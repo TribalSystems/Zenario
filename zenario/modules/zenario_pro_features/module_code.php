@@ -922,7 +922,7 @@ class zenario_pro_features extends zenario_common_features {
 			
 			zenario_pro_features::reviewDatabaseQueryForChanges($sql, $ids, $values, $table);
 			
-			sqlUpdate($sql, false);
+			sqlUpdate($sql, false, false);
 			$affectedRows = sqlAffectedRows();
 			
 			if ($affectedRows == 0) {
@@ -1045,7 +1045,8 @@ class zenario_pro_features extends zenario_common_features {
 					
 					//Anything that relies on group-membership or private items should never be cached, so we can ignore these tables too
 					case 'group_content_link':
-					case 'user_content_link':
+					case 'group_slide_link':
+					case 'translation_chain_privacy':
 						return;
 					
 					//File

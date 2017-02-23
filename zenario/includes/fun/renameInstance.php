@@ -67,14 +67,14 @@ if ($createNewInstance) {
 			is_slide,
 			name_or_title,
 			states,
-			visibility,
+			privacy,
 			smart_group_id,
 			module_class_name,
 			method_name,
 			param_1,
 			param_2
 		) SELECT
-			". (int) $instanceId. " AS `instance_id`,
+			". (int) $instanceId. ",
 			tab,
 			ord,
 			cols,
@@ -85,7 +85,7 @@ if ($createNewInstance) {
 			is_slide,
 			name_or_title,
 			states,
-			visibility,
+			privacy,
 			smart_group_id,
 			module_class_name,
 			method_name,
@@ -95,6 +95,7 @@ if ($createNewInstance) {
 		WHERE instance_id = ". (int) $oldInstanceId;
 	sqlSelect($sql);  //No need to check the cache as the other statements should clear it correctly
 	
+	
 	//Copy paths in the conductor
 	$sql = "
 		INSERT INTO ". DB_NAME_PREFIX. "nested_paths (
@@ -103,13 +104,37 @@ if ($createNewInstance) {
 			to_state,
 			commands
 		) SELECT
-			". (int) $instanceId. " AS `instance_id`,
+			". (int) $instanceId. ",
 			from_state,
 			to_state,
 			commands
 		FROM ". DB_NAME_PREFIX. "nested_paths
 		WHERE instance_id = ". (int) $oldInstanceId;
 	sqlSelect($sql);  //No need to check the cache as the other statements should clear it correctly
+	
+	
+	//Copy any groups chosen for slides
+	$sql = "
+		INSERT INTO ". DB_NAME_PREFIX. "group_slide_link (
+			`instance_id`,
+			`slide_id`,
+			`group_id`
+		) SELECT
+			". (int) $instanceId. ",
+			np_new.id,
+			gsl.group_id
+		FROM ". DB_NAME_PREFIX. "group_slide_link AS gsl
+		INNER JOIN ". DB_NAME_PREFIX. "nested_plugins AS np_old
+		   ON np_old.instance_id = ". (int) $oldInstanceId. "
+		  AND np_old.id = gsl.slide_id
+		INNER JOIN ". DB_NAME_PREFIX. "nested_plugins AS np_new
+		   ON np_new.instance_id = ". (int) $instanceId. "
+		  AND np_old.tab = np_new.tab
+		  AND np_old.ord = np_new.ord
+		WHERE gsl.instance_id = ". (int) $oldInstanceId;
+	
+	sqlSelect($sql);  //No need to check the cache as the other statements should clear it correctly
+	
 	
 	//Copy settings, as well as settings for any nested Plugins
 	$sql = "
@@ -125,7 +150,7 @@ if ($createNewInstance) {
 			foreign_key_char,
 			dangling_cross_references
 		) SELECT
-			". (int) $instanceId. " AS `instance_id`,
+			". (int) $instanceId. ",
 			IFNULL(np_new.id, 0),
 			ps.`name`,
 			ps.`value`,";
@@ -163,6 +188,7 @@ if ($createNewInstance) {
 	
 	sqlSelect($sql);  //No need to check the cache as the other statements should clear it correctly
 	
+	
 	//Copy any CSS for nested plugins
 	$sql = "
 		SELECT np_old.id AS old_id, np_new.id AS new_id
@@ -185,6 +211,7 @@ if ($createNewInstance) {
 		//Copy any plugin CSS files
 		managePluginCSSFile('copy', $oldInstanceId, $row['old_id'], $instanceId, $row['new_id']);
 	}
+	
 	
 	managePluginCSSFile('copy', $oldInstanceId, false, $instanceId);
 	

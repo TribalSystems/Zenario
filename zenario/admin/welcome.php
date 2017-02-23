@@ -208,7 +208,8 @@ echo
 '<!DOCTYPE HTML>
 <html>
 <head>
-	<title>', adminPhrase('Welcome to Zenario'), '</title>';
+	<title>', adminPhrase('Welcome to Zenario'), '</title>
+	<meta name="viewport" content="initial-scale=0.5">';
 
 $v = zenarioCodeVersion();
 CMSWritePageHead('../', 'welcome');
@@ -322,6 +323,7 @@ if (is_numeric(ZENARIO_REVISION)) {
 	$revision = $svninfo['Revision'];
 }
 
+
 echo '
 <div id="zenario_now_installing" class="zenario_now" style="display: none;">
 	<h1 style="text-align: center;">', adminPhrase('Now Installing'), '
@@ -364,13 +366,15 @@ echo '
 				</div>
 	
 				<div>
-					<h1>', adminPhrase('Welcome to Zenario'), '</h1>
-					<p id="no_cookies">',
-						adminPhrase("Unable to start a session! We cannot log you in at the moment.<br/><br/>Please check that cookies are enabled in your browser.<br/><br/>If you've enabled cookies and this message persists, please advise your system administrator to: <ul><li>Check the <code>COOKIE_DOMAIN</code> setting in the <code>zenario_siteconfig.php</code> file to ensure it is not referencing a different domain.</li><li>Check for any problems with caching or session storage on the server.</li></ul>"),
-					'</p>
-					<p id="no_script">',
-						adminPhrase('Please enable JavaScript in your browser to continue.'),
-					'</p>
+					<div class="problem">
+						<h1>', adminPhrase('Welcome to Zenario'), '</h1>
+						<p id="no_cookies">',
+							adminPhrase("Unable to start a session! We cannot log you in at the moment.<br/><br/>Please check that cookies are enabled in your browser.<br/><br/>If you've enabled cookies and this message persists, please advise your system administrator to: <ul><li>Check the <code>COOKIE_DOMAIN</code> setting in the <code>zenario_siteconfig.php</code> file to ensure it is not referencing a different domain.</li><li>Check for any problems with caching or session storage on the server.</li></ul>"),
+						'</p>
+						<p id="no_script">',
+							adminPhrase('Please enable JavaScript in your browser to continue.'),
+						'</p>
+					</div>
 				</div>
 			</div>
 		</div>

@@ -144,10 +144,12 @@ function browserBodyClass() {
 function engToBoolean($text) {
 	if (is_object($text) && get_class($text) == 'zenario_error') {
 		return 0;
-	} else if (is_array($text)) {
-		return 1;
+	
+	} elseif (is_bool($text) || is_numeric($text)) {
+		return (int) ((bool) $text);
+	
 	} else {
-		return (int) ($text && filter_var((string) $text, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) !== false);
+		return (int) (false !== filter_var($text, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE));
 	}
 }
 
@@ -479,7 +481,9 @@ function checkFunctionEnabled($name, $checkSafeMode = true) {
 }
 
 function zenarioSessionName() {
-	return 'PHPSESSID'. (COOKIE_DOMAIN? '-'. preg_replace('@\W@', '_', COOKIE_DOMAIN) : '');
+	return 'PHPSESSID'.
+		(COOKIE_DOMAIN? ('-'. preg_replace('@\W@', '_', COOKIE_DOMAIN)) : '').
+		(SUBDIRECTORY && SUBDIRECTORY != '/'? ('-'. preg_replace('@\W@', '_', str_replace('/', '', SUBDIRECTORY))) : '');
 }
 
 function startSession() {
@@ -526,6 +530,7 @@ class cms_core {
 	public static $lastDBHost;
 	public static $lastDBName;
 	public static $lastDBPrefix;
+	public static $mongoDB;
 	
 	public static $edition = '';
 	public static $editions = array();
@@ -600,7 +605,7 @@ class cms_core {
 	public static $isTwig = false;
 	public static $twigModules = array();
 	public static $whitelist = array('print_r', 'var_dump', 'json_encode');
-	public static $vars = array('userId' => 0);
+	public static $vars = array();
 
 	public static $skPath = '';
 	public static $skType = '';

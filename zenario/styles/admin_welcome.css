@@ -275,10 +275,15 @@ body.webkit input {
 
 /* Login */
 
-.welcome div.zenario_ab_tab__login {
+.welcome div.zenario_ab_tab__login,
+.welcome div.problem {
 	width:445px;
 	margin:auto;
 	overflow:visible;
+}
+
+.welcome div.problem h1 {
+	margin: 20px 0;
 }
 
 /* Inputs */

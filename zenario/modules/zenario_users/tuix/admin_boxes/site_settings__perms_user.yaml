@@ -1,0 +1,282 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+site_settings:
+    setting_group: perms
+    tabs:
+        users:
+            label: Users
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_SITE_SETTING
+            fields:
+            
+                perm.view.user:
+                    site_setting:
+                        name: perm.view.user
+                    type: radios
+                    value: specific
+                    values:
+                        logged_in:
+                            label: "Extranet users can view ANY user's details"
+                        specific:
+                            label: "Extranet users can view a user's details if..."
+                    redraw_onchange: true
+                perm.view.user.by.group:
+                    site_setting:
+                        name: perm.view.user.by.group
+                    indent: 1
+                    hide_if_previous_outdented_value_isnt: specific
+                    type: checkbox
+                    label: 'They are a member of the group(s):'
+                    redraw_onchange: true
+                perm.view.user.groups:
+                    site_setting:
+                        name: perm.view.user.groups
+                    indent: 2
+                    hide_with_previous_outdented_field: true
+                    hide_if_previous_outdented_value_isnt: 1
+                    pick_items: &pick_group
+                        path: zenario__users/panels/groups
+                        target_path: zenario__users/panels/groups
+                        min_path: zenario__users/panels/groups
+                        max_path: zenario__users/panels/groups
+                        disallow_refiners_looping_on_min_path: true
+                        nothing_selected_phrase: No group selected
+                        select_phrase: Select a group...
+                        multiple_select: true
+                    validation:
+                        required_if_not_hidden: Please select a group who can view a user's details.
+                perm.view.user.atLocation:
+                    site_setting:
+                        name: perm.view.user.atLocation
+                    hide_with_previous_indented_field: true
+                    indent: 1
+                    row_class: zfab_or
+                    type: checkbox
+                    label: The target user is assigned to a location at which the current user has
+                perm.view.user.atLocation.role:
+                    site_setting:
+                        name: perm.view.user.atLocation.role
+                    same_row: true
+                    hide_with_previous_field: true
+                    type: select
+                    empty_value: ANY role
+                    values: roles
+                perm.view.user.atLocationAtCompany:
+                    site_setting:
+                        name: perm.view.user.atLocationAtCompany
+                    hide_with_previous_indented_field: true
+                    indent: 1
+                    row_class: zfab_or
+                    type: checkbox
+                    label: The target user is assigned to ANY location at a company at which the current user has
+                perm.view.user.atLocationAtCompany.role:
+                    site_setting:
+                        name: perm.view.user.atLocationAtCompany.role
+                    same_row: true
+                    hide_with_previous_field: true
+                    type: select
+                    empty_value: ANY role
+                    values: roles
+                    post_field_html: '&nbsp; at ANY location in that company'
+                perm.view.oneself:
+                    hide_with_previous_indented_field: true
+                    indent: 1
+                    row_class: zfab_or
+                    type: checkbox
+                    value: 1
+                    read_only: true
+                    label: The current user can view their own details
+                
+                perm.view.user.enforce:
+                    indent: 1
+                    hide_if_previous_outdented_value_isnt:
+                        - logged_in
+                        - specific
+                    snippet: {}
+                    note_below: |
+                        If the userId variable is in the URL, the system will check if the visitor can see that user.
+                
+                perm.create-user.unassigned:
+                    snippet:
+                        label: "Create/unassigned: users can create a user who's not assigned to a location if..."
+                perm.create-user.unassigned.by.group:
+                    site_setting:
+                        name: perm.create-user.unassigned.by.group
+                    indent: 1
+                    type: checkbox
+                    label: 'They are a member of the group(s):'
+                    redraw_onchange: true
+                perm.create-user.unassigned.groups:
+                    site_setting:
+                        name: perm.create-user.unassigned.groups
+                    hide_if_previous_outdented_value_isnt: 1
+                    indent: 2
+                    pick_items: *pick_group
+                    validation:
+                        required_if_not_hidden: Please select a group who can create a user.
+                
+                perm.create-user.location:
+                    snippet:
+                        label: "Create/location: users can create a user assigned to a location if..."
+                perm.create-user.location.by.group:
+                    site_setting:
+                        name: perm.create-user.location.by.group
+                    indent: 1
+                    type: checkbox
+                    label: 'The current user a member of the group(s):'
+                    redraw_onchange: true
+                perm.create-user.location.groups:
+                    site_setting:
+                        name: perm.create-user.location.groups
+                    hide_if_previous_outdented_value_isnt: 1
+                    indent: 2
+                    pick_items: *pick_group
+                    validation:
+                        required_if_not_hidden: Please select a group who can create a user at a location.
+                perm.create-user.location.atLocation:
+                    site_setting:
+                        name: perm.create-user.location.atLocation
+                    hide_with_previous_indented_field: true
+                    indent: 1
+                    row_class: zfab_or
+                    type: checkbox
+                    label: The current user has
+                perm.create-user.location.atLocation.role:
+                    site_setting:
+                        name: perm.create-user.location.atLocation.role
+                    same_row: true
+                    hide_with_previous_field: true
+                    type: select
+                    empty_value: ANY role
+                    values: roles
+                    post_field_html: '&nbsp; at the location'
+                perm.create-user.location.atLocationAtCompany:
+                    site_setting:
+                        name: perm.create-user.location.atLocationAtCompany
+                    hide_with_previous_indented_field: true
+                    indent: 1
+                    row_class: zfab_or
+                    type: checkbox
+                    label: The location is in a company at which the current user has
+                perm.create-user.location.atLocationAtCompany.role:
+                    site_setting:
+                        name: perm.create-user.location.atLocationAtCompany.role
+                    same_row: true
+                    hide_with_previous_field: true
+                    type: select
+                    empty_value: ANY role
+                    values: roles
+                    post_field_html: '&nbsp; at ANY location in that company'
+                
+                perm.edit.user:
+                    snippet:
+                        label: "Edit: users can edit a user's details if..."
+                perm.edit.user.by.group:
+                    site_setting:
+                        name: perm.edit.user.by.group
+                    indent: 1
+                    type: checkbox
+                    label: 'The current user is a member of the group(s):'
+                    redraw_onchange: true
+                perm.edit.user.groups:
+                    site_setting:
+                        name: perm.edit.user.groups
+                    hide_if_previous_outdented_value_isnt: 1
+                    indent: 2
+                    pick_items: *pick_group
+                    validation:
+                        required_if_not_hidden: Please select a group who can edit a user.
+                perm.edit.user.atLocation:
+                    site_setting:
+                        name: perm.edit.user.atLocation
+                    hide_with_previous_indented_field: true
+                    indent: 1
+                    row_class: zfab_or
+                    type: checkbox
+                    label: The target user is assigned to a location at which the current user has 
+                perm.edit.user.atLocation.role:
+                    site_setting:
+                        name: perm.edit.user.atLocation.role
+                    same_row: true
+                    hide_with_previous_field: true
+                    type: select
+                    empty_value: ANY role
+                    values: roles
+                perm.edit.user.atLocationAtCompany:
+                    site_setting:
+                        name: perm.edit.user.atLocationAtCompany
+                    hide_with_previous_indented_field: true
+                    indent: 1
+                    row_class: zfab_or
+                    type: checkbox
+                    label: The target user is assigned to ANY location at a company at which the current user has
+                perm.edit.user.atLocationAtCompany.role:
+                    site_setting:
+                        name: perm.edit.user.atLocationAtCompany.role
+                    same_row: true
+                    hide_with_previous_field: true
+                    type: select
+                    empty_value: ANY role
+                    values: roles
+                    post_field_html: '&nbsp; at ANY location in that company'
+                perm.edit.oneself:
+                    site_setting:
+                        name: perm.edit.oneself
+                    hide_with_previous_indented_field: true
+                    indent: 1
+                    row_class: zfab_or
+                    type: checkbox
+                    label: The current user can edit their own details
+                
+                perm.delete.user:
+                    snippet:
+                        label: "Delete: users can delete a user if..."
+                perm.delete.user.by.group:
+                    site_setting:
+                        name: perm.delete.user.by.group
+                    indent: 1
+                    type: checkbox
+                    label: 'The current user is a member of the group(s):'
+                    redraw_onchange: true
+                perm.delete.user.groups:
+                    site_setting:
+                        name: perm.delete.user.groups
+                    hide_if_previous_outdented_value_isnt: 1
+                    indent: 2
+                    pick_items: *pick_group
+                    validation:
+                        required_if_not_hidden: Please select a group who can delete a user.
+                perm.delete.user.atLocation:
+                    site_setting:
+                        name: perm.delete.user.atLocation
+                    hide_with_previous_indented_field: true
+                    indent: 1
+                    row_class: zfab_or
+                    type: checkbox
+                    label: The target user is ONLY assigned to a location at which the current user has
+                perm.delete.user.atLocation.role:
+                    site_setting:
+                        name: perm.delete.user.atLocation.role
+                    same_row: true
+                    hide_with_previous_field: true
+                    type: select
+                    empty_value: ANY role
+                    values: roles
+                perm.delete.user.atLocationAtCompany:
+                    site_setting:
+                        name: perm.delete.user.atLocationAtCompany
+                    hide_with_previous_indented_field: true
+                    indent: 1
+                    row_class: zfab_or
+                    type: checkbox
+                    label: The target user is ONLY assigned to a location at a company at which the current user has
+                perm.delete.user.atLocationAtCompany.role:
+                    site_setting:
+                        name: perm.delete.user.atLocationAtCompany.role
+                    same_row: true
+                    hide_with_previous_field: true
+                    type: select
+                    empty_value: ANY role
+                    values: roles
+                    post_field_html: '&nbsp; at ANY location in that company'

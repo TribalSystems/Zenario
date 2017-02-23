@@ -41,8 +41,8 @@ zenario.lib(function(
 	undefined,
 	URLBasePath,
 	document, window, windowOpener, windowParent,
-	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO,
-	get, engToBoolean, htmlspecialchars, ifNull, jsEscape, phrase,
+	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO, strings,
+	encodeURIComponent, get, engToBoolean, htmlspecialchars, jsEscape, phrase,
 	extensionOf, methodsOf, has
 ) {
 	"use strict";
@@ -69,37 +69,8 @@ zenarioAT.init = function(firstLoad) {
 	zenarioAT.loaded = false;
 	zenarioAT.loadedBefore = true;
 	
-	zenario.ajax(zenarioAT.setURL(), false, true, true, true, 7500).after(zenarioAT.init2);
-
-	
-	
-	//var url =
-	//	URLBasePath +
-	//	'zenario/admin_toolbar.ajax.php' +
-	//	'?get=' + encodeURIComponent(JSON.stringify(zenarioA.importantGetRequests));
-	//
-	//zenarioAT.url = url + zenario.urlRequest(zenarioAT.getKey());
-	//
-	////Check the local storage, to see if there is an in-date copy of the Admin Toolbar for this item
-	//if (zenarioAT.tuix = zenario.checkSessionStorage(url, zenarioAT.getKey(), true)) {
-	//		//Backwards compatability for any old code
-	//		zenarioAT.focus = zenarioAT.tuix;
-	//	zenarioAT.init2();
-	//
-	//} else {
-	//	//Launch an AJAX request to get the admin toolbar
-	//	zenarioA.keepTrying(function(attempt) {
-	//		$.get(zenarioAT.url, function(data) {
-	//			if (zenarioA.stopTrying(attempt)) {
-	//				if (zenarioAT.tuix = zenarioA.readData(data, url, zenarioAT.getKey())) {
-	//					//Backwards compatability for any old code
-	//					zenarioAT.focus = zenarioAT.tuix;
-	//					zenarioAT.init2();
-	//				}
-	//			}
-	//		}, 'text');
-	//	});
-	//}
+	//zenario.ajax(url, post, json, useCache, retry, continueAnyway, settings, timeout, AJAXErrorHandler, onRetry, onCancel)
+	zenario.ajax(zenarioAT.setURL(), false, true, true, true, true, undefined, 7500).after(zenarioAT.init2);
 };
 
 
@@ -143,8 +114,8 @@ zenarioAT.clickTab = function(toolbar) {
 			
 			zenarioAT.action(zenarioAT.tuix.toolbars[toolbar]);
 			
-			var oldPageMode = ifNull(zenarioAT.tuix.toolbars[zenarioA.toolbar]? zenarioAT.tuix.toolbars[zenarioA.toolbar].page_mode : false, zenarioA.toolbar),
-				newPageMode = ifNull(zenarioAT.tuix.toolbars[toolbar].page_mode, toolbar),
+			var oldPageMode = zenarioAT.tuix.toolbars[zenarioA.toolbar] && zenarioAT.tuix.toolbars[zenarioA.toolbar].page_mode || zenarioA.toolbar,
+				newPageMode = zenarioAT.tuix.toolbars[toolbar].page_mode || toolbar,
 				toolbarSubstr = toolbar.substr(0, 4);
 			
 			$('body').removeClass('zenario_pageMode_' + oldPageMode).addClass('zenario_pageMode_' + newPageMode);
@@ -396,8 +367,8 @@ zenarioAT.draw = function() {
 		var id = zenarioAT.sortedToolbars[i],
 			tab = tuix.toolbars[id];
 		
-		//zenarioA.hidden(tuixObject, item, id, tuix, button, column, field, section, tab)
-		if (!zenarioA.hidden(undefined, undefined, id, tuix, undefined, undefined, undefined, undefined, tab)) {
+		//zenarioA.hidden(tuixObject, lib, item, id, button, column, field, section, tab, tuix)
+		if (!zenarioA.hidden(undefined, zenarioAT, undefined, id, undefined, undefined, undefined, undefined, tab)) {
 			
 			toolbar.tabs[++ti] = {
 				id: id,
@@ -425,13 +396,13 @@ zenarioAT.draw = function() {
 				buttonId, button;
 			
 			if (zenarioAT.sortedButtons[sectionId]
-			 && !zenarioA.hidden(undefined, undefined, sectionId, tuix, undefined, undefined, undefined, section)) {
+			 && !zenarioA.hidden(undefined, zenarioAT, undefined, sectionId, undefined, undefined, undefined, section)) {
 				
 				foreach (zenarioAT.sortedButtons[sectionId] as buttonOrdinal) {
 					buttonId = zenarioAT.sortedButtons[sectionId][buttonOrdinal],
 					button = section.buttons[buttonId];
 					
-					if (zenarioA.hidden(undefined, undefined, buttonId, tuix, button, undefined, undefined, section)) {
+					if (zenarioA.hidden(undefined, zenarioAT, undefined, buttonId, button, undefined, undefined, section)) {
 						continue;
 					}
 					if (button.appears_in_toolbars
@@ -441,8 +412,8 @@ zenarioAT.draw = function() {
 					
 					buttons[++bi] = {
 							id: buttonId,
-							css_class: ifNull(button.css_class, 'label_without_icon'),
-							label: ifNull(button.label, button.name),
+							css_class: button.css_class || 'label_without_icon',
+							label: button.label || button.name,
 							parent: button.parent,
 							tuix: button
 						};

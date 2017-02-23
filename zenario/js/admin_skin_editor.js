@@ -40,15 +40,15 @@ zenario.lib(function(
 	undefined,
 	URLBasePath,
 	document, window, windowOpener, windowParent,
-	zenario, zenarioA, zenarioSE, zenarioAT, zenarioO,
-	get, engToBoolean, htmlspecialchars, ifNull, jsEscape, phrase,
+	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO, strings,
+	encodeURIComponent, get, engToBoolean, htmlspecialchars, jsEscape, phrase,
 	extensionOf, methodsOf, has,
 	zenarioABToolkit
 ) {
 	"use strict";
 
 	var zenarioSE = window.zenarioSE = new zenarioABToolkit();
-	zenarioSE.init('zenarioSE', 'zenario_skin_editor');
+	zenarioSE.init('zenarioSE', 'zenario_skin_editor', 'zenarioSE_Controls');
 
 
 var FAB_NAME = 'AdminFloatingBox',
@@ -123,7 +123,7 @@ zenarioSE.setTitle = function(isReadOnly) {
 };
 
 zenarioSE.insertHTML = function(html, cb, isNewTab) {
-	get('zenario_abtab').innerHTML = html;
+	this.get('zenario_abtab').innerHTML = html;
 	this.tabHidden = false;
 	
 	cb.call();
@@ -210,7 +210,7 @@ zenarioSE.size = function(refresh, resizing) {
 				- $('#zenario_fbButtons').outerHeight()
 			);
 			
-			if (get('css_source')) {
+			if (this.get('css_source')) {
 				var editor = ace.edit('css_source');
 				editor.resize();
 			}

@@ -33,7 +33,7 @@ zenario_slideshow.show = function(className, containerId, fx, sync, timeout, spe
 
 	(zenario_slideshow.interfaces[containerId] = new window[className])
 		.show(containerId, fx, sync, timeout, speed, pause, nowrap, startingSlide);
-}
+};
 
 zenario_slideshow.page = function(el, i, mouseover) {
 	var containerId = getContainerIdFromEl(el);
@@ -41,7 +41,7 @@ zenario_slideshow.page = function(el, i, mouseover) {
 	
 	iface && iface.page(containerId, i, mouseover);
 	return false;
-}
+};
 
 zenario_slideshow.next = function(el) {
 	var containerId = getContainerIdFromEl(el);
@@ -49,7 +49,7 @@ zenario_slideshow.next = function(el) {
 	
 	iface && iface.next(containerId);
 	return false;
-}
+};
 
 zenario_slideshow.prev = function(el) {
 	var containerId = getContainerIdFromEl(el);
@@ -57,7 +57,7 @@ zenario_slideshow.prev = function(el) {
 	
 	iface && iface.prev(containerId);
 	return false;
-}
+};
 
 zenario_slideshow.pause = function(el) {
 	var containerId = getContainerIdFromEl(el);
@@ -65,7 +65,7 @@ zenario_slideshow.pause = function(el) {
 	
 	iface && iface.pause(containerId);
 	return false;
-}
+};
 
 zenario_slideshow.resume = function(el) {
 	var containerId = getContainerIdFromEl(el);
@@ -73,7 +73,7 @@ zenario_slideshow.resume = function(el) {
 	
 	iface && iface.resume(containerId);
 	return false;
-}
+};
 
 
 

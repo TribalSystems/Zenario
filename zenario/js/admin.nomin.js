@@ -1,4 +1,4 @@
-zenarioA.doEval = function(c, tuixObject, item, id, tuix, button, column, field, section, tab) {
+zenarioA.doEval = function(c, lib, tuixObject, item, id, button, column, field, section, tab, tuix) {
 	if (c.search(/^\s*function/) === 0) {
 		return eval("(" + c + ")");
 	} else {

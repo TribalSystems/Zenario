@@ -91,9 +91,4 @@ class zenario_common_features__admin_boxes__categories extends module_base_class
 			}
 		}
 	}
-	
-	public function adminBoxSaveCompleted($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		//Put the key back to what it originally was, to prevent highlighting bugs in Organizer
-		$box['key']['id'] = $box['key']['originalId'];
-	}
 }

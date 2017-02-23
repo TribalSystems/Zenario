@@ -403,14 +403,7 @@ class zenario_common_features extends module_base_class {
 					
 				
 				if ($runPlugins) {
-					setInstance($slot, $cID, $cType, $cVersion, $slotName, $checkForErrorPages = true);
-					
-					if (!empty($overrideSettings)
-					 && is_array($overrideSettings)) {
-						foreach ($overrideSettings as $name => $value) {
-							$slot['class']->zAPISettings[$name] = $value;
-						}
-					}
+					setInstance($slot, $cID, $cType, $cVersion, $slotName, $checkForErrorPages = true, $overrideSettings);
 					
 					if (initPluginInstance($slot)) {
 						if (!$ajaxReload && ($location = $slot['class']->checkHeaderRedirectLocation())) {
@@ -464,7 +457,7 @@ class zenario_common_features extends module_base_class {
 	
 	public static function reviewDatabaseQueryForChanges(&$sql, &$ids, &$values, $table = false, $runSql = false) {
 		if ($runSql) {
-			sqlUpdate($sql, false);
+			sqlUpdate($sql, false, false);
 			return sqlAffectedRows();
 		}
 	}
@@ -525,7 +518,7 @@ class zenario_common_features extends module_base_class {
 	
 	public function adminBoxSaveCompleted($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		if ($c = $this->runSubClass(__FILE__)) {
-			return $c->adminBoxDownload($path, $settingGroup, $box, $fields, $values, $changes);
+			return $c->adminBoxSaveCompleted($path, $settingGroup, $box, $fields, $values, $changes);
 		}
 	}
 	

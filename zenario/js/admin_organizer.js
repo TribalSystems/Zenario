@@ -41,8 +41,8 @@ zenario.lib(function(
 	undefined,
 	URLBasePath,
 	document, window, windowOpener, windowParent,
-	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO,
-	get, engToBoolean, htmlspecialchars, ifNull, jsEscape, phrase,
+	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO, strings,
+	encodeURIComponent, get, engToBoolean, htmlspecialchars, jsEscape, phrase,
 	extensionOf, methodsOf, has
 ) {
 	"use strict";
@@ -353,39 +353,11 @@ zenarioO.loadMap = function(after) {
 	
 	var store, url = URLBasePath + 'zenario/admin/organizer.ajax.php';
 	
-	//Attempt to get the map from the local store
-	//if (zenarioO.map = zenario.checkSessionStorage(url, {}, true)) {
-	//	after();
-	//	zenarioO.lookForBranches(zenarioO.map);
-	//
-	//} else {
-	//	//Otherwise launch an AJAX request to get the map
-	//	zenarioA.keepTrying(function(attempt) {
-	//		$.ajax({
-	//			url: url,
-	//			dataType: 'text'
-	//		}).fail(function(resp, statusType, statusText) {
-	//			if (zenarioA.stopTrying(attempt)) {
-	//				zenarioA.AJAXErrorHandler(resp, statusType, statusText);
-	//			}
-	//			
-	//		}).done(function(data) {
-	//			if (zenarioA.stopTrying(attempt)) {
-	//				if (zenarioO.map = zenarioA.readData(data, url, {})) {
-	//					after();
-	//					zenarioO.lookForBranches(zenarioO.map);
-	//				}
-	//			}
-	//		
-	//		});
-	//	});
-	//}
-	
-	zenario.ajax(url, false, false, true).after(function (data) {
-		if (zenarioO.map = zenarioA.readData(data, url, {})) {
-			zenarioO.lookForBranches(zenarioO.map);
-			after();
-		}
+	//zenario.ajax(url, post, json, useCache, retry, continueAnyway, settings, timeout, AJAXErrorHandler, onRetry, onCancel)
+	zenario.ajax(url, false, true, true, true, true).after(function (data) {
+		zenarioO.map = data;
+		zenarioO.lookForBranches(zenarioO.map);
+		after();
 	});
 };
 
@@ -588,33 +560,39 @@ zenarioO.checkQueueLength = function() {
 
 //If a Plugin Nest opened this Organizer Window, refresh that nest
 zenarioO.reloadOpeningInstanceIfRelevant = function(path) {
-	if (!zenarioO.checkQueueLength()) {
-	 	
-	 	if (path == window.zenarioOOpeningPath
-		 && (window.zenarioOOpeningInstance || window.zenarioOReloadOnChanges == 'zenarioAT')) {
-			var hash = '';
-		
-			if (window.zenarioOOpeningInstance) {
-				hash = window.zenarioOOpeningInstance + '!_refresh=' + ('' + Math.random()).replace('.', '');
-			}
-		
-			if (window.zenarioOReloadOnChanges == 'zenarioAT') {
-				hash += '&__zenario_reload_at__=' + ('' + Math.random()).replace('.', '');
-			}
-		
-			if (windowOpener && windowOpener.zenario) {
-				window.opener.document.location.hash = hash;
-		
-			} else if (windowParent && windowParent.zenario) {
-				window.parent.document.location.hash = hash;
-			}
-		}
 	
-		if (window.zenarioOReloadOnChanges == 'zenarioO'
-		 && windowParent
-		 && windowParent.zenarioO
-		 && windowParent.zenarioO.init) {
-			windowParent.zenarioO.reload();
+	var parent,
+		reload,
+		instance;
+	
+	if (windowOpener && windowOpener.zenario) {
+		parent = windowOpener;
+
+	} else if (windowParent && windowParent.zenario) {
+		parent = windowParent;
+	}
+	
+	if (parent && !zenarioO.checkQueueLength()) {
+		
+		
+		if (reload = window.zenarioOReloadOnChanges == 'zenarioO'
+		 && parent.zenarioO
+		 && parent.zenarioO.reload) {
+			reload();
+		}
+		
+		if (reload = window.zenarioOReloadOnChanges == 'zenarioAT'
+		 && parent.zenarioAT
+		 && parent.zenarioAT.init) {
+			reload();
+		}
+		
+		if (instance = window.zenarioOOpeningInstance
+		 && parent.zenario.instances
+		 && parent.zenario.instances[window.zenarioOOpeningInstance]) {
+			if (!zenario_conductor.refresh(instance.slotName)) {
+				zenario.refreshPluginSlot(instance.slotName, 'lookup', zenarioA.importantGetRequests);
+			}
 		}
 	}
 };
@@ -1160,63 +1138,8 @@ zenarioO.go = function(path, branch, refiner, queued, lastInQueue, backwards, do
 	if (!url) {
 		go2(panel);
 	} else {
-		zenario.ajax(url + zenario.urlRequest(requests), false, true, true, true).after(go2);
+		zenario.ajax(url + zenario.urlRequest(requests), false, true, true, true, true).after(go2);
 	}
-	
-	//Attempt to get this panel from the local storage, unless there's a post request
-	//} else if (postUsed) {
-	//	//Don't use the local storage for post requests
-	//	zenarioA.keepTrying(function(attempt) {
-	//		$.ajax({
-	//			url: url + zenario.urlRequest(requests),
-	//			data: post,
-	//			type: 'POST',
-	//			dataType: 'text'
-	//		
-	//		}).fail(function(resp, statusType, statusText) {
-	//			if (zenarioA.stopTrying(attempt)) {
-	//				zenarioA.AJAXErrorHandler(resp, statusType, statusText);
-	//			}
-	//		
-	//		}).done(function(data) {
-	//			if (zenarioA.stopTrying(attempt)) {
-	//				if (data = zenarioA.readData(data)) {
-	//					go2(data);
-	//				}
-	//			}
-	//		});
-	//	});
-	//
-	//} else if (db_items && !dontUseCache && (store = zenario.checkSessionStorage(url, requests, true, zenarioO.loadNum))) {
-	//	//Use the value from the local storage if possible...
-	//	go2(store);
-	//
-	//} else {
-	//	//...otherwise do an AJAX request then save the results into the local storage
-	//	var startTrying = function() {
-	//		zenarioA.keepTrying(function(attempt) {
-	//			$.ajax({
-	//				url: url,
-	//				data: requests,
-	//				dataType: 'text'
-	//		
-	//			}).fail(function(resp, statusType, statusText) {
-	//				if (zenarioA.stopTrying(attempt)) {
-	//					resp.zenario_retry = startTrying;
-	//					zenarioA.AJAXErrorHandler(resp, statusType, statusText);
-	//				}
-	//		
-	//			}).done(function(data) {
-	//				if (zenarioA.stopTrying(attempt)) {
-	//					if (data = zenarioA.readData(data, url, requests, startTrying)) {
-	//						go2(data);
-	//					}
-	//				}
-	//			});
-	//		});
-	//	};
-	//	startTrying();
-	//}
 };
 
 
@@ -1758,7 +1681,7 @@ zenarioO.itemLanguage = function(i) {
 		return zenarioO.tuix.items[i].language_id;
 	
 	} else if (zenarioO.tuix && zenarioO.tuix.key) {
-		return ifNull(zenarioO.tuix.key.languageId, zenarioO.tuix.key.language);
+		return zenarioO.tuix.key.languageId || zenarioO.tuix.key.language;
 	
 	} else {
 		return '';
@@ -1813,7 +1736,7 @@ zenarioO.getShownColumns = function(path, defaultSortColumn, columns) {
 	}
 	//Show the first column by default, if all others are turned off
 	if (!columnsShown) {
-		shownColumns[ifNull(firstColumn, defaultSortColumn)] = true;
+		shownColumns[firstColumn || defaultSortColumn] = true;
 	}
 	
 	return shownColumns;
@@ -1875,7 +1798,7 @@ zenarioO.goToLastPage = function() {
 };
 
 zenarioO.refreshAndShowPage = function(page) {
-	zenarioO.page = ifNull(page, 1);
+	zenarioO.page = page || 1;
 	zenarioO.load()
 };
 
@@ -1928,7 +1851,7 @@ zenarioO.searchAndSortItems = function(searchTerm) {
 	if (zenarioO.thisPageSize) {
 		//Work out the current page number for server-side searching and sorting
 		if (zenarioO.server_side && zenarioO.server_side) {
-			page = ifNull(zenarioO.tuix.__page__, zenarioO.refreshToPage, 1);
+			page = zenarioO.tuix.__page__ || zenarioO.refreshToPage || 1;
 	
 		//Work out the current page number for client-side sorting
 		} else {
@@ -1999,7 +1922,8 @@ zenarioO.setPanel = function() {
 	
 	foreach (selectedItems as var i) {
 		//Remove any items that have disappeared since this panel was last shown
-		if (!zenarioO.tuix.items[i]) {
+		if (!zenarioO.tuix.items
+		 || !zenarioO.tuix.items[i]) {
 			delete selectedItems[i];
 			itemsGone = true;
 		
@@ -2013,6 +1937,7 @@ zenarioO.setPanel = function() {
 	//then try to select the next item.
 	if (itemsGone && n == 0) {
 		if (zenarioO.selectNextItem
+		 && zenarioO.tuix.items
 		 && zenarioO.tuix.items[zenarioO.selectNextItem]) {
 			selectedItems[zenarioO.selectNextItem] = true;
 			++n;
@@ -2029,6 +1954,7 @@ zenarioO.setPanel = function() {
 	//then select that one
 	if (n == 0
 	 && zenarioO.inspectionViewItem
+	 && zenarioO.tuix.items
 	 && zenarioO.tuix.items[zenarioO.inspectionViewItem]) {
 		n = 1;
 		selectedItems = {};
@@ -2037,6 +1963,7 @@ zenarioO.setPanel = function() {
 	//Make sure we don't try to show inspection view if more than one item is selected
 	} else if (n > 1
 	 || !zenarioO.inspectionViewItem
+	 || !zenarioO.tuix.items
 	 || !zenarioO.tuix.items[zenarioO.inspectionViewItem]) {
 		zenarioO.inspectionView = false;
 	}
@@ -2216,10 +2143,10 @@ zenarioO.lookForBranches = function(map, path, panelPath, parentKey) {
 				}
 				
 				//In the event that two branches go to the same place, prefer item double-click links over anything else
-				if (!zenarioO.knownBranches[panelPath][map[i].link.path][ifNull(map[i].link.refiner, 1)]
-				 || ('' + zenarioO.knownBranches[panelPath][map[i].link.path][ifNull(map[i].link.refiner, 1)]).substr(-4) != 'item') {
+				if (!zenarioO.knownBranches[panelPath][map[i].link.path][map[i].link.refiner || 1]
+				 || ('' + zenarioO.knownBranches[panelPath][map[i].link.path][map[i].link.refiner || 1]).substr(-4) != 'item') {
 					//Otherwise, log the branch and stop scanning the parent tag
-					zenarioO.knownBranches[panelPath][map[i].link.path][ifNull(map[i].link.refiner, 1)] = zenarioO.shortenPath(p);
+					zenarioO.knownBranches[panelPath][map[i].link.path][map[i].link.refiner || 1] = zenarioO.shortenPath(p);
 				}
 			}
 			
@@ -2529,6 +2456,24 @@ zenarioO.parseReturnLink = function(url, replace) {
 	return zenario.addBasePath(('' + url).replace('zenario_sk_return=navigation_path', replace));
 };
 
+//Get a property, either from the panel's current refiner, or from the panel.
+//This allows us to have properties on panels that are overridden when a refiner is active.
+zenarioO.panelProp = function(prop, tuix) {
+	
+	var refinerName,
+		refinerDetails;
+	
+	if (tuix = tuix || zenarioO.tuix) {
+		if ((refinerName = zenarioO.refiner && zenarioO.refiner.name)
+		 && (refinerDetails = tuix.refiners && tuix.refiners[refinerName])
+		 && (refinerDetails[prop] !== undefined)) {
+			return refinerDetails[prop];
+		} else {
+			return tuix[prop];
+		}
+	}
+};
+
 //Remember a refiner on the current panel
 zenarioO.saveRefiner = function(refiner) {
 	zenarioO.branches[zenarioO.branches.length-1].refiners[zenarioO.path] = zenarioO.refiner = refiner;
@@ -2815,9 +2760,9 @@ zenarioO.viewTrash = function () {
 	return false;
 };
 
-zenarioO.collectionButtonClick = function(id) {
+zenarioO.collectionButtonClick = function(id, extraRequests) {
 	if (zenarioO.tuix && zenarioO.tuix.collection_buttons && zenarioO.tuix.collection_buttons[id]) {
-		zenarioA.action(zenarioO, zenarioO.tuix.collection_buttons[id], false, true);
+		zenarioA.action(zenarioO, zenarioO.tuix.collection_buttons[id], false, true, undefined, extraRequests);
 	}
 };
 
@@ -4030,17 +3975,22 @@ zenarioO.canSortColumn = function(c) {
 };
 
 zenarioO.canFilterColumn = function(c) {
-	//Only allow filtering for columns in the database
-	if (!zenarioO.tuix.columns[c].db_column
-	 || engToBoolean(zenarioO.tuix.columns[c].server_side_only)
-	 || engToBoolean(zenarioO.tuix.columns[c].disallow_filtering)) {
+	
+	var col = zenarioO.tuix.columns[c],
+		filterFormat;
+	
+	if (!col) {
 		return false;
 	}
 	
-	var filterFormat = zenarioO.tuix.columns[c].filter_format || zenarioO.tuix.columns[c].format;
+	filterFormat = col.filter_format || col.format;
 	
-	//Catch the case where an enum column is missing its values - don't allow filtering here
-	if (filterFormat == 'enum' && !zenarioO.tuix.columns[c].values) {
+	//Only allow filtering for columns in the database
+	if (!(col.db_column || col.filter_column)
+	 || engToBoolean(col.server_side_only)
+	 || engToBoolean(col.disallow_filtering)
+		//Catch the case where an enum column is missing its values - don't allow filtering here
+	 || (filterFormat == 'enum' && !col.values)) {
 		return false;
 	}
 	
@@ -4054,12 +4004,12 @@ zenarioO.canFilterColumn = function(c) {
 		case 'language_english_name':
 		case 'language_local_name_with_id':
 		case 'language_local_name':
-			return !engToBoolean(zenarioO.tuix.columns[c].disallow_sorting);
+			return !engToBoolean(col.disallow_sorting);
 		
 		//Text type fields are implemented as a search box.
 		//They should be filterable if they are flagged as searchable.
 		default:
-			return engToBoolean(zenarioO.tuix.columns[c].searchable);
+			return engToBoolean(col.searchable);
 	}
 };
 
@@ -4445,8 +4395,8 @@ zenarioO.isShowableColumn = function(c, shown) {
 	if (shown) {
 		return zenarioO.shownColumns[c] && zenarioO.isShowableColumn(c);
 	} else {
-		//zenarioA.hidden(tuixObject, item, id, tuix, button, column, field, section, tab)
-		return zenarioO.tuix.columns[c] && !zenarioA.hidden(undefined, undefined, c, zenarioO.tuix, undefined, zenarioO.tuix.columns[c]) && zenarioO.tuix.columns[c].title && !engToBoolean(zenarioO.tuix.columns[c].server_side_only);
+		//zenarioA.hidden(tuixObject, lib, item, id, button, column, field, section, tab, tuix)
+		return zenarioO.tuix.columns[c] && !zenarioA.hidden(undefined, zenarioO, undefined, c, undefined, zenarioO.tuix.columns[c]) && zenarioO.tuix.columns[c].title && !engToBoolean(zenarioO.tuix.columns[c].server_side_only);
 	}
 };
 
@@ -4734,17 +4684,27 @@ zenarioO.rowCssClass = function(i) {
 };
 
 zenarioO.columnCssClass = function(c, i) {
-	var html = '';
+	var html = '',
+		col = zenarioO.tuix.columns[c],
+		item = i != undefined && zenarioO.tuix.items[i];
 	
-	if (zenarioO.tuix.columns[c] && zenarioO.tuix.columns[c]['css_class']) {
-		html += ' ' + zenarioO.tuix.columns[c]['css_class'];
+	if (col && col['css_class']) {
+		html += ' ' + col['css_class'];
 	}
 	
-	if (i != undefined
-	 && zenarioO.tuix.items[i]
-	 && zenarioO.tuix.items[i].cell_css_classes
-	 && zenarioO.tuix.items[i].cell_css_classes[c]) {
-		html += ' ' + zenarioO.tuix.items[i].cell_css_classes[c];
+	if (item
+	 && item.cell_css_classes
+	 && item.cell_css_classes[c]) {
+		html += ' ' + item.cell_css_classes[c];
+	}
+	
+	if (item
+	 && item[c]
+	 && col
+	 && col.values
+	 && col.values[item[c]]
+	 && col.values[item[c]].css_class) {
+		html += ' ' + col.values[item[c]].css_class;
 	}
 	
 	return html;
@@ -5037,8 +4997,8 @@ zenarioO.setNavigation = function(returnData) {
 			item_css_class;
 		
 		if (i == 'top_right_buttons'
-			//zenarioA.hidden(tuixObject, item, id, tuix, button, column, field, section, tab)
-		 || zenarioA.hidden(undefined, undefined, i, zenarioO.tuix, undefined, undefined, undefined, topLevel)) {
+			//zenarioA.hidden(tuixObject, lib, item, id, button, column, field, section, tab, tuix)
+		 || zenarioA.hidden(undefined, zenarioO, undefined, i, undefined, undefined, undefined, topLevel)) {
 			continue;
 		}
 		
@@ -5085,8 +5045,8 @@ zenarioO.setNavigation = function(returnData) {
 					}
 				}
 				
-				//zenarioA.hidden(tuixObject, item, id, tuix, button, column, field, section, tab)
-				if (zenarioA.hidden(undefined, undefined, j, zenarioO.tuix, secondLevel, undefined, undefined, topLevel)) {
+				//zenarioA.hidden(tuixObject, lib, item, id, button, column, field, section, tab, tuix)
+				if (zenarioA.hidden(undefined, zenarioO, undefined, j, secondLevel, undefined, undefined, topLevel)) {
 					continue;
 				}
 				
@@ -5107,7 +5067,7 @@ zenarioO.setNavigation = function(returnData) {
 					href: secondLevel.href,
 					onclick: secondLevel.onclick,
 					css_class: item_css_class,
-					label: ifNull(secondLevel.label, secondLevel.name),
+					label: secondLevel.label || secondLevel.name,
 					tooltip: secondLevel.tooltip,
 					item_css_class: item_css_class
 				};
@@ -5440,6 +5400,10 @@ zenarioO.getItemButtons = function() {
 				if (engToBoolean(button.multiple_select_only)) {
 					minItems = 2;
 				}
+				
+				if (button.multiple_select_min_items) {
+					minItems = Math.max(minItems, button.multiple_select_min_items);
+				}
 			}
 			
 			if (zenarioO.itemsSelected < minItems || (maxItems && zenarioO.itemsSelected > maxItems)) {
@@ -5451,7 +5415,7 @@ zenarioO.getItemButtons = function() {
 				continue;
 			}
 			
-			if (!zenarioO.checkTraits(button, selectedItems)) {
+			if (!zenarioO.checkItemButtonHidden(button, selectedItems)) {
 				continue;
 			}
 			
@@ -5460,7 +5424,7 @@ zenarioO.getItemButtons = function() {
 			
 			
 			buttons[bi].label = zenarioO.applyMergeFieldsToLabel(
-				ifNull(button.label, button.name),
+				button.label || button.name,
 				false, true,
 				button.multiple_select_label
 			);
@@ -5565,17 +5529,17 @@ zenarioO.checkDisabled = function(button, buttonId, items) {
 	}
 	
 	if (button.disabled_if !== undefined) {
-		//zenarioA.eval(c, tuixObject, item, id, tuix, button, column, field, section, tab)
-		if (zenarioA.eval(button.disabled_if, undefined, singleItem, buttonId, tuix, button)) {
+		//zenarioA.eval(c, lib, tuixObject, item, id, tuix, button, column, field, section, tab, tuix)
+		if (zenarioA.eval(button.disabled_if, zenarioO, undefined, singleItem, buttonId, button)) {
 			return true;
 		}
 	}
 	
-	//Check whether an item button with the visible_if_for_all_selected_items/visible_if_for_any_selected_items
+	//Check whether an item button with the disabled_if_for_any_selected_items/disabled_if_for_all_selected_items
 	//properties should be visible
 	if (items && button.disabled_if_for_any_selected_items !== undefined) {
 		foreach (items as id) {
-			if (zenarioA.eval(button.disabled_if_for_any_selected_items, undefined, tuix.items[id], id, tuix, button)) {
+			if (zenarioA.eval(button.disabled_if_for_any_selected_items, zenarioO, undefined, tuix.items[id], id, button)) {
 				return true;
 			}
 		}
@@ -5583,7 +5547,7 @@ zenarioO.checkDisabled = function(button, buttonId, items) {
 	
 	if (items && button.disabled_if_for_all_selected_items !== undefined) {
 		foreach (items as id) {
-			if (!zenarioA.eval(button.disabled_if_for_all_selected_items, undefined, tuix.items[id], id, tuix, button)) {
+			if (!zenarioA.eval(button.disabled_if_for_all_selected_items, zenarioO, undefined, tuix.items[id], id, button)) {
 				return false;
 			}
 		}
@@ -5616,8 +5580,8 @@ zenarioO.checkButtonHidden = function(button, items) {
 	}
 	
 	//Check if this button is hidden
-	//zenarioA.hidden(tuixObject, item, id, tuix, button, column, field, section, tab)
-	if (zenarioA.hidden(undefined, singleItem, singleItemId, zenarioO.tuix, button)) {
+	//zenarioA.hidden(tuixObject, lib, item, id, button, column, field, section, tab, tuix)
+	if (zenarioA.hidden(undefined, zenarioO, singleItem, singleItemId, button)) {
 		return true;
 	}
 	
@@ -5683,7 +5647,7 @@ zenarioO.checkButtonHidden = function(button, items) {
 };
 
 
-//Define some logic for checking columns and traits
+//Define some logic for checking columns and traits on item buttons
 var colCheckLogic = {
 	traits: {
 		condition: function(id, trait, item) {
@@ -5713,7 +5677,7 @@ colCheckLogic.one_without_columns_set = zenario.clone(colCheckLogic.without_colu
 
 
 //Check to see whether an item button should be visible or hidden based on logic specific to item buttons
-zenarioO.checkTraits = function(button, items) {
+zenarioO.checkItemButtonHidden = function(button, items) {
 	
 	var id,
 		check, checks, ci, logic,
@@ -5731,8 +5695,8 @@ zenarioO.checkTraits = function(button, items) {
 	//properties should be visible
 	if (button.visible_if_for_all_selected_items !== undefined) {
 		foreach (items as id) {
-			//zenarioA.eval(c, tuixObject, item, id, tuix, button, column, field, section, tab)
-			if (!zenarioA.eval(button.visible_if_for_all_selected_items, undefined, tuix.items[id], id, tuix, button)) {
+			//zenarioA.eval(c, lib, tuixObject, item, id, tuix, button, column, field, section, tab, tuix)
+			if (!zenarioA.eval(button.visible_if_for_all_selected_items, zenarioO, undefined, tuix.items[id], id, button)) {
 				return false;
 			}
 		}
@@ -5740,7 +5704,7 @@ zenarioO.checkTraits = function(button, items) {
 	
 	if (button.visible_if_for_any_selected_items !== undefined) {
 		foreach (items as id) {
-			if (zenarioA.eval(button.visible_if_for_any_selected_items, undefined, tuix.items[id], id, tuix, button)) {
+			if (zenarioA.eval(button.visible_if_for_any_selected_items, zenarioO, undefined, tuix.items[id], id, button)) {
 				met = true;
 				break;
 			}
@@ -5806,7 +5770,7 @@ zenarioO.checkTraits = function(button, items) {
 zenarioO.checkItemPickable = function(id) {
 	var items = {};
 	items[id] = true;
-	return zenarioO.checkTraits(window.zenarioOSelectObject, items)
+	return zenarioO.checkItemButtonHidden(window.zenarioOSelectObject, items)
 		&& !zenarioO.checkDisabled(window.zenarioOSelectObject, undefined, items);
 };
 
@@ -5828,7 +5792,7 @@ zenarioO.getInlineButtons = function(id) {
 			continue;
 		}
 		
-		if (!zenarioO.checkTraits(button, ids)) {
+		if (!zenarioO.checkItemButtonHidden(button, ids)) {
 			continue;
 		}
 		
@@ -5860,13 +5824,13 @@ zenarioO.chooseButtonActive = function() {
 zenarioO.setChooseButton = function() {
 	//Enable or disable the "Choose" button
 	if (window.zenarioOSelectMode) {
-		var choosePhrase = ifNull(window.zenarioOChoosePhrase, phrase.choose),
+		var choosePhrase = window.zenarioOChoosePhrase || phrase.choose,
 			disabled = true,
 			className = 'submit_disabled',
 			selectedItems = zenarioO.pi.returnSelectedItems();
 		
 		if (zenarioO.chooseButtonActive()
-		 && zenarioO.checkTraits(window.zenarioOSelectObject, selectedItems)
+		 && zenarioO.checkItemButtonHidden(window.zenarioOSelectObject, selectedItems)
 		 && !zenarioO.checkDisabled(window.zenarioOSelectObject, undefined, selectedItems)
 		 && (zenarioO.itemsSelected > 0 || window.zenarioOAllowNoSelection)
 		 && (zenarioO.itemsSelected <= 1 || window.zenarioOMultipleSelect)) {
@@ -5923,7 +5887,7 @@ zenarioO.setPanelTitle = function() {
 			get('organizer_panelTitle').innerHTML = htmlspecialchars(title);
 		}
 		
-		var width = Math.max(0, ifNull($('#organizer_rightColumnTitle').width(), 0, 0) - 75 - ifNull($('#organizer_collectionToolbar').width(), 90));
+		var width = Math.max(0, ($('#organizer_rightColumnTitle').width() || 0) - 75 - ($('#organizer_collectionToolbar').width() || 90));
 		
 		//get('organizer_panelTitle').style.fontSize = Math.min(18, 1.6 * Math.round((width) / ('' + title).length)) + 'px';
 		//$('#organizer_panelTitle').width(width);
@@ -5942,8 +5906,8 @@ zenarioO.setTrash = function () {
 		get('organizer_trash_button').style.display = '';
 		get('organizer_trash_button').className =
 			engToBoolean(zenarioO.tuix.trash.empty)?
-				ifNull(zenarioO.tuix.trash.empty_css_class, 'trash_button_empty')
-			 :	ifNull(zenarioO.tuix.trash.full_css_class, 'trash_button_full');
+				zenarioO.tuix.trash.empty_css_class || 'trash_button_empty'
+			 :	zenarioO.tuix.trash.full_css_class || 'trash_button_full';
 		
 		zenarioA.tooltips('#organizer_trash_button a', {
 			position: {
@@ -5955,8 +5919,8 @@ zenarioO.setTrash = function () {
 			items: '*',
 			content:
 				engToBoolean(zenarioO.tuix.trash.empty)?
-					ifNull(zenarioO.tuix.trash.empty_tooltip, phrase.viewTrash)
-				 :	ifNull(zenarioO.tuix.trash.full_tooltip, phrase.viewTrash)
+					zenarioO.tuix.trash.empty_tooltip || phrase.viewTrash
+				 :	zenarioO.tuix.trash.full_tooltip || phrase.viewTrash
 		});
 		
 	} else {

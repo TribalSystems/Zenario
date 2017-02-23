@@ -42,82 +42,93 @@
  */
 
 
-zenario.moduleBaseClass = function(
-	moduleId, moduleClassName, moduleClassNameForPhrases,
-	zenario, undefined
+zenario.lib(function(
+	undefined,
+	URLBasePath,
+	document, window, windowOpener, windowParent,
+	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO, strings,
+	encodeURIComponent
+	//N.b. the rest of the shortcut functions that normally go here haven't been defined yet!
+	//They are actually defined below.
 ) {
 	"use strict";
+
+
+	zenario.moduleBaseClass = function(
+		moduleId, moduleClassName, moduleClassNameForPhrases,
+		zenario, undefined
+	) {
 	
-	this.moduleId = moduleId;
-	this.moduleClassName = moduleClassName;
-	this.moduleClassNameForPhrases = moduleClassNameForPhrases;
+		this.moduleId = moduleId;
+		this.moduleClassName = moduleClassName;
+		this.moduleClassNameForPhrases = moduleClassNameForPhrases;
 	
-	/*
-		Variables
-		(See environment_variables.inc.php for their descriptions)
-	*/
+		/*
+			Variables
+			(See environment_variables.inc.php for their descriptions)
+		*/
 	
-	this.cID = zenario.cID;
-	this.cType = zenario.cType;
-	this.cVersion = zenario.cVersion;
-	this.languageId = zenario.langId;
+		this.cID = zenario.cID;
+		this.cType = zenario.cType;
+		this.cVersion = zenario.cVersion;
+		this.languageId = zenario.langId;
 	
 	
-	/*
-		Utility Functions
-	*/
+		/*
+			Utility Functions
+		*/
 	
-	//Launch an AJAX request to your Plugin's handleAJAX placeholder method
-	//Warning: This uses zenario.nonAsyncAJAX() so is deprecated!
-	this.AJAX = function(requests, post, useCache) {
-		return zenario.moduleNonAsyncAJAX(this.moduleClassName, requests, post, false, useCache);
-	};
+		//Launch an AJAX request to your Plugin's handleAJAX placeholder method
+		//Warning: This uses zenario.nonAsyncAJAX() so is deprecated!
+		this.AJAX = function(requests, post, useCache) {
+			return zenario.moduleNonAsyncAJAX(this.moduleClassName, requests, post, false, useCache);
+		};
 	 
-	//Launch a JSON request to your Plugin's handleAJAX placeholder method
-	//Warning: This uses zenario.nonAsyncAJAX() so is deprecated!
-	this.JSON = function(requests, post, useCache) {
-		return zenario.moduleNonAsyncAJAX(this.moduleClassName, requests, post, true, useCache);
-	};
+		//Launch a JSON request to your Plugin's handleAJAX placeholder method
+		//Warning: This uses zenario.nonAsyncAJAX() so is deprecated!
+		this.JSON = function(requests, post, useCache) {
+			return zenario.moduleNonAsyncAJAX(this.moduleClassName, requests, post, true, useCache);
+		};
 	
 	
 	
 
 	
-	this.AJAXLink = function(requests) {
-		return zenario.AJAXLink(this.moduleClassName, requests);
-	};
+		this.AJAXLink = function(requests) {
+			return zenario.AJAXLink(this.moduleClassName, requests);
+		};
 	
-	this.pluginAJAXLink = function(slotNameOrContainedElement, requests) {
-		return zenario.pluginAJAXLink(this.moduleClassName, slotNameOrContainedElement, requests);
-	};
+		this.pluginAJAXLink = function(slotNameOrContainedElement, requests) {
+			return zenario.pluginAJAXLink(this.moduleClassName, slotNameOrContainedElement, requests);
+		};
 	
-	this.showFileLink = function(requests) {
-		return zenario.showFileLink(this.moduleClassName, requests);
-	};
+		this.showFileLink = function(requests) {
+			return zenario.showFileLink(this.moduleClassName, requests);
+		};
 	
-	this.showFloatingBoxLink = function(slotNameOrContainedElement, requests) {
-		return zenario.showFloatingBoxLink(this.moduleClassName, slotNameOrContainedElement, requests);
-	};
+		this.showFloatingBoxLink = function(slotNameOrContainedElement, requests) {
+			return zenario.showFloatingBoxLink(this.moduleClassName, slotNameOrContainedElement, requests);
+		};
 	
-	this.showSingleSlotLink = function(slotNameOrContainedElement, requests, hideLayout, cID, cType) {
-		return zenario.showSingleSlotLink(this.moduleClassName, slotNameOrContainedElement, requests, hideLayout, cID, cType);
-	};
+		this.showSingleSlotLink = function(slotNameOrContainedElement, requests, hideLayout, cID, cType) {
+			return zenario.showSingleSlotLink(this.moduleClassName, slotNameOrContainedElement, requests, hideLayout, cID, cType);
+		};
 	
-	this.showImageLink = function(requests) {
-		return zenario.showImageLink(this.moduleClassName, requests);
-	};
+		this.showImageLink = function(requests) {
+			return zenario.showImageLink(this.moduleClassName, requests);
+		};
 	
-	this.showStandalonePageLink = function(requests) {
-		return zenario.showStandalonePageLink(this.moduleClassName, requests);
-	};
+		this.showStandalonePageLink = function(requests) {
+			return zenario.showStandalonePageLink(this.moduleClassName, requests);
+		};
 	
-	this.visitorTUIXLink = function(path, customisationName, requests, mode) {
-		return zenario.visitorTUIXLink(this.moduleClassName, path, customisationName, requests, mode);
-	};
+		this.visitorTUIXLink = function(path, customisationName, requests, mode) {
+			return zenario.visitorTUIXLink(this.moduleClassName, path, customisationName, requests, mode);
+		};
 	
-	this.pluginVisitorTUIXLink = function(slotNameOrContainedElement, path, customisationName, requests, mode, useSync) {
-		return zenario.pluginVisitorTUIXLink(this.moduleClassName, slotNameOrContainedElement, path, customisationName, requests, mode, useSync);
-	};
+		this.pluginVisitorTUIXLink = function(slotNameOrContainedElement, path, customisationName, requests, mode, useSync) {
+			return zenario.pluginVisitorTUIXLink(this.moduleClassName, slotNameOrContainedElement, path, customisationName, requests, mode, useSync);
+		};
 
 	
 	
@@ -127,91 +138,92 @@ zenario.moduleBaseClass = function(
 	
 	
 	
-	/**
-	* The floatingBoxAnchor() method allows Plugin Developers to create a hyperlink which calls a
-	* zenario-themed alert box to appear when an Admin clicks on it.
-	* 
-	* If a Plugin Developer wishes to have a confirmation box and not an alert box, then the $buttons
-	* input can be passed the HTML needed for the buttons they wish to appear.
-	* 
-	* Note that this will only work in Admin mode.
-	*/
-	this.floatingMessage = function(html, buttonsHTML, warning) {
-		if (zenarioA.init) {
-			zenarioA.floatingBox(html, buttonsHTML, warning);
-		}
-	};
+		/**
+		* The floatingBoxAnchor() method allows Plugin Developers to create a hyperlink which calls a
+		* zenario-themed alert box to appear when an Admin clicks on it.
+		* 
+		* If a Plugin Developer wishes to have a confirmation box and not an alert box, then the $buttons
+		* input can be passed the HTML needed for the buttons they wish to appear.
+		* 
+		* Note that this will only work in Admin mode.
+		*/
+		this.floatingMessage = function(html, buttonsHTML, warning) {
+			if (zenario.inAdminMode) {
+				zenarioA.floatingBox(html, buttonsHTML, warning);
+			}
+		};
 	
-	//Returns the instance id of this Plugin.
-	//Warning: If you have more than one instance on a page then it's not defined which one will be returned
-	this.instanceId = function() {
-		foreach (this.slots as i) {
-			return this.slots[i].instanceId;
-		}
-		return false;
-	};
+		//Returns the instance id of this Plugin.
+		//Warning: If you have more than one instance on a page then it's not defined which one will be returned
+		this.instanceId = function() {
+			foreach (this.slots as i) {
+				return this.slots[i].instanceId;
+			}
+			return false;
+		};
 	
-	//Fetch your visitor phrases via AJAX.
-	this.loadPhrases = function(code) {
-		return zenario.loadPhrases(this.moduleClassNameForPhrases, code);
-	};
+		//Fetch your visitor phrases via AJAX.
+		this.loadPhrases = function(code) {
+			return zenario.loadPhrases(this.moduleClassNameForPhrases, code);
+		};
 	
-	//Fetch one of your visitor phrases via AJAX.
-	this.phrase = function(text, mrg) {
-		return zenario.phrase(this.moduleClassNameForPhrases, text, mrg);
-	};
+		//Fetch one of your visitor phrases via AJAX.
+		this.phrase = function(text, mrg) {
+			return zenario.phrase(this.moduleClassNameForPhrases, text, mrg);
+		};
 	
-	this.registerPhrases = function(phrases) {
-		zenario.registerPhrases(this.moduleClassNameForPhrases, phrases);
-	};
+		this.registerPhrases = function(phrases) {
+			zenario.registerPhrases(this.moduleClassNameForPhrases, phrases);
+		};
 	
-	this.nphrase = function(text, pluralText, n, mrg) {
-		return zenario.nphrase(this.moduleClassNameForPhrases, text, pluralText, n, mrg);
-	};
+		this.nphrase = function(text, pluralText, n, mrg) {
+			return zenario.nphrase(this.moduleClassNameForPhrases, text, pluralText, n, mrg);
+		};
 	 
-	//Go to a content item
-	this.goToItem = function(cID, cType, request) {
-		zenario.goToURL(zenario.linkToItem(cID, cType, request));
-	};
+		//Go to a content item
+		this.goToItem = function(cID, cType, request) {
+			zenario.goToURL(zenario.linkToItem(cID, cType, request));
+		};
 	 
-	//Go to a URL
-	this.goToURL = function(url) {
-		zenario.goToURL(url);
-	};
+		//Go to a URL
+		this.goToURL = function(url) {
+			zenario.goToURL(url);
+		};
 	
-	//Reload the contents of a slot.
-	this.refreshPluginSlot = function(slotNameOrContainedElement, requests, scrollToTopOfSlot, fadeOutAndIn) {
-		var slotName = zenario.getSlotnameFromEl(slotNameOrContainedElement);
+		//Reload the contents of a slot.
+		this.refreshPluginSlot = function(slotNameOrContainedElement, requests, scrollToTopOfSlot, fadeOutAndIn) {
+			var slotName = zenario.getSlotnameFromEl(slotNameOrContainedElement);
 		
-		if (slotName === false) {
-			return;
-		}
+			if (slotName === false) {
+				return;
+			}
 		
-		if (scrollToTopOfSlot === undefined) {
-			scrollToTopOfSlot = true;
-		}
+			if (scrollToTopOfSlot === undefined) {
+				scrollToTopOfSlot = true;
+			}
 		
-		if (fadeOutAndIn === undefined) {
-			fadeOutAndIn = true;
-		}
+			if (fadeOutAndIn === undefined) {
+				fadeOutAndIn = true;
+			}
 		
-		zenario.refreshPluginSlot(slotName, 'lookup', requests, true, scrollToTopOfSlot, fadeOutAndIn);
-	};
+			zenario.refreshPluginSlot(slotName, 'lookup', requests, true, scrollToTopOfSlot, fadeOutAndIn);
+		};
 	
-	//Scroll to the top of a slot
-	this.scrollToSlotTop = function(slotNameOrContainedElement, neverScrollDown) {
-		var slotName = zenario.getSlotnameFromEl(slotNameOrContainedElement);
-		zenario.scrollToSlotTop(slotName, neverScrollDown);
-	};
+		//Scroll to the top of a slot
+		this.scrollToSlotTop = function(slotNameOrContainedElement, neverScrollDown) {
+			var slotName = zenario.getSlotnameFromEl(slotNameOrContainedElement);
+			zenario.scrollToSlotTop(slotName, neverScrollDown);
+		};
 	
-	//Returns the slot name that this Plugin is in
-	//Warning: If this Plugin is in more than one slot on a page then it's not defined which one be returned
-	this.slotName = function() {
-		foreach (this.slots as i) {
-			return this.slots[i].slotName;
-		}
-		return false;
-	};
+		//Returns the slot name that this Plugin is in
+		//Warning: If this Plugin is in more than one slot on a page then it's not defined which one be returned
+		this.slotName = function() {
+			foreach (this.slots as i) {
+				return this.slots[i].slotName;
+			}
+			return false;
+		};
 	
-	this.slots = new Object();
-};
+		this.slots = new Object();
+	};
+});

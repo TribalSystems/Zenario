@@ -11,7 +11,7 @@
 	
 	<div class="zfea_confirm_buttons zfea_colorbox_buttons">
 		<form>
-			<input type="button" class="zfea_do_it" value="{{m.button_message|escape}}" id="zfea_do_it"/>
+			<input type="button" class="zfea_do_it {{m.button_css_class|escape}}" value="{{m.button_message|escape}}" id="zfea_do_it"/>
 			<input type="button" class="zfea_cancel" value="{{m.cancel_button_message|escape}}" onclick="$.colorbox.close();"/>
 		</form>
 	</div>

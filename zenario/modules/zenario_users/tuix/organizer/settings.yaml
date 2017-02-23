@@ -7,3 +7,6 @@ zenario__administration:
                 users:
                     name: Users
                     desc: Settings that affect extranet users and contacts.
+                perms:
+                    name: User Permissions
+                    desc: Settings that control what data can be seen or changed by which extranet users

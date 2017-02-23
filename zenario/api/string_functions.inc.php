@@ -100,7 +100,7 @@ function stndrdth($i) {
 	return $i. 'th';
 }
 
-function chopPrefixOffOfString($string, $prefix, $returnStringOnFailure = false) {
+function chopPrefixOffString($prefix, $string, $returnStringOnFailure = false) {
 	if ($string === $prefix) {
 		return '';
 	}
@@ -114,6 +114,11 @@ function chopPrefixOffOfString($string, $prefix, $returnStringOnFailure = false)
 	} else {
 		return false;
 	}
+}
+
+//Deprecated old version of the above function, with the inputs the other way around
+function chopPrefixOffOfString($string, $prefix, $returnStringOnFailure = false) {
+	chopPrefixOffString($prefix, $string, $returnStringOnFailure);
 }
 
 //Reverses encodeItemIdForOrganizer()

@@ -117,33 +117,85 @@ if (checkPriv()) {
 		
 		
 		
-		if (adminSetting('show_dev_tools') && !(defined('ZENARIO_IS_DEMO_SITE') && ZENARIO_IS_DEMO_SITE)) {
+		if (!(defined('ZENARIO_IS_DEMO_SITE') && ZENARIO_IS_DEMO_SITE)) {
 			$section = array('title' => adminPhrase('Installation Information'), 'fields' => array());
-		
-			if ((function_exists('gethostname') && ($hostName = @gethostname()))
-			 || ($hostName = @php_uname('n'))) {
-				$section['fields'][] = array('label' => adminPhrase('Server Name:'), 'value' => $hostName);
+			
+			if (adminSetting('show_dev_tools')) {
+				if ((function_exists('gethostname') && ($hostName = @gethostname()))
+				 || ($hostName = @php_uname('n'))) {
+					$section['fields'][] = array('label' => adminPhrase('Server name:'), 'value' => $hostName);
+				}
+				
+				$section['fields'][] = array('label' => adminPhrase('Server IP:'), 'value' => $_SERVER['SERVER_ADDR']);
+				
+				if ($realDir == $logicalDir) {
+					$section['fields'][] = array('label' => adminPhrase('Directory:'), 'value' => CMS_ROOT, 'class' => 'zenario_infoBoxDirectory');
+				} else {
+					$section['fields'][] = array('label' => adminPhrase('Client directory:'), 'value' => CMS_ROOT, 'class' => 'zenario_infoBoxDirectory');
+					$section['fields'][] = array('label' => adminPhrase('Install directory:'), 'value' => dirname($realDir), 'class' => 'zenario_infoBoxDirectory');
+				}
+				
+				if (($row = sqlFetchRow('SHOW VARIABLES LIKE "version"'))
+				 && (false !== stripos($row[1], 'MariaDB'))) {
+					$mrg = ['dbms' => 'MariaDB'];
+				} else {
+					$mrg = ['dbms' => 'MySQL'];
+				}
+				
+				if ($size = sqlFetchValue('
+					SELECT SUM(data_length + index_length)
+					FROM information_schema.tables
+					WHERE table_schema = "'. sqlEscape(DBNAME). '"'
+				)) {
+					$formattedSize = formatFilesizeNicely($size, 1, true);
+				}
+				
+				if (globalDBDefined()) {
+					$section['fields'][] = array('label' => adminPhrase('Global [[dbms]] database:', $mrg), 'value' => 
+						adminPhrase('[[DBNAME_GLOBAL]] on [[DBHOST_GLOBAL]], prefix [[DB_NAME_PREFIX_GLOBAL]]', get_defined_constants()));
+					$section['fields'][] = array('label' => adminPhrase('Local [[dbms]] database:', $mrg), 'value' => 
+						adminPhrase('[[DBNAME]] on [[DBHOST]], prefix [[DB_NAME_PREFIX]]', get_defined_constants()));
+					
+					if ($size) {
+						$section['fields'][] = array('label' => adminPhrase('Local database size:', $mrg), 'value' => $formattedSize);
+					}
+					
+				} else {
+					$section['fields'][] = array('label' => adminPhrase('[[dbms]] database:', $mrg), 'value' =>
+						adminPhrase('[[DBNAME]] on [[DBHOST]], prefix [[DB_NAME_PREFIX]]', get_defined_constants()));
+					
+					if ($size) {
+						$section['fields'][] = array('label' => adminPhrase('[[dbms]] size:', $mrg), 'value' => $formattedSize);
+					}
+				}
+				
+				if (defined('MONGODB_DBNAME') && MONGODB_DBNAME) {
+					
+					$host = 'localhost';
+					if (defined('MONGODB_CONNECTION_URI')) {
+						$host = MONGODB_CONNECTION_URI;
+						
+						$pos = strrpos($host, '@');
+						if ($pos !== false) {
+							$host = substr($host, $pos + 1);
+						}
+						
+						$pos = strrpos($host, '://');
+						if ($pos !== false) {
+							$host = substr($host, $pos + 3);
+						}
+					}
+					
+					$section['fields'][] = array('label' => adminPhrase('MongoDB database:'), 'value' =>
+						adminPhrase('[[DBNAME]] on [[DBHOST]]', array('DBNAME' => MONGODB_DBNAME, 'DBHOST' => $host)));
+				}
+				
+				$infoBox['sections'][] = $section;
+			
+			} elseif (checkPriv('_PRIV_EDIT_ADMIN')) {
+				$section['fields'][] = array('label' => adminPhrase('Enable developer tools to see full info')/*, 'value' => ''*/);
+				$infoBox['sections'][] = $section;
 			}
-		
-			$section['fields'][] = array('label' => adminPhrase('Server IP:'), 'value' => $_SERVER['SERVER_ADDR']);
-		
-			if ($realDir == $logicalDir) {
-				$section['fields'][] = array('label' => adminPhrase('Directory:'), 'value' => CMS_ROOT, 'class' => 'zenario_infoBoxDirectory');
-			} else {
-				$section['fields'][] = array('label' => adminPhrase('Client directory:'), 'value' => CMS_ROOT, 'class' => 'zenario_infoBoxDirectory');
-				$section['fields'][] = array('label' => adminPhrase('Install directory:'), 'value' => dirname($realDir), 'class' => 'zenario_infoBoxDirectory');
-			}
-		
-			if (globalDBDefined()) {
-				$section['fields'][] = array('label' => adminPhrase('Local database:'), 'value' => 
-					adminPhrase('[[DBNAME]] on [[DBHOST]], prefix [[DB_NAME_PREFIX]]', get_defined_constants()));
-				$section['fields'][] = array('label' => adminPhrase('Global database:'), 'value' => 
-					adminPhrase('[[DBNAME_GLOBAL]] on [[DBHOST_GLOBAL]], prefix [[DB_NAME_PREFIX_GLOBAL]]', get_defined_constants()));
-			} else {
-				$section['fields'][] = array('label' => adminPhrase('Database:'), 'value' =>
-					adminPhrase('[[DBNAME]] on [[DBHOST]], prefix [[DB_NAME_PREFIX]]', get_defined_constants()));
-			}
-			$infoBox['sections'][] = $section;
 		}
 		
 		
@@ -451,6 +503,7 @@ if (checkPriv()) {
 	}
 
 } else {
+	header('Zenario-Admin-Logged_Out: 1');
 	echo '<!--Logged_Out-->', adminPhrase('You have been logged out.');
 }
 

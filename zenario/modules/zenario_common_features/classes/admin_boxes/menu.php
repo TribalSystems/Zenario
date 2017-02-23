@@ -31,19 +31,20 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_common_features__admin_boxes__menu extends module_base_class {
 
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
-		if ($path != 'zenario_menu') return;
 		
-		//Try to get the Menu Id from the request
-		$box['key']['id'] = ifNull(arrayKey($box['key'], 'mID'), request('mID'), $box['key']['id']);
-
+		//Catch the case where we open from the admin toolbar, and the id variable has a different name
+		if (!empty($_REQUEST['mID'])) {
+			$box['key']['id'] = $_REQUEST['mID'];
+		}
+		
 		if (!$box['key']['languageId'] = ifNull($box['key']['languageId'], request('target_language_id'), request('languageId'))) {
 			$box['key']['languageId'] = setting('default_language');
 		}
-
-		//If we're in Storekeeper Quick, enable the "Save and Continue" button
-		if ($box['key']['mode'] == 'quick') {
-			$box['save_button_message'] = adminPhrase('Save & Close');
-			$box['save_and_continue_button_message'] = adminPhrase('Save & Continue');
+		
+		//When creating child nodes id is the parent node id
+		if ($box['key']['id_is_parent_menu_node_id']) {
+			$box['key']['parentMenuID'] = $box['key']['id'];
+			$box['key']['id'] = false;
 		}
 		
 		$menu = false;
@@ -88,9 +89,6 @@ class zenario_common_features__admin_boxes__menu extends module_base_class {
 	
 			$values['advanced/accesskey'] = $menu['accesskey'];
 			$values['advanced/rel_tag'] = $menu['rel_tag'];
-			$values['advanced/image_id'] = $menu['image_id'];
-			$values['advanced/use_rollover_image'] = (bool) $menu['rollover_image_id'];
-			$values['advanced/rollover_image_id'] = $menu['rollover_image_id'];
 			$values['advanced/css_class'] = $menu['css_class'];
 			$values['advanced/add_registered_get_requests'] = $menu['add_registered_get_requests'];
 	
@@ -108,7 +106,8 @@ class zenario_common_features__admin_boxes__menu extends module_base_class {
 			}
 
 		} else {
-			//Convert the location requests from either the old format, or the format that <zenario_quick_create> uses, if provided in one of those formats
+			exitIfNotCheckPriv('_PRIV_ADD_MENU_ITEM');
+			//Convert the location requests from the old format
 			if (!$box['key']['parentMenuID']) {
 				$box['key']['parentMenuID'] = ifNull(request('target_menu_parent'), request('parentMenuID'));
 			}
@@ -116,13 +115,7 @@ class zenario_common_features__admin_boxes__menu extends module_base_class {
 			if (!$box['key']['sectionId'] = ifNull($box['key']['sectionId'], request('target_menu_section'), request('sectionId'))) {
 				exit;
 			}
-	
-			if ($box['key']['parentMenuID']) {
-				exitIfNotCheckPriv('_PRIV_ADD_MENU_ITEM');
-			} else {
-				exitIfNotCheckPriv('_PRIV_ADD_MENU_ITEM');
-			}
-	
+			
 			foreach ($box['tabs'] as $i => &$tab) {
 				if (is_array($tab) && isset($tab['edit_mode'])) {
 					$tab['edit_mode']['enabled'] = true;
@@ -214,6 +207,7 @@ class zenario_common_features__admin_boxes__menu extends module_base_class {
 	
 			//Set the existing Menu Path from the existing title and the parent path
 			zenario_common_features::setMenuPath($box['tabs']['text']['fields'], $title, 'value');
+			
 		}
 
 
@@ -247,16 +241,13 @@ class zenario_common_features__admin_boxes__menu extends module_base_class {
 		//For top-level menu modes, add a note to the "path" field to make it clear that it's
 		//at the top level
 		if (!$values['text/parent_path_of__menu_title']) {
-			$fields['text/path_of__menu_title']['label'] = adminPhrase('Path (top level):');
+			$fields['text/path_of__menu_title']['label'] = adminPhrase('Path preview (top level):');
 		}
+
 	}
 
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		if ($path != 'zenario_menu') return;
-		
-		$fields['advanced/rollover_image_id']['hidden'] = 
-			!$values['advanced/use_rollover_image'];
-
 		$fields['advanced/menu__module_class_name']['hidden'] = 
 		$fields['advanced/menu__method_name']['hidden'] = 
 		$fields['advanced/menu__param_1']['hidden'] = 
@@ -311,9 +302,16 @@ class zenario_common_features__admin_boxes__menu extends module_base_class {
 
 
 		//Set the current Menu Path from the current title and the parent path
+		
 		foreach ($langs as $lang) {
-			zenario_common_features::setMenuPath($box['tabs']['text']['fields'], 'menu_title__'. $lang['id'], 'current_value');
-	
+			$path = $box['tabs']['text']['fields']['path_of__menu_title__'. $lang['id']]['value'];
+			if($path){
+				$nodes = explode('>',$path);
+				if(is_array($nodes) && $nodes){
+					$box['tabs']['text']['fields']['path_of__menu_title__'. $lang['id']]['value']= $path." (".count($nodes)." level)";	
+				}
+			}
+			
 			if (!empty($equivs) && empty($equivs[$lang['id']])) {
 				$box['tabs']['text']['fields']['path_of__menu_title__'. $lang['id']]['note_below'] = adminPhrase('Translated content item missing.');
 			} else {
@@ -325,8 +323,8 @@ class zenario_common_features__admin_boxes__menu extends module_base_class {
 	
 			$box['tabs']['text']['fields']['ext_url__'. $lang['id']]['hidden'] = 
 				$values['text/target_loc'] != 'exts';
+			
 		}
-		
 	}
 
 
@@ -471,33 +469,6 @@ class zenario_common_features__admin_boxes__menu extends module_base_class {
 			$submission['method_name'] = $call_static_method ? $values['advanced/menu__method_name'] : '';
 			$submission['param_1'] = $call_static_method ? $values['advanced/menu__param_1'] : '';
 			$submission['param_2'] = $call_static_method ? $values['advanced/menu__param_2'] : '';
-	
-			if ($imageId = $values['advanced/image_id']) {
-				if ($path = getPathOfUploadedFileInCacheDir($imageId)) {
-					$imageId = addFileToDatabase('image', $path);
-				}
-			}
-			if ($imageId) {
-				setRow('inline_images', array('image_id' => $imageId, 'in_use' => 1), array('foreign_key_to' => 'menu_node', 'foreign_key_id' => $id, 'foreign_key_char' => 'image'));
-			} else {
-				deleteRow('inline_images', array('foreign_key_to' => 'menu_node', 'foreign_key_id' => $id, 'foreign_key_char' => 'image'));
-			}
-			$submission['image_id'] = $imageId;
-	
-			if ($rolloverImageId = $values['advanced/rollover_image_id']) {
-				if ($path = getPathOfUploadedFileInCacheDir($rolloverImageId)) {
-					$rolloverImageId = addFileToDatabase('image', $path);
-			
-				}
-				$submission['rollover_image_id'] = $rolloverImageId;
-			} else {
-				$submission['rollover_image_id'] = 0;
-			}
-			if ($values['use_rollover_image'] && $rolloverImageId) {
-				setRow('inline_images', array('image_id' => $rolloverImageId, 'in_use' => 1), array('foreign_key_to' => 'menu_node', 'foreign_key_id' => $id, 'foreign_key_char' => 'rollover_image'));
-			} else {
-				deleteRow('inline_images', array('foreign_key_to' => 'menu_node', 'foreign_key_id' => $id, 'foreign_key_char' => 'rollover_image'));
-			}
 		}
 
 		$box['key']['id'] = saveMenuDetails($submission, $id);

@@ -120,6 +120,7 @@ tinymce.PluginManager.add('image', function(editor) {
 		}
 
 		function onSubmitForm() {
+			
 			var figureElm, oldImg;
 
 			function waitLoad(imgElm) {

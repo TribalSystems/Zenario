@@ -36,13 +36,12 @@
 	For more information, see js_minify.shell.php for steps (1) and (2), and admin.wrapper.js.php for step (3).
 */
 
-
 zenario.lib(function(
 	undefined,
 	URLBasePath,
 	document, window, windowOpener, windowParent,
-	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO,
-	get, engToBoolean, htmlspecialchars, ifNull, jsEscape, phrase,
+	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO, strings,
+	encodeURIComponent, get, engToBoolean, htmlspecialchars, jsEscape, phrase,
 	extensionOf, methodsOf, has
 ) {
 	"use strict";
@@ -50,12 +49,11 @@ zenario.lib(function(
 
 phrase = phrase || {};
 
-zenarioA.init = true;
 zenarioA.menuWandOn = true;
 zenarioA.slotWandOn = false;
 zenarioA.showGridOn = false;
 zenarioA.storekeeperInitTime = 5000;
-zenarioA.adminSettings = {};
+zenarioA.adminSettings = zenarioA.adminSettings || {};
 
 zenarioA.tooltipLengthThresholds = {
 	adminBoxTitle: 120,
@@ -71,10 +69,137 @@ zenarioA.microTemplate = function(template, data, filter) {
 	return zenario.microTemplate(template, data, filter, zenarioA.microTemplates);
 };
 
+//A very lightweight function for creating HTML tags,
+//by passing in their attributes in as pairs an array.
+//N.b. if you want some HTML inside the element, pass that in as the last entry in the array.
+var htmlBaseFun = function(tag, a, noOffset) {
+	var html = '<' + tag,
+		c = a.length,
+		i = noOffset? 1: 2,
+		key, val,
+		postFieldHTML,
+		selfCloses = {br:1, hr:1, img:1, link:1, input:1}[tag],
+		booleans = {checked: 1, selected: 1};
+
+	//Output attribute/value pairs
+	for (; i < c; i += 2) {
+		
+		key = a[i - 1];
+		val = a[i];
+		
+		if (key == 'checked' || key == 'disabled' || key == 'multiple' || key == 'selected') {
+			if (val) {
+				html += ' ' + key + '="' + key + '"';
+			}
+		} else {
+			if (val !== false && val !== undefined) {
+				html += ' ' + key + '="' + htmlspecialchars(val) + '"';
+			}
+		}
+	}
+		
+	if (selfCloses) {
+		html += '/>';
+	} else {
+		html += '>';
+	}
+	
+	//Was there an odd number of attribute/value pairs?
+	//If so, the last one should be the inner HTML of the element
+	if (c % 2? noOffset : !noOffset) {
+		postFieldHTML = a[c-1];
+		
+		//Use ">" as a flag to not close a tag and just return with it open
+		if (postFieldHTML === '>') {
+			return html;
+		}
+		
+		html += postFieldHTML;
+	}
+
+	if (!selfCloses) {
+		html += '</' + tag + '>';
+	}
+
+	return html;
+};
+
+//Create the following functions as shortcuts to the above function:
+//	zenarioA.html = funciton(tag) {};
+//	zenarioA.div = funciton() {};
+//	zenarioA.span = funciton() {};
+//	zenarioA.input = funciton() {};
+//	zenarioA.select = funciton() {};
+//	zenarioA.option = funciton() {};
+//	zenarioA.h1 = funciton() {};
+//	zenarioA.p = funciton() {};
+_.each(['', 'div', 'span', 'input', 'select', 'option', 'h1', 'p'], function(el) {
+	zenarioA[el || 'html'] = function(tag) {
+		return htmlBaseFun(el || tag, arguments, el);
+	}
+});
+
+//Create shortcut variables to the above functions and some common parameters,
+//so the code ends up smaller when minified
+(zenarioA.lib = function(fun) {
+	fun(
+		zenarioA.html,
+		zenarioA.div,
+		zenarioA.span,
+		zenarioA.input,
+		zenarioA.select,
+		zenarioA.option,
+		zenarioA.h1,
+		zenarioA.p,
+		'type',
+		'button',
+		'class',
+		'submit',
+		'value',
+		'onclick',
+		'style'
+	);
+})(function(
+	_$html,
+	_$div,
+	_$span,
+	_$input,
+	_$select,
+	_$option,
+	_$h1,
+	_$p,
+	__$type,
+	__$button,
+	__$class,
+	__$submit,
+	__$value,
+	__$onclick,
+	__$style
+) {
+
+/*
+var _$html = zenarioA.html,
+	_$div = zenarioA.div,
+	_$span = zenarioA.span,
+	_$input = zenarioA.input,
+	_$select = zenarioA.select,
+	_$option = zenarioA.option,
+	_$h1 = zenarioA.h1,
+	_$p = zenarioA.p,
+	__$type = 'type',
+	__$button = 'button',
+	__$class = 'class',
+	__$submit = 'submit',
+	__$value = 'value',
+	__$onclick = 'onclick',
+	__$style = 'style',
+	'id' = 'id';
+*/
+
 
 zenarioA.showAJAXLoader = function() {
 	$(document.body).addClass('zenario_adminAJAXLoaderOpen');
-	zenarioA.openBox('<div></div>', 'zenario_fbAdminAJAXLoader', 'AdminAJAXLoader', false, false, 50, 1, true, true, false, false);
+	zenarioA.openBox(_$div(), 'zenario_fbAdminAJAXLoader', 'AdminAJAXLoader', false, false, 50, 1, true, true, false, false);
 };
 
 zenarioA.hideAJAXLoader = function() {
@@ -124,7 +249,7 @@ zenarioA.closeInfoBox = function() {
 	zenarioA.closeBox('AdminInfoBox');
 };
 
-zenarioA.showMessage = function(message, buttonsHTML, messageType, modal, htmlEscapeMessage, addCancel) {
+zenarioA.showMessage = function(message, buttonsHTML, messageType, modal, htmlEscapeMessage, addCancel, cancelPhrase) {
 	var end = false,
 		hadCommand = false;
 
@@ -162,6 +287,7 @@ zenarioA.showMessage = function(message, buttonsHTML, messageType, modal, htmlEs
 
 
 	//Commands
+		//N.b. a lot of these are deprecated and/or not used!
 
 	//Reload Storekeeper
 	if ((message.substr(0, 23) == '<!--Reload_Organizer-->' || message.substr(0, 25) == '<!--Reload_Storekeeper-->')
@@ -221,7 +347,7 @@ zenarioA.showMessage = function(message, buttonsHTML, messageType, modal, htmlEs
 		message = message.substr(end + 3);
 
 	} else if (message.substr(0, 18) == '<!--Reload_Button:' && (end = message.indexOf('-->')) != -1) {
-		buttonsHTML = '<input class="submit_selected" type="button" onclick="document.location.href = document.location.href; return false;" value="' + message.substr(18, end - 18) + '">';
+		buttonsHTML = _$input(__$class, 'submit_selected', __$type, __$button, __$onclick, 'document.location.href = document.location.href; return false;', __$value, message.substr(18, end - 18));
 		message = message.substr(end + 3);
 
 	} else if (message.substr(0, 17) == '<!--Logged_Out-->') {
@@ -234,15 +360,13 @@ zenarioA.showMessage = function(message, buttonsHTML, messageType, modal, htmlEs
 		if (zenarioO.init
 		 && zenarioO.path
 		 && zenarioA.isFullOrganizerWindow) {
-			buttonsHTML =
-				'<input type="button" value="' + phrase.login + '" class="submit_selected" onclick="zenarioO.reloadPage(undefined, true);">';
+			buttonsHTML = _$input(__$type, __$button, __$value, phrase.login, __$class, 'submit_selected', __$onclick, 'zenarioO.reloadPage(undefined, true);');
 			
 			addCancel = "zenario.goToURL(URLBasePath);";
 		
 		} else {
 			buttonsHTML = 
-				'<input type="button" value="' + phrase.login + '" class="submit_selected"' +
-				' onclick="zenario.goToURL(zenario.linkToItem(zenario.cID, zenario.cType, zenarioA.importantGetRequests, true));">';
+				_$input(__$type, __$button, __$value, phrase.login, __$class, 'submit_selected', __$onclick, 'zenario.goToURL(zenario.linkToItem(zenario.cID, zenario.cType, zenarioA.importantGetRequests, true));');
 			
 			addCancel = "zenario.goToURL(zenario.linkToItem(zenario.cID, zenario.cType, zenarioA.importantGetRequests));";
 		}
@@ -250,28 +374,13 @@ zenarioA.showMessage = function(message, buttonsHTML, messageType, modal, htmlEs
 		message = message.substr(17);
 		modal = true;
 	}
-
-	//Attempt to strip out JSON encoded data from error messages that would cause confusion
-	if (messageType == 'error' && (end = message.indexOf('{"')) != -1) {
-		try {
-			var data = JSON.parse(message.substr(end));
-		
-			if (typeof data != 'object') {
-				throw 0;
-			}
-		
-			//If there was JSON encoded data, remove it and show the message without it
-			message = message.substr(0, end);
-		} catch (e) {
-		}
-	}
 	
 	if (addCancel) {
 		if (addCancel === true) {
 			addCancel = '';
 		}
 		buttonsHTML += 
-			'<input type="button" class="submit" value="' + phrase.cancel + '" onclick="' + jsEscape(addCancel) + '"/>';
+			_$input(__$type, __$button, __$class, __$submit, __$value, cancelPhrase || phrase.cancel, __$onclick, addCancel);
 	}
 
 	zenarioA.floatingBox(message, buttonsHTML, messageType, modal, htmlEscapeMessage);
@@ -279,10 +388,37 @@ zenarioA.showMessage = function(message, buttonsHTML, messageType, modal, htmlEs
 };
 
 
+
+
+
+//Attempt to strip out JSON encoded data from error messages
+zenarioA.splitDataFromErrorMessage = function(resp) {
+	
+	if (_.isString(resp)) {
+		resp = {responseText: resp};
+	}
+	
+	if (resp.responseText && (end = resp.responseText.indexOf('{"')) != -1) {
+		try {
+			var data = JSON.parse(resp.responseText.substr(end));
+		
+			if (typeof data == 'object') {
+				//If there was JSON encoded data, remove it and show the message without it
+				resp.data = data;
+				resp.responseText = resp.responseText.substr(0, end);
+			}
+		} catch (e) {
+		}
+	}
+	
+	return resp;
+};
+
+
 zenarioA.notification = function(message) {
 
 	get('zenario_notification').style.display = '';
-	get('zenario_notification').innerHTML = '<div><h1>' + zenario.htmlspecialchars(message) + '</h1></div>';
+	get('zenario_notification').innerHTML = _$div(_$h1(htmlspecialchars(message)));
 
 	$('#zenario_notification div')
 		.clearQueue()
@@ -655,7 +791,7 @@ zenarioA.getGridSlotDetails = function(slotName) {
 	if ($gridspan.length) {
 		//Attempt to get the CSS class names of the wrapper of the slot
 		//(it's easier to look this up using JavaScript than it is to work it out in fillAllAdminSlotControls() in php).
-		grid.cssClass = $gridspan.attr('class'),
+		grid.cssClass = $gridspan.attr(__$class),
 		
 		//Strip out "alpha" and "omega" from the class names
 		grid.cssClass = grid.cssClass.replace(' alpha ', ' ').replace(' omega ', ' ');
@@ -667,7 +803,7 @@ zenarioA.getGridSlotDetails = function(slotName) {
 			container,
 		
 			//Try and read the number of columns from the css class names, e.g. "span3"
-			css = $gridspan.attr('class') || '',
+			css = $gridspan.attr(__$class) || '',
 			columns = css.match(/\bspan\d+\b/);
 	
 		if (columns) {
@@ -721,7 +857,7 @@ zenarioA.getGridSlotDetails = function(slotName) {
 		
 		//Work out the size of the container
 		if ((container = $gridspan.closest('div.container'))
-		 && (container = container.attr('class'))
+		 && (container = container.attr(__$class))
 		 && (container = container.match(/container_(\d+)/))
 		 && (container[1])) {
 			grid.container = 1*container[1];
@@ -817,10 +953,36 @@ zenarioA.openSlotControls = function(el, e, slotName, isFromAdminToolbar) {
 			$('#zenario_slot_control__' + slotName + '__info__' + 'grid_width').hide();
 		}
 		
+		//Don't show the "copy embed link" option if this browser doesn't support copy and paste
+		if (!zenario.canCopy()) {
+			$('#zenario_slot_control__' + slotName + '__info__' + 'embed').hide();
+		}
+		
 		$('#plgslt_' + slotName + '-control_box').addClass('zenario_adminSlotControlsOpen');
 	}
 	
 	return false;
+};
+
+zenarioA.copyEmbedLink = function(link) {
+	zenarioA.copy(link);
+	zenarioA.closeSlotControls();
+};
+
+zenarioA.copy = function(text) {
+	if (zenario.copy(text)) {
+		zenarioA.toast({
+			message_type: 'success',
+			message: phrase.copied
+		});
+	}
+};
+
+zenarioA.copyEmbedHTML = function(link, slotName) {
+	var $slot = $('#plgslt_' + slotName);
+	
+	zenarioA.copy(_$html('iframe', 'width', $slot.outerWidth(true), 'height', $slot.outerHeight(true), 'src', link, 'frameborder', 0));
+	zenarioA.closeSlotControls();
 };
 
 zenarioA.dontCloseSlotControls = function() {
@@ -1164,44 +1326,18 @@ zenarioA.showPlugin = function(el, slotName) {
 /*  Reloading Slots  */
 
 //Callback function for refreshPluginSlot()
-zenarioA.replacePluginSlot = function(slotName, instanceId, level, tabId, contents, info, scriptsToRunBefore) {
+zenarioA.replacePluginSlot = function(slotName, instanceId, level, tabId, resp, scriptsToRunBefore) {
 	
-	var moduleId = false,
-		isVersionControlled = false,
-		beingEdited = false,
-		slotControls = '',
-		slotControlsCSSClass = '';
+	var flags = resp.flags,
+		moduleId = 1*flags.MODULE_ID,
+		isVersionControlled = flags.WIREFRAME,
+		beingEdited = flags.IN_EDIT_MODE,
+		className = flags.NAMESPACE,
+		slotControls = flags.SLOT_CONTROLS,
+		slotControlsCSSClass = flags.SLOT_CONTROLS_CSS_CLASS;
 	
-	//Look through the info at the top of the AJAX return
-	if (info) {
-		foreach (info as var i) {
-			var details = info[i].split('--');
-			
-			//Watch out for the "In Edit Mode" tag from modules in their edit modes
-			if (details[0] == 'IN_EDIT_MODE') {
-				beingEdited = true;
-			
-			//Watch out for the Plugin id
-			} else if (details[0] == 'MODULE_ID') {
-				moduleId = 1*details[1];
-			
-			} else if (details[0] == 'WIREFRAME') {
-				isVersionControlled = true;
-			
-			//Add a JavaScript namespace for a Plugin if one is not already present
-			//Also watch out for modules requesting JavaScript files to be added
-			} else if (details[0] == 'NAMESPACE') {
-				if (moduleId && !window[zenario.uneschyp(details[1])]) {
-					zenario.addPluginJavaScript(moduleId);
-				}
-			
-			} else if (details[0] == 'SLOT_CONTROLS') {
-				slotControls = zenario.uneschyp(details[1]);
-			
-			} else if (details[0] == 'SLOT_CONTROLS_CSS_CLASS') {
-				slotControlsCSSClass = zenario.uneschyp(details[1]);
-			}
-		}
+	if (moduleId && (!window[className] || _.isEmpty(window[className].slots))) {
+		zenario.addPluginJavaScript(moduleId);
 	}
 	
 	if (!moduleId) {
@@ -1232,7 +1368,7 @@ zenarioA.replacePluginSlot = function(slotName, instanceId, level, tabId, conten
 	}
 	
 	//Refresh the slot's innerHTML
-	get('plgslt_' + slotName).innerHTML = contents;
+	get('plgslt_' + slotName).innerHTML = resp.responseText;
 	get('zenario_fbAdminSlotControlsContents-' + slotName).innerHTML = slotControls;
 	
 	
@@ -1268,12 +1404,19 @@ zenarioA.checkForEdits = function() {
 };
 
 zenarioA.onbeforeunload = function() {
+	var message;
+	
 	//If any Admin Boxes are open, and look like they might have been changed, set a warning message for if an admin tries to leave the page 
 	if (window.zenarioAB && zenarioAB.isOpen && zenarioAB.editModeOnBox() && (zenarioAB.changes() || zenarioAB.callFunctionOnEditors('isDirty'))) {
 		return phrase.leaveAdminBoxWarning;
 	
+	//Same for the skin editor
 	} else if (window.zenarioSE && zenarioSE.isOpen && zenarioSE.editModeOnBox() && (zenarioSE.changes() || zenarioSE.callFunctionOnEditors('isDirty'))) {
 		return phrase.leaveAdminBoxWarning;
+	
+	//Same for the conductor & any FEA plugins
+	} else if (undefined !== (message = zenario_conductor.confirmOnCloseMessage())) {
+		return message;
 	
 	//Set a warning if any slots are being edited
 	} else if (zenarioA.checkSlotsBeingEdited()) {
@@ -1324,13 +1467,13 @@ zenarioA.openBox = function(html, className, n, e, width, left, top, disablePage
 				}
 			}
 			
-			$('body').append('<div class="' + overlayClassName + '" id="zenario_fb' + n + '__overlay" style="display: none;"></div>');
+			$('body').append(_$div(__$class, overlayClassName, 'id', 'zenario_fb' + n + '__overlay', __$style, 'display: none;'));
 		}
 		$overlay = $('#zenario_fb' + n + '__overlay');
 	}
 	
 	if (!get('zenario_fb' + n)) {
-		$('body').append('<div id="zenario_fb' + n + '"></div>');
+		$('body').append(_$div('id', 'zenario_fb' + n));
 	}
 	get('zenario_fb' + n).className = className;
 	$box = $('#zenario_fb' + n);
@@ -1348,7 +1491,7 @@ zenarioA.openBox = function(html, className, n, e, width, left, top, disablePage
 	
 	if (disablePageBelow || overlay) {
 		zIndex = $box.css('z-index');
-		$overlay.css('z-index', ifNull(1 * zIndex - 1, 0, 0)).show().unbind('click');
+		$overlay.css('z-index', (1 * zIndex - 1) || 0).show().unbind('click');
 		
 		if (!disablePageBelow) {
 			$overlay.click(function() {
@@ -1417,7 +1560,7 @@ zenarioA.adjustBox = function(n, e, width, left, top, html, padding, maxHeight, 
 	}
 	
 	if (maxHeight === undefined) {
-		maxHeight = ifNull($('#zenario_fb' + n).height(), 50);
+		maxHeight = $('#zenario_fb' + n).height() || 50;
 	}
 	
 	
@@ -1594,7 +1737,7 @@ zenarioA.forcePathWrap = function(html, pattern, replacement) {
 			replacement = '/';
 		}
 		
-		return html.replace(pattern, replacement + '<span style="font-size: 1px;"> </span>');
+		return html.replace(pattern, replacement + _$html('span', 'style', 'font-size: 1px;', ' '));
 	}
 };
 
@@ -1657,13 +1800,12 @@ zenarioA.floatingBox = function(message, buttonsHTML, messageType, modal, htmlEs
 	}
 	
 	if (buttonsHTML === true) {
-		buttonsHTML =
-			'<input type="button" class="submit" value="' + phrase.OK + '"/>';
+		buttonsHTML = _$input(__$type, __$button, __$class, __$submit, __$value, phrase.OK);
 	
 	} else if (buttonsHTML && buttonsHTML.indexOf('<input ') === -1) {
 		buttonsHTML =
-			'<input class="submit_selected" type="button" value="' + htmlspecialchars(buttonsHTML) + '"/>' +
-			'<input type="button" class="submit" value="' + phrase.cancel + '"/>';
+			_$input(__$class, 'submit_selected', __$type, __$button, __$value, buttonsHTML) +
+			_$input(__$type, __$button, __$class, __$submit, __$value, phrase.cancel);
 	}
 	
 	if (messageType == 'success' || messageType == 4) {
@@ -1695,7 +1837,8 @@ zenarioA.floatingBox = function(message, buttonsHTML, messageType, modal, htmlEs
 	};
 	
 	html = zenarioA.microTemplate('zenario_popout_message', m);
-
+	
+	zenarioA.onCloseFloatingBox = false;
 	zenarioA.openBox(html, 'zenario_fbAdmin zenario_prompt', 'AdminMessage', undefined, 550, 50, 17, modal, true, false, false);
 	
 	zenario.addJQueryElements('#zenario_fbAdminMessage ', true);
@@ -1716,6 +1859,7 @@ zenarioA.floatingBox = function(message, buttonsHTML, messageType, modal, htmlEs
 	}
 };
 
+zenarioA.onCloseFloatingBox = false;
 zenarioA.currentlyClosingFloatingBox = false;
 zenarioA.closeFloatingBox = function(stopBoxClosingTwice) {
 	if (zenarioA.currentlyClosingFloatingBox) {
@@ -1723,6 +1867,11 @@ zenarioA.closeFloatingBox = function(stopBoxClosingTwice) {
 	} else {
 		if (zenarioA.checkIfBoxIsOpen('AdminMessage')) {
 			zenarioA.closeBox('AdminMessage');
+			
+			if (zenarioA.onCloseFloatingBox) {
+				zenarioA.onCloseFloatingBox();
+				zenarioA.onCloseFloatingBox = false;
+			}
 			
 			if (stopBoxClosingTwice) {
 				zenarioA.currentlyClosingFloatingBox = true;
@@ -1768,6 +1917,14 @@ zenarioA.tooltips = function(target, options) {
 	
 	if (options.tooltipClass === undefined) {
 		options.tooltipClass = 'zenario_admin_tooltip';
+		//N.b. this is deprecated and will need to be changed to
+			//options.classes = {"ui-tooltip": "zenario_admin_tooltip"};
+		//at some point!
+	}
+	
+	//Disable speach-assistance for admin mode tooltips.
+	if (options.disableAriaLiveRegions === undefined) {
+		options.disableAriaLiveRegions = true;
 	}
 	
 	zenario.tooltips(target, options);
@@ -1817,7 +1974,7 @@ zenarioA.tinyMCEPasteRreprocess = function(pl, o) {
 		/<\/p>\s*<\/em>/gi, '</em></p>').replace(
 		/<strong>\s*<p\b[^>]*?>/gi, '<p><strong>').replace(
 		/<\/p>\s*<\/strong>/gi, '</strong></p>').replace(
-		/<u\b[^>]*?>/gi, '<span style="text-decoration: underline;">').replace(
+		/<u\b[^>]*?>/gi, _$span(__$style, 'text-decoration: underline;', '>')).replace(
 		/<\/u>/gi, '</span>');
 };
 
@@ -1863,9 +2020,7 @@ zenarioA.addMediaToTinyMCE = function(prefix) {
 				
 				var url = prefix + 'zenario/file.php?c=' + (file.short_checksum || file.checksum) + '&filename=' + encodeURIComponent(file.filename);
 				
-				html += '\n' +
-					'<img src="' + htmlspecialchars(url) + '" alt="' + htmlspecialchars(file.filename) + '"' +
-					' width="' + file.width + '" height="' + file.height + '"/>';
+				html += '\n' + _$html('img', 'src', url, 'alt', file.filename, 'width', file.width, 'height', file.height);
 			}
 		}
 	}
@@ -2000,7 +2155,7 @@ zenarioA.setLinkPickerOnTinyMCE = function() {
 	$urlField.width(urlFieldWidth + pickerWidth - newPickerWidth);
 	
 	zenarioA.tooltips(
-		$newPicker.find('button'),
+		$newPicker.find(__$button),
 		{tooltipClass: 'zenario_admin_tooltip zenario_admin_tooltip_over_tinymce'}
 	);
 };
@@ -2208,7 +2363,7 @@ zenarioA.formatOrganizerItemName = function(panel, i) {
 	if (panel.items
 	 && panel.items[i]) {
 	
-		if (string = string2 = ifNull(panel.label_format_for_picked_items, panel.label_format_for_grid_view)) {
+		if (string = string2 = panel.label_format_for_picked_items || panel.label_format_for_grid_view) {
 			foreach (panel.items[i] as var c) {
 				if (string.indexOf('[[' + c + ']]') != -1) {
 					value = panel.items[i][c];
@@ -2226,7 +2381,7 @@ zenarioA.formatOrganizerItemName = function(panel, i) {
 			}
 		
 		} else {
-			string = panel.items[i][ifNull(panel.default_sort_column, 'name')];
+			string = panel.items[i][panel.default_sort_column || 'name'];
 		}
 	}
 	
@@ -2253,21 +2408,17 @@ zenarioA.formatSKItemField = function(value, column) {
 		}
 		
 		if (format == 'true_or_false') {
-			value = engToBoolean(value)? phrase.tru : phrase.fal;
+			if (engToBoolean(value)) {
+				value = column.true_phrase || phrase.tru;
+			} else {
+				value = column.false_phrase || phrase.fal;
+			}
 			
 		} else if (format == 'yes_or_no') {
 			if (engToBoolean(value)) {
-				if (column.yes_phrase !== undefined) {
-					value = column.yes_phrase
-				} else {
-					value = phrase.yes;
-				}
+				value = column.yes_phrase || phrase.yes;
 			} else {
-				if (column.no_phrase !== undefined) {
-					value = column.no_phrase
-				} else {
-					value = phrase.no;
-				}
+				value = column.no_phrase || phrase.no;
 			}
 			
 		} else if (format == 'remove_zero_padding') {
@@ -2492,7 +2643,7 @@ zenarioA.SKInit = function() {
 	}
 	
 	get('zenario_fbAdminOrganizer').innerHTML =
-		'<iframe id="zenario_sk_iframe" src="' + URLBasePath + 'zenario/admin/organizer.php?openedInIframe=1&amp;rand=' + (new Date).getTime() + '"></iframe>';
+		_$html('iframe', 'id', 'zenario_sk_iframe', 'src', URLBasePath + 'zenario/admin/organizer.php?openedInIframe=1&rand=' + (new Date).getTime());
 	
 	zenarioA.SKInitted = true;
 };
@@ -2539,7 +2690,7 @@ zenarioA.setHTML5UploadFromDragDrop = function(path, request, preCall, callBack,
 		zenarioA.uploadRequestFromDragDrop = request;
 		zenarioA.uploadCallBackFromDragDrop = callBack;
 		
-		ifNull(el, document.body).addEventListener(
+		(el || document.body).addEventListener(
 			'drop',
 			function(e) {
 				if (preCall) {
@@ -2776,8 +2927,8 @@ zenarioA.draft = function(aId, justView, confirmMessage, confirmButtonText) {
 	 && (section = tuix.sections && tuix.sections.edit)
 	 && (button = section.buttons && section.buttons[buttonId])
 	 && (button.ajax
-		 //zenarioA.hidden(tuixObject, item, id, tuix, button, column, field, section, tab)
-	 && !zenarioA.hidden(undefined, undefined, buttonId, tuix, button, undefined, undefined, section))) {
+		 //zenarioA.hidden(tuixObject, lib, item, id, button, column, field, section, tab, tuix)
+	 && !zenarioA.hidden(undefined, zenarioAT, undefined, buttonId, button, undefined, undefined, section))) {
 		
 		//Create a copy of it
 		object = zenario.clone(button);
@@ -2797,17 +2948,17 @@ zenarioA.draft = function(aId, justView, confirmMessage, confirmButtonText) {
 			
 			//1. Create the draft, then when the draft has been created press this option again
 			buttonsHTML =
-				'<input type="button" class="submit_selected" value="' + htmlspecialchars(confirmButtonText) + '" onclick="zenarioA.draftSetCallback(\'' + htmlspecialchars(aId) + '\'); zenarioAT.action2();"/>';
+				_$input(__$type, __$button, __$class, 'submit_selected', __$value, confirmButtonText, __$onclick, 'zenarioA.draftSetCallback("' + jsEscape(aId) + '"); zenarioAT.action2();');
 			
 			//2. Don't create a draft, press this option again and just view in read-only mode
 			if (justView) {
 				buttonsHTML +=
-					'<input type="button" class="submit" value="' + htmlspecialchars(object.ajax.confirm.button_message__just_view) + '" onclick="zenarioA.draftDoCallback(\'' + htmlspecialchars(aId) + '\');"/>';
+					_$input(__$type, __$button, __$class, __$submit, __$value, object.ajax.confirm.button_message__just_view, __$onclick, 'zenarioA.draftDoCallback("' + jsEscape(aId) + '");');
 			}
 			
 			//3. Cancel
 			buttonsHTML +=
-				'<input type="button" class="submit" value="' + htmlspecialchars(object.ajax.confirm.cancel_button_message) + '"/>';
+				_$input(__$type, __$button, __$class, __$submit, __$value, object.ajax.confirm.cancel_button_message);
 			
 			object.ajax.confirm.message = '<!--Button_HTML:' + buttonsHTML + '-->' + confirmMessage;
 		
@@ -2845,7 +2996,7 @@ zenarioA.draft = function(aId, justView, confirmMessage, confirmButtonText) {
 	//Handle the case where we're already on a draft, but there was still a confirm message to show
 	} else if (confirmMessage) {
 		buttonsHTML =
-			'<input type="button" class="submit_selected" value="' + htmlspecialchars(confirmButtonText) + '" onclick="zenarioA.draftDoCallback(\'' + htmlspecialchars(aId) + '\');"/>';
+			_$input(__$type, __$button, __$class, 'submit_selected', __$value, confirmButtonText, __$onclick, 'zenarioA.draftDoCallback("' + jsEscape(aId) + '");');
 		
 		zenarioA.showMessage(confirmMessage, buttonsHTML, 'warning', undefined, undefined, true);
 
@@ -2885,44 +3036,69 @@ zenarioA.draftDoCallback = function(aId) {
 
 
 //Admin Actions
-zenarioA.eval = function(c, tuixObject, item, id, tuix, button, column, field, section, tab) {
+zenarioA.eval = function(condition, lib, tuixObject, item, id, button, column, field, section, tab, tuix) {
+	
+	var functionDetails, libName, methodName, ev;
+	
+	tuix = tuix || (lib && lib.tuix) || undefined;
 	tuixObject = tuixObject || button || column || field || item || section || tab;
 	
-	var ev = zenarioA.doEval(c + '', tuixObject, item, id, tuix, button, column, field, section, tab);
+	//From version 7.5 onwards we're allowing arrays/objects to be passed in,
+	//which should contain the name of a method and the inputs to give that method.
+	//This should be a lot more efficient than calling eval
+	if (typeof condition == 'object') {
+		
+		//Loop through each function requested, try to call each one, and
+		//return false if any call fails.
+		foreach (condition as functionDetails => ev) {
+			
+			functionDetails = functionDetails.split('.', 2);
+			libName = functionDetails[0];
+			methodName = functionDetails[1];
+			
+			if (!methodName) {
+				methodName = libName;
+				lib = window;
+			
+			} else if (libName != 'lib') {
+				if (!(lib = window[libName])) {
+					return false;
+				}
+			}
+			
+			if (!lib[methodName]
+			 || !lib[methodName].apply(lib, zenarioA.tuixToArray(ev))) {
+				return false;
+			}
+		}
+		//If all calls were fine then return true
+		return true;
 	
-	if (typeof ev == "function") {
-		ev = ev(tuixObject, item, id, tuix, button, column, field, section, tab);
+	//Otherwise assume this is some code that we need to evaulate
+	} else {
+		ev = zenarioA.doEval(condition + '', lib, tuixObject, item, id, button, column, field, section, tab, tuix);
+		
+		//If the eval returned a function, call said function
+		if (typeof ev == 'function') {
+			ev = ev(tuixObject, item, id, tuix, button, column, field, section, tab);
+		}
+		
+		return zenario.engToBoolean(ev);
 	}
-	
-	return zenario.engToBoolean(ev);
 };
 
 
 
 
-zenarioA.hidden = function(tuixObject, item, id, tuix, button, column, field, section, tab) {
-	var c;
+zenarioA.hidden = function(tuixObject, lib, item, id, button, column, field, section, tab, tuix) {
 	tuixObject = tuixObject || button || column || field || item || section || tab;
+
+	return engToBoolean(tuixObject.hidden)
+		|| (tuixObject.visible_if && !zenarioA.eval(tuixObject.visible_if, lib, tuixObject, item, id, button, column, field, section, tab, tuix))
+		|| (tuixObject.js_condition && !zenarioA.eval(tuixObject.js_condition, lib, tuixObject, item, id, button, column, field, section, tab, tuix));
 	
-	//tuixObject._was_hidden_before = true;
-	
-	if (engToBoolean(tuixObject.hidden)) {
-		return true;
-	
-	//Check a JavaScript condition (which used to be called "js_condition" but is now called "visible_if")
-	} else if (c = tuixObject.visible_if || tuixObject.js_condition) {
-		//try {
-			if (!zenarioA.eval(c, tuixObject, item, id, tuix, button, column, field, section, tab)) {
-				return true;
-			}
-		//} catch (e) {
-		//	alert(tuixObject.visible_if + '\n\nwas not a valid JavaScript expression.'); 
-		//	tuixObject.visible_if = false;
-		//}
-	}
-	
-	//delete tuixObject._was_hidden_before;
-	return false;
+	//N.b. "visible_if" used to be called "js_condition", so the js_condition line above is left for backwards compatability.
+	//If you specify both on one field, then both are checked. (This is used in a couple of advanced cases where properties are merged together.)
 };
 
 
@@ -2982,7 +3158,7 @@ zenarioA.checkActionUnique = function(object) {
 			'frontend_link',
 			'help',
 			'link',
-			'onclick',
+			__$onclick,
 			'panel',
 			'pick_items',
 			'popout',
@@ -3024,7 +3200,7 @@ zenarioA.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 	}
 	
 	var ajaxMethodCall;
-	switch (zenarioCallingLibrary.encapName) {
+	switch (zenarioCallingLibrary.globalName) {
 		case 'zenarioO':
 			ajaxMethodCall = 'handleOrganizerPanelAJAX';
 			break;
@@ -3078,7 +3254,7 @@ zenarioA.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 		if (!itemLevel
 		 && object.ajax
 		 && object.ajax.pass_matched_ids
-		 && zenarioCallingLibrary.encapName == 'zenarioO') {
+		 && zenarioCallingLibrary.globalName == 'zenarioO') {
 			url =
 				URLBasePath + 'zenario/admin/organizer.ajax.php?' +
 					'__pluginClassName__=' + thing.class_name +
@@ -3116,11 +3292,7 @@ zenarioA.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 			e, extension, extensions, split;
 		
 		if (extensions = object.upload.accept || object.upload.extensions) {
-			if (_.isString(extensions)) {
-				extensions = extensions.split(',');
-			} else {
-				extensions = _.toArray(extensions);
-			}
+			extensions = zenarioA.tuixToArray(extensions);
 			
 			//Loop through each extension and check it
 			foreach (extensions as e => extension) {
@@ -3225,7 +3397,7 @@ zenarioA.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 		
 		//For Organizer, attempt to insert the return link,
 		//and then open it in the same window if we successfully inserted it
-		if (zenarioCallingLibrary.encapName == 'zenarioO') {
+		if (zenarioCallingLibrary.globalName == 'zenarioO') {
 			frontend_link = zenarioO.parseReturnLink(frontend_link);
 			
 			if (frontend_link.indexOf('&zenario_sk_return=') != -1) {
@@ -3241,7 +3413,7 @@ zenarioA.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 		} else if (frontend_link.indexOf('://') !== -1 && frontend_link.indexOf(URLBasePath) !== 0) {
 			window.open(frontend_link);
 		
-		} else if (zenarioCallingLibrary.encapName == 'zenarioAT') {
+		} else if (zenarioCallingLibrary.globalName == 'zenarioAT') {
 			zenario.goToURL(zenario.addBasePath(frontend_link));
 		
 		} else if (windowOpener && !windowOpener.zenarioO) {
@@ -3262,7 +3434,7 @@ zenarioA.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 			navigation_path = item.navigation_path;
 		}
 		
-		if (zenarioCallingLibrary.encapName == 'zenarioO') {
+		if (zenarioCallingLibrary.globalName == 'zenarioO') {
 			zenarioO.go(navigation_path, -1);
 		} else {
 			zenario.goToURL(zenario.addBasePath(
@@ -3274,7 +3446,7 @@ zenarioA.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 	
 	} else if (object.admin_box) {
 		zenarioA.nowDoingSomething('loading');
-		var key = ifNull(zenarioCallingLibrary.getKey(itemLevel), {});
+		var key = zenarioCallingLibrary.getKey(itemLevel) || {};
 		
 		if (object.admin_box.key) {
 			foreach (object.admin_box.key as var r) {
@@ -3330,7 +3502,7 @@ zenarioA.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 				popout.href += 'c=' + encodeURIComponent(id);
 			}
 			
-			if (usage = ifNull(zenarioCallingLibrary.getKey().usage, item.usage)) {
+			if (usage = zenarioCallingLibrary.getKey().usage || item.usage) {
 				popout.href += '&usage=' + encodeURIComponent(usage);
 			}
 		}
@@ -3394,7 +3566,7 @@ zenarioA.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 			
 			object.organizer_quick.min_path, object.organizer_quick.max_path,
 			engToBoolean(object.organizer_quick.disallow_refiners_looping_on_min_path),
-			undefined, undefined, zenarioCallingLibrary.encapName);
+			undefined, undefined, zenarioCallingLibrary.globalName);
 	
 	} else if (object.pick_items && !itemLevel) {
 		
@@ -3415,7 +3587,7 @@ zenarioA.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 		}
 		
 		zenarioA.organizerSelect(
-			zenarioCallingLibrary.encapName, 'pickItems',
+			zenarioCallingLibrary.globalName, 'pickItems',
 			object.pick_items.multiple_select,
 			object.pick_items.path,
 			object.pick_items.target_path,
@@ -3451,7 +3623,7 @@ zenarioA.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 		}
 		
 		zenarioA.organizerSelect(
-			zenarioCallingLibrary.encapName, 'pickItems',
+			zenarioCallingLibrary.globalName, 'pickItems',
 			object.combine_items.multiple_select,
 			object.combine_items.path,
 			object.combine_items.target_path,
@@ -3527,16 +3699,20 @@ zenarioA.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 			
 			//Start generating the box.
 			//If there is a form, the message should be surrounded by <form></form> tags.
-			var html = '';
-			var buttonsHTML = '';
+			var html = '',
+				buttonsHTML = '',
+				r,
+				__$formId = 'zenario_bc_form';
+			
 			if (isDownload || object.upload) {
 				html += 
-					'<form id="zenario_bc_form" action="' + htmlspecialchars(zenarioCallingLibrary.actionTarget + '&_sk_form_submission=1') + '"' +
-						' onsubmit="get(\'preloader_circle\').style.visibility = \'visible\';"' +
-						' target="zenario_iframe" method="post"' + (object.upload? ' enctype="multipart/form-data"' : '') + '>';
+					_$html('form', 'id', __$formId, 'action', zenarioCallingLibrary.actionTarget + '&_sk_form_submission=1',
+						'onsubmit', "get('preloader_circle').style.visibility = 'visible';",
+						'target', 'zenario_iframe', 'method', 'post', 'enctype', object.upload && 'multipart/form-data',
+					'>');
 				
-				foreach (zenarioCallingLibrary.actionRequests as var r) {
-					html += '<input type="hidden" value="' + htmlspecialchars(zenarioCallingLibrary.actionRequests[r]) + '" name="' + htmlspecialchars(r) + '"/>';
+				foreach (zenarioCallingLibrary.actionRequests as r) {
+					html += _$input(__$type, 'hidden', __$value, zenarioCallingLibrary.actionRequests[r], 'name', r);
 				}
 				
 				if (!isHTML) {
@@ -3552,15 +3728,15 @@ zenarioA.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 				html += '</form>';
 				
 				buttonsHTML =
-					'<input type="button" class="submit_selected" value="' + htmlspecialchars(object.ajax.confirm.button_message) + '" onclick="get(\'zenario_bc_form\').submit();"/>';
+					_$input(__$type, __$button, __$class, 'submit_selected', __$value, object.ajax.confirm.button_message, __$onclick, "get('" + __$formId + "').submit();");
 			//...otherwise it should launch a syncronous AJAX request.
 			} else {
 				buttonsHTML =
-					'<input type="button" class="submit_selected" value="' + htmlspecialchars(object.ajax.confirm.button_message) + '" onclick="' + zenarioCallingLibrary.encapName + '.action2();"/>';
+					_$input(__$type, __$button, __$class, 'submit_selected', __$value, object.ajax.confirm.button_message, __$onclick, zenarioCallingLibrary.globalName + '.action2()');
 			}
 			
 			buttonsHTML +=
-				'<input type="button" class="submit" value="' + htmlspecialchars(object.ajax.confirm.cancel_button_message) + '"/>';
+				_$input(__$type, __$button, __$class, __$submit, __$value, object.ajax.confirm.cancel_button_message);
 			
 			
 			zenarioA.showMessage(html, buttonsHTML, object.ajax.confirm.message_type, undefined, !isHTML);
@@ -3580,7 +3756,7 @@ zenarioA.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 		
 	
 	} else if (object.help) {
-		var messageType = ifNull(object.help.message_type, 'question'),
+		var messageType = object.help.message_type || 'question',
 			htmlEscapeMessage = !engToBoolean(object.help.html);
 		
 		if (object.help.message) {
@@ -3593,9 +3769,9 @@ zenarioA.isHtaccessWorking = function() {
 	return zenario.nonAsyncAJAX(URLBasePath + 'zenario/includes/test_files/is_htaccess_working.txt', true) == 'Yes';
 };
 
-zenarioA.checkFunctionExists = function(functionName, encapName) {
-	if (encapName) {
-		return window[encapName] && typeof window[encapName][functionName] == 'function';
+zenarioA.checkFunctionExists = function(functionName, globalName) {
+	if (globalName) {
+		return window[globalName] && typeof window[globalName][functionName] == 'function';
 	} else {
 		return typeof window[functionName] == 'function';
 	}
@@ -3660,9 +3836,14 @@ zenarioA.sortArrayWithGrouping = function(a, b) {
 		return zenarioA.sortLogic(a, b, 1, 2);
 	
 	//Field b is not in a grouping, but field a is
-	} else {
-		//b's ordinal should be checked against the ordinal of a's grouping
+	} else if (b[2] === undefined) {
+		//a's ordinal should be checked against the ordinal of b's grouping
 		return zenarioA.sortLogic(a, b, 2, 1);
+	
+	//Both fields are in different groupings
+	} else {
+		//Compare the ordinal of the groupings against each other
+		return zenarioA.sortLogic(a, b, 2);
 	}
 };
 
@@ -3806,13 +3987,17 @@ zenarioA.csvToObject = function(aString) {
 //and convert it to a normal array.
 zenarioA.tuixToArray = function(tuix) {
 	
+	if (_.isArray(tuix)) {
+		return tuix;
+	}
+	
 	var key, val,
 		vals = [];
 	
 	switch (typeof tuix) {
 		//Spilt strings up by commas
 		case 'string':
-			return tuix.split(',');
+			return tuix.split(/\s*,\s*/);
 		
 		//Check objects
 		case 'object':
@@ -3898,48 +4083,7 @@ zenarioA.setKin = function(buttons, parentClass) {
 			buttons.splice(bi, 1);
 		}
 	}
-};
-
-
-
-zenarioA.readData = function(data, setSessionStorageURL, setSessionStorageRequest, retry) {
-	try {
-		data = JSON.parse(data);
-		
-		if (typeof data != 'object') {
-			throw 0;
-		}
-	} catch (e) {
-		//Display an error message if the data couldn't be parsed
-		
-		if (retry) {
-			var buttonsHTML =
-				'<input id="zenario_retry" class="submit_selected" type="button" value="' + phrase.retry + '"/>';
-			
-			zenarioA.nowDoingSomething();
-			zenarioA.showMessage(data, buttonsHTML, 'error', true, undefined, true);
-			
-			$('#zenario_retry').click(function() {
-				setTimeout(retry, 1);
-			});
-			
-		} else {
-			zenarioA.showMessage(data, true, 'error', false, true);
-			//zenarioA.showMessage(message, buttonsHTML, messageType, modal, htmlEscapeMessage)
-		}
-		
-		//Close the AJAX loader if it was open
-		zenarioA.hideAJAXLoader();
-		
-		return false;
-	}
-	
-	if (setSessionStorageURL) {
-		zenario.setSessionStorage(data, setSessionStorageURL, setSessionStorageRequest, true);
-	}
-	
-	return data;
-};
+};;
 
 
 //Default error handler for lost AJAX requests
@@ -3949,51 +4093,87 @@ zenarioA.readData = function(data, setSessionStorageURL, setSessionStorageReques
 
 zenarioA.AJAXErrorHandler = function(resp, statusType, statusText) {
 	
+	window.testResp = resp;
+	console.log(resp, statusType, statusText);
+	
 	if (!zenarioA.unloaded) {
 		var msg = '',
+			flags = '',
 			fun,
 			isDev = zenarioA.adminSettings.show_dev_tools;
 		
-		if (statusText) {
-			msg += '<h1><b>' + htmlspecialchars(resp.status + ' ' + statusText) + '</b></h1>';
+		resp = zenarioA.splitDataFromErrorMessage(resp);
+		
+		if (!(resp.getResponseHeader && resp.getResponseHeader('Zenario-Admin-Logged_Out'))) {
+			if (statusText) {
+				msg += _$h1(_$html('b', htmlspecialchars(resp.status + ' ' + statusText)));
+			}
+		
+			if (resp.status == 404) {
+				msg += _$p(isDev? phrase.error404Dev : phrase.error404);
+		
+			} else if (resp.status == 500) {
+				msg += _$p(isDev? phrase.error500Dev : phrase.error500);
+		
+			} else if (resp.status == 0 || statusType == 'timeout') {
+				msg += _$p(isDev? phrase.errorTimedOutDev : phrase.errorTimedOut);
+			}
+		
+			if (resp.responseText) {
+				msg += _$div(htmlspecialchars(resp.responseText));
+			}
 		}
-		
-		if (resp.status == 404) {
-			msg += '<p>' +  (isDev? phrase.error404Dev : phrase.error404) + '</p>';
-		
-		} else if (resp.status == 500) {
-			msg += '<p>' +  (isDev? phrase.error500Dev : phrase.error500) + '</p>';
-		
-		} else if (resp.status == 0 || statusType == 'timeout') {
-			msg += '<p>' +  (isDev? phrase.errorTimedOutDev : phrase.errorTimedOut) + '</p>';
-		}
-		
-		if (resp.responseText) {
-			msg += '<div>' + resp.responseText + '</div>';
-		}
-		
-		msg +=
-			'<p style="display: none;">' +
-				'Last URL accessed: ' +
-				htmlspecialchars(zenario.checkLastUrl) +
-			'</p>';
-		
 		
 		showErrorMessage = function() {
-			if (resp.zenario_retry) {
-				var buttonsHTML =
-					'<input id="zenario_retry" class="submit_selected" type="button" value="' + phrase.retry + '"/>';
+			
+			var hasReply = resp.zenario_retry,
+				hasContinueAnyway = resp.zenario_continueAnyway && resp.data,
+				hasOnCancel = resp.zenario_onCancel,
+				pressedCancel = true,
+				buttonsHTML = '';
+			
+			if (hasReply || hasContinueAnyway) {
+				
+				if (hasContinueAnyway) {
+					buttonsHTML += _$input('id', 'zenario_continueAnyway', __$class, 'submit_selected', __$type, __$button, __$value, phrase.continueAnyway);
+				}
+				if (hasReply) {
+					buttonsHTML += _$input('id', 'zenario_retry', __$class, 'submit_selected', __$type, __$button, __$value, phrase.retry);
+				}
 				
 				zenarioA.nowDoingSomething();
-				zenarioA.showMessage(msg, buttonsHTML, 'error', true, undefined, true);
+				//zenarioA.showMessage(message, buttonsHTML, messageType, modal, htmlEscapeMessage, addCancel, cancelPhrase)
+				zenarioA.showMessage(msg, buttonsHTML, 'error', true, undefined, true, phrase.close);
 				
-				$('#zenario_retry').click(function() {
-					setTimeout(resp.zenario_retry, 1);
-				});
+				if (hasContinueAnyway) {
+					$('#zenario_continueAnyway').click(function() {
+						setTimeout(function() {
+							resp.zenario_continueAnyway(resp.data);
+						}, 1);
+						pressedCancel = false;
+					});
+				}
+				if (hasReply) {
+					$('#zenario_retry').click(function() {
+						setTimeout(resp.zenario_retry, 1);
+						pressedCancel = false;
+					});
+				}
 				
 			} else {
 				zenarioA.showMessage(msg, '', 'error');
 			}
+			
+			if (hasOnCancel) {
+				zenarioA.onCloseFloatingBox = function() {
+					if (pressedCancel) {
+						setTimeout(resp.zenario_onCancel, 1);
+					}
+				};
+			}
+			
+			//Close the AJAX loader if it was open
+			zenarioA.hideAJAXLoader();
 		}
 		
 		if (resp.status == 0 || statusType == 'timeout') {
@@ -4112,34 +4292,85 @@ zenarioA.checkCookiesEnabled = function() {
 };
 
 
+//Check all hyperlinks on the page and add its status
+zenarioA.scanHyperlinksAndDisplayStatus = function(containerId) {
+    
+    var url, relativePath, i, j, match, resolvedURL, requestURI, index, editor,
+        post = {},
+        ajaxURL = URLBasePath + 'zenario/admin/quick_ajax.php?_get_link_statuses=1',
+        links = [], $links = [],
+        isAbsolutePath = new RegExp('^(?:[a-z]+:)?//', 'i'),
+        query = 'div' + (containerId === undefined? '' : '#' + containerId) + '.zenario_slot a[href][href!="#"]';
+    
+    $(query).each(function(ei, el) {
+        
+        var $el = $(el);
+        
+        if (url = $el.prop('href')) {
+            relativePath = false;
+            
+            //Check if this link is internal and get the relative link
+            if (!isAbsolutePath.test(url)) {
+                relativePath = url;
+            } else if (url.indexOf(URLBasePath) === 0) {
+                relativePath = url.substr(URLBasePath.length - 1);
+            //Links to spare domains are always highlighted
+            } else if (zenarioA.spareDomains) {
+                for (i = 0; i < zenarioA.spareDomains.length; ++i) {
+                    if (url.indexOf(zenarioA.spareDomains[i]) === 0) {
+                        $el.append(_$html('del', __$class, 'zenario_link_status zenario_link_status__spare_domain', _$html('del')));
+                    }
+                }
+            }
+            
+            if (relativePath) {
+                //Make sure link is to a content item (following .htaccess rules for aliases)
+                requestURI = relativePath.split('?')[0].split('#')[0];
+                if (!requestURI.match(/\/(admin|public|private|zenario|zenario_custom|zenario_extra_modules|purchased_downloads)\//)) {
+                    if (match = requestURI.match(/^([\/,A-Za-z0-9~_-]+)(|\.htm|\.html)$/)) {
+                        resolvedURL = '/?cID=' + match[1];
+                    } else {
+                        resolvedURL = relativePath;
+                    }
+                    
+                    //Store this link and a reference of it's jquery object
+                    if ((index = links.indexOf(resolvedURL)) === -1) {
+                        links.push(resolvedURL);
+                        $links.push([$el]);
+                    } else {
+                        $links[index].push($el);
+                    }
+                }
+            }
+        }
+    });
+    
+    //Get statuses of content items and append status identifiers
+    post.links = links;
+    zenario.ajax(ajaxURL, post, true, true).after(function(statuses) {
+        for (i = 0; i < statuses.length; ++i) {
+            for (j = 0; j < $links[i].length; ++j) {
+                $links[i][j].append(_$html('del', __$class, 'zenario_link_status zenario_link_status__' + statuses[i], _$html('del')));
+            }
+        }
+		
+		//If there are any open tinyMCE editors, remove any icons we just added to them
+		if (window.tinyMCE
+		 && tinyMCE.editors) {
+			zenario.removeLinkStatus($('div.mce-content-body'));
+		}
+    });
+};
+
+
+
 //Calculate function short names, we need to do this before calling any functions!
 zenario.shrtNms(zenarioA);
 
 
 
-//If any slots are being edited, set a warning message for if an admin tries to leave the page 
-window.onbeforeunload = zenarioA.onbeforeunload;
 
-$(document).ready(function() {
-	zenarioA.setSlotParents();
-	zenarioA.disableFileDragDrop(document.body);
+
+
 });
-
-//Append the HTML for the floating boxes in admin mode
-if (zenarioA.microTemplates) {
-	$('body').append(zenarioA.microTemplate('zenario_floating_boxes', {}));
-}
-
-//Add a progress bar
-$('body').append(
-	'<div id="zenario_progress_wrap">' +
-		'<div id="zenario_progress" class="ui-progressbar ui-widget ui-widget-content ui-corner-all">' +
-			'<div id="zenario_progress_name"></div>' +
-			'<div id="zenario_progress_stop"></div>' +
-			'<div id="zenario_progressbar" class="ui-progressbar-value ui-widget-header ui-corner-left" style="width: 0%;"></div>' +
-		'</div>' +
-	'</div>'
-);
-
-
 });

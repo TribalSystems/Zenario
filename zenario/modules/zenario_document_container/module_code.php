@@ -583,7 +583,7 @@ class zenario_document_container extends module_base_class {
 		switch ($path) {
 			case 'plugin_settings':
 				if (!inc('zenario_user_documents')) {
-					$fields['first_tab/container_mode']['hidden'] = true;
+					unset($fields['first_tab/container_mode']['values']['user_documents']);
 				}
 				
 				$fields['show_files_in_folders']['hidden'] = true;

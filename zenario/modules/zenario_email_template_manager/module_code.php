@@ -180,6 +180,8 @@ class zenario_email_template_manager extends module_base_class {
 		$senderCmsObjectArray = array(),
 		$addressReplyTo = false, $nameReplyTo = false
 	) {
+	
+		self::clearOldData();
 		
 		$sql = "
 			INSERT INTO ". DB_NAME_PREFIX. ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX. "email_template_sending_log SET
@@ -216,9 +218,24 @@ class zenario_email_template_manager extends module_base_class {
 				email_body = '". sqlEscape(adminPhrase('Body too large to save')). "'";
 		}
 		
-		sqlUpdate($sql, false);
+		sqlUpdate($sql, false, false);
 	}
 	
+	
+	public static function clearOldData(){
+		if($days = setting('period_to_delete_the_email_template_sending_log')){
+			if(is_numeric($days)){
+				$today = date('Y-m-d');
+				$date = date('Y-m-d', strtotime('-'.$days.' day', strtotime($today)));
+				if($date){
+					$sql = " 
+						DELETE FROM ". DB_NAME_PREFIX. ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX. "email_template_sending_log
+						WHERE sent_datetime < '".sqlEscape($date)."'";
+					sqlUpdate($sql);
+				}
+			}
+		}
+	}
 	
 	
 	public static function sendEmailsUsingTemplate(

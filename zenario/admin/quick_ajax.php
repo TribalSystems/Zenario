@@ -53,6 +53,148 @@ if (!empty($_REQUEST['keep_session_alive'])) {
 	$_SESSION['page_mode'] = $_POST['_save_page_mode'];
 	$_SESSION['admin_slot_wand'] = $_POST['_save_page_slot_wand'];
 
+} elseif (isset($_REQUEST['_get_link_statuses'])) {
+    $statuses = array();
+    if (isset($_POST['links']) && ($links = $_POST['links'])) {
+        
+        require CMS_ROOT. 'zenario/api/database_functions.inc.php';
+        require CMS_ROOT. 'zenario/includes/cms.inc.php';
+        loadSiteConfig();
+        exitIfNotCheckPriv();
+        
+        $data = array();
+        
+        foreach ($links as $i => $link) {
+            $linkStatus = 'content_not_found';
+            
+            $urlParts = parse_url($link);
+            $get = array();
+            if (!empty($urlParts['query'])) {
+                parse_str($urlParts['query'], $get);
+            }
+            
+            $request = $get;
+            $post = array();
+            $cID = $cType = $redirectNeeded = $aliasInURL = false;
+            resolveContentItemFromRequest($cID, $cType, $redirectNeeded, $aliasInURL, $get, $request, $post);
+            
+            if ($cID && $cType) {
+            	
+            	//This is a bit of a hack, but I need to change the $_GET and $_REQUEST to the $get from each link,
+            	//as some permission checks look at these variables directly
+            	$_GET = $get;
+            	$_REQUEST = $get;
+            	$_POST = array();
+            	
+            	//Check the permisions of the content item being linked to, and get the content item's status.
+            	//Also cache this, as often we'll get many links to the same page
+            	$tagId = $cType. '_'. $cID;
+            	if (!isset($data[$tagId])) {
+            		$data[$tagId] = ['content' => [], 'version' => []];
+					$data[$tagId]['perms'] = getShowableContent($data[$tagId]['content'], $data[$tagId]['version'], $cID, $cType, $requestVersion = false, $checkRequestVars = true, $adminsSee400Errors = true);
+            	}
+           		$perms = $data[$tagId]['perms'];
+	            
+	            //Check to see if this looks like a link to a slide
+	            if ($perms
+	             && (!empty($get['state'])
+	              || !empty($get['tab'])
+	              || !empty($get['tab_no']))) {
+	            	
+	            	do {
+						$key = ['is_slide' => 1];
+					
+						//Work out which slide this is... something that's either easy or hard depending on what variables
+						//we find in the URL!
+						if (!empty($get['tab'])) {
+							//Easy case: the slide's id is in the URL
+							$key['id'] = $get['tab'];
+					
+						} else {
+							if (!empty($get['instanceId'])) {
+								//Slightly harder case: we only have the instance id.
+								$key['instance_id'] = $get['instanceId'];
+							
+							} else {
+								//Very hard case: don't know the instance id, need to call getSlotContents()
+								//Again we'll try to cache this
+								$slotName = arrayKey($get, 'slotName');
+								$slotCode = 'instanceId`'. $slotName;
+								
+								if (!isset($data[$tagId][$slotCode])) {
+									$data[$tagId][$slotCode] = false;
+								
+									if ($layout = getRow('layouts', ['family_name', 'file_base_name'], $data[$tagId]['version']['layout_id'])) {
+										$slotContents = array();
+										getSlotContents(
+											$slotContents,
+											$cID, $cType, $data[$tagId]['version']['version'],
+											$data[$tagId]['version']['layout_id'], $layout['family_name'], $layout['file_base_name'],
+											false, $slotName, $ajaxReload = false, $runPlugins = false);
+									
+										foreach ($slotContents as $slot) {
+											if (!empty($slot['instance_id'])
+											 && !empty($slot['class_name'])
+											 && ($slot['class_name'] == 'zenario_plugin_nest'
+											  || $slot['class_name'] == 'zenario_slideshow')) {
+												$data[$tagId][$slotCode] = $slot['instance_id'];
+												break;
+											}
+										}
+									}
+								}
+								
+								if (!$key['instance_id'] = $data[$tagId][$slotCode]) {
+									continue;
+								}
+							}
+							
+							//If we have the instance id, we'll need to work out which slide this is for
+							if (!empty($get['tab_no'])) {
+								//Easy case: the slide's number is in the URL
+								$key['tab'] = $get['tab_no'];
+							} else {
+								//Slightly harder case: we have the state in the URL, and need to look up which slide has that state
+								$key['states'] = [$get['state']];
+							}
+						}
+						
+						//Attempt to find the slide that matches the variables we found above
+						if ($privacy = getRow('nested_plugins', ['privacy', 'smart_group_id', 'module_class_name', 'method_name', 'param_1', 'param_2'], $key)) {
+							//Check the privacy rules for that slide!
+							$perms = checkItemPrivacy($privacy, $privacy, $cID, $cType, $data[$tagId]['version']['version']);
+						}
+					} while (false);
+				}
+                
+                if (isset($data[$tagId]['content']['status'])) {
+					switch ($data[$tagId]['content']['status']) {
+						case 'published':
+						case 'published_with_draft':
+							$linkStatus = $data[$tagId]['content']['status'];
+						
+							if ($perms === ZENARIO_401_NOT_LOGGED_IN) {
+								$linkStatus .= '_401';
+						
+							} elseif (!$perms) {
+								$linkStatus .= '_403';
+							}
+							break;
+					
+						case 'first_draft':
+						case 'hidden_with_draft':
+						case 'hidden':
+							$linkStatus = 'hidden';
+							break;
+					}
+				}
+            } 
+            
+            $statuses[$i] = $linkStatus;
+        }
+    }
+    
+    echo json_encode($statuses, true);
 
 //Quickly look up the name of a file
 } elseif (!empty($_REQUEST['lookupFileDetails'])) {

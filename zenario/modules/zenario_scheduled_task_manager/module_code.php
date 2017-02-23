@@ -366,6 +366,8 @@ class zenario_scheduled_task_manager extends module_base_class {
 		if ($log['status'] == 'error'
 		 || ($log['status'] == 'action_taken' && $logActions)
 		 || ($log['status'] == 'no_action_taken' && $logInaction)) {
+			
+			self::clearOldData();
 			$logId = insertRow('job_logs', $log);
 		}
 		
@@ -386,6 +388,23 @@ class zenario_scheduled_task_manager extends module_base_class {
 		
 		return $logId;
 	}
+	
+	
+	public static function clearOldData(){
+		if($days = setting('period_to_delete_job_logs')){
+			if(is_numeric($days)){
+				$today = date('Y-m-d');
+				$date = date('Y-m-d', strtotime('-'.$days.' day', strtotime($today)));
+				if($date){
+					$sql = " 
+						DELETE FROM ". DB_NAME_PREFIX. "job_logs
+						WHERE started < '".sqlEscape($date)."'";
+					sqlUpdate($sql);
+				}
+			}
+		}
+	}
+	
 	
 	public static function getTaskStatus($result) {
 		if ($result == '<!--action_taken-->') {

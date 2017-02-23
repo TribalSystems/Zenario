@@ -302,6 +302,31 @@ plugin_settings:
                         2:
                             label: Open in a floating box
                     value: ""
+                link_to_anchor:
+                    indent: 1
+                    plugin_setting:
+                        name: link_to_anchor
+                    label: Link to anchor
+                    type: checkbox
+                    visible_if: |
+                        zenarioAB.value('link_type') == '_CONTENT_ITEM'
+                    redraw_onchange: true
+                hyperlink_anchor:
+                    indent: 2
+                    plugin_setting:
+                        name: hyperlink_anchor
+                    label: 'Anchor name:'
+                    type: text
+                    maxlength: 255
+                    visible_if: |
+                        zenarioAB.value('link_type') == '_CONTENT_ITEM' && zenarioAB.value('link_to_anchor')
+                    validation:
+                        required_if_not_hidden: Please enter an anchor name.
+                    side_note: >
+                        If you have an anchor on the page, you can specify it here and you'll be
+                        taken to its location on navigation.
+                
+                
                 enlarge_canvas:
                     indent: 1
                     plugin_setting:

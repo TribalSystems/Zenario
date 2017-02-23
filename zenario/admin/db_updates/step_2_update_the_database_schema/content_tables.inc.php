@@ -1903,12 +1903,6 @@ _sql
 	AFTER `hide_private_item`
 _sql
 
-, <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]]menu_nodes`
-	ADD COLUMN `hide_if_no_get_requests` tinyint(1) unsigned NOT NULL default 0
-	AFTER `add_registered_get_requests`
-_sql
-
 //Create a table for the conductor to save its paths
 );	revision( 37080
 , <<<_sql
@@ -1924,13 +1918,6 @@ _sql
 		PRIMARY KEY (`instance_id`,`to_state`,`from_state`),
 		UNIQUE KEY (`instance_id`,`from_state`,`to_state`)
 	) ENGINE=MyISAM DEFAULT CHARSET=utf8
-_sql
-
-//Remove one of the columns above (n.b. these two statements are completely removed in HEAD)
-);	revision( 37090
-, <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]]menu_nodes`
-	DROP COLUMN `hide_if_no_get_requests`
 _sql
 
 //Add a new column for tabs in nest, that works just like "Invisible in menu navigation" for menu nodes
@@ -2014,6 +2001,430 @@ _sql
 , <<<_sql
 	ALTER TABLE `[[DB_NAME_PREFIX]]nested_plugins`
 	MODIFY COLUMN `visibility` enum('everyone','logged_out','logged_in','call_static_method','in_smart_group','logged_in_not_in_smart_group') NOT NULL DEFAULT 'everyone'
+_sql
+
+
+//Fix some content type columns with the wrong definition
+	//They should always be ascii
+	//If there's another varchar/TEXT/BLOB field on the table, they should be varchar,
+		//otherwise they should be char for faster indexing
+	//Most should not have a default value
+); revision( 37269
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]categories`
+	MODIFY COLUMN `landing_page_content_type` varchar(20) CHARACTER SET ascii NOT NULL
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]content_cache`
+	MODIFY COLUMN `content_type` varchar(20) CHARACTER SET ascii NOT NULL
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]content_item_versions`
+	MODIFY COLUMN `type` varchar(20) CHARACTER SET ascii NOT NULL
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]content_items`
+	MODIFY COLUMN `type` varchar(20) CHARACTER SET ascii NOT NULL
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]content_types`
+	MODIFY COLUMN `content_type_id` varchar(20) CHARACTER SET ascii NOT NULL
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]layouts`
+	MODIFY COLUMN `content_type` varchar(20) CHARACTER SET ascii NOT NULL
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]plugin_item_link`
+	MODIFY COLUMN `content_type` varchar(20) CHARACTER SET ascii NOT NULL
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]spare_domain_names`
+	MODIFY COLUMN `content_type` varchar(20) CHARACTER SET ascii NOT NULL
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]user_content_accesslog`
+	MODIFY COLUMN `content_type` varchar(20) CHARACTER SET ascii NOT NULL
+_sql
+
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]menu_nodes`
+	MODIFY COLUMN `content_type` varchar(20) CHARACTER SET ascii NOT NULL default ''
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]plugin_instances`
+	MODIFY COLUMN `content_type` varchar(20) CHARACTER SET ascii NOT NULL default ''
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]spare_aliases`
+	MODIFY COLUMN `content_type` varchar(20) CHARACTER SET ascii NOT NULL default ''
+_sql
+
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]category_item_link`
+	MODIFY COLUMN `content_type` char(20) CHARACTER SET ascii NOT NULL
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]group_content_link`
+	MODIFY COLUMN `content_type` char(20) CHARACTER SET ascii NOT NULL
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]translation_chains`
+	MODIFY COLUMN `type` char(20) CHARACTER SET ascii NOT NULL
+_sql
+
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]special_pages`
+	MODIFY COLUMN `content_type` varchar(20) CHARACTER SET ascii
+_sql
+
+
+
+
+//More changes for slide visibility
+//This time I'm trying to merge the "privacy" column for content items and the "visbility" column
+//for slides, so everything has the same options and the same syntax.
+//I'm also removing the "Private, can be viewed by the selected Extranet User(s)" option for content items,
+//and setting anything that used it to "Send signal"/"No access".
+); revision( 37270
+
+//Update the privacy column in the translation_chains table with the new values
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]translation_chains`
+	ADD COLUMN `new_privacy` enum(
+		'public', 'logged_out', 'logged_in',
+		'group_members', 'in_smart_group', 'logged_in_not_in_smart_group',
+		'call_static_method', 'send_signal'
+	) NOT NULL default 'public'
+_sql
+
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]]translation_chains`
+	SET `new_privacy` = 'send_signal'
+	WHERE `privacy` IN ('specific_users', 'no_access')
+_sql
+
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]]translation_chains`
+	SET `new_privacy` = 'logged_in'
+	WHERE `privacy` = 'all_extranet_users'
+_sql
+
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]]translation_chains`
+	SET `new_privacy` = `privacy`
+	WHERE `privacy` NOT IN ('specific_users', 'no_access', 'all_extranet_users')
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]translation_chains`
+	DROP COLUMN `privacy`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]translation_chains`
+	CHANGE COLUMN `new_privacy` `privacy` enum(
+		'public', 'logged_out', 'logged_in',
+		'group_members', 'in_smart_group', 'logged_in_not_in_smart_group',
+		'call_static_method', 'send_signal'
+	) NOT NULL default 'public'
+_sql
+
+
+//Update the privacy column in the plugin nest table with the new values
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]nested_plugins`
+	ADD COLUMN `privacy` enum(
+		'public', 'logged_out', 'logged_in',
+		'group_members', 'in_smart_group', 'logged_in_not_in_smart_group',
+		'call_static_method'
+	) NOT NULL default 'public'
+	AFTER `visibility`
+_sql
+
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]]nested_plugins`
+	SET `privacy` = 'public'
+	WHERE `visibility` = 'everyone'
+_sql
+
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]]nested_plugins`
+	SET `privacy` = `visibility`
+	WHERE `visibility` != 'everyone'
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]nested_plugins`
+	DROP COLUMN `visibility`
+_sql
+
+
+//Add a column for smart groups to the translation_chains table
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]translation_chains`
+	ADD COLUMN `smart_group_id` int(10) unsigned NOT NULL default 0
+_sql
+
+
+//Drop the user_content_link table as we're not using it any more without the "specific_users" option
+, <<<_sql
+	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]user_content_link`
+_sql
+
+//Translation chains already have the group_content_link table, but slides don't
+//have a table like this so we'll need to create a table to hold the groups that can see each slide.
+, <<<_sql
+	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]group_slide_link`
+_sql
+
+, <<<_sql
+	CREATE TABLE `[[DB_NAME_PREFIX]]group_slide_link` (
+		`instance_id` int(10) unsigned NOT NULL,
+		`slide_id` int(10) unsigned NOT NULL,
+		`group_id` int(10) unsigned NOT NULL,
+		PRIMARY KEY (`instance_id`, `slide_id`, `group_id`),
+		UNIQUE KEY (`slide_id`, `group_id`)
+	) ENGINE=MyISAM DEFAULT CHARSET=utf8 
+_sql
+
+
+//Create a table to hold the (rarely used) advanced privacy options for translation_chains
+//I don't want to add these to the translation_chains table as currently all of the columns
+//in the translation_chains table are fixed width, which makes the translation_chains table
+//very quick to run queries on!
+, <<<_sql
+	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]translation_chain_privacy`
+_sql
+
+, <<<_sql
+	CREATE TABLE `[[DB_NAME_PREFIX]]translation_chain_privacy` (
+		`equiv_id` int(10) unsigned NOT NULL,
+		`content_type` varchar(20) CHARACTER SET ascii NOT NULL,
+		`module_class_name` varchar(200) NOT NULL default '',
+		`method_name` varchar(127) NOT NULL default '',
+		`param_1` varchar(200) NOT NULL default '',
+		`param_2` varchar(200) NOT NULL default '',
+		PRIMARY KEY (`equiv_id`, `content_type`)
+	) ENGINE=MyISAM DEFAULT CHARSET=utf8 
+_sql
+
+//Add a column for default content type permissions
+); revision(37303
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]content_types`
+	ADD COLUMN `default_permissions` enum('public', 'logged_in') NOT NULL DEFAULT 'public',
+	ADD COLUMN `hide_private_item` tinyint(1) NOT NULL default 0
+_sql
+
+
+//Rename "data schema" to "asset type" anywhere it was picked in plugin settings
+);	revision( 37460
+, <<<_sql
+	UPDATE IGNORE `[[DB_NAME_PREFIX]]plugin_settings`
+	SET value = REPLACE(value, 'data_schema', 'asset_type')
+	WHERE name IN ('mode', 'other_modes')
+	  AND value LIKE '%data_schema%'
+_sql
+
+
+//Rename "list_asset_keys_and_data" to "view_asset_keys_and_data"
+);	revision( 37600
+, <<<_sql
+	UPDATE IGNORE `[[DB_NAME_PREFIX]]plugin_settings`
+	SET value = REPLACE(value, 'list_asset_keys_and_data', 'view_asset_keys_and_data')
+	WHERE name IN ('mode', 'other_modes')
+	  AND value LIKE '%list_asset_keys_and_data%'
+_sql
+
+
+//Add checkboxes for showing the back/refresh buttons
+);	revision( 37890
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]nested_plugins`
+	ADD COLUMN `show_back` tinyint(1) NOT NULL default 0
+	AFTER `invisible_in_nav`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]nested_plugins`
+	ADD COLUMN `show_refresh` tinyint(1) NOT NULL default 0
+	AFTER `show_back`
+_sql
+
+
+//Add a checkbox that allows you to toggle a slide's visibility in admin mode
+//(Note that the default is not visible, which is a change from the previous
+// behaviour where slides were always visible.)
+);	revision( 38400
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]nested_plugins`
+	ADD COLUMN `always_visible_to_admins` tinyint(1) NOT NULL default 1
+_sql
+
+
+//Add the option to set a global command name on a slide
+);	revision( 38500
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]nested_plugins`
+	ADD COLUMN `global_command` varchar(100) NOT NULL default ''
+	AFTER `show_refresh`
+_sql
+
+
+//Add the option to set the request variables that a slide uses
+);	revision( 38600
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]nested_plugins`
+	ADD COLUMN `request_vars` varchar(255) NOT NULL default ''
+	AFTER `show_refresh`
+_sql
+
+//Attempt to auto-populate this column where possible based on the modes of the plugins picked
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]]modules` AS m
+	INNER JOIN `[[DB_NAME_PREFIX]]nested_plugins` AS egg
+	   ON egg.module_id = m.id
+	  AND egg.is_slide = 0
+	INNER JOIN `[[DB_NAME_PREFIX]]nested_plugins` AS slide
+	   ON slide.instance_id = egg.instance_id
+	  AND slide.tab = egg.tab
+	  AND slide.is_slide = 1
+	INNER JOIN `[[DB_NAME_PREFIX]]plugin_settings` AS ps
+	   ON ps.instance_id = egg.instance_id
+	  AND ps.nest = egg.id
+	  AND ps.name = 'mode'
+	LEFT JOIN `[[DB_NAME_PREFIX]]plugin_settings` AS ps2
+	   ON ps2.instance_id = egg.instance_id
+	  AND ps2.nest = egg.id
+	  AND ps2.name = 'scope_for_creation_and_lists'
+	
+	SET slide.request_vars = TRIM(BOTH ',' FROM
+		CONCAT (
+			IF (ps.value = 'edit_asset', 'assetId',
+			IF (ps.value = 'view_asset_details', 'assetId',
+	
+			IF (ps.value = 'edit_data_pool', 'dataPoolId',
+			IF (ps.value = 'view_data_pool_details', 'dataPoolId',
+	
+			IF (ps.value = 'list_locations', 'locationId',
+			IF (ps.value = 'view_location_details', 'locationId',
+	
+			IF (ps.value = 'edit_asset_type', 'assetTypeId',
+			IF (ps.value = 'delete_asset_type', 'assetTypeId',
+			IF (ps.value = 'edit_data_pool_type', 'assetTypeId',
+			IF (ps.value = 'delete_data_pool_type', 'assetTypeId',
+
+			IF (ps.value = 'edit_schedule', 'scheduleId',
+			IF (ps.value = 'edit_possible_event', 'possibleEventId',
+			IF (ps.value = 'edit_procedure', 'procedureId',
+			
+			''
+			))))))))))))),
+		',', 
+			
+			IF (ps2.value = 'company_locations', 'companyId',
+			IF (ps2.value = 'specified_company_direct', 'companyId',
+			IF (ps2.value = 'specified_company_indirect', 'companyId',
+			
+			IF (ps2.value = 'specified_location_direct', 'locationId',
+			IF (ps2.value = 'asset_type_commands', 'assetTypeId',
+			
+			IF (ps2.value = 'asset_active_events', 'assetId',
+			IF (ps2.value = 'assigned_to_parent_asset', 'assetId1',
+			
+			IF (ps2.value = 'system_assets', 'dataPoolId',
+			IF (ps2.value = 'assigned_to_parent_data_pool', 'dataPoolId1',
+			
+			''
+			)))))))))
+		)
+	)
+	WHERE m.class_name = 'assetwolf_2'
+_sql
+
+
+//Add a plugin setting for plugin nests to turn on the conductor,
+//and make sure it's turned on for any nest that already 
+);	revision( 38660
+, <<<_sql
+	INSERT IGNORE INTO `[[DB_NAME_PREFIX]]plugin_settings`
+	(instance_id, name, nest, value, is_content)
+	SELECT np.instance_id, 'enable_conductor', 0, 1, ps.is_content
+	FROM `[[DB_NAME_PREFIX]]nested_plugins` AS np
+	INNER JOIN `[[DB_NAME_PREFIX]]plugin_settings` AS ps
+	   ON ps.instance_id = np.instance_id
+	  AND ps.nest = 0
+	WHERE np.is_slide = 1
+	  AND np.states != ''
+	GROUP BY np.instance_id
+_sql
+
+
+//Convert the format of the site settings for external programs
+);	revision( 38668
+//Where the program is run from a directory in the environment PATH, just store the word "PATH".
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]]site_settings` SET
+		value = 'PATH'
+	WHERE (name, value) IN (
+		('antiword_path', ''),
+		('antiword_path', 'antiword'),
+		('clamscan_tool_path', ''),
+		('clamscan_tool_path', 'clamscan'),
+		('ghostscript_path', ''),
+		('ghostscript_path', 'gs'),
+		('pdftotext_path', ''),
+		('pdftotext_path', 'pdftotext')
+	)
+_sql
+
+//Otherwise just store the path without the program's name
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]]site_settings` SET
+		value = SUBSTR(value, 1, LENGTH(value) - 8)
+	WHERE name = 'antiword_path'
+	  AND value LIKE '%/antiword'
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]]site_settings` SET
+		value = SUBSTR(value, 1, LENGTH(value) - 8)
+	WHERE name = 'clamscan_tool_path'
+	  AND value LIKE '%/clamscan'
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]]site_settings` SET
+		value = SUBSTR(value, 1, LENGTH(value) - 2)
+	WHERE name = 'ghostscript_path'
+	  AND value LIKE '%/gs'
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]]site_settings` SET
+		value = SUBSTR(value, 1, LENGTH(value) - 9)
+	WHERE name = 'pdftotext_path'
+	  AND value LIKE '%/pdftotext'
+_sql
+
+); revision(38669
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]nested_plugins`
+	ADD COLUMN `show_auto_refresh` tinyint(1) NOT NULL DEFAULT '0' AFTER `show_refresh`,
+	ADD COLUMN `auto_refresh_interval` int(10) unsigned NOT NULL DEFAULT 60 AFTER `show_auto_refresh`
 _sql
 
 );

@@ -377,7 +377,7 @@ if ($getUploadedFileInCacheDir) {
 			//attempt to symlink the file to the private directory rather than load it all into memory in php
 			} else
 			if (($fileLink = fileLink($file['id'], randomString(24)))
-			 && (!chopPrefixOffOfString('zenario/file.php', $fileLink))) {
+			 && (!chopPrefixOffString($fileLink, 'zenario/file.php'))) {
 				header('location: '. absCMSDirURL(). $fileLink);
 				exit;
 			}

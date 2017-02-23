@@ -18,6 +18,8 @@ zenario__users:
         users:
             title: 'All users & contacts'
             panel_type: list_or_grid_or_multi_line_list
+            grid_view_microtemplate: 'zenario_grid_view_user'
+            label_format_for_grid_view: '[[identifier]]'
             no_items_message: >
                 No users/contacts. Click "Create" to create users and
                 contacts.
@@ -31,6 +33,12 @@ zenario__users:
                 group_members: {}
                 suspended_users:
                     sql: "u.status='suspended'"
+                smart_group:
+                    sql: 'TRUE'
+                    table_join: ''
+                    no_items_message: This smart group has no members
+    
+        
             
             columns:
                 id:

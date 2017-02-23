@@ -29,10 +29,8 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 class zenario_event_listing extends module_base_class {
 
-	protected $pages;
-	protected $totalPages;
-	protected $rows = false;
-
+    protected $data = array();
+    
 	public function init() {
 		$this->allowCaching(
 			$atAll = true, $ifUserLoggedIn = false, $ifGetSet = false, $ifPostSet = true, $ifSessionSet = true, $ifCookieSet = true);
@@ -40,11 +38,6 @@ class zenario_event_listing extends module_base_class {
 			$clearByContent = true, $clearByMenu = false, $clearByUser = false, $clearByFile = true, $clearByModuleData = true);
 		
 		$this->page = is_numeric(get('page'))? (int) get('page') : 1;
-
-		return true;
-	}
-
-	public function showSlot(){
 		
 		switch ($this->setting('period_mode')){
 			case 'date_range':
@@ -92,33 +85,42 @@ class zenario_event_listing extends module_base_class {
 			
 			//Get a count of how many items we have to display
 			$result = sqlSelect('SELECT COUNT(*) FROM ('. $sql . ') A');
-			list($this->rows) = sqlFetchRow($result);
+			list($rows) = sqlFetchRow($result);
 			
-			$this->totalPages = (int) ceil($this->rows / $this->setting('page_size'));
+			$totalPages = (int) ceil($rows / $this->setting('page_size'));
 			
 			//Loop through each page to display, and add its details to an array of merge fields
-			$this->pages = array();
-			for ($i = 1; $i <= $this->setting('page_limit') && $i <= $this->totalPages; ++$i) {
-				$this->pages[$i] = '&page='. $i;
+			$pages = array();
+			for ($i = 1; $i <= $this->setting('page_limit') && $i <= $totalPages; ++$i) {
+				$pages[$i] = '&page='. $i;
+			}
+			
+			$defaultImageURL = false;
+			if ($this->setting('show_sticky_images') && $this->setting('fall_back_to_default_image')) {
+                $width = 0;
+                $height = 0;
+			    imageLink($width, $height, $defaultImageURL, $this->setting('default_image_id'), $this->setting("width"), $this->setting("height"), $this->setting('canvas'), 0, $this->setting('retina'));
 			}
 				
 			$result = sqlSelect($sql . paginationLimit($this->page, $this->setting('page_size'), $this->setting('offset')));
 			while($row = sqlFetchAssoc($result)){
+			    $eventRow = array();
 				$eventRow['Link_To_Event'] = $this->linkToItem($row['id'], 'event');
 				
-				$url = '';
-				$width = 0;
-				$height = 0;
-				
-				imageLink($width, $height, $url, $row['sticky_image_id'],$this->setting("width"), $this->setting("height"), $this->setting('canvas'));
-				if ($url) {
-					$eventRow['Sticky_image_class_name'] = "single_event_sticky_image";
-					$eventRow['Sticky_image_HTML_tag'] =  '<img src="' . $url . '"/>';
-					$eventRow['Sticky_or_default_image_HTML_tag'] =  '<img src="' . $url .  '"/>';
-				} else {
-					$eventRow['Sticky_image_class_name'] = "sticky_image_placeholder";
-					$eventRow['Sticky_image_HTML_tag'] = ""; //without this image for last event is repeated.
-					$eventRow['Sticky_or_default_image_HTML_tag'] =  '<img src="' . absCMSDirURL() . moduleDir('zenario_event_listing', 'images/event_generic_image.jpg') .'"/>';
+				if ($this->setting('show_sticky_images')) {
+				    $stickyImageURL = $defaultImageURL;
+				    
+                    $url = '';
+                    $width = 0;
+                    $height = 0;
+                    imageLink($width, $height, $url, $row['sticky_image_id'], $this->setting("width"), $this->setting("height"), $this->setting('canvas'), 0, $this->setting('retina'));
+                    
+                    if ($url) {
+                        $stickyImageURL = $url;
+                    }
+                    if ($stickyImageURL) {
+                        $eventRow['Sticky_image_HTML_tag'] =  '<img src="' . $stickyImageURL . '"/>';
+                    }
 				}
 				
 				if ($this->setting('show_event_title')){
@@ -133,10 +135,10 @@ class zenario_event_listing extends module_base_class {
 
 				if ($this->setting('show_location')
 					&& ($locationId = arrayKey($row,'location_id'))
-						&& inc('zenario_location_manager') 
-							&& ($location = zenario_location_manager::getLocationDetails($locationId))){
-
-						$eventRow['Event_location'] = $location['description'];
+					&& inc('zenario_location_manager') 
+					&& ($location = zenario_location_manager::getLocationDetails($locationId))
+				) {
+				    $eventRow['Event_location'] = $location['description'];
 				}
 				
 				
@@ -206,54 +208,42 @@ class zenario_event_listing extends module_base_class {
 				if ( ($this->cType != 'event' || $eventRow['equiv_id'] != equivId($this->cID, $this->cType))  && (!isset($eventRows[$eventRow['equiv_id']]) || ($eventRows[$eventRow['equiv_id']]['language_id'] != $_SESSION['user_lang'])) ){
 					$eventRows[$eventRow['equiv_id']] = $eventRow;
 				}
-				
 			}
-			
-			
-			
 		}
 
 		if ($eventRows) {
 			switch ($this->setting('heading')) {
 				case 'show_heading':
-					
 					$heading_text = $this->setting('heading_text');
 					if ($this->setting('use_phrases')) {
 						$this->replacePhraseCodesInString($heading_text);
 					}
-					$title = $heading_text;
-					$showTitle = true;
+					$this->data['Title'] = $heading_text;
 					
 					break;
 				case 'show_period_name':
-					$title = $this->getPeriodName($periodName, $periodShift);
-					$showTitle = true;
+					$this->data['Title'] = $this->getPeriodName($periodName, $periodShift);
 					break;
 				case 'dont_show':
 				default:
-					$title = '';
-					$showTitle = false;
+					$this->data['Title'] = false;
 					break;
 			}
 
-			if ($this->setting('show_pagination') && count($this->pages) > 1) {
-				$this->pagination('pagination_style', $this->page, $this->pages, $pagination);
-			} else {
-				$pagination = false;
+			if ($this->setting('show_pagination') && count($pages) > 1) {
+				$this->pagination('pagination_style', $this->page, $pages, $this->data['Pagination']);
 			}
 			
-			
-			
-			$this->framework('Events_List',array('Title' => $title, 
-												 'Pagination' => $pagination),
-											array(	'Show_Title' => $showTitle,
-													'Event_Row_On_List' => $eventRows
-											)
-							);
+			$this->data['Events_List'] = true;
+			$this->data['Event_Row_On_List'] = $eventRows;
 		} else {
-			$msgEmptyList = $this->phrase('_NO_EVENTS_TO_DISPLAY');
-			$this->framework('No_Events',array('Msg_Empty_List'=>$msgEmptyList),array());
+		    $this->data['No_Events'] = true;
 		}
+		return true;
+	}
+
+	public function showSlot(){
+		$this->twigFramework($this->data);
 	}
 
 	protected function displayForAsSQLDateString(){
@@ -664,7 +654,6 @@ class zenario_event_listing extends module_base_class {
 				$fields['first_tab/past']['hidden'] = 
 					in_array($values['first_tab/period_mode'], array('today_only', 'date_range'));
 				
-				
 				$fields['pagination/page_limit']['hidden'] = 
 				$fields['pagination/pagination_style']['hidden'] = 
 					!$values['pagination/show_pagination'];
@@ -672,7 +661,16 @@ class zenario_event_listing extends module_base_class {
 				$fields['overall_list/heading_text']['hidden'] =
 					$values['overall_list/heading'] != 'show_heading';
 				
-				$this->showHideImageOptions($fields, $values, 'image_size');
+				
+				$fields['each_item/retina']['hidden'] = 
+                $fields['each_item/fall_back_to_default_image']['hidden'] = 
+                    !$values['each_item/show_sticky_images'];
+        
+                $fields['each_item/default_image_id']['hidden'] = 
+                    !($values['each_item/show_sticky_images'] && $values['each_item/fall_back_to_default_image']);
+        
+                $hidden = !$values['each_item/show_sticky_images'];
+                $this->showHideImageOptions($fields, $values, 'each_item', $hidden);
 				break;
 		}
 	}

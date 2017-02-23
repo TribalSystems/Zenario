@@ -111,8 +111,18 @@ if (!$moduleId) {
 
 } else {
 	
-	//Get information from the plugin itself
+	//Set up the embed buttons
+	$embedLink = linkToItem(
+		$cID, $cType, $fullPath = true, $request = '&zembedded=1&method_call=showSingleSlot&slotName='. $slotName,
+		cms_core::$alias, $autoAddImportantRequests = false, $useAliasInAdminMode = true);
+
+	$controls['info']['embed']['label'] .= '
+		<a onclick="zenarioA.copyEmbedHTML(\''. jsEscape($embedLink). '\', \''. jsEscape($slotName). '\');">'.
+			adminPhrase('Copy iframe HTML').
+		'</a>';
 	
+	
+	//Get information from the plugin itself
 	
 	//Show the wrapping html, id and css class names for the slot
 	if (isset(cms_core::$slotContents[$slotName]['class']) && !empty(cms_core::$slotContents[$slotName]['class'])) {
@@ -198,11 +208,21 @@ if (!$moduleId) {
 	$controls['css_class'] .= ' zenario_level'. $level;
 	
 	if (isset(cms_core::$slotContents[$slotName]['class']) && !empty(cms_core::$slotContents[$slotName]['class'])) {
+		
+		$status = false;
+		if (isset(cms_core::$slotContents[$slotName]['init'])) {
+			$status = cms_core::$slotContents[$slotName]['init'];
+		}
+		
+		if ($status === ZENARIO_401_NOT_LOGGED_IN || $status === ZENARIO_403_NO_PERMISSION) {
+			$controls['css_class'] .= ' zenario_slotWithNoPermission';
+		
+		} elseif (!$status) {
+			$controls['css_class'] .= ' zenario_slotNotShownInVisitorMode';
+		}
+		
 		if (cms_core::$slotContents[$slotName]['class']->shownInMenuMode()) {
 			$controls['css_class'] .= ' zenario_slotShownInMenuMode';
-		}
-		if (empty(cms_core::$slotContents[$slotName]['init'])) {
-			$controls['css_class'] .= ' zenario_slotNotShownInVisitorMode';
 		}
 		if ($isVersionControlled) {
 			$controls['css_class'] .= ' zenario_wireframe';

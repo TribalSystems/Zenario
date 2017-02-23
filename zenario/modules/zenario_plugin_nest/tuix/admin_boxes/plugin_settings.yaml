@@ -37,16 +37,28 @@ plugin_settings:
                         p: Paragraph
                     value: h1
                     side_note: Choose which HTML tag the heading will be displayed in.
+                
+                enable_conductor:
+                    plugin_setting:
+                        name: enable_conductor
+                    label: 'Enable nest conductor (advanced)'
+                    type: checkbox
+                    redraw_onchange: true
+                    side_note: |
+                        The nest conductor can be used to turn a plugin nest into a modal AJAX application.
+                
                 show_tabs:
                     plugin_setting:
                         name: show_tabs
+                    visible_if: |
+                        !zenarioAB.value('enable_conductor')
                     label: 'Show tabs'
                     type: checkbox
-                    value: 1
                 
                 show_next_prev_buttons:
                     plugin_setting:
                         name: show_next_prev_buttons
+                    hide_with_previous_field: true
                     label: 'Show next/previous buttons'
                     type: checkbox
                     redraw_onchange: true
@@ -54,7 +66,9 @@ plugin_settings:
                     plugin_setting:
                         name: next_prev_buttons_loop
                     indent: 1
-                    visible_if: zenarioAB.value('show_next_prev_buttons')
+                    hide_with_previous_field: true
+                    visible_if: |
+                        zenarioAB.value('show_next_prev_buttons')
                     label: 'Loop next/previous buttons'
                     type: checkbox
                     side_note: |

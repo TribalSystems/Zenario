@@ -162,10 +162,11 @@ class zenario_common_features__admin_boxes__document_rule extends module_base_cl
 			$fields['details/pattern']['error'] = adminPhrase('Please enter a pattern');
 		} else {
 			$return = false;
-			try {
-				$return = preg_match($values['details/pattern'], 'test');
-			} catch (Exception $e) {
+			
+			if (@preg_match($values['details/pattern'], null) === false) {
 				$return = false;
+			} else {
+				$return = preg_match($values['details/pattern'], 'test');
 			}
 	
 			if ($return === false) {

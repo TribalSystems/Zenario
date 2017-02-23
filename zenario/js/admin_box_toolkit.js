@@ -40,8 +40,8 @@ zenario.lib(function(
 	undefined,
 	URLBasePath,
 	document, window, windowOpener, windowParent,
-	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO,
-	get, engToBoolean, htmlspecialchars, ifNull, jsEscape, phrase,
+	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO, strings,
+	encodeURIComponent, get, engToBoolean, htmlspecialchars, jsEscape, phrase,
 	extensionOf, methodsOf, has,
 	zenarioAF, zenarioABToolkit
 ) {
@@ -307,7 +307,7 @@ methods.draw2 = function() {
 	}
 	
 	//Add wrapper CSS classes
-	get('zenario_fbAdminFloatingBox').className =
+	this.get('zenario_fbAdminFloatingBox').className =
 		this.baseCSSClass +
 		' ' +
 		(this.tuix.css_class || 'zenario_fab_default_style') + 
@@ -321,13 +321,13 @@ methods.draw2 = function() {
 	//Don't show the requested tab if it has been hidden
 	if (tuix.tab
 	 && (!tuix.tabs[tuix.tab]
-		//zenarioA.hidden(tuixObject, item, id, tuix, button, column, field, section, tab)
-	  || zenarioA.hidden(undefined, undefined, tuix.tab, tuix, undefined, undefined, undefined, undefined, tuix.tabs[tuix.tab]))) {
+		//zenarioA.hidden(tuixObject, lib, item, id, button, column, field, section, tab, tuix)
+	  || zenarioA.hidden(undefined, this, undefined, tuix.tab, undefined, undefined, undefined, undefined, tuix.tabs[tuix.tab]))) {
 		tuix.tab = false;
 	}
 	
 	//Set the HTML for the floating boxes tabs and title
-	get('zenario_fabTabs').innerHTML = this.drawTabs();
+	this.get('zenario_fabTabs').innerHTML = this.drawTabs();
 	
 	
 	var isReadOnly = !this.editModeOnBox(),
@@ -339,11 +339,11 @@ methods.draw2 = function() {
 	this.setTitle(isReadOnly);
 	this.showCloseButton();
 	
-	get('zenario_fbButtons').innerHTML = this.microTemplate(this.mtPrefix + '_buttons', m);
+	this.get('zenario_fbButtons').innerHTML = this.microTemplate(this.mtPrefix + '_buttons', m);
 	zenario.addJQueryElements('#zenario_fbButtons ', true);
 	
 	//Show the box
-	get('zenario_fbAdminFloatingBox').style.display = 'block';
+	this.get('zenario_fbAdminFloatingBox').style.display = 'block';
 	
 	//Set the floating box to the max height for the user's screen
 	this.size(true);
@@ -500,7 +500,7 @@ methods.pluginPreviewDetails = function(slotName, instanceId, fullPage) {
 methods.addExtraAttsForTextFields = function(field, extraAtt) {
 	if (this.hasPreviewWindow) {
 		extraAtt.onkeyup =
-			ifNull(extraAtt.onkeyup, '', '') +
+			(extraAtt.onkeyup || '') +
 			" " + this.globalName + ".updatePreview();";
 	}
 };
@@ -680,54 +680,94 @@ methods.save = function(confirm, saveAndContinue, createAnother) {
 	if (this.saving) {
 		return;
 	} else {
-		this.saving = true;
-	}
+		
+		//Use setTimeout to try and catch the case where someone was typing in a field using the keyboard,
+		//then immediately presses the save button with their mouse, which would otherwise skip any onchange events
+		setTimeout(function() {
+		
+			that.saving = true;
 	
-	this.differentTab = true;
-	this.loaded = false;
-	this.hideTab(true);
+			that.differentTab = true;
+			that.loaded = false;
+			that.hideTab(true);
 	
-	this.checkValues();
+			that.checkValues();
 	
-	var post = {
-		_save: true,
-		_confirm: confirm? 1 : '',
-		_save_and_continue: saveAndContinue,
-		_box: this.sendStateToServer()};
+			var post = {
+				_save: true,
+				_confirm: confirm? 1 : '',
+				_save_and_continue: saveAndContinue,
+				_box: that.sendStateToServer()};
 	
-	if (engToBoolean(this.tuix.download) || (this.tuix.confirm && engToBoolean(this.tuix.confirm.download))) {
-		this.save2(zenario.nonAsyncAJAX(this.getURL('save'), zenario.urlRequest(post)), saveAndContinue, createAnother);
-	} else {
-		this.retryAJAX(
-			url,
-			post,
-			function(data) {
-				that.save2(data, saveAndContinue, createAnother);
-			},
-			'saving'
-		);
+			if (engToBoolean(that.tuix.download) || (that.tuix.confirm && engToBoolean(that.tuix.confirm.download))) {
+				that.save2(zenario.nonAsyncAJAX(that.getURL('save'), zenario.urlRequest(post), true), saveAndContinue, createAnother);
+			} else {
+				that.retryAJAX(
+					url,
+					post,
+					true,
+					function(data) {
+						that.save2(data, saveAndContinue, createAnother);
+					},
+					'saving'
+				);
+			}
+		}, 100);
 	}
 };
 
 methods.save2 = function(data, saveAndContinue, createAnother) {
 	delete this.saving;
 	
-	if (('' + data).substr(0, 12) == '<!--Valid-->') {
-		data = data.substr(12);
+	var flags = data
+			 && data._sync
+			 && data._sync.flags || {},
+		isOrganizer = zenarioO.init && !window.zenarioOQuickMode && !window.zenarioOSelectMode;
+	
+	
+	if (flags.close_with_message) {
+		this.close();
 		
-		if (('' + data).substr(0, 14) == '<!--Confirm-->') {
-			data = data.substr(14);
+		if (isOrganizer) {
+			zenarioO.reload();
+		}
+		
+		zenarioA.showMessage(flags.close_with_message);
+	
+	} else if (flags.reload_organizer && isOrganizer) {
+		this.close();
+		zenarioA.rememberToast();
+	
+		zenarioA.uploading = false;
+		zenarioO.setWrapperClass('uploading', zenarioA.uploading);
+	
+		zenarioO.reloadPage();
+
+	//Open an Admin Box
+	} else if (flags.open_admin_box && zenarioAB.init) {
+		this.close();
+		zenarioAB.open(flags.open_admin_box);
+
+	//Go somewhere
+	} else if (flags.go_to_url) {
+		this.close();
+		zenarioA.rememberToast();
+		zenario.goToURL(zenario.addBasePath(flags.go_to_url), true);
+	
+	} else if (flags.valid) {
+		
+		if (flags.confirm) {
 			this.load(data);
 			this.sortTabs();
 			this.draw();
 			this.showConfirm(saveAndContinue, createAnother);
 		
-		} else if (('' + data).substr(0, 15) == '<!--Download-->') {
-			get('zenario_iframe_form').action = this.getURL('download');
-			get('zenario_iframe_form').innerHTML =
+		} else if (flags.download) {
+			this.get('zenario_iframe_form').action = this.getURL('download');
+			this.get('zenario_iframe_form').innerHTML =
 				'<input type="hidden" name="_download" value="1"/>' +
 				'<input type="hidden" name="_box" value="' + htmlspecialchars(this.sendStateToServer()) + '"/>';
-			get('zenario_iframe_form').submit();
+			this.get('zenario_iframe_form').submit();
 			
 			if (saveAndContinue) {
 				data = data.substr(15);
@@ -736,8 +776,7 @@ methods.save2 = function(data, saveAndContinue, createAnother) {
 			
 			this.refreshParentAndClose(true, saveAndContinue, createAnother);
 		
-		} else if (('' + data).substr(0, 12) == '<!--Saved-->') {
-			data = data.substr(12);
+		} else if (flags.saved) {
 			this.load(data);
 			this.refreshParentAndClose(false, saveAndContinue, createAnother);
 		
@@ -745,6 +784,7 @@ methods.save2 = function(data, saveAndContinue, createAnother) {
 			this.close();
 			zenarioA.showMessage(data, true, 'error');
 		}
+	
 	} else {
 		this.load(data);
 		this.sortTabs();
@@ -767,7 +807,7 @@ methods.showConfirm = function(saveAndContinue, createAnother) {
 			'<input type="button" class="submit_selected" value="' + this.tuix.confirm.button_message + '" onclick="' + this.globalName + '.save(true, ' + engToBoolean(saveAndContinue) + ', ' + engToBoolean(createAnother) + ');"/>' +
 			'<input type="button" class="submit" value="' + this.tuix.confirm.cancel_button_message + '" onclick="zenarioA.closeFloatingBox();"/>';
 		
-		zenarioA.floatingBox(message, buttons, ifNull(this.tuix.confirm.message_type, 'none'));
+		zenarioA.floatingBox(message, buttons, this.tuix.confirm.message_type || 'none');
 	}
 };
 

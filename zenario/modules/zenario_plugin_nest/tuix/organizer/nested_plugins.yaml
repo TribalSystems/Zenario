@@ -30,11 +30,17 @@ zenario__modules:
                 start_with_all_items_open: true
                     
             columns:
+                prefix:
+                    title: Prefix
+                    show_by_default: true
                 name_or_title:
                     title: Name
                     db_column: np.name_or_title
+                    css_class: organizer_long_title
                     show_by_default: true
                     width: large
+                states:
+                    db_column: np.states
                 cols:
                     title: Columns
                     db_column: np.cols
@@ -54,29 +60,21 @@ zenario__modules:
                     values:
                         show:
                             label: Shown on desktop and mobile
+                            css_class: organizer_icon_show_on_desktop_and_mobile
                         hide:
                             label: Shown on desktop only
+                            css_class: organizer_icon_show_on_desktop_only
                         only:
                             label: Shown on mobile only
+                            css_class: organizer_icon_show_on_mobile_only
                 parent:
                     hidden: true
                     db_column: |
                         IF (np.is_slide, NULL, p.id)
                 ordinal:
-                    hidden: true
+                    #hidden: true
                     db_column: IF (np.is_slide, np.tab, np.ord)
-                    #title: 'Ordinal #'
-                    #db_column: |
-                    #    IF (np.is_slide,
-                    #        LPAD(np.tab, ROUND(LOG10(IFNULL((SELECT MAX(tab) FROM [[DB_NAME_PREFIX]]nested_plugins WHERE instance_id = [[REFINER_ID]]), 1)) + 0.50001, 0), '0'),
-                    #        CONCAT(
-                    #            LPAD(np.tab, ROUND(LOG10(IFNULL((SELECT MAX(tab) FROM [[DB_NAME_PREFIX]]nested_plugins WHERE instance_id = [[REFINER_ID]]), 1)) + 0.50001, 0), '0'),
-                    #            '.',
-                    #            LPAD(np.ord, ROUND(LOG10(IFNULL((SELECT MAX(ord) FROM [[DB_NAME_PREFIX]]nested_plugins WHERE instance_id = [[REFINER_ID]]), 1)) + 0.50001, 0), '0')
-                    #        )
-                    #    )
-                    #show_by_default: true
-                    #width: xsmall
+                
                 module_class_name:
                     db_column: m.class_name
                     table_join: '[[DB_NAME_PREFIX]]modules AS m ON np.module_id = m.id'
@@ -124,9 +122,6 @@ zenario__modules:
                           AND `usage` = 'image'
                           AND img_f.mime_type IN ('image/gif', 'image/png', 'image/jpeg', 'image/svg+xml')
             default_sort_column: name_or_title
-            label_format_for_grid_view: |
-                [[ordinal]]
-                [[name_or_title]]
             item:
                 name: Nested slide/plugin
                 names: Nested slides and plugins

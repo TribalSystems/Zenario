@@ -340,16 +340,25 @@ zenario__content:
                         hidden: '[Hidden]'
                         trashed: '[Trashed]'
                 privacy:
-                    ord: 18
-                    title: Privacy
                     db_column: tc.privacy
                     format: enum
                     values:
-                        public: Public
-                        all_extranet_users: All extranet users
-                        group_members: Group members
-                        specific_users: Specific users
-                        no_access: No access
+                        public:
+                            label: Public, visible to everyone
+                        logged_out:
+                            label: Public, only show to visitors who are NOT logged in
+                        logged_in:
+                            label: Private, only show to extranet users who are logged in
+                        group_members:
+                            label: Private, only show to extranet users in a group
+                        in_smart_group:
+                            label: Private, only show to extranet users in a smart group
+                        logged_in_not_in_smart_group:
+                            label: Private, only show to extranet users NOT in a smart group
+                        call_static_method:
+                            label: "Call a module's static method to decide"
+                        send_signal:
+                            label: Send a signal to decide
                 first_created_datetime:
                     ord: 19
                     title: Date/time first created
@@ -494,7 +503,9 @@ zenario__content:
                     hide_on_filter: true
                     label: Create
                     admin_box:
-                        path: zenario_quick_create
+                        path: zenario_content
+                        key:
+                            create_from_content_panel: 1
                 
                 delete_trashed_items:
                     priv: _PRIV_DELETE_TRASHED_CONTENT_ITEMS
@@ -577,31 +588,9 @@ zenario__content:
                         [[layout]]
                     visible_if: |
                         !zenarioA.checkSpecificPerms(id)
-                public_permission:
-                    css_class: public_permission_inline
-                    tooltip: "Visible to: Publicly visible"
-                    visible_if: >
-                        (item.privacy == 'public')
-                private_permission:
-                    css_class: private_permission_inline
-                    tooltip: "Visible to: Private visibility, can be viewed by all extranet users"
-                    visible_if: >
-                        (item.privacy == 'all_extranet_users')
-                no_regular_access_permission:
-                    css_class: no_regular_access_permission_inline
-                    tooltip: "Visible to: No regular access"
-                    visible_if: >
-                        (item.privacy == 'no_access')
-                group_members_permission:
-                    css_class: group_members_inline
-                    tooltip: "Private visibility, can only be viewed by selected group(s)"
-                    visible_if: >
-                        (item.privacy == 'group_members')
-                specific_users_permission:
-                    css_class: group_members_inline
-                    tooltip: "Private visibility, can only be viewed by selected user(s)"
-                    visible_if: >
-                        (item.privacy == 'specific_users')
+                privacy:
+                    css_class: privacy_inline_button
+                    tooltip: "[[privacy]]"
                 view_frontend:
                     css_class: view_frontend
                     tooltip: Go to content item in front-end window

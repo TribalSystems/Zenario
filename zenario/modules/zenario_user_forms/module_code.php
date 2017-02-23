@@ -1638,7 +1638,7 @@ class zenario_user_forms extends module_base_class {
 			);
 		}
 		$values = array();
-		if (chopPrefixOffOfString($field['field_type'], 'centralised_') || $field['field_type'] == 'restatement' || $field['field_type'] == 'text') {
+		if (chopPrefixOffString('centralised_', $field['field_type']) || $field['field_type'] == 'restatement' || $field['field_type'] == 'text') {
 			if (!empty($field['values_source_filter'])) {
 				$filter = $field['values_source_filter'];
 			}
@@ -1673,8 +1673,14 @@ class zenario_user_forms extends module_base_class {
 		$fieldType = static::getFieldType($field);
 		$fieldName = static::getFieldName($fieldId);
 		
+		//Added because some sites rely on a hidden select fields value to display other fields later on...
+		$clearData = false;
+		if ($fieldType == 'select') {
+			$clearData = static::isFieldHidden($field, $fields, $data, $dataset, $instanceId);
+		}
+		
 		// If value is array, the form has been submitted, load from this data
-		if (is_array($data) && !$forceLoadDefaultValue) {
+		if (is_array($data) && !$forceLoadDefaultValue && !$clearData) {
 			if ($fieldType == 'checkboxes') {
 				$values = array();
 				$fields = array($fieldId => $field);
@@ -4131,21 +4137,16 @@ class zenario_user_forms extends module_base_class {
 					$fields['details/profanity_filter_text_fields']['hidden'] = true;
 				}
 				
+				//Only allow extranet users to be made if module is running, otherwise only allow contacts
 				if (!inc('zenario_extranet')) {
-					$fields['data/save_data']['hidden'] = 
-					$fields['data/email_html']['hidden'] = 
-					$fields['data/user_status']['hidden'] = 
-					$fields['data/log_user_in']['hidden'] = 
-					$fields['data/log_user_in_cookie']['hidden'] = 
-					$fields['data/add_user_to_group']['hidden'] = 
-					$fields['data/duplicate_submission_html']['hidden'] = 
-					$fields['data/user_duplicate_email_action']['hidden'] = 
-					$fields['data/duplicate_email_address_error_message']['hidden'] = 
-					$fields['data/line_br_2']['hidden'] = 
-					$fields['data/logged_in_user_section_start']['hidden'] = 
-					$fields['data/update_linked_fields']['hidden'] = 
-					$fields['data/no_duplicate_submissions']['hidden'] = 
-					$fields['data/duplicate_submission_message']['hidden'] = 
+					$values['data/user_status'] = 'contact';
+					$fields['data/user_status']['values']['active']['disabled'] = true;
+					$fields['data/user_status']['values']['active']['note_below'] = adminPhrase('Extranet module must be running to create active users.');
+					
+					$fields['data/logged_in_user_section_start']['hidden'] = true;
+					$fields['data/update_linked_fields']['hidden'] = true;
+					$fields['data/no_duplicate_submissions']['hidden'] = true;
+					$fields['data/duplicate_submission_message']['hidden'] = true;
 					$fields['data/add_logged_in_user_to_group']['hidden'] = true;
 				}
 				$fields['data/add_user_to_group']['values'] = 
@@ -4480,27 +4481,26 @@ class zenario_user_forms extends module_base_class {
 				$fields['anti_spam/extranet_users_use_captcha']['hidden'] =
 					!$values['anti_spam/use_captcha'];
 				
-				$zenario_extranet = inc('zenario_extranet');
-				if ($zenario_extranet) {
-					$fields['data/user_status']['hidden'] =
-					$fields['data/add_user_to_group']['hidden'] =
-					$fields['data/duplicate_submission_html']['hidden'] =
-					$fields['data/user_duplicate_email_action']['hidden'] =
-						!$values['data/save_data'];
 				
-					$fields['data/duplicate_email_address_error_message']['hidden'] = 
-						$fields['data/user_duplicate_email_action']['hidden']
-						|| ($values['data/user_duplicate_email_action'] != 'stop');
-					
-					$fields['data/log_user_in_cookie']['hidden'] =
-						!($values['data/save_data'] && ($values['data/log_user_in'] == 1) && ($values['data/user_status'] == 'active'));
 				
-					$fields['data/log_user_in']['hidden'] =
-						!($values['data/save_data'] && ($values['data/user_status'] == 'active'));
-						
-					$fields['data/duplicate_submission_message']['hidden'] = !$values['data/no_duplicate_submissions'];
-				}
+				$fields['data/user_status']['hidden'] =
+				$fields['data/add_user_to_group']['hidden'] =
+				$fields['data/duplicate_submission_html']['hidden'] =
+				$fields['data/user_duplicate_email_action']['hidden'] =
+					!$values['data/save_data'];
+			
+				$fields['data/create_another_form_submission_record']['hidden'] =
+					!$values['data/save_data'] || ($values['data/user_duplicate_email_action'] == 'stop');
+			
+				$fields['data/duplicate_email_address_error_message']['hidden'] = 
+					$fields['data/user_duplicate_email_action']['hidden']
+					|| ($values['data/user_duplicate_email_action'] != 'stop');
 				
+				$fields['data/log_user_in_cookie']['hidden'] =
+					!($values['data/save_data'] && ($values['data/log_user_in'] == 1) && ($values['data/user_status'] == 'active'));
+			
+				$fields['data/log_user_in']['hidden'] =
+					!($values['data/save_data'] && ($values['data/user_status'] == 'active'));
 				
 				$fields['data/send_email_to_logged_in_user']['hidden'] = 
 				$fields['data/send_email_to_email_from_field']['hidden'] = 
@@ -4519,8 +4519,6 @@ class zenario_user_forms extends module_base_class {
 				$fields['data/user_email_template_from_field']['hidden'] = 
 					!$values['data/send_email_to_user'] || !$values['data/send_email_to_email_from_field'] || ($values['data/user_email_options_from_field'] != 'use_template');
 				
-				
-				
 				$fields['data/admin_email_addresses']['hidden'] = 
 				$fields['data/admin_email_options']['hidden'] = 
 				$fields['data/reply_to']['hidden'] = 
@@ -4538,6 +4536,9 @@ class zenario_user_forms extends module_base_class {
 				
 				$fields['details/success_message']['hidden'] = $values['details/success_message_type'] != 'show_success_message';
 				
+				if (inc('zenario_extranet')) {
+					$fields['data/duplicate_submission_message']['hidden'] = !$values['data/no_duplicate_submissions'];
+				}
 				
 				if (!empty($box['key']['id'])) {
 					$box['title'] = adminPhrase('Editing the Form "[[name]]"', array('name' => $values['details/name']));
@@ -4747,7 +4748,7 @@ class zenario_user_forms extends module_base_class {
 				// Create an error if the form is doing nothing with data
 				if ($saving
 					&& !$box['key']['type']
-					&& (!inc('zenario_extranet') || empty($values['data/save_data']))
+					&& empty($values['data/save_data'])
 					&& empty($values['data/save_record'])
 					&& empty($values['data/send_signal'])
 					&& empty($values['data/send_email_to_user'])

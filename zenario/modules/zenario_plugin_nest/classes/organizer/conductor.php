@@ -154,7 +154,7 @@ class zenario_plugin_nest__organizer__conductor extends zenario_plugin_nest__org
 		$slides = getRowsArray('nested_plugins', array('id', 'tab', 'name_or_title', 'states'), array('instance_id' => $instance['instance_id'], 'is_slide' => 1));
 		
 		if (count($slides) < 2) {
-			$panel['no_items_message'] = adminPhrase('Please add at least two slides to use the conductor.');
+			$panel['no_items_message'] = adminPhrase('Please add at least two slides to this nest to use the nest conductor.');
 		
 		} else {
 			//Start adding elements for each slide, state and path
@@ -255,6 +255,11 @@ class zenario_plugin_nest__organizer__conductor extends zenario_plugin_nest__org
 					}
 				}
 			}
+			
+			//Attempt to load the preset positions, if they were set previously
+			if ($positions = getRow('plugin_instance_cache', 'cache', ['instance_id' => $instance['instance_id'], 'method_name' => '#conductor_positions#'])) {
+				$panel['positions'] = json_decode($positions, true);
+			}
 		}
 	}
 	
@@ -264,13 +269,13 @@ class zenario_plugin_nest__organizer__conductor extends zenario_plugin_nest__org
 		
 		
 		if (post('add_state') && checkPriv()) {
-			static::addStateToSlide($instance['instance_id'], chopPrefixOffOfString($ids, 'slide_'));
+			static::addStateToSlide($instance['instance_id'], chopPrefixOffString('slide_', $ids));
 		
 		} elseif (post('delete_state') && checkPriv()) {
-			static::removeStateFromSlide($instance['instance_id'], chopPrefixOffOfString($ids, 'state_'));
+			static::removeStateFromSlide($instance['instance_id'], chopPrefixOffString('state_', $ids));
 		
 		} elseif (post('add_path') && checkPriv()) {
-			static::addPath($instance['instance_id'], chopPrefixOffOfString($ids, 'state_'), post('add_path'));
+			static::addPath($instance['instance_id'], chopPrefixOffString('state_', $ids), post('add_path'));
 		
 		} elseif (post('redirect_path') && checkPriv()) {
 			$fromTo = explode('_', $ids);
@@ -286,6 +291,15 @@ class zenario_plugin_nest__organizer__conductor extends zenario_plugin_nest__org
 			if (!empty($fromTo[1]) && !empty($fromTo[2])) {
 				static::deletePath($instance['instance_id'], $fromTo[1], $fromTo[2]);
 			}
+			
+		} elseif (post('save_positions') && checkPriv()) {
+			setRow('plugin_instance_cache',
+				['cache' => $_POST['positions'], 'last_updated' => now()],
+				['instance_id' => $instance['instance_id'], 'method_name' => '#conductor_positions#']);
+		
+		} elseif (post('reset_positions') && checkPriv()) {
+			deleteRow('plugin_instance_cache',
+				['instance_id' => $instance['instance_id'], 'method_name' => '#conductor_positions#']);
 		}
 		
 		

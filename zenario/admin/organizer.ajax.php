@@ -40,7 +40,7 @@
 
 require '../visitorheader.inc.php';
 require CMS_ROOT. 'zenario/includes/admin.inc.php';
-require CMS_ROOT. 'zenario/includes/tuix_ajax.inc.php';
+require CMS_ROOT. 'zenario/includes/tuix.inc.php';
 useGZIP();
 
 //Add the admin id and type up as constants
@@ -83,6 +83,7 @@ if (get('_xml') || get('method_call') == 'showSitemap') {
 //Always require Admin Permissions, except for Organizer which has a feature where feeds from some panels can be made public
 if ($mode != 'xml') {
 	if (!checkPriv()) {
+		header('Zenario-Admin-Logged_Out: 1');
 		echo '<!--Logged_Out-->', adminPhrase('You have been logged out.');
 		exit;
 	}
@@ -106,67 +107,75 @@ if (get('method_call') == 'showSitemap') {
 }
 cms_core::$skPath = $requestedPath;
 
-$filters = array();
-if (get('_filters')) {
-	$filters = json_decode(get('_filters'), true);
-}
-
-function columnFilterValue($columnName, $value = null, $not = false) {
-	global $filters;
+class zenario_organizer {
 	
-	//If a value is specified, set the filter to that value
-	//(Or if the value was false, turn the filter off)
-	if ($value !== null) {
+	public static $filters = array();
+	
+	public static function filterValue($columnName) {
+	
+		//Return null if the filter was never set
+		if (!isset(zenario_organizer::$filters[$columnName])) {
+			return null;
+	
+		//Return false if the filter was set before, but isn't now
+		} elseif (empty(zenario_organizer::$filters[$columnName]['s']) || empty(zenario_organizer::$filters[$columnName]['v'])) {
+			return false;
+	
+		//Otherwise return the value of the filter
+		} else {
+			return zenario_organizer::$filters[$columnName]['v'];
+		}
+	}
+	
+	public static function filterIsNot($columnName) {
+		return !empty(zenario_organizer::$filters[$columnName]['not']);
+	}
+	
+	public static function setFilterValue($columnName, $value, $not = false) {
+		
+		//If a value is specified, set the filter to that value
+		//(Or if the value was false, turn the filter off)
 		if (!$value) {
-			$filters[$columnName] = array(
+			zenario_organizer::$filters[$columnName] = array(
 				's' => 0
 			);
 		} else {
-			$filters[$columnName] = array(
+			zenario_organizer::$filters[$columnName] = array(
 				's' => 1,
 				'v' => $value,
 				'not' => $not? 1 : 0
 			);
 		}
+	}
+
+	//Process a table join, and add the words "LEFT JOIN" to the start if they are missing
+	public static function noteTableJoin(&$existingJoins, $tableJoin) {
+		if (empty($tableJoin)) {
+			return;
 	
-	//Return null if the filter was never set
-	} elseif (!isset($filters[$columnName])) {
-		return null;
+		} elseif (is_array($tableJoin)) {
+			foreach ($tableJoin as &$join) {
+				zenario_organizer::noteTableJoin($existingJoins, $join);
+			}
 	
-	//Return false if the filter was set before, but isn't now
-	} elseif (empty($filters[$columnName]['s']) || empty($filters[$columnName]['v'])) {
-		return false;
+		} else {
+			$tableJoin = preg_replace('/\s\s+/', ' ', trim($tableJoin));
+			$words = preg_split('/\W+/', strtoupper($tableJoin), 4);
 	
-	//Otherwise return the value of the filter
-	} else {
-		return $filters[$columnName]['v'];
+			if (arrayKey($words, 1) != 'JOIN'
+			 && arrayKey($words, 2) != 'JOIN'
+			 && arrayKey($words, 1) != 'STRAIGHT_JOIN'
+			 && arrayKey($words, 2) != 'STRAIGHT_JOIN') {
+				$tableJoin = 'LEFT JOIN '. $tableJoin;
+			}
+	
+			$existingJoins[$tableJoin] = true;
+		}
 	}
 }
 
-
-//Process a table join, and add the words "LEFT JOIN" to the start if they are missing
-function noteTableJoin(&$existingJoins, $tableJoin) {
-	if (empty($tableJoin)) {
-		return;
-	
-	} elseif (is_array($tableJoin)) {
-		foreach ($tableJoin as &$join) {
-			noteTableJoin($existingJoins, $join);
-		}
-	
-	} else {
-		$tableJoin = preg_replace('/\s\s+/', ' ', trim($tableJoin));
-		$words = preg_split('/\W+/', strtoupper($tableJoin), 4);
-	
-		if (arrayKey($words, 1) != 'JOIN'
-		 && arrayKey($words, 2) != 'JOIN'
-		 && arrayKey($words, 1) != 'STRAIGHT_JOIN'
-		 && arrayKey($words, 2) != 'STRAIGHT_JOIN') {
-			$tableJoin = 'LEFT JOIN '. $tableJoin;
-		}
-	
-		$existingJoins[$tableJoin] = true;
-	}
+if (get('_filters')) {
+	zenario_organizer::$filters = json_decode(get('_filters'), true);
 }
 
 
@@ -201,6 +210,7 @@ if ($debugMode) {
 
 //Always require Admin Permissions, except for Organizer which has a feature where feeds from some panels can be made public
 if (!checkPriv() && !($mode == 'xml' && engToBooleanArray($tags, 'xml', 'allow_unauthenticated_xml_access'))) {
+	header('Zenario-Admin-Logged_Out: 1');
 	echo '<!--Logged_Out-->', adminPhrase('You have been logged out.');
 	exit;
 }
@@ -359,7 +369,7 @@ if (!$requestedPath || empty($tags['class_name'])) {
 			
 			//Bugfix: the join should always be added, even if the admin doesn't have the permissions,
 			//just to stop any Modules that assumed the join was there from erroring
-			noteTableJoin($extraTables, $customJoin);
+			zenario_organizer::noteTableJoin($extraTables, $customJoin);
 			
 			if (!$dataset['view_priv'] || checkPriv($dataset['view_priv'])) {
 				
@@ -503,25 +513,31 @@ if (!$requestedPath || empty($tags['class_name'])) {
 			
 			//allow_unauthenticated_xml_access must be repeated on a refiner if they are both used
 			if (!checkPriv() && !($mode == 'xml' && engToBooleanArray($tags, 'refiners', get('refinerName'), 'allow_unauthenticated_xml_access'))) {
+				header('Zenario-Admin-Logged_Out: 1');
 				echo '<!--Logged_Out-->', adminPhrase('You have been logged out.');
 				exit;
 			}
 			
 			$refinerWhere = false;
 			if (isset($_GET['_search']) && !empty($tags['refiners'][get('refinerName')]['sql_when_searching'])) {
-				$refinerWhere = $tags['refiners'][get('refinerName')]['sql_when_searching'];
+				$refinerWhere = ltrim($tags['refiners'][get('refinerName')]['sql_when_searching']);
 			
 			} elseif (!empty($tags['refiners'][get('refinerName')]['sql'])) {
-				$refinerWhere = $tags['refiners'][get('refinerName')]['sql'];
+				$refinerWhere = ltrim($tags['refiners'][get('refinerName')]['sql']);
 			}
 			if ($refinerWhere !== false) {
-				$whereStatement .= "
-					AND ". $refinerWhere;
+				if (substr($refinerWhere, 0, 3) == 'AND') {
+					$whereStatement .= "
+						". $refinerWhere;
+				} else {
+					$whereStatement .= "
+						AND ". $refinerWhere;
+				}
 				
 				//Normally we don't add the join to the custom table into the first SQL query, but if a refiner references it then we will need to!
 				if ($customJoin
 				 && (false !== strpos($refinerWhere, 'custom.') || false !== strpos($refinerWhere, '`custom`.'))) {
-					noteTableJoin($sortExtraTables, $customJoin);
+					zenario_organizer::noteTableJoin($sortExtraTables, $customJoin);
 				}
 			}
 			unset($refinerWhere);
@@ -535,12 +551,12 @@ if (!$requestedPath || empty($tags['class_name'])) {
 				$refinerJoin = $tags['refiners'][get('refinerName')]['table_join'];
 			}
 			if ($refinerJoin !== false) {
-				noteTableJoin($sortExtraTables, $refinerJoin);
+				zenario_organizer::noteTableJoin($sortExtraTables, $refinerJoin);
 				
 				//Normally we don't add the join to the custom table into the first SQL query, but if a refiner references it then we will need to!
 				if ($customJoin
 				 && (false !== strpos($refinerJoin, 'custom.') || false !== strpos($refinerJoin, '`custom`.'))) {
-					noteTableJoin($sortExtraTables, $customJoin);
+					zenario_organizer::noteTableJoin($sortExtraTables, $customJoin);
 				}
 			}
 			unset($refinerJoin);
@@ -586,7 +602,7 @@ if (!$requestedPath || empty($tags['class_name'])) {
 					//Check whether this column is being filtered, and what
 					//the filter format is
 					$filterFormat = false;
-					if ($isFiltered = !empty($filters[$colName]['v'])) {
+					if ($isFiltered = !empty(zenario_organizer::$filters[$colName]['v'])) {
 						if (!empty($col['format'])) {
 							$filterFormat = $col['format'];
 						} elseif (!empty($col['filter_format'])) {
@@ -605,9 +621,9 @@ if (!$requestedPath || empty($tags['class_name'])) {
 							'language_local_name', 'language_local_name_with_id',
 							'date', 'datetime', 'datetime_with_seconds'
 					))) {
-						noteTableJoin($sortExtraTables, $col['table_join']);
+						zenario_organizer::noteTableJoin($sortExtraTables, $col['table_join']);
 					} else {
-						noteTableJoin($extraTables, $col['table_join']);
+						zenario_organizer::noteTableJoin($extraTables, $col['table_join']);
 					}
 				}
 			}
@@ -657,13 +673,24 @@ if (!$requestedPath || empty($tags['class_name'])) {
 		
 		//Apply filters
 		foreach ($tags['columns'] as $colName => &$col) {
+			
+			
 			if (is_array($col)
-			 && !empty($col['db_column'])
-			 && !empty($filters[$colName]['v'])
+			 && !empty(zenario_organizer::$filters[$colName]['v'])
 			 && !engToBooleanArray($col, 'disallow_filtering')) {
 				
-				$value_ = $filters[$colName]['v'];
-				$columnName = ifNull(arrayKey($col, 'search_column'), $col['db_column']);
+				//Try to get the column to filter on
+				if (!empty($col['filter_column'])) {
+					$columnName = $col['filter_column'];
+				} elseif (!empty($col['search_column'])) {
+					$columnName = $col['search_column'];
+				} elseif (!empty($col['db_column'])) {
+					$columnName = $col['db_column'];
+				} else {
+					continue;
+				}
+				
+				$value_ = zenario_organizer::$filters[$colName]['v'];
 				
 				$filterFormat = false;
 				if (!empty($col['format'])) {
@@ -696,7 +723,7 @@ if (!$requestedPath || empty($tags['class_name'])) {
 					//Yes/No type filters on tinyint columns
 					case 'yes_or_no':
 					
-						if (empty($filters[$colName]['not'])) {
+						if (empty(zenario_organizer::$filters[$colName]['not'])) {
 							$whereStatement .= "
 							  AND ". $columnName. " != 0";
 					
@@ -719,8 +746,8 @@ if (!$requestedPath || empty($tags['class_name'])) {
 					
 						//A value of "*" should match all values (or all empty values if not is set)
 						if ($filterFormat != 'id'
-						 && $filters[$colName]['v'] == '*') {
-							if (empty($filters[$colName]['not'])) {
+						 && zenario_organizer::$filters[$colName]['v'] == '*') {
+							if (empty(zenario_organizer::$filters[$colName]['not'])) {
 								$whereStatement .= "
 								  AND ". $columnName. " != 0
 								  AND ". $columnName. " != ''";
@@ -734,13 +761,13 @@ if (!$requestedPath || empty($tags['class_name'])) {
 					
 						//Otherwise do a normal match
 						} else {
-							if (empty($filters[$colName]['not'])) {
+							if (empty(zenario_organizer::$filters[$colName]['not'])) {
 								$whereStatement .= "
-								  AND ". $columnName. " = '". sqlEscape($filters[$colName]['v']). "'";
+								  AND ". $columnName. " = '". sqlEscape(zenario_organizer::$filters[$colName]['v']). "'";
 					
 							} else {
 								$whereStatement .= "
-								  AND (". $columnName. " != '". sqlEscape($filters[$colName]['v']). "'
+								  AND (". $columnName. " != '". sqlEscape(zenario_organizer::$filters[$colName]['v']). "'
 									OR ". $columnName. " IS NULL)";
 							}
 						}
@@ -754,13 +781,13 @@ if (!$requestedPath || empty($tags['class_name'])) {
 					
 							$asciiCharactersOnly = engToBooleanArray($col, 'ascii_only');
 					
-							if (empty($filters[$colName]['not'])) {
+							if (empty(zenario_organizer::$filters[$colName]['not'])) {
 								$whereStatement .= "
-									AND ". $columnName. " LIKE '%". likeEscape($filters[$colName]['v'], true, $asciiCharactersOnly). "%'";
+									AND ". $columnName. " LIKE '%". likeEscape(zenario_organizer::$filters[$colName]['v'], true, $asciiCharactersOnly). "%'";
 					
 							} else {
 								$whereStatement .= "
-									AND (". $columnName. " IS NULL OR ". $columnName. " NOT LIKE '%". likeEscape($filters[$colName]['v'], true, $asciiCharactersOnly). "%')";
+									AND (". $columnName. " IS NULL OR ". $columnName. " NOT LIKE '%". likeEscape(zenario_organizer::$filters[$colName]['v'], true, $asciiCharactersOnly). "%')";
 							}
 						}
 				}
@@ -1290,6 +1317,7 @@ if (!$requestedPath || empty($tags['class_name'])) {
 		if (get('refinerName') && !empty($tags['refiners'][get('refinerName')])) {
 			//allow_unauthenticated_xml_access must repeated it on a refiner 
 			if (!checkPriv() && !($mode == 'xml' && engToBooleanArray($tags, 'refiners', get('refinerName'), 'allow_unauthenticated_xml_access'))) {
+				header('Zenario-Admin-Logged_Out: 1');
 				echo '<!--Logged_Out-->', adminPhrase('You have been logged out.');
 				exit;
 			}
@@ -1436,7 +1464,7 @@ if ($mode == 'get_item_data') {
 
 } elseif ($mode != 'xml' && $requestedPath) {
 	//Send the filters back to the client, just in case they were adjusted in php
-	$tags['_filters'] = $filters;
+	$tags['_filters'] = zenario_organizer::$filters;
 }
 
 

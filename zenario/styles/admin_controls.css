@@ -210,8 +210,13 @@ body.zenario_being_edited .zenario_slot_being_edited .zenario_slot {
 body.zenario_pageMode_edit .zenario_slotWithNoContents > div,
 body.zenario_pageMode_item .zenario_slotWithNoContents > div,
 body.zenario_pageMode_template .zenario_slotWithNoContents > div,
-body.zenario_pageMode_template_family .zenario_slotWithNoContents > div {
+body.zenario_pageMode_template_family .zenario_slotWithNoContents > div,
+.zenario_slotWithNoPermission > div {
 	opacity: 0.4;
+}
+
+.zenario_slotWithNoPermission > div em {
+	color: red;
 }
 
 body.zenario_pageMode_rollback .zenario_reusable > div,
@@ -463,7 +468,8 @@ div.zenario_slotControlsWrap .zenario_slotControlsWrap_info .zenario_sc:first-ch
 
 div.zenario_slotControlsWrap .zenario_slotControlsWrap_info .zenario_slotControl_slotName span,
 div.zenario_slotControlsWrap .zenario_slotControlsWrap_info .zenario_slotControl_width span,
-div.zenario_slotControlsWrap .zenario_slotControlsWrap_info .zenario_slotControl_cssClass span {
+div.zenario_slotControlsWrap .zenario_slotControlsWrap_info .zenario_slotControl_cssClass span,
+div.zenario_slotControlsWrap .zenario_slotControlsWrap_info .zenario_slotControl_copyEmbedLink span {
 	font-family: "Lucida Console", Monaco, monospace;
 	color: #c0c0c0;
 }
@@ -473,10 +479,19 @@ div.zenario_slotControlsWrap .zenario_slotControlsWrap_info .zenario_slotControl
 	font-size: 9px;
 }
 
+div.zenario_slotControlsWrap .zenario_slotControlsWrap_info .zenario_slotControl_copyEmbedLink a {
+	color: #e0e0e0;
+	font-size: 9px;
+	text-decoration: underline;
+	cursor: pointer;
+}
+
 div.zenario_slotControlsWrap .zenario_slotControlsWrap_info .zenario_slotControl_inThisSlot,
 div.zenario_slotControlsWrap .zenario_slotControlsWrap_overridden_info .zenario_slotControl_inThisSlot {
 	padding: 0;
-	color: #eee;
+	color: #70ddf7;
+	font-weight: bold;
+	font-size: 9px;
 }
 
 div.zenario_slotControlsWrap .zenario_slotControlsWrap_actions,

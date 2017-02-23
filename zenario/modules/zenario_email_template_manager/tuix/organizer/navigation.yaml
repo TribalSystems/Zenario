@@ -28,3 +28,10 @@ zenario__email_template_manager:
             link:
                 path: zenario__modules/panels/plugins
                 refiner: email_address_setting
+        site_setting_email_addresses:
+            ord: 3.1
+            priv: _PRIV_VIEW_USER
+            label: Site recipients
+            tooltip: "View site settings that have an email address"
+            link:
+                path: zenario__email_template_manager/panels/site_setting_email_addresses

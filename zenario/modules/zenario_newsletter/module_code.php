@@ -27,17 +27,6 @@
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
-
-
-
-/**
- * This file is the main program for this "Hello world" plugin. 
- * The file itself must be called module_code.php. 
- */
-
-/**
- * The name of the following class must match the Module's directory name!
- */
 class zenario_newsletter extends module_base_class {
 
 
@@ -75,7 +64,7 @@ class zenario_newsletter extends module_base_class {
 						INSERT IGNORE INTO ". DB_NAME_PREFIX. ZENARIO_NEWSLETTER_PREFIX. "newsletter_user_link
 							(newsletter_id, user_id, tracker_hash, remove_hash, delete_account_hash, identifier, `email`) "
 						. implode(" UNION ", $parts);
-					sqlUpdate($sql, false);
+					sqlUpdate($sql, false, false);
 					return sqlAffectedRows();
 				case 'get_sql':
 					return array(
@@ -129,6 +118,10 @@ class zenario_newsletter extends module_base_class {
 			WHERE u.email != ''";
 		//AND u.status IN('active', 'contact')";
 		
+		if (!smartGroupSQL($whereStatement, $sql, $smartGroupId)) {
+			return false;
+		}
+		
 		foreach (getRowsArray(
 			ZENARIO_NEWSLETTER_PREFIX. 'newsletter_sent_newsletter_link',
 			'sent_newsletter_id',
@@ -141,13 +134,6 @@ class zenario_newsletter extends module_base_class {
 		
 			$whereStatement .= "
 				AND nul_". (int) $sentNewsletterId. ".user_id IS NULL";
-		}
-		
-		if ($smartGroupId) {
-			$whereStatement .= smartGroupSQL($smartGroupId);
-		
-		} else {
-			return false;
 		}
 		
 		$cField = false;
@@ -171,15 +157,33 @@ class zenario_newsletter extends module_base_class {
 	
 	
 	public function preFillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
-		require funIncPath(__FILE__, __FUNCTION__);
+		if ($path == 'zenario__content/panels/email_images_for_newsletters') {
+			//Borrow the logic from the image library panel to handle the images
+			$c = $this->runSubClass('zenario_common_features', 'organizer', 'zenario__content/panels/image_library');
+			$c->preFillOrganizerPanel('generic_image_panel', $panel, $refinerName, $refinerId, $mode);
+		}
+		
+		if ($c = $this->runSubClass(__FILE__)) {
+			return $c->preFillOrganizerPanel($path, $panel, $refinerName, $refinerId, $mode);
+		}
 	}
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
-		require funIncPath(__FILE__, __FUNCTION__);
+		if ($path == 'zenario__content/panels/email_images_for_newsletters') {
+			//Borrow the logic from the image library panel to handle the images
+			$c = $this->runSubClass('zenario_common_features', 'organizer', 'zenario__content/panels/image_library');
+			$c->fillOrganizerPanel('generic_image_panel', $panel, $refinerName, $refinerId, $mode);
+		}
+		
+		if ($c = $this->runSubClass(__FILE__)) {
+			return $c->fillOrganizerPanel($path, $panel, $refinerName, $refinerId, $mode);
+		}
 	}
 	
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
-		return require funIncPath(__FILE__, __FUNCTION__);
+		if ($c = $this->runSubClass(__FILE__, 'organizer', $path)) {
+			return $c->handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId);
+		}
 	}
 
 
@@ -215,21 +219,28 @@ class zenario_newsletter extends module_base_class {
 		return getRow(ZENARIO_NEWSLETTER_PREFIX. 'newsletters', 'status', $id) == '_IN_PROGRESS';
 	}
 	
-	//Inclusion/Exclusion admin box (new Admin Box toolkit)
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
-		require funIncPath(__FILE__, __FUNCTION__);
+		if ($c = $this->runSubClass(__FILE__)) {
+			return $c->fillAdminBox($path, $settingGroup, $box, $fields, $values);
+		}
 	}
 	
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		require funIncPath(__FILE__, __FUNCTION__);
+		if ($c = $this->runSubClass(__FILE__)) {
+			return $c->formatAdminBox($path, $settingGroup, $box, $fields, $values, $changes);
+		}
 	}
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
-		require funIncPath(__FILE__, __FUNCTION__);
+		if ($c = $this->runSubClass(__FILE__)) {
+			return $c->validateAdminBox($path, $settingGroup, $box, $fields, $values, $changes, $saving);
+		}
 	}
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		require funIncPath(__FILE__, __FUNCTION__);
+		if ($c = $this->runSubClass(__FILE__)) {
+			return $c->saveAdminBox($path, $settingGroup, $box, $fields, $values, $changes);
+		}
 	}
 	
 	
@@ -285,13 +296,13 @@ class zenario_newsletter extends module_base_class {
 	
 	//Code to send every newsletter that needs sending
 	//Ideally should be run as a job
-	public static function jobSendNewsletters() {
+	public static function jobSendNewsletters($serverTime) {
 		$action = false;
 		
 		$sql = "
 			SELECT id, newsletter_name
 			FROM ". DB_NAME_PREFIX. ZENARIO_NEWSLETTER_PREFIX. "newsletters
-			WHERE status = '_IN_PROGRESS'";
+			WHERE status = '_IN_PROGRESS' AND (scheduled_send_datetime IS NULL OR scheduled_send_datetime <= STR_TO_DATE('". sqlEscape($serverTime). "', '%Y-%m-%d %H:%i:%s'))";
 		$result = sqlQuery($sql);
 		
 		while ($newsletter = sqlFetchAssoc($result)) {
@@ -304,7 +315,7 @@ class zenario_newsletter extends module_base_class {
 	}
 	
 	// Send the newsletter to all admins
-	private static function sendNewsletterToAdmins($id, $mode = 'myself') {
+	protected static function sendNewsletterToAdmins($id, $mode = 'myself') {
 		
 		if ($mode == 'none') {
 			return false;
@@ -464,7 +475,7 @@ class zenario_newsletter extends module_base_class {
 			  AND email_sent = 0
 			  AND user_id = ". (int) $userId;
 		
-		sqlUpdate($sql, false);
+		sqlUpdate($sql, false, false);
 		$affected_rows = sqlAffectedRows();
 		
 		if (!sqlAffectedRows()) {

@@ -660,7 +660,7 @@ plugin_settings:
                     type: checkbox
                     value: ""
                     side_note: |
-                        The content item's lowest level public category will be displayed.
+                        The content item's lowest level public category will be displayed. Private categories will NOT be shown.
                     
                 
         pagination:

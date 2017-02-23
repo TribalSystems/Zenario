@@ -29,13 +29,16 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 class zenario_plugin_nest extends module_base_class {
 	
+	protected static $addedSubtitle = false;
+	
 	protected $firstTab = false;
 	protected $lastTab = false;
 	protected $tabNum = false;
+	protected $tabId = false;
 	protected $state = false;
 	protected $usesConductor = false;
 	protected $commands = array();
-	protected $statesToTabs = array();
+	protected $statesToSlides = array();
 	protected $editingTabNum = false;
 	protected $mergeFields = array();
 	protected $sections = array();
@@ -55,6 +58,8 @@ class zenario_plugin_nest extends module_base_class {
 	public $banner__enlarge_canvas = false;
 	public $banner__enlarge_width = 0;
 	public $banner__enlarge_height = 0;
+	
+	protected $currentRequests = array();
 
 	public function getTabs() {
 		return $this->tabs;
@@ -67,6 +72,8 @@ class zenario_plugin_nest extends module_base_class {
 	public function init() {
 		//Flag that this plugin is actually a nest
 		cms_core::$slotContents[$this->slotName]['is_nest'] = true;
+		
+		$conductorEnabled = $this->setting('enable_conductor');
 		
 		$this->loadFramework();
 		
@@ -84,13 +91,13 @@ class zenario_plugin_nest extends module_base_class {
 		
 			if ($this->loadTabs()) {
 				
-				//CHeck to see if a tab or a state is requested in the URL
+				//Check to see if a tab or a state is requested in the URL
 				$lookForState =
 				$lookForTabId =
 				$lookForTabNo = 
 				$defaultState = false;
 				
-				if (setting('enable_conductor_for_nests')
+				if ($conductorEnabled
 				 && !empty($_REQUEST['state'])
 				 && preg_match('/^[AB]?[A-Z]$/', $_REQUEST['state'])) {
 					$lookForState = $_REQUEST['state'];
@@ -149,11 +156,15 @@ class zenario_plugin_nest extends module_base_class {
 						if (!$tab['invisible_in_nav']) {
 							$tabMergeFields['Class'] = 'tab_'. $tabOrd. ' tab';
 							$tabMergeFields['Tab_Link'] = $this->refreshPluginSlotTabAnchor('tab='. $tab['id'], false);
-							$tabMergeFields['Tab_Name'] = htmlspecialchars($tab['name_or_title']);
+							$tabMergeFields['Tab_Name'] = $this->formatTitleText($tab['name_or_title'], true);
+						}
 						
-							if ($this->inLibrary) {
-								$tabMergeFields['Tab_Name'] = $this->phrase($tabMergeFields['Tab_Name']);
-							}
+						if ($conductorEnabled) {
+							$tabMergeFields['Show_Back'] = (bool) $tab['show_back'];
+							$tabMergeFields['Show_Refresh'] = (bool) $tab['show_refresh'];
+							$tabMergeFields['Show_Auto_Refresh'] = (bool) $tab['show_auto_refresh'];
+							$tabMergeFields['Auto_Refresh_Interval'] = (int) $tab['auto_refresh_interval'];
+							$tabMergeFields['Last_Updated'] = formatTimeNicely(time(), '%H:%i:%S');
 						}
 						
 						$this->sections[$section][$tab['tab']] = $tabMergeFields;
@@ -214,23 +225,76 @@ class zenario_plugin_nest extends module_base_class {
 		}
 		
 		//Load all of the paths from the current state
-		if (setting('enable_conductor_for_nests') && $this->state) {
-			foreach (getRowsArray(
-				'nested_paths',
-				array('to_state', 'commands'),
-				array('instance_id' => $this->instanceId, 'from_state' => $this->state),
-				'to_state'
-			) as $path) {
+		if ($conductorEnabled && $this->state) {
+			
+			//Loop through each slide, checking if they have any states or global commands
+			$hadCommands = array();
+			foreach ($this->tabs as $tabNum => $tab) {
+				
+				//If a global command is set on a slide, it should point to the first state on that slide.
+				$first = true;
+				foreach ($tab['states'] as $state) {
+					if ($state) {
+						if ($first) {
+							$first = false;
+						
+							//If this slide has a global command set, note it down
+							//N.b. if two slides have the same global command, then go to the slide with the lowest ordinal.
+							if (($command = $tab['global_command'])
+							 && !isset($hadCommands[$command])) {
+								
+								//N.b. don't allow the link if we're already in that state...
+								if ($state != $this->state) {
+									$this->commands[$command] = [$state, $tab['request_vars']];
+									$this->usesConductor = true;
+								}
+								
+								//...but do block it, so we get consistent logic if two slides have the same global command.
+								$hadCommands[$command] = true;
+							}
+						}
+					
+					
+						//Note down which states are on which slides
+						$this->statesToSlides[$state] = $tabNum;
+					}
+				}
+			}
+			unset($hadCommands);
+			
+			//Look through the nested paths that lead from this slide, and note each down
+			//as long as it leads to another slide that we can see.
+			$sql = "
+				SELECT to_state, commands
+				FROM ". DB_NAME_PREFIX. "nested_paths
+				WHERE instance_id = ". (int) $this->instanceId. "
+				  AND from_state = '". sqlEscape($this->state). "'
+				ORDER BY to_state";
+			
+			foreach (sqlFetchAssocs($sql) as $path) {
 				foreach (explodeAndTrim($path['commands']) as $command) {
-					if (!empty($this->statesToTabs[$path['to_state']])) {
-						$this->commands[$command] = $path['to_state'];
+					if (isset($this->statesToSlides[$path['to_state']])) {
+						
+						$tabNum = $this->statesToSlides[$path['to_state']];
+						
+						$this->commands[$command] = [
+							$path['to_state'],
+							$this->tabs[$tabNum]['request_vars']
+						];
 					}
 					$this->usesConductor = true;
 				}
 			}
 			
 			if ($this->usesConductor) {
-				$this->callScript('zenario_conductor', 'setCommands', $this->slotName, $this->commands);
+				$this->callScript('zenario_conductor', 'setCommands', $this->slotName, $this->commands, cms_core::$vars);
+				
+				//Add the current title of the current conductor slide to the page title
+				//(Though use a static variable to stop this happening twice if there are two nests on the same page.)
+				if (!self::$addedSubtitle) {
+					self::$addedSubtitle = true;
+					$this->setPageTitle(cms_core::$pageTitle. ': '. $this->formatTitleText($this->tabs[$this->tabNum]['name_or_title']));
+				}
 			}
 		}
 		
@@ -248,20 +312,139 @@ class zenario_plugin_nest extends module_base_class {
 			$this->showInEditMode();
 		}
 		
+		//Set up some things for the conductor
 		if ($this->usesConductor) {
-			$importantGetRequests = array();
-			foreach(cms_core::$importantGetRequests as $getRequest => $defaultValue) {
-				$importantGetRequests[$getRequest] = arrayKey($_GET, $getRequest);
+			
+			//Work out an array of the current requests, by looking in cms_core::$importantGetRequests
+			$this->currentRequests = array();
+			foreach(cms_core::$importantGetRequests as $var => $defaultValue) {
+				if (isset($_GET[$var])) {
+					$this->currentRequests[$var] = $_GET[$var];
+				
+				} elseif (isset(cms_core::$vars[$var])) {
+					$this->currentRequests[$var] = cms_core::$vars[$var];
+				}
 			}
 
-			$this->callScript('zenario_conductor', 'registerGetRequest', $importantGetRequests);
+			$this->callScript('zenario_conductor', 'registerGetRequest', $this->slotName, $this->currentRequests);
 		}
 		
 		return $this->show;
 	}
+	
+	//Get an array of details on the back links, e.g. for use in breadcrumbs
+	public function getBackLinks($addCurrent = true) {
+		
+		$backs = array();
+		
+		if ($this->usesConductor && $this->state) {
+		
+			if ($addCurrent) {
+				$backs[$this->state] = ['state' => $this->state, 'tab' => $this->tabs[$this->tabNum]];
+			}
+		
+		
+			$backToState = false;
+			if (!empty($this->commands['back'][0])) {
+				$backToState = $this->commands['back'][0];
+		
+			} elseif (!empty($this->commands['close'][0])) {
+				$backToState = $this->commands['close'][0];
+			}
+		
+			while ($backToState
+			 && !isset($backs[$backToState])
+			 && isset($this->statesToSlides[$backToState])
+			) {
+				$backs[$backToState] = ['state' => $backToState, 'tab' => $this->tabs[$this->statesToSlides[$backToState]]];
+			
+				$backToState = sqlFetchValue("
+					SELECT to_state
+					FROM ". DB_NAME_PREFIX. "nested_paths
+					WHERE instance_id = ". (int) $this->instanceId. "
+					  AND from_state = '". sqlEscape($backToState). "'
+					  AND commands IN ('back', 'close')
+					ORDER BY to_state
+					LIMIT 1
+				");
+			}
+		
+			$backs = array_reverse($backs);
+			
+			//Define requests for each link
+			foreach ($backs as &$back) {
+				$requests = array();
+				
+				//If we're generating a link to the current state, keep all of the registered get requests
+				if ($back['state'] == $this->state) {
+					foreach(cms_core::$importantGetRequests as $reqVar => $defaultValue) {
+						if (isset($_GET[$reqVar]) && $_GET[$reqVar] != $defaultValue) {
+							$requests[$reqVar] = $_GET[$reqVar];
+						}
+					}
+				}
+				
+				//Loop through each of the variables needed by the destination
+				foreach ($back['tab']['request_vars'] as $reqVar => $dummy) {
+					//Check the settings on the destination to see if it needs that variable.
+					//If so then try to add it from the core variables.
+					if (empty($requests[$reqVar]) && !empty(cms_core::$vars[$reqVar])) {
+						$requests[$reqVar] = cms_core::$vars[$reqVar];
+					}
+				}
+			
+				$requests['state'] = $back['state'];
+				unset($requests['tab']);
+				unset($requests['tab_no']);
+				$back['requests'] = $requests;
+			}
+		}
+		
+		//echo '<pre>'; var_dump($backs); exit;
+		
+		return $backs;
+	}
+	
+	public function formatTitleText($text, $htmlescape = false) {
+		
+		//The old Tribiq frameworks need things escaped, so put this case in for them.
+		//(Note that for backwards compatability reasons the new Twig frameworks are also working like this)
+		if ($htmlescape) {
+			$text = htmlspecialchars($text);
+		}
+		
+		//If this is a library plugin, and therefore multilingual, we need to translate the text here
+		if ($this->inLibrary) {
+			$text = $this->phrase($text);
+		}
+
+		$frags = explode('[[', $text);
+		$count = count($frags);
+	
+		if ($count > 1) {
+			$text = $frags[0];
+			for ($i = 1; $i < $count; ++$i) {
+			
+				$part = explode(']]', $frags[$i], 2);
+			
+				if (isset($part[1])) {
+					if ($htmlescape) {
+						$text = htmlspecialchars(requestVarMergeField($part[0])). $part[1];
+					} else {
+						$text .= requestVarMergeField($part[0]). $part[1];
+					}
+				} else {
+					$text .= $part[0];
+				}
+			}
+		}
+		
+		return $text;
+	}
 
 	
 	public function showSlot() {
+		
 		$this->mergeFields['TAB_ORDINAL'] = $this->tabNum;
 		
 		//Show a single plugin in the nest
@@ -297,10 +480,7 @@ class zenario_plugin_nest extends module_base_class {
 			
 			// Replace phrase codes with phrases in heading text
 			if ($this->sections['Show_Title'] = (bool) $this->setting('show_heading')) {
-				$this->mergeFields['Title'] = htmlspecialchars($this->setting('heading_text'));
-				if ($this->inLibrary) {
-					$this->mergeFields['Title'] = $this->phrase($this->mergeFields['Title']);
-				}
+				$this->mergeFields['Title'] = $this->formatTitleText($this->setting('heading_text'), true);
 			}
 			
 			$this->frameworkHead(
@@ -343,10 +523,11 @@ class zenario_plugin_nest extends module_base_class {
 		
 		$sql = "
 			SELECT
-				id, tab, name_or_title,
-				states,
+				id, id AS slide_id,
+				tab, name_or_title,
+				states, show_back, show_refresh, show_auto_refresh, auto_refresh_interval, request_vars, global_command,
 				invisible_in_nav,
-				visibility, smart_group_id, module_class_name, method_name, param_1, param_2
+				privacy, smart_group_id, module_class_name, method_name, param_1, param_2, always_visible_to_admins
 			FROM ". DB_NAME_PREFIX. "nested_plugins
 			WHERE instance_id = ". (int) $this->instanceId. "
 			  AND is_slide = 1
@@ -370,6 +551,7 @@ class zenario_plugin_nest extends module_base_class {
 		} else {
 			while ($row = sqlFetchAssoc($result)) {
 				$row['states'] = explode(',', $row['states']);
+				$row['request_vars'] = arrayValuesToKeys(explodeAndTrim($row['request_vars']));
 				
 				$this->tabs[$row['tab']] = $row;
 			}
@@ -378,13 +560,6 @@ class zenario_plugin_nest extends module_base_class {
 			$this->mergeFields['Nest'] = '';
 			
 			$this->removeHiddenTabs($this->tabs, $this->cID, $this->cType, $this->cVersion, $this->instanceId);
-			
-			//Note down which states are on which tabs
-			foreach ($this->tabs as $tab) {
-				foreach ($tab['states'] as $state) {
-					$this->statesToTabs[$state] = $tab['tab'];
-				}
-			}
 			
 			
 			if ($this->setting('banner_canvas')
@@ -405,7 +580,6 @@ class zenario_plugin_nest extends module_base_class {
 			return !empty($this->tabs);
 		}
 	}
-	
 	
 	protected function loadTab($tabNum) {
 		
@@ -537,7 +711,7 @@ class zenario_plugin_nest extends module_base_class {
 		$addedJavaScript = false;
 		foreach ($this->modules[$tabNum] as $id => $slotNameNestId) {
 			cms_core::$slotContents[$slotNameNestId]['instance_id'] = $this->instanceId;
-			setInstance(cms_core::$slotContents[$slotNameNestId], $this->cID, $this->cType, $this->cVersion, $this->slotName, true, $id, $this->tabId);
+			setInstance(cms_core::$slotContents[$slotNameNestId], $this->cID, $this->cType, $this->cVersion, $this->slotName, true, false, $id, $this->tabId);
 			
 			if (initPluginInstance(cms_core::$slotContents[$slotNameNestId])) {
 				
@@ -569,11 +743,6 @@ class zenario_plugin_nest extends module_base_class {
 					$shownInEditMode = cms_core::$slotContents[$slotNameNestId]['class']->shownInEditMode();
 				}
 			}
-		}
-		
-		//If we're adding JavaScript, add a short delay to the tab switching to cover for the browser loading things in
-		if ($addedJavaScript) {
-			$this->callScriptBeforeAJAXReload('zenario_plugin_nest', 'sleep');
 		}
 		
 		//Add any Plugin JavaScript calls
@@ -616,14 +785,6 @@ class zenario_plugin_nest extends module_base_class {
 		}
 		
 		return true;
-	}
-	
-	protected function eggSetting($slotNameNestId, $setting) {
-		if (!empty(cms_core::$slotContents[$slotNameNestId]['class']->zAPISettings[$setting])) {
-			return cms_core::$slotContents[$slotNameNestId]['class']->zAPISettings[$setting];
-		} else {
-			return false;
-		}
 	}
 	
 	
@@ -730,18 +891,29 @@ class zenario_plugin_nest extends module_base_class {
 		
 		
 		$p = checkPriv();
-		$i = !empty(cms_core::$slotContents[$slotNameNestId]['init']);
+		$status = false;
+		if (isset(cms_core::$slotContents[$slotNameNestId]['init'])) {
+			$status = cms_core::$slotContents[$slotNameNestId]['init'];
+		}
+		
+		$noPermsMsg = ($status === ZENARIO_401_NOT_LOGGED_IN || $status === ZENARIO_403_NO_PERMISSION) && $p;
 		
 		if ($p) {
 			echo '
-				<span class="',
-					$i?
-						'zenario_slotWithContents'
-					 :	'zenario_slotWithNoContents',
-				'">';
+				<span class="';
+			
+			if ($noPermsMsg) {
+				echo 'zenario_slotWithContents zenario_slotWithNoPermission">';
+			
+			} elseif ($status) {
+				echo 'zenario_slotWithContents">';
+			
+			} else {
+				echo 'zenario_slotWithNoContents">';
+			}
 		}
 		
-		if ($i || $p) {
+		if ($status || $p) {
 			//Backwards compatability for old Tribiq frameworks
 			if (!$this->zAPIFrameworkIsTwig) {
 				$this->frameworkHead(
@@ -890,20 +1062,6 @@ class zenario_plugin_nest extends module_base_class {
 	
 	protected function needToAddCSSAndJS() {
 		return request('method_call') == 'refreshPlugin';
-	}
-	
-	
-	public function handleAJAX() {
-		
-		if (get('sleep')) {
-			//If we're adding Swatches or JavaScript, add a short delay to the tab switching to cover for the browser loading things in
-			
-			//We could use usleep for a longer delay, but usually the usual delay for the AJAX request is enough to cover
-			//usleep(10000);
-			
-			echo 1;
-			exit;
-		}
 	}
 	
 	public function fillAdminSlotControls(&$controls) {
@@ -1079,47 +1237,19 @@ class zenario_plugin_nest extends module_base_class {
 	
 	
 	protected function removeHiddenTabs(&$tabs, $cID, $cType, $cVersion, $instanceId) {
+		
 		$unsets = array();
 		foreach ($tabs as $tabNum => $tab) {
-			if (!checkPriv()) {
-				//Remove tabs based on the settings chosen
-				if ($tab['visibility'] == 'call_static_method' ) {
-					
-					$this->allowCaching(false);
-					
-					if (!(inc($tab['module_class_name']))
-					 || !(method_exists($tab['module_class_name'], $tab['method_name']))
-					 || !(call_user_func(
-							array($tab['module_class_name'], $tab['method_name']),
-								$tab['param_1'], $tab['param_2'])
-					)) {
-						$unsets[] = $tabNum;
-					}
-					
-				} elseif ($userId = userId()) {
-					switch ($tab['visibility']) {
-						case 'in_smart_group':
-							if (!checkUserIsInSmartGroup($tab['smart_group_id'], $userId)) {
-								$unsets[] = $tabNum;
-							}
-							break;
-							
-						case 'logged_in_not_in_smart_group':
-							if (checkUserIsInSmartGroup($tab['smart_group_id'], $userId)) {
-								$unsets[] = $tabNum;
-							}
-							break;
-							
-						case 'logged_out':
-							$unsets[] = $tabNum;
-					}
-				} else {
-					switch ($tab['visibility']) {
-						case 'in_smart_group':
-						case 'logged_in_not_in_smart_group':
-						case 'logged_in':
-							$unsets[] = $tabNum;
-					}
+			if (!($tab['always_visible_to_admins'] && checkPriv())) {
+				
+				switch ($tab['privacy']) {
+					case 'call_static_method':
+					case 'send_signal':
+						$this->allowCaching(false);
+				}
+				
+				if (!checkItemPrivacy($tab, $tab, cms_core::$cID, cms_core::$cType, cms_core::$cVersion)) {
+					$unsets[] = $tabNum;
 				}
 			}
 		}
@@ -1136,18 +1266,36 @@ class zenario_plugin_nest extends module_base_class {
 	}
 	
 	public function cCommandEnabled($command) {
-		return !empty($this->commands[$command]);
+		return !empty($this->commands[$command][0]);
 	}
 	
-	public function cLink($command, $requests) {
-		if (empty($this->commands[$command])) {
+	public function cLink($command, $requests = array()) {
+		if (empty($this->commands[$command][0])) {
 			return false;
 		} else {
-			$requests['state'] = $this->commands[$command];
+			
+			//Loop through each of the variables needed by the destination
+			foreach ($this->commands[$command][1] as $reqVar => $dummy) {
+				//Check the settings on the destination to see if it needs that variable.
+				//If so then try to add it from the core variables.
+				if (empty($requests[$reqVar]) && !empty(cms_core::$vars[$reqVar])) {
+					$requests[$reqVar] = cms_core::$vars[$reqVar];
+				}
+			}
+			
+			$requests['state'] = $this->commands[$command][0];
 			unset($requests['tab']);
 			unset($requests['tab_no']);
-			return linkToItem(cms_core::$cID, cms_core::$cType, false, $requests, cms_core::$alias);
+			
+			//If we're generating a link to the current state, keep all of the registered get requests
+			$autoAddImportantRequests = $requests['state'] == $this->state;
+			
+			return linkToItem(cms_core::$cID, cms_core::$cType, false, $requests, cms_core::$alias, $autoAddImportantRequests);
 		}
+	}
+	
+	public function cBackLink() {
+		return $this->cLink($this->cCommandEnabled('back')? 'back' : 'close');
 	}
 	
 	protected static function deletePath($instanceId, $from, $to = false) {

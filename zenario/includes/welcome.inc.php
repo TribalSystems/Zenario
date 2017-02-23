@@ -359,7 +359,7 @@ function installerAJAX(&$tags, &$box, &$task, $installStatus, &$freshInstall, &$
 		$box['tabs'][2]['fields']['php_1']['post_field_html'] =
 			adminPhrase('&nbsp;(<em>you have version [[version]]</em>)', array('version' => htmlspecialchars($phpVersion)));
 		
-		if (!compareVersionNumber($phpVersion, '5.3.0')) {
+		if (!compareVersionNumber($phpVersion, '5.4.0')) {
 			$box['tabs'][2]['fields']['php_1']['row_class'] = 'invalid';
 		
 		} else {
@@ -513,8 +513,8 @@ function installerAJAX(&$tags, &$box, &$task, $installStatus, &$freshInstall, &$
 					$box['tabs'][3]['errors'][] = 
 						adminPhrase('Sorry, your MySQL server is "[[version]]". Version 5.0 or later is required.', array('version' => $version[0]));
 			
-				} elseif (!(@sqlUpdate("CREATE TABLE IF NOT EXISTS `zenario_priv_test` (`id` TINYINT(1) NOT NULL )", false))
-					   || !(@sqlUpdate("DROP TABLE `zenario_priv_test`", false))) {
+				} elseif (!(@sqlUpdate("CREATE TABLE IF NOT EXISTS `zenario_priv_test` (`id` TINYINT(1) NOT NULL )", false, false))
+					   || !(@sqlUpdate("DROP TABLE `zenario_priv_test`", false, false))) {
 					$box['tabs'][3]['errors'][] = 
 						adminPhrase('Cannot verify database privileges. Please ensure the MySQL user [[DBUSER]] has CREATE TABLE and DROP TABLE privileges. You may need to contact your MySQL administrator to have these privileges enabled.',
 							$merge['DBUSER']).
@@ -936,7 +936,7 @@ function installerAJAX(&$tags, &$box, &$task, $installStatus, &$freshInstall, &$
 			
 			//Add logic if English is not chosen..?
 			//if (!empty($box['tabs'][4]['fields']['language_id']['current_value'])
-			// && !chopPrefixOffOfString($box['tabs'][4]['fields']['language_id']['current_value'], 'en-')) {
+			// && !chopPrefixOffString('en-', $box['tabs'][4]['fields']['language_id']['current_value'])) {
 			//	
 			//}
 			
@@ -1177,7 +1177,8 @@ function installerAJAX(&$tags, &$box, &$task, $installStatus, &$freshInstall, &$
 					
 					
 					//Apply database updates
-					checkIfDBUpdatesAreNeeded($andDoUpdates = true);
+					$moduleErrors = '';
+					checkIfDBUpdatesAreNeeded($moduleErrors, $andDoUpdates = true);
 					
 					//Fix a bug where sample sites might not have a default language set, by setting a default language if any content has been created
 					if (!setting('default_language') && ($langId = getRow('content_items', 'language_id', array()))) {
@@ -1431,7 +1432,8 @@ function updateAJAX(&$tags, &$box, &$task) {
 		
 		//Update to the latest version
 		set_time_limit(60 * 10);
-		$dbUpToDate = checkIfDBUpdatesAreNeeded($andDoUpdates = true);
+		$moduleErrors = '';
+		$dbUpToDate = checkIfDBUpdatesAreNeeded($moduleErrors, $andDoUpdates = true);
 		
 		if ($dbUpToDate) {
 			return true;
@@ -1450,7 +1452,8 @@ function updateAJAX(&$tags, &$box, &$task) {
 		$latestRevisionNumber = LATEST_REVISION_NO;
 	
 		//Get details on any database updates needed
-		if ($updates = checkIfDBUpdatesAreNeeded(false, false, false)) {
+		$moduleErrors = '';
+		if ($updates = checkIfDBUpdatesAreNeeded($moduleErrors, false, false, false)) {
 			list($currentRevisionNumber, $modules) = $updates;
 		}
 		
@@ -1555,13 +1558,13 @@ function zenarioSecurityCodeCookieValue() {
 //then returns the corresponding name that a site setting should have.
 //This is in the form "COOKIE_ADMIN_SECURITY_CODE_[[COOKIE_VALUE]]", or
 //"COOKIE_ADMIN_SECURITY_CODE_[[COOKIE_VALUE]]_[[IP_ADDRESS]]", depending on
-//whether the security_code_by_ip option is set in the site_description.yaml file.
+//whether the apply_two_factor_security_by_ip option is set in the site_description.yaml file.
 function zenarioSecurityCodeSettingName() {
 	
 	if ('' == ($sccn = zenarioSecurityCodeCookieValue())) {
 		 return false;
 	
-	} elseif (siteDescription('security_code_by_ip')) {
+	} elseif (siteDescription('apply_two_factor_security_by_ip')) {
 		return 'COOKIE_ADMIN_SECURITY_CODE_'. $sccn. '_'. visitorIP();
 
 	} else {
@@ -1574,8 +1577,8 @@ function zenarioTidySecurityCodes() {
 	$sql = "
 		DELETE FROM ". DB_NAME_PREFIX. "admin_settings
 		WHERE name LIKE 'COOKIE_ADMIN_SECURITY_CODE_%'
-		  AND value < '". sqlEscape(zenarioSecurityCodeTime(siteDescription('security_code_timeout'))). "'";
-	sqlUpdate($sql, false);
+		  AND value < '". sqlEscape(zenarioSecurityCodeTime(siteDescription('two_factor_security_timeout'))). "'";
+	sqlUpdate($sql, false, false);
 }
 
 
@@ -1663,7 +1666,7 @@ function securityCodeAJAX(&$tags, &$box, &$task, $getRequest) {
 			setCookieOnCookieDomain(
 				zenarioSecurityCodeCookieName(),
 				randomString(),
-				(int) siteDescription('security_code_timeout') * 86400);
+				(int) siteDescription('two_factor_security_timeout') * 86400);
 			
 			//...and an admin setting to remember it next time!
 			$scsn = zenarioSecurityCodeSettingName();
@@ -1796,7 +1799,7 @@ function diagnosticsAJAX(&$tags, &$box, $freshInstall) {
 		$box['tabs'][0]['fields']['backup_dir_status']['row_class'] = 'sub_invalid';
 		$box['tabs'][0]['fields']['backup_dir_status']['snippet']['html'] = adminPhrase('The directory &quot;[[basename]]&quot; does not exist.', $mrg);
 	
-	} elseif (false !== chopPrefixOffOfString(realpath($dir), realpath(CMS_ROOT))) {
+	} elseif (false !== chopPrefixOffString(realpath(CMS_ROOT), realpath($dir))) {
 		$box['tabs'][0]['fields']['backup_dir_status']['row_class'] = 'sub_invalid';
 		$box['tabs'][0]['fields']['backup_dir_status']['snippet']['html'] = adminPhrase('Zenario is installed this directory. Please choose a different directory.', $mrg);
 	
@@ -1823,7 +1826,7 @@ function diagnosticsAJAX(&$tags, &$box, $freshInstall) {
 		$box['tabs'][0]['fields']['docstore_dir_status']['row_class'] = 'sub_invalid';
 		$box['tabs'][0]['fields']['docstore_dir_status']['snippet']['html'] = adminPhrase('The directory &quot;[[basename]]&quot; does not exist.', $mrg);
 	
-	} elseif (false !== chopPrefixOffOfString(realpath($dir), realpath(CMS_ROOT))) {
+	} elseif (false !== chopPrefixOffString(realpath(CMS_ROOT), realpath($dir))) {
 		$box['tabs'][0]['fields']['docstore_dir_status']['row_class'] = 'sub_invalid';
 		$box['tabs'][0]['fields']['docstore_dir_status']['snippet']['html'] = adminPhrase('Zenario is installed this directory. Please choose a different directory.', $mrg);
 	
@@ -2112,6 +2115,7 @@ function diagnosticsAJAX(&$tags, &$box, $freshInstall) {
 	} else {
 		
 		$show_warning = false;
+		$show_error = false;
 		
 		if (!setting('site_enabled')) {
 			$show_warning = true;
@@ -2142,6 +2146,21 @@ function diagnosticsAJAX(&$tags, &$box, $freshInstall) {
 		} else {
 			$box['tabs'][0]['fields']['site_special_pages_unpublished']['row_class'] = 'valid';
 			$box['tabs'][0]['fields']['site_special_pages_unpublished']['snippet']['html'] = adminPhrase("All of your site's Special Pages are published.");
+		}
+		
+		
+		
+		if (!setting('plaintext_extranet_user_passwords')) {
+			$box['tabs'][0]['fields']['site_plaintext_passwords']['row_class'] = 'valid';
+			$box['tabs'][0]['fields']['site_plaintext_passwords']['hidden'] = true;
+		
+		} else {
+			$show_warning = true;
+			$mrg = array('link' => 'organizer.php#zenario__administration/panels/site_settings//users');
+		
+			$box['tabs'][0]['fields']['site_plaintext_passwords']['row_class'] = 'warning';
+			$box['tabs'][0]['fields']['site_plaintext_passwords']['snippet']['html'] =
+				adminPhrase('User passwords are being stored as plain-text in the database. This is not recomended, please go to <a href="[[link]]" target="_blank"><em>Site Settings -&gt; Users -&gt; Passwords</em> in Organizer</a> and change this.', $mrg);
 		}
 		
 		
@@ -2216,8 +2235,9 @@ function diagnosticsAJAX(&$tags, &$box, $freshInstall) {
 		
 		//Check for a missing site description file.
 		if (!is_file(CMS_ROOT. 'zenario_custom/site_description.yaml')) {
-			$show_warning = true;
-			$box['tabs'][0]['fields']['site_description_missing']['row_class'] = 'warning';
+			$show_error = true;
+			$showCheckAgainButton = true;
+			$box['tabs'][0]['fields']['site_description_missing']['row_class'] = 'invalid';
 		} else {
 			//Note: only show this message if it's in the error state; hide it otherwise
 			$box['tabs'][0]['fields']['site_description_missing']['hidden'] = true;
@@ -2304,8 +2324,24 @@ function diagnosticsAJAX(&$tags, &$box, $freshInstall) {
 			}
 		}
 		
+		$moduleErrors = '';
+		checkIfDBUpdatesAreNeeded($moduleErrors, $andDoUpdates = false);
 		
-		if ($show_warning) {
+		if (!$box['tabs'][0]['fields']['module_errors']['hidden'] = !$moduleErrors) {
+			$box['tabs'][0]['fields']['module_errors']['row_class'] = 'invalid';
+			$show_error = true;
+			
+			$box['tabs'][0]['fields']['module_errors']['snippet']['html'] =
+				nl2br(htmlspecialchars($moduleErrors));
+		}
+		
+		
+		
+		if ($show_error) {
+			$box['tabs'][0]['fields']['show_site']['pressed'] = true;
+			$box['tabs'][0]['fields']['site']['row_class'] = 'section_invalid';
+		
+		} elseif ($show_warning) {
 			$box['tabs'][0]['fields']['show_site']['pressed'] = true;
 			$box['tabs'][0]['fields']['site']['row_class'] = 'section_warning';
 		}
@@ -2318,7 +2354,8 @@ function diagnosticsAJAX(&$tags, &$box, $freshInstall) {
 	$show_warning = false;
 	
 	if (!$box['tabs'][0]['fields']['opcache_misconfigured']['hidden'] =
-		!checkFunctionEnabled('ini_get')
+		compareVersionNumber(phpversion(), '7.0.0')
+	 || !checkFunctionEnabled('ini_get')
 	 || !engToBoolean(ini_get('opcache.enable'))
 	 || engToBoolean(ini_get('opcache.dups_fix'))
 	) {

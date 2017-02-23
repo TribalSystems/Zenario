@@ -3,8 +3,14 @@
 <% } %>
 
 <div class="zfea zfea_{{m.that.path|escape}} {{m.tuix.css_class|escape}}">
+	{{m.tuix.header_html}}
+	
 	<% if (m.tuix.title !== undefined) { %>
-		<h1>{{m.tuix.title|escape}}</h1>
+	    <% if (m.tuix.title_tags) { %>
+		    <{{m.tuix.title_tags|escape}}>{{m.tuix.title|escape}}</{{m.tuix.title_tags|escape}}>
+		<% } else { %>
+		    <h1>{{m.tuix.title|escape}}</h1>
+		<% } %>
 	<% } %>
 	
 	<div class="zfea_back_button">
@@ -14,7 +20,9 @@
 		{{m.that.microTemplate(m.that.mtPrefix + '_button', m.tuix.sortedCollectionButtons, button => {return button.location == 'top';} )}}
 	</div>
 	
-	<% if (!m.tuix.hide_search_bar && (m.tuix.sortedItems.length > 0 || (!m.tuix.sortedItems.length && m.that.request.search))) { %>
+	<% var ci, col, chi, child, bi, button, ii, item, firstItem = true; %>
+	
+	<% if (!m.tuix.hide_search_bar && (m.tuix.sortedItems.length > 1 || (m.that.request.search != '' && m.that.request.search !== undefined))) { %>
 		<form
 			id="search_form_{{m.that.containerId}}"
 			class="search_form"
@@ -31,18 +39,25 @@
 			<input type="submit" value="{{m.that.phrase('Search')}}"/>
 		
 			<% if (m.that.request.search != undefined && m.that.request.search != '') { %>
-				<input type="button" value="{{m.that.phrase('Clear search')}}" onclick="
-					{{m.that.globalName}}.go(this, {search: '', page: ''});
+				<input type="button" class="clear_search" value="{{m.that.phrase('Clear search')}}" onclick="
+					{{m.that.globalName}}.doSearch(event, '');
 					return false;
 				"/>
 			<% } %>
 		</form>
+		
+		<% var searchButtonFound = false; %>
+		<% for (var count = 0; count < m.tuix.sortedCollectionButtons.length; count++) { %>
+			<% if (m.tuix.sortedCollectionButtons[count].location == 'search') { %>
+				<% searchButtonFound = true; break; %>
+			<% } %>
+		<% } %>
+		<% if (searchButtonFound) { %>
+			<div class="zfea_buttons zfea_search_buttons">
+				{{m.that.microTemplate(m.that.mtPrefix + '_button', m.tuix.sortedCollectionButtons, button => {return button.location == 'search';} )}}
+			</div>
+		<% } %>
 	<% } %>
-
-	<% var ci, col, chi, child, bi, button, ii, item; %>
-	<div class="zfea_buttons zfea_search_buttons">
-		{{m.that.microTemplate(m.that.mtPrefix + '_button', m.tuix.sortedCollectionButtons, button => {return button.location == 'search';} )}}
-	</div>
 
 	<% if (m.tuix.hide_column_headings) { %>
 		<div class="zfea_buttons sorted_buttons">
@@ -60,10 +75,20 @@
 		<table class="table_list">
 			<tr>
 				<% if (!m.tuix.hide_column_headings) { %>
+					<% if (m.that.multiSelectButtonsExist) { %>
+						<th class="zfea_check_all">
+							<input
+								type="checkbox"
+								class="zfea_check_all"
+								id="zfea_check_all_{{m.that.containerId|escape}}"
+								onclick="{{m.that.globalName}}.checkAllCheckboxes(this);"
+							/>
+						</th>
+					<% } %>
 					<% foreach (m.tuix.sortedColumns as ci => col) { %>
 						<th>{{col.title|escape}}</th>
 					<% } %>
-					<% if (m.tuix.sortedCollectionButtons.length || m.tuix.sortedItemButtons.length) { %>
+					<% if (m.tuix.itemHasItemButton || m.tuix.sortedCollectionButtons.length) { %>
 						<th class="sorted_buttons">
 							{{m.that.microTemplate(m.that.mtPrefix + '_button', m.tuix.sortedCollectionButtons, button => {return !button.location;} )}}
 						</th>
@@ -72,6 +97,16 @@
 			</tr>
 			<% foreach (m.tuix.sortedItems as ii => item) { %>
 				<tr class="zfea_row {{item.row_class|escape}}">
+					<% if (m.that.multiSelectButtonsExist) { %>
+						<td class="zfea_check_item">
+							<input
+								type="checkbox"
+								class="zfea_check_item"
+								data-item_id="{{item.id|escape}}"
+								onclick="{{m.that.globalName}}.updateItemButtons();"
+							/>
+						</td>
+					<% } %>
 					<% foreach (m.tuix.sortedColumns as ci => col) { %>
 						<td
 							id="{{('zfea_' + m.that.containerId + '_row_' + ii + '_col_' + ci)|escape}}"
@@ -84,7 +119,16 @@
 						>
 
 					
-							<div class="col_value col_value_for__{{col.id|escape}}">
+							<div class="col_value col_value_for__{{col.id|escape}} 
+								
+								<% if (item.cell_css_classes && item.cell_css_classes[col.id]) { %>
+									{{item.cell_css_classes[col.id]|escape}}
+								<% } %>
+								" 
+								<% if (item.cell_tooltip && item.cell_tooltip[col.id]) { %>
+									title="{{item.cell_tooltip[col.id]|escape}}"
+								<% } %>
+							>
 								{{m.that.microTemplate(m.that.mtPrefix + '_list_cell', {col: col, item: item})}}
 					
 								<% if (col.children) { %>
@@ -101,34 +145,32 @@
 							</div>
 						</td>
 					<% } %>
-					<% if (item.sortedItemButtons.length) { %>
-						<td class="sorted_buttons">
-							<% foreach (item.sortedItemButtons as bi => button) { %>
-								<a
-									<% if (button.href) { %>
-										href="{{button.href|escape}}"
-									<% } %>
-									<% if (button.onclick) { %>
-										onclick="var itemId = '{{item.id|escape}}'; {{button.onclick|escape}}"
-									<% } %>
-									class="{{button.css_class|escape}}"
-									title="{{button.tooltip|escape}}"
-								>{{button.label|escape}}</a>
-							<% } %>
-						</td>
+					<% if (m.tuix.itemHasItemButton || m.tuix.sortedCollectionButtons.length) { %>
+					    <td class="sorted_buttons">
+					        <% if (item.sortedItemButtons.length) { %>
+                                {{m.that.microTemplate(m.that.mtPrefix + '_button', item.sortedItemButtons)}}
+                            <% } else { %>
+                                &nbsp;
+                            <% } %>
+					    </td>
+					<% } %>
+					<% if (firstItem) { %>
+					    <td
+					    	class="multi_select_buttons"
+					    	id="multi_select_buttons_td_{{m.that.containerId}}"
+					    	style="display: none;"
+					    	rowspan="{{m.tuix.sortedItems.length}}"
+					    >
+					        <div id="multi_select_buttons_{{m.that.containerId}}"></div>
+					    </td>
 					<% } %>
 				</tr>
+				<% firstItem = false; %>
 			<% } %>
 			<% if (m.tuix.sortedItems.length == 0) { %>
-				<% if (!m.tuix.hide_search_bar && m.that.request.search) { %>
-					<% if (m.tuix.no_items_in_search_message) { %>
-						<tr><td>{{m.tuix.no_items_in_search_message}}</td></tr>
-					<% } %>
-				<% } else { %>
 					<% if (m.tuix.no_items_message) { %>
-						<tr><td>{{m.tuix.no_items_message}}</td></tr>
+						<tr><td colspan="100%">{{m.tuix.no_items_message}}</td></tr>
 					<% } %>
-				<% } %>
 			<% } %>
 		
 		
@@ -160,4 +202,6 @@
 	    </div> 
 	
 	</div>
+	
+	{{m.tuix.footer_html}}
 </div>

@@ -178,8 +178,10 @@ class zenario_wysiwyg_editor extends zenario_html_snippet {
 				exit;
 			}
 			
+			$canEdit = !empty($_SESSION['admin_userid']) && checkPriv('_PRIV_EDIT_DRAFT', cms_core::$cID, cms_core::$cType);
+			
 			//Open the editor if it has been requested, and the current Admin has permissions
-			if (cms_core::$isDraft && checkPriv('_PRIV_EDIT_DRAFT', cms_core::$cID, cms_core::$cType)) {
+			if ($canEdit && cms_core::$isDraft) {
 				
 				$this->editorId = $this->containerId. '_tinymce_content_'. str_replace('.', '', microtime(true));
 				
@@ -192,9 +194,10 @@ class zenario_wysiwyg_editor extends zenario_html_snippet {
 			}
 			
 			// Enable double click access to editor
-			$buttonSelector = '#zenario_slot_control__'.$this->slotName.'__actions__'.$this->moduleClassName.'__edit_inline';
-			$this->callScript('zenario_wysiwyg_editor', 'listenForDoubleClick', $this->slotName, $this->containerId, $buttonSelector);
-			
+			if ($canEdit) {
+				$buttonSelector = '#zenario_slot_control__'.$this->slotName.'__actions__'.$this->moduleClassName.'__edit_inline';
+				$this->callScript('zenario_wysiwyg_editor', 'listenForDoubleClick', $this->slotName, $this->containerId, $buttonSelector);
+			}
 		}
 		
 		return zenario_html_snippet::init();

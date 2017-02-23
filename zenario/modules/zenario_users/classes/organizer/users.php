@@ -41,20 +41,11 @@ class zenario_users__organizer__users extends zenario_users {
 		}
 		
 		if ($refinerName == 'smart_group') {
-			$joins = array();
-				
-			if ($sg = getSmartGroupDetails($refinerId)) {
-				$panel['refiners']['smart_group']['sql'] =
-					"TRUE ". smartGroupSQL($refinerId, 'u', 'custom');
-		
-				$panel['title'] = adminPhrase('Users in Smart Group "[[name]]"', $sg);
-					
-			} else {
-				$panel['refiners']['smart_group']['sql'] = "FALSE";
-		
-				$panel['title'] = adminPhrase('Users in Smart Group');
-				$panel['no_items_message'] = adminPhrase('There is a problem with this smart group and it cannot be displayed.');
-			}
+			smartGroupSQL(
+				$panel['refiners']['smart_group']['sql'],
+				$panel['refiners']['smart_group']['table_join'],
+				$refinerId, $list = true, 'u', 'custom');
+			
 		} else {
 			unset($panel['columns']['opted_out']);
 			unset($panel['columns']['opted_out_on']);

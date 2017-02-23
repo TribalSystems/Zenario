@@ -91,17 +91,17 @@ class zenario_common_features__organizer__backups extends module_base_class {
 			$filename = $_FILES['Filedata']['name'];
 			$ext = pathinfo($filename, PATHINFO_EXTENSION);
 			if (!in_array($ext, array('sql', 'gz'))) {
-				echo '<!--Message_Type:Error-->Only .sql or .gz files can be uploaded as backups';
+				echo '<!--Message_Type:Error-->Only .sql or .gz files can be uploaded as database backups';
 			} elseif (file_exists(setting('backup_dir') . '/'. $_FILES['Filedata']['name'])) {
-				echo '<!--Message_Type:Error-->A backup with the same name already exists';
+				echo '<!--Message_Type:Error-->A database backup with the same name already exists';
 			} elseif (move_uploaded_file($_FILES['Filedata']['tmp_name'], setting('backup_dir') . '/'. $_FILES['Filedata']['name'])) {
-				echo '<!--Message_Type:Success-->Successfully uploaded backup';
+				echo '<!--Message_Type:Success-->Successfully uploaded the database backup';
 			} else {
-				echo '<!--Message_Type:Error-->Unable to upload backup';
+				echo '<!--Message_Type:Error-->Unable to upload the database backup';
 			}
 		
 		} elseif (post('restore') && checkPriv('_PRIV_RESTORE_SITE')) {
-			//Restore a backup from the file system
+			//Restore a database backup from the file system
 			$failures = array();
 			if (restoreDatabaseFromBackup(
 					$filename,
@@ -121,9 +121,9 @@ class zenario_common_features__organizer__backups extends module_base_class {
 	public function organizerPanelDownload($path, $ids, $refinerName, $refinerId) {
 		if ($path != 'zenario__administration/panels/backups') return;
 		
-		//Functionality for Downloading Backups
+		//Functionality for downloading a database backup
 		
-		//Check permissions for downloading backups
+		//Check permissions
 		exitIfNotCheckPriv('_PRIV_BACKUP_SITE');
 		
 		//Check to see if we can proceed
@@ -135,13 +135,13 @@ class zenario_common_features__organizer__backups extends module_base_class {
 		}
 		
 		
-		//Offer a backup of the current state of the site for download 
+		//Offer a database backup of the current state of the site for download 
 		if (!$ids) {
 		
 			//Create a gz file in the temp directory...
 			$filepath = tempnam(sys_get_temp_dir(), 'tmpfiletodownload');
 			
-			//...write the backup into it...
+			//...write the database backup into it...
 			$g = gzopen($filepath, 'wb');
 			createDatabaseBackupScript($g);
 			gzclose($g);
@@ -155,10 +155,10 @@ class zenario_common_features__organizer__backups extends module_base_class {
 			@unlink($filepath);
 		
 		
-		//Offer one of the previously saved backups for download	
+		//Offer one of the previously saved database backups for download	
 		} else {
 			//Add some security to stop the user putting nasty things into their requested filename
-			//I'm doing this by stripping out anything not in the usual backup filename format
+			//I'm doing this by stripping out anything not in the usual database backup filename format
 			if ($ids) {
 				$filename = decodeItemIdForOrganizer($ids);
 				if (preg_match('/[^a-zA-Z0-9\._-]/', $filename)) {

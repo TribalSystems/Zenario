@@ -142,15 +142,25 @@ zenario__content:
                         hidden: '[Hidden]'
                         trashed: '[Trashed]'
                 privacy:
-                    title: Privacy
                     db_column: tc.privacy
                     format: enum
                     values:
-                        public: Public
-                        all_extranet_users: All Extranet Users
-                        group_members: Group Members
-                        specific_users: Specific Users
-                        no_access: No Access
+                        public:
+                            label: Public, visible to everyone
+                        logged_out:
+                            label: Public, only show to visitors who are NOT logged in
+                        logged_in:
+                            label: Private, only show to extranet users who are logged in
+                        group_members:
+                            label: Private, only show to extranet users in a group
+                        in_smart_group:
+                            label: Private, only show to extranet users in a smart group
+                        logged_in_not_in_smart_group:
+                            label: Private, only show to extranet users NOT in a smart group
+                        call_static_method:
+                            label: "Call a module's static method to decide"
+                        send_signal:
+                            label: Send a signal to decide
                 first_created_datetime:
                     title: Date/Time First Created
                     db_column: c.first_created_datetime

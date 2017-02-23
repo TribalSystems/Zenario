@@ -174,13 +174,13 @@ class zenario_users extends module_base_class {
 	
 	//Check if we should log that a user has accessed an item
 	public static function logUserAccess($extranetUserID, $cID, $cType, $cVersion) {
-	
 		//Check whether this content item logs user access
 		if (!empty($_SESSION['extranetUserID'])
 		&& !isset($_SESSION['extranetUserImpersonated'])
 		&& self::doesContentItemLogUserAccess($cID, $cType, $cVersion)
 		&& setting('log_user_access')) {
-	
+			
+			self::clearOldData();
 			cms_core::$userAccessLogged = true;
 	
 			//Log the hit
@@ -196,10 +196,26 @@ class zenario_users extends module_base_class {
 		}
 	}
 	
+	public static function clearOldData(){
+		if($days = setting('period_to_delete_the_user_content_access_log')){
+			if(is_numeric($days)){
+				$today = date('Y-m-d');
+				$date = date('Y-m-d', strtotime('-'.$days.' day', strtotime($today)));
+				if($date){
+					$sql = " 
+						DELETE FROM ". DB_NAME_PREFIX. "user_content_accesslog 
+						WHERE hit_datetime < '".sqlEscape($date)."'";
+					sqlUpdate($sql);
+				}
+			}
+		}
+	
+	}
+	
 	//Check if a content item logs user access
 	public static function doesContentItemLogUserAccess($cID, $cType) {
 		$privacy = getRow('translation_chains', 'privacy', array('equiv_id' => equivId($cID, $cType), 'type' => $cType));
-		return in_array($privacy, array('all_extranet_users', 'group_members', 'specific_users'));
+		return !in($privacy, 'public', 'logged_out');
 	}
 	
 	
@@ -223,7 +239,7 @@ class zenario_users extends module_base_class {
 		if (isset($adminToolbar['sections']['history']['buttons']['zenario_users__access_log'])) {
 			$item = getRow('translation_chains', array('privacy'), array('equiv_id' => cms_core::$equivId, 'type' => cms_core::$cType));
 		
-			if (setting('log_user_access') && in($item['privacy'], 'all_extranet_users', 'group_members', 'specific_users')) {
+			if (setting('log_user_access') && !in($item['privacy'], 'public', 'logged_out')) {
 				$adminToolbar['sections']['history']['buttons']['zenario_users__access_log']['organizer_quick']['path'] =
 					'zenario__content/panels/content/user_access_log//'. $cType. '_'. $cID. '//';
 		
@@ -237,8 +253,26 @@ class zenario_users extends module_base_class {
 	
 	
 	
+	//These are just for testing...
+	public static function returnTrue() {
+		return true;
+	}
 	
+	public static function returnNull() {
+		return null;
+	}
 	
+	public static function returnZero() {
+		return 0;
+	}
+	
+	public static function returnEmptyString() {
+		return '';
+	}
+	
+	public static function returnFalse() {
+		return false;
+	}
 	
 	
 	
@@ -248,47 +282,42 @@ class zenario_users extends module_base_class {
 	
 	//Various API and internal functions
 	
-	protected static function setupGroupOrUserCheckboxes($table, $idCol, $equivId, $cType) {
-		return inEscape(getRowsArray($table, $idCol, array('equiv_id' => $equivId, 'content_type' => $cType)), true);
-	}
-	
-	
-	
-	protected static function setContentItemGroupsOrUsers($table, $idCol, $equivId, $cType, $groupsOrUsers) {
-		deleteRow($table, array('equiv_id' => $equivId, 'content_type' => $cType));
-		
-		if (is_array($groupsOrUsers)) {
-			foreach ($groupsOrUsers as $value) {
-				setRow($table, array(), array($idCol => $value, 'equiv_id' => $equivId, 'content_type' => $cType));
-			}
-		}
-	}
-	
 	protected static function savePrivacySettings($tagIds, $values) {
 		$equivId = $cType = false;
 		foreach ($tagIds as $tagId) {
 			if (getEquivIdAndCTypeFromTagId($equivId, $cType, $tagId)) {
 				
+				$key = array('equiv_id' => $equivId, 'content_type' => $cType);
+				$chain = array('privacy' => $values['privacy/privacy']);
+				
+				if ($chain['privacy'] == 'group_members') {
+					updateLinkingTable('group_content_link', $key, 'group_id', $values['privacy/group_ids']);
+				} else {
+					deleteRow('group_content_link', $key);
+				}
+				
+				if ($chain['privacy'] == 'call_static_method') {
+					setRow('translation_chain_privacy', array(
+						'module_class_name' => $values['privacy/module_class_name'],
+						'method_name' => $values['privacy/method_name'],
+						'param_1' => $values['privacy/param_1'],
+						'param_2' => $values['privacy/param_2']
+					), $key);
+				} else {
+					deleteRow('translation_chain_privacy', $key);
+				}
+				
+				if (in($chain['privacy'], 'in_smart_group', 'logged_in_not_in_smart_group')) {
+					$chain['smart_group_id'] = $values['privacy/smart_group_id'];
+				} else {
+					$chain['smart_group_id'] = 0;
+				}
+				
 				//Save the privacy settings
 				setRow(
 					'translation_chains',
-					array(
-						'privacy' => $values['privacy/privacy']),
+					$chain,
 					array('equiv_id' => $equivId, 'type' => $cType));
-				
-				//Update the list of Users
-				$users = array();
-				if ($values['privacy/privacy'] == 'specific_users' && !empty($values['privacy/specific_users'])) {
-					$users = explode(',', $values['privacy/specific_users']);
-				}
-				self::setContentItemGroupsOrUsers('user_content_link', 'user_id', $equivId, $cType, $users);
-				
-				//Update the list of Groups
-				$groups = array();
-				if ($values['privacy/privacy'] == 'group_members' && !empty($values['privacy/group_members'])) {
-					$groups = explode(',', $values['privacy/group_members']);
-				}
-				self::setContentItemGroupsOrUsers('group_content_link', 'group_id', $equivId, $cType, $groups);
 			}
 		}
 	}

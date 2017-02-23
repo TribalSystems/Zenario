@@ -103,7 +103,6 @@ class zenario_location_manager extends module_base_class {
 	}
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
-		
 		switch ($path) {
 			case 'zenario__content/panels/content':
 				if (isset($_GET['refiner__zenario__locations__create_content'])
@@ -115,6 +114,40 @@ class zenario_location_manager extends module_base_class {
 				break;
 				
 			case 'zenario__locations/panel':
+				
+				$maxLevels = (int) setting('zenario_location_manager__hierarchy_levels');
+				if (!$maxLevels && isset($panel['item_buttons']['set_parent'])) {
+					unset($panel['item_buttons']['set_parent']);
+				}
+				
+				//Hide columns role and locations
+				if($refinerName == "users_locations"){
+					$panel['columns']['external_id']['hidden'] = true;
+					$panel['columns']['path']['hidden'] = true;
+					$panel['columns']['address1']['hidden'] = true;
+					$panel['columns']['address2']['hidden'] = true;
+					$panel['columns']['locality']['hidden'] = true;
+					$panel['columns']['city']['hidden'] = true;
+					$panel['columns']['state']['hidden'] = true;
+					$panel['columns']['postcode']['hidden'] = true;
+					$panel['columns']['country_code']['hidden'] = true;
+					$panel['columns']['country']['hidden'] = true;
+					$panel['columns']['region']['hidden'] = true;
+					$panel['columns']['latitude']['hidden'] = true;
+					$panel['columns']['longitude']['hidden'] = true;
+					$panel['columns']['status']['hidden'] = true;
+					$panel['columns']['content_item']['hidden'] = true;
+					$panel['columns']['sectors']['hidden'] = true;
+					$panel['columns']['sticky_flag']['hidden'] = true;
+					$panel['columns']['parent_name']['hidden'] = true;
+					$panel['columns']['number_of_children']['hidden'] = true;
+					$panel['columns']['image_usage']['hidden'] = true;
+					$panel['columns']['checksum']['hidden'] = true;
+					$panel['columns']['last_updated']['hidden'] = true;
+					$panel['columns']['last_updated_by']['hidden'] = true;
+					$panel['columns']['last_updated_via_import']['hidden'] = true;
+					$panel['columns']['on_map']['hidden'] = true;
+				}
 				
 				// Hide pending button if pending state not enabled
 				if (!setting('zenario_location_manager__enable_pending_status')) {
@@ -263,6 +296,8 @@ class zenario_location_manager extends module_base_class {
 					} 
 					$panel['item_buttons']['set_parent']['name'] = 'Assign location a new parent';
 					$panel['item_buttons']['set_parent']['combine_items']['one_to_one_choose_phrase'] = 'Assign parent Location';
+					
+					
 					if ($maxLevels==0 && issetArrayKey($panel,'item_buttons','set_parent')) {
 						unset($panel['item_buttons']['set_parent']);
 					}
@@ -1860,70 +1895,41 @@ class zenario_location_manager extends module_base_class {
 	}
 
 	
-	// Create a new location
+	//Create a new location
 	public static function createLocation($details, $customDetails = array()) {
-		
-		// When creating a new location, set status as pending if setting is set
+		//When creating a new location, set status as pending if setting is set
 		if (setting('zenario_location_manager__enable_pending_status')) {
 			$details['status'] = 'pending';
 		}
 		
-		// Insert new location
-		$locationID = insertRow(
-			ZENARIO_LOCATION_MANAGER_PREFIX . 'locations', 
-			$details
-		);
+		//Insert new location
+		$locationId = insertRow(ZENARIO_LOCATION_MANAGER_PREFIX . 'locations', $details);
 		
-		// Add any custom dataset fields
+		//Add any custom dataset fields
 		if ($customDetails) {
-			$customDetails['location_id'] = $locationID;
-			insertRow(
-				ZENARIO_LOCATION_MANAGER_PREFIX . 'locations_custom_data', 
-				$customDetails
-			);
+			$customDetails['location_id'] = $locationId;
+			insertRow(ZENARIO_LOCATION_MANAGER_PREFIX . 'locations_custom_data', $customDetails);
 		}
 		
-		return $locationID;
+		sendSignal('eventLocationCreated', array('locationId' => $locationId));
+		return $locationId;
 	}
 	
-	public static function deleteLocation($ID){
-		$sql = 'DELETE 
-				FROM ' .DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . 'locations 
-				WHERE id=' . (int)$ID;
-		sqlQuery($sql);
-		
-		sendSignal('eventLocationDeleted', array("locationId" => $ID));
-		
+	public static function deleteLocation($locationId) {
+		deleteRow(ZENARIO_LOCATION_MANAGER_PREFIX . 'locations', $locationId);
+		sendSignal('eventLocationDeleted', array("locationId" => $locationId));
 	}
 
-	public static function activateLocation($ID){
-		$sql = "UPDATE
-					 " .DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "locations 
-				SET
-					status='active'
-				WHERE 
-					id=" . (int)$ID;
-		sqlQuery($sql);
+	public static function activateLocation($locationId) {
+		updateRow(ZENARIO_LOCATION_MANAGER_PREFIX . "locations", array('status' => 'active'), $locationId);
 	}
 
-	public static function suspendLocation($ID){
-		$sql = "UPDATE
-					" .DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "locations 
-				SET
-					status='suspended'
-				WHERE 
-					id=" . (int)$ID;
-		sqlQuery($sql);
+	public static function suspendLocation($locationId) {
+		updateRow(ZENARIO_LOCATION_MANAGER_PREFIX . "locations", array('status' => 'suspended'), $locationId);
 	}
 	
 	public static function markLocationAsPending($ID) {
-		$sql = "UPDATE
-					" .DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "locations 
-				SET
-					status='pending'
-				WHERE 
-					id=" . (int)$ID;
-		sqlQuery($sql);
+		updateRow(ZENARIO_LOCATION_MANAGER_PREFIX . "locations", array('status' => 'pending'), $locationId);
 	}
 
 	public static function deleteSector($ID, $recurseCount = 0){

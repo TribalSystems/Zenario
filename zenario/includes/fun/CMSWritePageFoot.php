@@ -188,16 +188,21 @@ if ($inAdminMode && !$isWelcomeOrWizard) {
 	if (!empty(cms_core::$siteConfig)) {
 		foreach (cms_core::$siteConfig as $setting => &$value) {
 			if ($value
-			 && ($setting == 'admin_domain'
-			  || $setting == 'cookie_require_consent'
-			  || $setting == 'default_language'
-			  || $setting == 'organizer_title'
-			  || $setting == 'organizer_date_format'
-			  || $setting == 'primary_domain'
-			  || $setting == 'site_mode'
-			  || $setting == 'vis_time_format'
-			  || is_numeric($value))) {
-				$settings[$setting] = cms_core::$siteConfig[$setting];
+			 && substr($setting, 0, 5) != 'perm.') {
+				if (is_numeric($value)
+				 || $setting == 'admin_domain'
+				 || $setting == 'cookie_require_consent'
+				 || $setting == 'default_language'
+				 || $setting == 'organizer_title'
+				 || $setting == 'organizer_date_format'
+				 || $setting == 'primary_domain'
+				 || $setting == 'site_mode'
+				 || $setting == 'vis_time_format') {
+					$settings[$setting] = cms_core::$siteConfig[$setting];
+				
+				} elseif (substr($setting, -5) == '_path') {
+					$settings[$setting] = true;
+				}
 			}
 		}
 	}
@@ -259,6 +264,16 @@ if ($inAdminMode && !$isWelcomeOrWizard) {
 	echo "\n	zenarioA.lang = ", json_encode($langs), ";";
 	echo "\n	zenario.adminId = ", (int) session('admin_userid'), ";";
 	echo "\n	zenario.templateFamily = '", jsEscape(cms_core::$templateFamily), "';";
+	
+	$spareDomains = array();
+	$sql = '
+	    SELECT requested_url FROM ' . DB_NAME_PREFIX . 'spare_domain_names';
+	$result = sqlSelect($sql);
+	while ($row = sqlFetchAssoc($result)) {
+	    $spareDomains[] = httpOrhttps() . $row['requested_url'];
+	}
+	
+	echo "\n    zenarioA.spareDomains = ", json_encode($spareDomains), ";";
 }
 
 if (cms_core::$skinId) {

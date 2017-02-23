@@ -550,7 +550,7 @@ class zenario_common_features__admin_boxes__admin extends module_base_class {
 
 			if ($box['key']['id'] == adminId()) {
 				setAdminSession(adminId());
-				$box['popout_message'] = '<!--Reload_Organizer-->';
+				$this->needReload = true;
 			}
 		}
 		
@@ -559,7 +559,9 @@ class zenario_common_features__admin_boxes__admin extends module_base_class {
 			if (is_array($tab) && engToBooleanArray($tab, 'edit_mode', 'on')) {
 				foreach ($tab['fields'] as $fieldName => &$field) {
 					if (is_array($field)) {
-						if (!arrayKey($field, 'read_only') && $settingName = arrayKey($field, 'admin_setting', 'name')) {
+						if (!arrayKey($field, 'readonly')
+						 && !arrayKey($field, 'read_only')
+						 && $settingName = arrayKey($field, 'admin_setting', 'name')) {
 					
 							//Get the value of the setting. Hidden fields should count as being empty
 							if (engToBooleanArray($field, 'hidden')
@@ -577,5 +579,14 @@ class zenario_common_features__admin_boxes__admin extends module_base_class {
 		}
 
 		return false;
+	}
+	
+	private $needReload = false;
+	
+	public function adminBoxSaveCompleted($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+		if ($this->needReload) {
+			closeFABWithFlags(['reload_organizer' => true]);
+			exit;
+		}
 	}
 }

@@ -1,4 +1,3 @@
-
 /*
  * Copyright (c) 2017, Tribal Limited
  * All rights reserved.
@@ -41,8 +40,8 @@ zenario.lib(function(
 	undefined,
 	URLBasePath,
 	document, window, windowOpener, windowParent,
-	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO,
-	get, engToBoolean, htmlspecialchars, ifNull, jsEscape, phrase,
+	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO, strings,
+	encodeURIComponent, get, engToBoolean, htmlspecialchars, jsEscape, phrase,
 	extensionOf, methodsOf, has
 ) {
 	"use strict";
@@ -69,12 +68,33 @@ zenario.adminId = 0;
 
 
 
+
+//Create a library with some dummy functions for the conductor,
+//so plugins do not crash if the full conductor library is not loaded
+var zenario_conductor = createZenarioLibrary('_conductor');
+zenario_conductor.slots = {};
+zenario_conductor.setCommands =
+zenario_conductor.registerGetRequest =
+zenario_conductor.clearRegisteredGetRequest =
+zenario_conductor.getRegisteredGetRequest =
+zenario_conductor.confirmOnCloseMessage =
+zenario_conductor.confirmOnClose =
+zenario_conductor.commandEnabled =
+zenario_conductor.enabled =
+zenario_conductor.refresh =
+zenario_conductor.backLink =
+zenario_conductor.goBack =
+zenario_conductor.link =
+zenario_conductor.go ==> { return undefined; };
+
+
 //Callback class	
 zenario.callback = function() {
 	this.isOwnCallback = false;
 	this.isWrapper = false;
 	this.results = [undefined];
 	this.completes = [false];
+	this.done = false;
 	this.funs = [];
 };
 var methods = methodsOf(zenario.callback);
@@ -83,7 +103,15 @@ var methods = methodsOf(zenario.callback);
 //Your function will be called with the result of the callback as its arguement
 //(Or the results of the callbacks as its arguements, if you have chained multiple callbacks together)
 methods.after = function(fun, that) {
-	this.funs.push([fun, that || this]);
+	if (_.isFunction(fun)) {
+		this.funs.push([fun, that || this]);
+		
+		//Catch the case where an after() was added after call() was called
+		//Immediately run 
+		if (this.done) {
+			setTimeout(this.checkComplete, 0);
+		}
+	}
 	return this;
 };
 
@@ -102,6 +130,7 @@ methods.call = function(result) {
 //Your callback function will be called after all of the callback functions you've added are called,
 //and you'll get multiple arguements passed to your callback function (one per callback).
 methods.add = function(cb) {
+	this.done = false;
 	this.isWrapper = true;
 	this.completes[0] = true;
 	
@@ -143,7 +172,10 @@ methods.checkComplete = function() {
 		foreach (this.funs as i => fun) {
 			fun[0].apply(fun[1], this.results);
 		}
+		
+		this.funs = [];
 	}
+	this.done = true;
 };
 
 //Some different examples of how to use the callback function above
@@ -195,295 +227,823 @@ zenario.pluginClassAJAX = function(moduleClassName, requests, post, json, useCac
 
 
 
-	//Make a non-asyncornous AJAX call.
-	//Note that this is deprecated!
-	zenario.nonAsyncAJAX = function(url, post, json, useCache) {
-		
-		//if (zenarioA.adminSettings.show_dev_tools
-		// && window.console
-		// && console.trace) {
-		//	console.trace('Synchronous AJAX request made');
-		//	//or
-		//	var e = new Error();
-		//	console.log(e.stack);
-		//}
-		
-		url = zenario.addBasePath(url);
-		
-		var xmlHttp = {};
-		
-		//If this isn't a post request, only launch this request if it cannot be found in the storage
-		if (post
-		 || !useCache
-		 || !(xmlHttp.responseText = zenario.checkSessionStorage(url))) {
-			xmlHttp = new Object();
-		
-			if (window.ActiveXObject) {
-				xmlHttp = new ActiveXObject('Microsoft.XMLHTTP');
-			} else if (window.XMLHttpRequest) {
-				xmlHttp = new XMLHttpRequest();
-			}
-		
-			//Use GET or POST, as requested.
-			if (!post) {
-				//If you're using GET then any variables need to be set in the URL
-				xmlHttp.open('GET', url, false);
-				xmlHttp.send(null);
-			
-				if (useCache) {
-					zenario.setSessionStorage(xmlHttp.responseText, url);
-				}
-		
-			} else {
-				//If you're using POST then variables need to be set in the POST.
-				// (This uses the same format as GET, however without the initial ?)
-			
-				//Check to see if the caller took the time to seperate the two different inputs out,
-				//or if they have dumped them all into the url
-				if (post === true) {
-					//If post has just been set to true, try to check the url for the actual inputs!
-					var qMark = url.indexOf('?');
-				
-					if (qMark == -1) {
-						//Case where POST must be used, but there are not actually any requests
-						post = '';
-					} else {
-						//Get variables from the URL and put them in the POST
-						post = url.substr(qMark+1);
-						url = url.substr(0, qMark);
-					}
-			
-				} else if (typeof post != 'string') {
-					post = zenario.urlRequest(post);
-				}
-			
-				xmlHttp.open('POST', url, false);
-				xmlHttp.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-				xmlHttp.send(post);
-			}
+
+//Make a non-asyncornous AJAX call.
+//Note that this is deprecated!
+zenario.nonAsyncAJAX = function(url, post, json, useCache) {
+	
+	//if (zenarioA.adminSettings.show_dev_tools
+	// && window.console
+	// && console.trace) {
+	//	console.trace('Synchronous AJAX request made');
+	//	//or
+	//	var e = new Error();
+	//	console.log(e.stack);
+	//}
+	
+	url = zenario.addBasePath(url);
+	
+	var xmlHttp = {};
+	
+	//If this isn't a post request, only launch this request if it cannot be found in the storage
+	if (post
+	 || !useCache
+	 || !(xmlHttp.responseText = zenario.checkSessionStorage(url))) {
+		xmlHttp = new Object();
+	
+		if (window.ActiveXObject) {
+			xmlHttp = new ActiveXObject('Microsoft.XMLHTTP');
+		} else if (window.XMLHttpRequest) {
+			xmlHttp = new XMLHttpRequest();
 		}
 	
-		//Either return the response as-is, of if JSON was set, do JSON.parse on it first.
-		if (!json) {
-			return xmlHttp.responseText;
-		} else {
-			try {
-				return JSON.parse(xmlHttp.responseText);
-			} catch (e) {
-				if (xmlHttp.responseText) {
-					if (zenarioA.init) {
-						zenarioA.floatingBox(xmlHttp.responseText, true, 'error');
-					} else {
-						alert(xmlHttp.responseText);
-					}
-				}
-			}
-		}
-	};
-	
-	//An easy-as-possible drop-in replacement for zenario.nonAsyncAJAX(), which is now deprecated.
-	//It returns a zenario.callback object.
-		//url: The URL of the request
-		//post: Pass some POST requests in here to use POST. Or set to true to use POST without any POST requests.
-		//json: Set to true to decode a JSON response
-		//useCache: Store the response in the session cache, and use the cached results next time.
-			//Won't apply to POST requests.
-			//The cache results are cleared automatically if the data_rev in the database changes.
-		//retry: If there's an error, show a "retry" button on the error message.
-			//Only works in admin mode.
-			//Can be a function to call, or true to recall this function
-		//timeout: If set, the request will be automatically retried or cancelled after this amount of time.
-	zenario.ajax = function(url, post, json, useCache, retry, timeout, settings, AJAXErrorHandler, onRetry) {
-		url = zenario.addBasePath(url);
+		//Use GET or POST, as requested.
+		if (!post) {
+			//If you're using GET then any variables need to be set in the URL
+			xmlHttp.open('GET', url, false);
+			xmlHttp.send(null);
 		
-		var qMark, name, setting, options,
-			type = post? 'POST' : 'GET',
-			result = false,
-			aborted = false,
-			retryFun,
-			hadErrorAndHandledIt = false,
-			cb = new zenario.callback,
-			oldDataRevisionNumber = zenario.dataRev(),
-			
-			//If the request is a success, note down the data.
-			success = function(data) {
-				if (aborted) return;
-				result = data;
-			},
-			
-			//If there was an error, attempt to handle it
-			error = function(resp, statusType, statusText) {
-				if (aborted) return;
-				
-				if (AJAXErrorHandler = AJAXErrorHandler || zenarioA.AJAXErrorHandler) {
-					AJAXErrorHandler(resp, statusType, statusText);
-					hadErrorAndHandledIt = true;
-				}
-			},
-			
-			//Call this function when we have the data and need to return it
-			complete = function(resp, statusType, statusText) {
-				if (aborted || hadErrorAndHandledIt) return;
-				
-				var parsedResult = false;
-				
-				//Either return the response as-is, of if JSON was set, do JSON.parse on it first.
-				if (json) {
-					//If this is admin mode, try to use zenarioA.readData() as that has some error-handling built in
-					if (zenarioA.phrase && zenarioA.readData) {
-						if (!(parsedResult = zenarioA.readData(result, undefined, undefined, retry))) {
-							return;
-						}
-					
-					//Otherwise just use JSON.parse() and alert() to handle the errors
-					} else {
-						try {
-							parsedResult = JSON.parse(result);
-						} catch (e) {
-							if (result) {
-								if (AJAXErrorHandler = AJAXErrorHandler || zenarioA.AJAXErrorHandler) {
-									//(resp, statusType, statusText)
-									AJAXErrorHandler(resp, statusType, statusText);
-								} else {
-									alert(result);
-								}
-							}
-							return;
-						}
-					}
-			
-					cb.call(parsedResult);
-				} else {
-					cb.call(result);
-				}
-				
-				//If we were supposed to be using the cache, remember this result for next time
-				if (useCache) {
-					zenario.setSessionStorage(result, url);
-				}
-			},
-			
-			//Call this function to trigger the AJAX request
-			doRequest = function() {
-				result = false;
-				aborted = false;
-				hadErrorAndHandledIt = false;
-				
-				//Check to see if the caller took the time to seperate the two different inputs out,
-				//or if they have dumped them all into the url
-				if (post === true) {
-					//If post has just been set to true, try to check the url for the actual inputs!
-					qMark = url.indexOf('?');
-		
-					if (qMark == -1) {
-						//Case where POST must be used, but there are not actually any requests
-						post = '';
-					} else {
-						//Get variables from the URL and put them in the POST
-						post = url.substr(qMark+1);
-						url = url.substr(0, qMark);
-					}
-				}
-				
-				options = {
-					data: post,
-					type: type,
-					dataType: 'text',
-					success: success,
-					error: error,
-					complete: complete
-				}
-				
-				// Add any extra settings
-				if (settings !== undefined) {
-					foreach (settings as name => setting) {
-						options[name] = setting;
-					}
-				}
-				
-				//Do the AJAX request
-				var req = $.ajax(url, options);
-				req.zenario_retry = retry;
-				
-				//Set a timeout on the request. If the timeout expires, we'll either retry or just give in
-				//if retry is not specified.
-				if (timeout) {
-					setTimeout( => {
-						if (req.readyState < 4) {
-							if (retry) {
-								aborted = true;
-								req.abort();
-								timeout *= 2;
-								retry();
-							} else {
-								req.abort();
-							}
-						}
-					}, timeout);
-				}
-			};
-		
-		if (retry === true) {
-			retry = doRequest;
-		}
-		if (onRetry) {
-			retryFun = retry;
-			retry ==> {
-				onRetry();
-				retryFun();
-			};
-		}
-		
-		//For GET requests, should we try using the cache in the session storage?
-		if (useCache && oldDataRevisionNumber && !post) {
-			//Don't do anything if no_cache is set in the URL
-			if (url.indexOf('no_cache') != -1) {
-				var test = url.split(/&|\?/g);
-				foreach (test as var t) {
-					if (test[t] == 'no_cache') {
-						useCache = false;
-					} else if (test[t].substr(0, 9) == 'no_cache=' && engToBoolean(test[t].substr(9))) {
-						useCache = false;
-					}
-				}
-			}
-		
-			//Look for this request in the session storage
 			if (useCache) {
-				var name = zenario.userId + '_' + zenario.adminId + '_' + url,
-					store = zenario.sGetItem(true, name);
+				zenario.setSessionStorage(xmlHttp.responseText, url);
+			}
+	
+		} else {
+			//If you're using POST then variables need to be set in the POST.
+			// (This uses the same format as GET, however without the initial ?)
+		
+			//Check to see if the caller took the time to seperate the two different inputs out,
+			//or if they have dumped them all into the url
+			if (post === true) {
+				//If post has just been set to true, try to check the url for the actual inputs!
+				var qMark = url.indexOf('?');
+			
+				if (qMark == -1) {
+					//Case where POST must be used, but there are not actually any requests
+					post = '';
+				} else {
+					//Get variables from the URL and put them in the POST
+					post = url.substr(qMark+1);
+					url = url.substr(0, qMark);
+				}
+		
+			} else if (typeof post != 'string') {
+				post = zenario.urlRequest(post);
+			}
+		
+			xmlHttp.open('POST', url, false);
+			xmlHttp.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+			xmlHttp.send(post);
+		}
+	}
+
+	//Either return the response as-is, of if JSON was set, do JSON.parse on it first.
+	if (!json) {
+		return xmlHttp.responseText;
+	} else {
+		try {
+			return JSON.parse(xmlHttp.responseText);
+		} catch (e) {
+			if (xmlHttp.responseText) {
+				if (zenario.inAdminMode) {
+					zenarioA.floatingBox(xmlHttp.responseText, true, 'error');
+				} else {
+					alert(xmlHttp.responseText);
+				}
+			}
+		}
+	}
+};
+
+//An easy-as-possible drop-in replacement for zenario.nonAsyncAJAX(), which is now deprecated.
+//It returns a zenario.callback object.
+	//url: The URL of the request
+	//post: Pass some POST requests in here to use POST. Or set to true to use POST without any POST requests.
+	//json: Set to true to decode a JSON response
+	//useCache: Store the response in the session cache, and use the cached results next time.
+		//Won't apply to POST requests.
+		//The cache results are cleared automatically if the data_rev in the database changes.
+	//retry: If there's an error, show a "retry" button on the error message.
+		//Only works in admin mode.
+		//Can be a function to call, or true to recall this function
+	//timeout: If set, the request will be automatically retried or cancelled after this amount of time.
+zenario.ajax = function(url, post, json, useCache, retry, continueAnyway, settings, timeout, AJAXErrorHandler, onRetry, onCancel) {
+
+	url = zenario.addBasePath(url);
+	
+	var qMark, name, setting, options,
+		type = post? 'POST' : 'GET',
+		result = false,
+		aborted = false,
+		retryFun,
+		hadErrorAndHandledIt = false,
+		cb = new zenario.callback,
+		oldDataRevisionNumber = zenario.dataRev(),
+		
+		//If the request is a success, note down the data.
+		success = function(data) {
+			if (aborted) return;
+			result = data;
+		},
+		
+		//If there was an error, attempt to handle it
+		error = function(resp, statusType, statusText) {
+			if (aborted) return;
+			
+			if (AJAXErrorHandler = AJAXErrorHandler || zenarioA.AJAXErrorHandler) {
 				
-				//If we found it then we'll need to look up the current data revision number to see if it was in-date.
-				//(We'll also need to look it up if we never knew it in the first place!)
-				if (store || !oldDataRevisionNumber) {
-					zenario.checkDataRevisionNumber(true, => {
-						var currentDataRevisionNumber = zenario.dataRev();
+				AJAXErrorHandler(resp, statusType, statusText);
+				hadErrorAndHandledIt = true;
+			}
+		},
+		
+		//Call this function when we have the data and need to return it
+		complete = function(resp, statusType, statusText) {
+			if (aborted || hadErrorAndHandledIt) return;
+			
+			var parsedResult = false;
+			
+			//Either return the response as-is, of if JSON was set, do JSON.parse on it first.
+			if (json) {
+				try {
+					parsedResult = JSON.parse(result);
+				} catch (e) {
+					if (result) {
+						//Try to see if an error-handler has been set to show the error
+						if (AJAXErrorHandler = AJAXErrorHandler || zenarioA.AJAXErrorHandler) {
+							resp.responseText = result;
+							AJAXErrorHandler(resp, statusType, statusText);
 						
-						//If we didn't find it, or what we found was out of date, we still need to look it up again.
-						//Also, if it was out of date, we need to clear everything else out!
-						if (oldDataRevisionNumber !== currentDataRevisionNumber) {
-							doRequest();
-						
-						} else if (!store) {
-							doRequest();
-						
-						//Otherwise we can use the cached value!
+						//Otherwise just use alert() to handle the errors
 						} else {
-							result = store;
-							useCache = false;
-							complete();
+							alert(result);
 						}
+					}
+					return;
+				}
+		
+				cb.call(parsedResult);
+			} else {
+				cb.call(result);
+			}
+			
+			//If we were supposed to be using the cache, remember this result for next time
+			if (useCache) {
+				zenario.setSessionStorage(result, url);
+			}
+		},
+		
+		//Call this function to trigger the AJAX request
+		doRequest = function() {
+			result = false;
+			aborted = false;
+			hadErrorAndHandledIt = false;
+			
+			//Check to see if the caller took the time to seperate the two different inputs out,
+			//or if they have dumped them all into the url
+			if (post === true) {
+				//If post has just been set to true, try to check the url for the actual inputs!
+				qMark = url.indexOf('?');
+	
+				if (qMark == -1) {
+					//Case where POST must be used, but there are not actually any requests
+					post = '';
+				} else {
+					//Get variables from the URL and put them in the POST
+					post = url.substr(qMark+1);
+					url = url.substr(0, qMark);
+				}
+			}
+			
+			options = {
+				data: post,
+				type: type,
+				dataType: 'text',
+				success: success,
+				error: error,
+				complete: complete
+			}
+			
+			// Add any extra settings
+			if (settings) {
+				foreach (settings as name => setting) {
+					options[name] = setting;
+				}
+			}
+			
+			//Do the AJAX request
+			var req = $.ajax(url, options);
+			
+			//Some error handlers show a retry button that relaunches the request when pressed
+			//If this is available here, pass on the function they need to call
+			if (retry) {
+				req.zenario_retry = retry;
+			}
+			
+			//Notices, error messages, print_r()s and var_dump()s cause anything that uses JSON to valid
+			//validation. However it's possible that the JSON afterwards may still be valid.
+			//Allow an error handler to continue anyway in this case.
+			if (continueAnyway) {
+				req.zenario_continueAnyway = function(data) {
+					cb.call(data);
+				};
+			}
+			
+			//Allow a script to be called neither the cancel button was pressed,
+			//and not the retry/continue buttons
+			if (onCancel) {
+				req.zenario_onCancel = onCancel;
+			}
+			
+			
+			//Set a timeout on the request. If the timeout expires, we'll either retry or just give in
+			//if retry is not specified.
+			if (timeout) {
+				setTimeout( => {
+					if (req.readyState < 4) {
+						if (retry) {
+							aborted = true;
+							req.abort();
+							timeout *= 2;
+							retry();
+						} else {
+							req.abort();
+						}
+					}
+				}, timeout);
+			}
+		};
+	
+	if (retry === true) {
+		retry = doRequest;
+	}
+	if (onRetry) {
+		retryFun = retry;
+		retry ==> {
+			onRetry();
+			retryFun();
+		};
+	}
+	
+	//For GET requests, should we try using the cache in the session storage?
+	if (useCache && oldDataRevisionNumber && !post) {
+		//Don't do anything if no_cache is set in the URL
+		if (url.indexOf('no_cache') != -1) {
+			var test = url.split(/&|\?/g);
+			foreach (test as var t) {
+				if (test[t] == 'no_cache') {
+					useCache = false;
+				} else if (test[t].substr(0, 9) == 'no_cache=' && engToBoolean(test[t].substr(9))) {
+					useCache = false;
+				}
+			}
+		}
+	
+		//Look for this request in the session storage
+		if (useCache) {
+			var name = zenario.userId + '_' + zenario.adminId + '_' + url,
+				store = zenario.sGetItem(true, name);
+			
+			//If we found it then we'll need to look up the current data revision number to see if it was in-date.
+			//(We'll also need to look it up if we never knew it in the first place!)
+			if (store || !oldDataRevisionNumber) {
+				zenario.checkDataRevisionNumber(true, => {
+					var currentDataRevisionNumber = zenario.dataRev();
 					
-					});
-					return cb;
+					//If we didn't find it, or what we found was out of date, we still need to look it up again.
+					//Also, if it was out of date, we need to clear everything else out!
+					if (oldDataRevisionNumber !== currentDataRevisionNumber) {
+						doRequest();
+					
+					} else if (!store) {
+						doRequest();
+					
+					//Otherwise we can use the cached value!
+					} else {
+						result = store;
+						useCache = false;
+						complete();
+					}
+				
+				});
+				return cb;
+			}
+		}
+	}
+	
+	//If we didn't use the cache above, run the function now
+	doRequest();
+	return cb;
+};
+
+
+
+
+
+
+
+var loadingScripts = {},
+	loadedScripts = {},
+	scriptsLoadedCallback = new zenario.callback;
+
+zenario.loadScript =
+zenario.loadLibrary = function(path, callback, alreadyLoaded) {
+
+	var library =
+			loadedScripts[path] =
+				loadedScripts[path] || {
+					cb: new zenario.callback
+				};
+	
+	library.cb.after(callback);
+	
+	if (alreadyLoaded || library.loaded) {
+		library.loaded = true;
+		library.cb.call();
+	
+	} else if (!library.loading) {
+		library.loading = true;
+		
+		loadingScripts[path] = true;
+		
+		$.ajax({
+			url: path,
+			async: !!callback,
+			cache: true,
+			dataType: 'script',
+			success: function() {
+				library.loaded = true;
+				library.cb.call();
+			},
+		
+			complete: => {
+				delete loadingScripts[path];
+		
+				if (_.isEmpty(loadingScripts)) {
+					zenario.sendSignal('loadedScripts');
+				}
+			}
+		});
+	}
+};
+
+zenario.loadedScripts = function() {
+	scriptsLoadedCallback.call();
+	scriptsLoadedCallback = new zenario.callback; 
+};
+
+
+//Lazy-load the datepicker library when needed
+zenario.loadDatePicker = function(async) {
+	return zenario.loadScript(URLBasePath + 'zenario/libraries/mit/jquery/jquery-ui.datepicker.min.js?v=' + zenarioCSSJSVersionNumber,
+		async, $.datepicker);
+};
+
+
+
+
+zenario.sendSignal = function(signalName, data, dontUseCachedSignalHandlers) {
+
+	var id,
+		module,
+		moduleClass,
+		returnValue,
+		returnValues = [],
+		signalHandler,
+		signalHandlers = zenario.signalHandlers,
+		signalsInProgress = zenario.signalsInProgress;
+	
+	if (signalsInProgress[signalName]) {
+		return;
+	}
+	signalsInProgress[signalName] = true;
+	
+	if (!signalHandlers[signalName] || dontUseCachedSignalHandlers) {
+		signalHandlers[signalName] = [];
+		
+		foreach (zenario.modules as id => module) {
+			if (moduleClass = window[module.moduleClassName]) {
+				if (_.isFunction(moduleClass[signalName])) {
+					signalHandlers[signalName].push(moduleClass[signalName]);
 				}
 			}
 		}
 		
-		//If we didn't use the cache above, run the function now
-		doRequest();
-		return cb;
-	};
+		foreach (zenario.libs as id => moduleClass) {
+			if (_.isFunction(moduleClass[signalName])) {
+				signalHandlers[signalName].push(moduleClass[signalName]);
+			}
+		}
+	}
+
+	foreach (signalHandlers[signalName] as id => signalHandler) {
+		returnValue = signalHandler(data);
+	
+		if (returnValue !== undefined) {
+			returnValues.push(returnValue);
+		}
+	}
+
+	delete signalsInProgress[signalName];
+	return returnValues;
+};
+
+
+zenario.inList = function(list, val) {
+	
+	if (list && typeof list == 'object') {
+		//N.b. using "list[0] !== undefined" should catch both arrays
+		//and arrays that were accidentally converted to objects using json_encode.
+		return (list[0] !== undefined && _.contains(list, val))
+			|| (_.isObject(list) && engToBoolean(list[val]));
+	
+	} else {
+		return list == val;
+	}
+};
+
+
+zenario.applyMergeFields = function(text, mrg) {
+	mrg = mrg || {};
+
+	var trans = '',
+		b,
+		bits = ('' + text).split(/\[\[(.*?)\]\]/g);
+
+	foreach (bits as b) {
+		if (b % 2) {
+			if (mrg[bits[b]] !== undefined) {
+				trans += mrg[bits[b]];
+			}
+		} else {
+			trans += bits[b];
+		}
+	}
+	
+	return trans;
+};
+
+
+
+//Take a request string, and check it's formatted correctly
+zenario.addAmp = function(request) {
+
+	//For backwards compatability purposes, we'll accept a string with a URL already set, and strip the requests out
+	var pos = request.indexOf('?');
+	if (pos != -1) {
+		request = request.substr(pos+1);
+	}
+
+	//Add an & to the beginning if needed
+	if (request != '' && request.substr(0, 1) != '&') {
+		return '&' + request;
+	} else {
+		return request;
+	}
+};
+
+//Convert an array into a string for a URL if needed
+zenario.urlRequest = function(arr) {
+
+	//Don't run if this is already a string!
+	if (_.isString(arr)) {
+		return zenario.addAmp(arr);
+	}
+
+	var request = '';
+
+	if (arr) {
+		foreach (arr as var i) {
+			if (typeof arr[i] != 'object') {
+				request += '&' + encodeURIComponent(i) + '=';
+			
+				if (arr[i] !== undefined && arr[i] !== false && arr[i] !== null) {
+					request += encodeURIComponent(arr[i]);
+				}
+			}
+		}
+	}
+
+	return request;
+};
+
+
+//Reverse of the above, as per http://stackoverflow.com/questions/8648892/convert-url-parameters-to-a-javascript-object
+zenario.toObject = function(object, clone) {
+
+	if (!object) {
+		return {};
+	
+	//Convert URL strings to objects
+	} else if (_.isString(object)) {
+		return JSON.parse('{"' + decodeURI(object.replace(/&/g, "\",\"").replace(/=/g,"\":\"")) + '"}') || {};
+	
+	} else if (clone) {
+		return zenario.clone(object);
+	
+	} else {
+		return object;
+	}
+};
+
+zenario.clone = function(a, b, c) {
+	return $.extend(true, {}, a, b, c);
+};
+
+
+
+
+
+//Functions for managing plugin slots
+
+//Attempt to get the name of a slot from an element within the slot
+zenario.getSlotnameFromEl = function(el, getContainerId) {
+	if (_.isString(el)) {
+		if (!getContainerId) {
+			el = el.replace(/plgslt_/, '').split('-')[0];
+		}
+		return el;
+
+	} else if (_.isObject(el)) {
+		do {
+			if (el.id && el.id == 'colorbox') {
+				return zenario.colorboxOpen;
+		
+			} else if (el.id && el.id.substr(0, 7) == 'plgslt_') {
+			
+				var hyphen = el.id.indexOf('-'),
+					slotName;
+			
+				//Extract the slot name out from the container id
+				if (hyphen == -1) {
+					slotName = el.id.substr(7);
+				} else {
+					slotName = el.id.substr(7, hyphen - 7);
+				
+					//Check that this matches the correct pattern
+					var nestId = el.id.substr(hyphen + 1);
+					if (nestId != 1*nestId) {
+						continue;
+					}
+				}
+			
+				//Check if this is a name of a slot that exists!
+				if (!zenario.slots[slotName]) {
+					continue;
+				}
+			
+				if (getContainerId) {
+					return el.id;
+				} else {
+					return slotName;
+				}
+			}
+		} while (el = el.parentNode)
+	}
+	return false;
+};
+
+//Scroll to the top of a slot if needed
+zenario.scrollToSlotTop = function(containerIdSlotNameOrEl, neverScrollDown, time, el, offset) {
+	if (typeof containerIdSlotNameOrEl == 'string') {
+		containerIdSlotNameOrEl = get('plgslt_' + containerIdSlotNameOrEl) || get(containerIdSlotNameOrEl);
+	}
+
+	if (!containerIdSlotNameOrEl) {
+		return;
+	}
+
+	var scrollTop = zenario.scrollTop(undefined, undefined, el);
+	var slotTop = $(containerIdSlotNameOrEl).offset().top;
+
+	if (offset === undefined) {
+		offset = -80;
+	}
+
+	//Check that the top of the slot is actually visible
+	slotTop = Math.max(0, slotTop  + offset);
+
+	//Have an option to only scroll up, and never down
+	if (neverScrollDown && scrollTop < slotTop) {
+		return;
+	}
+
+	if (time === undefined) {
+		time = 700;
+	}
+
+	//Scroll to the correct place
+	zenario.scrollTop(slotTop, time, el);
+};
+
+//Refresh a plugin in a slot
+zenario.refreshPluginSlot = function(slotName, instanceId, additionalRequests, recordInURL, scrollToTopOfSlot, fadeOutAndIn, useCache, post) {
+	
+	if (scrollToTopOfSlot === undefined) {
+		scrollToTopOfSlot = true;
+	}
+
+	if (fadeOutAndIn === undefined) {
+		fadeOutAndIn = true;
+	}
+	
+	slotName = zenario.getSlotnameFromEl(slotName);
+	if (!slotName) {
+		return;
+	}
+
+	if (zenario.inAdminMode) {
+		zenarioA.closeSlotControls();
+		zenarioA.cancelMovePlugin();
+	}
+
+	//Remove the Nested Plugin id from the slotname if needed
+	slotName = slotName.split('-')[0];
+
+	if (!zenario.slots[slotName]) {
+		return;
+	}
+
+	if (!additionalRequests) {
+		additionalRequests = '';
+	} else {
+		additionalRequests = zenario.urlRequest(additionalRequests);
+	}
+	
+	additionalRequests = zenario.addTabIdToURL(additionalRequests, slotName);
+
+	//Allow a slot to be refreshed by name only, in which case we'll check its current instance id
+	if (instanceId == 'lookup') {
+		instanceId = zenario.slots[slotName].instanceId;
+	}
+
+	if (scrollToTopOfSlot && !zenarioAB.isOpen) {
+		//Scroll to the top of a slot if needed
+		zenario.scrollToSlotTop(slotName, true);
+	
+		//Don't scroll to the top later if we've already done it now
+		scrollToTopOfSlot = false;
+	}
+
+	//Fade the slot out to give a graphical hint that something is happening
+	if (fadeOutAndIn) {
+		var fadeOutAndInSelector = (fadeOutAndIn === 1 || fadeOutAndIn === true) ? ('#plgslt_' + slotName) : fadeOutAndIn;
+		$(fadeOutAndInSelector).stop(true, true).animate({opacity: .5}, 150);
+	}
+
+	//Run an AJAX request to reload the contents
+	var html,
+		url = zenario.pluginAJAXURL(slotName, additionalRequests, instanceId); 
+
+	//if (!post && useCache && (html = zenario.checkSessionStorage(url))) {
+	//	zenario.replacePluginSlotContents(slotName, instanceId, html, additionalRequests, recordInURL, scrollToTopOfSlot);
+	//} else {
+	//	//(I'm using jQuery so that this is done asyncronously)
+	//	var method = 'GET';
+	//	if (post) {
+	//		method = 'POST';
+	//	}
+	//	
+	//	$.ajax({
+	//		dataType: 'text',
+	//		data: post,
+	//		method: method,
+	//		url: url,
+	//		success: function(html) {
+	//			if (useCache) {
+	//				zenario.setSessionStorage(html, url);
+	//			}
+	//		
+	//			zenario.replacePluginSlotContents(slotName, instanceId, html, additionalRequests, recordInURL, scrollToTopOfSlot);
+	//		}
+	//	});
+	//}
+	
+	var cb = new zenario.callback;
+	
+	zenario.ajax(url, post, false, true).after(function(html) {
+		zenario.replacePluginSlotContents(slotName, instanceId, html, additionalRequests, recordInURL, scrollToTopOfSlot);
+		cb.call();
+	});
+	
+	return cb;
+};
+
+
+//Link to a content item
+zenario.linkToItem = function(cID, cType, request, adminlogin) {
+
+	//Accept an input in the form of a Plugin Setting, e.g. "html_123"
+	if (!cType && ('' + cID).indexOf('_') !== -1) {
+		//Only accept the input if it's in the correct form
+		var split = cID.split('_');
+			//There should be only one underscore
+		if (split[2] === undefined
+			//The second part should be a number
+		 && split[1] == 1 * split[1]
+			//The first part must be a-z
+		 && split[0].replace(/\w/g, '') === '') {
+			cID = split[1];
+			cType = split[0];
+		}
+	}
+
+	if (!cType) {
+		cType = 'html';
+	}
+
+	if (!request) {
+		request = '';
+	}
+
+	var pos,
+		canonicalURL,
+		basePath = URLBasePath;
+	if (adminlogin) {
+		basePath += 'zenario/admin/welcome.php';
+	} else {
+		basePath += zenario.indexDotPHP;
+	}
+	
+	//If we're linking to the content item that we're currently on...
+	if (!adminlogin
+	 && !zenario.adminId
+	 && cID === zenario.cID) {
+		//...check to see if it is using a friendly URL...
+		if ((canonicalURL = $('link[rel="canonical"]').attr('href'))
+		 && (!canonicalURL.match(/\bcID=/))) {
+			//..and try to keep it if possible
+			
+			//Get rid of any existing requests
+			pos = canonicalURL.indexOf('?');
+			if (pos != -1) {
+				canonicalURL = canonicalURL.substr(0, pos);
+			}
+			
+			if (request) {
+				return canonicalURL + '?' + zenario.urlRequest(request).substr(1);
+			} else {
+				return canonicalURL;
+			}
+		}
+	}
+	
+	
+	if (cID != 1*cID) {
+		return basePath + '?cID=' + cID + zenario.urlRequest(request);
+
+	} else {
+		return basePath + '?cID=' + cID + '&cType=' + cType + zenario.urlRequest(request);
+	}
+};
+
+
+
+//Redirect the user to a URL using JavaScript
+zenario.goToURL = function(URL, useChromeFix) {
+	document.location.href = URL;
+
+	if (useChromeFix) {
+		//Hack to fix a bug with Chrome :(
+		setTimeout(
+			function() {
+				document.location.href = URL;
+			}, 500);
+	}
+
+	return false;
+};
+
+
+zenario.actAfterDelayIfNotSuperseded = function(type, fun, delay) {
+	if (!delay) {
+		delay = 900;
+	}
+
+	if (!zenario.adinsActions[type]) {
+		zenario.adinsActions[type] = 0;
+	}
+	var thisAttemptNum = ++zenario.adinsActions[type];
+	
+	if (fun !== undefined) {
+		setTimeout(
+			function() {
+				//Catch to stop outdated/spammed requests
+				if (thisAttemptNum == zenario.adinsActions[type]) {
+					fun();
+				}
+			}, delay);
+	}
+};
+
+zenario.clearAllDelays = function(type) {
+	if (type) {
+		delete zenario.adinsActions[type];
+	} else {
+		zenario.adinsActions = {};
+	}
+};
+
+
 
 
 
@@ -544,9 +1104,16 @@ zenario.checkForHashChanges = function(timed) {
 		
 		//Give an Admin the ability to cancel navigation if they were editing something.
 		} else
-		if (zenarioA.init
+		if (zenario.inAdminMode
 		 && zenarioA.checkSlotsBeingEdited()
 		 && !confirm(zenarioA.phrase.leavePageWarning)
+		) {
+			document.location.hash = zenario.currentHash;
+		
+		//Same check for a FEA plugin in a nest conductor
+		} else
+		if ((undefined !== (message = zenario_conductor.confirmOnCloseMessage()))
+		 && (!confirm(message))
 		) {
 			document.location.hash = zenario.currentHash;
 		
@@ -655,12 +1222,21 @@ zenario.addTabIdToURL = function(url, slotName, specificTabId) {
 	var tabId = zenario.slots[slotName]
 			 && zenario.slots[slotName].tabId;
 	
-	//If the URL contains no tab.state information, add the tab id to it
-	if (tabId
-	 && url.indexOf('&state=') == -1
-	 && url.indexOf('&tab=') == -1
-	 && url.indexOf('&tab_no=') == -1) {
-		url += '&tab=' + (specificTabId === undefined? tabId : specificTabId);
+	//Check if the URL contains no tab or state information.
+	//If so, try to add the last tab/state used
+	if (tabId && !url.match(/\&(state|tab|tab_no)\=/)) {
+		
+		if (specificTabId !== undefined) {
+			url += '&tab=' + specificTabId;
+		
+		} else
+		if (zenario_conductor.slots[slotName]
+		 && zenario_conductor.slots[slotName].key) {
+			url += zenario.urlRequest(zenario_conductor.slots[slotName].key);
+		
+		} else {
+			url += '&tab=' + tabId;
+		}
 	}
 	
 	return url;
@@ -716,7 +1292,7 @@ zenario.formSubmit = function(el, scrollToTopOfSlot, fadeOutAndIn, slotName) {
 		fadeOutAndIn = true;
 	}
 	
-	if (zenarioA.init) {
+	if (zenario.inAdminMode) {
 		zenarioA.closeSlotControls();
 		zenarioA.cancelMovePlugin();
 	}
@@ -780,7 +1356,37 @@ zenario.formSubmit = function(el, scrollToTopOfSlot, fadeOutAndIn, slotName) {
 
 
 zenario.uneschyp = function(string) {
-	return string.replace(/`r/g, "\r").replace(/`n/g, "\n").replace(/`h/g, "-").replace(/`t/g, "`");
+	return string.replace(/`r/g, "\r").replace(/`n/g, "\n").replace(/`h/g, "-").replace(/`c/g, ":").replace(/`t/g, "`");
+};
+
+//Given a message that might have flags in it, parse the flags then strip them from the messages
+//Flags can look like this: <!--Flag-->
+//...or like this: <!--Flag:Value-->
+zenario.splitFlagsFromMessage = function(resp) {
+	
+	var flag;
+	
+	if (_.isString(resp)) {
+		resp = {responseText: resp};
+	}
+	
+	resp.flags = {};
+	
+	if (resp.responseText = resp.responseText || '') {
+		//Strip the flags off of from start
+		while ((flag = resp.responseText.split(/^\<\!--([^\:-]*?)(|\:([^\:-]*?))--\>/)) && (flag.length > 1)) {
+			resp.flags[flag[1]] = flag[3] && zenario.uneschyp(flag[3]);
+			resp.responseText = flag[4];
+		}
+	
+		//Strip the flags off from the end
+		while ((flag = resp.responseText.split(/\<\!--([^\:-]*?)(|\:([^\:-]*?))--\>$/)) && (flag.length > 1)) {
+			resp.flags[flag[1]] = flag[3] && zenario.uneschyp(flag[3]);
+			resp.responseText = flag[0];
+		}
+	}
+	
+	return resp;
 };
 
 //Set up a new encapsulated object for Plugins
@@ -796,7 +1402,7 @@ zenario.enc = function(id, className, moduleClassNameForPhrases) {
 			id, className, moduleClassNameForPhrases,
 			zenario);
 		
-		window[className].encapName = className;
+		window[className].globalName = className;
 		window[className].slots = new Object();
 		
 		zenario.modules[id] ==> {};
@@ -881,7 +1487,7 @@ zenario.slot = function(pluginInstances) {
 
 //Callback function for refreshPluginSlot()
 zenario.slotFormSubmissions = {};
-zenario.replacePluginSlotContents = function(slotName, instanceId, contents, additionalRequests, recordInURL, scrollToTopOfSlot, isFormPost) {
+zenario.replacePluginSlotContents = function(slotName, instanceId, resp, additionalRequests, recordInURL, scrollToTopOfSlot, isFormPost) {
 	
 	delete zenario.slotFormSubmissions[slotName];
 	zenario.currentHashSlot = slotName;
@@ -898,78 +1504,54 @@ zenario.replacePluginSlotContents = function(slotName, instanceId, contents, add
 		scriptsToRunBefore = new Array(),
 		showInFloatingBox = false,
 		floatingBoxExtraParams = {},
-		domSlot = get('plgslt_' + slotName);
+		containerId = 'plgslt_' + slotName,
+		domSlot = get(containerId),
+		flags, flagVal;
+	
+	//Look through the flags at the top of the AJAX return
+	resp = zenario.splitFlagsFromMessage(resp);
+	flags = resp.flags;
+	
+	//Allow modules to reject the AJAX reload and request an entire page reload
+	forceReloadHref = flags.FORCE_PAGE_RELOAD;
 	
 	//Don't try and do an AJAX reload if text has <script> or <styles> tags in
 		//However, if this was a POST submission, ignore this check as we don't want to re-submit the post data
-	contents = '' + contents;
-	if (!isFormPost && contents.match(/<(link|script|style)/i)) {
+	if (!isFormPost && resp.responseText.match(/<(link|script|style)/i)) {
 		forceReloadHref = zenario.linkToItem(zenario.cID, zenario.cType, additionalRequests);
 	}
 	
-	//Look for info tags before the plugin's output
-	cutoff = contents.indexOf('<!--/INFO-->');
-	if (cutoff != -1) {
-		//Get each tag from the info, then chop the tags off of the start of the content
-		info = contents.substr(0, cutoff + 4).split('--><!--');
-		contents = contents.substr(cutoff + 12);
+	if (flags.PAGE_TITLE) {
+		document.title = flags.PAGE_TITLE;
 	}
-		
-	//Look for info tags before the plugin's output
-	cutoff = contents.lastIndexOf('<!--INFO-->');
-	if (cutoff != -1) {
-		//Get each tag from the info, then chop the tags off of the start of the content
-		info = info.concat(contents.substr(cutoff + 8).split('--><!--'));
-		contents = contents.substr(0, cutoff);
-	}
-		
-	//Look through the info at the top of the AJAX return
-	foreach (info as var i) {
-		var details = info[i].split('--');
-		
-		//Allow modules to reject the AJAX reload and request an entire page reload
-		if (details[0] == 'FORCE_PAGE_RELOAD') {
-			forceReloadHref = zenario.uneschyp(details[1]);
-		
-		//Watch out for the "In Edit Mode" tag from modules in their edit modes
-		} else if (details[0] == 'IN_EDIT_MODE') {
-			beingEdited = true;
-		
-		} else if (details[0] == 'WIREFRAME') {
-			isVersionControlled = true;
-		
-		//Watch out for the instance id
-		} else if (details[0] == 'INSTANCE_ID') {
-			instanceId = zenario.uneschyp(details[1]);
-		
-		//Watch out for the slot's level
-		} else if (details[0] == 'LEVEL') {
-			level = 1*details[1];
-		
-		//Change the Class name of the slot
-		} else if (details[0] == 'CSS_CLASS') {
-			domSlot.className = 'zenario_slot ' + zenario.uneschyp(details[1])
-		
-		//Watch out for Tab Ids from nested modules
-		} else if (details[0] == 'TAB_ID') {
-			tabId = zenario.uneschyp(details[1]);
-		
-		//Allow modules to name JavaScript function(s) they wish to be run
-		} else if (details[0] == 'SCRIPT') {
-			scriptsToRun[scriptsToRun.length] = zenario.uneschyp(details[1]);
-		
-		} else if (details[0] == 'SCRIPT_BEFORE') {
-			scriptsToRunBefore[scriptsToRunBefore.length] = zenario.uneschyp(details[1]);
-		
-		} else if (details[0] == 'SCROLL_TO_TOP' && scrollToTopOfSlot === undefined) {
-			scrollToTopOfSlot = true;
-		
-		//Allow modules to open themselves in a floating box
-		} else if (details[0] == 'SHOW_IN_FLOATING_BOX') {
-			showInFloatingBox = true;
-		} else if (details[0] == 'FLOATING_BOX_PARAMS' && details[1]) {
-			floatingBoxExtraParams = JSON.parse(details[1]);
+	
+	//Watch out for the "In Edit Mode" tag from modules in their edit modes
+	beingEdited = flags.IN_EDIT_MODE;
+	isVersionControlled = flags.WIREFRAME;
+	instanceId = flags.INSTANCE_ID;
+	tabId = flags.TAB_ID;
+	level = 1*flags.LEVEL;
+	
+	domSlot.className = 'zenario_slot ' + (flags.CSS_CLASS || '');
+	
+	//Allow modules to name JavaScript function(s) they wish to be run
+	var script, i = 1;
+	while (script = flags['SCRIPT' + i] || flags['SCRIPT_BEFORE' + i]) {
+		if (flags['SCRIPT' + i]) {
+			scriptsToRun.push(script);
+		} else {
+			scriptsToRunBefore.push(script);
 		}
+		++i;
+	}
+	
+	if (scrollToTopOfSlot === undefined) {
+		scrollToTopOfSlot = flags.SCROLL_TO_TOP;
+	}
+	
+	//Allow modules to open themselves in a floating box
+	if (showInFloatingBox = flags.SHOW_IN_FLOATING_BOX) {
+		floatingBoxExtraParams = (flags.FLOATING_BOX_PARAMS && JSON.parse(flags.FLOATING_BOX_PARAMS)) || {};
 	}
 	
 	if (forceReloadHref) {
@@ -978,12 +1560,12 @@ zenario.replacePluginSlotContents = function(slotName, instanceId, contents, add
 			zenario.slots[slotName].beingEdited = beingEdited;
 		}
 		
-		if (zenarioA.init && (zenarioA.floatingBoxOpen || zenarioA.checkSlotsBeingEdited())) {
-			contents =
+		if (zenario.inAdminMode && (zenarioA.floatingBoxOpen || zenarioA.checkSlotsBeingEdited())) {
+			resp.responseText =
 				'<div><em>(' +
 					zenarioA.phrase.pluginNeedsReload.replace('[[href]]', htmlspecialchars(forceReloadHref)) +
 				')</em></div>' +
-				contents;
+				resp.responseText;
 		} else {
 			document.location.href = forceReloadHref;
 			return;
@@ -1006,7 +1588,7 @@ zenario.replacePluginSlotContents = function(slotName, instanceId, contents, add
 		zenario.colorboxFormChanged = false;
 		var params = {
 			transition: 'none',
-			html: contents,
+			html: resp.responseText,
 			onOpen: => {
 				var cb = get('colorbox');
 				cb.className = domSlot.className;
@@ -1065,9 +1647,9 @@ zenario.replacePluginSlotContents = function(slotName, instanceId, contents, add
 			zenario.colorboxOpen = false;
 		}
 		
-		if (!window.zenario_inIframe && zenarioA.init && info !== false) {
+		if (!window.zenario_inIframe && zenario.inAdminMode) {
 			//Admins need some more tasks, other than just changing the innerHTML
-			zenarioA.replacePluginSlot(slotName, instanceId, level, tabId, contents, info, scriptsToRunBefore);
+			zenarioA.replacePluginSlot(slotName, instanceId, level, tabId, resp, scriptsToRunBefore);
 		} else {
 			foreach (scriptsToRunBefore as var script) {
 				if (zenario.slots[slotName]) {
@@ -1077,7 +1659,7 @@ zenario.replacePluginSlotContents = function(slotName, instanceId, contents, add
 			
 			//If we're not in admin mode, just refresh the slot's innerHTML
 			zenario.slot([[slotName, instanceId, zenario.slots[slotName].moduleId, level, tabId, undefined, beingEdited, isVersionControlled]]);
-			domSlot.innerHTML = contents;
+			domSlot.innerHTML = resp.responseText;
 		}
 		
 		//Allow modules to call JavaScript function(s) after they have been refreshed
@@ -1087,7 +1669,7 @@ zenario.replacePluginSlotContents = function(slotName, instanceId, contents, add
 			}
 		}
 		
-		zenario.addJQueryElements('#plgslt_' + slotName + ' ');
+		zenario.addJQueryElements('#' + containerId + ' ');
 		
 		
 		if (scrollToTopOfSlot && !zenarioAB.isOpen) {
@@ -1102,8 +1684,9 @@ zenario.replacePluginSlotContents = function(slotName, instanceId, contents, add
 		}
 	}
 	
-	if (zenarioA.checkSlotsBeingEdited) {
+	if (zenario.inAdminMode) {
 		zenarioA.checkSlotsBeingEdited();
+		zenarioA.scanHyperlinksAndDisplayStatus(containerId);
 	}
 };
 
@@ -1167,13 +1750,12 @@ zenario.callScript = function(script, className, secondTime) {
 			functionName = script.shift();
 		
 		} else {
-			//If the library wasn't on the page, it might have just been loaded using jQuery's AJAX/eval
-			//function, and not be available yet.
-			//Try a zero-setTimeout and run it again.
-			if (!secondTime) {
-				setTimeout( => {
+			//If the library wasn't on the page, but there are scripts still loading,
+			//then try again after they have loaded
+			if (!secondTime && !_.isEmpty(loadingScripts)) {
+				scriptsLoadedCallback.after( => {
 					zenario.callScript(script, className, true);
-				}, 0);
+				});
 			}
 			
 			return;
@@ -1188,23 +1770,33 @@ zenario.callScript = function(script, className, secondTime) {
 
 
 
-
 //Apply compilation macros in a microtemplate
 //(Note that this is the same logic from zenario/js/js_minify.shell.php)
 zenario.applyCompilationMacros = code => {
 	
+	var forLoop = 'for ($2$3 in $1) { if (!zenario.has($1, $3)) continue;',
+		funct = 'function ($1) {';
+	
+	//"foreach" is a macro for "for .. in ... hasOwnProperty"
 	return code.replace(
 		/\bforeach\b\s*\(\s*(.+?)\s*\bas\b\s*(\bvar\b |)\s*(.+?)\s*\=\>\s*(\bvar\b |)\s*(.+?)\s*\)\s*\{/gi,
-		'for ($2$3 in $1) { if (!zenario.has($1, $3)) continue; $4 $5 = $1[$3];'
+		forLoop + ' $4 $5 = $1[$3];'
 	).replace(
 		/\bforeach\b\s*\(\s*(.+?)\s*\bas\b\s*(\bvar\b |)\s*(.+?)\s*\)\s*\{/gi,
-		'for ($2$3 in $1) { if (!zenario.has($1, $3)) continue;'
+		forLoop
+	
+	//Some babel style function definitions
 	).replace(
 		/\(([\w\s,]*)\)\s*\=\>\s*\{/g,
-		'function ($1) {'
+		funct
 	).replace(
 		/(\b\w+\b)\s*\=\>\s*\{/g,
-		'function ($1) {'
+		funct
+	
+	//Catch the case where whitespace would appear in the middle of a switch statement and cause an error
+	).replace(
+		/(\{|\:|\bbreak\s*\;)\s*%[\>\}]\s*[<\{]%\s*(case|default|\})/g,
+		'$1 $2'
 	);
 };
 
@@ -1291,7 +1883,7 @@ zenario.generateMicroTemplate = function(source, name) {
 };
 
 zenario.unfun = function(text) {
-	if (typeof text == 'function') {
+	if (_.isFunction(text)) {
 		return text();
 	} else {
 		return text;
@@ -1308,35 +1900,35 @@ zenario.num = function(text) {
 
 
 
-(contexts => {
-	contexts = {};
-	
-	zenario.disableScrolling = function(context) {
-		context = context || 'default';
-		
-		if (!contexts[context]) {
-			$('body').css({
-				overflow: 'hidden'
-			}); 
-	
-			contexts[context || 'default'] = true;
-		}
-	};
+var scrollingContexts = {};
 
-	zenario.enableScrolling = function(context) {
-		context = context || 'default';
-		
-		if (contexts[context]) {
-			delete contexts[context];
+zenario.disableScrolling = function(context) {
+	context = context || 'default';
 	
-			if (_.isEmpty(contexts)) {
-				$('body').css({
-					overflow: 'auto'
-				});
-			}
+	if (!scrollingContexts[context]) {
+		$('body').css({
+			overflow: 'hidden'
+		}); 
+
+		scrollingContexts[context || 'default'] = true;
+	}
+};
+
+zenario.enableScrolling = function(context) {
+	context = context || 'default';
+	
+	if (scrollingContexts[context]) {
+		delete scrollingContexts[context];
+
+		if (_.isEmpty(scrollingContexts)) {
+			$('body').css({
+				overflow: 'auto'
+			});
 		}
-	};
-})();
+	}
+};
+
+
 
 zenario.resizeColorbox = function() {
 	setTimeout($.colorbox.resize, 5);
@@ -1416,7 +2008,7 @@ zenario.addJQueryElements = function(path, adminFacing) {
 	
 	//Tooltips
 	var tooltips;
-	if (adminFacing && zenarioA.init) {
+	if (adminFacing && zenario.inAdminMode) {
 		tooltips = zenarioA.tooltips;
 	} else {
 		tooltips = zenario.tooltips;
@@ -1430,7 +2022,7 @@ zenario.addJQueryElements = function(path, adminFacing) {
 		tooltips(path + 'img[title]');
 		tooltips(path + 'area[title]');
 		
-		if (zenarioA.init) {
+		if (zenario.inAdminMode) {
 			zenarioA.addJQueryElements(path);
 		}
 	}
@@ -1454,27 +2046,6 @@ zenario.addJQueryElements = function(path, adminFacing) {
 	$(path + ' submit').click(function() {zenario.buttonClick(this)});
 };
 
-$(document)
-	//Disable/enable scrolling the page when a colorbox opens/closes
-	.bind('cbox_open', () => { zenario.disableScrolling('colorbox'); })
-	.bind('cbox_closed', () => { zenario.enableScrolling('colorbox'); })
-	
-	//Add tooltips and other jQuery elements to the page after it has loaded
-	.ready( => {
-		zenario.addJQueryElements();
-	});
-
-
-//Lazy-load the datepicker library when needed
-zenario.loadDatePicker = function() {
-	if (!$.datepicker) {
-		$.ajax({
-			async: false,
-			url: URLBasePath + 'zenario/libraries/mit/jquery/jquery-ui.datepicker.min.js?v=' + zenarioCSSJSVersionNumber,
-			dataType: 'script'
-		});
-	}
-};
 
 //The User presses a key on date field
 zenario.dateFieldKeyUp = function(el, event, adminBoxId) {
@@ -1619,6 +2190,20 @@ zenario.formatDate = function(date, showTime, format) {
 };
 
 
+
+
+var tooltipContent = function() {
+		var title = this.title,
+			pos = this.title.indexOf('|');
+	
+		if (pos != -1) {
+			return '<h3>' + this.title.substr(0, pos) + '</h3><p>' + this.title.substr(pos+1) + '</p>';
+		} else {
+			return title;
+		}
+	};
+
+
 //Wrapper function for jQuery tooltips
 zenario.tooltips = function(target, options) {
 	zenario.closeTooltip();
@@ -1647,16 +2232,7 @@ zenario.tooltips = function(target, options) {
 			options.position = {my: 'center top+2', at: 'center bottom', collision: 'flipfit'};
 		}
 		if (options.content === undefined) {
-			options.content = function() {
-				var title = this.title,
-					pos = this.title.indexOf('|');
-				
-				if (pos != -1) {
-					return '<h3>' + this.title.substr(0, pos) + '</h3><p>' + this.title.substr(pos+1) + '</p>';
-				} else {
-					return title;
-				}
-			};
+			options.content = tooltipContent;
 		}
 		
 		$('.ui-tooltip').remove();
@@ -1765,27 +2341,16 @@ zenario.fixJSON = function(json) {
 
 
 //Add a new plugin stylesheet to the page dynamically
-//This is so that if we add a new plugin or switch swatches, the new JS can be added
-//without needing a page reload
-zenario.javaScriptOnPage = new Object();
-zenario.addPluginJavaScript = function(moduleId, alwaysAdd) {
+zenario.addPluginJavaScript = function(moduleId, callback) {
 	
 	//Work out the path from the plugin name and the swatch name
 	filePath = 'zenario/js/plugin.wrapper.js.php?ids=' + moduleId + '&v=' + zenarioCSSJSVersionNumber;
 	
-	if (zenarioA.init) {
+	if (zenario.inAdminMode) {
 		filePath += '&admin=1';
 	}
 	
-	//Make sure that a script file is only included once, unless the "alwaysAdd" override is used
-	if (!alwaysAdd && zenario.javaScriptOnPage[filePath]) {
-		return;
-	}
-	
-	$.ajax({url: URLBasePath + filePath, dataType: "script", async: false});
-
-	
-	zenario.javaScriptOnPage[filePath] = true;
+	return zenario.loadScript(URLBasePath + filePath, callback);
 };
 
 
@@ -1863,8 +2428,10 @@ zenario.copy = function(text) {
 	if (textarea) {
 		textarea.value = text;
 		textarea.select();
-		document.execCommand('copy');
-	}  
+		return document.execCommand('copy');
+	}
+	
+	return false;
 };
 
 
@@ -1938,7 +2505,8 @@ zenario.checkDataRevisionNumber = function(async, cb) {
 	var url = URLBasePath + 'zenario/has_database_changed_and_is_cache_out_of_date.php';
 	
 	if (async) {
-		zenario.ajax(url, true, undefined, undefined, true, 2500).after(function(rev) {
+		//zenario.ajax(url, post, json, useCache, retry, continueAnyway, settings, timeout, AJAXErrorHandler, onRetry, onCancel)
+		zenario.ajax(url, true, undefined, undefined, true, false, undefined, 2500).after(function(rev) {
 			zenario.outdateCachedData(rev);
 			if (cb) cb();
 		});
@@ -2042,14 +2610,23 @@ zenario.sGetItem = function(session, name, isObject) {
 };
 
 //Include JSON library, if it's not defined natively
+//Note I am loading this syncronously, which is deprecated on modern browsers,
+//but it's not deprecated on any browser old enough not to have the JSON library built in as standard!
 if (!window.JSON) {
-	$.ajax({url: URLBasePath + 'zenario/libraries/public_domain/json/json2.min.js', dataType: "script", async: false});
+	zenario.loadScript(URLBasePath + 'zenario/libraries/public_domain/json/json2.min.js', false);
 }
 
 //Add the Math.log10() function, if it's not defined natively
 if (!Math.log10) {
 	Math.log10 = function(n) {
 		return Math.log(n) / Math.log(10);
+	};
+}
+
+//Add the starts-with function if it's not defined natively
+if (!String.prototype.startsWith) {
+	String.prototype.startsWith = function(prefix) {
+		return this.indexOf(prefix) === 0;
 	};
 }
 
@@ -2103,6 +2680,9 @@ zenario.tinyMCEGetContent = function(editor) {
 		 $(el).removeAttr('id class style');
 	});
 	
+	//Remove any of the link-status icons that get in the HTML
+	zenario.removeLinkStatus($html);
+	
 	html = $html.html();
 	
 	//Fix for request #2908 "Bug with WYSIWYG Editor: You can't delete an empty <h1> tag"
@@ -2111,6 +2691,10 @@ zenario.tinyMCEGetContent = function(editor) {
 	}
 	
 	return html;
+};
+
+zenario.removeLinkStatus = function($el) {
+	$el.find('del.zenario_link_status').remove();
 };
 
 //Functions for browser fullscreen
@@ -2158,20 +2742,6 @@ zenario.exitFullScreen = function() {
 };
 
 
-//Create a library with some dummy functions for the conductor,
-//so plugins do not crash if the full conductor lobrary is not loaded
-var zenario_conductor = createZenarioLibrary('_conductor');
-
-zenario_conductor.setCommands =
-zenario_conductor.registerGetRequest =
-zenario_conductor.clearRegisteredGetRequest =
-zenario_conductor.getRegisteredGetRequest =
-zenario_conductor.commandEnabled =
-zenario_conductor.enabled =
-zenario_conductor.link =
-zenario_conductor.go ==> { return false; };
-
-
 
 
 
@@ -2209,8 +2779,10 @@ var shrtNms = zenario.shrtNms = function(lib, libName) {
 			//so they can be copy-pasted into zenario/includes/js_minify.inc.php
 			//if/when there are changes/new functions
 			/*
-			libName = libName || lib.encapName;
-			console.log("'" + libName + "." + name + "(' => '" + libName + "." + newName + "(',");
+			if (newName.length < name.length) {
+				libName = libName || lib.globalName;
+				console.log("'" + libName + "." + name + "(' => '" + libName + "." + newName + "(',");
+			}
 			*/
 		}
 	}
@@ -2218,7 +2790,6 @@ var shrtNms = zenario.shrtNms = function(lib, libName) {
 
 shrtNms(_, '_');
 shrtNms(zenario);
-
 
 
 });

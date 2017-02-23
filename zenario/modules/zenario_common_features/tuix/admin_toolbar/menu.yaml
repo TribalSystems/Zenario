@@ -47,12 +47,8 @@ sections:
                     key:
                         mID: ""
                         languageId: ""
-            advanced_dropdown:
-                label: Advanced
-                hide_when_children_are_not_visible: true
             edit_menu_item:
                 priv: _PRIV_EDIT_MENU_ITEM
-                parent: advanced_dropdown
                 label: Menu node properties
                 tooltip: Edit the text of this menu node in the navigation
                 admin_box:
@@ -62,7 +58,6 @@ sections:
                         languageId: ""
             view_menu_node_in_sk:
                 priv: _PRIV_EDIT_MENU_ITEM
-                parent: advanced_dropdown
                 label: Organize menu...
                 organizer_quick:
                     path: ""
@@ -72,6 +67,23 @@ sections:
                     disallow_refiners_looping_on_min_path: No
                     reload_menu_slots: true
                     reload_admin_toolbar: true
+            advanced_dropdown:
+                label: More actions
+                hide_when_children_are_not_visible: true
+            quick_add_to_menu:
+                priv: _PRIV_ADD_MENU_ITEM
+                label: Create secondary node
+                parent: advanced_dropdown
+                tooltip: Create another menu node linking to this item
+                pick_items:
+                    path: zenario__menu/panels/menu_position
+                    target_path: zenario__menu/panels/menu_position
+                    disallow_refiners_looping_on_min_path: No
+                    one_to_one_choose_phrase: Create secondary menu node
+                    visible_if_for_all_selected_items: >
+                        zenario.engToBoolean(item.menu_id) || zenario.engToBoolean(item.is_dummy_child)
+                    request:
+                        mass_add_to_menu: 1
             detach:
                 priv: _PRIV_EDIT_MENU_ITEM
                 label: Detach content item
@@ -94,20 +106,6 @@ sections:
                         languageId: ""
                         menu_item: 1
                         detach: 1
-            quick_add_to_menu:
-                priv: _PRIV_ADD_MENU_ITEM
-                label: Create secondary node
-                parent: advanced_dropdown
-                tooltip: Create another menu node linking to this item
-                pick_items:
-                    path: zenario__menu/panels/menu_position
-                    target_path: zenario__menu/panels/menu_position
-                    disallow_refiners_looping_on_min_path: No
-                    one_to_one_choose_phrase: Create secondary menu node
-                    visible_if_for_all_selected_items: >
-                        zenario.engToBoolean(item.menu_id) || zenario.engToBoolean(item.is_dummy_child)
-                    request:
-                        mass_add_to_menu: 1
     secondary_menu_node:
         priv: _PRIV_VIEW_MENU_ITEM
         buttons:

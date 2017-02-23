@@ -28,9 +28,14 @@
 		<legend class="zfea_form_legend zfea_form_legend_for__{{firstField._id|escape}}"><span>{{firstField.legend}}</span></legend>
 	<% } %>
 	
-	<div id="row__{{m.fields[0]._id|escape}}" class="zfea_form_row zfea_form_row__{{m.fields[0]._id|escape}} {{m.fields[0].row_class|escape}} {{m.fields[0]._hideOnOpen? 'zfea_form_hide_row_on_open' : ''}}">
-		<div class="{{m.fields[0]._hideOnOpen? 'zfea_form_hide_on_open' : ''}} {{m.fields[0]._showOnOpen? 'zfea_form_show_on_open' : ''}}">
-			<% if (m.fields[0].label !== undefined) { %>
+	<div id="row__{{m.fields[0]._id|escape}}" class="
+		zfea_form_row zfea_form_row__{{m.fields[0]._id|escape}}
+		{{m.fields[0].row_class|escape}}
+		{{m.fields[0]._hideOnOpen? 'zfea_form_hide_row_on_open' : ''}}
+		{{firstField.indent? 'zfea_form_indent_level zfea_form_indent_level_' +  (1*firstField.indent) : ''}}
+	">
+		<div class="{{m.fields[0]._hideOnOpen? 'zfea_form_hide_on_open' : ''}} {{m.fields[0]._showOnOpen? 'zfea_form_show_on_open' : ''}}">	
+			<% if (m.fields[0].label !== undefined && !(firstField.type == 'checkbox' || firstField.type == 'radio' || firstField.type == 'toggle')) { %>
 				<div class="title">
 					<label for="{{m.fields[0]._id|escape}}">{{m.fields[0].label}}</label>
 				</div>

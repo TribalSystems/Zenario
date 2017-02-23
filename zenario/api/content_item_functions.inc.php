@@ -157,16 +157,10 @@ function sqlToSearchContentTable($hidePrivateItems = true, $onlyShow = false, $e
 	} elseif (!session('extranetUserID') || $onlyShow == 'public') {
 		//If the visitor is not logged in, only show public items
 		$sql .= "
-		WHERE tc.privacy = 'public'";
+		WHERE tc.privacy IN ('public', 'logged_out')";
 	
 	} else {
 		//If the visitor is logged in, check which items they can see
-		$sql .= "
-		LEFT JOIN ". DB_NAME_PREFIX. "user_content_link AS ucl
-		   ON ucl.equiv_id = tc.equiv_id
-		  AND ucl.content_type = tc.type
-		  AND ucl.user_id = ". (int) session('extranetUserID');
-		
 		
 		$groupsList = "FALSE";
 		foreach (getUserGroups(session('extranetUserID')) as $groupId => $groupName) {
@@ -188,18 +182,16 @@ function sqlToSearchContentTable($hidePrivateItems = true, $onlyShow = false, $e
 		$sql .= "
 		WHERE IF (tc.privacy = 'group_members',
 			". $groupsList. ",
-			IF (tc.privacy = 'specific_users',
-				ucl.equiv_id,
-				tc.privacy IN ('public', 'all_extranet_users')))";
+			tc.privacy IN ('public', 'logged_in'))";
 	}
 	
 	if ($onlyShow == 'public') {
 		$sql .= "
-		  AND tc.privacy = 'public'";
+		  AND tc.privacy IN ('public', 'logged_out')";
 	
 	} elseif ($onlyShow == 'private') {
 		$sql .= "
-		  AND tc.privacy IN ('all_extranet_users', 'group_members', 'specific_users')";
+		  AND tc.privacy IN ('logged_in', 'group_members', 'in_smart_group', 'logged_in_not_in_smart_group')";
 	}
 	
 	//Ensure that special pages are not included in the search results

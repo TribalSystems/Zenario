@@ -29,8 +29,8 @@ zenario.lib(function(
 	undefined,
 	URLBasePath,
 	document, window, windowOpener, windowParent,
-	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO,
-	get, engToBoolean, htmlspecialchars, ifNull, jsEscape, phrase,
+	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO, strings,
+	encodeURIComponent, get, engToBoolean, htmlspecialchars, jsEscape, phrase,
 	extensionOf, methodsOf, has,
 	panelTypes
 ) {
@@ -72,7 +72,7 @@ methods.returnPageSize = function() {
 methods.drawItems = function($panel) {
 	
 	//this.items = this.getMergeFieldsForItemsAndColumns(true);
-	this.items = {no_items_message: this.tuix.no_items_message || phrase.noItems};
+	this.items = {no_items_message: zenarioO.panelProp('no_items_message') || phrase.noItems};
 	
 	if (_.isEmpty(this.tuix.items)) {
 		$panel.html(this.microTemplate('zenario_organizer_grid', this.items));
@@ -87,7 +87,7 @@ methods.drawItems = function($panel) {
 					boxSelectionEnabled: false,
 					//autounselectify: true,
 					//autolock: true,
-					autoungrabify: true,
+					//autoungrabify: true,
 
 					style: [
 						{
@@ -109,9 +109,10 @@ methods.drawItems = function($panel) {
 								'padding-left': '10px',
 								'padding-bottom': '10px',
 								'padding-right': '10px',
-								'text-valign': 'top',
+								'text-valign': 'bottom',
 								'text-halign': 'center',
 								'background-color': '#ddd',
+								'background-opacity': 0.5,
 								'border-color': '#eee',
 								'border-opacity': 1,
 								'border-width': 1,
@@ -151,10 +152,6 @@ methods.drawItems = function($panel) {
 								'border-style': 'solid',
 								'background-blacken': 0.3,
 								'line-color': 'black'
-								/*
-								'background-color': 'black',
-								'target-arrow-color': 'black',
-								'source-arrow-color': 'black'*/
 							}
 						}
 					],
@@ -163,12 +160,57 @@ methods.drawItems = function($panel) {
 						nodes: [],
 						edges: []
 					},
-
+					
+					
+					//
+					// Different types of layout
+					//
+					
+					//Circle layout, items are arranged in a circle
+					//layout: {
+					//	name: 'circle',
+					//	padding: 5,
+					//	radius: 100
+					//}
+					
+					//Breadthfirst layout - a smart layout that arranges things in a grid, trying to keep linked items
+					//close to each other and reducing the ammount of spaghetti. Not fool-proof though!
 					layout: {
-						name: 'circle',
-						padding: 5,
-						radius: 100
+						name: 'breadthfirst'
+						//fit: true, // whether to fit the viewport to the graph
+						//directed: false, // whether the tree is directed downwards (or edges can point in any direction if false)
+						//padding: 30, // padding on fit
+						//circle: false, // put depths in concentric circles if true, put depths top down if false
+						//spacingFactor: 1.75, // positive spacing factor, larger => more space between nodes (N.B. n/a if causes overlap)
+						//boundingBox: undefined, // constrain layout bounds; { x1, y1, x2, y2 } or { x1, y1, w, h }
+						//avoidOverlap: true, // prevents node overlap, may overflow boundingBox if not enough space
+						//roots: undefined, // the roots of the trees
+						//maximalAdjustments: 0, // how many times to try to position the nodes in a maximal way (i.e. no backtracking)
+						//animate: false, // whether to transition the node positions
+						//animationDuration: 500, // duration of animation in ms if enabled
+						//animationEasing: undefined, // easing of animation if enabled
+						//ready: undefined, // callback on layoutready
+						//stop: undefined // callback on layoutstop
 					}
+					
+					
+					//Manual layout - here you need to manually set the position of each node
+					//layout: {
+					//	name: 'preset',
+					//	// map of (node id) => (position obj); or function(node){ return somPos; }
+					//	positions: {"state_A":{"x":209,"y":190.66666666666666},"state_O":{"x":182.875,"y":286}, ... },
+					//	zoom: undefined, // the zoom level to set (prob want fit = false if set)
+					//	pan: undefined, // the pan level to set (prob want fit = false if set)
+					//	fit: true, // whether to fit to viewport
+					//	padding: 30, // padding on fit
+					//	animate: false, // whether to transition the node positions
+					//	animationDuration: 500, // duration of animation in ms if enabled
+					//	animationEasing: undefined, // easing of animation if enabled
+					//	ready: undefined, // callback on layoutready
+					//	stop: undefined // callback on layoutstop
+					//}
+					
+					
 				},
 				this.tuix.cytoscape
 			);
@@ -194,6 +236,10 @@ methods.drawItems = function($panel) {
 			//N.b. if we want to make an item unselectable, do this:
 			//item.selectable = false; 
 			
+			//Allow states to be moved, slides and paths should inherit their position using the position of the states
+			//so they shouldn't be independantly movable
+			item.grabbable = item.data.type == 'state';
+			
 			switch (item.data.type) {
 				case 'state':
 				case 'slide':
@@ -217,6 +263,19 @@ methods.drawItems = function($panel) {
 		
 		this.cyOptions = options;
 		this.drawCytoscape($panel);
+		
+		
+		//Check to see if there were any specific positions set for this nest.
+		//If there are any saved positions in the database, override the defaults for each position that was saved
+		if (!_.isEmpty(this.tuix.positions)) {
+			var pos;
+			foreach (this.tuix.positions as id => pos) {
+				if (this.tuix.items[id]) {
+					this.cy.$('#' + id).position(pos);
+				}
+			}
+			this.cy.fit();
+		}
 	}
 
 	
@@ -227,6 +286,7 @@ methods.drawCytoscape = function($panel) {
 	$panel.html('');
 	
 	var that = this,
+		draggedSomething = false,
 		options = zenario.clone(this.cyOptions);
 	options.container = $panel;
 	
@@ -254,6 +314,38 @@ methods.drawCytoscape = function($panel) {
 		
 		zenarioO.setButtons();
 		zenarioO.setHash();
+	});
+	
+	//If the admin moves a node, update the position object
+	this.cy.on('grab', 'node', function(e) {
+		draggedSomething = false;
+	});
+	this.cy.on('drag', 'node', function(e) {
+		draggedSomething = true;
+	});
+	this.cy.on('free', 'node', function(e) {
+		
+		if (!draggedSomething) {
+			return;
+		}
+		
+		var id, item,
+			noPositionsWereSetBefore = _.isEmpty(that.tuix.positions),
+			noPositionsWereChangedBefore = !that.tuix.positionsChanged;
+		
+		that.tuix.positions = {};
+		
+		foreach (that.tuix.items as id => item) {
+			if (item.type == 'state') {
+				that.tuix.positions[id] = that.cy.$('#' + id).position();
+				that.tuix.positionsChanged = true;
+			}
+		}
+		
+		//If no positions were set before, and they are now, we may need to redraw the buttons
+		if (noPositionsWereSetBefore || noPositionsWereChangedBefore) {
+			zenarioO.setButtons();
+		}
 	});
 };
 

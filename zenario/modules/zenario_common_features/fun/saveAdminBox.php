@@ -33,11 +33,6 @@ switch ($path) {
 		return require funIncPath(__FILE__, 'plugin_settings.saveAdminBox');
 	
 	
-	case 'zenario_content':
-	case 'zenario_quick_create':
-		return require funIncPath(__FILE__, 'content.saveAdminBox');
-	
-	
 	case 'zenario_content_categories':
 		exitIfNotCheckPriv('_PRIV_EDIT_CONTENT_ITEM_CATEGORIES');
 		

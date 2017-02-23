@@ -31,6 +31,9 @@ $perms = array();
 
 //Loop through every module Setting that a module has in its Admin Box XML file(s)
 if ($dir = moduleDir($moduleClassName, 'tuix/admin_boxes/', true)) {
+	
+	require_once CMS_ROOT. 'zenario/includes/tuix.inc.php';
+	
 	$tags = array();
 	foreach (scandir(CMS_ROOT. $dir) as $file) {
 		if (is_file(CMS_ROOT. $dir. $file) && substr($file, 0, 1) != '.') {

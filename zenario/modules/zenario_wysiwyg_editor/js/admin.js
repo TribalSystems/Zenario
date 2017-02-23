@@ -29,8 +29,8 @@ zenario.lib(function(
 	undefined,
 	URLBasePath,
 	document, window, windowOpener, windowParent,
-	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO,
-	get, engToBoolean, htmlspecialchars, ifNull, jsEscape, phrase,
+	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO, strings,
+	encodeURIComponent, get, engToBoolean, htmlspecialchars, jsEscape, phrase,
 	extensionOf, methodsOf, has,
 	zenario_wysiwyg_editor
 ) {
@@ -73,7 +73,10 @@ zenario_wysiwyg_editor.open = function(containerId, editorId, summaryLocked, sum
 	}
 	
 	zenarioA.getSkinDesc();
-	$('div#' + editorId).tinymce({
+	
+	var $editor = $('div#' + editorId);
+	
+	$editor.tinymce({
 		script_url: URLBasePath + zenario.tinyMCEPath,
 
 		plugins: ["advlist autolink lists link image charmap hr anchor",
@@ -147,6 +150,7 @@ directionality	ltr rtl
 		file_browser_callback: zenarioA.fileBrowser,
 		
 		init_instance_callback: function(instance) {
+			zenario.removeLinkStatus($editor);
 			zenarioA.enableDragDropUploadInTinyMCE(true, '', containerId);
 		}
 	});

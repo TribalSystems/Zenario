@@ -4,10 +4,21 @@ zenario_smart_group:
     priv: _PRIV_MANAGE_GROUP
     key:
         id: ""
+        intended_usage: smart_newsletter_group
         num_rules: 1
+        
+        # Flags for whether certain types of user-field exist
+        flagsExist: false
+        groupsExist: false
+        listsExist: false
+        
+        # Flags for whether things from other modules exist
+        assetsExist: false
+        companiesExist: false
+        locationsExist: false
+        rolesExist: false
     hide_tab_bar: true
-    title: Creating a smart group
-    lovs: {}
+    title: ''
     tabs:
         smart_group:
             edit_mode:
@@ -34,44 +45,59 @@ zenario_smart_group:
                             label: 'they match ALL of the rules below:'
                         any:
                             label: 'they match ANY of the rules below:'
+                
+                table_start:
+                    full_width: true
+                    snippet: 
+                        html: |
+                            <table class="zenario_smart_group_rules">
+                
+                table_end:
+                    ord: 999996
+                    same_row: true
+                    snippet: 
+                        html: |
+                            </table>
+                
+                
                 members: 
-                    ord: 999998
+                    ord: 999997
                     label: "Users that match these rules:"
                     type: text
                     read_only: true
                     style: |
                         width: 5em;
                     value: 0
-                no_rules_set: 
-                    ord: 999999
+                
+                no_rules_set_news: 
+                    ord: 999998
+                    visible_if: tuix.key.intended_usage == 'smart_newsletter_group'
                     full_width: true
+                    label: "Users that match these rules:"
                     snippet: 
-                        html: |
-                            <p>
-                                No rules are set. All users will be included.
-                            </p>
+                        label: No rules are set. All users will be included.
+                
+                no_rules_set_perms: 
+                    ord: 999999
+                    visible_if: tuix.key.intended_usage == 'smart_permissions_group'
+                    full_width: true
+                    label: "Users that match these rules:"
+                    snippet: 
+                        label: No rules are set. No one will be included.
             
             custom_template_fields:
                 type__znz:
-                    ord: 10znz01
-                    custom_n: znz
+                    same_row: true
                     type: select
                     empty_value: ' -- Select -- '
-                    values:
-                        group:
-                            ord: 100001
-                            label: 'Group:'
-                        flag:
-                            ord: 100002
-                            label: 'Flag:'
-                        list:
-                            ord: 100003
-                            label: 'Radio or list:'
+                    values: types
                     format_onchange: true
+                    pre_field_html: |
+                        <tr><td>
+                    post_field_html: |
+                        </td><td>
                 
                 is_isnt_in__znz:
-                    ord: 10znz02
-                    custom_n: znz
                     same_row: true
                     type: select
                     values:
@@ -85,9 +111,67 @@ zenario_smart_group:
                         zenarioAB.value('type__znz') == 'group'
                     format_onchange: true
                 
+                field__znz:
+                    same_row: true
+                    type: select
+                    values: fields
+                    empty_value: ' -- Select -- '
+                    visible_if: |
+                        zenarioAB.value('type__znz') == 'flag' ||
+                        zenarioAB.value('type__znz') == 'group' ||
+                        zenarioAB.value('type__znz') == 'list'
+                    format_onchange: true
+                    validation:
+                        required_if_not_hidden: Please select a field
+                
+                field2__znz:
+                    same_row: true
+                    pre_field_html: ' or&nbsp;'
+                    type: select
+                    empty_value: ' -- Select -- '
+                    values: fields
+                    visible_if: |
+                        zenarioAB.value('type__znz') == 'group' &&
+                        zenarioAB.value('is_isnt_in__znz') == 'is_one_of'
+                    format_onchange: true
+                
+                field3__znz:
+                    same_row: true
+                    pre_field_html: ' or&nbsp;'
+                    type: select
+                    empty_value: ' -- Select -- '
+                    values: fields
+                    visible_if: |
+                        zenarioAB.value('type__znz') == 'group' &&
+                        zenarioAB.value('is_isnt_in__znz') == 'is_one_of' &&
+                        (zenario.engToBoolean(zenarioAB.value('field2__znz')) || zenario.engToBoolean(zenarioAB.value('field3__znz')))
+                    format_onchange: true
+                
+                field4__znz:
+                    same_row: true
+                    pre_field_html: ' or&nbsp;'
+                    type: select
+                    empty_value: ' -- Select -- '
+                    values: fields
+                    visible_if: |
+                        zenarioAB.value('type__znz') == 'group' &&
+                        zenarioAB.value('is_isnt_in__znz') == 'is_one_of' &&
+                        (zenario.engToBoolean(zenarioAB.value('field3__znz')) || zenario.engToBoolean(zenarioAB.value('field4__znz')))
+                    format_onchange: true
+                
+                field5__znz:
+                    same_row: true
+                    pre_field_html: ' or&nbsp;'
+                    type: select
+                    empty_value: ' -- Select -- '
+                    values: fields
+                    visible_if: |
+                        zenarioAB.value('type__znz') == 'group' &&
+                        zenarioAB.value('is_isnt_in__znz') == 'is_one_of' &&
+                        (zenario.engToBoolean(zenarioAB.value('field4__znz')) || zenario.engToBoolean(zenarioAB.value('field5__znz')))
+                    format_onchange: true
+                
                 is_isnt_set__znz:
-                    ord: 10znz03
-                    custom_n: znz
                     same_row: true
                     type: select
                     values:
@@ -99,79 +183,8 @@ zenario_smart_group:
                         zenarioAB.value('type__znz') == 'flag'
                     format_onchange: true
                 
-                field__znz:
-                    ord: 10znz04
-                    custom_n: znz
-                    same_row: true
-                    type: select
-                    empty_value: ' -- Select -- '
-                    visible_if: |
-                        zenarioAB.value('type__znz') == 'flag' ||
-                        zenarioAB.value('type__znz') == 'group' ||
-                        zenarioAB.value('type__znz') == 'list'
-                    format_onchange: true
-                    validation:
-                        required_if_not_hidden: Please select a field
-                
-                field2__znz:
-                    ord: 10znz05
-                    custom_n: znz
-                    same_row: true
-                    pre_field_html: ' or&nbsp;'
-                    type: select
-                    empty_value: ' -- Select -- '
-                    values: dataset_groups
-                    visible_if: |
-                        zenarioAB.value('type__znz') == 'group' &&
-                        zenarioAB.value('is_isnt_in__znz') == 'is_one_of'
-                    format_onchange: true
-                
-                field3__znz:
-                    ord: 10znz06
-                    custom_n: znz
-                    same_row: true
-                    pre_field_html: ' or&nbsp;'
-                    type: select
-                    empty_value: ' -- Select -- '
-                    values: dataset_groups
-                    visible_if: |
-                        zenarioAB.value('type__znz') == 'group' &&
-                        zenarioAB.value('is_isnt_in__znz') == 'is_one_of' &&
-                        (zenario.engToBoolean(zenarioAB.value('field2__znz')) || zenario.engToBoolean(zenarioAB.value('field3__znz')))
-                    format_onchange: true
-                
-                field4__znz:
-                    ord: 10znz07
-                    custom_n: znz
-                    same_row: true
-                    pre_field_html: ' or&nbsp;'
-                    type: select
-                    empty_value: ' -- Select -- '
-                    values: dataset_groups
-                    visible_if: |
-                        zenarioAB.value('type__znz') == 'group' &&
-                        zenarioAB.value('is_isnt_in__znz') == 'is_one_of' &&
-                        (zenario.engToBoolean(zenarioAB.value('field3__znz')) || zenario.engToBoolean(zenarioAB.value('field4__znz')))
-                    format_onchange: true
-                
-                field5__znz:
-                    ord: 10znz08
-                    custom_n: znz
-                    same_row: true
-                    pre_field_html: ' or&nbsp;'
-                    type: select
-                    empty_value: ' -- Select -- '
-                    values: dataset_groups
-                    visible_if: |
-                        zenarioAB.value('type__znz') == 'group' &&
-                        zenarioAB.value('is_isnt_in__znz') == 'is_one_of' &&
-                        (zenario.engToBoolean(zenarioAB.value('field4__znz')) || zenario.engToBoolean(zenarioAB.value('field5__znz')))
-                    format_onchange: true
-                
                 
                 is_isnt__znz:
-                    ord: 10znz20
-                    custom_n: znz
                     same_row: true
                     type: select
                     values:
@@ -180,14 +193,11 @@ zenario_smart_group:
                         isnt:
                             label: is not
                     visible_if: |
-                        zenarioAB.value('type__znz') &&
-                        zenarioAB.value('type__znz') != 'flag' &&
-                        zenarioAB.value('type__znz') != 'group'
+                        (zenarioAB.value('type__znz') && 1 * zenarioAB.value('type__znz')) ||
+                        (zenarioAB.value('type__znz') == 'list' && zenarioAB.value('field__znz'))
                     format_onchange: true
                 
                 value__znz:
-                    ord: 10znz21
-                    custom_n: znz
                     same_row: true
                     type: select
                     empty_value: ' -- Select -- '
@@ -195,19 +205,98 @@ zenario_smart_group:
                         required_if_not_hidden: Please select a value
                     format_onchange: true
                 
+                has_the_role__znz:
+                    same_row: true
+                    snippet:
+                        label: 'Has the role'
+                    visible_if: |
+                        zenarioAB.value('type__znz') == 'role'
+                
+                role__znz:
+                    same_row: true
+                    type: select
+                    values: roles
+                    empty_value: ' -- Select -- '
+                    visible_if: |
+                        zenarioAB.value('type__znz') == 'role'
+                    format_onchange: true
+                    validation:
+                        required_if_not_hidden: Please select a role
+                
+                role_at_specified_location__znz:
+                    same_row: true
+                    snippet:
+                        label: 'at the location specified in the URL'
+                    visible_if: |
+                        zenarioAB.value('type__znz') == 'role'
+                        && tuix.key.intended_usage == 'smart_permissions_group'
+                
+                role_at_any_location__znz:
+                    same_row: true
+                    snippet:
+                        label: 'at any location'
+                    visible_if: |
+                        zenarioAB.value('type__znz') == 'role'
+                        && tuix.key.intended_usage == 'smart_newsletter_group'
+                
+                td__znz:
+                    same_row: true
+                    snippet: 
+                        html: |
+                            </td><td>
+                
                 remove__znz:
-                    ord: 10znz22
-                    custom_n: znz
                     same_row: true
                     type: submit
                     value: '-'
                     visible_if: |
                         zenarioAB.value('type__znz') || znz > 1
                 add__znz:
-                    ord: 10znz23
-                    custom_n: znz
                     same_row: true
                     type: submit
                     value: '+'
                     visible_if: |
                         zenarioAB.value('type__znz') && znz == zenarioAB.tuix.key.num_rules
+                
+                tr__znz:
+                    same_row: true
+                    snippet: 
+                        html: |
+                            </td></tr>
+    
+    lovs:
+        fields: {}
+        types:
+            user_fields:
+                ord: 1
+                label: User fields
+            group:
+                parent: user_fields
+                ord: 100001
+                label: Group
+                visible_if: tuix.key.groupsExist
+            flag:
+                parent: user_fields
+                ord: 100002
+                label: Flag
+                visible_if: tuix.key.flagsExist
+            list:
+                parent: user_fields
+                ord: 100003
+                label: Radio or list
+                visible_if: tuix.key.listsExist
+            
+            has_access_to:
+                ord: 2
+                label: Other checks
+                hide_when_children_are_not_visible: true
+              
+            role:
+                ord: 6
+                parent: has_access_to
+                label: Role
+                visible_if: tuix.key.rolesExist  
+                
+                
+    
+    

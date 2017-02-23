@@ -1620,6 +1620,7 @@ var tooltip = $.widget( "ui.tooltip", {
 		}
 
 		// Append the aria-live region so tooltips announce correctly
+		if (!this.options.disableAriaLiveRegions)
 		this.liveRegion = $( "<div>" )
 			.attr({
 				role: "log",
@@ -1799,14 +1800,16 @@ var tooltip = $.widget( "ui.tooltip", {
 		// Support: Voiceover on OS X, JAWS on IE <= 9
 		// JAWS announces deletions even when aria-relevant="additions"
 		// Voiceover will sometimes re-read the entire log region's contents from the beginning
-		this.liveRegion.children().hide();
-		if ( content.clone ) {
-			a11yContent = content.clone();
-			a11yContent.removeAttr( "id" ).find( "[id]" ).removeAttr( "id" );
-		} else {
-			a11yContent = content;
+		if (!this.options.disableAriaLiveRegions) {
+			this.liveRegion.children().hide();
+			if ( content.clone ) {
+				a11yContent = content.clone();
+				a11yContent.removeAttr( "id" ).find( "[id]" ).removeAttr( "id" );
+			} else {
+				a11yContent = content;
+			}
+			$( "<div>" ).html( a11yContent ).appendTo( this.liveRegion );
 		}
-		$( "<div>" ).html( a11yContent ).appendTo( this.liveRegion );
 
 		function position( event ) {
 			positionOption.of = event;
@@ -1991,6 +1994,7 @@ var tooltip = $.widget( "ui.tooltip", {
 				element.removeData( "ui-tooltip-title" );
 			}
 		});
+		if (this.liveRegion)
 		this.liveRegion.remove();
 	}
 });

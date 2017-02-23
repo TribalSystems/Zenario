@@ -31,7 +31,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 $sql = "
 	DELETE FROM ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "user_unread_threads
 	WHERE reader_id = ". (int) $userId;
-sqlUpdate($sql, false);
+sqlUpdate($sql, false, false);
 
 $sql = "
 	UPDATE ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "forums SET

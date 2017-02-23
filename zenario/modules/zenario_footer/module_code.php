@@ -43,7 +43,6 @@ class zenario_footer extends zenario_menu {
 		$this->numLevels				= 1;
 		$this->maxLevel1MenuItems		= 40;
 		$this->language					= false;
-		$this->showAdminAddMenuItem		= true;
 		$this->onlyFollowOnLinks		= true;
 		$this->onlyIncludeOnLinks		= false;
 		$this->showInvisibleMenuItems	= false;

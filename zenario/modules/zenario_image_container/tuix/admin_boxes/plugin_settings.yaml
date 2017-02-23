@@ -7,12 +7,13 @@ plugin_settings:
             fields:
                 image_source:
                     #overwrite the banner declaration
-                    plugin_setting:
-                        name: image_source
-                    label: 'Image source:'
-                    type: text
-                    hidden: true
+                    disabled: true
                     value: _CUSTOM_IMAGE
+                    values:
+                        _NO_IMAGE:
+                            hidden: true
+                        _STICKY_IMAGE:
+                            hidden: true
                 retina:
                     hidden: true
                     visible_if: 'false'

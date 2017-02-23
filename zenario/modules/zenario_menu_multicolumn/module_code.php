@@ -43,17 +43,43 @@ class zenario_menu_multicolumn extends zenario_menu {
 				
 			case 'zenario_menu':
 				if ($box['key']['parentMenuID'] && !getMenuParent($box['key']['parentMenuID'])) {
-					$fields['zenario_menu_multicolumn__top_of_column']['hidden'] = false;
-					
 					if ($box['key']['id']) {
-					$values['zenario_menu_multicolumn__top_of_column'] =
-						getRow(
-							ZENARIO_MENU_MULTICOLUMN_PREFIX. 'nodes_top_of_column',
-							'top_of_column',
-							$box['key']['id']);
-					}								
-				}				
-				
+						$nodeLevel = self::getNodeLevel($box['key']['id']);
+						if($nodeLevel == 2){
+							$fields['zenario_menu_multicolumn__top_of_column']['hidden'] = false;
+							$values['zenario_menu_multicolumn__top_of_column'] =
+							getRow(
+								ZENARIO_MENU_MULTICOLUMN_PREFIX. 'nodes_top_of_column',
+								'top_of_column',
+								$box['key']['id']);
+						}else{
+							$fields['zenario_menu_multicolumn__top_of_column']['hidden'] = true;
+							$values['zenario_menu_multicolumn__top_of_column'] = 0;
+						}
+					}
+				}
+				break;
+		}
+	}
+	
+	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+		switch ($path) {
+			case 'zenario_menu':
+				if ($box['key']['id']) {
+						if(isset($values['zenario_pro_features__invisible']) && $values['zenario_pro_features__invisible']){
+								$values['zenario_menu_multicolumn__top_of_column'] = 0;
+								$fields['zenario_menu_multicolumn__top_of_column']['hidden'] = true;
+						}else if ($box['key']['parentMenuID'] && !getMenuParent($box['key']['parentMenuID'])) {
+							$nodeLevel = self::getNodeLevel($box['key']['id']);
+						
+							if($nodeLevel == 2){
+								$fields['zenario_menu_multicolumn__top_of_column']['hidden'] = false;
+							}else{
+								$fields['zenario_menu_multicolumn__top_of_column']['hidden'] = true;
+								$values['zenario_menu_multicolumn__top_of_column'] = 0;
+							}
+						}	
+				}
 				break;
 		}
 	}
@@ -165,6 +191,13 @@ class zenario_menu_multicolumn extends zenario_menu {
 			}
 		}
 
+	}
+	
+	public function getNodeLevel($nodeId,$i=1){
+		if($parentId = getRow('menu_nodes', 'parent_id', array('id'=>$nodeId))){
+			self::getNodeLevel($parentId,++$i);
+		}
+		return $i;
 	}
 
 	function drawMenuItemWithLevel(&$row, $l) {

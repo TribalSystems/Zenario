@@ -41,9 +41,10 @@ zenario.lib(function(
 	undefined,
 	URLBasePath,
 	document, window, windowOpener, windowParent,
-	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO,
-	get, engToBoolean, htmlspecialchars, ifNull, jsEscape, phrase,
-	extensionOf, methodsOf, has
+	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO, strings,
+	encodeURIComponent, get, engToBoolean, htmlspecialchars, jsEscape, phrase,
+	extensionOf, methodsOf, has,
+	zenario_plugin_nest, zenario_conductor
 ) {
 	"use strict";
 
@@ -53,21 +54,9 @@ zenario.lib(function(
 
 //Ensure that the JavaScript libraries is there for modules on reloads
 zenario_plugin_nest.addJavaScript = function(moduleClassName, moduleId) {
-	if (!window[moduleClassName]) {
-		zenario.addPluginJavaScript(moduleId);
-		
-		zenario_plugin_nest.needSleep = true;
+	if (!window[moduleClassName] || _.isEmpty(window[moduleClassName].slots)) {
+		zenario.addPluginJavaScript(moduleId, true);
 	}
-};
-
-//If we're adding JavaScript, add a short delay to the tab switching to cover for the browser loading things in
-zenario_plugin_nest.needSleep = false;
-zenario_plugin_nest.sleep = function() {
-	if (zenario_plugin_nest.needSleep) {
-		zenario_plugin_nest.AJAX({sleep: true});
-	}
-	
-	zenario_plugin_nest.needSleep = false;
 };
 
 zenario_conductor.cleanRequests = function(requests) {
@@ -77,6 +66,7 @@ zenario_conductor.cleanRequests = function(requests) {
 	if (!_.isEmpty(requests)) {
 		foreach (requests as key => value) {
 			if (value === ''
+			 || value === 0
 			 || value === null
 			 || value === false
 			 || value === undefined) {
@@ -94,7 +84,7 @@ zenario_conductor.cleanRequests = function(requests) {
 
 var slots = zenario_conductor.slots = {},
 	
-	getSlot = zenario_conductor.getSlot = function(slot, checkExists) {
+	getSlot = zenario_conductor.getSlot = function(slot) {
 		
 		var slotName =
 				slot && slot.slotName
@@ -102,14 +92,11 @@ var slots = zenario_conductor.slots = {},
 	
 		if (!slots[slotName]) {
 			
-			if (checkExists) {
-				return false;
-			}
-			
 			slots[slotName] = {
 				slotName: slotName,
 				key: {},
-				commands: {}
+				commands: {},
+				exists: false
 			};
 		}
 	
@@ -117,28 +104,154 @@ var slots = zenario_conductor.slots = {},
 	};
 
 
-zenario_conductor.setCommands = function(slot, commands) {
+zenario_conductor.setCommands = function(slot, commands, coreVars) {
 	slot = getSlot(slot);
 	
+	slot.key = {};
+	slot.exists = true;
 	slot.commands = commands || {};
+	slot.coreVars = coreVars || {};
+	slot.checkChangedOnClose =
+	slot.confirmOnClose =
+	slot.confirmOnCloseMessage = false;
 };
 
 zenario_conductor.calcRequests = function(slot, command, requests) {
 	var key, value,
-		toState = slot.commands[command];
+		commandDetails = slot.commands[command],
+		toState = commandDetails[0],
+		reqVars = commandDetails[1];
 	
+	//Make sure that the requests are an object
 	requests = zenario.toObject(requests, true);
 	
-	foreach (slot.key as key => value) {
-		if (requests[key] === undefined) {
-			requests[key] = value;
+	//If we're generating a link to the current state, keep all of the registered get requests
+	if (toState == slot.key.state) {
+		foreach (slot.key as key => value) {
+			if (requests[key] === undefined) {
+				requests[key] = value;
+			}
 		}
 	}
+	
+	//Loop through each of the variables needed by the destination
+	foreach (reqVars as key) {
+		//Check the settings on the destination to see if it needs that variable.
+		//If so then try to add it from the core variables.
+		if (!requests[key] && slot.coreVars[key]) {
+			requests[key] = slot.coreVars[key];
+		}
+	}
+	
 	requests.state = toState || '';
 	requests.tab = '';
 	
 	return requests;
 };
+
+zenario_conductor.confirmOnCloseMessage = function(slot, command, requests) {
+	var s, slot;
+	
+	foreach (slots as s => slot) {
+		if (slot.exists
+		 && _.isFunction(slot.checkChangedOnClose)
+		 && slot.checkChangedOnClose()) {
+			return slot.confirmOnCloseMessage;
+		}
+	}
+	
+	return undefined;
+};
+
+
+
+
+
+
+zenario_conductor.transitionIn = function(slot, transition_in) {
+	slot = getSlot(slot);
+	
+	var $slot = $('#plgslt_' + slot.slotName),
+		$eggs = $slot.find('.nest_plugins_wrap')
+			.css('position', 'relative'),
+		options = transition_in.options || {};
+	
+	if (_.isString(options.duration)) {
+		options.duration *= 1;
+	}
+	if (_.isArray(options.easing)) {
+		options.easing = $.bez(options.easing);
+	}
+	
+	if (transition_in.initial) {
+		$eggs.css(transition_in.initial);
+	}
+	
+	if (transition_in.animate) {
+		$eggs.animate(transition_in.animate, options);
+	}
+};
+
+//Play a transition out, when the current view is removed and replaced with something else
+zenario_conductor.transitionOut = function(slot, transition_out) {
+	slot = getSlot(slot);
+	
+	if (!transition_out
+	 || !transition_out.animate) {
+		return;
+	}
+	
+	var $slot = $('#plgslt_' + slot.slotName),
+		$cloneS = $slot.cloneProperly()
+			.attr('id', '')
+			.css('position', 'absolute')
+			.css('z-index', 2)
+			.addClass('zenario_conductor_slot_dummy_for_transition')
+			.width($slot.width())
+			.height($slot.height())
+			.insertBefore($slot),
+		$eggs = $slot.find('.nest_plugins_wrap'),
+		$cloneZ = $cloneS.find('.nest_plugins_wrap')
+			.css('position', 'relative')
+			.addClass('zenario_conductor_slide_dummy_for_transition'),
+		
+		options = transition_out.options || {},
+		animate = transition_out.animate,
+		slotOriginalHeightPixels = $slot.height(),
+		slotOriginalHeightCSS = $slot.css('min-height');
+	
+	if (_.isString(options.duration)) {
+		options.duration *= 1;
+	}
+	if (_.isArray(options.easing)) {
+		options.easing = $.bez(options.easing);
+	}
+	
+	//Remove certain CSS rules from the previous transition-in that may mess up the transition-out
+	if (animate.left !== undefined) {
+		$cloneZ.css('right', '');
+	}
+	if (animate.right !== undefined) {
+		$cloneZ.css('left', '');
+	}
+	if (animate.top !== undefined) {
+		$cloneZ.css('bottom', '');
+	}
+	if (animate.bottom !== undefined) {
+		$cloneZ.css('top', '');
+	}
+	
+	options.complete = function() {
+		$cloneS.remove();
+		$slot.css('min-height', slotOriginalHeightCSS);
+	};
+	$slot.css('min-height', slotOriginalHeightPixels + 'px');
+	
+	$cloneZ.animate(animate, options);
+	$eggs.hide();
+};
+
+
 
 
 //
@@ -151,6 +264,20 @@ zenario_conductor.getRegisteredGetRequest = function(slot, key) {
 		return slot.key[key];
 	} else {
 		return slot.key;
+	}
+};
+
+//Set an "are you sure" message when closing
+	//checkChangedOnClose: a function that should return true or false
+	//confirmOnClose: a function that should show a confirm box, then call it's input if the user presses "okay"
+	//confirmOnCloseMessage: a message as a fallback if confirmOnClose cannot be used
+zenario_conductor.confirmOnClose = function(slot, checkChangedOnClose, confirmOnClose, confirmOnCloseMessage) {
+	slot = getSlot(slot);
+	
+	if (slot.exists) {
+		slot.checkChangedOnClose = checkChangedOnClose;
+		slot.confirmOnClose = confirmOnClose;
+		slot.confirmOnCloseMessage = confirmOnCloseMessage;
 	}
 };
 
@@ -169,18 +296,10 @@ zenario_conductor.clearRegisteredGetRequest = function(slot, key) {
 	}
 };
 
-zenario_conductor.registerGetRequest = function(slot, requests, value) {
+zenario_conductor.registerGetRequest = function(slot, currentRequests) {
 	slot = getSlot(slot);
 	
-	if (_.isString(requests)) {
-		requests = {requests: value};
-	}
-	
-	if (!_.isEmpty(requests)) {
-		foreach (requests as key => value) {
-			slot.key[key] = value;
-		}
-	}
+	slot.key = currentRequests;
 	
 	zenario_conductor.cleanRequests(slot.key);
 };
@@ -189,35 +308,141 @@ zenario_conductor.registerGetRequest = function(slot, requests, value) {
 zenario_conductor.go = function(slot, command, requests, clearRegisteredGetRequests/*, recordInURL, scrollToTopOfSlot, fadeOutAndIn, useCache, post*/) {
 	slot = getSlot(slot);
 	
-	if (clearRegisteredGetRequests) {
-		zenario_conductor.clearRegisteredGetRequest(slot, clearRegisteredGetRequests);
-	}
+	if (slot.exists) {
+		if (clearRegisteredGetRequests) {
+			zenario_conductor.clearRegisteredGetRequest(slot, clearRegisteredGetRequests);
+		}
 	
-	requests = zenario_conductor.calcRequests(slot, command, requests);
-	zenario_conductor.cleanRequests(requests);
+		requests = zenario_conductor.calcRequests(slot, command, requests);
+		zenario_conductor.cleanRequests(requests);
+	
+		slot.lastRequest = requests;
+		
+		if (command == 'back' || command == 'close') {
+			zenario_conductor.transitionOut(slot, {
+				animate: {
+					opacity: 0
+				},
+				options: {
+					duration: 400
+				}
+			});
+		
+		} else {
+			zenario_conductor.transitionOut(slot, {
+				animate: {
+					opacity: 0,
+					right: '150%'
+				},
+				options: {
+					duration: 400
+				}
+			});
+		}
+		
+		//zenario.refreshPluginSlot(slotName, instanceId, additionalRequests, recordInURL, scrollToTopOfSlot, fadeOutAndIn, useCache, post)
+		zenario.refreshPluginSlot(slot.slotName, 'lookup', requests, true).after(function() {
+			if (command == 'back' || command == 'close') {
+				zenario_conductor.transitionIn(slot, {
+					initial: {
+						opacity: 0
+					},
+					animate: {
+						opacity: 1,
+						right: 0
+					},
+					options: {
+						duration: 1000
+					}
+				});
+			} else {
+				zenario_conductor.transitionIn(slot, {
+					initial: {
+						opacity: 0,
+						left: '150%'
+					},
+					animate: {
+						opacity: 1,
+						left: 0
+					},
+					options: {
+						duration: 800,
+						easing: [.3, .7, 0, 1.05]
+					}
+				});
+			}
+		});
+	}
+};
 
-	//zenario.refreshPluginSlot(slotName, instanceId, additionalRequests, recordInURL, scrollToTopOfSlot, fadeOutAndIn, useCache, post)
-	zenario.refreshPluginSlot(slot.slotName, 'lookup', requests, true);
+zenario_conductor.autoRefreshTimer = false;
+zenario_conductor.autoRefresh = function(slotName, interval) {
+	$('div.slot.' + slotName).addClass('auto_refreshing');
+	if (this.autoRefreshTimer === false) {
+		zenario_conductor.refresh(slotName);
+		this.autoRefreshTimer = setInterval(function() {
+			zenario_conductor.refresh(slotName);
+		}, interval * 1000);
+	}
+};
+
+zenario_conductor.stopAutoRefresh = function(slotName) {
+	clearInterval(this.autoRefreshTimer);
+	this.autoRefreshTimer = false;
+	$('div.slot.' + slotName).removeClass('auto_refreshing');
+};
+
+zenario_conductor.refresh = function(slot) {
+	if (slot = getSlot(slot)) {
+		var requests = _.extend({no_cache: 1}, slot.key, slot.coreVars);
+		zenario_conductor.cleanRequests(requests);
+		
+		zenario.refreshPluginSlot(slot.slotName, 'lookup', requests, undefined, false);
+		return true;
+	}
 };
 
 zenario_conductor.enabled = function(slot) {
-	return !!getSlot(slot, true);
+	slot = getSlot(slot);
+	return slot.exists;
 };
 
 zenario_conductor.commandEnabled = function(slot, command) {
 	slot = getSlot(slot);
-	return !!slot.commands[command];
+	return slot.exists && !!slot.commands[command];
 };
 
 zenario_conductor.link = function(slot, command, requests) {
 	slot = getSlot(slot);
 	
-	if (slot.commands[command]) {
+	if (slot.exists && slot.commands[command]) {
 		requests = zenario_conductor.calcRequests(slot, command, requests);
 		zenario_conductor.cleanRequests(requests);
 		return zenario.linkToItem(zenario.cID, zenario.cType, requests);
 	} else {
 		return false;
+	}
+};
+
+zenario_conductor.backLink = function(slot) {
+	slot = getSlot(slot);
+	return slot.exists && zenario_conductor.link(slot, slot.commands.back? 'back' : 'close');
+};
+
+zenario_conductor.goBack = function(slot, confirmed) {
+	slot = getSlot(slot);
+	if (slot.exists) {
+		
+		if (!confirmed
+		 && _.isFunction(slot.checkChangedOnClose)
+		 && _.isFunction(slot.confirmOnClose)
+		 && slot.checkChangedOnClose()) {
+			slot.confirmOnClose(function() {
+				zenario_conductor.goBack(slot, true);
+			});
+		} else {
+			zenario_conductor.go(slot, slot.commands.back? 'back' : 'close', {}, true);
+		}
 	}
 };
 

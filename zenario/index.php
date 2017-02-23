@@ -92,7 +92,7 @@ if ($checkPriv = checkPriv()) {
 
 //Attempt to get this page.
 $cID = $cType = $content = $version = $redirectNeeded = $aliasInURL = false;
-resolveContentItemFromRequest($cID, $cType, $redirectNeeded, $aliasInURL);
+resolveContentItemFromRequest($cID, $cType, $redirectNeeded, $aliasInURL, $_GET, $_REQUEST, $_POST);
 
 if ($redirectNeeded && empty($_POST) && !($redirectNeeded == 302 && $checkPriv)) {
 	
@@ -111,22 +111,21 @@ if ($redirectNeeded && empty($_POST) && !($redirectNeeded == 302 && $checkPriv))
 //Run pre-header actions
 require editionInclude('index.pre_header');
 
-//Look variables such as userId, locationId, etc., in the request
-require editionInclude('checkRequestVars');
-
 
 
 //Look up more details on the content item we are going to show
-$status = getShowableContent($content, $version, $cID, $cType, request('cVersion'));
+$status = getShowableContent($content, $version, $cID, $cType, request('cVersion'), $checkRequestVars = true);
+	//N.b. an empty string ('') is used for a private page, if a visitor is not logged in
+	//A 0 is used if a visitor is logged in and still can't see the page
 
 //If a page was requested but couldn't be shown...
-if ($status === 'no_permission') {
+if ($status === ZENARIO_403_NO_PERMISSION) {
 	//Show the no-access if this page is not accessible
 	header('HTTP/1.0 403 Forbidden');
 	langSpecialPage('zenario_no_access', $cID, $cType);
 	$status = getShowableContent($content, $version, $cID, $cType);
 
-} elseif ($status === 'notLoggedIn') {
+} elseif ($status === ZENARIO_401_NOT_LOGGED_IN) {
 	//Set the destination so the Visitor can come back here when logged in
 	$_SESSION['destCID'] = $content['id'];
 	$_SESSION['destCType'] = $content['type'];
@@ -185,9 +184,9 @@ $specificSlot = false;
 $specificInstance = false;
 $overrideSettings = false;
 $overrideFrameworkAndCSS = false;
+$methodCall = isset($_REQUEST['method_call'])? $_REQUEST['method_call'] : false;
 
-if (!empty($_REQUEST['method_call'])
- && ($_REQUEST['method_call'] == 'showSingleSlot' || $_REQUEST['method_call'] == 'showIframe')
+if (($methodCall == 'showSingleSlot' || $methodCall == 'showIframe')
  && (request('instanceId') || request('slotName'))) {
 	
 	$specificInstance = request('instanceId');
@@ -221,7 +220,60 @@ getSlotContents(
 	false, true, false, $overrideSettings, $overrideFrameworkAndCSS);
 useGZIP(setting('compress_web_pages'));
 
-//Run post-display actions
+
+
+//Check whether we should allow cross-site iframes
+do {
+	//Never allow in admin mode
+	if ($checkPriv) {
+		break;
+	}
+	
+	//Check what is allowed to be shown
+	switch (setting('xframe_target')) {
+		case 'all_slots':
+			//Only allow slots to be shown
+			if (!$specificSlot) {
+				break 2;
+			}
+			break;
+		
+		case 'slots_with_nests':
+			//Only allow slots with nests in them to be shown
+			if (!$specificSlot || empty(cms_core::$slotContents[$specificSlot]['is_nest'])) {
+				break 2;
+			}
+			break;
+		
+		default:
+			//Allow either slots or whole content items
+			if (!$specificSlot && $methodCall) {
+				break 2;
+			}
+	}
+	
+	//Check domain options
+	switch (setting('xframe_options')) {
+		case 'all':
+			//Allow from any domain (not recommended)
+			break;
+		case 'specific':
+			//Allow from specific domains
+			if (!isset($_SERVER['HTTP_REFERER'])
+			 || !in_array(parse_url($_SERVER['HTTP_REFERER'], PHP_URL_HOST), explodeAndTrim(setting('xframe_domains')))) {
+				break 2;
+			}
+			break;
+		default:
+			//Do not allow from third-party domains
+			break 2;
+	}
+	
+	//If we got past all of the 
+	header('X-Frame-Options: ALLOWALL');
+} while (false);
+
+
 require editionInclude('index.post_get_contents');
 
 

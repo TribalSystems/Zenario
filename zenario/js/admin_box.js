@@ -40,14 +40,14 @@ zenario.lib(function(
 	undefined,
 	URLBasePath,
 	document, window, windowOpener, windowParent,
-	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO,
-	get, engToBoolean, htmlspecialchars, ifNull, jsEscape, phrase,
+	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO, strings,
+	encodeURIComponent, get, engToBoolean, htmlspecialchars, jsEscape, phrase,
 	extensionOf, methodsOf, has,
 	zenarioABToolkit
 ) {
 	"use strict";
 
-zenarioAB.init('zenarioAB');
+zenarioAB.init('zenarioAB', 'zenario_admin_box', 'zenario_fbAdminFloatingBox');
 
 
 var FAB_NAME = 'AdminFloatingBox',
@@ -348,9 +348,15 @@ zenarioAB.validateAlias = function() {
 
 zenarioAB.validateAliasGo = function() {
 	
+	var domAlias = get('alias');
+	
+	if (!domAlias) {
+		return;
+	}
+	
 	var req = {
 		_validate_alias: 1,
-		alias: get('alias').value
+		alias: domAlias.value
 	}
 	
 	if (zenarioAB.tuix.key.cID) {
@@ -372,25 +378,25 @@ zenarioAB.validateAliasGo = function() {
 			req.lang_code_in_url = get('lang_code_in_url').value;
 		}
 	}
-
-	$.post(
+	
+	zenario.ajax(
 		URLBasePath + 'zenario/admin/quick_ajax.php',
 		req,
-		function(data) {
-			if (!(data = zenarioA.readData(data))) {
-				return false;
+		true
+	).after(function(data) {
+		var html = '',
+			alias_warning_display = get('alias_warning_display');
+	
+		if (data) {
+			foreach (data as var error) {
+				html += (html? '<br />' : '') + data[error];
 			}
-			
-			var html = '';
-			
-			if (data) {
-				foreach (data as var error) {
-					html += (html? '<br />' : '') + data[error];
-				}
-			}
-			
-			get('alias_warning_display').innerHTML =  html;
-	}, 'text');
+		}
+		
+		if (alias_warning_display) {
+			alias_warning_display.innerHTML =  html;
+		}
+	});
 };
 
 //bespoke functions for the Content Tab
@@ -437,12 +443,21 @@ zenarioAB.contentTitleChange = function() {
 
 
 //bespoke functions for Plugin Settings
-zenarioAB.modeSelected = function(checkMode) {
+zenarioAB.modesSelected = function() {
 	var mode = zenarioAB.value('mode', 'first_tab'),
 		otherModes = zenarioAB.value('other_modes', 'first_tab');
 	
-	return mode == checkMode || (otherModes && (',' + otherModes + ',').match(',' + checkMode + ','));
+	if (otherModes) {
+		mode += ',' + otherModes;
+	}
+	
+	return mode;
 };
+
+zenarioAB.modeSelected = function(checkMode) {
+	return (',' + zenarioAB.modesSelected() + ',').match(',' + checkMode + ',');
+};
+
 zenarioAB.viewFrameworkSource = function() {
 	var url =
 		URLBasePath +

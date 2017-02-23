@@ -272,7 +272,14 @@ class zenario_menu extends module_base_class {
 			$objects['Class'] .= ' '. $row['css_class'];
 		}
 		
-		if (arrayKey($row, 'equiv_id') == cms_core::$equivId && arrayKey($row, 'cType') == $this->cType) {
+		if (!isset($row['current'])) {
+			$row['current'] =
+				!empty($row['cType'])
+			 && !empty($row['equiv_id'])
+			 && $row['cType'] == cms_core::$cType
+			 && $row['equiv_id'] == cms_core::$equivId;
+		}
+		if ($row['current']) {
 			$objects['Class'] .= ' current';
 		}
 		

@@ -98,6 +98,39 @@ jquery-ui.visitor.js
 		The Tooltips Widget
 		All of the jQuery UI effects
 	
+	Some lines have been changed to add the option to disable ARIA voice-over support
+	  Replace:
+		this.liveRegion = $( "<div>" )
+	  With:
+		if (!this.options.disableAriaLiveRegions)
+		this.liveRegion = $( "<div>" )
+	
+	  Replace:
+		this.liveRegion.children().hide();
+		if ( content.clone ) {
+			a11yContent = content.clone();
+			a11yContent.removeAttr( "id" ).find( "[id]" ).removeAttr( "id" );
+		} else {
+			a11yContent = content;
+		}
+		$( "<div>" ).html( a11yContent ).appendTo( this.liveRegion );
+	  With:
+		if (!this.options.disableAriaLiveRegions) {
+			this.liveRegion.children().hide();
+			if ( content.clone ) {
+				a11yContent = content.clone();
+				a11yContent.removeAttr( "id" ).find( "[id]" ).removeAttr( "id" );
+			} else {
+				a11yContent = content;
+			}
+			$( "<div>" ).html( a11yContent ).appendTo( this.liveRegion );
+		}
+	  Replace:
+		this.liveRegion.remove();
+	  With:
+		if (this.liveRegion)
+		this.liveRegion.remove();
+	
 	The following line has been added as a work-around for a problem for Bootstrap users where
 	Bootstrap's tooltip function clashed with jQuery's tooltip function:
 		$.widget.bridge('jQueryTooltip', $.ui.tooltip);

@@ -41,8 +41,8 @@ zenario.lib(function(
 	undefined,
 	URLBasePath,
 	document, window, windowOpener, windowParent,
-	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO,
-	get, engToBoolean, htmlspecialchars, ifNull, jsEscape, phrase,
+	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO, strings,
+	encodeURIComponent, get, engToBoolean, htmlspecialchars, jsEscape, phrase,
 	extensionOf, methodsOf, has,
 	panelTypes
 ) {
@@ -430,7 +430,7 @@ methods.initDeleteButtons = function() {
 
 methods.deleteField = function(id) {
 	var that = this,
-		afterValidate = function(errors) {
+		afterAjaxRequestOnChange = function(errors) {
 			if (_.isEmpty(errors)) {
 				var $field, $next, field;
 				
@@ -486,10 +486,10 @@ methods.deleteField = function(id) {
 			}
 		};
 	
-	if (cb = this.validate(true)) {
-		cb.after(afterValidate);
+	if (cb = this.ajaxRequestOnChange(true)) {
+		cb.after(afterAjaxRequestOnChange);
 	} else {
-		afterValidate([]);
+		afterAjaxRequestOnChange([]);
 	}
 };
 
@@ -719,7 +719,7 @@ methods.createNewField = function(type, datasetFieldId, datasetFieldTabName) {
 
 methods.fieldClick = function($field, tab) {
 	var that = this,
-		afterValidate = function(errors) {
+		afterAjaxRequestOnChange = function(errors) {
 			if (_.isEmpty(errors)) {
 				
 				// Clear values changed
@@ -749,10 +749,10 @@ methods.fieldClick = function($field, tab) {
 	
 	if (this.tuix.items[id].type != 'repeat_end') {
 		this.save();
-		if (cb = this.validate()) {
-			cb.after(afterValidate);
+		if (cb = this.ajaxRequestOnChange()) {
+			cb.after(afterAjaxRequestOnChange);
 		} else {
-			afterValidate([]);
+			afterAjaxRequestOnChange([]);
 		}
 	}
 };
@@ -1682,7 +1682,7 @@ methods.save = function() {
 };
 
 // Called to validate properties of a field/tab when moving off current item
-methods.validate = function(removingField) {
+methods.ajaxRequestOnChange = function(removingField) {
 	var that = this,
 		index, message,
 		cb = new zenario.callback,
@@ -1808,7 +1808,7 @@ methods.initFormSettingsButton = function() {
 methods.showFieldDetailsSection = function(section, noValidation) {
 	var that = this,
 		cb,
-		afterValidate = function(errors) {
+		afterAjaxRequestOnChange = function(errors) {
 			if (_.isEmpty(errors)) {
 				that.currentFieldTab = section;
 				
@@ -1829,12 +1829,12 @@ methods.showFieldDetailsSection = function(section, noValidation) {
 	} else {
 		if (!noValidation) {
 			this.save();
-			if (cb = this.validate()) {
-				cb.after(afterValidate);
+			if (cb = this.ajaxRequestOnChange()) {
+				cb.after(afterAjaxRequestOnChange);
 				return;
 			}
 		}
-		afterValidate([]);
+		afterAjaxRequestOnChange([]);
 	}
 };
 

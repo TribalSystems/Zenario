@@ -3,7 +3,7 @@
 sections:
     edit:
         buttons:
-            request_trash:
+            request_trash: &request_trash
                 parent: action_dropdown
                 label: Trash...
                 tooltip: Request to trash this content item
@@ -11,7 +11,7 @@ sections:
                     path: zenario_content_requests
                     key:
                         action_requested: trash
-            request_publish:
+            request_publish: &request_publish
                 parent: action_dropdown
                 label: Publish...
                 tooltip: Request to publish this content item
@@ -19,6 +19,11 @@ sections:
                     path: zenario_content_requests
                     key:
                         action_requested: publish
+    
+    restricted_editing:
+        buttons:
+            request_trash: *request_trash
+            request_publish: *request_publish
 
     status_button:
         buttons:

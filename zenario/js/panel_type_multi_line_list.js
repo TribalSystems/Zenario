@@ -42,8 +42,8 @@ zenario.lib(function(
 	undefined,
 	URLBasePath,
 	document, window, windowOpener, windowParent,
-	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO,
-	get, engToBoolean, htmlspecialchars, ifNull, jsEscape, phrase,
+	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO, strings,
+	encodeURIComponent, get, engToBoolean, htmlspecialchars, jsEscape, phrase,
 	extensionOf, methodsOf, has,
 	panelTypes
 ) {
@@ -55,6 +55,11 @@ zenario.lib(function(
 var methods = methodsOf(
 	panelTypes.multi_line_list = extensionOf(panelTypes.list)
 );
+
+methods.init = function() {
+	this.lineHeight = 20;
+};
+
 
 methods.returnIsMultiLineList = function() {
 	return true;
@@ -99,11 +104,13 @@ methods.drawItems = function($panel) {
 				//Add cell values to each column as lines
 				foreach (multiLineColumn.lines as lineIndex => cellId) {
 					line = {
-						height: 25
+						height: this.lineHeight
 					};
 					
 					if (lineIndex == 0) {
 						line.firstLine = true;
+					} else if (multiLineColumn.tuix.no_italics) {
+						line.no_italics = true;
 					}
 					
 					line = $.extend(line, cells[cellId]);
@@ -118,6 +125,14 @@ methods.drawItems = function($panel) {
 	
 	$panel.html(this.microTemplate('zenario_organizer_multi_line_list', this.items));
 	$panel.show();
+	//Tooltip
+	$panel.find('.organizer_cell_line').each(function(i, el) { 
+		var $el = $(el); 
+		if (el.scrollWidth && el.scrollWidth > $el.innerWidth()) { 
+			$el.attr('title', $el.text()); 
+		} 
+	});
+	
 };
 
 methods.getMergeFieldsForMultiLineColumns = function() {
@@ -160,13 +175,14 @@ methods.getMergeFieldsForMultiLineColumns = function() {
 			mergeFields.push(multiLineColumn);
 		}
 	}
-	this.items.multiLineCellHeight = maxLines * 25;
+	this.items.multiLineCellHeight = maxLines * this.lineHeight;
 	
 	return mergeFields;
 };
 
 methods.showViewOptions = function($header) {
-	//Do not show view options
+	//Show the view "options" button
+	$header.find('#organizer_viewOptions').show().addClass('disabled').find('a').prop('onclick', '');
 };
 
 }, zenarioO.panelTypes);

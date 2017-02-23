@@ -1,0 +1,249 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+site_settings:
+    setting_group: perms
+    tabs:
+        assetTypes:
+            label: Asset Types
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_SITE_SETTING
+            fields:
+                desc:
+                    snippet:
+                        html: <em><i>These permissions will also apply to data pool schemas.</i></em>
+            
+                perm.view.assetType:
+                    site_setting:
+                        name: perm.view.assetType
+                    type: radios
+                    value: specific
+                    values:
+                        logged_out:
+                            label: "Anonymous visitors can view ANY asset type's details"
+                        logged_in:
+                            label: "Extranet users can view ANY asset type's details"
+                        specific:
+                            label: "Extranet users can view an asset type's details if..."
+                    redraw_onchange: true
+                perm.view.assetType.by.group:
+                    site_setting:
+                        name: perm.view.assetType.by.group
+                    indent: 1
+                    hide_if_previous_outdented_value_isnt: specific
+                    type: checkbox
+                    label: 'They are a member of the group(s):'
+                    redraw_onchange: true
+                perm.view.assetType.groups:
+                    site_setting:
+                        name: perm.view.assetType.groups
+                    indent: 2
+                    hide_with_previous_outdented_field: true
+                    hide_if_previous_outdented_value_isnt: 1
+                    pick_items: &pick_group
+                        path: zenario__users/panels/groups
+                        target_path: zenario__users/panels/groups
+                        min_path: zenario__users/panels/groups
+                        max_path: zenario__users/panels/groups
+                        disallow_refiners_looping_on_min_path: true
+                        nothing_selected_phrase: No group selected
+                        select_phrase: Select a group...
+                        multiple_select: true
+                    validation:
+                        required_if_not_hidden: Please select a group who can view an asset type's details.
+                perm.view.assetType.directlyAssigned:
+                    site_setting:
+                        name: perm.view.assetType.directlyAssigned
+                    hide_with_previous_indented_field: true
+                    indent: 1
+                    row_class: zfab_or
+                    type: checkbox
+                    label: The asset type is directly assigned to them
+                perm.view.assetType.atCompany:
+                    site_setting:
+                        name: perm.view.assetType.atCompany
+                    hide_with_previous_indented_field: true
+                    indent: 1
+                    row_class: zfab_or
+                    type: checkbox
+                    label: The asset type is assigned to a company, and they have
+                perm.view.assetType.atCompany.role:
+                    site_setting:
+                        name: perm.view.assetType.atCompany.role
+                    same_row: true
+                    hide_with_previous_field: true
+                    type: select
+                    empty_value: ANY role
+                    values: roles
+                    post_field_html: '&nbsp; at ANY location in the company'
+                
+                perm.view.assetType.enforce:
+                    indent: 1
+                    hide_if_previous_outdented_value_isnt:
+                        - logged_in
+                        - specific
+                    snippet: {}
+                    note_below: |
+                        If the assetTypeId variable is in the URL, the system will check if the visitor can see that asset type.
+                
+                perm.create-assetType.unassigned:
+                    snippet:
+                        label: "Create/unassigned: users can create an unassigned asset type if..."
+                perm.create-assetType.unassigned.by.group:
+                    site_setting:
+                        name: perm.create-assetType.unassigned.by.group
+                    indent: 1
+                    type: checkbox
+                    label: 'They are a member of the group(s):'
+                    redraw_onchange: true
+                perm.create-assetType.unassigned.groups:
+                    site_setting:
+                        name: perm.create-assetType.unassigned.groups
+                    hide_if_previous_outdented_value_isnt: 1
+                    indent: 2
+                    pick_items: *pick_group
+                    validation:
+                        required_if_not_hidden: Please select a group who can create unassigned asset types.
+                
+                perm.create-assetType.oneself:
+                    snippet:
+                        label: "Create/oneself: users can create an asset type assigned to themselves if..."
+                perm.create-assetType.oneself.by.group:
+                    site_setting:
+                        name: perm.create-assetType.oneself.by.group
+                    indent: 1
+                    type: checkbox
+                    label: 'They are a member of the group(s):'
+                    redraw_onchange: true
+                perm.create-assetType.oneself.groups:
+                    site_setting:
+                        name: perm.create-assetType.oneself.groups
+                    hide_if_previous_outdented_value_isnt: 1
+                    indent: 2
+                    pick_items: *pick_group
+                    validation:
+                        required_if_not_hidden: Please select a group who can create asset type assigned to themselves.
+                
+                perm.create-assetType.company:
+                    snippet:
+                        label: "Create/company: users can create an asset type assigned to a company if..."
+                perm.create-assetType.company.by.group:
+                    site_setting:
+                        name: perm.create-assetType.company.by.group
+                    indent: 1
+                    type: checkbox
+                    label: 'They are a member of the group(s):'
+                    redraw_onchange: true
+                perm.create-assetType.company.groups:
+                    site_setting:
+                        name: perm.create-assetType.company.groups
+                    hide_if_previous_outdented_value_isnt: 1
+                    indent: 2
+                    pick_items: *pick_group
+                    validation:
+                        required_if_not_hidden: Please select a group who can create asset types assigned to companies.
+                perm.create-assetType.company.atCompany:
+                    site_setting:
+                        name: perm.create-assetType.company.atCompany
+                    hide_with_previous_indented_field: true
+                    indent: 1
+                    row_class: zfab_or
+                    type: checkbox
+                    label: They have
+                perm.create-assetType.company.atCompany.role:
+                    site_setting:
+                        name: perm.create-assetType.company.atCompany.role
+                    same_row: true
+                    hide_with_previous_field: true
+                    type: select
+                    empty_value: ANY role
+                    values: roles
+                    post_field_html: '&nbsp; at ANY location in the company'
+                
+                perm.edit.assetType:
+                    snippet:
+                        label: "Edit: users can edit an asset type's details if..."
+                perm.edit.assetType.by.group:
+                    site_setting:
+                        name: perm.edit.assetType.by.group
+                    indent: 1
+                    type: checkbox
+                    label: 'They are a member of the group(s):'
+                    redraw_onchange: true
+                perm.edit.assetType.groups:
+                    site_setting:
+                        name: perm.edit.assetType.groups
+                    hide_if_previous_outdented_value_isnt: 1
+                    indent: 2
+                    pick_items: *pick_group
+                    validation:
+                        required_if_not_hidden: Please select a group who can edit an asset type.
+                perm.edit.assetType.directlyAssigned:
+                    site_setting:
+                        name: perm.edit.assetType.directlyAssigned
+                    hide_with_previous_indented_field: true
+                    indent: 1
+                    row_class: zfab_or
+                    type: checkbox
+                    label: The asset type is directly assigned to them
+                perm.edit.assetType.atCompany:
+                    site_setting:
+                        name: perm.edit.assetType.atCompany
+                    hide_with_previous_indented_field: true
+                    indent: 1
+                    row_class: zfab_or
+                    type: checkbox
+                    label: The asset type is assigned to a company, and they have
+                perm.edit.assetType.atCompany.role:
+                    site_setting:
+                        name: perm.edit.assetType.atCompany.role
+                    same_row: true
+                    hide_with_previous_field: true
+                    type: select
+                    empty_value: ANY role
+                    values: roles
+                    post_field_html: '&nbsp; at ANY location in the company'
+                
+                perm.delete.assetType:
+                    snippet:
+                        label: "Delete: users can delete an asset type if..."
+                perm.delete.assetType.by.group:
+                    site_setting:
+                        name: perm.delete.assetType.by.group
+                    indent: 1
+                    type: checkbox
+                    label: 'They are a member of the group(s):'
+                    redraw_onchange: true
+                perm.delete.assetType.groups:
+                    site_setting:
+                        name: perm.delete.assetType.groups
+                    hide_if_previous_outdented_value_isnt: 1
+                    indent: 2
+                    pick_items: *pick_group
+                    validation:
+                        required_if_not_hidden: Please select a group who can delete an asset type.
+                perm.delete.assetType.directlyAssigned:
+                    site_setting:
+                        name: perm.delete.assetType.directlyAssigned
+                    hide_with_previous_indented_field: true
+                    indent: 1
+                    row_class: zfab_or
+                    type: checkbox
+                    label: The asset type is directly assigned to them
+                perm.delete.assetType.atCompany:
+                    site_setting:
+                        name: perm.delete.assetType.atCompany
+                    hide_with_previous_indented_field: true
+                    indent: 1
+                    row_class: zfab_or
+                    type: checkbox
+                    label: The asset type is assigned to a company, and they have
+                perm.delete.assetType.atCompany.role:
+                    site_setting:
+                        name: perm.delete.assetType.atCompany.role
+                    same_row: true
+                    hide_with_previous_field: true
+                    type: select
+                    empty_value: ANY role
+                    values: roles
+                    post_field_html: '&nbsp; at ANY location in the company'

@@ -87,26 +87,51 @@ class zenario_common_features__admin_boxes__image extends module_base_class {
 		}
 		
 		$tags = explodeAndTrim($values['details/tags']);
-			//Catch the case where someone adds text into the "add tag" box but presses "Save" by mistake instead of "Add"
-			if ($saving
-			 && $values['details/new_tag']
-			 && !in_array($values['details/new_tag'], $tags)) {
-				$tags[] = $values['details/new_tag'];
-			}
-			$values['details/new_tag'] = '';
 		
-			//Validate the tags
-			foreach ($tags as &$tagName) {
-				$tagName = trim($tagName);
+		//Validate the tags
+		foreach ($tags as $tagName) {
+			$tagName = trim($tagName);
+		
+			if (preg_match('/\s/', $tagName) !== 0) {
+				$box['tabs']['details']['errors']['spaces'] = adminPhrase("Tag names cannot contain spaces.");
+		
+			} elseif (!validateScreenName(trim($tagName))) {
+				$box['tabs']['details']['errors']['alphanumeric'] = adminPhrase("Tag names can contain only alphanumeric characters, underscores or hyphens.");
+			}
+		}
+		
+		
+		$box['confirm']['show'] = false;
+		
+		if (empty($box['tabs']['details']['errors'])) {
 			
-				if (preg_match('/\s/', $tagName) !== 0) {
-					$box['tabs']['details']['errors']['spaces'] = adminPhrase("Tag names cannot contain spaces.");
+			if (!empty($tags)) {
+				$existingTags = sqlFetchValues("
+					SELECT name
+					FROM ". DB_NAME_PREFIX. "image_tags
+					WHERE name IN (". inEscape($tags, 'sql'). ")
+				");
 			
-				} elseif (!validateScreenName(trim($tagName))) {
-					$box['tabs']['details']['errors']['alphanumeric'] = adminPhrase("Tag names can contain only alphanumeric characters, underscores or hyphens.");
+			
+				$newTags = array();
+				foreach ($tags as $tagName) {
+					if (!in_array($tagName, $existingTags)) {
+						$newTags[] = $tagName;
+					}
+				}
+			
+				if (!empty($newTags)) {
+					$count = count($newTags);
+					$lastNewTag = array_pop($newTags);
+					$mrg = array('newTags' => implode(', ', $newTags), 'lastNewTag' => $lastNewTag);
+					$box['confirm']['show'] = true;
+					$box['confirm']['message'] = nAdminPhrase('The tag [[lastNewTag]] does not exist. Are you sure you wish to create it?',
+						'The tags [[newTags]] and [[lastNewTag]] do not exist. Are you sure you wish to create them?', $count, $mrg);
+					$box['confirm']['button_message'] = nAdminPhrase('Create tag', 'Create tags', $count);
 				}
 			}
-		$values['details/tags'] = implode(',', $tags);
+		}
+
 	}
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {

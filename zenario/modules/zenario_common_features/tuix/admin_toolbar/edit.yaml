@@ -3,7 +3,7 @@
 sections:
     edit:
         buttons:
-            property_dropdown:
+            property_dropdown: &property_dropdown
                 label: Properties
                 hide_when_children_are_not_visible: true
 
@@ -65,17 +65,17 @@ sections:
                 admin_box:
                     path: zenario_content_layout
             
-            action_dropdown:
+            action_dropdown: &action_dropdown
                 label: Actions
                 hide_when_children_are_not_visible: true
-            category_dropdown:
+            category_dropdown: &category_dropdown
                 label: Categories
                 hide_when_children_are_not_visible: true
-            view_dropdown:
+            view_dropdown: &view_dropdown
                 label: View
                 hide_when_children_are_not_visible: true
                 onmouseover: 'zenarioA.closeSlotControls();'
-            lock_dropdown:
+            lock_dropdown: &lock_dropdown
                 label: Locking
                 hide_when_children_are_not_visible: true
                 onmouseover: 'zenarioA.closeSlotControls();'
@@ -335,14 +335,14 @@ sections:
                     path: zenario_content_categories
 
 #view_dropdown
-            view_items_images:
+            view_items_images: &view_items_images
                 parent: view_dropdown
                 label: Attached images
                 organizer_quick:
                     target_path: zenario__content/panels/inline_images_for_content
                     min_path: zenario__content/panels/inline_images_for_content
                     disallow_refiners_looping_on_min_path: true
-            view_items_translations:
+            view_items_translations: &view_items_translations
                 parent: view_dropdown
                 label: Translations of this content item
                 organizer_quick:
@@ -427,3 +427,18 @@ sections:
                         message_type: warning
                     request:
                         unlock: 1
+
+
+
+
+    restricted_editing:
+        buttons:
+            property_dropdown: *property_dropdown
+            action_dropdown: *action_dropdown
+            category_dropdown: *category_dropdown
+            view_dropdown: *view_dropdown
+            lock_dropdown: *lock_dropdown
+
+            view_items_images: *view_items_images
+            view_items_translations: &view_items_translations
+            

@@ -587,13 +587,28 @@ label.zenario_tag,
 	font-weight: normal;
 	font-family: Verdana,Arial,Helvetica,sans-serif;
 	font-size: 9px;
-	height: 9px;
-	line-height: 23px;
-	padding: 5px 5px 5px 0;
+	display:inline-block;
+	height:21px;
+	line-height: 19px;
+	padding: 0 8px 0 0;
 	margin-left: 5px;
 	margin-right: 2px;
 	color: white;
 	background-color: #027dc9;
+}
+
+#zenario_fbAdminInner label.zenario_tag {
+	display:unset;
+	padding: 5px 8px 5px 0;
+}
+
+.zenario_ab__zenario__user_activity_band div.zenario_group_4_cols {
+	padding-bottom:5px !important;
+}
+
+body.webkit label.zenario_tag,
+body.webkit #zenario_fbAdminInner label.zenario_tag {
+	line-height: 21px;
 }
 
 label.zenario_tag::before {
@@ -720,12 +735,60 @@ body.zenario_showing_plugin_preview div#zenario_skin {
 }
 
 /*
-	Failed attempt at adding the background:
-		body.zenario_showing_plugin_preview div#zenario_skin div#zenario_layout::after {
-			content: '';
-			display: block;
-			width: 100%;
-			height 9999px
-			background: url('../admin/images/checkered.gif') repeat;
-		}
+	Link status, some placeholder styles
 */
+
+del.zenario_link_status {
+	text-decoration: none;
+	position: absolute;
+	z-index: 90;
+	float: right;
+	text-align: left;
+	overflow: visible;
+	line-height: 1px;
+	width: 0;
+	height: 0;
+	margin-left: -15px;
+}
+
+del.zenario_link_status > del {
+	text-decoration: none;
+	position: absolute;
+	z-index: 91;
+	width: 16px;
+	height: 16px;
+	border: 0;
+	opacity: 0.5;
+}
+
+del.zenario_link_status__content_not_found > del {
+	background:url('../admin/images/link_status/doesnt-exist-v2.png') no-repeat center;
+}
+
+del.zenario_link_status__hidden > del {
+	background:url('../admin/images/link_status/draft-v2.png') no-repeat center;
+}
+
+del.zenario_link_status__published_with_draft > del {
+	background:url('../admin/images/link_status/published-with-draft-v2.png') no-repeat center;
+}
+
+del.zenario_link_status__published_with_draft_401 > del {
+	background:url('../admin/images/link_status/published-with-draft-protected-v2.png') no-repeat center;
+}
+
+del.zenario_link_status__published_with_draft_403 > del {
+	background:url('../admin/images/link_status/published-with-draft-403-v2.png') no-repeat center;
+}
+
+del.zenario_link_status__published_401 > del {
+	background:url('../admin/images/link_status/published-protected-v2.png') no-repeat center;
+}
+
+del.zenario_link_status__published_403 > del {
+	background:url('../admin/images/link_status/published-403-v2.png') no-repeat center;
+}
+
+del.zenario_link_status__spare_domain > del {
+	background:url('../admin/images/link_status/spare-domain-v2.png') no-repeat center;
+}

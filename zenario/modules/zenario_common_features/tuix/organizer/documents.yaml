@@ -254,6 +254,8 @@ zenario__content:
                 rescan_extract:
                     parent: advanced_dropdown
                     hide_in_select_mode: true
+                    visible_if: |
+                        item.name.match(/.pdf$/i) && zenarioA.siteSettings.pdftotext_path && zenarioA.siteSettings.ghostscript_path
                     label: Rescan text and image
                     multiple_select: false
                     without_traits:
@@ -272,6 +274,10 @@ zenario__content:
                 rescan_text:
                     parent: advanced_dropdown
                     hide_in_select_mode: true
+                    visible_if: |
+                        item.name.match(/.doc$/i) ||
+                        item.name.match(/.docx$/i) && zenarioA.siteSettings.antiword_path ||
+                        item.name.match(/.pdf$/i) && zenarioA.siteSettings.pdftotext_path
                     label: Rescan text
                     multiple_select: false
                     without_traits:

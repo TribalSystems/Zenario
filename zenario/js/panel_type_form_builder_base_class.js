@@ -41,8 +41,8 @@ zenario.lib(function(
 	undefined,
 	URLBasePath,
 	document, window, windowOpener, windowParent,
-	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO,
-	get, engToBoolean, htmlspecialchars, ifNull, jsEscape, phrase,
+	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO, strings,
+	encodeURIComponent, get, engToBoolean, htmlspecialchars, jsEscape, phrase,
 	extensionOf, methodsOf, has,
 	panelTypes
 ) {
@@ -78,7 +78,7 @@ methods.initField = function($field) {
 methods.showFieldDetailsSection = function(section, noValidation) {
 	var that = this,
 		cb,
-		afterValidate = function(errors) {
+		afterAjaxRequestOnChange = function(errors) {
 			if (_.isEmpty(errors)) {
 				that.currentFieldTab = section;
 				
@@ -94,12 +94,12 @@ methods.showFieldDetailsSection = function(section, noValidation) {
 	
 	if (!noValidation) {
 		this.save();
-		if (cb = this.validate()) {
-			cb.after(afterValidate);
+		if (cb = this.ajaxRequestOnChange()) {
+			cb.after(afterAjaxRequestOnChange);
 			return;
 		}
 	}
-	afterValidate([]);
+	afterAjaxRequestOnChange([]);
 };
 
 //TODO improve this!
@@ -136,17 +136,17 @@ methods.initAddNewFieldsButton = function() {
 	var that = this;
 	$(this.formEditorSelector).find('input.add_new_field, span.add_new_field').on('click', function() {
 		// Validate and save the current field, if the field is valid then show the new fields list and unselect the current field
-		var afterValidate = function(errors) {
+		var afterAjaxRequestOnChange = function(errors) {
 			if (_.isEmpty(errors)) {
 				that.unselectField();
 				that.showDetailsSection('organizer_field_type_list');
 			}
 		};
 		that.save();
-		if (cb = that.validate()) {
-			cb.after(afterValidate);
+		if (cb = that.ajaxRequestOnChange()) {
+			cb.after(afterAjaxRequestOnChange);
 		} else {
-			afterValidate([]);
+			afterAjaxRequestOnChange([]);
 		}
 	});
 };
@@ -337,7 +337,7 @@ methods.showButtons = function($buttons) {
 		//Add an event to the Apply button to save the changes
 		$buttons.find('#organizer_applyButton')
 			.click(function() {
-				var afterValidate = function(errors) {
+				var afterAjaxRequestOnChange = function(errors) {
 					if (_.isEmpty(errors)) {
 						
 						if (that.saveLock == true) {
@@ -350,10 +350,10 @@ methods.showButtons = function($buttons) {
 				};
 				
 				that.save();
-				if (cb = that.validate()) {
-					cb.after(afterValidate);
+				if (cb = that.ajaxRequestOnChange()) {
+					cb.after(afterAjaxRequestOnChange);
 				} else {
-					afterValidate([]);
+					afterAjaxRequestOnChange([]);
 				}
 			});
 		
@@ -558,21 +558,7 @@ methods.returnAJAXRequests = function() {
 //Sets the title shown above the panel.
 //This is also shown in the back button when the back button would take you back to this panel.
 methods.returnPanelTitle = function() {
-	var title = this.tuix.title;
-	
-	if (window.zenarioOSelectMode && (this.path == window.zenarioOTargetPath || window.zenarioOTargetPath === false)) {
-		if (window.zenarioOMultipleSelect && this.tuix.multiple_select_mode_title) {
-			title = this.tuix.multiple_select_mode_title;
-		} else if (this.tuix.select_mode_title) {
-			title = this.tuix.select_mode_title;
-		}
-	}
-	
-	if (zenarioO.filteredView) {
-		title += phrase.refined;
-	}
-	
-	return title;
+	return methodsOf(panelTypes.grid).returnPanelTitle.call(this);
 };
 
 

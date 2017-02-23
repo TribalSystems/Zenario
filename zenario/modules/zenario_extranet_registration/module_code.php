@@ -312,8 +312,8 @@ class zenario_extranet_registration extends zenario_extranet {
 	}
 	
 
-	protected function validateFormFields($section) {
-		$fields = parent::validateFormFields($section);
+	protected function validateFormFields($section, $contactsCountAsUnregistered = false) {
+		$fields = parent::validateFormFields($section, $contactsCountAsUnregistered);
 		if ($section=='Registration_Form') {
 			if ($this->setting('user_passwords')){
 				$errors = $this->validatePassword(post('extranet_new_password'),post('extranet_new_password_confirm'),false,get_class($this));
@@ -334,7 +334,20 @@ class zenario_extranet_registration extends zenario_extranet {
 	}
 
 	protected function addUserRecord(){
-		$fields = $this->validateFormFields('Registration_Form');
+		
+		//Depending on the settings, allow contacts to register as if they haven't already made an account.
+		switch ($this->setting('verified_account_status')) {
+			case 'active':
+				$contactsCountAsUnregistered = true;
+				break;
+			case 'contact':
+				$contactsCountAsUnregistered = false;
+				break;
+			default:
+				$contactsCountAsUnregistered = $this->setting('initial_account_status') == 'pending';
+		}
+		
+		$fields = $this->validateFormFields('Registration_Form', $contactsCountAsUnregistered);
 		
 		if ($this->setting('user_email_verification')) {
 			if (!post('email_confirm')) {
@@ -395,7 +408,11 @@ class zenario_extranet_registration extends zenario_extranet {
 				$fields2[$column['Field']] = $fields[$column['Field']];
 			}
 		}
-		$userId = saveUser($fields2);
+		
+		//Allow contacts to register, turning their contact account into a user account
+		$userId = getRow('users', 'id', ['email' => post('email'), 'status' => 'contact']);
+		
+		$userId = saveUser($fields2, $userId);
 		
 		if (isError($userId)) {
 			return false;
@@ -628,7 +645,7 @@ class zenario_extranet_registration extends zenario_extranet {
 		}
 		
 		// Create user timer
-		if (inc("zenario_user_timers") && $this->setting('timer_for_new_users')) {
+		if ($this->setting('timer_for_new_users') && inc('zenario_user_timers')) {
 			zenario_user_timers::addTimerToUser($userId, $this->setting('timer_for_new_users'));
 		}
 		

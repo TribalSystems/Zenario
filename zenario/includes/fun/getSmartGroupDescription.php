@@ -28,100 +28,125 @@
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
 
-$desc = '';
+if (!$smartGroup = getRow('smart_groups', ['intended_usage', 'must_match'], $smartGroupId)) {
+	return '';
+}
+
 $rules = getRowsArray(
 	'smart_group_rules',
-	array('field_id', 'field2_id', 'field3_id', 'field4_id', 'field5_id', 'not', 'value'),
+	array('type_of_check', 'field_id', 'field2_id', 'field3_id', 'field4_id', 'field5_id', 'role_id', 'not', 'value'),
 	array('smart_group_id' => $smartGroupId),
 	'ord'
 );
+$list = $smartGroup['intended_usage'] == 'smart_newsletter_group';
 
+//If there are no rules, newsletter groups should return everyone, but permissions groups should return nobody.
 if (empty($rules)) {
-	return adminPhrase('All users and contacts');
+	if ($list) {
+		return adminPhrase('All users and contacts');
+	} else {
+		return adminPhrase('No one');
+	}
 }
+$or = count($rules) > 1 && $smartGroup['must_match'] == 'any';
 
 
-$or = count($rules) > 1
-   && getRow('smart_groups', 'must_match', $smartGroupId) == 'any';
-
+$descs = array();
 
 foreach ($rules as $rule) {
 	
-	//Check if a field is set, load the details, and check if it's a supported field. Only add it if it is.
-	if ($rule['field_id']
-	 && ($field = getDatasetFieldBasicDetails($rule['field_id']))
-	 && (in($field['type'], 'group', 'checkbox', 'radios', 'centralised_radios', 'select', 'centralised_select'))) {
+	switch ($rule['type_of_check']) {
 		
-		if ($field['is_system_field'] && $field['label'] == '') {
-			$field['label'] = $field['default_label'];
-		}
+		//Handle rules on user-fields
+		case 'user_field':
+			//Check if a field is set, load the details, and check if it's a supported field. Only add it if it is.
+			if ($rule['field_id']
+			 && ($field = getDatasetFieldBasicDetails($rule['field_id']))
+			 && (in($field['type'], 'group', 'checkbox', 'radios', 'centralised_radios', 'select', 'centralised_select'))) {
 		
-		if ($desc !== '') {
-			if ($or) {
-				$desc .= ' or ';
-			} else {
-				$desc .= '; ';
-			}
-		}
-		
-		if ($field['type'] == 'group') {
-			if ($rule['not']) {
-				$desc .= 'Not a member of '. $field['label'];
-			} else {
-				$desc .= 'Member of '. $field['label'];
-		
-				//If you filter by group, an "OR" logic containing multiple groups is allowed.
-				//Check if multiple groups have been picked...
-				$groups = array();
-				if ($field['type'] == 'group') {
-					if ($rule['field2_id']) $groups[] = $rule['field2_id'];
-					if ($rule['field3_id']) $groups[] = $rule['field3_id'];
-					if ($rule['field4_id']) $groups[] = $rule['field4_id'];
-					if ($rule['field5_id']) $groups[] = $rule['field5_id'];
+				if ($field['is_system_field'] && $field['label'] == '') {
+					$field['label'] = $field['default_label'];
 				}
-				
-				//...if so, list these extra groups too
-				if (!empty($groups)) {
-					$lastI = count($groups) - 1;
-					foreach ($groups as $i => $groupId) {
-						if ($i == $lastI) {
-							$desc .= ' or ';
-						} else {
-							$desc .= ', ';
+		
+				$desc = '';
+		
+				if ($field['type'] == 'group') {
+					if ($rule['not']) {
+						$desc .= 'Not a member of '. $field['label'];
+					} else {
+						$desc .= 'Member of '. $field['label'];
+		
+						//If you filter by group, an "OR" logic containing multiple groups is allowed.
+						//Check if multiple groups have been picked...
+						$groups = array();
+						if ($field['type'] == 'group') {
+							if ($rule['field2_id']) $groups[] = $rule['field2_id'];
+							if ($rule['field3_id']) $groups[] = $rule['field3_id'];
+							if ($rule['field4_id']) $groups[] = $rule['field4_id'];
+							if ($rule['field5_id']) $groups[] = $rule['field5_id'];
 						}
-						$desc .= getRow('custom_dataset_fields', 'label', $groupId);
+				
+						//...if so, list these extra groups too
+						if (!empty($groups)) {
+							$lastI = count($groups) - 1;
+							foreach ($groups as $i => $groupId) {
+								if ($i == $lastI) {
+									$desc .= ' or ';
+								} else {
+									$desc .= ', ';
+								}
+								$desc .= getRow('custom_dataset_fields', 'label', $groupId);
+							}
+						}
+					}
+			
+				} else {
+					$desc .= $field['label'];
+			
+					if ($rule['not']) {
+						$desc .= ' is not ';
+					} else {
+						$desc .= ' is ';
+					}
+			
+					switch ($field['type']) {
+						case 'checkbox':
+							$desc .= 'set';
+							break;
+				
+						//List of values work via a numeric value id
+						case 'radios':
+						case 'select':
+							$desc .= '"'. getRow('custom_dataset_field_values', 'label', $rule['value']). '"';
+							break;
+				
+						//Centralised lists work via a text value
+						default:
+							$desc .= '"'. $rule['value']. '"';
 					}
 				}
+		
+				$descs[] = $desc;
 			}
+			break;
 			
-		} else {
-			$desc .= $field['label'];
-			
-			if ($rule['not']) {
-				$desc .= ' is not ';
-			} else {
-				$desc .= ' is ';
-			}
-			
-			switch ($field['type']) {
-				case 'checkbox':
-					$desc .= 'set';
-					break;
+		case 'role':
+			if ($rule['role_id']
+			 && ($ZENARIO_ORGANIZATION_MANAGER_PREFIX = getModulePrefix('zenario_organization_manager', $mustBeRunning = true))
+			 && ($role = getRow($ZENARIO_ORGANIZATION_MANAGER_PREFIX. 'user_location_roles', ['name'], $rule['role_id']))) {
 				
-				//List of values work via a numeric value id
-				case 'radios':
-				case 'select':
-					$desc .= '"'. getRow('custom_dataset_field_values', 'label', $rule['value']). '"';
-					break;
-				
-				//Centralised lists work via a text value
-				default:
-					$desc .= '"'. $rule['value']. '"';
+				if ($list) {
+					$descs[] = adminPhrase('Has access to the [[name]] role at any location', $role);
+				} else {
+					$descs[] = adminPhrase('Has access to the [[name]] role at the location specified in the URL', $role);
+				}
 			}
-		}
+			break;
 	}
 }
 
-
-
-return $desc;
+if ($or) {
+	return implode(' or ', $descs);
+} else {
+	return implode('; ', $descs);
+}

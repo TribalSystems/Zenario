@@ -25,7 +25,7 @@ zenario_menu_text:
                     read_only: true
                 path_of__text_in_default_language:
                     grouping: left_column
-                    label: 'Path:'
+                    label: 'Path preview:'
                     type: text
                     disabled: disabled
                     class: zenario_textbox_noborder
@@ -54,7 +54,7 @@ zenario_menu_text:
                                 :    get('parent_path_of__' + this.id).value + ' -> ' + this.value;
                 path_of__menu_title:
                     grouping: right_column
-                    label: 'Path:'
+                    label: 'Path preview:'
                     type: text
                     disabled: disabled
                     class: zenario_textbox_noborder

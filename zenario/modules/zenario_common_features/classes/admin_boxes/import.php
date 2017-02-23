@@ -767,7 +767,7 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 		$dataCount = 0;
 		$firstNameFieldDetails = $lastNameFieldDetails = false;
 		foreach ($box['tabs']['headers']['fields'] as $fieldName => $field) {
-			if (isset($field['type']) && ($field['type'] == 'select') && chopPrefixOffOfString($fieldName, 'database_column__')) {
+			if (isset($field['type']) && ($field['type'] == 'select') && chopPrefixOffString('database_column__', $fieldName)) {
 				if (!empty($field['value'])) {
 					
 					// Look for any custom columns that have been set
@@ -1182,12 +1182,23 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 				if ($field['values_source']) {
 					$lov = getCentralisedListValues($field['values_source']);
 					if (!isset($lov[$value])) {
-						$displayValue = $value;
-						if (strlen($value) >= 33) {
-							$displayValue = substr($value, 0, 30) . '...';
+						$cannotImport = true;
+						// If this is a centralised list of countries, allow user to enter country names
+						if ($field['values_source'] == 'zenario_country_manager::getActiveCountries') {
+							$searchArray = array_map('strtolower', $lov);
+							if (in_array(strtolower($value), $searchArray)) {
+								$cannotImport = false;
+							}
 						}
-						$errorMessage = 'Unknown list value "' . $displayValue . '"';
-						self::addErrorMessage($problems, $errorCount, $errorMessage, $lineNumber, $columnIndex);
+						
+						if ($cannotImport) {
+							$displayValue = $value;
+							if (strlen($value) >= 33) {
+								$displayValue = substr($value, 0, 30) . '...';
+							}
+							$errorMessage = 'Unknown list value "' . $displayValue . '"';
+							self::addErrorMessage($problems, $errorCount, $errorMessage, $lineNumber, $columnIndex);
+						}
 					}
 				}
 				
@@ -1322,6 +1333,8 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 		$fieldIdDetails = array();
 		$errorMessage = '';
 		
+		$countryList = array();
+		
 		foreach ($importData as $i => $record) {
 			$error = false;
 			$message = 'Line: '.($i+1)."\n";
@@ -1337,8 +1350,19 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 						//
 					} else {
 						if (!isset($fieldIdDetails[$fieldId])) {
-							$fieldIdDetails[$fieldId] = getRow('custom_dataset_fields', array('is_system_field', 'db_column'), $fieldId);
+							$fieldIdDetails[$fieldId] = getRow('custom_dataset_fields', array('is_system_field', 'db_column', 'values_source'), $fieldId);
 						}
+						
+						if ($fieldIdDetails[$fieldId]['values_source'] && $fieldIdDetails[$fieldId]['values_source'] == 'zenario_country_manager::getActiveCountries') {
+							if (!$countryList) {
+								$countryList = getCentralisedListValues($fieldIdDetails[$fieldId]['values_source']);
+								$countryList = array_map('strtolower', $countryList);
+							}
+							if (!isset($countryList[$value])) {
+								$value = array_search(strtolower($value), $countryList);
+							}
+						}
+						
 						if ($fieldIdDetails[$fieldId]['is_system_field']) {
 							$data[$fieldIdDetails[$fieldId]['db_column']] = $value;
 						} else {

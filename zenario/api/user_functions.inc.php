@@ -219,6 +219,7 @@ function getSmartGroupDetails($smartGroupId) {
 	return getRow('smart_groups',
 			array(
 					'name',
+					'intended_usage',
 					'must_match',
 					'created_on',
 					'created_by',
@@ -229,46 +230,50 @@ function getSmartGroupDetails($smartGroupId) {
 }
 
 
-
-function smartGroupSQL($smartGroupId, $usersTableAlias = 'u', $customTableAlias = 'ucd') {
+define('ZENARIO_NOT_IN_SMART_GROUP', "AND FALSE");
+function smartGroupSQL(&$and, &$tableJoins, $smartGroupId, $list = true, $usersTableAlias = 'u', $customTableAlias = 'ucd') {
 	return require funIncPath(__FILE__, __FUNCTION__);
 }
 
 function countSmartGroupMembers($smartGroupId) {
 	
-	$sql = "
-		SELECT COUNT(DISTINCT u.id)
-		FROM ". DB_NAME_PREFIX. "users AS u
-		LEFT JOIN ". DB_NAME_PREFIX. "users_custom_data AS ucd
-		   ON ucd.user_id = u.id
-		WHERE TRUE
-		". smartGroupSQL($smartGroupId);
+	$and = $tableJoins = '';
+	if (smartGroupSQL($and, $tableJoins, $smartGroupId)) {
+		return sqlFetchValue("
+			SELECT COUNT(DISTINCT u.id)
+			FROM ". DB_NAME_PREFIX. "users AS u
+			LEFT JOIN ". DB_NAME_PREFIX. "users_custom_data AS ucd
+			   ON ucd.user_id = u.id
+			". $tableJoins. "
+			WHERE TRUE
+			". $and);
+	}
 	
-	return sqlFetchValue($sql);
+	return false;
 }
 
 cms_core::$whitelist[] = 'checkUserIsInSmartGroup';
 function checkUserIsInSmartGroup($smartGroupId, $userId = -1) {
 	
+	$and = $tableJoins = '';
 	if ($userId === -1) {
 		$userId = userId();
 	}
 	
-	if (!$userId) {
-		return false;
+	if ($userId && smartGroupSQL($and, $tableJoins, $smartGroupId, false)) {
+		return (bool) sqlFetchRow("
+			SELECT 1
+			FROM ". DB_NAME_PREFIX. "users AS u
+			LEFT JOIN ". DB_NAME_PREFIX. "users_custom_data AS ucd
+			   ON ucd.user_id = u.id
+			". $tableJoins. "
+			WHERE u.id = ". (int) $userId. "
+			". $and. "
+			LIMIT 1"
+		);
 	}
 	
-	$sql = "
-		SELECT 1
-		FROM ". DB_NAME_PREFIX. "users AS u
-		LEFT JOIN ". DB_NAME_PREFIX. "users_custom_data AS ucd
-		   ON ucd.user_id = u.id
-		WHERE u.id = ". (int) $userId. "
-		". smartGroupSQL($smartGroupId). "
-		LIMIT 1";
-	
-	$result = sqlSelect($sql);
-	return (bool) sqlFetchRow($result);
+	return false;
 }
 
 
@@ -577,6 +582,19 @@ function logUserIn($userId, $impersonate = false) {
 		require_once CMS_ROOT. 'zenario/libraries/mit/browser/lib/browser.php';
 		$browser = new Browser();
 		
+		if($days = setting('period_to_delete_sign_in_log')){
+			if(is_numeric($days)){
+				$today = date('Y-m-d');
+				$date = date('Y-m-d', strtotime('-'.$days.' day', strtotime($today)));
+				if($date){
+					$sql = " 
+						DELETE FROM ". DB_NAME_PREFIX. "user_signin_log
+						WHERE login_datetime < '".sqlEscape($date)."'";
+					sqlUpdate($sql);
+				}
+			}
+		}
+		
 		$sql = "
 			INSERT INTO ". DB_NAME_PREFIX. "user_signin_log SET
 				user_id = ". (int)  sqlEscape($userId).",
@@ -718,8 +736,6 @@ function checkUsersPassword($userId, $password) {
 }
 
 function deleteUser($userId) {
-	deleteRow('user_content_link', array('user_id' => $userId));
-	
 	sendSignal('eventUserDeleted', array('userId' => $userId));
 	
 	deleteRow('users', $userId);
@@ -738,5 +754,554 @@ function updateUserHash($userId) {
 		UPDATE ". DB_NAME_PREFIX. "users 
 		SET hash = md5(CONCAT(id, '-". date('Yz'). '-'. primaryDomain(). "-', email))
 		WHERE id = ". (int) $userId;
-	sqlUpdate($sql, false);
+	sqlUpdate($sql, false, false);
+}
+
+
+function checkNamedUserPermExists($perm, &$directlyAssignedToUser, &$hasRoleAtCompany, &$hasRoleAtLocation, &$hasRoleAtLocationAtCompany, &$onlyIfHasRolesAtAllAssignedLocations) {
+	
+	switch ($perm) {
+		//Possible permissions for companies, locations and users
+		case 'perm.create-company.unassigned':
+		case 'perm.delete.company':
+		case 'perm.create-location.unassigned':
+		case 'perm.create-user.unassigned':
+			//Superusers only
+			return true;
+		case 'perm.view.company':
+		case 'perm.edit.company':
+		case 'perm.create-location.company':
+			return
+				$hasRoleAtCompany = true;
+		case 'perm.edit.location':
+		case 'perm.delete.location':
+			return
+				$hasRoleAtLocation = true;
+		case 'perm.view.location':
+		case 'perm.create-user.location':
+		case 'perm.assign-user.location':
+		case 'perm.deassign-user.location':
+		case 'perm.view.user':
+		case 'perm.edit.user':
+			return
+				$hasRoleAtLocation =
+				$hasRoleAtLocationAtCompany = true;
+		case 'perm.delete.user':
+			return
+				$hasRoleAtLocation =
+				$hasRoleAtLocationAtCompany =
+				$onlyIfHasRolesAtAllAssignedLocations = true;
+		
+		//Possible permissions for assets
+		case 'perm.create-asset.unassigned':
+		case 'perm.create-asset.oneself':
+		case 'perm.assign.asset':
+			//Superusers only
+			return true;
+		case 'perm.create-asset.company':
+			return
+				$hasRoleAtCompany = true;
+		case 'perm.create-asset.location':
+			return
+				$hasRoleAtLocation = true;
+		case 'perm.view.asset':
+		case 'perm.edit.asset':
+		case 'perm.delete.asset':
+			return
+				$hasRoleAtLocation =
+				$hasRoleAtCompany =
+				$hasRoleAtLocationAtCompany =
+				$directlyAssignedToUser = true;
+		
+		//Possible permissions for other Assetwolf things
+		case 'perm.create-assetType.unassigned':
+		case 'perm.create-command.unassigned':
+		case 'perm.create-possibleEvent.unassigned':
+		case 'perm.create-procedure.unassigned':
+		case 'perm.create-schedule.unassigned':
+		case 'perm.create-scheduledReport.unassigned':
+		case 'perm.create-assetType.oneself':
+		case 'perm.create-command.oneself':
+		case 'perm.create-possibleEvent.oneself':
+		case 'perm.create-procedure.oneself':
+		case 'perm.create-schedule.oneself':
+		case 'perm.manage.command':
+			//Superusers only
+			return true;
+		case 'perm.create-assetType.company':
+		case 'perm.create-command.company':
+		case 'perm.create-possibleEvent.company':
+		case 'perm.create-procedure.company':
+		case 'perm.create-schedule.company':
+		case 'perm.edit.scheduledReport':
+		case 'perm.delete.scheduledReport':
+			return
+				$hasRoleAtCompany = true;
+		case 'perm.view.assetType':
+		case 'perm.view.command':
+		case 'perm.view.possibleEvent':
+		case 'perm.view.procedure':
+		case 'perm.view.schedule':
+		case 'perm.edit.assetType':
+		case 'perm.edit.command':
+		case 'perm.edit.possibleEvent':
+		case 'perm.edit.procedure':
+		case 'perm.edit.schedule':
+		case 'perm.delete.assetType':
+		case 'perm.delete.command':
+		case 'perm.delete.possibleEvent':
+		case 'perm.delete.procedure':
+		case 'perm.delete.schedule':
+			return
+				$hasRoleAtCompany =
+				$directlyAssignedToUser = true;
+		case 'perm.view.scheduledReport':
+		    return 
+		        $hasRoleAtLocationAtCompany = true;
+	    case 'perm.sendCommandTo.asset':
+			return
+				$hasRoleAtLocation =
+				$hasRoleAtCompany =
+				$hasRoleAtLocationAtCompany =
+				$directlyAssignedToUser = true;
+		//Reject any unrecognised permission
+		default:
+			return false;
+	}
+}
+
+
+cms_core::$whitelist[] = 'checkUserCan';
+function checkUserCan($action, $target = 'unassigned', $targetId = false, $multiple = false, $authenticatingUserId = -1) {
+	
+	//If the multiple flag is set, we'll want an array of inputs.
+	//If the multiple flag isn't set, then we'll want a singular input.
+	//For security reasons I expect the developer to specifically say which of these they are expecting,
+	//just to avoid someone passing in an array that the caller then evalulates to true.
+	if ($multiple XOR is_array($targetId)) {
+		return false;
+	}
+	
+	
+	$isAW =
+	$awTable =
+	$hasGlobal =
+	$directlyAssignedToUser =
+	$hasRoleAtCompany =
+	$hasRoleAtLocation =
+	$hasRoleAtLocationAtCompany =
+	$onlyIfHasRolesAtAllAssignedLocations =
+	$ASSETWOLF_2_PREFIX =
+	$ZENARIO_ORGANIZATION_MANAGER_PREFIX =
+	$ZENARIO_COMPANY_LOCATIONS_MANAGER_PREFIX = false;
+	
+	
+	//If the $authenticatingUserId is not set, default to the current user
+	if ($authenticatingUserId === -1) {
+		if (isset($_SESSION['extranetUserID'])) {
+			$authenticatingUserId = $_SESSION['extranetUserID'];
+		} else {
+			$authenticatingUserId = false;
+		}
+	}
+	
+	//Convenience feature: accept either the target's type, or the target's variable's name.
+	//If the name ends with "Id" we'll just strip it off.
+	if (substr($target, -2) == 'Id') {
+		$target = substr($target, 0, -2);
+	}
+	
+	//The site settings use certain set patterns, e.g. perm.view.company
+	$perm = 'perm.'. $action;
+	if ($target !== false) {
+		$perm .= '.'. $target;
+	}
+	
+	
+	//Run some global checks that apply regardless of the $targetId
+	//If the action is always allowed (or always disallowed) everywhere, then we can skip some specific logic
+	do {
+		$isGlobal = true;
+		//Only certain combination of settings are valid, if the name of a permissions check is requested that does not exist
+		//then return false.
+		if (!checkNamedUserPermExists($perm, $directlyAssignedToUser, $hasRoleAtCompany, $hasRoleAtLocation, $hasRoleAtLocationAtCompany, $onlyIfHasRolesAtAllAssignedLocations)) {
+			$hasGlobal = false;
+			break;
+		}
+		
+		//View permissions have the option to show to everyone, or to always show to any extranet user,
+		//except for "view user's details" which always needs at least an extranet login
+		if ($action == 'view') {
+			switch (setting($perm)) {
+				case 'logged_out':
+					$hasGlobal = $target != 'user';
+					break 2;
+				case 'logged_in':
+					$hasGlobal = (bool) $authenticatingUserId;
+					break 2;
+			}
+		}
+		
+		//All other options require a user to be logged in
+		if (!$authenticatingUserId) {
+			$hasGlobal = false;
+			break;
+		}
+		
+		//Check to see if the "by groups" option is checked.
+		//(Note that every type of permission has a "by groups" option.)
+		//If so, if the extranet user is in any of the listed groups then allow the action.
+		if (setting($perm. '.by.group')
+		 && ($groupIds = setting($perm. '.groups'))) {
+		    
+			//Get a row from the users_custom_data table containing the groups indexed by group id
+			$userGroups = getUserGroups($authenticatingUserId, true);
+		    
+			foreach (explodeAndTrim($groupIds, true) as $groupId) {
+				if (!empty($userGroups[$groupId])) {
+					$hasGlobal = true;
+					break 2;
+				}
+			}
+		}
+		
+		//If we reach this point then we can't do a global check,
+		//we must run specific logic on the target id.
+		$isGlobal = false;
+		
+		
+		//If this is a check on something for assetwolf, note down which table this is for
+		switch ($target) {
+			case 'asset':
+				$awTable = 'assets';
+				$isAW = true;
+				break;
+			case 'assetType':
+				$awTable = 'asset_types';
+				$isAW = true;
+				break;
+			case 'command':
+				$awTable = 'commands';
+				$isAW = true;
+				break;
+			case 'possibleEvent':
+				$awTable = 'possible_events';
+				$isAW = true;
+				break;
+			case 'procedure':
+				$awTable = 'procedures';
+				$isAW = true;
+				break;
+			case 'schedule':
+				$awTable = 'schedules';
+				$isAW = true;
+				break;
+		}
+	
+		//Only actually do each check if it's enabled in the site settings
+		$hasRoleAtLocation = $hasRoleAtLocation && setting($perm. '.atLocation');
+		$hasRoleAtCompany = $hasRoleAtCompany && setting($perm. '.atCompany');
+		$hasRoleAtLocationAtCompany = $hasRoleAtLocationAtCompany && setting($perm. '.atLocationAtCompany');
+		
+		//Look up table-prefixes if needed
+		if ($isAW) {
+			$ASSETWOLF_2_PREFIX = getModulePrefix('assetwolf_2', true);
+		}
+	
+		if ($hasRoleAtCompany || $hasRoleAtLocationAtCompany || $hasRoleAtLocation) {
+			$ZENARIO_ORGANIZATION_MANAGER_PREFIX = getModulePrefix('zenario_organization_manager', true);
+		}
+		if ($hasRoleAtCompany || $hasRoleAtLocationAtCompany) {
+			$ZENARIO_COMPANY_LOCATIONS_MANAGER_PREFIX = getModulePrefix('zenario_company_locations_manager', true);
+		}
+	
+	} while (false);
+	
+	//Allow multiple ids to be checked at once in an array
+	if ($multiple) {
+		//We need an associative array with targetIds as keys.
+		
+		//This code would check if we have a numeric array and convert it to an associative array.
+		//foreach ($targetId as $key => $dummy) {
+		//	if ($key === 0) {
+		//		$targetId = arrayValuesToKeys($targetId);
+		//	}
+		//	break;
+		//}
+		
+		//Loop through the array, applying the permissions check to each entry
+		foreach ($targetId as $key => &$value) {
+			$value = checkUserCanInternal(
+				$target, $key, $authenticatingUserId,
+				$perm, $isAW, $awTable, $isGlobal, $hasGlobal,
+				$directlyAssignedToUser, $hasRoleAtCompany, $hasRoleAtLocation, $hasRoleAtLocationAtCompany,
+				$onlyIfHasRolesAtAllAssignedLocations, $ASSETWOLF_2_PREFIX,
+				$ZENARIO_ORGANIZATION_MANAGER_PREFIX, $ZENARIO_COMPANY_LOCATIONS_MANAGER_PREFIX
+			);
+		}
+		
+		//Return the resulting array
+		return $targetId;
+	
+	//Otherwise just return true or false
+	} else {
+		return checkUserCanInternal(
+			$target, $targetId, $authenticatingUserId,
+			$perm, $isAW, $awTable, $isGlobal, $hasGlobal,
+			$directlyAssignedToUser, $hasRoleAtCompany, $hasRoleAtLocation, $hasRoleAtLocationAtCompany,
+			$onlyIfHasRolesAtAllAssignedLocations, $ASSETWOLF_2_PREFIX,
+			$ZENARIO_ORGANIZATION_MANAGER_PREFIX, $ZENARIO_COMPANY_LOCATIONS_MANAGER_PREFIX
+		);
+	}
+}
+
+function checkUserCanInternal(
+	$target, $targetId, $authenticatingUserId,
+	$perm, $isAW, $awTable, $isGlobal, $hasGlobal,
+	$directlyAssignedToUser, $hasRoleAtCompany, $hasRoleAtLocation, $hasRoleAtLocationAtCompany,
+	$onlyIfHasRolesAtAllAssignedLocations, $ASSETWOLF_2_PREFIX,
+	$ZENARIO_ORGANIZATION_MANAGER_PREFIX, $ZENARIO_COMPANY_LOCATIONS_MANAGER_PREFIX
+) {
+	
+	$companyId =
+	$locationId =
+	$isUserCheck = false;
+	
+	//Look to see what type of object this is a check for
+	switch ($target) {
+		//If this was a check on a company or location, then we can use the provided company or location id
+		case 'company':
+			$companyId = $targetId;
+			break;
+		
+		case 'location':
+			$locationId = $targetId;
+			break;
+		
+		//Some special cases for dealing with user records
+		case 'user':
+			switch ($perm) {
+				case 'perm.view.user':
+					//Users can always view their own data, this is hard-coded
+					if ($targetId == $authenticatingUserId) {
+						return true;
+					}
+					break;
+		
+				case 'perm.edit.user':
+					//Users can always edit their own data if the site setting to do so is enabled
+					if ($targetId == $authenticatingUserId && setting('perm.edit.oneself')) {
+						return true;
+					}
+					break;
+		
+				case 'perm.delete.user':
+					//Stop users from deleting themslves
+					if ($targetId == $authenticatingUserId) {
+						return false;
+					}
+					break;
+			}
+			$isUserCheck = true;
+			break;
+	}
+	
+	//Apart from the above special cases, some rules can be checked globally.
+	//E.g. someone might be in the super-users group and can view or edit anything.
+	//If so then there's no need to check anything for this specific id.
+	if ($isGlobal) {
+		return $hasGlobal;
+	
+	//The rest of the checks require the specific id of something to check,
+	//return false if one wasn't provided.
+	} elseif (!$targetId) {
+		return false;
+	}
+    
+	//If this is a check for something in Assetwolf, try to load the company id or location id
+	//that it is assigned to.
+	if ($isAW && ($ASSETWOLF_2_PREFIX = getModulePrefix('assetwolf_2', true))) {
+		if ($row = sqlFetchRow("
+			SELECT owner_type, owner_id
+			FROM ". DB_NAME_PREFIX. $ASSETWOLF_2_PREFIX. $awTable. "
+			WHERE id = ". (int) $targetId
+		)) {
+			switch ($row[0]) {
+				//Note down the company or location id
+				case 'company':
+					$companyId = $row[1];
+					break;
+				case 'location':
+					$locationId = $row[1];
+					break;
+				
+				//If the asset (or whatever) was directly assigned to a user, then we can run
+				//that check now
+				case 'user':
+					return $directlyAssignedToUser && ($authenticatingUserId == $row[1]) && setting($perm. '.directlyAssigned');
+			}
+		} else {
+			return false;
+		}
+	}
+	
+	//The *thing* is assigned to a company, and they have [ANY/the specified] role at ANY location in that company
+	if ($hasRoleAtCompany && $companyId && $ZENARIO_ORGANIZATION_MANAGER_PREFIX && $ZENARIO_COMPANY_LOCATIONS_MANAGER_PREFIX) {
+		$sql = "
+			SELECT 1
+			FROM ". DB_NAME_PREFIX. $ZENARIO_ORGANIZATION_MANAGER_PREFIX. "user_role_location_link AS urll
+			". ($onlyIfHasRolesAtAllAssignedLocations? "LEFT" : "INNER"). " JOIN ". DB_NAME_PREFIX. $ZENARIO_COMPANY_LOCATIONS_MANAGER_PREFIX. "company_location_link AS cll
+			   ON cll.company_id = ". (int) $companyId. "
+			  AND urll.location_id = cll.location_id
+			WHERE urll.user_id = ". (int) $authenticatingUserId;
+		
+		if ($roleId = setting($perm. '.atCompany.role')) {
+			$sql .= "
+			  AND role_id = ". (int) $roleId;
+		}
+		$sql .= "
+			LIMIT 1";
+		
+		if (sqlFetchRow($sql)) {
+			return true;
+		}
+	}
+	
+	//The *thing* is assigned to a location at which they have [ANY/the specified] role
+	if ($hasRoleAtLocation && ($locationId || $isUserCheck) && $ZENARIO_ORGANIZATION_MANAGER_PREFIX) {
+		
+		$roleId = setting($perm. '.atLocation.role');
+		
+		//Check the case where something is assigned to just one location
+		if ($locationId && !$isUserCheck) {
+			$sql = "
+				SELECT 1
+				FROM ". DB_NAME_PREFIX. $ZENARIO_ORGANIZATION_MANAGER_PREFIX. "user_role_location_link
+				WHERE location_id = ". (int) $locationId. "
+				  AND user_id = ". (int) $authenticatingUserId;
+		
+			if ($roleId) {
+				$sql .= "
+				  AND role_id = ". (int) $roleId;
+			}
+			$sql .= "
+				LIMIT 1";
+			
+			if (sqlFetchRow($sql)) {
+				return true;
+			}
+		
+		//Handle checks on users, who can be assigned to multiple locations
+		} elseif ($isUserCheck) {
+			//Check if the target user is at any location that the current user is at
+			//Also, if we're following ONLY logic, check that they are not at any other company
+			$sql = "
+				SELECT ". ($onlyIfHasRolesAtAllAssignedLocations? "cur.user_id IS NOT NULL" : "1"). "
+				FROM ". DB_NAME_PREFIX. $ZENARIO_ORGANIZATION_MANAGER_PREFIX. "user_role_location_link AS tar
+				". ($onlyIfHasRolesAtAllAssignedLocations? "LEFT" : "INNER"). "
+				JOIN ". DB_NAME_PREFIX. $ZENARIO_ORGANIZATION_MANAGER_PREFIX. "user_role_location_link AS cur
+				   ON cur.user_id = ". (int) $authenticatingUserId;
+		
+			if ($roleId) {
+				$sql .= "
+				  AND cur.role_id = ". (int) $roleId;
+			}
+			
+			$sql .= "
+				WHERE tar.user_id = ". (int) $targetId. "
+				". ($onlyIfHasRolesAtAllAssignedLocations? "ORDER BY 1" : ""). "
+				LIMIT 1";
+			
+			if (($row = sqlFetchRow($sql)) && ($row[0])) {
+				return true;
+			}
+		}
+	}
+	
+	//The *thing* is assigned to a location at a company, and they have [ANY/the specified] role at ANY location in that company
+	if ($hasRoleAtLocationAtCompany && ($locationId || $isUserCheck) && $ZENARIO_ORGANIZATION_MANAGER_PREFIX && $ZENARIO_COMPANY_LOCATIONS_MANAGER_PREFIX) {
+		
+		$roleId = setting($perm. '.atLocationAtCompany.role');
+		
+		//Check the case where something is assigned to just one location
+		if ($locationId && !$isUserCheck) {
+			//Look up the company id up from the location
+			$sql = "
+				SELECT company_id
+				FROM ". DB_NAME_PREFIX. $ZENARIO_COMPANY_LOCATIONS_MANAGER_PREFIX. "company_location_link
+				WHERE location_id = ". (int) $locationId;
+			if ($companyId = sqlFetchValue($sql)) {
+				
+				//Check if the current user is at any location in this company
+				$sql = "
+					SELECT 1
+					FROM ". DB_NAME_PREFIX. $ZENARIO_ORGANIZATION_MANAGER_PREFIX. "user_role_location_link AS urll
+					INNER JOIN ". DB_NAME_PREFIX. $ZENARIO_COMPANY_LOCATIONS_MANAGER_PREFIX. "company_location_link AS cll
+					   ON cll.company_id = ". (int) $companyId. "
+					  AND urll.location_id = cll.location_id
+					WHERE urll.user_id = ". (int) $authenticatingUserId;
+		
+				if ($roleId) {
+					$sql .= "
+					  AND role_id = ". (int) $roleId;
+				}
+				$sql .= "
+					LIMIT 1";
+		
+				if (sqlFetchRow($sql)) {
+					return true;
+				}
+			}
+		
+		//Handle users, who can be assigned to multiple locations
+		} elseif ($isUserCheck) {
+			//Look up every company that the current user is assigned to
+			$sql = "
+				SELECT DISTINCT company_id
+				FROM ". DB_NAME_PREFIX. $ZENARIO_ORGANIZATION_MANAGER_PREFIX. "user_role_location_link AS urll
+				INNER JOIN ". DB_NAME_PREFIX. $ZENARIO_COMPANY_LOCATIONS_MANAGER_PREFIX. "company_location_link AS cll
+				   ON urll.location_id = cll.location_id
+				WHERE urll.user_id = ". (int) $authenticatingUserId;
+		
+			if ($roleId) {
+				$sql .= "
+				  AND urll.role_id = ". (int) $roleId;
+			}
+			
+			if (($companyIds = sqlFetchValues($sql)) && (!empty($companyIds))) {
+				//Check if the target user is at any of these companies
+				//Also, if we're following ONLY logic, check that they are not at any other company
+				$sql = "
+					SELECT ". ($onlyIfHasRolesAtAllAssignedLocations? "cll.company_id IS NOT NULL" : "1"). "
+					FROM ". DB_NAME_PREFIX. $ZENARIO_ORGANIZATION_MANAGER_PREFIX. "user_role_location_link AS urll
+					". ($onlyIfHasRolesAtAllAssignedLocations? "LEFT" : "INNER"). "
+					JOIN ". DB_NAME_PREFIX. $ZENARIO_COMPANY_LOCATIONS_MANAGER_PREFIX. "company_location_link AS cll
+					   ON cll.company_id IN (". inEscape($companyIds, true). ")
+					  AND urll.location_id = cll.location_id
+					WHERE urll.user_id = ". (int) $targetId. "
+					". ($onlyIfHasRolesAtAllAssignedLocations? "ORDER BY 1" : ""). "
+					LIMIT 1";
+			
+				if (($row = sqlFetchRow($sql)) && ($row[0])) {
+					return true;
+				}
+			}
+		}
+	}
+	
+	//If no rule matches, deny access
+	return false;
+}
+
+//Shortcut function for creating things, which has a slightly less confusing syntax
+cms_core::$whitelist[] = 'checkUserCanCreate';
+function checkUserCanCreate($thingToCreate, $assignedTo = 'unassigned', $assignedToId = false, $multiple = false, $authenticatingUserId = -1) {
+	
+	//Convenience feature: accept either the thing's type, or the thing's variable's name.
+	//If the name ends with "Id" we'll just strip it off.
+	if (substr($thingToCreate, -2) == 'Id') {
+		$thingToCreate = substr($thingToCreate, 0, -2);
+	}
+	
+	return checkUserCan('create-'. $thingToCreate, $assignedTo, $assignedToId, $multiple, $authenticatingUserId);
 }

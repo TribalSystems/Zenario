@@ -2,6 +2,8 @@
 
 require '../adminheader.inc.php';
 
+checkForChangesInCssJsAndHtmlFiles();
+
 $gzf = setting('compress_web_pages')? '?gz=1' : '?gz=0';
 $gz = setting('compress_web_pages')? '&amp;gz=1' : '&amp;gz=0';
 useGZIP(setting('compress_web_pages'));

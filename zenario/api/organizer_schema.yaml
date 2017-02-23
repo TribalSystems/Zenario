@@ -551,6 +551,20 @@ additionalProperties:
                                         or set in your preFillOrganizerPanel() method.
                                         It can't be changed in your fillOrganizerPanel() method.
                                     default: (defaults to the db_column property)
+                                filter_column:
+                                    type: string
+                                    static: true
+                                    preFillOrganizerPanel: true
+                                    description: >
+                                        Allows you to specify a different column definition to use for filters.
+                                        
+                                        This works from version 7.5 onwards.
+            
+            
+                                        This property must be written in your .yaml file,
+                                        or set in your preFillOrganizerPanel() method.
+                                        It can't be changed in your fillOrganizerPanel() method.
+                                    default: (defaults to the search_column property)
                                 sort_column:
                                     type: string
                                     static: true
@@ -578,6 +592,9 @@ additionalProperties:
                                     default: "<code>sort_column</code> DESC"
                                 
                                 table_join: *table_join
+                                
+                                
+                                
                                 server_side_only:
                                     type: boolean
                                     static: true
@@ -658,6 +675,31 @@ additionalProperties:
                                     type: string
                                     description: >
                                         If a column is empty, show this text instead of a blank cell.
+                                
+                                yes_phrase:
+                                    type: string
+                                    description: >
+                                        For yes_or_no formatted columns, show this value if the field is not empty.
+                                        Defaults to "Yes".
+                                no_phrase:
+                                    type: string
+                                    description: >
+                                        For yes_or_no formatted columns, show this value if the field is empty.
+                                        Defaults to "No".
+                                true_phrase:
+                                    type: string
+                                    description: >
+                                        For true_or_false formatted columns, show this value if the field is not empty.
+                                        Defaults to "True".
+                                        
+                                        This works from version 7.5 onwards.
+                                false_phrase:
+                                    type: string
+                                    description: >
+                                        For true_or_false formatted columns, show this value if the field is empty.
+                                        Defaults to "False".
+                                        
+                                        This works from version 7.5 onwards.
                                 width:
                                     enum:
                                         - xxsmall
@@ -915,8 +957,8 @@ additionalProperties:
                                             t.some_column_name IN [[REFINER_IDS]]
                                 
                                         Refiners will only work with panels with a <code>db_items</code> property
-            
-            
+                                        
+                                        
                                         This property must be written in your .yaml file,
                                         or set in your preFillOrganizerPanel() method.
                                         It can't be changed in your fillOrganizerPanel() method.
@@ -927,10 +969,11 @@ additionalProperties:
                                     description: >
                                         If the Admin has entered a search query in the search box and you have set
                                         this property, the CMS will use this SQL instead of your <code>sql</code> property.
-    
-    
-                                        This property must be written in your .yaml file.
-                                        It can't be changed in php.
+                                        
+                                        
+                                        This property must be written in your .yaml file,
+                                        or set in your preFillOrganizerPanel() method.
+                                        It can't be changed in your fillOrganizerPanel() method.
                                 table_join_when_searching:
                                     type: string
                                     static: true
@@ -938,10 +981,11 @@ additionalProperties:
                                         If the Admin has entered a search query in the search box and you have set
                                         this property, the CMS will use this table join instead of your <code>table_join</code>
                                         property.
-    
-    
-                                        This property must be written in your .yaml file.
-                                        It can't be changed in php.
+                                        
+                                        
+                                        This property must be written in your .yaml file,
+                                        or set in your preFillOrganizerPanel() method.
+                                        It can't be changed in your fillOrganizerPanel() method.
                                 allow_unauthenticated_xml_access:
                                     type: boolean
                                     static: true
@@ -954,6 +998,46 @@ additionalProperties:
     
                                         This property must be written in your .yaml file.
                                         It can't be changed in php.
+                                
+                                title:
+                                    type: string
+                                    description: >
+                                        You can use this property to override the panel's title
+                                        when this refiner is active.
+                                        
+                                        This works from version 7.5 onwards.
+                                
+                                select_mode_title:
+                                    type: string
+                                    description: >
+                                        You can use this property to override the title in select mode
+                                        when this refiner is active.
+                                        
+                                        This works from version 7.5 onwards.
+                                multiple_select_mode_title:
+                                    type: string
+                                    description: >
+                                        You can use this property to override the title in select mode
+                                        (with multiple selection enabled)
+                                        when this refiner is active.
+                                        
+                                        This works from version 7.5 onwards.
+                    
+                                no_items_message:
+                                    type: string
+                                    description: >
+                                        You can use this property to override the "no items" message
+                                        when this refiner is active.
+                                        
+                                        This works from version 7.5 onwards.
+                                
+                                no_items_in_search_message:
+                                    type: string
+                                    description: >
+                                        You can use this property to override the "no items in search" message
+                                        when this refiner is active.
+                                        
+                                        This works from version 7.5 onwards.
                     
                     refiner_required:
                         type: boolean
@@ -1344,7 +1428,7 @@ additionalProperties:
                                                         In Organizer, this property allows you to set a different message if multiple items are selected.
                                                         
                                                         You can use the [[item_count]] merge field if you want to display the number of items in your message.
-                                                    default: (defaults to the title property)
+                                                    default: (defaults to the message property)
                                                 html: &message_html
                                                     type: boolean
                                                     description: >
@@ -1794,6 +1878,39 @@ additionalProperties:
                                 hidden: *hidden
                                 visible_if: *visible_if
                                 
+                                multiple_select:
+                                    type: boolean
+                                    description: >
+                                        This marks that this button is prepared to work on multiple items.
+                                multiple_select_max_items:
+                                    type: number
+                                    description: >
+                                        Do not show this button if more than this number of items are selected.
+                                
+                                        If you use this property you must also use the <code>multiple_select</code> property.
+                                multiple_select_min_items:
+                                    type: number
+                                    description: >
+                                        Do not show this button if less than this number of items are selected.
+                                
+                                        If you use this property you must also use the <code>multiple_select</code> property.
+                                        
+                                        This works from version 7.5 onwards.
+                                multiple_select_only:
+                                    type: boolean
+                                    description: >
+                                        Same as "multiple_select_min_items: 2"
+                                multiple_select_label:
+                                    type: string
+                                    description: >
+                                        A label for this button for when more than one item is selected.
+                                    default: (defaults to the label property)
+                                multiple_select_tooltip:
+                                    type: string
+                                    description: >
+                                        A tooltip to show when more than one item is selected.
+                                    default: (defaults to the tooltip property)
+                                
                                 visible_if_for_all_selected_items:
                                     type: string
                                     description: >
@@ -1809,7 +1926,6 @@ additionalProperties:
                                         At least one item must match for the button to be shown.
                                         
                                         See http://zenar.io/visibility-in-tuix for examples.
-                                
                                 traits:
                                     type: object
                                     additionalProperties:
@@ -1910,37 +2026,6 @@ additionalProperties:
                                 only_show_on_refiner: *only_show_on_refiner
                                 hide_on_refiner: *hide_on_refiner
                                 hide_on_filter: *hide_on_filter
-                                
-                                
-                                #Item Buttons also use the following properties:
-                                multiple_select:
-                                    type: boolean
-                                    description: >
-                                        This marks that this button is prepared to work on multiple items.
-                                multiple_select_only:
-                                    type: boolean
-                                    description: >
-                                        This marks that this button will only appear when multiple items are
-                                        selected.
-                                
-                                        If you use this property you must also use the <code>multiple_select</code> property.
-                                multiple_select_max_items:
-                                    type: number
-                                    description: >
-                                        This property takes a number; if you set it then this button won't be shown
-                                        when more than this number of items are selected
-                                
-                                        If you use this property you must also use the <code>multiple_select</code> property.
-                                multiple_select_label:
-                                    type: string
-                                    description: >
-                                        A label for this button for when more than one item is selected.
-                                    default: (defaults to the label property)
-                                multiple_select_tooltip:
-                                    type: string
-                                    description: >
-                                        A tooltip to show when more than one item is selected.
-                                    default: (defaults to the tooltip property)
                                 
                                 #In addition, an Item Button should have one (and only one) of the following properties as an action:
                                 ajax: *ajax

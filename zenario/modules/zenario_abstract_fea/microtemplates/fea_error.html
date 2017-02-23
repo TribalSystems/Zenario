@@ -5,9 +5,14 @@
 	
 	<div class="zfea_error_buttons">
 		<form>
+			<% if (m.continueAnyway) { %>
+				<input type="button" class="zfea_continueAnyway" value="{{m.that.hardcodedPhrase.continueAnyway|escape}}" id="zfea_continueAnyway"/>
+			<% } %>
 			<% if (m.retry) { %>
 				<input type="button" class="zfea_retry" value="{{m.that.hardcodedPhrase.retry|escape}}" id="zfea_retry"/>
-				<input type="button" class="zfea_ok zfea_cancel" value="{{m.that.hardcodedPhrase.cancel|escape}}" onclick="$.colorbox.close();"/>
+			<% } %>
+			<% if (m.retry || m.continueAnyway) { %>
+				<input type="button" class="zfea_ok zfea_cancel" value="{{m.that.hardcodedPhrase.close|escape}}" onclick="$.colorbox.close();"/>
 			<% } else { %>
 				<input type="button" class="zfea_ok" value="{{m.that.hardcodedPhrase.ok|escape}}" onclick="$.colorbox.close();"/>
 			<% } %>

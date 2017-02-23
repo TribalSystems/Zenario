@@ -32,8 +32,8 @@ zenario.lib(function(
 	undefined,
 	URLBasePath,
 	document, window, windowOpener, windowParent,
-	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO,
-	get, engToBoolean, htmlspecialchars, ifNull, jsEscape, phrase,
+	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO, strings,
+	encodeURIComponent, get, engToBoolean, htmlspecialchars, jsEscape, phrase,
 	extensionOf, methodsOf, has,
 	getContainerIdFromEl, zenarioGrid
 ) {
@@ -115,13 +115,6 @@ methods.ffov = function(mode) {
 			}
 		
 			if (that.tuix.go) {
-				if (that.tuix.transition_out) {
-					that.transitionOut(that.tuix.transition_out);
-				}
-				if (that.tuix.transition_in_on_next_screen) {
-					that.transitionInOnNextScreen = that.tuix.transition_in_on_next_screen;
-				}
-				
 				that.go(that.containerId, that.tuix.go);
 			
 			} else {
@@ -137,6 +130,23 @@ methods.ffov = function(mode) {
 
 methods.draw = function() {
 	this.draw2();
+	
+	//If the user presses the "close" button on the conductor,
+	//and the confirm_on_close tag is set, warn the user.
+	if (this.tuix.confirm_on_close) {
+		var that = this;
+		
+		zenario_conductor.confirmOnClose(
+			that.containerId,
+			function() {
+				return !that.hidden(undefined, that.tuix.confirm_on_close);
+			},
+			function(after) {
+				that.confirm(that.tuix.confirm_on_close, after);
+			},
+			that.tuix.confirm_on_close.message
+		);
+	}
 };
 methods.redrawTab = function() {
 	this.draw2();
@@ -150,14 +160,11 @@ methods.draw2 = function() {
 	var DOMlastFieldInFocus,
 		cb = new zenario.callback;
 	
-	$('#' + this.containerId).html(this.drawFields(cb, this.mtPrefix + '_form', this.tuix));
-	
-	zenario.addJQueryElements(this.containerId + ' ');
-	//zenario.tooltips(this.containerId + ' .zfea_field_tooltip');
+	this.putHTMLOnPage(this.drawFields(cb, this.mtPrefix + '_form'));
 	
 	if (this.path == this.prevPath
 	 && this.lastFieldInFocus
-	 && (DOMlastFieldInFocus = get(this.lastFieldInFocus))) {
+	 && (DOMlastFieldInFocus = this.get(this.lastFieldInFocus))) {
 		DOMlastFieldInFocus.focus();
 	}
 	
@@ -171,6 +178,21 @@ methods.ajaxURL = function() {
 
 
 
+
+methods.putHTMLOnPage = function(html) {
+	
+	this.clearOnScrollForItemButtons();
+	
+	var containerId = this.containerId,
+		sel = '#' + containerId;
+	
+	$(sel).html(html);
+	zenario.addJQueryElements(sel + ' ');
+	
+	if (zenario.adminId) {
+		zenarioA.scanHyperlinksAndDisplayStatus(containerId);
+	}
+};
 
 methods.microTemplate = function(template, data, filter) {
 	
@@ -203,8 +225,8 @@ methods.microTemplate = function(template, data, filter) {
 
 methods.showLoader = function(hide, wasRedraw) {
 	var loaderId = 'loader_for_' + this.containerId,
-		container = get(this.containerId),
-		loader = get(loaderId),
+		container = this.get(this.containerId),
+		loader = this.get(loaderId),
 		$container = $(container),
 		$loader;
 	
@@ -252,6 +274,14 @@ methods.reload = function(callWhenLoaded) {
 	}
 };
 
+methods.navigationEnabled = function(commandName, mode) {
+	if (zenario_conductor.enabled(this.containerId)) {
+		return zenario_conductor.commandEnabled(this.containerId, commandName);
+	} else {
+		return this.tuix.allowed_modes && this.tuix.allowed_modes[mode || commandName];
+	}
+};
+
 methods.checkModeAndPathOnRequest = function(request) {
 	if (request.mode) {
 		request.path = this.getPathFromMode(request.mode);
@@ -274,11 +304,31 @@ methods.runLogic = function(containerId, request, callWhenLoaded) {
 	this.logic(containerId, request, callWhenLoaded);
 };
 
-methods.logic = function(containerId, request, callWhenLoaded) {
+methods.typeOfLogic = function(request) {
 	if (request.path.match(/list/)) {
-		this.showList(callWhenLoaded);
+		return 'list';
 	} else {
-		this.showForm(callWhenLoaded);
+		return 'form';
+	}
+};
+
+methods.logic = function(containerId, request, callWhenLoaded) {
+	switch (this.typeOfLogic(request)) {
+		case 'list':
+			this.showList(callWhenLoaded);
+			break;
+		
+		case 'form':
+			this.showForm(callWhenLoaded);
+			break;
+		
+		case 'normal_plugin':
+			zenario.refreshPluginSlot(containerId, 'lookup', request);
+			break;
+		
+		case 'normal_plugin_using_post':
+			zenario.refreshPluginSlot(containerId, 'lookup', false,false,false,false,false, request);
+			break;
 	}
 };
 
@@ -353,17 +403,13 @@ methods.drawList = function() {
 	
 	this.sortOutTUIX(this.containerId, this.tuix);
 	
-	$('#' + this.containerId).html(this.microTemplate(this.mtPrefix + '_list', {}));
+	this.putHTMLOnPage(this.microTemplate(this.mtPrefix + '_list', {}));
 	
 	var that = this,
 		page = 1 * this.tuix.__page__,
 		pageSize = 1 * this.tuix.__page_size__,
 		itemCount = 1 * this.tuix.__item_count__,
 		paginationId;
-	
-	//	To do:
-	//		- add the jPaginator library to the page
-	//		- rewrite and implement this pagination logic that I copied from Organizer
 	
 	if (page
 	 && pageSize
@@ -394,7 +440,6 @@ methods.drawList = function() {
 	}
 	
 
-	zenario.addJQueryElements(this.containerId + ' ');
 	
 	//call sparkline
 	if (this.hadSparkline) {
@@ -438,7 +483,7 @@ methods.checkRequests = function(request, forDisplay, itemId, merge, keepClutter
 	
 	this.checkModeAndPathOnRequest(request);
 	
-	idVarName = this.idVarName(request.mode || this.mode) || 'id';
+	idVarName = this.idVarName(this.mode) || 'id';
 	
 	//Automatically add everything that's defined in the key
 	if (this.tuix
@@ -459,19 +504,28 @@ methods.checkRequests = function(request, forDisplay, itemId, merge, keepClutter
 		}
 	}
 	
-	if (request[idVarName] === undefined) {
-		if (itemId) {
-			request[idVarName] = itemId;
-		} else if (keepClutter) {
-			request[idVarName] = '';
-		}
+	if (itemId) {
+		request[idVarName] = itemId;
+	} else if (keepClutter && request[idVarName] === undefined) {
+		request[idVarName] = '';
 	}
 	
-	//Remove any empty values to avoid clutter
-	if (!keepClutter) {
-		foreach (request as key => value) {
-			if (value === ''
-			 || value === false) {
+	foreach (request as key => value) {
+		//For item buttons, have the ability to insert values from that item
+		if (_.isObject(value)) {
+			value =
+			request[key] = (
+				value.replace_with_field_from_item
+				 && itemId
+				 && this.tuix.items
+				 && this.tuix.items[itemId]
+			)?
+				this.tuix.items[itemId][value.replace_with_field_from_item] : '';
+		}
+		
+		//Remove any empty values to avoid clutter
+		if (!keepClutter) {
+			if (_.isEmpty(value) || value === '0') {
 				delete request[key];
 			}
 		}
@@ -490,9 +544,9 @@ methods.checkRequests = function(request, forDisplay, itemId, merge, keepClutter
 	return request;
 };
 
-methods.init = function(globalName, microtemplatePrefix, moduleClassName, containerId, request, setDefaultMode, pages, hasEditPerms, customisationName) {
+methods.init = function(globalName, microtemplatePrefix, moduleClassName, containerId, request, setDefaultMode, pages, customisationName) {
 	
-	methodsOf(zenarioF).init.call(this, globalName, microtemplatePrefix);
+	methodsOf(zenarioF).init.call(this, globalName, microtemplatePrefix, containerId);
 	
 	this.last = {};
 	this.pages = pages || {};
@@ -500,9 +554,7 @@ methods.init = function(globalName, microtemplatePrefix, moduleClassName, contai
 	this.path = '';
 	this.prevPath = '';
 	this.customisationName = customisationName || '';
-	this.containerId = containerId;
 	this.defaultMode = setDefaultMode;
-	this.hasEditPerms = hasEditPerms;
 	this.moduleClassName = moduleClassName;
 	this.go(containerId, request, undefined, true);
 	
@@ -511,8 +563,9 @@ methods.init = function(globalName, microtemplatePrefix, moduleClassName, contai
 	//Currently I've just copied them from admin mode then hardcoded them, and have not given any thought to translating them
 	this.hardcodedPhrase = {
 		'ok': 'OK',
-		'retry': 'Retry',
-		'cancel': 'Cancel',
+		'continueAnyway': 'Continue',
+		'retry': 'Retry request',
+		'close': 'Close',
 		'unknownMode': 'Unknown mode requested',
 		'error404': 'Could not access a file on the server. Please check that you have uploaded all of the CMS files to the server, and that you have no misconfigured rewrite rules in your Apache config or .htaccess file that might cause a 404 error.',
 		'error500': "Something on the server is incorrectly set up or misconfigured.",
@@ -521,11 +574,11 @@ methods.init = function(globalName, microtemplatePrefix, moduleClassName, contai
 };
 
 methods.editModeOn = function(tab) {
-	return this.hasEditPerms;
+	return true;
 };
 
 methods.editModeAlwaysOn = function(tab) {
-	return this.hasEditPerms;
+	return true;
 };
 
 methods.debug = function() {
@@ -536,21 +589,25 @@ methods.debug = function() {
 	}
 };
 
-methods.doSearch = function(e) {
+methods.doSearch = function(e, value) {
 	
 	zenario.stop(e);
 
-	var requests = this.request,//{{JSON.stringify(m.that.request)|escape}},
-		search = {search: get('search_' + this.containerId).value};
+	var requests = this.request,
+		search = {
+			page: '',
+			search: value !== undefined? value : this.get('search_' + this.containerId).value
+		};
 
-	this.go(this.containerId, this.checkRequests(requests, false, undefined, search));
+	this.go(this.containerId, this.checkRequests(requests, false, undefined, search, true));
 	
 	return false;
-}
+};
 
 
 methods.go = function(containerId, request, itemId, wasInitialLoad) {
 	containerId = getContainerIdFromEl(containerId);
+	request = request || {};
 	
 	//If a mode or path is not specified, assume we stay on the default path
 	if (request.mode === undefined
@@ -558,7 +615,7 @@ methods.go = function(containerId, request, itemId, wasInitialLoad) {
 		request.path = this.path;
 	}
 	
-	request = this.checkRequests(request, false, itemId);
+	request = this.checkRequests(request, false, itemId, undefined, true);
 	this.last[containerId] = {request: request};
 	this.prevPath = this.path;
 	
@@ -590,21 +647,142 @@ methods.go = function(containerId, request, itemId, wasInitialLoad) {
 			if (!wasInitialLoad) {
 				that.recordRequestsInURL(containerId, request);
 			}
-			
-			if (that.transitionInOnNextScreen) {
-				that.transitionIn(that.transitionInOnNextScreen);
-			
-			} else if (that.newlyNavigated && that.tuix.transition_in) {
-				that.transitionIn(that.tuix.transition_in);
-			}
-			
-			delete that.transitionInOnNextScreen;
 		});
 	}
 };
 
 
-methods.hidden = function(tuixObject, item, id, tuix, button, column, field, section, tab) {
+methods.itemButtonIsntHidden = function(button, itemIds, isCheckboxSelect) {
+	
+	var i, item,
+		met = false,
+		maxItems = 1, 
+		minItems = 0,
+		numItems = isCheckboxSelect? itemIds.length : 0;
+	
+	//Check all of the itemIds in the request actually exist
+	for (i in itemIds) {
+		if (!(item = this.tuix.items[itemIds[i]])) {
+			return false;
+		}
+	}
+	
+	//Do the standard checks if something is hidden
+	if (this.hidden(undefined, item, button.id, button)) {
+		return false;
+	}
+	
+	//Check the min/max rules for the number of selected items
+	if (engToBoolean(button.multiple_select)) {
+		
+		//Remember if we see a visible multi-select button
+		if (!button.hide_when_children_are_not_visible) {
+			this.multiSelectButtonsExist = true;
+		}
+		
+		maxItems = button.multiple_select_max_items;
+		
+		if (engToBoolean(button.multiple_select_only)) {
+			minItems = 2;
+		}
+		
+		if (button.multiple_select_min_items) {
+			minItems = Math.max(minItems, button.multiple_select_min_items);
+		}
+	}
+	
+	//If there are too many/too few selected items, don't show this button
+	if (numItems < minItems
+	 || (maxItems && numItems > maxItems)) {
+		return false;
+	}
+	
+	if (button.visible_if_for_all_selected_items !== undefined) {
+		for (i in itemIds) {
+			item = this.tuix.items[itemIds[i]];
+			
+			if (!zenarioA.eval(button.visible_if_for_all_selected_items, this, undefined, item, button.id, button)) {
+				return false;
+			}
+		}
+	}
+	
+	if (button.visible_if_for_any_selected_items !== undefined) {
+		for (i in itemIds) {
+			item = this.tuix.items[itemIds[i]];
+			
+			if (zenarioA.eval(button.visible_if_for_any_selected_items, this, undefined, item, button.id, button)) {
+				met = true;
+				break;
+			}
+		}
+		
+		return met;
+	}
+	
+	return true;
+};
+
+
+//Check to see whether a button should be disabled
+methods.buttonIsntDisabled = function(button, itemIds) {
+	
+	//Run all of the checks to see if a button is disabled
+	doLoop:
+	do {
+		if (engToBoolean(button.disabled)) {
+			break;
+		}
+	
+		if (button.disabled_if !== undefined) {
+			if (zenarioA.eval(button.disabled_if, this, undefined, item, button.id, button)) {
+				break;
+			}
+		}
+	
+		var i, item;
+	
+		//Check whether an item button with the disabled_if_for_any_selected_items/disabled_if_for_all_selected_items
+		//properties should be visible
+		if (itemIds !== undefined
+		 && button.disabled_if_for_any_selected_items !== undefined) {
+		
+			for (i in itemIds) {
+				item = this.tuix.items[itemIds[i]];
+			
+				if (zenarioA.eval(button.disabled_if_for_any_selected_items, this, undefined, item, button.id, button)) {
+					break doLoop;
+				}
+			}
+		}
+	
+		if (itemIds !== undefined
+		 && button.disabled_if_for_all_selected_items !== undefined) {
+		
+			for (i in itemIds) {
+				item = this.tuix.items[itemIds[i]];
+			
+				if (!zenarioA.eval(button.disabled_if_for_all_selected_items, this, undefined, item, button.id, button)) {
+					return true;
+				}
+			}
+		
+			break;
+		}
+	
+		return true;
+	} while (false);
+	
+	//If it is disabled, flag it as such and change to the disabled-tooltip
+	button._isDisabled = true;
+	button.tooltip = button.disabled_tooltip || button.tooltip;
+	
+	return false;
+};
+
+
+methods.hidden = function(tuixObject, item, id, button, column, field, section, tab) {
+	
 	tuixObject = tuixObject || button || column || field || item || section || tab;
 	
 	//Check if this button mentions the conductor
@@ -624,12 +802,8 @@ methods.hidden = function(tuixObject, item, id, tuix, button, column, field, sec
 		}
 	}
 	
-	if (!this.hasEditPerms
-	 && engToBoolean(tuixObject.needs_edit_perms)) {
-		return true;
-	} else {
-		return zenarioA.hidden(tuixObject, item, id, tuix, button, column, field, section, tab)
-	}
+	//zenarioA.hidden = function(tuixObject, lib, item, id, button, column, field, section, tab) {
+	return zenarioA.hidden(tuixObject, this, item, id, button, column, field, section, tab);
 };
 
 
@@ -637,14 +811,14 @@ methods.sortOutTUIX = function(containerId, tuix) {
 	containerId = getContainerIdFromEl(containerId);
 	
 	this.newlyNavigated = this.path != this.prevPath;
+	this.multiSelectButtonsExist = false;
 	
 	tuix.collection_buttons = tuix.collection_buttons || {};
 	tuix.item_buttons = tuix.item_buttons || {};
 	tuix.columns = tuix.columns || {};
 	tuix.items = tuix.items || {};
 	
-	var i, id, j, jd, col, item, button,
-		firstItem = false,
+	var i, id, j, itemButton, childItemButton, col, item, button,
 		sortBy = tuix.sort_by || 'name';
 		sortDesc = engToBoolean(tuix.sort_desc);
 	
@@ -655,58 +829,32 @@ methods.sortOutTUIX = function(containerId, tuix) {
 	tuix.sortedColumnIds = zenarioA.getSortedIdsOfTUIXElements(tuix, tuix.columns);
 	tuix.sortedColumns = [];
 	
-	if (tuix.__item_sort_order__) {
-		tuix.sortedItemIds = tuix.__item_sort_order__;
-	} else {
-		tuix.sortedItemIds = zenarioA.getSortedIdsOfTUIXElements(tuix, 'items', sortBy, sortDesc);
+	foreach (tuix.sortedCollectionButtonIds as i => id) {
+		button = _.clone(tuix.collection_buttons[id]);
+		button.id = id;
+		
+		if (!this.hidden(undefined, undefined, id, button)) {
+			if (this.buttonIsntDisabled(button)) {
+				this.setupButtonLinks(containerId, button);
+			}
+			
+			tuix.sortedCollectionButtons.push(button);
+		}
 	}
-	tuix.sortedItems = [];
-
+	
+	foreach (tuix.sortedItemButtonIds as i => id) {
+		button = tuix.item_buttons[id];
+		button.id = id;
+		
+		tuix.sortedItemButtons.push(button);
+	}
+	
 	foreach (tuix.sortedColumnIds as i => id) {
 		col = tuix.columns[id];
 		col.id = id;
 		
-		if (!this.hidden(undefined, undefined, id, tuix, undefined, col)) {
+		if (!this.hidden(undefined, undefined, id, undefined, col)) {
 			tuix.sortedColumns.push(col);
-		}
-	}
-	
-	foreach (tuix.sortedItemIds as i => id) {
-		item = tuix.items[id];
-		item.id = id;
-		
-		tuix.sortedItems.push(item);
-		
-		item.sortedItemButtons = [];
-		
-		foreach (tuix.sortedItemButtonIds as j => jd) {
-			button = _.clone(tuix.item_buttons[jd]);
-			button.id = jd;
-			this.setupButtonLinks(containerId, button, id);
-			
-			if (firstItem) {
-				tuix.sortedItemButtons.push(button);
-			}
-			
-			if (!this.hidden(undefined, item, jd, tuix, button)) {
-				item.sortedItemButtons.push(button);
-			}
-		}
-		
-		firstItem = false;
-	}
-	foreach (tuix.sortedCollectionButtonIds as i => id) {
-		button = tuix.collection_buttons[id];
-		button.id = id;
-		
-		if (this.hidden(undefined, undefined, id, tuix, button)) {
-			continue;
-		}
-		
-		this.setupButtonLinks(containerId, button);
-		
-		if (!this.hidden(undefined, item, id, tuix, button)) {
-			tuix.sortedCollectionButtons.push(button);
 		}
 	}
 	
@@ -714,7 +862,80 @@ methods.sortOutTUIX = function(containerId, tuix) {
 	zenarioA.setKin(tuix.sortedCollectionButtons, 'zfea_button_with_children');
 	zenarioA.setKin(tuix.sortedItemButtons, 'zfea_button_with_children');
 	
+	
+	if (tuix.__item_sort_order__) {
+		tuix.sortedItemIds = tuix.__item_sort_order__;
+	} else {
+		tuix.sortedItemIds = zenarioA.getSortedIdsOfTUIXElements(tuix, 'items', sortBy, sortDesc);
+	}
+	tuix.sortedItems = [];
+	
+	foreach (tuix.sortedItemIds as i => id) {
+		item = tuix.items[id];
+		item.id = id;
+		
+		tuix.sortedItems.push(item);
+		
+		item.sortedItemButtons = this.getSortedItemButtons(containerId, tuix, [id], false);
+	}
+	
 	this.last[containerId].tuix = tuix;
+};
+
+//Get a list of item buttons, depending on the item(s) that they were for
+methods.getSortedItemButtons = function(containerId, tuix, itemIds, isCheckboxSelect) {
+		
+	var j, itemButton,
+		k, childItemButton,
+		button, children, childButton,
+		sortedButtons = [],
+		itemId, itemIdsCSV;
+	
+	if (isCheckboxSelect) {
+		itemIdsCSV = itemIds.join(',');
+	} else {
+		itemIdsCSV = itemId = itemIds[0];
+	}
+	
+	foreach (tuix.sortedItemButtons as j => itemButton) {
+		button = _.clone(itemButton);
+		button.itemId = itemId;
+		button.itemIds = itemIdsCSV;
+		
+		if (this.itemButtonIsntHidden(button, itemIds, isCheckboxSelect)) {
+			
+			if (this.buttonIsntDisabled(button, itemIds)) {
+				this.setupButtonLinks(containerId, button, itemIdsCSV);
+			}
+			
+			if (button.children) {
+				children = button.children;
+				button.children = [];
+			
+				foreach (children as k => childItemButton) {
+					childButton = _.clone(childItemButton);
+					childButton.itemId = itemId;
+					childButton.itemIds = itemIdsCSV;
+				
+					if (this.itemButtonIsntHidden(childButton, itemIds, isCheckboxSelect)) {
+						
+						if (this.buttonIsntDisabled(childButton, itemIds)) {
+							this.setupButtonLinks(containerId, childButton, itemIdsCSV);
+						}
+						
+						button.children.push(childButton);
+					}
+				}
+			}
+		
+			if (!button.hide_when_children_are_not_visible || (button.children && button.children.length > 0)) {
+				tuix.itemHasItemButton = true;
+				sortedButtons.push(button);
+			}
+		}
+	}
+	
+	return sortedButtons;
 };
 
 methods.setupButtonLinks = function(containerId, button, itemId) {
@@ -723,15 +944,19 @@ methods.setupButtonLinks = function(containerId, button, itemId) {
 	var page,
 		request,
 		onclick,
+		onPrefix,
 		command;
 	
 	if (button.go
 	 || button.ajax
+	 || button.onclick
 	 || button.confirm) {
 		
+		onPrefix = this.defineLibVarBeforeCode();
+		
 		if (!button.onclick
-		 || !button.onclick.match(/\bzzdonezzthiszz\b/)) {
-			onclick = this.globalName + ".button(this, '" + jsEscape(containerId) + "', '" + jsEscape(button.id) + "'";
+		 || !button.onclick.startsWith(onPrefix)) {
+			onclick = onPrefix + "lib.button(this, '" + jsEscape(containerId) + "', '" + jsEscape(button.id) + "'";
 		
 			if (itemId) {
 				onclick += ", '" + jsEscape(itemId) + "'";
@@ -747,7 +972,7 @@ methods.setupButtonLinks = function(containerId, button, itemId) {
 				onclick += ", function () {" + button.onclick + "}";
 			}
 		
-			onclick += "); return false; /* zzdonezzthiszz */";
+			onclick += "); return false;";
 		
 			button.onclick = onclick;
 		}
@@ -791,8 +1016,8 @@ methods.clickButton = function(el, id) {
 		clickButton = methodsOf(zenarioF).clickButton;
 	
 	if (button.confirm
-	 && !this.hidden(button.confirm, undefined, id, this.tuix, button, undefined, button)) {
-		awf.confirm(
+	 && !this.hidden(button.confirm, undefined, id, button)) {
+		this.confirm(
 			button.confirm,
 			function () {
 				clickButton.call(that, el, id);
@@ -810,8 +1035,6 @@ methods.button = function(el, containerId, buttonName, itemId, onclickFun, confi
 		return;
 	}
 	
-	delete this.transitionInOnNextScreen;
-	
 	containerId = getContainerIdFromEl(containerId);
 	
 	var that = this,
@@ -820,10 +1043,18 @@ methods.button = function(el, containerId, buttonName, itemId, onclickFun, confi
 		last = this.last[containerId],
 		request,
 		confirm,
-		funReturn;
+		funReturn,
+		itemIds,
+		numItems = 0;
 	
 	if (itemId !== undefined) {
-		item = last.tuix.items[itemId];
+		itemIds = itemId.split(',');
+		numItems = itemIds.length;
+		
+		if (numItems == 1) {
+			item = last.tuix.items[itemId];
+		}
+		
 		button = last.tuix.item_buttons[buttonName];
 	} else {
 		button = last.tuix.collection_buttons[buttonName];
@@ -834,11 +1065,18 @@ methods.button = function(el, containerId, buttonName, itemId, onclickFun, confi
 	 		button.confirm
 	 	|| (button.go && button.go.confirm)
 	 	|| (button.ajax && button.ajax.confirm))
-	 && (!this.hidden(confirm, item, buttonName, last.tuix, button))) {
+	 && (!this.hidden(confirm, item, buttonName, button))) {
 		
-		if (item) {
+		//For item buttons, modify the confirm message to include details on the item(s) selected
+		if (itemId !== undefined) {
 			confirm = _.extend({}, confirm);
-			confirm.message = zenario.applyMergeFields(confirm.message, item);
+			
+			if (numItems === 1) {
+				confirm.message = zenario.applyMergeFields(confirm.message, item);
+			} else {
+				confirm.title = ((confirm.multiple_select_title || confirm.title) + '').replace(/\[\[item_count\]\]/ig, numItems);
+				confirm.message = ((confirm.multiple_select_message || confirm.message) + '').replace(/\[\[item_count\]\]/ig, numItems);
+			}
 		}
 		
 		this.confirm(confirm, function() {
@@ -859,21 +1097,152 @@ methods.button = function(el, containerId, buttonName, itemId, onclickFun, confi
 		
 		if (button.ajax) {
 			request = this.checkRequests(button.ajax.request, false, itemId, undefined, true);
-			this.runAJAXRequest(containerId, request, last.request);
+			
+			this.runAJAXRequest(containerId, request, button.go || this.checkRequests(last.request, true), button.ajax.download);
 
 		} else {
-			if (button.transition_out) {
-				this.transitionOut(button.transition_out);
-			}
-			if (button.transition_in_on_next_screen) {
-				this.transitionInOnNextScreen = button.transition_in_on_next_screen;
-			}
 			this.go(containerId, button.go, itemId);
 		}
 	}
 	
 };
 
+
+methods.checkAllCheckboxes = function(cbEl) {
+	$('#' + this.containerId + ' input.zfea_check_item').each(function(i, el) {
+		el.checked = cbEl.checked;
+	});
+	
+	this.updateItemButtons();
+};
+
+methods.clearOnScrollForItemButtons = function() {
+	if (this.updateItemButtonPositionOnScroll) {
+		$(window).off('scroll', this.updateItemButtonPositionOnScroll);
+	}
+};
+
+methods.updateItemButtons = function() {
+	
+	this.clearOnScrollForItemButtons();
+	
+	var prefix = '#multi_select_buttons_',
+		containerId = this.containerId,
+		checkAllCheckbox = get('zfea_check_all_' + containerId),
+		$trs = $('#' + containerId + ' tr.zfea_row'),
+		$oldTds = $('#' + containerId + ' td.sorted_buttons'),
+		$td = $(prefix + 'td_' + containerId),
+		$div = $(prefix + containerId),
+		$allCheckboxes = $('#' + containerId + ' td.zfea_check_item input'),
+		$tickedCheckboxes = $allCheckboxes.filter('input:checked'),
+		$highestTickedCheckbox = $tickedCheckboxes.first(),
+		$lowestTickedCheckbox = $tickedCheckboxes.last(),
+		numberChecked = $tickedCheckboxes.length,
+		highestCheckboxHeight,
+		lowestCheckboxHeight,
+		offsetTop, offsetBottom,
+		fullWidth, largestPossibleGap, distanceFromTop,
+		itemIds = [];
+	
+	//If no checkboxes are checked, clear the multi-select buttons and show the regular buttons
+	if (!numberChecked) {
+		$td.hide();
+		$oldTds.show();
+		checkAllCheckbox.checked = false;
+		
+		//Loop through each row, removing the height hack
+		$trs.each(function(i, el) {
+			var $el = $(el);
+			$el.height('');
+		});
+		
+	} else {
+		
+		//Loop through each row, fixing the height to stop the table moving around
+		$trs.each(function(i, el) {
+			var $el = $(el);
+			$el.height($el.height());
+		});
+		
+		$tickedCheckboxes.each(function(i, el) {
+			var $el = $(el);
+			itemIds.push($el.data('item_id'));
+		});
+		
+		
+		
+		$div.html(this.microTemplate(this.mtPrefix + '_button', this.getSortedItemButtons(this.containerId, this.tuix, itemIds, true)));
+		zenario.addJQueryElements(prefix + containerId + ' ');
+		
+		
+	
+	
+		$td.show();
+		$oldTds.hide();
+		checkAllCheckbox.checked = numberChecked == $allCheckboxes.length;
+	
+		highestCheckboxHeight = $highestTickedCheckbox.offset().top;
+		lowestCheckboxHeight = $lowestTickedCheckbox.offset().top;
+	
+		fullWidth = $(window).width() / 2;
+		largestPossibleGap = $td.height() - $div.outerHeight(true);
+		distanceFromTop = $td.offset().top;
+	
+	
+	
+		offsetTop = highestCheckboxHeight - distanceFromTop;
+		offsetBottom = lowestCheckboxHeight - distanceFromTop;
+	
+		//console.log('highestCheckboxHeight', highestCheckboxHeight, 'lowestCheckboxHeight', lowestCheckboxHeight,
+		//	'distanceFromTop', distanceFromTop, 
+		//	'offsetTop', offsetTop, 'offsetBottom', offsetBottom, 'largestPossibleGap', largestPossibleGap);
+	
+		if (offsetTop < 0) {
+			offsetTop = 0;
+		}
+		if (offsetBottom > largestPossibleGap) {
+			offsetBottom = largestPossibleGap;
+		}
+	
+	
+		if (offsetBottom > 0) {
+			//Look for full-width position: fixed divs and subtract them from the distance to the top
+				//N.b. the ":not(.ui-helper-hidden-accessible)" part of the selector is to skip the many junk tags added by jQuery tooltips
+			$('body > div:visible:not(.ui-helper-hidden-accessible)').each(function(i, el) {
+				var $el = $(el);
+		
+				if ($el.css('position') == 'fixed'
+				 && $el.css('top').match(/^0/)
+				 && $el.width() > fullWidth) {
+					distanceFromTop -= $el.height();
+				}
+			});
+			
+			this.updateItemButtonPositionOnScroll = function(event) {
+			
+				var moveDivDownBy = zenario.scrollTop() - distanceFromTop;
+		
+				//console.log('moveDivDownBy', moveDivDownBy, 'scrollTop', zenario.scrollTop(), 'distanceFromTop', distanceFromTop);
+		
+				if (moveDivDownBy < offsetTop) {
+					moveDivDownBy = offsetTop;
+		
+				} else
+				if (moveDivDownBy > offsetBottom) {
+					moveDivDownBy = offsetBottom;
+				}
+		
+				$div.css('margin-top', Math.round(moveDivDownBy));
+			};
+			
+			this.updateItemButtonPositionOnScroll();
+			
+			if (numberChecked > 1) {
+				$(window).on('scroll', this.updateItemButtonPositionOnScroll);
+			}
+		}
+	}
+};
 
 
 
@@ -999,8 +1368,8 @@ methods.sparkline = function() {
 			foreach (this.tuix.sortedItems as ii => item) {
 				
 				var i,
-					$td = $(get('zfea_' + this.containerId + '_row_' + ii + '_col_' + ci)),
-					data = item[col.id],
+					$td = $(this.get('zfea_' + this.containerId + '_row_' + ii + '_col_' + ci)),
+					data = item[col.id] || {},
 					chart = {};
 				//chart.type = '...';
 				
@@ -1010,7 +1379,6 @@ methods.sparkline = function() {
 					continue;
 				}
 				
-				data.values = $.map(data.values, parseFloat);
 				var colour;
 				if(data.colour){
 					colour = data.colour;
@@ -1040,7 +1408,7 @@ methods.sparkline = function() {
 methods.initSparklineChart = function() {
 	var that = this;
 	
-	zenario.loadLibrary('zenario/libraries/not_to_redistribute/highcharts/highcharts.min.js', function() {
+	zenario.loadLibrary('zenario/libraries/not_to_redistribute/highcharts/highcharts.js', function() {
 		that.sparkline();
 		
 		that.sizeTableListCellsIfNeededAfterDelay();
@@ -1052,70 +1420,6 @@ methods.initSparklineChart = function() {
 
 
 
-
-
-
-methods.transitionIn = function(transition_in) {
-	var $slot = $('#' + this.containerId),
-		$zfea = $slot.find('.zfea'),
-		options = transition_in.options || {};
-	
-	if (_.isString(options.duration)) {
-		options.duration *= 1;
-	}
-	if (_.isArray(options.easing)) {
-		options.easing = $.bez(options.easing);
-	}
-	
-	if (transition_in.initial) {
-		$zfea.css(transition_in.initial);
-	}
-	
-	if (transition_in.animate) {
-		$zfea.animate(transition_in.animate, options);
-	}
-};
-
-//Play a transition out, when the current view is removed and replaced with something else
-methods.transitionOut = function(transition_out) {
-	
-	if (!transition_out
-	 || !transition_out.animate) {
-		return;
-	}
-	
-	var $slot = $('#' + this.containerId),
-		$cloneS = $slot.clone()
-			.attr('id', '')
-			.css('position', 'absolute')
-			.addClass('zenario_slot_dummy_for_transition')
-			.width($slot.width())
-			.height($slot.height())
-			.insertBefore($slot),
-		$zfea = $slot.find('.zfea'),
-		$cloneZ = $cloneS.find('.zfea')
-			.removeClass('zfea_newly_navigated')
-			.addClass('zfea_dummy_for_transition'),
-		
-		options = transition_out.options || {},
-		slotOriginalHeightPixels = $slot.height(),
-		slotOriginalHeightCSS = $slot.css('min-height');
-	
-	options.complete = function() {
-		$cloneS.remove();
-		$slot.css('min-height', slotOriginalHeightCSS);
-	};
-	$slot.css('min-height', slotOriginalHeightPixels + 'px');
-	
-	if (_.isString(options.duration)) {
-		options.duration *= 1;
-	}
-	if (_.isArray(options.easing)) {
-		options.easing = $.bez(options.easing);
-	}
-	$cloneZ.animate(transition_out.animate, options);
-	$zfea.hide();
-};
 
 methods.confirm = function(confirm, after) {
 	if (this.loading) {
@@ -1150,7 +1454,7 @@ methods.confirm = function(confirm, after) {
 };
 
 
-methods.runAJAXRequest = function(containerId, request, goAfter) {
+methods.runAJAXRequest = function(containerId, request, goAfter, isDownload) {
 	if (this.loading) {
 		return;
 	}
@@ -1159,19 +1463,24 @@ methods.runAJAXRequest = function(containerId, request, goAfter) {
 	
 	$.colorbox.remove();
 	
-	var that = this,
+	var that = this;
+	
+	if (isDownload) {
+		url = zenario.pluginAJAXLink(this.moduleClassName, containerId, request);
+		window.location = url;
+	} else {
 		url = zenario.pluginAJAXLink(this.moduleClassName, containerId);
+		this.showLoader();
+		this.ajax(url, request).after(function(resp) {
+			that.hideLoader();
 	
-	this.showLoader();
-	this.ajax(url, request).after(function(resp) {
-		that.hideLoader();
-	
-		if (resp) {
-			that.AJAXErrorHandler(resp);
-		} else {
-			that.go(containerId, goAfter);
-		}
-	});
+			if (resp) {
+				that.AJAXErrorHandler(resp);
+			} else {
+				that.go(containerId, goAfter);
+			}
+		});
+	}
 };
 
 
@@ -1187,9 +1496,12 @@ methods.phrase = function(text, mrg) {
 
 methods.ajax = function(url, post, json) {
 	
-	var previewValues = windowParent
-	 && windowParent.zenarioAB
-	 && windowParent.zenarioAB.previewValues;
+	var that = this,
+		previewValues =
+			zenario.adminId
+		 && windowParent
+		 && windowParent.zenarioAB
+		 && windowParent.zenarioAB.previewValues;
 	
 	if (previewValues) {
 		if (post === false
@@ -1204,10 +1516,15 @@ methods.ajax = function(url, post, json) {
 		}
 	}
 	
-	//zenario.ajax(url, post, json, useCache, retry, timeout, settings, AJAXErrorHandler, onRetry)
-	return zenario.ajax(url, post, json, false, true, undefined, undefined, this.AJAXErrorHandler, function() {
-		$.colorbox.remove();
-	});
+	//zenario.ajax(url, post, json, useCache, retry, continueAnyway, settings, timeout, AJAXErrorHandler, onRetry, onCancel)
+	return zenario.ajax(url, post, json, false, true, true, undefined, undefined,
+		function(resp, statusType, statusText) {
+			that.AJAXErrorHandler(resp, statusType, statusText);
+		},
+		function() {
+			$.colorbox.remove();
+		}
+	);
 };
 
 
@@ -1232,26 +1549,24 @@ methods.AJAXErrorHandler = function(resp, statusType, statusText) {
 		msg = '',
 		m = {};
 	
-	if (_.isString(resp)) {
-		msg = htmlspecialchars(resp);
-	} else {
-		if (statusText) {
-			msg += '<h1><b>' + htmlspecialchars(resp.status + ' ' + statusText) + '</b></h1>';
-		}
+	resp = zenarioA.splitDataFromErrorMessage(resp);
 	
-		if (resp.status == 404) {
-			msg += '<p>' + this.hardcodedPhrase.error404 + '</p>';
-	
-		} else if (resp.status == 500) {
-			msg += '<p>' + this.hardcodedPhrase.error500 + '</p>';
-	
-		} else if (resp.status == 0 || statusType == 'timeout') {
-			msg += '<p>' + this.hardcodedPhrase.errorTimedOut + '</p>';
-		}
-	
-		if (resp.responseText) {
-			msg += '<div>' + resp.responseText + '</div>';
-		}
+	if (statusText) {
+		msg += zenarioA.h1(htmlspecialchars(resp.status + ' ' + statusText));
+	}
+
+	if (resp.status == 404) {
+		msg += zenarioA.p(this.hardcodedPhrase.error404);
+
+	} else if (resp.status == 500) {
+		msg += zenarioA.p(this.hardcodedPhrase.error500);
+
+	} else if (resp.status == 0 || statusType == 'timeout') {
+		msg += zenarioA.p(this.hardcodedPhrase.errorTimedOut);
+	}
+
+	if (resp.responseText) {
+		msg += zenarioA.div(htmlspecialchars(resp.responseText));
 	}
 	
 	
@@ -1259,6 +1574,7 @@ methods.AJAXErrorHandler = function(resp, statusType, statusText) {
 		
 		m.body = msg;
 		m.retry = !!resp.zenario_retry;
+		m.continueAnyway = resp.zenario_continueAnyway && resp.data;
 		
 		$.colorbox({
 			transition: 'none',
@@ -1266,9 +1582,22 @@ methods.AJAXErrorHandler = function(resp, statusType, statusText) {
 			html: that.microTemplate(that.mtPrefix + '_error', m)
 		});
 		
-		if (resp.zenario_retry) {
+		if (m.retry) {
 			$('#zfea_retry').click(function() {
+				$.colorbox.close();
+				zenario.enableScrolling('colorbox');
+				
 				setTimeout(resp.zenario_retry, 1);
+			});
+		}
+		if (m.continueAnyway) {
+			$('#zfea_continueAnyway').click(function() {
+				$.colorbox.close();
+				zenario.enableScrolling('colorbox');
+				
+				setTimeout(function() {
+					resp.zenario_continueAnyway(resp.data);
+				}, 1);
 			});
 		}
 	}

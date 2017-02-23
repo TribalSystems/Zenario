@@ -28,44 +28,7 @@
 
 //	function arrayKey(&$array, $key, $key2 = false, $key3 = false, $key4 = false, $key5 = false, $key6 = false, $key7 = false, $key8 = false, $key9 = false) {}
 
-function addOrdinalsToTUIX(&$tuix) {
-	
-	//Loop through an array of TUIX elements, inserting any missing ordinals
-	$ord = 0;
-	$replaces = array();
-	if (is_array($tuix)) {
-		foreach ($tuix as $key => &$tag) {
-			if (is_array($tag)) {
-				if (!isset($tag['ord'])) {
-					$tag['ord'] = ++$ord;
-				
-				//If the ordinal is a string, attempt to parse it
-				} elseif (!is_numeric($tag['ord'])) {
-					$replace = '';
-					foreach (preg_split('@(\b\w+\b|\.)@', $tag['ord'], -1,  PREG_SPLIT_DELIM_CAPTURE) as $i => $part) {
-						if ($i % 2) {
-							
-							//Only allow a period once in a number; e.g. 1.02.03 should be 1.0203
-							if ($part === '.') {
-								if (strpos($replace, '.') !== false) {
-									continue;
-								}
-							
-							//Look for the names of other elements,
-							//and replace the names with the ordinals of those elements
-							} elseif (!is_numeric($part) && isset($tuix[$part]['ord'])) {
-								$replace .= $tuix[$part]['ord'];
-								continue;
-							}
-						}
-						$replace .= $part;
-					}
-					$tag['ord'] = $replace;
-				}
-			}
-		}
-	}
-}
+
 
 function arrayValuesToKeys($a) {
 	$o = array();

@@ -53,6 +53,10 @@ class zenario_abstract_fea extends module_base_class {
 	protected function populateItemsSelect($path, &$tags, &$fields, &$values) {
 		return "SELECT id, name";
 	}
+	protected function populateItemsSelectCount($path, &$tags, &$fields, &$values) {
+		return '
+			SELECT COUNT(*)';
+	}
 	protected function populateItemsFrom($path, &$tags, &$fields, &$values) {
 		return "FROM ". DB_NAME_PREFIX. "table";
 	}
@@ -61,6 +65,9 @@ class zenario_abstract_fea extends module_base_class {
 	}
 	protected function populateItemsOrderBy($path, &$tags, &$fields, &$values) {
 		return "ORDER BY name";
+	}
+	protected function populateItemsGroupBy($path, &$tags, &$fields, &$values) {
+		return '';
 	}
 	protected function populateItemsPageSize($path, &$tags, &$fields, &$values) {
 		return false;
@@ -78,7 +85,7 @@ class zenario_abstract_fea extends module_base_class {
 		
 		if ($pageSize = $this->populateItemsPageSize($path, $tags, $fields, $values)) {
 			$row = sqlFetchRow(
-				"SELECT COUNT(*)
+				$this->populateItemsSelectCount($path, $tags, $fields, $values). "
 				". $this->populateItemsFrom($path, $tags, $fields, $values). "
 				". $this->populateItemsWhere($path, $tags, $fields, $values));
 			$itemCount = $row[0];
@@ -98,6 +105,7 @@ class zenario_abstract_fea extends module_base_class {
 				$this->populateItemsSelect($path, $tags, $fields, $values). "
 				". $this->populateItemsFrom($path, $tags, $fields, $values). "
 				". $this->populateItemsWhere($path, $tags, $fields, $values). "
+				". $this->populateItemsGroupBy($path, $tags, $fields, $values). "
 				". $this->populateItemsOrderBy($path, $tags, $fields, $values). "
 				". $limit);
 		

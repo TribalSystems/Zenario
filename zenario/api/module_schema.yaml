@@ -570,3 +570,11 @@ properties:
         description: >
             If your module provides a centralised list, or multiple centralised lists, you will need to specify a label
             and the method name for each here.
+    
+    commands:
+        type: object
+        additionalProperties:
+            type: string
+        description: >
+            For plugins that are designed to work with the nest conductor, you should define a list
+            of commands that your plugin sends here.

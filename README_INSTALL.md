@@ -7,7 +7,7 @@ System Requirements
 To run Zenario you will need a web server/hosted account with the following:
 
 *   Apache Server version 2
-*   PHP version 5.3 or later
+*   PHP version 5.4 or later
 *   MySQL version 5.0 or later
 *   An empty MySQL database to install to
 *   The GD, libCurl, libJPEG and libPNG libraries, and multibyte support in PHP

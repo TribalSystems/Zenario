@@ -1003,14 +1003,116 @@ _sql
 _sql
 
 
+//Fix some content type columns with the wrong definition
+	//They should always be ascii
+	//If there's another varchar/TEXT/BLOB field on the table, they should be varchar,
+		//otherwise they should be char for faster indexing
+	//Most should not have a default value
+); revision( 37269
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]users`
+	MODIFY COLUMN `content_type` varchar(20) CHARACTER SET ascii NOT NULL default ''
+_sql
+
+//Drop the old groups table, as it's not actually used any more
+); revision(37300
+, <<<_sql
+	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]groups`
+_sql
+
+
+//Add some new options for/types of smart-group
+); revision( 37500
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]smart_groups`
+	ADD COLUMN `intended_usage` enum('lists', 'perms') NOT NULL default 'lists'
+	AFTER `name`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]smart_groups`
+	ADD KEY (`intended_usage`)
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]smart_group_rules`
+	ADD COLUMN `type_of_check` enum(
+		'user_field', 'role', 'asset_in_url', 'company_in_url', 'location_in_url'
+	) NOT NULL default 'user_field'
+	AFTER `ord`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]smart_group_rules`
+	MODIFY COLUMN `field_id` int(10) unsigned NOT NULL default 0
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]smart_group_rules`
+	ADD COLUMN `role_id` int(10) unsigned NOT NULL default 0
+	AFTER `field5_id`
+_sql
+
+
+//Drop and recreate the intended_usage column
+); revision( 37520
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]smart_groups`
+	DROP COLUMN `intended_usage`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]smart_groups`
+	ADD COLUMN `intended_usage` enum('smart_newsletter_group', 'smart_permissions_group') NOT NULL
+	default 'smart_newsletter_group'
+	AFTER `name`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]smart_groups`
+	ADD KEY (`intended_usage`)
+_sql
+
+
+//Try to retroactively change the type of any smart groups that were used for permission checks.
+); revision( 37530
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]]smart_groups` AS sg
+	INNER JOIN `[[DB_NAME_PREFIX]]translation_chains` AS tc
+	ON tc.smart_group_id = sg.id
+	SET sg.intended_usage = 'smart_permissions_group';
+_sql
+
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]]smart_groups` AS sg
+	INNER JOIN `[[DB_NAME_PREFIX]]nested_plugins` AS np
+	ON np.smart_group_id = sg.id
+	SET sg.intended_usage = 'smart_permissions_group';
+_sql
+
+
+//Remove the "In URL" rules that the core CMS now *always* checks for by default
+); revision( 37810
+, <<<_sql
+	DELETE FROM `[[DB_NAME_PREFIX]]smart_group_rules`
+	WHERE `type_of_check` NOT IN ('user_field', 'role')
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]smart_group_rules`
+	MODIFY COLUMN `type_of_check` enum(
+		'user_field', 'role'
+	) NOT NULL default 'user_field'
+_sql
+
+
 //Clear the value of the session_id column from the users table as it's not used for anything
 //(This is a post branch patch; we won't actually drop the column until 7.5 but it's safe to clear it.)
-); revision( 37243
+); revision( 38663
 , <<<_sql
 	UPDATE `[[DB_NAME_PREFIX]]users`
 	SET `session_id` = ''
 _sql
-
 
 
 );

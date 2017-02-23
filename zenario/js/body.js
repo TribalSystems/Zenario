@@ -28,7 +28,7 @@
 
 //These functions are included on every page, just after the body tag, so they're written to be
 //as small as possible when minified
-(function(document_body, window, not_, retina) {
+(function(document_body, window) {
 	
 	//This function sets/modifies a CSS class on the document.body.
 	var setBodyClass = window.zenarioSBC = function(condition, metClassName, notMetClassName) {

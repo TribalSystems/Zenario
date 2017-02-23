@@ -102,7 +102,7 @@ class zenario_common_features__admin_boxes__menu_text extends module_base_class 
 		//For top-level menu modes, add a note to the "path" field to make it clear that it's
 		//at the top level
 		if (!$values['text/parent_path_of__menu_title']) {
-			$fields['text/path_of__menu_title']['label'] = adminPhrase('Path (top level):');
+			$fields['text/path_of__menu_title']['label'] = adminPhrase('Path preview (top level):');
 			$fields['text/path_of__text_in_default_language']['label'] = adminPhrase('Path (top level):');
 		}
 	}

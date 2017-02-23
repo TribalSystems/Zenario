@@ -19,10 +19,10 @@
 ---
 zenario_menu:
     tabs:
-        advanced:
+        text:
             fields:
                 zenario_menu_multicolumn__top_of_column:
-                    ord: 2
+                    ord: accesskey.2
                     label: 'Top of column'
                     side_note: |
                         For a level 2 menu node, send it to the top of the following column.

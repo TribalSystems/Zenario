@@ -43,8 +43,8 @@ zenario.lib(function(
 	undefined,
 	URLBasePath,
 	document, window, windowOpener, windowParent,
-	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO,
-	get, engToBoolean, htmlspecialchars, ifNull, jsEscape, phrase,
+	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO, strings,
+	encodeURIComponent, get, engToBoolean, htmlspecialchars, jsEscape, phrase,
 	extensionOf, methodsOf, has,
 	panelTypes
 ) {
@@ -219,9 +219,11 @@ methods.setSwitchButton = function($header, $panel, $footer) {
 		pic = this.pic,
 		m = {buttons: []};
 	
-			m.buttons.push({id: 'zenario_organizer_switch_view_a', css_class: this.returnSwitchButtonCSSClassA(), tooltip: this.returnSwitchButtonTooltipA()});
-			m.buttons.push({id: 'zenario_organizer_switch_view_b', css_class: this.returnSwitchButtonCSSClassB(), tooltip: this.returnSwitchButtonTooltipB()});
-	if(pic) m.buttons.push({id: 'zenario_organizer_switch_view_c', css_class: this.returnSwitchButtonCSSClassC(), tooltip: this.returnSwitchButtonTooltipC()});
+	m.buttons.push({id: 'zenario_organizer_switch_view_a', css_class: this.returnSwitchButtonCSSClassA(), tooltip: this.returnSwitchButtonTooltipA()});
+	m.buttons.push({id: 'zenario_organizer_switch_view_b', css_class: this.returnSwitchButtonCSSClassB(), tooltip: this.returnSwitchButtonTooltipB()});
+	if (pic) {
+		m.buttons.push({id: 'zenario_organizer_switch_view_c', css_class: this.returnSwitchButtonCSSClassC(), tooltip: this.returnSwitchButtonTooltipC()});
+	}
 
 	if (this.view == 'C' && this.pic) {
 		m.buttons[2].selected = true;
@@ -230,13 +232,15 @@ methods.setSwitchButton = function($header, $panel, $footer) {
 	} else {
 		m.buttons[0].selected = true;
 	}
-
+	
 	$switchButtons.show().html(this.microTemplate('zenario_organizer_switch_view_wrap', m));
 	zenarioA.tooltips($switchButtons);
 	
-			$switchButtons.find('#zenario_organizer_switch_view_a').click(function() { that.changeViewMode('A'); });
-			$switchButtons.find('#zenario_organizer_switch_view_b').click(function() { that.changeViewMode('B'); });
-	if(pic) $switchButtons.find('#zenario_organizer_switch_view_c').click(function() { that.changeViewMode('C'); });
+	$switchButtons.find('#zenario_organizer_switch_view_a').click(function() { that.changeViewMode('A'); });
+	$switchButtons.find('#zenario_organizer_switch_view_b').click(function() { that.changeViewMode('B'); });
+	if (pic) {
+		$switchButtons.find('#zenario_organizer_switch_view_c').click(function() { that.changeViewMode('C'); });
+	}
 };
 
 

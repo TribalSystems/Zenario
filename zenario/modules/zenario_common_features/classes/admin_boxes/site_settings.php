@@ -217,12 +217,12 @@ class zenario_common_features__admin_boxes__site_settings extends module_base_cl
 			}
 		}
 
-		if (isset($fields['security/require_security_code_on_admin_login'])) {
+		if (isset($fields['security/enable_two_factor_security_for_admin_logins'])) {
 			
-			if (engToBoolean(siteDescription('require_security_code_on_admin_login'))) {
-				$values['security/require_security_code_on_admin_login'] = 1;
-				$values['security/security_code_by_ip'] = siteDescription('security_code_by_ip');
-				$values['security/security_code_timeout'] = siteDescription('security_code_timeout');
+			if (engToBoolean(siteDescription('enable_two_factor_security_for_admin_logins'))) {
+				$values['security/enable_two_factor_security_for_admin_logins'] = 1;
+				$values['security/apply_two_factor_security_by_ip'] = siteDescription('apply_two_factor_security_by_ip');
+				$values['security/two_factor_security_timeout'] = siteDescription('two_factor_security_timeout');
 			}
 		}
 
@@ -439,8 +439,9 @@ class zenario_common_features__admin_boxes__site_settings extends module_base_cl
 					}
 			
 					try {
-						$subject = adminPhrase('A test email from [[HTTP_HOST]]', $_SERVER);
-						$body = adminPhrase('<p>Your email appears to be working.</p><p>This is a test email sent by an administrator at [[HTTP_HOST]].</p>', $_SERVER);
+						$mrg = array('absCMSDirURL' => absCMSDirURL());
+						$subject = adminPhrase('A test email from [[absCMSDirURL]]', $mrg);
+						$body = adminPhrase('<p>Your email appears to be working.</p><p>This is a test email sent by an administrator at [[absCMSDirURL]].</p>', $mrg);
 						$addressToOverriddenBy = false;
 						$result = sendEmail(
 							$subject, $body,
@@ -584,7 +585,7 @@ class zenario_common_features__admin_boxes__site_settings extends module_base_cl
 			} elseif (!is_readable($values['automated_backups/automated_backup_log_path'])) {
 				$box['tabs']['automated_backups']['errors'][] = adminPhrase('This file is not readable.');
 	
-			} elseif (false !== chopPrefixOffOfString(realpath($values['automated_backups/automated_backup_log_path']), realpath(CMS_ROOT))) {
+			} elseif (false !== chopPrefixOffString(realpath(CMS_ROOT), realpath($values['automated_backups/automated_backup_log_path']))) {
 				$box['tabs']['automated_backups']['errors'][] = adminPhrase('Zenario is installed in this directory. Please choose a different path.');
 			}
 		}
@@ -599,7 +600,7 @@ class zenario_common_features__admin_boxes__site_settings extends module_base_cl
 				} elseif (!is_dir($values[$dir. '/'. $dir])) {
 					$box['tabs'][$dir]['errors'][] = adminPhrase('This directory does not exist.');
 		
-				} elseif (false !== chopPrefixOffOfString(realpath($values[$dir. '/'. $dir]), realpath(CMS_ROOT))) {
+				} elseif (false !== chopPrefixOffString(realpath(CMS_ROOT), realpath($values[$dir. '/'. $dir]))) {
 					$box['tabs'][$dir]['errors'][] = adminPhrase('Zenario is installed in this directory. Please choose a different directory.');
 		
 				} else {
@@ -624,10 +625,16 @@ class zenario_common_features__admin_boxes__site_settings extends module_base_cl
 			$workingCopyImages = $thumbnailWorkingCopyImages = false;
 			$jpegOnly = true;
 	
-			if (is_array($tab) && engToBooleanArray($tab, 'edit_mode', 'on')) {
+			if (is_array($tab)
+			 && !empty($tab['fields'])
+			 && is_array($tab['fields'])
+			 && engToBooleanArray($tab, 'edit_mode', 'on')) {
+				
 				foreach ($tab['fields'] as $fieldName => &$field) {
 					if (is_array($field)) {
-						if (!arrayKey($field, 'read_only') && $setting = arrayKey($field, 'site_setting', 'name')) {
+						if (!arrayKey($field, 'readonly')
+						 && !arrayKey($field, 'read_only')
+						 && ($setting = arrayKey($field, 'site_setting', 'name'))) {
 					
 							//Get the value of the setting. Hidden fields should count as being empty
 							if (engToBooleanArray($field, 'hidden')

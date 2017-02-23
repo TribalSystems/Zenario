@@ -41,16 +41,15 @@ zenario.lib(function(
 	undefined,
 	URLBasePath,
 	document, window, windowOpener, windowParent,
-	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO,
-	get, engToBoolean, htmlspecialchars, ifNull, jsEscape, phrase,
+	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO, strings,
+	encodeURIComponent, get, engToBoolean, htmlspecialchars, jsEscape, phrase,
 	extensionOf, methodsOf, has,
 	zenarioAF
 ) {
 	"use strict";
 	
 	var zenarioW = window.zenarioW = new zenarioAF();
-	zenarioW.init('zenarioW');
-	zenarioW.mtPrefix = 'zenario_welcome';
+	zenarioW.init('zenarioW', 'zenario_welcome');
 
 
 zenarioW.draw = function() {
@@ -89,6 +88,15 @@ zenarioW.draw2 = function() {
 	} else {
 		zenarioW.animateInTab(html, cb, $('#welcome'));
 	}
+	
+	//Custom logic for assetwolf install wizard (move me to a custom file if that is ever implemented)
+	if (jstz) {
+		var timezone = jstz.determine().name();
+		if ($('#timezone option[value="' +  timezone + '"]').length != 0) {
+			$('#timezone').val(timezone);
+		}
+	}
+	
 	document.title = zenarioW.tuix.title;
 	zenarioW.shownTab = zenarioW.tuix.tab;
 	delete zenarioW.lastScrollTop;

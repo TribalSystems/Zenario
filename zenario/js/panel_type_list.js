@@ -42,8 +42,8 @@ zenario.lib(function(
 	undefined,
 	URLBasePath,
 	document, window, windowOpener, windowParent,
-	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO,
-	get, engToBoolean, htmlspecialchars, ifNull, jsEscape, phrase,
+	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO, strings,
+	encodeURIComponent, get, engToBoolean, htmlspecialchars, jsEscape, phrase,
 	extensionOf, methodsOf, has,
 	panelTypes
 ) {
@@ -240,7 +240,8 @@ methods.setupListViewColumns = function($panel) {
 		sortableColOrigins = {},
 		sizeListViewColumns = function() {
 			var thisWidth,
-				width = $('#organizer_non_sortable_resizeable_cols').width();
+				width = $('#organizer_non_sortable_resizeable_cols').width(),
+				widthWithExtraMarginForZoomErrors;
 			
 			$resizables.each(function(i, el) {
 				if (thisWidth = $(el).outerWidth()) {
@@ -248,8 +249,16 @@ methods.setupListViewColumns = function($panel) {
 				}
 			});
 			
-			$('#organizer_list_view').css('min-width', width + 'px');
-			$('#organizer_list_view .organizer_row').css('min-width', width + 'px');
+			//Some hacks to try and stop things that are supposed to be on one line wrapping on various browsers/browser zoom levels
+			//#organizer_list_view has the width we want, with overflow-x: hidden;
+			//#organizer_list_view .organizer_row has an extra 20 pixels of leeway, which should hopefully be hidden by the above
+			widthWithExtraMarginForZoomErrors = width;
+			if (window.outerWidth != window.innerWidth) {
+				widthWithExtraMarginForZoomErrors += 20;
+			} else {
+				widthWithExtraMarginForZoomErrors += 5;
+			}
+			$('#organizer_list_view .organizer_row').css('min-width', widthWithExtraMarginForZoomErrors + 'px');
 		},
 		sortHandler = function(event, ui) {
 			that.saveScrollPosition($panel);
@@ -280,7 +289,8 @@ methods.setupListViewColumns = function($panel) {
 				if (save) {
 					zenarioO.resizeColumn(id.replace('organizer_column__', ''), ui.element.width());
 				} else {
-					$sortAndResizeWrapper.css('width', 'auto');
+					$sortAndResizeWrapper.css('min-width', 'auto');
+					$sortAndResizeWrapper.css('max-width', 'auto');
 					sortAndResizeable$Cols[id].width(ui.element.width());
 					sizeListViewColumns();
 				}

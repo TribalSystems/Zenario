@@ -87,8 +87,10 @@ class zenario_common_features__admin_boxes__create_vlp extends module_base_class
 				'module_class_name' => 'zenario_common_features'));
 		
 		$box['key']['id'] = $values['details/language_id'];
-		
-		$box['popout_message'] = '<!--Open_Admin_Box:zenario_setup_language//'. $values['details/language_id']. '-->';
-		
+	}
+	
+	public function adminBoxSaveCompleted($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+		closeFABWithFlags(['open_admin_box' => 'zenario_setup_language//'. $box['key']['id']]);
+		exit;
 	}
 }

@@ -1912,6 +1912,8 @@ function loadSkinDescription($skin, &$tags) {
 	}
 	
 	if ($skin) {
+		require_once CMS_ROOT. 'zenario/includes/tuix.inc.php';
+		
 		$limit = 20;
 		$skinsWeHaveRead = array();
 		$familyName = $skin['family_name'];
@@ -1929,7 +1931,7 @@ function loadSkinDescription($skin, &$tags) {
 				if (!empty($tagsToParse['extension_of_skin'])) {
 					$name = $tagsToParse['extension_of_skin'];
 				}
-			
+				
 				zenarioParseTUIX($tags, $tagsToParse, 'skin_description');
 				unset($tagsToParse);
 			}
@@ -2087,22 +2089,20 @@ function checkForChangesInCssJsAndHtmlFiles($runInProductionMode = false, $force
 		return false;
 	}
 	
-	//Don't run if the templates directory is missing
-	if (!is_dir($templateDir = CMS_ROOT. 'zenario_custom/templates/')) {
-		return false;
-	}
-	
 	
 	$time = time();
 	$changed = false;
+	$templateChanges = false;
 	
 	//Get the date of the last time we ran this check and there was a change.
 	if (!($lastChanged = (int) setting('css_js_html_files_last_changed'))) {
 		//If this has never been run before then it must be run now!
 		$changed = true;
+		$templateChanges = is_dir(CMS_ROOT. 'zenario_custom/templates/');
 	
 	} elseif ($forceScan) {
 		$changed = true;
+		$templateChanges = is_dir(CMS_ROOT. 'zenario_custom/templates/');
 	
 	//Don't run this in production mode unless $forceScan or $runInProductionMode is set
 	} elseif (!$runInProductionMode && setting('site_mode') == 'production') {
@@ -2111,12 +2111,34 @@ function checkForChangesInCssJsAndHtmlFiles($runInProductionMode = false, $force
 	//Otherwise, check if there have been any files changed since the last modification time
 	} else {
 		
+		//These are the directories that we should look in.
+		//N.b. it's important that we check the templates directory first;
+		//there's some extra logic if a template file changes so we need to know if
+		//a template file change is the change that's triggering this
+		$dirs = array();
+		foreach (array(
+			'zenario_custom/templates',
+			'zenario/js',
+			'zenario/styles',
+			'zenario/modules',
+			'zenario_custom/modules',
+			'zenario_extra_modules'
+		) as $dir) {
+			if (is_dir(CMS_ROOT. $dir)) {
+				$dirs[] = $dir;
+			}
+		}
+		
+		if (empty($dirs)) {
+			return false;
+		}
+		
 		//Check to see if there are any .css, .js or .html files that have changed on the system
 		$useFallback = true;
 		
 		if (defined('PHP_OS') && execEnabled()) {
 			//Make sure we are in the CMS root directory.
-			chdir($templateDir);
+			chdir(CMS_ROOT);
 			
 			try {
 				//Look for any .css, .js or .html files that have been created or modified since this was last run.
@@ -2125,15 +2147,21 @@ function checkForChangesInCssJsAndHtmlFiles($runInProductionMode = false, $force
 				//(This will catch the case where files are deleted, as the modification times of directories are included.)
 				$find =
 					' -not -path "*/.*"'.
+					' \\( -name "*.css*" -o -name "*.js*" -o -name "*.html" -o -name "*.php" \\)'.
 					' -print'.
 					' | sed 1q';
+			
+				$locations = '';
+				foreach ($dirs as $dir) {
+					$locations .= ' '. escapeshellarg($dir);
+				}
 			
 				//If possble, try to use the UNIX shell
 				if (PHP_OS == 'Linux') {
 					//On Linux it's possible to set a timeout, so do so.
 					$output = array();
 					$status = false;
-					$changed = exec('timeout 10 find -L . -newermt @'. (int) $lastChanged. $find, $output, $status);
+					$changed = exec('timeout 10 find -L'. $locations. ' -newermt @'. (int) $lastChanged. $find, $output, $status);
 					
 					//If the statement times out, then I will assume this was because the file system indexes were out of
 					//date and the find statement took a long time.
@@ -2146,9 +2174,11 @@ function checkForChangesInCssJsAndHtmlFiles($runInProductionMode = false, $force
 			
 				} elseif (PHP_OS == 'Darwin') {
 					$ago = $time - $lastChanged;
-					$changed = exec('find -L . -mtime -'. (int) $ago. 's'. $find);
+					$changed = exec('find -L'. $locations. ' -mtime -'. (int) $ago. 's'. $find);
 					$useFallback = false;
 				}
+				
+				$templateChanges = $changed && chopPrefixOffString('zenario_custom/templates/', $changed);
 	
 			} catch (Exception $e) {
 				$useFallback = true;
@@ -2157,106 +2187,108 @@ function checkForChangesInCssJsAndHtmlFiles($runInProductionMode = false, $force
 		
 		//If we couldn't use the command line, we'll do the same logic using a RecursiveDirectoryIterator
 		if ($useFallback) {
-			$RecursiveDirectoryIterator = new RecursiveDirectoryIterator($templateDir);
-			$RecursiveIteratorIterator = new RecursiveIteratorIterator($RecursiveDirectoryIterator);
+			foreach ($dirs as $dir) {
+				$RecursiveDirectoryIterator = new RecursiveDirectoryIterator(CMS_ROOT. $dir);
+				$RecursiveIteratorIterator = new RecursiveIteratorIterator($RecursiveDirectoryIterator);
 			
-			foreach ($RecursiveIteratorIterator as $file) {
-				if ($file->isFile()
-				 && $file->getMTime() > $lastChanged) {
-					$changed = true;
-					break;
+				foreach ($RecursiveIteratorIterator as $file) {
+					if ($file->isFile()
+					 && $file->getMTime() > $lastChanged) {
+						$changed = true;
+						$templateChanges = $dir == 'zenario_custom/templates/';
+						break 2;
+					}
 				}
 			}
 		}
 	}
 	
-	//Make sure we are in the CMS root directory.
-	chdir(CMS_ROOT);
-	
 	
 	if ($changed) {
-		//Clear the page cache completely if a Skin or a Template Family has changed
-		$sql = '';
-		$ids = $values = array();
-		reviewDatabaseQueryForChanges($sql, $ids, $values, $table = 'template_family');
+		if ($templateChanges) {
+			//Clear the page cache completely if a Skin or a Template Family has changed
+			$sql = '';
+			$ids = $values = array();
+			reviewDatabaseQueryForChanges($sql, $ids, $values, $table = 'template_family');
 		
 		
-		//Mark all current Template Families/Template Files/Skins as missing
-		updateRow('template_families', array('missing' => 1), array());
-		updateRow('template_files', array('missing' => 1), array());
-		updateRow('skins', array('missing' => 1), array());
+			//Mark all current Template Families/Template Files/Skins as missing
+			updateRow('template_families', array('missing' => 1), array());
+			updateRow('template_files', array('missing' => 1), array());
+			updateRow('skins', array('missing' => 1), array());
 		
-		//Ensure that there is always a Template File and Family in the database to cover
-		//any Layouts and Skins that are also in the database, even if they would be missing.
-		foreach (getDistinctRowsArray('layouts', array('family_name')) as $row) {
-			setRow('template_families', array('missing' => 1), $row);
-		}
-		foreach (getDistinctRowsArray('layouts', array('family_name', 'file_base_name')) as $row) {
-			setRow('template_files', array('missing' => 1), $row);
-		}
-		foreach (getDistinctRowsArray('skins', array('family_name')) as $row) {
-			setRow('template_families', array('missing' => 1), $row);
-		}
+			//Ensure that there is always a Template File and Family in the database to cover
+			//any Layouts and Skins that are also in the database, even if they would be missing.
+			foreach (getDistinctRowsArray('layouts', array('family_name')) as $row) {
+				setRow('template_families', array('missing' => 1), $row);
+			}
+			foreach (getDistinctRowsArray('layouts', array('family_name', 'file_base_name')) as $row) {
+				setRow('template_files', array('missing' => 1), $row);
+			}
+			foreach (getDistinctRowsArray('skins', array('family_name')) as $row) {
+				setRow('template_families', array('missing' => 1), $row);
+			}
 		
-		//Check that all of the template-families, files and skins in the filesystem are
-		//registered in the database, and add any newly found files/directories.
-		if (is_dir($dir = CMS_ROOT. zenarioTemplatePath())) {
-			foreach (scandir($dir) as $family) {
-				if ($family && substr($family, 0, 1) != '.' && is_dir($dir2 = $dir. $family)) {
-					setRow('template_families', array('missing' => 0), array('family_name' => $family));
+			//Check that all of the template-families, files and skins in the filesystem are
+			//registered in the database, and add any newly found files/directories.
+			if (is_dir($dir = CMS_ROOT. zenarioTemplatePath())) {
+				foreach (scandir($dir) as $family) {
+					if ($family && substr($family, 0, 1) != '.' && is_dir($dir2 = $dir. $family)) {
+						setRow('template_families', array('missing' => 0), array('family_name' => $family));
 					
-					foreach (scandir($dir2) as $templateFile) {
-						if (substr($templateFile, 0, 1) != '.'
-						 && substr($templateFile, -8) == '.tpl.php'
-						 && is_file($dir2. '/'. $templateFile)) {
-							setRow(
-								'template_files',
-								array('missing' => 0),
-								array(
-									'family_name' => $family,
-									'file_base_name' => substr($templateFile, 0, -8)));
+						foreach (scandir($dir2) as $templateFile) {
+							if (substr($templateFile, 0, 1) != '.'
+							 && substr($templateFile, -8) == '.tpl.php'
+							 && is_file($dir2. '/'. $templateFile)) {
+								setRow(
+									'template_files',
+									array('missing' => 0),
+									array(
+										'family_name' => $family,
+										'file_base_name' => substr($templateFile, 0, -8)));
+							}
 						}
-					}
 					
-					if (is_dir($dir3 = $dir2. '/skins/')) {
-						foreach (scandir($dir3) as $skin) {
-							if (substr($skin, 0, 1) != '.' && is_dir($dir4 = $dir3. $skin)) {
-								$row = array('family_name' => $family, 'name' => $skin);
-								$exists = checkRowExists('skins', $row);
+						if (is_dir($dir3 = $dir2. '/skins/')) {
+							foreach (scandir($dir3) as $skin) {
+								if (substr($skin, 0, 1) != '.' && is_dir($dir4 = $dir3. $skin)) {
+									$row = array('family_name' => $family, 'name' => $skin);
+									$exists = checkRowExists('skins', $row);
 								
-								$details = array('missing' => 0);
+									$details = array('missing' => 0);
 								
-								//Also update the Skin's description
-								$desc = false;
-								if (loadSkinDescription($row, $desc)) {
-									$details['display_name'] = ifNull(arrayKey($desc, 'display_name'), $row['name']);
-									$details['extension_of_skin'] = arrayKey($desc, 'extension_of_skin');
-									$details['css_class'] = arrayKey($desc, 'css_class');
-									$details['background_selector'] = ifNull(arrayKey($desc, 'background_selector'), 'body');
-									$details['enable_editable_css'] = !engToBoolean(arrayKey($desc, 'disable_editable_css'));
+									//Also update the Skin's description
+									$desc = false;
+									if (loadSkinDescription($row, $desc)) {
+										$details['display_name'] = ifNull(arrayKey($desc, 'display_name'), $row['name']);
+										$details['extension_of_skin'] = arrayKey($desc, 'extension_of_skin');
+										$details['css_class'] = arrayKey($desc, 'css_class');
+										$details['background_selector'] = ifNull(arrayKey($desc, 'background_selector'), 'body');
+										$details['enable_editable_css'] = !engToBoolean(arrayKey($desc, 'disable_editable_css'));
+									}
+									setRow('skins', $details, $row);
 								}
-								setRow('skins', $details, $row);
 							}
 						}
 					}
 				}
 			}
-		}
 		
-		//Delete anything that is missing *and* not used
-		foreach(getRowsArray('skins', 'id', array('missing' => 1)) as $skinId) {
-			if (!checkSkinInUse($skinId)) {
-				deleteSkinAndClearForeignKeys($skinId);
+			//Delete anything that is missing *and* not used
+			foreach(getRowsArray('skins', 'id', array('missing' => 1)) as $skinId) {
+				if (!checkSkinInUse($skinId)) {
+					deleteSkinAndClearForeignKeys($skinId);
+				}
 			}
-		}
-		foreach(getRowsArray('template_files', array('family_name', 'file_base_name'), array('missing' => 1)) as $tf) {
-			if (!checkRowExists('layouts', $tf)) {
-				deleteRow('template_files', $tf);
+			foreach(getRowsArray('template_files', array('family_name', 'file_base_name'), array('missing' => 1)) as $tf) {
+				if (!checkRowExists('layouts', $tf)) {
+					deleteRow('template_files', $tf);
+				}
 			}
-		}
-		foreach(getRowsArray('template_families', 'family_name', array('missing' => 1)) as $familyName) {
-			if (!checkTemplateFamilyInUse($familyName)) {
-				deleteRow('template_families', $familyName);
+			foreach(getRowsArray('template_families', 'family_name', array('missing' => 1)) as $familyName) {
+				if (!checkTemplateFamilyInUse($familyName)) {
+					deleteRow('template_families', $familyName);
+				}
 			}
 		}
 		
@@ -2635,7 +2667,7 @@ function removeMenuText($menuId, $languageId) {
 	deleteRow('menu_text', array('language_id' => $languageId, 'menu_id' => $menuId));
 }
 
-function addContentItemsToMenu($tagIds, $menuTarget, $hideMenuNodes = false) {
+function addContentItemsToMenu($tagIds, $menuTarget, $hideMenuNodes = false, $hidePrivateItem = false) {
 	require funIncPath(__FILE__, __FUNCTION__);
 }
 
@@ -3073,9 +3105,13 @@ function runModule($id, $test) {
 	$desc = false;
 	$missingModules = array();
 	$module = getModuleDetails($id);
+	$moduleErrors = '';
 	
-	if (checkIfDBUpdatesAreNeeded()) {
+	if (checkIfDBUpdatesAreNeeded($moduleErrors)) {
 		return adminPhrase("Core databases need to be applied. Please log out and then log back in again before attempting to install any modules.");
+	
+	} elseif ($moduleErrors) {
+		return $moduleErrors;
 	
 	//Check to see if there are any other versions of the same module running.
 	//If we find another version running, don't let this version be activated!
@@ -3169,7 +3205,7 @@ function runModule($id, $test) {
 			
 				//Have a safety feature whereby if the installation fails, the module will be immediately uninstalled
 				//However this shouldn't be used for upgrading a module to a different version
-				checkIfDBUpdatesAreNeeded($andDoUpdates = true, $uninstallPluginOnFail = $id);
+				checkIfDBUpdatesAreNeeded($moduleErrors, $andDoUpdates = true, $uninstallPluginOnFail = $id);
 			
 				//Add any content types this module has
 				setupModuleContentTypesFromXMLDescription($module['class_name']);
@@ -3415,6 +3451,8 @@ function listModuleFrameworks($className, $limit = 10, $recursive = false) {
 	
 	if (!$recursive) {
 		ksort($frameworks);
+		
+		require_once CMS_ROOT. 'zenario/includes/tuix.inc.php';
 		addOrdinalsToTUIX($frameworks);
 	}
 	
@@ -3468,7 +3506,7 @@ function createNewInstance($moduleId, $instanceName, &$instanceId, &$errors, $on
 		FROM ". DB_NAME_PREFIX. "modules
 		WHERE id = ". (int) $moduleId;
 	
-	sqlUpdate($sql, false);  //No need to check the cache as this new instance is not used anywhere yet
+	sqlUpdate($sql, false, false);  //No need to check the cache as this new instance is not used anywhere yet
 	$instanceId = sqlInsertId();
 	
 	return true;
@@ -3753,7 +3791,7 @@ function deletePluginInstance($instanceId) {
 	deleteRow('plugin_instances', $instanceId);
 	
 	foreach (array(
-		'nested_plugins', 'nested_paths', 'plugin_instance_cache',
+		'group_slide_link', 'nested_plugins', 'nested_paths', 'plugin_instance_cache',
 		'plugin_settings', 'plugin_item_link', 'plugin_layout_link'
 	) as $table) {
 		deleteRow($table, array('instance_id' => $instanceId));
@@ -3858,7 +3896,11 @@ function updatePluginInstanceInItemSlot($instanceId, $slotName, $cID, $cType = f
 	}
 }
 
-function getNestDetails($nestedItemId, $instanceId = false, $includePermsColumns = false) {
+function conductorEnabled($instanceId) {
+	return (bool) getRow('plugin_settings', 'value', ['instance_id' => $instanceId, 'name' => 'enable_conductor', 'nest' => 0]);
+}
+
+function getNestDetails($nestedItemId, $instanceId = false) {
 
 	$sql = "
 		SELECT
@@ -3870,18 +3912,10 @@ function getNestDetails($nestedItemId, $instanceId = false, $includePermsColumns
 			css_class,
 			is_slide,
 			states,
-			name_or_title";
-	
-	if ($includePermsColumns) {
-		$sql .= ",
-			invisible_in_nav,
-			visibility, smart_group_id, module_class_name, method_name, param_1, param_2";
-	} else {
-		$sql .= ",
-			cols, small_screens";
-	}
-	
-	$sql .= "
+			show_back,
+			show_refresh,
+			name_or_title,
+			cols, small_screens
 		FROM ". DB_NAME_PREFIX. "nested_plugins
 		WHERE id = ". (int) $nestedItemId;
 	
@@ -4141,14 +4175,14 @@ function getAllCurrentRevisionNumbers() {
 	while ($row = sqlFetchAssoc($result)) {
 		//Convert anything saying "zenario_extra_modules/" or "zenario_custom/modules/" to "zenario/modules/"
 		//Also account for the directory path rearrangements that happened in zenario 6
-		if (($chop = chopPrefixOffOfString($row['path'], 'plugins/'))
-		 || ($chop = chopPrefixOffOfString($row['path'], 'zenario/plugins/'))
-		 || ($chop = chopPrefixOffOfString($row['path'], 'zenario_extra_modules/'))
-		 || ($chop = chopPrefixOffOfString($row['path'], 'zenario_custom/modules/'))) {
+		if (($chop = chopPrefixOffString('plugins/', $row['path']))
+		 || ($chop = chopPrefixOffString('zenario/plugins/', $row['path']))
+		 || ($chop = chopPrefixOffString('zenario_extra_modules/', $row['path']))
+		 || ($chop = chopPrefixOffString('zenario_custom/modules/', $row['path']))) {
 			$row['path'] = 'zenario/modules/'. $chop;
 		}
 		
-		if (!chopPrefixOffOfString($row['path'], 'zenario/')) {
+		if (!chopPrefixOffString('zenario/', $row['path'])) {
 			$row['path'] = 'zenario/'. $row['path'];
 		}
 		
@@ -4166,7 +4200,7 @@ function getAllCurrentRevisionNumbers() {
 
 //Check the current revisions as recorded in the revision_numbers tables
 //to see if database updates are needed from the updates directory
-function checkIfDBUpdatesAreNeeded($andDoUpdates = false, $uninstallPluginOnFail = false, $quickCheckForUpdates = true) {
+function checkIfDBUpdatesAreNeeded(&$moduleErrors, $andDoUpdates = false, $uninstallPluginOnFail = false, $quickCheckForUpdates = true) {
 	return require funIncPath(__FILE__, __FUNCTION__);
 }
 
@@ -4181,13 +4215,13 @@ function setModuleRevisionNumber($revisionNumber, $path, $updateFile) {
 	
 	//Account for the directory path rearrangements that happened in zenario 6
 	//Convert back to the old format when saving
-	if ($chop = chopPrefixOffOfString($path, 'zenario/')) {
+	if ($chop = chopPrefixOffString('zenario/', $path)) {
 		$path = $chop;
 	
 	//Convert back from the my_zenario_module format as well
 	} else
-	if (($chop = chopPrefixOffOfString($path, 'zenario_extra_modules/'))
-	 || ($chop = chopPrefixOffOfString($path, 'zenario_custom/modules/'))) {
+	if (($chop = chopPrefixOffString('zenario_extra_modules/', $path))
+	 || ($chop = chopPrefixOffString('zenario_custom/modules/', $path))) {
 		$path = 'modules/'. $chop;
 	}
 			
@@ -4215,12 +4249,12 @@ function performDBUpdate($path, $updateFile, $uninstallPluginOnFail, $currentRev
 		//The path will be of the form 
 		//	zenario/modules/'. $module['class_name']. '/...
 		//Get the module's directory name from the path!
-		if (chopPrefixOffOfString($path, 'zenario/modules/')
-		 || chopPrefixOffOfString($path, 'zenario_custom/modules/')) {
+		if (chopPrefixOffString('zenario/modules/', $path)
+		 || chopPrefixOffString('zenario_custom/modules/', $path)) {
 			$paths = explode('/', $path, 4);
 			$moduleName = $paths[2];
 		
-		} elseif (chopPrefixOffOfString($path, 'zenario_extra_modules/')) {
+		} elseif (chopPrefixOffString('zenario_extra_modules/', $path)) {
 			$paths = explode('/', $path, 3);
 			$moduleName = $paths[1];
 		
@@ -4374,6 +4408,14 @@ function moduleDescriptionFilePath($moduleName) {
 	} else {
 		return false;
 	}
+}
+
+
+//Organizer needs reloading if a module that adds to Organizer, or has a content type, is installed or uninstalled
+function needToReloadOrganizerWhenModuleIsInstalled($moduleName) {
+	$tags = array();
+	return moduleDir($moduleName, 'tuix/organizer', true)
+	 || (loadModuleDescription($moduleName, $tags) && (!empty($tags['content_types'])));
 }
 
 
@@ -4736,10 +4778,10 @@ function initialiseBackupFunctions($includeWarnings = false) {
 
 function generateFilenameForBackups() {
 	//Get the current date and time, and create a filename with that timestamp
-	$sql = "SELECT DATE_FORMAT(NOW(), '%Y-%m-%d-%H.%i')";
-	$result = sqlQuery($sql);
-	$row = sqlFetchRow($result);
-	return preg_replace('/[^\w-\\.]/', '', httpHost() ."-backup-". $row[0]. '-'. ZENARIO_VERSION. '-r'. LATEST_REVISION_NO. '.sql.gz');
+	return preg_replace('/[^\w\\.]+/', '-',
+		httpHost(). '-'. SUBDIRECTORY. '-backup-'. sqlFetchValue("SELECT DATE_FORMAT(NOW(), '%Y-%m-%d-%H.%i')"). '-'.
+		ZENARIO_VERSION. '-r'. LATEST_REVISION_NO.
+		'.sql.gz');
 }
 
 
@@ -5057,7 +5099,8 @@ function resetSite() {
 		
 		
 		//Apply database updates
-		checkIfDBUpdatesAreNeeded($andDoUpdates = true);
+		$moduleErrors = '';
+		checkIfDBUpdatesAreNeeded($moduleErrors, $andDoUpdates = true);
 		
 		//Populate the menu_hierarchy and the menu_positions tables
 		recalcAllMenuHierarchy();
@@ -5333,10 +5376,63 @@ To correct this, please ask your system administrator to perform a
 
 
 
+function contentItemPrivacyDesc($privacy, $chain = false) {
+	
+	if ($chain) {
+		switch ($privacy) {
+			case 'group_members':
+				$groupNames = sqlFetchValues("
+					SELECT IFNULL(label, default_label)
+					FROM ". DB_NAME_PREFIX. "group_content_link AS gcl
+					INNER JOIN ". DB_NAME_PREFIX. "custom_dataset_fields cdf
+					   ON gcl.group_id = cdf.id
+					WHERE gcl.equiv_id = ". (int) $chain['equiv_id']. "
+					  AND gcl.content_type = '". sqlEscape($chain['type']). "'");
+			
+				if (count($groupNames) > 1) {
+					$groupNames = array(implode(', ', $groupNames));
+					return adminPhrase('Private, only show to extranet users in the groups: [[0]]', $groupNames);
+				} else {
+					return adminPhrase('Private, only show to extranet users in the group: [[0]]', $groupNames);
+				}
+				break;
+			
+			case 'in_smart_group':
+			case 'logged_in_not_in_smart_group':
+				if (($smartGroupId = getRow('translation_chains', 'smart_group_id', array('equiv_id' => $chain['equiv_id'], 'type' => $chain['type'])))
+				 && ($smartGroup = getRow('smart_groups', array('name'), $smartGroupId))) {
+				
+					if ($privacy == 'in_smart_group') {
+						return adminPhrase('Private, only show to extranet users in the smart group: [[name]]', $smartGroup);
+					} else {
+						return adminPhrase('Private, only show to extranet users NOT in the smart group: [[name]]', $smartGroup);
+					}
+				}
+		}
+	}
+	
+	switch ($privacy) {
+		case 'public':
+			return adminPhrase('Public, visible to everyone');
+		case 'logged_out':
+			return adminPhrase('Public, only show to visitors who are NOT logged in');
+		case 'logged_in':
+			return adminPhrase('Private, only show to extranet users who are logged in');
+		case 'group_members':
+			return adminPhrase('Private, only show to extranet users in a group');
+		case 'in_smart_group':
+			return adminPhrase('Private, only show to extranet users in a smart group');
+		case 'logged_in_not_in_smart_group':
+			return adminPhrase('Private, only show to extranet users NOT in a smart group');
+		case 'call_static_method':
+			return adminPhrase("Call a module's static method to decide");
+		case 'send_signal':
+			return adminPhrase('Send a signal to decide');
+	}
+}
 
-
-function getListOfSmartGroupsWithCounts() {
-	$smartGroups = getRowsArray('smart_groups', 'name', array(), 'name');
+function getListOfSmartGroupsWithCounts($intendedUsage = 'smart_permissions_group') {
+	$smartGroups = getRowsArray('smart_groups', 'name', ['intended_usage' => $intendedUsage], 'name');
 	foreach ($smartGroups as $smartGroupId => &$name) {
 		$name .= 
 			' | '.
@@ -5679,19 +5775,47 @@ function listCustomFields($dataset, $flat = true, $filter = false, $customOnly =
 			}
 			
 			$fields['tab__'. $tab['name']] = $tab;
-			
-			//Add an invisible child as a little hack to force these to be optgroups even if there are
-			//no other children
-			$fields['dummy_child__'. $tab['name']] = array(
-				'label' => '',
-				'parent' => 'tab__'. $tab['name'],
-				'hidden' => true
-			);
 		}
 	}
 	
 	
 	return $fields;
+}
+
+function getGroupPickerCheckboxesForFAB() {
+	//Populate the list of groups
+	$lov = listCustomFields('users', $flat = false, 'groups_only', $customOnly = false, $useOptGroups = true, $hideEmptyOptGroupParents = true);
+	
+	$parents = array();
+	foreach ($lov as &$v) {
+		if (!empty($v['parent'])) {
+			$parents[$v['parent']] = true;
+		}
+	}
+	
+	//If there is only one tab that has any groups, turn this into a flat list
+	//by removing the tabs and making the groups top-level
+	if (count($parents) < 2) {
+		foreach ($lov as $i => &$v) {
+			if (empty($v['parent'])) {
+				unset($lov[$i]);
+			} else {
+				unset($v['parent']);
+			}
+		}
+	} else {
+		//Otherwise keep it as nested checkboxes. I want to show the tabs, but I don't want
+		//people to be able to select them
+		foreach ($lov as &$v) {
+			if (empty($v['parent'])) {
+				$v['readonly'] =
+				$v['disabled'] = true;
+				$v['style'] = 'display: none;';
+			}
+		}
+	}
+
+	return $lov;
 }
 
 //Given a field, get details on each of its child-fields.
@@ -5905,680 +6029,6 @@ function createDatasetFieldInDB($fieldId, $oldName = false) {
 
 
 
-//A recursive function that comes up with a list of all of the Organizer paths that a TUIX file references
-function logTUIXFileContentsR(&$paths, &$tags, $type, $path = '') {
-	
-	if (is_array($tags)) {
-		if (!empty($tags['panel'])) {
-			$recordedPath = $path. '/panel';
-			
-			if (!empty($tags['panel']['panel_type'])) {
-				$paths[$recordedPath] = $tags['panel']['panel_type'];
-			} else {
-				$paths[$recordedPath] = 'list';
-			}
-		}
-		if (!empty($tags['panels']) && is_array($tags['panels'])) {
-			foreach ($tags['panels'] as $panelName => &$panel) {
-				$recordedPath = $path. '/panels/'. $panelName;
-				
-				if (!empty($panel['panel_type'])) {
-					$paths[$recordedPath] = $panel['panel_type'];
-				} else {
-					$paths[$recordedPath] = 'list';
-				}
-			}
-		}
-		
-		foreach ($tags as $tagName => &$tag) {
-			if ($path === '') {
-				$thisPath = $tagName;
-			} else {
-				$thisPath = $path. '/'. $tagName;
-			}
-			logTUIXFileContentsR($paths, $tag, $type, $thisPath);
-		}
-	}
-}
-
-
-
-
-
-
-//This function scans the Module directory for Modules with certain TUIX files, reads them, and turns them into a php array
-	//You should initialise $modules and $tags to empty arrays before calling this function.
-function loadTUIX(
-	&$modules, &$tags, $type, $requestedPath = '', $settingGroup = '', $compatibilityClassNames = false,
-	$runningModulesOnly = true, $exitIfError = true
-) {
-	$modules = array();
-	$tags = array();
-	
-	//Ensure that the core plugin is included first, if it is there...
-	$modules['zenario_common_features'] = array();
-	
-	if ($type == 'welcome') {
-		foreach (scandir($dir = CMS_ROOT. 'zenario/admin/welcome/') as $file) {
-			if (substr($file, 0, 1) != '.') {
-				$tagsToParse = zenarioReadTUIXFile($dir. $file);
-				zenarioParseTUIX($tags, $tagsToParse, 'welcome');
-				unset($tagsToParse);
-			}
-		}
-	
-	} else {
-		//Try to check the tuix_file_contents table to see which files we need to include
-		foreach (modulesAndTUIXFiles(
-			$type, $requestedPath, $settingGroup, true, true, $compatibilityClassNames, $runningModulesOnly
-		) as $module) {
-			if (empty($modules[$module['class_name']])) {
-				setModulePrefix($module);
-				
-				$modules[$module['class_name']] = array(
-					'class_name' => $module['class_name'],
-					'depends' => getModuleDependencies($module['class_name']),
-					'included' => false,
-					'files' => array());
-			}
-			$modules[$module['class_name']]['files'][] = $module['filename'];
-		}
-	}
-	
-	//Ensure that the core plugin is included first, if it is there... but remove it again if it wasn't.
-	if (empty($modules['zenario_common_features'])) {
-		unset($modules['zenario_common_features']);
-	}
-	
-	//Include every Module's TUIX files in dependency order
-	$limit = 9999;
-	do {
-		$progressBeingMade = false;
-		
-		foreach ($modules as $className => &$module) {
-			//No need to include a Module twice
-			if ($module['included']) {
-				continue;
-			}
-			
-			//Make sure that we include files in dependency order by skipping over Modules whose dependencies
-			//are still to be included.
-			foreach ($module['depends'] as $depends) {
-				if (!empty($modules[$depends['dependency_class_name']])
-				 && !$modules[$depends['dependency_class_name']]['included']) {
-					continue 2;
-				}
-			}
-			
-			//Include any xml files in the directory
-			if ($dir = moduleDir($module['class_name'], 'tuix/'. $type. '/', true)) {
-				
-				if (!isset($module['files'])) {
-					$module['files'] = array();
-					
-					foreach (scandir($dir) as $file) {
-						if (substr($file, 0, 1) != '.') {
-							$module['files'] = scandir($dir);
-						}
-					}
-				}
-				
-				foreach ($module['files'] as $file) {
-					$tagsToParse = zenarioReadTUIXFile($dir. $file);
-					zenarioParseTUIX($tags, $tagsToParse, $type, $className, $settingGroup, $compatibilityClassNames, $requestedPath);
-					unset($tagsToParse);
-					
-					if (!isset($module['paths'])) {
-						$module['paths'] = array();
-					}
-					$module['paths'][$file] = $dir. $file;
-				}
-			}
-			
-			$module['included'] = true;
-			$progressBeingMade = true;
-		}
-	//Loop while includes are still being done
-	} while ($progressBeingMade && --$limit);
-	
-	//Readjust the start to get rid of the outer tag
-	if (!isset($tags[$type])) {
-		if ($exitIfError) {
-			echo adminPhrase('The requested path "[[path]]" was not found in the system. If you have just updated or added files to the CMS, you will need to reload the page.', array('path' => $requestedPath));
-			exit;
-		} else {
-			$tags = array();
-		}
-	}
-	$tags = $tags[$type];
-}
-
-
-function zenarioReadTUIXFileR(&$tags, &$xml) {
-	$lastKey = null;
-	$children = false;
-	foreach ($xml->children() as $child) {
-		$children = true;
-		$key = preg_replace('/[^\w-]/', '', $child->getName());
-		
-		//Strip underscores from the begining of tag names
-		if (substr($key, 0, 1) == '_') {
-			$key = substr($key, 1);
-		}
-		
-		//Hack to try and stop repeated parents with the same name overriding each other
-		if (isset($tags[$key]) && $lastKey === $key) {
-			$i = 2;
-			while (isset($tags[$key. ' ('. $i. ')'])) {
-				++$i;
-			}
-			$key = $key. ' ('. $i. ')';
-			
-		} else {
-			$lastKey = $key;
-		}
-		
-		if (!isset($tags[$key])) {
-			$tags[$key] = array();
-		}
-		
-		zenarioReadTUIXFileR($tags[$key], $child);
-		
-	}
-	
-	if ($children) {
-		foreach ($xml->attributes() as $key => $child) {
-			$tags[$key] = (string) $child;
-		}
-	} else {
-		$tags = trim((string) $xml);
-	}
-	
-}
-
-
-//This function reads a single xml files, and merges it into the information that we've already read
-
-	//$thisTags = zenarioReadTUIXFile($path, $moduleClassName);
-
-function zenarioParseTUIX(&$tags, &$par, $type, $moduleClassName = false, $settingGroup = '', $compatibilityClassNames = array(), $requestedPath = false, $tag = '', $path = '', $goodURLs = array(), $level = 0, $ord = 1, $parent = false, $parentsParent = false, $parentsParentsParent = false) {
-	
-	if ($path === '') {
-		$tag = $type;
-		$path = '';
-	}
-	$path .= $tag. '/';
-	
-	$isPanel = $tag == 'panel' || $parent == 'panels';
-	$lastWasPanel = $parent == 'panel' || $parentsParent == 'panels';
-	
-	//Note that I'm stripping the "organizer/" from the start of the URL, and the final "/" from the end
-	$url = substr($path, strlen($type. '/'), -1);
-	
-	//Check to see if we should include this tag and its children
-	$goFurther = true;
-	$includeThisSubTree = false;
-	if ($type == 'organizer') {
-		
-		//If this tag is a panel, then it's valid to link to this tag
-		if ($isPanel) {
-			//Record the link to this panel.
-			//Note that I'm stripping the "organizer/" from the start of the URL, and the final "/" from the end
-			array_unshift($goodURLs, $url);
-		
-			//If the current tag is a panel, and we have a specific path requested, don't include it if it is not on the requested path
-			if ($requestedPath && (strlen($requestedPath) < ($sl = strlen($goodURLs[0])) || substr($requestedPath, 0, $sl) != $goodURLs[0])) {
-				$goFurther = false;
-			}
-		}
-		
-		
-		//Purely client-side panels need to be completely in the map; panels which are loaded via AJAX only need some tags in the map
-		
-		//If a specific path has been requested, show all of the tags under than path
-		if ($requestedPath) {
-			$includeThisSubTree = true;
-		
-		//Always send the top right buttons
-		} elseif (substr($path, 0, 28) == 'organizer/top_right_buttons/') {
-			$includeThisSubTree = true;
-		
-		//If getting an overall map, only show certain needed tags, to save space
-		} elseif (isset($tags[$tag]) && is_array($tags[$tag])) {
-			//If this tag was included from parsing another file, it shouldn't be removed now
-			$includeThisSubTree = true;
-		
-		} elseif (!$isPanel && !$lastWasPanel && ($level < 4 || $parent == 'nav' || $parentsParent == 'nav' || $parentsParentsParent == 'nav')) {
-			//The left hand nav always needs to be sent
-			$includeThisSubTree = true;
-		
-		} elseif ($parent == 'refiners') {
-			//Always include refiner tags
-			$includeThisSubTree = true;
-		
-		} elseif ($parent == 'columns' && $ord == 1) {
-			//The first column always needs to be sent as it is used as a fallback
-			$includeThisSubTree = true;
-		
-		} elseif ($parentsParent == 'quick_filter_buttons') {
-			//Always include quick filters
-			$includeThisSubTree = true;
-		
-		} else {
-			switch ($tag) {
-				case 'back_link':
-				case 'link':
-				case 'panel':
-				case 'panels':
-				case 'php':
-					$includeThisSubTree = true;
-					break;
-				case 'always_show':
-				case 'show_by_default':
-					if ($parentsParent == 'columns') {
-						$includeThisSubTree = true;
-					}
-					break;
-				case 'client_side':
-				case 'encode_id_column':
-					if ($parent == 'db_items') {
-						$includeThisSubTree = true;
-					}
-					break;
-				case 'branch':
-				case 'path':
-				case 'refiner':
-					if ($parent == 'link') {
-						$includeThisSubTree = true;
-					}
-					break;
-				case 'db_items':
-				case 'default_sort_column':
-				case 'default_sort_desc':
-				case 'default_sort_column':
-				case 'item':
-				case 'no_return':
-				case 'panel_type':
-				case 'refiner_required':
-				case 'reorder':
-				case 'title':
-				case '_path_here':
-					if ($lastWasPanel) {
-						$includeThisSubTree = true;
-					}
-					break;
-				case 'css_class':
-					if ($parent == 'item') {
-						$includeThisSubTree = true;
-					}
-					break;
-				case 'column':
-				case 'lazy_load':
-					if ($parent == 'reorder') {
-						$includeThisSubTree = true;
-					}
-					break;
-			}
-		}
-		
-	
-	} elseif ($type == 'admin_boxes') {
-		if ($level == 1 && $url != $requestedPath) {
-			$goFurther = false;
-		
-		//Have an option to bypass the filters below and show everything
-		} elseif ($settingGroup === true) {
-			
-		//Filter by setting group
-		} elseif ($requestedPath == 'plugin_settings' || $requestedPath == 'site_settings') {
-			//Check attributes for keys and values.
-			//For module Settings, use the "module_class_name" attribute to only show the related settings
-			//However compatilibity now includes inheriting module Settings, so include module Settings from
-			//compatible modules as well
-			if ($requestedPath == 'plugin_settings'
-			 && !empty($par['module_class_name'])
-			 && empty($compatibilityClassNames[(string) $par['module_class_name']])) {
-				$goFurther = false;
-			
-			//For Site Settings, only show settings from the current settings group
-			} else
-			if ($requestedPath == 'site_settings'
-			 && !empty($par['setting_group'])
-			 && $par['setting_group'] != $settingGroup) {
-				$goFurther = false;
-			}
-		}
-		
-		$includeThisSubTree = true;
-		
-	
-	//Visitor TUIX has the option to be customised.
-	//(However this is optional; you can also show the base logic without any customisation.)
-	} elseif ($type == 'visitor') {
-		
-		//Not sure if this bit is needed..?
-		//if ($level == 1 && $url != $requestedPath) {
-		//	$goFurther = false;
-		//
-		//} else
-		
-		if ($settingGroup
-		 && !empty($par['setting_group'])
-		 && $par['setting_group'] != $settingGroup) {
-			$goFurther = false;
-		}
-		
-		$includeThisSubTree = true;
-		
-	
-	} elseif ($type == 'module_description') {
-		//Only the basic descriptive tags, <dependencies> and <inheritance> are copied using Module inheritance.
-		if ($settingGroup == 'inherited') {
-			switch ($tag) {
-				case 'admin_floating_box_tabs':
-				case 'content_types':
-				case 'jobs':
-				case 'pagination_types':
-				case 'preview_images':
-				case 'signals':
-				case 'special_pages':
-					if (!$parentsParent) {
-						$goFurther = false;
-					}
-					break;
-			}
-		
-		}
-		
-		$includeThisSubTree = true;
-	} else {
-		$includeThisSubTree = true;
-	}
-	
-	
-	//In certain places, we need to note down which module owns this element
-	$isEmptyArray = false;
-	if (!(isset($tags[$tag]) && is_array($tags[$tag]))) {
-		$isEmptyArray = true;
-		
-		//Everything that:
-			//Launches an AJAX request
-			//May need to be customised using fillOrganizerPanel(), fillAdminBox(), etc...
-		//will need the class name written down so we know which module's method to call.
-		if ($moduleClassName) {
-			$addClass = false;
-			if ($type == 'organizer') {
-				if ($tag == 'ajax'
-				 || $parent == 'db_items'
-				 || $parent == 'columns'
-				 || $parent == 'collection_buttons'
-				 || $parent == 'inline_buttons'
-				 || $parent == 'item_buttons'
-				 || $parent == 'quick_filter_buttons'
-				 || $tag == 'combine_items'
-				 || $parent == 'refiners'
-				 || $parent == 'panels'
-				 || $parent == 'nav'
-				 || $tag == 'panel'
-				 || $tag == 'pick_items'
-				 || $tag == 'reorder'
-				 || $tag == 'upload'
-				 || $tag === false) {
-					$addClass = true;
-				}
-		
-			} elseif ($type == 'admin_boxes' || $type == 'wizards') {
-				if ($parentsParent === false
-				 || $parent == 'tabs'
-				 || $parent == 'fields') {
-					$addClass = true;
-				}
-		
-			} elseif ($type == 'admin_toolbar') {
-				if ($tag == 'ajax'
-				 || $parent == 'buttons'
-				 || $tag == 'pick_items'
-				 || $parent == 'toolbars') {
-					$addClass = true;
-				}
-			}
-			
-			if ($addClass) {
-				$tags[$tag] = array('class_name' => $moduleClassName);
-			}
-		}
-	}
-	
-	
-	//Recursively scan each child-tag
-	$children = 0;
-	if (is_array($par)) {
-		foreach ($par as $key => &$child) {
-			++$children;
-			$isEmptyArray = true;
-			
-			if ($goFurther) {
-				if (zenarioParseTUIX($tags[$tag], $child, $type, $moduleClassName, $settingGroup, $compatibilityClassNames, $requestedPath, $key, $path, $goodURLs, $level + 1, $children, $tag, $parent, $parentsParent)) {
-					$includeThisSubTree = true;
-				}
-			}
-		}
-	}
-	
-	
-	if (!$includeThisSubTree) {
-		unset($tags[$tag]);
-		return false;
-	
-	} else {
-		//If this tag had no children, then note down its value
-		if (!is_array($par)) {
-			
-			//Do not allow empty variables to overwrite arrays if they are not empty
-			if (empty($par) && !empty($tags[$tag]) && is_array($tags[$tag]) && !$isEmptyArray) {
-				//Do nothing
-			
-			//Module/Skin description files are read in reverse dependancy order, so don't overwrite existing tags
-			} else if (isset($tags[$tag]) && ($type == 'module_description' || $type == 'skin_description')) {
-				//Do nothing
-				
-			} else {
-				$tags[$tag] = trim((string) $par);
-			}
-		
-		//If this tag has an Organizer Panel...
-		} elseif ($type == 'organizer') {
-			if ($isPanel) {
-				//..note down the path of the panel...
-				$tags[$tag]['_path_here'] = $goodURLs[0];
-				
-				//...and also the link to the panel above if there is one.
-				if (isset($goodURLs[1])
-				 && !isset($tags[$tag]['back_link'])
-				
-					//Note that panels defined against a top level item (which is deprecated) should not count as the natural
-					//back-link for a panel defined against a second-level item or in the panels container,
-					//as we've removed the ability to have nav-links there
-				 //&& !($parentsParentsParent == 'organizer' && ($parent == 'nav' || $parent == 'panels'))
-				 ) {
-					$tags[$tag]['back_link'] = $goodURLs[1];
-				}
-			}
-		}
-		
-		return true;
-	}
-}
-
-
-//Strip out any tags/sections that require a priv that the current admin does not have
-//Also count each tags' children
-function zenarioParseTUIX2(&$tags, &$removedColumns, $type, $requestedPath = '', $mode = false, $path = '', $parentKey = false, $parentParentKey = false, $parentParentParentKey = false) {
-	
-	//Keep track of the path to this point
-	if (!$path) {
-		$path = $requestedPath;
-	} else {
-		$path .= ($path? '/' : ''). $parentKey;
-	}
-	
-	
-	//Work out whether we should automatically add an "ord" property to the elements we find. This is needed
-	//in some places to keep things in the right order.
-	//However we need to be careful not to add "ord" properties to everything, as if they are inserted into
-	//a list of objects that would accidentally add a new dummy object into the list!
-	$noPrivs = array();
-	$orderItems = false;
-	
-	if ($mode == 'csv' || $mode == 'xml') {
-		//Don't order anything
-		
-	} elseif ($type == 'organizer') {
-		$orderItems = (!$requestedPath && $parentKey === false)
-					|| $parentKey == 'columns'
-					|| $parentKey == 'item_buttons'
-					|| $parentKey == 'inline_buttons'
-					|| $parentKey == 'collection_buttons'
-					|| $parentKey == 'quick_filter_buttons'
-					|| $parentKey == 'top_right_buttons'
-					|| $parentKey == 'nav';
-	
-	} elseif ($type == 'admin_boxes' || $type == 'welcome' || $type == 'wizards') {
-		$orderItems = $parentKey == 'tabs'
-					|| $parentKey == 'fields'
-					|| $parentKey == 'values';
-	
-	} elseif ($type == 'slot_controls') {
-		$orderItems = $parentKey == 'info'
-					|| $parentKey == 'notes'
-					|| $parentKey == 'actions'
-					|| $parentKey == 'overridden_info'
-					|| $parentKey == 'overridden_actions';
-	
-	} elseif ($type == 'admin_toolbar') {
-		$orderItems = ($parentParentKey === false && ($parentKey == 'sections' || $parentKey == 'toolbars'))
-					|| ($parentParentParentKey == 'sections' && $parentKey == 'buttons');
-	}
-	
-	if (is_array($tags)) {
-		//Strip out any tags/sections that require a priv that the current admin does not have
-		foreach ($tags as $key => &$value) {
-			if ((string) $key == 'priv') {
-				if (!checkPriv((string) $value)) {
-					return false;
-				}
-			
-			} elseif ((string) $key == 'local_admins_only') {
-				if (engToBoolean($value) && session('admin_global_id')) {
-					return false;
-				}
-			
-			} elseif ((string) $key == 'superadmins_only') {
-				if (engToBoolean($value) && !session('admin_global_id')) {
-					return false;
-				}
-			
-			} elseif (!zenarioParseTUIX2($value, $removedColumns, $type, $mode, $requestedPath, $path, (string) $key, $parentKey, $parentParentKey)) {
-				$noPrivs[] = $key;
-			}
-		}
-		
-		foreach($noPrivs as $key) {
-			unset($tags[$key]);
-		}
-		unset($tags['priv']);
-		
-		if ($orderItems) {
-			addOrdinalsToTUIX($tags);
-		}
-		
-		//Don't send any SQL to the client
-		if ($type == 'organizer') {
-			if ($parentKey === false || $parentKey == 'panel' || $parentParentKey = 'panels') {
-				if (!adminSetting('show_dev_tools')) {
-					
-					if (isset($tags['db_items']) && is_array($tags['db_items'])) {
-						unset($tags['db_items']['table']);
-						unset($tags['db_items']['id_column']);
-						unset($tags['db_items']['group_by']);
-						unset($tags['db_items']['where_statement']);
-					}
-					
-					if (isset($tags['columns']) && is_array($tags['columns'])) {
-						foreach ($tags['columns'] as &$col) {
-							if (is_array($col)) {
-								if (!empty($col['db_column'])) {
-									$col['db_column'] = true;
-								}
-								unset($col['search_column']);
-								unset($col['sort_column']);
-								unset($col['sort_column_desc']);
-								unset($col['table_join']);
-							}
-						}
-					}
-					
-					if (isset($tags['refiners']) && is_array($tags['refiners'])) {
-						foreach ($tags['refiners'] as &$refiner) {
-							if (is_array($refiner)) {
-								unset($refiner['sql']);
-								unset($refiner['sql_when_searching']);
-								unset($refiner['table_join']);
-								unset($refiner['table_join_when_searching']);
-								unset($refiner['allow_unauthenticated_xml_access']);
-							}
-						}
-					}
-				}
-			
-			} elseif (($parentParentKey === false || $parentParentKey == 'panel' || $parentParentParentKey == 'panels') && $parentKey == 'columns') {
-				//If this is a Organizer request for a specific panel, get a list of columns for that
-				//panel that are server side only, so that we can later remove these from the output.
-				if ($path == $requestedPath. '/columns') {
-					$removedColumns = array();
-					foreach ($tags as $key => &$value) {
-						if (is_array($value) && engToBoolean(arrayKey($value, 'server_side_only'))) {
-							$removedColumns[] = $key;
-						}
-					}
-				}
-			}
-		}
-	}
-	
-	
-	return true;
-}
-
-
-
-
-function sortTUIX(&$tags) {
-	if (is_array($tags)) {
-		uasort($tags, 'sortTUIXCompare');
-	}
-}
-
-function sortTUIXCompare($a, $b) {
-	$ordA = $ordB = 999999;
-	if (isset($a['ord'])) {
-		$ordA = $a['ord'];
-	}
-	if (isset($b['ord'])) {
-		$ordB = $b['ord'];
-	}
-	
-	if ($ordA === $ordB) {
-		return 0;
-	} else if ($ordA < $ordB) {
-		return -1;
-	} else {
-		return 1;
-	}
-}
-
-
-
 
 
 //
@@ -6656,10 +6106,10 @@ function recordEquivalence($cID1, $cID2, $cType, $onlyValidate = false) {
 
 function tidyTranslationsTable($equivId, $cType) {
 	if (!checkRowExists('content_items', array('equiv_id' => $equivId, 'type' => $cType))) {
-		deleteRow('translation_chains', array('equiv_id' => $equivId, 'type' => $cType));
 		deleteRow('category_item_link', array('equiv_id' => $equivId, 'content_type' => $cType));
 		deleteRow('group_content_link', array('equiv_id' => $equivId, 'content_type' => $cType));
-		deleteRow('user_content_link', array('equiv_id' => $equivId, 'content_type' => $cType));
+		deleteRow('translation_chains', array('equiv_id' => $equivId, 'type' => $cType));
+		deleteRow('translation_chain_privacy', array('equiv_id' => $equivId, 'content_type' => $cType));
 	}
 }
 
@@ -6689,10 +6139,10 @@ function copyTranslationsTable($oldEquivId, $newEquivId, $cType) {
 	sqlQuery($sql);
 	
 	$sql = "
-		INSERT IGNORE INTO ". DB_NAME_PREFIX. "user_content_link (
-			equiv_id, content_type, user_id
-		) SELECT ". (int) $newEquivId. ", content_type, user_id
-		FROM ". DB_NAME_PREFIX. "user_content_link
+		INSERT IGNORE INTO ". DB_NAME_PREFIX. "translation_chain_privacy (
+			equiv_id, content_type, module_class_name, method_name, param_1, param_2
+		) SELECT ". (int) $newEquivId. ", content_type, module_class_name, method_name, param_1, param_2
+		FROM ". DB_NAME_PREFIX. "translation_chain_privacy
 		WHERE equiv_id = ". (int) $oldEquivId. "
 		  AND content_type = '". sqlEscape($cType). "'";
 	sqlQuery($sql);

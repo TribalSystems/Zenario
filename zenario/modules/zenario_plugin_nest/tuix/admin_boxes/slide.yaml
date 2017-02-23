@@ -5,12 +5,13 @@ zenario_slide:
         id: ''
         instanceId: ''
         idInOrganizer: ''
-    title: Tab
+        usesConductor: false
+    title: Slide
     max_height: 550
     hide_tab_bar: true
     identifier:
         css_class: zenario_nest_tab
-        label: 'Tab number:'
+        label: 'Slide number:'
         value: ''
     tabs:
         tab:
@@ -20,24 +21,39 @@ zenario_slide:
                 always_on: true
             fields:
                 name_or_title:
-                    label: 'Title text or phrase code:'
+                    label: 'Slide title:'
                     type: text
                     maxlength: 100
                     validation:
-                        required: Please enter a title for this tab
-                    side_note: |
-                        Tabs will only be visible where a tab-based framework is selected in this nest's properties. If the field above contains phrase codes, visitor phrases will be merged into it. Insert [[_YOUR_PHRASE]] to merge a phrase whose code is _YOUR_PHRASE.
-                tab_visibility:
+                        required: Please enter a title for the tab to this slide
+                
+                email_merge_fields:
+                    same_row: true
+                    visible_if: |
+                        !_.isEmpty(field.values)
+                    type: select
+                    empty_value: 'Add merge field...'
+                    values: title_merge_fields
+                    onchange: |
+                        lib.insertText(lib.get('name_or_title'), $(this).val())
+                        $(this).val('');
+                
+                privacy:
                     label: 'Visibility:'
                     type: radios
-                    value: everyone
+                    value: public
                     values:
-                        everyone:
+                        public:
                             label: Public, visible to everyone
                         logged_out:
                             label: Public, only show to visitors who are NOT logged in
                         logged_in:
                             label: Private, only show to extranet users who are logged in
+                        group_members:
+                            label: 'Private, only show to extranet users in the group(s):'
+                            visible_if: |
+                                !_.isEmpty(tab.fields.group_ids.values)
+                            split_values_if_selected: true
                         in_smart_group:
                             label: 'Private, only show to extranet users in the smart group:'
                             split_values_if_selected: true
@@ -47,41 +63,60 @@ zenario_slide:
                         call_static_method:
                             label: "Call a module's static method to decide (advanced):"
                     format_onchange: true
-                    side_note: |
-                        You can restrict the visibility of the plugins following this tab to certain kinds of user.
-                tab__smart_group:
+                    validation:
+                        required: Please select a visibility option
+                group_ids:
                     indent: 1
-                    hidden: true
+                    visible_if: >
+                        zenarioAB.value('privacy') == 'group_members'
+                    type: checkboxes
+                    validation:
+                        required_if_not_hidden: Please select a group
+                smart_group_id:
+                    indent: 1
+                    visible_if: >
+                        zenario.IN(zenarioAB.value('privacy'), 'in_smart_group', 'logged_in_not_in_smart_group')
                     type: select
                     empty_value: ' -- Select -- '
-                tab__module_class_name:
+                    validation:
+                        required_if_not_hidden: Please select a smart group
+                module_class_name:
                     indent: 1
-                    hidden: true
+                    visible_if: >
+                        zenarioAB.value('privacy') == 'call_static_method'
                     label: 'Module class name:'
                     type: text
                     maxlength: 200
-                tab__method_name:
+                method_name:
                     indent: 1
-                    hidden: true
+                    hide_with_previous_field: true
                     label: 'Static method name:'
                     type: text
                     maxlength: 127
-                tab__param_1:
+                param_1:
                     indent: 1
-                    hidden: true
+                    hide_with_previous_field: true
                     label: 'Parameter 1:'
                     type: text
                     maxlength: 255
-                tab__param_2:
+                param_2:
                     indent: 1
-                    hidden: true
+                    hide_with_previous_field: true
                     label: 'Parameter 2:'
                     type: text
                     maxlength: 255
                 
-                tab_visibility_2:
+                always_visible_to_admins:
+                    indent: 1
+                    visible_if: >
+                        zenarioAB.value('privacy') && zenarioAB.value('privacy') != 'public'
+                    label: Make this slide always visible to logged in administrators.
+                    type: checkbox
+                    value: 1
+                
+                privacy_part_2:
                     snippet:
-                        show_split_values_from: tab_visibility
+                        show_split_values_from: privacy
                 
                 invisible_in_nav:
                     label: 'Hide the tab-link to this slide'
@@ -89,3 +124,106 @@ zenario_slide:
                     side_note: >
                         If hidden, the tab-link to this slide will not appear,
                         but the slide may still be accessed.
+                
+                show_refresh:
+                    visible_if: tuix.key.usesConductor
+                    label: Show a Refresh button
+                    type: checkbox
+                    redraw_onchange: true
+                
+                show_auto_refresh:
+                    hide_with_previous_field: true
+                    visible_if: >
+                        zenarioAB.value('show_refresh')
+                    label: Show an Auto Refresh button
+                    type: checkbox
+                    redraw_onchange: true
+                    indent: 1
+                auto_refresh_interval:
+                    hide_with_previous_field: true
+                    visible_if: >
+                        zenarioAB.value('show_auto_refresh')
+                    label: 'Refresh interval (seconds):'
+                    type: text
+                    value: 60
+                    indent: 2
+                    style: 'width:5em;'
+                    validation:
+                        numeric: The refresh interval must be numeric.
+                
+                show_back:
+                    visible_if: tuix.key.usesConductor
+                    label: Show a Back button
+                    type: checkbox
+                    note_below: |
+                        This will look for a path in the nest conductor called "back" or "close".
+                        If no path exists, a browser-back will be used.
+                
+                request_vars0:
+                    hide_with_previous_field: true
+                    label: Request variables for links to this slide
+                    type: select
+                    empty_value: ' -- Select -- '
+                    values: coreVars
+                    redraw_onchange: true
+                    note_below: |
+                        If a back button or a breadcrumb link is generated to this slide,
+                        these variables will be used in the link.
+                
+                request_vars1:
+                    hide_with_previous_field: true
+                    visible_if:
+                        lib.value: request_vars0
+                    same_row: true
+                    pre_field_html: ', &nbsp; '
+                    type: select
+                    empty_value: ' -- Select -- '
+                    values: coreVars
+                    redraw_onchange: true
+                request_vars2:
+                    hide_with_previous_field: true
+                    visible_if:
+                        lib.value: request_vars1
+                    same_row: true
+                    pre_field_html: ', &nbsp; '
+                    type: select
+                    empty_value: ' -- Select -- '
+                    values: coreVars
+                    redraw_onchange: true
+                request_vars3:
+                    hide_with_previous_field: true
+                    visible_if:
+                        lib.value: request_vars2
+                    same_row: true
+                    pre_field_html: ', &nbsp; '
+                    type: select
+                    empty_value: ' -- Select -- '
+                    values: coreVars
+                    redraw_onchange: true
+                request_vars4:
+                    hide_with_previous_field: true
+                    visible_if:
+                        lib.value: request_vars3
+                    same_row: true
+                    pre_field_html: ', &nbsp; '
+                    type: select
+                    empty_value: ' -- Select -- '
+                    values: coreVars
+                    redraw_onchange: true
+                
+                global_command:
+                    visible_if: tuix.key.usesConductor
+                    label: 'Global command name:'
+                    type: text
+                    maxlength: 100
+                    placeholder: Enter a command name
+                    note_below: |
+                        Use this to enter the name of a command that will take the user to this slide from any other slide.
+                    validation:
+                        no_spaces: |
+                            Please don't enter any spaces in the command's name
+                        screen_name: |
+                            Please don't enter any special characters in the command's name
+    lovs:
+        coreVars: {}
+        title_merge_fields: {}

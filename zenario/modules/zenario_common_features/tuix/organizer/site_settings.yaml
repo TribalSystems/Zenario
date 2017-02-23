@@ -66,9 +66,24 @@ zenario__administration:
                     desc: >
                         Settings for documents (new system).
                     keywords: documents
+                domains:
+                    priv: _PRIV_VIEW_SITE_SETTING
+                    name: Domains
+                    desc: Set the primary domain, admin domain and cookie domain for your site.
+                    keywords: >
+                        primary domain
+                        admin domain
+                        cookie-free domain for hosting static files
+                embedding:
+                    priv: _PRIV_VIEW_SITE_SETTING
+                    name: Embedding
+                    desc: Settings for embedding elements of this site in third-party sites
+                    keywords: >
+                        embed site iframe
+                        X-Frame-Options ALLOWALL SAMEORIGIN
                 email:
                     name: Email
-                    desc: Settings for sending emails.
+                    desc: Settings for emails.
                     keywords: smtp mail test send debug mode system email address from
                 errors:
                     name: Error handling
@@ -99,14 +114,6 @@ zenario__administration:
                     name: Head, Body and Foot slots
                     desc: |
                         Add HTML to the <head> or <body> tag of all pages on your site.
-                domains:
-                    priv: _PRIV_VIEW_SITE_SETTING
-                    name: Domains
-                    desc: Set the primary domain, admin domain and cookie domain for your site.
-                    keywords: >
-                        primary domain
-                        admin domain
-                        cookie-free domain for hosting static files
                 urls:
                     name: URLs
                     desc: Settings that affect how URLs for your site are generated.

@@ -28,13 +28,35 @@
 
 
 
-((window, createLibrary, undefined) => {
+(function(window, zenarioAsString, moduleClassNameAsString, undefined) {
 	"use strict";
 	
-	//This is a shortcut function for initialising a new class.
-	//It just uses normal JavaScript class inheritance, but it makes the syntax
-	//a little more readable and friendly when creating a new class
-	var extensionOf =(parent, initFun, encapName) => {
+		//Define some shortcuts for common strings, to reduce the filesize a bit
+	var strings = {
+			a: zenarioAsString + '/ajax.php',
+			c: '&method_call=',
+			d: '.' + zenarioAsString + '_',
+			e: '&eggId=',
+			f: zenarioAsString + '_common_features',
+			h: '#' + zenarioAsString + '_',
+			i: '&instanceId=',
+			l: '&slotName=',
+			m: moduleClassNameAsString,
+			o: zenarioAsString + '__content/panels/',
+			p: moduleClassNameAsString + 'ForPhrases',
+			q: '?' + moduleClassNameAsString + '=',
+			s: zenarioAsString + '/',
+			u: 'lookup',
+			v: '&cVersion=',
+			x: 'colorbox',
+			z: zenarioAsString + '_'
+		},
+		
+	
+		//This is a shortcut function for initialising a new class.
+		//It just uses normal JavaScript class inheritance, but it makes the syntax
+		//a little more readable and friendly when creating a new class
+		extensionOf = function(parent, initFun, globalName) {
 			if (parent) {
 				initFun = initFun || (function() {
 						parent.apply(this, arguments);
@@ -47,17 +69,19 @@
 				initFun = initFun || (function() {});
 			}
 			
-			if (encapName) {
-				initFun.encapName = encapName;
-				window[encapName] = initFun;
+			if (globalName) {
+				initFun.globalName = globalName;
+				window[globalName] = initFun;
 			}
 
 			return initFun;
 		},
 		
 		//Shortcut function to the above
-		createZenarioLibrary =(zenarioEncapName, parent)=> {
-			return extensionOf(parent, undefined, 'zenario' + zenarioEncapName);
+		zenarioLibs = {},
+		createZenarioLibrary = function(zenarioEncapName, parent) {
+			zenarioEncapName = zenarioAsString + zenarioEncapName;
+			return zenarioLibs[zenarioEncapName] = extensionOf(parent, undefined, zenarioEncapName);
 		},
 	
 		//Create encapsulated objects/classes for all of Zenario's libraries
@@ -73,17 +97,20 @@
 	//Create a wrapper function with variables for all of these objects
 	//(This helps keep file sizes down when minifying as the listed common global variables and functions
 	// can be minified.)
-	zenario.lib =(fun, extraVar1, extraVar2, extraVar3, extraVar4, extraVar5, extraVar6)=> {
+	zenario.lib = function(fun, extraVar1, extraVar2, extraVar3, extraVar4, extraVar5, extraVar6) {
 		fun(
 			undefined,
 			URLBasePath,
 			document, window, window.opener, window.parent,
-			zenario, zenarioA, zenarioAB, zenarioAT, zenarioO,
-			zenario.get, zenario.engToBoolean, zenario.htmlspecialchars, zenario.ifNull, zenario.jsEscape, zenarioA.phrase,
+			zenario, zenarioA, zenarioAB, zenarioAT, zenarioO, strings,
+			encodeURIComponent, zenario.get, zenario.engToBoolean, zenario.htmlspecialchars, zenario.jsEscape, zenarioA.phrase,
 			zenario.extensionOf, zenario.methodsOf, zenario.has,
 			extraVar1, extraVar2, extraVar3, extraVar4, extraVar5, extraVar6
 		);
 	};
+	
+	//Store the Zenario libraries in an object for easy traversal later
+	zenario.libs = zenarioLibs;
 	
 	//Allow the extensionOf() and createZenarioLibrary() functions to be called elsewhere as well
 	zenario.extensionOf = window.extensionOf = extensionOf;
@@ -91,4 +118,4 @@
 	
 	zenarioO.panelTypes = {};
 
-})(window);
+})(window, 'zenario', 'moduleClassName');

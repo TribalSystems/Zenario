@@ -1,15 +1,25 @@
-<a
-	<% if (m.href) { %>
-		href="{{m.href|escape}}"
-	<% } %>
-	<% if (m.onclick) { %>
-		onclick="{{m.onclick|escape}}"
-	<% } %>
-	class="zfea_button {{m.css_class|escape}}"
-	title="{{m.tooltip|escape}}"
->
-	
-	<span>{{m.label|escape}}</span>
-	{{m.children? '<ul>' + zenario.microTemplate('fea_button_children', m.children) + '</ul>'  : ''}}
+<% if (m.children) { %>
+    <div class="button_with_children_wrap">
+<% } %>
 
+<a
+    title="{{m.tooltip|escape}}"
+    
+    <% if (m._isDisabled) { %>
+		class="zfea_button zfea_button_disabled {{m.css_class|escape}}"
+	
+	<% } else { %>
+		class="zfea_button {{m.css_class|escape}}"
+		<% if (m.href) { %>
+			href="{{m.href|escape}}"
+		<% } %>
+		<% if (m.onclick) { %>
+			onclick="<% if (m.itemId) { %>var itemId = '{{m.itemId|escape}}'; <% } %>{{m.onclick|escape}}"
+		<% } %>
+	<% } %>
+>
+    
+    <span>{{m.label|escape}}</span>
 </a>
+
+{{m.children? '<ul>' + zenario.microTemplate('fea_button_children', m.children) + '</ul></div>'  : ''}}

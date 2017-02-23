@@ -70,6 +70,10 @@ class zenario_banner extends module_base_class {
 			
 			$link = $this->linkToItem($cID, $cType, $fullPath = false, $this->request);
 			
+			if ($this->setting('link_to_anchor') && ($anchor = $this->setting('hyperlink_anchor'))) {
+			    $link .= '#' . $anchor;
+			}
+			
 			//Use the Theme Section for a Masthead with a link and set the link
 			$mergeFields['Link_Href'] =
 			$mergeFields['Image_Link_Href'] =

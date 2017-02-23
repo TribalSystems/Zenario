@@ -40,8 +40,8 @@ zenario.lib(function(
 	undefined,
 	URLBasePath,
 	document, window, windowOpener, windowParent,
-	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO,
-	get, engToBoolean, htmlspecialchars, ifNull, jsEscape, phrase,
+	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO, strings,
+	encodeURIComponent, get, engToBoolean, htmlspecialchars, jsEscape, phrase,
 	extensionOf, methodsOf, has,
 	zenarioG,
 	formId, gridId, linksId, closeButtonId
@@ -74,7 +74,7 @@ zenarioG.init = function(data, layoutId, layoutName, familyName) {
 	if (typeof data == 'object') {
 		zenarioG.data = data;
 	} else {
-		zenarioG.data = zenarioA.readData(data);
+		zenarioG.data = JSON.parse(data);
 	}
 	
 	if (layoutName) {
@@ -224,7 +224,7 @@ zenarioG.checkDataR = function(cells) {
 			}
 			
 			cells[j].grid_break = true;
-			cells[j].grid_css_class = ifNull(cells[j].name, zenarioG.randomName(2, 'Grid_'));
+			cells[j].grid_css_class = cells[j].name || zenarioG.randomName(2, 'Grid_');
 			delete cells[j].name;
 			delete cells[j].grid_break_group;
 		}
@@ -710,7 +710,7 @@ zenarioG.resizePreview = function() {
 			leftHack = 10,
 			initialHeight = 360,
 			minWidth = 100,
-			iframeHeight = ifNull($(iframe.contentWindow.document.body).height(), initialHeight);
+			iframeHeight = $(iframe.contentWindow.document.body).height() || initialHeight;
 		
 		if(iframeHeight < initialHeight) iframeHeight = initialHeight;
 		
@@ -883,7 +883,7 @@ zenarioG.drawEditor = function(
 			cells[i].width = gCols;
 		
 		} else {
-			cells[i].width = Math.min(gCols, ifNull(cells[i].width, 1));
+			cells[i].width = Math.min(gCols, cells[i].width || 1);
 		}
 		
 		widthSoFarThisLine += cells[i].width;
@@ -1621,7 +1621,7 @@ zenarioG.save = function(saveAs) {
 			
 			$.colorbox({
 				transition: 'none',
-				html: zenarioA.microTemplate('zenario_grid_maker_save_prompt', {name: ifNull(zenarioG.newLayoutName, data.oldLayoutName, '')}),
+				html: zenarioA.microTemplate('zenario_grid_maker_save_prompt', {name: zenarioG.newLayoutName || data.oldLayoutName || ''}),
 				
 				onOpen: function() { zenario.addClassesToColorbox(cssClasses); },
 				onClosed: function() { zenario.removeClassesToColorbox(cssClasses); },
@@ -1975,7 +1975,7 @@ zenarioG.deleteCell = function(el) {
 zenarioG.add = function(el, type, respClass) {
 	//Try to get the level that the add button was for
 	var levels = $(el).attr('data-levels'),
-		newWidth = ifNull($(el).attr('data-new-width'), 1),
+		newWidth = $(el).attr('data-new-width') || 1,
 		data = zenarioG.data;
 	
 	$.colorbox.close();
@@ -2104,7 +2104,7 @@ zenarioG.saveProperties = function(el, params) {
 //Generate a random slot name
 zenarioG.randomName = function(length, prefix) {
 	var aToZ = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
-		text = ifNull(prefix, 'Slot_');
+		text = prefix || 'Slot_';
 	
 	for (var i = 0; i < length; ++i) {
 		text += aToZ.charAt(Math.floor(Math.random() * 26));
@@ -2177,7 +2177,7 @@ zenarioG.undoOrRedo = function(n) {
 	}
 	
 	zenarioG.pos = pos;
-	zenarioG.data = zenarioA.readData(zenarioG.history[pos]);
+	zenarioG.data = JSON.parse(zenarioG.history[pos]);
 	zenarioG.change(true, n > 1);
 };
 

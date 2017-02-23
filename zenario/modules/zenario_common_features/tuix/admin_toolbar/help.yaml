@@ -106,17 +106,3 @@ sections:
                         </p>
     menu_node_help:
         buttons:
-            menu:
-                label: Help
-                help:
-                    html: Yes
-                    message: |
-                        <p>
-                            <strong>Menu Mode</strong>
-                        </p>
-                        <p>
-                            This mode allows you to edit menu nodes, the navigation structure of the site.
-                        </p>
-                        <p>
-                            You can use this mode to add pages to your site; look for the &quot;Add a menu node&quot; buttons.
-                        </p>

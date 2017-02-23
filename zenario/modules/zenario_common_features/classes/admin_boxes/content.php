@@ -178,11 +178,6 @@ class zenario_common_features__admin_boxes__content extends module_base_class {
 		//Remove the ability to create a Menu Node if location information for the menu has not been provided
 		if (!$box['key']['target_menu_section']) {
 			$fields['meta_data/create_menu']['hidden'] = true;
-	
-			if ($path == 'zenario_quick_create') {
-				$fields['meta_data/more_options_menu']['hidden'] = true;
-				$fields['meta_data/more_options_button_menu']['hidden'] = true;
-			}
 
 		} elseif ($box['key']['target_menu_parent']) {
 			$values['meta_data/menu_parent_path'] = getMenuPath($box['key']['target_menu_parent'], ifNull($box['key']['target_language_id'], get('languageId'), get('language')));
@@ -191,151 +186,143 @@ class zenario_common_features__admin_boxes__content extends module_base_class {
 		$contentType = getRow('content_types', true, $box['key']['cType']);
 
 		$content = $version = $status = $tag = false;
-		if ($path == 'zenario_quick_create') {
-			//Specific Logic to Quick Create
 	
-			$box['key']['id'] = $box['key']['cID'] = $box['key']['cVersion'] = $box['key']['source_cID'] = $box['key']['source_cVersion'] = false;
-			$box['key']['cType'] = 'html';
+		//Specific Logic for Full Create
+		//Try to load details on the source Content Item, if one is set
+		if ($box['key']['source_cID']) {
+			$content =
+				getRow(
+					'content_items',
+					array('id', 'type', 'tag_id', 'language_id', 'alias', 'visitor_version', 'admin_version', 'status'),
+					array('id' => $box['key']['source_cID'], 'type' => $box['key']['cType']));
+		}
 
-		} else {
-			//Specific Logic for Full Create
-	
-			//Try to load details on the source Content Item, if one is set
-			if ($box['key']['source_cID']) {
-				$content =
-					getRow(
-						'content_items',
-						array('id', 'type', 'tag_id', 'language_id', 'alias', 'visitor_version', 'admin_version', 'status'),
-						array('id' => $box['key']['source_cID'], 'type' => $box['key']['cType']));
-			}
-	
-	
-			if ($content) {
-				if ($box['key']['duplicate'] || $box['key']['translate']) {
-					//If duplicating, check for a Menu Node
-					if ((($box['key']['translate'] && checkPriv('_PRIV_EDIT_MENU_TEXT')) || (!$box['key']['translate'] && checkPriv('_PRIV_ADD_MENU_ITEM')))
-					 && ($currentMenu = getMenuItemFromContent($box['key']['source_cID'], $box['key']['cType']))
-			
-					//When duplicating to a new/different language, if Menu Text already exists in the new Language,
-					//but a Content Item does not, rely on the existing Menu Text and don't offer to create a new one
-					 && (!($lang = ifNull($box['key']['target_language_id'], get('languageId'), get('language')))
-					  || ($lang == $content['language_id'])
-					  || !(checkRowExists('menu_text', array('menu_id' => $currentMenu['id'], 'language_id' => $lang))))) {
-						
-						$box['key']['target_menu_section'] = $currentMenu['section_id'];
-						$values['meta_data/menu_title'] = $currentMenu['name'];
-						$values['meta_data/menu_path'] = getMenuPath($currentMenu['parent_id'], $lang);
-						$values['meta_data/create_menu'] = 1;
 
-						
-					} else {
-						$values['meta_data/create_menu'] = '';
-						$fields['meta_data/create_menu']['hidden'] = true;
-						$box['key']['target_menu_section'] = null;
-						$box['key']['target_menu_parent'] = null;
-					}
-					
-					if ($box['key']['translate']) {
-						$values['meta_data/alias'] = $content['alias'];
-						$fields['meta_data/create_menu']['hidden'] = true;
-						$box['tabs']['categories']['hidden'] = true;
-						$box['tabs']['privacy']['hidden'] = true;
-			
-						if (!setting('translations_different_aliases')) {
-							$fields['meta_data/alias']['read_only'] = true;
-							unset($box['tabs']['meta_data']['fields']['alias']['note_below']);
-						}
-					}
+		if ($content) {
+			if ($box['key']['duplicate'] || $box['key']['translate']) {
+				//If duplicating, check for a Menu Node
+				if ((($box['key']['translate'] && checkPriv('_PRIV_EDIT_MENU_TEXT')) || (!$box['key']['translate'] && checkPriv('_PRIV_ADD_MENU_ITEM')))
+				 && ($currentMenu = getMenuItemFromContent($box['key']['source_cID'], $box['key']['cType']))
 		
+				//When duplicating to a new/different language, if Menu Text already exists in the new Language,
+				//but a Content Item does not, rely on the existing Menu Text and don't offer to create a new one
+				 && (!($lang = ifNull($box['key']['target_language_id'], get('languageId'), get('language')))
+				  || ($lang == $content['language_id'])
+				  || !(checkRowExists('menu_text', array('menu_id' => $currentMenu['id'], 'language_id' => $lang))))) {
+					
+					$box['key']['target_menu_section'] = $currentMenu['section_id'];
+					$values['meta_data/menu_title'] = $currentMenu['name'];
+					$values['meta_data/menu_path'] = getMenuPath($currentMenu['parent_id'], $lang);
+					$values['meta_data/create_menu'] = 1;
+
+					
 				} else {
-					//The options to set the alias, menu text, categories or privacy (if it is there!) should be hidden when not creating something
-					$fields['meta_data/alias']['hidden'] = true;
-					$fields['meta_data/create_menu']['hidden'] = true;
 					$values['meta_data/create_menu'] = '';
-					$box['tabs']['categories']['hidden'] = true;
-					$box['tabs']['privacy']['hidden'] = true;
+					$fields['meta_data/create_menu']['hidden'] = true;
 					$box['key']['target_menu_section'] = null;
 					$box['key']['target_menu_parent'] = null;
-					
-					$box['identifier']['css_class'] = getItemIconClass($content['id'], $content['type'], true, $content['status']);
 				}
+				
+				if ($box['key']['translate']) {
+					$values['meta_data/alias'] = $content['alias'];
+					$fields['meta_data/create_menu']['hidden'] = true;
+					$box['tabs']['categories']['hidden'] = true;
+					$box['tabs']['privacy']['hidden'] = true;
 		
-				$values['meta_data/language_id'] = $content['language_id'];
-		
-				$fields['meta_data/layout_id']['pick_items']['path'] = 
-					'zenario__layouts/panels/layouts/refiners/content_type//' . $content['type']. '//';
-		
-				if ($version =
-					getRow(
-						'content_item_versions',
-						true,
-						array('id' => $box['key']['source_cID'], 'type' => $box['key']['cType'], 'version' => $box['key']['source_cVersion']))
-				) {
-					$values['meta_data/title'] = $version['title'];
-					$values['meta_data/description'] = $version['description'];
-					$values['meta_data/keywords'] = $version['keywords'];
-					$values['meta_data/publication_date'] = $version['publication_date'];
-					$values['meta_data/writer_id'] = $version['writer_id'];
-					$values['meta_data/writer_name'] = $version['writer_name'];
-					$values['meta_data/content_summary'] = $version['content_summary'];
-					$values['meta_data/layout_id'] = $version['layout_id'];
-					$values['css/css_class'] = $version['css_class'];
-					$values['css/background_image'] = $version['bg_image_id'];
-					$values['css/bg_color'] = $version['bg_color'];
-					$values['css/bg_position'] = $version['bg_position'];
-					$values['css/bg_repeat'] = $version['bg_repeat'];
-					$values['file/file'] = $version['file_id'];
-			
-					if ($box['key']['cID'] && $contentType['enable_summary_auto_update']) {
-						$values['meta_data/lock_summary_view_mode'] =
-						$values['meta_data/lock_summary_edit_mode'] = $version['lock_summary'];
-						$fields['meta_data/lock_summary_view_mode']['hidden'] =
-						$fields['meta_data/lock_summary_edit_mode']['hidden'] = false;
-					}
-			
-					if (isset($box['tabs']['categories']['fields']['categories'])) {
-						setupCategoryCheckboxes(
-							$fields['categories/categories'], true,
-							$box['key']['source_cID'], $box['key']['cType'], $box['key']['source_cVersion']);
-					}
-			
-					$tag = formatTag($box['key']['source_cID'], $box['key']['cType'], arrayKey($content, 'alias'));
-			
-					$status = adminPhrase('archived');
-					if ($box['key']['source_cVersion'] == $content['visitor_version']) {
-						$status = adminPhrase('published');
-			
-					} elseif ($box['key']['source_cVersion'] == $content['admin_version']) {
-						if ($content['admin_version'] > $content['visitor_version']) {
-							$status = adminPhrase('draft');
-						} elseif ($content['status'] == 'hidden' || $content['status'] == 'hidden_with_draft') {
-							$status = adminPhrase('hidden');
-						} elseif ($content['status'] == 'trashed' || $content['status'] == 'trashed_with_draft') {
-							$status = adminPhrase('trashed');
-						}
+					if (!setting('translations_different_aliases')) {
+						$fields['meta_data/alias']['read_only'] = true;
+						unset($box['tabs']['meta_data']['fields']['alias']['note_below']);
 					}
 				}
+	
 			} else {
-				//If we are enforcing a specific Content Type, ensure that only layouts of that type can be picked
-				if ($box['key']['target_cType']) {
-					$fields['meta_data/layout_id']['pick_items']['path'] =
-						'zenario__layouts/panels/layouts/refiners/content_type//'. $box['key']['target_cType']. '//';
-					
-					
-					//T10208, Creating content items: auto-populate release date and author where used
-					$contentTypeDetails = getContentTypeDetails($box['key']['target_cType']);
+				//The options to set the alias, menu text, categories or privacy (if it is there!) should be hidden when not creating something
+				$fields['meta_data/alias']['hidden'] = true;
+				$fields['meta_data/create_menu']['hidden'] = true;
+				$values['meta_data/create_menu'] = '';
+				$box['tabs']['categories']['hidden'] = true;
+				$box['tabs']['privacy']['hidden'] = true;
+				$box['key']['target_menu_section'] = null;
+				$box['key']['target_menu_parent'] = null;
+				
+				$box['identifier']['css_class'] = getItemIconClass($content['id'], $content['type'], true, $content['status']);
+			}
 	
-					if ($contentTypeDetails['writer_field'] != 'hidden'
-					 && isset($fields['meta_data/writer_id'])
-					 && ($adminDetails = getAdminDetails(adminId()))) {
-						$values['meta_data/writer_id'] = adminId();
-						$values['meta_data/writer_name'] = $adminDetails['first_name']. ' '. $adminDetails['last_name'];
-					}
+			$values['meta_data/language_id'] = $content['language_id'];
 	
-					if ($contentTypeDetails['release_date_field'] != 'hidden'
-					 && isset($fields['meta_data/publication_date'])) {
-						$values['meta_data/publication_date'] = dateNow();
+			$fields['meta_data/layout_id']['pick_items']['path'] = 
+				'zenario__layouts/panels/layouts/refiners/content_type//' . $content['type']. '//';
+	
+			if ($version =
+				getRow(
+					'content_item_versions',
+					true,
+					array('id' => $box['key']['source_cID'], 'type' => $box['key']['cType'], 'version' => $box['key']['source_cVersion']))
+			) {
+				$values['meta_data/title'] = $version['title'];
+				$values['meta_data/description'] = $version['description'];
+				$values['meta_data/keywords'] = $version['keywords'];
+				$values['meta_data/publication_date'] = $version['publication_date'];
+				$values['meta_data/writer_id'] = $version['writer_id'];
+				$values['meta_data/writer_name'] = $version['writer_name'];
+				$values['meta_data/content_summary'] = $version['content_summary'];
+				$values['meta_data/layout_id'] = $version['layout_id'];
+				$values['css/css_class'] = $version['css_class'];
+				$values['css/background_image'] = $version['bg_image_id'];
+				$values['css/bg_color'] = $version['bg_color'];
+				$values['css/bg_position'] = $version['bg_position'];
+				$values['css/bg_repeat'] = $version['bg_repeat'];
+				$values['file/file'] = $version['file_id'];
+		
+				if ($box['key']['cID'] && $contentType['enable_summary_auto_update']) {
+					$values['meta_data/lock_summary_view_mode'] =
+					$values['meta_data/lock_summary_edit_mode'] = $version['lock_summary'];
+					$fields['meta_data/lock_summary_view_mode']['hidden'] =
+					$fields['meta_data/lock_summary_edit_mode']['hidden'] = false;
+				}
+		
+				if (isset($box['tabs']['categories']['fields']['categories'])) {
+					setupCategoryCheckboxes(
+						$fields['categories/categories'], true,
+						$box['key']['source_cID'], $box['key']['cType'], $box['key']['source_cVersion']);
+				}
+		
+				$tag = formatTag($box['key']['source_cID'], $box['key']['cType'], arrayKey($content, 'alias'));
+		
+				$status = adminPhrase('archived');
+				if ($box['key']['source_cVersion'] == $content['visitor_version']) {
+					$status = adminPhrase('published');
+		
+				} elseif ($box['key']['source_cVersion'] == $content['admin_version']) {
+					if ($content['admin_version'] > $content['visitor_version']) {
+						$status = adminPhrase('draft');
+					} elseif ($content['status'] == 'hidden' || $content['status'] == 'hidden_with_draft') {
+						$status = adminPhrase('hidden');
+					} elseif ($content['status'] == 'trashed' || $content['status'] == 'trashed_with_draft') {
+						$status = adminPhrase('trashed');
 					}
+				}
+			}
+		} else {
+			//If we are enforcing a specific Content Type, ensure that only layouts of that type can be picked
+			if ($box['key']['target_cType']) {
+				$fields['meta_data/layout_id']['pick_items']['path'] =
+					'zenario__layouts/panels/layouts/refiners/content_type//'. $box['key']['target_cType']. '//';
+				
+				
+				//T10208, Creating content items: auto-populate release date and author where used
+				$contentTypeDetails = getContentTypeDetails($box['key']['target_cType']);
+
+				if ($contentTypeDetails['writer_field'] != 'hidden'
+				 && isset($fields['meta_data/writer_id'])
+				 && ($adminDetails = getAdminDetails(adminId()))) {
+					$values['meta_data/writer_id'] = adminId();
+					$values['meta_data/writer_name'] = $adminDetails['first_name']. ' '. $adminDetails['last_name'];
+				}
+
+				if ($contentTypeDetails['release_date_field'] != 'hidden'
+				 && isset($fields['meta_data/publication_date'])) {
+					$values['meta_data/publication_date'] = dateNow();
 				}
 			}
 		}
@@ -378,7 +365,6 @@ class zenario_common_features__admin_boxes__content extends module_base_class {
 	
 			} elseif ($box['key']['target_menu_parent']
 				   && ($cItem = getRow('menu_nodes', array('equiv_id', 'content_type'), array('id' => $box['key']['target_menu_parent'], 'target_loc' => 'int')))
-				   && ($cItem['content_type'] == 'html' || $path != 'zenario_quick_create')
 				   && ($cItem['admin_version'] = getRow('content_items', 'admin_version', array('id' => $cItem['equiv_id'], 'type' => $cItem['content_type'])))
 				   && ($layoutId = contentItemTemplateId($cItem['equiv_id'], $cItem['content_type'], $cItem['admin_version']))) {
 		
@@ -386,12 +372,7 @@ class zenario_common_features__admin_boxes__content extends module_base_class {
 				$contentType = getRow('content_types', true, $box['key']['cType']);
 	
 			} else {
-				if ($path == 'zenario_quick_create') {
-					$box['key']['cType'] = 'html';
-				} else {
-					$box['key']['cType'] = ifNull($box['key']['target_cType'], $box['key']['cType'], 'html');
-				}
-		
+				$box['key']['cType'] = ifNull($box['key']['target_cType'], $box['key']['cType'], 'html');
 				$contentType = getRow('content_types', true, $box['key']['cType']);
 				$layoutId = $contentType['default_layout_id'];
 			}
@@ -621,8 +602,7 @@ class zenario_common_features__admin_boxes__content extends module_base_class {
 		}
 	}
 
-	public function formatContentFAB($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		
+	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		$box['tabs']['file']['hidden'] = true;
 
 		if (!$box['key']['cID']) {
@@ -666,7 +646,7 @@ class zenario_common_features__admin_boxes__content extends module_base_class {
 		$fields['meta_data/keywords']['hidden'] = false;
 		$fields['meta_data/publication_date']['hidden'] = false;
 		$fields['meta_data/content_summary']['hidden'] = false;
-		if ($path != 'zenario_quick_create' && $box['key']['cType'] && $details = getContentTypeDetails($box['key']['cType'])) {
+		if ($box['key']['cType'] && $details = getContentTypeDetails($box['key']['cType'])) {
 			if ($details['description_field'] == 'hidden') {
 				$fields['meta_data/description']['hidden'] = true;
 			}
@@ -881,9 +861,6 @@ class zenario_common_features__admin_boxes__content extends module_base_class {
 		if (isset($box['tabs']['meta_data']['fields']['content_summary'])) {
 			addAbsURLsToAdminBoxField($box['tabs']['meta_data']['fields']['content_summary']);
 		}
-	}
-
-	public function formatMenu($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		
 		
 		$fields['meta_data/menu_title']['hidden'] =
@@ -892,52 +869,46 @@ class zenario_common_features__admin_boxes__content extends module_base_class {
 			empty($box['key']['target_menu_section'])
 				|| !$values['meta_data/create_menu'];
 		
-		if (!empty($box['key']['create_from_toolbar'])) {
+		$showMenuOptions = !empty($box['key']['create_from_toolbar']) || !empty($box['key']['create_from_content_panel']);
+		
+		if ($showMenuOptions) {
 			$fields['meta_data/menu_title']['hidden'] = $values['meta_data/menu_options'] != 'add_to_menu';
 			$fields['meta_data/menu_title']['indent'] = 1;
 		}
 		
+		if (!$values['meta_data/menu_title']) {
+			$values['meta_data/menu_title'] = $values['meta_data/title'];
+		}
+		
 		$fields['meta_data/menu_options']['hidden'] = 
-			empty($box['key']['create_from_toolbar']);
+			!$showMenuOptions;
 		
 		$fields['meta_data/add_to_menu']['hidden'] = 
-			empty($box['key']['create_from_toolbar']) || $values['meta_data/menu_options'] != 'add_to_menu';
-	}
-
-	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		$this->formatContentFAB($path, $settingGroup, $box, $fields, $values, $changes);
-		$this->formatMenu($path, $settingGroup, $box, $fields, $values, $changes);
+			!$showMenuOptions || $values['meta_data/menu_options'] != 'add_to_menu';
 	}
 
 
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
 		$box['confirm']['show'] = false;
 		$box['confirm']['message'] = '';
-
-		if ($path == 'zenario_quick_create') {
+		
+		if (!$box['key']['cID']) {
 			if (!$values['meta_data/layout_id']) {
+				$box['tab'] = 'meta_data';
 				$box['tabs']['meta_data']['errors'][] = adminPhrase('Please select a layout.');
+			} else {
+				$box['key']['cType'] = getRow('layouts', 'content_type', $values['meta_data/layout_id']);
 			}
 
 		} else {
-			if (!$box['key']['cID']) {
-				if (!$values['meta_data/layout_id']) {
-					$box['tab'] = 'meta_data';
-					$box['tabs']['meta_data']['errors'][] = adminPhrase('Please select a layout.');
-				} else {
-					$box['key']['cType'] = getRow('layouts', 'content_type', $values['meta_data/layout_id']);
-				}
-	
-			} else {
-				validateChangeSingleLayout($box, $box['key']['cID'], $box['key']['cType'], $box['key']['cVersion'], $values['meta_data/layout_id'], $saving);
-			}
-	
-			if (!checkContentTypeRunning($box['key']['cType'])) {
-				$box['tabs']['meta_data']['errors'][] =
-					adminPhrase(
-						'Drafts of "[[cType]]" type content items cannot be created as their handler module is missing or not running.',
-						array('cType' => $box['key']['cType']));
-			}
+			validateChangeSingleLayout($box, $box['key']['cID'], $box['key']['cType'], $box['key']['cVersion'], $values['meta_data/layout_id'], $saving);
+		}
+
+		if (!checkContentTypeRunning($box['key']['cType'])) {
+			$box['tabs']['meta_data']['errors'][] =
+				adminPhrase(
+					'Drafts of "[[cType]]" type content items cannot be created as their handler module is missing or not running.',
+					array('cType' => $box['key']['cType']));
 		}
 
 		if (!$values['meta_data/title']) {
@@ -959,7 +930,7 @@ class zenario_common_features__admin_boxes__content extends module_base_class {
 		}
 
 
-		if ($path != 'zenario_quick_create' && $box['key']['cType'] && $details = getContentTypeDetails($box['key']['cType'])) {
+		if ($box['key']['cType'] && $details = getContentTypeDetails($box['key']['cType'])) {
 			if ($details['description_field'] == 'mandatory' && !$values['meta_data/description']) {
 				$box['tabs']['meta_data']['errors'][] = adminPhrase('Please enter a description.');
 			}
@@ -979,12 +950,6 @@ class zenario_common_features__admin_boxes__content extends module_base_class {
 
 		if (issetArrayKey($values,'meta_data/writer_id') && !issetArrayKey($values,'meta_data/writer_name')) {
 			$box['tabs']['meta_data']['errors'][] = adminPhrase('Please enter a writer name.');
-		}
-
-		if (!empty($box['key']['target_menu_section'])
-		 && $values['meta_data/create_menu']
-		 && !$values['meta_data/menu_title']) {
-			$box['tabs']['meta_data']['errors'][] = adminPhrase('Please enter the menu node text.');
 		}
 
 		if ($box['key']['translate']) {
@@ -1051,13 +1016,14 @@ class zenario_common_features__admin_boxes__content extends module_base_class {
 				}
 			}
 			
+			$showMenuOptions = !empty($box['key']['create_from_toolbar']) || !empty($box['key']['create_from_content_panel']);
 			//Create menu node from toolbar
-			if (!empty($box['key']['create_from_toolbar']) 
+			if ($showMenuOptions 
 				&& $values['meta_data/menu_options'] == 'add_to_menu' 
 				&& $values['meta_data/add_to_menu']
 			) {
 				$contentType = getContentTypeDetails($box['key']['cType']);
-				addContentItemsToMenu($box['key']['id'], $values['meta_data/add_to_menu'], $contentType['hide_menu_node']);
+				addContentItemsToMenu($box['key']['id'], $values['meta_data/add_to_menu'], $contentType['hide_menu_node'], $contentType['hide_private_item']);
 				
 				$menuId = getRow('menu_nodes', 'id', array('equiv_id' => $box['key']['cID'], 'content_type' => $box['key']['cType']));
 				saveMenuText($menuId, $values['meta_data/language_id'], array('name' => $values['meta_data/menu_title']));
@@ -1066,21 +1032,17 @@ class zenario_common_features__admin_boxes__content extends module_base_class {
 			//Set the title
 			$version['title'] = $values['meta_data/title'];
 			
-			if ($path == 'zenario_quick_create') {
-				$version['layout_id'] = $values['meta_data/layout_id'];
-			} else {
-				$version['description'] = $values['meta_data/description'];
-				$version['keywords'] = $values['meta_data/keywords'];
-				$version['publication_date'] = $values['meta_data/publication_date'];
-				$version['writer_id'] = $values['meta_data/writer_id'];
-				$version['writer_name'] = $values['meta_data/writer_name'];
-		
-				stripAbsURLsFromAdminBoxField($box['tabs']['meta_data']['fields']['content_summary']);
-				$version['content_summary'] = $values['meta_data/content_summary'];
-		
-				if (isset($fields['meta_data/lock_summary_edit_mode']) && !$fields['meta_data/lock_summary_edit_mode']['hidden']) {
-					$version['lock_summary'] = (int) $values['meta_data/lock_summary_edit_mode'];
-				}
+			$version['description'] = $values['meta_data/description'];
+			$version['keywords'] = $values['meta_data/keywords'];
+			$version['publication_date'] = $values['meta_data/publication_date'];
+			$version['writer_id'] = $values['meta_data/writer_id'];
+			$version['writer_name'] = $values['meta_data/writer_name'];
+	
+			stripAbsURLsFromAdminBoxField($box['tabs']['meta_data']['fields']['content_summary']);
+			$version['content_summary'] = $values['meta_data/content_summary'];
+	
+			if (isset($fields['meta_data/lock_summary_edit_mode']) && !$fields['meta_data/lock_summary_edit_mode']['hidden']) {
+				$version['lock_summary'] = (int) $values['meta_data/lock_summary_edit_mode'];
 			}
 		}
 
@@ -1186,7 +1148,8 @@ class zenario_common_features__admin_boxes__content extends module_base_class {
 	
 	public function adminBoxSaveCompleted($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		if ($box['key']['id_is_menu_node_id'] || $box['key']['id_is_parent_menu_node_id']) {
-			if ($menu = getMenuItemFromContent($box['key']['cID'], $box['key']['cType'], $fetchSecondaries = false, $sectionId = $box['key']['target_menu_section'])) {
+			$sectionId = isset($box['key']['target_menu_section']) ? $box['key']['target_menu_section'] : false;
+			if ($menu = getMenuItemFromContent($box['key']['cID'], $box['key']['cType'], $fetchSecondaries = false, $sectionId)) {
 				$box['key']['id'] = $menu['id'];
 			}
 		}

@@ -1,6 +1,6 @@
 <% if (m.needsComma) { %><span class="organizer_cell_items organizer_cell_comma">,</span> <% } %>
 
-<span class="organizer_cell_items">
+<span class="organizer_cell_items {{m.css_class|escape}}">
 	<span class="organizer_cell">
 		{{m.value}}
 	</span>

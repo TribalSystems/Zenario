@@ -188,7 +188,8 @@ body {
 	width: 100%;
 }
 
-.span .span1_1 {
+.span .span1_1,
+.span .span .span1_1 {
 	width: 100%;
 }
 

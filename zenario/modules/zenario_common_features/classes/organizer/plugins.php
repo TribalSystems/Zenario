@@ -74,6 +74,11 @@ class zenario_common_features__organizer__plugins extends module_base_class {
 				$item['image'] = getModuleIconURL($item['module_class_name']);
 			}
 			
+			if (strpos($item['module_class_name'], 'nest') !== false
+			 && conductorEnabled($id)) {
+				$item['traits']['usesConductor'] = true;
+			}
+			
 			//Should archived layouts trigger the "in use" flag..?
 			if ($item['usage_item']
 			 || $item['usage_layouts']

@@ -36,32 +36,48 @@ class zenario_users__admin_boxes__content extends zenario_users {
 		$equivId = $cID = $cType = false;
 		
 		if (empty($box['tabs']['privacy']['hidden'])) {
-			//Populate the list of groups
-			$lov = listCustomFields('users', $flat = false, 'groups_only', $customOnly = false, $useOptGroups = true, $hideEmptyOptGroupParents = true);
-		
-			//Note: these are multi-checkboxes fields. I want to show the tabs, but I don't want
-			//people to be able to select them
-			foreach ($lov as &$v) {
-				if (empty($v['parent'])) {
-					$v['readonly'] =
-					$v['disabled'] = true;
-					$v['style'] = 'display: none;';
-				}
-			}
-		
-			$box['tabs']['privacy']['fields']['group_members']['values'] = $lov;
+			$cType = $box['key']['cType'];
 			
+			$fields['privacy/group_ids']['values'] = getGroupPickerCheckboxesForFAB();
+			$fields['privacy/smart_group_id']['values'] = getListOfSmartGroupsWithCounts();
 			
-			//Default newly create items to "public"
+			$contentTypeDetails = getContentTypeDetails($cType);
+			
+			//Default newly create items to content type setting
 			$values['privacy/privacy'] = 'public';
+			if ($contentTypeDetails) {
+				$values['privacy/privacy'] = $contentTypeDetails['default_permissions'];
+			}
 			
+			
+			//Try to load the privacy options from the translation_chains table.
 			if (($cID = $box['key']['source_cID'])
-			 && ($cType = $box['key']['cType'])
+			 && ($cType)
 			 && ($equivId = equivId($box['key']['source_cID'], $box['key']['cType']))
 			 && ($chain = getRow('translation_chains', true, array('equiv_id' => $equivId, 'type' => $cType)))) {
+				
 				$values['privacy/privacy'] = $chain['privacy'];
-				$values['privacy/group_members'] = self::setupGroupOrUserCheckboxes('group_content_link', 'group_id', $equivId, $cType);
-				$values['privacy/specific_users'] = self::setupGroupOrUserCheckboxes('user_content_link', 'user_id', $equivId, $cType);
+				
+				switch ($chain['privacy']) {
+					case 'group_members':
+						$values['privacy/group_ids'] =
+							inEscape(getRowsArray('group_content_link', 'group_id', array('equiv_id' => $equivId, 'content_type' => $cType)), true);
+						break;
+					
+					case 'call_static_method':
+						if ($privacySettings = getRow('translation_chain_privacy', true, array('equiv_id' => $equivId, 'content_type' => $cType))) {
+							$values['privacy/module_class_name'] = $privacySettings['module_class_name'];
+							$values['privacy/method_name'] = $privacySettings['method_name'];
+							$values['privacy/param_1'] = $privacySettings['param_1'];
+							$values['privacy/param_2'] = $privacySettings['param_2'];
+						}
+						break;
+					
+					case 'in_smart_group':
+					case 'logged_in_not_in_smart_group':
+						$values['privacy/smart_group_id'] = $chain['smart_group_id'];
+						break;
+				}
 			}
 		}
 	}
@@ -72,18 +88,26 @@ class zenario_users__admin_boxes__content extends zenario_users {
 		if (empty($box['tabs']['privacy']['hidden'])
 		 && engToBooleanArray($box, 'tabs', 'privacy', 'edit_mode', 'on')) {
 			
-			if (!$values['privacy/privacy']) {
-				$box['tabs']['privacy']['errors'][] = adminPhrase('Please select an option.');
-			}
-			
-			if ($values['privacy/privacy'] == 'specific_users'
-			 && !$values['privacy/specific_users']) {
-				$box['tabs']['privacy']['errors'][] = adminPhrase('Please select a User.');
-			}
-			
-			if ($values['privacy/privacy'] == 'group_members'
-			 && !$values['privacy/group_members']) {
-				$box['tabs']['privacy']['errors'][] = adminPhrase('Please select a Group.');
+			switch ($values['privacy/privacy']) {
+				case 'call_static_method':
+					if (!$values['privacy/module_class_name']) {
+						$box['tabs']['privacy']['errors'][] = adminPhrase('Please enter the class name of a module.');
+		
+					} elseif (!inc($values['privacy/module_class_name'])) {
+						$box['tabs']['privacy']['errors'][] = adminPhrase('Please enter the class name of a module that you have running on this site.');
+		
+					} elseif ($values['privacy/method_name']
+						&& !method_exists(
+								$values['privacy/module_class_name'],
+								$values['privacy/method_name'])
+					) {
+						$box['tabs']['privacy']['errors'][] = adminPhrase('Please enter the name of an existing public static method.');
+					}
+		
+					if (!$values['privacy/method_name']) {
+						$box['tabs']['privacy']['errors'][] = adminPhrase('Please enter the name of a public static method.');
+					}
+					break;
 			}
 		}
 	}

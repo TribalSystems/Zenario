@@ -78,7 +78,7 @@ if (needRevision(50)) {
 
 if (needRevision(52)) {
 	
-	if ($statusField = getDatasetFieldDetails('status', 'users')) {
+	if ($statusField = getDatasetFieldDetails('status', 'users', ['id'])) {
 		
 		$stats = array('created_on' => now(), 'created_by' => adminId(), 'last_modified_on' => now(), 'last_modified_by' => adminId());
 		

@@ -2,7 +2,7 @@
 ---
 site_settings:
     setting_group: email
-    title: Editing settings for email
+    title: Editing email settings
     tabs:
         email:
             label: Email

@@ -208,6 +208,19 @@ class zenario_plugin_nest__organizer__nested_plugins extends zenario_plugin_nest
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
 		
+		$statesToSlides = array();
+		if ($usesConductor = conductorEnabled(get('refiner__nest'))) {
+			foreach ($panel['items'] as $id => &$item) {
+				if ($item['states']) {
+					foreach (explode(',', $item['states']) as $state) {
+						$statesToSlides[$state] = $item['ordinal'];
+					}
+				}
+			}
+		}
+		
+		require_once CMS_ROOT. 'zenario/libraries/public_domain/convert_to_roman/convert_to_roman.php';
+		
 		foreach ($panel['items'] as $id => &$item) {
 			$item['traits'] = array();
 			if ($item['is_slide']) {
@@ -215,8 +228,33 @@ class zenario_plugin_nest__organizer__nested_plugins extends zenario_plugin_nest
 				$item['css_class'] = 'zenario_nest_tab';
 				$item['cols'] = ' ';
 				$item['small_screens'] = ' ';
+				$item['prefix'] = $item['ordinal']. '. ';
+				
+				//Get a list of slide numbers/states that this state can go to
+				if ($usesConductor && $item['states']) {
+					$toStates = sqlFetchAssocs('
+						SELECT to_state, commands
+						FROM [[DB_NAME_PREFIX]]nested_paths AS path
+						WHERE path.instance_id = [[0]]
+						  AND path.from_state IN ([[1]])',
+						[$refinerId, explode(',', $item['states'])]
+					);
+					
+					$toText = array();
+					foreach ($toStates as $toState) {
+						if (isset($statesToSlides[$toState['to_state']])) {
+							$toText[] = $toState['commands']. ' → '. $statesToSlides[$toState['to_state']]. '/'. $toState['to_state'];
+						}
+					}
+					
+					if (!empty($toText)) {
+						$item['name_or_title'] .= ' | '. implode(', ', $toText);
+					}
+				}
+			
 			} else {
 				$item['traits']['is_not_tab'] = true;
+				$item['prefix'] = strtolower(convertToRoman($item['ordinal'])). '. ';
 				
 				if ($item['checksum']) {
 					$img = '&c='. $item['checksum'];

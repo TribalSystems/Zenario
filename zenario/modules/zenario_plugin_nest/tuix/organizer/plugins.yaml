@@ -35,9 +35,8 @@ zenario__modules:
                     parent: view_dropdown
                     priv: _PRIV_VIEW_REUSABLE_PLUGIN
                     visible_if: |
-                        zenarioA.siteSettings.enable_conductor_for_nests &&
-                        item.module_class_name == 'zenario_plugin_nest'
-                    label: Conductor settings (advanced)
+                        item.traits.usesConductor
+                    label: Nest conductor settings (advanced)
                     hide_in_select_mode: true
                     link:
                         path: zenario__modules/panels/conductor

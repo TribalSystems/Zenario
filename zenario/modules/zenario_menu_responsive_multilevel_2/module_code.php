@@ -37,7 +37,6 @@ class zenario_menu_responsive_multilevel_2 extends zenario_menu {
 				'zenario_menu_responsive_multilevel_2', 'init',
 				$this->containerId. '_slimmenu', (int) setting('image_mobile_resize_point'),
 				$this->setting('easing_effect'), $this->setting('anim_speed'));
-			$this->showAdminAddMenuItem = false;
 			
 			return true;
 		} else {

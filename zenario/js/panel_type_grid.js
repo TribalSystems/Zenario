@@ -41,8 +41,8 @@ zenario.lib(function(
 	undefined,
 	URLBasePath,
 	document, window, windowOpener, windowParent,
-	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO,
-	get, engToBoolean, htmlspecialchars, ifNull, jsEscape, phrase,
+	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO, strings,
+	encodeURIComponent, get, engToBoolean, htmlspecialchars, jsEscape, phrase,
 	extensionOf, methodsOf, has,
 	panelTypes
 ) {
@@ -74,15 +74,19 @@ methods.returnAJAXRequests = function() {
 };
 
 methods.returnPanelTitle = function() {
-	var title = this.tuix.title;
 	
-	if (window.zenarioOSelectMode && (this.path == window.zenarioOTargetPath || window.zenarioOTargetPath === false)) {
-		if (window.zenarioOMultipleSelect && this.tuix.multiple_select_mode_title) {
-			title = this.tuix.multiple_select_mode_title;
-		} else if (this.tuix.select_mode_title) {
-			title = this.tuix.select_mode_title;
-		}
-	}
+	var selectMode =
+			window.zenarioOSelectMode && (
+				this.path == window.zenarioOTargetPath
+			 || window.zenarioOTargetPath === false
+			),
+		title =
+			(
+				selectMode && (
+					(window.zenarioOMultipleSelect && zenarioO.panelProp('multiple_select_mode_title'))
+				 || zenarioO.panelProp('select_mode_title')
+				)
+			) || zenarioO.panelProp('title');
 	
 	if (zenarioO.filteredView) {
 		title += phrase.refined;
@@ -573,9 +577,9 @@ methods.getMergeFieldsForItemsAndColumns = function(useLargerThumbnails) {
 	if (!itemsExist) {
 		//Display a message if there were no items to display
 		if (zenarioO.filteredView) {
-			data.no_items_message = this.tuix.no_items_in_search_message || phrase.noItemsInSearch;
+			data.no_items_message = zenarioO.panelProp('no_items_in_search_message') || phrase.noItemsInSearch;
 		} else {
-			data.no_items_message = this.tuix.no_items_message || phrase.noItems;
+			data.no_items_message = zenarioO.panelProp('no_items_message') || phrase.noItems;
 		}
 	}
 	

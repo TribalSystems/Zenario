@@ -24,13 +24,13 @@ max_enabled_languages: 0
 
 
 # If enabled, an admin must verify access to their email when logging into the site.
-require_security_code_on_admin_login: false
+enable_two_factor_security_for_admin_logins: false
 
 # If enabled, an admin must verify access for each IP address they use to access the site.
-security_code_by_ip: false
+apply_two_factor_security_by_ip: false
 
 # The length of time (in days) that this should last.
-security_code_timeout: 30
+two_factor_security_timeout: 30
 
 
 # Style formats are class names that can be selected in the WYSIWYG Editor

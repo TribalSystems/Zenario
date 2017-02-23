@@ -113,12 +113,14 @@ Link: [[link]]', $note);
 		} elseif (!isDraft(cms_core::$status) || checkPriv('_PRIV_PUBLISH_CONTENT_ITEM', $cID, $cType)) {
 			unset($adminToolbar['sections']['status_button']['buttons']['request_publish']);
 			unset($adminToolbar['sections']['edit']['buttons']['request_publish']);
+			unset($adminToolbar['sections']['restricted_editing']['buttons']['request_publish']);
 		}
 		
 		//If this item could be trashed, but this admin doesn't have the rights to trashed it,
 		//show the Request to Rrash button where the Rrash button usually is.
 		if (!allowTrash($cID, $cType, cms_core::$status) || checkPriv('_PRIV_TRASH_CONTENT_ITEM', $cID, $cType)) {
 			unset($adminToolbar['sections']['edit']['buttons']['request_trash']);
+			unset($adminToolbar['sections']['restricted_editing']['buttons']['request_trash']);
 		}
 	}
 	

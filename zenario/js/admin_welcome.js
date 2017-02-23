@@ -40,16 +40,15 @@ zenario.lib(function(
 	undefined,
 	URLBasePath,
 	document, window, windowOpener, windowParent,
-	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO,
-	get, engToBoolean, htmlspecialchars, ifNull, jsEscape, phrase,
+	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO, strings,
+	encodeURIComponent, get, engToBoolean, htmlspecialchars, jsEscape, phrase,
 	extensionOf, methodsOf, has,
 	zenarioAF
 ) {
 	"use strict";
 	
 	var zenarioAW = window.zenarioAW = new zenarioAF();
-	zenarioAW.init('zenarioAW');
-	zenarioAW.mtPrefix = 'zenario_welcome';
+	zenarioAW.init('zenarioAW', 'zenario_welcome');
 
 
 
@@ -114,7 +113,7 @@ zenarioAW.returnAJAXURL = function() {
 		'zenario/admin/welcome.ajax.php' +
 		'?task=' + encodeURIComponent(zenarioAW.task) +
 		'&get=' + encodeURIComponent(JSON.stringify(zenarioAW.getRequest)) +
-		zenario.urlRequest(ifNull(zenarioAW.key, zenarioAW.tuix.key));
+		zenario.urlRequest(zenarioAW.key || zenarioAW.tuix.key);
 };
 
 
@@ -136,42 +135,40 @@ zenarioAW.quickValidateWelcomePageGo = function() {
 		url = URLBasePath + 'zenario/admin/welcome.ajax.php?quickValidate=1';
 	
 	foreach (this.tuix.tabs[this.tuix.tab].fields as f => field) {
-		rowClasses[f] = ifNull(field.row_class, '', '');
+		rowClasses[f] = field.row_class || '';
 	}
 	
-	$.post(url,
+	//zenario.ajax(url, post, json, useCache, retry, continueAnyway, settings, timeout, AJAXErrorHandler, onRetry, onCancel)
+	zenario.ajax(url,
 		{
 			tab: this.tuix.tab,
 			path: this.path || '',
 			values: JSON.stringify(this.readTab()),
 			row_classes: JSON.stringify(rowClasses)
 		},
-		function(data) {
-			if (!(data = zenarioA.readData(data))) {
-				return false;
-			}
-			
-			if (data && data.row_classes) {
-				foreach (data.row_classes as f) {
-					if (zenarioAW.tuix.tabs[zenarioAW.tuix.tab].fields[f] && get('row__' + f)) {
-						zenarioAW.tuix.tabs[zenarioAW.tuix.tab].fields[f].row_class = data.row_classes[f];
-						get('row__' + f).className = 'zenario_ab_row zenario_ab_row__' + f + ' ' + data.row_classes[f];
-					}
+		true, false, true, true
+	).after(function(data) {
+	
+		if (data && data.row_classes) {
+			foreach (data.row_classes as f) {
+				if (zenarioAW.tuix.tabs[zenarioAW.tuix.tab].fields[f] && zenarioAW.get('row__' + f)) {
+					zenarioAW.tuix.tabs[zenarioAW.tuix.tab].fields[f].row_class = data.row_classes[f];
+					zenarioAW.get('row__' + f).className = 'zenario_ab_row zenario_ab_row__' + f + ' ' + data.row_classes[f];
 				}
 			}
-			
-			if (data && data.snippets) {
-				foreach (data.snippets as f) {
-					if (zenarioAW.tuix.tabs[zenarioAW.tuix.tab].fields[f]
-					 && zenarioAW.tuix.tabs[zenarioAW.tuix.tab].fields[f].snippet
-					 && zenarioAW.tuix.tabs[zenarioAW.tuix.tab].fields[f].snippet.html && get('snippet__' + f)) {
-						zenarioAW.tuix.tabs[zenarioAW.tuix.tab].fields[f].snippet.html = data.snippets[f];
-						get('snippet__' + f).innerHTML = data.snippets[f];
-					}
+		}
+		
+		if (data && data.snippets) {
+			foreach (data.snippets as f) {
+				if (zenarioAW.tuix.tabs[zenarioAW.tuix.tab].fields[f]
+				 && zenarioAW.tuix.tabs[zenarioAW.tuix.tab].fields[f].snippet
+				 && zenarioAW.tuix.tabs[zenarioAW.tuix.tab].fields[f].snippet.html && zenarioAW.get('snippet__' + f)) {
+					zenarioAW.tuix.tabs[zenarioAW.tuix.tab].fields[f].snippet.html = data.snippets[f];
+					zenarioAW.get('snippet__' + f).innerHTML = data.snippets[f];
 				}
 			}
-		},
-	'text');
+		}
+	});
 	
 	return true;
 };

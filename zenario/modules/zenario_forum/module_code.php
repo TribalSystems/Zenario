@@ -918,7 +918,7 @@ class zenario_forum extends zenario_comments {
 			  AND unread_to != 0
 			  AND forum_id = ". (int) $this->forumId. "
 			  AND reader_id = ". (int) $readerId;
-		sqlUpdate($sql, $updateDataRevisionNumber = true, $checkCache = false);
+		sqlUpdate($sql, false, false);
 	}
 	
 	
@@ -936,21 +936,21 @@ class zenario_forum extends zenario_comments {
 			WHERE unread_to = ". (int) $threadLastUpdated. "
 			  AND unread_from = ". (int) $threadLastUpdated. "
 			  AND forum_id = ". (int) $forumId;
-		sqlUpdate($sql, false);
+		sqlUpdate($sql, false, false);
 		
 		$sql = "
 			UPDATE ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "user_unread_threads SET
 				unread_from = unread_from - 1
 			WHERE unread_from > ". (int) $threadLastUpdated. "
 			  AND forum_id = ". (int) $forumId;
-		sqlUpdate($sql, false);
+		sqlUpdate($sql, false, false);
 		
 		$sql = "
 			UPDATE ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "user_unread_threads SET
 				unread_to = unread_to - 1
 			WHERE unread_to > ". (int) $threadLastUpdated. "
 			  AND forum_id = ". (int) $forumId;
-		sqlUpdate($sql, false);
+		sqlUpdate($sql, false, false);
 	}
 	
 	
@@ -978,7 +978,7 @@ class zenario_forum extends zenario_comments {
 				unread_to = ". (int) $latestUpdated. "
 			WHERE unread_to = ". ((int) $latestUpdated - 1). "
 			  AND forum_id = ". (int) $this->forumId;
-		sqlUpdate($sql, false);
+		sqlUpdate($sql, false, false);
 		
 		//Where we couldn't extend a span, we must add a new one.
 		//NOT IN must be used in order not to create any duplicates with the query above
@@ -996,7 +996,7 @@ class zenario_forum extends zenario_comments {
 				WHERE forum_id = ". (int) $this->forumId. "
 				  AND unread_to = ". (int) $latestUpdated. "
 			)";
-		sqlUpdate($sql, false);
+		sqlUpdate($sql, false, false);
 	}
 	
 	
@@ -1026,7 +1026,7 @@ class zenario_forum extends zenario_comments {
 				unread_to = 0,
 				forum_id = ". (int) $this->forumId. ",
 				reader_id = ". (int) $userId;
-		sqlUpdate($sql, false);
+		sqlUpdate($sql, false, false);
 		
 		//Then mark the forum as unread for them
 		$sql = "
@@ -1035,7 +1035,7 @@ class zenario_forum extends zenario_comments {
 				unread_to = ". (int) $latestUpdated. ",
 				forum_id = ". (int) $this->forumId. ",
 				reader_id = ". (int) $userId;
-		sqlUpdate($sql, false);
+		sqlUpdate($sql, false, false);
 	}
 	
 	

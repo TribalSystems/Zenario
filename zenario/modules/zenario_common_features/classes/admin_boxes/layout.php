@@ -141,7 +141,8 @@ class zenario_common_features__admin_boxes__layout extends module_base_class {
 			
 			//Don't allow 2 layouts with the same name, or the same filename
 			if (checkRowExists('layouts', $key)
-			 || ($newName != $box['key']['file_base_name']
+			 || (!engToBoolean($box['key']['create_layout_from_template_file'])
+			  && $newName != $box['key']['file_base_name']
 			  && file_exists(zenarioTemplatePath($box['key']['family_name'], $newName)))
 			) {
 				$box['tabs']['template']['errors'][] = adminPhrase('The name for the layout must be unique.');
@@ -166,12 +167,26 @@ class zenario_common_features__admin_boxes__layout extends module_base_class {
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		if (engToBooleanArray($box['tabs']['template'], 'edit_mode', 'on') && checkPriv('_PRIV_EDIT_TEMPLATE')) {
 			
+			$needToClearCache = false;
+			
 			$layout = array(
 				'family_name' => $box['key']['family_name'],
 				'file_base_name' => $box['key']['file_base_name'],
 				'name' => $values['template/name'],
 				'content_type' => $values['content_type'],
 				'skin_id' => $values['skin_id']);
+			
+			//If registering an existing layout in the system, try to keep it's id if it's of the forum "L01"
+			if (!$box['key']['duplicate']
+			 && engToBoolean($box['key']['create_layout_from_template_file'])
+			 && $box['key']['file_base_name'][0] == 'L'
+			 && ($targetLayoutId = (int) chopPrefixOffString('L', $box['key']['file_base_name']))
+			 && (!checkRowExists('layouts', $targetLayoutId))) {
+			
+				$layout['layout_id'] = $targetLayoutId;
+				$box['key']['id'] = insertRow('layouts', $layout);
+				$needToClearCache = true;
+			}
 			
 			if ($box['key']['duplicate']) {
 				$newName = generateLayoutFileBaseName($values['template/name']);
@@ -184,8 +199,7 @@ class zenario_common_features__admin_boxes__layout extends module_base_class {
 				if (copyLayoutFiles($box['key'], $newName)) {
 					//If successful, note down the new name
 					$layout['file_base_name'] = $newName;
-					
-					checkForChangesInCssJsAndHtmlFiles($runInProductionMode = true, $forceScan = true);
+					$needToClearCache = true;
 				
 				} else {
 					//If duplicating, don't allow the duplication when the files could not be copied
@@ -233,6 +247,10 @@ class zenario_common_features__admin_boxes__layout extends module_base_class {
 			saveTemplate($vals, $box['key']['id']);
 			
 			deleteUnusedBackgroundImages();
+		}
+		
+		if ($needToClearCache) {
+			checkForChangesInCssJsAndHtmlFiles($runInProductionMode = true, $forceScan = true);
 		}
 	}
 }

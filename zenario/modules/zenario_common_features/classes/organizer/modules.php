@@ -437,11 +437,13 @@ class zenario_common_features__organizer__modules extends module_base_class {
 			exit;
 		}
 
-		$reload = false;
+		$reloadIfNeeded = false;
+		$return = null;
+		
 		if (post('suspend') && checkPriv('_PRIV_SUSPEND_MODULE') && $module['status'] == 'module_running') {
-			$reload = true;
 			suspendModule($ids);
 			zenarioClearCache();
+			$reloadIfNeeded = true;
 
 		} elseif (get('remove') || get('uninstall')) {
 			$module = getModuleDetails($ids);
@@ -499,13 +501,16 @@ class zenario_common_features__organizer__modules extends module_base_class {
 			
 			//Try and look for the new id of the module
 			addNewModules();
-			return getModuleId($moduleClassName);
+			$return = getModuleId($moduleClassName);
+			$reloadIfNeeded = false;
 		}
 
-		//Send a command to reload Storekeeper, if the XML map may have changed.
-		if ($reload && moduleDir($module['class_name'], 'tuix/organizer', true)) {
+		//Send a command to reload Organizer if a module adds to Organizer, or has a content type
+		if ($reloadIfNeeded && needToReloadOrganizerWhenModuleIsInstalled($module['class_name'])) {
 			echo '<!--Reload_Organizer-->';
 		}
+		
+		return $return;
 	}
 	
 	public function organizerPanelDownload($path, $ids, $refinerName, $refinerId) {

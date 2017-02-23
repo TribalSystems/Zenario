@@ -55,6 +55,15 @@ zenario__menu:
                             AND cmh.child_id = mi.id
             label_format_for_picked_items: '[[section_name]] | [[name]]'
             columns:
+                invisible_menu_node: 
+                    title: Invisible menu node
+                    db_column: IF (mi.invisible = '1','show','') 
+                    show_by_default: true
+                    format: enum
+                    values: 
+                        'show':
+                            label: ""
+                            css_class: invisible_menu_node
                 mid:
                     db_column: mi.id
                 ordinal:
@@ -72,6 +81,10 @@ zenario__menu:
                     db_column: mt.name
                     always_show: true
                     length_limit: "30"
+                invisible:
+                    title: Invisible
+                    db_column: mi.invisible
+                    hidden: true
                 section_id:
                     db_column: mi.section_id
                 section_name:
@@ -137,21 +150,37 @@ zenario__menu:
                     db_column: mt.language_id
                 parent_id:
                     db_column: mi.parent_id
+                is_content_type_default_menu_node:
+                    hidden: true
             item:
                 name: Menu node
                 names: Menu nodes
                 css_class: linked_child_menuitem_with_children
             collection_buttons:
-                create:
+                create_dropdown:
+                    hide_when_children_are_not_visible: true
+                    css_class: zenario_create_a_new
+                    label: Create
+                
+                create_menu_node:
                     priv: _PRIV_ADD_MENU_ITEM
                     hide_in_select_mode: true
-                    css_class: zenario_create_a_new
                     hide_on_filter: true
-                    label: Create a menu node
+                    parent: create_dropdown
+                    label: Menu node
                     admin_box:
-                        path: zenario_quick_create
+                        path: zenario_menu
+                create_menu_node_and_content_item:
+                    priv: _PRIV_ADD_MENU_ITEM
+                    hide_in_select_mode: true
+                    hide_on_filter: true
+                    parent: create_dropdown
+                    label: Menu node and content item
+                    admin_box:
+                        path: zenario_content
                         key:
                             id_is_menu_node_id: 1
+                
                 tree_explorer:
                     hide_in_select_mode: true
                     label: Open Tree Explorer
@@ -181,17 +210,28 @@ zenario__menu:
                     visible_if: >
                         zenario.engToBoolean(item.frontend_link)
             item_buttons:
-                create_child:
+                create_child_dropdown:
+                    hide_when_children_are_not_visible: true
+                    css_class: zenario_create_a_new
+                    label: Create a child
+                create_menu_node:
                     priv: _PRIV_ADD_MENU_ITEM
                     hide_in_select_mode: true
-                    css_class: zenario_create_a_new
                     hide_on_filter: true
-                    label: Create a child menu node
-                    tooltip: >
-                        Create a new child menu node underneath the selected menu
-                        node
+                    parent: create_child_dropdown
+                    label: Menu node
                     admin_box:
-                        path: zenario_quick_create
+                        path: zenario_menu
+                        key:
+                            id_is_parent_menu_node_id: 1
+                create_menu_node_and_content_item:
+                    priv: _PRIV_ADD_MENU_ITEM
+                    hide_in_select_mode: true
+                    hide_on_filter: true
+                    parent: create_child_dropdown
+                    label: Menu node and content item
+                    admin_box:
+                        path: zenario_content
                         key:
                             id_is_parent_menu_node_id: 1
                 edit_menu_text:
@@ -202,6 +242,16 @@ zenario__menu:
                     label: Edit menu text
                     admin_box:
                         path: zenario_menu_text
+                    without_traits:
+                        ghost: true
+                edit:
+                    priv: _PRIV_EDIT_MENU_ITEM
+                    hide_in_select_mode: true
+                    label: Menu node properties
+                    admin_box:
+                        path: zenario_menu
+                        key:
+                            mode: ""
                     without_traits:
                         ghost: true
                 define_menu_text:
@@ -228,15 +278,6 @@ zenario__menu:
                             duplicate_from_menu: true
                     traits:
                         can_duplicate: true
-                citem:
-                    priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
-                    label: Content item properties
-                    admin_box:
-                        path: zenario_content
-                        key:
-                            id_is_menu_node_id: 1
-                    traits:
-                        content: true
                 view_dropdown:
                     label: View
                     multiple_select: true
@@ -260,20 +301,20 @@ zenario__menu:
                         branch: true
                         refiner: menu_children
                 action_dropdown:
-                    label: Actions
+                    label: More actions
                     multiple_select: true
                     hide_when_children_are_not_visible: true
-                edit:
-                    parent: action_dropdown
-                    priv: _PRIV_EDIT_MENU_ITEM
-                    hide_in_select_mode: true
-                    label: Menu node properties
-                    admin_box:
-                        path: zenario_menu
-                        key:
-                            mode: ""
-                    without_traits:
-                        ghost: true
+               # edit:
+               #     parent: action_dropdown
+               #     priv: _PRIV_EDIT_MENU_ITEM
+               #     hide_in_select_mode: true
+               #     label: Menu node properties
+               #     admin_box:
+               #         path: zenario_menu
+               #         key:
+               #             mode: ""
+               #     without_traits:
+               #         ghost: true
                 #add:
                 #    parent: action_dropdown
                 #    priv: _PRIV_EDIT_MENU_ITEM
@@ -328,24 +369,6 @@ zenario__menu:
                 #        can_duplicate: true
                 #    without_traits:
                 #        ghost: true
-                move:
-                    parent: action_dropdown
-                    priv: _PRIV_EDIT_MENU_ITEM
-                    hide_in_select_mode: true
-                    label: Move in tree
-                    multiple_select: true
-                    combine_items:
-                        path: zenario__menu/panels/menu_position
-                        target_path: zenario__menu/panels/menu_position
-                        one_to_one_choose_phrase: Move menu node
-                        many_to_one_choose_phrase: Move menu nodes
-                        visible_if_for_all_selected_items: >
-                            zenario.engToBoolean(item.menu_id) || zenario.engToBoolean(item.is_dummy_child)
-                        request:
-                            move: 1
-                
-                
-                
                 quick_add_to_menu:
                     priv: _PRIV_ADD_MENU_ITEM
                     label: Create secondary node
@@ -361,6 +384,21 @@ zenario__menu:
                             zenario.engToBoolean(item.menu_id) || zenario.engToBoolean(item.is_dummy_child)
                         request:
                             mass_add_to_menu: 1
+                move:
+                    parent: action_dropdown
+                    priv: _PRIV_EDIT_MENU_ITEM
+                    hide_in_select_mode: true
+                    label: Move in tree
+                    multiple_select: true
+                    combine_items:
+                        path: zenario__menu/panels/menu_position
+                        target_path: zenario__menu/panels/menu_position
+                        one_to_one_choose_phrase: Move menu node
+                        many_to_one_choose_phrase: Move menu nodes
+                        visible_if_for_all_selected_items: >
+                            zenario.engToBoolean(item.menu_id) || zenario.engToBoolean(item.is_dummy_child)
+                        request:
+                            move: 1
                             
                 make_primary:
                     priv: _PRIV_EDIT_MENU_ITEM
@@ -384,8 +422,13 @@ zenario__menu:
                 
                 
                 delete:
+                    disabled_if_for_any_selected_items: |
+                        item.is_content_type_default_menu_node
+                    disabled_tooltip: |
+                        Cannot delete because this is the default menu node for a content type.
                     priv: _PRIV_DELETE_MENU_ITEM
                     label: Delete menu node
+                    parent: action_dropdown
                     multiple_select: true
                     hide_in_select_mode: true
                     ajax:
@@ -411,6 +454,7 @@ zenario__menu:
                 delete_recursive:
                     priv: _PRIV_DELETE_MENU_ITEM
                     label: Delete
+                    parent: action_dropdown
                     multiple_select: true
                     hide_in_select_mode: true
                     ajax:
@@ -441,3 +485,19 @@ zenario__menu:
                     label: Go to menu node
                     tooltip: Go to this Menu Node in hierarchical view
                     navigation_path: true
+                linked_content_item_dropdown:
+                    label: Linked content item
+                    multiple_select: true
+                    traits:
+                        content: true
+                citem:
+                    priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
+                    label: Content item properties
+                    parent: linked_content_item_dropdown
+                    hide_when_children_are_not_visible: true
+                    admin_box:
+                        path: zenario_content
+                        key:
+                            id_is_menu_node_id: 1
+                    traits:
+                        content: true

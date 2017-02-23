@@ -137,9 +137,10 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends mod
 				}
 				
 				// Get custom data for system tabs and custom tabs
-				$tabs = getRowsArray('custom_dataset_tabs', true, array('dataset_id' => $dataset['id']));
+				$tabs = getRowsArray('custom_dataset_tabs', true, array('dataset_id' => $dataset['id']), 'ord');
+				$firstTab = true;
 				foreach ($tabs as $tab) {
-					if  ($tab['is_system_field']) {
+					if ($tab['is_system_field']) {
 						if (isset($panel['items'][$tab['name']])) {
 							$panel['items'][$tab['name']]['parent_field_id'] = $tab['parent_field_id'];
 							if ($tab['ord']) {
@@ -161,6 +162,9 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends mod
 							'parent_field_id' => (int)$tab['parent_field_id'],
 							'fields' => array()
 						);
+					}
+					if ($firstTab && isset($panel['items'][$tab['name']])) {
+						$panel['items'][$tab['name']]['field_records_fetched'] = true;
 					}
 					
 					$fields = getRowsArray('custom_dataset_fields', true, array('dataset_id' => $dataset['id'], 'tab_name' => $tab['name']));
@@ -210,6 +214,10 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends mod
 							
 							'remove' => false,
 						);
+						//Get record count for fields on first tab. Other tab fields are loaded as their tab is clicked
+						if ($firstTab && $field['db_column']) {
+							$fieldProperties['record_count'] = countDatasetFieldRecords($fieldId);
+						}
 						
 						if (in_array($field['type'], array('checkboxes', 'radios', 'select', 'centralised_radios', 'centralised_select'))) {
 							// Add LOV for multi field types
@@ -248,6 +256,7 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends mod
 						$panel['items'][$tab['name']]['fields'][$fieldId] = $fieldProperties;
 					}
 					unset($panel['items'][$tab['name']]['system_fields']);
+					$firstTab = false;
 				}
 				
 			}
@@ -380,9 +389,11 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends mod
 															$values['organizer_visibility'] = 'none';
 														}
 														
-														$values['create_index'] = !empty($field['create_index']) && !empty($field['show_in_organizer']);
+														
+														
+														$values['create_index'] = in_array($field['type'], array('checkbox', 'group', 'radios', 'select', 'dataset_select', 'dataset_picker', 'file_picker', 'centralised_radios', 'centralised_select')) || (in_array($field['type'], array('text', 'date')) && !empty($field['create_index'])) || (!empty($field['create_index']) && !empty($field['show_in_organizer']));
 														$values['searchable'] = !empty($field['searchable']) && !empty($field['show_in_organizer']);
-														$values['sortable'] = !empty($field['sortable']) && $values['show_in_organizer'] && $values['create_index'];
+														$values['sortable'] = !empty($field['sortable']) && !empty($field['show_in_organizer']) && $values['create_index'];
 														$values['values_source'] = empty($field['values_source']) ? '' : $field['values_source'];
 														$values['values_source_filter'] = !empty($field['values_source']) && isset($field['values_source_filter']) ? substr($field['values_source_filter'], 0, 255) : '';
 														
@@ -492,7 +503,7 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends mod
 							$values = array(
 								'parent_field_id' => 0
 							);
-							if (empty($tab['is_system_field']) && !empty($tempFieldIdLink[$tab['parent_field_id']])) {
+							if (empty($tab['is_system_field']) && !empty($tab['parent_field_id']) && !empty($tempFieldIdLink[$tab['parent_field_id']])) {
 								$values['parent_field_id'] = $tempFieldIdLink[$tab['parent_field_id']];
 							}
 							updateRow('custom_dataset_tabs', $values, $ids);
@@ -519,44 +530,48 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends mod
 						
 					}
 					break;
-				case 'validate':
-					
-					$id = post('id');
-					$type = post('type');
-					$tab = post('tab');
-					$field_tab = post('field_tab');
-					$items = json_decode(post('items'), true);
-					
-					
-					if ($id && $items) {
-						$errors = array();
-						
-						if ($type == 'tab') {
-							
-							if (!empty($items[$tab]) && empty($items[$tab]['remove'])) {
-								
-								if (empty($items[$tab]['label'])) {
-									$errors[] = adminPhrase('Please enter a label');
-								}
-								
+				//(Handles validation)
+				case 'ajaxRequestOnChange':
+					$data = array();
+					//Load field usage counts of fields on a tab if not loaded already
+					if (post('loadingTab')) {
+						$tabName = post('loadingTab');
+						$fieldsResult = getRows('custom_dataset_fields', array('id', 'db_column'), array('dataset_id' => $dataset['id'], 'tab_name' => $tabName));
+						while ($field = sqlFetchAssoc($fieldsResult)) {
+							if ($field['db_column']) {
+								$data['record_counts'][$field['id']] = (int)countDatasetFieldRecords($field['id']);
 							}
+						}
+					}
+					//Validate tab or field details
+					if (post('validate')) {
+						$items = json_decode(post('items'), true);
+						if (post('type') == 'tab') {
+							$tabName = post('id');
+							if (!empty($items[$tabName]) && empty($items[$tabName]['remove'])) {
+								//Check tab for errors
+								if (empty($items[$tabName]['label'])) {
+									$data['errors'][] = adminPhrase('Please enter a label');
+								}
+							}
+						} elseif (post('type') == 'field') {
+							$fieldId = post('id');
+							$tabName = post('tab');
+							$fieldTab = post('fieldTab');
 							
-						} elseif ($type == 'field') {
-							
-							if (!empty($items[$tab]['fields'][$id]) && empty($items[$tab]['fields'][$id]['remove'])) {
-								
-								$field = $items[$tab]['fields'][$id];
+							if (!empty($items[$tabName]['fields'][$fieldId]) && empty($items[$tabName]['fields'][$fieldId]['remove'])) {
+								$field = $items[$tabName]['fields'][$fieldId];
 								
 								// Validate field details
-								switch ($field_tab) {
+								switch ($fieldTab) {
 									case 'details':
 										if (empty($field['is_system_field'])) {
 											// Must have code name
 											if (empty($field['db_column'])) {
-												$errors[] = adminPhrase('Please enter a code name');
+												$data['errors'][] = adminPhrase('Please enter a code name');
 											// Code name must be unique
 											} else {
-												unset($items[$tab]['fields'][$id]);
+												unset($items[$tabName]['fields'][$fieldId]);
 												$isUnique = true;
 												foreach ($items as $tab2) {
 													if (isset($tab2['fields']) && is_array($tab2['fields'])) {
@@ -569,21 +584,21 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends mod
 													}
 												}
 												if (!$isUnique) {
-													$errors[] = adminPhrase('The code name "[[db_column]]" is already in use in this dataset.', array('db_column' => $field['db_column']));
+													$data['errors'][] = adminPhrase('The code name "[[db_column]]" is already in use in this dataset.', array('db_column' => $field['db_column']));
 												}
 											}
 										}
 										// Must choose condition if show_on_condition is chosen
 										if (isset($field['admin_box_visibility']) && $field['admin_box_visibility'] == 'show_on_condition') {
 											if (empty($field['parent_id'])) {
-												$errors[] = adminPhrase('Please select a conditional display field.');
+												$data['errors'][] = adminPhrase('Please select a conditional display field.');
 											}
 										}
 										
 										// Must select file storage option
 										if ($field['type'] == 'file_picker') {
 											if (empty($field['store_file'])) {
-												$errors[] = adminPhrase('Please select a file storage method.');
+												$data['errors'][] = adminPhrase('Please select a file storage method.');
 											}
 										}
 										break;
@@ -596,7 +611,7 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends mod
 													|| $field['required_message'] === null
 												)
 											) {
-												$errors[] = adminPhrase('Please enter a message if not complete.');
+												$data['errors'][] = adminPhrase('Please enter a message if not complete.');
 											}
 											
 											if ($field['validation'] != 'none' 
@@ -605,7 +620,7 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends mod
 													|| $field['validation_message'] === null
 												)
 											) {
-												$errors[] = adminPhrase('Please enter a message if not valid.');
+												$data['errors'][] = adminPhrase('Please enter a message if not valid.');
 											}
 										}
 										break;
@@ -614,9 +629,8 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends mod
 								}
 							}
 						}
-						
-						echo json_encode($errors);
 					}
+					echo json_encode($data);
 					break;
 				
 				case 'get_centralised_lov':

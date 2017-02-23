@@ -131,7 +131,7 @@ while($reading) {
 			//If we didn't see any of those prefixes, attempt to look for the table names as the first name in the statement
 			} else {
 				//Remove some of phpMyAdmin's comments from the start, which can cause us problems in the logic below
-				$statements[$i] = preg_replace('@\n[ \t]*--[^\n]*`[^\n]*`[^\n]*@', '', $statements[$i], 1);
+				$statements[$i] = preg_replace('@^[ \t]*--[^"\']*?$@m', '', $statements[$i]);
 				
 				//Ignore any COMMIT/CREATE DATABASE/LOCK/SET/START/UNLOCK/USE statements if phpMyAdmin has added them
 				$matches = array();
@@ -161,7 +161,7 @@ while($reading) {
 						$dbNamePrefixInFile = substr($statements[$i], $tick1 + 11, $tick2 - $tick1 - 11);
 							//var_dump($dbNamePrefixInFile, $tableName);
 						
-						if ($tableName = chopPrefixOffOfString($tableName, $dbNamePrefixInFile)) {
+						if ($tableName = chopPrefixOffString($dbNamePrefixInFile, $tableName)) {
 							$searchInFile = '`'. $dbNamePrefixInFile. $tableName. '`';
 							$replaceInFile = '`'. DB_NAME_PREFIX. 'i_m_p_'. $tableName. '`';
 						
@@ -172,7 +172,7 @@ while($reading) {
 					
 					//Check that the table's name begins with the DB_NAME_PREFIX,
 					//and then get just the table name without the prefix
-					} elseif ($tableName = chopPrefixOffOfString($tableName, DB_NAME_PREFIX)) {
+					} elseif ($tableName = chopPrefixOffString(DB_NAME_PREFIX, $tableName)) {
 						$searchInFile = '`'. DB_NAME_PREFIX. $tableName. '`';
 						$replaceInFile = '`'. DB_NAME_PREFIX. 'i_m_p_'. $tableName. '`';
 					
@@ -296,10 +296,10 @@ if (!empty($failures)) {
 		$actualTable = str_replace(DB_NAME_PREFIX. 'i_m_p_', DB_NAME_PREFIX, $importTable);
 		
 		//Remove the currently existing table
-		sqlUpdate('DROP TABLE IF EXISTS `'. $actualTable. '`', false);
+		sqlUpdate('DROP TABLE IF EXISTS `'. $actualTable. '`', false, false);
 		
 		//Copy over the actual table
-		sqlUpdate('RENAME TABLE `'. $importTable. '` TO `'. $actualTable. '`', false);
+		sqlUpdate('RENAME TABLE `'. $importTable. '` TO `'. $actualTable. '`', false, false);
 	}
 	
 	restoreLocationalSiteSettings();

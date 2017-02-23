@@ -29,6 +29,57 @@
 		<div class="nest_plugins_wrap">
 			{% for Tab in Tabs %}
 				{% if Tab.Plugins %}
+					{% if Tab.Show_Back or Tab.Show_Refresh %}
+						<div class="nest_buttons">
+							{% if Tab.Show_Back %}
+								{% if this.cCommandEnabled('back') %}
+									<a
+										class="nest_back nest_go_back"
+										href="{{this.cBackLink()|escape}}"
+										onclick="zenario_conductor.goBack('{{slotName|escape}}'); return false;"
+									>{{this.phrase('Back')}}</a>
+								
+								{% elseif this.cCommandEnabled('close') %}
+									<a
+										class="nest_back nest_close"
+										href="{{this.cBackLink()|escape}}"
+										onclick="zenario_conductor.goBack('{{slotName|escape}}'); return false;"
+									>{{this.phrase('Back')}}</a>
+								{% else %}
+									<a
+										class="nest_back nest_browser_back"
+										onclick="
+											if (document.referrer) {
+												history.back();
+												return false;
+											}
+										"
+									>{{this.phrase('Back')}}</a>
+								{% endif %}
+							{% endif %}
+							{% if Tab.Show_Refresh %}
+								{% if Tab.Show_Auto_Refresh %}
+									<a
+										class="nest_refresh auto_refresh"
+										onclick="zenario_conductor.autoRefresh('{{slotName|escape}}', {{Tab.Auto_Refresh_Interval|escape}});"
+									>{{this.phrase('Auto refresh')}}</a>
+									<div class="stop_auto_refresh">
+										<a
+											class="nest_refresh"
+											onclick="zenario_conductor.stopAutoRefresh('{{slotName|escape}}');"
+										>{{this.phrase('Stop auto refreshing')}}</a>
+										<p>{{this.phrase('Last Updated: [[updated]]', {updated: Tab.Last_Updated})}}</p>
+									</div>
+								{% else %}
+									<a
+										class="nest_refresh"
+										onclick="zenario_conductor.refresh('{{slotName|escape}}');"
+									>{{this.phrase('Refresh')}}</a>
+								{% endif %}
+							{% endif %}
+						</div>
+					{% endif %}
+					
 					<div class="nest_plugins" {% if Tab.Hidden %} style="display: none;" {% endif %} >
 						{% for Plugin in Tab.Plugins %}
 							{% do this.showPlugin(Plugin) %}

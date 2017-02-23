@@ -1,0 +1,16 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+site_settings:
+    setting_group: perms
+    tabs:
+        thisPolicy:
+            hidden: true
+            label: This policy
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_SITE_SETTING
+            fields:
+                placeholder:
+                    snippet:
+                        html: |
+                            (This isn't implemented yet!)

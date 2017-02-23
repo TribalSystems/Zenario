@@ -154,7 +154,7 @@ install:
                     grouping: sub_table
                     full_width: true
                     snippet:
-                        html: PHP version 5.3 or later
+                        html: PHP version 5.4 or later
                     visible_if: zenarioAW.togglePressed()
                 mysql:
                     grouping: sub_table

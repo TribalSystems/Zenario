@@ -168,14 +168,14 @@ zenario_newsletter:
             fields:
                 recipients:
                     label: 'Recipients:'
-                    side_note: "Use a smart group to define who you're sending to (note that you can have a smart group that includes all users)."
+                    side_note: "Use a smart newsletter group to define who you're sending to (note that you can have a smart newsletter group that includes all users)."
                     pick_items:
-                        path: zenario__users/panels/smart_groups
+                        path: zenario__users/panels/smart_groups/refiners/smart_newsletter_group////
                         target_path: zenario__users/panels/smart_groups
                         min_path: zenario__users/panels/smart_groups
                         multiple_select: true
-                        select_phrase: "Select recipients' smart group(s)..."
-                        nothing_selected_phrase: "No recipients' smart groups selected"
+                        select_phrase: "Select recipients' smart newsletter group(s)..."
+                        nothing_selected_phrase: "No recipients' smart newsletter groups selected"
                 exclude_recipients_with_opt_out:
                     label: Exclude recipients with newsletter opt-out field checked
                     type: checkbox

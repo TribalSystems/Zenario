@@ -652,6 +652,15 @@ body.ie label#search_term_placeholder {
 	background: url('../admin/images/store_keeper/top-bar-btns-m-over.png') repeat-x 0px 0px;
 }
 
+.zenario_toolbar_header .toolbar.disabled {
+	border:1px solid #dfdfdf;
+}
+
+.zenario_toolbar_header .toolbar.disabled div,
+.zenario_toolbar_header .toolbar.disabled:hover div {
+	background:#f0f0f0;
+}
+
 #organizer__box_inner.organizer_filters_set_in_view_options .zenario_toolbar_header #organizer_viewOptions.toolbar,
 #organizer__box_inner.organizer_filters_set_in_view_options .zenario_toolbar_header #organizer_viewOptions.toolbar div:hover {
 	background:#01d300;
@@ -839,6 +848,10 @@ body.ie6 .headerPanel .secondToolbar {
 	background-image: url('../admin/images/sprites/org-icons-v5.png');
 }
 
+#organizer_header .disabled #organizer_listViewOptionsDropdown a {
+	background: url('../admin/images/icon-listViewOptionsDropdown-grey.png') no-repeat center center;
+}
+
 #organizer_header #organizer_refreshRightColumn a {
 	background-position: -62px -10px;
 }
@@ -847,6 +860,10 @@ body.ie6 .headerPanel .secondToolbar {
 	background-position: -309px -11px ;
 }
 
+#organizer_header .disabled #organizer_listViewOptionsDropdown a {
+	cursor:default;
+	opacity:0.8;
+}
 
 .headerPanel .viewMode #organizer_summary_view {
 	display:none;
@@ -867,6 +884,10 @@ body.ie6 .headerPanel .secondToolbar {
 
 .headerPanel .viewMode .organizer_switch_view.organizer_switch_to_map_view a {
 	background-position: -560px -208px;
+}
+
+.headerPanel .viewMode .organizer_switch_view.organizer_switch_to_compact_list_view a {
+	background: url('../admin/images/icon-compact-view.png') no-repeat center;
 }
 
 /*
@@ -1921,6 +1942,14 @@ div.organizer_pageSize {
 	padding:5px 10px 6px;
 }
 
+.organizer_toolbar .toolbar .toolbarButtons ul li.zenario_create_a_new a {
+	height:15px;
+}
+
+.organizer_toolbar .toolbar .toolbarButtons ul li.zenario_create_a_new li a {
+	height:auto;
+}
+
 .organizer_toolbar .toolbar .toolbarButtons ul li li.zenario_create_a_new a {
 	text-shadow:none;
 }
@@ -1989,6 +2018,7 @@ div.organizer_pageSize {
 	padding:0px;
 	min-width: 200px;
 	max-height: 40em;
+	overflow-y:auto;
 }
 
 .organizer_toolbar .toolbar .toolbarButtons ul li ul li {
@@ -2003,7 +2033,7 @@ div.organizer_pageSize {
 }
 
 .organizer_toolbar .toolbar .toolbarButtons ul li ul li a  {
-	padding: 5px 15px;
+	padding: 5px 8px;
 }
 
 .organizer_toolbar .toolbar .toolbarButtons a:hover {
@@ -2466,9 +2496,8 @@ div.organizer_pageSize {
 	overflow-x: hidden !important;
 }
 
-#organizer_rightColumnContent #organizer_items_wrapper {
-	/*overflow-x: hidden;
-    overflow-y: auto;*/
+#organizer_list_view,
+#organizer_items_wrapper {
 	width: 100%;
 }
 
@@ -2504,10 +2533,6 @@ div.organizer_pageSize {
 #organizer_rightColumnContent .organizer_header div#organizer_checkbox_col div {
 	width: 100%;
 	height: 100%;
-}
-
-#organizer_rightColumnContent div.organizer_list_view {
-	display:table;
 }
 
 /*#organizer_rightColumnContent div.organizer_list_view .organizer_list_view_body {
@@ -3182,32 +3207,50 @@ body.ie8 .organizer_item_image.ghost {
 	background: url('../admin/images/sprites/inline-view-icons-list-view.png') no-repeat;
 }
 
-#organizer_rightColumn div.organizer_row div.organizer_cell div.public_permission_inline a,
-#organizer_rightColumn div.organizer_row div.organizer_cell div.private_permission_inline a,
-#organizer_rightColumn div.organizer_row div.organizer_cell div.no_regular_access_permission_inline a,
-#organizer_rightColumn div.organizer_row div.organizer_cell div.group_members_inline a,
-#organizer_rightColumn div.organizer_row div.organizer_cell div.specific_users_inline a {
+#organizer_hierarchy_view .organizer_column__invisible_menu_node__cell {
+	display:inline-block;
+	width:20px !important;
+	height:20px;
+	text-indent:-999;
+	font-size:0;
+	line-height:0;
+	background-repeat:no-repeat;
+	background-position:left 6px;
+}
+
+#organizer_hierarchy_view .organizer_column__invisible_menu_node__cell {
+	background-image: url('../admin/images/inline_buttons/menu-node-visible-icon.png');
+}
+
+#organizer_hierarchy_view .organizer_column__invisible_menu_node__cell.invisible_menu_node {
+	background-image: url('../admin/images/inline_buttons/menu-node-not-visible-icon2.png');
+}
+
+#organizer_rightColumn div.organizer_row div.organizer_cell div.privacy_inline_button a {
 	cursor: default;
 }
 
-#organizer_rightColumn div.organizer_row div.organizer_cell div.public_permission_inline {
-	background: url('../admin/images/public-access-inline-icon.png') no-repeat;
+#organizer_rightColumn div.organizer_row.privacy_group_members div.organizer_cell div.privacy_inline_button {
+	background: url('../admin/images/privacy/inline_button/group_members.png') no-repeat;
 }
 
-#organizer_rightColumn div.organizer_row div.organizer_cell div.private_permission_inline {
-	background: url('../admin/images/password-protected-all-users-inline-icon.png') no-repeat;
+#organizer_rightColumn div.organizer_row.privacy_logged_in div.organizer_cell div.privacy_inline_button {
+	background: url('../admin/images/privacy/inline_button/logged_in.png') no-repeat;
 }
 
-#organizer_rightColumn div.organizer_row div.organizer_cell div.no_regular_access_permission_inline {
-	background: url('../admin/images/no-regular-access-inline-icon.png') no-repeat;
+#organizer_rightColumn div.organizer_row.privacy_send_signal div.organizer_cell div.privacy_inline_button,
+#organizer_rightColumn div.organizer_row.privacy_call_static_method div.organizer_cell div.privacy_inline_button {
+	background: url('../admin/images/privacy/inline_button/php.png') no-repeat;
 }
 
-#organizer_rightColumn div.organizer_row div.organizer_cell div.group_members_inline {
-	background: url('../admin/images/password-protected-groups-inline-icon.png') no-repeat;
+#organizer_rightColumn div.organizer_row.privacy_public div.organizer_cell div.privacy_inline_button,
+#organizer_rightColumn div.organizer_row.privacy_logged_out div.organizer_cell div.privacy_inline_button {
+	background: url('../admin/images/privacy/inline_button/public.png') no-repeat;
 }
 
-#organizer_rightColumn div.organizer_row div.organizer_cell div.specific_users_inline {
-	background: url('../admin/images/password-protected-groups-inline-icon.png') no-repeat;
+#organizer_rightColumn div.organizer_row.privacy_in_smart_group div.organizer_cell div.privacy_inline_button,
+#organizer_rightColumn div.organizer_row.privacy_logged_in_not_in_smart_group div.organizer_cell div.privacy_inline_button {
+	background: url('../admin/images/privacy/inline_button/smart_group.png') no-repeat;
 }
 
 #organizer_rightColumn div.organizer_row div.organizer_cell div.zenario_layout_inline_button a {
@@ -3276,12 +3319,24 @@ body.ie8 .organizer_item_image.ghost {
 	background-image: url('../admin/images/sprites/sprite-list-icons-single-col-v2.png');
 }
 
-.organizer_item_image.group {
+.organizer_item_image.zenario_smart_group {
 	background: url('../admin/images/icon-smart-groups-list-dark.png') no-repeat center center;
+}
+
+.organizer_item_image.zenario_smart_perms_group {
+	background: url('../admin/images/icon-smart-permissions-group-placeholder.png') no-repeat center center;
+}
+
+.organizer_item_image.zenario_smart_news_group {
+	background: url('../admin/images/icon-smart-newsletter-group-placeholder.png') no-repeat center center;
 }
 
 .organizer_item_image.zenario_group {
 	background: url('../admin/images/icon-groups.png') no-repeat center center;
+}
+
+.organizer_item_image.roles {
+	background: url('../admin/images/icon-roles-black.png') no-repeat center center;
 }
 
 .organizer_item_image.backup {
@@ -4341,7 +4396,8 @@ body #colorbox.zenario_grid_maker #cboxLoadedContent {
 }
 
 #organizer_rightColumn .organizer_hierarchy_view div.organizer_row div.organizer_cells_items {
-	width:80%;
+	width:94%;
+	width:calc(100% - 120px);
 	line-height:22px;
 	overflow:hidden;
 }
@@ -4355,6 +4411,16 @@ body #colorbox.zenario_grid_maker #cboxLoadedContent {
 
 #organizer_rightColumn .organizer_hierarchy_view div.organizer_row div.organizer_cells_items span.organizer_cell_items.organizer_cell_comma {
 	max-width:2%;
+}
+
+#organizer_rightColumn .organizer_hierarchy_view #organizer_items_wrapper ol li div.organizer_row div.organizer_cells_items {
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+#organizer_rightColumn .organizer_hierarchy_view #organizer_items_wrapper ol li div.organizer_row div.organizer_cells_items > span.organizer_cell_items {
+	width:auto;
+	max-width:97%;
 }
 
 #organizer_rightColumn .organizer_hierarchy_view div.organizer_row div.organizer_cells_items span.organizer_cell_items span {
@@ -4662,6 +4728,12 @@ table.table-bordered td
 .organizer_item_image.zenario_document_tag_item {
 	background:url("../admin/images/document-tag-icon.png") no-repeat center -12px;
 }
+.organizer_item_image.zenario_document_auto_set_rule {
+	background:url("../admin/images/icon-auto-set-rules-list.png") no-repeat center -12px;
+}
+.organizer_item_image.zenario_error_log {
+	background:url("../admin/images/icon-error-log-list.png") no-repeat center -12px;
+}
 
 /* ---------- Styles for documents section ------------*/
 #organizer_rightColumn div.organizer_row div.organizer_cell div.zenario_file_item.zenario_document_privacy_auto {
@@ -4951,6 +5023,38 @@ table.table-bordered td
 .organizer_list_view_with_short_rows div.organizer_cell div.organizer_cell_line.otherline {
 	font-style: italic;
 }
+
+
+/*  Placeholder icons for desktop/mobile view in the nest UI  */
+
+#organizer_rightColumnContent #organizer_hierarchy_view div.organizer_row .organizer_column__small_screens__cell {
+	display: inline-block;
+	width: 40px;
+	height: 18px;
+	font-size: 0;
+	color:transparent;
+}
+#organizer_hierarchy_view .organizer_column__small_screens__cell.organizer_icon_show_on_mobile_only:before,
+#organizer_hierarchy_view .organizer_column__small_screens__cell.organizer_icon_show_on_desktop_and_mobile:before {
+	display: inline-block;
+	width: 18px;
+	height: 19px;
+	background: url('../admin/images/icon-mobile.png') center bottom no-repeat;
+	background-size: auto 14px;
+	content: '';
+}
+#organizer_hierarchy_view .organizer_column__small_screens__cell.organizer_icon_show_on_desktop_only:after,
+#organizer_hierarchy_view .organizer_column__small_screens__cell.organizer_icon_show_on_desktop_and_mobile:after {
+	display: inline-block;
+	width: 18px;
+	height: 19px;
+	background: url('../admin/images/icon-desktop.png') center bottom no-repeat;
+	background-size: auto 14px;
+	content: '';
+}
+
+
+
 
 .organizer_list_view_with_tall_rows .listicon div {
 	width: 64px;
@@ -5855,6 +5959,12 @@ span.video_title {
 	font-size:11px;
 	line-height:14px;
 	font-style:italic;
+}
+
+.organizer_form_builder_view .form_fields_palette .field_details textarea {
+	width:320px;
+	height:150px;
+	max-width:320px;
 }
 
 .organizer_form_builder_view .field_type,

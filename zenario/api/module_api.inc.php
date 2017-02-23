@@ -62,6 +62,7 @@ class zenario_api {
 	protected $slotLevel;
 	protected $tabId;
 	protected $parentNest;
+	private $slotNameNestId;
 	
 	
 	
@@ -97,7 +98,7 @@ class zenario_api {
 	public final function allowCaching(
 		$atAll, $ifUserLoggedIn = true, $ifGetSet = true, $ifPostSet = true, $ifSessionSet = true, $ifCookieSet = true
 	) {
-		$vs = &cms_core::$slotContents[$this->slotName. ($this->eggId? '-'. $this->eggId : '')]['cache_if'];
+		$vs = &cms_core::$slotContents[$this->slotNameNestId]['cache_if'];
 		
 		foreach (array('a' => $atAll, 'u' => $ifUserLoggedIn, 'g' => $ifGetSet, 'p' => $ifPostSet, 's' => $ifSessionSet, 'c' => $ifCookieSet) as $if => $set) {
 			if (!isset($vs[$if])) {
@@ -110,7 +111,7 @@ class zenario_api {
 	public final function clearCacheBy(
 		$clearByContent = false, $clearByMenu = false, $clearByUser = false, $clearByFile = false, $clearByModuleData = false
 	) {
-		$vs = &cms_core::$slotContents[$this->slotName. ($this->eggId? '-'. $this->eggId : '')]['clear_cache_by'];
+		$vs = &cms_core::$slotContents[$this->slotNameNestId]['clear_cache_by'];
 		
 		foreach (array('content' => $clearByContent, 'menu' => $clearByMenu, 'user' => $clearByUser, 'file' => $clearByFile, 'module' => $clearByModuleData) as $if => $set) {
 			if (!isset($vs[$if])) {
@@ -144,7 +145,7 @@ class zenario_api {
 	public final function cache($methodName, $expiryTimeInSeconds = 600, $request = '') {
 		return require funIncPath(__FILE__, __FUNCTION__);
 	}
-
+	
 	public final function checkPostIsMine() {
 		return !empty($_POST) && (empty($_POST['containerId']) || $_POST['containerId'] == $this->containerId);
 	}
@@ -268,6 +269,9 @@ class zenario_api {
 		if (!isset($vars['userId'])) {
 			$vars['userId'] = cms_core::$userId;
 		}
+		if (!isset($vars['vars'])) {
+			$vars['vars'] = cms_core::$vars;
+		}
 		
 		//Add the current plugin
 		if (!isset($vars['this'])) {
@@ -364,14 +368,14 @@ class zenario_api {
 	}
 	
 	public final function slideNum() {
-		if (isset(cms_core::$slotContents[$this->slotName. ($this->eggId? '-'. $this->eggId : '')]['slide_num'])) {
-			return cms_core::$slotContents[$this->slotName. ($this->eggId? '-'. $this->eggId : '')]['slide_num'];
+		if (isset(cms_core::$slotContents[$this->slotNameNestId]['slide_num'])) {
+			return cms_core::$slotContents[$this->slotNameNestId]['slide_num'];
 		}
 	}
 	
 	public final function eggOrd() {
-		if (isset(cms_core::$slotContents[$this->slotName. ($this->eggId? '-'. $this->eggId : '')]['egg_ord'])) {
-			return cms_core::$slotContents[$this->slotName. ($this->eggId? '-'. $this->eggId : '')]['egg_ord'];
+		if (isset(cms_core::$slotContents[$this->slotNameNestId]['egg_ord'])) {
+			return cms_core::$slotContents[$this->slotNameNestId]['egg_ord'];
 		}
 	}
 	
@@ -782,16 +786,24 @@ class zenario_api {
 
 
 	public function conductorEnabled() {
-		return $this->parentNest && $this->parentNest->cEnabled();
+		return isset($this->parentNest) && $this->parentNest->cEnabled();
 	}
 	public function conductorCommandEnabled($command) {
-		return $this->parentNest && $this->parentNest->cCommandEnabled($command);
+		return isset($this->parentNest) && $this->parentNest->cCommandEnabled($command);
 	}
 	public function conductorLink($command, $requests = array()) {
-		if ($this->parentNest) {
+		if (isset($this->parentNest)) {
 			return $this->parentNest->cLink($command, $requests);
 		}
 		return false;
+	}
+
+	public function conductorBackLink() {
+		if (isset($this->parentNest)) {
+			return $this->parentNest->cBackLink();
+		} else {
+			return false;
+		}
 	}
 	
 	
@@ -806,7 +818,7 @@ class zenario_api {
 	//about them.
 	
 	//Plugin Settings
-	public $zAPISettings;
+	protected $zAPISettings = array();
 
 	//Disable AJAX Relaod
 	private $zAPIForcePageReloadVar = false;
@@ -936,6 +948,8 @@ class zenario_api {
 	}
 	
 	public final function zAPISetCachableVars(&$a) {
+		if (cms_core::$isTwig) return;
+		
 		$this->framework = $a[0];
 		$this->zAPIScripts = $a[1];
 		//$a[2] isn't used anymore
@@ -950,6 +964,8 @@ class zenario_api {
 		$locationAndInstanceDetails,
 		$nest = 0, $tab = 0, $settings = false, $frameworkPath = false, $mainClass = false
 	) {
+		if (cms_core::$isTwig) return;
+		
 		//Set the variables above from the array given
 		list($this->cID, $this->cType, $this->cVersion, $this->slotName,
 			 $this->instanceName, $this->instanceId,
@@ -969,6 +985,7 @@ class zenario_api {
 		$this->isWireframe = $this->isVersionControlled; //For backwards compatability
 		
 		$this->slotName = preg_replace('/[^\w-]/', '', $this->slotName);
+		$this->slotNameNestId = $this->slotName. ($this->eggId? '-'. $this->eggId : '');
 		$this->defaultFramework = preg_replace('/[^\w-]/', '', $this->defaultFramework);
 		$this->framework = preg_replace('/[^\w-]/', '', $this->framework);
 		
@@ -998,7 +1015,9 @@ class zenario_api {
 		}
 	}
 	
-	public final function setInstance($locationAndInstanceDetails = false, $nest = 0, $tab = 0) {
+	public final function setInstance($locationAndInstanceDetails = false, $overrideSettings = false, $nest = 0, $tab = 0) {
+		if (cms_core::$isTwig) return;
+		
 		$this->setInstanceVariables($locationAndInstanceDetails, $nest, $tab);
 		
 		//Set up settings for front-end plugins
@@ -1022,7 +1041,6 @@ class zenario_api {
 			
 			//Look up this plugin's settings, starting with the default values
 			//Make sure to get default values if they are defined in extened Modules
-			$this->zAPISettings = array();
 			foreach (getModuleInheritances($this->moduleClassName, 'inherit_settings') as $className) {
 				$sql = "
 					SELECT `name`, default_value
@@ -1057,11 +1075,21 @@ class zenario_api {
 			while($row = sqlFetchAssoc($result)) {
 				$this->zAPISettings[$row['name']] = $row['value'];
 			}
+			
+			
+			//Plugin previews get to override these settings on a temporary basis
+			if (!empty($overrideSettings)
+			 && is_array($overrideSettings)) {
+				foreach ($overrideSettings as $name => $value) {
+					$this->zAPISettings[$name] = $value;
+				}
+			}
 		}
 	}
 	
 	//Display a Slot and its wrappers
 	public final function show($includeAdminControlsIfInAdminMode = true, $showPlaceholderMethod = 'showSlot') {
+		if (cms_core::$isTwig) return;
 		
 		$edition = cms_core::$edition;
 		$isLayoutPreview = cms_core::$cID === -1;
@@ -1078,23 +1106,38 @@ class zenario_api {
 				$this->showLayoutPreview();
 			
 			} else {
-				if (!$this->eggId) {
-					$edition::preSlot($this->slotName, $showPlaceholderMethod);
+				//Check whether the plugin's init function returned true
+				$status = false;
+				if (isset(cms_core::$slotContents[$this->slotNameNestId]['init'])) {
+					$status = cms_core::$slotContents[$this->slotNameNestId]['init'];
 				}
 				
-					//Display the plugin, if it has been set up.
-					if (!$this->instanceId) {
-						echo showPluginError($this->slotName);
-					} else {
-						$this->$showPlaceholderMethod();
+				//In admin mode, show an error if the plugin could not run due to user permissions
+				if (($status === ZENARIO_401_NOT_LOGGED_IN || $status === ZENARIO_403_NO_PERMISSION) && checkPriv()) {
 					
-						if ($isShowSlot) {
-							$this->afterShowSlot();
-						}
+					//N.b. as a convience feature, I'll allow for plugin devs to send either a 401 or a 403 error,
+					//and pick the correct message here
+					if (userId()) {
+						echo '<em>'. adminPhrase('You do not have adequate user permission to view this plugin.'). '</em>';
+					} else {
+						echo '<em>'. adminPhrase('You need to be logged in as an extranet user to view this plugin.'). '</em>';
 					}
 				
-				if (!$this->eggId) {
-					$edition::postSlot($this->slotName, $showPlaceholderMethod);
+				} elseif ($status) {
+					
+					if (!$this->eggId) {
+						$edition::preSlot($this->slotName, $showPlaceholderMethod);
+					}
+					
+					$this->$showPlaceholderMethod();
+		
+					if ($isShowSlot) {
+						$this->afterShowSlot();
+					}
+					
+					if (!$this->eggId) {
+						$edition::postSlot($this->slotName, $showPlaceholderMethod);
+					}
 				}
 			}
 		echo $this->endInner();
@@ -1104,6 +1147,8 @@ class zenario_api {
 	//Any calls to frameworkHead() or to framework() for sections other than "Outer" are stored in the $this->zenario2Twig array.
 	//After showSlot is finished, we'll output the $this->zenario2Twig arrat using Twig.
 	public final function afterShowSlot() {
+		if (cms_core::$isTwig) return;
+		
 		if ($this->zAPIFrameworkIsTwig
 		 && $this->zenario2Twig !== false) {
 			$this->twigFramework($this->zenario2Twig);
@@ -1113,6 +1158,8 @@ class zenario_api {
 	
 	//Display the starting wrapper of a slot
 	public final function start() {
+		if (cms_core::$isTwig) return;
+		
 		//Put a section around the slot and the slot controls in admin mode.
 		//This lets us adjust the look of the slot and the slot controls using CSS.
 		if (checkPriv()) {
@@ -1128,12 +1175,15 @@ class zenario_api {
 	
 	//Put a div around the slot, so we can reload the contents
 	public final function startInner() {
+		if (cms_core::$isTwig) return;
+		
 		return '
 					<div id="'. $this->containerId. '" class="zenario_slot '. $this->cssClass. '">';
 	}
 	
 	//Close the admin controls for a slot.
 	public final function endInner() {
+		if (cms_core::$isTwig) return;
 		
 		$padding = '';
 		if (checkPriv()) {
@@ -1149,6 +1199,8 @@ class zenario_api {
 	
 	//Close the wrapper for a slot.
 	public final function end() {
+		if (cms_core::$isTwig) return;
+		
 		//Display the HTML at the end of a slot when in admin mode
 		if (checkPriv()) {
 			echo '
@@ -1829,44 +1881,7 @@ class zenario_api {
 	 * @param Boolean whether there is a canvas select $hasCanvas
 	 */
 	protected function showHideImageOptions(&$fields, $values, $tab, $hidden = false, $fieldPrefix = '', $hasCanvas = true, $sameLineLabel = 'Size (width × height):') {
-		$width = $tab . '/' . $fieldPrefix . 'width';
-		$height = $tab . '/' . $fieldPrefix . 'height';
-		
-		if ($hasCanvas) {
-			$canvas = $tab . '/' . $fieldPrefix . 'canvas';
-			$fields[$canvas]['hidden'] = $hidden;
-		}
-		
-		$fields[$width]['hidden'] = $hidden
-			|| ($hasCanvas && !in($values[$canvas], 'fixed_width', 'fixed_width_and_height', 'resize_and_crop'));
-		$fields[$height]['hidden'] = $hidden
-			|| ($hasCanvas && !in($values[$canvas], 'fixed_height', 'fixed_width_and_height', 'resize_and_crop'));
-		
-		$offset = $tab . '/' . $fieldPrefix . 'offset';
-		if (isset($fields[$offset])) {
-			$fields[$offset]['hidden'] = $hidden
-				|| ($hasCanvas && ($values[$canvas] != 'resize_and_crop'));
-		}
-		
-		if (!$fields[$width]['hidden'] && !$fields[$height]['hidden']) {
-			$fields[$width]['label'] = adminPhrase($sameLineLabel);
-			$fields[$width]['placeholder'] = adminPhrase('width');
-			$fields[$width]['post_field_html'] = '&nbsp;&nbsp;×&nbsp;';
-			
-			$fields[$height]['label'] = '';
-			$fields[$height]['placeholder'] = adminPhrase('height');
-			$fields[$height]['post_field_html'] = '&nbsp;pixels';
-			$fields[$height]['same_row'] = true;
-		} else {
-			$fields[$width]['label'] = adminPhrase('Width:');
-			$fields[$width]['placeholder'] = '';
-			$fields[$width]['post_field_html'] = '&nbsp;pixels';
-			
-			$fields[$height]['label'] = 'Height:';
-			$fields[$height]['placeholder'] = '';
-			$fields[$height]['post_field_html'] = '&nbsp;pixels';
-			$fields[$height]['same_row'] = false;
-		}
+		require funIncPath(__FILE__, __FUNCTION__);
 	}
 	
 	/**
@@ -1909,8 +1924,10 @@ class zenario_api {
 	//This is intended as a replacement for the old useThisClassInstead() functionality
 	//Rather than put all of your Admin Box/Organizer functionality in one module,
 	//this lets you divvy it up into different subclasses.
-	public $zAPIrunSubClassSafetyCatch = false;
-	protected $zAPIMainClass;
+	private $zAPIrunSubClassSafetyCatch = false;
+	private $zAPIMainClass;
+	private $zAPISubClasses = array();
+	
 	protected final function runSubClass($filePath, $type = false, $path = false) {
 		
 		//Add a check to stop subclasses calling themsevles again, which would cause an
@@ -1919,10 +1936,16 @@ class zenario_api {
 			return false;
 		}
 		
-		if ($className = includeModuleSubclass($filePath, $type, $path)) {
-			$class = new $className;
-			$class->zAPIrunSubClassSafetyCatch = true;
-			$class->setInstanceVariables(array(
+		//Try to cache these, so multiple calls to the same subclass use the same instance
+		$codeName = $filePath. '`'. $type. '`'. $path;
+		
+		if (isset($this->zAPISubClasses[$codeName])) {
+			return $this->zAPISubClasses[$codeName];
+		
+		} elseif ($className = includeModuleSubclass($filePath, $type, $path)) {
+			$this->zAPISubClasses[$codeName] = new $className;
+			$this->zAPISubClasses[$codeName]->zAPIrunSubClassSafetyCatch = true;
+			$this->zAPISubClasses[$codeName]->setInstanceVariables(array(
 				$this->cID, $this->cType, $this->cVersion, $this->slotName,
 				$this->instanceName, $this->instanceId,
 				$this->moduleClassName, $this->moduleClassNameForPhrases,
@@ -1932,9 +1955,11 @@ class zenario_api {
 				$this->slotLevel, $this->isVersionControlled),
 				$this->eggId, $this->tabId,
 				$this->zAPISettings, $this->frameworkPath, $this);
-			return $class;
+			
+			return $this->zAPISubClasses[$codeName];
+		
 		} else {
-			return false;
+			return $this->zAPISubClasses[$codeName] = false;
 		}
 	}
 	

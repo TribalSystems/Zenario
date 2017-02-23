@@ -100,15 +100,20 @@ class zenario_common_features__organizer__menu_nodes extends module_base_class {
 		}
 
 		if (isset($panel['item_buttons']['edit_menu_text'])) {
-			$panel['item_buttons']['edit_menu_text']['label'] =
-				adminPhrase('Edit menu text in [[language_name]]', $mrg);
+			if($numLanguages==1){
+				$panel['item_buttons']['edit_menu_text']['label'] = adminPhrase('Edit menu text');
+			}else{
+				$panel['item_buttons']['edit_menu_text']['label'] =
+					adminPhrase('Edit menu text in [[language_name]]', $mrg);
+			}
 		}
 
 		if (isset($panel['item_buttons']['define_menu_text'])) {
 			$panel['item_buttons']['define_menu_text']['label'] =
 				adminPhrase('Create menu text in [[language_name]]', $mrg);
 		}
-
+			
+			
 		if (isset($panel['item_buttons']['duplicate'])) {
 			$panel['item_buttons']['duplicate']['label'] =
 				adminPhrase('Create a translation in [[language_name]]', $mrg);
@@ -170,11 +175,21 @@ class zenario_common_features__organizer__menu_nodes extends module_base_class {
 		//to edit specific menu items, we'll need to check if the current admin can edit each
 		//item.
 		$checkSpecificPerms = in($mode, 'full', 'quick', 'select') && adminHasSpecificPerms();
-
+        
+        $defaultMenuNodes = array();
+        $contentTypesResult = getRows('content_types', array('default_parent_menu_node'), array());
+        while ($contentTypeRow = sqlFetchAssoc($contentTypesResult)) {
+            $defaultMenuNodes[$contentTypeRow['default_parent_menu_node']] = true;
+        }
+        
 		foreach ($panel['items'] as &$item) {
 	
 			$id = $item['mid'];
-	
+	        
+	        if (isset($defaultMenuNodes[$id])) {
+	            $item['is_content_type_default_menu_node'] = true;
+	        }
+	        
 			if ($item['target_loc'] == 'int' && $item['internal_target']) {
 				if ($item['redundancy'] == 'unique') {
 					$item['tooltip'] = adminPhrase('This is a unique menu node. No other menu node links to this content item.');
@@ -326,51 +341,6 @@ class zenario_common_features__organizer__menu_nodes extends module_base_class {
 			$menuNodeDetails = getMenuNodeDetails($ids);
 			$ids = $menuNodeDetails['content_type'] . '_' . $menuNodeDetails['equiv_id'];
 			addContentItemsToMenu($menuNodeDetails['content_type'] . '_' . $menuNodeDetails['equiv_id'], $ids2);
-		
-		} else
-		if (get('quick_create') && (
-				(get('parentMenuID') && checkPriv('_PRIV_ADD_MENU_ITEM'))
-			 || (!get('parentMenuID') && checkPriv('_PRIV_ADD_MENU_ITEM'))
-		)) {
-			$cID = $cType = false;
-			$defaultName = '';
-			if (get('parent__id') && getCIDAndCTypeFromTagId($cID, $cType, get('parent__id'))) {
-				$defaultName = getItemTitle($cID, $cType);
-	
-			} elseif (get('parent__cID') && get('parent__cType')) {
-				$defaultName = getItemTitle(get('parent__cID'), get('parent__cType'));
-			}
-	
-			echo
-				'<p>', 
-					adminPhrase('Create a new Menu Node.'), 
-				'</p><p>',
-					adminPhrase('Name:'),
-					' <input type="text" id="quick_create_name" name="quick_create_name" value="', htmlspecialchars($defaultName), '"/>',
-				'</p>';
-
-		} elseif (post('quick_create') && (
-					(post('parentMenuID') && checkPriv('_PRIV_ADD_MENU_ITEM'))
-				 || (!post('parentMenuID') && checkPriv('_PRIV_ADD_MENU_ITEM'))
-		)) {
-	
-			if (!post('quick_create_name')) {
-				echo adminPhrase('Please enter a name for your Menu Node.');
-				return false;
-	
-			} else {
-				$submission = array(
-					'name' => post('quick_create_name'),
-					'section_id' => post('sectionId'),
-					'content_id' => 0,
-					'target_loc' => 'none',
-					'content_type' => '',
-					'parent_id' => (int) post('parentMenuID'));
-		
-				 $menuId = saveMenuDetails($submission, post('languageId'));
-				 saveMenuText($menuId, post('languageId'), $submission);
-				 return $menuId;
-			}
 	
 		//Unlink a Menu Node from its Content Item
 		} elseif (post('detach') && checkPriv('_PRIV_EDIT_MENU_ITEM')) {
@@ -425,11 +395,6 @@ class zenario_common_features__organizer__menu_nodes extends module_base_class {
 				$newNeighbourId,
 				$languageId);
 	
-			//Go to the location that we've just moved to, if this is Storekeeper Quick
-			//if (request('parent__cID') && $ids) {
-				//echo '<!--Go_To_Storekeeper_Panel:', getMenuItemStorekeeperDeepLink($ids, ifNull(request('languageId'), request('refiner__language'))), '-->';
-			//}
-	
 
 		} elseif (post('remove') && checkPriv('_PRIV_DELETE_MENU_ITEM') && request('languageId') != setting('default_language')) {
 			foreach (explodeAndTrim($ids) as $id) {
@@ -475,6 +440,22 @@ class zenario_common_features__organizer__menu_nodes extends module_base_class {
 			foreach ($sectionIds as $id => $dummy) {
 				recalcMenuHierarchy($id);
 			}
+			
+			//The top column is updated
+			if(inc('zenario_menu_multicolumn')){
+				foreach (explodeAndTrim($ids) as $id) {
+					if(checkRowExists(ZENARIO_MENU_MULTICOLUMN_PREFIX. 'nodes_top_of_column', array('node_id' => $id))){
+						$isEnabled = getRow(ZENARIO_MENU_MULTICOLUMN_PREFIX. 'nodes_top_of_column','top_of_column', array('node_id' => $id));
+						if($isEnabled){
+							$nodeLevel = self::getNodeLevel($id);
+							if($nodeLevel == 2){
+								updateRow(ZENARIO_MENU_MULTICOLUMN_PREFIX. 'nodes_top_of_column',array('top_of_column' => 0),array('node_id' => $id));
+							}
+						}
+					}
+				}
+			}
+			
 		} elseif (post('make_primary')) {
 			$menuNodeDetails = getMenuNodeDetails($ids);
 			$submission = array(
@@ -484,6 +465,14 @@ class zenario_common_features__organizer__menu_nodes extends module_base_class {
 				'redundancy' => 'primary');
 			saveMenuDetails($submission, $ids);
 		}
+	}
+	
+	
+	public function getNodeLevel($nodeId,$i=1){
+		if($parentId = getRow('menu_nodes', 'parent_id', array('id'=>$nodeId))){
+			self::getNodeLevel($parentId,++$i);
+		}
+		return $i;
 	}
 	
 	public function organizerPanelDownload($path, $ids, $refinerName, $refinerId) {

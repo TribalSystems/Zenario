@@ -10,6 +10,16 @@
 				{{zenarioA.microTemplate('zenario_toolbar_button', m.sections.translations)}}
 			</div>
 		<% } %>
+		<% if (!zenarioA.hidden(m.sections.extranet_user)) { %>
+			<div class="zenario_at_extranet_user">
+				{{zenarioA.microTemplate('zenario_toolbar_button', m.sections.extranet_user)}}
+			</div>
+			
+			<% if (zenarioAT.tuix.meta_info.no_perms_icon) { %>
+				<del class="{{zenarioAT.tuix.meta_info.no_perms_icon|escape}}"><del></del></del>
+			<% } %>
+			
+		<% } %>
 		<% if (!zenarioA.hidden(m.sections.help)) { %>
 			<div class="zenario_at_help">
 				{{zenarioA.microTemplate('zenario_toolbar_button', m.sections.page_preview_sizes)}}

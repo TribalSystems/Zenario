@@ -190,6 +190,7 @@ if (!empty($desc['jobs']) && is_array($desc['jobs'])) {
 					days = '". sqlEscape(arrayKey($job, 'days')). "',
 					hours = '". sqlEscape(arrayKey($job, 'hours')). "',
 					minutes = '". sqlEscape(arrayKey($job, 'minutes')). "',
+					run_every_minute = " . engToBooleanArray($job, 'run_every_minute') . ",
 					first_n_days_of_month = ". (int) arrayKey($job, 'first_n_days_of_month'). ",
 					log_on_action = ". engToBooleanArray($job, 'log_on_action'). ",
 					log_on_no_action = ". engToBooleanArray($job, 'log_on_no_action'). ",
@@ -253,6 +254,9 @@ deleteRow('plugin_setting_defs', array('module_class_name' => $moduleClassName))
 
 //Loop through every module Setting that a module has in its Admin Box XML file(s)
 if ($dir = moduleDir($moduleClassName, 'tuix/admin_boxes/', true)) {
+	
+	require_once CMS_ROOT. 'zenario/includes/tuix.inc.php';
+	
 	foreach (array(
 		'zenario_admin' => 'admin_setting',
 		'plugin_settings' => 'plugin_setting',

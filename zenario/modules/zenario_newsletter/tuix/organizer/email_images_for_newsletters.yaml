@@ -133,7 +133,6 @@ zenario__content:
             inline_buttons:
                 view:
                     css_class: inspect
-                    label: View image
                     popout:
                         href: zenario/file.php
                         options:

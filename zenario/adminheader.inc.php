@@ -91,6 +91,8 @@ if (!checkPriv()) {
 	 || arrayKey($location, 1) == 'admin_boxes'
 	 || request('method_call') == 'handleOrganizerPanelAJAX'
 	 || request('method_call') == 'handleAdminToolbarAJAX') {
+		
+		header('Zenario-Admin-Logged_Out: 1');
 		echo '<!--Logged_Out-->', adminPhrase('You have been logged out.');
 		exit;
 	
@@ -109,7 +111,7 @@ if (!checkPriv()) {
 	}
 	
 	foreach (getRowsArray('admin_settings', array('name', 'value'), array('admin_id' => adminId())) as $adminSetting) {
-		if (chopPrefixOffOfString($adminSetting['name'], 'COOKIE_ADMIN_SECURITY_CODE_') === false) {
+		if (chopPrefixOffString('COOKIE_ADMIN_SECURITY_CODE_', $adminSetting['name']) === false) {
 			cms_core::$adminSettings[$adminSetting['name']] = $adminSetting['value'];
 		}
 	}

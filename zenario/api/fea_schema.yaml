@@ -24,11 +24,6 @@ common_definitions:
             From version 7.3 onwards, if you are inserting elements into another module's TUIX,
             you can use syntax of the form "name_of_other_element.001"
             to place an element after the named element in the order.
-    needs_edit_perms: &needs_edit_perms
-        type: boolean
-        description: >
-            This will be hidden from view if the current visitor does not have
-            edit permissions (as defined in your module code, plugin settings, etc...)
     hidden: &hidden
         type: boolean
         description: >
@@ -39,6 +34,14 @@ common_definitions:
             A snippet of JavaScript code to be evaluated.
             
             The visible_if property hides elements from view if the code provided does not evaluate to <code>true</code>.
+            
+            See http://zenar.io/visibility-in-tuix for examples.
+    disabled_if: &disabled_if
+        type: string
+        description: >
+            A snippet of JavaScript code to be evaluated.
+            
+            If the code provided evaluates to <code>true</code> the button will be disabled.
             
             See http://zenar.io/visibility-in-tuix for examples.
 
@@ -100,6 +103,11 @@ additionalProperties:
                     A variable or meta-information that you define about this form.
             description: >
                 The key of an form lets you receive and/or store meta-information and variables.
+        
+        show_overlay_layer:
+            type: boolean
+            description: >
+                Whether to show an overlay div under the form.
         
         css_class: *css_class
         
@@ -224,14 +232,14 @@ additionalProperties:
                                             type: string
                                             description: >
                                                 A message for the confirmation prompt.
-                            
-                                                If this is an item or inline button, your message may contain [[merge_field]]s
-                                                which match up to the column names, and will be populated according to the item
-                                                which is selected.
                                         button_message:
                                             type: string
                                             description: >
                                                 A message for the confirm button
+                                        button_css_class:
+                                            type: string
+                                            description: >
+                                                A css class for the confirm button
                                         cancel_button_message:
                                             type: string
                                             description: >
@@ -281,7 +289,6 @@ additionalProperties:
                     #        Lets you specify a tooltip for the column's header.
                     ord: *ord
                     #css_class: *css_class
-                    needs_edit_perms: *needs_edit_perms
                     hidden: *hidden
                     visible_if: *visible_if
                     values:
@@ -309,12 +316,33 @@ additionalProperties:
                             If you also specify a title, then your title will appear in each row as a label.
                             
                             There's a limit of 2 levels; you can't have a column inside a column inside another column.
-        
-        
         items:
             type: object
             description: >
                 An array of data for the items in the list
+            
+            additionalProperties:
+                type: object
+                
+                properties:
+                    cell_css_classes:
+                        type: object
+                        description: >
+                            You can use this to give individual cells a css class by creating elements here with
+                            the same element name as the columns.
+                        additionalProperties:
+                            type: string
+                            description: >
+                                A css class name for the item in the column with this element's name.
+                    cell_tooltip:
+                        type: object
+                        description: >
+                            You can use this to give individual cells a tooltip by creating elements here with
+                            the same element name as the columns.
+                        additionalProperties:
+                            type: string
+                            description: >
+                                A tooltip for the item in the column with this element's name.
         
         sort_by:
             type: string
@@ -348,10 +376,21 @@ additionalProperties:
                         type: string
                         description: >
                             A label for this button
+                    tooltip:
+                        type: string
+                        description: >
+                            A tooltip for this button
                     
-                    needs_edit_perms: *needs_edit_perms
                     hidden: *hidden
                     visible_if: *visible_if
+                    
+                    disabled_if: *disabled_if
+                    
+                    disabled_tooltip:
+                        type: string
+                        default: (defaults to the tooltip property)
+                        description: >
+                            A tooltip for this button if it is disabled.
                     
                     location:
                         enum:
@@ -396,7 +435,7 @@ additionalProperties:
                             command:
                                 type: string
                                 description: >
-                                    If the conductor is running, issue this command.
+                                    If the nest conductor is running, issue this command.
                                     Note that this overrides the normal navigation.
                         additionalProperties:
                             type: *variable
@@ -404,73 +443,6 @@ additionalProperties:
                                 A variable to add to the request/URL
                         description: >
                             You can use a "go" button to create navigation to another mode.
-                    
-                    transition_out: &button_transition_out
-                        type: object
-                        properties:
-                            animate: &transition_animate
-                                type: object
-                                description: >
-                                    CSS properties to animate
-                                additionalProperties:
-                                    type: *variable
-                            options: &transition_options
-                                type: object
-                                description: >
-                                    Options to pass to jQuery's animate() function
-                                additionalProperties:
-                                    type: *variable
-                        description: >
-                            For "go" buttons, you can set a transition out to play when the
-                            button is pressed, using jQuery's animate() function.
-                    transition_in_on_next_screen: &button_transition_in_on_next_screen
-                        type: object
-                        properties:
-                            initial: *transition_animate
-                            animate: *transition_animate
-                            options: *transition_options
-                        description: >
-                            For "go" buttons, you can set a transition in to play when the
-                            next screen is loaded, using jQuery's animate() function.
-                            
-                            This will overwrite the normal transition_in set on that screen 
-    
-        transition_in:
-            type: object
-            properties:
-                initial: *transition_animate
-                animate: *transition_animate
-                options: *transition_options
-            description: >
-                A transistion in to animate when showing this mode for the first time.
-                
-                It won't play if the mode is reloaded, or if the button leading here had
-                a transition_in set.
-        
-        transition_out:
-            type: object
-            properties:
-                animate: *transition_animate
-                options: *transition_options
-            description: >
-                For forms, you can set a transition out to play when the
-                form is submitted.
-                
-                Note that if your form has a "back" or "go" button, this won't apply.
-                You will need to add this property to the button as well if you want it on that too.
-        
-        transition_in_on_next_screen:
-            type: object
-            properties:
-                initial: *transition_animate
-                animate: *transition_animate
-                options: *transition_options
-            description: >
-                For forms, you can set a transition in to play on the next screen, when the
-                form is submitted.
-                
-                Note that if your form has a "back" or "go" button, this won't apply.
-                You will need to add this property to the button as well if you want it on that too.
             
                           
         item_buttons:
@@ -494,15 +466,68 @@ additionalProperties:
                         description: >
                             A label for this button
                     
-                    needs_edit_perms: *needs_edit_perms
+                    parent:
+                        type: string
+                        description: >
+                            Enter the name of another item button here to make your button appear
+                            under the named button as a dropdown.
+                            
+                            There's a limit of 2 levels; you can't have a dropdown inside another dropdown.
+                    
                     hidden: *hidden
                     visible_if: *visible_if
                     
+                    hide_when_children_are_not_visible:
+                        type: boolean
+                        description: >
+                            If you set this property, the button will be hidden when it has no
+                            visible children.
                     
-                    #In addition, a Collection Button should have one (and only one) of the following properties as an action:
-                    ajax: *ajax
+                    confirm:
+                        type: object
+                        description: >
+                            Use this to display a confirmation prompt before performing the button's action.
+                        properties:
+                            title:
+                                type: string
+                                description: >
+                                    A title for the confirmation prompt.
+                            message:
+                                type: string
+                                description: >
+                                    A message for the confirmation prompt.
+                
+                                    If this is an item or inline button, your message may contain [[merge_field]]s
+                                    which match up to the column names, and will be populated according to the item
+                                    which is selected.
+                            multiple_select_title:
+                                type: string
+                                description: >
+                                    Use this property if you want to set a different title for item buttons when multiple items are selected.
+                                    
+                                    You can use the [[item_count]] merge field if you want to display the number of items in your message.
+                            multiple_select_message:
+                                type: string
+                                description: >
+                                    Use this property if you want to set a different message for item buttons when multiple items are selected.
+                                    
+                                    You can use the [[item_count]] merge field if you want to display the number of items in your message.
+                            button_message:
+                                type: string
+                                description: >
+                                    A message for the confirm button
+                            button_css_class:
+                                type: string
+                                description: >
+                                    A css class for the confirm button
+                            cancel_button_message:
+                                type: string
+                                description: >
+                                    A message for the cancel button
                     
                     onclick: *onclick
+                    
+                    ajax: *ajax
                     
                     go:
                         type: object
@@ -516,13 +541,86 @@ additionalProperties:
                         additionalProperties:
                             type: *variable
                             description: >
-                                A variable to add to the request/URL
+                                A variable to add to the request/URL.
+                                
+                                Alternately you can set the request to an object of the form
+                                {replace_with_field_from_item: 'field_code_name'}
+                                to automatically put the value of a field into this request.
                         description: >
                             You can use a "go" button to create navigation to another mode.
                             For an item button, the item's id will be automatically added to the requests.
                     
-                    transition_out: *button_transition_out
-                    transition_in_on_next_screen: *button_transition_in_on_next_screen
+                    
+                    
+                    multiple_select:
+                        type: boolean
+                        description: >
+                            This marks that this button is prepared to work on multiple items.
+                    multiple_select_max_items:
+                        type: number
+                        description: >
+                            Do not show this button if more than this number of items are selected.
+                    
+                            If you use this property you must also use the <code>multiple_select</code> property.
+                    multiple_select_min_items:
+                        type: number
+                        description: >
+                            Do not show this button if less than this number of items are selected.
+                    
+                            If you use this property you must also use the <code>multiple_select</code> property.
+                    multiple_select_only:
+                        type: boolean
+                        description: >
+                            Same as "multiple_select_min_items: 2"
+                    visible_if_for_all_selected_items:
+                        type: string
+                        description: >
+                            A snippet of JavaScript code to be evaluated for each selected item.
+                            Each item must match for the button to be shown.
+                            
+                            See http://zenar.io/visibility-in-tuix for examples.
+                    
+                    visible_if_for_any_selected_items:
+                        type: string
+                        description: >
+                            A snippet of JavaScript code to be evaluated for each selected item.
+                            At least one item must match for the button to be shown.
+                            
+                            See http://zenar.io/visibility-in-tuix for examples.
+                    
+                    disabled:
+                        type: boolean
+                        description: >
+                            If you set this property, the button will be disabled.
+                    
+                    disabled_if: *disabled_if
+                    
+                    disabled_if_for_all_selected_items:
+                        type: string
+                        description: >
+                            A snippet of JavaScript code to be evaluated for each selected item.
+                            If each item matches, the button will be disabled.
+                    
+                    disabled_if_for_any_selected_items:
+                        type: string
+                        description: >
+                            A snippet of JavaScript code to be evaluated for each selected item.
+                            If at least one item matches, the button will be disabled.
+                            
+                            See http://zenar.io/visibility-in-tuix for examples.
+                    
+                    disabled_tooltip:
+                        type: string
+                        default: (defaults to the tooltip property)
+                        description: >
+                            A tooltip for this button if it is disabled.
+                            
+                            From version 7.1 you can use merge fields in this tooltip when one item is selected.
+                    
+                    
+        confirm_on_close: *confirm
+        
+        
         
         __page__:
             type: number

@@ -79,6 +79,7 @@ require CMS_ROOT. 'zenario/api/link_path_and_url_core_functions.inc.php';
 require CMS_ROOT. 'zenario/api/string_functions.inc.php';
 require CMS_ROOT. 'zenario/api/system_functions.inc.php';
 require CMS_ROOT. 'zenario/api/user_functions.inc.php';
+require CMS_ROOT. 'zenario/includes/phrases.inc.php';
 
 
 //Deprecated, please just use LATEST_REVISION_NO now
@@ -480,17 +481,10 @@ function showStartSitePageIfNeeded($reportDBOutOfDate = false) {
 //Some functions for loading a YAML file
 function tuixCacheDir($path) {
 	
-	$strlen = strlen(CMS_ROOT);
-	if (substr($path, 0, $strlen) == CMS_ROOT) {
-		$path = substr($path, $strlen);
-	}
-	$path = str_replace('/tuix/', '/', $path);
-	$path = str_replace('/zenario/', '/', $path);
+	$path = str_replace(['/tuix/', '/zenario/'], '/', chopPrefixOffString(CMS_ROOT, $path, true));
 	
-	$dir = dirname($path);
-	$dir = str_replace('%', ' ', rawurlencode($dir));
-	$file = basename($path);
-	$file = explode('.', $file, 2);
+	$dir = str_replace('%', ' ', rawurlencode(dirname($path)));
+	$file = explode('.', basename($path), 2);
 	$file = $file[0];
 	
 	cleanDownloads();
@@ -550,7 +544,7 @@ function zenarioReadTUIXFile($path, $useCache = true, $updateCache = true) {
 						WHERE '". sqlEscape($path). "' LIKE CONCAT('%modules/', module_class_name, '/tuix/', type, '/', filename)";
 					
 					//If we found any, delete them and flag that the cache table might be out of date
-					if ($affectedRows = sqlUpdate($sql, false)) {
+					if ($affectedRows = sqlUpdate($sql, false, false)) {
 						setSetting('yaml_files_last_changed', '');
 						
 						//Attempt to continue normally
@@ -660,6 +654,19 @@ function siteDescription($settingName = false) {
 			} else {
 				cms_core::$siteDesc = zenarioReadTUIXFile($path. 'enterprise/site_description.yaml');
 			}
+		
+		} else {
+			//Some backwards compatability checks for some old names
+			foreach (array(
+				'require_security_code_on_admin_login' => 'enable_two_factor_security_for_admin_logins',
+				'security_code_by_ip' => 'apply_two_factor_security_by_ip',
+				'security_code_timeout' => 'two_factor_security_timeout'
+			) as $old => $new) {
+				if (isset(cms_core::$siteDesc[$old])
+				 && !isset(cms_core::$siteDesc[$new])) {
+					cms_core::$siteDesc[$new] = cms_core::$siteDesc[$old];
+				}
+			}
 		}
 	}
 	
@@ -721,6 +728,10 @@ function checkPriv($action = false, $editCID = false, $editCType = false, $editC
 	 && !empty($_SESSION['admin_permissions'])
 	 && !empty($_SESSION['admin_logged_into_site'])
 	 && $_SESSION['admin_logged_into_site'] == COOKIE_DOMAIN. SUBDIRECTORY. setting('site_id')
+	
+	//If an admin looks at an embedded link, show them what it would look like if they were logged out.
+	//(N.b. if we didn't do this, they'd see a security error due to the X-Frame-Options logic in index.php.)
+	 && !isset($_REQUEST['zembedded'])
 	
 	//If the Admin hasn't passed the welcome page, then they shouldn't be able to use their
 	//Admin rights anywhere except the welcome page
@@ -1247,7 +1258,7 @@ function getContentLang($cID, $cType = false) {
 
 //Try to work out what content item is being accessed
 //n.b. linkToItem() and resolveContentItemFromRequest() are essentially opposites of each other...
-function resolveContentItemFromRequest(&$cID, &$cType, &$redirectNeeded, &$aliasInURL) {
+function resolveContentItemFromRequest(&$cID, &$cType, &$redirectNeeded, &$aliasInURL, $get, $request, $post) {
 	$aliasInURL = '';
 	$equivId = $cID = $cType = $reqLangId = $redirectNeeded = $languageSpecificDomain = $hierarchicalAliasInURL = false;
 	$adminMode = !empty($_SESSION['admin_logged_into_site']) && checkPriv();
@@ -1269,7 +1280,7 @@ function resolveContentItemFromRequest(&$cID, &$cType, &$redirectNeeded, &$alias
 	}
 	
 	//If there is a menu id in the request, try to get the Content Item from that
-	if (!empty($_REQUEST['mID']) && ($menu = getContentFromMenu($_REQUEST['mID'], 2))) {
+	if (!empty($request['mID']) && ($menu = getContentFromMenu($request['mID'], 2))) {
 		$cID = $menu['equiv_id'];
 		$cType = $menu['content_type'];
 		langEquivalentItem($cID, $cType);
@@ -1296,8 +1307,8 @@ function resolveContentItemFromRequest(&$cID, &$cType, &$redirectNeeded, &$alias
 	}
 	
 	//Check for a requested page in the GET request
-	if (!empty($_GET['cID'])) {
-		$aliasInURL = $_GET['cID'];
+	if (!empty($get['cID'])) {
+		$aliasInURL = $get['cID'];
 		
 		//If we see any slashes in the alias used in the URL, any links we generate will need to have the full path.
 		if (strpos($aliasInURL, '/') !== false) {
@@ -1305,8 +1316,8 @@ function resolveContentItemFromRequest(&$cID, &$cType, &$redirectNeeded, &$alias
 		}
 	}
 	//Also check the POST request; use this instead if we see it
-	if (!empty($_POST['cID'])) {
-		$aliasInURL = $_POST['cID'];
+	if (!empty($post['cID'])) {
+		$aliasInURL = $post['cID'];
 	}
 	
 	if (!$reqLangId && !$aliasInURL) {
@@ -1384,8 +1395,8 @@ function resolveContentItemFromRequest(&$cID, &$cType, &$redirectNeeded, &$alias
 		} elseif (is_numeric($aliasInURL)) {
 			$cID = (int) $aliasInURL;
 			
-			if (!empty($_REQUEST['cType'])) {
-				$cType = $_REQUEST['cType'];
+			if (!empty($request['cType'])) {
+				$cType = $request['cType'];
 			} else {
 				$cType = 'html';
 			}
@@ -1561,23 +1572,45 @@ function resolveContentItemFromRequest(&$cID, &$cType, &$redirectNeeded, &$alias
 //(Admins can see all Content Items that exist)
 function checkPerm($cID, $cType = 'html', $requestVersion = false) {
 	$content = false;
-	return (bool) checkPermAndGetShowableContent($content, $cID, $cType, $requestVersion, $return_permissions_error = false);
+	return (bool) checkPermAndGetShowableContent($content, $cID, $cType, $requestVersion);
 }
 
 //Gets the correct version of a Content Item to show someone, or false if the do not have any access.
 //(Works exactly like checkPerm() above, except it will return a version number.)
 function getShowableVersion($cID, $cType = 'html') {
 	$content = false;
-	return checkPermAndGetShowableContent($content, $cID, $cType, $requestVersion = false, $return_permissions_error = false);
+	return checkPermAndGetShowableContent($content, $cID, $cType, $requestVersion = false);
+}
+
+function requestVarMergeField($name) {
+	if (empty(cms_core::$vars)) {
+		require editionInclude('checkRequestVars');
+	}
+	return require editionInclude('requestVarMergeField');
 }
 
 //Check to see if a Content Item exists, and the current visitor/user/admin can see a Content Item
 //Works like checkPerm() above, except that it will return a permissions error code
 //It also looks up some details on the Content Item
-function getShowableContent(&$content, &$version, $cID, $cType = 'html', $requestVersion = false) {
-	$return_permissions_error = true;
+function getShowableContent(&$content, &$version, $cID, $cType = 'html', $requestVersion = false, $checkRequestVars = false, $adminsSee400Errors = false) {
+
+	if ($checkRequestVars) {
+		//Look variables such as userId, locationId, etc., in the request
+		if (!require editionInclude('checkRequestVars')) {
+			if ($adminsSee400Errors || !checkPriv()) {
+				//Handle the case where the current visitor does not have the rights to see something requested in the core variables
+				if (empty($_SESSION['extranetUserID'])) {
+					//If the current visitor is not logged in, sent a 401 error
+					return ZENARIO_401_NOT_LOGGED_IN;
+				} else {
+					//If there is a visitor not logged in, sent a 403 error
+					return ZENARIO_403_NO_PERMISSION;
+				}
+			}
+		}
+	}
 	
-	$versionNumber = checkPermAndGetShowableContent($content, $cID, $cType, $requestVersion, $return_permissions_error);
+	$versionNumber = checkPermAndGetShowableContent($content, $cID, $cType, $requestVersion, $adminsSee400Errors);
 	
 	if ($versionNumber && is_numeric($versionNumber)) {
 		$versionColumns = array(
@@ -1594,125 +1627,182 @@ function getShowableContent(&$content, &$version, $cID, $cType = 'html', $reques
 	return $versionNumber;
 }
 
-function checkPermAndGetShowableContent(&$content, $cID, $cType, $requestVersion, $return_permissions_error) {
+
+function checkPermAndGetShowableContent(&$content, $cID, $cType, $requestVersion, $adminsSee400Errors = false) {
 	// Returns the version of this content item which should normally be returned
-	if (!$cID) {
-		return false;
-	} else {
-		
-		$translationChainColumns = array(
-			'equiv_id', 'type', 'privacy');
-		$contentColumns = array(
-			'equiv_id', 'id', 'type', 'language_id', 'alias',
-			'visitor_version', 'admin_version', 'status', 'lock_owner_id');
-		
-		if ((!$content = getRow('content_items', $contentColumns, array('id' => $cID, 'type' => ifNull($cType, 'html'))))
-		 || (!$chain = getRow('translation_chains', $translationChainColumns, array('equiv_id' => $content['equiv_id'], 'type' => $content['type'])))) {
-			return false;
-		}
-		
-		if (!checkPriv()) {
-			// We are in visitor mode, show only a published version
-			if (!isPublished($content['status'])) {
-				return false;
+	if ($cID
+	 && $cType
+	 && ($content = sqlFetchAssoc("
+			SELECT
+				equiv_id, id, type, language_id, alias,
+				visitor_version, admin_version, status, lock_owner_id
+			FROM ". DB_NAME_PREFIX. "content_items
+			WHERE id = ". (int) $cID. "
+			  AND type = '". sqlEscape($cType). "'")
+		)
+	 && ($chain = sqlFetchAssoc("
+			SELECT equiv_id, type, privacy, smart_group_id
+			FROM ". DB_NAME_PREFIX. "translation_chains
+			WHERE equiv_id = ". (int) $content['equiv_id']. "
+			  AND type = '". sqlEscape($cType). "'")
+	)) {
+		//If we are in admin mode, allow anything that exists to be shown
+		if (checkPriv()) {
 			
-			} elseif (!$content['visitor_version']) {
+			//If no specific version was requested, use the admin version
+			if (!(int) $requestVersion) {
+				$requestVersion = (int) $content['admin_version'];
+			}
+			
+			//Check the requested version exists
+			if (!$requestVersion
+			 || !checkRowExists('content_item_versions', array('id' => $content['id'], 'type' => $content['type'], 'version' => $requestVersion))) {
 				return false;
 			}
 			
-			
-			if ($chain['privacy'] == 'public') {
-				// Item is published and non-private, so return the published version number
-				return $content['visitor_version'];
-			
-			} elseif ($chain['privacy'] == 'no_access') {
-				$grantAccess = false;
-				$status = false;
+			//If the $adminsSee400Errors option is set, still check the privacy settings even though an admin is logged in
+			$status = true;
+			if ($adminsSee400Errors) {
+				$privacySettings = false;
 				
-				if ($result = sendSignal("eventAccessDenied",array("userId" => session("extranetUserID"), "contentId" => $content['id'], "contentType" => $content['type']))) {
-					foreach ($result as $resultModule) {
-						if ($resultModule) {
-							if (is_array($resultModule)) {							
-								if (isset($resultModule['grant_access'])) {
-									if ($resultModule['grant_access']==true) {
-										$grantAccess = true;
-										break;
-									} elseif ($resultModule['grant_access']==false) {
-										$grantAccess = false;
-										$status = $resultModule['status'];
-										break;
-									}
-								}
-							}
+				switch ($chain['privacy']) {
+					case 'call_static_method':
+						$privacySettings =
+							getRow('translation_chain_privacy', true, array(
+								'equiv_id' => $content['equiv_id'],
+								'content_type' => $cType));
+				}
+			
+				$status = checkItemPrivacy($chain, $privacySettings, $cID, $cType, $requestVersion);
+			}
+			
+			return $status? $requestVersion: $status;
+		
+		//If we are in visitor mode, only show a published version
+		} elseif (isPublished($content['status']) && ($cVersion = (int) $content['visitor_version'])) {
+			
+			$privacySettings = false;
+			
+			switch ($chain['privacy']) {
+				case 'call_static_method':
+					$privacySettings =
+						getRow('translation_chain_privacy', true, array(
+							'equiv_id' => $content['equiv_id'],
+							'content_type' => $cType));
+				
+				case 'send_signal':
+					cms_core::$canCache = false;
+			}
+			
+			$status = checkItemPrivacy($chain, $privacySettings, $cID, $cType, $cVersion);
+			
+			return $status? $cVersion: $status;
+		}
+	}
+	
+	return false;
+}
+
+function checkItemPrivacy($privacy, $privacySettings, $cID, $cType, $cVersion) {
+	
+	//Check if a user is logged in.
+	$userId = false;
+	if (!empty($_SESSION['extranetUserID'])
+	 && ($userId = (int) $_SESSION['extranetUserID'])) {
+	
+	//If not, any permission that needs an account should fail with a 401 error.
+	} else {
+		switch ($privacy['privacy']) {
+			case 'logged_in':
+			case 'group_members':
+			case 'in_smart_group':
+			case 'logged_in_not_in_smart_group':
+				return ZENARIO_401_NOT_LOGGED_IN;
+		}
+	}
+
+	switch ($privacy['privacy']) {
+		case 'public':
+		case 'logged_in': //Already checked above
+			return true;
+		
+		case 'logged_out':
+			return $userId? ZENARIO_403_NO_PERMISSION : true;
+	
+		case 'group_members':
+			//Try to get this user's groups
+			$userGroups = getUserGroups($userId);
+		
+			//Look up all of the groups for this content item or slide.
+			//If the user has one of the groups, allow access.
+			if (!empty($userGroups)) {
+				
+				if (!empty($privacy['equiv_id']) && !empty($privacy['type'])) {
+					$sql = "
+						SELECT group_id
+						FROM `". DB_NAME_PREFIX. "group_content_link` AS gcl
+						WHERE equiv_id = ". (int) $privacy['equiv_id']. "
+						  AND content_type = '". sqlEscape($cType). "'";
+				
+				} elseif (!empty($privacy['slide_id'])) {
+					$sql = "
+						SELECT group_id
+						FROM `". DB_NAME_PREFIX. "group_slide_link` AS gcl
+						WHERE slide_id = ". (int) $privacy['slide_id'];
+				
+				} else {
+					return false;
+				}
+				
+				foreach (sqlFetchValues($sql) as $groupId) {
+					if (!empty($userGroups[$groupId])) {
+						return true;
+					}
+				}		
+			}
+		
+			//If they don't have access return a 403 error.
+			return ZENARIO_403_NO_PERMISSION;
+		
+		case 'in_smart_group':
+			return checkUserIsInSmartGroup($privacy['smart_group_id'], $userId)? true : ZENARIO_403_NO_PERMISSION;
+		
+		case 'logged_in_not_in_smart_group':
+			return !checkUserIsInSmartGroup($privacy['smart_group_id'], $userId)? true : ZENARIO_403_NO_PERMISSION;
+		
+		//Call a module's static method, or send the eventCheckContentItemPermission() signal,
+		//to decide whether the current user should see this content item
+		case 'call_static_method':
+		case 'send_signal':
+			
+			if ($privacy['privacy'] == 'call_static_method') {
+				if ($privacySettings) {
+					if ((inc($privacySettings['module_class_name']))
+					 && (method_exists($privacySettings['module_class_name'], $privacySettings['method_name']))) {
+					
+						$status = call_user_func(
+							array($privacySettings['module_class_name'], $privacySettings['method_name']),
+							$privacySettings['param_1'], $privacySettings['param_2']);
+					}
+				}
+			
+			} else {
+				if ($results = sendSignal('eventCheckContentItemPermission', array('userId' => $userId, 'cID' => $cID, 'cType' => $cType, 'cVersion' => $cVersion))) {
+					foreach ($results as $result) {
+						if ($result !== false) {
+							$status = $result;
 						}
 					}
 				}
-				
-				if ($grantAccess) {
-					return $content['visitor_version'];
-				} else {
-					if ($status) {
-						return $status;
-					} else {
-						return false;
-					}
-				}
-			} else {
-				// Published Item exists in this version but is private; check permissions
-				if (!session('extranetUserID')) {
-					// Deny it; user is not logged in as a valid extranet user
-					return $return_permissions_error? 'notLoggedIn' : false;
-				
-				} elseif ($chain['privacy'] == 'all_extranet_users') {
-					return $content['visitor_version'];
-				
-				} elseif ($chain['privacy'] == 'group_members') {
-					$groups_id_list = array_keys(getUserGroups(session('extranetUserID')));
-					
-					if (!empty($groups_id_list)) {
-						$sql = "
-							SELECT 1
-							FROM ". DB_NAME_PREFIX. "group_content_link AS gcl
-							WHERE equiv_id = ". (int) $chain['equiv_id']. "
-							  AND content_type = '". sqlEscape($chain['type']). "'
-							  AND group_id IN(". inEscape($groups_id_list, true). ")
-							LIMIT 1";
-								
-						if (($result = sqlQuery($sql)) && (sqlFetchRow($result))) {
-							return $content['visitor_version'];
-						}		
-					}
-					
-					return $return_permissions_error? 'no_permission' : false;
-				
-				} elseif ($chain['privacy'] == 'specific_users') {
-					if (checkRowExists(
-						'user_content_link',
-						array(
-							'user_id' => session('extranetUserID'),
-							'equiv_id' => $chain['equiv_id'],
-							'content_type' => $chain['type']))
-					) {
-						return $content['visitor_version'];
-					} else {
-						return $return_permissions_error? 'no_permission' : false;
-					}
-				}
 			}
-		
-		} else {
-			//Version number was specified in the URL; but first check to see if it exists
-			if ($requestVersion) {
-				if (checkRowExists('content_item_versions', array('id' => $content['id'], 'type' => $content['type'], 'version' => $requestVersion))) {
-					return (int) $requestVersion;
-				}
 			
-			} else {
-				if (checkRowExists('content_item_versions', array('id' => $content['id'], 'type' => $content['type'], 'version' => $content['admin_version']))) {
-					return $content['admin_version'];
-				}
+			//Catch the case where the PHP script above sends a 401 error but a user is logged in,
+			//and convert it to a 403 error
+			if ($status === ZENARIO_401_NOT_LOGGED_IN && $userId) {
+				return ZENARIO_403_NO_PERMISSION;
 			}
-		}
+			
+			return $status? true: $status;
 	}
 	
 	return false;
@@ -2077,246 +2167,6 @@ function exitIfUploadError($moduleClass = false) {
 		case UPLOAD_ERR_EXTENSION:
 			echo 'UPLOAD_ERR_EXTENSION';
 			exit;
-	}
-}
-
-//Deprecated, please use phrase() instead
-function getVLPPhrase($code, $replace = false, $languageId = false, $returnFalseOnFailure = false, $moduleClass = '', $phrase = false, $altCode = false) {
-	return phrase($code, $replace, $moduleClass, $languageId, 2);
-}
-
-//Replacement function for gettext()/ngettext() in our Twig frameworks
-function phrase($code, $replace = false, $moduleClass = 'lookup', $languageId = false, $backtraceOffset = 1) {
-	
-	if (false === $code
-	 || is_null($code)
-	 || '' === ($code = trim($code))) {
-		return '';
-	}
-	
-	//The twig frameworks don't pass in the phrase class name, so we need to rememeber it using a static class variable
-	if ($moduleClass === 'lookup') {
-		$moduleClass = cms_core::$moduleClassNameForPhrases;
-	}
-	if (!$moduleClass) {
-		$moduleClass = 'zenario_common_features';
-	}
-	
-	
-	//Use $languageId === true as a shortcut to the site default language
-	//Otherwise if $languageId is not set, try to get language from session, or the site default if that is not set
-	if ($languageId === true) {
-		$languageId = setting('default_language');
-	
-	} elseif (!$languageId) {
-		if (!empty($_SESSION['user_lang'])) {
-			$languageId = $_SESSION['user_lang'];
-	
-		} else {		
-			$languageId = setting('default_language');
-		}
-	}
-	
-	$multiLingal = getNumLanguages() > 1;
-	$isCode = substr($code, 0, 1) == '_';
-	$needsTranslating = $isCode || !empty(cms_core::$langs[$languageId]['translate_phrases']);
-	$needsUpdate = false;
-	$phrase = $code;
-	
-	//Phrase codes (which start with an underscore) always need to be looked up
-	//Otherwise we only need to look up phrases on multi-lingual sites
-	if ($multiLingal || $needsTranslating) {
-		
-		//Attempt to find a record of the phrase in the database
-		$sql = "
-			SELECT local_text, seen_in_visitor_mode, seen_at_url IS NULL
-			FROM ". DB_NAME_PREFIX. "visitor_phrases
-			WHERE language_id = '". sqlEscape($languageId). "'
-			  AND module_class_name = '". sqlEscape($moduleClass). "'
-			  AND code = '". sqlEscape($code). "'
-			LIMIT 1";
-	
-		$result = sqlQuery($sql);
-		if ($row = sqlFetchRow($result)) {
-			//If we found a translation, replace the code/default text with the translation
-				//Note that phrases in the default language are never actually translated,
-				//we're just checking if they are there!
-			if ($needsTranslating) {
-				if (is_null($row[0])) {
-					$phrase = $code;
-					if (checkPriv()) {
-						$phrase .= ' (untranslated)';
-					}
-				} else {
-					$phrase = $row[0];
-				}
-			}
-			
-			//If we've never recorded a URL for this phrase before, we need to note it down
-			if ($row[2]) {
-				$needsUpdate = true;
-			
-			//If this is the first time we've seen this phrase in visitor mode, note it down
-			} elseif (!$row[1] && !checkPriv()) {
-				$needsUpdate = true;
-			}
-		
-		} else {
-			//If we didn't find a translation that we needed, complain about it
-			if ($needsTranslating) {
-				$phrase = $code;
-				if (checkPriv()) {
-					$phrase .= ' (untranslated)';
-				}
-			}
-			
-			//For multilingal sites, any phrases that are not in the database need to be noted down
-			if ($multiLingal
-			 && !checkRowExists(
-					'visitor_phrases',
-					array(
-						'language_id' => setting('default_language'),
-						'module_class_name' => $moduleClass,
-						'code' => $code))
-			) {
-				$needsUpdate = true;
-			}
-		}
-		
-		//Make sure that this phrase is registered in the database
-		if ($needsUpdate
-			//Never register a phrase if this a plugin preview!
-		 && empty($_REQUEST['fakeLayout'])
-		 && empty($_REQUEST['grid_columns'])
-		 && empty($_REQUEST['grid_container'])
-		 && empty($_REQUEST['grid_pxWidth'])) {
-			
-			//Attempt to log the filename that this phrase appeared in by checking debug backtrace
-			if (is_string($backtraceOffset)) {
-				$filename = $backtraceOffset;
-			
-			} else {
-				$filename = '';
-			
-				if (version_compare(PHP_VERSION, '5.4.0', '>=')) {
-					$back = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
-				} elseif (version_compare(PHP_VERSION, '5.3.6', '>=')) {
-					$back = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
-				} else {
-					$back = debug_backtrace(false);
-				}
-			
-				if (!empty($back[$backtraceOffset]['file'])) {
-					//Strip off the CMS root
-					$filename = str_replace('$'. CMS_ROOT, '', '$'. $back[$backtraceOffset]['file']);
-				
-					//If this looks like it was in a framework, try to overwrite this with the path to the
-					//source of the framework file
-					if (cms_core::$frameworkFile
-					 && ($filename == 'zenario/api/module_api.inc.php'
-					  || substr($filename, 0, 17) == 'cache/frameworks/'
-					)) {
-						$filename = cms_core::$frameworkFile;
-					}
-				}
-			}
-			
-			
-			//Attempt to get a URL for this page
-			$url = null;
-			
-			//If it looks like this is an AJAX request or something like that,
-			//then rather than report an actual URL we'll try and generate a link with the same GET requests
-			if (!empty($_REQUEST['method_call'])
-			 && !empty($_REQUEST['cType'])
-			 && !empty($_REQUEST['cID'])) {
-				$requests = $_GET;
-				unset($requests['cID']);
-				unset($requests['cType']);
-				unset($requests['method_call']);
-				unset($requests['instanceId']);
-				unset($requests['slotName']);
-				
-				$url = linkToItem($_REQUEST['cID'], $_REQUEST['cType'], 'never', $requests);
-			
-			//Otherwise report the URL as it is
-			} elseif (!empty($_SERVER['REQUEST_URI'])) {
-				$url = $_SERVER['REQUEST_URI'];
-				
-				//Try to remove the SUBDIRECTORY from the start of the URL
-				if ($url != SUBDIRECTORY) {
-					$url = chopPrefixOffOfString($url, SUBDIRECTORY, true);
-				}
-			}
-			
-			if (!is_null($url)) {
-				$url = substr($url, 0, 0xffff);
-			}
-			
-			setRow(
-				'visitor_phrases',
-				array(
-					'seen_in_visitor_mode' => checkPriv()? 0 : 1,
-					'seen_in_file' => substr($filename, 0, 0xff),
-					'seen_at_url' => $url),
-				array(
-					'language_id' => setting('default_language'),
-					'module_class_name' => $moduleClass,
-					'code' => $code),
-				
-				//Don't clear the cache for this update
-				false, false, false, true, $checkCache = false);
-			
-			//For multilingual sites, we need to note down this information against
-			//the current language as well, to
-			//fix a bug where missing phrases would continously clear the cache.
-			if (setting('default_language') != $languageId) {
-				setRow(
-					'visitor_phrases',
-					array(
-						'seen_in_visitor_mode' => checkPriv()? 0 : 1,
-						'seen_in_file' => '-',
-						'seen_at_url' => '-'),
-					array(
-						'language_id' => $languageId,
-						'module_class_name' => $moduleClass,
-						'code' => $code),
-					
-					//Don't clear the cache for this update
-					false, false, false, true, $checkCache = false);
-			}
-		}
-	}
-	
-	
-	//Replace merge fields in the phrase
-	if (!empty($replace) && is_array($replace)) {
-		foreach ($replace as $key => $value) {
-			$phrase = str_replace(array('[['. $key. ']]', '{{'. $key. '}}'), $value, $phrase);
-		}
-	}
-	
-	return $phrase;
-}
-
-function nphrase($text, $pluralText = false, $n = 1, $replace = array(), $moduleClass = 'lookup', $languageId = false) {
-	
-	//Allow the caller to enter the name of a merge field that contains $n
-	if (is_string($n) && !is_numeric($n) && isset($replace[$n])) {
-		$n = $replace[$n];
-	} else {
-		if (!is_array($replace)) {
-			$replace = array();
-		}
-		if (!isset($replace['count'])) {
-			$replace['count'] = $n;
-		}
-	}
-	
-	if ($pluralText !== false && $n !== 1 && $n !== '1') {
-		return phrase($pluralText, $replace, $moduleClass, $languageId, 2);
-	} else {
-		return phrase($text, $replace, $moduleClass, $languageId, 2);
 	}
 }
 
@@ -2698,7 +2548,8 @@ function getMenuStructure(
 	$showInvisibleMenuItems = false,
 	$showMissingMenuNodes = false,
 	$recurseCount = 0,
-	$requests = false
+	$requests = false,
+	$getFullMenu = false
 ) {
 	if ($language === false) {
 		$language = !empty($_SESSION['user_lang'])? $_SESSION['user_lang'] : setting('default_language');
@@ -2781,7 +2632,7 @@ function getMenuStructure(
 				$row['active'] = $showMenuItem = shouldShowMenuItem($row, $cachingRestrictions);
 				$row['conditionally_hidden'] = $showMenuItem === null;
 				
-				if (checkPriv()) {
+				if (checkPriv() || $getFullMenu) {
 					//Always show an Admin a Menu Node
 					$showMenuItem = true;
 					$row['onclick'] = "if (!window.zenarioA) return true; return zenarioA.openMenuAdminBox({id: ". (int)  $row['mID']. "});";
@@ -2872,7 +2723,7 @@ function getMenuStructure(
 												$numLevels, $maxLevel1MenuItems, $language,
 												$onlyFollowOnLinks, $onlyIncludeOnLinks,
 												$showInvisibleMenuItems, $showMissingMenuNodes,
-												$recurseCount, $requests);
+												$recurseCount, $requests, $getFullMenu);
 						
 						if ($row['target_loc'] == 'none' && checkPriv()) {
 							//Publishing a Content Item under an unlinked Menu Node will cause that to appear - mark this as so in Admin Mode
@@ -2913,7 +2764,7 @@ function getMenuStructure(
 			
 			if ($showMenuItem) {
 				//Don't show unlinked Menu Nodes that have no immediate children to Visitors
-				if ($row['target_loc'] != 'none' || $row['children'] || checkPriv()) {
+				if ($row['target_loc'] != 'none' || $row['children'] || checkPriv() || $getFullMenu) {
 					//Ensure that we show this Menu Node!
 					unset($unsets[$menuId]);
 				}
@@ -2939,39 +2790,6 @@ function getMenuStructure(
 	
 	return $rows;
 }
-
-
-function showAdminAddMenuItem($sectionId, $language, $parentMenuId) {
-	
-	$mrg = array('section' => htmlspecialchars(menuSectionName($sectionId)));
-	if ($parentMenuId) {
-		$mrg['menuitem'] = htmlspecialchars(getMenuName($parentMenuId));
-		$tooltip = adminPhrase('Create a Menu Node here|Section: [[section]]<br />Parent: [[menuitem]]', $mrg);
-	} else {
-		$tooltip = adminPhrase('Create a Menu Node here|Section: [[section]]<br />Level 1', $mrg);
-	}
-	
-	return array(
-			'url' => '#',
-			'is_admin_add_menu_item' => true,
-			'onclick' =>
-				"zenarioAB.open('". (checkPriv('_PRIV_CREATE_FIRST_DRAFT')? 'zenario_quick_create' : 'zenario_menu'). "', {
-					target_menu_parent: ". (int) $parentMenuId. ",
-					target_menu_section: ". (int) $sectionId. ",
-					target_language_id: '". jsEscape($language). "'
-				});",
-			'img' =>
-				'<img
-					src="zenario/admin/images/slots/create_menu_icon.png"
-					class="pluginAdminMenuButton"
-					alt="'. adminPhrase('_ADD'). '"
-					border="0"
-					title="'. $tooltip. '"
-				/>'
-			);
-}
-
-
 
 
 function linkToEquivalentItem(
@@ -3340,13 +3158,6 @@ function getLanguages($includeAllLanguages = false, $orderByEnglishName = false,
 	return $langs;
 }
 
-function getNumLanguages() {
-	if (!defined('ZENARIO_NUM_LANGUAGES')) {
-		define('ZENARIO_NUM_LANGUAGES', selectCount('languages'));
-	}
-	return ZENARIO_NUM_LANGUAGES;
-}
-
 function getLanguageName($languageId = false, $addIdInBracketsToEnd = true, $returnIdOnFailure = true, $localName = false) {
 	
 	if ($languageId === false) {
@@ -3375,7 +3186,16 @@ function getLanguageLocalName($languageId = false) {
 
 
 
+//Signal that you need to log in as an extranet user to see this page
+//(N.b. we use an empty string for this, because it evaluates to false if someone isn't using a === check.)
+define('ZENARIO_401_NOT_LOGGED_IN', '');
 
+//Signal that the current extranet user does not have access to view the page.
+//(N.b. we use a zero for this, because it evaluates to false if someone isn't using a === check.)
+define('ZENARIO_403_NO_PERMISSION', 0);
+
+//Signal that a page was not found.
+define('ZENARIO_404_NOT_FOUND', false);
 
 
 define('ZENARIO_CENTRALISED_LIST_MODE_INFO', 1);
@@ -3693,7 +3513,7 @@ function getDatasetFieldLOV($field, $flat = true, $filter = false) {
 	}
 	
 	$lov = array();
-	if (chopPrefixOffOfString($field['type'], 'centralised_')) {
+	if (chopPrefixOffString('centralised_', $field['type'])) {
 		if (!empty($field['values_source_filter'])) {
 			$filter = $field['values_source_filter'];
 		}
@@ -3705,7 +3525,7 @@ function getDatasetFieldLOV($field, $flat = true, $filter = false) {
 			}
 		}
 	
-	} elseif (chopPrefixOffOfString($field['type'], 'dataset_')) {
+	} elseif (chopPrefixOffString('dataset_', $field['type'])) {
 		if ($labelDetails = getDatasetLabelFieldDetails($field['dataset_foreign_key_id'])) {
 			
 			$lov = getRowsArray($labelDetails['table'], $labelDetails['db_column'], array(), $labelDetails['db_column']);
@@ -3850,7 +3670,11 @@ function getUserGroups($user_id, $flat = true) {
 function checkUserInGroup($groupId, $userId = 'session') {
 	
 	if ($userId === 'session') {
-		$userId = $_SESSION['extranetUserID'];
+		if (empty($_SESSION['extranetUserID'])) {
+			return false;
+		} else {
+			$userId = $_SESSION['extranetUserID'];
+		}
 	}
 	
 	if (!$userId || !((int) $groupId)) {
@@ -4301,7 +4125,7 @@ function getSearchtermParts($searchString) {
 /* Categories */
 
 function getCategoryName($id) {
-	return getRow('categories', 'name', array('id' => $id));
+	return getRow('categories', 'name', ['id' => $id]);
 }
 
 function getContentItemLayout($cID, $cType, $cVersion) {
@@ -4432,105 +4256,6 @@ function languageIdForDatesInAdminMode() {
 		'en-us');
 }
 
-function formatDateNicely($date, $format_type = false, $languageId = false, $time_format = '', $rss = false) {
-	
-	//Use $languageId === true as a shortcut to the site default language
-	//Otherwise if $languageId is not set, try to get language from session, or the site default if that is not set
-	if ($languageId === true) {
-		$languageId = setting('default_language');
-	
-	} elseif (!$languageId) {
-		if (!empty($_SESSION['user_lang'])) {
-			$languageId = $_SESSION['user_lang'];
-	
-		} else {		
-			$languageId = setting('default_language');
-		}
-	}
-	
-	if ($time_format === true) {
-		$time_format = ' %H:%i';
-	}
-	
-	if ($rss) {
-		$format_type = '%a, %d %b %Y';
-		$time_format = ' %H:%i:%s ';
-	
-	} elseif (!$format_type || $format_type == 'vis_date_format_long' || $format_type == '_LONG') {
-		$format_type = setting('vis_date_format_long');
-	
-	} elseif ($format_type == 'vis_date_format_med' || $format_type == '_MEDIUM') {
-		$format_type = setting('vis_date_format_med');
-	
-	} elseif ($format_type == 'vis_date_format_short' || $format_type == '_SHORT') {
-		$format_type = setting('vis_date_format_short');
-	}
-	
-	//If this language is not English, do not show "1st/2nd/3rd
-	if ($languageId != 'en' && substr($languageId, 0, 3) != 'en-') {
-		$format_type = str_replace('%D', '%e', $format_type);
-	}
-	
-	if (is_numeric($date)) {
-		$date = convertToUserTimezone($date);
-	}
-	if (is_object($date)) {
-		$sql = "SELECT DATE_FORMAT('". sqlEscape($date->format('Y-m-d H:i:s')). "', '". sqlEscape($format_type. $time_format). "')";
-	} else {
-		$sql = "SELECT DATE_FORMAT('". sqlEscape($date). "', '". sqlEscape($format_type. $time_format). "')";
-	}
-	
-	$formattedDate = sqlFetchRow($sql);
-	$formattedDate = $formattedDate[0];
-	
-	$returnDate = '';
-	if ($rss) {
-		$returnDate = $formattedDate;
-		
-		if ($time_format) {
-			$sql = "SELECT TIME_FORMAT(NOW() - UTC_TIMESTAMP(), '%H%i') ";
-			$result = sqlQuery($sql);
-			list($timezone) = sqlFetchRow($result);
-			
-			if (substr($timezone, 0, 1) != '-') {
-				$timezone = '+'. $timezone;
-			}
-			
-			$returnDate .= $timezone;
-		}
-		
-	} else {
-		foreach (preg_split('/\[\[([^\[\]]+)\]\]/', $formattedDate, -1,  PREG_SPLIT_DELIM_CAPTURE) as $i => $part) {
-			if ($i % 2) {
-				$returnDate .= phrase($part, false, '', $languageId);
-			} else {
-				$returnDate .= $part;
-			}
-		}
-	}
-	
-	return $returnDate;
-}
-
-function formatDateTimeNicely($date, $format_type = false, $languageId = false, $rss = false) {
-	return formatDateNicely($date, $format_type, $languageId, true, $rss);
-}
-
-function formatTimeNicely($time, $format_type) {
-	
-	if (is_numeric($time)) {
-		$time = convertToUserTimezone($time);
-	}
-	if (is_object($time)) {
-		$sql = "SELECT TIME_FORMAT('". sqlEscape($time->format('Y-m-d H:i:s')). "', '". sqlEscape($format_type). "')";
-	} else {
-		$sql = "SELECT TIME_FORMAT('". sqlEscape($time). "', '". sqlEscape($format_type). "')";
-	}
-	
-	$row = sqlFetchRow($sql);
-	return $row[0];
-}
-
 function configFileSize($size) {
 	//Define labels to use
 	$labels = array('', 'K', 'M', 'G', 'T');
@@ -4637,7 +4362,7 @@ function randomString($requiredLength = 12) {
 //Generate a string from a specific set of characters
 	//By default I've stripped out vowels, just in case a swearword is randomly generated.
 	//Also "1"s look too much like "l"s and "0"s look too much like "o"s so I've removed those too for clarity.
-function randomStringFromSet($requiredLength = 12, $set = 'BCDFGHJKLMNPQRSTVWXYZbcdfghjklmnpqrstvwxyz23456789') {
+function randomStringFromSet($requiredLength = 12, $set = 'BCDFGHJKMNPQRSTVWXYZbcdfghjkmnpqrstvwxyz23456789') {
 	$lettersToUse = str_split($set);
 	$max = count($lettersToUse) - 1;
 	
@@ -4746,15 +4471,15 @@ function getModuleDetails($idOrName, $fetchBy = 'id') {
 }
 
 function getModuleName($id) {
-	return getRow('modules', 'class_name', array('id' => $id));
+	return getRow('modules', 'class_name', ['id' => $id]);
 }
 
 function getModuleDisplayName($id) {
-	return getRow('modules', 'display_name', array('id' => $id));
+	return getRow('modules', 'display_name', ['id' => $id]);
 }
 
 function getModuleDisplayNameByClassName($name) {
-	return getRow('modules', 'display_name', array('class_name' => $name));
+	return getRow('modules', 'display_name', ['class_name' => $name]);
 }
 
 function getNestedPluginName($id) {
@@ -4762,31 +4487,41 @@ function getNestedPluginName($id) {
 }
 
 function getModuleClassName($id) {
-	return getRow('modules', 'class_name', array('id' => $id));
+	return getRow('modules', 'class_name', ['id' => $id]);
 }
 
 function getModuleId($name) {
-	return getRow('modules', 'id', array('class_name' => $name));
+	return getRow('modules', 'id', ['class_name' => $name]);
 }
 
 function getModuleStatus($id) {
-	return getRow('modules', 'status', array('id' => $id));
+	return getRow('modules', 'status', ['id' => $id]);
 }
 
 function getModuleStatusByName($name) {
-	return getRow('modules', 'status', array('class_name' => $name));
+	return getRow('modules', 'status', ['class_name' => $name]);
 }
 
 function getModuleStatusByClassName($name) {
-	return getRow('modules', 'status', array('class_name' => $name));
+	return getRow('modules', 'status', ['class_name' => $name]);
 }
 
 function getModuleIdByClassName($name) {
-	return getRow('modules', 'id', array('class_name' => $name));
+	return getRow('modules', 'id', ['class_name' => $name]);
 }
 
 function getModuleClassNameByName($name) {
 	return $name;
+}
+
+function checkModuleRunning($className) {
+	
+	return (bool) sqlFetchRow("
+		SELECT 1
+		FROM [[DB_NAME_PREFIX]]modules
+		WHERE class_name = [[0]]
+		  AND status IN ('module_running', 'module_is_abstract')
+	", [$className]);
 }
 
 
@@ -4830,6 +4565,11 @@ function activateModule($name) {
 
 function inc($module) {
 	
+	//Don't allow this to be run whe running databse updates!
+	if (!class_exists('module_base_class')) {
+		return false;
+	}
+	
 	if (!is_array($module)) {
 		$module = sqlFetchAssoc("
 			SELECT id, class_name, status
@@ -4847,25 +4587,6 @@ function inc($module) {
 		return true;
 	} else {
 		return false;
-	}
-}
-
-
-function getModulePrefix($module, $mustBeRunning = true, $oldFormat = false) {
-	
-	if (!is_array($module)) {
-		$module = sqlFetchAssoc("
-			SELECT id, class_name, status
-			FROM ". DB_NAME_PREFIX. "modules
-			WHERE class_name = '". sqlEscape($module). "'
-			  ". ($mustBeRunning? "AND status IN ('module_running', 'module_is_abstract')" : ""). "
-			LIMIT 1");
-	}
-	
-	if (!$module) {
-		return false;
-	} else {
-		return setModulePrefix($module, false, $oldFormat);
 	}
 }
 
@@ -5298,7 +5019,7 @@ function getVersionControlledPluginInstanceId($cID, $cType, $cVersion, $slotName
 
 //Activate and setup a plugin
 //Note that the function canActivateModule() or equivalent should be called on the plugin's name before calling setInstance(), loadPluginInstance() or initPluginInstance()
-function setInstance(&$instance, $cID, $cType, $cVersion, $slotName, $checkForErrorPages = false, $nest = 0, $tab = 0) {
+function setInstance(&$instance, $cID, $cType, $cVersion, $slotName, $checkForErrorPages = false, $overrideSettings = false, $nest = 0, $tab = 0) {
 	
 	$missingPlugin = false;
 	if (!includeModuleAndDependencies($instance['class_name'], $missingPlugin)) {
@@ -5308,20 +5029,24 @@ function setInstance(&$instance, $cID, $cType, $cVersion, $slotName, $checkForEr
 	
 	$instance['class'] = new $instance['class_name'];
 	
-	$instance['class']->setInstance(array($cID, $cType, $cVersion, $slotName,
-										  arrayKey($instance, 'instance_name'), $instance['instance_id'],
-										  $instance['class_name'], $instance['vlp_class'],
-										  $instance['module_id'],
-										  $instance['default_framework'], $instance['framework'],
-										  $instance['css_class'],
-										  arrayKey($instance, 'level'), !empty($instance['content_id'])), $nest, $tab);
+	$instance['class']->setInstance(
+		array(
+			$cID, $cType, $cVersion, $slotName,
+			arrayKey($instance, 'instance_name'), $instance['instance_id'],
+			$instance['class_name'], $instance['vlp_class'],
+			$instance['module_id'],
+			$instance['default_framework'], $instance['framework'],
+			$instance['css_class'],
+			arrayKey($instance, 'level'), !empty($instance['content_id'])
+		), $overrideSettings, $nest, $tab
+	);
 }
 
 //Work out whether we are displaying this Plugin.
 //Run the plugin's own initalisation routine. If it returns true, then display the plugin.
 //(But note that modules are always displayed in admin mode.)
 function initPluginInstance(&$instance) {
-	if (!($instance['init'] = (bool) $instance['class']->init()) && !(checkPriv())) {
+	if (!($instance['init'] = $instance['class']->init()) && !(checkPriv())) {
 		$instance['class'] = false;
 		return false;
 	} else {

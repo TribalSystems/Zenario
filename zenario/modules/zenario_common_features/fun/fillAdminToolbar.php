@@ -134,7 +134,11 @@ if ($cVersion == cms_core::$adminVersion) {
 }
 
 
+$permsOnThisItem = true;
 if (adminHasSpecificPerms()) {
+	
+	$permsOnThisItem = checkPriv('_PRIV_EDIT_DRAFT', $cID, $cType);
+	
 	//Check if this admin can edit any of the menu text...
 	$canEditSomeMenuText = false;
 	foreach ($menuItems as $i => &$menuItem) {
@@ -151,6 +155,16 @@ if (adminHasSpecificPerms()) {
 		unset($adminToolbar['toolbars']['menu_secondary']);
 		unset($adminToolbar['sections']['primary_menu_node']);
 	}
+}
+
+if ($permsOnThisItem) {
+	$editToolbar = 'edit';
+	unset($adminToolbar['toolbars']['restricted_editing']);
+} else {
+	$editToolbar = 'restricted_editing';
+	unset($adminToolbar['toolbars']['edit']);
+	unset($adminToolbar['toolbars']['edit_disabled']);
+	unset($adminToolbar['toolbars']['rollback']);
 }
 
 
@@ -408,8 +422,8 @@ if (isset($adminToolbar['sections']['edit']['buttons']['item_template'])) {
 }
 
 
-if (isset($adminToolbar['sections']['edit']['buttons']['view_items_images'])) {
-	$adminToolbar['sections']['edit']['buttons']['view_items_images']['organizer_quick']['path'] =
+if (isset($adminToolbar['sections'][$editToolbar]['buttons']['view_items_images'])) {
+	$adminToolbar['sections'][$editToolbar]['buttons']['view_items_images']['organizer_quick']['path'] =
 		'zenario__content/panels/content/item_buttons/images//'. $tagId. '//';
 }
 
@@ -421,14 +435,14 @@ if (isset($adminToolbar['sections']['edit']['buttons']['view_slots'])) {
 
 //Multilingual options
 if (!$isMultilingual) {
-	unset($adminToolbar['sections']['edit']['buttons']['view_items_translations']);
+	unset($adminToolbar['sections'][$editToolbar]['buttons']['view_items_translations']);
 	if (isset($adminToolbar['sections']['translations'])) {
 		$adminToolbar['sections']['translations']['hidden'] = true;
 	}
 
 } else {
-	if (isset($adminToolbar['sections']['edit']['buttons']['view_items_translations'])) {
-		$adminToolbar['sections']['edit']['buttons']['view_items_translations']['organizer_quick']['path'] =
+	if (isset($adminToolbar['sections'][$editToolbar]['buttons']['view_items_translations'])) {
+		$adminToolbar['sections'][$editToolbar]['buttons']['view_items_translations']['organizer_quick']['path'] =
 			'zenario__content/panels/content/item_buttons/zenario_trans__view//'. $tagId. '//';
 	}
 	if (isset($adminToolbar['sections']['translations'])) {
@@ -982,7 +996,7 @@ $visitorURL = linkToItem(
 if (isset($adminToolbar['sections']['icons']['buttons']['copy_url'])) {
 	$adminToolbar['sections']['icons']['buttons']['copy_url']['onclick'] =
 		//Attempt to copy the cannonical URL to the clipboard when the visitor presses this button
-		'zenario.copy("'. jsEscape($visitorURL). '");'.
+		'zenarioA.copy("'. jsEscape($visitorURL). '");'.
 		//Small little hack here:
 			//After the URL is copy/pasted, the dropdown stays open which is counter-intuative.
 			//However the dropdown is powered by pure CSS and there's no way to close it using JavaScript.
@@ -1106,6 +1120,11 @@ foreach ($showVersions as $showVersion => $dummy) {
 
 
 //Content Item is Public
+if (isset($adminToolbar['sections']['icons']['buttons']['item_permissions'])) {
+	$adminToolbar['sections']['icons']['buttons']['item_permissions']['css_class'] .=  ' privacy_'. $chain['privacy'];
+	$adminToolbar['sections']['icons']['buttons']['item_permissions']['tooltip'] .= ' '. contentItemPrivacyDesc($chain['privacy'], $chain = false);
+}
+/*
 if ($chain['privacy'] == 'public') {
 	unset($adminToolbar['sections']['icons']['buttons']['item_permissions_closed']);
 } else {
@@ -1114,16 +1133,15 @@ if ($chain['privacy'] == 'public') {
 
 if (isset($adminToolbar['sections']['icons']['buttons']['item_permissions_closed'])) {
 
-	if($chain['privacy'] == 'no_access') {
+	if($chain['privacy'] == 'send_signal') {
 		$adminToolbar['sections']['icons']['buttons']['item_permissions_closed']['css_class'] = "zenario_at_icon_permissions_closed_no_access";
 	} elseif($chain['privacy'] == 'group_members') {
 		$adminToolbar['sections']['icons']['buttons']['item_permissions_closed']['css_class'] = "zenario_at_icon_permissions_closed_group_members";
-	} elseif($chain['privacy'] == 'specific_users') {
-		$adminToolbar['sections']['icons']['buttons']['item_permissions_closed']['css_class'] = "zenario_at_icon_permissions_closed_specific_users";
 	}
-
-	$adminToolbar['sections']['icons']['buttons']['item_permissions_closed']['tooltip'] =
-		$adminToolbar['sections']['icons']['buttons']['item_permissions_closed']['tooltip__'. $chain['privacy']];
+	
+	//here
+	//$adminToolbar['sections']['icons']['buttons']['item_permissions_closed']['tooltip'] =
+	//	$adminToolbar['sections']['icons']['buttons']['item_permissions_closed']['tooltip__'. $chain['privacy']];
 	
 	//If this item is set to show to specific users/groups, show them in the tooltip
 	$sql = false;
@@ -1135,15 +1153,6 @@ if (isset($adminToolbar['sections']['icons']['buttons']['item_permissions_closed
 			   ON gcl.group_id = cdf.id
 			WHERE gcl.equiv_id = ". (int) $chain['equiv_id']. "
 			  AND gcl.content_type = '" . sqlEscape($cType). "'";
-	
-	} elseif ($chain['privacy'] == 'specific_users') {
-		$sql = "
-			SELECT u.screen_name AS name
-			FROM ". DB_NAME_PREFIX. "user_content_link AS ucl
-			LEFT JOIN ". DB_NAME_PREFIX. "users AS u
-			   ON ucl.user_id = u.id
-			WHERE ucl.equiv_id = ". (int) $chain['equiv_id']. "
-			  AND ucl.content_type = '" . sqlEscape($cType). "'";
 	}
 	
 	$i = 0;
@@ -1155,7 +1164,7 @@ if (isset($adminToolbar['sections']['icons']['buttons']['item_permissions_closed
 				($i++? ', ' : ''). htmlspecialchars($row['name']);
 		}
 	}
-}
+}*/
 
 //Content Item is categorised
 if (checkRowExists('category_item_link', array('equiv_id' => $content['equiv_id'], 'content_type' => $cType))) {
@@ -1253,4 +1262,61 @@ foreach ($pagePreviews as $pagePreview) {
 	$adminToolbar['sections']['page_preview_sizes']['buttons']['page_preview_'.$pagePreview['ordinal'].'_'.$width.'x'.$height] = $pagePreviewButton;
 }
 
-return false;
+
+// Show the name of the logged in Extranet User
+// (N.b. the options to log in/edit/log out are currently commented out.)
+if (checkModuleRunning('zenario_users')) {
+	if ($userId = userId()) {
+		$adminToolbar['sections']['extranet_user']['buttons']['logged_in']['label'] =
+			adminPhrase('User [[identifier]]', getRow('users', ['identifier'], $userId));
+		
+		//$adminToolbar['sections']['extranet_user']['buttons']['logged_in']['admin_box']['key']['id'] =
+		//	$userId;
+		//
+		//$lCID = $lCType = false;
+		//if (langSpecialPage('zenario_logout', $lCID, $lCType, cms_core::$langId)
+		// && ($lURL = linkToItem($lCID, $lCType))) {
+		//
+		//	$adminToolbar['sections']['extranet_user']['buttons']['log_out']['onclick'] =
+		//		'zenario.goToURL("'. jsEscape($lURL). '");';
+		//} else {
+		//	unset($adminToolbar['sections']['extranet_user']['buttons']['log_out']);
+		//}
+	
+		unset($adminToolbar['sections']['extranet_user']['buttons']['logged_out']);
+		//unset($adminToolbar['sections']['extranet_user']['buttons']['log_in']);
+
+	} else {
+		//$lCID = $lCType = false;
+		//if (langSpecialPage('zenario_login', $lCID, $lCType, cms_core::$langId)
+		// && ($lURL = linkToItem($lCID, $lCType))) {
+		//
+		//	$adminToolbar['sections']['extranet_user']['buttons']['log_in']['onclick'] =
+		//		'zenario.goToURL("'. jsEscape($lURL). '");';
+		//} else {
+		//	unset($adminToolbar['sections']['extranet_user']['buttons']['log_in']);
+		//}
+	
+		unset($adminToolbar['sections']['extranet_user']['buttons']['logged_in']);
+		//unset($adminToolbar['sections']['extranet_user']['buttons']['log_out']);
+	}
+	
+	//If the current extranet user/visitor should not be able to see the current page because they don't have permissions,
+	//show a purple triangle next to their name
+	if (in(cms_core::$status, 'published', 'published_with_draft')) {
+		$perms = getShowableContent($content, $version, $cID, $cType, $cVersion, $checkRequestVars = false, $adminsSee400Errors = true);
+		
+		if ($perms === ZENARIO_401_NOT_LOGGED_IN) {
+			$adminToolbar['meta_info']['no_perms_icon'] = 'zenario_link_status zenario_link_status__'. cms_core::$status. '_401';
+	
+		} elseif (!$perms) {
+			$adminToolbar['meta_info']['no_perms_icon'] = 'zenario_link_status zenario_link_status__'. cms_core::$status. '_403';
+		}
+	}
+
+} else {
+	unset($adminToolbar['sections']['extranet_user']['buttons']['logged_out']);
+	//unset($adminToolbar['sections']['extranet_user']['buttons']['log_in']);
+	unset($adminToolbar['sections']['extranet_user']['buttons']['logged_in']);
+	//unset($adminToolbar['sections']['extranet_user']['buttons']['log_out']);
+}

@@ -3,6 +3,8 @@
 zenario__administration:
     panels:
         error_log:
+            item:
+                css_class: zenario_error_log
             title: Error log
             no_items_message: The error log is empty
             view_mode: list

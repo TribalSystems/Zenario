@@ -29,8 +29,8 @@ zenario.lib(function(
 	undefined,
 	URLBasePath,
 	document, window, windowOpener, windowParent,
-	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO,
-	get, engToBoolean, htmlspecialchars, ifNull, jsEscape, phrase,
+	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO, strings,
+	encodeURIComponent, get, engToBoolean, htmlspecialchars, jsEscape, phrase,
 	extensionOf, methodsOf, has,
 	zenario_banner
 ) {
@@ -118,6 +118,10 @@ zenario_banner.open = function(containerId, editorId, delayed) {
 				}
 				editorContentIsEmpty = editorContentIsNowEmpty;
 			});
+		},
+		
+		init_instance_callback: function(instance) {
+			zenario.removeLinkStatus($editor);
 		}
 	});
 	

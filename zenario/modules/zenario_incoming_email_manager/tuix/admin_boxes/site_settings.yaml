@@ -3,12 +3,39 @@
 site_settings:
     setting_group: email
     tabs:
-        email:
+        incoming_email:
+            label: Incoming email
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_SITE_SETTING
             fields:
                 zenario_incoming_email_manager__send_summary_email:
                     site_setting:
                         name: zenario_incoming_email_manager__send_summary_email
-                    label: 'Only send a summary email for incoming email tasks'
+                    label: 'Only send a summary email notifications'
                     type: checkbox
                     side_note: |
                         Whether to send a summary email for incoming email tasks, containing the number of emails processed and their statuses, in which case an email will be sent once the task processes all emails rather than one per email.
+                period_to_delete_account_logs: 
+                    site_setting:
+                        name: period_to_delete_account_logs
+                    label: "Delete data from Incoming Email Handler:"
+                    type: select
+                    values: 
+                        "90": 
+                            label: Delete data older than 3 months
+                            ord: "1"
+                        "180": 
+                            label: Delete data older than 6 months
+                            ord: "4"
+                        "365": 
+                            label: Delete data older than 1 year
+                            ord: "5"
+                        "730": 
+                            label: Delete data older than 2 years
+                            ord: "6"
+                        "1095": 
+                            label: Delete data older than 3 years
+                            ord: "7"
+                    empty_value: "Never delete"
+                    note_below: "Warning: Data older than specified period will be permanently deleted."

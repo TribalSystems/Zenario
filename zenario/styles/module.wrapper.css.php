@@ -92,12 +92,12 @@ if (!empty($_GET['admin_frontend'])) {
 foreach ($moduleDetails as $module) {
 	
 	$path = moduleDir($module['class_name'], 'adminstyles/');
-	if ($chop = chopPrefixOffOfString($path, 'zenario/')) {
+	if ($chop = chopPrefixOffString('zenario/', $path)) {
 		$url = '../'. $chop;
 	
 	} else
-	if (chopPrefixOffOfString($path, 'zenario_extra_modules/')
-	 || chopPrefixOffOfString($path, 'zenario_custom/modules/')) {
+	if (chopPrefixOffString('zenario_extra_modules/', $path)
+	 || chopPrefixOffString('zenario_custom/modules/', $path)) {
 		$url = '../../'. $path;
 	} else {
 		$url = false;

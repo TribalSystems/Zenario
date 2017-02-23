@@ -30,7 +30,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 
 //Code for handling renaming Plugin directories
-function renameModuleDirectory($oldName, $newName) {
+function renameModuleDirectory($oldName, $newName, $uninstallOldModule = false) {
 	addNewModules($skipIfFilesystemHasNotChanged = false);
 	
 	if (($oldId = getModuleId($oldName)) && ($newId = getModuleId($newName))) {
@@ -53,11 +53,11 @@ function renameModuleDirectory($oldName, $newName) {
 		if (in($newStatus, 'module_not_initialized', 'module_suspended')) {
 			setRow('modules', array('status' => $oldStatus), $newId);
 		}
-		
-		return true;
 	}
 	
-	return false;
+	if ($uninstallOldModule && $oldId) {
+		updateRow('modules', array('status' => 'module_not_initialized'), $oldId);
+	}
 }
 
 //Code for one Module replacing functionality from another
@@ -146,28 +146,18 @@ if (needRevision(36485)) {
 //Remove the content list probusiness and merge all of it's former features into the regular content list
 if (needRevision(36500)) {
 	
-	renameModuleDirectory('zenario_content_list_probusiness', 'zenario_content_list');
+	renameModuleDirectory('zenario_content_list_probusiness', 'zenario_content_list', true);
 	
 	revision(36500);
-}
-
-//Mark the old content list probusiness module as not running to avoid warning emails
-if (needRevision(36660)) {
-	
-	updateRow('modules', array('status' => 'module_not_initialized'), array('class_name' => 'zenario_content_list_probusiness'));
-	
-	revision(36660);
 }
 
 
 //In version 7.4, we're merging all of the nest-based slideshow-type modules
 if (needRevision(36900)) {
 	
-	renameModuleDirectory('zenario_slideshow_probusiness', 'zenario_slideshow');
-	renameModuleDirectory('zenario_roundabout', 'zenario_slideshow');
-	renameModuleDirectory('zenario_revealable_panel', 'zenario_slideshow');
-	updateRow('modules', array('status' => 'module_not_initialized'), array('class_name' =>
-		array('zenario_slideshow_probusiness', 'zenario_roundabout', 'zenario_revealable_panel')));
+	renameModuleDirectory('zenario_slideshow_probusiness', 'zenario_slideshow', true);
+	renameModuleDirectory('zenario_roundabout', 'zenario_slideshow', true);
+	renameModuleDirectory('zenario_revealable_panel', 'zenario_slideshow', true);
 	
 	revision(36900);
 }
@@ -175,8 +165,8 @@ if (needRevision(36900)) {
 //Merge all of the nest modules
 if (needRevision(36930)) {
 	
-	renameModuleDirectory('zenario_plugin_tabbed_nest', 'zenario_plugin_nest');
-	renameModuleDirectory('zenario_plugin_nest_probusiness', 'zenario_plugin_nest');
+	renameModuleDirectory('zenario_plugin_tabbed_nest', 'zenario_plugin_nest', true);
+	renameModuleDirectory('zenario_plugin_nest_probusiness', 'zenario_plugin_nest', true);
 	
 	//Check if the ProBusiness module was installed, and the tabs table exists
 	if (($module = getModuleDetails('zenario_plugin_nest_probusiness', 'class'))
@@ -197,21 +187,21 @@ if (needRevision(36930)) {
 		sqlQuery($sql);
 	}
 	
-	
-	updateRow('modules', array('status' => 'module_not_initialized'), array('class_name' =>
-		array('zenario_plugin_nest_probusiness', 'zenario_plugin_tabbed_nest')));
-	
 	revision(36930);
 }
 
+if (needRevision(37631)) {
+	
+	renameModuleDirectory('zenario_company_users_fea', 'zenario_users_fea', true);
+	
+	revision(37631);
+}
 
-
-//Post-branch patch:
 //Replace the (removed) zenario_feed_reader_pro module with the zenario_feed_reader module,
 //which now has all the features that the "pro" module used to have.
-if (needRevision(37237)) {
+if (needRevision(38050)) {
 	
-	renameModuleDirectory('zenario_feed_reader_pro', 'zenario_feed_reader');
+	renameModuleDirectory('zenario_feed_reader_pro', 'zenario_feed_reader', true);
 	
-	revision(37237);
+	revision(38050);
 }

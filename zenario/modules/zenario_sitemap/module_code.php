@@ -60,9 +60,6 @@ class zenario_sitemap extends zenario_menu {
 		//Auto-detect the visitors current language
 		$this->language					= false;
 		
-		//Don't allow Admins to build menus using the map
-		$this->showAdminAddMenuItem		= false;
-		
 		//Show every branch of the menu tree
 		$this->onlyFollowOnLinks		= false;
 		$this->onlyIncludeOnLinks		= false;

@@ -32,20 +32,6 @@ switch ($path) {
 	case 'plugin_css_and_framework':
 		return require funIncPath(__FILE__, 'plugin_settings.formatAdminBox');
 	
-	
-	case 'zenario_content':
-		require funIncPath(__FILE__, 'content.formatAdminBox');
-
-	case 'zenario_quick_create':
-		//Note that this code should run for both zenario_content and zenario_quick_create
-		$box['tabs']['meta_data']['fields']['menu_title']['hidden'] =
-		$box['tabs']['meta_data']['fields']['menu_path']['hidden'] =
-		$box['tabs']['meta_data']['fields']['menu_parent_path']['hidden'] =
-			!empty($box['tabs']['meta_data']['fields']['create_menu']['hidden']) || !$values['meta_data/create_menu'];
-		
-		break;
-	
-	
 	case 'zenario_document_move':
 		$fields['details/move_to']['hidden'] = $values['details/move_to_root'];
 		break;

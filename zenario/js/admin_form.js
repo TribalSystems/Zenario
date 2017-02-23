@@ -40,8 +40,8 @@ zenario.lib(function(
 	undefined,
 	URLBasePath,
 	document, window, windowOpener, windowParent,
-	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO,
-	get, engToBoolean, htmlspecialchars, ifNull, jsEscape, phrase,
+	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO, strings,
+	encodeURIComponent, get, engToBoolean, htmlspecialchars, jsEscape, phrase,
 	extensionOf, methodsOf, has,
 	zenarioAF
 ) {
@@ -61,13 +61,13 @@ methods.start = function(path, key, tab, values) {
 	this.tabHidden = true;
 	this.differentTab = false;
 	
-	this.path = ifNull(path, '');
+	this.path = path || '';
 	
 	this.tuix = {};
 		//Backwards compatability for any old code
 		this.focus = this.tuix;
 	
-	this.key = ifNull(key, {});
+	this.key = key || {};
 	this.tab = tab;
 	this.shownTab = false;
 	this.url = this.getURL('start');
@@ -75,6 +75,7 @@ methods.start = function(path, key, tab, values) {
 	that.retryAJAX(
 		that.url,
 		{_fill: true, _values: values? JSON.stringify(values) : ''},
+		true,
 		function(data) {
 			if (that.load(data)) {
 				if (that.tab) {
@@ -91,16 +92,15 @@ methods.start = function(path, key, tab, values) {
 				that.close(true);
 			}
 		},
-		'loading'
+		'loading',
+		function() {
+			that.close(true);
+		}
 	);
 };
 
 methods.load = function(data) {
 	this.loaded = true;
-	
-	if (!(data = zenarioA.readData(data))) {
-		return false;
-	}
 	
 	if (data.toast
 	 && zenarioA.toast) {

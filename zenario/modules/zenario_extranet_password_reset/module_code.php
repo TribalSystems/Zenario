@@ -54,7 +54,7 @@ class zenario_extranet_password_reset extends zenario_extranet {
 				if (post('extranet_change_password')) {
 					if ($this->changePassword($userId)) {
 						$this->message = $this->phrase('Your Password has been changed.');
-						$this->mode = 'modeLoggedIn';
+						$this->mode = 'modeLogin';
 						updateRow('users', array('reset_password_time' => null), array('id' => $userId));
 					}
 				}

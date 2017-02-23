@@ -253,6 +253,18 @@ diagnostics:
                     same_row: true
                     hide_on_install: true
                     visible_if: "zenarioAW.togglePressed(1, tuixObject)"
+                site_description_missing:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_level
+                    snippet:
+                        html: |
+                            This site's description file is missing.
+                            Please create the <code>zenario_custom/site_description.yaml</code> file,
+                            e.g. by copying or symlinking one of the files from the
+                            <code>zenario/api/sample_site_descriptions/</code> directory.
+                    hide_on_install: true
+                    visible_if: zenarioAW.togglePressed()
                 site_disabled:
                     grouping: sub_table
                     full_width: true
@@ -277,16 +289,12 @@ diagnostics:
                         html: "&nbsp;"
                     hide_on_install: true
                     visible_if: zenarioAW.togglePressed()
-                site_description_missing:
+                site_plaintext_passwords:
                     grouping: sub_table
                     full_width: true
                     row_class: sub_level
                     snippet:
-                        html: |
-                            This site's description file is missing.
-                            Please create the <code>zenario_custom/site_description.yaml</code> file,
-                            e.g. by copying or symlinking one of the files in
-                            <code>zenario/api/sample_site_descriptions/</code>
+                        html: "&nbsp;"
                     hide_on_install: true
                     visible_if: zenarioAW.togglePressed()
                 spare_domains_without_primary_domain:
@@ -341,6 +349,13 @@ diagnostics:
                     snippet:
                         html: ''
                     hide_on_install: true
+                    visible_if: zenarioAW.togglePressed()
+                module_errors:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_level
+                    snippet:
+                        html: ''
                     visible_if: zenarioAW.togglePressed()
                 mr_warning_1:
                     grouping: sub_table

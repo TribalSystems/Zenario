@@ -60,6 +60,9 @@ class zenario_common_features__admin_boxes__content_type_details extends module_
 		$values['details/enable_summary_auto_update'] = $details['enable_summary_auto_update'];
 		$values['details/enable_categories'] = $details['enable_categories'] ? 'enabled' : 'disabled';
 		$values['details/default_layout_id'] = $details['default_layout_id'];
+		$values['details/default_permissions'] = $details['default_permissions'];
+		
+		
 		
 		if (!$details['module_id']
 		 || !($status = getModuleStatus($details['module_id']))
@@ -75,6 +78,7 @@ class zenario_common_features__admin_boxes__content_type_details extends module_
 			$values['details/menu_node_position'] = $details['menu_node_position'];
 			$values['details/menu_node_position_edit'] = $details['menu_node_position_edit'];
 			$values['details/hide_menu_node'] = $details['hide_menu_node'];
+			$values['details/hide_private_item'] = $details['hide_private_item'];
 		}
 		
 		$box['tabs']['details']['fields']['default_layout_id']['pick_items']['path'] =
@@ -134,7 +138,9 @@ class zenario_common_features__admin_boxes__content_type_details extends module_
 				'default_parent_menu_node' => 0,
 				'menu_node_position' => null,
 				'menu_node_position_edit' => null,
-				'hide_menu_node' => 0
+				'hide_menu_node' => 0,
+				'default_permissions' => $values['details/default_permissions'],
+				'hide_private_item' => $values['hide_private_item']
 			);
 			
 			if ($values['details/summary_field'] != 'hidden') {

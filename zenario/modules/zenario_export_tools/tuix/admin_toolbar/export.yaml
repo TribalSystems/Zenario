@@ -3,7 +3,7 @@
 sections:
     edit:
         buttons:
-            export:
+            export: &export
                 priv: _PRIV_EXPORT_CONTENT_ITEM
                 parent: action_dropdown
                 label: Export
@@ -34,3 +34,7 @@ sections:
                     a different language using Google Translate
                 admin_box:
                     path: zenario_export_tools__google_translate
+    
+    restricted_editing:
+        buttons:
+            export: *export

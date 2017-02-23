@@ -33,23 +33,9 @@ class zenario_users__admin_boxes__content_privacy extends zenario_users {
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		
-		//Populate the list of groups
-		$lov = listCustomFields('users', $flat = false, 'groups_only', $customOnly = false, $useOptGroups = true, $hideEmptyOptGroupParents = true);
+		$fields['privacy/group_ids']['values'] = getGroupPickerCheckboxesForFAB();
+		$fields['privacy/smart_group_id']['values'] = getListOfSmartGroupsWithCounts();
 		
-		//Note: these are multi-checkboxes fields. I want to show the tabs, but I don't want
-		//people to be able to select them
-		foreach ($lov as &$v) {
-			if (empty($v['parent'])) {
-				$v['readonly'] =
-				$v['disabled'] = true;
-				$v['style'] = 'display: none;';
-			}
-		}
-		
-		$box['tabs']['privacy']['fields']['group_members']['values'] = $lov;
-		
-		
-		$combinedValues = true;
 		
 		$box['key']['originalId'] = $box['key']['id'];
 		
@@ -65,6 +51,10 @@ class zenario_users__admin_boxes__content_privacy extends zenario_users {
 			$box['key']['id'] = request('cType'). '_'. request('cID');
 		}
 		
+		$theseValues =
+		$lastValues = false;
+		$combinedValues = true;
+		
 		//Given a list of tag ids using cID and cType, convert them to equivIds and cTypes
 		foreach (explode(',', $box['key']['id']) as $tagId) {
 			if (getEquivIdAndCTypeFromTagId($equivId, $cType, $tagId)) {
@@ -73,28 +63,43 @@ class zenario_users__admin_boxes__content_privacy extends zenario_users {
 					$tagIds[$tagId] = $tagId;
 					++$total;
 					
-					//Attempt to see if the values of each chosen item match!
+					//Attempt to see if all of the chosen items have the same values
 					
-					//If we've already failed, stop trying
+					//If we've already failed trying to match values, stop trying
 					if ($combinedValues !== false) {
-						//Look up the values
-						if ($chain = getRow('translation_chains', array('privacy'), array('equiv_id' => $equivId, 'type' => $cType))) {
-							$chain['group_content_link'] = self::setupGroupOrUserCheckboxes('group_content_link', 'group_id', $equivId, $cType);
-							$chain['user_content_link'] = self::setupGroupOrUserCheckboxes('user_content_link', 'user_id', $equivId, $cType);
+						
+						//Look up the values for this content item
+						$sql = "
+							SELECT
+								tc.privacy, tc.smart_group_id,
+								tcp.module_class_name, tcp.method_name, tcp.param_1, tcp.param_2
+							FROM ". DB_NAME_PREFIX. "translation_chains AS tc
+							LEFT JOIN ". DB_NAME_PREFIX. "translation_chain_privacy AS tcp
+							   ON tc.equiv_id = tcp.equiv_id
+							  AND tc.type = tcp.content_type
+							WHERE tc.equiv_id = ". (int) $equivId. "
+							  AND tc.type = '". sqlEscape($cType). "'";
+						
+						if ($chain = sqlFetchAssoc($sql)) {
 							
-							//If we've previously had some values, do these ones match?
-							if (is_array($combinedValues)) {
-								foreach ($chain as $key => $value) {
-									if ($combinedValues[$key] != $chain[$key]) {
-										//If they don't match, mark this as failed and give up
-										$combinedValues = false;
-										break;
-									}
-								}
-							
-							//If we've not had previous values, remember these ones!
+							if ($chain['privacy'] == 'group_members') {
+								$chain['group_ids'] =
+									inEscape(getRowsArray('group_content_link', 'group_id', array('equiv_id' => $equivId, 'content_type' => $cType)), true);
 							} else {
+								$chain['group_ids'] = '';
+							}
+							
+							$theseValues = json_encode($chain);
+							
+							//If the values were the same as last time, combine them
+							if ($lastValues === false
+							 || $lastValues == $theseValues) {
+								$lastValues = $theseValues;
 								$combinedValues = $chain;
+							
+							//If they're not, we can't combine them, and will need to show the settings as empty
+							} else {
+								$combinedValues = false;
 							}
 						}
 					}
@@ -109,10 +114,14 @@ class zenario_users__admin_boxes__content_privacy extends zenario_users {
 		}
 		
 		//If all the values match, display them!
-		if (is_array($combinedValues)) {
-			$values['privacy/privacy'] = $chain['privacy'];
-			$values['privacy/group_members'] = self::setupGroupOrUserCheckboxes('group_content_link', 'group_id', $equivId, $cType);
-			$values['privacy/specific_users'] = self::setupGroupOrUserCheckboxes('user_content_link', 'user_id', $equivId, $cType);
+		if (!empty($combinedValues) && is_array($combinedValues)) {
+			$values['privacy/privacy'] = $combinedValues['privacy'];
+			$values['privacy/group_ids'] = $combinedValues['group_ids'];
+			$values['privacy/smart_group_id'] = $combinedValues['smart_group_id'];
+			$values['privacy/module_class_name'] = $combinedValues['module_class_name'];
+			$values['privacy/method_name'] = $combinedValues['method_name'];
+			$values['privacy/param_1'] = $combinedValues['param_1'];
+			$values['privacy/param_2'] = $combinedValues['param_2'];
 		}
 		
 		$numLanguages = getNumLanguages();
@@ -174,7 +183,7 @@ class zenario_users__admin_boxes__content_privacy extends zenario_users {
 						 || $specialPage == 'zenario_no_access') {
 							$box['tabs']['privacy']['errors']['special'] = adminPhrase('Your selection includes a special page that must be publicly visible.');
 						
-						} elseif ($specialPage == 'zenario_home' && $values['privacy/privacy'] != 'all_extranet_users') {
+						} elseif ($specialPage == 'zenario_home' && $values['privacy/privacy'] != 'logged_in') {
 							$box['tabs']['privacy']['errors']['home'] =
 								adminPhrase('The home page must either be publicly visible or viewable by all Extranet Users.');
 						
@@ -185,19 +194,27 @@ class zenario_users__admin_boxes__content_privacy extends zenario_users {
 					}
 				}
 			}
-				
-			if (!$values['privacy/privacy']) {
-				$box['tabs']['privacy']['errors'][] = adminPhrase('Please select an option.');
-			}
 			
-			if ($values['privacy/privacy'] == 'specific_users'
-			 && !$values['privacy/specific_users']) {
-				$box['tabs']['privacy']['errors'][] = adminPhrase('Please select a User.');
-			}
-			
-			if ($values['privacy/privacy'] == 'group_members'
-			 && !$values['privacy/group_members']) {
-				$box['tabs']['privacy']['errors'][] = adminPhrase('Please select a Group.');
+			switch ($values['privacy/privacy']) {
+				case 'call_static_method':
+					if (!$values['privacy/module_class_name']) {
+						$box['tabs']['privacy']['errors'][] = adminPhrase('Please enter the class name of a module.');
+		
+					} elseif (!inc($values['privacy/module_class_name'])) {
+						$box['tabs']['privacy']['errors'][] = adminPhrase('Please enter the class name of a module that you have running on this site.');
+		
+					} elseif ($values['privacy/method_name']
+						&& !method_exists(
+								$values['privacy/module_class_name'],
+								$values['privacy/method_name'])
+					) {
+						$box['tabs']['privacy']['errors'][] = adminPhrase('Please enter the name of an existing public static method.');
+					}
+		
+					if (!$values['privacy/method_name']) {
+						$box['tabs']['privacy']['errors'][] = adminPhrase('Please enter the name of a public static method.');
+					}
+					break;
 			}
 		}
 	}

@@ -20,6 +20,12 @@ full_slot:
                 edit: true
                 layout: true
             label: 'CSS classes: <span></span>'
+        embed:
+            css_class: zenario_slotControl_copyEmbedLink
+            label: 'Embed:'
+            page_modes:
+                edit: true
+                layout: true
         in_this_slot:
             css_class: zenario_slotControl_inThisSlot
             label: 'In this slot:'

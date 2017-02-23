@@ -3,18 +3,76 @@ zenario_menu:
         feature_image_id: ''
     tabs:
         feature_image:
-            label: 'Feature image'
+            label: 'Images'
+            ord: 2
             edit_mode:
                 enabled: true
             fields:
-                zenario_promo_menu__feature_image_checkbox:
-                    label: 'Feature image'
+                show_image:
+                    ord: 0.1
+                    label: 'Show an image'
                     type: checkbox
                     format_onchange: true
+                    side_note: "An image will show up next to the menu node."
+                image_id:
+                    visible_if: "zenarioAB.value('show_image')"
+                    ord: 0.2
+                    label: 'Image:'
+                    indent: 1
+                    upload:
+                        multi: false
+                        accept: 'image/*'
+                        extensions:
+                            - .gif
+                            - .jpg
+                            - .jpeg
+                            - .png
+                        drag_and_drop: true
+                        reorder_items: false
+                    pick_items:
+                        path: zenario__content/panels/image_library
+                        min_path: zenario__content/panels/image_library
+                        max_path: zenario__content/panels/image_library
+                        target_path: zenario__content/panels/image_library
+                        select_phrase: Select image...
+                    validation:
+                        required_if_not_hidden: Please select an image.
+                use_rollover_image:
+                    ord: 0.3
+                    label: 'Show a rollover image effect'
+                    type: checkbox
+                    format_onchange: true
+                    side_note: "An image will show up on mouse over and It will disappear on mouse out."
+                rollover_image_id:
+                    ord: 0.4
+                    indent: 1
+                    label: 'Rollover image:'
+                    visible_if: "zenarioAB.value('use_rollover_image')"
+                    upload:
+                        multi: false
+                        accept: 'image/*'
+                        extensions:
+                            - .gif
+                            - .jpg
+                            - .jpeg
+                            - .png
+                        drag_and_drop: true
+                        reorder_items: false
+                    pick_items:
+                        path: zenario__content/panels/image_library
+                        min_path: zenario__content/panels/image_library
+                        max_path: zenario__content/panels/image_library
+                        target_path: zenario__content/panels/image_library
+                        select_phrase: Select image...
+                zenario_promo_menu__feature_image_checkbox:
+                    label: 'Show a feature image'
+                    type: checkbox
+                    format_onchange: true
+                    side_note: "A feature image appears as a large image on a promotional menu during hover over this menu node. Only supported if the menu plugin supports images (e.g. Promo image plugin)"
                 zenario_promo_menu__feature_image:
                     indent: 1
                     foreign_key_to: file
-                    label: 'Image'
+                    label: 'Image:'
                     pick_items:
                         path: zenario__content/panels/image_library
                         min_path: zenario__content/panels/image_library
@@ -37,7 +95,7 @@ zenario_menu:
                         required_if_not_hidden: Please select an image.
                 zenario_promo_menu__canvas:
                     indent: 1
-                    label: 'Image canvas'
+                    label: 'Image canvas:'
                     type: select
                     value: unlimited
                     values:
@@ -59,7 +117,7 @@ zenario_menu:
                     format_onchange: Yes
                 zenario_promo_menu__width:
                     indent: 2
-                    label: 'Width'
+                    label: 'Width:'
                     type: text
                     validation:
                         required_if_not_hidden: Please enter a width in pixels.
@@ -70,7 +128,7 @@ zenario_menu:
                     post_field_html: '&nbsp;pixels'
                 zenario_promo_menu__height:
                     indent: 2
-                    label: 'Height'
+                    label: 'Height:'
                     type: text
                     validation:
                         required_if_not_hidden: Please enter a height in pixels.
@@ -84,7 +142,7 @@ zenario_menu:
                     indent: 2
                     plugin_setting:
                         name: offset
-                    label: 'Offset'
+                    label: 'Offset:'
                     type: text
                     style: 'width: 50px;'
                     value: "0"
@@ -106,7 +164,7 @@ zenario_menu:
                 zenario_promo_menu__rollover_image:
                     indent: 2
                     foreign_key_to: file
-                    label: 'Change image on rollover'
+                    label: 'Change image on rollover:'
                     pick_items:
                         path: zenario__content/panels/image_library
                         min_path: zenario__content/panels/image_library
@@ -131,7 +189,7 @@ zenario_menu:
                     indent: 1
                     multiple_edit:
                         original_value: ""
-                    label: 'Overwrite image alt-tag'
+                    label: 'Overwrite image alt-tag:'
                     type: text
                     maxlength: "255"
                     value: ""
@@ -139,14 +197,14 @@ zenario_menu:
                 
                 zenario_promo_menu__title:
                     indent: 1
-                    label: 'Title'
+                    label: 'Title:'
                     type: text
                     width: "150"
                     maxlength: "255"
                     value: ""
                 zenario_promo_menu__text:
                     indent: 1
-                    label: 'HTML'
+                    label: 'Description (HTML):'
                     type: editor
                     dont_trim: true
                     insert_link_button:
@@ -159,7 +217,7 @@ zenario_menu:
                 
                 zenario_promo_menu__link_type:
                     indent: 1
-                    label: 'Destination'
+                    label: 'Destination:'
                     type: radios
                     values:
                         no_link:
@@ -167,7 +225,7 @@ zenario_menu:
                             label: No link
                         content_item:
                             ord: "2"
-                            label: Link to a Content Item
+                            label: Link to a content item
                         external_url:
                             ord: "3"
                             label: Link to an external URL
@@ -175,7 +233,7 @@ zenario_menu:
                     format_onchange: Yes
                 zenario_promo_menu__hyperlink_target:
                     indent: 2
-                    label: 'Content Item'
+                    label: 'Content item:'
                     pick_items:
                         path: zenario__content/panels/content/refiners/filter_by_lang////
                         min_path: zenario__content/panels/content
@@ -185,11 +243,11 @@ zenario_menu:
                         select_phrase: select a content item...
                         hide_remove_button: true
                     validation:
-                        required_if_not_hidden: Please select a content item
+                        required_if_not_hidden: Please select a content item.
                     format_onchange: Yes
                 zenario_promo_menu__hide_private_item:
                     indent: 2
-                    label: 'Privacy'
+                    label: 'Privacy:'
                     type: select
                     value: always_show
                     values:
@@ -207,7 +265,7 @@ zenario_menu:
                             label: Only show to extranet users
                 zenario_promo_menu__url:
                     indent: 2
-                    label: 'External URL'
+                    label: 'External URL:'
                     type: url
                     maxlength: "255"
                     value: ""

@@ -251,12 +251,12 @@ function loadSiteConfig() {
 function my_mysql_query($sql, $updateDataRevisionNumber = -1, $checkCache = true, $return = 'sqlSelect') {
 	
 	if ($return === true || $return === 'mysql_affected_rows' || $return === 'mysql_affected_rows()' || $return === 'sqlAffectedRows' || $return === 'sqlAffectedRows()') {
-		if (sqlUpdate($sql, $checkCache)) {
+		if (sqlUpdate($sql, false, $checkCache)) {
 			return sqlAffectedRows();
 		}
 	
 	} elseif ($return === 'mysql_insert_id' || $return === 'mysql_insert_id()' || $return === 'sqlInsertId' || $return === 'sqlInsertId()') {
-		if (sqlUpdate($sql, $checkCache)) {
+		if (sqlUpdate($sql, false, $checkCache)) {
 			return sqlInsertId();
 		}
 	
@@ -322,10 +322,31 @@ Trace-back information:\n";
 	exit;
 }
 
-function reportDatabaseError($errtext="", $errno="", $error="", $sql="", $backtrace = "") {
+function reportDatabaseError($errtext = '', $errno = '', $error = '', $sql = '', $backtrace = '', $additionalSubject = '') {
 	
-	$subject = "Error at ".$_SERVER['HTTP_HOST'];
-	$body = visitorIP(). " accessing ". $_SERVER['REQUEST_URI']. "\n\n". $errtext. "\n\n". $errno. "\n\n". $error. "\n\n". $sql. "\n\n". $backtrace. "\n\n";
+	if (!empty($_SERVER['HTTP_HOST'])) {
+		$subject = 'Error at '. $_SERVER['HTTP_HOST'];
+	
+	} elseif (!empty(cms_core::$siteConfig['primary_domain'])) {
+		$subject = 'Error at '. cms_core::$siteConfig['primary_domain'];
+	
+	} elseif (!empty(cms_core::$siteConfig['last_primary_domain'])) {
+		$subject = 'Error at '. cms_core::$siteConfig['last_primary_domain'];
+	
+	} else {
+		$subject = 'Error at '. gethostname();
+	}
+	
+	$subject .= $additionalSubject;
+	
+	
+	$body = visitorIP();
+	
+	if (!empty($_SERVER['REQUEST_URI'])) {
+		$body .= ' accessing '. $_SERVER['REQUEST_URI'];
+	}
+	
+	$body .= "\n\n". $errtext. "\n\n". $errno. "\n\n". $error. "\n\n". $sql. "\n\n". $backtrace. "\n\n";
 	
 	// Mail it
 	require_once CMS_ROOT. 'zenario/api/system_functions.inc.php';
@@ -483,9 +504,9 @@ function checkForChangesInYamlFiles($forceScan = false) {
 	
 	
 	if ($changed) {
-		//We'll need to be reading TUIX files, the functions needed for this are stored in admin.inc.php
+		//We'll need to be reading TUIX files, the functions needed for this are stored in tuix.inc.php
 		require_once CMS_ROOT. 'zenario/visitorheader.inc.php';
-		require_once CMS_ROOT. 'zenario/includes/admin.inc.php';
+		require_once CMS_ROOT. 'zenario/includes/tuix.inc.php';
 		
 		
 		//Look to see what datasets are on the system, and which datasets extend which FABs
@@ -767,6 +788,25 @@ function getRunningModules($dbUpdateSafemode = false, $orderBy = false) {
 }
 
 
+function getModulePrefix($module, $mustBeRunning = true, $oldFormat = false) {
+	
+	if (!is_array($module)) {
+		$module = sqlFetchAssoc("
+			SELECT id, class_name, status
+			FROM ". DB_NAME_PREFIX. "modules
+			WHERE class_name = '". sqlEscape($module). "'
+			  ". ($mustBeRunning? "AND status IN ('module_running', 'module_is_abstract')" : ""). "
+			LIMIT 1");
+	}
+	
+	if (!$module) {
+		return false;
+	} else {
+		return setModulePrefix($module, false, $oldFormat);
+	}
+}
+
+
 //Define a plugin's database table prefix
 function setModulePrefix(&$module, $define = true, $oldFormat = false) {
 	
@@ -840,18 +880,20 @@ function trimDebugBacktrace(&$debugBacktrace, $firstCall = true) {
 }
 
 function reportDatabaseErrorFromHelperFunction($error) {
-	echo adminPhrase('A database error has occured on this section of the site.'), "\n\n";
+	echo 'A database error has occured on this section of the site.', "\n\n";
 	
 	if (defined('RUNNING_FROM_COMMAND_LINE') || (defined('SHOW_SQL_ERRORS_TO_VISITORS') && SHOW_SQL_ERRORS_TO_VISITORS === true)) {
 		echo $error;
 	} else {
-		echo adminPhrase('Please contact a site Administrator.');
+		echo 'Please contact a site Administrator.';
 	}
+	
+	echo "\n\n";
 		
 	if (defined('DEBUG_SEND_EMAIL') && DEBUG_SEND_EMAIL === true) {
 		$debugBacktrace = debug_backtrace();
 		trimDebugBacktrace($debugBacktrace);
-		reportDatabaseError(adminPhrase('Database query error'), '', $error, '', print_r($debugBacktrace, true));
+		reportDatabaseError('Database query error', '', $error, '', print_r($debugBacktrace, true));
 	}
 	
 	exit;
@@ -1088,7 +1130,7 @@ function checkRowExists(
 		$out = array();
 		
 		if ($result = checkRowExists($table, $ids, $ignoreMissingColumns, $cols, true, false, $orderBy, $distinct, false, !$distinct)) {
-			while ($row = sqlFetchAssoc($result, $table)) {
+			while ($row = sqlFetchAssoc($result, false, $table)) {
 				
 				$id = false;
 				if (is_string($returnArrayIndexedBy) && isset($row[$returnArrayIndexedBy])) {
@@ -1247,7 +1289,7 @@ function checkRowExists(
 		if ($multiple) {
 			return $result;
 		
-		} elseif (!$row = sqlFetchAssoc($result, $table)) {
+		} elseif (!$row = sqlFetchAssoc($result, false, $table)) {
 			return false;
 		
 		} elseif (is_array($cols)) {
@@ -1305,7 +1347,7 @@ function setRow(
 				checkRowExistsCol($tableName, $sqlW, $col, $val, $first, true, $ignoreMissingColumns);
 			}
 			
-			sqlUpdate($sql. $sqlW, false);
+			sqlUpdate($sql. $sqlW, false, false);
 			if (($affectedRows = sqlAffectedRows()) > 0
 			 && $checkCache) {
 				
@@ -1348,7 +1390,7 @@ function setRow(
 			}
 		}
 		
-		sqlUpdate($sql, false);
+		sqlUpdate($sql, false, false);
 		$id = sqlInsertId();
 		
 		if ($markNewThingsInSession) {
@@ -1384,7 +1426,7 @@ function reviewDatabaseQueryForChanges(&$sql, &$ids, &$values, $table = false, $
 		return $edition::reviewDatabaseQueryForChanges($sql, $ids, $values, $table, $runSql);
 	
 	} elseif ($runSql) {
-		sqlUpdate($sql, false);
+		sqlUpdate($sql, false, false);
 		return sqlAffectedRows();
 	}
 }

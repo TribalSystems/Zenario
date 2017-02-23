@@ -7,7 +7,7 @@ zenario_path:
         from_state: ''
         to_state: ''
         idInOrganizer: ''
-    max_height: 180
+    max_height: 250
     hide_tab_bar: true
     #identifier:
     #    css_class: ''
@@ -21,9 +21,32 @@ zenario_path:
                 always_on: true
             fields:
                 commands:
-                    type: text
-                    maxlength: 2048
-                    placeholder: Enter a list of commands, comma separated
+                    type: radios
+                    cols: 3
+                    values:
+                        back:
+                            ord: 1
+                            label: back
+                        close:
+                            ord: 2
+                            label: close
+                        '#custom#':
+                            ord: 999999
+                            label: 'Custom:'
                     validation:
                         required: |
-                            Please enter the name of at least one command
+                            Please select a command
+                command_custom:
+                    type: text
+                    maxlength: 100
+                    placeholder: Enter a command name
+                    onkeydown: >
+                        if (this.value != ''
+                         && (event.keyCode == 13 || event.keyCode > 45)) {
+                            zenario.get('commands___#custom#').checked = true;
+                        }
+                    validation:
+                        no_spaces: |
+                            Please don't enter any spaces in the command's name
+                        screen_name: |
+                            Please don't enter any special characters in the command's name

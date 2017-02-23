@@ -28,8 +28,14 @@
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
 
+cms_core::$vars['userId'] =
 cms_core::$vars['companyId'] =
 cms_core::$vars['locationId'] = 0;
+
+$status = require editionInclude('checkRequestVars', $continueFrom = 'zenario_pro_features');
+if (!$status) {
+	return $status;
+}
 
 $zclmPrefix = getModulePrefix('zenario_company_locations_manager');
 $zlmPrefix = getModulePrefix('zenario_location_manager');
@@ -37,19 +43,35 @@ $zlmPrefix = getModulePrefix('zenario_location_manager');
 
 if ($zlmPrefix) {
 	if (!cms_core::$vars['locationId']) {
-		cms_core::$vars['locationId'] = (int) request('locationId');
+		if (!empty($_REQUEST['locationId'])) {
+			cms_core::$vars['locationId'] = (int) $_REQUEST['locationId'];
+		}
 	}
 }
 
 if ($zclmPrefix) {
-
-	if (!cms_core::$vars['companyId'] && cms_core::$vars['locationId']) {
-		cms_core::$vars['companyId'] = getRow($zclmPrefix. 'company_location_link', 'company_id', array('location_id' => cms_core::$vars['locationId']));
-	}
-	
 	if (!cms_core::$vars['companyId']) {
-		cms_core::$vars['companyId'] = (int) request('companyId');
+		
+		if (cms_core::$vars['locationId']
+		 && (cms_core::$vars['companyId'] = getRow($zclmPrefix. 'company_location_link', 'company_id', array('location_id' => cms_core::$vars['locationId'])))) {
+		
+		} elseif (!empty($_REQUEST['companyId'])) {
+			cms_core::$vars['companyId'] = (int) $_REQUEST['companyId'];
+		}
 	}
 }
 
-require editionInclude('checkRequestVars', $continueFrom = 'zenario_pro_features');
+if (!cms_core::$vars['userId']) {
+	if (!empty($_REQUEST['userId'])) {
+		cms_core::$vars['userId'] = (int) $_REQUEST['userId'];
+	}
+}
+
+//If a companyId and/or locationId is in the URL, check the current visitor is allowed to see that company and/or location
+if ((cms_core::$vars['userId'] && !checkUserCan('view', 'user', cms_core::$vars['userId']))
+ || (cms_core::$vars['companyId'] && !checkUserCan('view', 'company', cms_core::$vars['companyId']))
+ || (cms_core::$vars['locationId'] && !checkUserCan('view', 'location', cms_core::$vars['locationId']))) {
+	return ZENARIO_403_NO_PERMISSION;
+}
+
+return true;

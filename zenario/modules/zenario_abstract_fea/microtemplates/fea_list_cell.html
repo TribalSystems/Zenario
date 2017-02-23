@@ -5,7 +5,7 @@
 	{{m.item[m.col.id]}}
 <% } else if (m.col.is_icon) { %>
 	<span class="fea_icon {{m.item[m.col.id]|escape}}"></span>
-
+    
 <% } else if (m.item[m.col.id] && m.col.values && m.col.values[m.item[m.col.id]]) { %>
 	{{m.col.values[m.item[m.col.id]]|escape}}
 <!--

@@ -59,14 +59,9 @@ incJS('zenario/libraries/mit/colorbox/jquery.colorbox');
 incJS('zenario/libraries/bsd/javascript_md5/md5');
 
 echo '
-zenario.tinyMCEPath = "', TINYMCE_DIR, 'tinymce.min.js";
-zenario.mtSettings = {
-variable: "m",
-escape: false,
-interpolate: /\{\{(.+?)\}\}/g,
-evaluate: /[<\{]%([\s\S]+?)%[>\}]/g,
-twigStyleSyntax: true
-}';
+zenario.tinyMCEPath = "', TINYMCE_DIR, 'tinymce.min.js";';
+
+incJS('zenario/js/visitor.ready');
 
 
 

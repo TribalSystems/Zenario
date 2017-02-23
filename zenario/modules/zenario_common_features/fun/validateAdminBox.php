@@ -33,11 +33,6 @@ switch ($path) {
 	case 'plugin_css_and_framework':
 		return require funIncPath(__FILE__, 'plugin_settings.validateAdminBox');
 	
-
-	case 'zenario_content':
-	case 'zenario_quick_create':
-		return require funIncPath(__FILE__, 'content.validateAdminBox');
-	
 	case 'zenario_document_folder':
 		
 		if ($values['details/folder_name'] == "") {

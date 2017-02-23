@@ -30,9 +30,28 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_users__organizer__smart_groups extends zenario_users {
 
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
+		
+		if (!checkModuleRunning('zenario_extranet')) {
+			unset($panel['collection_buttons']['perms']);
+		}
+		
 		foreach ($panel['items'] as $id => &$item) {
-			$item['description'] = getSmartGroupDescription($id);
 			$item['members'] = countSmartGroupMembers($id);
+			
+			if ($item['members'] === false) {
+				$item['description'] = adminPhrase('There is a problem with this smart group.');
+			} else {
+				$item['description'] = getSmartGroupDescription($id);
+			}
+			
+			switch ($item['intended_usage']) {
+				case 'smart_newsletter_group':
+					$item['css_class'] = 'zenario_smart_news_group';
+					break;
+				case 'smart_permissions_group':
+					$item['css_class'] = 'zenario_smart_perms_group';
+					break;
+			}
 		}
 	}
 	

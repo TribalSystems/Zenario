@@ -34,7 +34,6 @@ class zenario_menu_responsive_multilevel extends zenario_menu {
 		if (parent::init()) {
 			
 			$this->callScript('zenario_menu_responsive_multilevel', 'init', $this->containerId. '-dl-menu');
-			$this->showAdminAddMenuItem = false;
 			
 			return true;
 		} else {

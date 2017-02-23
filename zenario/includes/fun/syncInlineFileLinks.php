@@ -172,7 +172,7 @@ if ($usage == 'image'
 					$dummyWidth, $dummyHeight, $url, $file['id'], $width, $height,
 					$mode, $offset
 				)) {
-					if (chopPrefixOffOfString($url, 'public/images/')) {
+					if (chopPrefixOffString('public/images/', $url)) {
 						$html .= htmlspecialchars($url);
 						$htmlChanged = true;			
 						$doneSomething = true;
@@ -359,7 +359,7 @@ if (strpos($html, 'zenario/file.php') !== false) {
 					$retina = false, $privacy = 'public',
 					$useCacheDir = true, $internalFilePath = false, $returnImageStringIfCacheDirNotWorking = false
 				)) {
-					if (chopPrefixOffOfString($url, 'public/images/')) {
+					if (chopPrefixOffString('public/images/', $url)) {
 						$html .= htmlspecialchars($url);
 						$htmlChanged = true;			
 						$doneSomething = true;

@@ -273,10 +273,13 @@ class zenario_common_features__admin_boxes__setup_language extends module_base_c
 			}
 
 		}
-
-
+	}
+	
+	public function adminBoxSaveCompleted($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+		
 		//Go to the language in the enabled languages panel.
 		//We should also reload the page if any of the language names were changed, or if this was the first language to be added
-		$box['popout_message'] = '<!--Go_To_URL:zenario/admin/welcome.php?task=reload_sk&og='. rawurlencode('zenario__languages/panels/languages//'. $langId). '-->';
+		closeFABWithFlags(['go_to_url' => 'zenario/admin/welcome.php?task=reload_sk&og='. rawurlencode('zenario__languages/panels/languages//'. $box['key']['id'])]);
+		exit;
 	}
 }

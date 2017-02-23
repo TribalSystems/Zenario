@@ -29,7 +29,7 @@
 require('basicheader.inc.php');
 require CMS_ROOT. 'zenario/visitorheader.inc.php';
 require CMS_ROOT. 'zenario/includes/admin.inc.php';
-require CMS_ROOT. 'zenario/includes/tuix_ajax.inc.php';
+require CMS_ROOT. 'zenario/includes/tuix.inc.php';
 header('Content-Type: text/javascript; charset=UTF-8');
 
 

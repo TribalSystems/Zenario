@@ -178,14 +178,16 @@ plugin_settings:
                     side_note: |
                         Shows a drop-down list of countries. When a visitor selects a country,
                         only that country's locations will be shown.
-                    format_onchange: true
+                    redraw_onchange: true
                 default_country_options:
+                    visible_if: |
+                        zenarioAB.value('filter_by_country')
                     indent: 1
                     plugin_setting:
                         name: default_country_options
                     label: Default country
                     type: select
-                    format_onchange: true
+                    redraw_onchange: true
                     values:
                         select_country:
                             ord: 1
@@ -198,6 +200,8 @@ plugin_settings:
                         If GeoIP is selected, the visitor IP address will be taken into account to define the default country in the select list.
                 default_country:
                     indent: 2
+                    visible_if: |
+                        zenarioAB.value('filter_by_country') && zenarioAB.value('default_country_options') == 'select_country'
                     plugin_setting:
                         name: default_country
                     label: 'Default country:'
@@ -233,9 +237,11 @@ plugin_settings:
                         will be shown.
                         If you select multiple fields, they will act as filters with OR logic - locations
                         with one of the fields set will be shown.
-                    format_onchange: true
+                    redraw_onchange: true
                 field1:
                     indent: 1
+                    visible_if: |
+                        zenarioAB.value('list_by_field')
                     plugin_setting:
                         name: field1
                     type: select

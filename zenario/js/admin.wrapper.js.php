@@ -69,3 +69,5 @@ incJS('zenario/libraries/mit/jssor/jssor.slider.mini');
 
 echo '
 ace.config.set("basePath", URLBasePath + "zenario/libraries/bsd/ace/src-min-noconflict/");';
+
+incJS('zenario/js/admin.ready');

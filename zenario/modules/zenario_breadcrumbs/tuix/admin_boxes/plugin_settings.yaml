@@ -11,6 +11,7 @@ plugin_settings:
                         name: menu_section
                         foreign_key_to: menu_section
                         dangling_cross_references: delete_instance
+                        use_value_for_plugin_name: 2
                     label: 'Menu Section:'
                     pick_items:
                         path: zenario__menu/panels/sections
@@ -18,7 +19,7 @@ plugin_settings:
                         max_path: zenario__menu/panels/sections
                         target_path: zenario__menu/panels/sections
                         select_phrase: Select Menu Section...
-                        hide_remove_button: Yes
+                        hide_remove_button: true
                     value: "1"
                     validation:
                         required: Please select a menu section
@@ -36,7 +37,7 @@ plugin_settings:
                         other_menu_node:
                             label: "Use a specific menu node"
                     value: site_home_page
-                    format_onchange: Yes
+                    format_onchange: true
                     side_note: On multi-lingual sites, the link will always point to the page in the current visitor language, if it exists.
                     
                 breadcrumb_prefix_menu:
@@ -44,7 +45,7 @@ plugin_settings:
                         name: breadcrumb_prefix_menu
                         foreign_key_to: content
                         dangling_cross_references: delete_instance
-                        use_value_for_plugin_name: "4"
+                        use_value_for_plugin_name: 1
                     visible_if: >
                         zenarioAB.value('breadcrumb_trail') == 'other_menu_node'
                     label: 'Menu node:'
@@ -66,4 +67,14 @@ plugin_settings:
                     type: text
                     value: '»'
                     style: 'width: 5em;'
+                        
+                add_conductor_slides:
+                    plugin_setting:
+                        name: add_conductor_slides
+                    visible_if: |
+                        lib.tuix.key.usesConductor
+                    label: 'Add nest conductor slides to the breadcrumb trail'
+                    type: checkbox
+                    note_below: |
+                        The first slide's title will not appear in the breadcrumb trail, edit the content item's menu node to set this.
                 

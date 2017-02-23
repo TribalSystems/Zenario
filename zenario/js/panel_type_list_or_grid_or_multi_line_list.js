@@ -40,8 +40,8 @@ zenario.lib(function(
 	undefined,
 	URLBasePath,
 	document, window, windowOpener, windowParent,
-	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO,
-	get, engToBoolean, htmlspecialchars, ifNull, jsEscape, phrase,
+	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO, strings,
+	encodeURIComponent, get, engToBoolean, htmlspecialchars, jsEscape, phrase,
 	extensionOf, methodsOf, has,
 	panelTypes
 ) {
@@ -60,11 +60,11 @@ var methods = methodsOf(
 
 
 methods.returnPanelTypeA = function() {
-	return panelTypes.list;
+	return panelTypes.grid;
 };
 
 methods.returnPanelTypeB = function() {
-	return panelTypes.grid;
+	return panelTypes.list;
 };
 
 methods.returnPanelTypeC = function() {
@@ -72,31 +72,31 @@ methods.returnPanelTypeC = function() {
 };
 
 methods.returnSwitchButtonCSSClassA = function() {
-	return 'organizer_switch_to_list_view';
-};
-
-methods.returnSwitchButtonCSSClassB = function() {
 	return 'organizer_switch_to_grid_view';
 };
 
-methods.returnSwitchButtonCSSClassC = function() {
+methods.returnSwitchButtonCSSClassB = function() {
 	return 'organizer_switch_to_list_view';
 };
 
-methods.returnSwitchButtonTooltipA = function() {
-	return 'List view';
+methods.returnSwitchButtonCSSClassC = function() {
+	return 'organizer_switch_to_compact_list_view';
 };
 
-methods.returnSwitchButtonTooltipB = function() {
+methods.returnSwitchButtonTooltipA = function() {
 	return 'Grid view';
 };
 
+methods.returnSwitchButtonTooltipB = function() {
+	return 'List view';
+};
+
 methods.returnSwitchButtonTooltipC = function() {
-	return 'Detailed list view';
+	return 'Compact list view';
 };
 
 methods.returnDefaultView = function() {
-	return 'A';
+	return 'C';
 };
 
 

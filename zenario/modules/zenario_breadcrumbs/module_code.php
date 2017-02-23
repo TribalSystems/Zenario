@@ -40,7 +40,6 @@ class zenario_breadcrumbs extends zenario_menu {
 		$this->numLevels				= 999;
 		$this->maxLevel1MenuItems		= 999;
 		$this->language					= false;
-		$this->showAdminAddMenuItem		= false;
 		$this->onlyFollowOnLinks		= true;
 		$this->onlyIncludeOnLinks		= true;
 		$this->showInvisibleMenuItems	= true;
@@ -106,6 +105,71 @@ class zenario_breadcrumbs extends zenario_menu {
 	function drawMenu(&$menuArray, $recurseCount = 0, $headerObjects = array(), $subSections = array()) {
 		
 		if ($recurseCount == 0) {
+			
+			//Have an option to add the conductor's slides on to the end of the breadcrumb trail,
+			//if this plugin is in a nest, the plugin setting is enabled, and there are some back-links
+			if (isset($this->parentNest)
+			 && $this->setting('add_conductor_slides')
+			 && !empty($menuArray)
+			 && ($backs = $this->parentNest->getBackLinks())
+			 && (!empty($backs))) {
+				
+				//Create a reference to the last child in the breadcrumb trail.
+				//This is a bit complicated due to the recursive nature of the data; we need to
+				//keep drilling down into the child arrays until we get to the bottom node.
+				$lastNode = false;
+				foreach ($menuArray as &$menu) {
+					$lastNode = &$menu;
+					$lastNode['current'] = false;
+					break;
+				}
+				unset($menu);
+				while (!empty($lastNode['children']) && is_array($lastNode['children'])) {
+					foreach($lastNode['children'] as &$child) {
+						$lastNode = &$child;
+						$lastNode['current'] = false;
+					}
+				}
+				unset($child);
+				
+				
+				//Loop through each back link
+				$first = true;
+				foreach ($backs as $state => $details) {
+					
+					$name = $this->parentNest->formatTitleText($this->phrase($details['tab']['name_or_title']));
+					$url = linkToItem(
+						cms_core::$cID, cms_core::$cType, false, $details['requests'], cms_core::$alias,
+						$autoAddImportantRequests = false
+					);
+					
+					//For the first conductor link, override the lasty breadcrumb
+					if ($first) {
+						$first = false;
+						//$lastNode['name'] = $name;
+						$lastNode['url'] = $url;
+					
+					} else {
+						//For all subsequent  links, create a new breadcrumb as a copy of the previous one
+						$child = $lastNode;
+					
+						//Change the name and link
+						$child['open_in_new_window'] = false;
+						$child['name'] = $name;
+						$child['url'] = $url;
+					
+						//Set the new breadcrumb as a child of the previous one
+						$lastNode['children'] = [$child];
+						unset($child);
+					
+						//Update the pointer to point to the thing we just made
+						$lastNode = &$lastNode['children'][0];
+					}
+				}
+				$lastNode['current'] = true;
+			}
+			
+			
 			switch ($this->setting('breadcrumb_trail')) {
 				case 'other_menu_node':
 					$prefixPage = (getContentFromMenu($this->setting('breadcrumb_prefix_menu')));

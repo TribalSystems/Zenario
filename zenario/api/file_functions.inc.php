@@ -373,7 +373,7 @@ function fileLink($fileId, $hash = false, $type = 'files', $customDocstorePath =
 	
 	//Workout a hash for the file
 	if (!$hash) {
-		if (chopPrefixOffOfString($type, 'public/')) {
+		if (chopPrefixOffString('public/', $type)) {
 			$hash = $file['short_checksum'];
 		} else {
 			$hash = $file['checksum'];
@@ -788,14 +788,34 @@ function itemStickyImageLinkArray(
 	return false;
 }
 
+function programPathForExec($path, $program) {
+	
+	if (!windowsServer() && execEnabled()) {
+		switch ($path) {
+			case 'PATH':
+				return $program;
+			case '/usr/bin/':
+				return '/usr/bin/'. $program;
+			case '/usr/local/bin/':
+				return '/usr/local/bin/'. $program;
+			case '/Applications/AMPPS/mysql/bin/':
+				if (PHP_OS == 'Darwin') {
+					return '/Applications/AMPPS/mysql/bin/'. $program;
+				}
+		}
+	}
+	
+	return false;
+}
+
 function createPpdfFirstPageScreenshotPng($file) {
 	if (file_exists($file) && is_readable($file)) {
 		if (documentMimeType($file) == 'application/pdf') {
-			if (!windowsServer() && execEnabled()) {
+			if ($programPath = programPathForExec(setting('ghostscript_path'), 'gs')) {
 				if ($temp_file = tempnam(sys_get_temp_dir(), 'pdf2png')) {
 					$escaped_file = escapeshellarg($file);
 					//$jpeg_file = basename($file) . '.jpg';
-					$cmd = escapeshellarg(ifNull(setting('ghostscript_path'), 'gs')).
+					$cmd = escapeshellarg($programPath).
 						' -dNOPAUSE -q -dBATCH -sDEVICE=png16m -r' . ifNull((int)setting('ghostscript_dpi'), '72') . 
 						' -sOutputFile="' . $temp_file . '" -dLastPage=1 ' . $escaped_file;
 					exec($cmd, $output, $return_var);
@@ -835,10 +855,10 @@ function plainTextExtract($file, &$extract) {
 		switch (documentMimeType($file)) {
 			//.doc
 			case 'application/msword':
-				if (!windowsServer() && execEnabled()) {
+				if ($programPath = programPathForExec(setting('antiword_path'), 'antiword')) {
 					$return_var = false;
 					exec(
-						escapeshellarg(ifNull(setting('antiword_path'), 'antiword')).
+						escapeshellarg($programPath).
 						' '.
 						escapeshellarg($file),
 					$extract, $return_var);
@@ -873,11 +893,11 @@ function plainTextExtract($file, &$extract) {
 			
 			//.pdf
 			case 'application/pdf':
-				if (!windowsServer() && execEnabled()) {
+				if ($programPath = programPathForExec(setting('pdftotext_path'), 'pdftotext')) {
 					if ($temp_file = tempnam(sys_get_temp_dir(), 'p2t')) {
 						$return_var = $output = false;
 						exec(
-							escapeshellarg(ifNull(setting('pdftotext_path'), 'pdftotext')).
+							escapeshellarg($programPath).
 							' '.
 							escapeshellarg($file).
 							' '.
@@ -893,7 +913,7 @@ function plainTextExtract($file, &$extract) {
 								
 								$return_var = $output = false;
 								exec(
-									escapeshellarg(ifNull(setting('pdftotext_path'), 'pdftotext')).
+									escapeshellarg($programPath).
 									' '.
 									escapeshellarg($temp_pdf_file).
 									' '.

@@ -64,6 +64,9 @@ while ($row = sqlFetchAssoc($result)) {
 	if ($hideMenuNodes) {
 		$row['invisible'] = true;
 	}
+	if ($hidePrivateItem !== false) {
+		$row['hide_private_item'] = $hidePrivateItem;
+	}
 	$menuId = saveMenuDetails($row, $menuId, $resyncIfNeeded = false, $skipSectionChecks = true);
 	saveMenuText($menuId, $row['language_id'], $row);
 	$menuIds[$menuId] = $menuId;

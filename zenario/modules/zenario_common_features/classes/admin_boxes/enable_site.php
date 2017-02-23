@@ -64,7 +64,8 @@ class zenario_common_features__admin_boxes__enable_site extends module_base_clas
 		
 		if ($values['site/enable_site_production']
 		 || $values['site/enable_site_development']) {
-			if (checkIfDBUpdatesAreNeeded($andDoUpdates = false)) {
+		 	$moduleErrors = '';
+			if (checkIfDBUpdatesAreNeeded($moduleErrors, $andDoUpdates = false)) {
 				$box['tabs']['site']['errors'][] =
 					adminPhrase('You must apply database updates before you can enable your site.');
 			}

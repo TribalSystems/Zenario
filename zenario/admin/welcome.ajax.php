@@ -39,6 +39,7 @@ require '../basicheader.inc.php';
 startSession();
 require CMS_ROOT. 'zenario/includes/cms.inc.php';
 require CMS_ROOT. 'zenario/includes/admin.inc.php';
+require CMS_ROOT. 'zenario/includes/tuix.inc.php';
 require CMS_ROOT. 'zenario/includes/welcome.inc.php';
 
 //Check to see if the CMS is installed
@@ -190,7 +191,7 @@ if ($installed) {
 			//Security tokens are not enabled in the site_description.yaml file
 		if ($freshInstall
 		 || !checkTableDefinition(DB_NAME_PREFIX. 'admin_settings', true)
-		 || !siteDescription('require_security_code_on_admin_login')) {
+		 || !siteDescription('enable_two_factor_security_for_admin_logins')) {
 			$securityCodeChecked = true;
 		
 		//Try to get an existing admin cookie, and the corresponding admin setting.
@@ -205,7 +206,7 @@ if ($installed) {
 			zenarioTidySecurityCodes();
 			if (($scsn = zenarioSecurityCodeSettingName())
 			 && ($time = adminSetting($scsn))
-			 && ($time > zenarioSecurityCodeTime(siteDescription('security_code_timeout')))) {
+			 && ($time > zenarioSecurityCodeTime(siteDescription('two_factor_security_timeout')))) {
 				$securityCodeChecked = true;
 			
 			//Otherwise we need to send the email with the security code and show the admin the form
@@ -218,7 +219,8 @@ if ($installed) {
 	
 		if ($securityCodeChecked) {
 			//Check if database updates are needed
-			$dbUpToDate = !checkIfDBUpdatesAreNeeded($andDoUpdates = false);
+			$moduleErrors = '';
+			$dbUpToDate = !checkIfDBUpdatesAreNeeded($moduleErrors, $andDoUpdates = false);
 		
 			if (!$dbUpToDate) {
 				

@@ -36,7 +36,7 @@
 //To allow organizer.ajax.php to call this file, only include the header if it's not already been included
 if (!class_exists('cms_core')) {
 	require '../adminheader.inc.php';
-	require CMS_ROOT. 'zenario/includes/tuix_ajax.inc.php';
+	require CMS_ROOT. 'zenario/includes/tuix.inc.php';
 	useGZIP();
 } else {
 	exitIfNotCheckPriv();
@@ -51,7 +51,6 @@ $loadDefinition = true;
 $settingGroup = '';
 $compatibilityClassNames = array();
 cms_core::$skType = $type = 'admin_boxes';
-$commentMade = false;
 
 
 
@@ -205,6 +204,7 @@ if ($debugMode) {
 } elseif (!post('_fill')) {
 	$doSave = false;
 	$doFormat = true;
+	$errorsReset = false;
 	
 	if (post('_read_values')) {
 		//Given the JSON object for an Admin Box, strip everything out and just return the tabs/values
@@ -239,6 +239,7 @@ if ($debugMode) {
 		$values = array();
 		$changes = array();
 		readAdminBoxValues($tags, $fields, $values, $changes, $filling = false, $resetErrors = true);
+		$errorsReset = true;
 		
 		//Apply standard validation formats
 		if (TUIXLooksLikeFAB($tags)) {
@@ -283,9 +284,15 @@ if ($debugMode) {
 			}
 			
 			if ($doSave) {
+				$tags['_sync']['flags'] = array(
+					'valid' => false,
+					'confirm' => false,
+					'download' => false,
+					'saved' => false
+				);
+				
 				if (!post('_download')) {
-					echo '<!--Valid-->';
-					$commentMade = true;
+					$tags['_sync']['flags']['valid'] = true;
 				}
 				
 				$download =
@@ -295,12 +302,10 @@ if ($debugMode) {
 				
 				//Check if a confirmation is needed
 				if (engToBooleanArray($tags, 'confirm', 'show') && !(post('_confirm') || post('_download'))) {
-					echo '<!--Confirm-->';
-					$commentMade = true;
+					$tags['_sync']['flags']['confirm'] = true;
 					
 				} else if ($download && !post('_download')) {
-					echo '<!--Download-->';
-					$commentMade = true;
+					$tags['_sync']['flags']['download'] = true;
 					$doFormat = post('_save_and_continue');
 					
 				} else {
@@ -392,8 +397,7 @@ if ($debugMode) {
 						exit;
 				
 					} else {
-						echo '<!--Saved-->';
-						$commentMade = true;
+						$tags['_sync']['flags']['saved'] = true;
 						$doFormat = post('_save_and_continue');
 					}
 				}
@@ -406,7 +410,7 @@ if ($debugMode) {
 		$fields = array();
 		$values = array();
 		$changes = array();
-		readAdminBoxValues($tags, $fields, $values, $changes, $filling = false, $resetErrors = false);
+		readAdminBoxValues($tags, $fields, $values, $changes, $filling = false, $resetErrors = !$errorsReset);
 		
 		foreach ($modules as $className => &$module) {
 			$module->formatAdminBox($requestedPath, $settingGroup, $tags, $fields, $values, $changes);
@@ -755,6 +759,11 @@ if (!empty($originalTags)) {
 	$output = array();
 	syncAdminBoxFromServerToClient($tags, $originalTags, $output);
 	
+	//Always send the flags as-is without skipping them
+	if (isset($tags['_sync']['flags'])) {
+		$output['_sync']['flags'] = $tags['_sync']['flags'];
+	}
+	
 	$tags = $output;
 }
 
@@ -764,7 +773,5 @@ if (!empty($originalTags)) {
 
 
 //Display the output as JSON
-if (!$commentMade) {
-	header('Content-Type: text/javascript; charset=UTF-8');
-}
+header('Content-Type: text/javascript; charset=UTF-8');
 jsonEncodeForceObject($tags);

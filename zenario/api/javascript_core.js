@@ -41,7 +41,10 @@ zenario.lib(function(
 	undefined,
 	URLBasePath,
 	document, window, windowOpener, windowParent,
-	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO
+	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO, strings,
+	encodeURIComponent
+	//N.b. the rest of the shortcut functions that normally go here haven't been defined yet!
+	//They are actually defined below.
 ) {
 	"use strict";
 
@@ -76,21 +79,6 @@ zenario.lib(function(
 	//Shortcut to document.getElementById()
 	window.get = 
 	zenario.get = function(el) {
-		//Is there an admin floating box open?
-			//To avoid clashes with ids on the page and in the box, demand that the element returned be inside the box
-			//(Unless it's already prefixed with the zenario name, in which case it should be safe)
-		if (window.zenario
-		 && zenarioAB.isOpen
-		 && el.substr(0, 7) != 'zenario') {
-			var $el = $('#zenario_fbAdminFloatingBox #' + zenario.cssEscape(el));
-			
-			if ($el[0]) {
-				return $el[0];
-			}
-		}
-	
-		//If there wasn't an admin floating box open (or there was but the element we wanted wasn't inside)
-		//then return document.getElementById() as normal
 		return document.getElementById(el);
 	};
 
@@ -131,17 +119,28 @@ zenario.lib(function(
 	window.engToBoolean =
 	zenario.engToBoolean = function(text) {
 		
-		if (typeof text == 'function') {
+		var ty = typeof text;
+		
+		if (ty == 'function') {
 			text = text();
+			ty = typeof text;
 		}
 		
-		return text && (text = (text + '').trim().toLowerCase()) && (text != '0' && text != 'false' && text != 'no' && text != 'off')? 1:0;
+		switch (ty) {
+			case 'object':
+				return (text && text.length !== 0)? 1 : 0;
+			case 'string':
+				text = text.trim().toLowerCase();
+				return (text && text != '0' && text != 'false' && text != 'no' && text != 'off')? 1 : 0;
+			default:
+				return text? 1 : 0;
+		}
 	};
 
 	window.htmlspecialchars =
 	zenario.htmlspecialchars = function(text, preserveLineBreaks, preserveSpaces) {
 		
-		if (typeof text == 'function') {
+		if (_.isFunction(text)) {
 			text = text();
 		}
 		
@@ -169,10 +168,11 @@ zenario.lib(function(
 		
 		return text;
 	};
-
+	
+	//Deprecated, please don't use this!
 	window.ifNull =
 	zenario.ifNull = function(a, b, c) {
-		return a? a : (b? b : c);
+		return a || b || c;
 	};
 
 	window.jsEscape =
@@ -190,6 +190,8 @@ zenario.lib(function(
 			return text.replace(/[!"#$%&'()*+,.\/:;<=>?@[\\\]^`{|}~]/g, '\\$&');
 		}
 	};
+	
+	
 
 	zenario.addBasePath = function(url) {
 		if (url === undefined) {
@@ -202,70 +204,29 @@ zenario.lib(function(
 			return url;
 		}
 	};
+	
+	
+//	zenario.refreshPluginSlot = function(slotName, instanceId, additionalRequests, recordInURL, scrollToTopOfSlot, fadeOutAndIn, useCache, post) {};
 
-	//Take a request string, and check it's formatted correctly
-	zenario.addAmp = function(request) {
-	
-		//For backwards compatability purposes, we'll accept a string with a URL already set, and strip the requests out
-		var pos = request.indexOf('?');
-		if (pos != -1) {
-			request = request.substr(pos+1);
-		}
-	
-		//Add an & to the beginning if needed
-		if (request != '' && request.substr(0, 1) != '&') {
-			return '&' + request;
-		} else {
-			return request;
-		}
+//	zenario.getSlotnameFromEl = function(el, getContainerId) {};
+
+	zenario.getContainerIdFromEl = function(el) {
+		return zenario.getSlotnameFromEl(el, true);
 	};
 
-	//Convert an array into a string for a URL if needed
-	zenario.urlRequest = function(arr) {
-	
-		//Don't run if this is already a string!
-		if (_.isString(arr)) {
-			return zenario.addAmp(arr);
-		}
-	
-		var request = '';
-	
-		if (arr) {
-			foreach (arr as var i) {
-				if (typeof arr[i] != 'object') {
-					request += '&' + encodeURIComponent(i) + '=';
-				
-					if (arr[i] !== undefined && arr[i] !== false && arr[i] !== null) {
-						request += encodeURIComponent(arr[i]);
-					}
-				}
-			}
-		}
-	
-		return request;
-	};
-	
-	//Reverse of the above, as per http://stackoverflow.com/questions/8648892/convert-url-parameters-to-a-javascript-object
-	zenario.toObject = function(object, clone) {
-	
-		//Convert URL strings to objects
-		if (_.isString(object)) {
-			return JSON.parse('{"' + decodeURI(object.replace(/&/g, "\",\"").replace(/=/g,"\":\"")) + '"}') || {};
+	zenario.getEggIdFromEl = function(el) {
+		var containerId = zenario.getContainerIdFromEl(el);
 		
-		} else if (!object) {
-			return {};
-		
-		} else if (clone) {
-			return zenario.clone(object);
-		
-		} else {
-			return object;
-		}
+		return containerId
+			&& typeof containerId == 'string'
+			&& 1 * containerId.split('-')[1];
 	};
-	
-	zenario.clone = function(a, b, c) {
-		return $.extend(true, {}, a, b, c);
+
+	zenario.getContainerIdFromSlotName = function(slotName) {
+		return 'plgslt_' + slotName;
 	};
+
+//	zenario.microTemplate = function(template, data, filter) {};
 	
 
 	//Make a non-asyncornous AJAX call.
@@ -286,52 +247,10 @@ zenario.lib(function(
 		//timeout: If set, the request will be automatically retried or cancelled after this amount of time.
 //	zenario.ajax = function(url, post, json, useCache, retry, timeout, settings) {};
 	
-
-	zenario.loadedLibraries = {};
-	zenario.loadLibrary = function(path, callback) {
 	
-		var library;
 	
-		if (library = zenario.loadedLibraries[path]) {
-			if (library.loaded) {
-				callback();
-			} else {
-				library.cb.after(callback);
-			}
 	
-		} else {
-			library = zenario.loadedLibraries[path] = {cb: new zenario.callback, loaded: false};
 	
-			library.cb.after(callback);
-	
-			$.ajax({
-				url: path,
-				cache: true,
-				dataType: 'script',
-				success: function() {
-					library.loaded = true;
-					library.cb.call();
-				}
-			});
-		}
-	};
-
-
-
-	//Redirect the user to a URL using JavaScript
-	zenario.goToURL = function(URL, useChromeFix) {
-		document.location.href = URL;
-	
-		if (useChromeFix) {
-			//Hack to fix a bug with Chrome :(
-			setTimeout(
-				function() {
-					document.location.href = URL;
-				}, 500);
-		}
-	
-		return false;
-	};
 
 	zenario.phrases = {};
 	zenario.loadPhrases = function(vlpClass, code) {
@@ -388,327 +307,12 @@ zenario.lib(function(
 			return zenario.phrase(vlpClass, text, mrg);
 		}
 	};
-
-	zenario.applyMergeFields = function(text, mrg) {
-		mrg = mrg || {};
 	
-		var trans = '',
-			b,
-			bits = ('' + text).split(/\[\[(.*?)\]\]/g);
-	
-		foreach (bits as b) {
-			if (b % 2) {
-				if (mrg[bits[b]] !== undefined) {
-					trans += mrg[bits[b]];
-				}
-			} else {
-				trans += bits[b];
-			}
-		}
-		
-		return trans;
-	};
-
-
-	//Link to a content item
-	zenario.linkToItem = function(cID, cType, request, adminlogin) {
-	
-		//Accept an input in the form of a Plugin Setting, e.g. "html_123"
-		if (!cType && ('' + cID).indexOf('_') !== -1) {
-			//Only accept the input if it's in the correct form
-			var split = cID.split('_');
-				//There should be only one underscore
-			if (split[2] === undefined
-				//The second part should be a number
-			 && split[1] == 1 * split[1]
-				//The first part must be a-z
-			 && split[0].replace(/\w/g, '') === '') {
-				cID = split[1];
-				cType = split[0];
-			}
-		}
-	
-		if (!cType) {
-			cType = 'html';
-		}
-	
-		if (!request) {
-			request = '';
-		}
-	
-		var pos,
-			canonicalURL,
-			basePath = URLBasePath;
-		if (adminlogin) {
-			basePath += 'zenario/admin/welcome.php';
-		} else {
-			basePath += zenario.indexDotPHP;
-		}
-		
-		//If we're linking to the content item that we're currently on...
-		if (!adminlogin
-		 && !zenario.adminId
-		 && cID === zenario.cID) {
-			//...check to see if it is using a friendly URL...
-			if ((canonicalURL = $('link[rel="canonical"]').attr('href'))
-			 && (!canonicalURL.match(/\bcID=/))) {
-			 	//..and try to keep it if possible
-				
-				//Get rid of any existing requests
-				pos = canonicalURL.indexOf('?');
-				if (pos != -1) {
-					canonicalURL = canonicalURL.substr(0, pos);
-				}
-				
-				if (request) {
-					return canonicalURL + '?' + zenario.urlRequest(request).substr(1);
-				} else {
-					return canonicalURL;
-				}
-			}
-		}
-		
-		
-		if (cID != 1*cID) {
-			return basePath + '?cID=' + cID + zenario.urlRequest(request);
-	
-		} else {
-			return basePath + '?cID=' + cID + '&cType=' + cType + zenario.urlRequest(request);
-		}
-	};
-
-
-//	zenario.microTemplate = function(template, data, filter) {};
-
-
-
-	//Functions for managing plugin slots
-
-	//Attempt to get the name of a slot from an element within the slot
-	zenario.getSlotnameFromEl = function(el, getContainerId) {
-		if (_.isString(el)) {
-			if (!getContainerId) {
-				el = el.replace(/plgslt_/, '').split('-')[0];
-			}
-			return el;
-	
-		} else if (_.isObject(el)) {
-			do {
-				if (el.id && el.id == 'colorbox') {
-					return zenario.colorboxOpen;
-			
-				} else if (el.id && el.id.substr(0, 7) == 'plgslt_') {
-				
-					var hyphen = el.id.indexOf('-'),
-						slotName;
-				
-					//Extract the slot name out from the container id
-					if (hyphen == -1) {
-						slotName = el.id.substr(7);
-					} else {
-						slotName = el.id.substr(7, hyphen - 7);
-					
-						//Check that this matches the correct pattern
-						var nestId = el.id.substr(hyphen + 1);
-						if (nestId != 1*nestId) {
-							continue;
-						}
-					}
-				
-					//Check if this is a name of a slot that exists!
-					if (!zenario.slots[slotName]) {
-						continue;
-					}
-				
-					if (getContainerId) {
-						return el.id;
-					} else {
-						return slotName;
-					}
-				}
-			} while (el = el.parentNode)
-		}
-		return false;
-	};
-
-	zenario.getContainerIdFromEl = function(el) {
-		return zenario.getSlotnameFromEl(el, true);
-	};
-
-	zenario.getEggIdFromEl = function(el) {
-		var containerId = zenario.getContainerIdFromEl(el);
-		
-		return containerId
-			&& typeof containerId == 'string'
-			&& 1 * containerId.split('-')[1];
-	};
-
-	zenario.getContainerIdFromSlotName = function(slotName) {
-		return 'plgslt_' + slotName;
-	};
-
-	//Scroll to the top of a slot if needed
-	zenario.scrollToSlotTop = function(containerIdSlotNameOrEl, neverScrollDown, time, el, offset) {
-		if (typeof containerIdSlotNameOrEl == 'string') {
-			containerIdSlotNameOrEl = zenario.ifNull(zenario.get('plgslt_' + containerIdSlotNameOrEl), zenario.get(containerIdSlotNameOrEl));
-		}
-	
-		if (!containerIdSlotNameOrEl) {
-			return;
-		}
-	
-		var scrollTop = zenario.scrollTop(undefined, undefined, el);
-		var slotTop = $(containerIdSlotNameOrEl).offset().top;
-	
-		if (offset === undefined) {
-			offset = -80;
-		}
-	
-		//Check that the top of the slot is actually visible
-		slotTop = Math.max(0, slotTop  + offset);
-	
-		//Have an option to only scroll up, and never down
-		if (neverScrollDown && scrollTop < slotTop) {
-			return;
-		}
-	
-		if (time === undefined) {
-			time = 700;
-		}
-	
-		//Scroll to the correct place
-		zenario.scrollTop(slotTop, time, el);
-	};
-
-	//Refresh a plugin in a slot
-	zenario.refreshPluginSlot = function(slotName, instanceId, additionalRequests, recordInURL, scrollToTopOfSlot, fadeOutAndIn, useCache, post) {
-		
-		if (scrollToTopOfSlot === undefined) {
-			scrollToTopOfSlot = true;
-		}
-	
-		if (fadeOutAndIn === undefined) {
-			fadeOutAndIn = true;
-		}
-		
-		slotName = zenario.getSlotnameFromEl(slotName);
-		if (!slotName) {
-			return;
-		}
-	
-		if (zenarioA.init) {
-			zenarioA.closeSlotControls();
-			zenarioA.cancelMovePlugin();
-		}
-	
-		//Remove the Nested Plugin id from the slotname if needed
-		slotName = slotName.split('-')[0];
-	
-		if (!zenario.slots[slotName]) {
-			return;
-		}
-	
-		if (!additionalRequests) {
-			additionalRequests = '';
-		} else {
-			additionalRequests = zenario.urlRequest(additionalRequests);
-		}
-		
-		additionalRequests = zenario.addTabIdToURL(additionalRequests, slotName);
-	
-		//Allow a slot to be refreshed by name only, in which case we'll check its current instance id
-		if (instanceId == 'lookup') {
-			instanceId = zenario.slots[slotName].instanceId;
-		}
-	
-		if (scrollToTopOfSlot && !zenarioAB.isOpen) {
-			//Scroll to the top of a slot if needed
-			zenario.scrollToSlotTop(slotName, true);
-		
-			//Don't scroll to the top later if we've already done it now
-			scrollToTopOfSlot = false;
-		}
-	
-		//Fade the slot out to give a graphical hint that something is happening
-		if (fadeOutAndIn) {
-			var fadeOutAndInSelector = (fadeOutAndIn === 1 || fadeOutAndIn === true) ? ('#plgslt_' + slotName) : fadeOutAndIn;
-			$(fadeOutAndInSelector).stop(true, true).animate({opacity: .5}, 150);
-		}
-	
-		//Run an AJAX request to reload the contents
-		var html,
-			url = zenario.pluginAJAXURL(slotName, additionalRequests, instanceId); 
-	
-		//if (!post && useCache && (html = zenario.checkSessionStorage(url))) {
-		//	zenario.replacePluginSlotContents(slotName, instanceId, html, additionalRequests, recordInURL, scrollToTopOfSlot);
-		//} else {
-		//	//(I'm using jQuery so that this is done asyncronously)
-		//	var method = 'GET';
-		//	if (post) {
-		//		method = 'POST';
-		//	}
-		//	
-		//	$.ajax({
-		//		dataType: 'text',
-		//		data: post,
-		//		method: method,
-		//		url: url,
-		//		success: function(html) {
-		//			if (useCache) {
-		//				zenario.setSessionStorage(html, url);
-		//			}
-		//		
-		//			zenario.replacePluginSlotContents(slotName, instanceId, html, additionalRequests, recordInURL, scrollToTopOfSlot);
-		//		}
-		//	});
-		//}
-		
-		zenario.ajax(url, post, false, true).after(function(html) {
-			zenario.replacePluginSlotContents(slotName, instanceId, html, additionalRequests, recordInURL, scrollToTopOfSlot);
-		});
-	};
+//	zenario.linkToItem = function(cID, cType, request, adminlogin) {};
 
 	//Call a signal/event on all included Modules, if they have it defined
 	
-	zenario.sendSignal = function(signalName, data) {
-	
-		var id,
-			module,
-			moduleClass,
-			returnValue,
-			returnValues = [],
-			signalHandler,
-			signalHandlers = zenario.signalHandlers,
-			signalsInProgress = zenario.signalsInProgress;
-		
-		if (signalsInProgress[signalName]) {
-			return;
-		}
-		signalsInProgress[signalName] = true;
-		
-		if (!signalHandlers[signalName]) {
-			signalHandlers[signalName] = [];
-			
-			foreach (zenario.modules as id => module) {
-				if (moduleClass = window[module.moduleClassName]) {
-					if (_.isFunction(moduleClass[signalName])) {
-						signalHandlers[signalName].push(moduleClass[signalName]);
-					}
-				}
-			}
-		}
-	
-		foreach (signalHandlers[signalName] as id => signalHandler) {
-			returnValue = signalHandler(data);
-		
-			if (returnValue !== undefined) {
-				returnValues.push(returnValue);
-			}
-		}
-	
-		delete signalsInProgress[signalName];
-		return returnValues;
-	};
+//	zenario.sendSignal = function(signalName, data, dontUseCachedSignalHandlers) {};
 
 
 	zenario.getMouseX = function(e) {
@@ -809,68 +413,6 @@ zenario.lib(function(
 
 	zenario.httpOrhttps = function() {
 		return zenario.ishttps()? 'https://' : 'http://';
-	};
-	
-	
-	zenario.actAfterDelayIfNotSuperseded = function(type, fun, delay) {
-		if (!delay) {
-			delay = 900;
-		}
-	
-		if (!zenario.adinsActions[type]) {
-			zenario.adinsActions[type] = 0;
-		}
-		var thisAttemptNum = ++zenario.adinsActions[type];
-		
-		if (fun !== undefined) {
-			setTimeout(
-				function() {
-					//Catch to stop outdated/spammed requests
-					if (thisAttemptNum == zenario.adinsActions[type]) {
-						fun();
-					}
-				}, delay);
-		}
-	};
-	
-	zenario.clearAllDelays = function(type) {
-		if (type) {
-			delete zenario.adinsActions[type];
-		} else {
-			zenario.adinsActions = {};
-		}
-	};
-	
-
-	//Disable any parent elements of element from scrolling
-	zenario.disableBackgroundScrolling = function(element) {
-		$(element).on('DOMMouseScroll mousewheel', function(ev) {
-			var $this = $(this),
-				scrollTop = this.scrollTop,
-				scrollHeight = this.scrollHeight,
-				height = $this.height(),
-				delta = (ev.type == 'DOMMouseScroll' ?
-					ev.originalEvent.detail * -40 :
-					ev.originalEvent.wheelDelta),
-				up = delta > 0;
-		
-			var prevent = function() {
-				ev.stopPropagation();
-				ev.preventDefault();
-				ev.returnValue = false;
-				return false;
-			}
-		
-			if (!up && -delta > scrollHeight - height - scrollTop) {
-				// Scrolling down, but this will take us past the bottom.
-				$this.scrollTop(scrollHeight);
-				return prevent();
-			} else if (up && delta > scrollTop) {
-				// Scrolling up, but this will take us past the top.
-				$this.scrollTop(0);
-				return prevent();
-			}
-		});
 	};
 	
 	

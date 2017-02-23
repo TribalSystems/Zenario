@@ -37,19 +37,18 @@ foreach($this->frameworkFields($section, $this->subSections) as $name => $field)
 	} elseif (empty($field['pattern'])) {
 		//Do nothing
 	
-	} elseif (($field['pattern'] == 'email' || $field['pattern'] == 'new_email'
-			|| $field['pattern'] == 'existing_email' || $field['pattern'] == 'unverified_email') && post($name)) {
+	} elseif (in($field['pattern'], 'email', 'new_email', 'existing_email', 'unverified_email') && post($name)) {
 		
 		if (!validateEmailAddress(post($name))) {
 			$this->errors[] = array('Error' => $this->phrase('_ERROR_INVALID_'. strtoupper($name)));
 		
 		} elseif ($field['pattern'] == 'new_email') {
-			if (checkRowExists('users', array('email' => post($name)))
-				|| checkRowExists('users', array('screen_name' => post($name)))
-			) {
-				if (getRow('users', 'status', array('email' => post($name))) == 'contact') {
-					$errorMessage = $this->setting('contact_not_extranet_message');
-					$this->errors[] = array('Error' => $this->phrase($errorMessage));
+			if ($user = getRow('users', ['status'], ['email' => post($name)])) {
+				if ($user['status'] == 'contact') {
+					if (!$contactsCountAsUnregistered) {
+						$errorMessage = $this->setting('contact_not_extranet_message');
+						$this->errors[] = array('Error' => $this->phrase($errorMessage));
+					}
 				} else {
 					$errorMessage = $this->setting('email_already_registered');
 					$this->errors[] = array('Error' => $this->phrase($errorMessage));

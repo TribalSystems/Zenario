@@ -44,7 +44,7 @@ class zenario_common_features__organizer__content extends module_base_class {
 		 && !isset($_GET['refiner__zenario_trans__chained_in_link'])) {
 			
 			//If it's not set, set it to one language initially
-			if (!$langIdFilter = columnFilterValue('language_id')) {
+			if (!$langIdFilter = zenario_organizer::filterValue('language_id')) {
 				
 				//If an item was selected, use the language from that...
 				if (request('_item')) {
@@ -55,7 +55,7 @@ class zenario_common_features__organizer__content extends module_base_class {
 					$langIdFilter = setting('default_language');
 				}
 				
-				columnFilterValue('language_id', $langIdFilter);
+				zenario_organizer::setFilterValue('language_id', $langIdFilter);
 			}
 			unset($panel['quick_filter_buttons']['all_languages']);
 		}
@@ -66,15 +66,6 @@ class zenario_common_features__organizer__content extends module_base_class {
 			$panel['key']['cType'] = getRow('layouts', 'content_type', get('refiner__template'));
 		} elseif (get('refiner__content_type')) {
 			$panel['key']['cType'] = get('refiner__content_type');
-		}
-		
-		//If this panel doesn't show html content items, or only shows content items in a specific category,
-		//skip the quick-create FAB and go straight to the full-create FAB.
-		if (isset($panel['collection_buttons']['create'])) {
-			if (($panel['key']['cType'] && $panel['key']['cType'] != 'html')
-			 || get('refiner__category')) {
-				$panel['collection_buttons']['create']['admin_box']['path'] = 'zenario_content';
-			}
 		}
 
 		//Attempt to customise the defaults slightly depending on the content type
@@ -188,7 +179,7 @@ class zenario_common_features__organizer__content extends module_base_class {
 		} elseif ($numLanguages > 1 && in($mode, 'full', 'quick', 'select')) {
 			
 			//Check the current language filter, if there is one
-			$langIdFilter = columnFilterValue('language_id');
+			$langIdFilter = zenario_organizer::filterValue('language_id');
 			
 			//For each language, add a filter option
 			$ord = 100;
@@ -230,7 +221,7 @@ class zenario_common_features__organizer__content extends module_base_class {
 		
 		//Otherwise if the status filter is set, make sure to change the label of the parent to what was chosen
 		} else
-		 if (($statusFilter = columnFilterValue('status'))
+		 if (($statusFilter = zenario_organizer::filterValue('status'))
 		  && (!empty($panel['quick_filter_buttons'][$statusFilter]['label']))) {
 			$panel['quick_filter_buttons']['status']['label'] =
 				$panel['quick_filter_buttons'][$statusFilter]['label'];
@@ -258,7 +249,7 @@ class zenario_common_features__organizer__content extends module_base_class {
 				ORDER BY layout_id";
 			
 			//Check the current filter, if there is one
-			$layoutIdFilter = columnFilterValue('layout_id');
+			$layoutIdFilter = zenario_organizer::filterValue('layout_id');
 			
 			//For each layout, add a filter option
 			$ord = 1000;
@@ -447,7 +438,8 @@ class zenario_common_features__organizer__content extends module_base_class {
 		//If this is full, quick or select mode, and the admin looking at this only has permissions
 		//to edit specific content items, we'll need to check if the current admin can edit each
 		//content item.
-		$checkSpecificPerms = in($mode, 'full', 'quick', 'select') && adminHasSpecificPerms();
+		$showInOrganiser = in($mode, 'full', 'quick', 'select');
+		$checkSpecificPerms = $showInOrganiser && adminHasSpecificPerms();
 
 		foreach ($panel['items'] as $id => &$item) {
 			$item['cell_css_classes'] = array();
@@ -470,23 +462,15 @@ class zenario_common_features__organizer__content extends module_base_class {
 		
 		
 				$item['css_class'] = getItemIconClass($item['id'], $item['type'], true, $item['status']);
-		
-				switch (arrayKey($item,'privacy')){
-					case 'all_extranet_users':
-						$item['cell_css_classes']['privacy'] = 'blue';
-						break;
-					case 'group_members':
-						$item['cell_css_classes']['privacy'] = 'orange';
-						break;
-					case 'specific_users':
-						$item['cell_css_classes']['privacy'] = 'yellow';
-						break;
-					case 'no_access':
-						$item['cell_css_classes']['privacy'] = 'brown';
-						break;
-					default:
-						$item['cell_css_classes']['privacy'] = 'green';
-						break;
+				
+				if ($showInOrganiser && ($privacy = arrayKey($item, 'privacy'))) {
+					$item['row_css_class'] = ' privacy_'. $privacy;
+					
+					//If this content item is set to a group or smart group,
+					//go get a better description which includes the name.
+					if (in($privacy, 'group_members', 'in_smart_group', 'logged_in_not_in_smart_group')) {
+						$item['privacy'] = contentItemPrivacyDesc($privacy, $item);
+					}
 				}
 
 		
@@ -631,8 +615,8 @@ class zenario_common_features__organizer__content extends module_base_class {
 			$langId = false;
 			if (in($refinerName, 'language', 'content_type__language', 'template__language')) {
 				$langId = $panel['key']['language'];
-			} elseif ($numLanguages > 1 && columnFilterValue('language_id') == setting('default_language')) {
-				$langId = columnFilterValue('language_id');
+			} elseif ($numLanguages > 1 && zenario_organizer::filterValue('language_id') == setting('default_language')) {
+				$langId = zenario_organizer::filterValue('language_id');
 			}
 			
 			if ($langId) {

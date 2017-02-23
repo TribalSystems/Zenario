@@ -27,16 +27,16 @@
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
-define('ZENARIO_REVISION', '40005');
-define('LATEST_REVISION_NO', 37244);
-define('LATEST_BIG_CHANGE_REVISION_NO', 37244);
+define('ZENARIO_REVISION', '40096');
+define('LATEST_REVISION_NO', 38669);
+define('LATEST_BIG_CHANGE_REVISION_NO', 38669);	//N.b. 7.6 starts at revision #38820
 define('INSTALLER_REVISION_NO', 33430);
 define('INSTALLER_DEFAULT_THEME', 'duke_street');
 
 define('ZENARIO_MAJOR_VERSION', '7');
-define('ZENARIO_MINOR_VERSION', '4');
-define('ZENARIO_RELEASE_VERSION', '4');
-define('ZENARIO_VERSION', '7.4.4');
+define('ZENARIO_MINOR_VERSION', '5');
+define('ZENARIO_RELEASE_VERSION', '0');
+define('ZENARIO_VERSION', '7.5.0');
 define('ZENARIO_IS_HEAD', false);
 
 define('TINYMCE_DIR', 'zenario/libraries/lgpl/tinymce_4_3_12/');

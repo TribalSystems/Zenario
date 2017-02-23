@@ -4,7 +4,7 @@ zenario__users:
     nav:
         smart_groups:
             priv: _PRIV_VIEW_USER
-            ord: "3"
+            ord: groups.1
             label: Smart groups
             tooltip: >
                 Smart groups are views of user/contacts, based on
@@ -13,20 +13,41 @@ zenario__users:
                 path: zenario__users/panels/smart_groups
     
     panels:
-        users:
-            refiners:
-                smart_group:
-                    exists: true
-    
-        
         smart_groups:
-            title: Smart groups
             view_mode: list
             disable_grid_view: true
+            
+            item:
+                name: Smart group
+                names: Smart groups
+                css_class: zenario_smart_group
+            title: Smart groups
+            select_mode_title: Select a smart group
+            no_items_message: No smart groups are defined.
+            no_items_in_search_message: No smart groups match your search.
+            
             db_items:
                 table: '[[DB_NAME_PREFIX]]smart_groups AS sg'
                 id_column: sg.id
                 client_side: true
+            refiners:
+                #intended_usage:
+                #    sql: |
+                #        sg.intended_usage = [[REFINER__INTENDED_USAGE]]
+                smart_newsletter_group:
+                    title: Smart newsletter groups
+                    select_mode_title: Select a smart newsletter group
+                    no_items_message: No smart newsletter groups are defined.
+                    no_items_in_search_message: No smart newsletter groups match your search.
+                    sql: |
+                        sg.intended_usage = 'smart_newsletter_group'
+                smart_permissions_group:
+                    title: Smart permissions groups
+                    select_mode_title: Select a smart permissions group
+                    no_items_message: No smart permissions groups are defined.
+                    no_items_in_search_message: No smart permissions groups match your search.
+                    sql: |
+                        sg.intended_usage = 'smart_permissions_group'
             columns:
                 name:
                     title: Name
@@ -39,6 +60,8 @@ zenario__users:
                     width: small
                     show_by_default: true
                     align_right: true
+                intended_usage:
+                    db_column: sg.intended_usage
                 created_on:
                     title: Date/Time Created
                     db_column: sg.created_on
@@ -52,21 +75,35 @@ zenario__users:
                     width: xxlarge
                     show_by_default: true
             
-            
-            item:
-                name: Smart group
-                names: Smart groups
-                css_class: group
-            no_items_message: No smart groups are defined.
             collection_buttons:
-                new_create:
+                create_dropdown:
+                    hide_when_children_are_not_visible: true
+                    css_class: zenario_create_a_new
+                    label: Create a smart group...
+                    
+                lists:
+                    parent: create_dropdown
                     priv: _PRIV_MANAGE_GROUP
+                    hide_on_filter: true
                     hide_in_select_mode: true
                     css_class: zenario_create_a_new
-                    hide_on_filter: true
-                    label: Create a smart group
+                    label: Create a smart newsletter group
                     admin_box:
                         path: zenario_smart_group
+                        key:
+                            intended_usage: smart_newsletter_group
+                    
+                perms:
+                    parent: create_dropdown
+                    priv: _PRIV_MANAGE_GROUP
+                    hide_on_filter: true
+                    hide_in_select_mode: true
+                    css_class: zenario_create_a_new
+                    label: Create a smart permissions group
+                    admin_box:
+                        path: zenario_smart_group
+                        key:
+                            intended_usage: smart_permissions_group
                 help:
                     label: Help
                     help:

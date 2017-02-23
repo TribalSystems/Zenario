@@ -325,7 +325,7 @@ class zenario_extranet extends module_base_class {
 		require funIncPath(__FILE__, __FUNCTION__);
 	}
 	
-	protected function validateFormFields($section) {
+	protected function validateFormFields($section, $contactsCountAsUnregistered = false) {
 		return require funIncPath(__FILE__, __FUNCTION__);
 	}
 	

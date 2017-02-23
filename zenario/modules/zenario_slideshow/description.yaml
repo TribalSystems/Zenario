@@ -26,9 +26,8 @@ description: |
         You can restrict a slide's visibility:
         <ul>
             <li>to logged-in extranet users</li>
-            <li>to logged-in extranet users with a given field or group set</li>
+            <li>to logged-in extranet users in a given group</li>
             <li>to logged-in extranet users in a given smart group</li>
-            <li>to the inverse of the above options</li>
             <li>by calling a static method from another module, e.g. <code>checkVisitorInCountries()</code> from the <code>zenario_geoip_lookup</code> module</li>
         </ul>
     </p>

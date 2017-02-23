@@ -522,18 +522,68 @@ additionalProperties:
                                 ord: *ord
                                 hidden: *hidden
                                 visible_if: *visible_if
-                                hide_with_field_above:
+                                
+                                hide_with_previous_field:
                                     type: boolean
                                     description: >
-                                        Hide this field if the field displayed above this field is hidden.
+                                        Hide this field if the last field was hidden.
                                         
-                                        This works from version 7.3 onwards.
+                                        This works from version 7.5 onwards.
+                                hide_if_previous_field_is_not_hidden:
+                                    type: boolean
+                                    description: >
+                                        Hide this field if the last field was not hidden.
+                                        
+                                        This works from version 7.5 onwards.
+                                hide_with_previous_indented_field:
+                                    type: boolean
+                                    description: >
+                                        Hide this field if the last field on the same indent was hidden.
+                                        
+                                        This works from version 7.5 onwards.
+                                hide_with_previous_outdented_field:
+                                    type: boolean
+                                    description: >
+                                        Hide this field if the last field on a lesser indent was hidden.
+                                        
+                                        This works from version 7.5 onwards.
+                                hide_if_previous_value_isnt:
+                                    description: >
+                                        Hide this field if value of the last field does not equal the value you enter.
+                                        You can also provide an array of values, or an object with values as keys.
+                                        
+                                        This works from version 7.5 onwards.
+                                hide_if_previous_outdented_value_isnt:
+                                    description: >
+                                        Hide this field if value of the last field on a lower indent does not equal the value you enter.
+                                        You can also provide an array of values, or an object with values as keys.
+                                        
+                                        This works from version 7.5 onwards.
                                 
-                                read_only:
+                                
+                                
+                                
+                                
+                                readonly:
                                     type: boolean
                                     description: >
                                         Causes a field to always be drawn as a read-only field, even if
                                         edit mode is enabled.
+                                        
+                                        This works from version 7.5 onwards.
+                                
+                                read_only:
+                                    type: boolean
+                                    description: >
+                                        Deprecated, has been replaced with the readonly property.
+                                
+                                show_as_a_label_when_readonly:
+                                    type: boolean
+                                    description: >
+                                        Causes a field to be drawn as label, rather than a disabled field,
+                                        if it is readonly.
+                                        
+                                        This works from version 7.5 onwards.
                                 
                                 css_class:
                                     type: string
@@ -827,6 +877,16 @@ additionalProperties:
                                                 This hides the select button from the interface.
                                                 The type-ahead search will also be disabled.
                                         
+                                        allow_typing_anything:
+                                            type: boolean
+                                            description: >
+                                                Allow the user to type anything into the box.
+                                                This is useful if you wish to have a type-ahead that helps users pick
+                                                existing things, but also be able to create something new by typing a
+                                                name that doesn't yet exist.
+                                                
+                                                This works from version 7.5 onwards.
+                                        
                                         #In 7.3 the "hide_remove_button" property does nothing
                                         #hide_remove_button:
                                         #    type: boolean
@@ -905,6 +965,12 @@ additionalProperties:
                                                 Some text to display as a label.
                                                 
                                                 This works from version 7.3 onwards.
+                                        label_class:
+                                            type: string
+                                            description: >
+                                                A CSS class to add around the label
+                                                
+                                                This works from version 7.5 onwards.
                                         
                                         url:
                                             type: string
@@ -958,6 +1024,17 @@ additionalProperties:
                                         
                                         You can use the <code>$values</code> array to set and retrieve the values of your fields
                                         without worrying about the difference between value and current_value.
+                                selected_option:
+                                    modified_by_cms: true
+                                    description: >
+                                        Select lists and radio-groups work off a list of values.
+                                        
+                                        If the user selects a value, the CMS will place a shortcut to the selected value
+                                        in the selected_option property, to help you write your visible_if conditions in JavaScript.
+                                        
+                                        This is only available in JavaScript, you will not see it in PHP.
+                                        
+                                        This works from version 7.5 onwards.
                                 
                                 format_onchange:
                                     type: boolean
@@ -1190,9 +1267,6 @@ additionalProperties:
                                             description: >
                                                 If the value of this field is equal to the value you entered above,
                                                 don't save it into the database.
-                                                
-                                                (For technical reasons this only works with the value above, and not the the <code>value</code>
-                                                property from the field itself.)
                                         
                                         
                                                 This works from version 7.3 onwards.
@@ -1425,10 +1499,19 @@ additionalProperties:
                                             parent:
                                                 type: *stringy
                                                 description: >
-                                                    This is used for hierarchal checkboxes.
+                                                    This is used for hierarchal checkboxes, radiogroups and select lists.
                                                     You can enter the key/saved value of another value here to create a parent/child relationship.
                                                     
                                                     From version 7.0.6 onwards you can also use this for values in select lists.
+                                            
+                                            hide_when_children_are_not_visible:
+                                                type: boolean
+                                                description: >
+                                                    This is used for hierarchal select lists.
+                                                    
+                                                    Use this to hide the parent if it has no child values
+                                                    
+                                                    This works from version 7.5 onwards.
                                             
                                             pre_field_html:
                                                 type: string

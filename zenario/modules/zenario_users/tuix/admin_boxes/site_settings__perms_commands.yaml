@@ -1,0 +1,114 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+site_settings:
+    setting_group: perms
+    tabs:
+        commands:
+            label: Commands
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_SITE_SETTING
+            fields:
+                perm.manage.command:
+                    snippet:
+                        label: "Manage command templates: users can manage command templates if..."
+                perm.manage.command.by.group:
+                    site_setting:
+                        name: perm.manage.command.by.group
+                    indent: 1
+                    type: checkbox
+                    label: 'They are a member of the group(s):'
+                    redraw_onchange: true
+                perm.manage.command.groups:
+                    site_setting:
+                        name: perm.manage.command.groups
+                    hide_if_previous_outdented_value_isnt: 1
+                    indent: 2
+                    pick_items: &pick_group
+                        path: zenario__users/panels/groups
+                        target_path: zenario__users/panels/groups
+                        min_path: zenario__users/panels/groups
+                        max_path: zenario__users/panels/groups
+                        disallow_refiners_looping_on_min_path: true
+                        nothing_selected_phrase: No group selected
+                        select_phrase: Select a group...
+                        multiple_select: true
+                    validation:
+                        required_if_not_hidden: Please select a group who can manage command templates.
+                
+                perm.sendCommandTo.asset:
+                    snippet:
+                        label: "Send command: users can send a command to an asset if..."
+                perm.sendCommandTo.asset.by.group:
+                    site_setting:
+                        name: perm.sendCommandTo.asset.by.group
+                    indent: 1
+                    type: checkbox
+                    label: 'They are a member of the group(s):'
+                    redraw_onchange: true
+                perm.sendCommandTo.asset.groups:
+                    site_setting:
+                        name: perm.sendCommandTo.asset.groups
+                    hide_if_previous_outdented_value_isnt: 1
+                    indent: 2
+                    pick_items: *pick_group
+                    validation:
+                        required_if_not_hidden: Please select a group who can send commands to an asset.
+                perm.sendCommandTo.asset.directlyAssigned:
+                    site_setting:
+                        name: perm.sendCommandTo.asset.directlyAssigned
+                    hide_with_previous_indented_field: true
+                    indent: 1
+                    row_class: zfab_or
+                    type: checkbox
+                    label: The asset is directly assigned to them
+                perm.sendCommandTo.asset.atLocation:
+                    site_setting:
+                        name: perm.sendCommandTo.asset.atLocation
+                    hide_with_previous_indented_field: true
+                    indent: 1
+                    row_class: zfab_or
+                    type: checkbox
+                    label: The asset is assigned to a location at which they have
+                perm.sendCommandTo.asset.atLocation.role:
+                    site_setting:
+                        name: perm.sendCommandTo.asset.atLocation.role
+                    same_row: true
+                    hide_with_previous_field: true
+                    type: select
+                    empty_value: ANY role
+                    values: roles
+                perm.sendCommandTo.asset.atCompany:
+                    site_setting:
+                        name: perm.sendCommandTo.asset.atCompany
+                    hide_with_previous_indented_field: true
+                    indent: 1
+                    row_class: zfab_or
+                    type: checkbox
+                    label: The asset is assigned to a company, and they have
+                perm.sendCommandTo.asset.atCompany.role:
+                    site_setting:
+                        name: perm.sendCommandTo.asset.atCompany.role
+                    same_row: true
+                    hide_with_previous_field: true
+                    type: select
+                    empty_value: ANY role
+                    values: roles
+                    post_field_html: '&nbsp; at ANY location in the company'
+                perm.sendCommandTo.asset.atLocationAtCompany:
+                    site_setting:
+                        name: perm.sendCommandTo.asset.atLocationAtCompany
+                    hide_with_previous_indented_field: true
+                    indent: 1
+                    row_class: zfab_or
+                    type: checkbox
+                    label: The asset is assigned to a location at a company, and they have
+                perm.sendCommandTo.asset.atLocationAtCompany.role:
+                    site_setting:
+                        name: perm.sendCommandTo.asset.atLocationAtCompany.role
+                    same_row: true
+                    hide_with_previous_field: true
+                    type: select
+                    empty_value: ANY role
+                    values: roles
+                    post_field_html: '&nbsp; at ANY location in that company'

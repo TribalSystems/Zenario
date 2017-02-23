@@ -91,4 +91,18 @@ _sql
 	WHERE patchfile IN ('user.inc.php', 'users_tables.inc.php')
 	  AND path LIKE 'admin/db_updates/step_%'
 _sql
+
+
+//Move any db-updates for MongoDB into a different file than the updates for MySQL.
+//This makes things a little easier to fix if one database is out-of-step with the other
+);	revision( 38300
+, <<<_sql
+	INSERT IGNORE INTO `[[DB_NAME_PREFIX]]local_revision_numbers`
+		(path, patchfile, revision_no)
+	SELECT
+		path, 'mongo.inc.php', revision_no
+	FROM `[[DB_NAME_PREFIX]]local_revision_numbers`
+	WHERE path = 'modules/assetwolf_2/db_updates'
+	  AND patchfile = 'assetwolf_asset_manager.inc.php'
+_sql
 );

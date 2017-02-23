@@ -7,7 +7,7 @@
 			href="{{m.href|escape}}"
 		<% } %>
 		<% if (m.onclick) { %>
-			onclick="{{m.onclick|escape}}"
+			onclick="<% if (m.itemId) { %>var itemId = '{{m.itemId|escape}}'; <% } %>{{m.onclick|escape}}"
 		<% } %>
 		title="{{m.tooltip|escape}}"
 	>{{m.label|escape}}</a>

@@ -37,7 +37,35 @@ zenario__modules:
             
             cytoscape: {}
             
-            collection_buttons: {}
+            collection_buttons:
+                do_save_positions:
+                    hidden: true
+                    ajax:
+                        request:
+                            save_positions: 1
+                save_positions:
+                    only_show_on_refiner: nest
+                    visible_if: |
+                        zenarioO.tuix.positionsChanged
+                    label: 💾 Save positions
+                    onclick: |
+                        zenarioO.collectionButtonClick('do_save_positions', {positions: JSON.stringify(zenarioO.tuix.positions)});
+                reset_positions:
+                    only_show_on_refiner: nest
+                    visible_if: |
+                        !_.isEmpty(zenarioO.tuix.positions)
+                    label: ✘ Reset positions
+                    ajax:
+                        confirm:
+                            button_message: Reset positions
+                            cancel_button_message: Cancel
+                            message_type: warning
+                            message: |
+                                This will auto-arrange all of the nodes, clearing theit saved positions.
+                                
+                                Are you sure you wish to continue?
+                        request:
+                            reset_positions: 1
             item_buttons:
                 tab_settings:
                     only_show_on_refiner: nest
@@ -110,3 +138,27 @@ zenario__modules:
                                 
                                 This will immediately delete the state,
                                 as well as any paths that go through it.
+                
+                save_positions:
+                    only_show_on_refiner: nest
+                    visible_if: |
+                        zenarioO.tuix.positionsChanged
+                    label: 💾 Save positions
+                    onclick: |
+                        zenarioO.collectionButtonClick('do_save_positions', {positions: JSON.stringify(zenarioO.tuix.positions)});
+                reset_positions:
+                    only_show_on_refiner: nest
+                    visible_if: |
+                        !_.isEmpty(zenarioO.tuix.positions)
+                    label: ✘ Reset positions
+                    ajax:
+                        confirm:
+                            button_message: Reset positions
+                            cancel_button_message: Cancel
+                            message_type: warning
+                            message: |
+                                This will auto-arrange all of the nodes, clearing theit saved positions.
+                                
+                                Are you sure you wish to continue?
+                        request:
+                            reset_positions: 1

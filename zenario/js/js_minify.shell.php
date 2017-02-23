@@ -250,12 +250,13 @@ if ($scan = scandir(TINYMCE_DIR. 'plugins')) {
 }
 
 
-//Minify colorbox
-minify('zenario/libraries/mit/colorbox/', 'jquery.colorbox', $level, '.js');
-
-//Minify jQuery Roundabout
+//Minify some other jQuery extensions
 minify('zenario/libraries/bsd/jquery_roundabout/', 'jquery.roundabout', $level, '.js');
 minify('zenario/libraries/bsd/jquery_roundabout/', 'jquery.roundabout-shapes', $level, '.js');
+minify('zenario/libraries/mit/jquery.fix.clone/', 'jquery.fix.clone', $level, '.js');
+
+//Minify colorbox
+minify('zenario/libraries/mit/colorbox/', 'jquery.colorbox', $level, '.js');
 
 //Minify Tokenizer
 minify('zenario/libraries/bsd/tokenize/', 'jquery.tokenize', $level, '.css');

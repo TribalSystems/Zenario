@@ -127,7 +127,7 @@ class zenario_image_container extends zenario_banner {
 				$image = $this->images['image_main'];
 				$imageId = 'zic_'. $this->containerId;
 				
-				if ($fullPath && !chopPrefixOffOfString($image['src_url'], 'http')) {
+				if ($fullPath && !chopPrefixOffString('http', $image['src_url'])) {
 					$image['src_url'] = absCMSDirURL(). $image['src_url'];
 				}
 				
@@ -149,7 +149,7 @@ class zenario_image_container extends zenario_banner {
 			
 				if (isset($this->images['image_hover'])) {
 				
-					if ($fullPath && !chopPrefixOffOfString($image['src_url'], 'http')) {
+					if ($fullPath && !chopPrefixOffString('http', $image['src_url'])) {
 						$image['src_url'] = absCMSDirURL(). $image['src_url'];
 					}
 					
@@ -175,7 +175,7 @@ class zenario_image_container extends zenario_banner {
 			if (isset($this->images['image_mobile'])) {
 				$image = $this->images['image_mobile'];
 				
-				if ($fullPath && !chopPrefixOffOfString($image['src_url'], 'http')) {
+				if ($fullPath && !chopPrefixOffString('http', $image['src_url'])) {
 					$image['src_url'] = absCMSDirURL(). $image['src_url'];
 				}
 				

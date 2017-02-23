@@ -68,7 +68,7 @@ site_settings:
                     type: grouping
                     name: zenario_site_description
                 
-                require_security_code_on_admin_login:
+                enable_two_factor_security_for_admin_logins:
                     legend: Set in the <code>zenario_custom/site_description.yaml</code> file
                     grouping: zenario_site_description
                     
@@ -78,7 +78,7 @@ site_settings:
                     note_below: |
                         If enabled, an admin must verify access to their email when logging into the site.
                 
-                security_code_by_ip:
+                apply_two_factor_security_by_ip:
                     grouping: zenario_site_description
                     label: Issue security codes on a per-IP basis
                     type: checkbox
@@ -86,7 +86,7 @@ site_settings:
                     note_below: |
                         If enabled, an admin must verify access for each IP address they use to access the site.
                 
-                security_code_timeout:
+                two_factor_security_timeout:
                     grouping: zenario_site_description
                     label: Security codes timeout
                     type: text

@@ -79,8 +79,8 @@ $result = sqlQuery($sql);
 
 while($row = sqlFetchRow($result)) {
 	if (substr($row[0], 0, $prefixLen) == $prefix) {
-		sqlUpdate("DROP TABLE IF EXISTS `". sqlEscape($row[0]). "`", false);
-		@sqlUpdate("DROP VIEW IF EXISTS `". sqlEscape($row[0]). "`", false);
+		sqlUpdate("DROP TABLE IF EXISTS `". sqlEscape($row[0]). "`", false, false);
+		@sqlUpdate("DROP VIEW IF EXISTS `". sqlEscape($row[0]). "`", false, false);
 	}
 }
 

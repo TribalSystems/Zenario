@@ -29,8 +29,8 @@ zenario.lib(function(
 	undefined,
 	URLBasePath,
 	document, window, windowOpener, windowParent,
-	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO,
-	get, engToBoolean, htmlspecialchars, ifNull, jsEscape, phrase,
+	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO, strings,
+	encodeURIComponent, get, engToBoolean, htmlspecialchars, jsEscape, phrase,
 	extensionOf, methodsOf, has,
 	panelTypes
 ) {
@@ -71,21 +71,7 @@ methods.returnPageSize = function() {
 
 
 methods.returnPanelTitle = function() {
-	var title = this.tuix.title;
-	
-	if (window.zenarioOSelectMode && (zenarioO.path == window.zenarioOTargetPath || window.zenarioOTargetPath === false)) {
-		if (window.zenarioOMultipleSelect && this.tuix.multiple_select_mode_title) {
-			title = this.tuix.multiple_select_mode_title;
-		} else if (this.tuix.select_mode_title) {
-			title = this.tuix.select_mode_title;
-		}
-	}
-	
-	if (zenarioO.filteredView) {
-		title += phrase.refined;
-	}
-	
-	return title + ' (Map)';
+	return methodsOf(panelTypes.grid).returnPanelTitle.call(this) + ' (Map)';
 };
 
 methods.showPanel = function($header, $panel, $footer) {

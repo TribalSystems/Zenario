@@ -52,7 +52,7 @@ class zenario_promo_menu extends zenario_menu_multicolumn {
 		$this->numLevels = 3;
 		$this->maxLevel1MenuItems = 999;
 		$this->language = false;
-		$this->onlyFollowOnLinks = !$this->setting('menu_show_all_branches');
+		$this->onlyFollowOnLinks = false;
 		$this->onlyIncludeOnLinks = false;
 		$this->showInvisibleMenuItems = false;
 		$this->showMissingMenuNodes = $this->setting('show_missing_menu_nodes');
@@ -192,6 +192,18 @@ class zenario_promo_menu extends zenario_menu_multicolumn {
 				} else {
 					$values['feature_image/zenario_promo_menu__overwrite_alt_tag'] = $file['alt_tag'];
 				}
+
+				if ($box['key']['id'] && ($menu = getMenuNodeDetails($box['key']['id']))) {
+					
+					if($menu['image_id']){
+						$values['feature_image/show_image'] = true;
+					}else{
+						$menu['image_id']=false;
+					}
+					$values['feature_image/image_id'] = $menu['image_id'];
+					$values['feature_image/use_rollover_image'] = (bool) $menu['rollover_image_id'];
+					$values['feature_image/rollover_image_id'] = $menu['rollover_image_id'];
+				}
 				
 				$values['feature_image/zenario_promo_menu__feature_image_checkbox'] = $row['use_feature_image'];
 				$values['feature_image/zenario_promo_menu__feature_image'] = $row['image_id'];
@@ -273,6 +285,50 @@ class zenario_promo_menu extends zenario_menu_multicolumn {
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		switch($path) {
 			case 'zenario_menu':
+				//new features
+				$id = $box['key']['id'];
+
+				
+				if ($imageId = $values['feature_image/image_id']) {
+					if ($path = getPathOfUploadedFileInCacheDir($imageId)) {
+						$imageId = addFileToDatabase('image', $path);
+					}
+				}
+				
+				if(!$values['feature_image/show_image']){
+					$imageId=0;
+				} 
+				
+				
+				if ($imageId) {
+					setRow('inline_images', array('image_id' => $imageId, 'in_use' => 1), array('foreign_key_to' => 'menu_node', 'foreign_key_id' => $id, 'foreign_key_char' => 'image'));
+				} else {
+					deleteRow('inline_images', array('foreign_key_to' => 'menu_node', 'foreign_key_id' => $id, 'foreign_key_char' => 'image'));
+				}
+				$submission['image_id'] = $imageId;
+	
+				if ($rolloverImageId = $values['feature_image/rollover_image_id']) {
+					if ($path = getPathOfUploadedFileInCacheDir($rolloverImageId)) {
+						$rolloverImageId = addFileToDatabase('image', $path);
+			
+					}
+					$submission['rollover_image_id'] = $rolloverImageId;
+				} else {
+					$submission['rollover_image_id'] = 0;
+				}
+				if ($values['use_rollover_image'] && $rolloverImageId) {
+					setRow('inline_images', array('image_id' => $rolloverImageId, 'in_use' => 1), array('foreign_key_to' => 'menu_node', 'foreign_key_id' => $id, 'foreign_key_char' => 'rollover_image'));
+				} else {
+					deleteRow('inline_images', array('foreign_key_to' => 'menu_node', 'foreign_key_id' => $id, 'foreign_key_char' => 'rollover_image'));
+				}
+				saveMenuDetails($submission, $id);
+				
+				
+				//end new features
+				
+				
+				
+				
 				$row = array();
 				$nodeId = $box['key']['id'];
 				

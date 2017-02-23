@@ -186,11 +186,20 @@ class zenario_common_features__admin_boxes__setup_module extends module_base_cla
 				}
 			}
 		}
-
+		
 		//Modules that change Organizer will require a Organizer reload.
-		if (moduleDir($module['class_name'], 'tuix/organizer', true)) {
-			$box['popout_message'] = '<!--Reload_Organizer-->';
+		if (needToReloadOrganizerWhenModuleIsInstalled($module['class_name'])) {
+			$this->needReload = true;
 		}
 
+	}
+	
+	private $needReload = false;
+	
+	public function adminBoxSaveCompleted($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+		if ($this->needReload) {
+			closeFABWithFlags(['reload_organizer' => true]);
+			exit;
+		}
 	}
 }

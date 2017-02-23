@@ -541,6 +541,9 @@ class zenario_common_features__admin_boxes__plugin_settings extends module_base_
 
 		$box['title'] = $title;
 		
+		//Set a flag if this is a plugin in a conductor
+		$box['key']['usesConductor'] = $box['key']['nest'] && conductorEnabled($box['key']['instanceId']);
+		
 	}
 
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
@@ -714,13 +717,28 @@ class zenario_common_features__admin_boxes__plugin_settings extends module_base_
 									if (is_array($field)) {
 										if (!empty($field['plugin_setting']['name'])) {
 											$pk['name'] = $field['plugin_setting']['name'];
-					
-											//Delete the value for a field if it was hidden...
+											
+											$defaultValue = '';
+											if (isset($field['plugin_setting']['value'])) {
+												$defaultValue = $field['plugin_setting']['value'];
+											} elseif (isset($field['value'])) {
+												$defaultValue = $field['value'];
+											}
+											
+											//Don't save a value for a field if it was hidden...
 											if (engToBooleanArray($tab, 'hidden')
 											 || engToBooleanArray($tab, '_was_hidden_before')
 											 || engToBooleanArray($field, 'hidden')
 											 || engToBooleanArray($field, '_was_hidden_before')) {
-												deleteRow('plugin_settings', $pk);
+												
+												if ($defaultValue) {
+													//If a setting has a default value, we'll need to store a blank in the database
+													//to make it clear that the field was hidden and not set
+													setRow('plugin_settings', ['value' => ''], $pk);
+												} else {
+													//Otherwise we can just delete the row
+													deleteRow('plugin_settings', $pk);
+												}
 					
 											//...or a multiple edit field that is not marked as changed
 											} else
@@ -732,9 +750,9 @@ class zenario_common_features__admin_boxes__plugin_settings extends module_base_
 											//option set.
 											} else
 											if (engToBooleanArray($field, 'plugin_setting', 'dont_save_default_value')
-											 && isset($field['plugin_setting']['value'])
+											 && $defaultValue
 											 && (!isset($field['current_value'])
-											  || $field['current_value'] == $field['plugin_setting']['value'])) {
+											  || $field['current_value'] == $defaultValue)) {
 												deleteRow('plugin_settings', $pk);
 					
 											} else {
@@ -1035,7 +1053,8 @@ class zenario_common_features__admin_boxes__plugin_settings extends module_base_
 		$sql = "
 			DELETE
 			FROM ". DB_NAME_PREFIX. "plugin_instance_cache
-			WHERE instance_id = ". (int) $box['key']['instanceId'];
+			WHERE method_name NOT IN ('#conductor_positions#')
+			  AND instance_id = ". (int) $box['key']['instanceId'];
 		sqlQuery($sql);
 		
 	}

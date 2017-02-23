@@ -9,6 +9,7 @@ toolbars:
         toolbar_microtemplate: zenario_toolbar_preview_tab
     create:
         ord: 11
+        priv: _PRIV_CREATE_FIRST_DRAFT
         label: Create
         tooltip: Create new content items
         page_mode: preview
@@ -23,7 +24,7 @@ toolbars:
         page_mode: menu
         toolbar_microtemplate: zenario_toolbar_menu_tab
     menu_secondary:
-        ord: 
+        ord: ''
         priv: _PRIV_EDIT_MENU_TEXT
         label: 
         css_class: zenario_at_menu_tab zenario_at_menu_tab_secondary
@@ -51,6 +52,13 @@ toolbars:
         tooltip: Viewing a previous version of this content item
         page_mode: rollback
         toolbar_microtemplate: zenario_toolbar_edit_tab
+    restricted_editing:
+        ord: 43
+        priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
+        label: Restricted editing
+        tooltip: Editing this content item is restricted
+        page_mode: preview
+        toolbar_microtemplate: zenario_toolbar_restricted_editing_tab
     template:
         ord: 50
         priv: _PRIV_MANAGE_TEMPLATE_SLOT
@@ -131,6 +139,26 @@ sections:
                 css_class: zenario_at_publish_button
                 admin_box:
                     path: zenario_publish
+    
+    # Show the name of the logged in Extranet User
+    # (N.b. the options to log in/edit/log out are currently commented out.)
+    extranet_user:
+        buttons:
+            logged_in:
+                label: ''
+                #admin_box:
+                #    priv: _PRIV_VIEW_USER
+                #    path: zenario_user__details
+                #    key:
+                #        id: ''
+            #log_out:
+            #    parent: logged_in
+            #    label: Logout
+            logged_out:
+                label: Anonymous visitor
+            #log_in:
+            #    parent: logged_out
+            #    label: Login
 
 meta_info:
     title: ''

@@ -38,6 +38,9 @@ if (cms_core::$cID === -1) {
 
 //Add a JSON object for every slot controlbox on the page
 if (!empty($slotContents) && is_array($slotContents)) {
+	
+	require_once CMS_ROOT. 'zenario/includes/tuix.inc.php';
+	
 	//Load the TUIX tags for empty slots (these will always be the same)
 	$tagsEmpty = array();
 	$modulesEmpty = array();
@@ -191,12 +194,12 @@ if (!empty($slotContents) && is_array($slotContents)) {
 		
 		if ($ajaxReload) {
 			echo
-				'<!--SLOT_CONTROLS--',
+				'<!--SLOT_CONTROLS:',
 					eschyp($html),
 				'-->';
 
 			echo
-				'<!--SLOT_CONTROLS_CSS_CLASS--',
+				'<!--SLOT_CONTROLS_CSS_CLASS:',
 					eschyp($tags['css_class']),
 				'-->';
 			

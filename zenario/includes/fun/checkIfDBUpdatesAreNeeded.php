@@ -100,6 +100,20 @@ for ($i = 0; $i < ($andDoUpdates? 2 : 1); ++$i) {
 		}
 	} while ($progressMade);
 	
+	
+	//Log any dependancy errors!
+	foreach ($unorderedModules as &$module) {
+		if (empty($orderedModules[$module['class_name']])) {
+			//Don't add a Module into the list until its dependancies have been added
+			foreach (readModuleDependencies($module['class_name'], $module['_description_']) as $dependancyClassName) {
+				if (empty($orderedModules[$dependancyClassName])) {
+					$moduleErrors .= 'The module "'. $module['class_name']. '" cannot run unless the "'. $dependancyClassName. "\" module is also running.\n";
+				}
+			}
+		}
+	}
+	
+	
 	//Check for module updates. Check which modules we have in the database
 	foreach ($orderedModules as $module) {
 		//Check if the latest revision number file is there
@@ -140,7 +154,7 @@ for ($i = 0; $i < ($andDoUpdates? 2 : 1); ++$i) {
 		//Account for any Modules in the zenario_custom/modules or zenario_extra_modules directories;
 		//these should override modules in the zenario/modules directory
 		$actualPath = $path;
-		if ($chop = chopPrefixOffOfString($path, 'zenario/modules/')) {
+		if ($chop = chopPrefixOffString('zenario/modules/', $path)) {
 			$altPath = 'zenario_custom/modules/'. $chop;
 			if (file_exists(CMS_ROOT. $altPath)) {
 				$actualPath = $altPath;
@@ -225,7 +239,7 @@ for ($i = 0; $i < ($andDoUpdates? 2 : 1); ++$i) {
 							
 							$revisionsNeeded = true;
 							//If this is a core update, note down the revision number details
-							if (chopPrefixOffOfString($path, 'zenario/admin/')) {
+							if (chopPrefixOffString('zenario/admin/', $path)) {
 								//Try to be vaugely smart about which number we choose if the core numbers are different;
 								//for preference we should pick the smallest non-zero number
 								if (!$currentRevisionOut || ($currentRevision && $currentRevision < $currentRevisionOut)) {
@@ -233,7 +247,7 @@ for ($i = 0; $i < ($andDoUpdates? 2 : 1); ++$i) {
 								}
 							
 							//If this is a module update, note down which module this is
-							} elseif (chopPrefixOffOfString($path, 'zenario/modules/')) {
+							} elseif (chopPrefixOffString('zenario/modules/', $path)) {
 								$paths = explode('/', $path, 4);
 								
 								$modules[$paths[2]] = array($currentRevision, $latestRevisionNumber);
@@ -244,6 +258,11 @@ for ($i = 0; $i < ($andDoUpdates? 2 : 1); ++$i) {
 			}
 		}
 	}
+}
+
+
+if ($andDoUpdates) {
+	setSetting('last_successful_db_update', time());
 }
 
 if (!$revisionsNeeded) {

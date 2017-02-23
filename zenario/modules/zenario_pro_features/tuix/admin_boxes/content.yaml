@@ -8,3 +8,4 @@ zenario_content:
                     ord: 45
                     label: 'Invisible in the Menu Tree'
                     type: checkbox
+                    indent: 1

@@ -68,10 +68,6 @@
 				<% for (f in m.fields) { %>
 					{{m.fields[f]._html}}
 					
-					<% if (m.fields[f].label && (m.fields[f].type == 'checkbox' || m.fields[f].type == 'radio' || m.fields[f].type == 'toggle')) { %>
-						<label class="{{m.fields[f].label_class|escape}}" for="{{m.fields[f]._id|escape}}">{{m.fields[f].label}}</label>
-					<% } %>
-					
 					<% if (m.fields[f].show_phrase_icon) { %>
 						<a class="zenario_fab_phrase_icon" title="{{zenarioA.phrase.translatedField}}"></a>
 					<% } %>

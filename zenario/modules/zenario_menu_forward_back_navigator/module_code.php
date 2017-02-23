@@ -45,7 +45,6 @@ class zenario_menu_forward_back_navigator extends zenario_menu {
 		$this->numLevels				= 2;
 		$this->maxLevel1MenuItems		= 999;
 		$this->language					= false;
-		$this->showAdminAddMenuItem		= false;
 		$this->onlyFollowOnLinks		= true;
 		$this->onlyIncludeOnLinks		= false;
 		$this->showInvisibleMenuItems	= true;

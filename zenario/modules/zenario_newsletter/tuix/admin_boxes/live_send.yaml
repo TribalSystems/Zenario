@@ -4,7 +4,7 @@ zenario_live_send:
     priv: _PRIV_SEND_NEWSLETTER
     key:
         id: ""
-    max_height: 160
+    max_height: 400
     hide_tab_bar: true
     save_button_message: Send
     cancel_button_message: Cancel
@@ -30,6 +30,30 @@ zenario_live_send:
                         none:
                             label: Don't send to administrators
                     value: myself
+                send_time_options:
+                    type: radios
+                    values:
+                        now:
+                            label: Send now
+                        schedule:
+                            label: Schedule to send at...
+                    value: now
+                    redraw_onchange: true
+                send_date:
+                    label: 'Date & Time'
+                    type: date
+                    indent: 1
+                    visible_if: zenarioAB.value('send_time_options') == 'schedule'
+                send_hours:
+                    type: select
+                    values: {}
+                    same_row: true
+                    visible_if: zenarioAB.value('send_time_options') == 'schedule'
+                send_mins:
+                    type: select
+                    values: {}
+                    same_row: true
+                    visible_if: zenarioAB.value('send_time_options') == 'schedule'
                 note:
                     full_width: true
                     snippet:

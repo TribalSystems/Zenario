@@ -39,6 +39,7 @@ if (!checkContentTypeRunning($cType)) {
 //Have the ability to move from one Content Type to another (not recommended for Content Typed that use mirror tables)
 $cIDTo = (int) $cIDTo;
 $cTypeTo = $cType;
+$contentTypeDetails = getContentTypeDetails($cTypeTo);
 if (!$cTypeFrom) {
 	$cTypeFrom = $cType;
 }
@@ -68,7 +69,17 @@ if (!$cIDTo || !($content = getRow('content_items', true, array('id' => $cIDTo, 
 		'status' => 'first_draft');
 	
 	//Create an entry in the translation_chains table for this translation chain if one is not already there
-	setRow('translation_chains', array(), array('equiv_id' => $content['equiv_id'], 'type' => $content['type']));
+	$key = array('equiv_id' => $content['equiv_id'], 'type' => $content['type']);
+	if (!checkRowExists('translation_chains', $key)) {
+		$chain = array();
+		
+		//T10672, Creating a content item: Automatically set permissions
+		if (inc('zenario_users') && $contentTypeDetails) {
+			$chain['privacy'] = $contentTypeDetails['default_permissions'];
+		}
+		
+		setRow('translation_chains', $chain, $key);
+	}
 
 //If there was a target, create a new draft version
 } else {
@@ -116,7 +127,6 @@ if (!$cIDFrom
 	
 	
 	//T10208, Creating content items: auto-populate release date and author where used
-	$contentTypeDetails = getContentTypeDetails($cTypeTo);
 	
 	if (!empty($contentTypeDetails['writer_field'])
 	 && $contentTypeDetails['writer_field'] != 'hidden'

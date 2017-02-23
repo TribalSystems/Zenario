@@ -12,6 +12,7 @@ plugin_settings:
         slotName: ""
         languageId: ""
         nest: ""
+        usesConductor: false
         moduleId: ""
         frontEnd: ""
     tabs:

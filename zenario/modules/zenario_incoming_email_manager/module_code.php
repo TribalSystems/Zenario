@@ -1108,6 +1108,8 @@ class zenario_incoming_email_manager extends module_base_class {
 			zenario_incoming_email_manager::getMessageHeader($email, $header);
 			zenario_incoming_email_manager::getMessageAddresses($email, $addresses);
 			
+			self::clearOldData();
+			
 			$sql = "
 				REPLACE INTO ". DB_NAME_PREFIX. ZENARIO_INCOMING_EMAIL_MANAGER_PREFIX. "account_logs SET
 					job_id = ". (int) $jobId. ",
@@ -1122,6 +1124,21 @@ class zenario_incoming_email_manager extends module_base_class {
 			}
 			
 			sqlQuery($sql);
+		}
+	}
+	
+	public static function clearOldData(){
+		if($days = setting('period_to_delete_account_logs')){
+			if(is_numeric($days)){
+				$today = date('Y-m-d');
+				$date = date('Y-m-d', strtotime('-'.$days.' day', strtotime($today)));
+				if($date){
+					$sql = " 
+						DELETE FROM ". DB_NAME_PREFIX. ZENARIO_INCOMING_EMAIL_MANAGER_PREFIX. "account_logs
+						WHERE email_sent < '".sqlEscape($date)."'";
+					sqlUpdate($sql);
+				}
+			}
 		}
 	}
 

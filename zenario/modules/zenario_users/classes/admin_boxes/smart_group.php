@@ -32,28 +32,178 @@ class zenario_users__admin_boxes__smart_group extends zenario_users {
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		exitIfNotCheckPriv('_PRIV_MANAGE_GROUP');
 		
-		//Get a list of tabs and fields, and loop through it
-		$unsets = array();
-		$datasetFields = listCustomFields('users', $flat = false, $filter = false, $customOnly = false, $useOptGroups = true);
 		
-		foreach ($datasetFields as $fieldId => &$field) {
+		$n = 0;
+		if ($box['key']['id'] && ($details = getSmartGroupDetails($box['key']['id']))) {
+			
+			$values['smart_group/name'] = $details['name'];
+			$values['smart_group/must_match'] = $details['must_match'];
+			$box['key']['intended_usage'] = $details['intended_usage'];
+			
+			//Load all of the created rules
+			$rules = getRowsArray('smart_group_rules', true, array('smart_group_id' => $box['key']['id']), 'ord');
+			
+			//Create a row of fields for each rule
+			foreach ($rules as $rule) {
+				switch ($rule['type_of_check']) {
+					
+					//Load information on user fields
+					case 'user_field':
+						//Check if a field is set, and if it's a supported field. Only add it if it is.
+						if ($rule['field_id']
+						 && ($field = getDatasetFieldDetails($rule['field_id']))
+						 && (in($field['type'], 'group', 'checkbox', 'radios', 'centralised_radios', 'select', 'centralised_select'))) {
+							++$n;
+					
+							$values['smart_group/field__'. $n] = $field['id'];
+					
+							if ($field['type'] == 'group') {
+								$values['smart_group/type__'. $n] = 'group';
+						
+								if ($rule['field2_id']
+								 || $rule['field3_id']
+								 || $rule['field4_id']
+								 || $rule['field5_id']) {
+									$values['smart_group/field2__'. $n] = $rule['field2_id'];
+									$values['smart_group/field3__'. $n] = $rule['field3_id'];
+									$values['smart_group/field4__'. $n] = $rule['field4_id'];
+									$values['smart_group/field5__'. $n] = $rule['field5_id'];
+									$values['smart_group/is_isnt_in__'. $n] = 'is_one_of';
+								} else {
+									$values['smart_group/is_isnt_in__'. $n] = $rule['not']? 'isnt' : 'is';
+								}
+					
+							} elseif ($field['type'] == 'checkbox') {
+								$values['smart_group/type__'. $n] = 'flag';
+								$values['smart_group/is_isnt_set__'. $n] = $rule['not']? 'isnt' : 'is';
+					
+							} else {
+								$values['smart_group/type__'. $n] = 'list';
+								$values['smart_group/value__'. $n] = $rule['value'];
+								$values['smart_group/is_isnt__'. $n] = $rule['not']? 'isnt' : 'is';
+							}
+					
+							//Note: fundamental fields need to appear selected in the first list, not the second
+							//Note that currently "fundamental" is only implemented for lists.
+							if ($field['fundamental'] && in($field['type'], 'radios', 'select', 'centralised_radios', 'centralised_select')) {
+								$values['smart_group/type__'. $n] = $field['id'];
+								$values['smart_group/field__'. $n] = '';
+							}
+						}
+						break;
+					
+					//If a role is picked, set the select list
+					case 'role':
+						++$n;
+						$values['smart_group/type__'. $n] = 'role';
+						$values['smart_group/role__'. $n] = $rule['role_id'];
+						break;
+				}
+			}
+			
+			switch ($box['key']['intended_usage']) {
+				case 'smart_newsletter_group':
+					$box['title'] = adminPhrase('Editing the smart newsletter group "[[name]]".', $details);
+					break;
+				case 'smart_permissions_group':
+					$box['title'] = adminPhrase('Editing the smart permissions group "[[name]]".', $details);
+					break;
+			}
+		
+		} else {
+			$box['key']['id'] = '';
+			
+			switch ($box['key']['intended_usage']) {
+				case 'smart_newsletter_group':
+					$box['title'] = adminPhrase('Creating a smart newsletter group');
+					break;
+				case 'smart_permissions_group':
+					$box['title'] = adminPhrase('Creating a smart permissions group');
+					break;
+			}
+		}
+		
+		$changes = array();
+		$multiRows = $this->setupRuleRows($box, $fields, $values, $changes, $filling = true, $n);
+		$box['key']['num_rules'] = $multiRows['numRows'];
+		
+		
+		
+		//Check whether various other modules are running
+		if (getModulePrefix('assetwolf_2', $mustBeRunning = true)) {
+			$box['key']['assetsExist'] = true;
+		}
+		if (getModulePrefix('zenario_location_manager', $mustBeRunning = true)) {
+			$box['key']['locationsExist'] = true;
+		}
+		if (getModulePrefix('zenario_company_locations_manager', $mustBeRunning = true)) {
+			$box['key']['companiesExist'] = true;
+		}
+		if ($ZENARIO_ORGANIZATION_MANAGER_PREFIX = getModulePrefix('zenario_organization_manager', $mustBeRunning = true)) {
+			$box['lovs']['roles'] = getRowsArray($ZENARIO_ORGANIZATION_MANAGER_PREFIX. 'user_location_roles', 'name', [], 'name', 'id');
+			$box['key']['rolesExist'] = !empty($box['lovs']['roles']);
+		}
+		
+		
+		//Keep track of which things have parents
+		$unsets = array();
+		$optGroups = array(
+			'flags' => array(),
+			'groups' => array(),
+			'lists' => array()
+		);
+		
+		//Get a list of tabs and fields, and loop through it
+		$box['lovs']['fields'] = listCustomFields('users', $flat = false, $filter = false, $customOnly = false, $useOptGroups = true);
+		
+		foreach ($box['lovs']['fields'] as $fieldId => &$field) {
+			
+			if (empty($field['parent'])) {
+				$field['hide_when_children_are_not_visible'] = true;
+			}
 			
 			//Look for fields, exclude the tabs
 			if (!empty($field['parent']) && !empty($field['type'])) {
+				
+				//Permissions always require status to be active; there's no need to have the option for status
+				if ($box['key']['intended_usage'] == 'smart_permissions_group' && $field['db_column'] == 'status') {
+					$unsets[] = $fieldId;
+					continue;
+				}
+				
+				//If a field is flagged as "fundamental", add it to the main list and remove it from the second list
+				//Note that currently "fundamental" is only implemented for lists.
+				if ($field['fundamental'] && in($field['type'], 'radios', 'select', 'centralised_radios', 'centralised_select')) {
+					$box['lovs']['types'][$fieldId] = array(
+						'ord' => $field['ord'],
+						'parent' => 'user_fields',
+						'label' => $field['label']
+					);
+					$unsets[] = $fieldId;
+					continue;
+				}
+				
+				//Otherwise add the field to either the Groups list, Flags list or Lists list.
 				switch ($field['type']) {
-					case 'group':
-						$field['visible_if'] = "zenarioAB.value('type__znz') == 'group'";
+					case 'checkbox':
+						$field['visible_if'] = "zenarioAB.valueOnThisRow('type__', field.id) == 'flag'";
+						$box['key']['flagsExist'] = true;
+						$optGroups['flags'][$field['parent']] = true;
 						break;
 			
-					case 'checkbox':
-						$field['visible_if'] = "zenarioAB.value('type__znz') == 'flag'";
+					case 'group':
+						$field['visible_if'] = "zenarioAB.valueOnThisRow('type__', field.id) == 'group'";
+						$box['key']['groupsExist'] = true;
+						$optGroups['groups'][$field['parent']] = true;
 						break;
 			
 					case 'radios':
 					case 'centralised_radios':
 					case 'select':
 					case 'centralised_select':
-						$field['visible_if'] = "zenarioAB.value('type__znz') == 'list'";
+						$field['visible_if'] = "zenarioAB.valueOnThisRow('type__', field.id) == 'list'";
+						$box['key']['listsExist'] = true;
+						$optGroups['lists'][$field['parent']] = true;
 						break;
 			
 					case 'date':
@@ -63,225 +213,105 @@ class zenario_users__admin_boxes__smart_group extends zenario_users {
 						$unsets[] = $fieldId;
 						continue 2;
 				}
-				
-				//If a field is flagged as "fundamental", add it to the main list and remove it from the second list
-				//Note that currently "fundamental" is only implemented for lists.
-				if ($field['fundamental'] && in($field['type'], 'radios', 'select', 'centralised_radios', 'centralised_select')) {
-					$box['tabs']['smart_group']['custom_template_fields']['type__znz']['values'][$fieldId] =
-						array('ord' => $field['ord'], 'label' => $field['label']);
-					$unsets[] = $fieldId;
-				}
 			}
 		}
 		unset($field);
 		
 		foreach ($unsets as $fieldId) {
-			unset($datasetFields[$fieldId]);
+			unset($box['lovs']['fields'][$fieldId]);
 		}
 		
-		$box['tabs']['smart_group']['custom_template_fields']['field__znz']['values'] = $datasetFields;
-		
-		$box['lovs']['dataset_groups'] =
-			listCustomFields('users', $flat = false, $filter = 'groups_only', $customOnly = false, $useOptGroups = true);
-
-
-
-		if ($box['key']['id'] && ($details = getSmartGroupDetails($box['key']['id']))) {
-			$box['title'] = adminPhrase('Editing the smart group "[[name]]".', $details);
-			$values['smart_group/name'] = $details['name'];
-			$values['smart_group/must_match'] = $details['must_match'];
-			
-			//Load all of the created rules
-			$rules = getRowsArray('smart_group_rules', true, array('smart_group_id' => $box['key']['id']), 'ord');
-			
-			//Create a row of fields for each rule
-			$box['key']['num_rules'] = count($rules);
-			$this->setupRuleRows($box, $fields, $values, $changes = array(), $filling = false);
-			
-			$n = 0;
-			foreach ($rules as $rule) {
-				//Check if a field is set, and if it's a supported field. Only add it if it is.
-				if ($rule['field_id']
-				 && ($field = getDatasetFieldDetails($rule['field_id']))
-				 && (in($field['type'], 'group', 'checkbox', 'radios', 'centralised_radios', 'select', 'centralised_select'))) {
-					++$n;
-					
-					$values['smart_group/field__'. $n] = $field['id'];
-					
-					if ($field['type'] == 'group') {
-						$values['smart_group/type__'. $n] = 'group';
-						
-						if ($rule['field2_id']
-						 || $rule['field3_id']
-						 || $rule['field4_id']
-						 || $rule['field5_id']) {
-							$values['smart_group/field2__'. $n] = $rule['field2_id'];
-							$values['smart_group/field3__'. $n] = $rule['field3_id'];
-							$values['smart_group/field4__'. $n] = $rule['field4_id'];
-							$values['smart_group/field5__'. $n] = $rule['field5_id'];
-							$values['smart_group/is_isnt_in__'. $n] = 'is_one_of';
-						} else {
-							$values['smart_group/is_isnt_in__'. $n] = $rule['not']? 'isnt' : 'is';
+		//Loop through the list of fields again.
+		//Catch the case where there was only one tab visible for a type.
+		//In this case, don't bother showing the tabs in the list.
+		foreach ($box['lovs']['fields'] as $fieldId => &$field) {
+			if (!empty($field['parent']) && !empty($field['type'])) {
+				switch ($field['type']) {
+					case 'checkbox':
+						if (count($optGroups['flags']) < 2) {
+							unset($field['parent']);
 						}
-					
-					} elseif ($field['type'] == 'checkbox') {
-						$values['smart_group/type__'. $n] = 'flag';
-						$values['smart_group/is_isnt_set__'. $n] = $rule['not']? 'isnt' : 'is';
-					
-					} else {
-						$values['smart_group/type__'. $n] = 'list';
-						$values['smart_group/value__'. $n] = $rule['value'];
-						$values['smart_group/is_isnt__'. $n] = $rule['not']? 'isnt' : 'is';
-					}
-					
-					//Note: fundamental fields need to appear selected in the first list, not the second
-					//Note that currently "fundamental" is only implemented for lists.
-					if ($field['fundamental'] && in($field['type'], 'radios', 'select', 'centralised_radios', 'centralised_select')) {
-						$values['smart_group/type__'. $n] = $field['id'];
-						$values['smart_group/field__'. $n] = '';
-					}
-				
-				//Remove unsupported fields from the list
-				} else {
-					--$box['key']['num_rules'];
+						break;
+			
+					case 'group':
+						if (count($optGroups['groups']) < 2) {
+							unset($field['parent']);
+						}
+						break;
+			
+					case 'radios':
+					case 'centralised_radios':
+					case 'select':
+					case 'centralised_select':
+						if (count($optGroups['lists']) < 2) {
+							unset($field['parent']);
+						}
+						break;
 				}
 			}
 		}
+		unset($field);
 		
 		
 		return;
 	}
 
-	public function setupRuleRows(&$box, &$fields, &$values, $changes, $filling) {
+	public function setupRuleRows(&$box, &$fields, &$values, $changes, $filling, $addRows = 0) {
 		
-		if ($box['key']['num_rules'] < 1) {
-			$box['key']['num_rules'] = 1;
-		}
-		
-		//Check to see if we need to add any new rules, and if so, add them by making a new copy of the template fields
-		$n = 1;
-		while (true) {
-			
-			$inRange = $n <= $box['key']['num_rules'];
-			$fieldsExist = !empty($box['tabs']['smart_group']['fields']['field__'. $n]);
-			
-			if (!$inRange && !$fieldsExist) {
-				break;
-			
-			} elseif ($inRange && !$fieldsExist) {
-				$templateFields = json_decode(str_replace('znz', $n, json_encode($box['tabs']['smart_group']['custom_template_fields'])), true);
-				
-				foreach ($templateFields as $id => &$field) {
-					$box['tabs']['smart_group']['fields'][$id] = $field;
-				}
-				unset($field);
-			}
-			
-			++$n;
-		}
-		
-		//Check if we need to remove any rules from the end
-		$unsets = array();
-		foreach ($box['tabs']['smart_group']['fields'] as $fieldId => &$field) {
-			if (isset($field['custom_n'])) {
-				if ($field['hidden'] = $field['custom_n'] > $box['key']['num_rules']) {
-					$unsets[] = $fieldId;
-				}
-			}
-		}
-		unset($field);
-		
-		foreach ($unsets as $fieldId) {
-			unset($box['tabs']['smart_group']['fields'][$fieldId]);
-		}
-		
-		
-		//We may have created and/or destroyed fields, so update the linking fields
-		readAdminBoxValues($box, $fields, $values, $changes, $filling, $resetErrors = false);
+		return setupMultipleRowsInTUIX(
+			$box, $fields, $values, $changes, $filling = false,
+			$box['tabs']['smart_group']['custom_template_fields'],
+			$addRows,
+			$minNumRows = 1,
+			$tabName = 'smart_group',
+			$deleteButtonCodeName = 'remove__znz'
+		);
 	}
 
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		exitIfNotCheckPriv('_PRIV_MANAGE_GROUP');
 		
-		//Add a new rule at the end
-		if (!empty($box['tabs']['smart_group']['fields']['add__'. $box['key']['num_rules']]['pressed'])) {
-			++$box['key']['num_rules'];
-		
-		//Remove a rule, bumping any later rules up to it
-		} else {
-			for ($n = 1; $n <= $box['key']['num_rules']; ++$n) {
-				if (!empty($box['tabs']['smart_group']['fields']['remove__'. $n]['pressed'])) {
-					unset($box['tabs']['smart_group']['fields']['remove__'. $n]['pressed']);
-					
-					for (; $n <= $box['key']['num_rules']; ++$n) {
-						
-						//Loop through each field
-						foreach ($box['tabs']['smart_group']['custom_template_fields'] as $fieldId => &$field) {
-							if ($field['type'] == 'submit') {
-								continue;
-							}
-							
-							//Take the value of each field from the next rule, and paste it onto this rule
-							$cutName = str_replace('znz', $n + 1, $fieldId);
-							$pstName = str_replace('znz', $n, $fieldId);
-					
-							foreach (array('value', 'current_value') as $val) {
-								if (isset($box['tabs']['smart_group']['fields'][$cutName][$val])) {
-									$box['tabs']['smart_group']['fields'][$pstName][$val] =
-										$box['tabs']['smart_group']['fields'][$cutName][$val];
-									$box['tabs']['smart_group']['fields'][$cutName][$val] = '';
-								} else {
-									unset($box['tabs']['smart_group']['fields'][$pstName][$val]);
-								}
-							}
-						}
-						unset($field);
-					}
-					
-					--$box['key']['num_rules'];
-					break;
-				}
-			}
-		}
-		
-		$this->setupRuleRows($box, $fields, $values, $changes, $filling = false);
+		$multiRows = $this->setupRuleRows(
+			$box, $fields, $values, $changes, $filling = false,
+			$addRows = !empty($box['tabs']['smart_group']['fields']['add__'. $box['key']['num_rules']]['pressed'])
+		);
+		$box['key']['num_rules'] = $multiRows['numRows'];
 		
 		//Set the LOV options for every picked field
-		$fields['smart_group/no_rules_set']['hidden'] = false;
 		for ($n = 1; $n <= $box['key']['num_rules']; ++$n) {
 			
 			$fieldId = false;
 			if ($type = $values['smart_group/type__'. $n]) {
-				if (is_numeric($type)) {
+				if (in($type, 'group', 'flag', 'list')) {
+					$fieldId = (int) $values['smart_group/field__'. $n];
+				} elseif (is_numeric($type)) {
 					$fieldId = $type;
-				} else
-				if (($fid = $values['smart_group/field__'. $n])
-				 && (is_numeric($fid))) {
-					$fieldId = $fid;
+					$type = 'list';
 				}
 			}
 			
 			$box['tabs']['smart_group']['fields']['value__'. $n]['hidden'] = true;
-			if ($field = getDatasetFieldDetails($fieldId)) {
+			if ($fieldId && ($field = getDatasetFieldDetails($fieldId))) {
 				
 				//Set list of values
 				if (in($field['type'], 'radios', 'select', 'centralised_radios', 'centralised_select')) {
-					
-					//Catch the case where the user has just changed the first select list and the wrong thing is selected
-					if (!$type || in($type, 'group', 'flag')) {
-					} else {
-						$lov = getDatasetFieldLOV($field, $flat = false);
-						$box['tabs']['smart_group']['fields']['value__'. $n]['values'] = $lov;
-						$box['tabs']['smart_group']['fields']['value__'. $n]['hidden'] = empty($lov);
-					}
+					$lov = getDatasetFieldLOV($field, $flat = false);
+					$box['tabs']['smart_group']['fields']['value__'. $n]['values'] = $lov;
+					$box['tabs']['smart_group']['fields']['value__'. $n]['hidden'] = empty($lov);
 				}
-				
-				$fields['smart_group/no_rules_set']['hidden'] = true;
 			}
 		}
 		
+		
 		$rules = $this->getRulesFromFields($box, $fields, $values);
-		$values['smart_group/members'] = countSmartGroupMembers($rules);
+		
+		$fields['smart_group/no_rules_set_news']['hidden'] =
+		$fields['smart_group/no_rules_set_perms']['hidden'] = !empty($rules);
+		$fields['smart_group/members']['hidden'] = empty($rules);
+		
+		if (!empty($rules)) {
+			$values['smart_group/members'] = countSmartGroupMembers($rules);
+		}
 	}
 
 	
@@ -297,56 +327,81 @@ class zenario_users__admin_boxes__smart_group extends zenario_users {
 		$rules = array();
 		for ($n = 1; $n <= $box['key']['num_rules']; ++$n) {
 			
-			//For each row, check that a field is selected (remembering that fields are in the
-			//"type" select list if they are fundamental fields).
-			$fieldId = false;
 			if ($type = $values['smart_group/type__'. $n]) {
-				if (is_numeric($type)) {
-					$fieldId = $type;
-				} else
-				if (($fid = $values['smart_group/field__'. $n])
-				 && (is_numeric($fid))) {
-					$fieldId = $fid;
-				}
-			}
 			
-			//Check if a field is selected, and if it is a supported type
-			if ($fieldId
-			 && ($field = getDatasetFieldDetails($fieldId))
-			 && (in($field['type'], 'group', 'checkbox', 'radios', 'centralised_radios', 'select', 'centralised_select'))) {
-				
-				
 				$rule = array();
-				$rule['field_id'] = $fieldId;
+				$rule['field_id'] = 0;
 				$rule['field2_id'] = 0;
 				$rule['field3_id'] = 0;
 				$rule['field4_id'] = 0;
 				$rule['field5_id'] = 0;
+				$rule['role_id'] = 0;
 				$rule['value'] = null;
 				$rule['not'] = 0;
 				$rule['must_match'] = $values['smart_group/must_match'];
+				$rule['intended_usage'] = $box['key']['intended_usage'];
 				
-				if ($field['type'] == 'group') {
-					$values['smart_group/type__'. $n] = 'group';
+				switch ($type) {
+					//If a role is picked, set the select list
+					case 'role':
+						if ($rule['role_id'] = $values['smart_group/role__'. $n]) {
+							$rule['type_of_check'] = $type;
+							$rules[] = $rule;
+						}
+						break;
 					
-					if ($values['smart_group/is_isnt_in__'. $n] == 'is_one_of') {
-						$rule['field2_id'] = $values['smart_group/field2__'. $n];
-						$rule['field3_id'] = $values['smart_group/field3__'. $n];
-						$rule['field4_id'] = $values['smart_group/field4__'. $n];
-						$rule['field5_id'] = $values['smart_group/field5__'. $n];
-					} else {
-						$rule['not'] = engToBoolean($values['smart_group/is_isnt_in__'. $n] == 'isnt');
-					}
+					default:
+						//For each row, check that a field is selected (remembering that fields are in the
+						//"type" select list if they are fundamental fields).
+						$fieldId = false;
+						if (in($type, 'group', 'flag', 'list')) {
+							$fieldId = (int) $values['smart_group/field__'. $n];
+						} elseif (is_numeric($type)) {
+							$fieldId = $type;
+							$type = 'list';
+						}
+			
+						//Check if a field is selected, and if it is a supported type
+						if ($fieldId
+						 && ($field = getDatasetFieldDetails($fieldId))
+						 && (in($field['type'], 'group', 'checkbox', 'radios', 'centralised_radios', 'select', 'centralised_select'))) {
+							
+							//Catch the case where someone has just changed the select lists and the types of field don't match up
+							if (($type == 'group' xor $field['type'] == 'group')
+							 || ($type == 'flag' xor $field['type'] == 'checkbox')
+							 || ($type == 'list' xor in($field['type'], 'radios', 'centralised_radios', 'select', 'centralised_select'))) {
+								break;
+							}
+							
+							$rule['type_of_check'] = 'user_field';
+							$rule['field_id'] = $fieldId;
+							
+							if ($field['type'] == 'group') {
+								$values['smart_group/type__'. $n] = 'group';
+					
+								if ($values['smart_group/is_isnt_in__'. $n] == 'is_one_of') {
+									$rule['field2_id'] = $values['smart_group/field2__'. $n];
+									$rule['field3_id'] = $values['smart_group/field3__'. $n];
+									$rule['field4_id'] = $values['smart_group/field4__'. $n];
+									$rule['field5_id'] = $values['smart_group/field5__'. $n];
+								} else {
+									$rule['not'] = engToBoolean($values['smart_group/is_isnt_in__'. $n] == 'isnt');
+								}
 				
-				} elseif ($field['type'] == 'checkbox') {
-					$rule['not'] = engToBoolean($values['smart_group/is_isnt_set__'. $n] == 'isnt');
+							} elseif ($field['type'] == 'checkbox') {
+								$rule['not'] = engToBoolean($values['smart_group/is_isnt_set__'. $n] == 'isnt');
 				
-				} else {
-					$rule['value'] = $values['smart_group/value__'. $n];
-					$rule['not'] = engToBoolean($values['smart_group/is_isnt__'. $n] == 'isnt');
+							} else {
+								if (!$rule['value'] = $values['smart_group/value__'. $n]) {
+									break;
+								}
+								$rule['not'] = engToBoolean($values['smart_group/is_isnt__'. $n] == 'isnt');
+							}
+				
+							$rules[] = $rule;
+						}
+						break;
 				}
-				
-				$rules[] = $rule;
 			}
 		}
 		
@@ -367,6 +422,7 @@ class zenario_users__admin_boxes__smart_group extends zenario_users {
 		if (!$box['key']['id']) {
 			$details['created_on'] = now();
 			$details['created_by'] = adminId();
+			$details['intended_usage'] = $box['key']['intended_usage'];
 		}
 		
 		$box['key']['id'] = setRow('smart_groups', $details, $box['key']['id']);
@@ -381,6 +437,7 @@ class zenario_users__admin_boxes__smart_group extends zenario_users {
 			$key['ord'] = $ord;
 			$key['smart_group_id'] = $box['key']['id'];
 			unset($rule['must_match']);
+			unset($rule['intended_usage']);
 			
 			setRow('smart_group_rules', $rule, $key);
 		}

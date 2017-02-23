@@ -549,11 +549,6 @@ class zenario_location_map_and_listing extends module_base_class {
 					$values['front_end_features/enable_postcode_search'] = false;
 				}
 				
-				$fields['front_end_features/default_country_options']['hidden'] = !$values['front_end_features/filter_by_country'];
-				$fields['front_end_features/default_country']['hidden'] = !$values['front_end_features/filter_by_country'] || ($values['front_end_features/default_country_options'] != 'select_country');
-				
-				$fields['front_end_features/field1']['hidden'] = !$values['front_end_features/list_by_field'];
-				
 				$hidden = !$values['image/show_images'];
 				$this->showHideImageOptions($fields, $values, 'image', $hidden, 'map_view_thumbnail_');
 				$this->showHideImageOptions($fields, $values, 'image', $hidden, 'list_view_thumbnail_');

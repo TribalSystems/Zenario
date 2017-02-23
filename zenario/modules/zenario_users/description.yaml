@@ -7,56 +7,61 @@ editions: Pro, ProBusiness, Enterprise
 start_running_on_install: true
 license_info: 'Modified BSD License'
 description: >
-	<p>The Users enable the admin user interface to create/edit users.</p>
+    <p>The Users enable the admin user interface to create/edit users.</p>
 category: management
 keywords: user
 vlp_class_name: zenario_users
-is_pluggable: No
+is_pluggable: false
 default_framework: standard
 default_instance_name: Untitled User
 dependencies:
-	zenario_pro_features: Yes
-	zenario_country_manager: Yes
+    zenario_pro_features: true
+    zenario_country_manager: true
 signals:
-	-
-		name: eventGroupDeleted
-		static: true
-	-
-		name: eventUserUpdatedProfile
-		static: true
+    -
+        name: eventGroupDeleted
+        static: true
+    -
+        name: eventUserUpdatedProfile
+        static: true
 
 jobs:
-	-
-		name: jobSyncUsers
-		static: Yes
-		months: jan,feb,mar,apr,may,jun,jul,aug,sep,oct,nov,dec
-		days: mon,tue,wed,thr,fri,sat,sun
-		hours: 0h,1h,2h,3h,4h,5h,6h,7h,8h,9h,10h,11h,12h,13h,14h,15h,16h,17h,18h,19h,20h,21h,22h,23h
-		minutes: 0m,5m,10m,15m,20m,25m,30m,35m,40m,45m,50m,55m
-		log_on_action: false
-		log_on_no_action: false
-		email_on_action: false
-		email_on_no_action: false
-	-
-		name: jobRemoveInactivePendingUsers
-		static: true
-		months: jan,feb,mar,apr,may,jun,jul,aug,sep,oct,nov,dec
-		days: mon,tue,wed,thr,fri,sat,sun
-		hours: 1h
-		minutes: 0m
-		log_on_action: true
-		log_on_no_action: false
-		email_on_action: true
-		email_on_no_action: false
-	-
-		name: jobSendInactiveUserEmail
-		static: true
-		months: jan,feb,mar,apr,may,jun,jul,aug,sep,oct,nov,dec
-		days: mon,tue,wed,thr,fri,sat,sun
-		hours: >
-			7h
-		minutes: 0m
-		log_on_action: true
-		log_on_no_action: true
-		email_on_action: false
-		email_on_no_action: false
+    -
+        name: jobSyncUsers
+        static: true
+        months: jan,feb,mar,apr,may,jun,jul,aug,sep,oct,nov,dec
+        days: mon,tue,wed,thr,fri,sat,sun
+        hours: 0h,1h,2h,3h,4h,5h,6h,7h,8h,9h,10h,11h,12h,13h,14h,15h,16h,17h,18h,19h,20h,21h,22h,23h
+        minutes: 0m,5m,10m,15m,20m,25m,30m,35m,40m,45m,50m,55m
+        log_on_action: false
+        log_on_no_action: false
+        email_on_action: false
+        email_on_no_action: false
+    -
+        name: jobRemoveInactivePendingUsers
+        static: true
+        months: jan,feb,mar,apr,may,jun,jul,aug,sep,oct,nov,dec
+        days: mon,tue,wed,thr,fri,sat,sun
+        hours: 1h
+        minutes: 0m
+        log_on_action: true
+        log_on_no_action: false
+        email_on_action: true
+        email_on_no_action: false
+    -
+        name: jobSendInactiveUserEmail
+        static: true
+        months: jan,feb,mar,apr,may,jun,jul,aug,sep,oct,nov,dec
+        days: mon,tue,wed,thr,fri,sat,sun
+        hours: >
+            7h
+        minutes: 0m
+        log_on_action: true
+        log_on_no_action: true
+        email_on_action: false
+        email_on_no_action: false
+
+commands:
+    - create_user
+    - edit_user
+    - delete_user

@@ -140,7 +140,7 @@ class zenario_comments extends zenario_anonymous_comments {
 			UPDATE ". DB_NAME_PREFIX. ZENARIO_COMMENTS_PREFIX. "users SET
 				latest_activity = NOW()
 			WHERE user_id = ". (int) $userId;
-		sqlUpdate($sql, false);
+		sqlUpdate($sql, false, false);
 	}
 	
 	function canDeletePost(&$post) {
@@ -227,7 +227,7 @@ class zenario_comments extends zenario_anonymous_comments {
 					(user_id, latest_activity)
 				VALUES
 					(". (int) $userId. ", NOW())";
-			sqlUpdate($sql, false);
+			sqlUpdate($sql, false, false);
 		}
 	}
 	

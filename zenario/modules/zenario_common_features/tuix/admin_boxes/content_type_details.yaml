@@ -78,8 +78,40 @@ zenario_content_type_details:
                     side_note: |
                         Choose whether the menu node for a newly-created content item is at the start or end of the menu.
                     indent: 1
+                
+                hide_menu_node:
+                    label: 'Invisible in menu navigation'
+                    type: checkbox
+                    visible_if: zenarioAB.value('set_default_parent_menu_node')
+                    side_note: |
+                        Make the auto-created menu node be invisible
+                        (will appear in a breadcrumb trail but not in the menu navigation).
+                    indent: 1
+                
+                hide_private_item:
+                    indent: 1
+                    visible_if: zenarioAB.value('set_default_parent_menu_node')
+                    label: 'Privacy:'
+                    type: select
+                    values:
+                        - 
+                            ord: 0
+                            label: Show to visitors and extranet users, even if the target content item is private
+                        - 
+                            ord: 1
+                            label: Obey the privacy setting of the content item
+                        - 
+                            ord: 2
+                            label: Show to visitors, hide from extranet users
+                        - 
+                            ord: 3
+                            label: Only show to extranet users
+                    side_note: >
+                        If the linked-to content item is private, you can control
+                        when the menu node is displayed.
+                
                 menu_node_position_edit:
-                    label: 'Option:'
+                    label: 'Adminitrator override:'
                     type: radios
                     values:
                         suggest:
@@ -91,14 +123,16 @@ zenario_content_type_details:
                     side_note: |
                         Choose whether the auto-allocated menu position may be changed by the administrator.
                     indent: 1
-                hide_menu_node:
-                    label: 'Invisible in menu navigation'
-                    type: checkbox
-                    visible_if: zenarioAB.value('set_default_parent_menu_node')
-                    side_note: |
-                        Make the auto-created menu node be invisible
-                        (will appear in a breadcrumb trail but not in the menu navigation).
-                    indent: 1
+                
+                default_permissions:
+                    label: 'Default permissions for new content items:'
+                    type: radios
+                    values:
+                        public:
+                            label: Public, visible to everyone
+                        logged_in:
+                            label: Private, only show to extranet users who are logged in
+                
                 enable_categories:
                     label: 'Support for categories:'
                     type: radios

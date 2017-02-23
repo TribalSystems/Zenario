@@ -44,7 +44,8 @@ zenario__locations:
             external_id:
                 title: External number
                 db_column: l.external_id
-                show_by_default: Yes
+                show_by_default: false
+                hidden: false
                 searchable: Yes
                 width: small
                 align_right: Yes
@@ -53,6 +54,7 @@ zenario__locations:
                 show_by_default: No
                 searchable: Yes
                 width: xlarge
+                hidden: false
             description:
                 title: Name
                 db_column: l.description
@@ -65,35 +67,42 @@ zenario__locations:
                 db_column: l.address1
                 show_by_default: No
                 searchable: Yes
+                hidden: false
             address2:
                 title: Address 2
                 db_column: l.address2
                 show_by_default: No
                 searchable: Yes
+                hidden: false
             locality:
                 title: Locality
                 db_column: l.locality
                 show_by_default: No
                 searchable: Yes
+                hidden: false
             city:
                 title: City
                 db_column: l.city
                 show_by_default: Yes
                 searchable: Yes
+                hidden: false
             state:
                 title: State
                 db_column: l.state
                 show_by_default: No
                 searchable: Yes
+                hidden: false
             postcode:
                 title: Postcode
                 db_column: l.postcode
                 show_by_default: No
                 searchable: Yes
+                hidden: false
             country_code:
                 db_column: l.country_id
                 show_by_default: No
                 searchable: Yes
+                hidden: false
             country:
                 title: Country
                 db_column: c.english_name
@@ -103,6 +112,7 @@ zenario__locations:
                                                     l.country_id = c.id
                 show_by_default: Yes
                 searchable: Yes
+                hidden: false
             region:
                 title: Region
                 table_join: |
@@ -117,19 +127,23 @@ zenario__locations:
                 search_column: r.name
                 show_by_default: No
                 searchable: Yes
+                hidden: false
             latitude:
                 title: Latitude
                 db_column: l.latitude
                 show_by_default: No
+                hidden: false
             longitude:
                 title: Longitude
                 db_column: l.longitude
                 show_by_default: No
+                hidden: false
             status:
                 title: Status
                 db_column: l.status
-                show_by_default: Yes
+                show_by_default: false
                 searchable: Yes
+                hidden: false
                 format: enum
                 values:
                     pending: Pending
@@ -141,6 +155,7 @@ zenario__locations:
                 item_link: content_item
                 db_column: "CONCAT(l.content_type,'_',l.equiv_id)"
                 show_by_default: No
+                hidden: false
             sectors:
                 title: Sectors
                 db_column: |
@@ -152,6 +167,7 @@ zenario__locations:
                                                 WHERE l.id = lssl.location_id 
                                             )
                 show_by_default: No
+                hidden: false
             sticky_flag:
                 title: Primary Sector
                 db_column: |
@@ -165,6 +181,7 @@ zenario__locations:
                                                 LIMIT 1
                                             )
                 searchable: No
+                hidden: false
             parent_name:
                 db_column: |
                     IF (pl.description IS NULL,
@@ -183,6 +200,7 @@ zenario__locations:
                     [[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations AS pl 
                                             ON pl.id = l.parent_id
                 show_by_default: No
+                hidden: false
             number_of_children:
                 db_column: |
                     (
@@ -194,26 +212,32 @@ zenario__locations:
                                             )
                 title: Child locations
                 show_by_default: No
+                hidden: false
             image_usage:
                 db_column: f.usage
+                hidden: false
             checksum:
                 db_column: f.checksum
+                hidden: false
             last_updated:
                 title: Date/time last updated
                 db_column: l.last_updated
                 format: datetime
                 show_by_default: No
+                hidden: false
             last_updated_by:
                 title: Last updated by
                 db_column: l.last_updated_admin_id
                 show_by_default: No
                 searchable: Yes
                 format: enum
+                hidden: false
             last_updated_via_import:
                 title: Date/time last updated from import
                 db_column: l.last_updated_via_import
                 format: datetime
                 show_by_default: No
+                hidden: false
             on_map:
                 title: On map
                 db_column: '(l.latitude AND l.longitude)'
@@ -222,6 +246,7 @@ zenario__locations:
                 format: yes_or_no
                 width: xsmall
                 ord: "999"
+                hidden: false
         quick_filter_buttons:
                     all:
                         ord: 1

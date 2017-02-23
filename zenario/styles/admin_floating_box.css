@@ -2076,6 +2076,12 @@ body.ie6 .zenario_now h1 {
 	top:10px;
 }
 
+/*  Styles for smart group rules  */
+
+#zenario_fbAdminFloatingBox table.zenario_smart_group_rules td {
+	padding: 10px 4px;
+}
+
 /*  Styles for zenario import wizard  */
 
 #zenario_fbAdminInner .zenario_ab__zenario_import .zenario_row_input_button a {
@@ -2942,6 +2948,10 @@ body.ie6 .zenario_now h1 {
 	background:url('../admin/images/icon-info-v2.png') no-repeat 0 0;
 }
 
+#zenario_fbAdminFloatingBox .zenario_fabMain #zenario_fbMain .Tokenize.Disabled .zenario_fab_picked_item_info:hover {
+	background:none;
+}
+
 #zenario_fbAdminFloatingBox.zenario_fab_plugin .ui-state-default, 
 #zenario_fbAdminFloatingBox.zenario_fab_plugin .ui-widget-content .ui-state-default, 
 #zenario_fbAdminFloatingBox.zenario_fab_plugin .ui-widget-header .ui-state-default {
@@ -2964,10 +2974,6 @@ body.ie6 .zenario_now h1 {
 /* FAB roles
 --------------------------------------------------------------------------------------------------*/
 
-#zenario_fbAdminFloatingBox.zenario_fab_zenario_organization_manager__user_role_location_link #zenario_fbAdminInner .thickbox_table {
-	overflow:hidden;
-}
-
 #zenario_fbAdminFloatingBox.zenario_fab_zenario_organization_manager__user_role_location_link #zenario_fbAdminInner .div_table .div_table_row {
 	clear:unset;
 	float:left;
@@ -2975,12 +2981,30 @@ body.ie6 .zenario_now h1 {
 	margin-right:3%;
 }
 
+#zenario_fbAdminFloatingBox.zenario_fab_zenario_organization_manager__user_role_location_link #zenario_fbAdminInner .div_table #errorDisplayRow.div_table_row {
+	width:100%;
+	float:none;
+}
+
 #zenario_fbAdminFloatingBox.zenario_fab_zenario_organization_manager__user_role_location_link #zenario_fbAdminInner .Tokenize .TokensContainer {
 	width:230px;
+	min-height:30px;
 }
 
 #zenario_fbAdminFloatingBox.zenario_fab_zenario_organization_manager__user_role_location_link #zenario_fbAdminInner .Tokenize .form_picked_item {
-	width:185px;
+	width:150px;
+}
+
+#zenario_fbAdminFloatingBox.zenario_fab_zenario_organization_manager__user_role_location_link #zenario_fbAdminInner .Tokenize .Dropdown .form_picked_item {
+	width:220px !important;
+}
+
+#zenario_fbAdminFloatingBox.zenario_fab_zenario_organization_manager__user_role_location_link #zenario_fbAdminInner #name_for_user_id .Tokenize .TokensContainer {
+	padding:2px;
+}
+
+#zenario_fbAdminFloatingBox.zenario_fab_zenario_organization_manager__user_role_location_link #zenario_fbAdminInner #name_for_user_id .Tokenize.Disabled .TokenSearch {
+	display:none;
 }
 
 /* FAB toggle buttons
@@ -3370,6 +3394,20 @@ body.ie6 .zenario_now h1 {
 	margin-left:120px;
 }
 
+/* "or"s for permissions
+------------------------------------------------------------------------------------------------- */
+
+#zenario_fbAdminInner .div_table_row.zfab_or:before {
+	display: block;
+	overflow: visible;
+	height: 10px;
+	position: relative;
+	bottom: 8px;
+	left: 15px;
+	content: '-- or --';
+	font-style: italic;
+}
+
 /* FAB default style 
 ------------------------------------------------------------------------------------------------- */
 
@@ -3687,6 +3725,7 @@ body.ie10 #zenario_fabBox_readonlyMarker {
 	-webkit-border-radius: 2px;
 	-moz-border-radius: 2px;
 	border-radius: 2px;
+	margin-right:2px;
 }
 
 #zenario_fbAdminInner .Tokenize .zenario_picked_file_wrapper,
@@ -3722,7 +3761,7 @@ div.Tokenize ul.Dropdown li {
 div.Tokenize ul.Dropdown li.Hover,
 .zenario_fab_plugin div.Tokenize ul.Dropdown li.Hover,
 #zenario_fbAdminInner .Tokenize ul.Dropdown li.Hover .form_picked_item {
-	background:#F6F6F6 !important;
+	background:#fbf290 !important;
 	cursor:pointer;
 }
 
@@ -3863,6 +3902,18 @@ div.Tokenize ul.TokensContainer li.Token a.Close {
 	width: 500px;
 }
 
+/* Styles for icons to use on fields
+--------------------------------------------------------------------------------------------------*/
+
+#zenario_fbAdminFloatingBox #zenario_fbAdminInner .warning_icon {
+	background:url(../admin/images/icon-warning.png) no-repeat left 0;
+	padding-left:25px;
+}
+
+#zenario_fbAdminFloatingBox #zenario_fbAdminInner .success_icon {
+	background:url(../admin/images/icon-success.png) no-repeat left 0;
+	padding-left:25px;
+}
 
 
 /* FABs Plugins icons

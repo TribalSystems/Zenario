@@ -12,6 +12,11 @@ zenario_menu:
         cID: ""
         cType: ""
         mode: ""
+        id_is_parent_menu_node_id: ""
+    identifier: 
+        css_class: menu_section
+        label: Menu node ID
+        value: ""
     tabs:
         text:
             label: Menu node
@@ -45,11 +50,11 @@ zenario_menu:
                             !this.value?
                                 ''
                             :    !get('parent_path_of__' + this.id).value?
-                                    this.value
-                                :    get('parent_path_of__' + this.id).value + ' -> ' + this.value;
+                                    this.value + " (1 level)"
+                                :    get('parent_path_of__' + this.id).value + ' -> ' + this.value + " ("+ (get('parent_path_of__' + this.id).value.split("->").length + 1) + " level)";
                 path_of__menu_title:
                     ord: 1003
-                    label: 'Path:'
+                    label: 'Path preview:'
                     type: text
                     disabled: disabled
                     class: zenario_textbox_noborder
@@ -78,7 +83,7 @@ zenario_menu:
                         exts:
                             ord: 4
                             label: Link by language
-                            side_note: Link to a different external URL in each language
+                            side_note: Link to a different external URL in each language.
                     format_onchange: true
                 hyperlink_target:
                     ord: 1006
@@ -169,52 +174,7 @@ zenario_menu:
                     ord: 0
                     full_width: true
                     snippet:
-                        html: "Your site can have rich menu nodes, with images, additional text and custom CSS. You may specify these things here. Note that your menu plugin's framework must support these things otherwise they may not appear."
-                image_id:
-                    ord: 1
-                    label: 'Image:'
-                    upload:
-                        multi: false
-                        accept: 'image/*'
-                        extensions:
-                            - .gif
-                            - .jpg
-                            - .jpeg
-                            - .png
-                        drag_and_drop: true
-                        reorder_items: false
-                    pick_items:
-                        path: zenario__content/panels/image_library
-                        min_path: zenario__content/panels/image_library
-                        max_path: zenario__content/panels/image_library
-                        target_path: zenario__content/panels/image_library
-                        select_phrase: Select image...
-                
-                use_rollover_image:
-                    ord: 1.1
-                    label: 'Use a rollover image'
-                    type: checkbox
-                    format_onchange: true
-                rollover_image_id:
-                    ord: 1.2
-                    indent: 1
-                    label: 'Rollover image:'
-                    upload:
-                        multi: false
-                        accept: 'image/*'
-                        extensions:
-                            - .gif
-                            - .jpg
-                            - .jpeg
-                            - .png
-                        drag_and_drop: true
-                        reorder_items: false
-                    pick_items:
-                        path: zenario__content/panels/image_library
-                        min_path: zenario__content/panels/image_library
-                        max_path: zenario__content/panels/image_library
-                        target_path: zenario__content/panels/image_library
-                        select_phrase: Select image...
+                        html: "Your site can have rich menu nodes, with additional text and custom CSS. You may specify these things here. Note that your menu plugin's framework must support these things otherwise they may not appear."
                 css_class:
                     label: 'CSS class names:'
                     type: text
@@ -226,6 +186,17 @@ zenario_menu:
                     side_note: |
                         This menu node will appear as a &lt;li&gt; with these CSS class names.
                 
+                rel_tag:
+                    label: 'Rel-Tag:'
+                    type: text
+                    maxlength: 100
+                accesskey:
+                    label: 'Access key:'
+                    size: 1
+                    maxlength: 1
+                    type: text
+                
+                
                 add_registered_get_requests:
                     visible_if: |
                         zenarioAB.value('target_loc', 'text') == 'int'
@@ -235,8 +206,7 @@ zenario_menu:
                     value: 1
                     side_note: |
                         When linking to the current content item,
-                        keep variables like mode, page, id, locationId or companyId
-                        in the URL.
+                        keep variables like <code>mode</code> or <code>page</code> in the URL.
                 
                 call_static_method:
                     label: |
@@ -274,13 +244,3 @@ zenario_menu:
                             <li><code>true</code> to show the menu node</li>
                             <li>An <code>array()</code> to show the menu node, and set/overwrite its properties.</li>
                         </ul>
-                
-                rel_tag:
-                    label: 'Rel-Tag:'
-                    type: text
-                    maxlength: 100
-                accesskey:
-                    label: 'Access key:'
-                    size: 1
-                    maxlength: 1
-                    type: text

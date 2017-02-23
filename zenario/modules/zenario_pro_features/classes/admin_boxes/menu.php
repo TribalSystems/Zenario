@@ -36,11 +36,10 @@ class zenario_pro_features__admin_boxes__menu extends module_base_class {
 		$numLangs = count($langs);
 		$ord = 0;
 		foreach ($langs as $lang) {
-			++$ord;
 			
-			$field = $box['tabs']['advanced']['custom_fields']['zenario_pro_features__descriptive_text'];
+			$field = $box['tabs']['advanced']['custom_fields']['descriptive_text'];
 			
-			$field['ord'] .= '.'. str_pad($ord, 5, '0', STR_PAD_LEFT);
+			$field['ord'] = ++$ord;
 			
 			if ($box['key']['id'] && ($text = getMenuNodeDetails($box['key']['id'], $lang['id']))) {
 				$field['value'] = $text['descriptive_text'];
@@ -50,7 +49,7 @@ class zenario_pro_features__admin_boxes__menu extends module_base_class {
 				$field['label'] = adminPhrase('Additional text ([[english_name]]):', $lang);
 			}
 			
-			$box['tabs']['advanced']['fields']['zenario_pro_features__descriptive_text__'. $lang['id']] = $field;
+			$box['tabs']['advanced']['fields']['descriptive_text__'. $lang['id']] = $field;
 		}
 
 		if ($box['key']['id'] && $menu = getMenuNodeDetails($box['key']['id'], $box['key']['languageId'])) {
@@ -62,7 +61,7 @@ class zenario_pro_features__admin_boxes__menu extends module_base_class {
 		//Disable the descriptive text fields in any language that the Menu is not translated into
 		$langs = getLanguages();
 		foreach ($langs as $lang) {
-			$box['tabs']['advanced']['fields']['zenario_pro_features__descriptive_text__'. $lang['id']]['disabled'] =
+			$box['tabs']['advanced']['fields']['descriptive_text__'. $lang['id']]['disabled'] =
 				empty($values['text/menu_title__'. $lang['id']]);
 		}
 	}
@@ -75,7 +74,7 @@ class zenario_pro_features__admin_boxes__menu extends module_base_class {
 					$box['key']['id'],
 					$lang['id'],
 					array(
-						'descriptive_text' => $values['advanced/zenario_pro_features__descriptive_text__'. $lang['id']]),
+						'descriptive_text' => $values['advanced/descriptive_text__'. $lang['id']]),
 					$neverCreate = true);
 			}
 		}

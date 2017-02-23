@@ -65,9 +65,7 @@ Notes:
 class zenario_minify {
 	public static $shortNames = array(
 '_.after(' => '_._a(',
-'_.all(' => '_._al(',
 '_.allKeys(' => '_._aK(',
-'_.any(' => '_._an(',
 '_.assign(' => '_._as(',
 '_.before(' => '_._b(',
 '_.bind(' => '_._bi(',
@@ -128,7 +126,6 @@ class zenario_minify {
 '_.mapObject(' => '_._mO(',
 '_.matcher(' => '_._ma(',
 '_.memoize(' => '_._me(',
-'_.min(' => '_._mi(',
 '_.negate(' => '_._n(',
 '_.noConflict(' => '_._nC(',
 '_.noop(' => '_._no(',
@@ -167,13 +164,13 @@ class zenario_minify {
 '_.wrap(' => '_._wr(',
 '_.zip(' => '_._z(',
 'zenario.AJAXLink(' => 'zenario._AJL(',
-'zenario.IN(' => 'zenario._IN(',
 'zenario.actAfterDelayIfNotSuperseded(' => 'zenario._aADINS(',
 'zenario.addAmp(' => 'zenario._aA(',
 'zenario.addBasePath(' => 'zenario._aBP(',
 'zenario.addClassesToColorbox(' => 'zenario._aCTC(',
 'zenario.addJQueryElements(' => 'zenario._aJQE(',
 'zenario.addPluginJavaScript(' => 'zenario._aPJS(',
+'zenario.addTabIdToURL(' => 'zenario._aTITU(',
 'zenario.ajax(' => 'zenario._a(',
 'zenario.applyCompilationMacros(' => 'zenario._aCM(',
 'zenario.applyMergeFields(' => 'zenario._aMF(',
@@ -202,18 +199,20 @@ class zenario_minify {
 'zenario.closeTooltip(' => 'zenario._cT(',
 'zenario.copy(' => 'zenario._co(',
 'zenario.createZenarioLibrary(' => 'zenario._cZL(',
+'zenario.cssEscape(' => 'zenario._cE(',
 'zenario.dataRev(' => 'zenario._dR(',
 'zenario.dateFieldKeyUp(' => 'zenario._dFKU(',
 'zenario.decodeItemIdForOrganizer(' => 'zenario._dIIFO(',
 'zenario.decodeItemIdForStorekeeper(' => 'zenario._dIIFS(',
-'zenario.disableBackgroundScrolling(' => 'zenario._dBS(',
 'zenario.disableScrolling(' => 'zenario._dS(',
 'zenario.drawMicroTemplate(' => 'zenario._dMT(',
+'zenario.enableFullScreen(' => 'zenario._eFS(',
 'zenario.enableScrolling(' => 'zenario._eS(',
 'zenario.enc(' => 'zenario._e(',
 'zenario.encodeItemIdForOrganizer(' => 'zenario._eIIFO(',
 'zenario.encodeItemIdForStorekeeper(' => 'zenario._eIIFS(',
 'zenario.engToBoolean(' => 'zenario._eTB(',
+'zenario.exitFullScreen(' => 'zenario._exFuSc(',
 'zenario.extensionOf(' => 'zenario._eO(',
 'zenario.fireChangeEvent(' => 'zenario._fCE(',
 'zenario.fixJSON(' => 'zenario._fJ(',
@@ -223,6 +222,7 @@ class zenario_minify {
 'zenario.get(' => 'zenario._g(',
 'zenario.getContainerIdFromEl(' => 'zenario._gCIFE(',
 'zenario.getContainerIdFromSlotName(' => 'zenario._gCIFSN(',
+'zenario.getEggIdFromEl(' => 'zenario._gEIFE(',
 'zenario.getMouseX(' => 'zenario._gMX(',
 'zenario.getMouseY(' => 'zenario._gMY(',
 'zenario.getSlotnameFromEl(' => 'zenario._gSFE(',
@@ -231,18 +231,22 @@ class zenario_minify {
 'zenario.htmlspecialchars(' => 'zenario._h(',
 'zenario.httpOrhttps(' => 'zenario._hO(',
 'zenario.ifNull(' => 'zenario._iN(',
+'zenario.inList(' => 'zenario._iL(',
+'zenario.isFullScreen(' => 'zenario._iFS(',
+'zenario.isFullScreenAvailable(' => 'zenario._iFSA(',
 'zenario.ishttps(' => 'zenario._i(',
 'zenario.jsEscape(' => 'zenario._jE(',
 'zenario.linkToItem(' => 'zenario._lTI(',
 'zenario.loadDatePicker(' => 'zenario._lDP(',
 'zenario.loadLibrary(' => 'zenario._lL(',
 'zenario.loadPhrases(' => 'zenario._lP(',
+'zenario.loadScript(' => 'zenario._lS(',
+'zenario.loadedScripts(' => 'zenario._loSc(',
 'zenario.methodsOf(' => 'zenario._mO(',
 'zenario.microTemplate(' => 'zenario._mT(',
 'zenario.moduleNonAsyncAJAX(' => 'zenario._mNAA(',
 'zenario.nonAsyncAJAX(' => 'zenario._nAA(',
 'zenario.nphrase(' => 'zenario._n(',
-'zenario.num(' => 'zenario._nu(',
 'zenario.outdateCachedData(' => 'zenario._oCD(',
 'zenario.phrase(' => 'zenario._p(',
 'zenario.pluginAJAXLink(' => 'zenario._pAL(',
@@ -253,6 +257,7 @@ class zenario_minify {
 'zenario.refreshPluginSlot(' => 'zenario._rPS(',
 'zenario.registerPhrases(' => 'zenario._rP(',
 'zenario.removeClassesToColorbox(' => 'zenario._rCTC(',
+'zenario.removeLinkStatus(' => 'zenario._rLS(',
 'zenario.replacePluginSlotContents(' => 'zenario._rPSC(',
 'zenario.resizeColorbox(' => 'zenario._rC(',
 'zenario.rightHandedSubStr(' => 'zenario._rHSS(',
@@ -271,12 +276,13 @@ class zenario_minify {
 'zenario.showStandalonePageLink(' => 'zenario._sSPL(',
 'zenario.shrtNms(' => 'zenario._sN(',
 'zenario.slot(' => 'zenario._s(',
+'zenario.splitFlagsFromMessage(' => 'zenario._sFFM(',
 'zenario.stop(' => 'zenario._st(',
 'zenario.submitFormReturningHtml(' => 'zenario._sFRH(',
 'zenario.tinyMCEGetContent(' => 'zenario._tMGC(',
+'zenario.toObject(' => 'zenario._tO(',
 'zenario.tooltips(' => 'zenario._t(',
 'zenario.tooltipsUsing(' => 'zenario._tU(',
-'zenario.toObject(' => 'zenario._tO(',
 'zenario.uneschyp(' => 'zenario._u(',
 'zenario.unfun(' => 'zenario._un(',
 'zenario.urlRequest(' => 'zenario._uR(',
@@ -308,7 +314,10 @@ class zenario_minify {
 'zenarioA.closeInfoBox(' => 'zenarioA._cIB(',
 'zenarioA.closeSlotControls(' => 'zenarioA._cSC(',
 'zenarioA.closeSlotControlsAfterDelay(' => 'zenarioA._cSCAD(',
+'zenarioA.copy(' => 'zenarioA._c(',
 'zenarioA.copyContents(' => 'zenarioA._cC(',
+'zenarioA.copyEmbedHTML(' => 'zenarioA._cEH(',
+'zenarioA.copyEmbedLink(' => 'zenarioA._cEL(',
 'zenarioA.csvToObject(' => 'zenarioA._cTO(',
 'zenarioA.cutContents(' => 'zenarioA._cuCo(',
 'zenarioA.debug(' => 'zenarioA._d(',
@@ -341,8 +350,10 @@ class zenario_minify {
 'zenarioA.hidden(' => 'zenarioA._h(',
 'zenarioA.hideAJAXLoader(' => 'zenarioA._hAL(',
 'zenarioA.hidePlugin(' => 'zenarioA._hP(',
+'zenarioA.html(' => 'zenarioA._ht(',
 'zenarioA.infoBox(' => 'zenarioA._iB(',
 'zenarioA.initTutorialSlideshow(' => 'zenarioA._iTS(',
+'zenarioA.input(' => 'zenarioA._i(',
 'zenarioA.isHtaccessWorking(' => 'zenarioA._iHW(',
 'zenarioA.keepTrying(' => 'zenarioA._kT(',
 'zenarioA.loggedOut(' => 'zenarioA._lO(',
@@ -359,13 +370,13 @@ class zenario_minify {
 'zenarioA.openBox(' => 'zenarioA._oB(',
 'zenarioA.openMenuAdminBox(' => 'zenarioA._oMAB(',
 'zenarioA.openSlotControls(' => 'zenarioA._oSC(',
+'zenarioA.option(' => 'zenarioA._op(',
 'zenarioA.organizerQuick(' => 'zenarioA._oQ(',
 'zenarioA.organizerSelect(' => 'zenarioA._oS(',
 'zenarioA.overwriteContents(' => 'zenarioA._oC(',
 'zenarioA.pasteContents(' => 'zenarioA._pC(',
 'zenarioA.pickNewPlugin(' => 'zenarioA._pNP(',
 'zenarioA.pluginSlotEditSettings(' => 'zenarioA._pSES(',
-'zenarioA.readData(' => 'zenarioA._rD(',
 'zenarioA.refreshAllSlotsWithCutCopyPaste(' => 'zenarioA._rASWCCP(',
 'zenarioA.reloadMenuPlugins(' => 'zenarioA._rMP(',
 'zenarioA.rememberToast(' => 'zenarioA._rT(',
@@ -373,6 +384,8 @@ class zenario_minify {
 'zenarioA.replacePluginSlot(' => 'zenarioA._rPS(',
 'zenarioA.resizeImage(' => 'zenarioA._rI(',
 'zenarioA.savePageMode(' => 'zenarioA._sPM(',
+'zenarioA.scanHyperlinksAndDisplayStatus(' => 'zenarioA._sHADS(',
+'zenarioA.select(' => 'zenarioA._s(',
 'zenarioA.setButtonKin(' => 'zenarioA._sBK(',
 'zenarioA.setDocumentURL(' => 'zenarioA._sDU(',
 'zenarioA.setEditorField(' => 'zenarioA._sEF(',
@@ -398,6 +411,8 @@ class zenario_minify {
 'zenarioA.sortArrayForOrganizer(' => 'zenarioA._sAFO(',
 'zenarioA.sortArrayWithGrouping(' => 'zenarioA._sAWG(',
 'zenarioA.sortLogic(' => 'zenarioA._sL(',
+'zenarioA.span(' => 'zenarioA._sp(',
+'zenarioA.splitDataFromErrorMessage(' => 'zenarioA._sDFEM(',
 'zenarioA.stopDefault(' => 'zenarioA._sD(',
 'zenarioA.stopFileDragDrop(' => 'zenarioA._sFDD(',
 'zenarioA.stopTrying(' => 'zenarioA._stTr(',
@@ -408,6 +423,7 @@ class zenario_minify {
 'zenarioA.toggleShowHelpTourNextTime(' => 'zenarioA._tSHTNT(',
 'zenarioA.toggleSlotWand(' => 'zenarioA._tSW(',
 'zenarioA.tooltips(' => 'zenarioA._to(',
+'zenarioA.tuixToArray(' => 'zenarioA._tTA(',
 'zenarioA.uploadDone(' => 'zenarioA._uD(',
 'zenarioA.uploadProgress(' => 'zenarioA._uP(',
 'zenarioAT.action(' => 'zenarioAT._a(',
@@ -447,11 +463,11 @@ class zenario_minify {
 'zenarioO.checkCondition(' => 'zenarioO._cC(',
 'zenarioO.checkDisabled(' => 'zenarioO._cD(',
 'zenarioO.checkIfColumnPickerChangesAreAllowed(' => 'zenarioO._cICPCAA(',
+'zenarioO.checkItemButtonHidden(' => 'zenarioO._cIBH(',
 'zenarioO.checkItemPickable(' => 'zenarioO._cIP(',
 'zenarioO.checkPrefs(' => 'zenarioO._chPr(',
 'zenarioO.checkQueue(' => 'zenarioO._cQ(',
 'zenarioO.checkQueueLength(' => 'zenarioO._cQL(',
-'zenarioO.checkTraits(' => 'zenarioO._cT(',
 'zenarioO.choose(' => 'zenarioO._c(',
 'zenarioO.chooseButtonActive(' => 'zenarioO._cBA(',
 'zenarioO.clearFilter(' => 'zenarioO._clFi(',
@@ -499,9 +515,6 @@ class zenario_minify {
 'zenarioO.getSelectedItemFromLastPanel(' => 'zenarioO._gSIFLP(',
 'zenarioO.getShownColumns(' => 'zenarioO._gSC(',
 'zenarioO.getSortedIdsOfTUIXElements(' => 'zenarioO._gSIOTE(',
-'zenarioO.go(' => 'zenarioO._g(',
-'zenarioO.go2(' => 'zenarioO._g2(',
-'zenarioO.go3(' => 'zenarioO._g3(',
 'zenarioO.goToLastPage(' => 'zenarioO._gTLP(',
 'zenarioO.goToPage(' => 'zenarioO._gTP(',
 'zenarioO.hideCollectionButtons(' => 'zenarioO._hCB(',
@@ -535,11 +548,12 @@ class zenario_minify {
 'zenarioO.noItemsSelected(' => 'zenarioO._nIS(',
 'zenarioO.open(' => 'zenarioO._o(',
 'zenarioO.openInspectionView(' => 'zenarioO._oIV(',
+'zenarioO.panelProp(' => 'zenarioO._pP(',
 'zenarioO.parseNavigationPath(' => 'zenarioO._pNP(',
 'zenarioO.parseReturnLink(' => 'zenarioO._pRL(',
 'zenarioO.pathNotAllowed(' => 'zenarioO._pNA(',
 'zenarioO.pickItems(' => 'zenarioO._pI(',
-'zenarioO.prevPage(' => 'zenarioO._pP(',
+'zenarioO.prevPage(' => 'zenarioO._prPa(',
 'zenarioO.print(' => 'zenarioO._p(',
 'zenarioO.quickFilterEnabled(' => 'zenarioO._qFE(',
 'zenarioO.refreshAndShowPage(' => 'zenarioO._rASP(',
@@ -610,47 +624,130 @@ class zenario_minify {
 'zenarioO.uploadComplete(' => 'zenarioO._uC(',
 'zenarioO.uploadStart(' => 'zenarioO._uS(',
 'zenarioO.viewTrash(' => 'zenarioO._vT('
-);
+	);
 }
 
 //Macros and replacements
 function applyCompilationMacros($code) {
 	
 	//Check if this JavaScript file uses the zenario.lib function.
-	$isZenarioLib =
+	$isZenarioLibWithStringsInputs =
 		false !== strpos($code, 'zenario.lib(')
+	 && false !== strpos($code, 'zenario, zenarioA, zenarioAB, zenarioAT, zenarioO, strings');
+	$isZenarioLibWithAllInputs =
+		$isZenarioLibWithStringsInputs
 	 && false !== strpos($code, 'extensionOf, methodsOf, has');
 	
 	//If so, we can use the has() shortcut.
 	//If not, we need to write out zenario.has() in full.
-	if ($isZenarioLib) {
+	if ($isZenarioLibWithAllInputs) {
 		$has = 'has';
 	} else {
 		$has = 'zenario.has';
 	}
 	
-	//Attempt to replace methods with their shortnames from the list above
-	if ($isZenarioLib) {
+	$patterns = array();
+	$replacements = array();
+	
+	//Some special custom logic for zenario core libraries
+	if ($isZenarioLibWithAllInputs) {
+		//Attempt to replace methods with their shortnames from the list above
 		$code = str_replace(array_keys(zenario_minify::$shortNames), array_values(zenario_minify::$shortNames), $code);
+	}
+	if ($isZenarioLibWithStringsInputs) {
+		//Add some of the strings from base_definitions.js
+		/*strings = {
+			a: zenarioAsString + '/ajax.php',
+			c: '&method_call=',
+			d: '.' + zenarioAsString + '_',
+			e: '&eggId=',
+			f: zenarioAsString + '_common_features',
+			h: '#' + zenarioAsString + '_',
+			i: '&instanceId=',
+			l: '&slotName=',
+			m: moduleClassNameAsString,
+			o: zenarioAsString + '__content/panels/',
+			p: moduleClassNameAsString + 'ForPhrases',
+			q: '?' + moduleClassNameAsString + '=',
+			s: zenarioAsString + '/',
+			v: '&cVersion=',
+			x: 'colorbox',
+			z: zenarioAsString + '_'
+		}*/
+		$patterns[] = '@([\s\(])\'zenario/ajax.php@';
+		$replacements[] = '$1strings.a + \'';
+		
+		$patterns[] = '@([\s\(])\'\&method_call=@';
+		$replacements[] = '$1strings.c + \'';
+		
+		$patterns[] = '@([\s\(])\'\.zenario_@';
+		$replacements[] = '$1strings.d + \'';
+		
+		$patterns[] = '@([\s\(])\'\&eggId=@';
+		$replacements[] = '$1strings.e + \'';
+		
+		$patterns[] = '@([\s\(])\'zenario_common_features@';
+		$replacements[] = '$1strings.f + \'';
+		
+		$patterns[] = '@([\s\(])\'\#zenario_@';
+		$replacements[] = '$1strings.h + \'';
+		
+		$patterns[] = '@([\s\(])\'\&instanceId=@';
+		$replacements[] = '$1strings.i + \'';
+		
+		$patterns[] = '@([\s\(])\'\&slotName=@';
+		$replacements[] = '$1strings.l + \'';
+		
+		$patterns[] = '@\b(\w+|\])\.moduleClassName\b@';
+		$replacements[] = '$1[strings.m]';
+		
+		$patterns[] = '@([\s\(])\'zenario__content/panels/@';
+		$replacements[] = '$1strings.o + \'';
+		
+		$patterns[] = '@\b(\w+|\])\.moduleClassNameForPhrases\b@';
+		$replacements[] = '$1[strings.p]';
+		
+		$patterns[] = '@([\s\(])\'\?moduleClassName=@';
+		$replacements[] = '$1strings.q + \'';
+		
+		$patterns[] = '@([\s\(])\'zenario/@';
+		$replacements[] = '$1strings.s + \'';
+		
+		$patterns[] = '@([\s\(])\'lookup\'@';
+		$replacements[] = '$1strings.u';
+		
+		$patterns[] = '@([\s\(])\'\&cVersion=@';
+		$replacements[] = '$1strings.v + \'';
+		
+		$patterns[] = '@(\$|\))\.colorbox\b@';
+		$replacements[] = '$1[strings.x]';
+		
+		$patterns[] = '@([\s\(])\'colorbox@';
+		$replacements[] = '$1strings.x + \'';
+		
+		$patterns[] = '@colorbox\'(\))@';
+		$replacements[] = '\' + strings.x$1';
+		
+		$patterns[] = '@([\s\(])\'zenario_@';
+		$replacements[] = '$1strings.z + \'';
+	
 	}
 	
 	//"foreach" is a macro for "for .. in ... hasOwnProperty"
-	$patterns = array();
-	$replacements = array();
-	$patterns[] = '/\bforeach\b\s*\(\s*(.+?)\s*\bas\b\s*(\bvar\b |)\s*(.+?)\s*\=\>\s*(\bvar\b |)\s*(.+?)\s*\)\s*\{/';
+	$patterns[] = '@\bforeach\b\s*\(\s*(.+?)\s*\bas\b\s*(\bvar\b |)\s*(.+?)\s*\=\>\s*(\bvar\b |)\s*(.+?)\s*\)\s*\{@';
 	$replacements[] = 'for (\2\3 in \1) { if (!'. $has. '(\1, \3)) continue; \4 \5 = \1[\3];';
-	$patterns[] = '/\bforeach\b\s*\(\s*(.+?)\s*\bas\b\s*(\bvar\b |)\s*(.+?)\s*\)\s*\{/';
+	$patterns[] = '@\bforeach\b\s*\(\s*(.+?)\s*\bas\b\s*(\bvar\b |)\s*(.+?)\s*\)\s*\{@';
 	$replacements[] = 'for (\2\3 in \1) { if (!'. $has. '(\1, \3)) continue;';
 	
 	//We don't have node as a dependency so we can't use Babel.
 	//So we'll try and make do with a few replacements instead!
-	$patterns[] = '/\(([\w\s,]*)\)\s*\=\>\s*\{/';
+	$patterns[] = '@\(([\w\s,]*)\)\s*\=\>\s*\{@';
 	$replacements[] = 'function ($1) {';
-	$patterns[] = '/(\b\w+\b)\s*\=\>\s*\{/';
+	$patterns[] = '@(\b\w+\b)\s*\=\>\s*\{@';
 	$replacements[] = 'function ($1) {';
 	
 	//Not actually standard JavaScript but looks nice
-	$patterns[] = '/\=\>\s*\{/';
+	$patterns[] = '@\=\>\s*\{@';
 	$replacements[] = 'function () {';
 	
 	return preg_replace($patterns, $replacements, $code);

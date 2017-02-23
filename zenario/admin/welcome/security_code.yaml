@@ -12,15 +12,14 @@ security_code:
                     full_width: true
                     snippet:
                         html: |
-                            <h1>Extra security check</h1>
+                            <h1>Two-factor security check</h1>
                             <p>
-                                You've not logged in from this computer or this browser before,
+                                You've not logged in from this computer, browser or location before,
                                 or it has been a while since you last entered a code.
                             </p>
                             <p>
-                                As an additional security measure, we've sent a code to the
-                                email address registered at this account. Please check your
-                                email and enter the code below.
+                                We've sent a code to the email address registered at this account.
+                                Please check your email and enter the code in the box below.
                             </p>
                 code:
                     label: "Code:"

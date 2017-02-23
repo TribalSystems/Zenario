@@ -8,27 +8,27 @@ site_settings:
             label: Antiword
             edit_mode:
                 priv: _PRIV_EDIT_SITE_SETTING
-                enabled: Yes
-                on: No
-                format_on_edit: Yes
-                format_on_cancel_edit: Yes
-                format_on_revert: Yes
+                enabled: true
+                on: false
+                format_on_edit: true
+                format_on_cancel_edit: true
+                format_on_revert: true
             fields:
                 desc:
-                    full_width: Yes
+                    full_width: true
                     snippet:
                         html: |
                             <p>
-                                If you create a Document Content Item with a Word document, the CMS will attempt to
-                                scan the Word document and create a plain-text extract.
-                                This extract will not be visible, but will be used by the Search Results Module to search
-                                the contents of the document and show it in the search results.
+                                When you upload a Word document, Zenario will attempt to
+                                scan the document and create a plain-text extract.
+                                This extract is not directly visible to visitors,
+                                but plugins may use it to find documents that match a visitor's search.
                             </p><p>
                                 For Word documents with the new <code>.docx</code> extension,
-                                the CMS can create an extract without help.
+                                Zenario can create an extract without help.
                             </p><p>
                                 For Word documents with the old <code>.doc</code> extension,
-                                the CMS needs the help of an external tool called Antiword.
+                                Zenario needs the help of an external tool called Antiword.
                             </p><p>
                                 If Antiword is not installed on your server then your server administrator will need to install it;
                                 e.g. by running:
@@ -37,28 +37,36 @@ site_settings:
                                 <br/>
                                 on Ubuntu.
                             </p><p>
-                                The CMS can only use Antiword if it is running on a Unix-based server;
+                                Zenario can only use Antiword if it is running on a Unix-based server;
                                 there is not support for this feature on a Windows server.
                             </p>
                 antiword_path:
                     name: antiword_path
                     site_setting:
                         name: antiword_path
-                    label: 'Antiword Path:'
-                    type: varchar(255)
-                    style: 'width: 300px; margin-right: 0.5em;'
-                    value: antiword
+                    label: 'Antiword path:'
+                    type: select
+                    value: PATH
+                    empty_value: ' -- Do not use antiword -- '
+                    values:
+                        'PATH':
+                            label: "Use your server's PATH environment variable"
+                        '/usr/bin/':
+                            label: '/usr/bin/antiword'
+                        '/usr/local/bin/':
+                            label: '/usr/local/bin/antiword'
+                    format_onchange: true
+                    style: >
+                        margin-right: 0.5em;
                 test:
-                    same_row: Yes
+                    same_row: true
+                    visible_if:
+                        zenarioAB.value: antiword_path
                     type: submit
                     value: Test
                     class: submit
-                    can_be_pressed_in_view_mode: Yes
-                    format_onchange: Yes
-                    note_below: |
-                        You should enter the path to the <code>antiword</code> program in this field, e.g.: <code>/usr/bin/antiword</code>
-                                                        <br/>
-                                                        If this location is in your server's PATH environment variable, then you can just enter the name of the program.
+                    can_be_pressed_in_view_mode: true
+                    format_onchange: true
             show_errors_after_field: desc
             notices:
                 success:
@@ -73,23 +81,23 @@ site_settings:
             label: PDF-to-Text
             edit_mode:
                 priv: _PRIV_EDIT_SITE_SETTING
-                enabled: Yes
-                on: No
-                format_on_edit: Yes
-                format_on_cancel_edit: Yes
+                enabled: true
+                on: false
+                format_on_edit: true
+                format_on_cancel_edit: true
             fields:
                 desc:
-                    full_width: Yes
+                    full_width: true
                     snippet:
                         html: |
                             <p>
-                                If you create a Document Content Item with a PDF file, the CMS will attempt to
-                                scan the PDF file and create a plain-text extract.
-                                This extract will not be visible, but will be used by the Search Results Module to search
-                                the contents of the file and show it in the search results.
+                                When you upload a PDF file, Zenario will attempt to
+                                scan the file and create a plain-text extract.
+                                This extract is not directly visible to visitors,
+                                but plugins may use it to find documents that match a visitor's search.
                             </p><p>
                                 To get an extract from a PDF file,
-                                the CMS needs the help of a program called pdftotext,
+                                Zenario needs the help of a program called pdftotext,
                                 which is part of an external library called Poppler.
                             </p><p>
                                 If Poppler is not installed on your server then your server administrator will need to install it;
@@ -99,28 +107,36 @@ site_settings:
                                 <br/>
                                 on Ubuntu.
                             </p><p>
-                                The CMS can only use pdftotext and Poppler if it is running on a Unix-based server;
+                                Zenario can only use pdftotext and Poppler if it is running on a Unix-based server;
                                 there is not support for this feature on a Windows server.
                             </p>
                 pdftotext_path:
                     name: pdftotext_path
                     site_setting:
                         name: pdftotext_path
-                    label: 'pdftotext Path:'
-                    value: pdftotext
-                    type: varchar(255)
-                    style: 'width: 300px; margin-right: 0.5em;'
+                    label: 'pdftotext path:'
+                    type: select
+                    value: PATH
+                    empty_value: ' -- Do not use pdftotext -- '
+                    values:
+                        'PATH':
+                            label: "Use your server's PATH environment variable"
+                        '/usr/bin/':
+                            label: '/usr/bin/pdftotext'
+                        '/usr/local/bin/':
+                            label: '/usr/local/bin/pdftotext'
+                    format_onchange: true
+                    style: >
+                        margin-right: 0.5em;
                 test:
-                    same_row: Yes
+                    same_row: true
+                    visible_if:
+                        zenarioAB.value: pdftotext_path
                     type: submit
                     value: Test
                     class: submit
-                    can_be_pressed_in_view_mode: Yes
-                    format_onchange: Yes
-                    note_below: |
-                        You should enter the path to the <code>pdftotext</code> program in this field, e.g.: <code>/usr/bin/pdftotext</code>
-                                                        <br/>
-                                                        If this location is in your server's PATH environment variable, then you can just enter the name of the program.
+                    can_be_pressed_in_view_mode: true
+                    format_onchange: true
             show_errors_after_field: desc
             notices:
                 success:
@@ -136,21 +152,21 @@ site_settings:
             label: Ghostscript
             edit_mode:
                 priv: _PRIV_EDIT_SITE_SETTING
-                enabled: Yes
-                on: No
-                format_on_edit: Yes
-                format_on_cancel_edit: Yes
+                enabled: true
+                on: false
+                format_on_edit: true
+                format_on_cancel_edit: true
             fields:
                 desc:
-                    full_width: Yes
+                    full_width: true
                     snippet:
                         html: |
                             <p>
-                                If you create a Document Content Item with a PDF file, the CMS will attempt to
-                                scan the PDF file and create a thumbnail of the first page that can be used as stick image.
+                                When you upload a PDF file, Zenario will attempt to
+                                scan the file and create a thumbnail of the first page that can be used as stick image.
                             </p><p>
                                 To get a thumbnail from a PDF file,
-                                the CMS needs the help of a program called "gs" (ghostscript).
+                                Zenario needs the help of a program called "gs" (ghostscript).
                             </p><p>
                                 If ghostscript is not installed on your server then your server administrator will need to install it;
                                 e.g. by running:
@@ -159,7 +175,7 @@ site_settings:
                                 <br/>
                                 on Ubuntu.
                             </p><p>
-                                The CMS can only use ghostscript if it is running on a Unix-based server;
+                                Zenario can only use ghostscript if it is running on a Unix-based server;
                                 there is not support for this feature on a Windows server.
                             </p>
                 ghostscript_dpi:
@@ -180,21 +196,29 @@ site_settings:
                     name: ghostscript_path
                     site_setting:
                         name: ghostscript_path
-                    label: 'ghostscript Path:'
-                    value: gs
-                    type: varchar(255)
-                    style: 'width: 300px; margin-right: 0.5em;'
+                    label: 'ghostscript path:'
+                    type: select
+                    value: PATH
+                    empty_value: ' -- Do not use ghostscript -- '
+                    values:
+                        'PATH':
+                            label: "Use your server's PATH environment variable"
+                        '/usr/bin/':
+                            label: '/usr/bin/gs'
+                        '/usr/local/bin/':
+                            label: '/usr/local/bin/gs'
+                    format_onchange: true
+                    style: >
+                        margin-right: 0.5em;
                 test:
-                    same_row: Yes
+                    same_row: true
+                    visible_if:
+                        zenarioAB.value: ghostscript_path
                     type: submit
                     value: Test
                     class: submit
-                    can_be_pressed_in_view_mode: Yes
-                    format_onchange: Yes
-                    note_below: |
-                        You should enter the path to the <code>gs</code> program in this field, e.g.: <code>/usr/bin/gs</code>
-                        <br/>
-                        If this location is in your server's PATH environment variable, then you can just enter the name of the program.
+                    can_be_pressed_in_view_mode: true
+                    format_onchange: true
             show_errors_after_field: desc
             notices:
                 success:

@@ -27,115 +27,220 @@
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
-//$smartGroupId, $usersTableAlias = 'u', $customTableAlias
+//function smartGroupSQL(&$and, &$tableJoins, $smartGroupId, $list = true, $usersTableAlias = 'u', $customTableAlias = 'ucd')
 
-$sql = '';
-$first = true;
 
 //A little hack - allow an array of rules to be passed in instead of an id,
 //in order to test rules that aren't yet in the database
 if (is_array($smartGroupId)) {
+	
+	if (empty($smartGroupId)) {
+		$and = ZENARIO_NOT_IN_SMART_GROUP;
+		return false;
+	}
+	
 	$rules = $smartGroupId;
-	$or = arrayKey($rules, 1, 'must_match') == 'any';
+	$smartGroup = $rules[0];
 
 } else {
+	if (!$smartGroup = getRow('smart_groups', ['intended_usage', 'must_match'], $smartGroupId)) {
+		$and = ZENARIO_NOT_IN_SMART_GROUP;
+		return false;
+	}
+
 	$rules = getRowsArray(
 		'smart_group_rules',
-		array('field_id', 'field2_id', 'field3_id', 'field4_id', 'field5_id', 'not', 'value'),
+		array('type_of_check', 'field_id', 'field2_id', 'field3_id', 'field4_id', 'field5_id', 'role_id', 'not', 'value'),
 		array('smart_group_id' => $smartGroupId),
 		'ord'
 	);
-	$or = count($rules) > 1
-	   && getRow('smart_groups', 'must_match', $smartGroupId) == 'any';
 }
 
-
-foreach ($rules as $rule) {
-	//Check if a field is set, load the details, and check if it's a supported field. Only add it if it is.
-	if ($rule['field_id']
-	 && ($field = getDatasetFieldBasicDetails($rule['field_id']))
-	 && (in($field['type'], 'group', 'checkbox', 'radios', 'centralised_radios', 'select', 'centralised_select'))) {
-		
-		if (!$or) {
-			$and = "
-				AND ";
-		
-		} elseif ($first) {
-			$and = "
-				AND (";
-		
-		} else {
-			$and = "
-				OR ";
-		}
-		
-		//Work out the table alias and column name
-		$col = "`". sqlEscape($field['is_system_field']? $usersTableAlias : $customTableAlias). "`.`". sqlEscape($field['db_column']). "`";
-		
-		//If you filter by group, an "OR" logic containing multiple groups is allowed.
-		//Check if multiple groups have been picked...
-		$groups = array();
-		if ($field['type'] == 'group') {
-			if ($rule['field2_id']) $groups[] = $rule['field2_id'];
-			if ($rule['field3_id']) $groups[] = $rule['field3_id'];
-			if ($rule['field4_id']) $groups[] = $rule['field4_id'];
-			if ($rule['field5_id']) $groups[] = $rule['field5_id'];
-		}
-		
-		//...if so, handle this using an IN() statement
-		if (!empty($groups)) {
-			
-			$sql .= $and. "1 IN (". $col;
-			
-			foreach ($groups as $fieldNId) {
-				if ($fieldN = getRow(
-					'custom_dataset_fields',
-					array('is_system_field', 'db_column'),
-					array('id' => $fieldNId, 'type' => 'group')
-				)) {
-					$sql .= ", `". sqlEscape($fieldN['is_system_field']? $usersTableAlias : $customTableAlias). "`.`". sqlEscape($fieldN['db_column']). "`";
-				}
-			}
-			
-			$sql .= ")";
-			
-		} else {
-			switch ($field['type']) {
-				//Groups and checkboxes are handled by a tinyint column
-				case 'group':
-				case 'checkbox':
-					$check = $col. " = 1";
-					break;
-				
-				//List of values work via a numeric value id
-				case 'radios':
-				case 'select':
-					if ($rule['value'] == '') {
-						continue 2;
-					}
-					$check = $col. " = ". (int) $rule['value'];
-					break;
-				
-				//Centralised lists work via a text value
-				default:
-					if ($rule['value'] == '') {
-						continue 2;
-					}
-					$check = $col. " = '". sqlEscape($rule['value']). "'";
-			}
-			
-			if ($rule['not']) {
-				$sql .= $and. "NOT (". $check. " AND ". $col. " IS NOT NULL)";
-			} else {
-				$sql .= $and. $check;
-			}
-		}
-		$first = false;
+//If there are no rules, newsletter groups should return everyone, but permissions groups should return nobody.
+if (empty($rules)) {
+	if ($smartGroup['intended_usage'] == 'smart_newsletter_group') {
+		$and = "AND TRUE";
+		return true;
+	} else {
+		$and = ZENARIO_NOT_IN_SMART_GROUP;
+		return false;
 	}
 }
 
-if ($or && !$first) {
-	$sql .= ")";
+$or = count($rules) > 1 && $smartGroup['must_match'] == 'any';
+$firstAndOr = true;
+$hadNoRules = true;
+
+if ($or) {
+	$leftOrInnerJoin = "LEFT JOIN ";
+} else {
+	$leftOrInnerJoin = "INNER JOIN ";
 }
 
-return $sql;
+$i = 0;
+foreach ($rules as $rule) {
+	++$i;
+	
+	if (!$or) {
+		$andOr = "
+			AND ";
+	
+	} elseif ($firstAndOr) {
+		$andOr = "
+			AND (";
+	
+	} else {
+		$andOr = "
+			OR ";
+	}
+	$valid = false;
+	$typeOfCheck = $rule['type_of_check'];
+	
+	
+	
+	switch ($typeOfCheck) {
+		
+		//Handle rules on user-fields
+		case 'user_field':
+			
+			//Validate this rule first
+				//Check if a field is set, load the details, and check if it's a supported field. Only add it if it is.
+			if ($rule['field_id']
+			 && ($field = getDatasetFieldBasicDetails($rule['field_id']))
+			 && (in($field['type'], 'group', 'checkbox', 'radios', 'centralised_radios', 'select', 'centralised_select'))) {
+		
+				//Work out the table alias and column name
+				$col = "`". sqlEscape($field['is_system_field']? $usersTableAlias : $customTableAlias). "`.`". sqlEscape($field['db_column']). "`";
+		
+				//If you filter by group, an "OR" logic containing multiple groups is allowed.
+				//Check if multiple groups have been picked...
+				$groups = array();
+				if ($field['type'] == 'group') {
+					if ($rule['field2_id']) $groups[] = $rule['field2_id'];
+					if ($rule['field3_id']) $groups[] = $rule['field3_id'];
+					if ($rule['field4_id']) $groups[] = $rule['field4_id'];
+					if ($rule['field5_id']) $groups[] = $rule['field5_id'];
+				}
+		
+				//...if so, handle this using an IN() statement
+				if (!empty($groups)) {
+			
+					$and .= $andOr. "1 IN (". $col;
+			
+					foreach ($groups as $fieldNId) {
+						if ($fieldN = getRow(
+							'custom_dataset_fields',
+							array('is_system_field', 'db_column'),
+							array('id' => $fieldNId, 'type' => 'group')
+						)) {
+							$and .= ", `". sqlEscape($fieldN['is_system_field']? $usersTableAlias : $customTableAlias). "`.`". sqlEscape($fieldN['db_column']). "`";
+						}
+					}
+			
+					$and .= ")";
+			
+				} else {
+					switch ($field['type']) {
+						//Groups and checkboxes are handled by a tinyint column
+						case 'group':
+						case 'checkbox':
+							$check = $col. " = 1";
+							break;
+				
+						//List of values work via a numeric value id
+						case 'radios':
+						case 'select':
+							if ($rule['value'] == '') {
+								continue 2;
+							}
+							$check = $col. " = ". (int) $rule['value'];
+							break;
+				
+						//Centralised lists work via a text value
+						default:
+							if ($rule['value'] == '') {
+								continue 2;
+							}
+							$check = $col. " = '". sqlEscape($rule['value']). "'";
+					}
+			
+					if ($rule['not']) {
+						$and .= $andOr. "NOT (". $check. " AND ". $col. " IS NOT NULL)";
+					} else {
+						$and .= $andOr. $check;
+					}
+				}
+				$firstAndOr = false;
+				$valid = true;
+			}
+			break;
+			
+		
+		//Logic to handle location permissions, and roles at locations
+		case 'role':
+			
+			//Validate this rule first
+				//Roles need a role_id chosen in the settings
+			if ($rule['role_id']
+				//Permission checks need a specific locationId in the URL to check against
+			 && ($list || ($locationId = cms_core::$vars['locationId']))
+				//Oh and the Org Manager module must be installed and running
+			 && ($ZENARIO_ORGANIZATION_MANAGER_PREFIX = getModulePrefix('zenario_organization_manager', $mustBeRunning = true))) {
+				
+				$tableJoins .= "
+					". $leftOrInnerJoin. DB_NAME_PREFIX. $ZENARIO_ORGANIZATION_MANAGER_PREFIX. "user_role_location_link AS urll_". $i. "
+					   ON urll_". $i. ".user_id = `". sqlEscape($usersTableAlias). "`.id
+					  AND urll_". $i. ".role_id = ". (int) $rule['role_id'];
+				
+				//If we're just listing users who might be able to see a permission,
+				//list any user with that role set at any location.
+				//However for permissions checks, check the specific location from the URL.
+				if (!$list) {
+					$and .= "
+					  AND urll_". $i. ".location_id = ". (int) $locationId;
+				}
+				
+				if ($or) {
+					$and .= "
+						  ". $andOr. " urll_". $i. ".user_id IS NOT NULL";
+					$firstAndOr = false;
+				}
+				
+				
+				$valid = true;
+			}
+			break;
+	}
+	
+	//If the rule was not valid for whatever reason, always mark it as failed.
+	//For OR logic we can keep going, looking for more rules that might match,
+	//but for AND logic we should stop straight away
+	if (!$valid) {
+		if (!$or) {
+			$and = ZENARIO_NOT_IN_SMART_GROUP;
+			return false;
+		}
+	} else {
+		$hadNoRules = false;
+	}
+}
+
+//Catch the case where there were no valid rules.
+//(This should have been caught above, but just in case it wasn't I've added a line here.)
+if ($hadNoRules) {
+	$and = ZENARIO_NOT_IN_SMART_GROUP;
+	return false;
+}
+
+if ($or) {
+	$and .= ")";
+}
+
+//Permissions checks will always include a line to check the user is active,
+//this is hard-coded into the logic.
+if (!$list) {
+	$and .= "
+		AND `". sqlEscape($usersTableAlias). "`.`status` = 'active'";
+}
+
+return true;

@@ -27,7 +27,7 @@
  */
 
 require '../adminheader.inc.php';
-require CMS_ROOT. 'zenario/includes/tuix_ajax.inc.php';
+require CMS_ROOT. 'zenario/includes/tuix.inc.php';
 useGZIP();
 
 /*

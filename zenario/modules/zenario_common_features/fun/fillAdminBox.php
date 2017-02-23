@@ -32,12 +32,6 @@ switch ($path) {
 	case 'plugin_css_and_framework':
 		return require funIncPath(__FILE__, 'plugin_settings.fillAdminBox');
 	
-	
-	case 'zenario_content':
-	case 'zenario_quick_create':
-		return require funIncPath(__FILE__, 'content.fillAdminBox');
-	
-	
 	case 'zenario_content_categories':
 		
 		$box['key']['originalId'] = $box['key']['id'];

@@ -35,52 +35,12 @@ zenario_image:
                     pick_items:
                         path: zenario__content/panels/image_tags
                         multiple_select: true
-                        hide_select_button: true
                         nothing_selected_phrase: No tags set
+                        allow_typing_anything: true
                     cols: 4
-                
-                right_column:
-                    type: grouping
-                    name: right_column
-                new_tag:
-                    grouping: right_column
-                    #indent: 1
-                    type: text
-                    maxlength: 15
-                    #full_width: true
-                    label: 'Create a new tag for this image:'
-                    return_key_presses_button: zenario_image_add_tag_button
-                    placeholder: Enter the name for a new tag
-                    style: >
-                        width: 15em;
-                    onkeyup: |
-                        if (this.value) {
-                            var up = ('' + this.value),
-                                low = up.toLowerCase().replace(/[^\w\d\-\_]/g, '');
-                        
-                            if (up != low) {
-                                this.value = low;
-                            }
-                        }
-                add_tag:
-                    grouping: right_column
-                    same_row: true
-                    snippet:
-                        html: >
-                            <input
-                                type="button"
-                                class="submit"
-                                id="zenario_image_add_tag_button"
-                                onclick="
-                                    var nt = zenario.get('new_tag');
-                                    if (nt.value) {
-                                        zenarioAB.addToPickedItems(nt.value, 'tags');
-                                        nt.value = '';
-                                        $('.ui-autocomplete').hide();
-                                    }
-                                "
-                                value="Create tag"
-                            />
+                    note_below: |
+                        You may type the names of tags that do not exist to create them.
+                        Press the tab or the comma button while typing to enter multiple tags.
                     
                 desc:
                     full_width: true
@@ -106,3 +66,10 @@ zenario_image:
                         This will be used to add a table under the image when
                         displayed in a floating box.
             show_errors_after_field: image
+    
+    confirm:
+        show: false
+        cancel_button_message: Cancel
+        message_type: warning
+        message: ''
+        button_message: ''

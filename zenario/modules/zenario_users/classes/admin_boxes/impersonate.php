@@ -47,7 +47,9 @@ class zenario_users__admin_boxes__impersonate extends zenario_users {
 	}
 	
 	public function adminBoxSaveCompleted($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		echo '<!--Go_To_URL:'.absCMSDirURL().'-->';
+		
+		//Bypass the rest of the script in admin_boxes.ajax.php, and go to the new URL straight away
+		closeFABWithFlags(['go_to_url' => absCMSDirURL()]);
 		exit;
 	}
 }

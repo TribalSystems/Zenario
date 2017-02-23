@@ -50,7 +50,7 @@ switch(1) {
 		  AND forum_id = ". (int) $this->forumId. "
 		  AND reader_id = ". (int) $readerId;
 	
-	sqlUpdate($sql, false);
+	sqlUpdate($sql, false, false);
 	if (sqlAffectedRows()) {
 		break;
 	}
@@ -62,7 +62,7 @@ switch(1) {
 		  AND forum_id = ". (int) $this->forumId. "
 		  AND reader_id = ". (int) $readerId;
 	
-	sqlUpdate($sql, false);
+	sqlUpdate($sql, false, false);
 	if (sqlAffectedRows()) {
 		break;
 	}
@@ -74,7 +74,7 @@ switch(1) {
 		  AND forum_id = ". (int) $this->forumId. "
 		  AND reader_id = ". (int) $readerId;
 	
-	sqlUpdate($sql, false);
+	sqlUpdate($sql, false, false);
 	if (sqlAffectedRows()) {
 		break;
 	}
@@ -96,7 +96,7 @@ switch(1) {
 			  AND unread_to = ". (int) $row['unread_to']. "
 			  AND forum_id = ". (int) $this->forumId. "
 			  AND reader_id = ". (int) $readerId;
-		sqlUpdate($sql, false);
+		sqlUpdate($sql, false, false);
 		
 		$sql = "
 			INSERT INTO ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "user_unread_threads SET
@@ -104,7 +104,7 @@ switch(1) {
 				unread_to = ". (int) $row['unread_to']. ",
 				forum_id = ". (int) $this->forumId. ",
 				reader_id = ". (int) $readerId;
-		sqlUpdate($sql, false);
+		sqlUpdate($sql, false, false);
 	}
 	
 	break;
@@ -117,11 +117,11 @@ $sql = "
 	  AND unread_to = ". (int) $threadLastUpdated. "
 	  AND forum_id = ". (int) $this->forumId. "
 	  AND reader_id = ". (int) $readerId;
-sqlUpdate($sql, false);
+sqlUpdate($sql, false, false);
 
 //Update the thread's view-count
 $sql = "
 	UPDATE ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "threads SET
 		view_count = view_count + 1
 	WHERE id = ". (int) $this->threadId;
-sqlUpdate($sql, false);
+sqlUpdate($sql, false, false);

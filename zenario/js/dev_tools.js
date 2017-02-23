@@ -43,8 +43,8 @@ zenario.lib(function(
 	undefined,
 	URLBasePath,
 	document, window, windowOpener, windowParent,
-	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO,
-	get, engToBoolean, htmlspecialchars, ifNull, jsEscape, phrase,
+	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO, strings,
+	encodeURIComponent, get, engToBoolean, htmlspecialchars, jsEscape, phrase,
 	extensionOf, methodsOf, has,
 	$toolbar, $editor, $sidebar, $sidebarInner,
 	devTools, editor
@@ -293,7 +293,7 @@ devTools.load = function() {
 	zenario.ajax(url, false, true).after(function(data) {
 			
 		devTools.focus = data;
-		devTools.tagPath = ifNull(devTools.focus.tag_path, devTools.path, '');
+		devTools.tagPath = devTools.focus.tag_path || devTools.path || '';
 		
 		if (devTools.orgMap) {
 			devTools.map = $.extend(true, {}, windowOpener[devTools.mode].map);
@@ -1281,7 +1281,7 @@ devTools.sizePropertyTable = function() {
 	if (get('properties_table')) {
 		
 		var padding = 20,
-			titleWidth = ifNull($('#properties_table .property_name').width(), 0, 0),
+			titleWidth = $('#properties_table .property_name').width() || 0,
 			width = $sidebarInner.innerWidth() - titleWidth - padding;
 		
 		$('#properties_table .property_desc').width(width);

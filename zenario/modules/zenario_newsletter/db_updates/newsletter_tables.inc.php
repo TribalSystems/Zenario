@@ -901,4 +901,10 @@ _sql
 	AFTER `name`
 _sql
 
+); revision( 175
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters`
+	ADD COLUMN `scheduled_send_datetime` datetime DEFAULT NULL
+_sql
+
 );

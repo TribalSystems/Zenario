@@ -10,6 +10,7 @@ zenario_content:
         source_cID: ""
         source_cVersion: ""
         
+        create_from_content_panel: ""
         create_from_toolbar: ""
         from_cID: ""
         from_cType: ""
@@ -152,17 +153,21 @@ zenario_content:
                                         get('menu_title').value
                                     :    get('menu_parent_path').value + ' -> ' + get('menu_title').value;
                         }
+                    validation:
+                        required_if_not_hidden: Please enter some text for the menu node.
+                    indent: 1
                 menu_path:
                     ord: 41
-                    label: 'Path:'
+                    label: 'Path preview:'
                     type: text
                     disabled: disabled
                     class: zenario_textbox_noborder
+                    indent: 1
                 menu_parent_path:
                     same_row: true
                     ord: 42
                     type: hidden
-                
+                    indent: 1
                 alias:
                     ord: 50
                     label: 'Alias:'

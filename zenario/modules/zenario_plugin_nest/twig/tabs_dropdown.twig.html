@@ -7,7 +7,7 @@
 			<ul>
 				<li>
 					{% if tabs[tabNum] %}
-						<a href="" onclick="">{{tabs[tabNum].name_or_title|trans}}</a>
+						<a>{{tabs[tabNum].name_or_title|trans}}</a>
 					{% endif %}
 					<ul>
 						{% for tab in tabs %}
