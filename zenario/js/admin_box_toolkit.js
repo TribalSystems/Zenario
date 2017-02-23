@@ -410,7 +410,7 @@ methods.returnAJAXURL = function(action) {
 
 
 //Attempt to get the URL of a preview
-methods.pluginPreviewDetails = function(slotName, instanceId, fullPage) {
+methods.pluginPreviewDetails = function(slotName, instanceId, fullPage, fullWidth) {
 	
 	
 	var requests = _.clone(zenarioA.importantGetRequests),
@@ -462,7 +462,7 @@ methods.pluginPreviewDetails = function(slotName, instanceId, fullPage) {
 	
 		//If the preview window is open and we've previously set its size, request in the URL that the
 		//preview be the size of the window that we opened
-		if (this.previewWidth) {
+		if (this.previewWidth && !fullWidth) {
 			requests.grid_pxWidth = this.previewWidth;
 	
 		//Otherwise just use the width of the slot for now
@@ -536,12 +536,12 @@ methods.submitPreview = function(preview, target) {
 	'</form>').appendTo('body').hide().submit().remove();
 };
 
-methods.showPreviewInPopoutBox = function(fullPage) {
+methods.showPreviewInPopoutBox = function(fullPage, fullWidth) {
 	
 	var href,
 		onComplete,
 		that = this,
-		preview = this.pluginPreviewDetails(undefined, undefined, fullPage);
+		preview = this.pluginPreviewDetails(undefined, undefined, fullPage, fullWidth);
 	
 	if (!preview) {
 		return;

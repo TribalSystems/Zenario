@@ -15,7 +15,7 @@
 <% if (zenarioAB.hasPreviewWindow && !m.isReadOnly) { %>
 	<% if (zenarioAB.path == "plugin_css_and_framework" && zenario.cID && zenarioAB.tuix.key.slotName) { %>
 		<input type="button" value="{{zenarioA.phrase.previewFullPage|e}}" onclick="
-				zenarioAB.showPreviewInPopoutBox(true);
+				zenarioAB.showPreviewInPopoutBox(true, true);
 			" class="" id="zenario_fabPreviewFullPage"/>
 	<% } %>
 	
