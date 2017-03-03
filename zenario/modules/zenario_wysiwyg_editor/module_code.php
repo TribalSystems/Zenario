@@ -268,7 +268,7 @@ class zenario_wysiwyg_editor extends zenario_html_snippet {
 	}
 	
 	protected function editInlineButtonOnClick() {
-		return 'if (zenarioA.checkForEdits() && zenarioA.draft(this.id)) { '. $this->refreshPluginSlotJS('&content__edit_container='. $this->containerId, false). ' } return false;';
+		return 'if (zenarioA.checkForEdits() && zenarioA.draft(this.id)) { '. $this->refreshPluginSlotJS('&no_cache=1&content__edit_container='. $this->containerId, false). ' } return false;';
 	}
 	
 	public function fillAdminSlotControls(&$controls) {

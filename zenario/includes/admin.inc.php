@@ -82,7 +82,7 @@ function fillAdminSlotControlPluginInfo($moduleId, $instanceId, $isVersionContro
 	$modulesLink = '#zenario__modules/panels/modules//' . $moduleId;
 	
 	$info['module_name']['label'] =
-		adminPhrase('Module: <a href="[[link]]">[[display_name]]</a>',
+		adminPhrase('Module: <a target="_blank" href="[[link]]">[[display_name]]</a>',
 			array(
 				'link' => htmlspecialchars($skLink . $modulesLink),
 				'class_name' => htmlspecialchars($module['class_name']),
@@ -126,34 +126,34 @@ function fillAdminSlotControlPluginInfo($moduleId, $instanceId, $isVersionContro
 		if (!$mrg['layouts_active'] && !$mrg['layouts_archived']) {
 			//Not used on any content items
 			if (!$mrg['content_items']) {
-				$info['reusable_plugin_details']['label'] = adminPhrase('Plugin: <a href="[[plugins_link]]">[[instance_name]]</a>', $mrg);
+				$info['reusable_plugin_details']['label'] = adminPhrase('Plugin: <a target="_blank" href="[[plugins_link]]">[[instance_name]]</a>', $mrg);
 			
 			//Used on this content item only
 			} elseif ($mrg['content_items'] == 1 && $level == 1) {
-				$info['reusable_plugin_details']['label'] = adminPhrase('Plugin: <a href="[[plugins_link]]">[[instance_name]]</a>, used on this content item only', $mrg);
+				$info['reusable_plugin_details']['label'] = adminPhrase('Plugin: <a target="_blank" href="[[plugins_link]]">[[instance_name]]</a>, used on this content item only', $mrg);
 			
 			} elseif ($mrg['content_items'] == 1) {
-				$info['reusable_plugin_details']['label'] = adminPhrase('Plugin: <a href="[[plugins_link]]">[[instance_name]]</a>, used on <a href="[[content_items_link]]">1 content item</a>', $mrg);
+				$info['reusable_plugin_details']['label'] = adminPhrase('Plugin: <a target="_blank" href="[[plugins_link]]">[[instance_name]]</a>, used on <a target="_blank" href="[[content_items_link]]">1 content item</a>', $mrg);
 			
 			} else {
-				$info['reusable_plugin_details']['label'] = adminPhrase('Plugin: <a href="[[plugins_link]]">[[instance_name]]</a>, used on <a href="[[content_items_link]]">[[content_items]] content items</a>', $mrg);
+				$info['reusable_plugin_details']['label'] = adminPhrase('Plugin: <a target="_blank" href="[[plugins_link]]">[[instance_name]]</a>, used on <a target="_blank" href="[[content_items_link]]">[[content_items]] content items</a>', $mrg);
 			}
 		
 		//Just used on this layout
 		} elseif (($mrg['layouts_active'] + $mrg['layouts_archived']) == 1 && $level == 2) {
 			//Not used on any content items
 			if (!$mrg['content_items']) {
-				$info['reusable_plugin_details']['label'] = adminPhrase('Plugin: <a href="[[plugins_link]]">[[instance_name]]</a>, used on this layout only', $mrg);
+				$info['reusable_plugin_details']['label'] = adminPhrase('Plugin: <a target="_blank" href="[[plugins_link]]">[[instance_name]]</a>, used on this layout only', $mrg);
 			
 			//Used on this content item only
 			} elseif ($mrg['content_items'] == 1 && $level == 1) {
-				$info['reusable_plugin_details']['label'] = adminPhrase('Plugin: <a href="[[plugins_link]]">[[instance_name]]</a>, used on this layout and on this content item (are you sure you want that setup?)', $mrg);
+				$info['reusable_plugin_details']['label'] = adminPhrase('Plugin: <a target="_blank" href="[[plugins_link]]">[[instance_name]]</a>, used on this layout and on this content item (are you sure you want that setup?)', $mrg);
 			
 			} elseif ($mrg['content_items'] == 1) {
-				$info['reusable_plugin_details']['label'] = adminPhrase('Plugin: <a href="[[plugins_link]]">[[instance_name]]</a>, used on this layout and on <a href="[[content_items_link]]">1 content item</a>', $mrg);
+				$info['reusable_plugin_details']['label'] = adminPhrase('Plugin: <a target="_blank" href="[[plugins_link]]">[[instance_name]]</a>, used on this layout and on <a target="_blank" href="[[content_items_link]]">1 content item</a>', $mrg);
 			
 			} else {
-				$info['reusable_plugin_details']['label'] = adminPhrase('Plugin: <a href="[[plugins_link]]">[[instance_name]]</a>, used on this layout and on <a href="[[content_items_link]]">[[content_items]] content items</a>', $mrg);
+				$info['reusable_plugin_details']['label'] = adminPhrase('Plugin: <a target="_blank" href="[[plugins_link]]">[[instance_name]]</a>, used on this layout and on <a target="_blank" href="[[content_items_link]]">[[content_items]] content items</a>', $mrg);
 			}
 		
 		} else {
@@ -175,17 +175,17 @@ function fillAdminSlotControlPluginInfo($moduleId, $instanceId, $isVersionContro
 			
 			//Not used on any content items
 			if (!$mrg['content_items']) {
-				$info['reusable_plugin_details']['label'] = adminPhrase('Plugin: <a href="[[plugins_link]]">[[instance_name]]</a>, used on <a href="[[layouts_link]]">[[layouts]]</a>', $mrg);
+				$info['reusable_plugin_details']['label'] = adminPhrase('Plugin: <a target="_blank" href="[[plugins_link]]">[[instance_name]]</a>, used on <a target="_blank" href="[[layouts_link]]">[[layouts]]</a>', $mrg);
 			
 			//Used on this content item only
 			} elseif ($mrg['content_items'] == 1 && $level == 1) {
-				$info['reusable_plugin_details']['label'] = adminPhrase('Plugin: <a href="[[plugins_link]]">[[instance_name]]</a>, used on <a href="[[layouts_link]]">[[layouts]]</a> and on this content item', $mrg);
+				$info['reusable_plugin_details']['label'] = adminPhrase('Plugin: <a target="_blank" href="[[plugins_link]]">[[instance_name]]</a>, used on <a target="_blank" href="[[layouts_link]]">[[layouts]]</a> and on this content item', $mrg);
 			
 			} elseif ($mrg['content_items'] == 1) {
-				$info['reusable_plugin_details']['label'] = adminPhrase('Plugin: <a href="[[plugins_link]]">[[instance_name]]</a>, used on <a href="[[layouts_link]]">[[layouts]]</a> and on <a href="[[content_items_link]]">1 content item</a>', $mrg);
+				$info['reusable_plugin_details']['label'] = adminPhrase('Plugin: <a target="_blank" href="[[plugins_link]]">[[instance_name]]</a>, used on <a target="_blank" href="[[layouts_link]]">[[layouts]]</a> and on <a target="_blank" href="[[content_items_link]]">1 content item</a>', $mrg);
 			
 			} else {
-				$info['reusable_plugin_details']['label'] = adminPhrase('Plugin: <a href="[[plugins_link]]">[[instance_name]]</a>, used on <a href="[[layouts_link]]">[[layouts]]</a> and on <a href="[[content_items_link]]">[[content_items]] content items</a>', $mrg);
+				$info['reusable_plugin_details']['label'] = adminPhrase('Plugin: <a target="_blank" href="[[plugins_link]]">[[instance_name]]</a>, used on <a target="_blank" href="[[layouts_link]]">[[layouts]]</a> and on <a target="_blank" href="[[content_items_link]]">[[content_items]] content items</a>', $mrg);
 			}
 		}
 	}
