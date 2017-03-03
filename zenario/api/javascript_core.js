@@ -71,7 +71,6 @@ zenario.lib(function(
 	//JavaScript version of our PHP in() function, which itself is similar to MySQL's IN()
 	//Most of our functions use camelCase, but "in" is a reserved word in JavaScript.
 	//However as JavaScript is case-sensitive we have just made this upper-case as a work-around.
-	window.IN =
 	zenario.IN = function(value) {
 		return _.contains(arguments, value, 1);
 	};

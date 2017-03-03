@@ -73,7 +73,9 @@ class zenario_common_features__admin_boxes__enable_site extends module_base_clas
 			if (!checkRowExists('languages', array())) {
 				$box['tabs']['site']['errors'][] =
 					adminPhrase('You must enable a Language before you can enable your site.');
-			} else {
+			
+			//If the site isn't currently live, force people to review and publish all of the special pages before doing so
+			} elseif (!setting('site_enabled')) {
 				$tags = '';
 				
 				$result = getRows(

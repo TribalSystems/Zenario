@@ -63,7 +63,7 @@ if (is_file(CMS_ROOT. 'zenario_siteconfig.php')) {
 
 //If we couldn't work it out, try and keep going with a relative path
 if (!defined('SUBDIRECTORY')) {
-	define('SUBDIRECTORY', '');
+	define('SUBDIRECTORY', dirname(dirname($_SERVER['PHP_SELF'])). '/');
 }
 
 

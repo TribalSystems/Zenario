@@ -75,28 +75,33 @@ zenarioAT.init = function(firstLoad) {
 
 
 zenarioAT.init2 = function(tuix) {
-	zenarioAT.setURL();
-	zenarioAT.tuix = tuix;
+	
+	//This $(document).ready() is to ensure that this function runs after everything in visitor.ready.js
+	$(document).ready(function() {
+		
+		zenarioAT.setURL();
+		zenarioAT.tuix = tuix;
 	
 	
-	zenarioAT.sort();
-	/*zenarioAT.drawToolbarTabs();
+		zenarioAT.sort();
+		/*zenarioAT.drawToolbarTabs();
 	
-	$('#zenario_toolbar').clearQueue();
-	$('#zenario_toolbar').fadeOut(0, function() {
-		zenarioAT.drawToolbar();
 		$('#zenario_toolbar').clearQueue();
-		$('#zenario_toolbar').fadeIn(100);
-	});
-	*/
-	zenarioAT.draw();
-	zenarioAT.loaded = true;
-	zenarioAT.loadedBefore = true;
+		$('#zenario_toolbar').fadeOut(0, function() {
+			zenarioAT.drawToolbar();
+			$('#zenario_toolbar').clearQueue();
+			$('#zenario_toolbar').fadeIn(100);
+		});
+		*/
+		zenarioAT.draw();
+		zenarioAT.loaded = true;
+		zenarioAT.loadedBefore = true;
 	
-	foreach (zenarioAT.runOnInit as var i) {
-		zenarioAT.runOnInit[i]();
-	}
-	zenarioAT.runOnInit = [];
+		foreach (zenarioAT.runOnInit as var i) {
+			zenarioAT.runOnInit[i]();
+		}
+		zenarioAT.runOnInit = [];
+	});
 };
 
 //This used to send an AJAX request to load the Admin Toolbar when the page was ready

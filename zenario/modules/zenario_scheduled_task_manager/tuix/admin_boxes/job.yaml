@@ -145,7 +145,8 @@ zenario_job:
                     read_only: true
                     value: "1"
                 email_address_on_error:
-                    label: 'Email eddress:'
+                    indent: 1
+                    label: 'Email address:'
                     type: text
                     maxlength: "200"
                     note_below: |
@@ -161,10 +162,11 @@ zenario_job:
                     type: checkbox
                     redraw_onchange: true
                 email_address_on_action:
+                    indent: 1
+                    hide_if_previous_outdented_value_isnt: 1
                     label: 'Email address:'
                     type: text
                     maxlength: "200"
-                    visible_if: "zenarioAB.value('email_on_action')"
                 log_on_no_action:
                     label: 'If no action write log entry'
                     type: checkbox
@@ -173,8 +175,9 @@ zenario_job:
                     type: checkbox
                     redraw_onchange: true
                 email_address_on_no_action:
+                    indent: 1
+                    hide_if_previous_outdented_value_isnt: 1
                     label: 'Email address:'
                     type: text
                     maxlength: "200"
-                    visible_if: "zenarioAB.value('email_on_no_action')"
             show_errors_after_field: desc

@@ -117,40 +117,38 @@ switch ($path) {
 		$radioSortBy =  $values['details/sort'];
 		
 		$sql = "
-				SELECT d.id
-				FROM ".DB_NAME_PREFIX."documents AS d
-				LEFT JOIN ".DB_NAME_PREFIX."files as f ON d.file_id = f.id";
+			SELECT d.id
+			FROM " . DB_NAME_PREFIX . "documents AS d
+			LEFT JOIN " . DB_NAME_PREFIX . "files as f 
+				ON d.file_id = f.id";
 		if($radioOrderBy && $radioSortBy){
-			if ($radioOrderBy=='file_name'){
+			if ($radioOrderBy=='file_name') {
 				if ($folderId){
 					$sql.=" WHERE d.folder_id = '".sqlEscape($folderId)."'";
 				}else{
 					$sql.=" WHERE d.folder_id = 0";
 				}
-				$sql.= " ORDER BY f.filename";
-			}elseif($radioOrderBy=='uploading_date'){
-				if ($folderId){
+				$sql.= " ORDER BY d.filename";
+			} elseif ($radioOrderBy=='uploading_date') {
+				if ($folderId) {
 					$sql.=" WHERE d.folder_id = '".sqlEscape($folderId)."'";
-				}else{
+				} else {
 					$sql.=" WHERE d.folder_id = 0";
 				}
 				$sql.= " ORDER BY f.created_datetime";
-			}else{
-			// Custom data set
+			} else {
+				//Custom data set
 				$sql.=' INNER JOIN '.DB_NAME_PREFIX.'documents_custom_data AS zdcd 
 					ON zdcd.document_id = d.id';
 				
-				if ($folderId){
+				if ($folderId) {
 					$sql.=' WHERE d.folder_id = "'.sqlEscape($folderId).'"';
-				}else{
+				} else {
 					$sql.=" WHERE d.folder_id = 0";
 				}
 				
-				$dbColumn = getRowsArray('custom_dataset_fields',
-									'db_column',
-									array('id' => $radioOrderBy)
-									);
-				$sql.= " ORDER BY zdcd.".$dbColumn[$radioOrderBy];
+				$dbColumn = getRowsArray('custom_dataset_fields', 'db_column', $radioOrderBy);
+				$sql.= " ORDER BY zdcd.`" . $dbColumn[$radioOrderBy] . "`";
 			}
 			// Sort order
 			if($radioSortBy == 'ascending'){
@@ -164,10 +162,9 @@ switch ($path) {
 				$datasetResult[] = $row;
 			}
 			//update ordinal in the db
-			$i=1;
+			$i = 0;
 			foreach ($datasetResult as $result){
-				setRow('documents', array('ordinal' => $i),array('id' => $result['id']));
-				$i++;
+				setRow('documents', array('ordinal' => ++$i), $result['id']);
 			}
 		}
 		break;

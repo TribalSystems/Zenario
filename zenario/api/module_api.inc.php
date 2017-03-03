@@ -1096,7 +1096,7 @@ class zenario_api {
 		$isShowSlot = $showPlaceholderMethod == 'showSlot';
 		
 		//Include the controls if this is admin mode, and if this is not a preview of a layout
-		if ($includeAdminControlsIfInAdminMode && !$isLayoutPreview && checkPriv()) {
+		if ($checkPriv = $includeAdminControlsIfInAdminMode && !$isLayoutPreview && checkPriv()) {
 			$this->startIncludeAdminControls();
 		}
 		
@@ -1138,6 +1138,9 @@ class zenario_api {
 					if (!$this->eggId) {
 						$edition::postSlot($this->slotName, $showPlaceholderMethod);
 					}
+				
+				} elseif ($checkPriv && empty(cms_core::$slotContents[$this->slotNameNestId]['module_id'])) {
+					echo adminPhrase('[Empty Slot]');
 				}
 			}
 		echo $this->endInner();

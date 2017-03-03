@@ -587,6 +587,7 @@ if (isset($adminToolbar['sections']['edit'])
  		cms_core::$layoutId);
 }
 
+
 if (isset($adminToolbar['sections']['edit']['buttons']['head'])) {
 	$adminToolbar_edit_buttons_head = &$adminToolbar['sections']['edit']['buttons']['head'];
 	if(!isset($adminToolbar_edit_buttons_head['tooltip'])) {
@@ -603,6 +604,8 @@ if (isset($adminToolbar['sections']['edit']['buttons']['head'])) {
 		$adminToolbar_edit_buttons_head['tooltip'] .= '<br/>'. adminPhrase('This Layer is not output in Admin Mode.');
 	}
 }
+
+
 if (isset($adminToolbar['sections']['edit']['buttons']['foot'])) {
 	$adminToolbar_edit_buttons_foot = &$adminToolbar['sections']['edit']['buttons']['foot'];
 	if(!isset($adminToolbar_edit_buttons_foot['tooltip'])) {
@@ -620,6 +623,7 @@ if (isset($adminToolbar['sections']['edit']['buttons']['foot'])) {
  	}
 }
 
+
 if (isset($adminToolbar['sections']['template'])) {
 	$adminToolbar['sections']['template']['buttons']['id_and_name']['label'] =
 		adminPhrase('Layout: [[id_and_name]]', $templateDetails);
@@ -636,6 +640,7 @@ if (isset($adminToolbar['sections']['template'])) {
  		$templateDetails['status'] == 'active'?
  			'zenario__layouts/panels/layouts//'. cms_core::$layoutId
  		:	'zenario__layouts/panels/layouts/trash////'. cms_core::$layoutId;
+ 	
  	
  	$adminToolbar_buttons_head = &$adminToolbar['sections']['template']['buttons']['head'];
 	if(!isset($adminToolbar_buttons_head['tooltip'])) {
@@ -662,6 +667,8 @@ if (isset($adminToolbar['sections']['template'])) {
  	if ($template['head_visitor_only']) {
  		$adminToolbar_buttons_head['tooltip'] .= '<br/>'. adminPhrase('This Layer is not output in Admin Mode.');
  	}
+ 	
+ 	
  	
  	$adminToolbar_buttons_foot = &$adminToolbar['sections']['template']['buttons']['foot'];
 	if(!isset($adminToolbar_buttons_foot['tooltip'])) {

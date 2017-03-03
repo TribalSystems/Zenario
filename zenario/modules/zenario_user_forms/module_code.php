@@ -2978,6 +2978,10 @@ class zenario_user_forms extends module_base_class {
 		$fieldName = static::getFieldColumn($fieldId, $field);
 		$fieldValue = static::getFieldCurrentValue($fieldId, $fields, $data, $dataset, $instanceId);
 		
+		if (is_string($fieldValue)) {
+			$fieldValue = utf8_encode($fieldValue);
+		}
+		
 		if ($field['is_system_field'] && !$forceUnlinked){
 			$valueType = 'system';
 			$values = &$userSystemFields;

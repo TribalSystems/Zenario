@@ -297,6 +297,8 @@ zenario__content:
                 upload_replacement_document:
                     parent: actions_dropdown
                     hide_in_select_mode: true
+                    visible_if: |
+                        item.type != 'folder'
                     label: Upload a replacement
                     admin_box:
                         path: zenario_upload_replacement_document
