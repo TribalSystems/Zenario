@@ -4459,7 +4459,6 @@ function loadModuleDescription($moduleName, &$tags) {
 	$replaces['[[MODULE_DIRECTORY_NAME]]'] = $baseModuleName;
 	$replaces['[[ZENARIO_MAJOR_VERSION]]'] = ZENARIO_MAJOR_VERSION;
 	$replaces['[[ZENARIO_MINOR_VERSION]]'] = ZENARIO_MINOR_VERSION;
-	$replaces['[[ZENARIO_RELEASE_VERSION]]'] = ZENARIO_RELEASE_VERSION;
 	$replaces['[[ZENARIO_VERSION]]'] = ZENARIO_VERSION;
 	
 	$contents = false;

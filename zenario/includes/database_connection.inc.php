@@ -453,7 +453,7 @@ function zenarioCodeLastUpdated($getChecksum = true) {
 //if the site is set to Development mode.
 function zenarioCodeVersion() {
 	return
-		ZENARIO_MAJOR_VERSION. ZENARIO_MINOR_VERSION. ZENARIO_RELEASE_VERSION.
+		ZENARIO_MAJOR_VERSION. ZENARIO_MINOR_VERSION. (is_numeric(ZENARIO_REVISION)? ZENARIO_REVISION : '').
 		trim(max(zenarioCodeLastUpdated(), setting('css_js_version')));
 }
 
