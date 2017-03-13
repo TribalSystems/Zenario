@@ -27,31 +27,26 @@
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
+//Look up every content type on this site
+//Sort the items in the following order: html, news, blog then documents.
+$sql = "
+	SELECT content_type_id, content_type_name_en, content_type_plural_en
+	FROM ". DB_NAME_PREFIX. "content_types AS ct
+	INNER JOIN ". DB_NAME_PREFIX. "modules AS m
+	   ON m.id = ct.module_id
+	  AND m.status IN ('module_running', 'module_is_abstract')
+	ORDER BY
+		ct.content_type_id != 'html',
+		ct.content_type_id != 'news',
+		ct.content_type_id != 'blog',
+		ct.content_type_id != 'document',
+		ct.content_type_name_en";
+
 //Add links to every content type to the navigation
 $ord = 0.1;
-foreach (getRowsArray(
-	'content_types', array('content_type_name_en', 'content_type_plural_en'), array(), 'content_type_name_en'
-) as $cType => $details) {
-	
-	//Sort the items in the following order: html, news, blog then documents.
-	switch ($cType) {
-		case 'html':
-			$thisOrd = 0.01;
-			break;
-		case 'news':
-			$thisOrd = 0.02;
-			break;
-		case 'blog':
-			$thisOrd = 0.03;
-			break;
-		case 'document':
-			$thisOrd = 0.04;
-			break;
-		
-		//Anything else should be alphabetically sorted (but after html, news, blog and documents).
-		default:
-			$thisOrd = $ord = $ord + 0.0001;
-	}
+foreach (sqlFetchAssocs($sql) as $details) {
+	$thisOrd = $ord = $ord + 0.0001;
+	$cType = $details['content_type_id'];
 	
 	$nav['zenario__content']['nav']['content_type_'. $cType] = array(
 		'ord' => $thisOrd,
@@ -63,11 +58,10 @@ foreach (getRowsArray(
 			'refiner' => 'content_type',
 			'refinerId' => $cType
 	));
-	
-	$nav['top_right_buttons']['admin_name']['label'] = formatAdminName();
-	
-	if (session('admin_global_id')) {
-		$nav['top_right_buttons']['change_password']['disabled'] = true;
-	}
-	
+}
+
+$nav['top_right_buttons']['admin_name']['label'] = formatAdminName();
+
+if (session('admin_global_id')) {
+	$nav['top_right_buttons']['change_password']['disabled'] = true;
 }

@@ -1061,7 +1061,7 @@ class zenario_user_forms extends module_base_class {
 		$errorHTML = '';
 		
 		if (isset($this->errors[$fieldId])) {
-			$errorHTML = '<div class="form_error">' . static::fPhrase($this->errors[$fieldId], array(), $t) . '</div>';
+			$errorHTML = '<div class="form_error">' . $this->errors[$fieldId] . '</div>';
 		}
 		
 		// Add the fields label, checkboxes have a label element
