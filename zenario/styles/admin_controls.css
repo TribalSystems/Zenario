@@ -255,12 +255,6 @@ body.zenario_pageMode_menu .zenario_slotShownInMenuMode > div,
 }
 
 
-/*  Hide WYSIWYG Editor preview on the Preview and Layout Tabs  */
-body.zenario_pageMode_preview .zenario_editor_placeholder_text,
-body.zenario_pageMode_template .zenario_editor_placeholder_text {
-	display: none;
-}
-
 /* Show/hide Plugin information in Edit Mode */
 body.zenario_pageMode_edit .hide_in_edit_mode {
 	display: none;

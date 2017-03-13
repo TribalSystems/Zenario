@@ -168,6 +168,7 @@ class zenario_wysiwyg_editor extends zenario_html_snippet {
 	
 	//When the plugin is set up, also get the content item's status and the content section to display
 	function init() {
+		$canEdit = false;
 		
 		//Alow allow editing of inline content if this is a version controlled Plugin
 		if ($this->isVersionControlled) {
@@ -200,7 +201,7 @@ class zenario_wysiwyg_editor extends zenario_html_snippet {
 			}
 		}
 		
-		return zenario_html_snippet::init();
+		return zenario_html_snippet::init() || $canEdit;
 	}
 	
 	public function showLayoutPreview() {
@@ -225,9 +226,15 @@ class zenario_wysiwyg_editor extends zenario_html_snippet {
 		
 		if (!$this->editing && checkPriv() && !trim($this->setting('html'))) {
 			if (cms_core::$isDraft) {
-				echo '<div class="zenario_editor_placeholder_text">', adminPhrase('<h2>Write something here</h2><p>This is a WYSIWYG editor, but it\'s empty.</p><p>Double-click in this panel to edit.</p>', array('slotName' => $this->slotName)), '</div>';
+				echo
+					'<div class="zenario_editor_placeholder_text only_show_in_edit_mode">',
+						adminPhrase('<h2>Write something here</h2><p>This is a WYSIWYG editor, but it\'s empty.</p><p>Double-click in this panel to edit.</p>', array('slotName' => $this->slotName)),
+					'</div>';
 			} else {
-				echo '<div class="zenario_editor_placeholder_text">', adminPhrase('<h2>Write something here</h2><p>This is a WYSIWYG editor, but it\'s empty.</p><p>With the Edit tab selected, click &quot;Start editing&quot; to edit.</p>', array('slotName' => $this->slotName)), '</div>';
+				echo
+					'<div class="zenario_editor_placeholder_text only_show_in_edit_mode">',
+						adminPhrase('<h2>Write something here</h2><p>This is a WYSIWYG editor, but it\'s empty.</p><p>With the Edit tab selected, click &quot;Start editing&quot; to edit.</p>', array('slotName' => $this->slotName)),
+					'</div>';
 			}
 		}
 		
