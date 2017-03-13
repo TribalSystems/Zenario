@@ -563,7 +563,7 @@ zenarioO.reloadOpeningInstanceIfRelevant = function(path) {
 	
 	var parent,
 		reload,
-		instance;
+		i, instanceIds, instanceId, instance, instances;
 	
 	if (windowOpener && windowOpener.zenario) {
 		parent = windowOpener;
@@ -587,11 +587,16 @@ zenarioO.reloadOpeningInstanceIfRelevant = function(path) {
 			reload();
 		}
 		
-		if (instance = window.zenarioOOpeningInstance
-		 && parent.zenario.instances
-		 && parent.zenario.instances[window.zenarioOOpeningInstance]) {
-			if (!zenario_conductor.refresh(instance.slotName)) {
-				zenario.refreshPluginSlot(instance.slotName, 'lookup', zenarioA.importantGetRequests);
+		if ((instanceIds = window.zenarioOOpeningInstance)
+		 && (instances = parent.zenario.instances)) {
+			
+			instanceIds = instanceIds.split(',');
+			foreach (instanceIds as i => instanceId) {
+				if (instance = instances[instanceId]) {
+					if (!zenario_conductor.refresh(instance.slotName)) {
+						zenario.refreshPluginSlot(instance.slotName, 'lookup', zenarioA.importantGetRequests);
+					}
+				}
 			}
 		}
 	}
