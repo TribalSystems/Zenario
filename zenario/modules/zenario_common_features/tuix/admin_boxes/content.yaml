@@ -71,9 +71,9 @@ zenario_content:
                         if (title.length>65) {
                             title = title.substring(0,65).split(' ').slice(0, -1).join(' ') + ' ...';
                         }
-                        $('#google_preview_title').html(title);
+                        $('#google_preview_title').text(title);
                         if ($('#alias').val()) {
-                            $('#google_preview_url').html(zenario.htmlspecialchars(zenarioAB.value('domain_and_subdir_container') + $('#alias').val()));
+                            $('#google_preview_url').text(zenarioAB.value('domain_and_subdir_container') + $('#alias').val());
                         }
                     post_field_html: |
                         <div class="snippet__title" >
