@@ -145,7 +145,8 @@ class zenario_newsletter extends module_base_class {
 				  AND noo.`". sqlEscape($cField['db_column']). "` = 1";
 		}
 
-		$sql .= $whereStatement;
+		$sql .= "
+			". $whereStatement;
 		
 		if ($cField) {
 			$sql .= "

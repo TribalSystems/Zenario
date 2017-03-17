@@ -108,7 +108,7 @@ function mongoCollection($collection) {
 		
 		if (!USE_OLD_MONGO_DRIVER) {
 			//new logic for PHP 7
-			require_once CMS_ROOT . 'zenario/libraries/composer_with_misc_licenses/vendor/autoload.php';
+			require_once CMS_ROOT . 'zenario/libraries/by_vendor/autoload.php';
 			$mongoClient = new MongoDB\Client(MONGODB_CONNECTION_URI);
 			cms_core::$mongoDB = $mongoClient->{MONGODB_DBNAME};
 		

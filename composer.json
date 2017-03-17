@@ -1,0 +1,10 @@
+{
+	"name": "tribalsystems/zenario",
+    "require": {
+        "php-amqplib/php-amqplib": "2.5.*",
+        "mongodb/mongodb": "^1.0.0"
+    },
+    "config": {
+    	"vendor-dir": "zenario/libraries/by_vendor"
+    }
+}
