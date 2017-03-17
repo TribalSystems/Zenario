@@ -1,10 +1,16 @@
 {
 	"name": "tribalsystems/zenario",
-    "require": {
-        "php-amqplib/php-amqplib": "2.5.*",
-        "mongodb/mongodb": "^1.0.0"
-    },
-    "config": {
-    	"vendor-dir": "zenario/libraries/by_vendor"
-    }
+	"type": "project",
+	"description": "Zenario is a web-based content management system for sites with one or many languages.",
+	"keywords": ["cms", "content management", "wysiwyg", "zenario"],
+	"homepage": "https://github.com/TribalSystems/Zenario",
+	"license": "MIT",
+	"require": {
+		"php-amqplib/php-amqplib": "2.5.*",
+		"mongodb/mongodb": "^1.0.0",
+		"php": ">=5.4.0"
+	},
+	"config": {
+		"vendor-dir": "zenario/libraries/by_vendor"
+	}
 }
