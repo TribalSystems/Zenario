@@ -481,6 +481,11 @@ function zenarioParseTUIX(&$tags, &$par, $type, $moduleClassName = false, $setti
 	//Recursively scan each child-tag
 	$children = 0;
 	if (is_array($par)) {
+		
+		if ($goFurther && (!isset($tags[$tag]) || !is_array($tags[$tag]))) {
+			$tags[$tag] = array();
+		}
+		
 		foreach ($par as $key => &$child) {
 			++$children;
 			$isEmptyArray = true;

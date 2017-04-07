@@ -1008,7 +1008,7 @@ if (isset($adminToolbar['sections']['icons']['buttons']['copy_url'])) {
 			//After the URL is copy/pasted, the dropdown stays open which is counter-intuative.
 			//However the dropdown is powered by pure CSS and there's no way to close it using JavaScript.
 			//So as a workaround, redraw the admin toolbar with the dropdown closed.
-		'zenarioAT.draw();';
+		'if (!zenarioA.checkSlotsBeingEdited()) zenarioAT.draw();';
 }
 if (isset($adminToolbar['sections']['icons']['buttons']['go_to_alias'])) {
 	$adminToolbar['sections']['icons']['buttons']['go_to_alias']['label'] = adminPhrase('Go to content item via its alias "[[alias]]"', array('alias' => (cms_core::$alias)));

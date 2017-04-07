@@ -203,14 +203,14 @@ if ($resultSp = getRows('special_pages', true, array())) {
 								
 								//Insert Menu Nodes
 								$redundancy = 'primary';
-								if (arrayKey($page, 'menu_title')) {
+								if (!empty($page['menu_title']) && ($sectionId = menuSectionId('Main'))) {
 									
 									if ($menu = getMenuItemFromContent($cID, $cType, false, 'Main', true)) {
 										$menuId = $menu['id'];
 									
 									} else {
 										$menuId = saveMenuDetails(array(
-											'section_id' => 'Main',
+											'section_id' => $sectionId,
 											'redundancy' => $redundancy,
 											'name' => arrayKey($page, 'menu_title'),
 											'rel_tag' => arrayKey($page, 'menu_rel_tag'),
@@ -230,14 +230,14 @@ if ($resultSp = getRows('special_pages', true, array())) {
 									$redundancy = 'secondary';
 								}
 								
-								if (arrayKey($page, 'footer_menu_title')) {
+								if (!empty($page['footer_menu_title']) && ($sectionId = menuSectionId('Footer'))) {
 									
 									if ($menu = getMenuItemFromContent($cID, $cType, false, 'Footer', true)) {
 										$menuId = $menu['id'];
 									
 									} else {
 										$menuId = saveMenuDetails(array(
-											'section_id' => 'Footer',
+											'section_id' => $sectionId,
 											'redundancy' => $redundancy,
 											'name' => arrayKey($page, 'footer_menu_title'),
 											'rel_tag' => arrayKey($page, 'menu_rel_tag'),

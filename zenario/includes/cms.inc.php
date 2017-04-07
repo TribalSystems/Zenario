@@ -2559,7 +2559,7 @@ function getMenuStructure(
 	$getFullMenu = false
 ) {
 	if ($language === false) {
-		$language = !empty($_SESSION['user_lang'])? $_SESSION['user_lang'] : setting('default_language');
+		$language = cms_core::$langId? cms_core::$langId : setting('default_language');
 	}
 	
 	if (++$recurseCount == 1) {
