@@ -485,3 +485,25 @@ if (needRevision(36995)) {
 	
 	revision(36995);
 }
+
+//Correct a bug where uploading an image into a nest did not flag the image as being used.
+//N.b. this was copied back from version 7.7, but it should be safe to run twice so
+//copying it back and then later running it again in the migration to the next version
+//shouldn't cause any problems.
+if (needRevision(38670)) {
+	$sql = "
+		SELECT id, content_id, content_type, content_version
+		FROM ". DB_NAME_PREFIX. "plugin_instances
+		WHERE content_id = 0
+		  AND module_id IN (
+			SELECT module_id
+			FROM ". DB_NAME_PREFIX. "modules
+			WHERE class_name IN ('zenario_plugin_nest', 'zenario_slideshow')
+		)";
+	
+	$result = sqlSelect($sql);
+	while ($row = sqlFetchAssoc($result)) {
+		resyncLibraryPluginFiles($row['id'], $row);
+	}
+	revision(38670);
+}

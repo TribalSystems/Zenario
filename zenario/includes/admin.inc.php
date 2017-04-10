@@ -646,6 +646,40 @@ function syncInlineFiles(&$files, $key, $keepOldImagesThatAreNotInUse = true) {
 	}
 }
 
+//This function will correct the entries in the inline_images table for any files used in a library plugin
+function resyncLibraryPluginFiles($instanceId, $instance = null) {
+	
+	if (is_null($instance)) {
+		$instance = sqlFetchAssoc('
+			SELECT content_id, content_type, content_version
+			FROM '. DB_NAME_PREFIX. 'plugin_instances
+			WHERE id = '. (int) $instanceId
+		);
+	}
+	
+	if (!$instance) {
+		return;
+	
+	} elseif ($instance['content_id']) {
+		//This function only works for library plugins; syncInlineFileContentLink() should be used instead if a plugin is version-controlled
+		syncInlineFileContentLink($instance['content_id'], $instance['content_type'], $instance['content_version']);
+	
+	} else {
+		$sql = '
+			SELECT foreign_key_id AS id
+			FROM '. DB_NAME_PREFIX. 'plugin_settings
+			WHERE foreign_key_to = \'file\'
+			  AND instance_id = '. (int) $instanceId;
+	
+		$syncLibraryPluginFiles = sqlFetchAssocs($sql, false, 'id');
+	
+		syncInlineFiles(
+			$syncLibraryPluginFiles,
+			array('foreign_key_to' => 'library_plugin', 'foreign_key_id' => $instanceId),
+			$keepOldImagesThatAreNotInUse = false);
+	}
+}
+
 //Check to see if an image is not used, and delete it
 //This is only designed to work for files with their usage set to 'image'
 function deleteUnusedImage($imageId, $onlyDeleteUnusedArchivedImages = false) {

@@ -67,9 +67,7 @@ if (($moduleId = getModuleIdByClassName('zenario_banner'))
 			'nest' => $nestId,
 			'name' => 'alt_tag'));
 	
-	if ($instance['content_id']) {
-		syncInlineFileContentLink($instance['content_id'], $instance['content_type'], $instance['content_version']);
-	}
+	resyncLibraryPluginFiles($instanceId, $instance);
 	
 	return $nestId;
 } else {

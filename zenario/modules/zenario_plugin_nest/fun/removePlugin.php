@@ -48,9 +48,7 @@ if (($instance = getPluginInstanceDetails($instanceId))
 	
 	deleteRow('nested_plugins', array('instance_id' => $instanceId, 'id' => $nestedItemId));
 	
-	if ($instance['content_id']) {
-		syncInlineFileContentLink($instance['content_id'], $instance['content_type'], $instance['content_version']);
-	}
+	resyncLibraryPluginFiles($instanceId, $instance);
 	
 	
 	if ($className) {

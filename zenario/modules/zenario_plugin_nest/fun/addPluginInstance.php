@@ -96,9 +96,7 @@ if (($instance = getPluginInstanceDetails($addPluginInstance))
 		deletePluginInstance($addPluginInstance);
 	}
 	
-	if ($instance['content_id']) {
-		syncInlineFileContentLink($instance['content_id'], $instance['content_type'], $instance['content_version']);
-	}
+	resyncLibraryPluginFiles($instanceId, $instance);
 	
 	
 	return $nestedItemId;
