@@ -4,6 +4,7 @@ site_settings:
     setting_group: perms
     tabs:
         companies:
+            visible_if: zenarioA.running.zenario_company_locations_manager
             label: Companies
             edit_mode:
                 enabled: true

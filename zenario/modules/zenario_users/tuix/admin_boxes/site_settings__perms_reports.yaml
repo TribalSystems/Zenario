@@ -4,6 +4,7 @@ site_settings:
     setting_group: perms
     tabs:
         scheduled_reports:
+            visible_if: zenarioA.running.assetwolf_2
             label: Scheduled reports
             edit_mode:
                 enabled: true

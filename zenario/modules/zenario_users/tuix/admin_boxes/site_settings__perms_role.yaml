@@ -4,6 +4,7 @@ site_settings:
     setting_group: perms
     tabs:
         roles:
+            visible_if: zenarioA.running.zenario_location_manager
             label: Roles
             edit_mode:
                 enabled: true

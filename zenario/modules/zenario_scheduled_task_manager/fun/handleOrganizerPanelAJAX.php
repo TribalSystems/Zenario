@@ -28,6 +28,29 @@
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
 
+if (!empty($_POST['rerun'])
+ || !empty($_POST['enable'])
+ || !empty($_POST['enable_all'])
+ || !empty($_POST['get_code'])) {
+	
+	$pcntl = extension_loaded('pcntl');
+	$calendar = extension_loaded('calendar');
+
+	if (!$pcntl && !$calendar) {
+		echo adminPhrase('To enable scheduled tasks, please ask your sysadmin to enable the calendar and pcntl extensions in PHP.');
+		exit;
+
+	} elseif (!$pcntl) {
+		echo adminPhrase('To enable scheduled tasks, please ask your sysadmin to enable the pcntl extension in PHP.');
+		exit;
+
+	} elseif (!$calendar) {
+		echo adminPhrase('To enable scheduled tasks, please ask your sysadmin to enable the calendar extension in PHP.');
+		exit;
+	}
+}
+
+
 switch ($path) {
 	case 'zenario__administration/panels/zenario_scheduled_task_manager__scheduled_tasks':
 		if (post('rerun') && checkPriv('_PRIV_MANAGE_SCHEDULED_TASK')) {

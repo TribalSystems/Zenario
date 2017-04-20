@@ -4,6 +4,7 @@ site_settings:
     setting_group: perms
     tabs:
         possibleEvents:
+            visible_if: zenarioA.running.assetwolf_2
             label: Possible Events
             edit_mode:
                 enabled: true

@@ -4,6 +4,7 @@ site_settings:
     setting_group: perms
     tabs:
         procedures:
+            visible_if: zenarioA.running.assetwolf_2
             label: Procedures
             edit_mode:
                 enabled: true

@@ -4,6 +4,7 @@ site_settings:
     setting_group: perms
     tabs:
         assetTypes:
+            visible_if: zenarioA.running.assetwolf_2
             label: Asset Types
             edit_mode:
                 enabled: true

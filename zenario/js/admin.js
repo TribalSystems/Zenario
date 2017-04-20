@@ -2437,8 +2437,8 @@ zenarioA.formatSKItemField = function(value, column) {
 		} else if ((format == 'module_name' || format == 'module_class_name') && zenarioO.init) {
 			if (!value) {
 				value = phrase.core;
-			} else if (zenarioA.pluginNames[value]) {
-				value = zenarioA.pluginNames[value];
+			} else if (zenarioA.module[value]) {
+				value = zenarioA.module[value].display_name;
 			}
 			
 		} else if (format == 'filesize' && value == 1*value) {
@@ -2462,6 +2462,22 @@ zenarioA.formatSKItemField = function(value, column) {
 	}
 	
 	return value;
+};
+
+zenarioA.module = {};
+zenarioA.running = {};
+
+zenarioA.setModuleInfo = function(modules) {
+	var m, module;
+	foreach (modules as m => module) {
+		zenarioA.module[module.id] = 
+		zenarioA.module[module.class_name] = module;
+		
+		if (module.running) {
+			zenarioA.running[module.id] = 
+			zenarioA.running[module.class_name] = module;
+		}
+	}
 };
 
 //Open Organizer in quick mode

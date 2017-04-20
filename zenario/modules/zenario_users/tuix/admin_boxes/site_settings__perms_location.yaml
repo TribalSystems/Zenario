@@ -4,6 +4,7 @@ site_settings:
     setting_group: perms
     tabs:
         locations:
+            visible_if: zenarioA.running.zenario_location_manager
             label: Locations
             edit_mode:
                 enabled: true

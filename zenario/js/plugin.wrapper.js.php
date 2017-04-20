@@ -162,13 +162,18 @@ if (!empty($moduleDetails)) {
 
 if (!empty($_GET['organizer'])) {
 	//Get a list of Module names for use in the formatting options
-	$pluginNames = array();
-	foreach (getModules() as $module) {
-		$pluginNames[$module['id']] = $pluginNames[$module['class_name']] = $pluginNames[$module['class_name']] = $module['display_name'];
+	$moduleInfo =
+		sqlFetchAssocs("
+			SELECT id, class_name, display_name, status IN ('module_running', 'module_is_abstract') AS running
+			FROM ". DB_NAME_PREFIX. "modules");
+	
+	foreach ($moduleInfo as &$info) {
+		$info['id'] = (int) $info['id'];
+		$info['running'] = (bool) $info['running'];
 	}
 	
 	echo '
-		zenarioA.pluginNames = ', json_encode($pluginNames), ';';
+		zenarioA.setModuleInfo(', json_encode($moduleInfo), ');';
 }
 
 
