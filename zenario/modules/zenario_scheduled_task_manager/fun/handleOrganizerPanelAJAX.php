@@ -33,7 +33,8 @@ if (!empty($_POST['rerun'])
  || !empty($_POST['enable_all'])
  || !empty($_POST['get_code'])) {
 	
-	$pcntl = extension_loaded('pcntl');
+	$pcntl = true;
+	//$pcntl = extension_loaded('pcntl');
 	$calendar = extension_loaded('calendar');
 
 	if (!$pcntl && !$calendar) {

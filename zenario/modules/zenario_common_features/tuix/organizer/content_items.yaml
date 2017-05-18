@@ -200,6 +200,7 @@ zenario__content:
                     title: ID/alias
                     width: large
                     searchable: true
+                    ascii_only: true
                     db_column: c.tag_id
                     sort_column: c.type, c.id
                     sort_column_desc: c.type DESC, c.id DESC

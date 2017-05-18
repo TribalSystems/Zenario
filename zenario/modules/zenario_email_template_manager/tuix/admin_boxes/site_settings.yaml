@@ -9,20 +9,17 @@ site_settings:
                     label: "Delete data from sent email log:"
                     type: select
                     values: 
+                        "7": 
+                            label: Delete data older than 7 days
+                            ord: "1"
+                        "30": 
+                            label: Delete data older than 1 month
+                            ord: "2"
                         "90": 
                             label: Delete data older than 3 months
-                            ord: "1"
-                        "180": 
-                            label: Delete data older than 6 months
-                            ord: "4"
+                            ord: "3"
                         "365": 
                             label: Delete data older than 1 year
-                            ord: "5"
-                        "730": 
-                            label: Delete data older than 2 years
-                            ord: "6"
-                        "1095": 
-                            label: Delete data older than 3 years
-                            ord: "7"
+                            ord: "4"
                     empty_value: "Never delete"
-                    note_below: "Warning: Data older than specified period will be permanently deleted."
+                    note_below: "Warning: Data older than specified period will be permanently deleted when the next sent email is logged."

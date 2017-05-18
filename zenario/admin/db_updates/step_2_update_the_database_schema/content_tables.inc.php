@@ -2427,4 +2427,17 @@ _sql
 	ADD COLUMN `auto_refresh_interval` int(10) unsigned NOT NULL DEFAULT 60 AFTER `show_auto_refresh`
 _sql
 
+
+//Fix a bug with the migration for plugin nests from back in version 7.5,
+//where the "Apply slide-specific permissions" checkbox does not seem to be automatically checked
+//where you had a slide with the "Call a module's static method to decide" option.
+);	revision( 38671
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]]nested_plugins`
+	SET `privacy` = 'public'
+	WHERE `privacy` = 'public'
+	  AND `method_name` IS NOT NULL
+	  AND `method_name` != ''
+_sql
+
 );

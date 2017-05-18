@@ -939,7 +939,7 @@ class zenario_common_features__admin_boxes__plugin_settings extends module_base_
 						$eggName = getModuleDisplayName($box['key']['moduleId']);
 					}
 	
-					updateRow('nested_plugins', array('name_or_title' => $eggName), $box['key']['nest']);
+					updateRow('nested_plugins', array('name_or_title' => mb_substr($eggName, 0, 250, 'UTF-8')), $box['key']['nest']);
 				}
 
 				if ($instance['content_id']) {

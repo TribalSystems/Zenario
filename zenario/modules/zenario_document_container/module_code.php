@@ -179,7 +179,9 @@ class zenario_document_container extends module_base_class {
 			if ($childFiles = $this->getFilesInFolder(false, $documentId)) {
 				$childFiles =  $this->addMergeFields($childFiles, $level = 1);
 			}
-			$mergeFields = $childFiles[0];
+			if (isset($childFiles[$documentId])){
+				$mergeFields = $childFiles[$documentId];
+			}
 			
 		} elseif ($document['type'] == 'folder') {
 		
@@ -419,13 +421,13 @@ class zenario_document_container extends module_base_class {
 	}
 	
 	private static function canZIP() {
-		
 		if (!windowsServer() && execEnabled()) {
+			exec(escapeshellarg(static::getZIPExecutable()) .' -v',$arr,$rv);
+			return !(bool)$rv;
+		} else {
 			return false;
 		}
 		
-		exec(escapeshellarg(static::getZIPExecutable()) .' -v',$arr,$rv);
-		return !(bool)$rv;
 	}
 	
 	private static function addToZipArchive($archiveName,$filenameToAdd) {
@@ -495,6 +497,7 @@ class zenario_document_container extends module_base_class {
 	}
 	
 	private function build() {
+		
 		$archiveEmpty = true;
 		$oldDir = getcwd();
 		
@@ -775,7 +778,7 @@ class zenario_document_container extends module_base_class {
 		
 		$result = sqlQuery($sql);
 		while ($row = sqlFetchAssoc($result)) {
-			$childFiles[] = $row;
+			$childFiles[$row['id']] = $row;
 		}
 		
 		return $childFiles;
