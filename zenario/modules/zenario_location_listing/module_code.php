@@ -277,7 +277,7 @@ class zenario_location_listing extends module_base_class {
 				
 				foreach ($row as $key => $value) {
 					$fieldName = 'Location_'. str_replace(' ', '_', ucwords(str_replace('_', ' ', $key)));
-					$mergeFields[$fieldName] = htmlspecialchars($value);
+					$mergeFields[$fieldName] = $value;
 				}
 				
 				if (isset($mergeFields['Location_Summary'])) {

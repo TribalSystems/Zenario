@@ -673,6 +673,7 @@ function setUsersPassword($userId, $password, $needsChanging = -1, $plaintext = 
 	if ($needsChanging !== -1) {
 		$details['password_needs_changing'] = $needsChanging;
 	}
+	$details['reset_password_time'] = now();
 	
 	updateRow('users', $details, $userId);
 	//Adding hash

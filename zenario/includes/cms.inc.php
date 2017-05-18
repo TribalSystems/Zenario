@@ -2525,7 +2525,7 @@ function getMenuName($mID, $langId = false, $missingPhrase = '[[name]] ([[langua
 	
 	$markFrom = false;
 	if ($langId === false) {
-		$langId = ifNull(session('user_lang'), setting('default_language'));
+		$langId = ifNull(cms_core::$langId, session('user_lang'), setting('default_language'));
 	
 	} elseif ($langId === true) {
 		$langId = setting('default_language');
@@ -2702,7 +2702,7 @@ function getMenuStructure(
 	$getFullMenu = false
 ) {
 	if ($language === false) {
-		$language = !empty($_SESSION['user_lang'])? $_SESSION['user_lang'] : setting('default_language');
+		$language = cms_core::$langId? cms_core::$langId : setting('default_language');
 	}
 	
 	if (++$recurseCount == 1) {

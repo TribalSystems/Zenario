@@ -95,7 +95,6 @@ zenario_user__convert_to_user:
                     priv: _PRIV_CHANGE_USER_PASSWORD
                     label: "Ask user to change their password on next login"
                     type: checkbox
-                    side_note: "When an extranet user next logs in to the site, they will be asked to change his password before he can access the extranet area."
                 terms_and_conditions_accepted:
                     label: "User has accepted terms and conditions"
                     side_note: "When checked, this indicates the user has accepted the site's terms and conditions; when unchecked, they will be asked to accept when they next logs in."

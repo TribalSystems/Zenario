@@ -48,6 +48,15 @@ class zenario_users__admin_boxes__user__convert_to_user extends zenario_users {
 			$template = current($layouts);
 			$fields['details/email_to_send']['value'] = arrayKey($template,'code');
 		}
+		
+		
+		$fields['details/password_needs_changing']['note_below'] =
+			htmlspecialchars(
+				nAdminPhrase('This will flag the user\'s password as "needs changing". If it is not changed within 1 day, it will expire and need to be reset.',
+					'This will flag the user\'s password as "needs changing". If it is not changed within [[count]] days, it will expire and need to be reset.',
+					ifNull((int) setting('temp_password_timeout'), 14)
+				)
+			);
 	}
 	
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
@@ -98,8 +107,8 @@ class zenario_users__admin_boxes__user__convert_to_user extends zenario_users {
 			}
 			
 			$cols['password'] = $values['details/password'];
-			
 			$cols['password_needs_changing'] = $values['details/password_needs_changing'];
+			$cols['reset_password_time'] = now();
 			
 			saveUser($cols, $box['key']['id']);
 			

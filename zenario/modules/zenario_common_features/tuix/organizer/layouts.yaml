@@ -92,6 +92,7 @@ zenario__layouts:
                     show_by_default: true
                     format: enum
                     searchable: true
+                    ascii_only: true
                     width: small
                 usage_count:
                     title: Usage
@@ -124,7 +125,6 @@ zenario__layouts:
                     db_column: "CONCAT('[[CMS_ROOT]]zenario_custom/templates/', tf.family_name, '/', tf.file_base_name, '.tpl.php')"
                     show_by_default: true
                     searchable: true
-                    ascii_only: true
                     width: xxlarge
             default_sort_column: name
             label_format_for_grid_view: '[[code]] [[name]]'
