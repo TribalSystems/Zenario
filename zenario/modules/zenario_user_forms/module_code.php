@@ -312,6 +312,11 @@ class zenario_user_forms extends module_base_class {
 		return false;
 	}
 	
+	// An overwritable method to add custom HTML to the top buttons area
+	protected function getCustomTopButtons() {
+		return false;
+	}
+	
 	
 	// An overwritable method to set the form title
 	protected function getFormTitle($form) {
@@ -498,6 +503,12 @@ class zenario_user_forms extends module_base_class {
 			
 			$topButtonsHTML = '';
 			if ($this->setting('display_mode') == 'inline_in_page') {
+				
+				$topButton = $this->getCustomTopButtons();
+				if ($topButton) {
+					$topButtonsHTML .= $topButton;
+				}
+				
 				if ($this->setting('show_print_page_button')) {
 					$printButtonPages = $this->setting('print_page_button_pages');
 					if ($printButtonPages) {
@@ -626,7 +637,7 @@ class zenario_user_forms extends module_base_class {
 	
 	
 	// Get the HTML for a forms fields
-	private function getFieldsHTML($form, $fields, $data = false, $readonly = false, $page = false) {
+	protected function getFieldsHTML($form, $fields, $data = false, $readonly = false, $page = false) {
 		$html = '';
 		$t = $form['translate_text'];
 		$dataset = getDatasetDetails('users');

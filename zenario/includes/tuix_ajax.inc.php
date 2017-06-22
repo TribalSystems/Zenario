@@ -769,8 +769,6 @@ function syncAdminBoxFromClientToServer(&$serverTags, &$clientTags, $key1 = fals
 		 || (($type = 'value') && $key2 === false && $key1 == '_sync' && $key0 == 'storage')
 		 || (($type = 'value') && $key2 === false && $key1 == '_sync' && $key0 == 'cache_dir')
 		 || (($type = 'value') && $key2 === false && $key1 == '_sync' && $key0 == 'password')
-		 || (($type = 'array') && $key1 === false && $key0 == 'key')
-		 || (($type = 'value') && $key2 === false && $key1 == 'key')
 		 || (($type = 'value') && $key1 === false && $key0 == 'shake')
 		 || (($type = 'value') && $key1 === false && $key0 == 'download')
 		 || (($type = 'array') && $key1 === false && $key0 == 'tabs')

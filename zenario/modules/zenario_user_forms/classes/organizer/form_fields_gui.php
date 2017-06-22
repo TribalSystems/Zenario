@@ -901,7 +901,7 @@ class zenario_user_forms__organizer__form_fields_gui extends module_base_class {
 								// Custom code name must be unique in the form
 								if (!empty($field['custom_code_name'])) {
 									foreach ($items as $itemId => $item) {
-										if (($itemId != $id) && ($item['custom_code_name'] == $field['custom_code_name'])) {
+										if (($itemId != $id) && isset($item['custom_code_name']) && ($item['custom_code_name'] == $field['custom_code_name'])) {
 											$errors[] = adminPhrase('Another field already has that code name on this form.');
 										}
 									}
