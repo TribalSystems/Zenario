@@ -38,8 +38,16 @@ class zenario_document_container extends module_base_class {
 		$documentId = $this->setting('document_source');
 		$mergeFields = array();
 		
-		// Standard documents
-		if ($this->setting('container_mode') == 'documents') {
+		$this->privacy = getRow('translation_chains', 'privacy', array('equiv_id' => cms_core::$equivId, 'type' => cms_core::$cType));
+		
+		if ($this->setting('container_mode') == 'user_documents' && inc('zenario_user_documents')) {
+			// Private user documents
+			if (checkPriv()) {
+				$this->showUserDocumentPluginAdminInfo();
+			}
+			$mergeFields = $this->getDocumentContainerUserDocuments($userId);
+		} else {
+			// Standard documents
 			if (checkPriv()) {
 				$this->showDocumentPluginAdminInfo($documentId);
 			}
@@ -48,12 +56,6 @@ class zenario_document_container extends module_base_class {
 			if ($mergeFields === false) {
 				return false;
 			}
-		// Private user documents
-		} else {
-			if (checkPriv()) {
-				$this->showUserDocumentPluginAdminInfo();
-			}
-			$mergeFields = $this->getDocumentContainerUserDocuments($userId);
 		}
 		
 		$mergeFields['Title_Tags'] = $this->setting('title_tags') ? $this->setting('title_tags') : 'h1';
@@ -133,7 +135,7 @@ class zenario_document_container extends module_base_class {
 		$this->twigFramework(
 			array(
 				'Heading' => 'This is a Document container.', 
-				'Sub_Heading' => 'This slot is auto populated on the basic:', 
+				'Sub_Heading' => 'Automatically shows a list of documents according to its settings (blank if nothing set):', 
 				'Settings' => array(
 					'Showing: ' => 'User documents for logged in user'
 				)
@@ -209,9 +211,9 @@ class zenario_document_container extends module_base_class {
 				} else {
 					$this->showLinkToDownloadPage($mergeFields, $ids);
 				}
-			} else {
-				$mergeFields['Documents'] = $childFiles;
 			}
+			
+			$mergeFields['Documents'] = $childFiles;
 		}
 		return $mergeFields;
 	}
@@ -252,76 +254,72 @@ class zenario_document_container extends module_base_class {
 			} else {
 				$this->showLinkToDownloadPage($mergeFields, $ids, $userId);
 			}
-		} else {
-			$fields = getDatasetFieldsDetails(ZENARIO_USER_DOCUMENTS_PREFIX. 'user_documents');
-			foreach ($documents as &$document) {
-			
-				$privacyLevel = getRow('translation_chains', 'privacy', array('equiv_id' => cms_core::$equivId, 'type' => cms_core::$cType));
-				$file = getRow('files', array('id', 'filename', 'path', 'created_datetime', 'short_checksum', 'size'), $document['file_id']);
-				
-				$link = getDocumentFrontEndLink($documentId, true);
-				$document['Document_Type'] =  'file';
-				$document['Document_Link'] = $link;
-				$document['Document_created_datetime'] = $file['created_datetime'];
-				$document['Document_Mime'] = str_replace('/', '_', documentMimeType($link));
-				$document['Document_Title'] = $file['filename'];
-				$document['Document_Link_Text'] = htmlspecialchars($file['filename']);
-				$document['Document_Level'] = 1;
-				
-				if ($document['thumbnail_id'] && $this->setting('show_thumbnails')) {
-					$thumbnailHtml= static::createThumbnailHtml($document['thumbnail_id'], $this->setting('width'), $this->setting('height'), $this->setting('canvas'));
-					$document['Thumbnail'] = $thumbnailHtml;
-				} else {
-					$document['Thumbnail'] = false;
-				}
-			
-				if($this->setting('show_title')) {
-					$document['Title_Exists'] = true;
-				}
-				
-				if ($this->setting('show_file_size') && $file['size']) {
-					$fileSize = fileSizeConvert($file['size']);
-					$document['File_Size'] = $fileSize;
-				}
-				if ($this->setting('show_upload_date') && $document['document_datetime']) {
-					$uploadDate = formatDateTimeNicely($document['document_datetime'], '_MEDIUM');
-					$document['Upload_Date'] = $this->phrase('Uploaded: [[date]]', array('date' => $uploadDate));
-				}
-				
-			
-				$documentCustomData = getRow(ZENARIO_USER_DOCUMENTS_PREFIX.'user_documents_custom_data', true, $document['id']);
-				
-				foreach ($fields as $fieldName => &$field) {
-					$value = $displayValue = '';
-				
-					if ($documentCustomData && isset($documentCustomData[$fieldName])) {
-						$value = $displayValue = $documentCustomData[$fieldName];
-					
-						switch ($field['type']) {
-							case 'radios':
-							case 'select':
-								$displayValue = getDatasetFieldValueLabel($value);
-								break;
-							case 'centralised_radios':
-							case 'centralised_select':
-								if (!isset($field['lov'])) {
-									$field['lov'] = getDatasetFieldLOV($field);
-								}
-								if (isset($field['lov'][$value])) {
-									$displayValue = $field['lov'][$value];
-								}
-								break;
-						}
-				
-					} elseif ($field['type'] == 'checkboxes') {
-						//Skip checkboxes for now...
-					}
-				
-					$document[$fieldName] = $displayValue;
-				}
-			}
-			$mergeFields['Documents'] = $documents;
 		}
+		$fields = getDatasetFieldsDetails(ZENARIO_USER_DOCUMENTS_PREFIX. 'user_documents');
+		foreach ($documents as &$document) {
+			$file = getRow('files', array('filename', 'created_datetime', 'size'), $document['file_id']);
+			$link = createFilePrivateLink($document['file_id'], true);
+			$document['Document_Type'] =  'file';
+			$document['Document_Link'] = $link;
+			$document['Document_created_datetime'] = $file['created_datetime'];
+			$document['Document_Mime'] = str_replace('/', '_', documentMimeType($link));
+			$document['Document_Title'] = $file['filename'];
+			$document['Document_Link_Text'] = htmlspecialchars($file['filename']);
+			$document['Document_Level'] = 1;
+			
+			if ($document['thumbnail_id'] && $this->setting('show_thumbnails')) {
+				$thumbnailHtml= static::createThumbnailHtml($document['thumbnail_id'], $this->setting('width'), $this->setting('height'), $this->setting('canvas'), $this->setting('lazy_load_images'));
+				$document['Thumbnail'] = $thumbnailHtml;
+			} else {
+				$document['Thumbnail'] = false;
+			}
+		
+			if($this->setting('show_title')) {
+				$document['Title_Exists'] = true;
+			}
+			
+			if ($this->setting('show_file_size') && $file['size']) {
+				$fileSize = fileSizeConvert($file['size']);
+				$document['File_Size'] = $fileSize;
+			}
+			if ($this->setting('show_upload_date') && $document['document_datetime']) {
+				$uploadDate = formatDateTimeNicely($document['document_datetime'], '_MEDIUM');
+				$document['Upload_Date'] = $this->phrase('Uploaded: [[date]]', array('date' => $uploadDate));
+			}
+			
+		
+			$documentCustomData = getRow(ZENARIO_USER_DOCUMENTS_PREFIX.'user_documents_custom_data', true, $document['id']);
+			
+			foreach ($fields as $fieldName => &$field) {
+				$value = $displayValue = '';
+			
+				if ($documentCustomData && isset($documentCustomData[$fieldName])) {
+					$value = $displayValue = $documentCustomData[$fieldName];
+				
+					switch ($field['type']) {
+						case 'radios':
+						case 'select':
+							$displayValue = getDatasetFieldValueLabel($value);
+							break;
+						case 'centralised_radios':
+						case 'centralised_select':
+							if (!isset($field['lov'])) {
+								$field['lov'] = getDatasetFieldLOV($field);
+							}
+							if (isset($field['lov'][$value])) {
+								$displayValue = $field['lov'][$value];
+							}
+							break;
+					}
+			
+				} elseif ($field['type'] == 'checkboxes') {
+					//Skip checkboxes for now...
+				}
+			
+				$document[$fieldName] = $displayValue;
+			}
+		}
+		$mergeFields['Documents'] = $documents;
 		return $mergeFields;
 	}
 	
@@ -339,7 +337,7 @@ class zenario_document_container extends module_base_class {
 		}
 		$thumbnailHTML = false;
 		if ($thumbnailId) {
-			$thumbnailHTML = static::createThumbnailHtml($thumbnailId, $this->setting('width'), $this->setting('height'), $this->setting('canvas'));
+			$thumbnailHTML = static::createThumbnailHtml($thumbnailId, $this->setting('width'), $this->setting('height'), $this->setting('canvas'), $this->setting('lazy_load_images'));
 		}
 		return $thumbnailHTML;
 	}
@@ -408,6 +406,9 @@ class zenario_document_container extends module_base_class {
 			$uID = '&user_id='.$userId;
 		}
 		$requests = $uID.'&build='.$this->instanceId.'&ids=' . $ids;
+		if (isset($mergeFields['id'])) {
+			$requests .= '&build_folder=' . $mergeFields['id'];
+		}
 		$mergeFields['Requests'] = $requests;
 		$mergeFields['Anchor_Link'] = $this->linkToItemAnchor(cms_core::$cID, cms_core::$cType, true, $requests);
 	}
@@ -586,7 +587,7 @@ class zenario_document_container extends module_base_class {
 		switch ($path) {
 			case 'plugin_settings':
 				if (!inc('zenario_user_documents')) {
-					unset($fields['first_tab/container_mode']['values']['user_documents']);
+					$fields['first_tab/container_mode']['hidden'] = true;
 				}
 				
 				$fields['show_files_in_folders']['hidden'] = true;
@@ -658,15 +659,12 @@ class zenario_document_container extends module_base_class {
 	}
 	
 	function addMergeFields($documents, $level) {
-		
-		$privacyLevel = getRow('translation_chains', 'privacy', array('equiv_id' => cms_core::$equivId, 'type' => cms_core::$cType));
 		foreach ($documents as $key => $childDoc) {
-			$file = getRow('files', array('id', 'filename', 'path', 'created_datetime', 'short_checksum', 'size'), $childDoc['file_id']);
-			$file['filename'] = $childDoc['filename'];
+			$file = getRow('files', array('created_datetime', 'size'), $childDoc['file_id']);
 			$documents[$key]['id'] = $childDoc['id'];
-			$documents[$key]['Document_Type'] =  'file';
-			$documents[$key]['Document_Link'] =  getDocumentFrontEndLink($childDoc['id']);
-			$fileURL = static::getGoogleAnalyticsDocumentLink($childDoc['file_id'], $privacyLevel);
+			$documents[$key]['Document_Type'] = 'file';
+			$documents[$key]['Document_Link'] = getDocumentFrontEndLink($childDoc['id']);
+			$fileURL = static::getGoogleAnalyticsDocumentLink($childDoc['file_id'], $this->privacy);
 			$documents[$key]['Google_Analytics_Link'] = trackFileDownload($fileURL);
 			$documents[$key]['Document_Mime'] = str_replace('/', '_', documentMimeType($documents[$key]['Document_Link']));
 			$documents[$key]['Document_created_datetime'] = $file['created_datetime'];
@@ -722,13 +720,25 @@ class zenario_document_container extends module_base_class {
 		return $documents;
 	}
 	
-	public static function addFolderMergeFields($folder, $level) {
-		$privacyLevel = getRow('translation_chains', 'privacy', array('equiv_id' => cms_core::$equivId, 'type' => cms_core::$cType));
+	public function addFolderMergeFields($folder, $level) {
 		$folder['Document_Type'] =  'folder';
 		$folder['Document_Mime'] = 'folder';
 		$folder['Document_Title'] = $folder['folder_name'];
 		$folder['Document_Link_Text'] = $folder['folder_name'];
 		$folder['Document_Level'] = $level;
+		
+		if ($this->setting('offer_download_as_zip')) {
+			$childFiles= $this->getFilesInFolder($folder['id']);
+			$ids = array_keys($childFiles);
+			
+			$folder['Download_Archive'] = true;
+			if (get('build') == $this->instanceId && get('build_folder') == $folder['id']) {
+				$this->showLinkToFile($folder, $document);
+			} else {
+				$this->showLinkToDownloadPage($folder, $ids);
+			}
+		}
+		
 		return $folder;
 	}
 	
@@ -812,13 +822,17 @@ class zenario_document_container extends module_base_class {
 		}
 	}
 	
-	public static function createThumbnailHtml($thumbnailFileId, $widthIn, $heightIn, $canvas) {
+	public static function createThumbnailHtml($thumbnailFileId, $widthIn, $heightIn, $canvas, $lazyload = false) {
 		$thumbnail = getRow('files', array('id', 'filename', 'path'), $thumbnailFileId);
 		$thumbnailLink = $width = $height = false;
 		imageLink($width, $height, $thumbnailLink, $thumbnailFileId, $widthIn, $heightIn, $canvas);
-		$thumbnailHtml = '<img class="sticky_image"' .
-			' src="'. htmlspecialchars($thumbnailLink). '"'.
-			' style="width: '. $width. 'px; height: '. $height. 'px;"/>';
+		$thumbnailHtml = '<img class="sticky_image ';
+		if ($lazyload) {
+			$thumbnailHtml .= 'lazy" data-src="'. htmlspecialchars($thumbnailLink). '"';
+		} else {
+			$thumbnailHtml .= '" src="'. htmlspecialchars($thumbnailLink). '"';
+		}
+			$thumbnailHtml .= ' style="width: '. $width. 'px; height: '. $height. 'px;"/>';
 		return $thumbnailHtml;
 	}
 	

@@ -570,6 +570,8 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends mod
 											if (empty($field['db_column'])) {
 												$data['errors'][] = adminPhrase('Please enter a code name');
 											// Code name must be unique
+											} elseif (preg_match('/[^a-z0-9_]/', $field['db_column'])) {
+												$data['errors'][] = adminPhrase('Code name can only use characters a-z 0-9 _.');
 											} else {
 												unset($items[$tabName]['fields'][$fieldId]);
 												$isUnique = true;

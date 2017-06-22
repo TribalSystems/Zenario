@@ -981,7 +981,7 @@ class zenario_api {
 		$this->moduleId = (int) $this->moduleId;
 		$this->eggId = (int) $nest;
 		$this->tabId = (int) $tab;
-		$this->inLibrary = $this->isVersionControlled;
+		$this->inLibrary = !$this->isVersionControlled;
 		$this->isWireframe = $this->isVersionControlled; //For backwards compatability
 		
 		$this->slotName = preg_replace('/[^\w-]/', '', $this->slotName);

@@ -412,6 +412,11 @@ methods.returnAJAXURL = function(action) {
 //Attempt to get the URL of a preview
 methods.pluginPreviewDetails = function(slotName, instanceId, fullPage, fullWidth) {
 	
+	//Disallow for plugins in nests
+	if (this.tuix && this.tuix.key && this.tuix.key.nest) {
+		return false;
+	}
+	
 	
 	var requests = _.clone(zenarioA.importantGetRequests),
 		postName,

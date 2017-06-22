@@ -960,7 +960,7 @@ function updatePlainTextExtract($cID, $cType, $cVersion, $fileId = false) {
 	return $success;
 }
 
-function updateDocumentPlainTextExtract($fileId, &$extract, &$img_file_id) {
+function updateDocumentPlainTextExtract($fileId, &$extract, &$imgFileId) {
 	$errors = array();
 	$extract = array('extract' => '', 'extract_wordcount' => 0);
 	
@@ -969,10 +969,28 @@ function updateDocumentPlainTextExtract($fileId, &$extract, &$img_file_id) {
 	plainTextExtract($filePath, $extract['extract']);
 	$extract['extract_wordcount'] = str_word_count($extract['extract']);
 	
-	if ($img_file = createPpdfFirstPageScreenshotPng($filePath)) {
-		$img_base_name = basename($filePath) . '.png';
-		$img_file_id = addFileToDatabase('documents', $img_file, $img_base_name, true, true);
-	}
+	$mime = documentMimeType($filePath);
+	switch ($mime) {
+		case 'application/pdf':
+			if ($imgFile = createPpdfFirstPageScreenshotPng($filePath)) {
+				$imgBaseName = basename($filePath) . '.png';
+				$imgFileId = addFileToDatabase('documents', $imgFile, $imgBaseName, true, true);
+			}
+			break;
+		case 'image/jpeg':
+		case 'image/png':
+		case 'image/gif':
+			$imageThumbnailWidth = 300;
+			$imageThumbnailHeight = 300;
+			$size = getimagesize($filePath);
+			
+			if ($size && $size[0] > $imageThumbnailWidth && $size[1] > $imageThumbnailHeight) {
+				$width = $height = $url = false;
+				imageLink($width, $height, $url, $fileId, $imageThumbnailWidth, $imageThumbnailHeight, 'resize', 0, false, 'auto', true, $internalFilePath = true);
+				$imgFileId = addFileToDocstoreDir('document_thumbnail', $url);
+			} 
+			break;
+	}	
 }
 
 function getPathOfUploadedFileInCacheDir($string) {

@@ -254,10 +254,10 @@ class zenario_common_features__admin_boxes__publish extends module_base_class {
 			  AND v.version = c.admin_version
 			WHERE c.tag_id IN (". inEscape($tagIds, 'sql'). ")
 			  AND v.publication_date IS NOT NULL
-			  AND v.publication_date > ";
+			  AND DATE(v.publication_date) > ";
 		
 		if ($date) {
-			$sql .= "'". sqlEscape($date). "'";
+			$sql .= "DATE('". sqlEscape($date). "')";
 		} else {
 			$sql .= "DATE(NOW())";
 		}
@@ -302,7 +302,7 @@ class zenario_common_features__admin_boxes__publish extends module_base_class {
 		} else {
 			if ($clash = static::checkForClashingPublicationDates($box['key']['id'])) {
 				$box['tabs']['publish']['errors']['before'] =
-					adminPhrase('You cannot publish a content item before its release date. "[[tag]]" has a release date of [[date]].');
+					adminPhrase('You cannot publish a content item before its release date. "[[tag]]" has a release date of [[date]].', $clash);
 			}
 		}
 		

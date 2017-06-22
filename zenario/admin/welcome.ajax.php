@@ -36,8 +36,8 @@
 header('Content-Type: text/javascript; charset=UTF-8');
 
 require '../basicheader.inc.php';
-startSession();
 require CMS_ROOT. 'zenario/includes/cms.inc.php';
+startSession();
 require CMS_ROOT. 'zenario/includes/admin.inc.php';
 require CMS_ROOT. 'zenario/includes/tuix.inc.php';
 require CMS_ROOT. 'zenario/includes/welcome.inc.php';

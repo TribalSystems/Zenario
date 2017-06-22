@@ -110,7 +110,7 @@ class zenario_common_features__admin_boxes__export_dataset extends module_base_c
 				
 				
 				$sql = '
-					SELECT ' . sqlEscape(implode(', ', $recordTable['fields'])) . '
+					SELECT ' . inEscape($recordTable['fields'], 'identifier') . '
 					FROM ' . DB_NAME_PREFIX . sqlEscape($recordTable['table']) . '
 					WHERE ' . sqlEscape($IdColumn) . ' IN (' . inEscape($box['key']['export_ids']) . ')';
 				$result = sqlSelect($sql);

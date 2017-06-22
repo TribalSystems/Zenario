@@ -85,12 +85,8 @@ class zenario_slideshow extends zenario_plugin_nest {
 					'TAB_ORDINAL' => $tabOrd,
 					'Class' => 'tab_'. $tabOrd. ' tab',
 					'Tab_Link' => $link,
-					'Tab_Name' => htmlspecialchars($this->phrase($tab['name_or_title'])));
-				
-				if ($this->inLibrary) {
-					$this->sections[$section][$tab['tab']]['Tab_Name'] =
-						$this->phrase($this->sections[$section][$tab['tab']]['Tab_Name']);
-				}
+					'Tab_Name' => $this->formatTitleText($tab['name_or_title'], true)
+				);
 			}
 			
 			if (!$firstTabNum) {

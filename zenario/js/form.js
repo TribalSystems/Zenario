@@ -3865,8 +3865,6 @@ methods.syncAdminBoxFromClientToServerR = function($serverTags, $clientTags, $ke
 		 || (($type = __$value) && $key2 === undefined && $key1 == '_sync' && $key0 == 'cache_dir')
 		 || (($type = __$value) && $key2 === undefined && $key1 == '_sync' && $key0 == 'password')
 		 || (($type = __$value) && $key2 === undefined && $key1 == '_sync' && $key0 == 'iv')
-		 || (($type = __$array) && $key1 === undefined && $key0 == 'key')
-		 || (($type = __$value) && $key2 === undefined && $key1 == 'key')
 		 || (($type = __$value) && $key1 === undefined && $key0 == 'shake')
 		 || (($type = __$value) && $key1 === undefined && $key0 == 'download')
 		 || (($type = __$array) && $key1 === undefined && $key0 == 'tabs')

@@ -13,9 +13,7 @@
 		{% endif %}
 		<div id="archive_download_link">
 			{% if Anchor_Link %}
-				{{'Download all documents as single ZIP file:'|trans}} <a {{Anchor_Link}} onclick="zenario_document_container.refreshPluginSlot(this,'{{Requests}}');return false;">{{'Prepare archive'|trans}}</a>
-			{% elseif Download_Page %}
-				{{'Your ZIP download is ready:'|trans}} <a href="{{Archive_Link}}" onclick="{{Google_Analytics_Link}}">{{Archive_Filename}}</a>
+				{{'Download all documents as single ZIP file:'|trans}} <a {{Anchor_Link}} onclick="{{Google_Analytics_Link}}">{{'Download ZIP'|trans}}</a>
 			{% elseif Empty_Archive %}
 				{{'No documents to download'|trans}}
 			{% endif %}

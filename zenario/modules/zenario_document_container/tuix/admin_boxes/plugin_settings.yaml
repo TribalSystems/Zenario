@@ -101,18 +101,6 @@ plugin_settings:
                         leave this field empty, the folder name will be used.
                     post_field_html: '.zip'
                     indent: 1
-                zip_size_limit:
-                    plugin_setting:
-                        name: zip_size_limit
-                    label: 'Unpacked file size limit'
-                    post_field_html: '&nbsp;MB'
-                    type: text
-                    style: width:150px;
-                    value: "10"
-                    side_note: >
-                        Please specify the maximum size of the unpacked files. If
-                        not specified, 10 MB is assumed.
-                    indent: 1
                 show_file_size:
                     plugin_setting:
                         name: show_file_size
@@ -129,6 +117,14 @@ plugin_settings:
                     label: "Show document thumbnails (if available)"
                     type: checkbox
                     format_onchange: true
+                lazy_load_images:
+                    plugin_setting:
+                        name: lazy_load_images
+                    label: "Lazy load thumbnails"
+                    type: checkbox
+                    indent: 1
+                    visible_if: |
+                        zenarioAB.value('show_thumbnails');
                 canvas:
                     plugin_setting:
                         name: canvas
