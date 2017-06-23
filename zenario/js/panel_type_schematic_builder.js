@@ -29,10 +29,10 @@ zenario.lib(function(
 	undefined,
 	URLBasePath,
 	document, window, windowOpener, windowParent,
-	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO, strings,
+	zenario, zenarioA, zenarioT, zenarioAB, zenarioAT, zenarioO,
 	encodeURIComponent, get, engToBoolean, htmlspecialchars, jsEscape, phrase,
 	extensionOf, methodsOf, has,
-	panelTypes
+	panelTypes, extraVar2, s$s
 ) {
 	"use strict";
 
@@ -94,7 +94,7 @@ methods.showPanel = function($header, $panel, $footer) {
 		width: this.tuix.canvas.width,
 		height: this.tuix.canvas.height
 	};
-	var html = zenarioA.microTemplate('zenario_organizer_schematic_builder', mergeFields);
+	var html = zenarioT.microTemplate('zenario_organizer_schematic_builder', mergeFields);
 	$panel.html(html).show();
 	this.initLayerControls(start_layer);
 	
@@ -490,7 +490,7 @@ methods.updateLayerControls = function(layer, object) {
 	// Update controls
 	var mergeFields = this.getLayerControlsMergeFields(layer, object);
 	
-	var html = zenarioA.microTemplate('zenario_organizer_schematic_builder_controls', mergeFields);
+	var html = zenarioT.microTemplate('zenario_organizer_schematic_builder_controls', mergeFields);
 	$('#organizer_schematic_builder .controls').html(html);
 	this.initLayerControls(layer, object);
 };
@@ -618,7 +618,7 @@ methods.setForegroundItemControls = function(object) {
 					
 					mergeFields.customFields = customFields;
 					// Pass mergefields to microtemplate
-					var html = zenarioA.microTemplate('zenario_organizer_schematic_builder_item_controls', mergeFields);
+					var html = zenarioT.microTemplate('zenario_organizer_schematic_builder_item_controls', mergeFields);
 					$('#organizer_schematic_builder__foreground_fields_wrapper').html(html);
 					that.initForegroundItemControls(object);
 				}
@@ -653,7 +653,7 @@ methods.setForegroundItemControls = function(object) {
 			}
 			
 			// Pass mergefields to microtemplate
-			var html = zenarioA.microTemplate('zenario_organizer_schematic_builder_item_controls', mergeFields);
+			var html = zenarioT.microTemplate('zenario_organizer_schematic_builder_item_controls', mergeFields);
 			$('#organizer_schematic_builder__foreground_fields_wrapper').html(html);
 			that.initForegroundItemControls(object);
 		}
@@ -843,7 +843,7 @@ methods.initLayerControls = function(layer, object) {
 				var requests = zenarioO.getKey();
 				requests.action = 'upload_background_image';
 				$input.on('change', function() {
-					zenarioA.doHTML5Upload(this.files, that.getAJAXURL(), requests, function(images) {
+					zenarioT.doHTML5Upload(this.files, that.getAJAXURL(), requests, function(images) {
 						that.uploadImagesCallback(images);
 					});
 				});

@@ -113,7 +113,7 @@ class zenario_forum_search extends zenario_forum {
 		
 		//Only select rows in the Visitor's language, and that match the search terms
 		$sql .= "
-			  AND c.language_id = '". sqlEscape(session('user_lang')). "'
+			  AND c.language_id = '". sqlEscape(cms_core::$langId). "'
 			  AND (". $sqlW. ")
 			ORDER BY relevance DESC, up.id";
 		

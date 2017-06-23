@@ -76,7 +76,7 @@ site_settings:
 							label: Delete data older than 3 years
 							ord: "7"
 					empty_value: "Never delete"
-					note_below: "Warning: Data older than specified period will be permanently deleted."
+					note_below: "Warning: Data older than specified period will be permanently deleted when any user next registers or logs in."
 					indent: 1
 		passwords:
 			label: Passwords
@@ -89,23 +89,37 @@ site_settings:
 					label: 'Minimum password length:'
 					site_setting:
 						name: min_extranet_user_password_length
-					type: select
-					value: "5"
-					empty_value: No restrictions
-					values:
-						4: "4"
-						5: "5"
-						6: "6"
-						7: "7"
-						8: "8"
-						9: "9"
-						10: "10"
-						11: "11"
-						12: "12"
-						13: "13"
-						14: "14"
-						15: "15"
-						20: "20"
+					type: text
+					style: "width:50px;"
+					validation:
+						required: Please enter a number for minimum password length between 3 and 32.
+						numeric: The minimum password lengt must be a number between 3 and 32.
+						
+				a_z_uppercase_characters_in_user_password:
+					label: 'A-Z'
+					site_setting:
+						name: a_z_uppercase_characters
+					type: checkbox
+					value: true
+				a_z_lowercase_characters_in_user_password:
+					label: 'a-z'
+					site_setting:
+						name: a_z_lowercase_characters
+					type: checkbox
+					value: true
+				0_9_numbers_in_user_password:
+					label: '0-9'
+					site_setting:
+						name: 0_9_numbers_in_user_password
+					type: checkbox
+					value: true
+				symbols_in_user_password:
+					label: 'Symbols'
+					site_setting:
+						name: symbols_in_user_password
+					type: checkbox
+					value: false
+						
 				min_extranet_user_password_strength:
 					label: 'Minimum password strength:'
 					site_setting:
@@ -262,7 +276,7 @@ site_settings:
 							label: Delete data older than 3 years
 							ord: "7"
 					empty_value: "Never delete"
-					note_below: "Warning: Data older than specified period will be permanently deleted."
+					note_below: "Warning: Data older than specified period will be permanently deleted when any user next registers or logs in"
 					indent: 1
 		groups:
 			label: Groups

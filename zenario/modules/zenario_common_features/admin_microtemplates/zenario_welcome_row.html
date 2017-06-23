@@ -16,8 +16,8 @@
 <% if (m.fields) { %>
 	<% var firstField = m.fields[0]; %>
 	
-	<% if (firstField._lastGrouping !== firstField.grouping) { %>
-		<% if (firstField._lastGrouping) { %>
+	<% if (firstField._lastVisibleGrouping !== firstField.grouping) { %>
+		<% if (firstField._lastVisibleGrouping) { %>
 			</fieldset>
 		<% } %>
 		<% if (firstField.grouping) { %>
@@ -39,7 +39,7 @@
 			</div><div>
 		<% } %>
 				<div class="{{m.fields[0]._hideOnOpen? 'zenario_hide_on_open' : ''}} {{m.fields[0]._showOnOpen? 'zenario_show_on_open' : ''}}">
-					{{zenarioA.microTemplate('zenario_welcome_field', m.fields)}}
+					{{zenarioT.microTemplate('zenario_welcome_field', m.fields)}}
 				</div>
 			</div>
 	</div>

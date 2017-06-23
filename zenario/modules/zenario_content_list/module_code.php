@@ -218,7 +218,7 @@ class zenario_content_list extends module_base_class {
 		if ($this->setting('language_selection') == 'visitor') {
 			//Only return content in the current language
 			$sql .= "
-			  AND c.language_id = '". sqlEscape(session('user_lang')). "'";
+			  AND c.language_id = '". sqlEscape(cms_core::$langId). "'";
 		
 		} elseif ($this->setting('language_selection') == 'specific_languages') { 
 			//Return content in languages selected by admin
@@ -333,9 +333,13 @@ class zenario_content_list extends module_base_class {
 	//Returns a SQL statement that should identify each content item in the list
 	//Intended to be easily overwritten
 	protected function lookForContentSQL() {
+		$hidePrivateItems = false;
+		if ($this->setting('hide_private_items') == 1) {
+			$hidePrivateItems = true;
+		}
 		$sql =
 			sqlToSearchContentTable(
-				$this->setting('hide_private_items'), $this->setting('only_show'), 
+				$hidePrivateItems, $this->setting('only_show'), 
 				$this->lookForContentTableJoins()
 			).
 			$this->lookForContentWhere();
@@ -517,10 +521,54 @@ class zenario_content_list extends module_base_class {
 					}
 				}
 				
-				
-				$this->addExtraMergeFields($row, $item);
-				
-				$this->items[$item['Id']] = $item;
+				$dontAddItem = false;
+				if ($this->setting('hide_private_items') == 2) {
+					//show content item but with disabled link / class
+					//check if use can see target
+					if(!checkPerm($item['cID'], $item['cType'])) {
+						$item['Link'] = false;
+						$item['Full_Link'] = false;
+						$item['Disabled'] = true;
+					}
+					
+				} elseif ($this->setting('hide_private_items') == 3) {
+					//call a static method to decide 
+					
+					//first check to see if they have access
+					if(!checkPerm($item['cID'], $item['cType'])) {
+						$staticMethodClassName = $this->setting('hide_private_items_class_name');
+						$staticMethodName = $this->setting('hide_private_items_method_name');
+						$userId = userId();
+						
+						inc($staticMethodClassName);
+						$value = call_user_func(
+							array(
+								$staticMethodClassName, 
+								$staticMethodName
+							),
+							$item['cID'], 
+							$item['cType'],
+							$userId
+						);
+						
+						if ($value) {
+							$item['Link'] = false;
+							$item['Full_Link'] = false;
+							$item['Disabled'] = true;
+						} else {
+							$dontAddItem = true;
+						}
+						
+					} else {
+						//if they have access then show the content item link
+					}
+					
+				}
+				if (!$dontAddItem) {
+					$this->addExtraMergeFields($row, $item);
+					$this->items[$item['Id']] = $item;
+				} 
+				$dontAddItem = false;
 			}
 		}
 		

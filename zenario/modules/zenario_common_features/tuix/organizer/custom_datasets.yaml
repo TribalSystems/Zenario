@@ -44,7 +44,7 @@ zenario__administration:
             # New GUI editor
             item_buttons:
                 edit_gui:
-                    label: Edit (GUI)
+                    label: Edit
                     link:
                         path: zenario__administration/panels/custom_tabs_and_fields_gui
                         refiner: dataset_id

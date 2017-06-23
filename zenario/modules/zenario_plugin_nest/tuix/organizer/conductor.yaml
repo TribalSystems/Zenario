@@ -12,7 +12,7 @@ zenario__modules:
             #        LEFT JOIN [[DB_NAME_PREFIX]]nested_plugins AS p
             #           ON p.instance_id = np.instance_id
             #          AND p.is_slide = 1
-            #          AND p.tab = np.tab
+            #          AND p.slide_num = np.slide_num
             #    id_column: np.id
             refiners:
                 nest:
@@ -44,41 +44,42 @@ zenario__modules:
                         request:
                             save_positions: 1
                 save_positions:
+                    css_class: organizer_applyButton
                     only_show_on_refiner: nest
                     visible_if: |
                         zenarioO.tuix.positionsChanged
                     label: 💾 Save positions
                     onclick: |
                         zenarioO.collectionButtonClick('do_save_positions', {positions: JSON.stringify(zenarioO.tuix.positions)});
-                reset_positions:
-                    only_show_on_refiner: nest
-                    visible_if: |
-                        !_.isEmpty(zenarioO.tuix.positions)
-                    label: ✘ Reset positions
-                    ajax:
-                        confirm:
-                            button_message: Reset positions
-                            cancel_button_message: Cancel
-                            message_type: warning
-                            message: |
-                                This will auto-arrange all of the nodes, clearing theit saved positions.
-                                
-                                Are you sure you wish to continue?
-                        request:
-                            reset_positions: 1
+                #reset_positions:
+                #    only_show_on_refiner: nest
+                #    visible_if: |
+                #        !_.isEmpty(zenarioO.tuix.positions)
+                #    label: ✘ Reset positions
+                #    ajax:
+                #        confirm:
+                #            button_message: Reset positions
+                #            cancel_button_message: Cancel
+                #            message_type: warning
+                #            message: |
+                #                This will auto-arrange all of the nodes, clearing the saved positions.
+                #                
+                #                Are you sure you wish to continue?
+                #        request:
+                #            reset_positions: 1
             item_buttons:
                 tab_settings:
                     only_show_on_refiner: nest
                     label: Slide properties
                     visible_if: |
-                        item.type == 'slide'
+                        item.key && item.key.slideId
                     admin_box:
                         path: zenario_slide
                 add_state:
                     only_show_on_refiner: nest
                     label: Add alternate state to slide (advanced)
                     visible_if: |
-                        item.type == 'slide'
+                        item.key && item.key.slideId
                     ajax:
                         request:
                             add_state: 1
@@ -86,8 +87,16 @@ zenario__modules:
                     only_show_on_refiner: nest
                     label: Add path to...
                     visible_if: |
-                        item.type == 'state'
+                        item.key && item.key.state
                     hide_when_children_are_not_visible: true
+                add_path_to_citem:
+                    parent: add_path
+                    ord: 9999
+                    label: Another content item...
+                    admin_box:
+                        path: zenario_path
+                        key:
+                            linkToOtherContentItem: true
                 
                 path_properties:
                     only_show_on_refiner: nest
@@ -96,12 +105,22 @@ zenario__modules:
                         item.type == 'path'
                     admin_box:
                         path: zenario_path
+                        key:
+                            linkToOtherContentItem: autodetect
                 redirect_path:
                     only_show_on_refiner: nest
                     label: Redirect path to...
                     visible_if: |
                         item.type == 'path'
                     hide_when_children_are_not_visible: true
+                redirect_path_to_citem:
+                    parent: redirect_path
+                    ord: 9999
+                    label: Another content item...
+                    admin_box:
+                        path: zenario_path
+                        key:
+                            linkToOtherContentItem: true
                     
                 delete_path:
                     only_show_on_refiner: nest
@@ -117,7 +136,7 @@ zenario__modules:
                             cancel_button_message: Cancel
                             message_type: warning
                             message: |
-                                Are you sure you wish to delete the path from state [[from_state]] to state [[to_state]]?
+                                Are you sure you wish to delete the [[selected_label]]?
                                 
                                 This will immediately delete the path.
                 delete_state:
@@ -138,27 +157,3 @@ zenario__modules:
                                 
                                 This will immediately delete the state,
                                 as well as any paths that go through it.
-                
-                save_positions:
-                    only_show_on_refiner: nest
-                    visible_if: |
-                        zenarioO.tuix.positionsChanged
-                    label: 💾 Save positions
-                    onclick: |
-                        zenarioO.collectionButtonClick('do_save_positions', {positions: JSON.stringify(zenarioO.tuix.positions)});
-                reset_positions:
-                    only_show_on_refiner: nest
-                    visible_if: |
-                        !_.isEmpty(zenarioO.tuix.positions)
-                    label: ✘ Reset positions
-                    ajax:
-                        confirm:
-                            button_message: Reset positions
-                            cancel_button_message: Cancel
-                            message_type: warning
-                            message: |
-                                This will auto-arrange all of the nodes, clearing theit saved positions.
-                                
-                                Are you sure you wish to continue?
-                        request:
-                            reset_positions: 1

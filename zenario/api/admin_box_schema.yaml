@@ -571,11 +571,9 @@ additionalProperties:
                                         edit mode is enabled.
                                         
                                         This works from version 7.5 onwards.
-                                
-                                read_only:
-                                    type: boolean
-                                    description: >
-                                        Deprecated, has been replaced with the readonly property.
+                                        
+                                        Before version 7.5 this property was called "read_only".
+                                        This name still works as a deprecated alias.
                                 
                                 show_as_a_label_when_readonly:
                                     type: boolean
@@ -636,6 +634,18 @@ additionalProperties:
                                         
                                         
                                         This works from version 7.1 onwards.
+                                        
+                                group_with_previous_field:
+                                    type: boolean
+                                    description: >
+                                        Set this property to put this field in the same grouping as whatever field was just before it.
+                                        
+                                        Note - this is calculated *before* the fields are sorted by ordinal,
+                                        and works using the order that the fields appear in your yaml file.
+                                        
+                                        
+                                        This works from version 7.6 onwards.
+                                
                                 legend:
                                     type: string
                                     description: >
@@ -648,6 +658,23 @@ additionalProperties:
                                     type: string
                                     description: >
                                         Some HTML code to be placed just before the field.
+                                        
+                                        From version 7.5 onwards, you can also use opening tags as property names
+                                        as a more readable alternative to the pre_field_html, post_field_html and
+                                        same_row properties, e.g.:
+                                            
+                                            my_field:
+                                                <br/>:
+                                                type: text
+                                        
+                                        can be used, instead of the longer:
+                                            
+                                            my_field:
+                                                same_row: true
+                                                pre_field_html: '<br/>'
+                                                type: text
+                                            
+                                            
                                 post_field_label:
                                     type: string
                                     description: >
@@ -656,6 +683,25 @@ additionalProperties:
                                     type: string
                                     description: >
                                         Some HTML code to be placed just after the field.
+                                        
+                                        From version 7.5 onwards, you can also use opening tags as property names
+                                        as a more readable alternative to the pre_field_html, post_field_html and
+                                        same_row properties, e.g.:
+                                            
+                                            my_field:
+                                                <tr><td>:
+                                                type: text
+                                                </td>:
+                                        
+                                        can be used, instead of the longer:
+                                            
+                                            my_field:
+                                                same_row: true
+                                                pre_field_html: '<tr><td>'
+                                                type: text
+                                                post_field_html: '</td>'
+                                
+                                
                                 side_note:
                                     type: string
                                     description: >
@@ -1006,6 +1052,28 @@ additionalProperties:
                                                 If no values were split, then this field will be auto-hidden.
                                                 
                                                 This works from version 7.4 onwards.
+                                
+                                use_button_tag:
+                                    type: boolean
+                                    description: >
+                                        Use a <button> tag rather than an <input> tag for buttons
+                                        
+                                        This works from version 7.6 onwards.
+                                
+                                icon_left:
+                                    type: string
+                                    description: >
+                                        This places a <i></> tag to the left of a <button> with the specified CSS class name(s).
+                                        Used for adding font-based icons to buttons, e.g. Font Awesome.
+                                        
+                                        This works from version 7.6 onwards.
+                                icon_right:
+                                    type: string
+                                    description: >
+                                        This places a <i></> tag to the right of a <button> with the specified CSS class name(s).
+                                        Used for adding font-based icons to buttons, e.g. Font Awesome.
+                                        
+                                        This works from version 7.6 onwards.
                                 
                                 
                                 value:
@@ -1426,6 +1494,16 @@ additionalProperties:
                                                 
                                                 This property must be written in your .yaml file.
                                                 It can't be changed in php.
+                                        encrypt:
+                                            type: boolean
+                                            description: >
+                                                Set this to true to request that this setting be encrypted.
+                                                E.g. if this is a password or something else sensitive.
+                                                
+                                                The value will only actually be encrypted if encryption is available for a site,
+                                                otherwise it will still be stored as plain-text.
+                                                
+                                                This works from version 7.6 onwards.
                                 
                                 admin_setting:
                                     type: object
@@ -1611,6 +1689,13 @@ additionalProperties:
                                             title:
                                                 type: *stringy
                                                 description: Sets the title HTML attribute on a checkbox or radio option.
+                                
+                                no_values_message:
+                                    type: string
+                                    description: >
+                                        If a type: checkboxes or a type: radios field has no values, this message will be displayed instead.
+                                        
+                                        This works from version 7.6 onwards.
                                 
                                 checking_child_checks_parents:
                                     type: boolean
@@ -1819,6 +1904,21 @@ additionalProperties:
                                         
                                         
                                         This works from version 7.0.6 onwards.
+                                
+                                select_options:
+                                    type: object
+                                    properties:
+                                    additionalProperties:
+                                        type: *variable
+                                        description: >
+                                            An option to pass to the Chosen library.
+                                    description: >
+                                        Where you have a type: select field, you can use this property
+                                        to replace it with a more user-friendly select field powered by
+                                        the Chosen library.
+                                        
+                                        
+                                        This works from version 7.6 onwards.
 
                                 return_key_presses_button:
                                     type: *stringy
@@ -1995,7 +2095,7 @@ additionalProperties:
                                     - onkeyup
                                     - onselect
                                 snippet:
-                                    - read_only
+                                    - readonly
                                     - value
                                     - current_value
                                     - values

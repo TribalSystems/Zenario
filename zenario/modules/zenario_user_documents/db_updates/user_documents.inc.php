@@ -56,4 +56,14 @@ revision( 6
 	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_DOCUMENTS_PREFIX]]user_documents`
 	ADD COLUMN `title` varchar(255) DEFAULT NULL
 _sql
-);
+
+//Attempt to convert some columns with a utf8-3-byte character set to a 4-byte character set
+);	revision( 20
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_DOCUMENTS_PREFIX]]user_documents` SET `folder_name` = SUBSTR(`folder_name`, 1, 250) WHERE CHAR_LENGTH(`folder_name`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_DOCUMENTS_PREFIX]]user_documents` MODIFY COLUMN `folder_name` varchar(250) CHARACTER SET utf8mb4 NULL
+_sql
+
+); 

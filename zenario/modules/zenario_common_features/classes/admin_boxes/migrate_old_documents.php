@@ -143,11 +143,11 @@ class zenario_common_features__admin_boxes__migrate_old_documents extends module
 			$userAssignedMetaDataFields = array('title', 'language_id', 'description', 'keywords', 'content_summary');
 			foreach ($userAssignedMetaDataFields as $metaField) {
 			    if (!empty($values['details/' . $metaField])) {
-			        $datasetField = getDatasetFieldDetails($metaField, $datasetDetails['id']);
+			        $datasetField = getDatasetFieldDetails($values['details/' . $metaField], $datasetDetails['id']);
 			        if ($datasetField['is_system_field']) {
-			            updateRow('documents', array($metaField => $documentData[$metaField]), $documentId);
+			            updateRow('documents', array($datasetField['db_column'] => $documentData[$metaField]), $documentId);
 			        } else {
-			            setRow('documents_custom_data', array($metaField => $documentData[$metaField]), array('document_id' => $documentId));
+			            setRow('documents_custom_data', array($datasetField['db_column'] => $documentData[$metaField]), array('document_id' => $documentId));
 			        }
 			    }
 			}

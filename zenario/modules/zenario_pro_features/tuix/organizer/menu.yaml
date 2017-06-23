@@ -36,8 +36,8 @@ zenario__menu:
                             message_type: warning
                         request:
                             delete_menu_section: "1"
-                    traits:
-                        empty: Yes
+                    with_columns_set:
+                        traits.empty: true
         menu_nodes:
             columns:
                 zenario_pro_features__invisible:

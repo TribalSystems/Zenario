@@ -29,33 +29,44 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 
 //Duplicate a Plugin
-if (($nestedItem = getNestDetails($nestedItemId, $instanceId)) && (!$nestedItem['is_slide'])) {
-	if ($newNestedItemId = self::addPlugin($nestedItem['module_id'], $instanceId, $nestedItem['tab'])) {
+if (($egg = getNestDetails($eggId, $instanceId)) && (!$egg['is_slide'])) {
+	if ($newEggId = self::addPlugin($egg['module_id'], $instanceId, $egg['slide_num'])) {
+		
+		//Bump up the ordinals of any other plugins on this slide by one,
+		//so we can place this new plugin just after the one we duplicated
+		sqlUpdate("
+			UPDATE ". DB_NAME_PREFIX. "nested_plugins
+			  SET ord = ord + 1
+			WHERE ord > ". (int) $egg['ord']. "
+			  AND instance_id = ". (int) $instanceId. "
+			  AND slide_num = ". (int) $egg['slide_num']
+		);
 		
 		updateRow('nested_plugins', array(
-			'name_or_title' => $nestedItem['name_or_title'],
-			'framework' => $nestedItem['framework'],
-			'css_class' => $nestedItem['css_class'],
-			'cols' => $nestedItem['cols'],
-			'small_screens' => $nestedItem['small_screens']
-		), $newNestedItemId);
+			'name_or_title' => adminPhrase('[[name_or_title]] (copy)', $egg),
+			'ord' => $egg['ord'] + 1,
+			'framework' => $egg['framework'],
+			'css_class' => $egg['css_class'],
+			'cols' => $egg['cols'],
+			'small_screens' => $egg['small_screens']
+		), $newEggId);
 		
 		$sql = "
 			INSERT INTO ". DB_NAME_PREFIX. "plugin_settings (
-				instance_id, name, nest,
+				instance_id, name, egg_id,
 				value, is_content, foreign_key_to, foreign_key_id, foreign_key_char, dangling_cross_references
 			) SELECT
-				instance_id, name, ". (int) $newNestedItemId. ",
+				instance_id, name, ". (int) $newEggId. ",
 				value, is_content, foreign_key_to, foreign_key_id, foreign_key_char, dangling_cross_references
 			FROM ". DB_NAME_PREFIX. "plugin_settings
 			WHERE instance_id = ". (int) $instanceId. "
-			  AND nest = ". (int) $nestedItemId;
+			  AND egg_id = ". (int) $eggId;
 		
 		sqlSelect($sql);  //No need to check the cache as the other statements should clear it correctly
 		
-		managePluginCSSFile('copy', $instanceId, $nestedItemId, $instanceId, $newNestedItemId);
+		managePluginCSSFile('copy', $instanceId, $eggId, $instanceId, $newEggId);
 		
-		return $newNestedItemId;
+		return $newEggId;
 	}
 }
 

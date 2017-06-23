@@ -76,7 +76,9 @@ if (!$showingPreview) {
 
 //Add more classes to the browser body class using a short JavaScript function.
 echo '
-<script type="text/javascript">', file_get_contents(CMS_ROOT. 'zenario/js/body.min.js');
+<script type="text/javascript">
+var URLBasePath = "', jsEscape(httpOrhttps(). $_SERVER["HTTP_HOST"] . SUBDIRECTORY), '";
+', file_get_contents(CMS_ROOT. 'zenario/js/body.min.js');
 
 	//Use the "no_js" class if we're showing a preview
 	if ($showingPreview) {

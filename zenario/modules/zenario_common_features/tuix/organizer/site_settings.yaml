@@ -12,7 +12,7 @@ zenario__administration:
                     title: Settings
                     show_by_default: true
                     searchable: true
-                    width: large
+                    width: xlarge
                 desc:
                     width: xxlarge
                     title: Description
@@ -92,11 +92,12 @@ zenario__administration:
                 external_programs:
                     name: External programs
                     desc: >
-                        Settings for the external server programs such as antiword and
-                        pdftotext.
+                        Setup external server programs such as
+                        image optimizers and PDF readers
                     keywords: >
                         antiword pdftotext pdf-to-text pdf to text ghostscript word document
                         plain text extract plaintext extract image thumbnail
+                        png jpeg jpg optimize optimise
                 favicon:
                     css_class: favicon
                     name: Favicon
@@ -111,7 +112,7 @@ zenario__administration:
                         image thumbnail working copy jpeg file upload sizes
                         file download restrict by IP
                 head_and_foot:
-                    name: Head, Body and Foot slots
+                    name: Global <head> and <body> HTML
                     desc: |
                         Add HTML to the <head> or <body> tag of all pages on your site.
                 urls:

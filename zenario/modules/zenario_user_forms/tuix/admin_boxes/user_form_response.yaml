@@ -1,0 +1,23 @@
+---
+zenario_user_form_response:
+    title: "Form response"
+    hide_tab_bar: Yes
+    save_button_message: false
+    key:
+        id: ''
+        form_id: ''
+    tabs:
+        form_fields:
+            label: Fields
+            edit_mode:
+                enabled: true
+            fields:
+                response_datetime:
+                    label: 'Date/Time Responded:'
+                    type: text
+                    readonly: true
+                    style: "width:10em"
+                crm_response:
+                    label: 'CRM response:'
+                    type: textarea
+                    readonly: true

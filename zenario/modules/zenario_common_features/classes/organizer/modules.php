@@ -394,7 +394,6 @@ class zenario_common_features__organizer__modules extends module_base_class {
 					}
 				}
 		
-				$module['image'] = getModuleIconURL($module['name']);
 				$module['status'] = adminPhrase($module['status']);
 		
 			} else {

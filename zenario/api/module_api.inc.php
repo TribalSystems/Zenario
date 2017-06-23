@@ -60,7 +60,7 @@ class zenario_api {
 	protected $moduleClassNameForPhrases;
 	protected $slotName;
 	protected $slotLevel;
-	protected $tabId;
+	protected $slideId;
 	protected $parentNest;
 	private $slotNameNestId;
 	
@@ -126,20 +126,21 @@ class zenario_api {
 		$this->zAPICallScriptWhenLoaded(0, $args);
 	}
 	
-	public final function callScript($className, $scriptName /*[, $arg1 [, $arg2 [, ... ]]]*/) {
+	public final function callScriptBeforeFoot($className, $scriptName /*[, $arg1 [, $arg2 [, ... ]]]*/) {
 		$args = func_get_args();
 		$this->zAPICallScriptWhenLoaded(1, $args);
 	}
 	
-	public final function callScriptAtTheEnd($className, $scriptName /*[, $arg1 [, $arg2 [, ... ]]]*/) {
+	public final function callScript($className, $scriptName /*[, $arg1 [, $arg2 [, ... ]]]*/) {
 		$args = func_get_args();
 		$this->zAPICallScriptWhenLoaded(2, $args);
 	}
 	
+	//Deprecated, please use one of the above
 	protected final function callScriptAdvanced($beforeAJAXReload, $className, $scriptName /*[, $arg1 [, $arg2 [, ... ]]]*/) {
 		$args = func_get_args();
 		array_splice($args, 0, 1);
-		$this->zAPICallScriptWhenLoaded($beforeAJAXReload? 0 : 1, $args);
+		$this->zAPICallScriptWhenLoaded($beforeAJAXReload? 0 : 2, $args);
 	}
 	
 	public final function cache($methodName, $expiryTimeInSeconds = 600, $request = '') {
@@ -190,7 +191,7 @@ class zenario_api {
 					'foreign_key_id' => $foreignKeyId,
 					'foreign_key_char' => $foreignKeyChar,
 					'dangling_cross_references' => $danglingCrossReferences),
-				array('name' => $name, 'instance_id' => $this->instanceId, 'nest' => $this->eggId));
+				array('name' => $name, 'instance_id' => $this->instanceId, 'egg_id' => $this->eggId));
 		}
 	}
 	
@@ -399,16 +400,31 @@ class zenario_api {
 			$this->headerRedirect(linkToItem(cms_core::$cID, cms_core::$cType, true, $req));
 		}
 		
-		return '
+		$html = '
 				<form method="'. ($usePost? 'post' : 'get'). '" '. $extraAttributes. '
 				  onsubmit="'. htmlspecialchars($onSubmit). ' return zenario.formSubmit(this, '. engToBoolean($scrollToTopOfSlot). ', '. (is_bool($fadeOutAndIn)? engToBoolean($fadeOutAndIn) : ('\'' . jsEscape($fadeOutAndIn) . '\'')). ', \''. jsEscape($this->slotName). '\');"
 				  action="'. htmlspecialchars(ifNull($action, linkToItem(cms_core::$cID, cms_core::$cType, false, '', cms_core::$alias, true))). '">
 					'. $this->remember('cID', $this->cID). '
-					'. $this->remember('tab', $this->tabId). '
+					'. $this->remember('slideId', $this->slideId). '
 					'. $this->remember('cType', $this->cType). '
 					'. $this->remember('slotName', $this->slotName). '
 					'. $this->remember('instanceId', $this->instanceId). '
 					'. $this->remember('containerId', $this->containerId);
+		
+		//Add important requests to the URL
+		foreach(cms_core::$importantGetRequests as $getRequest => $defaultValue) {
+			if (isset($_REQUEST[$getRequest]) && $_REQUEST[$getRequest] != $defaultValue) {
+				$html .= $this->remember($getRequest);
+			}
+		}
+		
+		//Add anything from the cms_core::$vars, if they were missed from the cms_core::$importantGetRequests
+		foreach(cms_core::$vars as $getRequest => $value) {
+			if (!isset(cms_core::$importantGetRequests[$getRequest]) && $value) {
+				$html .= $this->remember($getRequest, $value);
+			}
+		}
+		return $html;
 	}
 	
 	protected final function pagination($paginationStyleSettingName, $currentPage, $pages, &$html, &$links = array(), $extraAttributes = array()) {
@@ -431,7 +447,7 @@ class zenario_api {
 			$this->defaultFramework, $this->framework,
 			$this->cssClass,
 			$this->slotLevel, $this->isVersionControlled),
-			$this->eggId, $this->tabId);
+			$this->eggId, $this->slideId);
 		$class->$method($currentPage, $pages, $html, $links, $extraAttributes);
 	}
 	
@@ -453,7 +469,7 @@ class zenario_api {
 	
 	public final function refreshPluginSlotAnchor($requests = '', $scrollToTopOfSlot = true, $fadeOutAndIn = true) {
 		return
-			$this->linkToItemAnchor($this->cID, $this->cType, $fullPath = false, '&slotName='. $this->slotName. ($this->tabId? '&tab='. $this->tabId : ''). urlRequest($requests)).
+			$this->linkToItemAnchor($this->cID, $this->cType, $fullPath = false, '&slotName='. $this->slotName. ($this->slideId? '&slideId='. $this->slideId : ''). urlRequest($requests)).
 			' onclick="'.
 				$this->refreshPluginSlotJS($requests, $scrollToTopOfSlot, $fadeOutAndIn).
 				' return false;"';
@@ -501,6 +517,10 @@ class zenario_api {
 				$string .= $str;
 			}
 		}
+	}
+	
+	public function returnGlobalName() {
+		return $this->moduleClassName. '_'. str_replace('-', '__', $this->containerId);
 	}
 	
 	
@@ -689,6 +709,32 @@ class zenario_api {
 			cms_core::$alias);
 	}
 	
+
+	
+	public final function visitorTUIXLink($callbackFromScriptTags, $path, $requests = '', $mode = 'fill') {
+		return
+			httpOrHttps(). httpHost(). SUBDIRECTORY.
+			'zenario/ajax.php?moduleClassName='. $this->moduleClassName.
+			'&method_call='. ($mode == 'format' || $mode == 'validate' || $mode == 'save'? $mode : 'fill'). 'VisitorTUIX'.
+			'&path='. urlencode($path).
+			'&_script='. engToBoolean($callbackFromScriptTags).
+			urlRequest($requests, true);
+	}
+	
+	public final function pluginVisitorTUIXLink($callbackFromScriptTags, $path, $requests = '', $mode = 'fill') {
+		return
+			$this->visitorTUIXLink($callbackFromScriptTags, $path, $requests, $mode).
+			'&cID='. $this->cID.
+			'&cType='. $this->cType.
+		  (checkPriv()?
+			'&cVersion='. $this->cVersion
+		   : '').
+			'&instanceId='. $this->instanceId.
+			'&slotName='. $this->slotName.
+			'&eggId='. $this->eggId;
+	}
+	
+	
 	//Old deprecated link
 	protected final function showIframeLink($requests = '', $hideLayout = false) {
 		return $this->showSingleSlotLink($requests, $hideLayout);
@@ -721,9 +767,9 @@ class zenario_api {
 		 || !cms_core::$rss1st
 	 		//Don't attempt to set the RSS link if one of the Plugins was served from the cache, as the logic isn't generated properly in this case
 		 || cms_core::$cachingInUse
-	 		//Nested Plugins on tabs other than the first tab should not be able to set the RSS link
-		 || !empty($_REQUEST['tab'])
-		 || !empty($_REQUEST['tab_no'])
+	 		//Nested Plugins on tabs other than the first slide should not be able to set the RSS link
+		 || !empty($_REQUEST['slideId'])
+		 || !empty($_REQUEST['slideNum'])
 	 		//Don't attempt to set the RSS link if we're only showing a specific Plugin on a page that may have more
 		 || !empty($_REQUEST['slotName'])
 		 || !empty($_REQUEST['instanceId'])) {
@@ -901,7 +947,7 @@ class zenario_api {
 	}
 	
 	public final function zAPIGetTabId() {
-		return $this->tabId;
+		return $this->slideId;
 	}
 
 	//Framework and Swatch for this plugin.
@@ -941,10 +987,10 @@ class zenario_api {
 			$this->framework,
 			$this->zAPIScripts,
 			false, //not used any more
-			$this->tabId,
+			$this->slideId,
 			$this->cssClass,
 			$this->eggId,
-			$this->tabId);
+			$this->slideId);
 	}
 	
 	public final function zAPISetCachableVars(&$a) {
@@ -953,16 +999,16 @@ class zenario_api {
 		$this->framework = $a[0];
 		$this->zAPIScripts = $a[1];
 		//$a[2] isn't used anymore
-		$this->tabId = $a[3];
+		$this->slideId = $a[3];
 		$this->cssClass = $a[4];
 		$this->eggId = $a[5];
-		$this->tabId = $a[6];
+		$this->slideId = $a[6];
 	}
 	
 	
 	public final function setInstanceVariables(
 		$locationAndInstanceDetails,
-		$nest = 0, $tab = 0, $settings = false, $frameworkPath = false, $mainClass = false
+		$eggId = 0, $slideId = 0, $settings = false, $frameworkPath = false, $mainClass = false
 	) {
 		if (cms_core::$isTwig) return;
 		
@@ -979,8 +1025,8 @@ class zenario_api {
 		$this->cVersion = (int) $this->cVersion;
 		$this->instanceId = (int) $this->instanceId;
 		$this->moduleId = (int) $this->moduleId;
-		$this->eggId = (int) $nest;
-		$this->tabId = (int) $tab;
+		$this->eggId = (int) $eggId;
+		$this->slideId = (int) $slideId;
 		$this->inLibrary = !$this->isVersionControlled;
 		$this->isWireframe = $this->isVersionControlled; //For backwards compatability
 		
@@ -1015,10 +1061,10 @@ class zenario_api {
 		}
 	}
 	
-	public final function setInstance($locationAndInstanceDetails = false, $overrideSettings = false, $nest = 0, $tab = 0) {
+	public final function setInstance($locationAndInstanceDetails = false, $overrideSettings = false, $eggId = 0, $slideId = 0) {
 		if (cms_core::$isTwig) return;
 		
-		$this->setInstanceVariables($locationAndInstanceDetails, $nest, $tab);
+		$this->setInstanceVariables($locationAndInstanceDetails, $eggId, $slideId);
 		
 		//Set up settings for front-end plugins
 		if ($this->instanceId) {
@@ -1061,7 +1107,7 @@ class zenario_api {
 				SELECT `name`, `value`
 				FROM ". DB_NAME_PREFIX. "plugin_settings
 				WHERE instance_id = ". (int) $this->instanceId. "
-				  AND nest = ". (int) $nest;
+				  AND egg_id = ". (int) $eggId;
 			
 			//Don't load phrase overrides for Reusable Plugins
 			//(Phrase overrides will begin with a %)
@@ -1337,7 +1383,7 @@ class zenario_api {
 							if (!empty($_FILES[$attributes['name']]) && is_uploaded_file($_FILES[$attributes['name']]['tmp_name'])) {
 								if (cleanDownloads()) {
 									$randomDir = createRandomDir(30, 'uploads');
-									$newName = $randomDir. preg_replace('/\.\./', '.', preg_replace('/[^\w\.-]/', '', $_FILES[$attributes['name']]['name']));
+									$newName = $randomDir. safeFileName($_FILES[$attributes['name']]['name'], true);
 									
 									//Change the extension
 									$newName = $newName. '.upload';
@@ -1353,7 +1399,7 @@ class zenario_api {
 							//Stop the user trying to trick the CMS into submitting a different file in a different location
 							if (!empty($_POST[$attributes['name']])) {
 								if (strpos($_POST[$attributes['name']], '..') !== false
-								 || !preg_match('@^cache/uploads/[\w\-\_]+/[\w\.-]+\.upload$@', $_POST[$attributes['name']])) {
+								 || !preg_match('@^cache/uploads/[\w\-]+/[\w\.-]+\.upload$@', $_POST[$attributes['name']])) {
 									unset($_POST[$attributes['name']]);
 								}
 							}
@@ -1691,11 +1737,11 @@ class zenario_api {
 								echo $this->containerId;
 						
 							} elseif ($thing == 'TAB_ORDINAL') {
-								//Output the ordinal number of the current tab
-								echo (int) getRow('nested_plugins', 'tab', $this->eggId);
+								//Output the ordinal number of the current slide
+								echo (int) getRow('nested_plugins', 'slide_num', $this->eggId);
 						
 							} elseif ($thing == 'PLUGIN_ORDINAL') {
-								//Output the ordinal number of the current egg on the current tab
+								//Output the ordinal number of the current egg on the current slide
 								echo (int) getRow('nested_plugins', 'ord', $this->eggId);
 						
 							} elseif ($thing == 'PATH') {
@@ -1726,7 +1772,7 @@ class zenario_api {
 							$attributes = $this->fieldInfo[$section][$thing];
 							$value = null;
 							$type = arrayKey($attributes, 'type');
-							$readOnly = engToBooleanArray($attributes, 'read_only');
+							$readOnly = engToBooleanArray($attributes, 'readonly');
 						
 							
 							//Check for a list of values, if one has been set
@@ -1874,15 +1920,7 @@ class zenario_api {
 		}
 	}
 	
-	/**
-	 * This is a utility function to deal with the standard image resize options on tuix plugin settings.
-	 * @param Array containing tuix $fields
-	 * @param Array containing tuix $values
-	 * @param String tuix tab name $tab
-	 * @param Boolean that specify if we want to show/hide $hidden
-	 * @param String to prefix the available options $fieldPrefix
-	 * @param Boolean whether there is a canvas select $hasCanvas
-	 */
+	//This is a utility function to deal with the standard image resize options on tuix plugin settings.
 	protected function showHideImageOptions(&$fields, $values, $tab, $hidden = false, $fieldPrefix = '', $hasCanvas = true, $sameLineLabel = 'Size (width × height):') {
 		require funIncPath(__FILE__, __FUNCTION__);
 	}
@@ -1956,7 +1994,7 @@ class zenario_api {
 				$this->defaultFramework, $this->framework,
 				$this->cssClass,
 				$this->slotLevel, $this->isVersionControlled),
-				$this->eggId, $this->tabId,
+				$this->eggId, $this->slideId,
 				$this->zAPISettings, $this->frameworkPath, $this);
 			
 			return $this->zAPISubClasses[$codeName];

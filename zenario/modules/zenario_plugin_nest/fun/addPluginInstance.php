@@ -28,25 +28,25 @@
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
 
-//Add a new Plugin to the nest, placing it in the right-most tab
+//Add a new Plugin to the nest, placing it in the right-most slide
 if (($instance = getPluginInstanceDetails($addPluginInstance))
  && (getRow('modules', 'nestable', $instance['module_id']))) {
 	
-	if ($tab && $tabIsTabId) {
-		$tab = getRow('nested_plugins', 'tab', array('instance_id' => $instanceId, 'id' => $tab));
+	if ($slideNum && $inputIsSlideId) {
+		$slideNum = getRow('nested_plugins', 'slide_num', array('instance_id' => $instanceId, 'id' => $slideNum));
 	}
 	
-	if (!$tab) {
-		$tab = ifNull(self::maxTab($instanceId), 1);
+	if (!$slideNum) {
+		$slideNum = ifNull(self::maxTab($instanceId), 1);
 	}
 	
-	$ord = 1 + (int) self::maxOrd($instanceId, $tab);
+	$ord = 1 + (int) self::maxOrd($instanceId, $slideNum);
 	
-	$nestedItemId = insertRow(
+	$eggId = insertRow(
 		'nested_plugins',
 		array(
 			'instance_id' => $instanceId,
-			'tab' => $tab,
+			'slide_num' => $slideNum,
 			'ord' => $ord,
 			'module_id' => $instance['module_id'],
 			'framework' => $instance['framework'],
@@ -57,7 +57,7 @@ if (($instance = getPluginInstanceDetails($addPluginInstance))
 		INSERT INTO ". DB_NAME_PREFIX. "plugin_settings (
 			instance_id,
 			name,
-			nest,
+			egg_id,
 			value,
 			is_content,
 			foreign_key_to,
@@ -67,7 +67,7 @@ if (($instance = getPluginInstanceDetails($addPluginInstance))
 		) SELECT
 			". (int) $instanceId. ",
 			name,
-			". (int) $nestedItemId. ",
+			". (int) $eggId. ",
 			value,";
 	
 	//Convert the is_content column differently depending on whether this is a Reusable or Wireframe Nest
@@ -99,7 +99,7 @@ if (($instance = getPluginInstanceDetails($addPluginInstance))
 	resyncLibraryPluginFiles($instanceId, $instance);
 	
 	
-	return $nestedItemId;
+	return $eggId;
 } else {
 	return false;
 }

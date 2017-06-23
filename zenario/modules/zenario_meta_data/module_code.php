@@ -90,7 +90,7 @@ class zenario_meta_data extends module_base_class {
 				SELECT f.id, f.alt_tag
 				FROM '.DB_NAME_PREFIX.'content_item_versions v
 				INNER JOIN '.DB_NAME_PREFIX.'files f
-					ON v.sticky_image_id = f.id
+					ON v.feature_image_id = f.id
 				WHERE v.id = '.(int)$this->cID.'
 					AND v.type = "'.sqlEscape($this->cType).'"
 					AND v.version = '.(int)$this->cVersion;

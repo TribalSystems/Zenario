@@ -218,6 +218,15 @@ switch ($path) {
 				adminPhrase('Enter text in [[def_lang_name]], this site\'s default language. <a href="[[phrases_panel]]" target="_blank">Click here to manage translations in Organizer</a>.', $mrg);
 		}
 		
+		
+		
+		$hideMobileOptions = $values['mobile_tab/mobile_behavior'] != 'change_image';
+
+		$fields['mobile_tab/mobile_image']['hidden'] = $hideMobileOptions;
+		
+		$this->showHideImageOptions($fields, $values, 'mobile_tab', $hideMobileOptions, 'mobile_');
+
+		
 
 		break;
 }

@@ -157,3 +157,39 @@ if (needRevision(160)) {
 }
 
 
+//Attempt to convert some columns with a utf8-3-byte character set to a 4-byte character set
+revision( 170
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_ANONYMOUS_COMMENTS_PREFIX]]comment_content_items` SET `comment_subs_email_template` = SUBSTR(`comment_subs_email_template`, 1, 250) WHERE CHAR_LENGTH(`comment_subs_email_template`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_ANONYMOUS_COMMENTS_PREFIX]]comment_content_items` MODIFY COLUMN `comment_subs_email_template` varchar(250) CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_ANONYMOUS_COMMENTS_PREFIX]]comment_content_items` SET `notification_email_address` = SUBSTR(`notification_email_address`, 1, 250) WHERE CHAR_LENGTH(`notification_email_address`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_ANONYMOUS_COMMENTS_PREFIX]]comment_content_items` MODIFY COLUMN `notification_email_address` varchar(250) CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_ANONYMOUS_COMMENTS_PREFIX]]comment_content_items` SET `notification_email_template` = SUBSTR(`notification_email_template`, 1, 250) WHERE CHAR_LENGTH(`notification_email_template`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_ANONYMOUS_COMMENTS_PREFIX]]comment_content_items` MODIFY COLUMN `notification_email_template` varchar(250) CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_ANONYMOUS_COMMENTS_PREFIX]]user_comments` MODIFY COLUMN `content_type` varchar(20) CHARACTER SET utf8mb4 NOT NULL
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_ANONYMOUS_COMMENTS_PREFIX]]user_comments` MODIFY COLUMN `message_text` text CHARACTER SET utf8mb4 NOT NULL
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_ANONYMOUS_COMMENTS_PREFIX]]user_comments` MODIFY COLUMN `poster_email` varchar(100) CHARACTER SET utf8mb4 NOT NULL default ''
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_ANONYMOUS_COMMENTS_PREFIX]]user_comments` MODIFY COLUMN `poster_name` varchar(50) CHARACTER SET utf8mb4 NOT NULL default ''
+_sql
+
+); 
+
+

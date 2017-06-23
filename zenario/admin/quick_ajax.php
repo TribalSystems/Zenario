@@ -98,17 +98,17 @@ if (!empty($_REQUEST['keep_session_alive'])) {
 	            //Check to see if this looks like a link to a slide
 	            if ($perms
 	             && (!empty($get['state'])
-	              || !empty($get['tab'])
-	              || !empty($get['tab_no']))) {
+	              || !empty($get['slideId'])
+	              || !empty($get['slideNum']))) {
 	            	
 	            	do {
 						$key = ['is_slide' => 1];
 					
 						//Work out which slide this is... something that's either easy or hard depending on what variables
 						//we find in the URL!
-						if (!empty($get['tab'])) {
+						if (!empty($get['slideId'])) {
 							//Easy case: the slide's id is in the URL
-							$key['id'] = $get['tab'];
+							$key['id'] = $get['slideId'];
 					
 						} else {
 							if (!empty($get['instanceId'])) {
@@ -150,9 +150,9 @@ if (!empty($_REQUEST['keep_session_alive'])) {
 							}
 							
 							//If we have the instance id, we'll need to work out which slide this is for
-							if (!empty($get['tab_no'])) {
+							if (!empty($get['slideNum'])) {
 								//Easy case: the slide's number is in the URL
-								$key['tab'] = $get['tab_no'];
+								$key['slide_num'] = $get['slideNum'];
 							} else {
 								//Slightly harder case: we have the state in the URL, and need to look up which slide has that state
 								$key['states'] = [$get['state']];
@@ -238,7 +238,7 @@ if (!empty($_REQUEST['keep_session_alive'])) {
 	if ($checkPriv) {
 		if (!empty($_POST['_save_prefs']) && !empty($_POST['prefs'])) {
 			$sql = "
-				REPLACE INTO ". DB_NAME_PREFIX. "admin_storekeeper_prefs SET
+				REPLACE INTO ". DB_NAME_PREFIX. "admin_organizer_prefs SET
 					prefs = '". sqlEscape($_POST['prefs']). "',
 					checksum = '". sqlEscape(substr($_POST['checksum'], 0, 22)). "',
 					admin_id = ". (int) $_SESSION['admin_userid'];
@@ -256,7 +256,7 @@ if (!empty($_REQUEST['keep_session_alive'])) {
 			}
 			
 			$sql .= "
-				FROM ". DB_NAME_PREFIX. "admin_storekeeper_prefs
+				FROM ". DB_NAME_PREFIX. "admin_organizer_prefs
 				WHERE admin_id = ". (int) $_SESSION['admin_userid'];
 			$result = sqlQuery($sql);
 			
@@ -272,7 +272,8 @@ if (!empty($_REQUEST['keep_session_alive'])) {
 } elseif (isset($_REQUEST['password_suggestion'])) {
 	
 	require CMS_ROOT. 'zenario/visitorheader.inc.php';
-	echo randomString(8);
+	echo createPassword();
+
 
 
 } elseif (isset($_POST['screen_name_suggestion'])) {

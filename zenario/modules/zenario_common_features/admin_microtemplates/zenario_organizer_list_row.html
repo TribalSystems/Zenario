@@ -71,7 +71,7 @@
 		
 		</div>
 		
-		{{m.inline_buttons? '<div class="organizer_inline_buttons" style="width: ' + (m.inline_buttons.length * 20) + 'px;">' + zenarioA.microTemplate('zenario_organizer_list_inline_button', m.inline_buttons) + '</div>' : ''}} 
+		{{m.inline_buttons? '<div class="organizer_inline_buttons" style="width: ' + (m.inline_buttons.length * 20) + 'px;">' + zenarioT.microTemplate('zenario_organizer_list_inline_button', m.inline_buttons) + '</div>' : ''}} 
 		 
 		<% if (m.canClickThrough) { %>
 			<a class="organizer_doubleclick" onclick="return zenarioO.itemClickThrough('{{m.id|escape}}', event);"></a>
@@ -80,14 +80,14 @@
 	
 	
 
-	{{zenarioA.microTemplate('zenario_organizer_list_cell', m.cells)}}
+	{{zenarioT.microTemplate('zenario_organizer_list_cell', m.cells)}}
 
 </div>
 
 <% if (zenarioO.inspectionViewEnabled()) { %>
 	<% if (m.open_in_inspection_view) { %>
 		<div id="organizer_slidedown_{{m.id|escape}}" class="organizer_slidedown_view organizer_slidedown_view_open">
-			{{zenarioA.microTemplate(zenarioO.tuix.slidedown_view_microtemplate, {id: m.id})}}
+			{{zenarioT.microTemplate(zenarioO.tuix.slidedown_view_microtemplate, {id: m.id})}}
 		</div>
 	<% } else { %>
 		<div id="organizer_slidedown_{{m.id|escape}}" class="organizer_slidedown_view organizer_slidedown_view_closed"></div>

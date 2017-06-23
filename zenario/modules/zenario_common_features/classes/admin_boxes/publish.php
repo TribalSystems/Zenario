@@ -88,10 +88,10 @@ class zenario_common_features__admin_boxes__publish extends module_base_class {
 				}
 				
 				if ($count == 1) {
-					$documentChangesMessage[$tagId] .= "When you publish this page the following documents will be made " . $privacy . " according to this pages permissions\n";
+					$documentChangesMessage[$tagId] .= "When you publish this content item, the following documents will be made " . $privacy . " to correspond with this content item\'s permissions\n";
 				} else {
 					$formattedTag = formatTagFromTagId($tagId);
-					$documentChangesMessage[$tagId] .= "\nWhen you publish the page \"" . $formattedTag . "\" the following documents will be made " . $privacy . " according to the pages permissions\n";
+					$documentChangesMessage[$tagId] .= "\nWhen you publish the content item \"" . $formattedTag . "\", the following documents will be made " . $privacy . " to correspond with this content item\'s permissions\n";
 				}
 				
 				foreach ($slots as $slotName => $slotInfo) {

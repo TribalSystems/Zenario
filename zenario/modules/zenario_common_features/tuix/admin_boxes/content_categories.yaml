@@ -23,7 +23,7 @@ zenario_content_categories:
                     type: checkboxes
                     values: ""
                     checking_child_checks_parents: true
-                    read_only: false
+                    readonly: false
                 no_categories:
                     label: 'Categories:'
                     snippet:

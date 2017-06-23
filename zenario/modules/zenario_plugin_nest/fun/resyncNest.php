@@ -29,32 +29,32 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 $key = array('instance_id' => $instanceId);
 
-//Ensure there is at least one tab in the nest
+//Ensure there is at least one slide in the nest
 $key['is_slide'] = 1;
 if (!checkRowExists('nested_plugins', $key)) {
-	self::addTab($instanceId);
+	self::addSlide($instanceId);
 }
 
 
-//Look through a Plugin Nest, and ensure that all of the tab and ordinal numbers are valid by overwriting them
-$tab = 0;
+//Look through a Plugin Nest, and ensure that all of the slide and ordinal numbers are valid by overwriting them
+$slideNum = 0;
 $ord = 0;
 
 $sql = "
-	SELECT id, tab, ord, is_slide
+	SELECT id, slide_num, ord, is_slide
 	FROM ". DB_NAME_PREFIX. "nested_plugins
 	WHERE instance_id = ". (int) $instanceId. "
-	ORDER BY tab, ord";
+	ORDER BY slide_num, ord";
 
 $result = sqlQuery($sql);
 while ($row = sqlFetchAssoc($result)) {
 	if ($row['is_slide']) {
-		//Catch the case where a Plugin was moved before the first tab
-		if ($tab) {
-			//If this is a new tab, reset the ordinal
+		//Catch the case where a Plugin was moved before the first slide
+		if ($slideNum) {
+			//If this is a new slide, reset the ordinal
 			$ord = 0;
 		}
-		++$tab;
+		++$slideNum;
 		$thisOrd = 0;
 	} else {
 		$thisOrd = ++$ord;
@@ -62,7 +62,7 @@ while ($row = sqlFetchAssoc($result)) {
 	
 	updateRow(
 		'nested_plugins',
-		array('tab' => ifNull($tab, 1), 'ord' => $thisOrd),
+		array('slide_num' => ifNull($slideNum, 1), 'ord' => $thisOrd),
 		array('instance_id' => $instanceId, 'id' => $row['id']));
 }
 

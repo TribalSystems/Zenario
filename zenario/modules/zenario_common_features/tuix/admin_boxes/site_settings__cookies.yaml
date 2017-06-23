@@ -140,5 +140,5 @@ site_settings:
                     legend: Set in the <code>zenario_siteconfig.php</code> file
                     
                     label: 'Cookie timeout:'
-                    read_only: true
+                    readonly: true
                     type: text

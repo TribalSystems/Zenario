@@ -94,25 +94,39 @@ if (request('quickValidate')) {
 
 
 //Include all of the yaml files in the install directory
-$box = array();
+$clientTags = array();
 $tags = array();
+$source = array();
 $dummy = array();
-loadTUIX($dummy, $tags, 'welcome');
+$fields = array();
+$values = array();
+$changes = array();
+loadTUIX($dummy, $source, 'welcome');
+
 $removedColumns = array();
-zenarioParseTUIX2($tags, $removedColumns, 'welcome');
+zenarioParseTUIX2($source, $removedColumns, 'welcome');
 
 
 if (post('_format') || post('_validate')) {
-	$box = json_decode($_POST['_box'], true);
+	$clientTags = $tags = json_decode($_POST['_box'], true);
 }
 $getRequest = json_decode($_GET['get'], true);
 $task = get('task');
 
 
+
+
+//Check system requirements
+if (!$systemRequirementsMet = !empty($_SESSION['zenario_system_requirements_met'])) {
+	prepareAdminWelcomeScreen('system_requirements', $source, $tags, $fields, $values, $changes);
+	$_SESSION['zenario_system_requirements_met'] = $systemRequirementsMet =
+		systemRequirementsAJAX($source, $tags, $fields, $values, $changes);
+}
+
 //Run the installer if the CMS is not installed
-if (!$installed) {
-	prepareAdminWelcomeScreen($box, $tags, 'install');	
-	$installed = installerAJAX($tags, $box, $task, $installStatus, $freshInstall, $adminId);
+if ($systemRequirementsMet && !$installed) {
+	prepareAdminWelcomeScreen('install', $source, $tags, $fields, $values, $changes);
+	$installed = installerAJAX($source, $tags, $fields, $values, $changes, $task, $installStatus, $freshInstall, $adminId);
 	
 	if ($installed) {
 		@include_once CMS_ROOT. 'zenario_siteconfig.php';
@@ -120,7 +134,7 @@ if (!$installed) {
 }
 
 
-if ($installed) {
+if ($systemRequirementsMet && $installed) {
 	//If the CMS is installed, move on to the login check and then database updates
 	
 	if ($freshInstall || $task == 'site_reset') {
@@ -154,7 +168,7 @@ if ($installed) {
 	//Log the current admin out if they've clicked the logout button
 	} else
 	if ($task == 'logout') {
-		logoutAdminAJAX($box, $getRequest);
+		logoutAdminAJAX($tags, $getRequest);
 		$loggedIn = false;
 	
 	//If a specific admin domain is set, check that they are logging into the admin domain
@@ -166,11 +180,11 @@ if ($installed) {
 		//Deny access and don't show the admin domain to people not on the admin domain,
 		//if the admin_domain_is_public setting is set
 		if (adminDomainIsPrivate()) {
-			$box['go_to_url'] = redirectAdmin($getRequest, true);
+			$tags['go_to_url'] = redirectAdmin($getRequest, true);
 		
 		} else {
 			//Direct them to the correct domain if not
-			$box['go_to_url'] =
+			$tags['go_to_url'] =
 				(setting('admin_use_ssl')? 'https://' : httpOrhttps()).
 				adminDomain(). SUBDIRECTORY.
 				'zenario/admin/welcome.php?'. http_build_query($getRequest);
@@ -179,9 +193,9 @@ if ($installed) {
 	
 	//Otherwise, check if the Admin has been logged in, and show the log in section if not
 	} elseif (!$loggedIn = checkPriv(false, false, false, false, $welcomePage = true)) {
-		prepareAdminWelcomeScreen($box, $tags, 'login');		
+		prepareAdminWelcomeScreen('login', $source, $tags, $fields, $values, $changes);	
 		//Show the login screen
-		$loggedIn = loginAJAX($tags, $box, $getRequest);
+		$loggedIn = loginAJAX($source, $tags, $fields, $values, $changes, $getRequest);
 	}
 	
 	if ($loggedIn) {
@@ -212,8 +226,8 @@ if ($installed) {
 			//Otherwise we need to send the email with the security code and show the admin the form
 			//to enter it
 			} else {
-				prepareAdminWelcomeScreen($box, $tags, 'security_code');			
-				$securityCodeChecked = securityCodeAJAX($tags, $box, $task, $getRequest);
+				prepareAdminWelcomeScreen('security_code', $source, $tags, $fields, $values, $changes);		
+				$securityCodeChecked = securityCodeAJAX($source, $tags, $fields, $values, $changes, $task, $getRequest);
 			}
 		}
 	
@@ -239,13 +253,13 @@ if ($installed) {
 				 || ($revision_no < 33720)) {
 					
 					//If we can, show the screen to apply database updates
-					prepareAdminWelcomeScreen($box, $tags, 'update');			
-					$dbUpToDate = updateAJAX($tags, $box, $task);
+					prepareAdminWelcomeScreen('update', $source, $tags, $fields, $values, $changes);		
+					$dbUpToDate = updateAJAX($source, $tags, $fields, $values, $changes, $task);
 				
 				} else {
 					//Otherwise show a message
-					prepareAdminWelcomeScreen($box, $tags, 'update_no_permission');					
-					updateNoPermissionsAJAX($tags, $box, $task, $getRequest);
+					prepareAdminWelcomeScreen('update_no_permission', $source, $tags, $fields, $values, $changes);				
+					updateNoPermissionsAJAX($source, $tags, $fields, $values, $changes, $task, $getRequest);
 				}
 			}
 		
@@ -257,8 +271,8 @@ if ($installed) {
 				$needToChangePassword = ($task == 'change_password' || getRow('admins', 'password_needs_changing', adminId()));
 			
 				if ($needToChangePassword) {
-					prepareAdminWelcomeScreen($box, $tags, 'change_password');				
-					$needToChangePassword = !changePasswordAJAX($tags, $box, $task);
+					prepareAdminWelcomeScreen('change_password', $source, $tags, $fields, $values, $changes);			
+					$needToChangePassword = !changePasswordAJAX($source, $tags, $fields, $values, $changes, $task);
 				}
 			
 			
@@ -279,21 +293,21 @@ if ($installed) {
 					
 					} else {
 						//Otherwise show the diagnostics page if there are errors to display
-						prepareAdminWelcomeScreen($box, $tags, 'diagnostics');					
-						$doneWithDiagnostics = diagnosticsAJAX($tags, $box, $freshInstall);
+						prepareAdminWelcomeScreen('diagnostics', $source, $tags, $fields, $values, $changes);				
+						$doneWithDiagnostics = diagnosticsAJAX($source, $tags, $fields, $values, $changes, $task, $freshInstall);
 					}
 				
 					if ($doneWithDiagnostics) {
 						protectBackupAndDocstoreDirsIfPossible();
 						
-						prepareAdminWelcomeScreen($box, $tags, 'congratulations');					
+						prepareAdminWelcomeScreen('congratulations', $source, $tags, $fields, $values, $changes);				
 						if ($task == 'install') {
 							//If the CMS was just installed, show the congrats screen
-							congratulationsAJAX($tags, $box);
+							congratulationsAJAX($source, $tags, $fields, $values, $changes);
 					
 						} else {
 							//Otherwise redirect the Admin away from this page
-							$box['go_to_url'] = redirectAdmin($getRequest);
+							$tags['go_to_url'] = redirectAdmin($getRequest);
 						}
 					}
 				}
@@ -303,5 +317,12 @@ if ($installed) {
 }
 
 
-$box['_task'] = $task;
-echo json_encode($box);
+$tags['_task'] = $task;
+
+if (empty($clientTags)) {
+	echo json_encode($tags);
+} else {
+	$output = array();
+	syncAdminBoxFromServerToClient($tags, $clientTags, $output);
+	echo json_encode($output);
+}

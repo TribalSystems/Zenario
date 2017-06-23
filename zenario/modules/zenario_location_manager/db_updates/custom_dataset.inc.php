@@ -43,7 +43,7 @@ _sql
  
 );
 
-if (needRevision(148)) {
+if (needRevision(149)) {
 	
 	//Add or update a record in the custom_datasets table with the correct details
 	$datasetId = registerDataset(
@@ -71,7 +71,9 @@ if (needRevision(148)) {
 	registerDatasetSystemField($datasetId, 'text', 'details', 'city');
 	registerDatasetSystemField($datasetId, 'text', 'details', 'state');
 	registerDatasetSystemField($datasetId, 'text', 'details', 'postcode');
-	registerDatasetSystemField($datasetId, 'text', 'details', 'country', 'country_id', 'none', 'zenario_country_manager::getActiveCountries');
+	registerDatasetSystemField($datasetId, 'centralised_select', 'details', 'country', 'country_id', 'none', 'zenario_country_manager::getActiveCountries');
+	registerDatasetSystemField($datasetId, 'dataset_picker', 'details', 'region', '');
+	
 	registerDatasetSystemField($datasetId, 'text', 'details', 'phone');
 	registerDatasetSystemField($datasetId, 'text', 'details', 'fax');
 	registerDatasetSystemField($datasetId, 'text', 'details', 'email', 'email', 'email');
@@ -82,5 +84,5 @@ if (needRevision(148)) {
 	//registerDatasetSystemField($datasetId, $type, $tabName, $fieldName, $dbColumn = false, $validation = 'none', $valuesSource = '', $fundamental = false, $isRecordName = false)
 
 
-	revision(148);
+	revision(149);
 }

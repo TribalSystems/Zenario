@@ -1,0 +1,85 @@
+<% if (m.mode == 'new_fields') { %>
+	<div id="organizer_field_type_list_outer" class="field_type_list_outer">
+		<div class="field_type_list_header field_type_section">
+			<h5>Add a field</h5>
+			<input class="form_settings" type="button" value="Form settings"/>
+		</div>
+		<div id="organizer_field_type_list" class="field_type_list field_type_section">
+			<div class="types_list">
+				<div class="field_type" data-type="checkbox"><span class="checkbox"></span><h4>Checkbox</h4></div>
+				<div class="field_type" data-type="checkboxes"><span class="checkboxes"></span><h4>Checkboxes</h4></div>
+				<div class="field_type" data-type="date"><span class="date"></span><h4>Date</h4></div>
+				<div class="field_type" data-type="radios"><span class="radios"></span><h4>Radios</h4></div>
+				<div class="field_type" data-type="select"><span class="select"></span><h4>Select list</h4></div>
+				<div class="field_type" data-type="text"><span class="text"></span><h4>Text</h4></div>
+				<div class="field_type" data-type="textarea"><span class="textarea"></span><h4>Textarea</h4></div>
+				<div class="field_type" data-type="url"><span class="url"></span><h4>URL</h4></div>
+				<div class="field_type" data-type="attachment"><span class="attachment"></span><h4>Attachment</h4></div>
+				<div class="field_type" data-type="restatement"><span class="restatement"></span><h4>Mirrored</h4></div>
+				<div class="field_type" data-type="calculated"><span class="calculated"></span><h4>Calculated</h4></div>
+				<div class="field_type" data-type="section_description"><span class="section_description"></span><h4>Subheading</h4></div>
+				<div class="field_type" data-type="repeat_start"><span class="repeat_start"></span><h4>Repeat block</h4></div>
+			</div>
+		</div>
+		<div class="field_type_list_header field_type_section">
+			<h5>Centralised data source</h5>
+			<p>For a list of countries, regions or another centralised list, drag one of these fields onto your form and choose the data source.</p>
+		</div>
+		<div id="organizer_centralised_field_type_list" class="field_type_list field_type_section">
+			<div class="field_type" data-type="centralised_radios"><span class="centralised_radios"></span><h4>Radios</h4></div>
+			<div class="field_type" data-type="centralised_select"><span class="centralised_select"></span><h4>Select list</h4></div>
+		</div>
+		<div class="field_type_list_header field_type_section">
+			<h5>Linked fields</h5>
+			<p>Add fields that connect this form with the Users Database.</p>
+		</div>
+		<div id="organizer_linked_field_type_list" class="field_type_list field_type_section">
+			{{zenarioT.microTemplate('zenario_organizer_form_builder_dataset_tab', m.datasetTabs)}}
+		</div>
+	</div>
+<% } else if (m.mode == 'field_details') { %>
+	<div id="organizer_field_details_outer" class="field_details_outer" >
+		<div id="organizer_field_details_inner" class="field_details_inner">
+			<form id="organizer_field_details_form">
+				<div class="field_details_header">
+					<div class="field_details_header_options">
+						<input class="form_settings" type="button" value="Form settings"/>
+					</div>
+					<div id="zenario_field_details_header_content" class="field_details_header_content">
+						<div class="field_name">
+							
+							<div class="view_mode" <% if (m.just_added) { %>style="display:none;"<% } %>>
+								<h5>{{m.name|e}}</h5>
+								<span class="edit_field_name_button">Edit</span>
+							</div>
+							<div class="edit_mode" <% if (!m.just_added) { %>style="display:none;"<% } %>>
+								<input name="name" id="field__name" type="text" value="{{m.name|e}}" maxlength="255"/>
+								<span class="done_field_name_button">Done</span>
+							</div>
+							
+						</div>
+						<div class="field_buttons">
+							<span class="add_new_field">Add new field</span>
+						</div>
+						<div class="field_info">
+							<span class="field_type_message">{{m.type|e}}</span>
+						</div> 
+					</div>
+				</div>
+				<% if (!m.hide_tab_bar) { %>
+					<div id="organizer_field_details_tabs" class="field_details_tabs">
+						<!-- TUIX tabs -->
+					</div>
+				<% } %>
+				<div id="organizer_field_details" class="field_details">
+					<!-- TUIX fields -->
+				</div>
+				<% if (m.is_tab) { %>
+					<div class="bottom_buttons">
+						<input id="organizer_remove_form_tab" type="button" value="Delete page"/>
+					</div>
+				<% } %> 
+			</form>
+		</div>
+	</div>
+<% } %>

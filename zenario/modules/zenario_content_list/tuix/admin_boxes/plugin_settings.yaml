@@ -252,7 +252,7 @@ plugin_settings:
                     visible_if: |
                         zenarioAB.value('enable_omit_category')
                     type: select
-                    read_only: true
+                    readonly: true
                     values:
                         any_categories:
                             label: Never show content items that are in ANY of the selected categories
@@ -414,7 +414,7 @@ plugin_settings:
                     value: ""
                     format_onchange: Yes
                     side_note: |
-                        The sticky image attached to the content item will be shown if it exists. For picture content items, a thumbnail will be automatically generated if no sticky image exists.
+                        The feature image for the content item will be shown if it exists. For picture content items, a thumbnail will be automatically generated if no feature image exists.
                 fall_back_to_default_image:
                     plugin_setting:
                         name: fall_back_to_default_image
@@ -422,7 +422,7 @@ plugin_settings:
                     type: checkbox
                     format_onchange: true
                     side_note: |
-                        If the content item being listed doesn't an image marked as "sticky", then display a default image instead.
+                        If the content item being listed doesn't have a feature image, then display a default image instead.
                     indent: 1
                 default_image_id:
                     plugin_setting:
@@ -639,11 +639,36 @@ plugin_settings:
                         name: hide_private_items
                     label: 'Links to private items:'
                     type: select
+                    format_onchange: Yes
                     value: "1"
                     empty_value: "Show to all visitors"
                     values:
                         1:
                             label: Only show to authorized Users
+                        2:
+                            label: Show disabled link if User is not authorized
+                        3:
+                            label: Call a module's static method to decide (advanced)
+                hide_private_items_class_name:
+                    plugin_setting:
+                        name: hide_private_items_class_name
+                    type: text
+                    label: 'Class name:'
+                    validation:
+                        required_if_not_hidden: Please enter a class name.
+                    visible_if: |
+                        zenarioAB.value('hide_private_items') == 3
+                    indent: 1
+                hide_private_items_method_name:
+                    plugin_setting:
+                        name: hide_private_items_method_name
+                    type: text
+                    label: 'Method name:'
+                    validation:
+                        required_if_not_hidden: Please enter a method name.
+                    visible_if: |
+                        zenarioAB.value('hide_private_items') == 3
+                    indent: 1
                 use_download_page:
                     plugin_setting:
                         name: use_download_page
@@ -765,7 +790,7 @@ plugin_settings:
 
 
         author_advice:
-            visible_if: '!zenarioAB.tuix.key.isVersionControlled && !zenarioAB.tuix.key.nest'
+            visible_if: '!zenarioAB.tuix.key.isVersionControlled && !zenarioAB.tuix.key.eggId'
             label: Author advice
             fields:
                 author_advice:

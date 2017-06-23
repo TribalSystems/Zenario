@@ -270,3 +270,29 @@ if (needRevision(160)) {
 	
 	revision(160);
 }
+
+
+//Attempt to convert some columns with a utf8-3-byte character set to a 4-byte character set
+revision( 170
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_FORUM_PREFIX]]forums` MODIFY COLUMN `new_thread_content_type` varchar(20) CHARACTER SET utf8mb4 NOT NULL default ''
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_FORUM_PREFIX]]forums` MODIFY COLUMN `thread_content_type` varchar(20) CHARACTER SET utf8mb4 NOT NULL default ''
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_FORUM_PREFIX]]threads` SET `title` = SUBSTR(`title`, 1, 250) WHERE CHAR_LENGTH(`title`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_FORUM_PREFIX]]threads` MODIFY COLUMN `title` varchar(250) CHARACTER SET utf8mb4 NOT NULL
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_FORUM_PREFIX]]user_posts` MODIFY COLUMN `message_text` text CHARACTER SET utf8mb4 NOT NULL
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_FORUM_PREFIX]]user_posts_uploads` MODIFY COLUMN `caption` varchar(60) CHARACTER SET utf8mb4 NULL
+_sql
+
+); 
+
+

@@ -1052,19 +1052,6 @@ CREATE TABLE `[[DB_NAME_PREFIX]]tuix_file_contents` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]user_admin_box_tabs`;
-CREATE TABLE `[[DB_NAME_PREFIX]]user_admin_box_tabs` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `ordinal` int(10) unsigned NOT NULL DEFAULT '0',
-  `name` varchar(64) NOT NULL,
-  `label` varchar(255) NOT NULL,
-  `is_system_field` tinyint(1) NOT NULL DEFAULT '0',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `label` (`label`),
-  UNIQUE KEY `name` (`name`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
-
 DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]user_characteristic_values`;
 CREATE TABLE `[[DB_NAME_PREFIX]]user_characteristic_values` (
   `id` int(10) NOT NULL AUTO_INCREMENT,
@@ -1083,29 +1070,6 @@ CREATE TABLE `[[DB_NAME_PREFIX]]user_characteristic_values_link` (
   `user_id` int(10) unsigned NOT NULL,
   `user_characteristic_value_id` int(10) NOT NULL,
   PRIMARY KEY (`user_id`,`user_characteristic_value_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
-
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]user_characteristics`;
-CREATE TABLE `[[DB_NAME_PREFIX]]user_characteristics` (
-  `id` int(10) NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) NOT NULL,
-  `label` varchar(255) NOT NULL DEFAULT 'Label not assigned',
-  `ordinal` int(10) NOT NULL,
-  `type` enum('list_single_select','list_multi_select','boolean','date','text','textarea','group','integer','float','country','url') NOT NULL,
-  `protected` tinyint(1) NOT NULL DEFAULT '0',
-  `parent_id` int(10) unsigned NOT NULL DEFAULT '0',
-  `help_text` varchar(255) DEFAULT NULL,
-  `admin_box_tab_id` int(10) unsigned NOT NULL DEFAULT '0',
-  `is_system_field` tinyint(1) NOT NULL DEFAULT '0',
-  `show_in_organizer_panel` tinyint(1) NOT NULL DEFAULT '1',
-  `organizer_allow_sort` tinyint(1) NOT NULL DEFAULT '0',
-  `admin_box_text_field_width` int(11) NOT NULL DEFAULT '0',
-  `admin_box_text_field_rows` int(11) NOT NULL DEFAULT '0',
-  `admin_box_display_columns` int(11) NOT NULL DEFAULT '0',
-  `user_access` enum('user_readable','user_writeable') DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `name` (`name`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 

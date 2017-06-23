@@ -66,5 +66,5 @@ zenario__administration:
                             button_message: Delete
                             cancel_button_message: Cancel
                             message_type: warning
-                    traits:
-                        custom: Yes
+                    with_columns_set:
+                        traits.custom: true

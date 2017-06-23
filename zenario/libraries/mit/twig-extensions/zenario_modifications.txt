@@ -2,9 +2,9 @@ Replaced calls to gettext() and ngettext() with calls to the phrase() or nphrase
 
 lib/Twig/Extensions/Node/Trans.php:
 	Replace:
-        $function = null === $this->getNode('plural') ? 'gettext' : 'ngettext';
+        return $plural ? 'ngettext' : 'gettext';
     With:
-        $function = null === $this->getNode('plural') ? 'phrase' : 'nphrase';
+        return $plural ? 'nphrase' : 'phrase';
 
 
 
@@ -39,4 +39,4 @@ lib/Twig/Extensions/Extension/I18n.php
 	Replace:
             new Twig_SimpleFilter('trans', 'gettext'),
     With:
-            new Twig_SimpleFilter('trans', 'phrase'),
+            new Twig_SimpleFilter('trans', 'phrase')

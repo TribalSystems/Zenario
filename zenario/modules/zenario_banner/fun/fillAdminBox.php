@@ -61,12 +61,12 @@ switch ($path) {
 		//Banner Plugins should have a note that appears below their settings if they are in a nest,
 		//explaining that they may be overwritten by the global settings.
 		//However in Modules that extend the banner, these should not be visible.
-		if ((!empty($box['key']['nest']))
-		 && ($nestedPlugin = getNestDetails($box['key']['nest']))
+		if ((!empty($box['key']['eggId']))
+		 && ($nestedPlugin = getNestDetails($box['key']['eggId']))
 		 && (getModuleClassName($nestedPlugin['module_id']) == 'zenario_banner')) {
 			$box['tabs']['first_tab']['fields']['canvas']['note_below'] =
 			$box['tabs']['first_tab']['fields']['enlarge_canvas']['note_below'] =
-				adminPhrase('This setting may be overwritten by the settings of the Nest.');
+				adminPhrase('This setting may be overwritten by the settings of the nest.');
 		}
 		
 		break;

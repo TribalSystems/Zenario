@@ -158,7 +158,12 @@ foreach (array('password' => 'password_salt', 'reset_password' => 'reset_passwor
 
 //Return an error if the password was wrong
 if (!$details['password_correct']) {
-	return new zenario_error('_ERROR_ADMIN_LOGIN_PASSWORD');
+	if (empty($details['reset_password'])
+	 && (empty($details['password']) || empty($details['password_salt']))) {
+		return new zenario_error('_ERROR_ADMIN_LOGIN_PASSWORD_RESET');
+	} else {
+		return new zenario_error('_ERROR_ADMIN_LOGIN_PASSWORD');
+	}
 }
 
 if ($details['type'] == 'global') {

@@ -55,3 +55,9 @@ if (needRevision(159)) {
 	
 	revision(159);
 }
+
+if (needRevision(210)) {
+	$dataset = getDatasetDetails('documents');
+	registerDatasetSystemField($dataset['id'], 'text', 'details', 'document_title', 'title');
+	revision(210);
+}

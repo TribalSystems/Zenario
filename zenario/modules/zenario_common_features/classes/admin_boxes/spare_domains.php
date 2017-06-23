@@ -47,7 +47,7 @@ class zenario_common_features__admin_boxes__spare_domains extends module_base_cl
 			$values['details/content'] = $record['content_type']. '_'. $record['content_id'];
 			
 			$box['title'] = adminPhrase('View/Edit a spare domain');
-			$fields['requested_url']['read_only'] = true;
+			$fields['requested_url']['readonly'] = true;
 			$fields['add_www']['hidden'] = true;
 		}
 	}

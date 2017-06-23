@@ -22,7 +22,7 @@ zenario_delete_language:
                 username:
                     label: 'Username:'
                     type: text
-                    read_only: Yes
+                    readonly: Yes
                 password:
                     label: 'Password:'
                     type: password

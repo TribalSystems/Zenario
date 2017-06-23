@@ -1,0 +1,4 @@
+Added 
+	require_once '../../../../zenario/basicheader.inc.php';
+	startSession();
+to securimage_show.php

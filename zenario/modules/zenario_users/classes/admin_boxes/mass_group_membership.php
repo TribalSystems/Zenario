@@ -33,12 +33,7 @@ class zenario_users__admin_boxes__mass_group_membership extends module_base_clas
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		
-		$ids = array();
-		foreach (explode(',', $box['key']['id']) as $id) {
-			if ($id = (int) $id) {
-				$ids[] = $id;
-			}
-		}
+		$ids = explodeAndTrim($box['key']['id'], true);
 		
 		if (!$box['key']['count'] = count($ids)) {
 			echo adminPhrase('No users selected!');
@@ -88,15 +83,7 @@ class zenario_users__admin_boxes__mass_group_membership extends module_base_clas
 			
 			} else {
 				//Look up how many users are in each group
-				$sql = "
-					SELECT COUNT(*)
-					FROM ". DB_NAME_PREFIX. "users_custom_data
-					WHERE `". sqlEscape($v['db_column']). "` = 1
-					  AND user_id IN (". inEscape($ids, 'numeric'). ")";
-				
-				$result = sqlSelect($sql);
-				$row = sqlFetchRow($result);
-				$count = $row[0];
+				$count = selectCount('users_custom_data', [$v['db_column'] => 1, 'user_id' => $ids]);
 				
 				if ($count != 0) {
 					++$inGroupCount;

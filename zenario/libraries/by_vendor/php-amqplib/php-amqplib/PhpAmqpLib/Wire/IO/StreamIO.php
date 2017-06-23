@@ -302,17 +302,7 @@ class StreamIO extends AbstractIO
             throw new AMQPIOException('Can not enable keepalive: SOL_SOCKET or SO_KEEPALIVE is not defined');
         }
 
-                
-        //$socket = socket_import_stream($this->sock);
-        //socket_set_option($socket, SOL_SOCKET, SO_KEEPALIVE, 1);
-        
-        //Hack to avoid following error -Robin
-        /*
-            PHP Warning:  socket_import_stream(): cannot represent a stream of type tcp_socket/ssl as a Socket Descriptor in /opt/serverstuff/vendor/php-amqplib/php-amqplib/PhpAmqpLib/Wire/IO/StreamIO.php
-        */
-        
-        $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+        $socket = socket_import_stream($this->sock);
         socket_set_option($socket, SOL_SOCKET, SO_KEEPALIVE, 1);
-        socket_connect($socket, $this->host, $this->port);
     }
 }

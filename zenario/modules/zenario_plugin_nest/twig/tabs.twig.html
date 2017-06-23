@@ -1,18 +1,18 @@
 {% if parentNest %}
-	{% set tabs = parentNest.getTabs() %}
-	{% set tabNum = parentNest.getTabNum() %}
+	{% set slides = parentNest.getSlides() %}
+	{% set slideNum = parentNest.getSlideNum() %}
 	
-	{% if tabs %}
+	{% if slides %}
 		<div class="switch_views assetwolf_switch_views switch_views_tabs">
 			<ul>
-			{% for tab in tabs %}
-				{% if not tab.invisible_in_nav %}
+			{% for slide in slides %}
+				{% if not slide.invisible_in_nav %}
 					<li class="
-						{% if tab.tab == tabNum %}
+						{% if slide.slideNum == slideNum %}
 							current
 						{% endif %}
 					">
-						<a {{parentNest.refreshPluginSlotTabAnchor('tab=' ~ tab.id, false)}}>{{tab.name_or_title|trans}}</a>
+						<a {{parentNest.refreshPluginSlotTabAnchor('slideId=' ~ slide.id, false)}}>{{slide.name_or_title|trans}}</a>
 					</li>
 				{% endif %}
 			{% endfor %}

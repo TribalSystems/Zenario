@@ -40,9 +40,10 @@ zenario.lib(function(
 	undefined,
 	URLBasePath,
 	document, window, windowOpener, windowParent,
-	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO, strings,
+	zenario, zenarioA, zenarioT, zenarioAB, zenarioAT, zenarioO,
 	encodeURIComponent, get, engToBoolean, htmlspecialchars, jsEscape, phrase,
-	extensionOf, methodsOf, has
+	extensionOf, methodsOf, has,
+	extraVar1, extraVar2, s$s
 ) {
 	"use strict";
 
@@ -579,14 +580,14 @@ zenario.loadLibrary = function(path, callback, alreadyLoaded) {
 				delete loadingScripts[path];
 		
 				if (_.isEmpty(loadingScripts)) {
-					zenario.sendSignal('loadedScripts');
+					zenario.sendSignal('eventLoadedScripts');
 				}
 			}
 		});
 	}
 };
 
-zenario.loadedScripts = function() {
+zenario.eventLoadedScripts = function() {
 	scriptsLoadedCallback.call();
 	scriptsLoadedCallback = new zenario.callback; 
 };
@@ -780,8 +781,8 @@ zenario.getSlotnameFromEl = function(el, getContainerId) {
 					slotName = el.id.substr(7, hyphen - 7);
 				
 					//Check that this matches the correct pattern
-					var nestId = el.id.substr(hyphen + 1);
-					if (nestId != 1*nestId) {
+					var eggId = el.id.substr(hyphen + 1);
+					if (eggId != 1*eggId) {
 						continue;
 					}
 				}
@@ -1088,7 +1089,7 @@ zenario.checkForHashChanges = function(timed) {
 			}
 			
 			//Check if there is an editor open
-			message = zenarioA.onbeforeunload();
+			message = zenarioT.onbeforeunload();
 			//If there was, give the Admin a chance to stop leaving the page
 			if (message === undefined || confirm(message)) {
 				zenarioAB.close();
@@ -1190,7 +1191,7 @@ if (window.history && history.pushState) {
 		if (slotName = event.state && event.state.slotName) {
 			
 			//Check if there is an editor open
-			message = zenarioA.onbeforeunload();
+			message = zenarioT.onbeforeunload();
 			
 			//If there was, give the Admin a chance to stop leaving the page
 			if (message === undefined || confirm(message)) {
@@ -1198,8 +1199,8 @@ if (window.history && history.pushState) {
 				
 				zenario.refreshPluginSlot(slotName, 'lookup',
 					
-					//If there is no tabId in the URL bar, add one as an empty string,
-					//to prevent a bug where the current tabId is added when going back to the first one
+					//If there is no slideId in the URL bar, add one as an empty string,
+					//to prevent a bug where the current slideId is added when going back to the first one
 					zenario.addTabIdToURL(event.state.request, slotName, ''));
 				
 				//Refresh the admin toolbar to remove the Editor controls if needed
@@ -1214,20 +1215,20 @@ if (window.history && history.pushState) {
 };
 
 
-//For AJAX reloads for nests, check if a state, tabId or tab number is in a URL,
+//For AJAX reloads for nests, check if a state, slideId or slide number is in a URL,
 //and add one if not.
-zenario.addTabIdToURL = function(url, slotName, specificTabId) {
+zenario.addTabIdToURL = function(url, slotName, specificSlideId) {
 	
-	//Check if this slot is a nest, and if so, which tab it is on
-	var tabId = zenario.slots[slotName]
-			 && zenario.slots[slotName].tabId;
+	//Check if this slot is a nest, and if so, which slide it is on
+	var slideId = zenario.slots[slotName]
+			 && zenario.slots[slotName].slideId;
 	
-	//Check if the URL contains no tab or state information.
-	//If so, try to add the last tab/state used
-	if (tabId && !url.match(/\&(state|tab|tab_no)\=/)) {
+	//Check if the URL contains no slide or state information.
+	//If so, try to add the last slide/state used
+	if (slideId && !url.match(/\&(state|slideId|slideNum)\=/)) {
 		
-		if (specificTabId !== undefined) {
-			url += '&tab=' + specificTabId;
+		if (specificSlideId !== undefined) {
+			url += '&slideId=' + specificSlideId;
 		
 		} else
 		if (zenario_conductor.slots[slotName]
@@ -1235,7 +1236,7 @@ zenario.addTabIdToURL = function(url, slotName, specificTabId) {
 			url += zenario.urlRequest(zenario_conductor.slots[slotName].key);
 		
 		} else {
-			url += '&tab=' + tabId;
+			url += '&slideId=' + slideId;
 		}
 	}
 	
@@ -1355,6 +1356,17 @@ zenario.formSubmit = function(el, scrollToTopOfSlot, fadeOutAndIn, slotName) {
 };
 
 
+zenario.unpackAndMerge = function(target, string) {
+	var i,
+		a = string.split('~'),
+		m = a.length - 1;
+	
+	for (i = 0; i < m; i += 2) {
+		target[a[i]] = a[i+1].replace(/`s/g, "~").replace(/`t/g, "`");
+	}
+};
+
+
 zenario.uneschyp = function(string) {
 	return string.replace(/`r/g, "\r").replace(/`n/g, "\n").replace(/`h/g, "-").replace(/`c/g, ":").replace(/`t/g, "`");
 };
@@ -1366,22 +1378,24 @@ zenario.splitFlagsFromMessage = function(resp) {
 	
 	var flag;
 	
-	if (_.isString(resp)) {
-		resp = {responseText: resp};
+	if (typeof resp != 'object') {
+		resp = {responseText: resp? '' + resp : ''};
 	}
 	
-	resp.flags = {};
+	if (typeof resp.flags != 'object') {
+		resp.flags = {};
+	}
 	
 	if (resp.responseText = resp.responseText || '') {
 		//Strip the flags off of from start
 		while ((flag = resp.responseText.split(/^\<\!--([^\:-]*?)(|\:([^\:-]*?))--\>/)) && (flag.length > 1)) {
-			resp.flags[flag[1]] = flag[3] && zenario.uneschyp(flag[3]);
+			resp.flags[flag[1]] = flag[3] === undefined? true : zenario.uneschyp(flag[3]);
 			resp.responseText = flag[4];
 		}
 	
 		//Strip the flags off from the end
 		while ((flag = resp.responseText.split(/\<\!--([^\:-]*?)(|\:([^\:-]*?))--\>$/)) && (flag.length > 1)) {
-			resp.flags[flag[1]] = flag[3] && zenario.uneschyp(flag[3]);
+			resp.flags[flag[1]] = flag[3] === undefined? true : zenario.uneschyp(flag[3]);
 			resp.responseText = flag[0];
 		}
 	}
@@ -1403,7 +1417,7 @@ zenario.enc = function(id, className, moduleClassNameForPhrases) {
 			zenario);
 		
 		window[className].globalName = className;
-		window[className].slots = new Object();
+		window[className].slots = {};
 		
 		zenario.modules[id] ==> {};
 		zenario.modules[id].moduleClassName = className;
@@ -1423,9 +1437,9 @@ zenario.slot = function(pluginInstances) {
 		p.level = pluginInstances[i][3];
 		
 		if (pluginInstances[i][4]) {
-			p.tabId = pluginInstances[i][4];
+			p.slideId = pluginInstances[i][4];
 		} else {
-			p.tabId = 0;
+			p.slideId = 0;
 		}
 		
 		//Record the name of the first main slot
@@ -1449,6 +1463,7 @@ zenario.slot = function(pluginInstances) {
 			if (old.instanceId) {
 				delete zenario.instances[old.instanceId];
 				delete window[old.moduleClassName].slots[old.slotName];
+				delete window[old.moduleClassName].outerSlots[old.slotName.split('-')[0]];
 			}
 		}
 		
@@ -1467,7 +1482,12 @@ zenario.slot = function(pluginInstances) {
 				
 				//Make info on this Plugin Instance availible to the core and to the Plugin
 				zenario.instances[p.instanceId] = p;
+				
+				//Note down which slots this plugin is in
 				window[p.moduleClassName].slots[p.slotName] = p;
+				
+				//For nested plugins, specifically note down the outer slot that the nested plugin is in
+				window[p.moduleClassName].outerSlots[p.slotName.split('-')[0]] = p;
 			}
 		}
 		
@@ -1495,7 +1515,7 @@ zenario.replacePluginSlotContents = function(slotName, instanceId, resp, additio
 	//Look for the settings at the start
 	var forceReloadHref = false,
 		level = false,
-		tabId = 0,
+		slideId = 0,
 		cutoff,
 		info = [],
 		beingEdited = false,
@@ -1529,7 +1549,7 @@ zenario.replacePluginSlotContents = function(slotName, instanceId, resp, additio
 	beingEdited = flags.IN_EDIT_MODE;
 	isVersionControlled = flags.WIREFRAME;
 	instanceId = flags.INSTANCE_ID;
-	tabId = flags.TAB_ID;
+	slideId = flags.TAB_ID;
 	level = 1*flags.LEVEL;
 	
 	domSlot.className = 'zenario_slot ' + (flags.CSS_CLASS || '');
@@ -1649,7 +1669,7 @@ zenario.replacePluginSlotContents = function(slotName, instanceId, resp, additio
 		
 		if (!window.zenario_inIframe && zenario.inAdminMode) {
 			//Admins need some more tasks, other than just changing the innerHTML
-			zenarioA.replacePluginSlot(slotName, instanceId, level, tabId, resp, scriptsToRunBefore);
+			zenarioA.replacePluginSlot(slotName, instanceId, level, slideId, resp, scriptsToRunBefore);
 		} else {
 			foreach (scriptsToRunBefore as var script) {
 				if (zenario.slots[slotName]) {
@@ -1658,7 +1678,7 @@ zenario.replacePluginSlotContents = function(slotName, instanceId, resp, additio
 			}
 			
 			//If we're not in admin mode, just refresh the slot's innerHTML
-			zenario.slot([[slotName, instanceId, zenario.slots[slotName].moduleId, level, tabId, undefined, beingEdited, isVersionControlled]]);
+			zenario.slot([[slotName, instanceId, zenario.slots[slotName].moduleId, level, slideId, undefined, beingEdited, isVersionControlled]]);
 			domSlot.innerHTML = resp.responseText;
 		}
 		
@@ -1688,6 +1708,8 @@ zenario.replacePluginSlotContents = function(slotName, instanceId, resp, additio
 		zenarioA.checkSlotsBeingEdited();
 		zenarioA.scanHyperlinksAndDisplayStatus(containerId);
 	}
+	
+	zenario.sendSignal('eventSlotUpdated', {slotName: slotName, instanceId: instanceId, flags: flags}, zenario.inAdminMode);
 };
 
 zenario.recordRequestsInURL = function(slotName, requests) {
@@ -1772,7 +1794,7 @@ zenario.callScript = function(script, className, secondTime) {
 
 //Apply compilation macros in a microtemplate
 //(Note that this is the same logic from zenario/js/js_minify.shell.php)
-zenario.applyCompilationMacros = code => {
+zenario.applyCompilationMacros = function(code) {
 	
 	var forLoop = 'for ($2$3 in $1) { if (!zenario.has($1, $3)) continue;',
 		funct = 'function ($1) {';
@@ -2609,62 +2631,101 @@ zenario.sGetItem = function(session, name, isObject) {
 	}
 };
 
-//Include JSON library, if it's not defined natively
-//Note I am loading this syncronously, which is deprecated on modern browsers,
-//but it's not deprecated on any browser old enough not to have the JSON library built in as standard!
-if (!window.JSON) {
-	zenario.loadScript(URLBasePath + 'zenario/libraries/public_domain/json/json2.min.js', false);
-}
 
-//Add the Math.log10() function, if it's not defined natively
-if (!Math.log10) {
-	Math.log10 = function(n) {
-		return Math.log(n) / Math.log(10);
+
+zenario.init = function(
+	zenarioCSSJSVersionNumber,
+	userId,
+	langId,
+	recaptchaTheme,
+	datePickerFormat,
+	indexDotPHP,
+	canSetCookie,
+	
+	equivId,
+	cID,
+	cType,
+	skinId
+) {
+
+	window.zenarioCSSJSVersionNumber = zenarioCSSJSVersionNumber;
+	
+	window.RecaptchaOptions = {
+		lang: langId.substr(0, 2),
+		theme: recaptchaTheme
 	};
-}
+	
+	zenario.userId = userId;
+	zenario.langId = langId;
+	zenario.dpf = datePickerFormat;
+	zenario.indexDotPHP = indexDotPHP;
+	zenario.canSetCookie = canSetCookie;
 
-//Add the starts-with function if it's not defined natively
-if (!String.prototype.startsWith) {
-	String.prototype.startsWith = function(prefix) {
-		return this.indexOf(prefix) === 0;
-	};
-}
+	zenario.equivId = equivId || undefined;
+	zenario.cID = cID || undefined;
+	zenario.cType = cType || undefined;
+	zenario.skinId = skinId || undefined;
+	
+	
 
 
-//Check to see whether we have a grid with a min-width, and whether the browser supports checking the min-width
-var minWidth = window.matchMedia && zenarioGrid.responsive && 1 * zenarioGrid.minWidth,
-	wasAResize = false;
+	//Include JSON library, if it's not defined natively
+	//Note I am loading this syncronously, which is deprecated on modern browsers,
+	//but it's not deprecated on any browser old enough not to have the JSON library built in as standard!
+	if (!window.JSON) {
+		zenario.loadScript(URLBasePath + 'zenario/libraries/public_domain/json/json2.min.js', false);
+	}
 
-zenario.mobile = false;
-zenario.desktop = true;
+	//Add the Math.log10() function, if it's not defined natively
+	if (!Math.log10) {
+		Math.log10 = function(n) {
+			return Math.log(n) / Math.log(10);
+		};
+	}
 
-//Add a call to enquire to switch the CSS class on the body between mobile and desktop
-//whenever the visitor resizes their window
-if (minWidth) {
-	enquire.register(
-		'screen and (min-width: ' + minWidth + 'px)',
-		{
-			match : => {
-				zenarioSBC(zenario.mobile = false, 'mobile', 'desktop');
-				zenario.desktop = true;
+	//Add the starts-with function if it's not defined natively
+	if (!String.prototype.startsWith) {
+		String.prototype.startsWith = function(prefix) {
+			return this.indexOf(prefix) === 0;
+		};
+	}
+
+
+	//Check to see whether we have a grid with a min-width, and whether the browser supports checking the min-width
+	var minWidth = window.matchMedia && zenarioGrid.responsive && 1 * zenarioGrid.minWidth,
+		wasAResize = false;
+
+	zenario.mobile = false;
+	zenario.desktop = true;
+
+	//Add a call to enquire to switch the CSS class on the body between mobile and desktop
+	//whenever the visitor resizes their window
+	if (minWidth) {
+		enquire.register(
+			'screen and (min-width: ' + minWidth + 'px)',
+			{
+				match : => {
+					zenarioSBC(zenario.mobile = false, 'mobile', 'desktop');
+					zenario.desktop = true;
 				
-				if (wasAResize) {
-					zenario.sendSignal('resizedToDesktop');
-				}
-				wasAResize = true;
-			},
-			doesntMatch : => {
-				zenarioSBC(zenario.mobile = true, 'mobile', 'desktop');
-				zenario.desktop = false;
+					if (wasAResize) {
+						zenario.sendSignal('eventResizedToDesktop');
+					}
+					wasAResize = true;
+				},
+				doesntMatch : => {
+					zenarioSBC(zenario.mobile = true, 'mobile', 'desktop');
+					zenario.desktop = false;
 				
-				if (wasAResize) {
-					zenario.sendSignal('resizedToMobile');
+					if (wasAResize) {
+						zenario.sendSignal('eventResizedToMobile');
+					}
+					wasAResize = true;
 				}
-				wasAResize = true;
 			}
-		}
-	);
-}
+		);
+	}
+};
 
 
 //Functions for TinyMCE

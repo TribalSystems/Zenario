@@ -96,7 +96,7 @@ class zenario_location_viewer extends module_base_class {
 				if (!empty($locationDetails['region_id'])) {
 					if ($region = zenario_country_manager::getRegionNamesInCurrentVisitorLanguage("active", $locationDetails['country_id'], $locationDetails['region_id'])) {
 						foreach ($region as $key => $value) {
-							$locationDetails['region'] = zenario_country_manager::adminPhrase(session('user_lang'),$value);
+							$locationDetails['region'] = zenario_country_manager::adminPhrase(cms_core::$langId,$value);
 							break;
 						}
 					}

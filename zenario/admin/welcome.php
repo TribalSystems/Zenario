@@ -258,6 +258,7 @@ if (cms_core::$lastDB
 
 $allowedTasks = array(
 	'change_password' => 'change_password',
+	'diagnostics' => 'diagnostics',
 	'reload_sk' => 'reload_sk',
 	'end' => 'logout',
 	'logout' => 'logout',

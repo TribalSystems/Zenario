@@ -34,7 +34,7 @@ if (!$smartGroup = getRow('smart_groups', ['intended_usage', 'must_match'], $sma
 
 $rules = getRowsArray(
 	'smart_group_rules',
-	array('type_of_check', 'field_id', 'field2_id', 'field3_id', 'field4_id', 'field5_id', 'role_id', 'not', 'value'),
+	array('type_of_check', 'field_id', 'field2_id', 'field3_id', 'field4_id', 'field5_id', 'role_id','activity_band_id', 'not', 'value'),
 	array('smart_group_id' => $smartGroupId),
 	'ord'
 );
@@ -142,6 +142,20 @@ foreach ($rules as $rule) {
 				}
 			}
 			break;
+		case 'activity_band':
+			if($rule['activity_band_id']
+			&& $ZENARIO_USER_ACTIVITY_BANDS_PREFIX = getModulePrefix('zenario_user_activity_bands', $mustBeRunning = true)){
+				
+				$activityBand = getRow($ZENARIO_USER_ACTIVITY_BANDS_PREFIX. 'activity_bands', ['name'], $rule['activity_band_id']);
+				
+				if($rule['not']){
+					$descs[] = adminPhrase('Not in activity band "[[name]]"', $activityBand);
+				}else{
+					$descs[] = adminPhrase('In activity band "[[name]]"', $activityBand);
+				}
+			}
+			break;
+		
 	}
 }
 

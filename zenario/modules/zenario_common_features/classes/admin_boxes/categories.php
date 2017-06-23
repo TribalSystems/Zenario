@@ -31,7 +31,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_common_features__admin_boxes__categories extends module_base_class {
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
-		if ($box['key']['id']) {
+		if ($box['key']['id'] && !$box['key']['sub_category']) {
 			$record = getRow('categories', true, $box['key']['id']);
 			$box['key']['parent_id'] = $record['parent_id'];
 			$values['name'] = $record['name'];
@@ -39,8 +39,17 @@ class zenario_common_features__admin_boxes__categories extends module_base_class
 			if ($record['landing_page_equiv_id'] && $record['landing_page_content_type']) {
 				$values['landing_page'] = formatTag($record['landing_page_equiv_id'], $record['landing_page_content_type'], false);
 			}
-		} else {
+		} else if ($box['key']['sub_category']) {
+			$box['key']['parent_id'] = $box['key']['id'];
+			$box['key']['id'] = "";
+		}else{
 			$box['key']['parent_id'] = request('refiner__parent_category');
+		}
+		
+
+		if ($box['key']['sub_category']) {
+			unset($box['title_for_existing_records']);
+			$box['title'] = adminPhrase('Creating a sub-category');
 		}
 		
 		if (setting('enable_display_categories_on_content_lists')) {
@@ -91,4 +100,5 @@ class zenario_common_features__admin_boxes__categories extends module_base_class
 			}
 		}
 	}
+	
 }

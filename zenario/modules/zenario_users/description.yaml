@@ -60,8 +60,3 @@ jobs:
         log_on_no_action: true
         email_on_action: false
         email_on_no_action: false
-
-commands:
-    - create_user
-    - edit_user
-    - delete_user

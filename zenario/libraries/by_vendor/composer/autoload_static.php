@@ -4,15 +4,22 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInitaa0adc33fb3759920a513ed957850b06
+class ComposerStaticInitb74c9e4c32ffef13f755020423be9bf1
 {
     public static $files = array (
+        '5255c38a0faeba867671b61dfda6d864' => __DIR__ . '/..' . '/paragonie/random_compat/lib/random.php',
         '3a37ebac017bc098e9a86b35401e7a68' => __DIR__ . '/..' . '/mongodb/mongodb/src/functions.php',
     );
 
     public static $prefixLengthsPsr4 = array (
+        'S' => 
+        array (
+            'Symfony\\Component\\Process\\' => 26,
+            'Symfony\\Component\\OptionsResolver\\' => 34,
+        ),
         'P' => 
         array (
+            'Psr\\Log\\' => 8,
             'PhpAmqpLib\\' => 11,
         ),
         'M' => 
@@ -22,6 +29,18 @@ class ComposerStaticInitaa0adc33fb3759920a513ed957850b06
     );
 
     public static $prefixDirsPsr4 = array (
+        'Symfony\\Component\\Process\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/process',
+        ),
+        'Symfony\\Component\\OptionsResolver\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/options-resolver',
+        ),
+        'Psr\\Log\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/psr/log/Psr/Log',
+        ),
         'PhpAmqpLib\\' => 
         array (
             0 => __DIR__ . '/..' . '/php-amqplib/php-amqplib/PhpAmqpLib',
@@ -32,11 +51,40 @@ class ComposerStaticInitaa0adc33fb3759920a513ed957850b06
         ),
     );
 
+    public static $prefixesPsr0 = array (
+        'I' => 
+        array (
+            'ImageOptimizer' => 
+            array (
+                0 => __DIR__ . '/..' . '/ps/image-optimizer/src',
+            ),
+        ),
+    );
+
+    public static $classMap = array (
+        'Defuse\\Crypto\\Core' => __DIR__ . '/..' . '/defuse/php-encryption/src/Core.php',
+        'Defuse\\Crypto\\Crypto' => __DIR__ . '/..' . '/defuse/php-encryption/src/Crypto.php',
+        'Defuse\\Crypto\\DerivedKeys' => __DIR__ . '/..' . '/defuse/php-encryption/src/DerivedKeys.php',
+        'Defuse\\Crypto\\Encoding' => __DIR__ . '/..' . '/defuse/php-encryption/src/Encoding.php',
+        'Defuse\\Crypto\\Exception\\BadFormatException' => __DIR__ . '/..' . '/defuse/php-encryption/src/Exception/BadFormatException.php',
+        'Defuse\\Crypto\\Exception\\CryptoException' => __DIR__ . '/..' . '/defuse/php-encryption/src/Exception/CryptoException.php',
+        'Defuse\\Crypto\\Exception\\EnvironmentIsBrokenException' => __DIR__ . '/..' . '/defuse/php-encryption/src/Exception/EnvironmentIsBrokenException.php',
+        'Defuse\\Crypto\\Exception\\IOException' => __DIR__ . '/..' . '/defuse/php-encryption/src/Exception/IOException.php',
+        'Defuse\\Crypto\\Exception\\WrongKeyOrModifiedCiphertextException' => __DIR__ . '/..' . '/defuse/php-encryption/src/Exception/WrongKeyOrModifiedCiphertextException.php',
+        'Defuse\\Crypto\\File' => __DIR__ . '/..' . '/defuse/php-encryption/src/File.php',
+        'Defuse\\Crypto\\Key' => __DIR__ . '/..' . '/defuse/php-encryption/src/Key.php',
+        'Defuse\\Crypto\\KeyOrPassword' => __DIR__ . '/..' . '/defuse/php-encryption/src/KeyOrPassword.php',
+        'Defuse\\Crypto\\KeyProtectedByPassword' => __DIR__ . '/..' . '/defuse/php-encryption/src/KeyProtectedByPassword.php',
+        'Defuse\\Crypto\\RuntimeTests' => __DIR__ . '/..' . '/defuse/php-encryption/src/RuntimeTests.php',
+    );
+
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInitaa0adc33fb3759920a513ed957850b06::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInitaa0adc33fb3759920a513ed957850b06::$prefixDirsPsr4;
+            $loader->prefixLengthsPsr4 = ComposerStaticInitb74c9e4c32ffef13f755020423be9bf1::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInitb74c9e4c32ffef13f755020423be9bf1::$prefixDirsPsr4;
+            $loader->prefixesPsr0 = ComposerStaticInitb74c9e4c32ffef13f755020423be9bf1::$prefixesPsr0;
+            $loader->classMap = ComposerStaticInitb74c9e4c32ffef13f755020423be9bf1::$classMap;
 
         }, null, ClassLoader::class);
     }

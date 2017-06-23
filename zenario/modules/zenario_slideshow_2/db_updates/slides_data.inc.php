@@ -200,5 +200,80 @@ _sql
 	ADD COLUMN `slide_more_link_text` varchar(255) DEFAULT '' AFTER `slide_extra_html`
 _sql
 
+); revision( 40
+
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_SLIDESHOW_2_PREFIX]]slides` SET `dest_url` = SUBSTR(`dest_url`, 1, 250) WHERE CHAR_LENGTH(`dest_url`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_SLIDESHOW_2_PREFIX]]slides` MODIFY COLUMN `dest_url` varchar(250) CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_SLIDESHOW_2_PREFIX]]slides` SET `field_value` = SUBSTR(`field_value`, 1, 250) WHERE CHAR_LENGTH(`field_value`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_SLIDESHOW_2_PREFIX]]slides` MODIFY COLUMN `field_value` varchar(250) CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_SLIDESHOW_2_PREFIX]]slides` SET `method_name` = SUBSTR(`method_name`, 1, 250) WHERE CHAR_LENGTH(`method_name`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_SLIDESHOW_2_PREFIX]]slides` MODIFY COLUMN `method_name` varchar(250) CHARACTER SET utf8mb4 NULL default ''
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_SLIDESHOW_2_PREFIX]]slides` MODIFY COLUMN `mobile_overwrite_alt_tag` text CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_SLIDESHOW_2_PREFIX]]slides` MODIFY COLUMN `mobile_slide_extra_html` text CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_SLIDESHOW_2_PREFIX]]slides` MODIFY COLUMN `mobile_slide_title` text CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_SLIDESHOW_2_PREFIX]]slides` MODIFY COLUMN `mobile_tab_name` text CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_SLIDESHOW_2_PREFIX]]slides` MODIFY COLUMN `overwrite_alt_tag` text CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_SLIDESHOW_2_PREFIX]]slides` SET `param_1` = SUBSTR(`param_1`, 1, 250) WHERE CHAR_LENGTH(`param_1`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_SLIDESHOW_2_PREFIX]]slides` MODIFY COLUMN `param_1` varchar(250) CHARACTER SET utf8mb4 NULL default ''
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_SLIDESHOW_2_PREFIX]]slides` SET `param_2` = SUBSTR(`param_2`, 1, 250) WHERE CHAR_LENGTH(`param_2`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_SLIDESHOW_2_PREFIX]]slides` MODIFY COLUMN `param_2` varchar(250) CHARACTER SET utf8mb4 NULL default ''
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_SLIDESHOW_2_PREFIX]]slides` SET `plugin_class` = SUBSTR(`plugin_class`, 1, 250) WHERE CHAR_LENGTH(`plugin_class`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_SLIDESHOW_2_PREFIX]]slides` MODIFY COLUMN `plugin_class` varchar(250) CHARACTER SET utf8mb4 NULL default ''
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_SLIDESHOW_2_PREFIX]]slides` MODIFY COLUMN `rollover_overwrite_alt_tag` text CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_SLIDESHOW_2_PREFIX]]slides` MODIFY COLUMN `slide_extra_html` text CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_SLIDESHOW_2_PREFIX]]slides` SET `slide_more_link_text` = SUBSTR(`slide_more_link_text`, 1, 250) WHERE CHAR_LENGTH(`slide_more_link_text`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_SLIDESHOW_2_PREFIX]]slides` MODIFY COLUMN `slide_more_link_text` varchar(250) CHARACTER SET utf8mb4 NULL default ''
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_SLIDESHOW_2_PREFIX]]slides` MODIFY COLUMN `slide_title` text CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_SLIDESHOW_2_PREFIX]]slides` MODIFY COLUMN `tab_name` text CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_SLIDESHOW_2_PREFIX]]slides` MODIFY COLUMN `transition_code` text CHARACTER SET utf8mb4 NULL
+_sql
+
 );
 

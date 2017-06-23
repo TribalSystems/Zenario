@@ -74,12 +74,7 @@ function phrase($code, $replace = false, $moduleClass = 'lookup', $languageId = 
 		$languageId = $defaultLanguage;
 	
 	} elseif (!$languageId) {
-		if (!empty($_SESSION['user_lang'])) {
-			$languageId = $_SESSION['user_lang'];
-	
-		} else {		
-			$languageId = $defaultLanguage;
-		}
+		$languageId = cms_core::$langId ?? $_SESSION['user_lang'] ?? $defaultLanguage;
 	}
 	
 	$multiLingal = getNumLanguages() > 1;
@@ -265,9 +260,11 @@ function phrase($code, $replace = false, $moduleClass = 'lookup', $languageId = 
 }
 
 function applyMergeFields(&$phrase, $mrg) {
-    foreach ($mrg as $key => $value) {
-        $phrase = str_replace(array('[['. $key. ']]', '{{'. $key. '}}'), $value, $phrase);
-    }
+	if (is_array($mrg)) {
+		foreach ($mrg as $key => $value) {
+			$phrase = str_replace(array('[['. $key. ']]', '{{'. $key. '}}'), $value, $phrase);
+		}
+	}
 }
 
 function nphrase($text, $pluralText = false, $n = 1, $replace = array(), $moduleClass = 'lookup', $languageId = false, $backtraceOffset = 1, $cli = false) {

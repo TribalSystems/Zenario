@@ -37,7 +37,7 @@ site_settings:
                     
                     label: 'Show PHP run-time notices'
                     type: checkbox
-                    read_only: true
+                    readonly: true
                     note_below: |
                         If run-time notices are enabled, the CMS and any Modules enabled on your site will show messages whenever they
                         encounter anything that may indicate an error. However these messages may also appear in the normal course of running of your site.
@@ -48,7 +48,7 @@ site_settings:
                     grouping: zenario_siteconfig
                     label: 'Show PHP strict errors'
                     type: checkbox
-                    read_only: true
+                    readonly: true
                     note_below: |
                         If strict errors are enabled, the CMS and any Modules enabled on your site will show messages whenever they
                         encounter any PHP code that is no longer compatible with the latest version of PHP.
@@ -58,7 +58,7 @@ site_settings:
                     grouping: zenario_siteconfig
                     label: 'Show all other PHP errors'
                     type: checkbox
-                    read_only: true
+                    readonly: true
                     note_below: |
                         You should normally leave these messages enabled.
 
@@ -85,7 +85,7 @@ site_settings:
                     
                     label: 'Use MySQL in "strict" mode'
                     type: checkbox
-                    read_only: true
+                    readonly: true
                     note_below: |
                         Running MySQL in &quot;stritch&quot; mode is recommended for all newly created sites.
                         <br/>
@@ -96,10 +96,10 @@ site_settings:
                     grouping: zenario_siteconfig
                     label: 'Send an email if there is a SQL or Twig error, or if a layout is missing'
                     type: checkbox
-                    read_only: true
+                    readonly: true
                 email_address_global_support:
                     grouping: zenario_siteconfig
                     label: 'Email address:'
                     type: text
-                    read_only: true
+                    readonly: true
                     indent: 1

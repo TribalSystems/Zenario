@@ -28,7 +28,7 @@
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
 
-class zenario_newsletter__admin_boxes__newsletter_template extends zenario_newsletter {
+class zenario_newsletter__admin_boxes__site_settings extends zenario_newsletter {
 
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		switch($settingGroup) {

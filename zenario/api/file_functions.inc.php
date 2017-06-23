@@ -54,6 +54,70 @@ function addFileToDatabase($usage, $location, $filename = false, $mustBeAnImage 
 	return require funIncPath(__FILE__, __FUNCTION__);
 }
 
+class zenario_image_optimiser {
+	protected static $factory;
+	protected static $options = [
+		//'ignore_errors' => false,
+		'jpegoptim_options' => ['--strip-all', '--all-progressive', '--max=88'],
+		'optipng_options' => ['-i0', '-o1', '-quiet'],
+		'advpng_options' => ['-z', '-2', '-q']
+	];
+	
+	public static function optimise($method, $path) {
+		if (empty(self::$factory)) {
+			require_once CMS_ROOT . 'zenario/libraries/by_vendor/autoload.php';
+			
+			$jpeg_quality_limit = (int) setting('jpeg_quality_limit');
+			if (80 <= $jpeg_quality_limit && $jpeg_quality_limit <= 100) {
+				self::$options['jpegoptim_options'][2] = '--max='. $jpeg_quality_limit;
+			}
+			
+			foreach (['advpng', 'jpegoptim', 'jpegtran', 'optipng'] as $program) {
+				self::$options[$program. '_bin'] =
+					programPathForExec(setting($program. '_path'), $program, true);
+			}
+			
+			self::$factory = new \ImageOptimizer\OptimizerFactory(zenario_image_optimiser::$options);
+		}
+	
+		if (!empty(self::$options[$method. '_bin'])) {
+			//$time_start = microtime(true);
+			//$sizeBefore = filesize($path);
+			self::$factory->get($method)->optimize($path);
+			//clearstatcache();
+			//var_dump($path, $method, microtime(true) - $time_start, $sizeBefore, filesize($path));
+			return true;
+		}
+		return false;
+	}
+}
+
+function optimizeImage($path) {
+	return optimiseImage($path);
+}
+function optimiseImage($path) {
+	
+	if (!in(documentMimeType($path), 'image/png', 'image/jpeg')
+	 || !is_file($path)
+	 || !is_writable($path)) {
+		return false;
+	}
+	
+	switch (documentMimeType($path)) {
+		case 'image/png':
+			zenario_image_optimiser::optimise('optipng', $path);
+			zenario_image_optimiser::optimise('advpng', $path);
+			break;
+		case 'image/jpeg':
+			if (!zenario_image_optimiser::optimise('jpegoptim', $path)) {
+				zenario_image_optimiser::optimise('jpegtran', $path);
+			}
+			break;
+	}
+    
+    return true;
+}
+
 
 //Delete a file from the database, and anywhere it was stored on the disk
 function deleteFile($fileId) {
@@ -592,14 +656,7 @@ function imageLink(
 			$url = CMS_ROOT. $path. $image['filename'];
 		
 		} else {
-			$url = $path. rawurlencode($image['filename']);
-			
-			if ($cookieFreeDomain = cookieFreeDomain()) {
-				$url = $cookieFreeDomain. $url;
-			
-			} elseif (cms_core::$mustUseFullPath) {
-				$url = absCMSDirURL(). $url;
-			}
+			$url = absURLIfNeeded(). $path. rawurlencode($image['filename']);
 			
 			$width = $widthOut;
 			$height = $heightOut;
@@ -611,7 +668,11 @@ function imageLink(
 	if ($path || $returnImageStringIfCacheDirNotWorking) {
 		
 		//Where an image has multiple sizes stored in the database, get the most suitable size
-		$wcit = ifNull((int) setting('working_copy_image_threshold'), 66) / 100;
+		if (setting('working_copy_image_threshold')) {
+			$wcit = ifNull((int) setting('working_copy_image_threshold'), 66) / 100;
+		} else {
+			$wcit = 0.66;
+		}
 		
 		foreach (array(
 			array('thumbnail_24x23_data', 'thumbnail_24x23_width', 'thumbnail_24x23_height'),
@@ -677,18 +738,14 @@ function imageLink(
 		 && file_put_contents(CMS_ROOT. $path. $image['filename'], $image['data'])) {
 			chmod(CMS_ROOT. $path. $image['filename'], 0666);
 			
+			//Try to optimise the image, if the libraries are installed
+			optimiseImage(CMS_ROOT. $path. $image['filename']);
+			
 			if ($internalFilePath) {
 				$url = CMS_ROOT. $path. $image['filename'];
 			
 			} else {
-				$url = $path. rawurlencode($image['filename']);
-				
-				if ($cookieFreeDomain = cookieFreeDomain()) {
-					$url = $cookieFreeDomain. $url;
-				
-				} elseif (cms_core::$mustUseFullPath) {
-					$url = absCMSDirURL(). $url;
-				}
+				$url = absURLIfNeeded(). $path. rawurlencode($image['filename']);
 			}
 			
 			$width = $widthOut;
@@ -762,7 +819,7 @@ function itemStickyImageId($cID, $cType, $cVersion = false) {
 		}
 	}
 	
-	return getRow('content_item_versions', 'sticky_image_id', array('id' => $cID, 'type' => $cType, 'version' => $cVersion));
+	return getRow('content_item_versions', 'feature_image_id', array('id' => $cID, 'type' => $cType, 'version' => $cVersion));
 }
 
 function itemStickyImageLink(
@@ -785,26 +842,6 @@ function itemStickyImageLinkArray(
 	if ($imageId = itemStickyImageId($cID, $cType, $cVersion)) {
 		return imageLinkArray($imageId, $widthLimit, $heightLimit, $mode, $offset, $retina, $privacy, $useCacheDir);
 	}
-	return false;
-}
-
-function programPathForExec($path, $program) {
-	
-	if (!windowsServer() && execEnabled()) {
-		switch ($path) {
-			case 'PATH':
-				return $program;
-			case '/usr/bin/':
-				return '/usr/bin/'. $program;
-			case '/usr/local/bin/':
-				return '/usr/local/bin/'. $program;
-			case '/Applications/AMPPS/mysql/bin/':
-				if (PHP_OS == 'Darwin') {
-					return '/Applications/AMPPS/mysql/bin/'. $program;
-				}
-		}
-	}
-	
 	return false;
 }
 
@@ -839,7 +876,7 @@ function addContentItemPdfScreenshotImage($cID, $cType, $cVersion, $file_name, $
 					'foreign_key_id' => $cID, 'foreign_key_char' => $cType, 'foreign_key_version' => $cVersion
 				));
 			if($setAsStickImage) {
-				updateVersion($cID, $cType, $cVersion, array('sticky_image_id' => $fileId));
+				updateVersion($cID, $cType, $cVersion, array('feature_image_id' => $fileId));
 				syncInlineFileContentLink($cID, $cType, $cVersion);
 			}
 			return true;
@@ -990,14 +1027,29 @@ function updateDocumentPlainTextExtract($fileId, &$extract, &$imgFileId) {
 				$imgFileId = addFileToDocstoreDir('document_thumbnail', $url);
 			} 
 			break;
-	}	
+	}
+}
+
+function safeFileName($filename, $strict = false) {
+	if ($strict) {
+		$filename = preg_replace('@[^\w\.-]@', '', $filename);
+	} else {
+		$filename = str_replace(array('/', '\\'), '', $filename);
+	}
+	if ($filename === '') {
+		$filename = '_';
+	}
+	if ($filename[0] === '.') {
+		$filename[0] = '_';
+	}
+	return $filename;
 }
 
 function getPathOfUploadedFileInCacheDir($string) {
 	$details = explode('/', decodeItemIdForOrganizer($string), 3);
 	
 	if (!empty($details[1])
-	 && file_exists($filepath = CMS_ROOT. 'cache/uploads/'. preg_replace('@\W@', '', $details[0]). '/'. $details[1])) {
+	 && file_exists($filepath = CMS_ROOT. 'cache/uploads/'. preg_replace('@[^\w-]@', '', $details[0]). '/'. safeFileName($details[1]))) {
 		return $filepath;
 	} else {
 		return false;

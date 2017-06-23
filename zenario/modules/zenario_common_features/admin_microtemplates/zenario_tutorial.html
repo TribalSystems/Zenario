@@ -3,12 +3,12 @@
 		{{m.main_video_title|e}}
 	</div>
 	<div id="zenario_tutorial_main_video" class="main_video">
-		{{zenarioA.microTemplate('zenario_tutorial_main_video', m)}}
+		{{zenarioT.microTemplate('zenario_tutorial_main_video', m)}}
 	</div>
 	<div id="zenario_tutorial_slideshow_container" class="other_videos">
 		<% if (m.videos.length) { %>
 			
-			{{zenarioA.microTemplate('zenario_tutorial_slideshow', m)}}
+			{{zenarioT.microTemplate('zenario_tutorial_slideshow', m)}}
 			
 		<% } else { %>
 			<div class="no_other_videos">

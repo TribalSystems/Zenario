@@ -138,6 +138,8 @@ function sqlToSearchContentTable($hidePrivateItems = true, $onlyShow = false, $e
 		". $extraJoinSQL;
 	
 	
+	$userId = userId();
+	
 	//Filter by whether the current viewer can see each item
 	if (checkPriv()) {
 		//Show Admins everything, even including private drafts
@@ -149,12 +151,12 @@ function sqlToSearchContentTable($hidePrivateItems = true, $onlyShow = false, $e
 		$sql .= "
 		WHERE TRUE";
 		
-	} elseif (!session('extranetUserID') && $onlyShow == 'private') {
+	} elseif (!$userId && $onlyShow == 'private') {
 		//Private items can only be seen by logged in users...
 		$sql .= "
 		WHERE FALSE";
 		  
-	} elseif (!session('extranetUserID') || $onlyShow == 'public') {
+	} elseif (!$userId || $onlyShow == 'public') {
 		//If the visitor is not logged in, only show public items
 		$sql .= "
 		WHERE tc.privacy IN ('public', 'logged_out')";
@@ -163,12 +165,14 @@ function sqlToSearchContentTable($hidePrivateItems = true, $onlyShow = false, $e
 		//If the visitor is logged in, check which items they can see
 		
 		$groupsList = "FALSE";
-		foreach (getUserGroups(session('extranetUserID')) as $groupId => $groupName) {
+		foreach (getUserGroups($userId) as $groupId => $groupName) {
 			$sql .= "
-				LEFT JOIN ". DB_NAME_PREFIX. "group_content_link AS gcl". $groupId. "
-				   ON gcl". $groupId. ".equiv_id = tc.equiv_id
-				  AND gcl". $groupId. ".content_type = tc.type
-				  AND gcl". $groupId. ".group_id = ". $groupId;
+				LEFT JOIN ". DB_NAME_PREFIX. "group_link AS gcl". $groupId. "
+				   ON gcl". $groupId. ".link_from = 'chain'
+				  AND gcl". $groupId. ".link_from_id = tc.equiv_id
+				  AND gcl". $groupId. ".link_from_char = tc.type
+				  AND gcl". $groupId. ".link_to = 'group'
+				  AND gcl". $groupId. ".link_to_id = ". $groupId;
 			
 			if ($groupsList == "FALSE") {
 				$groupsList = "";
@@ -176,13 +180,42 @@ function sqlToSearchContentTable($hidePrivateItems = true, $onlyShow = false, $e
 				$groupsList .= " OR ";
 			}
 			
-			$groupsList .= "gcl". $groupId. ".group_id IS NOT NULL";
+			$groupsList .= "gcl". $groupId. ".link_to_id IS NOT NULL";
+		}
+		
+		$rolesList = "FALSE";
+		if ($ZENARIO_ORGANIZATION_MANAGER_PREFIX = getModulePrefix('zenario_organization_manager')) {
+			foreach (sqlFetchValues("
+				SELECT DISTINCT role_id
+				FROM ". DB_NAME_PREFIX. $ZENARIO_ORGANIZATION_MANAGER_PREFIX. "user_role_location_link
+				WHERE user_id = ". (int) $userId
+			) as $roleId) {
+				$sql .= "
+					LEFT JOIN ". DB_NAME_PREFIX. "group_link AS rcl". $roleId. "
+					   ON rcl". $roleId. ".link_from = 'chain'
+					  AND rcl". $roleId. ".link_from_id = tc.equiv_id
+					  AND rcl". $roleId. ".link_from_char = tc.type
+					  AND rcl". $roleId. ".link_to = 'role'
+					  AND rcl". $roleId. ".link_to_id = ". $roleId;
+			
+				if ($rolesList == "FALSE") {
+					$rolesList = "";
+				} else {
+					$rolesList .= " OR ";
+				}
+			
+				$rolesList .= "rcl". $roleId. ".link_to_id IS NOT NULL";
+			}
 		}
 		
 		$sql .= "
 		WHERE IF (tc.privacy = 'group_members',
 			". $groupsList. ",
-			tc.privacy IN ('public', 'logged_in'))";
+			IF (tc.privacy = 'with_role',
+				". $rolesList. ",
+				tc.privacy IN ('public', 'logged_in')
+			)
+		)";
 	}
 	
 	if ($onlyShow == 'public') {
@@ -191,7 +224,7 @@ function sqlToSearchContentTable($hidePrivateItems = true, $onlyShow = false, $e
 	
 	} elseif ($onlyShow == 'private') {
 		$sql .= "
-		  AND tc.privacy IN ('logged_in', 'group_members', 'in_smart_group', 'logged_in_not_in_smart_group')";
+		  AND tc.privacy IN ('logged_in', 'group_members', 'with_role', 'in_smart_group', 'logged_in_not_in_smart_group')";
 	}
 	
 	//Ensure that special pages are not included in the search results

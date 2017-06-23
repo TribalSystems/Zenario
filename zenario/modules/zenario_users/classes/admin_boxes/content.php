@@ -40,6 +40,14 @@ class zenario_users__admin_boxes__content extends zenario_users {
 			
 			$fields['privacy/group_ids']['values'] = getGroupPickerCheckboxesForFAB();
 			$fields['privacy/smart_group_id']['values'] = getListOfSmartGroupsWithCounts();
+		
+			if ($ZENARIO_ORGANIZATION_MANAGER_PREFIX = getModulePrefix('zenario_organization_manager')) {
+				$fields['privacy/role_ids']['values'] = getRowsArray($ZENARIO_ORGANIZATION_MANAGER_PREFIX. 'user_location_roles', 'name', [], 'name');
+			} else {
+				$fields['privacy/role_ids']['hidden'] =
+				$fields['privacy/privacy']['values']['with_role']['hidden'] = true;
+			
+			}
 			
 			$contentTypeDetails = getContentTypeDetails($cType);
 			
@@ -61,7 +69,12 @@ class zenario_users__admin_boxes__content extends zenario_users {
 				switch ($chain['privacy']) {
 					case 'group_members':
 						$values['privacy/group_ids'] =
-							inEscape(getRowsArray('group_content_link', 'group_id', array('equiv_id' => $equivId, 'content_type' => $cType)), true);
+							inEscape(getRowsArray('group_link', 'link_to_id', array('link_to' => 'group', 'link_from' => 'chain', 'link_from_id' => $equivId, 'link_from_char' => $cType)), true);
+						break;
+					
+					case 'with_role':
+						$values['privacy/role_ids'] =
+							inEscape(getRowsArray('group_link', 'link_to_id', array('link_to' => 'role', 'link_from' => 'chain', 'link_from_id' => $equivId, 'link_from_char' => $cType)), true);
 						break;
 					
 					case 'call_static_method':

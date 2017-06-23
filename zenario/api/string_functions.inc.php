@@ -61,8 +61,19 @@ function base64($text) {
 	return rtrim(strtr(base64_encode($text), '+/', '-_'), '=');
 }
 
-function base16To64($hex) {
-	return base64(pack('H*', $hex));
+function base64Decode($text) {
+	return base64_decode(strtr($text, '-_', '+/'));
+}
+
+function base16To64($text) {
+	return base64(pack('H*', $text));
+}
+
+function base64To16($text) {
+	$data = unpack('H*', base64Decode($text));
+	if (!empty($data[1])) {
+		return $data[1];
+	}
 }
 
 //Find the lowest common denominator of two numbers
@@ -81,23 +92,6 @@ function rationalNumberGridClass($a, $b) {
 	$w = $a;
 	rationalNumber($a, $b);
 	return 'span span'. $w. ' span'. $a. '_'. $b;
-}
-
-function stndrdth($i) {
-	$h = (int) $i % 100;
-	
-	if ($h < 11 || $h > 13) {
-		switch ($h % 10) {
-			case 1:
-				return $i. 'st';
-			case 2:
-				return $i. 'nd';
-			case 3:
-				return $i. 'rd';
-		}
-	}
-	
-	return $i. 'th';
 }
 
 function chopPrefixOffString($prefix, $string, $returnStringOnFailure = false) {
@@ -221,7 +215,7 @@ function jsOnClickEscape($text) {
 	return htmlspecialchars(addcslashes($text, "\\\n\r\"'"));
 }
 
-function urlRequest($arr) {
+function urlRequest($arr, $tidyClutter = false) {
 	if (!$arr) {
 		return '';
 	} elseif (!is_array($arr)) {
@@ -230,10 +224,13 @@ function urlRequest($arr) {
 	
 	$request = '';
 	foreach ($arr as $name => &$value) {
-		$request .= '&'. rawurlencode($name). '=';
 		
-		if ($value !== false && $value !== null) {
-			$request .= rawurlencode($value);
+		if (!$tidyClutter || $value) {
+			$request .= '&'. rawurlencode($name). '=';
+		
+			if ($value !== false && $value !== null) {
+				$request .= rawurlencode($value);
+			}
 		}
 	}
 	

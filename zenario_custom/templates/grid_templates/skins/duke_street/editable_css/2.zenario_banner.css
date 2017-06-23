@@ -46,3 +46,10 @@
 .banner_masthead img {
 	border:5px solid #D7D7CF;
 }
+
+
+.Grid_Header .Top_1 .zenario_image_container__default_style a {
+	height:100% !important;
+	margin:auto;
+	background-position:center center !important;
+}

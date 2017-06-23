@@ -242,8 +242,8 @@ zenario__menu:
                     label: Edit menu text
                     admin_box:
                         path: zenario_menu_text
-                    without_traits:
-                        ghost: true
+                    without_columns_set:
+                        traits.ghost: true
                 edit:
                     priv: _PRIV_EDIT_MENU_ITEM
                     hide_in_select_mode: true
@@ -252,8 +252,8 @@ zenario__menu:
                         path: zenario_menu
                         key:
                             mode: ""
-                    without_traits:
-                        ghost: true
+                    without_columns_set:
+                        traits.ghost: true
                 define_menu_text:
                     priv: _PRIV_EDIT_MENU_TEXT
                     visible_if: |
@@ -262,10 +262,10 @@ zenario__menu:
                     label: Define menu text in this language
                     admin_box:
                         path: zenario_menu_text
-                    traits:
-                        ghost: true
-                    without_traits:
-                        can_duplicate: true
+                    with_columns_set:
+                        traits.ghost: true
+                    without_columns_set:
+                        traits.can_duplicate: true
                 duplicate:
                     priv: _PRIV_CREATE_TRANSLATION_FIRST_DRAFT
                     visible_if: |
@@ -276,8 +276,8 @@ zenario__menu:
                         key:
                             translate: true
                             duplicate_from_menu: true
-                    traits:
-                        can_duplicate: true
+                    with_columns_set:
+                        traits.can_duplicate: true
                 view_dropdown:
                     label: View
                     multiple_select: true
@@ -291,8 +291,8 @@ zenario__menu:
                         path: zenario__content/panels/chained
                         branch: true
                         refiner: zenario_trans__chained_in_link__from_menu_node
-                    traits:
-                        content: true
+                    with_columns_set:
+                        traits.content: true
                 view_content:
                     parent: view_dropdown
                     label: Content Items under this Node in the tree
@@ -304,71 +304,6 @@ zenario__menu:
                     label: More actions
                     multiple_select: true
                     hide_when_children_are_not_visible: true
-               # edit:
-               #     parent: action_dropdown
-               #     priv: _PRIV_EDIT_MENU_ITEM
-               #     hide_in_select_mode: true
-               #     label: Menu node properties
-               #     admin_box:
-               #         path: zenario_menu
-               #         key:
-               #             mode: ""
-               #     without_traits:
-               #         ghost: true
-                #add:
-                #    parent: action_dropdown
-                #    priv: _PRIV_EDIT_MENU_ITEM
-                #    label: XXXX_menu.xml,1
-                #    tooltip: Define menu text in this Language
-                #    admin_box:
-                #        path: zenario_menu
-                #    traits:
-                #        ghost: true
-                #    without_traits:
-                #        can_duplicate: true
-                #add_to_existing:
-                #    parent: action_dropdown
-                #    priv: _PRIV_EDIT_MENU_ITEM
-                #    label: XXXX_menu.xml,2
-                #    tooltip: >
-                #        Define Menu Text in this Language, then point to the
-                #        existing Content Item
-                #    admin_box:
-                #        path: zenario_menu
-                #    traits:
-                #        ghost: true
-                #        can_duplicate: true
-                #add_and_duplicate:
-                #    parent: action_dropdown
-                #    priv: _PRIV_CREATE_FIRST_DRAFT
-                #    label: XXXX_menu.xml,3
-                #    tooltip: >
-                #        Define Menu Text and Duplicate this Content Item to create a
-                #        translation in this Language
-                #    admin_box:
-                #        path: zenario_content
-                #        key:
-                #            duplicate: true
-                #            duplicate_from_menu: true
-                #    traits:
-                #        ghost: true
-                #        can_duplicate: true
-                #duplicate:
-                #    parent: action_dropdown
-                #    priv: _PRIV_CREATE_FIRST_DRAFT
-                #    label: XXXX_menu.xml,4
-                #    tooltip: >
-                #        Duplicate this Content Item to create a translation in this
-                #        Language
-                #    admin_box:
-                #        path: zenario_content
-                #        key:
-                #            duplicate: true
-                #            duplicate_from_menu: true
-                #    traits:
-                #        can_duplicate: true
-                #    without_traits:
-                #        ghost: true
                 quick_add_to_menu:
                     priv: _PRIV_ADD_MENU_ITEM
                     label: Create secondary node
@@ -446,11 +381,11 @@ zenario__menu:
                             message_type: warning
                         request:
                             delete: 1
-                    traits:
-                        childless: true
-                    without_traits:
-                        removable: true
-                        ghost: true
+                    with_columns_set:
+                        traits.childless: true
+                    without_columns_set:
+                        traits.removable: true
+                        traits.ghost: true
                 delete_recursive:
                     priv: _PRIV_DELETE_MENU_ITEM
                     label: Delete
@@ -476,11 +411,11 @@ zenario__menu:
                             message_type: warning
                         request:
                             delete: 1
-                    one_with_traits:
-                        has_children: true
-                    without_traits:
-                        removable: true
-                        ghost: true
+                    one_with_columns_set:
+                        traits.has_children: true
+                    without_columns_set:
+                        traits.removable: true
+                        traits.ghost: true
                 go_to_menu_in_sk:
                     label: Go to menu node
                     tooltip: Go to this Menu Node in hierarchical view
@@ -488,8 +423,8 @@ zenario__menu:
                 linked_content_item_dropdown:
                     label: Linked content item
                     multiple_select: true
-                    traits:
-                        content: true
+                    with_columns_set:
+                        traits.content: true
                 citem:
                     priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
                     label: Content item properties
@@ -499,5 +434,5 @@ zenario__menu:
                         path: zenario_content
                         key:
                             id_is_menu_node_id: 1
-                    traits:
-                        content: true
+                    with_columns_set:
+                        traits.content: true

@@ -67,7 +67,7 @@ class zenario_pro_features__admin_boxes__pro_features_spare_alias extends module
 			$box['title'] = adminPhrase('Editing the alias "[[alias]]"', array('alias' => ($details['alias'])));
 				
 			$box['tabs']['spare_alias']['fields']['alias']['value'] = $details['alias'];
-			$box['tabs']['spare_alias']['fields']['alias']['read_only'] = true;
+			$box['tabs']['spare_alias']['fields']['alias']['readonly'] = true;
 				
 			$box['tabs']['spare_alias']['fields']['target_loc']['value'] = $details['target_loc'];
 				

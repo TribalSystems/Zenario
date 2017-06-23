@@ -47,6 +47,45 @@ useGZIP();
 define('ADMIN_ID', (int) session('admin_userid'));
 
 
+function searchOrganizerColumn(&$whereStatement, $columnName, $serachText, $exactMatch, $not, $asciiCharactersOnly) {
+	
+	if ($exactMatch) {
+		if ($not) {
+			$whereStatement .= "
+				(". $columnName. " IS NULL OR ". $columnName. " != ";
+		} else {
+			$whereStatement .= "
+				". $columnName. " = ";
+		}
+	
+		if ($asciiCharactersOnly) {
+			$whereStatement .= "_ascii";
+		}
+	
+		$whereStatement .= "'". sqlEscape($serachText). "'";
+	
+	} else {
+		if ($not) {
+			$whereStatement .= "
+				(". $columnName. " IS NULL OR ". $columnName. " NOT LIKE ";
+		} else {
+			$whereStatement .= "
+				". $columnName. " LIKE ";
+		}
+	
+		if ($asciiCharactersOnly) {
+			$whereStatement .= "_ascii";
+		}
+	
+		$whereStatement .= "'%". likeEscape($serachText, true). "%'";
+	}
+	
+	if ($not) {
+		$whereStatement .= ")";
+	}
+}
+
+
 $mode = false;
 $tagPath = '';
 $modules = array();
@@ -503,6 +542,8 @@ if (!$requestedPath || empty($tags['class_name'])) {
 					$tags['columns'][$cFieldName] = $cCol;
 				}
 				unset($cfield);
+				
+				flagEncryptedColumnsInOrganizer($tags, 'custom', $dataset['table']);
 			}
 		}
 		
@@ -641,21 +682,23 @@ if (!$requestedPath || empty($tags['class_name'])) {
 					//Group functions can't be used in a query
 					if (!preg_match('/COUNT\s*\(/i', $col['db_column'])) {
 						
-						$asciiCharactersOnly = engToBooleanArray($col, 'ascii_only');
-						
 						if ($first) {
 							$first = false;
 						} else {
 							$whereStatement .= " OR";
 						}
 						
-						$whereStatement .= "
-							". ifNull(arrayKey($col, 'search_column'), $col['db_column']);
+						if (!empty($col['encrypted']['hashed'])) {
+							$whereStatement .= "
+								". $col['encrypted']['hashed_column']. " = '". sqlEscape(hashDBColumn($_GET['_search'])). "'";
 						
-						if (!empty($col['format']) && $col['format'] == 'id') {
-							$whereStatement .= " = '". sqlEscape(get('_search')). "'";
 						} else {
-							$whereStatement .= " LIKE '%". likeEscape(get('_search'), true, $asciiCharactersOnly). "%'";
+							
+							$exactMatch = !empty($col['format']) && $col['format'] == 'id';
+							$not = false;
+							$asciiCharactersOnly = engToBoolean($col['ascii_only'] ?? false);
+							
+							searchOrganizerColumn($whereStatement, $col['search_column'] ?? $col['db_column'], $_GET['_search'], $exactMatch, $not, $asciiCharactersOnly);
 						}
 					}
 				}
@@ -679,117 +722,117 @@ if (!$requestedPath || empty($tags['class_name'])) {
 			 && !empty(zenario_organizer::$filters[$colName]['v'])
 			 && !engToBooleanArray($col, 'disallow_filtering')) {
 				
-				//Try to get the column to filter on
-				if (!empty($col['filter_column'])) {
-					$columnName = $col['filter_column'];
-				} elseif (!empty($col['search_column'])) {
-					$columnName = $col['search_column'];
-				} elseif (!empty($col['db_column'])) {
-					$columnName = $col['db_column'];
-				} else {
-					continue;
-				}
-				
 				$value_ = zenario_organizer::$filters[$colName]['v'];
 				
-				$filterFormat = false;
-				if (!empty($col['format'])) {
-					$filterFormat = $col['format'];
-				} elseif (!empty($col['filter_format'])) {
-					$filterFormat = $col['filter_format'];
-				} 
-				$isDateColumn = $filterFormat == 'date' || $filterFormat == 'datetime' || $filterFormat == 'datetime_with_seconds';
+				//Special case for encrypted columns with hashed values
+				if (!empty($col['encrypted']['hashed'])) {
+					
+					$whereStatement .= "
+						AND ". $col['encrypted']['hashed_column'];
+					
+					if (empty(zenario_organizer::$filters[$colName]['not'])) {
+						$whereStatement .= " = '";
+					} else {
+						$whereStatement .= " != '";
+					}
+					
+					$whereStatement .= sqlEscape(hashDBColumn($value_)). "'";
 				
-				switch ($filterFormat) {
-					case 'date':
-					case 'datetime':
-					case 'datetime_with_seconds':
-						$dates = explode(',', $value_);
+				} else {
+					//Try to get the column to filter on
+					if (!empty($col['filter_column'])) {
+						$columnName = $col['filter_column'];
+					} elseif (!empty($col['search_column'])) {
+						$columnName = $col['search_column'];
+					} elseif (!empty($col['db_column'])) {
+						$columnName = $col['db_column'];
+					} else {
+						continue;
+					}
+				
+					$exactMatch = false;
+					$searchable = false;
+					$filterFormat = false;
+					if (!empty($col['format'])) {
+						$filterFormat = $col['format'];
+					} elseif (!empty($col['filter_format'])) {
+						$filterFormat = $col['filter_format'];
+					} 
+				
+					switch ($filterFormat) {
+						case 'date':
+						case 'datetime':
+						case 'datetime_with_seconds':
+							$dates = explode(',', $value_);
 						
-						if (!empty($dates[0]) && preg_replace('/\d{4}-\d{2}-\d{2}/', '', $dates[0]) == '') {
-							$whereStatement .= "
-							  AND ". $columnName.
-								  " >= '". sqlEscape($dates[0]). "'";
-						}
+							if (!empty($dates[0]) && preg_replace('/\d{4}-\d{2}-\d{2}/', '', $dates[0]) == '') {
+								$whereStatement .= "
+								  AND ". $columnName.
+									  " >= '". sqlEscape($dates[0]). "'";
+							}
 						
-						if (!empty($dates[1]) && preg_replace('/\d{4}-\d{2}-\d{2}/', '', $dates[1]) == '') {
-							$whereStatement .= "
-							  AND ". $columnName.
-								" < DATE_ADD('". sqlEscape($dates[1]). "', INTERVAL 1 DAY)";
-						}
+							if (!empty($dates[1]) && preg_replace('/\d{4}-\d{2}-\d{2}/', '', $dates[1]) == '') {
+								$whereStatement .= "
+								  AND ". $columnName.
+									" < DATE_ADD('". sqlEscape($dates[1]). "', INTERVAL 1 DAY)";
+							}
 						
-						break;
+							break;
 					
-					//Yes/No type filters on tinyint columns
-					case 'yes_or_no':
+						//Yes/No type filters on tinyint columns
+						case 'yes_or_no':
 					
-						if (empty(zenario_organizer::$filters[$colName]['not'])) {
-							$whereStatement .= "
-							  AND ". $columnName. " != 0";
-					
-						} else {
-							$whereStatement .= "
-							  AND (". $columnName. " = 0
-								OR ". $columnName. " IS NULL)";
-						}
-						
-						break;
-						
-						
-					//enum filters
-					case 'enum':
-					case 'language_english_name':
-					case 'language_english_name_with_id':
-					case 'language_local_name':
-					case 'language_local_name_with_id':
-					case 'id':
-					
-						//A value of "*" should match all values (or all empty values if not is set)
-						if ($filterFormat != 'id'
-						 && zenario_organizer::$filters[$colName]['v'] == '*') {
 							if (empty(zenario_organizer::$filters[$colName]['not'])) {
 								$whereStatement .= "
-								  AND ". $columnName. " != 0
-								  AND ". $columnName. " != ''";
+								  AND ". $columnName. " != 0";
 					
 							} else {
 								$whereStatement .= "
 								  AND (". $columnName. " = 0
-									OR ". $columnName. " = ''
 									OR ". $columnName. " IS NULL)";
 							}
+						
+							break;
+						
+						
+						//enum filters
+						case 'enum':
+						case 'language_english_name':
+						case 'language_english_name_with_id':
+						case 'language_local_name':
+						case 'language_local_name_with_id':
 					
-						//Otherwise do a normal match
-						} else {
-							if (empty(zenario_organizer::$filters[$colName]['not'])) {
-								$whereStatement .= "
-								  AND ". $columnName. " = '". sqlEscape(zenario_organizer::$filters[$colName]['v']). "'";
+							//A value of "*" should match all values (or all empty values if not is set)
+							if ($value_ == '*') {
+								if (empty(zenario_organizer::$filters[$colName]['not'])) {
+									$whereStatement .= "
+									  AND ". $columnName. " != 0
+									  AND ". $columnName. " != ''";
 					
-							} else {
-								$whereStatement .= "
-								  AND (". $columnName. " != '". sqlEscape(zenario_organizer::$filters[$colName]['v']). "'
-									OR ". $columnName. " IS NULL)";
+								} else {
+									$whereStatement .= "
+									  AND (". $columnName. " = 0
+										OR ". $columnName. " = ''
+										OR ". $columnName. " IS NULL)";
+								}
+								break;
 							}
-						}
+							
+						case 'id':
+							$exactMatch = true;
+							$searchable = true;
 						
-						break;
-						
-						
-					default:
-						//Do a text search for filters on text fields
-						if (engToBooleanArray($col, 'searchable')) {
-					
-							$asciiCharactersOnly = engToBooleanArray($col, 'ascii_only');
-					
-							if (empty(zenario_organizer::$filters[$colName]['not'])) {
+						default:
+							if ($searchable || engToBoolean($col['searchable'] ?? false)) {
+								
+								$not = !empty(zenario_organizer::$filters[$colName]['not']);
+								$asciiCharactersOnly = engToBoolean($col['ascii_only'] ?? false);
+								
 								$whereStatement .= "
-									AND ". $columnName. " LIKE '%". likeEscape(zenario_organizer::$filters[$colName]['v'], true, $asciiCharactersOnly). "%'";
-					
-							} else {
-								$whereStatement .= "
-									AND (". $columnName. " IS NULL OR ". $columnName. " NOT LIKE '%". likeEscape(zenario_organizer::$filters[$colName]['v'], true, $asciiCharactersOnly). "%')";
+								  AND ";
+								searchOrganizerColumn($whereStatement, $columnName, $value_, $exactMatch, $not, $asciiCharactersOnly);
 							}
-						}
+					}
 				}
 			}
 		}
@@ -1283,7 +1326,11 @@ if (!$requestedPath || empty($tags['class_name'])) {
 						foreach ($tags['columns'] as $colName => &$col) {
 							if (is_array($col) && !empty($col['db_column'])) {
 								if ($col['db_column'] != 'NULL') {
-									$tags['items'][$id][$colName] = $row[++$i];
+									if (empty($col['encrypted'])) {
+										$tags['items'][$id][$colName] = $row[++$i];
+									} else {
+										$tags['items'][$id][$colName] = zewl::decrypt($row[++$i]);
+									}
 								}
 							}
 						}

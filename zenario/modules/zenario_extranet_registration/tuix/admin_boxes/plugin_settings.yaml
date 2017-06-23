@@ -80,14 +80,30 @@ plugin_settings:
 					value: >
 						zenario_extranet_registration__to_admin_user_signup_notification_en
 					indent: 1
-				user_passwords:
-					label: 'User to choose password'
+				user_password:
+					label: "User's password:"
+					type: select
 					plugin_setting:
-						name: user_passwords
+						name: user_password
+					values:
+						user_to_choose_password:
+							label: "User to choose password"
+						user_to_have_random_password:
+							label: "User to have an auto-assigned random password"
+					format_onchange: true
+					empty_value: "-- Select --"
+					validation:
+						required_if_not_hidden: "Please select an option for the user's password."
+				password_needs_changing:
+					visible_if: "zenarioAB.value('user_password') == 'user_to_have_random_password'"
+					label: 'User must change password on next login'
+					plugin_setting:
+						name: password_needs_changing
 					type: checkbox
+					indent: 1
 					value: "0"
 					side_note: >
-						Allow user to choose a memorable password. Otherwise create a random password. Applies only to extranet users, not Contacts.
+						When the extranet user next logs in to the site, they will be asked to change their password before they can access the extranet area.
 				user_email_verification:
 					label: 'User must enter email twice'
 					plugin_setting:
@@ -323,7 +339,7 @@ plugin_settings:
 						on user signup or when User clicks verification link.
 					value: ""
 				user_activation_notification_email_template:
-					label: Email template:
+					label: 'Email template:'
 					plugin_setting:
 						name: user_activation_notification_email_template
 						foreign_key_to: email_template
@@ -350,36 +366,6 @@ plugin_settings:
 					side_note: >
 						Enter the recipient(s) who should be notified. Multiple email addresses can be separated by commas.
 					indent: 1
-		
-		registration_codes:
-			label: Registration Codes
-			fields:
-				desc:
-					full_width: true
-					snippet:
-						html: >
-							Using this tab, you can set up the User registration code
-							policy.
-				enable_registration_code:
-					label: 'Enable Registration Code'
-					type: checkbox
-					plugin_setting:
-						name: enable_registration_code
-					side_note: >
-						Check this box to enable Users to enter code on Registration
-						that may add them to a Group.
-					format_onchange: true
-				require_valid_code:
-					label: 'Require Code to be valid'
-					type: checkbox
-					plugin_setting:
-						name: require_valid_code
-					side_note: >
-						Check this box to force the User to enter a valid code
-						before registering.
-					hidden: true
-					indent: 1
-		
 		text:
 			label: Text
 			fields:

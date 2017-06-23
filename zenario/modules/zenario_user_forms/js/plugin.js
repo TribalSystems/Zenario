@@ -1,10 +1,13 @@
 (function(module) {
 	'use strict';
 	
-	module.initForm = function(containerId, slotName, ajaxURL, formHTML, formFinalSubmitSuccessfull, inFullScreen, allowProgressBarNavigation, page, maxPageReached, showLeavingPageMessage) {
+	module.initForm = function(containerId, slotName, ajaxURL, formHTML, formFinalSubmitSuccessfull, inFullScreen, allowProgressBarNavigation, page, maxPageReached, showLeavingPageMessage, isErrors) {
 		this.containerId = containerId;
-		
 		var that = this;
+		
+		if (isErrors) {
+			$('#' + containerId + '_user_form').effect("shake", {distance: 10, times: 3, duration: 300});
+		}
 		
 		$('#' + containerId + '_user_form form').on('submit', function() {
 		    window.onbeforeunload = null;
@@ -33,7 +36,7 @@
 		    });
 		}
 		
-		// Fix for modal forms with file inputs
+		//Fix for modal forms with file inputs
 		if (formHTML) {
 			$.colorbox({
 				transition: 'none',
@@ -48,12 +51,12 @@
 			});
 			zenario.resizeColorbox();
 		}
-		// Init print page button
+		//Init print page button
 		$('#' + containerId + '_print_page').on('click', function() {
 			that.printFormPage(containerId);
 		});
 		
-		// Init fullscreen button
+		//Init fullscreen button
 		var $fullScreenButton = $('#' + containerId + '_fullscreen');
 		var $fullScreenInput = $('#' + containerId + ' input[name="inFullScreen"]');
 		$fullScreenButton.on('click', function() {
@@ -70,7 +73,7 @@
 			zenario.exitFullScreen();
 		}
 		
-		// Init date pickers
+		//Init date pickers
 		$('#' + containerId + '_user_form input.jquery_form_datepicker').each(function(i, el) {
 			zenario.loadDatePicker();
 			if (el.id) {
@@ -99,59 +102,71 @@
 				}
 			}
 		});
-		// Init select list source fields
+		//Init select list source fields
 		$('#' + containerId + '_user_form select.source_field').on('change', function() {
 			module.submitForm(containerId, slotName, {'filter': 1});
 		});
-		// Init visible on condition fields
-		$('#' + containerId + '_user_form .form_field.visible_on_condition').each(function(i, el) {
-			var cFieldId = $(this).data('cfieldid');
-			var cFieldValue = $(this).data('cfieldvalue');
-			var fieldId = $(this).data('id');
+		//Init visible on condition fields
+		$('#' + containerId + '_user_form .form_field.visible_on_condition, #' + containerId + '_user_form .repeat_block.visible_on_condition, .page_switcher li.visible_on_condition').each(function(i, el) {
+			var that = this,
+				cFieldId = $(this).data('cfieldid'),
+				cFieldValue = $(this).data('cfieldvalue'),
+				cFieldInvert = $(this).data('cfieldinvert'),
+				cFieldType = $(this).data('cfieldtype'),
+				cFieldOperator = $(this).data('cfieldoperator'),
+				fieldId = $(this).data('id');
+			
 			if (cFieldId) {
-				$('#' + containerId + '_field_' + cFieldId + ' :input').on('change', function() {
-					var value;
-					if ($(this).is(':checkbox')) {
-						value = $(this).is(':checked');
-					} else {
-						value = $(this).val();
-					}
-					if ((!cFieldValue && value) || (cFieldValue && (cFieldValue == value))) {
-						$('#' + containerId + '_field_' + fieldId).show();
-					} else {
-						$('#' + containerId + '_field_' + fieldId).hide();
-					}
-				});
+				if (cFieldType == 'checkboxes') {
+					$('#' + containerId + '_field_' + cFieldId + ' input').on('change', function() {
+						var values = [], cFieldValues, visible, i;
+						$('#' + containerId + '_field_' + cFieldId + ' input').each(function() {
+							if ($(this).is(':checked')) {
+								values.push($(this).data('value'));
+							}
+						});
+						cFieldValues = cFieldValue ? _.map(cFieldValue.toString().split(','), Number) : [];
+						
+						if (cFieldOperator == 'AND') {
+							var sharedValues = _.intersection(values, cFieldValues);
+							var selectedRequiredValues = _.intersection(values, sharedValues);
+							
+							visible = _.isEqual(selectedRequiredValues, cFieldValues);
+						} else {
+							for (i = 0; i < values.length; i++) {
+								if (cFieldValues.indexOf(values[i]) != -1) {
+									visible = true;
+									break;
+								}
+							}	
+						}
+						
+						visible = cFieldInvert ? !visible : visible;
+						$(that).toggle(visible);
+					});
+				} else {
+					$('#' + containerId + '_field_' + cFieldId + ' :input').on('change', function() {
+						var value;
+						if ($(this).is(':checkbox')) {
+							value = $(this).is(':checked');
+						} else {
+							value = $(this).val();
+						}
+						
+						var visible = (cFieldValue === '' && value) || (cFieldValue !== '' && (cFieldValue == value));
+						visible = cFieldInvert ? !visible : visible;
+						$(that).toggle(visible);
+					});
+				}
 			}
 		});
-		// Init visible on condition repeat blocks
-		$('#' + containerId + '_user_form .repeat_block.visible_on_condition').each(function(i, el) {
-			var cFieldId = $(this).data('cfieldid');
-			var cFieldValue = $(this).data('cfieldvalue');
-			var fieldId = $(this).data('id');
-			if (cFieldId) {
-				$('#' + containerId + '_field_' + cFieldId + ' :input').on('change', function() {
-					var value;
-					if ($(this).is(':checkbox')) {
-						value = $(this).is(':checked');
-					} else {
-						value = $(this).val();
-					}
-					if ((!cFieldValue && value) || (cFieldValue && (cFieldValue == value))) {
-						$('#' + containerId + '_repeat_block_' + fieldId).show();
-					} else {
-						$('#' + containerId + '_repeat_block_' + fieldId).hide();
-					}
-				});
-			}
-		});
-		// Init restatement (mirror) fields
+		//Init restatement (mirror) fields
 		$('#' + containerId + '_user_form .form_field.restatement').each(function(i, el) {
 			var that = this;
 			var fieldId = $(this).data('fieldid');
 			if (fieldId) {
 				var $field = $('#' + containerId + '_user_form .form_field :input[name="field_' + fieldId + '"]');
-				// If field is on same form page update in real time
+				//If field is on same form page update in real time
 				if ($field.length > 0) {
 					
 					if ($field.is('input')) {
@@ -166,11 +181,19 @@
 				}
 			}
 		});
-		// Init calculated fields
+		
+		var checkFieldValueIsNaN = function(value) {
+			return (value == '' || isNaN(value) || value.toLowerCase().indexOf('e') > -1);
+		};
+		
+		//Init calculated fields
 		$('#' + containerId + '_user_form .form_field.calculated').each(function(i, el) {
 			var $calc = $(this).find('input');
 			var prefix = $(this).data('prefix');
 			var postfix = $(this).data('postfix');
+			var inRepeatBlock = $calc.data('repeated');
+			var repeatBlock = $calc.data('repeated_row');
+			var repeatBlockId = $calc.data('repeat_id');
 			var calculationCode = $('#' + containerId + '_field_' + $(el).data('id') + '_calculation_code').text();
 			if (calculationCode) {
 				calculationCode = JSON.parse(calculationCode);
@@ -181,12 +204,33 @@
 					var equation = that.buildFieldCalculation(containerId, calculationCode, fieldValues);
 					
 					if (equation) {
-						// Add fields not on page to equation
-						var $field, $fields = {};
+						var $field, $repeatFields, $fields = {};
 						for (i in fieldValues) {
 							$field = $('#' + containerId + '_user_form .form_field input[name="field_' + i + '"]');
+							//Find all the fields on the page so we can add a keyup event to update the calculated field
 							if ($field.length > 0) {
+								//Target field and calculated field are in the same repeat block
+								if ($field.data('repeated') && inRepeatBlock && ($field.data('repeat_id') == repeatBlockId)) {
+									if (repeatBlock > 1) {
+										$field = $('#' + containerId + '_user_form .form_field input[name="field_' + i + '_' + repeatBlock + '"]');
+										if ($field.length == 0) {
+											continue;
+										}	
+									}
+									$fields[i] = $field;
+									continue;
+								}
+								//Target field is repeated
+								if ($field.data('repeated')) {
+									$field._repeatedFields = [];
+									$repeatFields = $('#' + containerId + '_user_form .form_field.field_' + i + '_repeat input');
+									$repeatFields.each(function(index, e) {
+										$field._repeatedFields.push($(this));
+										$fields[i + '_' + index] = $(this);
+									});
+								}
 								$fields[i] = $field;
+							//Add fields not on page to equation
 							} else {
 								equation = equation.replace('[[FIELD_' + i + ']]', +fieldValues[i]);
 							}
@@ -203,10 +247,24 @@
 								
 								for (j in $fields) {
 									fieldValue = $fields[j].val();
-									if (fieldValue == '' || isNaN(fieldValue) || fieldValue.toLowerCase().indexOf('e') > -1) {
+									if (checkFieldValueIsNaN(fieldValue)) {
 										xIsNaN = true;
 										break;
 									}
+									//If this field is in a repeat block then it's the sum of all repeat fields
+									if ($fields[j]._repeatedFields && $fields[j]._repeatedFields.length) {
+										var repeatFieldValues = [fieldValue];
+										for (var k = 0; k < $fields[j]._repeatedFields.length; k++) {
+											var repeatFieldValue = $fields[j]._repeatedFields[k].val();
+											if (checkFieldValueIsNaN(repeatFieldValue)) {
+												xIsNaN = true;
+												break;
+											}
+											repeatFieldValues.push(repeatFieldValue);
+										}
+										fieldValue = '(' + repeatFieldValues.join(' + ') + ')';
+									}
+									
 									search = '\\[\\[FIELD_' + j + '\\]\\]';
 									equationWithMergeFields = equationWithMergeFields.replace(new RegExp(search, 'g'), fieldValue);
 								}
@@ -231,16 +289,16 @@
 								
 								$calc.val(x);
 								
-								// Update any restatement fields that target this field on the page
+								//Update any restatement fields that target this field on the page
 								$('#' + containerId + '_user_form .form_field.restatement[data-fieldid="' + $(el).data('id') + '"] :input').val(x);
 							});
 						}
 					}
 				}
 			}
-			
 		});
-		// Init repeat blocks
+		
+		//Init repeat blocks
 		$('#' + containerId + '_user_form .repeat_block').each(function(i, el) {
 			var blockId = $(this).data('id');
 			$(this).find('div.add').on('click', function() {
@@ -251,7 +309,7 @@
 				module.submitForm(containerId, slotName, {'delete_repeat_row': blockId, 'row': row});
 			});
 		});
-		// Init autocomplete lists
+		//Init autocomplete lists
 		var $autocompleteLists = $('#' + containerId + '_user_form .autocomplete_json');
 		$autocompleteLists.each(function() {
 			var that = this;
@@ -274,7 +332,7 @@
 						}
 						$(that).next().val(value);
 						$(that).prev().val(label);
-						// If this is a source field, reload the form to filter any target fields
+						//If this is a source field, reload the form to filter any target fields
 						if ($(that).data('source_field')) {
 							module.submitForm(containerId, slotName, {'filter': 1});
 						}
@@ -284,7 +342,7 @@
       					event.preventDefault();
 					},
 					change: function(event, ui) {
-						// If finish typing an option without selecting, search for that value and select it
+						//If finish typing an option without selecting, search for that value and select it
 						if (!ui.item) {
 							var value = $(this).val();
 							var found = list.find(function(el) {
@@ -311,7 +369,7 @@
 			}
 		});
 		//TODO improve this
-		// Init file picker fields
+		//Init file picker fields
 		$('#' + containerId + '_user_form .field_file_picker').each(function() {
 			var that = this,
 				$fileupload = $(this).find('.file_picker_field'),
@@ -325,7 +383,7 @@
 				field_id = $(this).data('id'),
 				acceptFileTypes = undefined;
 			
-			// Build regex from extensions for file type validation
+			//Build regex from extensions for file type validation
 			if (extensions) {
 				acceptFileTypes = '\\.(';
 				var temp = extensions.split(','),
@@ -342,10 +400,10 @@
 				acceptFileTypes = new RegExp(acceptFileTypes, 'i');
 			}
 			
-			// Init progress bar
+			//Init progress bar
 			$progressBar.progressbar();
 			
-			// Init file uploader
+			//Init file uploader
 			$fileupload.fileupload({
 				url: ajaxURL + '&filePickerUpload=1',
 				dataType: 'json',
@@ -363,7 +421,7 @@
 				},
 				done: function(e, data) {
 					
-					// Add new files
+					//Add new files
 					$.each(data.result.files, function(i, file) {
 						
 						var html = '';
@@ -383,7 +441,7 @@
 						}
 					});
 					
-					// Init file buttons
+					//Init file buttons
 					$(that).find('.delete_file_button').off().on('click', function() {
 						$(this).parent().remove();
 						count--; 
@@ -412,12 +470,12 @@
 				}
 			});
 			
-			// Get existing files
+			//Get existing files
 			var data = {};
 			var filesJSON = $(this).find('.loaded_files').text();
 			data.files = JSON.parse(filesJSON);
 			
-			// Add existing files
+			//Add existing files
 			if (data.files.length > 0) {
 				count = data.files.length;
 				$fileupload.fileupload('option', 'done').call($fileupload, $.Event('done'), {result: data});
@@ -427,10 +485,8 @@
 	
 	module.printFormPage = function() {
 		var htmlToPrint = $('#' + this.containerId + ' .form_fields').html();
-		
 		var left = window.screenX + ($(window).width() / 2);
 		var top = window.screenY;
-		
 		var newWin = window.open('','Print-Window','width=300,height=300,left=' + left + ',top=' + top );
 		
 		newWin.document.open();

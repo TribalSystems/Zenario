@@ -12,31 +12,30 @@ zenario_field_calculation:
             edit_mode:
                 enabled: true
             fields:
+                dummy_field:
+                    type: textarea
+                    hidden: true
                 calculation_display:
                     snippet:
                         html: |
                             <div id="zenario_calculation_display"></div>
                 operation_addition:
                     type: button
-                    value: |
-                        +
+                    value: "+"
                     onclick: zenarioO.pi.calculationAdminBoxAddSomthing('operation_addition');
                 operation_subtraction:
                     type: button
-                    value: |
-                        -
+                    value: "-"
                     same_row: true
                     onclick: zenarioO.pi.calculationAdminBoxAddSomthing('operation_subtraction');
                 operation_multiplication:
                     type: button
-                    value: |
-                        ×
+                    value: "×"
                     same_row: true
                     onclick: zenarioO.pi.calculationAdminBoxAddSomthing('operation_multiplication');
                 operation_division:
                     type: button
-                    value: |
-                        ÷
+                    value: "÷"
                     same_row: true
                     onclick: zenarioO.pi.calculationAdminBoxAddSomthing('operation_division');
                 parentheses_open:
@@ -57,11 +56,9 @@ zenario_field_calculation:
                     empty_value: -- Select --
                 add_numeric_field:
                     type: button
-                    value: |
-                        >
+                    value: ">"
                     same_row: true
                     onclick: zenarioO.pi.calculationAdminBoxAddSomthing('field', get('numeric_field').value);
-                
                 
                 static_value:
                     label: Static value
@@ -69,17 +66,13 @@ zenario_field_calculation:
                     style: 'width:6em;'
                 add_static_value:
                     type: button
-                    value: | 
-                        >
+                    value: ">"
                     same_row: true
                     onclick: zenarioO.pi.calculationAdminBoxAddSomthing('static_value', get('static_value').value);
-                    
                 delete:
                     type: button
                     value: Delete
                     onclick: zenarioO.pi.calculationAdminBoxDelete();
-                    
-                    
                 calculation_code:
                     type: textarea
                     style: display:none;

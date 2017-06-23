@@ -30,23 +30,23 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 //Remove a Plugin
 if (($instance = getPluginInstanceDetails($instanceId))
- && ($nestedItem = getNestDetails($nestedItemId, $instanceId))
- && (!$nestedItem['is_slide'])) {
+ && ($egg = getNestDetails($eggId, $instanceId))
+ && (!$egg['is_slide'])) {
 	$sql = "
 		DELETE FROM ". DB_NAME_PREFIX. "plugin_settings
 		WHERE instance_id = ". (int) $instanceId. "
-		  AND nest != 0
-		  AND nest IN (
+		  AND egg_id != 0
+		  AND egg_id IN (
 			SELECT id
 			FROM ". DB_NAME_PREFIX. "nested_plugins
 			WHERE instance_id = ". (int) $instanceId. "
-			  AND id = ". (int) $nestedItemId. "
+			  AND id = ". (int) $eggId. "
 		  )";
 	sqlSelect($sql);  //No need to check the cache as the other statements should clear it correctly
 	
-	managePluginCSSFile('delete', $instanceId, $nestedItemId);
+	managePluginCSSFile('delete', $instanceId, $eggId);
 	
-	deleteRow('nested_plugins', array('instance_id' => $instanceId, 'id' => $nestedItemId));
+	deleteRow('nested_plugins', array('instance_id' => $instanceId, 'id' => $eggId));
 	
 	resyncLibraryPluginFiles($instanceId, $instance);
 	

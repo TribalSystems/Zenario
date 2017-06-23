@@ -35,7 +35,7 @@ class zenario_menu_responsive_multilevel_2 extends zenario_menu {
 			
 			$this->callScript(
 				'zenario_menu_responsive_multilevel_2', 'init',
-				$this->containerId. '_slimmenu', (int) setting('image_mobile_resize_point'),
+				$this->containerId. '_slimmenu', (int) cms_core::$minWidth,
 				$this->setting('easing_effect'), $this->setting('anim_speed'));
 			
 			return true;

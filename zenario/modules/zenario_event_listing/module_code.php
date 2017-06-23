@@ -113,7 +113,7 @@ class zenario_event_listing extends module_base_class {
                     $url = '';
                     $width = 0;
                     $height = 0;
-                    imageLink($width, $height, $url, $row['sticky_image_id'], $this->setting("width"), $this->setting("height"), $this->setting('canvas'), 0, $this->setting('retina'));
+                    imageLink($width, $height, $url, $row['feature_image_id'], $this->setting("width"), $this->setting("height"), $this->setting('canvas'), 0, $this->setting('retina'));
                     
                     if ($url) {
                         $stickyImageURL = $url;
@@ -205,7 +205,7 @@ class zenario_event_listing extends module_base_class {
 				$eventRow['equiv_id'] = $row['equiv_id'];
 				$eventRow['language_id'] = $row['language_id'];
 
-				if ( ($this->cType != 'event' || $eventRow['equiv_id'] != equivId($this->cID, $this->cType))  && (!isset($eventRows[$eventRow['equiv_id']]) || ($eventRows[$eventRow['equiv_id']]['language_id'] != $_SESSION['user_lang'])) ){
+				if ( ($this->cType != 'event' || $eventRow['equiv_id'] != equivId($this->cID, $this->cType))  && (!isset($eventRows[$eventRow['equiv_id']]) || ($eventRows[$eventRow['equiv_id']]['language_id'] != cms_core::$langId)) ){
 					$eventRows[$eventRow['equiv_id']] = $eventRow;
 				}
 			}
@@ -494,7 +494,7 @@ class zenario_event_listing extends module_base_class {
 								v.version,
 								v.title,
 								v.content_summary,
-								v.sticky_image_id,
+								v.feature_image_id,
 								c.equiv_id,
 								c.language_id,
 								ce.location_id,
@@ -520,7 +520,7 @@ class zenario_event_listing extends module_base_class {
 					if ($this->setting('language_selection') == 'visitor') {
 						//Only return content in the current language
 						$sql .= "
-						  AND c.language_id = '". sqlEscape(session('user_lang')). "'";
+						  AND c.language_id = '". sqlEscape(cms_core::$langId). "'";
 					} elseif ($this->setting('language_selection') == 'specific_languages') { 
 						//Return content in languages selected by admin
 						$arr = array('');

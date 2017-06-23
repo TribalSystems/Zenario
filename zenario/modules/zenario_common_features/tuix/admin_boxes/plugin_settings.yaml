@@ -11,7 +11,8 @@ plugin_settings:
         cVersion: ""
         slotName: ""
         languageId: ""
-        nest: ""
+        eggId: ""
+        slideNum: ""
         usesConductor: false
         moduleId: ""
         frontEnd: ""

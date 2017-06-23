@@ -11,7 +11,7 @@ plugin_css_and_framework:
         cVersion: ''
         slotName: ''
         languageId: ''
-        nest: ''
+        eggId: ''
         moduleId: ''
         frontEnd: ''
         skinId: false
@@ -121,11 +121,16 @@ plugin_css_and_framework:
                     type: select
                     format_onchange: true
                     side_note: "The selected framework file is displayed below (editing may be available via your server's file system):"
+                framework_path:
+                    indent: 1
+                    snippet:
+                        label: ''
                 framework_source:
+                    indent: 1
                     full_width: true
                     type: code_editor
                     dont_trim: true
-                    read_only: true
+                    readonly: true
                     style: >
                         height: 30em;
                 

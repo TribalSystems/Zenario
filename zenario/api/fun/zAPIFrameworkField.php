@@ -77,7 +77,7 @@ if ($type === false) {
 
 //There's no need to re-upload a file that's already been uploaded
 if ($type == 'file') {
-	if ($value && substr($value, 0, 14) == 'cache/uploads/' && file_exists(CMS_ROOT. $value)) {
+	if ($value && preg_match('@^cache/uploads/[\w\-]+/[\w\.-]+\.upload$@', $value) && file_exists(CMS_ROOT. $value)) {
 		echo htmlspecialchars(substr(basename($value), 0, -7));
 		echo '
 			<input type="hidden" name="', htmlspecialchars(arrayKey($attributes, 'name')), '" value="', htmlspecialchars($value), '">'; 

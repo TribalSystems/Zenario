@@ -27,39 +27,73 @@
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
+
+//restoreDatabaseFromBackup($backupPath, &$failures)
+
+//Attempt to check whether gzip compression has been used, based on the filename
+$gzipped =
+	strtolower(substr($backupPath, -3)) == '.gz'
+ || strtolower(substr($backupPath, -13)) == '.gz.encrypted';
+$encrypted =
+	strtolower(substr($backupPath, -10)) == '.encrypted'
+ || strtolower(substr($backupPath, -13)) == '.encrypted.gz';
+
+
+//If the back was encrypted, decrypt it first!
+if ($encrypted) {
+	if (!(file_exists(CMS_ROOT. 'zenario/libraries/not_to_redistribute/zewl/zewl.inc.php'))
+	 || !(require_once CMS_ROOT. 'zenario/libraries/not_to_redistribute/zewl/zewl.inc.php')
+	 || !(zewl::loadClientKey())) {
+		echo adminPhrase('Could not load the encryption library.');
+		exit;
+	}
+	$encryptedBackupPath = $backupPath;
+	$backupPath = tempnam(sys_get_temp_dir(), 'ptb');
+	chmod($backupPath, 0600);
+	
+	try {
+		zewl::decryptFile($encryptedBackupPath, $backupPath);
+	} catch (Exception $e) {
+		echo adminPhrase('Could not decrypt this backup. It may be corrupted, or may have been created using a different encryption key.');
+		exit;
+	}
+}
+
+
+
 set_time_limit(60 * 10);
 
 //Use file functions for uncompressed files, and gz functions for compressed files
 //If the user has not tampered with a backup it should still be compressed though.
-if ($plainSql) {
-	$open = 'fopen';
-	$read = 'fread';
-	$close = 'fclose';
-} else {
+if ($gzipped) {
 	$open = 'gzopen';
 	$read = 'gzread';
 	$close = 'gzclose';
+} else {
+	$open = 'fopen';
+	$read = 'fread';
+	$close = 'fclose';
 }
 
 //Start out handling statements as SQL
 //Eventually we will move on to (re)creating the documents folder, as which point
 //this variable will be set to false
-$runningSQL = true;
+$attemptToUseMySQL = true;
 $chunks = '';
 $statementNo = 0;
 $reading = true;
-$state = ZENARIO_BU_NEXTPLEASE;
 
-//$docpath = setting('docstore_dir');
-//if (!is_readable($docpath) || !is_writeable($docpath)) {
-	//$docpath = false;
-//}
-
-//Open the file
-$f;
-
-if (!$g = $open($filename, 'rb')) {
-	$failures[] = adminPhrase('Could not open the file [[file]].', array('file' => $filename));
+//Try to open the file
+if (!$g = $open($backupPath, 'rb')) {
+	
+	//If we were restoring up from an encrypted file, delete the plain-text copy
+	if ($encrypted) {
+		unlink($backupPath);
+		$failures[] = adminPhrase('Could not open the file [[file]].', array('file' => $encryptedBackupPath));
+	} else {
+		$failures[] = adminPhrase('Could not open the file [[file]].', array('file' => $backupPath));
+	}
+	
 	return false;
 }
 
@@ -89,177 +123,195 @@ while($reading) {
 	//If we have any complete statements, execute them
 	for ($i = 0; $i < $count; ++$i) {
 		
-		//Stop running SQL statements when we see a statement called 'END OF SQL'
-		if ($runningSQL && $statements[$i] == 'END OF SQL') {
-			$runningSQL = false;
+		//Catch the case where phpMyAdmin shoves a "COMMIT" statement onto the end without a linebreak
+		if (substr($statements[$i], -7) == ';COMMIT') {
+			$statements[$i] = substr($statements[$i], 0, -7);
+		}
+	
+		//If the length is smaller than 20 chars, this is probably just some whitespace and can be ignored
+		if (($strlen = strlen($statements[$i])) < 20) {
+			continue;
 		}
 		
-		//If we are still running SQL statements then handle SQL statements
-		//If we have moved on, work differently
-		if ($runningSQL) {
-			//If the length is smaller than 20 chars, this is probably just some whitespace and can be ignored
-			if (($strlen = strlen($statements[$i])) < 20) {
-				continue;
+		//Keep count of the statements for debugging purposes
+		++$statementNo;
+		
+		
+		//Check to see if this 
+		if ($strlen > $max_allowed_packet) {
+			if ($needed_packet < $strlen) {
+				$needed_packet = $strlen;
 			}
+			continue;
+		
+		
+		
+		//Very old backups sometimes had global tables in them with special prefixes; ignore these
+		} elseif (strpos($statements[$i], "[['DB_NAME_PREFIX_GLOBAL']]") !== false) {
+			continue;
+		
+		} elseif (strpos($statements[$i], "[['GLOBAL_NOT_NORMALLY_RESTORED']]") !== false) {
+			continue;
+		
+		//Handle backups created by the CMS in the previous format before "T10131, A couple of small improvements to the CMS backup system"
+		//There will be no COMMIT/CREATE DATABASE/LOCK/SET/START/UNLOCK/USE statements, and the will be a merge field for the database prefix
+		} elseif (strpos($statements[$i], "[['DB_NAME_PREFIX']]") !== false) {
+			$searchInFile = "[['DB_NAME_PREFIX']]";
+			$replaceInFile = ($replacePrefix = DB_NAME_PREFIX. 'i_m_p_');
+			$searchPrefix = false;
+			$attemptToUseMySQL = false;
+		
+		//If we didn't see any of those prefixes, attempt to look for the table names as the first name in the statement
+		} else {
+			//Remove some of MySQL's or phpMyAdmin's comments from the start, which can cause us problems in the logic below
+			$statements[$i] = preg_replace('@^[ \t]*--[^"\']*?$@m', '', $statements[$i]);
 			
-			//Keep count of the statements for debugging purposes
-			++$statementNo;
+			//Try to work out what type of statement this is
+			$matches = array();
+			if (!preg_match('@^[^`\'\"]*\b(ALTER|COMMIT|CREATE DATABASE|CREATE TABLE|DROP|INSERT|LOCK|REPLACE|SELECT|SET|SHOW|START|TRUNCATE|UNLOCK|UPDATE|USE)\b@m', $statements[$i], $matches)) {
+				//Throw out anything that doesn't conform to the norm!
+				$failures[] = 'Statement '. $statementNo. ":\n". $statements[$i]. "\n\nThis does not look like a backup file made by Zenario, mysqldump or phpMyAdmin. Only those formats are supported.\n\n\n";
+				break 2;
 			
-			
-			//Check to see if this 
-			if ($strlen > $max_allowed_packet) {
-				if ($needed_packet < $strlen) {
-					$needed_packet = $strlen;
-				}
+			} elseif ($matches[1] == 'SET') {
+				//Ignore any SET commands we see, but don't raise an error about them either
 				continue;
 			
-			
-			
-			//Very old backups sometimes had global tables in them with special prefixes; ignore these
-			} elseif (strpos($statements[$i], "[['DB_NAME_PREFIX_GLOBAL']]") !== false) {
+			//Check for things such as COMMIT/CREATE DATABASE/LOCK/SET/START/UNLOCK/USE statements that phpMyAdmin likes to add
+			} else
+			if ($matches[1] == 'COMMIT'
+			 || $matches[1] == 'CREATE DATABASE'
+			 || $matches[1] == 'LOCK'
+			 || $matches[1] == 'START'
+			 || $matches[1] == 'UNLOCK'
+			 || $matches[1] == 'USE') {
+				//Don't attempt to pipe this SQL file directly to MySQL if we see something like a CREATE DATABASE or a USE at the top
+				$attemptToUseMySQL = false;
+				
+				//Otherwise if we're using PHP to restore the backup, just ignore these statements but keep trying to restore the tables in the backup
 				continue;
 			
-			} elseif (strpos($statements[$i], "[['GLOBAL_NOT_NORMALLY_RESTORED']]") !== false) {
-				continue;
+			//Look for the first two `s in the statement, and get the text inbetween
+			} else
+			if ((false !== ($tick1 = strpos($statements[$i], '`')))
+			 && (false !== ($tick2 = strpos($statements[$i], '`', $tick1 + 1)))
+			 && ($tick1 < 100)
+			 && ($tick2 < 350)
+			 && ($tableName = substr($statements[$i], $tick1 + 1, $tick2 - $tick1 - 1))) {
 			
-			//Handle backups created by the CMS in the previous format before "T10131, A couple of small improvements to the CMS backup system"
-			//There will be no COMMIT/CREATE DATABASE/LOCK/SET/START/UNLOCK/USE statements, and the will be a merge field for the database prefix
-			} elseif (strpos($statements[$i], "[['DB_NAME_PREFIX']]") !== false) {
-				$searchInFile = "[['DB_NAME_PREFIX']]";
-				$replaceInFile = DB_NAME_PREFIX. 'i_m_p_';
-			
-			//If we didn't see any of those prefixes, attempt to look for the table names as the first name in the statement
-			} else {
-				//Remove some of phpMyAdmin's comments from the start, which can cause us problems in the logic below
-				$statements[$i] = preg_replace('@^[ \t]*--[^"\']*?$@m', '', $statements[$i]);
-				
-				//Ignore any COMMIT/CREATE DATABASE/LOCK/SET/START/UNLOCK/USE statements if phpMyAdmin has added them
-				$matches = array();
-				if (preg_match('@\b(COMMIT|CREATE DATABASE|CREATE TABLE|DROP|INSERT|LOCK|REPLACE|SELECT|SET|SHOW|START|TRUNCATE|UNLOCK|UPDATE|USE)\b@', $statements[$i], $matches)
-				 && (!empty($matches))
-				 && ($matches[0] == 'COMMIT'
-				  || $matches[0] == 'CREATE DATABASE'
-				  || $matches[0] == 'LOCK'
-				  || $matches[0] == 'SET'
-				  || $matches[0] == 'START'
-				  || $matches[0] == 'UNLOCK'
-				  || $matches[0] == 'USE')) {
-					continue;
-				
-				//Look for the first two `s in the statement, and get the text inbetween
-				} else
-				if ((false !== ($tick1 = strpos($statements[$i], '`')))
-				 && (false !== ($tick2 = strpos($statements[$i], '`', $tick1 + 1)))
-				 && ($tick1 < 100)
-				 && ($tick2 < 350)
-				 && ($tableName = substr($statements[$i], $tick1 + 1, $tick2 - $tick1 - 1))) {
-				
-					//If this is a CMS backup in the latest format, each table name should have a note in front if it saying what the prefix was
-					if ((false !== ($tick1 = strpos($statements[$i], '/*\\prefix:\'')))
-					 && (false !== ($tick2 = strpos($statements[$i], '\':prefix\\*/', $tick1 + 11)))
-					 && ($tick2 < 100)) {
-						$dbNamePrefixInFile = substr($statements[$i], $tick1 + 11, $tick2 - $tick1 - 11);
-							//var_dump($dbNamePrefixInFile, $tableName);
-						
-						if ($tableName = chopPrefixOffString($dbNamePrefixInFile, $tableName)) {
-							$searchInFile = '`'. $dbNamePrefixInFile. $tableName. '`';
-							$replaceInFile = '`'. DB_NAME_PREFIX. 'i_m_p_'. $tableName. '`';
-						
-						} else {
-							$failures[] = 'Statement '. $statementNo. ":\n". $statements[$i]. "\n\nCould not read the table-prefix in this backup file\n\n\n";
-							break 2;
-						}
+				//If this is a recent backup created by the CMS (and not mysqldump),
+				//then each table name should have a note in front if it saying what the prefix was
+				if ((false !== ($tick1 = strpos($statements[$i], '/*\\prefix:\'')))
+				 && (false !== ($tick2 = strpos($statements[$i], '\':prefix\\*/', $tick1 + 11)))
+				 && ($tick2 < 100)) {
+					$dbNamePrefixInFile = substr($statements[$i], $tick1 + 11, $tick2 - $tick1 - 11);
 					
-					//Check that the table's name begins with the DB_NAME_PREFIX,
-					//and then get just the table name without the prefix
-					} elseif ($tableName = chopPrefixOffString(DB_NAME_PREFIX, $tableName)) {
-						$searchInFile = '`'. DB_NAME_PREFIX. $tableName. '`';
-						$replaceInFile = '`'. DB_NAME_PREFIX. 'i_m_p_'. $tableName. '`';
+					if ($tableName = chopPrefixOffString($dbNamePrefixInFile, $tableName)) {
+						$searchInFile = '`'. ($searchPrefix = $dbNamePrefixInFile). $tableName. '`';
+						$replaceInFile = '`'. ($replacePrefix = DB_NAME_PREFIX. 'i_m_p_'). $tableName. '`';
 					
 					} else {
-						$failures[] = 'Statement '. $statementNo. ":\n". $statements[$i]. "\n\nThe table-prefix in this backup file does not match the table-prefix for this site\n\n\n";
+						$failures[] = 'Statement '. $statementNo. ":\n". $statements[$i]. "\n\nCould not read the table-prefix in this backup file\n\n\n";
 						break 2;
 					}
-					
+				
+				//Check that the table's name begins with the DB_NAME_PREFIX,
+				//and then get just the table name without the prefix
+				} elseif ($tableName = chopPrefixOffString(DB_NAME_PREFIX, $tableName)) {
+					$searchInFile = '`'. ($searchPrefix = DB_NAME_PREFIX). $tableName. '`';
+					$replaceInFile = '`'. ($replacePrefix = DB_NAME_PREFIX. 'i_m_p_'). $tableName. '`';
+				
 				} else {
-					$failures[] = 'Statement '. $statementNo. ":\n". $statements[$i]. "\n\nTable name was not found, or backquotes were not used. Please make sure the 'Enclose table and column names with backquotes' option is checked when creating a backup.\n\n\n";
+					$failures[] = 'Statement '. $statementNo. ":\n". $statements[$i]. "\n\nThe table-prefix in this backup file does not match the table-prefix for this site\n\n\n";
 					break 2;
 				}
-			}
-			
-			//Attempt to run the SQL. Note there are no further checks done on it, so of course it may not be valid.
-			//I'll also check whether it failed or succeeded
-			$success = @sqlSelect(str_replace($searchInFile, $replaceInFile, $statements[$i]));
-						
-			//Even if it failed, we'll keep running the SQL statements. But we'll log the failures and report at the end.
-			if (!$success) {
-				$failures[] = 'Statement '. $statementNo. ":\n". $statements[$i]. "\n\nDatabase query error ". sqlErrno(). ": ". sqlError()."\n\n\n";
+				
+			} else {
+				$failures[] = 'Statement '. $statementNo. ":\n". $statements[$i]. "\n\nTable name was not found, or backquotes were not used. Please make sure the 'Enclose table and column names with backquotes' option is checked when creating a backup.\n\n\n";
 				break 2;
 			}
+		}
+		
+		
+		
+		//If we got this far, the backup is likely to be good.
+		//Attempt to use MySQL to restore the backup from this point, rather than using PHP.
+		//Note that because we need to do a preg-replace the database prefix, only try to do this if both prefixes contain only word characters
+		if ($attemptToUseMySQL
+		 && $searchPrefix !== false
+		 && preg_replace('@[a-zA-Z_]@', '', $searchPrefix) === ''
+		 && preg_replace('@[a-zA-Z_]@', '', $replacePrefix) === ''
+		 && testMySQL(false)
+		 && strpos(DBHOST, '"') === false
+		 && strpos(DBUSER, '"') === false
+		 && strpos(DBPASS, '"') === false) {
 			
-		//If we have moved on from SQL statements, move on to the DocStore creation statements
-		//} elseif ($docpath && empty($failures) && !$needed_packet) {
-			//Watch out for DIR and FILE labels, that tell us if the next statement is the path for a directory or a file
-			//if ($state == ZENARIO_BU_NEXTPLEASE) {
-				//if ($statements[$i] == 'DIR') {
-					//$state = ZENARIO_BU_CREATEDIR;
-				//} elseif ($statements[$i] == 'FILE') {
-					//$state = ZENARIO_BU_FILENAME;
-				//}
-				
-			//Create the specified directory, if it doesn't already exist
-			//} elseif ($state == ZENARIO_BU_CREATEDIR) {
-				//if (!file_exists(docstoreDirectoryPath($statements[$i]))) {
-					//mkdir(docstoreDirectoryPath($statements[$i]));
-				//}
-				//The next statement should be the start of a new directory or file
-				//$state = ZENARIO_BU_NEXTPLEASE;
-				
-			//Open the specified file for writing
-			//} elseif ($state == ZENARIO_BU_FILENAME) {
-				//$f = fopen(docstoreDirectoryPath($statements[$i]), 'wb');
-				
-				//The next statement should be the contents of the file
-				//$state = ZENARIO_BU_FILECONTENTS;
-				
-			//Write the contents of the file, then close it.
-			//} elseif ($state == ZENARIO_BU_FILECONTENTS) {
-				//Write the (remaining) data to the file
-				//fwrite($f, hex2bin($statements[$i]));
-				
-				//Close the file
-				//fclose($f);
-				
-				//We're done; the next statement should be the start of a new directory or file
-				//$state = ZENARIO_BU_NEXTPLEASE;
-			//}
+			//Create a password file to avoid writing the password in the CLI (which would be bad because this is visible to process lists)
+			$connectionDetails = '[client]
+host="'. DBHOST. '"
+user="'. DBUSER. '"
+password="'. DBPASS. '"';
+
+			if (defined('DBPORT') && (int) DBPORT) {
+				$connectionDetails .= "\nport=". (int) DBPORT;
+			}
+
+			$passwordFile = tempnam(sys_get_temp_dir(), 'pwf');
+			chmod($passwordFile, 0600);
+			file_put_contents($passwordFile, $connectionDetails);
+			unset($connectionDetails);
+			
+			
+			$input = 'cat '. escapeshellarg($backupPath);
+			
+			//Decompress if this is a gzipped backup
+			if ($gzipped) {
+				$input .= ' | gzip -d';
+			}
+			
+			//Change the database prefix from the backup to the temporary prefix using sed
+			$input .= ' | sed -E \'s@^(DROP TABLE|DROP TABLE IF EXISTS|CREATE TABLE|CREATE TABLE IF NOT EXISTS|INSERT INTO|REPLACE INTO|UPDATE|ALTER TABLE|/\\*\\![0-9]+ ALTER TABLE)( | /\\*\\\\prefix:\'"\'"\'[a-zA-Z_]+\'"\'"\':prefix\\\\\\*/)`'. $searchPrefix. '@\\1 `'. $replacePrefix. '@\'';
+			
+			//Call mysql restore the tables
+			$execResult = callMySQL(false,
+				' --default-character-set=utf8 --defaults-extra-file='. escapeshellarg($passwordFile). ' -D '. escapeshellarg(DBNAME),
+				$input. ' | ');
+			
+			if ($execResult !== false) {
+				//If all looks okay, skip down to after this loop where we tidy up the code
+				break 2;
+			}
+		}
+		
+		//If we couldn't call MySQL above, or calling MySQL didn't work, continue trying to restore the backup using PHP.
+		$attemptToUseMySQL = false;
+		
+		
+		
+		
+		
+		//Attempt to run the SQL. Note there are no further checks done on it, so of course it may not be valid.
+		//I'll also check whether it failed or succeeded
+		$success = @sqlSelect(str_replace($searchInFile, $replaceInFile, $statements[$i]));
+					
+		//Even if it failed, we'll keep running the SQL statements. But we'll log the failures and report at the end.
+		if (!$success) {
+			$failures[] = 'Statement '. $statementNo. ":\n". $statements[$i]. "\n\nDatabase query error ". sqlErrno(). ": ". sqlError()."\n\n\n";
+			break 2;
 		}
 	}
 
 	//Remember any incomplete statements for the next read
-	if ($state != ZENARIO_BU_FILECONTENTS) {
-		$chunks = $statements[$count];
-	} else {
-		//Have an exception for writing files - we can stream the data straight into the file
-		//without needing to hold it back.
-		if (strlen($statements[$i]) % 2 == 0) {
-			fwrite($f, hex2bin($statements[$i]));
-			$chunks = '';
-		} else {
-			//The hexadecimal values need to be in pairs; if there is an odd number then remove the
-			//last digit and save it for next time.
-			fwrite($f, hex2bin(substr($statements[$i], 0, -1)));
-			$chunks = substr($statements[$i], -1);
-		}
-	}
-
+	$chunks = $statements[$count];
 }
 $close($g);
-//Close the last file, if it was left open
-if ($state == ZENARIO_BU_FILECONTENTS) {
-	//Close the file
-	fclose($f);
+
+//If we were restoring up from an encrypted file, delete the plain-text copy
+if ($encrypted) {
+	unlink($backupPath);
 }
+
+
 
 
 if ($needed_packet) {
@@ -269,6 +321,21 @@ if ($needed_packet) {
 		"please ask your server administrator increase it to at least '". configFileSize($needed_packet * 1.05). "'.\n".
 		"Please see http://dev.mysql.com/doc/refman/5.0/en/packet-too-large.html for details.\n\n\n";
 }
+
+if (empty($failures)) {
+	if (sqlNumRows("SHOW TABLES LIKE '". likeEscape($replacePrefix). "%'") < 70
+	 || !sqlNumRows("SHOW TABLES LIKE '". likeEscape($replacePrefix). "action_admin_link'")
+	 || !sqlNumRows("SHOW TABLES LIKE '". likeEscape($replacePrefix). "admins'")
+	 || !sqlNumRows("SHOW TABLES LIKE '". likeEscape($replacePrefix). "local_revision_numbers'")
+	 || !sqlNumRows("SHOW TABLES LIKE '". likeEscape($replacePrefix). "users'")
+	 || !sqlNumRows("SHOW TABLES LIKE '". likeEscape($replacePrefix). "visitor_phrases'")) {
+		$failures[] = adminPhrase('This backup file is missing tables, or was not a backup of a Zenario site. It cannot be restored.');
+	
+	} elseif (!sqlNumRows("SELECT 1 FROM `". sqlEscape($replacePrefix). "local_revision_numbers` LIMIT 1")) {
+		$failures[] = adminPhrase('This backup file contained table definitions but no data. It cannot be restored.');
+	}
+}
+
 
 //Check for any failures
 if (!empty($failures)) {

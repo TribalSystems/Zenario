@@ -57,7 +57,7 @@ class zenario_common_features__admin_boxes__trash extends module_base_class {
 					m.class_name,
 					m.display_name,
 					ps.instance_id,
-					ps.nest,
+					ps.egg_id,
 					pi.content_id,
 					pi.content_type,
 					pi.content_version,

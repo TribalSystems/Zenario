@@ -741,7 +741,7 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 				$box['tabs']['actions']['fields']['label__'.$fieldId] = array(
 					'ord' => $ord + 500,
 					'same_row' => true,
-					'read_only' => true,
+					'readonly' => true,
 					'type' => 'text',
 					'value' => $datasetField['db_column'],
 					'style' => 'width: 15em;');
@@ -996,7 +996,7 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 		$box['tabs']['headers']['fields']['file_column__'.$value] = array(
 			'ord' => $ord + 500,
 			'same_row' => true,
-			'read_only' => true,
+			'readonly' => true,
 			'type' => 'text',
 			'value' => $value,
 			'style' => 'width: ' . self::$step2FieldWidth . 'em;'
@@ -1456,11 +1456,8 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 					
 					// If site uses screen names and no screen name is imported, use the identifier as a screen name
 					if (empty($data['screen_name']) && setting('user_use_screen_name')) {
-						$sql = '
-							UPDATE ' . DB_NAME_PREFIX . 'users 
-							SET screen_name = identifier
-							WHERE id = ' . (int)$id;
-						sqlQuery($sql);
+						$identifier = getUserIdentifier($id);
+						updateRow('users', ['screen_name' => $identifier], $id);
 					}
 				
 				// Custom logic to save locations

@@ -437,53 +437,6 @@ switch ($path) {
 		}
 		break;
 	
-	case 'zenario_document_properties':
-		if ($document_id = $box['key']['id']) {
-			$documentTagsString = '';
-			
-			$documentDetails = getRow('documents',array('file_id', 'thumbnail_id', 'extract', 'extract_wordcount', 'title'),  $document_id);
-			$documentName = getRow('documents', 'filename', array('type' => 'file','id' => $document_id));
-			$box['title'] = adminPhrase('Editing metadata for document "[[filename]]".', array("filename"=>$documentName));
-			
-			$fields['details/document_title']['value'] = $documentDetails['title'];
-			$fields['details/document_extension']['value'] = pathinfo($documentName, PATHINFO_EXTENSION);
-			$fields['details/document_name']['value'] = pathinfo($documentName, PATHINFO_FILENAME);
-			$fileDatetime=getRow('documents', 'file_datetime', array('type' => 'file','id' => $document_id));
-			$fields['details/date_uploaded']['value'] = date('jS F Y H:i', strtotime($fileDatetime));
-			
-			if (setting('enable_document_tags')) {
-				$documentTags = getRowsArray('document_tag_link', 'tag_id', array('document_id' => $document_id));
-				foreach ($documentTags as $tag) {
-					$documentTagsString .= $tag . ",";
-				}
-				$fields['details/tags']['value'] = $documentTagsString;
-				$fields['details/link_to_add_tags']['snippet']['html'] = 
-						adminPhrase('To add or edit document tags click <a[[link]]>this link</a>.',
-							array('link' => ' href="'. htmlspecialchars(absCMSDirURL(). 'zenario/admin/organizer.php#zenario__content/panels/document_tags'). '" target="_blank"'));
-			} else {
-				$fields['details/tags']['hidden'] = true;
-			}
-			
-			$fields['extract/extract_wordcount']['value'] = $documentDetails['extract_wordcount'];
-			$fields['extract/extract']['value'] = ($documentDetails['extract'] ? $documentDetails['extract']: 'No plain-text extract');
-			
-			// Add a preview image for JPEG/PNG/GIF images 
-			if (!empty($documentDetails['thumbnail_id'])) {
-				$this->getImageHtmlSnippet($documentDetails['thumbnail_id'], $fields['upload_image/thumbnail_image']['snippet']['html']);
-			} else {
-				$fields['upload_image/delete_thumbnail_image']['hidden'] = true;
-				$mimeType = getRow('files', 'mime_type', $documentDetails['file_id']);
-				if ($mimeType == 'image/gif' || $mimeType == 'image/png' || $mimeType == 'image/jpeg' || $mimeType == 'image/pjpeg') {
-					$this->getImageHtmlSnippet($documentDetails['file_id'], $fields['upload_image/thumbnail_image']['snippet']['html']);
-				} else {
-					$fields['upload_image/thumbnail_image']['snippet']['html'] = adminPhrase('No thumbnail avaliable');
-				}
-			}
-			
-		}
-		break;
-	
-	
 	case 'zenario_reorder_documents':
 		if ($box['key']['id']){
 			$folderId = $box['key']['id'];
@@ -512,15 +465,6 @@ switch ($path) {
 		}
 		
 	break;
-	
-	case 'zenario_document_upload':
-	
-		$folderDetails= getRow('documents', array('id','folder_name'), array('id' => $box['key']['id'],'type'=>'folder'));
-		if ($folderDetails) {
-			$box['title'] = 'Uploading document for the folder "'.$folderDetails['folder_name'].'"';
-			$documentProperties['folder_id'] = $box['key']['id'];
-		}
-		break;
 	
 	case 'zenario_document_rename':
 			$documentId = $box['key']['id'];

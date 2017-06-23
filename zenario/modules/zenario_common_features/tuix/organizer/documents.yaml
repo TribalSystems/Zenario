@@ -119,11 +119,29 @@ zenario__content:
                         path: zenario_document_folder
                         
                 reorder_root:
+                    priv: _PRIV_EDIT_DOCUMENTS
                     hide_on_filter: true
                     hide_in_select_mode: true
                     label: Re-order
                     admin_box:
                         path: zenario_reorder_documents
+                        
+                regenerate_public_links:
+                    priv: _PRIV_REGENERATE_DOCUMENT_PUBLIC_LINKS
+                    hide_on_filter: true
+                    hide_in_select_mode: true
+                    label: Re-generate public links
+                    ajax:
+                        confirm:
+                            message: |
+                                If you have any problems linking to public documents, this option will check every single public document and re-generate broken links.
+                                
+                                Are you sure you wish to check and re-generate links for public documents?
+                            button_message: Re-generate
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            regenerate_public_links: true
                 
             item_buttons:
                 upload:
@@ -133,9 +151,10 @@ zenario__content:
                     hide_on_filter: true
                     admin_box:
                         path: zenario_document_upload
-                    traits:
-                        is_folder: true
+                    with_columns_set:
+                        traits.is_folder: true
                 add_folder:
+                    priv: _PRIV_EDIT_DOCUMENTS
                     label: Create subfolder
                     css_class: zenario_create_a_new
                     hide_on_filter: true
@@ -143,15 +162,16 @@ zenario__content:
                         path: zenario_document_folder
                         key:
                             add_folder: true
-                    traits:
-                        is_folder: true
+                    with_columns_set:
+                        traits.is_folder: true
                 
                 view_tags:
+                    priv: _PRIV_EDIT_DOCUMENTS
                     hide_in_select_mode: true
                     label: Edit document metadata
                     multiple_select: false
-                    without_traits:
-                        is_folder: true
+                    without_columns_set:
+                        traits.is_folder: true
                     admin_box:
                         path: zenario_document_properties
                 actions_dropdown:
@@ -159,29 +179,31 @@ zenario__content:
                     multiple_select: true
                     hide_when_children_are_not_visible: true
                 reorder:
+                    priv: _PRIV_EDIT_DOCUMENTS
                     hide_on_filter: true
                     hide_in_select_mode: true
                     label: Re-order
                     admin_box:
                         path: zenario_reorder_documents
-                    traits:
-                        is_folder: true
+                    with_columns_set:
+                        traits.is_folder: true
                 rename:
+                    priv: _PRIV_EDIT_DOCUMENTS
                     parent: actions_dropdown
                     hide_in_select_mode: true
                     label: Rename
                     multiple_select: false
                     admin_box:
                         path: zenario_document_rename
-                    traits:
-                        is_folder: true
+                    with_columns_set:
+                        traits.is_folder: true
                 download:
                     parent: actions_dropdown
                     hide_in_select_mode: true
                     label: Download
                     multiple_select: false
-                    without_traits:
-                        is_folder: true
+                    without_columns_set:
+                        traits.is_folder: true
                     ajax:
                         confirm:
                             download: true
@@ -194,6 +216,7 @@ zenario__content:
                     multiple_select: true
                     hide_when_children_are_not_visible: true
                 autoset:
+                    priv: _PRIV_EDIT_DOCUMENTS
                     parent: advanced_dropdown
                     hide_in_select_mode: true
                     label: Auto-set metadata
@@ -202,8 +225,8 @@ zenario__content:
                     multiple_select: true
                     multiple_select_tooltip: >
                         Apply the rules to auto-set the metadata for these documents from their filenames
-                    without_traits:
-                        is_folder: true
+                    without_columns_set:
+                        traits.is_folder: true
                     ajax:
                         request: 
                             autoset: true
@@ -212,12 +235,13 @@ zenario__content:
                     disabled_tooltip: >
                         All of the selected documents are protected from auto-set
                 dont_autoset_metadata:
+                    priv: _PRIV_EDIT_DOCUMENTS
                     parent: advanced_dropdown
                     hide_in_select_mode: true
                     label: Protect from auto-set
                     multiple_select: true
-                    without_traits:
-                        is_folder: true
+                    without_columns_set:
+                        traits.is_folder: true
                     ajax:
                         request: 
                             dont_autoset_metadata: true
@@ -228,20 +252,21 @@ zenario__content:
                     hide_in_select_mode: true
                     label: Allow auto-set
                     multiple_select: true
-                    without_traits:
-                        is_folder: true
+                    without_columns_set:
+                        traits.is_folder: true
                     ajax:
                         request: 
                             allow_autoset_metadata: true
                     visible_if_for_any_selected_items: >
                         zenario.engToBoolean(item.dont_autoset_metadata)
                 remove_metadata:
+                    priv: _PRIV_EDIT_DOCUMENTS
                     parent: advanced_dropdown
                     hide_in_select_mode: true
                     label: Remove all metadata
                     multiple_select: true
-                    without_traits:
-                        is_folder: true
+                    without_columns_set:
+                        traits.is_folder: true
                     ajax: 
                         confirm: 
                             message: "Are you sure you want to remove all of the metadata from the document \"[[name]]\"?"
@@ -252,14 +277,15 @@ zenario__content:
                         request: 
                             remove_metadata: true
                 rescan_extract:
+                    priv: _PRIV_EDIT_DOCUMENTS
                     parent: advanced_dropdown
                     hide_in_select_mode: true
                     visible_if: |
                         item.name.match(/.pdf$/i) && zenarioA.siteSettings.pdftotext_path && zenarioA.siteSettings.ghostscript_path
                     label: Rescan text and image
                     multiple_select: false
-                    without_traits:
-                        is_folder: true
+                    without_columns_set:
+                        traits.is_folder: true
                     ajax:
                         confirm: 
                             message: | 
@@ -272,6 +298,7 @@ zenario__content:
                         request: 
                             rescan: true
                 rescan_text:
+                    priv: _PRIV_EDIT_DOCUMENTS
                     parent: advanced_dropdown
                     hide_in_select_mode: true
                     visible_if: |
@@ -280,12 +307,13 @@ zenario__content:
                         item.name.match(/.pdf$/i) && zenarioA.siteSettings.pdftotext_path
                     label: Rescan text
                     multiple_select: false
-                    without_traits:
-                        is_folder: true
+                    without_columns_set:
+                        traits.is_folder: true
                     ajax:
                         request: 
                             rescanText: true
                 move_documents:
+                    priv: _PRIV_EDIT_DOCUMENTS
                     parent: actions_dropdown
                     hide_in_select_mode: true
                     label: Move to folder...
@@ -295,6 +323,7 @@ zenario__content:
                         path: zenario_document_move
                 
                 upload_replacement_document:
+                    priv: _PRIV_EDIT_DOCUMENTS
                     parent: actions_dropdown
                     hide_in_select_mode: true
                     visible_if: |
@@ -304,11 +333,12 @@ zenario__content:
                         path: zenario_upload_replacement_document
                 
                 delete_file:
+                    priv: _PRIV_EDIT_DOCUMENTS
                     hide_in_select_mode: true
                     label: Delete
                     multiple_select: true
-                    without_traits:
-                        is_folder: true
+                    without_columns_set:
+                        traits.is_folder: true
                     ajax: 
                         class_name: zenario_common_features
                         confirm: 
@@ -320,13 +350,14 @@ zenario__content:
                         request: 
                             delete: true
                 generate_public_link:
+                    priv: _PRIV_EDIT_DOCUMENTS
                     parent: actions_dropdown
                     hide_in_select_mode: false
                     label: Generate public link
                     multiple_select: false
-                    without_traits:
-                        is_folder: true
-                        public_link: true
+                    without_columns_set:
+                        traits.is_folder: true
+                        traits.public_link: true
                     ajax: 
                         confirm:
                             message: Are you sure you want to generate a public link for this document? Anyone with the URL will be able to access this document.
@@ -341,38 +372,45 @@ zenario__content:
                     hide_in_select_mode: false
                     label: View public link
                     multiple_select: false
-                    traits:
-                        public_link: true
-                    without_traits:
-                        is_folder: true
+                    with_columns_set:
+                        traits.public_link: true
+                    without_columns_set:
+                        traits.is_folder: true
                     ajax: 
                         request: 
                             generate_public_link: true
                 delete_public_link:
+                    priv: _PRIV_EDIT_DOCUMENTS
                     parent: actions_dropdown
                     hide_in_select_mode: false
                     label: Delete public link
                     multiple_select: true
-                    traits:
-                        public_link: true
-                    without_traits:
-                        is_folder: true
+                    with_columns_set:
+                        traits.public_link: true
+                    without_columns_set:
+                        traits.is_folder: true
                     ajax: 
                         confirm:
-                            message: Are you sure you want to delete the public link for this document? Anyone with the URL will be unable to access this document.
+                            message: | 
+                                Are you sure you want to delete the public link for this document? 
+                                
+                                All links pointing to any replacement document will be deleted.
+                                
+                                Anyone with the URL will be unable to access this document.
                             button_message: Delete public link
                             cancel_button_message: Cancel
                             message_type: question
                         request: 
                             delete_public_link: true
                 delete_folder:
+                    priv: _PRIV_EDIT_DOCUMENTS
                     hide_in_select_mode: true
                     label: Delete
                     multiple_select: false
-                    traits:
-                        is_folder: true
-                    without_traits:
-                        is_empty_folder: true
+                    with_columns_set:
+                        traits.is_folder: true
+                    without_columns_set:
+                        traits.is_empty_folder: true
                     ajax: 
                         class_name: zenario_common_features
                         confirm: 
@@ -386,11 +424,12 @@ zenario__content:
                         request: 
                             delete: true
                 delete_empty_folder:
+                    priv: _PRIV_EDIT_DOCUMENTS
                     hide_in_select_mode: true
                     label: Delete
                     multiple_select: false
-                    traits:
-                        is_empty_folder: true
+                    with_columns_set:
+                        traits.is_empty_folder: true
                     ajax: 
                         class_name: zenario_common_features
                         confirm: 

@@ -22,7 +22,7 @@ zenario_menu_text:
                     grouping: left_column
                     label: ''
                     type: text
-                    read_only: true
+                    readonly: true
                 path_of__text_in_default_language:
                     grouping: left_column
                     label: 'Path preview:'

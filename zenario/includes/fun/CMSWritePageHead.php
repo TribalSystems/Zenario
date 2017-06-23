@@ -44,15 +44,18 @@ $css_wrappers = setting('css_wrappers');
 echo '
 <meta http-equiv="X-UA-Compatible" content="IE=Edge">';
 
-$oldIE = strpos($httpUserAgent, 'MSIE 6') !== false
-	|| strpos($httpUserAgent, 'MSIE 7') !== false
-	|| strpos($httpUserAgent, 'MSIE 8') !== false;
+//In admin mode, if this is IE, require 11 or later. Direct 10 and earlier to the compatibility mode page.
+if (strpos($httpUserAgent, 'MSIE') === false) {
+	$oldIE = $notSupportedInAdminMode = false;
 
-$notSupportedInAdminMode = $oldIE
-	|| strpos($httpUserAgent, 'MSIE 9') !== false;
+} else {
+	$oldIE = strpos($httpUserAgent, 'MSIE 6') !== false
+		|| strpos($httpUserAgent, 'MSIE 7') !== false
+		|| strpos($httpUserAgent, 'MSIE 8') !== false;
 
-//In admin mode, if this is IE, require 10 or later. Direct 9 and earlier to the compatibility mode page.
-if (strpos($httpUserAgent, 'MSIE') !== false) {
+	$notSupportedInAdminMode = $oldIE
+		|| strpos($httpUserAgent, 'MSIE 9') !== false
+		|| strpos($httpUserAgent, 'MSIE 10') !== false;
 	
 	if ($isWelcomeOrWizard || $checkPriv) {
 		echo '
@@ -71,12 +74,8 @@ if (strpos($httpUserAgent, 'MSIE') !== false) {
 	}
 }
 
-
-if (!$isWelcomeOrWizard && !$oldIE && $cookieFreeDomain = cookieFreeDomain()) {
-	$prefix = $cookieFreeDomain. 'zenario/';
-
-} elseif (cms_core::$mustUseFullPath) {
-	$prefix = absCMSDirURL(). 'zenario/';
+if ($absURL = absURLIfNeeded(!$isWelcomeOrWizard && !$oldIE)) {
+	$prefix = $absURL. 'zenario/';
 }
 
 
@@ -285,13 +284,6 @@ if ($checkPriv) {
 <link rel="stylesheet" type="text/css" href="', $prefix, 'styles/admin_login_link.min.css?v=', $v, '" media="screen" />';
 }
 
-
-echo '
-<script type="text/javascript">
-	var RecaptchaOptions = {
-		lang: "', jsEscape(substr(session('user_lang'), 0, 2)), '",
-		theme: "', jsEscape(setting('google_recaptcha_theme')), '"};
-</script>';
 
 if (cms_core::$cID) {
 	$itemHTML = $templateHTML = $familyHTML =

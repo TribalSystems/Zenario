@@ -225,29 +225,14 @@ class zenario_users extends module_base_class {
 			switch($rv['type']) {
 				case 'boolean':
 				case 'group':
-					$sql = "UPDATE ". DB_NAME_PREFIX. "users_custom_data
-							SET `" . $rv['name'] . "`=" . ($bool ? 1 : 0)
-								. " WHERE user_id = ". (int) $userId;
-					sqlQuery($sql);
+					updateRow('users_custom_data', [$rv['name'] => $bool], $userId);
 					break;
 			}
 		}
 	}
 	
 	public function fillAdminToolbar(&$adminToolbar, $cID, $cType, $cVersion) {
-		
-		if (isset($adminToolbar['sections']['history']['buttons']['zenario_users__access_log'])) {
-			$item = getRow('translation_chains', array('privacy'), array('equiv_id' => cms_core::$equivId, 'type' => cms_core::$cType));
-		
-			if (setting('log_user_access') && !in($item['privacy'], 'public', 'logged_out')) {
-				$adminToolbar['sections']['history']['buttons']['zenario_users__access_log']['organizer_quick']['path'] =
-					'zenario__content/panels/content/user_access_log//'. $cType. '_'. $cID. '//';
-		
-			} else {
-				unset($adminToolbar['sections']['history']['buttons']['zenario_users__access_log']);
-			}
-		}
-		
+		return require funIncPath(__FILE__, __FUNCTION__);
 	}
 	
 	
@@ -287,15 +272,23 @@ class zenario_users extends module_base_class {
 		foreach ($tagIds as $tagId) {
 			if (getEquivIdAndCTypeFromTagId($equivId, $cType, $tagId)) {
 				
-				$key = array('equiv_id' => $equivId, 'content_type' => $cType);
+				$key = array('link_to' => 'group', 'link_from' => 'chain', 'link_from_id' => $equivId, 'link_from_char' => $cType);
 				$chain = array('privacy' => $values['privacy/privacy']);
 				
 				if ($chain['privacy'] == 'group_members') {
-					updateLinkingTable('group_content_link', $key, 'group_id', $values['privacy/group_ids']);
+					updateLinkingTable('group_link', $key, 'link_to_id', $values['privacy/group_ids']);
 				} else {
-					deleteRow('group_content_link', $key);
+					deleteRow('group_link', $key);
 				}
 				
+				$key['link_to'] = 'role';
+				if ($chain['privacy'] == 'with_role') {
+					updateLinkingTable('group_link', $key, 'link_to_id', $values['privacy/role_ids']);
+				} else {
+					deleteRow('group_link', $key);
+				}
+				
+				$key = array('equiv_id' => $equivId, 'content_type' => $cType);
 				if ($chain['privacy'] == 'call_static_method') {
 					setRow('translation_chain_privacy', array(
 						'module_class_name' => $values['privacy/module_class_name'],
@@ -334,6 +327,8 @@ class zenario_users extends module_base_class {
 		$_SESSION["extranetUserImpersonated"] = true;
 		if ($setCookie) {
 			setCookieOnCookieDomain('LOG_ME_IN_COOKIE', $user['login_hash']);
+			setCookieOnCookieDomain('COOKIE_LAST_EXTRANET_EMAIL', $user['email']);
+			setCookieOnCookieDomain('COOKIE_LAST_EXTRANET_SCREEN_NAME', $user['screen_name']);
 		}
 	}
 		
@@ -441,7 +436,7 @@ class zenario_users extends module_base_class {
 		//(If we couldn't connect to a site for whatever reason, the last successful
 		// run date of the sync function should not be updated)
 		if ($success) {
-			setSetting('user_last_sync_time', $now, $updateDB = true, $clearCache = false);
+			setSetting('user_last_sync_time', $now, $updateDB = true, $encrypt = false, $clearCache = false);
 		}
 		
 		if ($success) {
@@ -628,12 +623,12 @@ class zenario_users extends module_base_class {
 				$interval = $intervalSetting;
 			}
 			$sql = '
-				SELECT id, screen_name, first_name, last_name, email, created_date
-				FROM '.DB_NAME_PREFIX.'users
+				SELECT u.id, [u.screen_name], [u.first_name], [u.last_name], [u.email], [u.created_date]
+				FROM [users AS u]
 				WHERE status = "pending"
 				AND email_verified = 0
-				AND created_date < DATE_SUB(NOW(), INTERVAL '.(int)$interval.' DAY)';
-			$result = sqlSelect($sql);
+				AND created_date < DATE_SUB(NOW(), INTERVAL [0] DAY)';
+			$result = sqlSelect($sql, [$interval]);
 			$count = 0;
 			$message = '';
 			while ($user = sqlFetchAssoc($result)) {
@@ -734,20 +729,24 @@ class zenario_users extends module_base_class {
 		}
 
 		$sql = "
-			SELECT u.id, u.salutation, u.first_name, u.last_name, u.email
-			FROM ".DB_NAME_PREFIX."users as u";
+			SELECT [u.id], [u.salutation], [u.first_name], [u.last_name], [u.email]
+			FROM [users as u]";
 			
-		if($datasetColumnNameLiveUser){
-			$sql .= "	INNER JOIN ". DB_NAME_PREFIX. "users_custom_data AS ucd
-						ON ucd.user_id = u.id";
+		if ($datasetColumnNameLiveUser){
+			$sql .= "
+				INNER JOIN [users_custom_data AS ucd]
+				   ON ucd.user_id = u.id";
 		}
-		$sql .= " WHERE u.status = 'active' AND u.last_login LIKE '%". sqlEscape($date). "%'";
+		$sql .= "
+			WHERE u.status = 'active'
+			  AND u.last_login BETWEEN [date] AND DATE_ADD([date], INTERVAL 1 DAY)";
 			
-		if($datasetColumnNameLiveUser){
-			$sql .= " AND ucd.".sqlEscape($datasetColumnNameLiveUser)." = 1";
+		if ($datasetColumnNameLiveUser){
+			$sql .= "
+			  AND ucd.`". sqlEscape($datasetColumnNameLiveUser). "` = 1";
 		}
 
-		$result = sqlSelect($sql);
+		$result = sqlSelect($sql, ['date' => $date]);
 		$users = array();
 		while ($row = sqlFetchAssoc($result)) {
 			$users[] = $row;

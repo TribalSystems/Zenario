@@ -42,10 +42,10 @@ zenario.lib(function(
 	undefined,
 	URLBasePath,
 	document, window, windowOpener, windowParent,
-	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO, strings,
+	zenario, zenarioA, zenarioT, zenarioAB, zenarioAT, zenarioO,
 	encodeURIComponent, get, engToBoolean, htmlspecialchars, jsEscape, phrase,
 	extensionOf, methodsOf, has,
-	panelTypes
+	panelTypes, extraVar2, s$s
 ) {
 	"use strict";
 
@@ -143,7 +143,7 @@ methods.showPanel = function($header, $panel, $footer) {
 	
 	//Sort each array by ordinal to get what the normalised ordinal will be
 	foreach (ordinals as parentId => items) {
-		items.sort(zenarioA.sortArrayByOrd);
+		items.sort(zenarioT.sortArrayByOrd);
 		
 		//loop through the array, writing down what the normalised ordinals were
 		for (i = 0; i < items.length; ++i) {
@@ -154,9 +154,9 @@ methods.showPanel = function($header, $panel, $footer) {
 	html = this.getHierarchyMicroTemplateHTML(m);
 	$panel.html(html);
 	$panel.show();
-	this.setScroll($panel);
 	
 	this.setupHierarchy($header, $panel, $footer);
+	this.setScroll($panel);
 	
 	//this.drawPagination($footer, m);
 	$footer.html('').show();
@@ -171,6 +171,22 @@ methods.getHierarchyMicroTemplateHTML = function(m) {
 methods.getItems = function() {
 	return this.getMergeFieldsForItemsAndColumns();
 }
+
+
+//Get the position of an item in Organizer, i.e. for the setScroll() function to scroll to it
+methods.getItemPosition = function(itemId) {
+	var $item = $(get('organizer_item_' + itemId)),
+		position = $item.position();
+	
+	//Hack for hiearchy view - if the element doesn't have a position, try its parent
+	if (position
+	 && position.top == 0
+	 && position.left == 0) {
+		position = $item.parent().position();
+	}
+	
+	return position;
+};
 
 methods.setupHierarchy = function($header, $panel, $footer) {
 	var that = this,

@@ -9,15 +9,17 @@ zenario_head_foot_slot:
         cType: ""
         cVersion: ""
         layoutId: ""
-    hide_tab_bar: Yes
+    hide_tab_bar: true
     tabs:
         slot:
             edit_mode:
-                enabled: Yes
+                enabled: true
             fields:
+                description:
+                    full_width: true
+                    snippet:
+                        html: ''
                 html:
-                    label: >
-                        HTML (can include &lt;script&gt; and &lt;style&gt; tags for JavaScript and CSS):
                     type: code_editor
                     dont_trim: true
                     language: html

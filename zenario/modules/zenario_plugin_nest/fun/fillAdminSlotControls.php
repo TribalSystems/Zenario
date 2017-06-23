@@ -68,8 +68,8 @@ if (isset($controls['actions']['settings']['onclick'])) {
 	}
 	
 	$selectedId = '';
-	if (!empty($this->tabId)) {
-		$selectedId = (int) $this->tabId;
+	if (!empty($this->slideId)) {
+		$selectedId = (int) $this->slideId;
 	}
 	
 	$controls['actions']['nested_plugins']['ord'] = 0;
@@ -100,8 +100,8 @@ if (isset($controls['actions']['settings']['onclick'])) {
 		$selectedId = '';
 		if (!empty($this->state)) {
 			$selectedId = 'state_'. $this->state;
-		} elseif (!empty($this->tabId)) {
-			$selectedId = (int) 'slide_'. $this->tabId;
+		} elseif (!empty($this->slideId)) {
+			$selectedId = (int) 'slide_'. $this->slideId;
 		}
 		
 		$controls['actions']['conductor'] = $controls['actions']['settings'];

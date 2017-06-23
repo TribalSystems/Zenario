@@ -45,17 +45,17 @@ class zenario_users__admin_boxes__export_access_log extends zenario_users {
 				'Email',
 				'IP address'
 			);
-			$cId = $cType = false;
-			getCIDAndCTypeFromTagId($cId, $cType, $tagId);
+			$cID = $cType = false;
+			getCIDAndCTypeFromTagId($cID, $cType, $tagId);
 			$sql = '
-				SELECT l.hit_datetime, l.user_id, u.first_name, u.last_name, u.email, l.ip
-				FROM ' . DB_NAME_PREFIX . 'user_content_accesslog l
-				INNER JOIN ' . DB_NAME_PREFIX . 'users u
+				SELECT l.hit_datetime, l.user_id, [u.first_name], [u.last_name], [u.email], l.ip
+				FROM [user_content_accesslog AS l]
+				INNER JOIN [users AS u]
 					ON l.user_id = u.id
-				WHERE l.content_id = ' . (int)$cId . '
-				AND l.content_type = "' . sqlEscape($cType) . '"
+				WHERE l.content_id = [0]
+				  AND l.content_type = [1]
 				ORDER BY l.hit_datetime DESC';
-			$result = sqlSelect($sql);
+			$result = sqlSelect($sql, [$cID, $cType]);
 			while ($row = sqlFetchAssoc($result)) {
 				$rows[] = $row;
 			}

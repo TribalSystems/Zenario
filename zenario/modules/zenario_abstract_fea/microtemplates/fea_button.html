@@ -14,12 +14,19 @@
 			href="{{m.href|escape}}"
 		<% } %>
 		<% if (m.onclick) { %>
-			onclick="<% if (m.itemId) { %>var itemId = '{{m.itemId|escape}}'; <% } %>{{m.onclick|escape}}"
+			onclick="{{m.onclick|escape}}"
 		<% } %>
 	<% } %>
 >
+	<% if (m.icon_left) { %>
+		<i class="{{m.icon_left|escape}}" aria-hidden="true"></i>
+	<% } %>
     
     <span>{{m.label|escape}}</span>
+	
+	<% if (m.icon_right) { %>
+		<i class="{{m.icon_right|escape}}" aria-hidden="true"></i>
+	<% } %>
 </a>
 
 {{m.children? '<ul>' + zenario.microTemplate('fea_button_children', m.children) + '</ul></div>'  : ''}}

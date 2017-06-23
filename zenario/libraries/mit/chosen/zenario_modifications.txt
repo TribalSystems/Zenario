@@ -1,0 +1,19 @@
+chosen.css
+	Change the path of the URLs they work when wrapped using the wrapper function:
+	  Replace:
+			url('
+	  With:
+			url('../libraries/mit/chosen/
+
+chosen.jquery.js	
+	Add the option to not show the empty_value in the dropdown:
+	  Replace:
+        data = _ref[_i];
+	  With:
+        data = _ref[_i];
+        
+        if (this.options.dont_show_empty_value
+         && _i === 0
+         && data.value === '') {
+        	continue;
+        }

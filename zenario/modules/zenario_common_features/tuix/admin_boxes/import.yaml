@@ -148,12 +148,12 @@ zenario_import:
                     label: 'Preview (up to line 200):'
                     type: code_editor
                     dont_trim: true
-                    read_only: true
+                    readonly: true
                 problems:
                     label: 'Problems:'
                     type: code_editor
                     dont_trim: true
-                    read_only: true
+                    readonly: true
                 desc2:
                     snippet:
                         html: Choose whether to import lines with warnings or skip them. Lines with errors cannot be imported.

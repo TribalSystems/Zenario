@@ -26,29 +26,6 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-//Add missing definitions to avoid php warnings if we access them
-function checkBoxDefinition(&$box, &$definition) {
-	if (!is_array($definition)) {
-		return;
-	}
-	if (!is_array($box)) {
-		$box = array();
-	}
-	
-	foreach ($definition as $tag => &$value) {
-		if (is_array($value)) {
-			if (!isset($box[$tag]) || !is_array($box[$tag])) {
-				$box[$tag] = $value;
-			} else {
-				checkBoxDefinition($box[$tag], $value);
-			}
-		} else {
-			if (!isset($box[$tag])) {
-				$box[$tag] = $value;
-			}
-		}
-	}
-}
 
 
 //Set up the floating box functionality
@@ -533,7 +510,7 @@ function getPluginContent($key) {
 	
 	if (!empty($instance)) {
 		$instance['class_name'] = getModuleClassName($instance['module_id']);
-		$instance['settings'] = getRowsArray('plugin_settings', true, array('instance_id' => $instance['id'], 'nest' => 0));
+		$instance['settings'] = getRowsArray('plugin_settings', true, array('instance_id' => $instance['id'], 'egg_id' => 0));
 		
 		foreach ($instance['settings'] as &$setting) {
 			unset($setting['instance_id']);
@@ -547,14 +524,14 @@ function setPluginContent($key, $instance = false) {
 	
 	if ($instanceId = getRow('plugin_instances', 'id', $key)) {
 		
-		deleteRow('plugin_settings', array('instance_id' => $instanceId, 'nest' => 0));
+		deleteRow('plugin_settings', array('instance_id' => $instanceId, 'egg_id' => 0));
 		
 		if ($instance && !empty($instance['settings'])) {
 			updateRow('plugin_instances', array('framework' => $instance['framework'], 'css_class' => $instance['css_class']), $instanceId);
 	
 			foreach ($instance['settings'] as $setting) {
 				$setting['instance_id'] = $instanceId;
-				$setting['nest'] = 0;
+				$setting['egg_id'] = 0;
 				insertRow('plugin_settings', $setting);
 			}
 		}
@@ -982,7 +959,7 @@ function removeItemFromPluginSettings($keyTo, $keyId = 0, $keyChar = '', $mode =
 				pi.module_id,
 				m.class_name,
 				ps.instance_id,
-				ps.nest,
+				ps.egg_id,
 				pi.content_id,
 				pi.content_type,
 				pi.content_version,
@@ -997,9 +974,9 @@ function removeItemFromPluginSettings($keyTo, $keyId = 0, $keyChar = '', $mode =
 			  AND foreign_key_char = '". sqlEscape($keyChar). "'";
 		$result = sqlQuery($sql);
 		while ($row = sqlFetchAssoc($result)) {
-			if ($row['nest']) {
+			if ($row['egg_id']) {
 				if (inc($row['class_name'])) {
-					call_user_func(array($row['class_name'], 'removePlugin'), $row['class_name'], $row['nest'], $row['instance_id']);
+					call_user_func(array($row['class_name'], 'removePlugin'), $row['class_name'], $row['egg_id'], $row['instance_id']);
 				}
 			} else {
 				//Delete this instance
@@ -1021,7 +998,7 @@ function removeItemFromPluginSettings($keyTo, $keyId = 0, $keyChar = '', $mode =
 				pi.module_id,
 				m.class_name,
 				ps.instance_id,
-				ps.nest,
+				ps.egg_id,
 				pi.content_id,
 				pi.content_type,
 				pi.content_version,
@@ -1038,10 +1015,10 @@ function removeItemFromPluginSettings($keyTo, $keyId = 0, $keyChar = '', $mode =
 		
 		$result = sqlQuery($sql);
 		while ($row = sqlFetchAssoc($result)) {
-			if ($row['nest']) {
+			if ($row['egg_id']) {
 				if (inc($row['class_name'])) {
 					//Delete this egg from the nest
-					call_user_func(array($row['class_name'], 'removePlugin'), $row['class_name'], $row['nest'], $row['instance_id']);
+					call_user_func(array($row['class_name'], 'removePlugin'), $row['class_name'], $row['egg_id'], $row['instance_id']);
 				}
 			
 			} elseif ($row['content_id']) {
@@ -1489,6 +1466,7 @@ function deleteAdmin($admin_id, $undo = false) {
 		UPDATE ". DB_NAME_PREFIX. "admins SET
 			status = '". ($undo? "active" : "deleted"). "',
 			modified_date = NOW(),
+			password = '',
 			password_salt = '',
 			reset_password_salt = '',
 			password_needs_changing = 1
@@ -1776,7 +1754,7 @@ function changeContentItemLayout($cID, $cType, $cVersion, $newLayoutId, $check =
 						   ON psd.module_id = ". (int) $slot['module_id']. "
 						  AND psd.name = ps.name
 						  AND psd.default_value != ps.value
-						WHERE ps.nest = 0
+						WHERE ps.egg_id = 0
 						  AND ps.value IS NOT NULL
 						  AND ps.is_content IN('version_controlled_setting', 'version_controlled_content')
 						  AND ps.instance_id = ". (int) $slot['instance_id']. "
@@ -1789,13 +1767,13 @@ function changeContentItemLayout($cID, $cType, $cVersion, $newLayoutId, $check =
 						FROM ". DB_NAME_PREFIX. "plugin_settings AS ps
 						INNER JOIN ". DB_NAME_PREFIX. "nested_plugins AS np
 						   ON np.instance_id = ps.instance_id
-						  AND np.id = ps.nest
+						  AND np.id = ps.egg_id
 						  AND np.is_slide = 1
 						INNER JOIN ". DB_NAME_PREFIX. "plugin_setting_defs AS psd
 						   ON psd.module_id = np.module_id
 						  AND psd.name = ps.name
 						  AND psd.default_value != ps.value
-						WHERE ps.nest != 0
+						WHERE ps.egg_id != 0
 						  AND ps.value IS NOT NULL
 						  AND ps.is_content IN('version_controlled_setting', 'version_controlled_content')
 						  AND ps.instance_id = ". (int) $slot['instance_id']. "
@@ -2127,9 +2105,18 @@ function checkForChangesInCssJsAndHtmlFiles($runInProductionMode = false, $force
 	$time = time();
 	$changed = false;
 	$templateChanges = false;
+	$zenario_version = getCMSVersionNumber();
+	
+	//Catch the case where someone just updated to a different version of the CMS
+	if ($zenario_version != setting('zenario_version')) {
+		//Clear everything that was cached if this has happened
+		setSetting('yaml_files_last_changed', '');
+		setSetting('yaml_version', '');
+		$changed = true;
+		$templateChanges = is_dir(CMS_ROOT. 'zenario_custom/templates/');
 	
 	//Get the date of the last time we ran this check and there was a change.
-	if (!($lastChanged = (int) setting('css_js_html_files_last_changed'))) {
+	} elseif (!($lastChanged = (int) setting('css_js_html_files_last_changed'))) {
 		//If this has never been run before then it must be run now!
 		$changed = true;
 		$templateChanges = is_dir(CMS_ROOT. 'zenario_custom/templates/');
@@ -2299,6 +2286,11 @@ function checkForChangesInCssJsAndHtmlFiles($runInProductionMode = false, $force
 										$details['css_class'] = arrayKey($desc, 'css_class');
 										$details['background_selector'] = ifNull(arrayKey($desc, 'background_selector'), 'body');
 										$details['enable_editable_css'] = !engToBoolean(arrayKey($desc, 'disable_editable_css'));
+										$details['import'] = arrayKey($desc, 'import');
+										
+										if (is_array($details['import'])) {
+											$details['import'] = implode("\n", $details['import']);
+										}
 									}
 									setRow('skins', $details, $row);
 								}
@@ -2328,6 +2320,7 @@ function checkForChangesInCssJsAndHtmlFiles($runInProductionMode = false, $force
 		
 		setSetting('css_js_html_files_last_changed', $time);
 		setSetting('css_js_version', base_convert($time, 10, 36));
+		setSetting('zenario_version', $zenario_version);
 	}
 	
 	return $changed;
@@ -2522,7 +2515,7 @@ function getLanguageSelectListOptions(&$field) {
 
 function getMenuItemStorekeeperDeepLink($menuId, $langId = false, $sectionId = false, $menuIdIsParent = false) {
 	if ($langId === false) {
-		$langId = ifNull(session('user_lang'), setting('default_language'));
+		$langId = currentLangId();
 	
 	} elseif ($langId === true) {
 		$langId = setting('default_language');
@@ -2575,7 +2568,7 @@ function getMenuPathWithMenuSection($menuId, $langId = false, $separator = ' -> 
 
 function getMenuPath($menuId, $langId = false, $separator = ' -> ', $useOrdinal = false) {
 	if ($langId === false) {
-		$langId = ifNull(session('user_lang'), setting('default_language'));
+		$langId = currentLangId();
 	
 	} elseif ($langId === true) {
 		$langId = setting('default_language');
@@ -3082,18 +3075,6 @@ function siteEdition() {
 	return 'Community';
 }
 
-function getModuleIconURL($moduleName) {
-	
-	foreach (array('.gif', '.png', '.jpg') as $ext) {
-		if ($path = moduleDir($moduleName, 'module_icon'. $ext, true)) {
-			return absCMSDirURL(). $path;
-		}
-	}
-	
-	return absCMSDirURL(). 'zenario/api/module_base_class/module_icon.gif';
-}
-
-
 function readModuleDependencies($targetModuleClassName, &$desc) {
 	$modules = array();
 	
@@ -3573,8 +3554,8 @@ function duplicateVersionControlledPluginSettings($cIDTo, $cIDFrom, $cType, $cVe
 	while ($instance = sqlFetchAssoc($result)) {
 		if (!$slotName || $slotName == $instance['slot_name']) {
 			if ($instance['id'] == arrayKey($slotContents, $instance['slot_name'], 'instance_id')) {
-				$nest = 0;
-				renameInstance($instance['id'], $nest, false, true, $cIDTo, $cTypeTo, $cVersionTo, $instance['slot_name']);
+				$eggId = 0;
+				renameInstance($instance['id'], $eggId, false, true, $cIDTo, $cTypeTo, $cVersionTo, $instance['slot_name']);
 			}
 		}
 	}
@@ -3582,7 +3563,7 @@ function duplicateVersionControlledPluginSettings($cIDTo, $cIDFrom, $cType, $cVe
 
 //Duplicate or rename an instance if possible
 //Also has the functionality to convert a Plugin between a Wireframe and a Reusable or vice versa when duplicating
-function renameInstance(&$instanceId, &$nest, $newName, $createNewInstance, $cID = false, $cType = false, $cVersion = false, $slotName = false) {
+function renameInstance(&$instanceId, &$eggId, $newName, $createNewInstance, $cID = false, $cType = false, $cVersion = false, $slotName = false) {
 	return require funIncPath(__FILE__, __FUNCTION__);
 }
 
@@ -3824,8 +3805,17 @@ function deletePluginInstance($instanceId) {
 	
 	deleteRow('plugin_instances', $instanceId);
 	
+	sqlUpdate("
+		DELETE np.*, gsl.*
+		FROM ". DB_NAME_PREFIX. "nested_plugins AS np
+		LEFT JOIN ". DB_NAME_PREFIX. "group_link AS gsl
+		   ON gsl.link_from = 'slide'
+		  AND gsl.link_from_id = np.id
+		  AND np.is_slide = 1
+		WHERE np.instance_id = ". $instanceId);
+	
 	foreach (array(
-		'group_slide_link', 'nested_plugins', 'nested_paths', 'plugin_instance_cache',
+		'nested_paths', 'plugin_instance_cache',
 		'plugin_settings', 'plugin_item_link', 'plugin_layout_link'
 	) as $table) {
 		deleteRow($table, array('instance_id' => $instanceId));
@@ -3931,14 +3921,14 @@ function updatePluginInstanceInItemSlot($instanceId, $slotName, $cID, $cType = f
 }
 
 function conductorEnabled($instanceId) {
-	return (bool) getRow('plugin_settings', 'value', ['instance_id' => $instanceId, 'name' => 'enable_conductor', 'nest' => 0]);
+	return (bool) getRow('plugin_settings', 'value', ['instance_id' => $instanceId, 'name' => 'enable_conductor', 'egg_id' => 0]);
 }
 
-function getNestDetails($nestedItemId, $instanceId = false) {
+function getNestDetails($eggId, $instanceId = false) {
 
 	$sql = "
 		SELECT
-			tab,
+			slide_num,
 			ord,
 			instance_id,
 			module_id,
@@ -3951,7 +3941,7 @@ function getNestDetails($nestedItemId, $instanceId = false) {
 			name_or_title,
 			cols, small_screens
 		FROM ". DB_NAME_PREFIX. "nested_plugins
-		WHERE id = ". (int) $nestedItemId;
+		WHERE id = ". (int) $eggId;
 	
 	if ($instanceId !== false) {
 		$sql .= "
@@ -4197,7 +4187,8 @@ function getAllCurrentRevisionNumbers() {
 	//Attempt to get all of the rows from the revision numbers table
 	$sql = "
 		SELECT path, patchfile, revision_no
-		FROM ". DB_NAME_PREFIX. "local_revision_numbers";
+		FROM ". DB_NAME_PREFIX. "local_revision_numbers
+		WHERE patchfile != 'mongo.inc.php'";
 	
 	//If we fail, rather than exist with an error message and crash the entire admin section,
 	//just return that there are no updates
@@ -4225,6 +4216,31 @@ function getAllCurrentRevisionNumbers() {
 		if (!isset($modulesToRevisionNumbers[$row['path']. '/'. $row['patchfile']])
 		 || $modulesToRevisionNumbers[$row['path']. '/'. $row['patchfile']] < $row['revision_no']) {
 			$modulesToRevisionNumbers[$row['path']. '/'. $row['patchfile']] = $row['revision_no'];
+		}
+	}
+	
+	//If MongoDB is connected, check for MongoDB revisions
+	//(N.b. this will also set the cms_core::$mongoDB variable if successful)
+	if ($local_revision_numbers = mongoCollection('local_revision_numbers', $returnFalseOnError = true)) {
+		$cursor = mongoFind($local_revision_numbers, [], []);
+		while ($row = mongoFetchRow($cursor)) {
+			
+			//Copy-paste of the above
+			if (($chop = chopPrefixOffString('plugins/', $row['path']))
+			 || ($chop = chopPrefixOffString('zenario/plugins/', $row['path']))
+			 || ($chop = chopPrefixOffString('zenario_extra_modules/', $row['path']))
+			 || ($chop = chopPrefixOffString('zenario_custom/modules/', $row['path']))) {
+				$row['path'] = 'zenario/modules/'. $chop;
+			}
+		
+			if (!chopPrefixOffString('zenario/', $row['path'])) {
+				$row['path'] = 'zenario/'. $row['path'];
+			}
+		
+			if (!isset($modulesToRevisionNumbers[$row['path']. '/'. $row['patchfile']])
+			 || $modulesToRevisionNumbers[$row['path']. '/'. $row['patchfile']] < $row['revision_no']) {
+				$modulesToRevisionNumbers[$row['path']. '/'. $row['patchfile']] = $row['revision_no'];
+			}
 		}
 	}
 	
@@ -4258,14 +4274,24 @@ function setModuleRevisionNumber($revisionNumber, $path, $updateFile) {
 	 || ($chop = chopPrefixOffString('zenario_custom/modules/', $path))) {
 		$path = 'modules/'. $chop;
 	}
-			
-	$sql = "
-		REPLACE INTO  ". DB_NAME_PREFIX. "local_revision_numbers SET
-		  path = '". sqlEscape($path). "',
-		  patchfile = '". sqlEscape($updateFile). "',
-		  revision_no = ". (int) $revisionNumber;
 	
-	sqlQuery($sql);
+	if ($updateFile == 'mongo.inc.php') {
+		if ($local_revision_numbers = mongoCollection('local_revision_numbers', $returnFalseOnError = true)) {
+			mongoUpdateOne($local_revision_numbers,
+				[§set => ['revision_no' => (int) $revisionNumber]],
+				['path' => $path, 'patchfile' => $updateFile],
+				['upsert' => true]
+			);
+		}
+	} else {
+		$sql = "
+			REPLACE INTO  ". DB_NAME_PREFIX. "local_revision_numbers SET
+			  path = '". sqlEscape($path). "',
+			  patchfile = '". sqlEscape($updateFile). "',
+			  revision_no = ". (int) $revisionNumber;
+	
+		sqlQuery($sql);
+	}
 }
 
 
@@ -4309,6 +4335,9 @@ function performDBUpdate($path, $updateFile, $uninstallPluginOnFail, $currentRev
 	
 	//Otherwise assume the file will be a php file with a series of revisions
 	} else {
+		//Clear any cached information on the existing database tables, as this can cause database errors if it's used when out-of-date
+		resetDatabaseStructureCache();
+		
 		//Set the inputs into global variables, so we can remember them for this revision
 		//without needing to add extra parameters to every function (which would make the update files look messy!)
 		cms_core::$dbupPath = $path;
@@ -4323,10 +4352,18 @@ function performDBUpdate($path, $updateFile, $uninstallPluginOnFail, $currentRev
 		$updateFile = cms_core::$dbupUpdateFile;
 		$currentRevision = cms_core::$dbupCurrentRevision;
 		$uninstallPluginOnFail = cms_core::$dbupUninstallPluginOnFail;
+		
+		//Clear any cached information on the existing database tables, as this can cause database errors if it's used when out-of-date
+		resetDatabaseStructureCache();
 	}
 	
 	//Update the current revision in the database to the latest, so this will not be triggered again.
 	setModuleRevisionNumber($latestRevisionNumber, $path, $updateFile);
+}
+
+function resetDatabaseStructureCache() {
+	cms_core::$dbCols = [];
+	cms_core::$pkCols = [];
 }
 
 function needRevision($revisionNumber) {
@@ -4809,12 +4846,12 @@ function initialiseBackupFunctions($includeWarnings = false) {
 }
 
 
-function generateFilenameForBackups() {
+function generateFilenameForBackups($gzip = true, $encrypt = false) {
 	//Get the current date and time, and create a filename with that timestamp
 	return preg_replace('/[^\w\\.]+/', '-',
 		httpHost(). '-'. SUBDIRECTORY. '-backup-'. sqlFetchValue("SELECT DATE_FORMAT(NOW(), '%Y-%m-%d-%H.%i')"). '-'.
 		ZENARIO_VERSION. '-r'. LATEST_REVISION_NO.
-		'.sql.gz');
+		'.sql'. ($gzip? '.gz' : ''). ($encrypt? '.encrypted' : ''));
 }
 
 
@@ -5035,8 +5072,40 @@ function apacheMaxFilesize() {
 define('MYSQL_CHUNK_SIZE', 3000);
 
 //Create a backup of the database
-function createDatabaseBackupScript(&$gzFile) {
+function createDatabaseBackupScript($backupPath, $gzip = true, $encrypt = false) {
 	require funIncPath(__FILE__, __FUNCTION__);
+}
+
+function callMySQL($mysqldump, $args = '', $input = '') {
+
+	if ($mysqldump) {
+		$programPath = programPathForExec(setting('mysqldump_path'), 'mysqldump');
+	} else {
+		$programPath = programPathForExec(setting('mysql_path'), 'mysql');
+	}
+	
+	if ($programPath) {
+		$return_var = $output = false;
+		$lastOutput = exec(
+			$input.
+			escapeshellarg($programPath).
+			$args,
+		$output, $return_var);
+		
+		if ($return_var == 0) {
+			return $lastOutput;
+		}
+	}
+	
+	return false;
+}
+
+function testMySQL($mysqldump) {
+	$result = callMySQL($mysqldump, ' --version');
+	
+	return $result
+		&& strpos($result, ($mysqldump? 'mysqldump' : 'mysql'). '  Ver') !== false
+		&& strpos($result, 'Distrib ') !== false;
 }
 
 
@@ -5050,16 +5119,10 @@ if (!function_exists('hex2bin')) {
 	}
 }
 
-//Define some constants to make the states clearer below
-define ('ZENARIO_BU_NEXTPLEASE', 1);
-define ('ZENARIO_BU_CREATEDIR', 2);
-define ('ZENARIO_BU_FILENAME', 3);
-define ('ZENARIO_BU_FILECONTENTS', 4);
-
 define ('ZENARIO_BU_READ_CHUNK_SIZE', 10000);
 
 //Given a backup, restore the database from it
-function restoreDatabaseFromBackup($filename, $plainSql, $prefix, &$failures) {
+function restoreDatabaseFromBackup($backupPath, &$failures) {
 	return require funIncPath(__FILE__, __FUNCTION__);
 }
 
@@ -5099,6 +5162,8 @@ function resetSite() {
 	(runSQL(false, 'local-CREATE.sql', $error)) &&
 	(runSQL(false, 'local-INSERT.sql', $error));
 	
+	//Reset the cached table details, in case any of the definitions are out of date
+	cms_core::$dbCols = array();
 	
 	//Add the admin-related revision numbers back in
 	foreach ($revisions as &$revision) {
@@ -5148,19 +5213,38 @@ function resetSite() {
 function restoreLocationalSiteSettings() {
 	//Attempt to keep the directory, primary domain and ssl site settings from the existing installation or the installer,
 	//as the chances are that their values in the backup will be wrong
-	foreach (array(
-		'backup_dir', 'docstore_dir',
+	
+	$encryptedColExists = checkTableDefinition(DB_NAME_PREFIX. 'site_settings', 'encrypted', $useCache = false);
+	
+	foreach ([
+		'backup_dir', 'docstore_dir', 'automated_backup_log_path',
 		'admin_domain', 'admin_use_ssl',
-		'primary_domain',
-		'use_cookie_free_domain', 'cookie_free_domain'
-	) as $setting) {
-		$sql = "
-			INSERT INTO ". DB_NAME_PREFIX. "site_settings
-			SET name = '". sqlEscape($setting). "',
-				value = '". sqlEscape(arrayKey(cms_core::$siteConfig, $setting)). "'
-			ON DUPLICATE KEY UPDATE
-				value = '". sqlEscape(arrayKey(cms_core::$siteConfig, $setting)). "'";
-		@sqlSelect($sql);
+		'primary_domain', 'use_cookie_free_domain', 'cookie_free_domain',
+		'advpng_path', 'jpegoptim_path', 'jpegtran_path', 'optipng_path',
+		'antiword_path', 'ghostscript_path', 'pdftotext_path',
+		'mysqldump_path', 'mysql_path'
+	] as $setting) {
+		if (isset(cms_core::$siteConfig[$setting])) {
+			$sql = "
+				INSERT INTO ". DB_NAME_PREFIX. "site_settings
+				SET name = '". sqlEscape($setting). "',
+					value = '". sqlEscape(cms_core::$siteConfig[$setting]). "'";
+		
+			if ($encryptedColExists) {
+				$sql .= ",
+					encrypted = 0";
+			}
+			$sql .= "
+				ON DUPLICATE KEY UPDATE
+					value = '". sqlEscape(cms_core::$siteConfig[$setting]). "'";
+		
+			if ($encryptedColExists) {
+				$sql .= ",
+					encrypted = 0";
+			}
+		
+			sqlSelect($sql);
+		}
 	}
 	
 	$sql = "
@@ -5168,9 +5252,9 @@ function restoreLocationalSiteSettings() {
 		WHERE name IN (
 			'css_js_version', 'css_js_html_files_last_changed',
 			'yaml_version', 'yaml_files_last_changed',
-			'module_description_hash'
+			'zenario_version', 'module_description_hash'
 		)";
-	@sqlSelect($sql);
+	sqlSelect($sql);
 }
 
 //This function generates a random key which can be used to identify a site.
@@ -5317,7 +5401,7 @@ To correct this, please ask your system administrator to perform a
 	}
 	
 	$file = array();
-	$file['filename'] = $filename;
+	$file['filename'] = safeFileName($filename);
 	
 	//Check if the file is already uploaded
 	if (!file_exists($path = CMS_ROOT. $dir. $file['filename'])
@@ -5416,11 +5500,13 @@ function contentItemPrivacyDesc($privacy, $chain = false) {
 			case 'group_members':
 				$groupNames = sqlFetchValues("
 					SELECT IFNULL(label, default_label)
-					FROM ". DB_NAME_PREFIX. "group_content_link AS gcl
+					FROM ". DB_NAME_PREFIX. "group_link AS gcl
 					INNER JOIN ". DB_NAME_PREFIX. "custom_dataset_fields cdf
-					   ON gcl.group_id = cdf.id
-					WHERE gcl.equiv_id = ". (int) $chain['equiv_id']. "
-					  AND gcl.content_type = '". sqlEscape($chain['type']). "'");
+					   ON gcl.link_to_id = cdf.id
+					WHERE gcl.link_to = 'group'
+					  AND gcl.link_from = 'chain'
+					  AND gcl.link_from_id = ". (int) $chain['equiv_id']. "
+					  AND gcl.link_from_char = '". sqlEscape($chain['type']). "'");
 			
 				if (count($groupNames) > 1) {
 					$groupNames = array(implode(', ', $groupNames));
@@ -5441,6 +5527,28 @@ function contentItemPrivacyDesc($privacy, $chain = false) {
 						return adminPhrase('Private, only show to extranet users NOT in the smart group: [[name]]', $smartGroup);
 					}
 				}
+				break;
+			
+			case 'with_role':
+				if ($ZENARIO_ORGANIZATION_MANAGER_PREFIX = getModulePrefix('zenario_organization_manager')) {
+					$roleNames = sqlFetchValues("
+						SELECT ulr.name
+						FROM ". DB_NAME_PREFIX. "group_link AS gcl
+						INNER JOIN ". DB_NAME_PREFIX. $ZENARIO_ORGANIZATION_MANAGER_PREFIX. "user_location_roles AS ulr
+						   ON gcl.link_to_id = ulr.id
+						WHERE gcl.link_to = 'role'
+						  AND gcl.link_from = 'chain'
+						  AND gcl.link_from_id = ". (int) $chain['equiv_id']. "
+						  AND gcl.link_from_char = '". sqlEscape($chain['type']). "'");
+			
+					if (count($roleNames) > 1) {
+						$roleNames = array(implode(', ', $roleNames));
+						return adminPhrase('Private, only show to extranet users with the following roles at ANY location: [[0]]', $roleNames);
+					} else {
+						return adminPhrase('Private, only show to extranet users with the following role at ANY location: [[0]]', $roleNames);
+					}
+				}
+				break;
 		}
 	}
 	
@@ -5453,6 +5561,8 @@ function contentItemPrivacyDesc($privacy, $chain = false) {
 			return adminPhrase('Private, only show to extranet users who are logged in');
 		case 'group_members':
 			return adminPhrase('Private, only show to extranet users in a group');
+		case 'with_role':
+			return adminPhrase('Private, only show to extranet users with a role');
 		case 'in_smart_group':
 			return adminPhrase('Private, only show to extranet users in a smart group');
 		case 'logged_in_not_in_smart_group':
@@ -6127,6 +6237,19 @@ function recordEquivalence($cID1, $cID2, $cType, $onlyValidate = false) {
 					updateRow('translation_chains', array('equiv_id' => $newEquivId), array('equiv_id' => $currentEquivId, 'type' => $cType));
 				}
 				
+				//Update the equivs recorded in links to content item stored in any plugins in the plugin library
+				$sql = "
+					UPDATE ". DB_NAME_PREFIX. "plugin_settings AS ps
+					INNER JOIN ". DB_NAME_PREFIX. "plugin_instances AS pi
+					   ON pi.id = ps.instance_id
+					  AND pi.content_id = 0
+					SET ps.foreign_key_id = ". (int) $newEquivId. ",
+						ps.value = '". sqlEscape($cType. '_'. $newEquivId). "'
+					WHERE ps.foreign_key_to = 'content'
+					  AND ps.foreign_key_id = ". (int) $currentEquivId. "
+					  AND ps.foreign_key_char = '". sqlEscape($cType). "'";
+				sqlUpdate($sql);
+				
 				tidyTranslationsTable($currentEquivId, $cType);
 			}
 		}
@@ -6140,7 +6263,7 @@ function recordEquivalence($cID1, $cID2, $cType, $onlyValidate = false) {
 function tidyTranslationsTable($equivId, $cType) {
 	if (!checkRowExists('content_items', array('equiv_id' => $equivId, 'type' => $cType))) {
 		deleteRow('category_item_link', array('equiv_id' => $equivId, 'content_type' => $cType));
-		deleteRow('group_content_link', array('equiv_id' => $equivId, 'content_type' => $cType));
+		deleteRow('group_link', array('link_from' => 'chain', 'link_from_id' => $equivId, 'link_from_char' => $cType));
 		deleteRow('translation_chains', array('equiv_id' => $equivId, 'type' => $cType));
 		deleteRow('translation_chain_privacy', array('equiv_id' => $equivId, 'content_type' => $cType));
 	}
@@ -6163,12 +6286,13 @@ function copyTranslationsTable($oldEquivId, $newEquivId, $cType) {
 	sqlQuery($sql);
 	
 	$sql = "
-		INSERT IGNORE INTO ". DB_NAME_PREFIX. "group_content_link (
-			equiv_id, content_type, group_id
-		) SELECT ". (int) $newEquivId. ", content_type, group_id
-		FROM ". DB_NAME_PREFIX. "group_content_link
-		WHERE equiv_id = ". (int) $oldEquivId. "
-		  AND content_type = '". sqlEscape($cType). "'";
+		INSERT IGNORE INTO ". DB_NAME_PREFIX. "group_link
+			(`link_from`, `link_from_id`, `link_from_char`, `link_to`, `link_to_id`)
+		SELECT `link_from`, ". (int) $newEquivId. ", `link_from_char`, `link_to`, `link_to_id`
+		FROM ". DB_NAME_PREFIX. "group_link
+		WHERE link_from = 'chain'
+		  AND link_from_id = ". (int) $oldEquivId. "
+		  AND link_from_char = '". sqlEscape($cType). "'";
 	sqlQuery($sql);
 	
 	$sql = "
@@ -6292,6 +6416,135 @@ function exportPanelItems($headers, $rows, $format = 'csv', $filename = 'export'
 		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
 		$objWriter->save('php://output');
 	}
+}
+
+function setupSlideDestinations(&$box, &$fields, &$values) {
+	//Check if this plugin is in a slide in a conductor
+	$box['key']['conductorState'] = '';
+	if ($box['key']['usesConductor'] && $box['key']['slideNum']) {
+	
+		//Try and find the current state or states
+		$slide = getRow('nested_plugins', ['states', 'show_back'], [
+			'instance_id' => $box['key']['instanceId'],
+			'slide_num' => $box['key']['slideNum'],
+			'is_slide' => 1
+		]);
+	
+		$currentStates = explodeAndTrim($slide['states']);
+		if (!empty($currentStates[0])) {
+			$box['key']['conductorState'] = $currentStates[0];
+		
+			//Fill the list of slides
+			$result = sqlSelect("
+				SELECT id, slide_num, states, name_or_title
+				FROM ". DB_NAME_PREFIX. "nested_plugins
+				WHERE instance_id = ". (int) $box['key']['instanceId']. "
+				  AND slide_num != ". (int) $box['key']['slideNum']. "
+				  AND is_slide = 1");
+	
+			$ord = 0;
+			while ($row = sqlFetchAssoc($result)) {
+		
+				$states = explodeAndTrim($row['states']);
+		
+				if (count($states) > 1) {
+					foreach ($states as $state) {
+						$row['state'] = $state;
+						$box['lovs']['slides_and_states'][$state] = [
+							'ord' => ++$ord,
+							'label' => adminPhrase('Slide [[slide_num]][[state]]: [[name_or_title]]', $row)
+						];
+					}
+				} else {
+					$box['lovs']['slides_and_states'][$row['states']] = [
+						'ord' => ++$ord,
+						'label' => adminPhrase('Slide [[slide_num]]: [[name_or_title]]', $row)
+					];
+				}
+			}
+		
+			//Load the existing destination for each path on this slide.
+			$sql = "
+				SELECT from_state, to_state, equiv_id, content_type, commands
+				FROM ". DB_NAME_PREFIX. "nested_paths
+				WHERE from_state IN (". inEscape($currentStates). ")
+				  AND instance_id = ". (int) $box['key']['instanceId']. "
+				ORDER BY commands, from_state";
+		
+			$i = 0;
+			$lastTo = '';
+			$lastCommand = '';
+			$result = sqlSelect($sql);
+			while ($row = sqlFetchAssoc($result)) {
+				
+				//var_dump($row);
+				
+				//Note that there may be more than one, in the case of multiple states. When this happens,
+				//we'll show no more than two.
+				if ($lastCommand != $row['commands']) {
+					$lastCommand = $row['commands'];
+					$i = 1;
+				} else {
+					//If both alternate states link to the same place, don't show it twice
+					if ($lastTo == $row['content_type']. $row['equiv_id']. $row['to_state']) {
+						continue;
+				
+					//Show at most two alternate states (as there is a limit of two fields per command)
+					} elseif ($i < 2) {
+						++$i;
+					} else {
+						continue;
+					}
+				}
+			
+				if (isset($fields['to_state'. $i. '.'. $row['commands']])) {
+					$fields['to_state'. $i. '.'. $row['commands']]['hidden'] = false;
+					
+					if ($row['equiv_id']) {
+						$codeName = $row['content_type']. '_'. $row['equiv_id']. '/'. $row['to_state'];
+						
+						$box['lovs']['slides_and_states'][$codeName] = formatTag($row['equiv_id'], $row['content_type'], -1, false, true);
+						
+						$values['to_state'. $i. '.'. $row['commands']] = $codeName;
+					} else {
+						$values['to_state'. $i. '.'. $row['commands']] = $row['to_state'];
+					}
+					
+					$lastTo = $row['content_type']. $row['equiv_id']. $row['to_state'];
+				}
+			}
+		
+			//If the back button is enabled in the slide properties, show it as a read-only checkbox
+			if (isset($fields['enable.back'])) {
+				$values['enable.back'] = $slide['show_back'];
+			}
+		
+			//If the back button has a path but the submit button doesn't have a path,
+			//default the path to that of the back button
+			if (isset($fields['enable.submit'])
+			 && empty($values['to_state1.submit'])
+			 && !empty($values['to_state1.back'])) {
+				$values['to_state1.submit'] = $values['to_state1.back'];
+			}
+		
+			//Loop through all of the command-fields, looking for any that didn't get values, and mark them with a warning symbol
+			foreach ($fields as $key => &$field) {
+				if (isset($field['values'])
+				 && $field['values'] === 'slides_and_states'
+				 && strpos($key, '/') === false //n.b. this line is because fields appear in the $fields shortcut-array twice
+				 && empty($values[$key])
+				 && empty($field['hidden'])
+				 && chopPrefixOffString('to_state', $key)
+				) {
+					$field['css_class'] .= ' zfab_warning';
+				}
+			}
+		}
+	}
+}
+
+function checkScheduledTaskRunning($jobName) {
+	return inc('zenario_scheduled_task_manager') && zenario_scheduled_task_manager::checkScheduledTaskRunning($jobName, true);
 }
 
 

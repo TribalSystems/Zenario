@@ -29,10 +29,10 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 $pluginName = null;
 foreach (explode(',', $eggIds) as $eggId) {
-	if (($nestedItem = getNestDetails($eggId))
-	 && (!$nestedItem['is_slide'])) {
+	if (($egg = getNestDetails($eggId))
+	 && (!$egg['is_slide'])) {
 		if ($pluginName === null) {
-			$pluginName = $nestedItem['name_or_title'];
+			$pluginName = $egg['name_or_title'];
 		} else {
 			$pluginName = false;
 		}
@@ -42,13 +42,13 @@ foreach (explode(',', $eggIds) as $eggId) {
 //Display a confirmation box, asking the admin if they want to delete the plugin(s)
 if (!$pluginName) {
 	$message =
-		'<p>'. adminPhrase('Are you sure you wish to remove the selected Plugins from the Nest?'). '</p>'.
-		'<p>'. adminPhrase('Their settings will be deleted but any attached images will be left in the Media panel.'). '</p>';
+		'<p>'. adminPhrase('Are you sure you wish to remove the selected Plugins from the nest?'). '</p>'.
+		'<p>'. adminPhrase('Their settings will be deleted but any attached images will be left in the image library.'). '</p>';
 
 } else {
 	$message =
-		'<p>'. adminPhrase('Are you sure you wish to remove the &quot;[[name]]&quot; Plugin from the Nest?', array('name' => htmlspecialchars($pluginName))). '</p>'.
-		'<p>'. adminPhrase('Its settings will be deleted but any attached images will be left in the Media panel.'). '</p>';
+		'<p>'. adminPhrase('Are you sure you wish to remove the &quot;[[name]]&quot; Plugin from the nest?', array('name' => htmlspecialchars($pluginName))). '</p>'.
+		'<p>'. adminPhrase('Its settings will be deleted but any attached images will be left in the image library.'). '</p>';
 }
 
 

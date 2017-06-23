@@ -14,16 +14,16 @@ zenario__content:
                     multiple_select: false
                     admin_box:
                         path: zenario_export_tools__export
-                    without_traits:
-                        ghost: true
+                    without_columns_set:
+                        traits.ghost: true
                 zenario_export_tools__import:
                     priv: _PRIV_IMPORT_CONTENT_ITEM
                     visible_if: |
                         zenarioA.checkSpecificPerms(id)
-                    traits:
-                        not_locked: true
-                    without_traits:
-                        ghost: true
+                    with_columns_set:
+                        traits.not_locked: true
+                    without_columns_set:
+                        traits.ghost: true
                     parent: action_dropdown
                     label: Import
                     tooltip: >
@@ -36,10 +36,10 @@ zenario__content:
                     priv: _PRIV_IMPORT_CONTENT_ITEM
                     visible_if: |
                         zenarioA.checkSpecificPerms(id)
-                    traits:
-                        not_locked: true
-                    without_traits:
-                        ghost: true
+                    with_columns_set:
+                        traits.not_locked: true
+                    without_columns_set:
+                        traits.ghost: true
                     parent: action_dropdown
                     label: Google Translate
                     tooltip: >

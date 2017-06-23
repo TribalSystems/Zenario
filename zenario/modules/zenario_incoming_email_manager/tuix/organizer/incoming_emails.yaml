@@ -69,8 +69,8 @@ zenario__administration:
 					ord: "1"
 					admin_box:
 						path: zenario_job
-					without_traits:
-						can_enable: Yes
+					without_columns_set:
+						traits.can_enable: true
 				zenario_incoming_email_manager__edit_enable_job:
 					priv: _PRIV_MANAGE_SCHEDULED_TASK
 					php: Yes
@@ -91,10 +91,10 @@ zenario__administration:
 							message_type: warning
 						request:
 							action: enable_incoming_email_handler
-					traits:
-						can_enable: Yes
-					without_traits:
-						can_suspend: Yes
+					with_columns_set:
+						traits.can_enable: true
+					without_columns_set:
+						traits.can_suspend: true
 				zenario_incoming_email_manager__edit_enable:
 					priv: _PRIV_MANAGE_SCHEDULED_TASK
 					php: Yes
@@ -103,10 +103,10 @@ zenario__administration:
 					label: Settings
 					admin_box:
 						path: zenario_job
-					traits:
-						can_enable: Yes
-					without_traits:
-						can_suspend: Yes
+					with_columns_set:
+						traits.can_enable: true
+					without_columns_set:
+						traits.can_suspend: true
 
 				zenario_incoming_email_manager__rerun:
 					ord: "52"
@@ -124,8 +124,8 @@ zenario__administration:
 							message_type: warning
 						request:
 							rerun: "1"
-					traits:
-						can_rerun: Yes
+					with_columns_set:
+						traits.can_rerun: true
 			hidden_nav:
 				log:
 					panel:

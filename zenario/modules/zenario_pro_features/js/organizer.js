@@ -29,16 +29,16 @@ zenario.lib(function(
 	undefined,
 	URLBasePath,
 	document, window, windowOpener, windowParent,
-	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO, strings,
+	zenario, zenarioA, zenarioT, zenarioAB, zenarioAT, zenarioO,
 	encodeURIComponent, get, engToBoolean, htmlspecialchars, jsEscape, phrase,
 	extensionOf, methodsOf, has,
-	zenario_pro_features
+	zenario_pro_features, zenario_server_time, s$s
 ) {
 	"use strict";
 
 
 zenario_pro_features.serverTime = function() {
-	var el = get('zenario_server_time');
+	var el = get(zenario_server_time);
 	
 	if (!el) {
 		return;
@@ -49,44 +49,33 @@ zenario_pro_features.serverTime = function() {
 	d = new Date(d);
 	
 	if (zenario.browserIsIE()) {
-		el.innerHTML = phrase.serverTime + htmlspecialchars(d.toLocaleTimeString());
+		el.innerHTML = htmlspecialchars(d.toLocaleTimeString());
 	} else {
 		el.innerHTML =
-			phrase.serverTime +
 			('0' + d.getHours()).substr(-2) + ':' +
 			('0' + d.getMinutes()).substr(-2) + ':' +
 			('0' + d.getSeconds()).substr(-2);
 	}
-	
-	if (zenario_pro_features.pageCachingTooltip) {
-		zenarioA.tooltips('#zenario_page_caching', {
-			position: {my: 'left+2 center', at: 'right center', collision: 'flipfit'},
-			items: '*',
-			content: zenario_pro_features.pageCachingTooltip});
-	}
-	delete zenario_pro_features.pageCachingTooltip;
-	
-	if (zenario_pro_features.serverTimeTooltip) {
-		zenarioA.tooltips('#zenario_server_time', {
-			position: {my: 'left+2 center', at: 'right center', collision: 'flipfit'},
-			items: '*',
-			content: zenario_pro_features.serverTimeTooltip});
-	}
-	delete zenario_pro_features.serverTimeTooltip;
 };
 
 
-zenario_pro_features.fillOrganizerLowerLeft = function() {
+zenario_pro_features.eventFillOrganizerLowerLeft = function() {
 	var times = zenario.moduleNonAsyncAJAX('zenario_pro_features', 'getBottomLeftInfo=1', true).split('~'),
 		now = new Date(),
 		htmlPC = '',
-		htmlSC = '';
+		htmlST = '',
+		htmlSC = '',
+		_$div = zenarioT.div,
+		
+		zenario_page_caching = 'zenario_page_caching',
+		zenario_scheduled_tasks_status = 'zenario_scheduled_tasks_status';
 	
 	
-	htmlPC +=
-		'<div id="zenario_page_caching"' +
-		' class="' + (times[0]? 'zenario_page_caching_on' : 'zenario_page_caching_off') + '"' +
-		' style="cursor: pointer;" onclick="zenarioAB.openSiteSettings(\'optimisation\', \'caching\');"></div>';
+	htmlPC = _$div(
+		'id', zenario_page_caching,
+		'class', times[0]? zenario_page_caching + '_on' : zenario_page_caching + '_off',
+		'onclick', "zenarioAB.openSiteSettings('optimisation', 'caching');"
+	);
 	
 	times[1] = times[1].replace(
 		'is_htaccess_working',
@@ -99,30 +88,47 @@ zenario_pro_features.fillOrganizerLowerLeft = function() {
 	zenario_pro_features.serverTimeMinsOffset = 1*times[3] - now.getMinutes();
 	zenario_pro_features.serverTimeSecsOffset = 1*times[4] - now.getSeconds();
 	
-	htmlSC += '<div id="zenario_server_time" class="' + htmlspecialchars(times[5]) + '"';
+	htmlST = _$div(
+		'id', zenario_scheduled_tasks_status,
+		'class', times[5],
+		'onclick', times[7] && ("zenarioO.go('" + jsEscape(times[7]) + "', -1);")
+	);
 	
-	if (times[7]) {
-		htmlSC += ' style="cursor: pointer;" onclick="zenarioO.go(\'' + htmlspecialchars(times[7]) + '\', -1);"';
-	}
+	htmlSC = _$div(
+		'id', zenario_server_time
+	);
 	
-	htmlSC += '></div>';
 	
-	//Old 6.1.0 logic:
-	//$('#leftColumn').after(html);
+	setTimeout(function() {
+		
+		var tooltipOptions = {
+			position: {my: 'center bottom', at: 'center top', collision: 'flipfit'},
+			items: '*'
+		};
+		
+		tooltipOptions.content = phrase.serverTime;
+		zenarioA.tooltips('#' + zenario_server_time, tooltipOptions);
 	
-	zenario_pro_features.pageCachingTooltip = times[1];
-	zenario_pro_features.serverTimeTooltip = times[6];
+		if (tooltipOptions.content = times[6]) {
+			zenarioA.tooltips('#' + zenario_scheduled_tasks_status, tooltipOptions);
+		}
+		
+		if (tooltipOptions.content = times[1]) {
+			tooltipOptions.position = {my: 'left+2 center', at: 'right center', collision: 'flipfit'};
+			zenarioA.tooltips('#' + zenario_page_caching, tooltipOptions);
+		}
+	}, 200);
 	
 	if (zenario_pro_features.serverTimeInterval) {
 		clearInterval(zenario_pro_features.serverTimeInterval);
 	}
-	
 	zenario_pro_features.serverTimeInterval = setInterval(zenario_pro_features.serverTime, 250);
 	
-	return [[htmlPC, 10], [htmlSC, 20]];
+	
+	return [[htmlPC, 10], [htmlST, 20], [htmlSC, 20.01]];
 };
 
 
 
 
-}, zenario_pro_features);
+}, zenario_pro_features, 'zen'+'ario_server_time');

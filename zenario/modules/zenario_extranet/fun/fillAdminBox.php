@@ -31,7 +31,7 @@ switch ($path) {
 	case 'plugin_settings':
 		
 		if (isset($fields['first_tab/login_with'])) {
-			$fields['first_tab/login_with']['read_only'] = !setting('user_use_screen_name');
+			$fields['first_tab/login_with']['readonly'] = !setting('user_use_screen_name');
 		}
 		
 		$defaultLangId = setting('default_language');

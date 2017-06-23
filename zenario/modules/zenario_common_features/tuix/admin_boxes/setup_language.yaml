@@ -106,7 +106,7 @@ zenario_setup_language:
                         && !zenarioA.siteSettings.primary_domain
                     label: 'Use a language-specific domain'
                     type: checkbox
-                    read_only: true
+                    readonly: true
                     side_note: |
                         If enabled, pages in this language will be available via a different domain or subdomain from the rest of the site.
                         You need to set a primary domain before you can use a language-specific domain.

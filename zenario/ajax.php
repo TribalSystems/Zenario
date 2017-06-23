@@ -332,6 +332,37 @@ if ($methodCall == 'showFile') {
 	   || $methodCall == 'validateVisitorTUIX'
 	   || $methodCall == 'saveVisitorTUIX') {
 	
+	if ($isForPlugin) {
+		$module = &cms_core::$slotContents[$slotName]['class'];
+	}
+	
+	$filling = $methodCall == 'fillVisitorTUIX' || empty($_POST['_tuix']);
+	$callbackFromScriptTags = $filling && !empty($_REQUEST['_script']);
+	
+	header('Content-Type: text/javascript; charset=UTF-8');
+	
+	class zenario_ajax_static_vars {
+		public static $hadFatalError = true;
+		public static $returnGlobalName = true;
+		public static function onShutdown() {
+			if (zenario_ajax_static_vars::$hadFatalError) {
+				$error = ob_get_clean();
+				
+				echo zenario_ajax_static_vars::$returnGlobalName, '.AJAXErrorHandler({
+					responseText: ', json_encode($error), '
+				});';
+				
+				exit;
+			}
+		}
+	}
+	zenario_ajax_static_vars::$returnGlobalName = $module->returnGlobalName();
+	
+	if ($callbackFromScriptTags) {
+		ob_start();
+		register_shutdown_function(['zenario_ajax_static_vars', 'onShutdown']);
+	}
+	
 	//Trying to do without admin.inc.php
 	//require_once CMS_ROOT. 'zenario/includes/admin.inc.php';
 	require_once CMS_ROOT. 'zenario/includes/tuix.inc.php';
@@ -342,10 +373,6 @@ if ($methodCall == 'showFile') {
 		exit;
 	}
 	$debugMode = checkPriv() && (bool) get('_debug');
-	
-	if ($isForPlugin) {
-		$module = &cms_core::$slotContents[$slotName]['class'];
-	}
 	
 	cms_core::$skType = 'visitor';
 	cms_core::$skPath = $requestedPath;
@@ -392,11 +419,9 @@ if ($methodCall == 'showFile') {
 	}
 	
 	$doSave = false;
-	if (in($methodCall, 'formatVisitorTUIX', 'validateVisitorTUIX', 'saveVisitorTUIX') && !empty($_POST['_tuix'])) {
-		$filling = false;
+	if (!$filling) {
 		$clientTags = json_decode($_POST['_tuix'], true);
 	
-		//checkBoxDefinition($box, $tags);
 		loadCopyOfTUIXFromServer($tags, $clientTags);
 		
 		syncAdminBoxFromClientToServer($tags, $clientTags);
@@ -410,7 +435,7 @@ if ($methodCall == 'showFile') {
 			$values = array();
 			$changes = array();
 			if (TUIXLooksLikeFAB($tags)) {
-				readAdminBoxValues($tags, $fields, $values, $changes, $filling, $resetErrors = true);
+				readAdminBoxValues($tags, $fields, $values, $changes, $filling, $resetErrors = true, $checkLOVs = true);
 				
 				foreach ($tags['tabs'] as $tabName => &$tab) {
 					applyValidationFromTUIXOnTab($tab);
@@ -457,7 +482,6 @@ if ($methodCall == 'showFile') {
 		}
 		
 	} else {
-		$filling = true;
 		
 		//Logic for initialising an Admin Box
 		if (!empty($tags['key']) && is_array($tags['key'])) {
@@ -483,7 +507,7 @@ if ($methodCall == 'showFile') {
 		$values = array();
 		$changes = array();
 		if (TUIXLooksLikeFAB($tags)) {
-			readAdminBoxValues($tags, $fields, $values, $changes, $filling, $resetErrors = false, $addOrds = true);
+			readAdminBoxValues($tags, $fields, $values, $changes, $filling, $resetErrors = false, $checkLOVs = false, $addOrds = true);
 		}
 
 		$module->formatVisitorTUIX($requestedPath, $tags, $fields, $values, $changes);
@@ -500,9 +524,45 @@ if ($methodCall == 'showFile') {
 			$tags = $output;
 		}
 	}
+	
 
-	echo json_encode($tags);
-	exit;
+	
+	
+	if ($callbackFromScriptTags) {
+		
+		$error = ob_get_clean();
+		
+		if ($error) {
+			echo zenario_ajax_static_vars::$returnGlobalName, '.AJAXErrorHandler({
+				data: {},
+				responseText: ', json_encode($error), ',
+				zenario_continueAnyway: function() {';
+		}
+		
+		$requests = $_GET;
+		unset($requests['cID']);
+		unset($requests['cType']);
+		unset($requests['cVersion']);
+		unset($requests['method_call']);
+		unset($requests['moduleClassName']);
+		unset($requests['instanceId']);
+		unset($requests['slotName']);
+		unset($requests['eggId']);
+		unset($requests['_script']);
+		echo zenario_ajax_static_vars::$returnGlobalName, '.loadFromScriptCallback(', json_encode($requests), ', ';
+	}
+	
+	jsonEncodeForceObject($tags);
+	
+	if ($callbackFromScriptTags) {
+		echo ');';
+		
+		if ($error) {
+			echo '}});';
+		}
+	}
+	
+	zenario_ajax_static_vars::$hadFatalError = false;
 	
 	
 	
@@ -716,13 +776,13 @@ if ($methodCall == 'showFile') {
 		
 		if (cms_core::$slotContents[$slotName]['class']->checkScrollToTopVar() === true) {
 			echo
-				'<!--SCROLL_TO_TOP:1-->';
+				'<!--SCROLL_TO_TOP-->';
 		}
 		
 		//Lets a Plugin will be placed in a floating box when it reloads
 		if (($showInFloatingBox = cms_core::$slotContents[$slotName]['class']->checkShowInFloatingBoxVar()) === true) {
 			echo
-				'<!--SHOW_IN_FLOATING_BOX:1-->';
+				'<!--SHOW_IN_FLOATING_BOX-->';
 			if (($params = cms_core::$slotContents[$slotName]['class']->getFloatingBoxParams()) && is_array($params)) {
 				echo
 					'<!--FLOATING_BOX_PARAMS:' . eschyp(json_encode($params)) . '-->';
@@ -735,9 +795,9 @@ if ($methodCall == 'showFile') {
 				eschyp(arrayKey(cms_core::$slotContents[$slotName], 'level')),
 			'-->';
 		
-		if ($tabId = (int) cms_core::$slotContents[$slotName]['class']->zAPIGetTabId()) {
+		if ($slideId = (int) cms_core::$slotContents[$slotName]['class']->zAPIGetTabId()) {
 			echo
-				'<!--TAB_ID:', $tabId, '-->';
+				'<!--TAB_ID:', $slideId, '-->';
 		}
 		
 		if (!empty(cms_core::$slotContents[$slotName]['css_class'])) {
@@ -768,12 +828,12 @@ if ($methodCall == 'showFile') {
 			if (!empty(cms_core::$slotContents[$slotName]['instance_id'])) {
 				if (!empty(cms_core::$slotContents[$slotName]['content_id'])) {
 					echo
-						'<!--WIREFRAME:1-->';
+						'<!--WIREFRAME-->';
 				}
 			}
 		
 			if (cms_core::$slotContents[$slotName]['class']->beingEdited()) {
-				echo '<!--IN_EDIT_MODE:1-->';
+				echo '<!--IN_EDIT_MODE-->';
 			}
 		}
 		

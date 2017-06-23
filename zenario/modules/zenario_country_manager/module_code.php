@@ -79,7 +79,7 @@ class zenario_country_manager extends module_base_class {
 	
 
 	public static function getCountryNamesInCurrentVisitorLanguageIndexedByISOCode($countryActivityFilter='active',$countryId=''){
-		$tbl= zenario_country_manager::getVisitorCountriesIndexedByISOCode($_SESSION['user_lang'],$countryActivityFilter,$countryId) ;
+		$tbl= zenario_country_manager::getVisitorCountriesIndexedByISOCode(currentLangId(),$countryActivityFilter,$countryId) ;
 		$rv = array();
 		foreach($tbl as $K=>$V)
 			$rv[$K]=$V['phrase'];
@@ -96,7 +96,7 @@ class zenario_country_manager extends module_base_class {
 	}
 
 	public static function getCountryNamesInCurrentVisitorLanguage($countryActivityFilter='active',$countryId=''){
-		$tbl= zenario_country_manager::getVisitorCountries($_SESSION['user_lang'],$countryActivityFilter,$countryId) ;
+		$tbl= zenario_country_manager::getVisitorCountries(currentLangId(),$countryActivityFilter,$countryId) ;
 		$rv = array();
 		foreach($tbl as $K=>$V)
 			$rv[$K]=$V['phrase'];
@@ -113,7 +113,7 @@ class zenario_country_manager extends module_base_class {
 	}
 
 	public static function getRegionNamesInCurrentVisitorLanguage($countryActivityFilter='active',$countryId='',$regionId=''){
-		$tbl= zenario_country_manager::getVisitorRegions($_SESSION['user_lang'],$countryActivityFilter,$countryId,$regionId) ;
+		$tbl= zenario_country_manager::getVisitorRegions(currentLangId(),$countryActivityFilter,$countryId,$regionId) ;
 		$rv = array();
 		foreach($tbl as $K=>$V)
 			$rv[$K]=$V['phrase'];

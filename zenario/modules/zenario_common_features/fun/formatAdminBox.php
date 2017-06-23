@@ -38,13 +38,6 @@ switch ($path) {
 	
 	case 'zenario_admin':
 		return require funIncPath(__FILE__, 'admin.formatAdminBox');
-	
-	case 'zenario_document_properties':
-		if (!empty($fields['upload_image/delete_thumbnail_image']['pressed'])) {
-			$fields['upload_image/thumbnail_image']['snippet']['html'] = adminPhrase('No thumbnail available');
-			$box['key']['delete_thumbnail'] = true;
-		}
-		break;
 
 }
 

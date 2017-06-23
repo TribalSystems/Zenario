@@ -37,6 +37,10 @@ function hideCookieConsent() {
 	}
 }
 
+function currentLangId() {
+	return cms_core::$langId ?? $_SESSION['user_lang'] ?? setting('default_language');
+}
+
 cms_core::$whitelist[] = 'inc';
 //	function inc($moduleClass) {}
 
@@ -48,7 +52,7 @@ cms_core::$whitelist[] = 'inc';
 function langSpecialPage($pageType, &$cID, &$cType, $preferredLanguageId = false, $languageMustMatch = false, $skipPermsCheck = false) {
 	//Assume that we'll want the special page in the language that the Visitor is currently viewing, if a language is not specified
 	if ($preferredLanguageId === false) {
-		$preferredLanguageId = ifNull(session('user_lang'), setting('default_language'));
+		$preferredLanguageId = cms_core::$langId ?? $_SESSION['user_lang'] ?? setting('default_language');
 	}
 	
 	//Convert the requested language to the format used in the special pages array
@@ -101,12 +105,7 @@ function formatDateNicely($date, $format_type = false, $languageId = false, $tim
 		$languageId = setting('default_language');
 	
 	} elseif (!$languageId) {
-		if (!empty($_SESSION['user_lang'])) {
-			$languageId = $_SESSION['user_lang'];
-	
-		} else {		
-			$languageId = setting('default_language');
-		}
+		$languageId = cms_core::$langId ?? $_SESSION['user_lang'] ?? setting('default_language');
 	}
 	
 	if ($time_format === true) {
@@ -238,7 +237,7 @@ function getRelativeDate($timestamp, $maxPeriod = "day", $addFullTime = true, $f
 	
 	$time = convertToUserTimezone($timestamp);
 	if (!is_numeric($timestamp)) {
-		$timestamp = $time->getTimestamp();
+		$timestamp = strtotime($timestamp . ' UTC');
 	}
 	
 	$etime = time() - (int) $timestamp;
@@ -307,6 +306,36 @@ function addSqlDateTimeByPeriodAndReturnStartEnd($sql_start_date, $by_period) {
 	//echo $sql_start_date, " ", $sql_end_date, "\n";
 
 	return array($sql_start_date, $sql_end_date);
+}
+
+
+
+function programPathForExec($path, $program, $checkExecutable = false) {
+	
+	if ($checkExecutable) {
+		$path = programPathForExec($path, $program, false);
+		if ($path && is_executable($path)) {
+			return $path;
+		}
+	
+	} else {
+		if (!windowsServer() && execEnabled()) {
+			switch ($path) {
+				case 'PATH':
+					return $program;
+				case '/usr/bin/':
+					return '/usr/bin/'. $program;
+				case '/usr/local/bin/':
+					return '/usr/local/bin/'. $program;
+				case '/Applications/AMPPS/mysql/bin/':
+					if (PHP_OS == 'Darwin') {
+						return '/Applications/AMPPS/mysql/bin/'. $program;
+					}
+			}
+		}
+	}
+	
+	return false;
 }
 
 function requireCookieConsent() {
@@ -479,16 +508,38 @@ function sendEmail(
 
 //	function setCookieConsent() {}
 
-function setSetting($settingName, $value, $updateDB = true, $clearCache = true) {
+function setSetting($settingName, $value, $updateDB = true, $encrypt = false, $clearCache = true) {
 	cms_core::$siteConfig[$settingName] = $value;
 	
 	if ($updateDB && cms_core::$lastDB) {
+		
+		$encryptedColExists = checkTableDefinition(DB_NAME_PREFIX. 'site_settings', 'encrypted', $useCache = true);
+		
+		$encrypted = 0;
+		if ($encryptedColExists && $encrypt && loadZewl()) {
+			$encrypted = 1;
+			$value = zewl::encrypt($value, false);
+		}
+		
 		$sql = "
 			INSERT INTO ". DB_NAME_PREFIX. "site_settings SET
 				`name` = '". sqlEscape($settingName). "',
-				`value` = '". sqlEscape($value). "'
+				`value` = '". sqlEscape($value). "'";
+		
+		if ($encryptedColExists) {
+			$sql .= ",
+				encrypted = ". (int) $encrypted;
+		}
+		
+		$sql .= "
 			ON DUPLICATE KEY UPDATE
 				`value` = VALUES(`value`)";
+		
+		if ($encryptedColExists) {
+			$sql .= ",
+				encrypted = ". (int) $encrypted;
+		}
+		
 		sqlUpdate($sql, false, $clearCache);
 	}
 }

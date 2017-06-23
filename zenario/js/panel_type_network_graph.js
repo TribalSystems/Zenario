@@ -29,10 +29,10 @@ zenario.lib(function(
 	undefined,
 	URLBasePath,
 	document, window, windowOpener, windowParent,
-	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO, strings,
+	zenario, zenarioA, zenarioT, zenarioAB, zenarioAT, zenarioO,
 	encodeURIComponent, get, engToBoolean, htmlspecialchars, jsEscape, phrase,
 	extensionOf, methodsOf, has,
-	panelTypes
+	panelTypes, extraVar2, s$s
 ) {
 	"use strict";
 
@@ -69,6 +69,7 @@ methods.returnPageSize = function() {
 	$footer.html('').show();
 };*/
 
+
 methods.drawItems = function($panel) {
 	
 	//this.items = this.getMergeFieldsForItemsAndColumns(true);
@@ -103,6 +104,11 @@ methods.drawItems = function($panel) {
 								'border-style': 'solid'
 							}
 						}, {
+							selector: 'node > $node',
+							css: {
+								'text-opacity': 0.7
+							}
+						}, {
 							selector: '$node > node',
 							css: {
 								'padding-top': '10px',
@@ -111,6 +117,7 @@ methods.drawItems = function($panel) {
 								'padding-right': '10px',
 								'text-valign': 'bottom',
 								'text-halign': 'center',
+								'font-size': 15,
 								'background-color': '#ddd',
 								'background-opacity': 0.5,
 								'border-color': '#eee',
@@ -126,7 +133,9 @@ methods.drawItems = function($panel) {
 								'line-style': 'solid',
 								'line-color': 'data(color)',
 								'content': 'data(label)',
-								'color': 'data(color)',
+								//'color': 'data(color)',
+								'text-opacity': 0.8,
+								'font-size': 14,
 								'text-valign': 'center',
 								'text-halign': 'center',
 								'text-rotation': 'autorotate',
@@ -215,7 +224,9 @@ methods.drawItems = function($panel) {
 				this.tuix.cytoscape
 			);
 		
-		var topLevelCount = 0;
+		var topLevelCount = 0,
+			needToDeselect = false;
+		
 		foreach (this.tuix.items as id => item) {
 			
 			//We're about to add some custom properties to an item,
@@ -233,8 +244,17 @@ methods.drawItems = function($panel) {
 				item.data.color = 'grey';
 			}
 			
-			//N.b. if we want to make an item unselectable, do this:
-			//item.selectable = false; 
+			//Make items unselectable if requested
+			if (engToBoolean(item.data.unselectable)) {
+				item.selected =
+				item.selectable = false; 
+				
+				//Watch out for the case where Organizer or the UI tries to auto-select something that shouldn't be selected
+				if (this.selectedItems[id]) {
+					delete this.selectedItems[id];
+					needToDeselect = true;
+				}
+			}
 			
 			//Allow states to be moved, slides and paths should inherit their position using the position of the states
 			//so they shouldn't be independantly movable
@@ -280,6 +300,13 @@ methods.drawItems = function($panel) {
 
 	
 	$panel.show();
+	
+	//Deal with the case where Organizer or the UI tries to auto-select something that shouldn't be selected
+	//by deselecting it and then redrawing the item buttons
+	if (needToDeselect) {
+		zenarioO.deselectAllItems();
+		this.setButtonsWrapper();
+	}
 };
 
 methods.drawCytoscape = function($panel) {
@@ -312,8 +339,7 @@ methods.drawCytoscape = function($panel) {
 			}
 		}
 		
-		zenarioO.setButtons();
-		zenarioO.setHash();
+		that.setButtonsWrapper();
 	});
 	
 	//If the admin moves a node, update the position object
@@ -349,12 +375,23 @@ methods.drawCytoscape = function($panel) {
 	});
 };
 
+methods.setButtonsWrapper = function() {
+	
+	zenarioO.setButtons();
+	zenarioO.setHash();
+};
+
 //This method should cause an item to be selected.
 //It is called after your panel is drawn so you should update the state of your items
 //on the page.
 methods.selectItem = function(id) {
 	this.selectedItems[id] = true;
-	this.cy && this.cy.$('#' + id).select();
+	if (this.cy
+	 && this.tuix.items
+	 && this.tuix.items[id]
+	 && !engToBoolean(this.tuix.items[id].unselectable)) {
+		this.cy.$('#' + id).select();
+	}
 };
 
 //This method should cause an item to be deselected

@@ -30,29 +30,7 @@
 
 (function(window, zenarioAsString, moduleClassNameAsString, undefined) {
 	"use strict";
-	
-		//Define some shortcuts for common strings, to reduce the filesize a bit
-	var strings = {
-			a: zenarioAsString + '/ajax.php',
-			c: '&method_call=',
-			d: '.' + zenarioAsString + '_',
-			e: '&eggId=',
-			f: zenarioAsString + '_common_features',
-			h: '#' + zenarioAsString + '_',
-			i: '&instanceId=',
-			l: '&slotName=',
-			m: moduleClassNameAsString,
-			o: zenarioAsString + '__content/panels/',
-			p: moduleClassNameAsString + 'ForPhrases',
-			q: '?' + moduleClassNameAsString + '=',
-			s: zenarioAsString + '/',
-			u: 'lookup',
-			v: '&cVersion=',
-			x: 'colorbox',
-			z: zenarioAsString + '_'
-		},
 		
-	
 		//This is a shortcut function for initialising a new class.
 		//It just uses normal JavaScript class inheritance, but it makes the syntax
 		//a little more readable and friendly when creating a new class
@@ -87,6 +65,7 @@
 		//Create encapsulated objects/classes for all of Zenario's libraries
 		zenario = createZenarioLibrary(''),
 		zenarioA = createZenarioLibrary('A'),
+		zenarioT = createZenarioLibrary('T'),
 		zenarioF = createZenarioLibrary('F'),
 		zenarioAF = createZenarioLibrary('AF', zenarioF),
 		zenarioABToolkit = createZenarioLibrary('ABToolkit', zenarioAF),
@@ -102,10 +81,33 @@
 			undefined,
 			URLBasePath,
 			document, window, window.opener, window.parent,
-			zenario, zenarioA, zenarioAB, zenarioAT, zenarioO, strings,
+			zenario, zenarioA, zenarioT, zenarioAB, zenarioAT, zenarioO,
 			encodeURIComponent, zenario.get, zenario.engToBoolean, zenario.htmlspecialchars, zenario.jsEscape, zenarioA.phrase,
 			zenario.extensionOf, zenario.methodsOf, zenario.has,
-			extraVar1, extraVar2, extraVar3, extraVar4, extraVar5, extraVar6
+			extraVar1, extraVar2,
+
+			//Define some shortcuts for common strings, to reduce the filesize a bit
+			zenarioAsString + '_',
+			zenarioAsString + '/',
+			'.' + zenarioAsString + '_',
+			zenarioAsString + '__content/panels/',
+			zenarioAsString + '_common_features',
+			'#' + zenarioAsString + '_',
+			'&instanceId=',
+			'&slotName=',
+			'&eggId=',
+			moduleClassNameAsString,
+			moduleClassNameAsString + 'ForPhrases',
+			'?' + moduleClassNameAsString + '=',
+			'&method_call=',
+			'lookup',
+			'&cVersion=',
+			'colorbox',
+			zenarioAsString + '/ajax.php',
+			'plgslt_',
+			'#plgslt_',
+			
+			extraVar3, extraVar4, extraVar5, extraVar6
 		);
 	};
 	

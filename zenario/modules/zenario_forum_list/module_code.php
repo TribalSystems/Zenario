@@ -89,7 +89,7 @@ class zenario_forum_list extends zenario_content_list {
 		
 		//Only return content in the current language
 		$sql .= "
-		  AND c.language_id = '". sqlEscape(session('user_lang')). "'";
+		  AND c.language_id = '". sqlEscape(cms_core::$langId). "'";
 		
 		//Exclude this page itself
 		$sql .= "

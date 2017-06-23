@@ -112,7 +112,7 @@ class zenario_common_features__admin_boxes__phrase extends module_base_class {
 						'ord' => $ord,
 						'label' => $language['english_name']. ':',
 						'type' => 'textarea',
-						'read_only' => !$hasPerms,
+						'readonly' => !$hasPerms,
 						'rows' => '4',
 						'side_note' => 
 							"This is HTML text.
@@ -128,7 +128,7 @@ class zenario_common_features__admin_boxes__phrase extends module_base_class {
 						'ord' => $ord + 1,
 						'label' => 'Protect',
 						'type' => 'checkbox',
-						'read_only' => !$hasPerms,
+						'readonly' => !$hasPerms,
 						'visible_if' => 'zenarioAB.editModeOn()',
 						'value' => $protectValue,
 						'side_note' =>
@@ -146,7 +146,7 @@ class zenario_common_features__admin_boxes__phrase extends module_base_class {
 		//Try to set the Module's name
 		if ($box['key']['module_class_name']) {
 			if ($box['tabs']['phrase']['fields']['module']['value'] = getModuleIdByClassName($box['key']['module_class_name'])) {
-				$box['tabs']['phrase']['fields']['module']['read_only'] = true;
+				$box['tabs']['phrase']['fields']['module']['readonly'] = true;
 			} else {
 				//If this is a phrase for a Module that doesn't exist any more, don't let it be edited
 				unset($box['tabs']['phrase']['fields']['module']['pick_items']);

@@ -15,6 +15,8 @@ description: |
     
     <p>A Banner may display an image. You may also nominate a second image as a rollover.</p>
     
+    <p>There is support for responsive websites, in that you can specify an alternate image to be displayed when viewed on a mobile device.</p>
+    
     <p>Images can be in JPG, PNG and GIF formats. In addition, the CMS can automatically resize large images down in size.</p>
     
     <p>Banners can link to a Content Item on your site, an image on your site, or a custom URL.</p>
@@ -26,10 +28,6 @@ description: |
     
     <p>If you link to an image on your site, then this image will appear in a floating box above the current page.
         Note that using or linking to an image gives the current Visitor the right to view that image at the size you specify.</p>
-    
-    <p>If you link to a Picture Content Item, you may use a resized version of that picture as the image for your Banner.
-        This also allows you to have a Picture which is private (e.g. only available via some kind of subscription model),
-        yet create a publicly visible thumbnail as a preview.</p>
         
     <p>Banners are nestable; this means that by first inserting a Plugin Nest into a Slot, you can then insert multiple Banners to make creative animated effects.</p>
 category: pluggable

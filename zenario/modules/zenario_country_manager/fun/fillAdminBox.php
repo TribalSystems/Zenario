@@ -37,7 +37,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 				$box['title'] = adminPhrase('Renaming the Country "[[country_name]]"', array('country_name' => $countryName));
 
 				$box['tabs']['details']['fields']['code']['value'] = arrayKey($box,'key','id');
-				$box['tabs']['details']['fields']['code']['read_only'] = true;
+				$box['tabs']['details']['fields']['code']['readonly'] = true;
 				$box['tabs']['details']['fields']['name']['value'] = $countryName;
 			}
 			break;

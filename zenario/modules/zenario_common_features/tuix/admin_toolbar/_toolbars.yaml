@@ -95,8 +95,8 @@ sections:
                     fixed: true
                     transition: none
                     css_class: zenario_grid_maker
-                traits:
-                    grid: true
+                with_columns_set:
+                    traits.grid: true
                 without_columns_set:
                     missing: true
             edit_skin:
@@ -109,7 +109,7 @@ sections:
                 onclick: |
                     zenarioSE.open();
             skq:
-                label: Organize layouts...
+                label: Organize layouts
                 tooltip: Define which skin this layout should use, and view other layouts
                 organizer_quick:
                     path: 
@@ -124,6 +124,71 @@ sections:
             slot_control_dropdown:
                 label: Slots
                 hide_when_children_are_not_visible: true
+                        
+            item_head:
+                parent: slot_control_dropdown
+                priv: _PRIV_MANAGE_ITEM_SLOT
+                visible_if: |
+                    zenarioA.checkSpecificPermsOnThisPage()
+                appears_in_toolbars:
+                    edit: true
+                label: <head> HTML
+                onmouseover: zenarioA.closeSlotControls();
+                admin_box:
+                    path: zenario_head_foot_slot
+                    key:
+                        mode: head
+                        level: item
+            item_foot:
+                ord: 9999
+                parent: slot_control_dropdown
+                priv: _PRIV_MANAGE_ITEM_SLOT
+                visible_if: |
+                    zenarioA.checkSpecificPermsOnThisPage()
+                appears_in_toolbars:
+                    edit: true
+                label: HTML before </body>
+                onmouseover: zenarioA.closeSlotControls();
+                admin_box:
+                    path: zenario_head_foot_slot
+                    key:
+                        mode: foot
+                        level: item
+            
+            global:
+                parent: slot_control_dropdown
+                appears_in_toolbars:
+                    template: true
+                label: Global <head> and <body> HTML
+                onmouseover: zenarioA.closeSlotControls();
+                admin_box:
+                    path: site_settings
+                    key:
+                        id: head_and_foot
+            layout_head:
+                parent: slot_control_dropdown
+                appears_in_toolbars:
+                    template: true
+                label: Layout-wide <head> HTML
+                onmouseover: zenarioA.closeSlotControls();
+                admin_box:
+                    path: zenario_head_foot_slot
+                    key:
+                        mode: head
+                        level: layout
+            layout_foot:
+                ord: 9999
+                parent: slot_control_dropdown
+                appears_in_toolbars:
+                    template: true
+                label: Layout-wide HTML before </body>
+                onmouseover: zenarioA.closeSlotControls();
+                admin_box:
+                    path: zenario_head_foot_slot
+                    key:
+                        mode: foot
+                        level: layout
+
     
     status_button:
         buttons:
@@ -139,26 +204,6 @@ sections:
                 css_class: zenario_at_publish_button
                 admin_box:
                     path: zenario_publish
-    
-    # Show the name of the logged in Extranet User
-    # (N.b. the options to log in/edit/log out are currently commented out.)
-    extranet_user:
-        buttons:
-            logged_in:
-                label: ''
-                #admin_box:
-                #    priv: _PRIV_VIEW_USER
-                #    path: zenario_user__details
-                #    key:
-                #        id: ''
-            #log_out:
-            #    parent: logged_in
-            #    label: Logout
-            logged_out:
-                label: Anonymous visitor
-            #log_in:
-            #    parent: logged_out
-            #    label: Login
 
 meta_info:
     title: ''

@@ -14,14 +14,14 @@ zenario_upload_replacement_document:
             label: Details
             fields:
                 desc:
-                    pre_field_html: '<div class=\"zenario_fbWarning\">'
+                    pre_field_html: "<div class=\"zenario_fbWarning\">"
                     snippet:
                         html: |
                             All unmanaged links (e.g. within WYSIWYG editors, or the HTML area of Banners or Raw HTML Snippets) will no longer work and will need to be re-made.
                     post_field_html: '</div>'
                 
                 upload:
-                    label: 'Upload replacment document:'
+                    label: 'Upload replacement document:'
                     upload:
                         drag_and_drop: true
                         multi: true

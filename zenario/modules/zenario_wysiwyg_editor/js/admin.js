@@ -29,10 +29,10 @@ zenario.lib(function(
 	undefined,
 	URLBasePath,
 	document, window, windowOpener, windowParent,
-	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO, strings,
+	zenario, zenarioA, zenarioT, zenarioAB, zenarioAT, zenarioO,
 	encodeURIComponent, get, engToBoolean, htmlspecialchars, jsEscape, phrase,
 	extensionOf, methodsOf, has,
-	zenario_wysiwyg_editor
+	zenario_wysiwyg_editor, extraVar2, s$s
 ) {
 	"use strict";
 
@@ -117,7 +117,7 @@ directionality	ltr rtl
 			tools: {title: 'Tools', items: 'searchreplace | code'}
 		},
 		
-		toolbar: 'undo redo | image link unlink | bold italic underline | removeformat' + (zenarioA.skinDesc.style_formats? ' | styleselect' : '') + ' | fontsizeselect | formatselect | numlist bullist | outdent indent | alignleft aligncenter alignright alignjustify | save save_and_close cancel',
+		toolbar: 'undo redo | image link unlink | bold italic underline | removeformat' + (zenarioA.skinDesc.style_formats? ' | styleselect' : '') + ' | fontsizeselect | formatselect | numlist bullist | blockquote outdent indent | alignleft aligncenter alignright alignjustify | save save_and_close cancel',
 		statusbar: false,
 		
 		
@@ -257,7 +257,7 @@ zenario_wysiwyg_editor.close = function(el) {
 	
 	zenario_wysiwyg_editor.floatingMessage(
 		phrase.closeEditorWarning,
-		'<input type="button" class="submit_selected" value="' + phrase.abandonChanges + '" onclick="zenarioA.closeFloatingBox(); zenario_wysiwyg_editor.doClose(\'' + slotName + '\');" />' +
+		'<input type="button" class="submit_selected" value="' + phrase.abandonChanges + '" onclick="zenario_wysiwyg_editor.doClose(\'' + slotName + '\');" />' +
 		'<input type="button" class="submit" value="' + phrase.cancel + '"/>',
 		true);
 };

@@ -13,14 +13,7 @@ zenario__content:
                     table: |
                         [[DB_NAME_PREFIX]][[ZENARIO_USER_DOCUMENTS_PREFIX]]user_documents AS ud
                         LEFT JOIN [[DB_NAME_PREFIX]]files AS f ON ud.file_id = f.id
-                    #hierarchy_column: ud.folder_id
                     id_column: ud.id
-                    #client_side: Yes
-                #reorder:
-                    #column: ordinal
-                    #hierarchy_view_mode: parent_ids_and_ordinals
-                    #lazy_load: true
-                #disable_periodic_refresh: Yes
                 default_sort_column: name
                 view_mode: list
                 columns:
@@ -38,20 +31,8 @@ zenario__content:
                         show_by_default: false
                         align_right: Yes
                         width: xxsmall
-                    #type:
-                    #    title: Type
-                    #    searchable: Yes
-                    #    db_column: ud.type
-                    #    show_by_default: false
-                    #folder_id:
-                    #    title: Folder ID
-                    #    db_column: ud.folder_id
-                    #    show_by_default: false
-                    #    align_right: Yes
-                    #    width: xxsmall
                     name:
                         title: Name
-                        #db_column: "concat(ifNull(f.filename, \'\'), ifNull(d.folder_name, \'\'))"
                         db_column: f.filename
                         show_by_default: Yes
                         width: xxlarge
@@ -59,8 +40,6 @@ zenario__content:
                         title: Filesize
                         width: small
                         show_by_default: Yes
-                    #folder_file_count:
-                    #    title: Files and folder count
                         
                 collection_buttons:
                     upload:
@@ -73,11 +52,6 @@ zenario__content:
                             drag_and_drop: Yes
                             request:
                                 upload: "1"
-                    #add_folder:
-                    #    label: Create a folder
-                    #    css_class: zenario_create_a_new
-                    #    admin_box:
-                    #        path: zenario_document_folder
                 item_buttons:
                     upload:
                         priv: _PRIV_MANAGE_CONFIDENTIAL_USER_DOCUMENTS
@@ -89,32 +63,15 @@ zenario__content:
                             drag_and_drop: Yes
                             request:
                                 upload: "1"
-                        traits:
-                            is_folder: Yes
-                    #add_folder:
-                    #    label: Create subfolder
-                    #    css_class: zenario_create_a_new
-                    #    admin_box:
-                    #        path: zenario_document_folder
-                    #        key:
-                    #            add_folder: Yes
-                    #    traits:
-                    #        is_folder: Yes
-                    #    
-                    #folder_details:
-                    #    hide_in_select_mode: Yes
-                    #    label: Rename
-                    #    admin_box:
-                    #        path: zenario_document_folder
-                    #    traits:
-                    #        is_folder: Yes
+                        with_columns_set:
+                            traits.is_folder: true
                     view_tags:
                         priv: _PRIV_MANAGE_CONFIDENTIAL_USER_DOCUMENTS
                         hide_in_select_mode: Yes
                         label: Edit document metadata
                         multiple_select: No
-                        without_traits:
-                            is_folder: Yes
+                        without_columns_set:
+                            traits.is_folder: true
                         admin_box:
                             path: zenario_user_documents__user_document_properties
                     download:
@@ -122,8 +79,8 @@ zenario__content:
                         hide_in_select_mode: Yes
                         label: Download
                         multiple_select: No
-                        without_traits:
-                            is_folder: Yes
+                        without_columns_set:
+                            traits.is_folder: true
                         ajax:
                             confirm:
                                 download: true
@@ -131,26 +88,13 @@ zenario__content:
                                 #message_type: warning
                                 button_message: Download
                                 cancel_button_message: Cancel
-                    #move_documents:
-                    #    hide_in_select_mode: Yes
-                    #    label: Move selected documents
-                    #    multiple_select: Yes
-                    #    multiple_select_only: Yes
-                    #    pick_items: 
-                    #        path: zenario__content/panels/documents
-                    #        target_path: zenario__content/panels/documents
-                    #        min_path: zenario__content/panels/documents
-                    #        max_path: zenario__content/panels/documents
-                    #        select_phrase: Select folder...
-                    #        request:
-                    #            select_folder: "1"
                     delete_file:
                         priv: _PRIV_MANAGE_CONFIDENTIAL_USER_DOCUMENTS
                         hide_in_select_mode: Yes
                         label: Delete
                         multiple_select: Yes
-                        without_traits:
-                            is_folder: Yes
+                        without_columns_set:
+                            traits.is_folder: true
                         ajax: 
                             class_name: zenario_user_documents
                             confirm: 
@@ -161,21 +105,3 @@ zenario__content:
                                 cancel_button_message: Cancel
                             request: 
                                 delete: Yes
-                    #delete_folder:
-                    #    hide_in_select_mode: Yes
-                    #    label: Delete
-                    #    multiple_select: No
-                    #    traits:
-                    #        is_folder: Yes
-                    #    ajax: 
-                    #        class_name: zenario_common_features
-                    #        confirm: 
-                    #            message: |
-                    #                Are you sure you want to delete the folder "[[name]]"?
-                    #                
-                    #                If you DELETE this folder all [[folder_file_count]] files and folders within this folder will be DELETED.
-                    #            message_type: warning
-                    #            button_message: Delete
-                    #            cancel_button_message: Cancel
-                    #        request: 
-                    #            delete: Yes

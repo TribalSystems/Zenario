@@ -2,14 +2,14 @@
 
     <td class="calendar-organizer-day calendar-organizer-date" onclick="zenarioO.pi.selectDay({{JSON.stringify(m.eventIds)|escape}});">
         <div class="calendar-organizer-day-value">{{m.date}}</div>
-        {{zenarioA.microTemplate('zenario_organizer_calendar_event', m.events)}}
+        {{zenarioT.microTemplate('zenario_organizer_calendar_event', m.events)}}
     </td>
 
 <% } else { %>
 
     <td class="calendar-organizer-day calendar-organizer-no-date">
         {{m.date}}
-        {{zenarioA.microTemplate('zenario_organizer_calendar_event', m.events)}}
+        {{zenarioT.microTemplate('zenario_organizer_calendar_event', m.events)}}
     </td>
 
 <% } %>

@@ -17,7 +17,7 @@ zenario_site_reset:
                 username: 
                     label: "Username:"
                     type: text
-                    read_only: true
+                    readonly: true
                 password: 
                     label: "Password:"
                     type: password

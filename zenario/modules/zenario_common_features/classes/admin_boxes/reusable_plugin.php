@@ -79,12 +79,12 @@ class zenario_common_features__admin_boxes__reusable_plugin extends module_base_
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		
 		if (engToBooleanArray($box['tabs']['instance'], 'edit_mode', 'on') && checkPriv('_PRIV_MANAGE_REUSABLE_PLUGIN')) {
-			$nest = false;
+			$eggId = false;
 			if ($box['key']['duplicate']) {
-				renameInstance($box['key']['id'], $nest, $values['instance/name'], $createNewInstance = true);
+				renameInstance($box['key']['id'], $eggId, $values['instance/name'], $createNewInstance = true);
 			
 			} else {
-				renameInstance($box['key']['id'], $nest, $values['instance/name'], $createNewInstance = false);
+				renameInstance($box['key']['id'], $eggId, $values['instance/name'], $createNewInstance = false);
 			}
 		}
 	}

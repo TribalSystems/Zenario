@@ -31,7 +31,6 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_common_features__organizer__content extends module_base_class {
 	
 	public function preFillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
-		
 		if (in($mode, 'full', 'quick', 'select', 'typeahead_search', 'get_matched_ids')
 		 && !isset($_GET['refiner__trash'])
 		 && isset($panel['db_items']['custom_where_statement__not_trashed'])) {
@@ -165,6 +164,13 @@ class zenario_common_features__organizer__content extends module_base_class {
 	}
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
+
+		if($contentType=request('refiner__content_type')){
+			if(checkRowExists('content_types', array('enable_categories' => 0, 'content_type_id'=>$contentType))){
+				unset($panel['inline_buttons']['no_categories']);
+				unset($panel['inline_buttons']['one_or_more_categories']);
+			}
+		}
 		
 		$numLanguages = count($langs = getLanguages());
 		
@@ -468,7 +474,7 @@ class zenario_common_features__organizer__content extends module_base_class {
 					
 					//If this content item is set to a group or smart group,
 					//go get a better description which includes the name.
-					if (in($privacy, 'group_members', 'in_smart_group', 'logged_in_not_in_smart_group')) {
+					if (in($privacy, 'group_members', 'with_role', 'in_smart_group', 'logged_in_not_in_smart_group')) {
 						$item['privacy'] = contentItemPrivacyDesc($privacy, $item);
 					}
 				}

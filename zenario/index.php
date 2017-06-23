@@ -292,7 +292,7 @@ if ($validDestURL = !$specialPage || $specialPage == 'zenario_home') {
 
 echo 
 '<!DOCTYPE HTML>
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="', $_SESSION["user_lang"], '" lang="', $_SESSION["user_lang"], '">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="', cms_core::$langId, '" lang="', cms_core::$langId, '">
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8" />';
 
@@ -315,6 +315,10 @@ $imageWidth = $imageHeight = $imageURL = false;
 if (cms_core::$pageImage && imageLink($imageWidth, $imageHeight, $imageURL, cms_core::$pageImage)) {
 	echo '
 <meta property="og:image" content="', htmlspecialchars(absCMSDirURL().$imageURL), '"/>';
+	if (httpOrHttps() == "https://") {
+		echo '
+<meta property="og:image:secure_url" content="', htmlspecialchars(absCMSDirURL().$imageURL), '"/>';
+	}
 }
 
 echo '
@@ -506,7 +510,7 @@ if ($specificInstance || $specificSlot) {
 	}
 	
 	echo "\n", '</div></div></div>';
-	CMSWritePageFoot('zenario/');
+	CMSWritePageFoot('zenario/', false, true, true, true);
 	
 	//If someone just changed the CSS for a plugin, scroll down to that plugin to show the changes
 	if ($checkPriv && !empty($_SESSION['scroll_slot_on_'. cms_core::$cType. '_'. cms_core::$cID])) {

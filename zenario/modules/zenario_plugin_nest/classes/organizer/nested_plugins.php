@@ -233,18 +233,39 @@ class zenario_plugin_nest__organizer__nested_plugins extends zenario_plugin_nest
 				//Get a list of slide numbers/states that this state can go to
 				if ($usesConductor && $item['states']) {
 					$toStates = sqlFetchAssocs('
-						SELECT to_state, commands
-						FROM [[DB_NAME_PREFIX]]nested_paths AS path
-						WHERE path.instance_id = [[0]]
-						  AND path.from_state IN ([[1]])',
+						SELECT path.to_state, slide.states, path.equiv_id, path.content_type, path.commands
+						FROM [nested_paths AS path]
+						INNER JOIN [nested_plugins AS slide]
+						   ON slide.is_slide = 1
+						  AND FIND_IN_SET(path.to_state, slide.states)
+						  AND slide.instance_id = [0]
+						WHERE path.instance_id = [0]
+						  AND path.from_state IN ([1])',
 						[$refinerId, explode(',', $item['states'])]
 					);
 					
 					$toText = array();
 					foreach ($toStates as $toState) {
-						if (isset($statesToSlides[$toState['to_state']])) {
-							$toText[] = $toState['commands']. ' → '. $statesToSlides[$toState['to_state']]. '/'. $toState['to_state'];
+						$label = $toState['commands']. ' → ';
+						
+						if ($toState['equiv_id']) {
+							$label = formatTag($toState['equiv_id'], $toState['content_type'], -1, false, true). ', ';
+							
+							if (is_numeric($toState['to_state'])) {
+								$label .= adminPhrase('slide [[to_state]]');
+							} else {
+								$label .= adminPhrase('state [[to_state]]');
+							}
+						
+						} elseif (isset($statesToSlides[$toState['to_state']])) {
+							$label .= $statesToSlides[$toState['to_state']];
+							
+							if (false !== strpos($toState['states'], ',')) {
+								$label .= $toState['to_state'];
+							}
 						}
+						
+						$toText[] = $label;
 					}
 					
 					if (!empty($toText)) {
@@ -261,8 +282,6 @@ class zenario_plugin_nest__organizer__nested_plugins extends zenario_plugin_nest
 					$item['traits']['has_image'] = true;
 					$item['image'] = 'zenario/file.php?og=1'. $img;
 					$item['list_image'] = 'zenario/file.php?ogl=1'. $img;
-				} else {
-					$item['image'] = getModuleIconURL($item['module_class_name']);
 				}
 			}
 		}
@@ -298,11 +317,11 @@ class zenario_plugin_nest__organizer__nested_plugins extends zenario_plugin_nest
 		$instance = getPluginInstanceDetails(request('refiner__nest'));
 		$this->exitIfNoEditPermsOnNest($instance);
 		
-		//Add a tab.
-		//Also, if we're adding a new plugin, ensure that at least one tab has been made.
+		//Add a slide.
+		//Also, if we're adding a new plugin, ensure that at least one slide has been made.
 		if (post('add_slide') || post('upload_banner') || post('add_plugin') || post('add_twig_snippet') || post('copy_plugin_instance')) {
 			if (post('add_slide') || !checkRowExists('nested_plugins', array('instance_id' => post('refiner__nest'), 'is_slide' => 1))) {
-				static::addTab(post('refiner__nest'));
+				static::addSlide(post('refiner__nest'));
 			}
 		}
 		
@@ -334,7 +353,7 @@ class zenario_plugin_nest__organizer__nested_plugins extends zenario_plugin_nest
 			return static::duplicatePlugin($ids, post('refiner__nest'));
 		
 		} elseif (post('duplicate_plugin_and_add_tab')) {
-			static::addTab(post('refiner__nest'));
+			static::addSlide(post('refiner__nest'));
 			return static::duplicatePlugin($ids, post('refiner__nest'));
 		
 		//Change the number of columns that a plugin takes up
@@ -382,11 +401,11 @@ class zenario_plugin_nest__organizer__nested_plugins extends zenario_plugin_nest
 			}
 		
 		} elseif ((get('remove_tab'))) {
-			echo $this->removeTabConfirm($ids, post('refiner__nest'));
+			echo $this->removeSlideConfirm($ids, post('refiner__nest'));
 			
 		} elseif (post('remove_tab')) {
 			foreach (explode(',', $ids) as $id) {
-				$this->removeTab($instance['class_name'], $id, post('refiner__nest'));
+				$this->removeSlide($instance['class_name'], $id, post('refiner__nest'));
 			}
 			
 		} elseif (post('reorder')) {

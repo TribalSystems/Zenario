@@ -139,8 +139,13 @@ class zenario_common_features__organizer__image_library extends module_base_clas
 	}
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
+		
+		$tallRowsInListView = false;
+		
 		switch($path) {
 			case 'zenario__content/panels/image_library':
+				$tallRowsInListView = true;
+				
 				if (in($mode, 'full', 'select', 'quick')) {
 					$panel['columns']['tags']['tag_colors'] =
 					$panel['columns']['filename']['tag_colors'] = getImageTagColours($byId = false, $byName = true);
@@ -285,6 +290,8 @@ class zenario_common_features__organizer__image_library extends module_base_clas
 				
 		
 			case 'zenario__content/panels/inline_images_for_content':
+				$tallRowsInListView = true;
+				
 				//If we're showing images for content items, remove all of the action-buttons if the current admin doesn't
 				//have access to this content item
 				$cID = $cType = false;
@@ -307,7 +314,7 @@ class zenario_common_features__organizer__image_library extends module_base_clas
 				$img .= '&usage='. rawurlencode($panel['key']['usage']);
 			}
 			
-			if ($path == 'zenario__content/panels/image_library') {
+			if ($tallRowsInListView) {
 				$item['list_image'] = $img. '&ogt=1';
 			} else {
 				$item['list_image'] = $img. '&ogl=1';
@@ -347,32 +354,6 @@ class zenario_common_features__organizer__image_library extends module_base_clas
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
 		
 		switch ($path) {
-			case 'zenario__content/panels/inline_images_for_content':
-				if (!$content = getRow('content_items', array('id', 'type', 'admin_version'), array('tag_id' => $refinerId))) {
-					exit;
-		
-				} elseif (post('make_sticky') && checkPriv('_PRIV_SET_CONTENT_ITEM_STICKY_IMAGE', $content['id'], $content['type'])) {
-					updateVersion($content['id'], $content['type'], $content['admin_version'], array('sticky_image_id' => $ids));
-					syncInlineFileContentLink($content['id'], $content['type'], $content['admin_version']);
-		
-				} elseif (post('make_unsticky') && checkPriv('_PRIV_SET_CONTENT_ITEM_STICKY_IMAGE', $content['id'], $content['type'])) {
-					updateVersion($content['id'], $content['type'], $content['admin_version'], array('sticky_image_id' => 0));
-					syncInlineFileContentLink($content['id'], $content['type'], $content['admin_version']);
-		
-				} else {
-					$key = array(
-						'foreign_key_to' => 'content',
-						'foreign_key_id' => $content['id'],
-						'foreign_key_char' => $content['type'],
-						'foreign_key_version' => $content['admin_version']);
-					$privCheck = checkPriv('_PRIV_EDIT_DRAFT', $content['id'], $content['type']);
-			
-					return require funIncPath('zenario_common_features', 'media.handleOrganizerPanelAJAX');
-				}
-				
-				break;
-				
-	
 			case 'zenario__content/panels/image_library':
 				$key = false;
 				$privCheck = checkPriv('_PRIV_MANAGE_MEDIA');

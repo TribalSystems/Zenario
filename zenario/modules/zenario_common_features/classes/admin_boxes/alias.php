@@ -54,12 +54,12 @@ class zenario_common_features__admin_boxes__alias extends module_base_class {
 			
 			//If this is a translation, only allow the translation's alias to be changed
 			if ($box['key']['equivId'] != $box['key']['cID']) {
-				$box['tabs']['meta_data']['fields']['update_translations']['read_only'] = true;
+				$box['tabs']['meta_data']['fields']['update_translations']['readonly'] = true;
 			}
 			
 		} else {
 			$box['tabs']['meta_data']['fields']['update_translations']['value'] = 'update_all';
-			$box['tabs']['meta_data']['fields']['update_translations']['read_only'] = true;
+			$box['tabs']['meta_data']['fields']['update_translations']['readonly'] = true;
 			
 			//If translations share an alias with the main content item,
 			//only allow the alias to be changed in the primary language.

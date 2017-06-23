@@ -40,6 +40,15 @@ class zenario_banner extends module_base_class {
 	protected $editorId = '';
 	protected $request = '';
 	
+	protected $styles = '';
+	
+	protected $normalImage = false;
+	protected $retinaImage = false;
+	protected $rolloverImage = false;
+	protected $retinaRolloverImage = false;
+	protected $respImage = false;
+	protected $retinaRespImage = false;
+	
 	protected function editTitleInlineOnClick() {
 		return 'if (zenarioA.checkForEdits() && zenarioA.draft(this.id)) { '. $this->refreshPluginSlotJS('&content__edit_container='. $this->containerId, false). ' } return false;';
 	}
@@ -186,8 +195,7 @@ class zenario_banner extends module_base_class {
 		}
 		
 		
-		$pictureCID = $pictureCType = $width = $height = $url = $url2 = $widthFullSize = $heightFullSize = $urlFullSize = false;
-		$this->mergeFields['Image_Style'] = '';
+		$pictureCID = $pictureCType = $width = $height = $respWidth = $respHeight = $url = $url2 = $widthFullSize = $heightFullSize = $urlFullSize = false;
 		
 		//Attempt to find a masthead image to display
 		//Check to see if an overwrite has been set, and use it if so
@@ -330,11 +338,31 @@ class zenario_banner extends module_base_class {
 			}
 			
 			
+			$banner_offset = $this->setting('offset');
+			$banner_retina = $banner_canvas != 'unlimited' || $this->setting('retina');
 			
 			
 			
-			
-			if (imageLink($width, $height, $url, $imageId, $banner_width, $banner_height, $banner_canvas, $this->setting('offset'), $this->setting('retina'))) {
+			//Try to get a link to the image
+			if (imageLink($width, $height, $url, $imageId, $banner_width, $banner_height, $banner_canvas, $banner_offset, $banner_retina)) {
+				
+				$this->normalImage = $url;
+
+				//If this was a retina image, get a normal version of the image as well for standard displays
+				if ($banner_retina) {
+					$sWidth = $sHeight = $sURL = false;
+					if (imageLink($sWidth, $sHeight, $sURL, $imageId, $width, $height, $banner_canvas, $banner_offset, false)) {
+						if ($url != $sURL) {
+							$this->mergeFields['Image_Srcset'] = $url. ' 2x';
+							
+							$this->retinaImage = $url;
+							$this->normalImage = $sURL;
+							
+							$url = $sURL;
+						}
+					}
+				}
+				
 				
 				if ($this->setting('image_source') == '_CUSTOM_IMAGE') {
 					$this->clearCacheBy(
@@ -347,31 +375,116 @@ class zenario_banner extends module_base_class {
 				
 				
 				$this->subSections['Image'] = true;
-				$this->mergeFields['Image_Src'] = htmlspecialchars($url);
+				$this->mergeFields['Image_URL'] = $url;
 				$this->mergeFields['Image_Height'] = $height;
 				$this->mergeFields['Image_Width'] = $width;
-				$this->mergeFields['Image_Style'] .= 'style="width: '. $width. 'px; height: '. $height. 'px;"';
+				$this->mergeFields['Image_Style'] = 'id="'. $this->containerId. '_img"';
+				//$this->mergeFields['Image_Style'] .= 'style="width: '. $width. 'px; height: '. $height. 'px;"';
 				
+				$this->styles = '#'. $this->containerId. '_img { width: '. $width. 'px; height: '. $height. 'px; }';
+				
+				//Deprecated merge field for old frameworks
+				$this->mergeFields['Image_Src'] = htmlspecialchars($url);
+				
+				
+				
+				//Set a responsive version of the image
+				if (cms_core::$minWidth) {
+					switch ($this->setting('mobile_behavior')) {
+						case 'change_image':
+							$mobile_image = $this->setting('mobile_image');
+							$mobile_canvas = $this->setting('mobile_canvas');
+							$mobile_width = $this->setting('mobile_width');
+							$mobile_height = $this->setting('mobile_height');
+							$mobile_offset = $this->setting('mobile_offset');
+							$mobile_retina = $mobile_canvas != 'unlimited' || $this->setting('mobile_retina');
+					
+							$respURL = false;
+							if (imageLink($respWidth, $respHeight, $respURL, $mobile_image, $mobile_width, $mobile_height, $mobile_canvas, $mobile_offset, $mobile_retina)) {
+				
+								$this->respImage = $respURL;
+								$this->mergeFields['Mobile_Srcset'] = $respURL;
+						
+								//If this was a retina image, get a normal version of the image as well for standard displays
+								if ($mobile_retina) {
+									$sWidth = $sHeight = $sURL = false;
+									if (imageLink($sWidth, $sHeight, $sURL, $mobile_image, $respWidth, $respHeight, $mobile_canvas, $mobile_offset, false)) {
+										if ($respURL != $sURL) {
+											
+											$this->respImage = $sURL;
+											$this->retinaRespImage = $respURL;
+											
+											$this->mergeFields['Mobile_Srcset'] = $sURL. ' 1x, '. $respURL. ' 2x';
+										}
+									}
+								}
+								
+								$this->mergeFields['Mobile_Media'] = '(max-width: '. (cms_core::$minWidth - 1). 'px)';
+						
+								if ($respWidth != $width
+								 || $respHeight != $height) {
+									$this->styles .= "\n". 'body.mobile #'. $this->containerId. '_img { width: '. $respWidth. 'px; height: '. $respHeight. 'px; }';
+								}
+							}
+							
+							break;
+						
+						//Hide the image on mobiles, and add some hacks to try and make sure that they never even try to download it
+						case 'hide_image':
+							$this->mergeFields['Mobile_Media'] = '(max-width: '. (cms_core::$minWidth - 1). 'px)';
+							$trans = absURLIfNeeded(). 'zenario/admin/images/trans.png';
+							$this->mergeFields['Mobile_Srcset'] = $trans. ' 1x, '. $trans. ' 2x';
+							$this->styles .= "\n". 'body.mobile #'. $this->containerId. '_img { display: none; }';
+					}
+				}
+				
+				
+				
+				//Set a rollover version of the image
 				if ($this->setting('use_rollover')
-				 && $this->setting('image_source') == '_CUSTOM_IMAGE'
-				 && imageLink($width, $height, $url2, $this->setting('rollover_image'), $banner_width, $banner_height, $banner_canvas, $this->setting('offset'), $this->setting('retina'))) {
-					$this->mergeFields['Image_Rollover'] = array(
-							'Image_Src' => htmlspecialchars($url2),
-							'Image_Height' => $height,
-							'Image_Width' => $width,
-						);
+				 && $this->setting('image_source') == '_CUSTOM_IMAGE') {
 					
-					$this->mergeFields['Image_Style'] .= ' id="'. $this->containerId. '_img" ';
+					$rollSrcset = '';
+					$normalSrcset = '';
 					
+					$rollover_image = $this->setting('rollover_image');
 					
+					$rWidth = $rHeight = $rollURL = false;
+					if (imageLink($rWidth, $rHeight, $rollURL, $rollover_image, $banner_width, $banner_height, $banner_canvas, $banner_offset, $banner_retina)) {
+						
+						$this->rolloverImage = $rollURL;
+						
+						//If this was a retina image, get a normal version of the image as well for standard displays
+						if ($banner_retina) {
+							$sWidth = $sHeight = $sURL = false;
+							if (imageLink($sWidth, $sHeight, $sURL, $rollover_image, $rWidth, $rHeight, $banner_canvas, $banner_offset, false)) {
+								if ($rollURL != $sURL) {
+									$rollSrcset = $rollURL. ' 2x';
+									$rollSrcset = 'srcset="'. htmlspecialchars($rollSrcset). '"';
+									
+									$this->rolloverImage = $sURL;
+									$this->retinaRolloverImage = $rollURL;
+									
+									$rollURL = $sURL;
+								}
+							}
+						}
+					}
+					
+					if (!empty($this->mergeFields['Image_Srcset'])) {
+						$normalSrcset = 'srcset="'. htmlspecialchars($this->mergeFields['Image_Srcset']). '"';
+					}
 					
 					$this->mergeFields['Rollover_Images'] =
-						'<img id="'. $this->containerId. '_rollout" alt="'. $alt_tag. '" src="'. htmlspecialchars($url). '" style="width: 1px; height: 1px; visibility: hidden;"/>'.
-						'<img id="'. $this->containerId. '_rollover" alt="'. $alt_tag. '" src="'. htmlspecialchars($url2). '" style="width: 1px; height: 1px; visibility: hidden;"/>';
+						'<img id="'. $this->containerId. '_rollout" alt="'. $alt_tag. '" src="'. htmlspecialchars($url). '" '. $normalSrcset. ' style="width: 1px; height: 1px; visibility: hidden;"/>'.
+						'<img id="'. $this->containerId. '_rollover" alt="'. $alt_tag. '" src="'. htmlspecialchars($rollURL). '" '. $rollSrcset. ' style="width: 1px; height: 1px; visibility: hidden;"/>';
 					
 					$this->mergeFields['Wrap'] =
-						'onmouseout="get(\''. $this->containerId. '_img\').src = get(\''. $this->containerId. '_rollout\').src;" '.
-						'onmouseover="get(\''. $this->containerId. '_img\').src = get(\''. $this->containerId. '_rollover\').src;" ';
+						'onmouseout="var x = \''. $this->containerId. '\', y = document.getElementById(x + \'_img\'), z = document.getElementById(x + \'_rollout\'); y.src = z.src; y.srcset = z.srcset;" '.
+						'onmouseover="var x = \''. $this->containerId. '\', y = document.getElementById(x + \'_img\'), z = document.getElementById(x + \'_rollover\'); y.src = z.src; y.srcset = z.srcset;" ';
+				
+				
+				
 				
 				} elseif (($this->setting('link_type')=='_ENLARGE_IMAGE') && ($this->setting('image_source') != '_STICKY_IMAGE') && (!arrayKey($this->mergeFields,'Link_Href'))){
 					if (imageLink($widthFullSize, $heightFullSize, $urlFullSize, $imageId, $banner__enlarge_width, $banner__enlarge_height, $banner__enlarge_canvas)) {
@@ -464,7 +577,48 @@ class zenario_banner extends module_base_class {
 				}
 			}
 			
+			//Enable an option to use a background images instead of <picture><img/></picture>
+			if ($this->setting('background_image') && $this->normalImage) {
+				$this->mergeFields['Wrap'] = '';
+				$this->mergeFields['Background_Image'] = true;
+				$this->mergeFields['Image_css_id'] = $this->containerId. '_img';
+				
+				$this->styles .= "\n". '#'. $this->containerId. '_img { display: block; background-repeat: no-repeat; background-image: url(\''. htmlspecialchars($this->normalImage).  '\'); }';
+				
+				if ($this->retinaImage) {
+					$this->styles .= "\n". 'body.retina #'. $this->containerId. '_img { background-image: url(\''. htmlspecialchars($this->retinaImage).  '\'); background-size: '. $width. 'px '. $height. 'px; }';
+				}
+				
+				if ($this->rolloverImage) {
+					$this->styles .= "\n". 'div.banner_wrap:hover #'. $this->containerId. '_img { background-image: url(\''. htmlspecialchars($this->rolloverImage).  '\'); }';
+					
+					if ($this->retinaRolloverImage) {
+						$this->styles .= "\n". 'body.retina div.banner_wrap:hover #'. $this->containerId. '_img { background-image: url(\''. htmlspecialchars($this->retinaRolloverImage).  '\'); background-size: '. $width. 'px '. $height. 'px; }';
+					}
+				}
+				
+				if ($this->respImage) {
+					$this->styles .= "\n". 'body.mobile #'. $this->containerId. '_img { background-image: url(\''. htmlspecialchars($this->respImage).  '\'); }';
+					
+					if ($this->retinaRespImage) {
+						$this->styles .= "\n". 'body.mobile.retina #'. $this->containerId. '_img { background-image: url(\''. htmlspecialchars($this->retinaRespImage).  '\'); background-size: '. $respWidth. 'px '. $respHeight. 'px; }';
+					}
+				}
+			}
+			
+			//If we're reloading via AJAX, we need to call a JavaScript function to add the style to the head.
+			//Otherwise we can use addToPageHead() below.
+			if ($this->styles !== '' && request('method_call') == 'refreshPlugin') {
+				$this->callScriptBeforeAJAXReload('zenario_banner', 'addToPageHead', $this->containerId, $this->styles);
+			}
+			
 			return true;
+		}
+	}
+	
+	public function addToPageHead() {
+		if ($this->styles !== '') {
+			echo "\n", '<style type="text/css" id="', $this->containerId, '-styles">', "\n", $this->styles, "\n", '</style>';
 		}
 	}
 	

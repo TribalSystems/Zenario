@@ -50,7 +50,7 @@ if (is_array($smartGroupId)) {
 
 	$rules = getRowsArray(
 		'smart_group_rules',
-		array('type_of_check', 'field_id', 'field2_id', 'field3_id', 'field4_id', 'field5_id', 'role_id', 'not', 'value'),
+		array('type_of_check', 'field_id', 'field2_id', 'field3_id', 'field4_id', 'field5_id', 'role_id','activity_band_id', 'not', 'value'),
 		array('smart_group_id' => $smartGroupId),
 		'ord'
 	);
@@ -108,9 +108,11 @@ foreach ($rules as $rule) {
 			if ($rule['field_id']
 			 && ($field = getDatasetFieldBasicDetails($rule['field_id']))
 			 && (in($field['type'], 'group', 'checkbox', 'radios', 'centralised_radios', 'select', 'centralised_select'))) {
-		
+				
+				$hashed = !in($field['type'], 'group', 'checkbox') && columnIsHashed($field['is_system_field']? 'users' : 'users_custom_data', $field['db_column']);
+				
 				//Work out the table alias and column name
-				$col = "`". sqlEscape($field['is_system_field']? $usersTableAlias : $customTableAlias). "`.`". sqlEscape($field['db_column']). "`";
+				$col = "`". sqlEscape($field['is_system_field']? $usersTableAlias : $customTableAlias). "`.`". ($hashed? '#' : ''). sqlEscape($field['db_column']). "`";
 		
 				//If you filter by group, an "OR" logic containing multiple groups is allowed.
 				//Check if multiple groups have been picked...
@@ -140,28 +142,33 @@ foreach ($rules as $rule) {
 					$and .= ")";
 			
 				} else {
-					switch ($field['type']) {
-						//Groups and checkboxes are handled by a tinyint column
-						case 'group':
-						case 'checkbox':
-							$check = $col. " = 1";
-							break;
+					if ($hashed) {
+						$check = $col. " = '". sqlEscape(hashDBColumn($rule['value'])). "'";
+					
+					} else {
+						switch ($field['type']) {
+							//Groups and checkboxes are handled by a tinyint column
+							case 'group':
+							case 'checkbox':
+								$check = $col. " = 1";
+								break;
 				
-						//List of values work via a numeric value id
-						case 'radios':
-						case 'select':
-							if ($rule['value'] == '') {
-								continue 2;
-							}
-							$check = $col. " = ". (int) $rule['value'];
-							break;
+							//List of values work via a numeric value id
+							case 'radios':
+							case 'select':
+								if ($rule['value'] == '') {
+									continue 2;
+								}
+								$check = $col. " = ". (int) $rule['value'];
+								break;
 				
-						//Centralised lists work via a text value
-						default:
-							if ($rule['value'] == '') {
-								continue 2;
-							}
-							$check = $col. " = '". sqlEscape($rule['value']). "'";
+							//Centralised lists work via a text value
+							default:
+								if ($rule['value'] == '') {
+									continue 2;
+								}
+								$check = $col. " = '". sqlEscape($rule['value']). "'";
+						}
 					}
 			
 					if ($rule['not']) {
@@ -207,6 +214,25 @@ foreach ($rules as $rule) {
 				}
 				
 				
+				$valid = true;
+			}
+			break;
+		
+		case 'activity_band':
+			if($ZENARIO_USER_ACTIVITY_BANDS_PREFIX = getModulePrefix('zenario_user_activity_bands', $mustBeRunning = true)){
+				$tableJoins .= "
+				". $leftOrInnerJoin. DB_NAME_PREFIX. $ZENARIO_USER_ACTIVITY_BANDS_PREFIX. "user_activity_bands_link AS uabl_". $i. "
+				ON uabl_".$i.".user_id = `". sqlEscape($usersTableAlias). "`.id";				
+				
+				if($rule['not']){
+					$and .= "
+						  ". $andOr. " uabl_". $i. ".band_id != ".$rule['activity_band_id'];
+					$firstAndOr = false;
+				}else{
+					$and .= "
+						  ". $andOr. " uabl_". $i. ".band_id = ".$rule['activity_band_id'];
+					$firstAndOr = false;
+				}
 				$valid = true;
 			}
 			break;

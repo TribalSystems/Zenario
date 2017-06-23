@@ -65,7 +65,7 @@ class zenario_users__admin_boxes__user__convert_to_user extends zenario_users {
 			$fields['details/suggest_screen_name']['hidden'] = true;
 		}
 		if (!$values['details/email']) {
-			$fields['details/email']['read_only'] =  false;
+			$fields['details/email']['readonly'] =  false;
 		}
 	}
 	

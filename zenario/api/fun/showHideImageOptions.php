@@ -30,6 +30,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 $width = $tab . '/' . $fieldPrefix . 'width';
 $height = $tab . '/' . $fieldPrefix . 'height';
+$retina = $tab . '/' . $fieldPrefix . 'retina';
 
 if ($hasCanvas) {
 	$canvas = $tab . '/' . $fieldPrefix . 'canvas';
@@ -40,6 +41,10 @@ $fields[$width]['hidden'] = $hidden
 	|| ($hasCanvas && !in($values[$canvas], 'fixed_width', 'fixed_width_and_height', 'resize_and_crop'));
 $fields[$height]['hidden'] = $hidden
 	|| ($hasCanvas && !in($values[$canvas], 'fixed_height', 'fixed_width_and_height', 'resize_and_crop'));
+
+if (isset($fields[$retina])) {
+	$fields[$retina]['hidden'] = $hidden || !$fields[$width]['hidden'] || !$fields[$height]['hidden'];
+}
 
 $offset = $tab . '/' . $fieldPrefix . 'offset';
 if (isset($fields[$offset])) {

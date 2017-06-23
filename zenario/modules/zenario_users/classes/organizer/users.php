@@ -32,6 +32,9 @@ class zenario_users__organizer__users extends zenario_users {
 	
 	public function preFillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
 		
+		flagEncryptedColumnsInOrganizer($panel, 'u', 'users');
+		flagEncryptedColumnsInOrganizer($panel, 'PU', 'users');
+		
 		if (!$refinerName) {
 			$panel['db_items']['where_statement'] = $panel['db_items']['custom_where_statement_if_no_refiner'];
 		}
@@ -45,7 +48,7 @@ class zenario_users__organizer__users extends zenario_users {
 				$panel['refiners']['smart_group']['sql'],
 				$panel['refiners']['smart_group']['table_join'],
 				$refinerId, $list = true, 'u', 'custom');
-			
+
 		} else {
 			unset($panel['columns']['opted_out']);
 			unset($panel['columns']['opted_out_on']);
@@ -54,6 +57,9 @@ class zenario_users__organizer__users extends zenario_users {
 	}
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
+		
+		
+		
 		
 		$hasUserTimersRunning = inc('zenario_user_timers');
 		
@@ -103,27 +109,6 @@ class zenario_users__organizer__users extends zenario_users {
 				$item['traits']['suspended'] = true;
 			}
 			
-			$item['cell_css_classes'] = array();
-			switch (arrayKey($item,'status')){
-				case 'pending':
-					$item['readable_status'] = adminPhrase('Pending extranet user');
-					$item['cell_css_classes']['status'] = 'orange';
-					break;
-				case 'active':
-					$item['readable_status'] = adminPhrase('Active extranet user');
-					$item['cell_css_classes']['status'] = 'blue';
-					break;
-				case 'suspended':
-					$item['readable_status'] = adminPhrase('Suspended extranet user');
-					$item['cell_css_classes']['status'] = 'brown';
-					break;
-				case 'contact':
-					$item['readable_status'] = adminPhrase('Contact');
-					break;
-				default:
-					break;
-			}
-			
 			if ($item['status'] == 'contact') {
 				$item['row_css_class'] = 'contact';
 			} elseif ($item['status'] == 'pending') {
@@ -148,6 +133,7 @@ class zenario_users__organizer__users extends zenario_users {
 			}
 			
 			if ($item['last_login']) {
+				$item['last_login'] = formatDateNicely($item['last_login'], setting('vis_date_format_med'));
 				$item['readable_last_login'] = adminPhrase('Last login: [[last_login]]', array('last_login' => $item['last_login']));
 			} elseif ($item['status'] != 'contact') {
 				$item['readable_last_login'] = adminPhrase('Last login: Never');
@@ -191,9 +177,17 @@ class zenario_users__organizer__users extends zenario_users {
 	
 		//Don't show the "Create User" or "Delete User" or "Import" buttons on a refiner
 		if ($refinerName) {
-			unset($panel['collection_buttons']['add']);
-			unset($panel['item_buttons']['delete']);
-			unset($panel['collection_buttons']['import_dropdown']);
+			if($refinerName == 'suspended_users'){
+				unset($panel['collection_buttons']['add']);
+				unset($panel['collection_buttons']['import_dropdown']);
+				unset($panel['quick_filter_buttons']);
+				
+			}else{
+				unset($panel['collection_buttons']['add']);
+				unset($panel['item_buttons']['delete']);
+				unset($panel['collection_buttons']['import_dropdown']);
+			}
+			
 		}
 	
 		if ($refinerName == 'group_members') {
@@ -201,25 +195,26 @@ class zenario_users__organizer__users extends zenario_users {
 			unset($panel['item_buttons']['remove_users_from_groups']);
 		}
 		
-		if ($refinerName == 'smart_group') {
-			//Smart group opted out functionally taken out 18/02/2014
-			//only commenting outing the code incase we decide to put it back in
-			/*foreach ($panel['items'] as &$item) {
-				if ($item['opted_out']) {
-					if (isset($item['row_css_class'])) {
-						$item['row_css_class'] .= ' orange_line';
-					} else {
-						$item['row_css_class'] = 'orange_line';
-					}
-				}
-			}*/
-		}
-		
 		switch($refinerName){
 			case 'suspended_users':
 				$panel['title'] = adminPhrase('Suspended users');
 				$panel['no_items_message'] = 'No suspended users.';
 				unset($panel['trash']);
+				unset($panel['quick_filter_buttons']['all']);
+				unset($panel['quick_filter_buttons']['pending']);
+				unset($panel['quick_filter_buttons']['active']);
+				unset($panel['quick_filter_buttons']['contact']);
+				
+				break;
+			
+			case 'active_users':
+				$panel['title'] = adminPhrase('Active users');
+				$panel['no_items_message'] = 'No active users.';
+				unset($panel['trash']);
+				unset($panel['quick_filter_buttons']['all']);
+				unset($panel['quick_filter_buttons']['pending']);
+				unset($panel['quick_filter_buttons']['active']);
+				unset($panel['quick_filter_buttons']['contact']);
 				
 				break;
 		}

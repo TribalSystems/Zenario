@@ -40,10 +40,10 @@ zenario.lib(function(
 	undefined,
 	URLBasePath,
 	document, window, windowOpener, windowParent,
-	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO, strings,
+	zenario, zenarioA, zenarioT, zenarioAB, zenarioAT, zenarioO,
 	encodeURIComponent, get, engToBoolean, htmlspecialchars, jsEscape, phrase,
 	extensionOf, methodsOf, has,
-	zenarioABToolkit
+	zenarioABToolkit, extraVar2, s$s
 ) {
 	"use strict";
 
@@ -94,14 +94,14 @@ zenarioSE.openBox = function(html) {
 			maxHeight: winHeight - 150,
 			handles: 's',
 			start: ()=>{
-		        $('#zenarioSE_PreviewFrame').css('pointer-events','none');
+		        $('#zenarioSE_Preview iframe.zenarioSE_PreviewFrame').css('pointer-events','none');
 				zenarioSE.size(true, true);
 			},
 			resize: ()=>{
 				zenarioSE.size(true, true);
 			},
 			stop: ()=> {
-		        $('#zenarioSE_PreviewFrame').css('pointer-events','auto');
+		        $('#zenarioSE_Preview iframe.zenarioSE_PreviewFrame').css('pointer-events','auto');
 				zenarioSE.size(true);
 			}
 		};
@@ -227,21 +227,12 @@ zenarioSE.size = function(refresh, resizing) {
 	}
 };
 
-zenarioSE.getPreviewDocument = function() {
-	return get('zenarioSE_PreviewFrame') && get('zenarioSE_PreviewFrame').contentDocument;
-};
-
-zenarioSE.submitPreview = function(preview, target) {
+zenarioSE.submitPreview = function(preview, $parent, cssClassName) {
 	
-	//Check if the preview has been scrolled down
-	var doc = zenarioSE.getPreviewDocument(),
-		scrollTop = doc && $(doc).scrollTop();
+	$parent = $parent || $('#zenarioSE_Preview');
+	cssClassName = cssClassName || 'zenarioSE_PreviewFrame';
 	
-	if (1*scrollTop) {
-		preview.url += '&_scroll_to=' + 1*scrollTop;
-	}
-	
-	methodsOf(zenarioABToolkit).submitPreview.call(zenarioSE, preview, target);
+	methodsOf(zenarioABToolkit).submitPreview.call(zenarioSE, preview, $parent, cssClassName);
 	
 	//fade "update preview" button
 	zenarioSE.canUpdatePreview = false;

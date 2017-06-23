@@ -31,8 +31,8 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 //Record the first RSS link on this page, if there was one
 if (cms_core::$rss
  && !cms_core::$rss1st
- && empty($_REQUEST['tab'])
- && empty($_REQUEST['tab_no'])
+ && empty($_REQUEST['slideId'])
+ && empty($_REQUEST['slideNum'])
  && empty($_REQUEST['slotName'])
  && empty($_REQUEST['instanceId'])
  && ($rss = explode('_', cms_core::$rss, 2))

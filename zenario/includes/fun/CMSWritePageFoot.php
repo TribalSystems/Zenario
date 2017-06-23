@@ -37,28 +37,46 @@ $isWelcomeOrWizard = $isWelcome || $isWizard;
 $isOrganizer = $mode === 'organizer';
 $inAdminMode = checkPriv();
 
-if (!$isWelcomeOrWizard && $cookieFreeDomain = cookieFreeDomain()) {
-	$prefix = $cookieFreeDomain. 'zenario/';
+if ($absURL = absURLIfNeeded(!$isWelcomeOrWizard)) {
+	$prefix = $absURL. 'zenario/';
+}
 
-} elseif (cms_core::$mustUseFullPath) {
-	$prefix = absCMSDirURL(). 'zenario/';
+if (!$inAdminMode
+ && !$isWelcomeOrWizard
+ && $defer
+ && setting('defer_js')) {
+	$scriptTag = '<script type="text/javascript" defer';
+	$inlineStart = "(window.addEventListener || (function(a,b){b();}))('DOMContentLoaded', function() {";
+	$inlineStop = '});';
+} else {
+	$scriptTag = '<script type="text/javascript"';
+	$inlineStart = $inlineStop = '';
 }
 
 
 //Write the URLBasePath to the page, and add JS needed for the CMS
 echo '
-<script type="text/javascript" src="', $prefix, 'libraries/mit/jquery/jquery.min.js?v=', $v, '"></script>
-<script type="text/javascript" src="', $prefix, 'libraries/mit/jquery/jquery-ui.visitor.min.js?v=', $v, '"></script>
+'. $scriptTag. ' src="', $prefix, 'libraries/mit/jquery/jquery.min.js?v=', $v, '"></script>
+'. $scriptTag. ' src="', $prefix, 'libraries/mit/jquery/jquery-ui.visitor.min.js?v=', $v, '"></script>
 
-<!--[if IE 9]><script type="text/javascript" src="', $prefix, 'js/ie.wrapper.js.php?ie=9"></script><![endif]-->
-<!--[if IE 8]><script type="text/javascript" src="', $prefix, 'js/ie.wrapper.js.php?ie=8"></script><![endif]-->
-<!--[if lte IE 7]><script type="text/javascript" src="', $prefix, 'js/ie.wrapper.js.php?ie=7"></script><![endif]-->
+<!--[if IE 9]>'. $scriptTag. ' src="', $prefix, 'js/ie.wrapper.js.php?ie=9"></script><![endif]-->
+<!--[if IE 8]>'. $scriptTag. ' src="', $prefix, 'js/ie.wrapper.js.php?ie=8"></script><![endif]-->
+<!--[if lte IE 7]>'. $scriptTag. ' src="', $prefix, 'js/ie.wrapper.js.php?ie=7"></script><![endif]-->
 
-<script type="text/javascript">
-	var zenarioCSSJSVersionNumber = "'. setting('css_js_version'). '";
-	var URLBasePath = "', jsEscape(httpOrhttps(). $_SERVER["HTTP_HOST"] . SUBDIRECTORY), '";
-</script>
-<script type="text/javascript" src="', $prefix, 'js/visitor.wrapper.js.php?v=', $v, $gz, '"></script>';
+'. $scriptTag. ' src="', $prefix, 'js/visitor.wrapper.js.php?v=', $v, $gz, '"></script>';
+
+
+
+
+//Write other related JavaScript variables to the page
+	//Note that page caching may cause the wrong user id to be set.
+	//As with session('extranetUserID'), anything that changes behaviour by Extranet User should not allow the page to be cached.
+echo '
+'. $scriptTag. '>'. $inlineStart. 'zenario.init("'. setting('css_js_version'). '", ', (int) session('extranetUserID'), ', "', jsEscape(currentLangId()), '", "', jsEscape(setting('google_recaptcha_theme')), '", "', jsEscape(setting('vis_date_format_datepicker')), '", "'. jsEscape(DIRECTORY_INDEX_FILENAME). '", ', (int) canSetCookie(), ', ', (int) cms_core::$equivId, ', ', (int) cms_core::$cID, ', "', jsEscape(cms_core::$cType), '", ', (int) cms_core::$skinId, ');'. $inlineStop. '</script>';
+
+
+
+
 
 	
 //Add JS needed for the CMS in Admin mode
@@ -76,15 +94,15 @@ if ($isWelcomeOrWizard || $inAdminMode) {
 
 echo '
 </div>
-<script type="text/javascript" src="', $prefix, 'libraries/mit/jquery/jquery-ui.admin.min.js?v=', $v, '"></script>
-<script type="text/javascript" src="', $prefix, 'libraries/mit/jquery/jquery-ui.datepicker.min.js?v=', $v, '"></script>
-<script type="text/javascript" src="', $prefix, 'libraries/bsd/ace/src-min-noconflict/ace.js?v=', $v, '"></script>
-<script type="text/javascript" src="', $prefix, 'js/admin.microtemplates_and_phrases.js.php?v=', $v, $gz, '"></script>
-<script type="text/javascript" src="', $prefix, 'js/admin.wrapper.js.php?v=', $v, $gz, '"></script>';
+'. $scriptTag. ' src="', $prefix, 'libraries/mit/jquery/jquery-ui.admin.min.js?v=', $v, '"></script>
+'. $scriptTag. ' src="', $prefix, 'libraries/mit/jquery/jquery-ui.datepicker.min.js?v=', $v, '"></script>
+'. $scriptTag. ' src="', $prefix, 'libraries/bsd/ace/src-min-noconflict/ace.js?v=', $v, '"></script>
+'. $scriptTag. ' src="', $prefix, 'js/admin.microtemplates_and_phrases.js.php?v=', $v, $gz, '"></script>
+'. $scriptTag. ' src="', $prefix, 'js/admin.wrapper.js.php?v=', $v, $gz, '"></script>';
 	
 	if (setting('dropbox_api_key')) {
 		echo '
-			<script type="text/javascript" src="https://www.dropbox.com/static/api/2/dropins.js" id="dropboxjs" data-app-key="', htmlspecialchars(setting('dropbox_api_key')), '"></script>';
+			'. $scriptTag. ' src="https://www.dropbox.com/static/api/2/dropins.js" id="dropboxjs" data-app-key="', htmlspecialchars(setting('dropbox_api_key')), '"></script>';
 	}
 	
 	if ($includeOrganizer) {
@@ -114,27 +132,27 @@ echo '
 			if (!defined('ZENARIO_GOOGLE_MAP_ON_PAGE')) {
 				define('ZENARIO_GOOGLE_MAP_ON_PAGE', true);
 				echo '
-<script type="text/javascript" src="https://maps.google.com/maps/api/js?libraries=geometry&key=' , urlencode(setting('google_maps_api_key')) , '"></script>';
+'. $scriptTag. ' src="https://maps.google.com/maps/api/js?libraries=geometry&key=' , urlencode(setting('google_maps_api_key')) , '"></script>';
 			}
 		}
 		
 		if (isset($panelTypes['network_graph'])) {
 			echo '
-<script type="text/javascript" src="', $prefix, 'libraries/mit/cytoscape/cytoscape.min.js"></script>';
+'. $scriptTag. ' src="', $prefix, 'libraries/mit/cytoscape/cytoscape.min.js"></script>';
 		}
 		
 		if (isset($panelTypes['schematic_builder'])) {
 			echo '
-<script type="text/javascript" src="', $prefix, 'libraries/mit/fabricJS/fabricJS.min.js"></script>';
+'. $scriptTag. ' src="', $prefix, 'libraries/mit/fabricJS/fabricJS.min.js"></script>';
 		}
 		
 		echo '
-<script type="text/javascript" src="', $prefix, 'js/organizer.wrapper.js.php?v=', $v, $gz, '"></script>';
+'. $scriptTag. ' src="', $prefix, 'js/organizer.wrapper.js.php?v=', $v, $gz, '"></script>';
 		echo '
-<script type="text/javascript" src="', $prefix, 'admin/organizer.ajax.php?_script=1?v=', $moduleCodeHash, $gz, '"></script>';
+'. $scriptTag. ' src="', $prefix, 'admin/organizer.ajax.php?_script=1?v=', $moduleCodeHash, $gz, '"></script>';
 		
 		echo '
-<script type="text/javascript">';
+'. $scriptTag. '>';
 		
 		echo '
 	zenarioA.moduleCodeHash = "', $moduleCodeHash, '";';
@@ -148,41 +166,11 @@ echo '
 		
 			echo '
 </script>
-<script type="text/javascript" src="', $prefix, 'js/plugin.wrapper.js.php?v=', $v, $gz, '&amp;ids=', $jsModuleIds, '&amp;organizer=1"></script>';
+'. $scriptTag. ' src="', $prefix, 'js/plugin.wrapper.js.php?v=', $v, $gz, '&amp;ids=', $jsModuleIds, '&amp;organizer=1"></script>';
 	}
-}
-
-
-//Write other related JavaScript variables to the page
-	//Note that page caching may cause the wrong user id to be set.
-	//As with session('extranetUserID'), anything that changes behaviour by Extranet User should not allow the page to be cached.
-echo '
-<script type="text/javascript">
-	zenario.userId = ', (int) session('extranetUserID'), ';
-	zenario.langId = "', jsEscape(session('user_lang')), '";
-	zenario.dpf = "', jsEscape(setting('vis_date_format_datepicker')), '";
-	zenario.indexDotPHP = "'. jsEscape(DIRECTORY_INDEX_FILENAME). '";
-	zenario.canSetCookie = ', (int) canSetCookie(), ';';
-	
-//Add location information about a content item if it is available
-if (cms_core::$equivId) {
-	echo '
-	zenario.equivId = ', (int) cms_core::$equivId, ';';
-}
-if (cms_core::$cID) {
-	echo '
-	zenario.cID = ', (int) cms_core::$cID, ';';
-}
-if (cms_core::$cType) {
-	echo '
-	zenario.cType = "', jsEscape(cms_core::$cType), '";';
 }
 
 if ($inAdminMode && !$isWelcomeOrWizard) {
-	if (cms_core::$cVersion) {
-		echo '
-		zenario.cVersion = ', (int) cms_core::$cVersion, ';';
-	}
 	
 	$settings = array();
 	if (!empty(cms_core::$siteConfig)) {
@@ -225,22 +213,10 @@ if ($inAdminMode && !$isWelcomeOrWizard) {
 		$importantGetRequests = json_encode($importantGetRequests);
 	}
 	
-	echo '
-	zenarioA.toolbar = \'', jsEscape(ifNull(session('page_toolbar'), 'preview')), '\';
-	zenarioA.pageMode = \'', jsEscape(ifNull(session('page_mode'), 'preview')), '\';
-	zenarioA.slotWandOn = ', engToBoolean(session('admin_slot_wand')), ';
-	zenarioA.showGridOn = ', engToBoolean(session('admin_show_grid')), ';
-	zenarioA.siteSettings = ', json_encode($settings), ';
-	zenarioA.adminSettings = ', json_encode($adminSettings), ';
-	zenarioA.importantGetRequests = ', $importantGetRequests, ';';
-	
-	if (adminHasSpecificPerms()) {
-		echo '
-	zenarioA.adminHasSpecificPerms = 1;';
-	
+	$adminHasSpecificPermsOnThisPage = 0;
+	if ($adminHasSpecificPerms = adminHasSpecificPerms()) {
 		if (cms_core::$cID && cms_core::$cType) {
-			echo '
-	zenarioA.adminHasSpecificPermsOnThisPage = ', engToBoolean(checkPriv(false, cms_core::$cID, cms_core::$cType)), ';';
+			$adminHasSpecificPermsOnThisPage = checkPriv(false, cms_core::$cID, cms_core::$cType);
 		}
 	}
 	
@@ -261,10 +237,6 @@ if ($inAdminMode && !$isWelcomeOrWizard) {
 		}
 	}
 	
-	echo "\n	zenarioA.lang = ", json_encode($langs), ";";
-	echo "\n	zenario.adminId = ", (int) session('admin_userid'), ";";
-	echo "\n	zenario.templateFamily = '", jsEscape(cms_core::$templateFamily), "';";
-	
 	$spareDomains = array();
 	$sql = '
 	    SELECT requested_url FROM ' . DB_NAME_PREFIX . 'spare_domain_names';
@@ -273,20 +245,26 @@ if ($inAdminMode && !$isWelcomeOrWizard) {
 	    $spareDomains[] = httpOrhttps() . $row['requested_url'];
 	}
 	
-	echo "\n    zenarioA.spareDomains = ", json_encode($spareDomains), ";";
-}
-
-if (cms_core::$skinId) {
-	echo "\n	zenario.skinId = ", (int) cms_core::$skinId, ";";
-}
-
-if (!$isWelcomeOrWizard) {
 	echo '
-	zenario.useGZ = ', (int) setting('compress_web_pages'), ';';
-}
-
-echo '
+'. $scriptTag. '>
+	zenarioA.init(
+		', (int) cms_core::$cVersion, ',
+		', (int) session('admin_userid'), ',
+		"', jsEscape(cms_core::$templateFamily), '",
+		"', jsEscape(ifNull(session('page_toolbar'), 'preview')), '",
+		"', jsEscape(ifNull(session('page_mode'), 'preview')), '",
+		', engToBoolean(session('admin_slot_wand')), ',
+		', engToBoolean(session('admin_show_grid')), ',
+		', json_encode($settings), ',
+		', json_encode($adminSettings), ',
+		', $importantGetRequests, ',
+		', (int) $adminHasSpecificPerms, ',
+		', (int) $adminHasSpecificPermsOnThisPage, ',
+		', json_encode($langs), ',
+		', json_encode($spareDomains), '
+	);
 </script>';
+}
 
 
 //Add JS needed for modules
@@ -296,7 +274,7 @@ if (!$isWelcomeOrWizard && cms_core::$pluginJS) {
 	}
 	
 	echo '
-<script type="text/javascript" src="', $prefix, 'js/plugin.wrapper.js.php?v=', $v, '&amp;ids=', cms_core::$pluginJS, $gz, '"></script>';
+'. $scriptTag. ' src="', $prefix, 'js/plugin.wrapper.js.php?v=', $v, '&amp;ids=', cms_core::$pluginJS, $gz, '"></script>';
 }
 
 
@@ -312,13 +290,13 @@ if ($inAdminMode && cms_core::$cID) {
 	
 	if ($jsModuleIds) {
 		echo '
-<script type="text/javascript" src="', $prefix, 'js/plugin.wrapper.js.php?v=', $v, '&amp;ids=', $jsModuleIds, $gz, '&amp;admin_frontend=1"></script>';
+'. $scriptTag. ' src="', $prefix, 'js/plugin.wrapper.js.php?v=', $v, '&amp;ids=', $jsModuleIds, $gz, '&amp;admin_frontend=1"></script>';
 	}
 	
 	//If we've just made a draft, and there's a callback, perform the callback
 	if (!empty($_SESSION['zenario_draft_callback'])) {
 		echo '
-		<script type="text/javascript">
+		'. $scriptTag. '>
 			$(document).ready(function() {
 				zenarioA.draftDoCallback("', jsEscape($_SESSION['zenario_draft_callback']), '");
 			});
@@ -330,77 +308,6 @@ if ($inAdminMode && cms_core::$cID) {
 
 //Are there plugins on this page..?
 if (!empty(cms_core::$slotContents) && is_array(cms_core::$slotContents)) {
-	//Include the Foot for any plugin instances on the page, if they have one
-	foreach(cms_core::$slotContents as $slotName => &$instance) {
-		if (!empty($instance['class'])) {
-			$edition = cms_core::$edition;
-			$edition::preSlot($slotName, 'addToPageFoot');
-				$instance['class']->addToPageFoot();
-			$edition::postSlot($slotName, 'addToPageFoot');
-		}
-	}
-	
-	if (!empty($scriptTypes[2])) {
-		echo "\n". '<script type="text/javascript">(function(c) {';
-		
-		foreach ($scriptTypes[2] as &$scriptsForPlugin) {
-			foreach ($scriptsForPlugin as &$script) {
-				echo "\n", 'c(', json_encode($script), ');';
-			}
-		}
-				
-		echo "\n", '})(zenario.callScript);</script>';
-	}
-}
-
-//Are there Plugins on this page..?
-if (!empty(cms_core::$slotContents) && is_array(cms_core::$slotContents)) {
-	echo '
-<script type="text/javascript">';
-	//Add encapculated objects for slots
-	$i = 0;
-	echo "\n", 'zenario.slot([';
-	foreach (cms_core::$slotContents as $slotName => &$instance) {
-		if (isset($instance['class']) || $inAdminMode) {
-			echo
-				$i++? ',' : '',
-				'["',
-					preg_replace('/[^\w-]/', '', $slotName), '",',
-					(int) arrayKey($instance, 'instance_id'), ',',
-					(int) arrayKey($instance, 'module_id');
-			
-			if (isset($instance['class']) && $instance['class']) {
-				
-				//For filled slots, set the level, tab id and whether this looks like the main slot.
-				//The tab id is used for Plugin Nests, and is the id of the current tab being displayed.
-				//The Main Slot is what we think the primary feature on this page is; it's slot name will not be shown after the # and between the !
-				//in the hashes used for AJAX reloads to make the hashs look a little friendlier
-				//In admin mode we also note down which plugins are version controlled
-				
-				echo ',', (int) arrayKey($instance, 'level');
-				
-				$tabId = $instance['class']->zAPIGetTabId();
-				$isMainSlot = isset($instance['class']) && arrayKey($instance, 'level') == 1 && substr($slotName, 0, 1) == 'M';
-				$beingEdited = $instance['class']->beingEdited();
-				
-				if ($inAdminMode) {
-					$isVersionControlled = (int) !empty($instance['content_id']);
-					
-					echo ',', (int) $tabId, ',', (int) $isMainSlot, ',', (int) $beingEdited, ',', (int) $isVersionControlled;
-				} elseif ($beingEdited) {
-					echo ',', (int) $tabId, ',', (int) $isMainSlot, ',', (int) $beingEdited;
-				} elseif ($isMainSlot) {
-					echo ',', (int) $tabId, ',', (int) $isMainSlot;
-				} elseif ($tabId) {
-					echo ',', (int) $tabId;
-				}
-			}
-			
-			echo ']';
-		}
-	}
-	echo ']);';
-
 	//Include the JS for any plugin instances on the page, if they have any
 	$scriptTypes = array(array(), array(), array());
 	foreach(cms_core::$slotContents as $slotName => &$instance) {
@@ -422,7 +329,7 @@ if (!empty(cms_core::$slotContents) && is_array(cms_core::$slotContents)) {
 	
 	if (!empty($scriptTypes[0])
 	 || !empty($scriptTypes[1])) {
-		echo "\n". '(function(c) {';
+		echo "\n". ''. $scriptTag. '>'. $inlineStart. '(function(c) {';
 		
 		if (!empty($scriptTypes[0])) {
 			foreach ($scriptTypes[0] as &$scriptsForPlugin) {
@@ -438,11 +345,82 @@ if (!empty(cms_core::$slotContents) && is_array(cms_core::$slotContents)) {
 				}
 			}
 		}
-				
-		echo "\n", '})(zenario.callScript);';
+		
+		echo "\n", '})(zenario._cS);'. $inlineStop. '</script>';
 	}
 	
-	echo "\n</script>";
+	//Include the Foot for any plugin instances on the page, if they have one
+	foreach(cms_core::$slotContents as $slotName => &$instance) {
+		if (!empty($instance['class'])) {
+			$edition = cms_core::$edition;
+			$edition::preSlot($slotName, 'addToPageFoot');
+				$instance['class']->addToPageFoot();
+			$edition::postSlot($slotName, 'addToPageFoot');
+		}
+	}
+}
+
+//Are there Plugins on this page..?
+if (!empty(cms_core::$slotContents) && is_array(cms_core::$slotContents)) {
+	echo '
+'. $scriptTag. '>'. $inlineStart;
+	//Add encapculated objects for slots
+	$i = 0;
+	echo "\n", 'zenario.slot([';
+	foreach (cms_core::$slotContents as $slotName => &$instance) {
+		if (isset($instance['class']) || $inAdminMode) {
+			echo
+				$i++? ',' : '',
+				'["',
+					preg_replace('/[^\w-]/', '', $slotName), '",',
+					(int) arrayKey($instance, 'instance_id'), ',',
+					(int) arrayKey($instance, 'module_id');
+			
+			if (isset($instance['class']) && $instance['class']) {
+				
+				//For filled slots, set the level, slide id and whether this looks like the main slot.
+				//The slide id is used for Plugin Nests, and is the id of the current slide being displayed.
+				//The Main Slot is what we think the primary feature on this page is; it's slot name will not be shown after the # and between the !
+				//in the hashes used for AJAX reloads to make the hashs look a little friendlier
+				//In admin mode we also note down which plugins are version controlled
+				
+				echo ',', (int) arrayKey($instance, 'level');
+				
+				$slideId = $instance['class']->zAPIGetTabId();
+				$isMainSlot = isset($instance['class']) && arrayKey($instance, 'level') == 1 && substr($slotName, 0, 1) == 'M';
+				$beingEdited = $instance['class']->beingEdited();
+				
+				if ($inAdminMode) {
+					$isVersionControlled = (int) !empty($instance['content_id']);
+					
+					echo ',', (int) $slideId, ',', (int) $isMainSlot, ',', (int) $beingEdited, ',', (int) $isVersionControlled;
+				} elseif ($beingEdited) {
+					echo ',', (int) $slideId, ',', (int) $isMainSlot, ',', (int) $beingEdited;
+				} elseif ($isMainSlot) {
+					echo ',', (int) $slideId, ',', (int) $isMainSlot;
+				} elseif ($slideId) {
+					echo ',', (int) $slideId;
+				}
+			}
+			
+			echo ']';
+		}
+	}
+	echo ']);';
+	
+	if (!empty($scriptTypes[2])) {
+		echo "\n". '(function(c) {';
+		
+		foreach ($scriptTypes[2] as &$scriptsForPlugin) {
+			foreach ($scriptsForPlugin as &$script) {
+				echo "\n", 'c(', json_encode($script), ');';
+			}
+		}
+				
+		echo "\n", '})(zenario._cS);';
+	}
+	
+	echo $inlineStop. '</script>';
 }
 
 
@@ -510,5 +488,5 @@ if (cms_core::$cID && $includeAdminToolbar && $inAdminMode && !$isWelcomeOrWizar
 	)));
 	
 	echo '
-<script type="text/javascript" src="', $prefix, 'admin/admin_toolbar.ajax.php?v=', $v, '&amp;', $params, '"></script>';
+'. $scriptTag. ' src="', $prefix, 'admin/admin_toolbar.ajax.php?v=', $v, '&amp;', $params, '"></script>';
 }

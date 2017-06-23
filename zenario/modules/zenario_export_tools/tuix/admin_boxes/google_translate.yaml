@@ -35,7 +35,7 @@ zenario_export_tools__google_translate:
                         max_path: zenario__languages/panels/languages
                         disallow_refiners_looping_on_min_path: Yes
                         hide_remove_button: Yes
-                    read_only: Yes
+                    readonly: Yes
     hide_tab_bar: Yes
     max_height: "300"
     save_button_message: Translate

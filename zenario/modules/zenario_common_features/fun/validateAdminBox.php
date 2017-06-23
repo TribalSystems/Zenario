@@ -107,97 +107,6 @@ switch ($path) {
 		}
 	
 		break;
-	
-	case 'zenario_document_upload':
-	
-		if ($values['upload_document/document__upload'] == "") {
-			$box['tabs']['upload_document']['errors'][] = adminPhrase('Select a document');
-		}
-		
-		$documentsUploaded = explode(',',$values['upload_document/document__upload']);
-		$documentNameList=array();
-		$found = false;
-		foreach ($documentsUploaded  as $document) {
-			$filename = basename(getPathOfUploadedFileInCacheDir($document));
-			if ($documentNameList){
-					if (in_array($filename,$documentNameList)){
-						$found=true;
-					}else{
-						$documentNameList[]=$filename;
-					}
-			}else{
-				$documentNameList[]=$filename;
-			}
-		}
-		if ($found){
-			$box['tabs']['upload_document']['errors'][] = adminPhrase('You cannot upload documents with the same name and extension in a directory');
-		}
-		
-		//same name 
-		if ($box['key']['id'] && $box['key']['id']!="id"){
-			$parentfolderId = $box['key']['id'];
-		}else{
-			$parentfolderId = "0";
-		}
-		
-		$sql="
-			SELECT filename
-			FROM ".DB_NAME_PREFIX."documents
-			WHERE folder_id = ".$parentfolderId;
-			
-		$result = sqlQuery($sql);
-		while($row = sqlFetchAssoc($result)) {
-			$fileNameList[] = $row['filename'];
-		}
-		
-		if ($values['upload_document/document__upload'] && isset($fileNameList) && $fileNameList){
-			foreach ($documentNameList as $name){
-				if (array_search($name, $fileNameList) !== false) {
-					$nameDetails = explode(".",$name);
-					$box['tabs']['upload_document']['errors'][] = adminPhrase('A file named "[[filename]]" with extension ".[[extension]]" already exists in this directory!', array('filename' => $nameDetails[0],'extension'=>$nameDetails[1]));
-					break;
-				}
-			}
-		}
-		break;
-	
-	case 'zenario_document_properties':
-		$documentId = $box['key']['id'];
-		$parentfolderId=getRow('documents', 'folder_id', array('id' => $documentId));
-		$newDocumentName = trim($values['details/document_name']);
-		
-		if (!$newDocumentName ){
-			$box['tabs']['details']['errors'][] = adminPhrase('Please enter a filename.');
-		} else {
-			// Stop forward slashes being used in filenames
-			$slashPos = strpos($newDocumentName, '/');
-			if ($slashPos !== false) {
-				$box['tabs']['details']['errors'][] = adminPhrase('Your filename cannot contain forward slashes (/).');
-			}
-		}
-		
-		//$fileNameAlreadyExists=checkRowExists('documents', array('type' => 'file','folder_id' => $parentfolderId,'filename'=>$newDocumentName));
-		
-		
-		$sql =  "
-			SELECT id
-			FROM ".DB_NAME_PREFIX."documents
-			WHERE type = 'file' 
-			AND folder_id = ". (int) $parentfolderId. "
-			AND filename = '". sqlEscape($newDocumentName). "' 
-			AND id != ". (int) $documentId;
-		
-		$documentIdList = array();
-		$result = sqlSelect($sql);
-		while($row = sqlFetchAssoc($result)) {
-				$documentIdList[] = $row;
-		}
-		$numberOfIds = count($documentIdList);
-		
-		if ($numberOfIds > 0){
-			$box['tabs']['details']['errors'][] = adminPhrase('The filename “[[folder_name]]” is already taken. Please choose a different name.', array('folder_name' => $newDocumentName));
-		}
-		break;
 		
 		
 	case 'zenario_document_rename':
@@ -215,9 +124,9 @@ switch ($path) {
 					SELECT id
 					FROM ".DB_NAME_PREFIX."documents
 					WHERE type = 'folder' 
-					AND folder_id =".$parentfolderId."
-					AND folder_name = '".$newDocumentName."' 
-					AND id != ". $documentId;
+					AND folder_id =".(int)$parentfolderId."
+					AND folder_name = '".sqlEscape($newDocumentName)."' 
+					AND id != ". (int)$documentId;
 	
 				$documentIdList = array();
 				$result = sqlSelect($sql);
@@ -225,7 +134,7 @@ switch ($path) {
 						$documentIdList[] = $row;
 				}
 				$numberOfIds = count($documentIdList);
-	
+
 				if ($numberOfIds > 0){
 					$box['tabs']['details']['errors'][] = adminPhrase('The folder name “[[folder_name]]” is already taken. Please choose a different name.', array('folder_name' => $newDocumentName));
 				}

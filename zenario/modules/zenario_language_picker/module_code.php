@@ -53,7 +53,7 @@ class zenario_language_picker extends module_base_class {
 				'equivId' => cms_core::$homeEquivId,
 				'flag' => $langCfg['flag'],
 				'name' => $langCfg['language_local_name'],
-				'current_language' => $langCfg['id'] == session('user_lang'),
+				'current_language' => $langCfg['id'] == cms_core::$langId,
 				'isEquivOfThisPage' => false);
 			
 			//Look up the cID of the homepage in each language and note that down as well

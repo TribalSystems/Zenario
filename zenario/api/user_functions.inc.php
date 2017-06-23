@@ -297,78 +297,104 @@ function generateUserIdentifier($userId, $details = array()) {
 		$details = getRow('users', array('screen_name', 'first_name', 'last_name', 'email'), $userId);
 	}
 	
-	$baseScreenName = '';
+	$baseIdentifier = '';
 	$firstName = $details['first_name'];
 	$lastName = $details['last_name'];
 	$email = $details['email'];
 	
 	//If this site uses screen names, use the screen name as the identifier...
 	if (!setting('user_use_screen_name')
-	 || !($baseScreenName = $details['screen_name'])) {
+	 || !($baseIdentifier = $details['screen_name'])) {
 		//...otherwise calcuate an identifier from the first name, last name and/or email address
 		
 		// Remove special characters and get the base screen name
 		$firstName = trimNonWordCharactersUnicode($firstName);
 		$lastName = trimNonWordCharactersUnicode($lastName);
 		if ($firstName || $lastName) {
-			$baseScreenName = $firstName. $lastName;
+			$baseIdentifier = $firstName. $lastName;
 		} elseif (($emailArray = explode('@', $email)) && ($email = trimNonWordCharactersUnicode($emailArray[0]))) {
-			$baseScreenName = $email;
+			$baseIdentifier = $email;
 		} else {
-			$baseScreenName = 'User';
+			$baseIdentifier = 'User';
 		}
-		if (strlen($baseScreenName) > 50) {
-			$baseScreenName = substr($baseScreenName, 0, 50);
+		if (strlen($baseIdentifier) > 50) {
+			$baseIdentifier = substr($baseIdentifier, 0, 50);
 		}
 	}
 	
-	// Get all current similar screen names from all linked sites
-	$screenNames = array();
-	if (file_exists(CMS_ROOT. 'zenario_usersync_config.php')) {
-		require CMS_ROOT. 'zenario_usersync_config.php';
-		$thisIsHub =
-			$hub['DBHOST'] == DBHOST
-		 && $hub['DBNAME'] == DBNAME;
+	//Check if the identifier column is encrypted
+	checkTableDefinition(DB_NAME_PREFIX. 'users');
+	if (!cms_core::$dbCols[DB_NAME_PREFIX. 'users']['identifier']->encrypted) {
+		//Attempt to generate a unique indentifier
+	
+		// Get all current identifiers from all linked sites
+		$identifiers = array();
+		if (file_exists(CMS_ROOT. 'zenario_usersync_config.php')) {
+			require CMS_ROOT. 'zenario_usersync_config.php';
+			$thisIsHub =
+				$hub['DBHOST'] == DBHOST
+			 && $hub['DBNAME'] == DBNAME;
 		
-		$screenNames = getSimilarScreenNames($baseScreenName, $thisIsHub, $hub, $satellites);
-		connectLocalDB();
-	}
-	
-	// Get similar identifiers from this site
-	$sql = '
-		SELECT id, identifier 
-		FROM '.DB_NAME_PREFIX.'users
-		WHERE identifier LIKE "'.sqlEscape($baseScreenName).'%"
-		AND id != '.(int)$userId;
-	$result = sqlSelect($sql);
-	while ($user = sqlFetchAssoc($result)) {
-		$screenNames[strtoupper($user['identifier'])] = $user['id'];
-	}
-	
-	// Find a unique screen name
-	$uniqueScreenName = $baseScreenName;
-	if (!isset($screenNames[strtoupper($uniqueScreenName)])) {
-		return $uniqueScreenName;
-	} else {
-		$userId = (string)$userId;
-		for ($i = 1; $i <= strlen($userId); $i++) {
-			$userNumber = substr($userId, -($i));
-			$baseScreenName = substr($baseScreenName, 0, (50 - ($i + 1)));
-			$uniqueScreenName = $baseScreenName . '-' . $userNumber;
-			if (!isset($screenNames[strtoupper($uniqueScreenName)])) {
-				return $uniqueScreenName;
-			}
+			$identifiers = getSimilarIdentifiers($baseIdentifier, $thisIsHub, $hub, $satellites);
+			connectLocalDB();
 		}
-		$uniqueScreenName .= rand(0, 99);
-		return $uniqueScreenName;
+	
+		// Get similar identifiers from this site
+		$sql = '
+			SELECT id, identifier 
+			FROM '.DB_NAME_PREFIX.'users
+			WHERE identifier LIKE "'.sqlEscape($baseIdentifier).'%"
+			AND id != '.(int)$userId;
+		$result = sqlSelect($sql);
+		while ($user = sqlFetchAssoc($result)) {
+			$identifiers[strtoupper($user['identifier'])] = $user['id'];
+		}
+	
+		// Find a unique indentifier
+		$uniqueIdentifier = $baseIdentifier;
+		if (!isset($identifiers[strtoupper($uniqueIdentifier)])) {
+			return $uniqueIdentifier;
+		} else {
+			$userId = (string)$userId;
+			for ($i = 1; $i <= strlen($userId); $i++) {
+				$userNumber = substr($userId, -($i));
+				$baseIdentifier = substr($baseIdentifier, 0, (50 - ($i + 1)));
+				$uniqueIdentifier = $baseIdentifier . '-' . $userNumber;
+				if (!isset($identifiers[strtoupper($uniqueIdentifier)])) {
+					return $uniqueIdentifier;
+				}
+			}
+			$uniqueIdentifier .= rand(0, 99);
+			return $uniqueIdentifier;
+		}
+	
+	} else {
+		//Attempt to generate a unique indentifier... without using a LIKE
+		$uniqueIdentifier = $baseIdentifier;
+		if (!checkRowExists('users', ['identifier' => $uniqueIdentifier, 'id' => ['!' => $userId]])) {
+			return $uniqueIdentifier;
+		} else {
+			$userId = (string)$userId;
+			for ($i = 1; $i <= strlen($userId); $i++) {
+				$userNumber = substr($userId, -($i));
+				$baseIdentifier = substr($baseIdentifier, 0, (50 - ($i + 1)));
+				$uniqueIdentifier = $baseIdentifier . '-' . $userNumber;
+				if (!checkRowExists('users', ['identifier' => $uniqueIdentifier, 'id' => ['!' => $userId]])) {
+					return $uniqueIdentifier;
+				}
+			}
+			$uniqueIdentifier .= rand(0, 99);
+			return $uniqueIdentifier;
+		}
 	}
 }
 
-function getSimilarScreenNames($screenName, $thisIsHub, $hub, $satellites) {
-	$screenNames = array();
+//N.b. this function won't work if identifier is encrypted on a site!
+function getSimilarIdentifiers($screenName, $thisIsHub, $hub, $satellites) {
+	$identifiers = array();
 	$DBHost = DBHOST;
 	$DBName = DBNAME;
-	// if not thisIsHub, return hubs screen names
+	// if not thisIsHub, return hubs identifiers
 	if (!$thisIsHub) {
 		if ($dbSelected = connectToDatabase($hub['DBHOST'], $hub['DBNAME'], $hub['DBUSER'], $hub['DBPASS'], arrayKey($hub, 'DBPORT'))) {
 			cms_core::$lastDB = $dbSelected;
@@ -383,12 +409,12 @@ function getSimilarScreenNames($screenName, $thisIsHub, $hub, $satellites) {
 			
 			$result = sqlSelect($sql);
 			while ($user = sqlFetchAssoc($result)) {
-				$screenNames[strtoupper($user['identifier'])] = $user['id'];
+				$identifiers[strtoupper($user['identifier'])] = $user['id'];
 			}
 		} else {
 			return false;
 		}
-	// If thisIsHub, return all satellite screen names
+	// If thisIsHub, return all satellite identifiers
 	} else {
 		foreach($satellites as $satellite) {
 			if ($satellite['DBHOST'] == $DBHost
@@ -408,13 +434,13 @@ function getSimilarScreenNames($screenName, $thisIsHub, $hub, $satellites) {
 					
 					$result = sqlSelect($sql);
 					while ($user = sqlFetchAssoc($result)) {
-						$screenNames[strtoupper($user['identifier'])] = $user['id'];
+						$identifiers[strtoupper($user['identifier'])] = $user['id'];
 					}
 				}
 			}
 		}
 	}
-	return $screenNames;
+	return $identifiers;
 }
 
 function getNextScreenName() {
@@ -570,11 +596,11 @@ function logUserIn($userId, $impersonate = false) {
 	if (!$impersonate) {
 		//Update their last login time
 		$sql = "
-			UPDATE " . DB_NAME_PREFIX . "users SET
-				last_login_ip = '". sqlEscape(visitorIP()). "',
+			UPDATE [users AS u] SET
+				[u.last_login_ip = 0],
 				last_login = NOW()
-			WHERE id = ". (int) $userId;
-		sqlUpdate($sql);
+			WHERE id = [1]";
+		sqlUpdate($sql, [visitorIP(), $userId]);
 		
 	
 		if(setting('sign_in_access_log'))
@@ -598,10 +624,6 @@ function logUserIn($userId, $impersonate = false) {
 		$sql = "
 			INSERT INTO ". DB_NAME_PREFIX. "user_signin_log SET
 				user_id = ". (int)  sqlEscape($userId).",
-				screen_name = '". sqlEscape($user['screen_name']). "',
-				first_name = '". sqlEscape($user['first_name']). "',
-				last_name = '". sqlEscape($user['last_name']). "',
-				email = '". sqlEscape($user['email']). "',
 				login_datetime = NOW(),
 				ip = '". sqlEscape(visitorIP()). "',
 				browser = '". sqlEscape($browser->getBrowser()). "',
@@ -619,18 +641,15 @@ function logUserIn($userId, $impersonate = false) {
 	return $user;
 }
 
-function getUserDetails($user_id) {
-	if($user_id) {
-		$sql = "SELECT u.*, ucd.* FROM ". DB_NAME_PREFIX. "users u 
-				LEFT JOIN ". DB_NAME_PREFIX. "users_custom_data ucd
-						ON u.id = ucd.user_id WHERE u.id=" . (int) $user_id;
-		$result = sqlQuery($sql);
-		if($result && ($row = sqlFetchAssoc($result))) {
-			unset($row['user_id']);
-			return $row;
+function getUserDetails($userId) {
+	
+	if ($user = getRow('users', true, $userId)) {
+		if ($custom_data = getRow('users_custom_data', true, $userId)) {
+			unset($custom_data['user_id']);
+			$user = array_merge($custom_data, $user);
 		}
 	}
-	return false;
+	return $user;
 }
 
 function getEmail($userId) {
@@ -666,7 +685,54 @@ function getUserIdFromScreenName($screenName) {
 }
 
 function createPassword() {
-	return randomString(8);
+	
+	$numbers = "0,1,2,3,4,5,6,7,8,9";
+	$letters = "a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z";
+	$symbols = "!,#,$,%,<,>,(,),*,+,-,@,?,{,},_";
+	
+	$lowercase = explode(',',$letters);
+	$uppercase = explode(',',strtoupper($letters));
+	$symbolsArray = explode(',',$symbols);
+	$numbersArray = explode(',',$numbers);
+	
+	$password = "";
+	$passwordLength = max(5, (int) setting('min_extranet_user_password_length'));
+	
+	$passwordCharacters = array();
+	
+	if($passwordLength){
+	
+		if(setting('a_z_uppercase_characters')){
+			$passwordCharacters = array_merge($passwordCharacters,$uppercase);
+		}
+		
+		if(setting('a_z_lowercase_characters')){
+			$passwordCharacters = array_merge($passwordCharacters,$lowercase);
+		}
+		
+		if(setting('0_9_numbers_in_user_password')){
+			$passwordCharacters = array_merge($passwordCharacters,$numbersArray);
+		}
+		
+		if(setting('symbols_in_user_password')){
+			$passwordCharacters = array_merge($passwordCharacters,$symbolsArray);
+		}
+		
+		if($passwordCharacters){
+			$lenght = count($passwordCharacters) - 1;
+			for($i=1; $i<=$passwordLength; $i++){
+				$randomNumber = mt_rand(0, $lenght);
+				$password .= $passwordCharacters[$randomNumber];
+			}
+		}
+	
+	}
+	
+	if ($password) {
+		return $password;
+	} else {
+		return randomString($passwordLength);
+	}	
 }
 
 function setUsersPassword($userId, $password, $needsChanging = -1, $plaintext = -1) {
@@ -751,9 +817,12 @@ function deleteUser($userId) {
 }
 
 function updateUserHash($userId) {
+	
+	$emailAddress = getRow('users', 'email', $userId);
+	
 	$sql = "
 		UPDATE ". DB_NAME_PREFIX. "users 
-		SET hash = md5(CONCAT(id, '-". date('Yz'). '-'. primaryDomain(). "-', email))
+		SET hash = '". sqlEscape(hash64($userId. '-'. date('Yz'). '-'. primaryDomain(). '-'. $emailAddress)). "'
 		WHERE id = ". (int) $userId;
 	sqlUpdate($sql, false, false);
 }
@@ -807,6 +876,7 @@ function checkNamedUserPermExists($perm, &$directlyAssignedToUser, &$hasRoleAtCo
 				$hasRoleAtLocation = true;
 		case 'perm.view.asset':
 		case 'perm.edit.asset':
+		case 'perm.acknowledge.asset':
 		case 'perm.delete.asset':
 			return
 				$hasRoleAtLocation =

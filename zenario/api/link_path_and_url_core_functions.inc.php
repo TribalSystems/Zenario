@@ -31,6 +31,19 @@ function absCMSDirURL() {
 	return httpOrHttps(). httpHost(). SUBDIRECTORY;
 }
 
+function absURLIfNeeded($cookieFree = true) {
+	
+	if ($cookieFree && $cookieFreeDomain = cookieFreeDomain()) {
+		return $cookieFreeDomain;
+	
+	} elseif (cms_core::$mustUseFullPath) {
+		return httpOrHttps(). httpHost(). SUBDIRECTORY;
+	
+	} else {
+		return '';
+	}
+}
+
 cms_core::$whitelist[] = 'httpHost';
 function httpHost() {
 	if (!empty($_SERVER['HTTP_HOST'])) {

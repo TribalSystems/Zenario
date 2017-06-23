@@ -158,6 +158,14 @@ _sql
 	WHERE `code` = 'zenario_extranet_registration__to_admin_user_activation_notification_en'
 _sql
 
+); revision(96,
+
+<<<_sql
+	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]][[ZENARIO_EXTRANET_REGISTRATION_PREFIX]]codes`
+_sql
+
+, <<<_sql
+	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]][[ZENARIO_EXTRANET_REGISTRATION_PREFIX]]code_groups`
+_sql
+
 );
-
-

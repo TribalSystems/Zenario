@@ -12,7 +12,7 @@ site_settings:
             fields:
                 perm.manage.command:
                     snippet:
-                        label: "Manage command templates: users can manage command templates if..."
+                        label: "Manage commands: users can manage commands if..."
                 perm.manage.command.by.group:
                     site_setting:
                         name: perm.manage.command.by.group
@@ -35,7 +35,7 @@ site_settings:
                         select_phrase: Select a group...
                         multiple_select: true
                     validation:
-                        required_if_not_hidden: Please select a group who can manage command templates.
+                        required_if_not_hidden: Please select a group who can manage commands.
                 
                 perm.sendCommandTo.asset:
                     snippet:

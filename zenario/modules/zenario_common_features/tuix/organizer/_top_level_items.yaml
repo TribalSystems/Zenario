@@ -12,7 +12,7 @@ dummy_item:
             no_items_message: Loading...
 
 zenario__content:
-    ord: 1
+    ord: -990
     visible_if: >
         zenarioA.siteSettings.default_language
     css_class: zenario_cms_core_content
@@ -73,7 +73,7 @@ zenario__content:
 zenario__menu:
     youtube_video_id: r6otMwh7EVw
     youtube_thumbnail_title: 'Zenario CMS: Menu navigation quick-start guide'
-    ord: 2
+    ord: -980
     priv: _PRIV_VIEW_MENU_ITEM
     visible_if: >
         zenarioA.siteSettings.default_language
@@ -101,8 +101,8 @@ zenario__menu:
         <p><strong>Menu</strong></p>
         <p>Manage the menu navigation for your website, you can arrange and edit the menu items as required.</p>       
 zenario__documents:
-    ord: 2.01
-    priv: _PRIV_MANAGE_DOCUMENTS
+    ord: -970
+    priv: _PRIV_VIEW_DOCUMENTS
     css_class: zenario_cms_core_documents
     label: Documents
     tooltip: 'Create and manage documents'
@@ -110,19 +110,19 @@ zenario__documents:
     youtube_thumbnail_title: 'Zenario CMS: Document management quick-start guide'
     nav:
         documents:
-            priv: _PRIV_MANAGE_DOCUMENTS
+            priv: _PRIV_VIEW_DOCUMENTS
             label: Documents
             link:
                 path: zenario__content/panels/documents
         document_tags:
-            priv: _PRIV_MANAGE_DOCUMENTS
+            priv: _PRIV_VIEW_DOCUMENTS
             label: Tags
             tooltip: >
                 Manage tags for documents
             link:
                 path: zenario__content/panels/document_tags
         document_rules:
-            priv: _PRIV_MANAGE_DOCUMENTS
+            priv: _PRIV_VIEW_DOCUMENTS
             css_class: zenario_document_auto_set_rule
             label: Auto-set rules
             tooltip: >
@@ -132,7 +132,7 @@ zenario__documents:
                 path: zenario__content/panels/document_rules
 
 zenario__users:
-    ord: 4
+    ord: -790
     priv: _PRIV_VIEW_ADMIN
     css_class: zenario_cms_core_users
     label: Users
@@ -147,7 +147,7 @@ zenario__users:
                 path: zenario__users/panels/administrators
 
 zenario__layouts:
-    ord: "999996"
+    ord: 999996
     visible_if: >
         zenarioA.siteSettings.default_language
     css_class: zenario_cms_core_templates
@@ -169,7 +169,7 @@ zenario__layouts:
             link:
                 path: zenario__layouts/panels/template_families
 zenario__modules:
-    ord: "999997"
+    ord: 999997
     css_class: zenario_cms_core_plugins
     label: Modules
     tooltip: Manage modules and their plugins
@@ -229,7 +229,7 @@ zenario__modules:
 zenario__languages:
     youtube_video_id: e-kjG0sgeTs
     youtube_thumbnail_title: 'Zenario CMS: Adding languages to a Zenario site'
-    ord: "999998"
+    ord: 999998
     priv: _PRIV_VIEW_LANGUAGE
     css_class: zenario_cms_core_languages
     label: International

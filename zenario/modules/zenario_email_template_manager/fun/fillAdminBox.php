@@ -31,6 +31,8 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 switch ($path) {
 	case 'zenario_email_template':
 		
+		$fields['meta_data/email_address_from_site_settings']['note_below'] = adminPhrase('Go to')." <a href='".absCMSDirURL()."zenario/admin/organizer.php?#zenario__administration/panels/site_settings//email' target='_blank'>".adminPhrase('Email site settings')."</a>";
+		
 		if ($box['key']['id']) {
 			$details = $this->getTemplateByCode($box['key']['id']);
 			
@@ -51,18 +53,35 @@ switch ($path) {
 			
 			$values['meta_data/template_name'] = $details['template_name'];
 			$values['meta_data/subject'] = $details['subject'];
+			$values['meta_data/from_details'] = $details['from_details'];
+			
+
+			
+			$values['meta_data/email_address_from_site_settings'] = setting('email_address_from');
+			$values['meta_data/email_name_from_site_settings'] = setting('email_name_from');
+			
+			
 			$values['meta_data/email_address_from'] = $details['email_address_from'];
 			$values['meta_data/email_name_from'] = $details['email_name_from'];
+			
+			
 			$values['meta_data/debug_override'] = $details['debug_override'];
 			$values['meta_data/debug_email_address'] = $details['debug_email_address'];
 			$values['meta_data/send_cc'] = $details['send_cc'];
 			$values['meta_data/cc_email_address'] = $details['cc_email_address'];
 			$values['meta_data/send_bcc'] = $details['send_bcc'];
 			$values['meta_data/bcc_email_address'] = $details['bcc_email_address'];
+			
 			$values['body/body'] = $details['body'];
 			$values['advanced/head'] = $details['head'];
+			
+			
 		
 		} else {
+			$values['meta_data/email_address_from_site_settings'] = setting('email_address_from');
+			$values['meta_data/email_name_from_site_settings'] = setting('email_name_from');
+			
+			
 			$values['meta_data/email_address_from'] = setting('email_address_from');
 			$values['meta_data/email_name_from'] = setting('email_name_from');
 		}
@@ -89,6 +108,32 @@ switch ($path) {
 				$values['email_name_from'] = $logRecord['email_name_from'];
 				
 				$box['tabs']['email']['fields']['email_body_non_escaped']['snippet']['html'] = $logRecord['email_body'];
+				
+				//Display a one-liner showing where the email came from
+				$mergeFields = array();
+				if (empty($logRecord['content_id'])) {
+					$mergeFields['content_item'] = adminPhrase('n/a');
+				} else {
+					$mergeFields['content_item'] = formatTag($logRecord['content_id'], $logRecord['content_type']);
+				}
+				if ($logRecord['module_id'] && ($module = getRow('modules', array('display_name'), $logRecord['module_id']))) {
+					$mergeFields['module'] = adminPhrase('"[[display_name]]" module', $module);
+				} else {
+					$mergeFields['module'] = adminPhrase('n/a');
+				}
+				if ($logRecord['instance_id'] && ($instance = getRow('plugin_instances', array('name'), $logRecord['instance_id']))) {
+					$mergeFields['plugin'] = adminPhrase('"[[display_name]]" plugin', $module);
+				} else {
+					$mergeFields['plugin'] = adminPhrase('n/a');
+				}
+				if (!isset($logRecord['attachment_present'])) {
+					$mergeFields['attachment'] = adminPhrase('n/a');
+				} elseif ($logRecord['attachment_present']) {
+					$mergeFields['attachment'] = adminPhrase('attachment');
+				} else {
+					$mergeFields['attachment'] = adminPhrase('no attachment');
+				}
+				$fields['email/sent_form_text']['snippet']['html'] = adminPhrase('Sent from: [[content_item]], [[module]], [[plugin]], [[attachment]]', $mergeFields);
 			}
 		}
 		break;

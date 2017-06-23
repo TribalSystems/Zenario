@@ -131,7 +131,7 @@ class zenario_common_features__admin_boxes__admin extends module_base_class {
 
 					//Don't let an Admin remove their own management rights.
 					if ($isCurrentAdmin && in($fieldName, 'perm_manage', 'perm_manage_permissions')) {
-						$field['read_only'] = true;
+						$field['readonly'] = true;
 					}
 				}
 			}

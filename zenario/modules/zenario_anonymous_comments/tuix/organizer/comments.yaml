@@ -1,6 +1,7 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
 zenario__social:
+    ord: -770
     css_class: zenario__social
     label: Social
     tooltip: Administer comments made by Extranet Users

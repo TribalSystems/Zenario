@@ -1942,22 +1942,6 @@ additionalProperties:
                                         Only show this button for items without any of the listed traits.
                                         
                                         Warning: this feature is deprecated!
-                                one_with_traits:
-                                    type: object
-                                    additionalProperties:
-                                        type: *variable
-                                    description: >
-                                        Only show this button if at least one of the selected items has all of the listed traits.
-                                        
-                                        Warning: this feature is deprecated!
-                                one_without_traits:
-                                    type: object
-                                    additionalProperties:
-                                        type: *variable
-                                    description: >
-                                        Only show this button if at least one of the selected items has none of the listed traits.
-                                        
-                                        Warning: this feature is deprecated!
                                 with_columns_set:
                                     type: object
                                     additionalProperties:

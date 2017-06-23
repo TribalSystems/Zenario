@@ -239,8 +239,8 @@ zenario__modules:
                 view_instances:
                     label: Module's plugins
                     parent: view_dropdown
-                    traits:
-                        is_pluggable: true
+                    with_columns_set:
+                        traits.is_pluggable: true
                     link:
                         path: zenario__modules/panels/plugins
                         branch: true
@@ -248,9 +248,9 @@ zenario__modules:
                 usage_layouts:
                     parent: view_dropdown
                     label: "Layouts with module's plugins"
-                    traits:
-                        is_pluggable: true
-                    hide_in_select_mode: true
+                    with_columns_set:
+                        traits.is_pluggable: true
+                    traits.hide_in_select_mode: true
                     link:
                         path: zenario__layouts/panels/layouts
                         branch: true
@@ -258,9 +258,9 @@ zenario__modules:
                 usage_item:
                     parent: view_dropdown
                     label: "Content items using this module's plugins"
-                    traits:
-                        is_pluggable: true
-                    hide_in_select_mode: true
+                    with_columns_set:
+                        traits.is_pluggable: true
+                    traits.hide_in_select_mode: true
                     link:
                         path: zenario__content/panels/content
                         branch: true
@@ -269,9 +269,9 @@ zenario__modules:
                     priv: _PRIV_VIEW_LANGUAGE
                     parent: view_dropdown
                     label: "Module's phrases"
-                    traits:
-                        uses_vlps: true
-                    hide_in_select_mode: true
+                    with_columns_set:
+                        traits.uses_vlps: true
+                    traits.hide_in_select_mode: true
                     link:
                         path: zenario__languages/panels/phrases
                         branch: true
@@ -280,8 +280,8 @@ zenario__modules:
                     parent: view_dropdown
                     label: "Module's frameworks"
                     hide_in_select_mode: true
-                    traits:
-                        is_pluggable: true
+                    with_columns_set:
+                        traits.is_pluggable: true
                     link:
                         path: zenario__modules/panels/modules/hidden_nav/view_frameworks/panel
                         branch: true
@@ -289,9 +289,9 @@ zenario__modules:
                 view_content_items:
                     parent: view_dropdown
                     label: Effective usage
-                    traits:
-                        is_pluggable: true
-                    hide_in_select_mode: true
+                    with_columns_set:
+                        traits.is_pluggable: true
+                    traits.hide_in_select_mode: true
                     link:
                         path: zenario__content/panels/content
                         branch: true
@@ -304,9 +304,9 @@ zenario__modules:
                     parent: action_dropdown
                     priv: _PRIV_SUSPEND_MODULE
                     label: Suspend module
-                    traits:
-                        module_running: true
-                    hide_in_select_mode: true
+                    with_columns_set:
+                        traits.module_running: true
+                    traits.hide_in_select_mode: true
                     ajax:
                         confirm:
                             message: 'Are you sure that you wish to suspend the module "[[display_name]]"?'
@@ -319,9 +319,9 @@ zenario__modules:
                     parent: action_dropdown
                     priv: _PRIV_RESET_MODULE
                     label: Uninitialise and delete data
-                    without_traits:
-                        module_running: true
-                        module_not_initialized: true
+                    without_columns_set:
+                        traits.module_running: true
+                        traits.module_not_initialized: true
                     hide_in_select_mode: true
                     ajax:
                         confirm:
@@ -333,8 +333,8 @@ zenario__modules:
                 remove:
                     priv: _PRIV_RESET_MODULE
                     label: Remove
-                    without_traits:
-                        code_present: true
+                    without_columns_set:
+                        traits.code_present: true
                     hide_in_select_mode: true
                     ajax:
                         confirm:
@@ -346,10 +346,10 @@ zenario__modules:
                 run:
                     priv: _PRIV_RUN_MODULE
                     label: Start module
-                    traits:
-                        code_present: true
-                    without_traits:
-                        module_running: true
+                    with_columns_set:
+                        traits.code_present: true
+                    without_columns_set:
+                        traits.module_running: true
                     hide_in_select_mode: true
                     admin_box:
                         path: zenario_setup_module

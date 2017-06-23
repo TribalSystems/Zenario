@@ -33,8 +33,8 @@ class zenario_plugin_nest extends module_base_class {
 	
 	protected $firstTab = false;
 	protected $lastTab = false;
-	protected $tabNum = false;
-	protected $tabId = false;
+	protected $slideNum = false;
+	protected $slideId = false;
 	protected $state = false;
 	protected $usesConductor = false;
 	protected $commands = array();
@@ -61,11 +61,11 @@ class zenario_plugin_nest extends module_base_class {
 	
 	protected $currentRequests = array();
 
-	public function getTabs() {
-		return $this->tabs;
+	public function getSlides() {
+		return $this->slides;
 	}
-	public function getTabNum() {
-		return $this->tabNum;
+	public function getSlideNum() {
+		return $this->slideNum;
 	}
 	
 	
@@ -83,18 +83,18 @@ class zenario_plugin_nest extends module_base_class {
 			$clearByContent = false, $clearByMenu = false, $clearByUser = false, $clearByFile = false, $clearByModuleData = false);
 		
 		if ($this->specificEgg()) {
-			$this->tabNum = ifNull(getRow('nested_plugins', 'tab', $this->specificEgg()), 1);
-			$this->tabId = getRow('nested_plugins', 'id', array('is_slide' => 1, 'tab' => $this->tabNum));
+			$this->slideNum = ifNull(getRow('nested_plugins', 'slide_num', $this->specificEgg()), 1);
+			$this->slideId = getRow('nested_plugins', 'id', array('is_slide' => 1, 'slide_num' => $this->slideNum));
 			$this->loadTabs();
 		
 		} else {
 		
 			if ($this->loadTabs()) {
 				
-				//Check to see if a tab or a state is requested in the URL
+				//Check to see if a slide or a state is requested in the URL
 				$lookForState =
-				$lookForTabId =
-				$lookForTabNo = 
+				$lookForSlideId =
+				$lookForSlideNum = 
 				$defaultState = false;
 				
 				if ($conductorEnabled
@@ -102,48 +102,45 @@ class zenario_plugin_nest extends module_base_class {
 				 && preg_match('/^[AB]?[A-Z]$/', $_REQUEST['state'])) {
 					$lookForState = $_REQUEST['state'];
 				
-				} elseif ($lookForTabId = (int) request('tab')) {
-				} elseif ($lookForTabNo = (int) request('tab_no')) {
+				} elseif ($lookForSlideId = (int) request('slideId')) {
+				} elseif ($lookForSlideNum = (int) request('slideNum')) {
 				}
 				
 				
 				$tabOrd = 0;
-				foreach ($this->tabs as $tab) {
+				foreach ($this->slides as $slide) {
 					++$tabOrd;
-					$this->lastTab = $tab['id'];
+					$this->lastTab = $slide['id'];
 					
-					//By default, show the first tab that the visitor can see...
+					//By default, show the first slide that the visitor can see...
 					if ($tabOrd == 1) {
-						$this->firstTab = $tab['id'];
-						$this->tabNum = $tab['tab'];
-						$this->tabId = $tab['id'];
-						$this->state = $tab['states'][0];
-						$defaultState = $tab['states'][0];
+						$this->firstSlide = $slide['id'];
+						$this->slideNum = $slide['slide_num'];
+						$this->slideId = $slide['id'];
+						$this->state = $slide['states'][0];
+						$defaultState = $slide['states'][0];
 					}
 					
 					//...but change this to the one mentioned in the request, if we see it
-					if ($lookForState && in_array($lookForState, $tab['states'])) {
-						$this->tabNum = $tab['tab'];
-						$this->tabId = $tab['id'];
+					if ($lookForState && in_array($lookForState, $slide['states'])) {
+						$this->slideNum = $slide['slide_num'];
+						$this->slideId = $slide['id'];
 						$this->state = $lookForState;
-						$defaultState = $tab['states'][0];
 					
-					} elseif ($lookForTabId == $tab['id']) {
-						$this->tabNum = $tab['tab'];
-						$this->tabId = $tab['id'];
-						$this->state = $tab['states'][0];
-						$defaultState = $tab['states'][0];
+					} elseif ($lookForSlideId == $slide['id']) {
+						$this->slideNum = $slide['slide_num'];
+						$this->slideId = $slide['id'];
+						$this->state = $slide['states'][0];
 					
-					} elseif ($lookForTabNo == $tab['tab']) {
-						$this->tabNum = $tab['tab'];
-						$this->tabId = $tab['id'];
-						$this->state = $tab['states'][0];
-						$defaultState = $tab['states'][0];
+					} elseif ($lookForSlideNum == $slide['slide_num']) {
+						$this->slideNum = $slide['slide_num'];
+						$this->slideId = $slide['id'];
+						$this->state = $slide['states'][0];
 					}
 					
-					$tabIds[$tab['tab']] = $tab['id'];
+					$tabIds[$slide['slide_num']] = $slide['id'];
 					
-					if (($this->checkFrameworkSectionExists($section = 'Tab_'. $tab['tab']))
+					if (($this->checkFrameworkSectionExists($section = 'Tab_'. $slide['slide_num']))
 					 || ($section = 'Tab')) {
 						
 						if (!isset($this->sections[$section])) {
@@ -153,73 +150,73 @@ class zenario_plugin_nest extends module_base_class {
 						$tabMergeFields = array(
 							'TAB_ORDINAL' => $tabOrd);
 						
-						if (!$tab['invisible_in_nav']) {
+						if (!$slide['invisible_in_nav']) {
 							$tabMergeFields['Class'] = 'tab_'. $tabOrd. ' tab';
-							$tabMergeFields['Tab_Link'] = $this->refreshPluginSlotTabAnchor('tab='. $tab['id'], false);
-							$tabMergeFields['Tab_Name'] = $this->formatTitleText($tab['name_or_title'], true);
+							$tabMergeFields['Tab_Link'] = $this->refreshPluginSlotTabAnchor('slideId='. $slide['id'], false);
+							$tabMergeFields['Tab_Name'] = $this->formatTitleText($slide['name_or_title'], true);
 						}
 						
 						if ($conductorEnabled) {
-							$tabMergeFields['Show_Back'] = (bool) $tab['show_back'];
-							$tabMergeFields['Show_Refresh'] = (bool) $tab['show_refresh'];
-							$tabMergeFields['Show_Auto_Refresh'] = (bool) $tab['show_auto_refresh'];
-							$tabMergeFields['Auto_Refresh_Interval'] = (int) $tab['auto_refresh_interval'];
+							$tabMergeFields['Show_Back'] = (bool) $slide['show_back'];
+							$tabMergeFields['Show_Refresh'] = (bool) $slide['show_refresh'];
+							$tabMergeFields['Show_Auto_Refresh'] = (bool) $slide['show_auto_refresh'];
+							$tabMergeFields['Auto_Refresh_Interval'] = (int) $slide['auto_refresh_interval'];
 							$tabMergeFields['Last_Updated'] = formatTimeNicely(time(), '%H:%i:%S');
 						}
 						
-						$this->sections[$section][$tab['tab']] = $tabMergeFields;
+						$this->sections[$section][$slide['slide_num']] = $tabMergeFields;
 					}
 				}
 				
-				if ((isset($this->sections[$section = 'Tab'][$this->tabNum]['Class']))
-				 || (isset($this->sections[$section = 'Tab_'. $this->tabNum][$this->tabNum]['Class']))) {
-					$this->sections[$section][$this->tabNum]['Class'] .= '_on';
+				if ((isset($this->sections[$section = 'Tab'][$this->slideNum]['Class']))
+				 || (isset($this->sections[$section = 'Tab_'. $this->slideNum][$this->slideNum]['Class']))) {
+					$this->sections[$section][$this->slideNum]['Class'] .= '_on';
 				}
 				
 				
-				$nextTabId = false;
-				if ($this->lastTab == $this->tabId) {
+				$nextSlideId = false;
+				if ($this->lastTab == $this->slideId) {
 					if (!$this->setting('next_prev_buttons_loop')) {
 						$this->mergeFields['Next_Disabled'] = '_disabled';
 					} else {
-						$nextTabId = $this->firstTab;
+						$nextSlideId = $this->firstSlide;
 					}
 				} else {
-					foreach ($this->tabs as $tabNum => $tab) {
-						if ($tabNum > $this->tabNum) {
-							$nextTabId = $tab['id'];
+					foreach ($this->slides as $slideNum => $slide) {
+						if ($slideNum > $this->slideNum) {
+							$nextSlideId = $slide['id'];
 							break;
 						}
 					}
 				}
 				
-				if ($nextTabId) {
-					$this->mergeFields['Next_Link'] = $this->refreshPluginSlotTabAnchor('tab='. $nextTabId, false);
+				if ($nextSlideId) {
+					$this->mergeFields['Next_Link'] = $this->refreshPluginSlotTabAnchor('slideId='. $nextSlideId, false);
 				}
 				
 				
-				$prevTabId = false;
-				if ($this->firstTab == $this->tabId) {
+				$prevSlideId = false;
+				if ($this->firstSlide == $this->slideId) {
 					if (!$this->setting('next_prev_buttons_loop')) {
 						$this->mergeFields['Prev_Disabled'] = '_disabled';
 					} else {
-						$prevTabId = $this->lastTab;
+						$prevSlideId = $this->lastTab;
 					}
 				} else {
-					foreach ($this->tabs as $tabNum => $tab) {
-						if ($tabNum >= $this->tabNum) {
+					foreach ($this->slides as $slideNum => $slide) {
+						if ($slideNum >= $this->slideNum) {
 							break;
 						} else {
-							$prevTabId = $tab['id'];
+							$prevSlideId = $slide['id'];
 						}
 					}
 				}
 				
-				if ($prevTabId) {
-					$this->mergeFields['Prev_Link'] = $this->refreshPluginSlotTabAnchor('tab='. $prevTabId, false);
+				if ($prevSlideId) {
+					$this->mergeFields['Prev_Link'] = $this->refreshPluginSlotTabAnchor('slideId='. $prevSlideId, false);
 				}
 				
-				$this->registerGetRequest('tab', $this->firstTab);
+				$this->registerGetRequest('slideId', $this->firstSlide);
 				$this->registerGetRequest('state', $defaultState);
 			}
 		}
@@ -229,23 +226,23 @@ class zenario_plugin_nest extends module_base_class {
 			
 			//Loop through each slide, checking if they have any states or global commands
 			$hadCommands = array();
-			foreach ($this->tabs as $tabNum => $tab) {
+			foreach ($this->slides as $slideNum => $slide) {
 				
 				//If a global command is set on a slide, it should point to the first state on that slide.
 				$first = true;
-				foreach ($tab['states'] as $state) {
+				foreach ($slide['states'] as $state) {
 					if ($state) {
 						if ($first) {
 							$first = false;
 						
 							//If this slide has a global command set, note it down
 							//N.b. if two slides have the same global command, then go to the slide with the lowest ordinal.
-							if (($command = $tab['global_command'])
+							if (($command = $slide['global_command'])
 							 && !isset($hadCommands[$command])) {
 								
 								//N.b. don't allow the link if we're already in that state...
 								if ($state != $this->state) {
-									$this->commands[$command] = [$state, $tab['request_vars']];
+									$this->commands[$command] = [$state, $slide['request_vars']];
 									$this->usesConductor = true;
 								}
 								
@@ -256,7 +253,7 @@ class zenario_plugin_nest extends module_base_class {
 					
 					
 						//Note down which states are on which slides
-						$this->statesToSlides[$state] = $tabNum;
+						$this->statesToSlides[$state] = $slideNum;
 					}
 				}
 			}
@@ -265,7 +262,7 @@ class zenario_plugin_nest extends module_base_class {
 			//Look through the nested paths that lead from this slide, and note each down
 			//as long as it leads to another slide that we can see.
 			$sql = "
-				SELECT to_state, commands
+				SELECT to_state, equiv_id, content_type, commands
 				FROM ". DB_NAME_PREFIX. "nested_paths
 				WHERE instance_id = ". (int) $this->instanceId. "
 				  AND from_state = '". sqlEscape($this->state). "'
@@ -273,13 +270,29 @@ class zenario_plugin_nest extends module_base_class {
 			
 			foreach (sqlFetchAssocs($sql) as $path) {
 				foreach (explodeAndTrim($path['commands']) as $command) {
-					if (isset($this->statesToSlides[$path['to_state']])) {
+					
+					//Handle links to other content items
+					if ($path['equiv_id']) {
 						
-						$tabNum = $this->statesToSlides[$path['to_state']];
+						$cID = $path['equiv_id'];
+						$cType = $path['content_type'];
+						langEquivalentItem($cID, $cType);
 						
 						$this->commands[$command] = [
 							$path['to_state'],
-							$this->tabs[$tabNum]['request_vars']
+							null,
+							$cID,
+							$cType
+						];
+					
+					//Handle links to other slides
+					} elseif (isset($this->statesToSlides[$path['to_state']])) {
+						
+						$slideNum = $this->statesToSlides[$path['to_state']];
+						
+						$this->commands[$command] = [
+							$path['to_state'],
+							$this->slides[$slideNum]['request_vars']
 						];
 					}
 					$this->usesConductor = true;
@@ -293,18 +306,18 @@ class zenario_plugin_nest extends module_base_class {
 				//(Though use a static variable to stop this happening twice if there are two nests on the same page.)
 				if (!self::$addedSubtitle) {
 					self::$addedSubtitle = true;
-					$this->setPageTitle(cms_core::$pageTitle. ': '. $this->formatTitleText($this->tabs[$this->tabNum]['name_or_title']));
+					$this->setPageTitle(cms_core::$pageTitle. ': '. $this->formatTitleText($this->slides[$this->slideNum]['name_or_title']));
 				}
 			}
 		}
 		
 		
 		//If all tabs were hidden, don't show anything
-		if ($this->tabNum !== false && $this->loadTab($this->tabNum)) {
+		if ($this->slideNum !== false && $this->loadTab($this->slideNum)) {
 			$this->show = true;
 		
 		//...except if no tabs exist, don't hide anything
-		} elseif (!checkRowExists('nested_plugins', array('instance_id' => $this->instanceId, 'is_slide' => 1)) && $this->loadTab($this->tabNum = 1)) {
+		} elseif (!checkRowExists('nested_plugins', array('instance_id' => $this->instanceId, 'is_slide' => 1)) && $this->loadTab($this->slideNum = 1)) {
 			$this->show = true;
 		}
 		
@@ -318,8 +331,8 @@ class zenario_plugin_nest extends module_base_class {
 			//Work out an array of the current requests, by looking in cms_core::$importantGetRequests
 			$this->currentRequests = array();
 			foreach(cms_core::$importantGetRequests as $var => $defaultValue) {
-				if (isset($_GET[$var])) {
-					$this->currentRequests[$var] = $_GET[$var];
+				if (isset($_REQUEST[$var])) {
+					$this->currentRequests[$var] = $_REQUEST[$var];
 				
 				} elseif (isset(cms_core::$vars[$var])) {
 					$this->currentRequests[$var] = cms_core::$vars[$var];
@@ -340,23 +353,21 @@ class zenario_plugin_nest extends module_base_class {
 		if ($this->usesConductor && $this->state) {
 		
 			if ($addCurrent) {
-				$backs[$this->state] = ['state' => $this->state, 'tab' => $this->tabs[$this->tabNum]];
+				$backs[$this->state] = ['state' => $this->state, 'slide' => $this->slides[$this->slideNum]];
 			}
 		
 		
 			$backToState = false;
-			if (!empty($this->commands['back'][0])) {
+			if (!empty($this->commands['back'][0])
+			 && empty($this->commands['back'][2])) {
 				$backToState = $this->commands['back'][0];
-		
-			} elseif (!empty($this->commands['close'][0])) {
-				$backToState = $this->commands['close'][0];
 			}
 		
 			while ($backToState
 			 && !isset($backs[$backToState])
 			 && isset($this->statesToSlides[$backToState])
 			) {
-				$backs[$backToState] = ['state' => $backToState, 'tab' => $this->tabs[$this->statesToSlides[$backToState]]];
+				$backs[$backToState] = ['state' => $backToState, 'slide' => $this->slides[$this->statesToSlides[$backToState]]];
 			
 				$backToState = sqlFetchValue("
 					SELECT to_state
@@ -385,7 +396,7 @@ class zenario_plugin_nest extends module_base_class {
 				}
 				
 				//Loop through each of the variables needed by the destination
-				foreach ($back['tab']['request_vars'] as $reqVar => $dummy) {
+				foreach ($back['slide']['request_vars'] as $reqVar => $dummy) {
 					//Check the settings on the destination to see if it needs that variable.
 					//If so then try to add it from the core variables.
 					if (empty($requests[$reqVar]) && !empty(cms_core::$vars[$reqVar])) {
@@ -394,8 +405,8 @@ class zenario_plugin_nest extends module_base_class {
 				}
 			
 				$requests['state'] = $back['state'];
-				unset($requests['tab']);
-				unset($requests['tab_no']);
+				unset($requests['slideId']);
+				unset($requests['slideNum']);
 				$back['requests'] = $requests;
 			}
 		}
@@ -445,14 +456,14 @@ class zenario_plugin_nest extends module_base_class {
 	
 	public function showSlot() {
 		
-		$this->mergeFields['TAB_ORDINAL'] = $this->tabNum;
+		$this->mergeFields['TAB_ORDINAL'] = $this->slideNum;
 		
 		//Show a single plugin in the nest
 		if ($this->checkShowInFloatingBoxVar()) {
 			if ($this->show) {
 				
 				$ord = 0;
-				foreach ($this->modules[$this->tabNum] as $id => $slotNameNestId) {
+				foreach ($this->modules[$this->slideNum] as $id => $slotNameNestId) {
 					$this->mergeFields['PLUGIN_ORDINAL'] = ++$ord;
 					
 					if (!empty(cms_core::$slotContents[$slotNameNestId]['class'])) {
@@ -463,12 +474,12 @@ class zenario_plugin_nest extends module_base_class {
 				}
 			}
 		
-		//Show all of the plugins on this tab
+		//Show all of the plugins on this slideId
 		} elseif ($this->zAPIFrameworkIsTwig) {
 			$this->mergeFields['Tabs'] = $this->sections['Tab'];
 			
 			if ($this->show) {
-				$this->mergeFields['Tabs'][$this->tabNum]['Plugins'] = $this->modules[$this->tabNum];
+				$this->mergeFields['Tabs'][$this->slideNum]['Plugins'] = $this->modules[$this->slideNum];
 			}
 			$this->twigFramework($this->mergeFields);
 		
@@ -497,7 +508,7 @@ class zenario_plugin_nest extends module_base_class {
 		
 			if ($this->show) {
 				$ord = 0;
-				foreach ($this->modules[$this->tabNum] as $id => $slotNameNestId) {
+				foreach ($this->modules[$this->slideNum] as $id => $slotNameNestId) {
 					$this->mergeFields['PLUGIN_ORDINAL'] = ++$ord;
 				
 					$this->showPlugin($slotNameNestId);
@@ -524,14 +535,14 @@ class zenario_plugin_nest extends module_base_class {
 		$sql = "
 			SELECT
 				id, id AS slide_id,
-				tab, name_or_title,
+				slide_num, name_or_title,
 				states, show_back, show_refresh, show_auto_refresh, auto_refresh_interval, request_vars, global_command,
 				invisible_in_nav,
 				privacy, smart_group_id, module_class_name, method_name, param_1, param_2, always_visible_to_admins
 			FROM ". DB_NAME_PREFIX. "nested_plugins
 			WHERE instance_id = ". (int) $this->instanceId. "
 			  AND is_slide = 1
-			ORDER BY tab";
+			ORDER BY slide_num";
 		
 		$result = sqlQuery($sql);
 		$sqlNumRows = sqlNumRows($result);
@@ -553,13 +564,13 @@ class zenario_plugin_nest extends module_base_class {
 				$row['states'] = explode(',', $row['states']);
 				$row['request_vars'] = arrayValuesToKeys(explodeAndTrim($row['request_vars']));
 				
-				$this->tabs[$row['tab']] = $row;
+				$this->slides[$row['slide_num']] = $row;
 			}
 			
 			
 			$this->mergeFields['Nest'] = '';
 			
-			$this->removeHiddenTabs($this->tabs, $this->cID, $this->cType, $this->cVersion, $this->instanceId);
+			$this->removeHiddenTabs($this->slides, $this->cID, $this->cType, $this->cVersion, $this->instanceId);
 			
 			
 			if ($this->setting('banner_canvas')
@@ -577,18 +588,18 @@ class zenario_plugin_nest extends module_base_class {
 			}
 			
 			
-			return !empty($this->tabs);
+			return !empty($this->slides);
 		}
 	}
 	
-	protected function loadTab($tabNum) {
+	protected function loadTab($slideNum) {
 		
 		$sql = "
-			SELECT np.id, np.tab, np.ord, np.module_id, np.framework, np.css_class, np.cols, np.small_screens
+			SELECT np.id, np.slide_num, np.ord, np.module_id, np.framework, np.css_class, np.cols, np.small_screens
 			FROM ". DB_NAME_PREFIX. "nested_plugins AS np
 			WHERE np.instance_id = ". (int) $this->instanceId. "
 			  AND np.is_slide = 0
-			  AND np.tab = ". (int) $tabNum;
+			  AND np.slide_num = ". (int) $slideNum;
 		
 		if ($this->specificEgg()) {
 			$sql .= "
@@ -598,7 +609,7 @@ class zenario_plugin_nest extends module_base_class {
 		$sql .= "
 			ORDER BY np.ord";
 		
-		$this->modules[$tabNum] = array();
+		$this->modules[$slideNum] = array();
 		$lastSlotNameNestId = false;
 		
 		$result = sqlQuery($sql);
@@ -611,13 +622,13 @@ class zenario_plugin_nest extends module_base_class {
 				$eggId = $row['id'];
 				$baseCSSName = $details['css_class_name'];
 				
-				$this->modules[$tabNum][$eggId] = $slotNameNestId = $this->slotName. '-'. $eggId;
+				$this->modules[$slideNum][$eggId] = $slotNameNestId = $this->slotName. '-'. $eggId;
 				
 				cms_core::$slotContents[$slotNameNestId] = $details;
 				cms_core::$slotContents[$slotNameNestId]['instance_id'] = $this->instanceId;
 				cms_core::$slotContents[$slotNameNestId]['egg_id'] = $eggId;
 				cms_core::$slotContents[$slotNameNestId]['egg_ord'] = $row['ord'];
-				cms_core::$slotContents[$slotNameNestId]['slide_num'] = $tabNum;
+				cms_core::$slotContents[$slotNameNestId]['slide_num'] = $slideNum;
 				cms_core::$slotContents[$slotNameNestId]['framework'] = ifNull($row['framework'], $details['default_framework']);
 				cms_core::$slotContents[$slotNameNestId]['css_class'] = $details['css_class_name'];
 				
@@ -635,7 +646,7 @@ class zenario_plugin_nest extends module_base_class {
 						cms_core::$slotContents[$slotNameNestId]['css_class'] .=
 							' '. cms_core::$cType. '_'. cms_core::$cID. '_'. $this->slotName.
 							'_'. $baseCSSName.
-							'_'. $row['tab']. '_'. $row['ord'];
+							'_'. $row['slide_num']. '_'. $row['ord'];
 					}
 				} else {
 					cms_core::$slotContents[$slotNameNestId]['css_class'] .=
@@ -709,9 +720,9 @@ class zenario_plugin_nest extends module_base_class {
 		$showInMenuMode =
 		$shownInEditMode =
 		$addedJavaScript = false;
-		foreach ($this->modules[$tabNum] as $id => $slotNameNestId) {
+		foreach ($this->modules[$slideNum] as $id => $slotNameNestId) {
 			cms_core::$slotContents[$slotNameNestId]['instance_id'] = $this->instanceId;
-			setInstance(cms_core::$slotContents[$slotNameNestId], $this->cID, $this->cType, $this->cVersion, $this->slotName, true, false, $id, $this->tabId);
+			setInstance(cms_core::$slotContents[$slotNameNestId], $this->cID, $this->cType, $this->cVersion, $this->slotName, true, false, $id, $this->slideId);
 			
 			if (initPluginInstance(cms_core::$slotContents[$slotNameNestId])) {
 				
@@ -733,7 +744,7 @@ class zenario_plugin_nest extends module_base_class {
 			if (checkPriv() && !empty(cms_core::$slotContents[$slotNameNestId]['class'])) {
 				if (!$beingEdited) {
 					if ($beingEdited = cms_core::$slotContents[$slotNameNestId]['class']->beingEdited()) {
-						$this->editingTabNum = $tabNum;
+						$this->editingTabNum = $slideNum;
 					}
 				}
 				if (!$showInMenuMode) {
@@ -746,7 +757,7 @@ class zenario_plugin_nest extends module_base_class {
 		}
 		
 		//Add any Plugin JavaScript calls
-		foreach ($this->modules[$tabNum] as $id => $slotNameNestId) {
+		foreach ($this->modules[$slideNum] as $id => $slotNameNestId) {
 			if (!empty(cms_core::$slotContents[$slotNameNestId]['class'])) {
 				//Check to see if any Eggs want to scroll to the top of the slot
 				$scrollToTop = cms_core::$slotContents[$slotNameNestId]['class']->checkScrollToTopVar();
@@ -764,7 +775,7 @@ class zenario_plugin_nest extends module_base_class {
 		//If an Egg wanted to show themselves in a Floating Box, hide the ones that didn't want this.
 		if ($this->checkShowInFloatingBoxVar()) {
 			$unsets = array();
-			foreach ($this->modules[$tabNum] as $id => $slotNameNestId) {
+			foreach ($this->modules[$slideNum] as $id => $slotNameNestId) {
 				if (!empty(cms_core::$slotContents[$slotNameNestId]['class'])) {
 					if (!cms_core::$slotContents[$slotNameNestId]['class']->checkShowInFloatingBoxVar()) {
 						unset(cms_core::$slotContents[$slotNameNestId]);
@@ -773,7 +784,7 @@ class zenario_plugin_nest extends module_base_class {
 				}
 			}
 			foreach ($unsets as $id) {
-				unset($this->modules[$tabNum][$id]);
+				unset($this->modules[$slideNum][$id]);
 			}
 		}
 		
@@ -993,7 +1004,7 @@ class zenario_plugin_nest extends module_base_class {
 		return false;
 	}
 	
-	//Version of refreshPluginSlotAnchor, that doesn't automatically set the tab id
+	//Version of refreshPluginSlotAnchor, that doesn't automatically set the slide id
 	public function refreshPluginSlotTabAnchor($requests = '', $scrollToTopOfSlot = true, $fadeOutAndIn = false) {
 		return
 			$this->linkToItemAnchor($this->cID, $this->cType, $fullPath = false, '&slotName='. $this->slotName. urlRequest($requests)).
@@ -1049,10 +1060,16 @@ class zenario_plugin_nest extends module_base_class {
 		}
 	}
 	
+	public function returnGlobalName() {
+		if ($class = $this->getSpecificEgg($class)) {
+			return $class->returnGlobalName();
+		}
+	}
+	
 	protected function getSpecificEgg(&$class) {
 		if ($this->show
 		 && ($eggId = $this->specificEgg())
-		 && ($slotNameNestId = arrayKey($this->modules[$this->tabNum], $eggId))
+		 && ($slotNameNestId = arrayKey($this->modules[$this->slideNum], $eggId))
 		 && (!empty(cms_core::$slotContents[$slotNameNestId]['init']))) {
 			return cms_core::$slotContents[$slotNameNestId]['class'];
 		}
@@ -1143,59 +1160,59 @@ class zenario_plugin_nest extends module_base_class {
 		return require funIncPath(__FILE__, __FUNCTION__);
 	}
 	
-	protected function removeTabConfirm($eggIds, $instanceId) {
+	protected function removeSlideConfirm($eggIds, $instanceId) {
 		return require funIncPath(__FILE__, __FUNCTION__);
 	}
 	
 	
-	protected static function addPluginInstance($addPluginInstance, $instanceId, $tab = false, $tabIsTabId = false) {
+	protected static function addPluginInstance($addPluginInstance, $instanceId, $slideNum = false, $inputIsSlideId = false) {
 		return require funIncPath(__FILE__, __FUNCTION__);
 	}
 	
 	
-	protected static function addPlugin($addPlugin, $instanceId, $tab = false, $displayName = false, $tabIsTabId = false) {
+	protected static function addPlugin($addPlugin, $instanceId, $slideNum = false, $displayName = false, $inputIsSlideId = false) {
 		return require funIncPath(__FILE__, __FUNCTION__);
 	}
 	
-	protected static function addBanner($imageId, $instanceId, $tab = false, $tabIsTabId = false) {
+	protected static function addBanner($imageId, $instanceId, $slideNum = false, $inputIsSlideId = false) {
 		return require funIncPath(__FILE__, __FUNCTION__);
 	}
 	
-	protected static function addTwigSnippet($moduleClassName, $snippetName, $instanceId, $tab = false, $tabIsTabId = false) {
+	protected static function addTwigSnippet($moduleClassName, $snippetName, $instanceId, $slideNum = false, $inputIsSlideId = false) {
 		return require funIncPath(__FILE__, __FUNCTION__);
 	}
 	
-	//Create a new, empty tab at the end of the nest
-	protected static function addTab($instanceId, $title = false, $tabNo = false) {
+	//Create a new, empty slide at the end of the nest
+	public static function addSlide($instanceId, $title = false, $slideNum = false) {
 		
-		if ($tabNo === false) {
-			$tabNo = 1 + (int) self::maxTab($instanceId);
+		if ($slideNum === false) {
+			$slideNum = 1 + (int) self::maxTab($instanceId);
 		}
 		
 		if ($title === false) {
-			$title = adminPhrase('Slide [[num]]', array('num' => $tabNo));
+			$title = adminPhrase('Slide [[num]]', array('num' => $slideNum));
 		}
 		
 		return insertRow(
 			'nested_plugins',
 			array(
 				'instance_id' => $instanceId,
-				'tab' => $tabNo,
+				'slide_num' => $slideNum,
 				'ord' => 0,
 				'module_id' => 0,
 				'is_slide' => 1,
 				'name_or_title' => $title));
 	}
 	
-	public static function duplicatePlugin($nestedItemId, $instanceId) {
+	public static function duplicatePlugin($eggId, $instanceId) {
 		return require funIncPath(__FILE__, __FUNCTION__);
 	}
 	
-	public static function removePlugin($className, $nestedItemId, $instanceId) {
+	public static function removePlugin($className, $eggId, $instanceId) {
 		require funIncPath(__FILE__, __FUNCTION__);
 	}
 	
-	protected function removeTab($className, $nestedItemId, $instanceId) {
+	protected function removeSlide($className, $eggId, $instanceId) {
 		require funIncPath(__FILE__, __FUNCTION__);
 	}
 	
@@ -1211,26 +1228,20 @@ class zenario_plugin_nest extends module_base_class {
 	
 	
 	protected static function maxTab($instanceId) {
-		$sql = "
-			SELECT MAX(tab) AS tab
+		return sqlFetchValue("
+			SELECT MAX(slide_num) AS slide_num
 			FROM ". DB_NAME_PREFIX. "nested_plugins
 			WHERE is_slide = 1
-			  AND instance_id = ". (int) $instanceId;
-		$result = sqlQuery($sql);
-		$row = sqlFetchAssoc($result);
-		return arrayKey($row, 'tab');
+			  AND instance_id = ". (int) $instanceId);
 	}
 	
-	protected static function maxOrd($instanceId, $tab) {
-		$sql = "
+	protected static function maxOrd($instanceId, $slideNum) {
+		return sqlFetchValue("
 			SELECT MAX(ord) AS ord
 			FROM ". DB_NAME_PREFIX. "nested_plugins
-			WHERE tab = ". (int) $tab. "
+			WHERE slide_num = ". (int) $slideNum. "
 			  AND is_slide = 0
-			  AND instance_id = ". (int) $instanceId;
-		$result = sqlQuery($sql);
-		$row = sqlFetchAssoc($result);
-		return arrayKey($row, 'ord');
+			  AND instance_id = ". (int) $instanceId);
 	}
 	
 	
@@ -1239,17 +1250,17 @@ class zenario_plugin_nest extends module_base_class {
 	protected function removeHiddenTabs(&$tabs, $cID, $cType, $cVersion, $instanceId) {
 		
 		$unsets = array();
-		foreach ($tabs as $tabNum => $tab) {
-			if (!($tab['always_visible_to_admins'] && checkPriv())) {
+		foreach ($tabs as $slideNum => $slide) {
+			if (!($slide['always_visible_to_admins'] && checkPriv())) {
 				
-				switch ($tab['privacy']) {
+				switch ($slide['privacy']) {
 					case 'call_static_method':
 					case 'send_signal':
 						$this->allowCaching(false);
 				}
 				
-				if (!checkItemPrivacy($tab, $tab, cms_core::$cID, cms_core::$cType, cms_core::$cVersion)) {
-					$unsets[] = $tabNum;
+				if (!checkItemPrivacy($slide, $slide, cms_core::$cID, cms_core::$cType, cms_core::$cVersion)) {
+					$unsets[] = $slideNum;
 				}
 			}
 		}
@@ -1272,7 +1283,9 @@ class zenario_plugin_nest extends module_base_class {
 	public function cLink($command, $requests = array()) {
 		if (empty($this->commands[$command][0])) {
 			return false;
-		} else {
+		
+		//Handle links to other slides
+		} elseif (empty($this->commands[$command][2])) {
 			
 			//Loop through each of the variables needed by the destination
 			foreach ($this->commands[$command][1] as $reqVar => $dummy) {
@@ -1284,13 +1297,28 @@ class zenario_plugin_nest extends module_base_class {
 			}
 			
 			$requests['state'] = $this->commands[$command][0];
-			unset($requests['tab']);
-			unset($requests['tab_no']);
+			unset($requests['slideId']);
+			unset($requests['slideNum']);
 			
 			//If we're generating a link to the current state, keep all of the registered get requests
 			$autoAddImportantRequests = $requests['state'] == $this->state;
 			
 			return linkToItem(cms_core::$cID, cms_core::$cType, false, $requests, cms_core::$alias, $autoAddImportantRequests);
+		
+		//Handle links to other content items
+		} else {
+			//Set the state or slide that we're linking to
+			unset($requests['state']);
+			unset($requests['slideId']);
+			unset($requests['slideNum']);
+			
+			if (is_numeric($this->commands[$command][0])) {
+				$requests['slideNum'] = $this->commands[$command][0];
+			} else {
+				$requests['state'] = $this->commands[$command][0];
+			}
+			
+			return linkToItem($this->commands[$command][2], $this->commands[$command][3], false, $requests);
 		}
 	}
 	
@@ -1298,16 +1326,23 @@ class zenario_plugin_nest extends module_base_class {
 		return $this->cLink($this->cCommandEnabled('back')? 'back' : 'close');
 	}
 	
-	protected static function deletePath($instanceId, $from, $to = false) {
+	protected static function deletePath($instanceId, $fromState, $toState = false, $equivId = 0, $contentType = '') {
 		
 		//If a from & to are both specified, delete that specific path
-		if ($to) {
-			deleteRow('nested_paths', array('instance_id' => $instanceId, 'from_state' => $from, 'to_state' => $to));
+		if ($toState) {
+			deleteRow('nested_paths', array('instance_id' => $instanceId, 'from_state' => $fromState, 'to_state' => $toState, 'equiv_id' => $equivId, 'content_type' => $contentType));
 		
 		//If just one state is specified, delete all paths from and to that state
 		} else {
-			deleteRow('nested_paths', array('instance_id' => $instanceId, 'from_state' => $from));
-			deleteRow('nested_paths', array('instance_id' => $instanceId, 'to_state' => $from));
+			if (!$equivId) {
+				$equivId = 0;
+			}
+			if (!$contentType) {
+				$contentType = '';
+			}
+			
+			deleteRow('nested_paths', array('instance_id' => $instanceId, 'from_state' => $fromState));
+			deleteRow('nested_paths', array('instance_id' => $instanceId, 'to_state' => $fromState));
 		}
 		
 	}

@@ -262,6 +262,10 @@ minify('zenario/libraries/mit/colorbox/', 'jquery.colorbox', $level, '.js');
 minify('zenario/libraries/bsd/tokenize/', 'jquery.tokenize', $level, '.css');
 minify('zenario/libraries/bsd/tokenize/', 'jquery.tokenize', $level, '.js');
 
+//Minify chosen
+minify('zenario/libraries/mit/chosen/', 'chosen', $level, '.css');
+minify('zenario/libraries/mit/chosen/', 'chosen.jquery', $level, '.js');
+
 //Minify enquire.js
 minify('zenario/libraries/mit/enquire/', 'enquire', $level, '.js');
 

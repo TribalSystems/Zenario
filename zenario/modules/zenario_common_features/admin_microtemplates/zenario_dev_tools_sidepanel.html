@@ -30,7 +30,7 @@
 		<% for (var prop in m.object.schema.properties) { %>
 			
 			<% var mTooltip = {data: m.object.data[prop], isRequired: m.object.requiredProperties[prop], schema: m.object.schema.properties[prop], tag: prop}; %>
-			<% var tooltip = zenarioA.microTemplate('zenario_dev_tools_tooltip', mTooltip); %>
+			<% var tooltip = zenarioT.microTemplate('zenario_dev_tools_tooltip', mTooltip); %>
 			
 			<% if (mTooltip.data === undefined) { %>
 				<% if (mTooltip.isRequired) { %>

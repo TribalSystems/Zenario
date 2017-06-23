@@ -29,10 +29,10 @@ zenario.lib(function(
 	undefined,
 	URLBasePath,
 	document, window, windowOpener, windowParent,
-	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO, strings,
+	zenario, zenarioA, zenarioT, zenarioAB, zenarioAT, zenarioO,
 	encodeURIComponent, get, engToBoolean, htmlspecialchars, jsEscape, phrase,
 	extensionOf, methodsOf, has,
-	zenario_anonymous_comments
+	zenario_anonymous_comments, extraVar2, s$s
 ) {
 	"use strict";
 
@@ -43,7 +43,7 @@ zenario_anonymous_comments.load = function(editorId, enableImages, enableLinks) 
 		toolbarGap = ' | ',
 		toolbar,
 		toolbarLeft = 'bold italic underline strikethrough style-code | removeformat',
-		toolbarRight = 'style-p style-pre blockquote | numlist bullist | outdent indent',
+		toolbarRight = 'style-p style-pre | numlist bullist | blockquote outdent indent',
 		plugins = 'lists paste autoresize stylebuttons',
 		fixed_toolbar_container = '#toolbar_container_for_' + editorId,
 		editorPhrases, options;

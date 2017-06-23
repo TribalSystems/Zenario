@@ -121,16 +121,27 @@ class zenario_plugin_nest__organizer__conductor extends zenario_plugin_nest__org
 		}
 	}
 	
+	protected static function ensureEachSlideHasAtLeastOneState($instanceId) {
+		//Look for slides with no states created, and make sure that they have at least one state each
+		foreach (getRowsArray('nested_plugins', 'id', array('instance_id' => $instanceId, 'is_slide' => 1, 'states' => ''), 'slide_num') as $slideId) {
+			static::addStateToSlide($instanceId, $slideId);
+		}
+	}
+	
 	protected static function addPath($instanceId, $from, $to) {
 		if ($from != $to) {
 			setRow('nested_paths', array(), array('instance_id' => $instanceId, 'from_state' => $from, 'to_state' => $to));
 		}
 	}
 	
-	protected static function redirectPath($instanceId, $from, $oldTo, $newTo) {
+	protected static function redirectPath(
+		$instanceId, $fromState,
+		$oldToState, $oldEquivId = 0, $oldContentType = '',
+		$newToState, $newEquivId = 0, $newContentType = ''
+	) {
 		updateRow('nested_paths',
-			array('to_state' => $newTo),
-			array('instance_id' => $instanceId, 'from_state' => $from, 'to_state' => $oldTo),
+			array('to_state' => $newToState, 'equiv_id' => $newEquivId, 'content_type' => $newContentType),
+			array('instance_id' => $instanceId, 'from_state' => $fromState, 'to_state' => $oldToState, 'equiv_id' => $oldEquivId, 'content_type' => $oldContentType),
 			$ignore = true);
 	}
 	
@@ -144,31 +155,51 @@ class zenario_plugin_nest__organizer__conductor extends zenario_plugin_nest__org
 		$this->setTitleAndCheckPermissions($path, $panel, $refinerName, $refinerId, $mode, $instance);
 		
 		//Look for slides with no states created, and make sure that they have at least one state each
-		foreach (getRowsArray('nested_plugins', 'id', array('instance_id' => $instance['instance_id'], 'is_slide' => 1, 'states' => ''), 'tab') as $slideId) {
-			static::addStateToSlide($instance['instance_id'], $slideId);
-		}
+		static::ensureEachSlideHasAtLeastOneState($instance['instance_id']);
 		
 		
 		//Get all of the existing slides and states
 		$coloursForStates = array();
-		$slides = getRowsArray('nested_plugins', array('id', 'tab', 'name_or_title', 'states'), array('instance_id' => $instance['instance_id'], 'is_slide' => 1));
+		$slides = getRowsArray('nested_plugins', array('id', 'slide_num', 'name_or_title', 'states'), array('instance_id' => $instance['instance_id'], 'is_slide' => 1));
 		
-		if (count($slides) < 2) {
-			$panel['no_items_message'] = adminPhrase('Please add at least two slides to this nest to use the nest conductor.');
+		if (count($slides) < 1) {
+			$panel['no_items_message'] = adminPhrase('Please add at least one slide to this nest to use the nest conductor.');
 		
 		} else {
+			
+			$statesToSlideIds = [];
+			foreach ($slides as $slideId => $slide) {
+				$states = explodeAndTrim($slide['states']);
+				foreach ($states as $state) {
+					$statesToSlideIds[$state] = $slideId;
+				}
+			}
+			
+			
 			//Start adding elements for each slide, state and path
 			$ord = 100;
 			foreach ($slides as $slide) {
+			
+				$states = explodeAndTrim($slide['states']);
+				$multipleStates = count($states) > 1;
+				
 				$id = 'slide_'. $slide['id'];
 				$panel['items'][$id] = array(
 					'id' => $id,
 					'type' => 'slide',
-					'label' => $slide['name_or_title']
+					'label' => $slide['name_or_title'],
+					'key' => [
+						'state' => $multipleStates? '' : $states[0],
+						'slideId' => $slide['id']
+					]
 				);
-			
-				$states = explodeAndTrim($slide['states']);
-				$canDelete = count($states) > 1;
+				
+				if ($multipleStates) {
+					$panel['items'][$id]['selected_label'] = adminPhrase('Slide [[slide_num]]', $slide);
+				} else {
+					//If there's only one state, make the slide (grey square) unselectable
+					$panel['items'][$id]['unselectable'] = true;
+				}
 			
 				foreach ($states as $state) {
 					
@@ -176,42 +207,53 @@ class zenario_plugin_nest__organizer__conductor extends zenario_plugin_nest__org
 					$panel['items'][$stateId] = array(
 						'id' => $stateId,
 						'type' => 'state',
-						'label' => $state,
+						'label' => $multipleStates? $slide['slide_num']. $state : $slide['slide_num'],
 						'parent' => $id,
 						'color' => $coloursForStates[$state] = self::getAColour(),
-						'can_delete' => $canDelete
+						'can_delete' => $multipleStates,
+						'key' => [
+							'state' => $state,
+							'slideId' => $slide['id']
+						]
 					);
+					
+					$slide['state'] = $state;
+					if ($multipleStates) {
+						$panel['items'][$stateId]['selected_label'] = adminPhrase('Slide [[slide_num]], state [[state]]', $slide);
+					} else {
+						$panel['items'][$stateId]['selected_label'] = adminPhrase('Slide [[slide_num]]', $slide);
+					}
 					
 					
 					//Add item buttons for adding and moving paths to each state
-					$mrg = array('state' => $state, 'name_or_title' => $slide['name_or_title']);
+					if ($multipleStates) {
+						$label = adminPhrase('[[slide_num]][[state]]. [[name_or_title]]', $slide);
+					} else {
+						$label = adminPhrase('[[slide_num]]. [[name_or_title]]', $slide);
+					}
+					
 					$panel['item_buttons']['add_path_'. $state] = array(
 						'ord' => ++$ord,
 						'only_show_on_refiner' => 'nest',
 						'parent' => 'add_path',
-						'label' => adminPhrase('"[[name_or_title]]", state [[state]]', $mrg),
+						'label' => $label,
 						'visible_if' => '
-	                        item.type == "state"
-						 && item.id != '. json_encode($stateId). '
-						 && !tuix.items["path_" + item.id.replace(/state_/, "") + "_" + '. json_encode($state). ']',
+	                        item.key
+	                     && item.key.state
+						 && item.key.state != '. json_encode($state). '
+						 && !tuix.items["path_" + item.key.state + "_" + '. json_encode($state). ']',
 						'admin_box' => array(
 							'path' => 'zenario_path',
 							'key' => array(
 								'to_state' => $state
 							)
 						)
-						//'ajax' => array(
-						//	'class_name' => $c,
-						//	'request' => array(
-						//		'add_path' => $state
-						//	)
-						//)
 					);
 					$panel['item_buttons']['redirect_path_'. $state] = array(
 						'ord' => ++$ord,
 						'only_show_on_refiner' => 'nest',
 						'parent' => 'redirect_path',
-						'label' => adminPhrase('"[[name_or_title]]", state [[state]]', $mrg),
+						'label' => $label,
 						'visible_if' => '
 							item.type == "path"
 						 && item.source != '. json_encode($stateId). '
@@ -226,12 +268,71 @@ class zenario_plugin_nest__organizer__conductor extends zenario_plugin_nest__org
 					
 					
 					//Get all of the existing paths from this state
-					$paths = getRowsArray('nested_paths',
-						array('from_state', 'to_state', 'commands'),
-						array('instance_id' => $instance['instance_id'], 'from_state' => $state));
+					$paths = getRowsArray('nested_paths', true, ['instance_id' => $instance['instance_id'], 'from_state' => $state]);
 					
 					foreach ($paths as $edge) {
 						$pathId = 'path_'. $edge['from_state']. '_'. $edge['to_state'];
+						
+						if ($multipleStates) {
+							$selected_label = adminPhrase('path from [[slide_num]][[state]]', $slide);
+						} else {
+							$selected_label = adminPhrase('path from [[slide_num]]', $slide);
+						}
+						
+						//Check if this is a link to another content item
+						if ($edge['equiv_id']) {
+							$tagId = $edge['equiv_id']. '_'. $edge['content_type'];
+							$pathId .= '_'. $tagId;
+							$citemId = 'slide_'. $tagId;
+							$citemStateId = 'state_'. $edge['to_state']. '_'. $tagId;
+							
+							$formatedTag = formatTag($edge['equiv_id'], $edge['content_type'], -1, false, true);
+							
+							//Add a box for that content item, if it doesn't already have one
+							if (!isset($panel['items'][$citemId])) {
+								$panel['items'][$citemId] = array(
+									'id' => $citemId,
+									'type' => 'slide',
+									'label' => $formatedTag,
+									'unselectable' => true
+								);
+							}
+							//Add this state into the box, if it's not already there
+							if (!isset($panel['items'][$citemStateId])) {
+								$panel['items'][$citemStateId] = array(
+									'id' => $citemStateId,
+									'type' => 'state',
+									'label' => $edge['to_state'],
+									'parent' => $citemId,
+									'color' => $coloursForStates[$citemStateId] = self::getAColour(),
+									'can_delete' => false,
+									'unselectable' => true
+								);
+							}
+							
+							$target = $citemStateId;
+							$colour = $coloursForStates[$citemStateId];
+							
+							$selected_label .= adminPhrase(' to [[tag]]', ['tag' => $formatedTag]);
+						
+						} else {
+							$target = 'state_'. $edge['to_state'];
+							$colour = $coloursForStates[$edge['from_state']];
+							
+							if (isset($statesToSlideIds[$edge['to_state']])
+							 && isset($slides[$statesToSlideIds[$edge['to_state']]])) {
+								$targetSlide = $slides[$statesToSlideIds[$edge['to_state']]];
+								
+								if (false !== strpos($targetSlide['states'], ',')) {
+									$targetSlide['state'] = $edge['to_state'];
+									$selected_label .= adminPhrase(' to [[slide_num]][[state]]', $targetSlide);
+								} else {
+									$selected_label .= adminPhrase(' to [[slide_num]]', $targetSlide);
+								}
+							} else {
+								$selected_label .= adminPhrase('');
+							}
+						}
 				
 						$cssClasses = '';
 						$commands = explodeAndTrim($edge['commands']);
@@ -249,8 +350,9 @@ class zenario_plugin_nest__organizer__conductor extends zenario_plugin_nest__org
 							'from_state' => $edge['from_state'],
 							'to_state' => $edge['to_state'],
 							'source' => 'state_'. $edge['from_state'],
-							'target' => 'state_'. $edge['to_state'],
-							'color' => $coloursForStates[$edge['from_state']],
+							'target' => $target,
+							'color' => $colour,
+							'selected_label' => $selected_label
 						);
 					}
 				}
@@ -269,18 +371,18 @@ class zenario_plugin_nest__organizer__conductor extends zenario_plugin_nest__org
 		
 		
 		if (post('add_state') && checkPriv()) {
-			static::addStateToSlide($instance['instance_id'], chopPrefixOffString('slide_', $ids));
+			static::addStateToSlide($instance['instance_id'], post('slideId'));
 		
 		} elseif (post('delete_state') && checkPriv()) {
-			static::removeStateFromSlide($instance['instance_id'], chopPrefixOffString('state_', $ids));
+			static::removeStateFromSlide($instance['instance_id'], post('state'));
 		
 		} elseif (post('add_path') && checkPriv()) {
-			static::addPath($instance['instance_id'], chopPrefixOffString('state_', $ids), post('add_path'));
+			static::addPath($instance['instance_id'], post('state'), post('add_path'));
 		
 		} elseif (post('redirect_path') && checkPriv()) {
 			$fromTo = explode('_', $ids);
 			if (!empty($fromTo[1]) && !empty($fromTo[2])) {
-				static::redirectPath($instance['instance_id'], $fromTo[1], $fromTo[2], post('redirect_path'));
+				static::redirectPath($instance['instance_id'], $fromTo[1], $fromTo[2], arrayKey($fromTo, 3), arrayKey($fromTo, 4), post('redirect_path'));
 				
 				return 'path_'. $fromTo[1]. '_'. post('redirect_path');
 			}
@@ -289,7 +391,7 @@ class zenario_plugin_nest__organizer__conductor extends zenario_plugin_nest__org
 			
 			$fromTo = explode('_', $ids);
 			if (!empty($fromTo[1]) && !empty($fromTo[2])) {
-				static::deletePath($instance['instance_id'], $fromTo[1], $fromTo[2]);
+				static::deletePath($instance['instance_id'], $fromTo[1], $fromTo[2], arrayKey($fromTo, 3), arrayKey($fromTo, 4));
 			}
 			
 		} elseif (post('save_positions') && checkPriv()) {
@@ -297,9 +399,9 @@ class zenario_plugin_nest__organizer__conductor extends zenario_plugin_nest__org
 				['cache' => $_POST['positions'], 'last_updated' => now()],
 				['instance_id' => $instance['instance_id'], 'method_name' => '#conductor_positions#']);
 		
-		} elseif (post('reset_positions') && checkPriv()) {
-			deleteRow('plugin_instance_cache',
-				['instance_id' => $instance['instance_id'], 'method_name' => '#conductor_positions#']);
+		//} elseif (post('reset_positions') && checkPriv()) {
+		//	deleteRow('plugin_instance_cache',
+		//		['instance_id' => $instance['instance_id'], 'method_name' => '#conductor_positions#']);
 		}
 		
 		

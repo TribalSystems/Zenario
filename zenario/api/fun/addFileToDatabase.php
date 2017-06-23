@@ -70,12 +70,12 @@ if ($existingFile = getRow('files', array('id', 'filename', 'location', 'path'),
 		$path = false;
 		if ($existingFile['location'] == 'db' || ($path = docstoreFilePath($existingFile['path']))) {
 			//If the name has changed, attempt to rename the file in the filesystem
-			if ($path && $file['filename'] != $existingFile['filename']) {
+			/*if ($path && $file['filename'] != $existingFile['filename']) {
 				@rename($path, setting('docstore_dir'). '/'. $existingFile['path']. '/'. $file['filename']);
 			}
 			
+			*/
 			updateRow('files', array('filename' => $filename, 'archived' => 0), $key);
-			
 			if ($deleteWhenDone) {
 				unlink($location);
 			}
@@ -94,6 +94,9 @@ if (isImageOrSVG($file['mime_type'])) {
 	if (isImage($file['mime_type'])) {
 		
 		$image = getimagesize($location);
+		if ($image === false) {
+			return false;
+		}	
 		$file['width'] = $image[0];
 		$file['height'] = $image[1];
 		$file['mime_type'] = $image['mime'];

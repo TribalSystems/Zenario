@@ -264,4 +264,82 @@ revision(141,
 	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations`
 	DROP COLUMN `email`
 _sql
+
+//Attempt to convert some columns with a utf8-3-byte character set to a 4-byte character set
+);	revision( 160
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]accreditors` SET `name` = SUBSTR(`name`, 1, 250) WHERE CHAR_LENGTH(`name`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]accreditors` MODIFY COLUMN `name` varchar(250) CHARACTER SET utf8mb4 NOT NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations` SET `address1` = SUBSTR(`address1`, 1, 250) WHERE CHAR_LENGTH(`address1`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations` MODIFY COLUMN `address1` varchar(250) CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations` SET `address2` = SUBSTR(`address2`, 1, 250) WHERE CHAR_LENGTH(`address2`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations` MODIFY COLUMN `address2` varchar(250) CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations` SET `city` = SUBSTR(`city`, 1, 250) WHERE CHAR_LENGTH(`city`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations` MODIFY COLUMN `city` varchar(250) CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations` SET `content_type` = SUBSTR(`content_type`, 1, 250) WHERE CHAR_LENGTH(`content_type`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations` MODIFY COLUMN `content_type` varchar(250) CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations` MODIFY COLUMN `country_id` varchar(5) CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations` SET `description` = SUBSTR(`description`, 1, 250) WHERE CHAR_LENGTH(`description`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations` MODIFY COLUMN `description` varchar(250) CHARACTER SET utf8mb4 NOT NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations` SET `external_id` = SUBSTR(`external_id`, 1, 250) WHERE CHAR_LENGTH(`external_id`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations` MODIFY COLUMN `external_id` varchar(250) CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations` SET `locality` = SUBSTR(`locality`, 1, 250) WHERE CHAR_LENGTH(`locality`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations` MODIFY COLUMN `locality` varchar(250) CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations` SET `postcode` = SUBSTR(`postcode`, 1, 250) WHERE CHAR_LENGTH(`postcode`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations` MODIFY COLUMN `postcode` varchar(250) CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations` SET `state` = SUBSTR(`state`, 1, 250) WHERE CHAR_LENGTH(`state`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations` MODIFY COLUMN `state` varchar(250) CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]location_images` SET `filename` = SUBSTR(`filename`, 1, 250) WHERE CHAR_LENGTH(`filename`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]location_images` MODIFY COLUMN `filename` varchar(250) CHARACTER SET utf8mb4 NOT NULL default ''
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]scores` SET `name` = SUBSTR(`name`, 1, 250) WHERE CHAR_LENGTH(`name`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]scores` MODIFY COLUMN `name` varchar(250) CHARACTER SET utf8mb4 NOT NULL
+_sql
 ); 

@@ -122,8 +122,8 @@ if ($cVersion == cms_core::$adminVersion) {
 } else {
 	unset($adminToolbar['toolbars']['edit']);
 	unset($adminToolbar['toolbars']['template']);
-	unset($adminToolbar['sections']['edit']['buttons']['head']);
-	unset($adminToolbar['sections']['edit']['buttons']['foot']);
+	unset($adminToolbar['sections']['slot_controls']['buttons']['item_head']);
+	unset($adminToolbar['sections']['slot_controls']['buttons']['item_foot']);
 	unset($adminToolbar['sections']['edit']['buttons']['delete_draft']);
 	unset($adminToolbar['sections']['edit']['buttons']['hide_content']);
 	unset($adminToolbar['sections']['edit']['buttons']['trash_content']);
@@ -329,7 +329,7 @@ if (!cms_core::$isDraft) {
 	
 	//The current Admin has a lock on the Content Item
 	if ($content['lock_owner_id'] && $content['lock_owner_id'] == session('admin_userid')) {
-		$adminToolbar['sections']['edit']['label'] = adminPhrase('Locked by you');
+		$adminToolbar['sections']['edit']['buttons']['lock_dropdown']['label'] = adminPhrase('LOCKED by you');
 		
 		$adminToolbar['sections']['edit']['buttons']['unlock']['tooltip'] =
 			adminPhrase('Locked by you [[time]] ago|Click here to unlock', $mrg);
@@ -340,7 +340,7 @@ if (!cms_core::$isDraft) {
 	
 	//The current Admin can remove other's locks
 	} elseif (checkPriv('_PRIV_CANCEL_CHECKOUT')) {
-		$adminToolbar['sections']['edit']['label'] = adminPhrase('Locked');
+		$adminToolbar['sections']['edit']['buttons']['lock_dropdown']['label'] = adminPhrase('LOCKED');
 		$adminToolbar['sections']['edit']['css_class'] = 'zenario_section_pink';
 		
 		$adminToolbar['sections']['edit']['buttons']['force_open']['tooltip'] =
@@ -356,9 +356,12 @@ if (!cms_core::$isDraft) {
 		unset($adminToolbar['sections']['edit']['buttons']['lock']);
 		unset($adminToolbar['sections']['edit']['buttons']['locked']);
 		unset($adminToolbar['sections']['edit']['buttons']['unlock']);
+		
+		$adminToolbar['lock_warning'] =
+			adminPhrase('This content item is locked, you will need to unlock it via the Edit tab before you can make changes.');
 	
 	} else {
-		$adminToolbar['sections']['edit']['label'] = adminPhrase('Locked');
+		$adminToolbar['sections']['edit']['buttons']['lock_dropdown']['label'] = adminPhrase('LOCKED');
 		$adminToolbar['sections']['edit']['css_class'] = 'zenario_section_pink';
 		
 		$adminToolbar['sections']['edit']['buttons']['locked']['tooltip'] =
@@ -374,6 +377,9 @@ if (!cms_core::$isDraft) {
 		unset($adminToolbar['sections']['edit']['buttons']['lock']);
 		unset($adminToolbar['sections']['edit']['buttons']['unlock']);
 		unset($adminToolbar['sections']['edit']['buttons']['force_open']);
+		
+		$adminToolbar['lock_warning'] =
+			adminPhrase('This content item is locked by another administrator, you will not be able to make changes.');
 	}
 }
 
@@ -588,8 +594,8 @@ if (isset($adminToolbar['sections']['edit'])
 }
 
 
-if (isset($adminToolbar['sections']['edit']['buttons']['head'])) {
-	$adminToolbar_edit_buttons_head = &$adminToolbar['sections']['edit']['buttons']['head'];
+if (isset($adminToolbar['sections']['slot_controls']['buttons']['item_head'])) {
+	$adminToolbar_edit_buttons_head = &$adminToolbar['sections']['slot_controls']['buttons']['item_head'];
 	if(!isset($adminToolbar_edit_buttons_head['tooltip'])) {
 		$adminToolbar_edit_buttons_head['tooltip'] = '';
 	}
@@ -606,8 +612,8 @@ if (isset($adminToolbar['sections']['edit']['buttons']['head'])) {
 }
 
 
-if (isset($adminToolbar['sections']['edit']['buttons']['foot'])) {
-	$adminToolbar_edit_buttons_foot = &$adminToolbar['sections']['edit']['buttons']['foot'];
+if (isset($adminToolbar['sections']['slot_controls']['buttons']['item_foot'])) {
+	$adminToolbar_edit_buttons_foot = &$adminToolbar['sections']['slot_controls']['buttons']['item_foot'];
 	if(!isset($adminToolbar_edit_buttons_foot['tooltip'])) {
 		$adminToolbar_edit_buttons_foot['tooltip'] = '';
 	}
@@ -642,7 +648,7 @@ if (isset($adminToolbar['sections']['template'])) {
  		:	'zenario__layouts/panels/layouts/trash////'. cms_core::$layoutId;
  	
  	
- 	$adminToolbar_buttons_head = &$adminToolbar['sections']['template']['buttons']['head'];
+ 	$adminToolbar_buttons_head = &$adminToolbar['sections']['slot_controls']['buttons']['layout_head'];
 	if(!isset($adminToolbar_buttons_head['tooltip'])) {
 		$adminToolbar_buttons_head['tooltip'] = '';
 	}
@@ -670,7 +676,7 @@ if (isset($adminToolbar['sections']['template'])) {
  	
  	
  	
- 	$adminToolbar_buttons_foot = &$adminToolbar['sections']['template']['buttons']['foot'];
+ 	$adminToolbar_buttons_foot = &$adminToolbar['sections']['slot_controls']['buttons']['layout_foot'];
 	if(!isset($adminToolbar_buttons_foot['tooltip'])) {
 		$adminToolbar_buttons_foot['tooltip'] = '';
 	}
@@ -721,12 +727,6 @@ if (isset($adminToolbar['sections']['primary_menu_node'])) {
 		}
 	//Content with at least one Menu Node
 	} else {
-		if (!cms_core::$visitorVersion) {
-			if (isset($adminToolbar['toolbars']['menu1'])) {
-				$adminToolbar['toolbars']['menu1']['css_class'] .= ' zenario_toolbar_warning';
-				$adminToolbar['toolbars']['menu1']['tooltip'] .= '<br/>'. adminPhrase('Warning: visitors cannot see this menu node. Menu nodes like this are shown in italics.');
-			}
-		}
 		
 		//For each Menu Node, create a copy of the Menu Section
 		$primary = true;
@@ -1131,47 +1131,6 @@ if (isset($adminToolbar['sections']['icons']['buttons']['item_permissions'])) {
 	$adminToolbar['sections']['icons']['buttons']['item_permissions']['css_class'] .=  ' privacy_'. $chain['privacy'];
 	$adminToolbar['sections']['icons']['buttons']['item_permissions']['tooltip'] .= ' '. contentItemPrivacyDesc($chain['privacy'], $chain = false);
 }
-/*
-if ($chain['privacy'] == 'public') {
-	unset($adminToolbar['sections']['icons']['buttons']['item_permissions_closed']);
-} else {
-	unset($adminToolbar['sections']['icons']['buttons']['item_permissions_open']);
-}
-
-if (isset($adminToolbar['sections']['icons']['buttons']['item_permissions_closed'])) {
-
-	if($chain['privacy'] == 'send_signal') {
-		$adminToolbar['sections']['icons']['buttons']['item_permissions_closed']['css_class'] = "zenario_at_icon_permissions_closed_no_access";
-	} elseif($chain['privacy'] == 'group_members') {
-		$adminToolbar['sections']['icons']['buttons']['item_permissions_closed']['css_class'] = "zenario_at_icon_permissions_closed_group_members";
-	}
-	
-	//here
-	//$adminToolbar['sections']['icons']['buttons']['item_permissions_closed']['tooltip'] =
-	//	$adminToolbar['sections']['icons']['buttons']['item_permissions_closed']['tooltip__'. $chain['privacy']];
-	
-	//If this item is set to show to specific users/groups, show them in the tooltip
-	$sql = false;
-	if ($chain['privacy'] == 'group_members') {
-		$sql = "
-			SELECT cdf.label as name
-			FROM ". DB_NAME_PREFIX. "group_content_link AS gcl
-			LEFT JOIN ". DB_NAME_PREFIX. "custom_dataset_fields AS cdf
-			   ON gcl.group_id = cdf.id
-			WHERE gcl.equiv_id = ". (int) $chain['equiv_id']. "
-			  AND gcl.content_type = '" . sqlEscape($cType). "'";
-	}
-	
-	$i = 0;
-	if ($sql && ($result = sqlQuery($sql))) {
-		$adminToolbar['sections']['icons']['buttons']['item_permissions_closed']['tooltip'] .= '<br/>';
-		
-		while ($row = sqlFetchAssoc($result)) {
-			$adminToolbar['sections']['icons']['buttons']['item_permissions_closed']['tooltip'] .=
-				($i++? ', ' : ''). htmlspecialchars($row['name']);
-		}
-	}
-}*/
 
 //Content Item is categorised
 if (checkRowExists('category_item_link', array('equiv_id' => $content['equiv_id'], 'content_type' => $cType))) {
@@ -1269,61 +1228,3 @@ foreach ($pagePreviews as $pagePreview) {
 	$adminToolbar['sections']['page_preview_sizes']['buttons']['page_preview_'.$pagePreview['ordinal'].'_'.$width.'x'.$height] = $pagePreviewButton;
 }
 
-
-// Show the name of the logged in Extranet User
-// (N.b. the options to log in/edit/log out are currently commented out.)
-if (checkModuleRunning('zenario_users')) {
-	if ($userId = userId()) {
-		$adminToolbar['sections']['extranet_user']['buttons']['logged_in']['label'] =
-			adminPhrase('User [[identifier]]', getRow('users', ['identifier'], $userId));
-		
-		//$adminToolbar['sections']['extranet_user']['buttons']['logged_in']['admin_box']['key']['id'] =
-		//	$userId;
-		//
-		//$lCID = $lCType = false;
-		//if (langSpecialPage('zenario_logout', $lCID, $lCType, cms_core::$langId)
-		// && ($lURL = linkToItem($lCID, $lCType))) {
-		//
-		//	$adminToolbar['sections']['extranet_user']['buttons']['log_out']['onclick'] =
-		//		'zenario.goToURL("'. jsEscape($lURL). '");';
-		//} else {
-		//	unset($adminToolbar['sections']['extranet_user']['buttons']['log_out']);
-		//}
-	
-		unset($adminToolbar['sections']['extranet_user']['buttons']['logged_out']);
-		//unset($adminToolbar['sections']['extranet_user']['buttons']['log_in']);
-
-	} else {
-		//$lCID = $lCType = false;
-		//if (langSpecialPage('zenario_login', $lCID, $lCType, cms_core::$langId)
-		// && ($lURL = linkToItem($lCID, $lCType))) {
-		//
-		//	$adminToolbar['sections']['extranet_user']['buttons']['log_in']['onclick'] =
-		//		'zenario.goToURL("'. jsEscape($lURL). '");';
-		//} else {
-		//	unset($adminToolbar['sections']['extranet_user']['buttons']['log_in']);
-		//}
-	
-		unset($adminToolbar['sections']['extranet_user']['buttons']['logged_in']);
-		//unset($adminToolbar['sections']['extranet_user']['buttons']['log_out']);
-	}
-	
-	//If the current extranet user/visitor should not be able to see the current page because they don't have permissions,
-	//show a purple triangle next to their name
-	if (in(cms_core::$status, 'published', 'published_with_draft')) {
-		$perms = getShowableContent($content, $version, $cID, $cType, $cVersion, $checkRequestVars = false, $adminsSee400Errors = true);
-		
-		if ($perms === ZENARIO_401_NOT_LOGGED_IN) {
-			$adminToolbar['meta_info']['no_perms_icon'] = 'zenario_link_status zenario_link_status__'. cms_core::$status. '_401';
-	
-		} elseif (!$perms) {
-			$adminToolbar['meta_info']['no_perms_icon'] = 'zenario_link_status zenario_link_status__'. cms_core::$status. '_403';
-		}
-	}
-
-} else {
-	unset($adminToolbar['sections']['extranet_user']['buttons']['logged_out']);
-	//unset($adminToolbar['sections']['extranet_user']['buttons']['log_in']);
-	unset($adminToolbar['sections']['extranet_user']['buttons']['logged_in']);
-	//unset($adminToolbar['sections']['extranet_user']['buttons']['log_out']);
-}

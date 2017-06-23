@@ -34,6 +34,15 @@ useGZIP(!empty($_GET['gz']));
 
 
 require CMS_ROOT. 'zenario/includes/cms.inc.php';
+		
+function esctick($text) {
+	$searches = array('`', '~');
+	$replaces = array('`t', '`s');
+	return str_replace($searches, $replaces, $text);
+}
+
+
+$output = '';
 
 
 //Get a few phrases used in admin mode
@@ -133,6 +142,7 @@ foreach(array(
 	'prev' => 'Prev',
 	'preview' => 'Preview',
 	'previewFullPage' => 'Preview full page',
+	'previewFullWidth' => 'Preview full width',
 	'publish' => 'Publish immediately',
 	'refined' => ' (filtered)',
 	'readonly' => 'Read-only',
@@ -150,8 +160,9 @@ foreach(array(
 	'saveUpdateSummary' => 'Yes, save and update Summary',
 	'saveUpdateSummaryPrompt' => 'The text you are editing is synced with this content item\'s Summary. Do you wish to continue to update the Summary with the changes made here?',
 	'saving' => 'Saving',
-	'selectDotDotDot' => 'Select...',
 	'selectAll' => 'Multi-select is available.<br/>Click to select all visible items in this panel.',
+	'selectDotDotDot' => 'Select...',
+	'selected' => 'selected',
 	'selectListSelect' => ' -- Select -- ',
 	'serverSide' => 'Server-side',
 	'serverTime' => 'Server time ',
@@ -312,28 +323,22 @@ _help
 	'gridUndo' => 'Undo'
 
 ) as $code => $phrase) {
-	$phrases[$code] = adminPhrase($phrase);
+	$output .= esctick($code). '~'. esctick($phrase). '~';
 }
 
-echo 'zenarioA.phrase=', json_encode($phrases), ';
-(function(t) {';
+echo 'zenario._uAM(zenarioA.phrase={},', json_encode($output), ');';
+$output = '';
+
 //Include any templates (for underscore.js) from Module directories
 foreach (moduleDirs('admin_microtemplates/') as $dir) {
 	foreach (scandir($dir = CMS_ROOT. $dir) as $file) {
 		if (substr($file, 0, 1) != '.' && substr($file, -5) == '.html' && is_file($dir. $file)) {
 			$name = substr($file, 0, -5);
-			
-			echo "\n";
-			
-			if ('' === preg_replace('@\w@', '', $name)) {
-				echo 't.'. $name;
-			} else {
-				echo 't[', json_encode($name), ']';
-			}
-			
-			echo '=', json_encode(file_get_contents($dir. $file)), ';';
+			$output .= esctick($name). '~'. esctick(preg_replace('@\s+@', ' ', file_get_contents($dir. $file))). '~';
 		}
 	}
 }
-echo '
-})(zenarioA.microTemplates={});';
+
+		
+echo "\n". 'zenario._uAM(zenarioT.microTemplates={},', json_encode($output), ');';
+unset($output);

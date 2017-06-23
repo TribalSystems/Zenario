@@ -1,18 +1,18 @@
 <div class="zenario_at_toolbar_container_top">
 	<div class="zenario_at_content zenario_at_toolbar">
-		<% if (!zenarioA.hidden(m.sections.history)) { %>
+		<% if (!zenarioT.hidden(m.sections.history)) { %>
 			<div class="zenario_at_history">
-				{{zenarioA.microTemplate('zenario_toolbar_button', m.sections.history)}}
+				{{zenarioT.microTemplate('zenario_toolbar_button', m.sections.history)}}
 			</div>
 		<% } %>
-		<% if (!zenarioA.hidden(m.sections.translations)) { %>
+		<% if (!zenarioT.hidden(m.sections.translations)) { %>
 			<div class="zenario_at_translations">
-				{{zenarioA.microTemplate('zenario_toolbar_button', m.sections.translations)}}
+				{{zenarioT.microTemplate('zenario_toolbar_button', m.sections.translations)}}
 			</div>
 		<% } %>
-		<% if (!zenarioA.hidden(m.sections.extranet_user)) { %>
+		<% if (!zenarioT.hidden(m.sections.extranet_user)) { %>
 			<div class="zenario_at_extranet_user">
-				{{zenarioA.microTemplate('zenario_toolbar_button', m.sections.extranet_user)}}
+				{{zenarioT.microTemplate('zenario_toolbar_button', m.sections.extranet_user)}}
 			</div>
 			
 			<% if (zenarioAT.tuix.meta_info.no_perms_icon) { %>
@@ -20,14 +20,14 @@
 			<% } %>
 			
 		<% } %>
-		<% if (!zenarioA.hidden(m.sections.help)) { %>
+		<% if (!zenarioT.hidden(m.sections.help)) { %>
 			<div class="zenario_at_help">
-				{{zenarioA.microTemplate('zenario_toolbar_button', m.sections.page_preview_sizes)}}
+				{{zenarioT.microTemplate('zenario_toolbar_button', m.sections.page_preview_sizes)}}
 			</div>
 		<% } %>
-		<% if (!zenarioA.hidden(m.sections.help)) { %>
+		<% if (!zenarioT.hidden(m.sections.help)) { %>
 			<div class="zenario_at_help">
-				{{zenarioA.microTemplate('zenario_toolbar_button', m.sections.help)}}
+				{{zenarioT.microTemplate('zenario_toolbar_button', m.sections.help)}}
 			</div>
 		<% } %>
 	</div>

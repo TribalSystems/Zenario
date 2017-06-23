@@ -66,7 +66,7 @@ zenario_admin:
                             label: "Change a content item's layout"
                         _PRIV_SET_CONTENT_ITEM_STICKY_IMAGE:
                             parent: _PRIV_EDIT_DRAFT
-                            label: "Set a content item's sticky image"
+                            label: "Set a content item's feature image"
                         _PRIV_MANAGE_MEDIA:
                             label: Manage images
                 perm_editmenu:
@@ -118,12 +118,12 @@ zenario_admin:
                     full_width: true
                     checking_child_checks_parents: true
                     values:
-                        _PRIV_CANCEL_CHECKOUT:
-                            label: Cancel a check-out
                         _PRIV_HIDE_CONTENT_ITEM:
                             label: Hide a content item
                         _PRIV_PUBLISH_CONTENT_ITEM:
                             label: Publish a content item
+                        _PRIV_CANCEL_CHECKOUT:
+                            label: Unlock a locked content item
                         _PRIV_TRASH_CONTENT_ITEM:
                             label: Trash a content item
                         _PRIV_DELETE_TRASHED_CONTENT_ITEMS:
@@ -148,8 +148,8 @@ zenario_admin:
                             label: Manage plugins
                         _PRIV_MANAGE_SPARE_ALIAS:
                             label: Manage page aliases
-                        _PRIV_MANAGE_DOCUMENTS:
-                            label: Manage documents
+                        #_PRIV_MANAGE_DOCUMENTS:
+                        #    label: Manage documents
                         _PRIV_VIEW_CONFIDENTIAL_USER_DOCUMENTS:
                             label: View confidential user documents
                         _PRIV_MANAGE_CONFIDENTIAL_USER_DOCUMENTS:
@@ -292,3 +292,23 @@ zenario_admin:
                         _PRIV_PROTECT_UNPROTECT_DATASET_FIELD:
                             #parent: _PRIV_MANAGE_DATASET
                             label: Protect / unprotect dataset fields
+                        _PRIV_REGENERATE_DOCUMENT_PUBLIC_LINKS:
+                            label: Re-generate document public links
+                perm_documents:
+                    is_admin_permission: true
+                    grouping: specific_actions
+                    type: checkbox
+                    full_width: true
+                    post_field_label: Manage documents
+                perm_document_permissions:
+                    is_admin_permission: true
+                    grouping: specific_actions
+                    type: checkboxes
+                    full_width: true
+                    checking_child_checks_parents: true
+                    values:
+                        _PRIV_VIEW_DOCUMENTS:
+                            label: View / add a document
+                        _PRIV_EDIT_DOCUMENTS:
+                            parent: _PRIV_VIEW_DOCUMENTS
+                            label: Edit / delete a document

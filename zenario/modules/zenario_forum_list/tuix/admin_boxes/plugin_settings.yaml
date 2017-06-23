@@ -54,7 +54,7 @@ plugin_settings:
                 show_sticky_images:
                     plugin_setting:
                         name: show_sticky_images
-                    label: "Show Item's Sticky image"
+                    label: "Show content item's feature image"
                     type: checkbox
                     value: ""
                     format_onchange: Yes

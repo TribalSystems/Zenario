@@ -1365,11 +1365,6 @@ _sql
 	) ENGINE=MyISAM DEFAULT CHARSET=utf8
 _sql
 
-, <<<_sql
-	DELETE FROM `[[DB_NAME_PREFIX]]site_settings`
-	WHERE name = 'yaml_files_last_changed'
-_sql
-
 //Add columns to content types table for new options for a default place in the menu
 ); revision (34752
 , <<<_sql
@@ -2375,9 +2370,29 @@ _sql
 	GROUP BY np.instance_id
 _sql
 
+); revision(38669
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]nested_plugins`
+	ADD COLUMN `show_auto_refresh` tinyint(1) NOT NULL DEFAULT '0' AFTER `show_refresh`,
+	ADD COLUMN `auto_refresh_interval` int(10) unsigned NOT NULL DEFAULT 60 AFTER `show_auto_refresh`
+_sql
+
+//Rename the "tab" column in the nested_plugins table to "slide number",
+//and the "nest" column in the plugin_settings table to "egg id"
+);	revision( 38820
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]nested_plugins`
+	CHANGE COLUMN `tab` `slide_num` smallint(4) unsigned NOT NULL default 1
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]plugin_settings`
+	CHANGE COLUMN `nest` `egg_id` int(10) unsigned NOT NULL default 0
+_sql
+
 
 //Convert the format of the site settings for external programs
-);	revision( 38668
+);	revision( 39300
 //Where the program is run from a directory in the environment PATH, just store the word "PATH".
 , <<<_sql
 	UPDATE `[[DB_NAME_PREFIX]]site_settings` SET
@@ -2420,18 +2435,632 @@ _sql
 	  AND value LIKE '%/pdftotext'
 _sql
 
-); revision(38669
+
+//Add an "encrypted" column to the site settings table
+);	revision( 39400
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]site_settings`
+	ADD COLUMN `encrypted` tinyint(1) NOT NULL default 0
+_sql
+);
+
+
+if (needRevision(39401)) {
+	//If columns don't exist, create them (hacked in because this was added in 7.5 after branch in revision 38669)
+	$sql = 'SHOW COLUMNS FROM ' . DB_NAME_PREFIX . 'nested_plugins LIKE "show_auto_refresh"';
+	$result = sqlSelect($sql);
+	if (!sqlNumRows($result)) {
+		$sql = '
+			ALTER TABLE `' . DB_NAME_PREFIX . 'nested_plugins`
+			ADD COLUMN `show_auto_refresh` tinyint(1) NOT NULL DEFAULT "0" AFTER `show_refresh`,
+			ADD COLUMN `auto_refresh_interval` int(10) unsigned NOT NULL DEFAULT 60 AFTER `show_auto_refresh`';
+		sqlQuery($sql);
+	}
+	revision(39401);
+}
+
+
+//Update the names of some Assetwolf plugin settings to the new format
+	revision( 39500
+, <<<_sql
+	UPDATE IGNORE `[[DB_NAME_PREFIX]]plugin_settings`
+	SET name = 'enable.edit_asset'
+	WHERE name = 'assetwolf__view_asset_name_and_links__show_edit_link'
+_sql
+
+
+//Replace the "close" command with the "back" command
+);	revision( 39550
+, <<<_sql
+	UPDATE IGNORE `[[DB_NAME_PREFIX]]nested_paths`
+	SET `commands` = 'back'
+	WHERE `commands` = 'close'
+_sql
+
+, <<<_sql
+	DELETE FROM `[[DB_NAME_PREFIX]]nested_paths`
+	WHERE `commands` = 'close'
+_sql
+
+
+
+
+//Add the "with_role" option for content item/slide visibility
+//Also do some tidying up and merge a few tables together
+); revision( 39560
+
+//Create a new table to store links between groups/roles and content items/slides
+, <<<_sql
+	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]group_link`
+_sql
+
+, <<<_sql
+	CREATE TABLE `[[DB_NAME_PREFIX]]group_link` (
+		`link_from` enum('chain', 'slide') NOT NULL,
+		`link_from_id` int(10) unsigned NOT NULL,
+		`link_from_char` char(20) CHARACTER SET ascii default '',
+		`link_to` enum('group', 'role') NOT NULL,
+		`link_to_id` int(10) unsigned NOT NULL,
+		PRIMARY KEY (`link_from`, `link_from_id`, `link_from_char`, `link_to`, `link_to_id`),
+		KEY (`link_to`, `link_to_id`)
+	) ENGINE=MyISAM DEFAULT CHARSET=utf8 
+_sql
+
+
+//Copy the existing data from the tables we are replacing
+, <<<_sql
+	INSERT INTO `[[DB_NAME_PREFIX]]group_link`
+	SELECT 'chain', equiv_id, content_type, 'group', group_id
+	FROM `[[DB_NAME_PREFIX]]group_content_link`
+_sql
+
+, <<<_sql
+	INSERT INTO `[[DB_NAME_PREFIX]]group_link`
+	SELECT 'slide', slide_id, '', 'group', group_id
+	FROM `[[DB_NAME_PREFIX]]group_slide_link`
+_sql
+
+
+//Drop the old tables that we don't use any more
+, <<<_sql
+	DROP TABLE `[[DB_NAME_PREFIX]]group_content_link`
+_sql
+
+, <<<_sql
+	DROP TABLE `[[DB_NAME_PREFIX]]group_slide_link`
+_sql
+
+, <<<_sql
+	DROP TABLE `[[DB_NAME_PREFIX]]group_user_link`
+_sql
+
+
+//Update the privacy column in the translation_chains/nested_plugins table with a new option
+//to link to roles
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]translation_chains`
+	MODIFY COLUMN `privacy` enum(
+		'public','logged_out','logged_in','group_members','in_smart_group','logged_in_not_in_smart_group','call_static_method',
+		'send_signal',
+		'with_role'
+	) NOT NULL default 'public'
+_sql
+
 , <<<_sql
 	ALTER TABLE `[[DB_NAME_PREFIX]]nested_plugins`
-	ADD COLUMN `show_auto_refresh` tinyint(1) NOT NULL DEFAULT '0' AFTER `show_refresh`,
-	ADD COLUMN `auto_refresh_interval` int(10) unsigned NOT NULL DEFAULT 60 AFTER `show_auto_refresh`
+	MODIFY COLUMN `privacy` enum(
+		'public','logged_out','logged_in','group_members','in_smart_group','logged_in_not_in_smart_group','call_static_method',
+		'with_role'
+	) NOT NULL default 'public'
+_sql
+
+
+//Add the ability for conductor paths to link to a slide on another content item
+);	revision( 39737
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]nested_paths`
+	ADD COLUMN `equiv_id` int(10) unsigned NOT NULL default 0
+	AFTER `to_state`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]nested_paths`
+	ADD COLUMN `content_type` varchar(20) CHARACTER SET ascii NOT NULL default ''
+	AFTER `equiv_id`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]nested_paths`
+	DROP KEY `instance_id`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]nested_paths`
+	DROP PRIMARY KEY
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]nested_paths`
+	ADD PRIMARY KEY (`instance_id`, `from_state`, `equiv_id`, `content_type`, `to_state`)
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]nested_paths`
+	ADD KEY (`instance_id`, `to_state`, `from_state`)
+_sql
+
+
+//Add zenario_image_container as a CSS class to any image containers before they are migrated to banners,
+//to hopefully keep any CSS styles that might have been applied to them.
+);	revision( 39790
+, <<<_sql
+	UPDATE IGNORE `[[DB_NAME_PREFIX]]plugin_instances`
+	SET css_class =
+			IF (css_class = '',
+				'zenario_image_container zenario_image_container__default_style',
+				CONCAT(css_class, ' zenario_image_container')
+			),
+		framework =
+			IF (framework = 'standard', 'image_then_title_then_text', framework)
+	WHERE module_id IN (
+		SELECT id
+		FROM `[[DB_NAME_PREFIX]]modules`
+		WHERE `class_name` = 'zenario_image_container'
+	)
+_sql
+
+, <<<_sql
+	UPDATE IGNORE `[[DB_NAME_PREFIX]]nested_plugins`
+	SET css_class =
+			IF (css_class = '',
+				'zenario_image_container zenario_image_container__default_style',
+				CONCAT(css_class, ' zenario_image_container')
+			)
+	WHERE is_slide = 0
+	  AND module_id IN (
+		SELECT id
+		FROM `[[DB_NAME_PREFIX]]modules`
+		WHERE `class_name` = 'zenario_image_container'
+	)
+_sql
+
+//Add the image_source setting to any image containers, so they will work properly as banners
+, <<<_sql
+	INSERT IGNORE INTO `[[DB_NAME_PREFIX]]plugin_settings` (
+	  `instance_id`,
+	  `name`,
+	  `egg_id`,
+	  `value`,
+	  `is_content`
+	)
+	SELECT 
+	  ps.instance_id,
+	  'image_source',
+	  ps.egg_id,
+	  '_CUSTOM_IMAGE',
+	  ps.`is_content`
+	FROM `[[DB_NAME_PREFIX]]plugin_settings` AS ps
+	WHERE ps.name = 'mobile_behavior'
+_sql
+
+
+//Delete the working_copy_image_threshold site setting if it was set to the default value
+);	revision( 39800
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]]site_settings`
+	SET `value` = ''
+	WHERE `name` = 'working_copy_image_threshold'
+	  AND `value` = '66'
+_sql
+
+
+);	revision( 39830
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]email_templates`
+	ADD COLUMN `from_details` enum('site_settings', 'custom_details') NOT NULL DEFAULT 'custom_details'
+	AFTER `subject`
+_sql
+
+
+);	revision( 39840
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]documents`
+	ADD COLUMN `short_checksum_list` MEDIUMTEXT
+_sql
+
+
+//Rename "sticky images" to "feature images"
+//Also add a new feature to automatically flag the first-uploaded image as a feature image
+);	revision( 40000
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]content_types`
+	ADD COLUMN `auto_flag_feature_image` tinyint(1) NOT NULL default 0
+	AFTER `release_date_field`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]content_item_versions`
+	DROP KEY `sticky_image_id`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]content_item_versions`
+	CHANGE COLUMN `sticky_image_id` `feature_image_id` int(10) unsigned NOT NULL default 0
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]content_item_versions`
+	ADD KEY (`feature_image_id`)
+_sql
+
+//Auto-flag feature images by default, unless someone goes into the content-type settings and turns it off
+);	revision( 40020
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]content_types`
+	MODIFY COLUMN `auto_flag_feature_image` tinyint(1) NOT NULL default 1
+_sql
+
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]]content_types`
+	SET `auto_flag_feature_image` = 1
+_sql
+
+
+//Attempt to convert some columns with a utf8-3-byte character set to a 4-byte character set
+);	revision( 40150
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]categories` MODIFY COLUMN `name` varchar(50) CHARACTER SET utf8mb4 NOT NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]]centralised_lists` SET `label` = SUBSTR(`label`, 1, 250) WHERE CHAR_LENGTH(`label`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]centralised_lists` MODIFY COLUMN `label` varchar(250) CHARACTER SET utf8mb4 NOT NULL
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]content_cache` MODIFY COLUMN `extract` mediumtext CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]content_cache` MODIFY COLUMN `text` mediumtext CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]content_items` MODIFY COLUMN `alias` varchar(75) CHARACTER SET utf8mb4 NOT NULL default ''
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]content_items` MODIFY COLUMN `tag_id` varchar(32) CHARACTER SET ascii NOT NULL
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]content_item_versions` MODIFY COLUMN `content_summary` mediumtext CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]content_item_versions` MODIFY COLUMN `description` mediumtext CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]]content_item_versions` SET `filename` = SUBSTR(`filename`, 6, 255) WHERE CHAR_LENGTH(`filename`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]content_item_versions` MODIFY COLUMN `filename` varchar(250) CHARACTER SET utf8mb4 NOT NULL default ''
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]content_item_versions` MODIFY COLUMN `foot_html` mediumtext CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]content_item_versions` MODIFY COLUMN `head_html` mediumtext CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]content_item_versions` MODIFY COLUMN `keywords` text CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]content_item_versions` MODIFY COLUMN `rss_slot_name` varchar(100) CHARACTER SET ascii NOT NULL default ''
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]content_item_versions` MODIFY COLUMN `title` varchar(250) CHARACTER SET utf8mb4 NOT NULL default ''
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]]content_item_versions` SET `writer_name` = SUBSTR(`writer_name`, 1, 250) WHERE CHAR_LENGTH(`writer_name`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]content_item_versions` MODIFY COLUMN `writer_name` varchar(250) CHARACTER SET utf8mb4 NOT NULL default ''
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]custom_datasets` MODIFY COLUMN `label` varchar(64) CHARACTER SET utf8mb4 NOT NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]]custom_dataset_field_values` SET `label` = SUBSTR(`label`, 1, 250) WHERE CHAR_LENGTH(`label`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]custom_dataset_field_values` MODIFY COLUMN `label` varchar(250) CHARACTER SET utf8mb4 NOT NULL
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]custom_dataset_field_values` MODIFY COLUMN `note_below` text CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]custom_dataset_tabs` MODIFY COLUMN `label` varchar(32) CHARACTER SET utf8mb4 NOT NULL default ''
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]documents` MODIFY COLUMN `extract` mediumtext CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]]documents` SET `filename` = SUBSTR(`filename`, 6, 255) WHERE CHAR_LENGTH(`filename`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]documents` MODIFY COLUMN `filename` varchar(250) CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]]documents` SET `folder_name` = SUBSTR(`folder_name`, 1, 250) WHERE CHAR_LENGTH(`folder_name`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]documents` MODIFY COLUMN `folder_name` varchar(250) CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]]documents` SET `title` = SUBSTR(`title`, 1, 250) WHERE CHAR_LENGTH(`title`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]documents` MODIFY COLUMN `title` varchar(250) CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]document_rules` MODIFY COLUMN `pattern` mediumtext CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]document_rules` MODIFY COLUMN `replacement` mediumtext CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]document_rules` MODIFY COLUMN `second_pattern` mediumtext CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]document_rules` MODIFY COLUMN `second_replacement` mediumtext CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]]document_tags` SET `tag_name` = SUBSTR(`tag_name`, 1, 250) WHERE CHAR_LENGTH(`tag_name`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]document_tags` MODIFY COLUMN `tag_name` varchar(250) CHARACTER SET utf8mb4 NOT NULL
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]document_types` MODIFY COLUMN `mime_type` varchar(128) CHARACTER SET utf8mb4 NOT NULL default ''
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]document_types` MODIFY COLUMN `type` varchar(10) CHARACTER SET utf8mb4 NOT NULL default ''
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]email_templates` MODIFY COLUMN `bcc_email_address` text CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]email_templates` MODIFY COLUMN `body` text CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]email_templates` MODIFY COLUMN `cc_email_address` text CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]email_templates` MODIFY COLUMN `debug_email_address` text CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]email_templates` MODIFY COLUMN `email_address_from` varchar(100) CHARACTER SET utf8mb4 NOT NULL default ''
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]]email_templates` SET `email_name_from` = SUBSTR(`email_name_from`, 1, 250) WHERE CHAR_LENGTH(`email_name_from`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]email_templates` MODIFY COLUMN `email_name_from` varchar(250) CHARACTER SET utf8mb4 NOT NULL default ''
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]email_templates` MODIFY COLUMN `head` mediumtext CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]]email_templates` SET `module_class_name` = SUBSTR(`module_class_name`, 1, 250) WHERE CHAR_LENGTH(`module_class_name`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]email_templates` MODIFY COLUMN `module_class_name` varchar(250) CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]]email_templates` SET `subject` = SUBSTR(`subject`, 1, 250) WHERE CHAR_LENGTH(`subject`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]email_templates` MODIFY COLUMN `subject` varchar(250) CHARACTER SET utf8mb4 NOT NULL
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]files` MODIFY COLUMN `alt_tag` text CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]]files` SET `filename` = SUBSTR(`filename`, 6, 255) WHERE CHAR_LENGTH(`filename`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]files` MODIFY COLUMN `filename` varchar(250) CHARACTER SET utf8mb4 NOT NULL
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]files` MODIFY COLUMN `floating_box_title` text CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]files` MODIFY COLUMN `mime_type` varchar(128) CHARACTER SET utf8mb4 NOT NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]]files` SET `path` = SUBSTR(`path`, 1, 250) WHERE CHAR_LENGTH(`path`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]files` MODIFY COLUMN `path` varchar(250) CHARACTER SET utf8mb4 NOT NULL default ''
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]files` MODIFY COLUMN `title` text CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]]image_tags` SET `name` = SUBSTR(`name`, 1, 250) WHERE CHAR_LENGTH(`name`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]image_tags` MODIFY COLUMN `name` varchar(250) CHARACTER SET utf8mb4 NOT NULL
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]jobs` MODIFY COLUMN `email_address_on_action` varchar(200) CHARACTER SET utf8mb4 NOT NULL default ''
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]jobs` MODIFY COLUMN `email_address_on_error` varchar(200) CHARACTER SET utf8mb4 NOT NULL default ''
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]jobs` MODIFY COLUMN `email_address_on_no_action` varchar(200) CHARACTER SET utf8mb4 NOT NULL default ''
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]job_logs` MODIFY COLUMN `note` text CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]languages` MODIFY COLUMN `detect_lang_codes` varchar(100) CHARACTER SET utf8mb4 NOT NULL default ''
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]]languages` SET `domain` = SUBSTR(`domain`, 1, 250) WHERE CHAR_LENGTH(`domain`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]languages` MODIFY COLUMN `domain` varchar(250) CHARACTER SET utf8mb4 NOT NULL default ''
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]layouts` MODIFY COLUMN `family_name` varchar(50) CHARACTER SET utf8mb4 NOT NULL default ''
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]layouts` MODIFY COLUMN `foot_html` mediumtext CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]layouts` MODIFY COLUMN `head_html` mediumtext CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]]layouts` SET `name` = SUBSTR(`name`, 1, 250) WHERE CHAR_LENGTH(`name`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]layouts` MODIFY COLUMN `name` varchar(250) CHARACTER SET utf8mb4 NOT NULL default ''
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]menu_nodes` MODIFY COLUMN `rel_tag` varchar(100) CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]menu_sections` MODIFY COLUMN `section_name` varchar(20) CHARACTER SET utf8mb4 NOT NULL
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]menu_text` MODIFY COLUMN `descriptive_text` mediumtext CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]]menu_text` SET `name` = SUBSTR(`name`, 1, 250) WHERE CHAR_LENGTH(`name`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]menu_text` MODIFY COLUMN `name` varchar(250) CHARACTER SET utf8mb4 NOT NULL default ''
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]]modules` SET `display_name` = SUBSTR(`display_name`, 1, 250) WHERE CHAR_LENGTH(`display_name`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]modules` MODIFY COLUMN `display_name` varchar(250) CHARACTER SET utf8mb4 NOT NULL
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]nested_plugins` MODIFY COLUMN `name_or_title` varchar(250) CHARACTER SET utf8mb4 NOT NULL default ''
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]nested_plugins` MODIFY COLUMN `request_vars` varchar(250) CHARACTER SET ascii NOT NULL default ''
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]]page_preview_sizes` SET `description` = SUBSTR(`description`, 1, 250) WHERE CHAR_LENGTH(`description`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]page_preview_sizes` MODIFY COLUMN `description` varchar(250) CHARACTER SET utf8mb4 NOT NULL default ''
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]plugin_instances` MODIFY COLUMN `name` varchar(250) CHARACTER SET utf8mb4 NOT NULL default ''
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]plugin_instances` MODIFY COLUMN `slot_name` varchar(100) CHARACTER SET ascii NOT NULL default ''
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]plugin_instance_cache` MODIFY COLUMN `cache` mediumtext CHARACTER SET utf8mb4 NOT NULL
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]plugin_settings` MODIFY COLUMN `foreign_key_char` varchar(250) CHARACTER SET ascii NOT NULL default ''
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]plugin_settings` MODIFY COLUMN `foreign_key_to` varchar(64) CHARACTER SET ascii NULL
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]plugin_settings` MODIFY COLUMN `value` mediumtext CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]site_settings` MODIFY COLUMN `value` mediumtext CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]]skins` SET `display_name` = SUBSTR(`display_name`, 1, 250) WHERE CHAR_LENGTH(`display_name`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]skins` MODIFY COLUMN `display_name` varchar(250) CHARACTER SET utf8mb4 NOT NULL default ''
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]smart_groups` MODIFY COLUMN `name` varchar(50) CHARACTER SET utf8mb4 NOT NULL
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]spare_aliases` MODIFY COLUMN `alias` varchar(75) CHARACTER SET utf8mb4 NOT NULL
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]visitor_phrases` DROP KEY `module_class_name`
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]visitor_phrases` ADD KEY (`module_class_name`(100),`language_id`,`code`(150))
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]visitor_phrases` MODIFY COLUMN `code` text CHARACTER SET utf8mb4 NOT NULL
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]visitor_phrases` MODIFY COLUMN `local_text` text CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]visitor_phrases` MODIFY COLUMN `seen_at_url` text CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]]visitor_phrases` SET `seen_in_file` = SUBSTR(`seen_in_file`, 1, 250) WHERE CHAR_LENGTH(`seen_in_file`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]visitor_phrases` MODIFY COLUMN `seen_in_file` varchar(250) CHARACTER SET utf8mb4 NOT NULL default ''
+_sql
+
+//More tweaks for zenario_image_container migration.
+//Try to automatically set the "background image" plugin setting so they work more-or-less as they did before
+);	revision( 40170
+, <<<_sql
+	INSERT IGNORE INTO `[[DB_NAME_PREFIX]]plugin_settings` (
+	  `instance_id`,
+	  `name`,
+	  `egg_id`,
+	  `value`,
+	  `is_content`
+	)
+	SELECT 
+	  ps.instance_id,
+	  'background_image',
+	  ps.egg_id,
+	  '1',
+	  ps.`is_content`
+	FROM `[[DB_NAME_PREFIX]]plugin_settings` AS ps
+	WHERE ps.name = 'show_custom_css_code'
+_sql
+
+//Create a table to store redirects from replaced documents to replace the old short_checksum_list column
+);	revision( 40190
+, <<<_sql
+	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]document_public_redirects`
+_sql
+
+, <<<_sql
+	CREATE TABLE `[[DB_NAME_PREFIX]]document_public_redirects` (
+		`document_id` int(10) unsigned NOT NULL,
+		`file_id` int(10) unsigned NOT NULL,
+		`path` varchar(255) NOT NULL,
+		PRIMARY KEY (`document_id`, `path`(10))
+	) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4
+_sql
+
+//Add the ability to import files in a skin
+);	revision( 40191
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]skins`
+	ADD COLUMN `import` TEXT
+	AFTER `extension_of_skin`
 _sql
 
 
 //Fix a bug with the migration for plugin nests from back in version 7.5,
 //where the "Apply slide-specific permissions" checkbox does not seem to be automatically checked
 //where you had a slide with the "Call a module's static method to decide" option.
-);	revision( 38671
+);	revision( 40194
 , <<<_sql
 	UPDATE `[[DB_NAME_PREFIX]]nested_plugins`
 	SET `privacy` = 'public'

@@ -142,7 +142,7 @@ class zenario_slideshow_2 extends module_base_class {
 						 background-image: url(".$slide['image_src'].");
 						 background-repeat: no-repeat;
 						}
-						@media (max-width: ".setting('image_mobile_resize_point')."px) {
+						@media (max-width: ". (int) cms_core::$minWidth. "px) {
 						 #".$this->containerId."_placeholder_image {
 						  display:block;
 						  height: ".$slide['m_height']."px;
@@ -175,7 +175,7 @@ class zenario_slideshow_2 extends module_base_class {
 				'mobile_height' => $maxMobileHeight,
 				'mobile_width' => $maxMobileWidth,
 				'slide_transition' => $this->setting("fx"),
-				'mobile_resize_width' => setting('image_mobile_resize_point'),
+				'mobile_resize_width' => (int) cms_core::$minWidth,
 				'hover_to_pause' => (int)$this->setting("hover_to_pause"),
 				'enable_swipe' => (int)$this->setting("enable_swipe"),
 				'auto_play' => (int)$this->setting("auto_play"),

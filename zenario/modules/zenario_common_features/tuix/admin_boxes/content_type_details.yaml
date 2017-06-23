@@ -15,7 +15,7 @@ zenario_content_type_details:
             fields:
                 module_id:
                     label: 'Module:'
-                    read_only: true
+                    readonly: true
                     pick_items:
                         path: zenario__modules/panels/modules
                         target_path: zenario__modules/panels/modules
@@ -50,6 +50,8 @@ zenario_content_type_details:
                         When a content item of this type is created, automatically attach it to the menu.
                     redraw_onchange: true
                 default_parent_menu_node:
+                    indent: 1
+                    hide_if_previous_outdented_value_isnt: 1
                     label: 'Parent menu node:'
                     pick_items:
                         path: zenario__menu/panels/sections
@@ -59,13 +61,13 @@ zenario_content_type_details:
                         select_phrase: Select menu node...
                         disallow_refiners_looping_on_min_path: true
                         hide_remove_button: true
-                    visible_if: zenarioAB.value('set_default_parent_menu_node')
                     validation:
                         required_if_not_hidden: |
                             Please choose a parent menu node.
                             (You cannot make new content items be automatically added to the top level of the site's navigation.)
-                    indent: 1
                 menu_node_position:
+                    indent: 1
+                    hide_if_previous_outdented_value_isnt: 1
                     label: 'Where:'
                     type: radios
                     values:
@@ -74,23 +76,21 @@ zenario_content_type_details:
                         end:
                             label: At the end
                     value: end
-                    visible_if: zenarioAB.value('set_default_parent_menu_node')
                     side_note: |
                         Choose whether the menu node for a newly-created content item is at the start or end of the menu.
-                    indent: 1
                 
                 hide_menu_node:
+                    indent: 1
+                    hide_if_previous_outdented_value_isnt: 1
                     label: 'Invisible in menu navigation'
                     type: checkbox
-                    visible_if: zenarioAB.value('set_default_parent_menu_node')
                     side_note: |
                         Make the auto-created menu node be invisible
                         (will appear in a breadcrumb trail but not in the menu navigation).
-                    indent: 1
                 
                 hide_private_item:
                     indent: 1
-                    visible_if: zenarioAB.value('set_default_parent_menu_node')
+                    hide_if_previous_outdented_value_isnt: 1
                     label: 'Privacy:'
                     type: select
                     values:
@@ -111,18 +111,18 @@ zenario_content_type_details:
                         when the menu node is displayed.
                 
                 menu_node_position_edit:
+                    indent: 1
+                    hide_if_previous_outdented_value_isnt: 1
                     label: 'Adminitrator override:'
-                    type: radios
+                    type: select
                     values:
                         suggest:
                             label: Allow administrator to override
                         force:
                             label: Don't allow administrator to override
                     value: force
-                    visible_if: zenarioAB.value('set_default_parent_menu_node')
                     side_note: |
                         Choose whether the auto-allocated menu position may be changed by the administrator.
-                    indent: 1
                 
                 default_permissions:
                     label: 'Default permissions for new content items:'
@@ -132,55 +132,63 @@ zenario_content_type_details:
                             label: Public, visible to everyone
                         logged_in:
                             label: Private, only show to extranet users who are logged in
+                auto_flag_feature_image:
+                    label: 'Flag the first-uploaded image as feature image'
+                    type: checkbox
+                    value: 1
                 
                 enable_categories:
                     label: 'Support for categories:'
                     type: radios
+                    cols: 3
                     value: 0
                     values:
-                        enabled:
-                            label: Enabled
                         disabled:
                             label: Disabled
+                        enabled:
+                            label: Enabled
                     side_note: |
                         When enabled, administrator will be able to assign content items of this content type to categories.
                         This is useful if you use a Content Summary List plugin, for example to make a list of recent news items.
                 description_field:
                     label: 'Description field:'
                     type: radios
+                    cols: 3
                     values:
-                        mandatory:
-                            label: 'Enabled & mandatory'
-                        optional:
-                            label: 'Enabled & optional'
                         hidden:
                             label: 'Disabled (not recommended)'
+                        optional:
+                            label: 'Enabled & optional'
+                        mandatory:
+                            label: 'Enabled & mandatory'
                     side_note: |
                         This allows administrators to enter a description meta tag for content items,
                         which is useful for giving search engines information about the page. 
                 keywords_field:
                     label: 'Keywords field:'
                     type: radios
+                    cols: 3
                     values:
-                        mandatory:
-                            label: 'Enabled & mandatory (not recommended)'
-                        optional:
-                            label: 'Enabled & optional'
                         hidden:
                             label: Disabled
+                        optional:
+                            label: 'Enabled & optional'
+                        mandatory:
+                            label: 'Enabled & mandatory (not recommended)'
                     side_note: |
                         This allows administrators to enter a keywords meta tag for content items.
                         Search engines usually disregard this meta tag, but it can help with on-site searching.
                 release_date_field:
                     label: 'Release date field:'
                     type: radios
+                    cols: 3
                     values:
-                        mandatory:
-                            label: 'Enabled & mandatory'
-                        optional:
-                            label: 'Enabled & optional'
                         hidden:
                             label: Disabled
+                        optional:
+                            label: 'Enabled & optional'
+                        mandatory:
+                            label: 'Enabled & mandatory'
                     side_note: |
                         This allows administrators to give content items a &quot;publication date&quot;.
                         This will appear on the page itself and in a Content Summary List that lists the content item
@@ -189,23 +197,25 @@ zenario_content_type_details:
                 writer_field:
                     label: 'Writer field:'
                     type: radios
+                    cols: 3
                     values:
-                        mandatory:
-                            label: 'Enabled & mandatory'
-                        optional:
-                            label: 'Enabled & optional'
                         hidden:
                             label: Disabled
+                        optional:
+                            label: 'Enabled & optional'
+                        mandatory:
+                            label: 'Enabled & mandatory'
                 summary_field:
                     label: 'Content summary:'
                     type: radios
+                    cols: 3
                     values:
-                        mandatory:
-                            label: 'Enabled & mandatory'
-                        optional:
-                            label: 'Enabled & optional'
                         hidden:
                             label: Disabled
+                        optional:
+                            label: 'Enabled & optional'
+                        mandatory:
+                            label: 'Enabled & mandatory'
                     redraw_onchange: true
                 enable_summary_auto_update:
                     label: 'Enable auto-update of summaries'

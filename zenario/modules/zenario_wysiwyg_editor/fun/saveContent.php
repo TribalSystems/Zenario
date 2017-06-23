@@ -42,7 +42,7 @@ if (!checkPriv('_PRIV_EDIT_DRAFT', cms_core::$cID, cms_core::$cType)) {
 	setRow(
 		'plugin_settings',
 		array('is_content' => 'version_controlled_content', 'format' => 'translatable_html', 'value' => $_POST['content__content']),
-		array('name' => 'html', 'instance_id' => $this->instanceId, 'nest' => $this->eggId));
+		array('name' => 'html', 'instance_id' => $this->instanceId, 'egg_id' => $this->eggId));
 	
 	syncInlineFileContentLink($this->cID, $this->cType, $this->cVersion);
 	

@@ -21,7 +21,7 @@ zenario_content_requests:
                     label: 'Existing requests:'
                     type: textarea
                     rows: 15
-                    read_only: Yes
+                    readonly: Yes
                 
                 create_draft_to_send_request:
                     full_width: true
@@ -65,4 +65,4 @@ zenario_content_requests:
                         multiple_select: true
                         hide_remove_button: true
                         nothing_selected_phrase: There are no admins who can receive notifications
-                    read_only: true
+                    readonly: true

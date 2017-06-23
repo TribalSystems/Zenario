@@ -70,8 +70,6 @@ class zenario_common_features__organizer__plugins extends module_base_class {
 				$item['traits']['has_image'] = true;
 				$item['image'] = 'zenario/file.php?og=1'. $img;
 				$item['list_image'] = 'zenario/file.php?ogl=1'. $img;
-			} else {
-				$item['image'] = getModuleIconURL($item['module_class_name']);
 			}
 			
 			if (strpos($item['module_class_name'], 'nest') !== false

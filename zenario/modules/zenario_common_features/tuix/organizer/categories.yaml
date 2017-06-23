@@ -97,6 +97,15 @@ zenario__content:
                     label: View
                     multiple_select: Yes
                     hide_when_children_are_not_visible: Yes
+                create_sub_category:
+                    priv: _PRIV_MANAGE_CATEGORY
+                    label: Create a sub-category
+                    admin_box:
+                        path: zenario_categories
+                        key:
+                            sub_category: '1'
+                    visible_if_for_all_selected_items: >
+                        (!item.children) 
                 view_content:
                     label: View content items in this category
                     link:
@@ -116,8 +125,8 @@ zenario__content:
                         path: zenario__languages/panels/phrases
                         branch: Yes
                         refiner: category_public_name
-                    traits:
-                        public: Yes
+                    with_columns_set:
+                        traits.public: true
                 delete:
                     priv: _PRIV_MANAGE_CATEGORY
                     label: Delete

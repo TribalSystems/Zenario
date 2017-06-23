@@ -15,6 +15,10 @@ zenario_delete_form_field:
             edit_mode:
                 enabled: true
             fields:
+                dummy_field:
+                    type: textarea
+                    hidden: true
+                    
                 warning_message:
                     pre_field_html: <div class="zenario_fbWarning">
                     snippet:

@@ -91,7 +91,7 @@ class zenario_crm_form_integration extends module_base_class {
 
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values){
 		switch ($path){
-			case 'zenario_user_admin_box_form':
+			case 'zenario_user_form':
 				$fields['data/send_signal']['note_below'] .= '<br> The checkbox is automatically checked when "CRM integration" is enabled';
 				if($box['key']['id']){
 					$formId = $box['key']['id'];
@@ -159,7 +159,7 @@ class zenario_crm_form_integration extends module_base_class {
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 	
 		switch ($path){
-			case 'zenario_user_admin_box_form':
+			case 'zenario_user_form':
 			
 				$crmIntegration = $values['crm_integration/enable_crm_integration'];
 				if ($crmIntegration){
@@ -177,7 +177,7 @@ class zenario_crm_form_integration extends module_base_class {
 					
 					//enable sendsignal
 					$values['data/send_signal'] = true;
-					$fields['data/send_signal']['read_only'] = true;
+					$fields['data/send_signal']['readonly'] = true;
 					
 				}else{
 					$fields['crm_integration/crm_url']['hidden'] = true;
@@ -191,7 +191,7 @@ class zenario_crm_form_integration extends module_base_class {
 					$fields['crm_integration/value4']['hidden'] = true;
 					$fields['crm_integration/name5']['hidden'] = true;
 					$fields['crm_integration/value5']['hidden'] = true;
-					$fields['data/send_signal']['read_only'] = false;
+					$fields['data/send_signal']['readonly'] = false;
 				}
 			break;
 		}
@@ -199,7 +199,7 @@ class zenario_crm_form_integration extends module_base_class {
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving){
 		switch ($path){
-			case 'zenario_user_admin_box_form':
+			case 'zenario_user_form':
 				if (!$values['crm_integration/crm_url'] && $values['crm_integration/enable_crm_integration']) {
 					$fields['crm_integration/crm_url']['error'] = adminPhrase('Please enter the CRM form action URL');
 				}
@@ -232,7 +232,7 @@ class zenario_crm_form_integration extends module_base_class {
 	
 	public function adminBoxSaveCompleted($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		switch ($path) {
-			case 'zenario_user_admin_box_form':
+			case 'zenario_user_form':
 				$formId = $box['key']['id'];
 				if ($formId) {
 					$enable_crm_integration = $values['crm_integration/enable_crm_integration'];

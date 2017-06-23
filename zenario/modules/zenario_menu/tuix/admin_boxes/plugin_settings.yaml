@@ -115,10 +115,10 @@ plugin_settings:
                 hide_if_current_item_not_in_menu:
                     plugin_setting:
                         name: hide_if_current_item_not_in_menu
-                    label: 'Hide menu on orphans'
+                    label: 'Only display menu when current content item is attached to menu'
                     type: checkbox
                     side_note: >
-                        Hide the entire menu when the current content item is not in the menu hierarchy.
+                        Hide the menu when the current content item is orphaned, i.e. not in the menu hierarchy.
                 reverse_order:
                     plugin_setting:
                         name: reverse_order

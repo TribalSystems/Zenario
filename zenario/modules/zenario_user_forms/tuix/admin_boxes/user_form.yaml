@@ -1,0 +1,511 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_user_form:
+    key:
+        id: ""
+        type: ""
+    tabs:
+        details:
+            label: Details
+            edit_mode:
+                enabled: true
+                always_on: true
+            ord: 1
+            fields:
+                name:
+                    ord: 1
+                    label: 'Form name:'
+                    type: text
+                    side_note: This name is for admin use only and will not be seen by visitors
+                show_title:
+                    ord: 2
+                    label: 'Show a title'
+                    type: checkbox
+                    redraw_onchange: true
+                title:
+                    ord: 3
+                    label: 'Form title:'
+                    type: text
+                    side_note: The title will be displayed above a form to visitors
+                    validation:
+                        required_if_not_hidden: 'Please enter a title.'
+                    visible_if: zenarioAB.value('show_title');
+                    indent: 1
+                title_tag:
+                    ord: 4
+                    label: 'Title tag:'
+                    type: select
+                    values:
+                        h1: Heading 1
+                        h2: Heading 2
+                        h3: Heading 3
+                        h4: Heading 4
+                        h5: Heading 5
+                        h6: Heading 6
+                        p: Paragraph
+                    value: h2
+                    visible_if: zenarioAB.value('show_title');
+                    indent: 1
+                success_message_type:
+                    ord: 5
+                    label: 'Action after form submission:'
+                    type: radios
+                    values:
+                        redirect_after_submission:
+                            label: 'Redirect to a "thank you" page'
+                        show_success_message:
+                            label: 'Remain on form, show a success message'
+                        none:
+                            label: 'Remain on form with no message'
+                    value: show_success_message
+                    format_onchange: true
+                redirect_location:
+                    ord: 6
+                    label: '"Thank you" page:'
+                    pick_items:
+                        path: zenario__content/panels/content/refiners/content_type//html//
+                        min_path: zenario__content/panels/content
+                        target_path: zenario__content/panels/content
+                        disallow_refiners_looping_on_min_path: true
+                        select_phrase: Select...
+                        hide_remove_button: true
+                    validation:
+                        required_if_not_hidden: 'Please select a content item with a "thank you" message.'
+                    indent: 1
+                success_message:
+                    ord: 7
+                    label: 'Success message:'
+                    type: text
+                    value: Thank you for your form submission!
+                    maxlength: 255
+                    indent: 1
+                    validation:
+                        required_if_not_hidden: Please enter a success message for when the form is submitted.
+                submit_button_text:
+                    ord: 8
+                    label: '"Submit" button text:'
+                    type: text
+                    maxlength: 255
+                    validation:
+                        required_if_not_hidden: Please enter default text for the submit button.
+                default_next_button_text:
+                    ord: 9
+                    label: '"Next" button text:'
+                    type: text
+                    maxlength: 255
+                    validation:
+                        required_if_not_hidden: Please enter default text for the next button.
+                    side_note: |
+                        Only applies to multi-page forms. Can be overridden by the text of buttons on a specific page of the form.
+                default_previous_button_text:
+                    ord: 10
+                    label: '"Back" button text:'
+                    type: text
+                    maxlength: 255
+                    validation:
+                        required_if_not_hidden: Please enter default text for the back button.
+                    side_note: |
+                        Only applies to multi-page forms. Can be overridden by the text of buttons on a specific page of the form.
+                translate_text:
+                    ord: 11
+                    label: 'Use the phrases system'
+                    type: checkbox
+                    format_onchange: true
+                profanity_filter_text_fields:
+                    ord: 12
+                    label: 'Filter text fields for profanities'
+                    type: checkbox
+                    side_note: |
+                        If this is enabled all submitted text and textarea fields will be checked for profanities. 
+                        If a profanity is found, the user will see a normal form response, but emails will not be sent 
+                        to the administrator nor the user.
+                
+                allow_partial_completion:
+                    ord: 13
+                    label: Enable "Save and complete later" feature
+                    type: checkbox
+                    side_note: |
+                        This allows extranet users to save their progress on a form and come back later to fill it in. 
+                        Only extranet users will be able to see this form.
+                    redraw_onchange: true
+                
+                partial_completion_mode__auto:
+                    ord: 13.1
+                    type: checkbox
+                    label: Automatically save when changing form page
+                    visible_if: zenarioAB.value('allow_partial_completion')
+                    indent: 1
+                partial_completion_mode__button:
+                    ord: 13.2
+                    type: checkbox
+                    label: Show a save button on each form page
+                    visible_if: zenarioAB.value('allow_partial_completion')
+                    redraw_onchange: true
+                    indent: 1
+                partial_completion_message:
+                    ord: 14
+                    label: 'Complete later message:'
+                    type: text
+                    value: 'Your data will be here the next time you open this form.'
+                    maxlength: 255
+                    visible_if: zenarioAB.value('allow_partial_completion') && zenarioAB.value('partial_completion_mode__button')
+                    side_note: The message to display when a user chooses to complete this form at a later date.
+                    validation:
+                        required_if_not_hidden: 'Please enter a complete later message.'
+                    indent: 2  
+                allow_clear_partial_data:
+                    ord: 14.1
+                    label: 'Allow user to clear uncompleted form data'
+                    type: checkbox
+                    visible_if: zenarioAB.value('allow_partial_completion')
+                    redraw_onchange: true
+                    indent: 1
+                clear_partial_data_message:
+                    ord: 14.2
+                    label: 'Clear uncompleted form data message'
+                    type: text
+                    value: 'Would you like to resume editing this form or clear your existing data?'
+                    maxlength: 255
+                    visible_if: zenarioAB.value('allow_partial_completion') && zenarioAB.value('allow_clear_partial_data')
+                    validation:
+                        required_if_not_hidden: 'Please enter a message for users when loading an uncompleted form.'
+                    indent: 2
+                
+                show_page_switcher:
+                    ord: 15
+                    label: Show page switcher
+                    type: checkbox
+                    redraw_onchange: true
+                page_switcher_navigation:
+                    ord: 16
+                    label: 'Page switcher navigation:'
+                    type: select
+                    values:
+                        none:
+                            ord: 1
+                            label: Display without hyperlink
+                        only_visited_pages:
+                            ord: 2
+                            label: Only visited pages
+                    visible_if: zenarioAB.value('show_page_switcher');
+                    indent: 1
+                enable_summary_page:
+                    ord: 17
+                    label: 'Enable summary page'
+                    type: checkbox
+                    
+        data:
+            label: Actions on form submission
+            edit_mode:
+                enabled: true
+                always_on: true
+            ord: 2
+            fields:
+                save_record:
+                    label: 'Create form submission log record'
+                    type: checkbox
+                    format_onchange: true
+                line_br_1:
+                    snippet:
+                        html: |
+                            <hr />
+                            <b>For anonymous visitors</b>
+                email_html:
+                    pre_field_html: "<div class=\"zenario_fbWarning\">"
+                    snippet:
+                        html: 'To create or save a user/contact record, your form must include the linked field "Email".'
+                    post_field_html: "</div>"
+                    hidden: true  
+                save_data:
+                    label: 'Create user/contact record'
+                    type: checkbox
+                    format_onchange: true
+                # BEGIN save_data options
+                user_status:
+                    label: 'Create user with status:'
+                    type: radios
+                    values:
+                        contact:
+                            label: 'Contact'
+                        active:
+                            label: 'Extranet user (Active)'
+                    value: contact
+                    format_onchange: true
+                    indent: 1
+                log_user_in:
+                    label: 'Log user in after form submission'
+                    type: checkbox
+                    format_onchange: true
+                    indent: 2
+                log_user_in_cookie:
+                    label: 'Set "keep me logged in" cookie'
+                    type: checkbox
+                    indent: 3
+                add_user_to_group:
+                    label: 'Add user/contact to group:'
+                    type: select
+                    empty_value: ' -- Select -- '
+                    indent: 1
+                duplicate_submission_html:
+                    snippet:
+                        html: <b>Actions on duplicate submissions</b>
+                    indent: 1
+                user_duplicate_email_action:
+                    label: 'Action:'
+                    type: radios
+                    values:
+                        merge:
+                            label: 'Merge new data with existing'
+                        overwrite:
+                            label: 'Overwrite old record'
+                        ignore:
+                            label: "Don't update"
+                        stop:
+                            label: "Don't allow submission"
+                    value: merge
+                    format_onchange: true
+                    indent: 1
+                
+                duplicate_email_address_error_message:
+                    label: 'Dupliate email error message:'
+                    type: text
+                    maxlength: 255
+                    side_note: |
+                        The error message that a user will see if the form has already been submitted with this email address
+                    validation:
+                        required_if_not_hidden: Please enter a duplicate email error message
+                    indent: 2
+                # END save_data options
+                
+                logged_in_user_section_start:
+                    snippet:
+                        html: |
+                            <hr />
+                            <b>For logged in users</b>
+                update_linked_fields:
+                    label: Update linked fields
+                    type: checkbox
+                    value: 1
+                    side_note: Certain fields such as "email" will not be updated.
+                no_duplicate_submissions:
+                    label: Don't allow duplicate submissions
+                    type: checkbox
+                    format_onchange: true
+                duplicate_submission_message:
+                    label: 'Duplicate submission message:'
+                    type: text
+                    value: You have already completed this form.
+                    maxlength: 255
+                    validation:
+                        required_if_not_hidden: Please enter a message to show when a user has already submitted this form.
+                    indent: 1
+                add_logged_in_user_to_group:
+                    label: 'Add user to group:'
+                    type: select
+                    empty_value: ' -- Select -- '
+                
+                line_br_2:
+                    snippet:
+                        html: <hr />
+                
+                send_email_to_user:
+                    label: 'Send email to user'
+                    type: checkbox
+                    format_onchange: true
+                
+                send_email_to_logged_in_user:
+                    label: Send to logged in user/account created from form
+                    type: checkbox
+                    format_onchange: true
+                    indent: 1
+                user_email_options_logged_in_user:
+                    type: radios
+                    values:
+                        send_data:
+                            ord: 1
+                            label: 'Send all form data (unformatted)'
+                            side_note: |
+                                Attachments will not be sent in this format.
+                        use_template:
+                            ord: 2
+                            label: 'Send email using template'
+                    value: use_template
+                    format_onchange: true
+                    indent: 2
+                user_email_template_logged_in_user:
+                    label: 'Email template:'
+                    pick_items:
+                        path: zenario__email_template_manager/panels/email_templates
+                        min_path: zenario__email_template_manager/panels/email_templates
+                        max_path: zenario__email_template_manager/panels/email_templates
+                        target_path: zenario__email_template_manager/panels/email_templates
+                        select_phrase: Select email template...
+                        hide_remove_button: true
+                    validation:
+                        required_if_not_hidden: Please select an email template for user emails.
+                    indent: 3
+                send_email_to_email_from_field:
+                    label: Choose an email field from the form
+                    type: checkbox
+                    format_onchange: true
+                    indent: 1
+                user_email_field:
+                    label: 'Email form field:'
+                    type: select
+                    empty_value: -- Select --
+                    validation:
+                        required_if_not_hidden: Please select a form field to send user email to.
+                    indent: 2
+                user_email_options_from_field:
+                    type: radios
+                    values:
+                        send_data:
+                            ord: 1
+                            label: 'Send all form data (unformatted)'
+                            side_note: |
+                                Attachments will not be sent in this format.
+                        use_template:
+                            ord: 2
+                            label: 'Send email using template'
+                    value: use_template
+                    format_onchange: true
+                    indent: 2
+                user_email_template_from_field:
+                    label: 'Email template:'
+                    pick_items:
+                        path: zenario__email_template_manager/panels/email_templates
+                        min_path: zenario__email_template_manager/panels/email_templates
+                        max_path: zenario__email_template_manager/panels/email_templates
+                        target_path: zenario__email_template_manager/panels/email_templates
+                        select_phrase: Select email template...
+                        hide_remove_button: true
+                    validation:
+                        required_if_not_hidden: Please select an email template for user emails.
+                    indent: 3
+                
+                line_br_3:
+                    snippet:
+                        html: <hr />
+                
+                send_email_to_admin:
+                    label: 'Send email to administrator'
+                    type: checkbox
+                    format_onchange: true
+                # BEGIN send_email_to_admin options
+                admin_email_addresses:
+                    label: 'Administrator email address(s):'
+                    type: text
+                    side_note: |
+                        Enter a comma separated list of administrator emails to send this email to.
+                    validation:
+                        required_if_not_hidden: Please enter one or more admin email addresses.
+                    is_email_address: true
+                    indent: 1
+                admin_email_options:
+                    type: radios
+                    values:
+                        send_data:
+                            ord: 1
+                            label: 'Send all form data (unformatted)'
+                        use_template:
+                            ord: 2
+                            label: 'Send email using template'
+                    value: send_data
+                    format_onchange: true
+                    indent: 1
+                admin_email_template:
+                    label: 'Email template:'
+                    pick_items:
+                        path: zenario__email_template_manager/panels/email_templates
+                        min_path: zenario__email_template_manager/panels/email_templates
+                        max_path: zenario__email_template_manager/panels/email_templates
+                        target_path: zenario__email_template_manager/panels/email_templates
+                        select_phrase: Select email template...
+                        hide_remove_button: true
+                    validation:
+                        required_if_not_hidden: Please select an email template for admin emails.
+                    indent: 2
+                reply_to:
+                    label: 'Optional "reply-to"'
+                    type: checkbox
+                    format_onchange: true
+                    side_note: When set, you can directly reply to the users email address in your email client
+                    indent: 1
+                # BEGIN reply_to options
+                reply_to_email_field:
+                    label: 'Reply-to email using:'
+                    type: select
+                    empty_value: -- Select --
+                    validation:
+                        required_if_not_hidden: Please select a reply-to email field
+                    side_note: Select the form field in which the user enters their email address
+                    indent: 2
+                reply_to_first_name:
+                    label: 'Reply-to first name using:'
+                    type: select
+                    empty_value: -- Select --
+                    side_note: Select the form field in which the user enters their first name
+                    indent: 2
+                reply_to_last_name:
+                    label: 'Reply-to last name using:'
+                    type: select
+                    empty_value: -- Select --
+                    side_note: Select the form field in which the user enters their last name
+                    indent: 2
+                # END reply_to options
+                # END send_email_to_admin options
+                line_br_4:
+                    snippet:
+                        html: <hr />
+                send_signal:
+                    label: 'Send a signal (advanced)'
+                    type: checkbox
+                    side_note: |
+                        Broadcast the submitted form data to other modules for them to process (advanced)
+                    note_below: |
+                        Signal name: eventUserFormSubmitted
+        anti_spam:
+            label: Anti-spam
+            ord: 3
+            edit_mode:
+                enabled: true
+                always_on: true
+            fields:
+                anti_spam_tab_description:
+                    full_width: true
+                    snippet:
+                        html: This tab lets you enable features to control spam.
+                use_honeypot:
+                    label: 'Use honeypot'
+                    type: checkbox
+                    format_onchange: true  
+                    side_note: |
+                        The form will contain a "honeypot" field. It is in the source of the page made invisible to human visitors using CSS. Because it's invisible, it will only normally be filled in by a "bot"; at the same time it's mandatory to leave it blank.
+                honeypot_label:
+                    label: 'Honeypot field label:'
+                    type: text
+                    maxlength: 255
+                    indent: 1
+                use_captcha:
+                    label: 'Require anonymous visitors to complete a captcha'
+                    type: checkbox
+                    format_onchange: true  
+                captcha_type:
+                    label: 'Type of captcha:'
+                    type: select
+                    empty_value: '-- Select --'
+                    values:
+                    validation: 
+                        required_if_not_hidden: Please select a type of captcha.
+                    indent: 1
+                extranet_users_use_captcha:
+                    label: 'Require extranet users to complete a captcha'
+                    type: checkbox
+                    indent: 1
+        translations:
+            ord: 4
+            label: Translations
+            edit_mode:
+                enabled: true
+                always_on: true
+            fields:

@@ -304,6 +304,83 @@ site_settings:
                     values: roles
                     post_field_html: '&nbsp; at ANY location in that company'
                 
+                perm.acknowledge.asset:
+                    snippet:
+                        label: "Acknowledge alarms: users can acknowledge an alarm on an asset if..."
+                perm.acknowledge.asset.by.group:
+                    site_setting:
+                        name: perm.acknowledge.asset.by.group
+                    indent: 1
+                    type: checkbox
+                    label: 'They are a member of the group(s):'
+                    redraw_onchange: true
+                perm.acknowledge.asset.groups:
+                    site_setting:
+                        name: perm.acknowledge.asset.groups
+                    hide_if_previous_outdented_value_isnt: 1
+                    indent: 2
+                    pick_items: *pick_group
+                    validation:
+                        required_if_not_hidden: Please select a group who can acknowledge an alarm.
+                perm.acknowledge.asset.directlyAssigned:
+                    site_setting:
+                        name: perm.acknowledge.asset.directlyAssigned
+                    hide_with_previous_indented_field: true
+                    indent: 1
+                    row_class: zfab_or
+                    type: checkbox
+                    label: The asset is directly assigned to them
+                perm.acknowledge.asset.atLocation:
+                    site_setting:
+                        name: perm.acknowledge.asset.atLocation
+                    hide_with_previous_indented_field: true
+                    indent: 1
+                    row_class: zfab_or
+                    type: checkbox
+                    label: The asset is assigned to a location at which they have
+                perm.acknowledge.asset.atLocation.role:
+                    site_setting:
+                        name: perm.acknowledge.asset.atLocation.role
+                    same_row: true
+                    hide_with_previous_field: true
+                    type: select
+                    empty_value: ANY role
+                    values: roles
+                perm.acknowledge.asset.atCompany:
+                    site_setting:
+                        name: perm.acknowledge.asset.atCompany
+                    hide_with_previous_indented_field: true
+                    indent: 1
+                    row_class: zfab_or
+                    type: checkbox
+                    label: The asset is assigned to a company, and they have
+                perm.acknowledge.asset.atCompany.role:
+                    site_setting:
+                        name: perm.acknowledge.asset.atCompany.role
+                    same_row: true
+                    hide_with_previous_field: true
+                    type: select
+                    empty_value: ANY role
+                    values: roles
+                    post_field_html: '&nbsp; at ANY location in the company'
+                perm.acknowledge.asset.atLocationAtCompany:
+                    site_setting:
+                        name: perm.acknowledge.asset.atLocationAtCompany
+                    hide_with_previous_indented_field: true
+                    indent: 1
+                    row_class: zfab_or
+                    type: checkbox
+                    label: The asset is assigned to a location at a company, and they have
+                perm.acknowledge.asset.atLocationAtCompany.role:
+                    site_setting:
+                        name: perm.acknowledge.asset.atLocationAtCompany.role
+                    same_row: true
+                    hide_with_previous_field: true
+                    type: select
+                    empty_value: ANY role
+                    values: roles
+                    post_field_html: '&nbsp; at ANY location in that company'
+                
                 perm.delete.asset:
                     snippet:
                         label: "Delete: users can delete an asset if..."

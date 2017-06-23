@@ -7,12 +7,12 @@
 					I've made the names of the sections equal to the names of the toolbars.
 					Thus passing the name of the current toolbar in for the name of the section that we want will work.
 				-->
-				{{zenarioA.microTemplate('zenario_toolbar_button', m.sections[zenarioA.toolbar])}}
+				{{zenarioT.microTemplate('zenario_toolbar_button', m.sections[zenarioA.toolbar])}}
 			</div>
 		<% } %>
-		<% if (!zenarioA.hidden(m.sections.menu_node_help)) { %>
+		<% if (!zenarioT.hidden(m.sections.menu_node_help)) { %>
 			<div class="zenario_at_help">
-				{{zenarioA.microTemplate('zenario_toolbar_button', m.sections.menu_node_help)}}
+				{{zenarioT.microTemplate('zenario_toolbar_button', m.sections.menu_node_help)}}
 			</div>
 		<% } %>
 	</div>

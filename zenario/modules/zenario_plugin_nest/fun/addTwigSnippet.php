@@ -44,7 +44,7 @@ if ((canActivateModule($moduleClassName))
 		$with = $matches[1]. ' ';
 	}
 	
-	$nestId = self::addPlugin($moduleId, $instanceId, $tab, $snippetName, $tabIsTabId);
+	$eggId = self::addPlugin($moduleId, $instanceId, $slideNum, $snippetName, $inputIsSlideId);
 	
 	setRow(
 		'plugin_settings',
@@ -53,10 +53,10 @@ if ((canActivateModule($moduleClassName))
 			'is_content' => $instance['content_id']? 'version_controlled_setting' : 'synchronized_setting'),
 		array(
 			'instance_id' => $instanceId,
-			'nest' => $nestId,
+			'egg_id' => $eggId,
 			'name' => 'html'));
 	
-	return $nestId;
+	return $eggId;
 } else {
 	return false;
 }

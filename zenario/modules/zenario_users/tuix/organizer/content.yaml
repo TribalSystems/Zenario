@@ -6,10 +6,12 @@ zenario__content:
             refiners:
                 group_members:
                     table_join: |
-                        [[DB_NAME_PREFIX]]group_content_link gcl
-                            ON c.equiv_id = gcl.equiv_id
-                            AND c.type = gcl.content_type
-                    sql: gcl.group_id = [[REFINER_ID]]
+                        [[DB_NAME_PREFIX]]group_link AS gcl
+                            ON gcl.link_to = 'group'
+                            AND gcl.link_to_id = [[REFINER_ID]]
+                            AND gcl.link_from = 'chain'
+                            AND gcl.link_from_id = c.equiv_id
+                            AND gcl.link_from_char = c.type
             item_buttons:
                 privacy:
                     ord: 3.1
@@ -19,8 +21,8 @@ zenario__content:
                     multiple_select: true
                     admin_box:
                         path: zenario_content_privacy
-                    without_traits:
-                        ghost: Yes
+                    without_columns_set:
+                        traits.ghost: true
                 
                 user_access_log:
                     parent: view_dropdown
@@ -31,7 +33,7 @@ zenario__content:
                         path: zenario__users/panels/access_log
                         branch: Yes
                         refiner: content
-                    traits:
-                        log_access: Yes
-                    without_traits:
-                        ghost: Yes
+                    with_columns_set:
+                        traits.log_access: true
+                    without_columns_set:
+                        traits.ghost: true

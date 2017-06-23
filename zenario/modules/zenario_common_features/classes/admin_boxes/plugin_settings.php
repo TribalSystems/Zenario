@@ -106,16 +106,16 @@ class zenario_common_features__admin_boxes__plugin_settings extends module_base_
 		if ($box['key']['isVersionControlled']) {
 			$cssName = $box['key']['cType']. '_'. $box['key']['cID']. '_'. $box['key']['slotName']. '_'. $cssName;
 		
-			if ($box['key']['nest']) {
-				$row = getRow('nested_plugins', true, $box['key']['nest']);
+			if ($box['key']['eggId']) {
+				$row = getRow('nested_plugins', true, $box['key']['eggId']);
 				$cssName .= '_'. $row['tab']. '_'. $row['ord'];
 			}
 			
 		} else {
 			$cssName .= '_'. $box['key']['instanceId'];
 			
-			if ($box['key']['nest']) {
-				$cssName .= '_'. $box['key']['nest'];
+			if ($box['key']['eggId']) {
+				$cssName .= '_'. $box['key']['eggId'];
 			}
 		}
 		
@@ -125,29 +125,41 @@ class zenario_common_features__admin_boxes__plugin_settings extends module_base_
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		if (get('refiner__nest')) {
 			$box['key']['instanceId'] = get('refiner__nest');
-			$box['key']['nest'] = (int) get('id');
-	
-			$nestedItem = getNestDetails($box['key']['nest'], $box['key']['instanceId']);
-			$box['key']['moduleId'] = $nestedItem['module_id'];
+			$box['key']['eggId'] = (int) get('id');
 
 		} elseif (!ifNull(get('instanceId'), get('id')) && get('refiner__plugin')) {
 			$box['key']['instanceId'] = false;
-			$box['key']['nest'] = 0;
+			$box['key']['eggId'] = 0;
 			$box['key']['moduleId'] = get('refiner__plugin');
 
 		} else {
+			$box['key']['moduleId'] = (int) get('moduleId');
 			$box['key']['instanceId'] = ifNull(get('instanceId'), get('id'));
-			$box['key']['nest'] = (int) get('nest');
-			$box['key']['moduleId'] = get('moduleId');
+			$box['key']['eggId'] = (int) get('eggId');
 		}
-
-
-		if ($box['key']['moduleId'] && $box['key']['instanceId']) {
-			$module = getModuleDetails($box['key']['moduleId']);
+		
+		if ($box['key']['eggId']) {
+			
+			if ($egg = getNestDetails($box['key']['eggId'], $box['key']['instanceId'])) {
+				$box['key']['moduleId'] = $egg['module_id'];
+				$box['key']['slideNum'] = $egg['slide_num'];
+				$module = getModuleDetails($box['key']['moduleId']);
+				$instance = getPluginInstanceDetails($egg['instance_id']);
+			
+			} else {
+				echo adminPhrase('Nested plugin not found.');
+				exit;
+			}
+		
+		} elseif ($box['key']['instanceId']) {
 			$instance = getPluginInstanceDetails($box['key']['instanceId']);
+			$box['key']['moduleId'] = $instance['module_id'];
+			$module = getModuleDetails($instance['module_id']);
+		
 		} elseif ($box['key']['moduleId']) {
 			$module = getModuleDetails($box['key']['moduleId']);
 			$instance = array('framework' => $module['default_framework'], 'css_class' => '');
+		
 		} else {
 			$module = $instance = getPluginInstanceDetails($box['key']['instanceId']);
 			$box['key']['moduleId'] = $instance['module_id'];
@@ -169,7 +181,7 @@ class zenario_common_features__admin_boxes__plugin_settings extends module_base_
 		} else {
 			$box['css_class'] .= ' zenario_reusable_plugin_settings';
 	
-			if ($box['key']['nest']) {
+			if ($box['key']['eggId']) {
 				exitIfNotCheckPriv('_PRIV_VIEW_REUSABLE_PLUGIN');
 			} elseif ($box['key']['instanceId']) {
 				exitIfNotCheckPriv('_PRIV_VIEW_REUSABLE_PLUGIN');
@@ -181,7 +193,7 @@ class zenario_common_features__admin_boxes__plugin_settings extends module_base_
 
 		$canEdit = false;
 		if ($box['key']['isVersionControlled']) {
-			if (isDraft($status = getContentStatus($box['key']['cID'], $box['key']['cType'])) || $box['key']['nest']) {
+			if (isDraft($status = getContentStatus($box['key']['cID'], $box['key']['cType'])) || $box['key']['eggId']) {
 				$canEdit = checkPriv('_PRIV_EDIT_DRAFT', $box['key']['cID'], $box['key']['cType'], $box['key']['cVersion']);
 			} else {
 				$canEdit =
@@ -191,7 +203,7 @@ class zenario_common_features__admin_boxes__plugin_settings extends module_base_
 			}
 
 		} else {
-			if ($box['key']['nest']) {
+			if ($box['key']['eggId']) {
 				$canEdit = checkPriv('_PRIV_MANAGE_REUSABLE_PLUGIN');
 			} else {
 				$canEdit = checkPriv('_PRIV_MANAGE_REUSABLE_PLUGIN');
@@ -260,12 +272,12 @@ class zenario_common_features__admin_boxes__plugin_settings extends module_base_
 				//Even if there are no settings for this plugin, then we still want to have
 				//one or two fixed fields at the start; e.g. the name of the instance as the very first field
 				//Nested modules have a little more information
-				if ($box['key']['nest']) {
+				if ($box['key']['eggId']) {
 					$fields['first_tab/instance_name']['hidden'] = true;
 
 				} else {
 					if ($box['key']['instanceId']) {
-						$fields['first_tab/instance_name']['read_only'] = true;
+						$fields['first_tab/instance_name']['readonly'] = true;
 					}
 					if ($box['key']['isVersionControlled']) {
 						$fields['first_tab/instance_name']['hidden'] = true;
@@ -274,17 +286,17 @@ class zenario_common_features__admin_boxes__plugin_settings extends module_base_
 		
 		
 				// Get admin box title
-				if ($box['key']['nest'] && $box['key']['isVersionControlled']) {
+				if ($box['key']['eggId'] && $box['key']['isVersionControlled']) {
 					$title = 
-						adminPhrase('Editing a plugin of the "[[module]]" module, in the [[nest]]',
+						adminPhrase('Editing a plugin of the "[[module]]" module, in the [[instanceName]]',
 							array('module' => htmlspecialchars($module['display_name']),
-								  'nest' => htmlspecialchars($instanceName)));
+								  'instanceName' => htmlspecialchars($instanceName)));
 		
-				} elseif ($box['key']['nest']) {
+				} elseif ($box['key']['eggId']) {
 					$title = 
-						adminPhrase('Editing a plugin of the "[[module]]" module, in the nest "[[nest]]"',
+						adminPhrase('Editing a plugin of the "[[module]]" module, in the nest "[[instanceName]]"',
 							array('module' => htmlspecialchars($module['display_name']),
-								  'nest' => htmlspecialchars($instanceName)));
+								  'instanceName' => htmlspecialchars($instanceName)));
 		
 				} elseif ($box['key']['isVersionControlled']) {
 					$title = 
@@ -334,11 +346,11 @@ class zenario_common_features__admin_boxes__plugin_settings extends module_base_
 				}
 
 				//Load the values from the database
-				if ($box['key']['nest']) {
+				if ($box['key']['eggId']) {
 					$sql = "
 						SELECT name_or_title, framework, css_class
 						FROM ". DB_NAME_PREFIX. "nested_plugins
-						WHERE id = ". (int) $box['key']['nest'];
+						WHERE id = ". (int) $box['key']['eggId'];
 	
 					$result = sqlQuery($sql);
 					$row = sqlFetchAssoc($result);
@@ -367,6 +379,7 @@ class zenario_common_features__admin_boxes__plugin_settings extends module_base_
 
 				} else {
 					$fields['framework_tab/framework']['hidden'] =
+					$fields['framework_tab/framework_path']['hidden'] =
 					$fields['framework_tab/framework_source']['hidden'] = true;
 				}
 				
@@ -407,8 +420,8 @@ class zenario_common_features__admin_boxes__plugin_settings extends module_base_
 						
 						$values['this_css_tab/use_css_file'] = $file_exists;
 						$fields['this_css_tab/use_css_file']['hidden'] = !$file_exists && !$skinIsEditable;
-						$fields['this_css_tab/use_css_file']['read_only'] =
-						$fields['this_css_tab/css_source']['read_only'] = !$is_writable;
+						$fields['this_css_tab/use_css_file']['readonly'] =
+						$fields['this_css_tab/css_source']['readonly'] = !$is_writable;
 				
 						if ($file_exists
 						 && ($css = file_get_contents($filepath))
@@ -444,8 +457,8 @@ class zenario_common_features__admin_boxes__plugin_settings extends module_base_
 					
 					$values['all_css_tab/use_css_file'] = $file_exists;
 					$fields['all_css_tab/use_css_file']['hidden'] = !$file_exists && !$skinIsEditable;
-					$fields['all_css_tab/use_css_file']['read_only'] =
-					$fields['all_css_tab/css_source']['read_only'] = !$is_writable;
+					$fields['all_css_tab/use_css_file']['readonly'] =
+					$fields['all_css_tab/css_source']['readonly'] = !$is_writable;
 				
 					if ($file_exists
 					 && ($css = file_get_contents($filepath))
@@ -512,17 +525,17 @@ class zenario_common_features__admin_boxes__plugin_settings extends module_base_
 				}
 		
 				// Get admin box title
-				if ($box['key']['nest'] && $box['key']['isVersionControlled']) {
+				if ($box['key']['eggId'] && $box['key']['isVersionControlled']) {
 					$title = 
-						adminPhrase('CSS & framework for a plugin of the "[[module]]" module, in the [[nest]]',
+						adminPhrase('CSS & framework for a plugin of the "[[module]]" module, in the [[instanceName]]',
 							array('module' => htmlspecialchars($module['display_name']),
-								  'nest' => htmlspecialchars($instanceName)));
+								  'instanceName' => htmlspecialchars($instanceName)));
 		
-				} elseif ($box['key']['nest']) {
+				} elseif ($box['key']['eggId']) {
 					$title = 
-						adminPhrase('CSS & framework for a plugin of the "[[module]]" module, in the nest "[[nest]]"',
+						adminPhrase('CSS & framework for a plugin of the "[[module]]" module, in the nest "[[instanceName]]"',
 							array('module' => htmlspecialchars($module['display_name']),
-								  'nest' => htmlspecialchars($instanceName)));
+								  'instanceName' => htmlspecialchars($instanceName)));
 		
 				} elseif ($box['key']['isVersionControlled']) {
 					$title = 
@@ -542,7 +555,7 @@ class zenario_common_features__admin_boxes__plugin_settings extends module_base_
 		$box['title'] = $title;
 		
 		//Set a flag if this is a plugin in a conductor
-		$box['key']['usesConductor'] = $box['key']['nest'] && conductorEnabled($box['key']['instanceId']);
+		$box['key']['usesConductor'] = $box['key']['eggId'] && conductorEnabled($box['key']['instanceId']);
 		
 	}
 
@@ -556,15 +569,19 @@ class zenario_common_features__admin_boxes__plugin_settings extends module_base_
 					if ($frameworkFile = frameworkPath($values['framework_tab/framework'], $module['class_name'], true)) {
 						$values['framework_tab/framework_source'] = file_get_contents($frameworkFile);
 						$fields['framework_tab/framework_source']['language'] = $frameworkFile;
+						$fields['framework_tab/framework_path']['hidden'] = false;
+						$fields['framework_tab/framework_path']['snippet']['label'] = $frameworkFile;
 
 					} else {
 						$values['framework_tab/framework_source'] = '';
 						$fields['framework_tab/framework_source']['language'] = '';
+						$fields['framework_tab/framework_path']['hidden'] = true;
+						$fields['framework_tab/framework_path']['snippet']['label'] = '';
 					}
 					
 					$box['tabs']['this_css_tab']['notices']['golive']['show'] =
 						$box['key']['isVersionControlled']
-					 && empty($fields['this_css_tab/use_css_file']['read_only'])
+					 && empty($fields['this_css_tab/use_css_file']['readonly'])
 					 && $values['this_css_tab/use_css_file'];
 
 				}
@@ -657,7 +674,7 @@ class zenario_common_features__admin_boxes__plugin_settings extends module_base_
 				exitIfNotCheckPriv('_PRIV_EDIT_DRAFT', $instance['content_id'], $instance['content_type'], $instance['content_version']);
 	
 			//Don't create a draft for Nested modules, the interface can't handle this
-			} elseif ($box['key']['nest']) {
+			} elseif ($box['key']['eggId']) {
 				return;
 	
 			//Otherwise create a new draft
@@ -678,7 +695,7 @@ class zenario_common_features__admin_boxes__plugin_settings extends module_base_
 				$box['key']['slotName'] = false;
 			}
 
-		} elseif ($box['key']['nest']) {
+		} elseif ($box['key']['eggId']) {
 			exitIfNotCheckPriv('_PRIV_MANAGE_REUSABLE_PLUGIN');
 
 		} else {
@@ -702,7 +719,7 @@ class zenario_common_features__admin_boxes__plugin_settings extends module_base_
 		$syncContent = false;
 		$pk = array(
 			'instance_id' => $box['key']['instanceId'],
-			'nest' => $box['key']['nest']);
+			'egg_id' => $box['key']['eggId']);
 
 
 		switch ($path) {
@@ -883,7 +900,7 @@ class zenario_common_features__admin_boxes__plugin_settings extends module_base_
 				}
 				
 				//Set the Nested Plugin's name
-				if ($box['key']['nest']) {
+				if ($box['key']['eggId']) {
 					//For Nested Plugins, check to see if there is a Plugin Setting with the <use_value_for_plugin_name> tag set,
 					//which should be the name of the Nested Plugin
 					//Empty or Hidden fields don't count; otherwise the value of <use_value_for_plugin_name> indicates which field has priority.
@@ -939,7 +956,7 @@ class zenario_common_features__admin_boxes__plugin_settings extends module_base_
 						$eggName = getModuleDisplayName($box['key']['moduleId']);
 					}
 	
-					updateRow('nested_plugins', array('name_or_title' => mb_substr($eggName, 0, 250, 'UTF-8')), $box['key']['nest']);
+					updateRow('nested_plugins', array('name_or_title' => mb_substr($eggName, 0, 250, 'UTF-8')), $box['key']['eggId']);
 				}
 
 				if ($instance['content_id']) {
@@ -979,8 +996,8 @@ class zenario_common_features__admin_boxes__plugin_settings extends module_base_
 					$vals['css_class'] = $values['this_css_tab/css_class'];
 				}
 		
-				if ($box['key']['nest']) {
-					updateRow('nested_plugins', $vals, $box['key']['nest']);
+				if ($box['key']['eggId']) {
+					updateRow('nested_plugins', $vals, $box['key']['eggId']);
 				} else {
 					updateRow('plugin_instances', $vals, $box['key']['instanceId']);
 				}

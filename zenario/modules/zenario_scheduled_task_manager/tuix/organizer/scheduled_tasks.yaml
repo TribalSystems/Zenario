@@ -167,8 +167,8 @@ zenario__administration:
                     ajax:
                         request:
                             enable: "1"
-                    traits:
-                        can_enable: Yes
+                    with_columns_set:
+                        traits.can_enable: true
                 suspend:
                     priv: _PRIV_MANAGE_SCHEDULED_TASK
                     css_class: suspend
@@ -184,8 +184,8 @@ zenario__administration:
                             message_type: warning
                         request:
                             suspend: "1"
-                    traits:
-                        can_suspend: Yes
+                    with_columns_set:
+                        traits.can_suspend: true
                 edit:
                     css_class: settings
                     label: Run times and reporting
@@ -207,8 +207,8 @@ zenario__administration:
                     ajax:
                         request:
                             rerun: "1"
-                    traits:
-                        can_rerun: Yes
+                    with_columns_set:
+                        traits.can_rerun: true
             
             hidden_nav:
                 log:

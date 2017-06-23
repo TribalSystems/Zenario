@@ -1106,17 +1106,155 @@ _sql
 _sql
 
 
-//Clear the value of the session_id column from the users table as it's not used for anything
-//(This is a post branch patch; we won't actually drop the column until 7.5 but it's safe to clear it.)
-); revision( 38663
+//Drop the session_id column from the users table as it's not used for anything
+); revision( 39000
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]]users`
-	SET `session_id` = ''
+	ALTER TABLE `[[DB_NAME_PREFIX]]users`
+	DROP COLUMN `session_id`
 _sql
 
 
+//Drop the columns from the user_signin_log table that repeat the user's first name/last name/screen name/email
+); revision( 39060
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]user_signin_log`
+	DROP COLUMN `screen_name`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]user_signin_log`
+	DROP COLUMN `first_name`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]user_signin_log`
+	DROP COLUMN `last_name`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]user_signin_log`
+	DROP COLUMN `email`
+_sql
+
+
+//Drop and recreate the hash column on the users table to use base64 instead of base16.
+//(N.b. this will also delete any existing hashes but that's okay, they're only supposed to be temporary anyway.)
+); revision( 39730
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]users`
+	DROP COLUMN `hash`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]users`
+	ADD COLUMN `hash` varchar(28) CHARACTER SET ascii NOT NULL default ''
+	AFTER `content_type`
+_sql
+
+);	revision(39810
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]smart_group_rules`
+	CHANGE `type_of_check` `type_of_check` enum('user_field','role','activity_band') NOT NULL default 'user_field'
+_sql
+
+);	revision(39820
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]smart_group_rules`
+	ADD COLUMN `activity_band_id` int(10) unsigned NOT NULL default 0
+	AFTER `role_id`
+_sql
+
+);	revision(40040
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]custom_dataset_fields`
+	MODIFY COLUMN `type`
+		enum('group','checkbox','checkboxes','date','editor','radios','centralised_radios','select','centralised_select','text','textarea','url','other_system_field','dataset_select','dataset_picker','file_picker','flag')
+	NOT NULL default 'other_system_field'
+_sql
+
+);	revision(40050
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]custom_dataset_fields`
+	MODIFY COLUMN `type`
+		enum('group','checkbox','checkboxes','date','editor','radios','centralised_radios','select','centralised_select','text','textarea','url','other_system_field','dataset_select','dataset_picker','file_picker')
+	NOT NULL default 'other_system_field'
+_sql
+
+
+//Attempt to convert some columns with a utf8-3-byte character set to a 4-byte character set
+);	revision( 40150
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]users` MODIFY COLUMN `email` varchar(100) CHARACTER SET utf8mb4 NOT NULL default ''
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]users` MODIFY COLUMN `first_name` varchar(100) CHARACTER SET utf8mb4 NOT NULL default ''
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]users` MODIFY COLUMN `identifier` varchar(50) CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]users` MODIFY COLUMN `last_login_ip` varchar(255) CHARACTER SET ascii NOT NULL default ''
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]users` MODIFY COLUMN `last_name` varchar(100) CHARACTER SET utf8mb4 NOT NULL default ''
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]users` MODIFY COLUMN `password_salt` varchar(8) CHARACTER SET ascii NULL
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]users` MODIFY COLUMN `salutation` varchar(25) CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]users` MODIFY COLUMN `screen_name` varchar(50) CHARACTER SET utf8mb4 NULL default ''
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]custom_dataset_fields` MODIFY COLUMN `default_label` varchar(64) CHARACTER SET utf8mb4 NOT NULL default ''
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]custom_dataset_fields` MODIFY COLUMN `label` varchar(64) CHARACTER SET utf8mb4 NOT NULL default ''
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]custom_dataset_fields` MODIFY COLUMN `note_below` text CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]custom_dataset_fields` MODIFY COLUMN `required_message` text CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]custom_dataset_fields` MODIFY COLUMN `side_note` text CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]custom_dataset_fields` MODIFY COLUMN `validation_message` text CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]]custom_dataset_fields` SET `values_source_filter` = SUBSTR(`values_source_filter`, 1, 250) WHERE CHAR_LENGTH(`values_source_filter`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]custom_dataset_fields` MODIFY COLUMN `values_source_filter` varchar(250) CHARACTER SET utf8mb4 NOT NULL default ''
+_sql
+
+);	revision(40160
+, <<<_sql
+	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]user_admin_box_tabs`
+_sql
+
+, <<<_sql
+	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]user_characteristics`
+_sql
+
+
+
+
+//Add new system field for users called send_delayed_registration_email
+);  revision(40193
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]users`
+	ADD COLUMN `send_delayed_registration_email` tinyint(1) NOT NULL default 0
+	AFTER `last_updated_timestamp`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]users`
+	ADD KEY (`send_delayed_registration_email`)
+_sql
 );
-
-
-
-

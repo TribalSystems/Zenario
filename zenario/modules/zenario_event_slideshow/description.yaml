@@ -13,7 +13,7 @@ description: |
         (event content items) that are in the future or today will be shown. 
         The plugin settings provide options to filter events by category, and maximum thumbnail height.
     </p><p>
-        If an event has an image marked as "sticky", then that image will be used as a thumbnail. Otherwise the event title will be shown instead. The slide is a hyperlink to the event content item.
+        If an event has a feature image, then that image will be used as a thumbnail. Otherwise the event title will be shown instead. The slide is a hyperlink to the event content item.
     </p>
 category: pluggable
 keywords: slideshow, slide, event, events, promotion

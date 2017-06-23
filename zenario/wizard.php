@@ -89,7 +89,6 @@ if ((file_exists(CMS_ROOT. ($logoURL = 'wizard-logo.png')))
 
 
 echo '
-<script type="text/javascript" src="libraries/mit/jstimezonedetect/jstz.min.js?v=', $v, '"></script>
 <script type="text/javascript" src="js/wizard.min.js?v=', $v, '"></script>
 <script type="text/javascript">
 	zenarioW.getRequest = ', json_encode($_GET), ';

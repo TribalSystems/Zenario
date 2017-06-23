@@ -38,7 +38,7 @@ plugin_settings:
                             ord: "5"
                             label: Resize and crop
                     format_onchange: Yes
-                    note_below: The sticky image will be used from the matching content items.
+                    note_below: The feature image will be used from the matching content items.
                 sticky_image_width: 
                     plugin_setting: 
                         name: sticky_image_width

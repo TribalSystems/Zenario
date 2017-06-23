@@ -83,7 +83,7 @@ class zenario_users__admin_boxes__user__details extends module_base_class {
 				$values['details/password_needs_changing'] = $user['password_needs_changing'];
 			}
 			
-			$fields['details/status']['read_only'] = true;
+			$fields['details/status']['readonly'] = true;
 			$fields['details/status']['values'] = array($user['status'] => $fields['details/status']['values'][$user['status']]);
 			
 			$values['dates/last_login_ip'] = $user['last_login_ip'];

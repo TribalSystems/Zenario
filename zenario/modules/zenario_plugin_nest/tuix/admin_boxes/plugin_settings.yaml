@@ -181,7 +181,7 @@ plugin_settings:
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
         author_advice:
-            visible_if: '!zenarioAB.tuix.key.isVersionControlled && !zenarioAB.tuix.key.nest'
+            visible_if: '!zenarioAB.tuix.key.isVersionControlled && !zenarioAB.tuix.key.eggId'
             label: Author advice
             fields:
                 author_advice:

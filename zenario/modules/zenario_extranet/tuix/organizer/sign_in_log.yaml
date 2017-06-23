@@ -43,24 +43,24 @@ zenario__users:
 					Screen_name:
 						width: small
 						title: Screen name
-						db_column: usl.screen_name
+						db_column: u.screen_name
 						show_by_default: Yes
 						searchable: Yes
 					First_Name:
 						width: small
 						title: First Name
-						db_column: usl.first_name
+						db_column: u.first_name
 						show_by_default: Yes
 						searchable: Yes
 					Last_Name:
 						width: small
 						title: Last Name
-						db_column: usl.last_name
+						db_column: u.last_name
 						show_by_default: Yes
 						searchable: Yes
 					Email:
 						title: Email Address
-						db_column: usl.email
+						db_column: u.email
 						show_by_default: Yes
 						searchable: Yes
 				   Client_Browser:

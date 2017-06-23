@@ -146,8 +146,8 @@ zenario__languages:
             item_buttons:
                 edit:
                     label: Properties
-                    traits:
-                        enabled: true
+                    with_columns_set:
+                        traits.enabled: true
                     admin_box:
                         path: zenario_setup_language
                         tab: settings
@@ -166,8 +166,8 @@ zenario__languages:
                     parent: action_dropdown
                     priv: _PRIV_MANAGE_LANGUAGE_CONFIG
                     label: Enable this language
-                    traits:
-                        not_enabled: true
+                    with_columns_set:
+                        traits.not_enabled: true
                     admin_box:
                         path: zenario_setup_language
                         tab: phrases
@@ -175,8 +175,8 @@ zenario__languages:
                 delete:
                     label: Delete Phrases
                     priv: _PRIV_MANAGE_LANGUAGE_PHRASE
-                    traits:
-                        not_enabled: true
+                    with_columns_set:
+                        traits.not_enabled: true
                     ajax:
                         confirm:
                             message: 'Are you sure that you wish to delete the phrases you have added for the Language "[[name]]"?'
@@ -189,9 +189,9 @@ zenario__languages:
                 delete_language:
                     label: Delete language
                     priv: _PRIV_MANAGE_LANGUAGE_CONFIG
-                    traits:
-                        enabled: true
-                        can_delete: true
+                    with_columns_set:
+                        traits.enabled: true
+                        traits.can_delete: true
                     admin_box:
                         path: zenario_delete_language
                     hide_in_select_mode: true

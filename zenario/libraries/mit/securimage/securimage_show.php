@@ -1,5 +1,8 @@
 <?php
 
+require_once '../../../../zenario/basicheader.inc.php';
+startSession();
+
 /**
  * Project:     Securimage: A PHP class for creating and managing form CAPTCHA images<br />
  * File:        securimage_show.php<br />

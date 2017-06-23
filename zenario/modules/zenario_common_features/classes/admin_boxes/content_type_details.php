@@ -57,6 +57,7 @@ class zenario_common_features__admin_boxes__content_type_details extends module_
 		$values['details/writer_field'] = $details['writer_field'];
 		$values['details/summary_field'] = $details['summary_field'];
 		$values['details/release_date_field'] = $details['release_date_field'];
+		$values['details/auto_flag_feature_image'] = $details['auto_flag_feature_image'];
 		$values['details/enable_summary_auto_update'] = $details['enable_summary_auto_update'];
 		$values['details/enable_categories'] = $details['enable_categories'] ? 'enabled' : 'disabled';
 		$values['details/default_layout_id'] = $details['default_layout_id'];
@@ -132,6 +133,7 @@ class zenario_common_features__admin_boxes__content_type_details extends module_
 				'writer_field' => $values['details/writer_field'],
 				'summary_field' => $values['details/summary_field'],
 				'release_date_field' => $values['details/release_date_field'],
+				'auto_flag_feature_image' => $values['details/auto_flag_feature_image'],
 				'enable_summary_auto_update' => 0,
 				'enable_categories' => ($values['details/enable_categories'] == 'enabled') ? 1 : 0,
 				'default_layout_id' => $values['details/default_layout_id'],

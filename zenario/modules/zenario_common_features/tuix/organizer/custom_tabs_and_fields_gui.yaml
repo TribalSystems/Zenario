@@ -3,119 +3,214 @@
 zenario__administration:
     panels:
         custom_tabs_and_fields_gui:
+            panel_type: admin_box_builder
             
-            
-            edit_form_fields:
-                tab: details
+            tab_details:
+                hide_tab_bar: true
                 tabs:
                     details:
                         label: Details
-                        edit_mode:
-                            enabled: true
-                            on: true
                         fields:
-                            label:
+                            tab_label:
                                 label: 'Label:'
                                 type: text
-                                maxlength: 64
+                                maxlength: 255
                                 validation:
                                     required: 'Please enter a label'
-                                onkeyup: |
-                                    if (!editFormFields.tuix.key.id) {
-                                        zenario.get('db_column').value =
-                                            this.value.toLowerCase().replace(/[\s-]+/g, '_').replace(/[^a-z_0-9]/g, '');
-                                    }
-                                note_below: |
-                                    The text of the label that appears before the field.
+                            parent_field_id:
+                                label: 'Conditional display on field:'
+                                type: select
+                                values: boolean_fields
+                                empty_value: -- No conditional display --
+                                visible_if: |
+                                    !item.is_system_field 
+            
+            field_details:
+                tabs:
+                    details:
+                        label: Details
+                        fields:
+                            message:
+                                pre_field_html: <div class="info_message">
+                                snippet:
+                                    html: |
+                                        This system field does not have a recognisable type so you cannot edit its details.
+                                post_field_html: </div>
+                                visible_if: |
+                                    item.type == 'other_system_field'
+                            field_label:
+                                label: 'Label:'
+                                type: text
+                                maxlength: 255
+                                note_below: The text of the label that appears before the field.
+                                visible_if: |
+                                    item.type != 'other_system_field'
                             db_column:
                                 label: 'Code name:'
                                 type: text
-                                maxlength: 64
-                                validation:
-                                    required: 'Please enter a code name'
-                                note_below: |
-                                    This will be used for the name of the column in the database.
-                            protected:
-                                priv: _PRIV_PROTECT_UNPROTECT_DATASET_FIELD
-                                label: 'Protected'
-                                type: checkbox
-                                note_below: 'Protected fields cannot be deleted'
+                                maxlength: 255
+                                note_below: This will be used for the name of the column in the database.
+                                readonly_if: |
+                                    item.is_protected || item.is_system_field
+                                visible_if: |
+                                    item.type != 'other_system_field' && (!item.is_system_field || item.db_column)
+                            values_source:
+                                label: 'Source:'
+                                type: select
+                                empty_value: -- Select --
+                                values: centralised_lists
                                 format_onchange: true
-                    display:
-                        label: Display
-                        edit_mode:
-                            enabled: Yes
-                        fields:
+                                visible_if: |
+                                    !item.is_system_field && (item.type == 'centralised_radios' || item.type == 'centralised_select')
+                            values_source_filter:
+                                label: ''
+                                type: text
+                                maxlength: 255
+                                note_below: Set a filter for the source.
+                                visible_if: |
+                                    !item.is_system_field && (item.type == 'centralised_radios' || item.type == 'centralised_select') && item.values_source
+                            
+                            dataset_foreign_key_id:
+                                label: 'Source:'
+                                type: select
+                                values: datasets
+                                visible_if: |
+                                    !item.is_system_field && (item.type == 'dataset_select' || item.type == 'dataset_picker')
+                            is_protected:
+                                label: Protected
+                                type: checkbox
+                                format_onchange: true
+                                visible_if: |
+                                    item.type != 'other_system_field'
+                            include_in_export:
+                                label: Include in export
+                                type: checkbox
+                                visible_if: |
+                                    item.type != 'other_system_field' && (item.db_column || item.is_new_field)
+                            autocomplete:
+                                label: Autocomplete
+                                type: checkbox
+                                note_below: Display a list below of all unique values for this field that you can choose from.
+                                visible_if: |
+                                    item.type == 'text'
+                            multiple_select:
+                                label: Allow multiple files
+                                type: checkbox
+                                visible_if: |
+                                    item.type == 'file_picker'
+                            store_file:
+                                label: 'File storage:'
+                                type: radios
+                                values: 
+                                    in_docstore:
+                                        label: Docstore
+                                    in_database:
+                                        label: Database
+                                visible_if: |
+                                    item.type == 'file_picker'
+                            extensions:
+                                label: 'Allowed file types:'
+                                type: text
+                                note_below: Enter a comma seperated list of allowed file types (e.g. .png, .jpg, .jpeg, .gif).
+                                visible_if: |
+                                    item.type == 'file_picker'
+                            width:
+                                label: 'Width of the field on the admin box:'
+                                type: select
+                                empty_value: -- Default width -- 
+                                values:
+                                    1:
+                                        label: 1 character (em)
+                                    5:
+                                        label: 5 characters (em)
+                                    10:
+                                        label: 10 characters (em)
+                                    25:
+                                        label: 25 characters (em)
+                                    40:
+                                        label: 40 characters (em)
+                                    56:
+                                        label: 56 characters (em)
+                                visible_if: |
+                                    item.type == 'editor' || item.type == 'textarea'
+                            height:
+                                label: 'Height of the field on the admin box:'
+                                type: select
+                                empty_value: -- Default rows -- 
+                                values:
+                                    3:
+                                        label: 3 rows
+                                    5:
+                                        label: 5 rows
+                                    10:
+                                        label: 10 rows
+                                    20:
+                                        label: 20 rows
+                                visible_if: |
+                                    item.type == 'editor' || item.type == 'textarea'
+                            admin_box_visibility:
+                                label: 'Visibility:'
+                                type: select
+                                values:
+                                    show:
+                                        label: Show
+                                    show_on_condition:
+                                        label: Show on condition
+                                    hide:
+                                        label: Hide
+                                format_onchange: true
+                                visible_if: |
+                                    item.type != 'other_system_field'
                             parent_id:
                                 label: 'Conditional display on field:'
                                 type: select
-                                empty_value: " -- No conditional display -- "
-                            width:
-                                visible_if: "({editor:1,text:1,textarea:1})[editFormFields.value('type', 'details')]"
-                                label: 'Width of the field on the admin box:'
-                                type: select
-                                empty_value: " -- Default width -- "
-                                values: 
-                                    1:
-                                        ord: 1
-                                        label: 1 character (em)
-                                    5:
-                                        ord: 2
-                                        label: 5 characters (em)
-                                    10:
-                                        ord: 3
-                                        label: 10 characters (em)
-                                    25:
-                                        ord: 4
-                                        label: 25 characters (em)
-                                    40:
-                                        ord: 5
-                                        label: 40 characters (em)
-                                    56:
-                                        ord: 6
-                                        label: 56 characters (em)
-                            height:
-                                visible_if: "({editor:1,textarea:1})[editFormFields.value('type', 'details')]"
-                                label: 'Height of the field on the admin box:'
-                                type: select
-                                empty_value: " -- Default rows -- "
-                                values: 
-                                    3:
-                                        ord: 1
-                                        label: 3 rows
-                                    5:
-                                        ord: 2
-                                        label: 5 rows
-                                    10: 
-                                        ord: 3
-                                        label: 10 rows
-                                    20: 
-                                        ord: 4
-                                        label: 20 rows
+                                empty_value: -- Select --
+                                values: boolean_fields
+                                visible_if: |
+                                    item.type != 'other_system_field' && item.admin_box_visibility == 'show_on_condition'
+                                indent: 1
                             note_below:
-                                label: 'Help text:'
+                                label: 'Note below:'
                                 type: text
-                                note_below: |
-                                    This is a message to administrators that explains what to enter for the field.
-                                    For example, like this message.
-                            
+                                maxlength: 255
+                                note_below: A message to administrators below the field.
+                                visible_if: |
+                                    item.type != 'other_system_field' && (item.is_system_field || (item.admin_box_visibility != 'hide'))
+                            side_note:
+                                label: 'Side note:'
+                                type: text
+                                maxlength: 255
+                                note_below: A message to administrators that appears to the side when hovering over the field.
+                                visible_if: |
+                                    item.type != 'other_system_field' && (item.is_system_field || (item.admin_box_visibility != 'hide'))
                     validation:
                         label: Validation
-                        edit_mode:
-                            enabled: Yes
+                        visible_if: |
+                            item.type != 'other_system_field'
                         fields:
+                            message:
+                                pre_field_html: <div class="info_message">
+                                snippet:
+                                    html: |
+                                        You cannot change the validation of a system field.
+                                post_field_html: </div>
+                                visible_if: |
+                                    item.is_system_field
                             required:
-                                label: 'Required'
+                                label: Required
                                 type: checkbox
-                                redraw_onchange: true
-                                note_below: |
-                                    An administrator will not be able to save a record until all of the required fields are complete.
+                                note_below: An administrator will not be able to save a record until all of the required fields are complete.
+                                format_onchange: true
+                                visible_if: |
+                                    !item.is_system_field
                             required_message:
-                                visible_if: "editFormFields.value('required')"
                                 label: 'Message if not complete:'
                                 type: text
+                                maxlength: 255
+                                visible_if: |
+                                    !item.is_system_field && item.required
+                                indent: 1
                             validation:
-                                visible_if: "({text:1})[editFormFields.value('type', 'details')]"
                                 label: 'Validation:'
                                 type: radios
                                 value: none
@@ -124,184 +219,98 @@ zenario__administration:
                                         label: 'None'
                                     email:
                                         label: 'Email'
-                                        note_below: 'Must be a valid email address'
                                     emails:
                                         label: 'Multiple emails'
-                                        note_below: 'Must be a comma-seperated list of valid email addresses'
                                     no_spaces:
                                         label: 'No spaces allowed'
-                                        note_below: 'May not contain spaces'
                                     numeric:
                                         label: 'Numeric'
-                                        note_below: 'Must be a number'
                                     screen_name:
                                         label: 'Screen name'
-                                        note_below: 'Only word characters, digits and spaces are allowed'
-                                redraw_onchange: true
-                                note_below: |
-                                    An administrator will not be able to save a record if this field does not match the validation rule chosen.
+                                format_onchange: true
+                                note_below: An administrator will not be able to save a record if this field does not match the validation rule chosen.
+                                visible_if: |
+                                     !item.is_system_field && item.type == 'text'
                             validation_message:
-                                visible_if: "({text:1})[editFormFields.value('type', 'details')] && editFormFields.value('validation') && editFormFields.value('validation') != 'none'"
                                 label: 'Message if not valid:'
                                 type: text
-                            
+                                maxlength: 255
+                                visible_if: |
+                                    !item.is_system_field && item.type == 'text' && item.validation && item.validation != 'none'
+                                indent: 1
                     organizer:
                         label: Organizer
-                        edit_mode:
-                            enabled: Yes
+                        visible_if: |
+                            item.type != 'other_system_field'
                         fields:
                             show_in_organizer:
-                                label: 'Show in Organizer panel'
+                                label: Show in Organizer panel
                                 type: checkbox
-                                redraw_onchange: true
+                                format_onchange: true
+                                visible_if: |
+                                    !item.is_system_field
+                            create_index:
+                                type: radios
+                                values:
+                                    no_index: 
+                                        label: Don't index
+                                    index:
+                                        label: Index
+                                value: index
+                                format_onchange: true
+                                visible_if: |
+                                    !item.is_system_field && item.show_in_organizer 
+                                indent: 1
                             searchable:
-                                visible_if: "editFormFields.value('show_in_organizer') == 1"
-                                label: 'Searchable'
+                                label: Allow searching in Organizer
                                 type: checkbox
+                                visible_if: |
+                                    !item.is_system_field && ((['date', 'editor', 'text', 'textarea', 'url'].indexOf(item.type) != -1) ? item.show_in_organizer : (item.show_in_organizer && item.create_index == 'index'))
+                                indent: 2
                             sortable:
-                                visible_if: "editFormFields.value('show_in_organizer') == 1"
-                                label: 'Sortable'
+                                label: Allow sorting in Organizer
                                 type: checkbox
-                            visibility:
-                                visible_if: "editFormFields.value('show_in_organizer') == 1"
+                                visible_if: |
+                                    console.log(item.create_index) || (
+                                    !item.is_system_field && item.show_in_organizer && (item.create_index == 'index') && (['checkboxes', 'radios', 'centralised_radios', 'select', 'centralised_select'].indexOf(item.type) == -1)
+                                    )
+                                indent: 2
+                            organizer_visibility:
                                 label: 'Visibility:'
                                 type: select
-                                empty_value: 'Hide by default'
                                 values:
-                                    1:
-                                        ord: 1
+                                    hide:
+                                        label: 'Hide by default'
+                                    show_by_default:
                                         label: 'Show by default'
-                                    2:
-                                        ord: 1
+                                    always_show:
                                         label: 'Always show'
-                                note_below: "Administrators will not be able to hide this field in Organizer if it is set to &quot;Always show&quot;."
-                            
-                            
-                    lov:
-                        visible_if: "({checkboxes:1,radios:1,select:1})[editFormFields.value('type', 'details')]"
-                        label: Values
-                        edit_mode:
-                            enabled: true
-                            always_on: true
-                            enable_revert: false
-                        fields:
-                            add_num:
-                                ord: 100001
-                                type: select
-                                hidden: true
-                                value: 1
-                                values:
-                                    1:
-                                        ord: 1
-                                        label: 'Add 1 more value'
-                                    2:
-                                        ord: 2
-                                        label: 'Add 2 more values'
-                                    5:
-                                        ord: 5
-                                        label: 'Add 5 more values'
-                                    10:
-                                        ord: 10
-                                        label: 'Add 10 more values'
-                            add:
-                                #same_row: true
-                                ord: 100002
-                                type: submit
-                                value: Add a value
-                        
-                        custom__template_fields:
-                            label:
-                                type: text
-                            id:
-                                same_row: true
-                                type: hidden
-                            delete:
-                                same_row: true
-                                type: submit
-                                value: 'X'
-                                onclick: >
-                                    if (!confirm('Are you sure you wish to delete this value?')) {
-                                        return false;
-                                    }
-                            nudge_down:
-                                same_row: true
-                                type: submit
-                                value: 'v'
-                            nudge_up:
-                                same_row: true
-                                type: submit
-                                value: '^'
-            edit_form_tabs:
-                tab: details  
-                tabs:
-                    details:
-                        edit_mode:
-                            enabled: true
-                            on: true
-                        fields:
-                            label:
-                                label: 'Label:'
-                                type: text
-                                maxlength: 32
-                                validation:
-                                    required: 'Please enter a label'
-            
-            
-            
-            disable_periodic_refresh: Yes
-            
-            refiners:
-                dataset_id: {}
-            refiner_required: true
-            
-            items: {}
-            default_sort_column: label
-            columns:
-                ordinal:
-                    title: Ordinal
-                    align_right: Yes
-                    width: xxsmall
-                db_column:
-                    title: Database Column
-                    searchable: Yes
-                    width: medium
-                parents:
-                    title: Parent fields
-                    show_by_default: Yes
-                    width: large
-                label:
-                    title: Label
-                    searchable: true
-                    show_by_default: Yes
-                    width: medium
-                type:
-                    title: Type
-                    format: enum
+                                note_below: Administrators will not be able to hide this field in Organizer if it is set to "Always show".
+                                visible_if: |
+                                    !item.is_system_field && item.show_in_organizer
+                                indent: 1
+                            hide_in_organizer:
+                                label: Hide in Organizer panel
+                                type: checkbox
+                                visible_if: |
+                                    item.is_system_field
+                                
                     values:
-                        group: 'Group'
-                        checkbox: 'Single checkbox'
-                        checkboxes: 'Multiple checkboxes'
-                        date: 'Date'
-                        editor: 'Editor'
-                        radios: 'Multiple radio-buttons'
-                        select: 'Select list'
-                        text: 'Text'
-                        textarea: 'Textarea'
-                        url: 'URL'
-                        tab: 'Tab'
-                        system_field: 'System field'
-                        system_tab: 'System tab'
-                    show_by_default: Yes
-                    width: medium
-                user_count:
-                    title: Count of records with this field set
-                    show_by_default: Yes
-                    width: xxsmall
-                protected:
-                    title: Protected
-                    width: xxsmall
-                    format: yes_or_no
-            
-            panel_type: admin_box_builder
-            
-            
+                        visible_if: |
+                            ['select', 'radios', 'checkboxes', 'centralised_radios', 'centralised_select'].indexOf(item.type) != -1
+                        label: Values
+                        fields:
+                            message:
+                                pre_field_html: <div class="info_message">
+                                snippet:
+                                    html: |
+                                        You cannot change the values of a system field.
+                                post_field_html: </div>
+                                visible_if: |
+                                    item.is_system_field || (item.type == 'centralised_radios' || item.type == 'centralised_select')
+                            values:
+                                type: values_list
+                                visible_if: |
+                                    !item.is_system_field && !(item.type == 'centralised_radios' || item.type == 'centralised_select')
+                                    
+                                

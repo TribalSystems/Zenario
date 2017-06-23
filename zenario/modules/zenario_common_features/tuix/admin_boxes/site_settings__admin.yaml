@@ -74,7 +74,7 @@ site_settings:
                     
                     label: Require security code on login
                     type: checkbox
-                    read_only: true
+                    readonly: true
                     note_below: |
                         If enabled, an admin must verify access to their email when logging into the site.
                 
@@ -82,7 +82,7 @@ site_settings:
                     grouping: zenario_site_description
                     label: Issue security codes on a per-IP basis
                     type: checkbox
-                    read_only: true
+                    readonly: true
                     note_below: |
                         If enabled, an admin must verify access for each IP address they use to access the site.
                 
@@ -90,7 +90,7 @@ site_settings:
                     grouping: zenario_site_description
                     label: Security codes timeout
                     type: text
-                    read_only: true
+                    readonly: true
                     style: |
                         width: 4em;
                     note_below: |

@@ -381,6 +381,17 @@ additionalProperties:
                         description: >
                             A tooltip for this button
                     
+                    icon_left:
+                        type: string
+                        description: >
+                            This places a <i></> tag to the left of a button with the specified CSS class name(s).
+                            Used for adding font-based icons to buttons, e.g. Font Awesome.
+                    icon_right:
+                        type: string
+                        description: >
+                            This places a <i></> tag to the right of a button with the specified CSS class name(s).
+                            Used for adding font-based icons to buttons, e.g. Font Awesome.
+                    
                     hidden: *hidden
                     visible_if: *visible_if
                     
@@ -465,6 +476,17 @@ additionalProperties:
                         type: string
                         description: >
                             A label for this button
+                    
+                    icon_left:
+                        type: string
+                        description: >
+                            This places a <i></> tag to the left of a button with the specified CSS class name(s).
+                            Used for adding font-based icons to buttons, e.g. Font Awesome.
+                    icon_right:
+                        type: string
+                        description: >
+                            This places a <i></> tag to the right of a button with the specified CSS class name(s).
+                            Used for adding font-based icons to buttons, e.g. Font Awesome.
                     
                     parent:
                         type: string
@@ -654,3 +676,13 @@ additionalProperties:
             description: >
                 If sorting is being done on the server, the CMS will put an array of ids
                 (sorted into the correct order) into this variable.
+
+        close_popout:
+            type: boolean
+            description: >
+                If this FEA plugin was opened in a popout, this sends a signal to close it.
+
+        reload_parent:
+            type: boolean
+            description: >
+                If this FEA plugin was opened in a popout from another FEA, this sends a signal to reload the parent FEA.

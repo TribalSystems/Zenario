@@ -59,9 +59,13 @@
 		
 		<% if (m.quickFilters && m.quickFilters.length) { %>
 			<div id="organizer_quickFilter">
-				{{zenarioA.microTemplate('zenario_organizer_quick_filter_button', m.quickFilters)}}
+				{{zenarioT.microTemplate('zenario_organizer_quick_filter_button', m.quickFilters)}}
 			</div>
 		<% } %>
+		
+		<div id="organizer_selected" style="display: none;">
+			<span id="organizer_itemSelected"></span>
+		</div>
 	</div>
 
 

@@ -37,14 +37,9 @@
 										class="nest_back nest_go_back"
 										href="{{this.cBackLink()|escape}}"
 										onclick="zenario_conductor.goBack('{{slotName|escape}}'); return false;"
-									>{{this.phrase('Back')}}</a>
-								
-								{% elseif this.cCommandEnabled('close') %}
-									<a
-										class="nest_back nest_close"
-										href="{{this.cBackLink()|escape}}"
-										onclick="zenario_conductor.goBack('{{slotName|escape}}'); return false;"
-									>{{this.phrase('Back')}}</a>
+									>
+									<i class="fa fa-caret-left" aria-hidden="true"></i>
+									{{this.phrase('Back')}}</a>
 								{% else %}
 									<a
 										class="nest_back nest_browser_back"
@@ -54,28 +49,36 @@
 												return false;
 											}
 										"
-									>{{this.phrase('Back')}}</a>
+									>
+									<i class="fa fa-caret-left" aria-hidden="true"></i>
+									{{this.phrase('Back')}}</a>
 								{% endif %}
 							{% endif %}
-							{% if Tab.Show_Refresh %}
-								{% if Tab.Show_Auto_Refresh %}
-									<a
-										class="nest_refresh auto_refresh"
-										onclick="zenario_conductor.autoRefresh('{{slotName|escape}}', {{Tab.Auto_Refresh_Interval|escape}});"
-									>{{this.phrase('Auto refresh')}}</a>
-									<div class="stop_auto_refresh">
-										<a
-											class="nest_refresh"
-											onclick="zenario_conductor.stopAutoRefresh('{{slotName|escape}}');"
-										>{{this.phrase('Stop auto refreshing')}}</a>
-										<p>{{this.phrase('Last Updated: [[updated]]', {updated: Tab.Last_Updated})}}</p>
-									</div>
-								{% else %}
+							
+							{% if Tab.Show_Auto_Refresh %}
+								<a
+									class="nest_refresh auto_refresh"
+									onclick="zenario_conductor.autoRefresh('{{slotName|escape}}', {{Tab.Auto_Refresh_Interval|escape}});"
+								>
+								<i class="fa fa-circle" aria-hidden="true"></i>
+								{{this.phrase('Auto refresh')}}</a>
+								<div class="stop_auto_refresh">
 									<a
 										class="nest_refresh"
-										onclick="zenario_conductor.refresh('{{slotName|escape}}');"
-									>{{this.phrase('Refresh')}}</a>
-								{% endif %}
+										onclick="zenario_conductor.stopAutoRefresh('{{slotName|escape}}');"
+									>
+									<i class="fa fa-circle" aria-hidden="true"></i>
+									{{this.phrase('Stop auto refreshing')}}</a>
+									<p>{{this.phrase('Last Updated: [[updated]]', {updated: Tab.Last_Updated})}}</p>
+								</div>
+							{% endif %}
+							{% if Tab.Show_Refresh %}
+								<a
+									class="nest_refresh"
+									onclick="zenario_conductor.refresh('{{slotName|escape}}');"
+								>
+								<i class="fa fa-refresh" aria-hidden="true"></i>
+								{{this.phrase('Refresh')}}</a>
 							{% endif %}
 						</div>
 					{% endif %}

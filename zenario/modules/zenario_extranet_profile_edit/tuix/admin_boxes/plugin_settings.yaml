@@ -18,15 +18,20 @@ plugin_settings:
                     label: 'Display a title'
                     type: checkbox
                     value: "1"
+                repeat_edit_button_at_top_of_form:
+                    plugin_setting:
+                        name: repeat_edit_button_at_top_of_form
+                    label: 'Repeat Profile edit button at top of form'
+                    type: checkbox
                 profile_form:
                     plugin_setting:
                         name: user_form
                     label: 'Form:'
                     pick_items:
-                        path: zenario__user_forms/panels/zenario_user_forms__forms
-                        target_path: zenario__user_forms/panels/zenario_user_forms__forms
-                        min_path: zenario__user_forms/panels/zenario_user_forms__forms
-                        max_path: zenario__user_forms/panels/zenario_user_forms__forms
+                        path: zenario__user_forms/panels/user_forms
+                        target_path: zenario__user_forms/panels/user_forms
+                        min_path: zenario__user_forms/panels/user_forms
+                        max_path: zenario__user_forms/panels/user_forms
                         disallow_refiners_looping_on_min_path: Yes
                         one_to_one_choose_phrase: Choose this form
                         select_phrase: Select a form...

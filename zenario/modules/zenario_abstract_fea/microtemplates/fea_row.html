@@ -16,8 +16,8 @@
 <% if (m.fields) { %>
 	<% var firstField = m.fields[0]; %>
 	
-	<% if (firstField._lastGrouping !== firstField.grouping) { %>
-		<% if (firstField._lastGrouping) { %>
+	<% if (firstField._lastVisibleGrouping !== firstField.grouping) { %>
+		<% if (firstField._lastVisibleGrouping) { %>
 			</fieldset>
 		<% } %>
 		<% if (firstField.grouping) { %>

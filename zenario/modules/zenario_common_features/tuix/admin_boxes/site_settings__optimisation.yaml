@@ -26,7 +26,7 @@ site_settings:
                 cache_images:
                     label: 'Cache images'
                     type: checkbox
-                    read_only: true
+                    readonly: true
                     note_below: ''
                 
                 fab_use_cache_dir:
@@ -70,10 +70,22 @@ site_settings:
                         on:
                             label: Always on
                     value: on
-                    read_only: true
+                    readonly: true
                     note_below: |
                         Reduce the number of downloads by combining multiple JavaScript files together.
                         (This cannot be disabled.)
+                
+                defer_js:
+                    site_setting:
+                        name: defer_js
+                    ord: 999
+                    label: 'Defer JavaScript in visitor mode'
+                    type: checkbox
+                    note_below: |
+                        Deferring JavaScript may make your pages load more quickly on mobile devices,
+                        but may cause issues for visitors using Internet Explorer versions 9 and earlier.
+                        Certain plugins may also stop working properly if this option is enabled.
+                        
         
         clear_cache:
             priv: _PRIV_EDIT_SITE_SETTING
@@ -156,7 +168,7 @@ site_settings:
                     grouping: zenario_siteconfig
                     label: 'Caching of SQL queries enabled'
                     type: checkbox
-                    read_only: true
+                    readonly: true
                     note_below: |
                         Enabling the query cache in MySQL will speed up the CMS when repeated queries are made to the database,
                         resulting in faster page-generation times and less load on the server.
@@ -166,4 +178,4 @@ site_settings:
                     label: 'Query cache Size'
                     type: text
                     style: 'width: 6em;'
-                    read_only: true
+                    readonly: true

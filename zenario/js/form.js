@@ -40,12 +40,12 @@ zenario.lib(function(
 	undefined,
 	URLBasePath,
 	document, window, windowOpener, windowParent,
-	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO, strings,
+	zenario, zenarioA, zenarioT, zenarioAB, zenarioAT, zenarioO,
 	encodeURIComponent, get, engToBoolean, htmlspecialchars, jsEscape, phrase,
 	extensionOf, methodsOf, has,
-	zenarioF
+	zenarioF, extraVar2, s$s
 ) {
-	zenarioA.lib(function(
+	zenarioT.lib(function(
 		_$html,
 		_$div,
 		_$span,
@@ -91,7 +91,7 @@ methods.get = function(el) {
 };
 
 methods.microTemplate = function(template, data, filter) {
-	return zenarioA.microTemplate(template, data, filter);
+	return zenarioT.microTemplate(template, data, filter);
 };
 
 
@@ -428,8 +428,8 @@ methods.switchToATabWithErrors = function() {
 			foreach (this.sortedTabs as i => tab) {
 				
 				if (tuix.tabs[tab]
-					//zenarioA.hidden(tuixObject, lib, item, id, button, column, field, section, tab, tuix)
-				 && !zenarioA.hidden(undefined, this, undefined, tab, undefined, undefined, undefined, undefined, tuix.tabs[tab])) {
+					//zenarioT.hidden(tuixObject, lib, item, id, button, column, field, section, tab, tuix)
+				 && !zenarioT.hidden(undefined, this, undefined, tab, undefined, undefined, undefined, undefined, tuix.tabs[tab])) {
 					if (this.errorOnTab(tab)) {
 						tuix.tab = tab;
 						return true;
@@ -501,8 +501,8 @@ methods.drawTabs = function(microTemplate) {
 	foreach (this.sortedTabs as i => tab) {
 		tabTUIX = this.tuix.tabs[tab];
 		if (tabTUIX
-			//zenarioA.hidden(tuixObject, lib, item, id, button, column, field, section, tab, tuix)
-		 && !zenarioA.hidden(undefined, this, undefined, tab, undefined, undefined, undefined, undefined, tabTUIX)) {
+			//zenarioT.hidden(tuixObject, lib, item, id, button, column, field, section, tab, tuix)
+		 && !zenarioT.hidden(undefined, this, undefined, tab, undefined, undefined, undefined, undefined, tabTUIX)) {
 			
 			//Only allow this tab to be clicked if it looks like there's something on it
 			//Dummy tabs that only exist to be the parents in drop-down menus should not be clickable
@@ -529,7 +529,7 @@ methods.drawTabs = function(microTemplate) {
 		}
 	}
 	
-	zenarioA.setButtonKin(data, 'zenario_fab_tab_with_children');
+	zenarioT.setButtonKin(data, 'zenario_fab_tab_with_children');
 	
 	return this.microTemplate(microTemplate, data);
 };
@@ -552,7 +552,7 @@ methods.drawFields = function(cb, microTemplate, scanForHiddenFieldsWithoutDrawi
 		fieldValuesByIndent = {},
 		errorsDrawn = false,
 		i, error, field, notice,
-		currentGrouping,
+		groupingName, lastGrouping, lastVisibleGrouping, groupingField = false, groupingsDrawn = {},
 		data = {
 			fields: {},
 			rows: [],
@@ -566,13 +566,14 @@ methods.drawFields = function(cb, microTemplate, scanForHiddenFieldsWithoutDrawi
 	
 	
 	if (!scanForHiddenFieldsWithoutDrawingThem) {
+		this.ffoving = 0;
 		this.splitValues = {};
-		zenarioA.clearHTML5UploadFromDragDrop();
+		zenarioT.clearHTML5UploadFromDragDrop();
 	
 		if (!this.savedAndContinued(tab) && this.editCancelEnabled(tab)) {
 			data.revert =
 				_$div(__$class, 'zenario_editCancelButton',
-					zenarioA.input(
+					zenarioT.input(
 						__$class, __$submit,
 						__$type, __$button,
 						__$onclick, this.globalName + '.changeMode(); return false;',
@@ -615,23 +616,26 @@ methods.drawFields = function(cb, microTemplate, scanForHiddenFieldsWithoutDrawi
 		
 		//Note down if the last field was in a grouping
 		forceNewRowForNewGrouping = false;
-		field._lastGrouping = currentGrouping;
-		if (currentGrouping !== field.grouping) {
-			currentGrouping = field.grouping;
+		groupingName = field.grouping;
+		
+		if (lastGrouping !== groupingName) {
+			lastGrouping = groupingName;
+			
+			groupingField = groupings[groupingName] !== undefined && fields[groupings[groupingName]];
 			
 			//Fields in a grouping should be hidden if the grouping is hidden, or does not actually exist
-			groupingIsHidden = currentGrouping && (
-				groupings[currentGrouping] === undefined
-			 || !fields[groupings[currentGrouping]]
-			 || zenarioA.hidden(undefined, this, undefined, groupings[currentGrouping], undefined, undefined, fields[groupings[currentGrouping]])
+			groupingIsHidden = groupingName && (
+				!groupingField || zenarioT.hidden(undefined, this, undefined, groupings[groupingName], undefined, undefined, groupingField)
 			);
+		}
 			
+		if (lastVisibleGrouping !== groupingName) {
 			//Force different groupings to be on a new row, even if the same_row property is set
 			forceNewRowForNewGrouping = true;
 		}
 		
 		field._id = fieldId;
-		field._html = this.drawField(cb, tab, fieldId, true, field, hiddenFieldsByIndent, fieldValuesByIndent, scanForHiddenFieldsWithoutDrawingThem, groupingIsHidden);
+		field._html = this.drawField(cb, tab, fieldId, field, hiddenFieldsByIndent, fieldValuesByIndent, scanForHiddenFieldsWithoutDrawingThem, groupingIsHidden);
 		
 		//Don't add completely hidden fields, or if we're just scanning fields and not drawing them
 		if (scanForHiddenFieldsWithoutDrawingThem
@@ -646,14 +650,51 @@ methods.drawFields = function(cb, microTemplate, scanForHiddenFieldsWithoutDrawi
 			data.rows.push({fields: []});
 		}
 		
+		//If the grouping field has a legend or any HTML at the top, include it
+		if (forceNewRowForNewGrouping
+		 && groupingField
+		 && (groupingField.legend || groupingField.snippet)) {
+			groupingField = _.extend({grouping: groupingName}, groupingField);
+			groupingField._id = groupingName;
+			groupingField._html = this.drawField(cb, tab, groupingName, groupingField);
+			groupingField._hideOnOpen = true;
+			groupingField._showOnOpen = true;
+			
+			groupingField._lastVisibleGrouping = lastVisibleGrouping;
+			lastVisibleGrouping = groupingName;
+			
+			data.rows[data.rows.length-1].fields.push(groupingField);
+			data.fields[groupingName] = groupingField;
+			groupingsDrawn[groupingName] = groupingField;
+			
+			data.rows.push({fields: []});
+		}
+		
 		if (!errorsDrawn && tabs.show_errors_after_field == fieldId) {
 			data.rows[data.rows.length-1].errors = data.errors;
 			data.rows[data.rows.length-1].notices = data.notices;
 			errorsDrawn = true;
 		}
 		
+		field._lastVisibleGrouping = lastVisibleGrouping;
+		lastVisibleGrouping = groupingName;
+		
 		data.rows[data.rows.length-1].fields.push(field);
 		data.fields[fieldId] = field;
+	}
+	
+	//If we displayed any grouping labels, they may need to be animated,
+	//depending on how the fields in them are animated:
+		//If any fields in the grouping were previously visible, then no animations are needed on the grouping
+		//If all of the visible fields in a grouping are animating open, then the grouping should also animate open
+		//If all of the visible fields in a grouping are animating closed, then the grouping should also animate closed
+	foreach (data.fields as fieldId => field) {
+		if (groupingName = field.grouping) {
+			if (groupingField = groupingsDrawn[groupingName]) {
+				groupingField._hideOnOpen &= field._hideOnOpen;
+				groupingField._showOnOpen &= field._showOnOpen;
+			}
+		}
 	}
 	
 	
@@ -676,7 +717,7 @@ methods.drawFields = function(cb, microTemplate, scanForHiddenFieldsWithoutDrawi
 	
 	foreach (sortedFields as f => fieldId) {
 		
-		delete fields[fieldId]._lastGrouping;
+		delete fields[fieldId]._lastVisibleGrouping;
 		delete fields[fieldId]._startNewRow;
 		delete fields[fieldId]._hideOnOpen;
 		delete fields[fieldId]._showOnOpen;
@@ -945,7 +986,7 @@ methods.enableMicroTemplates = function(field, object) {
 	
 };
 
-methods.drawField = function(cb, tab, id, customTemplate, field, hiddenFieldsByIndent, fieldValuesByIndent, scanForHiddenFieldsWithoutDrawingThem, groupingIsHidden, lov, value, readOnly, tempReadOnly, sortOrder, existingParents, lovField) {
+methods.drawField = function(cb, tab, id, field, hiddenFieldsByIndent, fieldValuesByIndent, scanForHiddenFieldsWithoutDrawingThem, groupingIsHidden, lov, value, readOnly, tempReadOnly, sortOrder, existingParents, lovField) {
 	
 	if (field === undefined) {
 		field = this.field(id, tab);
@@ -971,20 +1012,14 @@ methods.drawField = function(cb, tab, id, customTemplate, field, hiddenFieldsByI
 	
 	if (lovField) {
 		if (lovField.disabled_if !== undefined
-			//zenarioA.eval(c, lib, tuixObject, item, id, button, column, field, section, tab, tuix)
-		 && zenarioA.eval(lovField.disabled_if, this, lovField, undefined, lov, undefined, undefined, field)) {
+			//zenarioT.eval(c, lib, tuixObject, item, id, button, column, field, section, tab, tuix)
+		 && zenarioT.eval(lovField.disabled_if, this, lovField, undefined, lov, undefined, undefined, field)) {
 			readOnly = true;
 		}
 	} else
 	if (field.disabled_if !== undefined
-	 && zenarioA.eval(field.disabled_if, this, undefined, undefined, id, undefined, undefined, field)) {
+	 && zenarioT.eval(field.disabled_if, this, undefined, undefined, id, undefined, undefined, field)) {
 		readOnly = true;
-	}
-	
-	//Groups are not actually drawn on the page, they're only in with the fields so their
-	//ordinal can be determined
-	if (fieldType && fieldType == 'grouping') {
-		return '';
 	}
 	
 		
@@ -1026,7 +1061,7 @@ methods.drawField = function(cb, tab, id, customTemplate, field, hiddenFieldsByI
 			'max': true,
 			'min': true,
 			'pattern': true,
-			'placeholder': true,
+			'placeholder': !readOnly,	//Only allow placeholders if fields are editable
 			'required': true,
 			'step': true
 		},
@@ -1046,6 +1081,7 @@ methods.drawField = function(cb, tab, id, customTemplate, field, hiddenFieldsByI
 		parentsValuesExist = false,
 		selected_option,
 		prop, match,
+		useButtonTag = false,
 		startOfTable = false,
 		middleOfTable = false,
 		hasPreFieldTags = false,
@@ -1083,8 +1119,8 @@ methods.drawField = function(cb, tab, id, customTemplate, field, hiddenFieldsByI
 			//Catch the case where an option was visible, but is now hidden.
 			//In this case it shouldn't count as selected.
 			if (_.isObject(selected_option)
-				//zenarioA.hidden(tuixObject, lib, item, id, button, column, field, section, tab, tuix)
-			 && zenarioA.hidden(selected_option, this, undefined, value, undefined, undefined, field, undefined, this.tuix.tabs[tab])) {
+				//zenarioT.hidden(tuixObject, lib, item, id, button, column, field, section, tab, tuix)
+			 && zenarioT.hidden(selected_option, this, undefined, value, undefined, undefined, field, undefined, this.tuix.tabs[tab])) {
 				selected_option = false;
 			}
 			
@@ -1181,7 +1217,7 @@ methods.drawField = function(cb, tab, id, customTemplate, field, hiddenFieldsByI
 		indent = 1 * field.indent || 0;
 		hidden = groupingIsHidden
 		
-			  || zenarioA.hidden(undefined, this, undefined, id, undefined, undefined, field)
+			  || zenarioT.hidden(undefined, this, undefined, id, undefined, undefined, field)
 			
 			  || (engToBoolean(hiddenFieldsByIndent && hiddenFieldsByIndent.last? field.hide_with_previous_field : field.hide_if_previous_field_is_not_hidden))
 		
@@ -1339,8 +1375,8 @@ methods.drawField = function(cb, tab, id, customTemplate, field, hiddenFieldsByI
 						existingParents[val.parent] = true;
 					}
 					
-					//zenarioA.hidden(tuixObject, lib, item, id, button, column, field, section, tab, tuix)
-					if (zenarioA.hidden(val, this, undefined, v, undefined, undefined, field, undefined, this.tuix.tabs[tab])) {
+					//zenarioT.hidden(tuixObject, lib, item, id, button, column, field, section, tab, tuix)
+					if (zenarioT.hidden(val, this, undefined, v, undefined, undefined, field, undefined, this.tuix.tabs[tab])) {
 						continue;
 					} else if (val.ord !== undefined) {
 						sortOrder.push([v, val.ord]);
@@ -1354,7 +1390,7 @@ methods.drawField = function(cb, tab, id, customTemplate, field, hiddenFieldsByI
 				}
 			}
 	
-			sortOrder.sort(zenarioA.sortArray);
+			sortOrder.sort(zenarioT.sortArray);
 		
 			//Remove fields that were just there to help sort
 			foreach (sortOrder as var i) {
@@ -1392,7 +1428,7 @@ methods.drawField = function(cb, tab, id, customTemplate, field, hiddenFieldsByI
 			}
 		}
 		
-		html += _$html('label', 'id', 'label__' + id, displayVal);
+		html += _$html('label', 'id', 'label__' + id, __$class, field.css_class, displayVal);
 	
 	//Draw HTML snippets
 	} else if (snippet = field.snippet) {
@@ -1441,7 +1477,11 @@ methods.drawField = function(cb, tab, id, customTemplate, field, hiddenFieldsByI
 				thisField.disabled = true;
 			}
 			
-			html += this.hierarchicalBoxes(cb, tab, id, value, field, thisField, picked_items, tempReadOnly, sortOrder, existingParents);
+			if (_.isEmpty(sortOrder)) {
+				html += _$html('label', __$class, 'zenario_no_values_message', htmlspecialchars(field.no_values_message));
+			} else {
+				html += this.hierarchicalBoxes(cb, tab, id, value, field, thisField, picked_items, tempReadOnly, sortOrder, existingParents);
+			}
 		}
 	
 	} else if (field.upload || field.pick_items) {
@@ -1718,12 +1758,12 @@ methods.drawField = function(cb, tab, id, customTemplate, field, hiddenFieldsByI
 							relative_urls: false,
 		
 							content_css: content_css,
-							toolbar: 'undo redo | bold italic | removeformat | fontsizeselect | formatselect | numlist bullist | outdent indent | code',
+							toolbar: 'undo redo | bold italic | removeformat | fontsizeselect | formatselect | numlist bullist | blockquote outdent indent | code',
 							style_formats: zenarioA.skinDesc.style_formats,
 							oninit: undefined
 						}),
 					optionsWithImagesAndLinks = _.extend({}, normalOptions, {
-							toolbar: 'undo redo | image link unlink | bold italic | removeformat | fontsizeselect | formatselect | numlist bullist | outdent indent | code',
+							toolbar: 'undo redo | image link unlink | bold italic | removeformat | fontsizeselect | formatselect | numlist bullist | blockquote outdent indent | code',
 		
 							file_browser_callback: zenarioA.fileBrowser,
 							init_instance_callback: function(instance) {
@@ -1738,10 +1778,10 @@ methods.drawField = function(cb, tab, id, customTemplate, field, hiddenFieldsByI
 							}
 						}),
 					optionsWithImages = _.extend({}, optionsWithImagesAndLinks, {
-							toolbar: 'undo redo | image | bold italic | removeformat | fontsizeselect | formatselect | numlist bullist | outdent indent | code'
+							toolbar: 'undo redo | image | bold italic | removeformat | fontsizeselect | formatselect | numlist bullist | blockquote outdent indent | code'
 						}),
 					optionsWithLinks = _.extend({}, optionsWithImages, {
-							toolbar: 'undo redo | link unlink | bold italic | removeformat | fontsizeselect | formatselect | numlist bullist | outdent indent | code'
+							toolbar: 'undo redo | link unlink | bold italic | removeformat | fontsizeselect | formatselect | numlist bullist | blockquote outdent indent | code'
 						});
 			
 				if (readOnly) {
@@ -1803,8 +1843,14 @@ methods.drawField = function(cb, tab, id, customTemplate, field, hiddenFieldsByI
 			case __$button:
 			case __$submit:
 			case 'toggle':
-				html += '<input';
-				extraAtt.type = __$button;
+				
+				if (engToBoolean(field.use_button_tag)) {
+					html += '<' + __$button;
+					useButtonTag = true;
+				} else {
+					html += '<input';
+					extraAtt.type = __$button;
+				}
 			
 				if (!readOnly || engToBoolean(field.can_be_pressed_in_view_mode)) {
 					extraAttAfter.onclick = "lib.clickButton(this, '" + id + "');";
@@ -1965,6 +2011,19 @@ methods.drawField = function(cb, tab, id, customTemplate, field, hiddenFieldsByI
 		if (fieldType == 'select') {
 			html += '>';
 		
+		} else if (useButtonTag) {
+			html += '>';
+				if (field.icon_left) {
+					html += '<i class="' + htmlspecialchars(field.icon_left) + '" aria-hidden="true"></i>';
+				}
+			
+				html += htmlspecialchars(value, false, 'asis');
+			
+				if (field.icon_right) {
+					html += '<i class="' + htmlspecialchars(field.icon_right) + '" aria-hidden="true"></i>';
+				}
+			html += '</button>';
+		
 		} else if (fieldType == 'textarea' || fieldType == 'editor') {
 			html += '>' + htmlspecialchars(value, false, 'asis') + '</textarea>';
 		
@@ -1997,6 +2056,27 @@ methods.drawField = function(cb, tab, id, customTemplate, field, hiddenFieldsByI
 				html += this.hierarchicalSelect(picked_items, field, sortOrder, parentsValuesExist, existingParents);
 			}
 			html += '</select>';
+			
+			
+			//Playing around with adding the select2 jQuery plugin to the CMS so we can fancy up the select lists
+			if (field.select_options) {
+				cb.after(function() {
+					var $field = $(that.get(id)),
+						chosenOptions = _.extend({}, field.select_options, {
+							//https://harvesthq.github.io/chosen/options.html
+							width: $field.css('width') || $field.width(),
+							inherit_select_classes: true
+						});
+					
+					if (field.empty_value
+					 && chosenOptions.dont_show_empty_value
+					 && !chosenOptions.placeholder_text_single) {
+						chosenOptions.placeholder_text_single = field.empty_value;
+					}
+					
+					$field.chosen(chosenOptions);
+				});
+			}
 		
 		} else if (isNormalTextField) {
 			
@@ -2156,8 +2236,8 @@ methods.hierarchicalSelect = function(picked_items, field, sortOrder, parentsVal
 		} else
 		if (engToBoolean(val.disabled)
 		 || (val.disabled_if !== undefined
-			//zenarioA.eval(c, lib, tuixObject, item, id, button, column, field, section, tab, tuix)
-		  && zenarioA.eval(val.disabled_if, this, val, undefined, v, undefined, undefined, field))) {
+			//zenarioT.eval(c, lib, tuixObject, item, id, button, column, field, section, tab, tuix)
+		  && zenarioT.eval(val.disabled_if, this, val, undefined, v, undefined, undefined, field))) {
 			disabled = true;
 		}
 		
@@ -2543,7 +2623,7 @@ methods.upload = function(id, setUpDragDrop) {
 	};
 	
 	if (setUpDragDrop) {
-		zenarioA.setHTML5UploadFromDragDrop(
+		zenarioT.setHTML5UploadFromDragDrop(
 			that.ajaxURL(),
 			{
 				fileUpload: 1
@@ -2553,7 +2633,7 @@ methods.upload = function(id, setUpDragDrop) {
 			that.get('zenario_fbAdminInner')
 		);
 	} else {
-		zenarioA.action(this, object, undefined, undefined, undefined, {fileUpload: 1}, undefined, this.ajaxURL());
+		zenarioT.action(this, object, undefined, undefined, undefined, {fileUpload: 1}, undefined, this.ajaxURL());
 	}
 };
 
@@ -2885,8 +2965,7 @@ methods.hierarchicalBoxes = function(cb, tab, id, value, field, thisField, picke
 				})(m.lovId);
 			}
 		
-			//methods.drawField = function(cb, tab, id, customTemplate, field, hiddenFieldsByIndent, fieldValuesByIndent, scanForHiddenFieldsWithoutDrawingThem, groupingIsHidden, lov, value, readOnly, tempReadOnly, sortOrder, existingParents, lovField) {
-			m.lovHTML = this.drawField(cb, tab, id, true, thisField, undefined, undefined, undefined, undefined, v, isSelected, false, tempReadOnly, sortOrder, existingParents, lovField);
+			m.lovHTML = this.drawField(cb, tab, id, thisField, undefined, undefined, undefined, undefined, v, isSelected, false, tempReadOnly, sortOrder, existingParents, lovField);
 		
 			m.childrenHTML = '';
 			if (existingParents[v]) {
@@ -3042,7 +3121,7 @@ methods.drawPickedItem = function(item, id, field, readOnly) {
 			// is also set in zenario/file.php)
 			widthAndHeight = ('' + label).match(/.*\[\s*(\d+)p?x?\s*[×x]\s*(\d+)p?x?\s*\]$/);
 			if (widthAndHeight && widthAndHeight[1] && widthAndHeight[2]) {
-				zenarioA.resizeImage(widthAndHeight[1], widthAndHeight[2], 180, 120, mi.thumbnail);
+				zenarioT.resizeImage(widthAndHeight[1], widthAndHeight[2], 180, 120, mi.thumbnail);
 			}
 			
 			
@@ -3057,7 +3136,7 @@ methods.drawPickedItem = function(item, id, field, readOnly) {
 
 
 methods.showPickedItemInPopout = function(href, title) {
-	zenarioA.action(this, {popout: {href: href, title: title, css_class: 'zenario_show_colobox_above_fab'}});
+	zenarioT.action(this, {popout: {href: href, title: title, css_class: 'zenario_show_colobox_above_fab'}});
 };
 
 methods.pickItems = function(id) {
@@ -3131,7 +3210,7 @@ methods.addToPickedItems = function(values, id, tab, remove) {
 		multiple_select = (field.pick_items && engToBoolean(field.pick_items.multiple_select)) || (field.upload && engToBoolean(field.upload.multi)),
 		i, value, display, arrayOfValues, picked_items;
 	
-	values = zenarioA.csvToObject(values);
+	values = zenarioT.csvToObject(values);
 	
 	if (multiple_select && current_value) {
 		picked_items = this.pickedItemsArray(field, current_value);
@@ -3170,7 +3249,7 @@ methods.redrawPickedItems = function(id, field, picked_items) {
 		$tokenize = $(this.get(id)).tokenize(),
 		items = $tokenize.toArray();
 	
-	picked_items = zenarioA.csvToObject(picked_items);
+	picked_items = zenarioT.csvToObject(picked_items);
 	
 	foreach (items as i => item) {
 		if (picked_items[item]) {
@@ -3288,17 +3367,26 @@ methods.validateFormatOrRedrawForField = function(field) {
 
 		
 	if (validate) {
-		this.validate();
+		if (this.ffoving < 3) {
+			this.ffoving = 3;
+			this.validate();
+		}
 		return true;
 	
 	} else if (format) {
-		this.format();
+		if (this.ffoving < 2) {
+			this.ffoving = 2;
+			this.format();
+		}
 		return true;
 	
 	} else {
 		if (redraw) {
-			this.readTab();
-			this.redrawTab();
+			if (this.ffoving < 1) {
+				this.ffoving = 1;
+				this.readTab();
+				this.redrawTab();
+			}
 		}
 		
 		return redraw;
@@ -3453,14 +3541,37 @@ methods.value = function(f, tab, readOnly, getButtonLabelsAsValues) {
 	}
 };
 
-methods.valueIn = function(f) {
-	return _.contains(arguments, this.value(f), 1);
+methods.keyIn = function(k) {
+	return _.contains(arguments, this.tuix.key[k], 1);
+};
+
+methods.keyIs = function(k, v) {
+	return this.tuix.key[k] == v;
+};
+
+methods.key = function(k) {
+	return this.tuix.key[k];
 };
 
 methods.modeIn = function() {
 	return _.contains(arguments, this.value('mode'));
 };
 
+methods.modeIs = function(m) {
+	return this.value('mode') == m;
+};
+
+methods.valueIn = function(f) {
+	return _.contains(arguments, this.value(f), 1);
+};
+
+methods.valueIs = function(f, v) {
+	return this.value(f) == v;
+};
+
+methods.valueIsNot = function(f, v) {
+	return this.value(f) != v;
+};
 
 methods.isButton = function(field) {
 	return field && (field.type == __$submit || field.type == 'toggle' || field.type == __$button);
@@ -3724,7 +3835,7 @@ methods.sortTabs = function() {
 	}
 	
 	//Sort this array
-	this.sortedTabs.sort(zenarioA.sortArray);
+	this.sortedTabs.sort(zenarioT.sortArray);
 	
 	this.groupings = {};
 	this.sortedFields = {};
@@ -3779,7 +3890,7 @@ methods.sortFields = function(tab) {
 		}
 	
 		//Sort this array
-		this.sortedFields[tab].sort(zenarioA.sortArrayWithGrouping);
+		this.sortedFields[tab].sort(zenarioT.sortArrayWithGrouping);
 	
 		//Remove fields that were just there to help sort
 		foreach (this.sortedFields[tab] as i) {
@@ -3856,29 +3967,24 @@ methods.syncAdminBoxFromClientToServerR = function($serverTags, $clientTags, $ke
 	}
 	
 	var $type, $key0,
-		__$array = 'array';
+		__$array = 'array',
+		__$tabs = 'tabs',
+		__$fields = 'fields';
 	
 	for ($key0 in $clientTags) {
 		//Only allow certain tags in certain places to be merged in
-		if ((($type = __$array) && $key1 === undefined && $key0 == '_sync')
-		 || (($type = __$value) && $key2 === undefined && $key1 == '_sync' && $key0 == 'session')
-		 || (($type = __$value) && $key2 === undefined && $key1 == '_sync' && $key0 == 'cache_dir')
-		 || (($type = __$value) && $key2 === undefined && $key1 == '_sync' && $key0 == 'password')
-		 || (($type = __$value) && $key2 === undefined && $key1 == '_sync' && $key0 == 'iv')
-		 || (($type = __$value) && $key1 === undefined && $key0 == 'shake')
-		 || (($type = __$value) && $key1 === undefined && $key0 == 'download')
-		 || (($type = __$array) && $key1 === undefined && $key0 == 'tabs')
-		 || (($type = __$array) && $key2 === undefined && $key1 == 'tabs')
-		 || (($type = __$array) && $key3 === undefined && $key2 == 'tabs' && $key0 == 'edit_mode')
-		 || (($type = __$value) && $key4 === undefined && $key3 == 'tabs' && $key1 == 'edit_mode' && $key0 == 'on')
-		 || (($type = __$array) && $key3 === undefined && $key2 == 'tabs' && $key0 == 'fields')
-		 || (($type = __$array) && $key4 === undefined && $key3 == 'tabs' && $key1 == 'fields')
-		 || (($type = __$value) && $key5 === undefined && $key4 == 'tabs' && $key2 == 'fields' && $key0 == 'current_value')
-		 || (($type = __$value) && $key5 === undefined && $key4 == 'tabs' && $key2 == 'fields' && $key0 == '_display_value')
-		 || (($type = __$value) && $key5 === undefined && $key4 == 'tabs' && $key2 == 'fields' && $key0 == '_was_hidden_before')
-		 || (($type = __$value) && $key5 === undefined && $key4 == 'tabs' && $key2 == 'fields' && $key0 == 'pressed')
-		 || (($type = __$array) && $key5 === undefined && $key4 == 'tabs' && $key2 == 'fields' && $key0 == 'multiple_edit')
-		 || (($type = __$value) && $key6 === undefined && $key5 == 'tabs' && $key3 == 'fields' && $key1 == 'multiple_edit' && $key0 == '_changed')) {
+		if (
+			($key1 === undefined && zenario.IN($key0, 'download', 'path', 'shake', 'tab') && ($type = __$value))
+		 || ($key1 === undefined && zenario.IN($key0, '_sync', __$tabs) && ($type = __$array))
+			 || ($key2 === undefined && $key1 == '_sync' && zenario.IN($key0, 'cache_dir', 'password', 'session', 'iv') && ($type = __$value))
+			 || ($key2 === undefined && $key1 == __$tabs && ($type = __$array))
+				 || ($key3 === undefined && $key2 == __$tabs && zenario.IN($key0, 'edit_mode', __$fields) && ($type = __$array))
+					 || ($key4 === undefined && $key3 == __$tabs && $key1 == 'edit_mode' && $key0 == 'on' && ($type = __$value))
+					 || ($key4 === undefined && $key3 == __$tabs && $key1 == __$fields && ($type = __$array))
+						 || ($key5 === undefined && $key4 == __$tabs && $key2 == __$fields && zenario.IN($key0, '_display_value', '_was_hidden_before', 'current_value', 'pressed') && ($type = __$value))
+						 || ($key5 === undefined && $key4 == __$tabs && $key2 == __$fields && $key0 == 'multiple_edit' && ($type = __$array))
+							 || ($key6 === undefined && $key5 == __$tabs && $key3 == __$fields && $key1 == 'multiple_edit' && $key0 == '_changed' && ($type = __$value))
+		) {
 			
 			//Update any values from the client on the server's copy
 			if ($type == __$value) {

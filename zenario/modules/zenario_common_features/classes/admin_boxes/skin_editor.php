@@ -43,7 +43,7 @@ class zenario_common_features__admin_boxes__skin_editor extends zenario_common_f
 		'print.css' => 'This should contain rules for printing.'
 	);
 	
-	protected function addTab(&$box, &$fields, &$values, $file, $desc) {
+	protected function addSlide(&$box, &$fields, &$values, $file, $desc) {
 		
 		if (isset($box['tabs'][$file])) {
 			return;
@@ -106,7 +106,7 @@ class zenario_common_features__admin_boxes__skin_editor extends zenario_common_f
 		
 		//Add a tab for each editable file
 		foreach ($this->files as $file => &$desc) {
-			$this->addTab($box, $fields, $values, $file, $desc);
+			$this->addSlide($box, $fields, $values, $file, $desc);
 		}
 	}
 	

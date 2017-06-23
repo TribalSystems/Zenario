@@ -13,10 +13,20 @@
 <% } %>
 
 <% if (zenarioAB.hasPreviewWindow && !m.isReadOnly) { %>
-	<% if (zenarioAB.path == "plugin_css_and_framework" && zenario.cID && zenarioAB.tuix.key.slotName) { %>
-		<input type="button" value="{{zenarioA.phrase.previewFullPage|e}}" onclick="
-				zenarioAB.showPreviewInPopoutBox(true, true);
-			" class="" id="zenario_fabPreviewFullPage"/>
+	<% if (zenario.cID && zenarioAB.tuix.key.slotName) { %>
+		<% switch (zenarioAB.path) { %>
+			<% case "plugin_settings": %>
+				<input type="button"
+					id="zenario_fabPreviewFullPage"
+					value="{{zenarioA.phrase.previewFullWidth|e}}"
+					onclick="zenarioAB.showPreviewInPopoutBox(false, true);"/>
+			<% break; %>
+			<% case "plugin_css_and_framework": %>
+				<input type="button"
+					id="zenario_fabPreviewFullPage"
+					value="{{zenarioA.phrase.previewFullPage|e}}"
+					onclick="zenarioAB.showPreviewInPopoutBox(true, true);"/>
+		<% } %>
 	<% } %>
 	
 	<input type="button" value="{{zenarioA.phrase.updatePreview|e}}" onclick="
@@ -44,15 +54,15 @@
 	<% } %>
 <% } %>
 
+<% if (zenarioAB.tuix.save_button_message || zenarioAB.tuix.save_button_message === undefined) { %>
+	<input id="zenario_fabSave"  type="button" value="{{zenarioAB.tuix.save_button_message || zenarioA.phrase.save|e}}"
 
-<input id="zenario_fabSave"  type="button" value="{{zenarioAB.tuix.save_button_message || zenarioA.phrase.save|e}}"
-
-<% if (m.isReadOnly) { %>
-	 class="submit_disabled"/>
-<% } else { %>
-	 class="submit_selected" onclick="zenarioAB.save();"/>
+	<% if (m.isReadOnly) { %>
+		 class="submit_disabled"/>
+	<% } else { %>
+		 class="submit_selected" onclick="zenarioAB.save();"/>
+	<% } %>
 <% } %>
-
 
 <% if (zenarioAB.tuix.cancel_button_message) { %>
 	<input type="button" value="{{zenarioAB.tuix.cancel_button_message|e}}" onclick="zenarioAB.close();">

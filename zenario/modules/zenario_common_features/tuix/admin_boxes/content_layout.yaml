@@ -62,7 +62,7 @@ zenario_content_layout:
                     format_onchange: Yes
                 skin_id:
                     label: 'Skin:'
-                    read_only: Yes
+                    readonly: Yes
                     pick_items:
                         path: zenario__layouts/panels/skins
                         target_path: zenario__layouts/panels/skins

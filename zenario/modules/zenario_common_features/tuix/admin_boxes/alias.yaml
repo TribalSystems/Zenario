@@ -28,7 +28,7 @@ zenario_alias:
                 language_id:
                     label: 'Language:'
                     type: select
-                    read_only: true
+                    readonly: true
                 update_translations:
                     visible_if: zenarioA.multipleLanguagesEnabled()
                     label: 'For Translations:'
@@ -68,7 +68,7 @@ zenario_alias:
                         && !(zenarioA.siteSettings.mod_rewrite_enabled && zenarioA.siteSettings.mod_rewrite_slashes)
                     label: 'Language code:'
                     type: select
-                    read_only: true
+                    readonly: true
                     values:
                         show:
                             ord: 1

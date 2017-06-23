@@ -55,6 +55,20 @@ class zenario_common_features__organizer__categories extends module_base_class {
 		foreach ($panel['items'] as $id => &$item) {
 			$item['traits'] = array();
 			
+			if($item['id']){
+				$sql =" SELECT count(id) as number_of_categories
+						FROM ". DB_NAME_PREFIX."categories 
+						WHERE parent_id = ".(int)$item['id'];
+					
+				$result = sqlQuery($sql);
+				$row = sqlFetchAssoc($result);
+
+				if(!$row['number_of_categories']){
+					$item['link'] = false;
+				}
+			}
+
+			
 			if ($item['public']) {
 				$item['traits']['public'] = true;
 				
@@ -88,7 +102,4 @@ class zenario_common_features__organizer__categories extends module_base_class {
 		}
 	}
 	
-	public function organizerPanelDownload($path, $ids, $refinerName, $refinerId) {
-		
-	}
 }

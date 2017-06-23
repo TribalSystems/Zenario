@@ -40,10 +40,10 @@ zenario.lib(function(
 	undefined,
 	URLBasePath,
 	document, window, windowOpener, windowParent,
-	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO, strings,
+	zenario, zenarioA, zenarioT, zenarioAB, zenarioAT, zenarioO,
 	encodeURIComponent, get, engToBoolean, htmlspecialchars, jsEscape, phrase,
 	extensionOf, methodsOf, has,
-	zenarioAF
+	zenarioAF, extraVar2, s$s
 ) {
 	"use strict";
 	
@@ -51,7 +51,26 @@ zenario.lib(function(
 	zenarioAW.init('zenarioAW', 'zenario_welcome');
 
 
+zenarioAW.setData = function(data) {
+	
+	this.setDataDiff(data);
+};
 
+zenarioAW.sendStateToServer = function() {
+	
+	//Reset any errors first
+	//In the FAB/FEA this is done on the server side, but on the admin login the errors don't quite sync properly
+	//so need to be specifically reset first
+	if (this.tuix
+	 && this.tuix.tabs) {
+		var t, tab;
+		foreach (this.tuix.tabs as t => tab) {
+			delete tab.errors;
+		}
+	}
+	
+	return this.sendStateToServerDiff();
+};
 
 
 

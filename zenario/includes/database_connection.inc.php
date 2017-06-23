@@ -66,6 +66,27 @@ function connectLocalDB() {
 	return true;
 }
 
+function disconnectLastDB() {
+	if (cms_core::$lastDB) {
+		
+		if (cms_core::$localDB === cms_core::$lastDB) {
+			cms_core::$localDB = false;
+		}
+		if (cms_core::$globalDB === cms_core::$lastDB) {
+			cms_core::$globalDB = false;
+		}
+		
+		$rv = cms_core::$lastDB->close();
+		
+		cms_core::$lastDB = false;
+		cms_core::$lastDBHost = false;
+		cms_core::$lastDBName = false;
+		cms_core::$lastDBPrefix = false;
+		
+		return $rv;
+	}
+}
+
 
 function globalDBDefined() {
 	return defined('DBHOST_GLOBAL') && defined('DBNAME_GLOBAL') && defined('DBUSER_GLOBAL') && defined('DBPASS_GLOBAL') && defined('DB_NAME_PREFIX_GLOBAL')
@@ -123,12 +144,12 @@ function connectToDatabase($dbhost = 'localhost', $dbname, $dbuser, $dbpass, $db
 		
 		if ($dbconnection) {
 			if (mysqli_query($dbconnection,'SET NAMES "UTF8"')
-			 && mysqli_query($dbconnection,"SET collation_connection='utf8_general_ci'")
-			 && mysqli_query($dbconnection,"SET collation_server='utf8_general_ci'")
-			 && mysqli_query($dbconnection,"SET character_set_client='utf8'")
-			 && mysqli_query($dbconnection,"SET character_set_connection='utf8'")
-			 && mysqli_query($dbconnection,"SET character_set_results='utf8'")
-			 && mysqli_query($dbconnection,"SET character_set_server='utf8'")) {
+			 && mysqli_query($dbconnection,"SET collation_connection='utf8mb4_general_ci'")
+			 && mysqli_query($dbconnection,"SET collation_server='utf8mb4_general_ci'")
+			 && mysqli_query($dbconnection,"SET character_set_client='utf8mb4'")
+			 && mysqli_query($dbconnection,"SET character_set_connection='utf8mb4'")
+			 && mysqli_query($dbconnection,"SET character_set_results='utf8mb4'")
+			 && mysqli_query($dbconnection,"SET character_set_server='utf8mb4'")) {
 				return $dbconnection;
 			}
 		}
@@ -174,12 +195,24 @@ function loadSiteConfig() {
 	}
 	
 	$sql = "
-		SELECT name, IFNULL(value, default_value)
+		SELECT name, IFNULL(value, default_value), ". (isset(cms_core::$dbCols[DB_NAME_PREFIX. 'site_settings']['encrypted'])? 'encrypted' : '0'). "
 		FROM ". DB_NAME_PREFIX. "site_settings
-		WHERE name NOT IN ('site_disabled_title', 'site_disabled_message')";
+		WHERE name NOT IN ('site_disabled_title', 'site_disabled_message', 'sitewide_head', 'sitewide_body', 'sitewide_foot')
+		  AND name NOT LIKE 'perm.%'";
 	$result = sqlQuery($sql);
 	while ($row = sqlFetchRow($result)) {
-		cms_core::$siteConfig[$row[0]] = $row[1];
+		if ($row[2]) {
+			loadZewl();
+			cms_core::$siteConfig[$row[0]] = zewl::decrypt($row[1]);
+		} else {
+			cms_core::$siteConfig[$row[0]] = $row[1];
+		}
+	}
+	
+	//When we set the timezone in basicheader.inc.php, we were using whatever the server settings were.
+	//Now we have access to the database, check if it's been set in the site-settings, and set it to that if so.
+	if (!empty(cms_core::$siteConfig['zenario_timezones__default_timezone'])) {
+		date_default_timezone_set(cms_core::$siteConfig['zenario_timezones__default_timezone']);
 	}
 	
 	
@@ -230,7 +263,9 @@ function loadSiteConfig() {
 	
 	//Check whether we should show error messages or not
 	if (!defined('SHOW_SQL_ERRORS_TO_VISITORS')) {
-		if (!empty($_SESSION['admin_logged_in']) || setting('show_sql_errors_to_visitors')) {
+		if (!empty($_SESSION['admin_logged_in'])
+		  || setting('show_sql_errors_to_visitors')
+		  || (defined('RUNNING_FROM_COMMAND_LINE') && RUNNING_FROM_COMMAND_LINE)) {
 			define('SHOW_SQL_ERRORS_TO_VISITORS', true);
 		} else {
 			define('SHOW_SQL_ERRORS_TO_VISITORS', false);
@@ -247,7 +282,7 @@ function loadSiteConfig() {
 	}
 }
 
-//Old database functionality, please don't use any more
+//Deprecated function, please call either sqlSelect() or sqlUpdate() instead!
 function my_mysql_query($sql, $updateDataRevisionNumber = -1, $checkCache = true, $return = 'sqlSelect') {
 	
 	if ($return === true || $return === 'mysql_affected_rows' || $return === 'mysql_affected_rows()' || $return === 'sqlAffectedRows' || $return === 'sqlAffectedRows()') {
@@ -452,9 +487,7 @@ function zenarioCodeLastUpdated($getChecksum = true) {
 //svn to give an accurate result, and setting('css_js_version') is only accurate
 //if the site is set to Development mode.
 function zenarioCodeVersion() {
-	return
-		ZENARIO_MAJOR_VERSION. ZENARIO_MINOR_VERSION. (is_numeric(ZENARIO_REVISION)? ZENARIO_REVISION : '').
-		trim(max(zenarioCodeLastUpdated(), setting('css_js_version')));
+	return getCMSVersionNumber(false, false). '.'. trim(max(zenarioCodeLastUpdated(), setting('css_js_version')));
 }
 
 function checkForChangesInYamlFiles($forceScan = false) {
@@ -469,9 +502,17 @@ function checkForChangesInYamlFiles($forceScan = false) {
 	chdir(CMS_ROOT);
 	
 	$time = time();
+	$zenario_version = getCMSVersionNumber();
+	
+	//Catch the case where someone just updated to a different version of the CMS
+	if ($zenario_version != setting('zenario_version')) {
+		//Clear everything that was cached if this has happened
+		setSetting('css_js_html_files_last_changed', '');
+		setSetting('css_js_version', '');
+		$changed = true;
 	
 	//Get the date of the last time we ran this check and there was a change.
-	if (!($lastChanged = (int) setting('yaml_files_last_changed'))) {
+	} elseif (!($lastChanged = (int) setting('yaml_files_last_changed'))) {
 		//If this has never been run before then it must be run now!
 		$changed = true;
 	
@@ -708,6 +749,7 @@ function checkForChangesInYamlFiles($forceScan = false) {
 		
 		setSetting('yaml_files_last_changed', $time);
 		setSetting('yaml_version', base_convert($time, 10, 36));
+		setSetting('zenario_version', $zenario_version);
 	}
 }
 
@@ -899,6 +941,102 @@ function reportDatabaseErrorFromHelperFunction($error) {
 	exit;
 }
 
+
+class zenario_sql_col {
+	public $col = '';
+	public $encrypted = false;
+	public $hashed = false;
+	public $isFloat = false;
+	public $isInt = false;
+	public $isTime = false;
+	public $isSet = false;
+}
+
+
+class zenario_sql_query_wrapper {
+	public $q;
+	public $colDefs = array();
+	public $colDefsAreSpecfic = false;
+	
+	public function __construct($q, $colDefs = array(), $colDefsAreSpecfic = false) {
+		$this->q = $q;
+		$this->colDefs = $colDefs;
+		$this->colDefsAreSpecfic = $colDefsAreSpecfic;
+	}
+	
+	//Given an row fetched from the database using $this->q->fetch_assoc(), attempt to check it against the column definitions
+	public function parseAssoc(&$row) {
+		if (empty($this->colDefs)) {
+			return;
+		}
+		
+		foreach ($row as $col => &$val) {
+			if (isset($this->colDefs[$col])) {
+				$colDef = &$this->colDefs[$col];
+				
+				//Decrypt columns that were flagged as being encrypted
+				if ($colDef->encrypted) {
+					$val = zewl::decrypt($val);
+				}
+				
+				//Ensure that int and float columns are returned as ints and floats, and not strings
+				if ($colDef->isInt) {
+					$val = (int) $val;
+			
+				} elseif ($colDef->isFloat) {
+					$val = (float) $val;
+				}
+			}
+		}
+	}
+	
+	//Version of the above for $this->q->fetch_row()
+	//This will only work if each column is specifically defined
+	public function parseRow(&$row) {
+		
+		if ($this->colDefsAreSpecfic
+		 && !empty($this->colDefs)
+		 && (count($this->colDefs) == count($row))) {
+		
+			$i = 0;
+			foreach ($this->colDefs as &$colDef) {
+				if (isset($row[$i])) {
+					$val = &$row[$i];
+				
+					//Decrypt columns that were flagged as being encrypted
+					if ($colDef->encrypted) {
+						$val = zewl::decrypt($val);
+					}
+				
+					//Ensure that int and float columns are returned as ints and floats, and not strings
+					if ($colDef->isInt) {
+						$val = (int) $val;
+			
+					} elseif ($colDef->isFloat) {
+						$val = (float) $val;
+					}
+				}
+				++$i;
+			}
+		}
+	}
+}
+
+function loadZewl() {
+	if (!defined('ZEWL_LOADED')) {
+		if (file_exists($path = CMS_ROOT. 'zenario/libraries/not_to_redistribute/zewl/zewl.inc.php')) {
+			require_once $path;
+			if (zewl::loadClientKey()) {
+				define('ZEWL_LOADED', true);
+				return true;
+			}
+		}
+		
+		define('ZEWL_LOADED', false);
+	}
+	return ZEWL_LOADED;
+}
+
 //Check a table definition and see which columns are numeric
 //Note that int and float evaluate to true, and time and string evalulate to false
 define('ZENARIO_INT_COL', true);
@@ -910,8 +1048,8 @@ function checkTableDefinition($prefixAndTable, $checkExists = false, $useCache =
 	$pkCol = false;
 	$exists = false;
 	
-	if (!isset(cms_core::$numericCols[$prefixAndTable])) {
-		cms_core::$numericCols[$prefixAndTable] = array();
+	if (!$useCache || !isset(cms_core::$dbCols[$prefixAndTable])) {
+		cms_core::$dbCols[$prefixAndTable] = array();
 		$useCache = false;
 	}
 	
@@ -928,47 +1066,66 @@ function checkTableDefinition($prefixAndTable, $checkExists = false, $useCache =
 		}
 	
 		if ($result = sqlSelect('SHOW COLUMNS FROM `'. sqlEscape($prefixAndTable). '`')) {
-			while ($row = sqlFetchRow($result)) { 
-				$exists = true;
-				switch (substr($row[1], 0, strcspn($row[1], ' ('))) {
-					case 'tinyint':
-					case 'smallint':
-					case 'mediumint':
-					case 'int':
-					case 'integer':
-					case 'bigint':
-						cms_core::$numericCols[$prefixAndTable][$row[0]] = ZENARIO_INT_COL;
-						break;
+			while ($row = sqlFetchRow($result)) {
+				$col = &$row[0];
 				
-					case 'float':
-					case 'double':
-					case 'decimal':
-						cms_core::$numericCols[$prefixAndTable][$row[0]] = ZENARIO_FLOAT_COL;
-						break;
+				//Look out for encrypted versions of columns
+				if ($col[0] === '%') {
+					//If they exist, load the encryption wrapper library
+					loadZewl();
+					//Record that this column should be encrypted
+					cms_core::$dbCols[$prefixAndTable][substr($col, 1)]->encrypted = true;
 				
-					case 'datetime':
-					case 'date':
-					case 'timestamp':
-					case 'time':
-					case 'year':
-						cms_core::$numericCols[$prefixAndTable][$row[0]] = ZENARIO_TIME_COL;
-						break;
+				//Look out for hashed versions of columns
+				} elseif ($col[0] === '#') {
+					//Record that this column should be hashed
+					cms_core::$dbCols[$prefixAndTable][substr($col, 1)]->hashed = true;
 				
-					case 'set':
-						cms_core::$numericCols[$prefixAndTable][$row[0]] = ZENARIO_SET_COL;
-						break;
+				} else {
+					$exists = true;
+					
+					$colDef = new zenario_sql_col;
+					$colDef->col = $col;
+					
+					switch (substr($row[1], 0, strcspn($row[1], ' ('))) {
+						case 'tinyint':
+						case 'smallint':
+						case 'mediumint':
+						case 'int':
+						case 'integer':
+						case 'bigint':
+							$colDef->isInt = true;
+							break;
 				
-					default:
-						cms_core::$numericCols[$prefixAndTable][$row[0]] = ZENARIO_STRING_COL;
-				}
-			
-				//Also check to see if there is a single primary key column
-				if ($row[3] == 'PRI') {
-					if ($pkCol === false) {
-						$pkCol = $row[0];
-					} else {
-						$pkCol = true;
+						case 'float':
+						case 'double':
+						case 'decimal':
+							$colDef->isFloat = true;
+							break;
+				
+						case 'datetime':
+						case 'date':
+						case 'timestamp':
+						case 'time':
+						case 'year':
+							$colDef->isTime = true;
+							break;
+				
+						case 'set':
+							$colDef->isSet = true;
+							break;
 					}
+			
+					//Also check to see if there is a single primary key column
+					if ($row[3] == 'PRI') {
+						if ($pkCol === false) {
+							$pkCol = $col;
+						} else {
+							$pkCol = true;
+						}
+					}
+					
+					cms_core::$dbCols[$prefixAndTable][$col] = $colDef;
 				}
 			}
 		}
@@ -986,40 +1143,56 @@ function checkTableDefinition($prefixAndTable, $checkExists = false, $useCache =
 	
 	if ($checkExists && is_string($checkExists)) {
 		return
-			is_array(cms_core::$numericCols[$prefixAndTable])
-			&& isset(cms_core::$numericCols[$prefixAndTable][$checkExists]);
+			is_array(cms_core::$dbCols[$prefixAndTable])
+			&& isset(cms_core::$dbCols[$prefixAndTable][$checkExists]);
 	}
 	
-	return !empty(cms_core::$numericCols[$prefixAndTable]);
+	return !empty(cms_core::$dbCols[$prefixAndTable]);
 }
 
 //Helper function for checkRowExists
 function checkRowExistsCol(&$tableName, &$sql, &$col, &$val, &$first, $isWhere, $ignoreMissingColumns = false, $sign = '=', $in = 0, $wasNot = false) {
 	
-	if (!isset(cms_core::$numericCols[$tableName][$col])) {
+	if (!isset(cms_core::$dbCols[$tableName][$col])) {
 		checkTableDefinition($tableName);
 	}
 	
-	if (!isset(cms_core::$numericCols[$tableName][$col])) {
+	if (!isset(cms_core::$dbCols[$tableName][$col])) {
 		if ($ignoreMissingColumns && !$isWhere) {
 			return;
 		} else {
-			if (!function_exists('adminPhrase')) {
-				require_once CMS_ROOT. 'zenario/includes/cms.inc.php';
-			}
+			require_once CMS_ROOT. 'zenario/includes/cms.inc.php';
 			reportDatabaseErrorFromHelperFunction(adminPhrase('The column `[[col]]` does not exist in the table `[[table]]`.', array('col' => $col, 'table' => $tableName)));
 		}
 	}
 	
-	$def = cms_core::$numericCols[$tableName][$col];
+	$colDef = &cms_core::$dbCols[$tableName][$col];
 	
+	
+	if ($colDef->encrypted) {
+		if ($isWhere) {
+			if (!$colDef->hashed) {
+				require_once CMS_ROOT. 'zenario/includes/cms.inc.php';
+				reportDatabaseErrorFromHelperFunction(adminPhrase('The column `[[col]]` in the table `[[table]]` is encrypted and cannot be used in a WHERE-statement.', array('col' => $col, 'table' => $tableName)));
+			}
+		} else {
+			$sql .= ($first? '' : ','). '`%'. sqlEscape($col). '` = \''. sqlEscape((string) zewl::encrypt($val, true)). '\'';
+			
+			if ($colDef->hashed) {
+				$sql .= ', `#'. sqlEscape($col). '` = \''. sqlEscape(hashDBColumn($val)). '\'';
+			}
+			
+			$first = false;
+			return;
+		}
+	}
 	
 	
 	if ($isWhere && is_array($val)) {
 		$firstIn = true;
 		foreach ($val as $sign2 => &$val2) {
 			if (is_numeric($sign2) || substr($sign2, 0, 1) == '=') {
-				if ($def === ZENARIO_SET_COL) {
+				if ($colDef->isSet) {
 					if ($firstIn) {
 						checkRowExistsCol($tableName, $sql, $col, $val2, $first, $isWhere, $ignoreMissingColumns, $wasNot? 'NOT (' : '(', 1);
 						$firstIn = false;
@@ -1075,10 +1248,14 @@ function checkRowExistsCol(&$tableName, &$sql, &$col, &$val, &$first, $isWhere, 
 		}
 		$first = false;
 		
-		$cSql = '`'. sqlEscape($col). '` ';
+		if ($colDef->hashed) {
+			$cSql = '`#'. sqlEscape($col). '` ';
+		} else {
+			$cSql = '`'. sqlEscape($col). '` ';
+		}
 	}
 	
-	if ($val === null || (!$val && $def === ZENARIO_TIME_COL)) {
+	if ($val === null || (!$val && $colDef->isTime)) {
 		if ($in) {
 			$sql .= $cSql. $sign. 'NULL';
 		
@@ -1092,19 +1269,20 @@ function checkRowExistsCol(&$tableName, &$sql, &$col, &$val, &$first, $isWhere, 
 			$sql .= $cSql. 'IS NOT NULL';
 		}
 	
-	} elseif ($def) {
-		if ($def === ZENARIO_FLOAT_COL) {
-			$sql .= $cSql. $sign. ' '. (float) $val;
-		} else {
-			$sql .= $cSql. $sign. ' '. (int) $val;
-		}
+	} elseif ($colDef->hashed) {
+		$sql .= $cSql. $sign. '\''. sqlEscape(hashDBColumn($val)). '\'';
+	
+	} elseif ($colDef->isFloat) {
+		$sql .= $cSql. $sign. ' '. (float) $val;
+	
+	} elseif ($colDef->isInt) {
+		$sql .= $cSql. $sign. ' '. (int) $val;
+	
+	} elseif ($colDef->isSet && $in) {
+		$sql .= $sign. 'FIND_IN_SET(\''. sqlEscape((string) $val). '\', '. $cSql. ')';
+	
 	} else {
-		if ($def === ZENARIO_SET_COL && $in) {
-			$sql .= $sign. 'FIND_IN_SET(\''. sqlEscape((string) $val). '\', '. $cSql. ')';
-		
-		} else {
-			$sql .= $cSql. $sign. ' \''. sqlEscape((string) $val). '\'';
-		}
+		$sql .= $cSql. $sign. ' \''. sqlEscape((string) $val). '\'';
 	}
 }
 
@@ -1117,12 +1295,17 @@ function checkRowExists(
 ) {
 	$tableName = cms_core::$lastDBPrefix. $table;
 	
-	if (!isset(cms_core::$numericCols[$tableName])) {
+	if (!isset(cms_core::$dbCols[$tableName])) {
 		checkTableDefinition($tableName);
 	}
 	
 	if (cms_core::$pkCols[$tableName] === '') {
+		require_once CMS_ROOT. 'zenario/includes/cms.inc.php';
 		reportDatabaseErrorFromHelperFunction(adminPhrase('The table `[[table]]` does not exist.', array('table' => $tableName)));
+	}
+	
+	if ($cols === true) {
+		$cols = array_keys(cms_core::$dbCols[$tableName]);
 	}
 	
 	
@@ -1130,7 +1313,7 @@ function checkRowExists(
 		$out = array();
 		
 		if ($result = checkRowExists($table, $ids, $ignoreMissingColumns, $cols, true, false, $orderBy, $distinct, false, !$distinct)) {
-			while ($row = sqlFetchAssoc($result, false, $table)) {
+			while ($row = sqlFetchAssoc($result)) {
 				
 				$id = false;
 				if (is_string($returnArrayIndexedBy) && isset($row[$returnArrayIndexedBy])) {
@@ -1200,40 +1383,80 @@ function checkRowExists(
 				$suf = '';
 		}
 		
-		if (is_array($cols) && !empty($cols)) {
-			$sql = '';
-			foreach ($cols as $col) {
-				$sql .= ($sql? ',' : 'SELECT '). $pre. '`'. sqlEscape($col). '`'. $suf;
+		$dbCols = &cms_core::$dbCols[$tableName];
+		
+		if (empty($cols)) {
+			$sql = '
+				SELECT 1';
+		
+		} else {
+			if ($distinct) {
+				$sql = 'SELECT DISTINCT ';
+			} else {
+				$sql = 'SELECT ';
+			}
 			
-				if ($pre || $suf) {
-					$sql .= ' AS `'. sqlEscape($col). '`';
+			if (is_array($cols)) {
+				$first = true;
+				foreach ($cols as $col) {
+				
+					if ($first) {
+						$first = false;
+					} else {
+						$sql .= ',';
+					}	
+					
+					if (!isset($dbCols[$col])) {
+						require_once CMS_ROOT. 'zenario/includes/cms.inc.php';
+						reportDatabaseErrorFromHelperFunction(adminPhrase('The column `[[col]]` does not exist in the table `[[table]]`.', array('col' => $col, 'table' => $tableName)));
+				
+					} elseif ($dbCols[$col]->encrypted) {
+						if ($pre !== '') {
+							require_once CMS_ROOT. 'zenario/includes/cms.inc.php';
+							reportDatabaseErrorFromHelperFunction(adminPhrase('The column `[[col]]` in the table `[[table]]` is encrypted. You cannot use MIN(), MAX() or other group-statements on it.', array('col' => $col, 'table' => $tableName)));
+						}
+					
+						$sql .= '`%'. sqlEscape($col). '` AS `'. sqlEscape($col). '`';
+				
+					} else {
+						$sql .= $pre. '`'. sqlEscape($col). '`'. $suf;
+			
+						if ($pre !== '' || $suf !== '') {
+							$sql .= ' AS `'. sqlEscape($col). '`';
+						
+						} elseif ($addId && $col == cms_core::$pkCols[$tableName]) {
+							$addId = false;
+						}
+					}
+				}
+			} else {
+				if (!isset($dbCols[$cols])) {
+					require_once CMS_ROOT. 'zenario/includes/cms.inc.php';
+					reportDatabaseErrorFromHelperFunction(adminPhrase('The column `[[col]]` does not exist in the table `[[table]]`.', array('col' => $cols, 'table' => $tableName)));
+			
+				} elseif ($dbCols[$cols]->encrypted) {
+					if ($pre !== '') {
+						require_once CMS_ROOT. 'zenario/includes/cms.inc.php';
+						reportDatabaseErrorFromHelperFunction(adminPhrase('The column `[[col]]` in the table `[[table]]` is encrypted. You cannot use MIN(), MAX() or other group-statements on it.', array('col' => $cols, 'table' => $tableName)));
+					}
+				
+					$sql .= '`%'. sqlEscape($cols). '` AS `'. sqlEscape($cols). '`';
+			
+				} else {
+					$sql .= $pre. '`'. sqlEscape($cols). '`'. $suf;
+		
+					if ($pre !== '' || $suf !== '') {
+						$sql .= ' AS `'. sqlEscape($cols). '`';
+					
+					} elseif ($addId && $cols == cms_core::$pkCols[$tableName]) {
+						$addId = false;
+					}
 				}
 			}
 	
-			if ($addId && cms_core::$pkCols[$tableName] && !in_array(cms_core::$pkCols[$tableName], $cols)) {
+			if ($addId && cms_core::$pkCols[$tableName]) {
 				$sql .= ', `'. sqlEscape(cms_core::$pkCols[$tableName]). '` as `[[ id column ]]`';
 			}
-	
-		} elseif ($cols === true) {
-			$cols = array();
-			$sql = '
-				SELECT '. ($distinct? 'DISTINCT ' : ''). '*';
-	
-		} elseif ($cols !== false) {
-			$sql = '
-				SELECT '. ($distinct? 'DISTINCT ' : ''). $pre. '`'. sqlEscape($cols). '`'. $suf;
-			
-			if ($pre || $suf) {
-				$sql .= ' AS `'. sqlEscape($cols). '`';
-			}
-	
-			if ($addId && cms_core::$pkCols[$tableName] && $cols != cms_core::$pkCols[$tableName]) {
-				$sql .= ', `'. sqlEscape(cms_core::$pkCols[$tableName]). '` as `[[ id column ]]`';
-			}
-
-		} else {
-			$sql = '
-				SELECT 1';
 		}
 	} while(false);
 	
@@ -1284,12 +1507,12 @@ function checkRowExists(
 		return $affectedRows;
 	
 	} else {
-		$result = sqlSelect($sql);
+		$result = sqlSelect($sql, false, $tableName);
 		
 		if ($multiple) {
 			return $result;
 		
-		} elseif (!$row = sqlFetchAssoc($result, false, $table)) {
+		} elseif (!$row = sqlFetchAssoc($result)) {
 			return false;
 		
 		} elseif (is_array($cols)) {
@@ -1312,11 +1535,12 @@ function setRow(
 	$sqlW = '';
 	$tableName = cms_core::$lastDBPrefix. $table;
 	
-	if (!isset(cms_core::$numericCols[$tableName])) {
+	if (!isset(cms_core::$dbCols[$tableName])) {
 		checkTableDefinition($tableName);
 	}
 	
 	if (cms_core::$pkCols[$tableName] === '') {
+		require_once CMS_ROOT. 'zenario/includes/cms.inc.php';
 		reportDatabaseErrorFromHelperFunction(adminPhrase('The table `[[table]]` does not exist.', array('table' => $tableName)));
 	}
 	
@@ -1430,3 +1654,12 @@ function reviewDatabaseQueryForChanges(&$sql, &$ids, &$values, $table = false, $
 		return sqlAffectedRows();
 	}
 }
+
+
+
+
+
+function hashDBColumn($val) {
+	return hash('sha256', cms_core::$siteConfig['site_id']. strtolower($val), true);
+}
+

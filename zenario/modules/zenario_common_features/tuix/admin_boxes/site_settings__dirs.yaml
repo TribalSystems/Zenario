@@ -42,9 +42,17 @@ site_settings:
                     visible_if: zenarioAB.value('check_automated_backups')
                     site_setting:
                         name: automated_backup_log_path
-                    label: 'Path to log file:'
+                    label: 'Path to log file including file name:'
                     type: text
                     placeholder: 'E.g. /var/www/log/dbbackup.log'
+                test:
+                    same_row: true
+                    visible_if: zenarioAB.value('check_automated_backups')
+                    type: submit
+                    value: Test
+                    class: submit
+                    can_be_pressed_in_view_mode: true
+                    validate_onchange: true
                 automated_backup_days:
                     indent: 1
                     visible_if: zenarioAB.value('check_automated_backups')

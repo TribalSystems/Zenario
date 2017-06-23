@@ -84,7 +84,7 @@ function mongoUnescapeKey($key) {
 }
 
 //Connect to MongoDB and return a pointer to a collection
-function mongoCollection($collection) {
+function mongoCollection($collection, $returnFalseOnError = false) {
 	
 	//Connect to MongoDB if we haven't already
 	if (!isset(cms_core::$mongoDB)) {
@@ -94,19 +94,15 @@ function mongoCollection($collection) {
 			define('MONGODB_CONNECTION_URI', 'mongodb://localhost:27017');
 		}
 		
-		//Look for the MONGODB_DBNAME constant
 		if (!defined('MONGODB_DBNAME')) {
-			//This constant was recently renamed, so check the old version if it is missing
-			//(Warning: This will be removed in version 7.6 so please don't rely on this!)
-			if (defined('ASSETWOLF_MONGO_DB')) {
-				define('MONGODB_DBNAME', ASSETWOLF_MONGO_DB);
+			if ($returnFalseOnError) {
+				return false;
 			} else {
 				reportDatabaseErrorFromHelperFunction('The MONGODB_DBNAME constant was not defined in the zenario_siteconfig.php file.');
 				exit;
 			}
-		}
-		
-		if (!USE_OLD_MONGO_DRIVER) {
+	
+		} elseif (!USE_OLD_MONGO_DRIVER) {
 			//new logic for PHP 7
 			require_once CMS_ROOT . 'zenario/libraries/by_vendor/autoload.php';
 			$mongoClient = new MongoDB\Client(MONGODB_CONNECTION_URI);
@@ -118,8 +114,12 @@ function mongoCollection($collection) {
 			cms_core::$mongoDB = $mongoClient->selectDB(MONGODB_DBNAME);
 		
 		} else {
-			reportDatabaseErrorFromHelperFunction('The MongoDB PHP extension is not installed.');
-			exit;
+			if ($returnFalseOnError) {
+				return false;
+			} else {
+				reportDatabaseErrorFromHelperFunction('The MongoDB PHP extension is not installed.');
+				exit;
+			}
 		}
 	}
 	
@@ -347,25 +347,6 @@ function getIdColumnOfTable($table, $guess = false) {
 	}
 }
 
-//New in 7.3, this automatically fixes a bug where data from MySQL is loaded as a string,
-//and not an int or a float
-function correctMySQLDatatypes($table, &$data) {
-	if (!isset(cms_core::$numericCols[cms_core::$lastDBPrefix. $table])) {
-		checkTableDefinition(cms_core::$lastDBPrefix. $table);
-	}
-	$numericCols = &cms_core::$numericCols[cms_core::$lastDBPrefix. $table];
-	
-	foreach ($data as $key => &$value) {
-		if ($value !== null && isset($numericCols[$key])) {
-			if ($numericCols[$key] === ZENARIO_INT_COL) {
-				$value = (int) $value;
-			} elseif ($numericCols[$key] === ZENARIO_FLOAT_COL) {
-				$value = (float) $value;
-			}
-		}
-	}
-}
-
 
 
 function inEscape($csv, $escaping = -1, $prefix = false) {
@@ -409,25 +390,16 @@ function insertRow($table, $values, $ignore = false, $ignoreMissingColumns = fal
 	return setRow($table, $values, array(), $ignore, $ignoreMissingColumns, $markNewThingsInSession, true);
 }
 
-function likeEscape($text, $allowStarsAsWildcards = false, $asciiCharactersOnly = false, $sqlEscape = true) {
-	
-	if ($asciiCharactersOnly) {
-		//http://stackoverflow.com/questions/8781911/remove-non-ascii-characters-from-string-in-php
-		$text = preg_replace('/[^\x20-\x7E]/', '', $text);
-	}
-	
-	if ($sqlEscape) {
-		$text = sqlEscape($text);
-	}
+function likeEscape($text, $allowStarsAsWildcards = false) {
 	
 	if (!$allowStarsAsWildcards) {
-		return str_replace('%', '\\%', str_replace('_', '\\_', $text));
+		return str_replace('%', '\\%', str_replace('_', '\\_', sqlEscape($text)));
 	
 	} elseif ($text == '*') {
 		return '_';
 	
 	} else {
-		return str_replace('*', '%', str_replace('%', '\\%', str_replace('_', '\\_', $text)));
+		return str_replace('*', '%', str_replace('%', '\\%', str_replace('_', '\\_', sqlEscape($text))));
 	}
 }
 
@@ -470,31 +442,30 @@ function sqlFetchArray($result, $mrg = false) {
 	if (is_string($result)) {
 		$result = sqlSelect($result, $mrg);
 	}
-	return $result->fetch_array();
+	if ($row = $result->q->fetch_array()) {
+		if ($result->colDefs) {
+			$result->parseAssoc($row);
+		}
+		return $row;
+	} else {
+		return false;
+	}
 }
 
 //Replacement for mysql_fetch_assoc()
-function sqlFetchAssoc($result, $mrg = false, $table = false) {
+function sqlFetchAssoc($result, $mrg = false) {
 	if (is_string($result)) {
 		$result = sqlSelect($result, $mrg);
 	}
-	$row = $result->fetch_assoc();
-	
-	//If we know the table name we're selecting from,
-	//try to automatically convert any int/float columns to ints/floats
-	if ($table && is_array($row)) {
-		foreach ($row as $col => &$value) {
-			if ($value !== null && !empty(cms_core::$numericCols[cms_core::$lastDBPrefix. $table][$col])) {
-				if (cms_core::$numericCols[cms_core::$lastDBPrefix. $table][$col] === ZENARIO_FLOAT_COL) {
-					$value = (float) $value;
-				} else {
-					$value = (int) $value;
-				}
-			}
+	if ($row = $result->q->fetch_assoc()) {
+		if ($result->colDefs) {
+			$result->parseAssoc($row);
 		}
-	}
 	
-	return $row;
+		return $row;
+	} else {
+		return false;
+	}
 }
 
 //Replacement for mysql_fetch_row()
@@ -502,7 +473,14 @@ function sqlFetchRow($result, $mrg = false) {
 	if (is_string($result)) {
 		$result = sqlSelect($result, $mrg);
 	}
-	return $result->fetch_row();
+	if ($row = $result->q->fetch_row()) {
+		if ($result->colDefs) {
+			$result->parseRow($row);
+		}
+		return $row;
+	} else {
+		return false;
+	}
 }
 
 //Replacement for mysql_insert_id()
@@ -515,15 +493,12 @@ function sqlNumRows($result, $mrg = false) {
 	if (is_string($result)) {
 		$result = sqlSelect($result, $mrg);
 	}
-	return $result->num_rows;
+	return $result->q->num_rows;
 }
 
 //Fetch just one value from a SQL query
 function sqlFetchValue($result, $mrg = false) {
-	if (is_string($result)) {
-		$result = sqlSelect($result, $mrg);
-	}
-	if ($row = $result->fetch_row()) {
+	if ($row = sqlFetchRow($result, $mrg)) {
 		return $row[0];
 	} else {
 		return false;
@@ -536,7 +511,7 @@ function sqlFetchValues($result, $mrg = false, $numeric = false) {
 		$result = sqlSelect($result, $mrg);
 	}
 	$out = array();
-	while ($row = $result->fetch_row()) {
+	while ($row = sqlFetchRow($result)) {
 		if ($numeric) {
 			$out[] = (int) $row[0];
 		} else {
@@ -552,7 +527,7 @@ function sqlFetchAssocs($result, $mrg = false, $indexBy = false) {
 		$result = sqlSelect($result, $mrg);
 	}
 	$out = array();
-	while ($row = $result->fetch_assoc()) {
+	while ($row = sqlFetchAssoc($result)) {
 		if ($indexBy === false) {
 			$out[] = $row;
 		} else {
@@ -566,60 +541,228 @@ function sqlFetchRows($result, $mrg = false) {
 		$result = sqlSelect($result, $mrg);
 	}
 	$out = array();
-	while ($row = $result->fetch_row()) {
+	while ($row = sqlFetchRow($result)) {
 		$out[] = $row;
 	}
 	return $out;
 }
 
+
+
+function sqlAddMergeFields(&$sql, &$mrg, &$colDefs, $tables = array()) {
+	
+	$cacheQuery = strlen($sql) < 1024;
+	
+	//Check to see if we've got this SQL source cached 
+	if ($cacheQuery && isset(cms_core::$pq[$sql])) {
+		//If so, use the previous values
+		$details = &cms_core::$pq[$sql];
+		$parts = &$details[0];
+		$count = &$details[1];
+		$tables = &$details[2];
+	
+	//If not, we'll need to parse it using a preg_split()
+	} else {
+		$parts = preg_split('@\[(\w+)(|\.\w+)\s*(|AS|=|==|\!=)\s*([\w\/]*)\]@is', $sql, -1,  PREG_SPLIT_DELIM_CAPTURE);
+		$count = count($parts) - 1;
+	
+		//Do an intial sweep, looking for table definitions
+		for ($j=0; $j < $count; $j += 5) {
+		
+			$a = &$parts[$j+1];
+			$b = &$parts[$j+2];
+			$c = &$parts[$j+3];
+			$d = &$parts[$j+4];
+			
+			$c = strtoupper($c);
+			$isAs = $c == 'AS';
+		
+			if ($isAs && ($b === '' || defined($a))) {
+				if ($b !== '') {
+					$tableName = DB_NAME_PREFIX. constant($a). substr($b, 1);
+				} else {
+					$tableName = DB_NAME_PREFIX. $a;
+				}
+				$tables[$d] = $tableName;
+			
+				if (!isset(cms_core::$dbCols[$tableName])) {
+					checkTableDefinition($tableName);
+				}
+			}
+		}
+		
+		//Cache the last 5 queries, so we don't repeatedly perform the preg_split
+		//above on the same query.
+		if ($cacheQuery) {
+			if (count(cms_core::$pq) >= 5) {
+				array_splice(cms_core::$pq, 0, 1);
+			}
+		
+			cms_core::$pq[$sql] = [$parts, $count, $tables];
+		}
+	}
+		
+	//Loop through the parts of the SQL query, rewriting it in a few places where we
+	//add merge fields or encrypted columns
+	$sql = '';
+	for ($j=0; $j < $count; $j += 5) {
+		
+		$a = &$parts[$j+1];
+		$b = &$parts[$j+2];
+		$c = &$parts[$j+3];
+		$d = &$parts[$j+4];
+		$isAs = $c == 'AS';
+		
+		$sql .= $parts[$j];
+		
+		//Table definitions
+		if ($isAs && isset($tables[$d])) {
+			$tableName = $tables[$d];
+			
+			$sql .= '`'. $tableName. '` AS '. $d;
+		
+		//Merge fields that are unrelated to table/columns
+		} elseif ($b === '') {
+			sqlApplyMergeField($sql, $mrg, $a);
+		
+		} elseif ($b === '.likeEscape' && isset($mrg[$a])) {
+			$sql .= likeEscape($mrg[$a]);
+		
+		//Columns
+		} else {
+			$tableName = $tables[$a];
+			$colName = $as = substr($b, 1);
+			$colDef = &cms_core::$dbCols[$tableName][$colName];
+			
+			//Check the operation sign on this column
+			switch ($c) {
+				//Inserting/updating data into a column
+				case '=':
+					if ($colDef->encrypted) {
+						if ($colDef->hashed) {
+							//If a column is both encrypted and hashed, we'll need to insert two values
+							$sql .= $a. '.`#'. $colName. '` '. $c. ' ';
+							sqlApplyMergeField($sql, $mrg, $d, $colDef, true);
+							$sql .= ', ';
+						}
+						
+						$colName = '%'. $colName;
+					}
+		
+					$sql .= $a. '.`'. $colName. '` '. $c. ' ';
+					sqlApplyMergeField($sql, $mrg, $d, $colDef);
+					break;
+				
+				//Reading a value from a table
+				case 'AS':
+					$as = $d;
+				case '':
+					//If a column is encrypted, we'll need to read data from the encrypted version of the column
+					if ($colDef->encrypted) {
+						$colName = '%'. $colName;
+					}
+		
+					$sql .= $a. '.`'. $colName. '`';
+					
+					if ($as != $colName) {
+						$sql .= ' AS `'. $as. '`';
+					}
+				
+					$colDefs[$as] = $colDef;
+					break;
+				
+				//Checking the values of  columns
+				case '==':
+					$c = '=';
+				default:
+					//Check to see if a column is hashed, and check the hashed value
+					//If a column is hashed then only equals or not-equals is possible; e.g. you can't do < or >
+					if ($colDef->encrypted) {
+						if (!$colDef->hashed) {
+							require_once CMS_ROOT. 'zenario/includes/cms.inc.php';
+							reportDatabaseErrorFromHelperFunction(adminPhrase('The column `[[col]]` in the table `[[table]]` is encrypted and cannot be used in a WHERE-statement.', array('col' => $colName, 'table' => $tableName)));
+						}
+					
+						$colName = '#'. $colName;
+					}
+					
+					$sql .= $a. '.`'. $colName. '` '. $c. ' ';
+					sqlApplyMergeField($sql, $mrg, $d, $colDef, true);
+					break;
+			}
+		}	
+	}
+	
+	$sql .= $parts[$count];
+}
+
+function sqlApplyMergeField(&$sql, &$mrg, $key, $colDef = false, $useHash = false) {
+	
+	if (is_array($mrg) && isset($mrg[$key])) {
+		$val = &$mrg[$key];
+	
+	} else {
+		$sql .= 'NULL';
+		return;
+	}
+	
+	//Inserting/updating data into a column
+	if ($colDef) {
+		if ($colDef->encrypted) {
+			if ($useHash) {
+				$cipher = hashDBColumn($val);
+			} else {
+				$cipher = zewl::encrypt($val, true);
+			}
+			$sql .= "'". sqlEscape($cipher). "'";
+		
+		} elseif ($colDef->isFloat) {
+			$sql .= (float) $val;
+		
+		} elseif ($colDef->isInt) {
+			$sql .= (int) $val;
+		
+		} else {
+			$sql .= "'". sqlEscape($val). "'";
+		}
+	
+	//Call inEscape() for arrays
+	} elseif (is_array($val)) {
+		$sql .= inEscape($val);
+	
+	//Try and auto-detect the value of anything else
+	} else {
+		$sql .= stringToIntOrFloat($val, true);
+	}
+}
+
 //Replacement for mysql_query()
 //Runs a SQL query without updating the revision number or clearing the cache
-function sqlSelect($sql, $mrg = false) {
+function sqlSelect($sql, $mrg = false, $tableName = false) {
 	
 	if (!cms_core::$lastDB) {
 		return false;
 	}
 	
+	//Attempt to get a list of column definitions for the columns we are about to select from
+	$colDefs = array();
+	$colDefsAreSpecfic = false;
 	if ($mrg) {
-		sqlAddMergeFields($sql, $mrg);
+		sqlAddMergeFields($sql, $mrg, $colDefs);
+		$colDefsAreSpecfic = true;
+	
+	} elseif ($tableName) {
+		if (!isset(cms_core::$dbCols[$tableName])) {
+			checkTableDefinition($tableName);
+		}
+		$colDefs = &cms_core::$dbCols[$tableName];
 	}
 	
 	if ($result = cms_core::$lastDB->query($sql)) {
-		return $result;
+		return new zenario_sql_query_wrapper($result, $colDefs, $colDefsAreSpecfic);
 	
 	} else {
 		handleDatabaseError(cms_core::$lastDB, $sql);
-	}
-}
-
-function sqlAddMergeFields(&$sql, $mrg) {
-	$sqls = explode('[[', $sql);
-	$count = count($sqls);
-	
-	if ($count > 1) {
-		$sql = $sqls[0];
-		for ($i = 1; $i < $count; ++$i) {
-			
-			$part = explode(']]', $sqls[$i], 2);
-			
-			if (isset($part[1])) {
-				$key = $part[0];
-			
-				if (isset($mrg[$key])) {
-					if (is_array($mrg[$key])) {
-						$sql .= inEscape($mrg[$key]);
-					} else {
-						$sql .= stringToIntOrFloat($mrg[$key], true);
-					}
-				} elseif (defined($key)) {
-					$sql .= sqlEscape(constant($key));
-				}
-				
-				$sql .= $part[1];
-			} else {
-				$sql .= $part[0];
-			}
-		}
 	}
 }
 
@@ -631,7 +774,8 @@ function sqlUpdate($sql, $mrg = false, $checkCache = true) {
 	}
 	
 	if ($mrg) {
-		sqlAddMergeFields($sql, $mrg);
+		$colDefs = array();
+		sqlAddMergeFields($sql, $mrg, $colDefs);
 	}
 	
 	if ($result = cms_core::$lastDB->query($sql)) {
@@ -644,7 +788,7 @@ function sqlUpdate($sql, $mrg = false, $checkCache = true) {
 				reviewDatabaseQueryForChanges($sql, $ids, $values);
 			}
 		}
-		return $result;
+		return new zenario_sql_query_wrapper($result);
 	
 	} else {
 		handleDatabaseError(cms_core::$lastDB, $sql);
@@ -720,3 +864,26 @@ function updateLinkingTable($table, $key, $idCol, $ids = array()) {
 	}
 }
 
+
+function columnIsEncrypted($table, $column) {
+	
+	$tableName = DB_NAME_PREFIX. $table;
+	
+	if (!isset(cms_core::$dbCols[$tableName])) {
+		checkTableDefinition($tableName);
+	}
+
+	return isset(cms_core::$dbCols[$tableName][$column])? cms_core::$dbCols[$tableName][$column]->encrypted : null;
+}
+
+
+function columnIsHashed($table, $column) {
+	
+	$tableName = DB_NAME_PREFIX. $table;
+	
+	if (!isset(cms_core::$dbCols[$tableName])) {
+		checkTableDefinition($tableName);
+	}
+
+	return isset(cms_core::$dbCols[$tableName][$column])? cms_core::$dbCols[$tableName][$column]->hashed : null;
+}

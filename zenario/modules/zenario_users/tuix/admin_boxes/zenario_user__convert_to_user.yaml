@@ -20,20 +20,20 @@ zenario_user__convert_to_user:
                 email: 
                     label: "Email:"
                     type: text
-                    read_only: true
+                    readonly: true
                     format_onchange: Yes
                 salutation: 
                     label: "Salutation:"
                     type: text
-                    read_only: true
+                    readonly: true
                 first_name: 
                     label: "First Name:"
                     type: text
-                    read_only: true
+                    readonly: true
                 last_name: 
                     label: "Last Name:"
                     type: text
-                    read_only: true
+                    readonly: true
                 screen_name: 
                     label: "Screen Name:"
                     type: text

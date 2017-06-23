@@ -47,8 +47,10 @@ if (!defined('CMS_ROOT')) {
 }
 chdir(CMS_ROOT);
 
-define('NOT_ACCESSED_DIRECTLY', true);
-define('THIS_FILE_IS_BEING_DIRECTLY_ACCESSED', false);
+if (!defined('NOT_ACCESSED_DIRECTLY')) {
+	define('NOT_ACCESSED_DIRECTLY', true);
+	define('THIS_FILE_IS_BEING_DIRECTLY_ACCESSED', false);
+}
 define('RUNNING_FROM_COMMAND_LINE', true);
 
 //Include the CMS' library of functions, but don't include any behaviour designed

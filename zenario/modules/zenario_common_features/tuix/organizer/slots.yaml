@@ -63,53 +63,12 @@ zenario__content:
                             message_type: warning
                         request:
                             addPlugin: ''
-                    traits:
-                        empty: true
+                    with_columns_set:
+                        traits.empty: true
                     visible_if: >
                         zenarioO.refiner && zenarioO.refiner.name == 'template'
             
             item_buttons:
-                #edit_reusable:
-                #    priv: _PRIV_VIEW_REUSABLE_PLUGIN
-                #    label: Properties
-                #    onclick: |
-                #        zenarioO.setupSlotAdminBox();
-                #    custom_admin_box:
-                #        path: plugin_settings
-                #    traits:
-                #        full: true
-                #        reusable: true
-                #edit_wireframe:
-                #    priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
-                #    label: Properties
-                #    onclick: |
-                #        zenarioO.setupSlotAdminBox();
-                #    custom_admin_box:
-                #        path: plugin_settings
-                #    traits:
-                #        full: true
-                #        wireframe: true
-                #edit_reusable_css_and_framework:
-                #    priv: _PRIV_VIEW_REUSABLE_PLUGIN
-                #    label: 'CSS & framework'
-                #    onclick: |
-                #        zenarioO.setupSlotAdminBox();
-                #    custom_admin_box:
-                #        path: plugin_css_and_framework
-                #    traits:
-                #        full: true
-                #        reusable: true
-                #edit_wireframe_css_and_framework:
-                #    priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
-                #    label: 'CSS & framework'
-                #    onclick: |
-                #        zenarioO.setupSlotAdminBox();
-                #    custom_admin_box:
-                #        path: plugin_css_and_framework
-                #    traits:
-                #        full: true
-                #        wireframe: true
-                        
                 insert_dropdown:
                     label: Insert
                     hide_when_children_are_not_visible: true
@@ -128,8 +87,8 @@ zenario__content:
                         request:
                             level: 2
                             addPluginInstance: 1
-                    traits:
-                        empty: true
+                    with_columns_set:
+                        traits.empty: true
                     visible_if: >
                         zenarioO.refiner && zenarioO.refiner.name == 'template'
                 
@@ -145,8 +104,8 @@ zenario__content:
                         request:
                             level: 1
                             addPluginInstance: 1
-                    traits:
-                        empty: true
+                    with_columns_set:
+                        traits.empty: true
                     visible_if: >
                         zenarioO.refiner && zenarioO.refiner.name == 'content_item'
                 
@@ -162,10 +121,10 @@ zenario__content:
                         request:
                             level: 1
                             addPluginInstance: 1
-                    traits:
-                        full: true
-                        reusable: true
-                        template: true
+                    with_columns_set:
+                        traits.full: true
+                        traits.reusable: true
+                        traits.template: true
                     visible_if: >
                         zenarioO.refiner && zenarioO.refiner.name == 'content_item'
                         
@@ -186,9 +145,9 @@ zenario__content:
                         request:
                             level: 2
                             removePlugin: 1
-                    traits:
-                        full: true
-                        template: true
+                    with_columns_set:
+                        traits.full: true
+                        traits.template: true
                     visible_if: >
                         zenarioO.refiner && zenarioO.refiner.name == 'template'
                 
@@ -204,9 +163,9 @@ zenario__content:
                         request:
                             level: 1
                             removePlugin: 1
-                    traits:
-                        full: true
-                        content_item: true
+                    with_columns_set:
+                        traits.full: true
+                        traits.content_item: true
                     visible_if: >
                         zenarioO.refiner && zenarioO.refiner.name == 'content_item'
                 
@@ -221,10 +180,10 @@ zenario__content:
                         request:
                             level: 1
                             hidePlugin: 1
-                    traits:
-                        full: true
-                        reusable: true
-                        template: true
+                    with_columns_set:
+                        traits.full: true
+                        traits.reusable: true
+                        traits.template: true
                     visible_if: >
                         zenarioO.refiner && zenarioO.refiner.name == 'content_item'
                 
@@ -240,8 +199,8 @@ zenario__content:
                         request:
                             level: 1
                             showPlugin: 1
-                    traits:
-                        opaque: true
-                        template: true
+                    with_columns_set:
+                        traits.opaque: true
+                        traits.template: true
                     visible_if: >
                         zenarioO.refiner && zenarioO.refiner.name == 'content_item'

@@ -168,7 +168,7 @@ class zenario_project_locations extends module_base_class {
 				pl.*,
 				v.id AS content_id, v.type AS content_type,
 				c.alias, v.title, v.tag_id,
-				v.description, v.content_summary, v.sticky_image_id,
+				v.description, v.content_summary, v.feature_image_id,
                                 pl.content_type as content_item,
                                 pl.image_id as image_id";
 		

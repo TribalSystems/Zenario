@@ -72,7 +72,7 @@ if (needRevision(28710)) {
 				array(
 					'instance_id' => $plugin['id'],
 					'name' => 'more_link_text',
-					'nest' => 0,
+					'egg_id' => 0,
 					'value' => $plugin['local_text'],
 					'is_content' => $plugin['content_id']? 'version_controlled_content' : 'synchronized_setting',
 					'format' => 'translatable_text'),
@@ -112,7 +112,7 @@ if (needRevision(29560)) {
 			array(
 				'instance_id' => $plugin['id'],
 				'name' => 'more_link_text',
-				'nest' => 0,
+				'egg_id' => 0,
 				'value' => $plugin['local_text'],
 				'is_content' => $plugin['content_id']? 'version_controlled_content' : 'synchronized_setting',
 				'format' => 'translatable_text'),
@@ -148,7 +148,7 @@ if (needRevision(30130)) {
 if (needRevision(30150)) {
 	
 	if (setting('storekeeper_date_format') && !setting('organizer_date_format')) {
-		setSetting('organizer_date_format', setting('storekeeper_date_format'), true, false);
+		setSetting('organizer_date_format', setting('storekeeper_date_format'), true, false, false);
 		deleteRow('site_settings', array('name' => 'storekeeper_date_format'));
 	}
 	
@@ -272,14 +272,6 @@ if (needRevision(31260)) {
 	}
 	
 	revision(31260);
-}
-
-
-//Force the yaml files to be rescanned
-if (needRevision(31410)) {
-	setSetting('yaml_files_last_changed', '');
-	
-	revision(31410);
 }
 
 // Update news content type if exists to have categories by default
@@ -486,11 +478,57 @@ if (needRevision(36995)) {
 	revision(36995);
 }
 
+
+//Migrate the "other modes" plugin settings from a multiple-checkboxes field to
+//multiple single-checkboxes fields.
+if (needRevision(39440)) {
+	$sql = "
+		SELECT *
+		FROM ". DB_NAME_PREFIX. "plugin_settings
+		WHERE name = 'other_modes'
+		  AND `value` != ''
+		  AND `value` IS NOT NULL";
+	
+	$result = sqlSelect($sql);
+	while ($row = sqlFetchAssoc($result)) {
+		
+		foreach (explodeAndTrim($row['value']) as $modeOrFeature) {
+			$row['name'] = 'enable.'. $modeOrFeature;
+			$row['value'] = 1;
+			insertRow('plugin_settings', $row, true);
+		}
+	}
+	revision(39440);
+}
+
+//Migrate data from documents short_checksum_list column to new table.
+if (needRevision(40190)) {
+	$result = getRows('documents', array('id', 'short_checksum_list'), array());
+	while ($document = sqlFetchAssoc($result)) {
+		if ($document['short_checksum_list']) {
+			$redirects = explode(',', $document['short_checksum_list']);
+			foreach ($redirects as $path) {
+				sqlQuery('
+					INSERT IGNORE INTO ' . DB_NAME_PREFIX . 'document_public_redirects (`document_id`, `path`) 
+					VALUES (' . (int)$document['id']. ', "' . sqlEscape($path) . '")'
+				);
+			}
+		}
+	}
+	
+	sqlQuery('
+		ALTER TABLE `'. DB_NAME_PREFIX. 'documents`
+		DROP COLUMN `short_checksum_list`'
+	);
+
+	revision(40190);
+}
+
 //Correct a bug where uploading an image into a nest did not flag the image as being used.
 //N.b. this was copied back from version 7.7, but it should be safe to run twice so
 //copying it back and then later running it again in the migration to the next version
 //shouldn't cause any problems.
-if (needRevision(38670)) {
+if (needRevision(40192)) {
 	$sql = "
 		SELECT id, content_id, content_type, content_version
 		FROM ". DB_NAME_PREFIX. "plugin_instances
@@ -505,5 +543,5 @@ if (needRevision(38670)) {
 	while ($row = sqlFetchAssoc($result)) {
 		resyncLibraryPluginFiles($row['id'], $row);
 	}
-	revision(38670);
+	revision(40192);
 }

@@ -27,18 +27,15 @@ zenario_content:
                             label: Private, only show to extranet users who are logged in
                         group_members:
                             label: 'Private, only show to extranet users in the group(s):'
-                            visible_if: |
-                                !_.isEmpty(tab.fields.group_ids.values)
                             split_values_if_selected: true
                         in_smart_group:
                             label: 'Private, only show to extranet users in the smart group:'
-                            visible_if: |
-                                !_.isEmpty(tab.fields.smart_group_id.values)
                             split_values_if_selected: true
                         logged_in_not_in_smart_group:
                             label: 'Private, only show to extranet users NOT in the smart group:'
-                            visible_if: |
-                                !_.isEmpty(tab.fields.smart_group_id.values)
+                            split_values_if_selected: true
+                        with_role:
+                            label: 'Private, only show to extranet users with the following role(s) at ANY location:'
                             split_values_if_selected: true
                         call_static_method:
                             label: "Call a module's static method to decide (advanced):"
@@ -53,6 +50,7 @@ zenario_content:
                     visible_if: >
                         zenarioAB.value('privacy') == 'group_members'
                     type: checkboxes
+                    no_values_message: No groups defined
                     validation:
                         required_if_not_hidden: Please select a group
                 smart_group_id:
@@ -63,6 +61,14 @@ zenario_content:
                     empty_value: ' -- Select -- '
                     validation:
                         required_if_not_hidden: Please select a smart group
+                role_ids:
+                    indent: 1
+                    visible_if: >
+                        zenarioAB.value('privacy') == 'with_role'
+                    type: checkboxes
+                    no_values_message: No roles defined
+                    validation:
+                        required_if_not_hidden: Please select a role
                 module_class_name:
                     indent: 1
                     visible_if: >

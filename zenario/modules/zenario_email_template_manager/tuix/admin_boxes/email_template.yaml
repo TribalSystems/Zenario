@@ -30,14 +30,55 @@ zenario_email_template:
                     maxlength: 1000
                     validation:
                         required: Please enter a Subject Line for this Email Template.
-                email_address_from:
-                    label: 'Email Address From:'
+
+                from_details:
+                    label: 'From details:'
+                    type: select
+                    value: site_settings
+                    format_onchange: true
+                    values: 
+                        "site_settings": 
+                            label: "Use details from site settings"
+                            ord: 1
+                        "custom_details": 
+                            label: "Use custom details"
+                            ord: 2
+                    validation:
+                        required: Please select "From details" option.
+
+                email_address_from_site_settings:
+                    visible_if: |
+                        zenarioAB.value('from_details') == 'site_settings'
+                    label: 'From email address/name:'
                     type: text
                     maxlength: 100
+                    indent: 1
+                    readonly: true
+
+                        
+                email_name_from_site_settings:
+                    same_row: true
+                    visible_if: |
+                        zenarioAB.value('from_details') == 'site_settings'
+                    label: 'Email Name From:'
+                    type: text
+                    maxlength: 255
+                    readonly: true
+                    note_below: ''
+                email_address_from:
+                    visible_if: |
+                        zenarioAB.value('from_details') == 'custom_details'
+                    label: 'From email address/name:'
+                    type: text
+                    maxlength: 100
+                    indent: 1
                     validation:
                         required: Please enter an Email Address.
                         email: Please enter a valid Email Address.
                 email_name_from:
+                    visible_if: |
+                        zenarioAB.value('from_details') == 'custom_details'
+                    same_row: true
                     label: 'Email Name From:'
                     type: text
                     maxlength: 255
@@ -53,6 +94,7 @@ zenario_email_template:
                         Route all email to the debug email address rather than recipients' email addresses.
                 debug_email_address:
                     label: 'Debug email address:'
+                    indent: 1
                     type: text
                     visible_if: |
                         zenarioAB.value('debug_override')
@@ -67,6 +109,7 @@ zenario_email_template:
                         !zenarioAB.value('debug_override')
                 cc_email_address:
                     label: 'CC email address:'
+                    indent: 1
                     type: text
                     visible_if: |
                         !zenarioAB.value('debug_override')
@@ -85,6 +128,7 @@ zenario_email_template:
                         !zenarioAB.value('debug_override')
                 bcc_email_address:
                     label: 'BCC email address:'
+                    indent: 1
                     type: text
                     visible_if: |
                         !zenarioAB.value('debug_override')

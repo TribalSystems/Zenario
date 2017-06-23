@@ -23,7 +23,7 @@ zenario_user__details:
                     label: "Email verified"
                     type: checkbox
                     redraw_onchange: true
-                    read_only: true
+                    readonly: true
                 salutation: 
                     label: "Salutation"
                     type: text
@@ -88,11 +88,12 @@ zenario_user__details:
                         && zenarioAB.value('status', 'details')
                         && zenarioAB.value('status', 'details') != 'contact'
                         && zenarioA.siteSettings.user_use_screen_name
-                    read_only: true 
+                    readonly: true 
                     side_note: "If unchecked the screen name has been automatically generated with no user input."
                 
                 
                 password_grouping:
+                    dataset_label: '[Password grouping]'
                     type: grouping
                     name: password_grouping
                 
@@ -231,36 +232,36 @@ zenario_user__details:
                     label: "Created Date"
                     type: date
                     change_month_and_year: true
-                    read_only: true
+                    readonly: true
                 modified_date: 
                     label: "Modified Date"
                     type: date
                     change_month_and_year: true
-                    read_only: true
+                    readonly: true
                 last_login: 
                     visible_if: |
                         zenarioAB.value('status', 'details') != 'contact'
                     label: "Last Login"
                     type: date
                     change_month_and_year: true
-                    read_only: true
+                    readonly: true
                 last_login_ip: 
                     visible_if: |
                         zenarioAB.value('status', 'details') != 'contact'
                     label: "Last Login IP"
                     type: text
-                    read_only: true
+                    readonly: true
                 last_profile_update_in_frontend: 
                     visible_if: |
                         zenarioAB.value('status', 'details') != 'contact'
                     label: "Last profile update"
                     type: date
                     change_month_and_year: true
-                    read_only: true
+                    readonly: true
                 suspended_date: 
                     visible_if: |
                         zenarioAB.value('status', 'details') != 'suspended'
                     label: "Suspended date"
                     type: date
                     change_month_and_year: true
-                    read_only: true
+                    readonly: true

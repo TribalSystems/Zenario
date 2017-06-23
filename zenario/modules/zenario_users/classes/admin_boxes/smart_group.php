@@ -33,6 +33,8 @@ class zenario_users__admin_boxes__smart_group extends zenario_users {
 		exitIfNotCheckPriv('_PRIV_MANAGE_GROUP');
 		
 		
+
+		
 		$n = 0;
 		if ($box['key']['id'] && ($details = getSmartGroupDetails($box['key']['id']))) {
 			
@@ -98,6 +100,14 @@ class zenario_users__admin_boxes__smart_group extends zenario_users {
 						$values['smart_group/type__'. $n] = 'role';
 						$values['smart_group/role__'. $n] = $rule['role_id'];
 						break;
+						
+					case 'activity_band':
+						++$n;
+						$values['smart_group/type__'. $n] = 'activity_band';
+						$values['smart_group/activity_bands__'. $n] = $rule['activity_band_id'];
+						$values['smart_group/is_isnt_in_activity_band__'. $n] = $rule['not']? 'isnt' : 'is';
+						break;
+						
 				}
 			}
 			
@@ -142,6 +152,12 @@ class zenario_users__admin_boxes__smart_group extends zenario_users {
 		if ($ZENARIO_ORGANIZATION_MANAGER_PREFIX = getModulePrefix('zenario_organization_manager', $mustBeRunning = true)) {
 			$box['lovs']['roles'] = getRowsArray($ZENARIO_ORGANIZATION_MANAGER_PREFIX. 'user_location_roles', 'name', [], 'name', 'id');
 			$box['key']['rolesExist'] = !empty($box['lovs']['roles']);
+		}
+		
+		
+		if($ZENARIO_USER_ACTIVITY_BANDS_PREFIX = getModulePrefix('zenario_user_activity_bands', $mustBeRunning = true)){
+			$box['lovs']['activity_band'] = getRowsArray($ZENARIO_USER_ACTIVITY_BANDS_PREFIX. 'activity_bands', 'name', [], 'name', 'id');
+			$box['key']['activityBandsExist'] = !empty($box['lovs']['activity_band']);
 		}
 		
 		
@@ -277,6 +293,9 @@ class zenario_users__admin_boxes__smart_group extends zenario_users {
 		);
 		$box['key']['num_rules'] = $multiRows['numRows'];
 		
+		
+		
+		
 		//Set the LOV options for every picked field
 		for ($n = 1; $n <= $box['key']['num_rules']; ++$n) {
 			
@@ -298,10 +317,28 @@ class zenario_users__admin_boxes__smart_group extends zenario_users {
 					$lov = getDatasetFieldLOV($field, $flat = false);
 					$box['tabs']['smart_group']['fields']['value__'. $n]['values'] = $lov;
 					$box['tabs']['smart_group']['fields']['value__'. $n]['hidden'] = empty($lov);
+						
 				}
 			}
 		}
 		
+		for ($n = 1; $n <= $box['key']['num_rules']; $n++) {
+			if(inc('zenario_user_activity_bands')){
+				$activityBands = zenario_user_activity_bands::getActivityBands();
+				if($activityBands && is_array($activityBands)){
+					$i=1;
+					foreach($activityBands as $activityBand){
+						if(isset($fields['smart_group/activity_bands__'. $n])){
+						$fields['smart_group/activity_bands__'. $n]['values'][$activityBand['id']] = array(
+							'ord' => ++$i,
+							'label' => $activityBand['name'],
+							'value' => $activityBand['id']
+						);
+						}
+					}
+				}
+			}
+		}
 		
 		$rules = $this->getRulesFromFields($box, $fields, $values);
 		
@@ -341,11 +378,22 @@ class zenario_users__admin_boxes__smart_group extends zenario_users {
 				$rule['must_match'] = $values['smart_group/must_match'];
 				$rule['intended_usage'] = $box['key']['intended_usage'];
 				
+				//var_dump($type);
+				//exit;
+				
 				switch ($type) {
 					//If a role is picked, set the select list
 					case 'role':
 						if ($rule['role_id'] = $values['smart_group/role__'. $n]) {
 							$rule['type_of_check'] = $type;
+							$rules[] = $rule;
+						}
+						break;
+						
+					case 'activity_band':
+						if ($rule['activity_band_id'] = $values['smart_group/activity_bands__'. $n]) {
+							$rule['type_of_check'] = $type;
+							$rule['not'] = engToBoolean($values['smart_group/is_isnt_in_activity_band__'. $n] == 'isnt');
 							$rules[] = $rule;
 						}
 						break;

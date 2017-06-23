@@ -4,16 +4,6 @@ zenario__users:
     priv: _PRIV_VIEW_USER
     css_class: zenario_cms_core_users
     tooltip: 'Manage users and administrators - people who can edit this site'
-    nav:
-        users:
-            ord: "1"
-            label: 'Users & contacts'
-            tooltip: >
-                Store data about contacts, and about users who may access
-                password-protected parts of your site
-            link:
-                path: zenario__users/panels/users
-    
     panels:
         users:
             title: 'All users & contacts'
@@ -33,6 +23,8 @@ zenario__users:
                 group_members: {}
                 suspended_users:
                     sql: "u.status='suspended'"
+                active_users:
+                    sql: "u.status='active'"
                 smart_group:
                     sql: 'TRUE'
                     table_join: ''
@@ -95,17 +87,6 @@ zenario__users:
                     title: Email Verified
                     db_column: u.email_verified
                     format: yes_or_no
-                    width: xsmall
-                status:
-                    title: Status
-                    db_column: u.status
-                    format: enum
-                    show_by_default: true
-                    values:
-                        active: Active
-                        pending: Pending
-                        suspended: Suspended
-                        contact: Contact
                     width: xsmall
                 groups:
                     title: Groups
@@ -182,6 +163,7 @@ zenario__users:
                         zenarioO.pi.returnIsMultiLineList();
                 multi_line_id:
                     title: ID
+                    db_column: u.id #Makes this multi line column sortable on u.id
                     ord: 1001
                     show_by_default: true
                     width: xxsmall
@@ -190,6 +172,7 @@ zenario__users:
                         zenarioO.pi.returnIsMultiLineList();
                 multi_line_user_identifier:
                     title: User identifier
+                    db_column: u.identifier #Makes this multi line column sortable on u.identifier
                     ord: 1002
                     show_by_default: true
                     visible_if: |
@@ -203,6 +186,7 @@ zenario__users:
                         zenarioO.pi.returnIsMultiLineList();
                 multi_line_email:
                     title: Email
+                    db_column: u.email #Makes this multi line column sortable on u.email
                     ord: 1004
                     show_by_default: true
                     width: large
@@ -210,26 +194,33 @@ zenario__users:
                         zenarioO.pi.returnIsMultiLineList();
                 
                 
-                readable_status:
-                    title: Readable status
+                status:
+                    title: Status
+                    db_column: u.status
+                    format: enum
+                    values:
+                        active: Active extranet user
+                        pending: Pending extranet user
+                        suspended: Suspended extranet user
+                        contact: Contact
                     show_by_default: true
                     parent: multi_line_user_identifier
                     visible_if: |
                         zenarioO.pi.returnIsMultiLineList();
                 readable_last_login:
-                    title: Readable last login
+                    title: Last login
                     show_by_default: true
                     parent: multi_line_user_identifier
                     visible_if: |
                         zenarioO.pi.returnIsMultiLineList();
                 readable_name:
-                    title: Readable name
+                    title: Name
                     show_by_default: true
                     parent: multi_line_name
                     visible_if: |
                         zenarioO.pi.returnIsMultiLineList();
                 readable_groups:
-                    title: Readable groups
+                    title: Groups
                     show_by_default: true
                     parent: multi_line_name
                     visible_if: |
@@ -329,8 +320,8 @@ zenario__users:
                     priv: _PRIV_IMPERSONATE_USER
                     admin_box:
                         path: zenario__impersonate
-                    without_traits:
-                        is_contact: true
+                    visible_if_for_all_selected_items: >
+                        (item.status == 'active') 
                 view_dropdown:
                     label: View
                     hide_in_select_mode: true
@@ -345,25 +336,51 @@ zenario__users:
                     priv: _PRIV_EDIT_USER
                     parent: action_dropdown
                     label: Add to group...
-                    tooltip: Add this user to one or more groups
+                    tooltip: Add this user to one or more groups.
                     hide_in_select_mode: true
-                    multiple_select_tooltip: Add selected users to one or more groups
+                    multiple_select_tooltip: Add selected users to one or more groups.
                     multiple_select: true
                     admin_box:
                         path: zenario_mass_group_membership
                         key:
                             remove: false
-                
+                            
                 remove_users_from_groups:
                     priv: _PRIV_EDIT_USER
                     parent: action_dropdown
                     label: Remove from group...
-                    tooltip: Add this user to one or more groups
+                    tooltip: Remove this user from one or more groups.
                     hide_in_select_mode: true
-                    multiple_select_tooltip: Add selected users to one or more groups
+                    multiple_select_tooltip: Add selected users to one or more groups.
                     multiple_select: true
                     admin_box:
                         path: zenario_mass_group_membership
+                        key:
+                            remove: true
+                            
+                flag_user:
+                    priv: _PRIV_EDIT_USER
+                    parent: action_dropdown
+                    label: Add a flag...
+                    tooltip: Add one or more flags to this user.
+                    hide_in_select_mode: true
+                    multiple_select_tooltip: Add one or more flags to the selected users.
+                    multiple_select: true
+                    admin_box:
+                        path: zenario_flag
+                        key:
+                            remove: false
+                            
+                remove_flags:
+                    priv: _PRIV_EDIT_USER
+                    parent: action_dropdown
+                    label: Remove a flag...
+                    tooltip: Remove one or more flags from this user
+                    hide_in_select_mode: true
+                    multiple_select_tooltip: Remove one or more flags from this users.
+                    multiple_select: true
+                    admin_box:
+                        path: zenario_flag
                         key:
                             remove: true
                 
@@ -392,8 +409,8 @@ zenario__users:
                     ord: "70"
                     popout:
                         href: zenario/file.php?usage=user
-                    traits:
-                        has_image: true
+                    with_columns_set:
+                        traits.has_image: true
                 upload_image:
                     label: Upload an image
                     hide_in_select_mode: true
@@ -412,8 +429,8 @@ zenario__users:
                         fileDesc: Images
                         request:
                             upload_image: true
-                    without_traits:
-                        has_image: true
+                    without_columns_set:
+                        traits.has_image: true
                 replace_image:
                     label: Upload a new image
                     hide_in_select_mode: true
@@ -434,8 +451,8 @@ zenario__users:
                         fileDesc: Images
                         request:
                             upload_image: true
-                    traits:
-                        has_image: true
+                    with_columns_set:
+                        traits.has_image: true
                 delete_image:
                     label: Remove image
                     hide_in_select_mode: true
@@ -454,8 +471,8 @@ zenario__users:
                             message_type: warning
                         request:
                             delete_image: "1"
-                    traits:
-                        has_image: true
+                    with_columns_set:
+                        traits.has_image: true
                 convert_to_user:
                     label: Convert to extranet user
                     hide_in_select_mode: true
@@ -463,15 +480,15 @@ zenario__users:
                     priv: _PRIV_CHANGE_USER_STATUS
                     admin_box:
                         path: zenario_user__convert_to_user
-                    traits:
-                        is_contact: true
+                    with_columns_set:
+                        traits.is_contact: true
                 activate:
                     label: Activate user account
                     hide_in_select_mode: true
                     parent: action_dropdown
                     priv: _PRIV_CHANGE_USER_STATUS
-                    traits:
-                        suspended: true
+                    with_columns_set:
+                        traits.suspended: true
                     admin_box:
                         path: zenario_user__activate
                 suspend:
@@ -479,8 +496,8 @@ zenario__users:
                     parent: action_dropdown
                     priv: _PRIV_CHANGE_USER_STATUS
                     label: Suspend
-                    traits:
-                        active: true
+                    with_columns_set:
+                        traits.active: true
                     admin_box:
                         path: zenario_user__suspend
                 send_welcome_email:
@@ -489,8 +506,8 @@ zenario__users:
                     priv: _PRIV_CHANGE_USER_STATUS
                     label: Send welcome email
                     multiple_select: true
-                    traits:
-                        active: true
+                    with_columns_set:
+                        traits.active: true
                     admin_box:
                         path: zenario_user__welcome_email
                 delete:
@@ -511,9 +528,25 @@ zenario__users:
                             message_type: warning
                         request:
                             delete_user: "1"
-            trash:
-                full_tooltip: View suspended users
-                link: 
-                    path: zenario__users/panels/users
-                    refiner: suspended_users
-                    branch: true
+            inline_buttons:
+                active:
+                    css_class: zenario_users_active_status
+                    tooltip: "Active"
+                    visible_if: >
+                        (item.status == "active")
+                contact:
+                    css_class: zenario_users_contact_status
+                    tooltip: "Contact"
+                    visible_if: >
+                        (item.status == "contact")
+                pending:
+                    css_class: zenario_users_pending_status
+                    tooltip: "Pending"
+                    visible_if: >
+                        (item.status == "pending")
+                suspended:
+                    css_class: zenario_users_suspended_status
+                    tooltip: "Suspended"
+                    visible_if: >
+                        (item.status == "suspended")
+

@@ -146,7 +146,7 @@ class zenario_common_features__admin_boxes__site_settings extends module_base_cl
 		if (isset($fields['speed/compress_web_pages'])) {
 			if (in_array('mod_deflate', apache_get_modules())) {
 				$values['speed/compress_web_pages'] = 1;
-				$fields['speed/compress_web_pages']['read_only'] = true;
+				$fields['speed/compress_web_pages']['readonly'] = true;
 				$fields['speed/compress_web_pages']['note_below'] .=
 					'<br/>'.
 					adminPhrase('Compression is enabled on this server (<code>mod_deflate</code> is enabled in Apache).');
@@ -157,14 +157,14 @@ class zenario_common_features__admin_boxes__site_settings extends module_base_cl
 			 && engToBoolean(ini_get('zlib.output_compression'))
 			) {
 				$values['speed/compress_web_pages'] = 1;
-				$fields['speed/compress_web_pages']['read_only'] = true;
+				$fields['speed/compress_web_pages']['readonly'] = true;
 				$fields['speed/compress_web_pages']['note_below'] .=
 					'<br/>'.
 					adminPhrase('Compression is enabled on this server (<code>zlib.output_compression</code> is set in your <code>php.ini</code> and/or <code>.htaccess</code> file).');
 			
 			} else {
 				$values['speed/compress_web_pages'] = '';
-				$fields['speed/compress_web_pages']['read_only'] = true;
+				$fields['speed/compress_web_pages']['readonly'] = true;
 				$fields['speed/compress_web_pages']['note_below'] .=
 					'<br/>'.
 					adminPhrase('Compression is not enabled on this server. To enable, do one of the following: <br/> &nbsp; &bull; Enable <code>mod_deflate</code> in Apache<br/> &nbsp; &bull; Enable <code>zlib.output_compression</code> in your <code>php.ini</code><br/> &nbsp; &bull; Enable <code>zlib.output_compression</code> in your <code>.htaccess</code> file');
@@ -215,6 +215,9 @@ class zenario_common_features__admin_boxes__site_settings extends module_base_cl
 				$fields['image_sizes/working_copy_image']['value'] = '';
 				$fields['image_sizes/working_copy_image_size']['value'] = 1000;
 			}
+		}
+		if (isset($fields['image_sizes/set_working_copy_image_threshold'])) {
+			$values['image_sizes/set_working_copy_image_threshold'] = (bool) $values['image_sizes/working_copy_image_threshold'];
 		}
 
 		if (isset($fields['security/enable_two_factor_security_for_admin_logins'])) {
@@ -405,6 +408,92 @@ class zenario_common_features__admin_boxes__site_settings extends module_base_cl
 			}
 		}
 
+		if (isset($box['tabs']['mysql'])) {
+			$box['tabs']['mysql']['notices']['error']['show'] =
+			$box['tabs']['mysql']['notices']['success']['show'] = false;
+
+			if (!empty($fields['mysql/test']['pressed'])) {
+				setSetting('mysql_path', $values['mysql/mysql_path'], $updateDB = false);
+				
+				if (testMySQL(false)) {
+					$box['tabs']['mysql']['notices']['success']['show'] = true;
+				} else {
+					$box['tabs']['mysql']['notices']['error']['show'] = true;
+				}
+			}
+			
+			$box['tabs']['mysql']['notices']['error2']['show'] =
+			$box['tabs']['mysql']['notices']['success2']['show'] = false;
+
+			if (!empty($fields['mysql/test2']['pressed'])) {
+				setSetting('mysqldump_path', $values['mysql/mysqldump_path'], $updateDB = false);
+				
+				if (testMySQL(true)) {
+					$box['tabs']['mysql']['notices']['success2']['show'] = true;
+				} else {
+					$box['tabs']['mysql']['notices']['error2']['show'] = true;
+				}
+			}
+			
+			foreach ([
+				'advpng' => 'png',
+				'jpegoptim' => 'jpeg',
+				'jpegtran' => 'jpeg',
+				'optipng' => 'png',
+				'pngcrush' => 'png',
+				'pngquant' => 'png'
+			] as $program => $tab) {
+				$box['tabs'][$tab]['notices']['error_'. $program]['show'] =
+				$box['tabs'][$tab]['notices']['success_'. $program]['show'] = false;
+
+				if (!empty($fields[$tab. '/test_'. $program]['pressed'])) {
+					if (programPathForExec($values[$tab. '/'. $program. '_path'], $program, true)) {
+						$box['tabs'][$tab]['notices']['success_'. $program]['show'] = true;
+					} else {
+						$box['tabs'][$tab]['notices']['error_'. $program]['show'] = true;
+					}
+				}
+			}
+		}
+		
+		//here
+		if (isset($fields['automated_backups/test'])
+		 && $values['automated_backups/check_automated_backups']
+		 && (!isset($fields['automated_backups/test']['note_below'])
+		  || !empty($fields['automated_backups/test']['pressed']))) {
+			
+			$fields['automated_backups/test']['note_below'] = '';
+			
+			
+			
+			if (($automated_backup_log_path = $values['automated_backups/automated_backup_log_path'])
+			 && (is_file($automated_backup_log_path))
+			 && (is_readable($automated_backup_log_path))) {
+				
+				require_once CMS_ROOT. 'zenario/includes/welcome.inc.php';
+				$timestamp = lastAutomatedBackupTimestamp($automated_backup_log_path);
+				
+				if (!$timestamp) {
+					$mrg = array(
+						'DBNAME' => DBNAME,
+						'path' => $automated_backup_log_path
+					);
+					$fields['automated_backups/test']['note_below'] = htmlspecialchars(
+						adminPhrase('The database "[[DBNAME]]" was not listed in [[path]]', $mrg)
+					);
+			
+				} else {
+					$mrg = array(
+						'DBNAME' => DBNAME,
+						'datetime' => formatDateTimeNicely($timestamp, false, true)
+					);
+					$fields['automated_backups/test']['note_below'] = htmlspecialchars(
+						adminPhrase('The database "[[DBNAME]]" was last backed up on [[datetime]]', $mrg)
+					);
+				}
+			}
+		}
+
 		if (isset($fields['test/test_send_button'])) {
 	
 			$box['tabs']['test']['notices']['test_send_error']['show'] = false;
@@ -539,17 +628,17 @@ class zenario_common_features__admin_boxes__site_settings extends module_base_cl
 			}
 		}
 
-		if (isset($fields['image_sizes/jpeg_quality'])) {
-			if (!$values['image_sizes/jpeg_quality']) {
-				$box['tabs']['image_sizes']['errors'][] = adminPhrase('Please enter a JPEG Quality.');
+		if (isset($fields['image_sizes/jpeg_quality_limit'])) {
+			if (!$values['image_sizes/jpeg_quality_limit']) {
+				$box['tabs']['image_sizes']['errors'][] = adminPhrase('Please enter a JPEG quality.');
 	
-			} elseif (!is_numeric($values['image_sizes/jpeg_quality'])) {
-				$box['tabs']['image_sizes']['errors'][] = adminPhrase('The JPEG Quality must be a number.');
+			} elseif (!is_numeric($values['image_sizes/jpeg_quality_limit'])) {
+				$box['tabs']['image_sizes']['errors'][] = adminPhrase('The JPEG quality must be a number.');
 	
 			} else
-			if ((int) $values['image_sizes/jpeg_quality'] < 1
-			 || (int) $values['image_sizes/jpeg_quality'] > 100) {
-				$box['tabs']['image_sizes']['errors'][] = adminPhrase('The JPEG Quality must be a number between 1 and 100.');
+			if ((int) $values['image_sizes/jpeg_quality_limit'] < 80
+			 || (int) $values['image_sizes/jpeg_quality_limit'] > 100) {
+				$box['tabs']['image_sizes']['errors'][] = adminPhrase('The JPEG quality must be a number between 80 and 100.');
 			}
 		}
 
@@ -632,8 +721,8 @@ class zenario_common_features__admin_boxes__site_settings extends module_base_cl
 				
 				foreach ($tab['fields'] as $fieldName => &$field) {
 					if (is_array($field)) {
-						if (!arrayKey($field, 'readonly')
-						 && !arrayKey($field, 'read_only')
+						if (empty($field['readonly'])
+						 && empty($field['read_only'])
 						 && ($setting = arrayKey($field, 'site_setting', 'name'))) {
 					
 							//Get the value of the setting. Hidden fields should count as being empty
@@ -660,7 +749,8 @@ class zenario_common_features__admin_boxes__site_settings extends module_base_cl
 					
 							//Working copy images store a number for enabled. But the UI is a checkbox for enabled, and then a number if enabled.
 							//Convert the format back when saving
-							if (($setting == 'working_copy_image_size' && empty($values['image_sizes/working_copy_image']))
+							if (($setting == 'working_copy_image_threshold' && empty($values['image_sizes/set_working_copy_image_threshold']))
+							 || ($setting == 'working_copy_image_size' && empty($values['image_sizes/working_copy_image']))
 							 || ($setting == 'thumbnail_wc_image_size' && empty($values['image_sizes/thumbnail_wc']))) {
 								$value = '';
 							}
@@ -674,9 +764,11 @@ class zenario_common_features__admin_boxes__site_settings extends module_base_cl
 							}
 					
 							$settingChanged = $value != setting($setting);
-							setSetting($setting, $value);
 					
 							if ($settingChanged) {
+								//setSetting($settingName, $value, $updateDB = true, $encrypt = false, $clearCache = true)
+								setSetting($setting, $value, true, engToBooleanArray($field, 'site_setting', 'encrypt'));
+								
 								//Handle changing the default language of the site
 								if ($setting == 'default_language') {
 									//Update the special pages, creating new ones if needed
@@ -691,9 +783,6 @@ class zenario_common_features__admin_boxes__site_settings extends module_base_cl
 									while ($equiv = sqlFetchAssoc($equivResult)) {
 										resyncEquivalence($equiv['equiv_id'], $equiv['type']);
 									}
-						
-								} elseif ($setting == 'jpeg_quality') {
-									$workingCopyImages = $thumbnailWorkingCopyImages = true;
 						
 								} elseif ($setting == 'thumbnail_wc_image_size') {
 									$thumbnailWorkingCopyImages = true;

@@ -53,7 +53,7 @@
 							<p class="content_list_date">{{item.Date|e}}</p>
 						{% endif %}
 					</div>
-					{% if item.Show_Sticky_Image %}
+					{% if Show_Sticky_Image %}
 						<div class="sticky_image">
 							<a {{item.Link}}{{item.Target_Blank}}>
 								{{item.Sticky_Image}}
@@ -77,7 +77,7 @@
 					{% endif %}
 					
 					<div class="content_list_more">
-						<a {{Link}}>{{'_MORE'|trans}}</a>
+						<a {{item.Link}}{{item.Target_Blank}}>{{'_MORE'|trans}}</a>
 					</div>
 				</div>
 			{% endfor %}

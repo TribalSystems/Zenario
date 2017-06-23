@@ -16,8 +16,7 @@ zenario__content:
                       AND f.archived = 0
                       AND f.mime_type IN ('image/gif', 'image/png', 'image/jpeg', 'image/svg+xml')
             
-            #panel_type: grid_or_list
-            panel_type: images_with_tags_or_grid
+            panel_type: grid_or_images_with_tags
             use_tall_rows: true
             
             grid_view_microtemplate: zenario_grid_view_image

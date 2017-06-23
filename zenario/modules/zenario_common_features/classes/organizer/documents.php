@@ -359,7 +359,6 @@ class zenario_common_features__organizer__documents extends module_base_class {
 			$messageType = 'Success';
 			$html = '';
 			foreach (explode(',', $ids) as $id) {
-				
 				$result = zenario_common_features::generateDocumentPublicLink($id);
 				
 				if (isError($result)) {
@@ -378,7 +377,6 @@ class zenario_common_features__organizer__documents extends module_base_class {
 			echo '<!--Message_Type:' . $messageType . '-->' . $html;
 		
 		} elseif(post('delete_public_link')) {
-			
 			foreach (explode(',', $ids) as $id) {
 				$result = zenario_common_features::deleteHierarchicalDocumentPubliclink($id);
 				
@@ -391,6 +389,25 @@ class zenario_common_features__organizer__documents extends module_base_class {
 				}
 				
 			}
+		} elseif (post('regenerate_public_links')) {
+			//Get files that should have public links and their redirects
+			$sql = "
+				SELECT d.id, d.file_id, f.filename, f.location, f.path, f.short_checksum
+				FROM " . DB_NAME_PREFIX . "documents d
+				INNER JOIN " . DB_NAME_PREFIX . "files f
+					ON d.file_id = f.id
+				WHERE d.type = 'file' 
+				AND d.privacy = 'public'";
+			$result = sqlSelect($sql);
+			while($row = sqlFetchAssoc($result)) {
+				//Make public link
+				$publicLink = zenario_common_features::generateDocumentPublicLink($row['id']);
+				
+				//Re-make any redirects
+				if (!isError($publicLink)) {
+					zenario_common_features::remakeDocumentRedirectHtaccessFiles($row['id']);
+				}
+			}
 		}
 		
 		if ($externalProgramError) {
@@ -400,6 +417,7 @@ class zenario_common_features__organizer__documents extends module_base_class {
 				), '</p>';
 		}
 	}
+	
 	
 	public function organizerPanelDownload($path, $ids, $refinerName, $refinerId) {
 		$file =  getRow('files', true, getRow('documents', 'file_id', $ids));

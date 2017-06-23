@@ -582,6 +582,368 @@ _sql
 	WHERE `save_data` = 1 AND `user_duplicate_email_action` = 'overwrite'
 _sql
 
+); revision(80
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]form_field_values`
+	ADD COLUMN `is_invalid` tinyint(1) NOT NULL DEFAULT 0
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
+	ADD COLUMN `invalid_field_value_error_message` varchar(255) DEFAULT NULL
+_sql
+
+); revision(81
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
+	ADD COLUMN `visible_condition_invert` tinyint(1) NOT NULL DEFAULT 0 AFTER `visible_condition_field_id`,
+	ADD COLUMN `mandatory_condition_invert` tinyint(1) NOT NULL DEFAULT 0 AFTER `mandatory_condition_field_id`
+_sql
+
+); revision(82
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
+	ADD COLUMN `allow_clear_partial_data` tinyint(1) NOT NULL DEFAULT 0 AFTER `partial_completion_message`,
+	ADD COLUMN `clear_partial_data_message` varchar(255) DEFAULT NULL AFTER `allow_clear_partial_data`
+_sql
+
+); revision(83
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
+	ADD COLUMN `enable_summary_page` tinyint(1) NOT NULL DEFAULT 0
+_sql
+
+); revision(84
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
+	ADD COLUMN `visible_condition_checkboxes_operator` enum('AND', 'OR') NOT NULL DEFAULT 'AND' AFTER `visible_condition_invert`,
+	ADD COLUMN `mandatory_condition_checkboxes_operator` enum('AND', 'OR') NOT NULL DEFAULT 'AND' AFTER `mandatory_condition_invert`
+_sql
+
+); revision(85
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
+	ADD COLUMN `word_limit` int(10) unsigned DEFAULT NULL
+_sql
+
+); revision(100
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
+	MODIFY COLUMN `field_type` enum('checkbox','checkboxes','date','editor','radios','centralised_radios','select','centralised_select','text','textarea','url','attachment','page_break','section_description','calculated','restatement','repeat_start','repeat_end','pdf_upload') DEFAULT NULL
+_sql
+
+); revision(101
+
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]form_field_values` SET `label` = SUBSTR(`label`, 1, 250) WHERE CHAR_LENGTH(`label`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]form_field_values` MODIFY COLUMN `label` varchar(250) CHARACTER SET utf8mb4 NOT NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` SET `admin_email_addresses` = SUBSTR(`admin_email_addresses`, 1, 250) WHERE CHAR_LENGTH(`admin_email_addresses`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` MODIFY COLUMN `admin_email_addresses` varchar(250) CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` SET `admin_email_template` = SUBSTR(`admin_email_template`, 1, 250) WHERE CHAR_LENGTH(`admin_email_template`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` MODIFY COLUMN `admin_email_template` varchar(250) CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` SET `clear_partial_data_message` = SUBSTR(`clear_partial_data_message`, 1, 250) WHERE CHAR_LENGTH(`clear_partial_data_message`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` MODIFY COLUMN `clear_partial_data_message` varchar(250) CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` SET `default_next_button_text` = SUBSTR(`default_next_button_text`, 1, 250) WHERE CHAR_LENGTH(`default_next_button_text`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` MODIFY COLUMN `default_next_button_text` varchar(250) CHARACTER SET utf8mb4 NULL default 'Next'
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` SET `default_previous_button_text` = SUBSTR(`default_previous_button_text`, 1, 250) WHERE CHAR_LENGTH(`default_previous_button_text`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` MODIFY COLUMN `default_previous_button_text` varchar(250) CHARACTER SET utf8mb4 NULL default 'Back'
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` SET `duplicate_email_address_error_message` = SUBSTR(`duplicate_email_address_error_message`, 1, 250) WHERE CHAR_LENGTH(`duplicate_email_address_error_message`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` MODIFY COLUMN `duplicate_email_address_error_message` varchar(250) CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` SET `duplicate_submission_message` = SUBSTR(`duplicate_submission_message`, 1, 250) WHERE CHAR_LENGTH(`duplicate_submission_message`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` MODIFY COLUMN `duplicate_submission_message` varchar(250) CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` SET `honeypot_label` = SUBSTR(`honeypot_label`, 1, 250) WHERE CHAR_LENGTH(`honeypot_label`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` MODIFY COLUMN `honeypot_label` varchar(250) CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` SET `name` = SUBSTR(`name`, 1, 250) WHERE CHAR_LENGTH(`name`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` MODIFY COLUMN `name` varchar(250) CHARACTER SET utf8mb4 NOT NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` SET `page_end_name` = SUBSTR(`page_end_name`, 1, 250) WHERE CHAR_LENGTH(`page_end_name`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` MODIFY COLUMN `page_end_name` varchar(250) CHARACTER SET utf8mb4 NULL default 'Page end'
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` SET `partial_completion_message` = SUBSTR(`partial_completion_message`, 1, 250) WHERE CHAR_LENGTH(`partial_completion_message`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` MODIFY COLUMN `partial_completion_message` varchar(250) CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` SET `redirect_location` = SUBSTR(`redirect_location`, 1, 250) WHERE CHAR_LENGTH(`redirect_location`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` MODIFY COLUMN `redirect_location` varchar(250) CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` SET `submit_button_text` = SUBSTR(`submit_button_text`, 1, 250) WHERE CHAR_LENGTH(`submit_button_text`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` MODIFY COLUMN `submit_button_text` varchar(250) CHARACTER SET utf8mb4 NULL default 'Submit'
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` SET `success_message` = SUBSTR(`success_message`, 1, 250) WHERE CHAR_LENGTH(`success_message`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` MODIFY COLUMN `success_message` varchar(250) CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` SET `title` = SUBSTR(`title`, 1, 250) WHERE CHAR_LENGTH(`title`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` MODIFY COLUMN `title` varchar(250) CHARACTER SET utf8mb4 NULL default ''
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` SET `user_email_template_from_field` = SUBSTR(`user_email_template_from_field`, 1, 250) WHERE CHAR_LENGTH(`user_email_template_from_field`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` MODIFY COLUMN `user_email_template_from_field` varchar(250) CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` SET `user_email_template_logged_in_user` = SUBSTR(`user_email_template_logged_in_user`, 1, 250) WHERE CHAR_LENGTH(`user_email_template_logged_in_user`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` MODIFY COLUMN `user_email_template_logged_in_user` varchar(250) CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `autocomplete_class_name` = SUBSTR(`autocomplete_class_name`, 1, 250) WHERE CHAR_LENGTH(`autocomplete_class_name`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `autocomplete_class_name` varchar(250) CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `autocomplete_method_name` = SUBSTR(`autocomplete_method_name`, 1, 250) WHERE CHAR_LENGTH(`autocomplete_method_name`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `autocomplete_method_name` varchar(250) CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `autocomplete_no_filter_placeholder` = SUBSTR(`autocomplete_no_filter_placeholder`, 1, 250) WHERE CHAR_LENGTH(`autocomplete_no_filter_placeholder`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `autocomplete_no_filter_placeholder` varchar(250) CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `autocomplete_param_1` = SUBSTR(`autocomplete_param_1`, 1, 250) WHERE CHAR_LENGTH(`autocomplete_param_1`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `autocomplete_param_1` varchar(250) CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `autocomplete_param_2` = SUBSTR(`autocomplete_param_2`, 1, 250) WHERE CHAR_LENGTH(`autocomplete_param_2`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `autocomplete_param_2` varchar(250) CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `calculation_code` text CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `css_classes` = SUBSTR(`css_classes`, 1, 250) WHERE CHAR_LENGTH(`css_classes`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `css_classes` varchar(250) CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `custom_code_name` = SUBSTR(`custom_code_name`, 1, 250) WHERE CHAR_LENGTH(`custom_code_name`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `custom_code_name` varchar(250) CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `default_value` = SUBSTR(`default_value`, 1, 250) WHERE CHAR_LENGTH(`default_value`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `default_value` varchar(250) CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `default_value_class_name` = SUBSTR(`default_value_class_name`, 1, 250) WHERE CHAR_LENGTH(`default_value_class_name`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `default_value_class_name` varchar(250) CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `default_value_method_name` = SUBSTR(`default_value_method_name`, 1, 250) WHERE CHAR_LENGTH(`default_value_method_name`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `default_value_method_name` varchar(250) CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `default_value_param_1` = SUBSTR(`default_value_param_1`, 1, 250) WHERE CHAR_LENGTH(`default_value_param_1`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `default_value_param_1` varchar(250) CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `default_value_param_2` = SUBSTR(`default_value_param_2`, 1, 250) WHERE CHAR_LENGTH(`default_value_param_2`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `default_value_param_2` varchar(250) CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `description` text CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `div_wrap_class` = SUBSTR(`div_wrap_class`, 1, 250) WHERE CHAR_LENGTH(`div_wrap_class`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `div_wrap_class` varchar(250) CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `invalid_field_value_error_message` = SUBSTR(`invalid_field_value_error_message`, 1, 250) WHERE CHAR_LENGTH(`invalid_field_value_error_message`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `invalid_field_value_error_message` varchar(250) CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `label` = SUBSTR(`label`, 1, 250) WHERE CHAR_LENGTH(`label`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `label` varchar(250) CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `mandatory_condition_field_value` = SUBSTR(`mandatory_condition_field_value`, 1, 250) WHERE CHAR_LENGTH(`mandatory_condition_field_value`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `mandatory_condition_field_value` varchar(250) CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `name` = SUBSTR(`name`, 1, 250) WHERE CHAR_LENGTH(`name`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `name` varchar(250) CHARACTER SET utf8mb4 NOT NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `next_button_text` = SUBSTR(`next_button_text`, 1, 250) WHERE CHAR_LENGTH(`next_button_text`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `next_button_text` varchar(250) CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `note_to_user` = SUBSTR(`note_to_user`, 1, 250) WHERE CHAR_LENGTH(`note_to_user`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `note_to_user` varchar(250) CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `placeholder` = SUBSTR(`placeholder`, 1, 250) WHERE CHAR_LENGTH(`placeholder`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `placeholder` varchar(250) CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `previous_button_text` = SUBSTR(`previous_button_text`, 1, 250) WHERE CHAR_LENGTH(`previous_button_text`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `previous_button_text` varchar(250) CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `repeat_error_message` = SUBSTR(`repeat_error_message`, 1, 250) WHERE CHAR_LENGTH(`repeat_error_message`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `repeat_error_message` varchar(250) CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `repeat_field_label` = SUBSTR(`repeat_field_label`, 1, 250) WHERE CHAR_LENGTH(`repeat_field_label`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `repeat_field_label` varchar(250) CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `required_error_message` = SUBSTR(`required_error_message`, 1, 250) WHERE CHAR_LENGTH(`required_error_message`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `required_error_message` varchar(250) CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `validation_error_message` = SUBSTR(`validation_error_message`, 1, 250) WHERE CHAR_LENGTH(`validation_error_message`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `validation_error_message` varchar(250) CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `values_source` = SUBSTR(`values_source`, 1, 250) WHERE CHAR_LENGTH(`values_source`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `values_source` varchar(250) CHARACTER SET utf8mb4 NOT NULL default ''
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `values_source_filter` = SUBSTR(`values_source_filter`, 1, 250) WHERE CHAR_LENGTH(`values_source_filter`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `values_source_filter` varchar(250) CHARACTER SET utf8mb4 NOT NULL default ''
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `value_postfix` = SUBSTR(`value_postfix`, 1, 250) WHERE CHAR_LENGTH(`value_postfix`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `value_postfix` varchar(250) CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `value_prefix` = SUBSTR(`value_prefix`, 1, 250) WHERE CHAR_LENGTH(`value_prefix`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `value_prefix` varchar(250) CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `visible_condition_field_value` = SUBSTR(`visible_condition_field_value`, 1, 250) WHERE CHAR_LENGTH(`visible_condition_field_value`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `visible_condition_field_value` varchar(250) CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_partial_response_data` MODIFY COLUMN `value` text CHARACTER SET utf8mb4 NOT NULL
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response` MODIFY COLUMN `crm_response` text CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response_data` SET `internal_value` = SUBSTR(`internal_value`, 1, 250) WHERE CHAR_LENGTH(`internal_value`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response_data` MODIFY COLUMN `internal_value` varchar(250) CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response_data` MODIFY COLUMN `value` text CHARACTER SET utf8mb4 NOT NULL
+_sql
+
 );
 
 

@@ -204,4 +204,63 @@ _sql
 	WHERE name IN ('organizer_page_size', 'storekeeper_page_size')
 _sql
 
+
+
+//Rename the admin_storekeeper_prefs table to admin_organizer_prefs
+);	revision( 38821
+, <<<_sql
+	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]admin_organizer_prefs`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]admin_storekeeper_prefs`
+	RENAME TO `[[DB_NAME_PREFIX]]admin_organizer_prefs`
+_sql
+
+
+//Attempt to convert some columns with a utf8-3-byte character set to a 4-byte character set
+);	revision( 40150
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]admins` MODIFY COLUMN `email` varchar(200) CHARACTER SET utf8mb4 NOT NULL default ''
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]admins` MODIFY COLUMN `first_name` varchar(100) CHARACTER SET utf8mb4 NOT NULL default ''
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]admins` MODIFY COLUMN `last_name` varchar(100) CHARACTER SET utf8mb4 NOT NULL default ''
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]admins` MODIFY COLUMN `password` varchar(50) CHARACTER SET ascii NOT NULL default ''
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]admins` MODIFY COLUMN `password_salt` varchar(8) CHARACTER SET ascii NULL
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]admins` MODIFY COLUMN `reset_password` varchar(50) CHARACTER SET ascii NULL
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]admins` MODIFY COLUMN `reset_password_salt` varchar(8) CHARACTER SET ascii NULL
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]admins` MODIFY COLUMN `specific_content_items` text CHARACTER SET ascii NULL
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]admins` MODIFY COLUMN `specific_languages` text CHARACTER SET ascii NULL
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]admins` MODIFY COLUMN `specific_menu_areas` text CHARACTER SET ascii NULL
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]admins` MODIFY COLUMN `username` varchar(50) CHARACTER SET utf8mb4 NOT NULL default ''
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]admin_organizer_prefs` MODIFY COLUMN `checksum` varchar(22) CHARACTER SET utf8mb4 NOT NULL default '{}'
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]admin_organizer_prefs` MODIFY COLUMN `prefs` mediumtext CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]admin_settings` MODIFY COLUMN `value` mediumtext CHARACTER SET utf8mb4 NULL
+_sql
+
 );

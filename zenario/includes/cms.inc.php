@@ -89,18 +89,24 @@ function getLatestRevisionNumber() {
 
 //Get the CMS version number from latest_revision_no.inc.php
 //Also attempt to guess whether this is a build or an on-demand site
-function getCMSVersionNumber($revision = false) {
+function getCMSVersionNumber($revision = false, $addNoteAboutSVN = true) {
 	
 	$thisIsABuild = is_numeric(ZENARIO_REVISION);
 	
-	if ($revision === false && $thisIsABuild) {
-		$revision = ZENARIO_REVISION;
+	$versionNumber = ZENARIO_VERSION;
+	
+	if ($revision) {
+		$versionNumber .= '.'. $revision;
+	
+	} elseif ($revision === false && $thisIsABuild) {
+		$versionNumber .= '.'. ZENARIO_REVISION;
 	}
 	
-	return
-		ZENARIO_VERSION.
-		($revision? '.'. $revision : '').
-		($thisIsABuild? '' : (ZENARIO_IS_HEAD? ' (svn HEAD)' : ' (svn branch)'));
+	if ($addNoteAboutSVN && !$thisIsABuild) {
+		$versionNumber .= (ZENARIO_IS_HEAD? ' (svn HEAD)' : ' (svn branch)');
+	}
+	
+	return $versionNumber;
 }
 
 
@@ -124,7 +130,7 @@ function CMSWritePageBodyAdminToolbar(&$toolbars, $toolbarAttr = '') {
 }
 
 //Write the URLBasePath, and other related JavaScript variables, to the page
-function CMSWritePageFoot($prefix, $mode = false, $includeOrganizer = true, $includeAdminToolbar = true) {
+function CMSWritePageFoot($prefix, $mode = false, $includeOrganizer = true, $includeAdminToolbar = true, $defer = false) {
 	require funIncPath(__FILE__, __FUNCTION__);
 }
 
@@ -599,7 +605,12 @@ function zenarioReadTUIXFile($path, $useCache = true, $updateCache = true) {
 				
 			} else {
 				require_once CMS_ROOT. 'zenario/libraries/mit/spyc/Spyc.php';
-				$tags = Spyc::YAMLLoad($path);
+				try {
+					$tags = Spyc::YAMLLoad($path);
+				} catch (Exception $e) {
+					echo 'Could not parse file '. $path, "\n", htmlspecialchars($e->getMessage());
+					throw $e;
+				}
 			}
 			unset($contents);
 			
@@ -1094,6 +1105,9 @@ function checkAdminTableColumnsExist() {
 }
 
 
+
+
+
 //Some password functions for users/admins
 
 function hashPassword($salt, $password) {
@@ -1119,10 +1133,6 @@ function hashPasswordSha1($salt, $password) {
 	$row = sqlFetchRow($result);
 	return $row[0];
 }
-
-
-
-
 
 
 /*
@@ -1623,7 +1633,7 @@ function getShowableContent(&$content, &$version, $cID, $cType = 'html', $reques
 		$versionColumns = array(
 			'version',
 			'title', 'description', 'keywords',
-			'layout_id', 'css_class', 'sticky_image_id',
+			'layout_id', 'css_class', 'feature_image_id',
 			'publication_date', 'published_datetime', 'created_datetime',
 			'rss_slot_name', 'rss_nest');
 		
@@ -1722,6 +1732,7 @@ function checkItemPrivacy($privacy, $privacySettings, $cID, $cType, $cVersion) {
 		switch ($privacy['privacy']) {
 			case 'logged_in':
 			case 'group_members':
+			case 'with_role':
 			case 'in_smart_group':
 			case 'logged_in_not_in_smart_group':
 				return ZENARIO_401_NOT_LOGGED_IN;
@@ -1737,32 +1748,55 @@ function checkItemPrivacy($privacy, $privacySettings, $cID, $cType, $cVersion) {
 			return $userId? ZENARIO_403_NO_PERMISSION : true;
 	
 		case 'group_members':
-			//Try to get this user's groups
-			$userGroups = getUserGroups($userId);
+		case 'with_role':
+			
+			if ($privacy['privacy'] == 'group_members') {
+				//Try to get this user's groups
+				$linkTo = 'group';
+				$linkToIds = getUserGroups($userId);
+			
+			} elseif ($privacy['privacy'] == 'with_role' && ($ZENARIO_ORGANIZATION_MANAGER_PREFIX = getModulePrefix('zenario_organization_manager'))) {
+				//Try to get this user's roles
+				$linkTo = 'role';
+				$linkToIds =
+					arrayValuesToKeys(
+						sqlFetchValues("
+							SELECT DISTINCT role_id
+							FROM ". DB_NAME_PREFIX. $ZENARIO_ORGANIZATION_MANAGER_PREFIX. "user_role_location_link
+							WHERE user_id = ". (int) $userId
+						)
+					);
+			
+			} else {
+				return false;
+			}
 		
 			//Look up all of the groups for this content item or slide.
 			//If the user has one of the groups, allow access.
-			if (!empty($userGroups)) {
+			if (!empty($linkToIds)) {
+				
+				$sql = "
+					SELECT link_to_id
+					FROM `". DB_NAME_PREFIX. "group_link`
+					WHERE link_to = '". sqlEscape($linkTo). "'";
 				
 				if (!empty($privacy['equiv_id']) && !empty($privacy['type'])) {
-					$sql = "
-						SELECT group_id
-						FROM `". DB_NAME_PREFIX. "group_content_link` AS gcl
-						WHERE equiv_id = ". (int) $privacy['equiv_id']. "
-						  AND content_type = '". sqlEscape($cType). "'";
+					$sql .= "
+						  AND link_from = 'chain'
+						  AND link_from_id = ". (int) $privacy['equiv_id']. "
+						  AND link_from_char = '". sqlEscape($cType). "'";
 				
 				} elseif (!empty($privacy['slide_id'])) {
-					$sql = "
-						SELECT group_id
-						FROM `". DB_NAME_PREFIX. "group_slide_link` AS gcl
-						WHERE slide_id = ". (int) $privacy['slide_id'];
+					$sql .= "
+						  AND link_from = 'slide'
+						  AND link_from_id = ". (int) $privacy['slide_id'];
 				
 				} else {
 					return false;
 				}
 				
 				foreach (sqlFetchValues($sql) as $groupId) {
-					if (!empty($userGroups[$groupId])) {
+					if (!empty($linkToIds[$groupId])) {
 						return true;
 					}
 				}		
@@ -1829,7 +1863,7 @@ function setShowableContent(&$content, &$version) {
 	
 	cms_core::$pageTitle = $version['title'];
 	cms_core::$pageDesc = $version['description'];
-	cms_core::$pageImage = $version['sticky_image_id'];
+	cms_core::$pageImage = $version['feature_image_id'];
 	cms_core::$pageKeywords = $version['keywords'];
 	
 	cms_core::$itemCSS = $version['css_class'];
@@ -2382,7 +2416,7 @@ function getMenuName($mID, $langId = false, $missingPhrase = '[[name]] ([[langua
 	
 	$markFrom = false;
 	if ($langId === false) {
-		$langId = ifNull(session('user_lang'), setting('default_language'));
+		$langId = currentLangId();
 	
 	} elseif ($langId === true) {
 		$langId = setting('default_language');
@@ -2559,7 +2593,7 @@ function getMenuStructure(
 	$getFullMenu = false
 ) {
 	if ($language === false) {
-		$language = cms_core::$langId? cms_core::$langId : setting('default_language');
+		$language = cms_core::$langId ?? setting('default_language');
 	}
 	
 	if (++$recurseCount == 1) {
@@ -3694,15 +3728,7 @@ function checkUserInGroup($groupId, $userId = 'session') {
 		return false;
 	}
 	
-	$sql = "
-		SELECT 1
-		FROM ". DB_NAME_PREFIX. "users_custom_data
-		WHERE `". sqlEscape($group_name). "` = 1
-		  AND user_id = ". (int) $userId;
-	
-	$result = sqlQuery($sql);
-	
-	return (bool) sqlFetchRow($result);
+	return (bool) getRow('users_custom_data', $group_name, $userId);
 }
 
 function getUserGroupsNames( $userId ) {
@@ -3925,7 +3951,7 @@ function resizeImageStringToSize(&$image, $mime_type, $imageWidth, $imageHeight,
 				$temp_file = tempnam(sys_get_temp_dir(), 'Img');
 					if ($mime_type == 'image/gif') imagegif($resized_image, $temp_file);
 					if ($mime_type == 'image/png') imagepng($resized_image, $temp_file);
-					if ($mime_type == 'image/jpeg') imagejpeg($resized_image, $temp_file, ifNull((int) setting('jpeg_quality'), 99));
+					if ($mime_type == 'image/jpeg') imagejpeg($resized_image, $temp_file, $jpeg_quality = 100);
 			
 					imagedestroy($resized_image);
 					unset($resized_image);
@@ -4525,8 +4551,8 @@ function checkModuleRunning($className) {
 	
 	return (bool) sqlFetchRow("
 		SELECT 1
-		FROM [[DB_NAME_PREFIX]]modules
-		WHERE class_name = [[0]]
+		FROM [modules AS m]
+		WHERE class_name = [0]
 		  AND status IN ('module_running', 'module_is_abstract')
 	", [$className]);
 }
@@ -5026,7 +5052,7 @@ function getVersionControlledPluginInstanceId($cID, $cType, $cVersion, $slotName
 
 //Activate and setup a plugin
 //Note that the function canActivateModule() or equivalent should be called on the plugin's name before calling setInstance(), loadPluginInstance() or initPluginInstance()
-function setInstance(&$instance, $cID, $cType, $cVersion, $slotName, $checkForErrorPages = false, $overrideSettings = false, $nest = 0, $tab = 0) {
+function setInstance(&$instance, $cID, $cType, $cVersion, $slotName, $checkForErrorPages = false, $overrideSettings = false, $eggId = 0, $slideId = 0) {
 	
 	$missingPlugin = false;
 	if (!includeModuleAndDependencies($instance['class_name'], $missingPlugin)) {
@@ -5045,7 +5071,7 @@ function setInstance(&$instance, $cID, $cType, $cVersion, $slotName, $checkForEr
 			$instance['default_framework'], $instance['framework'],
 			$instance['css_class'],
 			arrayKey($instance, 'level'), !empty($instance['content_id'])
-		), $overrideSettings, $nest, $tab
+		), $overrideSettings, $eggId, $slideId
 	);
 }
 
@@ -5280,11 +5306,11 @@ function sendSignal($signalName, $signalParams) {
 /* Skins */
 
 function getSkinFromId($skinId) {
-	return getRow('skins', array('id', 'family_name', 'name', 'display_name', 'extension_of_skin', 'css_class', 'missing'), array('id' => $skinId));
+	return getRow('skins', array('id', 'family_name', 'name', 'display_name', 'extension_of_skin', 'import', 'css_class', 'missing'), array('id' => $skinId));
 }
 
 function getSkinFromName($familyName, $skinName) {
-	return getRow('skins', array('id', 'family_name', 'name', 'display_name', 'extension_of_skin', 'css_class', 'missing'), array('family_name' => $familyName, 'name' => $skinName));
+	return getRow('skins', array('id', 'family_name', 'name', 'display_name', 'extension_of_skin', 'import', 'css_class', 'missing'), array('family_name' => $familyName, 'name' => $skinName));
 }
 
 function getSkinPath($templateFamily = false, $skinName = false) {
@@ -5385,11 +5411,7 @@ function langEquivalentItem(&$cID, &$cType, $langId = false) {
 	}
 	
 	if ($langId === false) {
-		if (empty($_SESSION['user_lang'])) {
-			$langId = setting('default_language');
-		} else {
-			$langId = $_SESSION['user_lang'];
-		}
+		$langId = currentLangId();
 	
 	} elseif ($langId === true) {
 		$langId = setting('default_language');

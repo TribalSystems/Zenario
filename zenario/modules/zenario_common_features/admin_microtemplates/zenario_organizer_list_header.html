@@ -18,5 +18,10 @@
 		title="{{m.tooltip|escape}}"
 	<% } %>
 >
-	<span class="label">{{m.title|escape}}</span>
+	<span class="label">
+		{{m.title|escape}}
+		<% if (m.encrypted) { %>
+			<span class="organizer_encrypted_col">🔑 </span>
+		<% } %>
+	</span>
 </div>

@@ -27,7 +27,7 @@
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
-//Loop through each changed tab, and set its ordinal
+//Loop through each changed slide, and set its ordinal
 foreach (explode(',', $ids) as $id) {
 	$key = array('id' => $id, 'instance_id' => post('refiner__nest'), 'is_slide' => 1);
 	if (checkRowExists('nested_plugins', $key)) {
@@ -36,7 +36,7 @@ foreach (explode(',', $ids) as $id) {
 		
 		//Tabs sholudn't be children of other tabs
 		if (!$newParent) {
-			updateRow('nested_plugins', array('tab' => $newOrd), $key);
+			updateRow('nested_plugins', array('slide_num' => $newOrd), $key);
 		}
 	}
 }
@@ -50,10 +50,10 @@ foreach (explode(',', $ids) as $id) {
 		
 		//Plugins must be children of tabs
 		if ($newParent) {
-			//Convert the parent id to a tab number
-			$tabNo = getRow('nested_plugins', 'tab', array('id' => $newParent, 'instance_id' => post('refiner__nest'), 'is_slide' => 1));
-			//Update to the new tab number
-			updateRow('nested_plugins', array('tab' => ifNull($tabNo, 0, 0), 'ord' => $newOrd), $key);
+			//Convert the parent id to a slide number
+			$slideNum = getRow('nested_plugins', 'slide_num', array('id' => $newParent, 'instance_id' => post('refiner__nest'), 'is_slide' => 1));
+			//Update to the new slide number
+			updateRow('nested_plugins', array('slide_num' => ifNull($slideNum, 0, 0), 'ord' => $newOrd), $key);
 		}
 	}
 }

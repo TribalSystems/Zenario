@@ -1,4 +1,6 @@
 diagnostics:
+    key:
+        first_viewing: true
     tab: 0
     tabs:
         0:
@@ -17,18 +19,161 @@ diagnostics:
                     type: grouping
                     name: sub_table
                 
+                system_requirements:
+                    grouping: sub_table
+                    full_width: true
+                    snippet:
+                        html: System Requirements
+                    visible_if: zenarioAW.togglePressed(1)
+                show_system_requirements: &show_section
+                    grouping: sub_table
+                    type: toggle
+                    redraw_onchange: true
+                    same_row: true
+                    visible_if: "zenarioAW.togglePressed(1, tuixObject)"
+                
+                server:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_level
+                    snippet:
+                        html: Web Server
+                    visible_if: zenarioAW.togglePressed(2)
+                show_server: &show_subsection
+                    grouping: sub_table
+                    type: toggle
+                    redraw_onchange: true
+                    same_row: true
+                    visible_if: "zenarioAW.togglePressed(2, tuixObject)"
+                server_1:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_field
+                    snippet:
+                        html: Apache http server
+                    visible_if: zenarioAW.togglePressed()
+                php:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_level
+                    snippet:
+                        html: PHP
+                    visible_if: zenarioAW.togglePressed(2)
+                show_php: *show_subsection
+                php_1:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_field
+                    snippet:
+                        html: PHP version 7.0 or later
+                    visible_if: zenarioAW.togglePressed()
+                opcache_misconfigured:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_level
+                    snippet:
+                        html: |
+                            In your <code>php.ini</code> you have <code>opcache.enable</code>
+                            turned on, and you have <code>opcache.dups_fix</code> turned off.
+                            
+                            This may cause occasional PHP &ldquo;fatal errors&rdquo; on your site.
+                            
+                            Please edit your <code>php.ini</code> and either turn <code>opcache.enable</code> off
+                            or else turn <code>opcache.dups_fix</code> on.
+                    visible_if: zenarioAW.togglePressed()
+                mysql:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_level
+                    snippet:
+                        html: MySQL
+                    visible_if: zenarioAW.togglePressed(2)
+                show_mysql: *show_subsection
+                mysql_1:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_field
+                    snippet:
+                        html: MySQLi extension enabled in PHP
+                    visible_if: zenarioAW.togglePressed()
+                mysql_2:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_field
+                    snippet:
+                        html: MySQL version 5.5.3 or later
+                    visible_if: zenarioAW.togglePressed()
+                mb:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_level
+                    snippet:
+                        html: Unicode Support
+                    visible_if: zenarioAW.togglePressed(2)
+                show_mb: *show_subsection
+                mb_1:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_field
+                    snippet:
+                        html: ctype extension enabled in PHP
+                    visible_if: zenarioAW.togglePressed()
+                mb_2:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_field
+                    snippet:
+                        html: mbstring extension enabled in PHP
+                    visible_if: zenarioAW.togglePressed()
+                gd:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_level
+                    snippet:
+                        html: Image Manipulation
+                    visible_if: zenarioAW.togglePressed(2)
+                show_gd: *show_subsection
+                gd_1:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_field
+                    snippet:
+                        html: GD Library enabled in PHP
+                    visible_if: zenarioAW.togglePressed()
+                gd_2:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_field
+                    snippet:
+                        html: GIF Read Support enabled in PHP
+                    visible_if: zenarioAW.togglePressed()
+                gd_3:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_field
+                    snippet:
+                        html: JPG Support enabled in PHP
+                    visible_if: zenarioAW.togglePressed()
+                gd_4:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_field
+                    snippet:
+                        html: PNG Support enabled in PHP
+                    visible_if: zenarioAW.togglePressed()
+                
+                
+                
+                
+                
+                
                 dirs:
                     grouping: sub_table
                     full_width: true
                     snippet:
                         html: Directories
                     visible_if: zenarioAW.togglePressed(1)
-                show_dirs: &show_section
-                    grouping: sub_table
-                    type: toggle
-                    redraw_onchange: true
-                    same_row: true
-                    visible_if: "zenarioAW.togglePressed(1, tuixObject)"
+                show_dirs: *show_section
                 
                 dir_1:
                     grouping: sub_table
@@ -37,12 +182,7 @@ diagnostics:
                     snippet:
                         html: Backup Storage Area
                     visible_if: zenarioAW.togglePressed(2)
-                show_dir_1: &show_dir
-                    grouping: sub_table
-                    type: toggle
-                    redraw_onchange: true
-                    same_row: true
-                    visible_if: "zenarioAW.togglePressed(2, tuixObject)"
+                show_dir_1: *show_subsection
                 dir_1_blurb:
                     grouping: sub_table
                     full_width: true
@@ -73,7 +213,7 @@ diagnostics:
                     snippet:
                         html: Document Secure Store (Docstore)
                     visible_if: zenarioAW.togglePressed(2)
-                show_dir_2: *show_dir
+                show_dir_2: *show_subsection
                 dir_2_blurb:
                     grouping: sub_table
                     full_width: true
@@ -100,7 +240,7 @@ diagnostics:
                     snippet:
                         html: Templates Directory
                     visible_if: zenarioAW.togglePressed(2)
-                show_dir_3: *show_dir
+                show_dir_3: *show_subsection
                 dir_3_blurb:
                     grouping: sub_table
                     full_width: true
@@ -127,7 +267,7 @@ diagnostics:
                     snippet:
                         html: CSS Directories
                     visible_if: zenarioAW.togglePressed(2)
-                show_dir_4: *show_dir
+                show_dir_4: *show_subsection
                 dir_4_blurb:
                     grouping: sub_table
                     full_width: true
@@ -161,7 +301,7 @@ diagnostics:
                     snippet:
                         html: Cache Directory
                     visible_if: zenarioAW.togglePressed(2)
-                show_dir_5: *show_dir
+                show_dir_5: *show_subsection
                 dir_5_blurb:
                     grouping: sub_table
                     full_width: true
@@ -181,7 +321,7 @@ diagnostics:
                     snippet:
                         html: Private Directory
                     visible_if: zenarioAW.togglePressed(2)
-                show_dir_6: *show_dir
+                show_dir_6: *show_subsection
                 dir_6_blurb:
                     grouping: sub_table
                     full_width: true
@@ -202,7 +342,7 @@ diagnostics:
                     snippet:
                         html: Public Directory
                     visible_if: zenarioAW.togglePressed(2)
-                show_dir_7: *show_dir
+                show_dir_7: *show_subsection
                 dir_7_blurb:
                     grouping: sub_table
                     full_width: true
@@ -214,29 +354,6 @@ diagnostics:
                     visible_if: zenarioAW.togglePressed()
                 public_dir: *readonly_dir
                 public_dir_status: *dir_status
-                
-                
-                server:
-                    grouping: sub_table
-                    full_width: true
-                    snippet:
-                        html: Web Server
-                    visible_if: zenarioAW.togglePressed(1)
-                show_server: *show_section
-                opcache_misconfigured:
-                    grouping: sub_table
-                    full_width: true
-                    row_class: sub_level
-                    snippet:
-                        html: |
-                            In your <code>php.ini</code> you have <code>opcache.enable</code>
-                            turned on, and you have <code>opcache.dups_fix</code> turned off.
-                            
-                            This may cause occasional PHP &ldquo;fatal errors&rdquo; on your site.
-                            
-                            Please edit your <code>php.ini</code> and either turn <code>opcache.enable</code> off
-                            or else turn <code>opcache.dups_fix</code> on.
-                    visible_if: zenarioAW.togglePressed()
                 
                 
                 site:
@@ -281,6 +398,14 @@ diagnostics:
                         html: "&nbsp;"
                     hide_on_install: true
                     visible_if: zenarioAW.togglePressed()
+                site_unpublished_drafts:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_level
+                    snippet:
+                        html: "&nbsp;"
+                    hide_on_install: true
+                    visible_if: zenarioAW.togglePressed()
                 site_automated_backups:
                     grouping: sub_table
                     full_width: true
@@ -307,6 +432,17 @@ diagnostics:
                             Please go to <em>Configuration -&gt; Site settings -&gt; Domains</em> in Organizer to define a primary domain.
                     hide_on_install: true
                     visible_if: zenarioAW.togglePressed()
+                forwarded_ip_misconfigured:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_level
+                    snippet:
+                        html: |
+                            The <code>USE_FORWARDED_IP</code> constant is enabled
+                            in your <code>zenario_siteconfig.php</code> file,
+                            but you are not using a load balancer or a proxy,
+                            or your load balancer or proxy is misconfigured.
+                    visible_if: zenarioAW.togglePressed()
                 errors_not_shown:
                     grouping: sub_table
                     full_width: true
@@ -320,6 +456,19 @@ diagnostics:
                             in your <code>zenario_siteconfig.php</code> file - or
                             click the hammer icon at the bottom left of Organizer
                             to fully enable the site.)
+                    hide_on_install: true
+                    visible_if: zenarioAW.togglePressed()
+                notices_shown:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_level
+                    snippet:
+                        html: |
+                            Your site is in production mode, but you are showing PHP notices.
+                            <br/>
+                            (The <code>ERROR_REPORTING_LEVEL</code>
+                            should be set to <code>(E_ALL & ~E_NOTICE & ~E_STRICT)</code>
+                            in your <code>zenario_siteconfig.php</code> file.)
                     hide_on_install: true
                     visible_if: zenarioAW.togglePressed()
                 email_addresses_overridden:
@@ -357,6 +506,47 @@ diagnostics:
                     snippet:
                         html: ''
                     visible_if: zenarioAW.togglePressed()
+                
+                # We need to check whether mod-rewrite is working.
+                # This check can't always be done in PHP, so it must be done on the client.
+                # It's a slight hack, but I've implemented the logic in the visible_if property in
+                # JavaScript. This can't be read on the server, but thankfully it's only a warning
+                # so it doesn't need to be.
+                mr:
+                    grouping: sub_table
+                    full_width: true
+                    snippet:
+                        html: Friendly URLs
+                    visible_if: |
+                        function(tuixObject) {
+                            if (window.isHtaccessWorking = zenarioA.isHtaccessWorking()) {
+                                tuixObject.row_class = 'section_valid';
+                            } else {
+                                tuixObject.row_class = 'section_warning';
+                            }
+                            return zenarioAW.togglePressed(1);
+                        }
+                show_mr:
+                    grouping: sub_table
+                    type: toggle
+                    redraw_onchange: true
+                    same_row: true
+                    visible_if: |
+                        function(tuixObject) {
+                            if (tuixObject.pressed === undefined) {
+                                tuixObject.pressed = !window.isHtaccessWorking;
+                            }
+                            return zenarioAW.togglePressed(1, tuixObject)
+                        }
+                mr_valid_1:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: valid
+                    snippet:
+                        html: |
+                            Friendly URLs are supported (this is optional, but recommended).
+                    visible_if: |
+                        window.isHtaccessWorking && zenarioAW.togglePressed()
                 mr_warning_1:
                     grouping: sub_table
                     full_width: true
@@ -367,9 +557,8 @@ diagnostics:
                             
                             Please check your Apache configuration (that the mod_rewrite module is enabled),
                             and that your Zenario directory contains the .htaccess file.
-                    hide_on_install: true
                     visible_if: |
-                        zenarioAW.togglePressed() && !zenarioA.isHtaccessWorking()
+                        !window.isHtaccessWorking && zenarioAW.togglePressed()
                 
                 continue:
                     value: Continue

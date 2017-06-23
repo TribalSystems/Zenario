@@ -252,7 +252,7 @@ plugin_settings:
                     value: ""
                     format_onchange: Yes
                     side_note: |
-                        The sticky image attached to the content item will be shown if it exists. For picture content items, a thumbnail will be automatically generated if no sticky image exists.
+                        The feature image for the content item will be shown if it exists. For picture content items, a thumbnail will be automatically generated if no feature image exists.
                 fall_back_to_default_image:
                     plugin_setting:
                         name: fall_back_to_default_image
@@ -260,7 +260,7 @@ plugin_settings:
                     type: checkbox
                     format_onchange: true
                     side_note: |
-                        If the content item being listed doesn't an image marked as "sticky", then display a default image instead.
+                        If the content item being listed doesn't have a feature image, then display a default image instead.
                     indent: 1
                 default_image_id:
                     plugin_setting:

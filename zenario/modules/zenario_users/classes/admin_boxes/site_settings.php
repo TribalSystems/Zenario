@@ -59,6 +59,11 @@ class zenario_users__admin_boxes__site_settings extends module_base_class {
 							'label' => $label,
 							'ord' => $row['ord']
 						);
+						
+						$fields['flags/default_flags_dataset_tab']['values'][$row['name']] = array(
+							'label' => $label,
+							'ord' => $row['ord']
+						);
 					}
 				}
 				break;
@@ -202,6 +207,11 @@ class zenario_users__admin_boxes__site_settings extends module_base_class {
 				if ($values['inactive_user_email/time_user_inactive_2'] && !$values['inactive_user_email/inactive_user_email_template_2']){
 					$fields['inactive_user_email/inactive_user_email_template_1']['error'] = adminPhrase('Please select an email template for the second period.');
 				}
+				
+				if ($values['passwords/min_extranet_user_password_length'] < 3 || $values['passwords/min_extranet_user_password_length'] > 32){
+					$fields['passwords/min_extranet_user_password_length']['error'] = adminPhrase('The minimum password lengt must be a number between 3 and 32.');
+				}
+				
 		}
 	}
 	

@@ -177,72 +177,6 @@ switch ($path) {
 					'tag_name' => $values['details/tag_name']),
 				$box['key']['id']);
 		break;
-	
-	case 'zenario_document_properties':
-	
-		$id = (int)$box['key']['id'];
-		$documentId = $box['key']['id'];
-		$documentTitle = $values['details/document_title'];
-		
-		$document = getRow('documents', array('filename', 'file_id', 'title'), array('id' => $documentId));
-		$file = getRow('files', 
-						array('id', 'filename', 'path', 'created_datetime', 'short_checksum'),
-						$document['file_id']);
-		
-		$oldDocumentName = $document['filename'];
-		if($box['key']['id']){
-			$documentName = trim($values['details/document_name']).'.'.trim($values['details/document_extension']);
-		}else{
-			$documentName = trim($values['details/document_name']);
-		}
-		
-		// Rename public files directory and update filename if different
-		if ($oldDocumentName != $documentName) {
-			$dirPath = 'public' . '/downloads/' . $file['short_checksum'];
-			$symFolder =  CMS_ROOT . $dirPath;
-			$oldSymPath = $symFolder . '/' . $oldDocumentName;
-			$newSymPath = $symFolder . '/' . $documentName;
-			if(!windowsServer() && is_link($oldSymPath)) {
-				rename($oldSymPath, $newSymPath);
-			}
-			
-			updateRow('documents', array('filename' => $documentName), array('id' => $documentId));
-		}
-		
-		if($document['title'] != $documentTitle) {
-			updateRow('documents', array('title' => $documentTitle), array('id' => $documentId));
-		}
-		
-		// Save document thumbnail image
-		$old_image = getRowsArray('documents',
-									'file_id',
-									array('id' => $id)
-									);
-		$new_image = $values['zenario_common_feature__upload'];
-		
-		if ($new_image) {
-			if (!in_array($new_image, $old_image)) {
-				if ($path = getPathOfUploadedFileInCacheDir($new_image)) {
-					$fileId = addFileToDocstoreDir('document_thumbnail', $path);
-					$fileDetails = array();
-					$fileDetails['thumbnail_id'] = $fileId;
-					//update thumbnail
-					setRow('documents', $fileDetails, $id);
-				}
-			}
-		} elseif ($box['key']['delete_thumbnail']) {
-			updateRow('documents', array('thumbnail_id' => 0), array('id' => $documentId));
-		}
-	
-		// Save document tags
-		deleteRow('document_tag_link', array('document_id' => $documentId));
-		$tagIds = explodeAndTrim($values['details/tags']);
-		foreach ($tagIds as $tagId) {
-			setRow('document_tag_link', 
-				array('tag_id' => $tagId, 'document_id' => $documentId), 
-				array('tag_id' => $tagId, 'document_id' => $documentId));
-		}
-		break;
 		
 	case 'zenario_document_move':
 		// Move documents to another folder
@@ -264,57 +198,15 @@ switch ($path) {
 		break;
 		
 	case 'zenario_document_rename':
-			$documentId = $box['key']['id'];
-			$documentName = trim($values['details/document_name']);
-			$isfolder=getRow('documents', 'type', array('type' => 'folder','id' => $documentId));
-			if ($isfolder){
-				updateRow('documents', array('folder_name' => $documentName), array('id' => $documentId));
-			}else{
-				//file
-				updateRow('documents', array('filename' => $documentName), array('id' => $documentId));
-			}
-		break;
-		
-		
-	case 'zenario_document_upload':
-			$documentsUploaded = explode(',',$values['upload_document/document__upload']);
-			$currentDateTime = date("Y-m-d H:i:s");
-			$isFolder = getRow('documents', 'id', array('id' => $box['key']['id'], 'type' => 'folder'));
-			$sql = '
-				SELECT MAX(ordinal) + 1
-				FROM ' . DB_NAME_PREFIX . 'documents
-				WHERE folder_id = ' . (int)($isFolder ? $isFolder : 0);
-			$result = sqlSelect($sql);
-			$row = sqlFetchRow($result);
-			$maxOrdinal = $row[0] ? $row[0] : 1;
-			foreach ($documentsUploaded  as $document) {
-				$filepath = getPathOfUploadedFileInCacheDir($document);
-				$filename = basename(getPathOfUploadedFileInCacheDir($document));
-				
-				if ($filepath && $filename) {
-					$documentId = addFileToDatabase('hierarchial_file', $filepath, $filename,false,false,true);
-				
-					$documentProperties = array(
-						'type' =>'file',
-						'file_id' => $documentId,
-						'folder_id' => 0,
-						'filename' => $filename,
-						'file_datetime' => $currentDateTime,
-						'ordinal' => $maxOrdinal++);
-					
-					$extraProperties = self::addExtractToDocument($documentId);
-					$documentProperties = array_merge($documentProperties, $extraProperties);
-			
-					if ($isFolder) {
-						$documentProperties['folder_id'] = $box['key']['id'];
-					}
-					
-					if ($documentId = insertRow('documents', $documentProperties)) {
-						self::processDocumentRules($documentId);
-					}
-				}
-			}
-			$box['key']['id'] = $documentId;
+		$documentId = $box['key']['id'];
+		$documentName = trim($values['details/document_name']);
+		$isfolder=getRow('documents', 'type', array('type' => 'folder','id' => $documentId));
+		if ($isfolder){
+			updateRow('documents', array('folder_name' => $documentName), array('id' => $documentId));
+		}else{
+			//file
+			updateRow('documents', array('filename' => $documentName), array('id' => $documentId));
+		}
 		break;
 		
 }

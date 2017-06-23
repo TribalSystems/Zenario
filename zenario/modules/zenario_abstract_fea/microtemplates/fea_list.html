@@ -36,10 +36,10 @@
 				placeholder="{{m.tuix.search_bar_placeholder|escape}}"
 				onsearch="return {{m.that.globalName}}.doSearch(event);"
 			/>
-			<input type="submit" value="{{m.that.phrase('Search')}}"/>
+			<input type="submit" value="&#xf002;"/>
 		
 			<% if (m.that.request.search != undefined && m.that.request.search != '') { %>
-				<input type="button" class="clear_search" value="{{m.that.phrase('Clear search')}}" onclick="
+				<input type="button" class="clear_search" value="&#xf057;" onclick="
 					{{m.that.globalName}}.doSearch(event, '');
 					return false;
 				"/>
@@ -60,7 +60,7 @@
 	<% } %>
 
 	<% if (m.tuix.hide_column_headings) { %>
-		<div class="zfea_buttons sorted_buttons">
+		<div class="zfea_buttons sorted_buttons single_select_buttons">
 			{{m.that.microTemplate(m.that.mtPrefix + '_button', m.tuix.sortedCollectionButtons, button => {return !button.location;} )}}
 		</div>
 	<% } %>
@@ -146,7 +146,7 @@
 						</td>
 					<% } %>
 					<% if (m.tuix.itemHasItemButton || m.tuix.sortedCollectionButtons.length) { %>
-					    <td class="sorted_buttons">
+					    <td class="sorted_buttons single_select_buttons">
 					        <% if (item.sortedItemButtons.length) { %>
                                 {{m.that.microTemplate(m.that.mtPrefix + '_button', item.sortedItemButtons)}}
                             <% } else { %>
@@ -156,7 +156,7 @@
 					<% } %>
 					<% if (firstItem) { %>
 					    <td
-					    	class="multi_select_buttons"
+					    	class="sorted_buttons multi_select_buttons"
 					    	id="multi_select_buttons_td_{{m.that.containerId}}"
 					    	style="display: none;"
 					    	rowspan="{{m.tuix.sortedItems.length}}"

@@ -78,7 +78,6 @@ if (post('_format') || post('_validate')) {
 	$filling = false;
 	$clientTags = json_decode($_POST['_box'], true);
 	
-	//checkBoxDefinition($box, $tags);
 	syncAdminBoxFromClientToServer($tags, $clientTags);
 	
 	if (!empty($clientTags['tab'])) {

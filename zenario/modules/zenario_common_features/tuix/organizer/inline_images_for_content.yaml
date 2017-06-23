@@ -3,10 +3,13 @@
 zenario__content:
     panels:
         inline_images_for_content:
-            panel_type: grid_or_list
+            panel_type: grid_or_images_with_tags
+            use_tall_rows: true
+            
             no_items_in_search_message: This content item has no images belonging to it. Click above to upload images from your local machine, or add an image from the library.
             grid_view_microtemplate: zenario_grid_view_image
             slidedown_view_microtemplate: zenario_slidedown_view_image
+            
             db_items:
                 table: |
                     (SELECT 1) as dummy
@@ -69,6 +72,16 @@ zenario__content:
                     searchable: true
                     db_column: f.height
                     show_by_default: true
+                privacy:
+                    title: Privacy
+                    db_column: f.privacy
+                    show_by_default: true
+                    width: medium
+                    format: enum
+                    values:
+                        auto: Will auto-detect
+                        public: Public
+                        private: Private
                 in_use_here:
                     title: In use here
                     db_column: ii.in_use
@@ -102,8 +115,8 @@ zenario__content:
                             LIMIT 1
                         )
                 sticky_flag:
-                    title: Sticky
-                    db_column: v.sticky_image_id = f.id
+                    title: Feature image
+                    db_column: v.feature_image_id = f.id
                     show_by_default: true
                     format: yes_or_no
             default_sort_column: filename
@@ -170,36 +183,32 @@ zenario__content:
                     multiple_select: true
                     hide_when_children_are_not_visible: true
                 make_sticky:
-                    parent: action_dropdown
                     priv: _PRIV_SET_CONTENT_ITEM_STICKY_IMAGE
-                    label: Make sticky
+                    label: Flag as feature image
                     hide_in_select_mode: false
                     visible_if: |
                         !zenario.engToBoolean(item.sticky_flag)
                     ajax:
                         confirm:
                             message: |
-                                When an image is sticky, it can appear automatically in banners, content summary lists and other managed links to its content item.
+                                Do you wish to use "[[filename]]" as the feature image for this content item?
                                 
-                                Only one of the images attached to a content item can be sticky.
-                                
-                                Make the image "[[filename]]" sticky?
-                            button_message: Make sticky
+                                The feature image can appear automatically in banners, content summary lists and other managed links to this content item.
+                            button_message: Flag as feature image
                             cancel_button_message: Cancel
                             message_type: warning
                         request:
                             make_sticky: true
                 make_unsticky:
-                    parent: action_dropdown
                     priv: _PRIV_SET_CONTENT_ITEM_STICKY_IMAGE
-                    label: Remove stickyness
+                    label: Unflag as feature image
                     hide_in_select_mode: false
                     visible_if_for_all_selected_items: |
                         item.sticky_flag
                     ajax:
                         confirm:
-                            message: 'Are you sure you wish to stop the image "[[filename]]" being sticky?'
-                            button_message: Remove stickyness
+                            message: 'Are you sure you wish to stop using the image "[[filename]]" as the feature image?'
+                            button_message: Unflag as feature image
                             cancel_button_message: Cancel
                             message_type: warning
                         request:

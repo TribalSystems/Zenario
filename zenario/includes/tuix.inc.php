@@ -723,6 +723,7 @@ function addOrdinalsToTUIX(&$tuix) {
 	
 	//Loop through an array of TUIX elements, inserting any missing ordinals
 	$ord = 0;
+	$previousGrouping = null;
 	$replaces = array();
 	if (is_array($tuix)) {
 		foreach ($tuix as $key => &$tag) {
@@ -753,6 +754,16 @@ function addOrdinalsToTUIX(&$tuix) {
 					}
 					$tag['ord'] = $replace;
 				}
+			}
+			
+			if (!empty($tag['group_with_previous_field']) && !is_null($previousGrouping)) {
+				$tag['grouping'] = $previousGrouping;
+			}
+			
+			if (isset($tag['grouping'])) {
+				$previousGrouping = $tag['grouping'];
+			} else {
+				$previousGrouping = null;
 			}
 		}
 	}
@@ -956,7 +967,7 @@ function adminBoxDecodeTUIX(&$tags, &$clientTags, $string) {
 	return ($tags = json_decode($string, true)) && (is_array($tags));
 }
 
-function readAdminBoxValues(&$box, &$fields, &$values, &$changes, $filling, $resetErrors, $addOrds = false) {
+function readAdminBoxValues(&$box, &$fields, &$values, &$changes, $filling, $resetErrors, $checkLOVs = false, $addOrds = false) {
 	
 	if (!empty($box['tabs']) && is_array($box['tabs'])) {
 		
@@ -1057,6 +1068,44 @@ function readAdminBoxValues(&$box, &$fields, &$values, &$changes, $filling, $res
 										$field['values'][$file['id']]['label'] .= ' ['. $file['width']. ' × '. $file['height']. 'px]';
 									}
 								}
+							}
+						
+						//For radiogroups/multiple-checkboxes/select lists, check that the selected value(s) are actually in the LOV!
+						} else
+						if ($checkLOVs
+						 && $field[$currentValue]
+						 && isset($field['type'])
+						 && !isset($field['load_values_from_organizer_path'])
+						 && in($field['type'], 'radios', 'checkboxes', 'select')) {
+							
+							//Checkboxes can have multiple values, all of which must be checked.
+							if ($field['type'] == 'checkboxes') {
+								$checkValues = explodeAndTrim($field[$currentValue]);
+							} else {
+								$checkValues = array($field[$currentValue]);
+							}
+							
+							foreach ($checkValues as $checkValue) {
+								
+								//For each selected value, see if the value is in the list of values
+								if (isset($field['values'])) {
+									//The list of values can either be an array, or a string which points to an array
+									//in the LOVs section.
+									if (is_array($field['values'])) {
+										if (isset($field['values'][$checkValue])) {
+											continue;
+										}
+									
+									} else {
+										if (isset($box['lovs'][$field['values']][$checkValue])) {
+											continue;
+										}
+									}
+								}
+								
+								//If an option from the LOV wasn't picked, clear the selected value
+								$field[$currentValue] = '';
+								break;
 							}
 						}
 						
@@ -1724,7 +1773,7 @@ function loadAllPluginSettings(&$box, &$valuesInDB) {
 			SELECT name, `value`
 			FROM ". DB_NAME_PREFIX. "plugin_settings
 			WHERE instance_id = ". (int) $box['key']['instanceId']. "
-			  AND nest = ". (int) $box['key']['nest'];
+			  AND egg_id = ". (int) $box['key']['eggId'];
 		$result = sqlQuery($sql);
 
 		while($row = sqlFetchAssoc($result)) {
@@ -1741,24 +1790,18 @@ function syncAdminBoxFromClientToServer(&$serverTags, &$clientTags, $key1 = fals
 	
 	foreach ($keys as $key0 => $dummy) {
 		//Only allow certain tags in certain places to be merged in
-		if ((($type = 'array') && $key1 === false && $key0 == '_sync')
-		 || (($type = 'value') && $key2 === false && $key1 == '_sync' && $key0 == 'storage')
-		 || (($type = 'value') && $key2 === false && $key1 == '_sync' && $key0 == 'cache_dir')
-		 || (($type = 'value') && $key2 === false && $key1 == '_sync' && $key0 == 'password')
-		 || (($type = 'value') && $key1 === false && $key0 == 'shake')
-		 || (($type = 'value') && $key1 === false && $key0 == 'download')
-		 || (($type = 'array') && $key1 === false && $key0 == 'tabs')
-		 || (($type = 'array') && $key2 === false && $key1 == 'tabs')
-		 || (($type = 'array') && $key3 === false && $key2 == 'tabs' && $key0 == 'edit_mode')
-		 || (($type = 'value') && $key4 === false && $key3 == 'tabs' && $key1 == 'edit_mode' && $key0 == 'on')
-		 || (($type = 'array') && $key3 === false && $key2 == 'tabs' && $key0 == 'fields')
-		 || (($type = 'array') && $key4 === false && $key3 == 'tabs' && $key1 == 'fields')
-		 || (($type = 'value') && $key5 === false && $key4 == 'tabs' && $key2 == 'fields' && $key0 == 'current_value')
-		 || (($type = 'value') && $key5 === false && $key4 == 'tabs' && $key2 == 'fields' && $key0 == '_display_value')
-		 || (($type = 'value') && $key5 === false && $key4 == 'tabs' && $key2 == 'fields' && $key0 == '_was_hidden_before')
-		 || (($type = 'value') && $key5 === false && $key4 == 'tabs' && $key2 == 'fields' && $key0 == 'pressed')
-		 || (($type = 'array') && $key5 === false && $key4 == 'tabs' && $key2 == 'fields' && $key0 == 'multiple_edit')
-		 || (($type = 'value') && $key6 === false && $key5 == 'tabs' && $key3 == 'fields' && $key1 == 'multiple_edit' && $key0 == '_changed')) {
+		if (
+			($key1 === false && in($key0, 'download', 'path', 'shake', 'tab') && ($type = 'value'))
+		 || ($key1 === false && in($key0, '_sync', 'tabs') && ($type = 'array'))
+			 || ($key2 === false && $key1 == '_sync' && in($key0, 'cache_dir', 'password', 'storage') && ($type = 'value'))
+			 || ($key2 === false && $key1 == 'tabs' && ($type = 'array'))
+				 || ($key3 === false && $key2 == 'tabs' && in($key0, 'edit_mode', 'fields') && ($type = 'array'))
+					 || ($key4 === false && $key3 == 'tabs' && $key1 == 'edit_mode' && $key0 == 'on' && ($type = 'value'))
+					 || ($key4 === false && $key3 == 'tabs' && $key1 == 'fields' && ($type = 'array'))
+						 || ($key5 === false && $key4 == 'tabs' && $key2 == 'fields' && in($key0, '_display_value', '_was_hidden_before', 'current_value', 'pressed') && ($type = 'value'))
+						 || ($key5 === false && $key4 == 'tabs' && $key2 == 'fields' && $key0 == 'multiple_edit' && ($type = 'array'))
+							 || ($key6 === false && $key5 == 'tabs' && $key3 == 'fields' && $key1 == 'multiple_edit' && $key0 == '_changed' && ($type = 'value'))
+		) {
 			
 			//Update any values from the client on the server's copy
 			if ($type == 'value') {
@@ -1857,4 +1900,51 @@ function displayDebugMode(&$tags, &$modules, &$moduleFilesLoaded, $tagPath, $org
 	header('Content-Type: text/javascript; charset=UTF-8');
 	jsonEncodeForceObject($tags);
 	exit;
+}
+
+
+//For using encrypted columns in Organizer. Work in progress.
+function flagEncryptedColumnsInOrganizer(&$panel, $alias, $table) {
+	
+	$tableName = DB_NAME_PREFIX. $table;
+	$tableAlias = $alias. '.';
+	
+	if (!isset(cms_core::$dbCols[$tableName])) {
+		checkTableDefinition($tableName);
+	}
+	
+	$encryptedColumns = array();
+	if (!empty(cms_core::$dbCols[$tableName])) {
+		foreach (cms_core::$dbCols[$tableName] as $col => $colDef) {
+			if ($colDef->encrypted) {
+				$encryptedColumns[$col] = $colDef;
+			}
+		}
+	}
+	
+	if (!empty($encryptedColumns)) {
+		foreach ($panel['columns'] as &$column) {
+			
+			if (isset($column['db_column'])) {
+				$colName = trim(chopPrefixOffString($tableAlias, trim($column['db_column'])), '`');
+				
+				if (isset($encryptedColumns[$colName])) {
+					$colDef = $encryptedColumns[$colName];
+				
+					$column['db_column'] = $tableAlias. "`%". sqlEscape($colDef->col). "`";
+					$column['encrypted'] = [
+						'hashed_column' => $tableAlias. "`#". sqlEscape($colDef->col). "`",
+						'hashed' => $colDef->hashed
+					];
+				
+					$column['disallow_sorting'] = true;
+				
+					if (!$colDef->hashed) {
+						$column['searchable'] = false;
+						//$column['disallow_filtering'] = true;
+					}
+				}
+			}
+		}
+	}
 }

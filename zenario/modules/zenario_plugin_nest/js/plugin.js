@@ -41,10 +41,10 @@ zenario.lib(function(
 	undefined,
 	URLBasePath,
 	document, window, windowOpener, windowParent,
-	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO, strings,
+	zenario, zenarioA, zenarioT, zenarioAB, zenarioAT, zenarioO,
 	encodeURIComponent, get, engToBoolean, htmlspecialchars, jsEscape, phrase,
 	extensionOf, methodsOf, has,
-	zenario_plugin_nest, zenario_conductor
+	zenario_plugin_nest, zenario_conductor, s$s
 ) {
 	"use strict";
 
@@ -116,9 +116,31 @@ zenario_conductor.setCommands = function(slot, commands, coreVars) {
 	slot.confirmOnCloseMessage = false;
 };
 
-zenario_conductor.calcRequests = function(slot, command, requests) {
+zenario_conductor.linkToOtherContentItem = function(slot, commandDetails, requests) {
 	var key, value,
-		commandDetails = slot.commands[command],
+		toState = commandDetails[0],
+		cID = commandDetails[2],
+		cType = commandDetails[3];
+	
+	//Make sure that the requests are an object
+	requests = zenario.toObject(requests, true);
+	
+	//Set the state or slide that we're linking to
+	delete requests.state;
+	delete requests.slideId;
+	delete requests.slideNum;
+	
+	if (toState == 1*toState) {
+		requests.slideNum = toState;
+	} else {
+		requests.state = toState;
+	}
+	
+	return zenario.linkToItem(cID, cType, requests);
+};
+
+zenario_conductor.calcRequests = function(slot, commandDetails, requests) {
+	var key, value,
 		toState = commandDetails[0],
 		reqVars = commandDetails[1];
 	
@@ -312,66 +334,76 @@ zenario_conductor.go = function(slot, command, requests, clearRegisteredGetReque
 		if (clearRegisteredGetRequests) {
 			zenario_conductor.clearRegisteredGetRequest(slot, clearRegisteredGetRequests);
 		}
-	
-		requests = zenario_conductor.calcRequests(slot, command, requests);
-		zenario_conductor.cleanRequests(requests);
-	
-		slot.lastRequest = requests;
 		
-		if (command == 'back' || command == 'close') {
-			zenario_conductor.transitionOut(slot, {
-				animate: {
-					opacity: 0
-				},
-				options: {
-					duration: 400
-				}
-			});
+		var commandDetails = slot.commands[command];
 		
+		//Handle links to other content items
+		if (commandDetails[2]) {
+			if (command == 'submit') {
+				slot.checkChangedOnClose = false;
+			}
+			zenario.goToURL(zenario_conductor.linkToOtherContentItem(slot, commandDetails, requests));
+		
+		//Handle links to other slides
 		} else {
-			zenario_conductor.transitionOut(slot, {
-				animate: {
-					opacity: 0,
-					right: '150%'
-				},
-				options: {
-					duration: 400
-				}
-			});
-		}
-		
-		//zenario.refreshPluginSlot(slotName, instanceId, additionalRequests, recordInURL, scrollToTopOfSlot, fadeOutAndIn, useCache, post)
-		zenario.refreshPluginSlot(slot.slotName, 'lookup', requests, true).after(function() {
-			if (command == 'back' || command == 'close') {
-				zenario_conductor.transitionIn(slot, {
-					initial: {
+			requests = zenario_conductor.calcRequests(slot, commandDetails, requests);
+			zenario_conductor.cleanRequests(requests);
+	
+			if (command == 'back') {
+				zenario_conductor.transitionOut(slot, {
+					animate: {
 						opacity: 0
 					},
-					animate: {
-						opacity: 1,
-						right: 0
-					},
 					options: {
-						duration: 1000
+						duration: 400
 					}
 				});
+		
 			} else {
-				zenario_conductor.transitionIn(slot, {
-					initial: {
-						opacity: 0,
-						left: '150%'
-					},
+				zenario_conductor.transitionOut(slot, {
 					animate: {
-						opacity: 1,
-						left: 0
+						opacity: 0,
+						right: '150%'
 					},
 					options: {
-						duration: 800,
-						easing: [.3, .7, 0, 1.05]
+						duration: 400
 					}
 				});
 			}
-		});
+		
+			//zenario.refreshPluginSlot(slotName, instanceId, additionalRequests, recordInURL, scrollToTopOfSlot, fadeOutAndIn, useCache, post)
+			zenario.refreshPluginSlot(slot.slotName, 'lookup', requests, true).after(function() {
+				if (command == 'back') {
+					zenario_conductor.transitionIn(slot, {
+						initial: {
+							opacity: 0
+						},
+						animate: {
+							opacity: 1,
+							right: 0
+						},
+						options: {
+							duration: 1000
+						}
+					});
+				} else {
+					zenario_conductor.transitionIn(slot, {
+						initial: {
+							opacity: 0,
+							left: '150%'
+						},
+						animate: {
+							opacity: 1,
+							left: 0
+						},
+						options: {
+							duration: 800,
+							easing: [.3, .7, 0, 1.05]
+						}
+					});
+				}
+			});
+		}
 	}
 };
 
@@ -407,18 +439,40 @@ zenario_conductor.enabled = function(slot) {
 	return slot.exists;
 };
 
-zenario_conductor.commandEnabled = function(slot, command) {
+zenario_conductor.commandEnabled = function(slot, commands) {
 	slot = getSlot(slot);
-	return slot.exists && !!slot.commands[command];
+	
+	if (slot.exists) {
+		var ci, command,
+			commands = zenarioT.tuixToArray(commands);
+	
+		foreach (commands as ci => command) {
+			if (slot.commands[command]) {
+				return command;
+			}
+		}
+	}
+	
+	return false;
 };
 
 zenario_conductor.link = function(slot, command, requests) {
 	slot = getSlot(slot);
 	
-	if (slot.exists && slot.commands[command]) {
-		requests = zenario_conductor.calcRequests(slot, command, requests);
-		zenario_conductor.cleanRequests(requests);
-		return zenario.linkToItem(zenario.cID, zenario.cType, requests);
+	var commandDetails;
+	
+	if (slot.exists && (commandDetails = slot.commands[command])) {
+		
+		//Handle links to other content items
+		if (commandDetails[2]) {
+			return zenario_conductor.linkToOtherContentItem(slot, commandDetails, requests);
+		
+		//Handle links to other slides
+		} else {
+			requests = zenario_conductor.calcRequests(slot, commandDetails, requests);
+			zenario_conductor.cleanRequests(requests);
+			return zenario.linkToItem(zenario.cID, zenario.cType, requests);
+		}
 	} else {
 		return false;
 	}
@@ -426,7 +480,7 @@ zenario_conductor.link = function(slot, command, requests) {
 
 zenario_conductor.backLink = function(slot) {
 	slot = getSlot(slot);
-	return slot.exists && zenario_conductor.link(slot, slot.commands.back? 'back' : 'close');
+	return slot.exists && zenario_conductor.link(slot, 'back');
 };
 
 zenario_conductor.goBack = function(slot, confirmed) {
@@ -441,7 +495,7 @@ zenario_conductor.goBack = function(slot, confirmed) {
 				zenario_conductor.goBack(slot, true);
 			});
 		} else {
-			zenario_conductor.go(slot, slot.commands.back? 'back' : 'close', {}, true);
+			zenario_conductor.go(slot, 'back', {}, true);
 		}
 	}
 };

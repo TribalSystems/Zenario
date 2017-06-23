@@ -40,10 +40,10 @@ zenario.lib(function(
 	undefined,
 	URLBasePath,
 	document, window, windowOpener, windowParent,
-	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO, strings,
+	zenario, zenarioA, zenarioT, zenarioAB, zenarioAT, zenarioO,
 	encodeURIComponent, get, engToBoolean, htmlspecialchars, jsEscape, phrase,
 	extensionOf, methodsOf, has,
-	zenarioG,
+	zenarioG, extraVar2, s$s,
 	formId, gridId, linksId, closeButtonId
 ) {
 	"use strict";
@@ -435,7 +435,7 @@ zenarioG.draw = function(doNotRedrawForm) {
 
 zenarioG.drawForm = function() {
 	var m = {formId: formId},
-		html = zenarioA.microTemplate('zenario_grid_maker_top', m);
+		html = zenarioT.microTemplate('zenario_grid_maker_top', m);
 		
 	
 	
@@ -608,7 +608,7 @@ zenarioG.drawPreview = function() {
 			max: max,
 			startingValue: startingValue
 		},
-		html = zenarioA.microTemplate('zenario_grid_maker_preview', m);
+		html = zenarioT.microTemplate('zenario_grid_maker_preview', m);
 	
 	$('#' + gridId).css('margin', 'auto');
 	
@@ -1437,7 +1437,7 @@ zenarioG.drawEditor = function(
 				m = {
 					level: level
 				},
-				html = zenarioA.microTemplate('zenario_grid_maker_add_new_object', m);
+				html = zenarioT.microTemplate('zenario_grid_maker_add_new_object', m);
 			
 			
 			$.colorbox({
@@ -1487,7 +1487,7 @@ zenarioG.drawEditor = function(
 				
 				$.colorbox({
 					transition: 'none',
-					html: zenarioA.microTemplate('zenario_grid_maker_object_properties', m),
+					html: zenarioT.microTemplate('zenario_grid_maker_object_properties', m),
 					
 					onOpen: function() { zenario.addClassesToColorbox(cssClasses); },
 					onClosed: function() { zenario.removeClassesToColorbox(cssClasses); },
@@ -1539,7 +1539,7 @@ zenarioG.drawLinks = function() {
 		m = {
 			src: src
 		},
-		html = zenarioA.microTemplate('zenario_grid_maker_bottom_links', m);
+		html = zenarioT.microTemplate('zenario_grid_maker_bottom_links', m);
 	
 	$('.ui-tooltip').remove();
 	get(linksId).innerHTML = html;
@@ -1621,7 +1621,7 @@ zenarioG.save = function(saveAs) {
 			
 			$.colorbox({
 				transition: 'none',
-				html: zenarioA.microTemplate('zenario_grid_maker_save_prompt', {name: zenarioG.newLayoutName || data.oldLayoutName || ''}),
+				html: zenarioT.microTemplate('zenario_grid_maker_save_prompt', {name: zenarioG.newLayoutName || data.oldLayoutName || ''}),
 				
 				onOpen: function() { zenario.addClassesToColorbox(cssClasses); },
 				onClosed: function() { zenario.removeClassesToColorbox(cssClasses); },
@@ -2230,5 +2230,6 @@ zenarioG.poke = function() {
 
 },
 	window.zenarioG = function() {},
+	0,
 	'settings', 'grid', 'download_links', 'close_button'
 );

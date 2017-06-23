@@ -7,6 +7,10 @@
 	zfea_{{m.that.path|escape}}
 	{{m.tuix.css_class|escape}}
 	
+	<% if (m.tuix.show_overlay_layer) { %>
+		modal_window
+	<% } %>
+	
 	<% if (m.that.newlyNavigated) { %>
 		zfea_newly_navigated
 	<% } %>

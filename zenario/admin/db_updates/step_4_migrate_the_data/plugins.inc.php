@@ -30,7 +30,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 
 //Code for handling renaming Plugin directories
-function renameModuleDirectory($oldName, $newName, $uninstallOldModule = false) {
+function renameModuleDirectory($oldName, $newName, $uninstallOldModule = false, $moveEditableCSS = false) {
 	addNewModules($skipIfFilesystemHasNotChanged = false);
 	
 	if (($oldId = getModuleId($oldName)) && ($newId = getModuleId($newName))) {
@@ -52,6 +52,42 @@ function renameModuleDirectory($oldName, $newName, $uninstallOldModule = false) 
 		
 		if (in($newStatus, 'module_not_initialized', 'module_suspended')) {
 			setRow('modules', array('status' => $oldStatus), $newId);
+		}
+		
+		if ($moveEditableCSS
+		 && is_dir($gtDir = CMS_ROOT. zenarioTemplatePath('grid_templates'). '/skins/')) {
+			
+			foreach (scandir($gtDir) as $skin) {
+				if ($skin[0] != '.'
+				 && is_dir($cssDir = $gtDir. $skin. '/editable_css/')
+				 && is_writable($cssDir = $gtDir. $skin. '/editable_css/')) {
+					
+					foreach (scandir($cssDir) as $oldFile) {
+						if (is_file($cssDir. $oldFile)
+						 && ($suffix = chopPrefixOffString('2.'. $oldName, $oldFile))
+						 && ($contents = file_get_contents($cssDir. $oldFile))) {
+							
+							$contents = preg_replace('/\b'. $oldName. '_(\d)/', $newName. '_$1', $contents);
+							
+							$newFile = '2.'. $newName. $suffix;
+							
+							if (file_exists($cssDir. $newFile)) {
+								if (is_writable($cssDir. $newFile)) {
+									file_put_contents(
+										$cssDir. $newFile,
+										"\n\n\n". $contents,
+										FILE_APPEND | LOCK_EX
+									);
+									unlink($cssDir. $oldFile);
+								}
+							} else {
+								file_put_contents($cssDir. $newFile, $contents);
+								unlink($cssDir. $oldFile);
+							}
+						}
+					}
+				}
+			}
 		}
 	}
 	
@@ -176,9 +212,9 @@ if (needRevision(36930)) {
 		//Attempt to migrate all of the data from that table into the core table
 		$result = getRows(ZENARIO_PLUGIN_NEST_PROBUSINESS_PREFIX. 'tabs', true, array());
 		while ($row = sqlFetchAssoc($result)) {
-			$tabId = $row['tab_id'];
+			$slideId = $row['tab_id'];
 			unset($row['tab_id']);
-			updateRow('nested_plugins', $row, array('id' => $tabId, 'is_slide' => 1), $ignore = true, $ignoreMissingColumns = true);
+			updateRow('nested_plugins', $row, array('id' => $slideId, 'is_slide' => 1), $ignore = true, $ignoreMissingColumns = true);
 		}
 		
 		//Drop the table
@@ -204,4 +240,27 @@ if (needRevision(38050)) {
 	renameModuleDirectory('zenario_feed_reader_pro', 'zenario_feed_reader', true);
 	
 	revision(38050);
+}
+
+//Replace the (removed) zenario_company_listing_fea module with the assetwolf_2 module
+if (needRevision(38823)) {
+	
+	renameModuleDirectory('zenario_company_listing_fea', 'assetwolf_2', true);
+	
+	revision(38823);
+}
+
+//Remove the image container and convert any existing image containers to banners
+if (needRevision(39790)) {
+	
+	renameModuleDirectory('zenario_image_container', 'zenario_banner', true, true);
+	
+	revision(39790);
+}
+
+//Assetwolf 2 now needs the locations modules also running
+if (needRevision(40100)) {
+	runNewModuleDependency('assetwolf_2', 'zenario_location_manager');
+	runNewModuleDependency('assetwolf_2', 'zenario_company_locations_manager');
+	revision(40100);
 }

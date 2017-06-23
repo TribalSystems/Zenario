@@ -1,4 +1,4 @@
-zenario_user_forms__export_user_responses:
+zenario_export_user_responses:
     priv: _PRIV_MANAGE_FORMS
     key:
         form_id: ''

@@ -16,4 +16,10 @@ _sql
 	ALTER TABLE [[DB_NAME_PREFIX]][[ZENARIO_ERROR_LOG_PREFIX]]error_log
 	MODIFY COLUMN referrer_url text
 _sql
+
+//Attempt to convert some columns with a utf8-3-byte character set to a 4-byte character set
+);	revision( 20
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_ERROR_LOG_PREFIX]]error_log` MODIFY COLUMN `referrer_url` text CHARACTER SET utf8mb4 NULL
+_sql
 );

@@ -178,6 +178,12 @@ for ($i = 0; $i < ($andDoUpdates? 2 : 1); ++$i) {
 				if (substr($file, 0, 1) == '.' || $file == 'latest_revision_no.inc.php') {
 					continue;
 				
+				//If this is a patchfile for MongoDB, and if MongoDB wasn't loaded earlier
+				//during the getAllCurrentRevisionNumbers() function, then we don't have a connected MongoDB,
+				//and so skip this update.
+				} elseif ($file == 'mongo.inc.php' && !isset(cms_core::$mongoDB)) {
+					continue;
+				
 				} else {
 					$files[$file] = $actualPath;
 				}
@@ -262,6 +268,9 @@ for ($i = 0; $i < ($andDoUpdates? 2 : 1); ++$i) {
 
 
 if ($andDoUpdates) {
+	//Reset the cached table details, in case any of the definitions are out of date
+	cms_core::$dbCols = array();
+	
 	setSetting('last_successful_db_update', time());
 }
 

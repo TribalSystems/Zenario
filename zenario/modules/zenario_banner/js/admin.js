@@ -29,10 +29,10 @@ zenario.lib(function(
 	undefined,
 	URLBasePath,
 	document, window, windowOpener, windowParent,
-	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO, strings,
+	zenario, zenarioA, zenarioT, zenarioAB, zenarioAT, zenarioO,
 	encodeURIComponent, get, engToBoolean, htmlspecialchars, jsEscape, phrase,
 	extensionOf, methodsOf, has,
-	zenario_banner
+	zenario_banner, extraVar2, s$s
 ) {
 	"use strict";
 
@@ -86,7 +86,7 @@ zenario_banner.open = function(containerId, editorId, delayed) {
 			tools: {title: 'Tools', items: 'searchreplace | code'}
 		},
 		
-		toolbar: 'undo redo | link unlink | bold italic underline | removeformat' + (zenarioA.skinDesc.style_formats? ' | styleselect' : '') + ' | fontsizeselect | formatselect | numlist bullist | outdent indent | alignleft aligncenter alignright alignjustify | save save_and_close cancel',
+		toolbar: 'undo redo | link unlink | bold italic underline | removeformat' + (zenarioA.skinDesc.style_formats? ' | styleselect' : '') + ' | fontsizeselect | formatselect | numlist bullist | blockquote outdent indent | alignleft aligncenter alignright alignjustify | save save_and_close cancel',
 		statusbar: false,
 		
 		autoresize_min_height: 100,
@@ -202,7 +202,7 @@ zenario_banner.close = function(el) {
 	
 	zenario_banner.floatingMessage(
 		phrase.closeEditorWarning,
-		'<input type="button" class="submit_selected" value="' + phrase.abandonChanges + '" onclick="zenarioA.closeFloatingBox(); zenario_banner.doClose(\'' + slotName + '\');" />' +
+		'<input type="button" class="submit_selected" value="' + phrase.abandonChanges + '" onclick="zenario_banner.doClose(\'' + slotName + '\');" />' +
 		'<input type="button" class="submit" value="' + phrase.cancel + '"/>',
 		true);
 }

@@ -84,4 +84,22 @@ _sql
 	ADD COLUMN `overwrite_alt_tag` varchar(255) DEFAULT NULL
 _sql
 
+//Attempt to convert some columns with a utf8-3-byte character set to a 4-byte character set
+);	revision( 20
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_PROMO_MENU_PREFIX]]menu_node_feature_image` SET `overwrite_alt_tag` = SUBSTR(`overwrite_alt_tag`, 1, 250) WHERE CHAR_LENGTH(`overwrite_alt_tag`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_PROMO_MENU_PREFIX]]menu_node_feature_image` MODIFY COLUMN `overwrite_alt_tag` varchar(250) CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_PROMO_MENU_PREFIX]]menu_node_feature_image` MODIFY COLUMN `text` text CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_PROMO_MENU_PREFIX]]menu_node_feature_image` SET `title` = SUBSTR(`title`, 1, 250) WHERE CHAR_LENGTH(`title`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_PROMO_MENU_PREFIX]]menu_node_feature_image` MODIFY COLUMN `title` varchar(250) CHARACTER SET utf8mb4 NOT NULL default ''
+_sql
+
 );

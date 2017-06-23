@@ -201,8 +201,8 @@ zenario__layouts:
                     css_class: zenario_ib_warning
                     tooltip: |
                         Template file is not registered!
-                    traits:
-                        unregistered: true
+                    with_columns_set:
+                        traits.unregistered: true
                 grid_preview:
                     css_class: inspect
                     tooltip: View image
@@ -211,10 +211,10 @@ zenario__layouts:
                         filename: dummy.png
                         options:
                             type: image
-                    traits:
-                        grid: true
-                    without_traits:
-                        unregistered: true
+                    with_columns_set:
+                        traits.grid: true
+                    without_columns_set:
+                        traits.unregistered: true
             item_buttons:
                 create_layout_from_template_file:
                     priv: _PRIV_VIEW_TEMPLATE
@@ -223,8 +223,8 @@ zenario__layouts:
                         path: zenario_layout
                         key:
                             create_layout_from_template_file: true
-                    traits:
-                        unregistered: true
+                    with_columns_set:
+                        traits.unregistered: true
                     without_columns_set:
                         missing: true
                 settings:
@@ -233,8 +233,8 @@ zenario__layouts:
                     label: Layout properties
                     admin_box:
                         path: zenario_layout
-                    without_traits:
-                        unregistered: true
+                    without_columns_set:
+                        traits.unregistered: true
                 edit_grid:
                     priv: _PRIV_EDIT_TEMPLATE_FAMILY
                     hide_in_select_mode: true
@@ -250,8 +250,8 @@ zenario__layouts:
                         iframe: true
                         transition: none
                         css_class: zenario_grid_maker
-                    traits:
-                        grid: true
+                    with_columns_set:
+                        traits.grid: true
                     without_columns_set:
                         missing: true
                 view_dropdown:
@@ -261,8 +261,8 @@ zenario__layouts:
                 preview:
                     parent: view_dropdown
                     label: Preview
-                    without_traits:
-                        unregistered: true
+                    without_columns_set:
+                        traits.unregistered: true
                     visible_if_for_all_selected_items: >
                         !zenario.engToBoolean(item.missing)
                     popout: 
@@ -289,8 +289,8 @@ zenario__layouts:
                         path: zenario__content/panels/content
                         branch: true
                         refiner: template
-                    without_traits:
-                        unregistered: true
+                    without_columns_set:
+                        traits.unregistered: true
                 view_slots:
                     parent: view_dropdown
                     hide_in_select_mode: true
@@ -299,8 +299,8 @@ zenario__layouts:
                         path: zenario__content/panels/slots
                         refiner: template
                         branch: true
-                    without_traits:
-                        unregistered: true
+                    without_columns_set:
+                        traits.unregistered: true
                 
                 head_slot_layers:
                     parent: view_dropdown
@@ -335,8 +335,8 @@ zenario__layouts:
                         path: zenario_layout
                         key:
                             duplicate: "1"
-                    without_traits:
-                        unregistered: true
+                    without_columns_set:
+                        traits.unregistered: true
                 restore:
                     parent: action_dropdown
                     priv: _PRIV_EDIT_TEMPLATE
@@ -377,9 +377,9 @@ zenario__layouts:
                             message_type: warning
                         request:
                             archive: "1"
-                    without_traits:
-                        deletable: true
-                        unregistered: true
+                    without_columns_set:
+                        traits.deletable: true
+                        traits.unregistered: true
                     visible_if_for_all_selected_items: |
                         !zenario.engToBoolean(item.default) &&
                         !zenario.engToBoolean(item.archived)
@@ -398,9 +398,9 @@ zenario__layouts:
                             message_type: warning
                         request:
                             delete: "1"
-                    traits:
-                        deletable: true
-                    without_traits:
-                        unregistered: true
+                    with_columns_set:
+                        traits.deletable: true
+                    without_columns_set:
+                        traits.unregistered: true
                     without_columns_set:
                         default: true

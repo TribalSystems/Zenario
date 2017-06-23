@@ -41,10 +41,10 @@ zenario.lib(function(
 	undefined,
 	URLBasePath,
 	document, window, windowOpener, windowParent,
-	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO, strings,
+	zenario, zenarioA, zenarioT, zenarioAB, zenarioAT, zenarioO,
 	encodeURIComponent, get, engToBoolean, htmlspecialchars, jsEscape, phrase,
 	extensionOf, methodsOf, has,
-	panelTypes
+	panelTypes, extraVar2, s$s
 ) {
 	"use strict";
 
@@ -150,35 +150,54 @@ methods.setScroll = function($panel) {
 	
 	//If there's an item selected, attempt to find it's element on the page,
 	//get where it is compared to its parent, and then scroll to it
-	var item, position, scrollTo;
-	if (item = zenarioO.getKeyId(true)) {
-		
-		//I was using setTimeout() here because the position() and offset() functions didn't seem to work properly if they are called in the same thread :(
-		//Currently I'm trying without it to fix another bug, but I may have to add it back if the first bug reappears...
-		//setTimeout(function() {
-			
-			if (position = $(get('organizer_item_' + item)).position()) {
-				scrollTo = Math.max(0, position.top + $panel.scrollTop() - Math.floor($panel.height() / 4));
-				
-				//Snap the view instantly to the item
-				$panel.scrollTop(scrollTo).trigger('scroll');
-				
-				//This would scroll there more slowly
-				//$panel.stop().animate({scrollTop: scrollTo}, 250);
-			}
-		
-		//}, 0);
 	
+	var that = this,
+		setScroll = function() {
+			var itemId,
+				$item,
+				position,
+				scrollTo;
+	
+			if (itemId = zenarioO.getKeyId(true)) {
+			
+				if (position = that.getItemPosition(itemId)) {
+					scrollTo = Math.max(0, position.top + $panel.scrollTop() - Math.floor($panel.height() / 4));
+		
+					//Snap the view instantly to the item
+					$panel.scrollTop(scrollTo).trigger('scroll');
+		
+					//This would scroll there more slowly
+					//$panel.stop().animate({scrollTop: scrollTo}, 250);
+				}
+	
+			} else {
+				methods.restoreScrollPosition($panel);
+			}
+		};
+	
+	if (window.zenarioONotFull) {
+		//This setTimeout() is here because when first opening Organizer in select/quick mode,
+		//the position() and offset() functions don't immediately work properly.
+		setTimeout(setScroll, 0);
 	} else {
-		methods.restoreScrollPosition($panel);
+		setScroll();
 	}
+};
+
+
+//Get the position of an item in Organizer, i.e. for the setScroll() function to scroll to it
+methods.getItemPosition = function(itemId) {
+	var $item = $(get('organizer_item_' + itemId)),
+		position = $item.position();
+	
+	return position;
 };
 
 
 //Set a drag/drop upload if possible
 methods.enableDragDropUpload = function(collectionButtons, itemButtons) {
 	
-	if (!zenarioA.canDoHTML5Upload()) {
+	if (!zenarioT.canDoHTML5Upload()) {
 		this.disableDragDropUpload();
 	}
 	
@@ -248,7 +267,7 @@ methods.enableDragDropUpload = function(collectionButtons, itemButtons) {
 		request.__path__ = this.path;
 		request.method_call = 'handleOrganizerPanelAJAX';
 		
-		zenarioA.setHTML5UploadFromDragDrop(
+		zenarioT.setHTML5UploadFromDragDrop(
 			URLBasePath + 'zenario/ajax.php',
 			request,
 			function() {
@@ -269,7 +288,7 @@ methods.enableDragDropUpload = function(collectionButtons, itemButtons) {
 };
 
 methods.disableDragDropUpload = function() {
-	zenarioA.clearHTML5UploadFromDragDrop();
+	zenarioT.clearHTML5UploadFromDragDrop();
 	$('#organizer_rightColumn').removeClass('upload_enabled').removeClass('dragover');
 };
 
@@ -367,7 +386,7 @@ methods.getMergeFieldsForItemsAndColumns = function(useLargerThumbnails) {
 	
 	var itemsExist = false,
 		itemButtonsExist = false,
-		c, column, colNo, row, cell,
+		c, column, colMF, colNo, row, cell,
 		bi,
 		ci = -1,
 		ii = -1,
@@ -416,20 +435,23 @@ methods.getMergeFieldsForItemsAndColumns = function(useLargerThumbnails) {
 		
 		if (zenarioO.isShowableColumn(c, true)) {
 			
-			column = {
+			column = this.tuix.columns[c];
+			
+			colMF = {
 				id: c,
-				tuix: this.tuix.columns[c],
+				tuix: column,
 				htmlId: 'organizer_column__' + c,
 				css_class:
 					firstCell + (lastCol == c? 'lastcell' : '') +
 					(labelColumns[c]? ' label_column' : '') +
 					zenarioO.columnCssClass(c),
-				title: this.tuix.columns[c].title,
-				tooltip: this.tuix.columns[c].tooltip
+				title: column.title,
+				tooltip: column.tooltip,
+				encrypted: column.encrypted
 			};
 			
-			this.addExtraMergeFieldsForColumns(data, column);
-			data.columns[++ci] = column;
+			this.addExtraMergeFieldsForColumns(data, colMF);
+			data.columns[++ci] = colMF;
 			firstCell = '';
 		}
 	}
@@ -527,7 +549,7 @@ methods.getMergeFieldsForItemsAndColumns = function(useLargerThumbnails) {
 			ci = -1;
 			foreach (zenarioO.sortedColumns as colNo => c) {
 				if (zenarioO.isShowableColumn(c, true)) {
-					column = data.columns[++ci];
+					colMF = data.columns[++ci];
 					
 					value = zenarioO.columnValue(i, c);
 					
@@ -547,7 +569,7 @@ methods.getMergeFieldsForItemsAndColumns = function(useLargerThumbnails) {
 						needsComma: needsComma && lastNeedsComma
 					};
 					
-					this.addExtraMergeFieldsForCells(data, column, row, cell);
+					this.addExtraMergeFieldsForCells(data, colMF, row, cell);
 					
 					row.cells[++ei] = cell;
 					firstCell = '';

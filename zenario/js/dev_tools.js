@@ -43,11 +43,11 @@ zenario.lib(function(
 	undefined,
 	URLBasePath,
 	document, window, windowOpener, windowParent,
-	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO, strings,
+	zenario, zenarioA, zenarioT, zenarioAB, zenarioAT, zenarioO,
 	encodeURIComponent, get, engToBoolean, htmlspecialchars, jsEscape, phrase,
 	extensionOf, methodsOf, has,
-	$toolbar, $editor, $sidebar, $sidebarInner,
-	devTools, editor
+	devTools, editor, s$s,
+	$toolbar, $editor, $sidebar, $sidebarInner
 ) {
 	"use strict";
 
@@ -59,16 +59,6 @@ devTools.internalCMSProperties = {
 	_path_here: {description: 'This is the tag-path to a panel; i.e. the names of all of the elements and properties that lead here.'},
 	_sync: {description: 'This property helps sync the TUIX of this Admin Box between the client and the server. All elements and properties are download from the server to the client, but only certain elements and properties may be uploaded by the client.'},
 	_was_hidden_before: {description: 'This flags that a field was hidden when the admin box was last drawn. It can be modified by the client, so you shouldn\'t rely on it in your PHP code for security decisions.'}
-};
-devTools.deprecatedTraitProperties = {
-	traits: true,
-	without_traits: true,
-	with_columns_set: true,
-	without_columns_set: true,
-	one_with_traits: true,
-	one_without_traits: true,
-	one_with_columns_set: true,
-	one_without_columns_set: true
 };
 
 //A little hack to turn on flagging undefined additional properties in tv4
@@ -223,10 +213,10 @@ devTools.init = function(mode, schemaName, schema, orgMap) {
 			
 					text = '';
 					if (sche.exact) {
-						text = zenarioA.microTemplate('zenario_dev_tools_tooltip', sche);
+						text = zenarioT.microTemplate('zenario_dev_tools_tooltip', sche);
 					} else {
 						if (sche.internalCMSProperty = devTools.internalCMSProperties[sche.tag]) {
-							text = zenarioA.microTemplate('zenario_dev_tools_internal_property_tooltip', sche);
+							text = zenarioT.microTemplate('zenario_dev_tools_internal_property_tooltip', sche);
 						} else {
 							text = '';
 						}
@@ -435,7 +425,7 @@ devTools.updateToolbar = function(refresh) {
 		merge.selectedFile = get('view').value;
 	}
 	
-	get('toolbar').innerHTML = zenarioA.microTemplate('zenario_dev_tools_toolbar', merge);
+	get('toolbar').innerHTML = zenarioT.microTemplate('zenario_dev_tools_toolbar', merge);
 };
 
 
@@ -896,16 +886,8 @@ devTools.validate = function() {
 					}
 				}
 				
-				//Show a warning if the old properties for traits have been used.
-				//(These still exist in the system so they still work, but we'd rather move people away from them.)
-				if (devTools.mode == 'zenarioO'
-				 && ((code == 0 && message == 'Found type object, expected boolean/number/string/null')
-				  || (code == 303 && devTools.deprecatedTraitProperties[tag]))) {
-					type = 'warning';
-					message = 'Traits are deprecated! Please use visible_if, visible_if_for_all_selected_items or visible_if_for_any_selected_items on your buttons instead.';
-				
 				//Logic for unrecognised properties
-				} else if (code == 303) {
+				if (code == 303) {
 					
 					//Don't show warnings about unrecognised properties for FEA/visitor TUIX because
 					//there's a high likelyhood that there will be a lot of custom bespoke properties
@@ -1264,7 +1246,7 @@ devTools.showSidebar = function(path, data) {
 	
 	sche.object.files = devTools.highlightFilesContainingSelection(path || sche.object.path);
 	
-	get('sidebar_inner').innerHTML = zenarioA.microTemplate('zenario_dev_tools_sidepanel', sche);
+	get('sidebar_inner').innerHTML = zenarioT.microTemplate('zenario_dev_tools_sidepanel', sche);
 	$sidebar.removeClass('sidebarEmpty').addClass('sidebarFull');
 	devTools.sizePropertyTable();
 	
@@ -1324,7 +1306,7 @@ editor.session.setUseSoftTabs(false);
 
 
 },
-	$('#toolbar'), $('#editor'), $('#sidebar'), $('#sidebar_inner'),
 	window.devTools = function() {},
-	window.editor = ace.edit('editor')
+	window.editor = ace.edit('editor'),
+	$('#toolbar'), $('#editor'), $('#sidebar'), $('#sidebar_inner')
 );

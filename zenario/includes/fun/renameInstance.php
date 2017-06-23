@@ -57,7 +57,7 @@ if ($createNewInstance) {
 	$sql = "
 		INSERT INTO ". DB_NAME_PREFIX. "nested_plugins (
 			instance_id,
-			tab,
+			slide_num,
 			ord,
 			cols,
 			small_screens,
@@ -75,7 +75,7 @@ if ($createNewInstance) {
 			param_2
 		) SELECT
 			". (int) $instanceId. ",
-			tab,
+			slide_num,
 			ord,
 			cols,
 			small_screens,
@@ -102,11 +102,15 @@ if ($createNewInstance) {
 			instance_id,
 			from_state,
 			to_state,
+			equiv_id,
+			content_type,
 			commands
 		) SELECT
 			". (int) $instanceId. ",
 			from_state,
 			to_state,
+			equiv_id,
+			content_type,
 			commands
 		FROM ". DB_NAME_PREFIX. "nested_paths
 		WHERE instance_id = ". (int) $oldInstanceId;
@@ -115,23 +119,22 @@ if ($createNewInstance) {
 	
 	//Copy any groups chosen for slides
 	$sql = "
-		INSERT INTO ". DB_NAME_PREFIX. "group_slide_link (
-			`instance_id`,
-			`slide_id`,
-			`group_id`
-		) SELECT
-			". (int) $instanceId. ",
+		INSERT INTO ". DB_NAME_PREFIX. "group_link
+			(`link_from`, `link_from_id`, `link_from_char`, `link_to`, `link_to_id`)
+		SELECT
+			gsl.link_from,
 			np_new.id,
-			gsl.group_id
-		FROM ". DB_NAME_PREFIX. "group_slide_link AS gsl
-		INNER JOIN ". DB_NAME_PREFIX. "nested_plugins AS np_old
-		   ON np_old.instance_id = ". (int) $oldInstanceId. "
-		  AND np_old.id = gsl.slide_id
+			gsl.link_from_char, gsl.link_to, gsl.link_to_id
+		FROM ". DB_NAME_PREFIX. "nested_plugins AS np_old
+		INNER JOIN ". DB_NAME_PREFIX. "group_link AS gsl
+		   ON gsl.link_from = 'slide'
+		  AND gsl.link_from_id = np_old.id
 		INNER JOIN ". DB_NAME_PREFIX. "nested_plugins AS np_new
 		   ON np_new.instance_id = ". (int) $instanceId. "
-		  AND np_old.tab = np_new.tab
+		  AND np_old.slide_num = np_new.slide_num
 		  AND np_old.ord = np_new.ord
-		WHERE gsl.instance_id = ". (int) $oldInstanceId;
+		WHERE np_old.is_slide = 1
+		  AND np_old.instance_id = ". (int) $oldInstanceId;
 	
 	sqlSelect($sql);  //No need to check the cache as the other statements should clear it correctly
 	
@@ -140,7 +143,7 @@ if ($createNewInstance) {
 	$sql = "
 		INSERT INTO ". DB_NAME_PREFIX. "plugin_settings (
 			instance_id,
-			nest,
+			egg_id,
 			`name`,
 			`value`,
 			is_content,
@@ -172,13 +175,13 @@ if ($createNewInstance) {
 		FROM ". DB_NAME_PREFIX. "plugin_settings AS ps
 		LEFT JOIN ". DB_NAME_PREFIX. "nested_plugins AS np_old
 		   ON np_old.instance_id = ". (int) $oldInstanceId. "
-		  AND np_old.id = ps.nest
+		  AND np_old.id = ps.egg_id
 		LEFT JOIN ". DB_NAME_PREFIX. "nested_plugins AS np_new
 		   ON np_new.instance_id = ". (int) $instanceId. "
-		  AND np_old.tab = np_new.tab
+		  AND np_old.slide_num = np_new.slide_num
 		  AND np_old.ord = np_new.ord
 		  AND np_old.module_id = np_new.module_id
-		WHERE (ps.nest != 0 XOR np_new.id IS NULL)
+		WHERE (ps.egg_id != 0 XOR np_new.id IS NULL)
 		  AND ps.instance_id = ". (int) $oldInstanceId;
 	
 	if (!$cID) {
@@ -195,7 +198,7 @@ if ($createNewInstance) {
 		FROM ". DB_NAME_PREFIX. "nested_plugins AS np_old
 		INNER JOIN ". DB_NAME_PREFIX. "nested_plugins AS np_new
 		   ON np_new.instance_id = ". (int) $instanceId. "
-		  AND np_old.tab = np_new.tab
+		  AND np_old.slide_num = np_new.slide_num
 		  AND np_old.ord = np_new.ord
 		  AND np_old.module_id = np_new.module_id
 		WHERE np_old.instance_id = ". (int) $oldInstanceId;
@@ -203,9 +206,9 @@ if ($createNewInstance) {
 	$result = sqlSelect($sql);
 	while ($row = sqlFetchAssoc($result)) {
 		//If we were saving from a nested Plugin, convert its id to the new format
-		if ($nest
-		 && $nest == $row['old_id']) {
-			$nest = $row['new_id'];
+		if ($eggId
+		 && $eggId == $row['old_id']) {
+			$eggId = $row['new_id'];
 		}
 		
 		//Copy any plugin CSS files

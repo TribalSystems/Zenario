@@ -158,7 +158,7 @@ class zenario_advanced_search extends module_base_class {
 		$fields[] =	array('name' => 'v.description',		'weighting' => $weights[$this->setting('description_weighting')]);
 		$fields[] =	array('name' => 'v.filename',			'weighting' => $weights[$this->setting('filename_weighting')]);
 		$fields[] =	array('name' => 'v.content_summary',	'weighting' => $weights[$this->setting('content_summary_weighting')]);
-		$fields[] =	array('name' => 'v.sticky_image_id',	'weighting' => 0);
+		$fields[] =	array('name' => 'v.feature_image_id',	'weighting' => 0);
 		$fields[] =	array('name' => 'cc.text',				'weighting' => $weights[$this->setting('content_weighting')]);
 		$fields[] =	array('name' => 'cc.extract',			'weighting' => $weights[$this->setting('extract_weighting')]);
 
@@ -363,7 +363,7 @@ class zenario_advanced_search extends module_base_class {
 						$width = (int)$this->setting('sticky_image_width');
 						$height = (int)$this->setting('sticky_image_height');
 							
-						imageLink($width, $height, $url_img, $result['sticky_image_id'], $width, $height, $this->setting('sticky_image_canvas'));
+						imageLink($width, $height, $url_img, $result['feature_image_id'], $width, $height, $this->setting('sticky_image_canvas'));
 						if ($url_img) {
 							$img_tag =  '<img src="' . $url_img . '" />';
 						}
@@ -399,7 +399,6 @@ class zenario_advanced_search extends module_base_class {
 	}
 		
 	protected function getLanguagesSQLFilter(){
-		//session('user_lang')
 		if($this->language_id) {
 			return "
 				AND c.language_id = '". sqlEscape($this->language_id). "' ";

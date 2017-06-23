@@ -85,7 +85,7 @@ site_settings:
                     row_class: zfab_or
                     type: checkbox
                     value: 1
-                    read_only: true
+                    readonly: true
                     label: The current user can view their own details
                 
                 perm.view.user.enforce:

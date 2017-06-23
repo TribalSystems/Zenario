@@ -143,7 +143,7 @@ class zenario_scheduled_task_manager extends module_base_class {
 	}
 	
 	public static function step1($managerClassName = 'zenario_scheduled_task_manager', $runSpecificJob = false, $args = '') {
-	
+		
 		$serverTime = zenario_scheduled_task_manager::getServerTime();
 		$times = explode(' ', exec('date +"%Y %m %u %H %M %d "'));
 		
@@ -232,6 +232,10 @@ class zenario_scheduled_task_manager extends module_base_class {
 				continue;
 			}
 			
+			//Wait 0.1 seconds between running each task, to space things out a little further
+			$r = 100000;
+			usleep($r);
+			
 			exec('php '.
 						escapeshellarg(CMS_ROOT. moduleDir('zenario_scheduled_task_manager', 'cron/run_every_minute.php')).
 					' '. 
@@ -267,7 +271,7 @@ class zenario_scheduled_task_manager extends module_base_class {
 					' &');
 		}
 		
-		setSetting('jobs_last_run', time(), $updateDB = true, $clearCache = false);
+		setSetting('jobs_last_run', time(), $updateDB = true, $encrypt = false, $clearCache = false);
 		
 		return $jobsRun;
 	}

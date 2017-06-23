@@ -30,7 +30,7 @@ site_settings:
                 email_address_system:
                     label: 'Support email address:'
                     type: text
-                    read_only: true
+                    readonly: true
                     note_below: |
                         Any errors that occur on the site will be sent to this address.
                         You can change this address by editing the <code>EMAIL_ADDRESS_GLOBAL_SUPPORT</code> definition
@@ -173,6 +173,7 @@ site_settings:
                 smtp_password:
                     site_setting:
                         name: smtp_password
+                        encrypt: true
                     label: 'Password:'
                     type: password
                     visible_if: "1 * zenarioAB.value('smtp_specify_server') && zenarioAB.value('smtp_use_auth')"

@@ -711,6 +711,20 @@ label.zenario_tag_grey::before {
 .zenario_slot_being_edited .zenario_banner .banner_text p br { display:none; }
 
 
+
+/*
+	Little hack to try and make the TinyMCE-toolbar roughly the same height as the admin toolbar it replaces
+*/
+
+#zenario_at_toolbars .mce-menubar {
+	margin: 3px 0;
+}
+
+#zenario_at_toolbars .mce-toolbar-grp {
+	margin: 6px 0;
+}
+
+
 /*
 	Make the "toasts" at the top right a bit bigger by default in admin mode,
 	and tweak the opacity and icon position

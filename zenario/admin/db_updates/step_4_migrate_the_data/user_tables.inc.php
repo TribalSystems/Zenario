@@ -203,6 +203,7 @@ revision( 36077
 	DROP COLUMN `always_show`
 _sql
 );
+resetDatabaseStructureCache();
 
 // Migrate checkbox column data from plugin setting to user fields table
 if (needRevision(36505)) {
@@ -343,4 +344,27 @@ if (needRevision(37235)) {
 	
 	
 	revision(37235);
+}
+
+
+//If anyone has been using the extranet registration module in version 7.6 or 7.7 before the patch,
+//the send_delayed_registration_email column will have been created on the wrong table.
+//Move the data and delete the old column.
+if (needRevision(40193)) {
+	
+	if (sqlNumRows('SHOW COLUMNS FROM '. DB_NAME_PREFIX. 'users_custom_data LIKE "send_delayed_registration_email"')) {
+		sqlUpdate('
+			UPDATE '. DB_NAME_PREFIX . 'users AS u
+			INNER JOIN '. DB_NAME_PREFIX. 'users_custom_data AS ucd
+			   ON ucd.user_id = u.id
+			  AND ucd.send_delayed_registration_email = 1
+			SET u.send_delayed_registration_email = 1
+		');
+	}
+	
+	if ($details = getDatasetFieldDetails('users', 'send_delayed_registration_email')) {
+		deleteDatasetField($details['id']);
+	}
+	
+	revision(40193);
 }

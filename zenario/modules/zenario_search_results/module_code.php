@@ -262,7 +262,7 @@ class zenario_search_results extends module_base_class {
 	
 	protected function getLanguagesSQLFilter(){
 		return "
-			AND c.language_id = '". sqlEscape(session('user_lang')). "' ";
+			AND c.language_id = '". sqlEscape(currentLangId()). "' ";
 	}
 	
 	

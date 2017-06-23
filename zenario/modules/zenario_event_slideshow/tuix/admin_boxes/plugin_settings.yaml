@@ -51,7 +51,7 @@ plugin_settings:
                             label: Resize and crop
                     format_onchange: Yes
                     side_note: |
-                        The plugin will display an image from an Event content item (the one marked as "sticky") constrained by these dimensions. If no image is attached or marked as "sticky" when the title of the event will be shown
+                        The plugin will display the feature image from an Event content item constrained by these dimensions. If there is no feature imagethen the title of the event will be shown.
                 slide_width:
                     plugin_setting:
                         name: slide_width

@@ -62,7 +62,10 @@
 		>
 		
 		</div>
+		
+		{{m.inline_buttons? '<div class="organizer_inline_buttons" style="width: ' + (m.inline_buttons.length * 20) + 'px;">' + zenarioT.microTemplate('zenario_organizer_list_inline_button', m.inline_buttons) + '</div>' : ''}} 
+		
 	</div>
 	
-	{{zenarioA.microTemplate('zenario_organizer_multi_line_list_cell', m.multiLineCells)}}
+	{{zenarioT.microTemplate('zenario_organizer_multi_line_list_cell', m.multiLineCells)}}
 </div>

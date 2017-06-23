@@ -34,11 +34,12 @@ useGZIP(!empty($_GET['gz']));
 
 
 //Include a function that uses eval, and shouldn't be minified
-incJS('zenario/js/admin.nomin');
+incJS('zenario/js/tuix.nomin');
 
 //Include all of the standard JavaScript Admin libraries for the CMS
-incJS('zenario/js/admin');
+incJS('zenario/js/tuix');
 incJS('zenario/js/form');
+incJS('zenario/js/admin');
 incJS('zenario/js/admin_form');
 incJS('zenario/js/admin_box_toolkit');
 incJS('zenario/js/admin_box');
@@ -62,6 +63,7 @@ incJS('zenario/libraries/mit/jquery/jquery-ui.slider');
 //Include other third-party libraries
 incJS('zenario/libraries/bsd/tokenize/jquery.tokenize');
 incJS('zenario/libraries/mit/intro/intro');
+incJS('zenario/libraries/mit/chosen/chosen.jquery');
 incJS('zenario/libraries/mit/spectrum/spectrum');
 incJS('zenario/libraries/mit/toastr/toastr');
 incJS('zenario/libraries/public_domain/mousehold/mousehold');
@@ -70,4 +72,4 @@ incJS('zenario/libraries/mit/jssor/jssor.slider.mini');
 echo '
 ace.config.set("basePath", URLBasePath + "zenario/libraries/bsd/ace/src-min-noconflict/");';
 
-incJS('zenario/js/admin.ready');
+incJS('zenario/js/tuix.ready');

@@ -60,7 +60,7 @@ while ($fileIdsInPlugin = sqlFetchRow($result)) {
 }
 
 //Note down the sticky image for this Content Item, if there is one
-if ($fileId = getRow('content_item_versions', 'sticky_image_id', array('id' => $cID, 'type' => $cType, 'version' => $cVersion))) {
+if ($fileId = getRow('content_item_versions', 'feature_image_id', array('id' => $cID, 'type' => $cType, 'version' => $cVersion))) {
 	$fileIds[$fileId] = $fileId;
 }
 
@@ -74,7 +74,7 @@ if (!empty($fileIds)) {
 
 //Get each content area (which will have been converted into HTML snippets)
 $sql = "
-	SELECT ps.instance_id, ps.name, ps.nest, ps.value
+	SELECT ps.instance_id, ps.name, ps.egg_id, ps.value
 	FROM ". DB_NAME_PREFIX. "plugin_instances AS pi
 	INNER JOIN ". DB_NAME_PREFIX. "plugin_settings AS ps
 	   ON pi.id = ps.instance_id
@@ -95,7 +95,7 @@ while ($row = sqlFetchAssoc($result)) {
 		updateRow(
 			'plugin_settings',
 			array('value' => $row['value']),
-			array('instance_id' => $row['instance_id'], 'name' => $row['name'], 'nest' => $row['nest']));
+			array('instance_id' => $row['instance_id'], 'name' => $row['name'], 'egg_id' => $row['egg_id']));
 	}
 }
 

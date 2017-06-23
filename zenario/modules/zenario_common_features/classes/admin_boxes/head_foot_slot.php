@@ -105,16 +105,26 @@ class zenario_common_features__admin_boxes__head_foot_slot extends module_base_c
 			unset($fields['slot/html']['note_below']);
 			
 			if ($box['key']['level'] == 'item') {
-				$box['title'] = adminPhrase('HTML in the head of page for the content item "[[tag]]", version [[version]]', array('tag' => $formatTag, 'version' => $box['key']['cVersion']));
+				$box['title'] = adminPhrase('<head> HTML for the content item "[[tag]]", version [[version]]', array('tag' => $formatTag, 'version' => $box['key']['cVersion']));
+				$fields['slot/description']['snippet']['html'] =
+					adminPhrase('Add HTML within the <code>&lt;head&gt;</code> tag for this content item (can include &lt;style&gt; tags for CSS):');
+				
 			} elseif ($box['key']['level'] == 'layout') {
-				$box['title'] = adminPhrase('HTML in the head of page for the layout "[[id_and_name]]"', $layout);
+				$box['title'] = adminPhrase('<head> HTML for the layout "[[id_and_name]]"', $layout);
+				$fields['slot/description']['snippet']['html'] =
+					adminPhrase('Add HTML within the <code>&lt;head&gt;</code> tag for this layout (can include &lt;style&gt; tags for CSS):');
 			}
 	
 		} else {
 			if ($box['key']['level'] == 'item') {
-				$box['title'] = adminPhrase('HTML at the foot of page for the content item "[[tag]]", version [[version]]', array('tag' => $formatTag, 'version' => $box['key']['cVersion']));
+				$box['title'] = adminPhrase('HTML before </body> for the content item "[[tag]]", version [[version]]', array('tag' => $formatTag, 'version' => $box['key']['cVersion']));
+				$fields['slot/description']['snippet']['html'] =
+					adminPhrase('Add HTML immediately before the <code>&lt;/body&gt;</code> tag for this content item (can include &lt;script&gt; tags for JavaScript):');
+				
 			} elseif ($box['key']['level'] == 'layout') {
-				$box['title'] = adminPhrase('HTML at the foot of page for the layout "[[id_and_name]]"', $layout);
+				$box['title'] = adminPhrase('HTML before </body> for the layout "[[id_and_name]]"', $layout);
+				$fields['slot/description']['snippet']['html'] =
+					adminPhrase('Add HTML immediately before the <code>&lt;/body&gt;</code> tag for this layout (can include &lt;script&gt; tags for JavaScript):');
 			}
 		}
 		

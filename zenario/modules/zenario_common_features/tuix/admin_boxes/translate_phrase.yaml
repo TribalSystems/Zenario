@@ -22,12 +22,12 @@ zenario_translate_phrase:
                     label: 'Module:'
                     pick_items:
                         path: zenario__modules/panels/modules
-                    read_only: true
+                    readonly: true
                 code:
                     hidden: true
                     label: 'Code:'
                     type: textarea
-                    read_only: true
+                    readonly: true
                     rows: 2
                 
                 left_column:
@@ -37,7 +37,7 @@ zenario_translate_phrase:
                     grouping: left_column
                     label: 'Phrase:'
                     type: textarea
-                    read_only: true
+                    readonly: true
                     rows: 4
                 
                 right_column:

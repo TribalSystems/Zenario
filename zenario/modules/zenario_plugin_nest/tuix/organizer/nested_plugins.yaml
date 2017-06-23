@@ -13,7 +13,7 @@ zenario__modules:
                     LEFT JOIN [[DB_NAME_PREFIX]]nested_plugins AS p
                        ON p.instance_id = np.instance_id
                       AND p.is_slide = 1
-                      AND p.tab = np.tab
+                      AND p.slide_num = np.slide_num
                 id_column: np.id
             refiners:
                 nest:
@@ -73,7 +73,7 @@ zenario__modules:
                         IF (np.is_slide, NULL, p.id)
                 ordinal:
                     #hidden: true
-                    db_column: IF (np.is_slide, np.tab, np.ord)
+                    db_column: IF (np.is_slide, np.slide_num, np.ord)
                 
                 module_class_name:
                     db_column: m.class_name
@@ -89,7 +89,7 @@ zenario__modules:
                     table_join: |
                         LEFT JOIN [[DB_NAME_PREFIX]]plugin_settings AS img_ps
                            ON img_ps.instance_id = np.instance_id
-                          AND img_ps.nest = np.id
+                          AND img_ps.egg_id = np.id
                           AND img_ps.foreign_key_to = 'file'
                           AND np.is_slide = 0
                         LEFT JOIN [[DB_NAME_PREFIX]]files AS img_f
@@ -101,7 +101,7 @@ zenario__modules:
                     table_join: |
                         LEFT JOIN [[DB_NAME_PREFIX]]plugin_settings AS img_ps
                            ON img_ps.instance_id = np.instance_id
-                          AND img_ps.nest = np.id
+                          AND img_ps.egg_id = np.id
                           AND img_ps.foreign_key_to = 'file'
                           AND np.is_slide = 0
                         LEFT JOIN [[DB_NAME_PREFIX]]files AS img_f
@@ -114,7 +114,7 @@ zenario__modules:
                     table_join: |
                         LEFT JOIN [[DB_NAME_PREFIX]]plugin_settings AS img_ps
                            ON img_ps.instance_id = np.instance_id
-                          AND img_ps.nest = np.id
+                          AND img_ps.egg_id = np.id
                           AND img_ps.foreign_key_to = 'file'
                           AND np.is_slide = 0
                         LEFT JOIN [[DB_NAME_PREFIX]]files AS img_f
@@ -202,16 +202,16 @@ zenario__modules:
                     hide_when_children_are_not_visible: true
                     css_class: zenario_create_a_new
                     label: Add a plugin
-                    traits:
-                        is_slide: true
+                    with_columns_set:
+                        traits.is_slide: true
                 add_twig_snippet:
                     hide_on_filter: true
                     only_show_on_refiner: nest
                     hide_when_children_are_not_visible: true
                     css_class: zenario_create_a_new
                     label: Add twig snippet
-                    traits:
-                        is_slide: true
+                    with_columns_set:
+                        traits.is_slide: true
                 copy_plugin_instance:
                     ord: 999
                     parent: add_plugin
@@ -242,35 +242,35 @@ zenario__modules:
                         drag_and_drop: true
                         request:
                             upload_banner: 1
-                    traits:
-                        is_slide: true
+                    with_columns_set:
+                        traits.is_slide: true
                 tab_settings:
                     only_show_on_refiner: nest
                     label: Slide properties
-                    traits:
-                        is_slide: true
+                    with_columns_set:
+                        traits.is_slide: true
                     admin_box:
                         path: zenario_slide
                 plugin_settings:
                     only_show_on_refiner: nest
-                    label: Plugin properties
-                    traits:
-                        is_not_tab: true
+                    label: Edit plugin
+                    with_columns_set:
+                        traits.is_not_tab: true
                     admin_box:
                         path: plugin_settings
                 framework_and_css:
                     only_show_on_refiner: nest
                     label: 'Plugin CSS & framework'
-                    traits:
-                        is_not_tab: true
+                    with_columns_set:
+                        traits.is_not_tab: true
                     admin_box:
                         path: plugin_css_and_framework
                 
                 cols:
                     only_show_on_refiner: nest
                     label: '[[cols]]'
-                    traits:
-                        is_not_tab: true
+                    with_columns_set:
+                        traits.is_not_tab: true
                 group_with_previous:
                     parent: cols
                     label: Group with previous
@@ -297,8 +297,8 @@ zenario__modules:
                 small_screens:
                     only_show_on_refiner: nest
                     label: '[[small_screens]]'
-                    traits:
-                        is_not_tab: true
+                    with_columns_set:
+                        traits.is_not_tab: true
                 show:
                     parent: small_screens
                     label: Show on desktop and mobile
@@ -328,13 +328,13 @@ zenario__modules:
                         href: zenario/file.php
                         options:
                             type: image
-                    traits:
-                        has_image: true
+                    with_columns_set:
+                        traits.has_image: true
                 duplicate:
                     only_show_on_refiner: nest
-                    label: Duplicate
-                    traits:
-                        is_not_tab: true
+                    label: Duplicate plugin
+                    with_columns_set:
+                        traits.is_not_tab: true
                     ajax:
                         confirm:
                             html: true
@@ -347,8 +347,8 @@ zenario__modules:
                     only_show_on_refiner: nest
                     ord: 99
                     label: Delete
-                    traits:
-                        is_not_tab: true
+                    with_columns_set:
+                        traits.is_not_tab: true
                     ajax:
                         confirm:
                             html: true
@@ -361,8 +361,8 @@ zenario__modules:
                     only_show_on_refiner: nest
                     ord: 100
                     label: Delete
-                    traits:
-                        is_slide: true
+                    with_columns_set:
+                        traits.is_slide: true
                     visible_if: item.ordinal != 1
                     ajax:
                         confirm:

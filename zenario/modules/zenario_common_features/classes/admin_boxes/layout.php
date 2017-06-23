@@ -80,7 +80,7 @@ class zenario_common_features__admin_boxes__layout extends module_base_class {
 			}
 		}
 		
-		$box['tabs']['template']['fields']['content_type']['read_only'] =
+		$box['tabs']['template']['fields']['content_type']['readonly'] =
 			$box['key']['id'] && !$box['key']['duplicate'] && (checkRowExists('content_item_versions', array('layout_id' => $box['key']['id'])) || checkRowExists('content_types', array('default_layout_id' => $box['key']['id'])));
 		
 		$box['tabs']['template']['fields']['path']['value'] =

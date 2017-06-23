@@ -36,6 +36,13 @@ class zenario_users__admin_boxes__content_privacy extends zenario_users {
 		$fields['privacy/group_ids']['values'] = getGroupPickerCheckboxesForFAB();
 		$fields['privacy/smart_group_id']['values'] = getListOfSmartGroupsWithCounts();
 		
+		if ($ZENARIO_ORGANIZATION_MANAGER_PREFIX = getModulePrefix('zenario_organization_manager')) {
+			$fields['privacy/role_ids']['values'] = getRowsArray($ZENARIO_ORGANIZATION_MANAGER_PREFIX. 'user_location_roles', 'name', [], 'name');
+		} else {
+			$fields['privacy/role_ids']['hidden'] =
+			$fields['privacy/privacy']['values']['with_role']['hidden'] = true;
+		}
+		
 		
 		$box['key']['originalId'] = $box['key']['id'];
 		
@@ -84,9 +91,16 @@ class zenario_users__admin_boxes__content_privacy extends zenario_users {
 							
 							if ($chain['privacy'] == 'group_members') {
 								$chain['group_ids'] =
-									inEscape(getRowsArray('group_content_link', 'group_id', array('equiv_id' => $equivId, 'content_type' => $cType)), true);
+									inEscape(getRowsArray('group_link', 'link_to_id', array('link_to' => 'group', 'link_from' => 'chain', 'link_from_id' => $equivId, 'link_from_char' => $cType)), true);
 							} else {
 								$chain['group_ids'] = '';
+							}
+							
+							if ($chain['privacy'] == 'with_role') {
+								$chain['role_ids'] =
+									inEscape(getRowsArray('group_link', 'link_to_id', array('link_to' => 'role', 'link_from' => 'chain', 'link_from_id' => $equivId, 'link_from_char' => $cType)), true);
+							} else {
+								$chain['role_ids'] = '';
 							}
 							
 							$theseValues = json_encode($chain);
@@ -117,6 +131,7 @@ class zenario_users__admin_boxes__content_privacy extends zenario_users {
 		if (!empty($combinedValues) && is_array($combinedValues)) {
 			$values['privacy/privacy'] = $combinedValues['privacy'];
 			$values['privacy/group_ids'] = $combinedValues['group_ids'];
+			$values['privacy/role_ids'] = $combinedValues['role_ids'];
 			$values['privacy/smart_group_id'] = $combinedValues['smart_group_id'];
 			$values['privacy/module_class_name'] = $combinedValues['module_class_name'];
 			$values['privacy/method_name'] = $combinedValues['method_name'];

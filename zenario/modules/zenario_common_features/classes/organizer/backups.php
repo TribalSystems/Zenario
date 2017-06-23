@@ -37,6 +37,13 @@ class zenario_common_features__organizer__backups extends module_base_class {
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
 		if ($path != 'zenario__administration/panels/backups') return;
 		
+		if (!(file_exists(CMS_ROOT. 'zenario/libraries/not_to_redistribute/zewl/zewl.inc.php'))
+		 || !(require_once CMS_ROOT. 'zenario/libraries/not_to_redistribute/zewl/zewl.inc.php')
+		 || !(zewl::loadClientKey())) {
+			unset($panel['collection_buttons']['create_encrypted']);
+			unset($panel['collection_buttons']['create_and_download_encrypted']);
+		}
+		
 		if ($errorsAndWarnings = initialiseBackupFunctions(true)) {
 			$panel['no_items_message'] = '';
 			foreach ($errorsAndWarnings as $errorOrWarning) {
@@ -72,12 +79,12 @@ class zenario_common_features__organizer__backups extends module_base_class {
 		}
 		
 		if (post('create') && checkPriv('_PRIV_BACKUP_SITE')) {
-			//Create a new file in the backup directory, and write the backup into it
-			$backupPath = setting('backup_dir'). '/' . ($fileName = generateFilenameForBackups());
+			$encrypt = (bool) post('encrypt');
 			
-			$g = gzopen($backupPath, 'wb');
-			createDatabaseBackupScript($g);
-			gzclose($g);
+			//Create a new file in the backup directory, and write the backup into it
+			$backupPath = setting('backup_dir'). '/' . ($fileName = generateFilenameForBackups(true, $encrypt));
+			
+			createDatabaseBackupScript($backupPath, true, $encrypt);
 			
 			@chmod($backupPath, 0666);
 			
@@ -103,12 +110,7 @@ class zenario_common_features__organizer__backups extends module_base_class {
 		} elseif (post('restore') && checkPriv('_PRIV_RESTORE_SITE')) {
 			//Restore a database backup from the file system
 			$failures = array();
-			if (restoreDatabaseFromBackup(
-					$filename,
-					//Attempt to check whether gzip compression has been used, or if this is a plain sql file
-					strtolower(substr($filename, -3)) != '.gz',
-					DB_NAME_PREFIX, $failures
-			)) {
+			if (restoreDatabaseFromBackup($filename, $failures)) {
 				echo '<!--Reload_Organizer-->';
 			} else {
 				foreach ($failures as $text) {
@@ -137,17 +139,17 @@ class zenario_common_features__organizer__backups extends module_base_class {
 		
 		//Offer a database backup of the current state of the site for download 
 		if (!$ids) {
+			
+			$encrypt = (bool) post('encrypt');
 		
 			//Create a gz file in the temp directory...
 			$filepath = tempnam(sys_get_temp_dir(), 'tmpfiletodownload');
 			
 			//...write the database backup into it...
-			$g = gzopen($filepath, 'wb');
-			createDatabaseBackupScript($g);
-			gzclose($g);
+			createDatabaseBackupScript($filepath, true, $encrypt);
 		
 			//...and finally offer it for download
-			header('Content-Disposition: attachment; filename="'. generateFilenameForBackups(). '"');
+			header('Content-Disposition: attachment; filename="'. generateFilenameForBackups(true, $encrypt). '"');
 			header('Content-Length: '. filesize($filepath)); 
 			readfile($filepath);
 			

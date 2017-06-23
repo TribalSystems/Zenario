@@ -63,6 +63,14 @@ if (!file_exists(($cmsRoot = dirname(dirname(dirname(dirname($argv[0])))). '/').
 	exit;
 }
 
+if ($step == 1) {
+	//Wait a random ammount of time, between 0 and 5 seconds, before starting,
+	//to try and avoid the problem where every site on the server tries to run
+	//at exactly the same time
+	$r = mt_rand(0, 5000000);
+	usleep($r);
+}
+
 //Include the CMS' library of functions, but don't include any behaviour designed
 //for sending a page to a Visitor as this is a scheduled task and not a page load.
 define('CMS_ROOT', $cmsRoot);

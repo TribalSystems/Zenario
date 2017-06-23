@@ -50,7 +50,7 @@ zenario_slideshow_2.openImageManager = function(el, slotName, AJAXLink) {
 			mergeFields.recommededSizeMessage = data.recommededSizeMessage;
 		}
 		
-		html = zenarioA.microTemplate('zenario_image_manager', mergeFields);
+		html = zenarioT.microTemplate('zenario_image_manager', mergeFields);
 		
 		// zenarioA.openBox function parameters
 		//zenarioA.openBox = function(html, className, n, e, width, left, top, disablePageBelow, overlay, draggable, resizable, padding, maxHeight, rightCornerOfElement, bottomCornerOfElement)
@@ -66,8 +66,8 @@ zenario_slideshow_2.openImageManager = function(el, slotName, AJAXLink) {
 		that.selectSlide(that.current, true);
 		
 		// Set html 5 drag/drop upload going
-		if (zenarioA.canDoHTML5Upload()) {
-			zenarioA.setHTML5UploadFromDragDrop(
+		if (zenarioT.canDoHTML5Upload()) {
+			zenarioT.setHTML5UploadFromDragDrop(
 				that.AJAXLink, 
 				{
 					mode: 'file_upload'
@@ -209,7 +209,7 @@ zenario_slideshow_2.selectSlide = function(slideId, noSave) {
 
 // Show a slides details
 zenario_slideshow_2.displaySlideDetails = function(slide) {
-	var html = zenarioA.microTemplate('zenario_slide_details', slide);
+	var html = zenarioT.microTemplate('zenario_slide_details', slide);
 	$('#zenario_slide_attributes_inner').html(html);
 	this.bindEventListeners();
 };
@@ -323,7 +323,7 @@ zenario_slideshow_2.bindEventListeners = function() {
 	$('#zenario_show_transition_box').off().on('click', function() {
 		var mergeFields = {
 			code: that.slides[that.current].transition_code};
-		var html = zenarioA.microTemplate('zenario_transition_code_box', mergeFields);
+		var html = zenarioT.microTemplate('zenario_transition_code_box', mergeFields);
 		zenarioA.openBox(html, 'zenario_fbAdminImageManager_TransitionCodes', 'AdminImageManager_TransitionCodes', undefined, 200, undefined, undefined, true, true, '.zenario_dragMe', false);
 		that.bindEventListenersTransitionCodes();
 	});
@@ -331,7 +331,7 @@ zenario_slideshow_2.bindEventListeners = function() {
 	// Open popup box to choose organizer or upload directly
 	$("#zenario_change_image").off().on("click", function(e, image_type) {
 		that.rememberImageType = image_type;
-		var html = zenarioA.microTemplate('zenario_image_changer', {});
+		var html = zenarioT.microTemplate('zenario_image_changer', {});
 		zenarioA.openBox(html, 'zenario_fbAdminImageManager_ImageChanger', 'AdminImageManager_ImageChanger', undefined, 200, undefined, undefined, true, true, '.zenario_image_changer', false);
 		that.bindEventListenersImageChanger();
 	});
@@ -576,7 +576,7 @@ zenario_slideshow_2.uploadImages = function() {
 			mode: "file_upload"
 		};
 	
-	var fallback = !zenarioA.canDoHTML5Upload(),
+	var fallback = !zenarioT.canDoHTML5Upload(),
 		html = '<input type="file" name="Filedata" accept="image/*"';
 	
 	if (fallback) {
@@ -593,7 +593,7 @@ zenario_slideshow_2.uploadImages = function() {
 	if (!fallback) {
 		var $input = $(html);
 		$input.change(function() {
-			zenarioA.doHTML5Upload(this.files, that.AJAXLink, requests, function(responses) {
+			zenarioT.doHTML5Upload(this.files, that.AJAXLink, requests, function(responses) {
 				that.uploadImagesCallback(responses);
 			});
 			

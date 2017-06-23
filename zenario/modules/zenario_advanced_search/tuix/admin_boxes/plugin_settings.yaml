@@ -103,16 +103,16 @@ plugin_settings:
                 sticky_image_show:
                     plugin_setting:
                         name: sticky_image_show
-                    label: 'Show sticky image'
+                    label: 'Show feature image'
                     type: checkbox
                     value: ""
-                    side_note: Display the content item's sticky image if available.
+                    side_note: Display the content item's feature image if available.
                     format_onchange: Yes
                     indent: 1
                 sticky_image_canvas:
                     plugin_setting:
                         name: sticky_image_canvas
-                    label: 'Sticky image canvas:'
+                    label: 'Feature image canvas:'
                     type: select
                     value: unlimited
                     values:

@@ -41,7 +41,7 @@ zenario.lib(function(
 	undefined,
 	URLBasePath,
 	document, window, windowOpener, windowParent,
-	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO, strings,
+	zenario, zenarioA, zenarioT, zenarioAB, zenarioAT, zenarioO,
 	encodeURIComponent
 	//N.b. the rest of the shortcut functions that normally go here haven't been defined yet!
 	//They are actually defined below.
@@ -177,6 +177,11 @@ zenario.lib(function(
 	window.jsEscape =
 	zenario.jsEscape = function(text) {
 		return escape(text).replace(/\%u/g, '\\u').replace(/\%/g, '\\x');
+	};
+
+	window.jsUnescape =
+	zenario.jsUnescape = function(text) {
+		return unescape(text.replace(/\\u/gi, '%u').replace(/\\x/gi, '%')).replace(/\\(.)/g, "$1");
 	};
 	
 	//Fallback for browsers *cough IE* that don't have a CSS escape function,
@@ -493,22 +498,22 @@ zenario.lib(function(
 	};
 	
 	
-	zenario.visitorTUIXLink = function(moduleClassName, path, customisationName, requests, mode) {
+	zenario.visitorTUIXLink = function(moduleClassName, path, requests, mode, useSync) {
 		
 		return URLBasePath +
 			'zenario/ajax.php?moduleClassName=' + encodeURIComponent(moduleClassName) +
 			'&path=' + encodeURIComponent(path) +
-			'&_cn=' + encodeURIComponent(customisationName || '') +
 			'&method_call=' + (mode == 'format' || mode == 'validate' || mode == 'save'? mode : 'fill') + 'VisitorTUIX' +
+			'&_useSync=' + zenario.engToBoolean(useSync) +
 			zenario.urlRequest(requests);
 	};
 	
-	zenario.pluginVisitorTUIXLink = function(moduleClassName, slotNameOrContainedElement, path, customisationName, requests, mode, useSync) {
+	zenario.pluginVisitorTUIXLink = function(moduleClassName, slotNameOrContainedElement, path, requests, mode, useSync) {
 		var slotName = zenario.getSlotnameFromEl(slotNameOrContainedElement),
 			eggId = zenario.getEggIdFromEl(slotNameOrContainedElement),
 			instanceId = zenario.slots[slotName] && zenario.slots[slotName].instanceId;
 		
-		return zenario.visitorTUIXLink(moduleClassName, path, customisationName, undefined, mode) +
+		return zenario.visitorTUIXLink(moduleClassName, path, undefined, mode, useSync) +
 			'&cID=' + zenario.cID +
 			'&cType=' + zenario.cType +
 		  (zenario.adminId?
@@ -517,7 +522,6 @@ zenario.lib(function(
 			'&slotName=' + slotName +
 		  (eggId?
 			'&eggId=' + eggId : '') +
-			'&_useSync=' + zenario.engToBoolean(useSync) +
 			zenario.urlRequest(requests);
 	};
 });

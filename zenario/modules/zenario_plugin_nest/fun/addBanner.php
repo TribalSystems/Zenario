@@ -28,12 +28,12 @@
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
 
-//Add a new Banner to the nest, placing it in the right-most tab
+//Add a new Banner to the nest, placing it in the right-most slide
 if (($moduleId = getModuleIdByClassName('zenario_banner'))
  && ($instance = getPluginInstanceDetails($instanceId))
  && ($image = getRow('files', array('id', 'filename', 'width', 'height'), array('usage' => 'image', 'id' => $imageId)))) {
 	
-	$nestId = self::addPlugin($moduleId, $instanceId, $tab, adminPhrase('[[filename]] [[[width]] × [[height]]]', $image), $tabIsTabId);
+	$eggId = self::addPlugin($moduleId, $instanceId, $slideNum, adminPhrase('[[filename]] [[[width]] × [[height]]]', $image), $inputIsSlideId);
 	
 	setRow(
 		'plugin_settings',
@@ -42,7 +42,7 @@ if (($moduleId = getModuleIdByClassName('zenario_banner'))
 			'is_content' => $instance['content_id']? 'version_controlled_setting' : 'synchronized_setting'),
 		array(
 			'instance_id' => $instanceId,
-			'nest' => $nestId,
+			'egg_id' => $eggId,
 			'name' => 'image_source'));
 	
 	setRow(
@@ -54,7 +54,7 @@ if (($moduleId = getModuleIdByClassName('zenario_banner'))
 			'foreign_key_id' => $image['id']),
 		array(
 			'instance_id' => $instanceId,
-			'nest' => $nestId,
+			'egg_id' => $eggId,
 			'name' => 'image'));
 	
 	setRow(
@@ -64,12 +64,12 @@ if (($moduleId = getModuleIdByClassName('zenario_banner'))
 			'is_content' => $instance['content_id']? 'version_controlled_setting' : 'synchronized_setting'),
 		array(
 			'instance_id' => $instanceId,
-			'nest' => $nestId,
+			'egg_id' => $eggId,
 			'name' => 'alt_tag'));
 	
 	resyncLibraryPluginFiles($instanceId, $instance);
 	
-	return $nestId;
+	return $eggId;
 } else {
 	return false;
 }

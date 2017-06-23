@@ -137,7 +137,7 @@ class zenario_breadcrumbs extends zenario_menu {
 				$first = true;
 				foreach ($backs as $state => $details) {
 					
-					$name = $this->parentNest->formatTitleText($this->phrase($details['tab']['name_or_title']));
+					$name = $this->parentNest->formatTitleText($this->phrase($details['slide']['name_or_title']));
 					$url = linkToItem(
 						cms_core::$cID, cms_core::$cType, false, $details['requests'], cms_core::$alias,
 						$autoAddImportantRequests = false
@@ -185,7 +185,7 @@ class zenario_breadcrumbs extends zenario_menu {
 				
 				case 'site_home_page':
 				default:
-					$page = $this->getHomepage($_SESSION['user_lang']);
+					$page = $this->getHomepage(cms_core::$langId);
 					break;
 			}
 			

@@ -40,8 +40,16 @@ switch ($path) {
 			exitIfNotCheckPriv('_PRIV_MANAGE_EMAIL_TEMPLATE');
 			$columns['template_name'] = $values['meta_data/template_name'];
 			$columns['subject'] = $values['meta_data/subject'];
-			$columns['email_address_from'] = $values['meta_data/email_address_from'];
-			$columns['email_name_from'] = $values['meta_data/email_name_from'];
+			
+			if ($values['meta_data/from_details'] == "site_settings"){
+				$columns['email_address_from'] = $values['meta_data/email_address_from_site_settings'];
+				$columns['email_name_from'] = $values['meta_data/email_name_from_site_settings'];
+			}else{
+				$columns['email_address_from'] = $values['meta_data/email_address_from'];
+				$columns['email_name_from'] = $values['meta_data/email_name_from'];
+			}
+			
+			$columns['from_details'] = $values['meta_data/from_details'];
 			
 			$columns['debug_email_address'] =
 				($columns['debug_override'] = $values['meta_data/debug_override'])? $values['meta_data/debug_email_address'] : '';

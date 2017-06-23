@@ -108,8 +108,8 @@ zenario__social:
                                 message_type: warning
                             request:
                                 lock_forum: "1"
-                        traits:
-                            unlocked: Yes
+                        with_columns_set:
+                            traits.unlocked: true
                     unlock_forum:
                         priv: _PRIV_MODERATE_USER_COMMENTS
                         hide_in_select_mode: Yes
@@ -123,8 +123,8 @@ zenario__social:
                                 message_type: question
                             request:
                                 unlock_forum: "1"
-                        traits:
-                            locked: Yes
+                        with_columns_set:
+                            traits.locked: true
                     remove_thread_page:
                         ord: "97"
                         priv: _PRIV_MANAGE_ITEM_SLOT
@@ -146,8 +146,8 @@ zenario__social:
                                 message_type: warning
                             request:
                                 remove_thread_page: "1"
-                        traits:
-                            has_thread_page: Yes
+                        with_columns_set:
+                            traits.has_thread_page: true
                     remove_new_thread_page:
                         ord: "98"
                         priv: _PRIV_MANAGE_ITEM_SLOT
@@ -167,8 +167,8 @@ zenario__social:
                                 message_type: warning
                             request:
                                 remove_new_thread_page: "1"
-                        traits:
-                            has_new_thread_page: Yes
+                        with_columns_set:
+                            traits.has_new_thread_page: true
                     remove_forum:
                         ord: "99"
                         priv: _PRIV_MANAGE_ITEM_SLOT
@@ -183,8 +183,8 @@ zenario__social:
                                 message_type: warning
                             request:
                                 remove_forum: "1"
-                        traits:
-                            empty: Yes
+                        with_columns_set:
+                            traits.empty: true
                 reorder:
                     priv: _PRIV_REORDER_MENU_ITEM
                     column: ordinal

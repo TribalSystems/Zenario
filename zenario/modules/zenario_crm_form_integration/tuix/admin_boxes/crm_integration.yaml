@@ -1,4 +1,4 @@
-zenario_user_admin_box_form:
+zenario_user_form:
     tabs: 
         crm_integration:
             ord: 10

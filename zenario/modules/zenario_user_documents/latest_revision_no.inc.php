@@ -27,4 +27,4 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-define(moduleName(__FILE__). '_LATEST_REVISION_NO', 11);
+define(moduleName(__FILE__). '_LATEST_REVISION_NO', 20);

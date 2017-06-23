@@ -526,21 +526,7 @@ class zenario_extranet extends module_base_class {
 	}
 	
 	protected function getDetailsFromEmail($email) {
-		$sql = "
-			SELECT
-				id AS id,
-				first_name AS first_name,
-				last_name AS last_name,
-				screen_name AS screen_name,
-				password AS password,
-				password_salt AS password_salt,
-				email AS email,
-				hash AS hash
-			FROM ". DB_NAME_PREFIX. "users
-			WHERE email = '". sqlEscape($email). "'";
-		
-		$result = sqlQuery($sql);
-		return sqlFetchArray($result);
+		return getRow('users', ['id', 'first_name', 'last_name', 'screen_name', 'password', 'password_salt', 'email', 'hash'], ['email' => $email]);
 	}
 	
 	
@@ -628,4 +614,12 @@ class zenario_extranet extends module_base_class {
 	
 	
 	
+
+	public function preFillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
+		switch ($path) {
+			case 'zenario__users/nav/sign_in_log/panel':
+				flagEncryptedColumnsInOrganizer($panel, 'u', 'users');
+				flagEncryptedColumnsInOrganizer($panel, 'usl', 'user_signin_log');
+		}
+	}
 }

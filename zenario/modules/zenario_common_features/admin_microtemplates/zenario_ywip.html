@@ -2,7 +2,7 @@
 	<div class="zenario_ywip_dropdown_title">{{m.title|escape}}</div>
 	<ul>
 		<% for (var i = 0; m.__item_sort_order__[i] && m.items[m.__item_sort_order__[i]]; ++i) { %>
-			{{zenarioA.microTemplate('zenario_ywip_item', m.items[m.__item_sort_order__[i]])}}
+			{{zenarioT.microTemplate('zenario_ywip_item', m.items[m.__item_sort_order__[i]])}}
 		<% } %>
 		<li class="zenario_ywip_more">
 			<a href="#zenario__content/panels/content/refiners/your_work_in_progress////" onclick="zenarioO.go('zenario__content/panels/content/refiners/your_work_in_progress////'); return false;">

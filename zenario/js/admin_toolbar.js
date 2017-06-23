@@ -41,9 +41,10 @@ zenario.lib(function(
 	undefined,
 	URLBasePath,
 	document, window, windowOpener, windowParent,
-	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO, strings,
+	zenario, zenarioA, zenarioT, zenarioAB, zenarioAT, zenarioO,
 	encodeURIComponent, get, engToBoolean, htmlspecialchars, jsEscape, phrase,
-	extensionOf, methodsOf, has
+	extensionOf, methodsOf, has,
+	extraVar1, extraVar2, s$s
 ) {
 	"use strict";
 
@@ -101,6 +102,10 @@ zenarioAT.init2 = function(tuix) {
 			zenarioAT.runOnInit[i]();
 		}
 		zenarioAT.runOnInit = [];
+		
+		if (tuix.lock_warning) {
+			zenarioA.lockWarning(tuix.lock_warning);
+		}
 	});
 };
 
@@ -217,7 +222,7 @@ zenarioAT.action = function(object) {
 	zenarioA.closeSlotControls();
 	zenarioA.cancelMovePlugin();
 	
-	if (!zenarioA.checkActionUnique(object)) {
+	if (!zenarioT.checkActionUnique(object)) {
 		return false;
 	}
 	
@@ -261,7 +266,7 @@ zenarioAT.action = function(object) {
 			engToBoolean(object.organizer_quick.reload_admin_toolbar)? 'zenarioAT' : false);
 		
 	} else {
-		zenarioA.action(zenarioAT, object);
+		zenarioT.action(zenarioAT, object);
 	}
 };
 
@@ -306,7 +311,7 @@ zenarioAT.pickItems = function(path, keyIn, row) {
 	}
 	
 	if (zenarioAT.postPickItemsObject) {
-		zenarioA.action(zenarioAT, zenarioAT.postPickItemsObject, true, undefined, undefined, key);
+		zenarioT.action(zenarioAT, zenarioAT.postPickItemsObject, true, undefined, undefined, key);
 	
 	} else if (zenarioAT.actionTarget) {
 		foreach (key as var k) {
@@ -372,8 +377,8 @@ zenarioAT.draw = function() {
 		var id = zenarioAT.sortedToolbars[i],
 			tab = tuix.toolbars[id];
 		
-		//zenarioA.hidden(tuixObject, lib, item, id, button, column, field, section, tab, tuix)
-		if (!zenarioA.hidden(undefined, zenarioAT, undefined, id, undefined, undefined, undefined, undefined, tab)) {
+		//zenarioT.hidden(tuixObject, lib, item, id, button, column, field, section, tab, tuix)
+		if (!zenarioT.hidden(undefined, zenarioAT, undefined, id, undefined, undefined, undefined, undefined, tab)) {
 			
 			toolbar.tabs[++ti] = {
 				id: id,
@@ -401,13 +406,13 @@ zenarioAT.draw = function() {
 				buttonId, button;
 			
 			if (zenarioAT.sortedButtons[sectionId]
-			 && !zenarioA.hidden(undefined, zenarioAT, undefined, sectionId, undefined, undefined, undefined, section)) {
+			 && !zenarioT.hidden(undefined, zenarioAT, undefined, sectionId, undefined, undefined, undefined, section)) {
 				
 				foreach (zenarioAT.sortedButtons[sectionId] as buttonOrdinal) {
 					buttonId = zenarioAT.sortedButtons[sectionId][buttonOrdinal],
 					button = section.buttons[buttonId];
 					
-					if (zenarioA.hidden(undefined, zenarioAT, undefined, buttonId, button, undefined, undefined, section)) {
+					if (zenarioT.hidden(undefined, zenarioAT, undefined, buttonId, button, undefined, undefined, section)) {
 						continue;
 					}
 					if (button.appears_in_toolbars
@@ -465,7 +470,7 @@ zenarioAT.draw = function() {
 		}
 	}
 	
-	get('zenario_at_wrap').innerHTML = zenarioA.microTemplate('zenario_toolbar', toolbar);
+	get('zenario_at_wrap').innerHTML = zenarioT.microTemplate('zenario_toolbar', toolbar);
 	zenarioA.tooltips('#zenario_at_wrap a[title]');
 	zenarioA.tooltips('#zenario_at_wrap div[title]');
 	zenarioA.tooltips('#zenario_at_wrap ul ul a[title]', {position: {my: 'left+2 center', at: 'right center', collision: 'flipfit'}});
@@ -500,7 +505,7 @@ zenarioAT.sort = function() {
 	}
 	
 	//Sort this array
-	zenarioAT.sortedToolbars.sort(zenarioA.sortArray);
+	zenarioAT.sortedToolbars.sort(zenarioT.sortArray);
 	
 	//Remove fields that were just there to help sort
 	foreach (zenarioAT.sortedToolbars as var i) {
@@ -529,7 +534,7 @@ zenarioAT.sortButtons = function(sectionId) {
 	}
 	
 	//Sort this array
-	zenarioAT.sortedButtons[sectionId].sort(zenarioA.sortArray);
+	zenarioAT.sortedButtons[sectionId].sort(zenarioT.sortArray);
 	
 	//Remove fields that were just there to help sort
 	foreach (zenarioAT.sortedButtons[sectionId] as var i) {

@@ -3,6 +3,9 @@
 plugin_settings:
     module_class_name: zenario_multiple_image_container
     tabs:
+        mobile_tab:
+            hidden: true
+        
         first_tab:
             label: Images
             fields:
@@ -48,7 +51,7 @@ plugin_settings:
                 image_znz:
                     grouping: 'image_thumb image_thumb_znz'
                     row_class: zfab_just_show_image_thumb
-                    read_only: true
+                    readonly: true
                     pick_items:
                         path: zenario__content/panels/image_library
                         min_path: zenario__content/panels/image_library

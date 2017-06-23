@@ -1,10 +1,11 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
 site_settings:
-    title: Head and Foot
+    setting_group: head_and_foot
+    title: Global <head> and <body> HTML
     tabs:
         head:
-            label: Head
+            label: <head>
             edit_mode:
                 enabled: true
                 priv: _PRIV_EDIT_SITE_SETTING
@@ -13,7 +14,7 @@ site_settings:
                     full_width: true
                     snippet:
                         html: >
-                            Add HTML to the <code>&lt;head&gt;</code> tag of all pages on your site:
+                            Add HTML within the <code>&lt;head&gt;</code> tag of all pages:
                 sitewide_head:
                     site_setting:
                         name: sitewide_head
@@ -25,7 +26,7 @@ site_settings:
                     style: >
                         height: 25em;
         body:
-            label: Start of body
+            label: Start of <body>
             edit_mode:
                 enabled: true
                 priv: _PRIV_EDIT_SITE_SETTING
@@ -34,7 +35,7 @@ site_settings:
                     full_width: true
                     snippet:
                         html: >
-                            Add HTML at the start of the <code>&lt;body&gt;</code> tag of all pages on your site:
+                            Add HTML immediately after the <code>&lt;body&gt;</code> tag of all pages:
                 sitewide_body:
                     site_setting:
                         name: sitewide_body
@@ -46,7 +47,7 @@ site_settings:
                     style: >
                         height: 25em;
         foot:
-            label: Foot
+            label: HTML before </body>
             edit_mode:
                 enabled: true
                 priv: _PRIV_EDIT_SITE_SETTING
@@ -55,7 +56,7 @@ site_settings:
                     full_width: true
                     snippet:
                         html: >
-                            Add HTML to the bottom of the <code>&lt;body&gt;</code> tag of all pages on your site:
+                            Add HTML immediately before the <code>&lt;/body&gt;</code> tag of all pages:
                 sitewide_foot:
                     site_setting:
                         name: sitewide_foot
@@ -75,4 +76,14 @@ site_settings:
                             <li><a href="https://modernizr.com/" target="_blank">Modernizr</a></li>
                             <li><a href="http://underscorejs.org/" target="_blank">Underscore.js</a></li>
                         </ul>
-    setting_group: head_and_foot
+
+    confirm:
+        show: true
+        message: |
+            You are changing HTML that is used across the entire site.
+            The change will be <strong>immediate</strong> and cannot be undone.
+        html: true
+        button_message: Save
+        cancel_button_message: Cancel
+        message_type: warning
+    

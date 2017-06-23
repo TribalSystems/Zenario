@@ -30,6 +30,50 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 
 class zenario_abstract_fea extends module_base_class {
+	
+	protected function getMode() {
+		//From version 7.6, if you have a plugin, we'll only allow the plugin to run in the mode chosen in the plugin settings.
+		//If you want extra modes then you'll either need to make links in the conductor, or links to other content items.
+		if ($this->instanceId && ($mode = $this->setting('mode'))) {
+			return $mode;
+		
+		//Otherwise check the mode in the request
+		} elseif (!empty($_REQUEST['mode'])) {
+			return $_REQUEST['mode'];
+		
+		//Otherwise check the path in the request
+		} elseif (!empty($_REQUEST['path'])) {
+			return $this->getModeFromPath($_REQUEST['path']);
+		}
+	}
+	
+	protected $thingsEnabled;
+	protected function checkThingEnabled($thing = '') {
+		
+		if (!isset($this->thingsEnabled)) {
+			$this->thingsEnabled = [];
+			foreach ($this->zAPISettings as $settingName => &$value) {
+				if (substr($settingName, 0, 7) == 'enable.') {
+					$this->thingsEnabled[substr($settingName, 7)] = (bool) $value;
+				}
+			}
+			$this->thingsEnabled[$this->setting('mode')] = true;
+		}
+		
+		return !empty($this->thingsEnabled[$thing]);
+	}
+	
+	protected function isFeaAJAX() {
+		return in(request('method_call'), 'fillVisitorTUIX', 'formatVisitorTUIX', 'validateVisitorTUIX', 'saveVisitorTUIX');
+	}
+	
+	protected function getPathFromMode($mode) {
+		return 'zenario_' . $mode;
+	}
+	
+	protected function getModeFromPath($path) {
+		return str_replace('zenario_', '', $path);
+	}
 
 	public function init() {
 		//if (in(request('method_call'), 'fillVisitorTUIX', 'formatVisitorTUIX', 'validateVisitorTUIX', 'saveVisitorTUIX')) {
@@ -41,6 +85,33 @@ class zenario_abstract_fea extends module_base_class {
 
 	public function showSlot() {
 		//$this->twigFramework(array());
+	}
+	
+	
+	protected function feaAJAXRequest($libraryName, $path, $requests, $mode = '', $pages = array()) {
+			
+		//If this is the initial page load, rather than doing an AJAX request,
+		//instead write a script tag to the bottom of the page
+		if (empty($_REQUEST['method_call'])) {
+			$this->setScriptTag = $this->pluginVisitorTUIXLink(true, $path, $requests);
+			$requests = -1;
+		}
+		
+		//Initialise the FEA library
+		$this->callScriptBeforeFoot(
+			$libraryName, 'init',
+			$this->containerId,
+			$path, $requests, $mode, $pages);
+	}
+	
+	protected $setScriptTag = '';
+	
+	public function addToPageFoot() {
+		
+		if ($this->setScriptTag !== '') {
+			echo '
+<script type="text/javascript" src="', htmlspecialchars($this->setScriptTag), '"></script>';
+		}
 	}
 	
 	
@@ -75,6 +146,9 @@ class zenario_abstract_fea extends module_base_class {
 	protected function formatItemRow(&$item, $path, &$tags, &$fields, &$values) {
 		//...
 	}
+	protected function sqlSelect($sql) {
+		return sqlSelect($sql);
+	}
 	
 	protected function populateItems($path, &$tags, &$fields, &$values) {
 		
@@ -101,7 +175,7 @@ class zenario_abstract_fea extends module_base_class {
 		}
 		
 		
-		$result = sqlSelect(
+		$result = $this->sqlSelect(
 				$this->populateItemsSelect($path, $tags, $fields, $values). "
 				". $this->populateItemsFrom($path, $tags, $fields, $values). "
 				". $this->populateItemsWhere($path, $tags, $fields, $values). "

@@ -3,20 +3,26 @@
 zenario__impersonate:
     priv: _PRIV_IMPERSONATE_USER
     key:
-        id: ""
+        id: 0
+        openFromAdminToolbar: false
+    title: Impersonating an extranet user
     tabs:
         impersonate:
             edit_mode:
                 enabled: true
             fields:
-                warning: 
-                    pre_field_html: <div class="zenario_fbWarning">
-                    full_width: true
-                    snippet:
-                        html: |
-                            You are about to impersonate a user with email debug mode not enabled. Please note that emails may be sent to live email addresses whilst impersonating this user. To enable debug mode please follow <a href="zenario/admin/organizer.php?#zenario__administration/panels/site_settings//email">this link</a>.
-                    post_field_html: </div>
-                    hidden: true
+                user_id:
+                    label: Extranet user
+                    pick_items:
+                        path: zenario__users/panels/users/refiners/active_users////
+                        target_path: zenario__users/panels/users
+                        min_path: zenario__users/panels/users
+                        max_path: zenario__users/panels/users
+                        one_to_one_choose_phrase: Select
+                        select_phrase: Select extranet user...
+                        nothing_selected_phrase: No extranet user selected
+                    validation:
+                        required_if_not_hidden: 'Please select an extranet user'
                 desc:
                     full_width: true
                     snippet:
@@ -34,7 +40,7 @@ zenario__impersonate:
                     type: checkbox
                     side_note: |
                         Sets a cookie in your browser to keep you logged in as the impersonated user.
-    max_height: 120
+    max_height: 150
     hide_tab_bar: true
     save_button_message: Impersonate this user
     cancel_button_message: Cancel

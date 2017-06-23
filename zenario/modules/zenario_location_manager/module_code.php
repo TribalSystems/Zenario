@@ -296,8 +296,6 @@ class zenario_location_manager extends module_base_class {
 					} 
 					$panel['item_buttons']['set_parent']['name'] = 'Assign location a new parent';
 					$panel['item_buttons']['set_parent']['combine_items']['one_to_one_choose_phrase'] = 'Assign parent Location';
-					
-					
 					if ($maxLevels==0 && issetArrayKey($panel,'item_buttons','set_parent')) {
 						unset($panel['item_buttons']['set_parent']);
 					}

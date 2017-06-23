@@ -34,7 +34,7 @@ class zenario_pro_features__admin_boxes__site_settings extends module_base_class
 		
 		if (isset($box['tabs']['admin_domain']['fields']['admin_use_ssl'])) {
 			if (!setting('admin_use_ssl') && httpOrhttps() != 'https://') {
-				$box['tabs']['admin_domain']['fields']['admin_use_ssl']['read_only'] = true;
+				$box['tabs']['admin_domain']['fields']['admin_use_ssl']['readonly'] = true;
 			}
 		}
 		

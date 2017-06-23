@@ -43,10 +43,10 @@ zenario.lib(function(
 	undefined,
 	URLBasePath,
 	document, window, windowOpener, windowParent,
-	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO, strings,
+	zenario, zenarioA, zenarioT, zenarioAB, zenarioAT, zenarioO,
 	encodeURIComponent, get, engToBoolean, htmlspecialchars, jsEscape, phrase,
 	extensionOf, methodsOf, has,
-	panelTypes
+	panelTypes, extraVar2, s$s
 ) {
 	"use strict";
 
@@ -77,7 +77,7 @@ methods.sortItems = function() {
 	
 	var sortedItems = [],
 		subheadingColumn = this.tuix.subheading_column,
-		sortColSortedItems = zenarioA.getSortedIdsOfTUIXElements(this.tuix, 'items', this.sortBy, this.sortDesc),
+		sortColSortedItems = zenarioT.getSortedIdsOfTUIXElements(this.tuix, 'items', this.sortBy, this.sortDesc),
 		subheadingSortedItems,
 		sortedItemsBySubheading = {},
 		sortedSubheadings = [],
@@ -92,7 +92,7 @@ methods.sortItems = function() {
 		return sortColSortedItems;
 	}
 	
-	subheadingSortedItems = zenarioA.getSortedIdsOfTUIXElements(this.tuix, 'items', subheadingColumn);
+	subheadingSortedItems = zenarioT.getSortedIdsOfTUIXElements(this.tuix, 'items', subheadingColumn);
 	
 	foreach (subheadingSortedItems as i => id) {
 		subheading = this.tuix.items[id][subheadingColumn];

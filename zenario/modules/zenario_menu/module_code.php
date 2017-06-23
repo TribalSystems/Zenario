@@ -133,7 +133,7 @@ class zenario_menu extends module_base_class {
 					);
 				}
 			} else {
-				$homepage = $this->getHomepage($_SESSION['user_lang']);
+				$homepage = $this->getHomepage(currentLangId());
 				$this->headerObjects['Parent_Name'] = htmlspecialchars($homepage['name']);
 				$this->headerObjects['Parent_Link'] = htmlspecialchars($homepage['url']);
 			}

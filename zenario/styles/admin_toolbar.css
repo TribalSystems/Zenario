@@ -459,8 +459,16 @@ body.zenario_pageMode_menu #zenario_at .zenario_at_tabs .zenario_toolbar_on {
 	cursor:pointer;
 }
 
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_layout a {
+	cursor:pointer;
+}
+
 #zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_permissions.privacy_group_members a {
 	background: url('../admin/images/privacy/admin_toolbar/group_members.png') no-repeat;
+}
+
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_permissions.privacy_with_role a {
+	background: url('../admin/images/privacy/admin_toolbar/with_role.png') no-repeat;
 }
 
 #zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_permissions.privacy_logged_in a {
@@ -644,6 +652,13 @@ body.zenario_pageMode_menu #zenario_at .zenario_at_tabs .zenario_toolbar_on {
 #zenario_at ul li ul li ul  {
 	top: 0;
 	left: 100%;
+}
+
+#zenario_at .zenario_at_toolbar > div > ul > li a {
+	max-width: 250px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 

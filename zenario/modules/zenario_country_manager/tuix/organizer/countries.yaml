@@ -67,8 +67,8 @@ zenario__languages:
                     parent: view_dropdown
                     label: Visitor names (phrases)
                     hide_in_select_mode: true
-                    traits:
-                        show_localizations: true
+                    with_columns_set:
+                        traits.show_localizations: true
                     admin_box:
                         path: zenario_phrase
                         key:
@@ -81,10 +81,10 @@ zenario__languages:
                     parent: action_dropdown
                     priv: _PRIV_MANAGE_COUNTRY
                     label: Activate
-                    traits:
-                        suspended: true
-                    hide_in_select_mode: true
-                    multiple_select: true
+                    with_columns_set:
+                        traits.suspended: true
+                    traits.hide_in_select_mode: true
+                    traits.multiple_select: true
                     multiple_select_tooltip: Activate selected Countries
                     ajax:
                         confirm:
@@ -99,10 +99,10 @@ zenario__languages:
                     parent: action_dropdown
                     priv: _PRIV_MANAGE_COUNTRY
                     label: Suspend
-                    traits:
-                        active: true
-                    hide_in_select_mode: true
-                    multiple_select: true
+                    with_columns_set:
+                        traits.active: true
+                    traits.hide_in_select_mode: true
+                    traits.multiple_select: true
                     multiple_select_tooltip: Suspend selected Countries
                     ajax:
                         confirm:
@@ -130,8 +130,8 @@ zenario__languages:
                             message_type: warning
                         request:
                             action: delete_country
-                    traits:
-                        can_delete_country: true
+                    with_columns_set:
+                        traits.can_delete_country: true
         regions:
             title: Regions
             name: Regions
@@ -193,8 +193,8 @@ zenario__languages:
                     parent: view_dropdown
                     label: Phrases
                     hide_in_select_mode: true
-                    traits:
-                        show_localizations: true
+                    with_columns_set:
+                        traits.show_localizations: true
                     admin_box:
                         path: zenario_phrase
                         key:
@@ -216,5 +216,5 @@ zenario__languages:
                             message_type: warning
                         request:
                             action: delete_region
-                    traits:
-                        can_delete_region: Yes
+                    with_columns_set:
+                        traits.can_delete_region: true

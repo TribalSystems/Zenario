@@ -6,10 +6,11 @@
 	"homepage": "https://github.com/TribalSystems/Zenario",
 	"license": "MIT",
 	"require": {
-		"php-amqplib/php-amqplib": "2.5.*",
-		"mongodb/mongodb": "^1.0.0",
-		"php": ">=5.4.0"
-	},
+        "defuse/php-encryption": "^2.0",
+        "mongodb/mongodb": "^1.0.0",
+        "php-amqplib/php-amqplib": "2.5.*",
+        "ps/image-optimizer": "*"
+    },
 	"config": {
 		"vendor-dir": "zenario/libraries/by_vendor"
 	}

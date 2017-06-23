@@ -41,10 +41,10 @@ zenario.lib(function(
 	undefined,
 	URLBasePath,
 	document, window, windowOpener, windowParent,
-	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO, strings,
+	zenario, zenarioA, zenarioT, zenarioAB, zenarioAT, zenarioO,
 	encodeURIComponent, get, engToBoolean, htmlspecialchars, jsEscape, phrase,
 	extensionOf, methodsOf, has,
-	panelTypes
+	panelTypes, extraVar2, s$s
 ) {
 	"use strict";
 
@@ -205,7 +205,7 @@ methods.sortAndSearchItems = function() {
 
 //Part one of sortAndSearchItems(), this is broken up into two halves for easier overriding
 methods.sortItems = function() {
-	return zenarioA.getSortedIdsOfTUIXElements(this.tuix, 'items', this.sortBy, this.sortDesc);
+	return zenarioT.getSortedIdsOfTUIXElements(this.tuix, 'items', this.sortBy, this.sortDesc);
 };
 
 //Part two of sortAndSearchItems(), this is broken up into two halves for easier overriding
@@ -440,7 +440,7 @@ methods.closeInspectionView = function(id) {
 
 //Function to use for microtemplates
 methods.microTemplate = function(template, data, filter) {
-	return zenarioA.microTemplate(template, data, filter);
+	return zenarioT.microTemplate(template, data, filter);
 };
 
 

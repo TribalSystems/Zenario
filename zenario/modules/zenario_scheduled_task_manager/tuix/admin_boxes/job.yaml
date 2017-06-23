@@ -137,12 +137,12 @@ zenario_job:
                 log_on_error:
                     label: 'On error write log entry'
                     type: checkbox
-                    read_only: true
+                    readonly: true
                     value: "1"
                 email_on_error:
                     label: 'On error send email'
                     type: checkbox
-                    read_only: true
+                    readonly: true
                     value: "1"
                 email_address_on_error:
                     indent: 1

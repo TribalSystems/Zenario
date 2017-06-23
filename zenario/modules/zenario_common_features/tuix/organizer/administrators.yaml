@@ -182,17 +182,22 @@ zenario__users:
                     only_show_on_refiner: trashed
                     ajax:
                         confirm:
-                            message: 'Are you sure you wish to restore the administrator account "[[username]]"?'
-                            multiple_select_message: >
+                            message: |
+                                Are you sure you wish to restore the administrator account "[[username]]"?
+                                
+                                (After being restored, you will also need to give them a password reset before they can log in.)
+                            multiple_select_message: |
                                 Are you sure you wish to restore the selected administrator accounts?
+                                
+                                (After being restored, you will also need to give them a password reset before they can log in.)
                             button_message: Restore
                             cancel_button_message: Cancel
                             message_type: warning
                         request:
                             restore: "1"
-                    traits:
-                        local: true
-                        trashed: true
+                    with_columns_set:
+                        traits.local: true
+                        traits.trashed: true
                 trash_admin:
                     parent: action_dropdown
                     priv: _PRIV_DELETE_ADMIN
@@ -215,11 +220,11 @@ zenario__users:
                             message_type: warning
                         request:
                             trash: "1"
-                    traits:
-                        local: true
-                        active: true
-                    without_traits:
-                        current_admin: true
+                    with_columns_set:
+                        traits.local: true
+                        traits.active: true
+                    without_columns_set:
+                        traits.current_admin: true
             default_sort_column: full_name
             trash:
                 link:

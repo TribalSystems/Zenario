@@ -30,19 +30,40 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 class zenario_common_features extends module_base_class {
 	
-	public static function deleteHierarchicalDocumentPubliclink($documentId) {
-		$document = getRow('documents', array('file_id'), $documentId);
+	public static function deleteHierarchicalDocumentPubliclink($documentId, $documentDeleted = false) {
+		$document = getRow('documents', array('id', 'file_id'), $documentId);
 		$file = getRow('files',  array('short_checksum'), $document['file_id']);
 		
-		if (deleteCacheDir(CMS_ROOT. 'public/downloads/'. $file['short_checksum'], 1)) {
-			updateRow('documents', array('privacy' => 'auto'), array('file_id' => $document['file_id']));
-			return true;
-			
+		$docsWithSameFile = array();
+		$result = getRows('documents', array('id'), array('file_id' => $document['file_id']));
+		while ($row = sqlFetchAssoc($result)) {
+			$docsWithSameFile[] = $row;
+		}	
+		
+		$docsToUpdate = array();
+		$deleteMainPublicLink = !$documentDeleted || count($docsWithSameFile) == 1;
+		if ($deleteMainPublicLink) {
+			deleteCacheDir(CMS_ROOT . 'public/downloads/' . $file['short_checksum']);
+			$docsToUpdate = $docsWithSameFile;
 		} else {
-			return adminPhrase("Unable to public link directory as it is not empty.");
+			$docsToUpdate[] = $document;
 		}
+		
+		//Delete redirects and update privacy
+		foreach ($docsToUpdate as $docToUpdate) {
+			$result = getRows('document_public_redirects', array('path'), array('document_id' => $docToUpdate['id']));
+			while ($redirect = sqlFetchAssoc($result)) {
+				$parts = explode('/', $redirect['path']);
+				deleteCacheDir(CMS_ROOT . 'public/downloads/' . $parts[0]);
+			}
+			deleteRow('document_public_redirects', array('document_id' => $docToUpdate['id']));
+			
+			updateRow('documents', array('privacy' => 'auto'), $docToUpdate['id']);
+		}
+		return true;
 	}
 	
+
 	public static function deleteHierarchicalDocument($documentId) {
 		$details = getRow('documents', array('type', 'file_id', 'thumbnail_id'), $documentId);
 		
@@ -59,12 +80,10 @@ class zenario_common_features extends module_base_class {
 			$fileIdsInDocument = getRowsArray('documents', array('file_id', 'filename'), array('file_id'=>$document['file_id']));
 			$numberFileIds =count($fileIdsInDocument);
 			
-			$file = getRow('files', 
-							array('id', 'filename', 'path', 'created_datetime'),
-							$document['file_id']);
+			$file = getRow('files', array('id', 'filename', 'path', 'created_datetime'), $document['file_id']);
+			static::deleteHierarchicalDocumentPubliclink($documentId, true);
 			
 			if($file['filename']) {
-				self::deleteHierarchicalDocumentPubliclink($documentId);
 				//check to see if file used by another document before deleting or used in ctype documents
 				if (($numberFileIds == 1) && !checkRowExists('content_item_versions', array('file_id' => $details['file_id']))) {
 					deleteRow('files', array('id' => $details['file_id']));
@@ -72,13 +91,31 @@ class zenario_common_features extends module_base_class {
 						deleteRow('files', array('id' => $details['thumbnail_id']));
 					}
 					if ($fileDetails['location'] == 'docstore' &&  $fileDetails['path']) {
-						unlink(setting('docstore_dir') . '/'. $fileDetails['path'] . '/' . $fileDetails['filename']);
-						rmdir(setting('docstore_dir') . '/'. $fileDetails['path']);
+						
+						$f = setting('docstore_dir') . '/'. $fileDetails['path'] . '/' . $fileDetails['filename'];
+						if(is_file($f)){
+							unlink($f);
+						}
+
+						$dir = setting('docstore_dir') . '/'. $fileDetails['path'];
+						
+						$emptyFolder=self::isDirEmpty($dir);
+						if(is_dir($dir) && $emptyFolder){
+							rmdir($dir);
+						}
 					}
 				}
 			}
 			deleteRow('documents', array('id' => $documentId));
 		}
+	}
+	
+	public static function isDirEmpty($dir) {
+		if (!is_readable($dir)){
+			return false; 
+		}
+		
+		return (count(scandir($dir)) == 2);
 	}
 	
 	public function deleteDocumentTag($tagId) {
@@ -132,7 +169,7 @@ class zenario_common_features extends module_base_class {
 					symlink($path, $symPath);
 				} 
 				
-				updateRow('documents', array('privacy' => 'public'), $documentId);
+				updateRow('documents', array('privacy' => 'public'), array('file_id' => $document['file_id']));
 				
 				return $frontLink;
 				
@@ -655,6 +692,39 @@ class zenario_common_features extends module_base_class {
 	public static function canCreateAdditionalAdmins() {
 		$limit = siteDescription('max_local_administrators');
 		return !$limit || selectCount('admins', array('is_client_account' => 1, 'status' => 'active')) < $limit;
+	}
+	
+	public static function remakeDocumentRedirectHtaccessFiles($documentId) {
+		$sql = '
+			SELECT d.filename, f.short_checksum
+			FROM ' . DB_NAME_PREFIX . 'documents d
+			INNER JOIN ' . DB_NAME_PREFIX . 'files f
+				ON d.file_id = f.id
+			WHERE d.id = ' . (int)$documentId;
+		$result = sqlSelect($sql);
+		$newFile = sqlFetchAssoc($result);
+		
+		$result = getRows('document_public_redirects', array('path'), array('document_id' => $documentId));
+		while ($redirect = sqlFetchAssoc($result)) {
+			$parts = explode('/', $redirect['path']);
+			deleteCacheDir(CMS_ROOT . 'public/downloads/' . $parts[0]);
+			
+			$path = createCacheDir($parts[0], 'public/downloads', false);
+			zenario_common_features::makeDocumentRedirectHtaccessFile($path, $parts[1], $newFile['filename'], $newFile['short_checksum']);
+		}
+	}
+	
+	public static function makeDocumentRedirectHtaccessFile($htaccessFilePath, $redirectFromFileName, $redirectToFileName, $redirectToChecksum){
+		$f = fopen($htaccessFilePath . "/.htaccess", "w");		
+		$content = "options -Indexes "."\n";
+		$content .= "<IfModule mod_rewrite.c> "."\n";
+		$content .= "	RewriteEngine On "."\n";
+		$redirectFromFileName = str_replace(' ', '\ ', $redirectFromFileName );
+		$redirectToFileName = str_replace(' ', '\ ', $redirectToFileName );
+		$content .= "	RewriteRule ^".$redirectFromFileName."$ " . SUBDIRECTORY . "public/downloads/".$redirectToChecksum."/".$redirectToFileName." [R=302] "."\n";
+		$content .= "</IfModule>";
+		fwrite($f, $content);
+		fclose($f);
 	}
 	
 }

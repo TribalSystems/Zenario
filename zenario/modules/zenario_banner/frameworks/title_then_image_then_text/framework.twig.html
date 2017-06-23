@@ -1,5 +1,4 @@
 <div class="banner_wrap"><div class="banner_wrap_outer"><div class="banner_wrap_inner" {{Wrap}}>
-	{# If a title has been set show the title. #}
 	{% if Title %}
 		<div class="banner_title">
 			<{{Title_Tags}}>
@@ -12,14 +11,25 @@
 		</div>
 	{% endif %}
 	
-	{# If an image has been set then show the image. #}
-	{% if Image %}
+	{% if Background_Image %}
+		<a {{Image_Link_Href}}{{Target_Blank}} id="{{Image_css_id}}"></a>
+	
+	{% elseif Image %}
 		<div class="banner_image" >  
 			{% if Image_Link_Href %} 
 				<a {{Image_Link_Href}}{{Target_Blank}}>
 			{% endif %}
 			
-				<img src="{{Image_Src}}" alt="{{Image_Alt}}" {{Image_Style}}/>
+				<picture>
+					{% if Mobile_Media %}
+						<source media="{{Mobile_Media|e}}" srcset="{{Mobile_Srcset|e}}">
+					{% endif %}
+					<img src="{{Image_URL|e}}" alt="{{Image_Alt}}" {{Image_Style}}
+						{% if Image_Srcset %}
+							srcset="{{Image_Srcset|e}}"
+						{% endif %}
+					/>
+				</picture>
 				{{Rollover_Images}}
 			
 			
@@ -33,12 +43,10 @@
 		</div>
 	{% endif %}
 
-	{# If text has been set show the text. #}
 	{% if Text %}
 		<div class="banner_text">{{Text}}</div>
 	{% endif %}
 
-	{# If more link text has been set show the more link. #}
 	{% if More_Link_Text %}
 		<div class="banner_more">
 			<a {{Link_Href}}{{Target_Blank}}>{{More_Link_Text}}</a>

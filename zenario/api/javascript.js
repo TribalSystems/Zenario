@@ -46,7 +46,7 @@ zenario.lib(function(
 	undefined,
 	URLBasePath,
 	document, window, windowOpener, windowParent,
-	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO, strings,
+	zenario, zenarioA, zenarioT, zenarioAB, zenarioAT, zenarioO,
 	encodeURIComponent
 	//N.b. the rest of the shortcut functions that normally go here haven't been defined yet!
 	//They are actually defined below.
@@ -122,12 +122,12 @@ zenario.lib(function(
 			return zenario.showStandalonePageLink(this.moduleClassName, requests);
 		};
 	
-		this.visitorTUIXLink = function(path, customisationName, requests, mode) {
-			return zenario.visitorTUIXLink(this.moduleClassName, path, customisationName, requests, mode);
+		this.visitorTUIXLink = function(path, requests, mode) {
+			return zenario.visitorTUIXLink(this.moduleClassName, path, requests, mode);
 		};
 	
-		this.pluginVisitorTUIXLink = function(slotNameOrContainedElement, path, customisationName, requests, mode, useSync) {
-			return zenario.pluginVisitorTUIXLink(this.moduleClassName, slotNameOrContainedElement, path, customisationName, requests, mode, useSync);
+		this.pluginVisitorTUIXLink = function(slotNameOrContainedElement, path, requests, mode, useSync) {
+			return zenario.pluginVisitorTUIXLink(this.moduleClassName, slotNameOrContainedElement, path, requests, mode, useSync);
 		};
 
 	
@@ -224,6 +224,7 @@ zenario.lib(function(
 			return false;
 		};
 	
-		this.slots = new Object();
+		this.slots = {};
+		this.outerSlots = {};
 	};
 });

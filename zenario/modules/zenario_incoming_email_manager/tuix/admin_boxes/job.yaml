@@ -106,7 +106,7 @@ zenario_job:
                     label: 'If there is an error processing an email:'
                     type: select
                     empty_value: Move it to a different mailbox folder
-                    read_only: Yes
+                    readonly: Yes
                     visible_if: "zenarioAB.value('fetch_enable')"
                 fetch_error_mailbox:
                     label: 'Mailbox Folder to move to:'

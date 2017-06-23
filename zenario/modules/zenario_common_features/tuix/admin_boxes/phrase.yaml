@@ -36,5 +36,5 @@ zenario_phrase:
                         required: Please select a Module.
                 code:
                     type: textarea
-                    read_only: true
+                    readonly: true
                     rows: 2

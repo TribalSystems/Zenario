@@ -4,9 +4,11 @@ zenario_path:
     key:
         id: ''
         instanceId: ''
-        from_state: ''
+        state: ''
         to_state: ''
-        idInOrganizer: ''
+        linkToOtherContentItem: false
+        equiv_id: 0
+        content_type: ''
     max_height: 250
     hide_tab_bar: true
     #identifier:
@@ -22,21 +24,25 @@ zenario_path:
             fields:
                 commands:
                     type: radios
-                    cols: 3
+                    #cols: 3
                     values:
                         back:
                             ord: 1
-                            label: back
-                        close:
+                            label: Back (back)
+                        submit:
                             ord: 2
-                            label: close
+                            label: Submit (submit)
                         '#custom#':
                             ord: 999999
                             label: 'Custom:'
+                    redraw_onchange: true
                     validation:
                         required: |
                             Please select a command
                 command_custom:
+                    indent: 1
+                    visible_if:
+                        lib.valueIs: 'commands, #custom#'
                     type: text
                     maxlength: 100
                     placeholder: Enter a command name
@@ -50,3 +56,30 @@ zenario_path:
                             Please don't enter any spaces in the command's name
                         screen_name: |
                             Please don't enter any special characters in the command's name
+                
+                citem:
+                    visible_if: |
+                        lib.tuix.key.linkToOtherContentItem
+                    label: 'Content item'
+                    pick_items:
+                        path: zenario__content/panels/content/refiners/filter_by_lang////
+                        min_path: zenario__content/panels/content
+                        max_path: zenario__content/panels/content
+                        target_path: zenario__content/panels/content
+                        select_phrase: Select a content item...
+                        hide_remove_button: true
+                    validation:
+                        required_if_not_hidden: Please select a content item
+                to_state:
+                    visible_if: |
+                        lib.tuix.key.linkToOtherContentItem
+                    label: 'Slide number or state letter'
+                    type: text
+                    maxlength: 2
+                    style: |
+                        width: 2em;
+                    validation:
+                        required_if_not_hidden: Please enter either a slide number or state letter
+                        no_spaces: Please enter either a number or a letter
+                        screen_name: Please enter either a number or a letter
+                    

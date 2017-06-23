@@ -33,23 +33,23 @@ class zenario_users__organizer__groups extends zenario_users {
 		foreach ($panel['items'] as $id => &$item) {
 			$sql = '
 				SELECT COUNT(*)
-				FROM '.DB_NAME_PREFIX.'users_custom_data ucd
-				INNER JOIN '.DB_NAME_PREFIX.'users u
-					ON ucd.user_id = u.id
-				WHERE ucd.`'.sqlEscape($item['db_column']).'` = 1
+				FROM [users_custom_data AS ucd]
+				INNER JOIN [users AS u]
+				   ON ucd.user_id = u.id
+				WHERE [ucd.'. $item['db_column']. ' = val]
 				AND u.status != \'suspended\'';
-			$result = sqlSelect($sql);
-			$data = sqlFetchRow($result);
-			$item['members'] = $data[0];
+			$item['members'] = sqlFetchValue($sql, ['val' => 1]);
 			
 			$sql = '
 				SELECT COUNT(*)
-				FROM '.DB_NAME_PREFIX.'group_content_link gcl
+				FROM '.DB_NAME_PREFIX.'group_link gcl
 				INNER JOIN '.DB_NAME_PREFIX.'content_items c
-					ON gcl.equiv_id = c.equiv_id
-					AND gcl.content_type = c.type
-					AND c.status != \'trashed\'
-				WHERE gcl.group_id = '.(int)$id;
+					ON c.status != \'trashed\'
+					AND gcl.link_from_id = c.equiv_id
+					AND gcl.link_from_char = c.type
+				WHERE gcl.link_from = \'chain\'
+				  AND gcl.link_to = \'group\'
+				  AND gcl.link_to_id = '. (int) $id;
 			$result = sqlSelect($sql);
 			$data = sqlFetchRow($result);
 			$item['content_items'] = $data[0];

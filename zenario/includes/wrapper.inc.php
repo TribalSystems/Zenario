@@ -134,6 +134,16 @@ function includeSkinFiles(&$req, $linkV = false, $overrideCSS = false) {
 		}
 		$browsers = array_flip($browsers);
 		
+		if ($skin['import']) {
+			foreach (explode("\n", $skin['import']) as $import) {
+				if ($import = trim($import)) {
+					if (is_file(CMS_ROOT. $import)) {
+						$files[1][] = [dirname($import). '/', basename($import), dirname($import). '/', false];
+					}
+				}
+			}
+		}
+		
 		includeSkinFilesR($req, $browsers, $files, $skinPath, $skinPathURL);
 		
 		foreach ($files as $fi => &$fa) {
@@ -208,7 +218,7 @@ function overwriteCSSFile(&$override, $path, $pathURL, $media) {
 	//2 = editable CSS files, included alphabetically by filename
 	//3 = browser-specific CSS files
 
-function includeSkinFilesR(&$req, &$browsers, &$files, $skinPath, $skinPathURL, $limit = 10, $inEditableDir = false, $topLevel = true) {
+function includeSkinFilesR(&$req, &$browsers, &$files, $skinPath, $skinPathURL, $topLevel = true, $inEditableDir = false, $limit = 10) {
 	if (!--$limit) {
 		return;
 	}
@@ -220,7 +230,7 @@ function includeSkinFilesR(&$req, &$browsers, &$files, $skinPath, $skinPathURL, 
 			if (is_dir($skinPath. $file)) {
 				includeSkinFilesR(
 					$req, $specialFiles, $files, $skinPath. $file. '/', $skinPathURL. rawurlencode($file). '/',
-					$limit, $topLevel && $file === 'editable_css', false);
+					false, $topLevel && $file === 'editable_css', $limit);
 			
 			} elseif (substr($file, -4) == '.css') {
 				

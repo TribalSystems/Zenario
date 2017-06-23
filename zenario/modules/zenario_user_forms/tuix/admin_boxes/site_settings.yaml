@@ -1,7 +1,7 @@
 site_settings:
 	setting_group: zenario_user_forms__site_settings_group
 	title: |
-		Zenario forms profanity filter
+		Gettings for Forms
 	tabs:
 		zenario_user_forms_emails:
 			label: Emails
@@ -11,10 +11,10 @@ site_settings:
 				zenario_user_forms_admin_email_attachments:
 					site_setting:
 						name: zenario_user_forms_admin_email_attachments
-					label: 'Add files as attachments on admin emails:'
+					label: 'When sending response emails to administrators, attach uploaded files'
 					type: checkbox
 					side_note: |
-						Emails sent to admins will add all attachments from attachment type form fields.
+						Emails sent to administrators will include attachments. If not set, administrators will need to log in to Zenario to retrieve uploads.
 		zenario_user_forms_profanity_filter:
 			label:  Profanity filter
 			edit_mode:

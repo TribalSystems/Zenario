@@ -307,7 +307,7 @@ function moduleDirs($tests = 'module_code.php') {
 	return $dirs;
 }
 
-//Get the value of a site setting from the Core
+//Get the value of a site setting
 function setting($settingName) {
 	if (isset(cms_core::$siteConfig[$settingName])) {
 		return cms_core::$siteConfig[$settingName];
@@ -315,12 +315,16 @@ function setting($settingName) {
 	
 	if (cms_core::$lastDB) {
 		$sql = "
-			SELECT IFNULL(value, default_value)
+			SELECT IFNULL(value, default_value), ". (isset(cms_core::$dbCols[DB_NAME_PREFIX. 'site_settings']['encrypted'])? 'encrypted' : '0'). "
 			FROM ". DB_NAME_PREFIX. "site_settings
 			WHERE name = '". sqlEscape($settingName). "'";
-		if (($result = @sqlSelect($sql))
-		 && ($row = sqlFetchRow($result))) {
-			return cms_core::$siteConfig[$settingName] = $row[0];
+		if ($row = sqlFetchRow($sql)) {
+			if ($row[1]) {
+				loadZewl();
+				return cms_core::$siteConfig[$settingName] = zewl::decrypt($row[0]);
+			} else {
+				return cms_core::$siteConfig[$settingName] = $row[0];
+			}
 		} else {
 			cms_core::$siteConfig[$settingName] = false;
 		}
@@ -550,7 +554,7 @@ class cms_core {
 	public static $status = '';
 	public static $adminId = false;
 	public static $userId = false;
-	public static $langId = false;
+	public static $langId = null;
 	public static $skinId = false;
 	public static $skinName = '';
 	public static $skinCSS = '';
@@ -577,7 +581,7 @@ class cms_core {
 	public static $homeEquivId = 0;
 	public static $homeCType = '';
 	public static $pkCols = array();
-	public static $numericCols = array();
+	public static $dbCols = array();
 	public static $groups = '';
 	public static $signalsCurrentlyTriggered = array();
 	public static $importantGetRequests = array();
@@ -616,6 +620,7 @@ class cms_core {
 	public static $dbupUpdateFile = false;
 	public static $dbupCurrentRevision = false;
 	public static $dbupUninstallPluginOnFail = false;
+	public static $pq = array();
 	public static $apcDirs = array();
 	public static $apcFoundCodes = array();
 	public static $execEnabled = null;
@@ -695,7 +700,8 @@ if (defined('DBHOST_GLOBAL') && !defined('DBPORT_GLOBAL')) {
 	define('DBPORT_GLOBAL', '');
 }
 
-//Set the timezone to UTC if it's not defined, to avoid a PHP error
+//Set the timezone to UTC if it's not defined on the server, to avoid a PHP error.
+//(N.b. as soon as we get a database connection we'll set it properly.)
 if ($tz = @date_default_timezone_get()) {
 	date_default_timezone_set($tz);
 } else {

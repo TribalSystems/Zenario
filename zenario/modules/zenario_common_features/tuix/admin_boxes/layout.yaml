@@ -30,7 +30,7 @@ zenario_layout:
                 path:
                     label: 'Template file:'
                     type: text
-                    read_only: true
+                    readonly: true
                 name:
                     label: 'Layout name:'
                     type: text

@@ -182,7 +182,7 @@ zenario_newsletter:
                     side_note: >
                         Recipients who have previously clicked the Unsubscribe link will not receive this newsletter. There is no need to add a rule to exclude these recipients from your smart group.
                     value: 1
-                    read_only: true
+                    readonly: true
                 
                 
                 unsubscribe_link:

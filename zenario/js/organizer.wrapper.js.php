@@ -57,6 +57,7 @@ incJS('zenario/js/panel_type_slot_reload_on_change');
 
 incJS('zenario/js/panel_type_images_with_tags');
 incJS('zenario/js/panel_type_images_with_tags_or_grid');
+incJS('zenario/js/panel_type_grid_or_images_with_tags');
 
 incJS('zenario/js/panel_type_calendar');
 incJS('zenario/js/panel_type_calendar_user_timers');

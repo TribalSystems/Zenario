@@ -28,7 +28,7 @@ zenario_document_properties:
 				date_uploaded:
 					label: 'Date uploaded:'
 					type: text
-					read_only: Yes
+					readonly: Yes
 				tags:
 					label: 'Document tags:'
 					type: checkboxes

@@ -157,6 +157,8 @@ zenario__content:
                             label: Private, only show to extranet users in a smart group
                         logged_in_not_in_smart_group:
                             label: Private, only show to extranet users NOT in a smart group
+                        with_role:
+                            label: Private, only show to extranet users with a role
                         call_static_method:
                             label: "Call a module's static method to decide"
                         send_signal:
@@ -248,8 +250,8 @@ zenario__content:
                     label: Properties
                     admin_box:
                         path: zenario_content
-                    without_traits:
-                        ghost: true
+                    without_columns_set:
+                        traits.ghost: true
                 view_dropdown:
                     label: View
                     multiple_select: true
@@ -262,10 +264,10 @@ zenario__content:
                         href: 'zenario/file.php?usage=content&popout=1'
                         options:
                             type: image
-                    traits:
-                        has_picture: true
-                    without_traits:
-                        ghost: true
+                    with_columns_set:
+                        traits.has_picture: true
+                    without_columns_set:
+                        traits.ghost: true
                 export_dropdown:
                     label: Actions
                     multiple_select: true
@@ -282,10 +284,10 @@ zenario__content:
                             download: true
                         request:
                             download: 1
-                    traits:
-                        has_file: true
-                    without_traits:
-                        ghost: true
+                    with_columns_set:
+                        traits.has_file: true
+                    without_columns_set:
+                        traits.ghost: true
                 action_dropdown:
                     label: Actions
                     multiple_select: true
@@ -299,16 +301,16 @@ zenario__content:
                     multiple_select: true
                     admin_box:
                         path: zenario_content_layout
-                    without_traits:
-                        ghost: true
+                    without_columns_set:
+                        traits.ghost: true
                 alias:
                     parent: action_dropdown
                     priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
                     label: Edit alias
                     admin_box:
                         path: zenario_alias
-                    without_traits:
-                        ghost: true
+                    without_columns_set:
+                        traits.ghost: true
                 create_translation:
                     parent: action_dropdown
                     priv: _PRIV_CREATE_TRANSLATION_FIRST_DRAFT
@@ -320,9 +322,9 @@ zenario__content:
                         path: zenario_content
                         key:
                             translate: 1
-                    traits:
-                        zenario_trans__can_link: true
-                        ghost: true
+                    with_columns_set:
+                        traits.zenario_trans__can_link: true
+                        traits.ghost: true
                 hide:
                     parent: action_dropdown
                     priv: _PRIV_HIDE_CONTENT_ITEM
@@ -331,10 +333,10 @@ zenario__content:
                     hide_in_select_mode: true
                     label: Hide
                     multiple_select: true
-                    traits:
-                        hideable: true
-                    without_traits:
-                        ghost: true
+                    with_columns_set:
+                        traits.hideable: true
+                    without_columns_set:
+                        traits.ghost: true
                     ajax:
                         confirm:
                             message: |
@@ -362,10 +364,10 @@ zenario__content:
                     label: Unhide/make draft
                     multiple_select: true
                     multiple_select_tooltip: Unhide Content Items
-                    traits:
-                        hidden: true
-                    without_traits:
-                        ghost: true
+                    with_columns_set:
+                        traits.hidden: true
+                    without_columns_set:
+                        traits.ghost: true
                     ajax:
                         confirm:
                             message: |
@@ -389,11 +391,11 @@ zenario__content:
                     hide_in_select_mode: true
                     label: Publish
                     multiple_select: true
-                    traits:
-                        draft: true
-                        not_locked: true
-                    without_traits:
-                        ghost: true
+                    with_columns_set:
+                        traits.draft: true
+                        traits.not_locked: true
+                    without_columns_set:
+                        traits.ghost: true
                     admin_box:
                         path: zenario_publish
                 delete:
@@ -405,12 +407,12 @@ zenario__content:
                     label: Delete draft
                     multiple_select: true
                     multiple_select_label: Delete drafts
-                    traits:
-                        draft: true
-                        deletable: true
-                        not_locked: true
-                    without_traits:
-                        ghost: true
+                    with_columns_set:
+                        traits.draft: true
+                        traits.deletable: true
+                        traits.not_locked: true
+                    without_columns_set:
+                        traits.ghost: true
                     ajax:
                         confirm:
                             message: |
@@ -438,10 +440,10 @@ zenario__content:
                     hide_in_select_mode: true
                     label: Trash
                     multiple_select: true
-                    traits:
-                        trashable: true
-                    without_traits:
-                        ghost: true
+                    with_columns_set:
+                        traits.trashable: true
+                    without_columns_set:
+                        traits.ghost: true
                     admin_box:
                         path: zenario_trash
                 delete_archives:

@@ -119,41 +119,41 @@ site_settings:
                 total:
                     label: 'Total:'
                     type: text
-                    read_only: true
+                    readonly: true
                     value: ""
                     style: 'width: 10em;'
                     note_below: The total number of pages requested.
                 hits:
                     label: 'Hits:'
                     type: text
-                    read_only: true
+                    readonly: true
                     value: ""
                     style: 'width: 10em;'
                     note_below: The number of pages served from the cache.
                 hits_pc:
                     label: 'Hit Percentage:'
                     type: text
-                    read_only: true
+                    readonly: true
                     value: ""
                     style: 'width: 6em;'
                     post_field_html: %
                 writes:
                     label: 'Writes:'
                     type: text
-                    read_only: true
+                    readonly: true
                     value: ""
                     style: 'width: 10em;'
                     note_below: The number of pages written to the cache.
                 partial_hits:
                     label: 'Partial Hits:'
                     type: text
-                    read_only: true
+                    readonly: true
                     value: ""
                     style: 'width: 10em;'
                 partial_writes:
                     label: 'Partial Writes:'
                     type: text
-                    read_only: true
+                    readonly: true
                     value: ""
                     style: 'width: 10em;'
                     note_below: >
@@ -162,7 +162,7 @@ site_settings:
                 misses:
                     label: 'Misses:'
                     type: text
-                    read_only: true
+                    readonly: true
                     value: ""
                     style: 'width: 10em;'
                     note_below: >
@@ -171,12 +171,12 @@ site_settings:
                 from:
                     label: 'From:'
                     type: datetime
-                    read_only: true
+                    readonly: true
                     value: ""
                 to:
                     label: 'To:'
                     type: datetime
-                    read_only: true
+                    readonly: true
                     value: ""
                     note_below: The date range that these statistics have been recorded in.
                 refresh_stats:

@@ -75,21 +75,21 @@ zenario__locations:
                     ajax:
                         request:
                             action: increase_score
-                    traits:
-                        not_at_max: Yes
+                    with_columns_set:
+                        traits.not_at_max: true
                 decrease_score:
                     ord: "2"
                     label: Decrease score
                     ajax:
                         request:
                             action: decrease_score
-                    traits:
-                        not_at_min: Yes
+                    with_columns_set:
+                        traits.not_at_min: true
                 sticky:
                     ord: "1000"
                     label: Make primary
-                    traits:
-                        not_sticky: Yes
+                    with_columns_set:
+                        traits.not_sticky: true
                     ajax:
                         confirm:
                             message: 'Are you sure you wish to make sector "[[label_name2]]" the primary for this location?'

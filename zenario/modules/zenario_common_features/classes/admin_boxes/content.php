@@ -230,7 +230,7 @@ class zenario_common_features__admin_boxes__content extends module_base_class {
 					$box['tabs']['privacy']['hidden'] = true;
 		
 					if (!setting('translations_different_aliases')) {
-						$fields['meta_data/alias']['read_only'] = true;
+						$fields['meta_data/alias']['readonly'] = true;
 						unset($box['tabs']['meta_data']['fields']['alias']['note_below']);
 					}
 				}
@@ -551,7 +551,7 @@ class zenario_common_features__admin_boxes__content extends module_base_class {
 		}
 
 		if ($lockLanguageId) {
-			$box['tabs']['meta_data']['fields']['language_id']['read_only'] = true;
+			$box['tabs']['meta_data']['fields']['language_id']['readonly'] = true;
 		}
 
 

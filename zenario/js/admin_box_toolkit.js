@@ -40,10 +40,10 @@ zenario.lib(function(
 	undefined,
 	URLBasePath,
 	document, window, windowOpener, windowParent,
-	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO, strings,
+	zenario, zenarioA, zenarioT, zenarioAB, zenarioAT, zenarioO,
 	encodeURIComponent, get, engToBoolean, htmlspecialchars, jsEscape, phrase,
 	extensionOf, methodsOf, has,
-	zenarioAF, zenarioABToolkit
+	zenarioAF, zenarioABToolkit, s$s
 ) {
 	"use strict";
 
@@ -97,7 +97,7 @@ methods.open = function(path, key, tab, values, callBack, createAnotherObject, r
 	}
 	
 	//If any Admin Boxes are open, set a warning message for if an admin tries to leave the page 
-	window.onbeforeunload = zenarioA.onbeforeunload;
+	window.onbeforeunload = zenarioT.onbeforeunload;
 	
 	this.start(path, key, tab, values);
 	
@@ -270,7 +270,7 @@ methods.close = function(keepMessageWindowOpen) {
 
 methods.closeButton = function(onlyCloseIfNoChanges) {
 	//Check if there is an editor open
-	var message = zenarioA.onbeforeunload();
+	var message = zenarioT.onbeforeunload();
 	
 	//If there was, give the Admin a chance to stop leaving the page
 	if (message === undefined || (!onlyCloseIfNoChanges && confirm(message))) {
@@ -321,8 +321,8 @@ methods.draw2 = function() {
 	//Don't show the requested tab if it has been hidden
 	if (tuix.tab
 	 && (!tuix.tabs[tuix.tab]
-		//zenarioA.hidden(tuixObject, lib, item, id, button, column, field, section, tab, tuix)
-	  || zenarioA.hidden(undefined, this, undefined, tuix.tab, undefined, undefined, undefined, undefined, tuix.tabs[tuix.tab]))) {
+		//zenarioT.hidden(tuixObject, lib, item, id, button, column, field, section, tab, tuix)
+	  || zenarioT.hidden(undefined, this, undefined, tuix.tab, undefined, undefined, undefined, undefined, tuix.tabs[tuix.tab]))) {
 		tuix.tab = false;
 	}
 	
@@ -519,7 +519,7 @@ methods.fieldChange = function(id, lov) {
 methods.updatePreview = function(delay) {
 	var that = this;
 	if (this.hasPreviewWindow && !this.previewHidden) {
-		zenario.actAfterDelayIfNotSuperseded('fabUpdatePreview', ()=>{
+		zenario.actAfterDelayIfNotSuperseded('fabUpdatePreview', function() {
 	
 			//Get the values of the plugin settings on this FAB
 			var preview = that.pluginPreviewDetails();
@@ -529,23 +529,63 @@ methods.updatePreview = function(delay) {
 			 && that.lastPreviewValues != preview.postValues) {
 				that.lastPreviewValues = that.previewValues = preview.postValues;
 		
-				that.submitPreview(preview, 'zenario_fabPreviewFrame');
+				that.submitPreview(preview);
 			}
 		}, delay || 1000);
 	}
 };
 
-methods.submitPreview = function(preview, target) {
-	$('<form action="' + htmlspecialchars(preview.url) + '" method="post" target="' + htmlspecialchars(target) + '">' +
+var iframeCount = 0;
+
+methods.submitPreview = function(preview, $parent, cssClassName) {
+	
+	$parent = $parent || $('#zenario_fabPreview');
+	cssClassName = cssClassName || 'zenario_fabPreviewFrame';
+	
+	var id = 'zenario_previewFrame' + ++iframeCount,
+		$old = $parent.find('.' + cssClassName).not('.beingRemoved'),
+		$iframe = $(zenarioT.html('iframe', 'id', id, 'name', id, 'class', cssClassName)),
+		
+		//Check if the preview has been scrolled down
+		doc = $old[0] && $old[0].contentDocument,
+		scrollTop = 1 * (doc && $(doc).scrollTop());
+	
+	if (scrollTop) {
+		preview.url += '&_scroll_to=' + scrollTop;
+	}
+	
+	if ($old[0]) {
+		$old
+			.width($old.width())
+			.height($old.height())
+			.attr('id', '')
+			.attr('name', '')
+			.addClass('beingRemoved');
+	
+		setTimeout(function() {
+			$old.fadeOut(600, function() {
+				$old.remove();
+			});
+		}, 400);
+	}
+	
+	$parent.append($iframe);
+	
+	this.showPreviewViaPost(preview, id);
+};
+
+methods.showPreviewViaPost = function(preview, iframeName) {
+	
+	$('<form action="' + htmlspecialchars(preview.url) + '" method="post" target="' + htmlspecialchars(iframeName) + '">' +
 		'<input name="' + htmlspecialchars(preview.postName) + '" value="' + htmlspecialchars(preview.postValues) + '"/>' +
 	'</form>').appendTo('body').hide().submit().remove();
 };
 
 methods.showPreviewInPopoutBox = function(fullPage, fullWidth) {
 	
-	var href,
+	var that = this,
+		href,
 		onComplete,
-		that = this,
 		preview = this.pluginPreviewDetails(undefined, undefined, fullPage, fullWidth);
 	
 	if (!preview) {
@@ -560,8 +600,9 @@ methods.showPreviewInPopoutBox = function(fullPage, fullWidth) {
 	//Bugfix: Loading by GET may fail if the data is too large, so use POST instead
 	if (href.length >= (zenario.browserIsIE()? 2000 : 4000)) {
 		href = '';
-		onComplete =()=> {
-			that.submitPreview(preview, $('#cboxLoadedContent iframe').attr('name'));
+		onComplete = function() {
+			that.showPreviewViaPost(preview, $('#cboxLoadedContent iframe')[0].name);
+			//that.submitPreview(preview, $('#cboxLoadedContent iframe')[0]);
 		};
 	}
 	
@@ -743,8 +784,8 @@ methods.save2 = function(data, saveAndContinue, createAnother) {
 		this.close();
 		zenarioA.rememberToast();
 	
-		zenarioA.uploading = false;
-		zenarioO.setWrapperClass('uploading', zenarioA.uploading);
+		zenarioT.uploading = false;
+		zenarioO.setWrapperClass('uploading', zenarioT.uploading);
 	
 		zenarioO.reloadPage();
 
@@ -810,7 +851,7 @@ methods.showConfirm = function(saveAndContinue, createAnother) {
 		
 		var buttons =
 			'<input type="button" class="submit_selected" value="' + this.tuix.confirm.button_message + '" onclick="' + this.globalName + '.save(true, ' + engToBoolean(saveAndContinue) + ', ' + engToBoolean(createAnother) + ');"/>' +
-			'<input type="button" class="submit" value="' + this.tuix.confirm.cancel_button_message + '" onclick="zenarioA.closeFloatingBox();"/>';
+			'<input type="button" class="submit" value="' + this.tuix.confirm.cancel_button_message + '"/>';
 		
 		zenarioA.floatingBox(message, buttons, this.tuix.confirm.message_type || 'none');
 	}

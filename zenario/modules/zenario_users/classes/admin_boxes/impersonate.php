@@ -30,26 +30,36 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_users__admin_boxes__impersonate extends zenario_users {
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
-		// Show a warning if debug mode if off
-		if (!setting('debug_override_enable')) {
-			$fields['impersonate/warning']['hidden'] = false;
-			$box['max_height'] = 200;
+		if ($box['key']['id']
+		 && is_numeric($box['key']['id'])
+		 && ($values['impersonate/user_id'] = (int) $box['key']['id'])) {
+			$fields['impersonate/user_id']['hidden'] = true;
+			
+			$fields['impersonate/desc']['snippet']['html'] =
+				adminPhrase('This action will log you in as user "[[name]]", so that you will see the site as they see it.',
+					array('name' => getUserIdentifier($box['key']['id'])));
+		} else {
+			$box['max_height'] += 150;
+			$fields['impersonate/desc']['snippet']['html'] =
+				adminPhrase('This action will log you in as the selected user, so that you will see the site as they see it.',
+					array('name' => getUserIdentifier($box['key']['id'])));
 		}
-		$fields['impersonate/desc']['snippet']['html'] = adminPhrase('This action will log you in as user "[[name]]", so that you will see the site as the user sees it.', array('name' => getUserIdentifier($box['key']['id'])));
 	}
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		if (checkPriv('_PRIV_IMPERSONATE_USER')) {
 			$logAdminOut = ($values['impersonate/options'] == 'logout');
 			$setCookie = $values['impersonate/set_keep_me_logged_in_cookie'];
-			$this->impersonateUser($box['key']['id'], $logAdminOut, $setCookie);
+			$this->impersonateUser($values['impersonate/user_id'], $logAdminOut, $setCookie);
 		}
 	}
 	
 	public function adminBoxSaveCompleted($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		
-		//Bypass the rest of the script in admin_boxes.ajax.php, and go to the new URL straight away
-		closeFABWithFlags(['go_to_url' => absCMSDirURL()]);
-		exit;
+		if (!$box['key']['openFromAdminToolbar']) {
+			//Bypass the rest of the script in admin_boxes.ajax.php, and go to the new URL straight away
+			closeFABWithFlags(['go_to_url' => absCMSDirURL()]);
+			exit;
+		}
 	}
 }

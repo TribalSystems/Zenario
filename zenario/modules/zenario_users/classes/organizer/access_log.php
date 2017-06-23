@@ -35,7 +35,9 @@ class zenario_users__organizer__access_log extends zenario_users {
 		getItemTitle($item['Content_Item_Id'], $item['Content_Item_Type'], $item['Content_Item_Version']);
 	}
 	
-	public function preFillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode){
+	public function preFillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
+		
+		flagEncryptedColumnsInOrganizer($panel, 'u', 'users');
 	
 		$cID = $cType = false;
 	

@@ -37,7 +37,8 @@ class zenario_users__organizer__smart_groups extends zenario_users {
 		
 		foreach ($panel['items'] as $id => &$item) {
 			$item['members'] = countSmartGroupMembers($id);
-			
+
+
 			if ($item['members'] === false) {
 				$item['description'] = adminPhrase('There is a problem with this smart group.');
 			} else {
@@ -54,6 +55,7 @@ class zenario_users__organizer__smart_groups extends zenario_users {
 			}
 		}
 	}
+	
 	
 
 	public function handleAJAX() {

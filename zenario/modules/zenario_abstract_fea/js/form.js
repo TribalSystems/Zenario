@@ -32,10 +32,10 @@ zenario.lib(function(
 	undefined,
 	URLBasePath,
 	document, window, windowOpener, windowParent,
-	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO, strings,
+	zenario, zenarioA, zenarioT, zenarioAB, zenarioAT, zenarioO,
 	encodeURIComponent, get, engToBoolean, htmlspecialchars, jsEscape, phrase,
 	extensionOf, methodsOf, has,
-	getContainerIdFromEl, zenarioGrid
+	getContainerIdFromEl, zenarioGrid, s$s
 ) {
 	"use strict";
 
@@ -45,7 +45,7 @@ zenario.lib(function(
 		methods = methodsOf(zenarioFEA);
 
 
-methods.idVarName = function(mode) {
+methods.idVarName = function() {
 	return 'id';
 };
 
@@ -59,7 +59,10 @@ methods.validateFormatOrRedrawForField = function(field) {
 	field = this.field(field);
 	
 	if (engToBoolean(field.save_onchange)) {
-		this.save();
+		if (this.ffoving < 4) {
+			this.ffoving = 4;
+			this.save();
+		}
 		return true;
 	} else {
 		return methodsOf(zenarioF).validateFormatOrRedrawForField.apply(this, arguments);
@@ -89,15 +92,23 @@ methods.sendStateToServer = function() {
 	return this.sendStateToServerDiff();
 };
 
+methods.visitorTUIXLink = function(requests, mode, useSync) {
+	if (this.noPlugin) {
+		return zenario.visitorTUIXLink(this.moduleClassName, this.path, requests, mode, useSync);
+	} else {
+		return zenario.pluginVisitorTUIXLink(this.moduleClassName, this.containerId, this.path, requests, mode, useSync);
+	}
+};
 
-methods.ffov = function(mode) {
+
+methods.ffov = function(action) {
 	
 	var that = this,
 		cb = new zenario.callback,
-		url = this.url = zenario.pluginVisitorTUIXLink(this.moduleClassName, this.containerId, this.path, this.customisationName, this.request, mode, true),
+		url = this.url = this.visitorTUIXLink(this.request, action, true),
 		post = false;
 	
-	if (mode != 'fill') {
+	if (action != 'fill') {
 		this.prevPath = this.path;
 		this.checkValues();
 		post = {_format: true, _tuix: this.sendStateToServer()};
@@ -108,17 +119,24 @@ methods.ffov = function(mode) {
 		this.ajax(url, post, true).after(function(tuix) {
 			that.hideLoader();
 		
-			if (mode == 'fill') {
+			if (action == 'fill') {
 				that.tuix = tuix;
 			} else {
 				that.setData(tuix);
 			}
+			
+			if (that.tuix.reload_parent) {
+				that.reloadParent();
+			}
 		
 			if (that.tuix.go) {
-				that.go(that.containerId, that.tuix.go);
+				that.go(that.tuix.go);
+			
+			} else if (that.tuix.close_popout && that.inPopout) {
+				that.closePopout();
 			
 			} else {
-				that.sortOutTUIX(that.containerId, that.tuix);
+				that.sortOutTUIX();
 				that.draw();
 				cb.call();
 			}
@@ -194,6 +212,28 @@ methods.putHTMLOnPage = function(html) {
 	}
 };
 
+methods.closePopout = function() {
+	if (this.inPopout) {
+		var outerWrap = 'outer_' + this.containerId;
+		
+		if (get(outerWrap)) {
+			$(get(outerWrap)).remove();
+		}
+	}
+};
+
+methods.reloadParent = function() {
+	if (this.parent) {
+		if (typeof this.parent == 'string') {
+			if (!zenario_conductor.refresh(this.parent)) {
+				zenario.refreshPluginSlot(this.parent);
+			}
+		} else {
+			this.parent.reload();
+		}
+	}
+};
+
 methods.microTemplate = function(template, data, filter) {
 	
 	var html, d;
@@ -224,9 +264,9 @@ methods.microTemplate = function(template, data, filter) {
 };
 
 methods.showLoader = function(hide, wasRedraw) {
-	var loaderId = 'loader_for_' + this.containerId,
+	var loadingId = 'loader_for_' + this.containerId,
 		container = this.get(this.containerId),
-		loader = this.get(loaderId),
+		loader = this.get(loadingId),
 		$container = $(container),
 		$loader;
 	
@@ -251,7 +291,7 @@ methods.showLoader = function(hide, wasRedraw) {
 		return;
 		
 	} else {
-		$loader = $(this.microTemplate(this.mtPrefix + '_loading', {loaderId: loaderId}));
+		$loader = $(this.microTemplate(this.mtPrefix + '_loading', {loadingId: loadingId}));
 		$container.prepend($loader);
 	}
 	
@@ -270,50 +310,31 @@ methods.hideLoader = function(wasRedraw) {
 
 methods.reload = function(callWhenLoaded) {
 	if (this.containerId) {
-		this.runLogic(this.containerId, this.request, callWhenLoaded || (function() {}));
+		this.runLogic(this.request, callWhenLoaded || (function() {}));
 	}
 };
 
 methods.navigationEnabled = function(commandName, mode) {
-	if (zenario_conductor.enabled(this.containerId)) {
-		return zenario_conductor.commandEnabled(this.containerId, commandName);
-	} else {
-		return this.tuix.allowed_modes && this.tuix.allowed_modes[mode || commandName];
-	}
+	return this.tuix.enable && this.tuix.enable[mode || commandName] && zenario_conductor.commandEnabled(this.containerId, commandName);
 };
 
-methods.checkModeAndPathOnRequest = function(request) {
-	if (request.mode) {
-		request.path = this.getPathFromMode(request.mode);
-	} else if (request.path) {
-		request.mode = this.getModeFromPath(request.path);
-	} else {
-		request.mode = this.defaultMode;
-		request.path = this.getPathFromMode(this.defaultMode);
-	}
-};
-
-methods.runLogic = function(containerId, request, callWhenLoaded) {
-	this.checkModeAndPathOnRequest(request);
+methods.runLogic = function(request, callWhenLoaded) {
 	
-	this.mode = request.mode;
-	this.path = request.path;
 	this.request = request;
-	this.containerId = containerId;
 	
-	this.logic(containerId, request, callWhenLoaded);
+	this.logic(request, callWhenLoaded);
 };
 
-methods.typeOfLogic = function(request) {
-	if (request.path.match(/list/)) {
+methods.typeOfLogic = function() {
+	if (this.mode.match(/list/)) {
 		return 'list';
 	} else {
 		return 'form';
 	}
 };
 
-methods.logic = function(containerId, request, callWhenLoaded) {
-	switch (this.typeOfLogic(request)) {
+methods.logic = function(request, callWhenLoaded) {
+	switch (this.typeOfLogic()) {
 		case 'list':
 			this.showList(callWhenLoaded);
 			break;
@@ -323,13 +344,41 @@ methods.logic = function(containerId, request, callWhenLoaded) {
 			break;
 		
 		case 'normal_plugin':
-			zenario.refreshPluginSlot(containerId, 'lookup', request);
+			zenario.refreshPluginSlot(this.containerId, 'lookup', request);
 			break;
 		
 		case 'normal_plugin_using_post':
-			zenario.refreshPluginSlot(containerId, 'lookup', false,false,false,false,false, request);
+			zenario.refreshPluginSlot(this.containerId, 'lookup', false,false,false,false,false, request);
 			break;
 	}
+};
+
+
+methods.loadFromScriptCallback = function(request, tuix) {
+	
+	this.request = request;
+	this.tuix = tuix;
+	
+	this.last = {request: request};
+	this.prevPath = this.path;
+	
+	//setTimeout() is used as a hack to ensure the conductor is fully loaded first
+	var that = this;
+	
+	$(document).ready(function() {
+		switch (that.typeOfLogic()) {
+			case 'list':
+				that.url = that.visitorTUIXLink(that.request);
+				that.drawList();
+				that.hideLoader();
+				break;
+		
+			case 'form':
+				that.url = that.visitorTUIXLink(that.request, 'fill', true)
+				that.sortOutTUIX();
+				that.draw();
+		}
+	});
 };
 
 
@@ -346,7 +395,7 @@ methods.showList = function(callWhenLoaded) {
 	
 	var that = this,
 		redrawn = false,
-		url = this.url = zenario.pluginVisitorTUIXLink(this.moduleClassName, this.containerId, this.request.path, this.customisationName, this.request);
+		url = this.url = this.visitorTUIXLink(this.request);
 	
 	this.showLoader();
 	this.ajax(url, false, true).after(function(tuix) {
@@ -361,12 +410,12 @@ methods.showList = function(callWhenLoaded) {
 };
 
 //These signals will fire if the page is resized and switches between mobile/desktop views
-//assetwolf_2.resizedToMobile = function() {
-//	console.log('resizedToMobile');
+//assetwolf_2.eventResizedToMobile = function() {
+//	console.log('eventResizedToMobile');
 //};
 //
-//assetwolf_2.resizedToDesktop = function() {
-//	console.log('resizedToDesktop');
+//assetwolf_2.eventResizedToDesktop = function() {
+//	console.log('eventResizedToDesktop');
 //};
 
 methods.sizeTableListCells = function() {
@@ -401,7 +450,7 @@ methods.sizeTableListCellsIfNeededAfterDelay = function() {
 methods.drawList = function() {
 	this.hadSparkline = false;
 	
-	this.sortOutTUIX(this.containerId, this.tuix);
+	this.sortOutTUIX();
 	
 	this.putHTMLOnPage(this.microTemplate(this.mtPrefix + '_list', {}));
 	
@@ -434,7 +483,7 @@ methods.drawList = function() {
 			//coeffAcceleration: 2,
 			
 			onPageClicked: function(a,num) { 
-				that.go(that.containerId, {page: num});
+				that.go({page: num});
 			}
 		});
 	}
@@ -470,8 +519,8 @@ methods.getModeFromPath = function(path) {
 };
 
 
-methods.recordRequestsInURL = function(containerId, request) {
-	zenario.recordRequestsInURL(containerId, this.checkRequests(request, true));
+methods.recordRequestsInURL = function(request) {
+	zenario.recordRequestsInURL(this.containerId, this.checkRequests(request, true));
 };
 
 methods.checkRequests = function(request, forDisplay, itemId, merge, keepClutter) {
@@ -481,7 +530,6 @@ methods.checkRequests = function(request, forDisplay, itemId, merge, keepClutter
 	
 	request = zenario.clone(request, merge);
 	
-	this.checkModeAndPathOnRequest(request);
 	
 	idVarName = this.idVarName(this.mode) || 'id';
 	
@@ -544,19 +592,45 @@ methods.checkRequests = function(request, forDisplay, itemId, merge, keepClutter
 	return request;
 };
 
-methods.init = function(globalName, microtemplatePrefix, moduleClassName, containerId, request, setDefaultMode, pages, customisationName) {
+methods.init = function(globalName, microtemplatePrefix, moduleClassName, containerId, path, request, mode, pages, noPlugin, parent, inPopout, popoutClass) {
 	
 	methodsOf(zenarioF).init.call(this, globalName, microtemplatePrefix, containerId);
 	
 	this.last = {};
 	this.pages = pages || {};
-	this.mode = '';
-	this.path = '';
+	this.mode = mode;
+	this.path = path;
 	this.prevPath = '';
-	this.customisationName = customisationName || '';
-	this.defaultMode = setDefaultMode;
 	this.moduleClassName = moduleClassName;
-	this.go(containerId, request, undefined, true);
+	this.containerId = containerId;
+	this.noPlugin = noPlugin;
+	this.parent = parent;
+	this.inPopout = inPopout;
+	this.popoutClass = popoutClass = popoutClass || '';
+	
+	
+	if (inPopout) {
+		this.closePopout();
+		
+		$('body').append(
+			zenarioT.div(
+				'id', 'outer_' + containerId,
+				'class', 'zfea_popout ' + popoutClass,
+					zenarioT.div(
+						'id', containerId,
+						'class', 'zfea_popout_inner'
+					)
+			)
+		);
+	}
+
+	
+	
+	//I'm experiementing with making the first AJAX request of a FEA plugin load via a script tag to speed up the initial page load.
+	//If the request is set to -1, that means we'll do the first load using a script tag then later call the loadFromScriptCallback() method.
+	if (request !== -1) {
+		this.go(request, undefined, true);
+	}
 	
 	
 	//Error phrases
@@ -599,43 +673,36 @@ methods.doSearch = function(e, value) {
 			search: value !== undefined? value : this.get('search_' + this.containerId).value
 		};
 
-	this.go(this.containerId, this.checkRequests(requests, false, undefined, search, true));
+	this.go(this.checkRequests(requests, false, undefined, search, true));
 	
 	return false;
 };
 
 
-methods.go = function(containerId, request, itemId, wasInitialLoad) {
-	containerId = getContainerIdFromEl(containerId);
+methods.go = function(request, itemId, wasInitialLoad) {
 	request = request || {};
 	
-	//If a mode or path is not specified, assume we stay on the default path
-	if (request.mode === undefined
-	 && request.path === undefined) {
-		request.path = this.path;
-	}
-	
-	request = this.checkRequests(request, false, itemId, undefined, true);
-	this.last[containerId] = {request: request};
-	this.prevPath = this.path;
-	
-	//Check if the link should be directed to a different page
 	var page,
 		that = this,
-		command = request.command;
+		command = zenario_conductor.commandEnabled(this.containerId, request.command);
 	
 	delete request.command;
-
-	if (command
-	 && zenario_conductor.commandEnabled(containerId, command)) {
-		delete request.mode;
-		delete request.path;
-		zenario_conductor.go(containerId, command, request);
 	
+	request = this.checkRequests(request, false, itemId, undefined, true);
+	this.last = {request: request};
+	this.prevPath = this.path;
+
+
+	if (command) {
+		delete request.path;
+		delete request.mode;
+		zenario_conductor.go(this.containerId, command, request);
+	
+	//Check if the link should be directed to a different page
 	} else
 	if (!wasInitialLoad
 	 && request.mode
-	 && request.mode != this.defaultMode
+	 && request.mode != this.mode
 	 && (page = this.pages[request.mode])
 	 && (page.cID != zenario.cID || page.cType != zenario.cType)) {
 		
@@ -643,9 +710,9 @@ methods.go = function(containerId, request, itemId, wasInitialLoad) {
 		zenario.goToURL(zenario.linkToItem(page.cID, page.cType, request));
 	
 	} else {
-		this.runLogic(containerId, request, function() {
+		this.runLogic(request, function() {
 			if (!wasInitialLoad) {
-				that.recordRequestsInURL(containerId, request);
+				that.recordRequestsInURL(request);
 			}
 		});
 	}
@@ -701,7 +768,7 @@ methods.itemButtonIsntHidden = function(button, itemIds, isCheckboxSelect) {
 		for (i in itemIds) {
 			item = this.tuix.items[itemIds[i]];
 			
-			if (!zenarioA.eval(button.visible_if_for_all_selected_items, this, undefined, item, button.id, button)) {
+			if (!zenarioT.eval(button.visible_if_for_all_selected_items, this, undefined, item, button.id, button)) {
 				return false;
 			}
 		}
@@ -711,7 +778,7 @@ methods.itemButtonIsntHidden = function(button, itemIds, isCheckboxSelect) {
 		for (i in itemIds) {
 			item = this.tuix.items[itemIds[i]];
 			
-			if (zenarioA.eval(button.visible_if_for_any_selected_items, this, undefined, item, button.id, button)) {
+			if (zenarioT.eval(button.visible_if_for_any_selected_items, this, undefined, item, button.id, button)) {
 				met = true;
 				break;
 			}
@@ -735,7 +802,7 @@ methods.buttonIsntDisabled = function(button, itemIds) {
 		}
 	
 		if (button.disabled_if !== undefined) {
-			if (zenarioA.eval(button.disabled_if, this, undefined, item, button.id, button)) {
+			if (zenarioT.eval(button.disabled_if, this, undefined, item, button.id, button)) {
 				break;
 			}
 		}
@@ -750,7 +817,7 @@ methods.buttonIsntDisabled = function(button, itemIds) {
 			for (i in itemIds) {
 				item = this.tuix.items[itemIds[i]];
 			
-				if (zenarioA.eval(button.disabled_if_for_any_selected_items, this, undefined, item, button.id, button)) {
+				if (zenarioT.eval(button.disabled_if_for_any_selected_items, this, undefined, item, button.id, button)) {
 					break doLoop;
 				}
 			}
@@ -762,7 +829,7 @@ methods.buttonIsntDisabled = function(button, itemIds) {
 			for (i in itemIds) {
 				item = this.tuix.items[itemIds[i]];
 			
-				if (!zenarioA.eval(button.disabled_if_for_all_selected_items, this, undefined, item, button.id, button)) {
+				if (!zenarioT.eval(button.disabled_if_for_all_selected_items, this, undefined, item, button.id, button)) {
 					return true;
 				}
 			}
@@ -802,13 +869,14 @@ methods.hidden = function(tuixObject, item, id, button, column, field, section, 
 		}
 	}
 	
-	//zenarioA.hidden = function(tuixObject, lib, item, id, button, column, field, section, tab) {
-	return zenarioA.hidden(tuixObject, this, item, id, button, column, field, section, tab);
+	//zenarioT.hidden = function(tuixObject, lib, item, id, button, column, field, section, tab) {
+	return zenarioT.hidden(tuixObject, this, item, id, button, column, field, section, tab);
 };
 
 
-methods.sortOutTUIX = function(containerId, tuix) {
-	containerId = getContainerIdFromEl(containerId);
+methods.sortOutTUIX = function() {
+	
+	var tuix = this.tuix;
 	
 	this.newlyNavigated = this.path != this.prevPath;
 	this.multiSelectButtonsExist = false;
@@ -822,11 +890,11 @@ methods.sortOutTUIX = function(containerId, tuix) {
 		sortBy = tuix.sort_by || 'name';
 		sortDesc = engToBoolean(tuix.sort_desc);
 	
-	tuix.sortedCollectionButtonIds = zenarioA.getSortedIdsOfTUIXElements(tuix, tuix.collection_buttons);
+	tuix.sortedCollectionButtonIds = zenarioT.getSortedIdsOfTUIXElements(tuix, tuix.collection_buttons);
 	tuix.sortedCollectionButtons = [];
-	tuix.sortedItemButtonIds = zenarioA.getSortedIdsOfTUIXElements(tuix, tuix.item_buttons);
+	tuix.sortedItemButtonIds = zenarioT.getSortedIdsOfTUIXElements(tuix, tuix.item_buttons);
 	tuix.sortedItemButtons = [];
-	tuix.sortedColumnIds = zenarioA.getSortedIdsOfTUIXElements(tuix, tuix.columns);
+	tuix.sortedColumnIds = zenarioT.getSortedIdsOfTUIXElements(tuix, tuix.columns);
 	tuix.sortedColumns = [];
 	
 	foreach (tuix.sortedCollectionButtonIds as i => id) {
@@ -835,7 +903,7 @@ methods.sortOutTUIX = function(containerId, tuix) {
 		
 		if (!this.hidden(undefined, undefined, id, button)) {
 			if (this.buttonIsntDisabled(button)) {
-				this.setupButtonLinks(containerId, button);
+				this.setupButtonLinks(button);
 			}
 			
 			tuix.sortedCollectionButtons.push(button);
@@ -858,15 +926,15 @@ methods.sortOutTUIX = function(containerId, tuix) {
 		}
 	}
 	
-	zenarioA.setKin(tuix.sortedColumns);
-	zenarioA.setKin(tuix.sortedCollectionButtons, 'zfea_button_with_children');
-	zenarioA.setKin(tuix.sortedItemButtons, 'zfea_button_with_children');
+	zenarioT.setKin(tuix.sortedColumns);
+	zenarioT.setKin(tuix.sortedCollectionButtons, 'zfea_button_with_children');
+	zenarioT.setKin(tuix.sortedItemButtons, 'zfea_button_with_children');
 	
 	
 	if (tuix.__item_sort_order__) {
 		tuix.sortedItemIds = tuix.__item_sort_order__;
 	} else {
-		tuix.sortedItemIds = zenarioA.getSortedIdsOfTUIXElements(tuix, 'items', sortBy, sortDesc);
+		tuix.sortedItemIds = zenarioT.getSortedIdsOfTUIXElements(tuix, 'items', sortBy, sortDesc);
 	}
 	tuix.sortedItems = [];
 	
@@ -876,14 +944,14 @@ methods.sortOutTUIX = function(containerId, tuix) {
 		
 		tuix.sortedItems.push(item);
 		
-		item.sortedItemButtons = this.getSortedItemButtons(containerId, tuix, [id], false);
+		item.sortedItemButtons = this.getSortedItemButtons([id], false);
 	}
 	
-	this.last[containerId].tuix = tuix;
+	this.last.tuix = tuix;
 };
 
 //Get a list of item buttons, depending on the item(s) that they were for
-methods.getSortedItemButtons = function(containerId, tuix, itemIds, isCheckboxSelect) {
+methods.getSortedItemButtons = function(itemIds, isCheckboxSelect) {
 		
 	var j, itemButton,
 		k, childItemButton,
@@ -897,7 +965,7 @@ methods.getSortedItemButtons = function(containerId, tuix, itemIds, isCheckboxSe
 		itemIdsCSV = itemId = itemIds[0];
 	}
 	
-	foreach (tuix.sortedItemButtons as j => itemButton) {
+	foreach (this.tuix.sortedItemButtons as j => itemButton) {
 		button = _.clone(itemButton);
 		button.itemId = itemId;
 		button.itemIds = itemIdsCSV;
@@ -905,7 +973,7 @@ methods.getSortedItemButtons = function(containerId, tuix, itemIds, isCheckboxSe
 		if (this.itemButtonIsntHidden(button, itemIds, isCheckboxSelect)) {
 			
 			if (this.buttonIsntDisabled(button, itemIds)) {
-				this.setupButtonLinks(containerId, button, itemIdsCSV);
+				this.setupButtonLinks(button, itemIdsCSV);
 			}
 			
 			if (button.children) {
@@ -920,7 +988,7 @@ methods.getSortedItemButtons = function(containerId, tuix, itemIds, isCheckboxSe
 					if (this.itemButtonIsntHidden(childButton, itemIds, isCheckboxSelect)) {
 						
 						if (this.buttonIsntDisabled(childButton, itemIds)) {
-							this.setupButtonLinks(containerId, childButton, itemIdsCSV);
+							this.setupButtonLinks(childButton, itemIdsCSV);
 						}
 						
 						button.children.push(childButton);
@@ -929,7 +997,7 @@ methods.getSortedItemButtons = function(containerId, tuix, itemIds, isCheckboxSe
 			}
 		
 			if (!button.hide_when_children_are_not_visible || (button.children && button.children.length > 0)) {
-				tuix.itemHasItemButton = true;
+				this.tuix.itemHasItemButton = true;
 				sortedButtons.push(button);
 			}
 		}
@@ -938,8 +1006,7 @@ methods.getSortedItemButtons = function(containerId, tuix, itemIds, isCheckboxSe
 	return sortedButtons;
 };
 
-methods.setupButtonLinks = function(containerId, button, itemId) {
-	containerId = getContainerIdFromEl(containerId);
+methods.setupButtonLinks = function(button, itemId) {
 	
 	var page,
 		request,
@@ -956,20 +1023,27 @@ methods.setupButtonLinks = function(containerId, button, itemId) {
 		
 		if (!button.onclick
 		 || !button.onclick.startsWith(onPrefix)) {
-			onclick = onPrefix + "lib.button(this, '" + jsEscape(containerId) + "', '" + jsEscape(button.id) + "'";
-		
-			if (itemId) {
-				onclick += ", '" + jsEscape(itemId) + "'";
+			
+			onclick = onPrefix;
+			
+			if (itemId !== undefined) {
+				onclick += "var button = (lib.tuix.item_buttons||{})['" + jsEscape(button.id) + "'],"
+						+ "itemId = '" + jsEscape(itemId) + "',"
+						+ "item = (lib.tuix.items||{})[itemId];";
 			} else {
-				onclick += ", undefined";
+				onclick += "var button = (lib.tuix.collection_buttons||{})['" + jsEscape(button.id) + "'],"
+						+ "itemId,"
+						+ "item;";
 			}
+			
+			onclick += "lib.button(this, button, item, itemId";
 		
 			if (button.go) {
 				request = this.checkRequests(button.go, true, itemId);
 			}
 		
 			if (button.onclick) {
-				onclick += ", function () {" + button.onclick + "}";
+				onclick += ", function() {" + button.onclick + "}";
 			}
 		
 			onclick += "); return false;";
@@ -981,19 +1055,16 @@ methods.setupButtonLinks = function(containerId, button, itemId) {
 	//Check if this button has a "go" link
 	if (button.href === undefined) {
 		if (request) {
-			command = request.command;
+			command = zenario_conductor.commandEnabled(this.containerId, request.command);
 			delete request.command;
 			
-			if (command
-			 && zenario_conductor.commandEnabled(containerId, command)) {
-			 	delete request.mode;
-			 	delete request.path;
-				button.href = zenario_conductor.link(containerId, command, request);
+			if (command) {
+				button.href = zenario_conductor.link(this.containerId, command, request);
 			
 			//Check if the link should be directed to a different page. If so, just include a href and don't set an onclick
 			} else
 			if (request.mode
-			 && request.mode != this.defaultMode
+			 && request.mode != this.mode
 			 && (page = this.pages[request.mode])
 			 && (page.cID != zenario.cID || page.cType != zenario.cType)) {
 			
@@ -1030,17 +1101,12 @@ methods.clickButton = function(el, id) {
 };
 
 //Collection/item button presses on lists
-methods.button = function(el, containerId, buttonName, itemId, onclickFun, confirmed) {
+methods.button = function(el, button, item, itemId, onclickFun, confirmed) {
 	if (this.loading) {
 		return;
 	}
 	
-	containerId = getContainerIdFromEl(containerId);
-	
 	var that = this,
-		button,
-		item = false,
-		last = this.last[containerId],
 		request,
 		confirm,
 		funReturn,
@@ -1050,14 +1116,6 @@ methods.button = function(el, containerId, buttonName, itemId, onclickFun, confi
 	if (itemId !== undefined) {
 		itemIds = itemId.split(',');
 		numItems = itemIds.length;
-		
-		if (numItems == 1) {
-			item = last.tuix.items[itemId];
-		}
-		
-		button = last.tuix.item_buttons[buttonName];
-	} else {
-		button = last.tuix.collection_buttons[buttonName];
 	}
 	
 	if (!confirmed
@@ -1065,7 +1123,7 @@ methods.button = function(el, containerId, buttonName, itemId, onclickFun, confi
 	 		button.confirm
 	 	|| (button.go && button.go.confirm)
 	 	|| (button.ajax && button.ajax.confirm))
-	 && (!this.hidden(confirm, item, buttonName, button))) {
+	 && (!this.hidden(confirm, item, button.id, button))) {
 		
 		//For item buttons, modify the confirm message to include details on the item(s) selected
 		if (itemId !== undefined) {
@@ -1080,7 +1138,7 @@ methods.button = function(el, containerId, buttonName, itemId, onclickFun, confi
 		}
 		
 		this.confirm(confirm, function() {
-			that.button(el, containerId, buttonName, itemId, onclickFun, true);
+			that.button(el, button, item, itemId, onclickFun, true);
 		});
 	
 	} else {
@@ -1098,10 +1156,10 @@ methods.button = function(el, containerId, buttonName, itemId, onclickFun, confi
 		if (button.ajax) {
 			request = this.checkRequests(button.ajax.request, false, itemId, undefined, true);
 			
-			this.runAJAXRequest(containerId, request, button.go || this.checkRequests(last.request, true), button.ajax.download);
+			this.runAJAXRequest(request, button.go || this.checkRequests(this.last.request, true), button.ajax.download);
 
 		} else {
-			this.go(containerId, button.go, itemId);
+			this.go(button.go, itemId);
 		}
 	}
 	
@@ -1130,7 +1188,7 @@ methods.updateItemButtons = function() {
 		containerId = this.containerId,
 		checkAllCheckbox = get('zfea_check_all_' + containerId),
 		$trs = $('#' + containerId + ' tr.zfea_row'),
-		$oldTds = $('#' + containerId + ' td.sorted_buttons'),
+		$oldTds = $('#' + containerId + ' td.single_select_buttons'),
 		$td = $(prefix + 'td_' + containerId),
 		$div = $(prefix + containerId),
 		$allCheckboxes = $('#' + containerId + ' td.zfea_check_item input'),
@@ -1171,7 +1229,7 @@ methods.updateItemButtons = function() {
 		
 		
 		
-		$div.html(this.microTemplate(this.mtPrefix + '_button', this.getSortedItemButtons(this.containerId, this.tuix, itemIds, true)));
+		$div.html(this.microTemplate(this.mtPrefix + '_button', this.getSortedItemButtons(itemIds, true)));
 		zenario.addJQueryElements(prefix + containerId + ' ');
 		
 		
@@ -1192,10 +1250,6 @@ methods.updateItemButtons = function() {
 	
 		offsetTop = highestCheckboxHeight - distanceFromTop;
 		offsetBottom = lowestCheckboxHeight - distanceFromTop;
-	
-		//console.log('highestCheckboxHeight', highestCheckboxHeight, 'lowestCheckboxHeight', lowestCheckboxHeight,
-		//	'distanceFromTop', distanceFromTop, 
-		//	'offsetTop', offsetTop, 'offsetBottom', offsetBottom, 'largestPossibleGap', largestPossibleGap);
 	
 		if (offsetTop < 0) {
 			offsetTop = 0;
@@ -1221,8 +1275,6 @@ methods.updateItemButtons = function() {
 			this.updateItemButtonPositionOnScroll = function(event) {
 			
 				var moveDivDownBy = zenario.scrollTop() - distanceFromTop;
-		
-				//console.log('moveDivDownBy', moveDivDownBy, 'scrollTop', zenario.scrollTop(), 'distanceFromTop', distanceFromTop);
 		
 				if (moveDivDownBy < offsetTop) {
 					moveDivDownBy = offsetTop;
@@ -1347,6 +1399,9 @@ methods.sparkline = function() {
 						negativeColor: '#910000',
 						borderColor: 'silver'
 					}
+				},
+				exporting: {
+					enabled: false
 				}
 			};
 
@@ -1385,11 +1440,11 @@ methods.sparkline = function() {
 				}else{
 					colour = "#82CAFF";
 				}
-			
+				
 				$td.highcharts('SparkLine', {
 					colors: [colour],
 					series: [{
-						data: data.values,
+						data: _.toArray(data.values),
 						pointStart: 1
 					}],
 					tooltip: {
@@ -1398,7 +1453,6 @@ methods.sparkline = function() {
 					},
 					chart: chart
 				});
-				
 			}
 		}
 	}
@@ -1454,22 +1508,21 @@ methods.confirm = function(confirm, after) {
 };
 
 
-methods.runAJAXRequest = function(containerId, request, goAfter, isDownload) {
+methods.runAJAXRequest = function(request, goAfter, isDownload) {
 	if (this.loading) {
 		return;
 	}
 	
-	containerId = getContainerIdFromEl(containerId);
 	
 	$.colorbox.remove();
 	
 	var that = this;
 	
 	if (isDownload) {
-		url = zenario.pluginAJAXLink(this.moduleClassName, containerId, request);
+		url = zenario.pluginAJAXLink(this.moduleClassName, this.containerId, request);
 		window.location = url;
 	} else {
-		url = zenario.pluginAJAXLink(this.moduleClassName, containerId);
+		url = zenario.pluginAJAXLink(this.moduleClassName, this.containerId);
 		this.showLoader();
 		this.ajax(url, request).after(function(resp) {
 			that.hideLoader();
@@ -1477,7 +1530,7 @@ methods.runAJAXRequest = function(containerId, request, goAfter, isDownload) {
 			if (resp) {
 				that.AJAXErrorHandler(resp);
 			} else {
-				that.go(containerId, goAfter);
+				that.go(goAfter);
 			}
 		});
 	}
@@ -1549,24 +1602,24 @@ methods.AJAXErrorHandler = function(resp, statusType, statusText) {
 		msg = '',
 		m = {};
 	
-	resp = zenarioA.splitDataFromErrorMessage(resp);
+	resp = zenarioT.splitDataFromErrorMessage(resp);
 	
 	if (statusText) {
-		msg += zenarioA.h1(htmlspecialchars(resp.status + ' ' + statusText));
+		msg += zenarioT.h1(htmlspecialchars(resp.status + ' ' + statusText));
 	}
 
 	if (resp.status == 404) {
-		msg += zenarioA.p(this.hardcodedPhrase.error404);
+		msg += zenarioT.p(this.hardcodedPhrase.error404);
 
 	} else if (resp.status == 500) {
-		msg += zenarioA.p(this.hardcodedPhrase.error500);
+		msg += zenarioT.p(this.hardcodedPhrase.error500);
 
 	} else if (resp.status == 0 || statusType == 'timeout') {
-		msg += zenarioA.p(this.hardcodedPhrase.errorTimedOut);
+		msg += zenarioT.p(this.hardcodedPhrase.errorTimedOut);
 	}
 
 	if (resp.responseText) {
-		msg += zenarioA.div(htmlspecialchars(resp.responseText));
+		msg += zenarioT.div(htmlspecialchars(resp.responseText));
 	}
 	
 	
@@ -1611,8 +1664,19 @@ methods.AJAXErrorHandler = function(resp, statusType, statusText) {
 
 
 
+zenario_abstract_fea.setupAndInit = function(moduleClassName, library, containerId, path, request, mode, pages, noPlugin, parent, inPopout, popoutClass) {
 
+	var globalName = moduleClassName + '_' + containerId.replace(/\-/g, '__');
 	
+	if (!window[globalName]) {
+		window[globalName] = new library();
+	}
+	
+	window[globalName].init(globalName, 'fea', moduleClassName, containerId, path, request, mode, pages, noPlugin, parent, inPopout, popoutClass);
+	
+	return window[globalName];
+}
+
 
 
 

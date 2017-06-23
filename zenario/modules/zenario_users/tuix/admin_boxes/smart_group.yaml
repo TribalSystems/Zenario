@@ -17,6 +17,7 @@ zenario_smart_group:
         companiesExist: false
         locationsExist: false
         rolesExist: false
+        activityBandsExist: false
     hide_tab_bar: true
     title: ''
     tabs:
@@ -32,7 +33,7 @@ zenario_smart_group:
                     style: |
                         width: 25em;
                     validation: 
-                        required: Please enter a name
+                        required: "Please enter a smart group name."
                 must_match:
                     full_width: true
                     pre_field_html: |
@@ -64,7 +65,7 @@ zenario_smart_group:
                     ord: 999997
                     label: "Users that match these rules:"
                     type: text
-                    read_only: true
+                    readonly: true
                     style: |
                         width: 5em;
                     value: 0
@@ -108,7 +109,19 @@ zenario_smart_group:
                         isnt:
                             label: not a member of
                     visible_if: |
-                        zenarioAB.value('type__znz') == 'group'
+                        zenarioAB.value('type__znz') == 'group' 
+                    format_onchange: true
+                    
+                is_isnt_in_activity_band__znz:
+                    same_row: true
+                    type: select
+                    values:
+                        is:
+                            label: in activity band
+                        isnt:
+                            label: not in activity band
+                    visible_if: |
+                        zenarioAB.value('type__znz') == 'activity_band'
                     format_onchange: true
                 
                 field__znz:
@@ -122,7 +135,7 @@ zenario_smart_group:
                         zenarioAB.value('type__znz') == 'list'
                     format_onchange: true
                     validation:
-                        required_if_not_hidden: Please select a field
+                        required_if_not_hidden: "Please select a field."
                 
                 field2__znz:
                     same_row: true
@@ -170,6 +183,15 @@ zenario_smart_group:
                         zenarioAB.value('is_isnt_in__znz') == 'is_one_of' &&
                         (zenario.engToBoolean(zenarioAB.value('field4__znz')) || zenario.engToBoolean(zenarioAB.value('field5__znz')))
                     format_onchange: true
+                    
+                activity_bands__znz:
+                    same_row: true
+                    type: select
+                    type: select
+                    empty_value: ' -- Select --'
+                    visible_if: |
+                        zenarioAB.value('type__znz') == 'activity_band'
+                    format_onchange: true
                 
                 is_isnt_set__znz:
                     same_row: true
@@ -202,7 +224,7 @@ zenario_smart_group:
                     type: select
                     empty_value: ' -- Select -- '
                     validation:
-                        required_if_not_hidden: Please select a value
+                        required_if_not_hidden: "Please select a value."
                     format_onchange: true
                 
                 has_the_role__znz:
@@ -221,7 +243,7 @@ zenario_smart_group:
                         zenarioAB.value('type__znz') == 'role'
                     format_onchange: true
                     validation:
-                        required_if_not_hidden: Please select a role
+                        required_if_not_hidden: "Please select a role."
                 
                 role_at_specified_location__znz:
                     same_row: true
@@ -291,11 +313,18 @@ zenario_smart_group:
                 label: Other checks
                 hide_when_children_are_not_visible: true
               
-            role:
+            activity_band:
                 ord: 6
                 parent: has_access_to
+                label: Activity band
+                visible_if: tuix.key.activityBandsExist 
+                
+            role:
+                ord: 7
+                parent: has_access_to
                 label: Role
-                visible_if: tuix.key.rolesExist  
+                visible_if: tuix.key.rolesExist
+
                 
                 
     

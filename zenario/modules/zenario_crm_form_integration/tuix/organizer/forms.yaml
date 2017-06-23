@@ -1,6 +1,6 @@
 zenario__user_forms:
     panels:
-        zenario_user_forms__forms:
+        user_forms:
             columns:
                 has_crm_response:
                     table_join: |

@@ -370,8 +370,8 @@ zenario__locations:
                 hide_in_select_mode: Yes
                 tooltip: View location in hierarchy
                 navigation_path: Yes
-                without_traits:
-                    not_in_hierarchy: Yes
+                without_columns_set:
+                    traits.not_in_hierarchy: true
             
             action_dropdown:
                 label: Actions
@@ -476,8 +476,8 @@ zenario__locations:
                     fileDesc: Images
                     request:
                         upload_image: Yes
-                without_traits:
-                    has_image: Yes
+                without_columns_set:
+                    traits.has_image: true
             images:
                 parent: images_dropdown
                 label: View images

@@ -32,7 +32,7 @@ class zenario_user_forms__admin_boxes__field_calculation extends module_base_cla
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		$box['title'] = $box['key']['title'];
 		
-		$numericFields = json_decode($box['key']['numeric_fields'], true);
+		$numericFields = json_decode($values['details/dummy_field'], true);
 		if ($numericFields) {
 			$fields['details/numeric_field']['values'] = $numericFields;
 		} else {

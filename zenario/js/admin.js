@@ -40,9 +40,10 @@ zenario.lib(function(
 	undefined,
 	URLBasePath,
 	document, window, windowOpener, windowParent,
-	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO, strings,
+	zenario, zenarioA, zenarioT, zenarioAB, zenarioAT, zenarioO,
 	encodeURIComponent, get, engToBoolean, htmlspecialchars, jsEscape, phrase,
-	extensionOf, methodsOf, has
+	extensionOf, methodsOf, has,
+	extraVar1, extraVar2, s$s
 ) {
 	"use strict";
 
@@ -63,103 +64,7 @@ zenarioA.tooltipLengthThresholds = {
 };
 
 
-
-
-zenarioA.microTemplate = function(template, data, filter) {
-	return zenario.microTemplate(template, data, filter, zenarioA.microTemplates);
-};
-
-//A very lightweight function for creating HTML tags,
-//by passing in their attributes in as pairs an array.
-//N.b. if you want some HTML inside the element, pass that in as the last entry in the array.
-var htmlBaseFun = function(tag, a, noOffset) {
-	var html = '<' + tag,
-		c = a.length,
-		i = noOffset? 1: 2,
-		key, val,
-		postFieldHTML,
-		selfCloses = {br:1, hr:1, img:1, link:1, input:1}[tag],
-		booleans = {checked: 1, selected: 1};
-
-	//Output attribute/value pairs
-	for (; i < c; i += 2) {
-		
-		key = a[i - 1];
-		val = a[i];
-		
-		if (key == 'checked' || key == 'disabled' || key == 'multiple' || key == 'selected') {
-			if (val) {
-				html += ' ' + key + '="' + key + '"';
-			}
-		} else {
-			if (val !== false && val !== undefined) {
-				html += ' ' + key + '="' + htmlspecialchars(val) + '"';
-			}
-		}
-	}
-		
-	if (selfCloses) {
-		html += '/>';
-	} else {
-		html += '>';
-	}
-	
-	//Was there an odd number of attribute/value pairs?
-	//If so, the last one should be the inner HTML of the element
-	if (c % 2? noOffset : !noOffset) {
-		postFieldHTML = a[c-1];
-		
-		//Use ">" as a flag to not close a tag and just return with it open
-		if (postFieldHTML === '>') {
-			return html;
-		}
-		
-		html += postFieldHTML;
-	}
-
-	if (!selfCloses) {
-		html += '</' + tag + '>';
-	}
-
-	return html;
-};
-
-//Create the following functions as shortcuts to the above function:
-//	zenarioA.html = funciton(tag) {};
-//	zenarioA.div = funciton() {};
-//	zenarioA.span = funciton() {};
-//	zenarioA.input = funciton() {};
-//	zenarioA.select = funciton() {};
-//	zenarioA.option = funciton() {};
-//	zenarioA.h1 = funciton() {};
-//	zenarioA.p = funciton() {};
-_.each(['', 'div', 'span', 'input', 'select', 'option', 'h1', 'p'], function(el) {
-	zenarioA[el || 'html'] = function(tag) {
-		return htmlBaseFun(el || tag, arguments, el);
-	}
-});
-
-//Create shortcut variables to the above functions and some common parameters,
-//so the code ends up smaller when minified
-(zenarioA.lib = function(fun) {
-	fun(
-		zenarioA.html,
-		zenarioA.div,
-		zenarioA.span,
-		zenarioA.input,
-		zenarioA.select,
-		zenarioA.option,
-		zenarioA.h1,
-		zenarioA.p,
-		'type',
-		'button',
-		'class',
-		'submit',
-		'value',
-		'onclick',
-		'style'
-	);
-})(function(
+zenarioT.lib(function(
 	_$html,
 	_$div,
 	_$span,
@@ -178,14 +83,14 @@ _.each(['', 'div', 'span', 'input', 'select', 'option', 'h1', 'p'], function(el)
 ) {
 
 /*
-var _$html = zenarioA.html,
-	_$div = zenarioA.div,
-	_$span = zenarioA.span,
-	_$input = zenarioA.input,
-	_$select = zenarioA.select,
-	_$option = zenarioA.option,
-	_$h1 = zenarioA.h1,
-	_$p = zenarioA.p,
+var _$html = zenarioT.html,
+	_$div = zenarioT.div,
+	_$span = zenarioT.span,
+	_$input = zenarioT.input,
+	_$select = zenarioT.select,
+	_$option = zenarioT.option,
+	_$h1 = zenarioT.h1,
+	_$p = zenarioT.p,
 	__$type = 'type',
 	__$button = 'button',
 	__$class = 'class',
@@ -193,7 +98,6 @@ var _$html = zenarioA.html,
 	__$value = 'value',
 	__$onclick = 'onclick',
 	__$style = 'style',
-	'id' = 'id';
 */
 
 
@@ -241,7 +145,7 @@ zenarioA.infoBox = function() {
 	zenarioA.showAJAXLoader();
 	zenario.ajax(url, false, true, false).after(function(data) {
 		zenarioA.hideAJAXLoader();
-		zenarioA.openBox(zenarioA.microTemplate('zenario_info_box', data), 'zenario_fbAdminInfoBox', 'AdminInfoBox', undefined, 405, undefined, undefined, false, true, '.zenario_infoBoxHead', false);
+		zenarioA.openBox(zenarioT.microTemplate('zenario_info_box', data), 'zenario_fbAdminInfoBox', 'AdminInfoBox', undefined, 405, undefined, undefined, false, true, '.zenario_infoBoxHead', false);
 	});
 };
 
@@ -249,14 +153,20 @@ zenarioA.closeInfoBox = function() {
 	zenarioA.closeBox('AdminInfoBox');
 };
 
-zenarioA.showMessage = function(message, buttonsHTML, messageType, modal, htmlEscapeMessage, addCancel, cancelPhrase) {
+zenarioA.showMessage = function(resp, buttonsHTML, messageType, modal, htmlEscapeMessage, addCancel, cancelPhrase) {
 	var end = false,
-		hadCommand = false;
+		hadCommand = false,
+		message,
+		flags;
 
-	if (message) {
-		message = '' + message;
+	if (resp) {
+		resp = zenario.splitFlagsFromMessage(resp);
+		message = resp.responseText;
+		flags = resp.flags;
+	
 	} else {
 		message = (zenarioA.adminSettings.show_dev_tools? phrase.errorTimedOutDev : phrase.errorTimedOut);
+		flags = {};
 	}
 
 	if (buttonsHTML === undefined) {
@@ -267,68 +177,57 @@ zenarioA.showMessage = function(message, buttonsHTML, messageType, modal, htmlEs
 	if (messageType === undefined) {
 		messageType = 'none';
 	}
-
-	if		  (message.substr(0, 24) == '<!--Message_Type:None-->') {
-		message = message.substr(24);
-		messageType = false;
-	} else if (message.substr(0, 25) == '<!--Message_Type:Error-->') {
-		message = message.substr(25);
-		messageType = 'error';
-	} else if (message.substr(0, 27) == '<!--Message_Type:Success-->') {
-		message = message.substr(27);
-		messageType = 'success';
-	} else if (message.substr(0, 27) == '<!--Message_Type:Warning-->') {
-		message = message.substr(27);
-		messageType = 'warning';
-	} else if (message.substr(0, 28) == '<!--Message_Type:Question-->') {
-		message = message.substr(28);
-		messageType = 'question';
+	
+	if (flags.Message_Type) {
+		if (flags.Message_Type == 'None') {
+			messageType = false;
+		} else {
+			messageType = flags.Message_Type.toLowerCase();
+		}
 	}
 
 
 	//Commands
 		//N.b. a lot of these are deprecated and/or not used!
 
-	//Reload Storekeeper
-	if ((message.substr(0, 23) == '<!--Reload_Organizer-->' || message.substr(0, 25) == '<!--Reload_Storekeeper-->')
-	 && (zenarioO.init && !window.zenarioOQuickMode && !window.zenarioOSelectMode)) {
+	if (flags.Reload_Organizer !== undefined	//Reload_Storekeeper
+	 && zenarioO.init
+	 && !window.zenarioOQuickMode
+	 && !window.zenarioOSelectMode) {
 		//Still show the Admin the contents of the message via an alert, if there was a message
-		message = message.substr(25);
 		if (message) {
 			alert(message);
 		}
 		zenarioA.rememberToast();
 	
-		zenarioA.uploading = false;
-		zenarioO.setWrapperClass('uploading', zenarioA.uploading);
+		zenarioT.uploading = false;
+		zenarioO.setWrapperClass('uploading', zenarioT.uploading);
 	
 		zenarioO.reloadPage();
 	
 		return false;
 
-	//Refresh Storekeeper
-	} else if (message.substr(0, 26) == '<!--Refresh_Storekeeper-->' && zenarioO.init && !window.zenarioOQuickMode && !window.zenarioOSelectMode) {
+	} else
+	if (flags.Refresh_Organizer !== undefined	//flags.Refresh_Storekeeper
+	 && zenarioO.init
+	 && !window.zenarioOQuickMode
+	 && !window.zenarioOSelectMode) {
 		zenarioO.reload();
-		message = message.substr(26);
 		hadCommand = true;
 
-	//Go somewhere in Storekeeper
-	} else if (message.substr(0, 28) == '<!--Go_To_Storekeeper_Panel:' && (end = message.indexOf('-->')) != -1) {
-		zenarioO.go(message.substr(28, end - 28), -1);
-		message = message.substr(end + 3);
+	} else if (flags.Go_To_Organizer_Panel) {	//Go_To_Storekeeper_Panel
+		zenarioO.go(flags.Go_To_Organizer_Panel, -1);
 		hadCommand = true;
 
 	//Open an Admin Box
-	} else if (message.substr(0, 19) == '<!--Open_Admin_Box:' && (end = message.indexOf('-->')) != -1) {
-		zenarioAB.open(message.substr(19, end - 19));
-		message = message.substr(end + 3);
+	} else if (flags.Open_Admin_Box) {
+		zenarioAB.open(flags.Open_Admin_Box);
 		hadCommand = true;
 
 	//Go somewhere
-	} else if (message.substr(0, 14) == '<!--Go_To_URL:' && (end = message.indexOf('-->')) != -1) {
+	} else if (flags.Go_To_URL !== undefined) {
 		zenarioA.rememberToast();
-		zenario.goToURL(zenario.addBasePath(message.substr(14, end - 14)), true);
-		message = message.substr(end + 3);
+		zenario.goToURL(zenario.addBasePath(flags.Go_To_URL), true);
 		hadCommand = true;
 	}
 
@@ -336,21 +235,18 @@ zenarioA.showMessage = function(message, buttonsHTML, messageType, modal, htmlEs
 		return false;
 	}
 	
-	if (message.substr(0, 12) == '<!--Modal-->') {
-		message = message.substr(12);
+	if (flags.Modal !== undefined) {
 		modal = true;
 	}
 
 	//Set some custom buttons
-	if (message.substr(0, 16) == '<!--Button_HTML:' && (end = message.indexOf('-->')) != -1) {
-		buttonsHTML = message.substr(16, end - 16);
-		message = message.substr(end + 3);
+	if (flags.Button_HTML) {
+		buttonsHTML = flags.Button_HTML;
 
-	} else if (message.substr(0, 18) == '<!--Reload_Button:' && (end = message.indexOf('-->')) != -1) {
-		buttonsHTML = _$input(__$class, 'submit_selected', __$type, __$button, __$onclick, 'document.location.href = document.location.href; return false;', __$value, message.substr(18, end - 18));
-		message = message.substr(end + 3);
+	} else if (flags.Reload_Button) {
+		buttonsHTML = _$input(__$class, 'submit_selected', __$type, __$button, __$onclick, 'document.location.href = document.location.href; return false;', __$value, flags.Reload_Button);
 
-	} else if (message.substr(0, 17) == '<!--Logged_Out-->') {
+	} else if (flags.Logged_Out !== undefined) {
 		
 		//If the admin has been logged out, check to see whether this window is in an iframe, and show the login window in the iframe if possible.
 		if (zenarioA.loggedOutIframeCheck(message, messageType)) {
@@ -371,7 +267,6 @@ zenarioA.showMessage = function(message, buttonsHTML, messageType, modal, htmlEs
 			addCancel = "zenario.goToURL(zenario.linkToItem(zenario.cID, zenario.cType, zenarioA.importantGetRequests));";
 		}
 		
-		message = message.substr(17);
 		modal = true;
 	}
 	
@@ -391,28 +286,6 @@ zenarioA.showMessage = function(message, buttonsHTML, messageType, modal, htmlEs
 
 
 
-//Attempt to strip out JSON encoded data from error messages
-zenarioA.splitDataFromErrorMessage = function(resp) {
-	
-	if (_.isString(resp)) {
-		resp = {responseText: resp};
-	}
-	
-	if (resp.responseText && (end = resp.responseText.indexOf('{"')) != -1) {
-		try {
-			var data = JSON.parse(resp.responseText.substr(end));
-		
-			if (typeof data == 'object') {
-				//If there was JSON encoded data, remove it and show the message without it
-				resp.data = data;
-				resp.responseText = resp.responseText.substr(0, end);
-			}
-		} catch (e) {
-		}
-	}
-	
-	return resp;
-};
 
 
 zenarioA.notification = function(message) {
@@ -520,7 +393,7 @@ zenarioA.showTutorial = function(nav, auto) {
 	}
 	
 	// Open tutorial
-	var html = zenarioA.microTemplate('zenario_tutorial', m);
+	var html = zenarioT.microTemplate('zenario_tutorial', m);
 	$.colorbox({
 		width: 964,
 		height: 791,
@@ -591,7 +464,7 @@ zenarioA.clickOtherTutorialVideo = function(id, title, index) {
 	var m = {
 			main_video_id: id
 		},
-		html = zenarioA.microTemplate('zenario_tutorial_main_video', m);
+		html = zenarioT.microTemplate('zenario_tutorial_main_video', m);
 	$('#zenario_tutorial_video_banner').html(title);
 	$('#zenario_tutorial_main_video').html(html);
 	
@@ -877,7 +750,8 @@ zenarioA.openSlotControls = function(el, e, slotName, isFromAdminToolbar) {
 	var closeAsIsAlreadyOpen = !isFromAdminToolbar && $('#zenario_fbAdminSlotControls-' + slotName).is(':visible'),
 		left,
 		top,
-		thisSlotControlsBox = 'AdminSlotControls-' + slotName;
+		thisSlotControlsBox = 'AdminSlotControls-' + slotName,
+		sectionSel, infoSel;
 	
 	el.blur();
 	
@@ -923,39 +797,43 @@ zenarioA.openSlotControls = function(el, e, slotName, isFromAdminToolbar) {
 		
 		//Check that each section has at least one label or button in it. If not, hide that section
 		foreach (sections as section) {
-			$('#zenario_fbAdminSlotControls-' + slotName + ' .zenario_slotControlsWrap_' + section).show();
+			sectionSel = '#zenario_fbAdminSlotControls-' + slotName + ' .zenario_slotControlsWrap_' + section;
 			
-			$('#zenario_fbAdminSlotControls-' + slotName + ' .zenario_slotControlsWrap_' + section + ' .zenario_sc:visible').each(function(i, el) {
+			$(sectionSel).show();
+			
+			$(sectionSel + ' .zenario_sc:visible').each(function(i, el) {
 				sections[section] = true;
 			});
 		
 			if (!sections[section]) {
-				$('#zenario_fbAdminSlotControls-' + slotName + ' .zenario_slotControlsWrap_' + section).hide();
+				$(sectionSel).hide();
 			}
 		}
+		
+		infoSel = '#zenario_slot_control__' + slotName + '__info__';
 		
 		//Set the CSS class that the grid is using
 		if (grid.cssClass) {
 			//Strip out some technical class-names that make the grid work but designers don't need to see
 			grid.cssClass = grid.cssClass.replace(/\bspan\d*_?\d*\s/g, '');
 			
-			$('#zenario_slot_control__' + slotName + '__info__' + 'grid_css_class').show();
-			$('#zenario_slot_control__' + slotName + '__info__' + 'grid_css_class > span').text(grid.cssClass);
+			$(infoSel + 'grid_css_class').show();
+			$(infoSel + 'grid_css_class > span').text(grid.cssClass);
 		} else {
-			$('#zenario_slot_control__' + slotName + '__info__' + 'grid_css_class').hide();
+			$(infoSel + 'grid_css_class').hide();
 		}
 		
 		//Set the width of this slot
 		if (grid.widthInfo) {
-			$('#zenario_slot_control__' + slotName + '__info__' + 'grid_width').show();
-			$('#zenario_slot_control__' + slotName + '__info__' + 'grid_width > span').text(grid.widthInfo);
+			$(infoSel + 'grid_width').show();
+			$(infoSel + 'grid_width > span').text(grid.widthInfo);
 		} else {
-			$('#zenario_slot_control__' + slotName + '__info__' + 'grid_width').hide();
+			$(infoSel + 'grid_width').hide();
 		}
 		
 		//Don't show the "copy embed link" option if this browser doesn't support copy and paste
 		if (!zenario.canCopy()) {
-			$('#zenario_slot_control__' + slotName + '__info__' + 'embed').hide();
+			$(infoSel + 'embed').hide();
 		}
 		
 		$('#plgslt_' + slotName + '-control_box').addClass('zenario_adminSlotControlsOpen');
@@ -1160,7 +1038,7 @@ zenarioA.refreshAllSlotsWithCutCopyPaste = function(allowedModules) {
 	//Try to get a list of every type of plugin affected
 	var slotName,
 		module,
-		modules = zenarioA.csvToObject(allowedModules);
+		modules = zenarioT.csvToObject(allowedModules);
 	
 	modules.zenario_banner = true;
 	modules.zenario_html_snippet = true;
@@ -1326,7 +1204,7 @@ zenarioA.showPlugin = function(el, slotName) {
 /*  Reloading Slots  */
 
 //Callback function for refreshPluginSlot()
-zenarioA.replacePluginSlot = function(slotName, instanceId, level, tabId, resp, scriptsToRunBefore) {
+zenarioA.replacePluginSlot = function(slotName, instanceId, level, slideId, resp, scriptsToRunBefore) {
 	
 	var flags = resp.flags,
 		moduleId = 1*flags.MODULE_ID,
@@ -1345,7 +1223,7 @@ zenarioA.replacePluginSlot = function(slotName, instanceId, level, tabId, resp, 
 	}
 	
 	//Set the current instance id
-	zenario.slot([[slotName, instanceId, moduleId, level, tabId, undefined, beingEdited, isVersionControlled]]);
+	zenario.slot([[slotName, instanceId, moduleId, level, slideId, undefined, beingEdited, isVersionControlled]]);
 	
 	//Add a css class around slots that are being edited using the WYSIWYG Editor
 	if (beingEdited) {
@@ -1356,7 +1234,7 @@ zenarioA.replacePluginSlot = function(slotName, instanceId, level, tabId, resp, 
 	get('plgslt_' + slotName + '-wrap').className = slotControlsCSSClass;
 	
 	//If any slots are being edited, set a warning message for if an admin tries to leave the page 
-	window.onbeforeunload = zenarioA.onbeforeunload;
+	window.onbeforeunload = zenarioT.onbeforeunload;
 	
 	//Remember that this slot is being edited
 	zenario.slots[slotName].beingEdited = beingEdited;
@@ -1402,31 +1280,6 @@ zenarioA.checkForEdits = function() {
 		return true;
 	}
 };
-
-zenarioA.onbeforeunload = function() {
-	var message;
-	
-	//If any Admin Boxes are open, and look like they might have been changed, set a warning message for if an admin tries to leave the page 
-	if (window.zenarioAB && zenarioAB.isOpen && zenarioAB.editModeOnBox() && (zenarioAB.changes() || zenarioAB.callFunctionOnEditors('isDirty'))) {
-		return phrase.leaveAdminBoxWarning;
-	
-	//Same for the skin editor
-	} else if (window.zenarioSE && zenarioSE.isOpen && zenarioSE.editModeOnBox() && (zenarioSE.changes() || zenarioSE.callFunctionOnEditors('isDirty'))) {
-		return phrase.leaveAdminBoxWarning;
-	
-	//Same for the conductor & any FEA plugins
-	} else if (undefined !== (message = zenario_conductor.confirmOnCloseMessage())) {
-		return message;
-	
-	//Set a warning if any slots are being edited
-	} else if (zenarioA.checkSlotsBeingEdited()) {
-		return phrase.leavePageWarning;
-	
-	} else {
-		return undefined;
-	}
-};
-
 
 
 
@@ -1723,26 +1576,6 @@ zenarioA.closeBoxHandler = function(box) {
 		}, 100);
 };
 
-//Fix a bug where the directory path does not wrap in Webkit/IE
-zenarioA.forcePathWrap = function(html, pattern, replacement) {
-	
-	if (zenario.browserIsFirefox() && pattern === undefined) {
-		return html;
-	
-	} else {
-		if (pattern === undefined) {
-			pattern = /\//g;
-		}
-		if (replacement === undefined) {
-			replacement = '/';
-		}
-		
-		return html.replace(pattern, replacement + _$html('span', 'style', 'font-size: 1px;', ' '));
-	}
-};
-
-
-
 
 
 
@@ -1836,10 +1669,30 @@ zenarioA.floatingBox = function(message, buttonsHTML, messageType, modal, htmlEs
 		buttonsHTML: buttonsHTML
 	};
 	
-	html = zenarioA.microTemplate('zenario_popout_message', m);
+	html = zenarioT.microTemplate('zenario_popout_message', m);
 	
-	zenarioA.onCloseFloatingBox = false;
+	delete zenarioA.onCancelFloatingBox;
 	zenarioA.openBox(html, 'zenario_fbAdmin zenario_prompt', 'AdminMessage', undefined, 550, 50, 17, modal, true, false, false);
+	
+	//Add the command to close the floating box to each button in the box.
+	//Note that it must come *before* any other action.
+	$('#zenario_fbMessageButtons button, #zenario_fbMessageButtons input[type="button"]').each(function(i, el) {
+		var $button = $(el),
+			existingOnlick = $button.attr('onclick');
+		
+		//If this button is using an onclick attribute, add the command to close the box before it
+		if (existingOnlick && !(message && message.match('<form '))) {
+			$button.attr('onclick', 'zenarioA.closeFloatingBox($(this)); ' + existingOnlick);
+		
+		//Otherwise assume that the caller is going to be using jQuery bindings,
+		//and also add the command to close the box the same way.
+		//Note that it *must* be the first binding!
+		} else {
+			$button.click(function () {
+				zenarioA.closeFloatingBox($button);
+			});
+		}
+	});
 	
 	zenario.addJQueryElements('#zenario_fbAdminMessage ', true);
 	
@@ -1859,23 +1712,13 @@ zenarioA.floatingBox = function(message, buttonsHTML, messageType, modal, htmlEs
 	}
 };
 
-zenarioA.onCloseFloatingBox = false;
-zenarioA.currentlyClosingFloatingBox = false;
-zenarioA.closeFloatingBox = function(stopBoxClosingTwice) {
-	if (zenarioA.currentlyClosingFloatingBox) {
-		zenarioA.currentlyClosingFloatingBox = false;
-	} else {
-		if (zenarioA.checkIfBoxIsOpen('AdminMessage')) {
-			zenarioA.closeBox('AdminMessage');
-			
-			if (zenarioA.onCloseFloatingBox) {
-				zenarioA.onCloseFloatingBox();
-				zenarioA.onCloseFloatingBox = false;
-			}
-			
-			if (stopBoxClosingTwice) {
-				zenarioA.currentlyClosingFloatingBox = true;
-			}
+zenarioA.closeFloatingBox = function($button) {
+	if (zenarioA.checkIfBoxIsOpen('AdminMessage')) {
+		zenarioA.closeBox('AdminMessage');
+		
+		if (zenarioA.onCancelFloatingBox && $button && !$button.hasClass('submit_selected')) {
+			zenarioA.onCancelFloatingBox();
+			delete zenarioA.onCancelFloatingBox;
 		}
 	}
 };
@@ -1987,9 +1830,9 @@ zenarioA.enableDragDropUploadInTinyMCE = function(enableImages, prefix, el) {
 	}
 	
 	if (el) {
-		zenarioA.disableFileDragDrop(el);
+		zenarioT.disableFileDragDrop(el);
 		
-		if (enableImages && zenarioA.canDoHTML5Upload()) {
+		if (enableImages && zenarioT.canDoHTML5Upload()) {
 			var url = URLBasePath + 'zenario/ajax.php',
 				request = {
 					method_call: 'handleOrganizerPanelAJAX',
@@ -1997,7 +1840,7 @@ zenarioA.enableDragDropUploadInTinyMCE = function(enableImages, prefix, el) {
 					__path__: 'editor_temp_file',
 					upload: 1};
 			
-			zenarioA.setHTML5UploadFromDragDrop(
+			zenarioT.setHTML5UploadFromDragDrop(
 				url,
 				request,
 				false,
@@ -2143,7 +1986,7 @@ zenarioA.fileBrowser = function(field_name, url, type, win) {
 zenarioA.setLinkPickerOnTinyMCE = function() {
 	var $urlField = $('.mce-zenario_link_picker input.mce-textbox'),
 		$picker = $('.mce-zenario_link_picker .mce-open'),
-		$newPicker = $(zenarioA.microTemplate('zenario_tinymce_link_picker', {urlFieldId: $urlField.attr('id')})),
+		$newPicker = $(zenarioT.microTemplate('zenario_tinymce_link_picker', {urlFieldId: $urlField.attr('id')})),
 		urlFieldWidth = $urlField.width(),
 		pickerWidth = $picker.width(),
 		newPickerWidth;
@@ -2281,19 +2124,6 @@ zenarioA.formatFilesizeNicely = function(size, precision) {
 
 };
 
-
-
-zenarioA.makeTimeFromParts = function(hours,minutes,seconds) {
-	var outputTime;
-	
-	if (seconds == undefined) {
-		seconds = "00";
-	}
-	
-	outputTime = hours + ":" + minutes + ":" + seconds;
-	
-	return outputTime;
-};
 
 
 
@@ -2684,168 +2514,6 @@ zenarioA.multipleLanguagesEnabled = function() {
 };
 
 
-//Functions for enabling HTML 5 file-uploads in WYSIWYG Editors and in Organizer Panels
-
-zenarioA.uploading = false;
-zenarioA.canDoHTML5Upload = function() {
-	return window.FileReader;
-};
-
-zenarioA.clearHTML5UploadFromDragDrop = function() {
-	delete zenarioA.uploadPathFromDragDrop;
-	delete zenarioA.uploadRequestFromDragDrop;
-	delete zenarioA.uploadCallBackFromDragDrop;
-};
-
-zenarioA.setHTML5UploadFromDragDrop = function(path, request, preCall, callBack, el) {
-	if (!zenarioA.canDoHTML5Upload()) {
-		return false;
-	
-	} else {
-		zenarioA.uploadPathFromDragDrop = path;
-		zenarioA.uploadRequestFromDragDrop = request;
-		zenarioA.uploadCallBackFromDragDrop = callBack;
-		
-		(el || document.body).addEventListener(
-			'drop',
-			function(e) {
-				if (preCall) {
-					preCall();
-				}
-				zenarioA.doHTML5UploadFromDragDrop(e);
-			},
-			false);
-		
-		return true;
-	}
-};
-
-zenarioA.doHTML5UploadFromDragDrop = function(e) {
-	zenarioA.stopFileDragDrop(e);
-	zenarioA.doHTML5Upload(
-		e.target.files || e.dataTransfer.files,
-		zenarioA.uploadPathFromDragDrop,
-		zenarioA.uploadRequestFromDragDrop,
-		zenarioA.uploadCallBackFromDragDrop);
-};
-
-zenarioA.doHTML5Upload = function(files, path, request, callBack) {
-	if (!path || !request || zenarioA.uploading) {
-		return;
-	}
-	
-	zenarioA.uploadPath = path;
-	zenarioA.uploadRequest = request;
-	zenarioA.uploadCallBack = callBack;
-	zenarioA.uploadResponses = [];
-	
-	zenarioA.uploadFile = -1;
-	zenarioA.uploadFiles = files;
-	zenarioA.doNextUpload();
-};
-
-zenarioA.doNextUpload = function() {
-	
-	var $zenario_progress_wrap = $('#zenario_progress_wrap'),
-		$zenario_progress_name = $('#zenario_progress_name'),
-		$zenario_progress_stop = $('#zenario_progress_stop');
-	
-	$zenario_progress_name.text('');
-	$zenario_progress_stop.unbind('click');
-	
-	zenarioA.uploading = !!zenarioA.uploadFiles[++zenarioA.uploadFile];
-	
-	if (zenarioO.init) {
-		zenarioO.setWrapperClass('uploading', zenarioA.uploading);
-	}
-	
-	if (zenarioA.uploading) {
-		
-		$zenario_progress_wrap.show().removeClass('zenario_progress_cancelled');
-		
-		get('zenario_progressbar').style.width = '0%';
-		
-		if (!zenarioA.uploadFiles[zenarioA.uploadFile].size || !zenarioA.uploadFiles[zenarioA.uploadFile].name) {
-			zenarioA.doNextUpload();
-		
-		} else if (zenarioA.uploadFiles[zenarioA.uploadFile].size > zenarioA.maxUpload) {
-			zenarioA.showMessage(phrase.uploadTooLarge.replace('[[maxUploadF]]', zenarioA.maxUploadF), true, 'error');
-			zenarioA.doNextUpload();
-		
-		} else {
-			$zenario_progress_name.text(zenarioA.uploadFiles[zenarioA.uploadFile].name);
-			
-			zenarioA.uploader = new XMLHttpRequest();  
-			zenarioA.uploader.open('POST', zenarioA.uploadPath, true);
-			
-			try {
-				//Try to add a header for the filename
-				zenarioA.uploader.setRequestHeader('X_FILENAME', zenarioA.uploadFiles[zenarioA.uploadFile].name);
-			} catch (e) {
-				//Don't worry if it coudln't be added, it's optional
-			}
-			
-			var data = new FormData();
-			foreach (zenarioA.uploadRequest as var k) {
-				data.append(k, '' + zenarioA.uploadRequest[k]);
-			}
-			
-			data.append('Filedata', zenarioA.uploadFiles[zenarioA.uploadFile]);
-			
-			zenarioA.uploader.upload.addEventListener('progress', zenarioA.uploadProgress, false);
-			
-			zenarioA.uploader.addEventListener('load', zenarioA.uploadDone, false);
-			zenarioA.uploader.addEventListener('error', zenarioA.uploadDone, false);
-			zenarioA.uploader.addEventListener('abort', zenarioA.uploadDone, false);
-			
-			$zenario_progress_stop.click(function() {
-				$zenario_progress_wrap.show().removeClass('zenario_progress_cancelled');
-				zenarioA.uploader.abort();
-			});
-			
-			zenarioA.uploader.send(data);
-		}
-	
-	} else {
-		$zenario_progress_wrap.hide();
-		
-		if (zenarioA.uploadCallBack) {
-			zenarioA.uploadCallBack(zenarioA.uploadResponses);
-		}
-	}
-};
-
-zenarioA.uploadProgress = function(e) {
-	var completion = 0;
-	if (e.lengthComputable) {  
-		completion = 100 * e.loaded / e.total;  
-	}
-	
-	get('zenario_progress_wrap').style.display = 'block';
-	get('zenario_progressbar').style.width = completion + '%';
-};
-
-zenarioA.uploadDone = function(e) {
-	
-	if (zenarioA.uploader.responseText && zenarioA.uploader.responseText != 1) {
-		try {
-			data = JSON.parse(zenarioA.uploader.responseText);
-		
-			if (typeof data != 'object') {
-				throw 0;
-			}
-			
-			zenarioA.uploadResponses.push(data);
-		
-		} catch (e) {
-			zenarioA.showMessage(zenarioA.uploader.responseText, true, 'error', false, true);
-		}
-	}
-	
-	zenarioA.doNextUpload();
-};
-
-
 
 zenarioA.debug = function(mode, orgMap) {
 	window.open(URLBasePath + 'zenario/admin/dev_tools/dev_tools.php?mode=' + encodeURIComponent(mode) + (orgMap? '&orgMap=1' : '')); return false;
@@ -2943,8 +2611,8 @@ zenarioA.draft = function(aId, justView, confirmMessage, confirmButtonText) {
 	 && (section = tuix.sections && tuix.sections.edit)
 	 && (button = section.buttons && section.buttons[buttonId])
 	 && (button.ajax
-		 //zenarioA.hidden(tuixObject, lib, item, id, button, column, field, section, tab, tuix)
-	 && !zenarioA.hidden(undefined, zenarioAT, undefined, buttonId, button, undefined, undefined, section))) {
+		 //zenarioT.hidden(tuixObject, lib, item, id, button, column, field, section, tab, tuix)
+	 && !zenarioT.hidden(undefined, zenarioAT, undefined, buttonId, button, undefined, undefined, section))) {
 		
 		//Create a copy of it
 		object = zenario.clone(button);
@@ -3005,7 +2673,7 @@ zenarioA.draft = function(aId, justView, confirmMessage, confirmButtonText) {
 		}
 		
 		//"Press" the copy of the button we just made
-		zenarioA.action(zenarioAT, object);
+		zenarioT.action(zenarioAT, object);
 		return false;
 	
 	
@@ -3051,72 +2719,6 @@ zenarioA.draftDoCallback = function(aId) {
 
 
 
-//Admin Actions
-zenarioA.eval = function(condition, lib, tuixObject, item, id, button, column, field, section, tab, tuix) {
-	
-	var functionDetails, libName, methodName, ev;
-	
-	tuix = tuix || (lib && lib.tuix) || undefined;
-	tuixObject = tuixObject || button || column || field || item || section || tab;
-	
-	//From version 7.5 onwards we're allowing arrays/objects to be passed in,
-	//which should contain the name of a method and the inputs to give that method.
-	//This should be a lot more efficient than calling eval
-	if (typeof condition == 'object') {
-		
-		//Loop through each function requested, try to call each one, and
-		//return false if any call fails.
-		foreach (condition as functionDetails => ev) {
-			
-			functionDetails = functionDetails.split('.', 2);
-			libName = functionDetails[0];
-			methodName = functionDetails[1];
-			
-			if (!methodName) {
-				methodName = libName;
-				lib = window;
-			
-			} else if (libName != 'lib') {
-				if (!(lib = window[libName])) {
-					return false;
-				}
-			}
-			
-			if (!lib[methodName]
-			 || !lib[methodName].apply(lib, zenarioA.tuixToArray(ev))) {
-				return false;
-			}
-		}
-		//If all calls were fine then return true
-		return true;
-	
-	//Otherwise assume this is some code that we need to evaulate
-	} else {
-		ev = zenarioA.doEval(condition + '', lib, tuixObject, item, id, button, column, field, section, tab, tuix);
-		
-		//If the eval returned a function, call said function
-		if (typeof ev == 'function') {
-			ev = ev(tuixObject, item, id, tuix, button, column, field, section, tab);
-		}
-		
-		return zenario.engToBoolean(ev);
-	}
-};
-
-
-
-
-zenarioA.hidden = function(tuixObject, lib, item, id, button, column, field, section, tab, tuix) {
-	tuixObject = tuixObject || button || column || field || item || section || tab;
-
-	return engToBoolean(tuixObject.hidden)
-		|| (tuixObject.visible_if && !zenarioA.eval(tuixObject.visible_if, lib, tuixObject, item, id, button, column, field, section, tab, tuix))
-		|| (tuixObject.js_condition && !zenarioA.eval(tuixObject.js_condition, lib, tuixObject, item, id, button, column, field, section, tab, tuix));
-	
-	//N.b. "visible_if" used to be called "js_condition", so the js_condition line above is left for backwards compatability.
-	//If you specify both on one field, then both are checked. (This is used in a couple of advanced cases where properties are merged together.)
-};
-
 
 //A shortcut to the toastr library
 zenarioA.lastToast = false;
@@ -3160,946 +2762,17 @@ zenarioA.rememberToast = function() {
 	}
 };
 
-
-
-
-zenarioA.checkActionUnique = function(object) {
-	var actions = [],
-		test,
-		tests = [
-			'admin_box',
-			'ajax',
-			'combine_items',
-			'navigation_path',
-			'frontend_link',
-			'help',
-			'link',
-			__$onclick,
-			'panel',
-			'pick_items',
-			'popout',
-			'organizer_quick',
-			'upload'];
-	
-	foreach (tests as test) {
-		if (object[tests[test]]) {
-			actions.push(tests[test]);
-		}
-	}
-	
-	switch (actions.length) {
-		case 1:
-			return true;
-		
-		case 0:
-			return false;
-		
-		default:
-			console.log(object);
-			alert('This navigation or button has multiple actions associated with it:\n\n' + actions + '\n\n(See the console log for the faulty definition.)');
-			return false;
+zenarioA.lockWarning = function(msg) {
+	if (!$('#toast-container .zenario_lock_warning').length) {
+		toastr.warning(msg, undefined, {timeOut: 9e9, extendedTimeOut: 9e9, toastClass: 'toast zenario_lock_warning'});
 	}
 };
 
-//Handle what happens when an admin clicks on something that will cause an action; e.g. a button on the admin toolbar or a button on a Organizer Panel's Toolbar
-zenarioA.action = function(zenarioCallingLibrary, object, itemLevel, branch, link, extraRequests, specificItemRequested, AJAXURL) {
-	if (zenarioCallingLibrary.uploading) {
-		return false;
-	}
-	
-	//Check to see if there is a unique action on this button
-		//(But skip this if we're overriding the functionality with a link)
-	if (!link) {
-		if (!zenarioA.checkActionUnique(object)) {
-			return false;
-		}
-	}
-	
-	var ajaxMethodCall;
-	switch (zenarioCallingLibrary.globalName) {
-		case 'zenarioO':
-			ajaxMethodCall = 'handleOrganizerPanelAJAX';
-			break;
-		case 'zenarioAT':
-			ajaxMethodCall = 'handleAdminToolbarAJAX';
-			break;
-		case 'zenarioW':
-			ajaxMethodCall = 'handleWizardAJAX';
-			break;
-		case 'zenarioAB':
-		case 'zenarioSE':
-			ajaxMethodCall = 'handleAdminBoxAJAX';
-			break;
-		default:
-			ajaxMethodCall = 'handlePluginAJAX';
-	}
-	
-	if (!link && object.link) {
-		link = object.link;
-	
-	} else if (!link && object.panel && object.panel._path_here) {
-		link = {path: object.panel._path_here};
-	}
-	
-	//In select mode, don't let an admin navigate past a certain point using double-click actions on items
-	if (link && zenarioO.pathNotAllowed(link)) {
-		return;
-	}
-	
-	//Clear the yourWorkInProgressLastUpdated flag so that the list will be immediately updated after any change
-	zenarioO.yourWorkInProgressLastUpdated = 0;
-	
-	zenarioCallingLibrary.pickItemsItemLevel = itemLevel;
-	zenarioCallingLibrary.postPickItemsObject = false;
-	
-	
-	//Uploads and AJAX requests need a path and a requests object
-	var url, requests, thing;
-	if ((thing = object.upload)
-	 || (thing = object.ajax)) {
-		
-		if (AJAXURL) {
-			url = AJAXURL;
-			requests = zenarioCallingLibrary.getKey(itemLevel);
-		
-		//If an AJAX button requests all of the ids that are currently matched in Organizer,
-		//we'll need to get the details of the last Organizer panel accessed (the requests needed
-		//should be stored in zenarioO.lastRequests) and fire up the Organizer Panel to get the list of
-		//ids.
-		} else
-		if (!itemLevel
-		 && object.ajax
-		 && object.ajax.pass_matched_ids
-		 && zenarioCallingLibrary.globalName == 'zenarioO') {
-			url =
-				URLBasePath + 'zenario/admin/organizer.ajax.php?' +
-					'__pluginClassName__=' + thing.class_name +
-					'&path=' + zenarioO.path +
-					'&_get_matched_ids=1' +
-					'&method_call=' + ajaxMethodCall +
-					zenario.urlRequest(zenarioO.lastRequests);
-			requests = {};
-		
-		//If not then we don't need to use the whole the Organizer Panel logic, we can just use
-		//the normal ajax file.
-		} else {
-			url =
-				URLBasePath + 'zenario/ajax.php?' +
-					'__pluginClassName__=' + thing.class_name +
-					'&__path__=' + zenarioCallingLibrary.path +
-					'&method_call=' + ajaxMethodCall;
-		
-			requests = zenarioCallingLibrary.getKey(itemLevel);
-		}
-		
-		if (thing.request) {
-			$.extend(requests, thing.request);
-		}
-		
-		if (extraRequests) {
-			$.extend(requests, extraRequests);
-		}
-	}
-	
-	//Handle uploads first, as they need converting to ajax pop-ups for browsers without html5
-	if (object.upload) {
-		var fallback = !zenarioA.canDoHTML5Upload(),
-			html = '<input type="file" name="Filedata"',
-			e, extension, extensions, split;
-		
-		if (extensions = object.upload.accept || object.upload.extensions) {
-			extensions = zenarioA.tuixToArray(extensions);
-			
-			//Loop through each extension and check it
-			foreach (extensions as e => extension) {
-				
-				switch (extension) {
-					//Catch the case where someone has used the dropbox-style types and convert them
-					case 'text':
-						extensions[e] = 'text/*';
-						break;
-					case 'images':
-						extensions[e] = 'image/*';
-						break;
-					case 'video':
-						extensions[e] = 'video/*';
-						break;
-					case 'audio':
-						extensions[e] = 'audio/*';
-						break;
-					
-					default:
-						//Look for file extensions without a "." in front of them, and automatically add the "."
-						if (extension.indexOf('/') == -1
-						 && extension.substr(0, 1) != '.') {
-							extensions[e] = '.' + extension;
-						}
-				}
-			}
-			
-			html += ' accept="' + htmlspecialchars(extensions.join(',')) + '"';
-		
-		//Backwards compatibility with old versions
-		} else if (object.upload.fileDesc == 'Images') {
-			html += ' accept="image/*"';
-		}
-		
-		if (fallback) {
-			html += ' id="zenario_fallback_fileupload"';
-		}
-		
-		if (!fallback && engToBoolean(object.upload.multi)) {
-			html += ' multiple';
-		}
-		html += '/>';
-		
-		if (!fallback) {
-			var $input = $(html);
-			$input.change(function() {
-				
-				if (zenarioCallingLibrary.uploadStart) {
-					zenarioCallingLibrary.uploadStart();
-				}
-				
-				zenarioA.doHTML5Upload(this.files, url, requests, function(responses) {
-					zenarioCallingLibrary.uploadComplete(responses);
-				});
-				
-			});
-			$input.click();
-			return;
-			
-		} else {
-			//For backwards compatability for browsers without flash, attempt to convert file upload tags into ajax->confirm->form tags
-			object = zenario.clone(object);
-			requests._html5_backwards_compatibility_hack = 1;
-			
-			object.ajax = {
-				class_name: object.upload.class_name,
-				confirm: {
-					message: html,
-					html: true,
-					button_message: phrase.upload,
-					cancel_button_message: phrase.cancel,
-					form: true
-				},
-				request: requests
-			};
-		}
-	}
-	
-	
-	if (link) {
-		//If a link is set, go to the link
-		if (engToBoolean(link.unselect_items)) {
-			zenarioO.selectedItems = {};
-			zenarioO.saveSelection();
-		}
-		
-		zenarioO.go(
-			link.path,
-			branch,
-			link.refiner? {'id': itemLevel? zenarioO.getKeyId() : '', 'name': link.refiner} : undefined,
-			undefined, undefined, undefined, undefined, specificItemRequested);
-	
-	} else if (object.frontend_link) {
-		var id, item,
-			frontend_link = object.frontend_link,
-			sameWindow = false;
-		
-		if (itemLevel && (id = zenarioCallingLibrary.getKeyId(true)) && (item = zenarioCallingLibrary.tuix.items[id]) && item.frontend_link) {
-			frontend_link = item.frontend_link;
-		}
-		
-		//For Organizer, attempt to insert the return link,
-		//and then open it in the same window if we successfully inserted it
-		if (zenarioCallingLibrary.globalName == 'zenarioO') {
-			frontend_link = zenarioO.parseReturnLink(frontend_link);
-			
-			if (frontend_link.indexOf('&zenario_sk_return=') != -1) {
-				sameWindow = true;
-			}
-		}
-		
-		if (sameWindow || frontend_link.substr(0, 25) == 'zenario/admin/welcome.php') {
-			zenario.goToURL(zenario.addBasePath(frontend_link));
-		
-		//If there is a prototal (e.g. http://) in the URL, open it in a new window, unless it is a link
-		//to the current site
-		} else if (frontend_link.indexOf('://') !== -1 && frontend_link.indexOf(URLBasePath) !== 0) {
-			window.open(frontend_link);
-		
-		} else if (zenarioCallingLibrary.globalName == 'zenarioAT') {
-			zenario.goToURL(zenario.addBasePath(frontend_link));
-		
-		} else if (windowOpener && !windowOpener.zenarioO) {
-			window.opener.location = zenario.addBasePath(frontend_link);
-		
-		} else if (window.storekeeperChildWindow && !window.storekeeperChildWindow.closed) {
-			window.storekeeperChildWindow.location = zenario.addBasePath(frontend_link);
-		
-		} else {
-			window.storekeeperChildWindow = window.open(zenario.addBasePath(frontend_link));
-		}
-	
-	} else if (object.navigation_path) {
-		var id, item, pos,
-			navigation_path = object.navigation_path;
-		
-		if (itemLevel && (id = zenarioCallingLibrary.getKeyId(true)) && (item = zenarioCallingLibrary.tuix.items[id]) && item.navigation_path) {
-			navigation_path = item.navigation_path;
-		}
-		
-		if (zenarioCallingLibrary.globalName == 'zenarioO') {
-			zenarioO.go(navigation_path, -1);
-		} else {
-			zenario.goToURL(zenario.addBasePath(
-				(window.zenarioATLinks && window.zenarioATLinks.organizer || 'zenario/admin/organizer.php') +
-				'#' +
-				navigation_path
-			));
-		}
-	
-	} else if (object.admin_box) {
-		zenarioA.nowDoingSomething('loading');
-		var key = zenarioCallingLibrary.getKey(itemLevel) || {};
-		
-		if (object.admin_box.key) {
-			foreach (object.admin_box.key as var r) {
-				key[r] = object.admin_box.key[r];
-			}
-		}
-		
-		zenarioAB.open(
-			object.admin_box.path,
-			key,
-			object.admin_box.tab,
-			object.admin_box.values,
-			undefined,
-			engToBoolean(object.admin_box.create_another)? object.admin_box : false,
-			undefined,
-			engToBoolean(object.admin_box.pass_matched_ids));
-	
-	} else if (object.popout) {
-		var id, item, title, usage,
-			filename, match,
-			popout = zenario.clone(object.popout);
-		
-		if (itemLevel && (id = zenarioCallingLibrary.getKeyId(true)) && (item = zenarioCallingLibrary.tuix.items[id])) {
-			if (item.popout) {
-				popout = $.extend(popout, item.popout);
-			}
-			
-			if (!popout.title && zenarioCallingLibrary.popoutLabelFormat) {
-				popout.title = zenarioCallingLibrary.applyMergeFields(zenarioCallingLibrary.popoutLabelFormat, false, id);
-			}
-		}
-			
-		if (item && item.href && popout.href === undefined) {
-			popout.href = item.href;
-		
-		} else if (item && item.frontend_link && popout.href === undefined) {
-			popout.href = zenarioO.parseReturnLink(item.frontend_link, '_show_page_preview=1');
-		
-		} else if (item && popout.href) {
-			popout.href += popout.href.indexOf('?') === -1? '?' : '&';
-			
-			if (item.checksum) {
-				popout.href += 'c=' + encodeURIComponent(item.checksum);
-				
-				if (id == 1*id) {
-					popout.href += '&id=' + id;
-				}
-			
-			} else if (id == 1*id) {
-				popout.href += 'id=' + id;
-			
-			} else {
-				popout.href += 'c=' + encodeURIComponent(id);
-			}
-			
-			if (usage = zenarioCallingLibrary.getKey().usage || item.usage) {
-				popout.href += '&usage=' + encodeURIComponent(usage);
-			}
-		}
-		
-		if (popout.href) {
-			if (filename = (item && item.filename) || (popout.options && popout.options.filename) || popout.filename) {
-				
-				//If the short checksum has been added to the end of the filename, we need to strip it off
-				//as colorbox uses the filename to detect the mimetype of the object
-				if (match = filename.match(/(.*) \[.*\]/)) {
-					filename = match[1];
-				}
-				
-				popout.href += '&filename=' + encodeURIComponent(filename);
-			}
-			
-			popout.href = zenario.addBasePath(popout.href);
-		}
-		
-		if (popout.css_class) {
-			var cssClasses = ('' + popout.css_class).split(' ');
-			popout.onOpen = function() { zenario.addClassesToColorbox(cssClasses); };
-			popout.onClosed = function() { zenario.removeClassesToColorbox(cssClasses); };
-		}
-		
-		if (popout.iframe && popout.width === undefined) {
-			popout.width = '93%';
-		}
-		if (popout.iframe && popout.height === undefined) {
-			popout.height = '90%';
-		}
-		
-		if (item && item.width) {
-			popout.initialWidth = item.width;
-		}
-		if (item && item.height) {
-			popout.initialHeight = item.height;
-		}
-		
-		if (popout.preloading === undefined) {
-			popout.preloading = false;
-		}
-		
-		$.colorbox(popout);
-	
-	} else if (object.organizer_quick) {
-		var id,
-			path = object.organizer_quick.path;
-		
-		if (itemLevel && (id = zenarioCallingLibrary.getKeyId(true))) {
-			path = path.replace(/\[\[id\]\]/g, id);
-		}
-		
-		//zenarioA.organizerQuick = function(path, targetPath, minPath, maxPath, disallowRefinersLoopingOnMinPath, slotName, instanceId, reloadOnChanges, wrapperCSSClass)
-		zenarioA.organizerQuick(
-			path,
-			
-			//We don't need the target path variable when opening like this, but as a little hack I'll
-			//fill it with something anyway.
-			object.organizer_quick.min_path || object.organizer_quick.max_path || object.organizer_quick.path,
-			
-			object.organizer_quick.min_path, object.organizer_quick.max_path,
-			engToBoolean(object.organizer_quick.disallow_refiners_looping_on_min_path),
-			undefined, undefined, zenarioCallingLibrary.globalName);
-	
-	} else if (object.pick_items && !itemLevel) {
-		
-		if (object.pick_items.ajax) {
-			zenarioCallingLibrary.postPickItemsObject = object.pick_items;
-		}
-		
-		//Use Organizer in select mode to combine two items
-		zenarioCallingLibrary.actionTarget =
-			URLBasePath + 'zenario/ajax.php?' +
-				'__pluginClassName__=' + object.pick_items.class_name +
-				'&__path__=' + zenarioCallingLibrary.path +
-				'&method_call=' + ajaxMethodCall;
-		zenarioCallingLibrary.actionRequests = zenarioCallingLibrary.getKey(itemLevel);
-		
-		if (object.pick_items.request) {
-			$.extend(zenarioCallingLibrary.actionRequests, object.pick_items.request);
-		}
-		
-		zenarioA.organizerSelect(
-			zenarioCallingLibrary.globalName, 'pickItems',
-			object.pick_items.multiple_select,
-			object.pick_items.path,
-			object.pick_items.target_path,
-			object.pick_items.min_path,
-			object.pick_items.max_path,
-			object.pick_items.disallow_refiners_looping_on_min_path,
-			true,
-			object.pick_items.one_to_one_choose_phrase,
-			object.pick_items.one_to_many_choose_phrase,
-			undefined, undefined, undefined, undefined, undefined,
-			zenarioCallingLibrary.getLastKeyId(true),
-			object.pick_items.allow_no_selection,
-			object.pick_items.one_to_no_selection_choose_phrase,
-			undefined, undefined,
-			object.pick_items);
-	
-	} else if (object.combine_items && itemLevel) {
-		
-		if (object.combine_items.ajax) {
-			zenarioCallingLibrary.postPickItemsObject = object.combine_items;
-		}
-		
-		//Use Organizer in select mode to combine two items
-		zenarioCallingLibrary.actionTarget =
-			URLBasePath + 'zenario/ajax.php?' +
-				'__pluginClassName__=' + object.combine_items.class_name +
-				'&__path__=' + zenarioCallingLibrary.path +
-				'&method_call=' + ajaxMethodCall;
-		zenarioCallingLibrary.actionRequests = zenarioCallingLibrary.getKey(itemLevel);
-		
-		if (object.combine_items.request) {
-			$.extend(zenarioCallingLibrary.actionRequests, object.combine_items.request);
-		}
-		
-		zenarioA.organizerSelect(
-			zenarioCallingLibrary.globalName, 'pickItems',
-			object.combine_items.multiple_select,
-			object.combine_items.path,
-			object.combine_items.target_path,
-			object.combine_items.min_path,
-			object.combine_items.max_path,
-			object.combine_items.disallow_refiners_looping_on_min_path,
-			true,
-			zenarioCallingLibrary.itemsSelected > 1 && object.combine_items.many_to_one_choose_phrase?
-				object.combine_items.many_to_one_choose_phrase
-			  : object.combine_items.one_to_one_choose_phrase,
-			zenarioCallingLibrary.itemsSelected > 1 && object.combine_items.many_to_many_choose_phrase?
-				object.combine_items.many_to_many_choose_phrase
-			  : object.combine_items.one_to_many_choose_phrase,
-			undefined, undefined, undefined, undefined, undefined,
-			zenarioCallingLibrary.getKeyId(false),
-			object.combine_items.allow_no_selection,
-			zenarioCallingLibrary.itemsSelected > 1 && object.combine_items.many_to_no_selection_choose_phrase?
-				object.combine_items.many_to_no_selection_choose_phrase
-			  : object.combine_items.one_to_no_selection_choose_phrase,
-			undefined, undefined,
-			object.combine_items);
-	
-	} else if (object.ajax) {
-		
-		//Run an AJAX function
-		zenarioCallingLibrary.actionTarget = url;
-		zenarioCallingLibrary.actionRequests = requests;
-		
-		//If a confirm is set, set up a pop-up floating box box to ask the admin before carrying out the action
-		if (object.ajax.confirm) {
-			
-			var isHTML = engToBoolean(object.ajax.confirm.html);
-			var isDownload = engToBoolean(object.ajax.confirm.download);
-			
-			//Get the message/html for this box
-			var message;
-			
-			if (object.ajax.confirm.message) {
-				if (object.upload) {
-					//Part of the backwards compatability hack for browsers without HTML 5 uploads above
-					message = object.ajax.confirm.message;
-			
-				} else {
-					//Otherwise apply any merge fields to the label from the calling library
-					message = zenarioCallingLibrary.applyMergeFieldsToLabel(
-						object.ajax.confirm.message,
-						isHTML, itemLevel,
-						object.ajax.confirm.multiple_select_message
-					);
-				}
-			
-			//If no message is set, try and get one using an AJAX call
-			} else {
-				message = zenario.nonAsyncAJAX(zenarioCallingLibrary.actionTarget + zenario.urlRequest(zenarioCallingLibrary.actionRequests), false);
-			}
-			
-			//If this is a download, add the current search/sorting information in,
-			//just in case the download should differ depending on the current view
-			if (isDownload) {
-				zenarioCallingLibrary.actionRequests._download = 1;
-				
-				if (zenarioCallingLibrary.searchTerm !== undefined) {
-					zenarioCallingLibrary.actionRequests._search = zenarioCallingLibrary.searchTerm;
-				}
-				
-				if (zenarioCallingLibrary.prefs[zenarioCallingLibrary.path] && zenarioCallingLibrary.prefs[zenarioCallingLibrary.path].sortBy) {
-					zenarioCallingLibrary.actionRequests._sort_col = zenarioCallingLibrary.prefs[zenarioCallingLibrary.path].sortBy;
-					zenarioCallingLibrary.actionRequests._sort_desc = zenarioCallingLibrary.prefs[zenarioCallingLibrary.path].sortDesc? 1 : 0;
-				} else {
-					zenarioCallingLibrary.actionRequests._sort_col = zenarioCallingLibrary.labelTag;
-				}
-			}
-			
-			//Start generating the box.
-			//If there is a form, the message should be surrounded by <form></form> tags.
-			var html = '',
-				buttonsHTML = '',
-				r,
-				__$formId = 'zenario_bc_form';
-			
-			if (isDownload || object.upload) {
-				html += 
-					_$html('form', 'id', __$formId, 'action', zenarioCallingLibrary.actionTarget + '&_sk_form_submission=1',
-						'onsubmit', "get('preloader_circle').style.visibility = 'visible';",
-						'target', 'zenario_iframe', 'method', 'post', 'enctype', object.upload && 'multipart/form-data',
-					'>');
-				
-				foreach (zenarioCallingLibrary.actionRequests as r) {
-					html += _$input(__$type, 'hidden', __$value, zenarioCallingLibrary.actionRequests[r], 'name', r);
-				}
-				
-				if (!isHTML) {
-					message = htmlspecialchars(message, true);
-					isHTML = true;
-				}
-			}
-			
-			html += message;
-			
-			//If there is a form, the confirm button should submit the form...
-			if (isDownload || object.upload) {
-				html += '</form>';
-				
-				buttonsHTML =
-					_$input(__$type, __$button, __$class, 'submit_selected', __$value, object.ajax.confirm.button_message, __$onclick, "get('" + __$formId + "').submit();");
-			//...otherwise it should launch a syncronous AJAX request.
-			} else {
-				buttonsHTML =
-					_$input(__$type, __$button, __$class, 'submit_selected', __$value, object.ajax.confirm.button_message, __$onclick, zenarioCallingLibrary.globalName + '.action2()');
-			}
-			
-			buttonsHTML +=
-				_$input(__$type, __$button, __$class, __$submit, __$value, object.ajax.confirm.cancel_button_message);
-			
-			
-			zenarioA.showMessage(html, buttonsHTML, object.ajax.confirm.message_type, undefined, !isHTML);
-			
-			//If this was a fileupload in fallback mode, try to click the fileupload prompt straight away...
-			if (object.upload) {
-				//...except on IE, where this causes an error :(
-				if (!zenario.browserIsIE()) {
-					$('#zenario_fallback_fileupload').click();
-				}
-			}
-		
-		//If there is no confirmation then do the action straight away
-		} else {
-			zenarioCallingLibrary.action2();
-		}
-		
-	
-	} else if (object.help) {
-		var messageType = object.help.message_type || 'question',
-			htmlEscapeMessage = !engToBoolean(object.help.html);
-		
-		if (object.help.message) {
-			zenarioA.showMessage(object.help.message, true, messageType, false, htmlEscapeMessage);
-		}
-	}
-};
+
 
 zenarioA.isHtaccessWorking = function() {
 	return zenario.nonAsyncAJAX(URLBasePath + 'zenario/includes/test_files/is_htaccess_working.txt', true) == 'Yes';
 };
-
-zenarioA.checkFunctionExists = function(functionName, globalName) {
-	if (globalName) {
-		return window[globalName] && typeof window[globalName][functionName] == 'function';
-	} else {
-		return typeof window[functionName] == 'function';
-	}
-};
-
-
-//Given an image size and a target size, resize the image (maintaining aspect ratio).
-//This is a copy of the resizeImage() function in cms.inc.php, to ensure consistent logic
-//when generating a thumbnail in JavaScript
-zenarioA.resizeImage = function(image_width, image_height, constraint_width, constraint_height, out, allowUpscale) {
-	out.width = image_width;
-	out.height = image_height;
-	image_width = 1*image_width;
-	image_height = 1*image_height;
-	
-	if (image_width == constraint_width && image_height == constraint_height) {
-		return;
-	}
-	
-	if (!allowUpscale && (image_width <= constraint_width) && (image_height <= constraint_height)) {
-		return;
-	}
-
-	if ((constraint_width / image_width) < (constraint_height / image_height)) {
-		out.width = constraint_width;
-		out.height = Math.floor(image_height * constraint_width / image_width);
-	} else {
-		out.height = constraint_height;
-		out.width = Math.floor(image_width * constraint_height / image_height);
-	}
-
-	return;
-};
-
-
-
-
-//Utility function for the zenarioXX.sortYYY() series of function
-//Given two arrays (each of which represents an element), say which should be first
-zenarioA.sortArray = function(a, b) {
-	return zenarioA.sortLogic(a, b, 1);
-};
-
-zenarioA.sortArrayByOrd = function(a, b) {
-	return zenarioA.sortLogic(a, b, 'ord');
-};
-
-zenarioA.sortArrayByOrdinal = function(a, b) {
-	return zenarioA.sortLogic(a, b, 'ordinal');
-};
-
-zenarioA.sortArrayWithGrouping = function(a, b) {
-	
-	//Both fields are in the same grouping, or neither field is in a grouping.
-	if (a[2] === b[2]) {
-		//Check their ordinal normally
-		return zenarioA.sortLogic(a, b, 1);
-	
-	//Field a is not in a grouping, but field b is
-	} else if (a[2] === undefined) {
-		//a's ordinal should be checked against the ordinal of b's grouping
-		return zenarioA.sortLogic(a, b, 1, 2);
-	
-	//Field b is not in a grouping, but field a is
-	} else if (b[2] === undefined) {
-		//a's ordinal should be checked against the ordinal of b's grouping
-		return zenarioA.sortLogic(a, b, 2, 1);
-	
-	//Both fields are in different groupings
-	} else {
-		//Compare the ordinal of the groupings against each other
-		return zenarioA.sortLogic(a, b, 2);
-	}
-};
-
-zenarioA.sortLogic = function(a, b, propA, propB) {
-	
-	var vA = a[propA], vB;
-	
-	if (propB === undefined) {
-		vB = b[propA];
-	} else {
-		vB = b[propB];
-	}
-	
-	//Check to see if they're identical
-	if (vA === vB) {
-		return 0;
-	
-	} else {
-		var aNumeric = vA == 1*vA,
-			bNumeric = vB == 1*vB;
-	
-		//Try a numeric comparision
-		if (aNumeric && bNumeric) {
-			return 1*vA < 1*vB? -1 : 1;
-	
-		//Put any numeric values before strings
-		} else if (aNumeric || bNumeric) {
-			return aNumeric? -1 : 1;
-		
-		//Otherwise try a string comparision
-		} else {
-			return ('' + vA).toUpperCase() < ('' + vB).toUpperCase()? -1 : 1;
-		}
-	}
-};
-
-
-zenarioA.getSortedIdsOfTUIXElements = function(tuix, toSort, column, desc) {
-	//Build an array to sort, containing:
-		//0: The item's actual index
-		//1: The value to sort by
-		//2: Whether this value is numeric
-	var value,
-		numeric,
-		i, thing,
-		format = false,
-		sortedArray = [];
-	
-	if (!column) {
-		column = 'ord';
-	}
-	
-	if (toSort == 'items'
-	 && tuix.columns
-	 && tuix.columns[column]) {
-		format = tuix.columns[column].format;
-	}
-	
-	if (!_.isObject(toSort)) {
-		toSort = tuix[toSort];
-	}
-	
-	if (toSort) {
-		foreach (toSort as i => thing) {
-			if (thing) {
-				//Check if the value is a number, and if so make sure that it is numeric so it is sorted numericaly
-				value = thing[column];
-				
-				if (format == 'true_or_false' || format == 'yes_or_no') {
-					sortedArray.push([i, engToBoolean(value), true]);
-				
-				} else if (format != 'remove_zero_padding' && value == (numeric = 1*value)) {
-					sortedArray.push([i, numeric, true]);
-				
-				} else if (value) {
-					sortedArray.push([i, value.toLowerCase(), false]);
-				
-				} else {
-					sortedArray.push([i, 0, true]);
-				}
-			}
-		}
-	}
-	
-	//Sort this array
-	if (desc) {
-		sortedArray.sort(zenarioA.sortArrayDesc);
-	} else {
-		sortedArray.sort(zenarioA.sortArrayForOrganizer);
-	}
-	
-	//Remove fields that were just there to help sort
-	foreach (sortedArray as i) {
-		sortedArray[i] = sortedArray[i][0];
-	}
-	
-	return sortedArray;
-}
-
-//Given two elements from the above function, say which order they should be in
-zenarioA.sortArrayForOrganizer = function(a, b) {
-	if (a[1] === b[1]) {
-		//If their values are the same type and identical, say that they're identical
-		return 0;
-	
-	} else if (a[2]? b[2] : !b[2]) {
-		//If they're the same type, use a < to work out which is smallest
-		return a[1] < b[1]? -1 : 1;
-	
-	} else {
-		//Otherwise order by numeric data first, then strings
-		return a[2]? -1 : 1;
-	}
-};
-
-zenarioA.sortArrayDesc = function(a, b) {
-	return zenarioA.sortArrayForOrganizer(b, a);
-};
-
-zenarioA.csvToObject = function(aString) {
-	
-	if (_.isString(aString)) {
-		
-		var anArrayIndex,
-			anObject = {},
-			anArray = aString.split(',');
-		
-		for (anArrayIndex in anArray) {
-			if (anArray[anArrayIndex] !== '') {
-				anObject[anArray[anArrayIndex]] = true;
-			}
-		}
-		
-		return anObject;
-	}
-	return aString;
-};
-
-//Accept either a CSV string, an object with keys to true or false,
-//or an array (that might have been converted to an object),
-//and convert it to a normal array.
-zenarioA.tuixToArray = function(tuix) {
-	
-	if (_.isArray(tuix)) {
-		return tuix;
-	}
-	
-	var key, val,
-		vals = [];
-	
-	switch (typeof tuix) {
-		//Spilt strings up by commas
-		case 'string':
-			return tuix.split(/\s*,\s*/);
-		
-		//Check objects
-		case 'object':
-			foreach (tuix as key => val) {
-				//If the keys look numeric, assume it was a numeric array in PHP that got converted to an object,
-				//and note down the values.
-				if (key == 1*key) {
-					vals.push(val);
-				
-				//Otherwise assume it is an associative array and note down the keys, as long as the values were set to true
-				} else if (engToBoolean(val)) {
-					vals.push(key);
-				}
-			}
-	}
-	
-	return vals;
-};
-
-
-
-
-
-
-
-
-
-
-
-zenarioA.setButtonKin = function(buttons, parentClass) {
-	zenarioA.setKin(buttons, parentClass || 'organiser_button_with_children');
-};
-
-zenarioA.setKin = function(buttons, parentClass) {
-	
-	var bi, button, tuix,
-		pi, parentId, parentButton,
-		buttonsPos = {};
-	
-	foreach (buttons as bi => button) {
-		delete button.children;
-		buttonsPos[button.id] = bi;
-	}
-	
-	//Add parent/child relationships
-	foreach (buttons as bi => button) {
-		
-		//Accept either an array of TUIX objects, or a list of objects with pointers to TUIX objects.
-		tuix = button.tuix || button;
-		
-		if (parentId = tuix.parent) {
-			pi = buttonsPos[parentId];
-			
-			if (parentButton = buttons[pi]) {
-				
-				if (!parentButton.children) {
-					parentButton.children = [];
-					
-					if (parentClass !== undefined) {
-						parentButton.css_class = parentButton.css_class? parentButton.css_class + ' ' + parentClass : parentClass;
-					}
-				}
-				
-				if (button.enabled
-				 && !engToBoolean(tuix.remove_filter)) {
-					parentButton.childEnabled = true;
-				}
-				if (button.current) {
-					parentButton.childCurrent = true;
-				}
-				
-				parentButton.children.push(button);
-			}
-		}
-	}
-	
-	//Remove children from the top-level buttons
-	for (bi = buttons.length - 1; bi >= 0; --bi) {
-		button = buttons[bi];
-		tuix = button.tuix || button;
-		
-		if (tuix.parent || (engToBoolean(tuix.hide_when_children_are_not_visible) && !button.children)) {
-			buttons.splice(bi, 1);
-		}
-	}
-};;
 
 
 //Default error handler for lost AJAX requests
@@ -4109,16 +2782,13 @@ zenarioA.setKin = function(buttons, parentClass) {
 
 zenarioA.AJAXErrorHandler = function(resp, statusType, statusText) {
 	
-	window.testResp = resp;
-	console.log(resp, statusType, statusText);
-	
 	if (!zenarioA.unloaded) {
 		var msg = '',
 			flags = '',
 			fun,
 			isDev = zenarioA.adminSettings.show_dev_tools;
 		
-		resp = zenarioA.splitDataFromErrorMessage(resp);
+		resp = zenarioT.splitDataFromErrorMessage(resp);
 		
 		if (!(resp.getResponseHeader && resp.getResponseHeader('Zenario-Admin-Logged_Out'))) {
 			if (statusText) {
@@ -4138,6 +2808,8 @@ zenarioA.AJAXErrorHandler = function(resp, statusType, statusText) {
 			if (resp.responseText) {
 				msg += _$div(htmlspecialchars(resp.responseText));
 			}
+			
+			resp.responseText = msg;
 		}
 		
 		showErrorMessage = function() {
@@ -4145,7 +2817,6 @@ zenarioA.AJAXErrorHandler = function(resp, statusType, statusText) {
 			var hasReply = resp.zenario_retry,
 				hasContinueAnyway = resp.zenario_continueAnyway && resp.data,
 				hasOnCancel = resp.zenario_onCancel,
-				pressedCancel = true,
 				buttonsHTML = '';
 			
 			if (hasReply || hasContinueAnyway) {
@@ -4159,32 +2830,28 @@ zenarioA.AJAXErrorHandler = function(resp, statusType, statusText) {
 				
 				zenarioA.nowDoingSomething();
 				//zenarioA.showMessage(message, buttonsHTML, messageType, modal, htmlEscapeMessage, addCancel, cancelPhrase)
-				zenarioA.showMessage(msg, buttonsHTML, 'error', true, undefined, true, phrase.close);
+				zenarioA.showMessage(resp, buttonsHTML, 'error', true, undefined, true, phrase.close);
 				
 				if (hasContinueAnyway) {
 					$('#zenario_continueAnyway').click(function() {
 						setTimeout(function() {
 							resp.zenario_continueAnyway(resp.data);
 						}, 1);
-						pressedCancel = false;
 					});
 				}
 				if (hasReply) {
 					$('#zenario_retry').click(function() {
 						setTimeout(resp.zenario_retry, 1);
-						pressedCancel = false;
 					});
 				}
 				
 			} else {
-				zenarioA.showMessage(msg, '', 'error');
+				zenarioA.showMessage(resp, '', 'error');
 			}
 			
 			if (hasOnCancel) {
-				zenarioA.onCloseFloatingBox = function() {
-					if (pressedCancel) {
-						setTimeout(resp.zenario_onCancel, 1);
-					}
+				zenarioA.onCancelFloatingBox = function() {
+					setTimeout(resp.zenario_onCancel, 1);
 				};
 			}
 			
@@ -4201,34 +2868,6 @@ zenarioA.AJAXErrorHandler = function(resp, statusType, statusText) {
 };
 $.ajaxSetup({error: zenarioA.AJAXErrorHandler});
 
-zenarioA.attempts = {};
-zenarioA.attemptNum = 0;
-zenarioA.keepTrying = function(fun, attempt) {
-	if (attempt === undefined) {
-		attempt = ++zenarioA.attemptNum;
-		zenarioA.attempts[attempt] = true;
-	
-	} else if (!zenarioA.attempts[attempt]) {
-		return;
-	}
-	
-	fun(attempt);
-	
-	setTimeout(function() {
-		zenarioA.keepTrying(fun, attempt);
-	}, 30000);
-};
-
-zenarioA.stopTrying = function(attempt) {
-	if (!zenarioA.attempts[attempt]) {
-		return false;
-	
-	} else {
-		delete zenarioA.attempts[attempt];
-		return true;
-	}
-};
-
 
 
 zenarioA.onunload = function(e) {
@@ -4243,48 +2882,6 @@ if (window.onpagehide) {
 } else {
 	window.onunload = zenarioA.onunload;
 }
-
-
-zenarioA.stopDefault = function(e) {
-	e = (e || event);
-	
-	if (e && e.stopPropagation) {
-		e.stopPropagation();
-	}
-	if (e && e.preventDefault) {
-		e.preventDefault();
-	}
-	
-	return false;
-};
-
-
-//Try to disable the ability to navigate away from the page by dragging a file or an image into the browser from the filesystem
-zenarioA.stopFileDragDrop = function(e) {
-	var fileUpload = false;
-	if (e.dataTransfer && e.dataTransfer.types) {
-		if (typeof e.dataTransfer.types.contains == 'function') {
-			fileUpload = e.dataTransfer.types.contains('Files');
-		
-		} else {
-			fileUpload = (('' + e.dataTransfer.types) == 'Files') || (e.dataTransfer.types[0] && ('' + e.dataTransfer.types[0]) == 'Files');
-		}
-	}
-	
-	if (fileUpload) {
-		e.stopPropagation();
-		e.preventDefault();
-	}
-};
-
-zenarioA.disableFileDragDrop = function(el) {
-	if (zenarioA.canDoHTML5Upload()) {
-		el.addEventListener('drop', zenarioA.stopDefault, false);
-		el.addEventListener('dragenter', zenarioA.stopDefault, false);
-		el.addEventListener('dragover', zenarioA.stopDefault, false);
-		el.addEventListener('dragexit', zenarioA.stopDefault, false);
-	}
-};
 
 //Check whether cookies are enabled and able to be used.
 //Because of the way PHP/browsers/cookies work, if this is the first access it might take one
@@ -4379,11 +2976,67 @@ zenarioA.scanHyperlinksAndDisplayStatus = function(containerId) {
 };
 
 
+zenarioA.init = function(
+	cVersion,
+	adminId,
+	templateFamily,
+	
+	toolbar,
+	pageMode,
+	slotWandOn,
+	showGridOn,
+	siteSettings,
+	adminSettings,
+	importantGetRequests,
+	adminHasSpecificPerms,
+	adminHasSpecificPermsOnThisPage,
+	lang,
+	spareDomains
+
+) {
+	zenario.cVersion = cVersion;
+	zenario.adminId = adminId;
+	zenario.templateFamily = templateFamily;
+	
+	zenarioA.toolbar = toolbar;
+	zenarioA.pageMode = pageMode;
+	zenarioA.slotWandOn = slotWandOn;
+	zenarioA.showGridOn = showGridOn;
+	zenarioA.siteSettings = siteSettings;
+	zenarioA.adminSettings = adminSettings;
+	zenarioA.importantGetRequests = importantGetRequests;
+	zenarioA.adminHasSpecificPerms = adminHasSpecificPerms;
+	zenarioA.adminHasSpecificPermsOnThisPage = adminHasSpecificPermsOnThisPage;
+	zenarioA.lang = lang;
+	zenarioA.spareDomains = spareDomains;
+	
+	
+	
+	//If this is admin mode, or the admin login screen, prepare some of the admin mode widgets.
+	//(Note that some plugins include this library file on front-end pages even when not in admin mode;
+	// in this case there's no need to add the widgets.)
+	if (zenario.adminId || !zenario.cID) {
+		zenario.inAdminMode = true;
+	
+		$(document).ready(function() {
+			zenarioT.disableFileDragDrop(document.body);
+	
+			//If this is the front-end with a cID, call the link-checker function
+			if (zenario.cID) {
+				zenarioA.setSlotParents();
+				zenarioA.scanHyperlinksAndDisplayStatus();
+			}
+		});
+
+		//Append the HTML for the floating boxes in admin mode
+		$('body').append(zenarioT.microTemplate('zenario_floating_boxes', {}));
+	}
+};
+
+
 
 //Calculate function short names, we need to do this before calling any functions!
 zenario.shrtNms(zenarioA);
-
-
 
 
 

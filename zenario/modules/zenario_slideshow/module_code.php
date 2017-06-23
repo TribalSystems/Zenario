@@ -53,15 +53,15 @@ class zenario_slideshow extends zenario_plugin_nest {
 		
 		$this->loadTabs();
 		
-		if (empty($this->tabs)) {
-			$this->tabs = array(1 => array('id' => 0, 'tab' => 1, 'name_or_title' => ''));
+		if (empty($this->slides)) {
+			$this->slides = array(1 => array('id' => 0, 'slide_num' => 1, 'name_or_title' => ''));
 		}
 		
-		foreach ($this->tabs as &$tab) {
-			if ($this->loadTab($tab['tab'])) {
+		foreach ($this->slides as &$slide) {
+			if ($this->loadTab($slide['slide_num'])) {
 				$this->show = true;
-				$this->tabNum =
-				$this->lastTabNum = $tab['tab'];
+				$this->slideNum =
+				$this->lastTabNum = $slide['slide_num'];
 			}
 		}
 		
@@ -69,10 +69,10 @@ class zenario_slideshow extends zenario_plugin_nest {
 		$firstTabNum = $this->editingTabNum? $this->editingTabNum : false;
 		
 		$tabOrd = 0;
-		foreach ($this->tabs as &$tab) {
+		foreach ($this->slides as &$slide) {
 			++$tabOrd;
 			
-			if (($this->checkFrameworkSectionExists($section = 'Tab_'. $tab['tab']))
+			if (($this->checkFrameworkSectionExists($section = 'Tab_'. $slide['slide_num']))
 			 || ($section = 'Tab')) {
 				
 				$link = $this->tabLink($tabOrd);
@@ -81,16 +81,16 @@ class zenario_slideshow extends zenario_plugin_nest {
 					$this->sections[$section] = array();
 				}
 				
-				$this->sections[$section][$tab['tab']] = array(
+				$this->sections[$section][$slide['slide_num']] = [
 					'TAB_ORDINAL' => $tabOrd,
 					'Class' => 'tab_'. $tabOrd. ' tab',
 					'Tab_Link' => $link,
-					'Tab_Name' => $this->formatTitleText($tab['name_or_title'], true)
-				);
+					'Tab_Name' => $this->formatTitleText($slide['name_or_title'], true)
+				];
 			}
 			
 			if (!$firstTabNum) {
-				$firstTabNum = $tab['tab'];
+				$firstTabNum = $slide['slide_num'];
 			}
 		}
 		
@@ -182,7 +182,7 @@ class zenario_slideshow extends zenario_plugin_nest {
 			if ($this->show) {
 				
 				$ord = 0;
-				foreach ($this->modules[$this->tabNum] as $id => $slotNameNestId) {
+				foreach ($this->modules[$this->slideNum] as $id => $slotNameNestId) {
 					$this->mergeFields['PLUGIN_ORDINAL'] = ++$ord;
 					
 					if (!empty(cms_core::$slotContents[$slotNameNestId]['class'])) {
@@ -193,17 +193,17 @@ class zenario_slideshow extends zenario_plugin_nest {
 				}
 			}
 		
-		//Show all of the plugins on this tab
+		//Show all of the plugins on this slide
 		} elseif ($this->zAPIFrameworkIsTwig) {
 			
 			$this->mergeFields['Tabs'] = $this->sections['Tab'];
 			
 			if ($this->show) {
 				$hide = false;
-				foreach ($this->tabs as &$tab) {
-					$tabNum = $tab['tab'];
-					$this->mergeFields['Tabs'][$tabNum]['Plugins'] = $this->modules[$tabNum];
-					$this->mergeFields['Tabs'][$tabNum]['Hidden'] = $hide;
+				foreach ($this->slides as &$slide) {
+					$slideNum = $slide['slide_num'];
+					$this->mergeFields['Tabs'][$slideNum]['Plugins'] = $this->modules[$slideNum];
+					$this->mergeFields['Tabs'][$slideNum]['Hidden'] = $hide;
 					
 					if ($mode = $this->setting('mode')) {
 						//Hide the slides after slide one, until the jQuery slideshow Plugin kicks in and overrides this.
@@ -234,7 +234,7 @@ class zenario_slideshow extends zenario_plugin_nest {
 				$this->sections);
 			
 			$tabOrd = 0;
-			foreach ($this->tabs as &$tab) {
+			foreach ($this->slides as &$slide) {
 				$this->mergeFields['TAB_ORDINAL'] = ++$tabOrd;
 				
 				$this->frameworkHead(
@@ -246,7 +246,7 @@ class zenario_slideshow extends zenario_plugin_nest {
 				if ($this->show) {
 					
 					$ord = 0;
-					foreach ($this->modules[$tab['tab']] as $id => $slotNameNestId) {
+					foreach ($this->modules[$slide['slide_num']] as $id => $slotNameNestId) {
 						$this->mergeFields['PLUGIN_ORDINAL'] = ++$ord;
 						
 						$this->showPlugin($slotNameNestId);

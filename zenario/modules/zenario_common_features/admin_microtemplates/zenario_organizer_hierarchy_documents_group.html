@@ -1,9 +1,9 @@
 <li class="dd-item dd3-item {{m.canDrag? 'organizer_menu_handle' : ''|escape}}" data-id="{{m.id|escape}}">
-	{{zenarioA.microTemplate('zenario_organizer_hierarchy_documents_row', m)}}
+	{{zenarioT.microTemplate('zenario_organizer_hierarchy_documents_row', m)}}
 	
 	<% if (m.items && m.items.length) { %>
 		<ol class="dd-list">
-			{{zenarioA.microTemplate('zenario_organizer_hierarchy_documents_group', m.items)}}
+			{{zenarioT.microTemplate('zenario_organizer_hierarchy_documents_group', m.items)}}
 		</ol>
 	<% } else if (zenarioO.tuix.__item_parents__ && zenarioO.tuix.__item_parents__[m.id]) {%>
 		<ol class="dd-list">

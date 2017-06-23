@@ -254,7 +254,7 @@ class zenario_newsletter extends module_base_class {
 		$newsletterArray = array("id" => $newsletterId,"body" => $body);
 		$body = zenario_newsletter::createTrackerHyperlinks($newsletterArray);
 		//Check if there is a User set up with this email address
-		if (!$user = $this->getDetailsFromEmail($email)) {
+		if (!$user = self::getUserDetails(['email' => $email])) {
 			//Send the test email with the current Admin's details, rather than a User.
 			$user['first_name'] = $adminDetails['admin_first_name'];
 			$user['last_name'] = $adminDetails['admin_last_name'];
@@ -284,14 +284,11 @@ class zenario_newsletter extends module_base_class {
 	}
 	
 	//Attempt to get details of a user from their email address
-	function getDetailsFromEmail($email) {
-		$sql = "
-			SELECT id, salutation, salutation as title, first_name, last_name
-			FROM ". DB_NAME_PREFIX. "users
-			WHERE email = '". sqlEscape($email). "'";
-		
-		$result = sqlQuery($sql);
-		return sqlFetchAssoc($result);
+	protected static function getUserDetails($key) {
+		if ($row = getRow('users', ['id', 'salutation', 'first_name', 'last_name', 'email'], $key)) {
+			$row['title'] = $row['salutation'];
+			return $row;
+		}
 	}
 	
 	
@@ -451,22 +448,8 @@ class zenario_newsletter extends module_base_class {
 	
 	
 	protected static function sendNewsletterToUser(&$newsletter, $userId, $hashes) {
-
-		$sql = "
-			SELECT 
-				id,
-				email,
-				salutation,
-				salutation as title,
-				first_name,
-				last_name
-			FROM "
-				. DB_NAME_PREFIX. "users
-			WHERE 
-				id = ". (int) $userId. "
-			LIMIT 1";
-		$result = sqlQuery($sql);
-		$user = sqlFetchAssoc($result);
+		
+		$user = self::getUserDetails($userId);
 
 		$sql = "
 			UPDATE ". DB_NAME_PREFIX. ZENARIO_NEWSLETTER_PREFIX. "newsletter_user_link SET

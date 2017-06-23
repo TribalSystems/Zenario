@@ -61,3 +61,17 @@ dependencies:
 inheritance:
     include_javascript_from_module: zenario_user_forms
 default_instance_name: Extranet Registration
+
+jobs:
+    job:
+        name: jobSendDelayedRegistrationEmails
+        static: true
+        months: jan,feb,mar,apr,may,jun,jul,aug,sep,oct,nov,dec
+        days: mon,tue,wed,thr,fri,sat,sun
+        hours: >
+            0h,1h,2h,3h,4h,5h,6h,7h,8h,9h,10h,11h,12h,13h,14h,15h,16h,17h,18h,19h,20h,21h,22h,23h
+        minutes: 0m
+        log_on_action: true
+        log_on_no_action: false
+        email_on_action: true
+        email_on_no_action: false

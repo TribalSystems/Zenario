@@ -524,6 +524,7 @@ class zenario_pro_features extends zenario_common_features {
 		
 				//Check if the scheduled task manager is running
 				if (!inc('zenario_scheduled_task_manager')) {
+					echo '~~', adminPhrase('Scheduled Tasks Manager is not installed');
 					return;
 		
 				} elseif (!zenario_scheduled_task_manager::checkScheduledTaskRunning($jobName = false, $checkPulse = false)) {
@@ -1016,7 +1017,7 @@ class zenario_pro_features extends zenario_common_features {
 					case 'admins':
 					case 'admin_actions':
 					case 'admin_roles':
-					case 'admin_storekeeper_prefs':
+					case 'admin_organizer_prefs':
 					
 					//Tables for other types of cache; again ignore these
 					case 'content_cache':
@@ -1044,8 +1045,7 @@ class zenario_pro_features extends zenario_common_features {
 					case 'user_content_accesslog':
 					
 					//Anything that relies on group-membership or private items should never be cached, so we can ignore these tables too
-					case 'group_content_link':
-					case 'group_slide_link':
+					case 'group_link':
 					case 'translation_chain_privacy':
 						return;
 					
@@ -1073,7 +1073,6 @@ class zenario_pro_features extends zenario_common_features {
 					//User
 					case 'custom_dataset_values_link':
 					case 'groups':
-					case 'group_user_link':
 					case 'users':
 						zenario_pro_features::$clearCacheBy['user'] = true;
 						continue;

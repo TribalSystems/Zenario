@@ -21,6 +21,8 @@ sections:
                 ord: 18
                 css_class: zenario_at_icon_layout
                 tooptip: Content Item Layout
+                admin_box:
+                    path: zenario_content_layout
             language_id:
                 ord: 19
                 css_class: zenario_at_icon_language

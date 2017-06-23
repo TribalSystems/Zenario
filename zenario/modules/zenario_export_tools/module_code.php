@@ -69,8 +69,8 @@ class zenario_export_tools extends module_base_class {
 			case 'zenario_export_tools__google_translate':
 				if (!setting('google_translate_api_key')) {
 					$box['tabs']['translate']['errors'][] = adminPhrase('Please enter your Google Translate API Key in the Site Settings.');
-					$box['tabs']['translate']['fields']['lang_from']['read_only'] = true;
-					$box['tabs']['translate']['fields']['lang_to']['read_only'] = true;
+					$box['tabs']['translate']['fields']['lang_from']['readonly'] = true;
+					$box['tabs']['translate']['fields']['lang_to']['readonly'] = true;
 				}
 				
 				break;
@@ -351,7 +351,7 @@ class zenario_export_tools extends module_base_class {
 						   ON psd.module_id = pi.module_id
 						  AND psd.name = ps.name
 						WHERE ps.instance_id = ". (int) $slotContents[$slotName]['instance_id']. "
-						  AND ps.nest = 0";		//Add support for Nests..?
+						  AND ps.egg_id = 0";		//Add support for Nests..?
 					
 					$result = sqlQuery($sql);
 					while ($row = sqlFetchAssoc($result)) {
@@ -391,23 +391,23 @@ class zenario_export_tools extends module_base_class {
 					
 					
 					$sql = "
-						SELECT id, tab, ord, module_id, framework, is_slide, name_or_title
+						SELECT id, slide_num, ord, module_id, framework, is_slide, name_or_title
 						FROM ". DB_NAME_PREFIX. "nested_plugins
 						WHERE instance_id = ". (int) $slotContents[$slotName]['instance_id']. "
-						ORDER BY tab, is_slide DESC, ord";
+						ORDER BY slide_num, is_slide DESC, ord";
 					
 					$eggsResult = sqlQuery($sql);
 					while ($egg = sqlFetchAssoc($eggsResult)) {
 						if ($egg['is_slide']) {
-							zenario_export_tools::openTagStart($isXML, $f, 'tab', true);
-							zenario_export_tools::addAtt($isXML, $f, 'tab', $egg['tab']);
+							zenario_export_tools::openTagStart($isXML, $f, 'slide', true);
+							zenario_export_tools::addAtt($isXML, $f, 'slideNum', $egg['slide_num']);
 							zenario_export_tools::openTagEnd($isXML, $encodeHTMLAtt, $f);
 							zenario_export_tools::setTagContents($isXML, $f, $egg['name_or_title'], true, true);
-							zenario_export_tools::closeTag($isXML, $f, 'tab');
+							zenario_export_tools::closeTag($isXML, $f, 'slide');
 							
 						} else {
 							zenario_export_tools::openTagStart($isXML, $f, 'egg', true);
-							zenario_export_tools::addAtt($isXML, $f, 'tab', $egg['tab']);
+							zenario_export_tools::addAtt($isXML, $f, 'slideNum', $egg['slide_num']);
 							zenario_export_tools::addAtt($isXML, $f, 'ord', $egg['ord']);
 							zenario_export_tools::addAtt($isXML, $f, 'class', getModuleClassName($egg['module_id']));
 							zenario_export_tools::addAtt($isXML, $f, 'framework', $egg['framework']);
@@ -422,7 +422,7 @@ class zenario_export_tools extends module_base_class {
 								   ON psd.module_id = ". (int) $egg['module_id']. "
 								  AND psd.name = ps.name
 								WHERE ps.instance_id = ". (int) $slotContents[$slotName]['instance_id']. "
-								  AND ps.nest = ". (int) $egg['id'];
+								  AND ps.egg_id = ". (int) $egg['id'];
 							
 							$nestedResult = sqlQuery($sql);
 							while ($row = sqlFetchAssoc($nestedResult)) {
@@ -438,7 +438,7 @@ class zenario_export_tools extends module_base_class {
 								 || $row['format'] == 'translatable_html';
 								
 								zenario_export_tools::openTagStart($isXML, $f, 'setting', true);
-								zenario_export_tools::addAtt($isXML, $f, 'tab', $egg['tab']);
+								zenario_export_tools::addAtt($isXML, $f, 'slideNum', $egg['slide_num']);
 								zenario_export_tools::addAtt($isXML, $f, 'ord', $egg['ord']);
 								zenario_export_tools::addAtt($isXML, $f, 'name', $row['name']);
 								zenario_export_tools::addAtt($isXML, $f, 'is_content', $row['is_content']);
@@ -672,7 +672,7 @@ class zenario_export_tools extends module_base_class {
 			foreach ($input as $i => &$thing) {
 				switch ($i % 6) {
 					case 2:
-						$ndLevels[ceil($i/6)] = $thing == 'egg' || $thing == 'setting' || $thing == 'tab';
+						$ndLevels[ceil($i/6)] = $thing == 'egg' || $thing == 'setting' || $thing == 'slide';
 				}
 			}
 			
@@ -801,7 +801,7 @@ class zenario_export_tools extends module_base_class {
 				}
 			}
 			
-			if (!($xml = strip_tags($xml, '<html><target><title><description><keywords><summary><menu><menu_desc><template><plugin><setting><tab><egg>'))) {
+			if (!($xml = strip_tags($xml, '<html><target><title><description><keywords><summary><menu><menu_desc><template><plugin><setting><slide><egg>'))) {
 				$error = adminPhrase('The file format has been corrupted and the file could not be read.');
 				return false;
 			}
@@ -1082,14 +1082,14 @@ class zenario_export_tools extends module_base_class {
 							
 							if ($instanceId = arrayKey($slotContents, $slotName, 'instance_id')) {
 								//Look for any Nested Tabs that match up with the Nested Tabs we are importing
-								if ($plugin->tab) {
-									foreach ($plugin->tab as $tab) {
+								if ($plugin->slide) {
+									foreach ($plugin->slide as $slide) {
 										if ($id = 
 											getRow('nested_plugins', 'id',
 												array(
 													'instance_id' => $instanceId,
 													'is_slide' => 1,
-													'tab' => (int) $tab->attributes()->tab))
+													'slide_num' => (int) $slide->attributes()->slideNum))
 										) {
 											$nestedPlugins[] = $id;
 										}
@@ -1105,7 +1105,7 @@ class zenario_export_tools extends module_base_class {
 													array(
 														'instance_id' => $instanceId,
 														'is_slide' => 0,
-														'tab' => (int) $egg->attributes()->tab,
+														'slide_num' => (int) $egg->attributes()->slideNum,
 														'ord' => (int) $egg->attributes()->ord,
 														'module_id' => $nestedModuleId))
 											) {
@@ -1129,13 +1129,13 @@ class zenario_export_tools extends module_base_class {
 							
 							
 								//Check for any existing file/image-links for the current Plugin, and note down what they are for use later
-								$result = getRows('plugin_settings', array('name', 'nest', 'value'), array('instance_id' => $instanceId, 'foreign_key_to' => 'file'));
+								$result = getRows('plugin_settings', array('name', 'egg_id', 'value'), array('instance_id' => $instanceId, 'foreign_key_to' => 'file'));
 								while ($row = sqlFetchAssoc($result)) {
-									if (!isset($images[$row['nest']])) {
-										$images[$row['nest']] = array();
+									if (!isset($images[$row['egg_id']])) {
+										$images[$row['egg_id']] = array();
 									}
 									
-									$images[$row['nest']][$row['name']] = $row['value'];
+									$images[$row['egg_id']][$row['name']] = $row['value'];
 								}
 							}
 							
@@ -1154,18 +1154,18 @@ class zenario_export_tools extends module_base_class {
 							setRow('plugin_instances', array('framework' => (string) $plugin->attributes()->framework), $instanceId);
 							
 							//Import/update the tabs
-							if ($plugin->tab) {
-								foreach ($plugin->tab as $tab) {
+							if ($plugin->slide) {
+								foreach ($plugin->slide as $slide) {
 									setRow(
 										'nested_plugins',
 										array(
 											'ord' => 0,
 											'module_id' => 0,
-											'name_or_title' => zenario_export_tools::getValue($tab)),
+											'name_or_title' => zenario_export_tools::getValue($slide)),
 										array(
 											'instance_id' => $instanceId,
 											'is_slide' => 1,
-											'tab' => (int) $tab->attributes()->tab));
+											'slide_num' => (int) $slide->attributes()->slideNum));
 								}
 							}
 							
@@ -1174,13 +1174,13 @@ class zenario_export_tools extends module_base_class {
 							if ($plugin->egg) {
 								foreach ($plugin->egg as $egg) {
 									if ($nestedModuleId = getModuleIdByClassName($egg->attributes()->class)) {
-										$tab = (int) $egg->attributes()->tab;
+										$slideNum = (int) $egg->attributes()->slideNum;
 										$ord = (int) $egg->attributes()->ord;
-										if (!isset($nestedPlugins[$tab])) {
-											$nestedPlugins[$tab] = array();
+										if (!isset($nestedPlugins[$slideNum])) {
+											$nestedPlugins[$slideNum] = array();
 										}
 										
-										$nestedPlugins[$tab][$ord] = setRow(
+										$nestedPlugins[$slideNum][$ord] = setRow(
 											'nested_plugins',
 											array(
 												'framework' => $egg->attributes()->framework,
@@ -1188,7 +1188,7 @@ class zenario_export_tools extends module_base_class {
 											array(
 												'instance_id' => $instanceId,
 												'is_slide' => 0,
-												'tab' => $tab,
+												'slide_num' => $slideNum,
 												'ord' => $ord,
 												'module_id' => $nestedModuleId));
 									}
@@ -1197,14 +1197,14 @@ class zenario_export_tools extends module_base_class {
 							
 							if ($plugin->setting) {
 								foreach ($plugin->setting as $setting) {
-									$tab = (int) $setting->attributes()->tab;
+									$slideNum = (int) $setting->attributes()->slideNum;
 									$ord = (int) $setting->attributes()->ord;
 									
-									if (!$tab && !$ord) {
-										$key['nest'] = 0;
+									if (!$slideNum && !$ord) {
+										$key['egg_id'] = 0;
 									
-									} elseif (!empty($nestedPlugins[$tab][$ord])) {
-										$key['nest'] = $nestedPlugins[$tab][$ord];
+									} elseif (!empty($nestedPlugins[$slideNum][$ord])) {
+										$key['egg_id'] = $nestedPlugins[$slideNum][$ord];
 									
 									} else {
 										continue;
@@ -1270,8 +1270,8 @@ class zenario_export_tools extends module_base_class {
 										case 'file':
 											//Check the existing files to see if one was linked in this position before the export.
 											//If so, don't change it
-											if (!empty($images[$key['nest']][$key['name']])) {
-												$value['value'] = $images[$key['nest']][$key['name']];
+											if (!empty($images[$key['egg_id']][$key['name']])) {
+												$value['value'] = $images[$key['egg_id']][$key['name']];
 											
 											} elseif (!checkRowExists('files', $value['value'])) {
 												continue 2;

@@ -88,8 +88,8 @@ cms_core::$skPath = $requestedPath;
 //They need to include the Settings from the Plugin in question, and any modules it is compatable with
 if ($requestedPath == 'plugin_settings') {
 	if (get('refiner__nest') && get('id')) {
-		$nestedItem = getNestDetails(get('id'), get('refiner__nest'));
-		$module = getModuleDetails($nestedItem['module_id']);
+		$egg = getNestDetails(get('id'), get('refiner__nest'));
+		$module = getModuleDetails($egg['module_id']);
 	
 	} elseif (!get('instanceId') && get('refiner__plugin')) {
 		$module = getModuleDetails(get('refiner__plugin'));
@@ -238,7 +238,7 @@ if ($debugMode) {
 		$fields = array();
 		$values = array();
 		$changes = array();
-		readAdminBoxValues($tags, $fields, $values, $changes, $filling = false, $resetErrors = true);
+		readAdminBoxValues($tags, $fields, $values, $changes, $filling = false, $resetErrors = true, $checkLOVs = true);
 		$errorsReset = true;
 		
 		//Apply standard validation formats
@@ -573,7 +573,7 @@ if ($debugMode) {
 						$cfield['pick_items'] = array(
 							'disallow_refiners_looping_on_min_path' => true);
 						
-						$cfield['read_only'] = true;
+						$cfield['readonly'] = true;
 					}
 				
 				//For file pickers, set up the picked_items and upload properties
@@ -648,6 +648,10 @@ if ($debugMode) {
 						$cfield['value'] = $record[$cfield['db_column']];
 					}
 				}
+				
+				if (columnIsEncrypted($dataset['table'], $cfield['db_column'])) {
+					$cfield['encrypted'] = true;
+				}
 			
 			
 				//Make child fields only visible if their parents are visible and checked
@@ -663,7 +667,7 @@ if ($debugMode) {
 				
 				if (!$dataset['edit_priv'] || checkPriv($dataset['edit_priv'])) {
 				} else {
-					$cfield['read_only'] = true;
+					$cfield['readonly'] = true;
 				}
 				
 				$cfield['class'] = 'zenario_fab_custom_field zenario_fab_custom_field__'. $cfield['type'];
@@ -694,35 +698,41 @@ if ($debugMode) {
 			 || !is_array($tags['tabs'][$cfield['tab_name']]['fields'][$cfield['field_name']])) {
 				continue;
 			}
+			$customisedField = &$tags['tabs'][$cfield['tab_name']]['fields'][$cfield['field_name']];
 			
 			//Set properties
 			if ($cfield['ord']) {
-				$tags['tabs'][$cfield['tab_name']]['fields'][$cfield['field_name']]['ord'] = $cfield['ord'];
+				$customisedField['ord'] = $cfield['ord'];
 			}
 			if ($cfield['label']) {
-				$tags['tabs'][$cfield['tab_name']]['fields'][$cfield['field_name']]['label'] = $cfield['label'];
+				$customisedField['label'] = $cfield['label'];
 			}
 			if ($cfield['note_below']) {
-				$tags['tabs'][$cfield['tab_name']]['fields'][$cfield['field_name']]['note_below'] = htmlspecialchars($cfield['note_below']);
+				$customisedField['note_below'] = htmlspecialchars($cfield['note_below']);
 			}
 			if ($cfield['side_note']) {
-				$tags['tabs'][$cfield['tab_name']]['fields'][$cfield['field_name']]['side_note'] = htmlspecialchars($cfield['side_note']);
+				$customisedField['side_note'] = htmlspecialchars($cfield['side_note']);
 			}
 			if ($cfield['allow_admin_to_change_visibility']) {
 				if ($cfield['admin_box_visibility'] == 'hide') {
-					$tags['tabs'][$cfield['tab_name']]['fields'][$cfield['field_name']]['hidden'] = true;
+					$customisedField['hidden'] = true;
 				} elseif (($cfield['admin_box_visibility'] == 'show_on_condition') && $cfield['parent_id']) {
-					$tags['tabs'][$cfield['tab_name']]['fields'][$cfield['field_name']]['parent_id'] = $cfield['parent_id'];
-					$tags['tabs'][$cfield['tab_name']]['fields'][$cfield['field_name']]['dataset_id'] = $dataset['id'];
-					$tags['tabs'][$cfield['tab_name']]['fields'][$cfield['field_name']]['tab_name'] = $cfield['tab_name'];
-					setChildFieldVisibility($tags['tabs'][$cfield['tab_name']]['fields'][$cfield['field_name']], $tags);
+					$customisedField['parent_id'] = $cfield['parent_id'];
+					$customisedField['dataset_id'] = $dataset['id'];
+					$customisedField['tab_name'] = $cfield['tab_name'];
+					setChildFieldVisibility($customisedField, $tags);
 				}
 			}
 			
 			if ($cfield['type'] == 'text') {
 				if ($cfield['autocomplete']) {
-					$tags['tabs'][$cfield['tab_name']]['fields'][$cfield['field_name']]['values'] = getDatasetFieldLOV($cfield);
+					$customisedField['values'] = getDatasetFieldLOV($cfield);
 				}
+			}
+			
+			
+			if (columnIsEncrypted($dataset['system_table'], $cfield['db_column'])) {
+				$customisedField['encrypted'] = true;
 			}
 		}
 		unset($cfield);

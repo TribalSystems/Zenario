@@ -9,10 +9,10 @@ plugin_settings:
                     plugin_setting:
                         name: user_form
                     pick_items:
-                        path: zenario__user_forms/panels/zenario_user_forms__forms
-                        min_path: zenario__user_forms/panels/zenario_user_forms__forms
-                        max_path: zenario__user_forms/panels/zenario_user_forms__forms
-                        target_path: zenario__user_forms/panels/zenario_user_forms__forms
+                        path: zenario__user_forms/panels/user_forms
+                        min_path: zenario__user_forms/panels/user_forms
+                        max_path: zenario__user_forms/panels/user_forms
+                        target_path: zenario__user_forms/panels/user_forms
                         select_phrase: Select Form...
                         hide_remove_button: true
                     validation:

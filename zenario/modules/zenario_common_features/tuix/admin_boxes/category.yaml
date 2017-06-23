@@ -4,6 +4,7 @@ zenario_categories:
     key:
         id: ''
         parent_id: ''
+        sub_category: ''
     title: 'Creating a category'
     title_for_existing_records: 'Editing the category "[[details/name]]"'
     max_height: 350

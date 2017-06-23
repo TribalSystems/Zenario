@@ -97,233 +97,6 @@ install:
                     type: submit
                     same_row: true
                     visible_if: "if (zenarioAW.value('i_agree')) delete tuixObject.disabled; else tuixObject.disabled = true; true;"
-        2:
-            edit_mode:
-                enabled: true
-                on: true
-                always_on: true
-            fields:
-                description_met:
-                    full_width: true
-                    snippet:
-                        html: |
-                            <h1>Step 2: System Requirements</h1>
-                            <p>Your system looks like it meets our requirements.</p>
-                description_unmet:
-                    full_width: true
-                    snippet:
-                        html: |
-                            <h1>Step 2: System Requirements</h1>
-                            <p>It looks like your server doesn't meet the requirements for Zenario.</p>
-                
-                sub_table:
-                    type: grouping
-                    name: sub_table
-                
-                server:
-                    grouping: sub_table
-                    full_width: true
-                    snippet:
-                        html: Web Server
-                    visible_if: zenarioAW.togglePressed(1)
-                show_server:
-                    grouping: sub_table
-                    type: toggle
-                    redraw_onchange: true
-                    same_row: true
-                    visible_if: "zenarioAW.togglePressed(1, tuixObject)"
-                server_1:
-                    grouping: sub_table
-                    full_width: true
-                    snippet:
-                        html: Apache http server
-                    visible_if: zenarioAW.togglePressed()
-                php:
-                    grouping: sub_table
-                    full_width: true
-                    snippet:
-                        html: PHP
-                    visible_if: zenarioAW.togglePressed(1)
-                show_php:
-                    grouping: sub_table
-                    type: toggle
-                    redraw_onchange: true
-                    same_row: true
-                    visible_if: "zenarioAW.togglePressed(1, tuixObject)"
-                php_1:
-                    grouping: sub_table
-                    full_width: true
-                    snippet:
-                        html: PHP version 5.4 or later
-                    visible_if: zenarioAW.togglePressed()
-                mysql:
-                    grouping: sub_table
-                    full_width: true
-                    snippet:
-                        html: MySQL
-                    visible_if: zenarioAW.togglePressed(1)
-                show_mysql:
-                    grouping: sub_table
-                    type: toggle
-                    redraw_onchange: true
-                    same_row: true
-                    visible_if: "zenarioAW.togglePressed(1, tuixObject)"
-                mysql_1:
-                    grouping: sub_table
-                    full_width: true
-                    snippet:
-                        html: MySQLi extension enabled in PHP
-                    visible_if: zenarioAW.togglePressed()
-                mysql_2:
-                    grouping: sub_table
-                    full_width: true
-                    snippet:
-                        html: MySQL version 5.0 or later
-                    visible_if: zenarioAW.togglePressed()
-                mb:
-                    grouping: sub_table
-                    full_width: true
-                    snippet:
-                        html: Unicode Support
-                    visible_if: zenarioAW.togglePressed(1)
-                show_mb:
-                    grouping: sub_table
-                    type: toggle
-                    redraw_onchange: true
-                    same_row: true
-                    visible_if: "zenarioAW.togglePressed(1, tuixObject)"
-                mb_1:
-                    grouping: sub_table
-                    full_width: true
-                    snippet:
-                        html: ctype extension enabled in PHP
-                    visible_if: zenarioAW.togglePressed()
-                mb_2:
-                    grouping: sub_table
-                    full_width: true
-                    snippet:
-                        html: mbstring extension enabled in PHP
-                    visible_if: zenarioAW.togglePressed()
-                gd:
-                    grouping: sub_table
-                    full_width: true
-                    snippet:
-                        html: Image Manipulation
-                    visible_if: zenarioAW.togglePressed(1)
-                show_gd:
-                    grouping: sub_table
-                    type: toggle
-                    redraw_onchange: true
-                    same_row: true
-                    visible_if: "zenarioAW.togglePressed(1, tuixObject)"
-                gd_1:
-                    grouping: sub_table
-                    full_width: true
-                    snippet:
-                        html: GD Library enabled in PHP
-                    visible_if: zenarioAW.togglePressed()
-                gd_2:
-                    grouping: sub_table
-                    full_width: true
-                    snippet:
-                        html: GIF Read Support enabled in PHP
-                    visible_if: zenarioAW.togglePressed()
-                gd_3:
-                    grouping: sub_table
-                    full_width: true
-                    snippet:
-                        html: JPG Support enabled in PHP
-                    visible_if: zenarioAW.togglePressed()
-                gd_4:
-                    grouping: sub_table
-                    full_width: true
-                    snippet:
-                        html: PNG Support enabled in PHP
-                    visible_if: zenarioAW.togglePressed()
-                
-                # We need to check whether mod-rewrite is working.
-                # This check can't always be done in PHP, so it must be done on the client.
-                # It's a slight hack, but I've implemented the logic in the visible_if property in
-                # JavaScript. This can't be read on the server, but thankfully it's only a warning
-                # so it doesn't need to be.
-                mr:
-                    grouping: sub_table
-                    full_width: true
-                    snippet:
-                        html: Friendly URLs
-                    visible_if: |
-                        function(tuixObject) {
-                            if (window.isHtaccessWorking = zenarioA.isHtaccessWorking()) {
-                                tuixObject.row_class = 'section_valid';
-                            } else {
-                                tuixObject.row_class = 'section_warning';
-                            }
-                            return zenarioAW.togglePressed(1);
-                        }
-                show_mr:
-                    grouping: sub_table
-                    type: toggle
-                    redraw_onchange: true
-                    same_row: true
-                    visible_if: |
-                        function(tuixObject) {
-                            if (tuixObject.pressed === undefined) {
-                                tuixObject.pressed = !window.isHtaccessWorking;
-                            }
-                            return zenarioAW.togglePressed(1, tuixObject)
-                        }
-                mr_valid_1:
-                    grouping: sub_table
-                    full_width: true
-                    row_class: valid
-                    snippet:
-                        html: |
-                            Friendly URLs are supported (this is optional, but recommended).
-                    visible_if: |
-                        window.isHtaccessWorking && zenarioAW.togglePressed()
-                mr_warning_1:
-                    grouping: sub_table
-                    full_width: true
-                    row_class: warning
-                    snippet:
-                        html: |
-                            Friendly URLs are not supported (this is optional, but recommended).
-                            
-                            Please check your Apache configuration (that the mod_rewrite module is enabled),
-                            and that your Zenario directory contains the .htaccess file.
-                    visible_if: |
-                        !window.isHtaccessWorking && zenarioAW.togglePressed()
-                
-                ignore_apache_mysql_requirements:
-                    type: checkbox
-                    full_width: true
-                    format_onchange: true
-                    post_field_html: |
-                        <label for="ignore_apache_mysql_requirements">
-                            Ignore the Apache and MySQL requirements
-                        </label>
-                    note_below: |
-                            Check this option if you are using an Apache or MySQL-equivalent
-                            software instead of Apache or MySQL themselves.
-                
-                previous:
-                    value: Back
-                    type: submit
-                    full_width: true
-                    style: |
-                        float: left;
-                check_again:
-                    value: Check Again
-                    type: submit
-                    same_row: true
-                    style: |
-                        float: right;
-                next:
-                    value: Next
-                    type: submit
-                    same_row: true
-                    style: |
-                        float: right;
         3:
             edit_mode:
                 enabled: true
@@ -334,7 +107,7 @@ install:
                     full_width: true
                     snippet:
                         html: |
-                            <h1>Step 3: Database</h1>
+                            <h1>Step 2: Database</h1>
                             <p>Please enter information about your database.</p>
                 host:
                     label: "Host, and optional port number:"
@@ -392,7 +165,7 @@ install:
                     full_width: true
                     snippet:
                         html: |
-                            <h1>Step 4: Your Site's Content</h1>
+                            <h1>Step 3: Your Site's Content</h1>
                             <p>
                                 Please choose the initial language, date format and skin of your site.
                             </p>
@@ -517,7 +290,7 @@ install:
                     full_width: true
                     snippet:
                         html: |
-                            <h1>Step 5: Your Admin Account</h1>
+                            <h1>Step 4: Your Admin Account</h1>
                             <p>Please enter your details so we can make your first administrator account.</p>
                 first_name:
                     label: "Your First Name:"
@@ -577,7 +350,57 @@ install:
                     full_width: true
                     snippet:
                         html: |
-                            <h1>Step 6: Site Configuration File</h1>
+                            <h1>Step 3: Support email address</h1>
+                            <p>Please enter an email address for receiving notification of system errors and database errors.</p>
+                email:
+                    label: "Support email address:"
+                    type: text
+                    row_class: row_form
+                    return_key_presses_button: next
+                description2:
+                    full_width: true
+                    snippet:
+                        html: |
+                            <h1>Step 4: Restore a Backup</h1>
+                            <p>Please enter the path and filename of a backup file to restore.</p>
+                path:
+                    label: "Path:"
+                    type: text
+                    row_class: row_form
+                    onkeyup: zenarioAW.quickValidateWelcomePage(500);
+                    return_key_presses_button: next
+                path_status:
+                    full_width: true
+                    snippet:
+                        pre_field_html: |
+                            <div style="text-align: right;">
+                        html: "&nbsp;"
+                        post_field_html: |
+                            </div>
+                previous:
+                    value: Back
+                    type: submit
+                    full_width: true
+                    style: |
+                        float: left;
+                next:
+                    value: Next
+                    type: submit
+                    same_row: true
+                    style: |
+                        float: right;
+            show_errors_after_field: description
+        7:
+            edit_mode:
+                enabled: true
+                on: true
+                always_on: true
+            fields:
+                description:
+                    full_width: true
+                    snippet:
+                        html: |
+                            <h1>Step 5: Site Configuration File</h1>
                             <p>
                                 The following file is necessary for Zenario to run,
                                 and this installer can either write the file for you
@@ -611,7 +434,7 @@ install:
                         float: right;
                     onclick: "zenarioA.nowDoingSomething('installing');"
             show_errors_after_field: description
-        7:
+        8:
             edit_mode:
                 enabled: true
                 on: true
@@ -621,7 +444,7 @@ install:
                     full_width: true
                     snippet:
                         html: |
-                            <h1>Step 7: Installation</h1>
+                            <h1>Step 6: Installation</h1>
                             <p>We're sorry, but it looks like something went wrong there.</p>
                             <p>You can try the installation again, or go back and change your settings.</p>
                 previous:
@@ -637,54 +460,4 @@ install:
                     style: |
                         float: right;
                     onclick: "zenarioA.nowDoingSomething('installing');"
-            show_errors_after_field: description
-        45:
-            edit_mode:
-                enabled: true
-                on: true
-                always_on: true
-            fields:
-                description:
-                    full_width: true
-                    snippet:
-                        html: |
-                            <h1>Step 4: Support email address</h1>
-                            <p>Please enter an email address for receiving notification of system errors and database errors.</p>
-                email:
-                    label: "Support email address:"
-                    type: text
-                    row_class: row_form
-                    return_key_presses_button: next
-                description2:
-                    full_width: true
-                    snippet:
-                        html: |
-                            <h1>Step 5: Restore a Backup</h1>
-                            <p>Please enter the path and filename of a backup file to restore.</p>
-                path:
-                    label: "Path:"
-                    type: text
-                    row_class: row_form
-                    onkeyup: zenarioAW.quickValidateWelcomePage(500);
-                    return_key_presses_button: next
-                path_status:
-                    full_width: true
-                    snippet:
-                        pre_field_html: |
-                            <div style="text-align: right;">
-                        html: "&nbsp;"
-                        post_field_html: |
-                            </div>
-                previous:
-                    value: Back
-                    type: submit
-                    full_width: true
-                    style: |
-                        float: left;
-                next:
-                    value: Next
-                    type: submit
-                    same_row: true
-                    style: |
-                        float: right;
             show_errors_after_field: description

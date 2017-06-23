@@ -356,6 +356,8 @@ zenario__content:
                             label: Private, only show to extranet users in a smart group
                         logged_in_not_in_smart_group:
                             label: Private, only show to extranet users NOT in a smart group
+                        with_role:
+                            label: Private, only show to extranet users with a role
                         call_static_method:
                             label: "Call a module's static method to decide"
                         send_signal:
@@ -564,16 +566,6 @@ zenario__content:
                             This panel shows all of the content items that have been trashed.
                             To restore a content item, you need to re-draft and then publish it.
             inline_buttons:
-                no_categories:
-                    css_class: no_categories
-                    tooltip: "No categories"
-                    visible_if: >
-                        (item.number_of_categories == 0)
-                one_or_more_categories:
-                    css_class: one_or_more_categories
-                    tooltip: "Content item in one or more categories"
-                    visible_if: >
-                        (item.number_of_categories > 0)
                 layout:
                     css_class: zenario_layout_inline_button
                     label: |
@@ -592,6 +584,20 @@ zenario__content:
                 privacy:
                     css_class: privacy_inline_button
                     tooltip: "[[privacy]]"
+                no_categories:
+                    css_class: no_categories
+                    tooltip: "No categories"
+                    admin_box:
+                        path: zenario_content_categories
+                    visible_if: >
+                        (item.number_of_categories == 0)
+                one_or_more_categories:
+                    css_class: one_or_more_categories
+                    tooltip: "Content item in one or more categories"
+                    admin_box:
+                        path: zenario_content_categories
+                    visible_if: >
+                        (item.number_of_categories > 0)
                 view_frontend:
                     css_class: view_frontend
                     tooltip: Go to content item in front-end window
@@ -626,16 +632,16 @@ zenario__content:
                     label: Edit metadata and content
                     admin_box:
                         path: zenario_content
-                    without_traits:
-                        ghost: true
+                    without_columns_set:
+                        traits.ghost: true
                 alias:
                     parent: property_dropdown
                     priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
                     label: Edit alias
                     admin_box:
                         path: zenario_alias
-                    without_traits:
-                        ghost: true
+                    without_columns_set:
+                        traits.ghost: true
                         
                 head:
                     parent: property_dropdown
@@ -669,8 +675,8 @@ zenario__content:
                     multiple_select: true
                     admin_box:
                         path: zenario_content_layout
-                    without_traits:
-                        ghost: true
+                    without_columns_set:
+                        traits.ghost: true
                     
                 publish:
                     priv: _PRIV_PUBLISH_CONTENT_ITEM
@@ -679,11 +685,11 @@ zenario__content:
                     hide_in_select_mode: true
                     label: Publish...
                     multiple_select: true
-                    traits:
-                        draft: true
-                        not_locked: true
-                    without_traits:
-                        ghost: true
+                    with_columns_set:
+                        traits.draft: true
+                        traits.not_locked: true
+                    without_columns_set:
+                        traits.ghost: true
                     admin_box:
                         path: zenario_publish
                 action_dropdown:
@@ -713,10 +719,10 @@ zenario__content:
                             download: true
                         request:
                             download: "1"
-                    traits:
-                        has_file: true
-                    without_traits:
-                        ghost: true
+                    with_columns_set:
+                        traits.has_file: true
+                    without_columns_set:
+                        traits.ghost: true
                 view_image:
                     parent: view_dropdown
                     label: View picture
@@ -725,10 +731,10 @@ zenario__content:
                         href: 'zenario/file.php?usage=content&popout=1'
                         options:
                             type: image
-                    traits:
-                        has_picture: true
-                    without_traits:
-                        ghost: true
+                    with_columns_set:
+                        traits.has_picture: true
+                    without_columns_set:
+                        traits.ghost: true
                 images:
                     parent: view_dropdown
                     label: Attached images
@@ -736,9 +742,9 @@ zenario__content:
                         path: zenario__content/panels/inline_images_for_content
                         branch: true
                         refiner: content
-                    without_traits:
-                        no_images: true
-                        ghost: true
+                    without_columns_set:
+                        traits.no_images: true
+                        traits.ghost: true
                 zenario_trans__view:
                     parent: view_dropdown
                     hide_in_select_mode: true
@@ -869,8 +875,8 @@ zenario__content:
                     multiple_select: true
                     admin_box:
                         path: zenario_content_categories_add
-                    without_traits:
-                        ghost: true
+                    without_columns_set:
+                        traits.ghost: true
                     disabled_if_for_any_selected_items: |
                         !zenarioO.tuix.custom__content_types_with_categories[item.type]
                     disabled_tooltip: Categories are not enabled for this content type
@@ -881,8 +887,8 @@ zenario__content:
                     
                     admin_box:
                         path: zenario_content_categories
-                    without_traits:
-                        ghost: true
+                    without_columns_set:
+                        traits.ghost: true
                     disabled_if_for_any_selected_items: |
                         !zenarioO.tuix.custom__content_types_with_categories[item.type]
                     disabled_tooltip: Categories are not enabled for this content type
@@ -894,8 +900,8 @@ zenario__content:
                     multiple_select: true
                     admin_box:
                         path: zenario_content_categories_remove
-                    without_traits:
-                        ghost: true
+                    without_columns_set:
+                        traits.ghost: true
                     disabled_if_for_any_selected_items: |
                         !zenarioO.tuix.custom__content_types_with_categories[item.type]
                     disabled_tooltip: Categories are not enabled for this content type
@@ -916,11 +922,11 @@ zenario__content:
                             zenario.engToBoolean(item.menu_id) || zenario.engToBoolean(item.is_dummy_child)
                         request:
                             mass_add_to_menu: "1"
-                    traits:
-                        unlinked: true
-                    without_traits:
-                        ghost: true
-                        hidden: true
+                    with_columns_set:
+                        traits.unlinked: true
+                    without_columns_set:
+                        traits.ghost: true
+                        traits.hidden: true
                 mass_add_to_menu:
                     parent: action_dropdown
                     priv: _PRIV_ADD_MENU_ITEM
@@ -937,11 +943,11 @@ zenario__content:
                             zenario.engToBoolean(item.menu_id) || zenario.engToBoolean(item.is_dummy_child)
                         request:
                             mass_add_to_menu: "1"
-                    traits:
-                        unlinked: true
-                    without_traits:
-                        ghost: true
-                        hidden: true
+                    with_columns_set:
+                        traits.unlinked: true
+                    without_columns_set:
+                        traits.ghost: true
+                        traits.hidden: true
                 duplicate:
                     parent: action_dropdown
                     priv: _PRIV_CREATE_FIRST_DRAFT
@@ -950,8 +956,8 @@ zenario__content:
                         path: zenario_content
                         key:
                             duplicate: "1"
-                    without_traits:
-                        ghost: true
+                    without_columns_set:
+                        traits.ghost: true
                 
                 
                 create_draft_by_copying:
@@ -959,10 +965,10 @@ zenario__content:
                     priv: _PRIV_CREATE_REVISION_DRAFT
                     visible_if: |
                         zenarioA.checkSpecificPerms(id)
-                    traits:
-                        not_locked: true
-                    without_traits:
-                        draft: true
+                    with_columns_set:
+                        traits.not_locked: true
+                    without_columns_set:
+                        traits.draft: true
                     label: Copy from other...
                     combine_items:
                         path: zenario__content/panels/content/refiners/filter_by_lang////
@@ -986,9 +992,9 @@ zenario__content:
                     priv: _PRIV_CREATE_REVISION_DRAFT
                     visible_if: |
                         zenarioA.checkSpecificPerms(id)
-                    traits:
-                        draft: true
-                        not_locked: true
+                    with_columns_set:
+                        traits.draft: true
+                        traits.not_locked: true
                     label: Copy from other...
                     combine_items:
                         path: zenario__content/panels/content/refiners/filter_by_lang////
@@ -1042,12 +1048,12 @@ zenario__content:
                     label: Delete draft
                     multiple_select: true
                     multiple_select_label: Delete drafts
-                    traits:
-                        draft: true
-                        deletable: true
-                        not_locked: true
-                    without_traits:
-                        ghost: true
+                    with_columns_set:
+                        traits.draft: true
+                        traits.deletable: true
+                        traits.not_locked: true
+                    without_columns_set:
+                        traits.ghost: true
                     ajax:
                         confirm:
                             message: |
@@ -1075,10 +1081,10 @@ zenario__content:
                     hide_in_select_mode: true
                     label: Hide
                     multiple_select: true
-                    traits:
-                        hideable: true
-                    without_traits:
-                        ghost: true
+                    with_columns_set:
+                        traits.hideable: true
+                    without_columns_set:
+                        traits.ghost: true
                     ajax:
                         confirm:
                             message: |
@@ -1105,10 +1111,10 @@ zenario__content:
                         zenarioA.checkSpecificPerms(id)
                     label: Unhide this content item
                     multiple_select: true
-                    traits:
-                        hidden: true
-                    without_traits:
-                        ghost: true
+                    with_columns_set:
+                        traits.hidden: true
+                    without_columns_set:
+                        traits.ghost: true
                     ajax:
                         confirm:
                             message: |
@@ -1132,10 +1138,10 @@ zenario__content:
                     hide_in_select_mode: true
                     label: Trash this content item
                     multiple_select: true
-                    traits:
-                        trashable: true
-                    without_traits:
-                        ghost: true
+                    with_columns_set:
+                        traits.trashable: true
+                    without_columns_set:
+                        traits.ghost: true
                     admin_box:
                         path: zenario_trash
                 redraft:

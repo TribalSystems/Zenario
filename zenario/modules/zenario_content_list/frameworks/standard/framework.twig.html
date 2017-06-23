@@ -33,7 +33,7 @@
 		{% endif %}
 		<div class="content_list_listing">
 			{% for item in Row %}
-				<div class="content_list_data_row data_row_{{item.ODD_OR_EVEN|e}}">
+				<div class="content_list_data_row data_row_{{item.ODD_OR_EVEN|e}}{% if item.Disabled %} disabled_link{% endif %}">
 					{% if Show_Sticky_Image %}
 						<div class="sticky_image">
 							<a {{item.Link}}{{item.Target_Blank}}>
@@ -43,9 +43,12 @@
 					{% endif %}
 					<div class="content_list_text">
 						{% if Show_Item_Title %}
-							<h2 class="content_list_title {{item.Content_Type|e}}">
+							<h2 class="content_list_title {{item.Content_Type|e}}{% if item.Disabled %} disabled_link{% endif %}">
 								<a {{item.Link}}{{item.Target_Blank}}>{{item.Title|e}}</a> 
-								{% if 'Language' in item%}<span>({{item.Language|e}})</span>{% endif %}
+								
+								{% if this.setting('show_language') %}
+									<span>({{item.Language|e}})</span>
+								{% endif %}
 							</h2>
 						{% endif %}
 						{% if Show_Author_Image %}

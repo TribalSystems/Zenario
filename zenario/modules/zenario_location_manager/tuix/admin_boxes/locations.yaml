@@ -120,22 +120,19 @@ zenario_location_manager__location:
                         document.getElementById('google_map_iframe').contentWindow.placeLatLng(latValue,lngValue);
                         
                 zoom:
-                    label: 'Map Zoom:'
-                    type: text
-                    readonly: true
                     ord: 9994
-                    style: >
-                        width: 4em;
+                    same_row: true
+                    type: hidden
                 last_updated:
                     label: 'Last updated:'
                     type: date
-                    read_only: Yes
+                    readonly: Yes
                     row_class: disabled_map_fields
                     ord: 9998
                 last_updated_by:
                     label: 'Last updated by:'
                     type: text
-                    read_only: Yes
+                    readonly: Yes
                     row_class: disabled_map_fields
                     ord: 9999
         content_item:

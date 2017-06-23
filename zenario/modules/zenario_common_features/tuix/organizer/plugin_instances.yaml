@@ -169,14 +169,14 @@ zenario__modules:
                         href: zenario/file.php
                         options:
                             type: image
-                    traits:
-                        has_image: true
+                    with_columns_set:
+                        traits.has_image: true
                 usage_layouts:
                     parent: view_dropdown
                     label: "Layouts using this plugin"
-                    traits:
-                        in_use: true
-                    hide_in_select_mode: true
+                    with_columns_set:
+                        traits.in_use: true
+                    traits.hide_in_select_mode: true
                     link:
                         path: zenario__layouts/panels/layouts
                         branch: true
@@ -186,9 +186,9 @@ zenario__modules:
                 usage_item:
                     parent: view_dropdown
                     label: "Items using this plugin"
-                    traits:
-                        in_use: true
-                    hide_in_select_mode: true
+                    with_columns_set:
+                        traits.in_use: true
+                    traits.hide_in_select_mode: true
                     link:
                         path: zenario__content/panels/content
                         branch: true
@@ -198,9 +198,9 @@ zenario__modules:
                 view_content_items:
                     parent: view_dropdown
                     label: Effective usage
-                    traits:
-                        in_use: true
-                    hide_in_select_mode: true
+                    with_columns_set:
+                        traits.in_use: true
+                    traits.hide_in_select_mode: true
                     link:
                         path: zenario__content/panels/content
                         branch: true

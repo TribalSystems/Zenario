@@ -21,10 +21,11 @@
 
 <% if (m.fields) { %>
 	<% var f; %>
+	<% var hadKeySymbol = false; %>
 	<% var firstField = m.fields[0]; %>
 	
-	<% if (firstField._lastGrouping !== firstField.grouping) { %>
-		<% if (firstField._lastGrouping) { %>
+	<% if (firstField._lastVisibleGrouping !== firstField.grouping) { %>
+		<% if (firstField._lastVisibleGrouping) { %>
 			</fieldset>
 		<% } %>
 		<% if (firstField.grouping) { %>
@@ -57,9 +58,16 @@
 						</div>
 					<% } %>
 				<% } %>
-				<% if (firstField.label && !(firstField.type == 'checkbox' || firstField.type == 'radio' || firstField.type == 'toggle')) { %>
+				<% if (firstField.label && !zenario.IN(firstField.type, 'checkbox', 'radio', 'toggle')) { %>
 					<div class="title {{firstField._hideOnOpen? 'zenario_hide_on_open' : ''}} {{firstField._showOnOpen? 'zenario_show_on_open' : ''}}">
-						<label class="{{firstField.label_class|escape}}" for="{{firstField._id|escape}}">{{firstField.label}}</label>
+						<label class="{{firstField.label_class|escape}}" for="{{firstField._id|escape}}">
+							{{firstField.label}}
+						</label>
+					
+						<% if (firstField.encrypted && zenario.IN(firstField.type, 'checkboxes', 'radios')) { %>
+							<span class="zfab_encrypted_field">🔑 </span>
+							<% hadKeySymbol = true; %>
+						<% } %>
 					</div>
 				<% } %>
 			<% } %>
@@ -67,6 +75,10 @@
 			<div class="{{firstField._hideOnOpen? 'zenario_hide_on_open' : ''}} {{firstField._showOnOpen? 'zenario_show_on_open' : ''}} {{firstField.type=='checkbox'? 'zenario_input_checkbox' : ''}}">
 				<% for (f in m.fields) { %>
 					{{m.fields[f]._html}}
+					
+					<% if (!hadKeySymbol && m.fields[f].encrypted) { %>
+						<span class="zfab_encrypted_field">🔑 </span>
+					<% } %>
 					
 					<% if (m.fields[f].show_phrase_icon) { %>
 						<a class="zenario_fab_phrase_icon" title="{{zenarioA.phrase.translatedField}}"></a>

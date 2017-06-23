@@ -6,129 +6,122 @@ site_settings:
         image_sizes:
             label: Image sizes
             edit_mode:
-                enabled: Yes
+                enabled: true
                 priv: _PRIV_EDIT_SITE_SETTING
                 on: No
             fields:
                 description:
-                    full_width: Yes
+                    full_width: true
                     snippet:
                         html: |
                             This tab contains settings for the storage and processing of images.
                                                             Working copy images may be stored to improve performance when automatically resizing large images.
+                jpeg_quality_limit:
+                    site_setting:
+                        name: jpeg_quality_limit
+                    label: 'Limit JPEG image quality:'
+                    type: text
+                    value: 90
+                    style: 'width: 50px;'
+                    slider:
+                        range: min
+                        min: 80
+                        max: 100
+                        before_field: true
+                    note_below: |
+                        When Zenario outputs a JPEG image on a page,
+                        limit the quality to no more than this amount to keep page-sizes smaller.
+                
                 thumbnail_wc:
-                    label: 'Use a thumbnail working copy:'
+                    label: 'Create thumbnails for images as soon as they are uploaded'
                     type: checkbox
-                    redraw_onchange: Yes
+                    redraw_onchange: true
                 thumbnail_wc_image_size:
+                    indent: 1
+                    hide_if_previous_outdented_value_isnt: 1
                     site_setting:
                         name: thumbnail_wc_image_size
-                    label: 'Thumbnail working copy:'
-                    pre_field_html: |
-                        The CMS will store a working copy of images with either dimension greater than the following: 
-                                                    <br/>
-                                                    <br/>
+                    label: 'Thumbnail size (largest dimension):'
                     post_field_html: pixels
                     note_below: |
-                        The working copy, constrained in both dimensions to the size given above,
-                                                    will be used to automatically generate thumbnails and other small images.
+                        When an image is uploaded, Zenario will create a thumbnail of this size.
+                        Having a thumbnail pre-created will allow any plugin
+                        that uses a thumbnail of that size or smaller
+                        to be generated faster.
                     type: text
-                    value: "300"
+                    value: 300
                     style: 'width: 5em;'
                     slider:
                         range: min
-                        min: "200"
-                        max: "1000"
-                        before_field: Yes
-                        step: "25"
+                        min: 200
+                        max: 1000
+                        before_field: true
+                        step: 25
                     validation:
-                        required_if_not_hidden: 'Please enter a  constraint.'
-                        numeric: The large constraint must be numeric.
-                    visible_if: "zenarioAB.value('thumbnail_wc')"
+                        required_if_not_hidden: Please enter a thumbnail size.
+                        numeric: The thumbnail size must be numeric.
                 working_copy_image:
-                    label: 'Use a large image working copy:'
+                    indent: 1
+                    hide_if_previous_outdented_value_isnt: 1
+                    label: 'Create a second thumbnail'
                     type: checkbox
-                    redraw_onchange: Yes
+                    redraw_onchange: true
                 working_copy_image_size:
+                    indent: 2
+                    hide_with_previous_outdented_field: 1
+                    hide_if_previous_outdented_value_isnt: 1
                     site_setting:
                         name: working_copy_image_size
-                    label: 'Large image working copy:'
-                    pre_field_html: |
-                        The CMS will store a second working copy of images with either dimension greater than the following:
-                                                    <br/>
-                                                    <br/>
+                    label: 'Thumbnail size (largest dimension):'
                     post_field_html: pixels
                     type: text
                     style: 'width: 6em;'
                     slider:
                         range: min
-                        min: "500"
-                        max: "2000"
-                        before_field: Yes
-                        step: "50"
+                        min: 500
+                        max: 2000
+                        before_field: true
+                        step: 50
                     validation:
-                        required_if_not_hidden: Please enter a very large constraint.
-                        numeric: The very large constraint must be numeric.
-                    visible_if: "zenarioAB.value('working_copy_image')"
+                        required_if_not_hidden: Please enter a second thumbnail size.
+                        numeric: The second thumbnail size must be numeric.
+                set_working_copy_image_threshold:
+                    indent: 1
+                    hide_with_previous_outdented_field: 1
+                    hide_if_previous_outdented_value_isnt: 1
+                    label: 'Change the threshold for this (advanced)'
+                    type: checkbox
+                    redraw_onchange: true
                 working_copy_image_threshold:
+                    indent: 2
+                    hide_with_previous_outdented_field: 1
+                    hide_if_previous_outdented_value_isnt: 1
                     site_setting:
                         name: working_copy_image_threshold
-                    label: 'Threshold:'
                     pre_field_html: |
-                        The CMS will use a working copy when the desired output size of the image is exactly the same size as the working copy, or when it is not more than the following proportion of the working copy's dimensions:
+                        Zenario will use this thumbnail when the the requested thumbnail is exactly the same size,
+                        or no larger than the following proportion of the working copy's dimensions:
                                                     <br/><br/>
                     post_field_html: %
                     type: text
-                    value: "66"
                     style: 'width: 3em;'
                     slider:
                         range: min
-                        min: "50"
-                        max: "100"
-                        before_field: Yes
+                        min: 50
+                        max: 100
+                        before_field: true
                     validation:
                         required_if_not_hidden: Please enter a percentage.
                         numeric: The percentage must be numeric.
-                    visible_if: "zenarioAB.value('thumbnail_wc') || zenarioAB.value('working_copy_image')"
-                jpeg_quality:
-                    site_setting:
-                        name: jpeg_quality
-                    label: 'JPEG Quality:'
-                    type: text
-                    value: 99
-                    style: 'width: 50px;'
-                    slider:
-                        range: min
-                        min: "1"
-                        max: "100"
-                        before_field: Yes
-                    note_below: |
-                        If the CMS needs to resize a JPEG image (e.g. to create a thumbnail),
-                                                    the newly created image will be saved at this quality.
-                image_mobile_resize_point:
-                    site_setting:
-                        name: image_mobile_resize_point
-                    label: 'Image mobile resize point:'
-                    type: text
-                    validation:
-                        required_if_not_hidden: Please enter a width.
-                        numeric: The width must be a number.
-                    value: "767"
-                    maxlength: "5"
-                    style: 'width: 5em;'
-                    post_field_html: '&nbsp;pixels'
-                    note_below: |
-                        This value determines the point at which plugins with seperate mobile content will
-                        display thier mobile content over their regular content.
         filesizes:
             label: File Upload Sizes
             edit_mode:
-                enabled: Yes
+                enabled: true
                 priv: _PRIV_EDIT_SITE_SETTING
                 on: No
             fields:
                 description:
-                    full_width: Yes
+                    full_width: true
                     snippet:
                         html: This tab contains settings for file uploads.
                 content_max_filesize:
@@ -136,7 +129,7 @@ site_settings:
                         name: content_max_filesize
                     label: 'Maximum Content File Size:'
                     type: text
-                    value: "20000000"
+                    value: 20000000
                     note_below: >
                         This allows you to set a maximum allowed uploadable file
                         size (in bytes) for Pictures, Audio, Video, and other
@@ -149,7 +142,7 @@ site_settings:
                         name: max_content_image_filesize
                     label: 'Maximum Image File Size:'
                     type: text
-                    value: "500000"
+                    value: 500000
                     note_below: |
                         This allows you to set a maximum allowed uploadable file size (in bytes) for images which are to be used with HTML and
                                                     other types of Content Items.
@@ -161,7 +154,7 @@ site_settings:
                         name: max_content_movie_filesize
                     label: 'Maximum Animation File Size:'
                     type: text
-                    value: "20000000"
+                    value: 20000000
                     note_below: |
                         This allows you to set a maximum allowed uploadable file size (in bytes) for Animation which are to be used with HTML and
                                                     other types of Content Items.
@@ -171,14 +164,14 @@ site_settings:
                 apache_max_filesize:
                     label: 'Largest Possible Upload Size:'
                     type: text
-                    read_only: Yes
+                    readonly: true
                     note_below: |
                         This is the size of the largest uploaded file that your server will accept.
                                                     Your server administrator can change this by changing the server's Apache Config.
                 max_allowed_packet:
                     label: 'MySQL max_packet_size:'
                     type: text
-                    read_only: Yes
+                    readonly: true
                     note_below: |
                         This is the size of the largest possible command the CMS can send to your database.
                                                         Images, along with their thumbnails and their working copies, will be added to the database using one command,
@@ -188,12 +181,12 @@ site_settings:
         file_downloads:
             label: File Downloads
             edit_mode:
-                enabled: Yes
+                enabled: true
                 priv: _PRIV_EDIT_SITE_SETTING
                 on: No
             fields:
                 description:
-                    full_width: Yes
+                    full_width: true
                     snippet:
                         html: This tab contains settings for file downloads.
                 restrict_downloads_by_ip:
@@ -201,6 +194,6 @@ site_settings:
                         name: restrict_downloads_by_ip
                     label: 'Restrict by IP:'
                     type: checkbox
-                    value: "1"
+                    value: 1
                     note_below: "Places a <code>.htaccess</code> file in the temporary document directory to allow access only from the client's IP address."
     setting_group: files_and_images
