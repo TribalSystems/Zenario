@@ -338,7 +338,7 @@ zenario.lib(function(
 	zenario.scrollTop = function(value, time, el) {
 	
 		if (el === undefined) {
-			el = zenario.browserIsSafari()? 'body' : 'html';
+			el = zenario.browserIsWebKit() || zenario.browserIsEdge()? 'body' : 'html';
 		}
 	
 		if (value === undefined) {
@@ -351,7 +351,7 @@ zenario.lib(function(
 	};
 
 	zenario.scrollLeft = function(value) {
-		var $body = $(zenario.browserIsSafari()? 'body' : 'html');
+		var $body = $(zenario.browserIsWebKit() || zenario.browserIsEdge()? 'body' : 'html');
 	
 		if (value === undefined) {
 			return $body.scrollLeft();
@@ -376,6 +376,10 @@ zenario.lib(function(
 
 	zenario.browserIsChrome = function() {
 		return /Chrome/.test(navigator.userAgent);
+	};
+
+	zenario.browserIsEdge = function() {
+		return /Edge\//.test(navigator.userAgent);
 	};
 
 	zenario.browserIsFirefox = function() {

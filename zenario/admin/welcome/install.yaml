@@ -91,12 +91,14 @@ install:
                     value: Fresh Install
                     type: submit
                     full_width: true
-                    visible_if: "if (zenarioAW.value('i_agree')) delete tuixObject.disabled; else tuixObject.disabled = true; true;"
+                    disabled_if: |
+                        !zenarioAW.value('i_agree')
                 restore:
                     value: Restore from Backup
                     type: submit
                     same_row: true
-                    visible_if: "if (zenarioAW.value('i_agree')) delete tuixObject.disabled; else tuixObject.disabled = true; true;"
+                    disabled_if: |
+                        !zenarioAW.value('i_agree')
         3:
             edit_mode:
                 enabled: true

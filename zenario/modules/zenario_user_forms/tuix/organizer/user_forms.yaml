@@ -86,9 +86,8 @@ zenario__user_forms:
                     title: Plugin module names
                     show_by_default: false
                 plugin_content_items:
-                    title: Content items
+                    title: Content usage
                     show_by_default: true
-            
             default_sort_column: name
             
             item:

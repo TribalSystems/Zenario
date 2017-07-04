@@ -1692,7 +1692,7 @@ define(
       render: render
     };
   }
-)
+);
 
 
 /**

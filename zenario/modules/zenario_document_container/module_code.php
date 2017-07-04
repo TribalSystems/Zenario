@@ -30,6 +30,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_document_container extends module_base_class {
 	
 	public function init() {
+		$this->privacy = getRow('translation_chains', 'privacy', array('equiv_id' => cms_core::$equivId, 'type' => cms_core::$cType));
 		return true;
 	}
 	
@@ -37,8 +38,6 @@ class zenario_document_container extends module_base_class {
 		$userId = userId();
 		$documentId = $this->setting('document_source');
 		$mergeFields = array();
-		
-		$this->privacy = getRow('translation_chains', 'privacy', array('equiv_id' => cms_core::$equivId, 'type' => cms_core::$cType));
 		
 		if ($this->setting('container_mode') == 'user_documents' && inc('zenario_user_documents')) {
 			// Private user documents
@@ -99,11 +98,15 @@ class zenario_document_container extends module_base_class {
 				$sqlWhere;
 			$result = sqlSelect($sql);
 			while ($row = sqlFetchAssoc($result)) {
-				$paths .= ' "' . setting("docstore_dir") . "/" . $row['path'] . "/" . $row['doc_filename'] . '"';
+				if (file_exists(setting("docstore_dir") . "/" . $row['path'] . "/" . $row['doc_filename'])) {
+					$paths .= ' "' . setting("docstore_dir") . "/" . $row['path'] . "/" . $row['doc_filename'] . '"';
+				} else {
+					$paths .= ' "' . setting("docstore_dir") . "/" . $row['path'] . "/" . $row['filename'] . '"';
+				}
 			}
 			
 			$archiveName = $this->getArchiveName();
-		
+			
 			//zip download headers
 			header('Content-Type: application/zip');
 			header('Content-disposition: attachment; filename="' . $archiveName . '.zip"');

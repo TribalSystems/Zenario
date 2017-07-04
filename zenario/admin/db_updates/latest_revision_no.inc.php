@@ -34,8 +34,8 @@ define('INSTALLER_DEFAULT_THEME', 'duke_street');
 
 define('ZENARIO_MAJOR_VERSION', '7');
 define('ZENARIO_MINOR_VERSION', '6');
-define('ZENARIO_REVISION', '41504');
+define('ZENARIO_REVISION', '41633');
 define('ZENARIO_VERSION', '7.6');
 define('ZENARIO_IS_HEAD', false);
 
-define('TINYMCE_DIR', 'zenario/libraries/lgpl/tinymce_4_6_4/');
+define('TINYMCE_DIR', 'zenario/libraries/lgpl/tinymce_4_5_7/');

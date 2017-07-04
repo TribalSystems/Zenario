@@ -85,3 +85,12 @@ revision( 173
 _sql
 
 );
+
+revision( 181
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters_hyperlinks`
+		CHANGE COLUMN `hyperlink` `hyperlink` text
+_sql
+
+);

@@ -35,7 +35,16 @@ if (!loadModuleDescription($moduleClassName, $desc)
 	return false;
 }
 //Update the modules table with the details
-$category = (isset($desc['category']) && !empty($desc['category'])) ? ("'".sqlEscape($desc['category'])."'") : "NULL";
+if (!empty($desc['category'])) {
+	$category = $desc['category'];
+
+} elseif (is_dir(CMS_ROOT. 'zenario_custom/modules/'. $moduleClassName)) {
+	$category = 'custom';
+
+} else {
+	$category = engToBoolean($desc['is_pluggable'])? 'pluggable' : 'management';
+}
+
 $sql = "
 	UPDATE ". DB_NAME_PREFIX. "modules SET
 		vlp_class = '". sqlEscape($desc['vlp_class_name']). "',
@@ -47,7 +56,7 @@ $sql = "
 		can_be_version_controlled = ". engToBoolean(engToBoolean($desc['is_pluggable'])? $desc['can_be_version_controlled'] : 0). ",
 		for_use_in_twig = ". engToBoolean($desc['for_use_in_twig']). ",
 		nestable = ". engToBoolean($desc['nestable']). ",
-		category = ". $category . "
+		category = '". sqlEscape($category). "'
 	WHERE id = '". (int) $moduleId. "'";
 sqlQuery($sql);
 

@@ -61,7 +61,7 @@ zenario__modules:
                 nestable_wireframes_only:
                     sql: 'status = "module_running" AND is_pluggable = 1 AND nestable = 1 AND can_be_version_controlled = 1'
                 custom_modules:
-                    sql: '(category = "custom" OR category IS NULL)'
+                    sql: 'category = "custom"'
                 core_modules:
                     sql: 'category = "core"'
                 content_type_modules:

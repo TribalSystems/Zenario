@@ -54,7 +54,7 @@ class zenario_user_forms__organizer__user_forms extends module_base_class {
 			unset($panel['columns']['form_email_addresses']);
 		}
 		
-		// Get plugins using a form
+		//Get plugins using a form
 		$moduleIds = zenario_user_forms::getFormModuleIds();
 		$formPlugins = array();
 		$sql = '
@@ -78,9 +78,10 @@ class zenario_user_forms__organizer__user_forms extends module_base_class {
 			$formPlugins[$row['id']] = $row['name'];
 		}
 		
-		// Get content items with a plugin using a form on
+		//Get content items with a plugin using a form on
 		$formUsage = array();
 		$contentItemUsage = array();
+		$layoutUsage = array();
 		if ($formPlugins) {
 			$sql = '
 				SELECT pil.content_id, pil.content_type, pil.instance_id
@@ -89,15 +90,29 @@ class zenario_user_forms__organizer__user_forms extends module_base_class {
 					ON (pil.content_id = c.id) AND (pil.content_type = c.type) AND (pil.content_version = c.admin_version)
 				WHERE c.status NOT IN (\'trashed\',\'deleted\')
 				AND pil.instance_id IN ('. inEscape(array_keys($formPlugins), 'numeric'). ')
-				GROUP BY pil.content_id, pil.content_type';
+				GROUP BY pil.content_id, pil.content_type, pil.instance_id';
 			$result = sqlSelect($sql);
 			while ($row = sqlFetchAssoc($result)) {
 				$tagId = formatTag($row['content_id'], $row['content_type']);
 				$contentItemUsage[$row['instance_id']][] = $tagId;
 			}
+			
+			//Get layouts with a plugin using a form on
+			$sql = '
+				SELECT l.name, pll.instance_id
+				FROM '.DB_NAME_PREFIX.'plugin_layout_link pll
+				INNER JOIN '.DB_NAME_PREFIX.'layouts l
+					ON pll.layout_id = l.layout_id
+				WHERE l.status = "active"
+				AND pll.instance_id IN (' . inEscape(array_keys($formPlugins), 'numeric') . ')
+				GROUP BY l.layout_id, pll.instance_id';
+			$result = sqlSelect($sql);
+			while ($row = sqlFetchAssoc($result)) {
+				$layoutUsage[$row['instance_id']][] = $row['name'];
+			}
 		}
 		
-		foreach($formPlugins as $instanceId => $pluginName) {
+		foreach ($formPlugins as $instanceId => $pluginName) {
 			$className = zenario_user_forms::getModuleClassNameByInstanceId($instanceId);
 			$moduleName = getModuleDisplayNameByClassName($className);
 			
@@ -106,13 +121,17 @@ class zenario_user_forms__organizer__user_forms extends module_base_class {
 				if (isset($contentItemUsage[$instanceId])) {
 					$details['contentItems'] = $contentItemUsage[$instanceId];
 				}
+				if (isset($layoutUsage[$instanceId])) {
+					$details['layouts'] = $layoutUsage[$instanceId];
+				}
 				$formUsage[$formId][] = $details;
 			}
 		}
 		
-		foreach($panel['items'] as $id => &$item) {
+		foreach ($panel['items'] as $id => &$item) {
 			$pluginUsage = '';
 			$contentUsage = '';
+			$layoutUsage = '';
 			$moduleNames = array();
 			if (isset($formUsage[$id]) && !empty($formUsage[$id])) {
 				$pluginUsage = '"'.$formUsage[$id][0]['pluginName'].'"';
@@ -120,20 +139,44 @@ class zenario_user_forms__organizer__user_forms extends module_base_class {
 					$plural = (($count - 1) == 1) ? '' : 's';
 					$pluginUsage .= ' and '.($count - 1).' other plugin'.$plural;
 				}
-				$count = 0;
+				$contentCount = 0;
+				$layoutCount = 0;
 				foreach($formUsage[$id] as $plugin) {
 					$moduleNames[$plugin['moduleName']] = $plugin['moduleName'];
 					if (isset($plugin['contentItems'])) {
 						if (empty($contentUsage)) {
 							$contentUsage = '"'.$plugin['contentItems'][0].'"';
 						}
-						$count += count($plugin['contentItems']);
+						$contentCount += count($plugin['contentItems']);
+					}
+					if (isset($plugin['layouts'])) {
+						if (empty($layoutUsage)) {
+							$layoutUsage = '"' . $plugin['layouts'][0] . '"';
+						}
+						$layoutCount += count($plugin['layouts']);
 					}
 				}
-				if ($count > 1) {
-					$plural = (($count - 1) == 1) ? '' : 's';
-					$contentUsage .= ' and '.($count - 1).' other item'.$plural;
-					
+				
+				//Multiple content, no layout
+				if ($contentCount > 1 && $layoutCount == 0) {
+					$plural = (($contentCount - 1) == 1) ? '' : 's';
+					$contentUsage .= ' and '.($contentCount - 1).' other item'.$plural;
+				//Multiple content, layout
+				} elseif ($contentCount > 1 && $layoutCount > 0) {
+					$plural = (($contentCount - 1) == 1) ? '' : 's';
+					$plural2 = ($layoutCount == 1) ? '' : 's';
+					$contentUsage .= ', '.($contentCount - 1).' other item'.$plural . ' and '.$layoutCount. ' layout'.$plural2;
+				//Single content, layout
+				} elseif ($contentCount == 1 && $layoutCount > 0) {
+					$plural2 = ($layoutCount == 1) ? '' : 's';
+					$contentUsage .= ' and '.$layoutCount. ' layout'.$plural2;
+				//No content, layout
+				} elseif (!$contentCount && $layoutCount) {
+					$contentUsage = $layoutUsage;
+					if ($layoutCount > 1) {
+						$plural2 = (($layoutCount - 1) == 1) ? '' : 's';
+						$contentUsage .= ' and '.($layoutCount - 1).' other layout'.$plural2;
+					}
 				}
 			}
 			$item['plugin_module_name'] = implode(', ', $moduleNames);
@@ -167,7 +210,7 @@ class zenario_user_forms__organizer__user_forms extends module_base_class {
 			$formFields = getRowsArray(ZENARIO_USER_FORMS_PREFIX . 'user_form_fields', true, array('user_form_id' => $ids));
 			$formNameArray = explode(' ', $formProperties['name']);
 			$formVersion = end($formNameArray);
-			// Remove version number at end of field
+			//Remove version number at end of field
 			if (preg_match('/\((\d+)\)/', $formVersion, $matches)) {
 				array_pop($formNameArray);
 				$formProperties['name'] = implode(' ', $formNameArray);
@@ -187,7 +230,7 @@ class zenario_user_forms__organizer__user_forms extends module_base_class {
 				unset($formField['id']);
 				$formField['user_form_id'] = $id;
 				$fieldId = insertRow(ZENARIO_USER_FORMS_PREFIX . 'user_form_fields', $formField);
-				// Duplicate form field values if any
+				//Duplicate form field values if any
 				foreach ($formFieldValues as $field) {
 					$field['form_field_id'] = $fieldId;
 					unset($field['id']);
