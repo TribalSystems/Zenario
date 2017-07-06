@@ -4288,8 +4288,10 @@ function getSearchtermParts($searchString) {
 	}
 	
 	//Just in case the user doesn't know about the "using quotes to group words together" feature,
-	//add the whole phrase in as a search term
-	if (!$quotesUsed && count($searchStrings) > 1) {
+	//add the whole phrase in as a search term.
+	//Also do this as a fallback in case nothing was matched
+	if (empty($searchWordsAndPhrases)
+	 || (!$quotesUsed && count($searchStrings) > 1)) {
 		$searchWordsAndPhrases[$searchString] = 'whole phrase';
 	}
 	
