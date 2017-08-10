@@ -122,6 +122,9 @@ foreach ($globalAdmins as $globalId => &$admin) {
 	}
 }
 
+//If any superadmins on this site were not found on the global site, flag them as deleted.
+updateRow('admins', array('status' => 'deleted'), array('authtype' => 'super', 'global_id' => array('!' => array_keys($globalAdmins))));
+
 if (!empty($globalAdmins[$adminIdG]['local_id'])) {
 	return $globalAdmins[$adminIdG]['local_id'];
 } else {

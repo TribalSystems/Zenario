@@ -1221,7 +1221,7 @@ class zenario_user_forms extends module_base_class {
 				break;
 				
 			case 'date':
-				$html .= '<input type="text" readonly class="jquery_form_datepicker" ';
+				$html .= '<input type="text" class="jquery_form_datepicker" ';
 				if ($readonly) {
 					$html .= ' disabled ';
 				}

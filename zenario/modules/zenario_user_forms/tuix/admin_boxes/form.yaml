@@ -483,4 +483,4 @@ zenario_user_admin_box_form:
             edit_mode:
                 enabled: true
                 always_on: true
-            fields:
+            fields: {}

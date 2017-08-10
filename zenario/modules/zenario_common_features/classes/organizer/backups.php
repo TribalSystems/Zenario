@@ -68,7 +68,11 @@ class zenario_common_features__organizer__backups extends module_base_class {
 		}
 		
 		if ($ids) {
-			$filename = setting('backup_dir') . '/'. decodeItemIdForOrganizer($ids);
+			$filename = decodeItemIdForOrganizer($ids);
+			if (preg_match('/[^a-zA-Z0-9\._-]/', $filename)) {
+				exit;
+			}
+			$filename = setting('backup_dir') . '/'. $filename;
 		}
 		
 		if (post('create') && checkPriv('_PRIV_BACKUP_SITE')) {
