@@ -117,6 +117,31 @@ class zenario_users__admin_boxes__user__details extends module_base_class {
 				$fields['details/email_to_send']['value'] = arrayKey($template,'code');
 			}
 		}
+		
+		if (checkPriv('_PRIV_CHANGE_USER_PASSWORD')) {
+			if (!$box['key']['id']) {
+				unset($fields['details/password_needs_changing']['side_note']);
+				
+				$fields['details/password_needs_changing']['note_below'] =
+					htmlspecialchars(
+						nAdminPhrase('This will flag the user\'s password as "needs changing". If it is not changed within 1 day, it will expire and need to be reset.',
+							'This will flag the user\'s password as "needs changing". If it is not changed within [[count]] days, it will expire and need to be reset.',
+							ifNull((int) setting('temp_password_timeout'), 14)
+						)
+					);
+			
+			} elseif (empty($user['last_login'])) {
+				unset($fields['details/password_needs_changing']['side_note']);
+				
+				$fields['details/password_needs_changing']['note_below'] =
+					htmlspecialchars(
+						nAdminPhrase('This will flag the user\'s password as "needs changing". If it is not changed within 1 day of being set, it will expire and need to be reset.',
+							'This will flag the user\'s password as "needs changing". If it is not changed within [[count]] days of being set, it will expire and need to be reset.',
+							ifNull((int) setting('temp_password_timeout'), 14)
+						)
+					);
+			}
+		}
 	}
 	
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
@@ -216,6 +241,7 @@ class zenario_users__admin_boxes__user__details extends module_base_class {
 				if (!$box['key']['id']
 				 || (!empty($fields['details/change_password']['pressed']) && checkPriv('_PRIV_CHANGE_USER_PASSWORD'))) {
 					$cols['password'] = $values['details/password'];
+					$cols['reset_password_time'] = now();
 				}
 				if (checkPriv('_PRIV_CHANGE_USER_PASSWORD')) {
 					$cols['password_needs_changing'] = $values['details/password_needs_changing'];

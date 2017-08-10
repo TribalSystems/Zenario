@@ -368,14 +368,17 @@ function visitorIP() {
 	if (defined('USE_FORWARDED_IP')
 	 && constant('USE_FORWARDED_IP')
 	 && !empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-		return $_SERVER['HTTP_X_FORWARDED_FOR'];
+		$ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
 	
 	} elseif (!empty($_SERVER['REMOTE_ADDR'])) {
-		return $_SERVER['REMOTE_ADDR'];
+		$ip = $_SERVER['REMOTE_ADDR'];
 	
 	} else {
 		return false;
 	}
+	
+	$ip = explode(',', $ip, 2);
+	return $ip[0];
 }
 
 //Check if this is https
