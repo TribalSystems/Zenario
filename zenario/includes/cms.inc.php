@@ -1816,6 +1816,8 @@ function checkItemPrivacy($privacy, $privacySettings, $cID, $cType, $cVersion) {
 		case 'call_static_method':
 		case 'send_signal':
 			
+			$status = ZENARIO_404_NOT_FOUND;
+			
 			if ($privacy['privacy'] == 'call_static_method') {
 				if ($privacySettings) {
 					if ((inc($privacySettings['module_class_name']))

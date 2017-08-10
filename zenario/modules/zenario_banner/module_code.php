@@ -351,7 +351,7 @@ class zenario_banner extends module_base_class {
 				//If this was a retina image, get a normal version of the image as well for standard displays
 				if ($banner_retina) {
 					$sWidth = $sHeight = $sURL = false;
-					if (imageLink($sWidth, $sHeight, $sURL, $imageId, $width, $height, 'stretch', $banner_offset, false)) {
+					if (imageLink($sWidth, $sHeight, $sURL, $imageId, $width, $height, $banner_canvas == 'resize_and_crop'? 'resize_and_crop' : 'stretch', $banner_offset, false)) {
 						if ($url != $sURL) {
 							$this->mergeFields['Image_Srcset'] = $url. ' 2x';
 							
@@ -457,7 +457,7 @@ class zenario_banner extends module_base_class {
 						//If this was a retina image, get a normal version of the image as well for standard displays
 						if ($banner_retina) {
 							$sWidth = $sHeight = $sURL = false;
-							if (imageLink($sWidth, $sHeight, $sURL, $rollover_image, $rWidth, $rHeight, 'stretch', $banner_offset, false)) {
+							if (imageLink($sWidth, $sHeight, $sURL, $rollover_image, $rWidth, $rHeight, $banner_canvas == 'resize_and_crop'? 'resize_and_crop' : 'stretch', $banner_offset, false)) {
 								if ($rollURL != $sURL) {
 									$rollSrcset = $rollURL. ' 2x';
 									$rollSrcset = 'srcset="'. htmlspecialchars($rollSrcset). '"';

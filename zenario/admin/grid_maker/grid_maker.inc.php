@@ -533,7 +533,14 @@ public static function generateHTMLR(&$html, &$lines, &$data, &$grouping, &$slot
 		  && empty($cell['grid_break'])
 		  && empty($cell['slot'])
 		  && empty($cell['space']))) {
-			continue;
+			
+			//Catch a case when migrating from an older version of Grid Maker
+			if (!empty($cell['name'])
+			 && !empty($cell['width'])) {
+				$cell['slot'] = true;
+			} else {
+				continue;
+			}
 		}
 		
 		if (!empty($cell['grid_break']) && $level == 0) {

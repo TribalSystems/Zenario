@@ -75,7 +75,7 @@ class zenario_common_features__organizer__backups extends module_base_class {
 		}
 		
 		if ($ids) {
-			$filename = setting('backup_dir') . '/'. decodeItemIdForOrganizer($ids);
+			$filename = setting('backup_dir') . '/'. safeFileName(decodeItemIdForOrganizer($ids));
 		}
 		
 		if (post('create') && checkPriv('_PRIV_BACKUP_SITE')) {

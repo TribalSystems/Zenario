@@ -82,7 +82,18 @@
 					dateFormat: zenario.dpf,
 					altField: '#' + el.id + '__0',
 					altFormat: 'yy-mm-dd',
-					showOn: 'focus'
+					showOn: 'focus',
+					onClose: function(dateText, inst) {
+						//After closing the datepicker, make sure the entered date is valid. If not, change back to the previous valid date or set to null if none.
+						var value = get(el.id + '__0').value;
+						var formattedValue = $.datepicker.formatDate(zenario.dpf, $.datepicker.parseDate('yy-mm-dd', get(el.id + '__0').value));
+						
+						if (!dateText || !formattedValue) {
+							$datepicker.datepicker('setDate', null);
+						} else if (dateText && formattedValue) {
+							el.value = formattedValue;
+						}
+					}
 				};
 				if ($(this).data('selectors')) {
 					options.changeMonth = true;

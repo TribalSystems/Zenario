@@ -457,7 +457,8 @@ if (needRevision(36995)) {
 		
 		//Attempt to read the grid data from the template file
 		if (($data = zenario_grid_maker::readLayoutCode($layout['layout_id']))
-		 && (!empty($data['cells']))) {
+		 && (!empty($data['cells']))
+		 && (zenario_grid_maker::validateData($data))) {
 			
 			//Attempt to regenerate the .tpl and .css files.
 			//This may fail (e.g. if the files were not writable), but even if it fails it may still return

@@ -24,7 +24,6 @@ zenario_upload_replacement_document:
                     label: 'Upload replacement document:'
                     upload:
                         drag_and_drop: true
-                        multi: true
                         dropbox: true
                         dropbox_phrase: 'Upload from dropbox'
                 

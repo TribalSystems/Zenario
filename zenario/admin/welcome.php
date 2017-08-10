@@ -26,6 +26,16 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+if (version_compare(phpversion(), '7.0.0', '<')) {
+	echo '
+		<h1>System Requirements</h1>
+		<p>It looks like your server doesn\'t meet the requirements for Zenario.</p>
+		<p>
+			Zenario needs PHP version 7.0 or later to run (<em>you have version ', htmlspecialchars(phpversion()), '</em>).
+		</p>';
+	exit;
+}
+
 
 /*  
  *  Standard welcome page header.
