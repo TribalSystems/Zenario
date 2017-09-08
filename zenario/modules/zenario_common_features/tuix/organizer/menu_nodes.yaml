@@ -423,8 +423,7 @@ zenario__menu:
                 linked_content_item_dropdown:
                     label: Linked content item
                     multiple_select: true
-                    with_columns_set:
-                        traits.content: true
+                    hide_when_children_are_not_visible: true
                 citem:
                     priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
                     label: Content item properties

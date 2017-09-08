@@ -6,7 +6,7 @@ zenario__content:
             refiners:
                 group_members:
                     table_join: |
-                        [[DB_NAME_PREFIX]]group_link AS gcl
+                        INNER JOIN [[DB_NAME_PREFIX]]group_link AS gcl
                             ON gcl.link_to = 'group'
                             AND gcl.link_to_id = [[REFINER_ID]]
                             AND gcl.link_from = 'chain'

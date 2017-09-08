@@ -65,14 +65,22 @@ if ($createNewInstance) {
 			framework,
 			css_class,
 			is_slide,
-			name_or_title,
+			invisible_in_nav,
+			show_back,
+			show_refresh,
+			show_auto_refresh,
+			auto_refresh_interval,
+			request_vars,
+			global_command,
 			states,
+			name_or_title,
 			privacy,
 			smart_group_id,
 			module_class_name,
 			method_name,
 			param_1,
-			param_2
+			param_2,
+			always_visible_to_admins
 		) SELECT
 			". (int) $instanceId. ",
 			slide_num,
@@ -83,14 +91,22 @@ if ($createNewInstance) {
 			framework,
 			css_class,
 			is_slide,
-			name_or_title,
+			invisible_in_nav,
+			show_back,
+			show_refresh,
+			show_auto_refresh,
+			auto_refresh_interval,
+			request_vars,
+			global_command,
 			states,
+			name_or_title,
 			privacy,
 			smart_group_id,
 			module_class_name,
 			method_name,
 			param_1,
-			param_2
+			param_2,
+			always_visible_to_admins
 		FROM ". DB_NAME_PREFIX. "nested_plugins
 		WHERE instance_id = ". (int) $oldInstanceId;
 	sqlSelect($sql);  //No need to check the cache as the other statements should clear it correctly

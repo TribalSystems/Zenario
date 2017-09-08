@@ -91,7 +91,7 @@ zenario__users:
                         path: zenario__users/panels/users
                         refiner: group_members
                 content_items:
-                    label: 'Content items shared to Group members'
+                    label: 'View content items protected by this group'
                     parent: view_dropdown
                     link:
                         path: zenario__content/panels/content

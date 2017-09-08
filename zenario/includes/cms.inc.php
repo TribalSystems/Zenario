@@ -4017,7 +4017,7 @@ function createCacheDir($dir, $type = 'private/downloads', $onlyForCurrentVisito
 		$fullPath .= $dir. '/';
 		
 		if (is_dir($fullPath)) {
-			touch($fullPath. 'accessed');
+			@touch($fullPath. 'accessed');
 			return $path;
 		
 		} else {
