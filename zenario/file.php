@@ -118,10 +118,10 @@ $height = false;
 $offset = 0;
 $file = false;
 $filePath = false;
-$filename = request('filename');
+$filename = $_REQUEST['filename'] ?? false;
 $useCacheDir = true;
 $getUploadedFileInCacheDir = 
-		request('getUploadedFileInCacheDir') 
+		($_REQUEST['getUploadedFileInCacheDir'] ?? false) 
 		&& (
 			checkPriv() 
 			|| (
@@ -135,11 +135,11 @@ $getUploadedFileInCacheDir =
 
 //Attempt to get the id from the request
 	//(This is only allowed under certain situations, as images may be protected or not public.)
-if ($usage == 'user' && request('user_id')) {
-	$id = getRow('users', 'image_id', array('id' => request('user_id')));
+if ($usage == 'user' && ($_REQUEST['user_id'] ?? false)) {
+	$id = getRow('users', 'image_id', array('id' => ($_REQUEST['user_id'] ?? false)));
 
-} elseif ($usage == 'template' && request('layout_id')) {
-	$id = getRow('layouts', 'image_id', request('layout_id'));
+} elseif ($usage == 'template' && ($_REQUEST['layout_id'] ?? false)) {
+	$id = getRow('layouts', 'image_id', ($_REQUEST['layout_id'] ?? false));
 
 } elseif ($adminBackend && !empty($_GET['id'])) {
 	$id = $_GET['id'];
@@ -206,13 +206,13 @@ if ($getUploadedFileInCacheDir) {
 	
 	$file = array();
 	
-	if (($filepath = getPathOfUploadedFileInCacheDir(request('getUploadedFileInCacheDir')))
-	 && ($file['mime_type'] = documentMimeType($filepath))) {
+	if (($filepath = Ze\File::getPathOfUploadedInCacheDir($_REQUEST['getUploadedFileInCacheDir'] ?? false))
+	 && ($file['mime_type'] = Ze\File::mimeType($filepath))) {
 		
 		$file['data'] = file_get_contents($filepath);
 		$file['filename'] = $filename = basename($filepath);
 		
-		if (isImage($file['mime_type'])
+		if (Ze\File::isImage($file['mime_type'])
 		 && ($image = getimagesize($filepath))) {
 			$file['width'] = $image[0];
 			$file['height'] = $image[1];
@@ -242,23 +242,23 @@ if ($getUploadedFileInCacheDir) {
 			INNER JOIN ". DB_NAME_PREFIX. "content_item_versions AS v
 			   ON v.file_id = f.id";
 
-		if (request('cID') && request('cType')) {
+		if (($_REQUEST['cID'] ?? false) && ($_REQUEST['cType'] ?? false)) {
 			$sql .= "
 			WHERE f.`usage` = 'content'
-			  AND v.id = ". (int) request('cID'). "
-			  AND v.type = '". sqlEscape(request('cType')). "'";
+			  AND v.id = ". (int) ($_REQUEST['cID'] ?? false). "
+			  AND v.type = '". sqlEscape($_REQUEST['cType'] ?? false). "'";
 	
-			if (checkPriv() && request('cVersion')) {
+			if (checkPriv() && ($_REQUEST['cVersion'] ?? false)) {
 				$sql .= "
-				  AND v.version = ". (int) request('cVersion');
+				  AND v.version = ". (int) ($_REQUEST['cVersion'] ?? false);
 	
 			} elseif (checkPriv()) {
 				$sql .= "
-				  AND v.version = ". (int) getLatestVersion(request('cID'), request('cType'));
+				  AND v.version = ". (int) getLatestVersion($_REQUEST['cID'] ?? false, ($_REQUEST['cType'] ?? false));
 	
 			} else {
 				$sql .= "
-				  AND v.version = ". (int) getPublishedVersion(request('cID'), request('cType'));
+				  AND v.version = ". (int) getPublishedVersion($_REQUEST['cID'] ?? false, ($_REQUEST['cType'] ?? false));
 			}
 
 		} elseif ($checksum) {
@@ -324,7 +324,7 @@ if ($getUploadedFileInCacheDir) {
 	} elseif ($usage == 'content') {
 		$sql .= "data";
 
-	//Otherwise we won't load it now, and we'll use the imageLink() function to get it below.
+	//Otherwise we won't load it now, and we'll use the Ze\File::imageLink() function to get it below.
 	} else {
 		$sql .= "NULL AS data";
 	}
@@ -360,12 +360,12 @@ if ($getUploadedFileInCacheDir) {
 
 		//If the file is supposed to be in the docstore, check if it is actually there
 		if ($file['location'] == 'docstore' && empty($file['data'])) {
-			if (!$filePath = docstoreFilePath($file['path'])) {
+			if (!$filePath = Ze\File::docstorePath($file['path'])) {
 				echo adminPhrase('File missing!');
 				exit;
 			
 			//Check to see if this is an image
-			} elseif (isImageOrSVG($file['mime_type'])) {
+			} elseif (Ze\File::isImageOrSVG($file['mime_type'])) {
 			
 			//Check to see if this is a pdf downloading from Organizer
 			} else
@@ -376,7 +376,7 @@ if ($getUploadedFileInCacheDir) {
 			//If this is not an image, and is not a PDF that is being downloaded from Organizer,
 			//attempt to symlink the file to the private directory rather than load it all into memory in php
 			} else
-			if (($fileLink = fileLink($file['id'], randomString(24)))
+			if (($fileLink = Ze\File::link($file['id'], randomString(24)))
 			 && (!chopPrefixOffString($fileLink, 'zenario/file.php'))) {
 				header('location: '. absCMSDirURL(). $fileLink);
 				exit;
@@ -395,9 +395,9 @@ if ($getUploadedFileInCacheDir) {
 		//If this is an image, check to see if it is in the cache directory.
 		//If it's not yet there, resize it if needed and then attempt to put it in there
 		if (empty($file['data'])) {
-			if (isImageOrSVG($file['mime_type'])) {
+			if (Ze\File::isImageOrSVG($file['mime_type'])) {
 				$result =
-					imageLink(
+					Ze\File::imageLink(
 						$width, $height, $filePath, $file['id'], $width, $height, $mode, $offset,
 						$retina = false, $privacy = 'auto',
 						$useCacheDir, $internalFilePath = true, $returnImageStringIfCacheDirNotWorking = true);
@@ -442,7 +442,7 @@ if (!$filename && !empty($file['filename'])) {
 	$filename = $file['filename'];
 }
 if ($filename) {
-	if (request('download') || $usage == 'content') {
+	if (($_REQUEST['download'] ?? false) || $usage == 'content') {
 		header('Content-Disposition: attachment; filename="'. urlencode($filename). '"');
 	} else {
 		header('Content-Disposition: filename="'. urlencode($filename). '"');

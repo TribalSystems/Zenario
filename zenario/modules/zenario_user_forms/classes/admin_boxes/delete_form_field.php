@@ -86,33 +86,36 @@ class zenario_user_forms__admin_boxes__delete_form_field extends module_base_cla
 	}
 	
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+		$fieldId = $box['key']['id'];
 		$fields['details/migration_field']['hidden'] = $values['details/delete_field_options'] != 'delete_field_but_migrate_data';
-		$responseCount = 0;
+		$responseCount = (int)selectCount(ZENARIO_USER_FORMS_PREFIX . 'user_response_data', array('form_field_id' => $fieldId));
 		
 		// If migrating data show warning if selected field has existing responses
 		if ($values['details/delete_field_options'] == 'delete_field_but_migrate_data') {
-			
 			$box['save_button_message'] = adminPhrase('Migrate and delete');
+			$fields['details/data_migration_warning_message']['snippet']['html'] = '<p>' . adminPhrase('Response data stored in this form field will be migrated when you save changes to this form.') . '</p>';
 			
 			if ($values['details/migration_field'] && is_numeric($values['details/migration_field'])) {
 			
-				$responseCount = (int)selectCount(
+				$otherFieldResponseCount = (int)selectCount(
 					ZENARIO_USER_FORMS_PREFIX . 'user_response_data', 
 					array('form_field_id' => $values['details/migration_field'])
 				);
 				
-				if ($responseCount >= 1) {
+				if ($otherFieldResponseCount >= 1) {
 					$fields['details/data_migration_warning_message']['snippet']['html'] = 
 						'<p>' . 
 						nAdminPhrase(
-							'That field already has [[count]] response recorded against it. By migrating responses to it any previous responses will be deleted.',
-							'That field already has [[count]] responses recorded against it. By migrating responses to it any previous responses will be deleted.',
-							$responseCount,
-							array('count' => $responseCount)
+							'That field already has 1 response recorded against it. By migrating responses to it any previous responses will be deleted.',
+							'That field already has [[n]] responses recorded against it. By migrating responses to it any previous responses will be deleted.',
+							$otherFieldResponseCount, ['n' => $otherFieldResponseCount]
 						) . 
 						'</p>';
 				}
 			}
+		} elseif ($values['details/delete_field_options'] == 'delete_field_and_data') {
+			$box['save_button_message'] = adminPhrase('Delete');
+			$fields['details/data_migration_warning_message']['snippet']['html'] = '<p>' . adminPhrase('Response data stored in this form field will be deleted when you save changes to this form.') . '</p>';
 		}
 		
 		$fields['details/data_migration_warning_message']['hidden'] = ($responseCount == 0);

@@ -12,6 +12,9 @@ description: |
             <p>You can specify the maximum width and height of the displayed image. The CMS will proportionally reduce the size of larger images so that their dimensions are within the constraints.</p>
 category: pluggable
 keywords: extranet, image, photo, user
+
+# Reminder: you need to increment the LATEST_REVISION_NO in this module's
+# latest_revision_no.inc.php file if you change any of the fields below:
 vlp_class_name: zenario_extranet_user_image
 css_class_name: zenario_extranet_user_image
 is_pluggable: true

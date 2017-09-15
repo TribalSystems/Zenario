@@ -105,10 +105,6 @@ class zenario_slideshow extends zenario_plugin_nest {
 		
 		$this->showInFloatingBox(false);
 		
-		if (!$this->isVersionControlled && checkPriv() && $this->setting('author_advice')) {
-			$this->showInEditMode();
-		}
-		
 		return $this->show;
 	}
 	

@@ -33,6 +33,16 @@ if (isset(cms_core::$vars[$name])) {
 }
 
 switch ($name) {
+	case 'class':
+		$classMethod = explode('-', cms_core::$vars['classMethod']);
+		return $classMethod[0];
+		break;
+	
+	case 'method':
+		$classMethod = explode('-', cms_core::$vars['classMethod']);
+		return $classMethod[1] ?? '';
+		break;
+	
 	//Allow company name to be displayed if the Company Locations Manager Module is running
 	case 'company_name':
 		if ($zclmPrefix = getModulePrefix('zenario_company_locations_manager')) {
@@ -59,6 +69,55 @@ switch ($name) {
 	case 'user_first_and_last_name':
 		return userFirstAndLastName(cms_core::$vars['userId']);
 	
+	case 'conference_name':
+		if ($zcmPrefix = getModulePrefix('zenario_conference_manager')) {
+			return sqlFetchValue('
+				SELECT name
+				FROM ' . DB_NAME_PREFIX . $zcmPrefix . 'conferences
+				WHERE id = ' . (int) cms_core::$vars['conferenceId']
+			);
+		}
+		break;
+	case 'session_name':
+		if ($zcmPrefix = getModulePrefix('zenario_conference_manager')) {
+			return sqlFetchValue('
+				SELECT name
+				FROM ' . DB_NAME_PREFIX . $zcmPrefix . 'sessions
+				WHERE id = ' . (int) cms_core::$vars['sessionId']
+			);
+		}
+		break;
+	case 'seminar_name':
+		if ($zcmPrefix = getModulePrefix('zenario_conference_manager')) {
+			return sqlFetchValue('
+				SELECT name
+				FROM ' . DB_NAME_PREFIX . $zcmPrefix . 'seminars
+				WHERE id = ' . (int) cms_core::$vars['seminarId']
+			);
+		}
+		break;
+	case 'day_name':
+		return phrase('Day [[day]]', array('day' => cms_core::$vars['day']));
+	
+	case 'room_name':
+		if ($zcmPrefix = getModulePrefix('zenario_conference_manager')) {
+			return sqlFetchValue('
+				SELECT name
+				FROM ' . DB_NAME_PREFIX . $zcmPrefix . 'rooms
+				WHERE id = ' . (int) cms_core::$vars['roomId']
+			);
+		}
+		break;
+	case 'abstract_name':
+		if ($zcmPrefix = getModulePrefix('zenario_conference_manager')) {
+			return sqlFetchValue('
+				SELECT title
+				FROM ' . DB_NAME_PREFIX . $zcmPrefix . 'abstracts
+				WHERE id = ' . (int) cms_core::$vars['abstractId']
+			);
+		}
+		break;
+		
 	//If we didn't match anything, check if other modules have any merge fields
 	default:
 		return require editionInclude('requestVarMergeField', $continueFrom = 'zenario_pro_features');

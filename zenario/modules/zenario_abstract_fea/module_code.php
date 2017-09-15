@@ -64,7 +64,7 @@ class zenario_abstract_fea extends module_base_class {
 	}
 	
 	protected function isFeaAJAX() {
-		return in(request('method_call'), 'fillVisitorTUIX', 'formatVisitorTUIX', 'validateVisitorTUIX', 'saveVisitorTUIX');
+		return in($_REQUEST['method_call'] ?? false, 'fillVisitorTUIX', 'formatVisitorTUIX', 'validateVisitorTUIX', 'saveVisitorTUIX');
 	}
 	
 	protected function getPathFromMode($mode) {
@@ -76,9 +76,7 @@ class zenario_abstract_fea extends module_base_class {
 	}
 
 	public function init() {
-		//if (in(request('method_call'), 'fillVisitorTUIX', 'formatVisitorTUIX', 'validateVisitorTUIX', 'saveVisitorTUIX')) {
-		//} else {
-		//}
+		requireJsLib('js/tuix.wrapper.js.php', null, true);
 		
 		return true;
 	}
@@ -164,7 +162,7 @@ class zenario_abstract_fea extends module_base_class {
 				". $this->populateItemsWhere($path, $tags, $fields, $values));
 			$itemCount = $row[0];
 			
-			if ((!$page = (int) request('page'))
+			if ((!$page = (int) ($_REQUEST['page'] ?? false))
 			 || ($page > ceil($itemCount / $pageSize))) {
 				$page = 1;
 			}

@@ -659,7 +659,7 @@ public static function generateHTMLR(&$html, &$lines, &$data, &$grouping, &$slot
 			
 				//The right-most grid element if always floated right, so doesn't actually need to be written
 				//last in the HTML. We can use this to put it first on the page if we wish
-				if ($data['responsive'] && $c > 0 && arrayKey($line['line'][$c], 'small') == 'first') {
+				if ($data['responsive'] && $c > 0 && ($line['line'][$c]['small'] ?? false) == 'first') {
 					$last = array_pop($array_keys);
 					array_splice($array_keys, 0, 0, array($last));
 				}
@@ -723,7 +723,7 @@ public static function generateHTMLR(&$html, &$lines, &$data, &$grouping, &$slot
 					} elseif (!empty($line['line'][$i]['slot']) && !empty($line['line'][$i]['name'])) {
 						$html .= ' slot ';
 						
-						switch (arrayKey($line['line'][$i], 'height')) {
+						switch ($line['line'][$i]['height'] ?? false) {
 							case 'xxlarge':
 								$height = 5;
 								$html .= 'xxlarge_slot';
@@ -794,11 +794,11 @@ public static function updateMetaInfoInDB(&$data, &$slots, &$layout) {
 	//Update the information on the grid in the layouts table
 	updateRow('layouts',
 		array(
-			'cols' => arrayKey($data, 'cols'),
-			'min_width' => arrayKey($data, 'minWidth'),
-			'max_width' => arrayKey($data, 'maxWidth'),
-			'fluid' => arrayKey($data, 'fluid'),
-			'responsive' => arrayKey($data, 'responsive')
+			'cols' => ($data['cols'] ?? false),
+			'min_width' => ($data['minWidth'] ?? false),
+			'max_width' => ($data['maxWidth'] ?? false),
+			'fluid' => ($data['fluid'] ?? false),
+			'responsive' => ($data['responsive'] ?? false)
 		),
 		$layout['layout_id']);
 
@@ -821,7 +821,7 @@ public static function updateMetaInfoInDB(&$data, &$slots, &$layout) {
 			array(
 				'ord' => $slot['ord'],
 				'cols' => $slot['width'],
-				'small_screens' => ifNull(arrayKey($slot, 'small'), 'show')
+				'small_screens' => ifNull($slot['small'] ?? false, 'show')
 			),
 			array(
 				'family_name' => $layout['family_name'],
@@ -913,7 +913,7 @@ public static function generateThumbnailR(
 					
 					if (!empty($cell['name'])) {
 						
-						switch (arrayKey($cell, 'height')) {
+						switch ($cell['height'] ?? false) {
 							case 'xxlarge':
 								$height = 5;
 								break;
@@ -986,7 +986,7 @@ public static function readCode(&$html, $justCheck = false, $quickCheck = false)
 		$parts = explode('//', $parts[1], 3);
 		
 		//Don't allow the quick-check option for old versions of Grid Maker
-		if (arrayKey($parts, 1) != 'v2') {
+		if (($parts[1] ?? false) != 'v2') {
 			$quickCheck = false;
 		}
 		
@@ -1045,13 +1045,13 @@ public static function validateData(&$data) {
 		if ((($data['fluid'] = !empty($data['fluid'])) || true)
 		 && (($data['mirror'] = !empty($data['mirror'])) || true)
 		 && (($data['responsive'] = !empty($data['responsive'])) || true)
-		 && (($data['gCols'] = (int) arrayKey($data, 'cols')))
-		 && (($data['gColWidth'] = (int) arrayKey($data, 'colWidth')) || $data['fluid'])
-		 && (($data['gGutter'] = $data['fluid']? (float) arrayKey($data, 'gutterFlu') : (int) arrayKey($data, 'gutter')) || true)
-		 && (($data['gGutterLeftEdge'] = $data['fluid']? (float) arrayKey($data, 'gutterLeftEdgeFlu') : (int) arrayKey($data, 'gutterLeftEdge')) || true)
-		 && (($data['gGutterRightEdge'] = $data['fluid']? (float) arrayKey($data, 'gutterRightEdgeFlu') : (int) arrayKey($data, 'gutterRightEdge')) || true)
-		 && ($data['minWidth'] = $data['fluid']? (int) arrayKey($data, 'minWidth') : $data['gCols'] * $data['gColWidth'] + $data['gGutterLeftEdge'] + $data['gGutterRightEdge'] + ($data['gCols'] - 1) * $data['gGutter'])
-		 && ($data['maxWidth'] = $data['fluid']? (int) arrayKey($data, 'maxWidth') : $data['minWidth'])
+		 && (($data['gCols'] = (int) ($data['cols'] ?? false)))
+		 && (($data['gColWidth'] = (int) ($data['colWidth'] ?? false)) || $data['fluid'])
+		 && (($data['gGutter'] = $data['fluid']? (float) ($data['gutterFlu'] ?? false) : (int) ($data['gutter'] ?? false)) || true)
+		 && (($data['gGutterLeftEdge'] = $data['fluid']? (float) ($data['gutterLeftEdgeFlu'] ?? false) : (int) ($data['gutterLeftEdge'] ?? false)) || true)
+		 && (($data['gGutterRightEdge'] = $data['fluid']? (float) ($data['gutterRightEdgeFlu'] ?? false) : (int) ($data['gutterRightEdge'] ?? false)) || true)
+		 && ($data['minWidth'] = $data['fluid']? (int) ($data['minWidth'] ?? false) : $data['gCols'] * $data['gColWidth'] + $data['gGutterLeftEdge'] + $data['gGutterRightEdge'] + ($data['gCols'] - 1) * $data['gGutter'])
+		 && ($data['maxWidth'] = $data['fluid']? (int) ($data['maxWidth'] ?? false) : $data['minWidth'])
 		 && ($data['gCols'] >= 1)
 		) {
 			return true;

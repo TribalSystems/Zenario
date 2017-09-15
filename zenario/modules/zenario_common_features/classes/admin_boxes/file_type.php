@@ -44,7 +44,7 @@ class zenario_common_features__admin_boxes__file_type extends module_base_class 
 		if (preg_replace('/[a-zA-Z0-9_\\.-]/', '', $values['details/type'])) {
 			$box['tabs']['details']['errors'][] = adminPhrase('The Extension must not contain any special characters.');
 		
-		} elseif (checkDocumentTypeIsExecutable($values['details/type'])) {
+		} elseif (Ze\File::isExecutable($values['details/type'])) {
 			$box['tabs']['details']['errors'][] = adminPhrase('You may not register an executable file type.');
 		
 		} elseif (checkRowExists('document_types', array('type' => $values['details/type']))) {

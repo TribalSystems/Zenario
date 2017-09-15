@@ -14,6 +14,9 @@ description: |
             <p>You can add a text filter to the incoming feed so that only certain items are displayed. Using a regular expression (text filter) applied to the title, description or date of the incoming data, you can specify that only the matching items are displayed.</p>
 category: pluggable
 keywords: atom, feed, news, newsfeed, rss
+
+# Reminder: you need to increment the LATEST_REVISION_NO in this module's
+# latest_revision_no.inc.php file if you change any of the fields below:
 vlp_class_name: zenario_feed_reader
 css_class_name: zenario_feed_reader
 is_pluggable: true

@@ -2,11 +2,11 @@
 // Allows an admin to download any file
 require '../adminheader.inc.php';
 
-$fileId = get('id');
+$fileId = $_GET['id'] ?? false;
 $link = false;
 
 if ($fileId) {
-	$link = fileLink($fileId);
+	$link = Ze\File::link($fileId);
 	$file = getRow('files', array('filename', 'mime_type', 'size'), $fileId);
 }
 

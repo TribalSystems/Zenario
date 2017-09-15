@@ -54,16 +54,16 @@ class zenario_extranet extends module_base_class {
 		$this->clearCacheBy(
 			$clearByContent = false, $clearByMenu = false, $clearByUser = false, $clearByFile = false, $clearByModuleData = false);
 		
-		$passwordNeedsChanging = getRow('users', 'password_needs_changing', post('user_id'));
-		if (post('extranet_change_password') && $passwordNeedsChanging){
+		$passwordNeedsChanging = getRow('users', 'password_needs_changing', ($_POST['user_id'] ?? false));
+		if (($_POST['extranet_change_password'] ?? false) && $passwordNeedsChanging){
 			
-			$this->errors = $this->validatePassword(post('extranet_new_password'), post('extranet_new_password_confirm'), post('old_password'), get_class($this), post('user_id'));
+			$this->errors = $this->validatePassword($_POST['extranet_new_password'] ?? false, ($_POST['extranet_new_password_confirm'] ?? false), ($_POST['old_password'] ?? false), get_class($this), ($_POST['user_id'] ?? false));
 			
 			if (!empty($this->errors)) {
 				$this->mode = 'modeChangePassword';
 			} else {
-				setUsersPassword(post('user_id'), post('extranet_new_password'), false);
-				$this->logUserIn(post('user_id'));
+				setUsersPassword($_POST['user_id'] ?? false, ($_POST['extranet_new_password'] ?? false), false);
+				$this->logUserIn($_POST['user_id'] ?? false);
 				$this->redirectToPage();
 			}
 		} else {
@@ -97,15 +97,15 @@ class zenario_extranet extends module_base_class {
 						
 						if (!$this->useScreenName || $this->setting('login_with') == 'Email') {
 							$this->subSections['Login_with_email'] = true;
-							$this->objects['extranet_email'] = arrayKey($_COOKIE, 'COOKIE_LAST_EXTRANET_EMAIL');
+							$this->objects['extranet_email'] = $_COOKIE['COOKIE_LAST_EXTRANET_EMAIL'] ?? false;
 						} else {
 							$this->subSections['Login_with_screen_name'] = true;
-							$this->objects['extranet_screen_name'] = arrayKey($_COOKIE, 'COOKIE_LAST_EXTRANET_SCREEN_NAME');
+							$this->objects['extranet_screen_name'] = $_COOKIE['COOKIE_LAST_EXTRANET_SCREEN_NAME'] ?? false;
 						}
 					}
 				}
 				
-				if (post('extranet_login')) {
+				if ($_POST['extranet_login'] ?? false) {
 					//Check if the login was successful and redirect the user if so, or move the user to a change password page
 					if ($this->checkLogin()) {
 						if (setting('cookie_consent_for_extranet') == 'granted') {
@@ -162,7 +162,7 @@ class zenario_extranet extends module_base_class {
 		
 		$subSections = array();
 		$subSections['Password_Error_Display'] = $this->errors;
-		$old_password = !empty($this->old_password) ? $this->old_password : post('old_password');
+		$old_password = !empty($this->old_password) ? $this->old_password : ($_POST['old_password'] ?? false);
 		
 		echo $this->openForm();
 			echo $this->remember('user_id', $this->user_id);
@@ -249,7 +249,7 @@ class zenario_extranet extends module_base_class {
 	protected function addLoggedInLinks() {
 		if ($this->checkFrameworkSectionExists('Welcome_Message_Section')) {
 			$this->subSections['Welcome_Message_Section'] = true;
-			$this->objects['Welcome_Message'] = $this->phrase('_WELCOME', array('user' => htmlspecialchars(arrayKey($_SESSION, 'extranetUser_firstname'))));
+			$this->objects['Welcome_Message'] = $this->phrase('_WELCOME', array('user' => htmlspecialchars($_SESSION['extranetUser_firstname'] ?? false)));
 		}
 		
 		if (langSpecialPage('zenario_change_password', $cID, $cType)
@@ -264,7 +264,7 @@ class zenario_extranet extends module_base_class {
 			$this->objects['Logout_Link'] = $this->linkToItemAnchor($cID, $cType);
 		}
 		
-		if (session('destURL') && ($this->cID != session('destCID') || $this->cType != session('destCType'))) {
+		if (($_SESSION['destURL'] ?? false) && ($this->cID != ($_SESSION['destCID'] ?? false) || $this->cType != $_SESSION['destCType'] ?? false)) {
 			$this->subSections['Destination_url_section'] = true;
 			$this->objects['destURL_Title'] = htmlspecialchars($_SESSION['destTitle']);
 			$this->objects['destURL_Link'] = htmlspecialchars($_SESSION['destURL']);
@@ -336,7 +336,7 @@ class zenario_extranet extends module_base_class {
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		switch ($path) {
 			case 'plugin_settings':
-				$defaultLangId = setting('default_language');
+				$defaultLangId = cms_core::$defaultLang;
 				
 				foreach (array(
 					'error_messages/invalid_email_error_text' => '_ERROR_INVALID_EXTRANET_EMAIL',		
@@ -360,7 +360,7 @@ class zenario_extranet extends module_base_class {
 		$user = logUserIn($userId);
 		
 		if ($this->setting('enable_remember_me')) {
-			if (post('extranet_remember_me')) {
+			if ($_POST['extranet_remember_me'] ?? false) {
 				if (!$this->useScreenName || $this->setting('login_with') == 'Email') {
 					$_SESSION['SET_EXTRANET_LOGIN_COOKIE'] = $user['email'];
 				} else {
@@ -372,7 +372,7 @@ class zenario_extranet extends module_base_class {
 		}
 			
 		if ($this->setting('enable_log_me_in')) {
-			if (post('extranet_log_me_in')) {
+			if ($_POST['extranet_log_me_in'] ?? false) {
 				$_SESSION['SET_EXTRANET_LOG_ME_IN_COOKIE'] = $user['login_hash'];
 			}
 		}
@@ -381,7 +381,7 @@ class zenario_extranet extends module_base_class {
 	//Handle actions
 	protected function checkLogin() {
 		if ($this->validateFormFields('Login_Form')) {
-			//check if email adrres has been entered
+			//check if email address has been entered
 			//Check if this user exists, their password is correct, and they are active. Only log them in if so.
 			$sql = "
 				SELECT
@@ -391,25 +391,28 @@ class zenario_extranet extends module_base_class {
 						AND last_login IS NULL
 						AND created_date <= DATE_SUB(NOW(), INTERVAL ". ifNull((int) setting('temp_password_timeout'), 14). " DAY)
 					) AS password_expired
-				FROM ". DB_NAME_PREFIX. "users";
+				FROM [users as u]";
 			
 			if (!$this->useScreenName || $this->setting('login_with') == 'Email') {
 				$sql .= "
-				WHERE email = '". sqlEscape(post('extranet_email')). "'";
+				WHERE [u.email == extranet_email]";
 			} else {
 				$sql .= "
-				WHERE screen_name = '". sqlEscape(post('extranet_screen_name')). "'";
+				WHERE [u.screen_name == extranet_screen_name]";
 			}
 			
-			if ($user = sqlFetchAssoc($sql)) {
+			$values = array('extranet_email' => $_POST['extranet_email'] ?? false, 'extranet_screen_name' => $_POST['extranet_screen_name'] ?? false);
+			$result = sqlSelect($sql, $values);
+			
+			if ($user = sqlFetchAssoc($result)) {
 				if ($user['status'] != "contact") {
 					if ($user['password_expired']) {
 						$errorMessage = $this->setting('password_expired_message');
 						$this->errors[] = array('Error' => $this->phrase($errorMessage));
 					
-					} elseif (checkUsersPassword($user['id'], post('extranet_password'))) {
+					} elseif (checkUsersPassword($user['id'], ($_POST['extranet_password'] ?? false))) {
 						//password correct
-						if(request('extranet_terms_and_conditions')){
+						if($_REQUEST['extranet_terms_and_conditions'] ?? false){
 							setRow('users', array('terms_and_conditions_accepted'=>1), array('id' => $user['id']));
 							$user['terms_and_conditions_accepted'] = true;
 						}
@@ -418,7 +421,7 @@ class zenario_extranet extends module_base_class {
 								//user password needs changing
 								$this->mode = 'modeChangePassword';
 								$this->user_id = $user['id'];
-								$this->old_password = post('extranet_password');
+								$this->old_password = $_POST['extranet_password'] ?? false;
 			
 							} elseif ($this->setting('requires_terms_and_conditions') && $this->setting('terms_and_conditions_page') && !$user['terms_and_conditions_accepted']) {
 								//show terms and conditions checkbox
@@ -438,7 +441,7 @@ class zenario_extranet extends module_base_class {
 								$this->errors[] = array('Error' => $this->phrase($errorMessage));
 							} elseif ($user['status'] == 'pending') {
 								//user is pending, show error
-								if(getRow('users', 'email_verified', array('email' => post('extranet_email')))) {
+								if(getRow('users', 'email_verified', array('email' => ($_POST['extranet_email'] ?? false)))) {
 									//user has verified email, wanting on admin to activate there account.
 									$errorMessage = $this->setting('account_pending_message');
 									$this->errors[] = array('Error' => $this->phrase($errorMessage));

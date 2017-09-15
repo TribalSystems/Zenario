@@ -125,58 +125,6 @@ class zenario_pro_features extends zenario_common_features {
 	
 	
 	
-	public static function lookForMenuItems($parentMenuId, $language, $sectionId, $currentMenuId, $recurseCount, $showInvisibleMenuItems) {
-	
-		$sql = "
-			SELECT
-				m.id AS mID,
-				t.name,
-				m.target_loc,
-				m.open_in_new_window,
-				m.anchor,
-				m.module_class_name,
-				m.method_name,
-				m.param_1,
-				m.param_2,
-				m.equiv_id,
-				c.id AS cID,
-				m.content_type AS cType,
-				c.alias,
-				m.use_download_page,
-				m.hide_private_item,
-				t.ext_url,
-				c.visitor_version,
-				m.invisible,
-				m.accesskey,
-				m.ordinal,
-				m.rel_tag,
-				m.image_id,
-				m.rollover_image_id,
-				m.css_class,
-				t.descriptive_text
-			FROM ". DB_NAME_PREFIX. "menu_nodes AS m
-			INNER JOIN ". DB_NAME_PREFIX. "menu_text AS t
-			   ON t.menu_id = m.id
-			  AND t.language_id = '". sqlEscape($language). "'
-			LEFT JOIN ".DB_NAME_PREFIX."content_items AS c
-			   ON m.target_loc = 'int'
-			  AND m.equiv_id = c.equiv_id
-			  AND m.content_type = c.type
-			  AND c.language_id = '". sqlEscape($language). "'
-			WHERE m.parent_id = ". (int) $parentMenuId. "
-			  AND m.section_id = ". (int) $sectionId;
-		
-		if (!$showInvisibleMenuItems) {
-			$sql .= "
-			  AND m.invisible != 1";
-		}
-	
-		$sql .= "
-			ORDER BY m.ordinal";
-		
-		return sqlQuery($sql);
-	}
-	
 	
 	public static function loadPluginInstance(
 			&$slotContents, $slotName,
@@ -186,7 +134,7 @@ class zenario_pro_features extends zenario_common_features {
 			$runPlugins, $overrideSettings = false, $overrideFrameworkAndCSS = false
 	) {
 	
-		if (!request('method_call')
+		if (!($_REQUEST['method_call'] ?? false)
 		&& isset($GLOBALS['chToLoadStatus']) && isset($GLOBALS['chAllRequests']) && isset($GLOBALS['chKnownRequests'])
 		&& setting('caching_enabled') && setting('cache_plugins')) {
 	
@@ -208,10 +156,10 @@ class zenario_pro_features extends zenario_common_features {
 			$chAllRequests = $GLOBALS['chAllRequests'];
 			$chKnownRequests = $GLOBALS['chKnownRequests'];
 				
-			$chAllRequests['slotName'] = $slotName;
-			$chAllRequests['instanceId'] = cms_core::$slotContents[$slotName]['instance_id'];
-			$chKnownRequests['slotName'] = $slotName;
-			$chKnownRequests['instanceId'] = cms_core::$slotContents[$slotName]['instance_id'];
+			$chAllRequests['S'] = $slotName;
+			$chAllRequests['I'] = cms_core::$slotContents[$slotName]['instance_id'];
+			$chKnownRequests['S'] = $slotName;
+			$chKnownRequests['I'] = cms_core::$slotContents[$slotName]['instance_id'];
 				
 				
 			$chDirAllRequests = pageCacheDir($chAllRequests, 'plugin');
@@ -278,15 +226,21 @@ class zenario_pro_features extends zenario_common_features {
 														$slotContents[$slotNameNestId]['class']->pageFoot = $vars['f'];
 														unset($vars['f']);
 													}
+													if (isset($vars['l'])) {
+														foreach ($vars['l'] as $lib => $dummy) {
+															requireJsLib($lib);
+														}
+														unset($vars['l']);
+													}
 													
 													$slotContents[$slotNameNestId]['class']->setInstanceVariables(array(
 															cms_core::$cID, cms_core::$cType, cms_core::$cVersion, $slotName,
-															arrayKey($slotContents[$slotNameNestId], 'instance_name'), $slotContents[$slotNameNestId]['instance_id'],
+															($slotContents[$slotNameNestId]['instance_name'] ?? false), $slotContents[$slotNameNestId]['instance_id'],
 															$slotContents[$slotNameNestId]['class_name'], $slotContents[$slotNameNestId]['vlp_class'],
 															$slotContents[$slotNameNestId]['module_id'],
 															$slotContents[$slotNameNestId]['default_framework'], $slotContents[$slotNameNestId]['framework'],
 															$slotContents[$slotNameNestId]['css_class'],
-															arrayKey($slotContents[$slotNameNestId], 'level'), !empty($slotContents[$slotNameNestId]['content_id'])));
+															($slotContents[$slotNameNestId]['level'] ?? false), !empty($slotContents[$slotNameNestId]['content_id'])));
 	
 													cms_core::$slotContents[$slotNameNestId]['class']->zAPISetCachableVars($vars['c']);
 													
@@ -441,7 +395,7 @@ class zenario_pro_features extends zenario_common_features {
 	
 	function handleAJAX() {
 		
-		if (post('getBottomLeftInfo')) {
+		if ($_POST['getBottomLeftInfo'] ?? false) {
 		
 			$compressed = setting('compress_web_pages')? adminPhrase('Compressed') : adminPhrase('Not Compressed');
 		
@@ -618,7 +572,7 @@ class zenario_pro_features extends zenario_common_features {
 	
 	public static function preSlot($slotName, $showPlaceholderMethod, $useOb = true) {
 		if (cms_core::$canCache
-		&& !request('method_call')
+		&& !($_REQUEST['method_call'] ?? false)
 		&& isset($GLOBALS['chToLoadStatus']) && isset($GLOBALS['chAllRequests']) && isset($GLOBALS['chKnownRequests'])
 		&& setting('caching_enabled') && setting('cache_plugins')
 		&& empty(cms_core::$slotContents[$slotName]['served_from_cache'])) {
@@ -637,20 +591,22 @@ class zenario_pro_features extends zenario_common_features {
 	
 	public static function postSlot($slotName, $showPlaceholderMethod, $useOb = true) {
 		if (cms_core::$canCache
-		&& !request('method_call')
+		&& !($_REQUEST['method_call'] ?? false)
 		&& isset($GLOBALS['chToLoadStatus']) && isset($GLOBALS['chAllRequests']) && isset($GLOBALS['chKnownRequests'])
 		&& setting('caching_enabled') && setting('cache_plugins')
 		&& empty(cms_core::$slotContents[$slotName]['served_from_cache'])) {
 				
 			if ($showPlaceholderMethod == 'addToPageHead') {
 				//Note down any html added to the page head
-				if ($useOb) zenario_pro_features::$pluginPageHeadHTML[$slotName] = ob_get_contents();
-				if ($useOb) ob_end_flush();
+				if ($useOb) {
+					zenario_pro_features::$pluginPageHeadHTML[$slotName] = ob_get_flush();
+				}
 					
 			} elseif ($showPlaceholderMethod == 'addToPageFoot') {
 				//Note down any html added to the page foot
-				if ($useOb) zenario_pro_features::$pluginPageFootHTML[$slotName] = ob_get_contents();
-				if ($useOb) ob_end_flush();
+				if ($useOb) {
+					zenario_pro_features::$pluginPageFootHTML[$slotName] = ob_get_flush();
+				}
 					
 			} elseif ($showPlaceholderMethod == 'showSlot') {
 	
@@ -658,8 +614,8 @@ class zenario_pro_features extends zenario_common_features {
 				$chToSaveStatus = $GLOBALS['chToSaveStatus'];
 				$chKnownRequests = $GLOBALS['chKnownRequests'];
 	
-				$chKnownRequests['slotName'] = $slotName;
-				$chKnownRequests['instanceId'] = arrayKey(cms_core::$slotContents, $slotName, 'instance_id');
+				$chKnownRequests['S'] = $slotName;
+				$chKnownRequests['I'] = arrayKey(cms_core::$slotContents, $slotName, 'instance_id');
 	
 	
 				//Look for this slot on the page, and check for any Nested Plugins in child-slots
@@ -706,7 +662,7 @@ class zenario_pro_features extends zenario_common_features {
 				if ($canCache) {
 					$cacheStatusText = implode('', $chToSaveStatus);
 						
-					if (cleanDownloads() && ($path = createCacheDir(pageCacheDir($chKnownRequests, 'plugin'). $cacheStatusText, 'pages', false))) {						
+					if (cleanCacheDir() && ($path = createCacheDir(pageCacheDir($chKnownRequests, 'plugin'). $cacheStatusText, 'pages', false))) {						
 						
 						//Record the slot vars and class vars for this slot, and if this is a nest, any child-slots
 						$setFiles = array();
@@ -719,7 +675,7 @@ class zenario_pro_features extends zenario_common_features {
 									if ($set && !isset($setFiles[$if])) {
 										$setFiles[$if] = true;
 										touch(CMS_ROOT. $path. $if);
-										chmod(CMS_ROOT. $path. $if, 0666);
+										@chmod(CMS_ROOT. $path. $if, 0666);
 									}
 								}
 							}
@@ -745,6 +701,10 @@ class zenario_pro_features extends zenario_common_features {
 								unset(zenario_pro_features::$pluginPageFootHTML[$slotNameNestId]);
 							}
 
+							if (!empty(cms_core::$jsLibs)) {
+								$slots[$slotNameNestId]['l'] = cms_core::$jsLibs;
+							}
+
 							foreach ($temps as $temp => $dummy) {
 								if (isset($temps[$temp])) {
 									cms_core::$slotContents[$slotNameNestId][$temp] = $temps[$temp];
@@ -755,7 +715,7 @@ class zenario_pro_features extends zenario_common_features {
 							}
 						}
 						file_put_contents(CMS_ROOT. $path. 'vars', serialize($slots));
-						chmod(CMS_ROOT. $path. 'vars', 0666);
+						@chmod(CMS_ROOT. $path. 'vars', 0666);
 						unset($slots);
 	
 	
@@ -783,12 +743,12 @@ class zenario_pro_features extends zenario_common_features {
 	
 						file_put_contents(CMS_ROOT. $path. 'plugin.html', $html);
 						file_put_contents(CMS_ROOT. $path. 'tag_id', cms_core::$cType. '_'. cms_core::$cID);
-						chmod(CMS_ROOT. $path. 'plugin.html', 0666);
-						chmod(CMS_ROOT. $path. 'tag_id', 0666);
+						@chmod(CMS_ROOT. $path. 'plugin.html', 0666);
+						@chmod(CMS_ROOT. $path. 'tag_id', 0666);
 	
 						if ($images) {
 							file_put_contents(CMS_ROOT. $path. 'cached_files', $images);
-							chmod(CMS_ROOT. $path. 'cached_files', 0666);
+							@chmod(CMS_ROOT. $path. 'cached_files', 0666);
 						}
 					}
 				}

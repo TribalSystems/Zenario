@@ -67,7 +67,7 @@ class zenario_pro_features__admin_boxes__menu extends module_base_class {
 	}
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		if (engToBooleanArray($box['tabs']['advanced'], 'edit_mode', 'on')) {
+		if (engToBoolean($box['tabs']['advanced']['edit_mode']['on'] ?? false)) {
 			$langs = getLanguages();
 			foreach ($langs as $lang) {
 				saveMenuText(
@@ -79,7 +79,7 @@ class zenario_pro_features__admin_boxes__menu extends module_base_class {
 			}
 		}
 
-		if (engToBooleanArray($box['tabs']['text'], 'edit_mode', 'on') && checkPriv('_PRIV_EDIT_MENU_ITEM')) {
+		if (engToBoolean($box['tabs']['text']['edit_mode']['on'] ?? false) && checkPriv('_PRIV_EDIT_MENU_ITEM')) {
 			saveMenuDetails(
 				array(
 					'invisible' => $values['text/zenario_pro_features__invisible']),

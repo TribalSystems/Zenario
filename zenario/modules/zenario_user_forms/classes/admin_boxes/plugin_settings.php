@@ -33,6 +33,10 @@ class zenario_user_forms__admin_boxes__plugin_settings extends module_base_class
 		if (isset($fields['first_tab/display_text'])) {
 			$fields['first_tab/display_text']['hidden'] = ($values['first_tab/display_mode'] != 'in_modal_window');
 		}
+		
+		$formId = $values['first_tab/user_form'];
+		$form = getRow(ZENARIO_USER_FORMS_PREFIX . 'user_forms', array('allow_partial_completion', 'partial_completion_mode'), $formId);
+		$fields['first_tab/partial_completion_button_position']['hidden'] = !($form && $form['allow_partial_completion'] && $form['partial_completion_mode'] == 'button' || $form['partial_completion_mode'] == 'auto_and_button');
 	}
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {

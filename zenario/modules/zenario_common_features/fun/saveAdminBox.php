@@ -82,14 +82,7 @@ switch ($path) {
 	
 	case 'zenario_document_folder':
 		if (isset($box['key']['add_folder']) && $box['key']['add_folder']) {
-			$box['key']['id'] = 
-				setRow(
-					'documents',
-					array(
-						'type' => 'folder',
-						'folder_name' => $values['details/folder_name'],
-						'folder_id' => $box['key']['id'],
-						'ordinal' => 0));
+			$box['key']['id'] = zenario_common_features::createFolder($values['details/folder_name'], $box['key']['id']);
 		} else {
 			if($box['key']['id']) {
 				updateRow(
@@ -99,13 +92,7 @@ switch ($path) {
 						'folder_name' => $values['details/folder_name']),
 					$box['key']['id']);
 			} else {
-				$box['key']['id'] = 
-				setRow(
-					'documents',
-					array(
-						'type' => 'folder',
-						'folder_name' => $values['details/folder_name'],
-						'ordinal' => 0));
+				$box['key']['id'] = zenario_common_features::createFolder($values['details/folder_name']);
 			}
 		}
 		break;

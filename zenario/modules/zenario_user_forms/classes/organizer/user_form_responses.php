@@ -115,7 +115,7 @@ class zenario_user_forms__organizer__user_form_responses extends module_base_cla
 		$formId = $refinerId;
 		
 		//Delete all responses
-		if (post('delete_form_responses') && $formId) {
+		if (($_POST['delete_form_responses'] ?? false) && $formId) {
 			$result = getRows(
 				ZENARIO_USER_FORMS_PREFIX . 'user_response', 
 				array('id'), 
@@ -125,7 +125,7 @@ class zenario_user_forms__organizer__user_form_responses extends module_base_cla
 				zenario_user_forms::deleteFormResponse($row['id']);
 			}
 		//Delete single response
-		} else if (post('delete_form_response')) {
+		} else if ($_POST['delete_form_response'] ?? false) {
 			zenario_user_forms::deleteFormResponse($ids);
 		}
 	}

@@ -75,25 +75,26 @@ class zenario_common_features__organizer__backups extends module_base_class {
 		}
 		
 		if ($ids) {
-			$filename = setting('backup_dir') . '/'. safeFileName(decodeItemIdForOrganizer($ids));
+			$filename = setting('backup_dir') . '/'. Ze\File::safeName(decodeItemIdForOrganizer($ids));
 		}
 		
-		if (post('create') && checkPriv('_PRIV_BACKUP_SITE')) {
-			$encrypt = (bool) post('encrypt');
+		if (($_POST['create'] ?? false) && checkPriv('_PRIV_BACKUP_SITE')) {
+			$encrypt = (bool) ($_POST['encrypt'] ?? false);
+			$gzip = true;
 			
 			//Create a new file in the backup directory, and write the backup into it
-			$backupPath = setting('backup_dir'). '/' . ($fileName = generateFilenameForBackups(true, $encrypt));
+			$backupPath = setting('backup_dir'). '/' . ($fileName = generateFilenameForBackups($gzip, $encrypt));
 			
-			createDatabaseBackupScript($backupPath, true, $encrypt);
+			createDatabaseBackupScript($backupPath, $gzip, $encrypt);
 			
 			@chmod($backupPath, 0666);
 			
 			return encodeItemIdForOrganizer($fileName);
 		
-		} elseif (post('delete') && checkPriv('_PRIV_RESTORE_SITE')) {
+		} elseif (($_POST['delete'] ?? false) && checkPriv('_PRIV_RESTORE_SITE')) {
 			unlink($filename);
 		
-		} elseif (post('upload') && checkPriv('_PRIV_BACKUP_SITE')) {
+		} elseif (($_POST['upload'] ?? false) && checkPriv('_PRIV_BACKUP_SITE')) {
 			
 			$filename = $_FILES['Filedata']['name'];
 			$ext = pathinfo($filename, PATHINFO_EXTENSION);
@@ -107,7 +108,7 @@ class zenario_common_features__organizer__backups extends module_base_class {
 				echo '<!--Message_Type:Error-->Unable to upload the database backup';
 			}
 		
-		} elseif (post('restore') && checkPriv('_PRIV_RESTORE_SITE')) {
+		} elseif (($_POST['restore'] ?? false) && checkPriv('_PRIV_RESTORE_SITE')) {
 			//Restore a database backup from the file system
 			$failures = array();
 			if (restoreDatabaseFromBackup($filename, $failures)) {
@@ -140,7 +141,7 @@ class zenario_common_features__organizer__backups extends module_base_class {
 		//Offer a database backup of the current state of the site for download 
 		if (!$ids) {
 			
-			$encrypt = (bool) post('encrypt');
+			$encrypt = (bool) ($_POST['encrypt'] ?? false);
 		
 			//Create a gz file in the temp directory...
 			$filepath = tempnam(sys_get_temp_dir(), 'tmpfiletodownload');

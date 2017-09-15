@@ -43,7 +43,7 @@ function pageCacheDir(&$requests, $type = 'ajax') {
 //Also don't allow it if a Visitor is not logged in as an Extranet User, but has the LOG_ME_IN_COOKIE Cookie set, as they're probably about to be automatically logged in
 if (!isset($_SESSION['admin_logged_into_site'])
  && !(empty($_SESSION['extranetUserID']) && isset($_COOKIE['LOG_ME_IN_COOKIE']))
- && in(request('method_call'), 'refreshPlugin', 'showFloatingBox', 'showRSS', 'showSlot')) {
+ && in($_REQUEST['method_call'] ?? false, 'refreshPlugin', 'showFloatingBox', 'showRSS', 'showSlot')) {
 	
 	//Work out what cache-flags to use:
 		//u = extranet user logged in
@@ -68,17 +68,26 @@ if (!isset($_SESSION['admin_logged_into_site'])
 		$chToLoadStatus['p'] = 'p';
 	}
 	
-	$chKnownRequests = array();
-	foreach (array('cID', 'cType', 'slotName', 'instanceId', 'method_call') as $req) {
-		if (!empty($_REQUEST[$req])) {
-			$chKnownRequests[$req] = $_REQUEST[$req];
+	//Look out for core requests. These should be stored separately.
+	//Also, to save space, we'll shorten the names.
+	$chKnownRequests = [];
+	foreach ($_REQUEST as $request => &$value) {
+		if (isset(cms_core::$cacheCoreVars[$request])) {
+			$request = cms_core::$cacheCoreVars[$request];
+			$chKnownRequests[$request] = $value;
 		}
 	}
-	
+		
+	//Note down any non-core GET requests
 	ksort($_GET);
 	$chAllRequests = $chKnownRequests;
 	foreach ($_GET as $request => &$value) {
-		if (!in($request, 'cID', 'cType', 'slotName', 'instanceId', 'method_call')) {
+		if (!isset(cms_core::$cacheCoreVars[$request])) {
+			//Use "z" as an escape character.
+			//Anything that's one character long, or already begins with a z, should have a z put in front of it.
+			if ($request[0] === 'z' || !isset($request[1])) {
+				$request = 'z'. $request;
+			}
 			$chAllRequests[$request] = $value;
 		}
 	}
@@ -101,6 +110,7 @@ if (!isset($_SESSION['admin_logged_into_site'])
 			break;
 		}
 	}
+	unset($value);
 	
 	
 	//Get two checksums from the GET requests.

@@ -7,36 +7,36 @@ $v = zenarioCodeVersion();
 
 $levelNodesCount = array();
 
-if (get("type")=="section") {
-	$parameters = "?section_id=" . get("id") . "&language=" . get("language");
-	$top = "Showing menu tree in menu section \"" . menuSectionName(get("id")) . "\"";
+if (($_GET["type"] ?? false)=="section") {
+	$parameters = "?section_id=" . ($_GET["id"] ?? false) . "&language=" . ($_GET["language"] ?? false);
+	$top = "Showing menu tree in menu section \"" . menuSectionName($_GET["id"] ?? false) . "\"";
 
-	if ($menuArray = getMenuStructure($cachingRestrictions,get("id"),false,0,0,100,false,false,false,true)) {
-		generateMenuForJSON($menuArray, $levelNodesCount, get('og'), get('language'));
+	if ($menuArray = getMenuStructure($cachingRestrictions,($_GET["id"] ?? false),false,0,0,100,false,false,true)) {
+		generateMenuForJSON($menuArray, $levelNodesCount, ($_GET['og'] ?? false), ($_GET['language'] ?? false));
 	}
 
-} elseif (get("type")=="menu_node") {
-	$sectionId = getRow("menu_nodes","section_id",array("id" => get("id")));
+} elseif (($_GET["type"] ?? false)=="menu_node") {
+	$sectionId = getRow("menu_nodes","section_id",array("id" => ($_GET["id"] ?? false)));
 
-	$parameters = "?section_id=" . $sectionId . "&menu_id=" . get("id") . "&language=" . get("language");
+	$parameters = "?section_id=" . $sectionId . "&menu_id=" . ($_GET["id"] ?? false) . "&language=" . ($_GET["language"] ?? false);
 
-	$menuNode = getMenuNodeDetails(get("id"),"en-gb");
+	$menuNode = getMenuNodeDetails($_GET["id"] ?? false,"en-gb");
 	
 	if (!issetArrayKey($menuNode,'name')) {
-		$menuNode = getMenuNodeDetails(get("id"),"en");
+		$menuNode = getMenuNodeDetails($_GET["id"] ?? false,"en");
 	}
 	
 	$top = "Showing menu tree beneath menu node \"" . $menuNode['name'] . "\"";
 
-	if ($menuArray = getMenuStructure($cachingRestrictions,$sectionId,false,get("id"),0,100,false,false,false,true)) {
-		generateMenuForJSON($menuArray, $levelNodesCount, get('og'), get('language'));
+	if ($menuArray = getMenuStructure($cachingRestrictions,$sectionId,false,($_GET["id"] ?? false),0,100,false,false,true)) {
+		generateMenuForJSON($menuArray, $levelNodesCount, ($_GET['og'] ?? false), ($_GET['language'] ?? false));
 	}
 
 } else {
 	exit;
 }
 
-if (get('og')) {
+if ($_GET['og'] ?? false) {
 	$parameters .= '&og=1';
 }
 

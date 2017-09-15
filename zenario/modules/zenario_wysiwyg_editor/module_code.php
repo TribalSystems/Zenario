@@ -174,7 +174,7 @@ class zenario_wysiwyg_editor extends zenario_html_snippet {
 		if ($this->isVersionControlled) {
 			
 			//Handle submitting revisions by AJAX
-			if (post('_zenario_save_content_')) {
+			if ($_POST['_zenario_save_content_'] ?? false) {
 				$this->saveContent();
 				exit;
 			}
@@ -187,7 +187,7 @@ class zenario_wysiwyg_editor extends zenario_html_snippet {
 				$this->editorId = $this->containerId. '_tinymce_content_'. str_replace('.', '', microtime(true));
 				
 				//Open the editor immediately if it is in the URL
-				if (request('content__edit_container') == $this->containerId) {
+				if (($_REQUEST['content__edit_container'] ?? false) == $this->containerId) {
 					$this->editing = true;
 					$this->markSlotAsBeingEdited();
 					$this->openEditor();
@@ -205,7 +205,7 @@ class zenario_wysiwyg_editor extends zenario_html_snippet {
 	}
 	
 	public function showLayoutPreview() {
-		if ($this->instanceId) {
+		if (!$this->shouldShowLayoutPreview()) {
 			$this->showSlot();
 		} else {
 			echo adminPhrase('<h2>WYSIWYG editor</h2><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>');
@@ -243,7 +243,7 @@ class zenario_wysiwyg_editor extends zenario_html_snippet {
 		if (!cms_core::$isDraft
 		 || !checkPriv('_PRIV_EDIT_DRAFT', cms_core::$cID, cms_core::$cType)
 		 || !$this->isVersionControlled
-		 || (!$this->editing && request('content__edit_container'))) {
+		 || (!$this->editing && ($_REQUEST['content__edit_container'] ?? false))) {
 			echo $this->setting('html');
 			return;
 		}

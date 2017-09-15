@@ -48,7 +48,7 @@ cms_core::$whitelist[] = 'checkUserInGroup';
 cms_core::$whitelist[] = 'userGroups';
 function userGroups($userId = -1) {
 	if ($userId === -1) {
-		$userId = session('extranetUserID');
+		$userId = $_SESSION['extranetUserID'] ?? false;
 	}
 	
 	return getUserGroups($userId, false);
@@ -129,7 +129,7 @@ function logUserOut() {
 cms_core::$whitelist[] = 'userEmail';
 function userEmail($userId = 'session') {
 	if ($userId === 'session') {
-		$userId = session('extranetUserID');
+		$userId = $_SESSION['extranetUserID'] ?? false;
 	}
 	
 	if ($userId) {
@@ -140,13 +140,13 @@ function userEmail($userId = 'session') {
 }
 
 function userId() {
-	return session('extranetUserID');
+	return ($_SESSION['extranetUserID'] ?? false);
 }
 
 cms_core::$whitelist[] = 'userScreenName';
 function userScreenName($userId = 'session') {
 	if ($userId === 'session') {
-		$userId = session('extranetUserID');
+		$userId = $_SESSION['extranetUserID'] ?? false;
 	}
 	
 	if ($userId) {
@@ -159,7 +159,7 @@ function userScreenName($userId = 'session') {
 cms_core::$whitelist[] = 'userUsername';
 function userUsername($userId = 'session') {
 	if ($userId === 'session') {
-		$userId = session('extranetUserID');
+		$userId = $_SESSION['extranetUserID'] ?? false;
 	}
 	
 	if ($userId) {
@@ -178,7 +178,7 @@ cms_core::$whitelist[] = 'visitorIP';
 cms_core::$whitelist[] = 'userFieldDisplayValue';
 function userFieldDisplayValue($cfield, $userId = -1, $returnCSV = true) {
 	if ($userId === -1) {
-		$userId = session('extranetUserID');
+		$userId = $_SESSION['extranetUserID'] ?? false;
 	}
 	return datasetFieldValue('users', $cfield, $userId, $returnCSV, true);
 }
@@ -186,7 +186,7 @@ function userFieldDisplayValue($cfield, $userId = -1, $returnCSV = true) {
 cms_core::$whitelist[] = 'userFieldValue';
 function userFieldValue($cfield, $userId = -1, $returnCSV = true) {
 	if ($userId === -1) {
-		$userId = session('extranetUserID');
+		$userId = $_SESSION['extranetUserID'] ?? false;
 	}
 	return datasetFieldValue('users', $cfield, $userId, $returnCSV, false);
 }
@@ -287,7 +287,6 @@ function isInvalidUser($values, $id = false) {
 
 
 function generateUserIdentifier($userId, $details = array()) {
-	
 	//Look up details on this user if not provided
 	if (empty($details)
 	 || !isset($details['email'])
@@ -302,12 +301,9 @@ function generateUserIdentifier($userId, $details = array()) {
 	$lastName = $details['last_name'];
 	$email = $details['email'];
 	
-	//If this site uses screen names, use the screen name as the identifier...
+	//Create a "Base identifier" for this user based on their details
 	if (!setting('user_use_screen_name')
 	 || !($baseIdentifier = $details['screen_name'])) {
-		//...otherwise calcuate an identifier from the first name, last name and/or email address
-		
-		// Remove special characters and get the base screen name
 		$firstName = trimNonWordCharactersUnicode($firstName);
 		$lastName = trimNonWordCharactersUnicode($lastName);
 		if ($firstName || $lastName) {
@@ -321,6 +317,8 @@ function generateUserIdentifier($userId, $details = array()) {
 			$baseIdentifier = substr($baseIdentifier, 0, 50);
 		}
 	}
+	
+	//Then create a unqiue identifier by appending some numbers to the end of the "Base identifier"
 	
 	//Check if the identifier column is encrypted
 	checkTableDefinition(DB_NAME_PREFIX. 'users');
@@ -396,7 +394,7 @@ function getSimilarIdentifiers($screenName, $thisIsHub, $hub, $satellites) {
 	$DBName = DBNAME;
 	// if not thisIsHub, return hubs identifiers
 	if (!$thisIsHub) {
-		if ($dbSelected = connectToDatabase($hub['DBHOST'], $hub['DBNAME'], $hub['DBUSER'], $hub['DBPASS'], arrayKey($hub, 'DBPORT'))) {
+		if ($dbSelected = connectToDatabase($hub['DBHOST'], $hub['DBNAME'], $hub['DBUSER'], $hub['DBPASS'], ($hub['DBPORT'] ?? false))) {
 			cms_core::$lastDB = $dbSelected;
 			cms_core::$lastDBHost = $hub['DBHOST'];
 			cms_core::$lastDBName = $hub['DBNAME'];
@@ -421,7 +419,7 @@ function getSimilarIdentifiers($screenName, $thisIsHub, $hub, $satellites) {
 				&& $satellite['DBNAME'] == $DBName) {
 				continue;
 			} else {
-				if ($dbSelected = connectToDatabase($satellite['DBHOST'], $satellite['DBNAME'], $satellite['DBUSER'], $satellite['DBPASS'], arrayKey($satellite, 'DBPORT'))) {
+				if ($dbSelected = connectToDatabase($satellite['DBHOST'], $satellite['DBNAME'], $satellite['DBUSER'], $satellite['DBPASS'], ($satellite['DBPORT'] ?? false))) {
 					cms_core::$lastDB = $dbSelected;
 					cms_core::$lastDBHost = $satellite['DBHOST'];
 					cms_core::$lastDBName = $satellite['DBNAME'];
@@ -603,33 +601,32 @@ function logUserIn($userId, $impersonate = false) {
 		sqlUpdate($sql, [visitorIP(), $userId]);
 		
 	
-		if(setting('sign_in_access_log'))
-		{
-		require_once CMS_ROOT. 'zenario/libraries/mit/browser/lib/browser.php';
-		$browser = new Browser();
+		if(setting('sign_in_access_log')){
+			require_once CMS_ROOT. 'zenario/libraries/mit/browser/lib/browser.php';
+			$browser = new Browser();
 		
-		if($days = setting('period_to_delete_sign_in_log')){
-			if(is_numeric($days)){
-				$today = date('Y-m-d');
-				$date = date('Y-m-d', strtotime('-'.$days.' day', strtotime($today)));
-				if($date){
-					$sql = " 
-						DELETE FROM ". DB_NAME_PREFIX. "user_signin_log
-						WHERE login_datetime < '".sqlEscape($date)."'";
-					sqlUpdate($sql);
+			if($days = setting('period_to_delete_sign_in_log')){
+				if(is_numeric($days)){
+					$today = date('Y-m-d');
+					$date = date('Y-m-d', strtotime('-'.$days.' day', strtotime($today)));
+					if($date){
+						$sql = " 
+							DELETE FROM ". DB_NAME_PREFIX. "user_signin_log
+							WHERE login_datetime < '".sqlEscape($date)."'";
+						sqlUpdate($sql);
+					}
 				}
 			}
-		}
 		
-		$sql = "
-			INSERT INTO ". DB_NAME_PREFIX. "user_signin_log SET
-				user_id = ". (int)  sqlEscape($userId).",
-				login_datetime = NOW(),
-				ip = '". sqlEscape(visitorIP()). "',
-				browser = '". sqlEscape($browser->getBrowser()). "',
-				browser_version = '". sqlEscape($browser->getVersion()). "',
-				platform = '". sqlEscape($browser->getPlatform()). "'";
-		sqlQuery($sql);
+			$sql = "
+				INSERT INTO ". DB_NAME_PREFIX. "user_signin_log SET
+					user_id = ". (int)  sqlEscape($userId).",
+					login_datetime = NOW(),
+					ip = '". sqlEscape(visitorIP()). "',
+					browser = '". sqlEscape($browser->getBrowser()). "',
+					browser_version = '". sqlEscape($browser->getVersion()). "',
+					platform = '". sqlEscape($browser->getPlatform()). "'";
+			sqlQuery($sql);
 		}
 		sendSignal('eventUserLoggedIn',array('user_id' => $userId));
 	}
@@ -669,7 +666,7 @@ function getUserIdentifier($userId) {
 cms_core::$whitelist[] = 'userFirstAndLastName';
 function userFirstAndLastName($userId = -1) {
 	if ($userId === -1) {
-		$userId = session('extranetUserID');
+		$userId = $_SESSION['extranetUserID'] ?? false;
 	}
 	if ($row = getRow('users', array('first_name', 'last_name'), $userId)) {
 		return $row['first_name']. ' '. $row['last_name'];
@@ -831,11 +828,17 @@ function updateUserHash($userId) {
 function checkNamedUserPermExists($perm, &$directlyAssignedToUser, &$hasRoleAtCompany, &$hasRoleAtLocation, &$hasRoleAtLocationAtCompany, &$onlyIfHasRolesAtAllAssignedLocations) {
 	
 	switch ($perm) {
+		//Permissions for changing site settings
+		case 'perm.manage.options-assetwolf':
 		//Possible permissions for companies, locations and users
 		case 'perm.create-company.unassigned':
 		case 'perm.delete.company':
 		case 'perm.create-location.unassigned':
 		case 'perm.create-user.unassigned':
+		//Export all of the asset data on a site
+		case 'perm.export.allData':
+		//Recalculate all of the asset data on a site
+		case 'perm.recalculate.allData':
 			//Superusers only
 			return true;
 		case 'perm.view.company':
@@ -885,42 +888,45 @@ function checkNamedUserPermExists($perm, &$directlyAssignedToUser, &$hasRoleAtCo
 				$directlyAssignedToUser = true;
 		
 		//Possible permissions for other Assetwolf things
-		case 'perm.create-assetType.unassigned':
+		case 'perm.create-schema.unassigned':
 		case 'perm.create-command.unassigned':
-		case 'perm.create-possibleEvent.unassigned':
+		case 'perm.create-dataRepeater.unassigned':
+		case 'perm.create-trigger.unassigned':
 		case 'perm.create-procedure.unassigned':
 		case 'perm.create-schedule.unassigned':
 		case 'perm.create-scheduledReport.unassigned':
-		case 'perm.create-assetType.oneself':
+		case 'perm.create-schema.oneself':
 		case 'perm.create-command.oneself':
-		case 'perm.create-possibleEvent.oneself':
+		case 'perm.create-trigger.oneself':
 		case 'perm.create-procedure.oneself':
 		case 'perm.create-schedule.oneself':
 		case 'perm.manage.command':
 			//Superusers only
 			return true;
-		case 'perm.create-assetType.company':
+		case 'perm.create-schema.company':
 		case 'perm.create-command.company':
-		case 'perm.create-possibleEvent.company':
+		case 'perm.create-trigger.company':
 		case 'perm.create-procedure.company':
 		case 'perm.create-schedule.company':
 		case 'perm.edit.scheduledReport':
 		case 'perm.delete.scheduledReport':
 			return
 				$hasRoleAtCompany = true;
-		case 'perm.view.assetType':
+		case 'perm.view.schema':
 		case 'perm.view.command':
-		case 'perm.view.possibleEvent':
+		case 'perm.view.dataRepeater':
+		case 'perm.view.trigger':
 		case 'perm.view.procedure':
 		case 'perm.view.schedule':
-		case 'perm.edit.assetType':
+		case 'perm.edit.schema':
 		case 'perm.edit.command':
-		case 'perm.edit.possibleEvent':
+		case 'perm.edit.trigger':
 		case 'perm.edit.procedure':
 		case 'perm.edit.schedule':
-		case 'perm.delete.assetType':
+		case 'perm.delete.schema':
 		case 'perm.delete.command':
-		case 'perm.delete.possibleEvent':
+		case 'perm.delete.dataRepeater':
+		case 'perm.delete.trigger':
 		case 'perm.delete.procedure':
 		case 'perm.delete.schedule':
 			return
@@ -954,6 +960,7 @@ function checkUserCan($action, $target = 'unassigned', $targetId = false, $multi
 	}
 	
 	
+	$awIdCol = 'id';
 	$isAW =
 	$awTable =
 	$hasGlobal =
@@ -1047,16 +1054,21 @@ function checkUserCan($action, $target = 'unassigned', $targetId = false, $multi
 				$awTable = 'assets';
 				$isAW = true;
 				break;
-			case 'assetType':
-				$awTable = 'asset_types';
+			case 'schema':
+				$awTable = 'schemas';
 				$isAW = true;
 				break;
 			case 'command':
 				$awTable = 'commands';
 				$isAW = true;
 				break;
-			case 'possibleEvent':
-				$awTable = 'possible_events';
+			case 'dataRepeater':
+				$awTable = 'data_repeaters';
+				$awIdCol = 'source_id';
+				$isAW = true;
+				break;
+			case 'trigger':
+				$awTable = 'triggers';
 				$isAW = true;
 				break;
 			case 'procedure':
@@ -1104,7 +1116,7 @@ function checkUserCan($action, $target = 'unassigned', $targetId = false, $multi
 		foreach ($targetId as $key => &$value) {
 			$value = checkUserCanInternal(
 				$target, $key, $authenticatingUserId,
-				$perm, $isAW, $awTable, $isGlobal, $hasGlobal,
+				$perm, $isAW, $awTable, $awIdCol, $isGlobal, $hasGlobal,
 				$directlyAssignedToUser, $hasRoleAtCompany, $hasRoleAtLocation, $hasRoleAtLocationAtCompany,
 				$onlyIfHasRolesAtAllAssignedLocations, $ASSETWOLF_2_PREFIX,
 				$ZENARIO_ORGANIZATION_MANAGER_PREFIX, $ZENARIO_COMPANY_LOCATIONS_MANAGER_PREFIX
@@ -1118,7 +1130,7 @@ function checkUserCan($action, $target = 'unassigned', $targetId = false, $multi
 	} else {
 		return checkUserCanInternal(
 			$target, $targetId, $authenticatingUserId,
-			$perm, $isAW, $awTable, $isGlobal, $hasGlobal,
+			$perm, $isAW, $awTable, $awIdCol, $isGlobal, $hasGlobal,
 			$directlyAssignedToUser, $hasRoleAtCompany, $hasRoleAtLocation, $hasRoleAtLocationAtCompany,
 			$onlyIfHasRolesAtAllAssignedLocations, $ASSETWOLF_2_PREFIX,
 			$ZENARIO_ORGANIZATION_MANAGER_PREFIX, $ZENARIO_COMPANY_LOCATIONS_MANAGER_PREFIX
@@ -1128,7 +1140,7 @@ function checkUserCan($action, $target = 'unassigned', $targetId = false, $multi
 
 function checkUserCanInternal(
 	$target, $targetId, $authenticatingUserId,
-	$perm, $isAW, $awTable, $isGlobal, $hasGlobal,
+	$perm, $isAW, $awTable, $awIdCol, $isGlobal, $hasGlobal,
 	$directlyAssignedToUser, $hasRoleAtCompany, $hasRoleAtLocation, $hasRoleAtLocationAtCompany,
 	$onlyIfHasRolesAtAllAssignedLocations, $ASSETWOLF_2_PREFIX,
 	$ZENARIO_ORGANIZATION_MANAGER_PREFIX, $ZENARIO_COMPANY_LOCATIONS_MANAGER_PREFIX
@@ -1195,7 +1207,7 @@ function checkUserCanInternal(
 		if ($row = sqlFetchRow("
 			SELECT owner_type, owner_id
 			FROM ". DB_NAME_PREFIX. $ASSETWOLF_2_PREFIX. $awTable. "
-			WHERE id = ". (int) $targetId
+			WHERE ". $awIdCol. " = ". (int) $targetId
 		)) {
 			switch ($row[0]) {
 				//Note down the company or location id

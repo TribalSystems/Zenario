@@ -202,7 +202,7 @@ Link: [[link]]', $note);
 			case 'zenario_admin':
 				
 				//Allow an admin to edit their own notifications, otherwise check the _PRIV_EDIT_ADMIN permission
-				if (engToBooleanArray($box['tabs']['notifications_tab'], 'edit_mode', 'on')
+				if (engToBoolean($box['tabs']['notifications_tab']['edit_mode']['on'] ?? false)
 				 && ($box['key']['id'] == adminId() || checkPriv('_PRIV_EDIT_ADMIN'))) {
 					setRow(
 						ZENARIO_CONTENT_NOTIFICATIONS_PREFIX. 'admins_mirror',

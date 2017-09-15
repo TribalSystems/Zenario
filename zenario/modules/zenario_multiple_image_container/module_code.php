@@ -42,7 +42,7 @@ class zenario_multiple_image_container extends zenario_banner {
 		foreach (explodeAndTrim($this->setting('image'), true) as $imageId) {
 			if (($imageId = (int) trim($imageId))
 			 && ($image = getRow('files', array('alt_tag', 'title', 'floating_box_title'), $imageId))
-			 && ((imageLink($width, $height, $url, $imageId, $this->setting('width'), $this->setting('height'), $this->setting('canvas'), $this->setting('offset'), $this->setting('retina'))))) {
+			 && ((Ze\File::imageLink($width, $height, $url, $imageId, $this->setting('width'), $this->setting('height'), $this->setting('canvas'), $this->setting('offset'), $this->setting('retina'))))) {
 				
 				if (!isset($this->mergeFields['Images'])) {
 					$this->mergeFields['Images'] = array();
@@ -57,7 +57,7 @@ class zenario_multiple_image_container extends zenario_banner {
 					'Popout' => false);
 				
 				if ($this->setting('link_type_'. $imageId) == '_ENLARGE_IMAGE'
-				 && (imageLink($widthFullSize, $heightFullSize, $urlFullSize, $imageId, $this->setting('enlarge_width'), $this->setting('enlarge_height'), $this->setting('enlarge_canvas')))) {
+				 && (Ze\File::imageLink($widthFullSize, $heightFullSize, $urlFullSize, $imageId, $this->setting('enlarge_width'), $this->setting('enlarge_height'), $this->setting('enlarge_canvas')))) {
 					
 					$imageMF['Floating_Box'] = array(
 						'Src' => $urlFullSize,
@@ -188,6 +188,7 @@ class zenario_multiple_image_container extends zenario_banner {
 						//On the first tab, always show the image and canvas options...
 						case 'image':
 						case 'canvas':
+						case 'lazy_load':
 							$field['hidden'] = false;
 							break;
 						
@@ -210,7 +211,7 @@ class zenario_multiple_image_container extends zenario_banner {
 					
 					//The multiple image container plugin uses one level less of indents than the banner plugin
 					//When we first open the FAB, reduce any indent by 1
-					if (isset($field['indent']) && request('_fill')) {
+					if (isset($field['indent']) && ($_REQUEST['_fill'] ?? false)) {
 						$field['indent'] -= 1;
 					}
 				}

@@ -33,11 +33,11 @@ class zenario_extranet_user_image extends module_base_class {
 	protected $sections = array();
 	
 	public function init() {
-		if (!session('extranetUserID')) {
+		if (!($_SESSION['extranetUserID'] ?? false)) {
 			return checkPriv();
 		}
 		
-		if (post('extranet_add_image')) {
+		if ($_POST['extranet_add_image'] ?? false) {
 			if (setting('max_content_image_filesize') < $_FILES['extranet_upload_image']['size']) {
 				$this->sections['Errors'] = true;
 				$this->sections['Error'] = array('Error' => $this->phrase('Your image must be smaller than [[bytes]] bytes', array('bytes'=>setting('max_content_image_filesize'))));
@@ -45,7 +45,7 @@ class zenario_extranet_user_image extends module_base_class {
 				$this->sections['Errors'] = true;
 				$this->sections['Error'] = array('Error' => $this->phrase('_ERROR_NO_IMAGE_SELECTED'));
 			
-			} elseif (!isImage($_FILES['extranet_upload_image']['type'])) {
+			} elseif (!Ze\File::isImage($_FILES['extranet_upload_image']['type'])) {
 				$this->sections['Errors'] = true;
 				$this->sections['Error'] = array('Error' => $this->phrase('_ERROR_INVALID_FILE_TYPE'));
 			
@@ -57,8 +57,8 @@ class zenario_extranet_user_image extends module_base_class {
 				if ($image[0] >= $minWidth && $image[1] >= $minHeight) {
 					//Remove the User's old image, if they had one
 					$this->removeUserImage();
-					if ($imageId = addFileToDatabase('user', $location, rawurldecode($_FILES['extranet_upload_image']['name']), true)) {
-						updateRow('users', array('image_id' => $imageId), session('extranetUserID'));
+					if ($imageId = Ze\File::addToDatabase('user', $location, rawurldecode($_FILES['extranet_upload_image']['name']), true)) {
+						updateRow('users', array('image_id' => $imageId), ($_SESSION['extranetUserID'] ?? false));
 					}
 				} else {
 					$this->sections['Errors'] = true;
@@ -72,13 +72,13 @@ class zenario_extranet_user_image extends module_base_class {
 
 			}
 		
-		} elseif (post('extranet_remove_image_confirm') && $this->setting('allow_remove')) {
+		} elseif (($_POST['extranet_remove_image_confirm'] ?? false) && $this->setting('allow_remove')) {
 			$this->removeUserImage();
 		}
 		
 		$url = $width = $height = false;
-		if (($imageId = getRow('users', 'image_id', session('extranetUserID')))
-		 && imageLink($width, $height, $url, $imageId, ifNull((int) $this->setting('max_width'), 375), ifNull((int) $this->setting('max_height'), 500))) {
+		if (($imageId = getRow('users', 'image_id', ($_SESSION['extranetUserID'] ?? false)))
+		 && Ze\File::imageLink($width, $height, $url, $imageId, ifNull((int) $this->setting('max_width'), 375), ifNull((int) $this->setting('max_height'), 500))) {
 			$this->sections['Existing_Image'] = true;
 		 	$this->mergeFields['Image_Src'] = htmlspecialchars($url);
 		 	$this->mergeFields['Image_Width'] = $width;
@@ -97,8 +97,8 @@ class zenario_extranet_user_image extends module_base_class {
 			
 		}
 		
-		$this->sections['Remove_Image'] = (bool) ($this->setting('allow_remove') && (!post('extranet_remove_image')));
-		$this->sections['Remove_Image_Confirm'] = (bool) ($this->setting('allow_remove') && post('extranet_remove_image'));
+		$this->sections['Remove_Image'] = (bool) ($this->setting('allow_remove') && (!($_POST['extranet_remove_image'] ?? false)));
+		$this->sections['Remove_Image_Confirm'] = (bool) ($this->setting('allow_remove') && ($_POST['extranet_remove_image'] ?? false));
 		$this->sections['New_Image'] = true;
 		
 		return true;
@@ -106,7 +106,7 @@ class zenario_extranet_user_image extends module_base_class {
 	
 	function showSlot() {
 		
-		if (!session('extranetUserID')) {
+		if (!($_SESSION['extranetUserID'] ?? false)) {
 			if (checkPriv()) {
 				echo adminPhrase('You must be logged in as an Extranet User to see this Plugin.');
 			}
@@ -119,7 +119,7 @@ class zenario_extranet_user_image extends module_base_class {
 	
 	protected function removeUserImage() {
 		//Remove the image for a user
-		updateRow('users', array('image_id' => 0), session('extranetUserID'));
+		updateRow('users', array('image_id' => 0), ($_SESSION['extranetUserID'] ?? false));
 		
 		//Delete any unlinked images
 		$sql = "

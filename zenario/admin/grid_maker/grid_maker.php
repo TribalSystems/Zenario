@@ -3,8 +3,6 @@
 require '../../adminheader.inc.php';
 require CMS_ROOT. 'zenario/admin/grid_maker/grid_maker.inc.php';
 
-$gzf = setting('compress_web_pages')? '?gz=1' : '?gz=0';
-$gz = setting('compress_web_pages')? '&amp;gz=1' : '&amp;gz=0';
 
 $homeLink = $backLink = '';
 
@@ -68,14 +66,14 @@ echo '
 			//Then we need to take the Family Name and Filename, form a path, check that file exists, open it,
 			//read its contents and then check to see if there is Grid data in there.
 		$layoutId = 0;
-		if (request('loadTemplateFile')
-		 && ((is_numeric(request('id'))
-		   && ($layout = getTemplateDetails(request('id')))
+		if (($_REQUEST['loadTemplateFile'] ?? false)
+		 && ((is_numeric($_REQUEST['id'] ?? false)
+		   && ($layout = getTemplateDetails($_REQUEST['id'] ?? false))
 		   && ($layoutId = $layout['layout_id'])
 		   && ($path = $layout['family_name']. '/'. $layout['filename'])
 		   )
-		  || (request('c')
-		   && ($path = decodeItemIdForOrganizer(request('c')). '.tpl.php')
+		  || (($_REQUEST['c'] ?? false)
+		   && ($path = decodeItemIdForOrganizer($_REQUEST['c'] ?? false). '.tpl.php')
 		   && ($layout = explode('/', $path, 2))
 		   && (!empty($layout[1]))
 		   && ($layout['family_name'] = $layout[0])

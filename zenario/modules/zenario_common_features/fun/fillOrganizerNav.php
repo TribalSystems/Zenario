@@ -62,6 +62,6 @@ foreach (sqlFetchAssocs($sql) as $details) {
 
 $nav['top_right_buttons']['admin_name']['label'] = formatAdminName();
 
-if (session('admin_global_id')) {
+if ($_SESSION['admin_global_id'] ?? false) {
 	$nav['top_right_buttons']['change_password']['disabled'] = true;
 }

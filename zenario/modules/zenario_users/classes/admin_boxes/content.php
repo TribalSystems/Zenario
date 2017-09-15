@@ -99,7 +99,7 @@ class zenario_users__admin_boxes__content extends zenario_users {
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
 		
 		if (empty($box['tabs']['privacy']['hidden'])
-		 && engToBooleanArray($box, 'tabs', 'privacy', 'edit_mode', 'on')) {
+		 && engToBoolean($box['tabs']['privacy']['edit_mode']['on'] ?? false)) {
 			
 			switch ($values['privacy/privacy']) {
 				case 'call_static_method':
@@ -131,7 +131,7 @@ class zenario_users__admin_boxes__content extends zenario_users {
 		$tagIds = array($box['key']['cType']. '_'. $box['key']['cID']);
 		
 		if (empty($box['tabs']['privacy']['hidden'])
-		 && engToBooleanArray($box, 'tabs', 'privacy', 'edit_mode', 'on')
+		 && engToBoolean($box['tabs']['privacy']['edit_mode']['on'] ?? false)
 		 && checkPriv('_PRIV_EDIT_CONTENT_ITEM_PERMISSIONS')) {
 			
 			$this->savePrivacySettings($tagIds, $values);

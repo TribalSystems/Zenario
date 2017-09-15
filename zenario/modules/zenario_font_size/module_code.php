@@ -50,12 +50,12 @@ class zenario_font_size extends module_base_class {
 		switch ($path) {
 			case 'plugin_settings':
 				if (!empty($values['first_tab/minimum_font_size'])){
-					if (!is_numeric(arrayKey($values,'first_tab/minimum_font_size'))  || !(arrayKey($values,'first_tab/minimum_font_size')>0) ){
+					if (!is_numeric(($values['first_tab/minimum_font_size'] ?? false))  || !(($values['first_tab/minimum_font_size'] ?? false)>0) ){
 						$box['tabs']['first_tab']['errors'][] = "Error. The minimum font size must be a number greater than 0.";
 					}
 				}
 				if (!empty($values['first_tab/maximum_font_size'])){
-					if (!is_numeric(arrayKey($values,'first_tab/maximum_font_size'))  || !(arrayKey($values,'first_tab/maximum_font_size')>0) ){
+					if (!is_numeric(($values['first_tab/maximum_font_size'] ?? false))  || !(($values['first_tab/maximum_font_size'] ?? false)>0) ){
 						$box['tabs']['first_tab']['errors'][] = "Error. The maximum font size must be a number greater than 0.";
 					}
 				}

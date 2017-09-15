@@ -46,7 +46,7 @@ if (!class_exists('cms_core')) {
 $mode = false;
 $tagPath = '';
 $modules = array();
-$debugMode = (bool) get('_debug');
+$debugMode = (bool) ($_GET['_debug'] ?? false);
 $loadDefinition = true;
 $settingGroup = '';
 $compatibilityClassNames = array();
@@ -60,7 +60,7 @@ cms_core::$skType = $type = 'admin_boxes';
 
 
 //If this isn't the first load, attempt to load the defintion from the Storage
-if (!post('_fill') && !$debugMode) {
+if (!($_POST['_fill'] ?? false) && !$debugMode) {
 	//Load the information that we have from the client
 	if (empty($_POST['_box'])) {
 		echo adminPhrase('An error occurred when syncing this floating admin box with the server.');
@@ -87,18 +87,18 @@ cms_core::$skPath = $requestedPath;
 //The Plugin Settings Admin Boxes are a special case for looking up XML files.
 //They need to include the Settings from the Plugin in question, and any modules it is compatable with
 if ($requestedPath == 'plugin_settings') {
-	if (get('refiner__nest') && get('id')) {
-		$egg = getNestDetails(get('id'), get('refiner__nest'));
+	if (($_GET['refiner__nest'] ?? false) && ($_GET['id'] ?? false)) {
+		$egg = getNestDetails($_GET['id'] ?? false, ($_GET['refiner__nest'] ?? false));
 		$module = getModuleDetails($egg['module_id']);
 	
-	} elseif (!get('instanceId') && get('refiner__plugin')) {
-		$module = getModuleDetails(get('refiner__plugin'));
+	} elseif (!($_GET['instanceId'] ?? false) && ($_GET['refiner__plugin'] ?? false)) {
+		$module = getModuleDetails($_GET['refiner__plugin'] ?? false);
 	
-	} elseif (get('moduleId')) {
-		$module = getModuleDetails(get('moduleId'));
+	} elseif ($_GET['moduleId'] ?? false) {
+		$module = getModuleDetails($_GET['moduleId'] ?? false);
 	
 	} else {
-		$module = getPluginInstanceDetails(ifNull(get('instanceId'), get('id')));
+		$module = getPluginInstanceDetails(ifNull($_GET['instanceId'] ?? false, ($_GET['id'] ?? false)));
 	}
 	
 	if ($module) {
@@ -111,7 +111,7 @@ if ($requestedPath == 'plugin_settings') {
 	}
 
 } elseif ($requestedPath == 'site_settings') {
-	$settingGroup = request('id');
+	$settingGroup = $_REQUEST['id'] ?? false;
 }
 
 
@@ -201,12 +201,12 @@ if ($debugMode) {
 	exit;
 
 //Special logic for Validating and Saving
-} elseif (!post('_fill')) {
+} elseif (!($_POST['_fill'] ?? false)) {
 	$doSave = false;
 	$doFormat = true;
 	$errorsReset = false;
 	
-	if (post('_read_values')) {
+	if ($_POST['_read_values'] ?? false) {
 		//Given the JSON object for an Admin Box, strip everything out and just return the tabs/values
 		$fields = array();
 		$values = array();
@@ -231,7 +231,7 @@ if ($debugMode) {
 		jsonEncodeForceObject($values2d);
 		exit;
 		
-	} else if (post('_validate') || post('_save') || post('_download')) {
+	} else if (($_POST['_validate'] ?? false) || ($_POST['_save'] ?? false) || ($_POST['_download'] ?? false)) {
 		//Take the current state of the box as a JSON object, and validate it
 		
 		//Create a (read only) shortcut array to the values
@@ -245,7 +245,7 @@ if ($debugMode) {
 		if (TUIXLooksLikeFAB($tags)) {
 			foreach ($tags['tabs'] as $tabName => &$tab) {
 				//Check if the tab is in edit mode
-				if (engToBooleanArray($tab, 'edit_mode', 'on')) {
+				if (engToBoolean($tab['edit_mode']['on'] ?? false)) {
 					applyValidationFromTUIXOnTab($tab);
 				}
 			}
@@ -253,11 +253,11 @@ if ($debugMode) {
 		
 		//Apply the modules' specific validation
 		foreach ($modules as $className => &$module) {
-			$module->validateAdminBox($requestedPath, $settingGroup, $tags, $fields, $values, $changes, (bool) post('_save'));
+			$module->validateAdminBox($requestedPath, $settingGroup, $tags, $fields, $values, $changes, (bool) ($_POST['_save'] ?? false));
 		}
 		
 		//If the Admin is trying to save, and the box was valid, fire the save methods
-		if (post('_save') || post('_download')) {
+		if (($_POST['_save'] ?? false) || ($_POST['_download'] ?? false)) {
 			
 			//Check if there are any errors
 			if (TUIXLooksLikeFAB($tags)) {
@@ -291,22 +291,22 @@ if ($debugMode) {
 					'saved' => false
 				);
 				
-				if (!post('_download')) {
+				if (!($_POST['_download'] ?? false)) {
 					$tags['_sync']['flags']['valid'] = true;
 				}
 				
 				$download =
-					engToBooleanArray($tags, 'download')
+					engToBoolean($tags['download'] ?? false)
 						//For backwards compatability with old code
-						|| engToBooleanArray($tags, 'confirm', 'download');
+						|| engToBoolean($tags['confirm']['download'] ?? false);
 				
 				//Check if a confirmation is needed
-				if (engToBooleanArray($tags, 'confirm', 'show') && !(post('_confirm') || post('_download'))) {
+				if (engToBoolean($tags['confirm']['show'] ?? false) && !(($_POST['_confirm'] ?? false) || ($_POST['_download'] ?? false))) {
 					$tags['_sync']['flags']['confirm'] = true;
 					
-				} else if ($download && !post('_download')) {
+				} else if ($download && !($_POST['_download'] ?? false)) {
 					$tags['_sync']['flags']['download'] = true;
-					$doFormat = post('_save_and_continue');
+					$doFormat = $_POST['_save_and_continue'] ?? false;
 					
 				} else {
 					$fields = array();
@@ -398,7 +398,7 @@ if ($debugMode) {
 				
 					} else {
 						$tags['_sync']['flags']['saved'] = true;
-						$doFormat = post('_save_and_continue');
+						$doFormat = $_POST['_save_and_continue'] ?? false;
 					}
 				}
 			}
@@ -546,7 +546,10 @@ if ($debugMode) {
 				$cFieldName = '__custom_field__'. ifNull($cfield['db_column'], $cfield['id']);
 			
 				if (!isset($tags['tabs'][$cfield['tab_name']])
-				 || !is_array($tags['tabs'][$cfield['tab_name']])) {
+				 || !is_array($tags['tabs'][$cfield['tab_name']])
+				 //Drawing of repeating dataset fields not implemented
+				 || $cfield['type'] == 'repeat_start'
+				 || $cfield['type'] == 'repeat_end') {
 					continue;
 				}
 				if (!isset($tags['tabs'][$cfield['tab_name']]['fields'])

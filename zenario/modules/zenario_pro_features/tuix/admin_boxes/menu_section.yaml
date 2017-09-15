@@ -5,7 +5,7 @@ zenario_menu_section:
     key:
         id: ""
     title: Creating a menu section
-    max_height: "190"
+    max_height: 280
     hide_tab_bar: Yes
     tabs:
         menu_section:

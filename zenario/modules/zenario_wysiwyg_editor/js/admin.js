@@ -112,7 +112,7 @@ directionality	ltr rtl
 			edit: {title: 'Edit', items: 'undo redo | cut copy paste | selectall'},
 			insert: {title: 'Insert', items: 'link image | anchor hr charmap'},
 			view: {title: 'View', items: ''},
-			format: {title: 'Format', items: 'bold italic underline strikethrough superscript subscript' + (zenarioA.skinDesc.style_formats? ' | formats' : '') + ' | removeformat'},
+			format: {title: 'Format', items: 'bold italic underline strikethrough superscript subscript' + (zenarioA.skinDesc.style_formats? ' | formats' : '') + ' blockquote | removeformat'},
 			table: {title: 'Table', items: 'inserttable tableprops deletetable | cell row column'},
 			tools: {title: 'Tools', items: 'searchreplace | code'}
 		},
@@ -299,6 +299,7 @@ zenario_wysiwyg_editor.listenForDoubleClick = function(slotName, containerId, bu
 			$(buttonSelector).click();
 		}
 	});
+	$('#'+containerId + '-wrap').addClass('zenario_showDoubleClickInEditMode');
 };
 
 

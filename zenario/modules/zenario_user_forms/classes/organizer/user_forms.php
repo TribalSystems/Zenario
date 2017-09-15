@@ -34,10 +34,6 @@ class zenario_user_forms__organizer__user_forms extends module_base_class {
 			$panel['db_items']['where_statement'] = 'WHERE TRUE';
 			$panel['no_items_message'] = adminPhrase('No forms have been archived.');
 		}
-		if (!inc('zenario_extranet_registration')) {
-			$panel['db_items']['where_statement'] .= '
-				AND f.type != "registration"';
-		}
 		if (!inc('zenario_extranet_profile_edit')) {
 			$panel['db_items']['where_statement'] .= '
 				AND f.type != "profile"';
@@ -53,6 +49,11 @@ class zenario_user_forms__organizer__user_forms extends module_base_class {
 		} else {
 			unset($panel['columns']['form_email_addresses']);
 		}
+		
+		if ($refinerName == 'type' && $refinerId == 'registration') {
+			$panel['no_items_message'] = adminPhrase('There are no registration forms.');
+		}
+		
 		
 		//Get plugins using a form
 		$moduleIds = zenario_user_forms::getFormModuleIds();
@@ -112,8 +113,8 @@ class zenario_user_forms__organizer__user_forms extends module_base_class {
 			}
 		}
 		
-		foreach ($formPlugins as $instanceId => $pluginName) {
-			$className = zenario_user_forms::getModuleClassNameByInstanceId($instanceId);
+		foreach($formPlugins as $instanceId => $pluginName) {
+			$className = static::getModuleClassNameByInstanceId($instanceId);
 			$moduleName = getModuleDisplayNameByClassName($className);
 			
 			if ($formId = getRow('plugin_settings', 'value', array('instance_id' => $instanceId, 'name' => 'user_form'))) {
@@ -191,11 +192,11 @@ class zenario_user_forms__organizer__user_forms extends module_base_class {
 	
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
 		exitIfNotCheckPriv('_PRIV_MANAGE_FORMS');
-		if (post('archive_form')) {
+		if ($_POST['archive_form'] ?? false) {
 			foreach(explode(',', $ids) as $id) {
 				updateRow(ZENARIO_USER_FORMS_PREFIX . 'user_forms', array('status' => 'archived'), array('id' => $id));
 			}
-		} elseif (post('delete_form')) {
+		} elseif ($_POST['delete_form'] ?? false) {
 			foreach (explode(',', $ids) as $formId) {
 				$error = zenario_user_forms::deleteForm($formId);
 				if (isError($error)) {
@@ -205,55 +206,54 @@ class zenario_user_forms__organizer__user_forms extends module_base_class {
 				}
 				
 			}
-		} elseif (post('duplicate_form')) {
-			$formProperties = getRow(ZENARIO_USER_FORMS_PREFIX . 'user_forms', true, $ids);
-			$formFields = getRowsArray(ZENARIO_USER_FORMS_PREFIX . 'user_form_fields', true, array('user_form_id' => $ids));
-			$formNameArray = explode(' ', $formProperties['name']);
-			$formVersion = end($formNameArray);
-			//Remove version number at end of field
-			if (preg_match('/\((\d+)\)/', $formVersion, $matches)) {
-				array_pop($formNameArray);
-				$formProperties['name'] = implode(' ', $formNameArray);
-			}
-			for ($i = 2; $i < 1000; $i++) {
-				$name = $formProperties['name'].' ('.$i.')';
-				if (!checkRowExists(ZENARIO_USER_FORMS_PREFIX . 'user_forms', array('name' => $name))) {
-					$formProperties['name'] = $name;
-					break;
-				}
-			}
-			
-			unset($formProperties['id']);
-			$id = insertRow(ZENARIO_USER_FORMS_PREFIX . 'user_forms', $formProperties);
-			foreach ($formFields as $formField) {
-				$formFieldValues = getRowsArray(ZENARIO_USER_FORMS_PREFIX. 'form_field_values', true, array('form_field_id' => $formField['id']));
-				unset($formField['id']);
-				$formField['user_form_id'] = $id;
-				$fieldId = insertRow(ZENARIO_USER_FORMS_PREFIX . 'user_form_fields', $formField);
-				//Duplicate form field values if any
-				foreach ($formFieldValues as $field) {
-					$field['form_field_id'] = $fieldId;
-					unset($field['id']);
-					insertRow(ZENARIO_USER_FORMS_PREFIX. 'form_field_values', $field);
-				}
+		} elseif ($_POST['duplicate_form'] ?? false) {
+			static::duplicateForm($ids);
+		}
+	}
+	
+	public static function duplicateForm($formId) {
+		$form = getRow(ZENARIO_USER_FORMS_PREFIX . 'user_forms', true, $formId);
+		
+		//Add version number to form name
+		$formNameArray = explode(' ', $form['name']);
+		$formVersion = end($formNameArray);
+		if (preg_match('/\((\d+)\)/', $formVersion, $matches)) {
+			array_pop($formNameArray);
+			$form['name'] = implode(' ', $formNameArray);
+		}
+		for ($i = 2; $i < 1000; $i++) {
+			$name = $form['name'].' ('.$i.')';
+			if (!checkRowExists(ZENARIO_USER_FORMS_PREFIX . 'user_forms', array('name' => $name))) {
+				$form['name'] = $name;
+				break;
 			}
 		}
+		
+		//Use the import/export functions to easily duplicate a form
+		$formsJSON = static::getFormsExportJSON($formId);
+		$formsJSON['forms'][0]['form']['name'] = $name;
+		
+		zenario_user_forms::importForms(json_encode($formsJSON));
+	}
+	
+	public static function getFormsExportJSON($formIds) {
+		$formIds = explodeAndTrim($formIds);
+		$formsJSON = array(
+			'major_version' => ZENARIO_MAJOR_VERSION,
+			'minor_version' => ZENARIO_MINOR_VERSION,
+			'forms' => array()
+		);
+		foreach ($formIds as $formId) {
+			$formJSON = zenario_user_forms::getFormJSON($formId);
+			$formsJSON['forms'][] = $formJSON;
+		}
+		return $formsJSON;
 	}
 	
 	public function organizerPanelDownload($path, $ids, $refinerName, $refinerId) {
 		exitIfNotCheckPriv('_PRIV_MANAGE_FORMS');
-		if (post('export_forms')) {
-			$formIds = explodeAndTrim($ids);
-			$formsJSON = array(
-				'major_version' => ZENARIO_MAJOR_VERSION,
-				'minor_version' => ZENARIO_MINOR_VERSION,
-				'forms' => array()
-			);
-			foreach ($formIds as $formId) {
-				$formJSON = zenario_user_forms::getFormJSON($formId);
-				$formsJSON['forms'][] = $formJSON;
-			}
-			$formsJSON = json_encode($formsJSON);
+		if ($_POST['export_forms'] ?? false) {
+			$formsJSON = json_encode(static::getFormsExportJSON($ids));
 			
 			$filename = tempnam(sys_get_temp_dir(), 'forms_export');
 			file_put_contents($filename, $formsJSON);
@@ -266,5 +266,17 @@ class zenario_user_forms__organizer__user_forms extends module_base_class {
 			@unlink($filename);
 			exit;
 		}
+	}
+	
+	public static function getModuleClassNameByInstanceId($id) {
+		$sql = '
+			SELECT class_name
+			FROM '.DB_NAME_PREFIX.'modules m
+			INNER JOIN '.DB_NAME_PREFIX.'plugin_instances pi
+				ON m.id = pi.module_id
+			WHERE pi.id = '.(int)$id;
+		$result = sqlSelect($sql);
+		$row = sqlFetchRow($result);
+		return $row[0];
 	}
 }

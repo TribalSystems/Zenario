@@ -39,7 +39,7 @@ $ETag = 'zenario-cookie_message-'. LATEST_REVISION_NO. '--'. $_SERVER["HTTP_HOST
 
 //Cache this combination of running Plugin JavaScript
 useCache($ETag);
-useGZIP(isset($_GET['gz']) && $_GET['gz']);
+useGZIP();
 
 require CMS_ROOT. 'zenario/api/database_functions.inc.php';
 require CMS_ROOT. 'zenario/includes/cms.inc.php';

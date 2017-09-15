@@ -137,7 +137,7 @@ if (!empty($desc['special_pages']) && is_array($desc['special_pages'])) {
 					array(
 						'module_class_name' => $moduleClassName,
 						'logic' => $logic,
-						'publish' => engToBooleanArray($page, 'publish'),
+						'publish' => engToBoolean($page['publish'] ?? false),
 						'page_type' => $page['page_type']));
 			
 			} elseif (!$specialPage['module_class_name'] || $specialPage['module_class_name'] == $moduleClassName) {
@@ -147,7 +147,7 @@ if (!empty($desc['special_pages']) && is_array($desc['special_pages'])) {
 					array(
 						'module_class_name' => $moduleClassName,
 						'logic' => $logic,
-						'publish' => engToBooleanArray($page, 'publish')),
+						'publish' => engToBoolean($page['publish'] ?? false)),
 					array(
 						'page_type' => $page['page_type']));
 			
@@ -174,8 +174,8 @@ if (!empty($desc['signals']) && is_array($desc['signals'])) {
 					signal_name = '". sqlEscape($signal['name']). "',
 					module_id = '". (int) $moduleId. "',
 					module_class_name = '". sqlEscape($moduleClassName). "',
-					static_method = ". engToBooleanArray($signal, 'static'). ",
-					suppresses_module_class_name = '". sqlEscape(arrayKey($signal, 'suppresses_module_class_name')). "'";
+					static_method = ". engToBoolean($signal['static'] ?? false). ",
+					suppresses_module_class_name = '". sqlEscape($signal['suppresses_module_class_name'] ?? false). "'";
 			sqlQuery($sql);
 		}
 	}
@@ -190,21 +190,21 @@ if (!empty($desc['jobs']) && is_array($desc['jobs'])) {
 			$jobs .= ($jobs? ',' : ''). "'". sqlEscape($job['name']). "'";
 			$sql = "
 				INSERT IGNORE INTO ". DB_NAME_PREFIX. "jobs SET
-					manager_class_name = '". sqlEscape(ifNull(arrayKey($job, 'manager_class_name'), 'zenario_scheduled_task_manager')). "',
+					manager_class_name = '". sqlEscape(ifNull($job['manager_class_name'] ?? false, 'zenario_scheduled_task_manager')). "',
 					job_name = '". sqlEscape($job['name']). "',
 					module_id = '". (int) $moduleId. "',
 					module_class_name = '". sqlEscape($moduleClassName). "',
-					static_method = ". engToBooleanArray($job, 'static'). ",
-					months = '". sqlEscape(arrayKey($job, 'months')). "',
-					days = '". sqlEscape(arrayKey($job, 'days')). "',
-					hours = '". sqlEscape(arrayKey($job, 'hours')). "',
-					minutes = '". sqlEscape(arrayKey($job, 'minutes')). "',
-					run_every_minute = " . engToBooleanArray($job, 'run_every_minute') . ",
-					first_n_days_of_month = ". (int) arrayKey($job, 'first_n_days_of_month'). ",
-					log_on_action = ". engToBooleanArray($job, 'log_on_action'). ",
-					log_on_no_action = ". engToBooleanArray($job, 'log_on_no_action'). ",
-					email_on_action = ". engToBooleanArray($job, 'email_on_action'). ",
-					email_on_no_action = ". engToBooleanArray($job, 'email_on_no_action'). ",
+					static_method = ". engToBoolean($job['static'] ?? false). ",
+					months = '". sqlEscape($job['months'] ?? false). "',
+					days = '". sqlEscape($job['days'] ?? false). "',
+					hours = '". sqlEscape($job['hours'] ?? false). "',
+					minutes = '". sqlEscape($job['minutes'] ?? false). "',
+					run_every_minute = " . engToBoolean($job['run_every_minute'] ?? false) . ",
+					first_n_days_of_month = ". (int) ($job['first_n_days_of_month'] ?? false). ",
+					log_on_action = ". engToBoolean($job['log_on_action'] ?? false). ",
+					log_on_no_action = ". engToBoolean($job['log_on_no_action'] ?? false). ",
+					email_on_action = ". engToBoolean($job['email_on_action'] ?? false). ",
+					email_on_no_action = ". engToBoolean($job['email_on_no_action'] ?? false). ",
 					email_address_on_action = '". sqlEscape(EMAIL_ADDRESS_GLOBAL_SUPPORT). "',
 					email_address_on_no_action = '". sqlEscape(EMAIL_ADDRESS_GLOBAL_SUPPORT). "',
 					email_address_on_error = '". sqlEscape(EMAIL_ADDRESS_GLOBAL_SUPPORT). "'";

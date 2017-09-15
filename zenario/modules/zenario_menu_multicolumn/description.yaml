@@ -16,6 +16,9 @@ editions: Community, Pro, ProBusiness, Enterprise
 inheritance:
     inherit_settings_from_module: zenario_menu
 start_running_on_install: true
+
+# Reminder: you need to increment the LATEST_REVISION_NO in this module's
+# latest_revision_no.inc.php file if you change any of the fields below:
 is_pluggable: true
 default_framework: standard
 default_instance_name: Multicolumn menu

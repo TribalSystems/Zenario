@@ -37,8 +37,8 @@ class zenario_common_features__organizer__sections extends module_base_class {
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
 		if ($path != 'zenario__menu/panels/sections') return;
 		
-		if (get('refiner__language')) {
-			$panel['title'] = adminPhrase('Menu sections (language [[lang]])', array('lang' => getLanguageName(get('refiner__language'))));
+		if ($_GET['refiner__language'] ?? false) {
+			$panel['title'] = adminPhrase('Menu sections (language [[lang]])', array('lang' => getLanguageName($_GET['refiner__language'] ?? false)));
 		}
 		
 		foreach ($panel['items'] as $id => &$item) {

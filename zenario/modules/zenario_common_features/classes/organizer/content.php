@@ -46,12 +46,12 @@ class zenario_common_features__organizer__content extends module_base_class {
 			if (!$langIdFilter = zenario_organizer::filterValue('language_id')) {
 				
 				//If an item was selected, use the language from that...
-				if (request('_item')) {
-					$langIdFilter = getRow('content_items', 'language_id', array('tag_id' => request('_item')));
+				if ($_REQUEST['_item'] ?? false) {
+					$langIdFilter = getRow('content_items', 'language_id', array('tag_id' => ($_REQUEST['_item'] ?? false)));
 				}
 				//...otherwise use the default language
 				if (!$langIdFilter) {
-					$langIdFilter = setting('default_language');
+					$langIdFilter = cms_core::$defaultLang;
 				}
 				
 				zenario_organizer::setFilterValue('language_id', $langIdFilter);
@@ -60,11 +60,11 @@ class zenario_common_features__organizer__content extends module_base_class {
 		}
 		
 		//Check if a specific Content Type and/or layout has been set, either by using a content-type refiner or a layout's refiner
-		if (get('refiner__template')) {
-			$panel['key']['layoutId'] = get('refiner__template');
-			$panel['key']['cType'] = getRow('layouts', 'content_type', get('refiner__template'));
-		} elseif (get('refiner__content_type')) {
-			$panel['key']['cType'] = get('refiner__content_type');
+		if ($_GET['refiner__template'] ?? false) {
+			$panel['key']['layoutId'] = $_GET['refiner__template'] ?? false;
+			$panel['key']['cType'] = getRow('layouts', 'content_type', ($_GET['refiner__template'] ?? false));
+		} elseif ($_GET['refiner__content_type'] ?? false) {
+			$panel['key']['cType'] = $_GET['refiner__content_type'] ?? false;
 		}
 
 		//Attempt to customise the defaults slightly depending on the content type
@@ -165,7 +165,7 @@ class zenario_common_features__organizer__content extends module_base_class {
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
 
-		if($contentType=request('refiner__content_type')){
+		if($contentType=($_REQUEST['refiner__content_type'] ?? false)){
 			if(checkRowExists('content_types', array('enable_categories' => 0, 'content_type_id'=>$contentType))){
 				unset($panel['inline_buttons']['no_categories']);
 				unset($panel['inline_buttons']['one_or_more_categories']);
@@ -292,13 +292,13 @@ class zenario_common_features__organizer__content extends module_base_class {
 			unset($panel['columns']['status']);
 			unset($panel['collection_buttons']['create']);
 
-		} elseif (get('refiner__following_item_link')) {
+		} elseif ($_GET['refiner__following_item_link'] ?? false) {
 			$panel['title'] = adminPhrase('Linked content item');
 			unset($panel['collection_buttons']['create']);
 			unset($panel['item_buttons']['trash']);
 			unset($panel['item_buttons']['delete']);
 
-		} elseif (get('refinerName') == 'find_duplicates') {
+		} elseif (($_GET['refinerName'] ?? false) == 'find_duplicates') {
 			$panel['title'] = adminPhrase('Items with duplicate file attachments');
 			$panel['no_items_message'] = adminPhrase('No items with duplicate file attachments found');
 			unset($panel['collection_buttons']['diagnostics_dropdown']);
@@ -371,9 +371,9 @@ class zenario_common_features__organizer__content extends module_base_class {
 			$panel['no_items_message'] = adminPhrase('There are no [[content_type_plural_lower_en]].', $mrg);
 			unset($panel['columns']['type']);
 
-		} elseif (get('refiner__menu_children')) {
+		} elseif ($_GET['refiner__menu_children'] ?? false) {
 			$mrg = array(
-				'name' => getMenuName(get('refiner__menu_children'), true));
+				'name' => getMenuName($_GET['refiner__menu_children'] ?? false, true));
 			$panel['title'] = adminPhrase('Content items under the menu node "[[name]]"', $mrg);
 			$panel['no_items_message'] = adminPhrase('There are no content items under the menu node "[[name]]".', $mrg);
 			unset($panel['collection_buttons']['create']);
@@ -385,42 +385,42 @@ class zenario_common_features__organizer__content extends module_base_class {
 			$panel['no_items_message'] = adminPhrase('There are no content items in [[language]].', $mrg);
 			$panel['columns']['language_id']['hidden'] = true;
 
-		} elseif (get('refiner__category')) {
+		} elseif ($_GET['refiner__category'] ?? false) {
 			$mrg = array(
-				'category' => getCategoryName(get('refiner__category')));
+				'category' => getCategoryName($_GET['refiner__category'] ?? false));
 			$panel['title'] = adminPhrase('Content items in the category "[[category]]"', $mrg);
 			$panel['no_items_message'] = adminPhrase('There are no content items in the category "[[category]]".', $mrg);
 
-		} elseif (get('refiner__module_usage')) {
+		} elseif ($_GET['refiner__module_usage'] ?? false) {
 			$mrg = array(
-				'name' => getModuleDisplayName(get('refiner__module_usage')));
+				'name' => getModuleDisplayName($_GET['refiner__module_usage'] ?? false));
 			$panel['title'] = adminPhrase('Content items on which module "[[name]]" is used', $mrg);
 			$panel['no_items_message'] = adminPhrase('There are no content items using the module "[[name]]".', $mrg);
 			unset($panel['collection_buttons']['create']);
 
-		} elseif (get('refiner__module_effective_usage')) {
+		} elseif ($_GET['refiner__module_effective_usage'] ?? false) {
 			$mrg = array(
-				'name' => getModuleDisplayName(get('refiner__module_effective_usage')));
+				'name' => getModuleDisplayName($_GET['refiner__module_effective_usage'] ?? false));
 			$panel['title'] = adminPhrase('Content items on which module "[[name]]" is used (effective usage)', $mrg);
 			$panel['no_items_message'] = adminPhrase('There are no content items using the module "[[name]]".', $mrg);
 			unset($panel['collection_buttons']['create']);
 
-		} elseif (get('refiner__plugin_instance_usage')) {
+		} elseif ($_GET['refiner__plugin_instance_usage'] ?? false) {
 			$mrg = array(
-				'name' => getPluginInstanceName(get('refiner__plugin_instance_usage')));
+				'name' => getPluginInstanceName($_GET['refiner__plugin_instance_usage'] ?? false));
 			$panel['title'] = adminPhrase('Content items on which the plugin "[[name]]" is used', $mrg);
 			$panel['no_items_message'] = adminPhrase('There are no content items using the plugin "[[name]]".', $mrg);
 			unset($panel['collection_buttons']['create']);
 
-		} elseif (get('refiner__plugin_instance_effective_usage')) {
+		} elseif ($_GET['refiner__plugin_instance_effective_usage'] ?? false) {
 			$mrg = array(
-				'name' => getPluginInstanceName(get('refiner__plugin_instance_effective_usage')));
+				'name' => getPluginInstanceName($_GET['refiner__plugin_instance_effective_usage'] ?? false));
 			$panel['title'] = adminPhrase('Content items on which the plugin "[[name]]" appears (effective usage)', $mrg);
 			$panel['no_items_message'] = adminPhrase('There are no content items using the plugin "[[name]]".', $mrg);
 			unset($panel['collection_buttons']['create']);
 
 		} elseif ($refinerName == 'special_pages') {
-			$panel['title'] = adminPhrase('Special Pages for the Default Language ([[lang]])', array('lang' => setting('default_language')));
+			$panel['title'] = adminPhrase('Special Pages for the Default Language ([[lang]])', array('lang' => cms_core::$defaultLang));
 			$panel['item']['css_class'] = 'special_content_published';
 			unset($panel['collection_buttons']['create']);
 
@@ -469,7 +469,7 @@ class zenario_common_features__organizer__content extends module_base_class {
 		
 				$item['css_class'] = getItemIconClass($item['id'], $item['type'], true, $item['status']);
 				
-				if ($showInOrganiser && ($privacy = arrayKey($item, 'privacy'))) {
+				if ($showInOrganiser && ($privacy = $item['privacy'] ?? false)) {
 					$item['row_css_class'] = ' privacy_'. $privacy;
 					
 					//If this content item is set to a group or smart group,
@@ -513,7 +513,7 @@ class zenario_common_features__organizer__content extends module_base_class {
 					break;
 				}
 		
-				if (!$item['lock_owner_id'] || $item['lock_owner_id'] == session('admin_userid')) {
+				if (!$item['lock_owner_id'] || $item['lock_owner_id'] == ($_SESSION['admin_userid'] ?? false)) {
 					$item['traits']['not_locked'] = true;
 				}
 		
@@ -550,13 +550,13 @@ class zenario_common_features__organizer__content extends module_base_class {
 				}
 		
 				if ($item['file_id']) {
-					if ($item['file_path'] && !docstoreFilePath($item['file_path'])) {	
+					if ($item['file_path'] && !Ze\File::docstorePath($item['file_path'])) {	
 						$item['filename'] .= ' (File is missing)';
 						$item['cell_css_classes']['filename'] = "warning";
 					} else {
 						$item['traits']['has_file'] = true;
 				
-						if (isImageOrSVG($item['mime_type'])) {
+						if (Ze\File::isImageOrSVG($item['mime_type'])) {
 							$item['traits']['has_picture'] = true;
 						}
 					}
@@ -567,7 +567,7 @@ class zenario_common_features__organizer__content extends module_base_class {
 				if ($mode == 'get_item_links') {
 					$item['name'] = $item['tag'];
 			
-					if (get('languageId') && $item['language_id'] != get('languageId')) {
+					if (($_GET['languageId'] ?? false) && $item['language_id'] != $_GET['languageId'] ?? false) {
 						$item['name'] .= ' ('. $item['language_id']. ')';
 					}
 			
@@ -621,7 +621,7 @@ class zenario_common_features__organizer__content extends module_base_class {
 			$langId = false;
 			if (in($refinerName, 'language', 'content_type__language', 'template__language')) {
 				$langId = $panel['key']['language'];
-			} elseif ($numLanguages > 1 && zenario_organizer::filterValue('language_id') == setting('default_language')) {
+			} elseif ($numLanguages > 1 && zenario_organizer::filterValue('language_id') == cms_core::$defaultLang) {
 				$langId = zenario_organizer::filterValue('language_id');
 			}
 			
@@ -634,7 +634,7 @@ class zenario_common_features__organizer__content extends module_base_class {
 								'ord' => $ord += 0.001,
 								'title' => $lang['id'],
 								'width' => 'xxsmall',
-								'show_by_default' => (!request('refiner__content_type') || request('refiner__content_type') == 'html')
+								'show_by_default' => (!($_REQUEST['refiner__content_type'] ?? false) || ($_REQUEST['refiner__content_type'] ?? false) == 'html')
 							);
 					}
 				}
@@ -693,10 +693,10 @@ class zenario_common_features__organizer__content extends module_base_class {
 	}
 	
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
-		if (post('mass_add_to_menu') && checkPriv('_PRIV_ADD_MENU_ITEM')) {
+		if (($_POST['mass_add_to_menu'] ?? false) && checkPriv('_PRIV_ADD_MENU_ITEM')) {
 			addContentItemsToMenu($ids, $ids2);
 
-		} elseif (post('hide')) {
+		} elseif ($_POST['hide'] ?? false) {
 			foreach (explodeAndTrim($ids) as $id) {
 				$cID = $cType = false;
 				if (getCIDAndCTypeFromTagId($cID, $cType, $id)) {
@@ -706,7 +706,7 @@ class zenario_common_features__organizer__content extends module_base_class {
 				}
 			}
 
-		} elseif (post('trash')) {
+		} elseif ($_POST['trash'] ?? false) {
 			foreach (explodeAndTrim($ids) as $id) {
 				$cID = $cType = false;
 				if (getCIDAndCTypeFromTagId($cID, $cType, $id)) {
@@ -716,7 +716,7 @@ class zenario_common_features__organizer__content extends module_base_class {
 				}
 			}
 
-		} elseif (post('delete')) {
+		} elseif ($_POST['delete'] ?? false) {
 			foreach (explodeAndTrim($ids) as $id) {
 				$cID = $cType = false;
 				if (getCIDAndCTypeFromTagId($cID, $cType, $id)) {
@@ -726,22 +726,22 @@ class zenario_common_features__organizer__content extends module_base_class {
 				}
 			}
 
-		} elseif (post('delete_trashed_items') && checkPriv('_PRIV_DELETE_TRASHED_CONTENT_ITEMS')) {
+		} elseif (($_POST['delete_trashed_items'] ?? false) && checkPriv('_PRIV_DELETE_TRASHED_CONTENT_ITEMS')) {
 			$result = getRows('content_items', array('id', 'type'), array('status' => 'trashed'));
 			while ($content = sqlFetchAssoc($result)) {
 				deleteContentItem($content['id'], $content['type']);
 			}
 
-		} elseif (post('lock')) {
+		} elseif ($_POST['lock'] ?? false) {
 			foreach (explodeAndTrim($ids) as $id) {
 				if (getCIDAndCTypeFromTagId($cID, $cType, $ids)) {
 					if (checkPriv('_PRIV_EDIT_DRAFT', $cID, $cType)) {
-						updateRow('content_items', array('lock_owner_id' => session('admin_userid'), 'locked_datetime' => now()), array('id' => $cID, 'type' => $cType));
+						updateRow('content_items', array('lock_owner_id' => ($_SESSION['admin_userid'] ?? false), 'locked_datetime' => now()), array('id' => $cID, 'type' => $cType));
 					}
 				}
 			}
 		// Set unlock ajax message
-		} elseif (get('unlock')) {
+		} elseif ($_GET['unlock'] ?? false) {
 			foreach (explodeAndTrim($ids) as $id) {
 			if (getCIDAndCTypeFromTagId($cID, $cType, $ids)) {
 					$contentInfo = getRow('content_items', array('admin_version', 'lock_owner_id'), array('id'=>$cID, 'type'=>$cType));
@@ -760,7 +760,7 @@ class zenario_common_features__organizer__content extends module_base_class {
 				}
 			}
 		// Unlock a content item
-		} elseif (post('unlock')) {
+		} elseif ($_POST['unlock'] ?? false) {
 			foreach (explodeAndTrim($ids) as $id) {
 			if (getCIDAndCTypeFromTagId($cID, $cType, $ids)) {
 					// Unlock the item & remove scheduled publication
@@ -772,31 +772,31 @@ class zenario_common_features__organizer__content extends module_base_class {
 				}
 			}
 	
-		} elseif ((post('create_draft') || post('unhide')) && checkPriv('_PRIV_CREATE_REVISION_DRAFT')) {
+		} elseif ((($_POST['create_draft'] ?? false) || ($_POST['unhide'] ?? false)) && checkPriv('_PRIV_CREATE_REVISION_DRAFT')) {
 			foreach (explodeAndTrim($ids) as $id) {
 				if (($content = getRow('content_items', array('id', 'type', 'status', 'admin_version', 'visitor_version'), array('tag_id' => $id)))
 				 && (checkPriv('_PRIV_CREATE_REVISION_DRAFT', $content['id'], $content['type']))) {
 			
-					if (post('create_draft') && isDraft($content['status'])) {
+					if (($_POST['create_draft'] ?? false) && isDraft($content['status'])) {
 						continue;
-					} elseif (post('unhide') && $content['status'] != 'hidden') {
+					} elseif (($_POST['unhide'] ?? false) && $content['status'] != 'hidden') {
 						continue;
 					}
 			
 					$cVersionTo = false;
-					createDraft($content['id'], $content['id'], $content['type'], $cVersionTo, ifNull(post('cVersion'), $content['admin_version']));
+					createDraft($content['id'], $content['id'], $content['type'], $cVersionTo, ifNull($_POST['cVersion'] ?? false, $content['admin_version']));
 			
-					if (get('method_call') == 'handleAdminToolbarAJAX') {
+					if (($_GET['method_call'] ?? false) == 'handleAdminToolbarAJAX') {
 						$_SESSION['last_item'] = $content['type']. '_'. $content['id'];
 				
-						if (request('switch_to_edit_mode')) {
+						if ($_REQUEST['switch_to_edit_mode'] ?? false) {
 							$_SESSION['page_mode'] = $_SESSION['page_toolbar'] = 'edit';
 						}
 					}
 				}
 			}
 
-		} elseif (post('create_draft_by_copying') && checkPriv('_PRIV_CREATE_REVISION_DRAFT')) {
+		} elseif (($_POST['create_draft_by_copying'] ?? false) && checkPriv('_PRIV_CREATE_REVISION_DRAFT')) {
 			$sourceCID = $sourceCType = false;
 			if (getCIDAndCTypeFromTagId($sourceCID, $sourceCType, $ids2)
 			 && ($content = getRow('content_items', array('id', 'type', 'status'), array('tag_id' => $ids)))
@@ -817,7 +817,7 @@ class zenario_common_features__organizer__content extends module_base_class {
 				}
 			}
 
-		} elseif (post('delete_archives') && checkPriv('_PRIV_TRASH_CONTENT_ITEM')) {
+		} elseif (($_POST['delete_archives'] ?? false) && checkPriv('_PRIV_TRASH_CONTENT_ITEM')) {
 			foreach (explodeAndTrim($ids) as $id) {
 				$cID = $cType = false;
 				if ((getCIDAndCTypeFromTagId($cID, $cType, $id))
@@ -831,7 +831,7 @@ class zenario_common_features__organizer__content extends module_base_class {
 	
 	public function organizerPanelDownload($path, $ids, $refinerName, $refinerId) {
 		$cID = $cType = false;
-		if (post('download') && getCIDAndCTypeFromTagId($cID, $cType, $ids)) {
+		if (($_POST['download'] ?? false) && getCIDAndCTypeFromTagId($cID, $cType, $ids)) {
 			//Offer a download for a file being used for a Content Item
 			header('location: '. absCMSDirURL(). 'zenario/file.php?usage=content&cID='. $cID. '&cType='. $cType);
 			exit;

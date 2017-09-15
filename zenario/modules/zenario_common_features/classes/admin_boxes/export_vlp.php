@@ -53,7 +53,7 @@ class zenario_common_features__admin_boxes__export_vlp extends module_base_class
 		list($phrases['present']) = sqlFetchRow($result);
 		$phrases['missing'] = $phrases['total'] - $phrases['present'];
 		$phrases['lang'] = getLanguageName($box['key']['id']);
-		$phrases['def_lang'] = getLanguageName(setting('default_language'));
+		$phrases['def_lang'] = getLanguageName(cms_core::$defaultLang);
 		
 		
 		$box['tabs']['export']['fields']['desc']['snippet']['html'] =
@@ -65,7 +65,7 @@ class zenario_common_features__admin_boxes__export_vlp extends module_base_class
 		$box['tabs']['export']['fields']['option']['values']['all'] =
 			adminPhrase('Include all possible phrases ([[total]])', $phrases);
 		
-		if ($box['key']['id'] != setting('default_language')) {
+		if ($box['key']['id'] != cms_core::$defaultLang) {
 			$box['tabs']['export']['fields']['desc']['snippet']['html'] .=
 				' '.
 				adminPhrase('"[[def_lang]]" will be used as a reference.',$phrases);
@@ -149,7 +149,7 @@ class zenario_common_features__admin_boxes__export_vlp extends module_base_class
 			LEFT JOIN ". DB_NAME_PREFIX. "visitor_phrases AS reference
 			   ON reference.code = codes.code
 			  AND reference.module_class_name = codes.module_class_name
-			  AND reference.language_id = '". sqlEscape(setting('default_language')). "'
+			  AND reference.language_id = '". sqlEscape(cms_core::$defaultLang). "'
 			  AND reference.code != '__LANGUAGE_LOCAL_NAME__'";
 		
 		if ($values['export/option'] == 'missing') {
@@ -253,7 +253,7 @@ class zenario_common_features__admin_boxes__export_vlp extends module_base_class
 				exit;
 		}
 		
-		$mimeType = documentMimeType($extension);
+		$mimeType = Ze\File::mimeType($extension);
 		
 		header('Content-Type: '. $mimeType. '; charset=UTF-8');
 		header('Content-Disposition: attachment;filename="'. $languageId. '.'. $extension. '"');

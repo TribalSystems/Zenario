@@ -51,7 +51,24 @@ $(document)
 	.bind('cbox_open', => { zenario.disableScrolling('colorbox'); })
 	.bind('cbox_closed', => { zenario.enableScrolling('colorbox'); })
 	
-	//Add tooltips and other jQuery elements to the page after it has loaded
 	.ready(function() {
+		//Add tooltips and other jQuery elements to the page after it has loaded
 		zenario.addJQueryElements();
+		
+		var	baseURL = URLBasePath + 'zenario/',
+			baseURLlen = baseURL.length;
+		
+		$('script').each(function(i, el) {
+			
+			var src = el.src;
+			
+			if (src && src.substr(0, baseURLlen) == baseURL) {
+				zenario.jsLibs[
+					src.substr(baseURLlen)
+						.replace(/(\?|\&)(v=[^\&]+|no_cache=1)\&/g, '$1')
+						.replace(/(\?|\&)(v=[^\&]+|no_cache=1)\&/g, '$1')
+						.replace(/(\?|\&)(v=[^\&]+|no_cache=1)$/g, '')
+				] = true;
+			}
+		});
 	});

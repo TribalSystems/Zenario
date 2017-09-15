@@ -161,7 +161,13 @@ class zenario_api {
 	public final function getCIDAndCTypeFromSetting(&$cID, &$cType, $setting, $getLanguageEquivalent = true) {
 		if (getCIDAndCTypeFromTagId($cID, $cType, $this->setting($setting))) {
 			if ($getLanguageEquivalent) {
-				langEquivalentItem($cID, $cType);
+				$inId = $cID;
+				$inType = $cType;
+				if (langEquivalentItem($cID, $cType, false, true)) {
+					return true;
+				}
+				$cID = $inId;
+				$cType = $inType;
 			}
 			
 			return (checkPriv() || getPublishedVersion($cID, $cType));
@@ -460,11 +466,11 @@ class zenario_api {
 	}
 		
 	public final function phrase($text, $replace = array()) {
-		return phrase($text, $replace, $this->moduleClassNameForPhrases, cms_core::$langId);
+		return phrase($text, $replace, $this->moduleClassNameForPhrases, cms_core::$visLang);
 	}
 	
 	public final function nphrase($text, $pluralText = false, $n = 1, $replace = array()) {
-		return nphrase($text, $pluralText, $n, $replace, $this->moduleClassNameForPhrases, cms_core::$langId);
+		return nphrase($text, $pluralText, $n, $replace, $this->moduleClassNameForPhrases, cms_core::$visLang);
 	}
 	
 	public final function refreshPluginSlotAnchor($requests = '', $scrollToTopOfSlot = true, $fadeOutAndIn = true) {
@@ -491,7 +497,7 @@ class zenario_api {
 	public final function remember($name, $value = false, $htmlId = false, $type = 'hidden') {
 		
 		if ($value === false) {
-			$value = request($name);
+			$value = $_REQUEST[$name] ?? false;
 		}
 		
 		if ($htmlId === true) {
@@ -602,14 +608,6 @@ class zenario_api {
 
 	protected final function showInMenuMode($shownInMenuMode = true) {
 		$this->zAPIShowInMenuMode($shownInMenuMode);
-	}
-
-	protected final function showInEditMode($shownInEditMode = true) {
-		$this->zAPIShowInEditMode($shownInEditMode);
-	}
-	//Old name, left in for backwards compatability reasons
-	protected final function showReusablePluginInEditMode($shownInEditMode = true) {
-		$this->zAPIShowInEditMode($shownInEditMode);
 	}
 	
 	
@@ -811,8 +809,8 @@ class zenario_api {
 	protected function getImageHtmlSnippet($image_id, &$snippet_field, $widthLimit = false, $heightLimit = false){
 		if($image_id) {
 			$width = $height = $url = $widthR = $heightR = $urlR = false;
-			imageLink($width, $height, $url, $image_id, $widthLimit, $heightLimit, $mode = 'resize', $offset = 0, $retina = false, $privacy = 'auto', $useCacheDir = false);
-			imageLink($widthR, $heightR, $urlR, $image_id, $widthLimit = 700, $heightLimit = 200, $mode = 'resize', $offset = 0, $retina = true, $privacy = 'auto', $useCacheDir = false);
+			Ze\File::imageLink($width, $height, $url, $image_id, $widthLimit, $heightLimit, $mode = 'resize', $offset = 0, $retina = false, $privacy = 'auto', $useCacheDir = false);
+			Ze\File::imageLink($widthR, $heightR, $urlR, $image_id, $widthLimit = 700, $heightLimit = 200, $mode = 'resize', $offset = 0, $retina = true, $privacy = 'auto', $useCacheDir = false);
 	
 			$snippet_field = '
 			<p style="text-align: center;">
@@ -926,15 +924,6 @@ class zenario_api {
 	}
 	protected final function zAPIShowInMenuMode($shownInMenuMode) {
 		$this->zAPIShownInMenuMode = $shownInMenuMode;
-	}
-	
-	//Mark this Library plugin as shown in Edit Mode
-	private $zAPIShownInEditMode;
-	public final function shownInEditMode() {
-		return $this->zAPIShownInEditMode;
-	}
-	protected final function zAPIShowInEditMode($shownInEditMode) {
-		$this->zAPIShownInEditMode = $shownInEditMode;
 	}
 	
 	//Mark this Plugin as being editing
@@ -1141,9 +1130,39 @@ class zenario_api {
 		$isLayoutPreview = cms_core::$cID === -1;
 		$isShowSlot = $showPlaceholderMethod == 'showSlot';
 		
+		$slot = &cms_core::$slotContents[$this->slotNameNestId];
+		
 		//Include the controls if this is admin mode, and if this is not a preview of a layout
 		if ($checkPriv = $includeAdminControlsIfInAdminMode && !$isLayoutPreview && checkPriv()) {
 			$this->startIncludeAdminControls();
+		}
+		
+		
+		//Here
+		//Experiementing with showing a layout preview when you click on the layout tab
+		//N.b. I'd need to do something like this on the AJAX reload too...
+		//I'd also need to catch the case where a plugin got overridden, and show the layout preview from the module that was overridden..?
+		
+		if ($checkPriv
+		 && !$isLayoutPreview
+		 && $this->slotLevel == 2
+		 && checkPriv('_PRIV_MANAGE_TEMPLATE_SLOT')) {
+			
+			echo '<div id="'. $this->containerId. '-layout_preview" class="zenario_slot_layout_preview zenario_slot '. $this->cssClass. '"';
+			
+			if ($this->shouldShowLayoutPreview()
+			 && !$this->eggId
+			 && !empty($slot['module_id'])) {
+			
+				$this->cssClass .= ' zenario_slot_with_layout_preview';
+				
+				echo '>';
+					$this->showLayoutPreview();
+				echo '</div>';
+			
+			} else {
+				echo ' style="display: none;"></div>';
+			}
 		}
 		
 		echo $this->startInner();
@@ -1154,8 +1173,8 @@ class zenario_api {
 			} else {
 				//Check whether the plugin's init function returned true
 				$status = false;
-				if (isset(cms_core::$slotContents[$this->slotNameNestId]['init'])) {
-					$status = cms_core::$slotContents[$this->slotNameNestId]['init'];
+				if (isset($slot['init'])) {
+					$status = $slot['init'];
 				}
 				
 				//In admin mode, show an error if the plugin could not run due to user permissions
@@ -1185,7 +1204,7 @@ class zenario_api {
 						$edition::postSlot($this->slotName, $showPlaceholderMethod);
 					}
 				
-				} elseif ($checkPriv && empty(cms_core::$slotContents[$this->slotNameNestId]['module_id'])) {
+				} elseif ($checkPriv && empty($slot['module_id'])) {
 					echo adminPhrase('[Empty Slot]');
 				}
 			}
@@ -1377,19 +1396,19 @@ class zenario_api {
 								unset($_POST[$attributes['name']. '__3']);
 							}
 						
-						//For file uploads - if there has been a submission, move it to the cache/uploads directory and
+						//For file uploads - if there has been a submission, move it to the private/uploads directory and
 						//place the path in the $_POST variable.
 						} elseif ($attributes['type'] == 'file' && isset($_POST['cID'])) {
 							if (!empty($_FILES[$attributes['name']]) && is_uploaded_file($_FILES[$attributes['name']]['tmp_name'])) {
-								if (cleanDownloads()) {
+								if (cleanCacheDir()) {
 									$randomDir = createRandomDir(30, 'uploads');
-									$newName = $randomDir. safeFileName($_FILES[$attributes['name']]['name'], true);
+									$newName = $randomDir. Ze\File::safeName($_FILES[$attributes['name']]['name'], true);
 									
 									//Change the extension
 									$newName = $newName. '.upload';
 									
 									if (move_uploaded_file($_FILES[$attributes['name']]['tmp_name'], CMS_ROOT. $newName)) {
-										chmod(CMS_ROOT. $newName, 0666);
+										@chmod(CMS_ROOT. $newName, 0666);
 										$_POST[$attributes['name']] =
 										$_REQUEST[$attributes['name']] = $newName;
 									}
@@ -1399,7 +1418,7 @@ class zenario_api {
 							//Stop the user trying to trick the CMS into submitting a different file in a different location
 							if (!empty($_POST[$attributes['name']])) {
 								if (strpos($_POST[$attributes['name']], '..') !== false
-								 || !preg_match('@^cache/uploads/[\w\-]+/[\w\.-]+\.upload$@', $_POST[$attributes['name']])) {
+								 || !preg_match('@^private/uploads/[\w\-]+/[\w\.-]+\.upload$@', $_POST[$attributes['name']])) {
 									unset($_POST[$attributes['name']]);
 								}
 							}
@@ -1689,7 +1708,7 @@ class zenario_api {
 						if (checkPriv() && !$this->frameworkOutputted) {
 							switch ($type) {
 								case CMS_FRAMEWORK_MERGE:
-									$this->frameworkOutputted = (bool) trim(arrayKey($mergeFieldsRow, $thing));
+									$this->frameworkOutputted = (bool) trim($mergeFieldsRow[$thing] ?? false);
 									break;
 							
 								case CMS_FRAMEWORK_INCLUDE:
@@ -1756,8 +1775,8 @@ class zenario_api {
 						//Display some text from another Plugin
 						} elseif ($type == CMS_FRAMEWORK_INCLUDE) {
 						
-							$module = ifNull(arrayKey($thing, 'source_module'), arrayKey($thing, 'module'), arrayKey($thing, 'plugin'));
-							$method = ifNull(arrayKey($thing, 'source_method'), arrayKey($thing, 'method'));
+							$module = ifNull($thing['source_module'] ?? false, ($thing['module'] ?? false), ($thing['plugin'] ?? false));
+							$method = ifNull($thing['source_method'] ?? false, ($thing['method'] ?? false));
 						
 							if ($module && $method && inc($module)) {
 								echo call_user_func(array($module, $method), $mergeFieldsRow, $thing);
@@ -1771,8 +1790,8 @@ class zenario_api {
 							//Get the attriubtes
 							$attributes = $this->fieldInfo[$section][$thing];
 							$value = null;
-							$type = arrayKey($attributes, 'type');
-							$readOnly = engToBooleanArray($attributes, 'readonly');
+							$type = $attributes['type'] ?? false;
+							$readOnly = engToBoolean($attributes['readonly'] ?? false);
 						
 							
 							//Check for a list of values, if one has been set
@@ -2046,9 +2065,9 @@ class zenario_api {
 	}
 	
 	protected final function checkRequiredField(&$field) {
-		$name = arrayKey($field, 'name');
-		if (engToBooleanArray($field, 'required') && !post($name) ) {
-			if (arrayKey($field, 'type') == 'checkbox'){
+		$name = $field['name'] ?? false;
+		if (engToBoolean($field['required'] ?? false) && !($_POST[$name] ?? false) ) {
+			if (($field['type'] ?? false) == 'checkbox'){
 				
 				$sub = $name . '__';
 				$len = strlen($sub);

@@ -297,7 +297,7 @@ class zenario_location_ratings extends zenario_location_manager {
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
 		switch ($path) {
 			case 'zenario__locations/nav/accreditors/panel':
-				switch (post('action')){
+				switch ($_POST['action'] ?? false){
 					case 'delete_accreditor':
 						$IDs = explode(',',$ids);
 						foreach ($IDs as $ID){
@@ -308,7 +308,7 @@ class zenario_location_ratings extends zenario_location_manager {
 						break;
 				}
 			case 'zenario__locations/nav/accreditors/panel/hidden_nav/accreditor_scores/panel':
-				switch (post('action')){
+				switch ($_POST['action'] ?? false){
 					case 'delete_accreditor_score':
 						$IDs = explode(',',$ids);
 						foreach ($IDs as $ID){
@@ -498,7 +498,7 @@ class zenario_location_ratings extends zenario_location_manager {
 				
 				break;
 			case "zenario_location_ratings__accreditor_rating":
-				$box['key']['accreditor_id'] = get("refiner__zenario_location_ratings__accreditor");
+				$box['key']['accreditor_id'] = $_GET["refiner__zenario_location_ratings__accreditor"] ?? false;
 			
 				if (issetArrayKey($box,'key','id')) {      
 					$accreditorScore = self::getAccreditorScore($box['key']['id']);
@@ -541,7 +541,7 @@ class zenario_location_ratings extends zenario_location_manager {
 					$sql = "SELECT id
 							FROM " . DB_NAME_PREFIX . ZENARIO_LOCATION_RATINGS_PREFIX . "accreditor_scores
 							WHERE score = '" . sqlEscape($values['accreditor_rating/rating']) . "'
-								AND accreditor_id = " . (int) arrayKey($box,"key","accreditor_id");
+								AND accreditor_id = " . (int) ($box["key"]["accreditor_id"] ?? false);
 							
 					if (issetArrayKey($box,"key","id")) {
 						$sql .= " AND id <> " . (int) $box['key']['id'];
@@ -561,7 +561,7 @@ class zenario_location_ratings extends zenario_location_manager {
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		switch ($path) {
 			case "zenario_location_manager__location":
-				if (engToBooleanArray($box, 'tabs', 'zenario_location_ratings__accreditation', 'edit_mode', 'on')) {
+				if (engToBoolean($box['tabs']['zenario_location_ratings__accreditation']['edit_mode']['on'] ?? false)) {
 					if ($accreditors = $this->getAccreditors()) {
 						$newAccreditationScores = array();
 					
@@ -580,7 +580,7 @@ class zenario_location_ratings extends zenario_location_manager {
 			
 				break;
 			case "zenario_location_manager__locations_multiple_edit":
-				if (engToBooleanArray($box, 'tabs', 'zenario_location_ratings__accreditation', 'edit_mode', 'on')) {
+				if (engToBoolean($box['tabs']['zenario_location_ratings__accreditation']['edit_mode']['on'] ?? false)) {
 					if ($accreditors = $this->getAccreditors()) {
 						$newAccreditationScores = array();
 
@@ -616,7 +616,7 @@ class zenario_location_ratings extends zenario_location_manager {
 				if (issetArrayKey($box,"key","id")) {
 					$oldAccreditorDetails = $this->getAccreditorDetails($box['key']['id']);
 
-					updateRow(ZENARIO_LOCATION_RATINGS_PREFIX . "accreditors",array("name" => arrayKey($values,'accreditor/name'),"score_type" => arrayKey($values,'accreditor/score_type')),array("id" => $box['key']['id']));	
+					updateRow(ZENARIO_LOCATION_RATINGS_PREFIX . "accreditors",array("name" => ($values['accreditor/name'] ?? false),"score_type" => ($values['accreditor/score_type'] ?? false)),array("id" => $box['key']['id']));	
 					
 					$newAccreditorDetails = $this->getAccreditorDetails($box['key']['id']);
 					
@@ -624,16 +624,16 @@ class zenario_location_ratings extends zenario_location_manager {
 						$this->prepopulateAccreditorScores($box['key']['id']);
 					}
 				} else {
-					$accreditorId = insertRow(ZENARIO_LOCATION_RATINGS_PREFIX . "accreditors",array("name" => arrayKey($values,'accreditor/name'),"score_type" => arrayKey($values,'accreditor/score_type')));	
+					$accreditorId = insertRow(ZENARIO_LOCATION_RATINGS_PREFIX . "accreditors",array("name" => ($values['accreditor/name'] ?? false),"score_type" => ($values['accreditor/score_type'] ?? false)));	
 					$this->prepopulateAccreditorScores($accreditorId);
 				}
 				
 				break;
 			case "zenario_location_ratings__accreditor_rating":
 				if (issetArrayKey($box,"key","id")) {
-					updateRow(ZENARIO_LOCATION_RATINGS_PREFIX . "accreditor_scores",array("score" => arrayKey($values,'accreditor_rating/rating'),"accreditor_id" => arrayKey($box,"key","accreditor_id")),array("id" => $box['key']['id'],"accreditor_id" => $box['key']['accreditor_id']));	
+					updateRow(ZENARIO_LOCATION_RATINGS_PREFIX . "accreditor_scores",array("score" => ($values['accreditor_rating/rating'] ?? false),"accreditor_id" => ($box["key"]["accreditor_id"] ?? false)),array("id" => $box['key']['id'],"accreditor_id" => $box['key']['accreditor_id']));	
 				} else {
-					insertRow(ZENARIO_LOCATION_RATINGS_PREFIX . "accreditor_scores",array("score" => arrayKey($values,'accreditor_rating/rating'),"accreditor_id" => arrayKey($box,"key","accreditor_id")));	
+					insertRow(ZENARIO_LOCATION_RATINGS_PREFIX . "accreditor_scores",array("score" => ($values['accreditor_rating/rating'] ?? false),"accreditor_id" => ($box["key"]["accreditor_id"] ?? false)));	
 				}
 				
 				break;

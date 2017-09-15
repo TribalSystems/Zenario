@@ -26,7 +26,7 @@ system_requirements:
                     snippet:
                         html: Web Server
                     visible_if: zenarioAW.togglePressed(1)
-                show_server:
+                show_server: &show_section
                     grouping: sub_table
                     type: toggle
                     redraw_onchange: true
@@ -44,12 +44,7 @@ system_requirements:
                     snippet:
                         html: PHP
                     visible_if: zenarioAW.togglePressed(1)
-                show_php:
-                    grouping: sub_table
-                    type: toggle
-                    redraw_onchange: true
-                    same_row: true
-                    visible_if: "zenarioAW.togglePressed(1, tuixObject)"
+                show_php: *show_section
                 php_1:
                     grouping: sub_table
                     full_width: true
@@ -76,12 +71,7 @@ system_requirements:
                     snippet:
                         html: MySQL
                     visible_if: zenarioAW.togglePressed(1)
-                show_mysql:
-                    grouping: sub_table
-                    type: toggle
-                    redraw_onchange: true
-                    same_row: true
-                    visible_if: "zenarioAW.togglePressed(1, tuixObject)"
+                show_mysql: *show_section
                 mysql_1:
                     grouping: sub_table
                     full_width: true
@@ -100,12 +90,7 @@ system_requirements:
                     snippet:
                         html: Unicode Support
                     visible_if: zenarioAW.togglePressed(1)
-                show_mb:
-                    grouping: sub_table
-                    type: toggle
-                    redraw_onchange: true
-                    same_row: true
-                    visible_if: "zenarioAW.togglePressed(1, tuixObject)"
+                show_mb: *show_section
                 mb_1:
                     grouping: sub_table
                     full_width: true
@@ -124,12 +109,7 @@ system_requirements:
                     snippet:
                         html: Image Manipulation
                     visible_if: zenarioAW.togglePressed(1)
-                show_gd:
-                    grouping: sub_table
-                    type: toggle
-                    redraw_onchange: true
-                    same_row: true
-                    visible_if: "zenarioAW.togglePressed(1, tuixObject)"
+                show_gd: *show_section
                 gd_1:
                     grouping: sub_table
                     full_width: true
@@ -153,6 +133,32 @@ system_requirements:
                     full_width: true
                     snippet:
                         html: PNG Support enabled in PHP
+                    visible_if: zenarioAW.togglePressed()
+                optional:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_level
+                    snippet:
+                        html: Optional requirements
+                    visible_if: zenarioAW.togglePressed(1)
+                show_optional: *show_section
+                optional_curl:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_field
+                    snippet:
+                        html: |
+                            curl extension enabled in PHP
+                            <br/><small>Needed for translating pages using Google Translate</small>
+                    visible_if: zenarioAW.togglePressed()
+                optional_zip:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_field
+                    snippet:
+                        html: |
+                            zip extension enabled in PHP
+                            <br/><small>Needed for creating document extracts</small>
                     visible_if: zenarioAW.togglePressed()
                 
                 # We need to check whether mod-rewrite is working.

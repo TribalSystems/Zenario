@@ -29,8 +29,7 @@
 
 #zenario_at_logout_link a,
 #zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_alias a,
-#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_title a,
-#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_toolbar_warning span.zenario_icon {
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_title a {
 	background-image:url('../admin/images/sprites/org-icons-v5.png');
 }
 
@@ -83,35 +82,13 @@
 	box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.3); 
 }
 
-#zenario_at_organizer_link a {
-	display:block;
-	width: 50px;
-	height:41px;
-	position:absolute;
-	text-align:center;
-	text-transform:uppercase;
-	line-height:36px;
-	font-size:0;
-	font-weight:bold;
-	color: transparent; 
-	text-shadow:0 1px 1px #000;
-	background:url('../admin/images/zenario-insignia.png') #000 no-repeat center;
-}
-
-#zenario_at_organizer_link a:hover {
-	background:url('../admin/images/zenario-insignia.png') #545454 no-repeat center;
-	-webkit-transition: background-color 0.3s ease-out;
-	-moz-transition: background-color 0.3s ease-out;
-	-o-transition: background-color 0.3s ease-out;
-	transition: background-color 0.3s ease-out;
-}
-
 #zenario_at_logout_link a {
 	display:block;
 	width:38px;
 	height:41px;
 	background-position: -753px -6px;
 	position:absolute;
+	z-index:103;
 	right:15px;
 	border-left:1px solid #B3B3B3;
 	border-right:1px solid #B3B3B3;
@@ -140,8 +117,11 @@
 #zenario_at #zenario_at_lower_section,
 #zenario_at #zenario_at_toolbars .zenario_at_status_button {
 	margin: 0 auto;
-	max-width: 960px;
-	min-width: 760px;
+	max-width: 980px;
+}
+
+.zenario_at_content.zenario_at_toolbar {
+	max-width:930px !important;
 }
 
 #zenario_at .zenario_at_content:before, 
@@ -195,6 +175,13 @@
 	color:#C42754;
 }
 
+#zenario_at .zenario_at_content.zenario_at_toolbar .zenario_at_extranet_user ul li.zenario_at_button_with_children a {
+	max-width: 295px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 @keyframes blink {  
 	0% { 	background:#FE8831;}
 	14% { 	background:#FE9C34;}
@@ -238,11 +225,22 @@
 	animation: blink 2s ease-in-out 2s infinite;
 }
 
+#zenario_at #zenario_at_toolbars .zenario_at_status_button .zenario_delete_draft a {	
+	margin-top:7px;
+	font-size:11px;
+	font-weight:normal;
+	color:#D90000;
+	line-height:25px;
+	padding:0 15px;
+	display:inline-block;
+	cursor:pointer;
+}
+
 #zenario_at .zenario_at_tabs_container {
 	background:#333333;
 	font-size:13px;
 	height:41px;
-	padding-left:130px;
+	padding-left:150px;
 }
 
 #zenario_at .zenario_at_toolbar_container {
@@ -320,30 +318,39 @@
 #zenario_at .zenario_at_tabs {
 	height:37px;
 	padding-top:4px;
+	padding-left:140px;
+	position:relative;
 }
 
 #zenario_at .zenario_at_tabs .zenario_toolbar,
-#zenario_at .zenario_at_tabs .zenario_toolbar a {
-	color:#E2E2E2;
-	text-shadow:0 1px 1px #000;
+#zenario_at .zenario_at_tabs .zenario_toolbar a,
+#zenario_at .zenario_at_tabs .zenario_tabOrTabsChildSelected .zenario_at_menu_tab_primary > div > .zenario_middle_inner,
+#zenario_at .zenario_at_tabs .zenario_tabOrTabsChildSelected .zenario_at_menu_tab_primary .zenario_at_menu_tab_secondary .zenario_middle_inner {
+	color:#DCDCDC;
 }
 
 #zenario_at .zenario_at_tabs .zenario_toolbar:hover,
-#zenario_at .zenario_at_tabs .zenario_toolbar:hover a {
-	color:#43d4f4;
+#zenario_at .zenario_at_tabs .zenario_toolbar:hover a,
+#zenario_at .zenario_at_tabs .zenario_tabOrTabsChildSelected .zenario_at_menu_tab_primary > div > .zenario_middle_inner:hover,
+#zenario_at .zenario_at_tabs .zenario_tabOrTabsChildSelected .zenario_at_menu_tab_primary .zenario_at_menu_tab_secondary .zenario_middle_inner:hover {
+	color:#6E6E6E;
 }
 
 #zenario_at .zenario_at_tabs .zenario_toolbar_on,
 #zenario_at .zenario_at_tabs .zenario_toolbar_on a,
 #zenario_at .zenario_at_tabs .zenario_toolbar_on:hover,
-#zenario_at .zenario_at_tabs .zenario_toolbar_on:hover a {
+#zenario_at .zenario_at_tabs .zenario_toolbar_on:hover a,
+#zenario_at .zenario_at_tabs .zenario_tabOrTabsChildSelected .zenario_toolbar_on.zenario_at_menu_tab_primary > div > .zenario_middle_inner,
+#zenario_at .zenario_at_tabs .zenario_tabOrTabsChildSelected .zenario_toolbar_on.zenario_at_menu_tab_primary > div > .zenario_middle_inner:hover,
+#zenario_at .zenario_at_tabs .zenario_tabOrTabsChildSelected .zenario_at_menu_tab_primary .zenario_toolbar_on.zenario_at_menu_tab_secondary .zenario_middle_inner,
+#zenario_at .zenario_at_tabs .zenario_tabOrTabsChildSelected .zenario_at_menu_tab_primary .zenario_toolbar_on.zenario_at_menu_tab_secondary .zenario_middle_inner:hover {
 	color:#000;
-	text-shadow:none;
 }
 
 #zenario_at .zenario_at_tabs .zenario_toolbar {
 	float:left;
 	margin-right:4px;
+	overflow:hidden;
 	cursor:pointer;
 	-webkit-border-top-left-radius: 2px;
 	-webkit-border-top-right-radius: 2px;
@@ -353,13 +360,29 @@
 	border-top-right-radius: 2px;
 }
 
-body.zenario_pageMode_menu #zenario_at .zenario_at_tabs .zenario_at_menu_tab {
+/*body.zenario_pageMode_menu #zenario_at .zenario_at_tabs .zenario_at_menu_tab {
 	background:#666666;
+}*/
+
+#zenario_at .zenario_at_tabs .zenario_toolbar,
+#zenario_at .zenario_at_tabs .zenario_middle_inner {
+	background-color:#676767;
+	-webkit-transition: background-color 0.3s ease-out;
+	-moz-transition: background-color 0.3s ease-out;
+	-o-transition: background-color 0.3s ease-out;
+	transition: background-color 0.3s ease-out;
+	border-top-right-radius: 2px;
+	border-top-left-radius: 2px;
 }
 
-#zenario_at .zenario_at_tabs .zenario_toolbar_on,
-body.zenario_pageMode_menu #zenario_at .zenario_at_tabs .zenario_toolbar_on {
-	background:#F6F6F6;
+
+#zenario_at .zenario_at_tabs .zenario_middle_inner:hover {
+	background-color:#B9B9B9;
+}
+
+#zenario_at .zenario_at_tabs .zenario_toolbar_on > div > .zenario_middle_inner,
+#zenario_at .zenario_at_tabs .zenario_toolbar_on > div > .zenario_middle_inner:hover {
+	background-color:#F6F6F6;
 }
 
 #zenario_at .zenario_at_status_icons_container .zenario_at_status_icons span {
@@ -500,23 +523,173 @@ body.zenario_pageMode_menu #zenario_at .zenario_at_tabs .zenario_toolbar_on {
 	cursor: pointer;
 }
 
-#zenario_at .zenario_at_tabs .zenario_toolbar .zenario_left,
-#zenario_at .zenario_at_tabs .zenario_toolbar .zenario_middle,
-#zenario_at .zenario_at_tabs .zenario_toolbar .zenario_right {
-	height:24px;
+#zenario_at .zenario_at_tabs .zenario_toolbar .zenario_middle .zenario_middle_inner {
+	height:27px;
+	float:left;
+	padding:10px 10px 0;
+}
+
+#zenario_at .zenario_at_tabs .zenario_tabOrTabsChildSelected .zenario_at_menu_tab_primary .zenario_at_menu_tab_secondary {
+	background-image:url('../admin/images/toolbar-border-pale-grey.png');
+	background-repeat:no-repeat;
+	background-position:0 0;
+	overflow:hidden;
+	padding-left:1px;
+}
+
+#zenario_at .zenario_at_tabs .zenario_tabOrTabsChildSelected .zenario_at_menu_tab_primary .zenario_at_menu_tab_secondary:hover {
+	background-image:url('../admin/images/toolbar-border-grey.png');
+	background-repeat:no-repeat;
+	background-position:0 0;
+}
+
+/*#zenario_at .zenario_at_tabs .zenario_tabOrTabsChildSelected .zenario_at_menu_tab_primary .zenario_at_menu_tab_secondary.zenario_toolbar_on,
+#zenario_at .zenario_at_tabs .zenario_tabOrTabsChildSelected .zenario_at_menu_tab_primary .zenario_at_menu_tab_secondary.zenario_toolbar_on:hover {
+	background-image:url('../admin/images/toolbar-border-black.png');
+	background-repeat:no-repeat;
+	background-position:0 0;
+}*/
+
+#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_at_tab_with_children .zenario_middle .zenario_middle_inner {
+	display:inline-block;
 	float:left;
 }
 
-#zenario_at .zenario_at_tabs .zenario_toolbar .zenario_middle {
-	padding:13px 15px 0;
+#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_at_tab_with_children .zenario_middle .zenario_toolbar_tab_children {
+	display:inline-block;
+	float:right;
 }
 
-#zenario_at .zenario_at_tabs .zenario_at_menu_tab_secondary .zenario_middle {
+#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_at_tab_with_children .zenario_middle .zenario_toolbar_tab_children .zenario_toolbar_tab_child {
+	display:inline-block;
+	float:left;
+}
+
+#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_at_tab_with_children .zenario_middle .zenario_toolbar_tab_children .zenario_toolbar_tab_child .zenario_middle .zenario_middle_inner {
+	position:relative;
+	margin-top:-10px;
+}
+
+#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_at_tab_with_children .zenario_middle .zenario_middle_child .zenario_middle_inner {
+	display:inline-block;
+}
+
+#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_toolbar__preview .zenario_middle .zenario_middle_inner,
+#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_toolbar__create .zenario_middle .zenario_middle_inner,
+#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_toolbar__edit .zenario_middle .zenario_middle_inner,
+#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_toolbar__item .zenario_middle .zenario_middle_inner,
+#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_at_menu_tab .zenario_middle .zenario_middle_inner,
+#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_toolbar__layout .zenario_middle .zenario_middle_inner,
+#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_at_tab_with_children .zenario_middle .zenario_middle_child .zenario_middle_inner {
+	padding-left:35px;
+	background-repeat:no-repeat;
+	background-position:10px center;
+	background-size:auto 16px;
+}
+
+#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_at_tab_with_children .zenario_middle .zenario_middle_child .zenario_middle_inner {
+	padding-left:28px;
+	background-position:7px center;
+}
+
+#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_toolbar__create .zenario_middle .zenario_middle_inner {
+	background-size:auto 19px;
+}
+
+#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_toolbar__preview .zenario_middle .zenario_middle_inner {
+	background-image:url('../admin/images/icon-navigate-off-state.svg');
+}
+
+#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_toolbar__preview .zenario_middle .zenario_middle_inner:hover {
+	background-image:url('../admin/images/icon-navigate-hover-state.svg');
+}
+
+#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_toolbar__preview.zenario_toolbar_on .zenario_middle .zenario_middle_inner,
+#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_toolbar__preview.zenario_toolbar_on .zenario_middle .zenario_middle_inner:hover {
+	background-image:url('../admin/images/icon-navigate-on-state.svg');
+}
+
+#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_toolbar__create .zenario_middle .zenario_middle_inner,
+#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_toolbar__create .zenario_middle .zenario_middle_inner:hover {
+	background-image:url('../admin/images/icon-new-off-and-hover-state.svg');
+}
+
+#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_toolbar__create.zenario_toolbar_on .zenario_middle .zenario_middle_inner,
+#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_toolbar__create.zenario_toolbar_on .zenario_middle .zenario_middle_inner:hover {
+	background-image:url('../admin/images/icon-new-on-state.svg');
+}
+
+#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_toolbar__edit .zenario_middle .zenario_middle_inner {
+	background-image:url('../admin/images/icon-edit-off-state.svg');
+}
+
+#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_toolbar__edit .zenario_middle .zenario_middle_inner:hover {
+	background-image:url('../admin/images/icon-edit-hover-state.svg');
+}
+
+#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_toolbar__edit.zenario_toolbar_on .zenario_middle .zenario_middle_inner,
+#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_toolbar__edit.zenario_toolbar_on .zenario_middle .zenario_middle_inner:hover {
+	background-image:url('../admin/images/icon-edit-on-state.svg');
+}
+
+#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_toolbar__item .zenario_middle .zenario_middle_inner,
+#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_toolbar__item .zenario_middle .zenario_middle_inner:hover {
+	background-image:url('../admin/images/icon-slots-off-and-hover-state.svg');
+}
+
+#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_toolbar__item.zenario_toolbar_on .zenario_middle .zenario_middle_inner,
+#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_toolbar__item.zenario_toolbar_on .zenario_middle .zenario_middle_inner:hover {
+	background-image:url('../admin/images/icon-slots-on-state.svg');
+}
+
+#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_at_menu_tab .zenario_middle .zenario_middle_inner,
+#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_at_menu_tab .zenario_middle .zenario_middle_inner:hover {
+	background-image:url('../admin/images/icon-menu-off-and-hover-state.svg');
+}
+
+#zenario_at .zenario_at_tabs .zenario_tabOrTabsChildSelected .zenario_toolbar.zenario_at_menu_tab.zenario_at_menu_tab_primary .zenario_middle .zenario_middle_inner,
+#zenario_at .zenario_at_tabs .zenario_tabOrTabsChildSelected .zenario_toolbar.zenario_at_menu_tab.zenario_at_menu_tab_primary.zenario_toolbar_on .zenario_middle .zenario_middle_inner,
+#zenario_at .zenario_at_tabs .zenario_tabOrTabsChildSelected .zenario_toolbar.zenario_at_menu_tab.zenario_at_menu_tab_primary.zenario_toolbar_on .zenario_middle .zenario_middle_inner:hover {
+	background-image:url('../admin/images/icon-menu-on-state.svg');
+}
+
+#zenario_at .zenario_at_tabs .zenario_tabOrTabsChildSelected .zenario_toolbar.zenario_at_menu_tab.zenario_at_menu_tab_primary .zenario_middle .zenario_at_menu_tab_secondary .zenario_middle_child .zenario_middle_inner,
+#zenario_at .zenario_at_tabs .zenario_tabOrTabsChildSelected .zenario_toolbar.zenario_at_menu_tab.zenario_at_menu_tab_primary .zenario_middle .zenario_at_menu_tab_secondary .zenario_middle_child .zenario_middle_inner:hover  {
+	background-image:url('../admin/images/icon-menu-child-2-state.svg');
+}
+
+#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_toolbar__layout .zenario_middle .zenario_middle_inner,
+#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_toolbar__layout .zenario_middle .zenario_middle_inner:hover {
+	background-image:url('../admin/images/icon-layout-off-and-hover-state.svg');
+}
+
+#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_toolbar__layout.zenario_toolbar_on .zenario_middle .zenario_middle_inner,
+#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_toolbar__layout.zenario_toolbar_on .zenario_middle .zenario_middle_inner:hover {
+	background-image:url('../admin/images/icon-layout-on-state.svg');
+}
+
+/*#zenario_at .zenario_at_tabs .zenario_at_menu_tab_secondary .zenario_middle {
 	padding:5px 10px 0;
 }
 
 #zenario_at .zenario_at_tabs .zenario_at_menu_tab_secondary {
-	margin-top:8px;
+	margin-top:5px;
+}*/
+
+#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_toolbar__preview,
+#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_toolbar__menu1 {
+	position:relative;
+}
+
+#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_toolbar__preview del.zenario_link_status,
+#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_toolbar__menu1 del.zenario_link_status {
+	top:2px;
+	left:32px;
+}
+
+#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_toolbar__preview del.zenario_link_status > del,
+#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_toolbar__menu1 del.zenario_link_status > del {
+	opacity:0.8;
 }
 
 #zenario_at .zenario_at_toolbar,
@@ -526,14 +699,6 @@ body.zenario_pageMode_menu #zenario_at .zenario_at_tabs .zenario_toolbar_on {
 
 #zenario_at .zenario_at_toolbar a {
 	cursor:pointer;
-}
-
-#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_toolbar_warning span.zenario_icon {
-	width:15px;
-	height:13px;
-	display:inline-block;
-	margin:0 0 0 5px;
-	background-position:-667px -117px;
 }
 
 #zenario_at .zenario_at_toolbar .zenario_at_history,
@@ -577,6 +742,12 @@ body.zenario_pageMode_menu #zenario_at .zenario_at_tabs .zenario_toolbar_on {
 #zenario_at .zenario_at_toolbar .zenario_at_history,
 #zenario_at ul li a {
 	height:41px;
+}
+
+#zenario_at .zenario_at_toolbar .zenario_at_extranet_user,
+#zenario_at .zenario_at_toolbar .zenario_at_help {
+	position:relative;
+	z-index:1;
 }
 
 #zenario_at ul li,
@@ -661,6 +832,12 @@ body.zenario_pageMode_menu #zenario_at .zenario_at_tabs .zenario_toolbar_on {
 	text-overflow: ellipsis;
 }
 
+#zenario_at .zenario_at_toolbar > div > ul > li ul li a {
+	text-overflow:clip;
+	max-width:none;
+	overflow:visible;
+	white-space:normal;
+}
 
 #zenario_at ul ul,
 #zenario_at ul li:hover ul ul,
@@ -808,11 +985,6 @@ body.zenario_pageMode_menu #zenario_at .zenario_at_tabs .zenario_toolbar_on {
 	width: 0;
 }
 
-#zenario_at .zenario_at_toolbar ul li li.zenario_at_prev_version_published a,
-#zenario_at .zenario_at_toolbar ul li li.zenario_at_current_version_draft a {
-	padding-left:24px;
-}
-
 #zenario_at ul li.zenario_at_button_with_children {
 	padding-right:8px;
 }
@@ -862,6 +1034,7 @@ body.zenario_pageMode_menu #zenario_at .zenario_at_tabs .zenario_toolbar_on {
 	-moz-border-radius: 2px;
 	border-radius: 2px;
 	width:44%;
+	width:calc(44% - 12px);
 	color:#000;
 	font-size:11px;
 	text-overflow: ellipsis;
@@ -870,7 +1043,7 @@ body.zenario_pageMode_menu #zenario_at .zenario_at_tabs .zenario_toolbar_on {
 	overflow:hidden;
 }
 
-#zenario_at #zenario_at_lower_section .zenario_at_infobar_title {
+#zenario_at #zenario_at_lower_section .zenario_at_clickable_infobar {
 	font-family: 'Courier New',Courier,monospace;
 	font-size:12px;
 	cursor: pointer;
@@ -893,9 +1066,10 @@ body.zenario_pageMode_menu #zenario_at .zenario_at_tabs .zenario_toolbar_on {
 }
 
 #zenario_at #zenario_at_lower_section .zenario_at_infobar_version {
-	margon-left: 0;
+	margin-left: 0;
 	float: right;
 	width: 49%;
+	width: calc(49% - 2px);
 }
 
 .zenario_at_button_with_children ul li {
@@ -977,18 +1151,6 @@ div.zenario_admin_toolbar #zenario_topsection {
 	text-align: center;
 }
 
-div.zenario_admin_toolbar #zenario_topsection_content {
-	width: 940px;
-	margin: 0px auto;
-}
-
-div.zenario_admin_toolbar #zenario_topsection_content #zenario_toolbar_tabs {
-	float: left;
-	margin-top: 21px;
-	font-family: 'Trebuchet MS', Helvetica, sans-serif;
-	font-size: 14px;
-}
-
 div.zenario_admin_toolbar #zenario_organizer_and_logout {
 	float: right;
 	margin-top: 6px;
@@ -1042,83 +1204,6 @@ div.zenario_admin_toolbar #zenario_organizer_and_logout #zenario_menu_button {
 div.zenario_admin_toolbar #zenario_organizer_and_logout #zenario_menu_button:hover {
 	width: 35px;
 	background-image: url(../admin/images/icons/yellow_btn_big.gif);
-}
-
-div.zenario_admin_toolbar #zenario_topsection_content div.zenario_toolbar {
-	cursor: pointer;
-	float: left;
-	color: #545454;
-}
-
-div.zenario_admin_toolbar #zenario_topsection_content div.zenario_toolbar_on {
-	color: #01788E;
-}
-
-div.zenario_admin_toolbar #zenario_topsection_content div.zenario_toolbar__rollback div.zenario_middle {
-	text-decoration: line-through;
-}
-
-div.zenario_admin_toolbar #zenario_topsection_content div.zenario_toolbar div.zenario_left {
-	float: left;
-	height: 28px;
-	width: 4px;
-	background: url(../admin/images/maintab_left_end_off.gif) no-repeat bottom;
-}
-
-div.zenario_admin_toolbar #zenario_topsection_content div.zenario_toolbar div.zenario_middle {
-	float: left;
-	height: 28px;
-	background: url(../admin/images/maintab_middle_off.gif) repeat-x bottom;
-	padding: 0px;
-	line-height: 28px;
-}
-
-div.zenario_admin_toolbar #zenario_topsection_content div.zenario_toolbar div.zenario_middle_inner {
-	padding: 0px 20px;
-}
-
-div.zenario_admin_toolbar #zenario_topsection_content div.zenario_toolbar__edit div.zenario_middle_inner,
-div.zenario_admin_toolbar #zenario_topsection_content div.zenario_toolbar__rollback div.zenario_middle_inner,
-div.zenario_admin_toolbar #zenario_topsection_content div.zenario_toolbar__edit_disabled div.zenario_middle_inner {
-	padding: 0px 25px;
-}
-
-div.zenario_admin_toolbar #zenario_topsection_content div.zenario_toolbar div.zenario_right {
-	float: left;
-	height: 28px;
-	width: 4px;
-	background: url(../admin/images/maintab_right_end_off.gif) no-repeat bottom;
-}
-
-div.zenario_admin_toolbar #zenario_topsection_content div.zenario_toolbar_on div.zenario_left {
-	background: url(../admin/images/maintab_left_end_on.gif) no-repeat bottom;
-}
-
-div.zenario_admin_toolbar #zenario_topsection_content div.zenario_toolbar_on div.zenario_middle {
-	background: url(../admin/images/maintab_middle_on.gif) repeat-x bottom;
-}
-
-div.zenario_admin_toolbar #zenario_topsection_content div.zenario_toolbar_on div.zenario_right {
-	background: url(../admin/images/maintab_right_end_on.gif) no-repeat bottom;
-}
-
-div.zenario_admin_toolbar #zenario_topsection_content div.zenario_toolbar__item div.zenario_middle,
-div.zenario_admin_toolbar #zenario_topsection_content div.zenario_toolbar__template div.zenario_middle,
-div.zenario_admin_toolbar #zenario_topsection_content div.zenario_toolbar__template_family div.zenario_middle {
-	font-size: 80%;
-	line-height: 32px;
-}
-
-.ie6 div.zenario_admin_toolbar #zenario_topsection_content div.zenario_toolbar__item div.zenario_middle,
-.ie6 div.zenario_admin_toolbar #zenario_topsection_content div.zenario_toolbar__template div.zenario_middle,
-.ie6 div.zenario_admin_toolbar #zenario_topsection_content div.zenario_toolbar__template_family div.zenario_middle {
-	line-height:28px;
-}
-
-div.zenario_admin_toolbar #zenario_topsection_content div.zenario_toolbar__item div.zenario_middle  div.zenario_middle_inner,
-div.zenario_admin_toolbar #zenario_topsection_content div.zenario_toolbar__template div.zenario_middle  div.zenario_middle_inner,
-div.zenario_admin_toolbar #zenario_topsection_content div.zenario_toolbar__template_family div.zenario_middle  div.zenario_middle_inner {
-	padding: 0 5px;
 }
 
 div.zenario_admin_toolbar #zenario_middlesection {
@@ -1320,10 +1405,6 @@ div.zenario_admin_toolbar .zenario_admin_toolbar_button div {
 	line-height: 23px;
 }
 
-div.zenario_admin_toolbar .zenario_toolbar_warning .zenario_middle_inner {
-	background:url(../admin/images/img_warning_triangle_small_orange.png) no-repeat 97% 50%;
-}
-
 div.zenario_admin_toolbar #zenario_bottomsection {
 	height: 41px;
 	background: url(../admin/images/grey_bottombar_1pxl_strip.gif);
@@ -1499,9 +1580,9 @@ div.zenario_grid_overlay_view .row {
 
 #zenario_at_top_left_menu {
 	display: block;
+	width: 140px;
 	height: 41px;
 	position: absolute;
-	left: 50px;
 	z-index: 102;
 }
 
@@ -1512,11 +1593,14 @@ div.zenario_grid_overlay_view .row {
 
 #zenario_at_top_left_menu ul li a {
 	background-color: #000000;
-	width: 32px;
 	height: 41px;
 	color: #ffffff;
 	display: block;
 	cursor: pointer;
+}
+
+#zenario_at_top_left_menu ul li a.zenario_at_top_left_org_link {
+	width: 140px;
 }
 
 #zenario_at_top_left_menu ul li a:hover {
@@ -1533,15 +1617,9 @@ div.zenario_grid_overlay_view .row {
 	height: 35px;
 }
 
-.zenario_at_top_left_dropdown.zenario_at_button_with_children {
-	width:32px;
-	height:41px;
-}
-
 /* Top left dropdown, first level */
 
 #zenario_at_top_left_menu ul li ul,
-#zenario_at_top_left_menu ul li ul::after,
 #zenario_at_top_left_menu ul li ul li ul,
 #zenario_at_top_left_menu ul li:hover ul li ul {
 	opacity:0;
@@ -1554,7 +1632,6 @@ div.zenario_grid_overlay_view .row {
 }
 
 #zenario_at_top_left_menu ul li:hover ul,
-#zenario_at_top_left_menu ul li ul::after,
 #zenario_at_top_left_menu ul li ul li:hover ul {
 	opacity:1;
 	visibility:visible;
@@ -1586,31 +1663,25 @@ body.ie9 #zenario_at_top_left_menu ul li ul li:hover ul {
 	padding-left: 9px;
 	margin-top: 8px;
 	position: relative;
-	top: 10px;
+	top: 8px;
 	font-size: 12px;
 }
 
+#zenario_at_top_left_menu ul li a span.zenario_at_button_main {
+	background:url('../admin/images/arrow-dropdown-white.png') no-repeat right 5px;
+	padding-right:15px;
+}
+
 #zenario_at_top_left_menu ul li ul {
-	margin-top: 9px;
-	background-color: #393939;
-	list-style: none;
-}
-
-#zenario_at_top_left_menu ul li ul::after {
-	border-color: #393939 transparent;
-	border-style: solid;
-	border-width: 0 10px 10px;
-	bottom: 100%;
-	content: "";
-	height: 0;
 	position: absolute;
-	width: 0;
-	top: 40px;
-	left: 6px;
+	top: 41px;
+	left: 0;
+	list-style: none;
+	background-color: #393939;
 }
 
-#zenario_at_top_left_menu ul li ul ul::after {
-	content:unset; 
+#zenario_at_top_left_menu ul li ul li {
+	position:relative;
 }
 
 #zenario_at_top_left_menu ul li ul li a {
@@ -1668,7 +1739,7 @@ body.ie9 #zenario_at_top_left_menu ul li ul li:hover ul {
 	float: none;
 	
 	position: absolute;
-	left: 232px;
+	left: 230px;
 	margin-top: -40px;
 }
 
@@ -1717,4 +1788,195 @@ body.ie9 #zenario_at_top_left_menu ul li ul li:hover ul {
 #zenario_at_top_left_menu ul li ul li ul a span > span {
 	height:25px;
 	top:5px;
+}
+
+
+/* "Admin toolbar for ..." text */
+
+#zenario_at_title {
+	display: block;
+	width: auto;
+	left: 140px;
+	height: 31px;
+	padding:5px 10px;
+	position: absolute;
+	z-index: 102;
+	background: transparent;
+	color: white;
+	font-size: 11px;
+}
+
+#zenario_at_title .zenario_at_title_label {
+	text-transform: uppercase;
+	font-weight: bold;
+}
+
+#zenario_at_title .zenario_at_title_for {
+}
+
+/* RESPONSIVE STYLES
+--------------------------------------------------------------------------------------------------*/
+
+/* Layout max-width: 1350px
+--------------------------------------------------------------------------------------------------*/
+
+@media all and (max-width: 1351px) {
+	
+	#zenario_at .zenario_at_tabs .zenario_toolbar .zenario_middle .zenario_toolbar_tab_children .zenario_middle_inner {
+		font-size:0;
+		line-height:0;
+		text-indent:-999px;
+	}
+}
+
+/* Layout max-width: 1180px
+--------------------------------------------------------------------------------------------------*/
+
+@media all and (max-width: 1181px) {
+
+	#zenario_at .zenario_at_tabs {
+		padding-left:0;
+	}
+	
+	#zenario_at_title {
+		display:none;
+	}
+}
+
+/* Layout max-width: 1060px
+--------------------------------------------------------------------------------------------------*/
+
+@media all and (max-width: 1061px) {
+
+	#zenario_at .zenario_at_tabs .zenario_toolbar .zenario_middle .zenario_middle_inner {
+		font-size:0;
+		line-height:0;
+		text-indent:-999px;
+	}
+	
+	#zenario_at .zenario_at_toolbar_container_bottom {
+		padding-left:5px;
+		padding-right:5px;
+	}
+	
+	#zenario_at #zenario_at_toolbars div.zenario_at_status_button {
+		padding-right:5px;
+	}
+	
+	#zenario_at #zenario_at_lower_section .zenario_at_infobar {
+		width:calc(34% - 12px);
+		margin-right:1%;
+	}
+	
+	#zenario_at #zenario_at_lower_section .zenario_at_infobar_version {
+		width:calc(65% - 12px);
+		margin-right:0;
+	}
+	
+	#zenario_at_top_left_menu ul li a.zenario_at_top_left_org_link {
+		width:35px;
+	}
+	
+	#zenario_at_top_left_menu ul li a span.zenario_at_button_main {
+		display:inline-block;
+		width:15px;
+		height:15px;
+		padding-right:0;
+		background-position:right 0;
+		top:0;
+		font-size:0;
+		line-height:0;
+		text-indent:-999px;
+		padding-left:7px;
+	}
+	
+	#zenario_at_top_left_menu {
+		width:40px;
+	}
+	
+	#zenario_at .zenario_at_tabs_container {
+		padding-left:40px;
+	}
+	
+	#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_toolbar__preview .zenario_middle .zenario_middle_inner, 
+	#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_toolbar__create .zenario_middle .zenario_middle_inner, 
+	#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_toolbar__edit .zenario_middle .zenario_middle_inner, 
+	#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_toolbar__item .zenario_middle .zenario_middle_inner, 
+	#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_at_menu_tab .zenario_middle .zenario_middle_inner, 
+	#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_toolbar__layout .zenario_middle .zenario_middle_inner, 
+	#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_at_tab_with_children .zenario_middle .zenario_middle_child .zenario_middle_inner {
+		padding-left:25px;
+	}
+	
+}
+
+/* Layout max-width: 840px
+--------------------------------------------------------------------------------------------------*/
+
+@media all and (max-width: 841px) {
+
+	#zenario_at .zenario_at_status_icons_container,
+	.zenario_at_dev_icons {
+		display:none;
+	}
+	
+}
+
+/* Layout max-width: 640px
+--------------------------------------------------------------------------------------------------*/
+
+@media all and (max-width: 641px) {
+
+	.zenario_at_status_button {
+		display:none;
+	}
+	
+	#zenario_at ul li.zenario_at_button_with_children li.zenario_at_publish_button {
+		background:#FE8831;
+		text-shadow:0 1px 1px #fff;
+		-webkit-animation: blink 2s ease-in-out 2s infinite;
+		-moz-animation: blink 2s ease-in-out 2s infinite;
+		-ms-animation: blink 2s ease-in-out 2s infinite;
+		-o-animation: blink 2s ease-in-out 2s infinite;
+		animation: blink 2s ease-in-out 2s infinite;
+		margin:0;
+		padding:4px 5px;
+	}
+	
+	#zenario_at ul li.zenario_at_button_with_children li.zenario_at_publish_button,
+	#zenario_at ul li.zenario_at_button_with_children li.zenario_at_publish_button:hover a {
+		color:#000 !important;
+	}
+
+	#zenario_at ul li.zenario_at_button_with_children li.zenario_delete_draft a,
+	#zenario_at ul li.zenario_at_button_with_children li.zenario_delete_draft:hover a {	
+		color:#D90000 !important;
+	}
+	
+	#zenario_at_logout_link a {
+		right:0;
+		width:28px;
+		background-position:-759px -6px;
+		background-color:#000;
+	}
+	
+	#zenario_at .zenario_at_tabs {
+		overflow:hidden;
+	}
+	
+}
+
+/* Layout max-width: 530px
+--------------------------------------------------------------------------------------------------*/
+
+@media all and (max-width: 531px) {
+	
+	#zenario_fbAdminFloatingBox .zenario_fbButtons {
+		overflow:hidden;
+		text-align:center !important;
+	}
+	
+	.zenario_fbAdmin .zenario_fbButtons input.zenario_fabExtraButton {
+		float:none !important;
+	}
 }

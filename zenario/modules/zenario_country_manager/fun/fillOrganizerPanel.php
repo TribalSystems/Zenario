@@ -74,7 +74,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 							break;
 					}
 				}
-				switch (get('refinerName')){
+				switch ($_GET['refinerName'] ?? false){
 					case 'country_code_filter':
 						if ($country=$this->getEnglishCountryName($refinerId)){
 							$panel['title'] = 'Regions in the Country "'. $country . '"';

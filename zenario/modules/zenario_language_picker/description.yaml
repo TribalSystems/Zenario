@@ -13,10 +13,13 @@ description: |
 category: pluggable
 keywords: >
     change, language, localize, localise, multi, multilingual, switch, international
+
+# Reminder: you need to increment the LATEST_REVISION_NO in this module's
+# latest_revision_no.inc.php file if you change any of the fields below:
 vlp_class_name: zenario_language_picker
 css_class_name: zenario_language_picker
 default_framework: select_list
-is_pluggable: Yes
-can_be_version_controlled: No
-nestable: Yes
+is_pluggable: true
+can_be_version_controlled: false
+nestable: true
 default_instance_name: Language Picker

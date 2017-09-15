@@ -82,6 +82,11 @@ password="'. DBPASS. '"';
 		$postProcessing .= ' | sed -E \'s@^(DROP TABLE|DROP TABLE IF EXISTS|CREATE TABLE|CREATE TABLE IF NOT EXISTS|INSERT INTO|REPLACE INTO|UPDATE|ALTER TABLE) `('. DB_NAME_PREFIX. ')@\\1 /\\*\\\\prefix:\'"\'"\'\2\'"\'"\':prefix\\\\\\*/`\2@\'';
 	}
 	
+	//This line would attempt to force UTF8.
+	//Unfortunately it also limits the filesize of the backups to about 250k and trims them after that,
+	//so we can't use it.
+	//$postProcessing .= ' | iconv -f utf8 -t utf8';
+	
 	if ($gzip) {
 		$postProcessing .= ' | gzip -f9';
 	}

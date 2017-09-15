@@ -64,7 +64,7 @@ $justHadAnEmptyLine = true;
 $numberOf = array('upload_error' => false, 'wrong_language' => false, 'added' => 0, 'updated' => 0, 'protected' => 0);
 
 //Work out whether this is a spreadsheet or a CSV file and load the file appropriately
-$mimeType = documentMimeType(str_replace('.php', '', ifNull($realFilename, $file)));
+$mimeType = Ze\File::mimeType(str_replace('.php', '', ifNull($realFilename, $file)));
 if (in($mimeType, 'text/csv', 'text/comma-separated-values')) {
 	$csv = true;
 	
@@ -115,7 +115,7 @@ for ($i = 1; true; ++$i) {
 		}
 		
 		$row = $pCSV->parse_string("0,1,2,3,4,5\n". $row. "\n");
-		$row = arrayKey($row, 0);
+		$row = $row[0] ?? false;
 		$rowCount = count($row);
 		
 		//Ignore empty lines, though remember that we've had them

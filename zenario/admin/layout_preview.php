@@ -1,5 +1,4 @@
 <?php 
-
 /*
  * Copyright (c) 2017, Tribal Limited
  * All rights reserved.
@@ -30,8 +29,6 @@
 
 require '../adminheader.inc.php';
 
-$gzf = setting('compress_web_pages')? '?gz=1' : '?gz=0';
-$gz = setting('compress_web_pages')? '&amp;gz=1' : '&amp;gz=0';
 
 
 
@@ -39,8 +36,9 @@ $gz = setting('compress_web_pages')? '&amp;gz=1' : '&amp;gz=0';
 
 
 require CMS_ROOT. 'zenario/includes/twig.inc.php';
+require CMS_ROOT. 'zenario/includes/twig.frameworks.inc.php';
 
-if (!$layout = getRow('layouts', true, request('id'))) {
+if (!$layout = getRow('layouts', true, ($_REQUEST['id'] ?? false))) {
 	exit;
 }
 
@@ -50,7 +48,7 @@ $content = array(
 	'type' => $layout['content_type'],
 	'alias' => '',
 	'status' => 'hidden',
-	'language_id' => ifNull(setting('default_language'), 'en'),
+	'language_id' => ifNull(cms_core::$defaultLang, 'en'),
 	'admin_version' => 1,
 	'visitor_version' => 0,
 	'lock_owner_id' => 0);
@@ -80,7 +78,7 @@ getSlotContents(
 	cms_core::$slotContents,
 	cms_core::$cID, cms_core::$cType, cms_core::$cVersion,
 	cms_core::$layoutId, cms_core::$templateFamily, cms_core::$templateFileBaseName);
-useGZIP(setting('compress_web_pages'));
+useGZIP();
 
 
 

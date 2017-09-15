@@ -71,26 +71,11 @@ class zenario_users__admin_boxes__site_settings extends module_base_class {
 			
 			case 'perms':
 				//Check to see what's running
-				$ASSETWOLF_2_PREFIX = getModulePrefix('assetwolf_2', true);
 				$ZENARIO_ORGANIZATION_MANAGER_PREFIX = getModulePrefix('zenario_organization_manager', true);
 				$ZENARIO_COMPANY_LOCATIONS_MANAGER_PREFIX = getModulePrefix('zenario_company_locations_manager', true);
 				
-				if (!$ASSETWOLF_2_PREFIX) {
-					$box['tabs']['asset']['hidden'] =
-					$box['tabs']['assetType']['hidden'] =
-					$box['tabs']['possibleEvent']['hidden'] =
-					$box['tabs']['procedure']['hidden'] =
-					$box['tabs']['schedule']['hidden'] = true;
-				}
-				
-				if (!$ZENARIO_ORGANIZATION_MANAGER_PREFIX) {
-					$box['tabs']['location']['hidden'] = true;
-				} else {
+				if ($ZENARIO_ORGANIZATION_MANAGER_PREFIX) {
 					$box['lovs']['roles'] = getRowsArray($ZENARIO_ORGANIZATION_MANAGER_PREFIX. 'user_location_roles', 'name', [], 'name', 'id');
-				}
-				
-				if (!$ZENARIO_ORGANIZATION_MANAGER_PREFIX || !$ZENARIO_COMPANY_LOCATIONS_MANAGER_PREFIX) {
-					$box['tabs']['company']['hidden'] = true;
 				}
 				
 				//If the dev tools are on, add an example as a site note to each type of permissions check
@@ -101,9 +86,12 @@ class zenario_users__admin_boxes__site_settings extends module_base_class {
 								if (!empty($field) && is_array($field)) {
 									if ($fieldId) {
 										
+										$atLocation = stripos($fieldId, 'atLocation') !== false;
+										$atCompany = stripos($fieldId, 'atCompany') !== false;
+										
 										//Don't show company/location related permissions if the modules are not running
-										if ((!$ZENARIO_ORGANIZATION_MANAGER_PREFIX && stripos($fieldId, 'atLocation') !== false)
-										 || (!$ZENARIO_COMPANY_LOCATIONS_MANAGER_PREFIX && stripos($fieldId, 'atCompany') !== false)) {
+										if ((!$ZENARIO_ORGANIZATION_MANAGER_PREFIX && ($atCompany || $atLocation))
+										 || (!$ZENARIO_COMPANY_LOCATIONS_MANAGER_PREFIX && $atCompany)) {
 											$field['hidden'] = true;
 										
 										} else {
@@ -219,7 +207,7 @@ class zenario_users__admin_boxes__site_settings extends module_base_class {
 		switch ($settingGroup) {
 			case 'users':
 				//Changes to extranet user passwords..?
-				if (checkPriv('_PRIV_EDIT_SITE_SETTING') && engToBooleanArray($box, 'tabs', 'passwords', 'edit_mode', 'on')) {
+				if (checkPriv('_PRIV_EDIT_SITE_SETTING') && engToBoolean($box['tabs']['passwords']['edit_mode']['on'] ?? false)) {
 			
 					//If someone is turning off plaintext passwords, encrypt any that are still stored as plaintext
 					if (isset($values['passwords/plaintext_extranet_user_passwords'])

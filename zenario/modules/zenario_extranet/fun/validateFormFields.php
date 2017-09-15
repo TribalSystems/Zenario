@@ -37,13 +37,13 @@ foreach($this->frameworkFields($section, $this->subSections) as $name => $field)
 	} elseif (empty($field['pattern'])) {
 		//Do nothing
 	
-	} elseif (in($field['pattern'], 'email', 'new_email', 'existing_email', 'unverified_email') && post($name)) {
+	} elseif (in($field['pattern'], 'email', 'new_email', 'existing_email', 'unverified_email') && ($_POST[$name] ?? false)) {
 		
-		if (!validateEmailAddress(post($name))) {
+		if (!validateEmailAddress($_POST[$name] ?? false)) {
 			$this->errors[] = array('Error' => $this->phrase('_ERROR_INVALID_'. strtoupper($name)));
 		
 		} elseif ($field['pattern'] == 'new_email') {
-			if ($user = getRow('users', ['status'], ['email' => post($name)])) {
+			if ($user = getRow('users', ['status'], ['email' => ($_POST[$name] ?? false)])) {
 				if ($user['status'] == 'contact') {
 					if (!$contactsCountAsUnregistered) {
 						$errorMessage = $this->setting('contact_not_extranet_message');
@@ -56,39 +56,39 @@ foreach($this->frameworkFields($section, $this->subSections) as $name => $field)
 			}
 		
 		} elseif ($field['pattern'] == 'existing_email' || $field['pattern'] == 'unverified_email') {
-			if (!checkRowExists('users', array('email' => post($name)))) {
+			if (!checkRowExists('users', array('email' => ($_POST[$name] ?? false)))) {
 				$errorMessage = $this->setting('email_not_in_db_message');
 				$this->errors[] = array('Error' => $this->phrase($errorMessage));
 			
 			} else {
-				if ($field['pattern'] == 'unverified_email' && getRow('users', 'email_verified', array('email' => post($name)))) {
+				if ($field['pattern'] == 'unverified_email' && getRow('users', 'email_verified', array('email' => ($_POST[$name] ?? false)))) {
 					$errorMessage = $this->setting('already_verified_message');
 					$this->errors[] = array('Error' => $this->phrase($errorMessage));
 				}
-				if ($field['pattern'] == 'unverified_email' && getRow('users', 'status', array('email' => post($name))) == 'contact') {
+				if ($field['pattern'] == 'unverified_email' && getRow('users', 'status', array('email' => ($_POST[$name] ?? false))) == 'contact') {
 					$errorMessage = $this->setting('contact_not_extranet_message');
 					$this->errors[] = array('Error' => $this->phrase($errorMessage));
 				}
-				if ($field['pattern'] == 'unverified_email' && getRow('users', 'status', array('email' => post($name))) == 'suspended') {
+				if ($field['pattern'] == 'unverified_email' && getRow('users', 'status', array('email' => ($_POST[$name] ?? false))) == 'suspended') {
 					$errorMessage = $this->setting('account_suspended_message');
 					$this->errors[] = array('Error' => $this->phrase($errorMessage));
 				}
 			}
 		}
 	
-	} elseif (($field['pattern'] == 'screen_name' || $field['pattern'] == 'new_screen_name') && post($name)) {
-		if (!validateScreenName(post($name))) {
+	} elseif (($field['pattern'] == 'screen_name' || $field['pattern'] == 'new_screen_name') && ($_POST[$name] ?? false)) {
+		if (!validateScreenName($_POST[$name] ?? false)) {
 			$this->errors[] = array('Error' => $this->phrase('_ERROR_INVALID_'. strtoupper($name)));
 		
 		} elseif ($field['pattern'] == 'new_screen_name') {
-			if (checkRowExists('users', array('screen_name' => post($name)))) {
+			if (checkRowExists('users', array('screen_name' => ($_POST[$name] ?? false)))) {
 				$errorMessage = $this->setting('screen_name_in_use');
 				$this->errors[] = array('Error' => $this->phrase($errorMessage));
 			}
 		}
 	}
 	
-	$fields[$name] = post($name);
+	$fields[$name] = $_POST[$name] ?? false;
 }
 
 return empty($this->errors)? $fields : false;

@@ -36,7 +36,7 @@ if (!checkPriv('_PRIV_EDIT_DRAFT', cms_core::$cID, cms_core::$cType)) {
 
 } else {
 	
-	addImageDataURIsToDatabase($_POST['content__content']);
+	Ze\File::addImageDataURIsToDatabase($_POST['content__content']);
 	
 	//Save the field in the plugin_settings table.
 	setRow(
@@ -48,11 +48,11 @@ if (!checkPriv('_PRIV_EDIT_DRAFT', cms_core::$cID, cms_core::$cType)) {
 	
 	$v = array();
 	$v['last_modified_datetime'] = now();
-	$v['last_author_id'] = session('admin_userid');
+	$v['last_author_id'] = $_SESSION['admin_userid'] ?? false;
 	updateRow('content_item_versions', $v, array('id' => cms_core::$cID, 'type' => cms_core::$cType, 'version' => cms_core::$cVersion));
 
 	
-	if (post('_sync_summary') && !$this->summaryLocked($this->cID, $this->cType, $this->cVersion)) {
+	if (($_POST['_sync_summary'] ?? false) && !$this->summaryLocked($this->cID, $this->cType, $this->cVersion)) {
 		$this->syncSummary($this->cID, $this->cType, $this->cVersion, zenario_wysiwyg_editor::generateSummary($_POST['content__content']));
 	}
 }

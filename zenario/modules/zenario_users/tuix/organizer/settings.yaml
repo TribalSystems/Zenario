@@ -5,7 +5,7 @@ zenario__administration:
         site_settings:
             items:
                 users:
-                    name: Users
+                    name: Users and Contacts
                     desc: Settings that affect extranet users and contacts.
                 perms:
                     name: User Permissions

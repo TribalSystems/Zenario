@@ -30,10 +30,13 @@ category: pluggable
 keywords: >
     list, auto, news, documents, pages, latest, category,
     taxonomy, summary, summaries, archive, library
+
+# Reminder: you need to increment the LATEST_REVISION_NO in this module's
+# latest_revision_no.inc.php file if you change any of the fields below:
 vlp_class_name: zenario_content_list
 css_class_name: zenario_content_list
-is_pluggable: Yes
-can_be_version_controlled: Yes
-nestable: Yes
+is_pluggable: true
+can_be_version_controlled: true
+nestable: true
 default_framework: standard
 default_instance_name: Untitled Content List

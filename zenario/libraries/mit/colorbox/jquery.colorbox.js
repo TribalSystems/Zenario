@@ -250,7 +250,7 @@
 
 	// Checks an href to see if it is a photo.
 	// There is a force photo option (photo: true) for hrefs that cannot be matched by the regex.
-	function isImage(settings, url) {
+	function Ze\File::isImage(settings, url) {
 		return settings.get('photo') || settings.get('photoRegex').test(url);
 	}
 
@@ -867,7 +867,7 @@
 							settings = new Settings(i, $.data(i, colorbox)),
 							src = settings.get('href');
 
-						if (src && isImage(settings, src)) {
+						if (src && Ze\File::isImage(settings, src)) {
 							src = retinaUrl(settings, src);
 							img = document.createElement('img');
 							img.src = src;
@@ -978,7 +978,7 @@
 			prep(" ");
 		} else if (settings.get('html')) {
 			prep(settings.get('html'));
-		} else if (isImage(settings, href)) {
+		} else if (Ze\File::isImage(settings, href)) {
 
 			href = retinaUrl(settings, href);
 

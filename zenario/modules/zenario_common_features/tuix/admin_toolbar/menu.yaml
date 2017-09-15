@@ -19,9 +19,10 @@ sections:
                     This content item is orphaned (not in the menu). Click to
                     add it to the menu (use its browser title as the menu text).
                 pick_items:
-                    path: zenario__menu/panels/menu_position
+                    path: zenario__menu/panels/menu_position/refiners/create////
                     target_path: zenario__menu/panels/menu_position
-                    disallow_refiners_looping_on_min_path: No
+                    min_path: zenario__menu/panels/menu_position
+                    disallow_refiners_looping_on_min_path: true
                     one_to_one_choose_phrase: Create menu node
                     visible_if_for_all_selected_items: >
                         zenario.engToBoolean(item.menu_id) || zenario.engToBoolean(item.is_dummy_child)
@@ -76,9 +77,9 @@ sections:
                 parent: advanced_dropdown
                 tooltip: Create another menu node linking to this item
                 pick_items:
-                    path: zenario__menu/panels/menu_position
+                    path: zenario__menu/panels/menu_position/refiners/create////
                     target_path: zenario__menu/panels/menu_position
-                    disallow_refiners_looping_on_min_path: No
+                    disallow_refiners_looping_on_min_path: true
                     one_to_one_choose_phrase: Create secondary menu node
                     visible_if_for_all_selected_items: >
                         zenario.engToBoolean(item.menu_id) || zenario.engToBoolean(item.is_dummy_child)

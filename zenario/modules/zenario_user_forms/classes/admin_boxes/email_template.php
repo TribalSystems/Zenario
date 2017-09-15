@@ -64,7 +64,7 @@ class zenario_user_forms__admin_boxes__email_template extends module_base_class 
 				'label' => adminPhrase('Add all to template')
 			);
 			while ($row = sqlFetchAssoc($result)) {
-				if (zenario_user_forms::fieldTypeCanRecordValue($row['field_type'])) {
+				if (!in_array($row['field_type'], array('section_description', 'repeat_start', 'repeat_end', 'restatement'))) {
 					$formFields[$row['id']] = array(
 						'ord' => $row['ord'] + 10,
 						'label' => trim($row['name'], " \t\n\r\0\x0B:")

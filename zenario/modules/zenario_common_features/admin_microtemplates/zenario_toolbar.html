@@ -1,23 +1,21 @@
 
-	<div id="zenario_at_organizer_link">
-		<a
-			href="{{zenarioATLinks.organizer|escape}}#{{zenarioATLinks.organizer_hash|escape}}"
-			id="zenario_organizer_button"
-			title="{{zenarioA.phrase.goToOrganizer}}"
-			data-tooltip-options="{tooltipClass:\'zenario_admin_tooltip\'}"
-		>Organizer</a>
-	</div>
 	<div id="zenario_at_top_left_menu">
-		<div class="zenario_admin_toolbar_divider"></div>
-
 		<ul>
 			<li class="zenario_at_top_left_dropdown zenario_at_button_with_children">
-				<a>
-					<span>▼</span>
-				</a>
+				<a
+					class="zenario_at_top_left_org_link"
+					href="{{zenarioATLinks.organizer|escape}}#{{zenarioATLinks.organizer_hash|escape}}"
+					id="zenario_organizer_button"
+				><span class="zenario_at_button_main">
+					Go to Organizer
+				</span></a>
 				<ul>{{zenarioT.microTemplate('zenario_toolbar_organizer_link', zenarioO.setNavigation(true).items)}}</ul>
 			</li>
 		</ul>
+	</div>
+	<div id="zenario_at_title">
+		<div class="zenario_at_title_label">Admin Toolbar</div>
+		<div class="zenario_at_title_for">for {{zenarioATLinks.tag|escape}}</div>
 	</div>
 	<div id="zenario_at_logout_link">
 		<a

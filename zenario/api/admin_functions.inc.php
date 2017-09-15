@@ -27,8 +27,8 @@
  */
 
 function adminId() {
-	if (session('admin_logged_into_site') && session('admin_logged_into_site') == COOKIE_DOMAIN. SUBDIRECTORY. setting('site_id')) {
-		return session('admin_userid');
+	if (($_SESSION['admin_logged_into_site'] ?? false) && ($_SESSION['admin_logged_into_site'] ?? false) == COOKIE_DOMAIN. SUBDIRECTORY. setting('site_id')) {
+		return ($_SESSION['admin_userid'] ?? false);
 	} else {
 		return false;
 	}

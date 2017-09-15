@@ -41,11 +41,11 @@ switch ($path) {
 		$tagIds = array();
 		$equivId = $cType = false;
 		
-		if (request('equivId') && request('cType')) {
-			$box['key']['id'] = request('cType'). '_'. request('equivId');
+		if (($_REQUEST['equivId'] ?? false) && ($_REQUEST['cType'] ?? false)) {
+			$box['key']['id'] = ($_REQUEST['cType'] ?? false). '_'. ($_REQUEST['equivId'] ?? false);
 		
-		} elseif (request('cID') && request('cType')) {
-			$box['key']['id'] = request('cType'). '_'. request('cID');
+		} elseif (($_REQUEST['cID'] ?? false) && ($_REQUEST['cType'] ?? false)) {
+			$box['key']['id'] = ($_REQUEST['cType'] ?? false). '_'. ($_REQUEST['cID'] ?? false);
 		}
 		
 		//Given a list of tag ids using cID and cType, convert them to equivIds and cTypes
@@ -172,11 +172,11 @@ switch ($path) {
 		$tagIds = array();
 		$equivId = $cType = false;
 		
-		if (request('equivId') && request('cType')) {
-			$box['key']['id'] = request('cType'). '_'. request('equivId');
+		if (($_REQUEST['equivId'] ?? false) && ($_REQUEST['cType'] ?? false)) {
+			$box['key']['id'] = ($_REQUEST['cType'] ?? false). '_'. ($_REQUEST['equivId'] ?? false);
 		
-		} elseif (request('cID') && request('cType')) {
-			$box['key']['id'] = request('cType'). '_'. request('cID');
+		} elseif (($_REQUEST['cID'] ?? false) && ($_REQUEST['cType'] ?? false)) {
+			$box['key']['id'] = ($_REQUEST['cType'] ?? false). '_'. ($_REQUEST['cID'] ?? false);
 		}
 		
 		//Given a list of tag ids using cID and cType, convert them to equivIds and cTypes
@@ -304,11 +304,11 @@ switch ($path) {
 		$tagIds = array();
 		$equivId = $cType = false;
 		
-		if (request('equivId') && request('cType')) {
-			$box['key']['id'] = request('cType'). '_'. request('equivId');
+		if (($_REQUEST['equivId'] ?? false) && ($_REQUEST['cType'] ?? false)) {
+			$box['key']['id'] = ($_REQUEST['cType'] ?? false). '_'. ($_REQUEST['equivId'] ?? false);
 		
-		} elseif (request('cID') && request('cType')) {
-			$box['key']['id'] = request('cType'). '_'. request('cID');
+		} elseif (($_REQUEST['cID'] ?? false) && ($_REQUEST['cType'] ?? false)) {
+			$box['key']['id'] = ($_REQUEST['cType'] ?? false). '_'. ($_REQUEST['cID'] ?? false);
 		}
 		
 		//Given a list of tag ids using cID and cType, convert them to equivIds and cTypes

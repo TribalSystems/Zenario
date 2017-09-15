@@ -38,7 +38,7 @@ plugin_settings:
 						min_path: zenario__email_template_manager/panels/email_templates
 						max_path: zenario__email_template_manager/panels/email_templates
 						target_path: zenario__email_template_manager/panels/email_templates
-						select_phrase: Select Email Template...
+						select_phrase: Select email template...
 						hide_remove_button: true
 					validation:
 						required_if_not_hidden: Please select an email template
@@ -132,7 +132,7 @@ plugin_settings:
 						max_path: zenario__content/panels/content
 						target_path: zenario__content/panels/content
 						disallow_refiners_looping_on_min_path: true
-						select_phrase: select a content item...
+						select_phrase: Select a content item...
 						hide_remove_button: true
 					validation:
 						required_if_not_hidden: Please select a terms and conditions page
@@ -500,33 +500,33 @@ plugin_settings:
 				no_new_repeat_password_error_text:
 					label: 'If no new repeat password is entered:'
 					type: text
-					value: "Please repeat your new Password."
+					value: "Please repeat your new password."
 					show_phrase_icon: true
 				new_passwords_do_not_match:
 					plugin_setting:
 						name: new_passwords_do_not_match
 					label: 'If the new password and repeat new password fields do not match:'
 					type: text
-					value: "Your repeated Password does not match."
+					value: "Your repeated password does not match."
 					show_phrase_icon: true
 				new_password_length_message:
 					plugin_setting:
 						name: new_password_length_message
 					label: 'If new password is not over min length:'
 					type: text
-					value: "Please ensure that your new Password is at least [[min_password_length]] characters long."
+					value: "Please ensure that your new password is at least [[min_password_length]] characters long."
 					show_phrase_icon: true
 				new_password_not_strong_enough_message:
 					plugin_setting:
 						name: new_password_not_strong_enough_message
 					label: 'If new password is not stong enough:'
 					type: text
-					value: "The new Password provided is not strong enough. Please make the password longer, or try mixing in upper and lower case letters, numbers or non-alphanumeric characters."
+					value: "The new password provided is not strong enough. Please make the password longer, or try mixing in upper and lower case letters, numbers or non-alphanumeric characters."
 					show_phrase_icon: true
 				new_password_same_as_old_message:
 					plugin_setting:
 						name: new_password_same_as_old_message
 					label: 'If new password is the same as the old password:'
 					type: text
-					value: "Your new Password is the same as your old Password."
+					value: "Your new password is the same as your old password."
 					show_phrase_icon: true

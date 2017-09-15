@@ -29,4 +29,7 @@
 	<% } %>
 </a>
 
-{{m.children? '<ul>' + zenario.microTemplate('fea_button_children', m.children) + '</ul></div>'  : ''}}
+<% if (m.children) { %>
+	    <ul>{{zenario.microTemplate('fea_button_children', m.children)}}</ul>
+    </div>
+<% } %>

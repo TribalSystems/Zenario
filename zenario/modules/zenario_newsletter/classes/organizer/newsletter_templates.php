@@ -39,7 +39,7 @@ class zenario_newsletter__organizer__newsletter_templates extends zenario_newsle
 	}
 	
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
-		if (post('delete') && checkPriv('_PRIV_EDIT_NEWSLETTER')) {
+		if (($_POST['delete'] ?? false) && checkPriv('_PRIV_EDIT_NEWSLETTER')) {
 			foreach(explode(',', $ids) as $id) {
 				zenario_newsletter::deleteNewsletterTemplate($id);
 			}

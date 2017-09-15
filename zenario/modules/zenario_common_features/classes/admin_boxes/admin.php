@@ -56,13 +56,13 @@ class zenario_common_features__admin_boxes__admin extends module_base_class {
 
 			
 			//Load this admin's settings
-			if (is_array(arrayKey($box,'tabs'))) {
+			if (is_array($box['tabs'] ?? false)) {
 				foreach ($box['tabs'] as $tabName => &$tab) {
 					if (is_array($tab)
 					 && !empty($tab['fields'])
 					 && is_array($tab['fields'])) {
 						foreach ($tab['fields'] as &$field) {
-							if (($settingName = arrayKey($field, 'admin_setting', 'name'))
+							if (($settingName = $field['admin_setting']['name'] ?? false)
 							 && (false !== ($settingValue = getRow('admin_settings', 'value', array('name' => $settingName, 'admin_id' => $box['key']['id']))))) {
 								$field['value'] = getRow('admin_settings', 'value', array('name' => $settingName, 'admin_id' => $box['key']['id']));
 							}
@@ -219,7 +219,7 @@ class zenario_common_features__admin_boxes__admin extends module_base_class {
 		
 		$fields['permissions/permissions']['values']['specific_languages']['side_note'] =
 			adminPhrase($fields['permissions/permissions']['values']['specific_languages']['side_note'],
-				array('default_language' => ifNull(setting('default_language'), 'en')));
+				array('default_language' => ifNull(cms_core::$defaultLang, 'en')));
 		
 	}
 
@@ -253,7 +253,7 @@ class zenario_common_features__admin_boxes__admin extends module_base_class {
 						unset($field['hidden']);
 			
 						//Look for checkboxes on their own, add some styling around them
-						if (!engToBooleanArray($field, 'same_row') && $field['type'] == 'checkbox') {
+						if (!engToBoolean($field['same_row'] ?? false) && $field['type'] == 'checkbox') {
 							$rowStart = $fieldName;
 							$field['row_class'] = 'zenario_perms';
 						}
@@ -312,7 +312,7 @@ class zenario_common_features__admin_boxes__admin extends module_base_class {
 							}
 
 							$box['tabs']['permissions']['fields'][$rowStart][
-							engToBooleanArray($box['tabs']['permissions']['fields'], 'edit_mode', 'on')? 'current_value' : 'value'
+							engToBoolean($box['tabs']['permissions']['fields']['edit_mode']['on'] ?? false)? 'current_value' : 'value'
 									] = $parentChecked;
 
 							//Set up JavaScript logic to update all of this when an Admin changes the value of a checkbox
@@ -336,9 +336,9 @@ class zenario_common_features__admin_boxes__admin extends module_base_class {
 
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
 		$editing =
-		engToBooleanArray($box['tabs']['details'], 'edit_mode', 'on')
-		|| engToBooleanArray($box['tabs']['password'], 'edit_mode', 'on')
-		|| engToBooleanArray($box['tabs']['permissions'], 'edit_mode', 'on');
+		engToBoolean($box['tabs']['details']['edit_mode']['on'] ?? false)
+		|| engToBoolean($box['tabs']['password']['edit_mode']['on'] ?? false)
+		|| engToBoolean($box['tabs']['permissions']['edit_mode']['on'] ?? false);
 
 		if ($box['key']['id']) {
 			if (!$details = getRow('admins', true, $box['key']['id'])) {
@@ -357,7 +357,7 @@ class zenario_common_features__admin_boxes__admin extends module_base_class {
 			exitIfNotCheckPriv('_PRIV_CREATE_ADMIN');
 		}
 
-		if (engToBooleanArray($box['tabs']['details'], 'edit_mode', 'on') && (!$box['key']['id'] || exitIfNotCheckPriv('_PRIV_EDIT_ADMIN'))) {
+		if (engToBoolean($box['tabs']['details']['edit_mode']['on'] ?? false) && (!$box['key']['id'] || exitIfNotCheckPriv('_PRIV_EDIT_ADMIN'))) {
 
 			//Attempt to ensure that username and email are unique.
 			//However if the Admin is not trying to change the username/email, then apply a "grandfather rule" and let existing bad data stay as it is.
@@ -385,7 +385,7 @@ class zenario_common_features__admin_boxes__admin extends module_base_class {
 		$pTab = false;
 		if ($newAdmin = !$box['key']['id']) {
 			$pTab = 'details';
-		} elseif (engToBooleanArray($box['tabs']['password'], 'edit_mode', 'on')) {
+		} elseif (engToBoolean($box['tabs']['password']['edit_mode']['on'] ?? false)) {
 			$pTab = 'password';
 			exitIfNotCheckPriv('_PRIV_CHANGE_ADMIN_PASSWORD');
 		}
@@ -406,7 +406,7 @@ class zenario_common_features__admin_boxes__admin extends module_base_class {
 			}
 		}
 		
-		if (engToBooleanArray($box['tabs']['permissions'], 'edit_mode', 'on')) {
+		if (engToBoolean($box['tabs']['permissions']['edit_mode']['on'] ?? false)) {
 			switch ($values['permissions/permissions']) {
 				case 'specific_languages':
 					if (!$values['permissions/specific_languages']
@@ -437,12 +437,12 @@ class zenario_common_features__admin_boxes__admin extends module_base_class {
 		$pTab = false;
 		if ($newAdmin = !$box['key']['id']) {
 			$pTab = 'details';
-		} elseif (engToBooleanArray($box['tabs']['password'], 'edit_mode', 'on')) {
+		} elseif (engToBoolean($box['tabs']['password']['edit_mode']['on'] ?? false)) {
 			$pTab = 'password';
 			exitIfNotCheckPriv('_PRIV_CHANGE_ADMIN_PASSWORD');
 		}
 
-		if (engToBooleanArray($box['tabs']['details'], 'edit_mode', 'on')) {
+		if (engToBoolean($box['tabs']['details']['edit_mode']['on'] ?? false)) {
 			
 			$details = array(
 					'username' => $values['details/username'],
@@ -455,8 +455,8 @@ class zenario_common_features__admin_boxes__admin extends module_base_class {
 				$details['is_client_account'] = $values['details/is_client_account'];
 			}
 			
-			if ($values['details/image'] && ($filepath = getPathOfUploadedFileInCacheDir($values['details/image']))) {
-				$image_id = addFileToDatabase('admin', $filepath, false, true);
+			if ($values['details/image'] && ($filepath = Ze\File::getPathOfUploadedInCacheDir($values['details/image']))) {
+				$image_id = Ze\File::addToDatabase('admin', $filepath, false, true);
 				$details['image_id'] = $image_id;
 			
 			} else {
@@ -496,7 +496,7 @@ class zenario_common_features__admin_boxes__admin extends module_base_class {
 		}
 
 
-		if (engToBooleanArray($box['tabs']['permissions'], 'edit_mode', 'on')) {
+		if (engToBoolean($box['tabs']['permissions']['edit_mode']['on'] ?? false)) {
 			
 			//Look for checkboxes set up as permission fields
 			$perms = array();
@@ -556,16 +556,16 @@ class zenario_common_features__admin_boxes__admin extends module_base_class {
 		
 		//Save admin settings
 		foreach ($box['tabs'] as $tabName => &$tab) {
-			if (is_array($tab) && engToBooleanArray($tab, 'edit_mode', 'on')) {
+			if (is_array($tab) && engToBoolean($tab['edit_mode']['on'] ?? false)) {
 				foreach ($tab['fields'] as $fieldName => &$field) {
 					if (is_array($field)) {
-						if (!arrayKey($field, 'readonly')
-						 && !arrayKey($field, 'read_only')
-						 && $settingName = arrayKey($field, 'admin_setting', 'name')) {
+						if (!($field['readonly'] ?? false)
+						 && !($field['read_only'] ?? false)
+						 && $settingName = $field['admin_setting']['name'] ?? false) {
 					
 							//Get the value of the setting. Hidden fields should count as being empty
-							if (engToBooleanArray($field, 'hidden')
-							 || engToBooleanArray($field, '_was_hidden_before')) {
+							if (engToBoolean($field['hidden'] ?? false)
+							 || engToBoolean($field['_was_hidden_before'] ?? false)) {
 								$value = '';
 							} else {
 								$value = arrayKey($values, $tabName. '/'. $fieldName);

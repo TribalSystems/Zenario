@@ -1,3 +1,5 @@
+<% var buttons = zenarioAT.tuix.sections[zenarioA.toolbar].buttons; %>
+
 <div class="zenario_at_toolbar_container_top">
 	<div class="zenario_at_content zenario_at_toolbar">
 		<% if (m.sections[zenarioA.toolbar]) { %>
@@ -20,10 +22,20 @@
 <div class="zenario_at_toolbar_container_bottom">
 	<div id="zenario_at_lower_section">
 		<div class="zenario_at_infobar_menu_section">
-			{{zenarioAT.tuix.sections[zenarioA.toolbar].buttons.menu_section.label|escape}}
+			{{buttons.menu_section.label|escape}}
 		</div>
-		<div class="zenario_at_infobar zenario_at_infobar_menu_path {{zenarioAT.tuix.sections[zenarioA.toolbar].buttons.menu_path.css_class|escape}}">
-			{{zenarioAT.tuix.sections[zenarioA.toolbar].buttons.menu_path.label|escape}}
+		<div
+			class="
+				zenario_at_infobar
+				zenario_at_infobar_menu_path
+				{{buttons.menu_path.css_class|escape}}
+				
+				<% if (buttons.edit_menu_text && buttons.edit_menu_text.admin_box) { %>
+					zenario_at_clickable_infobar" onclick="zenarioAT.clickButton(zenarioA.toolbar, 'edit_menu_text');
+				<% } %>
+			"
+		>
+			{{buttons.menu_path.label|escape}}
 		</div>
 	</div>
 </div>

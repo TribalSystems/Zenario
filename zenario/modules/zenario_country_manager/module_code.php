@@ -79,7 +79,7 @@ class zenario_country_manager extends module_base_class {
 	
 
 	public static function getCountryNamesInCurrentVisitorLanguageIndexedByISOCode($countryActivityFilter='active',$countryId=''){
-		$tbl= zenario_country_manager::getVisitorCountriesIndexedByISOCode(currentLangId(),$countryActivityFilter,$countryId) ;
+		$tbl= zenario_country_manager::getVisitorCountriesIndexedByISOCode(visitorLangId(),$countryActivityFilter,$countryId) ;
 		$rv = array();
 		foreach($tbl as $K=>$V)
 			$rv[$K]=$V['phrase'];
@@ -96,7 +96,7 @@ class zenario_country_manager extends module_base_class {
 	}
 
 	public static function getCountryNamesInCurrentVisitorLanguage($countryActivityFilter='active',$countryId=''){
-		$tbl= zenario_country_manager::getVisitorCountries(currentLangId(),$countryActivityFilter,$countryId) ;
+		$tbl= zenario_country_manager::getVisitorCountries(visitorLangId(),$countryActivityFilter,$countryId) ;
 		$rv = array();
 		foreach($tbl as $K=>$V)
 			$rv[$K]=$V['phrase'];
@@ -113,7 +113,7 @@ class zenario_country_manager extends module_base_class {
 	}
 
 	public static function getRegionNamesInCurrentVisitorLanguage($countryActivityFilter='active',$countryId='',$regionId=''){
-		$tbl= zenario_country_manager::getVisitorRegions(currentLangId(),$countryActivityFilter,$countryId,$regionId) ;
+		$tbl= zenario_country_manager::getVisitorRegions(visitorLangId(),$countryActivityFilter,$countryId,$regionId) ;
 		$rv = array();
 		foreach($tbl as $K=>$V)
 			$rv[$K]=$V['phrase'];
@@ -346,11 +346,11 @@ class zenario_country_manager extends module_base_class {
 	
 	public static function getEnglishCountryName_framework($mergeFields, $attributes) {
 		$out = '';
-		if ($value = ifNull(arrayKey($mergeFields, arrayKey($attributes, 'name')), arrayKey($attributes, 'value'))) {
+		if ($value = ifNull($mergeFields[$attributes['name'] ?? false], $attributes['value'] ?? false)) {
 			$out = getRow(ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_countries', 'english_name', array('id' => $value));
 		}
 		
-		if (engToBooleanArray($attributes, 'escape')) {
+		if (engToBoolean($attributes['escape'] ?? false)) {
 			return htmlspecialchars($out);
 		} else {
 			return $out;

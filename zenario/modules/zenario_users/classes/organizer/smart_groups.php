@@ -59,18 +59,18 @@ class zenario_users__organizer__smart_groups extends zenario_users {
 	
 
 	public function handleAJAX() {
-		$ids = post('id');
+		$ids = $_POST['id'] ?? false;
 		$this->handleOrganizerPanelAJAX('zenario__users/panels/smart_groups', $ids, '', '', '');
 	}
 	
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
 		
-		if (post('load_smart_group') && checkPriv('_PRIV_VIEW_USER')) {
+		if (($_POST['load_smart_group'] ?? false) && checkPriv('_PRIV_VIEW_USER')) {
 			header('Content-Type: text/javascript; charset=UTF-8');
 			echo getRow('smart_groups', 'values', $ids);
 			exit;
 	
-		} elseif (post('save_smart_group') && checkPriv('_PRIV_MANAGE_GROUP')) {
+		} elseif (($_POST['save_smart_group'] ?? false) && checkPriv('_PRIV_MANAGE_GROUP')) {
 			$json = array();
 			$key = array();
 			$values = array();
@@ -78,21 +78,21 @@ class zenario_users__organizer__smart_groups extends zenario_users {
 			if ($ids) {
 					$key = array('id' => $ids);
 					$json['exists'] = true;
-					$values['name'] = post('name');
+					$values['name'] = $_POST['name'] ?? false;
 	
 			} else {
-				$key = array('name' => post('name'));
+				$key = array('name' => ($_POST['name'] ?? false));
 				$json['exists'] = checkRowExists('smart_groups', $key);
 			}
 	
-			if ($json['exists'] && !post('confirm')) {
+			if ($json['exists'] && !($_POST['confirm'] ?? false)) {
 				$json['message'] = adminPhrase('The Smart Group "[[name]]" already exists, do you want to overwrite it?', $key);
 				$json['message_type'] = 'warning';
 				$json['confirm_button_message'] = adminPhrase('Overwrite Smart Group');
 
 			} else {
 				exitIfNotCheckPriv('_PRIV_MANAGE_GROUP');
-				$values['values'] = post('values');
+				$values['values'] = $_POST['values'] ?? false;
 				$values['last_modified_on'] = now();
 				$values['last_modified_by'] = adminId();
 		
@@ -116,7 +116,7 @@ class zenario_users__organizer__smart_groups extends zenario_users {
 			exit;
 	
 		
-		} elseif (post('delete') && checkPriv('_PRIV_MANAGE_GROUP')) {
+		} elseif (($_POST['delete'] ?? false) && checkPriv('_PRIV_MANAGE_GROUP')) {
 			foreach (explode(',', $ids) as $id) {
 				deleteRow('smart_groups', $id);
 				deleteRow('smart_group_rules', array('smart_group_id' => $id));

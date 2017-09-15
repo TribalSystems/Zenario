@@ -44,13 +44,13 @@ class zenario_common_features__admin_boxes__content extends module_base_class {
 				//Edit an existing Content Item based on its Menu Node
 				$box['key']['cID'] = $menuContentItem['equiv_id'];
 				$box['key']['cType'] = $menuContentItem['content_type'];
-				langEquivalentItem($box['key']['cID'], $box['key']['cType'], ifNull($box['key']['target_language_id'], get('languageId'), setting('default_language')));
+				langEquivalentItem($box['key']['cID'], $box['key']['cType'], ifNull($box['key']['target_language_id'], ($_GET['languageId'] ?? false), cms_core::$defaultLang));
 				$box['key']['source_cID'] = $box['key']['cID'];
 		
 				$box['key']['target_menu_section'] = getRow('menu_nodes', 'section_id', $box['key']['id']);
 		
 			} else {
-				$box['key']['target_menu_section'] = ifNull($box['key']['target_menu_section'], request('sectionId'), request('refiner__section'));
+				$box['key']['target_menu_section'] = ifNull($box['key']['target_menu_section'], ($_REQUEST['sectionId'] ?? false), ($_REQUEST['refiner__section'] ?? false));
 			}
 			$box['key']['id'] = false;
 		}
@@ -61,12 +61,12 @@ class zenario_common_features__admin_boxes__content extends module_base_class {
 	
 			if ($box['key']['duplicate_from_menu']) {
 				//Handle the case where a language id is in the primary key
-				if ($box['key']['id'] && !is_numeric($box['key']['id']) && get('refiner__menu_node_translations')) {
+				if ($box['key']['id'] && !is_numeric($box['key']['id']) && ($_GET['refiner__menu_node_translations'] ?? false)) {
 					$box['key']['target_language_id'] = $box['key']['id'];
-					$box['key']['id'] = get('refiner__menu_node_translations');
+					$box['key']['id'] = $_GET['refiner__menu_node_translations'] ?? false;
 		
-				} elseif (is_numeric($box['key']['id']) && get('refiner__language')) {
-					$box['key']['target_language_id'] = get('refiner__language');
+				} elseif (is_numeric($box['key']['id']) && ($_GET['refiner__language'] ?? false)) {
+					$box['key']['target_language_id'] = $_GET['refiner__language'] ?? false;
 				}
 		
 				if ($menuContentItem = getContentFromMenu($box['key']['id'])) {
@@ -85,9 +85,9 @@ class zenario_common_features__admin_boxes__content extends module_base_class {
 			//Version for opening from the "translation chain" panel in Organizer:
 			if (
 				$box['key']['translate']
-			 && request('refinerName') == 'zenario_trans__chained_in_link'
+			 && ($_REQUEST['refinerName'] ?? false) == 'zenario_trans__chained_in_link'
 			 && !getCIDAndCTypeFromTagId($box['key']['source_cID'], $box['key']['cType'], $box['key']['id'])
-			 && getCIDAndCTypeFromTagId($box['key']['source_cID'], $box['key']['cType'], request('refiner__zenario_trans__chained_in_link'))
+			 && getCIDAndCTypeFromTagId($box['key']['source_cID'], $box['key']['cType'], ($_REQUEST['refiner__zenario_trans__chained_in_link'] ?? false))
 			) {
 				$box['key']['target_language_id'] = $box['key']['id'];
 				$box['key']['id'] = null;
@@ -95,25 +95,25 @@ class zenario_common_features__admin_boxes__content extends module_base_class {
 			//Version for opening from the "translation chain" panel in the menu area in Organizer:
 			if (
 				$box['key']['translate']
-			 && request('refinerName') == 'zenario_trans__chained_in_link__from_menu_node'
-			 && request('equivId')
-			 && request('cType')
-			 && request('language')
+			 && ($_REQUEST['refinerName'] ?? false) == 'zenario_trans__chained_in_link__from_menu_node'
+			 && ($_REQUEST['equivId'] ?? false)
+			 && ($_REQUEST['cType'] ?? false)
+			 && ($_REQUEST['language'] ?? false)
 			) {
 				$box['key']['target_language_id'] = $box['key']['id'];
-				$box['key']['source_cID'] = request('equivId');
+				$box['key']['source_cID'] = $_REQUEST['equivId'] ?? false;
 				$box['key']['id'] = null;
 			} else
 			//Version for opening from the Admin Toolbar
 			if (
 				$box['key']['translate']
-			 && request('cID') && request('cType')
+			 && ($_REQUEST['cID'] ?? false) && ($_REQUEST['cType'] ?? false)
 			 && !getCIDAndCTypeFromTagId($box['key']['source_cID'], $box['key']['cType'], $box['key']['id'])
 			) {
 				$box['key']['target_language_id'] = $box['key']['id'];
 				$box['key']['id'] = null;
-				$box['key']['source_cID'] = request('cID');
-				$box['key']['cType'] = request('cType');
+				$box['key']['source_cID'] = $_REQUEST['cID'] ?? false;
+				$box['key']['cType'] = $_REQUEST['cType'] ?? false;
 				$box['key']['cID'] = '';
 			}
 		}
@@ -121,9 +121,9 @@ class zenario_common_features__admin_boxes__content extends module_base_class {
 
 		//If creating a new Content Item from the Content Items (and missing translations) in Language Panel,
 		//or the Content Items in the Language X Panel, don't allow the language to be changed
-		if (get('refinerName') == 'language'
-		 || (isset($_GET['refiner__language_equivs']) && get('refiner__language'))) {
-			$box['key']['target_language_id'] = get('refiner__language');
+		if (($_GET['refinerName'] ?? false) == 'language'
+		 || (isset($_GET['refiner__language_equivs']) && ($_GET['refiner__language'] ?? false))) {
+			$box['key']['target_language_id'] = $_GET['refiner__language'] ?? false;
 		}
 		
 		
@@ -167,8 +167,8 @@ class zenario_common_features__admin_boxes__content extends module_base_class {
 		}
 
 		//Enforce a specific Content Type
-		if (request('refiner__content_type')) {
-			$box['key']['target_cType'] = request('refiner__content_type');
+		if ($_REQUEST['refiner__content_type'] ?? false) {
+			$box['key']['target_cType'] = $_REQUEST['refiner__content_type'] ?? false;
 		}
 		
 		if (!empty($box['key']['create_from_toolbar'])) {
@@ -180,7 +180,7 @@ class zenario_common_features__admin_boxes__content extends module_base_class {
 			$fields['meta_data/create_menu']['hidden'] = true;
 
 		} elseif ($box['key']['target_menu_parent']) {
-			$values['meta_data/menu_parent_path'] = getMenuPath($box['key']['target_menu_parent'], ifNull($box['key']['target_language_id'], get('languageId'), get('language')));
+			$values['meta_data/menu_parent_path'] = getMenuPath($box['key']['target_menu_parent'], ifNull($box['key']['target_language_id'], ($_GET['languageId'] ?? false), ($_GET['language'] ?? false)));
 		}
 
 		$contentType = getRow('content_types', true, $box['key']['cType']);
@@ -206,7 +206,7 @@ class zenario_common_features__admin_boxes__content extends module_base_class {
 		
 				//When duplicating to a new/different language, if Menu Text already exists in the new Language,
 				//but a Content Item does not, rely on the existing Menu Text and don't offer to create a new one
-				 && (!($lang = ifNull($box['key']['target_language_id'], get('languageId'), get('language')))
+				 && (!($lang = ifNull($box['key']['target_language_id'], ($_GET['languageId'] ?? false), ($_GET['language'] ?? false)))
 				  || ($lang == $content['language_id'])
 				  || !(checkRowExists('menu_text', array('menu_id' => $currentMenu['id'], 'language_id' => $lang))))) {
 					
@@ -287,7 +287,7 @@ class zenario_common_features__admin_boxes__content extends module_base_class {
 						$box['key']['source_cID'], $box['key']['cType'], $box['key']['source_cVersion']);
 				}
 		
-				$tag = formatTag($box['key']['source_cID'], $box['key']['cType'], arrayKey($content, 'alias'));
+				$tag = formatTag($box['key']['source_cID'], $box['key']['cType'], ($content['alias'] ?? false));
 		
 				$status = adminPhrase('archived');
 				if ($box['key']['source_cVersion'] == $content['visitor_version']) {
@@ -350,15 +350,15 @@ class zenario_common_features__admin_boxes__content extends module_base_class {
 		//Set default values
 		if ($content) {
 			if ($box['key']['duplicate'] || $box['key']['translate']) {
-				$values['meta_data/language_id'] = ifNull($box['key']['target_language_id'], ifNull(get('languageId'), get('language'), $content['language_id']));
+				$values['meta_data/language_id'] = ifNull($box['key']['target_language_id'], ifNull($_GET['languageId'] ?? false, ($_GET['language'] ?? false), $content['language_id']));
 			}
 		} else {
-			$values['meta_data/language_id'] = ifNull($box['key']['target_language_id'], get('languageId'), setting('default_language'));
+			$values['meta_data/language_id'] = ifNull($box['key']['target_language_id'], ($_GET['languageId'] ?? false), cms_core::$defaultLang);
 		}
 		
 		if (!$version) {
 			//Attempt to work out the default template and Content Type for a new Content Item
-			if (($layoutId = ifNull($box['key']['target_template_id'], get('refiner__template')))
+			if (($layoutId = ifNull($box['key']['target_template_id'], ($_GET['refiner__template'] ?? false)))
 			 && ($box['key']['cType'] = getRow('layouts', 'content_type', $layoutId))) {
 		
 				$contentType = getRow('content_types', true, $box['key']['cType']);
@@ -384,42 +384,39 @@ class zenario_common_features__admin_boxes__content extends module_base_class {
 				
 				$values['meta_data/menu_options'] = 'add_to_menu';
 				
-				$menuNode = getRow('menu_nodes', array('id', 'section_id'), $contentType['default_parent_menu_node']);
-				$dummyNode = 1;
-				$menuNodeId = $menuNode['id'];
-				if ($contentType['menu_node_position'] == 'start') {
-					
-					// Get first child menu node
-					$sql = '
-						SELECT id
-						FROM ' . DB_NAME_PREFIX . 'menu_nodes
-						WHERE parent_id = ' . (int)$menuNode['id'] . '
-						ORDER BY ordinal
-						LIMIT 1';
-					$result = sqlSelect($sql);
-					$row = sqlFetchRow($result);
-					
-					if ($row[0]) {
-						$menuNodeId = $row[0];
-						$dummyNode = 0;
-					}
-				}
-				$values['meta_data/add_to_menu'] = $menuNode['section_id'] . '_' . $menuNodeId . '_' . $dummyNode;
+				$values['meta_data/add_to_menu'] = getDefaultMenuPositionFromSettings($contentType);
 				
 				if ($contentType['menu_node_position_edit'] == 'force') {
 					$fields['meta_data/warning_message']['snippet']['html'] = adminPhrase('The initial menu position for content items of this type has been locked.');
 					$fields['meta_data/warning_message']['hidden'] = false;
 					$fields['meta_data/menu_options']['disabled'] = true;
-					$fields['meta_data/add_to_menu']['pick_items']['hide_select_button'] = true;
-					$fields['meta_data/add_to_menu']['pick_items']['hide_remove_button'] = true;
+					$fields['meta_data/add_to_menu']['readonly'] = true;
 				}
+			}
+			
+			//Check the FAB was opened from an existing content item in the front-end
+			if ($box['key']['from_cID']
+			 && $box['key']['from_cType']
+			 && ($menu = getMenuItemFromContent($box['key']['from_cID'], $box['key']['from_cType']))) {
+				
+				$box['key']['from_mID'] = $menu['id'];
+				
+				//Default the specific location option to "under the current content item", if a default wasn't set in the content type settings
+				if (!$values['meta_data/add_to_menu']) {
+					$dummyNode = 1;
+					$values['meta_data/add_to_menu'] = $menu['section_id'] . '_' . $menu['id'] . '_' . $dummyNode;
+				}
+			
+			} else {
+				//Don't allow the "after current" option if the was no relative content item to base this off
+				$fields['meta_data/menu_options']['values']['after_current']['hidden'] = true;
 			}
 			
 			if (isset($box['tabs']['categories']['fields']['categories'])) {
 				
 				setupCategoryCheckboxes($box['tabs']['categories']['fields']['categories'], true);
 		
-				if ($categories = get('refiner__category')) {
+				if ($categories = $_GET['refiner__category'] ?? false) {
 					
 					$categories = explodeAndTrim($categories);
 					$inCategories = array_flip($categories);
@@ -666,9 +663,9 @@ class zenario_common_features__admin_boxes__content extends module_base_class {
 		}
 
 		if (isset($box['tabs']['meta_data']['fields']['writer_id'])
-		 && !engToBooleanArray($box['tabs']['meta_data']['fields']['writer_id'], 'hidden')) {
+		 && !engToBoolean($box['tabs']['meta_data']['fields']['writer_id']['hidden'] ?? false)) {
 			if ($values['meta_data/writer_id']) {
-				if (engToBooleanArray($box, 'tabs', 'meta_data', 'edit_mode', 'on')) {
+				if (engToBoolean($box['tabs']['meta_data']['edit_mode']['on'] ?? false)) {
 					if (empty($box['tabs']['meta_data']['fields']['writer_name']['current_value'])
 					 || empty($box['tabs']['meta_data']['fields']['writer_id']['last_value'])
 					 || $box['tabs']['meta_data']['fields']['writer_id']['last_value'] != $values['meta_data/writer_id']) {
@@ -691,7 +688,7 @@ class zenario_common_features__admin_boxes__content extends module_base_class {
 			$languageId = getContentLang($box['key']['cID'], $box['key']['cType']);
 			$specialPage = isSpecialPage($box['key']['cID'], $box['key']['cType']);
 		} else {
-			$languageId = ifNull($values['meta_data/language_id'], $box['key']['target_template_id'], setting('default_language'));
+			$languageId = ifNull($values['meta_data/language_id'], $box['key']['target_template_id'], cms_core::$defaultLang);
 			$specialPage = false;
 		}
 
@@ -872,7 +869,7 @@ class zenario_common_features__admin_boxes__content extends module_base_class {
 		$showMenuOptions = !empty($box['key']['create_from_toolbar']) || !empty($box['key']['create_from_content_panel']);
 		
 		if ($showMenuOptions) {
-			$fields['meta_data/menu_title']['hidden'] = $values['meta_data/menu_options'] != 'add_to_menu';
+			$fields['meta_data/menu_title']['hidden'] = !in($values['meta_data/menu_options'], 'add_to_menu', 'after_current');
 			$fields['meta_data/menu_title']['indent'] = 1;
 		}
 		
@@ -993,15 +990,24 @@ class zenario_common_features__admin_boxes__content extends module_base_class {
 			//Create Menu Nodes for first drafts
 			if ($values['meta_data/create_menu'] && $box['key']['cVersion'] == 1 && $box['key']['target_menu_section']) {
 				if (($box['key']['translate'] && checkPriv('_PRIV_EDIT_MENU_TEXT')) || (!$box['key']['translate'] && checkPriv('_PRIV_ADD_MENU_ITEM'))) {
-			
+					
+					$menu = getMenuItemFromContent($box['key']['source_cID'], $box['key']['cType']);
+					
 					if (($box['key']['duplicate'] || $box['key']['translate'])
 					 && recordEquivalence($box['key']['source_cID'], $box['key']['cID'], $box['key']['cType'])
-					 && ($menu = getMenuItemFromContent($box['key']['source_cID'], $box['key']['cType']))) {
+					 && ($menu)) {
 						//Try to use one equivalent Menu Node rather than creating two copies, if duplicationg into a new Language
 						$menuId = $menu['mID'];
 			
 					} elseif (!$box['key']['translate']) {
-						$submission = array();
+						$submission = $menu? $menu : [];
+						
+						unset(
+							$submission['id'], $submission['mID'], $submission['menu_id'],
+							$submission['redundancy'], $submission['equiv_id'],
+							$submission['parent_id'], $submission['ordinal']
+						);
+						
 						$submission['target_loc'] = 'int';
 						$submission['content_id'] = $box['key']['cID'];
 						$submission['content_type'] = $box['key']['cType'];
@@ -1018,12 +1024,15 @@ class zenario_common_features__admin_boxes__content extends module_base_class {
 			
 			$showMenuOptions = !empty($box['key']['create_from_toolbar']) || !empty($box['key']['create_from_content_panel']);
 			//Create menu node from toolbar
-			if ($showMenuOptions 
-				&& $values['meta_data/menu_options'] == 'add_to_menu' 
-				&& $values['meta_data/add_to_menu']
-			) {
-				$contentType = getContentTypeDetails($box['key']['cType']);
-				addContentItemsToMenu($box['key']['id'], $values['meta_data/add_to_menu'], $contentType['hide_menu_node'], $contentType['hide_private_item']);
+			if ($showMenuOptions && in($values['meta_data/menu_options'], 'add_to_menu', 'after_current')) {
+				
+				
+				if ($values['meta_data/menu_options'] == 'add_to_menu' && $values['meta_data/add_to_menu']) {
+					addContentItemsToMenu($box['key']['id'], $values['meta_data/add_to_menu'], $afterNeighbour = 0);
+				
+				} elseif ($values['meta_data/menu_options'] == 'after_current' && $box['key']['from_mID']) {
+					addContentItemsToMenu($box['key']['id'], $box['key']['from_mID'], $afterNeighbour = 1);
+				}
 				
 				$menuId = getRow('menu_nodes', 'id', array('equiv_id' => $box['key']['cID'], 'content_type' => $box['key']['cType']));
 				saveMenuText($menuId, $values['meta_data/language_id'], array('name' => $values['meta_data/menu_title']));
@@ -1047,18 +1056,18 @@ class zenario_common_features__admin_boxes__content extends module_base_class {
 		}
 
 		//Set the Layout
-		if (engToBooleanArray($box, 'tabs', 'meta_data', 'edit_mode', 'on')
+		if (engToBoolean($box['tabs']['meta_data']['edit_mode']['on'] ?? false)
 		 && checkPriv('_PRIV_EDIT_CONTENT_ITEM_TEMPLATE', $box['key']['cID'], $box['key']['cType'])) {
 			$newLayoutId = $values['meta_data/layout_id'];
 		}
 
 		//Save the CSS and background
-		if (engToBooleanArray($box, 'tabs', 'css', 'edit_mode', 'on')
+		if (engToBoolean($box['tabs']['css']['edit_mode']['on'] ?? false)
 		 && checkPriv('_PRIV_EDIT_CONTENT_ITEM_TEMPLATE', $box['key']['cID'], $box['key']['cType'])) {
 			$version['css_class'] = $values['css/css_class'];
 	
-			if (($filepath = getPathOfUploadedFileInCacheDir($values['css/background_image']))
-			 && ($imageId = addFileToDatabase('background_image', $filepath, false, $mustBeAnImage = true))) {
+			if (($filepath = Ze\File::getPathOfUploadedInCacheDir($values['css/background_image']))
+			 && ($imageId = Ze\File::addToDatabase('background_image', $filepath, false, $mustBeAnImage = true))) {
 				$version['bg_image_id'] = $imageId;
 			} else {
 				$version['bg_image_id'] = $values['css/background_image'];
@@ -1070,11 +1079,11 @@ class zenario_common_features__admin_boxes__content extends module_base_class {
 		}
 
 		//Save the chosen file, if a file was chosen
-		if (engToBooleanArray($box, 'tabs', 'file', 'edit_mode', 'on')) {
+		if (engToBoolean($box['tabs']['file']['edit_mode']['on'] ?? false)) {
 			if ($values['file/file']
-			 && ($path = getPathOfUploadedFileInCacheDir($values['file/file']))
+			 && ($path = Ze\File::getPathOfUploadedInCacheDir($values['file/file']))
 			 && ($filename = preg_replace('/([^.a-z0-9]+)/i', '_', basename($path)))
-			 && ($fileId = addFileToDocstoreDir('content', $path, $filename))) {
+			 && ($fileId = Ze\File::addToDocstoreDir('content', $path, $filename))) {
 				$version['file_id'] = $fileId;
 				$version['filename'] = $filename;
 			} else {
@@ -1116,7 +1125,7 @@ class zenario_common_features__admin_boxes__content extends module_base_class {
 
 		//Update item Categories
 		if (empty($box['tabs']['categories']['hidden'])
-		 && engToBooleanArray($box, 'tabs', 'categories', 'edit_mode', 'on')
+		 && engToBoolean($box['tabs']['categories']['edit_mode']['on'] ?? false)
 		 && isset($values['categories/categories'])
 		 && checkPriv('_PRIV_EDIT_CONTENT_ITEM_CATEGORIES')) {
 			setContentItemCategories($box['key']['cID'], $box['key']['cType'], explodeAndTrim($values['categories/categories']));

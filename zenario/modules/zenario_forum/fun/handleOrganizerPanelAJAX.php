@@ -30,7 +30,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 switch ($path) {
 	case 'zenario__social/nav/forums/panel':
-		if (post('remove_forum') && checkPriv('_PRIV_MANAGE_ITEM_SLOT')) {
+		if (($_POST['remove_forum'] ?? false) && checkPriv('_PRIV_MANAGE_ITEM_SLOT')) {
 			$sql = "
 				DELETE FROM ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "forums
 				WHERE post_count = 0
@@ -38,7 +38,7 @@ switch ($path) {
 				  AND id = ". (int) $ids;
 			sqlQuery($sql);
 		
-		} elseif (post('remove_thread_page') && checkPriv('_PRIV_MANAGE_ITEM_SLOT')) {
+		} elseif (($_POST['remove_thread_page'] ?? false) && checkPriv('_PRIV_MANAGE_ITEM_SLOT')) {
 			$sql = "
 				UPDATE ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "forums SET
 					thread_content_id = 0,
@@ -46,7 +46,7 @@ switch ($path) {
 				WHERE id = ". (int) $ids;
 			sqlQuery($sql);
 		
-		} elseif (post('remove_new_thread_page') && checkPriv('_PRIV_MANAGE_ITEM_SLOT')) {
+		} elseif (($_POST['remove_new_thread_page'] ?? false) && checkPriv('_PRIV_MANAGE_ITEM_SLOT')) {
 			$sql = "
 				UPDATE ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "forums SET
 					new_thread_content_id = 0,
@@ -54,21 +54,21 @@ switch ($path) {
 				WHERE id = ". (int) $ids;
 			sqlQuery($sql);
 		
-		} elseif (post('lock_forum') && checkPriv('_PRIV_MODERATE_USER_COMMENTS')) {
+		} elseif (($_POST['lock_forum'] ?? false) && checkPriv('_PRIV_MODERATE_USER_COMMENTS')) {
 			$sql = "
 				UPDATE ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "forums SET
 					locked = 1
 				WHERE id = ". (int) $ids;
 			sqlQuery($sql);
 		
-		} elseif (post('unlock_forum') && checkPriv('_PRIV_MODERATE_USER_COMMENTS')) {
+		} elseif (($_POST['unlock_forum'] ?? false) && checkPriv('_PRIV_MODERATE_USER_COMMENTS')) {
 			$sql = "
 				UPDATE ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "forums SET
 					locked = 0
 				WHERE id = ". (int) $ids;
 			sqlQuery($sql);
 			
-		} elseif (post('reorder') && checkPriv('_PRIV_REORDER_MENU_ITEM')) {
+		} elseif (($_POST['reorder'] ?? false) && checkPriv('_PRIV_REORDER_MENU_ITEM')) {
 			foreach (explode(',', $ids) as $id) {
 				if (!empty($_POST['ordinals'][$id])) {
 					$sql = "

@@ -185,11 +185,11 @@ class zenario_email_template_manager extends module_base_class {
 		
 		$sql = "
 			INSERT INTO ". DB_NAME_PREFIX. ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX. "email_template_sending_log SET
-				module_id = ". (int) getRow('plugin_instances', 'module_id', array('id' => arrayKey($senderCmsObjectArray, 'instanceId'))). ",
-				instance_id = ". (int) arrayKey($senderCmsObjectArray, 'instanceId'). ",
-				content_id = ". (int) arrayKey($senderCmsObjectArray, 'cID'). ",
-				content_type = '". sqlEscape(arrayKey($senderCmsObjectArray, 'cType')). "',
-				content_version = ". (int) arrayKey($senderCmsObjectArray, 'cVersion'). ",
+				module_id = ". (int) getRow('plugin_instances', 'module_id', array('id' => ($senderCmsObjectArray['instanceId'] ?? false))). ",
+				instance_id = ". (int) ($senderCmsObjectArray['instanceId'] ?? false). ",
+				content_id = ". (int) ($senderCmsObjectArray['cID'] ?? false). ",
+				content_type = '". sqlEscape($senderCmsObjectArray['cType'] ?? false). "',
+				content_version = ". (int) ($senderCmsObjectArray['cVersion'] ?? false). ",
 				email_template_id = ". (int) $templateNo. ",
 				email_template_name = '". sqlEscape(getRow('email_templates', 'template_name', array('id' => $templateNo))). "',
 				email_subject = '". sqlEscape($subject). "',

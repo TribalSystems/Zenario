@@ -32,7 +32,7 @@ require_once CMS_ROOT. 'zenario/libraries/mit/recaptcha/recaptchalib.php';
 
 $resp = recaptcha_check_answer ($privatekey,
 								visitorIP(),
-								post('recaptcha_challenge_field'),
-								post('recaptcha_response_field'));
+								($_POST['recaptcha_challenge_field'] ?? false),
+								($_POST['recaptcha_response_field'] ?? false));
 
 return (bool) $resp->is_valid;

@@ -209,6 +209,21 @@ function loadSiteConfig() {
 		}
 	}
 	
+	cms_core::$defaultLang = cms_core::$siteConfig['default_language'] ?? null;
+	
+	//Check whether we should show error messages or not
+	if (!defined('SHOW_SQL_ERRORS_TO_VISITORS')) {
+		if (!empty($_SESSION['admin_logged_in'])
+		  || setting('show_sql_errors_to_visitors')
+		  || (defined('RUNNING_FROM_COMMAND_LINE') && RUNNING_FROM_COMMAND_LINE)) {
+			define('SHOW_SQL_ERRORS_TO_VISITORS', true);
+		} else {
+			define('SHOW_SQL_ERRORS_TO_VISITORS', false);
+		}
+	}
+	
+	cms_core::$cacheWrappers = setting('caching_enabled') && setting('cache_css_js_wrappers');
+	
 	//When we set the timezone in basicheader.inc.php, we were using whatever the server settings were.
 	//Now we have access to the database, check if it's been set in the site-settings, and set it to that if so.
 	if (!empty(cms_core::$siteConfig['zenario_timezones__default_timezone'])) {
@@ -247,28 +262,20 @@ function loadSiteConfig() {
 	
 	
 	//Load a list of languages whose phrases need translating
-	if (!checkTableDefinition(DB_NAME_PREFIX. 'languages', true)) {
+	if (!checkTableDefinition(DB_NAME_PREFIX. 'languages', true)
+	 || !isset(cms_core::$dbCols[DB_NAME_PREFIX. 'languages']['show_untranslated_content_items'])) {
 		return;
 	}
 	
-	cms_core::$langs = getRowsArray('languages', array('translate_phrases', 'domain'), array());
+	cms_core::$langs = sqlFetchAssocs('SELECT id, translate_phrases, domain, show_untranslated_content_items FROM '. DB_NAME_PREFIX. 'languages', false, 'id');
+	
 	foreach (cms_core::$langs as &$lang) {
 		$lang['translate_phrases'] = (bool) $lang['translate_phrases'];
+		$lang['show_untranslated_content_items'] = (bool) $lang['show_untranslated_content_items'];
 		
 		//Don't allow language specific domains if no primary domain has been set
 		if (empty(cms_core::$siteConfig['primary_domain'])) {
 			$lang['domain'] = '';
-		}
-	}
-	
-	//Check whether we should show error messages or not
-	if (!defined('SHOW_SQL_ERRORS_TO_VISITORS')) {
-		if (!empty($_SESSION['admin_logged_in'])
-		  || setting('show_sql_errors_to_visitors')
-		  || (defined('RUNNING_FROM_COMMAND_LINE') && RUNNING_FROM_COMMAND_LINE)) {
-			define('SHOW_SQL_ERRORS_TO_VISITORS', true);
-		} else {
-			define('SHOW_SQL_ERRORS_TO_VISITORS', false);
 		}
 	}
 	
@@ -776,10 +783,10 @@ function saveSystemFieldsFromTUIX($datasetId) {
 					$tabDetails = getRow('custom_dataset_tabs', true, array('dataset_id' => $datasetId, 'name' => $tabName));
 					$values = array(
 						'is_system_field' => 1,
-						'default_label' => ifNull(arrayKey($tab, 'dataset_label'), arrayKey($tab, 'label'), '')
+						'default_label' => ifNull($tab['dataset_label'] ?? false, ($tab['label'] ?? false), '')
 					);
 					if (!$tabDetails || !$tabDetails['ord']) {
-						$values['ord'] = (float)ifNull(arrayKey($tab, 'ord'), $tabCount);
+						$values['ord'] = (float)ifNull($tab['ord'] ?? false, $tabCount);
 					}
 					setRow('custom_dataset_tabs', 
 						$values,
@@ -795,12 +802,13 @@ function saveSystemFieldsFromTUIX($datasetId) {
 								
 								$fieldDetails = getRow('custom_dataset_fields', true, array('dataset_id' => $datasetId, 'tab_name' => $tabName, 'is_system_field' => 1, 'field_name' => $fieldName));
 								$values = array(
-									'default_label' => ifNull(arrayKey($field, 'dataset_label'), arrayKey($field, 'label'), ''),
+									'default_label' => ifNull($field['dataset_label'] ?? false, ($field['label'] ?? false), ''),
 									'is_system_field' => 1,
-									'allow_admin_to_change_visibility' => !empty($field['allow_admin_to_change_visibility'])
+									'allow_admin_to_change_visibility' => !empty($field['allow_admin_to_change_visibility']),
+									'allow_admin_to_change_export' => !empty($field['allow_admin_to_change_export'])
 								);
 								if (!$fieldDetails || !$fieldDetails['ord']) {
-									$values['ord'] = (float) ifNull(arrayKey($field, 'ord'), $fieldCount);
+									$values['ord'] = (float) ifNull($field['ord'] ?? false, $fieldCount);
 								}
 								setRow('custom_dataset_fields',
 									$values,

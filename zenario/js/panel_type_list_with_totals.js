@@ -62,7 +62,7 @@ methods.returnPageSize = function() {
 };
 
 
-methods.generateTotals = function(data, itemsToCount, grandTotal) {
+methods.generateTotals = function(data, itemsToCount) {
 
 	//Loop through each column, trying to put a total in it
 	if (data
@@ -105,16 +105,13 @@ methods.generateTotals = function(data, itemsToCount, grandTotal) {
 						total = total.toFixed(maxDecimalPlaces);
 					}
 					column.total = total;
-					
-					if(grandTotal == true) {
-						column.grandTotalExists = false;
-					} else {
-						column.grandTotalExists = true;
-					}
-					
 				} else {
 					return;
 				}
+			}
+			
+			if (column.total !== undefined) {
+				column.total_label = (column.tuix.total_label === undefined) ? 'Total:' : column.tuix.total_label;
 			}
 		}
 	}
@@ -133,7 +130,6 @@ methods.showPanel = function($header, $panel, $footer) {
 		item,
 		value,
 		total,
-		grandTotalExists,
 		foundANumber,
 		decimalPlaces,
 		maxDecimalPlaces;

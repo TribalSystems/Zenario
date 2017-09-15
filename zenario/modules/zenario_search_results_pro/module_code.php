@@ -32,7 +32,7 @@ class zenario_search_results_pro extends zenario_search_results {
 	public function init() {
 		
 		$defaultTab = $this->setting('search_html')? 'html' : ($this->setting('search_document')? 'document' : 'news');
-		$this->cTypeToSearch = ifNull(get('ctab'), $defaultTab);
+		$this->cTypeToSearch = ifNull($_GET['ctab'] ?? false, $defaultTab);
 		
 		//$this->registerGetRequest('ctab', $defaultTab);
 		

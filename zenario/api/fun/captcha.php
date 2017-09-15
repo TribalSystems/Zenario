@@ -30,7 +30,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 $publickey = setting('google_recaptcha_public_key');
 require_once CMS_ROOT. 'zenario/libraries/mit/recaptcha/recaptchalib.php';
 
-if (request('method_call') == 'refreshPlugin') {
+if (($_REQUEST['method_call'] ?? false) == 'refreshPlugin') {
 	$html = '<div id="zenario_captcha_'. $this->slotName. '"></div>';
 	$this->callScript(
 		'zenario', 'captcha',

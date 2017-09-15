@@ -47,7 +47,7 @@ class zenario_common_features__admin_boxes__document_upload extends module_base_
 		$documentNameList=array();
 		$found = false;
 		foreach ($documentsUploaded  as $document) {
-			$filename = basename(getPathOfUploadedFileInCacheDir($document));
+			$filename = basename(Ze\File::getPathOfUploadedInCacheDir($document));
 			if ($documentNameList){
 					if (in_array($filename,$documentNameList)){
 						$found=true;
@@ -91,64 +91,17 @@ class zenario_common_features__admin_boxes__document_upload extends module_base_
 	}
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		$documentsUploaded = explode(',',$values['upload_document/document__upload']);
-		$currentDateTime = date("Y-m-d H:i:s");
 		$inFolder = getRow('documents', 'id', array('id' => $box['key']['id'], 'type' => 'folder'));
-		$sql = '
-			SELECT MAX(ordinal) + 1
-			FROM ' . DB_NAME_PREFIX . 'documents
-			WHERE folder_id = ' . (int)($inFolder ? $inFolder : 0);
-		$result = sqlSelect($sql);
-		$row = sqlFetchRow($result);
-		$maxOrdinal = $row[0] ? $row[0] : 1;
-		foreach ($documentsUploaded  as $document) {
-			$filepath = getPathOfUploadedFileInCacheDir($document);
-			$filename = basename(getPathOfUploadedFileInCacheDir($document));
+		$folderId = $inFolder ? $box['key']['id'] : false;
+		
+		$documentsUploaded = explode(',',$values['upload_document/document__upload']);
+		$documentId = false;
+		foreach ($documentsUploaded as $document) {
+			$filepath = Ze\File::getPathOfUploadedInCacheDir($document);
+			$filename = basename(Ze\File::getPathOfUploadedInCacheDir($document));
 			
 			if ($filepath && $filename) {
-				$fileId = addFileToDatabase('hierarchial_file', $filepath, $filename,false,false,true);
-				
-				$documentProperties = array(
-					'type' => 'file',
-					'file_id' => $fileId,
-					'folder_id' => 0,
-					'filename' => $filename,
-					'file_datetime' => $currentDateTime,
-					'ordinal' => $maxOrdinal++);
-				
-				//Copy privacy if a document with the same file already exists
-				$docWithSameFile = getRow('documents', array('privacy', 'filename'), array('file_id' => $fileId));
-				if ($docWithSameFile) {
-					$documentProperties['privacy'] = $docWithSameFile['privacy'];
-					$documentProperties['filename'] = $docWithSameFile['filename'];
-				}
-				
-				//Delete any redirects that redirect the document to a different document
-				$hasRedirect = false;
-				$result = getRows('document_public_redirects', array('path'), array('file_id' => $fileId));
-				while ($redirect = sqlFetchAssoc($result)) {
-					$parts = explode('/', $redirect['path']);
-					deleteCacheDir(CMS_ROOT . 'public/downloads/' . $parts[0]);
-					$hasRedirect = true;
-				}
-				deleteRow('document_public_redirects', array('file_id' => $fileId));
-				
-				
-				$extraProperties = zenario_common_features::addExtractToDocument($fileId);
-				$documentProperties = array_merge($documentProperties, $extraProperties);
-		
-				if ($inFolder) {
-					$documentProperties['folder_id'] = $box['key']['id'];
-				}
-				
-				if ($documentId = insertRow('documents', $documentProperties)) {
-					zenario_common_features::processDocumentRules($documentId);
-					
-					//If there was a redirect, this document should be public
-					if ($hasRedirect) {
-						zenario_common_features::generateDocumentPublicLink($documentId);
-					}
-				}
+				$documentId = zenario_common_features::uploadDocument($filepath, $filename, $folderId);
 			}
 		}
 		$box['key']['id'] = $documentId;

@@ -30,7 +30,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 switch ($path) {
 	case 'zenario_email_template':
-		if (engToBooleanArray($box['tabs']['meta_data'], 'edit_mode', 'on')) {
+		if (engToBoolean($box['tabs']['meta_data']['edit_mode']['on'] ?? false)) {
 			exitIfNotCheckPriv('_PRIV_MANAGE_EMAIL_TEMPLATE');
 			
 			$key = array('template_name' => $values['meta_data/template_name']);

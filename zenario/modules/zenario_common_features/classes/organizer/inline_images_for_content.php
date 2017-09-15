@@ -42,10 +42,10 @@ class zenario_common_features__organizer__inline_images_for_content extends zena
 		if (!$content = getRow('content_items', array('id', 'type', 'admin_version'), array('tag_id' => $refinerId))) {
 			exit;
 
-		} elseif (post('make_sticky') && checkPriv('_PRIV_SET_CONTENT_ITEM_STICKY_IMAGE', $content['id'], $content['type'])) {
+		} elseif (($_POST['make_sticky'] ?? false) && checkPriv('_PRIV_SET_CONTENT_ITEM_STICKY_IMAGE', $content['id'], $content['type'])) {
 			self::setFeatureImage($content, $ids);
 
-		} elseif (post('make_unsticky') && checkPriv('_PRIV_SET_CONTENT_ITEM_STICKY_IMAGE', $content['id'], $content['type'])) {
+		} elseif (($_POST['make_unsticky'] ?? false) && checkPriv('_PRIV_SET_CONTENT_ITEM_STICKY_IMAGE', $content['id'], $content['type'])) {
 			self::setFeatureImage($content, 0);
 
 		} else {
@@ -62,7 +62,7 @@ class zenario_common_features__organizer__inline_images_for_content extends zena
 			//and the "Flag the first-uploaded image as feature image" option is enabled for this content type,
 			//make the first image the feature image if there wasn't already a feature image
 			if (!empty($return)
-			 && (post('upload') || post('add'))
+			 && (($_POST['upload'] ?? false) || ($_POST['add'] ?? false))
 			 && getRow('content_types', 'auto_flag_feature_image', ['content_type_id' => $content['type']])
 			 && !getRow('content_item_versions', 'feature_image_id', ['id' => $content['id'], 'type' => $content['type'], 'version' => $content['admin_version']])) {
 				$imageIds = explodeAndTrim($return);

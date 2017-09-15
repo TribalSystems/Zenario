@@ -102,7 +102,7 @@ class zenario_menu extends module_base_class {
 		}
 		
 		if ($this->language === false) {
-			$this->language = cms_core::$langId;
+			$this->language = cms_core::$visLang;
 		}
 		
 		$userDetails = false;
@@ -133,7 +133,7 @@ class zenario_menu extends module_base_class {
 					);
 				}
 			} else {
-				$homepage = $this->getHomepage(currentLangId());
+				$homepage = $this->getHomepage(visitorLangId());
 				$this->headerObjects['Parent_Name'] = htmlspecialchars($homepage['name']);
 				$this->headerObjects['Parent_Link'] = htmlspecialchars($homepage['url']);
 			}
@@ -147,7 +147,9 @@ class zenario_menu extends module_base_class {
 							 $this->numLevels, $this->maxLevel1MenuItems, $this->language,
 							 $this->onlyFollowOnLinks, $this->onlyIncludeOnLinks, 
 							 $this->showInvisibleMenuItems,
-							 $this->showMissingMenuNodes,$recurseCount = 0,$this->requests);
+							 $this->showMissingMenuNodes,
+							 $this->requests,
+							 showUntranslatedContentItems());
 							 
 		switch ($cachingRestrictions) {
 			case 'privateItemsExist':
@@ -191,11 +193,11 @@ class zenario_menu extends module_base_class {
 			
 		} elseif ($this->startFrom == 'Menu Level 4' || $this->startFrom == '_MENU_LEVEL_4') {
 			$branch = $this->getMenuBranch($currentMenuId);
-			$parentMenuId = arrayKey($branch,2)?arrayKey($branch,2):$currentMenuId;
+			$parentMenuId = ($branch[2] ?? false)?($branch[2] ?? false):$currentMenuId;
 			
 		} elseif ($this->startFrom == 'Menu Level 5' || $this->startFrom == '_MENU_LEVEL_5') {
 			$branch = $this->getMenuBranch($currentMenuId);
-			$parentMenuId = arrayKey($branch,3)?arrayKey($branch,3):$currentMenuId;
+			$parentMenuId = ($branch[3] ?? false)?($branch[3] ?? false):$currentMenuId;
 			
 		} 
 
@@ -296,7 +298,7 @@ class zenario_menu extends module_base_class {
 		}
 		
 		$width = $height = $url = false;
-		if (!empty($row['image_id']) && imageLink($width, $height, $url, $row['image_id'])) {
+		if (!empty($row['image_id']) && Ze\File::imageLink($width, $height, $url, $row['image_id'])) {
 			$menuItemImageLink = '';
 			if (!empty($row['url'])) {
 				$menuItemImageLink .= '<a';
@@ -321,7 +323,7 @@ class zenario_menu extends module_base_class {
 			
 			$width2 = $height2 = $url2 = false;
 			$onMouseOver = $onMouseOut = '';
-			if (!empty($row['rollover_image_id']) && imageLink($width2, $height2, $url2, $row['rollover_image_id'])) {
+			if (!empty($row['rollover_image_id']) && Ze\File::imageLink($width2, $height2, $url2, $row['rollover_image_id'])) {
 				
 				$onMouseOver = ' onmouseover="{this.src=\''. htmlspecialchars($url2) .'\'};" ';
 				if ($row['on']) {
@@ -434,8 +436,8 @@ class zenario_menu extends module_base_class {
 				$onlyIncludeOnLinks = true,
 				$showInvisibleMenuItems = true,
 				$showMissingMenuNodes = false,
-				$recurseCount = 0,
-				$this->requests
+				$this->requests,
+				showUntranslatedContentItems()
 				);
 			
 			if (!empty($rows[$menu['id']])) {

@@ -157,8 +157,8 @@ class zenario_common_features__admin_boxes__document_properties extends module_b
 		
 		if ($new_image) {
 			if (!in_array($new_image, $old_image)) {
-				if ($path = getPathOfUploadedFileInCacheDir($new_image)) {
-					$fileId = addFileToDocstoreDir('document_thumbnail', $path);
+				if ($path = Ze\File::getPathOfUploadedInCacheDir($new_image)) {
+					$fileId = Ze\File::addToDocstoreDir('document_thumbnail', $path);
 					$fileDetails = array();
 					$fileDetails['thumbnail_id'] = $fileId;
 					//update thumbnail

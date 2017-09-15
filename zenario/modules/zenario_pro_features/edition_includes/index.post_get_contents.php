@@ -30,7 +30,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 if (isset($chToLoadStatus)) {
 	foreach ($_GET as $request => &$value) {
-		if ($request != 'cID' && $request != 'cType' && $request != 'instanceId' && $request != 'slotName') {
+		if ($request != 'cID' && $request != 'cType' && $request != 'visLang' && $request != 'slotName' && $request != 'instanceId') {
 			if (isset(cms_core::$importantGetRequests[$request])) {
 				$chKnownRequests[$request] = $value;
 			

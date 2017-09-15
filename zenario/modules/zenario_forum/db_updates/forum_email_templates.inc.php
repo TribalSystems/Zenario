@@ -55,7 +55,7 @@ revision(80, "
         <p>&nbsp;</p>
         <p><small>This is an auto-generated email from [[cms_url]].</small></p>',
         NOW(),
-        ". (int) session('admin_userid'). ",
+        ". (int) ($_SESSION['admin_userid'] ?? false). ",
         0
     )
 
@@ -86,7 +86,7 @@ revision(80, "
         <p>&nbsp;</p>
         <p><small>This is an auto-generated email from [[cms_url]].</small></p>',
         NOW(),
-        ". (int) session('admin_userid'). ",
+        ". (int) ($_SESSION['admin_userid'] ?? false). ",
         0
     )
 
@@ -121,7 +121,7 @@ revision(80, "
         <p>Further new threads may have been posted since this email was sent.</p>
         <p><small>This is an auto-generated email. Please visit [[cms_url]] to change your notification settings.</small></p>',
         NOW(),
-        ". (int) session('admin_userid'). ",
+        ". (int) ($_SESSION['admin_userid'] ?? false). ",
         0
     )
 
@@ -155,7 +155,7 @@ revision(80, "
         <p>Further messages may have been posted since this email was sent.</p>
         <p><small>This is an auto-generated email. Please visit [[cms_url]] to change your notification settings.</small></p>',
         NOW(),
-        ". (int) session('admin_userid'). ",
+        ". (int) ($_SESSION['admin_userid'] ?? false). ",
         0
     )
 ");
@@ -189,7 +189,7 @@ revision(107, "
         <p><small>This is an auto-generated email from [[cms_url]].</small></p>
 		',
         NOW(),
-        ". (int) session('admin_userid'). ",
+        ". (int) ($_SESSION['admin_userid'] ?? false). ",
         0
     )
 ");

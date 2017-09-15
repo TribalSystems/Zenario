@@ -82,7 +82,7 @@ class zenario_forum extends zenario_comments {
 		if ($forumId = getRow(ZENARIO_FORUM_PREFIX. "forums", 'id', array($field. '_content_id' => $this->cID, $field. '_content_type' => $this->cType))) {
 			return $forumId;
 		
-		} elseif (langEquivalentItem($cID, $cType, setting('default_language')) &&
+		} elseif (langEquivalentItem($cID, $cType, cms_core::$defaultLang) &&
 		  ($forumId = getRow(ZENARIO_FORUM_PREFIX. "forums", 'id', array($field. '_content_id' => $this->cID, $field. '_content_type' => $this->cType)))) {
 			return $forumId;
 		
@@ -112,20 +112,20 @@ class zenario_forum extends zenario_comments {
 			return $this->show = false;
 		}
 		
-		$this->page = ifNull((int) request('comm_page'), 1);
+		$this->page = ifNull((int) ($_REQUEST['comm_page'] ?? false), 1);
 		
 		//Check to see if the current content item has a forum
 		if ($this->forumId = $this->checkPageType('forum')) {
 			if (!$this->loadForumInfo()) {
 				return $this->show = false;
 			
-			} elseif (request('comm_request') == 'add_thread' && $this->newThreadPageIsForumPage() && $this->canMakeThread()) {
+			} elseif (($_REQUEST['comm_request'] ?? false) == 'add_thread' && $this->newThreadPageIsForumPage() && $this->canMakeThread()) {
 				$this->mode = 'showAddThread';
 				$this->useCannonicalURLs = false;
 				$this->allowCaching(false);
 				$_GET['comm_enter_text'] = 1;
 			
-			} elseif (request('forum_thread') && $this->threadPageIsForumPage() && $this->loadThreadInfo()) {
+			} elseif (($_REQUEST['forum_thread'] ?? false) && $this->threadPageIsForumPage() && $this->loadThreadInfo()) {
 				$this->mode = 'showPosts';
 				$this->useCannonicalURLs = false;
 				$this->allowCaching(false);
@@ -140,7 +140,7 @@ class zenario_forum extends zenario_comments {
 				if ($this->loadThreadInfo()) {
 					$this->mode = 'showPosts';
 				} else {
-					if (request('forum_thread')) {
+					if ($_REQUEST['forum_thread'] ?? false) {
 						$this->clearRequest('forum_thread');
 						if ($this->loadThreadInfo()) {
 							$this->mode = 'showPosts';
@@ -180,9 +180,9 @@ class zenario_forum extends zenario_comments {
 		
 		if ($this->mode == 'showPosts') {
 			
-			if (session('extranetUserID')) {
-				$this->markThreadCheckUserIsInTable(session('extranetUserID'));
-				$this->markThreadAsRead(session('extranetUserID'));
+			if ($_SESSION['extranetUserID'] ?? false) {
+				$this->markThreadCheckUserIsInTable($_SESSION['extranetUserID'] ?? false);
+				$this->markThreadAsRead($_SESSION['extranetUserID'] ?? false);
 			}
 			
 			$this->loadPagination();
@@ -199,8 +199,8 @@ class zenario_forum extends zenario_comments {
 		
 		} elseif ($this->mode == 'showAddThread') {
 			
-			if (session('extranetUserID')) {
-				$this->markThreadCheckUserIsInTable(session('extranetUserID'));
+			if ($_SESSION['extranetUserID'] ?? false) {
+				$this->markThreadCheckUserIsInTable($_SESSION['extranetUserID'] ?? false);
 			}
 			
 			$failure = false;
@@ -216,7 +216,7 @@ class zenario_forum extends zenario_comments {
 			}
 			
 			if (!empty($_POST['comm_title']) && !empty($_POST['comm_message'])) {
-				$this->addThread(session('extranetUserID'), $_POST['comm_title'], $_POST['comm_message']);
+				$this->addThread($_SESSION['extranetUserID'] ?? false, $_POST['comm_title'], $_POST['comm_message']);
 				
 				$this->clearRequest('comm_post');
 				$this->clearRequest('comm_request');
@@ -233,8 +233,8 @@ class zenario_forum extends zenario_comments {
 		
 		} elseif ($this->mode == 'showThreads') {
 			
-			if (session('extranetUserID')) {
-				$this->markThreadCheckUserIsInTable(session('extranetUserID'));
+			if ($_SESSION['extranetUserID'] ?? false) {
+				$this->markThreadCheckUserIsInTable($_SESSION['extranetUserID'] ?? false);
 			}
 			
 			$this->forumActionHandler();
@@ -328,9 +328,9 @@ class zenario_forum extends zenario_comments {
 		} elseif ($this->modPrivs) {
 			return true;
 		} else {
-			return session('extranetUserID')
+			return ($_SESSION['extranetUserID'] ?? false)
 				&& $this->setting('allow_user_edit_own_post')
-				&& $post['poster_id'] == session('extranetUserID')
+				&& $post['poster_id'] == ($_SESSION['extranetUserID'] ?? false)
 				&& !$this->locked();
 		}
 	}
@@ -363,22 +363,22 @@ class zenario_forum extends zenario_comments {
 	}
 	
 	function canSubsThread() {
-		return session('extranetUserID') && $this->setting('enable_thread_subs');
+		return ($_SESSION['extranetUserID'] ?? false) && $this->setting('enable_thread_subs');
 	}
 	
 	function canSubsForum() {
-		return session('extranetUserID') && $this->setting('enable_forum_subs');
+		return ($_SESSION['extranetUserID'] ?? false) && $this->setting('enable_forum_subs');
 	}
 	
 	function couldSubsForum() {
-		return !session('extranetUserID') && $this->setting('enable_forum_subs') && !$this->locked();
+		return !($_SESSION['extranetUserID'] ?? false) && $this->setting('enable_forum_subs') && !$this->locked();
 	}
 	
 	function hasSubsThread() {
 		return checkRowExists(
 			ZENARIO_COMMENTS_PREFIX. 'user_subscriptions',
 			array(
-				'user_id' => session('extranetUserID'),
+				'user_id' => ($_SESSION['extranetUserID'] ?? false),
 				'forum_id' => $this->forumId,
 				'thread_id' => $this->threadId));
 	}
@@ -387,13 +387,13 @@ class zenario_forum extends zenario_comments {
 		return checkRowExists(
 			ZENARIO_COMMENTS_PREFIX. 'user_subscriptions',
 			array(
-				'user_id' => session('extranetUserID'),
+				'user_id' => ($_SESSION['extranetUserID'] ?? false),
 				'forum_id' => $this->forumId,
 				'thread_id' => 0));
 	}
 	
 	function checkConfirmKey() {
-		return get('comm_key') && get('comm_key') == arrayKey($_SESSION, 'confirm_key');
+		return ($_GET['comm_key'] ?? false) && ($_GET['comm_key'] ?? false) == ($_SESSION['confirm_key'] ?? false);
 	}
 	
 	
@@ -402,7 +402,7 @@ class zenario_forum extends zenario_comments {
 		zenario_comments::runCheckPrivs();
 		
 		$this->newThreadPrivs =
-			session('extranetUserID') && (
+			($_SESSION['extranetUserID'] ?? false) && (
 					$this->modPrivs
 				 || !$this->setting('enable_new_thread_restrictions')
 				 || !$this->setting('restrict_new_thread_to_group')
@@ -420,7 +420,7 @@ class zenario_forum extends zenario_comments {
 	protected function manageOneUpload($postId, $location, $file_name){
 		if($this->allow_uploads){
 			if(!$location || !strlen($location)) return;
-			if ($fileId = addFileToDatabase(self::$forum_post_upload_dbkey, $location, $file_name, false, false, true)) {
+			if ($fileId = Ze\File::addToDatabase(self::$forum_post_upload_dbkey, $location, $file_name, false, false, true)) {
 				$using_ids = array('file_id' => (int)$fileId, 'post_id' => (int)$postId);
 				$using_values = $using_ids;
 				$using_values['caption'] = sqlEscape($file_name);
@@ -488,7 +488,7 @@ class zenario_forum extends zenario_comments {
 			require_once CMS_ROOT. 'zenario/includes/admin.inc.php';
 			
 			if(!getRow(ZENARIO_FORUM_PREFIX . 'user_posts_uploads', 'file_id', array('file_id' => (int)$file_id))){
-				deleteFile($file_id);
+				Ze\File::delete($file_id);
 			}
 		}
 	}
@@ -528,9 +528,9 @@ class zenario_forum extends zenario_comments {
 				$height = $this->setting('image_thumbnail_height');
 				$file_id = $rec['file_id'];
 				$caption = $rec['caption'];
-				imageLink($width, $height, $url, $file_id, $width, $height);
+				Ze\File::imageLink($width, $height, $url, $file_id, $width, $height);
 				
-				$file_link = fileLink($file_id);
+				$file_link = Ze\File::link($file_id);
 				
 				$upload_links[] = array('File_Link' => $file_link, 'File_Thumbnail' => $url, 
 						'Caption' => htmlspecialchars($caption), 'File_Id' => $file_id,
@@ -600,18 +600,18 @@ class zenario_forum extends zenario_comments {
 		$actionTaken = true;
 		
 		//Note that some forum actions work via GET, so need checkConfirmKey() for extra security
-		if (get('comm_request') == 'mark_forum_read' && session('extranetUserID') && $this->checkConfirmKey()) {
+		if (($_GET['comm_request'] ?? false) == 'mark_forum_read' && ($_SESSION['extranetUserID'] ?? false) && $this->checkConfirmKey()) {
 			//Mark all of the Threads in a Forum as read for a User
-			$this->markForumRead(session('extranetUserID'));
+			$this->markForumRead($_SESSION['extranetUserID'] ?? false);
 		
-		} elseif (get('comm_request') == 'move_thread'  && $this->canMoveThread() && $this->checkConfirmKey()) {
+		} elseif (($_GET['comm_request'] ?? false) == 'move_thread'  && $this->canMoveThread() && $this->checkConfirmKey()) {
 			//Move a Thread from another Forum into this Forum
-			$this->moveThreadIntoForum(get('forum_thread_to_move'));
+			$this->moveThreadIntoForum($_GET['forum_thread_to_move'] ?? false);
 		
-		} elseif (post('comm_request') == 'subs_forum' && $this->canSubsForum() && !$this->hasSubsForum()) {
+		} elseif (($_POST['comm_request'] ?? false) == 'subs_forum' && $this->canSubsForum() && !$this->hasSubsForum()) {
 			$this->subs(true, false);
 			
-		} elseif (post('comm_request') == 'unsubs_forum' && $this->canSubsForum()) {
+		} elseif (($_POST['comm_request'] ?? false) == 'unsubs_forum' && $this->canSubsForum()) {
 			$this->subs(false, false);
 		
 		} else {
@@ -746,10 +746,10 @@ class zenario_forum extends zenario_comments {
 				forum_id
 			FROM ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "threads AS t";
 		
-		if (request('forum_thread')) {
+		if ($_REQUEST['forum_thread'] ?? false) {
 			$sql .= "
 			WHERE forum_id = ". (int) $this->forumId. "
-			  AND id = ". (int) request('forum_thread');
+			  AND id = ". (int) ($_REQUEST['forum_thread'] ?? false);
 		} else {
 			$sql .= "
 			WHERE forum_id = ". (int) $this->forumId. "
@@ -829,9 +829,9 @@ class zenario_forum extends zenario_comments {
 			FROM ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "user_posts
 			WHERE thread_id = ". (int) $this->threadId;
 		
-		if (request('comm_post')) {
+		if ($_REQUEST['comm_post'] ?? false) {
 			$sql .= "
-			  AND id = ". (int) request('comm_post');
+			  AND id = ". (int) ($_REQUEST['comm_post'] ?? false);
 		} else {
 			$sql .= "
 			ORDER BY id".
@@ -840,7 +840,7 @@ class zenario_forum extends zenario_comments {
 		
 		$result = sqlQuery($sql);
 
-		if (request('comm_post')) {
+		if ($_REQUEST['comm_post'] ?? false) {
 			if (!$this->posts[] = $this->post = sqlFetchAssoc($result)) {
 				$this->clearRequest('comm_post');
 				$this->clearRequest('comm_request');
@@ -885,7 +885,7 @@ class zenario_forum extends zenario_comments {
 	
 	protected function subs($subs, $thread = true) {
 		$key = array(
-			'user_id' => session('extranetUserID'),
+			'user_id' => ($_SESSION['extranetUserID'] ?? false),
 			'forum_id' => $this->forumId);
 		
 		if ($thread) {
@@ -1040,7 +1040,7 @@ class zenario_forum extends zenario_comments {
 	
 	
 	public static function markThreadCheckUserHasReadThread($latestUpdated, $forumId) {
-		if (!($userId = session('extranetUserID'))) {
+		if (!($userId = $_SESSION['extranetUserID'] ?? false)) {
 			return true;
 		}
 		
@@ -1061,7 +1061,7 @@ class zenario_forum extends zenario_comments {
 	//Check to see if a user has read a forum
 	public static function markThreadCheckUserHasReadForum($forumId) {
 		//Not logged in? Always return true
-		if (!$userId = session('extranetUserID')) {
+		if (!$userId = $_SESSION['extranetUserID'] ?? false) {
 			return true;
 		}
 		
@@ -1106,13 +1106,13 @@ class zenario_forum extends zenario_comments {
 	
 	
 	function forumSelectMode() {
-		if (request('comm_confirm')) {
+		if ($_REQUEST['comm_confirm'] ?? false) {
 			$this->scrollToTopOfSlot(false);
 			
-			if (request('comm_request') == 'subs_forum' && $this->canSubsForum() && !$this->hasSubsForum()) {
+			if (($_REQUEST['comm_request'] ?? false) == 'subs_forum' && $this->canSubsForum() && !$this->hasSubsForum()) {
 				$this->showConfirmBox($this->phrase('_CONFIRM_SUBS_FORUM', array('email' => htmlspecialchars(userEmail()))), $this->phrase('_SUBMIT_SUBS_FORUM'));
 				
-			} elseif (request('comm_request') == 'unsubs_forum' && $this->canSubsForum() && $this->hasSubsForum()) {
+			} elseif (($_REQUEST['comm_request'] ?? false) == 'unsubs_forum' && $this->canSubsForum() && $this->hasSubsForum()) {
 				$this->showConfirmBox($this->phrase('_CONFIRM_UNSUBS_FORUM'), $this->phrase('_SUBMIT_UNSUBS_FORUM'));
 			}
 			
@@ -1143,7 +1143,7 @@ class zenario_forum extends zenario_comments {
 			$this->mergeFields['Login_To_Post_Link'] = $this->linkToItemAnchor($loginCID, $loginCType);
 		}
 		
-		if (session('extranetUserID') && $this->forum['post_count'] && !zenario_forum::markThreadCheckUserHasReadForum($this->forumId)) {
+		if (($_SESSION['extranetUserID'] ?? false) && $this->forum['post_count'] && !zenario_forum::markThreadCheckUserHasReadForum($this->forumId)) {
 			$this->sections['Mark_Forum_Read'] = true;
 			$this->mergeFields['Mark_Forum_Read_Link'] = $this->refreshPluginSlotAnchor('&comm_page='. $this->page. '&comm_key='. $_SESSION['confirm_key']. '&comm_request=mark_forum_read', false);
 		}

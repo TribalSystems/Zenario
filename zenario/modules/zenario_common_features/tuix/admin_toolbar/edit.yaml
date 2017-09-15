@@ -209,29 +209,6 @@ sections:
                         message_type: warning
                     request:
                         delete_archives: 1
-            delete_draft:
-                #parent: action_dropdown
-                ord: 999
-                appears_in_toolbars:
-                    edit: true
-                priv: _PRIV_DELETE_DRAFT
-                visible_if: |
-                    zenarioA.checkSpecificPermsOnThisPage()
-                label: Delete draft
-                css_class: zenario_delete_draft label_to_the_left
-                ajax:
-                    confirm:
-                        message: |
-                            You are about to delete the current draft version of this content item. Any changes you've made on this draft version will be lost.
-                            
-                            This will not affect the item's published version, if one exists.
-                            
-                            Are you sure you wish to proceed?
-                        button_message: Delete draft
-                        cancel_button_message: Cancel
-                        message_type: warning
-                    request:
-                        delete: 1
             hide_content:
                 parent: action_dropdown
                 priv: _PRIV_HIDE_CONTENT_ITEM

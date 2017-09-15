@@ -56,16 +56,16 @@ echo '<!DOCTYPE HTML>
 					|| (name[0] && opener && opener[name[0]]);
 			},
 			el = document.getElementById("map"),
-			lat = "', jsEscape(get('lat')), '",
-			lng = "', jsEscape(get('lng')), '",
-			zoom = "', jsEscape(get('zoom')), '",
-			addMarkerAtCentre = "', jsEscape(get('addMarkerAtCentre')), '",
-			options = getFromOpener("', jsEscape(get('options')), '") || {},
-			callback = getFromOpener("', jsEscape(get('callback')), '"),
+			lat = "', jsEscape($_GET['lat'] ?? false), '",
+			lng = "', jsEscape($_GET['lng'] ?? false), '",
+			zoom = "', jsEscape($_GET['zoom'] ?? false), '",
+			addMarkerAtCentre = "', jsEscape($_GET['addMarkerAtCentre'] ?? false), '",
+			options = getFromOpener("', jsEscape($_GET['options'] ?? false), '") || {},
+			callback = getFromOpener("', jsEscape($_GET['callback'] ?? false), '"),
 			map,
 			marker,
-			stylesheet = "', jsEscape(get('stylesheet')), '",
-			customIcon = "', jsEscape(get('customIcon')), '",
+			stylesheet = "', jsEscape($_GET['stylesheet'] ?? false), '",
+			customIcon = "', jsEscape($_GET['customIcon'] ?? false), '",
 			addStylesheet = function(href) {
 				var sheet = document.createElement("link");
 				sheet.type = "text/css";

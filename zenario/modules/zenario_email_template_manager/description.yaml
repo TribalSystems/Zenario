@@ -24,7 +24,10 @@ description: |
             </p>
 category: management
 keywords: email, inbox, mail, newsletter, outbox, send, template
-is_pluggable: No
+
+# Reminder: you need to increment the LATEST_REVISION_NO in this module's
+# latest_revision_no.inc.php file if you change any of the fields below:
+is_pluggable: false
 admin_floating_box_tabs:
     tab:
         target_class_name: zenario_email_template_manager

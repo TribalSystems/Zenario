@@ -14,8 +14,11 @@ description: |
 keywords: >
     file, document, download, pdf, doc, docx, xls, xlsx
 category: pluggable
-is_pluggable: Yes
-can_be_version_controlled: Yes
-nestable: Yes
+
+# Reminder: you need to increment the LATEST_REVISION_NO in this module's
+# latest_revision_no.inc.php file if you change any of the fields below:
+is_pluggable: true
+can_be_version_controlled: true
+nestable: true
 default_framework: standard
 default_instance_name: Untitled Document Container

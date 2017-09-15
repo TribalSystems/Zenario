@@ -6,21 +6,21 @@ require 'tree_explorer.fun.php';
 $cachingRestrictions = false;
 $allowCaching = true;
 
-if (get("section_id")) {
-	if (get("menu_id")) {
-		if ($menuArray = getMenuStructure($cachingRestrictions, get("section_id"),false,get("menu_id"),0,100,false,false,false,true)) {
+if ($_GET["section_id"] ?? false) {
+	if ($_GET["menu_id"] ?? false) {
+		if ($menuArray = getMenuStructure($cachingRestrictions, ($_GET["section_id"] ?? false),false,($_GET["menu_id"] ?? false),0,100,false,false,false,true)) {
 			$levelNodesCount = array();
 		
-			generateMenuForJSON($menuArray, $levelNodesCount,get('sk'), get('language'));
+			generateMenuForJSON($menuArray, $levelNodesCount,($_GET['sk'] ?? false), ($_GET['language'] ?? false));
 		}
 		
-		$menuNode = getMenuNodeDetails(get("menu_id"),"en-gb");
+		$menuNode = getMenuNodeDetails($_GET["menu_id"] ?? false,"en-gb");
 
 		if (!issetArrayKey($menuNode,'name')) {
-			$menuNode = getMenuNodeDetails(get("menu_id"),"en");
+			$menuNode = getMenuNodeDetails($_GET["menu_id"] ?? false,"en");
 		}
 
-		$menuNodeAttributes = getRow("menu_nodes",array("redundancy","invisible"),array("id" => get("menu_id")));
+		$menuNodeAttributes = getRow("menu_nodes",array("redundancy","invisible"),array("id" => ($_GET["menu_id"] ?? false)));
 	
 		$redundancy = $menuNodeAttributes['redundancy'];
 		$visibility = $menuNodeAttributes['invisible'] ? "invisible" : "visible";
@@ -35,13 +35,13 @@ if (get("section_id")) {
 
 		$menuArray = array('name' => $top, 'redundancy' => $redundancy, 'visibility' => $visibility,'children' => $subMenuArray);
 	} else {
-		if ($menuArray = getMenuStructure($cachingRestrictions,get("section_id"),false,0,0,100,false,false,false,true)) {
+		if ($menuArray = getMenuStructure($cachingRestrictions,($_GET["section_id"] ?? false),false,0,0,100,false,false,false,true)) {
 			$levelNodesCount = array();
 			
-			generateMenuForJSON($menuArray, $levelNodesCount, get('sk'), get('language'));
+			generateMenuForJSON($menuArray, $levelNodesCount, ($_GET['sk'] ?? false), ($_GET['language'] ?? false));
 		}
 		
-		$top = menuSectionName(get("section_id"));
+		$top = menuSectionName($_GET["section_id"] ?? false);
 		$menuArray = array('name' => $top, 'children' => $menuArray, "section" => true);
 	}
 }

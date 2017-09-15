@@ -61,8 +61,6 @@ define('§max', '$max');
 define('§exists', '$exists');
 define('§type', '$type');
 
-define('USE_OLD_MONGO_DRIVER', version_compare(phpversion(), 7, '<') || !class_exists('MongoDB\Driver\Manager'));
-
 
 
 
@@ -102,16 +100,10 @@ function mongoCollection($collection, $returnFalseOnError = false) {
 				exit;
 			}
 	
-		} elseif (!USE_OLD_MONGO_DRIVER) {
+		} elseif (class_exists('MongoDB\Driver\Manager')) {
 			//new logic for PHP 7
-			require_once CMS_ROOT . 'zenario/libraries/by_vendor/autoload.php';
 			$mongoClient = new MongoDB\Client(MONGODB_CONNECTION_URI);
 			cms_core::$mongoDB = $mongoClient->{MONGODB_DBNAME};
-		
-		} elseif (class_exists('mongoClient')) {
-			//Old logic for PHP 5
-			$mongoClient = new mongoClient(MONGODB_CONNECTION_URI);
-			cms_core::$mongoDB = $mongoClient->selectDB(MONGODB_DBNAME);
 		
 		} else {
 			if ($returnFalseOnError) {
@@ -123,36 +115,29 @@ function mongoCollection($collection, $returnFalseOnError = false) {
 		}
 	}
 	
-	if (USE_OLD_MONGO_DRIVER) {
-		return cms_core::$mongoDB->selectCollection($collection);
-	} else {
-		return cms_core::$mongoDB->{$collection};
+	return cms_core::$mongoDB->{$collection};
+}
+
+function zenarioMongoParseInputs(&$collection, &$ids) {
+	if (is_string($collection)) {
+		$collection = mongoCollection($collection);
+	}
+	if (!is_array($ids) && !empty($ids)) {
+		$ids = ['_id' => $ids];
 	}
 }
 
 //Get a COUNT(*) of rows
 cms_core::$whitelist[] = 'mongoCount';
 function mongoCount($collection, $ids = array()) {
-	
-	if (is_string($collection)) {
-		$collection = mongoCollection($collection);
-	}
-	if (!is_array($ids) && !empty($ids)) {
-		$ids = ['_id' => $ids];
-	}
-	
+	zenarioMongoParseInputs($collection, $ids);
 	return $collection->count($ids);
 }
 
 //Run a query on a collection
 function mongoFind($collection, $cols = array(), $ids = array(), $sort = null, $limit = 0, $queryOptions = array()) {
 	
-	if (is_string($collection)) {
-		$collection = mongoCollection($collection);
-	}
-	if (!is_array($ids) && !empty($ids)) {
-		$ids = ['_id' => $ids];
-	}
+	zenarioMongoParseInputs($collection, $ids);
 	if (!empty($sort) && is_string($sort)) {
 		if ($sort[0] == '-') {
 			$sort = [substr($sort, 1) => -1];
@@ -161,44 +146,27 @@ function mongoFind($collection, $cols = array(), $ids = array(), $sort = null, $
 		}
 	}
 	
-	if (USE_OLD_MONGO_DRIVER) {
-		
-		$cursor = $collection->find($ids, $cols);
-		
-		if (isset($limit)) {
-			$cursor->limit($limit);
-		}
-		if (isset($sort)) {
-			$cursor->sort($sort);
-		}
-		//N.b. $queryOptions are not implemented in the old driver
-		
-		return $cursor;
-		
-	} else {
-		
-		if (isset($cols)) {
-			$queryOptions['projection'] = $cols;
-		}
-		if (isset($limit)) {
-			$queryOptions['limit'] = $limit;
-		}
-		if (isset($sort)) {
-			$queryOptions['sort'] = $sort;
-		}
-		
-		$cursor = $collection->find($ids, $queryOptions);
-		$cursor->setTypeMap(['root' => 'array', 'document' => 'array', 'array' => 'array']);
-		
-		try {
-			$IteratorIterator = new IteratorIterator($cursor);
-			$IteratorIterator->rewind();
-			return $IteratorIterator;
-		
-		} catch (Exception $e) {
-			$obj = new ArrayObject([]);
-			return $obj->getIterator();
-		}
+	if (is_array($cols) && $cols !== []) {
+		$queryOptions['projection'] = $cols;
+	}
+	if (isset($limit)) {
+		$queryOptions['limit'] = $limit;
+	}
+	if (isset($sort)) {
+		$queryOptions['sort'] = $sort;
+	}
+	
+	$cursor = $collection->find($ids, $queryOptions);
+	$cursor->setTypeMap(['root' => 'array', 'document' => 'array', 'array' => 'array']);
+	
+	try {
+		$IteratorIterator = new IteratorIterator($cursor);
+		$IteratorIterator->rewind();
+		return $IteratorIterator;
+	
+	} catch (Exception $e) {
+		$obj = new ArrayObject([]);
+		return $obj->getIterator();
 	}
 }
 
@@ -207,7 +175,7 @@ cms_core::$whitelist[] = 'mongoFindOne';
 function mongoFindOne($collection, $cols = array(), $ids = array(), $sort = null, $queryOptions = array()) {
 	
 	$col = false;
-	if (is_array($cols)) {
+	if (is_array($cols) || $cols === true) {
 		$col = false;
 	} else {
 		$col = $cols;
@@ -219,55 +187,35 @@ function mongoFindOne($collection, $cols = array(), $ids = array(), $sort = null
 	if ($col === false) {
 		return $row;
 	} else {
-		return arrayKey($row, $col);
+		return ($row[$col] ?? false);
 	}
 }
 
 function mongoUpdateOne($collection, $update, $ids, $queryOptions = array()) {
-	if (is_string($collection)) {
-		$collection = mongoCollection($collection);
-	}
-	if (!is_array($ids) && !empty($ids)) {
-		$ids = ['_id' => $ids];
-	}
-	
-	if (USE_OLD_MONGO_DRIVER) {
-		$queryOptions['multi'] = false;
-		$queryOptions['multiple'] = false;
-		$collection->update($ids, $update, $queryOptions);
-	} else {
-		$collection->updateOne($ids, $update, $queryOptions);
-	}
+	zenarioMongoParseInputs($collection, $ids);
+	$collection->updateOne($ids, $update, $queryOptions);
 }
 	
 function mongoUpdateMany($collection, $update, $ids = array(), $queryOptions = array()) {
-	if (is_string($collection)) {
-		$collection = mongoCollection($collection);
-	}
-	if (!is_array($ids) && !empty($ids)) {
-		$ids = ['_id' => $ids];
-	}
+	zenarioMongoParseInputs($collection, $ids);
+	$collection->updateMany($ids, $update, $queryOptions);
+}
+
+function mongoDeleteOne($collection, $ids, $queryOptions = array()) {
+	zenarioMongoParseInputs($collection, $ids);
+	$collection->deleteOne($ids, $queryOptions);
+}
 	
-	if (USE_OLD_MONGO_DRIVER) {
-		$queryOptions['multi'] = true;
-		$queryOptions['multiple'] = true;
-		$collection->update($ids, $update, $queryOptions);
-	} else {
-		$collection->updateMany($ids, $update, $queryOptions);
-	}
+function mongoDeleteMany($collection, $ids = array(), $queryOptions = array()) {
+	zenarioMongoParseInputs($collection, $ids);
+	$collection->deleteMany($ids, $queryOptions);
 }
 
 //Fetch a row from a cursor returned by mongoFind()
 function mongoFetchRow($cursor) {
-	if (USE_OLD_MONGO_DRIVER) {
-		if ($cursor->hasNext() && ($row = $cursor->next())) {
-			return $row;
-		}
-	} else {
-		if ($row = $cursor->current()) {
-			$cursor->next();
-			return $row;
-		}
+	if ($row = $cursor->current()) {
+		$cursor->next();
+		return $row;
 	}
 	
 	return false;

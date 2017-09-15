@@ -234,7 +234,7 @@ zenario__content:
                     priv: _PRIV_MANAGE_MEDIA
                     label: Detach from content item
                     multiple_select: true
-                    hide_in_select_mode: true
+                    hide_in_select_mode: false
                     disabled_if_for_any_selected_items: |
                         item.in_use_here || item.sticky_flag
                     disabled_tooltip: |

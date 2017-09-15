@@ -68,7 +68,7 @@ if (needRevision(31740)) {
 		
 		if ($sg['values'] && ($values = json_decode($sg['values'], true))) {
 			
-			foreach (explode(',', arrayKey($values, 'first_tab','indexes')) as $index) {
+			foreach (explode(',', ($values['first_tab']['indexes'] ?? false)) as $index) {
 				if (arrayKey($values, 'first_tab','rule_type_' . $index) == 'characteristic') {
 					if ($fieldId = arrayKey($values, 'first_tab','rule_characteristic_picker_' . $index)) {
 						$fieldValue = arrayKey($values, 'first_tab','rule_characteristic_values_picker_' . $index);
@@ -95,8 +95,8 @@ if (needRevision(31740)) {
 								'smart_group_id' => $sg['id'],
 								'ord' => ++$ord,
 								'field_id' => $groups[0],
-								'field2_id' => arrayKey($groups, 1),
-								'field3_id' => arrayKey($groups, 2)
+								'field2_id' => ($groups[1] ?? false),
+								'field3_id' => ($groups[2] ?? false)
 							));
 						} else {
 							foreach ($groups as $groupId) {
@@ -112,10 +112,10 @@ if (needRevision(31740)) {
 			}
 			
 			
-			if (arrayKey($values, 'exclude','enable') ) {
-				if (arrayKey($values, 'exclude','rule_type') == 'characteristic') {
-					if ($fieldId = (arrayKey($values, 'exclude','rule_characteristic_picker'))) {
-						$fieldValue = arrayKey($values, 'exclude','rule_characteristic_values_picker');
+			if ($values['exclude']['enable'] ?? false) {
+				if (($values['exclude']['rule_type'] ?? false) == 'characteristic') {
+					if ($fieldId = $values['exclude']['rule_characteristic_picker'] ?? false) {
+						$fieldValue = $values['exclude']['rule_characteristic_values_picker'] ?? false;
 						
 						insertRow('smart_group_rules', array(
 							'smart_group_id' => $sg['id'],
@@ -128,7 +128,7 @@ if (needRevision(31740)) {
 				}
 				
 				if (arrayKey($values, 'exclude' , 'rule_type') == 'group') {
-					if ($groups = arrayKey($values, 'exclude', 'rule_group_picker')) {
+					if ($groups = $values['exclude']['rule_group_picker'] ?? false) {
 						$groups = explode(',', $groups);
 						array_filter($groups);
 						
@@ -350,7 +350,7 @@ if (needRevision(37235)) {
 //If anyone has been using the extranet registration module in version 7.6 or 7.7 before the patch,
 //the send_delayed_registration_email column will have been created on the wrong table.
 //Move the data and delete the old column.
-if (needRevision(40193)) {
+if (needRevision(40780)) {
 	
 	if (sqlNumRows('SHOW COLUMNS FROM '. DB_NAME_PREFIX. 'users_custom_data LIKE "send_delayed_registration_email"')) {
 		sqlUpdate('
@@ -366,5 +366,17 @@ if (needRevision(40193)) {
 		deleteDatasetField($details['id']);
 	}
 	
-	revision(40193);
+	revision(40780);
+}
+
+//Delete old template from DB
+if (needRevision(41253)) {
+	$code = 'zenario_users__to_user_account_suspended';
+	$sql = "
+		DELETE FROM " . DB_NAME_PREFIX . "email_templates
+		WHERE code = '". sqlEscape($code) . "'";
+	sqlUpdate($sql);
+	removeItemFromPluginSettings('email_template', 0, $code);
+	
+	revision(41253);
 }

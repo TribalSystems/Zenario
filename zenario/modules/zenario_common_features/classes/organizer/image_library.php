@@ -42,7 +42,7 @@ class zenario_common_features__organizer__image_library extends module_base_clas
 				switch ($refinerName) {
 					case 'content':
 						$cID = $cType = false;
-						getCIDAndCTypeFromTagId($cID, $cType, get('refiner__content'));
+						getCIDAndCTypeFromTagId($cID, $cType, ($_GET['refiner__content'] ?? false));
 			
 						if (!checkPriv('_PRIV_EDIT_DRAFT', $cID, $cType)) {
 							unset($panel['collection_buttons']['add']);
@@ -52,8 +52,8 @@ class zenario_common_features__organizer__image_library extends module_base_clas
 						$panel['title'] =
 							adminPhrase('Images attached to the content item [[tag]], version [[version]]',
 								array(
-									'tag' => formatTagFromTagId(get('refiner__content')),
-									'version' => getRow('content_items', 'admin_version', array('tag_id' => get('refiner__content')))));
+									'tag' => formatTagFromTagId($_GET['refiner__content'] ?? false),
+									'version' => getRow('content_items', 'admin_version', array('tag_id' => ($_GET['refiner__content'] ?? false)))));
 				
 						break;
 			
@@ -283,6 +283,15 @@ class zenario_common_features__organizer__image_library extends module_base_clas
 							$text = adminPhrase('[[used_on]] [[count]] email templates', $mrg);
 						}
 						$item['usage_email_templates'] = $text;
+						
+						if ($item['privacy'] == 'auto') {
+							$item['tooltip'] = adminPhrase('[[name]] is Hidden. (will become Public when placed on a public content item, or Private when placed on a private content item)', array('name' => $item['filename']));
+						} elseif ($item['privacy'] == 'private') {
+							$item['tooltip'] = adminPhrase('[[name]] is Private. (only a logged-in extranet user can access this image via an internal link; URL will change from time to time)', array('name' => $item['filename']));
+						} elseif ($item['privacy'] == 'public') {
+							$item['tooltip'] = adminPhrase('[[name]] is Public. (any visitor who knows the public link can access it)', array('name' => $item['filename']));
+						}
+						
 					}
 				}
 				
@@ -365,7 +374,7 @@ class zenario_common_features__organizer__image_library extends module_base_clas
 	public function organizerPanelDownload($path, $ids, $refinerName, $refinerId) {
 		switch ($path) {
 			case 'zenario__content/panels/image_library':
-				if (post('download_image')) {
+				if ($_POST['download_image'] ?? false) {
 					$fileId = $ids;
 					$file =  getRow('files', array('id', 'filename', 'path'), $fileId);
 					if ($file) {
@@ -381,9 +390,9 @@ class zenario_common_features__organizer__image_library extends module_base_clas
 							header('Expires: 0');
 							header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
 							header('Pragma: public');
-							header('Content-Length: ' . filesize(docstoreFilePath($file['id'])));
+							header('Content-Length: ' . filesize(Ze\File::docstorePath($file['id'])));
 							
-							readfile(docstoreFilePath($file['id']));
+							readfile(Ze\File::docstorePath($file['id']));
 						} else {
 							header('location: '. absCMSDirURL(). 'zenario/file.php?adminDownload=1&download=1&id=' . $file['id']);
 						}

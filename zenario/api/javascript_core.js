@@ -359,6 +359,18 @@ zenario.lib(function(
 			return $body.scrollLeft(value);
 		}
 	};
+	
+	
+	var di,
+		docClasses = {},
+		docClassesSplit = document.body.className.split(' ');
+	
+	for (di in docClassesSplit) {
+		docClasses[docClassesSplit[di]] = true;
+	}
+	
+	di = docClassesSplit = undefined;
+	
 
 	zenario.versionOfIE = function(n) {
 		if (/opera|OPERA/.test(navigator.userAgent)) {
@@ -369,21 +381,33 @@ zenario.lib(function(
 	};
 
 	zenario.browserIsIE = function(n) {
-		var ver = zenario.versionOfIE();
+		if (docClasses.ie) {
+			if (n === undefined) {
+				return true;
 		
-		return ver && (n? ver <= n: true);
+			} else {
+				while (n > 5) {
+					if (docClasses['ie' + n]) {
+						return true;
+					}
+					--n;
+				}
+			}
+		}
+		
+		return false;
 	};
 
 	zenario.browserIsChrome = function() {
-		return /Chrome/.test(navigator.userAgent);
+		return docClasses.chrome;
 	};
 
 	zenario.browserIsEdge = function() {
-		return /Edge\//.test(navigator.userAgent);
+		return docClasses.edge;
 	};
 
 	zenario.browserIsFirefox = function() {
-		return /Firefox/.test(navigator.userAgent);
+		return docClasses.ff;
 	};
 
 	zenario.browserIsRetina = function() {
@@ -391,15 +415,15 @@ zenario.lib(function(
 	};
 
 	zenario.browserIsSafari = function() {
-		return /Safari/.test(navigator.userAgent);
+		return docClasses.safari;
 	};
 
 	zenario.browserIsWebKit = function() {
-		return /WebKit/.test(navigator.userAgent);
+		return docClasses.webkit;
 	};
 
 	zenario.browserIsOpera = function() {
-		return /Opera/.test(navigator.userAgent);
+		return docClasses.opera;
 	};
 
 	zenario.browserIsiPad = function() {

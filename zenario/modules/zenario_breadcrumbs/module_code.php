@@ -58,6 +58,10 @@ class zenario_breadcrumbs extends zenario_menu {
 		}
 	}
 	
+	public function shouldShowLayoutPreview() {
+		return true;
+	}
+	
 	public function showLayoutPreview() {
 		
 		$dummyMenuNode = array(
@@ -185,13 +189,13 @@ class zenario_breadcrumbs extends zenario_menu {
 				
 				case 'site_home_page':
 				default:
-					$page = $this->getHomepage(cms_core::$langId);
+					$page = $this->getHomepage(cms_core::$visLang);
 					break;
 			}
 			
 			if ($page) {
 				foreach ($menuArray as &$menu) {
-					if (arrayKey($page, 'url') != $menu['url'] && $page['name'] && $page['name'] != $menu['name']) {
+					if (($page['url'] ?? false) != $menu['url'] && $page['name'] && $page['name'] != $menu['name']) {
 						$page['children'] = $menuArray;
 						$menuArrayHome = array($page);
 						zenario_menu::drawMenu($menuArrayHome, $recurseCount);

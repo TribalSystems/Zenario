@@ -107,26 +107,37 @@ zenario__user_forms:
                     admin_box:
                         path: zenario_user_form
                     hide_on_refiner: archived
-                create_advanced_dropdown:
+                advanced_dropdown:
                     ord: 2
+                    label: Advanced
                     hide_in_select_mode: true
                     hide_on_filter: true
-                    label: Advanced
                     hide_on_refiner: archived
                     hide_when_children_are_not_visible: true
-                create_profile_form:
-                    ord: 3
+#Not implemented yet: a separate type of forms for profiles
+#                create_profile_form:
+#                    ord: 3
+#                    priv: _PRIV_MANAGE_FORMS
+#                    parent: advanced_dropdown
+#                    label: Create profile form
+#                    admin_box:
+#                        path: zenario_user_form
+#                        key:
+#                            type: profile
+                create_registration_form:
+                    ord: 4
                     priv: _PRIV_MANAGE_FORMS
-                    parent: create_advanced_dropdown
-                    label: Create profile form
+                    parent: advanced_dropdown
+                    label: Create registration form
                     admin_box:
                         path: zenario_user_form
                         key:
-                            type: profile
+                            type: registration
                 import_form:
                     ord: 5
                     priv: _PRIV_MANAGE_FORMS
-                    label: Import forms
+                    parent: advanced_dropdown
+                    label: Import form design
                     admin_box:
                         path: zenario_import_user_forms
                     hide_on_refiner: archived
@@ -162,35 +173,18 @@ zenario__user_forms:
                         request:
                             duplicate_form: "1"
                     hide_on_refiner: archived
-                export_forms:
-                    ord: 3.1
-                    priv: _PRIV_MANAGE_FORMS
-                    hide_in_select_mode: true
-                    label: Export
-                    multiple_select: true
-                    ajax:
-                        confirm:
-                            message: |
-                                Are you sure you want to export the selected forms?
-                            button_message: 'Export'
-                            cancel_button_message: Cancel
-                            message_type: warning
-                            download: true
-                        request:
-                            export_forms: "1"
+                view_responses:
+                    ord: 3.9
+                    label: View user responses
+                    priv: _PRIV_VIEW_FORM_RESPONSES
+                    link:
+                        path: zenario__user_forms/panels/user_form_responses
+                        refiner: form_id
                 view_dropdown:
                     ord: 4
                     label: View
                     hide_in_select_mode: true
                     hide_when_children_are_not_visible: true
-                view_responses:
-                    ord: 5
-                    label: Responses
-                    priv: _PRIV_VIEW_FORM_RESPONSES
-                    parent: view_dropdown
-                    link:
-                        path: zenario__user_forms/panels/user_form_responses
-                        refiner: form_id
                 view_content_items:
                     ord: 6
                     label: Content items this form is used on
@@ -198,7 +192,31 @@ zenario__user_forms:
                     link:
                         path: zenario__content/panels/content
                         refiner: form_id
-                    
+                advanced_dropdown:
+                    ord: 6.1
+                    label: Advanced
+                    hide_in_select_mode: true
+                    hide_on_filter: true
+                    hide_when_children_are_not_visible: true
+                export_forms:
+                    ord: 6.2
+                    priv: _PRIV_MANAGE_FORMS
+                    parent: advanced_dropdown
+                    hide_in_select_mode: true
+                    label: Export form specification
+                    multiple_select: true
+                    ajax:
+                        confirm:
+                            message: |
+                                Are you sure you want to export the selected form specifications?
+                            button_message: 'Export'
+                            cancel_button_message: Cancel
+                            message_type: warning
+                            download: true
+                        request:
+                            export_forms: "1"
+                
+                
                 delete:
                     ord: 98
                     priv: _PRIV_MANAGE_FORMS

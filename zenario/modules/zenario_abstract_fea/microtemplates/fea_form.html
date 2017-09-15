@@ -1,6 +1,4 @@
-<% if (zenarioA.adminSettings && zenarioA.adminSettings.show_dev_tools) { %>
-	<div class="zenario_debug" style="z-index: 1;" onclick="{{m.that.globalName}}.debug();"><div></div></div>
-<% } %>
+{{m.that.pMicroTemplate('dev_tools', m)}}
 
 <div class="
 	zfea
@@ -20,16 +18,16 @@
 	<% } %>
 	
 	<div class="zfea_back_button">
-		{{m.that.microTemplate(m.that.mtPrefix + '_button', m.tuix.sortedCollectionButtons, button => {return button.location == 'back';} )}}
+		{{m.that.pMicroTemplate('button', m.tuix.sortedCollectionButtons, 'back')}}
 	</div>
 	<div class="zfea_top_buttons">
-		{{m.that.microTemplate(m.that.mtPrefix + '_button', m.tuix.sortedCollectionButtons, button => {return button.location == 'top';} )}}
+		{{m.that.pMicroTemplate('button', m.tuix.sortedCollectionButtons, 'top')}}
 	</div>
 	
 	<form onsubmit="return false;">
-		<div>{{m.that.microTemplate(m.that.mtPrefix + '_row', m.rows)}}</div>
+		<div>{{m.that.pMicroTemplate('row', m.rows)}}</div>
 		<div>
-			{{m.that.microTemplate(m.that.mtPrefix + '_button', m.tuix.sortedCollectionButtons, button => {return !button.location;} )}}
+			{{m.that.pMicroTemplate('button', m.tuix.sortedCollectionButtons, false)}}
 		</div>
 	</form>
 </div>

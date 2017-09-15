@@ -64,7 +64,7 @@ class zenario_common_features__organizer__image_tags extends module_base_class {
 	}
 	
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
-		if (post('delete') && checkPriv('_PRIV_MANAGE_MEDIA') && $ids) {
+		if (($_POST['delete'] ?? false) && checkPriv('_PRIV_MANAGE_MEDIA') && $ids) {
 			$sql = "
 				DELETE it.*, itl.*
 				FROM ". DB_NAME_PREFIX. "image_tags as it

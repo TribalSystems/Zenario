@@ -99,7 +99,7 @@ switch ($path) {
 		if ($box['key']['id']) {
 			$logRecord = self::getLogRecordById($box['key']['id']);
 			if(count($logRecord)) {
-				$box['title'] = 'Email sent to "' .  htmlspecialchars(arrayKey($logRecord,'email_address_to')) . '" on ' .  formatDateNicely(arrayKey($logRecord,'sent_datetime')) . ' ' . formatTimeNicely(arrayKey($logRecord,'sent_datetime'),setting('vis_time_format'),'');
+				$box['title'] = 'Email sent to "' .  htmlspecialchars($logRecord['email_address_to'] ?? false) . '" on ' .  formatDateNicely($logRecord['sent_datetime'] ?? false) . ' ' . formatTimeNicely($logRecord['sent_datetime'] ?? false,setting('vis_time_format'),'');
 				$values['email_template_name'] = $logRecord['email_template_name'];
 				$values['email_subject'] = $logRecord['email_subject'];
 				$values['email_address_to'] = $logRecord['email_address_to'];

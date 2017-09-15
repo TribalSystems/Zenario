@@ -14,7 +14,7 @@ sections:
                 frontend_link: ''
             
             this:
-                label: '[[english_name]] translation'
+                label: 'This is the [[english_name]] translation'
                 parent: ''
                 frontend_link: ''
             

@@ -45,10 +45,10 @@ class zenario_common_features__organizer__site_settings extends module_base_clas
 		if (setting('favicon')
 		 && ($icon = getRow('files', array('id', 'mime_type', 'filename', 'checksum'), setting('favicon')))) {
 			if ($icon['mime_type'] == 'image/vnd.microsoft.icon' || $icon['mime_type'] == 'image/x-icon') {
-				$url = fileLink($icon['id']);
+				$url = Ze\File::link($icon['id']);
 			} else {
 				$width = $height = $url = false;
-				imageLink($width, $height, $url, $icon['id'], 24, 23);
+				Ze\File::imageLink($width, $height, $url, $icon['id'], 24, 23);
 			}
 			$panel['items']['favicon']['list_image'] = $url;
 		}
@@ -56,7 +56,7 @@ class zenario_common_features__organizer__site_settings extends module_base_clas
 		//Same for the site logo and the rebranding
 		if (setting('brand_logo') == 'custom' && setting('custom_logo')) {
 			$width = $height = $url = false;
-			imageLink($width, $height, $url, setting('custom_logo'), 24, 23);
+			Ze\File::imageLink($width, $height, $url, setting('custom_logo'), 24, 23);
 			$panel['items']['branding']['list_image'] = $url;
 		}
 

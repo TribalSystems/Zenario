@@ -31,12 +31,12 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_common_features__admin_boxes__site_settings extends module_base_class {
 
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
-		if (is_array(arrayKey($box,'tabs'))) {
+		if (is_array($box['tabs'] ?? false)) {
 			foreach ($box['tabs'] as $tabName => &$tab) {
 				if (!empty($tab['fields'])
 				 && is_array($tab['fields'])) {
 					foreach ($tab['fields'] as &$field) {
-						if ($setting = arrayKey($field, 'site_setting', 'name')) {
+						if ($setting = $field['site_setting']['name'] ?? false) {
 							$field['value'] = setting($setting);
 					
 							if ($setting == 'default_template_family') {
@@ -181,10 +181,10 @@ class zenario_common_features__admin_boxes__site_settings extends module_base_cl
 				if (!$fields['speed/query_cache_size']['hidden'] = !(
 					$fields['speed/have_query_cache']['value'] =
 					$fields['speed/have_query_cache']['current_value'] =
-						engToBooleanArray($settings, 'have_query_cache') && engToBooleanArray($settings, 'query_cache_type')
+						engToBoolean($settings['have_query_cache'] ?? false) && engToBoolean($settings['query_cache_type'] ?? false)
 				)) {
 					$fields['speed/query_cache_size']['value'] =
-					$fields['speed/query_cache_size']['current_value'] = formatFilesizeNicely((int) arrayKey($settings, 'query_cache_size'), $precision = 1, $adminMode = true);
+					$fields['speed/query_cache_size']['current_value'] = formatFilesizeNicely((int) ($settings['query_cache_size'] ?? false), $precision = 1, $adminMode = true);
 				}
 	
 			} else {
@@ -242,7 +242,7 @@ class zenario_common_features__admin_boxes__site_settings extends module_base_cl
 		}
 
 		//On multisite sites, don't allow local Admins to change the directory paths
-		if (globalDBDefined() && !session('admin_global_id')) {
+		if (globalDBDefined() && !($_SESSION['admin_global_id'] ?? false)) {
 			foreach (array('backup_dir', 'docstore_dir') as $dir) {
 				if (isset($box['tabs'][$dir]['edit_mode'])) {
 					$box['tabs'][$dir]['edit_mode']['enabled'] = false;
@@ -331,7 +331,7 @@ class zenario_common_features__admin_boxes__site_settings extends module_base_cl
 		
 		if (isset($box['tabs']['caching'])) {
 			
-			cleanDownloads();
+			cleanCacheDir();
 			if (is_writable(CMS_ROOT. 'public/images')
 			 && is_writable(CMS_ROOT. 'private/images')) {
 				$values['caching/cache_images'] = 1;
@@ -366,7 +366,7 @@ class zenario_common_features__admin_boxes__site_settings extends module_base_cl
 				$extract = '';
 				setSetting('antiword_path', $values['antiword/antiword_path'], $updateDB = false);
 		
-				if ((plainTextExtract(moduleDir('zenario_common_features', 'fun/test_files/test.doc'), $extract))
+				if ((Ze\File::plainTextExtract(moduleDir('zenario_common_features', 'fun/test_files/test.doc'), $extract))
 				 && ($extract == 'Test')) {
 					$box['tabs']['antiword']['notices']['success']['show'] = true;
 				} else {
@@ -383,7 +383,7 @@ class zenario_common_features__admin_boxes__site_settings extends module_base_cl
 				$extract = '';
 				setSetting('pdftotext_path', $values['pdftotext/pdftotext_path'], $updateDB = false);
 		
-				if ((plainTextExtract(moduleDir('zenario_common_features', 'fun/test_files/test.pdf'), $extract))
+				if ((Ze\File::plainTextExtract(moduleDir('zenario_common_features', 'fun/test_files/test.pdf'), $extract))
 				 && ($extract == 'Test')) {
 					$box['tabs']['pdftotext']['notices']['success']['show'] = true;
 				} else {
@@ -400,7 +400,7 @@ class zenario_common_features__admin_boxes__site_settings extends module_base_cl
 				$extract = '';
 				setSetting('ghostscript_path', $values['ghostscript/ghostscript_path'], $updateDB = false);
 
-				if (createPpdfFirstPageScreenshotPng(moduleDir('zenario_common_features', 'fun/test_files/test.pdf'))) {
+				if (Ze\File::createPpdfFirstPageScreenshotPng(moduleDir('zenario_common_features', 'fun/test_files/test.pdf'))) {
 					$box['tabs']['ghostscript']['notices']['success']['show'] = true;
 				} else {
 					$box['tabs']['ghostscript']['notices']['error']['show'] = true;
@@ -456,7 +456,6 @@ class zenario_common_features__admin_boxes__site_settings extends module_base_cl
 			}
 		}
 		
-		//here
 		if (isset($fields['automated_backups/test'])
 		 && $values['automated_backups/check_automated_backups']
 		 && (!isset($fields['automated_backups/test']['note_below'])
@@ -661,7 +660,7 @@ class zenario_common_features__admin_boxes__site_settings extends module_base_cl
 		}
 
 		if (isset($box['tabs']['automated_backups']['fields']['check_automated_backups'])
-		 && engToBooleanArray($box['tabs']['automated_backups'], 'edit_mode', 'on')
+		 && engToBoolean($box['tabs']['automated_backups']['edit_mode']['on'] ?? false)
 		 && $values['automated_backups/check_automated_backups']) {
 			if (!$values['automated_backups/automated_backup_log_path']) {
 				//Allow no path to be entered; this is actually the default state.
@@ -682,7 +681,7 @@ class zenario_common_features__admin_boxes__site_settings extends module_base_cl
 		foreach (array('backup_dir', 'docstore_dir') as $dir) {
 			if ($saving
 			 && isset($box['tabs'][$dir]['fields'][$dir])
-			 && engToBooleanArray($box['tabs'][$dir], 'edit_mode', 'on')) {
+			 && engToBoolean($box['tabs'][$dir]['edit_mode']['on'] ?? false)) {
 				if (!$values[$dir. '/'. $dir]) {
 					$box['tabs'][$dir]['errors'][] = adminPhrase('Please enter a directory.');
 		
@@ -717,17 +716,17 @@ class zenario_common_features__admin_boxes__site_settings extends module_base_cl
 			if (is_array($tab)
 			 && !empty($tab['fields'])
 			 && is_array($tab['fields'])
-			 && engToBooleanArray($tab, 'edit_mode', 'on')) {
+			 && engToBoolean($tab['edit_mode']['on'] ?? false)) {
 				
 				foreach ($tab['fields'] as $fieldName => &$field) {
 					if (is_array($field)) {
 						if (empty($field['readonly'])
 						 && empty($field['read_only'])
-						 && ($setting = arrayKey($field, 'site_setting', 'name'))) {
+						 && ($setting = $field['site_setting']['name'] ?? false)) {
 					
 							//Get the value of the setting. Hidden fields should count as being empty
-							if (engToBooleanArray($field, 'hidden')
-							 || engToBooleanArray($field, '_was_hidden_before')) {
+							if (engToBoolean($field['hidden'] ?? false)
+							 || engToBoolean($field['_was_hidden_before'] ?? false)) {
 								$value = '';
 							} else {
 								$value = arrayKey($values, $tabName. '/'. $fieldName);
@@ -743,7 +742,7 @@ class zenario_common_features__admin_boxes__site_settings extends module_base_cl
 							}
 					
 							//On multisite sites, don't allow local Admins to change the directory paths
-							if (in($setting, 'backup_dir', 'docstore_dir') && globalDBDefined() && !session('admin_global_id')) {
+							if (in($setting, 'backup_dir', 'docstore_dir') && globalDBDefined() && !($_SESSION['admin_global_id'] ?? false)) {
 								continue;
 							}
 					
@@ -757,8 +756,8 @@ class zenario_common_features__admin_boxes__site_settings extends module_base_cl
 					
 							//Handle file pickers
 							if (!empty($field['upload'])) {
-								if ($filepath = getPathOfUploadedFileInCacheDir($value)) {
-									$value = addFileToDatabase('site_setting', $filepath);
+								if ($filepath = Ze\File::getPathOfUploadedInCacheDir($value)) {
+									$value = Ze\File::addToDatabase('site_setting', $filepath);
 								}
 								$changesToFiles = true;
 							}
@@ -767,10 +766,12 @@ class zenario_common_features__admin_boxes__site_settings extends module_base_cl
 					
 							if ($settingChanged) {
 								//setSetting($settingName, $value, $updateDB = true, $encrypt = false, $clearCache = true)
-								setSetting($setting, $value, true, engToBooleanArray($field, 'site_setting', 'encrypt'));
+								setSetting($setting, $value, true, engToBoolean($field['site_setting']['encrypt'] ?? false));
 								
 								//Handle changing the default language of the site
 								if ($setting == 'default_language') {
+									cms_core::$defaultLang = $value;
+									
 									//Update the special pages, creating new ones if needed
 									addNeededSpecialPages();
 							
@@ -816,7 +817,7 @@ class zenario_common_features__admin_boxes__site_settings extends module_base_cl
 	
 			$result = sqlSelect($sql);
 			while ($file = sqlFetchAssoc($result)) {
-				deleteFile($file['id']);
+				Ze\File::delete($file['id']);
 			}
 		}
 		

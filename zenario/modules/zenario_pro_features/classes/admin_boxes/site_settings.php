@@ -138,7 +138,7 @@ class zenario_pro_features__admin_boxes__site_settings extends module_base_class
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		//Changes to the cache site settings..?
-		if (checkPriv('_PRIV_EDIT_SITE_SETTING') && engToBooleanArray($box, 'tabs', 'caching', 'edit_mode', 'on')) {
+		if (checkPriv('_PRIV_EDIT_SITE_SETTING') && engToBoolean($box['tabs']['caching']['edit_mode']['on'] ?? false)) {
 			//Empty the cache if so
 			zenario_pro_features::clearCacheOnShutdown($clearAll = true);
 			

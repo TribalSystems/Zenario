@@ -65,7 +65,7 @@ class zenario_common_features__admin_boxes__upload_replacement_document extends 
 	}
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
-		$location = getPathOfUploadedFileInCacheDir($values['file/upload']);
+		$location = Ze\File::getPathOfUploadedInCacheDir($values['file/upload']);
 		$file = array();
 		if (is_readable($location)
 			 && is_file($location)
@@ -77,7 +77,7 @@ class zenario_common_features__admin_boxes__upload_replacement_document extends 
 			$document = getRow('documents', array('file_id'), $documentId);
 			$key = array('checksum' => $file['checksum'], 'id' => $document['file_id']);
 			if ($existingFile = getRow('files', array('id', 'filename', 'location', 'path'), $key)) {
-				if (docstoreFilePath($existingFile['id'], false)){
+				if (Ze\File::docstorePath($existingFile['id'], false)){
 					$fields['file/upload']['error'] = adminPhrase('The replacement document is the same as the current document.');
 				}
 			}
@@ -89,8 +89,8 @@ class zenario_common_features__admin_boxes__upload_replacement_document extends 
 		$documentId = $box['key']['id'];
 		$document = getRow('documents', array('file_id', 'filename'), $documentId);
 		$replacementDocument = $values['file/upload'];
-		$replacementDocumentPath = getPathOfUploadedFileInCacheDir($replacementDocument);
-		$replacementDocumentName = basename(getPathOfUploadedFileInCacheDir($replacementDocument));
+		$replacementDocumentPath = Ze\File::getPathOfUploadedInCacheDir($replacementDocument);
+		$replacementDocumentName = basename(Ze\File::getPathOfUploadedInCacheDir($replacementDocument));
 		
 		if ($replacementDocumentPath && $replacementDocumentName) {
 			//Find if old file has public link
@@ -99,7 +99,7 @@ class zenario_common_features__admin_boxes__upload_replacement_document extends 
 			$publicLink = is_link($oldFilePath . '/' . $document['filename']);
 			
 			//Upload new file
-			$newFileId = addFileToDatabase('hierarchial_file', $replacementDocumentPath, false, false, false, true);
+			$newFileId = Ze\File::addToDatabase('hierarchial_file', $replacementDocumentPath, false, false, false, true);
 			$newFile = getRow('files', array('filename', 'short_checksum'), $newFileId);
 			
 			if (!$values['file/keep_meta_data']) {
@@ -136,7 +136,7 @@ class zenario_common_features__admin_boxes__upload_replacement_document extends 
 			}
 			setRow('documents', $documentProperties, $documentId);
 			//If the old file had a public link, create a new public link for the new file and remake all redirects to point to it including the old file.
-			if ($publicLink && cleanDownloads()) {
+			if ($publicLink && cleanCacheDir()) {
 				$newRedirect = $oldFile['short_checksum'] . '/' . $document['filename'];
 				$sql = '
 					INSERT IGNORE INTO ' . DB_NAME_PREFIX . 'document_public_redirects (document_id, file_id, path)

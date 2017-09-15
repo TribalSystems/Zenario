@@ -5,7 +5,7 @@ if (!adminSetting('show_dev_tools')) {
 	exit;
 }
 
-switch (get('mode')) {
+switch ($_GET['mode'] ?? false) {
 	case 'zenarioAB';
 		$type = 'admin_boxes';
 		break;
@@ -26,9 +26,9 @@ if (!empty($_POST['load_tuix_files']) && $data = json_decode($_POST['load_tuix_f
 			$paths = explode('.', $paths);
 			
 			
-			if ((validateScreenName($module = arrayKey($paths, 0)))
-			 && (validateScreenName($file = arrayKey($paths, 1)))
-			 && (validateScreenName($ext = arrayKey($paths, 2)))
+			if ((validateScreenName($module = $paths[0] ?? false))
+			 && (validateScreenName($file = $paths[1] ?? false))
+			 && (validateScreenName($ext = $paths[2] ?? false))
 			 && ($path = moduleDir($module, 'tuix/'. $type. '/'. $file. '.'. $ext, true))) {
 			
 				if ($tags = zenarioReadTUIXFile($path)) {

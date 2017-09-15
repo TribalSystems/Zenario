@@ -71,10 +71,10 @@ class zenario_location_manager extends module_base_class {
 	}
  
 	public function handleAJAX () {
-		if (get("mode")=="get_country_name") {
-			$country= zenario_country_manager::getCountryFullInfo("all",get("country_id"));
-			if (isset($country[get("country_id")])) {
-			    $item['country'] = $country[get("country_id")]['english_name'];
+		if (($_GET["mode"] ?? false)=="get_country_name") {
+			$country= zenario_country_manager::getCountryFullInfo("all",($_GET["country_id"] ?? false));
+			if (isset($country[($_GET["country_id"] ?? false)])) {
+			    $item['country'] = $country[($_GET["country_id"] ?? false)]['english_name'];
 			    echo $item['country'];
 			}
 		}
@@ -91,7 +91,7 @@ class zenario_location_manager extends module_base_class {
 			case 'zenario__locations/panel':
 				
 				// Get panel type and add filter if map to remove locations without map coordinates
-				if (get('panel_type') === 'google_map') {
+				if (($_GET['panel_type'] ?? false) === 'google_map') {
 					$panel['db_items']['where_statement'] = '
 						WHERE l.latitude IS NOT NULL 
 						AND l.longitude IS NOT NULL
@@ -291,7 +291,7 @@ class zenario_location_manager extends module_base_class {
 	
 					$level = $this->exploreTreeUp($refinerId) + 1;
 					$maxLevels = (int) setting('zenario_location_manager__hierarchy_levels');
-					if (($level > $maxLevels ) && (arrayKey($panel,'collection_buttons','add_child_location'))) {
+					if (($level > $maxLevels ) && ($panel['collection_buttons']['add_child_location'] ?? false)) {
 						unset($panel['collection_buttons']['add_child_location']);
 					} 
 					$panel['item_buttons']['set_parent']['name'] = 'Assign location a new parent';
@@ -486,12 +486,12 @@ class zenario_location_manager extends module_base_class {
 	                    $box['tabs']['content_item']['fields']['content_item']['value'] = $locationDetails['content_type'] . "_" . $locationDetails['equiv_id'];
 	                }
  
-                    $box['tabs']['details']['fields']['last_updated']['value'] = arrayKey($locationDetails,'last_updated');
+                    $box['tabs']['details']['fields']['last_updated']['value'] = $locationDetails['last_updated'] ?? false;
                 	$box['tabs']['details']['fields']['last_updated']['hidden'] = false;
 
-					$lastUpdatedByAdmin = getRow("admins",array("id","username","authtype"),array("id" => arrayKey($locationDetails,'last_updated_admin_id')));
+					$lastUpdatedByAdmin = getRow("admins",array("id","username","authtype"),array("id" => ($locationDetails['last_updated_admin_id'] ?? false)));
 
-                	$box['tabs']['details']['fields']['last_updated_by']['value'] = arrayKey($lastUpdatedByAdmin,'username') . ((arrayKey($lastUpdatedByAdmin,'authtype')=="super") ? " (super)":"");
+                	$box['tabs']['details']['fields']['last_updated_by']['value'] = ($lastUpdatedByAdmin['username'] ?? false) . ((($lastUpdatedByAdmin['authtype'] ?? false)=="super") ? " (super)":"");
                 	$box['tabs']['details']['fields']['last_updated_by']['hidden'] = false;
  
                 } else {
@@ -524,8 +524,8 @@ class zenario_location_manager extends module_base_class {
 				$map_lookup .= "<button onclick=\"document.getElementById('google_map_iframe').contentWindow.placeMarker(document.getElementById('pin_placement_method').value);return false\">Place Pin</button>\n";
 				$map_lookup .= "<button onclick=\"document.getElementById('google_map_iframe').contentWindow.clearMap();return false\">Clear Map</button>\n";
 				
-				$mapEdit = "<iframe id=\"google_map_iframe\" name=\"google_map_iframe\" src=\"" . htmlspecialchars($this->showFileLink("&map_center_lat=" . arrayKey($locationDetails,'map_center_latitude') . "&map_center_lng=" . arrayKey($locationDetails,'map_center_longitude') . "&marker_lat=" . arrayKey($locationDetails,'latitude') . "&marker_lng=" . arrayKey($locationDetails,'longitude') . "&zoom=" . arrayKey($locationDetails,'map_zoom')) . "&editmode=1") . "\" style=\"width: 425px;height: 425px;border: none;\"></iframe>\n";
-				$mapView = "<iframe id=\"google_map_iframe\" name=\"google_map_iframe\" src=\"" . htmlspecialchars($this->showFileLink("&map_center_lat=" . arrayKey($locationDetails,'map_center_latitude') . "&map_center_lng=" . arrayKey($locationDetails,'map_center_longitude') . "&marker_lat=" . arrayKey($locationDetails,'latitude') . "&marker_lng=" . arrayKey($locationDetails,'longitude') . "&zoom=" . arrayKey($locationDetails,'map_zoom')) . "&editmode=0") . "\" style=\"width: 425px;height: 425px;border: none;\"></iframe>\n";
+				$mapEdit = "<iframe id=\"google_map_iframe\" name=\"google_map_iframe\" src=\"" . htmlspecialchars($this->showFileLink("&map_center_lat=" . ($locationDetails['map_center_latitude'] ?? false) . "&map_center_lng=" . ($locationDetails['map_center_longitude'] ?? false) . "&marker_lat=" . ($locationDetails['latitude'] ?? false) . "&marker_lng=" . ($locationDetails['longitude'] ?? false) . "&zoom=" . ($locationDetails['map_zoom'] ?? false)) . "&editmode=1") . "\" style=\"width: 425px;height: 425px;border: none;\"></iframe>\n";
+				$mapView = "<iframe id=\"google_map_iframe\" name=\"google_map_iframe\" src=\"" . htmlspecialchars($this->showFileLink("&map_center_lat=" . ($locationDetails['map_center_latitude'] ?? false) . "&map_center_lng=" . ($locationDetails['map_center_longitude'] ?? false) . "&marker_lat=" . ($locationDetails['latitude'] ?? false) . "&marker_lng=" . ($locationDetails['longitude'] ?? false) . "&zoom=" . ($locationDetails['map_zoom'] ?? false)) . "&editmode=0") . "\" style=\"width: 425px;height: 425px;border: none;\"></iframe>\n";
 
 				$box['tabs']['details']['fields']['map_lookup']['snippet']['html'] = $map_lookup;				
 				$box['tabs']['details']['fields']['map_edit']['snippet']['html'] = $mapEdit;
@@ -676,8 +676,8 @@ class zenario_location_manager extends module_base_class {
 
 				break;
 			case "zenario_location_manager__sector":
-				if (get("refiner__sub_sectors")) {
-					$box['key']['parent_id'] = get("refiner__sub_sectors");
+				if ($_GET["refiner__sub_sectors"] ?? false) {
+					$box['key']['parent_id'] = $_GET["refiner__sub_sectors"] ?? false;
 				}
 			
 				if ($box['key']['id']) {
@@ -702,7 +702,7 @@ class zenario_location_manager extends module_base_class {
 				
 				break;
 			case "zenario_content":
-				if (isset($_GET['refiner__zenario__locations__create_content']) || (get("refinerName")=="refiner__zenario__locations__create_content")) {
+				if (isset($_GET['refiner__zenario__locations__create_content']) || (($_GET["refinerName"] ?? false)=="refiner__zenario__locations__create_content")) {
 					$box['tabs']['meta_data']['fields']['content_summary']['hidden'] = true;
 					$box['tabs']['meta_data']['fields']['lock_summary_view_mode']['hidden'] = true;
 					$box['tabs']['meta_data']['fields']['lock_summary_edit_mode']['hidden'] = true;
@@ -751,19 +751,19 @@ class zenario_location_manager extends module_base_class {
 		switch ($path) {
 			case "zenario_location_manager__location":
 				$mapEdit = "<iframe id=\"google_map_iframe\" name=\"google_map_iframe\" src=\"" . 
-						htmlspecialchars($this->showFileLink("	&map_center_lat=" . arrayKey($values, 'details/map_center_lat') . "
-															 	&map_center_lng=" . arrayKey($values, 'details/map_center_lng') . "
-															 	&marker_lat=" . arrayKey($values, 'details/marker_lat') . "
-															 	&marker_lng=" . arrayKey($values, 'details/marker_lng') . "
-															 	&zoom=" . arrayKey($values, 'details/zoom')) . "
+						htmlspecialchars($this->showFileLink("	&map_center_lat=" . ($values['details/map_center_lat'] ?? false) . "
+															 	&map_center_lng=" . ($values['details/map_center_lng'] ?? false) . "
+															 	&marker_lat=" . ($values['details/marker_lat'] ?? false) . "
+															 	&marker_lng=" . ($values['details/marker_lng'] ?? false) . "
+															 	&zoom=" . ($values['details/zoom'] ?? false)) . "
 															 	&editmode=1") . "\" 
 															 	style=\"width: 425px;height: 425px;border: none;\"></iframe>\n";
 				$mapView = "<iframe id=\"google_map_iframe\" name=\"google_map_iframe\" src=\"" . 
-						htmlspecialchars($this->showFileLink("	&map_center_lat=" . arrayKey($values, 'details/map_center_lat') . "
-																&map_center_lng=" . arrayKey($values, 'details/map_center_lng') . "
-																&marker_lat=" . arrayKey($values, 'details/marker_lat') . "
-																&marker_lng=" . arrayKey($values, 'details/marker_lng') . "
-																&zoom=" . arrayKey($values, 'details/zoom')) . "
+						htmlspecialchars($this->showFileLink("	&map_center_lat=" . ($values['details/map_center_lat'] ?? false) . "
+																&map_center_lng=" . ($values['details/map_center_lng'] ?? false) . "
+																&marker_lat=" . ($values['details/marker_lat'] ?? false) . "
+																&marker_lng=" . ($values['details/marker_lng'] ?? false) . "
+																&zoom=" . ($values['details/zoom'] ?? false)) . "
 																&editmode=0") . "\" style=\"width: 425px;height: 425px;border: none;\"></iframe>\n";
 
 				$box['tabs']['details']['fields']['map_edit']['snippet']['html'] =  $mapEdit;
@@ -934,7 +934,7 @@ class zenario_location_manager extends module_base_class {
 				}
 				
 				// Add sectors to location
-				if (engToBooleanArray($box, 'tabs', 'sectors', 'edit_mode', 'on')) {
+				if (engToBoolean($box['tabs']['sectors']['edit_mode']['on'] ?? false)) {
 					if (!empty($values['sectors/sectors'])) {
 						$this->setLocationSectors($box['key']['id'], explode(',', $values['sectors/sectors']));
 					} else {
@@ -943,14 +943,14 @@ class zenario_location_manager extends module_base_class {
 				}
 				
 				// Save location images
-				if (engToBooleanArray($box['tabs']['images'], 'edit_mode', 'on') && isset($values['images/images'])) {
+				if (engToBoolean($box['tabs']['images']['edit_mode']['on'] ?? false) && isset($values['images/images'])) {
 				
 					$ord = 0;
 					$sticky = 1;
 					$usedImages = array();
 					foreach (explode(',', $values['images/images']) as $image) {
 						$image_id = 0;
-						if ($filepath = getPathOfUploadedFileInCacheDir($image)) {
+						if ($filepath = Ze\File::getPathOfUploadedInCacheDir($image)) {
 							$image_id = self::addImage($box['key']['id'], $filepath);
 						} else {
 							$image_id = (int) $image;
@@ -1037,8 +1037,8 @@ class zenario_location_manager extends module_base_class {
 							if ($values['content_item/content_item']) {
 								$contentItemArray = explode("_",$values['content_item/content_item']);
 
-								$fieldsToChangeSQL[] = "equiv_id = " . arrayKey($contentItemArray,1);
-								$fieldsToChangeSQL[] = "content_type = '" . sqlEscape(arrayKey($contentItemArray,0)) . "'";
+								$fieldsToChangeSQL[] = "equiv_id = " . ($contentItemArray[1] ?? false);
+								$fieldsToChangeSQL[] = "content_type = '" . sqlEscape($contentItemArray[0] ?? false) . "'";
 							} else {
 								$fieldsToChangeSQL[] = "equiv_id = null";
 								$fieldsToChangeSQL[] = "content_type = null";
@@ -1056,7 +1056,7 @@ class zenario_location_manager extends module_base_class {
 						}
 						
 						$fieldsToChangeSQL[] = "last_updated = '" . now() . "'";
-						$fieldsToChangeSQL[] = "last_updated_admin_id = " . session('admin_userid');
+						$fieldsToChangeSQL[] = "last_updated_admin_id = " . ($_SESSION['admin_userid'] ?? false);
 					}
 				}
 				
@@ -1071,7 +1071,7 @@ class zenario_location_manager extends module_base_class {
 					$result = sqlQuery($sql);
 				}
 
-				if (engToBooleanArray($box, 'tabs', 'sectors', 'edit_mode', 'on')) {
+				if (engToBoolean($box['tabs']['sectors']['edit_mode']['on'] ?? false)) {
 					if ($changes['sectors/sectors']) {
 						$locationIds = explode(",",$box['key']['id']);
 						foreach ($locationIds as $locationId) {
@@ -1464,7 +1464,7 @@ class zenario_location_manager extends module_base_class {
 						break;
 				}
 			case 'zenario__locations/location_sectors/panel':
-				switch (post('action')){
+				switch ($_POST['action'] ?? false){
 					case 'remove_sector':
 						$IDs = explode(',',$ids);
 						foreach ($IDs as $ID){
@@ -1572,18 +1572,18 @@ class zenario_location_manager extends module_base_class {
 				defaultMapZoom = 1;
 				';
 		
-		if (get("map_center_lat") && get("map_center_lng") && get("zoom")) {		
-			echo 'defaultMapCentreLat = ' . get("map_center_lat") . ';
-				defaultMapCentreLng = ' . get("map_center_lng") . ';
-				defaultMapZoom = ' . get("zoom") . ';';
+		if (($_GET["map_center_lat"] ?? false) && ($_GET["map_center_lng"] ?? false) && ($_GET["zoom"] ?? false)) {		
+			echo 'defaultMapCentreLat = ' . ($_GET["map_center_lat"] ?? false) . ';
+				defaultMapCentreLng = ' . ($_GET["map_center_lng"] ?? false) . ';
+				defaultMapZoom = ' . ($_GET["zoom"] ?? false) . ';';
 		}
 		
-		if (get("marker_lat") && get("marker_lng")) {		
-			echo 'markerLat = ' . get("marker_lat") . ';
-				markerLng = ' . get("marker_lng") . ';';
+		if (($_GET["marker_lat"] ?? false) && ($_GET["marker_lng"] ?? false)) {		
+			echo 'markerLat = ' . ($_GET["marker_lat"] ?? false) . ';
+				markerLng = ' . ($_GET["marker_lng"] ?? false) . ';';
 		}		
 		
-		if (get("editmode")) {
+		if ($_GET["editmode"] ?? false) {
 			echo 'editMode = true;';
 		}
 		
@@ -1600,7 +1600,7 @@ class zenario_location_manager extends module_base_class {
 	public static function getLocationHierarchyPathAndDeepLinks ($locationId,$output=array("path" => "","link" => ""),$pathSeparator=" -> ",$linkSeparator="//item//",$recurseCount=0) {
 		$locationDetails = self::getLocationDetails($locationId);
 		
-		$output['path'] = arrayKey($locationDetails,'description') . $pathSeparator . $output['path'];
+		$output['path'] = ($locationDetails['description'] ?? false) . $pathSeparator . $output['path'];
 		$output['link'] = $linkSeparator . $locationId . $output['link'];
 
 		if (issetArrayKey($locationDetails,'parent_id')) {
@@ -2057,7 +2057,7 @@ class zenario_location_manager extends module_base_class {
 	
 	public static function handleMediaUpload($filename, $maxSize, $locationId) {
 		$error = array();
-		if (arrayKey($_FILES,$filename)) {
+		if ($_FILES[$filename] ?? false) {
 			if (is_uploaded_file($_FILES[$filename]['tmp_name'])) {
 				if ($_FILES[$filename]['size'] > $maxSize) {
 					$error['document'] = adminPhrase('_FILE_UPLOAD_ERROR_SIZE', array('size' => $maxSize));
@@ -2301,7 +2301,7 @@ class zenario_location_manager extends module_base_class {
         return getRowsArray(ZENARIO_LOCATION_MANAGER_PREFIX. 'location_images', 'image_id', array('location_id' => $locationId), 'ordinal');
     }
     public static function addImage($locationId, $location, $filename = false) {
-        $image_id = addFileToDatabase('location', $location, $filename, true);
+        $image_id = Ze\File::addToDatabase('location', $location, $filename, true);
         
         if (!$filename) {
         	$filename = basename($location);

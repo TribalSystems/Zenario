@@ -52,10 +52,6 @@ common_definitions:
                     <ul><li>Do not show something in Internet Explorer versions 7 or earlier</li></ul></li>
                 <li><code>zenarioA.siteSettings.my_setting</code>
                     <ul><li>Only show something when a Site Setting is enabled. (But note that only numeric Site Settings are available in JavaScript.)</li></ul></li>
-                <li><code>zenarioA.slotWandOn</code>
-                    <ul><li>Only show a button when empty slots are shown.</li></ul></li>
-                <li><code>!zenarioA.slotWandOn</code>
-                    <ul><li>Only show a button when empty slots are not shown.</li></ul></li>
                 <li><code>zenarioA.showGridOn</code>
                     <ul><li>Only show a button when the grid shown.</li></ul></li>
                 <li><code>!zenarioA.showGridOn</code>
@@ -96,6 +92,14 @@ properties:
                 hidden: *hidden
                 visible_if: *visible_if
                 
+                parent:
+                    type: string
+                    description: >
+                        Enter the name of another toolbar here to make your toolbar's tab appear
+                        under the named toolbar's tab as a sub-tab.
+                        
+                        There's a limit of 2 levels; you can't have a sub-tab inside another sub-tab.
+                
                 toolbar_microtemplate:
                     type: string
                     description: >
@@ -109,7 +113,7 @@ properties:
                         - edit_disabled
                         - rollback
                         - menu
-                        - template
+                        - layout
                     description: >
                         The page mode to use when this toolbar is selected.
                         

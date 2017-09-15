@@ -40,7 +40,7 @@ useGZIP();
 $mode = false;
 $tagPath = '';
 $modules = array();
-$debugMode = (bool) get('_debug');
+$debugMode = (bool) ($_GET['_debug'] ?? false);
 $loadDefinition = true;
 $settingGroup = '';
 $compatibilityClassNames = array();
@@ -101,7 +101,7 @@ if ($debugMode) {
 
 //Apply the modules' specific logic
 foreach ($modules as $className => &$module) {
-	$module->fillAdminToolbar($tags, (int) request('cID'), request('cType'), (int) request('cVersion'));
+	$module->fillAdminToolbar($tags, (int) ($_REQUEST['cID'] ?? false), ($_REQUEST['cType'] ?? false), (int) ($_REQUEST['cVersion'] ?? false));
 }
 
 
@@ -109,12 +109,12 @@ foreach ($modules as $className => &$module) {
 //Display the output as JSON
 header('Content-Type: text/javascript; charset=UTF-8');
 	
-if (request('_script')) {
+if ($_REQUEST['_script'] ?? false) {
 	echo 'zenarioAT.init2(';
 }
 
 jsonEncodeForceObject($tags);
 
-if (request('_script')) {
+if ($_REQUEST['_script'] ?? false) {
 	echo ');';
 }

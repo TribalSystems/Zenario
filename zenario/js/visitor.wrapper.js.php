@@ -30,10 +30,11 @@ header('Content-Type: text/javascript; charset=UTF-8');
 require '../basicheader.inc.php';
 
 useCache('zenario-inc-js-'. LATEST_REVISION_NO);
-useGZIP(!empty($_GET['gz']));
+useGZIP();
 
 
 //Run pre-load actions
+require CMS_ROOT. 'zenario/api/cache_functions.inc.php';
 require editionInclude('wrapper.pre_load');
 
 
@@ -57,6 +58,7 @@ incJS('zenario/api/javascript');
 incJS('zenario/js/easing');
 incJS('zenario/libraries/mit/colorbox/jquery.colorbox');
 incJS('zenario/libraries/bsd/javascript_md5/md5');
+incJS('zenario/libraries/mit/jquery.lazy/jquery.lazy');
 
 echo '
 zenario.tinyMCEPath = "', TINYMCE_DIR, 'tinymce.min.js";';

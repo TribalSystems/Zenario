@@ -153,6 +153,14 @@ methods.showPanel = function($header, $panel, $footer) {
 	
 	html = this.getHierarchyMicroTemplateHTML(m);
 	$panel.html(html);
+	
+	$panel.find('ol > li > div.organizer_can_choose').each(function (i, el) {
+		$(el).parent().parent().addClass('organizer_can_choose_children');
+	});
+	$panel.find('ol > li > div.organizer_cant_choose').each(function (i, el) {
+		$(el).parent().parent().addClass('organizer_cant_choose_children');
+	});
+	
 	$panel.show();
 	
 	this.setupHierarchy($header, $panel, $footer);

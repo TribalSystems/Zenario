@@ -319,7 +319,7 @@ class zenario_abstract_manager extends module_base_class {
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
 		if ($path != static::$dsInfo['organizerPanelPath']) return;
 		
-		if (post('delete') && (!static::$dsInfo['managePriv'] || checkPriv(static::$dsInfo['managePriv']))) {
+		if (($_POST['delete'] ?? false) && (!static::$dsInfo['managePriv'] || checkPriv(static::$dsInfo['managePriv']))) {
 			foreach (explodeAndTrim($ids, true) as $id) {
 				deleteRow(static::table(), $id);
 			}

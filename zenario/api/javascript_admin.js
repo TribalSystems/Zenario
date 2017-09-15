@@ -33,8 +33,6 @@
 	//Get information on a single item from Storekeeper 
 //	zenarioA.getItemFromOrganizer = function(path, id) {};
 
-//	zenarioA.toggleSlotWand = function() {};
-
 
 //	zenarioA.toggleShowGrid = function() {};
 	

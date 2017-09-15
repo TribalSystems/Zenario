@@ -92,7 +92,7 @@ if ($newParentId && ($parentDetails = getMenuNodeDetails($newParentId))) {
 		
 		//If there was a specific ordinal chosen, move there
 		if ($newNeighbour !== false) {
-			$submission['ordinal'] = $newNeighbour + $numMoves++;
+			$submission['ordinal'] = $newNeighbour + $afterNeighbour + $numMoves++;
 		}
 		
 		saveMenuDetails($submission, $id, false);
@@ -134,7 +134,7 @@ if ($newParentId && ($parentDetails = getMenuNodeDetails($newParentId))) {
 		
 		//If there was a specific ordinal chosen, move there
 		if ($newNeighbour !== false) {
-			$submission['ordinal'] = $newNeighbour + $numMoves++;
+			$submission['ordinal'] = $newNeighbour + $afterNeighbour + $numMoves++;
 		}
 		
 		saveMenuDetails($submission, $id, false);
@@ -149,7 +149,7 @@ if ($newNeighbour !== false && $numMoves && $idsList) {
 		WHERE section_id = ". (int) $sectionId. "
 		  AND parent_id = ". (int) $newParentId. "
 		  AND id NOT IN (". $idsList. ")
-		  AND ordinal >= ". (int) $newNeighbour;
+		  AND ordinal >= ". (int) ($newNeighbour + $afterNeighbour);
 	sqlQuery($sql);
 }
 

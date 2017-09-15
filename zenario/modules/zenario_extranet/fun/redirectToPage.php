@@ -34,19 +34,19 @@ $cID = $cType = false;
 //Check to see if there is a valid destination URL
 $validDestURL = false;
 $privacy = false;
-if (session('destURL')) {
+if ($_SESSION['destURL'] ?? false) {
 	$validDestURL = true;
 	
-	if (session('destCID')) {
+	if ($_SESSION['destCID'] ?? false) {
 		//Check to see if the destination URL is not a special page (except for the home page)
-		if ($specialPage = isSpecialPage(session('destCID'), session('destCType'))) {
+		if ($specialPage = isSpecialPage($_SESSION['destCID'] ?? false, ($_SESSION['destCType'] ?? false))) {
 			if ($specialPage != 'zenario_home') {
 				$validDestURL = false;
 			}
 		}
 		//Check to see if the destination URL is private or public
-		$equivId = equivId(session('destCID'), session('destCType'));
-		$privacy = getRow('translation_chains', 'privacy', array('equiv_id' => $equivId, 'type' => session('destCType')));
+		$equivId = equivId($_SESSION['destCID'] ?? false, ($_SESSION['destCType'] ?? false));
+		$privacy = getRow('translation_chains', 'privacy', array('equiv_id' => $equivId, 'type' => ($_SESSION['destCType'] ?? false)));
 	}
 }
 

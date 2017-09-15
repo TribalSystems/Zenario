@@ -1,0 +1,28 @@
+<div class="embed_slide">
+	
+	<div class="embed_title">
+		<div>{{m.title|e}}</div>
+	</div>
+	
+	<div class="embed_desc">
+		<div>{{m.desc|e}}</div>
+	</div>
+	
+	<% if (m.auth_warning) { %>
+		<div class="embed_auth_warning">
+			<div>{{m.auth_warning|e}}</div>
+		</div>
+	<% } %>
+	
+	<form class="embed_link">
+		<input type="text" class="embed_link" value="{{m.link|e}}"/>
+		
+		<% if (zenario.canCopy()) { %>
+			<input type="button" class="embed_copy_button" value="{{m.copy|e}}" onclick="
+				if (zenario.copy($(this.form).find('input.embed_link')[0]) && window.toastr) {
+					toastr.success('{{m.copied|e}}');
+				}
+			"/>
+		<% } %>
+	</form>
+</div>

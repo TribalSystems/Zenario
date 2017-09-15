@@ -7,8 +7,6 @@ if (!adminSetting('show_dev_tools')) {
 
 //require CMS_ROOT. 'zenario/admin/dev_tools/dev_tools.inc.php';
 
-$gzf = setting('compress_web_pages')? '?gz=1' : '?gz=0';
-$gz = setting('compress_web_pages')? '&amp;gz=1' : '&amp;gz=0';
 
 
 
@@ -20,7 +18,7 @@ echo
 <head>
 	<title>';
 	
-		switch (get('mode')) {
+		switch ($_GET['mode'] ?? false) {
 			case 'zenarioAB';
 				echo adminPhrase('Dev Tools: Specification for Admin Box');
 				break;
@@ -28,7 +26,7 @@ echo
 				echo adminPhrase('Dev Tools: Specification for Admin Toolbar');
 				break;
 			case 'zenarioO';
-				if (engToBoolean(get('orgMap'))) {
+				if (engToBoolean($_GET['orgMap'] ?? false)) {
 					echo adminPhrase('Dev Tools: Specification for Storekeeper Map');
 				} else {
 					echo adminPhrase('Dev Tools: Specification for Storekeeper Panel');
@@ -84,7 +82,7 @@ echo '
 
 
 
-switch (get('mode')) {
+switch ($_GET['mode'] ?? false) {
 	case 'zenarioAB':
 		$schemaName = 
 		$schemaNameForURL = 'admin_box_schema';
@@ -133,7 +131,7 @@ echo '
 <script type="text/javascript" src="../../js/dev_tools.min.js?v=', $v, '"></script>
 <script type="text/javascript">
 	var schema = ', json_encode($schema), ';
-	devTools.init(\'', jsEscape(get('mode')), '\', \'', jsEscape($schemaNameForURL), '\', schema, ', engToBoolean(get('orgMap')), ');
+	devTools.init(\'', jsEscape($_GET['mode'] ?? false), '\', \'', jsEscape($schemaNameForURL), '\', schema, ', engToBoolean($_GET['orgMap'] ?? false), ');
 	var sshPath = "', jsEscape(httpHostWithoutPort(). CMS_ROOT), '";
 </script>
 </body>

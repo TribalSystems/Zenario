@@ -257,7 +257,7 @@ class zenario_newsletter__admin_boxes__newsletter extends zenario_newsletter {
 		$box['tabs']['unsub_exclude']['fields']['exclude_previous_newsletters_recipients']['hidden'] =
 			!$values['unsub_exclude/exclude_previous_newsletters_recipients_enable'];
 		
-		if (engToBooleanArray($box['tabs']['meta_data']['fields']['test_send_button'], 'pressed')) {
+		if (engToBoolean($box['tabs']['meta_data']['fields']['test_send_button']['pressed'] ?? false)) {
 			$box['tabs']['meta_data']['notices']['test_send']['show'] = true;
 			
 			$error = '';
@@ -266,7 +266,7 @@ class zenario_newsletter__admin_boxes__newsletter extends zenario_newsletter {
 				$error = adminPhrase('Please enter an email address.');
 			
 			} else {
-				$adminDetails = getAdminDetails(session('admin_userid'));
+				$adminDetails = getAdminDetails($_SESSION['admin_userid'] ?? false);
 				foreach (explodeAndTrim($values['meta_data/test_send_email_address']) as $email) {
 					$body = $values['meta_data/body'];
 					if ($values['unsub_exclude/unsubscribe_link'] == 'unsub') {
@@ -314,7 +314,7 @@ class zenario_newsletter__admin_boxes__newsletter extends zenario_newsletter {
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
 		exitIfNotCheckPriv('_PRIV_EDIT_NEWSLETTER');
 		
-		if (engToBooleanArray($box['tabs']['meta_data'], 'edit_mode', 'on')) {
+		if (engToBoolean($box['tabs']['meta_data']['edit_mode']['on'] ?? false)) {
 			if (checkRowExists(
 				ZENARIO_NEWSLETTER_PREFIX. 'newsletters',
 				array('newsletter_name' => $values['meta_data/newsletter_name'], 'id' => array('!' => $box['key']['id']))
@@ -327,7 +327,7 @@ class zenario_newsletter__admin_boxes__newsletter extends zenario_newsletter {
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		exitIfNotCheckPriv('_PRIV_EDIT_NEWSLETTER');
 		
-		if (engToBooleanArray($box['tabs']['meta_data'], 'edit_mode', 'on')) {
+		if (engToBoolean($box['tabs']['meta_data']['edit_mode']['on'] ?? false)) {
 			
 			addAbsURLsToAdminBoxField($box['tabs']['meta_data']['fields']['body']);
 			
@@ -364,7 +364,7 @@ class zenario_newsletter__admin_boxes__newsletter extends zenario_newsletter {
 			$body = $values['meta_data/body'];
 			$files = array();
 			$htmlChanged = false;
-			addImageDataURIsToDatabase($body, absCMSDirURL());
+			Ze\File::addImageDataURIsToDatabase($body, absCMSDirURL());
 			syncInlineFileLinks($files, $body, $htmlChanged);
 			syncInlineFiles(
 				$files,
@@ -376,7 +376,7 @@ class zenario_newsletter__admin_boxes__newsletter extends zenario_newsletter {
 			}
 		}
 		
-		if ($box['key']['id'] && engToBooleanArray($box, 'tabs', 'unsub_exclude', 'edit_mode', 'on')) {
+		if ($box['key']['id'] && engToBoolean($box['tabs']['unsub_exclude']['edit_mode']['on'] ?? false)) {
 			setRow(
 				ZENARIO_NEWSLETTER_PREFIX. 'newsletters',
 				array(

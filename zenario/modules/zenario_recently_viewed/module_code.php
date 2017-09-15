@@ -34,14 +34,14 @@ class zenario_recently_viewed extends module_base_class {
 		$this->clearCacheBy(
 			$clearByContent = true, $clearByMenu = false, $clearByUser = false, $clearByFile = true, $clearByModuleData = true);
 		
-		if (!get("mode")) {
+		if (!($_GET["mode"] ?? false)) {
 			if ($this->setting("action")=="record_and_display" || $this->setting("action")=="record_only") {
 				$this->registerItemView();
 				$this->checkNumberOfRecentItems();
 	   		}
 	   	}
 
-		if (post('recently_viewed_pages_submit')) {
+		if ($_POST['recently_viewed_pages_submit'] ?? false) {
 			$recentlyViewedItems = array();
 		
 			foreach ($_POST as $key => $value) {
@@ -64,8 +64,8 @@ class zenario_recently_viewed extends module_base_class {
     function showSlot() {
 		$frameworkArray = array();
 
-		if (get("mode")=="delete_recent_item") {
-			$this->deleteRecentlyViewedItem(get("key"));
+		if (($_GET["mode"] ?? false)=="delete_recent_item") {
+			$this->deleteRecentlyViewedItem($_GET["key"] ?? false);
 		} 
     
     	if ($this->setting("action")=="record_and_display" || $this->setting("action")=="display_only") {
@@ -116,7 +116,7 @@ class zenario_recently_viewed extends module_base_class {
 			}
 		}
     	
-    	if (post('recently_viewed_pages_submit')) {
+    	if ($_POST['recently_viewed_pages_submit'] ?? false) {
 	  		$this->framework("Outer",array(),array("Items_Submitted" => true));
     	} elseif ($frameworkArray) {
 				
@@ -209,15 +209,15 @@ class zenario_recently_viewed extends module_base_class {
     }
     
     function getRecentlyViewedItems () {
-    	if (session('recently_viewed_items') && is_array(session('recently_viewed_items'))) {
-    		return session('recently_viewed_items');
+    	if (($_SESSION['recently_viewed_items'] ?? false) && is_array($_SESSION['recently_viewed_items'] ?? false)) {
+    		return ($_SESSION['recently_viewed_items'] ?? false);
     	} else {
     		return false;
     	}
     }
     
     function deleteRecentlyViewedItem ($keyIn) {
-    	if (session('recently_viewed_items') && is_array(session('recently_viewed_items'))) {
+    	if (($_SESSION['recently_viewed_items'] ?? false) && is_array($_SESSION['recently_viewed_items'] ?? false)) {
     		foreach ($_SESSION['recently_viewed_items'] as $instanceKey => &$instance) {
     			if ($instanceKey==(int)$this->setting('pot')) {
 					foreach ($instance as &$cType) {

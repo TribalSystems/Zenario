@@ -123,19 +123,19 @@ class zenario_common_features__admin_boxes__plugin_settings extends module_base_
 	}
 
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
-		if (get('refiner__nest')) {
-			$box['key']['instanceId'] = get('refiner__nest');
-			$box['key']['eggId'] = (int) get('id');
+		if ($_GET['refiner__nest'] ?? false) {
+			$box['key']['instanceId'] = $_GET['refiner__nest'] ?? false;
+			$box['key']['eggId'] = (int) ($_GET['id'] ?? false);
 
-		} elseif (!ifNull(get('instanceId'), get('id')) && get('refiner__plugin')) {
+		} elseif (!ifNull($_GET['instanceId'] ?? false, ($_GET['id'] ?? false)) && ($_GET['refiner__plugin'] ?? false)) {
 			$box['key']['instanceId'] = false;
 			$box['key']['eggId'] = 0;
-			$box['key']['moduleId'] = get('refiner__plugin');
+			$box['key']['moduleId'] = $_GET['refiner__plugin'] ?? false;
 
 		} else {
-			$box['key']['moduleId'] = (int) get('moduleId');
-			$box['key']['instanceId'] = ifNull(get('instanceId'), get('id'));
-			$box['key']['eggId'] = (int) get('eggId');
+			$box['key']['moduleId'] = (int) ($_GET['moduleId'] ?? false);
+			$box['key']['instanceId'] = ifNull($_GET['instanceId'] ?? false, ($_GET['id'] ?? false));
+			$box['key']['eggId'] = (int) ($_GET['eggId'] ?? false);
 		}
 		
 		if ($box['key']['eggId']) {
@@ -169,11 +169,11 @@ class zenario_common_features__admin_boxes__plugin_settings extends module_base_
 
 
 		$box['key']['isVersionControlled'] = !empty($instance['content_id']);
-		$box['key']['cID'] = ifNull(arrayKey($instance, 'content_id'), get('cID'), get('parent__cID'));
-		$box['key']['cType'] = ifNull(arrayKey($instance, 'content_type'), get('cType'), get('parent__cType'));
-		$box['key']['cVersion'] = ifNull(arrayKey($instance, 'content_version'), get('cVersion'));
-		$box['key']['slotName'] = ifNull(arrayKey($instance, 'slot_name'), get('slotName'));
-		$box['key']['languageId'] = ifNull(getContentLang($box['key']['cID'], $box['key']['cType']), setting('default_language'));
+		$box['key']['cID'] = ifNull($instance['content_id'] ?? false, ($_GET['cID'] ?? false), ($_GET['parent__cID'] ?? false));
+		$box['key']['cType'] = ifNull($instance['content_type'] ?? false, ($_GET['cType'] ?? false), ($_GET['parent__cType'] ?? false));
+		$box['key']['cVersion'] = ifNull($instance['content_version'] ?? false, ($_GET['cVersion'] ?? false));
+		$box['key']['slotName'] = ifNull($instance['slot_name'] ?? false, ($_GET['slotName'] ?? false));
+		$box['key']['languageId'] = ifNull(getContentLang($box['key']['cID'], $box['key']['cType']), cms_core::$defaultLang);
 
 
 		if ($box['key']['isVersionControlled']) {
@@ -728,7 +728,7 @@ class zenario_common_features__admin_boxes__plugin_settings extends module_base_
 				//Loop through each field that would be in the Admin Box, and has the <plugin_setting> tag set
 				if (!empty($box['tabs']) && is_array($box['tabs'])) {
 					foreach ($box['tabs'] as $tabName => &$tab) {
-						if (is_array($tab) && engToBooleanArray($box, 'tabs', $tabName, 'edit_mode', 'on')) {
+						if (is_array($tab) && engToBoolean($box['tabs'][$tabName]['edit_mode']['on'] ?? false)) {
 							if (!empty($tab['fields']) && is_array($tab['fields'])) {
 								foreach ($tab['fields'] as $fieldName => &$field) {
 									if (is_array($field)) {
@@ -743,10 +743,10 @@ class zenario_common_features__admin_boxes__plugin_settings extends module_base_
 											}
 											
 											//Don't save a value for a field if it was hidden...
-											if (engToBooleanArray($tab, 'hidden')
-											 || engToBooleanArray($tab, '_was_hidden_before')
-											 || engToBooleanArray($field, 'hidden')
-											 || engToBooleanArray($field, '_was_hidden_before')) {
+											if (engToBoolean($tab['hidden'] ?? false)
+											 || engToBoolean($tab['_was_hidden_before'] ?? false)
+											 || engToBoolean($field['hidden'] ?? false)
+											 || engToBoolean($field['_was_hidden_before'] ?? false)) {
 												
 												if ($defaultValue) {
 													//If a setting has a default value, we'll need to store a blank in the database
@@ -766,7 +766,7 @@ class zenario_common_features__admin_boxes__plugin_settings extends module_base_
 											//...or fields that have not changed, and have the "dont_save_default_value"
 											//option set.
 											} else
-											if (engToBooleanArray($field, 'plugin_setting', 'dont_save_default_value')
+											if (engToBoolean($field['plugin_setting']['dont_save_default_value'] ?? false)
 											 && $defaultValue
 											 && (!isset($field['current_value'])
 											  || $field['current_value'] == $defaultValue)) {
@@ -782,8 +782,8 @@ class zenario_common_features__admin_boxes__plugin_settings extends module_base_
 												if (!empty($field['upload'])) {
 													$fileIds = array();
 													foreach (explodeAndTrim($value['value']) as $file) {
-														if ($location = getPathOfUploadedFileInCacheDir($file)) {
-															$fileIds[] = addFileToDatabase('image', $location);
+														if ($location = Ze\File::getPathOfUploadedInCacheDir($file)) {
+															$fileIds[] = Ze\File::addToDatabase('image', $location);
 														} else {
 															$fileIds[] = $file;
 														}
@@ -800,7 +800,7 @@ class zenario_common_features__admin_boxes__plugin_settings extends module_base_
 													$value['foreign_key_char'] = '';
 						
 												} else {
-													$value['dangling_cross_references'] = ifNull(arrayKey($field, 'plugin_setting', 'dangling_cross_references'), 'remove');
+													$value['dangling_cross_references'] = ifNull($field['plugin_setting']['dangling_cross_references'] ?? false, 'remove');
 													$value['foreign_key_to'] = $field['plugin_setting']['foreign_key_to'];
 						
 													if ($field['plugin_setting']['foreign_key_to'] == 'categories') {
@@ -836,7 +836,7 @@ class zenario_common_features__admin_boxes__plugin_settings extends module_base_
 												if (!$instance['content_id']) {
 													$value['is_content'] = 'synchronized_setting';
 									
-													switch (arrayKey($field, 'plugin_setting', 'foreign_key_to')) {
+													switch ($field['plugin_setting']['foreign_key_to'] ?? false) {
 														case 'file':
 															if ($fileId = (int) trim($value['value'])) {
 																$syncLibraryPluginFiles[$fileId] = array('id' => $fileId);
@@ -853,14 +853,14 @@ class zenario_common_features__admin_boxes__plugin_settings extends module_base_
 													}
 											
 						
-												} elseif (engToBooleanArray($field, 'plugin_setting', 'is_searchable_content')) {
+												} elseif (engToBoolean($field['plugin_setting']['is_searchable_content'] ?? false)) {
 													$value['is_content'] = 'version_controlled_content';
 													$syncContent = true;
 						
 												} else {
 													$value['is_content'] = 'version_controlled_setting';
 							
-													if (in(arrayKey($field, 'plugin_setting', 'foreign_key_to'), 'file', 'multiple_files')) {
+													if (in($field['plugin_setting']['foreign_key_to'] ?? false, 'file', 'multiple_files')) {
 														$syncContent = true;
 													}
 												}
@@ -869,14 +869,14 @@ class zenario_common_features__admin_boxes__plugin_settings extends module_base_
 													$value['format'] = 'empty';
 						
 												} elseif (html_entity_decode($trimedValue) != $trimedValue || strip_tags($trimedValue) != $trimedValue) {
-													if (engToBooleanArray($field, 'plugin_setting', 'translate')) {
+													if (engToBoolean($field['plugin_setting']['translate'] ?? false)) {
 														$value['format'] = 'translatable_html';
 													} else {
 														$value['format'] = 'html';
 													}
 						
 												} else {
-													if (engToBooleanArray($field, 'plugin_setting', 'translate')) {
+													if (engToBoolean($field['plugin_setting']['translate'] ?? false)) {
 														$value['format'] = 'translatable_text';
 													} else {
 														$value['format'] = 'text';
@@ -908,20 +908,20 @@ class zenario_common_features__admin_boxes__plugin_settings extends module_base_
 					$eggNameCurrentPriority = false;
 					foreach ($box['tabs'] as $tabName => &$tab) {
 						if (is_array($tab)
-						 && !engToBooleanArray($tab, 'hidden')
-						 && !engToBooleanArray($tab, '_was_hidden_before')
+						 && !engToBoolean($tab['hidden'] ?? false)
+						 && !engToBoolean($tab['_was_hidden_before'] ?? false)
 						 && !empty($tab['fields']) && is_array($tab['fields'])) {
 			
 							foreach ($tab['fields'] as $fieldName => &$field) {
 								if (is_array($field)
 								 && !empty($values[$tabName. '/'. $fieldName])
 								 && !empty($field['plugin_setting']['use_value_for_plugin_name'])
-								 && !engToBooleanArray($field, 'hidden')
-								 && !engToBooleanArray($field, '_was_hidden_before')
+								 && !engToBoolean($field['hidden'] ?? false)
+								 && !engToBoolean($field['_was_hidden_before'] ?? false)
 								 && ($eggNameCurrentPriority === false || $eggNameCurrentPriority > (int) $field['plugin_setting']['use_value_for_plugin_name'])) {
 					
 									$eggName = $values[$tabName. '/'. $fieldName];
-									$editMode = engToBooleanArray($tab, 'edit_mode', 'on')? '_' : '';
+									$editMode = engToBoolean($tab['edit_mode']['on'] ?? false)? '_' : '';
 									$eggNameCurrentPriority = (int) $field['plugin_setting']['use_value_for_plugin_name'];
 									
 									//T10290 - for an internal link, only record the tag id and not the alias and publishing status
@@ -947,7 +947,7 @@ class zenario_common_features__admin_boxes__plugin_settings extends module_base_
 					}
 					
 					if (is_array($eggName)) {
-						$eggName = arrayKey($eggName, 'label');
+						$eggName = $eggName['label'] ?? false;
 					}
 	
 					if ($eggName) {
@@ -1043,7 +1043,7 @@ class zenario_common_features__admin_boxes__plugin_settings extends module_base_
 						}
 					}
 					
-					if (!request('_save_and_continue')) {
+					if (!($_REQUEST['_save_and_continue'] ?? false)) {
 						//If the CSS files have changed, and we opened up from the front-end,
 						//unset the slotName from the key to force the toolkit to reload the whole page.
 						if ((isset($fields['this_css_tab/use_css_file']['current_value']) && $fields['this_css_tab/use_css_file']['current_value'] != $fields['this_css_tab/use_css_file']['value'])

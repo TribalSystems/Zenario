@@ -29,7 +29,8 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 switch ($path) {
 	case 'zenario__content/panels/document_tags':
-		if (post('delete')) {
+		if ($_POST['delete'] ?? false) {
+			exitIfNotCheckPriv('_PRIV_EDIT_DOCUMENTS');
 			foreach (explode(',', $ids) as $id) {
 				self::deleteDocumentTag($id);
 			}

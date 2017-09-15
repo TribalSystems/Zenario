@@ -69,7 +69,7 @@ error_reporting(ERROR_REPORTING_LEVEL);
 
 
 
-if (request('quickValidate')) {
+if ($_REQUEST['quickValidate'] ?? false) {
 	
 	if ($installStatus > 2 && empty($_SESSION['admin_logged_into_site'])) {
 		exit;
@@ -79,7 +79,7 @@ if (request('quickValidate')) {
 	$rowClasses = json_decode($_POST['row_classes'], true);
 	$snippets = array();
 	
-	quickValidateWelcomePage($values, $rowClasses, $snippets, post('tab'));
+	quickValidateWelcomePage($values, $rowClasses, $snippets, ($_POST['tab'] ?? false));
 	
 	echo json_encode(array('row_classes' => $rowClasses, 'snippets' => $snippets));
 	exit;
@@ -107,11 +107,11 @@ $removedColumns = array();
 zenarioParseTUIX2($source, $removedColumns, 'welcome');
 
 
-if (post('_format') || post('_validate')) {
+if (($_POST['_format'] ?? false) || ($_POST['_validate'] ?? false)) {
 	$clientTags = $tags = json_decode($_POST['_box'], true);
 }
 $getRequest = json_decode($_GET['get'], true);
-$task = get('task');
+$task = $_GET['task'] ?? false;
 
 
 

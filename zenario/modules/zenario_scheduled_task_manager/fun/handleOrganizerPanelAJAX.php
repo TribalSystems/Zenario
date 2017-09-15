@@ -54,34 +54,34 @@ if (!empty($_POST['rerun'])
 
 switch ($path) {
 	case 'zenario__administration/panels/zenario_scheduled_task_manager__scheduled_tasks':
-		if (post('rerun') && checkPriv('_PRIV_MANAGE_SCHEDULED_TASK')) {
+		if (!empty($_POST['rerun']) && checkPriv('_PRIV_MANAGE_SCHEDULED_TASK')) {
 			updateRow('jobs', array('status' => 'rerun_scheduled'), $ids);
 			return $ids;
 		
-		} elseif (post('enable_all') && checkPriv('_PRIV_MANAGE_SCHEDULED_TASK')) {
+		} elseif (!empty($_POST['enable_all']) && checkPriv('_PRIV_MANAGE_SCHEDULED_TASK')) {
 			setSetting('jobs_enabled', 1);
 			echo '<!--Reload_Organizer-->';
 			return;
 		
-		} elseif (post('suspend_all') && checkPriv('_PRIV_MANAGE_SCHEDULED_TASK')) {
+		} elseif (!empty($_POST['suspend_all']) && checkPriv('_PRIV_MANAGE_SCHEDULED_TASK')) {
 			setSetting('jobs_enabled', 0);
 			echo '<!--Reload_Organizer-->';
 			return;
 			
-		} elseif (post('enable') && checkPriv('_PRIV_MANAGE_SCHEDULED_TASK')) {
+		} elseif (!empty($_POST['enable']) && checkPriv('_PRIV_MANAGE_SCHEDULED_TASK')) {
 			foreach (explode(',', $ids) as $id) {
 				updateRow('jobs', array('enabled' => 1), $id);
 			}
 			return $ids;
 			
-		} elseif (post('suspend') && checkPriv('_PRIV_MANAGE_SCHEDULED_TASK')) {
+		} elseif (!empty($_POST['suspend']) && checkPriv('_PRIV_MANAGE_SCHEDULED_TASK')) {
 			foreach (explode(',', $ids) as $id) {
 				updateRow('jobs', array('enabled' => 0), $id);
 			}
 			return $ids;
 		
 			
-		} elseif (post('get_code')) {
+		} elseif (!empty($_POST['get_code'])) {
 			echo '<!--Message_Type:None-->',
 				adminPhrase('To enable Scheduled Tasks to run, please add the following command into your Crontab:'),
 				'<br/><br/>
@@ -96,14 +96,14 @@ switch ($path) {
 		
 		
 	case 'zenario__administration/panels/zenario_scheduled_task_manager__scheduled_tasks/hidden_nav/log/panel':
-		if (post('delete') && checkPriv('_PRIV_MANAGE_SCHEDULED_TASK')) {
+		if (!empty($_POST['delete']) && checkPriv('_PRIV_MANAGE_SCHEDULED_TASK')) {
 			foreach (explode(',', $ids) as $id) {
 				deleteRow('job_logs', $id);
 			}
 			return '';
 		
-		} elseif (post('truncate') && checkPriv('_PRIV_MANAGE_SCHEDULED_TASK')) {
-			deleteRow('job_logs', array('job_id' => post('refiner__job')));
+		} elseif (!empty($_POST['truncate']) && checkPriv('_PRIV_MANAGE_SCHEDULED_TASK')) {
+			deleteRow('job_logs', array('job_id' => !empty($_POST['refiner__job'])));
 			return '';
 		}
 		

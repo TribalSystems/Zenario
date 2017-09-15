@@ -3,22 +3,6 @@
 sections:
     slot_wand:
         buttons:
-            slot_wand_off:
-                css_class: zenario_toolbar_toggle zenario_toolbar_toggle_off
-                label: Show empty slots
-                tooltip: |
-                    In the current view, only slots containing a plugin at this layer are shown. Click to show empty slots.
-                visible_if: '!zenarioA.slotWandOn'
-                onclick: |
-                    zenarioA.toggleSlotWand();
-            slot_wand_on:
-                css_class: zenario_toolbar_toggle zenario_toolbar_toggle_on
-                label: Hide empty slots
-                tooltip: |
-                    All slots populated at this layer are shown. Click on a &ldquo;+&rdquo; button in an empty slot to insert a plugin.
-                visible_if: zenarioA.slotWandOn
-                onclick: |
-                    zenarioA.toggleSlotWand();
             show_grid_off:
                 css_class: zenario_toolbar_toggle zenario_toolbar_toggle_off
                 label: Show grid

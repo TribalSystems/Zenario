@@ -66,7 +66,7 @@ class zenario_ctype_event extends module_base_class {
 		}
 		
 		if ($this->targetType!='event') {
-			if ((int)arrayKey($_SESSION,'admin_userid')){
+			if ((int)($_SESSION['admin_userid'] ?? false)){
 				echo "This Plugin needs to be placed on an Event-type Content Item or configured to point to another Event-type Content Item. Please check your Plugin Settings.";
 			}
 			return;
@@ -76,11 +76,11 @@ class zenario_ctype_event extends module_base_class {
 
 			$this->mergeFields['title']=htmlspecialchars(getItemTitle($this->targetID, $this->targetType, $this->targetVersion));
 
-			if (arrayKey($event,'start_date')==arrayKey($event,'end_date')){
-				$this->mergeFields['dates_range']=$this->phrase('_SINGLE_DAY_DATE_RANGE',array('date'=>formatDateNicely(arrayKey($event,'start_date'),$this->setting('date_format'),false,false)));
+			if (($event['start_date'] ?? false)==($event['end_date'] ?? false)){
+				$this->mergeFields['dates_range']=$this->phrase('_SINGLE_DAY_DATE_RANGE',array('date'=>formatDateNicely($event['start_date'] ?? false,$this->setting('date_format'),false,false)));
 			} else {
-				$this->mergeFields['dates_range']=$this->phrase('_MULTIPLE_DAYS_DATE_RANGE',array('start_date'=>formatDateNicely(arrayKey($event,'start_date'),$this->setting('date_format'),false,false)
-																								,'end_date'=>formatDateNicely(arrayKey($event,'end_date'),$this->setting('date_format'),false,false)));
+				$this->mergeFields['dates_range']=$this->phrase('_MULTIPLE_DAYS_DATE_RANGE',array('start_date'=>formatDateNicely($event['start_date'] ?? false,$this->setting('date_format'),false,false)
+																								,'end_date'=>formatDateNicely($event['end_date'] ?? false,$this->setting('date_format'),false,false)));
 			}
 			
 			if (inc('zenario_event_days_and_dates')){
@@ -99,8 +99,8 @@ class zenario_ctype_event extends module_base_class {
 			if ($weekdays){
 				$this->subSections['Event_On_Weekday_Details']=$weekdays;
 			} else {
-				if (!empty($event['start_time']) && (arrayKey($event,'start_time')!='00:00:00')){
-					if (!empty($event['end_time']) && (arrayKey($event,'start_time')!=arrayKey($event,'end_time'))){
+				if (!empty($event['start_time']) && (($event['start_time'] ?? false)!='00:00:00')){
+					if (!empty($event['end_time']) && (($event['start_time'] ?? false)!=($event['end_time'] ?? false))){
 						$this->mergeFields['dates_range'] .= " " . $this->phrase('_MULTIPLE_HOURS_EVENT_RANGE',array('start_time'=>formatTimeNicely($event['start_time'],setting('vis_time_format'),''),
 																									'end_time'=>formatTimeNicely($event['end_time'],setting('vis_time_format'),'')));
 					} else {
@@ -129,7 +129,7 @@ class zenario_ctype_event extends module_base_class {
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		switch ($path) {
 			case 'zenario_content':
-				if ($box['key']['cType'] == 'event' && arrayKey($box,'key','source_cID') && arrayKey($box,'key','source_cVersion') ) {
+				if ($box['key']['cType'] == 'event' && ($box['key']['source_cID'] ?? false) && ($box['key']['source_cVersion'] ?? false) ) {
 					$eventDetails = $this->getEventDetails($box['key']['source_cID'],$box['key']['source_cVersion']);
 					
 					$box['tabs']['zenario_ctype_event__when_and_where']['fields']['start_date']['value'] = $eventDetails['start_date'];
@@ -146,11 +146,11 @@ class zenario_ctype_event extends module_base_class {
 					$startTime = explode(":",$eventDetails['start_time']);
 					$endTime = explode(":",$eventDetails['end_time']);
 					
-					$box['tabs']['zenario_ctype_event__when_and_where']['fields']['start_time_hours']['value'] = arrayKey($startTime,0);
-					$box['tabs']['zenario_ctype_event__when_and_where']['fields']['start_time_minutes']['value'] = arrayKey($startTime,1);
+					$box['tabs']['zenario_ctype_event__when_and_where']['fields']['start_time_hours']['value'] = $startTime[0] ?? false;
+					$box['tabs']['zenario_ctype_event__when_and_where']['fields']['start_time_minutes']['value'] = $startTime[1] ?? false;
 
-					$box['tabs']['zenario_ctype_event__when_and_where']['fields']['end_time_hours']['value'] = arrayKey($endTime,0);
-					$box['tabs']['zenario_ctype_event__when_and_where']['fields']['end_time_minutes']['value'] = arrayKey($endTime,1);
+					$box['tabs']['zenario_ctype_event__when_and_where']['fields']['end_time_hours']['value'] = $endTime[0] ?? false;
+					$box['tabs']['zenario_ctype_event__when_and_where']['fields']['end_time_minutes']['value'] = $endTime[1] ?? false;
 
 					$box['tabs']['zenario_ctype_event__when_and_where']['fields']['url']['value'] = $eventDetails['url'];
 					$box['tabs']['zenario_ctype_event__when_and_where']['fields']['location']['value'] = $eventDetails['location_id'];
@@ -187,7 +187,7 @@ class zenario_ctype_event extends module_base_class {
 				}
 				break;
 			case 'plugin_settings':
-		        $box['tabs']['first_tab']['fields']['another_event']['hidden'] = !(arrayKey($values,'first_tab/show_details_and_link')=='another_content_item');
+		        $box['tabs']['first_tab']['fields']['another_event']['hidden'] = !(($values['first_tab/show_details_and_link'] ?? false)=='another_content_item');
 				break;
 		}
 	}
@@ -225,22 +225,22 @@ class zenario_ctype_event extends module_base_class {
 								"version" => $box['key']['cVersion'],
 								"start_date" => $values['zenario_ctype_event__when_and_where/start_date'],
 								"start_time" => (
-												(arrayKey($values,'zenario_ctype_event__when_and_where/start_time_hours') 
-													&& arrayKey($values,'zenario_ctype_event__when_and_where/start_time_minutes')
-														&& arrayKey($values,'zenario_ctype_event__when_and_where/specify_time'))?
+												(($values['zenario_ctype_event__when_and_where/start_time_hours'] ?? false) 
+													&& ($values['zenario_ctype_event__when_and_where/start_time_minutes'] ?? false)
+														&& ($values['zenario_ctype_event__when_and_where/specify_time'] ?? false))?
 												 ($values['zenario_ctype_event__when_and_where/start_time_hours'] . ":" . $values['zenario_ctype_event__when_and_where/start_time_minutes']): 
 												 null
 												 ),
 								"end_date" => $values['zenario_ctype_event__when_and_where/end_date'],
 								"end_time" => (
-												(arrayKey($values,'zenario_ctype_event__when_and_where/end_time_hours') 
-													&& arrayKey($values,'zenario_ctype_event__when_and_where/end_time_minutes') 
-														&& arrayKey($values,'zenario_ctype_event__when_and_where/specify_time'))?
+												(($values['zenario_ctype_event__when_and_where/end_time_hours'] ?? false) 
+													&& ($values['zenario_ctype_event__when_and_where/end_time_minutes'] ?? false) 
+														&& ($values['zenario_ctype_event__when_and_where/specify_time'] ?? false))?
 												 ($values['zenario_ctype_event__when_and_where/end_time_hours'] . ":" . $values['zenario_ctype_event__when_and_where/end_time_minutes']): 
 												 null
 											   ),
 								"specify_time" => engToBoolean($values['zenario_ctype_event__when_and_where/specify_time']),
-								"next_day_finish" => engToBoolean($values['zenario_ctype_event__when_and_where/late_evening_event']) && arrayKey($values,'zenario_ctype_event__when_and_where/specify_time'),
+								"next_day_finish" => engToBoolean($values['zenario_ctype_event__when_and_where/late_evening_event']) && ($values['zenario_ctype_event__when_and_where/specify_time'] ?? false),
 								"location_id" => $values['zenario_ctype_event__when_and_where/location'],
 								"url" => $values['zenario_ctype_event__when_and_where/url']
 							),
@@ -360,20 +360,20 @@ class zenario_ctype_event extends module_base_class {
 	}
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
-		if (get('refiner__content_type')!='event') {
-			if (arrayKey($panel,'columns','zenario_ctype_event__start_date')) {
+		if (($_GET['refiner__content_type'] ?? false)!='event') {
+			if ($panel['columns']['zenario_ctype_event__start_date'] ?? false) {
 				unset($panel['columns']['zenario_ctype_event__start_date']);
 			}
 
-			if (arrayKey($panel,'columns','zenario_ctype_event__start_time')) {
+			if ($panel['columns']['zenario_ctype_event__start_time'] ?? false) {
 				unset($panel['columns']['zenario_ctype_event__start_time']);
 			}
 
-			if (arrayKey($panel,'columns','zenario_ctype_event__end_date')) {
+			if ($panel['columns']['zenario_ctype_event__end_date'] ?? false) {
 				unset($panel['columns']['zenario_ctype_event__end_date']);
 			}
 
-			if (arrayKey($panel,'columns','zenario_ctype_event__end_time')) {
+			if ($panel['columns']['zenario_ctype_event__end_time'] ?? false) {
 				unset($panel['columns']['zenario_ctype_event__end_time']);
 			}
 		}

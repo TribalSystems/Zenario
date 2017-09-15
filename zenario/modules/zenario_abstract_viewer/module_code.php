@@ -75,7 +75,7 @@ class zenario_abstract_viewer extends zenario_abstract_manager {
 		}
 		
 		if (($datasetId = static::getDatasetId())
-		 && ($id = $this->merge['id'] = request(static::$requestVar))
+		 && ($id = $this->merge['id'] = $_REQUEST[static::$requestVar] ?? false)
 		 && ($this->merge['values'] = getRow(static::table(), true, $this->merge['id']))) {
 			
 			$this->merge['show'] = true;

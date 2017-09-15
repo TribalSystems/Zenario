@@ -48,7 +48,7 @@ switch ($path) {
 	
 	case 'zenario__modules/panels/modules/hidden_nav/view_frameworks/panel':
 		
-		if ($refinerName == 'module' && ($module = getModuleDetails(get('refiner__module')))) {
+		if ($refinerName == 'module' && ($module = getModuleDetails($_GET['refiner__module'] ?? false))) {
 			$panel['title'] =
 				adminPhrase('Frameworks for the Module "[[name]]"', array('name' => $module['display_name']));
 			

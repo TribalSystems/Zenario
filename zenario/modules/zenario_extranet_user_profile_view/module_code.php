@@ -89,7 +89,7 @@ class zenario_extranet_user_profile_view extends module_base_class {
 			$this->mergeFields['Bus_Postcode'] = htmlspecialchars($userDetails['bus_postcode']);
 
 			$this->subSections['Bus_Country'] = issetArrayKey($userDetails,"bus_country_id");			
-			$this->mergeFields['Bus_Country'] = zenario_country_manager::adminPhrase(cms_core::$langId,"_COUNTRY_NAME_" . $userDetails['bus_country_id']);
+			$this->mergeFields['Bus_Country'] = zenario_country_manager::adminPhrase(cms_core::$visLang,"_COUNTRY_NAME_" . $userDetails['bus_country_id']);
 			
 			// Make custom dataset fields available for custom frameworks
 			$C = array();
@@ -122,7 +122,7 @@ class zenario_extranet_user_profile_view extends module_base_class {
 
 			$url = $width = $height = false;
 			if (($imageId = getRow('users', 'image_id', $userId))
-			 && imageLink($width, $height, $url, $imageId, ifNull((int) $this->setting('max_user_image_width'), 120), ifNull((int) $this->setting('max_user_image_height'), 120))) {
+			 && Ze\File::imageLink($width, $height, $url, $imageId, ifNull((int) $this->setting('max_user_image_width'), 120), ifNull((int) $this->setting('max_user_image_height'), 120))) {
 				$this->subSections['User_Image'] = true;
 				$this->mergeFields['Image_Src'] = htmlspecialchars($url);
 				$this->mergeFields['Image_Width'] = $width;

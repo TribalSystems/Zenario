@@ -44,10 +44,11 @@ useCache($ETag);
 
 
 //Run pre-load actions
+require CMS_ROOT. 'zenario/api/cache_functions.inc.php';
 require editionInclude('wrapper.pre_load');
 
 
-useGZIP(!empty($_GET['gz']));
+useGZIP();
 require CMS_ROOT. 'zenario/includes/cms.inc.php';
 require CMS_ROOT. 'zenario/includes/wrapper.inc.php';
 loadSiteConfig();

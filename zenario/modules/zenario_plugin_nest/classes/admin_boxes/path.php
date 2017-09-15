@@ -15,11 +15,11 @@ class zenario_plugin_nest__admin_boxes__path extends zenario_plugin_nest {
 	}
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
-		if (!get('refiner__nest')) {
+		if (!($_GET['refiner__nest'] ?? false)) {
 			exit;
 		}
 		
-		$box['key']['instanceId'] = get('refiner__nest');
+		$box['key']['instanceId'] = $_GET['refiner__nest'] ?? false;
 		
 		if (!$instance = getPluginInstanceDetails($box['key']['instanceId'])) {
 			exit;

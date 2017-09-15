@@ -33,36 +33,71 @@ class zenario_common_features__organizer__menu_position extends module_base_clas
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
 		if ($path != 'zenario__menu/panels/menu_position') return;
 		
-		$panel['title'] = adminPhrase('Select a position in the menu');
-		
 		$seperator = ' -> ';
 		
+		//We'll get the menu nodes in no particular order (the sorting happens on the client).
+		//But I need a flag for which menu node at each place in the tree has the smallest ordinal,
+		//so we'll need to calculate this
+		$firstMenuNodes = [];
 		foreach ($panel['items'] as $id => &$item) {
+			if (!$item['is_dummy_child']) {
+				$ordinal = (int) $item['ordinal'];
+				
+				if ($ordinal) {
+					if (!isset($firstMenuNodes[$item['parent_id']])
+					 || ($ordinal < $firstMenuNodes[$item['parent_id']])) {
+						$firstMenuNodes[$item['parent_id']] = $ordinal;
+					}
+				}
+			}
+		}	
+		
+		foreach ($panel['items'] as $id => &$item) {
+			$parentTagParts = explode('_', $item['parent_id']);
+			$parentId = (int) ($parentTagParts[1] ?? 0);
+			$ordinal = (int) $item['ordinal'];
 			
 			if ($item['is_dummy_child']) {
-				$parentTagParts = explode('_', $item['parent_id']);
-				$parentId = $parentTagParts[1];
 				
+				$item['parent_menu_id'] = $parentId;
 				$item['css_class'] = 'zenario_menunode_unlinked ghost';
-				$item['name'] = adminPhrase('[ Put menu node here ]');
 				$item['target'] =
 				$item['target_loc'] =
 				$item['internal_target'] =
 				$item['redundancy'] = '';
 				
 				
-				if ($parentId) {
-					$item['menu_path'] =
-						getMenuPath($parentId, false, $seperator) . $seperator.
-						adminPhrase('[ new child node ]');
-				} else {
-					$item['menu_path'] =
-						adminPhrase('[ new top-level node ]');
+				switch ($refinerName) {
+					case 'create':
+						if ($parentId) {
+							$item['menu_path'] =
+								getMenuPath($parentId, false, $seperator) . $seperator.
+								adminPhrase('[ Create at the end ]');
+						} else {
+							$item['menu_path'] =
+								adminPhrase('[ Create at the end ]');
+						}
+						
+						$item['name'] = adminPhrase('[ Create at the end ]');
+						break;
+					
+					case 'move':
+						if ($parentId) {
+							$item['menu_path'] =
+								getMenuPath($parentId, false, $seperator) . $seperator.
+								adminPhrase('[ Move to the end ]');
+						} else {
+							$item['menu_path'] =
+								adminPhrase('[ Move to the end ]');
+						}
+						
+						$item['name'] = adminPhrase('[ Move to the end ]');
+						break;
 				}
 				
 			} elseif ($item['menu_id']) {
-				$parentTagParts = explode('_', $item['parent_id']);
-				$parentId = $parentTagParts[1];
+				
+				$item['parent_menu_id'] = $parentId;
 				
 				if ($item['target_loc'] == 'int' && $item['internal_target']) {
 					
@@ -89,17 +124,47 @@ class zenario_common_features__organizer__menu_position extends module_base_clas
 					$item['css_class'] .= ' zenario_menunode_toplevel';
 				}
 				
-				if ($parentId) {
-					$item['menu_path'] =
-						getMenuPath($parentId, false, $seperator) . $seperator.
-						adminPhrase('[ new node before "[[name]]" ]', $item);
-				} else {
-					$item['menu_path'] =
-						adminPhrase('[ new top-level node before "[[name]]" ]', $item);
+				if ($isFirst = $firstMenuNodes[$item['parent_id']] == $ordinal) {
+					$item['is_first'] = true;
 				}
+				
+				
+				switch ($refinerName) {
+					case 'create':
+						if ($parentId) {
+							$item['menu_path'] =
+								getMenuPath($parentId, false, $seperator) . $seperator.
+								adminPhrase('[ Create before "[[name]]" ]', $item);
+						} else {
+							$item['menu_path'] =
+								adminPhrase('[ Create before "[[name]]" ]', $item);
+						}
+						
+						$item['name'] = adminPhrase('[ Create before "[[name]]" ]', $item);
+						break;
+					
+					case 'move':
+						if ($parentId) {
+							$item['menu_path'] =
+								getMenuPath($parentId, false, $seperator) . $seperator.
+								adminPhrase('[ Move before "[[name]]" ]', $item);
+						} else {
+							$item['menu_path'] =
+								adminPhrase('[ Move before "[[name]]" ]', $item);
+						}
+						
+						$item['name'] = adminPhrase('[ Move before "[[name]]" ]', $item);
+						break;
+					
+					case 'existing':
+						$item['menu_path'] = getMenuPath($item['menu_id'], false, $seperator);
+						break;
+				}
+				 
 				
 			} else {
 				$item['css_class'] = 'menu_section';
+				$item['menu_path'] = $item['name'];
 			}
 		}
 	}

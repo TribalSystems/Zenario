@@ -169,7 +169,7 @@ class zenario_newsletter__organizer__newsletters extends zenario_newsletter {
 	}
 	
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
-		if (post('delete') && checkPriv('_PRIV_EDIT_NEWSLETTER')) {
+		if (($_POST['delete'] ?? false) && checkPriv('_PRIV_EDIT_NEWSLETTER')) {
 			
 			foreach(explode(',', $ids) as $id) {
 				zenario_newsletter::deleteNewsletter($id);
@@ -177,7 +177,7 @@ class zenario_newsletter__organizer__newsletters extends zenario_newsletter {
 		
 		
 		//Attempt to resume sending the newsletter
-		} elseif (post('resume') && checkPriv('_PRIV_SEND_NEWSLETTER') && $this->checkIfNewsletterIsInProgress($ids)) {
+		} elseif (($_POST['resume'] ?? false) && checkPriv('_PRIV_SEND_NEWSLETTER') && $this->checkIfNewsletterIsInProgress($ids)) {
 			//Note: same code as above
 			set_time_limit(60 * 10);
 			self::sendNewsletter($ids);
@@ -188,7 +188,7 @@ class zenario_newsletter__organizer__newsletters extends zenario_newsletter {
 		
 		
 		//Duplicate the newsletter
-		} elseif (post('duplicate') && checkPriv('_PRIV_EDIT_NEWSLETTER')) {
+		} elseif (($_POST['duplicate'] ?? false) && checkPriv('_PRIV_EDIT_NEWSLETTER')) {
 
 			$admin_id = adminId();
 			$table_newsletters = DB_NAME_PREFIX . ZENARIO_NEWSLETTER_PREFIX . "newsletters"; 

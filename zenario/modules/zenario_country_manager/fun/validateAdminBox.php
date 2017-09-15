@@ -29,41 +29,41 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 	switch($path) {
 		case 'zenario_country_manager__country':
-			if (!arrayKey($values,'details/code')) {
+			if (!($values['details/code'] ?? false)) {
 				$box['tabs']['details']['errors'][] = adminPhrase("Error. Please enter a Code");
 				break;
 			}
-			if (!arrayKey($values,'details/name')) {
+			if (!($values['details/name'] ?? false)) {
 				$box['tabs']['details']['errors'][] = adminPhrase("Error. Please enter a Name");
 				break;
 			}
-			if (!arrayKey($box,'key','id') && checkRowExists(ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_countries', array('id' => arrayKey($values,'details/code')))) {
+			if (!($box['key']['id'] ?? false) && checkRowExists(ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_countries', array('id' => ($values['details/code'] ?? false)))) {
 				$box['tabs']['details']['errors'][] = adminPhrase("Error. Country code must be unique.");
 				break;
 			}
 			$countries = getRows(ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_countries', 
 									array('id','english_name'), 
-										array('english_name' => arrayKey($values,'details/name')));
+										array('english_name' => ($values['details/name'] ?? false)));
 			while($country = sqlFetchAssoc($countries)) {
-				if (arrayKey($box,'key','id') != arrayKey($country,'id'))  {
+				if (($box['key']['id'] ?? false) != $country['id'] ?? false)  {
 					$box['tabs']['details']['errors'][] = adminPhrase("Error. Country name must be unique.");
 					break;
 				}
 			}
 			break;
 		case 'zenario_country_manager__region':
-			if (!arrayKey($values,'details/name')) {
+			if (!($values['details/name'] ?? false)) {
 				$box['tabs']['details']['errors'][] = adminPhrase("Error. Please enter a Name");
 				break;
 			}
-			if (!arrayKey($values, 'details/region_type') && setting('zenario_country_manager__region_type_management')) {
+			if (!($values['details/region_type'] ?? false) && setting('zenario_country_manager__region_type_management')) {
 				$box['tabs']['details']['errors'][] = adminPhrase("Error. Please select region type");
 				break;
 			}
-			$parentRegionId = arrayKey($box,'key','parent_id');
-			$countryCode = arrayKey($box,'key','country_id');
-			$regionName = arrayKey($values,'details/name');
-			$regionId = arrayKey($box,'key','id');
+			$parentRegionId = $box['key']['parent_id'] ?? false;
+			$countryCode = $box['key']['country_id'] ?? false;
+			$regionName = ($values['details/name'] ?? false);
+			$regionId = $box['key']['id'] ?? false;
 
 			if ($parentRegionId){
 				if ($regions = self::getRegions('all','','',false,$parentRegionId,$regionName,$regionId)) {

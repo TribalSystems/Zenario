@@ -11,9 +11,12 @@ description: |
             <p>You can use this Module to display Title, Description or other summary information drawn from Content Items as defined by the Plugin's filter.</p>
             <p>You can define a filter based on Content Type and Category, from whose Content Items the text will be read and then displayed in rotation.</p>
 category: pluggable
+
+# Reminder: you need to increment the LATEST_REVISION_NO in this module's
+# latest_revision_no.inc.php file if you change any of the fields below:
 vlp_class_name: zenario_news_ticker
 css_class_name: zenario_news_ticker
-is_pluggable: Yes
-nestable: Yes
+is_pluggable: true
+nestable: true
 default_framework: standard
 default_instance_name: News Ticker

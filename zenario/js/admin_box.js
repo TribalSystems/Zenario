@@ -442,20 +442,8 @@ zenarioAB.contentTitleChange = function() {
 
 
 
-//bespoke functions for Plugin Settings
-zenarioAB.modesSelected = function() {
-	var mode = zenarioAB.value('mode', 'first_tab'),
-		otherModes = zenarioAB.value('other_modes', 'first_tab');
-	
-	if (otherModes) {
-		mode += ',' + otherModes;
-	}
-	
-	return mode;
-};
-
-zenarioAB.modeSelected = function(checkMode) {
-	return (',' + zenarioAB.modesSelected() + ',').match(',' + checkMode + ',');
+zenarioAB.mode = function() {
+	return zenarioAB.value('mode', 'first_tab');
 };
 
 zenarioAB.viewFrameworkSource = function() {

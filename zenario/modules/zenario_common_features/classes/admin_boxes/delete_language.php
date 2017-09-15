@@ -33,7 +33,7 @@ class zenario_common_features__admin_boxes__delete_language extends module_base_
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		
 		exitIfNotCheckPriv('_PRIV_MANAGE_LANGUAGE_CONFIG');
-		$box['tabs']['site']['fields']['username']['value'] = session('admin_username');
+		$box['tabs']['site']['fields']['username']['value'] = $_SESSION['admin_username'] ?? false;
 		$box['tabs']['site']['notices']['are_you_sure']['message'] =
 			adminPhrase(
 				'Are you sure that you wish to delete the Language "[[lang]]"? All Content Items and Menu Node text in this Language will also be deleted. THIS CANNOT BE UNDONE!',
@@ -59,7 +59,7 @@ class zenario_common_features__admin_boxes__delete_language extends module_base_
 			$box['tabs']['site']['errors'][] =
 				adminPhrase('Please enter your password.');
 		
-		} elseif (!engToBoolean(checkPasswordAdmin(session('admin_username'), $details, $values['site/password']))) {
+		} elseif (!engToBoolean(checkPasswordAdmin($_SESSION['admin_username'] ?? false, $details, $values['site/password']))) {
 			$box['tabs']['site']['errors'][] =
 				adminPhrase('Your password was not recognised. Please check and try again.');
 		}

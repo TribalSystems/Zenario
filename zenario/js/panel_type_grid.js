@@ -171,7 +171,7 @@ methods.setScroll = function($panel) {
 				}
 	
 			} else {
-				methods.restoreScrollPosition($panel);
+				that.restoreScrollPosition($panel);
 			}
 		};
 	

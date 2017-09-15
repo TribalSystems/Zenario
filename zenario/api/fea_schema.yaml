@@ -13,6 +13,7 @@ common_definitions:
         - "null"
     css_class: &css_class
         type: string
+        show_by_default_in_editor: true
         description: A CSS class name to add to this element.
     ord: &ord
         type: *stringy
@@ -62,6 +63,13 @@ additionalProperties:
                 - key
                 - tabs
     properties:
+        microtemplate:
+            type: string
+            description: >
+                The name of the microtemplate to use to display this data.
+                
+                If not set, it defaults to 'fea_list' for list mode, and 'fea_form' for form mode.
+        
         title:
             type: string
             description: >
@@ -110,6 +118,21 @@ additionalProperties:
                 Whether to show an overlay div under the form.
         
         css_class: *css_class
+        table_css_class:
+            type: string
+            description: A CSS class name to add to the table used for FEA lists.
+        
+        always_visible_cols:
+            type: number
+            description: >
+                This automatically sets the "zfea_always_visible" CSS class on the first n columns,
+                where n is the number you enter.
+        
+        item_count_message:
+            type: string
+            description: >
+                A message like "[[count]] items" which will show the number of items in a list.
+                Will only show when there is more than 1 item.
         
         tab:
             type: *stringy
@@ -221,6 +244,7 @@ additionalProperties:
                             properties:
                                 confirm: &confirm
                                     type: object
+                                    hide_in_editor: true
                                     description: >
                                         Use this to display a confirmation prompt before performing the button's action.
                                     properties:
@@ -374,6 +398,7 @@ additionalProperties:
                     css_class: *css_class
                     label:
                         type: string
+                        show_by_default_in_editor: true
                         description: >
                             A label for this button
                     tooltip:
@@ -408,6 +433,7 @@ additionalProperties:
                             - top
                             - back
                             - search
+                        collection_button_only: true
                         description: >
                             Setting this properly lets you override the default location and put the button in a different position.
                     
@@ -421,6 +447,7 @@ additionalProperties:
                     
                     ajax: &ajax
                         type: object
+                        hide_in_editor: true
                         description: >
                             Send an AJAX request to your <code>handlePluginAJAX()</code> method.
 
@@ -437,17 +464,138 @@ additionalProperties:
                     go:
                         type: object
                         required:
-                            - mode
-                        properties:
-                            mode:
-                                type: string
-                                description: >
-                                    A mode to go to when your button is pressed
+                            - command
+                        properties: &go_properties
                             command:
                                 type: string
                                 description: >
                                     If the nest conductor is running, issue this command.
-                                    Note that this overrides the normal navigation.
+                            mode:
+                                type: string
+                                description: >
+                                    A mode to go to when your button is pressed.
+                                    Note that if you specify a command, and the nest conductor is running,
+                                    then this will be ignored.
+                            locationId:
+                                type: *variable
+                                clear_only_in_editor: true
+                                description: >
+                                    Set the locationId variable to this value upon navigation.
+                                    Enter an empty string to clear the value.
+                            companyId:
+                                type: *variable
+                                clear_only_in_editor: true
+                                description: >
+                                    Set the companyId variable to this value upon navigation.
+                                    Enter an empty string to clear the value.
+                            userId:
+                                type: *variable
+                                clear_only_in_editor: true
+                                description: >
+                                    Set the userId variable to this value upon navigation.
+                                    Enter an empty string to clear the value.
+                            commandId:
+                                type: *variable
+                                clear_only_in_editor: true
+                                description: >
+                                    Set the commandId variable to this value upon navigation.
+                                    Enter an empty string to clear the value.
+                            scheduleId:
+                                type: *variable
+                                clear_only_in_editor: true
+                                description: >
+                                    Set the scheduleId variable to this value upon navigation.
+                                    Enter an empty string to clear the value.
+                            procedureId:
+                                type: *variable
+                                clear_only_in_editor: true
+                                description: >
+                                    Set the procedureId variable to this value upon navigation.
+                                    Enter an empty string to clear the value.
+                            triggerId:
+                                type: *variable
+                                clear_only_in_editor: true
+                                description: >
+                                    Set the triggerId variable to this value upon navigation.
+                                    Enter an empty string to clear the value.
+                            schemaId:
+                                type: *variable
+                                clear_only_in_editor: true
+                                description: >
+                                    Set the schemaId variable to this value upon navigation.
+                                    Enter an empty string to clear the value.
+                            dataPoolId:
+                                type: *variable
+                                clear_only_in_editor: true
+                                description: >
+                                    Set the dataPoolId variable to this value upon navigation.
+                                    Enter an empty string to clear the value.
+                            assetId:
+                                type: *variable
+                                clear_only_in_editor: true
+                                description: >
+                                    Set the assetId variable to this value upon navigation.
+                                    Enter an empty string to clear the value.
+                            dataPoolId1:
+                                type: *variable
+                                clear_only_in_editor: true
+                                description: >
+                                    Set the dataPoolId1 variable to this value upon navigation.
+                                    Enter an empty string to clear the value.
+                            assetId1:
+                                type: *variable
+                                clear_only_in_editor: true
+                                description: >
+                                    Set the assetId1 variable to this value upon navigation.
+                                    Enter an empty string to clear the value.
+                            dataPoolId2:
+                                type: *variable
+                                clear_only_in_editor: true
+                                description: >
+                                    Set the dataPoolId2 variable to this value upon navigation.
+                                    Enter an empty string to clear the value.
+                            assetId2:
+                                type: *variable
+                                clear_only_in_editor: true
+                                description: >
+                                    Set the assetId2 variable to this value upon navigation.
+                                    Enter an empty string to clear the value.
+                            dataPoolId3:
+                                type: *variable
+                                clear_only_in_editor: true
+                                description: >
+                                    Set the dataPoolId3 variable to this value upon navigation.
+                                    Enter an empty string to clear the value.
+                            assetId3:
+                                type: *variable
+                                clear_only_in_editor: true
+                                description: >
+                                    Set the assetId3 variable to this value upon navigation.
+                                    Enter an empty string to clear the value.
+                            dataPoolId4:
+                                type: *variable
+                                clear_only_in_editor: true
+                                description: >
+                                    Set the dataPoolId4 variable to this value upon navigation.
+                                    Enter an empty string to clear the value.
+                            assetId4:
+                                type: *variable
+                                clear_only_in_editor: true
+                                description: >
+                                    Set the assetId4 variable to this value upon navigation.
+                                    Enter an empty string to clear the value.
+                            dataPoolId5:
+                                type: *variable
+                                clear_only_in_editor: true
+                                description: >
+                                    Set the dataPoolId5 variable to this value upon navigation.
+                                    Enter an empty string to clear the value.
+                            assetId5:
+                                type: *variable
+                                clear_only_in_editor: true
+                                description: >
+                                    Set the assetId5 variable to this value upon navigation.
+                                    Enter an empty string to clear the value.
                         additionalProperties:
                             type: *variable
                             description: >
@@ -474,8 +622,13 @@ additionalProperties:
                     css_class: *css_class
                     label:
                         type: string
+                        show_by_default_in_editor: true
                         description: >
                             A label for this button
+                    tooltip:
+                        type: string
+                        description: >
+                            A tooltip for this button
                     
                     icon_left:
                         type: string
@@ -490,6 +643,7 @@ additionalProperties:
                     
                     parent:
                         type: string
+                        item_button_only: true
                         description: >
                             Enter the name of another item button here to make your button appear
                             under the named button as a dropdown.
@@ -501,6 +655,7 @@ additionalProperties:
                     
                     hide_when_children_are_not_visible:
                         type: boolean
+                        item_button_only: true
                         description: >
                             If you set this property, the button will be hidden when it has no
                             visible children.
@@ -554,12 +709,8 @@ additionalProperties:
                     go:
                         type: object
                         required:
-                            - mode
-                        properties:
-                            mode:
-                                type: string
-                                description: >
-                                    A mode to go to when your button is pressed
+                            - command
+                        properties: *go_properties
                         additionalProperties:
                             type: *variable
                             description: >
@@ -576,26 +727,31 @@ additionalProperties:
                     
                     multiple_select:
                         type: boolean
+                        item_button_only: true
                         description: >
                             This marks that this button is prepared to work on multiple items.
                     multiple_select_max_items:
                         type: number
+                        item_button_only: true
                         description: >
                             Do not show this button if more than this number of items are selected.
                     
                             If you use this property you must also use the <code>multiple_select</code> property.
                     multiple_select_min_items:
                         type: number
+                        item_button_only: true
                         description: >
                             Do not show this button if less than this number of items are selected.
                     
                             If you use this property you must also use the <code>multiple_select</code> property.
                     multiple_select_only:
                         type: boolean
+                        item_button_only: true
                         description: >
                             Same as "multiple_select_min_items: 2"
                     visible_if_for_all_selected_items:
                         type: string
+                        item_button_only: true
                         description: >
                             A snippet of JavaScript code to be evaluated for each selected item.
                             Each item must match for the button to be shown.
@@ -604,6 +760,7 @@ additionalProperties:
                     
                     visible_if_for_any_selected_items:
                         type: string
+                        item_button_only: true
                         description: >
                             A snippet of JavaScript code to be evaluated for each selected item.
                             At least one item must match for the button to be shown.
@@ -612,6 +769,7 @@ additionalProperties:
                     
                     disabled:
                         type: boolean
+                        item_button_only: true
                         description: >
                             If you set this property, the button will be disabled.
                     
@@ -619,12 +777,14 @@ additionalProperties:
                     
                     disabled_if_for_all_selected_items:
                         type: string
+                        item_button_only: true
                         description: >
                             A snippet of JavaScript code to be evaluated for each selected item.
                             If each item matches, the button will be disabled.
                     
                     disabled_if_for_any_selected_items:
                         type: string
+                        item_button_only: true
                         description: >
                             A snippet of JavaScript code to be evaluated for each selected item.
                             If at least one item matches, the button will be disabled.
@@ -641,6 +801,31 @@ additionalProperties:
                     
                     
         confirm_on_close: *confirm
+        
+        go:
+            type: object
+            required:
+                - command
+            properties: *go_properties
+            additionalProperties:
+                type: *variable
+                description: >
+                    A variable to add to the request/URL.
+                    
+                    Alternately you can set the request to an object of the form
+                    {replace_with_field_from_item: 'field_code_name'}
+                    to automatically put the value of a field into this request.
+            description: >
+                This property allows you to trigger navigation in TUIX forms.
+                It is ignored when the form is first displayed, but will be followed when
+                the form is re-displayed (e.g. because the user pressed the save button).
+        
+        go_to_url:
+            type: string
+            description: >
+                This property allows you to trigger navigation in TUIX forms.
+                It is ignored when the form is first displayed, but will be followed when
+                the form is re-displayed (e.g. because the user pressed the save button).
         
         
         

@@ -28,11 +28,27 @@
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
 
+/*
+fillAllAdminSlotControls(
+	&$controls,
+	$cID, $cType, $cVersion,
+	$slotName, $containerId,
+	$level, $moduleId, $instanceId, $isVersionControlled
+)
+*/
+
+
+if (cms_core::$cVersion == cms_core::$adminVersion) {
+	$couldEdit = checkPriv('_PRIV_EDIT_DRAFT', $cID, $cType);
+	//$canEdit = checkPriv('_PRIV_EDIT_DRAFT', $cID, $cType, $cVersion);
+} else {
+	$couldEdit = false;
+	//$canEdit = false;
+}
+
 $pageMode = array();
-$couldChange = $canChange = false;
-$couldEdit = checkPriv('_PRIV_EDIT_DRAFT', $cID, $cType);
-$canEdit = checkPriv('_PRIV_EDIT_DRAFT', $cID, $cType, $cVersion);
 $isNest = !empty(cms_core::$slotContents[$slotName]['is_nest']);
+
 
 //Check to see if there are entries on the item and layout layer
 $overriddenPlugin = false;
@@ -48,29 +64,47 @@ if ($level == 1) {
 	}
 }
 
-$controls['info']['slot_name']['label'] = adminPhrase('Slot class name: <span>[[slotName]]</span>', array('slotName' => $slotName));
+$mrg = ['slotName' => $slotName];
+$controls['info']['slot_lite_details']['label'] = adminPhrase('Slot: <span>[[slotName]]</span>', $mrg);
+$controls['info']['slot_name']['label'] = adminPhrase('Slot class name: <span>[[slotName]]</span>', $mrg);
 
 switch ($level) {
 	case 1:
-		$pageMode = array('edit' => true);
-		$couldChange = checkPriv('_PRIV_MANAGE_ITEM_SLOT', $cID, $cType);
-		$canChange = checkPriv('_PRIV_MANAGE_ITEM_SLOT', $cID, $cType, $cVersion);
+		$pageMode = ['item' => true];
 		$controls['info']['in_this_slot']['label'] = adminPhrase('In this slot on this content item:');
+		
+		if (cms_core::$cVersion == cms_core::$adminVersion) {
+			$couldChange = checkPriv('_PRIV_MANAGE_ITEM_SLOT', $cID, $cType);
+			$canChange = checkPriv('_PRIV_MANAGE_ITEM_SLOT', $cID, $cType, $cVersion);
+		} else {
+			$couldChange = false;
+			$canChange = false;
+		}
+		
+		unset($controls['actions']['insert_reusable_on_layout_layer']);
+		unset($controls['actions']['remove_from_layout_layer']);
 		
 		break;
 	
 	case 2:
-		$pageMode = array('layout' => true);
+		$pageMode = ['layout' => true];
 		$couldChange = $canChange = checkPriv('_PRIV_MANAGE_TEMPLATE_SLOT');
 		$controls['info']['in_this_slot']['label'] = adminPhrase('In this slot on this layout:');
 		
 		break;
 	
 	default:
+		$couldChange = $canChange = false;
 		break;
 }
 
-$settingsPageMode = $isVersionControlled? array('edit' => true) : $pageMode;
+if ($isVersionControlled) {
+	$settingsPageMode = ['edit' => true];
+	$cssFrameworkPageMode = ['edit' => true];
+} else {
+	$settingsPageMode = $pageMode;
+	$cssFrameworkPageMode = $pageMode;
+}
 
 
 
@@ -140,8 +174,8 @@ if (!$moduleId) {
 
 	
 	
-	$controls['actions']['settings']['page_modes'] =
-	$controls['actions']['framework_and_css']['page_modes'] = $settingsPageMode;
+	$controls['actions']['settings']['page_modes'] = $settingsPageMode;
+	$controls['actions']['framework_and_css']['page_modes'] = $cssFrameworkPageMode;
 	
 	if ($isVersionControlled && cms_core::$cVersion == cms_core::$adminVersion) {
 		if (cms_core::$locked) {
@@ -222,31 +256,14 @@ if (!$moduleId) {
 		}
 		
 		if (cms_core::$slotContents[$slotName]['class']->shownInMenuMode()) {
-			$controls['css_class'] .= ' zenario_slotShownInMenuMode';
+			$controls['css_class'] .= ' zenario_showSlotInMenuMode';
+		} else {
+			$controls['css_class'] .= ' zenario_hideSlotInMenuMode';
 		}
 		if ($isVersionControlled) {
 			$controls['css_class'] .= ' zenario_wireframe';
 		} else {
 			$controls['css_class'] .= ' zenario_reusable';
-			
-			if ($level == 1 || cms_core::$slotContents[$slotName]['class']->shownInEditMode()) {
-				//Check to see if there are any actions available on the Item/Edit tab
-				$actions = false;
-				foreach ($controls['actions'] as &$action) {
-					if (!empty($action['page_modes']['edit'])) {
-						$actions = true;
-						break;
-					}
-				}
-				
-				if ($actions) {
-					$controls['css_class'] .= ' zenario_reusableWithActionsInEditMode';
-				} else {
-					$controls['css_class'] .= ' zenario_reusableShownInEditMode';
-				}
-			} else {
-				$controls['css_class'] .= ' zenario_reusableNotShownInEditMode';
-			}
 		}
 	}
 	

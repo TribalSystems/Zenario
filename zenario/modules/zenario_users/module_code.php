@@ -399,7 +399,7 @@ class zenario_users extends module_base_class {
 			
 			require CMS_ROOT. 'zenario_usersync_config.php';
 			
-			if ($dbSelected = connectToDatabase($hub['DBHOST'], $hub['DBNAME'], $hub['DBUSER'], $hub['DBPASS'], arrayKey($hub, 'DBPORT'))) {
+			if ($dbSelected = connectToDatabase($hub['DBHOST'], $hub['DBNAME'], $hub['DBUSER'], $hub['DBPASS'], ($hub['DBPORT'] ?? false))) {
 				cms_core::$lastDB = $dbSelected;
 				cms_core::$lastDBHost = $hub['DBHOST'];
 				cms_core::$lastDBName = $hub['DBNAME'];
@@ -509,7 +509,7 @@ class zenario_users extends module_base_class {
 		$result = sqlSelect($sql);
 		
 		//Connect to the other site
-		if ($dbSelected = connectToDatabase($site['DBHOST'], $site['DBNAME'], $site['DBUSER'], $site['DBPASS'], arrayKey($site, 'DBPORT'))) {
+		if ($dbSelected = connectToDatabase($site['DBHOST'], $site['DBNAME'], $site['DBUSER'], $site['DBPASS'], ($site['DBPORT'] ?? false))) {
 			cms_core::$lastDB = $dbSelected;
 			cms_core::$lastDBHost = $site['DBHOST'];
 			cms_core::$lastDBName = $site['DBNAME'];
@@ -798,7 +798,7 @@ class zenario_users extends module_base_class {
 	}
 	
 	public static function uploadUserImage($userIds) {
-		$imageId = addFileToDatabase('user', $_FILES['Filedata']['tmp_name'], rawurldecode($_FILES['Filedata']['name']), true);
+		$imageId = Ze\File::addToDatabase('user', $_FILES['Filedata']['tmp_name'], rawurldecode($_FILES['Filedata']['name']), true);
 		if ($imageId) {
 			foreach (explode(',', $userIds) as $userId) {
 				updateRow('users', array('image_id' => $imageId), $userId);
@@ -812,6 +812,18 @@ class zenario_users extends module_base_class {
 			updateRow('users', array('image_id' => 0), $userId);
 		}
 		deleteUnusedImagesByUsage('user');
+	}
+	
+	public function suspendUser($userId) {
+		$sql ="
+			UPDATE " . DB_NAME_PREFIX . "users
+			SET 
+				status='suspended',
+				suspended_date=NOW()
+			WHERE
+				id = " . (int)$userId;
+		sqlQuery($sql);
+		sendSignal("eventUserStatusChange",array("userId" => $userId, "status" => "suspended"));
 	}
 	
 }

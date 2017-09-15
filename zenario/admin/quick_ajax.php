@@ -44,14 +44,12 @@ if (!empty($_REQUEST['keep_session_alive'])) {
 	$_SESSION['zenario_draft_callback'] = $_POST['_draft_set_callback'];
 	$_SESSION['page_toolbar'] = $_POST['_save_page_toolbar'];
 	$_SESSION['page_mode'] = $_POST['_save_page_mode'];
-	$_SESSION['admin_slot_wand'] = $_POST['_save_page_slot_wand'];
 
 
 } elseif (isset($_POST['_save_page_mode'])) {
 	
 	$_SESSION['page_toolbar'] = $_POST['_save_page_toolbar'];
 	$_SESSION['page_mode'] = $_POST['_save_page_mode'];
-	$_SESSION['admin_slot_wand'] = $_POST['_save_page_slot_wand'];
 
 } elseif (isset($_REQUEST['_get_link_statuses'])) {
     $statuses = array();
@@ -118,7 +116,7 @@ if (!empty($_REQUEST['keep_session_alive'])) {
 							} else {
 								//Very hard case: don't know the instance id, need to call getSlotContents()
 								//Again we'll try to cache this
-								$slotName = arrayKey($get, 'slotName');
+								$slotName = $get['slotName'] ?? false;
 								$slotCode = 'instanceId`'. $slotName;
 								
 								if (!isset($data[$tagId][$slotCode])) {
@@ -280,9 +278,9 @@ if (!empty($_REQUEST['keep_session_alive'])) {
 	
 	require CMS_ROOT. 'zenario/adminheader.inc.php';
 	echo generateUserIdentifier(false, array(
-		'first_name' => post('first_name'),
-		'last_name' => post('last_name'),
-		'email' => post('email'),
+		'first_name' => ($_POST['first_name'] ?? false),
+		'last_name' => ($_POST['last_name'] ?? false),
+		'email' => ($_POST['email'] ?? false),
 		'screen_name' => ''
 	));
 
@@ -292,12 +290,12 @@ if (!empty($_REQUEST['keep_session_alive'])) {
 	require CMS_ROOT. 'zenario/adminheader.inc.php';
 	
 	
-	if ($alias = post('alias')) {
+	if ($alias = $_POST['alias'] ?? false) {
 		
-		$lines = validateAlias($alias, post('cID'), post('cType'), post('equivId'));
+		$lines = validateAlias($alias, ($_POST['cID'] ?? false), ($_POST['cType'] ?? false), ($_POST['equivId'] ?? false));
 		
-		if (!$equivId = post('equivId')) {
-			$equivId = equivId(post('cID'), post('cType'));
+		if (!$equivId = $_POST['equivId'] ?? false) {
+			$equivId = equivId($_POST['cID'] ?? false, ($_POST['cType'] ?? false));
 		}
 		
 		if (empty($lines) && $alias) {
@@ -306,27 +304,27 @@ if (!empty($_REQUEST['keep_session_alive'])) {
 				FROM ". DB_NAME_PREFIX. "content_items
 				WHERE alias != ''
 				  AND alias < '". sqlEscape($alias). "'
-				  AND (equiv_id, type) NOT IN ((". (int) $equivId. ", '". sqlEscape(post('cType')). "'))
+				  AND (equiv_id, type) NOT IN ((". (int) $equivId. ", '". sqlEscape($_POST['cType'] ?? false). "'))
 				ORDER BY alias DESC, language_id DESC";
 			$result = sqlQuery($sql);
 			$lastAlias = sqlFetchRow($result);
 			
-			if (post('cID') && post('cType')) {
+			if (($_POST['cID'] ?? false) && ($_POST['cType'] ?? false)) {
 				$sql = "
 					SELECT lang_code_in_url, language_id, alias
 					FROM ". DB_NAME_PREFIX. "content_items
-					WHERE id = ". (int) post('cID'). "
-					  AND type = '". sqlEscape(post('cType')). "'";
+					WHERE id = ". (int) ($_POST['cID'] ?? false). "
+					  AND type = '". sqlEscape($_POST['cType'] ?? false). "'";
 				$result = sqlQuery($sql);
 				$thisAlias = sqlFetchRow($result);
 				$thisAlias[2] = $alias;
 			
 			} else {
-				$thisAlias = array('default', post('langId'), $alias);
+				$thisAlias = array('default', ($_POST['langId'] ?? false), $alias);
 			}
 			
-			if (post('lang_code_in_url')) {
-				$thisAlias[0] = post('lang_code_in_url');
+			if ($_POST['lang_code_in_url'] ?? false) {
+				$thisAlias[0] = $_POST['lang_code_in_url'] ?? false;
 			}
 			
 			$sql = "
@@ -334,7 +332,7 @@ if (!empty($_REQUEST['keep_session_alive'])) {
 				FROM ". DB_NAME_PREFIX. "content_items
 				WHERE alias != ''
 				  AND alias > '". sqlEscape($alias). "'
-				  AND (equiv_id, type) NOT IN ((". (int) $equivId. ", '". sqlEscape(post('cType')). "'))
+				  AND (equiv_id, type) NOT IN ((". (int) $equivId. ", '". sqlEscape($_POST['cType'] ?? false). "'))
 				ORDER BY alias, language_id";
 			$result = sqlQuery($sql);
 			$nextAlias = sqlFetchRow($result);

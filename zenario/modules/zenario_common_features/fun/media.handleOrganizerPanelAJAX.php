@@ -35,7 +35,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 
 //Upload a new file
-if (post('upload') && $privCheck) {
+if (($_POST['upload'] ?? false) && $privCheck) {
 	
 	//Check to see if an identical file has already been uploaded
 	$existingFilename = false;
@@ -46,7 +46,7 @@ if (post('upload') && $privCheck) {
 	}
 	
 	//Try to add the uploaded image to the database
-	$fileId = addFileToDatabase('image', $_FILES['Filedata']['tmp_name'], rawurldecode($_FILES['Filedata']['name']), true);
+	$fileId = Ze\File::addToDatabase('image', $_FILES['Filedata']['tmp_name'], rawurldecode($_FILES['Filedata']['name']), true);
 	
 	if ($fileId) {
 		
@@ -73,7 +73,7 @@ if (post('upload') && $privCheck) {
 	}
 
 //Add an image from the library
-} elseif (post('add') && $key && $privCheck) {
+} elseif (($_POST['add'] ?? false) && $key && $privCheck) {
 	foreach (explodeAndTrim($ids, true) as $id) {
 		$key['image_id'] = $id;
 		setRow('inline_images', array(), $key);
@@ -81,26 +81,26 @@ if (post('upload') && $privCheck) {
 	return $ids;
 
 //Mark images as public
-} elseif (post('mark_as_public') && checkPriv('_PRIV_MANAGE_MEDIA')) {
+} elseif (($_POST['mark_as_public'] ?? false) && checkPriv('_PRIV_MANAGE_MEDIA')) {
 	foreach (explodeAndTrim($ids, true) as $id) {
 		updateRow('files', array('privacy' => 'public'), $id);
 	}
 
 //Mark images as private
-} elseif (post('mark_as_private') && checkPriv('_PRIV_MANAGE_MEDIA')) {
+} elseif (($_POST['mark_as_private'] ?? false) && checkPriv('_PRIV_MANAGE_MEDIA')) {
 	foreach (explodeAndTrim($ids, true) as $id) {
 		updateRow('files', array('privacy' => 'private'), $id);
-		deletePublicImage($id);
+		Ze\File::deletePublicImage($id);
 	}
 
 //Delete an unused image
-} elseif (post('delete') && checkPriv('_PRIV_MANAGE_MEDIA')) {
+} elseif (($_POST['delete'] ?? false) && checkPriv('_PRIV_MANAGE_MEDIA')) {
 	foreach (explodeAndTrim($ids, true) as $id) {
 		deleteUnusedImage($id);
 	}
 
 //Detach an image from a content item or newsletter
-} elseif (post('remove') && $key && checkPriv('_PRIV_MANAGE_MEDIA')) {
+} elseif (($_POST['remove'] ?? false) && $key && checkPriv('_PRIV_MANAGE_MEDIA')) {
 	foreach (explodeAndTrim($ids, true) as $id) {
 		$key['image_id'] = $id;
 		$key['in_use'] = 0;
@@ -109,13 +109,13 @@ if (post('upload') && $privCheck) {
 
 
 
-} elseif (post('view_public_link')) {
+} elseif ($_POST['view_public_link'] ?? false) {
 	
 	$rememberWhatThisWas = cms_core::$mustUseFullPath;
 	cms_core::$mustUseFullPath = false;
 	
 	$width = $height = $url = false;
-	if (imageLink($width, $height, $url, $ids)) {
+	if (Ze\File::imageLink($width, $height, $url, $ids)) {
 		
 		echo
 			'<!--Message_Type:Success-->',

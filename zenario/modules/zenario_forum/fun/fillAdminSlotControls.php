@@ -32,7 +32,7 @@ if ($this->forumNotSetUp && checkPriv('_PRIV_MANAGE_ITEM_SLOT')) {
 	$controls['actions']['create_forum'] = array(
 		'ord' => 50,
 		'label' => adminPhrase('Create a Forum here'),
-		'page_modes' => array('edit' => true, 'layout' => true),
+		'page_modes' => array('edit' => true, 'item' => true, 'layout' => true),
 		'onclick' => "
 			zenarioA.floatingBox(
 				'". adminPhrase('Are you sure you wish to create a new Forum on this Content Item?'). "',
@@ -51,7 +51,7 @@ if ($this->forumNotSetUp && checkPriv('_PRIV_MANAGE_ITEM_SLOT')) {
 		$controls['actions']['setup_forum'] = array(
 			'ord' => 51,
 			'label' => adminPhrase('Use this page as part of an existing Forum'),
-			'page_modes' => array('edit' => true, 'layout' => true),
+			'page_modes' => array('edit' => true, 'item' => true, 'layout' => true),
 			'onclick' => "
 				zenarioAB.open('zenario_forum_setup', {cID: zenario.cID, cType: zenario.cType}); return false;");
 	}
@@ -61,7 +61,7 @@ if (!$this->forumNotSetUp && (checkPriv('_PRIV_MANAGE_ITEM_SLOT') || checkPriv('
 	$controls['actions']['manage_forum'] = array(
 		'ord' => 50,
 		'label' => adminPhrase('Manage Forum'),
-		'page_modes' => array('edit' => true, 'layout' => true),
+		'page_modes' => array('edit' => true, 'item' => true, 'layout' => true),
 		'onclick' => "
 			window.open(URLBasePath + 'zenario/admin/organizer.php#zenario__social/nav/forums/panel//". $this->forumId. "'); return false;");
 }

@@ -312,11 +312,11 @@ class zenario_document_container extends module_base_class {
 		$fields = getDatasetFieldsDetails(ZENARIO_USER_DOCUMENTS_PREFIX. 'user_documents');
 		foreach ($documents as &$document) {
 			$file = getRow('files', array('filename', 'created_datetime', 'size'), $document['file_id']);
-			$link = createFilePrivateLink($document['file_id'], true);
+			$link = Ze\File::createPrivateLink($document['file_id'], true);
 			$document['Document_Type'] =  'file';
 			$document['Document_Link'] = $link;
 			$document['Document_created_datetime'] = $file['created_datetime'];
-			$document['Document_Mime'] = str_replace('/', '_', documentMimeType($link));
+			$document['Document_Mime'] = str_replace('/', '_', Ze\File::mimeType($link));
 			$document['Document_Title'] = $file['filename'];
 			$document['Document_Link_Text'] = htmlspecialchars($file['filename']);
 			$document['Document_Level'] = 1;
@@ -333,7 +333,7 @@ class zenario_document_container extends module_base_class {
 			}
 			
 			if ($this->setting('show_file_size') && $file['size']) {
-				$fileSize = fileSizeConvert($file['size']);
+				$fileSize = Ze\File::fileSizeConvert($file['size']);
 				$document['File_Size'] = $fileSize;
 			}
 			if ($this->setting('show_upload_date') && $document['document_datetime']) {
@@ -384,7 +384,7 @@ class zenario_document_container extends module_base_class {
 				$thumbnailId = $documentThumbnailId;
 			} else {
 				$mimeType = getRow('files', 'mime_type', $fileId);
-				if (isImageOrSVG($mimeType)) {
+				if (Ze\File::isImageOrSVG($mimeType)) {
 					$thumbnailId = $fileId;
 				}
 			}
@@ -401,7 +401,7 @@ class zenario_document_container extends module_base_class {
 		if (is_numeric($fileId)) {
 			$file = getRow('files', array('id', 'filename', 'path', 'created_datetime', 'short_checksum'), $fileId);
 			if ($docFilename || $file['filename']) {
-				if (!windowsServer() && $privacyLevel == 'public' && (docstoreFilePath($file['id'], false))) {
+				if (!windowsServer() && $privacyLevel == 'public' && (Ze\File::docstorePath($file['id'], false))) {
 					$path = 'public/downloads/' . $file['short_checksum'];
 				} else {
 					$path = 'private';
@@ -436,7 +436,7 @@ class zenario_document_container extends module_base_class {
 			//Google analytics link
 			$archiveName = $this->getArchiveName();
 			$archiveURL = static::getGoogleAnalyticsDocumentLink($archiveName);
-			$mergeFields['Google_Analytics_Link'] = trackFileDownload($archiveURL);
+			$mergeFields['Google_Analytics_Link'] = Ze\File::trackDownload($archiveURL);
 		}
 	}
 	
@@ -489,17 +489,17 @@ class zenario_document_container extends module_base_class {
 			$file = getRow('files', array('created_datetime', 'size'), $childDoc['file_id']);
 			$documents[$key]['id'] = $childDoc['id'];
 			$documents[$key]['Document_Type'] = 'file';
-			$documents[$key]['Document_Link'] = getDocumentFrontEndLink($childDoc['id']);
+			$documents[$key]['Document_Link'] = Ze\File::getDocumentFrontEndLink($childDoc['id']);
 			$fileURL = static::getGoogleAnalyticsDocumentLink($childDoc['file_id'], $this->privacy);
-			$documents[$key]['Google_Analytics_Link'] = trackFileDownload($fileURL);
-			$documents[$key]['Document_Mime'] = str_replace('/', '_', documentMimeType($documents[$key]['Document_Link']));
+			$documents[$key]['Google_Analytics_Link'] = Ze\File::trackDownload($fileURL);
+			$documents[$key]['Document_Mime'] = str_replace('/', '_', Ze\File::mimeType($documents[$key]['Document_Link']));
 			$documents[$key]['Document_created_datetime'] = $file['created_datetime'];
 			$documents[$key]['Document_Title'] = $childDoc['filename'];
 			$documents[$key]['Document_Link_Text'] = $childDoc['filename'];
 			$documents[$key]['Document_Level'] = $level;
 			$documents[$key]['Thumbnail'] = $this->getDocumentThumbnail($childDoc['thumbnail_id'], $childDoc['file_id']);
 			if ($this->setting('show_file_size') && $file['size']) {
-				$fileSize = fileSizeConvert($file['size']);
+				$fileSize = Ze\File::fileSizeConvert($file['size']);
 				$documents[$key]['File_Size'] = $fileSize;
 			}
 			if ($this->setting('show_upload_date') && $childDoc['file_datetime']) {
@@ -647,7 +647,7 @@ class zenario_document_container extends module_base_class {
 	public static function createThumbnailHtml($thumbnailFileId, $widthIn, $heightIn, $canvas, $lazyload = false) {
 		$thumbnail = getRow('files', array('id', 'filename', 'path'), $thumbnailFileId);
 		$thumbnailLink = $width = $height = false;
-		imageLink($width, $height, $thumbnailLink, $thumbnailFileId, $widthIn, $heightIn, $canvas);
+		Ze\File::imageLink($width, $height, $thumbnailLink, $thumbnailFileId, $widthIn, $heightIn, $canvas);
 		$thumbnailHtml = '<img class="sticky_image ';
 		if ($lazyload) {
 			$thumbnailHtml .= 'lazy" data-src="'. htmlspecialchars($thumbnailLink). '"';

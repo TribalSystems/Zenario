@@ -70,8 +70,8 @@ class zenario_crm_form_integration extends module_base_class {
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
 		switch ($path) {
 			case 'zenario__user_forms/panels/zenario_crm_form_integration__fields':
-				if (post('reorder')) {
-					// Update ordinals
+				if ($_POST['reorder'] ?? false) {
+					//Update ordinals
 					$ids = explode(',', $ids);
 					
 					foreach ($ids as $id) {
@@ -93,38 +93,17 @@ class zenario_crm_form_integration extends module_base_class {
 		switch ($path){
 			case 'zenario_user_form':
 				$fields['data/send_signal']['note_below'] .= '<br> The checkbox is automatically checked when "CRM integration" is enabled';
-				if($box['key']['id']){
-					$formId = $box['key']['id'];
-					$row = getRow(
-										ZENARIO_CRM_FORM_INTEGRATION_PREFIX. 'form_crm_data',
-										array(	'crm_url',
-												'custom_input_name_1',
-												'custom_input_value_1',
-												'custom_input_name_2',
-												'custom_input_value_2',
-												'custom_input_name_3',
-												'custom_input_value_3',
-												'custom_input_name_4',
-												'custom_input_value_4',
-												'custom_input_name_5',
-												'custom_input_value_5',
-												'enable_crm_integration',
-												'form_id'
-										),
-										array('form_id' => $formId)
-										);
+				$formId = $box['key']['id'];
+				if ($formId) {
+					$row = getRow(ZENARIO_CRM_FORM_INTEGRATION_PREFIX. 'form_crm_data', array('crm_url','enable_crm_integration'), array('form_id' => $formId));
 					$values['crm_integration/crm_url'] = $row['crm_url'];
-					$values['crm_integration/name1'] = $row['custom_input_name_1'];
-					$values['crm_integration/value1'] = $row['custom_input_value_1'];
-					$values['crm_integration/name2'] = $row['custom_input_name_2'];
-					$values['crm_integration/value2'] = $row['custom_input_value_2'];
-					$values['crm_integration/name3'] = $row['custom_input_name_3'];
-					$values['crm_integration/value3'] = $row['custom_input_value_3'];
-					$values['crm_integration/name4'] = $row['custom_input_name_4'];
-					$values['crm_integration/value4'] = $row['custom_input_value_4'];
-					$values['crm_integration/name5'] = $row['custom_input_name_5'];
-					$values['crm_integration/value5'] = $row['custom_input_value_5'];
 					$values['crm_integration/enable_crm_integration'] = $row['enable_crm_integration'];
+					
+					$result = getRows(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'form_crm_static_inputs', array('name', 'value', 'ord'), array('form_id' => $formId), 'ord');
+					while ($row = sqlFetchAssoc($result)) {
+						$values['crm_integration/name' . $row['ord']] = $row['name'];
+						$values['crm_integration/value' . $row['ord']] = $row['value'];
+					}
 				}
 				break;
 			case 'zenario_crm_form_integration__field_name':
@@ -157,47 +136,20 @@ class zenario_crm_form_integration extends module_base_class {
 	
 	
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-	
 		switch ($path){
 			case 'zenario_user_form':
-			
 				$crmIntegration = $values['crm_integration/enable_crm_integration'];
-				if ($crmIntegration){
-					$fields['crm_integration/crm_url']['hidden'] = false;
-					$fields['crm_integration/name1']['hidden'] = false;
-					$fields['crm_integration/value1']['hidden'] = false;
-					$fields['crm_integration/name2']['hidden'] = false;
-					$fields['crm_integration/value2']['hidden'] = false;
-					$fields['crm_integration/name3']['hidden'] = false;
-					$fields['crm_integration/value3']['hidden'] = false;
-					$fields['crm_integration/name4']['hidden'] = false;
-					$fields['crm_integration/value4']['hidden'] = false;
-					$fields['crm_integration/name5']['hidden'] = false;
-					$fields['crm_integration/value5']['hidden'] = false;
-					
-					//enable sendsignal
+				if ($crmIntegration) {
 					$values['data/send_signal'] = true;
 					$fields['data/send_signal']['readonly'] = true;
-					
-				}else{
-					$fields['crm_integration/crm_url']['hidden'] = true;
-					$fields['crm_integration/name1']['hidden'] = true;
-					$fields['crm_integration/value1']['hidden'] = true;
-					$fields['crm_integration/name2']['hidden'] = true;
-					$fields['crm_integration/value2']['hidden'] = true;
-					$fields['crm_integration/name3']['hidden'] = true;
-					$fields['crm_integration/value3']['hidden'] = true;
-					$fields['crm_integration/name4']['hidden'] = true;
-					$fields['crm_integration/value4']['hidden'] = true;
-					$fields['crm_integration/name5']['hidden'] = true;
-					$fields['crm_integration/value5']['hidden'] = true;
+				} else {
 					$fields['data/send_signal']['readonly'] = false;
 				}
 			break;
 		}
 	}
 	
-	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving){
+	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
 		switch ($path){
 			case 'zenario_user_form':
 				if (!$values['crm_integration/crm_url'] && $values['crm_integration/enable_crm_integration']) {
@@ -207,10 +159,10 @@ class zenario_crm_form_integration extends module_base_class {
 		}
 	}
 	
-	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes){
+	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		switch ($path){
 			case 'zenario_crm_form_integration__field_name':
-				// Update all fields using this name on this form
+				//Update all fields using this name on this form
 				$oldFieldName = getRow(ZENARIO_CRM_FORM_INTEGRATION_PREFIX.'form_crm_fields', 'field_crm_name', $box['key']['id']);
 				if ($oldFieldName !== '' && $oldFieldName !== null) {
 					$sql = '
@@ -235,23 +187,17 @@ class zenario_crm_form_integration extends module_base_class {
 			case 'zenario_user_form':
 				$formId = $box['key']['id'];
 				if ($formId) {
-					$enable_crm_integration = $values['crm_integration/enable_crm_integration'];
-					$crm_url = $values['crm_integration/crm_url'];
-					$name1 = $values['crm_integration/name1'];
-					$value1 = $values['crm_integration/value1'];
-					$name2 = $values['crm_integration/name2'];
-					$value2 = $values['crm_integration/value2'];
-					$name3 = $values['crm_integration/name3'];
-					$value3 = $values['crm_integration/value3'];
-					$name4 = $values['crm_integration/name4'];
-					$value4 = $values['crm_integration/value4'];
-					$name5 = $values['crm_integration/name5'];
-					$value5 = $values['crm_integration/value5'];
-					//update db table
-					self::updateFormCrmData($formId,$crm_url,$name1,$value1,$name2,$value2,$name3,$value3,$name4,$value4,$name5,$value5,$enable_crm_integration);
+					setRow(ZENARIO_CRM_FORM_INTEGRATION_PREFIX. 'form_crm_data', array('crm_url' => $values['crm_integration/crm_url'], 'enable_crm_integration' => $values['crm_integration/enable_crm_integration']), array('form_id' => $formId));
 					
-					// All CRM forms must send a signal
-					if ($enable_crm_integration) {
+					deleteRow(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'form_crm_static_inputs', array('form_id' => $formId));
+					for ($i = 1; $i <= 10; $i++) {
+						if ($values['crm_integration/name' . $i]) {
+							setRow(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'form_crm_static_inputs', array('name' => trim($values['crm_integration/name' . $i]), 'value' => trim($values['crm_integration/value' . $i])), array('form_id' => $formId, 'ord' => $i));
+						}
+					}
+					
+					//All CRM forms must send a signal
+					if ($values['crm_integration/enable_crm_integration']) {
 						updateRow(ZENARIO_USER_FORMS_PREFIX . 'user_forms', array('send_signal' => true), $formId);
 					}
 				}
@@ -259,145 +205,115 @@ class zenario_crm_form_integration extends module_base_class {
 		}
 	}
 	
-	public static function eventUserFormSubmitted($data, $rawData, $fromProperties, $fieldIdValueLink, $responseId = false) {
-		$formId = $fromProperties['user_form_id'];
-		$formCrmData = self::getFormCrmData($formId);
+	public static function eventUserFormSubmitted($data, $formProperties, $fieldIdValueLink, $responseId = false) {
+		$formId = $formProperties['id'];
+		$formCrmData = getRow(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'form_crm_data', array('crm_url', 'enable_crm_integration'), array('form_id' => $formId));
+		if (empty($formCrmData['enable_crm_integration'])) {
+			return false;
+		}
 		$data=array();
 		$multiValueFields = array();
 		$url = $formCrmData['crm_url'];
-		if ($formCrmData['custom_input_name_1']) {
-			$data[$formCrmData['custom_input_name_1']] = $formCrmData['custom_input_value_1'];
-			$multiValueFields[$formCrmData['custom_input_name_1']]['m'] = array('name' => '', 'value' => $formCrmData['custom_input_value_1']);
-		}
-		if ($formCrmData['custom_input_name_2']) {
-			$data[$formCrmData['custom_input_name_2']] = $formCrmData['custom_input_value_2'];
-			$multiValueFields[$formCrmData['custom_input_name_2']]['m'] = array('name' => '', 'value' => $formCrmData['custom_input_value_2']);
-		}
-		if ($formCrmData['custom_input_name_3']) {
-			$data[$formCrmData['custom_input_name_3']] = $formCrmData['custom_input_value_3'];
-			$multiValueFields[$formCrmData['custom_input_name_3']]['m'] = array('name' => '', 'value' => $formCrmData['custom_input_value_3']);
-		}
-		if ($formCrmData['custom_input_name_4']) {
-			$data[$formCrmData['custom_input_name_4']] = $formCrmData['custom_input_value_4'];
-			$multiValueFields[$formCrmData['custom_input_name_4']]['m'] = array('name' => '', 'value' => $formCrmData['custom_input_value_4']);
-		}
-		if ($formCrmData['custom_input_name_5']) {
-			$data[$formCrmData['custom_input_name_5']] = $formCrmData['custom_input_value_5'];
-			$multiValueFields[$formCrmData['custom_input_name_5']]['m'] = array('name' => '', 'value' => $formCrmData['custom_input_value_5']);
+		
+		//Get static crm data to send from form
+		$result = getRows(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'form_crm_static_inputs', array('name', 'value'), array('form_id' => $formId), 'ord');
+		while ($row = sqlFetchAssoc($result)) {
+			//Allow responseId to be sent to CRM via merge field
+			if ($responseId) {
+				applyMergeFields($row['value'], array('responseId' => $responseId));
+			}
+			$data[$row['name']] = $row['value'];
+			$multiValueFields[$row['name']]['m'] = array('name' => '', 'value' => $row['value']);
+			
 		}
 		
-		foreach($fieldIdValueLink as $fieldId => $value) {
-			$fieldCrmDetails = getRow(ZENARIO_CRM_FORM_INTEGRATION_PREFIX. 'form_crm_fields', array('field_crm_name', 'ordinal'), array('form_field_id' => $fieldId));
+		//Get field crm data to send from submission
+		$formFields = zenario_user_forms::getFormFieldsStatic($formId);
+		$sql = '
+			SELECT uff.id, uff.name, fcf.field_crm_name, fcf.ordinal
+			FROM ' . DB_NAME_PREFIX . ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'form_crm_fields fcf
+			INNER JOIN ' . DB_NAME_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_form_fields uff
+				ON fcf.form_field_id = uff.id
+				AND uff.user_form_id = ' . (int)$formId;
+		$result = sqlSelect($sql);
+		while ($row = sqlFetchAssoc($result)) {
+			$fieldId = $row['id'];
+			if (!isset($formFields[$fieldId]) || !isset($fieldIdValueLink[$fieldId])) {
+				continue;
+			}
+			$field = $formFields[$fieldId];
+			$fieldCRMName = $row['field_crm_name'];
+			$value = zenario_user_forms::getFieldValueFromStored($field, $fieldIdValueLink[$fieldId]);
 			
-			$fieldCrmName = $fieldCrmDetails['field_crm_name'];
-			
-			if ($fieldCrmName){
-				//this is a select list, multi-checkboxes or radios
-				//look up field value crm value
-				if (is_array($value)) {
-					$crmValue = '';
-					foreach($value as $fieldValueId => $rawValue) {
-						//Dataset values
-						$isDataset = getRow(
-							ZENARIO_CRM_FORM_INTEGRATION_PREFIX. 'form_crm_field_values', 
-							'value', 
-							array(
-								'form_field_id' => $fieldId,
-								'form_field_value_dataset_id' => $fieldValueId, 
-								'form_field_value_unlinked_id' => 0,
-								'form_field_value_centralised_key' => null
-							)
-						);
-						if ($isDataset) {
-							$crmValue = $isDataset;
-						} else {
-							//Dataset centralised values
-							$isDatasetCentralised = getRow(
-								ZENARIO_CRM_FORM_INTEGRATION_PREFIX. 'form_crm_field_values', 
-								'value', 
-								array(
-									'form_field_id' => $fieldId,
-									'form_field_value_dataset_id' => 0, 
-									'form_field_value_unlinked_id' => 0, 
-									'form_field_value_centralised_key' => $fieldValueId
-								)
-							);
-							if ($isDatasetCentralised) {
-								$crmValue = $isDatasetCentralised;
-							} else {
-								//Unlinked values
-								$isUnlinked= getRow(
-									ZENARIO_CRM_FORM_INTEGRATION_PREFIX. 'form_crm_field_values', 
-									'value', 
-									array(
-										'form_field_id' => $fieldId,
-										'form_field_value_dataset_id' => 0,
-										'form_field_value_unlinked_id' => $fieldValueId,
-										'form_field_value_centralised_key' => null
-									)
-								);
-								if ($isUnlinked) {
-									$crmValue = $isUnlinked;
-								}
-							}
-						}
-						
-						//this code avoid send empty data
-						if(!$crmValue) {
-							//if not crm value has been use for the field use raw value
-							$crmValue = $rawValue;
+			//Get crm field value
+			$fieldCRMValue = null;
+			$hasSingleValue = false;
+			switch ($field['type']) {
+				case 'checkbox':
+				case 'group':
+					$fieldCRMValue = getRow(ZENARIO_CRM_FORM_INTEGRATION_PREFIX. 'form_crm_field_values', 'value', array('form_field_id' => $fieldId, 'form_field_value_checkbox_state' => (int)$value));
+					break;
+				case 'checkboxes':
+					$fieldCRMValue = array();
+					if ($value) {
+						$column = $field['dataset_field_id'] ? 'form_field_value_dataset_id' : 'form_field_value_unlinked_id';
+						foreach ($value as $valueId) {
+							$fieldCRMValue[] = getRow(ZENARIO_CRM_FORM_INTEGRATION_PREFIX. 'form_crm_field_values', 'value', array('form_field_id' => $fieldId, $column => $valueId));
 						}
 					}
-					$value = $crmValue;
-				// If this field is a checkbox
-				} else {
-					$sql = '
-						SELECT cdf.type, uff.field_type
-						FROM '.DB_NAME_PREFIX.ZENARIO_USER_FORMS_PREFIX.'user_form_fields uff
-						LEFT JOIN '.DB_NAME_PREFIX.'custom_dataset_fields cdf
-							ON uff.user_field_id = cdf.id
-						WHERE uff.id = '.$fieldId;
-					$result = sqlSelect($sql);
-					$field = sqlFetchArray($result);
-					$fieldType = $field[0] ? $field[0] : $field[1];
-					
-					if ($fieldType == 'checkbox') {
-						
-						$checkboxState = $value ? 1 : 0;
-						
-						$crmValue = getRow(
-							ZENARIO_CRM_FORM_INTEGRATION_PREFIX. 'form_crm_field_values', 
-							'value', 
-							array(
-								'form_field_id' => $fieldId,
-								'form_field_value_dataset_id' => 0, 
-								'form_field_value_unlinked_id' => 0, 
-								'form_field_value_checkbox_state' => $checkboxState
-							)
-						);
-						
-						if ($crmValue !== false) {
-							$value = $crmValue;
-						}
-					}
-					
+					$fieldCRMValue = implode(';', $fieldCRMValue);
+					break;
+				case 'radios':
+				case 'select':
+					$column = $field['dataset_field_id'] ? 'form_field_value_dataset_id' : 'form_field_value_unlinked_id';
+					$fieldCRMValue = getRow(ZENARIO_CRM_FORM_INTEGRATION_PREFIX. 'form_crm_field_values', 'value', array('form_field_id' => $fieldId, $column => $value));
+					break;
+				case 'centralised_radios':
+				case 'centralised_select':
+					$fieldCRMValue = getRow(ZENARIO_CRM_FORM_INTEGRATION_PREFIX. 'form_crm_field_values', 'value', array('form_field_id' => $fieldId, 'form_field_value_centralised_key' => $value));
+					break;
+				case 'text':
+				case 'textarea':
+				case 'date':
+				case 'url':
+				case 'calculated':
+					$fieldCRMValue = $value;
+					$hasSingleValue = true;
+					break;
+			}
+			
+			if ($fieldCRMName && $fieldCRMValue !== null) {
+				//Send multiple values from a single field if there is a comma in the crm field name
+				$names = explode(',', $fieldCRMName);
+				$hasSingleName = count($names) == 1;
+				$values = array();
+				if (!$hasSingleValue) {
+					$values = explode(',', (string)$fieldCRMValue);
 				}
-				// Record form field name and value in case a crm field name is used by multiple fields
-				$formFieldName = getRow(ZENARIO_USER_FORMS_PREFIX . 'user_form_fields', 'name', $fieldId);
-				$multiValueFields[$fieldCrmName][$fieldCrmDetails['ordinal']] = array('name' => $formFieldName, 'value' => $value);
-				$data[$fieldCrmName] = $value;
+				foreach ($names as $index => $name) {
+					$value = null;
+					if ($hasSingleValue || $hasSingleName) {
+						$value = $fieldCRMValue;
+					} elseif (isset($values[$index])) {
+						$value = $values[$index];
+					}
+					if ($value !== null) {
+						$data[trim($name)] = trim($value);
+						$multiValueFields[trim($name)][] = array('name' => $row['name'], 'value' => trim($value));
+					}
+				}
 			}
 		}
 		
-		// If a crm field name is used by multiple fields update $data
-		foreach ($multiValueFields as $fieldCrmName => $fields) {
+		//Group field crm data with the same crm name together
+		foreach ($multiValueFields as $fieldCRMName => $fields) {
 			if (count($fields) > 1) {
 				ksort($fields);
 				$fieldValue = '';
 				foreach ($fields as $ordinal => $fieldDetails) {
 					$fieldValue .= rtrim($fieldDetails['name']," \t\n\r\0\x0B:").': '.$fieldDetails['value'].', ';
 				}
-				$data[$fieldCrmName] = trim($fieldValue, " \t\n\r\0\x0B,:");
+				$data[$fieldCRMName] = trim($fieldValue, " \t\n\r\0\x0B,");
 			}
 		}
 		
@@ -407,7 +323,6 @@ class zenario_crm_form_integration extends module_base_class {
 	
 	
 	public static function submitCrmCustomValues($formId, $url, $data, $responseId){
-		
 		$request = http_build_query($data);
 		$options = array(
 			'http' => array(
@@ -421,6 +336,7 @@ class zenario_crm_form_integration extends module_base_class {
 		
 		$context  = stream_context_create($options);
 		$result = @file_get_contents($url, false, $context);
+		
 		if ($responseId && ($result !== false)) {
 			updateRow(ZENARIO_USER_FORMS_PREFIX . 'user_response', array('crm_response' => $result), $responseId);
 		}
@@ -434,189 +350,30 @@ class zenario_crm_form_integration extends module_base_class {
 		);
 	}
 	
-	//FormCrmData
-	public static function getFormCrmData($formId){
-		$formCrmData = getRow(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'form_crm_data',
-			array(
-				'form_id',
-				'crm_url',
-				'custom_input_name_1',
-				'custom_input_value_1',
-				'custom_input_name_2',
-				'custom_input_value_2',
-				'custom_input_name_3',
-				'custom_input_value_3',
-				'custom_input_name_4',
-				'custom_input_value_4',
-				'custom_input_name_5',
-				'custom_input_value_5',
-				'enable_crm_integration'
-			),
-			array('form_id' => $formId)
-		);
-		return $formCrmData;
-	}
-	
-	public static function updateFormCrmData($formId,$crm_url,$name1,$value1,$name2,$value2,$name3,$value3,$name4,$value4,$name5,$value5,$enable_crm_integration){
-		$rowId = setRow(ZENARIO_CRM_FORM_INTEGRATION_PREFIX. 'form_crm_data',
-			array('crm_url' => $crm_url,
-					'custom_input_name_1' =>$name1,
-					'custom_input_value_1' => $value1,
-					'custom_input_name_2' =>$name2,
-					'custom_input_value_2' => $value2,
-					'custom_input_name_3' =>$name3,
-					'custom_input_value_3' => $value3,
-					'custom_input_name_4' =>$name4,
-					'custom_input_value_4' => $value4,
-					'custom_input_name_5' =>$name5,
-					'custom_input_value_5' => $value5,
-					'enable_crm_integration' =>$enable_crm_integration,
-					),
-					array('form_id' => $formId)
-					);
-		return $rowId;
-	}
-	
-	public static function saveFormCrmData($formId,$crm_url,$name1,$value1,$name2,$value2,$name3,$value3,$name4,$value4,$name5,$value5,$enable_crm_integration){
-		$rowId = setRow(ZENARIO_CRM_FORM_INTEGRATION_PREFIX. 'form_crm_data',
-			array('crm_url' => $crm_url,
-					'custom_input_name_1' =>$name1,
-					'custom_input_value_1' => $value1,
-					'custom_input_name_2' =>$name2,
-					'custom_input_value_2' => $value2,
-					'custom_input_name_3' =>$name3,
-					'custom_input_value_3' => $value3,
-					'custom_input_name_4' =>$name4,
-					'custom_input_value_4' => $value4,
-					'custom_input_name_5' =>$name5,
-					'custom_input_value_5' => $value5,
-					'enable_crm_integration' =>$enable_crm_integration,
-					'form_id'=>$formId
-					)
-					);
-		return $rowId;
-	}
-	
-	// Form CRM Fields
-	public static function getFormCrmField($formFieldId){
-		$formCrmFieldsArray = getRow(ZENARIO_CRM_FORM_INTEGRATION_PREFIX.'form_crm_fields',
-			array('form_field_id','field_crm_name'),
-			array('form_field_id'=>$formFieldId));
-		return $formCrmFieldsArray;
-	}
-	
-	public static function updateFormCrmField($formFieldId,$fieldCrmName){
-		if ($fieldCrmName) {
-			$values = array('field_crm_name' => $fieldCrmName);
-			if (!checkRowExists(ZENARIO_CRM_FORM_INTEGRATION_PREFIX.'form_crm_fields', array('form_field_id' => $formFieldId, 'field_crm_name' => $fieldCrmName))) {
-				$sql = '
-					SELECT MAX(ordinal) from '.DB_NAME_PREFIX.ZENARIO_CRM_FORM_INTEGRATION_PREFIX.'form_crm_fields
-					WHERE field_crm_name = \''.sqlEscape($fieldCrmName).'\'';
-				$result = sqlSelect($sql);
-				$ordinal = sqlFetchRow($result);
-				$values['ordinal'] = ($ordinal[0] ? ($ordinal[0]+1) : 1);
-			}
-			return setRow(ZENARIO_CRM_FORM_INTEGRATION_PREFIX. 'form_crm_fields', $values, array('form_field_id'=>$formFieldId));
-		}
-		deleteRow(ZENARIO_CRM_FORM_INTEGRATION_PREFIX. 'form_crm_fields', array('form_field_id'=>$formFieldId));
-		return false;
-	}
-	
-	//Form CRM Field Values
-	public static function getFormCrmFieldValues($formFieldId){
-		$formCrmFieldValues = getRowsArray(ZENARIO_CRM_FORM_INTEGRATION_PREFIX.'form_crm_field_values',
-			array('form_field_value_dataset_id','form_field_value_unlinked_id','form_field_value_centralised_key', 'form_field_value_checkbox_state', 'form_field_id','value'),
-			array('form_field_id' => $formFieldId));
-		return $formCrmFieldValues;
-	}
-	
-	public static function updateFormCrmFieldValues($formFieldId,$formFieldValueDatasetId,$formFieldValueUnlinkedId,$value){
-		$rowId=setRow(ZENARIO_CRM_FORM_INTEGRATION_PREFIX. 'form_crm_field_values',
-				array('form_field_value_dataset_id'=>$formFieldValueDatasetId,'form_field_value_unlinked_id'=>$formFieldValueUnlinkedId,'value'=>$value),
-				array('form_field_id'=>$formFieldId));
-		return $rowId;
-	}
-	
-	public static function saveFormCrmFieldValues($formFieldId, $formFieldValueDatasetId, $formFieldValueUnlinkedId, $formFieldValueCentralisedKey, $formFieldValueCheckboxState, $value){
-		$values = array('form_field_id'=>$formFieldId,
-						'form_field_value_dataset_id'=>$formFieldValueDatasetId,
-						'form_field_value_unlinked_id'=>$formFieldValueUnlinkedId,
-						'value'=>$value);
-		if ($formFieldValueCentralisedKey !== false) {
-			$values['form_field_value_centralised_key'] = $formFieldValueCentralisedKey;
-		}
-		if ($formFieldValueCheckboxState !== false) {
-			$values['form_field_value_checkbox_state'] = $formFieldValueCheckboxState;
-		}
-		
-		// Save a linked fields options
-		if ($formFieldValueDatasetId){
-			$rowId = setRow(ZENARIO_CRM_FORM_INTEGRATION_PREFIX. 'form_crm_field_values', $values, array('form_field_value_dataset_id'=>$formFieldValueDatasetId, 'form_field_id' => $formFieldId));
-		// Save a unlinked fields options
-		}elseif ($formFieldValueUnlinkedId){
-			$rowId = setRow(ZENARIO_CRM_FORM_INTEGRATION_PREFIX. 'form_crm_field_values', $values, array('form_field_value_unlinked_id'=>$formFieldValueUnlinkedId));
-		// Save a checkbox fields 0 and 1 options
-		} elseif ($formFieldValueCheckboxState !== false) {
-			$rowId = setRow(ZENARIO_CRM_FORM_INTEGRATION_PREFIX. 'form_crm_field_values', $values, array('form_field_id'=>$formFieldId, 'form_field_value_checkbox_state' => $formFieldValueCheckboxState));
-		// Save a centralised linked fields options
-		}else{
-			$rowId = setRow(ZENARIO_CRM_FORM_INTEGRATION_PREFIX. 'form_crm_field_values', $values, array('form_field_id'=>$formFieldId, 'form_field_value_centralised_key'=>$formFieldValueCentralisedKey));
-		}
-		return $rowId;
-	}
-	
-	public static function getFormIdPassingFormFieldId($formFieldId){
-		$formId = getRow(ZENARIO_USER_FORMS_PREFIX . 'user_form_fields',
-			array('user_form_id'),
-			array('id'=>$formFieldId));
-		return $formId['user_form_id'];
-	}
-	
-	public static function cleanDbUnlinkedValues($ids){
-		if ($ids){
-			$stringOfIds = implode(',',$ids);
-			$sql="
-					SELECT form_field_value_unlinked_id 
-					FROM ". DB_NAME_PREFIX.ZENARIO_CRM_FORM_INTEGRATION_PREFIX."form_crm_field_values
-					WHERE form_field_value_unlinked_id NOT IN (".sqlEscape($stringOfIds).") 
-					AND form_field_value_unlinked_id != 0
-					AND form_field_value_dataset_id = 0";
-			
-			$result = sqlQuery($sql);
-			$formFieldTypes = array();
-			while($row = sqlFetchAssoc($result)) {
-				$idsToDelete[] = $row['form_field_value_unlinked_id'];
-			}
-			if(isset($idsToDelete) && $idsToDelete){
-				foreach ($idsToDelete as $id){
-					deleteRow(ZENARIO_CRM_FORM_INTEGRATION_PREFIX. 'form_crm_field_values', array('form_field_value_unlinked_id' => $id));
-				}
-			}
-		}
-	}
-	
 	public static function deleteFieldCRMData($fieldId) {
 		deleteRow(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'form_crm_fields', array('form_field_id' => $fieldId));
 		deleteRow(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'form_crm_field_values', array('form_field_id' => $fieldId));
 	}
 	
-	// Signal when a form is deleted
+	//Signal when a form is deleted
 	public static function eventFormDeleted($formId) {
-		// Delete crm data stored against form fields
+		//Delete crm data stored against form fields
 		$fields = getRows(ZENARIO_USER_FORMS_PREFIX . 'user_form_fields', array('id'), array('user_form_id' => $formId));
 		while ($field = sqlFetchAssoc($fields)) {
 			self::deleteFieldCRMData($field['id']);
 		}
-		// Delete last crm request sent
+		//Delete last crm request sent
 		deleteRow(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'last_crm_requests', array('form_id' => $formId));
+		//Delete crm static inputs
+		deleteRow(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'form_crm_static_inputs', array('form_id' => $formId));
 	}
 	
-	// Signal when a form field is deleted
+	//Signal when a form field is deleted
 	public static function eventFormFieldDeleted($fieldId) {
 		self::deleteFieldCRMData($fieldId);
 	}
 	
-	// Signal when an individual form field value is deleted
+	//Signal when an individual form field value is deleted
 	public static function eventFormFieldValueDeleted($valueId) {
 		deleteRow(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'form_crm_field_values', array('form_field_value_unlinked_id' => $valueId));
 	}

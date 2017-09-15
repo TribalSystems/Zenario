@@ -31,7 +31,7 @@ class zenario_user_documents extends module_base_class {
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
 		switch ($path) {
 			case 'zenario__content/hidden_nav/user_documents/panel':
-				if (post('reorder') || post('hierarchy')) {
+				if (($_POST['reorder'] ?? false) || ($_POST['hierarchy'] ?? false)) {
 					//Loop through each moved files
 					//var_dump($_POST);
 					foreach (explode(',', $ids) as $id) {
@@ -58,8 +58,8 @@ class zenario_user_documents extends module_base_class {
 							updateRow(ZENARIO_USER_DOCUMENTS_PREFIX.'user_documents', $cols, $id);
 						}
 					}
-				} elseif (post('upload')) {
-					if (!checkDocumentTypeIsAllowed($_FILES['Filedata']['name'])) {
+				} elseif ($_POST['upload'] ?? false) {
+					if (!Ze\File::isAllowed($_FILES['Filedata']['name'])) {
 						echo
 							adminPhrase('You must select a known file format, for example .doc, .docx, .jpg, .pdf, .png or .xls.'), 
 							"\n\n",
@@ -70,7 +70,7 @@ class zenario_user_documents extends module_base_class {
 					}
 			
 					exitIfUploadError();
-					$file_id = addFileToDatabase('user_file', $_FILES['Filedata']['tmp_name'], preg_replace('/([^.a-z0-9]+)/i', '_',$_FILES['Filedata']['name']), false, false, true);
+					$file_id = Ze\File::addToDatabase('user_file', $_FILES['Filedata']['tmp_name'], preg_replace('/([^.a-z0-9]+)/i', '_',$_FILES['Filedata']['name']), false, false, true);
 					$existingUserFile = getRow(ZENARIO_USER_DOCUMENTS_PREFIX.'user_documents', array('id'), array('file_id' => $file_id, 'user_id' => $refinerId));
 					if ($existingUserFile) {
 						echo "This file has already been uploaded to this users files";
@@ -82,7 +82,7 @@ class zenario_user_documents extends module_base_class {
 						return insertRow(ZENARIO_USER_DOCUMENTS_PREFIX.'user_documents',array('type' =>'file', 'file_id' => $file_id, 'user_id' => $refinerId, 'folder_id' => 0, 'ordinal' => 0));
 					}*/
 					return insertRow(ZENARIO_USER_DOCUMENTS_PREFIX.'user_documents',array('type' =>'file', 'file_id' => $file_id, 'user_id' => $refinerId, 'folder_id' => 0, 'ordinal' => 0));
-				} elseif (post('delete')) {
+				} elseif ($_POST['delete'] ?? false) {
 					foreach (explode(',', $ids) as $id) {
 						self::deleteUserDocument($id);
 					}
@@ -109,7 +109,7 @@ class zenario_user_documents extends module_base_class {
 						$item['css_class'] = 'zenario_file_item';
 						$fileId = getRow(ZENARIO_USER_DOCUMENTS_PREFIX.'user_documents', 'file_id', $item['id']);
 						if ($fileId) {
-							$filePath = fileLink($fileId);
+							$filePath = Ze\File::link($fileId);
 							$item['frontend_link'] = $filePath;
 						}
 						$filenameInfo = pathinfo($item['name']);
@@ -119,8 +119,8 @@ class zenario_user_documents extends module_base_class {
 					if (strlen($item['name']) > 30) {
 						$item['name'] = substr($item['name'], 0, 10) . "..." .  substr($item['name'], -15);
 					}
-					if ($fileId && docstoreFilePath($fileId)) {
-						$item['filesize'] = fileSizeConvert(filesize(docstoreFilePath($fileId)));
+					if ($fileId && Ze\File::docstorePath($fileId)) {
+						$item['filesize'] = Ze\File::fileSizeConvert(filesize(Ze\File::docstorePath($fileId)));
 					}
 				}
 				break;
@@ -135,7 +135,7 @@ class zenario_user_documents extends module_base_class {
 				if ($file['path']) {
 					header('Content-Description: File Transfer');
 					header('Content-Type: application/octet-stream');
-					header('Content-Disposition: attachment; filename="'.basename(docstoreFilePath($file['id'])).'"'); //<<< Note the " " surrounding the file name
+					header('Content-Disposition: attachment; filename="'.basename(Ze\File::docstorePath($file['id'])).'"'); //<<< Note the " " surrounding the file name
 					header("Content-Type: application/force-download");
 					header("Content-Type: application/octet-stream");
 					header("Content-Type: application/download");
@@ -144,8 +144,8 @@ class zenario_user_documents extends module_base_class {
 					header('Expires: 0');
 					header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
 					header('Pragma: public');
-					header('Content-Length: ' . filesize(docstoreFilePath($file['id'])));
-					readfile(docstoreFilePath($file['id']));
+					header('Content-Length: ' . filesize(Ze\File::docstorePath($file['id'])));
+					readfile(Ze\File::docstorePath($file['id']));
 					exit;
 				} else {
 					header('location: '. absCMSDirURL(). 'zenario/file.php?adminDownload=1&download=1&id='. getRow('files', 'id', getRow(ZENARIO_USER_DOCUMENTS_PREFIX.'user_documents', 'file_id', $ids)));

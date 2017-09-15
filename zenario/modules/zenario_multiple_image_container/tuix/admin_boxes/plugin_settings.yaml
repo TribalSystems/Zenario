@@ -38,6 +38,17 @@ plugin_settings:
                         reorder_items: true
                     validation:
                         required_if_not_hidden: false
+                
+                lazy_load:
+                    indent: 0
+                    visible_if: true
+                    plugin_setting:
+                        name: lazy_load
+                    label: Lazy load images
+                    type: checkbox
+                    side_note: |
+                        This will cause the images to be loaded when they scroll into view,
+                        rather than loading them all at once.
 
         links:
             ord: 1.5

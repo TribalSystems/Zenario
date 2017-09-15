@@ -37,7 +37,7 @@ class zenario_event_listing extends module_base_class {
 		$this->clearCacheBy(
 			$clearByContent = true, $clearByMenu = false, $clearByUser = false, $clearByFile = true, $clearByModuleData = true);
 		
-		$this->page = is_numeric(get('page'))? (int) get('page') : 1;
+		$this->page = is_numeric($_GET['page'] ?? false)? (int) ($_GET['page'] ?? false) : 1;
 		
 		switch ($this->setting('period_mode')){
 			case 'date_range':
@@ -99,7 +99,7 @@ class zenario_event_listing extends module_base_class {
 			if ($this->setting('show_sticky_images') && $this->setting('fall_back_to_default_image')) {
                 $width = 0;
                 $height = 0;
-			    imageLink($width, $height, $defaultImageURL, $this->setting('default_image_id'), $this->setting("width"), $this->setting("height"), $this->setting('canvas'), 0, $this->setting('retina'));
+			    Ze\File::imageLink($width, $height, $defaultImageURL, $this->setting('default_image_id'), $this->setting("width"), $this->setting("height"), $this->setting('canvas'), 0, $this->setting('retina'));
 			}
 				
 			$result = sqlSelect($sql . paginationLimit($this->page, $this->setting('page_size'), $this->setting('offset')));
@@ -113,7 +113,7 @@ class zenario_event_listing extends module_base_class {
                     $url = '';
                     $width = 0;
                     $height = 0;
-                    imageLink($width, $height, $url, $row['feature_image_id'], $this->setting("width"), $this->setting("height"), $this->setting('canvas'), 0, $this->setting('retina'));
+                    Ze\File::imageLink($width, $height, $url, $row['feature_image_id'], $this->setting("width"), $this->setting("height"), $this->setting('canvas'), 0, $this->setting('retina'));
                     
                     if ($url) {
                         $stickyImageURL = $url;
@@ -134,7 +134,7 @@ class zenario_event_listing extends module_base_class {
 				}
 
 				if ($this->setting('show_location')
-					&& ($locationId = arrayKey($row,'location_id'))
+					&& ($locationId = $row['location_id'] ?? false)
 					&& inc('zenario_location_manager') 
 					&& ($location = zenario_location_manager::getLocationDetails($locationId))
 				) {
@@ -173,13 +173,13 @@ class zenario_event_listing extends module_base_class {
 						$datetime['end_time'] = '';
 						break;
 					case 'show_start_time_only':
-						if (arrayKey($row,'specify_time')){
+						if ($row['specify_time'] ?? false){
 							$datetime['start_time'] = formatTimeNicely($row['start_time'], setting('vis_time_format'));
 						}
 						$datetime['end_time'] = '';
 						break;
 					case 'show_start_and_end_time':
-						if (arrayKey($row,'specify_time')){
+						if ($row['specify_time'] ?? false){
 							$datetime['start_time'] = formatTimeNicely($row['start_time'], setting('vis_time_format'));
 							if ($row['start_time']!=$row['end_time']) {
 								$datetime['end_time'] = formatTimeNicely($row['end_time'], setting('vis_time_format'));
@@ -193,11 +193,11 @@ class zenario_event_listing extends module_base_class {
 				
 
 				
-				$eventRow['Event_Dates'] = arrayKey($datetime,'start_date') . ' ' 
-											. arrayKey($datetime,'start_time') . ' ' 
-												.  arrayKey($datetime,'separator') . ' ' 
-													. arrayKey($datetime,'end_date') . ' ' 	
-													 	. arrayKey($datetime,'end_time');
+				$eventRow['Event_Dates'] = ($datetime['start_date'] ?? false) . ' ' 
+											. ($datetime['start_time'] ?? false) . ' ' 
+												.  ($datetime['separator'] ?? false) . ' ' 
+													. ($datetime['end_date'] ?? false) . ' ' 	
+													 	. ($datetime['end_time'] ?? false);
 
 
 

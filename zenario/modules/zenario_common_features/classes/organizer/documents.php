@@ -30,7 +30,6 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_common_features__organizer__documents extends module_base_class {
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
-		
 		if (!setting('enable_document_tags')) {
 			unset($panel['collection_buttons']['document_tags']);
 		}
@@ -50,52 +49,60 @@ class zenario_common_features__organizer__documents extends module_base_class {
 				$item['traits']['is_folder'] = true;
 				$tempArray = getRowsArray('documents', 'id', array('folder_id' => $item['id']));
 				$item['folder_file_count'] = count($tempArray);
+				
 				if (!$item['folder_file_count']) {
 					$item['traits']['is_empty_folder'] = true;
 				}
-				$item['extract_wordcount'] = 
-				$item['privacy'] = '';
+				$item['extract_wordcount'] =  $item['privacy'] = '';
+				
 			} else {
-			
-			/* if one document has public link */
-				$document = getRow('documents', array('file_id', 'filename'), $item['id']);
-				
-				$file = getRow('files', 
-								array('id', 'filename', 'path', 'created_datetime', 'short_checksum'),
-								$document['file_id']);
-				
-				if($document['filename']) {
-					$dirPath = 'public' . '/downloads/' . $file['short_checksum'];
-					$frontLink = $dirPath . '/' . $document['filename'];
-					$symPath = CMS_ROOT . $frontLink;
-					$symFolder =  CMS_ROOT . $dirPath;
-					
-					if (is_file($symPath)) {
-						$item['traits']['public_link'] = true;
-						$item['frontend_link'] = $frontLink;
-						$publicLink = true;
-					}
-				}
-				
 				//change icon
 				$item['css_class'] = 'zenario_file_item';
-				$sql = "
-					SELECT
-						file_id,
-						extract_wordcount,
-						SUBSTR(extract, 1, 40) as extract
-					FROM ".  DB_NAME_PREFIX. "documents
-					WHERE id = ". (int) $item['id'];
 				
-				$result = sqlSelect($sql);
-				$documentDetails = sqlFetchAssoc($result);
-				if (!empty($documentDetails['extract_wordcount'])) {
-					$documentDetails['extract_wordcount'] .= ', ';
+				if ($item['filesize']) {
+					$item['filesize'] = Ze\File::fileSizeConvert($item['filesize']);
 				}
-				$item['plaintext_extract_details'] = 'Word count: '.$documentDetails['extract_wordcount'].$documentDetails['extract'];
-				$fileId = $documentDetails['file_id'];
+				
+				$item['css_class'] .= ' zenario_document_privacy_' . $item['privacy'];
+				
+				$privicyPhraseAuto = adminPhrase('[[name]] is Hidden. (will become Public when a link to it is made from a public content item, or Private when a link is made on a private content item)', $item);
+				$privicyPhrasePrivate = adminPhrase('[[name]] is Private. (only a logged-in extranet user can access this document via an internal link; URL will change from time to time)', $item);
+				$privicyPhrasePublic = adminPhrase('[[name]] is Public. (any visitor who knows the public link can access it)', $item);
+				
+				if ($item['privacy'] == 'auto') {
+					$item['tooltip'] = $privicyPhraseAuto;
+				} elseif ($item['privacy'] == 'private') {
+					$item['tooltip'] = $privicyPhrasePrivate;
+				} elseif ($item['privacy'] == 'public') {
+					$item['tooltip'] = $privicyPhrasePublic;
+					$item['traits']['public_link'] = true;
+					
+					$dirPath = 'public' . '/downloads/' . $item['short_checksum'];
+					$frontLink = $dirPath . '/' . $item['filename'];
+					$item['frontend_link'] = $frontLink;
+				}
+				
+				if (!empty($item['extract_wordcount'])) {
+					$item['plaintext_extract_details'] = 'Word count: '.$item['extract_wordcount'].", ".$item['extract_snippet'];
+				}
+				
+				if ($item['date_uploaded']) {
+					$item['date_uploaded'] = adminPhrase('Uploaded [[date]]', array('date' => formatDateTimeNicely($item['date_uploaded'], '_MEDIUM')));
+				}
+				if ($item['extract_wordcount']) {
+					$item['extract_wordcount'] = nAdminPhrase(
+						'[[extract_wordcount]] word', 
+						'[[extract_wordcount]] words',
+						$item['extract_wordcount'],
+						$item
+					);
+				} else {
+					$item['extract_wordcount'] = '';
+				}
+				
+				$fileId = $item['file_id'];
 				if ($fileId && empty($item['frontend_link'])) {
-					$filePath = fileLink($fileId);
+					$filePath = Ze\File::link($fileId);
 					$item['frontend_link'] = $filePath;
 				}
 				$filenameInfo = pathinfo($item['name']);
@@ -103,28 +110,11 @@ class zenario_common_features__organizer__documents extends module_base_class {
 					$item['type'] = $filenameInfo['extension'];
 				}
 			}
-			$item['tooltip'] = $item['name'];
-			if (strlen($item['name']) > 50) {
-				$item['name'] = substr($item['name'], 0, 25) . "..." .  substr($item['name'], -25);
-			}
-			if ($fileId && docstoreFilePath($fileId)) {
-				$item['filesize'] = fileSizeConvert(filesize(docstoreFilePath($fileId)));
-			}
-			$item['css_class'] .= ' zenario_document_privacy_' . $item['privacy'];
 			
-			if ($item['date_uploaded']) {
-				$item['date_uploaded'] = adminPhrase('Uploaded [[date]]', array('date' => formatDateTimeNicely($item['date_uploaded'], '_MEDIUM')));
+			if (mb_strlen($item['name']) > 50) {
+				$item['name'] = mb_substr($item['name'], 0, 25) . "..." .  mb_substr($item['name'], -25);
 			}
-			if ($item['extract_wordcount']) {
-				$item['extract_wordcount'] = nAdminPhrase(
-					'[[extract_wordcount]] word', 
-					'[[extract_wordcount]] words',
-					$item['extract_wordcount'],
-					$item
-				);
-			} else {
-				$item['extract_wordcount'] = '';
-			}
+			
 		}
 		
 		if (count($panel['items']) <= 0) {
@@ -135,7 +125,7 @@ class zenario_common_features__organizer__documents extends module_base_class {
 	
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
 		$externalProgramError = false;
-		if (post('reorder') || post('hierarchy')) {
+		if (($_POST['reorder'] ?? false) || ($_POST['hierarchy'] ?? false)) {
 			$idsArray = explode(',', $ids);
 			$filenamesInFolder = array();
 			$folderNamesInFolder = array();
@@ -236,8 +226,9 @@ class zenario_common_features__organizer__documents extends module_base_class {
 					updateRow('documents', $cols, $id);
 				}
 			}
-		} elseif (post('upload')) {
-			if (!checkDocumentTypeIsAllowed($_FILES['Filedata']['name'])) {
+		} elseif ($_POST['upload'] ?? false) {
+			exitIfNotCheckPriv('_PRIV_EDIT_DOCUMENTS');
+			if (!Ze\File::isAllowed($_FILES['Filedata']['name'])) {
 				echo
 					adminPhrase('You must select a known file format, for example .doc, .docx, .jpg, .pdf, .png or .xls.'), 
 					"\n\n",
@@ -248,7 +239,7 @@ class zenario_common_features__organizer__documents extends module_base_class {
 			}
 			
 			exitIfUploadError();
-			$file_id = addFileToDatabase('hierarchial_file', $_FILES['Filedata']['tmp_name'], preg_replace('/([^.a-z0-9\s_]+)/i', '-',$_FILES['Filedata']['name']), false, false, true);
+			$file_id = Ze\File::addToDatabase('hierarchial_file', $_FILES['Filedata']['tmp_name'], preg_replace('/([^.a-z0-9\s_]+)/i', '-',$_FILES['Filedata']['name']), false, false, true);
 			$existingFile = getRow('documents', array('id'), array('file_id' => $file_id));
 			if ($existingFile) {
 				echo "This file has already been uploaded to the files directory!";
@@ -274,7 +265,7 @@ class zenario_common_features__organizer__documents extends module_base_class {
 			
 			return $documentId;
 			
-		} elseif (post('rescan')) {
+		} elseif ($_POST['rescan'] ?? false) {
 			$file_id = getRow('documents', 'file_id', array('id' => $ids));
 			$documentProperties = zenario_common_features::addExtractToDocument($file_id);
 			if (empty($documentProperties['extract']) || empty($documentProperties['thumbnail_id'])) {
@@ -286,7 +277,7 @@ class zenario_common_features__organizer__documents extends module_base_class {
 			if (empty($documentProperties['extract'])) {
 				echo '<p>', adminPhrase('Unable to update document text extract.'), '</p>';
 				
-				if (!((plainTextExtract(moduleDir('zenario_common_features', 'fun/test_files/test.doc'), $extract))
+				if (!((Ze\File::plainTextExtract(moduleDir('zenario_common_features', 'fun/test_files/test.doc'), $extract))
 					 && ($extract == 'Test'))) {
 					echo '<p>', adminPhrase('<code>antiword</code> or <code>pdftotext</code> do not appear to be working.'), '</p>';
 					$externalProgramError = true;
@@ -298,7 +289,7 @@ class zenario_common_features__organizer__documents extends module_base_class {
 			if (empty($documentProperties['thumbnail_id'])) {
 				echo '<p>', adminPhrase('Unable to update document image.'), '</p>';
 				
-				if (!createPpdfFirstPageScreenshotPng(moduleDir('zenario_common_features', 'fun/test_files/test.pdf'))) {
+				if (!Ze\File::createPpdfFirstPageScreenshotPng(moduleDir('zenario_common_features', 'fun/test_files/test.pdf'))) {
 					echo '<p>', adminPhrase('<code>ghostscript</code> does not appear to be working.'), '</p>';
 					$externalProgramError = true;
 				}
@@ -308,7 +299,7 @@ class zenario_common_features__organizer__documents extends module_base_class {
 			
 			updateRow('documents', $documentProperties, array('id' => $ids));
 			
-		}elseif(post('rescanText')){ 
+		}elseif($_POST['rescanText'] ?? false){ 
 			$file_id = getRow('documents', 'file_id', array('id' => $ids));
 			$documentProperties = zenario_common_features::addExtractToDocument($file_id);
 			if (empty($documentProperties['extract'])) {
@@ -319,7 +310,7 @@ class zenario_common_features__organizer__documents extends module_base_class {
 			if (empty($documentProperties['extract'])) {
 				echo '<p>', adminPhrase('Unable to update document text extract.'), '</p>';
 				
-				if (!((plainTextExtract(moduleDir('zenario_common_features', 'fun/test_files/test.doc'), $extract))
+				if (!((Ze\File::plainTextExtract(moduleDir('zenario_common_features', 'fun/test_files/test.doc'), $extract))
 					 && ($extract == 'Test'))) {
 					echo '<p>', adminPhrase('<code>antiword</code> or <code>pdftotext</code> do not appear to be working.'), '</p>';
 					$externalProgramError = true;
@@ -329,21 +320,24 @@ class zenario_common_features__organizer__documents extends module_base_class {
 				updateRow('documents', array('extract'=>$documentProperties['extract']), array('id' => $ids));
 			}
 		
-		}elseif (post('autoset')) {
+		}elseif ($_POST['autoset'] ?? false) {
 			zenario_common_features::processDocumentRules($ids);
 			
-		} elseif (post('dont_autoset_metadata')) {
+		} elseif ($_POST['dont_autoset_metadata'] ?? false) {
+			exitIfNotCheckPriv('_PRIV_EDIT_DOCUMENTS');
 			foreach (explode(',', $ids) as $id) {
 				updateRow('documents', array('dont_autoset_metadata' => 1), $id);
 			}
 			
-		} elseif (post('allow_autoset_metadata')) {
+		} elseif ($_POST['allow_autoset_metadata'] ?? false) {
+			exitIfNotCheckPriv('_PRIV_EDIT_DOCUMENTS');
 			foreach (explode(',', $ids) as $id) {
 				updateRow('documents', array('dont_autoset_metadata' => 0), $id);
 			}
 		
 		//Remove all of the custom data from a document
-		} elseif (post('remove_metadata')) {
+		} elseif ($_POST['remove_metadata'] ?? false) {
+			exitIfNotCheckPriv('_PRIV_EDIT_DOCUMENTS');
 			if ($dataset = getDatasetDetails('documents')) {
 				foreach (explode(',', $ids) as $id) {
 					deleteRow('documents_custom_data', $id);
@@ -351,11 +345,12 @@ class zenario_common_features__organizer__documents extends module_base_class {
 				}
 			}
 			
-		} elseif (post('delete')) {
+		} elseif ($_POST['delete'] ?? false) {
+			exitIfNotCheckPriv('_PRIV_EDIT_DOCUMENTS');
 			foreach (explode(',', $ids) as $id) {
 				zenario_common_features::deleteHierarchicalDocument($id);
 			}
-		} elseif (post('generate_public_link')) {
+		} elseif ($_POST['generate_public_link'] ?? false) {
 			$messageType = 'Success';
 			$html = '';
 			foreach (explode(',', $ids) as $id) {
@@ -376,7 +371,8 @@ class zenario_common_features__organizer__documents extends module_base_class {
 			}
 			echo '<!--Message_Type:' . $messageType . '-->' . $html;
 		
-		} elseif(post('delete_public_link')) {
+		} elseif($_POST['delete_public_link'] ?? false) {
+			exitIfNotCheckPriv('_PRIV_EDIT_DOCUMENTS');
 			foreach (explode(',', $ids) as $id) {
 				$result = zenario_common_features::deleteHierarchicalDocumentPubliclink($id);
 				
@@ -389,7 +385,8 @@ class zenario_common_features__organizer__documents extends module_base_class {
 				}
 				
 			}
-		} elseif (post('regenerate_public_links')) {
+		} elseif ($_POST['regenerate_public_links'] ?? false) {
+			exitIfNotCheckPriv('_PRIV_REGENERATE_DOCUMENT_PUBLIC_LINKS');
 			//Get files that should have public links and their redirects
 			$sql = "
 				SELECT d.id, d.file_id, f.filename, f.location, f.path, f.short_checksum
@@ -434,8 +431,8 @@ class zenario_common_features__organizer__documents extends module_base_class {
 			header('Expires: 0');
 			header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
 			header('Pragma: public');
-			header('Content-Length: ' . filesize(docstoreFilePath($file['id'])));
-			readfile(docstoreFilePath($file['id']));
+			header('Content-Length: ' . filesize(Ze\File::docstorePath($file['id'])));
+			readfile(Ze\File::docstorePath($file['id']));
 		} else {
 			header('location: '. absCMSDirURL(). 'zenario/file.php?adminDownload=1&download=1&id='. getRow('files', 'id', getRow('documents', 'file_id', $ids)));
 		}

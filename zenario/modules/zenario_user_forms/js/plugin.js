@@ -1,10 +1,11 @@
 (function(module) {
 	'use strict';
 	
-	module.initForm = function(containerId, slotName, ajaxURL, formHTML, formFinalSubmitSuccessfull, inFullScreen, allowProgressBarNavigation, page, maxPageReached, showLeavingPageMessage, isErrors) {
+	module.initForm = function(containerId, slotName, ajaxURL, formHTML, formFinalSubmitSuccessfull, inFullScreen, allowProgressBarNavigation, page, maxPageReached, showLeavingPageMessage, isErrors, phrases) {
 		this.containerId = containerId;
 		var that = this;
 		
+		phrases = JSON.parse(phrases);
 		if (isErrors) {
 			$('#' + containerId + '_user_form').effect("shake", {distance: 10, times: 3, duration: 300});
 		}
@@ -31,7 +32,7 @@
 		        var targetPage = $(this).data('page');
 		        if (targetPage <= maxPageReached && targetPage != page) {
 		            window.onbeforeunload = null;
-		            that.submitForm(containerId, slotName, {'target_page': targetPage}, true);
+		            that.submitForm(containerId, {'target_page': targetPage}, true);
 		        }
 		    });
 		}
@@ -51,6 +52,32 @@
 			});
 			zenario.resizeColorbox();
 		}
+		
+		//Init navigation buttons
+		$('#' + containerId + '_user_form .form_buttons .next.submit').on('click', function() {
+			that.submitForm(containerId, {submitForm: true}, true);
+		});
+		$('#' + containerId + '_user_form .form_buttons .next:not(.submit)').on('click', function() {
+			that.submitForm(containerId, {next: true}, true);
+		});
+		$('#' + containerId + '_user_form .form_buttons .previous').on('click', function() {
+			that.submitForm(containerId, {previous: true}, true);
+		});
+		
+		$('#' + containerId + ' input.saveLater').on('click', function() {
+			var message = $(this).data('message');
+			if (confirm(message)) {
+				that.submitForm(containerId, {saveLater: true});
+			}
+		});
+		
+		$('#' + containerId + '_user_form .field_attachment .remove_attachment').on('click', function() {
+			var fieldId = $(this).data('id');
+			var request = {};
+			request['remove_attachment_' + fieldId] = true;
+			that.submitForm(containerId, request);
+		});
+		
 		//Init print page button
 		$('#' + containerId + '_print_page').on('click', function() {
 			that.printFormPage(containerId);
@@ -75,7 +102,6 @@
 		
 		//Init date pickers
 		$('#' + containerId + '_user_form input.jquery_form_datepicker').each(function(i, el) {
-			zenario.loadDatePicker();
 			if (el.id) {
 				el.value = $.datepicker.formatDate(zenario.dpf, $.datepicker.parseDate('yy-mm-dd', get(el.id + '__0').value));
 				var options = {
@@ -100,6 +126,9 @@
 					options.changeYear = true;
 					options.yearRange = "c-100:c+5";
 				}
+				if ($(this).data('no_past_dates')) {
+					options.minDate = new Date;
+				}
 				
 				var $datepicker = $('#' + el.id);
 				$datepicker.datepicker(options);
@@ -115,59 +144,72 @@
 		});
 		//Init select list source fields
 		$('#' + containerId + '_user_form select.source_field').on('change', function() {
-			module.submitForm(containerId, slotName, {'filter': 1});
+			module.submitForm(containerId, {'filter': 1});
 		});
 		//Init visible on condition fields
 		$('#' + containerId + '_user_form .form_field.visible_on_condition, #' + containerId + '_user_form .repeat_block.visible_on_condition, .page_switcher li.visible_on_condition').each(function(i, el) {
 			var that = this,
-				cFieldId = $(this).data('cfieldid'),
-				cFieldValue = $(this).data('cfieldvalue'),
-				cFieldInvert = $(this).data('cfieldinvert'),
-				cFieldType = $(this).data('cfieldtype'),
-				cFieldOperator = $(this).data('cfieldoperator'),
+				cFields = $(this).data('cfields'),
 				fieldId = $(this).data('id');
 			
-			if (cFieldId) {
-				if (cFieldType == 'checkboxes') {
-					$('#' + containerId + '_field_' + cFieldId + ' input').on('change', function() {
-						var values = [], cFieldValues, visible, i;
-						$('#' + containerId + '_field_' + cFieldId + ' input').each(function() {
-							if ($(this).is(':checked')) {
-								values.push($(this).data('value'));
-							}
-						});
-						cFieldValues = cFieldValue ? _.map(cFieldValue.toString().split(','), Number) : [];
+			if (cFields.length) {
+				var hidden = false;
+				//Visibility can be chained. So one field depends on another, depends on another and so on...
+				//so when one of those fields in the chain is changed, each field down to the original field is checked.
+				//if any of the closer ones say it's hidden then the field is hidden. Otherwise it uses whatever the changed
+				//field says.
+				for (var i = 0; i < cFields.length; i++) {
+					var cField = cFields[i];
+					(function(i) {
+						$('#' + containerId + '_field_' + cField.id + ' :input').on('change', function() {
+							var visible = true;
+							for (var j = i; j < cFields.length; j++) {
+								var tcField = cFields[j];
+								var $tcField = $('#' + containerId + '_field_' + tcField.id + ' :input');
+								if (tcField.type == 'checkboxes') {
+									var values = [], cFieldValues;
+									$tcField.each(function() {
+										if ($(this).is(':checked')) {
+											values.push($(this).data('value'));
+										}
+									});
+									cFieldValues = tcField.value ? _.map(tcField.value.toString().split(','), Number) : [];
+									
+									if (tcField.operator == 'AND') {
+										var sharedValues = _.intersection(values, cFieldValues);
+										var selectedRequiredValues = _.intersection(values, sharedValues);
 						
-						if (cFieldOperator == 'AND') {
-							var sharedValues = _.intersection(values, cFieldValues);
-							var selectedRequiredValues = _.intersection(values, sharedValues);
+										visible = _.isEqual(selectedRequiredValues, cFieldValues);
+									} else {
+										visible = false;
+										for (var k = 0; k < values.length; k++) {
+											if (cFieldValues.indexOf(values[k]) != -1) {
+												visible = true;
+												break;
+											}
+										}	
+									}
+								} else {
+									var value;
+									if ($tcField.is(':checkbox')) {
+										value = $tcField.is(':checked');
+									} else if (tcField.type == 'radios') {
+										value = $tcField.filter(':checked').val();
+									} else {
+										value = $tcField.val();
+									}
 							
-							visible = _.isEqual(selectedRequiredValues, cFieldValues);
-						} else {
-							for (i = 0; i < values.length; i++) {
-								if (cFieldValues.indexOf(values[i]) != -1) {
-									visible = true;
+									visible = Boolean((tcField.value === '' && value) || (tcField.value !== '' && (tcField.value == value)));
+								}
+								
+								visible = tcField.invert ? !visible : visible;
+								if (!visible || (j == cFields.length - 1)) {
+									$(that).toggle(visible);
 									break;
 								}
-							}	
-						}
-						
-						visible = cFieldInvert ? !visible : visible;
-						$(that).toggle(visible);
-					});
-				} else {
-					$('#' + containerId + '_field_' + cFieldId + ' :input').on('change', function() {
-						var value;
-						if ($(this).is(':checkbox')) {
-							value = $(this).is(':checked');
-						} else {
-							value = $(this).val();
-						}
-						
-						var visible = (cFieldValue === '' && value) || (cFieldValue !== '' && (cFieldValue == value));
-						visible = cFieldInvert ? !visible : visible;
-						$(that).toggle(visible);
-					});
+							}
+						});
+					})(i);
 				}
 			}
 		});
@@ -194,7 +236,7 @@
 		});
 		
 		var checkFieldValueIsNaN = function(value) {
-			return (value == '' || isNaN(value) || value.toLowerCase().indexOf('e') > -1);
+			return (value === '' || isNaN(value) || value.toString().toLowerCase().indexOf('e') > -1);
 		};
 		
 		//Init calculated fields
@@ -258,6 +300,9 @@
 								
 								for (j in $fields) {
 									fieldValue = $fields[j].val();
+									if (!fieldValue) {
+										fieldValue = 0;
+									}
 									if (checkFieldValueIsNaN(fieldValue)) {
 										xIsNaN = true;
 										break;
@@ -267,6 +312,9 @@
 										var repeatFieldValues = [fieldValue];
 										for (var k = 0; k < $fields[j]._repeatedFields.length; k++) {
 											var repeatFieldValue = $fields[j]._repeatedFields[k].val();
+											if (!repeatFieldValue) {
+												repeatFieldValue = 0;
+											}
 											if (checkFieldValueIsNaN(repeatFieldValue)) {
 												xIsNaN = true;
 												break;
@@ -279,7 +327,6 @@
 									search = '\\[\\[FIELD_' + j + '\\]\\]';
 									equationWithMergeFields = equationWithMergeFields.replace(new RegExp(search, 'g'), fieldValue);
 								}
-								
 								if (!xIsNaN) {
 									x = Parser.evaluate(equationWithMergeFields);
 									if (!_.isFinite(x) || (x > maxNumberSize) || (x < minNumberSize)) {
@@ -313,11 +360,11 @@
 		$('#' + containerId + '_user_form .repeat_block').each(function(i, el) {
 			var blockId = $(this).data('id');
 			$(this).find('div.add').on('click', function() {
-				module.submitForm(containerId, slotName, {'add_repeat_row': blockId});
+				module.submitForm(containerId, {'add_repeat_row': blockId});
 			});
 			$(this).find('div.delete').on('click', function() {
 				var row = $(this).data('row');
-				module.submitForm(containerId, slotName, {'delete_repeat_row': blockId, 'row': row});
+				module.submitForm(containerId, {'delete_repeat_row': blockId, 'row': row});
 			});
 		});
 		//Init autocomplete lists
@@ -345,7 +392,7 @@
 						$(that).prev().val(label);
 						//If this is a source field, reload the form to filter any target fields
 						if ($(that).data('source_field')) {
-							module.submitForm(containerId, slotName, {'filter': 1});
+							module.submitForm(containerId, {'filter': 1});
 						}
 					},
 					focus: function(event, ui) {
@@ -379,119 +426,349 @@
 				});
 			}
 		});
-		//TODO improve this
+		
 		//Init file picker fields
-		$('#' + containerId + '_user_form .field_file_picker').each(function() {
-			var that = this,
-				$fileupload = $(this).find('.file_picker_field'),
-				$progressBar = $(this).find('.progress_bar'),
-				$fileUploadButton = $(this).find('.file_upload_button'),
-				maxNumberOfFiles = $fileupload.data('limit'),
-				extensions = $fileupload.data('extensions'),
-				count = 0,
-				fileNumber = 0,
-				that = this,
-				field_id = $(this).data('id'),
-				acceptFileTypes = undefined;
-			
-			//Build regex from extensions for file type validation
-			if (extensions) {
-				acceptFileTypes = '\\.(';
-				var temp = extensions.split(','),
-					cleanExtensions = [];
-				for (var i = 0; i < temp.length; i++) {
-					var extension = temp[i].replace(/\./i, '').trim();
-					if (extension) {
-						cleanExtensions.push(extension);
-					}
-				}
-				acceptFileTypes += cleanExtensions.join('|');
-				acceptFileTypes += ')$';
+		(function() {
+			function redrawFiles(fieldId, files) {
+				var orderedFiles = getOrderedFiles(files),
+					html = zenario.microTemplate('file_upload_row', orderedFiles),
+					$files = $('#' + containerId + '_field_' + fieldId + ' .files');
 				
-				acceptFileTypes = new RegExp(acceptFileTypes, 'i');
-			}
-			
-			//Init progress bar
-			$progressBar.progressbar();
-			
-			//Init file uploader
-			$fileupload.fileupload({
-				url: ajaxURL + '&filePickerUpload=1',
-				dataType: 'json',
-				maxFileSize: 10000000, //10MB
-				acceptFileTypes: acceptFileTypes,
-				maxNumberOfFiles: maxNumberOfFiles,
-				getNumberOfFiles: function() {
-					return count;
-				},
-				submit: function(e, data) {
-					count++;
-				},
-				start: function(e) {
-					$progressBar.show();
-				},
-				done: function(e, data) {
-					
-					//Add new files
-					$.each(data.result.files, function(i, file) {
-						
-						var html = '';
-						html += '<div class="file_row">';
-						if (file.download_link) {
-							html += 	'<p><a href="' + file.download_link + '" target="_blank">' + file.name + '</a></p>';
-						} else {
-							html += 	'<p>' + file.name + '</p>';
-						}
-						html += 	'<input name="field_' + field_id + '_' + (++fileNumber) + '" type="hidden" value="' + file.id + '" />';
-						html += 	'<span class="delete_file_button">' + zenario.phrase('zenario_user_forms', 'Delete') + '</span>';
-						html += '</div>';
-						$(that).find('.files').append($(html));
-						
-						if (count >= maxNumberOfFiles) {
-							$fileUploadButton.hide();
-						}
-					});
-					
-					//Init file buttons
-					$(that).find('.delete_file_button').off().on('click', function() {
-						$(this).parent().remove();
-						count--; 
-						if (count < maxNumberOfFiles) {
-							$fileUploadButton.show();
-						}
-					});
-					
-					
-				},
-				always: function(e, data) {
-					$progressBar.hide();
-				},
-				processfail: function(e, data) {
-					alert(data.files[data.index].error);
-				},
-				progressall: function(e, data) {
-					var progress = parseInt(data.loaded / data.total * 100, 10);
-					$progressBar.progressbar('option', 'value', progress);
-					
-				},
-				messages: {
-					acceptFileTypes: zenario.phrase('zenario_user_forms', 'Allowed file types: [[types]]', {types: extensions}),
-					maxFileSize: zenario.phrase('zenario_user_forms', 'File exceeds maximum allowed size of 10MB'),
-					maxNumberOfFiles: zenario.phrase('zenario_user_forms', 'Maximum number of files exceeded')
+				$files.html(html);
+				
+				//Delete button
+				$files.find('.file_row .delete').on('click', function() {
+					if (confirm(phrases.delete_file)) {
+						var fileId = $(this).parent().data('id');
+						delete(files[fileId]);
+						redrawFiles(fieldId, files);
+					}
+				});
+				
+				//Update files input
+				$('input[name="field_' + fieldId + '"]').val(JSON.stringify(files));
+			};
+			function getOrderedFiles(files) {
+				var orderedFiles = [];
+				for (var fileId in files) {
+					orderedFiles.push(files[fileId]);
 				}
+				orderedFiles.sort(sortByOrd);
+				return orderedFiles;
+			};
+			function updateProgressBar(fieldId, popupClass, width, show) {
+				$('#' + containerId + '_field_' + fieldId +  + ' .progress').toggle(show).find('.progress_bar').css('width', width + '%');
+			};
+			
+			$('#' + containerId + '_user_form .field_file_picker:not(.readonly)').each(function() {
+				var fieldId = $(this).data('id');
+				var files = JSON.parse($('input[name="field_' + fieldId + '"]').val());
+				if (!files) {
+					files = {};
+				}
+				redrawFiles(fieldId, files);
+				
+				$(this).find('.file_picker_field').fileupload({
+					url: ajaxURL + '&fileUpload=1',
+					dataType: 'json',
+					start: function(e) {
+						updateProgressBar(fieldId, 0, true);
+					},
+					progressall: function(e, data) {
+						var progress = parseInt(data.loaded / data.total * 100, 10);
+						updateProgressBar(fieldId, progress, true);
+					},
+					done: function (e, data) {
+						var orderedFiles = getOrderedFiles(files),
+							ord = orderedFiles.length && orderedFiles[orderedFiles.length - 1].ord ? orderedFiles[orderedFiles.length - 1].ord : 1;
+						$.each(data.result.files, function(index, file) {
+							ord++;
+							file.id = 't' + ord;
+							file.ord = ord;
+							files[file.id] = file;
+						});
+						redrawFiles(fieldId, files);
+					},
+					stop: function(e) {
+						updateProgressBar(fieldId, 0, false);
+					}
+				});
+				
+				
 			});
-			
-			//Get existing files
-			var data = {};
-			var filesJSON = $(this).find('.loaded_files').text();
-			data.files = JSON.parse(filesJSON);
-			
-			//Add existing files
-			if (data.files.length > 0) {
-				count = data.files.length;
-				$fileupload.fileupload('option', 'done').call($fileupload, $.Event('done'), {result: data});
-			}
-		});
+		})();
+		
+		//Init PDF upload fields
+		(function() {
+			function redrawFiles(fieldId, files) {
+				var orderedFiles = getOrderedFiles(files),
+					html = zenario.microTemplate('document_upload_row', orderedFiles),
+					$files = $('#' + containerId + '_field_' + fieldId + ' .popup_1 .files');
+				
+				$files.html(html);
+				
+				//Delete button
+				$files.find('.file_row .delete').on('click', function() {
+					if (confirm(phrases.delete_file)) {
+						var fileId = $(this).parent().data('id');
+						delete(files[fileId]);
+						redrawFiles(fieldId, files);
+					}
+				});
+			};
+			function redrawFileFragments(fieldId, files) {
+				var orderedFiles = getOrderedFiles(files),
+					html = zenario.microTemplate('document_upload_uploaded_file', orderedFiles),
+					$files = $('#' + containerId + '_field_' + fieldId + ' .popup_2 .files');
+				
+				$files.html(html);
+				
+				//Delete button
+				$files.find('.file_row .delete').on('click', function() {
+					if (confirm(phrases.delete_file)) {
+						var fileId = $(this).parent().data('id');
+						delete(files[fileId]);
+						redrawFileFragments(fieldId, files);
+					}
+				});
+				//Rotate button
+				$files.find('.file_row .rotate').on('click', function() {
+					var fileId = $(this).parent().data('id');
+					if (!files[fileId].rotate) {
+						files[fileId].rotate = 0;
+					}
+					files[fileId].rotate = (files[fileId].rotate + 90) % 360;
+					var requests = {
+						file: JSON.stringify(files[fileId])
+					};
+					
+					$files.find('.file_' + fileId + ' .icon img').css({
+						'transform':         'rotate(' + files[fileId].rotate + 'deg)',
+						'-ms-transform':     'rotate(' + files[fileId].rotate + 'deg)',
+						'-moz-transform':    'rotate(' + files[fileId].rotate + 'deg)',
+						'-webkit-transform': 'rotate(' + files[fileId].rotate + 'deg)',
+						'-o-transform':      'rotate(' + files[fileId].rotate + 'deg)'
+					});
+				});
+				//Reorder
+				if (orderedFiles.length) {
+					$files.sortable({
+						containment: 'parent',
+						tolerance: 'pointer',
+						items: 'div.file_row',
+						start: function(event, ui) {
+							that.startIndex = ui.item.index();
+						},
+						stop: function(event, ui) {
+							if (that.startIndex != ui.item.index()) {
+								$files.find('.file_row').each(function(i) {
+									var fileId = $(this).data('id');
+									files[fileId].ord = i + 1;
+								});
+							}
+						}
+					});
+				}
+			};
+			function getOrderedFiles(files) {
+				var orderedFiles = [];
+				for (var fileId in files) {
+					orderedFiles.push(files[fileId]);
+				}
+				orderedFiles.sort(sortByOrd);
+				return orderedFiles;
+			};
+			function updateProgressBar(fieldId, popupClass, width, show) {
+				$('#' + containerId + '_field_' + fieldId + ' .' + popupClass + ' .progress').toggle(show).find('.progress_bar').css('width', width + '%');
+			};
+			function closePopup($overlay, files) {
+				var orderedFiles = getOrderedFiles(files);
+				if (orderedFiles.length) {
+					if (confirm(phrases.are_you_sure_message)) {
+						$overlay.hide();
+					}
+				} else {
+					$overlay.hide();
+				}
+			};
+			$('#' + containerId + '_user_form .field_document_upload').each(function() {
+				var that = this,
+					fieldId = $(this).data('id'),
+					$overlay1 = $(this).find('.overlay_1'),
+					$overlay2 = $(this).find('.overlay_2'),
+					$popup1FileList = $(this).find('.popup_1 .files'),
+					$popup2FileList = $(this).find('.popup_2 .files'),
+					$filesInput = $(this).find('input[name="field_' + fieldId + '"]'),
+					combinedFilename = $(this).data('filename'),
+					files = {},
+					fileFragments = {};
+				
+				$(this).find('.open_popup_1').on('click', function() {
+					if ($filesInput.val()) {
+						files = JSON.parse($filesInput.val());
+					}
+					if (!files) {
+						files = {};
+					}
+					redrawFiles(fieldId, files);
+					$overlay1.show();
+				});
+				
+				$(this).find('.open_popup_2').on('click', function() {
+					fileFragments = {};
+					redrawFileFragments(fieldId, fileFragments);
+					$overlay2.show();
+				});
+				
+				$(this).find('.popup_1 .close').on('click', function() {
+					closePopup($overlay1, files);
+				});
+				
+				$(this).find('.popup_2 .close').on('click', function() {
+					closePopup($overlay2, fileFragments);
+				});
+				
+				window.onclick = function() {
+					if (event.target == $overlay1[0]) {
+						closePopup($overlay1, files);
+					} else if (event.target == $overlay2[0]) {
+						closePopup($overlay2, fileFragments);
+					}
+				};
+				
+				$(this).find('.popup_1 .upload_complete_files').fileupload({
+					url: ajaxURL + '&fileUpload=1',
+					dataType: 'json',
+					dropZone: $popup1FileList,
+					start: function(e) {
+						updateProgressBar(fieldId, 'popup_1', 0, true);
+					},
+					progressall: function(e, data) {
+						var progress = parseInt(data.loaded / data.total * 100, 10);
+						updateProgressBar(fieldId, 'popup_1', progress, true);
+					},
+					done: function (e, data) {
+						var orderedFiles = getOrderedFiles(files),
+							ord = orderedFiles.length && orderedFiles[orderedFiles.length - 1].ord ? orderedFiles[orderedFiles.length - 1].ord : 1;
+						$.each(data.result.files, function(index, file) {
+							ord++;
+							file.id = 't' + ord;
+							file.ord = ord;
+							files[file.id] = file;
+						});
+						redrawFiles(fieldId, files);
+					},
+					stop: function(e) {
+						updateProgressBar(fieldId, 'popup_1', 0, false);
+					}
+				});
+				
+				$(this).find('.popup_1 .save').on('click', function() {
+					var orderedFiles = getOrderedFiles(files),
+						html = '', 
+						fileList = [],
+						i, file;
+					for (i = 0; i < orderedFiles.length; i++) {
+						var file = orderedFiles[i];
+						fileList.push('<a href="' + file.path + '" target="_blank">' + file.name + '</a>');
+					}
+					html = fileList.join(', ');
+					$(that).find('.files_preview').html(html);
+					
+					$filesInput.val(JSON.stringify(files));
+					$overlay1.hide();
+					$overlay2.hide();
+				});
+				
+				$(this).find('.popup_2 .upload_file_fragments').fileupload({
+					url: ajaxURL + '&fileUpload=1&thumbnail=1',
+					dataType: 'json',
+					dropZone: $popup2FileList,
+					start: function(e) {
+						updateProgressBar(fieldId, 'popup_2', 0, true);
+					},
+					progressall: function(e, data) {
+						var progress = parseInt(data.loaded / data.total * 100, 10);
+						updateProgressBar(fieldId, 'popup_2', progress, true);
+					},
+					done: function (e, data) {
+						var orderedFiles = getOrderedFiles(fileFragments),
+							ord = orderedFiles.length && orderedFiles[orderedFiles.length - 1].ord ? orderedFiles[orderedFiles.length - 1].ord : 1;
+						$.each(data.result.files, function(index, file) {
+							ord++;
+							file.id = 't' + ord;
+							file.ord = ord;
+							fileFragments[file.id] = file;
+						});
+						redrawFileFragments(fieldId, fileFragments);
+					},
+					stop: function(e) {
+						updateProgressBar(fieldId, 'popup_2', 0, false);
+					}
+				});
+				
+				$(this).find('.popup_2 .combine').on('click', function() {
+					var orderedFiles = getOrderedFiles(fileFragments);
+					if (orderedFiles.length) {
+						var button = this,
+							name;
+						$(button).val(phrases.combining);
+						
+						//If using a default filename, add a number to keep it unique
+						if (combinedFilename) {
+							var name = combinedFilename,
+								number = 1,
+								orderedCompleteFiles = getOrderedFiles(files),
+								regexp = new RegExp(name + "(?:_(\\d+))?\.pdf$"),
+								matches = false, 
+								i;
+							
+							for (i = 0; i < orderedCompleteFiles.length; i++) {
+								matches = orderedCompleteFiles[i].name.match(regexp);
+								if (matches) {
+									number = +matches[1] + 1;
+								}
+							}
+							name += '_' + number;
+						} else {
+							name = $(that).find('.filename').val();
+						}
+						
+						var requests = {
+							name: name,
+							files: JSON.stringify(orderedFiles)
+						};
+						zenario.ajax(ajaxURL + '&combineFiles=1', requests).after(function(response) {
+							var newFile = JSON.parse(response);
+							if (newFile && newFile.path) {
+								var orderedFiles = getOrderedFiles(files),
+									ord = orderedFiles.length && orderedFiles[orderedFiles.length - 1].ord ? orderedFiles[orderedFiles.length - 1].ord : 1;
+								ord++;
+								newFile.id = 't' + ord;
+								newFile.ord = ord;
+								files[newFile.id] = newFile;
+								
+								redrawFiles(fieldId, files);
+								$(that).find('.filename').val(combinedFilename ? combinedFilename : 'my-combined-file');
+								$overlay2.hide();
+								
+								fileFragments = {};
+								redrawFileFragments(fieldId, []);
+							}
+							$(button).val(phrases.combine);
+						});
+					}
+				});
+			});
+		})();
+		
+		function sortByOrd(a, b) {
+			if (a.ord < b.ord) 
+				return -1;
+			if (a.ord > b.ord)
+				return 1;
+			return 0;
+		};
 	};
 	
 	module.printFormPage = function() {
@@ -546,7 +823,7 @@
 		return equation;
 	};
 	
-	module.submitForm = function(containerId, slotName, values, scrollToTop) {
+	module.submitForm = function(containerId, values, scrollToTop) {
 		var $form = $('#' + containerId + '_user_form form');
 		if (!scrollToTop) {
 			zenario.blockScrollToTop = true;
@@ -556,6 +833,12 @@
 				$form.append('<input type="hidden" name="' + i + '" value="' + values[i] + '"/>');
 			}
 		}
+		
+		//Remove ajax file inputs to make this an ajax reload rather than a page reload
+		$('#' + containerId + '_user_form .field_document_upload, #' + containerId + '_user_form .field_file_picker').each(function() {
+			$(this).find('input[type="file"]').remove();
+		});
+		
 		$form.submit();
 	};
 	

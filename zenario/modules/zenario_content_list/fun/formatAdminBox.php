@@ -87,7 +87,7 @@ switch ($path) {
 		} else {
 			
 			$mrg = array(
-				'def_lang_name' => htmlspecialchars(getLanguageName(setting('default_language'))),
+				'def_lang_name' => htmlspecialchars(getLanguageName(cms_core::$defaultLang)),
 				'phrases_panel' => htmlspecialchars(absCMSDirURL(). 'zenario/admin/organizer.php#zenario__languages/panels/phrases')
 			);
 			

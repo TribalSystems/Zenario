@@ -228,7 +228,7 @@ zenario__modules:
                     ord: "99"
                     label: Delete
                     multiple_select: true
-                    hide_in_select_mode: true
+                    hide_in_select_mode: false
                     visible_if_for_all_selected_items: item.usage_item == 0 && item.usage_layouts == 0
                     ajax:
                         confirm:

@@ -51,15 +51,15 @@ class zenario_common_features__organizer__plugins extends module_base_class {
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
 		if ($path != 'zenario__modules/panels/plugins') return;
 		
-		$panel['key']['skinId'] = request('skinId');
+		$panel['key']['skinId'] = $_REQUEST['skinId'] ?? false;
 		
 		
-		if (get('refiner__plugin') && !isset($_GET['refiner__all_instances'])) {
+		if (($_GET['refiner__plugin'] ?? false) && !isset($_GET['refiner__all_instances'])) {
 			$panel['title'] =
 			$panel['select_mode_title'] =
-				adminPhrase('"[[name]]" plugins in the library', array('name' => getModuleDisplayName(get('refiner__plugin'))));
+				adminPhrase('"[[name]]" plugins in the library', array('name' => getModuleDisplayName($_GET['refiner__plugin'] ?? false)));
 			$panel['no_items_message'] =
-				adminPhrase('There are no "[[name]]" plugins in the library. Click the "Create" button to create one.', array('name' => getModuleDisplayName(get('refiner__plugin'))));
+				adminPhrase('There are no "[[name]]" plugins in the library. Click the "Create" button to create one.', array('name' => getModuleDisplayName($_GET['refiner__plugin'] ?? false)));
 		}
 		
 		foreach ($panel['items'] as $id => &$item) {
@@ -96,7 +96,7 @@ class zenario_common_features__organizer__plugins extends module_base_class {
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
 		if ($path != 'zenario__modules/panels/plugins') return;
 		
-		if (post('delete') && checkPriv('_PRIV_MANAGE_REUSABLE_PLUGIN')) {
+		if (($_POST['delete'] ?? false) && checkPriv('_PRIV_MANAGE_REUSABLE_PLUGIN')) {
 			foreach (explodeAndTrim($ids) as $id) {
 				deletePluginInstance($id);
 			}

@@ -59,5 +59,3 @@ if (get_magic_quotes_gpc()) {
 		unset($_uploadedFile_);
 	}
 }
-
-?>

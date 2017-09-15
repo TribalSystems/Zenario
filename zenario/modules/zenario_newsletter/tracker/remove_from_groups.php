@@ -46,16 +46,16 @@ if (!inc('zenario_newsletter')) {
 	echo phrase('Sorry, you cannot be automatically unsubscribed right now, as this site has disabled their newsletter system.');
 	exit;
 
-} elseif (request('t') == 'XXXXXXXXXXXXXXX' || request('t') == 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX') {
+} elseif (($_REQUEST['t'] ?? false) == 'XXXXXXXXXXXXXXX' || ($_REQUEST['t'] ?? false) == 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX') {
 	echo phrase('Any user who clicks on this link in the actual Newsletter will be automatically unsubscribed.');
 	exit;
 }
 
 
-if ($link = getRow(ZENARIO_NEWSLETTER_PREFIX. 'newsletter_user_link', array('user_id', 'newsletter_id'), array('remove_hash' => request('t')))) {
+if ($link = getRow(ZENARIO_NEWSLETTER_PREFIX. 'newsletter_user_link', array('user_id', 'newsletter_id'), array('remove_hash' => ($_REQUEST['t'] ?? false)))) {
 	
 	if (!checkUserInGroup(setting('zenario_newsletter__all_newsletters_opt_out'), $link['user_id'])) {
-		if (!post('confirm')) {
+		if (!($_POST['confirm'] ?? false)) {
 			echo '
 				<form method="post">
 					', phrase('Please confirm that you wish to unsubscribe.'), '

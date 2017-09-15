@@ -53,23 +53,7 @@ revision(6, "
 		<p>&nbsp;</p>
 		<p>This is an auto-generated email from [[cms_url]] .</p>',
 		 NOW(),
-		 " .(int) session('admin_userid') . ",
-		 0
-		)
-		, 
-		(
-		 'zenario_users__to_user_account_suspended',
-		 'To User: Account Suspended',
-		 'Your account on [[cms_url]] has been suspended',
-		 '" . sqlEscape(setting('email_address_from')) . "',
-		 '" . sqlEscape(setting('email_name_from')) . "',
-		'<p>Dear [[first_name]] [[last_name]],</p>
-		<p>Your account has been suspended. You will no longer be able to access the extranet area of our website.</p>
-		<p>If you feel this suspension has been made in error, please contact us.</p> 
-		<p>&nbsp;</p>
-		<p>This is an auto-generated email from [[cms_url]] .</p>',
-		 NOW(),
-		 " .(int) session('admin_userid') . ",
+		 " .(int) ($_SESSION['admin_userid'] ?? false) . ",
 		 0
 		)
 "
@@ -98,7 +82,7 @@ revision(43,
 	) VALUES (
 		'zenario_users__inactive_user_short_time',
 		'To User: Inactive User (Short Time)',
-		'Inactive user',
+		'We\'ve missed you',
 		'". sqlEscape(setting('email_address_from')). "',
 		'". sqlEscape(setting('email_name_from')). "',
 		'<p>Dear [[salutation]] [[first_name]] [[last_name]],</p> we\'ve not seen you in a while. <br> Did you know that you can do these cool features on the portal: <br> ..... <br> ..... <br> [[link]]',
@@ -122,7 +106,7 @@ revision(44,
 	) VALUES (
 		'zenario_users__inactive_user_long_time',
 		'To User: Inactive User (Long Time)',
-		'Inactive user',
+		'We\'ve missed you',
 		'". sqlEscape(setting('email_address_from')). "',
 		'". sqlEscape(setting('email_name_from')). "',
 		'<p>Dear [[salutation]] [[first_name]] [[last_name]],</p> we\'ve not seen you in a long time. <br> Did you know that you can do these cool features on the portal: <br> ..... <br> ..... <br> [[link]]',

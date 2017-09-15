@@ -22,6 +22,7 @@ zenario_slide:
                 always_on: true
             fields:
                 name_or_title:
+                    row_class: zenario_row_with_dropdown
                     label: 'Slide title:'
                     type: text
                     maxlength: 100
@@ -33,17 +34,14 @@ zenario_slide:
                     visible_if: |
                         !_.isEmpty(field.values)
                     type: select
-                    css_class: slide_title_merge_fields
-                    select_options:
-                        disable_search: true
-                        dont_show_empty_value: true
+                    css_class: slide_title_merge_fields iconselectmenu
                     empty_value: 'Add merge field...'
                     values: title_merge_fields
                     style: |
                         width: 400px;
                     onchange: |
                         lib.insertText(lib.get('name_or_title'), $(this).val())
-                        $(this).val('').trigger('chosen:updated');
+                        $(this).val('').iconselectmenu('refresh');
                 
                 invisible_in_nav:
                     label: 'Hide the tab-link to this slide'
@@ -254,6 +252,10 @@ zenario_slide:
                     label: Ignore the above rules when logged in as an administrator.
                     type: checkbox
                     value: 1
+                
+                show_embed:
+                    label: Show an Embed button
+                    type: checkbox
     lovs:
         coreVars: {}
         title_merge_fields: {}

@@ -222,26 +222,30 @@ class zenario_users__organizer__users extends zenario_users {
 	
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
 		
-		if (post('delete_user') && checkPriv('_PRIV_DELETE_USER')) {
+		if (($_POST['delete_user'] ?? false) && checkPriv('_PRIV_DELETE_USER')) {
 			foreach (explode(',', $ids) as $id) {
 				deleteUser($id);
 			}
-	
-		} elseif (post('remove_users_from_this_group') && post('refiner__group_members') && checkPriv('_PRIV_EDIT_USER')) {
-			foreach (explode(',', $ids) as $id) {
-				addUserToGroup($id, post('refiner__group_members'), $remove = true);
-			}
-	
-		} elseif (post('add_user_to_this_group') && post('refiner__group_members') && checkPriv('_PRIV_EDIT_USER')) {
-			foreach (explode(',', $ids) as $userId) {
-				addUserToGroup($userId, post('refiner__group_members'));
-			}
 		
+		} elseif (($_POST['remove_users_from_this_group'] ?? false) && ($_POST['refiner__group_members'] ?? false) && checkPriv('_PRIV_EDIT_USER')) {
+			foreach (explode(',', $ids) as $id) {
+				addUserToGroup($id, ($_POST['refiner__group_members'] ?? false), $remove = true);
+			}
+	
+		} elseif (($_POST['add_user_to_this_group'] ?? false) && ($_POST['refiner__group_members'] ?? false) && checkPriv('_PRIV_EDIT_USER')) {
+			foreach (explode(',', $ids) as $userId) {
+				addUserToGroup($userId, ($_POST['refiner__group_members'] ?? false));
+			}
+		} elseif ($_POST['suspend_user'] ?? false) {
+			if (checkPriv('_PRIV_CHANGE_USER_STATUS')) {
+				static::suspendUser($ids);
+			}
+			
 		//Set a new avatar for a User/Users
-		} elseif (post('upload_image') && checkPriv('_PRIV_EDIT_USER')) {
+		} elseif (($_POST['upload_image'] ?? false) && checkPriv('_PRIV_EDIT_USER')) {
 			zenario_users::uploadUserImage($ids);
 		//Remove the image for each user
-		} elseif (post('delete_image') && checkPriv('_PRIV_EDIT_USER')) {
+		} elseif (($_POST['delete_image'] ?? false) && checkPriv('_PRIV_EDIT_USER')) {
 			zenario_users::deleteUserImage($ids);
 		}
 	}

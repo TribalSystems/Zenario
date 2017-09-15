@@ -76,9 +76,9 @@ sections:
                         <p>
                             This mode allows you to view details of a previous version of this content item.
                         </p>
-            template:
+            layout:
                 appears_in_toolbars:
-                    template: Yes
+                    layout: Yes
                 label: Help
                 help:
                     html: Yes

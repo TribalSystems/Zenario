@@ -36,8 +36,13 @@
 
 
 function getNumLanguages() {
+	
 	if (!defined('ZENARIO_NUM_LANGUAGES')) {
-		define('ZENARIO_NUM_LANGUAGES', selectCount('languages'));
+		if (!empty(cms_core::$langs)) {
+			define('ZENARIO_NUM_LANGUAGES', count(cms_core::$langs));
+		} else {
+			define('ZENARIO_NUM_LANGUAGES', selectCount('languages'));
+		}
 	}
 	return ZENARIO_NUM_LANGUAGES;
 }
@@ -65,16 +70,15 @@ function phrase($code, $replace = false, $moduleClass = 'lookup', $languageId = 
 		$moduleClass = 'zenario_common_features';
 	}
 	
-	$defaultLanguage = setting('default_language');
-	
 	
 	//Use $languageId === true as a shortcut to the site default language
 	//Otherwise if $languageId is not set, try to get language from session, or the site default if that is not set
 	if ($languageId === true) {
-		$languageId = $defaultLanguage;
+		$languageId = cms_core::$defaultLang;
 	
 	} elseif (!$languageId) {
-		$languageId = cms_core::$langId ?? $_SESSION['user_lang'] ?? $defaultLanguage;
+		$languageId = cms_core::$visLang ?? $_SESSION['user_lang'] ?? cms_core::$defaultLang;
+			//N.b. The visitorLangId() function is inlined here in order to not create a dependancy on zenario/api/system_functions.inc.php
 	}
 	
 	$multiLingal = getNumLanguages() > 1;
@@ -132,11 +136,11 @@ function phrase($code, $replace = false, $moduleClass = 'lookup', $languageId = 
 			
 			//For multilingal sites, any phrases that are not in the database need to be noted down
 			if ($multiLingal
-			 && ($defaultLanguage == $languageId
+			 && (cms_core::$defaultLang == $languageId
 			  || !checkRowExists(
 					'visitor_phrases',
 					array(
-						'language_id' => $defaultLanguage,
+						'language_id' => cms_core::$defaultLang,
 						'module_class_name' => $moduleClass,
 						'code' => $code)
 			))) {
@@ -222,7 +226,7 @@ function phrase($code, $replace = false, $moduleClass = 'lookup', $languageId = 
 					'seen_in_file' => substr($filename, 0, 0xff),
 					'seen_at_url' => $url),
 				array(
-					'language_id' => $defaultLanguage,
+					'language_id' => cms_core::$defaultLang,
 					'module_class_name' => $moduleClass,
 					'code' => $code),
 				
@@ -232,7 +236,7 @@ function phrase($code, $replace = false, $moduleClass = 'lookup', $languageId = 
 			//For multilingual sites, we need to note down this information against
 			//the current language as well, to
 			//fix a bug where missing phrases would continously clear the cache.
-			if ($defaultLanguage != $languageId) {
+			if (cms_core::$defaultLang != $languageId) {
 				setRow(
 					'visitor_phrases',
 					array(

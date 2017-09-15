@@ -30,7 +30,12 @@ header('Content-Type: text/css; charset=UTF-8');
 
 require '../basicheader.inc.php';
 useCache('zenario-inc-organizer-css-'. LATEST_REVISION_NO);
-useGZIP(!empty($_GET['gz']));
+useGZIP();
+
+
+//Run pre-load actions
+require CMS_ROOT. 'zenario/api/cache_functions.inc.php';
+require editionInclude('wrapper.pre_load');
 
 
 //Include the CSS needed for Organizer and its support libraries
@@ -38,3 +43,7 @@ incCSS('zenario/libraries/mit/jquery/css/nestable');
 incCSS('zenario/libraries/mit/jpaginator/jPaginator');
 incCSS('zenario/styles/admin_organizer');
 incCSS('zenario/libraries/mit/jssor/skin');
+
+
+//Run post-display actions
+require editionInclude('wrapper.post_display');

@@ -20,7 +20,7 @@ site_settings:
                 mod_rewrite_enabled:
                     site_setting:
                         name: mod_rewrite_enabled
-                    label: 'Use friendly URLs:'
+                    label: 'Use friendly URLs'
                     type: checkbox
                     value: ""
                     redraw_onchange: true

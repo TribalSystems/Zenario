@@ -488,7 +488,7 @@ class zenario_form_input_handler extends module_base_class {
 	}
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
-		$id = (int)arrayKey($box, 'key', 'id');
+		$id = (int)($box['key']['id'] ?? false);
 		
 		switch ($path) {
 			case 'zenario_form_input_handler__ruleset':
@@ -504,7 +504,7 @@ class zenario_form_input_handler extends module_base_class {
 				break;
 			
 			case 'zenario_form_input_handler__ruleset_rule':
-				$rule_set_id = (int)request('refinerId');
+				$rule_set_id = (int)($_REQUEST['refinerId'] ?? false);
 				$box['key']['rule_set_id'] = $rule_set_id;
 				
 				$record_ruleset = getRow(ZENARIO_FORM_INPUT_HANDLER_PREFIX . 'rule_sets', true, $rule_set_id);
@@ -573,7 +573,7 @@ class zenario_form_input_handler extends module_base_class {
 	}
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
-		$id = (int)arrayKey($box, 'key', 'id');
+		$id = (int)($box['key']['id'] ?? false);
 		switch ($path) {
 			case 'zenario_form_input_handler__ruleset':
 				$record = getRow(ZENARIO_FORM_INPUT_HANDLER_PREFIX . 'rule_sets', true, array('name' => $values['name']));
@@ -604,7 +604,7 @@ class zenario_form_input_handler extends module_base_class {
 
 			case 'zenario_form_input_handler__email_submission':
 				if (!empty($values['email_details/email_address'])){
-					foreach (explode(',',arrayKey($values,'email_details/email_address')) as $email){
+					foreach (explode(',',($values['email_details/email_address'] ?? false)) as $email){
 						if (!validateEmailAddress(trim($email))){
 							$box['tabs']['email_details']['errors'][] = adminPhrase("Error. The email address entered is not valid.");				
 						}
@@ -617,7 +617,7 @@ class zenario_form_input_handler extends module_base_class {
 	}
 
 	private static function dumpAttachmentFile($data,$filename) {
-		cleanDownloads();
+		cleanCacheDir();
 		# folder creation
 		# pass a string length and the document path to the function which creates a randomly generated folder name
 		$randomDir = createRandomDir(15);
@@ -670,7 +670,7 @@ class zenario_form_input_handler extends module_base_class {
 				break;
 				
 			case 'zenario_form_input_handler__email_submission':
-				foreach (explode(',',arrayKey($box,'key','id')) as $key){
+				foreach (explode(',',($box['key']['id'] ?? false)) as $key){
 					if ($details = self::getSubmissionData($key)){
 						$formFields = array();
 						$attachments = array();
@@ -684,20 +684,20 @@ class zenario_form_input_handler extends module_base_class {
 			
 						foreach ($details as $field){
 							if (!empty($field['attachment'])){
-								if ($fileDumpName = self::dumpAttachmentFile(arrayKey($field,'attachment'),arrayKey($field,'value'))){
-									$attachments[arrayKey($field,'label')] = $fileDumpName;
-									$attachmentFilenameMappings[arrayKey($field,'label')] = arrayKey($field,'value');
+								if ($fileDumpName = self::dumpAttachmentFile($field['attachment'] ?? false,($field['value'] ?? false))){
+									$attachments[($field['label'] ?? false)] = $fileDumpName;
+									$attachmentFilenameMappings[($field['label'] ?? false)] = $field['value'] ?? false;
 								}
 							} else {
-								$formFields[arrayKey($field,'label')] = arrayKey($field,'value');
-								$bodyHTMLSafe .= '<b>' . nl2br(htmlspecialchars(arrayKey($field,'label'))) . ':</b> ' . nl2br(htmlspecialchars(arrayKey($field,'value'))) . '<br/>';
+								$formFields[($field['label'] ?? false)] = $field['value'] ?? false;
+								$bodyHTMLSafe .= '<b>' . nl2br(htmlspecialchars($field['label'] ?? false)) . ':</b> ' . nl2br(htmlspecialchars($field['value'] ?? false)) . '<br/>';
 							}
 						}
 						
 						
-						foreach (explode(',',arrayKey($values,'email_details/email_address')) as $email){
+						foreach (explode(',',($values['email_details/email_address'] ?? false)) as $email){
 							if (!empty($values['email_details/email_template'])){
-								zenario_email_template_manager::sendEmailsUsingTemplate($email,arrayKey($values,'email_details/email_template'),$formFields,$attachments,$attachmentFilenameMappings);
+								zenario_email_template_manager::sendEmailsUsingTemplate($email,($values['email_details/email_template'] ?? false),$formFields,$attachments,$attachmentFilenameMappings);
 							} else {
 								$subject = adminPhrase("Form submission");
 								if ($submission = self::getFormSubmissions($key)){
@@ -788,7 +788,7 @@ class zenario_form_input_handler extends module_base_class {
 				}
 				break;
 			case 'zenario__form_input_handler/nav/email_rulesets_rules/panel':
-				$ruleset_id = request('refinerId');
+				$ruleset_id = $_REQUEST['refinerId'] ?? false;
 				$record = getRow(ZENARIO_FORM_INPUT_HANDLER_PREFIX . 'rule_sets', true, $ruleset_id);
 				$panel['title'] .= ' for "' . htmlspecialchars($record['name']) . '"';
 				break;
@@ -1012,7 +1012,7 @@ class zenario_form_input_handler extends module_base_class {
 	
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
 		foreach (explode(',',$ids) as $id) {
-			switch (post('action'))  {
+			switch ($_POST['action'] ?? false)  {
 				case 'delete_ruleset':
 					if (checkPriv('_PRIV_SET_EMAIL_ROUTING')){
 						$this->deleteRuleSet($id);
@@ -1020,7 +1020,7 @@ class zenario_form_input_handler extends module_base_class {
 					break;
 				case 'delete_ruleset_rule':
 					if (checkPriv('_PRIV_SET_EMAIL_ROUTING')){
-						$this->deleteRuleSetRule($id, request('refinerId'));
+						$this->deleteRuleSetRule($id, ($_REQUEST['refinerId'] ?? false));
 					}
 					break;
 				case 'delete_form_submission':
@@ -1035,11 +1035,11 @@ class zenario_form_input_handler extends module_base_class {
 	}
 	
 	public function organizerPanelDownload($path, $ids, $refinerName, $refinerId) {
-		if (post('export_all_data')) {
+		if ($_POST['export_all_data'] ?? false) {
 			$ar = explode('_', $refinerId);
 			self::exportformSubmitionsData($path, $ar[1], $ar[0]);
 			
-		} elseif (post('export_selected_data')) {
+		} elseif ($_POST['export_selected_data'] ?? false) {
 			$ar = explode('_', $refinerId);
 			self::exportformSubmitionsData($path, $ar[1], $ar[0], $ids);
 		}
@@ -1096,7 +1096,7 @@ class zenario_form_input_handler extends module_base_class {
 					$sql .= $ID;
 					$sql .= ',' . $i++;
 					$sql .= ",'" . sqlEscape($key) . "'";
-					$sql .= ",'" . sqlEscape(ifNull(arrayKey($attachmentFilenameMappings, $key), basename($val))) ."'";
+					$sql .= ",'" . sqlEscape(ifNull($attachmentFilenameMappings[$key] ?? false, basename($val))) ."'";
 					$sql .= ",'" . sqlEscape(file_get_contents($val)) ."'";
 					$sql .= "),";
 					
@@ -1166,14 +1166,14 @@ class zenario_form_input_handler extends module_base_class {
 						case 'not_equals':
 							$inverse = true;
 						case 'equals':
-							$matched = strcmp(strtolower($matchingValue),strtolower(arrayKey($formFields,$rule['object_name'])))===0;
+							$matched = strcmp(strtolower($matchingValue),strtolower($formFields[$rule['object_name']] ?? false))===0;
 							break;
 						
 						case 'starts_with':
-							$matched = strpos(strtolower(arrayKey($formFields,$rule['object_name'])),strtolower($matchingValue))===0;
+							$matched = strpos(strtolower($formFields[$rule['object_name']] ?? false),strtolower($matchingValue))===0;
 							break;
 						case 'match_regexp':
-							$matched = preg_match ($matchingValue,arrayKey($formFields,$rule['object_name']))===1;
+							$matched = preg_match ($matchingValue,($formFields[$rule['object_name']] ?? false))===1;
 							break;
 					}
 					

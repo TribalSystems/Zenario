@@ -43,47 +43,66 @@ class zenario_language_picker extends module_base_class {
 		$this->clearCacheBy(
 			$clearByContent = true, $clearByMenu = false, $clearByUser = false, $clearByFile = false, $clearByModuleData = false);
 		
-		$langs = array();
+		
+		$useEquivs = $this->setting('destination') != 'home';
+		$useHomepage = $this->setting('destination') != 'equiv_only';
+		
+		$adminMode = !empty($_SESSION['admin_logged_into_site']) && checkPriv();
+		
+		$equivs = [];
+		if ($useEquivs) {
+			$equivs = sqlFetchAssocs(
+				'SELECT id, status, alias, language_id
+				FROM '. DB_NAME_PREFIX. 'content_items
+				WHERE equiv_id = '. (int) cms_core::$equivId. '
+				  AND `type` = \''. sqlEscape(cms_core::$cType). '\'',
+				false, 'language_id'
+			);
+		}
+		
+		
 		
 		//Loop through all of the languages enabled on this site, adding the details of each to an array
-		foreach (getLanguages() as $langCfg) {
-			$langs[$langCfg['id']] = array(
+		foreach (getLanguages() as $langId => $langCfg) {
+			$lang = [
 				'cID' => false,
 				'cType' => false,
-				'equivId' => cms_core::$homeEquivId,
 				'flag' => $langCfg['flag'],
 				'name' => $langCfg['language_local_name'],
-				'current_language' => $langCfg['id'] == cms_core::$langId,
-				'isEquivOfThisPage' => false);
+				'request' => '',
+				'current_language' => $langId == cms_core::$visLang
+			];
 			
-			//Look up the cID of the homepage in each language and note that down as well
-			langSpecialPage('zenario_home', $langs[$langCfg['id']]['cID'], $langs[$langCfg['id']]['cType'], $langCfg['id'], true);
-		}
-		
-		//Unless we should always link to the homepage, try to look up an equivalent content item of the current content item
-		//in the language specified. If we find one, use this instead of the homepage link.
-		if ($this->setting('destination') != 'home') {
-			foreach (equivalences($this->cID, $this->cType) as $langId => $equiv) {
-				if (isset($langs[$langId])) {
-					$langs[$langId]['cID'] = $equiv['id'];
-					$langs[$langId]['cType'] = $equiv['type'];
-					$langs[$langId]['equivId'] = cms_core::$equivId;
-					$langs[$langId]['isEquivOfThisPage'] = true;
+			$alias = false;
+			$isPlaceholder = false;
+			
+			//Unless we should always link to the homepage, try to look up an equivalent content item of the current content item
+			//in the language specified. If we find one, use this instead of the homepage link.
+			if ($useEquivs
+			 && (($equiv = $equivs[$langId] ?? false)
+			  || (showUntranslatedContentItems($langId) && ($equiv = $equivs[cms_core::$defaultLang] ?? false) && ($isPlaceholder = true)))
+			 && ($adminMode || isPublished($equiv['status']))) {
+				
+				$lang['cID'] = $equiv['id'];
+				$lang['cType'] = cms_core::$cType;
+				$lang['alias'] = $equiv['alias'];
+				$lang['equivId'] = cms_core::$equivId;
+				
+				if ($isPlaceholder) {
+					$lang['request'] = ['visLang' => $langId];
 				}
+			
+			} elseif ($useHomepage) {
+				//Look up the cID of the homepage in each language and note that down as well
+				langSpecialPage('zenario_home', $lang['cID'], $lang['cType'], $langId, true);
+				$lang['equivId'] = cms_core::$homeEquivId;
+			
+			} else {
+				continue;
 			}
-		}
-		
-		//For each of the content items we found, check that they're good to link to. If they are, include the link to that language.
-		foreach ($langs as $langId => &$lang) {
-			if ($this->setting('destination') != 'equiv_only' || $lang['isEquivOfThisPage']) {
-				if ($content = getRow('content_items', array('status', 'alias'), array('id' => $lang['cID'], 'type' => $lang['cType']))) {
-					if (checkPriv() || isPublished($content['status'])) {
-						$lang['alias'] = $content['alias'];
-						$lang['View_This_Page_In_Lang'] = phrase('_VIEW_THIS_PAGE_IN_LANG', false, 'zenario_language_picker', $langId);
-						$this->langs[$langId] = $lang;
-					}
-				}
-			}
+			
+			$lang['View_This_Page_In_Lang'] = phrase('_VIEW_THIS_PAGE_IN_LANG', false, 'zenario_language_picker', $langId);
+			$this->langs[$langId] = $lang;
 		}
 		
 		//Always show the "choose your language" text
@@ -102,7 +121,7 @@ class zenario_language_picker extends module_base_class {
 			//This is done in showSlot() and not init() to give other plugins time to register GET requests.
 			foreach ($this->langs as $langId => &$lang) {
 				$lang['link'] = linkToItem(
-					$lang['cID'], $lang['cType'], false, '', $lang['alias'],
+					$lang['cID'], $lang['cType'], false, $lang['request'] ?? '', $lang['alias'] ?? false,
 					$autoAddImportantRequests = true, false,
 					$lang['equivId'], $langId);
 			}

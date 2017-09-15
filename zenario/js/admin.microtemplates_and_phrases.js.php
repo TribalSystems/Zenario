@@ -30,7 +30,7 @@ header('Content-Type: text/javascript; charset=UTF-8');
 require '../basicheader.inc.php';
 
 useCache('zenario-inc-admin-js-'. LATEST_REVISION_NO);
-useGZIP(!empty($_GET['gz']));
+useGZIP();
 
 
 require CMS_ROOT. 'zenario/includes/cms.inc.php';
@@ -103,7 +103,6 @@ foreach(array(
 	'filterByCol' => 'Click here to filter by this column',
 	'filterByColStop' => 'Click here to stop filtering by this column',
 	'goToNextPage' => 'Go to next page',
-	'goToOrganizer' => 'Go to the Organizer administration back-end for this site',
 	'goToPrevPage' => 'Go to previous page',
 	'hideExport' => 'Hide CSV export options',
 	'informationForModuleDevelopers' => 'Information for module developers:',
@@ -326,7 +325,7 @@ _help
 	$output .= esctick($code). '~'. esctick($phrase). '~';
 }
 
-echo 'zenario._uAM(zenarioA.phrase={},', json_encode($output), ');';
+echo 'zenario._uAM(zenarioA.phrase,', json_encode($output), ');';
 $output = '';
 
 //Include any templates (for underscore.js) from Module directories

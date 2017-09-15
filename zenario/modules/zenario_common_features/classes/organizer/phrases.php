@@ -37,7 +37,7 @@ class zenario_common_features__organizer__phrases extends module_base_class {
 			$mrg = array('lang_name' => htmlspecialchars(getLanguageName(FOCUSED_LANGUAGE_ID__NO_QUOTES)));
 	
 			if ($refinerName == 'language_and_plugin') {
-				if ($module = getModuleDetails(get('refiner__language_and_plugin'))) {
+				if ($module = getModuleDetails($_GET['refiner__language_and_plugin'] ?? false)) {
 					$mrg['display_name'] = $module['display_name'];
 					$panel['key']['moduleClass'] = $module['class_name'];
 			
@@ -57,7 +57,7 @@ class zenario_common_features__organizer__phrases extends module_base_class {
 	
 			if (isset($panel['item_buttons']['delete'])) {
 		
-				if (FOCUSED_LANGUAGE_ID__NO_QUOTES == setting('default_language')) {
+				if (FOCUSED_LANGUAGE_ID__NO_QUOTES == cms_core::$defaultLang) {
 					$panel['item_buttons']['delete']['ajax']['request']['delete_translated_phrases'] = 1;
 				}
 			}
@@ -265,9 +265,9 @@ class zenario_common_features__organizer__phrases extends module_base_class {
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
 		if ($path != 'zenario__languages/panels/phrases') return;
 		
-		if (request('delete_phrase') && checkPriv('_PRIV_MANAGE_LANGUAGE_PHRASE')) {
+		if (($_REQUEST['delete_phrase'] ?? false) && checkPriv('_PRIV_MANAGE_LANGUAGE_PHRASE')) {
 			//Handle translated and/or customised phrases that are linked to the current phrase
-			if (request('delete_translated_phrases')) {
+			if ($_REQUEST['delete_translated_phrases'] ?? false) {
 				$sql = "
 					FROM ". DB_NAME_PREFIX. "visitor_phrases AS t
 					INNER JOIN ". DB_NAME_PREFIX. "visitor_phrases AS l
@@ -276,7 +276,7 @@ class zenario_common_features__organizer__phrases extends module_base_class {
 					WHERE t.id IN (". inEscape($ids, 'numeric'). ")
 					  AND t.language_id != l.language_id";
 	
-				if (get('delete_phrase')) {
+				if ($_GET['delete_phrase'] ?? false) {
 					$result = sqlSelect("SELECT COUNT(DISTINCT l.id) AS cnt". $sql);
 					$mrg = sqlFetchAssoc($result);
 			
@@ -296,7 +296,7 @@ class zenario_common_features__organizer__phrases extends module_base_class {
 						}
 					}
 		
-				} elseif (post('delete_phrase')) {
+				} elseif ($_POST['delete_phrase'] ?? false) {
 					$result = sqlSelect("SELECT l.id". $sql);
 					while ($row = sqlFetchAssoc($result)) {
 						deleteRow('visitor_phrases', array('id' => $row['id']));
@@ -304,13 +304,13 @@ class zenario_common_features__organizer__phrases extends module_base_class {
 				}
 			}
 	
-			if (post('delete_phrase') && checkPriv('_PRIV_MANAGE_LANGUAGE_PHRASE')) {
+			if (($_POST['delete_phrase'] ?? false) && checkPriv('_PRIV_MANAGE_LANGUAGE_PHRASE')) {
 				foreach (explodeAndTrim($ids) as $id) {
 					deleteRow('visitor_phrases', array('id' => $id));
 				}
 			}
 
-		} elseif (request('merge_phrases') && checkPriv('_PRIV_MANAGE_LANGUAGE_PHRASE')) {
+		} elseif (($_REQUEST['merge_phrases'] ?? false) && checkPriv('_PRIV_MANAGE_LANGUAGE_PHRASE')) {
 			//Merge phrases together
 			$className = false;
 			$newCode = false;
@@ -363,7 +363,7 @@ class zenario_common_features__organizer__phrases extends module_base_class {
 			while ($row = sqlFetchRow($result)) {
 				$idsToKeep[] = $row[0];
 		
-				if ($row[1] == setting('default_language')) {
+				if ($row[1] == cms_core::$defaultLang) {
 					$returnId = $row[0];
 				}
 			}
@@ -386,9 +386,9 @@ class zenario_common_features__organizer__phrases extends module_base_class {
 	
 			return $returnId;
 
-		} elseif (post('import_phrases') && checkPriv('_PRIV_MANAGE_LANGUAGE_PHRASE')) {
+		} elseif (($_POST['import_phrases'] ?? false) && checkPriv('_PRIV_MANAGE_LANGUAGE_PHRASE')) {
 			
-			if (documentMimeType($_FILES['Filedata']['name']) == 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+			if (Ze\File::mimeType($_FILES['Filedata']['name']) == 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
 			 && !extension_loaded('zip')) {
 				echo adminPhrase('Importing or exporting .xlsx files requires the php_zip extension. Please ask your server administrator to enable it.');
 				exit;
@@ -399,7 +399,7 @@ class zenario_common_features__organizer__phrases extends module_base_class {
 				$this->languageImportResults($numberOf);
 			}
 
-		} elseif (request('reimport_phrases')) {
+		} elseif ($_REQUEST['reimport_phrases'] ?? false) {
 			if ($refinerId && ($moduleDetails = getRow('modules', array('class_name', 'display_name'), $refinerId))) {
 				$importFiles = scanModulePhraseDir($moduleDetails['class_name'], 'number and file');
 				$list = array();

@@ -43,7 +43,7 @@ class zenario_advanced_search extends module_base_class {
 	protected $keywords = '';
 	
 	public function init() {
-		if (request('clearSearch')) {
+		if ($_REQUEST['clearSearch'] ?? false) {
 			$_REQUEST['language_id'] = $_POST['language_id'] = '0';
 			$_REQUEST['category00_id'] = $_POST['category00_id'] = '0';
 			$_REQUEST['category01_id'] = $_POST['category01_id'] = '0';
@@ -54,7 +54,7 @@ class zenario_advanced_search extends module_base_class {
 		}
 		
 		$defaultTab = $this->setting('search_document')? 'document' : ($this->setting('search_html')? 'html' : 'news');
-		$this->cTypeToSearch = ifNull(request('ctab'), $defaultTab);
+		$this->cTypeToSearch = ifNull($_REQUEST['ctab'] ?? false, $defaultTab);
 		
 		$this->allowCaching(
 			$atAll = true, $ifUserLoggedIn = true, $ifGetSet = false, $ifPostSet = false, $ifSessionSet = true, $ifCookieSet = true);
@@ -68,7 +68,7 @@ class zenario_advanced_search extends module_base_class {
 		
 		$this->mergeFields['Delay'] = (int) $this->setting('keyboard_delay_before_submit');
 		
-		$this->category00_id = (int)request('category00_id');
+		$this->category00_id = (int)($_REQUEST['category00_id'] ?? false);
 		if($this->category00_id) {
 			$this->mergeFields['category00_id'] = $this->category00_id;
 			if (count($this->getCategoryOptionsWithParentId($this->category00_id)) > 1) {
@@ -76,7 +76,7 @@ class zenario_advanced_search extends module_base_class {
 			}
 		}
 		
-		$this->category01_id = (int)request('category01_id');
+		$this->category01_id = (int)($_REQUEST['category01_id'] ?? false);
 		if($this->category01_id) {
 			$this->mergeFields['category01_id'] = $this->category01_id;
 			if (count($this->getCategoryOptionsWithParentId($this->category01_id)) > 1) {
@@ -84,19 +84,19 @@ class zenario_advanced_search extends module_base_class {
 			}
 		}
 		
-		$this->category02_id = (int)request('category02_id');
+		$this->category02_id = (int)($_REQUEST['category02_id'] ?? false);
 		if($this->category02_id) {
 			$this->mergeFields['category02_id'] = $this->category02_id;
 		}
-		$this->language_id = request('language_id');
-		$this->keywords = request('keywords');
+		$this->language_id = $_REQUEST['language_id'] ?? false;
+		$this->keywords = $_REQUEST['keywords'] ?? false;
 		
 		$this->category = false;
-		if ($this->setting('enable_categories') && (int) request('category')) {
-			$this->category = request('category');
+		if ($this->setting('enable_categories') && (int) ($_REQUEST['category'] ?? false)) {
+			$this->category = $_REQUEST['category'] ?? false;
 		}
-		$this->searchString = substr((string) request('searchString'), 0, 100);
-		$this->page = ifNull((int) request('page'), 1);
+		$this->searchString = substr((string) ($_REQUEST['searchString'] ?? false), 0, 100);
+		$this->page = ifNull((int) ($_REQUEST['page'] ?? false), 1);
 		
 		return true;
 	}
@@ -350,7 +350,7 @@ class zenario_advanced_search extends module_base_class {
 				if($menu_item){
 					$breadcrumb = ' &raquo; ' . $menu_item['name'];
 					while($menu_item && $menu_item['parent_id']) {
-						$menu_item = getMenuNodeDetails($menu_item['parent_id'], cms_core::$langId);
+						$menu_item = getMenuNodeDetails($menu_item['parent_id'], cms_core::$visLang);
 						if($menu_item ) $breadcrumb = ' &raquo; ' . $menu_item['name'] . $breadcrumb;
 					}
 					$result['Breadcrumb'] = $breadcrumb;
@@ -363,7 +363,7 @@ class zenario_advanced_search extends module_base_class {
 						$width = (int)$this->setting('sticky_image_width');
 						$height = (int)$this->setting('sticky_image_height');
 							
-						imageLink($width, $height, $url_img, $result['feature_image_id'], $width, $height, $this->setting('sticky_image_canvas'));
+						Ze\File::imageLink($width, $height, $url_img, $result['feature_image_id'], $width, $height, $this->setting('sticky_image_canvas'));
 						if ($url_img) {
 							$img_tag =  '<img src="' . $url_img . '" />';
 						}

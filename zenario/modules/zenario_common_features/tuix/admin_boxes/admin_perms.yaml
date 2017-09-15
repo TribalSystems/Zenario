@@ -308,7 +308,7 @@ zenario_admin:
                     checking_child_checks_parents: true
                     values:
                         _PRIV_VIEW_DOCUMENTS:
-                            label: View / add a document
+                            label: View documents and folders
                         _PRIV_EDIT_DOCUMENTS:
                             parent: _PRIV_VIEW_DOCUMENTS
-                            label: Edit / delete a document
+                            label: Manage documents and folders

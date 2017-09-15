@@ -5,8 +5,7 @@
 	<div class="
 		grouping
 		<% if (m._isSortable) { %> is_sortable <% } %>
-		<% if (m.is_system_field) { %> system_field <% } %>
-	"
+		<% if (m.is_system_field) { %> system_field <% } %>"
 		data-id="{{m.id}}"
 	>
 		{{zenarioT.microTemplate('zenario_organizer_admin_box_builder_field', m._fields)}}
@@ -19,12 +18,16 @@
 		form_field 
 		<% if (m._isSortable) { %> is_sortable <% } %>
 		{{m.display_type}} 
+		<% if (m.type == 'other_system_field' && m.type != m.display_type) { %> other_system_field <% } %>
 		<% if (m.is_system_field) { %> system_field <% } %> 
 		<% if (m.selected) { %> selected <% } %> 
 		<% if (m.required) { %> required <% } %>
-		<% if (m.indent) { %> zenario_indent_level zenario_indent_level_{{m.indent}} <% } %>
-	" 
+		<% if (m.indent) { %> zenario_indent_level zenario_indent_level_{{m.indent}} <% } %>" 
 	data-id="{{m.id}}"
+	
+	<% if (m._inRepeat) { %>
+		style="padding-left:50px;"
+	<% } %>
 >
 	
 	<div id="organizer_form_field_side_note_{{m.id|e}}" class="zenario_side_note_wrap" <% if (!m.side_note) { %> style="display:none;" <% } %>>
@@ -118,6 +121,13 @@
 		<% } else if (m.display_type == 'url') { %>
 			<span class="label">{{m.display_label}}</span>
 			<input type="text" value="http://" readonly class="url"/>
+		
+		<% } else if (m.display_type == 'repeat_start') { %>
+			<div class="border"></div>
+			<span>Repeating section start</span>
+			
+		<% } else if (m.display_type == 'repeat_end') { %>
+			<div class="border"></div>
 		
 		<% } else { %>
 			<span class="label">{{m.display_label}}</span>

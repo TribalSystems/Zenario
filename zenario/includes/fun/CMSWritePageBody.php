@@ -38,7 +38,7 @@ if (checkPriv()) {
 		CMSWritePageBodyAdminClass($bodyTag, $toolbars);
 	} else {
 		$includeAdminToolbar = false;
-		$bodyTag .= ' zenario_adminLoggedIn zenario_pageMode_preview zenario_menuWand_off zenario_slotWand_off';
+		$bodyTag .= ' zenario_adminLoggedIn zenario_pageMode_preview zenario_pageModeIsnt_menu zenario_pageModeIsnt_layout zenario_pageModeIsnt_item';
 	}
 } else {
 	$includeAdminToolbar = false;

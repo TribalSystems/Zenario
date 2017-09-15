@@ -15,10 +15,6 @@
 				{{zenarioT.microTemplate('zenario_toolbar_button', m.sections.extranet_user)}}
 			</div>
 			
-			<% if (zenarioAT.tuix.meta_info.no_perms_icon) { %>
-				<del class="{{zenarioAT.tuix.meta_info.no_perms_icon|escape}}"><del></del></del>
-			<% } %>
-			
 		<% } %>
 		<% if (!zenarioT.hidden(m.sections.help)) { %>
 			<div class="zenario_at_help">

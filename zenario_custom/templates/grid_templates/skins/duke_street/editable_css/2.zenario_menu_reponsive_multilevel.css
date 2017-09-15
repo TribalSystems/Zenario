@@ -10,7 +10,7 @@
 	}
 	
 	.zenario_adminLoggedIn.zenario_pageMode_menu .Top_Mobile_Menu,
-	.zenario_adminLoggedIn.zenario_pageMode_template .Top_Mobile_Menu,
+	.zenario_adminLoggedIn.zenario_pageMode_layout .Top_Mobile_Menu,
 	.zenario_adminLoggedIn.zenario_pageMode_edit .Top_Mobile_Menu {
 		position:relative;
 	}

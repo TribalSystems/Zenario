@@ -27,9 +27,11 @@
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
-$gzf = setting('compress_web_pages')? '?gz=1' : '?gz=0';
-$gz = setting('compress_web_pages')? '&amp;gz=1' : '&amp;gz=0';
-$v = zenarioCodeVersion();
+$v = $w = 'v='. zenarioCodeVersion();
+
+if (!cms_core::$cacheWrappers) {
+	$w .= '&amp;no_cache=1';
+}
 
 $isWelcome = $mode === true || $mode === 'welcome';
 $isWizard = $mode === 'wizard';
@@ -115,7 +117,7 @@ if ($isWelcomeOrWizard || ($isOrganizer && setting('organizer_favicon') == 'zena
 	
 	if ($faviconId
 	 && ($icon = getRow('files', array('id', 'mime_type', 'filename', 'checksum'), $faviconId))
-	 && ($link = fileLink($icon['id'], false, 'public/images'))) {
+	 && ($link = Ze\File::link($icon['id'], false, 'public/images'))) {
 		if ($icon['mime_type'] == 'image/vnd.microsoft.icon' || $icon['mime_type'] == 'image/x-icon') {
 			echo "\n", '<link rel="shortcut icon" href="', absCMSDirURL(), htmlspecialchars($link), '"/>';
 		} else {
@@ -126,7 +128,7 @@ if ($isWelcomeOrWizard || ($isOrganizer && setting('organizer_favicon') == 'zena
 	if (!$isOrganizer
 	 && setting('mobile_icon')
 	 && ($icon = getRow('files', array('id', 'mime_type', 'filename', 'checksum'), setting('mobile_icon')))
-	 && ($link = fileLink($icon['id']))) {
+	 && ($link = Ze\File::link($icon['id']))) {
 		echo "\n", '<link rel="apple-touch-icon-precomposed" href="', absCMSDirURL(), htmlspecialchars($link), '"/>';
 	}
 }
@@ -137,26 +139,26 @@ if ($isWelcomeOrWizard || ($isOrganizer && setting('organizer_favicon') == 'zena
 if ($isWelcomeOrWizard || $checkPriv) {
 	if (!cms_core::$skinId) {
 		echo '
-<link rel="stylesheet" type="text/css" media="screen" href="', $prefix, 'libraries/mit/colorbox/colorbox.css?v=', $v, $gz, '"/>';
+<link rel="stylesheet" type="text/css" media="screen" href="', $prefix, 'libraries/mit/colorbox/colorbox.css?', $v, '"/>';
 	}
 	
 	echo '
-<link rel="stylesheet" type="text/css" media="screen" href="', $prefix, 'libraries/mit/jquery/css/jquery_ui/jquery-ui.css?v=', $v, $gz, '"/>
+<link rel="stylesheet" type="text/css" media="screen" href="', $prefix, 'libraries/mit/jquery/css/jquery_ui/jquery-ui.css?', $v, '"/>
 <link rel="stylesheet" type="text/css" media="print" href="', $prefix, 'styles/print.min.css"/>';
 	
 	//Add the CSS for admin mode... unless this is a layout preview
 	if ($mode != 'layout_preview') {
 		echo '
-<link rel="stylesheet" type="text/css" media="screen" href="', $prefix, 'styles/admin.wrapper.css.php?v=', $v, $gz, '"/>';
+<link rel="stylesheet" type="text/css" media="screen" href="', $prefix, 'styles/admin.wrapper.css.php?', $w, '"/>';
 	}
 	
 	if ($includeOrganizer) {
 		echo '
-<link rel="stylesheet" type="text/css" media="screen" href="', $prefix, 'styles/organizer.wrapper.css.php?v=', $v, $gz, '"/>';
+<link rel="stylesheet" type="text/css" media="screen" href="', $prefix, 'styles/organizer.wrapper.css.php?', $w, '"/>';
 		
 		if ($isOrganizer) {
 			echo '
-<link rel="stylesheet" type="text/css" media="print" href="', $prefix, 'styles/admin_organizer_print.min.css?v=', $v, $gz, '"/>';
+<link rel="stylesheet" type="text/css" media="print" href="', $prefix, 'styles/admin_organizer_print.min.css?', $v, '"/>';
 		}
 		
 		$cssModuleIds = '';
@@ -169,7 +171,7 @@ if ($isWelcomeOrWizard || $checkPriv) {
 		
 		if ($cssModuleIds) {
 			echo '
-<link rel="stylesheet" type="text/css" media="screen" href="', $prefix, 'styles/module.wrapper.css.php?v=', $v, $gz, '&amp;ids=', $cssModuleIds, '&amp;organizer=1"/>';
+<link rel="stylesheet" type="text/css" media="screen" href="', $prefix, 'styles/module.wrapper.css.php?', $w, '&amp;ids=', $cssModuleIds, '&amp;organizer=1"/>';
 		}
 	}
 }
@@ -181,8 +183,8 @@ if ($overrideFrameworkAndCSS === false && ($css_wrappers == 'on' || ($css_wrappe
 	//(Note that wrappers are forced off when viewing a preview of layouts/CSS.)
 	if (cms_core::$skinId || cms_core::$layoutId) {
 		echo '
-<link rel="stylesheet" type="text/css" media="screen" href="', $prefix, 'styles/skin.cache_wrapper.css.php?v=', $v, '&amp;id=', (int) cms_core::$skinId, '&amp;layoutId=', (int) cms_core::$layoutId, $gz, '"/>
-<link rel="stylesheet" type="text/css" media="print" href="', $prefix, 'styles/skin.cache_wrapper.css.php?v=', $v, '&amp;id=', (int) cms_core::$skinId, '&amp;print=1', $gz, '"/>';
+<link rel="stylesheet" type="text/css" media="screen" href="', $prefix, 'styles/skin.cache_wrapper.css.php?', $v, '&amp;id=', (int) cms_core::$skinId, '&amp;layoutId=', (int) cms_core::$layoutId, '"/>
+<link rel="stylesheet" type="text/css" media="print" href="', $prefix, 'styles/skin.cache_wrapper.css.php?', $v, '&amp;id=', (int) cms_core::$skinId, '&amp;print=1', '"/>';
 	}
 	
 } else {
@@ -274,14 +276,14 @@ if ($checkPriv) {
 	
 		if ($cssModuleIds) {
 			echo '
-<link rel="stylesheet" type="text/css" href="', $prefix, 'styles/module.wrapper.css.php?v=', $v, '&amp;ids=', $cssModuleIds, $gz, '&amp;admin_frontend=1" media="screen" />';
+<link rel="stylesheet" type="text/css" href="', $prefix, 'styles/module.wrapper.css.php?', $w, '&amp;ids=', $cssModuleIds, '&amp;admin_frontend=1" media="screen" />';
 		}
 	}
 
 //Add the CSS for the login link for admins if this looks like a logged out admin
 } else if (isset($_COOKIE['COOKIE_LAST_ADMIN_USER']) && !adminDomainIsPrivate()) { 
 	echo '
-<link rel="stylesheet" type="text/css" href="', $prefix, 'styles/admin_login_link.min.css?v=', $v, '" media="screen" />';
+<link rel="stylesheet" type="text/css" href="', $prefix, 'styles/admin_login_link.min.css?', $v, '" media="screen" />';
 }
 
 
@@ -341,9 +343,9 @@ if (cms_core::$cID) {
 	
 	//Check to see if there is a background image on this content item (or on this layout if not on the content item)
 	if ($itemHTML['bg_image_id']) {
-		imageLink($bgWidth, $bgHeight, $bgURL, $itemHTML['bg_image_id']);
+		Ze\File::imageLink($bgWidth, $bgHeight, $bgURL, $itemHTML['bg_image_id']);
 	} elseif ($templateHTML['bg_image_id']) {
-		imageLink($bgWidth, $bgHeight, $bgURL, $templateHTML['bg_image_id']);
+		Ze\File::imageLink($bgWidth, $bgHeight, $bgURL, $templateHTML['bg_image_id']);
 	}
 	
 	$bgColor = $itemHTML['bg_color']? $itemHTML['bg_color'] : $templateHTML['bg_color'];
@@ -387,4 +389,4 @@ if (cms_core::$cID) {
 //Bugfixes for IE 6, 7 and 8
 echo '
 <!--[if IE 6]><style type="text/css"> body { behavior: url(', $prefix, 'libraries/lgpl/csshover/csshover.htc); } </style><![endif]-->
-<!--[if lte IE 8]><script type="text/javascript" src="', $prefix, 'libraries/mit/respond/respond.js?v=', $v, '"></script><![endif]-->';
+<!--[if lte IE 8]><script type="text/javascript" src="', $prefix, 'libraries/mit/respond/respond.js?', $v, '"></script><![endif]-->';

@@ -50,8 +50,6 @@ zenario.lib(function(
 
 phrase = phrase || {};
 
-zenarioA.menuWandOn = true;
-zenarioA.slotWandOn = false;
 zenarioA.showGridOn = false;
 zenarioA.storekeeperInitTime = 5000;
 zenarioA.adminSettings = zenarioA.adminSettings || {};
@@ -482,12 +480,21 @@ zenarioA.toggleShowHelpTourNextTime = function() {
 //Get information on a single item from Storekeeper 
 zenarioA.getSKItem =
 zenarioA.getItemFromOrganizer = function(path, id, async) {
+	
+	if (typeof path == 'string') {
+		if (zenarioO.map) {
+			path = zenarioO.convertNavPathToTagPath(path);
+		} else {
+			path = {path: path};
+		}
+	}
+	
 	var i,
 		data,
 		first = false,
 		url =
 			URLBasePath +
-			'zenario/admin/organizer.ajax.php?_start=0&_get_item_name=1&path=' + encodeURIComponent(path);
+			'zenario/admin/organizer.ajax.php?_start=0&_get_item_name=1&path=' + encodeURIComponent(path.path);
 	
 	if (id !== undefined) {
 		url += '&_item=';
@@ -503,6 +510,14 @@ zenarioA.getItemFromOrganizer = function(path, id, async) {
 			}
 		} else {
 			url += encodeURIComponent(id) + '&_limit=1';
+		}
+	}
+	
+	if (path.refinerName) {
+		url += '&refinerName=' + encodeURIComponent(path.refinerName);
+	
+		if (path.refinerId !== undefined) {
+			url += '&refinerId=' + encodeURIComponent(path.refinerId);
 		}
 	}
 	
@@ -533,14 +548,6 @@ zenarioA.lookupFileDetails = function(id) {
 		data = zenario.nonAsyncAJAX(url, false, true);
 		zenario.setSessionStorage(data, url, '', true);
 		return data;
-	}
-};
-
-
-zenarioA.toggleSlotWand = function() {
-	if (zenarioA.checkForEdits()) {
-		zenarioA.slotWandOn = !zenarioA.slotWandOn;
-		zenarioAT.clickTab(zenarioA.toolbar);
 	}
 };
 
@@ -785,7 +792,7 @@ zenarioA.openSlotControls = function(el, e, slotName, isFromAdminToolbar) {
 			left = 200;
 			top = 0;
 		} else {
-			left = -width + 34;
+			left = -width + 44;
 			top = 32;
 		}
 		
@@ -817,7 +824,7 @@ zenarioA.openSlotControls = function(el, e, slotName, isFromAdminToolbar) {
 			//Strip out some technical class-names that make the grid work but designers don't need to see
 			grid.cssClass = grid.cssClass.replace(/\bspan\d*_?\d*\s/g, '');
 			
-			$(infoSel + 'grid_css_class').show();
+			//$(infoSel + 'grid_css_class').show();
 			$(infoSel + 'grid_css_class > span').text(grid.cssClass);
 		} else {
 			$(infoSel + 'grid_css_class').hide();
@@ -825,7 +832,7 @@ zenarioA.openSlotControls = function(el, e, slotName, isFromAdminToolbar) {
 		
 		//Set the width of this slot
 		if (grid.widthInfo) {
-			$(infoSel + 'grid_width').show();
+			//$(infoSel + 'grid_width').show();
 			$(infoSel + 'grid_width > span').text(grid.widthInfo);
 		} else {
 			$(infoSel + 'grid_width').hide();
@@ -991,9 +998,9 @@ zenarioA.doMovePlugin = function(el, moveDestination) {
 	zenarioA.cancelMovePlugin(el);
 	
 	if (moveSource && moveDestination) {
-		if (zenarioA.toolbar == 'edit') {
+		if (zenarioA.toolbar == 'item') {
 			zenarioA.doMovePlugin2(moveSource, moveDestination, 1);
-		} else if (zenarioA.toolbar == 'template') {
+		} else if (zenarioA.toolbar == 'layout') {
 			var html = zenario.moduleNonAsyncAJAX('zenario_common_features', {movePlugin: 1, level: 2, cID: zenario.cID, cType: zenario.cType, cVersion: zenario.cVersion}, false);
 			
 			if (zenarioA.loggedOut(html)) {
@@ -1206,13 +1213,16 @@ zenarioA.showPlugin = function(el, slotName) {
 //Callback function for refreshPluginSlot()
 zenarioA.replacePluginSlot = function(slotName, instanceId, level, slideId, resp, scriptsToRunBefore) {
 	
-	var flags = resp.flags,
+	var containerId = 'plgslt_' + slotName,
+		flags = resp.flags,
 		moduleId = 1*flags.MODULE_ID,
 		isVersionControlled = flags.WIREFRAME,
 		beingEdited = flags.IN_EDIT_MODE,
 		className = flags.NAMESPACE,
+		layoutPreview = flags.LAYOUT_PREVIEW,
 		slotControls = flags.SLOT_CONTROLS,
-		slotControlsCSSClass = flags.SLOT_CONTROLS_CSS_CLASS;
+		slotControlsCSSClass = flags.SLOT_CONTROLS_CSS_CLASS,
+		domLayoutPreview = get(containerId + '-layout_preview');
 	
 	if (moduleId && (!window[className] || _.isEmpty(window[className].slots))) {
 		zenario.addPluginJavaScript(moduleId);
@@ -1230,8 +1240,24 @@ zenarioA.replacePluginSlot = function(slotName, instanceId, level, slideId, resp
 		slotControlsCSSClass += ' zenario_slot_being_edited';
 	}
 	
+	if (layoutPreview) {
+		if (!domLayoutPreview) {
+			domLayoutPreview = $(
+				_$div('id', containerId + '-layout_preview', 'class', 'zenario_slot_layout_preview zenario_slot')
+			).insertAfter('#' + containerId + '-control_box')[0];
+		}
+		
+		domLayoutPreview.innerHTML = layoutPreview;
+		domLayoutPreview.style.display = '';
+	} else {
+		if (domLayoutPreview) {
+			domLayoutPreview.innerHTML = '';
+			domLayoutPreview.style.display = 'none';
+		}
+	}
+	
 	//Set the CSS class for the slot's admin wrapper/slot controls
-	get('plgslt_' + slotName + '-wrap').className = slotControlsCSSClass;
+	get(containerId + '-wrap').className = slotControlsCSSClass;
 	
 	//If any slots are being edited, set a warning message for if an admin tries to leave the page 
 	window.onbeforeunload = zenarioT.onbeforeunload;
@@ -1251,9 +1277,9 @@ zenarioA.replacePluginSlot = function(slotName, instanceId, level, slideId, resp
 	
 	
 	//Set tooltips for the area, if we are using tooltips
-	zenario.tooltips('#plgslt_' + slotName + ' a');
-	zenario.tooltips('#plgslt_' + slotName + ' img');
-	zenario.tooltips('#plgslt_' + slotName + ' input');
+	zenario.tooltips('#' + containerId + ' a');
+	zenario.tooltips('#' + containerId + ' img');
+	zenario.tooltips('#' + containerId + ' input');
 };
 
 
@@ -1728,26 +1754,6 @@ zenarioA.closeFloatingBox = function($button) {
 //Add jQuery elements automatically by class name
 zenarioA.addJQueryElements = function(path) {
 	
-	
-	//jQuery datepickers (Admin mode version)
-	$(path + 'input.zenario_datepicker').each(function(i, el) {
-		if (el.id && zenarioA.siteSettings && get('_value_for__' + el.id)) {
-			var changeMonthAndYear = $(el).hasClass('zenario_datepicker_change_month_and_year');
-			$(el).datepicker({
-				changeMonth: changeMonthAndYear,
-				changeYear: changeMonthAndYear,
-				dateFormat: zenarioA.siteSettings.organizer_date_format,
-				altField: '#_value_for__' + el.id,
-				altFormat: 'yy-mm-dd',
-				showOn: 'focus',
-				onSelect: function(dateText, inst) {
-					$(el).change();
-					//zenarioAB.fieldChange(this.name);
-				}
-			});
-		}
-	});
-	
 	//Admin mode tooltips
 	zenarioA.tooltips(path + 'span[title]');
 	zenarioA.tooltips(path + '.pluginAdminMenuButton[title]', {position: {my: 'left top+2', at: 'left bottom', collision: 'flipfit'}});
@@ -2053,7 +2059,7 @@ zenarioA.setDocumentURL = function(path, key, row) {
 		documentURL = URLBasePath + documentURL;
 	}
 	
-	zenarioA.setEditorField(row.name, $('.mce-panel input.mce-link_text_to_display')[0]);
+	zenarioA.setEditorField(row.name, $('.mce-panel input.mce-link_text_to_display')[0], true);
 	zenarioA.setEditorField(documentURL);
 }
 
@@ -2072,7 +2078,7 @@ zenarioA.setImageURL = function(path, key, row) {
 		imageURL = URLBasePath + imageURL;
 	}
 	
-	zenarioA.setEditorField(row.alt_tag, $('.mce-panel input.mce-image_alt')[0]);
+	zenarioA.setEditorField(row.alt_tag, $('.mce-panel input.mce-image_alt')[0], true);
 	zenarioA.setEditorField(imageURL);
 };
 
@@ -2534,7 +2540,7 @@ zenarioA.openMenuAdminBox = function(key, openSpecificBox) {
 	} else if (zenarioA.pageMode == 'preview') {
 		return true;
 	
-	} else if (zenarioA.pageMode == 'menu' && zenarioA.menuWandOn) {
+	} else if (zenarioA.pageMode == 'menu') {
 		openSpecificBox = 'zenario_menu_text';
 	
 	} else {
@@ -2576,7 +2582,7 @@ zenarioA.openMenuAdminBox = function(key, openSpecificBox) {
 };
 
 zenarioA.reloadMenuPlugins = function() {
-	$('.zenario_slotShownInMenuMode .zenario_slot').each(function(i, el) {
+	$('.zenario_showSlotInMenuMode .zenario_slot').each(function(i, el) {
 		if (el.id && el.id.substr(0, 7) == 'plgslt_') {
 			var slotName = el.id.substr(7);
 			
@@ -2696,7 +2702,6 @@ zenarioA.savePageMode = function(async, data) {
 	}
 	data._save_page_mode = zenarioA.pageMode;
 	data._save_page_toolbar = zenarioA.toolbar;
-	data._save_page_slot_wand = zenarioA.slotWandOn? 1 : '';
 	data._save_page_show_grid = zenarioA.showGridOn? 1 : '';
 	
 	$.ajax({
@@ -2983,7 +2988,6 @@ zenarioA.init = function(
 	
 	toolbar,
 	pageMode,
-	slotWandOn,
 	showGridOn,
 	siteSettings,
 	adminSettings,
@@ -3000,7 +3004,6 @@ zenarioA.init = function(
 	
 	zenarioA.toolbar = toolbar;
 	zenarioA.pageMode = pageMode;
-	zenarioA.slotWandOn = slotWandOn;
 	zenarioA.showGridOn = showGridOn;
 	zenarioA.siteSettings = siteSettings;
 	zenarioA.adminSettings = adminSettings;

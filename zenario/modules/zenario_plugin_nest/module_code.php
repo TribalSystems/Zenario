@@ -102,8 +102,8 @@ class zenario_plugin_nest extends module_base_class {
 				 && preg_match('/^[AB]?[A-Z]$/', $_REQUEST['state'])) {
 					$lookForState = $_REQUEST['state'];
 				
-				} elseif ($lookForSlideId = (int) request('slideId')) {
-				} elseif ($lookForSlideNum = (int) request('slideNum')) {
+				} elseif ($lookForSlideId = (int) ($_REQUEST['slideId'] ?? false)) {
+				} elseif ($lookForSlideNum = (int) ($_REQUEST['slideNum'] ?? false)) {
 				}
 				
 				
@@ -162,6 +162,43 @@ class zenario_plugin_nest extends module_base_class {
 							$tabMergeFields['Show_Auto_Refresh'] = (bool) $slide['show_auto_refresh'];
 							$tabMergeFields['Auto_Refresh_Interval'] = (int) $slide['auto_refresh_interval'];
 							$tabMergeFields['Last_Updated'] = formatTimeNicely(time(), '%H:%i:%S');
+						}
+						
+						//Set up the embed link
+						if ($slide['show_embed']) {
+							
+							if (!in(setting('xframe_options'), 'all', 'specific')) {
+								$tabMergeFields['Show_Embed_Disabled'] = true;
+							
+							} else {
+								$embedLink = linkToItem(
+									cms_core::$cID, cms_core::$cType, $fullPath = true, $request = '&zembedded=1&method_call=showSingleSlot&slotName='. $this->slotName,
+									cms_core::$alias, $autoAddImportantRequests = true, $useAliasInAdminMode = true);
+								
+								$mergefields = [
+									'title' => $this->phrase('Embed this plugin on a third-party website'),
+									'desc' => $this->phrase('You can display this plugin (part of this page) on another website.'),
+									'link' => $embedLink,
+									'copy' => $this->phrase('Copy'),
+									'copied' => $this->phrase('Copied to clipboard')
+								];
+								
+								if ('public' != $slide['privacy']
+								 || 'public' != sqlFetchValue("
+													SELECT privacy
+													FROM ". DB_NAME_PREFIX. "translation_chains
+													WHERE equiv_id = ". (int) cms_core::$equivId. "
+													  AND type = '". sqlEscape(cms_core::$cType). "'")
+								) {
+									$mergefields['auth_warning'] = $this->phrase('Warning: this page is password-protected, so users will need to be authenticated to this site before they can view the content.');
+								}
+								
+								
+								$tabMergeFields['Show_Embed'] = true;
+								$tabMergeFields['Embed'] = json_encode($mergefields);
+								
+								requireJsLib('libraries/mit/toastr/toastr.min.js', 'libraries/mit/toastr/toastr.min.css', true);
+							}
 						}
 						
 						$this->sections[$section][$slide['slide_num']] = $tabMergeFields;
@@ -319,10 +356,6 @@ class zenario_plugin_nest extends module_base_class {
 		//...except if no tabs exist, don't hide anything
 		} elseif (!checkRowExists('nested_plugins', array('instance_id' => $this->instanceId, 'is_slide' => 1)) && $this->loadTab($this->slideNum = 1)) {
 			$this->show = true;
-		}
-		
-		if (!$this->isVersionControlled && checkPriv() && $this->setting('author_advice')) {
-			$this->showInEditMode();
 		}
 		
 		//Set up some things for the conductor
@@ -536,7 +569,7 @@ class zenario_plugin_nest extends module_base_class {
 			SELECT
 				id, id AS slide_id,
 				slide_num, name_or_title,
-				states, show_back, show_refresh, show_auto_refresh, auto_refresh_interval, request_vars, global_command,
+				states, show_back, show_embed, show_refresh, show_auto_refresh, auto_refresh_interval, request_vars, global_command,
 				invisible_in_nav,
 				privacy, smart_group_id, module_class_name, method_name, param_1, param_2, always_visible_to_admins
 			FROM ". DB_NAME_PREFIX. "nested_plugins
@@ -718,7 +751,6 @@ class zenario_plugin_nest extends module_base_class {
 		
 		$beingEdited =
 		$showInMenuMode =
-		$shownInEditMode =
 		$addedJavaScript = false;
 		foreach ($this->modules[$slideNum] as $id => $slotNameNestId) {
 			cms_core::$slotContents[$slotNameNestId]['instance_id'] = $this->instanceId;
@@ -749,9 +781,6 @@ class zenario_plugin_nest extends module_base_class {
 				}
 				if (!$showInMenuMode) {
 					$showInMenuMode = cms_core::$slotContents[$slotNameNestId]['class']->shownInMenuMode();
-				}
-				if (!$shownInEditMode) {
-					$shownInEditMode = cms_core::$slotContents[$slotNameNestId]['class']->shownInEditMode();
 				}
 			}
 		}
@@ -792,7 +821,6 @@ class zenario_plugin_nest extends module_base_class {
 		if (checkPriv()) {
 			$this->markSlotAsBeingEdited($beingEdited);
 			$this->showInMenuMode($showInMenuMode);
-			$this->showInEditMode($shownInEditMode);
 		}
 		
 		return true;
@@ -997,7 +1025,7 @@ class zenario_plugin_nest extends module_base_class {
 				case 'formatVisitorTUIX':
 				case 'validateVisitorTUIX':
 				case 'saveVisitorTUIX':
-					return (int) request('eggId');
+					return (int) ($_REQUEST['eggId'] ?? false);
 			}
 		}
 		
@@ -1078,7 +1106,7 @@ class zenario_plugin_nest extends module_base_class {
 	
 	
 	protected function needToAddCSSAndJS() {
-		return request('method_call') == 'refreshPlugin';
+		return ($_REQUEST['method_call'] ?? false) == 'refreshPlugin';
 	}
 	
 	public function fillAdminSlotControls(&$controls) {

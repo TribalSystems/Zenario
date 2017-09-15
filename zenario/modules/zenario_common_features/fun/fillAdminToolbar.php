@@ -49,13 +49,13 @@ if (!$content || !$version) {
 	$templateDetails['usage'] = checkTemplateUsage(cms_core::$layoutId);
 	
 	//Set the link to Grid Maker
-	if (isset($adminToolbar['sections']['template']['buttons']['edit_grid'])) {
+	if (isset($adminToolbar['sections']['layout']['buttons']['edit_grid'])) {
 		//To Do: only set the link if this Layout was actually made using grid maker
 			//(Maybe you could check to see if a grid css file exists?)
 		if (true) {
-			$adminToolbar['sections']['template']['buttons']['edit_grid']['popout']['href'] .= '&id='. cms_core::$layoutId;
+			$adminToolbar['sections']['layout']['buttons']['edit_grid']['popout']['href'] .= '&id='. cms_core::$layoutId;
 		} else {
-			unset($adminToolbar['sections']['template']['buttons']['edit_grid']);
+			unset($adminToolbar['sections']['layout']['buttons']['edit_grid']);
 		}
 	}
 	
@@ -63,16 +63,16 @@ if (!$content || !$version) {
 	 || !cms_core::$skinId
 	 || !($skin = getRow('skins', array('display_name', 'enable_editable_css'), cms_core::$skinId))
 	 || !($skin['enable_editable_css'])) {
-		unset($adminToolbar['sections']['template']['buttons']['edit_skin']);
+		unset($adminToolbar['sections']['layout']['buttons']['edit_skin']);
 	
-	} elseif (isset($adminToolbar['sections']['template']['buttons']['edit_skin'])) {
-		$adminToolbar['sections']['template']['buttons']['edit_skin']['admin_box']['key']['skinId'] = cms_core::$skinId;
-		$adminToolbar['sections']['template']['buttons']['edit_skin']['label'] =
+	} elseif (isset($adminToolbar['sections']['layout']['buttons']['edit_skin'])) {
+		$adminToolbar['sections']['layout']['buttons']['edit_skin']['admin_box']['key']['skinId'] = cms_core::$skinId;
+		$adminToolbar['sections']['layout']['buttons']['edit_skin']['label'] =
 			adminPhrase('Edit skin "[[display_name]]"', $skin);
 	}
 	
-	if (isset($adminToolbar['sections']['template']['buttons']['settings']['admin_box']['key']['id'])) {
-		$adminToolbar['sections']['template']['buttons']['settings']['admin_box']['key']['id'] = cms_core::$layoutId;
+	if (isset($adminToolbar['sections']['layout']['buttons']['settings']['admin_box']['key']['id'])) {
+		$adminToolbar['sections']['layout']['buttons']['settings']['admin_box']['key']['id'] = cms_core::$layoutId;
 	}
 }
 
@@ -121,10 +121,10 @@ if ($cVersion == cms_core::$adminVersion) {
 
 } else {
 	unset($adminToolbar['toolbars']['edit']);
-	unset($adminToolbar['toolbars']['template']);
+	unset($adminToolbar['toolbars']['layout']);
 	unset($adminToolbar['sections']['slot_controls']['buttons']['item_head']);
 	unset($adminToolbar['sections']['slot_controls']['buttons']['item_foot']);
-	unset($adminToolbar['sections']['edit']['buttons']['delete_draft']);
+	unset($adminToolbar['sections']['status_button']['buttons']['delete_draft']);
 	unset($adminToolbar['sections']['edit']['buttons']['hide_content']);
 	unset($adminToolbar['sections']['edit']['buttons']['trash_content']);
 	unset($adminToolbar['sections']['edit']['buttons']['create_draft_by_copying']);
@@ -173,7 +173,6 @@ if ($permsOnThisItem) {
 if ($cVersion == cms_core::$adminVersion && cms_core::$status == 'hidden') {
 	foreach (array('edit', 'edit_disabled') as $toolbar) {
 		if (isset($adminToolbar['toolbars'][$toolbar])) {
-			$adminToolbar['toolbars'][$toolbar]['css_class'] = 'zenario_toolbar_warning';
 			$adminToolbar['toolbars'][$toolbar]['tooltip'] .= '<br/>'. adminPhrase('Warning: this Content Item is Hidden');
 		}
 	}
@@ -197,7 +196,6 @@ if ($cVersion == cms_core::$adminVersion && cms_core::$isDraft) {
 	
 	foreach (array('edit', 'edit_disabled') as $toolbar) {
 		if (isset($adminToolbar['toolbars'][$toolbar])) {
-			$adminToolbar['toolbars'][$toolbar]['css_class'] = 'zenario_toolbar_warning';
 			
 			if (!empty($adminToolbar['toolbars'][$toolbar]['tooltip'])) {
 				$adminToolbar['toolbars'][$toolbar]['tooltip'] .= '<br/>';
@@ -222,7 +220,7 @@ if ($cVersion == cms_core::$adminVersion && cms_core::$isDraft) {
 		}
 		
 		$adminToolbar['sections']['edit']['label'] = adminPhrase('First Draft');
-		$adminToolbar['sections']['edit']['buttons']['delete_draft']['ajax']['confirm']['message'] = adminPhrase("
+		$adminToolbar['sections']['status_button']['buttons']['delete_draft']['ajax']['confirm']['message'] = adminPhrase("
 			You are about to delete the current draft version of this content item. 
 			
 			As there isn't published version of this content item, it'll be deleted and you will be redirected to [[redirect_page]].
@@ -235,7 +233,7 @@ if ($cVersion == cms_core::$adminVersion && cms_core::$isDraft) {
 
 } else {
 	unset($adminToolbar['sections']['status_button']['buttons']['publish']);
-	unset($adminToolbar['sections']['edit']['buttons']['delete_draft']);
+	unset($adminToolbar['sections']['status_button']['buttons']['delete_draft']);
 	
 
 	//Published Version
@@ -291,7 +289,7 @@ if (checkPriv('_PRIV_EDIT_DRAFT', $cID, $cType)) {
 
 //Check if deletion is allowed
 if (!allowDelete($cID, $cType, cms_core::$status)) {
-	unset($adminToolbar['sections']['edit']['buttons']['delete_draft']);
+	unset($adminToolbar['sections']['status_button']['buttons']['delete_draft']);
 }
 if (!allowHide($cID, $cType, cms_core::$status)) {
 	unset($adminToolbar['sections']['edit']['buttons']['hide_content']);
@@ -328,7 +326,7 @@ if (!cms_core::$isDraft) {
 	}
 	
 	//The current Admin has a lock on the Content Item
-	if ($content['lock_owner_id'] && $content['lock_owner_id'] == session('admin_userid')) {
+	if ($content['lock_owner_id'] && $content['lock_owner_id'] == ($_SESSION['admin_userid'] ?? false)) {
 		$adminToolbar['sections']['edit']['buttons']['lock_dropdown']['label'] = adminPhrase('LOCKED by you');
 		
 		$adminToolbar['sections']['edit']['buttons']['unlock']['tooltip'] =
@@ -512,8 +510,15 @@ if (!$isMultilingual) {
 				if ($translation
 				 && $translation['id'] == cms_core::$equivId
 				 && $translation['type'] == cms_core::$cType) {
-					$adminToolbar['sections']['translations']['buttons'][$gcId]['label'] =
-						adminPhrase("The original (in [[english_name]])", $lang);
+					if ($translation['id'] == cms_core::$cID) {
+						$adminToolbar['sections']['translations']['buttons'][$gcId]['label'] =
+							adminPhrase("This is the original (in [[english_name]])", $lang);
+					
+					} else {
+						$adminToolbar['sections']['translations']['buttons'][$gcId]['label'] =
+							adminPhrase("Go to the original (in [[english_name]])", $lang);
+					}
+				
 				} else {
 					$adminToolbar['sections']['translations']['buttons'][$gcId]['label'] =
 						adminPhrase($adminToolbar['sections']['translations']['buttons'][$gcId]['label'], $lang);
@@ -584,10 +589,10 @@ if (checkRowExists('content_item_versions', array('id' => $cID, 'type' => $cType
 
 
 if (isset($adminToolbar['sections']['edit'])
- || isset($adminToolbar['sections']['template'])) {
+ || isset($adminToolbar['sections']['layout'])) {
  	
  	//$version
- 	$template = getRow(
+ 	$layout = getRow(
  		'layouts',
  		array('family_name', 'file_base_name', 'head_html', 'head_visitor_only', 'foot_html', 'foot_visitor_only'),
  		cms_core::$layoutId);
@@ -630,19 +635,19 @@ if (isset($adminToolbar['sections']['slot_controls']['buttons']['item_foot'])) {
 }
 
 
-if (isset($adminToolbar['sections']['template'])) {
-	$adminToolbar['sections']['template']['buttons']['id_and_name']['label'] =
+if (isset($adminToolbar['sections']['layout'])) {
+	$adminToolbar['sections']['layout']['buttons']['id_and_name']['label'] =
 		adminPhrase('Layout: [[id_and_name]]', $templateDetails);
 	
 	if ($templateDetails['usage'] == 1) {
-		$adminToolbar['sections']['template']['buttons']['usage']['label'] =
+		$adminToolbar['sections']['layout']['buttons']['usage']['label'] =
 			adminPhrase('Used on [[usage]] Content Item', $templateDetails);
 	} else {
-		$adminToolbar['sections']['template']['buttons']['usage']['label'] =
+		$adminToolbar['sections']['layout']['buttons']['usage']['label'] =
 			adminPhrase('Used on [[usage]] Content Item(s)', $templateDetails);
 	}
  	
- 	$adminToolbar['sections']['template']['buttons']['skq']['organizer_quick']['path'] =
+ 	$adminToolbar['sections']['layout']['buttons']['skq']['organizer_quick']['path'] =
  		$templateDetails['status'] == 'active'?
  			'zenario__layouts/panels/layouts//'. cms_core::$layoutId
  		:	'zenario__layouts/panels/layouts/trash////'. cms_core::$layoutId;
@@ -653,7 +658,7 @@ if (isset($adminToolbar['sections']['template'])) {
 		$adminToolbar_buttons_head['tooltip'] = '';
 	}
  	if ($version['head_overwrite']) {
-		if ($template['head_html'] === null) {
+		if ($layout['head_html'] === null) {
 			$adminToolbar_buttons_head['css_class'] = 'head_slot_empty_overwritten';
 	 		$adminToolbar_buttons_head['tooltip'] .= adminPhrase('This Layer is empty.');
 		} else {
@@ -662,7 +667,7 @@ if (isset($adminToolbar['sections']['template'])) {
 		}
  		$adminToolbar_buttons_head['tooltip'] .= '<br/>'. adminPhrase('This Layer is being overwritten here by a Layer above.');
  	} else {
-		if ($template['head_html'] === null) {
+		if ($layout['head_html'] === null) {
 			$adminToolbar_buttons_head['css_class'] = 'head_slot_empty';
 	 		$adminToolbar_buttons_head['tooltip'] .= adminPhrase('This Layer is empty.');
 		} else {
@@ -670,7 +675,7 @@ if (isset($adminToolbar['sections']['template'])) {
 	 		$adminToolbar_buttons_head['tooltip'] .= adminPhrase('This Layer is populated.');
 		}
  	}
- 	if ($template['head_visitor_only']) {
+ 	if ($layout['head_visitor_only']) {
  		$adminToolbar_buttons_head['tooltip'] .= '<br/>'. adminPhrase('This Layer is not output in Admin Mode.');
  	}
  	
@@ -681,7 +686,7 @@ if (isset($adminToolbar['sections']['template'])) {
 		$adminToolbar_buttons_foot['tooltip'] = '';
 	}
  	if ($version['foot_overwrite']) {
-		if ($template['foot_html'] === null) {
+		if ($layout['foot_html'] === null) {
 			$adminToolbar_buttons_foot['css_class'] = 'foot_slot_empty_overwritten';
 	 		$adminToolbar_buttons_foot['tooltip'] .= adminPhrase('This Layer is empty.');
 		} else {
@@ -690,7 +695,7 @@ if (isset($adminToolbar['sections']['template'])) {
 		}
  		$adminToolbar_buttons_foot['tooltip'] .= '<br/>'. adminPhrase('This Layer is being overwritten here by a Layer above.');
  	} else {
-		if ($template['foot_html'] === null) {
+		if ($layout['foot_html'] === null) {
 			$adminToolbar_buttons_foot['css_class'] = 'foot_slot_empty';
 	 		$adminToolbar_buttons_foot['tooltip'] .= adminPhrase('This Layer is empty.');
 		} else {
@@ -698,7 +703,7 @@ if (isset($adminToolbar['sections']['template'])) {
 	 		$adminToolbar_buttons_foot['tooltip'] .= adminPhrase('This Layer is populated.');
 		}
  	}
- 	if ($template['foot_visitor_only']) {
+ 	if ($layout['foot_visitor_only']) {
  		$adminToolbar_buttons_foot['tooltip'] .= '<br/>'. adminPhrase('This Layer is not output in Admin Mode.');
  	}
 }
@@ -714,7 +719,7 @@ if (isset($adminToolbar['sections']['primary_menu_node'])) {
 		if (!empty($adminToolbar['toolbars']['menu1'])
 		 && !empty($adminToolbar['sections']['no_menu_nodes'])) {
 			$adminToolbar['sections']['menu1'] = $adminToolbar['sections']['no_menu_nodes'];
-			$adminToolbar['toolbars']['menu1']['css_class'] .= ' zenario_toolbar_warning';
+			$adminToolbar['toolbars']['menu1']['warning_icon'] = 'zenario_link_status zenario_link_status__menu_warning';
 			$adminToolbar['toolbars']['menu1']['tooltip'] .= '<br/>'. adminPhrase('
 				Warning: Orphaned content item. 
 				<br/>
@@ -740,11 +745,11 @@ if (isset($adminToolbar['sections']['primary_menu_node'])) {
 			if ($i > 1 && isset($adminToolbar['toolbars']['menu_secondary'])) {
 				//Add extra tabs for each secondary Menu Node
 				$adminToolbar['toolbars']['menu'. $i] = $adminToolbar['toolbars']['menu_secondary'];
-				$adminToolbar['toolbars']['menu'. $i]['ord'] = '30.'. str_pad($i, 3, '0', STR_PAD_LEFT);
+				$adminToolbar['toolbars']['menu'. $i]['ord'] .= '.'. str_pad($i, 3, '0', STR_PAD_LEFT);
 				$adminToolbar['toolbars']['menu'. $i]['label'] = $i;
 			
 				if ($menuItem['name'] === null) {
-					$adminToolbar['toolbars']['menu'. $i]['css_class'] .= 'zenario_toolbar_warning';
+					$adminToolbar['toolbars']['menu'. $i]['warning_icon'] = 'zenario_link_status zenario_link_status__menu_warning';
 					$adminToolbar['toolbars']['menu'. $i]['tooltip'] .= '<br/>'. adminPhrase('Warning: text of menu node is missing in this language.');
 				}
 				
@@ -761,7 +766,7 @@ if (isset($adminToolbar['sections']['primary_menu_node'])) {
 			
 			} else {
 				if ($menuItem['name'] === null) {
-					$adminToolbar['toolbars']['menu1']['css_class'] .= 'zenario_toolbar_warning';
+					$adminToolbar['toolbars']['menu1']['warning_icon'] = 'zenario_link_status zenario_link_status__menu_warning';
 					$adminToolbar['toolbars']['menu1']['tooltip'] .= '<br/>'. adminPhrase('Warning: text of menu node missing in this language.');
 				}
 				
@@ -1170,7 +1175,7 @@ if (checkRowExists('content_types', array('enable_categories' => 0, 'content_typ
 
 //Get the slots on this Layout, and add a button for each
 $ord = 2000;
-$lookForSlots = array('family_name' => $template['family_name'], 'file_base_name' => $template['file_base_name']);
+$lookForSlots = array('family_name' => $layout['family_name'], 'file_base_name' => $layout['file_base_name']);
 foreach(getRowsArray('template_slot_link', array('ord', 'slot_name'), $lookForSlots, array('ord', 'slot_name')) as $slot) {
 	$adminToolbar['sections']['slot_controls']['buttons'][$slot['slot_name']] =
 		array(
@@ -1228,3 +1233,51 @@ foreach ($pagePreviews as $pagePreview) {
 	$adminToolbar['sections']['page_preview_sizes']['buttons']['page_preview_'.$pagePreview['ordinal'].'_'.$width.'x'.$height] = $pagePreviewButton;
 }
 
+
+$linkStatus = false;        
+switch (cms_core::$status) {
+	case 'published':
+	case 'published_with_draft':
+		$linkStatus = cms_core::$status;
+		
+		$perms = getShowableContent($content, $version, $cID, $cType, $cVersion, $checkRequestVars = false, $adminsSee400Errors = true);
+	
+		if ($perms === ZENARIO_401_NOT_LOGGED_IN) {
+			$linkStatus .= '_401';
+	
+		} elseif (!$perms) {
+			$linkStatus .= '_403';
+		}
+		break;
+
+	case 'first_draft':
+	case 'hidden_with_draft':
+	case 'hidden':
+		$linkStatus = 'hidden';
+		break;
+}
+
+if ($linkStatus) {
+	$adminToolbar['toolbars']['preview']['warning_icon'] = 'zenario_link_status zenario_link_status__'. $linkStatus;
+}
+
+
+
+//Handle the case where there's not enough width on the screen to show the delete draft and publish buttons
+//Also add a copy of them to the "Actions" dropdown on the edit tab
+if (isset($adminToolbar['sections']['edit']['buttons'])) {
+	if ($button = $adminToolbar['sections']['status_button']['buttons']['delete_draft'] ?? false) {
+		$button['ord'] = 998;
+		$button['parent'] = 'action_dropdown';
+		unset($button['tooltip']);
+		unset($button['appears_in_toolbars']);
+		$adminToolbar['sections']['edit']['buttons']['delete_draft'] = $button;
+	}
+	if ($button = $adminToolbar['sections']['status_button']['buttons']['publish'] ?? false) {
+		$button['ord'] = 999;
+		$button['parent'] = 'action_dropdown';
+		unset($button['tooltip']);
+		unset($button['appears_in_toolbars']);
+		$adminToolbar['sections']['edit']['buttons']['publish'] = $button;
+	}
+}

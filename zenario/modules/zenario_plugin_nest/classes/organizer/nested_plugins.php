@@ -31,10 +31,10 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_plugin_nest__organizer__nested_plugins extends zenario_plugin_nest {
 	
 	public function preFillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
-		$instance = getPluginInstanceDetails(get('refiner__nest'));
+		$instance = getPluginInstanceDetails($_GET['refiner__nest'] ?? false);
 		$c = $instance['class_name'];
 		
-		$panel['key']['skinId'] = request('skinId');
+		$panel['key']['skinId'] = $_REQUEST['skinId'] ?? false;
 		
 		
 		//Get a list of types of plugins that can be put in this nest
@@ -209,7 +209,7 @@ class zenario_plugin_nest__organizer__nested_plugins extends zenario_plugin_nest
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
 		
 		$statesToSlides = array();
-		if ($usesConductor = conductorEnabled(get('refiner__nest'))) {
+		if ($usesConductor = conductorEnabled($_GET['refiner__nest'] ?? false)) {
 			foreach ($panel['items'] as $id => &$item) {
 				if ($item['states']) {
 					foreach (explode(',', $item['states']) as $state) {
@@ -300,10 +300,10 @@ class zenario_plugin_nest__organizer__nested_plugins extends zenario_plugin_nest
 		} elseif ($instance['content_id'] && !checkPriv('_PRIV_EDIT_DRAFT', $instance['content_id'], $instance['content_type'], $instance['content_version'])) {
 			exit;
 		
-		} elseif (!$instance['content_id'] && !post('reorder') && !checkPriv('_PRIV_MANAGE_REUSABLE_PLUGIN')) {
+		} elseif (!$instance['content_id'] && !($_POST['reorder'] ?? false) && !checkPriv('_PRIV_MANAGE_REUSABLE_PLUGIN')) {
 			exit;
 		
-		} elseif (!$instance['content_id'] && post('reorder') && !checkPriv('_PRIV_MANAGE_REUSABLE_PLUGIN')) {
+		} elseif (!$instance['content_id'] && ($_POST['reorder'] ?? false) && !checkPriv('_PRIV_MANAGE_REUSABLE_PLUGIN')) {
 			exit;
 		}
 		
@@ -314,104 +314,104 @@ class zenario_plugin_nest__organizer__nested_plugins extends zenario_plugin_nest
 	}
 	
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
-		$instance = getPluginInstanceDetails(request('refiner__nest'));
+		$instance = getPluginInstanceDetails($_REQUEST['refiner__nest'] ?? false);
 		$this->exitIfNoEditPermsOnNest($instance);
 		
 		//Add a slide.
 		//Also, if we're adding a new plugin, ensure that at least one slide has been made.
-		if (post('add_slide') || post('upload_banner') || post('add_plugin') || post('add_twig_snippet') || post('copy_plugin_instance')) {
-			if (post('add_slide') || !checkRowExists('nested_plugins', array('instance_id' => post('refiner__nest'), 'is_slide' => 1))) {
-				static::addSlide(post('refiner__nest'));
+		if (($_POST['add_slide'] ?? false) || ($_POST['upload_banner'] ?? false) || ($_POST['add_plugin'] ?? false) || ($_POST['add_twig_snippet'] ?? false) || ($_POST['copy_plugin_instance'] ?? false)) {
+			if (($_POST['add_slide'] ?? false) || !checkRowExists('nested_plugins', array('instance_id' => ($_POST['refiner__nest'] ?? false), 'is_slide' => 1))) {
+				static::addSlide($_POST['refiner__nest'] ?? false);
 			}
 		}
 		
 		//Add a new plugin or banner
-		if (post('add_plugin')) {
-			return static::addPlugin(post('moduleId'), post('refiner__nest'), $ids, false, true);
+		if ($_POST['add_plugin'] ?? false) {
+			return static::addPlugin($_POST['moduleId'] ?? false, ($_POST['refiner__nest'] ?? false), $ids, false, true);
 		
-		} elseif (post('copy_plugin_instance')) {
+		} elseif ($_POST['copy_plugin_instance'] ?? false) {
 			if ($ids2) {
-				return static::addPluginInstance($ids2, post('refiner__nest'), $ids, true);
+				return static::addPluginInstance($ids2, ($_POST['refiner__nest'] ?? false), $ids, true);
 			} else {
-				return static::addPluginInstance($ids, post('refiner__nest'));
+				return static::addPluginInstance($ids, ($_POST['refiner__nest'] ?? false));
 			}
 		
-		} elseif (post('upload_banner')) {
-			if ($imageId = addFileToDatabase('image', $_FILES['Filedata']['tmp_name'], rawurldecode($_FILES['Filedata']['name']), true)) {
-				return static::addBanner($imageId, post('refiner__nest'), $ids, true);
+		} elseif ($_POST['upload_banner'] ?? false) {
+			if ($imageId = Ze\File::addToDatabase('image', $_FILES['Filedata']['tmp_name'], rawurldecode($_FILES['Filedata']['name']), true)) {
+				return static::addBanner($imageId, ($_POST['refiner__nest'] ?? false), $ids, true);
 			} else {
 				return false;
 			}
 		
-		} elseif (post('add_twig_snippet')) {
-			return static::addTwigSnippet(post('moduleClassName'), post('snippetName'), post('refiner__nest'), $ids, true);
+		} elseif ($_POST['add_twig_snippet'] ?? false) {
+			return static::addTwigSnippet($_POST['moduleClassName'] ?? false, ($_POST['snippetName'] ?? false), ($_POST['refiner__nest'] ?? false), $ids, true);
 		
-		} elseif ((get('duplicate_plugin') || get('duplicate_plugin_and_add_tab'))) {
+		} elseif ((($_GET['duplicate_plugin'] ?? false) || ($_GET['duplicate_plugin_and_add_tab'] ?? false))) {
 			echo $this->duplicatePluginConfirm($ids);
 			
-		} elseif (post('duplicate_plugin')) {
-			return static::duplicatePlugin($ids, post('refiner__nest'));
+		} elseif ($_POST['duplicate_plugin'] ?? false) {
+			return static::duplicatePlugin($ids, ($_POST['refiner__nest'] ?? false));
 		
-		} elseif (post('duplicate_plugin_and_add_tab')) {
-			static::addSlide(post('refiner__nest'));
-			return static::duplicatePlugin($ids, post('refiner__nest'));
+		} elseif ($_POST['duplicate_plugin_and_add_tab'] ?? false) {
+			static::addSlide($_POST['refiner__nest'] ?? false);
+			return static::duplicatePlugin($ids, ($_POST['refiner__nest'] ?? false));
 		
 		//Change the number of columns that a plugin takes up
-		} elseif (post('set_cols')) {
+		} elseif ($_POST['set_cols'] ?? false) {
 			
-			$cols = (int) post('cols');
+			$cols = (int) ($_POST['cols'] ?? false);
 			
 			foreach (explode(',', $ids) as $id) {
 				updateRow('nested_plugins',
-					array('cols' => post('cols')),
-					array('instance_id' => post('refiner__nest'), 'is_slide' => 0, 'id' => $id));
+					array('cols' => ($_POST['cols'] ?? false)),
+					array('instance_id' => ($_POST['refiner__nest'] ?? false), 'is_slide' => 0, 'id' => $id));
 				
 				//"only" is only a valid option for full width columns (0) or groupings (-1).
 				//If this isn't a full width or a grouping, then change any "only"s to "show"s.
 				if ($cols > 0) {
 					updateRow('nested_plugins',
 						array('small_screens' => 'show'),
-						array('instance_id' => post('refiner__nest'), 'is_slide' => 0, 'id' => $id, 'small_screens' => 'only'));
+						array('instance_id' => ($_POST['refiner__nest'] ?? false), 'is_slide' => 0, 'id' => $id, 'small_screens' => 'only'));
 				}
 			}
 		
 		//Set a plugin to either show or hide on mobile view.
-		} elseif (post('small_screens') && in(post('small_screens'), 'show', 'hide')) {
+		} elseif (($_POST['small_screens'] ?? false) && in($_POST['small_screens'] ?? false, 'show', 'hide')) {
 			foreach (explode(',', $ids) as $id) {
 				updateRow('nested_plugins',
-					array('small_screens' => post('small_screens')),
-					array('instance_id' => post('refiner__nest'), 'is_slide' => 0, 'id' => $id));
+					array('small_screens' => ($_POST['small_screens'] ?? false)),
+					array('instance_id' => ($_POST['refiner__nest'] ?? false), 'is_slide' => 0, 'id' => $id));
 			}
 		
 		//Set a plugin to only be shown on mobile view.
 		//Note that this is only valid for full width columns (0) or groupings (-1).
-		} elseif (post('small_screens') && post('small_screens') == 'only') {
+		} elseif (($_POST['small_screens'] ?? false) && ($_POST['small_screens'] ?? false) == 'only') {
 			foreach (explode(',', $ids) as $id) {
 				updateRow('nested_plugins',
-					array('small_screens' => post('small_screens')),
-					array('instance_id' => post('refiner__nest'), 'is_slide' => 0, 'cols' => array(-1, 0), 'id' => $id));
+					array('small_screens' => ($_POST['small_screens'] ?? false)),
+					array('instance_id' => ($_POST['refiner__nest'] ?? false), 'is_slide' => 0, 'cols' => array(-1, 0), 'id' => $id));
 			}
 		
-		} elseif (get('remove_plugin')) {
-			echo $this->removePluginConfirm($ids, post('refiner__nest'));
+		} elseif ($_GET['remove_plugin'] ?? false) {
+			echo $this->removePluginConfirm($ids, ($_POST['refiner__nest'] ?? false));
 			
-		} elseif (post('remove_plugin')) {
+		} elseif ($_POST['remove_plugin'] ?? false) {
 			foreach (explode(',', $ids) as $id) {
-				static::removePlugin($instance['class_name'], $id, post('refiner__nest'));
+				static::removePlugin($instance['class_name'], $id, ($_POST['refiner__nest'] ?? false));
 			}
 		
-		} elseif ((get('remove_tab'))) {
-			echo $this->removeSlideConfirm($ids, post('refiner__nest'));
+		} elseif ($_GET['remove_tab'] ?? false) {
+			echo $this->removeSlideConfirm($ids, ($_POST['refiner__nest'] ?? false));
 			
-		} elseif (post('remove_tab')) {
+		} elseif ($_POST['remove_tab'] ?? false) {
 			foreach (explode(',', $ids) as $id) {
-				$this->removeSlide($instance['class_name'], $id, post('refiner__nest'));
+				$this->removeSlide($instance['class_name'], $id, ($_POST['refiner__nest'] ?? false));
 			}
 			
-		} elseif (post('reorder')) {
+		} elseif ($_POST['reorder'] ?? false) {
 			//Each specific Nest may have it's own rules for ordering, so be sure to call the correct reorder method for this Nest
 			call_user_func(array($instance['class_name'], 'reorderNest'), $ids);
-			call_user_func(array($instance['class_name'], 'resyncNest'), post('refiner__nest'));
+			call_user_func(array($instance['class_name'], 'resyncNest'), ($_POST['refiner__nest'] ?? false));
 		}
 	}
 	

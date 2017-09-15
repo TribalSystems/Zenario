@@ -40,10 +40,8 @@ zenario_delete_form_field:
                     hidden: true
                 
                 data_migration_warning_message:
-                    pre_field_html: <div class="zenario_fbWarning">
                     snippet:
                         html: {}
-                    post_field_html: </div>
                     hidden: true
                     
                 migration_field:

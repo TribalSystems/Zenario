@@ -61,11 +61,6 @@ zenario__administration:
                     desc: >
                         Manage backups and change the location of the document storage directory.
                     keywords: backup log directory
-                documents:
-                    name: Documents
-                    desc: >
-                        Settings for documents (new system).
-                    keywords: documents
                 domains:
                     priv: _PRIV_VIEW_SITE_SETTING
                     name: Domains
@@ -106,11 +101,11 @@ zenario__administration:
                     keywords: >
                         favicon mobile icon home screen icon
                 files_and_images:
-                    name: File and Image Handling
-                    desc: Settings for how files and images are managed in the CMS.
+                    name: Documents, Images and File Handling
+                    desc: Settings for how documents, files and images are managed in the CMS.
                     keywords: >
                         image thumbnail working copy jpeg file upload sizes
-                        file download restrict by IP
+                        file download restrict by IP document
                 head_and_foot:
                     name: Global <head> and <body> HTML
                     desc: |
@@ -154,30 +149,30 @@ zenario__administration:
             # but we put them here anyway as this is the logical place to look for them
                 site_enabled:
                     css_class: site_enabled
-                    name: Site Enabled
-                    desc: Disable this site to hide it from visitors.
+                    name: Site mode (Enabled)
+                    desc: Change site mode (production, development or disabled).
                     is_not_site_setting: true
                 site_disabled:
                     css_class: site_disabled
-                    name: Site Disabled
-                    desc: Enable this site so visitors can see it.
+                    name: Site mode (Disabled)
+                    desc: Change site mode (production, development or disabled).
                     is_not_site_setting: true
                 site_reset:
                     priv: _PRIV_RESET_SITE
                     css_class: site_reset
-                    name: Site Reset
+                    name: Reset site
                     desc: Delete this entire site except for administrator accounts.
                     is_not_site_setting: true
             item_buttons:
                 edit_setting:
-                    label: Properties
+                    label: Edit this setting
                     admin_box:
                         path: site_settings
                     visible_if_for_all_selected_items: |
                         !item.is_not_site_setting
                 site_reset:
                     priv: _PRIV_RESET_SITE
-                    label: Site Reset
+                    label: Reset site
                     hide_in_select_mode: true
                     visible_if_for_all_selected_items: |
                         id == 'site_reset'
@@ -191,7 +186,7 @@ zenario__administration:
                         path: zenario_site_reset
                 disable_site:
                     priv: _PRIV_EDIT_SITE_SETTING
-                    label: Disable this Site
+                    label: Change site mode
                     hide_in_select_mode: true
                     visible_if_for_all_selected_items: |
                         id == 'site_enabled'
@@ -199,7 +194,7 @@ zenario__administration:
                         path: zenario_enable_site
                 enable_site:
                     priv: _PRIV_EDIT_SITE_SETTING
-                    label: Enable this Site
+                    label: Enable this site
                     hide_in_select_mode: true
                     visible_if_for_all_selected_items: |
                         id == 'site_disabled'

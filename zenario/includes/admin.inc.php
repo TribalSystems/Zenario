@@ -276,6 +276,52 @@ function checkContentTypeRunning($cType) {
 		);
 }
 
+//Convert the format of the menu position as saved in the content-type settings to
+//a position in the format that the position selector used
+function getDefaultMenuPositionFromSettings($contentType) {
+	$menuNode = getRow('menu_nodes', array('id', 'section_id'), $contentType['default_parent_menu_node']);
+	$dummyNode = 1;
+	$menuNodeId = $menuNode['id'];
+	
+	if ($contentType['menu_node_position'] == 'start') {
+		
+		// Get first child menu node
+		$sql = '
+			SELECT id
+			FROM ' . DB_NAME_PREFIX . 'menu_nodes
+			WHERE parent_id = ' . (int)$menuNode['id'] . '
+			ORDER BY ordinal
+			LIMIT 1';
+		$result = sqlSelect($sql);
+		$row = sqlFetchRow($result);
+		
+		if ($row[0]) {
+			$menuNodeId = $row[0];
+			$dummyNode = 0;
+		}
+	}
+	return $menuNode['section_id'] . '_' . $menuNodeId . '_' . $dummyNode;
+}
+
+//Reverse of the above
+function getSettingsFromDefaultMenuPosition($position, &$parentId, &$startOrEnd) {
+	
+	$parentTagParts = explode('_', $position);
+	
+	if ($parentId = (int) ($parentTagParts[1] ?? 0)) {
+		if (empty($parentTagParts[2])) {
+			$parentId = getRow('menu_nodes', 'parent_id', $parentId);
+			$startOrEnd = 'start';
+		} else {
+			$startOrEnd = 'end';
+		}
+	}
+	
+	return (bool) $parentId;
+}
+
+
+
 function createDraft(&$cIDTo, $cIDFrom, $cType, &$cVersionTo, $cVersionFrom = false, $languageId = false, $adminId = false, $useCIDIfItDoesntExist = false, $cTypeFrom = false) {
 	require funIncPath(__FILE__, __FUNCTION__);
 }
@@ -293,7 +339,7 @@ function updateVersion($cID, $cType, $cVersion, $version = array(), $forceMarkAs
 		$version['last_modified_datetime'] = now();
 	}
 	
-	$version['last_author_id'] = session('admin_userid');
+	$version['last_author_id'] = $_SESSION['admin_userid'] ?? false;
 	updateRow('content_item_versions', $version, array('id' => $cID, 'type' => $cType, 'version' => $cVersion));
 }
 
@@ -314,7 +360,7 @@ function checkIfVersionChanged($cIDOrVersion, $cType = false, $cVersion = false)
 
 function publishContent($cID, $cType, $adminId = false) {
 	if (!$adminId) {
-		$adminId = session('admin_userid');
+		$adminId = $_SESSION['admin_userid'] ?? false;
 	}
 	
 	if (!($content = getRow('content_items', array('admin_version', 'alias', 'status'), array('id' => $cID, 'type' => $cType)))
@@ -675,11 +721,11 @@ function deleteUnusedImage($imageId, $onlyDeleteUnusedArchivedImages = false) {
 			if (!$image['archived']) {
 				updateRow('files', array('archived' => 1), $imageId);
 			}
-			deletePublicImage($imageId);
+			Ze\File::deletePublicImage($imageId);
 		
 		} else {
 			//Otherwise delete it straight away
-			deleteFile($imageId);
+			Ze\File::delete($imageId);
 		}
 		
 		//Remove the image from the linking table anywhere it is unused
@@ -709,7 +755,7 @@ function deleteUnusedImagesByUsage($usage) {
 	while ($file = sqlFetchAssoc($result)) {
 		if (!checkRowExists('admins', array('image_id' => $file['id']))
 		 && !checkRowExists('users', array('image_id' => $file['id']))) {
-			deleteFile($file['id']);
+			Ze\File::delete($file['id']);
 		}
 	}
 }
@@ -739,7 +785,7 @@ function deleteUnusedBackgroundImages() {
 
 function deleteDraft($cID, $cType, $allowCompleteDeletion = true, $adminId = false) {
 	if (!$adminId) {
-		$adminId = session('admin_userid');
+		$adminId = $_SESSION['admin_userid'] ?? false;
 	}
 	
 	$content = getRow('content_items', array('status', 'admin_version', 'visitor_version'), array('id' => $cID, 'type' => $cType));
@@ -850,7 +896,7 @@ function deleteContentItem($cID, $cType) {
 function trashContent($cID, $cType, $adminId = false, $mode = false) {
 	
 	if (!$adminId) {
-		$adminId = session('admin_userid');
+		$adminId = $_SESSION['admin_userid'] ?? false;
 	}
 
 	$cVersion = getRow('content_items', 'admin_version', array('id' => $cID, 'type' => $cType));
@@ -869,7 +915,7 @@ function trashContent($cID, $cType, $adminId = false, $mode = false) {
 function hideContent($cID, $cType, $adminId = false) {
 	
 	if (!$adminId) {
-		$adminId = session('admin_userid');
+		$adminId = $_SESSION['admin_userid'] ?? false;
 	}
 	
 	//If this a draft that's not been modified since the previous version, delete the draft
@@ -1117,7 +1163,7 @@ function getImageTagColours($byId = true, $byName = true) {
 
 
 function allowDeleteLanguage($langId) {
-	return $langId != setting('default_language');
+	return $langId != cms_core::$defaultLang;
 }
 
 function deleteLanguage($langId) {
@@ -1383,7 +1429,7 @@ function tidyAlias($alias) {
 function formatAdminName($adminDetails = false) {
 	
 	if (!$adminDetails) {
-		$adminDetails = session('admin_userid');
+		$adminDetails = $_SESSION['admin_userid'] ?? false;
 	}
 	
 	if (!is_array($adminDetails)) {
@@ -2005,9 +2051,9 @@ function getSkinCSSClassNames($skin, $type, $moduleClassName = '') {
 		if (!empty($desc['pickable_css_class_names'][$type. 's'])
 		 && is_array($desc['pickable_css_class_names'][$type. 's'])) {
 			foreach ($desc['pickable_css_class_names'][$type. 's'] as $swatch) {
-				$module_css_class_name = arrayKey($swatch, 'module_css_class_name');
-				$css_class_name = arrayKey($swatch, 'css_class_name');
-				$label = arrayKey($swatch, 'label');
+				$module_css_class_name = $swatch['module_css_class_name'] ?? false;
+				$css_class_name = $swatch['css_class_name'] ?? false;
+				$label = $swatch['label'] ?? false;
 				
 				if ($type != 'plugin' || $moduleClassName == $module_css_class_name) {
 					if ($css_class_name) {
@@ -2281,12 +2327,12 @@ function checkForChangesInCssJsAndHtmlFiles($runInProductionMode = false, $force
 									//Also update the Skin's description
 									$desc = false;
 									if (loadSkinDescription($row, $desc)) {
-										$details['display_name'] = ifNull(arrayKey($desc, 'display_name'), $row['name']);
-										$details['extension_of_skin'] = arrayKey($desc, 'extension_of_skin');
-										$details['css_class'] = arrayKey($desc, 'css_class');
-										$details['background_selector'] = ifNull(arrayKey($desc, 'background_selector'), 'body');
-										$details['enable_editable_css'] = !engToBoolean(arrayKey($desc, 'disable_editable_css'));
-										$details['import'] = arrayKey($desc, 'import');
+										$details['display_name'] = ifNull($desc['display_name'] ?? false, $row['name']);
+										$details['extension_of_skin'] = $desc['extension_of_skin'] ?? false;
+										$details['css_class'] = $desc['css_class'] ?? false;
+										$details['background_selector'] = ifNull($desc['background_selector'] ?? false, 'body');
+										$details['enable_editable_css'] = !engToBoolean($desc['disable_editable_css'] ?? false);
+										$details['import'] = $desc['import'] ?? false;
 										
 										if (is_array($details['import'])) {
 											$details['import'] = implode("\n", $details['import']);
@@ -2518,7 +2564,7 @@ function getMenuItemStorekeeperDeepLink($menuId, $langId = false, $sectionId = f
 		$langId = currentLangId();
 	
 	} elseif ($langId === true) {
-		$langId = setting('default_language');
+		$langId = cms_core::$defaultLang;
 	}
 	
 	$menuDetails = false;
@@ -2531,7 +2577,7 @@ function getMenuItemStorekeeperDeepLink($menuId, $langId = false, $sectionId = f
 	}
 	
 	//Build up a link to the current parent in Organizer
-	if ($langId == setting('default_language')) {
+	if ($langId == cms_core::$defaultLang) {
 		$path = 'zenario__menu/nav/default_language/panel/item//'. $langId. '//item//'. $sectionId. '//';
 				 
 	} else {
@@ -2568,10 +2614,10 @@ function getMenuPathWithMenuSection($menuId, $langId = false, $separator = ' -> 
 
 function getMenuPath($menuId, $langId = false, $separator = ' -> ', $useOrdinal = false) {
 	if ($langId === false) {
-		$langId = currentLangId();
+		$langId = visitorLangId();
 	
 	} elseif ($langId === true) {
-		$langId = setting('default_language');
+		$langId = cms_core::$defaultLang;
 	}
 	
 	$sql = "
@@ -2594,7 +2640,7 @@ function getMenuPath($menuId, $langId = false, $separator = ' -> ', $useOrdinal 
 					WHERE mt.menu_id = mi.id
 					ORDER BY
 						mt.language_id = '". sqlEscape($langId). "' DESC,
-						mt.language_id = '". sqlEscape(setting('default_language')). "' DESC
+						mt.language_id = '". sqlEscape(cms_core::$defaultLang). "' DESC
 					LIMIT 1
 				)";
 	}
@@ -2648,7 +2694,7 @@ function saveMenuText($menuId, $languageId, $submission, $neverCreate = false) {
 		//For new translations of an existing Menu Node with an external URL, default the URL to the
 		//URL of an existing translation if it was not provided.
 		if (!isset($submission['ext_url'])
-		 && (($url = getRow('menu_text', 'ext_url', array('menu_id' => $menuId, 'language_id' => setting('default_language'))))
+		 && (($url = getRow('menu_text', 'ext_url', array('menu_id' => $menuId, 'language_id' => cms_core::$defaultLang)))
 		  || ($url = getRow('menu_text', 'ext_url', array('menu_id' => $menuId))))) {
 			$submission['ext_url'] = $url;
 		}
@@ -2694,11 +2740,11 @@ function removeMenuText($menuId, $languageId) {
 	deleteRow('menu_text', array('language_id' => $languageId, 'menu_id' => $menuId));
 }
 
-function addContentItemsToMenu($tagIds, $menuTarget, $hideMenuNodes = false, $hidePrivateItem = false) {
+function addContentItemsToMenu($tagIds, $menuTarget, $afterNeighbour = 0) {
 	require funIncPath(__FILE__, __FUNCTION__);
 }
 
-function moveMenuNode($ids, $newSectionId, $newParentId, $newNeighbourId, $languageId = false) {
+function moveMenuNode($ids, $newSectionId, $newParentId, $newNeighbourId, $afterNeighbour = 0, $languageId = false) {
 	require funIncPath(__FILE__, __FUNCTION__);
 }
 
@@ -3277,7 +3323,7 @@ function addNewModules($skipIfFilesystemHasNotChanged = true, $runModulesOnInsta
 					css_class_name = '". sqlEscape($desc['css_class_name']). "',
 					nestable = ". engToBoolean($desc['nestable']);
 					
-			if (!$dbUpdateSafeMode && engToBooleanArray($desc, 'is_abstract')) {
+			if (!$dbUpdateSafeMode && engToBoolean($desc['is_abstract'] ?? false)) {
 				$sql .= ",
 					status = 'module_is_abstract'";
 			
@@ -3306,7 +3352,7 @@ function addNewModules($skipIfFilesystemHasNotChanged = true, $runModulesOnInsta
 					nestable = VALUES(nestable)";
 					
 			
-			if (!$dbUpdateSafeMode && engToBooleanArray($desc, 'is_abstract')) {
+			if (!$dbUpdateSafeMode && engToBoolean($desc['is_abstract'] ?? false)) {
 				$sql .= ",
 					status = 'module_is_abstract'";
 			
@@ -3534,7 +3580,7 @@ function removeUnusedVersionControlledPluginSettings($cID, $cType, $cVersion) {
 	
 	$result = getRows('plugin_instances', array('id', 'slot_name'), array('content_id' => $cID, 'content_type' => $cType, 'content_version' => $cVersion));
 	while ($instance = sqlFetchAssoc($result)) {
-		if ($instance['id'] != arrayKey($slotContents, $instance['slot_name'], 'instance_id')) {
+		if ($instance['id'] != ($slotContents[$instance['slot_name']]['instance_id'] ?? false)) {
 			deletePluginInstance($instance['id']);
 		}
 	}
@@ -3553,7 +3599,7 @@ function duplicateVersionControlledPluginSettings($cIDTo, $cIDFrom, $cType, $cVe
 	$result = getRows('plugin_instances', array('id', 'slot_name'), array('content_id' => $cIDFrom, 'content_type' => $cTypeFrom, 'content_version' => $cVersionFrom));
 	while ($instance = sqlFetchAssoc($result)) {
 		if (!$slotName || $slotName == $instance['slot_name']) {
-			if ($instance['id'] == arrayKey($slotContents, $instance['slot_name'], 'instance_id')) {
+			if ($instance['id'] == ($slotContents[$instance['slot_name']]['instance_id'] ?? false)) {
 				$eggId = 0;
 				renameInstance($instance['id'], $eggId, false, true, $cIDTo, $cTypeTo, $cVersionTo, $instance['slot_name']);
 			}
@@ -4222,7 +4268,7 @@ function getAllCurrentRevisionNumbers() {
 	//If MongoDB is connected, check for MongoDB revisions
 	//(N.b. this will also set the cms_core::$mongoDB variable if successful)
 	if ($local_revision_numbers = mongoCollection('local_revision_numbers', $returnFalseOnError = true)) {
-		$cursor = mongoFind($local_revision_numbers, [], []);
+		$cursor = mongoFind($local_revision_numbers, [], ['path' => [§exists => 1], 'patchfile' => [§exists => 1], 'revision_no' => [§exists => 1]]);
 		while ($row = mongoFetchRow($cursor)) {
 			
 			//Copy-paste of the above
@@ -4361,11 +4407,6 @@ function performDBUpdate($path, $updateFile, $uninstallPluginOnFail, $currentRev
 	setModuleRevisionNumber($latestRevisionNumber, $path, $updateFile);
 }
 
-function resetDatabaseStructureCache() {
-	cms_core::$dbCols = [];
-	cms_core::$pkCols = [];
-}
-
 function needRevision($revisionNumber) {
 
 	//Check the latest revision number, and if we have applied this revision yet
@@ -4377,6 +4418,11 @@ function needRevision($revisionNumber) {
 	} else {
 		return true;
 	}
+}
+
+function resetDatabaseStructureCache() {
+	cms_core::$dbCols = [];
+	cms_core::$pkCols = [];
 }
 
 //This function is used for database revisions. It's called from the patch files.
@@ -5193,7 +5239,7 @@ function resetSite() {
 	} else {
 		//Give the newly reset site a new key, and log the admin in
 		setSetting('site_id', generateRandomSiteIdentifierKey());
-		setAdminSession(session('admin_userid'), session('admin_global_id'));
+		setAdminSession($_SESSION['admin_userid'] ?? false, ($_SESSION['admin_global_id'] ?? false));
 		
 		
 		//Apply database updates
@@ -5338,7 +5384,7 @@ function formatDateFormatSelectList(&$field, $addFormatInBrackets = false, $isJa
 //Generic handler for misc. AJAX requests from admin boxes
 function handleAdminBoxAJAX() {
 	
-	if (request('fileUpload')) {
+	if ($_REQUEST['fileUpload'] ?? false) {
 		exitIfUploadError();
 		
 		//If this is the plugin settings FAB, and this is an image, try to add the image
@@ -5346,33 +5392,33 @@ function handleAdminBoxAJAX() {
 		if (!empty($_REQUEST['path'])
 		 && $_REQUEST['path'] == 'plugin_settings'
 		 && (checkPriv('_PRIV_MANAGE_MEDIA') || checkPriv('_PRIV_EDIT_DRAFT') || checkPriv('_PRIV_CREATE_REVISION_DRAFT') || checkPriv('_PRIV_MANAGE_REUSABLE_PLUGIN'))
-		 && isImageOrSVG(documentMimeType($_FILES['Filedata']['name']))) {
+		 && Ze\File::isImageOrSVG(Ze\File::mimeType($_FILES['Filedata']['name']))) {
 			
-			$imageId = addFileToDatabase('image', $_FILES['Filedata']['tmp_name'], rawurldecode($_FILES['Filedata']['name']), $mustBeAnImage = true);
+			$imageId = Ze\File::addToDatabase('image', $_FILES['Filedata']['tmp_name'], rawurldecode($_FILES['Filedata']['name']), $mustBeAnImage = true);
 			$image = getRow('files', array('id', 'filename', 'width', 'height'), $imageId);
 			echo json_encode($image);
 		
 		//Otherwise upload
 		} else {
-			putUploadFileIntoCacheDir($_FILES['Filedata']['name'], $_FILES['Filedata']['tmp_name'], request('_html5_backwards_compatibility_hack'));
+			putUploadFileIntoCacheDir($_FILES['Filedata']['name'], $_FILES['Filedata']['tmp_name'], ($_REQUEST['_html5_backwards_compatibility_hack'] ?? false));
 		}
 	
-	} else if (request('fetchFromDropbox')) {
-		putDropboxFileIntoCacheDir(post('name'), post('link'));
+	} else if ($_REQUEST['fetchFromDropbox'] ?? false) {
+		putDropboxFileIntoCacheDir($_POST['name'] ?? false, ($_POST['link'] ?? false));
 	
 	} else {
 		exit;
 	}
 }
 
-//See also: function getPathOfUploadedFileInCacheDir()
+//See also: function Ze\File::getPathOfUploadedInCacheDir()
 
 function putDropboxFileIntoCacheDir($filename, $dropboxLink) {
 	putUploadFileIntoCacheDir($filename, false, false, $dropboxLink);
 }
 
 function putUploadFileIntoCacheDir($filename, $tempnam, $html5_backwards_compatibility_hack = false, $dropboxLink = false) {
-	if (!checkDocumentTypeIsAllowed($filename)) {
+	if (!Ze\File::isAllowed($filename)) {
 		echo
 			'<p>', adminPhrase('You must select a known file format, for example .doc, .docx, .jpg, .pdf, .png or .xls.'), '</p>',
 			'<p>', adminPhrase('Please also check that your filename does not contain any of the following characters:'), '</p>',
@@ -5388,7 +5434,7 @@ function putUploadFileIntoCacheDir($filename, $tempnam, $html5_backwards_compati
 		exit;
 	}
 	
-	if (!cleanDownloads()
+	if (!cleanCacheDir()
 	 || !($dir = createCacheDir($sha, 'uploads', false))) {
 		echo
 			adminPhrase('Zenario cannot currently receive uploaded files, because one of the
@@ -5401,7 +5447,7 @@ To correct this, please ask your system administrator to perform a
 	}
 	
 	$file = array();
-	$file['filename'] = safeFileName($filename);
+	$file['filename'] = Ze\File::safeName($filename);
 	
 	//Check if the file is already uploaded
 	if (!file_exists($path = CMS_ROOT. $dir. $file['filename'])
@@ -5411,7 +5457,7 @@ To correct this, please ask your system administrator to perform a
 			$failed = true;
 		
 			touch($path);
-			chmod($path, 0666);
+			@chmod($path, 0666);
 		
 			//Attempt to use wget to fetch the file
 			if (!windowsServer() && execEnabled()) {
@@ -5456,8 +5502,8 @@ To correct this, please ask your system administrator to perform a
 		}
 	}
 	
-	if (($mimeType = documentMimeType($file['filename']))
-	 && (isImage($mimeType))
+	if (($mimeType = Ze\File::mimeType($file['filename']))
+	 && (Ze\File::isImage($mimeType))
 	 && ($image = @getimagesize($path))) {
 		$file['width'] = $image[0];
 		$file['height'] = $image[1];
@@ -5747,10 +5793,17 @@ function deleteDatasetField($fieldId) {
 				WHERE fv.field_id = ". (int) $field['id'];
 			sqlQuery($sql);
 		
-		} else {
+		} elseif ($field['type'] != 'repeat_end') {
 			$sql = "
 				ALTER TABLE `". DB_NAME_PREFIX. sqlEscape($dataset['table']). "`
 				DROP COLUMN `". sqlEscape($field['db_column']). "`";
+			if ($field['repeat_start_id']) {
+				$rows = getRow('custom_dataset_fields', 'max_rows', $field['repeat_start_id']);
+				for ($i = 2; $i <= $rows; $i++) {
+					$sql .= ",
+						DROP COLUMN `" . sqlEscape(getDatasetFieldRepeatRowColumnName($field['db_column'], $i)) . "`";
+				}
+			}
 			sqlQuery($sql);
 		}
 		
@@ -5781,13 +5834,15 @@ function deleteDataset($dataset) {
 	}
 }
 
-function getDatasetFieldDefinition($type) {
+function getDatasetFieldDefinition($field) {
 	
-	switch ($type) {
+	switch ($field['type']) {
 		case 'checkboxes':
 		case 'file_picker':
+		case 'repeat_end':
 			return '';
 		
+		case 'repeat_start':
 		case 'checkbox':
 		case 'group':
 			return " tinyint(1) NOT NULL default 0";
@@ -5798,10 +5853,14 @@ function getDatasetFieldDefinition($type) {
 		case 'dataset_picker':
 			return " int(10) unsigned NOT NULL default 0";
 		
-		case 'centralised_radios':
-		case 'centralised_select':
 		case 'text':
 		case 'url':
+			if (!$field['create_index']) {
+				return " TINYTEXT";
+			}
+			
+		case 'centralised_radios':
+		case 'centralised_select':
 			return " varchar(255) NOT NULL default ''";
 		
 		case 'editor':
@@ -6064,7 +6123,7 @@ function checkColumnExistsInDB($table, $column) {
 	return ($result = sqlQuery($sql)) && (sqlFetchRow($result));
 }
 
-function createDatasetFieldInDB($fieldId, $oldName = false) {
+function createDatasetFieldInDB($fieldId, $oldName = false, $newRows = false, $oldRows = false) {
 	if (($field = getDatasetFieldDetails($fieldId))
 	 && ($dataset = getDatasetDetails($field['dataset_id']))) {
 		
@@ -6092,7 +6151,7 @@ function createDatasetFieldInDB($fieldId, $oldName = false) {
 		}
 		
 		//Get the column definition
-		$def = getDatasetFieldDefinition($field['type']);
+		$def = getDatasetFieldDefinition($field);
 		if ($def === false) {
 			echo adminPhrase('Error: bad field type!');
 			exit;
@@ -6134,12 +6193,60 @@ function createDatasetFieldInDB($fieldId, $oldName = false) {
 		
 		$sql .= " `". sqlEscape($field['db_column']). "`";
 		
-		
 		if ($def === false) {
 			echo adminPhrase('Error: bad field type!');
 			exit;
 		} else {
 			$sql .= $def;
+		}
+		
+		//Update extra columns for repeating fields
+		if ($newRows || $oldRows) {
+			$start = false;
+			$stop = false;
+			$deleting = false;
+			
+			//Only create
+			if (!$oldRows) {
+				$start = 2;
+				$stop = $newRows;
+			//Only delete
+			} elseif (!$newRows) {
+				$start = 2;
+				$stop = $oldRows;
+				$deleting = true;
+			//Update existing and create some new
+			} elseif ($newRows >= $oldRows) {
+				$start = $oldRows + 1;
+				$stop = $newRows;
+			//Update existing and delete some old
+			} elseif ($newRows < $oldRows) {
+				$start = $newRows + 1;
+				$stop = $oldRows;
+				$deleting = true;
+			}
+			
+			if ($start !== false && $stop !== false) {
+				for ($i = 2; $i <= $stop; $i++) {
+					if ($i >= $start) {
+						if ($deleting) {
+							$sql .= ",
+								DROP COLUMN `" . sqlEscape(getDatasetFieldRepeatRowColumnName($field['db_column'], $i)) . "`";
+						} else {
+							$sql .= ",
+								ADD COLUMN `" . sqlEscape(getDatasetFieldRepeatRowColumnName($field['db_column'], $i)) . "`" . $def;
+						}
+					} else {
+						if ($oldExists) {
+							$sql .= ",
+								CHANGE COLUMN `" . sqlEscape(getDatasetFieldRepeatRowColumnName($oldName, $i)) . "` `" . sqlEscape(getDatasetFieldRepeatRowColumnName($field['db_column'], $i)) . "`" . $def;
+						} elseif ($exists) {
+							$sql .= ",
+								MODIFY COLUMN `" . sqlEscape(getDatasetFieldRepeatRowColumnName($field['db_column'], $i)) . "`" . $def;
+						}
+					}
+				}
+			}
 		}
 		
 		//Drop any existing keys
@@ -6191,10 +6298,10 @@ function recordEquivalence($cID1, $cID2, $cType, $onlyValidate = false) {
 	}
 	
 	//Try to get the cID for the default Language
-	$default = getRow('content_items', array('id', 'alias'), array('equiv_id' => $equiv1, 'type' => $cType, 'language_id' => setting('default_language')));
+	$default = getRow('content_items', array('id', 'alias'), array('equiv_id' => $equiv1, 'type' => $cType, 'language_id' => cms_core::$defaultLang));
 	
 	if (!$default && $equiv2) {
-		$default = getRow('content_items', array('id', 'alias'), array('equiv_id' => $equiv2, 'type' => $cType, 'language_id' => setting('default_language')));
+		$default = getRow('content_items', array('id', 'alias'), array('equiv_id' => $equiv2, 'type' => $cType, 'language_id' => cms_core::$defaultLang));
 	}
 	
 	//Case where a content item is first created in non-default language so the equivId is targeted at the non-defualt language

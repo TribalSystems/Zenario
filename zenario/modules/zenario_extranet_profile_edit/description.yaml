@@ -19,6 +19,9 @@ description: |
                 res_address1, res_address2, res_address3, res_town, res_state, res_postcode, res_country_id, res_phone and address_pref.</p>
 category: pluggable
 keywords: address, extranet, name, personal, profile, user, form
+
+# Reminder: you need to increment the LATEST_REVISION_NO in this module's
+# latest_revision_no.inc.php file if you change any of the fields below:
 vlp_class_name: zenario_extranet_profile_edit
 css_class_name: zenario_extranet_profile
 is_pluggable: true
@@ -33,6 +36,15 @@ special_pages:
         footer_menu_title: Profile
         only_show_to_visitors_who_are_logged_in: true
         logic: create_and_maintain_in_default_language
+
+# Warning: adding a new dependency to an existing module will break any existing sites
+# where the dependency is not running.
+# You can fix this on a per-site basis by manually running the dependency, i.e. by running
+#   UPDATE zenario_modules SET status = 'module_running' WHERE class_name = 'dependency'
+# in MySQL and then going to /admin/ to apply database updates.
+# If this is a core module, consider using runNewModuleDependency() in a 
+# database-revision in zenario/admin/db_updates/step_4_migrate_the_data/plugins.inc.php
+# to fix it automatically for every site.
 dependencies:
     zenario_extranet: true
     zenario_user_forms: true

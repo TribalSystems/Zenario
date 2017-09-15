@@ -36,7 +36,7 @@ switch ($path) {
 		$files = array();
 		$columns = array();
 		
-		if (engToBooleanArray($box['tabs']['meta_data'], 'edit_mode', 'on')) {
+		if (engToBoolean($box['tabs']['meta_data']['edit_mode']['on'] ?? false)) {
 			exitIfNotCheckPriv('_PRIV_MANAGE_EMAIL_TEMPLATE');
 			$columns['template_name'] = $values['meta_data/template_name'];
 			$columns['subject'] = $values['meta_data/subject'];
@@ -61,15 +61,15 @@ switch ($path) {
 				($columns['send_bcc'] = $values['meta_data/send_bcc'])? $values['meta_data/bcc_email_address'] : '';
 		}
 		
-		if (engToBooleanArray($box['tabs']['body'], 'edit_mode', 'on')) {
+		if (engToBoolean($box['tabs']['body']['edit_mode']['on'] ?? false)) {
 			exitIfNotCheckPriv('_PRIV_MANAGE_EMAIL_TEMPLATE');
 			$columns['body'] = $values['body/body'];
 			$htmlChanged = false;
-			addImageDataURIsToDatabase($columns['body'], absCMSDirURL());
+			Ze\File::addImageDataURIsToDatabase($columns['body'], absCMSDirURL());
 			syncInlineFileLinks($files, $columns['body'], $htmlChanged);
 		}
 		
-		if (engToBooleanArray($box['tabs']['advanced'], 'edit_mode', 'on')) {
+		if (engToBoolean($box['tabs']['advanced']['edit_mode']['on'] ?? false)) {
 			exitIfNotCheckPriv('_PRIV_MANAGE_EMAIL_TEMPLATE');
 			$columns['head'] = $values['advanced/head'];
 		}

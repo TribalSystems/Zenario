@@ -38,7 +38,7 @@ class zenario_user_forms__admin_boxes__export_user_responses extends module_base
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
 		$errors = &$box['tabs']['details']['errors'];
 		if ($values['details/responses_to_export'] === 'specific_date_range') {
-			// Validate dates
+			//Validate dates
 			if (!$values['details/date_from']) {
 				$errors[] = adminPhrase('Please choose a "from date" for the range.');
 			} elseif (!$values['details/date_to']) {
@@ -47,7 +47,7 @@ class zenario_user_forms__admin_boxes__export_user_responses extends module_base
 				$errors[] = adminPhrase('The "from date" cannot be before the "to date"	');
 			}
 		} elseif ($values['details/responses_to_export'] === 'from_id') {
-		// Validate ID
+			//Validate response Id
 			if (!$values['details/response_id']) {
 				$errors[] = adminPhrase('Please enter a response ID.');
 			} elseif (
@@ -63,56 +63,48 @@ class zenario_user_forms__admin_boxes__export_user_responses extends module_base
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		exitIfNotCheckPriv('_PRIV_VIEW_FORM_RESPONSES');
-		// Export responses
+		$formId = $box['key']['form_id'];
+		//Export responses
 		
-		// Create PHPExcel object
+		//Create PHPExcel object
 		require_once CMS_ROOT. 'zenario/libraries/lgpl/PHPExcel/Classes/PHPExcel.php';
 		$objPHPExcel = new PHPExcel();
 		$sheet = $objPHPExcel->getActiveSheet();
 		
-		// Get headers
-		$typesNotToExport = array('page_break', 'section_description', 'restatement');
-		$formFields = array();
-		$sql = '
-			SELECT id, name
-			FROM ' . DB_NAME_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_form_fields
-			WHERE user_form_id = ' . (int)$box['key']['form_id'] . '
-			AND (field_type NOT IN (' . inEscape($typesNotToExport) . ')
-				OR field_type IS NULL
-			)
-			ORDER BY ord
-		';
-		$result = sqlSelect($sql);
-		while ($row = sqlFetchAssoc($result)) {
-			$formFields[$row['id']] = $row['name'];
+		//Get headers
+		$typesNotToExport = array('section_description', 'restatement', 'repeat_start', 'repeat_end');
+		$fields = zenario_user_forms::getFormFieldsStatic($formId);
+		$exportHeaders = array();
+		foreach ($fields as $fieldId => $field) {
+			if (!in_array($field['type'], $typesNotToExport)) {
+				$exportHeaders[$fieldId] = $field['name'];
+			}
 		}
 		
-		$lastColumn = PHPExcel_Cell::stringFromColumnIndex(count($formFields) + 1);
+		$lastColumn = PHPExcel_Cell::stringFromColumnIndex(count($exportHeaders) + 1);
 		
-		// Set columns to text type
+		//Set columns to text type
 		$sheet->getStyle('A:' . $lastColumn)
 			->getNumberFormat()
 			->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_TEXT);
 		
-		// Write headers
+		//Write headers
 		$sheet->setCellValue('A1', 'Response ID');
 		$sheet->setCellValue('B1', 'Date/Time Responded');
-		$sheet->fromArray($formFields, NULL, 'C1');
+		$sheet->fromArray($exportHeaders, NULL, 'C1');
 		
-		// Get data
+		//Get data
 		$responsesData = array();
 		$sql = '
-			SELECT urd.value, urd.internal_value, urd.form_field_id, uff.ord, ur.id, uff.field_type, cdf.type
+			SELECT urd.value, urd.form_field_id, ur.id
 			FROM '.DB_NAME_PREFIX. ZENARIO_USER_FORMS_PREFIX .'user_response AS ur
 			LEFT JOIN '.DB_NAME_PREFIX. ZENARIO_USER_FORMS_PREFIX .'user_response_data AS urd
 				ON ur.id = urd.user_response_id
 			LEFT JOIN '.DB_NAME_PREFIX. ZENARIO_USER_FORMS_PREFIX . 'user_form_fields AS uff
 				ON urd.form_field_id = uff.id
-			LEFT JOIN '.DB_NAME_PREFIX. 'custom_dataset_fields cdf
-				ON uff.user_field_id = cdf.id
-			WHERE ur.form_id = '. (int)$box['key']['form_id'];
+			WHERE ur.form_id = ' . (int)$formId;
 		
-		// Add any filters
+		//Add any filters
 		switch ($values['details/responses_to_export']) {
 			case 'today':
 				$date = date('Y-m-d 00:00:00');
@@ -141,60 +133,57 @@ class zenario_user_forms__admin_boxes__export_user_responses extends module_base
 		$sql .= '
 			ORDER BY ur.response_datetime DESC, uff.ord';
 		$result = sqlSelect($sql);
-		
 		while ($row = sqlFetchAssoc($result)) {
-			$type = zenario_user_forms::getFieldType($row);
-			if ($type == 'attachment' || $type == 'file_picker') {
-				$row['value'] = array('value' => $row['value'], 'link' => adminFileLink($row['internal_value']));
-			}
-			
 			if (!isset($responsesData[$row['id']])) {
 				$responsesData[$row['id']] = array();
 			}
-			if (isset($formFields[$row['form_field_id']])) {
-				$responsesData[$row['id']][$row['form_field_id']] = $row['value'];
+			if (isset($exportHeaders[$row['form_field_id']])) {
+				$field = $fields[$row['form_field_id']];
+				$displayValue = zenario_user_forms::getFieldDisplayValueFromStored($field, $row['value']);
+				$responsesData[$row['id']][$row['form_field_id']] = array();
+				if ($field['type'] == 'attachment' && $row['value']) {
+					$responsesData[$row['id']][$row['form_field_id']]['link'] = adminFileLink($row['value']);
+				}
+				$responsesData[$row['id']][$row['form_field_id']]['value'] = $displayValue;
 			}
 		}
 		
 		$responseDates = getRowsArray(
 			ZENARIO_USER_FORMS_PREFIX. 'user_response', 
 			'response_datetime', 
-			array('form_id' => $box['key']['form_id']), 'response_datetime'
+			array('form_id' => $formId), 'response_datetime'
 		);
 		
-		// Write data
+		//Write data
 		$rowPointer = 1;
 		foreach ($responsesData as $responseId => $responseData) {
-			
 			$rowPointer++;
 			$response = array();
 			$response[0] = $responseId;
 			$response[1] = formatDateTimeNicely($responseDates[$responseId], '_MEDIUM');
 			
 			$j = 1;
-			foreach ($formFields as $formFieldId => $name) {
-				$response[++$j] = '';
+			foreach ($exportHeaders as $formFieldId => $name) {
+				$response[++$j] = 'N/A';
 				if (isset($responseData[$formFieldId])) {
 					$response[$j] = $responseData[$formFieldId];
 				}
 			}
 			
 			foreach ($response as $columnPointer => $value) {
-				$link = false;
-				if (is_array($value)) {
-					$link = $value['link'];
-					$value = $value['value'];
+				if (!is_array($value)) {
+					$value = array('value' => $value);
 				}
-				$sheet->setCellValueExplicitByColumnAndRow($columnPointer, $rowPointer, $value);
-				
-				if ($link) {
-					$sheet->getCellByColumnAndRow($columnPointer, $rowPointer)->getHyperlink()->setUrl($link);
+				$sheet->setCellValueExplicitByColumnAndRow($columnPointer, $rowPointer, $value['value']);
+				if (!empty($value['link'])) {
+					$sheet->getCellByColumnAndRow($columnPointer, $rowPointer)->getHyperlink()->setUrl($value['link']);
 				}
 				
 			}
 		}
 		
-		$formName = getRow(ZENARIO_USER_FORMS_PREFIX . 'user_forms', 'name', array('id' => $box['key']['form_id']));
+		
+		$formName = getRow(ZENARIO_USER_FORMS_PREFIX . 'user_forms', 'name', array('id' => $formId));
 		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
 		header('Content-Type: application/vnd.ms-excel');
 		header('Content-Disposition: attachment;filename="' . $formName . ' user responses.xls"');

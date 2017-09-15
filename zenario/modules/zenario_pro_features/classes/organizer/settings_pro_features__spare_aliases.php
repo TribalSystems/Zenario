@@ -31,7 +31,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_pro_features__organizer__settings_pro_features__spare_aliases extends module_base_class {
 	
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId){
-		if (post('delete') && checkPriv('_PRIV_MANAGE_SPARE_ALIAS')) {
+		if (($_POST['delete'] ?? false) && checkPriv('_PRIV_MANAGE_SPARE_ALIAS')) {
 			foreach (explode(',', $ids) as $checksum) {
 				deleteRow('spare_aliases', array('alias' => $ids));
 			}

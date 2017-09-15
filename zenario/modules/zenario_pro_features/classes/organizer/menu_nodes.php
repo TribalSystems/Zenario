@@ -34,12 +34,12 @@ class zenario_pro_features__organizer__menu_nodes extends module_base_class {
 		switch ($path) {
 		
 			case 'zenario__menu/panels/menu_nodes':
-				if (post('make_invisible') && checkPriv('_PRIV_EDIT_MENU_ITEM')) {
+				if (($_POST['make_invisible'] ?? false) && checkPriv('_PRIV_EDIT_MENU_ITEM')) {
 					foreach (explode(',', $ids) as $id) {
 						updateRow('menu_nodes', array('invisible' => 1), $id);
 					}
 		
-				} elseif (post('make_visible') && checkPriv('_PRIV_EDIT_MENU_ITEM')) {
+				} elseif (($_POST['make_visible'] ?? false) && checkPriv('_PRIV_EDIT_MENU_ITEM')) {
 					foreach (explode(',', $ids) as $id) {
 						updateRow('menu_nodes', array('invisible' => 0), $id);
 					}

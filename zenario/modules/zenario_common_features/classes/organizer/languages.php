@@ -36,10 +36,10 @@ class zenario_common_features__organizer__languages extends module_base_class {
 	
 			case 'zenario__content/panels/languages':
 				//Check if a specific Content Type has been set
-				if (get('refiner__content_type')) {
-					$panel['key']['cType'] = get('refiner__content_type');
-				} elseif (get('refiner__template')) {
-					$panel['key']['cType'] = getRow('layouts', 'content_type', get('refiner__template'));
+				if ($_GET['refiner__content_type'] ?? false) {
+					$panel['key']['cType'] = $_GET['refiner__content_type'] ?? false;
+				} elseif ($_GET['refiner__template'] ?? false) {
+					$panel['key']['cType'] = getRow('layouts', 'content_type', ($_GET['refiner__template'] ?? false));
 				}
 		
 				break;
@@ -63,7 +63,7 @@ class zenario_common_features__organizer__languages extends module_base_class {
 	
 	
 					foreach ($panel['columns'] as &$column) {
-						if (trim(arrayKey($column, 'db_column')) == 'vp.language_id') {
+						if (trim($column['db_column'] ?? false) == 'vp.language_id') {
 							$column['db_column'] = 'l.id';
 						}
 					}
@@ -114,8 +114,8 @@ _text
 		switch ($path) {
 			
 			case 'zenario__content/panels/languages':
-				if (get('refiner__template')) {
-					$details = getRow('layouts', array('name', 'content_type'), get('refiner__template'));
+				if ($_GET['refiner__template'] ?? false) {
+					$details = getRow('layouts', array('name', 'content_type'), ($_GET['refiner__template'] ?? false));
 					$panel['title'] = adminPhrase('Content using the Layout "[[name]]"', $details);
 					$panel['no_items_message'] = adminPhrase('There is no Content using the Layout "[[name]]."', $details);
 	
@@ -127,7 +127,7 @@ _text
 							   ON v.id = c.id
 							  AND v.type = c.type
 							  AND v.version = c.admin_version
-							  AND v.layout_id = ". (int) get('refiner__template'). "
+							  AND v.layout_id = ". (int) ($_GET['refiner__template'] ?? false). "
 							WHERE c.language_id = '". sqlEscape($id). "'
 							  AND c.status NOT IN ('trashed','deleted')
 							  AND c.type = '". sqlEscape($details['content_type']). "'";
@@ -137,9 +137,9 @@ _text
 						$item['item_count'] = $row[0];
 					}
 
-				} elseif (get('refiner__content_type')) {
+				} elseif ($_GET['refiner__content_type'] ?? false) {
 					$mrg = array(
-						'ctype' => getContentTypeName(get('refiner__content_type')));
+						'ctype' => getContentTypeName($_GET['refiner__content_type'] ?? false));
 					$panel['title'] = adminPhrase('[[ctype]] content items', $mrg);
 					$panel['no_items_message'] = adminPhrase('There are no [[ctype]] content items.', $mrg);
 					
@@ -147,7 +147,7 @@ _text
 						$item['item_count'] = selectCount('content_items', array(
 							'language_id' => $id,
 							'status' => array('!1' => 'trashed', '!2' => 'deleted'),
-							'type' => get('refiner__content_type')
+							'type' => ($_GET['refiner__content_type'] ?? false)
 						));
 					}
 
@@ -276,7 +276,7 @@ _text
 
 	
 			case 'zenario__languages/panels/languages':
-				if (post('delete') && checkPriv('_PRIV_MANAGE_LANGUAGE_PHRASE')) {
+				if (($_POST['delete'] ?? false) && checkPriv('_PRIV_MANAGE_LANGUAGE_PHRASE')) {
 					$sql = "
 						DELETE
 						FROM " . DB_NAME_PREFIX . "visitor_phrases
@@ -289,8 +289,8 @@ _text
 				}
 		
 				// Enable a language
-				if (post('enable_language') && post('id')) {
-					echo '<!--Open_Admin_Box:zenario_setup_language//' . post('id') . '-->';
+				if (($_POST['enable_language'] ?? false) && ($_POST['id'] ?? false)) {
+					echo '<!--Open_Admin_Box:zenario_setup_language//' . ($_POST['id'] ?? false) . '-->';
 				}
 		
 				break;

@@ -44,13 +44,13 @@ class zenario_common_features__organizer__skins extends module_base_class {
 		require_once CMS_ROOT. 'zenario/admin/grid_maker/grid_maker.inc.php';
 		
 		if (($refinerName == 'template_family' || $refinerName == 'template_family__panel_above')
-		 && $templateFamily = decodeItemIdForOrganizer(get('refiner__template_family'))) {
+		 && $templateFamily = decodeItemIdForOrganizer($_GET['refiner__template_family'] ?? false)) {
 			$panel['title'] = adminPhrase('Skins in the template directory "[[family]]"', array('family' => $templateFamily));
 			$panel['no_items_message'] = adminPhrase('There are no skins for this template directory.');
 			unset($panel['columns']['family_name']['title']);
 		
 		} elseif ($refinerName == 'usable_in_template_family'
-		 && $templateFamily = decodeItemIdForOrganizer(get('refiner__usable_in_template_family'))) {
+		 && $templateFamily = decodeItemIdForOrganizer($_GET['refiner__usable_in_template_family'] ?? false)) {
 			$panel['title'] = adminPhrase('Skins in the directory "[[family]]"', array('family' => $templateFamily));
 			$panel['no_items_message'] = adminPhrase('There are no skins in the directory "[[family]]"', array('family' => $templateFamily));
 			unset($panel['columns']['family_name']['title']);
@@ -77,8 +77,8 @@ class zenario_common_features__organizer__skins extends module_base_class {
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
 		if ($path != 'zenario__layouts/panels/skins') return;
 		
-		if (post('make_default') && checkPriv('_PRIV_EDIT_TEMPLATE_FAMILY')) {
-			updateRow('template_families', array('skin_id' => $ids), decodeItemIdForOrganizer(request('refiner__template_family')));
+		if (($_POST['make_default'] ?? false) && checkPriv('_PRIV_EDIT_TEMPLATE_FAMILY')) {
+			updateRow('template_families', array('skin_id' => $ids), decodeItemIdForOrganizer($_REQUEST['refiner__template_family'] ?? false));
 			checkForChangesInCssJsAndHtmlFiles($runInProductionMode = true, $forceScan = true);
 		}
 	}

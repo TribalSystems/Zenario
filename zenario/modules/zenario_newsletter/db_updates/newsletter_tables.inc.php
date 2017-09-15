@@ -269,9 +269,9 @@ if (needRevision(46)) {
 			$doneSomething = false;
 			if ($links[$i+1] == 'image' || $links[$i+1] == 'movie') {
 				//If this file is already linked by checksum/filename
-				if ($checksum = ifNull(arrayKey($params, 'c'), arrayKey($params, 'checksum'))) {
+				if ($checksum = ifNull($params['c'] ?? false, $params['checksum'] ?? false)) {
 					//Change the path of the link
-					$html .= 'zenario/file.php?c='. ifNull(arrayKey($checksums, $checksum), $checksum);
+					$html .= 'zenario/file.php?c='. ifNull($checksums[$checksum] ?? false, $checksum);
 					
 					if (!empty($params['filename'])) {
 						$html .= $amp. 'filename='. $params['filename'];

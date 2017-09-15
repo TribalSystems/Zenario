@@ -205,4 +205,53 @@ _sql
 	) ENGINE=MyISAM DEFAULT CHARSET=utf8
 _sql
 
+); revision(25
+, <<<_sql
+	DROP TABLE IF EXISTS [[DB_NAME_PREFIX]][[ZENARIO_CRM_FORM_INTEGRATION_PREFIX]]form_crm_static_inputs
+_sql
+, <<<_sql
+	CREATE TABLE IF NOT EXISTS [[DB_NAME_PREFIX]][[ZENARIO_CRM_FORM_INTEGRATION_PREFIX]]form_crm_static_inputs (
+		`form_id` int(10) UNSIGNED NOT NULL,
+		`ord` int(10) UNSIGNED NOT NULL DEFAULT 1,
+		`name` varchar(255) DEFAULT NULL,
+		`value` varchar(255) DEFAULT NULL,
+		PRIMARY KEY (`form_id`, `ord`),
+		KEY(`form_id`)
+	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+_sql
+
 );
+
+if (needRevision(26)) {
+	$sql = '
+		SELECT form_id, custom_input_name_1, custom_input_value_1, custom_input_name_2, custom_input_value_2, custom_input_name_3, custom_input_value_3, custom_input_name_4, custom_input_value_4, custom_input_name_5, custom_input_value_5
+		FROM ' . DB_NAME_PREFIX . ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'form_crm_data';
+	$result = sqlSelect($sql);
+	while ($row = sqlFetchAssoc($result)) {
+		$ord = 0;
+		for ($i = 1; $i <= 5; $i++) {
+			if ($row['custom_input_name_' . $i]) {
+				insertRow(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'form_crm_static_inputs', ['form_id' => $row['form_id'], 'ord' => ++$ord, 'name' => $row['custom_input_name_' . $i], 'value' => $row['custom_input_value_' . $i]]);
+			}
+		}
+	}
+	revision(26);
+}
+
+revision(27
+, <<<_sql
+	ALTER TABLE [[DB_NAME_PREFIX]][[ZENARIO_CRM_FORM_INTEGRATION_PREFIX]]form_crm_data
+	DROP COLUMN `custom_input_name_1`,
+	DROP COLUMN `custom_input_value_1`,
+	DROP COLUMN `custom_input_name_2`,
+	DROP COLUMN `custom_input_value_2`,
+	DROP COLUMN `custom_input_name_3`,
+	DROP COLUMN `custom_input_value_3`,
+	DROP COLUMN `custom_input_name_4`,
+	DROP COLUMN `custom_input_value_4`,
+	DROP COLUMN `custom_input_name_5`,
+	DROP COLUMN `custom_input_value_5`
+_sql
+
+);
+

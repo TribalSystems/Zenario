@@ -42,10 +42,10 @@ class zenario_common_features__admin_boxes__menu_text extends module_base_class 
 		if ($path != 'zenario_menu_text') return;
 		
 		//Try to get the Menu Id from the request
-		$box['key']['id'] = ifNull(arrayKey($box['key'], 'mID'), request('mID'), $box['key']['id']);
+		$box['key']['id'] = ifNull($box['key']['mID'] ?? false, ($_REQUEST['mID'] ?? false), $box['key']['id']);
 		
-		if (!$box['key']['languageId'] = ifNull($box['key']['languageId'], request('target_language_id'), request('languageId'))) {
-			$box['key']['languageId'] = setting('default_language');
+		if (!$box['key']['languageId'] = ifNull($box['key']['languageId'], ($_REQUEST['target_language_id'] ?? false), ($_REQUEST['languageId'] ?? false))) {
+			$box['key']['languageId'] = cms_core::$defaultLang;
 		}
 		
 		if (!$menu = getMenuNodeDetails($box['key']['id'])) {
@@ -60,13 +60,13 @@ class zenario_common_features__admin_boxes__menu_text extends module_base_class 
 		}
 		$values['text/menu_title'] = self::getMenuText($box['key']['id'], $box['key']['languageId']);
 		
-		if (setting('default_language') != $box['key']['languageId']
-		 && ($values['text/text_in_default_language'] = self::getMenuText($box['key']['id'], setting('default_language')))) {
+		if (cms_core::$defaultLang != $box['key']['languageId']
+		 && ($values['text/text_in_default_language'] = self::getMenuText($box['key']['id'], cms_core::$defaultLang))) {
 			$fields['text/text_in_default_language']['label'] =
 				adminPhrase('Menu text ([[english_name]]):',
-					array('english_name' => getLanguageName(setting('default_language'), false)));
+					array('english_name' => getLanguageName(cms_core::$defaultLang, false)));
 			
-			$values['text/parent_path_of__text_in_default_language'] = getMenuPath($box['key']['parentMenuID'], setting('default_language'));
+			$values['text/parent_path_of__text_in_default_language'] = getMenuPath($box['key']['parentMenuID'], cms_core::$defaultLang);
 			zenario_common_features::setMenuPath($box['tabs']['text']['fields'], 'text_in_default_language', 'value');
 		
 		} else {

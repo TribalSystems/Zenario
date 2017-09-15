@@ -88,6 +88,18 @@
 							{% do this.showPlugin(Plugin) %}
 						{% endfor %}
 					</div>
+					
+					{% if Tab.Show_Embed_Disabled %}
+						<a
+							class="nest_show_embed nest_show_embed_disabled"
+						>{{'Embedding is disabled'|trans}}</a>
+					
+					{% elseif Tab.Show_Embed %}
+						<a
+							class="nest_show_embed"
+							onclick="zenario_plugin_nest.embed({{Tab.Embed|escape}});"
+						>{{'Embed'|trans}}</a>
+					{% endif %}
 				{% endif %}
 			{% endfor %}
 		</div>
@@ -108,4 +120,6 @@
 		</a>
 		<div class="background_next"></div>
 	{% endif %}
+	
+	
 </div>

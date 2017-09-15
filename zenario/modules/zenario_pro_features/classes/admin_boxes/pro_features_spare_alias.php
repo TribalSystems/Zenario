@@ -78,6 +78,10 @@ class zenario_pro_features__admin_boxes__pro_features_spare_alias extends module
 			}
 		}
 		
+		//Show suffix if settings enabled
+		if (setting('mod_rewrite_enabled') && ($suffix = setting('mod_rewrite_suffix'))) {
+			$fields['spare_alias/alias']['post_field_html'] = "&nbsp;" . $suffix;
+		}
 	}
 	
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
@@ -86,6 +90,28 @@ class zenario_pro_features__admin_boxes__pro_features_spare_alias extends module
 		
 		$box['tabs']['spare_alias']['fields']['ext_url']['hidden'] = 
 			$values['spare_alias/target_loc'] != 'ext';
+		
+		
+		//Remember redirect target
+		if ($values['spare_alias/target_loc'] == 'int') {
+			$tagId = $values['spare_alias/hyperlink_target'];
+			if ($tagId) {
+				$values['spare_alias/redirect_target_url'] = linkToItem($tagId, 'html', true, '', false, false, $useAliasInAdminMode = true);
+			}
+		} elseif ($values['spare_alias/target_loc'] == 'ext') {
+			$target = $values['spare_alias/ext_url'];
+			if (!preg_match("/^((http|https|ftp):\/\/)/", $target)) {
+				$target = 'http://' . $target;
+			}
+			$values['spare_alias/redirect_target_url'] = $target;
+		}
+		//Show preview
+		$alias = $values['spare_alias/alias'];
+		$suffix = setting('mod_rewrite_suffix');
+		if ($alias !== "") {
+			$alias .= $suffix;
+		}
+		$fields['spare_alias/preview']['snippet']['html'] = '<a id="spare_alias_preview" data-base="' . absCMSDirURL() . '" data-suffix="' . $suffix . '" href="' . $values['spare_alias/redirect_target_url'] . '" target="spare_alias_preview">' . absCMSDirURL() . $alias . '</a>';
 	}
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
@@ -115,7 +141,7 @@ class zenario_pro_features__admin_boxes__pro_features_spare_alias extends module
 		
 		if ($values['spare_alias/target_loc'] == 'int') {
 			$row['target_loc'] = 'int';
-			getCIdAndCTypeFromTagId($row['content_id'], $row['content_type'], $values['spare_alias/hyperlink_target']);
+			getCIDAndCTypeFromTagId($row['content_id'], $row['content_type'], $values['spare_alias/hyperlink_target']);
 		
 		} elseif ($values['spare_alias/target_loc'] == 'ext') {
 			$row['target_loc'] = 'ext';

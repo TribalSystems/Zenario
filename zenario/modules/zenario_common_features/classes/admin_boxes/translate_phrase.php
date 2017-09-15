@@ -43,18 +43,18 @@ class zenario_common_features__admin_boxes__translate_phrase extends module_base
 		$box['key']['is_code'] = substr($box['key']['code'], 0, 1) == '_';
 
 		$languages = getLanguages(false, true, true);
-		$translateDefaultLang = $languages[setting('default_language')]['translate_phrases'];
+		$translateDefaultLang = $languages[cms_core::$defaultLang]['translate_phrases'];
 		$translateThisPhraseInDefaultLang = $box['key']['is_code'] || $translateDefaultLang;
 		
 		$mrg = array(
-			'default_lang' => getLanguageName(setting('default_language')),
+			'default_lang' => getLanguageName(cms_core::$defaultLang),
 			'this_lang' => getLanguageName($box['key']['language_id']));
 		
 		$box['title'] = adminPhrase('Editing a phrase in [[this_lang]]', $mrg);
 		$fields['phrase/phrase']['label'] = adminPhrase('Phrase in [[default_lang]]:', $mrg);
 		$fields['phrase/local_text']['label'] = adminPhrase('Phrase in [[this_lang]]:', $mrg);
 		
-		$phraseKey['language_id'] = setting('default_language');
+		$phraseKey['language_id'] = cms_core::$defaultLang;
 		if ($phrase = getRow('visitor_phrases', array('local_text', 'protect_flag'), $phraseKey)) {
 			
 			if ($translateThisPhraseInDefaultLang) {
@@ -71,7 +71,7 @@ class zenario_common_features__admin_boxes__translate_phrase extends module_base
 		}
 		
 		//If this is the default language, don't show two columns
-		if ($box['key']['language_id'] == setting('default_language')) {
+		if ($box['key']['language_id'] == cms_core::$defaultLang) {
 			$fields['phrase/left_column']['hidden'] = true;
 			$fields['phrase/right_column']['hidden'] = true;
 			$fields['phrase/phrase']['hidden'] = true;

@@ -18,7 +18,8 @@
 				{{'No documents to download'|trans}}
 			{% endif %}
 		</div>
-	{% elseif Documents %}
+	{% endif %}
+	{% if Documents %}
 		{% for item in Documents %}
 			<div class="document_wrap">
 			{% if item.Thumbnail %}

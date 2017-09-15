@@ -79,10 +79,10 @@ class zenario_common_features__admin_boxes__image extends module_base_class {
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
 		
-		if (!$values['details/filename'] || !guessAltTagFromFilename($values['details/filename'])) {
+		if (!$values['details/filename'] || !Ze\File::guessAltTagFromname($values['details/filename'])) {
 			$box['tabs']['details']['errors'][] = adminPhrase('Please enter a filename.');
 		
-		} elseif (documentMimeType($values['details/filename']) != getRow('files', 'mime_type', $box['key']['id'])) {
+		} elseif (Ze\File::mimeType($values['details/filename']) != getRow('files', 'mime_type', $box['key']['id'])) {
 			$box['tabs']['details']['errors'][] = adminPhrase("You must not change the file's extension.");
 		}
 		

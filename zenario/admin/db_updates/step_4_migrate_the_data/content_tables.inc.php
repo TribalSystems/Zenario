@@ -264,7 +264,7 @@ if (needRevision(31255)) {
 }
 
 //The directory structure for the cache/public/private directories has changed slightly.
-//Attempt to remove the last access date for the cleanDownloads() function
+//Attempt to remove the last access date for the cleanCacheDir() function
 //to force it to rerun and create any new directories the next time it is called.
 if (needRevision(31260)) {
 	if (@file_exists(CMS_ROOT. 'cache/stats/clean_downloads/accessed')) {
@@ -436,7 +436,7 @@ if (needRevision(36380)) {
 	 && !windowsServer()
 	 && execEnabled()) {
 		exec('rm -r '. escapeshellarg(CMS_ROOT. 'cache/frameworks'));
-		cleanDownloads();
+		cleanCacheDir();
 	}
 	
 	revision(36380);
@@ -526,10 +526,7 @@ if (needRevision(40190)) {
 }
 
 //Correct a bug where uploading an image into a nest did not flag the image as being used.
-//N.b. this was copied back from version 7.7, but it should be safe to run twice so
-//copying it back and then later running it again in the migration to the next version
-//shouldn't cause any problems.
-if (needRevision(40192)) {
+if (needRevision(40670)) {
 	$sql = "
 		SELECT id, content_id, content_type, content_version
 		FROM ". DB_NAME_PREFIX. "plugin_instances
@@ -544,5 +541,5 @@ if (needRevision(40192)) {
 	while ($row = sqlFetchAssoc($result)) {
 		resyncLibraryPluginFiles($row['id'], $row);
 	}
-	revision(40192);
+	revision(40670);
 }

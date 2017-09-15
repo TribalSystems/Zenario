@@ -362,7 +362,7 @@ class zenario_incoming_email_manager extends module_base_class {
 			
 			
 			case 'zenario__administration/panels/zenario_scheduled_task_manager__scheduled_tasks/hidden_nav/log/panel':
-				if (!get('refiner__zenario_incoming_email_manager__incoming_emails')) {
+				if (!($_GET['refiner__zenario_incoming_email_manager__incoming_emails'] ?? false)) {
 					unset($panel['columns']['zenario_incoming_email_manager__email_from']);
 					unset($panel['columns']['zenario_incoming_email_manager__email_subject']);
 					unset($panel['columns']['zenario_incoming_email_manager__email_sent']);
@@ -387,7 +387,7 @@ class zenario_incoming_email_manager extends module_base_class {
 			
 			
 			case 'zenario__administration/panels/zenario_scheduled_task_manager__scheduled_tasks/hidden_nav/log/panel':
-				if (get('refiner__zenario_incoming_email_manager__incoming_emails')) {
+				if ($_GET['refiner__zenario_incoming_email_manager__incoming_emails'] ?? false) {
 					$panel['title'] = adminPhrase('Logs for Incoming Email Handler "[[job]]"', array('job' => getRow('jobs', 'job_name', $refinerId)));
 				}
 				
@@ -398,12 +398,12 @@ class zenario_incoming_email_manager extends module_base_class {
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
 		switch ($path) {
 			case 'zenario__administration/panels/zenario_scheduled_task_manager__scheduled_tasks':
-				if (post('rerun') && checkPriv('_PRIV_MANAGE_SCHEDULED_TASK') && $checkEmailId = getRow('jobs', 'id', array('job_name' => 'jobCheckEmails'))) {
+				if (($_POST['rerun'] ?? false) && checkPriv('_PRIV_MANAGE_SCHEDULED_TASK') && $checkEmailId = getRow('jobs', 'id', array('job_name' => 'jobCheckEmails'))) {
 					updateRow('jobs', array('status' => 'rerun_scheduled'), $checkEmailId);
 					updateRow('jobs', array('status' => 'rerun_scheduled'), $ids);
 				}
 				
-				if ((post('action') == 'enable_incoming_email_handler') && checkPriv('_PRIV_MANAGE_SCHEDULED_TASK') && $checkEmailId = getRow('jobs', 'id', array('job_name' => 'jobCheckEmails'))) {
+				if ((($_POST['action'] ?? false) == 'enable_incoming_email_handler') && checkPriv('_PRIV_MANAGE_SCHEDULED_TASK') && $checkEmailId = getRow('jobs', 'id', array('job_name' => 'jobCheckEmails'))) {
 					foreach (explode(',', $ids) as $id) {
 						updateRow('jobs',array('enabled' => 1),$id);
 					}
@@ -562,7 +562,7 @@ class zenario_incoming_email_manager extends module_base_class {
 							
 							//Make a connection to test if this actually works. May be slow, so only do it while actually saving
 							if (empty($box['tabs']['zenario_incoming_email_manager__fetch']['errors'])
-							 && engToBooleanArray($box['tabs']['zenario_incoming_email_manager__fetch'], 'edit_mode', 'on')
+							 && engToBoolean($box['tabs']['zenario_incoming_email_manager__fetch']['edit_mode']['on'] ?? false)
 							 && $saving) {
 							 	imap_timeout(IMAP_OPENTIMEOUT, 10);
 							 	imap_timeout(IMAP_READTIMEOUT, 10);
@@ -615,7 +615,7 @@ class zenario_incoming_email_manager extends module_base_class {
 				if ($box['key']['manager_class_name'] == 'zenario_incoming_email_manager' && checkPriv('_PRIV_MANAGE_SCHEDULED_TASK')) {
 					
 					/*
-					if (engToBooleanArray($box['tabs']['zenario_incoming_email_manager__trigger'], 'edit_mode', 'on')) {
+					if (engToBoolean($box['tabs']['zenario_incoming_email_manager__trigger']['edit_mode']['on'] ?? false)) {
 						if ($values['zenario_incoming_email_manager__trigger/script_enable']) {
 							
 							setRow(ZENARIO_INCOMING_EMAIL_MANAGER_PREFIX. 'accounts',
@@ -638,7 +638,7 @@ class zenario_incoming_email_manager extends module_base_class {
 						}
 					}*/
 					
-					if (engToBooleanArray($box['tabs']['zenario_incoming_email_manager__fetch'], 'edit_mode', 'on')) {
+					if (engToBoolean($box['tabs']['zenario_incoming_email_manager__fetch']['edit_mode']['on'] ?? false)) {
 						if ($values['zenario_incoming_email_manager__fetch/fetch_enable']) {
 							
 							setRow(ZENARIO_INCOMING_EMAIL_MANAGER_PREFIX. 'accounts',

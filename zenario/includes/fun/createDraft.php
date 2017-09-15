@@ -45,7 +45,7 @@ if (!$cTypeFrom) {
 }
 
 if (!$adminId) {
-	$adminId = session('admin_userid');
+	$adminId = $_SESSION['admin_userid'] ?? false;
 }
 
 //Check to see if a target Content Item has been set, and actually exists
@@ -62,7 +62,7 @@ if (!$cIDTo || !($content = getRow('content_items', true, array('id' => $cIDTo, 
 		'id' => $cIDTo,
 		'type' => $cTypeTo,
 		'tag_id' => $cTypeTo. '_'. $cIDTo,
-		'language_id' => ifNull($languageId, setting('default_language')),
+		'language_id' => ifNull($languageId, cms_core::$defaultLang),
 		'first_created_datetime' => now(),
 		'visitor_version' => 0,
 		'admin_version' => 1,
@@ -75,7 +75,7 @@ if (!$cIDTo || !($content = getRow('content_items', true, array('id' => $cIDTo, 
 		
 		//T10672, Creating a content item: Automatically set permissions
 		if (inc('zenario_users') && $contentTypeDetails) {
-			$chain['privacy'] = $contentTypeDetails['default_permissions'];
+			$chain['privacy'] = $contentTypeDetails['default_permissions'] ?? 'public';
 		}
 		
 		setRow('translation_chains', $chain, $key);
@@ -107,7 +107,7 @@ if (!$cIDTo || !($content = getRow('content_items', true, array('id' => $cIDTo, 
 
 if ($newDraftCreated) {
 	if (setting('lock_item_upon_draft_creation')) {
-		$content['lock_owner_id'] = session('admin_userid');
+		$content['lock_owner_id'] = $_SESSION['admin_userid'] ?? false;
 		$content['locked_datetime'] = now();
 	}
 }

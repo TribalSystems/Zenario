@@ -38,6 +38,7 @@ useCache('zenario-inc-js-ie-'. $ie. '-'. LATEST_REVISION_NO);
 
 
 //Run pre-load actions
+require CMS_ROOT. 'zenario/api/cache_functions.inc.php';
 require editionInclude('wrapper.pre_load');
 
 

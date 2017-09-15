@@ -34,7 +34,7 @@ switch ($path) {
 			exit;
 		}
 			
-		if (engToBooleanArray($box['tabs']['time_and_day'], 'edit_mode', 'on') && empty($box['tabs']['month']['hidden'])) {
+		if (engToBoolean($box['tabs']['time_and_day']['edit_mode']['on'] ?? false) && empty($box['tabs']['month']['hidden'])) {
 			
 			$columns = array();
 			
@@ -84,7 +84,7 @@ switch ($path) {
 		
 		} 
 		
-		if (engToBooleanArray($box['tabs']['month'], 'edit_mode', 'on') && empty($box['tabs']['month']['hidden'])) {
+		if (engToBoolean($box['tabs']['month']['edit_mode']['on'] ?? false) && empty($box['tabs']['month']['hidden'])) {
 			
 			$months = '';
 			foreach (array('jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec') as $month) {
@@ -101,7 +101,7 @@ switch ($path) {
 		
 		} 
 		
-		if (engToBooleanArray($box['tabs']['reporting'], 'edit_mode', 'on')) {
+		if (engToBoolean($box['tabs']['reporting']['edit_mode']['on'] ?? false)) {
 			
 			updateRow('jobs',
 				array(

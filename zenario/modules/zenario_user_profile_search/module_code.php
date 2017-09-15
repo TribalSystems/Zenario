@@ -44,9 +44,9 @@ class zenario_user_profile_search extends module_base_class {
 	protected $data = array();
 	
 	public function init(){
-		$this->country_id_to_search = request('country_id_to_search');
-		$this->name_to_search = request('name_to_search');
-		$this->keywords_to_search = request('keywords_to_search');
+		$this->country_id_to_search = $_REQUEST['country_id_to_search'] ?? false;
+		$this->name_to_search = $_REQUEST['name_to_search'] ?? false;
+		$this->keywords_to_search = $_REQUEST['keywords_to_search'] ?? false;
 		
 		$this->rowsPerPage = (int)$this->setting('search_results_per_page');
 		if(!$this->rowsPerPage){
@@ -83,7 +83,7 @@ class zenario_user_profile_search extends module_base_class {
 	protected function setPagination($url_params) {
 		$pageSize = $this->rowsPerPage;
 	
-		$this->page = ifNull((int) get('page'), 1);
+		$this->page = ifNull((int) ($_GET['page'] ?? false), 1);
 		$this->pageCount = ceil($this->rowCount / $pageSize);
 	
 		$this->registerGetRequest('page', 1);
@@ -154,7 +154,7 @@ class zenario_user_profile_search extends module_base_class {
 				FROM " . DB_NAME_PREFIX . ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_countries
 				AS cmc LEFT JOIN ' . DB_NAME_PREFIX . "visitor_phrases AS vs
 						ON CONCAT('_COUNTRY_NAME_',cmc.id) = vs.code
-						AND vs.language_id = '" . sqlEscape(cms_core::$langId) . "'
+						AND vs.language_id = '" . sqlEscape(cms_core::$visLang) . "'
 				WHERE cmc.id IN(SELECT DISTINCT `" . $country_field['name'] . "` FROM " 
 						. DB_NAME_PREFIX . ($country_field['is_system_field'] ? 'users' : 'users_custom_data') 
 				. ")
@@ -311,7 +311,7 @@ class zenario_user_profile_search extends module_base_class {
 		$select_fields = $this->getUserFields();
 		$search_fields = $this->getSearchFields();
 		
-		$country_id_to_search = request('country_id_to_search');
+		$country_id_to_search = $_REQUEST['country_id_to_search'] ?? false;
 		if($country_id_to_search && ($country_field = $search_fields['country'])) {
 			$table_prefix = $this->getUserFieldPrefix($country_field);
 			$sql .= ' AND ' . $table_prefix . '.`' . $country_field['name'] 
@@ -319,7 +319,7 @@ class zenario_user_profile_search extends module_base_class {
 		}
 		$this->data['country_id_to_search'] = $country_id_to_search;
 		
-		$name_to_search = request('name_to_search');
+		$name_to_search = $_REQUEST['name_to_search'] ?? false;
 		if($name_to_search && ($name_fields = $search_fields['name_fields'])) {
 			$sql_names = '';
 			$name_to_search_escaped = sqlEscape($name_to_search);
@@ -339,7 +339,7 @@ class zenario_user_profile_search extends module_base_class {
 			$this->data['name_to_search'] = $name_to_search;
 		}
 		
-		$keywords_to_search = request('keywords_to_search');
+		$keywords_to_search = $_REQUEST['keywords_to_search'] ?? false;
 		if($keywords_to_search && ($keyword_fields = $search_fields['keyword_fields'])) {
 			$sql_keywords = '';
 			$keywords_to_search_escaped = sqlEscape($keywords_to_search);
@@ -387,7 +387,7 @@ class zenario_user_profile_search extends module_base_class {
 		$width = $this->setting($img_prefix . '_width');
 		$height = $this->setting($img_prefix . '_height');
 		$file_id = $image_id;
-		imageLink($width, $height, $url, $file_id, $width, $height, $this->setting($img_prefix . '_canvas'));
+		Ze\File::imageLink($width, $height, $url, $file_id, $width, $height, $this->setting($img_prefix . '_canvas'));
 		return $url;
 	}
 	

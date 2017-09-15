@@ -29,17 +29,17 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 if (checkPriv()) {
 	$layoutId = $templateFamily = $slotKey = false;
-	if (request('cID') && request('cType') && request('cVersion')
-	 && request('cID') != -1) {
-		$layoutId = contentItemTemplateId(request('cID'), request('cType'), request('cVersion'));
+	if (($_REQUEST['cID'] ?? false) && ($_REQUEST['cType'] ?? false) && ($_REQUEST['cVersion'] ?? false)
+	 && ($_REQUEST['cID'] ?? false) != -1) {
+		$layoutId = contentItemTemplateId($_REQUEST['cID'] ?? false, ($_REQUEST['cType'] ?? false), ($_REQUEST['cVersion'] ?? false));
 		$slotKey = array(
-			'content_id' => request('cID'),
-			'content_type' => request('cType'),
-			'content_version' => request('cVersion'),
-			'slot_name' => request('slotName'));
+			'content_id' => ($_REQUEST['cID'] ?? false),
+			'content_type' => ($_REQUEST['cType'] ?? false),
+			'content_version' => ($_REQUEST['cVersion'] ?? false),
+			'slot_name' => ($_REQUEST['slotName'] ?? false));
 	
-	} elseif (request('layoutId')) {
-		$layoutId = (int) request('layoutId');
+	} elseif ($_REQUEST['layoutId'] ?? false) {
+		$layoutId = (int) ($_REQUEST['layoutId'] ?? false);
 	}
 	
 	if ($layoutId) {
@@ -47,7 +47,7 @@ if (checkPriv()) {
 	}
 	
 	
-	if ($tagId = request('slidedown_content_item_req')) {
+	if ($tagId = $_REQUEST['slidedown_content_item_req'] ?? false) {
 		
 		$content = getRow('content_items', true, array('tag_id' => $tagId));
 		
@@ -91,7 +91,7 @@ if (checkPriv()) {
 		exit;
 	
 	//Get the current SVN number
-	} elseif (get('infoBox')) {
+	} elseif ($_GET['infoBox'] ?? false) {
 		
 		$realDir = realpath($logicalDir = CMS_ROOT. 'zenario');
 		
@@ -204,27 +204,27 @@ if (checkPriv()) {
 		exit;
 	
 	//Attempt to load this list from an xml file description to add choices in for swatches from the Skin
-	} elseif (get('skinId')) {
+	} elseif ($_GET['skinId'] ?? false) {
 		$tags = array();
-		loadSkinDescription(get('skinId'), $tags);
+		loadSkinDescription($_GET['skinId'] ?? false, $tags);
 		jsonEncodeForceObject($tags);
 	
 	//Look up a Plugin ID
-	} elseif (get('getmoduleIdFromInstanceId')) {
-		$instance = getPluginInstanceDetails(get('getmoduleIdFromInstanceId'));
+	} elseif ($_GET['getmoduleIdFromInstanceId'] ?? false) {
+		$instance = getPluginInstanceDetails($_GET['getmoduleIdFromInstanceId'] ?? false);
 		echo $instance['module_id'];
 	
-	} elseif (get('getmoduleIdFromClassName')) {
-		echo getModuleIdByClassName(get('getmoduleIdFromClassName'));
+	} elseif ($_GET['getmoduleIdFromClassName'] ?? false) {
+		echo getModuleIdByClassName($_GET['getmoduleIdFromClassName'] ?? false);
 		
-	} elseif (post('getMenuItemStorekeeperDeepLink')) {
-		echo getMenuItemStorekeeperDeepLink(post('getMenuItemStorekeeperDeepLink'), request('languageId'));
+	} elseif ($_POST['getMenuItemStorekeeperDeepLink'] ?? false) {
+		echo getMenuItemStorekeeperDeepLink($_POST['getMenuItemStorekeeperDeepLink'] ?? false, ($_REQUEST['languageId'] ?? false));
 		
 	//Handle getting the URLs for items
-	} elseif (post('getItemURL')) {
+	} elseif ($_POST['getItemURL'] ?? false) {
 		$request = '';
 		$cID = $cType = false;
-		getCIDAndCTypeFromTagId($cID, $cType, post('id'));
+		getCIDAndCTypeFromTagId($cID, $cType, ($_POST['id'] ?? false));
 		
 		//Links for documents should be a download-now link by default
 		if ($cType == 'document') {
@@ -235,8 +235,8 @@ if (checkPriv()) {
 		exit;
 		
 	//Get a preview of a date format
-	} elseif (get('previewDateFormat')) {
-		echo formatDateNicely(now(), get('previewDateFormat'), true);
+	} elseif ($_GET['previewDateFormat'] ?? false) {
+		echo formatDateNicely(now(), ($_GET['previewDateFormat'] ?? false), true);
 		exit;
 	
 	//Toggle dev tools on/off
@@ -246,31 +246,31 @@ if (checkPriv()) {
 	//Otherwise handle requests for slots
 	} else {
 		//Update the last modification date if making a change to a Content Item
-		if (post('cID') && post('cType') && post('cVersion')
-		 && post('cID') != -1
-		 && checkPriv(false, post('cID'), post('cType'), post('cVersion'))) {
-			updateVersion(post('cID'), post('cType'), post('cVersion'));
+		if (($_POST['cID'] ?? false) && ($_POST['cType'] ?? false) && ($_POST['cVersion'] ?? false)
+		 && ($_POST['cID'] ?? false) != -1
+		 && checkPriv(false, ($_POST['cID'] ?? false), ($_POST['cType'] ?? false), ($_POST['cVersion'] ?? false))) {
+			updateVersion($_POST['cID'] ?? false, ($_POST['cType'] ?? false), ($_POST['cVersion'] ?? false));
 		}
 	
 		//Insert a Reuasble Plugin into a slot
-		if (post('addPluginInstance') && post('level') == 1 && checkPriv('_PRIV_MANAGE_ITEM_SLOT', request('cID'), request('cType'), request('cVersion'))) {
-			updatePluginInstanceInItemSlot(post('addPluginInstance'), post('slotName'), post('cID'), post('cType'), post('cVersion'));
+		if (($_POST['addPluginInstance'] ?? false) && ($_POST['level'] ?? false) == 1 && checkPriv('_PRIV_MANAGE_ITEM_SLOT', ($_REQUEST['cID'] ?? false), ($_REQUEST['cType'] ?? false), ($_REQUEST['cVersion'] ?? false))) {
+			updatePluginInstanceInItemSlot($_POST['addPluginInstance'] ?? false, ($_POST['slotName'] ?? false), ($_POST['cID'] ?? false), ($_POST['cType'] ?? false), ($_POST['cVersion'] ?? false));
 	
-		} elseif (post('addPluginInstance') && post('level') == 2 && checkPriv('_PRIV_MANAGE_TEMPLATE_SLOT') && $layoutId && $templateFamily) {
-			updatePluginInstanceInTemplateSlot(post('addPluginInstance'), post('slotName'), $templateFamily, $layoutId);
+		} elseif (($_POST['addPluginInstance'] ?? false) && ($_POST['level'] ?? false) == 2 && checkPriv('_PRIV_MANAGE_TEMPLATE_SLOT') && $layoutId && $templateFamily) {
+			updatePluginInstanceInTemplateSlot($_POST['addPluginInstance'] ?? false, ($_POST['slotName'] ?? false), $templateFamily, $layoutId);
 		
 			//To avoid confusin, also remove the "hide plugin on this content item" option
 			//for this slot on this version of this content item if it has been set.
 			//(But don't touch any other versions/content items, even if they're also hidden.)
-			unhidePlugin(post('cID'), post('cType'), post('cVersion'), post('slotName'));
+			unhidePlugin($_POST['cID'] ?? false, ($_POST['cType'] ?? false), ($_POST['cVersion'] ?? false), ($_POST['slotName'] ?? false));
 	
 		//Insert a version-controlled plugin into a slot
-		} elseif (get('addPlugin')) {
+		} elseif ($_GET['addPlugin'] ?? false) {
 			
 			$mrg = array('pages' => checkTemplateUsage($layoutId, false, false),
 							'published' => checkTemplateUsage($layoutId, false, true),
-							'display_name' => htmlspecialchars(getModuleDisplayName(get('addPlugin'))),
-							'slotName' => htmlspecialchars(get('slotName')));
+							'display_name' => htmlspecialchars(getModuleDisplayName($_GET['addPlugin'] ?? false)),
+							'slotName' => htmlspecialchars($_GET['slotName'] ?? false));
 			
 			if ($mrg['pages'] == 1) {
 				echo adminPhrase(
@@ -290,31 +290,31 @@ if (checkPriv()) {
 				, $mrg);
 			}
 	
-		} elseif (post('addPlugin') && checkPriv('_PRIV_MANAGE_TEMPLATE_SLOT') && $layoutId && $templateFamily) {
-			updatePluginInstanceInTemplateSlot(0, post('slotName'), $templateFamily, $layoutId, post('addPlugin'));
+		} elseif (($_POST['addPlugin'] ?? false) && checkPriv('_PRIV_MANAGE_TEMPLATE_SLOT') && $layoutId && $templateFamily) {
+			updatePluginInstanceInTemplateSlot(0, ($_POST['slotName'] ?? false), $templateFamily, $layoutId, ($_POST['addPlugin'] ?? false));
 		
 			//To avoid confusin, also remove the "hide plugin on this content item" option
 			//for this slot on this version of this content item if it has been set.
 			//(But don't touch any other versions/content items, even if they're also hidden.)
-			unhidePlugin(post('cID'), post('cType'), post('cVersion'), post('slotName'));
+			unhidePlugin($_POST['cID'] ?? false, ($_POST['cType'] ?? false), ($_POST['cVersion'] ?? false), ($_POST['slotName'] ?? false));
 		
 		
 		
 		//Handle copying/cutting/pasting/etc.
-		} elseif (post('copyContents') || post('cutContents')) {
+		} elseif (($_POST['copyContents'] ?? false) || ($_POST['cutContents'] ?? false)) {
 			$_SESSION['admin_copied_contents'] =
 				getPluginContent($slotKey);
 			
 			$_SESSION['admin_copied_contents']['allowed'] = array();
-			foreach (explodeAndTrim(post('allowedModules')) as $module) {
+			foreach (explodeAndTrim($_POST['allowedModules'] ?? false) as $module) {
 				$_SESSION['admin_copied_contents']['allowed'][$module] = true;
 			}
 			
-			if (post('cutContents') && checkPriv('_PRIV_EDIT_DRAFT', request('cID'), request('cType'), request('cVersion'))) {
+			if (($_POST['cutContents'] ?? false) && checkPriv('_PRIV_EDIT_DRAFT', ($_REQUEST['cID'] ?? false), ($_REQUEST['cType'] ?? false), ($_REQUEST['cVersion'] ?? false))) {
 				setPluginContent($slotKey);
 			}
 			
-		} elseif ((post('pasteContents') || post('overwriteContents') || post('swapContents')) && checkPriv('_PRIV_EDIT_DRAFT', request('cID'), request('cType'), request('cVersion'))) {
+		} elseif ((($_POST['pasteContents'] ?? false) || ($_POST['overwriteContents'] ?? false) || ($_POST['swapContents'] ?? false)) && checkPriv('_PRIV_EDIT_DRAFT', ($_REQUEST['cID'] ?? false), ($_REQUEST['cType'] ?? false), ($_REQUEST['cVersion'] ?? false))) {
 			$oldContent = getPluginContent($slotKey);
 			
 			if (empty($_SESSION['admin_copied_contents'])) {
@@ -332,7 +332,7 @@ if (checkPriv()) {
 			} else {
 				setPluginContent($slotKey, $_SESSION['admin_copied_contents']);
 				
-				if (post('swapContents')) {
+				if ($_POST['swapContents'] ?? false) {
 					$oldContent['allowed'] = $_SESSION['admin_copied_contents']['allowed'];
 					$_SESSION['admin_copied_contents'] = $oldContent;
 				}
@@ -341,14 +341,14 @@ if (checkPriv()) {
 		
 		
 		//Hide a plugin on this page
-		} elseif (post('hidePlugin') && checkPriv('_PRIV_MANAGE_ITEM_SLOT', post('cID'), post('cType'), post('cVersion'))) {
+		} elseif (($_POST['hidePlugin'] ?? false) && checkPriv('_PRIV_MANAGE_ITEM_SLOT', ($_POST['cID'] ?? false), ($_POST['cType'] ?? false), ($_POST['cVersion'] ?? false))) {
 			updatePluginInstanceInItemSlot(
 				0,
-				post('slotName'), post('cID'), post('cType'), post('cVersion'));
+				($_POST['slotName'] ?? false), ($_POST['cID'] ?? false), ($_POST['cType'] ?? false), ($_POST['cVersion'] ?? false));
 	
 		//Handle removing modules
 		//(Get the number of Content Items that use this template/template family)
-		} elseif ((get('removePlugin') || get('movePlugin')) && get('level') == 2) {
+		} elseif ((($_GET['removePlugin'] ?? false) || ($_GET['movePlugin'] ?? false)) && ($_GET['level'] ?? false) == 2) {
 			
 			$mrg = array('pages' => checkTemplateUsage($layoutId, false, false), 'published' => checkTemplateUsage($layoutId, false, true));
 
@@ -356,59 +356,59 @@ if (checkPriv()) {
 				'plugin_layout_link',
 				array('module_id', 'instance_id'),
 				array(
-					'slot_name' => get('slotName'),
+					'slot_name' => ($_GET['slotName'] ?? false),
 					'family_name' => $templateFamily,
 					'layout_id' => $layoutId));
 			
 			if (!empty($placement['module_id']) && !$placement['instance_id']) {
 				$mrg['display_name'] = htmlspecialchars(getModuleDisplayName($placement['module_id']));
 				
-				if (get('movePlugin')) {
+				if ($_GET['movePlugin'] ?? false) {
 					echo adminPhrase('Are you sure you wish to move the [[display_name]]?<br/><br/>This will affect [[pages]] Content Item(s), <b>[[published]] Published</b>.', $mrg);
 				} else {
 					echo adminPhrase('Are you sure you wish to remove the [[display_name]] from the layout?<br/><br/>This will affect [[pages]] Content Item(s), <b>[[published]] Published</b>.', $mrg);
 				}
 			} else {
-				if (get('movePlugin')) {
+				if ($_GET['movePlugin'] ?? false) {
 					echo adminPhrase('Are you sure you wish to move this plugin?<br/><br/>This will affect [[pages]] Content Item(s), <b>[[published]] Published</b>.', $mrg);
 				} else {
 					echo adminPhrase('Are you sure you wish to remove this plugin from the layout?<br/><br/>This will affect [[pages]] Content Item(s), <b>[[published]] Published</b>.', $mrg);
 				}
 			}
 	
-		} elseif ((post('removePlugin') && post('level') == 1 && checkPriv('_PRIV_MANAGE_ITEM_SLOT', post('cID'), post('cType'), post('cVersion')))
-				|| (post('showPlugin') && checkPriv('_PRIV_MANAGE_ITEM_SLOT', post('cID'), post('cType'), post('cVersion')))) {
+		} elseif ((($_POST['removePlugin'] ?? false) && ($_POST['level'] ?? false) == 1 && checkPriv('_PRIV_MANAGE_ITEM_SLOT', ($_POST['cID'] ?? false), ($_POST['cType'] ?? false), ($_POST['cVersion'] ?? false)))
+				|| (($_POST['showPlugin'] ?? false) && checkPriv('_PRIV_MANAGE_ITEM_SLOT', ($_POST['cID'] ?? false), ($_POST['cType'] ?? false), ($_POST['cVersion'] ?? false)))) {
 			updatePluginInstanceInItemSlot(
 				'',
-				post('slotName'), post('cID'), post('cType'), post('cVersion'));
+				($_POST['slotName'] ?? false), ($_POST['cID'] ?? false), ($_POST['cType'] ?? false), ($_POST['cVersion'] ?? false));
 	
-		} elseif (post('removePlugin') && post('level') == 2 && checkPriv('_PRIV_MANAGE_TEMPLATE_SLOT')) {
+		} elseif (($_POST['removePlugin'] ?? false) && ($_POST['level'] ?? false) == 2 && checkPriv('_PRIV_MANAGE_TEMPLATE_SLOT')) {
 			updatePluginInstanceInTemplateSlot(
 				'',
-				post('slotName'), $templateFamily, $layoutId);
+				($_POST['slotName'] ?? false), $templateFamily, $layoutId);
 		
 			//To avoid confusin, also remove the "hide plugin on this content item" option
 			//for this slot on this version of this content item if it has been set.
 			//(But don't touch any other versions/content items, even if they're also hidden.)
-			unhidePlugin(post('cID'), post('cType'), post('cVersion'), post('slotName'));
+			unhidePlugin($_POST['cID'] ?? false, ($_POST['cType'] ?? false), ($_POST['cVersion'] ?? false), ($_POST['slotName'] ?? false));
 	
 		//Handle moving modules
 		//Move a Plugin from one slot to another, at a specific level.
 		//Swapping two modules around is allowed, so we'll need logic that completely switches the Contents of two slots around.
 		//We also need to carefully update the slotnames on the instances table for Wireframe modules
-		} elseif (post('movePlugin')) {
+		} elseif ($_POST['movePlugin'] ?? false) {
 			//Create arrays containing which tables to move data in (this will always be the plugin_instances table and one of the link tables,
 			//depending on the level) and which Content Items are affected.
 			$tables = array();
 		
 			//To move at an item level, we need only check this Content Item
-			if (post('level') == 1 && checkPriv('_PRIV_MANAGE_ITEM_SLOT', post('cID'), post('cType'), post('cVersion'))) {
-				$version = array(array('content_id' => post('cID'), 'content_type' => post('cType'), 'content_version' => post('cVersion')));
+			if (($_POST['level'] ?? false) == 1 && checkPriv('_PRIV_MANAGE_ITEM_SLOT', ($_POST['cID'] ?? false), ($_POST['cType'] ?? false), ($_POST['cVersion'] ?? false))) {
+				$version = array(array('content_id' => ($_POST['cID'] ?? false), 'content_type' => ($_POST['cType'] ?? false), 'content_version' => ($_POST['cVersion'] ?? false)));
 				$tables['plugin_item_link'] = $version;
 				$tables['plugin_instances'] = $version;
 		
 			//For layouts, we need to check which Content Items use the selected Layout
-			} elseif (post('level') == 2 && checkPriv('_PRIV_MANAGE_TEMPLATE_SLOT')) {
+			} elseif (($_POST['level'] ?? false) == 2 && checkPriv('_PRIV_MANAGE_TEMPLATE_SLOT')) {
 				$tables['plugin_layout_link'] = array(array('layout_id' => $layoutId, 'family_name' => $templateFamily));
 				$tables['plugin_instances'] = array();
 				if ($result = getRows('content_item_versions', array('id', 'type', 'version'), array('layout_id' => $layoutId))) {
@@ -433,10 +433,10 @@ if (checkPriv()) {
 					//However we have to be very careful to move the right Settings for Wireframe modules
 					if ($table == 'plugin_item_link' || $table == 'plugin_layout_link') {
 						//Firstly, check the linking tables to see which modules we are supposed to be moving, and whether they are wireframe modules
-						$id['slot_name'] = post('slotNameSource');
+						$id['slot_name'] = $_POST['slotNameSource'] ?? false;
 						$sourcePlugin = getRow($table, array('module_id', 'instance_id'), $id);
 					
-						$id['slot_name'] = post('slotNameDestination');
+						$id['slot_name'] = $_POST['slotNameDestination'] ?? false;
 						$destinationPlugin = getRow($table, array('module_id', 'instance_id'), $id);
 					
 						//Whatever was in the linking tables won't stop us moving the values of the linking tables, so now we continue with the move.
@@ -448,23 +448,23 @@ if (checkPriv()) {
 						$sourcePluginItem = $destinationPluginItem = $sourcePluginTemplate = $destinationPluginTemplate = false;
 					
 						//If this move should be on a Layout, check which Plugin is in at an Item level for each Content Item
-						if (post('level') == 2) {
+						if (($_POST['level'] ?? false) == 2) {
 							$sourcePluginItem =
 								getRow('plugin_item_link',
 									array('module_id', 'instance_id'),
-									array('content_id' => $id['content_id'], 'content_type' => $id['content_type'], 'content_version' => $id['content_version'], 'slot_name' => post('slotNameSource')));
+									array('content_id' => $id['content_id'], 'content_type' => $id['content_type'], 'content_version' => $id['content_version'], 'slot_name' => ($_POST['slotNameSource'] ?? false)));
 							$destinationPluginItem =
 								getRow('plugin_item_link',
 									array('module_id', 'instance_id'),
-									array('content_id' => $id['content_id'], 'content_type' => $id['content_type'], 'content_version' => $id['content_version'], 'slot_name' => post('slotNameDestination')));
+									array('content_id' => $id['content_id'], 'content_type' => $id['content_type'], 'content_version' => $id['content_version'], 'slot_name' => ($_POST['slotNameDestination'] ?? false)));
 						}
 					}
 				
 					$i = 0;
 					foreach (array(
-						post('slotNameSource') => '%%%',
-						post('slotNameDestination') => post('slotNameSource'),
-						'%%%' => post('slotNameDestination')
+						($_POST['slotNameSource'] ?? false) => '%%%',
+						($_POST['slotNameDestination'] ?? false) => ($_POST['slotNameSource'] ?? false),
+						'%%%' => ($_POST['slotNameDestination'] ?? false)
 					) as $from => $to) {
 						if ($table == 'plugin_instances') {
 							//The settings for Wireframe modules are stored by Content Item, Version, Slot and Plugin ID. But not Level.

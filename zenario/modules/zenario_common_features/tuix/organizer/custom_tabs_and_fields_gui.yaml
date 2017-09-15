@@ -48,12 +48,12 @@ zenario__administration:
                             db_column:
                                 label: 'Code name:'
                                 type: text
-                                maxlength: 255
+                                maxlength: 64
                                 note_below: This will be used for the name of the column in the database.
                                 readonly_if: |
                                     item.is_protected || item.is_system_field
                                 visible_if: |
-                                    item.type != 'other_system_field' && (!item.is_system_field || item.db_column)
+                                    item.type != 'other_system_field' && item.type != 'repeat_start' && (!item.is_system_field || item.db_column)
                             values_source:
                                 label: 'Source:'
                                 type: select
@@ -80,13 +80,23 @@ zenario__administration:
                                 label: Protected
                                 type: checkbox
                                 format_onchange: true
+                                note_below: A protected field is important to the operation of the site.
                                 visible_if: |
-                                    item.type != 'other_system_field'
+                                    item.type != 'other_system_field' && item.type != 'repeat_start'
+                                format_onchange: true
+                            
+                            protected_warning:
+                                visible_if: |
+                                    item.is_protected == 0 && item.was_protected
+                                snippet:
+                                    html: |
+                                        <strong>Deleting or changing the code name of this field may break your site.</strong>
+                                    
                             include_in_export:
                                 label: Include in export
                                 type: checkbox
                                 visible_if: |
-                                    item.type != 'other_system_field' && (item.db_column || item.is_new_field)
+                                    (item.type != 'other_system_field' && item.type != 'repeat_start' && (item.db_column || item.is_new_field)) || item.allow_admin_to_change_export
                             autocomplete:
                                 label: Autocomplete
                                 type: checkbox
@@ -175,18 +185,35 @@ zenario__administration:
                                 maxlength: 255
                                 note_below: A message to administrators below the field.
                                 visible_if: |
-                                    item.type != 'other_system_field' && (item.is_system_field || (item.admin_box_visibility != 'hide'))
+                                    item.type != 'other_system_field' && item.type != 'repeat_start' && (item.is_system_field || (item.admin_box_visibility != 'hide'))
                             side_note:
                                 label: 'Side note:'
                                 type: text
                                 maxlength: 255
                                 note_below: A message to administrators that appears to the side when hovering over the field.
                                 visible_if: |
-                                    item.type != 'other_system_field' && (item.is_system_field || (item.admin_box_visibility != 'hide'))
+                                    item.type != 'other_system_field' && item.type != 'repeat_start' && (item.is_system_field || (item.admin_box_visibility != 'hide'))
+                            
+                            min_rows:
+                                label: 'Minimum rows:'
+                                type: text
+                                value: 1
+                                maxlength: 250
+                                note_below: The number of rows that are always shown and cannot be deleted.
+                                visible_if: |
+                                    item.type == 'repeat_start'
+                            max_rows:
+                                label: 'Maximum rows:'
+                                type: text
+                                value: 5
+                                maxlength: 250
+                                note_below: The maximum number of rows that can be added.
+                                visible_if: |
+                                    item.type == 'repeat_start'
                     validation:
                         label: Validation
                         visible_if: |
-                            item.type != 'other_system_field'
+                            item.type != 'other_system_field' && item.type != 'repeat_start'
                         fields:
                             message:
                                 pre_field_html: <div class="info_message">
@@ -241,7 +268,7 @@ zenario__administration:
                     organizer:
                         label: Organizer
                         visible_if: |
-                            item.type != 'other_system_field'
+                            item.type != 'other_system_field' && item.type != 'repeat_start'
                         fields:
                             show_in_organizer:
                                 label: Show in Organizer panel
@@ -271,9 +298,7 @@ zenario__administration:
                                 label: Allow sorting in Organizer
                                 type: checkbox
                                 visible_if: |
-                                    console.log(item.create_index) || (
                                     !item.is_system_field && item.show_in_organizer && (item.create_index == 'index') && (['checkboxes', 'radios', 'centralised_radios', 'select', 'centralised_select'].indexOf(item.type) == -1)
-                                    )
                                 indent: 2
                             organizer_visibility:
                                 label: 'Visibility:'

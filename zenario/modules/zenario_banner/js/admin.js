@@ -49,7 +49,7 @@ zenario_banner.open = function(containerId, editorId, delayed) {
 	}
 	
 	var $input = $('<input type="text" id="banner_title_input_box" placeholder="'+zenario_banner.phrase('Title')+'"/>'), 
-		$title = $('div#'+containerId+' div.banner_title h2'),
+		$title = $('#banner_title__' + containerId),
 		$editor = $('div#' + editorId),
 		editorContentIsEmpty = $.trim($editor.text()) == '',
 		p, 
@@ -136,6 +136,7 @@ zenario_banner.open = function(containerId, editorId, delayed) {
 	};
 	
 	zenario_banner.startPoking();
+	$input.focus();
 }
 
 

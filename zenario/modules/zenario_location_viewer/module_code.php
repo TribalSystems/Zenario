@@ -96,7 +96,7 @@ class zenario_location_viewer extends module_base_class {
 				if (!empty($locationDetails['region_id'])) {
 					if ($region = zenario_country_manager::getRegionNamesInCurrentVisitorLanguage("active", $locationDetails['country_id'], $locationDetails['region_id'])) {
 						foreach ($region as $key => $value) {
-							$locationDetails['region'] = zenario_country_manager::adminPhrase(cms_core::$langId,$value);
+							$locationDetails['region'] = zenario_country_manager::adminPhrase(cms_core::$visLang,$value);
 							break;
 						}
 					}
@@ -110,7 +110,7 @@ class zenario_location_viewer extends module_base_class {
 				$locationDetails['image_width'] = 
 				$locationDetails['image_height'] = 
 				$locationDetails['image_url'] = false;
-				imageLink(
+				Ze\File::imageLink(
 					$locationDetails['image_width'], 
 					$locationDetails['image_height'], 
 					$locationDetails['image_url'], 
@@ -134,9 +134,9 @@ class zenario_location_viewer extends module_base_class {
 				'zenario_location_viewer', 
 				'initMap', 
 				'object_in_' . $this->containerId,
-				arrayKey($locationDetails,'latitude'),
-				arrayKey($locationDetails,'longitude'),
-				arrayKey($locationDetails,'map_zoom')
+				($locationDetails['latitude'] ?? false),
+				($locationDetails['longitude'] ?? false),
+				($locationDetails['map_zoom'] ?? false)
 			);
 		}
 		
@@ -228,9 +228,9 @@ class zenario_location_viewer extends module_base_class {
 				return $this->setting('location');
 			case 'location_from_url':
 				if($this->setting('use_custom_url_request') && ($urlRequest = $this->setting('url_request'))){
-					return get($urlRequest);
+					return ($_GET[$urlRequest] ?? false);
 				}else{
-					return get('l_id');
+					return ($_GET['l_id'] ?? false);
 				}
 		}
 		return false;

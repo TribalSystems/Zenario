@@ -16,9 +16,10 @@
 				<div class="field_type" data-type="url"><span class="url"></span><h4>URL</h4></div>
 				<div class="field_type" data-type="attachment"><span class="attachment"></span><h4>Attachment</h4></div>
 				<div class="field_type" data-type="restatement"><span class="restatement"></span><h4>Mirrored</h4></div>
-				<div class="field_type" data-type="calculated"><span class="calculated"></span><h4>Calculated</h4></div>
+				<div class="field_type" data-type="document_upload"><span class="document_upload"></span><h4>Multi-upload</h4></div>
 				<div class="field_type" data-type="section_description"><span class="section_description"></span><h4>Subheading</h4></div>
 				<div class="field_type" data-type="repeat_start"><span class="repeat_start"></span><h4>Repeat block</h4></div>
+				<div class="field_type" data-type="calculated"><span class="calculated"></span><h4>Calculated</h4></div>
 			</div>
 		</div>
 		<div class="field_type_list_header field_type_section">
@@ -31,7 +32,7 @@
 		</div>
 		<div class="field_type_list_header field_type_section">
 			<h5>Linked fields</h5>
-			<p>Add fields that connect this form with the Users Database.</p>
+			<p>Add fields that connect this form with the <a href="{{m.link_to_dataset|e}}" target="_blank">Users Dataset</a>.</p>
 		</div>
 		<div id="organizer_linked_field_type_list" class="field_type_list field_type_section">
 			{{zenarioT.microTemplate('zenario_organizer_form_builder_dataset_tab', m.datasetTabs)}}
@@ -46,14 +47,14 @@
 						<input class="form_settings" type="button" value="Form settings"/>
 					</div>
 					<div id="zenario_field_details_header_content" class="field_details_header_content">
-						<div class="field_name">
+						<div class="field_name {{m.type|e}}">
 							
 							<div class="view_mode" <% if (m.just_added) { %>style="display:none;"<% } %>>
 								<h5>{{m.name|e}}</h5>
 								<span class="edit_field_name_button">Edit</span>
 							</div>
 							<div class="edit_mode" <% if (!m.just_added) { %>style="display:none;"<% } %>>
-								<input name="name" id="field__name" type="text" value="{{m.name|e}}" maxlength="255"/>
+								<input name="name" id="field__name" type="text" value="{{m.name|e}}" maxlength="255" placeholder="Field name (admin use only)"/>
 								<span class="done_field_name_button">Done</span>
 							</div>
 							
@@ -62,7 +63,7 @@
 							<span class="add_new_field">Add new field</span>
 						</div>
 						<div class="field_info">
-							<span class="field_type_message">{{m.type|e}}</span>
+							<span class="field_type_message">{{m.typePhrase|e}}</span>
 						</div> 
 					</div>
 				</div>

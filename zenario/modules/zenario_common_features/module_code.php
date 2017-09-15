@@ -30,6 +30,101 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 class zenario_common_features extends module_base_class {
 	
+	
+	
+	public static function uploadDocument($filepath, $filename, $folderId = false) {
+		$fileId = Ze\File::addToDatabase('hierarchial_file', $filepath, $filename, false,false,true);
+		zenario_common_features::createDocument($fileId, $filename, $folderId);
+	}
+	
+	public static function createDocument($fileId, $filename, $folderId) {
+		//Get last ordinal within folder
+		$sql = '
+			SELECT MAX(ordinal) + 1
+			FROM ' . DB_NAME_PREFIX . 'documents
+			WHERE folder_id = ' . (int)($folderId ? $folderId : 0);
+		$result = sqlSelect($sql);
+		$row = sqlFetchRow($result);
+		$ordinal = $row[0] ? $row[0] : 1;
+		
+		$documentProperties = array(
+			'type' => 'file',
+			'file_id' => $fileId,
+			'folder_id' => 0,
+			'filename' => $filename,
+			'file_datetime' => date("Y-m-d H:i:s"),
+			'ordinal' => $ordinal);
+		
+		//Copy privacy if a document with the same file already exists
+		$docWithSameFile = getRow('documents', array('privacy', 'filename'), array('file_id' => $fileId));
+		if ($docWithSameFile) {
+			$documentProperties['privacy'] = $docWithSameFile['privacy'];
+			$documentProperties['filename'] = $docWithSameFile['filename'];
+		}
+		
+		//Delete any redirects that redirect the document to a different document
+		$hasRedirect = false;
+		$result = getRows('document_public_redirects', array('path'), array('file_id' => $fileId));
+		while ($redirect = sqlFetchAssoc($result)) {
+			$parts = explode('/', $redirect['path']);
+			deleteCacheDir(CMS_ROOT . 'public/downloads/' . $parts[0]);
+			$hasRedirect = true;
+		}
+		deleteRow('document_public_redirects', array('file_id' => $fileId));
+		
+		
+		$extraProperties = zenario_common_features::addExtractToDocument($fileId);
+		$documentProperties = array_merge($documentProperties, $extraProperties);
+
+		if ($folderId) {
+			$documentProperties['folder_id'] = $folderId;
+		}
+		
+		if ($documentId = insertRow('documents', $documentProperties)) {
+			zenario_common_features::processDocumentRules($documentId);
+			
+			//If there was a redirect, this document should be public
+			if ($hasRedirect) {
+				zenario_common_features::generateDocumentPublicLink($documentId);
+			}
+		}
+		return $documentId;
+	}
+	
+	public static function createFolder($name, $parentId = false, $makeNameUnqiue = false) {
+		$name = mb_substr(trim($name), 0, 250, 'UTF-8');
+		$nameExists = checkRowExists('documents', ['folder_name' => $name, 'type' => 'folder', 'folder_id' => $parentId]);
+		if ($nameExists) {
+			//Ensure this folder has a unique name on it's level by adding a (1) to the end
+			if ($makeNameUnqiue) {
+				if (!preg_match('/\s\(\d+\)$/', $name)) {
+					$name .= ' (0)';
+				}
+				while (true) {
+					//Increment number
+					$name = preg_replace_callback('/\((\d+)\)$/', function($matches) {
+						return '(' . ++$matches[1] . ')';
+					}, $name);
+					//Check again
+					if (!checkRowExists('documents', ['folder_name' => $name, 'type' => 'folder', 'folder_id' => $parentId])) {
+						break;
+					}
+				}
+			} else {
+				return false;
+			}
+		}
+		return insertRow(
+			'documents',
+			array(
+				'type' => 'folder',
+				'folder_name' => $name,
+				'folder_id' => $parentId,
+				'ordinal' => 0
+			)
+		);
+	}
+	
 	public static function deleteHierarchicalDocumentPubliclink($documentId, $documentDeleted = false) {
 		$document = getRow('documents', array('id', 'file_id'), $documentId);
 		$file = getRow('files',  array('short_checksum'), $document['file_id']);
@@ -66,6 +161,7 @@ class zenario_common_features extends module_base_class {
 
 	public static function deleteHierarchicalDocument($documentId) {
 		$details = getRow('documents', array('type', 'file_id', 'thumbnail_id'), $documentId);
+		sendSignal('eventDocumentDeleted', array($documentId));
 		
 		if ($details && $details['type'] == 'folder') {
 			deleteRow('documents', array('id' => $documentId));
@@ -127,7 +223,7 @@ class zenario_common_features extends module_base_class {
 		$documentProperties = array();
 		$extract = array();
 		$thumbnailId = false;
-		updateDocumentPlainTextExtract($file_id, $extract, $thumbnailId);
+		Ze\File::updateDocumentPlainTextExtract($file_id, $extract, $thumbnailId);
 		
 		if ($extract['extract']) {
 			$documentProperties['extract'] = $extract['extract'];
@@ -149,7 +245,7 @@ class zenario_common_features extends module_base_class {
 			array('id' => $document['file_id'])
 		);
 		if($file['filename']) {
-			if (cleanDownloads()) {
+			if (cleanCacheDir()) {
 				$dirPath = createCacheDir($file['short_checksum'], 'public/downloads', false);
 			}
 			if (!$dirPath) {
@@ -161,7 +257,7 @@ class zenario_common_features extends module_base_class {
 			$symPath = $symFolder . $document['filename'];
 			
 			$frontLink = $dirPath . $document['filename'];
-			if (!windowsServer() && ($path = docstoreFilePath($file['id'], false))) {
+			if (!windowsServer() && ($path = Ze\File::docstorePath($file['id'], false))) {
 				if (!file_exists($symPath)) {
 					if(!file_exists($symFolder)) {
 						mkdir($symFolder);

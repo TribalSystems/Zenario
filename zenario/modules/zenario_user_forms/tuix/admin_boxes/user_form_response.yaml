@@ -10,7 +10,7 @@ zenario_user_form_response:
         form_fields:
             label: Fields
             edit_mode:
-                enabled: true
+                enabled: false
             fields:
                 response_datetime:
                     label: 'Date/Time Responded:'
@@ -21,3 +21,6 @@ zenario_user_form_response:
                     label: 'CRM response:'
                     type: textarea
                     readonly: true
+                data:
+                    snippet:
+                        html: ''

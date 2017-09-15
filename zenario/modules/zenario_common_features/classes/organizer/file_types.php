@@ -46,7 +46,7 @@ class zenario_common_features__organizer__file_types extends module_base_class {
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
 		if ($path != 'zenario__administration/panels/file_types') return;
 		
-		if (post('delete') && checkPriv('_PRIV_EDIT_CONTENT_TYPE')) {
+		if (($_POST['delete'] ?? false) && checkPriv('_PRIV_EDIT_CONTENT_TYPE')) {
 			foreach (explodeAndTrim($ids) as $id) {
 				deleteRow('document_types', array('type' => decodeItemIdForOrganizer($id), 'custom' => 1));
 			}

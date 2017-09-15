@@ -39,7 +39,7 @@ class zenario_extranet_change_password extends zenario_extranet {
 		
 		$this->manageCookies();
 		
-		if (post('extranet_change_password')) {
+		if ($_POST['extranet_change_password'] ?? false) {
 			if ($this->changePassword()) {
 				$this->message = $this->phrase('_PASSWORD_CHANGED');
 				$this->mode = 'modeLoggedIn';
@@ -71,13 +71,13 @@ class zenario_extranet_change_password extends zenario_extranet {
 	//Attempt to change a user's password
 	protected function changePassword() {
 		
-		$errors = $this->validatePassword(post('extranet_new_password'),post('extranet_new_password_confirm'),post('extranet_password'),get_class($this),userId());
+		$errors = $this->validatePassword($_POST['extranet_new_password'] ?? false,($_POST['extranet_new_password_confirm'] ?? false),($_POST['extranet_password'] ?? false),get_class($this),userId());
 		
 		if (count($errors)) {
 			$this->errors = array_merge ($this->errors, $errors);
 			return false;
 		} else {
-			setUsersPassword(userId(), post('extranet_new_password'));
+			setUsersPassword(userId(), ($_POST['extranet_new_password'] ?? false));
 			return true;
 		}
 	}

@@ -48,8 +48,8 @@ class zenario_common_features__admin_boxes__view_source_code extends module_base
 			
 			case 'framework':
 				
-				$moduleId = ifNull(request('refiner__module'), request('moduleId'));
-				$framework = decodeItemIdForOrganizer(ifNull(request('id'), request('framework')));
+				$moduleId = ifNull($_REQUEST['refiner__module'] ?? false, ($_REQUEST['moduleId'] ?? false));
+				$framework = decodeItemIdForOrganizer(ifNull($_REQUEST['id'] ?? false, ($_REQUEST['framework'] ?? false)));
 				
 				if ($module = getModuleDetails($moduleId)) {
 					$file = frameworkPath($framework, $module['class_name'], true);
@@ -63,9 +63,9 @@ class zenario_common_features__admin_boxes__view_source_code extends module_base
 			case 'skin_file':
 				
 				
-				$skinId = decodeItemIdForOrganizer(request('refiner__skin'));
+				$skinId = decodeItemIdForOrganizer($_REQUEST['refiner__skin'] ?? false);
 				$filename =
-				$subpath = decodeItemIdForOrganizer(request('id'));
+				$subpath = decodeItemIdForOrganizer($_REQUEST['id'] ?? false);
 				
 				if (strpos($subpath, './') === false
 				 && strpos($subpath, '.\\') === false

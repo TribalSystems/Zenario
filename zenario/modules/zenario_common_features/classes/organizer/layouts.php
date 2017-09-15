@@ -91,15 +91,15 @@ class zenario_common_features__organizer__layouts extends module_base_class {
 			$panel['title'] = adminPhrase('Layouts available for the "[[name]]" content type', array('name' => getContentTypeName($refinerId)));
 			$panel['no_items_message'] = adminPhrase('There are no layouts available for the "[[name]]" content type', array('name' => getContentTypeName($refinerId)));
 		
-		} elseif (get('refiner__module_usage')) {
+		} elseif ($_GET['refiner__module_usage'] ?? false) {
 			$mrg = array(
-				'name' => getModuleDisplayName(get('refiner__module_usage')));
+				'name' => getModuleDisplayName($_GET['refiner__module_usage'] ?? false));
 			$panel['title'] = adminPhrase('Layouts on which the module "[[name]]" is used (layout layer)', $mrg);
 			$panel['no_items_message'] = adminPhrase('There are no layouts using the module "[[name]]".', $mrg);
 		
-		} elseif (get('refiner__plugin_instance_usage')) {
+		} elseif ($_GET['refiner__plugin_instance_usage'] ?? false) {
 			$mrg = array(
-				'name' => getPluginInstanceName(get('refiner__plugin_instance_usage')));
+				'name' => getPluginInstanceName($_GET['refiner__plugin_instance_usage'] ?? false));
 			$panel['title'] = adminPhrase('Layouts on which the plugin "[[name]]" is used (layout layer)', $mrg);
 			$panel['no_items_message'] = adminPhrase('There are no layouts using the plugin "[[name]]".', $mrg);
 		
@@ -196,7 +196,7 @@ class zenario_common_features__organizer__layouts extends module_base_class {
 		if ($path != 'zenario__layouts/panels/layouts') return;
 		
 		//Delete a template if it is not in use
-		if (post('delete') && checkPriv('_PRIV_EDIT_TEMPLATE')) {
+		if (($_POST['delete'] ?? false) && checkPriv('_PRIV_EDIT_TEMPLATE')) {
 			foreach (explodeAndTrim($ids) as $id) {
 				if (!checkRowExists('content_types', array('default_layout_id' => $id))
 				 && !checkRowExists('content_item_versions', array('layout_id' => $id))) {
@@ -206,7 +206,7 @@ class zenario_common_features__organizer__layouts extends module_base_class {
 			checkForChangesInCssJsAndHtmlFiles($runInProductionMode = true, $forceScan = true);
 		
 		//Archive a template
-		} elseif (post('archive') && checkPriv('_PRIV_EDIT_TEMPLATE')) {
+		} elseif (($_POST['archive'] ?? false) && checkPriv('_PRIV_EDIT_TEMPLATE')) {
 			foreach (explodeAndTrim($ids) as $id) {
 				if (!checkRowExists('content_types', array('default_layout_id' => $id))) {
 					updateRow('layouts', array('status' => 'suspended'), $id);
@@ -214,7 +214,7 @@ class zenario_common_features__organizer__layouts extends module_base_class {
 			}
 		
 		//Restore a template
-		} elseif (post('restore') && checkPriv('_PRIV_EDIT_TEMPLATE')) {
+		} elseif (($_POST['restore'] ?? false) && checkPriv('_PRIV_EDIT_TEMPLATE')) {
 			foreach (explodeAndTrim($ids) as $id) {
 				updateRow('layouts', array('status' => 'active'), $id);
 			}

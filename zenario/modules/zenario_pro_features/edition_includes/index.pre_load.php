@@ -51,9 +51,9 @@ function zenario_page_caching__logStats($stats) {
 	touch($dir. 'accessed');
 	if (!file_exists($dir. 'from')) {
 		touch($dir. 'from');
-		chmod($dir. 'to', 0666);
-		chmod($dir. 'accessed', 0666);
-		chmod($dir. 'from', 0666);
+		@chmod($dir. 'to', 0666);
+		@chmod($dir. 'accessed', 0666);
+		@chmod($dir. 'from', 0666);
 	}
 	
 	foreach ($stats as $stat) {
@@ -62,7 +62,7 @@ function zenario_page_caching__logStats($stats) {
 			file_put_contents($dir. $stat, ++$hits);
 		} else {
 			file_put_contents($dir. $stat, 1);
-			chmod($dir. $stat, 0666);
+			@chmod($dir. $stat, 0666);
 		}
 	}
 	
@@ -95,14 +95,14 @@ if (!isset($_SESSION['admin_logged_into_site'])
 	//We can work all of these out exactly except for "g", as registerGetRequest() lets module developers register
 	//anything dynamically. There's a bit of logic later that handles this by checking both cases.
 	
-	$chToSaveStatus = array();
+	$chToSaveStatus = [];
 	$chToSaveStatus['u'] = 'u';
 	$chToSaveStatus['g'] = 'g';
 	$chToSaveStatus['p'] = 'p';
 	$chToSaveStatus['s'] = 's';
 	$chToSaveStatus['c'] = 'c';
 	
-	$chToLoadStatus = array();
+	$chToLoadStatus = [];
 	$chToLoadStatus['u'] = '';
 	$chToLoadStatus['g'] = '';
 	$chToLoadStatus['p'] = '';
@@ -116,23 +116,31 @@ if (!isset($_SESSION['admin_logged_into_site'])
 		$chToLoadStatus['p'] = 'p';
 	}
 	
-	$chKnownRequests = array();
-	if (!empty($_REQUEST['cID'])) {
-		$chKnownRequests[''] = $_REQUEST['cID'];
-	}
-	foreach (array('cType', 'slotName', 'instanceId', 'method_call') as $request) {
-		if (!empty($_REQUEST[$request])) {
-			$chKnownRequests[$request] = $_REQUEST[$request];
+	//Look out for core requests. These should be stored separately.
+	//Also, to save space, we'll shorten the names.
+	$chKnownRequests = [];
+	foreach ($_REQUEST as $request => &$value) {
+		if (isset(cms_core::$cacheCoreVars[$request])) {
+			$request = cms_core::$cacheCoreVars[$request];
+			$chKnownRequests[$request] = $value;
 		}
 	}
-	
+		
+	//Note down any non-core GET requests
 	ksort($_GET);
 	$chAllRequests = $chKnownRequests;
 	foreach ($_GET as $request => &$value) {
-		if ($request != 'cID' && $request != 'cType' && $request != 'instanceId' && $request != 'slotName') {
+		if (!isset(cms_core::$cacheCoreVars[$request])) {
+			//Use "z" as an escape character.
+			//Anything that's one character long, or already begins with a z, should have a z put in front of it.
+			if ($request[0] === 'z' || !isset($request[1])) {
+				$request = 'z'. $request;
+			}
 			$chAllRequests[$request] = $value;
 		}
 	}
+	
+	
 	
 	foreach ($_SESSION as $request => &$value) {
 		if (substr($request, 0, 11) != 'can_cache__'
@@ -151,6 +159,7 @@ if (!isset($_SESSION['admin_logged_into_site'])
 			break;
 		}
 	}
+	unset($value);
 	
 	
 	//Get two checksums from the GET requests.

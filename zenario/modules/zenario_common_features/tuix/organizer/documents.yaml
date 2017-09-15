@@ -3,6 +3,7 @@
 zenario__content:
     panels:
         documents:
+            priv: _PRIV_VIEW_DOCUMENTS
             item:
                 css_class: zenario_file_item
             title: Documents
@@ -36,6 +37,14 @@ zenario__content:
                     db_column: d.id
                     align_right: true
                     width: xxsmall
+                file_id:
+                    title: fileID
+                    db_column: f.id
+                    hidden: true
+                short_checksum:
+                    title: Short checksum
+                    db_column: f.short_checksum
+                    hidden: true
                 ordinal:
                     title: Ordinal
                     db_column: d.ordinal
@@ -57,9 +66,12 @@ zenario__content:
                     css_class: 'zenario_document_title'
                     
                     document_line_number: 1
+                filename:
+                    db_column: d.filename
                 filesize:
                     title: Filesize
                     width: small
+                    db_column: f.size
                     show_by_default: true
                     
                     document_line_number: 1
@@ -90,6 +102,10 @@ zenario__content:
                     css_class: "zenario_document_sub_fields"
                     
                     document_line_number: 2
+                extract_snippet:
+                    title: extract snippet
+                    db_column: SUBSTR(extract, 1, 40) as extract
+                    hidden: true
                 folder_file_count: {}
                 has_image:
                     db_column: d.thumbnail_id
@@ -105,13 +121,14 @@ zenario__content:
                     format: yes_or_no
             collection_buttons:
                 upload:
-                    hide_in_select_mode: true
+                    priv: _PRIV_EDIT_DOCUMENTS
                     label: Upload documents
                     css_class: zenario_create_a_new
                     hide_on_filter: true
                     admin_box:
                         path: zenario_document_upload
                 add_folder:
+                    priv: _PRIV_EDIT_DOCUMENTS
                     label: Create a folder
                     css_class: zenario_create_a_new
                     hide_on_filter: true
@@ -145,7 +162,7 @@ zenario__content:
                 
             item_buttons:
                 upload:
-                    hide_in_select_mode: true
+                    priv: _PRIV_EDIT_DOCUMENTS
                     label: Upload to selected folder
                     css_class: zenario_create_a_new
                     hide_on_filter: true
@@ -248,6 +265,7 @@ zenario__content:
                     visible_if_for_any_selected_items: >
                         !zenario.engToBoolean(item.dont_autoset_metadata)
                 allow_autoset_metadata:
+                    priv: _PRIV_EDIT_DOCUMENTS
                     parent: advanced_dropdown
                     hide_in_select_mode: true
                     label: Allow auto-set

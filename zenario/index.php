@@ -1,5 +1,4 @@
 <?php 
-
 /*
  * Copyright (c) 2017, Tribal Limited
  * All rights reserved.
@@ -69,11 +68,13 @@ require 'basicheader.inc.php';
 startSession();
 
 //Run pre-load actions
+require CMS_ROOT. 'zenario/api/cache_functions.inc.php';
 require editionInclude('index.pre_load');
 
 define('CHECK_IF_MAJOR_REVISION_IS_NEEDED', true);
 require CMS_ROOT. 'zenario/visitorheader.inc.php';
 require CMS_ROOT. 'zenario/includes/twig.inc.php';
+require CMS_ROOT. 'zenario/includes/twig.frameworks.inc.php';
 
 
 if ($checkPriv = checkPriv()) {
@@ -114,7 +115,7 @@ require editionInclude('index.pre_header');
 
 
 //Look up more details on the content item we are going to show
-$status = getShowableContent($content, $version, $cID, $cType, request('cVersion'), $checkRequestVars = true);
+$status = getShowableContent($content, $version, $cID, $cType, ($_REQUEST['cVersion'] ?? false), $checkRequestVars = true);
 	//N.b. an empty string ('') is used for a private page, if a visitor is not logged in
 	//A 0 is used if a visitor is logged in and still can't see the page
 
@@ -187,12 +188,12 @@ $overrideFrameworkAndCSS = false;
 $methodCall = isset($_REQUEST['method_call'])? $_REQUEST['method_call'] : false;
 
 if (($methodCall == 'showSingleSlot' || $methodCall == 'showIframe')
- && (request('instanceId') || request('slotName'))) {
+ && (($_REQUEST['instanceId'] ?? false) || ($_REQUEST['slotName'] ?? false))) {
 	
-	$specificInstance = request('instanceId');
-	if ($specificSlot = request('slotName')) {
-		if (!$hideLayout = (bool) request('hideLayout')) {
-			$fakeLayout = (bool) request('fakeLayout');
+	$specificInstance = $_REQUEST['instanceId'] ?? false;
+	if ($specificSlot = $_REQUEST['slotName'] ?? false) {
+		if (!$hideLayout = (bool) ($_REQUEST['hideLayout'] ?? false)) {
+			$fakeLayout = (bool) ($_REQUEST['fakeLayout'] ?? false);
 		}
 	}
 	
@@ -218,7 +219,7 @@ getSlotContents(
 	cms_core::$layoutId, cms_core::$templateFamily, cms_core::$templateFileBaseName,
 	$specificInstance, $specificSlot,
 	false, true, false, $overrideSettings, $overrideFrameworkAndCSS);
-useGZIP(setting('compress_web_pages'));
+useGZIP();
 
 
 
@@ -296,6 +297,7 @@ echo
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8" />';
 
+
 //If relative URLs with slashes are in use, add the "base" path to make it clear what the relative URL of this page should be.
 //(N.b. most methods in the CMS automatically switch to using the full URL in this case, but this statement should help catch
 // any hardcoded links that need correcting, e.g. in WYSIWYG Eidtors.)
@@ -305,14 +307,23 @@ if (setting('mod_rewrite_slashes')) {
 }
 
 echo '
-<title>', htmlspecialchars(cms_core::$pageTitle), '</title>
+<title>', htmlspecialchars(cms_core::$pageTitle), '</title>';
+
+//Don't allow placeholder pages to be indexed by search engines!
+if (cms_core::$langId !== cms_core::$visLang) {
+	echo '
+<meta name="robots" content="noindex" />';
+
+} else {
+	echo '
 <link rel="canonical" href="', htmlspecialchars($canonicalURL), '"/>
 <meta property="og:url" content="', htmlspecialchars($canonicalURL), '"/>
 <meta property="og:type" content="', htmlspecialchars(cms_core::$pageOGType), '"/>
 <meta property="og:title" content="', htmlspecialchars(cms_core::$pageTitle), '"/>';
+}
 
 $imageWidth = $imageHeight = $imageURL = false;
-if (cms_core::$pageImage && imageLink($imageWidth, $imageHeight, $imageURL, cms_core::$pageImage)) {
+if (cms_core::$pageImage && Ze\File::imageLink($imageWidth, $imageHeight, $imageURL, cms_core::$pageImage)) {
 	echo '
 <meta property="og:image" content="', htmlspecialchars(absCMSDirURL().$imageURL), '"/>';
 	if (httpOrHttps() == "https://") {

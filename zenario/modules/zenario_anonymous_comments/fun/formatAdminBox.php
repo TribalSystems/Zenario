@@ -33,10 +33,10 @@ switch ($path) {
 			!$values['moderation/enable_report_a_post'];
 
 		$box['tabs']['moderation']['fields']['email_address_for_reports']['hidden'] = 
-			(!$values['moderation/enable_report_a_post'] && !arrayKey($values,'moderation/comments_require_approval'));
+			(!$values['moderation/enable_report_a_post'] && !($values['moderation/comments_require_approval'] ?? false));
 
 		$box['tabs']['moderation']['fields']['email_template_for_approve_requests']['hidden'] = 
-			!arrayKey($values,'moderation/comments_require_approval');
+			!($values['moderation/comments_require_approval'] ?? false);
 
 		
 		if (isset($values['notification/notification_email_template'])) {

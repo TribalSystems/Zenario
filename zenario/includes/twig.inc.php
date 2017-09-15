@@ -1,33 +1,59 @@
 <?php
+/*
+ * Copyright (c) 2017, Tribal Limited
+ * All rights reserved.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of Zenario, Tribal Limited nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL TRIBAL LTD BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
-require CMS_ROOT. 'zenario/libraries/bsd/twig/lib/Twig/Autoloader.php';
-Twig_Autoloader::register();
-
-require CMS_ROOT. 'zenario/libraries/mit/twig-extensions/lib/Twig/Extensions/Autoloader.php';
-Twig_Extensions_Autoloader::register();
 
 
-
-//A modified copy of Twig_Cache_Filesystem in zenario/libraries/bsd/twig/lib/Twig/Loader/Filesystem.php
+//An implementation of Twig_LoaderInterface
 //It works with both raw source code and paths to a twig file.
 	//If the $name starts with a \n character, we'll treat it as raw code.
 	//Otherwise, we'll assume it's a path to a twig file (relative to the CMS_ROOT).
 class Zenario_Twig_Loader implements Twig_LoaderInterface {
     
-    public function getSource($name) {
-    	if (substr($name, 0, 1) === "\n") {
-    		return $name;
-    	} else {
-	    	return file_get_contents(CMS_ROOT. $name);
-	    }
-    }
+    //public function getSource($name) {
+    //	if (substr($name, 0, 1) === "\n") {
+    //		return $name;
+    //	} else {
+	//    	return file_get_contents(CMS_ROOT. $name);
+	//    }
+    //}
 
     public function getCacheKey($name) {
+    	return $name;
+    }
+    
+
+    public function getSourceContext($name) {
     	if (substr($name, 0, 1) === "\n") {
-    		return $name;
+	        return new Twig_Source($name, $name);
     	} else {
-	    	return $name;
+    		$path = CMS_ROOT. $name;
+	        return new Twig_Source(file_get_contents($path), $name, $path);
 	    }
     }
 
@@ -38,10 +64,45 @@ class Zenario_Twig_Loader implements Twig_LoaderInterface {
 	        return filemtime(CMS_ROOT. $name) <= $time;
 	    }
     }
+    
+
+    public function exists($name) {
+    	if (substr($name, 0, 1) === "\n") {
+    		return true;
+    	} else {
+	        return file_exists(CMS_ROOT. $name);
+	    }
+    }
 }
 
 
-//A modified copy of Twig_Cache_Filesystem in zenario/libraries/bsd/twig/lib/Twig/Cache/Filesystem.php
+
+
+
+//A copy of the above that always only works with raw source code
+class Zenario_Twig_String_Loader implements Twig_LoaderInterface {
+    
+    public function getCacheKey($name) {
+    	return $name;
+    }
+    
+
+    public function getSourceContext($name) {
+        //return new Twig_Source($name, sha1($name));
+        return new Twig_Source($name, $name);
+    }
+
+    public function isFresh($name, $time) {
+   		return true;
+    }
+
+    public function exists($name) {
+   		return true;
+    }
+}
+
+
+//An implementation of Twig_CacheInterface that saves files to Zenario's cache directory.
 //The main reason for the rewrite is so that we use our createCacheDir() function, which has a working garbage collector.
 //(Twig doesn't do any garbage collection so old frameworks can clog up the cache/ directory!)
 class Zenario_Twig_Cache implements Twig_CacheInterface {
@@ -53,11 +114,17 @@ class Zenario_Twig_Cache implements Twig_CacheInterface {
 	}
 
     public function load($key) {
-    	touch(dirname($key). '/accessed');
-        @include_once $key;
+        if (file_exists($key)) {
+			touch(dirname($key). '/accessed');
+			@include_once $key;
+		}
     }
 
     public function write($key, $content) {
+    	
+    	//var_dump('writing', $key, $content);
+    	
+    	
         $dir = basename(dirname($key));
         createCacheDir($dir, 'cache/frameworks', false);
         file_put_contents($key, $content);
@@ -65,49 +132,10 @@ class Zenario_Twig_Cache implements Twig_CacheInterface {
     }
 
     public function getTimestamp($key) {
+        if (!file_exists($key)) {
+            return 0;
+        }
+
         return (int) @filemtime($key);
     }
 }
-
-
-//Run the garbage collector and create the cache/frameworks/ directory if it wasn't already created
-cleanDownloads();
-
-
-//Initialise Twig
-cms_core::$twig = new Twig_Environment(new Zenario_Twig_Loader(), array(
-	'cache' => new Zenario_Twig_Cache(),
-	'autoescape' => false,
-	'auto_reload' => true
-));
-
-
-//Add the I18n extension to add support for translating text
-cms_core::$twig->addExtension(new Twig_Extensions_Extension_I18n());
-
-
-//Create instances of any modules that say they are usable in Twig Frameworks
-foreach (sqlFetchAssocs("
-	SELECT id, class_name, status
-	FROM ". DB_NAME_PREFIX. "modules
-	WHERE for_use_in_twig = 1"
-) as $module) {
-	if (inc($module)) {
-		$className = $module['class_name'];
-		cms_core::$twigModules[$className] = new $className;
-	}
-}
-
-
-//Add all of the whitelisted functions
-function readTwigWhitelist() {
-	if (!empty(cms_core::$whitelist)) {
-		foreach (cms_core::$whitelist as $fun) {
-			cms_core::$twig->addFunction(new Twig_SimpleFunction($fun, $fun));
-		}
-	}
-	cms_core::$whitelist = array();
-}
-readTwigWhitelist();
-
-

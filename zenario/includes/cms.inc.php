@@ -72,14 +72,57 @@ if (!defined('SUBDIRECTORY')) {
 //Add includes from the CMS
 require CMS_ROOT. 'zenario/api/admin_functions.inc.php';
 require CMS_ROOT. 'zenario/api/array_and_object_functions.inc.php';
+require_once CMS_ROOT. 'zenario/api/cache_functions.inc.php';
 require CMS_ROOT. 'zenario/api/content_item_functions.inc.php';
 require_once CMS_ROOT. 'zenario/api/database_functions.inc.php';
-require CMS_ROOT. 'zenario/api/file_functions.inc.php';
 require CMS_ROOT. 'zenario/api/link_path_and_url_core_functions.inc.php';
 require CMS_ROOT. 'zenario/api/string_functions.inc.php';
 require CMS_ROOT. 'zenario/api/system_functions.inc.php';
 require CMS_ROOT. 'zenario/api/user_functions.inc.php';
 require CMS_ROOT. 'zenario/includes/phrases.inc.php';
+
+
+if (is_dir(CMS_ROOT. 'zenario_custom/modules')
+ && count(scandir(CMS_ROOT. 'zenario_custom/modules')) > 2) {
+	//These functions have been moved to an encapsulated class using a PSR-4 autoloader.
+	//Some global functions pointing to them have been left here for now to not break backwards compatability
+	//with any client or third-party modules that might still use them.
+	require CMS_ROOT. 'zenario/api/file_functions.inc.php';
+}
+
+
+
+//These five functions are deprecated since php 7.0; please use the null coalescing operator (??) instead!
+function get($n) {
+	return $_GET[$n] ?? false;
+}
+
+function post($n) {
+	return $_POST[$n] ?? false;
+}
+
+function request($n) {
+	return $_REQUEST[$n] ?? false;
+}
+
+function session($n) {
+	return $_SESSION[$n] ?? false;
+}
+
+function arrayKey(&$a, $k) {
+	if (is_array($a) && isset($a[$k])) {
+		$result = &$a[$k];
+		$count = func_num_args();
+		for($i = 2; $i < $count; ++$i){
+			if(!is_array($result)) return false;
+			$arg = func_get_arg($i);
+			if(!isset($result[$arg])) return false;
+			$result = &$result[$arg];
+		}
+		return $result;
+	}
+	return false;
+}
 
 
 //Deprecated, please just use LATEST_REVISION_NO now
@@ -156,8 +199,8 @@ function showCookieConsentBox() {
 			case 'zenario_login':
 			case 'zenario_no_access':
 			case 'zenario_not_found':
-				$importantGetRequests['cID'] = request('cID');
-				if (!($importantGetRequests['cType'] = request('cType'))) {
+				$importantGetRequests['cID'] = $_REQUEST['cID'] ?? false;
+				if (!($importantGetRequests['cType'] = $_REQUEST['cType'] ?? false)) {
 					unset($importantGetRequests['cType']);
 				}
 		}
@@ -165,7 +208,7 @@ function showCookieConsentBox() {
 		//Add the logo
 		$logoURL = $logoWidth = $logoHeight = false;
 		if (setting('admin_link_logo') == 'custom'
-		 && (imageLink($logoWidth, $logoHeight, $logoURL, setting('admin_link_custom_logo'), 50, 50, $mode = 'resize', $offset = 0, $retina = true))) {
+		 && (Ze\File::imageLink($logoWidth, $logoHeight, $logoURL, setting('admin_link_custom_logo'), 50, 50, $mode = 'resize', $offset = 0, $retina = true))) {
 	
 			if (strpos($logoURL, '://') === false) {
 				$logoURL = absCMSDirURL(). $logoURL;
@@ -201,7 +244,7 @@ function showCookieConsentBox() {
 	switch (setting('cookie_require_consent')) {
 		case 'implied':
 			//Implied consent - show the cookie message, just once. Continuing to use the site counts as acceptance.
-			if (!empty($_COOKIE['cookies_accepted']) || session('cookies_accepted')) {
+			if (!empty($_COOKIE['cookies_accepted']) || ($_SESSION['cookies_accepted'] ?? false)) {
 				return;
 			}
 			
@@ -218,7 +261,7 @@ function showCookieConsentBox() {
 			//Explicit consent - show the cookie message until it is accepted or rejected, if the reject button is enabled.
 			if (cms_core::$cookieConsent == 'hide'
 			 || canSetCookie()
-			 || (cms_core::$cookieConsent != 'require') && session('cookies_rejected')) {
+			 || (cms_core::$cookieConsent != 'require') && ($_SESSION['cookies_rejected'] ?? false)) {
 				return;
 			}
 			
@@ -243,7 +286,7 @@ function showCookieConsentBox() {
 	switch (setting('cookie_require_consent')) {
 		case 'implied':
 			//Implied consent - show the cookie message, just once. Continuing to use the site counts as acceptance.
-			if (!empty($_COOKIE['cookies_accepted']) || session('cookies_accepted')) {
+			if (!empty($_COOKIE['cookies_accepted']) || ($_SESSION['cookies_accepted'] ?? false)) {
 				return;
 			}
 			
@@ -269,7 +312,7 @@ function showCookieConsentBox() {
 			//Explicit consent - show the cookie message until it is accepted or rejected, if the reject button is enabled.
 			if (cms_core::$cookieConsent == 'hide'
 			 || canSetCookie()
-			 || (cms_core::$cookieConsent != 'require') && session('cookies_rejected')) {
+			 || (cms_core::$cookieConsent != 'require') && ($_SESSION['cookies_rejected'] ?? false)) {
 				return;
 			}
 			
@@ -500,7 +543,7 @@ function tuixCacheDir($path) {
 	$file = explode('.', basename($path), 2);
 	$file = $file[0];
 	
-	cleanDownloads();
+	cleanCacheDir();
 	return createCacheDir($dir, $type = 'tuix', $onlyForCurrentVisitor = true, $ip = false). $file. '.json';
 }
 
@@ -1075,7 +1118,7 @@ function unsetAdminSession($destorySession = true) {
 	unset($_SESSION['privs']);
 	
 	if ($destorySession) {
-		if (session('admin_logged_into_site') == COOKIE_DOMAIN. SUBDIRECTORY. setting('site_id')) {
+		if (($_SESSION['admin_logged_into_site'] ?? false) == COOKIE_DOMAIN. SUBDIRECTORY. setting('site_id')) {
 			if (isset($_COOKIE[session_name()])) {
 				clearCookie(session_name());
 			}
@@ -1337,251 +1380,295 @@ function resolveContentItemFromRequest(&$cID, &$cType, &$redirectNeeded, &$alias
 		$aliasInURL = $post['cID'];
 	}
 	
-	if (!$reqLangId && !$aliasInURL) {
-		//Show one of the home pages if there's nothing in the request and no language specific domain
-		$equivId = cms_core::$homeEquivId;
-		$cType = cms_core::$homeCType;
+	//Attempt to work out what content item we're on, and break out of this logic as soon as it's resolved
+	do {
 	
-	} else {
-		
-		//Check for slashes in the alias
-		if (strpos($aliasInURL, '/') !== false) {
-			
-			$hierarchicalAliasInURL = trim($aliasInURL, '/');
-			$slashes = explode('/', $hierarchicalAliasInURL);
-			
-			//For multilingual sites, check the first part of the URL for the requested language code.
-			//(Except if a language-specific domain was used above, in which case skip this.)
-			if ($multilingual
-			 && !$reqLangId
-			 && !empty($slashes[0])
-			 && isset(cms_core::$langs[$slashes[0]])) {
-				$reqLangId = array_shift($slashes);
-			}
-			
-			//Use the last bit of the URL to find the page.
-			$aliasInURL = array_pop($slashes);
-			
-			//Anything in the middle are the other aliases in the menu tree; currently these are just visual
-			//and are ignored.
-		
+		if (!$reqLangId && !$aliasInURL) {
+			//Show one of the home pages if there's nothing in the request and no language specific domain
+			$equivId = cms_core::$homeEquivId;
+			$cType = cms_core::$homeCType;
+	
 		} else {
-			//Check the request for a numeric cID, a string alias, and a language code separated by a comma.
-			$aliasInURL = explode(',', $aliasInURL);
 		
-			if (!empty($aliasInURL[1])) {
-				//Don't allow a language specific domain name *and* the language code in a comma
-				if ($languageSpecificDomain) {
-					$redirectNeeded = 301;
+			//Check for slashes in the alias
+			if (strpos($aliasInURL, '/') !== false) {
+			
+				$hierarchicalAliasInURL = trim($aliasInURL, '/');
+				$slashes = explode('/', $hierarchicalAliasInURL);
+			
+				//For multilingual sites, check the first part of the URL for the requested language code.
+				//(Except if a language-specific domain was used above, in which case skip this.)
+				if ($multilingual
+				 && !$reqLangId
+				 && !empty($slashes[0])
+				 && isset(cms_core::$langs[$slashes[0]])) {
+					$reqLangId = array_shift($slashes);
 				}
-				
-				$reqLangId = $aliasInURL[1];
-			}
 			
-			$aliasInURL = $aliasInURL[0];
-		}
+				//Use the last bit of the URL to find the page.
+				$aliasInURL = array_pop($slashes);
+			
+				//Anything in the middle are the other aliases in the menu tree; currently these are just visual
+				//and are ignored.
 		
-		//Catch the case where the language id is in the URL, and nothing else.
-		//This should be a link to the home page in that language.
-		if ($aliasInURL && isset(cms_core::$langs[$aliasInURL])) {
-			$reqLangId = $aliasInURL;
-			$aliasInURL = false;
-			
-			//N.b. this is not a valid URL is there is only one language on a site!
-			if (count(cms_core::$langs) < 2) {
-				$redirectNeeded = 301;
-			}
-		}
-		
-		//Language codes with no alias means the home page for that language
-		if ($reqLangId && !$aliasInURL) {
-			
-			langSpecialPage('zenario_home', $cID, $cType, $reqLangId, $languageMustMatch = true, $skipPermsCheck = true);
-			
-			//Slightly different logic depending on whether we are allowed slashes in the alias or not
-				//If so, this is a valid URL and we don't need to change it
-				//If not, it's not a valid URL, and we should rewrite it to show the alias.
-			//Also, language specific domains should trigger the same logic.
-			if (!$languageSpecificDomain && !setting('mod_rewrite_slashes')) {
-				$redirectNeeded = 301;
-			}
-			
-			return;
-		
-		//Link by numeric cID
-		} elseif (is_numeric($aliasInURL)) {
-			$cID = (int) $aliasInURL;
-			
-			if (!empty($request['cType'])) {
-				$cType = $request['cType'];
 			} else {
-				$cType = 'html';
-			}
-			
-			//Allow numeric cIDs with language codes, but redirect them to the correct URL
-			if ($reqLangId) {
-				langEquivalentItem($cID, $cType, $reqLangId);
-				$redirectNeeded = 301;
-			}
-			
-			//We know both the Content Item and language from the numeric id,
-			//so we can return straight away without looking up anything else.
-			return;
+				//Check the request for a numeric cID, a string alias, and a language code separated by a comma.
+				$aliasInURL = explode(',', $aliasInURL);
 		
-		//Link by tag id
-		} elseif (getCIDAndCTypeFromTagId($cID, $cType, $aliasInURL)) {
-			//Allow tag ids with language codes, but redirect them to the correct URL
-			if ($reqLangId && !$languageSpecificDomain) {
-				langEquivalentItem($cID, $cType, $reqLangId);
-				$redirectNeeded = 301;
-			}
-			
-			//Again we can return straight away as we know the specific Content Item
-			return;
-		
-		//Link by an alias
-		} else {
-			//Attempt to look up a page with this alias
-			$sql = "
-				SELECT id, type, equiv_id, language_id
-				FROM ". DB_NAME_PREFIX. "content_items
-				WHERE alias = '". sqlEscape($aliasInURL). "'
-				  AND status NOT IN ('trashed', 'deleted')
-				ORDER BY language_id";
-			
-			//If there was a language code in the URL, focus on the language that we're looking for
-			if ($reqLangId) {
-				$sql .= " = '". sqlEscape($reqLangId). "' DESC, language_id";
-			}
-			
-			//Get two rows, so we can tell if this alias was unique
-			$sql .= "
-				LIMIT 2";
-			
-			$result = sqlQuery($sql);
-			if ($row = sqlFetchAssoc($result)) {
-				$row2 = sqlFetchAssoc($result);
-			}
-			
-			//If the alias was not found, then we can't resolve it to a Content Item
-			if (!$row) {
-				$cID = false;
-				$cType = false;
-				return;
-			
-			//If there was only one result for that alias, we can use this straight away
-			//If there was a language specified and there was only one match for that language, we're also good to go
-			} elseif ($row && (
-				!$row2
-			 || ($reqLangId && $reqLangId == $row['language_id'] && $reqLangId != $row2['language_id'])
-			)) {
-				$cID = $row['id'];
-				$cType = $row['type'];
-				
-				//Redirect the case where we resolved a match, but the alias didn't actually match the language code
-				if ($reqLangId && $reqLangId != $row['language_id']) {
-					langEquivalentItem($cID, $cType, $reqLangId);
-					$redirectNeeded = 301;
-				
-				//If this was a hierarchical URL, but hierarchical URLs are disabled,
-				//we should redirect back to a page with a flat URL
-				} elseif ($hierarchicalAliasInURL !== false && !setting('mod_rewrite_slashes')) {
-					$redirectNeeded = 301;
-				
-				//If this was a hierarchical URL, check the URL was correct and redirect if not
-				} elseif ($hierarchicalAliasInURL !== false) {
-					$hierarchicalAlias = addHierarchicalAlias($row['equiv_id'], $row['type'], $row['language_id'], $aliasInURL);
-				
-					if ($hierarchicalAliasInURL != $hierarchicalAlias
-					 && $hierarchicalAliasInURL != $row['language_id']. '/'. $hierarchicalAlias) {
+				if (!empty($aliasInURL[1])) {
+					//Don't allow a language specific domain name *and* the language code in a comma
+					if ($languageSpecificDomain) {
 						$redirectNeeded = 301;
 					}
+				
+					$reqLangId = $aliasInURL[1];
 				}
 			
-				return;
+				$aliasInURL = $aliasInURL[0];
+			}
+		
+			//Catch the case where the language id is in the URL, and nothing else.
+			//This should be a link to the home page in that language.
+			if ($aliasInURL && isset(cms_core::$langs[$aliasInURL])) {
+				$reqLangId = $aliasInURL;
+				$aliasInURL = false;
 			
+				//N.b. this is not a valid URL is there is only one language on a site!
+				if (count(cms_core::$langs) < 2) {
+					$redirectNeeded = 301;
+				}
+			}
+		
+			//Language codes with no alias means the home page for that language
+			if ($reqLangId && !$aliasInURL) {
+			
+				langSpecialPage('zenario_home', $cID, $cType, $reqLangId, $languageMustMatch = true, $skipPermsCheck = true);
+			
+				//Slightly different logic depending on whether we are allowed slashes in the alias or not
+					//If so, this is a valid URL and we don't need to change it
+					//If not, it's not a valid URL, and we should rewrite it to show the alias.
+				//Also, language specific domains should trigger the same logic.
+				if (!$languageSpecificDomain && !setting('mod_rewrite_slashes')) {
+					$redirectNeeded = 301;
+				}
+			
+				break;
+		
+			//Link by numeric cID
+			} elseif (is_numeric($aliasInURL)) {
+				$cID = (int) $aliasInURL;
+			
+				if (!empty($request['cType'])) {
+					$cType = $request['cType'];
+				} else {
+					$cType = 'html';
+				}
+			
+				//Allow numeric cIDs with language codes, but redirect them to the correct URL
+				if ($reqLangId) {
+					langEquivalentItem($cID, $cType, $reqLangId);
+					$redirectNeeded = 301;
+				}
+			
+				//We know both the Content Item and language from the numeric id,
+				//so we can stop straight away without looking up anything else.
+				break;
+		
+			//Link by tag id
+			} elseif (getCIDAndCTypeFromTagId($cID, $cType, $aliasInURL)) {
+				//Allow tag ids with language codes, but redirect them to the correct URL
+				if ($reqLangId && !$languageSpecificDomain) {
+					langEquivalentItem($cID, $cType, $reqLangId);
+					$redirectNeeded = 301;
+				}
+			
+				//Again we can stop straight away as we know the specific Content Item
+				break;
+		
+			//Link by an alias
 			} else {
-				//Otherwise, just note down which translation chain was found, and resolve to the correct language below
-				$cID = false;
-				$equivId = $row['equiv_id'];
-				$cType = $row['type'];
+				//Attempt to look up a page with this alias
+				$sql = "
+					SELECT id, type, equiv_id, language_id
+					FROM ". DB_NAME_PREFIX. "content_items
+					WHERE alias = '". sqlEscape($aliasInURL). "'";
+			
+				//If an admin is logged in, any drafts/hidden content items should effect which language they get directed to
+				//If not, only published pages should effect the logic.
+				if ($adminMode) {
+					$sql .= "
+					  AND status NOT IN ('trashed', 'deleted')";
+				} else {
+					$sql .= "
+					  AND status IN ('published_with_draft', 'published')";
+				}
+			
+				$sql .= "
+					ORDER BY language_id";
+			
+				//If there was a language code in the URL, focus on the language that we're looking for
+				if ($reqLangId) {
+					$sql .= " = '". sqlEscape($reqLangId). "' DESC, language_id";
+				}
+			
+				//Get two rows, so we can tell if this alias was unique
+				$sql .= "
+					LIMIT 2";
+			
+				$result = sqlQuery($sql);
+				if ($row = sqlFetchAssoc($result)) {
+					$row2 = sqlFetchAssoc($result);
+				}
+			
+				//If the alias was not found, then we can't resolve it to a Content Item
+				if (!$row) {
+					$cID = false;
+					$cType = false;
+					break;
+			
+				//If there was only one result for that alias, we can use this straight away
+				//If there was a language specified and there was only one match for that language, we're also good to go
+				} elseif ($row && (
+					!$row2
+				 || ($reqLangId && $reqLangId == $row['language_id'] && $reqLangId != $row2['language_id'])
+				)) {
+					$cID = $row['id'];
+					$cType = $row['type'];
+				
+					//Redirect the case where we resolved a match, but the alias didn't actually match the language code
+					if ($reqLangId && $reqLangId != $row['language_id']) {
+						langEquivalentItem($cID, $cType, $reqLangId);
+						$redirectNeeded = 301;
+				
+					//If this was a hierarchical URL, but hierarchical URLs are disabled,
+					//we should redirect back to a page with a flat URL
+					} elseif ($hierarchicalAliasInURL !== false && !setting('mod_rewrite_slashes')) {
+						$redirectNeeded = 301;
+				
+					//If this was a hierarchical URL, check the URL was correct and redirect if not
+					} elseif ($hierarchicalAliasInURL !== false) {
+						$hierarchicalAlias = addHierarchicalAlias($row['equiv_id'], $row['type'], $row['language_id'], $aliasInURL);
+				
+						if ($hierarchicalAliasInURL != $hierarchicalAlias
+						 && $hierarchicalAliasInURL != $row['language_id']. '/'. $hierarchicalAlias) {
+							$redirectNeeded = 301;
+						}
+					}
+			
+					break;
+			
+				} else {
+					//Otherwise, just note down which translation chain was found, and resolve to the correct language below
+					$cID = false;
+					$equivId = $row['equiv_id'];
+					$cType = $row['type'];
+				}
 			}
 		}
-	}
 	
 	
-	//If we reach this point, we've found a translation to show, but don't know which language to show it in.
+		//If we reach this point, we've found a translation to show, but don't know which language to show it in.
+		$acptLangId = $acptLangId2 = false;
+		if (!empty($_SERVER['HTTP_ACCEPT_LANGUAGE'])) {
+			//Get the Visitor's preferred languae from their browser.
+				//Note: as of 6.1 we only look at the first choice.
+			$acptLangId = explode(',', $_SERVER['HTTP_ACCEPT_LANGUAGE'], 2);
+			$acptLangId = explode(';', $acptLangId[0], 2);
+			$acptLangId = strtolower(trim($acptLangId[0]));
 	
-	$acptLangId = $acptLangId2 = false;
-	if (!empty($_SERVER['HTTP_ACCEPT_LANGUAGE'])) {
-		//Get the Visitor's preferred languae from their browser.
-			//Note: as of 6.1 we only look at the first choice.
-		$acptLangId = explode(',', $_SERVER['HTTP_ACCEPT_LANGUAGE'], 2);
-		$acptLangId = explode(';', $acptLangId[0], 2);
-		$acptLangId = strtolower(trim($acptLangId[0]));
-	
-		//Also look for the first part of the language code (before the hyphen) as a fallback
-		$acptLangId2 = explode('-', $acptLangId, 2);
-		$acptLangId2 = $acptLangId2[0];
-	}
-	
-	//Look at the languages that we have for the requested translation.
-	$sql = "
-		SELECT c.id, c.type, c.equiv_id, c.language_id, c.alias, l.detect, l.detect_lang_codes
-		FROM ". DB_NAME_PREFIX. "content_items AS c
-		INNER JOIN ". DB_NAME_PREFIX. "languages AS l
-		   ON c.language_id = l.id
-		WHERE c.equiv_id = ". (int) $equivId. "
-		  AND c.type = '". sqlEscape($cType). "'
-		  AND c.status NOT IN ('trashed', 'deleted')
-		ORDER BY
-			c.language_id = '". sqlEscape(setting('default_language')). "' DESC,
-			c.language_id";
-	
-	$match = false;
-	$result = sqlQuery($sql);
-	while ($row = sqlFetchAssoc($result)) {
-		//If this language should be auto-detected, get a list of language codes that it matches to
-		if ($row['detect']) {
-			$langCodes = array_flip(explodeAndTrim($row['language_id']. ','. $row['detect_lang_codes']));
+			//Also look for the first part of the language code (before the hyphen) as a fallback
+			$acptLangId2 = explode('-', $acptLangId, 2);
+			$acptLangId2 = $acptLangId2[0];
 		}
-		
-		//If there is a match, use that and stop here
-		if ($row['detect'] && $acptLangId && !empty($langCodes[$acptLangId])) {
-			$match = $row;
-			break;
-		
-		//If there is a match on the first part of the language code, remember this one as a fallback
-		} elseif ($row['detect'] && $acptLangId2 && !empty($langCodes[$acptLangId2])) {
-			$match = $row;
-		
-		//If nothing else matches, make sure we go to the default language
-		//(or the first found language if there was no default) as a fallback.
-		} elseif (!$match) {
-			$match = $row;
-		}
-	}
 	
-	if ($match) {
-		$cID = $match['id'];
+		//Look at the languages that we have for the requested translation.
+		$sql = "
+			SELECT c.id, c.type, c.equiv_id, c.language_id, c.alias, l.detect, l.detect_lang_codes
+			FROM ". DB_NAME_PREFIX. "content_items AS c
+			INNER JOIN ". DB_NAME_PREFIX. "languages AS l
+			   ON c.language_id = l.id
+			WHERE c.equiv_id = ". (int) $equivId. "
+			  AND c.type = '". sqlEscape($cType). "'";
+			
+			//If an admin is logged in, any drafts/hidden content items should effect which language they get directed to
+			//If not, only published pages should effect the logic.
+			if ($adminMode) {
+				$sql .= "
+				  AND c.status NOT IN ('trashed', 'deleted')";
+			} else {
+				$sql .= "
+				  AND c.status IN ('published_with_draft', 'published')";
+			}
+			
+			$sql .= "
+			ORDER BY
+				c.language_id = '". sqlEscape(cms_core::$defaultLang). "' DESC,
+				c.language_id";
+	
+		$match = false;
+		$result = sqlQuery($sql);
+		while ($row = sqlFetchAssoc($result)) {
+			//If this language should be auto-detected, get a list of language codes that it matches to
+			if ($row['detect']) {
+				$langCodes = array_flip(explodeAndTrim($row['language_id']. ','. $row['detect_lang_codes']));
+			}
 		
-		//If there was a requested alias, which was different than the resolved alias, we should do a redirect.
-		if ($aliasInURL && $aliasInURL != $match['alias']) {
+			//If there is a match, use that and stop here
+			if ($row['detect'] && $acptLangId && !empty($langCodes[$acptLangId])) {
+				$match = $row;
+				break;
+		
+			//If there is a match on the first part of the language code, remember this one as a fallback
+			} elseif ($row['detect'] && $acptLangId2 && !empty($langCodes[$acptLangId2])) {
+				$match = $row;
+		
+			//If nothing else matches, make sure we go to the default language
+			//(or the first found language if there was no default) as a fallback.
+			} elseif (!$match) {
+				$match = $row;
+			}
+		}
+	
+		if ($match) {
+			$cID = $match['id'];
+		
+			//If there was a requested alias, which was different than the resolved alias, we should do a redirect.
+			if ($aliasInURL && $aliasInURL != $match['alias']) {
+				$redirectNeeded = 301;
+		
+			//If there was a requested language, which was different than the resolved language, we should do a redirect.
+			} elseif ($reqLangId && $reqLangId != $match['language_id']) {
+				$redirectNeeded = 301;
+		
+			//For multilingual sites, if the language code was not in the URL and we had an ambiguous link, we should do a redirect.
+			//But make it a 302 redirect, as we don't want to discourage Search Engines from listing the URLs of landing pages.
+			} elseif (!$reqLangId && $multilingual) {
+				$redirectNeeded = 302;
+			}
+	
+		} else {
+			$cID = false;
+			$cType = false;
+		}
+	} while (false);
+	
+	
+	//Check to see if the user requested the page shown using a different language
+	if ($cID !== false
+	 && isset($_GET['visLang'])
+	 && cms_core::$visLang === null) {
+		$visLang = $_GET['visLang'];
+		
+		//Don't allow this if the language requested is not used on the site,
+		//or if there's a real translation for the page in the language requested that's now visible.
+		if (!isset(cms_core::$langs[$visLang])
+		 || langEquivalentItem($cID, $cType, $visLang, true)) {
+			unset($_GET['visLang']);
 			$redirectNeeded = 301;
 		
-		//If there was a requested language, which was different than the resolved language, we should do a redirect.
-		} elseif ($reqLangId && $reqLangId != $match['language_id']) {
-			$redirectNeeded = 301;
-		
-		//For multilingual sites, if the language code was not in the URL and we had an ambiguous link, we should do a redirect.
-		//But make it a 302 redirect, as we don't want to discourage Search Engines from listing the URLs of landing pages.
-		} elseif (!$reqLangId && $multilingual) {
-			$redirectNeeded = 302;
+		} else {
+			cms_core::$visLang = $visLang;
 		}
-	
-	} else {
-		$cID = false;
-		$cType = false;
 	}
 }
 
@@ -1857,7 +1944,16 @@ function setShowableContent(&$content, &$version) {
 	cms_core::$cType = $content['type'];
 	cms_core::$alias = $content['alias'];
 	cms_core::$status = $content['status'];
-	cms_core::$langId = $_SESSION['user_lang'] = $content['language_id'];
+	cms_core::$langId = $content['language_id'];
+ 	
+	//Set the visitor's language differently, depending on whether we're showing this
+	//page for another language
+	if (cms_core::$visLang !== null
+	 && cms_core::$visLang != cms_core::$langId) {
+		$_SESSION['user_lang'] = cms_core::$visLang;
+	} else {
+		$_SESSION['user_lang'] = cms_core::$visLang = cms_core::$langId;
+	}
 	
 	cms_core::$cVersion = $version['version'];
 	cms_core::$adminVersion = $content['admin_version'];
@@ -1879,7 +1975,7 @@ function setShowableContent(&$content, &$version) {
 		 || $content['status'] == 'hidden_with_draft'
 		 || $content['status'] == 'trashed_with_draft');
 	
-	cms_core::$locked = $content['lock_owner_id'] && $content['lock_owner_id'] != session('admin_userid');
+	cms_core::$locked = $content['lock_owner_id'] && $content['lock_owner_id'] != $_SESSION['admin_userid'] ?? false;
 
 	//Given what we know, find a Layout and a Template Family as best we can.
 	//Give priority to matching Layout ids, matching family names, active Layouts,
@@ -2191,7 +2287,7 @@ function secondsToAdminPhrase($seconds) {
 
 
 function exitIfUploadError($moduleClass = false) {
-	$error = arrayKey($_FILES, 'Filedata', 'error');
+	$error = $_FILES['Filedata']['error'] ?? false;
 	switch ($error) {
 		case UPLOAD_ERR_INI_SIZE:
 		case UPLOAD_ERR_FORM_SIZE:
@@ -2230,12 +2326,19 @@ function getContentFromMenu($mID, $recurseLimit = 0) {
 	return false;
 }
 
-function getMenuItemFromContent($cID, $cType, $fetchSecondaries = false, $sectionId = false, $allowGhosts = false) {
+function getMenuItemFromContent($cID, $cType, $fetchSecondaries = false, $sectionId = false, $allowGhosts = false, $fetchEverything = false) {
 	if ($cID && $cType) {
 		$sql = "
 			SELECT
+				m.id AS mID,";
+		
+		if ($fetchEverything) {
+			$sql .= "
+				m.*, t.*";
+		
+		} else {
+			$sql .= "
 				m.id,
-				m.id AS mID,
 				m.section_id,
 				c.language_id,
 				t.name,
@@ -2246,7 +2349,10 @@ function getMenuItemFromContent($cID, $cType, $fetchSecondaries = false, $sectio
 				m.hide_private_item,
 				m.invisible,
 				m.rel_tag,
-				m.css_class
+				m.css_class";
+		}
+		
+		$sql .= "
 			FROM ". DB_NAME_PREFIX. "content_items AS c
 			INNER JOIN ". DB_NAME_PREFIX. "menu_nodes AS m
 			   ON m.equiv_id = c.equiv_id
@@ -2282,6 +2388,39 @@ function getMenuItemFromContent($cID, $cType, $fetchSecondaries = false, $sectio
 		}
 	} else {
 		return false;
+	}
+}
+
+//Get the content item in the menu above this one
+function getContentItemAbove(&$cID, &$cType, $equivId, $langId = false) {
+	
+	if ($langId === false) {
+		$langId = getContentLang($equivId, $cType);
+	}
+	
+	$sql = "
+		SELECT
+			m2.equiv_id,
+			m2.content_type
+		FROM ". DB_NAME_PREFIX. "menu_nodes AS m1
+		INNER JOIN ". DB_NAME_PREFIX. "menu_hierarchy AS mh
+		   ON mh.child_id = m1.id
+		INNER JOIN ". DB_NAME_PREFIX. "menu_nodes AS m2
+		   ON m2.id = mh.ancestor_id
+		  AND m2.target_loc = 'int'
+		WHERE m1.target_loc = 'int'
+		  AND m1.equiv_id = ". (int) $equivId. "
+		  AND m1.content_type = '". sqlEscape($cType). "'
+		ORDER BY m1.redundancy = 'primary' DESC, m2.redundancy = 'primary' DESC
+		LIMIT 1";
+	
+	if ($row = sqlFetchRow($sql)) {
+		$cID = $row[0];
+		$cType = $row[1];
+		return langEquivalentItem($cID, $cType, $langId);
+	
+	} else {
+		return $cID = $cType = false;
 	}
 }
 
@@ -2418,10 +2557,10 @@ function getMenuName($mID, $langId = false, $missingPhrase = '[[name]] ([[langua
 	
 	$markFrom = false;
 	if ($langId === false) {
-		$langId = currentLangId();
+		$langId = visitorLangId();
 	
 	} elseif ($langId === true) {
-		$langId = setting('default_language');
+		$langId = cms_core::$defaultLang;
 	
 	} elseif (checkPriv()) {
 		$markFrom = true;
@@ -2433,7 +2572,7 @@ function getMenuName($mID, $langId = false, $missingPhrase = '[[name]] ([[langua
 		WHERE menu_id = ". (int) $mID. "
 		ORDER BY
 			language_id = '". sqlEscape($langId). "' DESC,
-			language_id = '". sqlEscape(setting('default_language')). "' DESC
+			language_id = '". sqlEscape(cms_core::$defaultLang). "' DESC
 		LIMIT 1";
 	
 	$result = sqlQuery($sql);
@@ -2458,7 +2597,7 @@ function getMenuParent($mID) {
 }
 
 
-function shouldShowMenuItem(&$row, &$cachingRestrictions) {
+function shouldShowMenuItem(&$row, &$cachingRestrictions, $language, $getFullMenu, $adminMode) {
 	
 	// Hide menu node if static method is set
 	if (!empty($row['module_class_name'])) {
@@ -2488,32 +2627,56 @@ function shouldShowMenuItem(&$row, &$cachingRestrictions) {
 		}
 	}
 	
+	//Logic for menu nodes that point to content items 
 	if ($row['target_loc'] == 'int') {
 		
-		//Check to see if there is a published version
-		if (!$row['visitor_version']) {
-			//If a Menu Node is translated, but a Content Item does not have a translation, try to link to a Content Item in the default Language
-			if (!$row['cID'] && $row['cType'] && $row['equiv_id']) {
-				if ($content = getRow('content_items', array('alias', 'visitor_version'), array('id' => $row['equiv_id'], 'type' => $row['cType']))) {
+		
+		
+		//Check to see if the content item attached to the menu node was visible
+		if (!$row['cID']) {
+			
+			//Try to show a placeholder page from the default language if the content item in this language
+			//was missing or not published, and that option is enabled
+			if ($getFullMenu
+			 && $row['cType']
+			 && $row['equiv_id']
+			 && $language !== cms_core::$defaultLang) {
+				
+				$sql = '
+					SELECT alias
+					FROM '. DB_NAME_PREFIX. 'content_items
+					WHERE id = '. (int) $row['equiv_id']. '
+					  AND `type` = \''. sqlEscape($row['cType']). '\'';
+					
+				if ($adminMode) {
+					$sql .= "
+						AND status != 'deleted'";
+				} else {
+					$sql .= "
+						AND status IN ('published', 'published_with_draft')";
+				}
+				
+				if ($content = sqlFetchAssoc($sql)) {
 					$row['cID'] = $row['equiv_id'];
 					$row['alias'] = $content['alias'];
-					$row['visitor_version'] = $content['visitor_version'];
+					$row['placeholder'] = true;
 					
-					return shouldShowMenuItem($row, $cachingRestrictions);
+					return shouldShowMenuItem($row, $cachingRestrictions, $language, $getFullMenu, $adminMode);
 				}
 			}
 			
+			//Otherwise the menu node should be hidden
 			return false;
 		
 		//Check for Menu Nodes that are only shown if logged in/out as an Extranet User
 		//But note that this logic is not used in Admin Mode; Admins always see every Menu Node, and don't see any special markings for these Menu Nodes
 		} elseif ($row['hide_private_item'] == 3) {
 			$cachingRestrictions = 'privateItemsExist';
-			return session('extranetUserID') || checkPriv();
+			return !empty($_SESSION['extranetUserID']) || $adminMode;
 		
 		} elseif ($row['hide_private_item'] == 2) {
 			$cachingRestrictions = 'privateItemsExist';
-			return !session('extranetUserID') || checkPriv();
+			return empty($_SESSION['extranetUserID']) || $adminMode;
 		
 		} elseif ($row['hide_private_item']) {
 			$cachingRestrictions = 'privateItemsExist';
@@ -2524,12 +2687,11 @@ function shouldShowMenuItem(&$row, &$cachingRestrictions) {
 }
 
 
-function lookForMenuItems($parentMenuId, $language, $sectionId, $currentMenuId, $recurseCount, $showInvisibleMenuItems) {
+function lookForMenuItems($parentMenuId, $language, $sectionId, $currentMenuId, $recurseCount, $showInvisibleMenuItems, $getFullMenu, $adminMode) {
 	
 	$sql = "
 		SELECT
 			m.id AS mID,
-			t.name,
 			m.target_loc,
 			m.open_in_new_window,
 			m.anchor,
@@ -2544,25 +2706,56 @@ function lookForMenuItems($parentMenuId, $language, $sectionId, $currentMenuId, 
 			m.use_download_page,
 			m.hide_private_item,
 			m.add_registered_get_requests,
-			t.ext_url,
-			c.visitor_version,
 			m.invisible,
 			m.accesskey,
 			m.ordinal,
 			m.rel_tag,
 			m.image_id,
 			m.rollover_image_id,
-			m.css_class,
+			m.css_class";
+	
+	if ($getFullMenu
+	 && $language != cms_core::$defaultLang) {
+		$sql .= ",
+			IFNULL(t.name, d.name) AS name,
+			IFNULL(t.ext_url, d.ext_url) AS ext_url,
+			IFNULL(t.descriptive_text, d.descriptive_text) AS descriptive_text
+		FROM ". DB_NAME_PREFIX. "menu_nodes AS m
+		LEFT JOIN ". DB_NAME_PREFIX. "menu_text AS t
+		   ON t.menu_id = m.id
+		  AND t.language_id = '". sqlEscape($language). "'
+		LEFT JOIN ". DB_NAME_PREFIX. "menu_text AS d
+		   ON t.menu_id IS NULL
+		  AND d.menu_id = m.id
+		  AND d.language_id = '". sqlEscape(cms_core::$defaultLang). "'";
+	
+	} else {
+		$sql .= ",
+			t.name,
+			t.ext_url,
 			t.descriptive_text
 		FROM ". DB_NAME_PREFIX. "menu_nodes AS m
 		INNER JOIN ". DB_NAME_PREFIX. "menu_text AS t
 		   ON t.menu_id = m.id
-		  AND t.language_id = '". sqlEscape($language). "'
+		  AND t.language_id = '". sqlEscape($language). "'";
+	}
+	
+	$sql .= "
 		LEFT JOIN ".DB_NAME_PREFIX."content_items AS c
 		   ON m.target_loc = 'int'
 		  AND m.equiv_id = c.equiv_id
 		  AND m.content_type = c.type
-		  AND c.language_id = '". sqlEscape($language). "'
+		  AND c.language_id = '". sqlEscape($language). "'";
+	
+	if ($adminMode) {
+		$sql .= "
+			AND c.status != 'deleted'";
+	} else {
+		$sql .= "
+			AND c.status IN ('published', 'published_with_draft')";
+	}
+	
+	$sql .= "
 		WHERE m.parent_id = ". (int) $parentMenuId. "
 		  AND m.section_id = ". (int) $sectionId;
 	
@@ -2570,7 +2763,7 @@ function lookForMenuItems($parentMenuId, $language, $sectionId, $currentMenuId, 
 		$sql .= "
 		  AND m.invisible != 1";
 	}
-
+	
 	$sql .= "
 		ORDER BY m.ordinal";
 	
@@ -2590,23 +2783,25 @@ function getMenuStructure(
 	$onlyIncludeOnLinks = false,
 	$showInvisibleMenuItems = false,
 	$showMissingMenuNodes = false,
-	$recurseCount = 0,
 	$requests = false,
-	$getFullMenu = false
+	$getFullMenu = false,
+	$recurseCount = 0
 ) {
 	if ($language === false) {
-		$language = cms_core::$langId ?? setting('default_language');
+		$language = cms_core::$visLang ?? cms_core::$defaultLang;
 	}
 	
 	if (++$recurseCount == 1) {
 		$level1counter = 0;
 	}
 	
+	$adminMode = !empty($_SESSION['admin_logged_into_site']) && checkPriv();
+	
 	//Look up all of the Menu Items on this level
 	$edition = cms_core::$edition;
 	$rows = array();
-	if ($showMissingMenuNodes && $language != setting('default_language')) {
-		$result = lookForMenuItems($parentMenuId, setting('default_language'), $sectionId, $currentMenuId, $recurseCount, $showInvisibleMenuItems);
+	if ($showMissingMenuNodes && $language != cms_core::$defaultLang) {
+		$result = lookForMenuItems($parentMenuId, cms_core::$defaultLang, $sectionId, $currentMenuId, $recurseCount, $showInvisibleMenuItems, $getFullMenu, $adminMode);
 		while ($row = sqlFetchAssoc($result)) {
 			if (empty($row['css_class'])) {
 				$row['css_class'] = 'missing';
@@ -2618,7 +2813,7 @@ function getMenuStructure(
 		}
 	}
 	
-	$result = lookForMenuItems($parentMenuId, $language, $sectionId, $currentMenuId, $recurseCount, $showInvisibleMenuItems);
+	$result = lookForMenuItems($parentMenuId, $language, $sectionId, $currentMenuId, $recurseCount, $showInvisibleMenuItems, $getFullMenu, $adminMode);
 	while ($row = sqlFetchAssoc($result)) {
 		$rows[$row['mID']] = $row;
 	}
@@ -2672,10 +2867,10 @@ function getMenuStructure(
 				continue;
 			
 			} else {
-				$row['active'] = $showMenuItem = shouldShowMenuItem($row, $cachingRestrictions);
+				$row['active'] = $showMenuItem = shouldShowMenuItem($row, $cachingRestrictions, $language, $getFullMenu, $adminMode);
 				$row['conditionally_hidden'] = $showMenuItem === null;
 				
-				if (checkPriv() || $getFullMenu) {
+				if ($adminMode) {
 					//Always show an Admin a Menu Node
 					$showMenuItem = true;
 					$row['onclick'] = "if (!window.zenarioA) return true; return zenarioA.openMenuAdminBox({id: ". (int)  $row['mID']. "});";
@@ -2700,12 +2895,18 @@ function getMenuStructure(
 							$row['url'] .= '&'. $row['extra_requests'];
 						}
 					}
+
+
+
 						
 				} else if ($row['target_loc'] == 'int' && $row['cID']) {
 					$request = '';
 					$downloadDocument = ($row['cType'] == 'document' && !$row['use_download_page']);
 					if ($downloadDocument) {
 						$request = '&download=1';
+					}
+					if (isset($row['placeholder'])) {
+						$request .= '&visLang='. rawurlencode($language);
 					}
 					if ($requests) {
 						$request .= addAmp($requests);
@@ -2727,7 +2928,7 @@ function getMenuStructure(
 					$link = linkToItem($row['cID'], $row['cType'], false, $request, $row['alias'], $row['add_registered_get_requests']);
 					
 					if ($downloadDocument) {
-						$row['onclick'] = trackFileDownload($link);
+						$row['onclick'] = Ze\File::trackDownload($link);
 					}
 					
 					$row['url'] = $link;
@@ -2766,9 +2967,9 @@ function getMenuStructure(
 												$numLevels, $maxLevel1MenuItems, $language,
 												$onlyFollowOnLinks, $onlyIncludeOnLinks,
 												$showInvisibleMenuItems, $showMissingMenuNodes,
-												$recurseCount, $requests, $getFullMenu);
+												$requests, $getFullMenu, $recurseCount);
 						
-						if ($row['target_loc'] == 'none' && checkPriv()) {
+						if ($row['target_loc'] == 'none' && $adminMode) {
 							//Publishing a Content Item under an unlinked Menu Node will cause that to appear - mark this as so in Admin Mode
 							foreach ($row['children'] as &$child) {
 								if (!empty($child['active'])) {
@@ -2781,9 +2982,9 @@ function getMenuStructure(
 					//Otherwise if we're not recursing, check that at least one of the children are in fact visible to the current Visitor
 					} else {
 						$row['children'] = false;
-						$result2 = lookForMenuItems($row['mID'], $language, $sectionId, $currentMenuId, $recurseCount, $showInvisibleMenuItems);
+						$result2 = lookForMenuItems($row['mID'], $language, $sectionId, $currentMenuId, $recurseCount, $showInvisibleMenuItems, $getFullMenu, $adminMode);
 						while ($row2 = sqlFetchAssoc($result2)) {
-							if ($row2['target_loc'] != 'none' && (empty($row2['invisible']) || $showInvisibleMenuItems) && shouldShowMenuItem($row2, $cachingRestrictions)) {
+							if ($row2['target_loc'] != 'none' && (empty($row2['invisible']) || $showInvisibleMenuItems) && shouldShowMenuItem($row2, $cachingRestrictions, $language, $getFullMenu, $adminMode)) {
 								$row['children'] = true;
 								break;
 							}
@@ -2792,7 +2993,7 @@ function getMenuStructure(
 					
 					//Unlinked Menu Items with visible children should still be shown to Visitors.
 					//Unlinked Menu Items with no visible children should be shown but marked as inactive to Admins.
-					if (checkPriv()) {
+					if ($adminMode) {
 						$showMenuItem = true;
 					
 					} elseif (!empty($row['children']) && $followLink && $goFurther) {
@@ -2807,7 +3008,7 @@ function getMenuStructure(
 			
 			if ($showMenuItem) {
 				//Don't show unlinked Menu Nodes that have no immediate children to Visitors
-				if ($row['target_loc'] != 'none' || $row['children'] || checkPriv() || $getFullMenu) {
+				if ($row['target_loc'] != 'none' || $row['children'] || $adminMode || $getFullMenu) {
 					//Ensure that we show this Menu Node!
 					unset($unsets[$menuId]);
 				}
@@ -2851,12 +3052,30 @@ function linkToEquivalentItem(
 }
 
 
+function linkToItemStayInCurrentLanguage(
+	$cID, $cType = 'html', $fullPath = false, $request = '', $alias = false,
+	$autoAddImportantRequests = false, $useAliasInAdminMode = false,
+	$equivId = false, $languageId = false
+) {
+	
+	$stayInCurrentLanguage =
+		cms_core::$visLang != cms_core::$defaultLang
+	 && (cms_core::$langs[cms_core::$visLang]['show_untranslated_content_items'] ?? false);
+
+	return linkToItem(
+		$cID, $cType, $fullPath, $request, $alias,
+		$autoAddImportantRequests, $useAliasInAdminMode,
+		$equivId, $languageId, $stayInCurrentLanguage
+	);
+}
+
+
 //Build a link to a content item
 //n.b. linkToItem() and resolveContentItemFromRequest() are essentially opposites of each other...
 function linkToItem(
 	$cID, $cType = 'html', $fullPath = false, $request = '', $alias = false,
 	$autoAddImportantRequests = false, $useAliasInAdminMode = false,
-	$equivId = false, $languageId = false
+	$equivId = false, $languageId = false, $stayInCurrentLanguage = false
 ) {
 	
 	//Catch the case where a tag id is entered, not a cID and cType
@@ -2917,14 +3136,13 @@ function linkToItem(
 	 && !empty(cms_core::$importantGetRequests)
 	 && is_array(cms_core::$importantGetRequests);
 	
-	//Attempt to look up the alias if it wasn't provided.
-	//If we need to make a multi-lingual URL or if the mod_rewrite_slashes option is enabled
-	//then we'll also need the equivId and languageId of the content item.
-	if (($useAlias || ($autoAddImportantRequests && !$equivId))
-	 && ($multilingual
-	  || $alias === false
-	  || ($mod_rewrite_slashes && ($equivId === false || $languageId === false))
-	)) {
+	//Attempt to look up the alias/language if they weren't provided, and we might need them.
+	if (($stayInCurrentLanguage && $multilingual && $languageId === false)
+	 || (($useAlias || ($autoAddImportantRequests && !$equivId))
+	  && ($multilingual
+	   || $alias === false
+	   || ($mod_rewrite_slashes && ($equivId === false || $languageId === false))
+	))) {
 		$result = sqlSelect("
 			SELECT alias, equiv_id, language_id, lang_code_in_url
 			FROM ". DB_NAME_PREFIX. "content_items
@@ -3049,6 +3267,14 @@ function linkToItem(
 	//then add it as a slash at the start of the URL
 	if ($needToUseLangCode && $mod_rewrite_slashes) {
 		$aliasOrCID = $languageId. '/'. $aliasOrCID;
+	}
+	
+	//If a translation isn't available, have an option to show the page in the default
+	//language
+	if ($stayInCurrentLanguage
+	 && cms_core::$visLang != $languageId
+	 && cms_core::$visLang != cms_core::$defaultLang) {
+		$request .= '&visLang='. rawurlencode(cms_core::$visLang);
 	}
 	
 	//"Download now" format for old documents
@@ -3183,7 +3409,7 @@ function getLanguages($includeAllLanguages = false, $orderByEnglishName = false,
 		ORDER BY ";
 	
 	if ($defaultLangFirst) {
-		$sql .= "l.id = '". sqlEscape(setting('default_language')). "' DESC, ";
+		$sql .= "l.id = '". sqlEscape(cms_core::$defaultLang). "' DESC, ";
 	}
 	
 	if ($orderByEnglishName) {
@@ -3204,7 +3430,7 @@ function getLanguages($includeAllLanguages = false, $orderByEnglishName = false,
 function getLanguageName($languageId = false, $addIdInBracketsToEnd = true, $returnIdOnFailure = true, $localName = false) {
 	
 	if ($languageId === false) {
-		$languageId = ifNull(cms_core::$langId, setting('default_language'));
+		$languageId = ifNull(cms_core::$visLang, cms_core::$defaultLang);
 	}
 	
 	$name = getRow('visitor_phrases', 'local_text', array('code' => '__LANGUAGE_ENGLISH_NAME__', 'language_id' => $languageId, 'module_class_name' => 'zenario_common_features'));
@@ -3299,7 +3525,15 @@ function getDatasetFieldsDetails($dataset) {
 	return $out;
 }
 
-function datasetFieldValue($dataset, $cfield, $recordId, $returnCSV = true, $forDisplay = false) {
+function getDatasetFieldRepeatRowColumnName($dbColumn, $row) {
+	return ($row > 1) ? $dbColumn . '___' . $row : $dbColumn;
+}
+
+function getDatasetRepeatStartRowColumnName($fieldId) {
+	return $fieldId . '___rows';
+}
+
+function datasetFieldValue($dataset, $cfield, $recordId, $returnCSV = true, $forDisplay = false, $row = false) {
 	if ($dataset && !is_array($dataset)) {
 		$dataset = getDatasetDetails($dataset, array('id', 'system_table', 'table'));
 	}
@@ -3383,7 +3617,11 @@ function datasetFieldValue($dataset, $cfield, $recordId, $returnCSV = true, $for
 				break;
 			
 			default:
-				$value = getRow($dataset['table'], $cfield['db_column'], $recordId);
+				$dbColumn = $cfield['db_column'];
+				if ($row) {
+					$dbColumn = getDatasetFieldRepeatRowColumnName($dbColumn, $row);
+				}
+				$value = getRow($dataset['table'], $dbColumn, $recordId);
 				
 				if ($forDisplay) {
 					switch ($cfield['type']) {
@@ -3460,8 +3698,8 @@ function updateDatasetFilePickerField($datasetId, $cField, $linkingId, $values) 
 	foreach ($values as $id) {
 		if ($id) {
 			
-			if ($location = getPathOfUploadedFileInCacheDir($id)) {
-				$id = addFileToDatabase(
+			if ($location = Ze\File::getPathOfUploadedInCacheDir($id)) {
+				$id = Ze\File::addToDatabase(
 					'dataset_file', $location,
 					$filename = false, $mustBeAnImage = false, $deleteWhenDone = false,
 					$addToDocstoreDirIfPossible = $cField['store_file'] == 'in_docstore'
@@ -3517,7 +3755,7 @@ function removeUnusedDatasetFiles() {
 	
 	$result = sqlSelect($sql);
 	while ($file = sqlFetchAssoc($result)) {
-		deleteFile($file['id']);
+		Ze\File::delete($file['id']);
 	}
 }
 
@@ -3888,7 +4126,7 @@ function resizeImageString(&$image, $mime_type, &$imageWidth, &$imageHeight, $ma
 function resizeImageStringToSize(&$image, $mime_type, $imageWidth, $imageHeight, $newWidth, $newHeight, $cropWidth, $cropHeight, $cropNewWidth, $cropNewHeight, $offset = 0) {
 	//Check if the image needs to be resized
 	if ($imageWidth != $cropNewWidth || $imageHeight != $cropNewHeight) {
-		if (isImage($mime_type)) {
+		if (Ze\File::isImage($mime_type)) {
 			//Load the original image into a canvas
 			if ($image = @imagecreatefromstring($image)) {
 				//Make a new blank canvas
@@ -3975,137 +4213,6 @@ function resizeImageStringToSize(&$image, $mime_type, $imageWidth, $imageHeight,
 
 
 /* Content specific functions */
-
-
-/* Documents */
-
-
-function createRandomDir($length, $type = 'private/downloads', $onlyForCurrentVisitor = true, $ip = -1, $prefix = '') {
-	return createCacheDir($prefix. randomString($length), $type, $onlyForCurrentVisitor, $ip);
-}
-
-
-function createCacheDir($dir, $type = 'private/downloads', $onlyForCurrentVisitor = true, $ip = -1) {
-	
-	switch ($type) {
-		//Migrate some old formats of the $type input
-		case 'frameworks':
-		case 'pages':
-		case 'stats':
-		case 'tuix':
-		case 'uploads':
-			$path = 'cache/'. $type. '/';
-			break;
-		
-		case 'downloads':
-		case 'images':
-		case 'files':
-			$path = 'private/'. $type. '/';
-			break;
-		
-		default:
-			$path = $type. '/';
-	}
-	
-	$fullPath = CMS_ROOT. $path;
-	
-	if (!is_dir($fullPath) || !is_writable($fullPath)) {
-		return false;
-	
-	} else {
-		$path .= $dir. '/';
-		$fullPath .= $dir. '/';
-		
-		if (is_dir($fullPath)) {
-			@touch($fullPath. 'accessed');
-			return $path;
-		
-		} else {
-			if (@mkdir($fullPath, 0777)) {
-				chmod($fullPath, 0777);
-			
-				if ($onlyForCurrentVisitor) {
-					htaccessFileForCurrentVisitor($fullPath, $ip);
-				}
-			
-				touch($fullPath. 'accessed');
-				chmod($fullPath. 'accessed', 0666);
-				return $path;
-			} else {
-				return false;
-			}
-		}
-	}
-}
-
-function htaccessFileForCurrentVisitor($path, $ip = -1) {
-	if ($ip === -1) {
-		$ip = visitorIP();
-	}
-	
-	if (!$ip) {
-		$file  = "deny from all\n";
-	
-	} elseif (defined('USE_FORWARDED_IP') && constant('USE_FORWARDED_IP')) {
-		$file  = 'RewriteEngine on'. "\n";
-		$file .= 'RewriteCond %{HTTP:X-Forwarded-For} !^'. str_replace(',', '\\,', str_replace(' ', '\\ ', preg_quote($ip))). '$'. "\n";
-		$file .= 'RewriteRule . - [F,NC]'. "\n";
-	
-	} else {
-		$file  = "deny from all\n";
-		$file .= "allow from ". $ip. "\n";
-	}
-	
-	$file .= "RemoveType .php\n";
-	
-	if (file_put_contents($path. '/.htaccess', $file)) {
-		chmod($path. '/.htaccess', 0666);
-		return true;
-	} else {
-		return false;
-	}
-}
-
-
-function cleanDownloads() {
-	//Only allow this function to run at most once per page-load
-	if (defined('ZENARIO_CLEANED_DOWNLOADS')) {
-		return ZENARIO_CLEANED_DOWNLOADS;
-	
-	} else {
-		$time = time();
-		
-		//Check to see if anyone has done a "rm -rf" on the images directory
-		//If so skip the "every 5 minutes rule" and run now.
-		if (is_dir(CMS_ROOT. 'public/images')
-		 && is_dir(CMS_ROOT. 'private/images')
-		 && is_dir(CMS_ROOT. 'cache/frameworks')) {
-			
-			//Check if this function was last run within the last 30 minutes
-			$lifetime = 30 * 60;
-			if (file_exists($accessed = 'cache/stats/clean_downloads/accessed')) {
-				$timeA = fileatime($accessed);
-				$timeM = filemtime($accessed);
-			
-				if (!$timeA || $timeA < $timeM) {
-					$timeA = $timeM;
-				}
-			
-				if ($timeA > $time - $lifetime) {
-					//If it was run in the last 30 minutes, don't run it again now...
-					define('ZENARIO_CLEANED_DOWNLOADS', true);
-					return true;
-				}
-			}
-		}
-		
-		//...otherwise, continue running cleanDownloads(), and call the createCacheDir() function to create/touch
-		//the cache/stats/clean_downloads/accessed file so we know that we last ran cleanDownloads() at this current time
-		createCacheDir('clean_downloads', 'stats', true, false);
-		
-		return require funIncPath(__FILE__, __FUNCTION__);
-	}
-}
 
 
 
@@ -4289,7 +4396,7 @@ function formatNicely($text,$limit) {
 function languageIdForDatesInAdminMode() {
 	return ifNull(
 		getRow('visitor_phrases', 'language_id', array('code' => '_WEEKDAY_0', 'language_id' => array('en', 'en-gb', 'en-us'))),
-		setting('default_language'),
+		cms_core::$defaultLang,
 		'en-us');
 }
 
@@ -4671,6 +4778,17 @@ function includeModuleSubclass($filePathOrModuleClassName, $type = false, $path 
 	//From the logic above, create a standard filepath and class name
 	$phpPath = $basePath. '/classes/'. $type. '/'. $matches[1]. '.php';
 	$className = $moduleClassName. '__'. $type. '__'. $matches[1];
+	
+	//Also check for a filepath by stripping off the classname from the path
+	//e.g. (zenario_example_manager__test could be called test.php)
+	if (!is_file($phpPath)) {
+		$matches = array();
+		preg_match('@.*/_*(\w+)@', str_replace('/'. $moduleClassName. '_', '/', str_replace('/panel', '', '/'. $path)), $matches);
+		$phpPathAlt = $basePath. '/classes/'. $type. '/'. $matches[1]. '.php';
+		if (is_file($phpPathAlt)) {
+			$phpPath = $phpPathAlt;
+		}
+	}
 	
 	//Check if the file is there
 	if (is_file($phpPath)) {
@@ -5069,12 +5187,12 @@ function setInstance(&$instance, $cID, $cType, $cVersion, $slotName, $checkForEr
 	$instance['class']->setInstance(
 		array(
 			$cID, $cType, $cVersion, $slotName,
-			arrayKey($instance, 'instance_name'), $instance['instance_id'],
+			($instance['instance_name'] ?? false), $instance['instance_id'],
 			$instance['class_name'], $instance['vlp_class'],
 			$instance['module_id'],
 			$instance['default_framework'], $instance['framework'],
 			$instance['css_class'],
-			arrayKey($instance, 'level'), !empty($instance['content_id'])
+			($instance['level'] ?? false), !empty($instance['content_id'])
 		), $overrideSettings, $eggId, $slideId
 	);
 }
@@ -5397,7 +5515,7 @@ function equivId($cID, $cType) {
 	return getRow('content_items', 'equiv_id', array('id' => $cID, 'type' => $cType));
 }
 
-function langEquivalentItem(&$cID, &$cType, $langId = false) {
+function langEquivalentItem(&$cID, &$cType, $langId = false, $checkVisible = false) {
 	
 	//Catch the case where a tag id is entered, not a cID and cType
 	if (!is_numeric($cID)) {
@@ -5415,10 +5533,10 @@ function langEquivalentItem(&$cID, &$cType, $langId = false) {
 	}
 	
 	if ($langId === false) {
-		$langId = currentLangId();
+		$langId = visitorLangId();
 	
 	} elseif ($langId === true) {
-		$langId = setting('default_language');
+		$langId = cms_core::$defaultLang;
 	}
 	
 	$sql = "
@@ -5436,17 +5554,35 @@ function langEquivalentItem(&$cID, &$cType, $langId = false) {
 				WHERE equiv_id = ". (int) $row['equiv_id']. "
 				  AND type = '". sqlEscape($cType). "'
 				  AND language_id = '". sqlEscape($langId). "'";
+			
+			if ($checkVisible) {
+				$adminMode = !empty($_SESSION['admin_logged_into_site']) && checkPriv();
+				
+				//If an admin is logged in, any drafts/hidden content items should effect which language they get directed to
+				//If not, only published pages should effect the logic.
+				if ($adminMode) {
+					$sql .= "
+					  AND status NOT IN ('trashed', 'deleted')";
+				} else {
+					$sql .= "
+					  AND status IN ('published_with_draft', 'published')";
+				}
+			}
+			
 			$result = sqlQuery($sql);
 			
 			if ($row = sqlFetchAssoc($result)) {
 				$cID = $row['id'];
+				return true;
 			}
 		}
 		
-		return true;
-	} else {
-		return false;
+		if (!$checkVisible) {
+			return true;
+		}
 	}
+	
+	return false;
 }
 
 function equivalences($cID, $cType, $includeCurrent = true, $equivId = false) {

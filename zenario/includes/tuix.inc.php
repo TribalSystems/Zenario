@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright (c) 2017, Tribal Limited
  * All rights reserved.
@@ -603,12 +602,12 @@ function zenarioParseTUIX2(&$tags, &$removedColumns, $type, $requestedPath = '',
 				}
 			
 			} elseif ((string) $key == 'local_admins_only') {
-				if (engToBoolean($value) && session('admin_global_id')) {
+				if (engToBoolean($value) && ($_SESSION['admin_global_id'] ?? false)) {
 					return false;
 				}
 			
 			} elseif ((string) $key == 'superadmins_only') {
-				if (engToBoolean($value) && !session('admin_global_id')) {
+				if (engToBoolean($value) && !($_SESSION['admin_global_id'] ?? false)) {
 					return false;
 				}
 			
@@ -671,7 +670,7 @@ function zenarioParseTUIX2(&$tags, &$removedColumns, $type, $requestedPath = '',
 				if ($path == $requestedPath. '/columns') {
 					$removedColumns = array();
 					foreach ($tags as $key => &$value) {
-						if (is_array($value) && engToBoolean(arrayKey($value, 'server_side_only'))) {
+						if (is_array($value) && engToBoolean($value['server_side_only'] ?? false)) {
 							$removedColumns[] = $key;
 						}
 					}
@@ -733,26 +732,19 @@ function addOrdinalsToTUIX(&$tuix) {
 				
 				//If the ordinal is a string, attempt to parse it
 				} elseif (!is_numeric($tag['ord'])) {
-					$replace = '';
-					foreach (preg_split('@(\b\w+\b|\.)@', $tag['ord'], -1,  PREG_SPLIT_DELIM_CAPTURE) as $i => $part) {
-						if ($i % 2) {
-							
-							//Only allow a period once in a number; e.g. 1.02.03 should be 1.0203
-							if ($part === '.') {
-								if (strpos($replace, '.') !== false) {
-									continue;
-								}
-							
-							//Look for the names of other elements,
-							//and replace the names with the ordinals of those elements
-							} elseif (!is_numeric($part) && isset($tuix[$part]['ord'])) {
-								$replace .= $tuix[$part]['ord'];
-								continue;
-							}
+					$bits = explode('.', $tag['ord']);
+					$referencedCodeName = array_shift($bits);
+					
+					//If possible, replace the referenced code name with that element's ordinal
+					if ($referencedCodeName && !empty($bits) && isset($tuix[$referencedCodeName]['ord'])) {
+						$bits = array_merge(explode('.', $tuix[$referencedCodeName]['ord']), $bits) ;
+						
+						//Add in the rest of the ordinal, but only add at most one decimal place
+						$tag['ord'] = array_shift($bits);
+						if (!empty($bits)) {
+							$tag['ord'] .= '.'. implode('', $bits);
 						}
-						$replace .= $part;
 					}
-					$tag['ord'] = $replace;
 				}
 			}
 			
@@ -1018,9 +1010,10 @@ function readAdminBoxValues(&$box, &$fields, &$values, &$changes, $filling, $res
 						//fields not in readonly mode should use ['current_value'].
 						$readOnly =
 							$filling
-						 || !engToBooleanArray($tab, 'edit_mode', 'on')
-						 || engToBooleanArray($field, 'read_only')
-						 || engToBooleanArray($field, 'readonly');
+						 || !engToBoolean($tab['edit_mode']['on'] ?? false)
+						 || engToBoolean($field['read_only'] ?? false)
+						 || engToBoolean($field['readonly'] ?? false)
+						 || engToBoolean($field['disabled'] ?? false);
 						
 						$currentValue = $readOnly? 'value' : 'current_value';
 						
@@ -1117,10 +1110,10 @@ function readAdminBoxValues(&$box, &$fields, &$values, &$changes, $filling, $res
 						} else
 						if ($readOnly
 						 || (isset($field['multiple_edit']['changed']) && !isset($field['multiple_edit']['_changed']))) {
-							$changed = engToBooleanArray($field['multiple_edit'], 'changed');
+							$changed = engToBoolean($field['multiple_edit']['changed'] ?? false);
 						
 						} else {
-							$changed = engToBooleanArray($field['multiple_edit'], '_changed');
+							$changed = engToBoolean($field['multiple_edit']['_changed'] ?? false);
 						}
 					}
 					
@@ -1139,12 +1132,12 @@ function readAdminBoxValues(&$box, &$fields, &$values, &$changes, $filling, $res
 					}
 					
 					if ($isField) {
-						//Editor fields will need the addImageDataURIsToDatabase() run on them
+						//Editor fields will need the Ze\File::addImageDataURIsToDatabase() run on them
 						if (isset($field['current_value'])
 						 && arrayKey($box, 'tabs', $tabName, 'fields', $fieldName, 'type')  == 'editor'
 						 && !empty($box['tabs'][$tabName]['fields'][$fieldName]['insert_image_button'])) {
 							//Convert image data urls to files in the database
-							addImageDataURIsToDatabase($field['current_value'], absCMSDirURL());
+							Ze\File::addImageDataURIsToDatabase($field['current_value'], absCMSDirURL());
 						}
 					}
 				}
@@ -1175,15 +1168,15 @@ function applyValidationFromTUIXOnTab(&$tab) {
 			$notSet = !(trim($fieldValue) || $fieldValue === '0');
 			
 			//Check for required fields
-			if (($msg = arrayKey($field['validation'], 'required')) && $notSet) {
+			if (($msg = $field['validation']['required'] ?? false) && $notSet) {
 				$field['error'] = $msg;
 			
 			//Check for fields that are required if not hidden. (Note that it is the user submitted data from the client
 			//which determines whether a field was hidden.)
-			} elseif (($msg = arrayKey($field['validation'], 'required_if_not_hidden'))
-				   && !engToBooleanArray($tab, 'hidden') && !engToBooleanArray($field, 'hidden')
-				   //&& !engToBooleanArray($tab, '_was_hidden_before')
-				   && !engToBooleanArray($field, '_was_hidden_before')
+			} elseif (($msg = $field['validation']['required_if_not_hidden'] ?? false)
+				   && !engToBoolean($tab['hidden'] ?? false) && !engToBoolean($field['hidden'] ?? false)
+				   //&& !engToBoolean($tab['_was_hidden_before'] ?? false)
+				   && !engToBoolean($field['_was_hidden_before'] ?? false)
 				   && $notSet
 			) {
 				$field['error'] = $msg;
@@ -1192,19 +1185,22 @@ function applyValidationFromTUIXOnTab(&$tab) {
 			} elseif ($notSet) {
 				continue;
 			
-			} elseif (($msg = arrayKey($field['validation'], 'email')) && !validateEmailAddress($fieldValue)) {
+			} elseif (($msg = $field['validation']['email'] ?? false) && !validateEmailAddress($fieldValue)) {
 				$field['error'] = $msg;
 			
-			} elseif (($msg = arrayKey($field['validation'], 'emails')) && !validateEmailAddress($fieldValue, true)) {
+			} elseif (($msg = $field['validation']['emails'] ?? false) && !validateEmailAddress($fieldValue, true)) {
 				$field['error'] = $msg;
 			
-			} elseif (($msg = arrayKey($field['validation'], 'no_spaces')) && preg_replace('/\S/', '', $fieldValue)) {
+			} elseif (($msg = $field['validation']['no_spaces'] ?? false) && preg_replace('/\S/', '', $fieldValue)) {
 				$field['error'] = $msg;
 			
-			} elseif (($msg = arrayKey($field['validation'], 'numeric')) && !is_numeric($fieldValue)) {
+			} elseif (($msg = $field['validation']['numeric'] ?? false) && !is_numeric($fieldValue)) {
 				$field['error'] = $msg;
 			
-			} elseif (($msg = arrayKey($field['validation'], 'screen_name')) && !validateScreenName($fieldValue)) {
+			} elseif (($msg = $field['validation']['screen_name'] ?? false) && !validateScreenName($fieldValue)) {
+				$field['error'] = $msg;
+			
+			} elseif (($msg = $field['validation']['no_special_characters'] ?? false) && !validateScreenName(str_replace(',', '', $fieldValue), true)) {
 				$field['error'] = $msg;
 			
 			} else {
@@ -1226,8 +1222,8 @@ function applyValidationFromTUIXOnTab(&$tab) {
 					foreach (explodeAndTrim($fieldValue) as $file) {
 						
 						//If this file has just been picked, we'll need to check it from the disk
-						if ($filepath = getPathOfUploadedFileInCacheDir($file)) {
-							$mimeType = documentMimeType($filepath);
+						if ($filepath = Ze\File::getPathOfUploadedInCacheDir($file)) {
+							$mimeType = Ze\File::mimeType($filepath);
 						
 						//Otherwise look for it in the files table
 						} else {
@@ -1240,12 +1236,12 @@ function applyValidationFromTUIXOnTab(&$tab) {
 						//Check all of the possible rules for image validation.
 						//Stop checking image validation rules for this field as soon
 						//as we find one picked file that doesn't match one rule
-						if ($must_be_image && !isImage($mimeType)) {
+						if ($must_be_image && !Ze\File::isImage($mimeType)) {
 							$field['error'] = $field['validation']['must_be_image'];
 							break;
 						
 						} else
-						if ($must_be_image_or_svg && !isImageOrSVG($mimeType)) {
+						if ($must_be_image_or_svg && !Ze\File::isImageOrSVG($mimeType)) {
 							$field['error'] = $field['validation']['must_be_image_or_svg'];
 							break;
 						
@@ -1347,6 +1343,7 @@ function translatePhrasesInTUIXObject(&$t, &$o, &$p, &$c, &$l, &$s, $objectType 
     				case 'placeholder':
                     case 'subtitle':
                     case 'no_items_message':
+                    case 'item_count_message':
                     case 'title_for_existing_records':
                     case 'search_bar_placeholder':
                         translatePhraseInTUIX($t, $o, $p, $c, $l, $s, $i);
@@ -1397,13 +1394,24 @@ function translatePhrasesInTUIXObject(&$t, &$o, &$p, &$c, &$l, &$s, $objectType 
 			case 'custom_template_fields':
 				translatePhrasesInTUIXObjects(array('values'), $t, $o, $p, $c, $l, $s);
 		
+				if (isset($t[$i='legend'])) translatePhraseInTUIX($t, $o, $p, $c, $l, $s, $i);
 				if (isset($t[$i='side_note'])) translatePhraseInTUIX($t, $o, $p, $c, $l, $s, $i);
 				if (isset($t[$i='note_below'])) translatePhraseInTUIX($t, $o, $p, $c, $l, $s, $i);
 				if (isset($t[$i='empty_value'])) translatePhraseInTUIX($t, $o, $p, $c, $l, $s, $i);
-				if (isset($t[$i='snippet'][$j='label'])) translatePhraseInTUIX($t, $o, $p, $c, $l, $s, $i, $j);
-				if (isset($t[$i='upload'][$j='dropbox_phrase'])) translatePhraseInTUIX($t, $o, $p, $c, $l, $s, $i, $j);
-				if (isset($t[$i='upload'][$j='upload_phrase'])) translatePhraseInTUIX($t, $o, $p, $c, $l, $s, $i, $j);
 				if (isset($t[$i='validation'][$j='required'])) translatePhraseInTUIX($t, $o, $p, $c, $l, $s, $i, $j);
+				
+				if (isset($t[$i='snippet'])) {
+					if (isset($t[$i][$j='h1'])) translatePhraseInTUIX($t, $o, $p, $c, $l, $s, $i, $j);
+					if (isset($t[$i][$j='h2'])) translatePhraseInTUIX($t, $o, $p, $c, $l, $s, $i, $j);
+					if (isset($t[$i][$j='h3'])) translatePhraseInTUIX($t, $o, $p, $c, $l, $s, $i, $j);
+					if (isset($t[$i][$j='h4'])) translatePhraseInTUIX($t, $o, $p, $c, $l, $s, $i, $j);
+					if (isset($t[$i][$j='label'])) translatePhraseInTUIX($t, $o, $p, $c, $l, $s, $i, $j);
+				}
+				
+				if (isset($t[$i='upload'])) {
+					if (isset($t[$i][$j='dropbox_phrase'])) translatePhraseInTUIX($t, $o, $p, $c, $l, $s, $i, $j);
+					if (isset($t[$i][$j='upload_phrase'])) translatePhraseInTUIX($t, $o, $p, $c, $l, $s, $i, $j);
+				}
 		
 				//Translate button values
 				if (isset($t['value']) && isset($t['type']) && ($t['type'] == 'button' || $t['type'] == 'toggle' || $t['type'] == 'submit')) {
@@ -1543,7 +1551,7 @@ function setupOverridesForPhrasesInTUIX(&$box, &$fields, $path = '') {
 	
 	if (checkRowExists('languages', array('translate_phrases' => 1))) {
 		$mrg = array(
-			'def_lang_name' => htmlspecialchars(getLanguageName(setting('default_language'))),
+			'def_lang_name' => htmlspecialchars(getLanguageName(cms_core::$defaultLang)),
 			'phrases_panel' => htmlspecialchars(absCMSDirURL(). 'zenario/admin/organizer.php#zenario__languages/panels/phrases')
 		);
 		
@@ -1564,7 +1572,10 @@ function setupMultipleRowsInTUIX(
 	$minNumRows = 0,
 	$tabName = 'details',
 	$deleteButtonCodeName = '',
-	$idFieldCodeName = ''
+	$idFieldCodeName = '',
+	$dupFieldCodeName = '',
+	$firstN = 1,
+	$setGrouping = false
 ) {
 	
 	$changed = false;
@@ -1583,7 +1594,7 @@ function setupMultipleRowsInTUIX(
 		addOrdinalsToTUIX($templateFields);
 		
 		foreach ($templateFields as $id => &$field) {
-			if (strpos($field['ord'], 'nzn') === false) {
+			if (strpos($field['ord'], 'znz') === false) {
 				$field['ord'] = 'znz'. str_pad($field['ord'], 3, '0', STR_PAD_LEFT);
 			}
 		}
@@ -1591,18 +1602,24 @@ function setupMultipleRowsInTUIX(
 	}
 	
 	//Work out how many rows are there are currently, including deleted rows
+	$dupN = false;
 	$numRows = 0;
 	$numDeletedRows = 0;
-	$n = 1;
+	$n = $firstN;
 	while ($rowExists = !empty($tab['fields'][str_replace('znz', $n, $fieldCodeNames[0])])) {
 		++$numRows;
 		
 		if ($deleted = $deleteButtonCodeName && !empty($tab['fields'][str_replace('znz', $n, $deleteButtonCodeName)]['pressed'])) {
 			++$numDeletedRows;
+		
+		} elseif (!$addRows && $dupFieldCodeName !== '' && !empty($tab['fields'][str_replace('znz', $n, $dupFieldCodeName)]['pressed'])) {
+			$dupN = $n;
+			$addRows = 1;
 		}
 		
 		++$n;
 	}
+	
 	
 	//Add extra rows if requested
 	$numRows += (int) $addRows;
@@ -1617,7 +1634,7 @@ function setupMultipleRowsInTUIX(
 	
 	
 	//Check to see if we need to add or delete any rows
-	$n = 1;
+	$n = $firstN;
 	while (true) {
 		
 		$deleted = false;
@@ -1660,7 +1677,7 @@ function setupMultipleRowsInTUIX(
 			}
 		}
 		
-		$inRange = $n <= $numRows;
+		$inRange = $n - $firstN < $numRows;
 		
 		if ($inRange) {
 			
@@ -1684,12 +1701,53 @@ function setupMultipleRowsInTUIX(
 							$field['current_value'] = $values[$tabName. '/'. $id];
 						}
 					}
+					//Same for buttons
+					if (!empty($fields[$tabName. '/'. $id])) {
+						foreach ($fields[$tabName. '/'. $id] as $prop => $val) {
+							$field[$prop] = $val;
+						}
+					}
+					
+					if ($setGrouping !== false) {
+						$field['grouping'] = $setGrouping;
+					}
 					
 					$tab['fields'][$id] = $field;
 					
 				}
 				unset($field);
 				$changed = true;
+				
+				if ($dupN !== false) {
+					foreach ($fieldCodeNames as $fieldCodeName) {
+						if ($fieldCodeName !== $deleteButtonCodeName
+						 && $fieldCodeName !== $idFieldCodeName
+						 && $fieldCodeName !== $dupFieldCodeName
+						) {
+							$copyName = str_replace('znz', $dupN, $fieldCodeName);
+							$pstName = str_replace('znz', $n, $fieldCodeName);
+							
+							$attrs = [
+								'value' => 'value',
+								'current_value' => 'current_value',
+								'pressed' => 'pressed',
+								'hidden' => 'hidden',
+								'_was_hidden_before' => '_was_hidden_before'
+							];
+							if (!empty($tab['fields'][$copyName]['readonly'])) {
+								$attrs['current_value'] = 'value';
+							}
+							
+							foreach ($attrs as $pasteVal => $copyVal) {
+								if (isset($tab['fields'][$copyName][$copyVal])) {
+									$tab['fields'][$pstName][$pasteVal] = $tab['fields'][$copyName][$copyVal];
+								} else {
+									unset($tab['fields'][$pstName][$pasteVal]);
+								}
+							}
+						}
+					}
+				}
 			}
 		} else {
 			if ($rowExists) {
@@ -1740,7 +1798,7 @@ function setupMultipleRowsInTUIX(
 	$activeRows = 0;
 	$firstRow = 0;
 	$lastRow = 0;
-	for ($n = 1; $n <= $numRows; ++$n) {
+	for ($n = $firstN; $n - $firstN < $numRows; ++$n) {
 		if (!$deleted = $deleteButtonCodeName && !empty($tab['fields'][str_replace('znz', $n, $deleteButtonCodeName)]['pressed'])) {
 			++$activeRows;
 			
@@ -1791,7 +1849,7 @@ function syncAdminBoxFromClientToServer(&$serverTags, &$clientTags, $key1 = fals
 	foreach ($keys as $key0 => $dummy) {
 		//Only allow certain tags in certain places to be merged in
 		if (
-			($key1 === false && in($key0, 'download', 'path', 'shake', 'tab') && ($type = 'value'))
+			($key1 === false && in($key0, 'download', 'path', 'shake', 'tab', 'switchToTab') && ($type = 'value'))
 		 || ($key1 === false && in($key0, '_sync', 'tabs') && ($type = 'array'))
 			 || ($key2 === false && $key1 == '_sync' && in($key0, 'cache_dir', 'password', 'storage') && ($type = 'value'))
 			 || ($key2 === false && $key1 == 'tabs' && ($type = 'array'))
@@ -1805,6 +1863,16 @@ function syncAdminBoxFromClientToServer(&$serverTags, &$clientTags, $key1 = fals
 			
 			//Update any values from the client on the server's copy
 			if ($type == 'value') {
+				
+				//Security check - don't allow read-only fields to be changed
+				if (($key0 === 'current_value' || $key0 === 'pressed')
+				 && ((isset($serverTags['disabled']) && engToBoolean($serverTags['disabled']))
+				  || (isset($serverTags['readonly']) && engToBoolean($serverTags['readonly']))
+				  || (isset($serverTags['read_only']) && engToBoolean($serverTags['read_only']))
+				)) {
+					continue;
+				}
+				
 				if (!isset($clientTags[$key0])) {
 					unset($serverTags[$key0]);
 				} else {

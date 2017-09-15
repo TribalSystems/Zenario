@@ -31,8 +31,11 @@ description: |
             By saving submitted data, you can be sure that valuable submitted data is not lost when sent by email.</p>
 category: management
 keywords: data, email, form, routing, submission
+
+# Reminder: you need to increment the LATEST_REVISION_NO in this module's
+# latest_revision_no.inc.php file if you change any of the fields below:
 vlp_class_name: zenario_form_input_handler
-is_pluggable: No
+is_pluggable: false
 admin_floating_box_tabs:
     tab1:
         floating_box_name: Submission Details
@@ -54,5 +57,14 @@ admin_floating_box_tabs:
 signals:
     signal:
         name: eventFlexibleFormSubmitted
+
+# Warning: adding a new dependency to an existing module will break any existing sites
+# where the dependency is not running.
+# You can fix this on a per-site basis by manually running the dependency, i.e. by running
+#   UPDATE zenario_modules SET status = 'module_running' WHERE class_name = 'dependency'
+# in MySQL and then going to /admin/ to apply database updates.
+# If this is a core module, consider using runNewModuleDependency() in a 
+# database-revision in zenario/admin/db_updates/step_4_migrate_the_data/plugins.inc.php
+# to fix it automatically for every site.
 dependencies:
-    zenario_email_template_manager: Yes
+    zenario_email_template_manager: true

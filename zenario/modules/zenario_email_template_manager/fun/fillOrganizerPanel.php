@@ -61,15 +61,15 @@ switch ($path) {
 				} else {
 					$panel['items'][$K]['created_by'] = 'n/a';
 				}
-			} elseif (arrayKey($template,'created_by_id')) {
-				$admin = getAdminDetails(arrayKey($template,'created_by_id'));
+			} elseif ($template['created_by_id'] ?? false) {
+				$admin = getAdminDetails($template['created_by_id'] ?? false);
 				$panel['items'][$K]['created_by'] = $admin['admin_username'];
 			} else {
 				$panel['items'][$K]['created_by'] = 'n/a';
 			}
 
 			if (!empty($template['modified_by_id'])) {
-				$admin = getAdminDetails(arrayKey($template,'modified_by_id'));
+				$admin = getAdminDetails($template['modified_by_id'] ?? false);
 				$panel['items'][$K]['modified_by'] = $admin['admin_username'];
 			} else {
 				$panel['items'][$K]['modified_by'] = 'n/a';
@@ -93,7 +93,7 @@ switch ($path) {
 		if ($refinerName=='email_template'){
 			$template =  self::getTemplateById($refinerId);
 			if (!empty($template['template_name'])){
-				$panel['title'] = 'Emails sent using the template "' . htmlspecialchars(arrayKey($template,'template_name')) . '"';
+				$panel['title'] = 'Emails sent using the template "' . htmlspecialchars($template['template_name'] ?? false) . '"';
 			}
 		}
 

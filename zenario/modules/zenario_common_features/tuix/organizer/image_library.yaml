@@ -16,7 +16,8 @@ zenario__content:
                       AND f.archived = 0
                       AND f.mime_type IN ('image/gif', 'image/png', 'image/jpeg', 'image/svg+xml')
             
-            panel_type: grid_or_images_with_tags
+            panel_type: images_with_tags_or_grid_or_multi_line_list
+            
             use_tall_rows: true
             
             grid_view_microtemplate: zenario_grid_view_image
@@ -45,6 +46,15 @@ zenario__content:
                     db_column: f.filename
                     show_by_default: true
                     get_tags_from_column: tags
+                    parent: multi_line_filename
+                    
+                multi_line_filename:
+                    title: Filename/privacy
+                    db_column: f.filename #Makes this multi line column sortable on f.filename
+                    show_by_default: true
+                    visible_if: |
+                        zenarioO.pi.returnIsMultiLineList();
+                
                 tags:
                     #title: Tags
                     #db_column: |
@@ -90,6 +100,17 @@ zenario__content:
                     show_by_default: true
                     align_right: true
                     width: xsmall
+                    parent: multi_line_size
+                    
+                multi_line_size:
+                    title: Size
+                    db_column: f.size #Makes this multi line column sortable on f.size
+                    align_right: true
+                    width: xsmall
+                    show_by_default: true
+                    visible_if: |
+                        zenarioO.pi.returnIsMultiLineList();
+                
                 width:
                     title: Width
                     searchable: true
@@ -97,6 +118,15 @@ zenario__content:
                     show_by_default: true
                     align_right: true
                     width: xsmall
+                    parent: multi_line_width
+                multi_line_width:
+                    title: Width
+                    db_column: f.width #Makes this multi line column sortable on f.width
+                    align_right: true
+                    width: xsmall
+                    show_by_default: true
+                    visible_if: |
+                        zenarioO.pi.returnIsMultiLineList();
                 height:
                     title: Height
                     searchable: true
@@ -104,6 +134,16 @@ zenario__content:
                     show_by_default: true
                     align_right: true
                     width: xsmall
+                    parent: multi_line_height
+                multi_line_height:
+                    title: Height
+                    show_by_default: true
+                    align_right: true
+                    db_column: f.height #Makes this multi line column sortable on f.height
+                    width: xsmall
+                    visible_if: |
+                        zenarioO.pi.returnIsMultiLineList();
+                
                 privacy:
                     title: Privacy
                     db_column: f.privacy
@@ -129,7 +169,7 @@ zenario__content:
                                 <td style="vertical-align: text-top;">When next displayed to a visitor, will be set to Public if on a public content item, or Private if on a private content item.</td>
                             </tr>
                         </table>
-                    
+                    parent: multi_line_filename
                     
                 in_use_anywhere:
                     title: In use
@@ -145,11 +185,25 @@ zenario__content:
                     format: yes_or_no
                     show_by_default: true
                     width: xsmall
+                    parent: multi_line_in_use_anywhere
+                multi_line_in_use_anywhere:
+                    title: In use
+                    show_by_default: true
+                    width: xsmall
+                    visible_if: |
+                        zenarioO.pi.returnIsMultiLineList();
                 
                 all_usage_content:
                     title: Where it's used
                     tooltip: All content usage (attached to items, plugins, menu nodes)
                     show_by_default: true
+                    parent: multi_line_all_usage_content
+                multi_line_all_usage_content:
+                    title: Where it's used
+                    show_by_default: true
+                    visible_if: |
+                        zenarioO.pi.returnIsMultiLineList();
+                
                 
                 usage_content:
                     title: Attached to (content items)
@@ -241,6 +295,12 @@ zenario__content:
                             LIMIT 1
                         )
                     show_by_default: true
+                    parent: multi_line_usage_email_templates
+                multi_line_usage_email_templates:
+                    title: Email templates
+                    show_by_default: true
+                    visible_if: |
+                        zenarioO.pi.returnIsMultiLineList();
                 
                 duplicate_filename:
                     db_column: |

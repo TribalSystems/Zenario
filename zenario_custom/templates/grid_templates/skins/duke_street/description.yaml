@@ -57,6 +57,9 @@ style_formats:
         title: "Code"
         selector: "*"
         classes: "code"
+    -
+        title: "Quote"
+        block: "blockquote"
 
 # Any CSS class names that you define for a plugin will appear as an option on the
 # "CSS & framework" settings for that plugin.

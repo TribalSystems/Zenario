@@ -68,33 +68,38 @@ methods.showPanel = function($header, $panel, $footer) {
 	var html = this.loadPanelHTML();
 	$panel.html(html).show();
 	
-	//On initial load select the first tab
-	if (!this.currentTabId) {
-		var tabs = this.getOrderedTabs();
-		if (tabs.length > 0) {
-			this.currentTabId = tabs[0].id;
+	//On initial load select the first page
+	if (_.isEmpty(this.tuix.items)) {
+		this.addNewPage(true);
+	}
+	if (!this.currentPageId) {
+		var pages = this.getOrderedPages();
+		if (pages.length > 0) {
+			this.currentPageId = pages[0].id;
 		}
 	}
 	
+	this.pagesReordered = false;
+	this.deletedPages = [];
 	this.deletedFields = [];
+	this.deletedValues = [];
 	this.changeDetected = false;
 	this.maxNewCustomField = 1;
 	this.maxNewCustomFieldValue = 1;
 	
-	this.selectedDetailsTab = this.selectedDetailsTab ? this.selectedDetailsTab : false;
+	this.selectedDetailsPage = this.selectedDetailsPage ? this.selectedDetailsPage : false;
 	this.selectedFieldId = this.selectedFieldId ? this.selectedFieldId : false;
-	this.selectedTabId = this.selectedTabId ? this.selectedTabId : false;
+	this.selectedPageId = this.selectedPageId ? this.selectedPageId : false;
 	
 	//Load right panel
-	this.loadTabsList(this.currentTabId);
-	this.loadFieldsList(this.currentTabId);
+	this.loadPagesList(this.currentPageId);
+	this.loadFieldsList(this.currentPageId);
 	
 	//Load left panel
 	if (this.selectedFieldId) {
 		this.loadFieldDetailsPanel(this.selectedFieldId, true);
-		this.highlightField(this.selectedFieldId);
-	} else if (this.selectedTabId) {
-		this.loadTabDetailsPanel(this.selectedTabId, true);
+	} else if (this.selectedPageId) {
+		this.loadPageDetailsPanel(this.selectedPageId, true);
 	} else {
 		this.loadNewFieldsPanel(true);
 	}
@@ -111,19 +116,26 @@ methods.showPanel = function($header, $panel, $footer) {
 };
 
 methods.sortOutItems = function() {
-	var tabId, tab, fieldId, field;
-	foreach (this.tuix.items as tabId => tab) {
-		foreach (tab.fields as fieldId => field) {
-			//This array is turned into an object when parsed. Turn it back into an array...
-			if (field.invalid_responses) {
-				field.invalid_responses = _.toArray(field.invalid_responses);
-			}
-			if (field.visible_condition_checkboxes_field_value) {
-				field.visible_condition_checkboxes_field_value = _.toArray(field.visible_condition_checkboxes_field_value);
-			}
-			if (field.mandatory_condition_checkboxes_field_value) {
-				field.mandatory_condition_checkboxes_field_value = _.toArray(field.mandatory_condition_checkboxes_field_value);
-			}
+	var pageId, page, fieldId, field;
+	foreach (this.tuix.fields as fieldId => field) {
+		//This array is turned into an object when parsed. Turn it back into an array...
+		if (field.invalid_responses) {
+			field.invalid_responses = _.toArray(field.invalid_responses);
+		}
+		if (field.visible_condition_checkboxes_field_value) {
+			field.visible_condition_checkboxes_field_value = _.toArray(field.visible_condition_checkboxes_field_value);
+		}
+		if (field.mandatory_condition_checkboxes_field_value) {
+			field.mandatory_condition_checkboxes_field_value = _.toArray(field.mandatory_condition_checkboxes_field_value);
+		}
+	}
+	
+	foreach (this.tuix.items as pageId => page) {
+		if (page.visible_condition_checkboxes_field_value) {
+			page.visible_condition_checkboxes_field_value = _.toArray(page.visible_condition_checkboxes_field_value);
+		}
+		if (page.mandatory_condition_checkboxes_field_value) {
+			page.mandatory_condition_checkboxes_field_value = _.toArray(page.mandatory_condition_checkboxes_field_value);
 		}
 	}
 };
@@ -136,47 +148,49 @@ methods.loadPanelHTML = function() {
 	return html;
 };
 
-methods.loadTabDetailsPanel = function(tabId, stopEffect) {
-	this.loadFieldDetailsPanel(tabId, stopEffect, true);
+methods.loadPageDetailsPanel = function(pageId, stopEffect) {
+	this.loadFieldDetailsPanel(pageId, stopEffect, true);
 	
 	var that = this,
-		label, tab, message, fields;
+		label, page, message, fields;
 	$('#field__name').on('keyup', function() {
-		label = that.getTabLabel($(this).val());
-		$('#organizer_form_tab_' + tabId + ' span').text(label);
+		label = that.getPageLabel($(this).val());
+		$('#organizer_form_tab_' + pageId + ' span').text(label);
 	});
 	
 	$('#organizer_remove_form_tab').on('click', function(e) {
-		tab = that.tuix.items[tabId];
-		if (tab) {
+		page = that.tuix.items[pageId];
+		if (page) {
 			message = '<p>Are you sure you want to delete this page?</p>';
-			fields = that.getOrderedFields(tabId);
+			fields = that.getOrderedFields(pageId);
 			if (fields.length) {
 				message += '<p>All fields on this page will be moved onto the previous page.</p>';
 			}
 			zenarioA.floatingBox(message, 'Delete', 'warning', true, false, function() {
-				that.deleteTab(tabId);
+				that.deletePage(pageId);
 			});
 		}
 	});
 };
 
-methods.loadFieldDetailsPanel = function(fieldId, stopEffect, isTab) {
+methods.loadFieldDetailsPanel = function(fieldId, stopEffect, isPage) {
 	var field;
-	if (isTab) {
+	if (isPage) {
 		field = this.tuix.items[fieldId];
+		field.type = 'page_break';
 	} else {
-		field = this.tuix.items[this.currentTabId].fields[fieldId];
+		field = this.tuix.fields[fieldId];
 	}
 	
 	//Load HTML
 	var mergeFields = {
 		mode: 'field_details',
 		name: field.name,
-		type: this.getFieldReadableType(field.type),
+		type: field.type,
+		typePhrase: this.getFieldReadableType(field.type),
 		just_added: field.just_added,
 		hide_tab_bar: this.tuix.field_details.hide_tab_bar,
-		is_tab: isTab
+		is_tab: isPage
 	};
 	if (field.dataset_field_id) {
 		mergeFields.type += ', dataset field';
@@ -192,26 +206,26 @@ methods.loadFieldDetailsPanel = function(fieldId, stopEffect, isTab) {
 		$div.hide().show('drop', {direction: 'left'}, 200);
 	}
 	
-	//Load TUIX tabs HTML
+	//Load TUIX pages HTML
 	var tuix = this.tuix.field_details.tabs;
-	var tabs = this.sortAndLoadTUIXTabs(tuix, field, this.selectedDetailsTab);
-	var html = this.getTUIXTabsHTML(tabs);
+	var pages = this.sortAndLoadTUIXPages(tuix, field, this.selectedDetailsPage);
+	var html = this.getTUIXPagesHTML(pages);
 	$('#organizer_field_details_tabs').html(html);
 	
-	//Add field details tab events
+	//Add field details page events
 	var that = this;
 	$('#organizer_field_details_tabs .tab').on('click', function() {
-		var tab = $(this).data('name');
-		if (tab && tab != that.selectedDetailsTab) {
+		var page = $(this).data('name');
+		if (page && page != that.selectedDetailsPage) {
 			var errors = that.saveCurrentOpenDetails();
 			if (!errors) {
-				that.loadFieldDetailsTab(tab, fieldId);
+				that.loadFieldDetailsPage(page, fieldId);
 			}
 		}
 	});
 	
 	//Load TUIX fields html
-	this.loadFieldDetailsTab(this.selectedDetailsTab, fieldId);
+	this.loadFieldDetailsPage(this.selectedDetailsPage, fieldId);
 	
 	//Add panel events
 	
@@ -264,22 +278,22 @@ methods.openFormSettings = function() {
 	);
 };
 
-methods.loadTabDetailsTab = function(tab, tabId, errors) {
-	this.loadFieldDetailsTab(tab, tabId, errors);
+methods.loadPageDetailsPage = function(page, pageId, errors) {
+	this.loadFieldDetailsPage(page, pageId, errors);
 };
 
-methods.loadFieldDetailsTab = function(tab, fieldId, errors) {
-	this.selectedDetailsTab = tab;
+methods.loadFieldDetailsPage = function(page, fieldId, errors) {
+	this.selectedDetailsPage = page;
 	var item;
-	if (this.selectedFieldId && this.tuix.items[this.currentTabId].fields[fieldId]) {
-		item = this.tuix.items[this.currentTabId].fields[fieldId]
-	} else if (this.selectedTabId && this.tuix.items[fieldId]) {
+	if (this.selectedFieldId && this.tuix.fields[fieldId]) {
+		item = this.tuix.fields[fieldId]
+	} else if (this.selectedPageId && this.tuix.items[fieldId]) {
 		item = this.tuix.items[fieldId];
 		//Final page must be visible
-		var tabs = this.getOrderedTabs();
-		for (var i = 0; i < tabs.length; i++) {
-			if (tabs[i].id == item.id) {
-				if (i == (tabs.length - 1)) {
+		var pages = this.getOrderedPages();
+		for (var i = 0; i < pages.length; i++) {
+			if (pages[i].id == item.id) {
+				if (i == (pages.length - 1)) {
 					item.visibility = 'visible';
 				}
 				break;
@@ -287,10 +301,10 @@ methods.loadFieldDetailsTab = function(tab, fieldId, errors) {
 		}
 	}
 	
-	var path = 'field_details/' + tab;
-	var tuix = this.tuix.field_details.tabs[tab].fields;
+	var path = 'field_details/' + page;
+	var tuix = this.tuix.field_details.tabs[page].fields;
 	var fields = this.loadFields(path, tuix, item);
-	var formattedFields = this.formatFieldDetails(fields, item, 'field', tab);
+	var formattedFields = this.formatFieldDetails(fields, item, 'field', page);
 	var sortedFields = this.sortFields(formattedFields, item);
 	var html = '';
 	
@@ -305,7 +319,7 @@ methods.loadFieldDetailsTab = function(tab, fieldId, errors) {
 	html += this.getTUIXFieldsHTML(sortedFields);
 	$('#organizer_field_details').html(html);
 	$('#organizer_field_details_tabs .tab').removeClass('on');
-	$('#field_tab__' + tab).addClass('on');
+	$('#field_tab__' + page).addClass('on');
 	if (!_.isEmpty(errors)) {
 		$('#organizer_field_details_form').effect({
 			effect: 'bounce',
@@ -321,7 +335,7 @@ methods.loadFieldDetailsTab = function(tab, fieldId, errors) {
 	
 	var that = this;
 	
-	if (tab == 'details') {
+	if (page == 'details') {
 		$('#field__field_label').on('keyup', function() {
 			$('#organizer_form_field_' + fieldId + ' .label').text($(this).val());
 			if (item.just_added) {
@@ -347,13 +361,11 @@ methods.loadFieldDetailsTab = function(tab, fieldId, errors) {
 			$('#edit_field_calculation').on('click', function() {
 				//Get all numeric text fields
 				var numericFields = {};
-				foreach (that.tuix.items as var tTabId => tTab) {
-					foreach (tTab.fields as var tFieldId => var tField) {
-						if ((tField.type == 'text' && ['number', 'integer', 'floating_point'].indexOf(tField.field_validation) != -1) 
-							|| (tField.type == 'calculated' && fieldId != tFieldId)
-						) {
-							numericFields[tFieldId] = {label: tField.name, ord: tField.ord};
-						}
+				foreach (that.tuix.fields as var tFieldId => var tField) {
+					if ((tField.type == 'text' && ['number', 'integer', 'floating_point'].indexOf(tField.field_validation) != -1) 
+						|| (tField.type == 'calculated' && fieldId != tFieldId)
+					) {
+						numericFields[tFieldId] = {label: tField.name, ord: tField.ord};
 					}
 				}
 				
@@ -380,13 +392,13 @@ methods.loadFieldDetailsTab = function(tab, fieldId, errors) {
 						}
 						that.changeMadeToPanel();
 						that.saveCurrentOpenDetails();
-						that.loadFieldDetailsTab('details', fieldId);
+						that.loadFieldDetailsPage('details', fieldId);
 					}
 				);
 			});
 		}
 		
-	} else if (tab == 'advanced') {
+	} else if (page == 'advanced') {
 		$('#field__css_classes').on('keyup', function() {
 			$('#organizer_form_field_' + fieldId + ' .form_field_classes .css').toggle(!!$(this).val()).prop('title', $(this).val());
 		});
@@ -394,9 +406,9 @@ methods.loadFieldDetailsTab = function(tab, fieldId, errors) {
 			$('#organizer_form_field_' + fieldId + ' .form_field_classes .div').toggle(!!$(this).val()).prop('title', $(this).val());
 		});
 		
-	} else if (tab == 'values') {
+	} else if (page == 'values') {
 		if (formattedFields.values && !formattedFields.values._hidden) {
-			var values = this.getOrderedFieldValues(this.currentTabId, fieldId);
+			var values = this.getOrderedFieldValues(fieldId);
 			html = this.microTemplate('zenario_organizer_admin_box_builder_field_value', values);
 			
 			$('#field_values_list').html(html).sortable({
@@ -408,7 +420,7 @@ methods.loadFieldDetailsTab = function(tab, fieldId, errors) {
 				},
 				stop: function(event, ui) {
 					if (that.startIndex != ui.item.index()) {
-						that.saveFieldListOfValues(fieldId);
+						that.saveFieldListOfValues(that.tuix.fields[fieldId]);
 						that.loadFieldValuesListPreview(fieldId);
 						that.changeMadeToPanel();
 					}
@@ -424,8 +436,8 @@ methods.loadFieldDetailsTab = function(tab, fieldId, errors) {
 			//Add new field value
 			$('#organizer_add_a_field_value').on('click', function() {
 				that.addFieldValue(item);
-				that.saveItemTUIXTab('field_details', tab, item);
-				that.loadFieldDetailsTab(tab, fieldId);
+				that.saveItemTUIXPage('field_details', page, item);
+				that.loadFieldDetailsPage(page, fieldId);
 				that.loadFieldValuesListPreview(fieldId);
 				that.changeMadeToPanel();
 			});
@@ -434,31 +446,28 @@ methods.loadFieldDetailsTab = function(tab, fieldId, errors) {
 			$('#field_values_list .delete_icon').on('click', function() {
 				var id = $(this).data('id');
 				if (item.lov[id]) {
-					if (!item._deleted_lov) {
-						item._deleted_lov = [];
-					}
-					item._deleted_lov.push(id);
+					that.deletedValues.push(id);
 					delete(item.lov[id]);
 				}
-				that.saveItemTUIXTab('field_details', tab, item);
-				that.loadFieldDetailsTab(tab, fieldId);
+				that.saveItemTUIXPage('field_details', page, item);
+				that.loadFieldDetailsPage(page, fieldId);
 				that.loadFieldValuesListPreview(fieldId);
 				that.changeMadeToPanel();
 			});
 		}
-	} else if (tab == 'translations') {
-		var transFieldNamesList = _.toArray(this.tuix.field_details.tabs[tab].translatable_fields);
+	} else if (page == 'translations') {
+		var transFieldNamesList = _.toArray(this.tuix.field_details.tabs[page].translapagele_fields);
 		var transFieldNames = {};
 		for (var i = 0; i < transFieldNamesList.length; i++) {
 			transFieldNames[transFieldNamesList[i]] = true;
 		}
 		
-		//Currently translations only support fields on the details tab
-		tab = 'details';
-		path = 'field_details/' + tab;
-		tuix = this.tuix.field_details.tabs[tab].fields;
+		//Currently translations only support fields on the details page
+		page = 'details';
+		path = 'field_details/' + page;
+		tuix = this.tuix.field_details.tabs[page].fields;
 		fields = this.loadFields(path, tuix, item);
-		formattedFields = this.formatFieldDetails(fields, item, 'field', tab);
+		formattedFields = this.formatFieldDetails(fields, item, 'field', page);
 		sortedFields = this.sortFields(formattedFields, item);
 		
 		var visibleTransFieldNamesList = [];
@@ -511,19 +520,21 @@ methods.loadFieldDetailsTab = function(tab, fieldId, errors) {
 			that.changeMadeToPanel();
 		});
 		
-	} else if (tab == 'crm') {
+	} else if (page == 'crm') {
 		$('#organizer_crm_button__set_labels').on('click', function() {
+			that.changeMadeToPanel();
 			$('#organizer_field_crm_values input.crm_value_input').each(function(i, e) {
 				var id = $(this).data('id');
 				var value = '';
-				if (that.tuix.items[that.currentTabId].fields[fieldId].lov && that.tuix.items[that.currentTabId].fields[fieldId].lov[id]) {
-					value = that.tuix.items[that.currentTabId].fields[fieldId].lov[id].label;
+				if (that.tuix.fields[fieldId].lov && that.tuix.fields[fieldId].lov[id]) {
+					value = that.tuix.fields[fieldId].lov[id].label;
 				}
 				$(this).val(value);
 			});
 		});
 		
 		$('#organizer_crm_button__set_values').on('click', function() {
+			that.changeMadeToPanel();
 			$('#organizer_field_crm_values input.crm_value_input').each(function(i, e) {
 				var id = $(this).data('id');
 				$(this).val(id);
@@ -534,7 +545,7 @@ methods.loadFieldDetailsTab = function(tab, fieldId, errors) {
 			values: []
 		};
 		
-		if (item.type == 'checkbox') {
+		if (item.type == 'checkbox' || item.type == 'group') {
 			values = {
 				'unchecked': {
 					label: 0, 
@@ -559,7 +570,7 @@ methods.loadFieldDetailsTab = function(tab, fieldId, errors) {
 			
 			mergeFields.values.sort(this.sortByOrd);
 		} else {
-			mergeFields.values = this.getOrderedFieldValues(this.currentTabId, fieldId);
+			mergeFields.values = this.getOrderedFieldValues(fieldId);
 		}
 		
 		var html = this.microTemplate('zenario_organizer_form_builder_crm_values', mergeFields);
@@ -621,17 +632,16 @@ methods.calculationAdminBoxUpdateDisplay = function(calculationCode) {
 	$('#zenario_calculation_display').text(calculationDisplay);
 };
 methods.getCalculationCodeDisplay = function(calculationCode) {
-	var calculationDisplay = '';
+	var calculationDisplay = '',
+		fields, fieldId, field, lastIsParenthesisOpen, i, name;
 	if (calculationCode) {
-		var fields = {};
-		foreach (this.tuix.items as var tabId => var tab) {
-			foreach (tab.fields as var fieldId => var field) {
-				fields[fieldId] = field;
-			}
+		fields = {};
+		foreach (this.tuix.fields as fieldId => field) {
+			fields[fieldId] = field;
 		}
 		
-		var lastIsParenthesisOpen = false;
-		for (var i = 0; i < calculationCode.length; i++) {
+		lastIsParenthesisOpen = false;
+		for (i = 0; i < calculationCode.length; i++) {
 			if (!lastIsParenthesisOpen && calculationCode[i].type != 'parentheses_close') {
 				calculationDisplay += ' ';
 			} else if (lastIsParenthesisOpen) {
@@ -662,7 +672,7 @@ methods.getCalculationCodeDisplay = function(calculationCode) {
 					calculationDisplay += calculationCode[i].value;
 					break;
 				case 'field':
-					var name = '';
+					name = '';
 					if (fields[calculationCode[i].value]) {
 						name = fields[calculationCode[i].value].name;
 					} else {
@@ -678,12 +688,14 @@ methods.getCalculationCodeDisplay = function(calculationCode) {
 };
 
 
-methods.formatFieldDetails = function(fields, item, mode, tab) {
+methods.formatFieldDetails = function(fields, item, mode, page) {
 	if (mode == 'field') {
-		if (tab == 'details') {
+		if (page == 'details') {
 			if (item.dataset_field_id) {
 				fields.values_source._disabled = true;
 				fields.values_source_filter._readonly = true;
+				fields.min_rows._readonly = true;
+				fields.max_rows._readonly = true;
 			}
 			
 			var values_source = fields.values_source._value;
@@ -739,12 +751,12 @@ methods.formatFieldDetails = function(fields, item, mode, tab) {
 					fields.calculation_code._value = this.getCalculationCodeDisplay(item.calculation_code);
 				}
 			} else if (item.type == 'page_break') {
-				var tabs = this.getOrderedTabs();
-				for (var i = 0; i < tabs.length; i++) {
-					if (tabs[i].id == item.id) {
+				var pages = this.getOrderedPages();
+				for (var i = 0; i < pages.length; i++) {
+					if (pages[i].id == item.id) {
 						if (i == 0) {
 							fields.previous_button_text._hidden = true;
-						} else if (i == (tabs.length - 1)) {
+						} else if (i == (pages.length - 1)) {
 							fields.next_button_text._hidden = true;
 							fields.visibility._disabled = true;
 						}
@@ -753,24 +765,30 @@ methods.formatFieldDetails = function(fields, item, mode, tab) {
 				}
 			}
 			
-		} else if (tab == 'advanced') {
+		} else if (page == 'advanced') {
 			if (item.default_value_options == 'value') {
 				if (['radios', 'centralised_radios', 'select', 'centralised_select'].indexOf(item.type) != -1) {
 					fields.default_value_lov.values = item.lov;
 				}
 			}
+			
+			if (item.type == 'select') {
+				fields.default_value_options.label = 'Pre-select field:';
+			}
 		}
 	}
+	
+	//Re-draw page tabs for visibility class
+	if (item.type == 'page_break') {
+		this.loadPagesList(this.currentPageId);
+	}
+	
 	return fields;
 };
 
 methods.getField = function(fieldId) {
-	foreach (this.tuix.items as var tTabId => var tTab) {
-		foreach (tTab.fields as var tFieldId => var tField) {
-			if (tFieldId == fieldId) {
-				return tField;
-			}
-		}
+	if (this.tuix.fields[fieldId]) {
+		return this.tuix.fields[fieldId];
 	}
 	return false;
 };
@@ -783,14 +801,13 @@ methods.getFieldValuesList = function(field) {
 	var disabled = field._disabled;
 	var usesOptGroups = false;
 	
-	
 	if (typeof(values) == 'object') {
 		var i = 0;
 		foreach (values as var tValueId => var tValue) {
 			var option = {
 				label: tValue.label,
 				value: tValueId,
-				ord: ++i
+				ord: tValue.ord !== undefined ? tValue.ord : ++i
 			};
 			sortedValues.push(option);
 		}
@@ -808,20 +825,20 @@ methods.getFieldValuesList = function(field) {
 		|| values == 'conditional_fields'
 		|| values == 'mirror_fields'
 	) {
-		var tTabs = this.getOrderedTabs();
-		usesOptGroups = tTabs.length > 1;
+		var tPages = this.getOrderedPages();
+		usesOptGroups = tPages.length > 1;
 		var ord = 1;
-		for (var i = 0; i < tTabs.length; i++) {
-			var tFields = this.getOrderedFields(tTabs[i].id);
+		for (var i = 0; i < tPages.length; i++) {
+			var tFields = this.getOrderedFields(tPages[i].id);
 			var parentIndex = false;
-			var tTab = tTabs[i];
+			var tPage = tPages[i];
 			for (var j = 0; j < tFields.length; j++) {
 				var tField = tFields[j];
 				if (this.canAddFieldToList(values, tField)) {
 					if (parentIndex === false && usesOptGroups) {
 						parentIndex = sortedValues.push({
 							ord: ord++,
-							label: tTab.name,
+							label: tPage.name,
 							hasChildren: true,
 							options: []
 						}) - 1;
@@ -837,8 +854,8 @@ methods.getFieldValuesList = function(field) {
 			}
 		}
 	} else if (values == 'field_lov') {
-		if (this.tuix.items[this.currentTabId].fields[this.selectedFieldId] && this.tuix.items[this.currentTabId].fields[this.selectedFieldId].lov) {
-			foreach (this.tuix.items[this.currentTabId].fields[this.selectedFieldId].lov as var tValueId => var tValue) {
+		if (this.tuix.fields[this.selectedFieldId] && this.tuix.fields[this.selectedFieldId].lov) {
+			foreach (this.tuix.fields[this.selectedFieldId].lov as var tValueId => var tValue) {
 				var option = {
 					ord: tValue.ord,
 					label: tValue.label,
@@ -890,13 +907,14 @@ methods.canAddFieldToList = function(values, field) {
 
 
 methods.loadNewFieldsPanel = function(stopEffect) {
-	this.selectedTabId = false;
+	this.selectedPageId = false;
 	this.selectedFieldId = false;
 	
 	//Load HTML
 	var mergeFields = {
 		mode: 'new_fields',
-		datasetTabs: this.getOrderedDatasetTabsAndFields()
+		datasetTabs: this.getOrderedDatasetPagesAndFields(),
+		link_to_dataset: this.tuix.link_to_dataset
 	};
 	var html = this.microTemplate('zenario_organizer_form_builder_left_panel', mergeFields);
 	var $div = $('#organizer_form_builder .form_fields_palette .form_fields_palette_outer').html(html);
@@ -922,45 +940,45 @@ methods.loadNewFieldsPanel = function(stopEffect) {
 	});
 };
 
-methods.loadTabsList = function(tabId) {
-	foreach (this.tuix.items as var tTabId => var tab) {
-		if (tabId == tTabId) {
-			tab._selected = true;
+methods.loadPagesList = function(pageId) {
+	foreach (this.tuix.items as var tPageId => var page) {
+		if (pageId == tPageId) {
+			page._selected = true;
 		} else {
-			delete(tab._selected);
+			delete(page._selected);
 		}
 	}
 	
-	//Only show page tabs if there is at least 2
-	var tabs = this.getOrderedTabs();
-	if (tabs.length <= 1) {
-		tabs = false;
+	//Only show page pages if there is at least 2
+	var pages = this.getOrderedPages();
+	if (pages.length <= 1) {
+		pages = false;
 	}
 	
 	//Load HTML
-	var mergeFields = {tabs: tabs};
+	var mergeFields = {pages: pages};
 	var html = this.microTemplate('zenario_organizer_form_builder_tabs', mergeFields);
 	$('#organizer_form_tabs').html(html);
 	
 	//Add events
 	
 	var that = this;
-	//Click on a tab
+	//Click on a page
 	$('#organizer_form_tabs .tab').on('click', function() {
-		var tTabId = $(this).data('id');
-		if (that.tuix.items[tTabId]) {
-			that.clickTab(tTabId);
+		var tPageId = $(this).data('id');
+		if (that.tuix.items[tPageId]) {
+			that.clickPage(tPageId);
 		}
 	});
-	//Add a new tab
+	//Add a new page
 	$('#organizer_add_new_tab').on('click', function() {
 		var errors = that.saveCurrentOpenDetails();
 		if (!errors) {
-			that.addNewTab();
+			that.addNewPage();
 			that.changeMadeToPanel();
 		}
 	});
-	//Tab sorting
+	//Page sorting
 	$('#organizer_form_tabs').sortable({ 
 		containment: 'parent',
 		tolerance: 'pointer',
@@ -972,49 +990,56 @@ methods.loadTabsList = function(tabId) {
 			if (that.startIndex != ui.item.index()) {
 				//Update ordinals
 				$('#organizer_form_tabs .tab.sort').each(function(i) {
-					var tTabId = $(this).data('id');
-					that.tuix.items[tTabId].ord = (i + 1);
+					var tPageId = $(this).data('id');
+					that.tuix.items[tPageId].ord = (i + 1);
 				});
+				that.pagesReordered = true;
 				that.changeMadeToPanel();
 				
-				//If currently viewing a tabs details, reload because the content changes depending on position
-				if (that.selectedTabId) {
+				//If currently viewing a pages details, reload because the content changes depending on position TODO
+				if (that.selectedPageId) {
 					that.saveCurrentOpenDetails();
-					that.loadTabDetailsPanel(that.selectedTabId, true);
+					that.loadPageDetailsPanel(that.selectedPageId, true);
 				}
 			}
 		}
 	});
 	
-	//Moving fields between tabs
+	//Moving fields between pages
 	$('#organizer_form_tabs .tab').droppable({
-		accept: 'div.form_field:not(.repeat_end)',
+		accept: 'div.is_sortable:not(.repeat_end)',
 		greedy: true,
 		hoverClass: 'ui-state-hover',
 		tolerance: 'pointer',
 		drop: function(event, ui) {
-			var tTabId = $(this).data('id');
-			var fieldId = $(ui.draggable).data('id');
+			var errors = that.saveCurrentOpenDetails();
+			if (!errors) {
+				var tPageId = $(this).data('id');
+				var fieldId = $(ui.draggable).data('id');
 			
-			that.moveFieldToTab(that.currentTabId, tTabId, fieldId);
+				that.moveFieldToPage(that.currentPageId, tPageId, fieldId);
 			
-			if (fieldId == that.selectedFieldId) {
-				that.loadNewFieldsPanel();
+				if (fieldId == that.selectedFieldId) {
+					that.loadNewFieldsPanel();
+				}
+				that.loadFieldsList(that.currentPageId);
 			}
-			that.loadFieldsList(that.currentTabId);
 		}
 	});
 };
 
-methods.moveFieldToTab = function(fromTabId, toTabId, fieldId, addToStart) {
-	if (fromTabId != toTabId 
-		&& this.tuix.items[toTabId] 
-		&& this.tuix.items[fromTabId] 
-		&& this.tuix.items[fromTabId].fields[fieldId]
-		&& this.tuix.items[fromTabId].fields[fieldId].type != 'repeat_end'
+methods.moveFieldToPage = function(fromPageId, toPageId, fieldId, addToStart) {
+	if (fromPageId != toPageId 
+		&& this.tuix.items[toPageId] 
+		&& this.tuix.items[fromPageId] 
+		&& this.tuix.items[fromPageId].fields[fieldId]
+		&& this.tuix.fields[fieldId].type != 'repeat_end'
 	) {
+		this.tuix.items[toPageId]._pageFieldsReordered = true;
+		this.tuix.items[fromPageId]._pageFieldsReordered = true;
+		
 		var ord = 1;
-		var toFields = this.getOrderedFields(toTabId);
+		var toFields = this.getOrderedFields(toPageId);
 		if (toFields.length) {
 			if (addToStart) {
 				ord = toFields[0].ord - 1;
@@ -1024,95 +1049,98 @@ methods.moveFieldToTab = function(fromTabId, toTabId, fieldId, addToStart) {
 		}
 		
 		//Move matching repeat_end for repeat_start
-		if (this.tuix.items[fromTabId].fields[fieldId].type == 'repeat_start') {
+		if (this.tuix.fields[fieldId].type == 'repeat_start') {
 			var repeatEndId = this.getMatchingRepeatEnd(fieldId);
-			this.tuix.items[toTabId].fields[repeatEndId] = this.tuix.items[fromTabId].fields[repeatEndId];
-			this.tuix.items[toTabId].fields[repeatEndId].ord = ord + 0.001;
-			delete(this.tuix.items[fromTabId].fields[repeatEndId]);
+			this.tuix.fields[repeatEndId].ord = ord + 0.001;
+			this.tuix.items[toPageId].fields[repeatEndId] = 1;
+			delete(this.tuix.items[fromPageId].fields[repeatEndId]);
 		}
 		
-		this.tuix.items[toTabId].fields[fieldId] = this.tuix.items[fromTabId].fields[fieldId];
-		this.tuix.items[toTabId].fields[fieldId].ord = ord;
-		delete(this.tuix.items[fromTabId].fields[fieldId]);
+		this.tuix.fields[fieldId].ord = ord;
+		this.tuix.items[toPageId].fields[fieldId] = 1;
+		delete(this.tuix.items[fromPageId].fields[fieldId]);
 		
 		this.changeMadeToPanel();
 	}
 };
 
-methods.addNewTab = function() {
+methods.addNewPage = function(inBackground) {
 	var ord = 1;
-	var tabs = this.getOrderedTabs();
-	if (tabs.length) {
-		ord = tabs[tabs.length - 1].ord + 1;
+	var pages = this.getOrderedPages();
+	if (pages.length) {
+		ord = pages[pages.length - 1].ord + 1;
 	}
-	this.addNewField('page_break', ord);
+	this.addNewField('page_break', ord, undefined, undefined, undefined, undefined, inBackground);
 };
 
-methods.clickTab = function(tabId, isNewTab) {
-	if (this.selectedTabId != tabId) {
-		var errors = this.saveCurrentOpenDetails();
-		if (!errors) {
-			//By clicking on the current tab you can access it's details
-			if (this.currentTabId == tabId) {
+methods.clickPage = function(pageId, isNewPage) {
+	if (this.selectedPageId != pageId) {
+		var detailErrors = this.saveCurrentOpenDetails();
+		var structureErrors = this.displayPageFieldStructureErrors(this.currentPageId);
+		
+		if (!detailErrors && !structureErrors) {
+			//By clicking on the current page you can access it's details
+			if (this.currentPageId == pageId) {
 				this.selectedFieldId = false;
-				this.selectedTabId = tabId;
-				this.selectedDetailsTab = false;
-				this.loadTabDetailsPanel(tabId);
+				this.selectedPageId = pageId;
+				this.selectedDetailsPage = false;
+				this.loadPageDetailsPanel(pageId);
 				return;
 			}
-			this.clickTab2(tabId, isNewTab);
+			this.clickPage2(pageId, isNewPage);
 		}
 	}
 };
 
-methods.clickTab2 = function(tabId, isNewTab) {
-	this.currentTabId = tabId;
-	if (isNewTab) {
-		this.selectedTabId = tabId;
-		this.loadTabDetailsPanel(tabId);
+methods.clickPage2 = function(pageId, isNewPage) {
+	this.currentPageId = pageId;
+	if (isNewPage) {
+		this.selectedPageId = pageId;
+		this.loadPageDetailsPanel(pageId);
 	} else {
 		var stopEffect = false;
-		if (!this.selectedFieldId && !this.selectedTabId) {
+		if (!this.selectedFieldId && !this.selectedPageId) {
 			stopEffect = true;
 		}
 		this.loadNewFieldsPanel(stopEffect);
 	}
 	this.selectedFieldId = false;
-	this.loadTabsList(tabId);
-	this.loadFieldsList(tabId);
+	this.loadPagesList(pageId);
+	this.loadFieldsList(pageId);
 };
 
 
-methods.getOrderedTabs = function() {
-	var sortedTabs = [];
-	foreach (this.tuix.items as var tabId => var tab) {
-		sortedTabs.push(tab);
+methods.getOrderedPages = function() {
+	var orderedPages = [],
+		pageId, page;
+	foreach (this.tuix.items as pageId => page) {
+		orderedPages.push(page);
 	}
-	sortedTabs.sort(this.sortByOrd);
-	return sortedTabs;
+	orderedPages.sort(this.sortByOrd);
+	return orderedPages;
 };
 
 
 methods.fieldDetailsChanged = function(path, field) {
 	path = path.split('/');
 	var mode = path[0],
-		tab = path[1],
+		page = path[1],
 		tuixField, value, valuesSource, actionRequests, that, item, title;
 	
-	if (tab && mode && this.tuix[mode] && this.tuix[mode].tabs[tab] && this.tuix[mode].tabs[tab].fields[field]) {
+	if (page && mode && this.tuix[mode] && this.tuix[mode].tabs[page] && this.tuix[mode].tabs[page].fields[field]) {
 		this.changeMadeToPanel();
-		tuixField = this.tuix[mode].tabs[tab].fields[field];
+		tuixField = this.tuix[mode].tabs[page].fields[field];
 		if (tuixField.format_onchange) {
 			if (mode == 'field_details') {
 				//Save
 				if (this.selectedFieldId) {
-					item = this.tuix.items[this.currentTabId].fields[this.selectedFieldId];
+					item = this.tuix.fields[this.selectedFieldId];
 				} else {
-					item = this.tuix.items[this.selectedTabId];
+					item = this.tuix.items[this.selectedPageId];
 				}
 				
-				this.saveItemTUIXTab(mode, this.selectedDetailsTab, item);
-				if (tab == 'details' && field == 'field_validation') {
+				this.saveItemTUIXPage(mode, this.selectedDetailsPage, item);
+				if (page == 'details' && field == 'field_validation') {
 					if (item.field_validation == 'email') {
 						item.field_validation_error_message = 'The email address you have entered is not valid, please enter a valid email address.';
 					} else if (item.field_validation == 'URL') {
@@ -1127,9 +1155,9 @@ methods.fieldDetailsChanged = function(path, field) {
 				}
 				
 				//Load
-				this.loadFieldDetailsTab(this.selectedDetailsTab, item.id);
+				this.loadFieldDetailsPage(this.selectedDetailsPage, item.id);
 				
-				if (tab == 'details') {
+				if (page == 'details') {
 					if (field == 'visibility') {
 						value = $('#field__visibility').val();
 						if (value == 'hidden') {
@@ -1145,7 +1173,7 @@ methods.fieldDetailsChanged = function(path, field) {
 						} else if (value == 'conditional_mandatory') {
 							title = 'Mandatory on condition';
 						}
-						$('#organizer_form_field_' + this.selectedFieldId + ' .form_field_classes .mandatory').toggle(value == 'mandatory' || value == 'conditional_mandatory').prop('title', title);
+						$('#organizer_form_field_' + this.selectedFieldId + ' .form_field_classes .mandatory').toggle(value == 'mandatory' || value == 'conditional_mandatory' || value == 'mandatory_if_visible').prop('title', title);
 					} else if (field == 'field_validation') {
 						value = $('#field__field_validation').val();
 						$('#organizer_form_field_' + this.selectedFieldId + ' .form_field_classes .validation').toggle(value != 'none');
@@ -1175,10 +1203,10 @@ methods.fieldDetailsChanged = function(path, field) {
 };
 
 methods.loadFieldValuesListPreview = function(fieldId) {
-	var tabId = this.currentTabId;
-	if (this.tuix.items[tabId].fields[fieldId]) {
-		var field = this.tuix.items[tabId].fields[fieldId];
-		var values = this.getOrderedFieldValues(tabId, fieldId, true);
+	var pageId = this.currentPageId;
+	if (this.tuix.fields[fieldId]) {
+		var field = this.tuix.fields[fieldId];
+		var values = this.getOrderedFieldValues(fieldId, true);
 		var html = false;
 		if (field.type == 'select' || field.type == 'centralised_select') {
 			html = this.microTemplate('zenario_organizer_admin_box_builder_select_values', values);
@@ -1193,8 +1221,8 @@ methods.loadFieldValuesListPreview = function(fieldId) {
 	}
 };
 
-methods.loadFieldsList = function(tabId) {
-	var orderedFields = this.getOrderedFields(tabId, true);
+methods.loadFieldsList = function(pageId) {
+	var orderedFields = this.getOrderedFields(pageId, true, true);
 	
 	//Load HTML
 	var mergeFields = {
@@ -1203,13 +1231,17 @@ methods.loadFieldsList = function(tabId) {
 	var html = this.microTemplate('zenario_organizer_form_builder_section', mergeFields);
 	$('#organizer_form_fields').html(html);
 	
+	if (this.selectedFieldId) {
+		this.highlightField(this.selectedFieldId);
+	}
+	
 	//Add events
 	
 	var that = this;
 	//Select a field
 	$('#organizer_form_fields div.form_field').on('click', function() {
 		var fieldId = $(this).data('id');
-		if (that.tuix.items[that.currentTabId].fields[fieldId]) {
+		if (that.tuix.fields[fieldId]) {
 			that.clickField(fieldId);
 		}
 	});
@@ -1241,7 +1273,7 @@ methods.loadFieldsList = function(tabId) {
 	
 	//Make fields sortable
 	$('#organizer_form_fields .form_section').sortable({
-		items: 'div.form_field',
+		items: 'div.is_sortable',
 		tolerance: 'pointer',
 		placeholder: 'preview',
 		//Add new field to the form
@@ -1249,19 +1281,19 @@ methods.loadFieldsList = function(tabId) {
 			$(this).find('div.field_type, div.dataset_field').each(function() {
 				var fieldType = $(this).data('type');
 				var datasetFieldId = $(this).data('id');
-				var datasetTabId = $(this).data('tab_name');
+				var datasetPageId = $(this).data('tab_name');
 				var ord = 0.1;
 				var previousFieldId = $(this).prev().data('id');
-				if (previousFieldId && that.tuix.items[tabId].fields[previousFieldId]) {
-					ord = that.tuix.items[tabId].fields[previousFieldId].ord + 0.1;
+				if (previousFieldId && that.tuix.fields[previousFieldId]) {
+					ord = that.tuix.fields[previousFieldId].ord + 0.1;
 				} else {
 					var nextFieldId = $(this).next().data('id');
-					if (nextFieldId && that.tuix.items[tabId].fields[nextFieldId]) {
-						ord = that.tuix.items[tabId].fields[nextFieldId].ord - 0.1;
+					if (nextFieldId && that.tuix.fields[nextFieldId]) {
+						ord = that.tuix.fields[nextFieldId].ord - 0.1;
 					}
 				}
 				
-				that.addNewField(fieldType, ord, datasetFieldId, datasetTabId);
+				that.addNewField(fieldType, ord, datasetFieldId, datasetPageId);
 				that.updateFieldOrds();
 			});
 		},
@@ -1271,8 +1303,11 @@ methods.loadFieldsList = function(tabId) {
 		//Detect reorder/new/deleted fields
 		stop: function(event, ui) {
 			if (that.startIndex != ui.item.index()) {
+				that.tuix.items[pageId]._pageFieldsReordered = true;
 				//Update ordinals
 				that.updateFieldOrds();
+				//Redraw fields for indenting
+				that.loadFieldsList(pageId);
 			}
 		}
 	});
@@ -1280,17 +1315,16 @@ methods.loadFieldsList = function(tabId) {
 	$('#organizer_form_fields .delete_icon').on('click', function(e) {
 		e.stopPropagation();
 		var fieldId = $(this).data('id');
-		if (that.tuix.items[that.currentTabId].fields[fieldId]) {
+		if (that.tuix.fields[fieldId]) {
 			//Make sure we can delete this field
 			var errors = that.saveCurrentOpenDetails(true);
 			if (!errors) {
-				var field = that.tuix.items[that.currentTabId].fields[fieldId];
+				var field = that.tuix.fields[fieldId];
 				var transferFields = {};
-				foreach (that.tuix.items as var tTabId => var tTab) {
-					foreach (tTab.fields as var tFieldId => var tField) {
-						if (tField.type == field.type && tFieldId != fieldId) {
-							transferFields[tTabId + '__' + tFieldId] = tField.name;
-						}
+				
+				foreach (that.tuix.fields as var tFieldId => var tField) {
+					if (tField.type == field.type && tFieldId != fieldId) {
+						transferFields[tFieldId] = tField.name;
 					}
 				}
 			
@@ -1313,17 +1347,107 @@ methods.loadFieldsList = function(tabId) {
 						if (values.details.delete_field_options == 'delete_field_but_migrate_data' 
 							&& values.details.migration_field
 						) {
-							var ids = values.details.migration_field.split('__');
-							if (ids.length == 2 
-								&& that.tuix.items[ids[0]] 
-								&& that.tuix.items[ids[0]].fields[ids[1]]
-							) {
-								that.tuix.items[ids[0]].fields[ids[1]]._migrate_responses_from = fieldId;
+							if (that.tuix.fields[values.details.migration_field]) {
+								that.tuix.fields[values.details.migration_field]._migrate_responses_from = fieldId;
 							}
 						}
 						that.deleteField(fieldId);
 					}
 				);
+			}
+		}
+	});
+	//Duplicate a field
+	$('#organizer_form_fields .duplicate_icon').on('click', function(e) {
+		e.stopPropagation();
+		var fieldId = $(this).data('id');
+		if (that.tuix.fields[fieldId]) {
+			var errors = that.saveCurrentOpenDetails();
+			if (!errors) {
+				var field = that.tuix.fields[fieldId];
+				message = '<p>Are you sure you want to duplicate the field "' + field.name + '"?</p>';
+				zenarioA.floatingBox(message, 'Duplicate', 'warning', true, false, function() {
+					that.addNewField(field.type, field.ord + 0.1, undefined, undefined, undefined, fieldId);
+					that.updateFieldOrds();
+				});
+			}
+		}
+	});
+	
+	//Update a dataset repeat field
+	$('#organizer_form_fields .update_repeat_field_icon').on('click', function(e) {
+		e.stopPropagation();
+		var repeatFieldId = $(this).data('id');
+		if (that.tuix.fields[repeatFieldId] && that.tuix.fields[repeatFieldId].dataset_field_id) {
+			var errors = that.saveCurrentOpenDetails();
+			if (!errors) {
+				message = '<p>Are you sure you want to update this dataset repeat field?</p>';
+				zenarioA.floatingBox(message, 'Update', 'warning', true, false, function() {
+					
+					var datasetRepeatFieldId = that.tuix.fields[repeatFieldId].dataset_field_id;
+					var datasetRepeatField = false;
+					//Find dataset repeat start field
+					for (var tab in that.tuix.dataset_fields) {
+						if (that.tuix.dataset_fields[tab].fields && that.tuix.dataset_fields[tab].fields[datasetRepeatFieldId]) {
+							var datasetRepeatField = that.tuix.dataset_fields[tab].fields[datasetRepeatFieldId];
+							break;
+						}
+					}
+					//Add / remove / reorder fields
+					if (datasetRepeatField) {
+						var formRepeatFields = [];
+						var datasetRepeatFields = [];
+						//Get form fields inside dataset repeat
+						foreach (that.tuix.fields as var fieldId => var field) {
+							if (field.dataset_repeat_grouping == datasetRepeatField.id && field.type != 'repeat_end' && field.type != 'repeat_start') {
+								formRepeatFields.push(fieldId);
+							}
+						}
+						//Get dataset fields inside dataset repeat
+						foreach (datasetRepeatField.fields as var datasetFieldId => var datasetField) {
+							if (datasetField.type != 'repeat_end') {
+								datasetRepeatFields.push(datasetField);
+							}
+						}
+						datasetRepeatFields.sort(that.sortByOrd);
+				
+						//Add new fields and update ordinals
+						var ord = that.tuix.fields[repeatFieldId].ord;
+						for (var i = 0; i < datasetRepeatFields.length; i++) {
+					
+							var found = false;
+							for (var j = 0; j < formRepeatFields.length; j++) {
+								if (datasetRepeatFields[i].id == that.tuix.fields[formRepeatFields[j]].dataset_field_id) {
+									that.tuix.fields[formRepeatFields[j]].ord = ord + (datasetRepeatFields[i].ord / 1000);
+									found = true;
+									break;
+								}
+							}
+							if (!found) {
+								datasetRepeatFields[i].dataset_repeat_grouping = datasetRepeatField.id;
+								that.addNewField(datasetRepeatFields[i].type, ord + (datasetRepeatFields[i].ord / 1000), false, false, datasetRepeatFields[i]);
+							}
+						}
+				
+						//Remove fields that no longer exist
+						for (var i = 0; i < formRepeatFields.length; i++) {
+							var found = false;
+							for (var j = 0; j < datasetRepeatFields.length; j++) {
+								if (that.tuix.fields[formRepeatFields[i]].dataset_field_id == datasetRepeatFields[j].id) {
+									found = true;
+								}
+							}
+							if (!found) {
+								that.deleteField(formRepeatFields[i]);
+							}
+						}
+						
+						//Update display
+						that.tuix.items[that.currentPageId]._pageFieldsReordered = true;
+						that.loadFieldsList(that.currentPageId);
+						that.changeMadeToPanel();
+					}
+				});
 			}
 		}
 	});
@@ -1333,34 +1457,36 @@ methods.updateFieldOrds = function() {
 	var that = this;
 	$('#organizer_form_fields div.form_field').each(function(i) {
 		var fieldId = $(this).data('id');
-		that.tuix.items[that.currentTabId].fields[fieldId].ord = (i + 1);
+		if (fieldId) {
+			that.tuix.fields[fieldId].ord = (i + 1);
+		}
 	});
 	this.changeMadeToPanel();
 };
 
-methods.deleteTab = function(tabId) {
-	var tabs = this.getOrderedTabs(),
-		fields, i, j, nextTabId;
-	//Do not allow the final tab to be deleted
-	if (tabs.length >= 2) {
-		fields = this.getOrderedFields(tabId);
-		for (i = 0; i < tabs.length; i++) {
-			if (tabs[i].id == tabId) {
-				if (tabs[i - 1]) {
-					nextTabId = tabs[i - 1].id;
+methods.deletePage = function(pageId) {
+	var pages = this.getOrderedPages(),
+		fields, i, j, nextPageId;
+	//Do not allow the final page to be deleted
+	if (pages.length >= 2) {
+		fields = this.getOrderedFields(pageId);
+		for (i = 0; i < pages.length; i++) {
+			if (pages[i].id == pageId) {
+				if (pages[i - 1]) {
+					nextPageId = pages[i - 1].id;
 					for (j = 0; j < fields.length; j++) {
-						this.moveFieldToTab(tabId, nextTabId, fields[j].id);
+						this.moveFieldToPage(pageId, nextPageId, fields[j].id);
 					}
 				} else {
-					nextTabId = tabs[i + 1].id;
+					nextPageId = pages[i + 1].id;
 					for (j = fields.length - 1; j >= 0; j--) {
-						this.moveFieldToTab(tabId, nextTabId, fields[j].id, true);
+						this.moveFieldToPage(pageId, nextPageId, fields[j].id, true);
 					}
 				}
-				this.deletedFields.push(tabId);
-				delete(this.tuix.items[tabId]);
+				this.deletedPages.push(pageId);
+				delete(this.tuix.items[pageId]);
 				
-				this.clickTab(nextTabId);
+				this.clickPage(nextPageId);
 				this.changeMadeToPanel();
 				break;
 			}
@@ -1369,23 +1495,36 @@ methods.deleteTab = function(tabId) {
 };
 
 methods.deleteField = function(fieldId) {
-	tabId = this.currentTabId;
-	if (this.tuix.items[tabId].fields[fieldId]) {
+	pageId = this.currentPageId;
+	if (this.tuix.fields[fieldId]) {
 		this.changeMadeToPanel();
 		this.deletedFields.push(fieldId);
 		
-		var field = this.tuix.items[tabId].fields[fieldId];
+		var field = this.tuix.fields[fieldId];
 		//Delete a repeat start's matching repeat end
 		if (field.type == 'repeat_start') {
 			var repeatEndId = this.getMatchingRepeatEnd(fieldId);
 			if (repeatEndId) {
 				this.deletedFields.push(repeatEndId);
-				delete(this.tuix.items[tabId].fields[repeatEndId]);
+				delete(this.tuix.items[pageId].fields[repeatEndId]);
+				delete(this.tuix.fields[repeatEndId]);
+			}
+		}
+		
+		//When deleting a dataset repeat, remove all fields inside as well.
+		if (field.dataset_repeat_grouping) {
+			var fields = this.getOrderedFields(pageId);
+			for (var i = 0; i < fields.length; i++) {
+				if (fields[i].dataset_repeat_grouping && fields[i].dataset_repeat_grouping == field.dataset_repeat_grouping && fields[i].type != 'repeat_start') {
+					this.deletedFields.push(fields[i].id);
+					delete(this.tuix.items[pageId].fields[fields[i].id]);
+					delete(this.tuix.fields[fields[i].id]);
+				}
 			}
 		}
 		
 		//Select next field if one exists
-		var fields = this.getOrderedFields(tabId);
+		var fields = this.getOrderedFields(pageId);
 		var deletedFieldIndex = false;
 		var nextFieldId = false;
 		
@@ -1393,8 +1532,9 @@ methods.deleteField = function(fieldId) {
 			if (fields[i].id == field.id) {
 				deletedFieldIndex = i;
 			}
+			
 			if (deletedFieldIndex !== false) {
-				if (deletedFieldIndex > 0 && fields[deletedFieldIndex - 1].type != 'repeat_end') {
+				if (deletedFieldIndex > 0) {
 					nextFieldId = fields[deletedFieldIndex - 1].id;
 					break;
 				} else if (fieldId != fields[i].id) {
@@ -1403,9 +1543,15 @@ methods.deleteField = function(fieldId) {
 				}
 			}
 		}
-		delete(this.tuix.items[tabId].fields[fieldId]);
 		
-		this.loadFieldsList(tabId);
+		if (nextFieldId && this.tuix.fields[nextFieldId].type == 'repeat_end') {
+			nextFieldId = false;
+		}
+		
+		delete(this.tuix.items[pageId].fields[fieldId]);
+		delete(this.tuix.fields[fieldId]);
+		
+		this.loadFieldsList(pageId);
 		if (nextFieldId) {
 			this.clickField(nextFieldId);
 		} else {
@@ -1414,43 +1560,51 @@ methods.deleteField = function(fieldId) {
 	}
 };
 
-methods.getMatchingRepeatEnd = function(fieldId) {
-	var repeatEndId = false,
-		fieldIndex = false,
-		tabId = this.currentTabId,
-		fields = this.getOrderedFields(tabId),
-		i;
-	for (i = 0; i < fields.length; i++) {
-		if (fields[i].type == 'repeat_end') {
-			repeatEndId = fields[i].id;
-		}
-		if (fields[i].id == fieldId) {
-			fieldIndex = i;
-		} else if (fieldIndex !== false && fields[i].type == 'repeat_end') {
-			repeatEndId = fields[i].id;
-			break;
-		}
-	}
-	return repeatEndId;
-};
-
-methods.addNewField = function(type, ord, datasetFieldId, datasetTabId) {
+methods.addNewField = function(type, ord, datasetFieldId, datasetPageId, datasetField, copyFromFieldId, inBackground) {
 	var newFieldId = 't' + this.maxNewCustomField++;
 	var newField = false;
-	if (datasetFieldId && this.tuix.dataset_fields[datasetTabId] && this.tuix.dataset_fields[datasetTabId].fields[datasetFieldId]) {
-		var datasetField = this.tuix.dataset_fields[datasetTabId].fields[datasetFieldId];
+	if (datasetField
+		|| (datasetFieldId 
+			&& this.tuix.dataset_fields[datasetPageId] 
+			&& this.tuix.dataset_fields[datasetPageId].fields[datasetFieldId]
+		)
+	) {
+		if (!datasetField) {
+			datasetField = this.tuix.dataset_fields[datasetPageId].fields[datasetFieldId];
+		}
 		newField = {
 			type: datasetField.type,
 			name: datasetField.label,
 			field_label: datasetField.label,
-			dataset_field_id: datasetFieldId,
+			dataset_field_id: datasetField.id,
 			values_source: datasetField.values_source,
 			values_source_filter: datasetField.values_source_filter,
 			db_column: datasetField.db_column
 		};
+		
+		if (datasetField.dataset_repeat_grouping) {
+			newField.dataset_repeat_grouping = datasetField.dataset_repeat_grouping;
+		}
+		
 		if (datasetField.lov) {
 			newField.lov = datasetField.lov;
 		}
+		if (datasetField.type == 'repeat_start') {
+			newField.dataset_repeat_grouping = datasetField.id;
+			var repeatDatasetFields = datasetField.fields;
+			var orderedFields = [];
+			foreach (datasetField.fields as var tFieldId => var tField) {
+				orderedFields.push(tField);
+			}
+			orderedFields.sort(this.sortByOrd);
+			
+			for (var i = 0; i < orderedFields.length; i++) {
+				var tField = orderedFields[i];
+				tField.dataset_repeat_grouping = datasetField.id;
+				this.addNewField(tField.type, ord + (0.001 * (i + 1)), undefined, undefined, tField);
+			}
+		}
+		
 	} else if (type) {
 		newField = {
 			type: type,
@@ -1464,14 +1618,14 @@ methods.addNewField = function(type, ord, datasetFieldId, datasetTabId) {
 				this.addFieldValue(newField, 'Option ' + i);
 			}
 		} else if (type == 'repeat_start') {
-			this.addNewField('repeat_end', ord + 0.01);
+			this.addNewField('repeat_end', ord + 0.001);
 		}
 	}
 	
 	//Load default values for fields
-	foreach (this.tuix.field_details.tabs as var tabName => tab) {
-		if (tab.fields) {
-			foreach (tab.fields as var fieldName => var field) {
+	foreach (this.tuix.field_details.tabs as var pageName => page) {
+		if (page.fields) {
+			foreach (page.fields as var fieldName => var field) {
 				if (field.value !== undefined && newField[fieldName] === undefined) {
 					newField[fieldName] = field.value;
 				}	
@@ -1480,37 +1634,57 @@ methods.addNewField = function(type, ord, datasetFieldId, datasetTabId) {
 	}
 	
 	if (newField) {
-		newField.id = newFieldId;
-		newField.ord = ord;
-		newField.is_new_field = true;
-		newField.just_added = true;
+		if (copyFromFieldId) {
+			newField = JSON.parse(JSON.stringify(this.tuix.fields[copyFromFieldId]));
+			if (newField.type == 'checkboxes' || newField.type == 'select' || newField.type == 'radios') {
+				var lov = newField.lov;
+				delete(newField.lov);
+				
+				newField.lov = {};
+				for (var valueId in lov) {
+					this.addFieldValue(newField, lov[valueId].label, lov[valueId].ord);
+				}
+			}
+		}
 		
+		newField.ord = ord;
+		newField._is_new = true;
+		newField.just_added = true;
+		newField.id = newFieldId;
 		if (type == 'page_break') {
-			var tabs = this.getOrderedTabs();
-			newField.name = 'Page ' + (tabs.length + 1);
+			var pages = this.getOrderedPages();
+			newField.name = 'Page ' + (pages.length + 1);
 			newField.fields = {};
 			this.tuix.items[newFieldId] = newField;
-			this.clickTab(newFieldId, true);
+			if (!inBackground) {
+				this.clickPage(newFieldId, true);
+			}
 		} else {
-			this.tuix.items[this.currentTabId].fields[newFieldId] = newField;
-			this.loadFieldsList(this.currentTabId);
-			this.clickField(newFieldId);
+			this.tuix.items[this.currentPageId].fields[newFieldId] = 1;
+			this.tuix.fields[newFieldId] = newField;
+			//Don't bother redrawing if we're adding repeat dataset fields, once is enough.
+			if (datasetField && !datasetFieldId) {
+				return;
+			}
+			this.loadFieldsList(this.currentPageId);
+			if (!inBackground) {
+				this.clickField(newFieldId);
+			}
 		}
 	}
 };
 
 methods.clickField = function(fieldId) {
 	if (this.selectedFieldId != fieldId 
-		&& this.tuix.items[this.currentTabId]
-		&& this.tuix.items[this.currentTabId].fields[fieldId]
-		&& this.tuix.items[this.currentTabId].fields[fieldId].type != 'repeat_end'
+		&& this.tuix.fields[fieldId]
+		&& this.tuix.fields[fieldId].type != 'repeat_end'
 	) {
 		var errors = this.saveCurrentOpenDetails();
 		if (!errors) {
 			this.highlightField(fieldId);
 			this.selectedFieldId = fieldId;
-			this.selectedTabId = false;
-			this.selectedDetailsTab = false;
+			this.selectedPageId = false;
+			this.selectedDetailsPage = false;
 			this.loadFieldDetailsPanel(fieldId);
 		}
 	}
@@ -1519,92 +1693,118 @@ methods.clickField = function(fieldId) {
 methods.saveCurrentOpenDetails = function(deletingField) {
 	var errors = false,
 		item;
-	if (this.selectedFieldId 
-		&& this.tuix.items[this.currentTabId] 
-		&& this.tuix.items[this.currentTabId].fields[this.selectedFieldId]
-	) {
+	if (this.selectedFieldId && this.tuix.fields[this.selectedFieldId]) {
 		//Save custom field
 		var $name = $('#field__name');
 		if ($name.length) {
-			this.tuix.items[this.currentTabId].fields[this.selectedFieldId].name = $name.val();
+			this.tuix.fields[this.selectedFieldId].name = $name.val();
 		}
 		
 		if (deletingField) {
 			errors = this.getDeleteFieldErrors(this.selectedFieldId);
 		} else {
-			item = this.tuix.items[this.currentTabId].fields[this.selectedFieldId];
-			errors = this.saveItemTUIXTab('field_details', this.selectedDetailsTab, item);
+			item = this.tuix.fields[this.selectedFieldId];
+			errors = this.saveItemTUIXPage('field_details', this.selectedDetailsPage, item);
 		}
 		
 		if (!_.isEmpty(errors)) {
-			this.loadFieldDetailsTab(this.selectedDetailsTab, this.selectedFieldId, errors);
+			this.loadFieldDetailsPage(this.selectedDetailsPage, this.selectedFieldId, errors);
 		}
-	} else if (this.selectedTabId && this.tuix.items[this.selectedTabId]) {
+	} else if (this.selectedPageId && this.tuix.items[this.selectedPageId]) {
 		//Save custom field
 		var $name = $('#field__name');
 		if ($name.length) {
-			this.tuix.items[this.selectedTabId].name = $name.val();
+			this.tuix.items[this.selectedPageId].name = $name.val();
 		}
 		
-		item = this.tuix.items[this.selectedTabId];
-		errors = this.saveItemTUIXTab('field_details', this.selectedDetailsTab, item);
+		item = this.tuix.items[this.selectedPageId];
+		errors = this.saveItemTUIXPage('field_details', this.selectedDetailsPage, item);
 		if (!_.isEmpty(errors)) {
-			this.loadTabDetailsTab(this.selectedDetailsTab, this.selectedTabId, errors);
+			this.loadPageDetailsPage(this.selectedDetailsPage, this.selectedPageId, errors);
 		}
 	}
 	return !_.isEmpty(errors);
 };
 
-methods.displayGlobalErrors = function() {
-	var errors = {};
-	var fields = this.getOrderedFields();
-	var inRepeatBlock = false;
-	for (var i = 0; i < fields.length; i++) {
-		var field = fields[i];
-		if (inRepeatBlock && (['page_break', 'repeat_start', 'calculated', 'restatement', 'file_picker'].indexOf(field.type) != -1)) {
-			errors[field.id] = 'Field type "' + this.getFieldReadableType(field.type).toLowerCase() + '" is not allowed in repeat blocks.';
-		}
-		if (field.type == 'repeat_start') {
+methods.displayPageFieldStructureErrors = function(pageId) {
+	var errors = [],
+		fields = this.getOrderedFields(pageId),
+		inRepeatBlock = false, 
+		repeatBlockDepth = 0,
+		i, field;
+	
+	var fieldsAllowedInRepeatBlock = [
+		//Valid form field types
+		'checkbox', 
+		'checkboxes', 
+		'date', 
+		'radios', 
+		'centralised_radios', 
+		'select', 
+		'centralised_select', 
+		'text', 
+		'textarea', 
+		'url', 
+		'attachment', 
+		'section_description', 
+		'calculated',
+		//Valid dataset field types not included above
+		'group'
+	];
+	
+	for (i = 0; i < fields.length; i++) {
+		field = fields[i];
+		
+		if (field.type == 'repeat_start' && !inRepeatBlock) {
 			inRepeatBlock = true;
 		} else if (field.type == 'repeat_end') {
-			if (!inRepeatBlock) {
-				errors[field.id] = 'You cannot have a Repeat End before a Repeat Start.';
-				break;
+			if (inRepeatBlock) {
+				inRepeatBlock = false;
+			} else {
+				errors.push('Repeat ends must be placed after repeat starts.');
 			}
-			inRepeatBlock = false;
+		} else {
+			//Validate field types in repeat block
+			if (inRepeatBlock && fieldsAllowedInRepeatBlock.indexOf(field.type) == -1) {
+				errors.push('Field type "' + this.getFieldReadableType(field.type).toLowerCase() + '" is not allowed in a repeat block.');
+			}
 		}
 	}
+	
+	//Display errors
+	var foundErrors = errors.length > 0;
 	var $errorDiv = $('#organizer_fields_error');
 	$errorDiv.html('');
-	foreach (errors as i => var error) {
-		$errorDiv.append('<p class="error">' + error + '</p>');
+	for (i = 0; i < errors.length; i++) {
+		$errorDiv.append('<p class="error">' + errors[i] + '</p>');
 	}
-	$errorDiv.show().delay(3000).fadeOut(function() {
-		$(this).html('');
-	});
+	$errorDiv.toggle(foundErrors);
 	
-	return !_.isEmpty(errors);
+	return foundErrors;
 };
 
-methods.getDeleteFieldErrors = function(deleteFieldId) {
-	var errors = {};
-	foreach (this.tuix.items[this.currentTabId].fields as var fieldId => var field) {
-		if (deleteFieldId != fieldId) {
+
+
+methods.getDeleteFieldErrors = function(fieldId) {
+	var errors = {},
+		tFieldId, tField;
+	foreach (this.tuix.fields as tFieldId => var tField) {
+		if (fieldId != tFieldId) {
 			var usedInCalcField = false;
-			if (field.type == 'calculated' && field.calculation_code) {
-				foreach (field.calculation_code as var index => var step) {
-					if (step.type == 'field' && step.value == deleteFieldId) {
+			if (tField.type == 'calculated' && tField.calculation_code) {
+				foreach (tField.calculation_code as var index => var step) {
+					if (step.type == 'field' && step.value == fieldId) {
 						usedInCalcField = true;
 						break;
 					}
 				}
 			}
 			
-			if ((field.visibility && field.visibility == 'visible_on_condition' && field.visible_condition_field_id == deleteFieldId)
-				|| (field.readonly_or_mandatory && field.readonly_or_mandatory == 'conditional_mandatory' && field.mandatory_condition_field_id == deleteFieldId)
+			if ((tField.visibility && tField.visibility == 'visible_on_condition' && tField.visible_condition_field_id == fieldId)
+				|| (tField.readonly_or_mandatory && tField.readonly_or_mandatory == 'conditional_mandatory' && tField.mandatory_condition_field_id == fieldId)
 				|| usedInCalcField
 			) {
-				errors[fieldId] = 'Unable to delete field because the field "' + field.name + '" depends on it.';
+				errors[tFieldId] = 'Unable to delete field because the field "' + tField.name + '" depends on it.';
 			}
 		}
 	}
@@ -1612,14 +1812,14 @@ methods.getDeleteFieldErrors = function(deleteFieldId) {
 };
 
 
-methods.validateFieldDetails = function(fields, item, mode, tab, errors) {
-	var conditionField, tTabId, tTab, fieldId, field, i;
+methods.validateFieldDetails = function(fields, item, mode, page, errors) {
+	var conditionField, tPageId, tPage, fieldId, field, i;
 	if (mode == 'field_details') {
 		if (!item.name) {
 			errors.name = 'Please enter a name for this form field.';
 		}
 		
-		if (tab == 'details') {
+		if (page == 'details') {
 			if (item.type == 'checkbox' || item.type == 'group') {
 				if (!item.field_label) {
 					errors.field_label = 'Please enter a label for this checkbox.';
@@ -1666,7 +1866,7 @@ methods.validateFieldDetails = function(fields, item, mode, tab, errors) {
 			}
 			
 			if (item.readonly_or_mandatory) {
-				if ((item.readonly_or_mandatory == 'mandatory' || item.readonly_or_mandatory == 'conditional_mandatory') && !item.required_error_message) {
+				if ((item.readonly_or_mandatory == 'mandatory' || item.readonly_or_mandatory == 'conditional_mandatory' || item.readonly_or_mandatory == 'mandatory_if_visible') && !item.required_error_message) {
 					errors.required_error_message = 'Please enter an error message when this field is incomplete.';
 				}
 				
@@ -1716,9 +1916,9 @@ methods.validateFieldDetails = function(fields, item, mode, tab, errors) {
 				}
 			}
 			
-			foreach (this.tuix.items as tTabId => tTab) {
-				foreach (tTab.fields as fieldId => field) {
-					if (field.type == 'calculated' && field.calculation_code && item.field_validation && ['number', 'integer', 'floating_point'].indexOf(item.field_validation) == -1) {
+			if (item.type == 'text' && item.field_validation && ['number', 'integer', 'floating_point'].indexOf(item.field_validation) == -1) {
+				foreach (this.tuix.fields as fieldId => field) {
+					if (field.type == 'calculated' && field.calculation_code) {
 						for (i = 0; i < field.calculation_code.length; i++) {
 							if (field.calculation_code[i].type == 'field' && field.calculation_code[i].value == item.id) {
 								errors.field_validation = 'The field "' + field.name + '" requires this field to be numeric. You must first remove this from that field.';
@@ -1729,7 +1929,7 @@ methods.validateFieldDetails = function(fields, item, mode, tab, errors) {
 				}
 			}
 			
-		} else if (tab == 'advanced') {
+		} else if (page == 'advanced') {
 			if (item.default_value_options) {
 				if (item.default_value_options == 'value') {
 					if (!item.default_value_lov && !item.default_value_text) {
@@ -1746,11 +1946,9 @@ methods.validateFieldDetails = function(fields, item, mode, tab, errors) {
 			}
 			
 			if (item.custom_code_name) {
-				foreach (this.tuix.items as tTabId => tTab) {
-					foreach (tTab.fields as fieldId => field) {
-						if (fieldId != item.id && (item.custom_code_name == field.custom_code_name)) {
-							errors.custom_code_name = 'Another field already has that code name on this form.';
-						}
+				foreach (this.tuix.fields as fieldId => field) {
+					if (fieldId != item.id && (item.custom_code_name == field.custom_code_name)) {
+						errors.custom_code_name = 'Another field already has that code name on this form.';
 					}
 				}
 			}
@@ -1777,16 +1975,23 @@ methods.validateFieldDetails = function(fields, item, mode, tab, errors) {
 			}
 			
 			if (item.type == 'textarea') {
-				if (item.word_limit) {
-					if (+item.word_limit != item.word_limit) {
-						errors.word_limit = 'Please a valid number for word count.';
-					} else if (item.word_limit < 1) {
-						errors.word_limit = 'Word count must be greater than 0.';
+				if (item.word_count_max) {
+					if (+item.word_count_max != item.word_count_max) {
+						errors.word_count_max = 'Please a valid number for the max word count.';
+					} else if (item.word_count_max < 1) {
+						errors.word_count_max = 'Word count must be greater than 0.';
+					}
+				}
+				if (item.word_count_min) {
+					if (+item.word_count_min != item.word_count_min) {
+						errors.word_count_min = 'Please a valid number for the min word count.';
+					} else if (item.word_count_min < 1) {
+						errors.word_count_min = 'Word count must be greater than 0.';
 					}
 				}
 			}
 			
-		} else if (tab == 'crm') {
+		} else if (page == 'crm') {
 			if (item.send_to_crm && !item.field_crm_name) {
 				errors.field_crm_name = 'Please enter a CRM field name.';
 			}
@@ -1802,10 +2007,6 @@ methods.highlightField = function(fieldId) {
 		$('#organizer_form_field_' + fieldId).addClass('selected');
 		$('#organizer_form_field_' + fieldId + ' .form_field_classes').show();
 		$('#organizer_form_field_' + fieldId + ' .form_field_inline_buttons').show();
-	}
-	
-	if (this.selectedFieldId && this.tuix.items[this.currentTabId].fields[this.selectedFieldId]) {
-		delete(this.tuix.items[this.currentTabId].fields[this.selectedFieldId].just_added);
 	}
 };
 
@@ -1844,48 +2045,101 @@ methods.getFieldReadableType = function(type) {
 			return 'Calculated';
 		case 'restatement':
 			return 'Mirror';
+		case 'repeat_start':
+			return 'Start of repeating section';
+		case 'repeat_end':
+			return 'End of repeating section';
+		case 'document_upload':
+			return 'Multi-upload';
+		default:
+			return 'Unknown';
+		
 		//Types unique to dataset fields
 		case 'group':
 			return 'Group';
 		case 'file_picker':
 			return 'File picker';
-		case 'repeat_start':
-			return 'Start of repeating section';
-		case 'repeat_end':
-			return 'End of repeating section';
-		default:
-			return 'Unknown';
 	}
 };
 
-methods.getOrderedFields = function(tabId, orderValues) {
+methods.getOrderedFields = function(pageId, orderValues, groupGroupedFields) {
 	var sortedFields = [],
-		fieldId, field;
-	if (this.tuix.items[tabId] && this.tuix.items[tabId].fields) {
-		foreach (this.tuix.items[tabId].fields as fieldId => field) {
+		groupedFields = [],
+		groups = {},
+		fieldId, field, 
+		inRepeat = false;
+	if (this.tuix.items[pageId] && this.tuix.items[pageId].fields) {
+		
+		for (fieldId in this.tuix.items[pageId].fields) {
+			field = this.tuix.fields[fieldId];
 			var fieldClone = _.clone(field);
+			
 			if (orderValues) {
-				fieldClone.lov = this.getOrderedFieldValues(tabId, fieldId, true);
+				fieldClone.lov = this.getOrderedFieldValues(fieldId, true);
 			}
-			sortedFields.push(fieldClone);
+			
+			if (fieldClone.dataset_field_id) {
+				fieldClone._hideDuplicateButton = true;
+			}
+			
+			if (groupGroupedFields && fieldClone.dataset_repeat_grouping) {
+				if (!groups[fieldClone.dataset_repeat_grouping]) {
+					groups[fieldClone.dataset_repeat_grouping] = {};
+					groups[fieldClone.dataset_repeat_grouping]._fields = [];
+				}
+				if (fieldClone.type != 'repeat_start') {
+					fieldClone._hideDragButton = true;
+					fieldClone._hideDeleteButton = true;
+					fieldClone._hideDuplicateButton = true;
+				}
+				groupedFields.push(fieldClone);
+			} else {
+				fieldClone._isSortable = true;
+				sortedFields.push(fieldClone);
+			}
 		}
 	}
+	
+	if (groupedFields.length > 0) {
+		for (i = 0; i < groupedFields.length; i++) {
+			groups[groupedFields[i].dataset_repeat_grouping]._fields.push(groupedFields[i]);
+		}
+	}
+	
+	foreach (groups as groupName => group) {
+		group._fields.sort(this.sortByOrd);
+		if (group._fields.length) {
+			group.ord = group._fields[0].ord;
+			group._isSortable = true;
+			sortedFields.push(group);
+		}
+	}
+	
 	sortedFields.sort(this.sortByOrd);
+	
+	//Remember which fields have a repeat above them for indenting
+	for (var i = 0; i < sortedFields.length; i++) {
+		if (sortedFields[i].type == 'repeat_start') {
+			inRepeat = true;
+		} else if (sortedFields[i].type == 'repeat_end') {
+			inRepeat = false;
+		} else if (inRepeat) {
+			sortedFields[i]._inRepeat = true;
+		}
+	}
+	
 	return sortedFields;
 };
 
-methods.getOrderedFieldValues = function(tabId, fieldId, includeEmptyValue) {
+methods.getOrderedFieldValues = function(fieldId, includeEmptyValue) {
 	var sortedValues = [],
 		valueId, value;
-	if (this.tuix.items[tabId]
-		&& this.tuix.items[tabId].fields
-		&& this.tuix.items[tabId].fields[fieldId]
-		&& this.tuix.items[tabId].fields[fieldId].lov
-	) {
-		foreach (this.tuix.items[tabId].fields[fieldId].lov as valueId => value) {
+	if (this.tuix.fields[fieldId] && this.tuix.fields[fieldId].lov) {
+		
+		foreach (this.tuix.fields[fieldId].lov as valueId => value) {
 			sortedValues.push(value);
 		}
-		var type = this.tuix.items[tabId].fields[fieldId].type;
+		var type = this.tuix.fields[fieldId].type;
 		if (includeEmptyValue && (type == 'select' || type == 'centralised_select')) {
 			sortedValues.push({
 				id: 'empty_value',
@@ -1914,35 +2168,33 @@ methods.sortLanguages = function(languages) {
 	return sortedLanguages;
 };
 
-methods.getOrderedDatasetTabsAndFields = function() {
-	var sortedTabs = [];
+methods.getOrderedDatasetPagesAndFields = function() {
+	var sortedPages = [];
 	var usedDatasetFields = {};
-	foreach (this.tuix.items as var tabId => var tab) {
-		foreach (tab.fields as var fieldId => var field) {
-			if (field.dataset_field_id) {
-				usedDatasetFields[field.dataset_field_id] = true;
-			}
+	foreach (this.tuix.fields as var fieldId => var field) {
+		if (field.dataset_field_id) {
+			usedDatasetFields[field.dataset_field_id] = true;
 		}
 	}
 	
-	foreach (this.tuix.dataset_fields as var datasetTabName => var datasetTab) {
-		var datasetTabClone = _.clone(datasetTab);
-		datasetTabClone.fields = [];
+	foreach (this.tuix.dataset_fields as var datasetPageName => var datasetPage) {
+		var datasetPageClone = _.clone(datasetPage);
+		datasetPageClone.fields = [];
 		
-		if (datasetTab.fields) {
-			foreach (datasetTab.fields as var datasetFieldId => var datasetField) {
+		if (datasetPage.fields) {
+			foreach (datasetPage.fields as var datasetFieldId => var datasetField) {
 				datasetField.readableType = this.getFieldReadableType(datasetField.type);
 				if (!usedDatasetFields[datasetFieldId]) {
-					datasetTabClone.fields.push(datasetField);
+					datasetPageClone.fields.push(datasetField);
 				}
 			}
-			datasetTabClone.fields.sort(this.sortByOrd);
+			datasetPageClone.fields.sort(this.sortByOrd);
 		}
 		
-		sortedTabs.push(datasetTabClone);
+		sortedPages.push(datasetPageClone);
 	}
-	sortedTabs.sort(this.sortByOrd);
-	return sortedTabs;
+	sortedPages.sort(this.sortByOrd);
+	return sortedPages;
 };
 
 methods.changeMadeToPanel = function() {
@@ -1962,17 +2214,22 @@ methods.saveChanges = function() {
 	var that = this;
 	var actionRequests = {
 		mode: 'save',
-		data: JSON.stringify(this.tuix.items),
+		pages: JSON.stringify(this.tuix.items),
+		fields: JSON.stringify(this.tuix.fields),
+		pagesReordered: this.pagesReordered,
+		deletedPages: JSON.stringify(this.deletedPages),
 		deletedFields: JSON.stringify(this.deletedFields),
-		currentTabId: this.currentTabId
+		deletedValues: JSON.stringify(this.deletedValues),
+		currentPageId: this.currentPageId
 	};
-	if (this.selectedTabId) {
-		actionRequests.selectedTabId = this.selectedTabId;
+	if (this.selectedPageId) {
+		actionRequests.selectedPageId = this.selectedPageId;
 	}
 	if (this.selectedFieldId) {
 		actionRequests.selectedFieldId = this.selectedFieldId;
 	}
 	
+	zenarioA.nowDoingSomething('saving', true);
 	this.sendAJAXRequest(actionRequests).after(function(info) {
 		if (info) {
 			info = JSON.parse(info);
@@ -1985,8 +2242,8 @@ methods.saveChanges = function() {
 					zenarioA.floatingBox(message);
 				}
 			}
-			that.currentTabId = info.currentTabId;
-			that.selectedTabId = info.selectedTabId
+			that.currentPageId = info.currentPageId;
+			that.selectedPageId = info.selectedPageId
 			that.selectedFieldId = info.selectedFieldId;
 		}
 		

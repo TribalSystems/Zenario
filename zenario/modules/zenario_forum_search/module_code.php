@@ -37,10 +37,10 @@ class zenario_forum_search extends zenario_forum {
 		$this->clearCacheBy(
 			$clearByContent = false, $clearByMenu = false, $clearByUser = false, $clearByFile = false, $clearByModuleData = false);
 		
-		$this->page = ifNull((int) request('comm_page'), 1);
+		$this->page = ifNull((int) ($_REQUEST['comm_page'] ?? false), 1);
 		
 		$this->mode = 'showSearch';
-		$this->posts = $this->runSearch(request('searchString'), $this->setting('show_private_items'), $this->setting('hide_private_items'));
+		$this->posts = $this->runSearch($_REQUEST['searchString'] ?? false, $this->setting('show_private_items'), $this->setting('hide_private_items'));
 		
 		return true;
 	}
@@ -163,7 +163,7 @@ class zenario_forum_search extends zenario_forum {
 		//Note: this form should be changed to work via GET when that option is added to the API
 		$this->sections['Search'] = array('Open_Form' => $this->openForm(), 'Close_Form' => $this->closeForm());
 		
-		if (request('searchString') && !$this->posts) {
+		if (($_REQUEST['searchString'] ?? false) && !$this->posts) {
 			$this->sections['Search_No_Results'] = true;
 		}
 		

@@ -29,13 +29,13 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 		if (checkPriv("_PRIV_MANAGE_COUNTRY")){
 			foreach (explode(',',$ids) as $id) {
-				if (post('action') == 'activate_country') {
+				if (($_POST['action'] ?? false) == 'activate_country') {
 					updateRow(ZENARIO_COUNTRY_MANAGER_PREFIX . "country_manager_countries", array('active' => 1), array('id' => $id));
 				}
-				if (post('action') == 'suspend_country') {
+				if (($_POST['action'] ?? false) == 'suspend_country') {
 					updateRow(ZENARIO_COUNTRY_MANAGER_PREFIX . "country_manager_countries", array('active' => 0), array('id' => $id));
 				}
-				if (post('action') == 'delete_country') {
+				if (($_POST['action'] ?? false) == 'delete_country') {
 					deleteRow("visitor_phrases", 
 								array(
 										'module_class_name' => 'zenario_country_manager',
@@ -61,7 +61,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 					sendSignal('eventCountryDeleted', array("countryId" => $id));
 				}
 
-				if (post('action') == 'delete_region') {
+				if (($_POST['action'] ?? false) == 'delete_region') {
 					$name = getRow(ZENARIO_COUNTRY_MANAGER_PREFIX . "country_manager_regions", "name", array('id' => $id));
 					deleteRow("visitor_phrases", 
 								array(

@@ -3,49 +3,54 @@
 full_slot:
     css_class: zenario_slotOuter zenario_slotWithContents
     info:
-        slot_name:
+        slot_lite_details:
             css_class: zenario_slotControl_slotName
             page_modes:
                 edit: true
+        slot_name:
+            css_class: zenario_slotControl_slotName
+            page_modes:
+                item: true
                 layout: true
         grid_width:
             css_class: zenario_slotControl_width
             page_modes:
-                edit: true
+                item: true
                 layout: true
             label: 'Width: <span></span>'
         grid_css_class:
             css_class: zenario_slotControl_cssClass
             page_modes:
-                edit: true
+                item: true
                 layout: true
             label: 'CSS classes: <span></span>'
         embed:
             css_class: zenario_slotControl_copyEmbedLink
             label: 'Embed:'
             page_modes:
-                edit: true
+                item: true
                 layout: true
         in_this_slot:
             css_class: zenario_slotControl_inThisSlot
             label: 'In this slot:'
             page_modes:
-                edit: true
+                item: true
                 layout: true
         module_name:
             css_class: '' #zenario_slotControl_wireframe or zenario_slotControl_reusable
             page_modes:
                 edit: true
+                item: true
                 layout: true
         reusable_plugin_details:
             css_class: zenario_slotControl_reusablePluginDetails
             page_modes:
-                edit: true
+                item: true
                 layout: true
         slot_css_class:
             css_class: zenario_slotControl_cssClass
             page_modes:
-                edit: true
+                item: true
                 layout: true
     notes:
         author_advice:
@@ -128,7 +133,7 @@ full_slot:
         move_on_item_layer:
             ord: 75
             page_modes:
-                edit: true
+                item: true
             onclick: |
                 if (zenarioA.draft(this.id)) {
                     zenarioA.movePlugin(this, slotName);
@@ -148,11 +153,10 @@ full_slot:
             priv: _PRIV_MANAGE_ITEM_SLOT
             label: Replace plugin on this content item...
             page_modes:
-                edit: true
-                layout: true
+                item: true
             onclick: |
                 if (zenarioA.draft(this.id)) {
-                    zenarioAT.clickTab('edit');
+                    zenarioAT.clickTab('item');
                     zenarioA.pickNewPlugin(this, slotName, 1, [[overides_layout]]);
                 }
                 return false;
@@ -160,8 +164,7 @@ full_slot:
         hide_plugin:
             ord: 86
             page_modes:
-                edit: true
-                layout: true
+                item: true
             onclick: >
                 if (zenarioA.draft(this.id, false, 'Are you sure you wish to hide this ~plugin~ on this content item?', 'Hide')) {
                     zenarioA.hidePlugin(this, slotName);
@@ -172,7 +175,7 @@ full_slot:
         insert_reusable_on_layout_layer:
             ord: 87
             priv: _PRIV_MANAGE_TEMPLATE_SLOT
-            label: Replace plugin on this layout...
+            label: Replace ~plugin~ with something else...
             page_modes:
                 layout: true
             onclick: return zenarioA.pickNewPlugin(this, slotName, 2);
@@ -180,7 +183,7 @@ full_slot:
         remove_from_item_layer:
             ord: 90
             page_modes:
-                edit: true
+                item: true
             onclick: >
                 if (zenarioA.draft(this.id, false, 'Are you sure you wish to remove this ~plugin~?', 'Remove')) {
                     zenarioA.removePlugin(this, slotName, 1);
@@ -192,7 +195,7 @@ full_slot:
             page_modes:
                 layout: true
             onclick: return zenarioA.removePlugin(this, slotName, 2);
-            label: Remove ~plugin~ from layout
+            label: Remove ~plugin~
     
     
     
@@ -207,17 +210,17 @@ full_slot:
             css_class: zenario_slotControl_inThisSlot
             label: 'In this slot on this layout (overridden):'
             page_modes:
-                edit: true
+                item: true
                 layout: true
         module_name:
             css_class: '' #zenario_slotControl_wireframe or zenario_slotControl_reusable
             page_modes:
-                edit: true
+                item: true
                 layout: true
         reusable_plugin_details:
             css_class: zenario_slotControl_reusablePluginDetails
             page_modes:
-                edit: true
+                item: true
                 layout: true
     overridden_actions:
         #show_plugin:
@@ -234,7 +237,6 @@ full_slot:
         remove_from_layout_layer:
             ord: 92
             page_modes:
-                edit: true
                 layout: true
             onclick: return zenarioA.removePlugin(this, slotName, 2);
-            label: Remove ~plugin~ from layout
+            label: Remove ~plugin~

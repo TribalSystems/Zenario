@@ -123,7 +123,7 @@ class zenario_search_entry_box_predictive_probusiness extends zenario_search_res
 	
 	
 	public function init() {
-		if (get('method_call') == 'showRSS') {
+		if (($_GET['method_call'] ?? false) == 'showRSS') {
 			//Adding this line would allow predictive searches to be cached.
 			//$this->registerGetRequest('searchString');
 		} else {

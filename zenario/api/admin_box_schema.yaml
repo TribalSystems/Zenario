@@ -164,9 +164,26 @@ additionalProperties:
             type: *stringy
             modified_by_cms: true
             description: >
-                The code-name of the current tab.
-                Can be overwritten by the the opener of the Admin Box.
+                The code-name of the current tab that's being displayed.
+                
+                It defaults to the first tab in the Admin Box, but this can be overridden
+                by the developer who opened this Admin Box.
             default: (the first tab of the Admin Box)
+        
+        switchToTab:
+            type: *stringy
+            modified_by_cms: true
+            description: >
+                Set this property to request to switch to another tab in the Admin Box.
+                
+                If the user clicks on a tab, this property will be set to the code-name of the tab
+                they just clicked on.
+                
+                Note that if there were any validation errors on the current tab,
+                the switch will be cancelled and the current tab will be remain in view.
+                
+                
+                This works from version 7.7 onwards.
         
         hide_tab_bar:
             type: boolean
@@ -367,6 +384,15 @@ additionalProperties:
                     
                     hidden: *hidden
                     visible_if: *visible_if
+                    hide_when_children_are_not_visible:
+                        type: boolean
+                        description: >
+                            If you set this property, the button will be hidden when it has no
+                            visible children.
+                            
+                            
+                            This works from version 7.3 onwards.
+                    
                     errors:
                         type: object
                         html_description: |
@@ -529,18 +555,36 @@ additionalProperties:
                                         Hide this field if the last field was hidden.
                                         
                                         This works from version 7.5 onwards.
+                                hide_with_previous_previous_field:
+                                    type: boolean
+                                    description: >
+                                        Hide this field if the field before last was hidden.
+                                        
+                                        This works from version 7.7 onwards.
                                 hide_if_previous_field_is_not_hidden:
                                     type: boolean
                                     description: >
                                         Hide this field if the last field was not hidden.
                                         
                                         This works from version 7.5 onwards.
+                                hide_if_previous_previous_field_is_not_hidden:
+                                    type: boolean
+                                    description: >
+                                        Hide this field if the field before last was not hidden.
+                                        
+                                        This works from version 7.7 onwards.
                                 hide_with_previous_indented_field:
                                     type: boolean
                                     description: >
                                         Hide this field if the last field on the same indent was hidden.
                                         
                                         This works from version 7.5 onwards.
+                                hide_with_previous_indented_fields:
+                                    type: boolean
+                                    description: >
+                                        Hide this field if all of the previous field on the same indent have been hidden.
+                                        
+                                        This works from version 7.7 onwards.
                                 hide_with_previous_outdented_field:
                                     type: boolean
                                     description: >
@@ -589,10 +633,6 @@ additionalProperties:
                                         This property allows you to place a CSS class name on the field.
                                         
                                         This works from version 7.4 onwards.
-                                row_class:
-                                    type: string
-                                    description: >
-                                        This property allows you to place a CSS class name on a row.
                                 label:
                                     type: string
                                     description: >
@@ -620,7 +660,6 @@ additionalProperties:
                                         
                                         
                                         This works from version 7.1 onwards.
-                                
                                         
                                 grouping:
                                     type: string
@@ -658,23 +697,6 @@ additionalProperties:
                                     type: string
                                     description: >
                                         Some HTML code to be placed just before the field.
-                                        
-                                        From version 7.5 onwards, you can also use opening tags as property names
-                                        as a more readable alternative to the pre_field_html, post_field_html and
-                                        same_row properties, e.g.:
-                                            
-                                            my_field:
-                                                <br/>:
-                                                type: text
-                                        
-                                        can be used, instead of the longer:
-                                            
-                                            my_field:
-                                                same_row: true
-                                                pre_field_html: '<br/>'
-                                                type: text
-                                            
-                                            
                                 post_field_label:
                                     type: string
                                     description: >
@@ -683,25 +705,6 @@ additionalProperties:
                                     type: string
                                     description: >
                                         Some HTML code to be placed just after the field.
-                                        
-                                        From version 7.5 onwards, you can also use opening tags as property names
-                                        as a more readable alternative to the pre_field_html, post_field_html and
-                                        same_row properties, e.g.:
-                                            
-                                            my_field:
-                                                <tr><td>:
-                                                type: text
-                                                </td>:
-                                        
-                                        can be used, instead of the longer:
-                                            
-                                            my_field:
-                                                same_row: true
-                                                pre_field_html: '<tr><td>'
-                                                type: text
-                                                post_field_html: '</td>'
-                                
-                                
                                 side_note:
                                     type: string
                                     description: >
@@ -737,6 +740,7 @@ additionalProperties:
                                         - grouping
                                         - hidden
                                         - password
+                                        - multiselect
                                         - radio
                                         - radios
                                         - select
@@ -747,6 +751,7 @@ additionalProperties:
                                         - url
                                     description: >
                                         The type of field to draw.
+                                    
                                 
                                 name:
                                     type: string
@@ -899,6 +904,8 @@ additionalProperties:
                                             default: Select...
                                             description: >
                                                 The text for the Select button.
+                                                
+                                                From version 7.7 onwards, you canb set this to false or an empty
                                         nothing_selected_phrase:
                                             type: string
                                             default: Nothing selected
@@ -921,7 +928,10 @@ additionalProperties:
                                             type: boolean
                                             description: >
                                                 This hides the select button from the interface.
-                                                The type-ahead search will also be disabled.
+                                                
+                                                Note that from version 7.7 onwards, this will no longer
+                                                disable the type-ahead search. You must set the
+                                                disable_type_ahead_search property instead for this.
                                         
                                         allow_typing_anything:
                                             type: boolean
@@ -1005,6 +1015,96 @@ additionalProperties:
                                             description: >
                                                 Some HTML code to display
                                         
+                                        hr:
+                                            type: boolean
+                                            description: >
+                                                Set this to add a <hr> tag.
+                                                
+                                                This works from version 7.7 onwards.
+                                        hr_class:
+                                            type: string
+                                            description: >
+                                                A CSS class to add around the <hr> tag.
+                                                
+                                                This works from version 7.7 onwards.
+                                        hr_style:
+                                            type: string
+                                            description: >
+                                                Inline styles to add to the <hr> tag.
+                                                
+                                                This works from version 7.7 onwards.
+                                        h1:
+                                            type: string
+                                            description: >
+                                                Some text to display as a <h1> tag.
+                                                
+                                                This works from version 7.7 onwards.
+                                        h1_class:
+                                            type: string
+                                            description: >
+                                                A CSS class to add around the <h1> tag.
+                                                
+                                                This works from version 7.7 onwards.
+                                        h1_style:
+                                            type: string
+                                            description: >
+                                                Inline styles to add to the <h1> tag.
+                                                
+                                                This works from version 7.7 onwards.
+                                        h2:
+                                            type: string
+                                            description: >
+                                                Some text to display as a <h2> tag.
+                                                
+                                                This works from version 7.7 onwards.
+                                        h2_class:
+                                            type: string
+                                            description: >
+                                                A CSS class to add around the <h2> tag.
+                                                
+                                                This works from version 7.7 onwards.
+                                        h2_style:
+                                            type: string
+                                            description: >
+                                                Inline styles to add to the <h2> tag.
+                                                
+                                                This works from version 7.7 onwards.
+                                        h3:
+                                            type: string
+                                            description: >
+                                                Some text to display as a <h3> tag.
+                                                
+                                                This works from version 7.7 onwards.
+                                        h3_class:
+                                            type: string
+                                            description: >
+                                                A CSS class to add around the <h3> tag.
+                                                
+                                                This works from version 7.7 onwards.
+                                        h3_style:
+                                            type: string
+                                            description: >
+                                                Inline styles to add to the <h3> tag.
+                                                
+                                                This works from version 7.7 onwards.
+                                        h4:
+                                            type: string
+                                            description: >
+                                                Some text to display as a <h4> tag.
+                                                
+                                                This works from version 7.7 onwards.
+                                        h4_class:
+                                            type: string
+                                            description: >
+                                                A CSS class to add around the <h4> tag.
+                                                
+                                                This works from version 7.7 onwards.
+                                        h4_style:
+                                            type: string
+                                            description: >
+                                                Inline styles to add to the <h4> tag.
+                                                
+                                                This works from version 7.7 onwards.
                                         label:
                                             type: string
                                             description: >
@@ -1014,9 +1114,15 @@ additionalProperties:
                                         label_class:
                                             type: string
                                             description: >
-                                                A CSS class to add around the label
+                                                A CSS class to add around the <label> tag.
                                                 
                                                 This works from version 7.5 onwards.
+                                        label_style:
+                                            type: string
+                                            description: >
+                                                Inline styles to add to the <label> tag.
+                                                
+                                                This works from version 7.7 onwards.
                                         
                                         url:
                                             type: string
@@ -1029,18 +1135,19 @@ additionalProperties:
                                                 
                                                 If not set, the url will be requested each time the tab is redrawn.
                                         
-                                        separator:
-                                            type:
-                                                - object
-                                            description: >
-                                                Setting this property lets you add a <hr> property.
-                                            required:
-                                                - style
-                                            properties:
-                                                style:
-                                                    type: string
-                                                    description: >
-                                                        Any inline styles you wish to add to your <hr> property.
+                                        #Removed as of 7.7, please use the hr/hr_style properties instead
+                                        #separator:
+                                        #    type:
+                                        #        - object
+                                        #    description: >
+                                        #        Setting this property lets you add a <hr> property.
+                                        #    required:
+                                        #        - style
+                                        #    properties:
+                                        #        style:
+                                        #            type: string
+                                        #            description: >
+                                        #                Any inline styles you wish to add to your <hr> property.
                                         
                                         show_split_values_from:
                                             type: string
@@ -1104,22 +1211,40 @@ additionalProperties:
                                         
                                         This works from version 7.5 onwards.
                                 
-                                format_onchange:
+                                redraw_onchange:
                                     type: boolean
                                     description: >
-                                        If set, the contents of the Admin Box will be sent to the server to your
-                                        <code>formatAdminBox()</code> method whenever an Admin changes this field.
+                                        If set, the current tab will be redrawn on the client whenever an Admin changes this field.
                                 
                                 validate_onchange:
                                     type: boolean
                                     description: >
                                         If set, the contents of the Admin Box will be sent to the server to your
                                         <code>validateAdminBox()</code> method whenever an Admin changes this field.
+                                        
+                                        Note that your <code>formatAdminBox()</code> method will also be called.
                                 
-                                redraw_onchange:
+                                format_onchange:
                                     type: boolean
                                     description: >
-                                        If set, the current tab will be redrawn on the client whenever an Admin changes this field.
+                                        If set, the contents of the Admin Box will be sent to the server to your
+                                        <code>formatAdminBox()</code> method whenever an Admin changes this field.
+                                
+                                format_on_toggle_on:
+                                    type: boolean
+                                    description: >
+                                        This property for "type: toggle" buttons will call your
+                                        <code>formatAdminBox()</code> method, but only when the toggle is turned on.
+                                        
+                                        This works from version 7.7 onwards.
+                                
+                                format_on_toggle_off:
+                                    type: boolean
+                                    description: >
+                                        This property for "type: toggle" buttons will call your
+                                        <code>formatAdminBox()</code> method, but only when the toggle is turned off.
+                                        
+                                        This works from version 7.7 onwards.
                                 
                                 validation:
                                     type: object
@@ -1151,6 +1276,11 @@ additionalProperties:
                                             type: string
                                             description: >
                                                 An error message to display if any spaces are entered for this field.
+                                        no_special_characters:
+                                            type: string
+                                            description: >
+                                                An error message to display if any special characters or multilingual characters are entered.
+                                                This works from version 7.7 onwards.
                                         numeric:
                                             type: string
                                             description: >
@@ -1256,15 +1386,6 @@ additionalProperties:
                                                     default: Not changed
                                                     description: >
                                                         The text of the "changed" select list option.
-                                        disable_when_unchanged:
-                                            type: boolean
-                                            description: >
-                                                Setting this property will disable the ability to change a field when the field is
-                                                not marked as changed.
-                                                If this property is set, the only way to change the value of a field is to first
-                                                click the checkbox.
-                                                If this property is not set, the Admin can type directly into the field, which will
-                                                mark it has changed as soon as they start typing.
                                         hide_ui:
                                             type: boolean
                                             description: >
@@ -1629,6 +1750,13 @@ additionalProperties:
                                                     
                                                     This works from version 7.4 onwards.
                                             
+                                            hide_unselected_values_when_readonly:
+                                                type: boolean
+                                                description: >
+                                                    If a "type: checkboxes" or "type: radios" field is readonly, don't draw any unselected values.
+                                                    
+                                                    This works from version 7.7 onwards.
+                                            
                                             accesskey:
                                                 type: *stringy
                                                 description: Sets the accesskey HTML attribute on a checkbox or radio option.
@@ -1718,7 +1846,7 @@ additionalProperties:
                                     type: number
                                     default: 1
                                     description: >
-                                        On a pick items, checkboxes or radio group field, this property
+                                        On a pick items, checkboxes, radio group or multiselect field, this property
                                         set the number of columns to display the values in.
                                         The default is just to use one column.
                                         
@@ -1735,6 +1863,14 @@ additionalProperties:
                                         Creating an empty value makes it clear when the value in the a Select List
                                         is empty, and stops the first value being automatically selected when
                                         editing.
+                                
+                                show_empty_value_at_end:
+                                    type: boolean
+                                    description: >
+                                        If this is set, the empty option above will be shown at the end of the list and not the beginning.
+                                        
+                                        
+                                        This works from version 7.7 onwards.
                                 
                                 tag_colors:
                                     type: object
@@ -1905,21 +2041,6 @@ additionalProperties:
                                         
                                         This works from version 7.0.6 onwards.
                                 
-                                select_options:
-                                    type: object
-                                    properties:
-                                    additionalProperties:
-                                        type: *variable
-                                        description: >
-                                            An option to pass to the Chosen library.
-                                    description: >
-                                        Where you have a type: select field, you can use this property
-                                        to replace it with a more user-friendly select field powered by
-                                        the Chosen library.
-                                        
-                                        
-                                        This works from version 7.6 onwards.
-
                                 return_key_presses_button:
                                     type: *stringy
                                     description: >
@@ -1952,11 +2073,46 @@ additionalProperties:
                                         visibility.
                                 
                                         This works from version 7.3 onwards.
+                                
+                                allow_admin_to_change_export:
+                                    type: boolean
+                                    description: >
+                                        Allows admins to set the "include in export" option for a dataset field that would not normally have it enabled.
+                                        
+                                        This works from version 7.7 onwards.
                                 style:
                                     type: string
                                     description: >
                                         Adds an inline style to the field (and also applies to code and html editors).
                                         For multiple checkboxes/radiogroups, this will apply to each checkbox/radio option, unless overwritten.
+                                
+                                row_style:
+                                    type: string
+                                    description: >
+                                        Adds an inline style to this field's row.
+                                        (Does not work for fields with the same_row property.)
+                                
+                                        This works from version 7.7 onwards.
+                                
+                                row_class:
+                                    type: string
+                                    description: >
+                                        This property allows you to place a CSS class name on a row.
+                                        
+                                grouping_style:
+                                    type: string
+                                    description: >
+                                        Adds an inline style to a <code>type: grouping</code> field.
+                                        
+                                        This works from version 7.7 onwards.
+                                        
+                                grouping_css_class:
+                                    type: string
+                                    description: >
+                                        This lets you add a CSS class for a <code>type: grouping</code> field.
+                                        
+                                        This works from version 7.7 onwards.
+                                
                                 
                                 dont_trim:
                                     type: boolean

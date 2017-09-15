@@ -219,7 +219,7 @@ class zenario_common_features__organizer__slots extends module_base_class {
 		
 		//A little hack: set the requests up in the same way that handleAJAX() expects
 		$_GET['slotName'] = $_REQUEST['slotName'] = $_POST['slotName'] = $ids;
-		if (request('addPluginInstance') && $ids2) {
+		if (($_REQUEST['addPluginInstance'] ?? false) && $ids2) {
 			$_GET['addPluginInstance'] = $_REQUEST['addPluginInstance'] = $_POST['addPluginInstance'] = $ids2;
 		}
 		

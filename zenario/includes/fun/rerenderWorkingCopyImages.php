@@ -59,7 +59,7 @@ if ($workingCopyImages) {
 		
 		while($img = sqlFetchAssoc($result)) {
 			if ($img['location'] == 'docstore') {
-				if ($path = docstoreFilePath($img['path'])) {
+				if ($path = Ze\File::docstorePath($img['path'])) {
 					$img['working_copy_data'] = file_get_contents($path);
 				} else {
 					continue;
@@ -102,7 +102,7 @@ if ($thumbnailWorkingCopyImages) {
 		
 		while($img = sqlFetchAssoc($result)) {
 			if ($img['location'] == 'docstore') {
-				if ($path = docstoreFilePath($img['path'])) {
+				if ($path = Ze\File::docstorePath($img['path'])) {
 					$img['working_copy_2_data'] = file_get_contents($path);
 				} else {
 					continue;

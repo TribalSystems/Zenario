@@ -39,19 +39,19 @@ class zenario_extranet_password_reset extends zenario_extranet {
 		
 		$this->mode = 'modeResetPasswordStage1';
 		
-		if (post('extranet_send_reset_email')) {
+		if ($_POST['extranet_send_reset_email'] ?? false) {
 			if ($this->sendResetEmail()) {
 				$this->message = $this->phrase('You have been sent an email containing a link to reset your password.<br /><br />Please ensure you check your spam/bulk mail folder in case it is mis-filed.');
 				$this->mode = 'modeLogin';
 			}
-		} elseif (request('extranet_reset_password') && ($userId = $this->getUserIdFromHashCode(request('hash')))) {
+		} elseif (($_REQUEST['extranet_reset_password'] ?? false) && ($userId = $this->getUserIdFromHashCode($_REQUEST['hash'] ?? false))) {
 			if (!$this->checkResetPasswordTime($userId)) {
 				updateRow('users', array('reset_password_time' => null), array('id' => $userId));
 				$this->message = $this->phrase('This link has expired. To reset your password make a new request.');
 				$this->mode = 'modeLogin';
 			} else {
 				$this->mode = 'modeResetPasswordStage2';
-				if (post('extranet_change_password')) {
+				if ($_POST['extranet_change_password'] ?? false) {
 					if ($this->changePassword($userId)) {
 						$this->message = $this->phrase('Your Password has been changed.');
 						$this->mode = 'modeLogin';
@@ -78,8 +78,8 @@ class zenario_extranet_password_reset extends zenario_extranet {
 	
 	// Display a form that lets the user enter a new password and confirmation
 	protected function modeResetPasswordStage2() {
-		$this->objects['hash'] = request('hash');
-		$this->objects['extranet_reset_password'] = request('extranet_reset_password');
+		$this->objects['hash'] = $_REQUEST['hash'] ?? false;
+		$this->objects['extranet_reset_password'] = $_REQUEST['extranet_reset_password'] ?? false;
 		$this->frameworkHead('Outer', 'Reset_Password_Form_Passwords', $this->objects, $this->subSections);
 			echo $this->openForm();
 				$this->framework('Main_Title');
@@ -91,15 +91,15 @@ class zenario_extranet_password_reset extends zenario_extranet {
 	private function sendResetEmail() {
 		if (!$this->validateFormFields('Reset_Password_Form')) {
 			// Function displays error message so no action here
-		} elseif (!$userDetails = $this->getDetailsFromEmail(post('extranet_email'))) {
+		} elseif (!$userDetails = $this->getDetailsFromEmail($_POST['extranet_email'] ?? false)) {
 			$this->errors[] = array('Error' => $this->phrase('Sorry, we couldn\'t find an account associated with that email address.'));
 		} else {
-			if (checkRowExists('users', array('email' => post('extranet_email'), 'status' => 'pending', 'email_verified' => false  ))) {
+			if (checkRowExists('users', array('email' => ($_POST['extranet_email'] ?? false), 'status' => 'pending', 'email_verified' => false  ))) {
 				$this->errors[] = array('Error' => $this->phrase('You have not yet verified your email address. Please click on the link in your verification email.'));
 			} else {
 				updateUserHash($userDetails['id']);
 				updateRow('users', array('reset_password_time' => now()), array('id' => $userDetails['id']));
-				$userDetails = $this->getDetailsFromEmail(post('extranet_email'));
+				$userDetails = getUserDetails($userDetails['id']);
 				$userDetails['ip_address'] = visitorIP();
 				$userDetails['cms_url'] = absCMSDirURL();
 				$userDetails['reset_url'] = $this->linkToItem($this->cID, $this->cType, $fullPath = true, $request = '&extranet_reset_password=1&hash='. $userDetails['hash']);
@@ -127,13 +127,13 @@ class zenario_extranet_password_reset extends zenario_extranet {
 	
 	// Attempt to change a user's password
 	private function changePassword($userId) {
-		$errors = $this->validatePassword(post('extranet_new_password'),post('extranet_new_password_confirm'),post('extranet_password'),get_class($this),$userId);
+		$errors = $this->validatePassword($_POST['extranet_new_password'] ?? false,($_POST['extranet_new_password_confirm'] ?? false),($_POST['extranet_password'] ?? false),$this->moduleClassNameForPhrases,$userId);
 		
 		if (count($errors)) {
 			$this->errors = array_merge ($this->errors, $errors);
 			return false;
 		} else {
-			setUsersPassword($userId, post('extranet_new_password'), false);
+			setUsersPassword($userId, ($_POST['extranet_new_password'] ?? false), false);
 			return true;
 		}
 	}

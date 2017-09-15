@@ -125,7 +125,7 @@ zenario__languages:
                         path: zenario_create_vlp
                 default_language:
                     priv: _PRIV_EDIT_SITE_SETTING
-                    label: Set default language
+                    label: Change default language...
                     hide_in_select_mode: true
                     admin_box:
                         path: site_settings
@@ -145,7 +145,7 @@ zenario__languages:
                             To add a language to your site, click "Add a language" and select the language from the list in order to enable it. If you don't see the language you want, you can define a new language with a few parameters.
             item_buttons:
                 edit:
-                    label: Properties
+                    label: Edit settings for this language
                     with_columns_set:
                         traits.enabled: true
                     admin_box:
@@ -173,13 +173,13 @@ zenario__languages:
                         tab: phrases
                     hide_in_select_mode: true
                 delete:
-                    label: Delete Phrases
+                    label: Delete phrases
                     priv: _PRIV_MANAGE_LANGUAGE_PHRASE
                     with_columns_set:
                         traits.not_enabled: true
                     ajax:
                         confirm:
-                            message: 'Are you sure that you wish to delete the phrases you have added for the Language "[[name]]"?'
+                            message: 'Are you sure that you wish to delete the phrases you have added for the language "[[name]]"?'
                             button_message: Delete
                             cancel_button_message: Cancel
                             message_type: warning
@@ -187,7 +187,7 @@ zenario__languages:
                             delete: "1"
                     hide_in_select_mode: true
                 delete_language:
-                    label: Delete language
+                    label: Delete language and its content
                     priv: _PRIV_MANAGE_LANGUAGE_CONFIG
                     with_columns_set:
                         traits.enabled: true

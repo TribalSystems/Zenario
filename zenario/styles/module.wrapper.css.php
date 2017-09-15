@@ -50,7 +50,12 @@ if (isset($_GET['admin']) && $_GET['admin']) {
 
 //Cache this combination of running Module CSS
 useCache($ETag);
-useGZIP(isset($_GET['gz']) && $_GET['gz']);
+useGZIP();
+
+
+//Run pre-load actions
+require CMS_ROOT. 'zenario/api/cache_functions.inc.php';
+require editionInclude('wrapper.pre_load');
 
 
 require CMS_ROOT. 'zenario/includes/cms.inc.php';
@@ -117,3 +122,7 @@ foreach ($moduleDetails as $module) {
 		}
 	}
 }
+
+
+//Run post-display actions
+require editionInclude('wrapper.post_display');

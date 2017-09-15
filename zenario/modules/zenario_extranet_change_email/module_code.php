@@ -32,7 +32,7 @@ class zenario_extranet_change_email extends zenario_extranet {
 	
 	
 	public function init() {
-		if (post('action')=='prepare_email_change'){
+		if (($_POST['action'] ?? false)=='prepare_email_change'){
 			if (userId()) {
 				if ($this->prepareEmailChange()){
 					$this->mode = 'modeLoggedIn';
@@ -42,7 +42,7 @@ class zenario_extranet_change_email extends zenario_extranet {
 			} else {
 				$this->mode = 'modeLogin';
 			}
-		} elseif (get('action')=='confirm_email'){
+		} elseif (($_GET['action'] ?? false)=='confirm_email'){
 			if ($this->changeEmailAndLogUserIn()){
 				$this->mode = 'modeLoggedIn';
 			} else {
@@ -71,7 +71,7 @@ class zenario_extranet_change_email extends zenario_extranet {
 					FROM " 
 						. DB_NAME_PREFIX . ZENARIO_EXTRANET_CHANGE_EMAIL_PREFIX . "new_user_emails 
 					WHERE
-						hash ='" . sqlEscape(arrayKey($_GET,'hash')) . "'";
+						hash ='" . sqlEscape($_GET['hash'] ?? false) . "'";
 			
 			$result = sqlQuery($sql);
 			if ($row = sqlFetchAssoc($result)){
@@ -92,7 +92,7 @@ class zenario_extranet_change_email extends zenario_extranet {
 				$sql = "DELETE FROM " 
 						. DB_NAME_PREFIX . ZENARIO_EXTRANET_CHANGE_EMAIL_PREFIX . "new_user_emails 
 					WHERE
-						hash ='" . sqlEscape(arrayKey($_GET,'hash')) . "'";
+						hash ='" . sqlEscape($_GET['hash'] ?? false) . "'";
 				sqlQuery($sql);
 				
 				logUserIn($row['user_id']);
@@ -121,34 +121,34 @@ class zenario_extranet_change_email extends zenario_extranet {
 		$this->validateFormFields('Change_Email_Form');
 		if (!$this->errors){
 			
-			if (!checkUsersPassword(userId(), arrayKey($_POST,'extranet_password'))) {
+			if (!checkUsersPassword(userId(), ($_POST['extranet_password'] ?? false))) {
 				$this->errors[] = array('Error'=>$this->phrase('_INCORRECT_PASSWORD'));
 			}
 
 
-			if (checkRowExists('users', array('email' => arrayKey($_POST,'extranet_email')))) {
+			if (checkRowExists('users', array('email' => ($_POST['extranet_email'] ?? false)))) {
 				$this->errors[] = array('Error'=>$this->phrase('_EMAIL_ALREADY_IN_USE'));
 			}
 
 			if(!$this->errors){
 				if ($this->setting('confirmation_email_template') && inc('zenario_email_template_manager')){
-					$hash = md5(arrayKey($_POST,'extranet_email') . httpHost() . time()) . time();
+					$hash = md5(($_POST['extranet_email'] ?? false) . httpHost() . time()) . time();
 					$sql = "REPLACE INTO " 
 								. DB_NAME_PREFIX . ZENARIO_EXTRANET_CHANGE_EMAIL_PREFIX . "new_user_emails 
 							SET 
 								user_id = " . (int) userId() . ",
-								new_email = '" . sqlEscape(arrayKey($_POST,'extranet_email')) . "',
+								new_email = '" . sqlEscape($_POST['extranet_email'] ?? false) . "',
 								hash = '" . $hash . "'";
 					sqlQuery($sql);
 
 					$userDetails = getUserDetails(userId());
-					$userDetails['new_email'] =  arrayKey($_POST,'extranet_email');
+					$userDetails['new_email'] =  $_POST['extranet_email'] ?? false;
 					$userDetails['hash'] =  $hash;
 					$userDetails['ip_address'] = visitorIP();
 					$userDetails['cms_url'] = absCMSDirURL();
 					$userDetails['email_confirmation_link'] = $this->linkToItem($this->cID, $this->cType, $fullPath = true, $request = '&action=confirm_email&hash='. $hash);
 					
-					if (!zenario_email_template_manager::sendEmailsUsingTemplate(arrayKey($_POST,'extranet_email'),$this->setting('confirmation_email_template'),$userDetails,array())){
+					if (!zenario_email_template_manager::sendEmailsUsingTemplate($_POST['extranet_email'] ?? false,$this->setting('confirmation_email_template'),$userDetails,array())){
 						$this->errors[] = array('Error'=>$this->phrase('_COULD_NOT_SEND_CONFIRMATION_EMAIL'));
 						return false;
 					}

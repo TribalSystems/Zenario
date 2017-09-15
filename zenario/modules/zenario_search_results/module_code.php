@@ -46,8 +46,8 @@ class zenario_search_results extends module_base_class {
 		$this->sections = array();
 		
 		$this->category = false;
-		if ($this->setting('enable_categories') && (int) get('category')) {
-			$this->category = get('category');
+		if ($this->setting('enable_categories') && (int) ($_GET['category'] ?? false)) {
+			$this->category = $_GET['category'] ?? false;
 		}
 		
 		
@@ -55,8 +55,8 @@ class zenario_search_results extends module_base_class {
 		//$this->registerGetRequest('category');
 		//$this->registerGetRequest('searchString');
 		
-		$this->searchString = substr((string) get('searchString'), 0, 100);
-		$this->page = (int)ifNull(get('page'), 1);
+		$this->searchString = substr((string) ($_GET['searchString'] ?? false), 0, 100);
+		$this->page = (int)ifNull($_GET['page'] ?? false, 1);
 		
 		return true;
 	}

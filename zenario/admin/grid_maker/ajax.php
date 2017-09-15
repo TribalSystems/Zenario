@@ -62,33 +62,33 @@ if (!empty($_REQUEST['data'])) {
 if (is_array($data) && zenario_grid_maker::validateData($data)) {
  	
  	//Save a Skin or a Template file to the filesystem
-	if (post('save') && post('saveas')) {
+	if (($_POST['save'] ?? false) && ($_POST['saveas'] ?? false)) {
 		exit;
 	}
-	if (post('save') || post('saveas')) {
+	if (($_POST['save'] ?? false) || ($_POST['saveas'] ?? false)) {
 		header('Content-Type: text/javascript; charset=UTF-8');
 		$a = array();
-		$preview = !post('confirm');
+		$preview = !($_POST['confirm'] ?? false);
 		$layoutName = false;
 		$fileBaseName = false; 
 		
 		//Do some validation on the Template file before trying to save
-		if (post('saveas')) {
-			if (!post('layoutName')) {
+		if ($_POST['saveas'] ?? false) {
+			if (!($_POST['layoutName'] ?? false)) {
 				$a['error'] = adminPhrase('Please enter a name for your Layout.');
 			
-			} elseif (post('saveas') && checkRowExists('layouts', array('name' => post('layoutName')))) {
+			} elseif (($_POST['saveas'] ?? false) && checkRowExists('layouts', array('name' => ($_POST['layoutName'] ?? false)))) {
 				$a['error'] = adminPhrase('A Layout with that name already exists. Please enter a different name.');
 			
 			} else {
-				$layoutName = post('layoutName');
+				$layoutName = $_POST['layoutName'] ?? false;
 				$fileBaseName = generateLayoutFileBaseName($layoutName);
 			}
 			
-			$layoutId = request('layoutId');
+			$layoutId = $_REQUEST['layoutId'] ?? false;
 			
 		} else {
-			if ((!$layoutId = request('layoutId'))
+			if ((!$layoutId = $_REQUEST['layoutId'] ?? false)
 			 || (!$layout = getTemplateDetails($layoutId))
 			 || (!$fileBaseName = $layout['file_base_name'])) {
 				echo adminPhrase('Could not save layout.');
@@ -114,14 +114,14 @@ if (is_array($data) && zenario_grid_maker::validateData($data)) {
 				exit;
 			}
 			
-			if (post('save') && !$status['template_file_exists']) {
+			if (($_POST['save'] ?? false) && !$status['template_file_exists']) {
 				echo adminPhrase('The template file you were trying to save has been deleted from the system. You may use "Save As" to save it as a new template file.');
 				exit;
 			
-			} elseif (post('save') && $status['template_file_identical'] && $status['template_css_file_identical']) {
+			} elseif (($_POST['save'] ?? false) && $status['template_file_identical'] && $status['template_css_file_identical']) {
 				$a['success'] = adminPhrase('Your template file has previously been saved to the filesystem.');
 			
-			} elseif (post('saveas') && $status['template_file_exists']) {
+			} elseif (($_POST['saveas'] ?? false) && $status['template_file_exists']) {
 				$a['error'] = adminPhrase('A template file "[[fileName]]" already exists. Please enter a different name.', array('fileName' => $fileName));
 			}
 			
@@ -130,8 +130,8 @@ if (is_array($data) && zenario_grid_maker::validateData($data)) {
 				
 				if ($preview) {
 					
-					if (request('layoutId')) {
-						$a['oldLayoutName'] = getRow('layouts', 'name', request('layoutId'));
+					if ($_REQUEST['layoutId'] ?? false) {
+						$a['oldLayoutName'] = getRow('layouts', 'name', ($_REQUEST['layoutId'] ?? false));
 					}
 					
 					$a['message'] = adminPhrase('You are about to write files to your filesystem:');
@@ -186,7 +186,7 @@ if (is_array($data) && zenario_grid_maker::validateData($data)) {
 					$renameSlotsInDatabase = true;
 					
 					//If using the "Save As" option, create a new layout
-					if (post('saveas')) {
+					if ($_POST['saveas'] ?? false) {
 						
 						if (!$layoutId
 						 || !($submission = getRow('layouts', true, $layoutId))) {
@@ -290,8 +290,8 @@ if (is_array($data) && zenario_grid_maker::validateData($data)) {
 		echo json_encode($a);
 		exit;
 	
-	} elseif (get('thumbnail')) {
-		zenario_grid_maker::generateThumbnail($data, get('highlightSlot'), get('width'), get('height'));
+	} elseif ($_GET['thumbnail'] ?? false) {
+		zenario_grid_maker::generateThumbnail($data, ($_GET['highlightSlot'] ?? false), ($_GET['width'] ?? false), ($_GET['height'] ?? false));
 		exit;
 	
 	} elseif (!empty($_REQUEST['zip'])) {
@@ -316,45 +316,45 @@ if (is_array($data) && zenario_grid_maker::validateData($data)) {
 		}
 		
 		
-		if (request('image')) {
+		if ($_REQUEST['image'] ?? false) {
 			header('Location: '. $imgBg. '&save=1');
 			exit;
 		}
 	
 		
-		if (request('html') || !request('css')) {
+		if (($_REQUEST['html'] ?? false) || !($_REQUEST['css'] ?? false)) {
 			$slots = array();
 			zenario_grid_maker::generateHTML($html, $data, $slots);
 		}
-		if (request('css') || !request('html')) {
+		if (($_REQUEST['css'] ?? false) || !($_REQUEST['html'] ?? false)) {
 			zenario_grid_maker::generateCSS($css, $data);
 		}
 		
-		if (request('css')) {
-			if (request('download')) {
+		if ($_REQUEST['css'] ?? false) {
+			if ($_REQUEST['download'] ?? false) {
 				header('Content-Type: text/css; charset=UTF-8');
 				header('Content-Disposition: attachment; filename="'. zenario_grid_maker::calcSkinFileName($data). '.css"');
 			} else {
 				header('Content-Type: text/html; charset=UTF-8');
 			}
 			
-			if (request('copy')) {
+			if ($_REQUEST['copy'] ?? false) {
 				echo '<textarea>', htmlspecialchars($css), '</textarea>';
 			} else {
 				echo $css;
 			}
 			exit;
 		
-		} elseif (request('html')) {
+		} elseif ($_REQUEST['html'] ?? false) {
 			
-			if (request('download')) {
+			if ($_REQUEST['download'] ?? false) {
 				header('Content-Type: application/x-httpd-php; charset=UTF-8');
 				header('Content-Disposition: attachment; filename="'. zenario_grid_maker::calcTemplateFileName($data). '.tpl.php"');
 			} else {
 				header('Content-Type: text/html; charset=UTF-8');
 			}
 			
-			if (request('copy')) {
+			if ($_REQUEST['copy'] ?? false) {
 				echo '<textarea>', htmlspecialchars($html), '</textarea>';
 			} else {
 				echo $html;

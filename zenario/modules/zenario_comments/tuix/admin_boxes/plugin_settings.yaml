@@ -233,8 +233,7 @@ plugin_settings:
                 separator:
                     full_width: true
                     snippet:
-                        separator:
-                            exists: true
+                        hr: true
                 description_reporting:
                     full_width: true
                     snippet:
@@ -371,8 +370,7 @@ plugin_settings:
                 separator:
                     full_width: true
                     snippet:
-                        separator:
-                            exists: true
+                        hr: true
                 description_subs:
                     full_width: true
                     snippet:

@@ -77,7 +77,7 @@ $this->sections['Post_Message']['Post_Text'] = '
 	<div id="toolbar_container_for_'. $this->getEditorId(). '" class="zenario_tinymce_toolbar_container"></div>
 	<div id="'. $this->getEditorId(). '" name="comm_message">'. $this->sections['Post_Message']['Post_Text']. '</div>';
 
-$form_attributes = ' class="'. htmlspecialchars(request('comm_request')). '"';
+$form_attributes = ' class="'. htmlspecialchars($_REQUEST['comm_request'] ?? false). '"';
 if($this->form_encode_type){
 	$form_attributes .= ' enctype="' . $this->form_encode_type . '"';
 }
@@ -96,7 +96,7 @@ $this->sections['Post_Message']['Open_Form'] = $this->openForm($onSubmit, $form_
 $this->sections['Post_Message']['Close_Form'] = $this->closeForm();
 
 
-if (request('comm_request') != 'report_post') {
+if (($_REQUEST['comm_request'] ?? false) != 'report_post') {
 	if ($this->setting('comments_require_approval') && !$this->modPrivs) {
 		$this->sections['Show_Post_Screening_Notice'] = true;
 	}
@@ -106,7 +106,7 @@ if (!empty($this->post) && $quoteMode != 'quote') {
 	$this->getExtraPostInfo($this->post, $this->sections['Post_Message'], $this->sections , true);
 }
 
-//if (post('comm_enter_text')) {
+//if ($_POST['comm_enter_text'] ?? false) {
 //	//Hack for a bug in Firefox and reloading TinyMCE via AJAX
 //	$this->callScript(
 //		'zenario_anonymous_comments', 'loadWithDelay',
@@ -122,7 +122,7 @@ if (!empty($this->post) && $quoteMode != 'quote') {
 //}
 
 
-if (request('comm_request') == 'post_reply') {
+if (($_REQUEST['comm_request'] ?? false) == 'post_reply') {
 	if ($this->setting('enable_captcha')) {
 		$this->sections['Captcha'] = true;
 		$this->sections['Post_Message']['Captcha'] = $this->captcha();

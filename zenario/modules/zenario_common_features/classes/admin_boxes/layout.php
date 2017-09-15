@@ -123,7 +123,7 @@ class zenario_common_features__admin_boxes__layout extends module_base_class {
 	
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
-		if (engToBooleanArray($box['tabs']['template'], 'edit_mode', 'on') && checkPriv('_PRIV_EDIT_TEMPLATE')) {
+		if (engToBoolean($box['tabs']['template']['edit_mode']['on'] ?? false) && checkPriv('_PRIV_EDIT_TEMPLATE')) {
 			
 			//Work out what the filename for the template should be
 			if ($box['key']['duplicate']) {
@@ -165,7 +165,7 @@ class zenario_common_features__admin_boxes__layout extends module_base_class {
 	}
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		if (engToBooleanArray($box['tabs']['template'], 'edit_mode', 'on') && checkPriv('_PRIV_EDIT_TEMPLATE')) {
+		if (engToBoolean($box['tabs']['template']['edit_mode']['on'] ?? false) && checkPriv('_PRIV_EDIT_TEMPLATE')) {
 			
 			$needToClearCache = false;
 			
@@ -229,12 +229,12 @@ class zenario_common_features__admin_boxes__layout extends module_base_class {
 			}
 		}
 		
-		if (engToBooleanArray($box['tabs']['css'], 'edit_mode', 'on') && checkPriv('_PRIV_EDIT_TEMPLATE') && $box['key']['id']) {
+		if (engToBoolean($box['tabs']['css']['edit_mode']['on'] ?? false) && checkPriv('_PRIV_EDIT_TEMPLATE') && $box['key']['id']) {
 			$vals = array();
 			$vals['css_class'] = $values['css/css_class'];
 			
-			if (($filepath = getPathOfUploadedFileInCacheDir($values['css/background_image']))
-			 && ($imageId = addFileToDatabase('background_image', $filepath, false, $mustBeAnImage = true))) {
+			if (($filepath = Ze\File::getPathOfUploadedInCacheDir($values['css/background_image']))
+			 && ($imageId = Ze\File::addToDatabase('background_image', $filepath, false, $mustBeAnImage = true))) {
 				$vals['bg_image_id'] = $imageId;
 			} else {
 				$vals['bg_image_id'] = $values['css/background_image'];

@@ -51,7 +51,7 @@ class zenario_extranet_password_reminder extends zenario_extranet {
 		
 		$this->manageCookies();
 		
-		if (post('extranet_forgot_password')) {
+		if ($_POST['extranet_forgot_password'] ?? false) {
 			if ($this->forgotPassword()) {
 				$this->message = $this->phrase('_EMAIL_SENT');
 				$this->mode = 'modeLogin';
@@ -79,11 +79,11 @@ class zenario_extranet_password_reminder extends zenario_extranet {
 	function forgotPassword() {
 		if (!$this->validateFormFields('Forget_Password_Form')) {
 		
-		} elseif (!$userDetails = $this->getDetailsFromEmail(post('extranet_email'))) {
+		} elseif (!$userDetails = $this->getDetailsFromEmail($_POST['extranet_email'] ?? false)) {
 			$this->errors[] = array('Error' => $this->phrase('_ERROR_EMAIL_UNASSOCIATED'));
 			
 		} else {
-			if (checkRowExists('users', array('email' => post('extranet_email'), 'status' => 'pending', 'email_verified' => false  ))) {
+			if (checkRowExists('users', array('email' => ($_POST['extranet_email'] ?? false), 'status' => 'pending', 'email_verified' => false  ))) {
 				$this->errors[] = array('Error' => $this->phrase('_ERROR_EMAIL_NOT_VERIFIED'));
 			
 			} else {

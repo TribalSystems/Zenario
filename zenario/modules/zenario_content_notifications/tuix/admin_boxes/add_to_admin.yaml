@@ -13,25 +13,25 @@ zenario_admin:
                             This admin does not have the &ldquo;May receive content notifications&rdquo; permission
                             so cannot receive notifications.
                 content_request_notification:
-                    label: 'Receive request notifications:'
+                    label: 'Receive request notifications'
                     note_below: >
                         Send this admin an email notification when another administrator creates a request on a content item.
                     type: checkbox
                     value: ""
                 draft_notification:
-                    label: 'Receive draft notifications:'
+                    label: 'Receive draft notifications'
                     type: checkbox
                     value: ""
                     note_below: >
                         Send this admin an email notification when another administrator creates a draft.
                 published_notification:
-                    label: 'Receive publish notifications:'
+                    label: 'Receive publish notifications'
                     type: checkbox
                     value: ""
                     note_below: >
                         Send this admin an email notification when another administrator publishes a content item.
                 menu_node_notification:
-                    label: 'Receive menu node notifications:'
+                    label: 'Receive menu node notifications'
                     type: checkbox
                     value: ""
                     note_below: >

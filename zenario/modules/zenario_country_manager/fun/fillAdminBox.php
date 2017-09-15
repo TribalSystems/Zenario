@@ -29,14 +29,14 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 	switch($path) {
 		case 'zenario_country_manager__country':
-			if (get('refinerId')){
-				$box['key']['id'] = get('refinerId');
+			if ($_GET['refinerId'] ?? false){
+				$box['key']['id'] = $_GET['refinerId'] ?? false;
 			}
-			if (arrayKey($box,'key','id')) {
-				$countryName = getRow(ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_countries', 'english_name', array('id' => arrayKey($box,'key','id')));
+			if ($box['key']['id'] ?? false) {
+				$countryName = getRow(ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_countries', 'english_name', array('id' => ($box['key']['id'] ?? false)));
 				$box['title'] = adminPhrase('Renaming the Country "[[country_name]]"', array('country_name' => $countryName));
 
-				$box['tabs']['details']['fields']['code']['value'] = arrayKey($box,'key','id');
+				$box['tabs']['details']['fields']['code']['value'] = $box['key']['id'] ?? false;
 				$box['tabs']['details']['fields']['code']['readonly'] = true;
 				$box['tabs']['details']['fields']['name']['value'] = $countryName;
 			}
@@ -45,30 +45,30 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 			if (!setting('zenario_country_manager__region_type_management')) {
 				$box['tabs']['details']['fields']['region_type']['hidden'] = true;
 			}
-			if (get('id')){
-				$box['key']['id'] = get('id');
+			if ($_GET['id'] ?? false){
+				$box['key']['id'] = $_GET['id'] ?? false;
 			}
-			if (get('refinerName')=='parent_id') {
-				$box['key']['parent_id'] = get('refinerId');
-				if (arrayKey($box,'key','id')) {
-					$region = getRow(ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_regions', array('name','region_type'), array('id' => arrayKey($box,'key','id')));
+			if (($_GET['refinerName'] ?? false)=='parent_id') {
+				$box['key']['parent_id'] = $_GET['refinerId'] ?? false;
+				if ($box['key']['id'] ?? false) {
+					$region = getRow(ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_regions', array('name','region_type'), array('id' => ($box['key']['id'] ?? false)));
 					$box['title'] = adminPhrase('Renaming the Region "[[region_name]]"', array('region_name' => $region['name']));
 					$box['tabs']['details']['fields']['name']['value'] = $region['name'];
 					$box['tabs']['details']['fields']['update_phrase']['hidden'] = false;
 					if (setting('zenario_country_manager__region_type_management')) {
 						$box['tabs']['details']['fields']['region_type']['value'] = $region['region_type'];
 					}
-				} elseif (arrayKey($box,'key','parent_id')) {
-					$parentRegion = getRow(ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_regions', array('name'), array('id' => arrayKey($box,'key','parent_id')));
+				} elseif ($box['key']['parent_id'] ?? false) {
+					$parentRegion = getRow(ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_regions', array('name'), array('id' => ($box['key']['parent_id'] ?? false)));
 					$box['title'] = adminPhrase('Creating a Sub-region of the Region "[[parent_region_name]]"', 
 													array('parent_region_name' => $parentRegion['name']));
 					$box['tabs']['details']['fields']['update_phrase']['hidden'] = true;
 				}
-			} elseif (get('refiner__country_code_filter')) {
-				$box['key']['country_id'] = get('refiner__country_code_filter');
-				$countryName = getRow(ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_countries', 'english_name', array('id' => arrayKey($box,'key','country_id')));
-				if (arrayKey($box,'key','id')) {
-					$region = getRow(ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_regions', array('name', 'region_type'), array('id' => arrayKey($box,'key','id')));
+			} elseif ($_GET['refiner__country_code_filter'] ?? false) {
+				$box['key']['country_id'] = $_GET['refiner__country_code_filter'] ?? false;
+				$countryName = getRow(ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_countries', 'english_name', array('id' => ($box['key']['country_id'] ?? false)));
+				if ($box['key']['id'] ?? false) {
+					$region = getRow(ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_regions', array('name', 'region_type'), array('id' => ($box['key']['id'] ?? false)));
 					$box['title'] = adminPhrase('Renaming the Region "[[region_name]]" in the Country "[[country_name]]"', 
 													array('region_name' => $region['name'], 'country_name' => $countryName));
 					$box['tabs']['details']['fields']['name']['value'] = $region['name'];

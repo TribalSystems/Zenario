@@ -85,19 +85,19 @@ if (!checkPriv()) {
 	$location = array_reverse(explode('/', $location[0]['file']));
 	
 	//If this is an AJAX file, or an admin box, simply exit as there is no recovery we can really do
-	if (substr(arrayKey($location, 0), -8) == 'ajax.php'
-	 || arrayKey($location, 0) == 'ajax'
-	 || arrayKey($location, 1) == 'ajax'
-	 || arrayKey($location, 1) == 'admin_boxes'
-	 || request('method_call') == 'handleOrganizerPanelAJAX'
-	 || request('method_call') == 'handleAdminToolbarAJAX') {
+	if (substr($location[0] ?? false, -8) == 'ajax.php'
+	 || ($location[0] ?? false) == 'ajax'
+	 || ($location[1] ?? false) == 'ajax'
+	 || ($location[1] ?? false) == 'admin_boxes'
+	 || ($_REQUEST['method_call'] ?? false) == 'handleOrganizerPanelAJAX'
+	 || ($_REQUEST['method_call'] ?? false) == 'handleAdminToolbarAJAX') {
 		
 		header('Zenario-Admin-Logged_Out: 1');
 		echo '<!--Logged_Out-->', adminPhrase('You have been logged out.');
 		exit;
 	
 	//Also don't do the redirect for index.php or organizer.php
-	} elseif (arrayKey($location, 0) != DIRECTORY_INDEX_FILENAME && arrayKey($location, 0) != 'index.php' && arrayKey($location, 0) != 'organizer.php') {
+	} elseif (($location[0] ?? false) != DIRECTORY_INDEX_FILENAME && ($location[0] ?? false) != 'index.php' && ($location[0] ?? false) != 'organizer.php') {
 		//Otherwise attempt to redirect the user to the login screen
 		header('location: '. httpOrHttps(). $_SERVER["HTTP_HOST"]. SUBDIRECTORY. 'zenario/admin/welcome.php?desturl='. urlencode($_SERVER['REQUEST_URI']));
 		exit;

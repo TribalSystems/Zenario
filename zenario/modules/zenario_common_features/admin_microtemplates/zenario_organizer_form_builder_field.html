@@ -1,7 +1,19 @@
+<% if (m._fields) { %>
+
+<div class="grouping <% if (m._isSortable) { %> is_sortable <% } %>">
+	{{zenarioT.microTemplate('zenario_organizer_form_builder_field', m._fields)}}
+</div>
+
+<% } else { %>
 <div 
 	id="organizer_form_field_{{m.id}}" 
-	class="form_field {{m.type}} {{m.css_classes}} <% if (m.selected) { %> selected <% } %>" 
+	class="form_field {{m.type}} {{m.css_classes}}
+		<% if (m._isSortable) { %> is_sortable <% } %> 
+		<% if (m.selected) { %> selected <% } %>"
 	data-id="{{m.id}}"
+	<% if (m._inRepeat) { %>
+		style="padding-left:50px;"
+	<% } %>
 >
 	<div class="form_field_arrow"></div>
 	<div class="form_field_details_wrapper">
@@ -85,10 +97,11 @@
 			<input type="text" value="" readonly/>
 		
 		<% } else if (m.type == 'repeat_start') { %>
-			vvv <span>Repeat start</span> vvv
+			<div class="border"></div>
+			<span>Repeating section start</span>
 			
 		<% } else if (m.type == 'repeat_end') { %>
-			^^^ <span>Repeat end</span> ^^^
+			<div class="border"></div>
 		
 		<% } else { %>
 			<span class="label">{{m.field_label|e}}</span>
@@ -106,17 +119,26 @@
 	<% if (m.type != 'page_end') { %>
         <div class="form_field_classes" style="display:none;">
         	<span class="field_icon not_visible" title="<% if (m.visibility == 'hidden') { %>Hidden<% } else { %>Visible on condition<% } %>" <% if (m.visibility == 'visible') { %>style="display:none;"<% } %>>Vis</span>
-        	<span class="field_icon mandatory" title="<% if (m.readonly_or_mandatory == 'mandatory') { %>Mandatory<% } else { %>Mandatory on condition<% } %>" <% if (m.readonly_or_mandatory != 'mandatory' && m.readonly_or_mandatory != 'conditional_mandatory') { %>style="display:none;"<% } %>>Mand</span>
+        	<span class="field_icon mandatory" title="<% if (m.readonly_or_mandatory == 'mandatory') { %>Mandatory<% } else { %>Mandatory on condition<% } %>" <% if (m.readonly_or_mandatory != 'mandatory' && m.readonly_or_mandatory != 'conditional_mandatory' && m.readonly_or_mandatory != "mandatory_if_visible") { %>style="display:none;"<% } %>>Mand</span>
         	<span class="field_icon validation" title="Validation" <% if (m.field_validation == 'none') { %>style="display:none;"<% } %>>Val</span>
             <span class="field_icon css" title="{{m.css_classes|e}}" <% if (!m.css_classes) { %>style="display:none;"<% } %>>CSS</span>
             <span class="field_icon div" title="{{m.div_wrap_class|e}}" <% if (!m.div_wrap_class) { %>style="display:none;"<% } %>>Div</span>
         </div>
     
         <div id="organizer_form_field_inline_buttons_{{m.id|e}}" class="form_field_inline_buttons" <% if (!m.selected) { %> style="display:none;" <% } %>>
-            <span class="drag_icon"></span>
-            <span 
-                class="delete_icon <% if (m.form_type == 'registration' && m.db_column == 'email') { %>disabled<% } else { %>enabled<% } %}" data-id="{{m.id|e}}"
-            >Delete</span>
+        	<% if (!m._hideDragButton) { %>
+            	<span class="drag_icon"></span>
+            <% } %>
+            <% if (!m._hideDeleteButton) { %>
+           		<span class="delete_icon <% if (m.form_type == 'registration' && m.db_column == 'email') { %>disabled<% } else { %>enabled<% } %}" data-id="{{m.id|e}}">Delete</span>
+           	<% } %>
+           	<% if (!m._hideDuplicateButton) { %>
+           		<span class="duplicate_icon" data-id="{{m.id|e}}">Duplicate</span>
+           	<% } %>
+           	<% if (m.type == 'repeat_start' && m.dataset_field_id) { %>
+           		<span class="update_repeat_field_icon" data-id="{{m.id|e}}">Update</span>
+           	<% } %>
         </div>
 	<% } %>
 </div>
+<% } %>

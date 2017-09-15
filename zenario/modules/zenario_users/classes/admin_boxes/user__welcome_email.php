@@ -44,7 +44,7 @@ class zenario_users__admin_boxes__user__welcome_email extends zenario_users {
 		}
 		if (count($layouts)){
 			$template = current($layouts);
-			$fields['details/email_to_send']['value'] = arrayKey($template,'code');
+			$fields['details/email_to_send']['value'] = $template['code'] ?? false;
 		}
 	}
 	

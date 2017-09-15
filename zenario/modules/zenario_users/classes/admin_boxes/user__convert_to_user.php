@@ -30,13 +30,13 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_users__admin_boxes__user__convert_to_user extends zenario_users {
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
-		$userDetails = getUserDetails(arrayKey($box,"key","id"));
+		$userDetails = getUserDetails($box["key"]["id"] ?? false);
 		$values['details/email'] = $userDetails['email'];
 		$values['details/salutation'] = $userDetails['salutation'];
 		$values['details/first_name'] = $userDetails['first_name'];
 		$values['details/last_name'] = $userDetails['last_name'];
 	
-		$box['title'] = "Converting the contact \"" . arrayKey($userDetails,"identifier") . "\"";
+		$box['title'] = "Converting the contact \"" . ($userDetails["identifier"] ?? false) . "\"";
 	
 		$layouts = zenario_email_template_manager::getTemplatesByNameIndexedByCode('User Activated',false);
 	
@@ -46,7 +46,7 @@ class zenario_users__admin_boxes__user__convert_to_user extends zenario_users {
 	
 		if (count($layouts)){
 			$template = current($layouts);
-			$fields['details/email_to_send']['value'] = arrayKey($template,'code');
+			$fields['details/email_to_send']['value'] = $template['code'] ?? false;
 		}
 		
 		$fields['details/password_needs_changing']['note_below'] =
@@ -124,7 +124,7 @@ class zenario_users__admin_boxes__user__convert_to_user extends zenario_users {
 				$mergeFields['password'] = $values['password'];
 				$mergeFields['cms_url'] = absCMSDirURL();
 				
-				zenario_email_template_manager::sendEmailsUsingTemplate(arrayKey($mergeFields,'email'),arrayKey($values,'details/email_to_send'),$mergeFields);
+				zenario_email_template_manager::sendEmailsUsingTemplate($mergeFields['email'] ?? false,($values['details/email_to_send'] ?? false),$mergeFields);
 			}
 		}
 	}

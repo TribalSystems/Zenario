@@ -4,9 +4,7 @@ require '../adminheader.inc.php';
 
 checkForChangesInCssJsAndHtmlFiles();
 
-$gzf = setting('compress_web_pages')? '?gz=1' : '?gz=0';
-$gz = setting('compress_web_pages')? '&amp;gz=1' : '&amp;gz=0';
-useGZIP(setting('compress_web_pages'));
+useGZIP();
 
 $homeLink = $backLink = '';
 
@@ -51,7 +49,7 @@ CMSWritePageBody();
 
                         	
 $homePageCID = $homePageCType = false;
-langSpecialPage('zenario_home', $homePageCID, $homePageCType, setting('default_language'), true);
+langSpecialPage('zenario_home', $homePageCID, $homePageCType, cms_core::$defaultLang, true);
 
 if (!empty($_GET['openedInIframe'])) {
 	$topLeftHTML =
@@ -65,12 +63,12 @@ if (!empty($_GET['openedInIframe'])) {
 				title="'. adminPhrase('Back to&lt;br/&gt;Home Page'). '"></a>
 		</div>';
 	
-	if (get('fromCID') && get('fromCType') && (get('fromCID') != $homePageCID || get('fromCType') != $homePageCType)) {
+	if (($_GET['fromCID'] ?? false) && ($_GET['fromCType'] ?? false) && (($_GET['fromCID'] ?? false) != $homePageCID || ($_GET['fromCType'] ?? false) != $homePageCType)) {
 		$topLeftHTML .= '
 			<div class="last_page_button top_left_button">
 				<a id="last_page_button_link"
-					href="'. htmlspecialchars($backLink = linkToItem(get('fromCID'), get('fromCType'), true, 'zenario_sk_return=navigation_path')). '"
-					title="'. adminPhrase('Back to&lt;br/&gt;[[citem]]', array('citem' => htmlspecialchars(formatTag(get('fromCID'), get('fromCType'))))). '"></a>
+					href="'. htmlspecialchars($backLink = linkToItem($_GET['fromCID'] ?? false, ($_GET['fromCType'] ?? false), true, 'zenario_sk_return=navigation_path')). '"
+					title="'. adminPhrase('Back to&lt;br/&gt;[[citem]]', array('citem' => htmlspecialchars(formatTag($_GET['fromCID'] ?? false, ($_GET['fromCType'] ?? false))))). '"></a>
 			</div>';
 	}
 	
@@ -105,20 +103,20 @@ CMSWritePageFoot($prefix, 'organizer', true, false);
 echo '
 	<script type="text/javascript">';
 
-if (get('openingInstance') && get('openingPath')) {
+if (($_GET['openingInstance'] ?? false) && ($_GET['openingPath'] ?? false)) {
 	echo '
 		window.zenarioOQuickMode = true;
-		window.zenarioOOpeningInstance = ', (int) get('openingInstance'), ';
-		window.zenarioOOpeningPath = "', preg_replace('@[^\w-/]@', '', get('openingPath')), '";';
+		window.zenarioOOpeningInstance = ', (int) ($_GET['openingInstance'] ?? false), ';
+		window.zenarioOOpeningPath = "', preg_replace('@[^\w-/]@', '', ($_GET['openingPath'] ?? false)), '";';
 }
 
 $adminAuthType = getRow('admins', 'authtype', adminId());
 $show_help_tour_next_time = (($adminAuthType == 'local') && adminSetting('show_help_tour_next_time'));
 
 echo '
-		zenarioA.fromCID = ', (int) get('fromCID'), ';
-		zenarioA.fromCType = "', preg_replace('/\W/', '', get('fromCType')), '";
-		zenarioA.openedInIframe = ', get('openedInIframe')? 'true' : 'false', ';
+		zenarioA.fromCID = ', (int) ($_GET['fromCID'] ?? false), ';
+		zenarioA.fromCType = "', preg_replace('/\W/', '', ($_GET['fromCType'] ?? false)), '";
+		zenarioA.openedInIframe = ', ($_GET['openedInIframe'] ?? false)? 'true' : 'false', ';
 		zenarioA.homeLink = "', jsEscape($homeLink), '";
 		zenarioA.backLink = "', jsEscape($backLink), '";
 		

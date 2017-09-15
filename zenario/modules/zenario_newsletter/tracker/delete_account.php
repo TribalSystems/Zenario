@@ -45,7 +45,7 @@ echo '
 if (!($newsletters = activateModule('zenario_newsletter'))) {
 	phrase('Sorry, you cannot be automatically removed right now, as this site has disabled their newsletter system.', false, 'zenario_newsletter');
 	exit;
-} elseif (request('t') == 'XXXXXXXXXXXXXXX' || request('t') == 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX') {
+} elseif (($_REQUEST['t'] ?? false) == 'XXXXXXXXXXXXXXX' || ($_REQUEST['t'] ?? false) == 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX') {
 	echo phrase('Any user who clicks on this link in the actual Newsletter will have their account deleted.', false, 'zenario_newsletter');
 	exit;
 }
@@ -53,7 +53,7 @@ if (!($newsletters = activateModule('zenario_newsletter'))) {
 $sql = "
 	SELECT user_id, newsletter_id
 	FROM ". DB_NAME_PREFIX. ZENARIO_NEWSLETTER_PREFIX. "newsletter_user_link
-	WHERE delete_account_hash = '". sqlEscape(request('t')). "'";
+	WHERE delete_account_hash = '". sqlEscape($_REQUEST['t'] ?? false). "'";
 
 $result = sqlQuery($sql);
 if ($row = sqlFetchAssoc($result)) {
@@ -64,7 +64,7 @@ if ($row = sqlFetchAssoc($result)) {
 	$result = sqlQuery($sql);
 	
 	if (sqlNumRows($result)) {
-		if (post('confirm')) {
+		if ($_POST['confirm'] ?? false) {
 			deleteUser($row['user_id']);
 			
 			echo phrase('Your account has been deleted.', false, 'zenario_newsletter');

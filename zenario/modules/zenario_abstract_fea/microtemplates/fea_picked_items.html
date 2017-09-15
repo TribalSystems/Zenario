@@ -7,42 +7,7 @@
 			type="button"
 			value="{{m.upload.phrase|e}}"
 			onclick="{{m.upload.onclick|e}}"
-			class="
-				launch_keeper
-				<% if (m.tempReadOnly) { %>
-					submit_disabled" disabled="disabled
-				<% } %>
-			"
+			class="launch_keeper"
 		/>
 	<% } %>
-	
-	<!--
-	<% if (m.dropbox) { %>
-		<input
-			type="button"
-			value="Pick from Dropbox..."
-			onclick="{{m.dropbox.onclick|e}}"
-			class="
-				launch_keeper
-				<% if (m.tempReadOnly) { %>
-					submit_disabled" disabled="disabled
-				<% } %>
-			"
-		/>
-	<% } %>
-	
-	<% if (m.select) { %>
-		<input
-			type="button"
-			value="{{m.select.phrase|e}}"
-			onclick="{{m.select.onclick|e}}"
-			class="
-				launch_keeper
-				<% if (m.tempReadOnly) { %>
-					submit_disabled" disabled="disabled
-				<% } %>
-			"
-		/>
-	<% } %>
-	-->
 <% } %>

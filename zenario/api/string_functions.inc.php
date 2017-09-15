@@ -57,16 +57,12 @@ function addQu($request) {
 	}
 }
 
-function base64($text) {
-	return rtrim(strtr(base64_encode($text), '+/', '-_'), '=');
-}
+//	function base64($text) {}
+
+//	function base16To64($text) {}
 
 function base64Decode($text) {
 	return base64_decode(strtr($text, '-_', '+/'));
-}
-
-function base16To64($text) {
-	return base64(pack('H*', $text));
 }
 
 function base64To16($text) {
@@ -113,6 +109,14 @@ function chopPrefixOffString($prefix, $string, $returnStringOnFailure = false) {
 //Deprecated old version of the above function, with the inputs the other way around
 function chopPrefixOffOfString($string, $prefix, $returnStringOnFailure = false) {
 	chopPrefixOffString($prefix, $string, $returnStringOnFailure);
+}
+
+function explodeAndSet($delimiter, $string, &...$args) {
+	$vals = explode($delimiter, $string, count($args));
+	
+	foreach ($args as $i => &$arg) {
+		$arg = $vals[$i] ?? null;
+	}
 }
 
 //Reverses encodeItemIdForOrganizer()

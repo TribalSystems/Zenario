@@ -29,6 +29,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 
 
+
 //This code just adds one content item, unless multiple in the same were selected at once
 $sql = "
 	SELECT
@@ -48,7 +49,7 @@ $sql = "
 	ORDER BY
 		c.type,
 		c.equiv_id,
-		c.language_id = '". sqlEscape(setting('default_language')). "' DESC,
+		c.language_id = '". sqlEscape(cms_core::$defaultLang). "' DESC,
 		c.language_id,
 		v.title";
 
@@ -61,12 +62,14 @@ while ($row = sqlFetchAssoc($result)) {
 		$lastEquivTag = $row['content_type']. '_'. $row['equiv_id'];
 		$menuId = false;
 	}
-	if ($hideMenuNodes) {
+	
+	$contentType = getRow('content_types', ['hide_private_item', 'hide_menu_node'], $row['content_type']);
+	
+	if ($contentType['hide_menu_node']) {
 		$row['invisible'] = true;
 	}
-	if ($hidePrivateItem !== false) {
-		$row['hide_private_item'] = $hidePrivateItem;
-	}
+	$row['hide_private_item'] = (int) $contentType['hide_private_item'];
+	
 	$menuId = saveMenuDetails($row, $menuId, $resyncIfNeeded = false, $skipSectionChecks = true);
 	saveMenuText($menuId, $row['language_id'], $row);
 	$menuIds[$menuId] = $menuId;
@@ -75,7 +78,7 @@ define('TEST', $menuId);
 
 //By default, just move to the top level
 $newParentId = 0;
-$newSectionId = post('child__refiner__section');
+$newSectionId = $_POST['child__refiner__section'] ?? false;
 $newNeighbourId = 0;
 
 //Look for a menu node in the request
@@ -110,4 +113,5 @@ moveMenuNode(
 	$menuIds,
 	$newSectionId,
 	$newParentId,
-	$newNeighbourId);
+	$newNeighbourId,
+	$afterNeighbour);

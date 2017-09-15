@@ -28,8 +28,8 @@
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
 
-if (post('create_new_forum')) {
-	$ids = array('forum_content_id' => post('cID'), 'forum_content_type' => post('cType'));
+if ($_POST['create_new_forum'] ?? false) {
+	$ids = array('forum_content_id' => ($_POST['cID'] ?? false), 'forum_content_type' => ($_POST['cType'] ?? false));
 	
 	if (!checkRowExists(ZENARIO_FORUM_PREFIX. 'forums', $ids)) {
 		$sql = "

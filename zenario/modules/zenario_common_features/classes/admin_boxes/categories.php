@@ -43,7 +43,7 @@ class zenario_common_features__admin_boxes__categories extends module_base_class
 			$box['key']['parent_id'] = $box['key']['id'];
 			$box['key']['id'] = "";
 		}else{
-			$box['key']['parent_id'] = request('refiner__parent_category');
+			$box['key']['parent_id'] = $_REQUEST['refiner__parent_category'] ?? false;
 		}
 		
 

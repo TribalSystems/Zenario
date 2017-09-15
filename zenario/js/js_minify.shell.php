@@ -254,6 +254,10 @@ if ($scan = scandir(TINYMCE_DIR. 'plugins')) {
 minify('zenario/libraries/bsd/jquery_roundabout/', 'jquery.roundabout', $level, '.js');
 minify('zenario/libraries/bsd/jquery_roundabout/', 'jquery.roundabout-shapes', $level, '.js');
 minify('zenario/libraries/mit/jquery.fix.clone/', 'jquery.fix.clone', $level, '.js');
+minify('zenario/libraries/mit/jquery.lazy/', 'jquery.lazy', $level, '.js');
+minify('zenario/libraries/mit/jquery.lazy/', 'jquery.lazy.plugins', $level, '.js');
+minify('zenario/libraries/mit/jquery.multiselect/', 'jquery.multiselect', $level, '.js');
+minify('zenario/libraries/mit/jquery.multiselect/', 'jquery.multiselect', $level, '.css');
 
 //Minify colorbox
 minify('zenario/libraries/mit/colorbox/', 'jquery.colorbox', $level, '.js');
@@ -261,10 +265,6 @@ minify('zenario/libraries/mit/colorbox/', 'jquery.colorbox', $level, '.js');
 //Minify Tokenizer
 minify('zenario/libraries/bsd/tokenize/', 'jquery.tokenize', $level, '.css');
 minify('zenario/libraries/bsd/tokenize/', 'jquery.tokenize', $level, '.js');
-
-//Minify chosen
-minify('zenario/libraries/mit/chosen/', 'chosen', $level, '.css');
-minify('zenario/libraries/mit/chosen/', 'chosen.jquery', $level, '.js');
 
 //Minify enquire.js
 minify('zenario/libraries/mit/enquire/', 'enquire', $level, '.js');

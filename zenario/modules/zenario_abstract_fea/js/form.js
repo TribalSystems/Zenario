@@ -106,7 +106,8 @@ methods.ffov = function(action) {
 	var that = this,
 		cb = new zenario.callback,
 		url = this.url = this.visitorTUIXLink(this.request, action, true),
-		post = false;
+		post = false,
+		goneToURL = false;
 	
 	if (action != 'fill') {
 		this.prevPath = this.path;
@@ -116,7 +117,8 @@ methods.ffov = function(action) {
 	
 	if (!this.loading) {
 		this.showLoader();
-		this.ajax(url, post, true).after(function(tuix) {
+		
+		var after = function(tuix) {
 			that.hideLoader();
 		
 			if (action == 'fill') {
@@ -132,6 +134,16 @@ methods.ffov = function(action) {
 			if (that.tuix.go) {
 				that.go(that.tuix.go);
 			
+			} else if (that.tuix.go_to_url && !goneToURL) {
+				zenario.goToURL(that.tuix.go_to_url);
+				goneToURL = true;
+				
+				//Set a timeout to re-liven the form, just in case the URL was a redirect to a download which wouldn't
+				//unload the current window.
+				setTimeout(function() {
+					after(tuix);
+				}, 350);
+			
 			} else if (that.tuix.close_popout && that.inPopout) {
 				that.closePopout();
 			
@@ -140,7 +152,9 @@ methods.ffov = function(action) {
 				that.draw();
 				cb.call();
 			}
-		});
+		};
+		
+		this.ajax(url, post, true).after(after);
 	}
 	
 	return cb;
@@ -175,18 +189,16 @@ methods.draw2 = function() {
 	
 	this.tuix.form_title = this.getTitle();
 	
-	var DOMlastFieldInFocus,
-		cb = new zenario.callback;
+	this.cb = new zenario.callback;
+	this.putHTMLOnPage(this.drawFields(this.cb, this.mtPrefix + '_form'));
 	
-	this.putHTMLOnPage(this.drawFields(cb, this.mtPrefix + '_form'));
+	var DOMlastFieldInFocus;
 	
 	if (this.path == this.prevPath
 	 && this.lastFieldInFocus
 	 && (DOMlastFieldInFocus = this.get(this.lastFieldInFocus))) {
 		DOMlastFieldInFocus.focus();
 	}
-	
-	cb.call();
 };
 
 methods.ajaxURL = function() {
@@ -202,14 +214,27 @@ methods.putHTMLOnPage = function(html) {
 	this.clearOnScrollForItemButtons();
 	
 	var containerId = this.containerId,
-		sel = '#' + containerId;
+		sel = 'fea_' + containerId,
+		$fea;
 	
-	$(sel).html(html);
-	zenario.addJQueryElements(sel + ' ');
+	$fea = $('#' + sel);
+	if (!$fea.length) {
+		sel = containerId;
+		$fea = $('#' + sel);
+	}
+	
+	$fea.html(html);
+	this.addJQueryElements('#' + sel);
+	
+	this.cb.call();
 	
 	if (zenario.adminId) {
-		zenarioA.scanHyperlinksAndDisplayStatus(containerId);
+		zenarioA.scanHyperlinksAndDisplayStatus(sel);
 	}
+};
+
+methods.after = function(fun) {
+	this.cb.after(fun);
 };
 
 methods.closePopout = function() {
@@ -234,9 +259,36 @@ methods.reloadParent = function() {
 	}
 };
 
+methods.hasSearch = function() {
+	return this.request.search != undefined && this.request.search != '';
+};
+
+methods.showClearSearchButton = function() {
+	return this.hasSearch() && (zenario.browserIsFirefox() || zenario.browserIsIE(9));
+};
+
+methods.fun = function(functionName) {
+	return this.globalName + '.' + functionName;
+};
+
+methods.pMicroTemplate = function(template, data, filter) {
+	return this.microTemplate(this.mtPrefix + '_' + template, data, filter);
+};
+
 methods.microTemplate = function(template, data, filter) {
 	
-	var html, d;
+	//Use a customised microtemplate for listing classes and methods
+	if ((template == 'fea_list' || template == 'fea_form')
+	 && this.tuix
+	 && this.tuix.microtemplate) {
+		template = this.tuix.microtemplate;
+	}
+	
+	var d,
+		html,
+		addAndRemoveThis = true;
+	
+	filter = zenarioT.filter(filter);
 	
 	if (_.isArray(data)) {
 		for (d in data) {
@@ -244,20 +296,28 @@ methods.microTemplate = function(template, data, filter) {
 			if (!data[d].tuix) data[d].tuix = this.tuix;
 		}
 	} else {
-		data.that = this;
-		if (!data.tuix) data.tuix = this.tuix;
+		if (data.that === undefined) {
+			data.that = this;
+			if (!data.tuix) data.tuix = this.tuix;
+		} else {
+			addAndRemoveThis = false;
+		}
 	}
 	
 	html = zenario.microTemplate(template, data, filter);
 	
-	if (_.isArray(data)) {
-		for (d in data) {
-			delete data[d].that;
-			delete data[d].tuix;
-		}
-	} else {
-		delete data.that;
-		delete data.tuix;
+	if (addAndRemoveThis) {
+		setTimeout(function() {
+			if (_.isArray(data)) {
+				for (d in data) {
+					delete data[d].that;
+					delete data[d].tuix;
+				}
+			} else {
+				delete data.that;
+				delete data.tuix;
+			}
+		}, 1);
 	}
 	
 	return html;
@@ -312,6 +372,10 @@ methods.reload = function(callWhenLoaded) {
 	if (this.containerId) {
 		this.runLogic(this.request, callWhenLoaded || (function() {}));
 	}
+};
+
+methods.commandEnabled = function(commandName) {
+	return zenario_conductor.commandEnabled(this.containerId, commandName);
 };
 
 methods.navigationEnabled = function(commandName, mode) {
@@ -452,6 +516,7 @@ methods.drawList = function() {
 	
 	this.sortOutTUIX();
 	
+	this.cb = new zenario.callback;
 	this.putHTMLOnPage(this.microTemplate(this.mtPrefix + '_list', {}));
 	
 	var that = this,
@@ -483,7 +548,7 @@ methods.drawList = function() {
 			//coeffAcceleration: 2,
 			
 			onPageClicked: function(a,num) { 
-				that.go({page: num});
+				that.doSearch(undefined, undefined, num);
 			}
 		});
 	}
@@ -663,13 +728,14 @@ methods.debug = function() {
 	}
 };
 
-methods.doSearch = function(e, value) {
+methods.doSearch = function(e, value, page) {
 	
 	zenario.stop(e);
 
 	var requests = this.request,
+		page = page ? page : '',
 		search = {
-			page: '',
+			page: page,
 			search: value !== undefined? value : this.get('search_' + this.containerId).value
 		};
 
@@ -710,7 +776,12 @@ methods.go = function(request, itemId, wasInitialLoad) {
 		zenario.goToURL(zenario.linkToItem(page.cID, page.cType, request));
 	
 	} else {
+		zenario_conductor.mergeRequests(this.containerId, request);
+		
 		this.runLogic(request, function() {
+			if (request.page) {
+				zenario.scrollToSlotTop(that.containerId, true);
+			}
 			if (!wasInitialLoad) {
 				that.recordRequestsInURL(request);
 			}
@@ -1462,11 +1533,8 @@ methods.sparkline = function() {
 methods.initSparklineChart = function() {
 	var that = this;
 	
-	zenario.loadLibrary('zenario/libraries/not_to_redistribute/highcharts/highcharts.js', function() {
-		that.sparkline();
-		
-		that.sizeTableListCellsIfNeededAfterDelay();
-	});
+	that.sparkline();
+	that.sizeTableListCellsIfNeededAfterDelay();
 };
 
 

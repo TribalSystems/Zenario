@@ -150,7 +150,7 @@ class zenario_plugin_nest__organizer__conductor extends zenario_plugin_nest__org
 	}
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
-		$instance = getPluginInstanceDetails(get('refiner__nest'));
+		$instance = getPluginInstanceDetails($_GET['refiner__nest'] ?? false);
 		$c = $instance['class_name'];
 		$this->setTitleAndCheckPermissions($path, $panel, $refinerName, $refinerId, $mode, $instance);
 		
@@ -366,40 +366,40 @@ class zenario_plugin_nest__organizer__conductor extends zenario_plugin_nest__org
 	}
 	
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
-		$instance = getPluginInstanceDetails(request('refiner__nest'));
+		$instance = getPluginInstanceDetails($_REQUEST['refiner__nest'] ?? false);
 		$this->exitIfNoEditPermsOnNest($instance);
 		
 		
-		if (post('add_state') && checkPriv()) {
-			static::addStateToSlide($instance['instance_id'], post('slideId'));
+		if (($_POST['add_state'] ?? false) && checkPriv()) {
+			static::addStateToSlide($instance['instance_id'], ($_POST['slideId'] ?? false));
 		
-		} elseif (post('delete_state') && checkPriv()) {
-			static::removeStateFromSlide($instance['instance_id'], post('state'));
+		} elseif (($_POST['delete_state'] ?? false) && checkPriv()) {
+			static::removeStateFromSlide($instance['instance_id'], ($_POST['state'] ?? false));
 		
-		} elseif (post('add_path') && checkPriv()) {
-			static::addPath($instance['instance_id'], post('state'), post('add_path'));
+		} elseif (($_POST['add_path'] ?? false) && checkPriv()) {
+			static::addPath($instance['instance_id'], ($_POST['state'] ?? false), ($_POST['add_path'] ?? false));
 		
-		} elseif (post('redirect_path') && checkPriv()) {
+		} elseif (($_POST['redirect_path'] ?? false) && checkPriv()) {
 			$fromTo = explode('_', $ids);
 			if (!empty($fromTo[1]) && !empty($fromTo[2])) {
-				static::redirectPath($instance['instance_id'], $fromTo[1], $fromTo[2], arrayKey($fromTo, 3), arrayKey($fromTo, 4), post('redirect_path'));
+				static::redirectPath($instance['instance_id'], $fromTo[1], $fromTo[2], ($fromTo[3] ?? false), ($fromTo[4] ?? false), ($_POST['redirect_path'] ?? false));
 				
-				return 'path_'. $fromTo[1]. '_'. post('redirect_path');
+				return 'path_'. $fromTo[1]. '_'. ($_POST['redirect_path'] ?? false);
 			}
 		
-		} elseif (post('delete_path') && checkPriv()) {
+		} elseif (($_POST['delete_path'] ?? false) && checkPriv()) {
 			
 			$fromTo = explode('_', $ids);
 			if (!empty($fromTo[1]) && !empty($fromTo[2])) {
-				static::deletePath($instance['instance_id'], $fromTo[1], $fromTo[2], arrayKey($fromTo, 3), arrayKey($fromTo, 4));
+				static::deletePath($instance['instance_id'], $fromTo[1], $fromTo[2], ($fromTo[3] ?? false), ($fromTo[4] ?? false));
 			}
 			
-		} elseif (post('save_positions') && checkPriv()) {
+		} elseif (($_POST['save_positions'] ?? false) && checkPriv()) {
 			setRow('plugin_instance_cache',
 				['cache' => $_POST['positions'], 'last_updated' => now()],
 				['instance_id' => $instance['instance_id'], 'method_name' => '#conductor_positions#']);
 		
-		//} elseif (post('reset_positions') && checkPriv()) {
+		//} elseif (($_POST['reset_positions'] ?? false) && checkPriv()) {
 		//	deleteRow('plugin_instance_cache',
 		//		['instance_id' => $instance['instance_id'], 'method_name' => '#conductor_positions#']);
 		}

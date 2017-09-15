@@ -2232,7 +2232,7 @@ _sql
 );	revision( 37460
 , <<<_sql
 	UPDATE IGNORE `[[DB_NAME_PREFIX]]plugin_settings`
-	SET value = REPLACE(value, 'data_schema', 'asset_type')
+	SET value = REPLACE(value, 'data_schema', 'schema')
 	WHERE name IN ('mode', 'other_modes')
 	  AND value LIKE '%data_schema%'
 _sql
@@ -2320,13 +2320,13 @@ _sql
 			IF (ps.value = 'list_locations', 'locationId',
 			IF (ps.value = 'view_location_details', 'locationId',
 	
-			IF (ps.value = 'edit_asset_type', 'assetTypeId',
-			IF (ps.value = 'delete_asset_type', 'assetTypeId',
-			IF (ps.value = 'edit_data_pool_type', 'assetTypeId',
-			IF (ps.value = 'delete_data_pool_type', 'assetTypeId',
+			IF (ps.value = 'edit_schema', 'schemaId',
+			IF (ps.value = 'delete_schema', 'schemaId',
+			IF (ps.value = 'edit_schema', 'schemaId',
+			IF (ps.value = 'delete_schema', 'schemaId',
 
 			IF (ps.value = 'edit_schedule', 'scheduleId',
-			IF (ps.value = 'edit_possible_event', 'possibleEventId',
+			IF (ps.value = 'edit_trigger', 'triggerId',
 			IF (ps.value = 'edit_procedure', 'procedureId',
 			
 			''
@@ -2338,7 +2338,7 @@ _sql
 			IF (ps2.value = 'specified_company_indirect', 'companyId',
 			
 			IF (ps2.value = 'specified_location_direct', 'locationId',
-			IF (ps2.value = 'asset_type_commands', 'assetTypeId',
+			IF (ps2.value = 'asset_type_commands', 'schemaId',
 			
 			IF (ps2.value = 'asset_active_events', 'assetId',
 			IF (ps2.value = 'assigned_to_parent_asset', 'assetId1',
@@ -2442,26 +2442,21 @@ _sql
 	ALTER TABLE `[[DB_NAME_PREFIX]]site_settings`
 	ADD COLUMN `encrypted` tinyint(1) NOT NULL default 0
 _sql
-);
 
 
-if (needRevision(39401)) {
-	//If columns don't exist, create them (hacked in because this was added in 7.5 after branch in revision 38669)
-	$sql = 'SHOW COLUMNS FROM ' . DB_NAME_PREFIX . 'nested_plugins LIKE "show_auto_refresh"';
-	$result = sqlSelect($sql);
-	if (!sqlNumRows($result)) {
-		$sql = '
-			ALTER TABLE `' . DB_NAME_PREFIX . 'nested_plugins`
-			ADD COLUMN `show_auto_refresh` tinyint(1) NOT NULL DEFAULT "0" AFTER `show_refresh`,
-			ADD COLUMN `auto_refresh_interval` int(10) unsigned NOT NULL DEFAULT 60 AFTER `show_auto_refresh`';
-		sqlQuery($sql);
-	}
-	revision(39401);
-}
+
+//Add a couple of columns to the nested plugins table
+//(N.b. this was added in an after-branch patch in 7.5 revision 38669, so we need to check if it's not already there.)
+);	if (needRevision(39401) && !sqlNumRows('SHOW COLUMNS FROM '. DB_NAME_PREFIX. 'nested_plugins LIKE "show_auto_refresh"'))	revision(39401
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]nested_plugins`
+	ADD COLUMN `show_auto_refresh` tinyint(1) NOT NULL DEFAULT '0' AFTER `show_refresh`,
+	ADD COLUMN `auto_refresh_interval` int(10) unsigned NOT NULL DEFAULT 60 AFTER `show_auto_refresh`
+_sql
 
 
 //Update the names of some Assetwolf plugin settings to the new format
-	revision( 39500
+);	revision( 39500
 , <<<_sql
 	UPDATE IGNORE `[[DB_NAME_PREFIX]]plugin_settings`
 	SET name = 'enable.edit_asset'
@@ -3048,8 +3043,43 @@ _sql
 	) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4
 _sql
 
+//Rename "possible events" to "triggers"
+);	revision( 40300
+, <<<_sql
+	UPDATE IGNORE `[[DB_NAME_PREFIX]]site_settings`
+	  SET name = REPLACE(name, 'possibleEvent', 'trigger')
+	WHERE name LIKE '%possibleEvent%'
+_sql
+
+, <<<_sql
+	UPDATE IGNORE `[[DB_NAME_PREFIX]]plugin_settings`
+	  SET name = REPLACE(name, 'possible_event', 'trigger')
+	WHERE name IN ('enable.create_possible_event', 'enable.delete_possible_event', 'enable.edit_possible_event', 'enable.list_possible_events')
+_sql
+
+, <<<_sql
+	UPDATE IGNORE `[[DB_NAME_PREFIX]]plugin_settings`
+	  SET `value` = REPLACE(`value`, 'possible_event', 'trigger')
+	WHERE name = 'mode'
+	  AND `value` IN ('create_possible_event', 'list_possible_events', 'edit_possible_event')
+_sql
+
+, <<<_sql
+	UPDATE IGNORE `[[DB_NAME_PREFIX]]nested_plugins`
+	  SET request_vars = REPLACE(request_vars, 'possibleEventId', 'triggerId')
+	WHERE request_vars LIKE '%possibleEventId%'
+_sql
+
+, <<<_sql
+	UPDATE IGNORE `[[DB_NAME_PREFIX]]nested_paths`
+	  SET commands = REPLACE(commands, 'possible_event', 'trigger')
+	WHERE commands LIKE '%possible_event%'
+_sql
+
+
 //Add the ability to import files in a skin
-);	revision( 40191
+//(N.b. this was added in an after-branch patch in 7.6 revision 40191, so we need to check if it's not already there.)
+);	if (needRevision(40400) && !sqlNumRows('SHOW COLUMNS FROM '. DB_NAME_PREFIX. 'skins LIKE "import"'))	revision( 40400
 , <<<_sql
 	ALTER TABLE `[[DB_NAME_PREFIX]]skins`
 	ADD COLUMN `import` TEXT
@@ -3057,16 +3087,75 @@ _sql
 _sql
 
 
+
+//Rename "asset types" and "data pool types" back to "schemas" again
+);	revision( 40600
+, <<<_sql
+	UPDATE IGNORE `[[DB_NAME_PREFIX]]site_settings`
+	  SET name = REPLACE(name, 'assetType', 'schema')
+	WHERE name LIKE '%assetType%'
+_sql
+
+, <<<_sql
+	UPDATE IGNORE `[[DB_NAME_PREFIX]]plugin_settings`
+	  SET name = REPLACE(name, 'asset_type', 'schema')
+	WHERE name LIKE 'enable.%asset_type%'
+_sql
+
+, <<<_sql
+	UPDATE IGNORE `[[DB_NAME_PREFIX]]plugin_settings`
+	  SET name = REPLACE(name, 'data_pool_type', 'schema')
+	WHERE name LIKE 'enable.%data_pool_type%'
+_sql
+
+, <<<_sql
+	UPDATE IGNORE `[[DB_NAME_PREFIX]]plugin_settings`
+	  SET `value` = REPLACE(REPLACE(`value`, 'asset_type', 'schema'), 'data_pool_type', 'schema')
+	WHERE name = 'mode'
+	  AND (`value` LIKE '%asset_type' OR `value` LIKE '%asset_types' OR `value` LIKE '%data_pool_type' OR `value` LIKE '%data_pool_types')
+_sql
+
+, <<<_sql
+	UPDATE IGNORE `[[DB_NAME_PREFIX]]nested_plugins`
+	  SET request_vars = REPLACE(request_vars, 'assetTypeId', 'schemaId')
+	WHERE request_vars LIKE '%assetTypeId%'
+_sql
+
+, <<<_sql
+	UPDATE IGNORE `[[DB_NAME_PREFIX]]nested_paths`
+	  SET commands = REPLACE(REPLACE(commands, 'asset_type', 'schema'), 'data_pool_type', 'schema')
+	WHERE commands LIKE '%asset_type%' OR commands LIKE '%data_pool_type%'
+_sql
+
+
 //Fix a bug with the migration for plugin nests from back in version 7.5,
 //where the "Apply slide-specific permissions" checkbox does not seem to be automatically checked
 //where you had a slide with the "Call a module's static method to decide" option.
-);	revision( 40194
+);	revision( 40785
 , <<<_sql
 	UPDATE `[[DB_NAME_PREFIX]]nested_plugins`
 	SET `privacy` = 'public'
 	WHERE `privacy` = 'public'
 	  AND `method_name` IS NOT NULL
 	  AND `method_name` != ''
+_sql
+
+
+//Add an option to control whether a language shows placeholder content items from the default language
+);	revision( 41200
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]languages`
+	ADD COLUMN `show_untranslated_content_items` tinyint(1) NOT NULL default 0
+	AFTER `translate_phrases`
+_sql
+
+
+//Add a "show embed" option for slides
+);	revision( 41250
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]nested_plugins`
+	ADD COLUMN `show_embed` tinyint(1) NOT NULL default 0
+	AFTER `show_back`
 _sql
 
 );

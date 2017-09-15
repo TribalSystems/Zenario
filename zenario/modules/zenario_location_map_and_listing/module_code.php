@@ -142,7 +142,7 @@ class zenario_location_map_and_listing extends module_base_class {
 			$this->data['show_list_and_map_in_seperate_tabs'] = true;
 			$this->data['listViewOnClick'] = $this->refreshPluginSlotJS();
 			$this->data['mapViewOnClick'] = $this->refreshPluginSlotJS('map_view=1');
-			$this->data['currentView'] = request('map_view') ? 'map' : 'list';
+			$this->data['currentView'] = ($_REQUEST['map_view'] ?? false) ? 'map' : 'list';
 		}
 		
 		$this->data['mapId'] = $this->containerId. '_map';
@@ -212,7 +212,7 @@ class zenario_location_map_and_listing extends module_base_class {
 				   ON loc.country_id IS NOT NULL
 				  AND module_class_name = 'zenario_country_manager'
 				  AND CONCAT('_COUNTRY_NAME_', loc.country_id) = vp_cn.code 
-				  AND vp_cn.language_id = '". sqlEscape(cms_core::$langId). "'
+				  AND vp_cn.language_id = '". sqlEscape(cms_core::$visLang). "'
 			WHERE loc.status = 'active'";
 		
 		if ($this->setting('filter_by_country')) {
@@ -432,7 +432,7 @@ class zenario_location_map_and_listing extends module_base_class {
 			SELECT SUBSTR(code, 15), local_text
 			FROM ". DB_NAME_PREFIX. "visitor_phrases AS vp_cn
 			WHERE module_class_name = 'zenario_country_manager'
-			  AND language_id = '". sqlEscape(cms_core::$langId). "'
+			  AND language_id = '". sqlEscape(cms_core::$visLang). "'
 			  AND code IN (
 				SELECT CONCAT('_COUNTRY_NAME_', loc.country_id)
 				FROM ". DB_NAME_PREFIX. ZENARIO_LOCATION_MANAGER_PREFIX. "locations AS loc
@@ -465,7 +465,7 @@ class zenario_location_map_and_listing extends module_base_class {
 	}
 
 	public function showSlot() {
-		if (!request('display_map')) {
+		if (!($_REQUEST['display_map'] ?? false)) {
 			$this->twigFramework($this->data);
 		} else {
 			echo '
@@ -533,7 +533,7 @@ class zenario_location_map_and_listing extends module_base_class {
 				if ($values['first_tab/country']) {
 					if ((int)$values['first_tab/region']) {
 						$regionCountry = zenario_country_manager::getCountryOfRegion((int)$values['first_tab/region']);
-						if (arrayKey($regionCountry,'id') != $values['first_tab/country']) {
+						if (($regionCountry['id'] ?? false) != $values['first_tab/country']) {
 							unset($box['tabs']['first_tab']['fields']['region']['value']);
 							unset($box['tabs']['first_tab']['fields']['region']['current_value']);
 						}
@@ -572,7 +572,7 @@ class zenario_location_map_and_listing extends module_base_class {
 					$canvas = $this->setting('list_view_thumbnail_canvas'); 
 					$offset = $this->setting('list_view_thumbnail_offset');
 				}
-				imageLink($width, $height, $url, $imageId,$widthImage,$heightImage,$canvas,$offset);
+				Ze\File::imageLink($width, $height, $url, $imageId,$widthImage,$heightImage,$canvas,$offset);
 				return $url;
 			}
 		}

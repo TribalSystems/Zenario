@@ -145,6 +145,12 @@ jquery-ui.autocomplete.js
 jquery-ui.datepicker.js
 	This is the Datepicker Widget from jQuery UI
 
+jquery-ui.iconselectmenu.js
+	This is the icon menu from https://jqueryui.com/selectmenu/#custom_render
+
+jquery-ui.selectmenu.js
+	This is the Slider Widget from jQuery UI
+
 jquery-ui.slider.js
 	This is the Slider Widget from jQuery UI
 

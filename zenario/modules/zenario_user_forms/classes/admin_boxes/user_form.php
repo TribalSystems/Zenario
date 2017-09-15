@@ -62,7 +62,7 @@ class zenario_user_forms__admin_boxes__user_form extends module_base_class {
 		$fields['data/add_logged_in_user_to_group']['values'] = 
 			listCustomFields('users', $flat = false, 'groups_only', $customOnly = true, $useOptGroups = true, $hideEmptyOptGroupParents = true);
 		
-		if (get('refinerName') == 'archived') {
+		if (($_GET['refinerName'] ?? false) == 'archived') {
 			foreach($box['tabs'] as &$tab) {
 				$tab['edit_mode']['enabled'] = false;
 			}
@@ -163,8 +163,6 @@ class zenario_user_forms__admin_boxes__user_form extends module_base_class {
 					'title' => $record['title'],
 					'success_message' => $record['success_message'],
 					'submit_button_text' => $record['submit_button_text'],
-					'default_next_button_text' => $record['default_next_button_text'],
-					'default_previous_button_text' => $record['default_previous_button_text'],
 					'duplicate_email_address_error_message' => $record['duplicate_email_address_error_message']);
 				
 				// Get any existing phrases that translatable fields have
@@ -195,6 +193,7 @@ class zenario_user_forms__admin_boxes__user_form extends module_base_class {
 					} else {
 						$html .= ' (No text is defined in the default language)';
 					}
+					$box['tabs']['translations']['fields'] = array();
 					$box['tabs']['translations']['fields'][$name] = array(
 						'class_name' => 'zenario_user_forms',
 						'ord' => $ord,
@@ -233,14 +232,25 @@ class zenario_user_forms__admin_boxes__user_form extends module_base_class {
 			} else {
 				unset($box['tabs']['translations']);
 			}
+			
+			if ($record['type'] == 'registration') {
+				$values['data/verification_email_template'] = $record['verification_email_template'];
+				$values['data/welcome_email_template'] = $record['welcome_email_template'];
+				if ($record['welcome_message']) {
+					$values['welcome_message'] = $record['welcome_message'];
+				}
+				$values['welcome_redirect_location'] = $record['welcome_redirect_location'];
+				if ($record['welcome_redirect_location']) {
+					$values['action_after_verification'] = 'redirect_after_submission';
+				}
+			}
+			
 		} else {
 			unset($box['tabs']['translations']);
 			$box['title'] = adminPhrase('Creating a Form');
 			if (!$box['key']['type']) {
 				$values['data/save_record'] = true;
 				$values['details/submit_button_text'] = 'Submit';
-				$values['details/default_next_button_text'] = 'Next';
-				$values['details/default_previous_button_text'] = 'Back';
 				$values['data/duplicate_email_address_error_message'] = 'Sorry this form has already been completed with this email address';
 			} elseif ($box['key']['type'] == 'profile') {
 				//TODO
@@ -253,7 +263,7 @@ class zenario_user_forms__admin_boxes__user_form extends module_base_class {
 		
 		$dataset = getDatasetDetails('users');
 		$emailDatasetField = getDatasetFieldDetails('email', $dataset);
-		if (!checkRowExists(ZENARIO_USER_FORMS_PREFIX . 'user_form_fields', array('user_form_id' => $box['key']['id'], 'user_field_id' => $emailDatasetField['id']))) {
+		if (!checkRowExists(ZENARIO_USER_FORMS_PREFIX . 'user_form_fields', array('user_form_id' => $box['key']['id'], 'user_field_id' => $emailDatasetField['id'])) && $box['key']['type'] != 'registration') {
 			$fields['data/email_html']['hidden'] = false;
 			$values['data/save_data'] = false;
 			$fields['data/save_data']['disabled'] = true;
@@ -277,7 +287,7 @@ class zenario_user_forms__admin_boxes__user_form extends module_base_class {
 		
 		// Display translation boxes for translatable fields with a value entered
 		$languages = getLanguages(false, true, true);
-		$fieldsToTranslate = array('title', 'success_message', 'submit_button_text', 'default_next_button_text', 'default_previous_button_text', 'duplicate_email_address_error_message');
+		$fieldsToTranslate = array('title', 'success_message', 'submit_button_text', 'duplicate_email_address_error_message');
 		foreach($fieldsToTranslate as $fieldName) {
 			$fields['translations/'.$fieldName]['snippet']['html'] = '<b>'.$fields[$fieldName]['label'].'</b>';
 			if (!empty($values[$fieldName])) {
@@ -367,22 +377,35 @@ class zenario_user_forms__admin_boxes__user_form extends module_base_class {
 		}
 		
 		
+		//Fields to hide if this is a registration form...
 		if ($box['key']['type'] == 'registration') {
 			$fields['details/success_message_type']['hidden'] = true;
 			$fields['details/redirect_location']['hidden'] = true;
 			$fields['details/success_message']['hidden'] = true;
-			$fields['details/default_next_button_text']['hidden'] = true;
-			$fields['details/default_previous_button_text']['hidden'] = true;
+			$fields['details/profanity_filter_text_fields']['hidden'] = true;
+			$fields['details/allow_partial_completion']['hidden'] = true;
+			$fields['details/partial_completion_mode__auto']['hidden'] = true;
+			$fields['details/partial_completion_mode__button']['hidden'] = true;
+			$fields['details/partial_completion_message']['hidden'] = true;
+			$fields['details/allow_clear_partial_data']['hidden'] = true;
+			$fields['details/clear_partial_data_message']['hidden'] = true;
+			$fields['details/enable_summary_page']['hidden'] = true;
 			
-			$fields['data/save_data']['hidden'] = true;
-			$fields['data/email_html']['hidden'] = true;
+			//Always create a user...
+			$values['data/save_data'] = true;
+			$fields['data/save_data']['readonly'] = true;
 			$fields['data/user_status']['hidden'] = true;
 			$fields['data/log_user_in']['hidden'] = true;
 			$fields['data/log_user_in_cookie']['hidden'] = true;
-			$fields['data/add_user_to_group']['hidden'] = true;
 			$fields['data/duplicate_submission_html']['hidden'] = true;
 			$fields['data/user_duplicate_email_action']['hidden'] = true;
 			$fields['data/duplicate_email_address_error_message']['hidden'] = true;
+			
+			$fields['data/logged_in_user_section_start']['hidden'] = true;
+			$fields['data/update_linked_fields']['hidden'] = true;
+			$fields['data/no_duplicate_submissions']['hidden'] = true;
+			$fields['data/duplicate_submission_message']['hidden'] = true;
+			$fields['data/add_logged_in_user_to_group']['hidden'] = true;
 			
 			$fields['data/line_br_2']['hidden'] = true;
 			
@@ -405,9 +428,7 @@ class zenario_user_forms__admin_boxes__user_form extends module_base_class {
 			$fields['data/reply_to_first_name']['hidden'] = true;
 			$fields['data/reply_to_last_name']['hidden'] = true;
 			
-			$fields['data/line_br_4']['hidden'] = true;
-			
-			$box['tabs']['captcha']['hidden'] = true;
+			$fields['anti_spam/extranet_users_use_captcha']['hidden'] = true;
 		}
 	}
 	
@@ -524,19 +545,30 @@ class zenario_user_forms__admin_boxes__user_form extends module_base_class {
 		} else {
 			$record['log_user_in_cookie'] = 0;
 		}
-		$record['user_duplicate_email_action'] = (empty($values['user_duplicate_email_action']) ? null : $values['user_duplicate_email_action']);
 		
-		$record['update_linked_fields'] = !empty($values['update_linked_fields']);
+		//Make sure registration forms cannot update existing users
+		if ($box['key']['type'] == 'registration') {
+			$record['user_duplicate_email_action'] = 'ignore';
+			$record['update_linked_fields'] = false;
+			$record['add_logged_in_user_to_group'] = false;
+			$record['verification_email_template'] = $values['verification_email_template'];
+			$record['welcome_email_template'] = $values['welcome_email_template'];
+			$record['welcome_message'] = $values['action_after_verification'] == 'show_welcome_message' ? $values['welcome_message'] : null;
+			$record['welcome_redirect_location'] = $values['action_after_verification'] == 'redirect_after_submission' ? $values['welcome_redirect_location'] : null;
+			
+		} else {
+			$record['user_duplicate_email_action'] = (empty($values['user_duplicate_email_action']) ? null : $values['user_duplicate_email_action']);
+			$record['update_linked_fields'] = !empty($values['update_linked_fields']);
+			$record['add_logged_in_user_to_group'] = $values['add_logged_in_user_to_group'];
+		}
+		
 		$record['duplicate_submission_message'] = null;
 		if ($record['no_duplicate_submissions'] = !empty($values['no_duplicate_submissions'])) {
 			$record['duplicate_submission_message'] = mb_substr($values['duplicate_submission_message'], 0, 250);
 		}
-		$record['add_logged_in_user_to_group'] = $values['add_logged_in_user_to_group'];
 		
 		$record['translate_text'] = (empty($values['translate_text']) ? 0 : 1);
 		$record['submit_button_text'] = (empty($values['submit_button_text']) ? 'Submit' : $values['submit_button_text']);
-		$record['default_next_button_text'] = (empty($values['default_next_button_text']) ? 'Next' : $values['default_next_button_text']);
-		$record['default_previous_button_text'] = (empty($values['default_previous_button_text']) ? 'Back' : $values['default_previous_button_text']);
 		$record['duplicate_email_address_error_message'] = ($values['user_duplicate_email_action'] != 'stop') ? 'Sorry this form has already been completed with this email address' : $values['duplicate_email_address_error_message'];
 		$record['profanity_filter_text'] = (empty($values['profanity_filter_text_fields']) ? 0 : 1);
 		
@@ -577,7 +609,7 @@ class zenario_user_forms__admin_boxes__user_form extends module_base_class {
 			$formProperties = getRow(ZENARIO_USER_FORMS_PREFIX . 'user_forms', array('translate_text'), array('id' => $id));
 			// Save translations
 			if ($formProperties['translate_text']) { 
-				$translatableFields = array('title', 'success_message', 'submit_button_text', 'default_next_button_text', 'default_previous_button_text', 'duplicate_email_address_error_message');
+				$translatableFields = array('title', 'success_message', 'submit_button_text', 'duplicate_email_address_error_message');
 				
 				// Update phrase code if phrases are changed to keep translation chain
 				$fieldsToTranslate = getRow(ZENARIO_USER_FORMS_PREFIX . 'user_forms', $translatableFields, $id);
@@ -598,10 +630,6 @@ class zenario_user_forms__admin_boxes__user_form extends module_base_class {
 									success_message = "'.sqlEscape($oldCode).'"
 								OR
 									submit_button_text = "'.sqlEscape($oldCode).'"
-								OR
-									default_next_button_text = "'.sqlEscape($oldCode).'"
-								OR
-									default_previous_button_text = "'.sqlEscape($oldCode).'"
 								OR
 									duplicate_email_address_error_message = "'.sqlEscape($oldCode).'"
 								)';
@@ -665,7 +693,6 @@ class zenario_user_forms__admin_boxes__user_form extends module_base_class {
 					}
 				}
 			}
-			
 		} else {
 			$record['type'] = 'standard';
 			if ($box['key']['type']) {
@@ -677,65 +704,8 @@ class zenario_user_forms__admin_boxes__user_form extends module_base_class {
 			if ($box['key']['type'] == 'profile') {
 				//TODO
 			} elseif ($box['key']['type'] == 'registration') {
-				$dataset = getDatasetDetails('users');
-				
-				$emailField = getDatasetFieldDetails('email', $dataset);
-				insertRow(
-					ZENARIO_USER_FORMS_PREFIX . 'user_form_fields', 
-					array(
-						'user_form_id' => $formId,
-						'user_field_id' => $emailField['id'],
-						'ord' => 1,
-						'is_required' => 1,
-						'label' => 'Email:',
-						'name' => 'Email',
-						'required_error_message' => 'Please enter your email address',
-						'validation' => 'email',
-						'validation_error_message' => 'Please enter a valid email address'
-					)
-				);
-				
-				$salutationField = getDatasetFieldDetails('salutation', $dataset);
-				insertRow(
-					ZENARIO_USER_FORMS_PREFIX . 'user_form_fields', 
-					array(
-						'user_form_id' => $formId,
-						'user_field_id' => $salutationField['id'],
-						'ord' => 2,
-						'label' => 'Salutation:',
-						'name' => 'Salutation'
-					)
-				);
-				
-				$firstNameField = getDatasetFieldDetails('first_name', $dataset);
-				insertRow(
-					ZENARIO_USER_FORMS_PREFIX . 'user_form_fields', 
-					array(
-						'user_form_id' => $formId,
-						'user_field_id' => $firstNameField['id'],
-						'ord' => 3,
-						'is_required' => 1,
-						'label' => 'First name:',
-						'name' => 'First name',
-						'required_error_message' => 'Please enter your first name'
-					)
-				);
-				
-				$lastNameField = getDatasetFieldDetails('last_name', $dataset);
-				insertRow(
-					ZENARIO_USER_FORMS_PREFIX . 'user_form_fields', 
-					array(
-						'user_form_id' => $formId,
-						'user_field_id' => $lastNameField['id'],
-						'ord' => 3,
-						'is_required' => 1,
-						'label' => 'Last name:',
-						'name' => 'Last name',
-						'required_error_message' => 'Please enter your last name'
-					)
-				);
+				//TODO
 			}
-			
 			$box['key']['id'] = $formId;
 		}
 	}

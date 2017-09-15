@@ -76,7 +76,7 @@ class zenario_newsletter__admin_boxes__newsletter_template extends zenario_newsl
 		$body = $values['details/body'];
 		$files = array();
 		$htmlChanged = false;
-		addImageDataURIsToDatabase($body, absCMSDirURL());
+		Ze\File::addImageDataURIsToDatabase($body, absCMSDirURL());
 		syncInlineFileLinks($files, $body, $htmlChanged);
 		syncInlineFiles(
 			$files,

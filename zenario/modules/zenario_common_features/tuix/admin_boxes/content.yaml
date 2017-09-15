@@ -14,6 +14,7 @@ zenario_content:
         create_from_toolbar: ""
         from_cID: ""
         from_cType: ""
+        from_mID: 0
         
         translate: ""
         equivId: ""
@@ -105,41 +106,26 @@ zenario_content:
                         html: ''
                     post_field_html: </div>
                     hidden: true
-                menu_options:
-                    ord: 34
-                    label: 'Menu options:'
-                    type: radios
-                    values:
-                        add_to_menu:
-                            ord: 10
-                            label: Add to menu
-                        orphan:
-                            ord: 20
-                            label: Don't add to menu (orphan)
-                    value: orphan
-                    format_onchange: true
-                add_to_menu:
-                    ord: 35
-                    label: 'Attach to menu:'
-                    pick_items:
-                        path: zenario__menu/panels/menu_position
-                        target_path: zenario__menu/panels/menu_position
-                        min_path: zenario__menu/panels/menu_position
-                        select_phrase: Place menu node...
-                        hide_info_button: true
-                        visible_if_for_all_selected_items: |
-                            zenario.engToBoolean(item.menu_id) || zenario.engToBoolean(item.is_dummy_child)
-                    indent: 1
-                    validation:
-                        required_if_not_hidden: Please choose a place in the menu or leave it as an orphan.
-                
                 create_menu:
-                    ord: 39
+                    ord: 34
                     label: 'Add to menu'
                     type: checkbox
                     format_onchange: true
+                menu_options:
+                    ord: 35
+                    label: 'Menu options:'
+                    type: radios
+                    values:
+                        orphan:
+                            label: Don't add to menu (orphan)
+                        after_current:
+                            label: Add to menu, just after the current page
+                        add_to_menu:
+                            label: Add to menu at a specific position (advanced)
+                    value: after_current
+                    format_onchange: true
                 menu_title:
-                    ord: 40
+                    ord: 36
                     label: 'Menu node text:'
                     type: text
                     maxlength: 255
@@ -156,6 +142,21 @@ zenario_content:
                     validation:
                         required_if_not_hidden: Please enter some text for the menu node.
                     indent: 1
+                add_to_menu:
+                    ord: 37
+                    label: 'Attach to menu:'
+                    pick_items:
+                        path: zenario__menu/panels/menu_position/refiners/create////
+                        min_path: zenario__menu/panels/menu_position
+                        disallow_refiners_looping_on_min_path: true
+                        select_phrase: Place menu node...
+                        hide_info_button: true
+                        visible_if_for_all_selected_items: |
+                            zenario.engToBoolean(item.menu_id) || zenario.engToBoolean(item.is_dummy_child)
+                    indent: 1
+                    validation:
+                        required_if_not_hidden: Please choose a place in the menu or leave it as an orphan.
+                
                 menu_path:
                     ord: 41
                     label: 'Path preview:'

@@ -18,13 +18,25 @@ category: pluggable
 keywords: >
     chat, chatroom, community, discuss, discussion, forum, list,
     message, post, user
+
+# Reminder: you need to increment the LATEST_REVISION_NO in this module's
+# latest_revision_no.inc.php file if you change any of the fields below:
 vlp_class_name: zenario_forum
 css_class_name: zenario_comments
-is_pluggable: Yes
+is_pluggable: true
 default_framework: standard
 default_instance_name: Forum List
+
+# Warning: adding a new dependency to an existing module will break any existing sites
+# where the dependency is not running.
+# You can fix this on a per-site basis by manually running the dependency, i.e. by running
+#   UPDATE zenario_modules SET status = 'module_running' WHERE class_name = 'dependency'
+# in MySQL and then going to /admin/ to apply database updates.
+# If this is a core module, consider using runNewModuleDependency() in a 
+# database-revision in zenario/admin/db_updates/step_4_migrate_the_data/plugins.inc.php
+# to fix it automatically for every site.
 dependencies:
-    zenario_forum: Yes
-    zenario_content_list: Yes
+    zenario_forum: true
+    zenario_content_list: true
 inheritance:
     inherit_frameworks_from_module: zenario_comments

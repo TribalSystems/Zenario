@@ -43,9 +43,12 @@ class zenario_user_forms__admin_boxes__user_form_response extends module_base_cl
 			unset($box['tabs']['form_fields']['fields']['crm_response']);
 		}
 		
-		$ord = 100;
+		$html = zenario_user_forms::getFormSummaryHTML($responseId);
 		
-		//Get user response
+		$fields['form_fields/data']['snippet']['html'] = $html;
+	}
+	
+	private function getFormDataFromResponse($responseId) {
 		$result = getRows(
 			ZENARIO_USER_FORMS_PREFIX . 'user_response_data',
 			array('form_field_id', 'value', 'internal_value'),
@@ -54,135 +57,9 @@ class zenario_user_forms__admin_boxes__user_form_response extends module_base_cl
 		$responseData = array();
 		$data = array();
 		while ($row = sqlFetchAssoc($result)) {
-			$responseData[$row['form_field_id']] = $row;
 			$data[zenario_user_forms::getFieldName($row['form_field_id'])] = $row['internal_value'] !== null ? $row['internal_value'] : $row['value'];
 		}
-		
-		$fields = zenario_user_forms::getFields($formId);
-		$form = zenario_user_forms::getForm($formId);
-		
-		$inRepeatBlock = false;
-		$repeatBlockField = false;
-		$repeatBlockFields = array();
-		
-		$sectionFields = array();
-		$lastField = end($fields);
-		foreach ($fields as $_fieldId => $_field) {
-			$type = zenario_user_forms::getFieldType($_field);
-			if ($type != 'page_break') {
-				//Only show fields that the user would have been able to see.
-				if (!zenario_user_forms::isFieldHidden($_field, $fields, $data, false, false) && $type != 'section_description' && $type != 'restatement') {
-					$sectionFields[$_fieldId] = $_field;
-				}
-			} 
-			//Also hide any pages and all fields that were on a hidden page.
-			if (($type == 'page_break' && !$_field['hide_in_page_switcher'] && !zenario_user_forms::isFieldHidden($_field, $fields, $data, false, false))
-				|| ($_fieldId == $lastField['id'])
-			) {
-				if ($form['show_page_switcher']) {
-					if ($type == 'page_break') {
-						//$this->addFieldResponse($box, ++$ord, $_fieldId, $type, $_field['name'], array());
-					} elseif (!$form['hide_final_page_in_page_switcher']) {;
-						//$this->addFieldResponse($box, ++$ord, 'page_end', 'page_break', $form['page_end_name'], array());
-					}
-				}
-				foreach ($sectionFields as $fieldId => $field) {
-					$type = zenario_user_forms::getFieldType($field);
-					if ($type == 'repeat_start') {
-						$inRepeatBlock = true;
-						$repeatBlockField = $field;
-						continue;
-					} elseif ($type == 'repeat_end') {
-						if ($repeatBlockFields) {
-							//Draw repeat field values in response in order.
-							$repeatResponses = array();
-							$sql = '
-								SELECT form_field_id, field_row, value, internal_value
-								FROM ' . DB_NAME_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_response_data
-								WHERE user_response_id = ' . (int)$responseId . '
-								AND form_field_id IN (' . inEscape($repeatBlockFields) . ')
-								ORDER BY field_row';
-							$result = sqlSelect($sql);
-							$maxRowCount = 0;
-							while ($row = sqlFetchAssoc($result)) {
-								if (empty($repeatResponses[$row['form_field_id']])) {
-									$repeatResponses[$row['form_field_id']] = array();
-								}
-								$repeatResponses[$row['form_field_id']][] = $row;
-				
-								$count = count($repeatResponses[$row['form_field_id']]);	
-								$maxRowCount =  $count > $maxRowCount ? $count : $maxRowCount;
-							}
-							for ($i = 0; $i < $maxRowCount; $i++) {
-								foreach ($repeatBlockFields as $repeatBlockFieldId) {
-									if (isset($repeatResponses[$repeatBlockFieldId][$i])) {
-										$response = $repeatResponses[$repeatBlockFieldId][$i];
-										$fieldId = $repeatBlockFieldId . '_' . $i;
-										$type = zenario_user_forms::getFieldType($fields[$repeatBlockFieldId]);
-										$label = $fields[$repeatBlockFieldId]['label'];
-										if ($response['field_row'] > 1) {
-											$label .= ' (' . ($i + 1) . ')';
-										}
-										$this->addFieldResponse($box, ++$ord, $fieldId, $type, $label, $response);
-									}
-								}
-							}
-						}
-						$inRepeatBlock = false;
-						$repeatBlockField = false;
-						$repeatBlockFields = array();
-						continue;
-					}
-					if ($inRepeatBlock) {
-						$repeatBlockFields[] = $fieldId;
-					} else {
-						$response = isset($responseData[$fieldId]) ? $responseData[$fieldId] : array();
-						$this->addFieldResponse($box, ++$ord, $fieldId, $type, $field['label'], $response);
-					}				
-				}
-				$sectionFields = array();
-			}
-		}
-	}
-	
-	public function addFieldResponse(&$box, $ord, $fieldId, $type, $label, $response, $i = 0) {
-		$responseValues = array();
-		$field = array(
-			'label' => $label,
-			'ord' => $ord,
-			'readonly' => true
-		);
-		if ($type == 'attachment' || $type == 'file_picker') {
-			$responseValue = isset($response['internal_value']) ? $response['internal_value'] : '';
-			if ($type == 'file_picker') {
-				$responseValues = explode(',', $responseValue);
-				$responseValue = $responseValues[$i];
-			}
-			if ($responseValue && ($file = getRow('files', array('mime_type'), $responseValue))) {
-				$link = 'zenario/file.php?adminDownload=1&download=1&id=' . $responseValue;
-				$field['post_field_html'] = '<a href="' . $link . '">' . adminPhrase('Download') . '</a>';
-			}
-			$field['upload'] = array();
-			$field['download'] = true;
-		} else {
-			$responseValue = isset($response['value']) ? $response['value'] : '';
-			if ($type == 'textarea') {
-				$field['type'] = 'textarea';
-				$field['rows'] = 5;
-			} else {
-				$field['type'] = 'text';
-			}
-		}
-		$field['value'] = $responseValue;
-		$fieldName = 'form_field_' . $fieldId;
-		if ($i > 0) {
-			$fieldName .= '_' . $i;
-		}
-		$box['tabs']['form_fields']['fields'][$fieldName] = $field;
-		
-		if ($i < count($responseValues) - 1) {
-			$this->addFieldResponse($box, $ord + 0.001, $fieldId, $type, '', $response, ++$i);
-		}
+		return $data;
 	}
 	
 }

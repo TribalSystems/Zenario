@@ -72,9 +72,11 @@ zenario_setup_language:
                         Otherwise it will just use them as-is.
                         
                         If a phrase starts with an underscore it will always be looked up.
+                
                 search_type:
                     label: 'Search algorithm:'
                     type: radios
+                    value: full_text
                     values:
                         full_text:
                             label: Use MySQL full-text search
@@ -82,7 +84,6 @@ zenario_setup_language:
                         simple:
                             label: Use "LIKE" in searches
                             side_note: Search for anything containing the search term, e.g. a search for "van" would match "caravan". We suggest this for languages that use symbols such as Japanese and Chinese.
-                    value: full_text
                 use_domain:
                     visible_if: |
                         zenarioA.multipleLanguagesEnabled()
@@ -112,5 +113,18 @@ zenario_setup_language:
                         You need to set a primary domain before you can use a language-specific domain.
                         Please go to <em>Configuration -&gt; Site settings -&gt; Domains</em>
                         and set the primary domain.
+                
+                show_untranslated_content_items:
+                    visible_if: |
+                        zenarioAB.tuix.key.id != zenarioA.siteSettings.default_language
+                    label: ''
+                    type: radios
+                    values:
+                        0:
+                            ord: 2
+                            label: ''
+                        1:
+                            ord: 1
+                            label: ''
                         
                         

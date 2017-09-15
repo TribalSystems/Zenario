@@ -36,10 +36,10 @@ class zenario_common_features__admin_boxes__content_layout extends module_base_c
 		$cID = $cType = false;
 		$canEdit = true;
 		
-		if (request('cID') && request('cType')) {
+		if (($_REQUEST['cID'] ?? false) && ($_REQUEST['cType'] ?? false)) {
 			$total = 1;
-			$cID = $box['key']['cID'] = request('cID');
-			$cType = $box['key']['cType'] = request('cType');
+			$cID = $box['key']['cID'] = $_REQUEST['cID'] ?? false;
+			$cType = $box['key']['cType'] = $_REQUEST['cType'] ?? false;
 			$tagSQL = "'". sqlEscape($box['key']['id'] = $cType. '_'. $cID). "'";
 			$canEdit = checkPriv('_PRIV_EDIT_DRAFT', $cID, $cType);
 		

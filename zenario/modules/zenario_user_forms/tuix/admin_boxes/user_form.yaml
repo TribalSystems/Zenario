@@ -59,6 +59,44 @@ zenario_user_form:
                             label: 'Remain on form with no message'
                     value: show_success_message
                     format_onchange: true
+                
+                action_after_verification:
+                    ord: 5.1
+                    label: 'Action after email verification:'
+                    type: radios
+                    values:
+                        redirect_after_submission:
+                            label: 'Redirect to a "Welcome" page'
+                        show_welcome_message:
+                            label: 'Show a "Welcome" message'
+                    value: show_welcome_message
+                    redraw_onchange: true
+                    visible_if: zenarioAB.tuix.key.type == 'registration'
+                welcome_message:
+                    ord: 5.2
+                    label: 'Success message:'
+                    type: text
+                    value: Welcome!
+                    maxlength: 255
+                    indent: 1
+                    validation:
+                        required_if_not_hidden: Please enter a "Welcome" message.
+                    visible_if: zenarioAB.tuix.key.type == 'registration' && zenarioAB.value('action_after_verification') == 'show_welcome_message'
+                welcome_redirect_location:
+                    ord: 5.3
+                    label: '"Welcome" page:'
+                    pick_items:
+                        path: zenario__content/panels/content/refiners/content_type//html//
+                        min_path: zenario__content/panels/content
+                        target_path: zenario__content/panels/content
+                        disallow_refiners_looping_on_min_path: true
+                        select_phrase: Select...
+                        hide_remove_button: true
+                    validation:
+                        required_if_not_hidden: 'Please select a content item with a "Welcome" message.'
+                    visible_if: zenarioAB.tuix.key.type == 'registration' && zenarioAB.value('action_after_verification') == 'redirect_after_submission'
+                    indent: 1
+                
                 redirect_location:
                     ord: 6
                     label: '"Thank you" page:'
@@ -75,9 +113,8 @@ zenario_user_form:
                 success_message:
                     ord: 7
                     label: 'Success message:'
-                    type: text
+                    type: textarea
                     value: Thank you for your form submission!
-                    maxlength: 255
                     indent: 1
                     validation:
                         required_if_not_hidden: Please enter a success message for when the form is submitted.
@@ -88,24 +125,6 @@ zenario_user_form:
                     maxlength: 255
                     validation:
                         required_if_not_hidden: Please enter default text for the submit button.
-                default_next_button_text:
-                    ord: 9
-                    label: '"Next" button text:'
-                    type: text
-                    maxlength: 255
-                    validation:
-                        required_if_not_hidden: Please enter default text for the next button.
-                    side_note: |
-                        Only applies to multi-page forms. Can be overridden by the text of buttons on a specific page of the form.
-                default_previous_button_text:
-                    ord: 10
-                    label: '"Back" button text:'
-                    type: text
-                    maxlength: 255
-                    validation:
-                        required_if_not_hidden: Please enter default text for the back button.
-                    side_note: |
-                        Only applies to multi-page forms. Can be overridden by the text of buttons on a specific page of the form.
                 translate_text:
                     ord: 11
                     label: 'Use the phrases system'
@@ -119,7 +138,7 @@ zenario_user_form:
                         If this is enabled all submitted text and textarea fields will be checked for profanities. 
                         If a profanity is found, the user will see a normal form response, but emails will not be sent 
                         to the administrator nor the user.
-                
+        
                 allow_partial_completion:
                     ord: 13
                     label: Enable "Save and complete later" feature
@@ -128,7 +147,7 @@ zenario_user_form:
                         This allows extranet users to save their progress on a form and come back later to fill it in. 
                         Only extranet users will be able to see this form.
                     redraw_onchange: true
-                
+        
                 partial_completion_mode__auto:
                     ord: 13.1
                     type: checkbox
@@ -170,7 +189,7 @@ zenario_user_form:
                     validation:
                         required_if_not_hidden: 'Please enter a message for users when loading an uncompleted form.'
                     indent: 2
-                
+        
                 show_page_switcher:
                     ord: 15
                     label: Show page switcher
@@ -183,17 +202,17 @@ zenario_user_form:
                     values:
                         none:
                             ord: 1
-                            label: Display without hyperlink
+                            label: Show a tab for each page without a hyperlink
                         only_visited_pages:
                             ord: 2
-                            label: Only visited pages
+                            label: Show a tab for each page and show a hyperlink if the user has visited the page
                     visible_if: zenarioAB.value('show_page_switcher');
                     indent: 1
                 enable_summary_page:
                     ord: 17
                     label: 'Enable summary page'
                     type: checkbox
-                    
+            
         data:
             label: Actions on form submission
             edit_mode:
@@ -220,6 +239,37 @@ zenario_user_form:
                     label: 'Create user/contact record'
                     type: checkbox
                     format_onchange: true
+        
+                #registration form options
+                verification_email_template:
+                    label: 'Email template for verifications:'
+                    pick_items:
+                        path: zenario__email_template_manager/panels/email_templates
+                        min_path: zenario__email_template_manager/panels/email_templates
+                        max_path: zenario__email_template_manager/panels/email_templates
+                        target_path: zenario__email_template_manager/panels/email_templates
+                        select_phrase: Select Email Template...
+                        hide_remove_button: true
+                    validation:
+                        required_if_not_hidden: Please select an email template for email verification.
+                    value: zenario_extranet_registration__to_user_email_verification_en
+                    visible_if: zenarioAB.tuix.key.type == 'registration'
+                    indent: 1
+                welcome_email_template:
+                    label: '"Welcome" email:'
+                    pick_items:
+                        path: zenario__email_template_manager/panels/email_templates
+                        min_path: zenario__email_template_manager/panels/email_templates
+                        max_path: zenario__email_template_manager/panels/email_templates
+                        target_path: zenario__email_template_manager/panels/email_templates
+                        select_phrase: Select email template...
+                        hide_remove_button: true
+                    validation:
+                        required_if_not_hidden: Please select a "welcome" email template.
+                    value: zenario_extranet_registration__to_user_account_activation_en
+                    visible_if: zenarioAB.tuix.key.type == 'registration'
+                    indent: 1
+            
                 # BEGIN save_data options
                 user_status:
                     label: 'Create user with status:'
@@ -265,7 +315,7 @@ zenario_user_form:
                     value: merge
                     format_onchange: true
                     indent: 1
-                
+        
                 duplicate_email_address_error_message:
                     label: 'Dupliate email error message:'
                     type: text
@@ -276,7 +326,7 @@ zenario_user_form:
                         required_if_not_hidden: Please enter a duplicate email error message
                     indent: 2
                 # END save_data options
-                
+        
                 logged_in_user_section_start:
                     snippet:
                         html: |
@@ -303,16 +353,16 @@ zenario_user_form:
                     label: 'Add user to group:'
                     type: select
                     empty_value: ' -- Select -- '
-                
+        
                 line_br_2:
                     snippet:
                         html: <hr />
-                
+        
                 send_email_to_user:
                     label: 'Send email to user'
                     type: checkbox
                     format_onchange: true
-                
+        
                 send_email_to_logged_in_user:
                     label: Send to logged in user/account created from form
                     type: checkbox
@@ -382,11 +432,11 @@ zenario_user_form:
                     validation:
                         required_if_not_hidden: Please select an email template for user emails.
                     indent: 3
-                
+        
                 line_br_3:
                     snippet:
                         html: <hr />
-                
+        
                 send_email_to_admin:
                     label: 'Send email to administrator'
                     type: checkbox

@@ -57,7 +57,7 @@ class zenario_users__organizer__groups extends zenario_users {
 	}
 	
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
-		if (post('action') == 'delete') {
+		if (($_POST['action'] ?? false) == 'delete') {
 			exitIfNotCheckPriv('_PRIV_MANAGE_GROUP');
 			deleteDatasetField($ids);
 		}

@@ -34,7 +34,7 @@ if (cms_core::$lastDB
  && setting('brand_logo') == 'custom'
  && ($result = sqlSelect("SHOW COLUMNS IN ". DB_NAME_PREFIX. "files WHERE Field = 'thumbnail_64x64_width'"))
  && ($dbAtRecentRevision = sqlFetchRow($result))
- && (imageLink($logoWidth, $logoHeight, $logoURL, setting('custom_logo'), 500, 250, $mode = 'resize', $offset = 0, $retina = true))) {
+ && (Ze\File::imageLink($logoWidth, $logoHeight, $logoURL, setting('custom_logo'), 500, 250, $mode = 'resize', $offset = 0, $retina = true))) {
 	$logoURL = $logoURL;
 } else {
 	$logoURL = 'zenario/admin/images/zenario_logo.png';
@@ -48,9 +48,9 @@ if ($reportDBOutOfDate && checkPriv()) {
 	$adminLink = 'zenario/admin/welcome.php';
 
 //If there's a specifc page in the request, keep the admin on that page after they log in
-} elseif (request('cID')) {
+} elseif ($_REQUEST['cID'] ?? false) {
 	$errorMessage = setting('site_disabled_message');
-	$adminLink = 'zenario/admin/welcome.php?cID='. rawurlencode(request('cID')). '&cType='. rawurlencode(request('cType'));
+	$adminLink = 'zenario/admin/welcome.php?cID='. rawurlencode($_REQUEST['cID'] ?? false). '&cType='. rawurlencode($_REQUEST['cType'] ?? false);
 
 //If you need to enable a language, the "here" link should point to the languages panel
 } elseif (!checkRowExists('languages', array())) {

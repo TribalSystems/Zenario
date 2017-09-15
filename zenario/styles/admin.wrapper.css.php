@@ -30,7 +30,12 @@ header('Content-Type: text/css; charset=UTF-8');
 
 require '../basicheader.inc.php';
 useCache('zenario-inc-admin-css-'. LATEST_REVISION_NO);
-useGZIP(!empty($_GET['gz']));
+useGZIP();
+
+
+//Run pre-load actions
+require CMS_ROOT. 'zenario/api/cache_functions.inc.php';
+require editionInclude('wrapper.pre_load');
 
 
 //Include all of the standard CSS admin libraries for the CMS
@@ -44,10 +49,14 @@ incCSS('zenario/styles/colorbox');
 //Include other third-party libraries
 incCSS('zenario/libraries/bsd/tokenize/jquery.tokenize');
 incCSS('zenario/libraries/mit/intro/introjs');
-incCSS('zenario/libraries/mit/chosen/chosen');
+incCSS('zenario/libraries/mit/jquery.multiselect/jquery.multiselect');
 incCSS('zenario/libraries/mit/spectrum/spectrum');
 incCSS('zenario/libraries/mit/toastr/toastr');
 
 echo '
 $.fn.spectrum.load = false;
 ';
+
+
+//Run post-display actions
+require editionInclude('wrapper.post_display');

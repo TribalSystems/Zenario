@@ -14,9 +14,12 @@ description: >
     </p>
 category: pluggable
 keywords: accessibility, font, text
+
+# Reminder: you need to increment the LATEST_REVISION_NO in this module's
+# latest_revision_no.inc.php file if you change any of the fields below:
 vlp_class_name: zenario_font_size
 css_class_name: zenario_font_size
-is_pluggable: Yes
-nestable: Yes
+is_pluggable: true
+nestable: true
 default_framework: standard
 default_instance_name: Font Size

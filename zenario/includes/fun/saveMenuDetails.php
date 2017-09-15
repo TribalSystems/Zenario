@@ -101,7 +101,7 @@ if (($newMenu || $recalc) && !isset($submission['ordinal'])) {
 		SELECT max(ordinal)
 		FROM ". DB_NAME_PREFIX. "menu_nodes 
 		WHERE section_id = ". (int) $submission['section_id']. "
-		  AND parent_id = ". (int) arrayKey($submission, 'parent_id');
+		  AND parent_id = ". (int) ($submission['parent_id'] ?? false);
 		
 	$result = sqlSelect($sql);
 	list($ordinal) = sqlFetchRow($result);
@@ -157,7 +157,7 @@ if ($lastCItemDifferent && $lastEquivId && $lastCType) {
 if ($newMenu) {
 	//If we're adding a new Menu Node, add entries into the menu_hierarchy table.
 	//There's no need to recalculate the whole table as nothing will have changed; we just need to add the new entries in for this Menu Node
-	addNewMenuItemToMenuHierarchy($submission['section_id'], $menuId, arrayKey($submission, 'parent_id'));
+	addNewMenuItemToMenuHierarchy($submission['section_id'], $menuId, ($submission['parent_id'] ?? false));
 
 } elseif ($recalc && $resyncIfNeeded) {
 	//If this was a Menu Node being moved, recalculate the entire menu hierarchy

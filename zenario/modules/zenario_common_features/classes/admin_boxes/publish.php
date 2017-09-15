@@ -324,7 +324,7 @@ class zenario_common_features__admin_boxes__publish extends module_base_class {
 				if ($values['publish/publish_options'] == 'immediately') {
 					// Publish now
 					publishContent($cID, $cType);
-					if (session('last_item') == $cType. '_'. $cID) {
+					if (($_SESSION['last_item'] ?? false) == $cType. '_'. $cID) {
 						$_SESSION['page_mode'] = $_SESSION['page_toolbar'] = 'preview';
 					}
 				} else {
@@ -334,7 +334,7 @@ class zenario_common_features__admin_boxes__publish extends module_base_class {
 					updateRow('content_item_versions', array('scheduled_publish_datetime'=>$scheduled_publish_datetime), array('id' =>$cID, 'type'=>$cType, 'version'=>$cVersion));
 					
 					// Lock content item
-					$adminId = session('admin_userid');
+					$adminId = $_SESSION['admin_userid'] ?? false;
 					updateRow('content_items', array('lock_owner_id'=>$adminId, 'locked_datetime'=>date('Y-m-d H:i:s')), array('id' =>$cID, 'type'=>$cType));
 				}
 			}

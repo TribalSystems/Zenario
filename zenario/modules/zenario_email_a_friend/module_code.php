@@ -42,7 +42,7 @@ class zenario_email_a_friend extends module_base_class {
 		$this->clearCacheBy(
 			$clearByContent = false, $clearByMenu = false, $clearByUser = false, $clearByFile = false, $clearByModuleData = false);
 		
-		if (request('floatingBoxMode')=='1'){
+		if (($_REQUEST['floatingBoxMode'] ?? false)=='1'){
 			$this->showInFloatingBox(); 
 		}
 		
@@ -51,8 +51,8 @@ class zenario_email_a_friend extends module_base_class {
 	
 	function checkVar($varName,$varLabel,$len){
 		$errStr = '';
-		if (post($varName)) {
-			if (strlen(post($varName)) > $len){
+		if ($_POST[$varName] ?? false) {
+			if (strlen($_POST[$varName] ?? false) > $len){
 				$errStr = $this->phrase('_FIELD_LENGTH_EXCEEDED',array('field_name'=>$varLabel)) . '<br/>';
 				$this->mergeFields[$varName]='';
 			}
@@ -70,7 +70,7 @@ class zenario_email_a_friend extends module_base_class {
 	function checkEmailVar ($varName,$varLabel,$len){
 		$errStr = '';
 		if ($this->checkVar($varName,$varLabel,$len)) {
-			if (!validateEmailAddress(post($varName))){
+			if (!validateEmailAddress($_POST[$varName] ?? false)){
 				$errStr = $this->phrase('_INVALID_EMAIL_ADDRESS',array('field_name'=>$varLabel)) . '<br/>';
 			}
 		}
@@ -83,13 +83,13 @@ class zenario_email_a_friend extends module_base_class {
 	}
 	
 	function showSlot() {
-		if (request('floatingBoxMode')){
+		if ($_REQUEST['floatingBoxMode'] ?? false){
 			$this->displaySections['Email_friend_popup_header'] = true;
 	
-			$this->mergeFields['email'] = post('email');
-			$this->mergeFields['name'] = post('name');
-			$this->mergeFields['msg'] = post('msg');
-			$this->mergeFields['email_to'] = post('email_to');
+			$this->mergeFields['email'] = $_POST['email'] ?? false;
+			$this->mergeFields['name'] = $_POST['name'] ?? false;
+			$this->mergeFields['msg'] = $_POST['msg'] ?? false;
+			$this->mergeFields['email_to'] = $_POST['email_to'] ?? false;
 			
 			$this->checkEmailVar('email_to',$this->phrase('_EMAIL_ADDRESS'),100);
 			$this->checkEmailVar('email',$this->phrase('_EMAIL_FROM'),100);
@@ -104,13 +104,13 @@ class zenario_email_a_friend extends module_base_class {
 									'page_title'=>getItemTitle($this->cID,$this->cType),
 									'page_description'=>getItemDescription($this->cID,$this->cType,$this->cVersion));
 																		
-				if (zenario_email_template_manager::sendEmailsUsingTemplate(post('email_to'),$this->setting('email_template'),$mergeFields,array())){
+				if (zenario_email_template_manager::sendEmailsUsingTemplate($_POST['email_to'] ?? false,$this->setting('email_template'),$mergeFields,array())){
 					$this->displaySections['Email_friend_popup_msg_sent']=true;
 				} else {
 					$this->displaySections['Email_friend_sending_error']=true;
 				}
 			}else{
-				if (post('Go')){
+				if ($_POST['Go'] ?? false){
 					$this->mergeFields['Error_message']=$this->errors;
 					$this->displaySections['Input_error_section']=true;
 					}

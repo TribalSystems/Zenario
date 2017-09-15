@@ -47,10 +47,14 @@
 					<textarea id="field__{{m.id|e}}" name="{{m.id|e}}" onkeyup="zenarioO.pi.fieldDetailsChanged('{{m.path|e}}','{{m.id|e}}');">{{m._value|e}}</textarea>
 				</div>
 			<% } else if (m.type == 'values_list') { %>
+				<% if (m._readonly) { %>
+					You cannot edit a dataset field's values
+				<% } else { %>
 				<div id="field_values_list"></div>
 				<div class="bottom_buttons">
 					<input type="button" id="organizer_add_a_field_value" value="Add a value"/>
 				</div>
+				<% } %>
 			<% } else if (m.type == 'calculation_code') { %>
 				<div class="value">
 					<textarea readonly>{{m._value|e}}</textarea>

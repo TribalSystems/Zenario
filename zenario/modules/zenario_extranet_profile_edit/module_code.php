@@ -64,7 +64,7 @@ class zenario_extranet_profile_edit extends zenario_user_forms {
 		$this->messages['global_top'] = $this->phrase($this->setting('profile_updated'));
 	}
 	
-	protected function getFormTitle($form) {
+	protected function getFormTitle() {
 		$title = '';
 		if ($this->setting('show_title_message')) {
 			$title .= '<h1>';
@@ -78,7 +78,7 @@ class zenario_extranet_profile_edit extends zenario_user_forms {
 		return $title;
 	}
 	
-	protected function isFormReadonly($form) {
+	protected function isFormReadonly() {
 		return empty($_GET['extranet_edit_profile']) && empty($this->errors);
 	}
 	
@@ -86,7 +86,7 @@ class zenario_extranet_profile_edit extends zenario_user_forms {
 		return !empty($_GET['extranet_edit_profile']) || !empty($this->errors);
 	}
 	
-	protected function getCustomButtons($page, $onLastPage, $position) {
+	protected function getCustomButtons($pageId, $onLastPage, $position) {
 		$editing = !empty($_GET['extranet_edit_profile']) || !empty($this->errors);
 		if ($position == 'first' && !$editing && $onLastPage && $this->setting('enable_edit_profile')) {
 			return '<div class="extranet_links"><a ' . $this->refreshPluginSlotAnchor('extranet_edit_profile=1') . ' class="nice_button">' . $this->phrase($this->setting('edit_profile_button_text')) . '</a></div>';

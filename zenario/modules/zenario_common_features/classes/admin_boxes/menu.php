@@ -37,8 +37,8 @@ class zenario_common_features__admin_boxes__menu extends module_base_class {
 			$box['key']['id'] = $_REQUEST['mID'];
 		}
 		
-		if (!$box['key']['languageId'] = ifNull($box['key']['languageId'], request('target_language_id'), request('languageId'))) {
-			$box['key']['languageId'] = setting('default_language');
+		if (!$box['key']['languageId'] = ifNull($box['key']['languageId'], ($_REQUEST['target_language_id'] ?? false), ($_REQUEST['languageId'] ?? false))) {
+			$box['key']['languageId'] = cms_core::$defaultLang;
 		}
 		
 		//When creating child nodes id is the parent node id
@@ -48,7 +48,7 @@ class zenario_common_features__admin_boxes__menu extends module_base_class {
 		}
 		
 		$menu = false;
-		if ($box['key']['id'] && ($menu = getMenuNodeDetails($box['key']['id'], setting('default_language')))) {
+		if ($box['key']['id'] && ($menu = getMenuNodeDetails($box['key']['id'], cms_core::$defaultLang))) {
 			exitIfNotCheckPriv('_PRIV_VIEW_MENU_ITEM');
 	
 			$box['key']['sectionId'] = $menu['section_id'];
@@ -109,10 +109,10 @@ class zenario_common_features__admin_boxes__menu extends module_base_class {
 			exitIfNotCheckPriv('_PRIV_ADD_MENU_ITEM');
 			//Convert the location requests from the old format
 			if (!$box['key']['parentMenuID']) {
-				$box['key']['parentMenuID'] = ifNull(request('target_menu_parent'), request('parentMenuID'));
+				$box['key']['parentMenuID'] = ifNull($_REQUEST['target_menu_parent'] ?? false, ($_REQUEST['parentMenuID'] ?? false));
 			}
 	
-			if (!$box['key']['sectionId'] = ifNull($box['key']['sectionId'], request('target_menu_section'), request('sectionId'))) {
+			if (!$box['key']['sectionId'] = ifNull($box['key']['sectionId'], ($_REQUEST['target_menu_section'] ?? false), ($_REQUEST['sectionId'] ?? false))) {
 				exit;
 			}
 			
@@ -124,7 +124,7 @@ class zenario_common_features__admin_boxes__menu extends module_base_class {
 				}
 			}
 	
-			$values['text/menu_title'] = arrayKey($box['key'], 'suggestedName');
+			$values['text/menu_title'] = $box['key']['suggestedName'] ?? false;
 		}
 
 
@@ -223,9 +223,9 @@ class zenario_common_features__admin_boxes__menu extends module_base_class {
 
 		//Attempt to load a list of CSS Class Names from an xml file description in the current Skin to add choices in for the CSS Class Picker
 		$skinId = false;
-		if ((request('cID')
-		  && request('cType')
-		  && $layoutId = contentItemTemplateId(request('cID'), request('cType')))
+		if ((($_REQUEST['cID'] ?? false)
+		  && ($_REQUEST['cType'] ?? false)
+		  && $layoutId = contentItemTemplateId($_REQUEST['cID'] ?? false, ($_REQUEST['cType'] ?? false)))
 		 || ($menu
 		  && $menu['equiv_id']
 		  && $menu['content_type']
@@ -336,7 +336,7 @@ class zenario_common_features__admin_boxes__menu extends module_base_class {
 		$numLangs = count($langs);
 
 		$createdLanguages = 0;
-		if (engToBooleanArray($box['tabs']['text'], 'edit_mode', 'on')) {
+		if (engToBoolean($box['tabs']['text']['edit_mode']['on'] ?? false)) {
 			foreach ($langs as $lang) {
 				if ($values['text/menu_title__'. $lang['id']]) {
 					++$createdLanguages;
@@ -354,8 +354,8 @@ class zenario_common_features__admin_boxes__menu extends module_base_class {
 
 
 		if ($values['text/target_loc'] == 'exts') {
-			if (engToBooleanArray($box['tabs']['text'], 'edit_mode', 'on')
-			 || engToBooleanArray($box['tabs']['text'], 'edit_mode', 'on')) {
+			if (engToBoolean($box['tabs']['text']['edit_mode']['on'] ?? false)
+			 || engToBoolean($box['tabs']['text']['edit_mode']['on'] ?? false)) {
 				foreach ($langs as $lang) {
 					if ($values['text/menu_title__'. $lang['id']]
 					 && !$values['text/ext_url__'. $lang['id']]) {
@@ -365,7 +365,7 @@ class zenario_common_features__admin_boxes__menu extends module_base_class {
 			}
 		}
 
-		if (engToBooleanArray($box['tabs']['advanced'], 'edit_mode', 'on')) {
+		if (engToBoolean($box['tabs']['advanced']['edit_mode']['on'] ?? false)) {
 			if (!empty($values['advanced/accesskey'])) {
 				$ord = ord($values['advanced/accesskey']);
 				if ($ord < 48 || ($ord > 57 && $ord < 65) || $ord > 90) {
@@ -415,8 +415,8 @@ class zenario_common_features__admin_boxes__menu extends module_base_class {
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		if ($path != 'zenario_menu') return;
 		
-		$id = arrayKey($box, 'key', 'id');
-		$parent_menu_id = arrayKey($box, 'key', 'parentMenuID');
+		$id = $box['key']['id'] ?? false;
+		$parent_menu_id = $box['key']['parentMenuID'] ?? false;
 
 		if ($id) {
 			if (getRow('menu_nodes', 'parent_id', $id)) {
@@ -441,7 +441,7 @@ class zenario_common_features__admin_boxes__menu extends module_base_class {
 			$submission['parent_id'] = $parent_menu_id;
 		}
 
-		if (engToBooleanArray($box['tabs']['text'], 'edit_mode', 'on')) {
+		if (engToBoolean($box['tabs']['text']['edit_mode']['on'] ?? false)) {
 			$submission['target_loc'] = $values['text/target_loc'];
 	
 	
@@ -458,7 +458,7 @@ class zenario_common_features__admin_boxes__menu extends module_base_class {
 			$submission['anchor'] = ($values['text/target_loc'] == 'int' && $values['text/link_to_anchor']) ? $values['text/hyperlink_anchor'] : '';
 		}
 
-		if (engToBooleanArray($box['tabs']['advanced'], 'edit_mode', 'on')) {
+		if (engToBoolean($box['tabs']['advanced']['edit_mode']['on'] ?? false)) {
 			$submission['accesskey'] = $values['advanced/accesskey'];
 			$submission['rel_tag'] = $values['advanced/rel_tag'];
 			$submission['css_class'] = $values['advanced/css_class'];
@@ -479,7 +479,7 @@ class zenario_common_features__admin_boxes__menu extends module_base_class {
 
 		foreach ($langs as $lang) {
 	
-			if (engToBooleanArray($box['tabs']['text'], 'edit_mode', 'on')) {
+			if (engToBoolean($box['tabs']['text']['edit_mode']['on'] ?? false)) {
 				$submission = array();
 		
 				//Remove a Menu Node without any text.
@@ -496,7 +496,7 @@ class zenario_common_features__admin_boxes__menu extends module_base_class {
 	
 			$submission = array();
 	
-			if (engToBooleanArray($box['tabs']['text'], 'edit_mode', 'on')) {
+			if (engToBoolean($box['tabs']['text']['edit_mode']['on'] ?? false)) {
 				if ($values['text/target_loc'] == 'exts') {
 					$submission['ext_url'] = $values['text/ext_url__'. $lang['id']];
 				} else {

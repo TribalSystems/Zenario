@@ -159,6 +159,9 @@ zenario_location_manager__location:
                         max_path: zenario__content/panels/content
                         target_path: zenario__content/panels/content
                         disallow_refiners_looping_on_min_path: true
+                    allow_admin_to_change_export: true
+                    
+                    
         sectors:
             ord: "50"
             label: Sectors

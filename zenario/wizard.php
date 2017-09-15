@@ -112,7 +112,7 @@ echo '
 
 
 //Add JavaScript libraries for any modules that are running for this path
-if ($requestedPath = ifNull(request('name'), request('path'))) {
+if ($requestedPath = ifNull($_REQUEST['name'] ?? false, ($_REQUEST['path'] ?? false))) {
 	$modules = array_unique(getRowsArray('tuix_file_contents', 'module_class_name', array('type' => 'wizards', 'path' => $requestedPath)));
 	
 	if (!empty($modules)) {

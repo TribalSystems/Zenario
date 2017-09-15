@@ -49,6 +49,24 @@ zenario.lib(function(
 	"use strict";
 
 //
+// Show a pop-out box with embed options
+//
+
+
+zenario_plugin_nest.embed = function(mergefields) {
+
+	$.colorbox({
+		transition: 'none',
+		//closeButton: false,
+		html: zenario.microTemplate('embed_slide', mergefields),
+		className: 'embed_slide_popout'
+	});
+};
+
+
+
+
+//
 // Utility plugins for nests
 //
 
@@ -149,11 +167,7 @@ zenario_conductor.calcRequests = function(slot, commandDetails, requests) {
 	
 	//If we're generating a link to the current state, keep all of the registered get requests
 	if (toState == slot.key.state) {
-		foreach (slot.key as key => value) {
-			if (requests[key] === undefined) {
-				requests[key] = value;
-			}
-		}
+		zenario_conductor.mergeRequests(slot, requests);
 	}
 	
 	//Loop through each of the variables needed by the destination
@@ -169,6 +183,17 @@ zenario_conductor.calcRequests = function(slot, commandDetails, requests) {
 	requests.tab = '';
 	
 	return requests;
+};
+
+zenario_conductor.mergeRequests = function(slot, requests) {
+	
+	if (slot = getSlot(slot)) {
+		foreach (slot.key as key => value) {
+			if (requests[key] === undefined) {
+				requests[key] = value;
+			}
+		}
+	}
 };
 
 zenario_conductor.confirmOnCloseMessage = function(slot, command, requests) {
@@ -331,6 +356,10 @@ zenario_conductor.go = function(slot, command, requests, clearRegisteredGetReque
 	slot = getSlot(slot);
 	
 	if (slot.exists) {
+		if (this.autoRefreshTimer) {
+			zenario_conductor.stopAutoRefresh(slot.slotName);
+		}
+		
 		if (clearRegisteredGetRequests) {
 			zenario_conductor.clearRegisteredGetRequest(slot, clearRegisteredGetRequests);
 		}

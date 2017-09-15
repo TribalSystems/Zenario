@@ -7,7 +7,7 @@
 				{% else %}
 					{{Title}}
 				{% endif %}
-			</{{Title_Tags}}>
+			</{{Title_Tags_Close}}>
 		</div>
 	{% endif %}
 	
@@ -24,11 +24,7 @@
 					{% if Mobile_Media %}
 						<source media="{{Mobile_Media|e}}" srcset="{{Mobile_Srcset|e}}">
 					{% endif %}
-					<img src="{{Image_URL|e}}" alt="{{Image_Alt}}" {{Image_Style}}
-						{% if Image_Srcset %}
-							srcset="{{Image_Srcset|e}}"
-						{% endif %}
-					/>
+					<img src="{{Image_URL|e}}" alt="{{Image_Alt}}" {{Image_Style}} {% if Image_Srcset %} srcset="{{Image_Srcset|e}}" {% endif %} />
 				</picture>
 				{{Rollover_Images}}
 			

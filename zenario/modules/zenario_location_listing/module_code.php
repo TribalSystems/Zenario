@@ -43,7 +43,7 @@ class zenario_location_listing extends module_base_class {
 			$clearByContent = true, $clearByMenu = false, $clearByUser = false, $clearByFile = true, $clearByModuleData = true);
 		
 		$this->pageSize = ifNull((int) $this->setting('page_size'), 10);
-		$this->page = ifNull((int) get('page'), 1);
+		$this->page = ifNull((int) ($_GET['page'] ?? false), 1);
 		$this->registerGetRequest('page', 1);
 		
 		return true;
@@ -128,7 +128,7 @@ class zenario_location_listing extends module_base_class {
 				   ON loc.country_id IS NOT NULL
 				  AND module_class_name = 'zenario_country_manager'
 				  AND CONCAT('_COUNTRY_NAME_', loc.country_id) = vp_cn.code 
-				  AND vp_cn.language_id = '". sqlEscape(cms_core::$langId). "'";
+				  AND vp_cn.language_id = '". sqlEscape(cms_core::$visLang). "'";
 			
 			//Custom data:
 			$sql .= "
@@ -245,7 +245,7 @@ class zenario_location_listing extends module_base_class {
 					$mergeFields['Link_To_Image'] =
 					$mergeFields['Image_Width'] =
 					$mergeFields['Image_Height'] = '';
-					imageLink($mergeFields['Image_Width'], $mergeFields['Image_Height'], $mergeFields['Link_To_Image'], $row['image_id'], $this->setting('width'), $this->setting('height'), $this->setting('canvas'));
+					Ze\File::imageLink($mergeFields['Image_Width'], $mergeFields['Image_Height'], $mergeFields['Link_To_Image'], $row['image_id'], $this->setting('width'), $this->setting('height'), $this->setting('canvas'));
 				}
 
 				$cID = $row['equiv_id'];
@@ -347,7 +347,7 @@ class zenario_location_listing extends module_base_class {
 				if ($values['first_tab/country']) {
 					if ((int)$values['first_tab/region']) {
 						$regionCountry = zenario_country_manager::getCountryOfRegion((int)$values['first_tab/region']);
-						if (arrayKey($regionCountry,'id') != $values['first_tab/country']) {
+						if (($regionCountry['id'] ?? false) != $values['first_tab/country']) {
 							unset($box['tabs']['first_tab']['fields']['region']['value']);
 							unset($box['tabs']['first_tab']['fields']['region']['current_value']);
 						}
@@ -401,9 +401,9 @@ class zenario_location_listing extends module_base_class {
 					
 					initMap(
 						\'map\',
-						'. (float) get('map_center_lat'). ',
-						'. (float) get('map_center_lng'). ',
-						'. (float) get('map_zoom'). '
+						'. (float) ($_GET['map_center_lat'] ?? false). ',
+						'. (float) ($_GET['map_center_lng'] ?? false). ',
+						'. (float) ($_GET['map_zoom'] ?? false). '
 					);
 				">
 					<div id="map" style="width: 475px; height: 324px;"></div>

@@ -335,11 +335,11 @@ _sql
 
 // Migrate existing calculation fields to new system
 if (needRevision(51)) {
-	$result = getRows(
-		ZENARIO_USER_FORMS_PREFIX . 'user_form_fields', 
-		array('id', 'numeric_field_1', 'numeric_field_2', 'calculation_type'),
-		array('field_type' => 'calculated')
-	);
+	$sql = '
+		SELECT id, numeric_field_1, numeric_field_2, calculation_type
+		FROM ' . DB_NAME_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_form_fields
+		WHERE field_type = "calculated"';
+	$result = sqlSelect($sql);
 	while ($row = sqlFetchAssoc($result)) {
 		if ($row['numeric_field_1'] && $row['numeric_field_2'] && $row['calculation_type']) {
 			$calculationCode = array();
@@ -375,10 +375,13 @@ _sql
 
 // Migrate dataset field DB columns to form field IDs
 if (needRevision(54)) {
-	$forms = getRowsArray(ZENARIO_USER_FORMS_PREFIX . 'user_forms', true, array());
-	foreach ($forms as $form) {
+	$sql = '
+		SELECT id, reply_to_email_field, reply_to_first_name, reply_to_last_name
+		FROM ' . DB_NAME_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_forms';
+	$result = sqlSelect($sql);
+	while ($form = sqlFetchAssoc($result)) {
 		$set = false;
-		if ($form['reply_to_email_field']) {
+		if (!empty($form['reply_to_email_field'])) {
 			$sql = '
 				SELECT f.id
 				FROM ' . DB_NAME_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_form_fields f
@@ -398,7 +401,7 @@ if (needRevision(54)) {
 		}
 		
 		$set = false;
-		if ($form['reply_to_first_name']) {
+		if (!empty($form['reply_to_first_name'])) {
 			$sql = '
 				SELECT f.id
 				FROM ' . DB_NAME_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_form_fields f
@@ -418,7 +421,7 @@ if (needRevision(54)) {
 		}
 		
 		$set = false;
-		if ($form['reply_to_last_name']) {
+		if (!empty($form['reply_to_last_name'])) {
 			$sql = '
 				SELECT f.id
 				FROM ' . DB_NAME_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_form_fields f
@@ -517,20 +520,22 @@ _sql
 );
 //Migrate form user email settings to new format
 if (needRevision(66)) {
-	
-	$formsResult = getRows(ZENARIO_USER_FORMS_PREFIX . 'user_forms', true, array());
-	while ($form = sqlFetchAssoc($formsResult)) {
-		$details = array();
-		if ($form['send_email_to_user'] && $form['user_email_field']) {
-			$details['send_email_to_email_from_field'] = true;
-			$details['user_email_use_template_for_email_from_field'] = true;
-			$details['user_email_template_from_field'] = $form['user_email_template'];
-		} elseif ($form['send_email_to_user'] && !$form['user_email_field']) {
-			$details['send_email_to_logged_in_user'] = true;
-			$details['user_email_use_template_for_logged_in_user'] = true;
-			$details['user_email_template_logged_in_user'] = $form['user_email_template'];
-		}
-		if ($details) {
+	$sql = '
+		SELECT id, send_email_to_user, user_email_field, user_email_template
+		FROM ' . DB_NAME_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_forms';
+	$result = sqlSelect($sql);
+	while ($form = sqlFetchAssoc($result)) {
+		if (!empty($form['send_email_to_user'])) {
+			$details = array();
+			if (!empty($form['user_email_field'])) {
+				$details['send_email_to_email_from_field'] = true;
+				$details['user_email_use_template_for_email_from_field'] = true;
+				$details['user_email_template_from_field'] = $form['user_email_template'];
+			} else {
+				$details['send_email_to_logged_in_user'] = true;
+				$details['user_email_use_template_for_logged_in_user'] = true;
+				$details['user_email_template_logged_in_user'] = $form['user_email_template'];
+			}
 			updateRow(ZENARIO_USER_FORMS_PREFIX . 'user_forms', $details, $form['id']);
 		}
 	}
@@ -944,6 +949,294 @@ _sql
 	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response_data` MODIFY COLUMN `value` text CHARACTER SET utf8mb4 NOT NULL
 _sql
 
+//Rename pdf_upload to document_upload
+); revision(102
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
+	MODIFY COLUMN `field_type` enum('checkbox','checkboxes','date','editor','radios','centralised_radios','select','centralised_select','text','textarea','url','attachment','page_break','section_description','calculated','restatement','repeat_start','repeat_end', 'pdf_upload', 'document_upload') DEFAULT NULL
+_sql
+
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
+	SET `field_type` = 'document_upload' WHERE `field_type` = 'pdf_upload'
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
+	MODIFY COLUMN `field_type` enum('checkbox','checkboxes','date','editor','radios','centralised_radios','select','centralised_select','text','textarea','url','attachment','page_break','section_description','calculated','restatement','repeat_start','repeat_end', 'document_upload') DEFAULT NULL
+_sql
+
+//Add column for fields being mandatory if visible
+); revision(103
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
+	ADD COLUMN `mandatory_if_visible` tinyint(1) NOT NULL DEFAULT '0' AFTER `is_required`
+_sql
+
+//Add column for document upload default combined images filename
+); revision(104
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
+	ADD COLUMN `combined_filename` varchar(250) CHARACTER SET utf8mb4 DEFAULT NULL
+_sql
+
+//New table to store pages seperatly rather than having page break fields
+); revision(106
+, <<<_sql
+	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]pages`
+_sql
+
+,<<<_sql
+	CREATE TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]pages`(
+		`id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+		`form_id` int(10) unsigned NOT NULL,
+		`ord` int(10) unsigned NOT NULL DEFAULT '1',
+		`name` varchar(250) CHARACTER SET utf8mb4 DEFAULT NULL,
+		`label` varchar(250) CHARACTER SET utf8mb4 DEFAULT NULL,
+		`visibility` enum('visible','hidden','visible_on_condition') DEFAULT 'visible',
+		`visible_condition_field_id` int(10) unsigned DEFAULT '0',
+		`visible_condition_invert` tinyint(1) NOT NULL DEFAULT '0',
+		`visible_condition_checkboxes_operator` enum('AND','OR') NOT NULL DEFAULT 'AND',
+		`visible_condition_field_value` varchar(250) CHARACTER SET utf8mb4 DEFAULT NULL,
+		`next_button_text` varchar(250) CHARACTER SET utf8mb4 NOT NULL DEFAULT 'Next',
+		`previous_button_text` varchar(250) CHARACTER SET utf8mb4 NOT NULL DEFAULT 'Previous',
+		`hide_in_page_switcher` tinyint(1) NOT NULL DEFAULT '0',
+		PRIMARY KEY (`id`)
+	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
+	ADD COLUMN `page_id` int(10) unsigned NOT NULL AFTER `user_form_id`
+_sql
+
 );
 
+//Migrate page breaks to pages..
+if (needRevision(107)) {
+	$sql = '
+		SELECT id, page_end_name, default_previous_button_text, hide_final_page_in_page_switcher
+		FROM ' . DB_NAME_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_forms';
+	$result = sqlSelect($sql);
+	while ($form = sqlFetchAssoc($result)) {
+		$ord = 0;
+		$pageFields = array();
+		
+		$sql = '
+			SELECT * 
+			FROM ' . DB_NAME_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_form_fields
+			WHERE user_form_id = ' . (int)$form['id'] . '
+			ORDER BY ord';
+		$fieldsResult = sqlSelect($sql);
+		while ($field = sqlFetchAssoc($fieldsResult)) {
+			if ($field['field_type'] == 'page_break') {
+				$page = array(
+					'form_id' => $form['id'],
+					'ord' => ++$ord,
+					'name' => $field['name'],
+					'label' => $field['name'],
+					'visibility' => $field['visibility'],
+					'visible_condition_field_id' => $field['visible_condition_field_id'],
+					'visible_condition_invert' => $field['visible_condition_invert'],
+					'visible_condition_checkboxes_operator' => $field['visible_condition_checkboxes_operator'],
+					'visible_condition_field_value' => $field['visible_condition_field_value'],
+					'next_button_text' => $field['next_button_text'] ? $field['next_button_text'] : 'Next',
+					'previous_button_text' => $field['previous_button_text'],
+					'hide_in_page_switcher' => $field['hide_in_page_switcher']
+				);
+				$pageId = insertRow(ZENARIO_USER_FORMS_PREFIX . 'pages', $page);
+				if ($pageFields) {
+					$sql = '
+						UPDATE ' . DB_NAME_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_form_fields
+						SET page_id = ' . (int)$pageId . ' WHERE id IN (' . implode(',', array_keys($pageFields)) . ')';
+					sqlQuery($sql);
+				}
+				$pageFields = array();
+			} else {
+				$pageFields[$field['id']] = $field;
+			}
+		}
+		
+		$page = array(
+			'form_id' => $form['id'],
+			'ord' => ++$ord,
+			'name' => $form['page_end_name'],
+			'label' => $form['page_end_name'],
+			'previous_button_text' => $form['default_previous_button_text'],
+			'hide_in_page_switcher' => $form['hide_final_page_in_page_switcher']
+		);
+		$pageId = insertRow(ZENARIO_USER_FORMS_PREFIX . 'pages', $page);
+		if ($pageFields) {
+			$sql = '
+				UPDATE ' . DB_NAME_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_form_fields
+				SET page_id = ' . (int)$pageId . ' WHERE id IN (' . implode(',', array_keys($pageFields)) . ')';
+			sqlQuery($sql);
+		}
+	}
+	
+	deleteRow(ZENARIO_USER_FORMS_PREFIX . 'user_form_fields', array('field_type' => 'page_break'));
+	
+	
+	
+	revision(107);
+}
+
+revision(108
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
+	DROP COLUMN `default_next_button_text`,
+	DROP COLUMN `default_previous_button_text`,
+	DROP COLUMN `hide_final_page_in_page_switcher`,
+	DROP COLUMN `page_end_name`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
+	MODIFY COLUMN `field_type` enum('checkbox','checkboxes','date','editor','radios','centralised_radios','select','centralised_select','text','textarea','url','attachment','section_description','calculated','restatement','repeat_start','repeat_end','document_upload') DEFAULT NULL,
+	DROP COLUMN `next_button_text`,
+	DROP COLUMN `previous_button_text`,
+	DROP COLUMN `hide_in_page_switcher`
+_sql
+
+//Replacing a table with a column...
+); revision(109
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
+	ADD COLUMN `filter_on_field` int(10) unsigned NOT NULL DEFAULT 0
+_sql
+
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` uf
+	INNER JOIN `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]form_field_update_link` ufl 
+		ON uf.id = ufl.target_field_id
+	SET  uf.filter_on_field = ufl.source_field_id
+_sql
+
+, <<<_sql
+	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]form_field_update_link`
+_sql
+
+); revision(110
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]form_field_values`
+	MODIFY `ord` int(10) unsigned NOT NULL DEFAULT 0,
+	MODIFY `label` varchar(250) CHARACTER SET utf8mb4 NOT NULL DEFAULT ''
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
+	MODIFY COLUMN `name` varchar(250) CHARACTER SET utf8mb4 NOT NULL DEFAULT ''
+_sql
+
+//This was never implemented or used
+); revision(111
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
+	DROP COLUMN `autocomplete_class_name`,
+	DROP COLUMN `autocomplete_method_name`,
+	DROP COLUMN `autocomplete_param_1`,
+	DROP COLUMN `autocomplete_param_2`
+_sql
+
+); revision(112
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
+	ADD COLUMN `repeat_start_id` int(10) unsigned NOT NULL DEFAULT '0',
+	DROP COLUMN `show_repeat_field`,
+	DROP COLUMN `repeat_field_label`,
+	DROP COLUMN `repeat_error_message`
+_sql
+
+);
+
+//Migration for new repeat_start_id column
+if (needRevision(114)) {
+	$sql = '
+		SELECT id
+		FROM ' . DB_NAME_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_forms';
+	$result = sqlSelect($sql);
+	while ($form = sqlFetchAssoc($result)) {
+		$repeatStartId = false;
+		$sql = '
+			SELECT uff.id, uff.field_type
+			FROM ' . DB_NAME_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_form_fields uff
+			INNER JOIN ' . DB_NAME_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'pages p
+				ON uff.page_id = p.id
+			WHERE uff.user_form_id = ' . (int)$form['id'] . '
+			ORDER BY p.ord, uff.ord';
+		$result = sqlSelect($sql);
+		while ($field = sqlFetchAssoc($result)) {
+			updateRow(ZENARIO_USER_FORMS_PREFIX . 'user_form_fields', array('repeat_start_id' => $repeatStartId), $field['id']);
+			
+			if ($field['field_type'] == 'repeat_start') {
+				$repeatStartId = $field['id'];
+			} elseif ($field['field_type'] == 'repeat_end') {
+				$repeatStartId = false;
+			}
+		}
+	}
+	revision(114);
+}
+
+//Migration for max_page_reached stored in form partial responses
+revision(115
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_partial_response` r
+	INNER JOIN `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]pages` p
+		ON r.form_id = p.form_id
+		AND r.max_page_reached = p.ord
+	SET r.max_page_reached = p.id
+_sql
+
+); revision(117
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
+	ADD COLUMN `verification_email_template` varchar(255) DEFAULT NULL,
+	ADD COLUMN `welcome_email_template` varchar(255) DEFAULT NULL
+_sql
+
+); revision(118
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
+	MODIFY COLUMN `verification_email_template` varchar(250) CHARACTER SET utf8mb4 DEFAULT NULL,
+	MODIFY COLUMN `welcome_email_template` varchar(250) CHARACTER SET utf8mb4 DEFAULT NULL,
+	ADD COLUMN `welcome_message` varchar(250) CHARACTER SET utf8mb4 DEFAULT NULL,
+	ADD COLUMN `welcome_redirect_location` varchar(250) CHARACTER SET utf8mb4 DEFAULT NULL
+_sql
+
+); revision(120
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
+	ADD KEY (`user_form_id`),
+	ADD KEY (`page_id`),
+	ADD KEY (`user_field_id`),
+	ADD KEY (`custom_code_name`)
+_sql
+
+); revision(121
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
+	ADD COLUMN `no_past_dates` tinyint(1) NOT NULL DEFAULT '0' AFTER `show_month_year_selectors`
+_sql
+
+); revision(122
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
+	CHANGE `word_limit` `word_count_max` int(10) unsigned DEFAULT NULL,
+	ADD COLUMN `word_count_min` int(10) unsigned DEFAULT NULL AFTER `word_count_max`
+_sql
+
+); revision(124
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
+	ADD COLUMN `disable_manual_input` tinyint(1) NOT NULL DEFAULT '0'
+_sql
+
+); revision(126
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
+	MODIFY COLUMN `success_message` text CHARACTER SET utf8mb4 DEFAULT NULL
+_sql
+
+);
 

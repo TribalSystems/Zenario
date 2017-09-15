@@ -44,7 +44,7 @@ class zenario_pro_features__admin_boxes__alias extends module_base_class {
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
 		//Create a Spare Alias under the old name, if there is an old name, it is being changed, and it was requested
-		if (checkPriv('_PRIV_MANAGE_SPARE_ALIAS') && engToBooleanArray($box, 'tabs', 'meta_data', 'edit_mode', 'on')) {
+		if (checkPriv('_PRIV_MANAGE_SPARE_ALIAS') && engToBoolean($box['tabs']['meta_data']['edit_mode']['on'] ?? false)) {
 			if ($values['meta_data/zenario_pro_features__create_spare_alias']
 			&& $box['tabs']['meta_data']['fields']['alias']['value'] == $box['tabs']['meta_data']['fields']['alias']['current_value']) {
 				$box['tabs']['meta_data']['errors'][] =
@@ -56,7 +56,7 @@ class zenario_pro_features__admin_boxes__alias extends module_base_class {
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		//Create a Spare Alias under the old name, if there is an old name, it is being changed, and it was requested
-		if (checkPriv('_PRIV_MANAGE_SPARE_ALIAS') && engToBooleanArray($box, 'tabs', 'meta_data', 'edit_mode', 'on')) {
+		if (checkPriv('_PRIV_MANAGE_SPARE_ALIAS') && engToBoolean($box['tabs']['meta_data']['edit_mode']['on'] ?? false)) {
 			if ($values['meta_data/zenario_pro_features__create_spare_alias']
 			&& $box['tabs']['meta_data']['fields']['alias']['value']
 			&& $box['tabs']['meta_data']['fields']['alias']['value'] != $box['tabs']['meta_data']['fields']['alias']['current_value']) {

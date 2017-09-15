@@ -99,7 +99,7 @@ class zenario_comments extends zenario_anonymous_comments {
 		if ($this->setting('show_user_avatars')) {
 			$width = $height = $url = false;
 			if ($coreDetails['image_id']
-			 && imageLink($width, $height, $url, $coreDetails['image_id'], $this->setting('avatar_width'), $this->setting('avatar_height'))) {
+			 && Ze\File::imageLink($width, $height, $url, $coreDetails['image_id'], $this->setting('avatar_width'), $this->setting('avatar_height'))) {
 				$sections['Show_Avatar'] = $sections['Posting_Show_Avatar'] = true;
 				$mergeFields['Width'] = $width;
 				$mergeFields['Height'] = $height;

@@ -72,6 +72,8 @@
 		zenarioAB = window.zenarioAB = new zenarioABToolkit(),
 		zenarioAT = createZenarioLibrary('AT'),
 		zenarioO = createZenarioLibrary('O');
+		
+		zenarioA.phrase = {};
 	
 	//Create a wrapper function with variables for all of these objects
 	//(This helps keep file sizes down when minifying as the listed common global variables and functions

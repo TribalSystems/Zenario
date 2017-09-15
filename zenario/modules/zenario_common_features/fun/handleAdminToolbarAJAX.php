@@ -29,18 +29,18 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 
 //Requests for Menu Nodes
-if (request('mID') && post('menu_item')) {
+if (($_REQUEST['mID'] ?? false) && ($_POST['menu_item'] ?? false)) {
 	//Most of the logic for Menu Nodes is already included for Storekeeper, so include those functions
-	$this->handleOrganizerPanelAJAX('zenario__menu/panels/menu_nodes', request('mID'), $ids, false, false);
+	$this->handleOrganizerPanelAJAX('zenario__menu/panels/menu_nodes', ($_REQUEST['mID'] ?? false), $ids, false, false);
 	
-	if (post('make_primary') && checkPriv('_PRIV_EDIT_MENU_ITEM')) {
+	if (($_POST['make_primary'] ?? false) && checkPriv('_PRIV_EDIT_MENU_ITEM')) {
 		$_SESSION['page_toolbar'] = 'menu1';
 	}
-} elseif (post('rollback')) {
+} elseif ($_POST['rollback'] ?? false) {
 	$cVersionTo = false;
 	createDraft($cID, $cID, $cType, $cVersionTo, $cVersion);
 		
-} elseif (post('trash')) {
+} elseif ($_POST['trash'] ?? false) {
 	if (allowTrash($cID, $cType) && checkPriv('_PRIV_TRASH_CONTENT_ITEM', $cID, $cType)) {
 		$menu = getMenuItemFromContent($cID, $cType);
 		
@@ -54,7 +54,7 @@ if (request('mID') && post('menu_item')) {
 	}
 
 //Delete the draft of a Content Item
-} elseif (post('delete')) {
+} elseif ($_POST['delete'] ?? false) {
 	if (allowDelete($cID, $cType) && checkPriv('_PRIV_DELETE_DRAFT', $cID, $cType)) {
 		$menu = getMenuItemFromContent($cID, $cType);
 		

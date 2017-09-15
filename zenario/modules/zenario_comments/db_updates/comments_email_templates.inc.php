@@ -55,7 +55,7 @@ revision(80, "
         <p>Further comments may have been posted since this email was sent.</p>
         <p><small>This is an auto-generated email. Please visit [[cms_url]] to change your notification settings.</small></p>',
         NOW(),
-        ". (int) session('admin_userid'). ",
+        ". (int) ($_SESSION['admin_userid'] ?? false). ",
         0
     )
 ");

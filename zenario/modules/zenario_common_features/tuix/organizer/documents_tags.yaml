@@ -3,6 +3,7 @@
 zenario__content:
     panels:
         document_tags:
+            priv: _PRIV_VIEW_DOCUMENTS
             view_mode: list
             disable_grid_view: Yes
             item:
@@ -31,6 +32,7 @@ zenario__content:
                     
             collection_buttons:
                 create_tag:
+                    priv: _PRIV_EDIT_DOCUMENTS
                     label: Create a tag
                     css_class: zenario_create_a_new
                     hide_on_filter: true
@@ -38,11 +40,13 @@ zenario__content:
                         path: zenario_document_tag
             item_buttons:
                 tag_details:
+                    priv: _PRIV_EDIT_DOCUMENTS
                     hide_in_select_mode: Yes
                     label: Properties
                     admin_box:
                         path: zenario_document_tag
                 delete_file:
+                    priv: _PRIV_EDIT_DOCUMENTS
                     hide_in_select_mode: Yes
                     label: Delete
                     multiple_select: No

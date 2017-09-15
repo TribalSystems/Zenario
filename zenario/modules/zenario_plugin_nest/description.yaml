@@ -38,6 +38,9 @@ description: |
 
 category: pluggable
 keywords: multiple, nest, panel, plugin, slot
+
+# Reminder: you need to increment the LATEST_REVISION_NO in this module's
+# latest_revision_no.inc.php file if you change any of the fields below:
 vlp_class_name: zenario_plugin_nest
 css_class_name: zenario_plugin_nest
 default_framework: standard

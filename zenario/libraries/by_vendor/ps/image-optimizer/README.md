@@ -34,10 +34,13 @@ automatically.
 Supported options:
 
 * `ignore_errors` (default: true)
+* `execute_only_first_png_optimizer` (default: true) - execute the first successful or all `png` optimizers
+* `execute_only_first_jpeg_optimizer` (default: true) - execute the first successful or all `jpeg` optimizers
 * `optipng_options` (default: `array('-i0', '-o2', '-quiet')`) - an array of arguments to pass to the library
 * `pngquant_options` (default: `array('--force')`)
 * `pngcrush_options` (default: `array('-reduce', '-q', '-ow')`)
 * `pngout_options` (default: `array('-s3', '-q', '-y')`)
+* `advpng_options` (default: `array('-z', '-4', '-q')`)
 * `gifsicle_options` (default: `array('-b', '-O5')`)
 * `jpegoptim_options` (default: `array('--strip-all', '--all-progressive')`)
 * `jpegtran_options` (default: `array('-optimize', '-progressive')`)
@@ -45,6 +48,7 @@ Supported options:
 * `pngquant_bin`
 * `pngcrush_bin`
 * `pngout_bin`
+* `advpng_bin`
 * `gifsicle_bin`
 * `jpegoptim_bin`
 * `jpegtran_bin`
@@ -68,9 +72,10 @@ optionally `Psr\LoggerInterface`.
 * `optipng` - [homepage][2]
 * `pngcrush` - [homepage][3]
 * `pngout` - [homepage][4]
-* `jpegtran` - [homepage][5]
-* `jpegoptim` - [homepage][6]
-* `gifsicle` - [homepage][7]
+* `advpng` - [homepage][5]
+* `jpegtran` - [homepage][6]
+* `jpegoptim` - [homepage][7]
+* `gifsicle` - [homepage][8]
 
 You can obtain concrete optimizer by passing his name to `ImageOptimizer\OptimizerFactory`::`get` method:
 
@@ -95,6 +100,7 @@ You can obtain concrete optimizer by passing his name to `ImageOptimizer\Optimiz
 [2]: http://optipng.sourceforge.net/
 [3]: http://pmt.sourceforge.net/pngcrush/
 [4]: http://www.jonof.id.au/kenutils
-[5]: http://jpegclub.org/jpegtran/
-[6]: http://freecode.com/projects/jpegoptim
-[7]: http://www.lcdf.org/gifsicle/
+[5]: http://advancemame.sourceforge.net/doc-advpng.html
+[6]: http://jpegclub.org/jpegtran/
+[7]: http://freecode.com/projects/jpegoptim
+[8]: http://www.lcdf.org/gifsicle/

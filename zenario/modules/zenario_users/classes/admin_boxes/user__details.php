@@ -115,7 +115,7 @@ class zenario_users__admin_boxes__user__details extends module_base_class {
 	
 			if (count($layouts)){
 				$template = current($layouts);
-				$fields['details/email_to_send']['value'] = arrayKey($template,'code');
+				$fields['details/email_to_send']['value'] = $template['code'] ?? false;
 			}
 		}
 		

@@ -38,7 +38,20 @@ function hideCookieConsent() {
 }
 
 function currentLangId() {
-	return cms_core::$langId ?? $_SESSION['user_lang'] ?? setting('default_language');
+	return cms_core::$langId ?? $_SESSION['user_lang'] ?? cms_core::$defaultLang;
+}
+function visitorLangId() {
+	return cms_core::$visLang ?? $_SESSION['user_lang'] ?? cms_core::$defaultLang;
+}
+
+//Whether to show untranslated content items - maybe this needs to be moved to another category?
+function showUntranslatedContentItems($langId = false) {
+	
+	if ($langId === false) {
+		$langId = cms_core::$visLang;
+	}
+	
+	return cms_core::$langs[$langId]['show_untranslated_content_items'] ?? false;
 }
 
 cms_core::$whitelist[] = 'inc';
@@ -52,11 +65,11 @@ cms_core::$whitelist[] = 'inc';
 function langSpecialPage($pageType, &$cID, &$cType, $preferredLanguageId = false, $languageMustMatch = false, $skipPermsCheck = false) {
 	//Assume that we'll want the special page in the language that the Visitor is currently viewing, if a language is not specified
 	if ($preferredLanguageId === false) {
-		$preferredLanguageId = cms_core::$langId ?? $_SESSION['user_lang'] ?? setting('default_language');
+		$preferredLanguageId = cms_core::$visLang ?? $_SESSION['user_lang'] ?? cms_core::$defaultLang;
 	}
 	
 	//Convert the requested language to the format used in the special pages array
-	if ($preferredLanguageId == setting('default_language')) {
+	if ($preferredLanguageId == cms_core::$defaultLang) {
 		$preferredLanguageId = '';
 	} else {
 		$preferredLanguageId = '`'. $preferredLanguageId;
@@ -102,10 +115,10 @@ function formatDateNicely($date, $format_type = false, $languageId = false, $tim
 	//Use $languageId === true as a shortcut to the site default language
 	//Otherwise if $languageId is not set, try to get language from session, or the site default if that is not set
 	if ($languageId === true) {
-		$languageId = setting('default_language');
+		$languageId = cms_core::$defaultLang;
 	
 	} elseif (!$languageId) {
-		$languageId = cms_core::$langId ?? $_SESSION['user_lang'] ?? setting('default_language');
+		$languageId = cms_core::$visLang ?? $_SESSION['user_lang'] ?? cms_core::$defaultLang;
 	}
 	
 	if ($time_format === true) {
@@ -208,19 +221,7 @@ function convertToUserTimezone($time, $specificTimeZone = false) {
 	} else {
 		//Get the user's timezone, if not already checked
 		if (cms_core::$timezone === null) {
-			if (!empty($_SESSION['extranetUserID'])
-			 && ($timezoneFieldId = setting('zenario_timezones__timezone_dataset_field'))
-			 && ($timezoneFieldCol = getRow('custom_dataset_fields', 'db_column', $timezoneFieldId))
-			 && (cms_core::$timezone = getRow('users_custom_data', $timezoneFieldCol, $_SESSION['extranetUserID']))) {
-				//Use the timezone from the user's preferences, if set
-			
-			} elseif (cms_core::$timezone = setting('zenario_timezones__default_timezone')) {
-				//Use the timezone from the site settings, if set
-			
-			} else {
-				//Otherwise use the server default if neither is set
-				cms_core::$timezone = false;
-			}
+			cms_core::$timezone = getUserTimezone();
 		}
 		if (cms_core::$timezone) {
 			$time->setTimeZone(new DateTimeZone(cms_core::$timezone));
@@ -228,6 +229,28 @@ function convertToUserTimezone($time, $specificTimeZone = false) {
 	}
 	
 	return $time;
+}
+
+function getUserTimezone($userId = false) {
+	$timezone = false;
+	if (!$userId) {
+		$userId = ($_SESSION['extranetUserID'] ?? false);
+	}
+	
+	if ($userId
+	 && ($timezoneFieldId = setting('zenario_timezones__timezone_dataset_field'))
+	 && ($timezoneFieldCol = getRow('custom_dataset_fields', 'db_column', $timezoneFieldId))
+	 && ($timezone = getRow('users_custom_data', $timezoneFieldCol, $userId))) {
+		//Use the timezone from the user's preferences, if set
+	
+	} elseif ($timezone = setting('zenario_timezones__default_timezone')) {
+		//Use the timezone from the site settings, if set
+	
+	} else {
+		//Otherwise use the server default if neither is set
+		$timezone = false;
+	}
+	return $timezone;
 }
 
 
@@ -330,6 +353,11 @@ function programPathForExec($path, $program, $checkExecutable = false) {
 				case '/Applications/AMPPS/mysql/bin/':
 					if (PHP_OS == 'Darwin') {
 						return '/Applications/AMPPS/mysql/bin/'. $program;
+					}
+					break;
+				case '/Applications/AMPPS/mongodb/bin/':
+					if (PHP_OS == 'Darwin') {
+						return '/Applications/AMPPS/mongodb/bin/'. $program;
 					}
 			}
 		}

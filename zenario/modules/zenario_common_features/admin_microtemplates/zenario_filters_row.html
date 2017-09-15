@@ -1,5 +1,10 @@
 <% if (m.fields) { %>
-	<div id="row__{{m.fields[0]._id|escape}}" class="zenario_ab_row__{{m.fields[0]._id|escape}} {{m.fields[0].row_class|escape}} {{m.fields[0]._hideOnOpen? 'zenario_hide_row_on_open' : ''}} zenario_colsortfields_row">
+	<div id="row__{{m.fields[0]._id|escape}}" class="
+		zenario_ab_row__{{m.fields[0]._id|escape}}
+		{{m.fields[0].row_class|escape}}
+		{{m.fields[0]._hideOnOpen? 'zenario_hide_row_on_open' : ''}}
+		zenario_colsortfields_row
+	">
 		<div class="{{m.fields[0]._hideOnOpen? 'zenario_hide_on_open' : ''}} {{m.fields[0]._showOnOpen? 'zenario_show_on_open' : ''}}">
 			{{zenarioT.microTemplate('zenario_filters_field', m.fields)}}
 		</div>

@@ -33,7 +33,7 @@ class zenario_common_features__admin_boxes__site_reset extends module_base_class
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		
 		exitIfNotCheckPriv('_PRIV_RESET_SITE');
-		$box['tabs']['site']['fields']['username']['value'] = session('admin_username');
+		$box['tabs']['site']['fields']['username']['value'] = $_SESSION['admin_username'] ?? false;
 	}
 
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
@@ -49,7 +49,7 @@ class zenario_common_features__admin_boxes__site_reset extends module_base_class
 			$box['tabs']['site']['errors'][] =
 				adminPhrase('Please enter your password.');
 		
-		} elseif (!engToBoolean(checkPasswordAdmin(session('admin_username'), $details, $values['site/password']))) {
+		} elseif (!engToBoolean(checkPasswordAdmin($_SESSION['admin_username'] ?? false, $details, $values['site/password']))) {
 			$box['tabs']['site']['errors'][] =
 				adminPhrase('Your password was not recognised. Please check and try again.');
 		}

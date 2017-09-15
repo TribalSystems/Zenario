@@ -170,7 +170,7 @@ class zenario_content_list extends module_base_class {
 		} else {
 			$cTypes = array();
 			foreach (getContentTypes() as $cType) {
-				switch (arrayKey($cType,'content_type_id')){
+				switch ($cType['content_type_id'] ?? false){
 					case 'recurringevent':
 					case 'event':
 						break;
@@ -352,7 +352,7 @@ class zenario_content_list extends module_base_class {
 	}
 	
 	protected function escapeAppropriately($text) {
-		if (arrayKey($_REQUEST, 'method_call') == 'showRSS') {
+		if (($_REQUEST['method_call'] ?? false) == 'showRSS') {
 			return XMLEscape($text);
 		} else {
 			return $this->escapeIfOldFramework($text);
@@ -365,9 +365,9 @@ class zenario_content_list extends module_base_class {
 		$this->target_blank = $this->setting('target_blank');
 		
 		$this->allowCaching(
-			$atAll = true, $ifUserLoggedIn = $this->setting('hide_private_items'), $ifGetSet = true, $ifPostSet = true, $ifSessionSet = true, $ifCookieSet = true);
+			$atAll = true, $ifUserLoggedIn = !$this->setting('hide_private_items'), $ifGetSet = true, $ifPostSet = true, $ifSessionSet = true, $ifCookieSet = true);
 		$this->clearCacheBy(
-			$clearByContent = true, $clearByMenu = $this->setting('only_show_child_items'), $clearByUser = false, $clearByFile = $this->setting('show_sticky_images'), $clearByModuleData = false);
+			$clearByContent = true, $clearByMenu = $this->setting('only_show_child_items'), $clearByUser = (bool) $this->setting('hide_private_items'), $clearByFile = $this->setting('show_sticky_images'), $clearByModuleData = false);
 		
 		
 		if ($this->setting('data_field') == 'description') {
@@ -381,7 +381,7 @@ class zenario_content_list extends module_base_class {
 		$this->registerGetRequest('page', 1);
 		
 		//Pick a page to display
-		$this->page = is_numeric(get('page'))? (int) get('page') : 1;
+		$this->page = is_numeric($_GET['page'] ?? false)? (int) ($_GET['page'] ?? false) : 1;
 		
 		
 		//Loop through each item to display, and add its details to an array of merge fields
@@ -402,7 +402,7 @@ class zenario_content_list extends module_base_class {
 					$item['Excerpt_Text'] = $this->escapeAppropriately($row['content_table_data']);
 				
 				} elseif ($this->dataField == 'v.content_summary') {
-					if (arrayKey($_REQUEST, 'method_call') == 'showRSS') {
+					if (($_REQUEST['method_call'] ?? false) == 'showRSS') {
 						$item['Excerpt_Text'] = XMLEscape(html_entity_decode(strip_tags($row['content_table_data']), ENT_QUOTES, 'UTF-8'));
 					} else {
 						$item['Excerpt_Text'] = $row['content_table_data'];
@@ -413,7 +413,7 @@ class zenario_content_list extends module_base_class {
 				}
 				if (isset($row['writer_image_id']) && !empty($row['writer_image_id'])) {
 					$width = $height = $url = false;
-					imageLink($width, $height, $url, $row['writer_image_id'], $this->setting('author_width'), $this->setting('author_height'), $this->setting('author_canvas'), (int)$this->setting('author_offset'), $this->setting('author_retina'));
+					Ze\File::imageLink($width, $height, $url, $row['writer_image_id'], $this->setting('author_width'), $this->setting('author_height'), $this->setting('author_canvas'), (int)$this->setting('author_offset'), $this->setting('author_retina'));
 					$item['Author_Image_Src'] = $url;
 					$item['Author_Image_Alt'] = $row['alt_tag'];
 					$item['Author_Image_Width'] = $width;
@@ -442,7 +442,7 @@ class zenario_content_list extends module_base_class {
 						$this->setting('date_format'),
 						false,
 						(bool) $this->setting('show_times'),
-						arrayKey($_REQUEST, 'method_call') == 'showRSS');
+						($_REQUEST['method_call'] ?? false) == 'showRSS');
 				}
 				
 				
@@ -451,14 +451,14 @@ class zenario_content_list extends module_base_class {
 					if ($row['type'] == 'picture') {
 						//Legacy code for Pictures
 						if ($imageId = getRow("content_item_versions", "file_id", array("id" => $row['id'], 'type' => $row['type'], "version" => $row['version']))) {
-							imageLink($width, $height, $url, $imageId, $this->setting('width'), $this->setting('height'), $this->setting('canvas'), 0, $this->setting('retina'));
+							Ze\File::imageLink($width, $height, $url, $imageId, $this->setting('width'), $this->setting('height'), $this->setting('canvas'), 0, $this->setting('retina'));
 						}
 					} else {
-						$foundStickyImage = itemStickyImageLink($width, $height, $url, $row['id'], $row['type'], $row['version'], $this->setting('width'), $this->setting('height'), $this->setting('canvas'), 0, $this->setting('retina'));
+						$foundStickyImage = Ze\File::itemStickyImageLink($width, $height, $url, $row['id'], $row['type'], $row['version'], $this->setting('width'), $this->setting('height'), $this->setting('canvas'), 0, $this->setting('retina'));
 						
 						if (!$foundStickyImage && $this->setting('fall_back_to_default_image') && $this->setting('default_image_id')) {
 							$width = $height = $url = false;
-							imageLink($width, $height, $url, $this->setting('default_image_id'), $this->setting('width'), $this->setting('height'), $this->setting('canvas'), 0, $this->setting('retina'));
+							Ze\File::imageLink($width, $height, $url, $this->setting('default_image_id'), $this->setting('width'), $this->setting('height'), $this->setting('canvas'), 0, $this->setting('retina'));
 						}
 					} 
 				}
@@ -487,7 +487,7 @@ class zenario_content_list extends module_base_class {
 					$item['Download_Page_Full_Link'] = $item['Full_Link'];
 					$item['Download_Now_Link'] = $this->linkToItemAnchor($row['id'], $row['type'], false, 'download=1', $row['alias']);
 					$item['Download_Now_Full_Link'] = $this->escapeAppropriately(absCMSDirURL() . $link);
-					$item['Download_Now_Link'] .= ' onclick="'. htmlspecialchars(trackFileDownload($link)). '"';
+					$item['Download_Now_Link'] .= ' onclick="'. htmlspecialchars(Ze\File::trackDownload($link)). '"';
 					
 					if (!$this->setting('use_download_page')) {
 						$item['Link'] = $item['Download_Now_Link'];
@@ -570,10 +570,6 @@ class zenario_content_list extends module_base_class {
 				} 
 				$dontAddItem = false;
 			}
-		}
-		
-		if (!$this->isVersionControlled && !$this->eggId && checkPriv()) {
-			$this->showInEditMode();
 		}
 		
 		return !empty($this->items) || ((bool)$this->setting('show_headings_if_no_items'));
@@ -815,7 +811,7 @@ class zenario_content_list extends module_base_class {
 					paginationOptions();
 				
 				foreach (getContentTypes() as $cType) {
-					switch (arrayKey($cType,'content_type_id')){
+					switch ($cType['content_type_id'] ?? false){
 						case 'recurringevent':
 						case 'event':
 							break;
@@ -845,7 +841,7 @@ class zenario_content_list extends module_base_class {
 			'ord' => 0,
 			'label' => '',
 			'css_class' => 'zenario_slotControl_filterSettings',
-			'page_modes' => array('edit' => true, 'layout' => true));
+			'page_modes' => array('edit' => true, 'item' => true, 'layout' => true));
 		
 		$this->fillAdminSlotControlsShowFilterSettings($controls);
 	}
@@ -884,7 +880,7 @@ class zenario_content_list extends module_base_class {
 			$langs = getLanguages();
 			$arr = array();
 			foreach(explode(",", $this->setting('specific_languages')) as $langCode )  {
-				$arr[] = arrayKey($langs, $langCode, 'english_name');
+				$arr[] = $langs[$langCode]['english_name'] ?? false;
 			}
 			sort($arr);
 			$controls['notes']['filter_settings']['label'] .= '<br/>'. adminPhrase("Show Items in: " . htmlspecialchars(implode(", ", $arr)));

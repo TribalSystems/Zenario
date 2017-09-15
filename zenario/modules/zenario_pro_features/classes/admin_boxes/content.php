@@ -50,7 +50,7 @@ class zenario_pro_features__admin_boxes__content extends module_base_class {
 	}
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		if (engToBooleanArray($box, 'tabs', 'meta_data', 'edit_mode', 'on')
+		if (engToBoolean($box['tabs']['meta_data']['edit_mode']['on'] ?? false)
 		&& isset($box['tabs']['meta_data']['fields']['menu_invisible'])
 		&& $values['meta_data/create_menu']
 		&& ($menu = getMenuItemFromContent($box['key']['cID'], $box['key']['cType']))) {

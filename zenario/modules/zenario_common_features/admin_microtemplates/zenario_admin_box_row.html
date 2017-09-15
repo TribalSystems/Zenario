@@ -22,32 +22,35 @@
 <% if (m.fields) { %>
 	<% var f; %>
 	<% var hadKeySymbol = false; %>
-	<% var firstField = m.fields[0]; %>
+	<% var ff = m.fields[0]; %>
 	
-	<% if (firstField._lastVisibleGrouping !== firstField.grouping) { %>
-		<% if (firstField._lastVisibleGrouping) { %>
+	<% if (ff._lastVisibleGrouping !== ff.grouping) { %>
+		<% if (ff._lastVisibleGrouping) { %>
 			</fieldset>
 		<% } %>
-		<% if (firstField.grouping) { %>
-			<fieldset class="zenario_grouping zenario_grouping__{{firstField.grouping|escape}}">
+		<% if (ff.grouping) { %>
+			<% var grouping = m.grouping || {}; %>
+			<fieldset class="zenario_grouping zenario_grouping__{{ff.grouping|escape}} {{grouping.grouping_css_class|escape}}" style="{{grouping.grouping_style|escape}}">
 		<% } %>
 	<% } %>
-	<% if (firstField.legend) { %>
-		<legend class="zenario_legend zenario_legend_for__{{firstField._id|escape}}"><span>{{firstField.legend}}</span></legend>
+	<% if (ff.legend) { %>
+		<legend class="zenario_legend zenario_legend_for__{{ff._id|escape}}"><span>{{ff.legend}}</span></legend>
 	<% } %>
 	
-	<div id="row__{{firstField._id|escape}}" class="
-		{{firstField.type=='checkbox'? 'zenario_single_line' : ''}}
-		zenario_ab_row__{{firstField._id|escape}}
-		{{firstField.row_class|escape}}
-		{{firstField._hideOnOpen? 'zenario_hide_row_on_open' : ''}}
+	<div id="row__{{ff._id|escape}}" style="{{ff.row_style|escape}}" class="
 		div_table_row
-		{{firstField.indent? 'zenario_indent_level zenario_indent_level_' +  (1*firstField.indent) : ''}}
+		zenario_ab_row__{{ff._id|escape}}
+		{{ff.row_class|escape}}
+		{{ff.pressed? 'zenario_row_pressed' : ''}}
+		{{ff.type=='checkbox'? 'zenario_single_line' : ''}}
+		{{ff._hideOnOpen? 'zenario_hide_row_on_open' : ''}}
+		{{ff.indent? 'zenario_indent_level zenario_indent_level_' +  (1*ff.indent) : ''}}
+		zenario_row_for_{{ff.snippet? 'snippet' : ff.upload? 'upload' : ff.pick_items? 'pick_items' : ff.type |escape}}
 	">
 		
 		<div class="div_table_column">
 			
-			<% if (!zenario.engToBoolean(firstField.full_width)) { %>
+			<% if (!zenario.engToBoolean(ff.full_width)) { %>
 				<% for (f in m.fields) { %>
 					<% if (m.fields[f].side_note) { %>
 						<div class="zenario_side_note_wrap zenario_side_note_wrap_for_field">
@@ -58,13 +61,13 @@
 						</div>
 					<% } %>
 				<% } %>
-				<% if (firstField.label && !zenario.IN(firstField.type, 'checkbox', 'radio', 'toggle')) { %>
-					<div class="title {{firstField._hideOnOpen? 'zenario_hide_on_open' : ''}} {{firstField._showOnOpen? 'zenario_show_on_open' : ''}}">
-						<label class="{{firstField.label_class|escape}}" for="{{firstField._id|escape}}">
-							{{firstField.label}}
+				<% if (ff.label && !zenario.IN(ff.type, 'checkbox', 'radio', 'toggle')) { %>
+					<div class="title {{ff._hideOnOpen? 'zenario_hide_on_open' : ''}} {{ff._showOnOpen? 'zenario_show_on_open' : ''}}">
+						<label class="{{ff.label_class|escape}}" for="{{ff._id|escape}}">
+							{{ff.label}}
 						</label>
 					
-						<% if (firstField.encrypted && zenario.IN(firstField.type, 'checkboxes', 'radios')) { %>
+						<% if (ff.encrypted && zenario.IN(ff.type, 'checkboxes', 'radios')) { %>
 							<span class="zfab_encrypted_field">🔑 </span>
 							<% hadKeySymbol = true; %>
 						<% } %>
@@ -72,7 +75,7 @@
 				<% } %>
 			<% } %>
 			
-			<div class="{{firstField._hideOnOpen? 'zenario_hide_on_open' : ''}} {{firstField._showOnOpen? 'zenario_show_on_open' : ''}} {{firstField.type=='checkbox'? 'zenario_input_checkbox' : ''}}">
+			<div class="{{ff._hideOnOpen? 'zenario_hide_on_open' : ''}} {{ff._showOnOpen? 'zenario_show_on_open' : ''}} {{ff.type=='checkbox'? 'zenario_input_checkbox' : ''}}">
 				<% for (f in m.fields) { %>
 					{{m.fields[f]._html}}
 					
@@ -97,8 +100,8 @@
 		</div>
 	</div>
 	
-	<% if (firstField._isLastRow) { %>
-		<% if (firstField.grouping) { %>
+	<% if (ff._isLastRow) { %>
+		<% if (ff.grouping) { %>
 			</fieldset>
 		<% } %>
 	<% } %>

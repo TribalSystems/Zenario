@@ -57,7 +57,7 @@ revision(1, "
 		 <p>This is an auto-generated email from [[cms_url]] .</p>
 		',
 		 NOW(),
-		 " .(int) session('admin_userid') . ",
+		 " .(int) ($_SESSION['admin_userid'] ?? false) . ",
 		 0
 		)
 "

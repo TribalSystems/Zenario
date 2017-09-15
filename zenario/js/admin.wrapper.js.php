@@ -30,15 +30,15 @@ header('Content-Type: text/javascript; charset=UTF-8');
 require '../basicheader.inc.php';
 
 useCache('zenario-inc-admin-js-'. LATEST_REVISION_NO);
-useGZIP(!empty($_GET['gz']));
+useGZIP();
 
 
-//Include a function that uses eval, and shouldn't be minified
-incJS('zenario/js/tuix.nomin');
+//Run pre-load actions
+require CMS_ROOT. 'zenario/api/cache_functions.inc.php';
+require editionInclude('wrapper.pre_load');
+
 
 //Include all of the standard JavaScript Admin libraries for the CMS
-incJS('zenario/js/tuix');
-incJS('zenario/js/form');
 incJS('zenario/js/admin');
 incJS('zenario/js/admin_form');
 incJS('zenario/js/admin_box_toolkit');
@@ -46,30 +46,17 @@ incJS('zenario/js/admin_box');
 incJS('zenario/js/admin_skin_editor');
 incJS('zenario/js/admin_toolbar');
 
-//Include Ace Editor extensions
-incJS('zenario/libraries/bsd/ace/src-min-noconflict/ext-modelist');
-incJS('zenario/libraries/bsd/ace/src-min-noconflict/ext-language_tools');
-
-//Include jQuery modules
 //Include a small pre-loader library for TinyMCE (the full code is load-on-demand)
 incJS(TINYMCE_DIR. 'jquery.tinymce');
-//Include the autocomplete library for the FAB library
-incJS('zenario/libraries/mit/jquery/jquery-ui.autocomplete');
-//Include the selectboxes library for moving items between select lists
-incJS('zenario/libraries/mit/jquery/jquery.selectboxes');
-//Include the jQuery Slider code in Admin Mode
-incJS('zenario/libraries/mit/jquery/jquery-ui.slider');
 
 //Include other third-party libraries
-incJS('zenario/libraries/bsd/tokenize/jquery.tokenize');
 incJS('zenario/libraries/mit/intro/intro');
-incJS('zenario/libraries/mit/chosen/chosen.jquery');
 incJS('zenario/libraries/mit/spectrum/spectrum');
 incJS('zenario/libraries/mit/toastr/toastr');
-incJS('zenario/libraries/public_domain/mousehold/mousehold');
+incJS('zenario/libraries/mit/jquery/jquery.selectboxes');
 incJS('zenario/libraries/mit/jssor/jssor.slider.mini');
+incJS('zenario/libraries/public_domain/mousehold/mousehold');
 
-echo '
-ace.config.set("basePath", URLBasePath + "zenario/libraries/bsd/ace/src-min-noconflict/");';
 
-incJS('zenario/js/tuix.ready');
+//Run post-display actions
+require editionInclude('wrapper.post_display');

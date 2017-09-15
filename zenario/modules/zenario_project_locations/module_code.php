@@ -49,12 +49,12 @@ class zenario_project_locations extends module_base_class {
 
 	public function init(){
 
-		$this->country_id = request('country_id');
+		$this->country_id = $_REQUEST['country_id'] ?? false;
 		/*if($this->country_id)*/ $this->sections['HasRegions'] = true;
-		$this->region_id = (int)request('region_id');
+		$this->region_id = (int)($_REQUEST['region_id'] ?? false);
 		if($this->region_id) $this->sections['HasSubRegions'] = true;
-		$this->service_id = (int)request('service_id');
-		$this->sector_id = (int)request('sector_id');
+		$this->service_id = (int)($_REQUEST['service_id'] ?? false);
+		$this->sector_id = (int)($_REQUEST['sector_id'] ?? false);
 		$this->rowsPerPage = $this->setting('search_results_per_page');
 		return true;
 		   
@@ -69,7 +69,7 @@ class zenario_project_locations extends module_base_class {
 								AS cmc ON l.country_id = cmc.id
 								LEFT JOIN ' . DB_NAME_PREFIX . "visitor_phrases AS vs
 										ON CONCAT('_COUNTRY_NAME_',cmc.id) = vs.code
-										AND vs.language_id = '" . sqlEscape(cms_core::$langId) . "'
+										AND vs.language_id = '" . sqlEscape(cms_core::$visLang) . "'
 												ORDER BY 2";
 
 		$result = sqlQuery($sql);			
@@ -99,7 +99,7 @@ class zenario_project_locations extends module_base_class {
 					LEFT JOIN 
 						". DB_NAME_PREFIX . "visitor_phrases AS vs
 					ON 
-						R.name = vs.code AND vs.language_id = '" . sqlEscape(cms_core::$langId) . "'
+						R.name = vs.code AND vs.language_id = '" . sqlEscape(cms_core::$visLang) . "'
 					ORDER BY 2";
 		
 			$result = sqlQuery($sql);
@@ -121,7 +121,7 @@ class zenario_project_locations extends module_base_class {
 				FROM ' . DB_NAME_PREFIX . ZENARIO_PROJECT_LOCATIONS_PREFIX.'project_location_services'
 				. ' AS s LEFT JOIN ' . DB_NAME_PREFIX . "visitor_phrases 
 				AS vp ON CONCAT('_PROJECT_PORTFOLIO_SERVICE_', s.id) = vp.code
-				AND vp.language_id = '" . sqlEscape(cms_core::$langId) . "' ORDER BY 2";
+				AND vp.language_id = '" . sqlEscape(cms_core::$visLang) . "' ORDER BY 2";
 			
 		$result = sqlQuery($sql);
 			
@@ -140,7 +140,7 @@ class zenario_project_locations extends module_base_class {
 				FROM ' . DB_NAME_PREFIX . ZENARIO_PROJECT_LOCATIONS_PREFIX.'project_location_sectors'
 				. ' AS s LEFT JOIN ' . DB_NAME_PREFIX . "visitor_phrases 
 				AS vp ON CONCAT('_PROJECT_PORTFOLIO_SECTOR_', s.id) = vp.code 
-				AND vp.language_id = '" . sqlEscape(cms_core::$langId) . "' ORDER BY 2";
+				AND vp.language_id = '" . sqlEscape(cms_core::$visLang) . "' ORDER BY 2";
 			
 		$result = sqlQuery($sql);
 			
@@ -231,8 +231,8 @@ class zenario_project_locations extends module_base_class {
 	protected function setPagination($url_params) {
 		$pageSize = $this->rowsPerPage;
 	
-                if(request('onlyList')) {
-                    $this->page = ifNull((int) get('page'), 1);            
+                if($_REQUEST['onlyList'] ?? false) {
+                    $this->page = ifNull((int) ($_GET['page'] ?? false), 1);            
                 } else {
                     $this->page = 1;
                 }
@@ -289,7 +289,7 @@ class zenario_project_locations extends module_base_class {
 			$img_tag = '';
 			if($row['alt_tag']) $alt_tag=" alt='" . $row['alt_tag'] . "'"; else $alt_tag=" alt='" . $row['client_name'] . "'";
 			
-			imageLink($width, $height, $url, $row['image_id'], $width, $height);
+			Ze\File::imageLink($width, $height, $url, $row['image_id'], $width, $height);
 			if ($url) {
 				$img_tag =  '<img src="' . $url . '" ' . $alt_tag . ' />';
 			}
@@ -340,7 +340,7 @@ class zenario_project_locations extends module_base_class {
 	
 	public function showSlot() {
 		
-		//if(request("doSearch")){
+		//if($_REQUEST["doSearch"] ?? false){
 			if ($this->checkRowsExist()) {
                             $this->sections['HasResults'] = true;
 
@@ -515,11 +515,11 @@ class zenario_project_locations extends module_base_class {
 						$fields['content_item']['value'] = $projectDetails['content_type'] . "_" . $projectDetails['equiv_id'];
 					}
  
-					$fields['last_updated']['value'] = arrayKey($projectDetails,'last_updated');
+					$fields['last_updated']['value'] = $projectDetails['last_updated'] ?? false;
 					$fields['last_updated']['hidden'] = false;
 
-					$lastUpdatedByAdmin = getRow("admins",array("id","username","authtype"),array("id" => arrayKey($projectDetails,'last_updated_admin_id')));
-					$fields['last_updated_admin_id']['value'] = arrayKey($lastUpdatedByAdmin,'username') . ((arrayKey($lastUpdatedByAdmin,'authtype')=="super") ? " (super)":"");
+					$lastUpdatedByAdmin = getRow("admins",array("id","username","authtype"),array("id" => ($projectDetails['last_updated_admin_id'] ?? false)));
+					$fields['last_updated_admin_id']['value'] = ($lastUpdatedByAdmin['username'] ?? false) . ((($lastUpdatedByAdmin['authtype'] ?? false)=="super") ? " (super)":"");
 					$fields['last_updated_admin_id']['hidden'] = false;
  
 				} else {
@@ -552,7 +552,7 @@ class zenario_project_locations extends module_base_class {
 					htmlspecialchars(
 						str_replace($this->moduleClassName, 'zenario_location_manager', 
 							$this->showFileLink(
-								"&map_center_lat=" . arrayKey($projectDetails,'map_center_latitude') . "&map_center_lng=" . arrayKey($projectDetails,'map_center_longitude') . "&marker_lat=" . arrayKey($projectDetails,'latitude') . "&marker_lng=" . arrayKey($projectDetails,'longitude') . "&zoom=" . arrayKey($projectDetails,'map_zoom') . "&editmode=1"
+								"&map_center_lat=" . ($projectDetails['map_center_latitude'] ?? false) . "&map_center_lng=" . ($projectDetails['map_center_longitude'] ?? false) . "&marker_lat=" . ($projectDetails['latitude'] ?? false) . "&marker_lng=" . ($projectDetails['longitude'] ?? false) . "&zoom=" . ($projectDetails['map_zoom'] ?? false) . "&editmode=1"
 					))).
 					"\" style=\"width: 425px;height: 425px;border: none;\"></iframe>\n";
 				
@@ -561,7 +561,7 @@ class zenario_project_locations extends module_base_class {
 					htmlspecialchars(
 						str_replace($this->moduleClassName, 'zenario_location_manager', 
 							$this->showFileLink(
-								"&map_center_lat=" . arrayKey($projectDetails,'map_center_latitude') . "&map_center_lng=" . arrayKey($projectDetails,'map_center_longitude') . "&marker_lat=" . arrayKey($projectDetails,'latitude') . "&marker_lng=" . arrayKey($projectDetails,'longitude') . "&zoom=" . arrayKey($projectDetails,'map_zoom') . "&editmode=0"
+								"&map_center_lat=" . ($projectDetails['map_center_latitude'] ?? false) . "&map_center_lng=" . ($projectDetails['map_center_longitude'] ?? false) . "&marker_lat=" . ($projectDetails['latitude'] ?? false) . "&marker_lng=" . ($projectDetails['longitude'] ?? false) . "&zoom=" . ($projectDetails['map_zoom'] ?? false) . "&editmode=0"
 					))).
 					"\" style=\"width: 425px;height: 425px;border: none;\"></iframe>\n";
 
@@ -676,7 +676,7 @@ class zenario_project_locations extends module_base_class {
 					}
 
 					$saveValues['last_updated'] = now();
-					$saveValues['last_updated_admin_id'] = session('admin_userid');
+					$saveValues['last_updated_admin_id'] = $_SESSION['admin_userid'] ?? false;
 
 					if ($saveValues['latitude'] =='0.000000000000000000' || $saveValues['latitude'] == '')
 					{
@@ -737,7 +737,7 @@ class zenario_project_locations extends module_base_class {
 			case 'zenario__projects/nav/project_services/panel':
 				
 				//Handle the case where an Admin presses the delete button.
-				if (post('action') == 'delete_project_service'
+				if (($_POST['action'] ?? false) == 'delete_project_service'
 				 && checkPriv('_PRIV_MANAGE_PROJECT_LOCATIONS')) {
 					foreach (explode(',', $ids) as $id) {
 						deleteRow(ZENARIO_PROJECT_LOCATIONS_PREFIX.'project_location_services', $id);
@@ -767,7 +767,7 @@ class zenario_project_locations extends module_base_class {
 			case 'zenario__projects/nav/project_sectors/panel':
 				
 				//Handle the case where an Admin presses the delete button.
-				if (post('action') == 'delete_project_sector'
+				if (($_POST['action'] ?? false) == 'delete_project_sector'
 				 && checkPriv('_PRIV_MANAGE_PROJECT_LOCATIONS')) {
 					foreach (explode(',', $ids) as $id) {
 						deleteRow(ZENARIO_PROJECT_LOCATIONS_PREFIX.'project_location_sectors', $id);
@@ -777,7 +777,7 @@ class zenario_project_locations extends module_base_class {
 			case 'zenario__projects/nav/projects/panel':
 				
 				//Handle the case where an Admin presses the delete button.
-				if (post('action') == 'delete_location'
+				if (($_POST['action'] ?? false) == 'delete_location'
 				 && checkPriv('_PRIV_MANAGE_PROJECT_LOCATIONS')) {
 					foreach (explode(',', $ids) as $id) {
 						deleteRow(ZENARIO_PROJECT_LOCATIONS_PREFIX.'project_locations', $id);
@@ -812,12 +812,12 @@ class zenario_project_locations extends module_base_class {
 				
 						
 				//Upload a new image
-				if (post('upload') && checkPriv('_PRIV_MANAGE_PROJECT_LOCATIONS')) {
-					$image_id = addFileToDatabase('project_locations', $_FILES['Filedata']['tmp_name'], rawurldecode($_FILES['Filedata']['name']), true);
+				if (($_POST['upload'] ?? false) && checkPriv('_PRIV_MANAGE_PROJECT_LOCATIONS')) {
+					$image_id = Ze\File::addToDatabase('project_locations', $_FILES['Filedata']['tmp_name'], rawurldecode($_FILES['Filedata']['name']), true);
 					return $image_id;
 				
 				//Delete an image
-				} elseif (post('delete') && checkPriv('_PRIV_MANAGE_PROJECT_LOCATIONS')) {
+				} elseif (($_POST['delete'] ?? false) && checkPriv('_PRIV_MANAGE_PROJECT_LOCATIONS')) {
 					foreach (explode(',', $ids) as $id) {
 						if (!checkRowExists(ZENARIO_PROJECT_LOCATIONS_PREFIX. 'project_locations', array('image_id' => $id))) {
 							deleteRow( 'files', array('id' => $id, 'usage' => 'project_locations'));

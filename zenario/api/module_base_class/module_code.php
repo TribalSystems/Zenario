@@ -64,8 +64,12 @@ class module_base_class extends zenario_api {
 		//...your PHP code...//
 	}
 	
+	public function shouldShowLayoutPreview() {
+		return $this->isVersionControlled && $this->slotLevel == 2;
+	}
+	
 	public function showLayoutPreview() {
-		if ($this->instanceId) {
+		if (!$this->shouldShowLayoutPreview()) {
 			$this->showSlot();
 		} elseif (!$this->moduleId) {
 			echo adminPhrase('[Empty Slot]');

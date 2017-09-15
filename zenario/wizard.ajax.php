@@ -33,7 +33,7 @@ require CMS_ROOT. 'zenario/includes/tuix.inc.php';
 header('Content-Type: text/javascript; charset=UTF-8');
 
 
-if (!$requestedPath = ifNull(request('name'), request('path'))) {
+if (!$requestedPath = ifNull($_REQUEST['name'] ?? false, ($_REQUEST['path'] ?? false))) {
 	echo 'No wizard specified';
 	exit;
 }
@@ -74,7 +74,7 @@ if (!empty($tags['tabs']) && is_array($tags['tabs'])) {
 }
 
 
-if (post('_format') || post('_validate')) {
+if (($_POST['_format'] ?? false) || ($_POST['_validate'] ?? false)) {
 	$filling = false;
 	$clientTags = json_decode($_POST['_box'], true);
 	

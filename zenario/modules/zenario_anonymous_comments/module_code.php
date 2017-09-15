@@ -121,7 +121,7 @@ class zenario_anonymous_comments extends module_base_class {
 		}
 		
 		$this->registerGetRequest('comm_page', 1);
-		$this->page = ifNull((int) request('comm_page'), 1);
+		$this->page = ifNull((int) ($_REQUEST['comm_page'] ?? false), 1);
 		
 		$this->runCheckPrivs();
 		
@@ -268,7 +268,7 @@ class zenario_anonymous_comments extends module_base_class {
 			$mergeFields['Delete_Post_Link'] = $this->refreshPluginSlotAnchor('&comm_page='. $this->page. '&comm_request=delete_post&comm_confirm=1&comm_post='. $post['id']. '&forum_thread='. $this->thread['id']);
 		}
 
-		if (arrayKey($post,'status')=='pending' && $this->canApprovePost()) {
+		if (($post['status'] ?? false)=='pending' && $this->canApprovePost()) {
 			$controls = true;
 			$sections['Approve_Post'] = true;
 			$mergeFields['Approve_Post_Link'] = $this->refreshPluginSlotAnchor('&comm_page='. $this->page. '&comm_request=approve_post&comm_confirm=1&comm_post='. $post['id']. '&forum_thread='. $this->thread['id'] . '&checksum=' . md5($post['message_text']));
@@ -463,19 +463,19 @@ class zenario_anonymous_comments extends module_base_class {
 			$this->pageSize = ifNull((int) $this->setting('page_size_posts'), 12);
 			
 			//Don't show pagination if a specific post id is beind displayed
-			if (request('comm_post')) {
+			if ($_REQUEST['comm_post'] ?? false) {
 				return;
 			}
 			
 			$pageCount = (int) ceil($this->thread['post_count'] / $this->pageSize);
 			
 			//Show the last page in the thread when adding a new reply
-			if (request('comm_enter_text') || $this->page == -1) {
+			if (($_REQUEST['comm_enter_text'] ?? false) || $this->page == -1) {
 				$this->page = $pageCount;
 			}
 			
 			//Don't show pagination when the enter-reply box is displayed
-			if (request('comm_enter_text')) {
+			if ($_REQUEST['comm_enter_text'] ?? false) {
 				return;
 			}
 			
@@ -502,12 +502,12 @@ class zenario_anonymous_comments extends module_base_class {
 		for ($i=1; $i <= $pageCount; ++$i) {
 			$pages[$i] = '&comm_page='. $i;
 			
-			if ($this->mode == 'showPosts' && request('forum_thread')) {
-				$pages[$i] .= '&forum_thread='. (int) request('forum_thread');
+			if ($this->mode == 'showPosts' && ($_REQUEST['forum_thread'] ?? false)) {
+				$pages[$i] .= '&forum_thread='. (int) ($_REQUEST['forum_thread'] ?? false);
 			}
 			
 			if ($this->mode == 'showSearch') {
-				$pages[$i] .= '&searchString='. rawurlencode(request('searchString'));
+				$pages[$i] .= '&searchString='. rawurlencode($_REQUEST['searchString'] ?? false);
 			}
 		}
 		
@@ -558,19 +558,19 @@ class zenario_anonymous_comments extends module_base_class {
 		}
 		
 		//Have the option to just display a specific post
-		if (request('comm_post')) {
+		if ($_REQUEST['comm_post'] ?? false) {
 			$sql .= "
-			  AND id = ". (int) request('comm_post');
+			  AND id = ". (int) ($_REQUEST['comm_post'] ?? false);
 		} else {
 			$sql .= "
 			ORDER BY id";
 			
 			//Normally, display posts in order, unless the MOST_RECENT_FIRST option is checked and we're not making a reply.
-			if ($this->setting('order') == 'MOST_RECENT_FIRST' && !request('comm_enter_text')) {
+			if ($this->setting('order') == 'MOST_RECENT_FIRST' && !($_REQUEST['comm_enter_text'] ?? false)) {
 				$sql .= " DESC";
 			}
 			
-			if ($this->setting('order') == 'MOST_RECENT_FIRST' && request('comm_enter_text')) {
+			if ($this->setting('order') == 'MOST_RECENT_FIRST' && ($_REQUEST['comm_enter_text'] ?? false)) {
 				$sql .= "
 				LIMIT ". max(0, ($this->thread['post_count'] - $this->pageSize)). ", ". (int) $this->pageSize;
 			} else {
@@ -580,7 +580,7 @@ class zenario_anonymous_comments extends module_base_class {
 		
 		$result = sqlQuery($sql);
 
-		if (request('comm_post')) {
+		if ($_REQUEST['comm_post'] ?? false) {
 			//Attempt to get information on a specific post. If it doesn't exist, clear the request and reload the page
 			if (!$this->posts[] = $this->post = sqlFetchAssoc($result)) {
 				$this->clearRequest('comm_post');
@@ -645,7 +645,7 @@ class zenario_anonymous_comments extends module_base_class {
 		$this->sections['Confirmation_Box']['Confirmation_Message'] = $message;
 		$this->sections['Confirmation_Box']['Cancel_Link'] = $this->refreshPluginSlotAnchor('&comm_page='. $this->page. '&forum_thread='. arrayKey($this->thread, 'id'), false);
 		
-		$this->sections['Confirmation_Box']['Open_Form'] = $this->openForm('', 'class="'. htmlspecialchars(request('comm_request')). '"'). 
+		$this->sections['Confirmation_Box']['Open_Form'] = $this->openForm('', 'class="'. htmlspecialchars($_REQUEST['comm_request'] ?? false). '"'). 
 			$this->remember('comm_request').
 			$this->remember('comm_page').
 			$this->remember('comm_confirm').
@@ -683,9 +683,9 @@ class zenario_anonymous_comments extends module_base_class {
 				
 				$this->showUserInfo($mergeFields, $sections, $post['poster_id'], $post);
 				
-				$this->getExtraPostInfo($post, $mergeFields, $sections /*, arrayKey($_REQUEST,'comm_request') == 'edit_post'*/);
+				$this->getExtraPostInfo($post, $mergeFields, $sections /*, ($_REQUEST['comm_request'] ?? false) == 'edit_post'*/);
 				
-				if (request('comm_confirm') || request('comm_enter_text') || !($this->checkPostActions($post, $mergeFields, $sections))) {
+				if (($_REQUEST['comm_confirm'] ?? false) || ($_REQUEST['comm_enter_text'] ?? false) || !($this->checkPostActions($post, $mergeFields, $sections))) {
 					$this->framework('Post', $mergeFields, $sections);
 				} else {
 					$sections['Post_Controls'] = true;
@@ -811,7 +811,7 @@ class zenario_anonymous_comments extends module_base_class {
 		
 		if ($this->canMoveThread()) {
 			$this->sections['Move_Thread'] = true;
-			$this->mergeFields['Move_Thread_Link'] = 'href="#" onclick="'. $this->moduleClassName. ".moveThread('". $this->slotName. "', '". adminPhrase('Move Thread to a different Forum'). "', ". $this->forumId. ", ". $this->thread['id']. ", '". session('confirm_key'). "'); return false;". '"';
+			$this->mergeFields['Move_Thread_Link'] = 'href="#" onclick="'. $this->moduleClassName. ".moveThread('". $this->slotName. "', '". adminPhrase('Move Thread to a different Forum'). "', ". $this->forumId. ", ". $this->thread['id']. ", '". ($_SESSION['confirm_key'] ?? false). "'); return false;". '"';
 		}
 		
 		if ($this->canDeleteThread()) {
@@ -839,7 +839,7 @@ class zenario_anonymous_comments extends module_base_class {
 	
 	//Handle any requests the users ask for
 	function threadActionHandler() {
-		if (post('comm_request')) {
+		if ($_POST['comm_request'] ?? false) {
 			require funIncPath(__FILE__, __FUNCTION__);
 		}
 	}
@@ -847,44 +847,44 @@ class zenario_anonymous_comments extends module_base_class {
 	
 	function threadSelectMode() {
 		
-		if (request('comm_confirm')) {
-			if (request('comm_request') == 'delete_post' && $this->canDeletePost($this->post)) {
+		if ($_REQUEST['comm_confirm'] ?? false) {
+			if (($_REQUEST['comm_request'] ?? false) == 'delete_post' && $this->canDeletePost($this->post)) {
 				$this->showConfirmBox($this->phrase('_CONFIRM_DELETE_POST'), $this->phrase('_SUBMIT_DELETE_POST'));
 				
-			} elseif (request('comm_request') == 'approve_post' && $this->canApprovePost()) {
-				if (request('checksum') == md5($this->post['message_text'])) {
+			} elseif (($_REQUEST['comm_request'] ?? false) == 'approve_post' && $this->canApprovePost()) {
+				if (($_REQUEST['checksum'] ?? false) == md5($this->post['message_text'])) {
 					$this->showConfirmBox($this->phrase('_CONFIRM_APPROVE_POST'), $this->phrase('_SUBMIT_APPROVE_POST'));
 				} else {
 					$this->showConfirmBox($this->phrase('_CONFIRM_APPROVE_MODIFIED_POST'), $this->phrase('_SUBMIT_APPROVE_MODIFIED_POST'));
 				}
 				
-			} elseif (request('comm_request') == 'delete_thread' && $this->canDeleteThread()) {
+			} elseif (($_REQUEST['comm_request'] ?? false) == 'delete_thread' && $this->canDeleteThread()) {
 				$this->showConfirmBox($this->phrase('_CONFIRM_DELETE_THREAD'), $this->phrase('_SUBMIT_DELETE_THREAD'));
 				
-			} elseif (request('comm_request') == 'lock_thread' && $this->canLockThread()) {
+			} elseif (($_REQUEST['comm_request'] ?? false) == 'lock_thread' && $this->canLockThread()) {
 				$this->showConfirmBox($this->phrase('_CONFIRM_LOCK_THREAD'), $this->phrase('_SUBMIT_LOCK_THREAD'));
 				
-			} elseif (request('comm_request') == 'unlock_thread' && $this->canUnlockThread()) {
+			} elseif (($_REQUEST['comm_request'] ?? false) == 'unlock_thread' && $this->canUnlockThread()) {
 				$this->showConfirmBox($this->phrase('_CONFIRM_UNLOCK_THREAD'), $this->phrase('_SUBMIT_UNLOCK_THREAD'));
 				
-			} elseif (request('comm_request') == 'subs_thread' && $this->canSubsThread()) {
+			} elseif (($_REQUEST['comm_request'] ?? false) == 'subs_thread' && $this->canSubsThread()) {
 				$this->showConfirmBox($this->phrase('_CONFIRM_SUBS_THREAD', array('email' => htmlspecialchars(userEmail()))), $this->phrase('_SUBMIT_SUBS_THREAD'));
 				
-			} elseif (request('comm_request') == 'unsubs_thread' && $this->canSubsThread()) {
+			} elseif (($_REQUEST['comm_request'] ?? false) == 'unsubs_thread' && $this->canSubsThread()) {
 				$this->showConfirmBox($this->phrase('_CONFIRM_UNSUBS_THREAD'), $this->phrase('_SUBMIT_UNSUBS_THREAD'));
 			}
 			
-		} elseif (request('comm_enter_text')) {
-			if (request('comm_request') == 'edit_first_post' && $this->canEditFirstPost($this->post)) {
+		} elseif ($_REQUEST['comm_enter_text'] ?? false) {
+			if (($_REQUEST['comm_request'] ?? false) == 'edit_first_post' && $this->canEditFirstPost($this->post)) {
 				$this->showPostScreen($this->phrase('_EDIT_MESSAGE:'), $this->phrase('_SAVE_POST'), 'edit', $this->phrase('_EDIT_TITLE:'));
 			
-			} elseif (request('comm_request') == 'edit_post' && $this->canEditPost($this->post)) {
+			} elseif (($_REQUEST['comm_request'] ?? false) == 'edit_post' && $this->canEditPost($this->post)) {
 				$this->showPostScreen($this->phrase('_EDIT_MESSAGE:'), $this->phrase('_SAVE_POST'), 'edit');
 			
-			} elseif (request('comm_request') == 'post_reply' && $this->canMakePost()) {
+			} elseif (($_REQUEST['comm_request'] ?? false) == 'post_reply' && $this->canMakePost()) {
 				$this->showPostScreen($this->phrase('_ADD_REPLY:'), $this->phrase('_ADD_REPLY'), 'quote');
 			
-			} elseif (request('comm_request') == 'report_post' && $this->canReportPost()) {
+			} elseif (($_REQUEST['comm_request'] ?? false) == 'report_post' && $this->canReportPost()) {
 				$this->showPostScreen($this->phrase('_REPORT_MESSAGE:'), $this->phrase('_REPORT_POST'), 'none');
 			}
 			

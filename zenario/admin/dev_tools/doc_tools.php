@@ -12,7 +12,7 @@ echo
 <head>
 	<title>';
 	
-		switch (get('mode')) {
+		switch ($_GET['mode'] ?? false) {
 			case 'admin_box_schema';
 				$schema = 'admin_box_schema.yaml';
 				echo adminPhrase('Schema for Admin Box');
@@ -45,7 +45,7 @@ echo '
     <script src="', $docsonBaseUrl, '/lib/require.js"></script></head>
     <script src="doc_tools.js"></script>';
     
-    if (get('linkToRef')) {
+    if ($_GET['linkToRef'] ?? false) {
     	echo "
     		<style>
     			html, body {
@@ -111,10 +111,10 @@ echo '
     require(["docson", "lib/jquery"], function(docson) {
         $(function() {
         	var schema = docTools.parseSchema(
-        		', json_encode(get('mode')), ',
+        		', json_encode($_GET['mode'] ?? false), ',
         		', json_encode($schema), ',
-        		', json_encode(get('tag')), ',
-        		', engToBoolean(get('linkToRef')), ');
+        		', json_encode($_GET['tag'] ?? false), ',
+        		', engToBoolean($_GET['linkToRef'] ?? false), ');
             docson.templateBaseUrl= "', $docsonBaseUrl, '/templates";
             docson.doc("doc", schema);
         });

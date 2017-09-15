@@ -218,7 +218,7 @@ class zenario_common_features__organizer__modules extends module_base_class {
 					$module['cell_css_classes']['status'] = "green";
 				}
 		
-				$module['special_page'] = arrayKey($moduleSpecialPages, $module['name']);
+				$module['special_page'] = $moduleSpecialPages[$module['name']] ?? false;
 		
 				//Don't allow people to click the folder to see a module's plugins if it doesn't use plugins, or is not running
 				if (!$module['is_pluggable']
@@ -439,15 +439,15 @@ class zenario_common_features__organizer__modules extends module_base_class {
 		$reloadIfNeeded = false;
 		$return = null;
 		
-		if (post('suspend') && checkPriv('_PRIV_SUSPEND_MODULE') && $module['status'] == 'module_running') {
+		if (($_POST['suspend'] ?? false) && checkPriv('_PRIV_SUSPEND_MODULE') && $module['status'] == 'module_running') {
 			suspendModule($ids);
 			zenarioClearCache();
 			$reloadIfNeeded = true;
 
-		} elseif (get('remove') || get('uninstall')) {
+		} elseif (($_GET['remove'] ?? false) || ($_GET['uninstall'] ?? false)) {
 			$module = getModuleDetails($ids);
 	
-			if (get('remove')) {
+			if ($_GET['remove'] ?? false) {
 				echo adminPhrase('Are you sure that you wish to remove the Module "[[display_name]]"?', $module);
 			} else {
 				echo adminPhrase('Are you sure that you wish to uninitialise the Module "[[display_name]]"?', $module);
@@ -485,11 +485,11 @@ class zenario_common_features__organizer__modules extends module_base_class {
 			echo adminPhrase('This cannot be undone.');
 	
 
-		} elseif (post('remove') && checkPriv("_PRIV_RESET_MODULE") && (!file_exists(CMS_ROOT . 'modules/'. $module['class_name']. '/module_code.php'))) {
+		} elseif (($_POST['remove'] ?? false) && checkPriv("_PRIV_RESET_MODULE") && (!file_exists(CMS_ROOT . 'modules/'. $module['class_name']. '/module_code.php'))) {
 			uninstallModule($ids, true);
 			zenarioClearCache();
 
-		} elseif (post('uninstall') && checkPriv("_PRIV_RESET_MODULE") && $module['status'] == 'module_suspended') {
+		} elseif (($_POST['uninstall'] ?? false) && checkPriv("_PRIV_RESET_MODULE") && $module['status'] == 'module_suspended') {
 			
 			//Remember the module's class name
 			$moduleClassName = getModuleClassName($ids);

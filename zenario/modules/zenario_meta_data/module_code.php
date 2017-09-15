@@ -78,7 +78,7 @@ class zenario_meta_data extends module_base_class {
 			$file = sqlFetchAssoc($result);
 			if (!empty($file)) {
 				$width = $height = $url = false;
-				imageLink($width, $height, $url, $file['id'], $this->setting('width'), $this->setting('height'), $this->setting('canvas'), $this->setting('offset'));
+				Ze\File::imageLink($width, $height, $url, $file['id'], $this->setting('width'), $this->setting('height'), $this->setting('canvas'), $this->setting('offset'));
 				if ($this->mergeFields['Writer_Src'] = $url) {
 					$this->mergeFields['Writer_Alt'] = $file['alt_tag'];
 					$this->showSections['show_writer_image'] = true;
@@ -98,7 +98,7 @@ class zenario_meta_data extends module_base_class {
 			$file = sqlFetchAssoc($result);
 			if (!empty($file)) {
 				$width = $height = $url = false;
-				imageLink($width, $height, $url, $file['id'], $this->setting('sticky_image_width'), $this->setting('sticky_image_height'), $this->setting('sticky_image_canvas'), $this->setting('sticky_image_offset'));
+				Ze\File::imageLink($width, $height, $url, $file['id'], $this->setting('sticky_image_width'), $this->setting('sticky_image_height'), $this->setting('sticky_image_canvas'), $this->setting('sticky_image_offset'));
 				if ($this->mergeFields['Sticky_Image_Src'] = $url) {
 					$this->mergeFields['Sticky_Image_Alt'] = $file['alt_tag'];
 					$this->showSections['show_sticky_image'] = true;

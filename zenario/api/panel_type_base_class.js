@@ -285,6 +285,8 @@ methods.onUnload = function($header, $panel, $footer) {
 //Remember where the admin had scrolled to.
 //If we ever draw this panel again it would be nice to restore this to how it was
 methods.saveScrollPosition = function($panel) {
+	$panel = $panel || zenarioO.getPanel();
+	
 	this.scrollTop = $panel.scrollTop();
 	this.scrollLeft = $panel.scrollLeft();
 };
@@ -292,6 +294,8 @@ methods.saveScrollPosition = function($panel) {
 //If this panel has been displayed before, try to restore the admin's previous scroll
 //Otherwise show the top left (i.e. (0, 0))
 methods.restoreScrollPosition = function($panel) {
+	$panel = $panel || zenarioO.getPanel();
+	
 	$panel
 		.scrollTop(this.scrollTop || 0)
 		.scrollLeft(this.scrollLeft || 0)

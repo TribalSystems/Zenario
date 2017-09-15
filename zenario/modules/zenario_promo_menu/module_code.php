@@ -66,7 +66,9 @@ class zenario_promo_menu extends zenario_menu_multicolumn {
 							 $this->numLevels, $this->maxLevel1MenuItems, $this->language,
 							 $this->onlyFollowOnLinks, $this->onlyIncludeOnLinks, 
 							 $this->showInvisibleMenuItems,
-							 $this->showMissingMenuNodes);
+							 $this->showMissingMenuNodes,
+							 false,
+							 showUntranslatedContentItems());
 							 
 		switch ($cachingRestrictions) {
 			case 'privateItemsExist':
@@ -113,11 +115,11 @@ class zenario_promo_menu extends zenario_menu_multicolumn {
 		while ($row = sqlFetchAssoc($result)) {
 			// Set image links
 			$url = $width = $height = false;
-			imageLink($width, $height, $url, $row['feature_image_id'], $row['width'], $row['height'], $row['canvas'], $row['offset']);
+			Ze\File::imageLink($width, $height, $url, $row['feature_image_id'], $row['width'], $row['height'], $row['canvas'], $row['offset']);
 			$row['feature_image_link'] = $url;
 			
 			$url = $width = $height = false;
-			imageLink($width, $height, $url, $row['image_id']);
+			Ze\File::imageLink($width, $height, $url, $row['image_id']);
 			$row['image_link'] = $url;
 			
 			if ($row['overwrite_alt_tag']) {
@@ -126,13 +128,13 @@ class zenario_promo_menu extends zenario_menu_multicolumn {
 			
 			if ($row['use_rollover_image'] && $row['feature_rollover_image_id']) {
 				$url = $width = $height = false;
-				imageLink($width, $height, $url, $row['feature_rollover_image_id'], $row['width'], $row['height'], $row['canvas'], $row['offset']);
+				Ze\File::imageLink($width, $height, $url, $row['feature_rollover_image_id'], $row['width'], $row['height'], $row['canvas'], $row['offset']);
 				$row['feature_rollover_image_link'] = $url;
 			}
 			
 			if ($row['rollover_image_id']) {
 				$url = $width = $height = false;
-				imageLink($width, $height, $url, $row['rollover_image_id']);
+				Ze\File::imageLink($width, $height, $url, $row['rollover_image_id']);
 				$row['rollover_image_link'] = $url;
 			}
 			
@@ -151,12 +153,12 @@ class zenario_promo_menu extends zenario_menu_multicolumn {
 					}
 					break;
 				case 'logged_out':
-					if (!session('extranetUserID')) {
+					if (!($_SESSION['extranetUserID'] ?? false)) {
 						$row['show_banner'] = true;
 					}
 					break;
 				case 'logged_in':
-					if (session('extranetUserID')) {
+					if ($_SESSION['extranetUserID'] ?? false) {
 						$row['show_banner'] = true;
 					}
 					break;
@@ -290,8 +292,8 @@ class zenario_promo_menu extends zenario_menu_multicolumn {
 
 				
 				if ($imageId = $values['feature_image/image_id']) {
-					if ($path = getPathOfUploadedFileInCacheDir($imageId)) {
-						$imageId = addFileToDatabase('image', $path);
+					if ($path = Ze\File::getPathOfUploadedInCacheDir($imageId)) {
+						$imageId = Ze\File::addToDatabase('image', $path);
 					}
 				}
 				
@@ -308,8 +310,8 @@ class zenario_promo_menu extends zenario_menu_multicolumn {
 				$submission['image_id'] = $imageId;
 	
 				if ($rolloverImageId = $values['feature_image/rollover_image_id']) {
-					if ($path = getPathOfUploadedFileInCacheDir($rolloverImageId)) {
-						$rolloverImageId = addFileToDatabase('image', $path);
+					if ($path = Ze\File::getPathOfUploadedInCacheDir($rolloverImageId)) {
+						$rolloverImageId = Ze\File::addToDatabase('image', $path);
 			
 					}
 					$submission['rollover_image_id'] = $rolloverImageId;
@@ -353,8 +355,8 @@ class zenario_promo_menu extends zenario_menu_multicolumn {
 					
 					$featureImage['use_feature_image'] = 1;
 					$featureImage['image_id'] = $values['feature_image/zenario_promo_menu__feature_image'];
-					if ($location = getPathOfUploadedFileInCacheDir($values['feature_image/zenario_promo_menu__feature_image'])) {
-						$featureImage['image_id'] = addFileToDatabase('image', $location);
+					if ($location = Ze\File::getPathOfUploadedInCacheDir($values['feature_image/zenario_promo_menu__feature_image'])) {
+						$featureImage['image_id'] = Ze\File::addToDatabase('image', $location);
 					}
 					
 					$featureImage['canvas'] = $values['feature_image/zenario_promo_menu__canvas'];
@@ -365,8 +367,8 @@ class zenario_promo_menu extends zenario_menu_multicolumn {
 					if ($values['feature_image/zenario_promo_menu__use_rollover']) {
 						$featureImage['use_rollover_image'] = 1;
 						$featureImage['rollover_image_id'] = $values['feature_image/zenario_promo_menu__rollover_image'];
-						if ($location = getPathOfUploadedFileInCacheDir($values['feature_image/zenario_promo_menu__rollover_image'])) {
-							$featureImage['rollover_image_id'] = addFileToDatabase('image', $location);
+						if ($location = Ze\File::getPathOfUploadedInCacheDir($values['feature_image/zenario_promo_menu__rollover_image'])) {
+							$featureImage['rollover_image_id'] = Ze\File::addToDatabase('image', $location);
 						}
 					}
 					

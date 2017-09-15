@@ -29,26 +29,38 @@ description: |
 category: management
 keywords: >
     notifications, update, inform, monitor, team
+
+# Reminder: you need to increment the LATEST_REVISION_NO in this module's
+# latest_revision_no.inc.php file if you change any of the fields below:
 vlp_class_name: zenario_content_notifications
 css_class_name: zenario_content_notifications
-is_pluggable: No
-can_be_version_controlled: No
-nestable: No
+is_pluggable: false
+can_be_version_controlled: false
+nestable: false
+
+# Warning: adding a new dependency to an existing module will break any existing sites
+# where the dependency is not running.
+# You can fix this on a per-site basis by manually running the dependency, i.e. by running
+#   UPDATE zenario_modules SET status = 'module_running' WHERE class_name = 'dependency'
+# in MySQL and then going to /admin/ to apply database updates.
+# If this is a core module, consider using runNewModuleDependency() in a 
+# database-revision in zenario/admin/db_updates/step_4_migrate_the_data/plugins.inc.php
+# to fix it automatically for every site.
 dependencies:
-    zenario_pro_features: Yes
+    zenario_pro_features: true
 signals:
     signal1:
         name: eventContentPublished
-        static: Yes
+        static: true
     signal2:
         name: eventDraftCreated
-        static: Yes
+        static: true
     signal3:
         name: eventMenuNodeTextAdded
-        static: Yes
+        static: true
     signal4:
         name: eventMenuNodeTextUpdated
-        static: Yes
+        static: true
     signal5:
         name: eventContentDeleted
-        static: Yes
+        static: true

@@ -49,12 +49,12 @@ class zenario_common_features__organizer__skin_files extends module_base_class {
 		$panel['collection_buttons']['help']['help']['message'] = $markdownToHTML->text($markdown);
 		
 		
-		if ($skin = getSkinFromId(get('refiner__skin'))) {
+		if ($skin = getSkinFromId($_GET['refiner__skin'] ?? false)) {
 			
 			$dir = getSkinPath($skin['family_name'], $skin['name']);
 			$skin['subpath'] = '';
 			
-			if (($skin['subpath'] = get('refiner__subpath')) && ($skin['subpath'] = decodeItemIdForOrganizer($skin['subpath'])) && (strpos($skin['subpath'], '..') === false)) {
+			if (($skin['subpath'] = $_GET['refiner__subpath'] ?? false) && ($skin['subpath'] = decodeItemIdForOrganizer($skin['subpath'])) && (strpos($skin['subpath'], '..') === false)) {
 				$panel['title'] = adminPhrase('Files for the skin "[[display_name]]" in the template directory "[[family_name]]" in the sub-directory "[[subpath]]"', $skin);
 				$skin['subpath'] .= '/';
 				$dir .= $skin['subpath'];

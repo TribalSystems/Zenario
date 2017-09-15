@@ -31,7 +31,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 if (cms_core::$canCache 
  && isset($chToLoadStatus)
  && setting('caching_enabled') && setting('cache_ajax')
- && in(request('method_call'), 'refreshPlugin', 'showFloatingBox', 'showRSS', 'showSlot')) {
+ && in($_REQUEST['method_call'] ?? false, 'refreshPlugin', 'showFloatingBox', 'showRSS', 'showSlot')) {
 	
 	$chToSaveStatus = array();
 	$chToSaveStatus['u'] = 'u';
@@ -41,7 +41,7 @@ if (cms_core::$canCache
 	$chToSaveStatus['c'] = 'c';
 	
 	foreach ($_GET as $request => &$value) {
-		if (!in($request, 'cID', 'cType', 'cVersion', 'slotName', 'instanceId', 'method_call')) {
+		if (!in($request, 'cID', 'cType', 'visLang', 'cVersion', 'slotName', 'instanceId', 'method_call')) {
 			if (isset(cms_core::$importantGetRequests[$request])) {
 				$chKnownRequests[$request] = $value;
 			
@@ -88,10 +88,10 @@ if (cms_core::$canCache
 		
 		$cacheStatusText = implode('', $chToSaveStatus);
 		
-		if (cleanDownloads() && ($path = createCacheDir(pageCacheDir($chKnownRequests). $cacheStatusText, 'pages', false))) {
+		if (cleanCacheDir() && ($path = createCacheDir(pageCacheDir($chKnownRequests). $cacheStatusText, 'pages', false))) {
 			foreach ($clearCacheBy as $if => $set) {
 				touch(CMS_ROOT. $path. $if);
-				chmod(CMS_ROOT. $path. $if, 0666);
+				@chmod(CMS_ROOT. $path. $if, 0666);
 			}
 			
 			
@@ -119,9 +119,9 @@ if (cms_core::$canCache
 			file_put_contents(CMS_ROOT. $path. 'tag_id', cms_core::$cType. '_'. cms_core::$cID);
 			file_put_contents(CMS_ROOT. $path. 'cached_files', $images);
 			file_put_contents(CMS_ROOT. $path. 'plugin.html', $html);
-			chmod(CMS_ROOT. $path. 'tag_id', 0666);
-			chmod(CMS_ROOT. $path. 'cached_files', 0666);
-			chmod(CMS_ROOT. $path. 'plugin.html', 0666);
+			@chmod(CMS_ROOT. $path. 'tag_id', 0666);
+			@chmod(CMS_ROOT. $path. 'cached_files', 0666);
+			@chmod(CMS_ROOT. $path. 'plugin.html', 0666);
 		}
 	}
 }

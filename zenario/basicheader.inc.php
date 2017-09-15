@@ -77,68 +77,8 @@ if (!is_file(CMS_ROOT. 'zenario/visitorheader.inc.php')) {
 	exit;
 }
 
-
-function arrayKey(&$a, $k) {
-	if ( is_array($a) && isset($a[$k])) {
-		$result = &$a[$k];
-		$count = func_num_args();
-		for($i = 2; $i < $count; ++$i){
-			if(!is_array($result)) return false;
-			$arg = func_get_arg($i);
-			if(!isset($result[$arg])) return false;
-			$result = &$result[$arg];
-		}
-		return $result;
-	}
-	return false;
-}
-
 function httpUserAgent() {
 	return isset($_SERVER['HTTP_USER_AGENT'])? $_SERVER['HTTP_USER_AGENT'] : '';
-}
-
-function browserBodyClass() {
-	$c = '';
-	$a = httpUserAgent();
-	
-	if (strpos($a, 'Edge/')) {
-		$c = 'edge';
-	
-	} elseif (strpos($a, 'WebKit/')) {
-		$c = 'webkit';
-		
-		if (strpos($a, 'OPR/')) {
-			$c .= ' opera';
-		} elseif (strpos($a, 'Chrome/')) {
-			$c .= ' chrome';
-		} elseif (strpos($a, 'iPhone')) {
-			$c .= ' ios iphone';
-		} elseif (strpos($a, 'iPad')) {
-			$c .= ' ios ipad';
-		} elseif (strpos($a, 'Safari/')) {
-			$c .= ' safari';
-		}
-	
-	} elseif (strpos($a, 'Firefox/')) {
-		$c = 'ff';
-	
-	} elseif (strpos($a, 'Opera/')) {
-		$c = 'opera';
-	
-	} elseif (strpos($a, 'MSIE ')) {
-		$c = 'ie';
-		for ($i = 10; $i > 5; --$i) {
-			if (strpos($a, 'MSIE '. $i) !== false) {
-				$c .= ' ie'. $i;
-				break;
-			}
-		}
-	
-	} elseif (strpos($a, 'Trident/')) {
-		$c = 'ie ie11';
-	}
-	
-	return $c;
 }
 
 function engToBoolean($text) {
@@ -164,12 +104,16 @@ function funIncPath($filePathOrModuleClassName, $functionName) {
 }
 
 
-function get($n) {
-	return isset($_GET[$n])? $_GET[$n] : false;
-}
-
 function hash64($text, $len = 28) {
 	return substr(rtrim(strtr(base64_encode(sha1($text, true)), '+/', '-_'), '='), 0, $len);
+}
+
+function base64($text) {
+	return rtrim(strtr(base64_encode($text), '+/', '-_'), '=');
+}
+
+function base16To64($text) {
+	return base64(pack('H*', $text));
 }
 
 function in($needle) {
@@ -180,50 +124,6 @@ function in($needle) {
 
 function isError($object) {
 	return is_object($object) && get_class($object) == 'zenario_error';
-}
-
-function post($n) {
-	return isset($_POST[$n])? $_POST[$n] : false;
-}
-
-function request($n) {
-	return isset($_REQUEST[$n])? $_REQUEST[$n] : false;
-}
-
-function session($n) {
-	return isset($_SESSION[$n])? $_SESSION[$n] : false;
-}
-
-
-function incCSS($file) {
-	$file = CMS_ROOT. $file;
-	if (file_exists($file. '.min.css')) {
-		require $file. '.min.css';
-	} elseif (file_exists($file. '.css')) {
-		require $file. '.css';
-	}
-	
-	echo "\n/**/\n";
-}
-
-function incJS($file, $wrapWrappers = false) {
-	echo "\n";
-	$file = CMS_ROOT. $file;
-	if ($wrapWrappers && file_exists($file. '.js.php')) {
-		chdir(dirname($file));
-		require $file. '.js.php';
-		chdir(CMS_ROOT);
-	
-	} elseif (file_exists($file. '.pack.js')) {
-		require $file. '.pack.js';
-	} elseif (file_exists($file. '.min.js')) {
-		require $file. '.min.js';
-	} elseif (file_exists($file. '.js')) {
-		require $file. '.js';
-	} else {
-		return;
-	}
-	echo "/**/";
 }
 
 
@@ -359,7 +259,7 @@ function useCache($ETag = false, $maxAge = false) {
 	}
 }
 
-function useGZIP($useGZIP = true) {
+function useGZIP() {
 	
 	//As of Zenario 7.2, we now rely on people enabling compression in their php.ini or .htaccess files
 	//The only purpose of this function is now to trigger ob_start() when page caching is enabled.
@@ -399,6 +299,10 @@ function isHttps() {
 	  && substr($_SERVER['SCRIPT_URI'], 0, 5) == 'https');
 }
 
+function requireJsLib($lib, $stylesheet = null, $cacheWrappers = true) {
+	cms_core::$jsLibs[$lib] = [$stylesheet, $cacheWrappers];
+}
+
 function setCookieOnCookieDomain($name, $value, $expire = COOKIE_TIMEOUT) {
 	
 	if ($expire > 1) {
@@ -433,38 +337,6 @@ function setCookieNoConsent() {
 		clearCookie('cookies_accepted');
 	}
 	$_SESSION['cookies_rejected'] = true;
-}
-
-function deleteCacheDir($dir, $subDirLimit = 0) { 
-	
-	$allGone = true;
-	
-	if (!is_dir($dir)
-	 || !is_writable($dir)) { 
-		return false;
-	}
-	
-	foreach (scandir($dir) as $file) { 
-		if ($file == '.'
-		 || $file == '..') {
-			continue;
-		
-		} else
-		if (is_file($dir. '/'. $file)) {
-			$allGone = @unlink($dir. '/'. $file) && $allGone;
-		
-		} else
-		if ($subDirLimit > 0
-		 && is_dir($dir. '/'. $file)
-		 && !is_link($dir. '/'. $file)) {
-			$allGone = deleteCacheDir($dir. '/'. $file, $subDirLimit - 1) && $allGone;
-		
-		} else {
-			$allGone = false;
-		}
-	}
-	
-	return $allGone && @rmdir($dir);
 }
 
 //Check whether we are allowed to call exec()
@@ -555,6 +427,8 @@ class cms_core {
 	public static $adminId = false;
 	public static $userId = false;
 	public static $langId = null;
+	public static $visLang = null;
+	public static $defaultLang = null;
 	public static $skinId = false;
 	public static $skinName = '';
 	public static $skinCSS = '';
@@ -588,6 +462,8 @@ class cms_core {
 	public static $locationDependant = false;
 	public static $canCache;
 	public static $cachingInUse = false;
+	public static $cacheWrappers = false;
+	public static $cacheCoreVars = ['cID' => '', 'cType' => 'T', 'visLang' => 'L', 'slotName' => 'S', 'instanceId' => 'I', 'method_call' => 'M'];
 	public static $userAccessLogged = false;
 	public static $mustUseFullPath = false;
 	public static $wrongDomain = false;
@@ -605,6 +481,7 @@ class cms_core {
 	public static $rss = array();
 	public static $rss1st = true;
 	public static $pluginJS = '';
+	public static $jsLibs = array();
 	public static $itemCSS = '';
 	public static $templateCSS = '';
 	public static $frameworkFile = '';
@@ -700,7 +577,7 @@ if (defined('DBHOST_GLOBAL') && !defined('DBPORT_GLOBAL')) {
 	define('DBPORT_GLOBAL', '');
 }
 
-//Set the timezone to UTC if it's not defined on the server, to avoid a PHP error.
+//Set the timezone to UTC if it's not defined on the server, to avoid a PHP error
 //(N.b. as soon as we get a database connection we'll set it properly.)
 if ($tz = @date_default_timezone_get()) {
 	date_default_timezone_set($tz);
@@ -711,7 +588,7 @@ if ($tz = @date_default_timezone_get()) {
 
 
 
-
 require CMS_ROOT. 'zenario/admin/db_updates/latest_revision_no.inc.php';
 require CMS_ROOT. 'zenario/includes/stripslashes.inc.php';
+require CMS_ROOT. 'zenario/libraries/by_vendor/autoload.php';
 require CMS_ROOT. 'zenario/editions.inc.php';

@@ -17,6 +17,7 @@ plugin_settings:
                         hide_remove_button: true
                     validation:
                         required: Please choose a Form
+                    format_onchange: true
                 display_mode:
                     plugin_setting:
                         name: display_mode
@@ -66,4 +67,15 @@ plugin_settings:
                     visible_if: (zenarioAB.value('display_mode') == 'inline_in_page') && zenarioAB.value('show_print_page_button')
                     side_note: A comma seperated list of page numbers to display the print page button on
                     value: 1
+                partial_completion_button_position:
+                    plugin_setting:
+                        name: partial_completion_button_position
+                    label: 'Show "Save and complete later" button at:'
+                    type: select
+                    values:
+                        top:
+                            label: Top
+                        bottom:
+                            label: Bottom
+                    value: bottom
                 

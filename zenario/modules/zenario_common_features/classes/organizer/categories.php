@@ -84,9 +84,9 @@ class zenario_common_features__organizer__categories extends module_base_class {
 		}
 		
 		
-		if (get('refiner__parent_category')) {
+		if ($_GET['refiner__parent_category'] ?? false) {
 			$mrg = array(
-				'category' => getCategoryName(get('refiner__parent_category')));
+				'category' => getCategoryName($_GET['refiner__parent_category'] ?? false));
 			$panel['title'] = adminPhrase('Sub-categories of "[[category]]"', $mrg);
 			$panel['no_items_message'] = adminPhrase('Category "[[category]]" has no sub-categories.', $mrg);
 		}
@@ -95,7 +95,7 @@ class zenario_common_features__organizer__categories extends module_base_class {
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
 		if ($path != 'zenario__content/panels/categories') return;
 		
-		if (post('delete') && checkPriv('_PRIV_MANAGE_CATEGORY')) {
+		if (($_POST['delete'] ?? false) && checkPriv('_PRIV_MANAGE_CATEGORY')) {
 			foreach (explode(',', $ids) as $id) {
 				zenario_common_features::deleteCategory($id);
 			}

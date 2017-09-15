@@ -116,7 +116,7 @@ if (!$details) {
 	//Is there an admin with that name?
 	if ($details = sqlFetchAssoc($result)) {
 		//If the link to the global database is down, don't allow super admins to log in with the copies of their data
-		if (arrayKey($details, 'authtype') == 'super') {
+		if (($details['authtype'] ?? false) == 'super') {
 			return new zenario_error('_ERROR_ADMIN_LOGIN_MULTISITE_CONNECTION');
 		
 		} else {

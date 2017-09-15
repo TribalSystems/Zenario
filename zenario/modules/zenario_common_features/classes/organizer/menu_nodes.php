@@ -33,8 +33,8 @@ class zenario_common_features__organizer__menu_nodes extends module_base_class {
 	public function preFillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
 		if ($path != 'zenario__menu/panels/menu_nodes') return;
 		
-		if (!(get('refiner__language') && get('refiner__language') != setting('default_language'))
-		 && !get('refiner__show_language_choice')
+		if (!(($_GET['refiner__language'] ?? false) && ($_GET['refiner__language'] ?? false) != cms_core::$defaultLang)
+		 && !($_GET['refiner__show_language_choice'] ?? false)
 		 && !in($mode, 'typeahead_search', 'get_item_name', 'get_item_links')) {
 			$panel['db_items']['where_statement'] = $panel['db_items']['custom_where_statement_if_no_missing_items'];
 		}
@@ -59,14 +59,14 @@ class zenario_common_features__organizer__menu_nodes extends module_base_class {
 		if ($refinerName == 'following_item_link') {
 			$menuItem = getMenuNodeDetails($refinerId);
 
-		} elseif (get('refiner__children')) {
-			$menuParent = getMenuNodeDetails(get('refiner__children'));
+		} elseif ($_GET['refiner__children'] ?? false) {
+			$menuParent = getMenuNodeDetails($_GET['refiner__children'] ?? false);
 		}
 
-		$panel['key']['languageId'] = ifNull(get('refiner__language'), ifNull(get('languageId'), get('language'), setting('default_language')));
-		$panel['key']['sectionId'] = menuSectionId(ifNull(arrayKey($menuItem, 'section_id'), arrayKey($menuParent, 'section_id'), get('refiner__section')));
+		$panel['key']['languageId'] = ifNull($_GET['refiner__language'] ?? false, ifNull($_GET['languageId'] ?? false, ($_GET['language'] ?? false), cms_core::$defaultLang));
+		$panel['key']['sectionId'] = menuSectionId(ifNull($menuItem['section_id'] ?? false, $menuParent['section_id'] ?? false, ($_GET['refiner__section'] ?? false)));
 		$panel['key']['parentId'] =
-		$panel['key']['parentMenuID'] = arrayKey($menuParent, 'id');
+		$panel['key']['parentMenuID'] = $menuParent['id'] ?? false;
 		
 		$mrg = array(
 			'lang' => getLanguageName($panel['key']['languageId']),
@@ -78,7 +78,7 @@ class zenario_common_features__organizer__menu_nodes extends module_base_class {
 		}
 		
 		//Hide the "view content items under this menu node" if not showing the default language
-		if ($panel['key']['languageId'] != setting('default_language')) {
+		if ($panel['key']['languageId'] != cms_core::$defaultLang) {
 			unset($panel['item_buttons']['view_content']);
 		}
 
@@ -286,7 +286,7 @@ class zenario_common_features__organizer__menu_nodes extends module_base_class {
 					}
 				}
 		
-				if ($panel['key']['languageId'] != setting('default_language') && !empty($item['translations']) && $item['translations'] > 1) {
+				if ($panel['key']['languageId'] != cms_core::$defaultLang && !empty($item['translations']) && $item['translations'] > 1) {
 					$item['traits']['removable'] = true;
 				}
 			}
@@ -336,28 +336,28 @@ class zenario_common_features__organizer__menu_nodes extends module_base_class {
 		if ($path != 'zenario__menu/panels/menu_nodes') return;
 		
 		// mass_add_to_menu used in both content and menu nodes
-		if (post('mass_add_to_menu') && checkPriv('_PRIV_ADD_MENU_ITEM')) {
+		if (($_POST['mass_add_to_menu'] ?? false) && checkPriv('_PRIV_ADD_MENU_ITEM')) {
 			// Get tag ID from menu node ID
 			$menuNodeDetails = getMenuNodeDetails($ids);
 			$ids = $menuNodeDetails['content_type'] . '_' . $menuNodeDetails['equiv_id'];
 			addContentItemsToMenu($menuNodeDetails['content_type'] . '_' . $menuNodeDetails['equiv_id'], $ids2);
 	
 		//Unlink a Menu Node from its Content Item
-		} elseif (post('detach') && checkPriv('_PRIV_EDIT_MENU_ITEM')) {
+		} elseif (($_POST['detach'] ?? false) && checkPriv('_PRIV_EDIT_MENU_ITEM')) {
 	
 			$submission = array(
 				'target_loc' => 'none');
 	
-			saveMenuDetails($submission, post('mID'));
-			ensureContentItemHasPrimaryMenuItem(equivId(post('cID'), post('cType')), post('cType'));
+			saveMenuDetails($submission, ($_POST['mID'] ?? false));
+			ensureContentItemHasPrimaryMenuItem(equivId($_POST['cID'] ?? false, ($_POST['cType'] ?? false)), ($_POST['cType'] ?? false));
 	
 		//Move one or more Menu Nodes to a different parent and/or the top level
-		} elseif (post('move') && checkPriv('_PRIV_EDIT_MENU_ITEM')) {
+		} elseif (($_POST['move'] ?? false) && checkPriv('_PRIV_EDIT_MENU_ITEM')) {
 	
 			//By default, just move to the top level
-			$languageId = post('languageId');
+			$languageId = $_POST['languageId'] ?? false;
 			$newParentId = 0;
-			$newSectionId = post('child__refiner__section');
+			$newSectionId = $_POST['child__refiner__section'] ?? false;
 			$newNeighbourId = 0;
 	
 			//Look for a menu node in the request
@@ -393,27 +393,28 @@ class zenario_common_features__organizer__menu_nodes extends module_base_class {
 				$newSectionId,
 				$newParentId,
 				$newNeighbourId,
+				$afterNeighbour = 0,
 				$languageId);
 	
 
-		} elseif (post('remove') && checkPriv('_PRIV_DELETE_MENU_ITEM') && request('languageId') != setting('default_language')) {
+		} elseif (($_POST['remove'] ?? false) && checkPriv('_PRIV_DELETE_MENU_ITEM') && ($_REQUEST['languageId'] ?? false) != cms_core::$defaultLang) {
 			foreach (explodeAndTrim($ids) as $id) {
 				//Only remove translation if another translation still exists
 				if (($result = getRows('menu_text', 'menu_id', array('menu_id' => $id)))
 				 && (sqlFetchRow($result))
 				 && (sqlFetchRow($result))) {
-					removeMenuText($id, request('languageId'));
+					removeMenuText($id, ($_REQUEST['languageId'] ?? false));
 				}
 			}
 
-		} elseif (post('delete') && checkPriv('_PRIV_DELETE_MENU_ITEM')) {
+		} elseif (($_POST['delete'] ?? false) && checkPriv('_PRIV_DELETE_MENU_ITEM')) {
 			foreach (explodeAndTrim($ids) as $id) {
 				deleteRow('inline_images', array('foreign_key_to' => 'menu_node', 'foreign_key_id' => $id));
 				deleteMenuNode($id);
 			}
 
 		//Move or reorder Menu Nodes
-		} elseif ((post('reorder') || post('hierarchy')) && checkPriv('_PRIV_REORDER_MENU_ITEM')) {
+		} elseif ((($_POST['reorder'] ?? false) || ($_POST['hierarchy'] ?? false)) && checkPriv('_PRIV_REORDER_MENU_ITEM')) {
 			$sectionIds = array();
 	
 			//Loop through each moved Menu Node
@@ -456,7 +457,7 @@ class zenario_common_features__organizer__menu_nodes extends module_base_class {
 				}
 			}
 			
-		} elseif (post('make_primary')) {
+		} elseif ($_POST['make_primary'] ?? false) {
 			$menuNodeDetails = getMenuNodeDetails($ids);
 			$submission = array(
 				'equiv_id' => $menuNodeDetails['equiv_id'],

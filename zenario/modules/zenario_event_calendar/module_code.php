@@ -64,14 +64,14 @@ class zenario_event_calendar extends module_base_class {
 
 	function showMonthView(){
 	
-		if (get('month')){
-			$month=(int)get('month');
+		if ($_GET['month'] ?? false){
+			$month=(int)($_GET['month'] ?? false);
 		} else {
 			$month=date('n',time());
 		}
 		
-		if ((get('year')) && (get('year')>1969) && (get('year')<2038)){
-			$year=(int)get('year');
+		if (($_GET['year'] ?? false) && (($_GET['year'] ?? false)>1969) && (($_GET['year'] ?? false)<2038)){
+			$year=(int)($_GET['year'] ?? false);
 		} else {
 			$year=date('Y',time());
 		}
@@ -220,8 +220,8 @@ class zenario_event_calendar extends module_base_class {
 		$monthFormat = $this->setting('months_format');
 	
 		$langIDs = array();
-		if ((get('year')) && (get('year')>1969) && (get('year')<2038)){
-			$year=(int)get('year');
+		if (($_GET['year'] ?? false) && (($_GET['year'] ?? false)>1969) && (($_GET['year'] ?? false)<2038)){
+			$year=(int)($_GET['year'] ?? false);
 		} else {
 			$year=date('Y',time());
 		}
@@ -697,7 +697,7 @@ class zenario_event_calendar extends module_base_class {
 	
 		$langIDs = $this->getAllowedLanguages();
 		
-		$events = $this->getEventsDesc(get('year'),get('month'),get('day'),$langIDs);
+		$events = $this->getEventsDesc($_GET['year'] ?? false,($_GET['month'] ?? false),($_GET['day'] ?? false),$langIDs);
 		
 
 		if (count($events)>0){
@@ -723,14 +723,14 @@ class zenario_event_calendar extends module_base_class {
 								'Content_type'=>'event',
 								'StickyImage'=>$htmlStickyImage);
 
-				if (arrayKey($event,'start_date')==arrayKey($event,'end_date')){
-					$arr['Time_of_event'] = $this->phrase('_SINGLE_DAY_DATE_RANGE',array('date'=>formatDateNicely(arrayKey($event,'start_date'),$this->setting('date_format'),false,false)));
+				if (($event['start_date'] ?? false)==($event['end_date'] ?? false)){
+					$arr['Time_of_event'] = $this->phrase('_SINGLE_DAY_DATE_RANGE',array('date'=>formatDateNicely($event['start_date'] ?? false,$this->setting('date_format'),false,false)));
 				} else {
-					$arr['Time_of_event'] = $this->phrase('_MULTIPLE_DAYS_DATE_RANGE',array('start_date'=>formatDateNicely(arrayKey($event,'start_date'),$this->setting('date_format'),false,false)
-																								,'end_date'=>formatDateNicely(arrayKey($event,'end_date'),$this->setting('date_format'),false,false)));
+					$arr['Time_of_event'] = $this->phrase('_MULTIPLE_DAYS_DATE_RANGE',array('start_date'=>formatDateNicely($event['start_date'] ?? false,$this->setting('date_format'),false,false)
+																								,'end_date'=>formatDateNicely($event['end_date'] ?? false,$this->setting('date_format'),false,false)));
 				}
-				if ($event['specify_time'] && !empty($event['start_time']) && (arrayKey($event,'start_time')!='00:00:00')){
-					if ( $event['end_time'] && ($event['end_time']!='00:00:00' || $event['next_day_finish']) && (arrayKey($event,'start_time')!=arrayKey($event,'end_time'))){
+				if ($event['specify_time'] && !empty($event['start_time']) && (($event['start_time'] ?? false)!='00:00:00')){
+					if ( $event['end_time'] && ($event['end_time']!='00:00:00' || $event['next_day_finish']) && (($event['start_time'] ?? false)!=($event['end_time'] ?? false))){
 						$arr['Time_of_event'] .= " " . $this->phrase('_MULTIPLE_HOURS_EVENT_RANGE',array('start_time'=>formatTimeNicely($event['start_time'],setting('vis_time_format'),''),
 																									'end_time'=>formatTimeNicely($event['end_time'],setting('vis_time_format'),'')));
 					} else {
@@ -742,10 +742,10 @@ class zenario_event_calendar extends module_base_class {
 				$mergeFields[] = $arr;
 			}
 		} else {
-			$mergeFields[]=array('Event_title'=>htmlspecialchars($this->phrase('_NO_EVENTS_ON', array('date' => formatDateNicely(get('year') . '-' . get('month') . '-' . get('day')  ,  $this->setting('date_format'),false,false)))));
+			$mergeFields[]=array('Event_title'=>htmlspecialchars($this->phrase('_NO_EVENTS_ON', array('date' => formatDateNicely(($_GET['year'] ?? false) . '-' . ($_GET['month'] ?? false) . '-' . ($_GET['day'] ?? false)  ,  $this->setting('date_format'),false,false)))));
 		}
-		if (get('day')){
-			$numerOfEvents=$this->getEventDay(get('year'),get('month'),get('day'),$langIDs);
+		if ($_GET['day'] ?? false){
+			$numerOfEvents=$this->getEventDay($_GET['year'] ?? false,($_GET['month'] ?? false),($_GET['day'] ?? false),$langIDs);
 			if ($numerOfEvents>1){
 				$counter = $numerOfEvents." ".$this->phrase('Events');
 			}else{
@@ -758,21 +758,21 @@ class zenario_event_calendar extends module_base_class {
 			
 			if ($this->setting('event_count') == "event_count_on"){
 					$this->frameworkHead('EFrame','Single_event',array('Close_popup_script'=> '$.colorbox.close();', 
-																				  'Date_of_event'=>formatDateNicely(get('year') . '-' . get('month') . '-' . get('day'),  
+																				  'Date_of_event'=>formatDateNicely(($_GET['year'] ?? false) . '-' . ($_GET['month'] ?? false) . '-' . ($_GET['day'] ?? false),  
 																															 $this->setting('date_format'),
 																															 false,
 																															 false), 
 																					'Event_counter_class_in_window'=>"<p class='event_count_in_window has_events'>(".$counter.")</p>"));
 			}elseif($this->setting('event_count') == "event_count_off"){
 					$this->frameworkHead('EFrame','Single_event',array('Close_popup_script'=> '$.colorbox.close();', 
-																		  'Date_of_event'=>formatDateNicely(get('year') . '-' . get('month') . '-' . get('day'),  
+																		  'Date_of_event'=>formatDateNicely(($_GET['year'] ?? false) . '-' . ($_GET['month'] ?? false) . '-' . ($_GET['day'] ?? false),  
 																													 $this->setting('date_format'),
 																													 false,
 																													 false), 
 																			'Event_counter_class_in_window'=>""));	
 			}
 		} else {
-			$numerOfEvents=$this->getMonthEvent(get('year'),get('month'),$langIDs);
+			$numerOfEvents=$this->getMonthEvent($_GET['year'] ?? false,($_GET['month'] ?? false),$langIDs);
 			if ($numerOfEvents>1){
 				$counter = $numerOfEvents." ".$this->phrase('Events');
 			}else{
@@ -782,14 +782,14 @@ class zenario_event_calendar extends module_base_class {
 			
 			if ($this->setting('event_count') == "event_count_on"){
 				$this->frameworkHead('EFrame','Single_event',array('Close_popup_script'=> '$.colorbox.close();', 
-																			  'Date_of_event'=>formatDateNicely(get('year') . '-' . get('month') . '-01',  
+																			  'Date_of_event'=>formatDateNicely(($_GET['year'] ?? false) . '-' . ($_GET['month'] ?? false) . '-01',  
 																														 '[[_MONTH_LONG_%m]] %Y',
 																														 false,
 																														 false), 
 																				'Event_counter_class_in_window'=>"<p class='event_count_in_window has_events'>(".$counter.")</p>"));
 		}elseif($this->setting('event_count') == "event_count_off"){
 				$this->frameworkHead('EFrame','Single_event',array('Close_popup_script'=> '$.colorbox.close();', 
-																			  'Date_of_event'=>formatDateNicely(get('year') . '-' . get('month') . '-01',  
+																			  'Date_of_event'=>formatDateNicely(($_GET['year'] ?? false) . '-' . ($_GET['month'] ?? false) . '-01',  
 																														 '[[_MONTH_LONG_%m]] %Y',
 																														 false,
 																														 false), 
@@ -813,8 +813,8 @@ class zenario_event_calendar extends module_base_class {
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		switch ($path){
 			case 'plugin_settings':
-				$fields['calendar/first_day_of_week']['hidden'] = arrayKey($values,'calendar/view_mode') != 'month_view';
-				$fields['calendar/months_format']['hidden'] = arrayKey($values,'calendar/view_mode') == 'month_view';
+				$fields['calendar/first_day_of_week']['hidden'] = ($values['calendar/view_mode'] ?? false) != 'month_view';
+				$fields['calendar/months_format']['hidden'] = ($values['calendar/view_mode'] ?? false) == 'month_view';
 				
 				$hidden = !$values['calendar/show_sticky_images'];
 				$this->showHideImageOptions($fields, $values, 'calendar', $hidden);
@@ -825,7 +825,7 @@ class zenario_event_calendar extends module_base_class {
 	
 	public function getStickyImage($id,$type,$version){
 		$width = $height = $url = false;
-		itemStickyImageLink($width, $height, $url, $id, $type, $version, $this->setting('width'), $this->setting('height'), $this->setting('canvas'));
+		Ze\File::itemStickyImageLink($width, $height, $url, $id, $type, $version, $this->setting('width'), $this->setting('height'), $this->setting('canvas'));
 		if($url){
 			return htmlspecialchars($url);
 		}else{

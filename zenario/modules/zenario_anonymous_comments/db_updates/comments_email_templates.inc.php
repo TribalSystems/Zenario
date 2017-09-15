@@ -52,7 +52,7 @@ revision(37, "
         <p>&nbsp;</p>
         <p><small>This is an auto-generated email from [[cms_url]].</small></p>',
         NOW(),
-        ". (int) session('admin_userid'). ",
+        ". (int) ($_SESSION['admin_userid'] ?? false). ",
         0
     )
 ");
@@ -86,7 +86,7 @@ revision(104, "
         <p><small>This is an auto-generated email from [[cms_url]].</small></p>
 		',
         NOW(),
-        ". (int) session('admin_userid'). ",
+        ". (int) ($_SESSION['admin_userid'] ?? false). ",
         0
     )
 ");
@@ -118,7 +118,7 @@ revision(107, "
         <p>&nbsp;</p>
         <p><small>This is an auto-generated email from [[cms_url]].</small></p>',
         NOW(),
-        ". (int) session('admin_userid'). ",
+        ". (int) ($_SESSION['admin_userid'] ?? false). ",
         0
     )
 ");

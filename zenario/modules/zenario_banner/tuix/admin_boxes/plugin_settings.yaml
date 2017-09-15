@@ -132,7 +132,19 @@ plugin_settings:
                         !zenarioAB.svgSelected('images')
                     side_note: |
                         Display image at double density.
-
+                
+                #lazy_load:
+                #    indent: 1
+                #    visible_if:
+                #        zenarioAB.valueIn: image_source, _CUSTOM_IMAGE, _STICKY_IMAGE
+                #    plugin_setting:
+                #        name: lazy_load
+                #    label: Lazy load image
+                #    type: checkbox
+                #    side_note: |
+                #        This will cause the images to be loaded when they scroll into view,
+                #        rather than loading them all at once.
+                
                 background_image:
                     indent: 1
                     visible_if:

@@ -1,3 +1,9 @@
-<div id="organizer_form_tab_{{m.id|e}}" class="tab sort <% if (m._selected) { %> on <% } %>" data-id="{{m.id|e}}">
+<div 
+	id="organizer_form_tab_{{m.id|e}}" 
+	data-id="{{m.id|e}}"
+	class="tab sort 
+		<% if (m._selected) { %> on <% } %>
+		{{m.visibility|e}}" 
+>
 	<span>{{m.name|e}}</span>
 </div>

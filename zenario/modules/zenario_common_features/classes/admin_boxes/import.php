@@ -37,7 +37,7 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 		}
 		if (count($layouts)){
 			$template = current($layouts);
-			$fields['actions/email_to_send']['value'] = arrayKey($template,'code');
+			$fields['actions/email_to_send']['value'] = $template['code'] ?? false;
 		}
 	}
 	
@@ -48,7 +48,7 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 			case 'file':
 				// --- Validate file tab --- 
 				if (!empty($box['tabs']['file']['fields']['next']['pressed']) && $values['file/file']) {
-					$path = getPathOfUploadedFileInCacheDir($values['file/file']);
+					$path = Ze\File::getPathOfUploadedInCacheDir($values['file/file']);
 					if (pathinfo($path, PATHINFO_EXTENSION) == 'csv') {
 						$string = file_get_contents($path);
 						$isUTF8 = mb_detect_encoding($string, 'UTF-8', true);
@@ -255,7 +255,7 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 		}
 		
 		
-		$path = getPathOfUploadedFileInCacheDir($values['file/file']);
+		$path = Ze\File::getPathOfUploadedInCacheDir($values['file/file']);
 		$newFileUploaded = ($path != $box['key']['file_path']);
 		$box['key']['file_path'] = $path;
 		
@@ -807,7 +807,7 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 		$keyLine = $values['headers/key_line'];
 		$unexpectedErrors = array();
 		if ($file = $values['file/file']) {
-			$path = getPathOfUploadedFileInCacheDir($file);
+			$path = Ze\File::getPathOfUploadedInCacheDir($file);
 			$mode = ($values['file/type'] == 'insert_data') ? 'insert' : 'update';
 			$importValues = array();
 			if (pathinfo($path, PATHINFO_EXTENSION) == 'csv') {
@@ -934,7 +934,7 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 		// Send report email
 		if ($values['actions/email_report']) {
 			$adminDetails = getAdminDetails(adminId());
-			$path = getPathOfUploadedFileInCacheDir($values['file/file']);
+			$path = Ze\File::getPathOfUploadedInCacheDir($values['file/file']);
 			$filename = pathinfo($path, PATHINFO_BASENAME);
 			$createOrUpdate = 'create';
 			if ($values['file/type'] == 'update_data') {

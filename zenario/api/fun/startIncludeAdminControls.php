@@ -36,7 +36,7 @@ echo '
 			class="zenario_openSlotControls"
 			id="', $this->containerId, '-options"
 			onclick="return zenarioA.openSlotControls(this, this, \'', $this->slotName, '\');"
-		></a>';
+		><span></span></a>';
 
 
 if (checkPriv('_PRIV_MANAGE_ITEM_SLOT') || checkPriv('_PRIV_MANAGE_TEMPLATE_SLOT')) {

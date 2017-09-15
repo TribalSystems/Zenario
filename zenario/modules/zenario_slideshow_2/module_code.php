@@ -160,7 +160,7 @@ class zenario_slideshow_2 extends module_base_class {
 				foreach ($this->slideData["slides"] as $index => &$slide) {
 					if (!$slide['mobile_image_id']) {
 						$width = $height = $url = false;
-						imageLink($width, $height, $url, $slide['image_id'], $maxMobileWidth, $maxMobileHeight);
+						Ze\File::imageLink($width, $height, $url, $slide['image_id'], $maxMobileWidth, $maxMobileHeight);
 						$slide['mobile_image_src'] = $url;
 					}
 				}
@@ -214,7 +214,7 @@ class zenario_slideshow_2 extends module_base_class {
 	
 	public function pluginAJAX() {
 		
-		switch(request('mode')) {
+		switch($_REQUEST['mode'] ?? false) {
 			case 'get_details':
 				
 				$recommededSize = false;
@@ -243,11 +243,11 @@ class zenario_slideshow_2 extends module_base_class {
 				
 			case "file_upload":
 				exitIfUploadError();
-				putUploadFileIntoCacheDir($_FILES['Filedata']['name'], $_FILES['Filedata']['tmp_name'], request('_html5_backwards_compatibility_hack'));
+				putUploadFileIntoCacheDir($_FILES['Filedata']['name'], $_FILES['Filedata']['tmp_name'], ($_REQUEST['_html5_backwards_compatibility_hack'] ?? false));
 				exit;
 				
 			case "add_slides_from_organizer": 
-				$keys = explode(',', get("ids"));
+				$keys = explode(',', ($_GET["ids"] ?? false));
 				$data = array();
 				foreach($keys as $key) {
 					$data[] = $this->getNewImageDetails($key);
@@ -258,15 +258,15 @@ class zenario_slideshow_2 extends module_base_class {
 				
 			case "change_image_from_organizer": 
 				header('Content-Type: text/javascript; charset=UTF-8');
-				echo json_encode($this->getNewImageDetails(get("new_image_id")));
+				echo json_encode($this->getNewImageDetails($_GET["new_image_id"] ?? false));
 				break;
 				
 			case "save_slides":
 				
-				$slides = json_decode(post("slides"), true);
+				$slides = json_decode($_POST["slides"] ?? false, true);
 				
 				
-				$ordinals = explode(',', post("ordinals"));
+				$ordinals = explode(',', ($_POST["ordinals"] ?? false));
 				$errors = array();
 				// Check for errors
 				foreach ($slides as $key => $value) {
@@ -443,14 +443,14 @@ class zenario_slideshow_2 extends module_base_class {
 			
 			if ($value[$image_id] == 0) {
 				// new uploaded image
-				$path = getPathOfUploadedFileInCacheDir($value[$prefix. "cache_id"]);
-				if ($id = addFileToDatabase("image", $path)) {
+				$path = Ze\File::getPathOfUploadedInCacheDir($value[$prefix. "cache_id"]);
+				if ($id = Ze\File::addToDatabase("image", $path)) {
 					updateRow(ZENARIO_SLIDESHOW_2_PREFIX. "slides", 
 						array($image_id => $id),
 						array("id" => $key));
 				}
 			} else {
-				if ($id = copyFileInDatabase("image", $value[$image_id], $value[$prefix. "filename"])) {
+				if ($id = Ze\File::copyInDatabase("image", $value[$image_id], $value[$prefix. "filename"])) {
 					// new image from organizer
 					updateRow(ZENARIO_SLIDESHOW_2_PREFIX. "slides",
 						array($image_id => $id),
@@ -527,7 +527,7 @@ class zenario_slideshow_2 extends module_base_class {
 			$url = "";
 			$row1['true_height'] = $row1["height"];
 			$row1['true_width'] = $row1['width'];
-			imageLink($row1["width"], $row1["height"], $url, $row1["image_id"], $this->setting("banner_width"), $this->setting("banner_height"), $this->setting('banner_canvas'));
+			Ze\File::imageLink($row1["width"], $row1["height"], $url, $row1["image_id"], $this->setting("banner_width"), $this->setting("banner_height"), $this->setting('banner_canvas'));
 			$row1['image_src'] = $url;
 			
 			// Get rollover image details
@@ -550,7 +550,7 @@ class zenario_slideshow_2 extends module_base_class {
 			$url2 = "";
 			$row2['true_r_height'] = $row2['r_height'];
 			$row2['true_r_width'] = $row2['r_width'];
-			imageLink($row2["r_width"], $row2["r_height"], $url2, $row2["rollover_image_id"], $this->setting("banner_width"), $this->setting("banner_height"), $this->setting('banner_canvas'));
+			Ze\File::imageLink($row2["r_width"], $row2["r_height"], $url2, $row2["rollover_image_id"], $this->setting("banner_width"), $this->setting("banner_height"), $this->setting('banner_canvas'));
 			$row2['rollover_image_src'] = $url2;
 
 			// Get mobile image details
@@ -574,9 +574,9 @@ class zenario_slideshow_2 extends module_base_class {
 			$row3['true_m_height'] = $row3['m_height'];
 			
 			if ($this->setting('mobile_options') == 'seperate_fixed') {
-				imageLink($row3["m_width"], $row3["m_height"], $url3, $row3["mobile_image_id"], $this->setting('mobile_width'), $this->setting('mobile_height'), $this->setting('mobile_canvas'));
+				Ze\File::imageLink($row3["m_width"], $row3["m_height"], $url3, $row3["mobile_image_id"], $this->setting('mobile_width'), $this->setting('mobile_height'), $this->setting('mobile_canvas'));
 			} elseif ($this->setting('mobile_options') == 'desktop_fixed') {
-				imageLink($row3['m_width'], $row3['m_height'], $url3, $row1["image_id"], $this->setting('mobile_width'), $this->setting('mobile_height'), $this->setting('mobile_canvas'));
+				Ze\File::imageLink($row3['m_width'], $row3['m_height'], $url3, $row1["image_id"], $this->setting('mobile_width'), $this->setting('mobile_height'), $this->setting('mobile_canvas'));
 			}
 			
 			$row3['mobile_image_src'] = $url3;
@@ -586,14 +586,14 @@ class zenario_slideshow_2 extends module_base_class {
 				$width = $row1["width"];
 				$height = $row1["height"];
 				
-				imageLink($width, $height, $url, $row1["image_id"], 300, 150);
+				Ze\File::imageLink($width, $height, $url, $row1["image_id"], 300, 150);
 				$row1['image_src_thumbnail_1'] = $url;
 				
 				$url = "";
 				$width = $row1["width"];
 				$height = $row1["height"];
 				
-				imageLink($width, $height, $url, $row1["image_id"], 150, 150);
+				Ze\File::imageLink($width, $height, $url, $row1["image_id"], 150, 150);
 				$row1['image_src_thumbnail_2'] = $url;
 				
 				// Get rollover image thumbnails
@@ -601,14 +601,14 @@ class zenario_slideshow_2 extends module_base_class {
 				$width = $row2["r_width"];
 				$height = $row2["r_height"];
 				
-				imageLink($width, $height, $url2, $row2["rollover_image_id"], 300, 150);
+				Ze\File::imageLink($width, $height, $url2, $row2["rollover_image_id"], 300, 150);
 				$row2['rollover_image_src_thumbnail_1'] = $url2;
 				
 				// Get mobile image thumbnails
 				$url3 = "";
 				$width = $row3["m_width"];
 				$height = $row3["m_height"];
-				imageLink($width, $height, $url3, $row3["mobile_image_id"], 300, 150);
+				Ze\File::imageLink($width, $height, $url3, $row3["mobile_image_id"], 300, 150);
 				$row3['mobile_image_src_thumbnail_1'] = $url3;
 				
 				
@@ -644,13 +644,13 @@ class zenario_slideshow_2 extends module_base_class {
 		$url = "";
 		$width = $row["width"];
 		$height = $row["height"];
-		//imageLink($width, $height, $url, $row["image_id"], $row["width"], $row["height"]);
+		//Ze\File::imageLink($width, $height, $url, $row["image_id"], $row["width"], $row["height"]);
 		//$row["image_src"] = $url;
 		
-		imageLink($width, $height, $url, $row["image_id"], 300, 150);
+		Ze\File::imageLink($width, $height, $url, $row["image_id"], 300, 150);
 		$row["image_src_thumbnail_1"] = $url;
 		
-		imageLink($width, $height, $url, $row["image_id"], 150, 150);
+		Ze\File::imageLink($width, $height, $url, $row["image_id"], 150, 150);
 		$row["image_src_thumbnail_2"] = $url;
 		return $row;
 	}

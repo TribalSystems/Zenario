@@ -84,9 +84,9 @@ loadSiteConfig();
 
 
 //Check for any form submissions
-if (!empty($_POST) && substr(httpUserAgent(), 0, 10) != 'BlackBerry') {
+if (!empty($_POST) && substr(httpUserAgent(), 0, 10) != 'BlackBerry' && (!defined('SKIP_XSS_CHECK') || !SKIP_XSS_CHECK)) {
 	//Attempt to stop some XSS attacks by checking that the referer matches (except for old Blackberries which don't support this feature)
-	if (substr(arrayKey($_SERVER, 'HTTP_REFERER'), 0, strlen(httpOrhttps(). arrayKey($_SERVER, 'HTTP_HOST'))) !== httpOrhttps(). arrayKey($_SERVER, 'HTTP_HOST')) {
+	if (substr($_SERVER['HTTP_REFERER'] ?? false, 0, strlen(httpOrhttps(). ($_SERVER['HTTP_HOST'] ?? false))) !== httpOrhttps(). ($_SERVER['HTTP_HOST'] ?? false)) {
 		echo 'Sorry, but the referer for the form you just submitted does not seem to match this site';
 		exit;
 	}
@@ -141,6 +141,6 @@ logUserInAutomatically();
 
 //Set the user's language, if it is not set already
 if (!empty($_SESSION) && empty($_SESSION['user_lang'])) {
-	$_SESSION['user_lang'] = setting('default_language');
+	$_SESSION['user_lang'] = cms_core::$defaultLang;
 }
 

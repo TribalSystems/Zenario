@@ -144,7 +144,7 @@ methods.addExtraMergeFieldsForRows = function(data, row) {
 	//Check if this the last row of the subsection. If so, draw the sub-totals.
 	if (row.id == this.lastItemIdBySubheading[subheading]
 	 && this.itemIdsBySubheading[subheading]) {
-		row.subtotal = this.generateTotals(data, this.itemIdsBySubheading[subheading], true);
+		row.subtotal = this.generateTotals(data, this.itemIdsBySubheading[subheading]);
 	}
 };
 

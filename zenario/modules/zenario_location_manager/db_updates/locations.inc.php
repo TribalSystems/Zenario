@@ -494,7 +494,7 @@ if (needRevision(119)) {
 	$result = sqlQuery($sql);
 	
 	while ($row = sqlFetchAssoc($result)) {
-		$imageId = addFileFromString('location', $row['data'], $row['filename'], true);
+		$imageId = Ze\File::addFromString('location', $row['data'], $row['filename'], true);
 		if ($imageId)
 		{
 		$sql2 = "

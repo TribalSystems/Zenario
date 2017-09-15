@@ -1,7 +1,8 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
 site_settings:
-    title: Editing settings for files and images
+    title: Editing settings for documents, files and images
+    setting_group: files_and_images
     tabs:
         image_sizes:
             label: Image sizes
@@ -196,4 +197,15 @@ site_settings:
                     type: checkbox
                     value: 1
                     note_below: "Places a <code>.htaccess</code> file in the temporary document directory to allow access only from the client's IP address."
-    setting_group: files_and_images
+        document_tags:
+            label: Document tags
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_SITE_SETTING
+            fields:
+                enable_document_tags:
+                    site_setting:
+                        name: enable_document_tags
+                    label: 'Enable document tags'
+                    type: checkbox
+                    value: true

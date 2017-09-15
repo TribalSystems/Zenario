@@ -46,7 +46,7 @@ class zenario_common_features__organizer__administrators extends module_base_cla
 			$item['traits'] = array();
 			$item['has_permissions'] = checkRowExists('action_admin_link', array('admin_id' => $id));
 			
-			if ($id == session('admin_userid')) {
+			if ($id == ($_SESSION['admin_userid'] ?? false)) {
 				$item['traits']['current_admin'] = true;
 			}
 			
@@ -110,14 +110,14 @@ class zenario_common_features__organizer__administrators extends module_base_cla
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
 		if ($path != 'zenario__users/panels/administrators') return;
 		
-		if (post('trash') && checkPriv('_PRIV_DELETE_ADMIN')) {
+		if (($_POST['trash'] ?? false) && checkPriv('_PRIV_DELETE_ADMIN')) {
 			foreach (explodeAndTrim($ids) as $id) {
-				if ($id != session('admin_userid')) {
+				if ($id != $_SESSION['admin_userid'] ?? false) {
 					deleteAdmin($id);
 				}
 			}
 		
-		} elseif (post('restore') && checkPriv('_PRIV_DELETE_ADMIN') && zenario_common_features::canCreateAdditionalAdmins()) {
+		} elseif (($_POST['restore'] ?? false) && checkPriv('_PRIV_DELETE_ADMIN') && zenario_common_features::canCreateAdditionalAdmins()) {
 			foreach (explodeAndTrim($ids) as $id) {
 				deleteAdmin($id, true);
 			}

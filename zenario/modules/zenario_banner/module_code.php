@@ -65,11 +65,7 @@ class zenario_banner extends module_base_class {
 		
 		//Check to see if an item is set in the hyperlink_target setting 
 		if ($this->setting($link_type) == '_CONTENT_ITEM'
-		 && ($linkExists = $this->getCIDAndCTypeFromSetting(
-			$cID, $cType,
-			$hyperlink_target,
-			!$this->isVersionControlled && $this->setting('use_translation'))
-		)) {
+		 && ($linkExists = $this->getCIDAndCTypeFromSetting($cID, $cType, $hyperlink_target, $this->setting('use_translation')))) {
 			
 			$downloadFile = ($cType == 'document' && !$this->setting('use_download_page'));
 			
@@ -77,7 +73,11 @@ class zenario_banner extends module_base_class {
 				$this->request = 'download=1';
 			}
 			
-			$link = $this->linkToItem($cID, $cType, $fullPath = false, $this->request);
+			if (!$this->isVersionControlled && $this->setting('use_translation')) {
+				$link = linkToItemStayInCurrentLanguage($cID, $cType, $fullPath = false, $this->request);
+			} else {
+				$link = linkToItem($cID, $cType, $fullPath = false, $this->request);
+			}
 			
 			if ($this->setting('link_to_anchor') && ($anchor = $this->setting('hyperlink_anchor'))) {
 			    $link .= '#' . $anchor;
@@ -89,7 +89,7 @@ class zenario_banner extends module_base_class {
 				'href="'. htmlspecialchars($link). '"';
 			
 			if ($downloadFile) {
-				$mergeFields['Target_Blank'] = ' onclick="'. htmlspecialchars(trackFileDownload($link)). '"';
+				$mergeFields['Target_Blank'] = ' onclick="'. htmlspecialchars(Ze\File::trackDownload($link)). '"';
 			}
 			
 			
@@ -167,9 +167,9 @@ class zenario_banner extends module_base_class {
 	//In visitor mode, the Plugin is only displayed if this method returns true.
 	function init() {
 		if ($this->isVersionControlled) {
-			if (post('_zenario_save_content_')) {
-				$this->setSetting('text', post('content__content'), true, true, 'translatable_html');
-				$this->setSetting('title', post('content__title'), true, true, 'translatable_text');
+			if ($_POST['_zenario_save_content_'] ?? false) {
+				$this->setSetting('text', ($_POST['content__content'] ?? false), true, true, 'translatable_html');
+				$this->setSetting('title', ($_POST['content__title'] ?? false), true, true, 'translatable_text');
 				exit;
 			}
 		
@@ -178,7 +178,7 @@ class zenario_banner extends module_base_class {
 				$this->editorId = $this->containerId. '_tinymce_content_'. str_replace('.', '', microtime(true));
 			
 				//Open the editor immediately if it is in the URL
-				if (request('content__edit_container') == $this->containerId) {
+				if (($_REQUEST['content__edit_container'] ?? false) == $this->containerId) {
 					$this->editing = true;
 					$this->markSlotAsBeingEdited();
 					$this->openEditor();
@@ -208,7 +208,7 @@ class zenario_banner extends module_base_class {
 		 
 		 || ($this->setting('image_source') == '_STICKY_IMAGE'
 		  && $cID
-		  && ($imageId = itemStickyImageId($cID, $cType)))) {
+		  && ($imageId = Ze\File::itemStickyImageId($cID, $cType)))) {
 			
 			$cols = array();
 			if (!$this->setting('alt_tag')) {
@@ -344,14 +344,15 @@ class zenario_banner extends module_base_class {
 			
 			
 			//Try to get a link to the image
-			if (imageLink($width, $height, $url, $imageId, $banner_width, $banner_height, $banner_canvas, $banner_offset, $banner_retina)) {
+			if (Ze\File::imageLink($width, $height, $url, $imageId, $banner_width, $banner_height, $banner_canvas, $banner_offset, $banner_retina)) {
 				
 				$this->normalImage = $url;
 
 				//If this was a retina image, get a normal version of the image as well for standard displays
 				if ($banner_retina) {
 					$sWidth = $sHeight = $sURL = false;
-					if (imageLink($sWidth, $sHeight, $sURL, $imageId, $width, $height, $banner_canvas == 'resize_and_crop'? 'resize_and_crop' : 'stretch', $banner_offset, false)) {
+					if (Ze\File::imageLink($sWidth, $sHeight, $sURL, $imageId, $width, $height, $banner_canvas == 'resize_and_crop'? 'resize_and_crop' : 'stretch', $banner_offset, false)) {
+						
 						if ($url != $sURL) {
 							$this->mergeFields['Image_Srcset'] = $url. ' 2x';
 							
@@ -400,7 +401,7 @@ class zenario_banner extends module_base_class {
 							$mobile_retina = $mobile_canvas != 'unlimited' || $this->setting('mobile_retina');
 					
 							$respURL = false;
-							if (imageLink($respWidth, $respHeight, $respURL, $mobile_image, $mobile_width, $mobile_height, $mobile_canvas, $mobile_offset, $mobile_retina)) {
+							if (Ze\File::imageLink($respWidth, $respHeight, $respURL, $mobile_image, $mobile_width, $mobile_height, $mobile_canvas, $mobile_offset, $mobile_retina)) {
 				
 								$this->respImage = $respURL;
 								$this->mergeFields['Mobile_Srcset'] = $respURL;
@@ -408,7 +409,7 @@ class zenario_banner extends module_base_class {
 								//If this was a retina image, get a normal version of the image as well for standard displays
 								if ($mobile_retina) {
 									$sWidth = $sHeight = $sURL = false;
-									if (imageLink($sWidth, $sHeight, $sURL, $mobile_image, $respWidth, $respHeight, $mobile_canvas, $mobile_offset, false)) {
+									if (Ze\File::imageLink($sWidth, $sHeight, $sURL, $mobile_image, $respWidth, $respHeight, $mobile_canvas, $mobile_offset, false)) {
 										if ($respURL != $sURL) {
 											
 											$this->respImage = $sURL;
@@ -450,14 +451,14 @@ class zenario_banner extends module_base_class {
 					$rollover_image = $this->setting('rollover_image');
 					
 					$rWidth = $rHeight = $rollURL = false;
-					if (imageLink($rWidth, $rHeight, $rollURL, $rollover_image, $banner_width, $banner_height, $banner_canvas, $banner_offset, $banner_retina)) {
+					if (Ze\File::imageLink($rWidth, $rHeight, $rollURL, $rollover_image, $banner_width, $banner_height, $banner_canvas, $banner_offset, $banner_retina)) {
 						
 						$this->rolloverImage = $rollURL;
 						
 						//If this was a retina image, get a normal version of the image as well for standard displays
 						if ($banner_retina) {
 							$sWidth = $sHeight = $sURL = false;
-							if (imageLink($sWidth, $sHeight, $sURL, $rollover_image, $rWidth, $rHeight, $banner_canvas == 'resize_and_crop'? 'resize_and_crop' : 'stretch', $banner_offset, false)) {
+							if (Ze\File::imageLink($sWidth, $sHeight, $sURL, $rollover_image, $rWidth, $rHeight, $banner_canvas == 'resize_and_crop'? 'resize_and_crop' : 'stretch', $banner_offset, false)) {
 								if ($rollURL != $sURL) {
 									$rollSrcset = $rollURL. ' 2x';
 									$rollSrcset = 'srcset="'. htmlspecialchars($rollSrcset). '"';
@@ -486,8 +487,8 @@ class zenario_banner extends module_base_class {
 				
 				
 				
-				} elseif (($this->setting('link_type')=='_ENLARGE_IMAGE') && ($this->setting('image_source') != '_STICKY_IMAGE') && (!arrayKey($this->mergeFields,'Link_Href'))){
-					if (imageLink($widthFullSize, $heightFullSize, $urlFullSize, $imageId, $banner__enlarge_width, $banner__enlarge_height, $banner__enlarge_canvas)) {
+				} elseif (($this->setting('link_type')=='_ENLARGE_IMAGE') && ($this->setting('image_source') != '_STICKY_IMAGE') && (empty($this->mergeFields['Link_Href']))){
+					if (Ze\File::imageLink($widthFullSize, $heightFullSize, $urlFullSize, $imageId, $banner__enlarge_width, $banner__enlarge_height, $banner__enlarge_canvas)) {
 						if ($this->setting('disable_rel')) {
 							$this->mergeFields['Link_Href'] =
 							$this->mergeFields['Image_Link_Href'] = 'rel="colorbox_no_arrows" href="' . htmlspecialchars($urlFullSize) . '" class="enlarge_in_fancy_box"';
@@ -516,7 +517,12 @@ class zenario_banner extends module_base_class {
 		$this->subSections['Title'] = (bool) $this->setting('title') || $this->editing;
 		$this->subSections['More_Link_Text'] = (bool) $this->setting('more_link_text');
 		
-		$this->mergeFields['Title_Tags'] = $this->setting('title_tags') ? $this->setting('title_tags') : 'h2';
+		$this->mergeFields['Title_Tags'] =
+		$this->mergeFields['Title_Tags_Close'] = $this->setting('title_tags') ? $this->setting('title_tags') : 'h2';
+		
+		if ($this->editorId !== '') {
+			$this->mergeFields['Title_Tags'] .= ' id="banner_title__'. $this->containerId. '"';
+		}
 		
 		//Don't show empty Banners
 		//Note: If there is some more link text set, but no Image/Text/Title, then I'll still consider the Banner to be empty
@@ -608,7 +614,7 @@ class zenario_banner extends module_base_class {
 			
 			//If we're reloading via AJAX, we need to call a JavaScript function to add the style to the head.
 			//Otherwise we can use addToPageHead() below.
-			if ($this->styles !== '' && request('method_call') == 'refreshPlugin') {
+			if ($this->styles !== '' && ($_REQUEST['method_call'] ?? false) == 'refreshPlugin') {
 				$this->callScriptBeforeAJAXReload('zenario_banner', 'addToPageHead', $this->containerId, $this->styles);
 			}
 			

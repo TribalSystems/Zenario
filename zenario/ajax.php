@@ -34,19 +34,20 @@ startSession();
 
 
 //Run pre-load actions
+require CMS_ROOT. 'zenario/api/cache_functions.inc.php';
 require editionInclude('ajax.pre_load');
 
 
 $type = false;
 $path = false;
-$methodCall = request('method_call');
+$methodCall = $_REQUEST['method_call'] ?? false;
 if ($methodCall == 'handleOrganizerPanelAJAX') {
 	cms_core::$skType = $type = 'organizer';
-	cms_core::$skPath = $path = request('__path__');
+	cms_core::$skPath = $path = $_REQUEST['__path__'] ?? false;
 }
 
 
-$isForPlugin = request('cID') && request('cType') && request('instanceId');
+$isForPlugin = ($_REQUEST['cID'] ?? false) && ($_REQUEST['cType'] ?? false) && ($_REQUEST['instanceId'] ?? false);
 
 //Check which method call is being requested
 //Some method calls are associated with instances and content items, and some are not
@@ -65,7 +66,8 @@ if ($methodCall == 'refreshPlugin'
 	//showRSS and showFloatingBox method calls relate to content items
 	require CMS_ROOT. 'zenario/visitorheader.inc.php';
 	require CMS_ROOT. 'zenario/includes/twig.inc.php';
-	useGZIP(setting('compress_web_pages'));
+	require CMS_ROOT. 'zenario/includes/twig.frameworks.inc.php';
+	useGZIP();
 	
 	//If an admin is logged in, include admin functions for refreshing modules
 	if (checkPriv()) {
@@ -76,12 +78,12 @@ if ($methodCall == 'refreshPlugin'
 	$cID = $cType = $content = $version = $redirectNeeded = $aliasInURL = $instanceFound = false;
 	resolveContentItemFromRequest($cID, $cType, $redirectNeeded, $aliasInURL, $_GET, $_REQUEST, $_POST);
 	
-	if (!$cVersion = request('cVersion')) {
+	if (!$cVersion = $_REQUEST['cVersion'] ?? false) {
 		$cVersion = getAppropriateVersion($cID, $cType);
 	}
 	
 	
-	$status = getShowableContent($content, $version, $cID, $cType, request('cVersion'), $checkRequestVars = true);
+	$status = getShowableContent($content, $version, $cID, $cType, ($_REQUEST['cVersion'] ?? false), $checkRequestVars = true);
 	if (!$status || is_string($status)) {
 		exit;
 	}
@@ -100,8 +102,8 @@ if ($methodCall == 'refreshPlugin'
 		$_REQUEST['eggId'] = $_GET['eggId'] = $rss[0];
 	}
 	
-	$instanceId = request('instanceId');
-	$slotName = HTMLId(request('slotName'));
+	$instanceId = $_REQUEST['instanceId'] ?? false;
+	$slotName = HTMLId($_REQUEST['slotName'] ?? false);
 	
 	//Use exact matching if this is a call to refreshPlugin.
 	//Otherwise try to allow for the fact that people might have bad/old slot names/instance ids
@@ -129,8 +131,8 @@ if ($methodCall == 'refreshPlugin'
 		
 		foreach (cms_core::$slotContents as $s => &$instance) {
 			$slotName = $s;
-			$moduleClassName = arrayKey($instance, 'class_name');
-			$instanceId = arrayKey($instance, 'instance_id');
+			$moduleClassName = $instance['class_name'] ?? false;
+			$instanceId = $instance['instance_id'] ?? false;
 			$instanceFound = true;
 			break;
 		}
@@ -161,7 +163,7 @@ if ($methodCall == 'refreshPlugin'
 		|| $methodCall == 'showStandalonePage') {
 	
 	//Allow handleAJAX, showFile, showImage and showStandalonePage to be for visitors or admins as needed
-	if (session('admin_logged_in') || $methodCall == 'handleOrganizerPanelAJAX' || $methodCall == 'handleAdminToolbarAJAX') {
+	if (($_SESSION['admin_logged_in'] ?? false) || $methodCall == 'handleOrganizerPanelAJAX' || $methodCall == 'handleAdminToolbarAJAX') {
 		require 'adminheader.inc.php';
 	} else {
 		require 'visitorheader.inc.php';
@@ -169,23 +171,23 @@ if ($methodCall == 'refreshPlugin'
 	
 	//Use compression where possible, except in a couple of cases where we're using ob_start()
 	if ($methodCall != 'handleOrganizerPanelAJAX' && $methodCall != 'handleAdminToolbarAJAX') {
-		useGZIP(setting('compress_web_pages'));
+		useGZIP();
 	}
 	
-	if (request('__pluginClassName__')) {
-		if (!($module = activateModule($moduleClassName = request('__pluginClassName__')))) {
+	if ($_REQUEST['__pluginClassName__'] ?? false) {
+		if (!($module = activateModule($moduleClassName = $_REQUEST['__pluginClassName__'] ?? false))) {
 			exit;
 		}
-	} elseif (request('moduleClassName')) {
-		if (!($module = activateModule($moduleClassName = request('moduleClassName')))) {
+	} elseif ($_REQUEST['moduleClassName'] ?? false) {
+		if (!($module = activateModule($moduleClassName = $_REQUEST['moduleClassName'] ?? false))) {
 			exit;
 		}
-	} elseif (request('__pluginName__')) {
-		if (!($module = activateModule($moduleClassName = request('__pluginName__')))) {
+	} elseif ($_REQUEST['__pluginName__'] ?? false) {
+		if (!($module = activateModule($moduleClassName = $_REQUEST['__pluginName__'] ?? false))) {
 			exit;
 		}
 	} else {
-		if (!($module = activateModule($moduleClassName = request('moduleName')))) {
+		if (!($module = activateModule($moduleClassName = $_REQUEST['moduleName'] ?? false))) {
 			exit;
 		}
 	}
@@ -194,7 +196,7 @@ if ($methodCall == 'refreshPlugin'
 	require editionInclude('checkRequestVars');
 	
 
-} elseif (get('method_call') == 'loadPhrase') {
+} elseif (($_GET['method_call'] ?? false) == 'loadPhrase') {
 	
 	//Look up one or more visitor phrases
 	require 'visitorheader.inc.php';
@@ -203,13 +205,13 @@ if ($methodCall == 'refreshPlugin'
 	if (isset($_GET['__code__'])) {
 		$codes = explodeDecodeAndTrim($_GET['__code__']);
 	}
-	$languageId = ifNull(get('langId'), session('user_lang'), setting('default_language'));
+	$languageId = ifNull($_GET['langId'] ?? false, ($_SESSION['user_lang'] ?? false), cms_core::$defaultLang);
 	
 	$sql = "
 		SELECT code, local_text
 		FROM ". DB_NAME_PREFIX. "visitor_phrases
 		WHERE language_id = '". sqlEscape($languageId). "'
-		  AND module_class_name = '". sqlEscape(get('__class__')). "'";
+		  AND module_class_name = '". sqlEscape($_GET['__class__'] ?? false). "'";
 	
 	if (!empty($codes)) {
 		$sql .= "
@@ -233,7 +235,7 @@ if ($methodCall == 'refreshPlugin'
 	if (!empty($codes) && checkPriv()) {
 		foreach ($codes as $code) {
 			if (!isset($phrases[$code])) {
-				$phrases[$code] = phrase($code, array(), get('__class__'), $languageId, adminPhrase('JavaScript code'));
+				$phrases[$code] = phrase($code, array(), ($_GET['__class__'] ?? false), $languageId, adminPhrase('JavaScript code'));
 			}
 		}
 	}
@@ -296,20 +298,20 @@ if ($methodCall == 'refreshPlugin'
 	//Check to see if the CMS' library of functions has been included, and include it if not
 	if (!function_exists('checkPriv')) {
 		require 'adminheader.inc.php';
-		useGZIP(setting('compress_web_pages'));
+		useGZIP();
 	}
 	
 	//Otherwise look for a Module Name
-	if (request('moduleClassName')) {
-		if (!($module = activateModule(request('moduleClassName')))) {
+	if ($_REQUEST['moduleClassName'] ?? false) {
+		if (!($module = activateModule($_REQUEST['moduleClassName'] ?? false))) {
 			exit;
 		}
-	} elseif (request('__pluginName__')) {
-		if (!($module = activateModule(request('__pluginName__')))) {
+	} elseif ($_REQUEST['__pluginName__'] ?? false) {
+		if (!($module = activateModule($_REQUEST['__pluginName__'] ?? false))) {
 			exit;
 		}
 	} else {
-		if (!($module = activateModule(request('moduleName')))) {
+		if (!($module = activateModule($_REQUEST['moduleName'] ?? false))) {
 			exit;
 		}
 	}
@@ -368,11 +370,11 @@ if ($methodCall == 'showFile') {
 	require_once CMS_ROOT. 'zenario/includes/tuix.inc.php';
 	
 	//Exit if no path is specified
-	if (!$requestedPath = request('path')) {
+	if (!$requestedPath = $_REQUEST['path'] ?? false) {
 		echo 'No path specified!';
 		exit;
 	}
-	$debugMode = checkPriv() && (bool) get('_debug');
+	$debugMode = checkPriv() && (bool) ($_GET['_debug'] ?? false);
 	
 	cms_core::$skType = 'visitor';
 	cms_core::$skPath = $requestedPath;
@@ -609,14 +611,14 @@ if ($methodCall == 'showFile') {
 
 
 //Handle a file download from Organizer
-} elseif ($methodCall == 'handleOrganizerPanelAJAX' && post('_download')) {
+} elseif ($methodCall == 'handleOrganizerPanelAJAX' && !empty($_POST['_download'])) {
 	
 	//Handle the old name if it's not been changed yet
 	if (method_exists($module, 'storekeeperDownload')) {
-		$module->storekeeperDownload(request('__path__'), request('id'), request('refinerName'), request('refinerId'));
+		$module->storekeeperDownload($_REQUEST['__path__'] ?? false, ($_REQUEST['id'] ?? false), ($_REQUEST['refinerName'] ?? false), ($_REQUEST['refinerId'] ?? false));
 	}
 	
-	$module->organizerPanelDownload(request('__path__'), request('id'), request('refinerName'), request('refinerId'));
+	$module->organizerPanelDownload($_REQUEST['__path__'] ?? false, ($_REQUEST['id'] ?? false), ($_REQUEST['refinerName'] ?? false), ($_REQUEST['refinerId'] ?? false));
 	
 	exit;
 
@@ -627,10 +629,10 @@ if ($methodCall == 'showFile') {
 	$newIds = false;
 	$message = false;
 
-	if (request('_sk_form_submission')) {
+	if ($_REQUEST['_sk_form_submission'] ?? false) {
 		ob_start();
 	} else {
-		useGZIP(setting('compress_web_pages'));
+		useGZIP();
 	}
 	
 	$newIds = false;
@@ -638,25 +640,25 @@ if ($methodCall == 'showFile') {
 		
 		//Handle the old name if it's not been changed yet
 		if (method_exists($module, 'adminToolbarAJAX')) {
-			$module->adminToolbarAJAX((int) request('cID'), request('cType'), (int) request('cVersion'), request('id'));
+			$module->adminToolbarAJAX((int) ($_REQUEST['cID'] ?? false), ($_REQUEST['cType'] ?? false), (int) ($_REQUEST['cVersion'] ?? false), ($_REQUEST['id'] ?? false));
 		}
 		
-		$module->handleAdminToolbarAJAX((int) request('cID'), request('cType'), (int) request('cVersion'), request('id'));
+		$module->handleAdminToolbarAJAX((int) ($_REQUEST['cID'] ?? false), ($_REQUEST['cType'] ?? false), (int) ($_REQUEST['cVersion'] ?? false), ($_REQUEST['id'] ?? false));
 	
 	} else {
 		//Handle the old name if it's not been changed yet
 		if (method_exists($module, 'storekeeperAJAX')) {
-			$module->storekeeperAJAX(request('__path__'), request('id'), request('id2'), request('refinerName'), request('refinerId'));
+			$module->storekeeperAJAX($_REQUEST['__path__'] ?? false, ($_REQUEST['id'] ?? false), ($_REQUEST['id2'] ?? false), ($_REQUEST['refinerName'] ?? false), ($_REQUEST['refinerId'] ?? false));
 		}
 		
-		$newIds = $module->handleOrganizerPanelAJAX(request('__path__'), request('id'), request('id2'), request('refinerName'), request('refinerId'));
+		$newIds = $module->handleOrganizerPanelAJAX($_REQUEST['__path__'] ?? false, ($_REQUEST['id'] ?? false), ($_REQUEST['id2'] ?? false), ($_REQUEST['refinerName'] ?? false), ($_REQUEST['refinerId'] ?? false));
 	}
 	
 	if ($newIds && !is_array($newIds)) {
 		$newIds = explode(',', $newIds);
 	}
 	
-	if (request('_sk_form_submission')) {
+	if ($_REQUEST['_sk_form_submission'] ?? false) {
 		$message = trim(ob_get_contents());
 		ob_end_clean();
 		
@@ -666,7 +668,7 @@ if ($methodCall == 'showFile') {
 		}
 		
 		//Send the results to Organizer in the parent frame
-		useGZIP(setting('compress_web_pages'));
+		useGZIP();
 		echo '
 			<html>
 				<body>
@@ -727,7 +729,7 @@ if ($methodCall == 'showFile') {
 	
 	} else {
 		if ($newIds) {
-			if (!is_array(session('sk_new_ids'))) {
+			if (!is_array($_SESSION['sk_new_ids'] ?? false)) {
 				$_SESSION['sk_new_ids'] = array();
 			}
 			foreach ($newIds as $id) {
@@ -746,16 +748,18 @@ if ($methodCall == 'showFile') {
 		return str_replace($searches, $replaces, $text);
 	}
 	
+	$module = &cms_core::$slotContents[$slotName]['class'];
+	
 	//Display an info section at the top of the result, to help the CMS pick up on a few things
 	$showInfo = true;
 	
-	if ($url = cms_core::$slotContents[$slotName]['class']->checkHeaderRedirectLocation()) {
+	if ($url = $module->checkHeaderRedirectLocation()) {
 		if (!checkPriv()) {
 			$showInfo = false;
 		}
 		echo '<!--FORCE_PAGE_RELOAD:', eschyp($url), '-->';
 	
-	} elseif (cms_core::$slotContents[$slotName]['class']->checkForcePageReloadVar()) {
+	} elseif ($module->checkForcePageReloadVar()) {
 		if (!checkPriv()) {
 			$showInfo = false;
 		}
@@ -774,50 +778,46 @@ if ($methodCall == 'showFile') {
 				(int) arrayKey(cms_core::$slotContents[$slotName], 'instance_id'),
 			'-->';
 		
-		if (cms_core::$slotContents[$slotName]['class']->checkScrollToTopVar() === true) {
+		if ($module->checkScrollToTopVar() === true) {
 			echo
 				'<!--SCROLL_TO_TOP-->';
 		}
 		
 		//Lets a Plugin will be placed in a floating box when it reloads
-		if (($showInFloatingBox = cms_core::$slotContents[$slotName]['class']->checkShowInFloatingBoxVar()) === true) {
+		if (($showInFloatingBox = $module->checkShowInFloatingBoxVar()) === true) {
 			echo
 				'<!--SHOW_IN_FLOATING_BOX-->';
-			if (($params = cms_core::$slotContents[$slotName]['class']->getFloatingBoxParams()) && is_array($params)) {
+			if (($params = $module->getFloatingBoxParams()) && is_array($params)) {
 				echo
 					'<!--FLOATING_BOX_PARAMS:' . eschyp(json_encode($params)) . '-->';
 			}
 		}
 		
 		//Display the level this Module is at
+		$slotLevel = arrayKey(cms_core::$slotContents[$slotName], 'level');
 		echo
 			'<!--LEVEL:',
-				eschyp(arrayKey(cms_core::$slotContents[$slotName], 'level')),
+				eschyp($slotLevel),
 			'-->';
 		
-		if ($slideId = (int) cms_core::$slotContents[$slotName]['class']->zAPIGetTabId()) {
+		if ($slideId = (int) $module->zAPIGetTabId()) {
 			echo
 				'<!--TAB_ID:', $slideId, '-->';
 		}
 		
+		$cssClass = '';
 		if (!empty(cms_core::$slotContents[$slotName]['css_class'])) {
-			echo
-				'<!--CSS_CLASS:',
-					eschyp(cms_core::$slotContents[$slotName]['css_class']),
-				'-->';
-		} else {
-			echo
-				'<!--CSS_CLASS:-->';
+			$cssClass = cms_core::$slotContents[$slotName]['css_class'];
 		}
-
 			
 		if (checkPriv()) {
 			$slotContents = array($slotName => &cms_core::$slotContents[$slotName]);
 			setupAdminSlotControls($slotContents, true);
 			
+			$moduleId = arrayKey(cms_core::$slotContents[$slotName], 'module_id');
 			echo
 				'<!--MODULE_ID:',
-					eschyp(arrayKey(cms_core::$slotContents[$slotName], 'module_id')),
+					eschyp($moduleId),
 				'-->';
 			
 			echo
@@ -832,32 +832,64 @@ if ($methodCall == 'showFile') {
 				}
 			}
 		
-			if (cms_core::$slotContents[$slotName]['class']->beingEdited()) {
+			if ($module->beingEdited()) {
 				echo '<!--IN_EDIT_MODE-->';
 			}
+		
+			if ($slotLevel == 2
+			 && checkPriv('_PRIV_MANAGE_TEMPLATE_SLOT')
+			 && $module->shouldShowLayoutPreview()
+			 && $moduleId) {
+				
+				ob_start();
+					$module->showLayoutPreview();
+				$layoutPreview = ob_get_clean();
+				$cssClass .= ' zenario_slot_with_layout_preview';
+				
+				echo
+					'<!--LAYOUT_PREVIEW:',
+						eschyp($layoutPreview),
+					'-->';
+			}
 		}
+		
+		echo
+			'<!--CSS_CLASS:',
+				eschyp($cssClass),
+			'-->';
 		
 		if (empty(cms_core::$slotContents[$slotName]['instance_id'])) {
 			showPluginError($slotName);
 		} else {
-			cms_core::$slotContents[$slotName]['class']->showSlot();
-			cms_core::$slotContents[$slotName]['class']->afterShowSlot();
+			$module->showSlot();
+			$module->afterShowSlot();
 		}
 		
 		
 		//Check if the Plugin wants any JavaScript run
 		$scriptTypes = array();
-		cms_core::$slotContents[$slotName]['class']->zAPICheckRequestedScripts($scriptTypes);
+		$module->zAPICheckRequestedScripts($scriptTypes);
 		
 		$i = 0;
+		$j = 0;
 		foreach ($scriptTypes as $scriptType => &$scripts) {
 			foreach ($scripts as &$script) {
 				if ($scriptType === 0) {
-					echo '<!--SCRIPT_BEFORE'. ++$i. ':';
+					echo '<!--SCRIPT_BEFORE'. ++$j. ':';
 				} else {
 					echo '<!--SCRIPT'. ++$i. ':';
 				}
 				echo eschyp(json_encode($script)), '-->';
+			}
+		}
+		
+		if (!empty(cms_core::$jsLibs)) {
+			$i = 0;
+			foreach (cms_core::$jsLibs as $lib => $libInfo) {
+				echo
+					'<!--JS_LIB'. ++$i. ':',
+						eschyp(json_encode([$lib, $libInfo[0]])),
+					'-->';
 			}
 		}
 	}

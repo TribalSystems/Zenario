@@ -83,7 +83,7 @@ class zenario_ctype_audio extends module_base_class {
 			$this->targetType = $this->cType;
 		}
 		if ($this->targetType!='audio'){
-			if ((int)arrayKey($_SESSION,'admin_userid')){
+			if ((int)($_SESSION['admin_userid'] ?? false)){
 				echo "This Plugin needs to be placed on an Audio Content Item or be configured to point to another Audio Content Item. Please check your Plugin Settings.";
 			}
 			return;
@@ -129,9 +129,9 @@ class zenario_ctype_audio extends module_base_class {
 		
 		$subSections['Audio'] = true;
 		$mergeFields['Container_id'] = $this->containerId;
-		$mergeFields['Size'] = formatFilesizeNicely(getRow('files','size',array('id'=> arrayKey($contentItemDetails,'file_id'))), 0, false, 'zenario_ctype_audio');
-		$mergeFields['title'] = arrayKey($contentItemDetails,'title');
-		contentFileLink($url, $this->targetID, $this->targetType, $this->targetVersion);
+		$mergeFields['Size'] = formatFilesizeNicely(getRow('files','size',array('id'=> ($contentItemDetails['file_id'] ?? false))), 0, false, 'zenario_ctype_audio');
+		$mergeFields['title'] = $contentItemDetails['title'] ?? false;
+		Ze\File::contentLink($url, $this->targetID, $this->targetType, $this->targetVersion);
 		$mergeFields['mp3Path'] = $url;
 			
 		$this->framework('mp3', $mergeFields, $subSections);
@@ -150,7 +150,7 @@ class zenario_ctype_audio extends module_base_class {
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes){
 		switch ( $path ){
 		    case 'plugin_settings':
-		        $box['tabs']['first_tab']['fields']['another_audio']['hidden'] = !(arrayKey($values,'first_tab/show_details_and_link')=='another_content_item');
+		        $box['tabs']['first_tab']['fields']['another_audio']['hidden'] = !(($values['first_tab/show_details_and_link'] ?? false)=='another_content_item');
 		        break;
 			
 			
@@ -169,17 +169,17 @@ class zenario_ctype_audio extends module_base_class {
 		switch ($path) {
 			case 'zenario_content':
 				if ($box['key']['cType'] == 'audio') {
-					if (engToBooleanArray($box, 'tabs', 'file', 'edit_mode', 'on')) {
+					if (engToBoolean($box['tabs']['file']['edit_mode']['on'] ?? false)) {
 						if (!$values['file/file']) {
 							if ($saving) {
 								$box['tabs']['file']['errors'][] = adminPhrase('Please select a file.');
 							}
 						
-						} elseif ($path = getPathOfUploadedFileInCacheDir($values['file/file'])) {
+						} elseif ($path = Ze\File::getPathOfUploadedInCacheDir($values['file/file'])) {
 							if (setting('content_max_filesize') < filesize($path)) {
 								$box['tabs']['file']['errors'][] = adminPhrase('This file is larger than the Maximum Content File Size as set in the Site Settings.');
 						
-							} elseif (!$this->checkDocumentTypeIsAllowed($path)) {
+							} elseif (!$this->isFileTypeAllowed($path)) {
 								$box['tabs']['file']['errors'][] = adminPhrase('Please select an MP3 file.');
 							}
 						}
@@ -202,7 +202,7 @@ class zenario_ctype_audio extends module_base_class {
 					} else {
 						$panel['collection_buttons']['zenario_ctype_audio__create_multiple']['tooltip'] = 
 							adminPhrase('Create multiple Audio files in the Language "[[lang]]"',
-								array('lang' => getLanguageName(ifNull(arrayKey($panel, 'key', 'language'), setting('default_language')))));
+								array('lang' => getLanguageName(ifNull($panel['key']['language'] ?? false, cms_core::$defaultLang))));
 					}
 				}
 				
@@ -215,29 +215,29 @@ class zenario_ctype_audio extends module_base_class {
 		switch ($path) {
 			case 'zenario__content/panels/content':
 				//Handle creating multiple Audios at once in Storekeeper
-				if (post('create_multiple') && checkPriv('_PRIV_CREATE_FIRST_DRAFT')) {
+				if (($_POST['create_multiple'] ?? false) && checkPriv('_PRIV_CREATE_FIRST_DRAFT')) {
 					$newIds = array();
 					
 					//This sholud only be allowed if we know what the language will be
-					if (($languageId = ifNull(post('language'), setting('default_language')))) {
+					if (($languageId = ifNull($_POST['language'] ?? false, cms_core::$defaultLang))) {
 						
-						if (request('refiner__template')) {
-							$cType = getRow('layouts', 'content_type', request('refiner__template'));
+						if ($_REQUEST['refiner__template'] ?? false) {
+							$cType = getRow('layouts', 'content_type', ($_REQUEST['refiner__template'] ?? false));
 						} else {
-							$cType = post('cType');
+							$cType = $_POST['cType'] ?? false;
 						}
 						
 						if ($cType == 'audio') {
 							
-							if (request('refiner__template')) {
-								$layoutId = request('refiner__template');
+							if ($_REQUEST['refiner__template'] ?? false) {
+								$layoutId = $_REQUEST['refiner__template'] ?? false;
 							} else {
 								$layoutId = getRow('content_types', 'default_layout_id', array('content_type_id' => $cType));
 							}
 							
 							
 							exitIfUploadError();
-							if (!$this->checkDocumentTypeIsAllowed($_FILES['Filedata']['name'])) {
+							if (!$this->isFileTypeAllowed($_FILES['Filedata']['name'])) {
 								echo
 									adminPhrase(
 										'The [[file]] is not an MP3 file.',
@@ -252,7 +252,7 @@ class zenario_ctype_audio extends module_base_class {
 							} else {
 								$filename = preg_replace('/([^.a-z0-9]+)/i', '_', $_FILES['Filedata']['name']);
 								
-								if ($fileId = addFileToDocstoreDir(
+								if ($fileId = Ze\File::addToDocstoreDir(
 									'content',
 									$_FILES['Filedata']['tmp_name'], $filename)
 								) {
@@ -276,8 +276,8 @@ class zenario_ctype_audio extends module_base_class {
 	}
 
 
-	protected function checkDocumentTypeIsAllowed($filename) {
-		$mimeType = documentMimeType($filename);
+	protected function isFileTypeAllowed($filename) {
+		$mimeType = Ze\File::mimeType($filename);
 		
 		return ($mimeType == 'audio/mpeg');
 	}

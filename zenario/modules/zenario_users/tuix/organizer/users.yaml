@@ -498,8 +498,14 @@ zenario__users:
                     label: Suspend
                     with_columns_set:
                         traits.active: true
-                    admin_box:
-                        path: zenario_user__suspend
+                    ajax:
+                        confirm:
+                            message: 'Are you sure you want to suspend the user "[[identifier]]"?'
+                            button_message: Suspend
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            suspend_user: "1"
                 send_welcome_email:
                     hide_in_select_mode: true
                     parent: action_dropdown

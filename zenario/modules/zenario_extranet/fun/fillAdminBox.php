@@ -34,7 +34,7 @@ switch ($path) {
 			$fields['first_tab/login_with']['readonly'] = !setting('user_use_screen_name');
 		}
 		
-		$defaultLangId = setting('default_language');
+		$defaultLangId = cms_core::$defaultLang;
 		foreach (array(
 			'error_messages/invalid_email_error_text' => '_ERROR_INVALID_EXTRANET_EMAIL',		
 			'error_messages/screen_name_required_error_text' => '_ERROR_EXTRANET_SCREEN_NAME',		

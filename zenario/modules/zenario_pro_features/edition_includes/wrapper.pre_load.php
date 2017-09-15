@@ -28,7 +28,8 @@
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
 
-if (empty($_GET['admin'])) {
+if (cms_core::$canCache) {
+	
 	function pageCacheDir(&$requests, $type) {
 		$type = str_replace(array('.', ' '), '-', $type. '-'. browserBodyClass(). '-');
 		
@@ -37,7 +38,7 @@ if (empty($_GET['admin'])) {
 	}
 	
 	
-	$type = str_replace(array('.cache_wrapper', '.php'), '', basename($_SERVER['PHP_SELF']));
+	$type = str_replace(array('.wrapper', '.php'), '', basename($_SERVER['PHP_SELF']));
 	$chFile = pageCacheDir($_GET, $type);
 	
 	if (file_exists(($chPath = 'cache/pages/'. $chFile. '/'). $type)) {

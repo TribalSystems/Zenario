@@ -71,13 +71,13 @@ class zenario_news_ticker extends module_base_class {
 		while ($row = sqlFetchAssoc($rv)){
 			switch ($this->setting('data_field')){
 				case 'title':
-					$text = arrayKey($row,'title');
+					$text = $row['title'] ?? false;
 					break;				
 				case 'description':
-					$text = arrayKey($row,'description');
+					$text = $row['description'] ?? false;
 					break;				
 				case 'content_summary':
-					$text = arrayKey($row,'content_summary');
+					$text = $row['content_summary'] ?? false;
 					break;
 				default:
 					break;
@@ -89,7 +89,7 @@ class zenario_news_ticker extends module_base_class {
 			if ($this->setting('suppress_link_to_content_item')){
 				$linkToContentItem = '';
 			}else{
-				$linkToContentItem = linkToItem(arrayKey($row,'id'),arrayKey($row,'type'));
+				$linkToContentItem = linkToItem($row['id'] ?? false,($row['type'] ?? false));
 				$this->mergeFields['has_link_class'] = "has_link";
 			}
 			

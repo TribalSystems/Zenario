@@ -18,10 +18,13 @@ description: |
                 </p>
 category: pluggable
 keywords: cookies, consent, explicit
+
+# Reminder: you need to increment the LATEST_REVISION_NO in this module's
+# latest_revision_no.inc.php file if you change any of the fields below:
 vlp_class_name: zenario_cookie_consent_status
 css_class_name: zenario_cookie_consent_status
-is_pluggable: Yes
-can_be_version_controlled: No
-nestable: Yes
+is_pluggable: true
+can_be_version_controlled: false
+nestable: true
 default_framework: standard
 default_instance_name: Cookie consent status

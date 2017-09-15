@@ -67,12 +67,13 @@ class zenario_common_features__organizer__document_rules extends module_base_cla
 	
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
 		
-		if (post('reorder')) {
+		if ($_POST['reorder'] ?? false) {
 			foreach (explodeAndTrim($ids) as $id) {
 				updateRow('document_rules', array('ordinal' => $_POST['ordinals'][$id]), $id);
 			}
 			
-		} elseif (post('duplicate')) {
+		} elseif ($_POST['duplicate'] ?? false) {
+			exitIfNotCheckPriv('_PRIV_EDIT_DOCUMENTS');
 			foreach (explodeAndTrim($ids) as $id) {
 				if ($rule = getRow('document_rules', true, $id)) {
 					$sql = "
@@ -88,7 +89,8 @@ class zenario_common_features__organizer__document_rules extends module_base_cla
 				}
 			}
 			
-		} elseif (post('delete')) {
+		} elseif ($_POST['delete'] ?? false) {
+			exitIfNotCheckPriv('_PRIV_EDIT_DOCUMENTS');
 			foreach (explodeAndTrim($ids) as $id) {
 				deleteRow('document_rules', $id);
 			}

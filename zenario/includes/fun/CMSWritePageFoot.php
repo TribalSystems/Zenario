@@ -27,9 +27,11 @@
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
-$gzf = setting('compress_web_pages')? '?gz=1' : '?gz=0';
-$gz = setting('compress_web_pages')? '&amp;gz=1' : '&amp;gz=0';
-$v = zenarioCodeVersion();
+$v = $w = 'v='. zenarioCodeVersion();
+
+if (!cms_core::$cacheWrappers) {
+	$w .= '&amp;no_cache=1';
+}
 
 $isWelcome = $mode === true || $mode === 'welcome';
 $isWizard = $mode === 'wizard';
@@ -56,23 +58,23 @@ if (!$inAdminMode
 
 //Write the URLBasePath to the page, and add JS needed for the CMS
 echo '
-'. $scriptTag. ' src="', $prefix, 'libraries/mit/jquery/jquery.min.js?v=', $v, '"></script>
-'. $scriptTag. ' src="', $prefix, 'libraries/mit/jquery/jquery-ui.visitor.min.js?v=', $v, '"></script>
+'. $scriptTag. ' src="', $prefix, 'libraries/mit/jquery/jquery.min.js?', $v, '"></script>
+'. $scriptTag. ' src="', $prefix, 'libraries/mit/jquery/jquery-ui.visitor.min.js?', $v, '"></script>
 
-<!--[if IE 9]>'. $scriptTag. ' src="', $prefix, 'js/ie.wrapper.js.php?ie=9"></script><![endif]-->
-<!--[if IE 8]>'. $scriptTag. ' src="', $prefix, 'js/ie.wrapper.js.php?ie=8"></script><![endif]-->
-<!--[if lte IE 7]>'. $scriptTag. ' src="', $prefix, 'js/ie.wrapper.js.php?ie=7"></script><![endif]-->
+<!--[if IE 9]>'. $scriptTag. ' src="', $prefix, 'js/ie.wrapper.js.php?', $w, '&amp;ie=9"></script><![endif]-->
+<!--[if IE 8]>'. $scriptTag. ' src="', $prefix, 'js/ie.wrapper.js.php?', $w, '&amp;ie=8"></script><![endif]-->
+<!--[if lte IE 7]>'. $scriptTag. ' src="', $prefix, 'js/ie.wrapper.js.php?', $w, '&amp;ie=7"></script><![endif]-->
 
-'. $scriptTag. ' src="', $prefix, 'js/visitor.wrapper.js.php?v=', $v, $gz, '"></script>';
+'. $scriptTag. ' src="', $prefix, 'js/visitor.wrapper.js.php?', $w, '"></script>';
 
 
 
 
 //Write other related JavaScript variables to the page
 	//Note that page caching may cause the wrong user id to be set.
-	//As with session('extranetUserID'), anything that changes behaviour by Extranet User should not allow the page to be cached.
+	//As with ($_SESSION['extranetUserID'] ?? false), anything that changes behaviour by Extranet User should not allow the page to be cached.
 echo '
-'. $scriptTag. '>'. $inlineStart. 'zenario.init("'. setting('css_js_version'). '", ', (int) session('extranetUserID'), ', "', jsEscape(currentLangId()), '", "', jsEscape(setting('google_recaptcha_theme')), '", "', jsEscape(setting('vis_date_format_datepicker')), '", "'. jsEscape(DIRECTORY_INDEX_FILENAME). '", ', (int) canSetCookie(), ', ', (int) cms_core::$equivId, ', ', (int) cms_core::$cID, ', "', jsEscape(cms_core::$cType), '", ', (int) cms_core::$skinId, ');'. $inlineStop. '</script>';
+'. $scriptTag. '>'. $inlineStart. 'zenario.init("'. setting('css_js_version'). '", ', (int) ($_SESSION['extranetUserID'] ?? false), ', "', jsEscape(currentLangId()), '", "', jsEscape(setting('google_recaptcha_theme')), '", "', jsEscape(setting('vis_date_format_datepicker')), '", "'. jsEscape(DIRECTORY_INDEX_FILENAME). '", ', (int) canSetCookie(), ', ', (int) cms_core::$equivId, ', ', (int) cms_core::$cID, ', "', jsEscape(cms_core::$cType), '", ', (int) cms_core::$skinId, ');'. $inlineStop. '</script>';
 
 
 
@@ -80,25 +82,43 @@ echo '
 
 	
 //Add JS needed for the CMS in Admin mode
-if ($isWelcomeOrWizard || $inAdminMode) {
+if ($inAdminMode) {
 	
 	if (!$isWelcome) {
 		checkForChangesInYamlFiles();
 	}
 	
+	//Write all of the slot controls to the page
 	echo '
 <div id="zenario_slotControls">';
-
-	//Write all of the slot controls to the page
 	setupAdminSlotControls(cms_core::$slotContents, false);
+	
+	echo '
+</div>';
+	
+	//Note down that we need various extra libraries in admin mode...
+	requireJsLib('js/ace.wrapper.js.php', null, true);
+}
 
-echo '
-</div>
-'. $scriptTag. ' src="', $prefix, 'libraries/mit/jquery/jquery-ui.admin.min.js?v=', $v, '"></script>
-'. $scriptTag. ' src="', $prefix, 'libraries/mit/jquery/jquery-ui.datepicker.min.js?v=', $v, '"></script>
-'. $scriptTag. ' src="', $prefix, 'libraries/bsd/ace/src-min-noconflict/ace.js?v=', $v, '"></script>
-'. $scriptTag. ' src="', $prefix, 'js/admin.microtemplates_and_phrases.js.php?v=', $v, $gz, '"></script>
-'. $scriptTag. ' src="', $prefix, 'js/admin.wrapper.js.php?v=', $v, $gz, '"></script>';
+if ($inAdminMode || $isWelcomeOrWizard) {
+	//...or on the admin-login screen
+	requireJsLib('libraries/mit/jquery/jquery-ui.admin.min.js');
+	requireJsLib('libraries/mit/jquery/jquery-ui.datepicker.min.js');
+	requireJsLib('js/tuix.wrapper.js.php', null, true);
+	requireJsLib('js/admin.microtemplates_and_phrases.js.php');
+	requireJsLib('js/admin.wrapper.js.php', null, true);
+}
+
+foreach (cms_core::$jsLibs as $lib => $libInfo) {
+	
+	if ($libInfo[0]) {
+		echo "\n", '<link rel="stylesheet" type="text/css" media="screen" href="', $prefix, htmlspecialchars($libInfo[0]). '?', $libInfo[1]? $v : $w, '"/>';
+	}
+	echo "\n", $scriptTag, ' src="', $prefix, htmlspecialchars($lib). '?', $libInfo[1]? $v : $w, '"></script>';
+}
+	
+
+if ($inAdminMode && !$isWelcomeOrWizard) {
 	
 	if (setting('dropbox_api_key')) {
 		echo '
@@ -147,9 +167,9 @@ echo '
 		}
 		
 		echo '
-'. $scriptTag. ' src="', $prefix, 'js/organizer.wrapper.js.php?v=', $v, $gz, '"></script>';
+'. $scriptTag. ' src="', $prefix, 'js/organizer.wrapper.js.php?', $w, '"></script>';
 		echo '
-'. $scriptTag. ' src="', $prefix, 'admin/organizer.ajax.php?_script=1?v=', $moduleCodeHash, $gz, '"></script>';
+'. $scriptTag. ' src="', $prefix, 'admin/organizer.ajax.php?_script=1?v=', $moduleCodeHash, '"></script>';
 		
 		echo '
 '. $scriptTag. '>';
@@ -166,11 +186,9 @@ echo '
 		
 			echo '
 </script>
-'. $scriptTag. ' src="', $prefix, 'js/plugin.wrapper.js.php?v=', $v, $gz, '&amp;ids=', $jsModuleIds, '&amp;organizer=1"></script>';
+'. $scriptTag. ' src="', $prefix, 'js/plugin.wrapper.js.php?', $w, '&amp;ids=', $jsModuleIds, '&amp;organizer=1"></script>';
 	}
-}
-
-if ($inAdminMode && !$isWelcomeOrWizard) {
+	
 	
 	$settings = array();
 	if (!empty(cms_core::$siteConfig)) {
@@ -249,12 +267,11 @@ if ($inAdminMode && !$isWelcomeOrWizard) {
 '. $scriptTag. '>
 	zenarioA.init(
 		', (int) cms_core::$cVersion, ',
-		', (int) session('admin_userid'), ',
+		', (int) ($_SESSION['admin_userid'] ?? false), ',
 		"', jsEscape(cms_core::$templateFamily), '",
-		"', jsEscape(ifNull(session('page_toolbar'), 'preview')), '",
-		"', jsEscape(ifNull(session('page_mode'), 'preview')), '",
-		', engToBoolean(session('admin_slot_wand')), ',
-		', engToBoolean(session('admin_show_grid')), ',
+		"', jsEscape(ifNull($_SESSION['page_toolbar'] ?? false, 'preview')), '",
+		"', jsEscape(ifNull($_SESSION['page_mode'] ?? false, 'preview')), '",
+		', engToBoolean($_SESSION['admin_show_grid'] ?? false), ',
 		', json_encode($settings), ',
 		', json_encode($adminSettings), ',
 		', $importantGetRequests, ',
@@ -274,7 +291,7 @@ if (!$isWelcomeOrWizard && cms_core::$pluginJS) {
 	}
 	
 	echo '
-'. $scriptTag. ' src="', $prefix, 'js/plugin.wrapper.js.php?v=', $v, '&amp;ids=', cms_core::$pluginJS, $gz, '"></script>';
+'. $scriptTag. ' src="', $prefix, 'js/plugin.wrapper.js.php?', $w, '&amp;ids=', cms_core::$pluginJS, '"></script>';
 }
 
 
@@ -290,7 +307,7 @@ if ($inAdminMode && cms_core::$cID) {
 	
 	if ($jsModuleIds) {
 		echo '
-'. $scriptTag. ' src="', $prefix, 'js/plugin.wrapper.js.php?v=', $v, '&amp;ids=', $jsModuleIds, $gz, '&amp;admin_frontend=1"></script>';
+'. $scriptTag. ' src="', $prefix, 'js/plugin.wrapper.js.php?', $w, '&amp;ids=', $jsModuleIds, '&amp;admin_frontend=1"></script>';
 	}
 	
 	//If we've just made a draft, and there's a callback, perform the callback
@@ -373,8 +390,8 @@ if (!empty(cms_core::$slotContents) && is_array(cms_core::$slotContents)) {
 				$i++? ',' : '',
 				'["',
 					preg_replace('/[^\w-]/', '', $slotName), '",',
-					(int) arrayKey($instance, 'instance_id'), ',',
-					(int) arrayKey($instance, 'module_id');
+					(int) ($instance['instance_id'] ?? false), ',',
+					(int) ($instance['module_id'] ?? false);
 			
 			if (isset($instance['class']) && $instance['class']) {
 				
@@ -384,10 +401,10 @@ if (!empty(cms_core::$slotContents) && is_array(cms_core::$slotContents)) {
 				//in the hashes used for AJAX reloads to make the hashs look a little friendlier
 				//In admin mode we also note down which plugins are version controlled
 				
-				echo ',', (int) arrayKey($instance, 'level');
+				echo ',', (int) ($instance['level'] ?? false);
 				
 				$slideId = $instance['class']->zAPIGetTabId();
-				$isMainSlot = isset($instance['class']) && arrayKey($instance, 'level') == 1 && substr($slotName, 0, 1) == 'M';
+				$isMainSlot = isset($instance['class']) && ($instance['level'] ?? false) == 1 && substr($slotName, 0, 1) == 'M';
 				$beingEdited = $instance['class']->beingEdited();
 				
 				if ($inAdminMode) {
@@ -488,5 +505,5 @@ if (cms_core::$cID && $includeAdminToolbar && $inAdminMode && !$isWelcomeOrWizar
 	)));
 	
 	echo '
-'. $scriptTag. ' src="', $prefix, 'admin/admin_toolbar.ajax.php?v=', $v, '&amp;', $params, '"></script>';
+'. $scriptTag. ' src="', $prefix, 'admin/admin_toolbar.ajax.php?', $v, '&amp;', $params, '"></script>';
 }

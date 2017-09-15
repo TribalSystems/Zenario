@@ -10,7 +10,8 @@
 
 zenario__menu:
     panels:
-        menu_position: &menu_position
+        menu_position:
+            back_link: false
             db_items:
                 table: |
                     [[DB_NAME_PREFIX]]menu_positions AS mp
@@ -27,6 +28,16 @@ zenario__menu:
                       AND c.language_id = [[FOCUSED_LANGUAGE_ID]]
                 id_column: mp.tag
                 client_side: true
+            
+            refiners:
+                create:
+                    title: Select a position to create a menu node
+                move:
+                    title: Select a position to move to
+                existing:
+                    title: Select a position
+                    sql: |
+                        mp.is_dummy_child = 0
             
             panel_type: hierarchy_with_lazy_load
             reorder:
@@ -45,10 +56,14 @@ zenario__menu:
                     db_column: mp.parent_tag
                 order_by:
                     db_column: IF (mp.is_dummy_child = 1, '~~~~~~~~~', IFNULL(mi.ordinal, ms.section_name))
+                ordinal:
+                    db_column: mi.ordinal
                 menu_id:
                     db_column: mp.menu_id
+                parent_menu_id: {}
                 is_dummy_child:
                     db_column: mp.is_dummy_child
+                is_first: {}
                 name:
                     title: Name/Text
                     db_column: IF (mi.id IS NULL, ms.section_name, mt.name)
@@ -81,5 +96,3 @@ zenario__menu:
                     show_by_default: true
                 menu_path:
                     title: Path
-        
-        menu_existing_position: *menu_position

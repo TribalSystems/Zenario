@@ -35,15 +35,16 @@ class zenario_common_features__admin_boxes__setup_language extends module_base_c
 		if (!$box['key']['id']) {
 			exit;
 	
-		} elseif ($lang = getRow('languages', array('detect', 'detect_lang_codes', 'search_type', 'translate_phrases', 'domain'), $box['key']['id'])) {
-			$box['tabs']['settings']['fields']['detect']['value'] = $lang['detect'];
-			$box['tabs']['settings']['fields']['detect_lang_codes']['value'] = $lang['detect_lang_codes'];
-			$box['tabs']['settings']['fields']['search_type']['value'] = $lang['search_type'];
-			$box['tabs']['settings']['fields']['translate_phrases']['value'] = $lang['translate_phrases'];
+		} elseif ($lang = getRow('languages', true, $box['key']['id'])) {
+			$values['settings/detect'] = $lang['detect'];
+			$values['settings/detect_lang_codes'] = $lang['detect_lang_codes'];
+			$values['settings/search_type'] = $lang['search_type'];
+			$values['settings/translate_phrases'] = $lang['translate_phrases'];
+			$values['settings/show_untranslated_content_items'] = $lang['show_untranslated_content_items'];
 	
 			if ($lang['domain']) {
-				$box['tabs']['settings']['fields']['use_domain']['value'] = 1;
-				$box['tabs']['settings']['fields']['domain']['value'] = $lang['domain'];
+				$values['settings/use_domain'] = 1;
+				$values['settings/domain'] = $lang['domain'];
 			}
 	
 			$box['title'] = adminPhrase('Editing settings for "[[language]]"', array('language' => getLanguageName($box['key']['id'])));
@@ -68,29 +69,42 @@ class zenario_common_features__admin_boxes__setup_language extends module_base_c
 				case 'ko':
 				case 'ja':
 				case 'vi':
-					$box['tabs']['settings']['fields']['search_type']['value'] = 'simple';
+					$values['settings/search_type'] = 'simple';
 					break;
 				default:
-					$box['tabs']['settings']['fields']['search_type']['value'] = 'full_text';
+					$values['settings/search_type'] = 'full_text';
 					break;
 			}
 
 		}
 
-		$box['tabs']['settings']['fields']['domain']['placeholder'] = $box['key']['id']. '.'. primaryDomain();
+		$fields['settings/domain']['placeholder'] = $box['key']['id']. '.'. primaryDomain();
+		
+		$defaultName = $this->lookupLangPhrase('__LANGUAGE_ENGLISH_NAME__', cms_core::$defaultLang);
+		$engName = $this->lookupLangPhrase('__LANGUAGE_ENGLISH_NAME__', $box['key']['id']);
+		$localName = $this->lookupLangPhrase('__LANGUAGE_LOCAL_NAME__', $box['key']['id']);
+		$flag = $this->lookupLangPhrase('__LANGUAGE_FLAG_FILENAME__', $box['key']['id']);
+		
 
-		$box['tabs']['settings']['fields']['english_name']['value'] =
-			getRow('visitor_phrases', 'local_text', array('code' => '__LANGUAGE_ENGLISH_NAME__', 'language_id' => $box['key']['id'], 'module_class_name' => 'zenario_common_features'));
+		$values['dummy/default_name'] = $this->lookupLangPhrase('__LANGUAGE_ENGLISH_NAME__', cms_core::$defaultLang);
+		$values['settings/english_name'] = $this->lookupLangPhrase('__LANGUAGE_ENGLISH_NAME__', $box['key']['id']);
+		$values['settings/language_local_name'] = $this->lookupLangPhrase('__LANGUAGE_LOCAL_NAME__', $box['key']['id']);
+		$values['settings/flag_filename'] = $this->lookupLangPhrase('__LANGUAGE_FLAG_FILENAME__', $box['key']['id']);
 
-		$box['tabs']['settings']['fields']['language_local_name']['value'] =
-			getRow('visitor_phrases', 'local_text', array('code' => '__LANGUAGE_LOCAL_NAME__', 'language_id' => $box['key']['id'], 'module_class_name' => 'zenario_common_features'));
-
-		$box['tabs']['settings']['fields']['flag_filename']['value'] =
-			getRow('visitor_phrases', 'local_text', array('code' => '__LANGUAGE_FLAG_FILENAME__', 'language_id' => $box['key']['id'], 'module_class_name' => 'zenario_common_features'));
-
-		if (empty($box['tabs']['settings']['fields']['detect_lang_codes']['value'])) {
-			$box['tabs']['settings']['fields']['detect_lang_codes']['value'] = $box['key']['id'];
+		if (empty($values['settings/detect_lang_codes'])) {
+			$values['settings/detect_lang_codes'] = $box['key']['id'];
 		}
+		
+		$fields['settings/show_untranslated_content_items']['label'] =
+			adminPhrase('When showing banners/menus in [[settings/english_name]], and the site is only partially translated into [[settings/english_name]]:', $values);
+		$fields['settings/show_untranslated_content_items']['values'][0]['label'] =
+			adminPhrase('Hide banner/menu links when no [[settings/english_name]] page exists', $values);
+		$fields['settings/show_untranslated_content_items']['values'][1]['label'] =
+			adminPhrase('Show all banner/menu links, but link to the [[dummy/default_name]] page when no [[settings/english_name]] page exists', $values);
+	}
+	
+	protected function lookupLangPhrase($code, $langId) {
+		return getRow('visitor_phrases', 'local_text', array('code' => $code, 'language_id' => $langId, 'module_class_name' => 'zenario_common_features'));
 	}
 
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
@@ -185,7 +199,7 @@ class zenario_common_features__admin_boxes__setup_language extends module_base_c
 		$pagesExist = checkRowExists('content_items', $cItemsInLangKey);
 
 
-		if (engToBooleanArray($box['tabs']['settings'], 'edit_mode', 'on')) {
+		if (engToBoolean($box['tabs']['settings']['edit_mode']['on'] ?? false)) {
 			setRow('languages', array(), $langId);
 
 			setRow(
@@ -224,6 +238,7 @@ class zenario_common_features__admin_boxes__setup_language extends module_base_c
 					'detect' => $values['settings/detect'], 
 					'detect_lang_codes' => $values['settings/detect_lang_codes'], 
 					'translate_phrases' => $values['settings/translate_phrases'], 
+					'show_untranslated_content_items' => $values['settings/show_untranslated_content_items'], 
 					'search_type'=> ($values['settings/search_type'] == 'simple'? 'simple' : 'full_text'),
 					'domain'=> ($values['settings/use_domain'] && getNumLanguages() > 1? $values['domain'] : '')
 				),
@@ -231,8 +246,9 @@ class zenario_common_features__admin_boxes__setup_language extends module_base_c
 		}
 
 		//Check if a default language has been set, and set it now if not
-		if ($addedFirstLanguage = !setting('default_language')) {
+		if ($addedFirstLanguage = !cms_core::$defaultLang) {
 			setSetting('default_language', $langId);
+			cms_core::$defaultLang = $langId;
 		}
 
 		//Update the special pages, creating new ones if needed

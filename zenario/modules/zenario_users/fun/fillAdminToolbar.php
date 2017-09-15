@@ -128,16 +128,3 @@ if ($userId = userId()) {
 	unset($adminToolbar['sections']['extranet_user']['buttons']['view_user']);
 	unset($adminToolbar['sections']['extranet_user']['buttons']['logout']);
 }
-
-//If the current extranet user/visitor should not be able to see the current page because they don't have permissions,
-//show a purple triangle next to their name
-if (in(cms_core::$status, 'published', 'published_with_draft')) {
-	$perms = getShowableContent($content, $version, $cID, $cType, $cVersion, $checkRequestVars = false, $adminsSee400Errors = true);
-
-	if ($perms === ZENARIO_401_NOT_LOGGED_IN) {
-		$adminToolbar['meta_info']['no_perms_icon'] = 'zenario_link_status zenario_link_status__'. cms_core::$status. '_401';
-
-	} elseif (!$perms) {
-		$adminToolbar['meta_info']['no_perms_icon'] = 'zenario_link_status zenario_link_status__'. cms_core::$status. '_403';
-	}
-}

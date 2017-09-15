@@ -56,10 +56,10 @@ class zenario_current_time extends module_base_class {
 	}
 	
 	public function handleAJAX() {
-		switch (request('action')) {
+		switch ($_REQUEST['action'] ?? false) {
 			case 'getCurrentTime':
 				$format = 'H~i~s';
-				$timezone = request('timezone');
+				$timezone = $_REQUEST['timezone'] ?? false;
 				if (!$timezone || strtoupper($timezone)=="FALSE"){
 					$timezone=false;
 				}

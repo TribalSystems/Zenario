@@ -77,6 +77,13 @@
 				<?php slot('Built_On', 'grid'); ?>
 			</div>
 		</div>
+		<div class="grid_clear"></div>
+		<div class="span span2 span1_6 alpha slot small_slot Slot_VL">
+			<?php slot('Slot_VL', 'grid'); ?>
+		</div>
+		<div class="span span10 span5_6 omega grid_space">
+			<span class="pad_slot">&nbsp;</span>
+		</div>
 	</div>
 </div>
 
@@ -84,5 +91,5 @@
 	require CMS_ROOT. cms_core::$templatePath. '/includes/footer.inc.php';
 }?>
 
-<?php //data:eJydUl1vwiAU_S88N8tam330TZfpTGaWTBMfFkOw0EpGwQDdXIz_fVDbBm3ZjG_ce88593BgD1LCmALJxx58U6w3IAmjAOSSYriWBH2CRMuSBEAxoZtzNU2VgilDynDBxDamCxAAjgpiGnODhsNMEwlHAv-AQ_CPfL_kC0GYyHO2a6XetxBbOBNrygicEV4aI6pAjJmJ4Kyz3t1jmUPjxFA6SQy8u0JX8t4LixwjG4qJy_JfZAAOqysD6wu7Z8u4ZAwuK8gf0cwQ5d5sHnqFLcWVjHtRI7E7TdAPiy6DDS6DxdcnOxZCd7-iCzsivIHZl9iilDRrXOrcDuCUN1v8v6Y_9q65_ncflZRp-MZtDCtjQViL9h4F5cv6M989mhLt6jIM49sAZKykuNEqqJRCgiRDTJlSErUVXNGv9mb5U6trj7WSkcknpbY-k_gmaqtXkulnnBMX8U7zjdOsemNWNsQTXtVvUS3z2D78AiainLs,//v2// ?>
-<?php //checksum:A6zw9giHQWWufEe8IAX6ssP4JFY,// ?>
+<?php //data:eJydU1tvwiAU_i88N8tam136pst0Jpol08yHZSFYaCWjYIBuLsb_PqhtgyvdjG89h-9yzgfdg5QwpkDytgdfFOsNSMIoALmkGK4lQR8g0bIkAVBM6Oa7Ok2VgilDynDBxDamSxAAjgpiGguDhsNMEwlHAn-DQ_CPvF_yiSBM5G-2O0rttxRbOBdrygicE16aQVSBGDMngrOOvetjmUMziaF0khj0eoWu5G0vLHIG2VBMXFb_IgNweL8wMF_YHpdxyRhcVZA_opkjynuzufMKW4orGXtRI7E7TbAfFp0HG5wHiy9PdiyE7j5FF3ZE9AZmb2KLUtLYuNSFPYBT3rj0vxp_7N3h_Pc-KinT8JmfxuDHVr_w68xAzazC7mIXLihf1a_-5t6UaFeXYRhfByBjJcWNUEGlFBIkGWLKlJKoreCKfrYR5A-trv2slYxMPim1XSiJr6K2mpFMP-KcuIgXmm-cZtUbs7IhnvCqfotqmcf24Qc256oN//v2// ?>
+<?php //checksum:v2k_Yh-DBJaf2TEZ1Z5-9VsB2zw,// ?>

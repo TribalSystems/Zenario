@@ -61,7 +61,7 @@ if (!empty($slotContents) && is_array($slotContents)) {
 		}
 		
 		$compatibilityClassNames = array();
-		$level = (int) arrayKey($instance, 'level');
+		$level = (int) ($instance['level'] ?? false);
 		$isVersionControlled = !empty($instance['content_id']);
 		$containerId = 'plgslt_'. $slotName;
 		
@@ -115,19 +115,19 @@ if (!empty($slotContents) && is_array($slotContents)) {
 			}
 		}
 		
+		
+		$showSlotInEditMode = false;
+		$showSlotInItemMode = false;
+		$showSlotInLayoutMode = false;
+		$slotWrapperClass = $tags['css_class'];
+		
 		if (!$ajaxReload) {
-			$slotWrapperClasses[$slotName] = $tags['css_class'];
-			
-			//Add a css class around slots that are being edited using the WYSIWYG Editor
-			if ($slotContents[$slotName]['class']->beingEdited()) {
-				$slotWrapperClasses[$slotName] .= ' zenario_slot_being_edited';
-			}
-			
 			$html .= '
 				<div id="zenario_fbAdminSlotControls-'. $slotName. '" style="display: none;" onmouseout="zenarioA.closeSlotControlsAfterDelay();" onmouseover="zenarioA.dontCloseSlotControls();" class="zenario_fbAdminSlotControls">
 					<div class="zenario_slotControlsWrap" id="zenario_fbAdminPluginOptionsWrap-'. $slotName. '">
 						<div id="zenario_fbAdminSlotControlsContents-'. $slotName. '">';
 		}
+		
 		
 		//Output the slot controls
 		foreach ($sections as $section) {
@@ -138,23 +138,45 @@ if (!empty($slotContents) && is_array($slotContents)) {
 				if ($section == 'actions' || $section == 'overridden_actions') {
 					$thisHtml .= ' onclick="zenarioA.closeSlotControls();"';
 				}
+				$isInfoSection = $section == 'info';
+				
 				$thisHtml .= '>';
 				
 				$foundButton = false;
 				foreach ($tags[$section] as $id => &$control) {
-					if (is_array($control) && !empty($control['label']) && !engToBooleanArray($control, 'hidden')) {
+					if (is_array($control) && !empty($control['label']) && !engToBoolean($control['hidden'] ?? false)) {
 						$foundButton = true;
 						
 						$thisHtml .= '<div id="'. htmlspecialchars('zenario_slot_control__'. $slotName. '__'. $section. '__'. $id). '" class="zenario_sc ';
 						
-						if (engToBooleanArray($control, 'page_modes', 'menu')) {
-							$thisHtml .= 'zenario_showInMenuMode ';
-						}
-						if (engToBooleanArray($control, 'page_modes', 'edit')) {
+						if (empty($control['page_modes']['edit'])) {
+							$thisHtml .= 'zenario_hideInEditMode ';
+						} else {
 							$thisHtml .= 'zenario_showInEditMode ';
+							
+							if (!$isInfoSection) {
+								$showSlotInEditMode = true;
+							}
 						}
-						if (engToBooleanArray($control, 'page_modes', 'layout')) {
+						
+						if (empty($control['page_modes']['item'])) {
+							$thisHtml .= 'zenario_hideInItemMode ';
+						} else {
+							$thisHtml .= 'zenario_showInItemMode ';
+							
+							if (!$isInfoSection) {
+								$showSlotInItemMode = true;
+							}
+						}
+						
+						if (empty($control['page_modes']['layout'])) {
+							$thisHtml .= 'zenario_hideInLayoutMode ';
+						} else {
 							$thisHtml .= 'zenario_showInLayoutMode ';
+							
+							if (!$isInfoSection) {
+								$showSlotInLayoutMode = true;
+							}
 						}
 						
 						if (isset($control['css_class'])) {
@@ -192,6 +214,28 @@ if (!empty($slotContents) && is_array($slotContents)) {
 			}
 		}
 		
+		//Add a css class around slots that are being edited using the WYSIWYG Editor
+		if ($slotContents[$slotName]['class']->beingEdited()) {
+			$slotWrapperClass .= ' zenario_slot_being_edited';
+			$showSlotInEditMode = true;
+		}
+		
+		if ($showSlotInEditMode) {
+			$slotWrapperClass .= ' zenario_showSlotInEditMode';
+		} else {
+			$slotWrapperClass .= ' zenario_hideSlotInEditMode';
+		}
+		if ($showSlotInItemMode) {
+			$slotWrapperClass .= ' zenario_showSlotInItemMode';
+		} else {
+			$slotWrapperClass .= ' zenario_hideSlotInItemMode';
+		}
+		if ($showSlotInLayoutMode) {
+			$slotWrapperClass .= ' zenario_showSlotInLayoutMode';
+		} else {
+			$slotWrapperClass .= ' zenario_hideSlotInLayoutMode';
+		}
+		
 		if ($ajaxReload) {
 			echo
 				'<!--SLOT_CONTROLS:',
@@ -200,12 +244,14 @@ if (!empty($slotContents) && is_array($slotContents)) {
 
 			echo
 				'<!--SLOT_CONTROLS_CSS_CLASS:',
-					eschyp($tags['css_class']),
+					eschyp($slotWrapperClass),
 				'-->';
 			
 			$html = '';
 		
 		} else {
+			$slotWrapperClasses[$slotName] = $slotWrapperClass;
+			
 			$html .= '
 						</div>
 					</div>

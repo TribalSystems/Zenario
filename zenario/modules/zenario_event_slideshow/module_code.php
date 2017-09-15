@@ -64,7 +64,7 @@ class zenario_event_slideshow extends module_base_class {
 		while ($row = sqlFetchAssoc($result)) {
 			$width = $height = $url = false;
 			if ($stickyImage = 
-				itemStickyImageLink(
+				Ze\File::itemStickyImageLink(
 					$width, 
 					$height, 
 					$url, 

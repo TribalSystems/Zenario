@@ -96,7 +96,7 @@ foreach ($globalAdmins as $globalId => &$admin) {
 			
 			//Copy it to the local database and then use the copy
 			if ($image !== false) {
-				$adminG['image_id'] = addFileFromString('admin', $image['data'], $image['filename'], true);
+				$adminG['image_id'] = Ze\File::addFromString('admin', $image['data'], $image['filename'], true);
 			}
 		}
 	} else {

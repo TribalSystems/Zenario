@@ -55,8 +55,6 @@ class zenario_common_features__admin_boxes__export_dataset extends module_base_c
 	}
 	
 	public function adminBoxDownload($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-	//public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		
 		// Get dataset fields with export property
 		$dataset = getDatasetDetails($box['key']['dataset']);
 		$sql = self::getExportableDatasetFieldsSQL($dataset['id']);
@@ -64,6 +62,7 @@ class zenario_common_features__admin_boxes__export_dataset extends module_base_c
 		$systemFields = array();
 		$customFields = array();
 		$datasetColumns = array();
+		$datasetColumnIdLink = array();
 		$datasetFields = array();
 		$rowTemplate = array();
 		$data = array();
@@ -74,20 +73,35 @@ class zenario_common_features__admin_boxes__export_dataset extends module_base_c
 				continue;
 			}
 			
-			if ($row['is_system_field']) {
-				$systemFields[] = $row['db_column'];
-			} else {
-				$customFields[] = $row['db_column'];
+			if ($row['db_column']) {
+				if ($row['is_system_field']) {
+					$systemFields[] = $row['db_column'];
+				} else {
+					$customFields[] = $row['db_column'];
+				}
+				$datasetColumnIdLink[$row['db_column']] = $row['id'];
 			}
-			$datasetColumns[$row['id']] = $row['db_column'];
+			
+			$datasetColumns[$row['id']] = !empty($row['db_column']) ? $row['db_column'] : $row['field_name'];
+			
 			$row['ord'] = ++$ord;
-			$datasetFields[$row['db_column']] = $row;
-			$rowTemplate[$row['db_column']] = '';
+			$datasetFields[$row['id']] = $row;
+			$rowTemplate[$row['id']] = '';
 		}
-		
 
 		if ($dataset['system_table'] == 'users' && inc('zenario_user_activity_bands') && setting('zenario_user_activity_bands__add_activity_band_column')) {
 			$datasetColumns[] = 'activity_bands';
+		}
+		
+		//Get location descriptive page (if export is enabled for it)
+		$locationContentItemFieldId = false;
+		if (inc('zenario_location_manager') && $dataset['system_table'] == ZENARIO_LOCATION_MANAGER_PREFIX . 'locations') {
+			$fieldId = getRow('custom_dataset_fields', 'id', array('dataset_id' => $dataset['id'], 'tab_name' => 'content_item', 'field_name' => 'content_item'));
+			if (isset($datasetColumns[$fieldId])) {
+				$locationContentItemFieldId = $fieldId;
+				$systemFields[] = 'equiv_id';
+				$systemFields[] = 'content_type';
+			}
 		}
 		
 		// Array of tables to get data from
@@ -105,30 +119,33 @@ class zenario_common_features__admin_boxes__export_dataset extends module_base_c
 		// Get data
 		foreach ($recordTables as $recordTable) {
 			if (!empty($recordTable['table'])) {
-				$IdColumn = getIdColumnOfTable($recordTable['table']);
-				$recordTable['fields'][] = $IdColumn;
-				
+				$idColumn = getIdColumnOfTable($recordTable['table']);
+				$recordTable['fields'][] = $idColumn;
 				
 				$sql = '
 					SELECT ' . inEscape($recordTable['fields'], 'identifier') . '
 					FROM ' . DB_NAME_PREFIX . sqlEscape($recordTable['table']) . '
-					WHERE ' . sqlEscape($IdColumn) . ' IN (' . inEscape($box['key']['export_ids']) . ')';
+					WHERE ' . sqlEscape($idColumn) . ' IN (' . inEscape($box['key']['export_ids']) . ')';
 				$result = sqlSelect($sql);
 				
 				while ($row = sqlFetchAssoc($result)) {
-					
-					if (!isset($data[$row[$IdColumn]])) {
-						$data[$row[$IdColumn]] = $rowTemplate;
+					if (!isset($data[$row[$idColumn]])) {
+						$data[$row[$idColumn]] = $rowTemplate;
 					}
 					
 					foreach ($row as $col => $value) {
 						// Don't export ID column
-						if ($col == $IdColumn) {
+						if ($col == $idColumn) {
 							continue;
 						}
 						
 						// Set value
-						$data[$row[$IdColumn]][$col] = self::formatDatasetFieldValue($value, $datasetFields[$col]);
+						$datasetFieldId = $datasetColumnIdLink[$col];
+						$data[$row[$idColumn]][$datasetFieldId] = self::formatDatasetFieldValue($value, $datasetFields[$datasetFieldId]);
+					}
+					
+					if ($locationContentItemFieldId && ($recordTable['table'] == $dataset['system_table'])) {
+						$data[$row[$idColumn]][$locationContentItemFieldId] = $row['content_type'] . '_' . $row['equiv_id'];
 					}
 				}
 			}
@@ -193,12 +210,11 @@ class zenario_common_features__admin_boxes__export_dataset extends module_base_c
 	
 	private static function getExportableDatasetFieldsSQL($datasetId) {
 		$sql = '
-			SELECT f.id, f.db_column, f.is_system_field, f.type
+			SELECT f.id, f.db_column, f.is_system_field, f.type, f.tab_name, f.field_name
 			FROM '.DB_NAME_PREFIX.'custom_dataset_fields f
 			INNER JOIN '.DB_NAME_PREFIX.'custom_dataset_tabs t
 				ON (f.dataset_id = t.dataset_id) AND (f.tab_name = t.name)
 			WHERE f.dataset_id = '.(int)$datasetId. '
-			AND f.db_column != ""
 			AND f.include_in_export = 1
 			AND f.type != "textarea"
 			AND f.type != "editor"

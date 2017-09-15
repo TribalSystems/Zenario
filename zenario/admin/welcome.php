@@ -254,7 +254,7 @@ if (cms_core::$lastDB
  && setting('brand_logo') == 'custom'
  && ($result = sqlSelect("SHOW COLUMNS IN ". DB_NAME_PREFIX. "files WHERE Field = 'thumbnail_64x64_width'"))
  && ($dbAtRecentRevision = sqlFetchRow($result))
- && (imageLink($logoWidth, $logoHeight, $logoURL, setting('custom_logo'), 500, 250, $mode = 'resize', $offset = 0, $retina = true))) {
+ && (Ze\File::imageLink($logoWidth, $logoHeight, $logoURL, setting('custom_logo'), 500, 250, $mode = 'resize', $offset = 0, $retina = true))) {
 	
 	if (strpos($logoURL, '://') === false) {
 		$logoURL = absCMSDirURL(). $logoURL;
@@ -292,7 +292,7 @@ if (!empty($_SERVER['HTTP_REFERER'])
 echo '
 <script type="text/javascript" src="../js/admin_welcome.min.js?v=', $v, '"></script>
 <script type="text/javascript">
-	zenarioAW.task = "', arrayKey($allowedTasks, request('task')), '";
+	zenarioAW.task = "', $allowedTasks[$_REQUEST['task'] ?? false] ?? false, '";
 	zenarioAW.getRequest = ', json_encode($_GET), ';
 	
 	$(document).ready(function () {
@@ -305,13 +305,13 @@ echo '
 						zenarioAW.start();
 						zenarioAW.refererHostWarning(', json_encode($refererHostWarning), ');
 					} else {
-						get("no_something").style.display = "block";
-						get("no_cookies").style.display = "inline";
+						zenario.get("no_something").style.display = "block";
+						zenario.get("no_cookies").style.display = "inline";
 					}
 				});
 			} catch (e) {
-				get("no_something").style.display = "block";
-				get("no_cookies").style.display = "inline";
+				zenario.get("no_something").style.display = "block";
+				zenario.get("no_cookies").style.display = "inline";
 			}
 		}
 	});

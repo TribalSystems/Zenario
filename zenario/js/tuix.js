@@ -33,7 +33,7 @@
 		2. It is minified (e.g. using Google Closure Compiler).
 		3. It may be wrapped togther with other files (this is to reduce the number of http requests on a page).
 	
-	For more information, see js_minify.shell.php for steps (1) and (2), and admin.wrapper.js.php for step (3).
+	For more information, see js_minify.shell.php for steps (1) and (2), and tuix.wrapper.js.php for step (3).
 */
 
 zenario.lib(function(
@@ -59,7 +59,7 @@ var htmlBaseFun = function(tag, a, noOffset) {
 		key, val,
 		postFieldHTML,
 		selfCloses = {br:1, hr:1, img:1, link:1, input:1}[tag],
-		booleans = {checked: 1, selected: 1};
+		booleans = {checked: 1, disabled: 1, multiple: 1, selected: 1};
 
 	//Output attribute/value pairs
 	for (; i < c; i += 2) {
@@ -67,7 +67,7 @@ var htmlBaseFun = function(tag, a, noOffset) {
 		key = a[i - 1];
 		val = a[i];
 		
-		if (key == 'checked' || key == 'disabled' || key == 'multiple' || key == 'selected') {
+		if (booleans[key]) {
 			if (val) {
 				html += ' ' + key + '="' + key + '"';
 			}
@@ -82,19 +82,19 @@ var htmlBaseFun = function(tag, a, noOffset) {
 		html += '/>';
 	} else {
 		html += '>';
-	}
 	
-	//Was there an odd number of attribute/value pairs?
-	//If so, the last one should be the inner HTML of the element
-	if (c % 2? noOffset : !noOffset) {
-		postFieldHTML = a[c-1];
+		//Was there an odd number of attribute/value pairs?
+		//If so, the last one should be the inner HTML of the element
+		if (c % 2? noOffset : !noOffset) {
+			postFieldHTML = a[c-1];
 		
-		//Use ">" as a flag to not close a tag and just return with it open
-		if (postFieldHTML === '>') {
-			return html;
+			//Use ">" as a flag to not close a tag and just return with it open
+			if (postFieldHTML === '>') {
+				return html;
+			}
+		
+			html += postFieldHTML;
 		}
-		
-		html += postFieldHTML;
 	}
 
 	if (!selfCloses) {
@@ -1445,6 +1445,9 @@ zenarioT.setKin = function(buttons, parentClass) {
 				if (button.current) {
 					parentButton.childCurrent = true;
 				}
+				if (button.selected) {
+					parentButton.childSelected = true;
+				}
 				
 				parentButton.children.push(button);
 			}
@@ -1517,6 +1520,33 @@ zenarioT.splitDataFromErrorMessage = function(resp) {
 	return resp;
 };
 
+zenarioT.onChangeOrSearch = function() {
+	return (zenario.browserIsIE() || zenario.browserIsEdge())? 'onchange' : 'onsearch';
+};
+
+zenarioT.showDevTools = function() {
+	return (zenarioA.adminSettings || {}).show_dev_tools;
+};
+
+zenarioT.filter = function(filter) {
+	
+	if (filter === false) {
+		return function(button) {
+			return !button.location;
+		};
+	
+	} else if (typeof filter == 'string') {
+		return function(button) {
+			return button.location == filter;
+		};
+	}
+	
+	return filter;
+};
+
+zenarioT.find = function(collection, filter) {
+	return _.find(collection, zenarioT.filter(filter));
+};
 
 
 zenarioT.init = true;

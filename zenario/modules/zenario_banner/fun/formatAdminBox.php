@@ -69,7 +69,7 @@ switch ($path) {
 		 
 			 || ($values['first_tab/image_source'] == '_STICKY_IMAGE'
 			  && (getCIDAndCTypeFromTagId($cID, $cType, $values['first_tab/hyperlink_target']))
-			  && ($imageId = itemStickyImageId($cID, $cType))));
+			  && ($imageId = Ze\File::itemStickyImageId($cID, $cType))));
 			
 			$imagePicked = (bool) $imageId;
 		}
@@ -103,7 +103,7 @@ switch ($path) {
 		if ($imagePicked
 		 && $imageId
 		 && ($image = getRow('files', array('width', 'height', 'alt_tag', 'title', 'floating_box_title'), $imageId))) {
-			$editModeOn = engToBooleanArray($box['tabs']['first_tab'], 'edit_mode', 'on');
+			$editModeOn = engToBoolean($box['tabs']['first_tab']['edit_mode']['on'] ?? false);
 			
 			$fields['first_tab/alt_tag']['multiple_edit']['original_value'] = $image['alt_tag'];
 			if ($box['first_display'] && !$values['first_tab/alt_tag']) {
@@ -202,7 +202,7 @@ switch ($path) {
 		} else {
 			
 			$mrg = array(
-				'def_lang_name' => htmlspecialchars(getLanguageName(setting('default_language'))),
+				'def_lang_name' => htmlspecialchars(getLanguageName(cms_core::$defaultLang)),
 				'phrases_panel' => htmlspecialchars(absCMSDirURL(). 'zenario/admin/organizer.php#zenario__languages/panels/phrases')
 			);
 			

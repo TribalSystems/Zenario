@@ -5,18 +5,18 @@ require '../../adminheader.inc.php';
 require_once CMS_ROOT. 'zenario/libraries/lgpl/wideimage/WideImage.php';
 
 
-$fluid = (int) get('fluid');
-//$border = (int) get('border');
-$save = (int) get('save');
-$gCols = (int) get('gCols');
-$gColWidth = (int) get('gColWidth');
-$gGutter = (float) get('gGutter');
-$gGutterLeftEdge = (float) get('gGutterLeftEdge');
-$gGutterRightEdge = (float) get('gGutterRightEdge');
-$minWidth = (int) get('minWidth');
-$maxWidth = (int) get('maxWidth');
-$minHeight = (int) get('minHeight');
-if(!$minHeight) $minHeight = get('png') ? 500 : 50;
+$fluid = (int) ($_GET['fluid'] ?? false);
+//$border = (int) ($_GET['border'] ?? false);
+$save = (int) ($_GET['save'] ?? false);
+$gCols = (int) ($_GET['gCols'] ?? false);
+$gColWidth = (int) ($_GET['gColWidth'] ?? false);
+$gGutter = (float) ($_GET['gGutter'] ?? false);
+$gGutterLeftEdge = (float) ($_GET['gGutterLeftEdge'] ?? false);
+$gGutterRightEdge = (float) ($_GET['gGutterRightEdge'] ?? false);
+$minWidth = (int) ($_GET['minWidth'] ?? false);
+$maxWidth = (int) ($_GET['maxWidth'] ?? false);
+$minHeight = (int) ($_GET['minHeight'] ?? false);
+if(!$minHeight) $minHeight = ($_GET['png'] ?? false) ? 500 : 50;
 
 if ($fluid) {
 	$width = $maxWidth;

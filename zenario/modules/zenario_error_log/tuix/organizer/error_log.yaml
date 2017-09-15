@@ -50,12 +50,5 @@ zenario__administration:
                     priv: _PRIV_MANAGE_SPARE_ALIAS
                     hide_when_no_search_results: true
                     label: Clear log
-                    ajax:
-                        confirm:
-                            message: Are you sure you want to clear the error log? All logged errors in this panel will be permanently deleted.
-                            message_type: warning
-                            button_message: Clear log
-                            cancel_button_message: Cancel
-                        request:
-                            clear_log: 1
-                            
+                    admin_box:
+                        path: zenario_clear_error_log

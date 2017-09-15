@@ -30,7 +30,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 $failure = false;
 
-if (post('comm_request') == 'post_reply' && $this->canMakePost()) {
+if (($_POST['comm_request'] ?? false) == 'post_reply' && $this->canMakePost()) {
 	$name = '';
 	$email = '';
 	
@@ -73,17 +73,17 @@ if (post('comm_request') == 'post_reply' && $this->canMakePost()) {
 		$this->addReply(userId(), $_POST['comm_message'], 0, $name, $email);
 	}
 
-} elseif (post('comm_request') == 'delete_post' && $this->canDeletePost($this->post)) {
+} elseif (($_POST['comm_request'] ?? false) == 'delete_post' && $this->canDeletePost($this->post)) {
 	$this->deletePost();
 	
-} elseif (post('comm_request') == 'approve_post' && $this->canApprovePost()) {
-	if (request('checksum') == md5($this->post['message_text'])) {
+} elseif (($_POST['comm_request'] ?? false) == 'approve_post' && $this->canApprovePost()) {
+	if (($_REQUEST['checksum'] ?? false) == md5($this->post['message_text'])) {
 		$this->approvePost();
 	} else {
 		$failure = true;
 	}
 	
-} elseif (post('comm_request') == 'edit_first_post' && $this->canEditFirstPost($this->post)) {
+} elseif (($_POST['comm_request'] ?? false) == 'edit_first_post' && $this->canEditFirstPost($this->post)) {
 	
 	if (empty($_POST['comm_title'])) {
 		//complain about required fields
@@ -100,7 +100,7 @@ if (post('comm_request') == 'post_reply' && $this->canMakePost()) {
 		$this->editFirstPost(userId(), $_POST['comm_message'], $_POST['comm_title']);
 	}
 	
-} elseif (post('comm_request') == 'edit_post' && $this->canEditPost($this->post)) {
+} elseif (($_POST['comm_request'] ?? false) == 'edit_post' && $this->canEditPost($this->post)) {
 	if ($_POST['comm_message']) {
 		$this->editPost(userId(), $_POST['comm_message']);
 	} else {
@@ -109,24 +109,24 @@ if (post('comm_request') == 'post_reply' && $this->canMakePost()) {
 		$this->postingErrors[] = array('Error' => $this->phrase('_ERROR_MESSAGE'));
 	}
 	
-} elseif (post('comm_request') == 'lock_thread' && $this->canLockThread()) {
+} elseif (($_POST['comm_request'] ?? false) == 'lock_thread' && $this->canLockThread()) {
 	$this->lockThread(1);
 	
-} elseif (post('comm_request') == 'unlock_thread' && $this->canUnlockThread()) {
+} elseif (($_POST['comm_request'] ?? false) == 'unlock_thread' && $this->canUnlockThread()) {
 	$this->lockThread(0);
 	
-} elseif (post('comm_request') == 'delete_thread' && $this->canDeleteThread()) {
+} elseif (($_POST['comm_request'] ?? false) == 'delete_thread' && $this->canDeleteThread()) {
 	$this->deleteThread();
 	return;
 
-} elseif (post('comm_request') == 'subs_thread' && $this->canSubsThread() && !$this->hasSubsThread()) {
+} elseif (($_POST['comm_request'] ?? false) == 'subs_thread' && $this->canSubsThread() && !$this->hasSubsThread()) {
 	$this->subs(true);
 
-} elseif (post('comm_request') == 'unsubs_thread' && $this->canSubsThread()) {
+} elseif (($_POST['comm_request'] ?? false) == 'unsubs_thread' && $this->canSubsThread()) {
 	$this->subs(false);
 	
-} elseif (post('comm_request') == 'report_post' && $this->canReportPost()) {
-	if (post('comm_message')) {
+} elseif (($_POST['comm_request'] ?? false) == 'report_post' && $this->canReportPost()) {
+	if ($_POST['comm_message'] ?? false) {
 		$this->reportPost();
 	} else {
 		//complain about required fields

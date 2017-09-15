@@ -37,6 +37,9 @@ category: pluggable
 keywords: >
     masthead, callout, call-out, document, download, image,
     picture, gif, jpg, jpeg, png, link, hyperlink, url
+
+# Reminder: you need to increment the LATEST_REVISION_NO in this module's
+# latest_revision_no.inc.php file if you change any of the fields below:
 vlp_class_name: zenario_slideshow_2
 css_class_name: zenario_slideshow_2
 is_pluggable: true

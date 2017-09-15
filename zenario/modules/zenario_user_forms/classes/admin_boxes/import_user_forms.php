@@ -50,15 +50,15 @@ class zenario_user_forms__admin_boxes__import_user_forms extends module_base_cla
 						break;
 					}
 					
-					$path = getPathOfUploadedFileInCacheDir($values['file/form_json']);
-					$formJSON = file_get_contents($path);
+					$path = Ze\File::getPathOfUploadedInCacheDir($values['file/form_json']);
+					$formJSONString = file_get_contents($path);
 					
-					if ($formJSON === false) {
+					if ($formJSONString === false) {
 						$box['tabs']['file']['errors'][] = adminPhrase('Failed to read file.');
 						break;
 					}
 					
-					$result = zenario_user_forms::validateFormsImport($formJSON);
+					$result = zenario_user_forms::validateImportForms($formJSONString);
 					if (isError($result)) {
 						$box['tabs']['file']['errors'][] = (string)$result;
 						break;
@@ -66,50 +66,30 @@ class zenario_user_forms__admin_boxes__import_user_forms extends module_base_cla
 					
 					// Change to preview tab
 					$box['tab'] = 'preview';
-					
-					// Write errors to preview
-					$formImportCount = 0;
 					$preview = &$fields['preview/preview']['snippet']['html'];
 					$preview = '<h3>' . adminPhrase('Import results preview') . '</h3><br><hr><br>';
-					foreach ($result as $formResult) {
-						$preview .= '<h4>' . adminPhrase('Form: "[[name]]"', array('name' => $formResult['name'])) . '</h4><br>';
-						// Write form import preview
-						$formHasErrors = !empty($formResult['errors']);
-						if ($formHasErrors) {
-							$preview .= static::writePreviewList('Errors', $formResult['errors']);
+					$canImport = true;
+					
+					$formJSON = json_decode($formJSONString, true);
+					foreach ($formJSON['forms'] as $index => $data) {
+						$preview .= '<h4>' . adminPhrase('Form: "[[name]]"', array('name' => $data['form']['name'])) . '</h4><br>';
+						if (!empty($result['errors'][$index])) {
+							$canImport = false;
+							$preview .= static::writePreviewList('Errors', $result['errors'][$index]);
 						}
-						if (!empty($formResult['warnings'])) {
-							$preview .= static::writePreviewList('Warnings', $formResult['warnings']);
+						if (!empty($result['warnings'][$index])) {
+							$preview .= static::writePreviewList('Warnings', $result['warnings'][$index]);
 						}
-						$hasFieldIssues = false;
-						if ($formHasErrors) {
+						if (!empty($result['errors'][$index])) {
 							$preview .= '<p>' . adminPhrase('This form will not be imported.') . '</p>';
-						} else {
-							++$formImportCount;
-							// Write form fields import preview
-							foreach ($formResult['fields'] as $fieldResult) {
-								if (!empty($fieldResult['errors']) || !empty($fieldResult['warnings'])) {
-									$hasFieldIssues = true;
-									$preview .= '<h4>' . adminPhrase('Field: "[[name]]"', array('name' => $fieldResult['name'])) . '</h4><br>';
-									$fieldHasErrors = !empty($fieldResult['errors']);
-									if ($fieldHasErrors) {
-										$preview .= static::writePreviewList('Errors', $fieldResult['errors']);
-									}
-									if (!empty($fieldResult['warnings'])) {
-										$preview .= static::writePreviewList('Warnings', $fieldResult['warnings']);
-									}
-									$preview .= '<br>';
-								}
-							}
 						}
-						
-						if (!$formHasErrors && empty($formResult['warnings']) && !$hasFieldIssues) {
+						if (empty($result['errors'][$index]) && empty($result['warnings'][$index])) {
 							$preview .= '<p>' . adminPhrase('No errors or warnings.') . '</p>';
 						}
-						
 						$preview .= '<hr><br>';
 					}
-					if ($formImportCount > 0) {
+					
+					if ($canImport) {
 						$box['key']['show_save_button'] = true;
 					}
 					
@@ -124,7 +104,7 @@ class zenario_user_forms__admin_boxes__import_user_forms extends module_base_cla
 	}
 	
 	public function writePreviewList($title, $messages) {
-		$list = '<h5>' . adminPhrase($title) . '</h5><br>';
+		$list = '<h5>' . adminPhrase($title) . '</h5>';
 		$list .= '<ul>';
 		foreach ($messages as $message) {
 			$list .= '<li>' . $message . '</li>';
@@ -134,9 +114,9 @@ class zenario_user_forms__admin_boxes__import_user_forms extends module_base_cla
 	}
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		$path = getPathOfUploadedFileInCacheDir($values['file/form_json']);
-		$formJSON = file_get_contents($path);
-		$rv = zenario_user_forms::importForms($formJSON);
+		$path = Ze\File::getPathOfUploadedInCacheDir($values['file/form_json']);
+		$formJSONString = file_get_contents($path);
+		$rv = zenario_user_forms::importForms($formJSONString);
 		if (is_numeric($rv)) {
 			$box['key']['id'] = $rv;
 		}

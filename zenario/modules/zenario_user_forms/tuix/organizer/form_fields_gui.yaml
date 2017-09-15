@@ -111,7 +111,7 @@ zenario__user_forms:
                             min_rows:
                                 label: 'Minimum rows:'
                                 type: text
-                                value: 3
+                                value: 1
                                 maxlength: 250
                                 note_below: The number of rows that are always shown and cannot be deleted.
                                 visible_if: |
@@ -119,7 +119,7 @@ zenario__user_forms:
                             max_rows:
                                 label: 'Maximum rows:'
                                 type: text
-                                value: 10
+                                value: 5
                                 maxlength: 250
                                 note_below: The maximum number of rows that can be added.
                                 visible_if: |
@@ -136,10 +136,12 @@ zenario__user_forms:
                                         label: Read-only
                                     conditional_mandatory:
                                         label: Mandatory on condition
+                                    mandatory_if_visible:
+                                        label: Mandatory if visible
                                 format_onchange: true
                                 note_below: Choose whether this field is mandatory or read-only.
                                 visible_if: |
-                                    ['page_break', 'section_description', 'repeat_start', 'page_end'].indexOf(item.type) == -1
+                                    ['page_break', 'section_description', 'repeat_start', 'page_end', 'restatement', 'calculated'].indexOf(item.type) == -1
                             mandatory_condition_field_id:
                                 label: 'Mandatory on condition field:'
                                 type: select
@@ -149,7 +151,7 @@ zenario__user_forms:
                                 note_below: |
                                     Select a field that this field will rely on from the current form (the following types of field are allowed: checkbox, checkboxes, radios, select, centralised radios and centralised select)
                                 visible_if: |
-                                   ['page_break', 'section_description', 'repeat_start', 'page_end'].indexOf(item.type) == -1 && item.readonly_or_mandatory == 'conditional_mandatory'
+                                   ['page_break', 'section_description', 'repeat_start', 'page_end', 'restatement', 'calculated'].indexOf(item.type) == -1 && item.readonly_or_mandatory == 'conditional_mandatory'
                                 indent: 1
                             
                             mandatory_condition_field_type:
@@ -160,7 +162,7 @@ zenario__user_forms:
                                     mandatory_if_not:
                                         label: Mandatory if not...
                                 visible_if: |
-                                    ['page_break', 'section_description', 'repeat_start', 'page_end'].indexOf(item.type) == -1 && item.readonly_or_mandatory == 'conditional_mandatory' && item.mandatory_condition_field_id
+                                    ['page_break', 'section_description', 'repeat_start', 'page_end', 'restatement', 'calculated'].indexOf(item.type) == -1 && item.readonly_or_mandatory == 'conditional_mandatory' && item.mandatory_condition_field_id
                                 indent: 2
                             mandatory_condition_field_value:
                                 type: select
@@ -171,7 +173,7 @@ zenario__user_forms:
                                     unchecked:
                                         label: Unchecked
                                 visible_if: |
-                                    ['page_break', 'section_description', 'repeat_start', 'page_end'].indexOf(item.type) == -1 && item.readonly_or_mandatory == 'conditional_mandatory' && item.mandatory_condition_field_id
+                                    ['page_break', 'section_description', 'repeat_start', 'page_end', 'restatement', 'calculated'].indexOf(item.type) == -1 && item.readonly_or_mandatory == 'conditional_mandatory' && item.mandatory_condition_field_id
                                 indent: 2
                             mandatory_condition_checkboxes_operator:
                                 type: select
@@ -186,17 +188,17 @@ zenario__user_forms:
                                 type: checkboxes
                                 values: field_lov
                                 visible_if: |
-                                    ['page_break', 'section_description', 'repeat_start', 'page_end'].indexOf(item.type) == -1 && item.readonly_or_mandatory == 'conditional_mandatory' && item.mandatory_condition_field_id
+                                    ['page_break', 'section_description', 'repeat_start', 'page_end', 'restatement', 'calculated'].indexOf(item.type) == -1 && item.readonly_or_mandatory == 'conditional_mandatory' && item.mandatory_condition_field_id
                                 indent: 2
                                 
                             required_error_message:
                                 label: 'Error message when field is incomplete:'
                                 type: text
                                 maxlength: 250
-                                value: This field is required
+                                value: This field is required.
                                 note_below: Enter an error message when this field is incomplete.
                                 visible_if: |
-                                    ['page_break', 'section_description', 'repeat_start', 'page_end'].indexOf(item.type) == -1 && (item.readonly_or_mandatory == 'mandatory' || item.readonly_or_mandatory == 'conditional_mandatory')
+                                    ['page_break', 'section_description', 'repeat_start', 'page_end', 'restatement', 'calculated'].indexOf(item.type) == -1 && ['mandatory', 'conditional_mandatory', 'mandatory_if_visible'].indexOf(item.readonly_or_mandatory) != -1
                                 indent: 1
                             field_validation:
                                 label: 'Validation:'
@@ -238,6 +240,23 @@ zenario__user_forms:
                                 type: checkbox
                                 visible_if: |
                                     item.type == 'date'
+                            no_past_dates:
+                                label: No past dates
+                                type: checkbox
+                                visible_if: |
+                                    item.type == 'date'
+                            disable_manual_input:
+                                label: Disable manual input
+                                type: checkbox
+                                visible_if: |
+                                    item.type == 'date'
+                            combined_filename:
+                                label: 'Default combined filename:'
+                                type: text
+                                maxlength: 250
+                                note_below: A filename for the combined file. The user will be unable to edit this.
+                                visible_if: |
+                                    item.type == 'document_upload'
                             note_to_user:
                                 label: 'Note below field:'
                                 type: text
@@ -288,6 +307,15 @@ zenario__user_forms:
                                 note_below: You can mirror text, calculated, select lists and centralised select lists.
                                 visible_if: |
                                     item.type == 'restatement'
+                    values:
+                        label: Values
+                        visible_if: |
+                            ['select', 'radios', 'checkboxes'].indexOf(item.type) != -1
+                        fields:
+                            values:
+                                type: values_list
+                                readonly_if: |
+                                    item.dataset_field_id > 0
                     advanced:
                         label: Advanced
                         visible_if: |
@@ -312,7 +340,7 @@ zenario__user_forms:
                                     method:
                                         label: Call a module's static method to get the value
                                 visible_if: |
-                                    !item.dataset_field_id && (['checkboxes', 'section_description', 'repeat_start'].indexOf(item.type) == -1)
+                                    !item.dataset_field_id && (['checkboxes', 'section_description', 'repeat_start', 'document_upload'].indexOf(item.type) == -1)
                             default_value_lov:
                                 label: 'Default value:'
                                 type: select
@@ -362,7 +390,7 @@ zenario__user_forms:
                                      !item.dataset_field_id && item.default_value_options == 'method'
                                 indent: 1
                             value_field_columns:
-                                label: 'Checkbox columns:'
+                                label: 'Value columns:'
                                 type: select
                                 values:
                                     1:
@@ -378,9 +406,14 @@ zenario__user_forms:
                                     6:
                                         label: 6
                                 visible_if: |
-                                    item.type == 'checkboxes'
-                            word_limit:
-                                label: 'Word limit:'
+                                    item.type == 'checkboxes' || item.type == 'radios'
+                            word_count_min:
+                                label: 'Word count (min):'
+                                type: text
+                                visible_if: |
+                                    item.type == 'textarea'
+                            word_count_max:
+                                label: 'Word count (max):'
                                 type: text
                                 visible_if: |
                                     item.type == 'textarea'
@@ -408,19 +441,6 @@ zenario__user_forms:
                                 note_below: Show a list of possible options below that match what you type.
                                 visible_if: |
                                     item.type == 'text'
-                            autocomplete_options:
-                                label: 'Autocomplete values source:'
-                                type: radios
-                                format_onchange: true
-                                value: centralised_list
-                                values:
-                                    centralised_list:
-                                        label: Centralised list
-                                    method:
-                                        label: Call a modue's static method to get a list
-                                visible_if: |
-                                    item.type == 'text' && item.autocomplete
-                                indent: 1
                             values_source:
                                 label: 'Source:'
                                 type: select
@@ -428,8 +448,8 @@ zenario__user_forms:
                                 values: centralised_lists
                                 format_onchange: true
                                 visible_if: |
-                                    item.type == 'text' && item.autocomplete && item.autocomplete_options == 'centralised_list'
-                                indent: 2
+                                    item.type == 'text' && item.autocomplete
+                                indent: 1
                             filter_on_field:
                                 label: 'Filter on field:'
                                 type: select
@@ -438,50 +458,22 @@ zenario__user_forms:
                                 format_onchange: true
                                 note_below: Filter an autocomplete list based on the value of another field.
                                 visible_if: |
-                                    item.type == 'text' && item.autocomplete && item.autocomplete_options == 'centralised_list'
-                                indent: 2
+                                    item.type == 'text' && item.autocomplete
+                                indent: 1
                             autocomplete_no_filter_placeholder:
                                 label: 'No filter placeholder:'
                                 type: text
                                 maxlength: 250
                                 note_below: Filter an autocomplete list based on the value of another field.
                                 visible_if: |
-                                    item.type == 'text' && item.autocomplete && item.autocomplete_options == 'centralised_list' && item.filter_on_field
+                                    item.type == 'text' && item.autocomplete && item.filter_on_field
                                 indent: 3
-                            autocomplete_class_name:
-                                label: 'Module class name:'
-                                type: text
-                                maxlength: 250
-                                visible_if: |
-                                     item.type == 'text' && item.autocomplete && item.autocomplete_options == 'method'
-                                indent: 2
-                            autocomplete_method_name:
-                                label: 'Static method name:'
-                                type: text
-                                maxlength: 250
-                                visible_if: |
-                                     item.type == 'text' && item.autocomplete && item.autocomplete_options == 'method'
-                                indent: 2
-                            autocomplete_param_1:
-                                label: 'Parameter 1:'
-                                type: text
-                                maxlength: 250
-                                visible_if: |
-                                     item.type == 'text' && item.autocomplete && item.autocomplete_options == 'method'
-                                indent: 2
-                            autocomplete_param_2:
-                                label: 'Parameter 2:'
-                                type: text
-                                maxlength: 250
-                                visible_if: |
-                                     item.type == 'text' && item.autocomplete && item.autocomplete_options == 'method'
-                                indent: 2
                             invalid_responses:
                                 label: 'Invalid responses:'
                                 type: checkboxes
                                 values: field_lov
                                 format_onchange: true
-                                note_below: If a user chooses an invalid response and attempts to submit the form then an error message will be shown.
+                                note_below: If you want the form to offer possible responses in the list, but want some of them to generate an error if chosen, select those responses above.
                                 visible_if: |
                                     ['checkboxes', 'select', 'radios'].indexOf(item.type) != -1                                    
                             invalid_field_value_error_message:
@@ -491,13 +483,6 @@ zenario__user_forms:
                                 visible_if: |
                                     ['checkboxes', 'select', 'radios'].indexOf(item.type) != -1 && item.invalid_responses && item.invalid_responses.length
                                 indent: 1
-                    values:
-                        label: Values
-                        visible_if: |
-                            ['select', 'radios', 'checkboxes'].indexOf(item.type) != -1
-                        fields:
-                            values:
-                                type: values_list
                     translations:
                         label: Translations
                         visible_if: |
@@ -516,7 +501,7 @@ zenario__user_forms:
                     crm:
                         label: CRM
                         visible_if: |
-                            zenarioO.pi.tuix.crm_enabled && (['page_break', 'page_end', 'section_description'].indexOf(item.type) == -1)
+                            zenarioO.pi.tuix.crm_enabled && (['page_break', 'page_end', 'section_description', 'repeat_start', 'attachment', 'file_picker', 'document_upload', 'restatement'].indexOf(item.type) == -1)
                         fields:
                             send_to_crm:
                                 label: Send to CRM
@@ -536,4 +521,4 @@ zenario__user_forms:
                             crm_values:
                                 type: crm_values
                                 visible_if: |
-                                    item.send_to_crm && (['select', 'radios', 'checkboxes', 'centralised_select', 'centralised_radios', 'checkbox'].indexOf(item.type) != -1)
+                                    item.send_to_crm && (['select', 'radios', 'checkboxes', 'centralised_select', 'centralised_radios', 'checkbox', 'group'].indexOf(item.type) != -1)

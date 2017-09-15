@@ -54,8 +54,12 @@ if (cms_core::$cVersion != cms_core::$adminVersion || cms_core::$status == 'tras
 
 //Only show slot/layout on the current version
 if (cms_core::$cVersion == cms_core::$adminVersion) {
+	
+	if (checkPriv('_PRIV_MANAGE_ITEM_SLOT')) {
+		$toolbars['item'] = array('ord' => 50, 'label' => adminPhrase('Item'));
+	}
 	if (checkPriv('_PRIV_MANAGE_TEMPLATE_SLOT')) {
-		$toolbars['template'] = array('ord' => 50, 'label' => adminPhrase('Layout'));
+		$toolbars['layout'] = array('ord' => 51, 'label' => adminPhrase('Layout'));
 	}
 }
 
@@ -66,20 +70,28 @@ if (!empty($_SESSION['last_item']) && $_SESSION['last_item'] != cms_core::$cType
 $_SESSION['last_item'] = cms_core::$cType. '_'. cms_core::$cID;
 
 //Check that we're about to use a toolbar that exists
-if (!cms_core::$cID || !isset($toolbars[session('page_toolbar')])) {
+if (!cms_core::$cID || !isset($toolbars[($_SESSION['page_toolbar'] ?? false)])) {
+	
 	//Allow switching between edit/edit_disabled/rollback. Default to preview mode otherwise.
-	if (session('page_toolbar') == 'edit' || session('page_toolbar') == 'edit_disabled' || session('page_toolbar') == 'rollback') {
+	if (($_SESSION['page_toolbar'] ?? false) == 'edit' || ($_SESSION['page_toolbar'] ?? false) == 'edit_disabled' || ($_SESSION['page_toolbar'] ?? false) == 'rollback') {
+		
 		if (isset($toolbars['edit'])) {
-			$_SESSION['page_mode'] = $_SESSION['page_toolbar'] = 'edit';
+			$_SESSION['page_mode'] = 'edit';
+			$_SESSION['page_toolbar'] = 'edit';
+		
 		} elseif (isset($toolbars['edit_disabled'])) {
-			$_SESSION['page_mode'] = $_SESSION['page_toolbar'] = 'edit_disabled';
+			$_SESSION['page_mode'] = 'edit';
+			$_SESSION['page_toolbar'] = 'edit_disabled';
+		
 		} elseif (isset($toolbars['rollback'])) {
-			$_SESSION['page_mode'] = $_SESSION['page_toolbar'] = 'rollback';
+			$_SESSION['page_mode'] = 'edit';
+			$_SESSION['page_toolbar'] = 'rollback';
+		
 		} else {
 			$_SESSION['page_mode'] = $_SESSION['page_toolbar'] = 'preview';
 		}
 	
-	} elseif (session('page_mode') == 'menu') {
+	} elseif (($_SESSION['page_mode'] ?? false) == 'menu') {
 		$_SESSION['page_toolbar'] = 'menu1';
 	
 	} else {
@@ -87,9 +99,35 @@ if (!cms_core::$cID || !isset($toolbars[session('page_toolbar')])) {
 	}
 }
 
-$class .=
-	' zenario_adminLoggedIn zenario_pageMode_'. session('page_mode').
-	' '.
-	(session('page_mode') == 'menu'? 'zenario_menuWand_on' : 'zenario_menuWand_off').
-	' '.
-	(in(session('page_mode'), 'edit', 'template') && session('admin_slot_wand')? 'zenario_slotWand_on' : 'zenario_slotWand_off');
+
+$class .= ' zenario_adminLoggedIn';
+
+foreach ([
+	'preview',
+	'edit_disabled',
+	'edit',
+	'rollback',
+	'item',
+	'menu',
+	'layout'
+] as $possiblePageMode) {
+	if (($_SESSION['page_mode'] ?? false) == $possiblePageMode) {
+		$class .= ' zenario_pageMode_'. $possiblePageMode;
+	} else {
+		$class .= ' zenario_pageModeIsnt_'. $possiblePageMode;
+	}
+}
+
+
+if (($_SESSION['page_mode'] ?? false) == 'item' || ($_SESSION['page_mode'] ?? false) == 'layout') {
+	$class .= ' zenario_slotWand_on';
+} else {
+	$class .= ' zenario_slotWand_off';
+}
+
+//Add the old class name for this for backwards compatability
+if (($_SESSION['page_mode'] ?? false) == 'layout') {
+	$class .= ' zenario_pageMode_template';
+} else {
+	$class .= ' zenario_pageModeIsnt_template';
+}

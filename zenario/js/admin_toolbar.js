@@ -126,26 +126,38 @@ zenarioAT.clickTab = function(toolbar) {
 			
 			var oldPageMode = zenarioAT.tuix.toolbars[zenarioA.toolbar] && zenarioAT.tuix.toolbars[zenarioA.toolbar].page_mode || zenarioA.toolbar,
 				newPageMode = zenarioAT.tuix.toolbars[toolbar].page_mode || toolbar,
-				toolbarSubstr = toolbar.substr(0, 4);
+				toolbarSubstr = toolbar.substr(0, 4),
+				sbcFun = zenarioSBC,
+				testPageMode,
+				possiblePageModes = {
+					preview: 0,
+					edit_disabled: 0,
+					edit: 0,
+					rollback: 0,
+					item: 0,
+					menu: 0,
+					layout: 0
+				};
 			
-			$('body').removeClass('zenario_pageMode_' + oldPageMode).addClass('zenario_pageMode_' + newPageMode);
-			
-			//A little bespoke logic for Menu Node Clicks on the Menu Toolbar
-			if (toolbarSubstr == 'menu' && zenarioA.menuWandOn) {
-				$('body').addClass('zenario_menuWand_on').removeClass('zenario_menuWand_off');
-			} else {
-				$('body').addClass('zenario_menuWand_off').removeClass('zenario_menuWand_on');
+			for (testPageMode in possiblePageModes) {
+				sbcFun(newPageMode == testPageMode, 'zenario_pageMode_' + testPageMode, 'zenario_pageModeIsnt_' + testPageMode);
 			}
 			
-			//A little bespoke logic for the Slot Wand on the edit/layout tabs
-			if ((toolbarSubstr == 'edit' || toolbarSubstr == 'temp') && zenarioA.slotWandOn) {
+			//Show empty slots on the item/layout tabs
+			sbcFun(newPageMode == 'item' || newPageMode == 'layout', 'zenario_slotWand_on', 'zenario_slotWand_off');
+			
+			//For layouts, add the old class name for this for backwards compatability
+			sbcFun(newPageMode == 'layout', 'zenario_pageMode_template', 'zenario_pageModeIsnt_template');
+			
+			//Show empty slots on the item/layout tabs
+			if (newPageMode == 'item' || newPageMode == 'layout') {
 				$('body').addClass('zenario_slotWand_on').removeClass('zenario_slotWand_off');
 			} else {
 				$('body').addClass('zenario_slotWand_off').removeClass('zenario_slotWand_on');
 			}
 			
-			//A little bespoke logic for the Show Grid on the edit/layout tabs
-			if ((toolbarSubstr == 'edit' || toolbarSubstr == 'temp') && zenarioA.showGridOn) {
+			//Toggle the Grid on the item/layout tabs
+			if ((newPageMode == 'item' || newPageMode == 'layout') && zenarioA.showGridOn) {
 				zenarioAT.showGridOnOff(true);
 			} else {
 				zenarioAT.showGridOnOff(false);
@@ -238,7 +250,7 @@ zenarioAT.action = function(object) {
 		}
 		
 		if (engToBoolean(object.organizer_quick.reload_menu_slots)) {
-			$('.zenario_slotShownInMenuMode .zenario_slot').each(function(i, el) {
+			$('.zenario_showSlotInMenuMode .zenario_slot').each(function(i, el) {
 				if (el.id && el.id.substr(0, 7) == 'plgslt_') {
 					var slotName = el.id.substr(7);
 					if (zenario.slots[slotName] && zenario.slots[slotName].instanceId) {
@@ -382,8 +394,10 @@ zenarioAT.draw = function() {
 			
 			toolbar.tabs[++ti] = {
 				id: id,
+				parent: tab.parent,
 				css_class: tab.css_class,
 				label: tab.label,
+				warning_icon: tab.warning_icon,
 				tooltip: tab.tooltip,
 				toolbar_microtemplate: tab.toolbar_microtemplate,
 				selected: id == zenarioA.toolbar
@@ -394,6 +408,9 @@ zenarioAT.draw = function() {
 			}
 		}
 	}
+	
+	//Add parent/child relationships for sub-tabs within tabs
+	zenarioT.setKin(toolbar.tabs, 'zenario_at_tab_with_children');
 	
 	//Loop through each section
 	foreach (tuix.sections as sectionId => section) {
@@ -447,23 +464,7 @@ zenarioAT.draw = function() {
 				}
 				
 				//Add parent/child relationships
-				foreach (buttonsPos as var i) {
-					if (parent = section.buttons[i].parent) {
-						if ((bi = buttonsPos[parent]) !== undefined) {
-							if (!buttons[bi].children) {
-								buttons[bi].children = [];
-								buttons[bi].css_class += ' zenario_at_button_with_children';
-							}
-							buttons[bi].children[buttons[bi].children.length] = buttons[buttonsPos[i]];
-						}
-					}
-				}
-				for (bi = buttons.length - 1; bi >= 0; --bi) {
-					var button = section.buttons[buttons[bi].id];
-					if (button.parent || (engToBoolean(button.hide_when_children_are_not_visible) && !buttons[bi].children)) {
-						buttons.splice(bi, 1);
-					}
-				}
+				zenarioT.setKin(buttons, 'zenario_at_button_with_children');
 			}
 			
 			toolbar.sections[sectionId] = buttons;

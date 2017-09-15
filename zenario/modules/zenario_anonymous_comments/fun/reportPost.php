@@ -36,8 +36,8 @@ if (!empty($_SESSION['extranetUserID']) && inc('zenario_users')) {
 }
 
 $request = '';
-if (post('forum_thread')) {
-   $request = '&forum_thread='. (int) post('forum_thread');
+if ($_POST['forum_thread'] ?? false) {
+   $request = '&forum_thread='. (int) ($_POST['forum_thread'] ?? false);
 }
 
 $mergeFields['link'] = $this->linkToItem($this->cID, $this->cType, true, $request) ;
@@ -49,7 +49,7 @@ if ($this->post['updater_id'] !== null) {
 
 $mergeFields['reporter_screen_name'] =  $this->getUserScreenNameLink($user['id']);
 $mergeFields['text_message'] = $this->post['message_text'];
-$mergeFields['report_message'] = zenario_anonymous_comments::sanitiseHTML(post('comm_message'), true, true);
+$mergeFields['report_message'] = zenario_anonymous_comments::sanitiseHTML($_POST['comm_message'] ?? false, true, true);
 $mergeFields['cms_url'] = absCMSDirURL();
 
 

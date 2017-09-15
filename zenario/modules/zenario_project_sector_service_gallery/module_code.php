@@ -115,7 +115,7 @@ class zenario_project_sector_service_gallery extends module_base_class {
 				FROM ' . DB_NAME_PREFIX . ZENARIO_PROJECT_LOCATIONS_PREFIX . 'project_location_services'
 				. ' AS s LEFT JOIN ' . DB_NAME_PREFIX . "visitor_phrases 
 				AS vp ON CONCAT('_PROJECT_plocations_SERVICE_', s.id) = vp.code
-				AND vp.language_id = '" . sqlEscape(cms_core::$langId) . "' ORDER BY 2";
+				AND vp.language_id = '" . sqlEscape(cms_core::$visLang) . "' ORDER BY 2";
 			
 		$result = sqlQuery($sql);
 			
@@ -133,7 +133,7 @@ class zenario_project_sector_service_gallery extends module_base_class {
 				FROM ' . DB_NAME_PREFIX . ZENARIO_PROJECT_LOCATIONS_PREFIX . 'project_location_sectors'
 				. ' AS s LEFT JOIN ' . DB_NAME_PREFIX . "visitor_phrases 
 				AS vp ON CONCAT('_PROJECT_plocations_SECTOR_', s.id) = vp.code 
-				AND vp.language_id = '" . sqlEscape(cms_core::$langId) . "' ORDER BY 2";
+				AND vp.language_id = '" . sqlEscape(cms_core::$visLang) . "' ORDER BY 2";
 			
 		$result = sqlQuery($sql);
 			
@@ -206,8 +206,8 @@ class zenario_project_sector_service_gallery extends module_base_class {
 	protected function setPagination($url_params) {
 		$pageSize = $this->rowsPerPage;
 
-				if(request('onlyList')) {
-					$this->page = ifNull((int) get('page'), 1);            
+				if($_REQUEST['onlyList'] ?? false) {
+					$this->page = ifNull((int) ($_GET['page'] ?? false), 1);            
 				} else {
 					$this->page = 1;
 				}
@@ -281,7 +281,7 @@ class zenario_project_sector_service_gallery extends module_base_class {
 			
 			$img_tag = '';
 			
-			imageLink($width, $height, $url, $row['image_id'], $width, $height, $imageCanvas);
+			Ze\File::imageLink($width, $height, $url, $row['image_id'], $width, $height, $imageCanvas);
 			if ($url) {
 				$img_tag =  '<img src="' . $url . '" />';
 			}

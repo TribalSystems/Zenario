@@ -34,6 +34,7 @@ useGZIP();
 
 
 //Run pre-load actions
+require CMS_ROOT. 'zenario/api/cache_functions.inc.php';
 require editionInclude('wrapper.pre_load');
 
 

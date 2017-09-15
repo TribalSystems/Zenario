@@ -1,18 +1,22 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
 site_settings:
+    tab: users
     setting_group: perms
     title: Editing settings for user permissions and data protection
     lovs:
         roles: {}
     tabs:
-        companies: {}
-        locations: {}
         users: {}
-        roles: {}
-        assets: {}
-        assetTypes: {}
-        possibleEvents: {}
-        procedures: {}
-        schedules: {}
-        thisPolicy: {}
+        organisations:
+            label: Organisations
+            hide_when_children_are_not_visible: true
+        companies:
+            parent: organisations
+            visible_if: zenarioA.running.zenario_company_locations_manager
+        locations:
+            parent: organisations
+            visible_if: zenarioA.running.zenario_location_manager
+        roles:
+            parent: organisations
+            visible_if: zenarioA.running.zenario_organization_manager

@@ -30,9 +30,9 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_users__admin_boxes__user__activate extends zenario_users {
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
-		$userDetails = getUserDetails(arrayKey($box,"key","id"));
+		$userDetails = getUserDetails($box["key"]["id"] ?? false);
 	
-		$box['title'] = "Activating the user \"" . arrayKey($userDetails,"identifier") . "\"";
+		$box['title'] = "Activating the user \"" . ($userDetails["identifier"] ?? false) . "\"";
 	
 		$layouts = zenario_email_template_manager::getTemplatesByNameIndexedByCode('User Activated',false);
 	
@@ -42,7 +42,7 @@ class zenario_users__admin_boxes__user__activate extends zenario_users {
 	
 		if (count($layouts)){
 			$template = current($layouts);
-			$box['tabs']['email']['fields']['email_to_send']['value'] = arrayKey($template,'code');
+			$box['tabs']['email']['fields']['email_to_send']['value'] = $template['code'] ?? false;
 		}
 	}
 	
@@ -83,7 +83,7 @@ class zenario_users__admin_boxes__user__activate extends zenario_users {
 					}
 				}
 	
-				zenario_email_template_manager::sendEmailsUsingTemplate(arrayKey($mergeFields,'email'),arrayKey($values,'email/email_to_send'),$mergeFields);
+				zenario_email_template_manager::sendEmailsUsingTemplate($mergeFields['email'] ?? false,($values['email/email_to_send'] ?? false),$mergeFields);
 			}
 		}
 	}

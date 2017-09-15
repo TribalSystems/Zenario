@@ -154,15 +154,15 @@ methods.sortFields = function(fields, item) {
 	return sortedFields;
 };
 
-methods.saveFieldListOfValues = function(fieldId) {
-	if (this.tuix.items[this.currentTabId] && this.tuix.items[this.currentTabId].fields[fieldId]) {
-		var field = this.tuix.items[this.currentTabId].fields[fieldId];
+methods.saveFieldListOfValues = function(field) {
+	if (field) {
 		$('#field_values_list div.field_value').each(function(i, value) {
 			var id = $(this).data('id');
 			if (!field.lov) {
 				field.lov = {};
 			}
 			if (field.lov[id]) {
+				field.lov[id].id = id;
 				field.lov[id].label = $(value).find('input').val();
 				field.lov[id].ord = i + 1;
 			}
@@ -183,37 +183,37 @@ methods.getTUIXFieldHTML = function(field) {
 };
 
 
-methods.sortAndLoadTUIXTabs = function(tabs, item, selectedTab) {
-	var sortedTabs = [];
+methods.sortAndLoadTUIXPages = function(pages, item, selectedPage) {
+	var sortedPages = [];
 	var selected = false;
-	foreach (tabs as var i => var tab) {
-		if (tab) {
-			tab.id = i;
-			if (tab.visible_if) {
-				if (!zenarioT.doEval(tab.visible_if, undefined, undefined, item)) {
+	foreach (pages as var i => var page) {
+		if (page) {
+			page.id = i;
+			if (page.visible_if) {
+				if (!zenarioT.doEval(page.visible_if, undefined, undefined, item)) {
 					continue;
 				}
 			}
-			if (!selected && (!selectedTab || (selectedTab == i))) {
+			if (!selected && (!selectedPage || (selectedPage == i))) {
 				selected = true;
-				tab._selected = true;
-				this.selectedDetailsTab = i;
+				page._selected = true;
+				this.selectedDetailsPage = i;
 			}
-			sortedTabs.push(tab);
+			sortedPages.push(page);
 		}
 	}
-	return sortedTabs;
+	return sortedPages;
 };
 
-methods.getTUIXTabsHTML = function(tabs) {
+methods.getTUIXPagesHTML = function(pages) {
 	var html = '';
-	for (var i = 0; i < tabs.length; i++) {
-		html += this.getTUIXTabHTML(tabs[i]);
+	for (var i = 0; i < pages.length; i++) {
+		html += this.getTUIXPageHTML(pages[i]);
 	}
 	return html;
 };
-methods.getTUIXTabHTML = function(tab) {
-	var html = this.microTemplate('zenario_organizer_admin_box_builder_tuix_tab', tab);
+methods.getTUIXPageHTML = function(page) {
+	var html = this.microTemplate('zenario_organizer_admin_box_builder_tuix_tab', page);
 	return html;
 };
 
@@ -233,7 +233,7 @@ methods.saveItemTUIXFields = function(item, fields, tuixPath, errors) {
 					item[prop].push($(this).val());
 				});
 			} else if (field.type == 'values_list') {
-				this.saveFieldListOfValues(item.id);
+				this.saveFieldListOfValues(item);
 			} else if (field.type == 'translations') {
 				item._translations = {};
 				$('#organizer_field_translations input.translation').map(function(index, input) {
@@ -246,7 +246,7 @@ methods.saveItemTUIXFields = function(item, fields, tuixPath, errors) {
 				});
 				
 			} else if (field.type == 'crm_values') {
-				if (item.type == 'checkbox') {
+				if (item.type == 'checkbox' || item.type == 'group') {
 					item._crm_data = {};
 					item._crm_data.values = {
 						'unchecked': {
@@ -261,7 +261,7 @@ methods.saveItemTUIXFields = function(item, fields, tuixPath, errors) {
 				}
 				$('#organizer_field_crm_values input.crm_value_input').map(function(index, input) {
 					var id = $(this).data('id');
-					if (item.type == 'checkbox') {
+					if (item.type == 'checkbox' || item.type == 'group') {
 						item._crm_data.values[id].crm_value = $(this).val();
 					} else if (item.lov && item.lov[id]) {
 						item.lov[id].crm_value = $(this).val();
@@ -277,20 +277,21 @@ methods.saveItemTUIXFields = function(item, fields, tuixPath, errors) {
 		}
 	}
 	
-	this.validateFieldDetails(fields, item, tuixPath, this.selectedDetailsTab, errors);
+	this.validateFieldDetails(fields, item, tuixPath, this.selectedDetailsPage, errors);
 };
 
 
-methods.saveItemTUIXTab = function(tuixPath, tab, item) {
+methods.saveItemTUIXPage = function(tuixPath, page, item) {
 	var errors = {};
-	if (this.tuix[tuixPath] && this.tuix[tuixPath].tabs && this.tuix[tuixPath].tabs[tab]) {
-		var fields = this.tuix[tuixPath].tabs[tab].fields;
-		this.saveItemTUIXFields(item, fields, tuixPath, errors)
+	if (this.tuix[tuixPath] && this.tuix[tuixPath].tabs && this.tuix[tuixPath].tabs[page]) {
+		var fields = this.tuix[tuixPath].tabs[page].fields;
+		this.saveItemTUIXFields(item, fields, tuixPath, errors);
+		item._changed = true;
 	}
 	return errors;
 };
 
-methods.addFieldValue = function(item, label) {
+methods.addFieldValue = function(item, label, ord) {
 	if (!label) {
 		label = 'Untitled';
 	}
@@ -298,18 +299,37 @@ methods.addFieldValue = function(item, label) {
 	item.lov[newValueId] = {
 		id: newValueId,
 		label: label,
-		ord: _.size(item['lov']) + 100,
-		is_new_value: true
+		ord: ord || _.size(item['lov']) + 100,
+		_is_new: true
 	};
 };
 
-methods.getTabLabel = function(label) {
-	if (label.trim() === '') {
+methods.getPageLabel = function(label) {
+	if (label && label.trim() === '') {
 		label = 'Untitled';
 	}
 	return label;
 };
 
+methods.getMatchingRepeatEnd = function(fieldId) {
+	var repeatEndId = false,
+		fieldIndex = false,
+		pageId = this.currentPageId,
+		fields = this.getOrderedFields(pageId),
+		i;
+	for (i = 0; i < fields.length; i++) {
+		if (fields[i].type == 'repeat_end') {
+			repeatEndId = fields[i].id;
+		}
+		if (fields[i].id == fieldId) {
+			fieldIndex = i;
+		} else if (fieldIndex !== false && fields[i].type == 'repeat_end') {
+			repeatEndId = fields[i].id;
+			break;
+		}
+	}
+	return repeatEndId;
+};
 
 
 //Draw (or hide) the button toolbar
@@ -331,9 +351,8 @@ methods.showButtons = function($buttons) {
 			.click(function() {
 				var errors = that.saveCurrentOpenDetails();
 				if (!errors) {
-					errors = that.displayGlobalErrors();
+					errors = that.displayPageFieldStructureErrors(that.currentPageId);
 					if (!errors) {
-						zenarioA.nowDoingSomething('saving', true);
 						that.saveChanges();
 					}
 				}
@@ -346,8 +365,8 @@ methods.showButtons = function($buttons) {
 					zenarioO.enableInteraction();
 					
 					that.selectedFieldId = false;
-					that.selectedTabId = false;
-					that.currentTabId = false;
+					that.selectedPageId = false;
+					that.currentPageId = false;
 					
 					that.changeDetected = false;
 					zenarioO.reload();
@@ -360,7 +379,7 @@ methods.showButtons = function($buttons) {
 	}
 };
 
-methods.displayGlobalErrors = function() {
+methods.displayPageFieldStructureErrors = function() {
 	return false;
 };
 
@@ -406,7 +425,7 @@ methods.returnShowLeftColumn = function() {
 //The default value here is a PHP script that will:
 	//Load all of the TUIX properties
 	//Call your preFillOrganizerPanel() method
-	//Populate items from the database if you set the db_items property in TUIX
+	//Populate items from the dapagease if you set the db_items property in TUIX
 	//Call your fillOrganizerPanel() method
 //You can skip these steps and not do an AJAX request by returning false instead,
 //or do something different by returning a URL to a different PHP script

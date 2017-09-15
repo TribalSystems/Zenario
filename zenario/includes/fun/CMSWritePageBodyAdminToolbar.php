@@ -28,12 +28,14 @@
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
 //Work out the links to open Organizer, and to log out. Make these merge fields.
-$zenarioATLinks = array(
+$zenarioATLinks = [
 	'logout' => adminLogoutOnclick(),
-	'organizer' => 'zenario/admin/organizer.php?fromCID='. cms_core::$cID. '&fromCType='. cms_core::$cType);
+	'tag' => cms_core::$cType. '_'. cms_core::$cID,
+	'organizer' => 'zenario/admin/organizer.php?fromCID='. cms_core::$cID. '&fromCType='. cms_core::$cType
+];
 
-if (request('zenario_sk_return')) {
-	$zenarioATLinks['organizer_hash'] = request('zenario_sk_return');
+if ($_REQUEST['zenario_sk_return'] ?? false) {
+	$zenarioATLinks['organizer_hash'] = $_REQUEST['zenario_sk_return'] ?? false;
 } else {
 	$zenarioATLinks['organizer_hash'] = 'zenario__content/panels/content/refiners/content_type//'. cms_core::$cType. '//'. cms_core::$cType. '_'. cms_core::$cID;
 }

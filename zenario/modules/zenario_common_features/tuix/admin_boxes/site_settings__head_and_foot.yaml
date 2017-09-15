@@ -25,6 +25,8 @@ site_settings:
                     value: ''
                     style: >
                         height: 25em;
+                    note_below: >
+                            Note that changes saved here will take effect across your entire site.
         body:
             label: Start of <body>
             edit_mode:

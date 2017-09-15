@@ -8,14 +8,49 @@ toolbars:
         page_mode: preview
         toolbar_microtemplate: zenario_toolbar_preview_tab
     create:
-        ord: 11
+        ord: 20
         priv: _PRIV_CREATE_FIRST_DRAFT
-        label: Create
+        label: New
         tooltip: Create new content items
         page_mode: preview
         toolbar_microtemplate: zenario_toolbar_create_tab
+    edit_disabled:
+        ord: 30
+        priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
+        label: Edit
+        tooltip: ''
+        page_mode: edit_disabled
+        toolbar_microtemplate: zenario_toolbar_edit_tab
+    edit:
+        ord: 31
+        priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
+        label: Edit
+        tooltip: Edit this content item
+        page_mode: edit
+        toolbar_microtemplate: zenario_toolbar_edit_tab
+    rollback:
+        ord: 32
+        priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
+        label: Edit
+        tooltip: Viewing a previous version of this content item
+        page_mode: rollback
+        toolbar_microtemplate: zenario_toolbar_edit_tab
+    restricted_editing:
+        ord: 33
+        priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
+        label: Restricted editing
+        tooltip: Editing this content item is restricted
+        page_mode: preview
+        toolbar_microtemplate: zenario_toolbar_restricted_editing_tab
+    item:
+        ord: 40
+        priv: _PRIV_MANAGE_ITEM_SLOT
+        label: Slots
+        tooltip: Configure plugins that are used on this content item
+        page_mode: item
+        toolbar_microtemplate: zenario_toolbar_item_tab
     menu1:
-        ord: 20
+        ord: 50
         priv: _PRIV_EDIT_MENU_TEXT
         label: Menu
         tooltip: >
@@ -24,53 +59,26 @@ toolbars:
         page_mode: menu
         toolbar_microtemplate: zenario_toolbar_menu_tab
     menu_secondary:
-        ord: ''
+        ord: 51
         priv: _PRIV_EDIT_MENU_TEXT
+        parent: menu1
         label: 
         css_class: zenario_at_menu_tab zenario_at_menu_tab_secondary
         page_mode: menu
         tooltip: Secondary menu node|Make changes to the navigation hierarchy
         toolbar_microtemplate: zenario_toolbar_menu_tab
-    edit_disabled:
-        ord: 40
-        priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
-        label: Edit
-        tooltip: ''
-        page_mode: edit_disabled
-        toolbar_microtemplate: zenario_toolbar_edit_tab
-    edit:
-        ord: 41
-        priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
-        label: Edit
-        tooltip: Edit this content item
-        page_mode: edit
-        toolbar_microtemplate: zenario_toolbar_edit_tab
-    rollback:
-        ord: 42
-        priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
-        label: Edit
-        tooltip: Viewing a previous version of this content item
-        page_mode: rollback
-        toolbar_microtemplate: zenario_toolbar_edit_tab
-    restricted_editing:
-        ord: 43
-        priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
-        label: Restricted editing
-        tooltip: Editing this content item is restricted
-        page_mode: preview
-        toolbar_microtemplate: zenario_toolbar_restricted_editing_tab
-    template:
-        ord: 50
+    layout:
+        ord: 60
         priv: _PRIV_MANAGE_TEMPLATE_SLOT
         label: Layout
         tooltip: >
             View the layout used by this page, and configure plugins that are used on it
-        page_mode: template
+        page_mode: layout
         toolbar_microtemplate: zenario_toolbar_layout_tab
 sections:
-    template:
+    layout:
         appears_in_toolbars:
-            template: true
+            layout: true
         buttons:
             id_and_name:
                 hidden: true
@@ -131,7 +139,7 @@ sections:
                 visible_if: |
                     zenarioA.checkSpecificPermsOnThisPage()
                 appears_in_toolbars:
-                    edit: true
+                    item: true
                 label: <head> HTML
                 onmouseover: zenarioA.closeSlotControls();
                 admin_box:
@@ -146,7 +154,7 @@ sections:
                 visible_if: |
                     zenarioA.checkSpecificPermsOnThisPage()
                 appears_in_toolbars:
-                    edit: true
+                    item: true
                 label: HTML before </body>
                 onmouseover: zenarioA.closeSlotControls();
                 admin_box:
@@ -158,7 +166,7 @@ sections:
             global:
                 parent: slot_control_dropdown
                 appears_in_toolbars:
-                    template: true
+                    layout: true
                 label: Global <head> and <body> HTML
                 onmouseover: zenarioA.closeSlotControls();
                 admin_box:
@@ -168,7 +176,7 @@ sections:
             layout_head:
                 parent: slot_control_dropdown
                 appears_in_toolbars:
-                    template: true
+                    layout: true
                 label: Layout-wide <head> HTML
                 onmouseover: zenarioA.closeSlotControls();
                 admin_box:
@@ -180,7 +188,7 @@ sections:
                 ord: 9999
                 parent: slot_control_dropdown
                 appears_in_toolbars:
-                    template: true
+                    layout: true
                 label: Layout-wide HTML before </body>
                 onmouseover: zenarioA.closeSlotControls();
                 admin_box:
@@ -197,6 +205,13 @@ sections:
                 label: 
                 tooltip: 
             publish:
+                appears_in_toolbars: &publish_appears_in_toolbars
+                    preview: true
+                    edit_disabled: true
+                    edit: true
+                    rollback: true
+                    restricted_editing: true
+                    item: true
                 priv: _PRIV_PUBLISH_CONTENT_ITEM
                 visible_if: |
                     zenarioA.checkSpecificPermsOnThisPage()
@@ -204,6 +219,26 @@ sections:
                 css_class: zenario_at_publish_button
                 admin_box:
                     path: zenario_publish
+            delete_draft:
+                appears_in_toolbars: *publish_appears_in_toolbars
+                priv: _PRIV_DELETE_DRAFT
+                visible_if: |
+                    zenarioA.checkSpecificPermsOnThisPage()
+                label: Delete draft
+                css_class: zenario_delete_draft label_to_the_left
+                ajax:
+                    confirm:
+                        message: |
+                            You are about to delete the current draft version of this content item. Any changes you've made on this draft version will be lost.
+                            
+                            This will not affect the item's published version, if one exists.
+                            
+                            Are you sure you wish to proceed?
+                        button_message: Delete draft
+                        cancel_button_message: Cancel
+                        message_type: warning
+                    request:
+                        delete: 1
 
 meta_info:
     title: ''

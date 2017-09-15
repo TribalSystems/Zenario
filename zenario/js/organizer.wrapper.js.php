@@ -30,16 +30,20 @@ header('Content-Type: text/javascript; charset=UTF-8');
 require '../basicheader.inc.php';
 
 useCache('zenario-inc-organizer-js-'. LATEST_REVISION_NO);
-useGZIP(!empty($_GET['gz']));
+useGZIP();
 
 
-//require CMS_ROOT. 'zenario/includes/cms.inc.php';
+//Run pre-load actions
+require CMS_ROOT. 'zenario/api/cache_functions.inc.php';
+require editionInclude('wrapper.pre_load');
+
 
 //Include all of the standard JavaScript Admin libraries for the CMS
 incJS('zenario/libraries/mit/jquery/jquery.nestable');
-incJS('zenario/libraries/mit/jpaginator/jPaginator');
 incJS('zenario/js/admin_organizer');
 
+//Include every panel-type
+//N.b. these need to be included in dependency order
 incJS('zenario/api/panel_type_base_class');
 incJS('zenario/js/panel_type_grid');
 incJS('zenario/js/panel_type_list');
@@ -58,6 +62,7 @@ incJS('zenario/js/panel_type_slot_reload_on_change');
 incJS('zenario/js/panel_type_images_with_tags');
 incJS('zenario/js/panel_type_images_with_tags_or_grid');
 incJS('zenario/js/panel_type_grid_or_images_with_tags');
+incJS('zenario/js/panel_type_images_with_tags_or_grid_or_multi_line_list');
 
 incJS('zenario/js/panel_type_calendar');
 incJS('zenario/js/panel_type_calendar_user_timers');
@@ -70,3 +75,7 @@ incJS('zenario/js/panel_type_form_builder');
 incJS('zenario/js/panel_type_admin_box_builder');
 
 incJS('zenario/js/panel_type_schematic_builder');
+
+
+//Run post-display actions
+require editionInclude('wrapper.post_display');

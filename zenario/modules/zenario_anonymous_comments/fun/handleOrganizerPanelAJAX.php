@@ -29,7 +29,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 switch ($path) {
 	case 'zenario__social/nav/comments/panel':
-		switch (request('action')) {
+		switch ($_REQUEST['action'] ?? false) {
 			case 'approve_comment':
 				if (checkPriv('_PRIV_MODERATE_USER_COMMENTS')) {
 					foreach (explode(",", $ids) as $id) {

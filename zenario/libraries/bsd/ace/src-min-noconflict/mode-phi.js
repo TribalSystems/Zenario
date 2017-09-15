@@ -60,86 +60,55 @@
 			'dechex': {input: 'number', returns: 'hexadecimal-string'},
 			'decoct': {input: 'number', returns: 'octal-string'},
 			'deg2rad': {input: 'degrees', returns: 'radians'},
-			'exp': {input: 'number', returns: 'number'},
-			'expm1': {input: 'number', returns: 'number'},
 			'floor': {input: 'number', returns: 'number'},
-			'fmod': {input: 'dividend, divisor', returns: 'number'},
-			//'getrandmax': {},
 			'hexdec': {input: 'hexadecimal-string', returns: 'number'},
-			'hypot': {input: 'lengthAdj, lengthOpp', returns: 'lengthHyp'},
-			'intdiv': {input: 'dividend, divisor', returns: 'number'},		//n.b. php7 only
 			'is_finite': {input: 'number', returns: 'boolean'},
 			'is_infinite': {input: 'number', returns: 'boolean'},
 			'is_nan': {input: 'number', returns: 'boolean'},
 			'log': {input: 'number, base', returns: 'number'},
 			'log10': {input: 'number', returns: 'number'},
-			'log1p': {input: 'number', returns: 'number'},
-			'max': {},
-			'min': {},
-			//'mt_getrandmax': {},
-			//'mt_rand': {},
-			//'mt_srand': {},
 			'octdec': {input: 'octal-string', returns: 'number'},
-			//'pi': {},
-			//'pow': {},
 			'rad2deg': {input: 'radians', returns: 'degrees'},
-			//'rand': {},
 			'round': {input: 'number, precision', returns: 'number'},
 			'sin': {input: 'number', returns: 'number'},
 			'sinh': {input: 'number', returns: 'number'},
 			'sqrt': {input: 'number', returns: 'number'},
-			//'srand': {},
-			'sum': {input: 'array', returns: 'number'},
 			'tan': {input: 'number', returns: 'number'},
 			'tanh': {input: 'number', returns: 'number'},
-			//'bcadd': {input: 'number, number, scale=0', returns: 'number'},
-			//'bccomp': {input: 'number, number, scale=0', returns: 'number'},
-			//'bcdiv': {input: 'number, number, scale=0', returns: 'number'},
-			//'bcmod': {input: 'number, modulus', returns: 'number'},
-			//'bcmul': {input: 'number, number, scale=0', returns: 'number'},
-			//'bcpow': {input: 'number, number, scale=0', returns: 'number'},
-			//'bcpowmod': {input: 'number, number, modulus, scale=0', returns: 'number'},
-			//'bcscale': {input: 'scale', returns: 'number'},
-			//'bcsqrt': {input: 'number, scale=0', returns: 'number'},
-			//'bcsub': {input: 'number, number, scale=0', returns: 'number'},
 			
+			//Type conversion
+			'int': {input: 'mixed', returns: 'number'},
+			'float': {input: 'mixed', returns: 'number'},
+			'string': {input: 'mixed', returns: 'string'},
+			
+			//Functions that take mixed inputs (numbers or arrays of numbers)
+			//N.b. NumbersPHP\Statistic is used for some of the statistics
+			'sort': {returns: 'array'},
+			'shuffle': {returns: 'array'},
+			'sum': {returns: 'number'},
+			'max': {returns: 'number'},
+			'min': {returns: 'number'},
+			'mean': {returns: 'number'},
+			'median': {returns: 'number'},
+			'mode': {returns: 'number'},
+			'lowerQuartile': {returns: 'number'},
+			'firstQuartile': {returns: 'number'},
+			'upperQuartile': {returns: 'number'},
+			'thirdQuartile': {returns: 'number'},
+			'standardDev': {returns: 'number'},
+			'product': {returns: 'number'},
+
 			//Numbers.php basic maths functions
-			'subtraction': {input: 'array', returns: 'number'},
-			'product': {input: 'array', returns: 'number'},
-			'square': {input: 'number', returns: 'number'},
-			//'binomial': {input: 'numchoices, numchosen', returns: 'number'},
 			'factorial': {input: 'number', returns: 'number'},
 			'gcd': {input: 'number, number', returns: 'number'},
 			'lcm': {input: 'number, number', returns: 'number'},
-			'shuffle': {input: 'array', returns: 'array'},
-			'isInt': {input: 'number', returns: 'boolean'},
-			//'divMod': {input: 'number, number', returns: 'array'},
-			//'powerMod': {input: 'number, number', returns: 'number'},
-			//'egcd': {input: 'number, number', returns: 'array'},
-			//'modInverse': {input: 'number, number', returns: 'number'},
-			//'numbersEqual': {input: 'number, number', returns: 'boolean'},
-			//'fallingFactorial': {input: 'number, number', returns: 'number'},
 			
-			//Numbers.php statistics functions
-			'mean': {input: 'array', returns: 'number'},
-			'median': {input: 'array', returns: 'number'},
-			'mode': {input: 'array', returns: 'number'},
-			//'quantile': {},
-			//'report': {},
-			//'randomSample': {},
-			'standardDev': {input: 'array', returns: 'number'},
-			//'correlation': {},
-			//'rSquared': {},
-			//'exponentialRegression': {},
-			//'linearRegression': {},
-			//'covariance': {},
-			
-			//Returns a Numbers.php complex number
-			'complex': {input: 'number, number', returns: 'complex number'},
 			//Twig functions
-			'date': {input: 'date-string, timezone', returns: 'date'},
+			'date': {input: 'date-string[, timezone]', returns: 'date'},
+			'cycle': {input: 'array, index', returns: 'element'},
 			'random': {input: 'array/number/string', returns: 'element/number/character'},
-			//N.b. I removed a few such as attribute and cycle from the autocomplete but they're still usable
+			'range': {input: 'start, stop[, step]', returns: 'array'},
+			//N.b. I removed a few such as attribute from the autocomplete/documentation but they're still usable
 			
 			//Assetwolf's functions
 			'getHistoricValue': {input: 'key, timestamp', returns: 'value'},
@@ -147,14 +116,16 @@
 			
 			//Misc functions
 			'length': {input: 'array/string', returns: 'number'},
-			'sort': {input: 'array', returns: 'array'},
 			'paste': {input: 'strings', returns: 'string'},
 			'print': {input: 'string', returns: 'null'},
-			'var_dump': {input: 'string', returns: 'null'},
+			'dump': {input: 'string', returns: 'null'},
 			'count': {input: 'array', returns: 'number'},
+			'array': {input: 'numbers/strings', returns: 'array'},
 			'c': {input: 'numbers/strings', returns: 'array'},
 			'list': {input: 'numbers/strings', returns: 'array'},
+			'array_merge': {input: 'arrays', returns: 'array'},
 			'rev': {input: 'array', returns: 'array'},
+			'reverse': {input: 'array', returns: 'array'},
 			'trim': {input: 'string', returns: 'string'},
 			'setValue': {input: 'key, value', returns: 'null'}
 			
@@ -169,7 +140,6 @@
 			DocCommentHighlightRules = require("./doc_comment_highlight_rules").DocCommentHighlightRules,
 			TextHighlightRules = require("./text_highlight_rules").TextHighlightRules,
 			PhiHighlightRules = function() {
-			
 				
 				var keywordMapper = this.createKeywordMapper(
 					{
@@ -295,8 +265,13 @@
 		
 
 			this.getCompletions = function(state, session, pos, prefix) {
+				
 				var keywords = this.$keywordList || this.$createKeywordList();
-				//console.log(keywords);
+				
+				if (zenario.phiVariables !== undefined) {
+					keywords = keywords.concat(zenario.phiVariables);
+				}
+				
 				return keywords.map(function(word) {
 				
 					var details,
@@ -327,6 +302,9 @@
 							caption = word + '()';
 						}
 						value = word + '(';
+					
+					} else {
+						meta = 'variable';
 					}
 				
 					return {

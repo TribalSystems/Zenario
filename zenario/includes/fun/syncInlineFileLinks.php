@@ -59,9 +59,9 @@ if ($usage == 'image'
 		$filename = $links[$i + 4];
 		$params = array(
 			'mode' => $explode[0],
-			'width' => $width = (int) arrayKey($explode, 1),
-			'height' => $height = (int) arrayKey($explode, 2),
-			'offset' => $offset = (int) arrayKey($explode, 3));
+			'width' => $width = (int) ($explode[1] ?? false),
+			'height' => $height = (int) ($explode[2] ?? false),
+			'offset' => $offset = (int) ($explode[3] ?? false));
 		
 		$mode = 'unlimited';
 		if (in($params['mode'], 'unlimited', 'stretch', 'resize_and_crop', 'fixed_width', 'fixed_height', 'resize')) {
@@ -104,7 +104,7 @@ if ($usage == 'image'
 					if ($checksum
 					 && $checksumCol
 					 && ($existingFile = getRow('files', array('id', 'usage', 'privacy', 'width', 'height', 'usage', 'filename'), array($checksumCol => $checksum)))
-					 && ($newId = copyFileInDatabase($usage, $existingFile['id'], ifNull($filename, $existingFile['filename'])))) {
+					 && ($newId = Ze\File::copyInDatabase($usage, $existingFile['id'], ifNull($filename, $existingFile['filename'])))) {
 					
 						$existingFile['id'] = $newId;
 					
@@ -168,7 +168,7 @@ if ($usage == 'image'
 				
 				$url = '';
 				$dummyWidth = $dummyHeight = 0;
-				if (imageLink(
+				if (Ze\File::imageLink(
 					$dummyWidth, $dummyHeight, $url, $file['id'], $width, $height,
 					$mode, $offset
 				)) {
@@ -251,7 +251,7 @@ if (strpos($html, 'zenario/file.php') !== false) {
 		//If we can get the checksum from the url, look up this file and process it
 		$doSomething = false;
 		$doneSomething = false;
-		if ($checksum = ifNull(arrayKey($params, 'c'), arrayKey($params, 'checksum'))) {
+		if ($checksum = ifNull($params['c'] ?? false, $params['checksum'] ?? false)) {
 		
 			//Catch old checksums in base 16. Convert these to base 64 so the links will be shorter.
 			if (strlen($checksum) == 32
@@ -272,7 +272,7 @@ if (strpos($html, 'zenario/file.php') !== false) {
 
 		
 			//Get the preferred filename from the URL string, if it is set
-			$filename = ifNull(trim(rawurldecode(arrayKey($params, 'filename'))), null, null);
+			$filename = ifNull(trim(rawurldecode($params['filename'] ?? false)), null, null);
 		
 		
 			//Check to see if this is the checksum of an image, with the correct usage set
@@ -285,14 +285,14 @@ if (strpos($html, 'zenario/file.php') !== false) {
 			$file = $foundChecksums[$checksum];
 			
 			//If it is, we've found it and we can continue without any changes
-			if ($file && ifNull(trim(rawurldecode(arrayKey($params, 'usage'))), 'image') == $usage) {
+			if ($file && ifNull(trim(rawurldecode($params['usage'] ?? false)), 'image') == $usage) {
 		
 			//If not, check to see if it is the checksum of an image that exists somewhere on the filesystem,
 			//and try to copy it over.
 			} else {
 				if (!isset($foundChecksumsWithTheWrongUsage[$checksum])) {
 					if (($existingFile = getRow('files', array('id', 'usage', 'privacy', 'width', 'height', 'usage', 'filename'), array($checksumCol => $checksum)))
-					 && ($newId = copyFileInDatabase($usage, $existingFile['id'], ifNull($filename, $existingFile['filename'])))) {
+					 && ($newId = Ze\File::copyInDatabase($usage, $existingFile['id'], ifNull($filename, $existingFile['filename'])))) {
 					
 						$existingFile['id'] = $newId;
 					
@@ -325,13 +325,13 @@ if (strpos($html, 'zenario/file.php') !== false) {
 		
 			//If the image has a width/height listed against its attributes or inline styles,
 			//try to put that width/height in the parameters to the file.php program.
-			if (arrayKey($params, 'width') != $width) {
+			if (($params['width'] ?? false) != $width) {
 				$doSomething = true;
 			}
-			if (arrayKey($params, 'height') != $height) {
+			if (($params['height'] ?? false) != $height) {
 				$doSomething = true;
 			}
-			if (arrayKey($params, 'k') != $key) {
+			if (($params['k'] ?? false) != $key) {
 				$doSomething = true;
 			}
 			
@@ -353,7 +353,7 @@ if (strpos($html, 'zenario/file.php') !== false) {
 				
 				$rememberWhatThisWas = cms_core::$mustUseFullPath;
 				cms_core::$mustUseFullPath = false;
-				if (imageLink(
+				if (Ze\File::imageLink(
 					$dummyWidth, $dummyHeight, $url, $file['id'], $width, $height,
 					$mode = 'stretch', $offset = 0,
 					$retina = false, $privacy = 'public',

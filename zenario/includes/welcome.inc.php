@@ -222,7 +222,7 @@ function getDiamondPath() {
 
 function refreshAdminSession() {
 	if (adminId()) {
-		setAdminSession(adminId(), session('admin_global_id'));
+		setAdminSession(adminId(), ($_SESSION['admin_global_id'] ?? false));
 	}
 }
 
@@ -233,7 +233,7 @@ function prepareAdminWelcomeScreen($path, &$source, &$tags, &$fields, &$values, 
 	//If this is the first time we're displaying something,
 	//or we were displaying something different before and have now just switched paths,
 	//then wipe any previous client tags and initialise every tag as they are defined in the .yaml files.
-	if (arrayKey($tags, 'path') != $path) {
+	if (($tags['path'] ?? false) != $path) {
 		$filling = true;
 		
 		$tags = $source[$path];
@@ -505,6 +505,23 @@ function systemRequirementsAJAX(&$source, &$tags, &$fields, &$values, $changes, 
 	}
 	
 	
+	$optionalRequirementsMet = true;
+	if (!extension_loaded('curl')) {
+		$optionalRequirementsMet = false;
+		$fields['0/optional_curl']['row_class'] = $warning;
+	
+	} else {
+		$fields['0/optional_curl']['row_class'] = $valid;
+	}
+	if (!extension_loaded('zip')) {
+		$optionalRequirementsMet = false;
+		$fields['0/optional_zip']['row_class'] = $warning;
+	
+	} else {
+		$fields['0/optional_zip']['row_class'] = $valid;
+	}
+	
+	
 	$overall = 'section_valid';
 	
 	if (!$apacheRecommendationMet) {
@@ -513,6 +530,14 @@ function systemRequirementsAJAX(&$source, &$tags, &$fields, &$values, $changes, 
 		$fields['0/server']['row_class'] = $section_warning;
 	} else {
 		$fields['0/server']['row_class'] = $section_valid;
+	}
+	
+	if (!$optionalRequirementsMet) {
+		$overall = 'section_warning';
+		$fields['0/show_optional']['pressed'] = true;
+		$fields['0/optional']['row_class'] = $section_warning;
+	} else {
+		$fields['0/optional']['row_class'] = $section_valid;
 	}
 	
 	if (!$phpRequirementsMet) {
@@ -1031,7 +1056,7 @@ function installerAJAX(&$source, &$tags, &$fields, &$values, $changes, &$task, $
 		
 		case 5:
 			
-			$strength = passwordValuesToStrengths(checkPasswordStrength(arrayKey($fields['5/password'], 'current_value'), true));
+			$strength = passwordValuesToStrengths(checkPasswordStrength(($fields['5/password']['current_value'] ?? false), true));
 			$fields['5/password_strength']['snippet']['html'] =
 				'<div class="password_'. $strength. '"><span>'. adminPhrase($strength). '</span></div>';
 			
@@ -1192,7 +1217,7 @@ function installerAJAX(&$source, &$tags, &$fields, &$values, $changes, &$task, $
 							$merge['LANGUAGE_ID']);
 						
 						//Set this language as the default language
-						setSetting('default_language', $merge['LANGUAGE_ID']);
+						setSetting('default_language', cms_core::$defaultLang = $merge['LANGUAGE_ID']);
 
 						//Import any phrases for Modules that use phrases
 						importPhrasesForModules($merge['LANGUAGE_ID']);
@@ -1254,9 +1279,12 @@ function installerAJAX(&$source, &$tags, &$fields, &$values, $changes, &$task, $
 					$moduleErrors = '';
 					checkIfDBUpdatesAreNeeded($moduleErrors, $andDoUpdates = true);
 					
+					//Reset the cached table details, in case any of the definitions are out of date
+					cms_core::$dbCols = array();
+					
 					//Fix a bug where sample sites might not have a default language set, by setting a default language if any content has been created
-					if (!setting('default_language') && ($langId = getRow('content_items', 'language_id', array()))) {
-						setSetting('default_language', $langId);
+					if (!cms_core::$defaultLang && ($langId = getRow('content_items', 'language_id', array()))) {
+						setSetting('default_language', cms_core::$defaultLang = $langId);
 					}
 					
 					//Populate the menu_hierarchy and the menu_positions tables
@@ -1767,7 +1795,7 @@ function changePasswordAJAX(&$source, &$tags, &$fields, &$values, $changes, &$ta
 	
 	//Skip this screen if the Admin presses the "Skip" button
 	if (!empty($fields['change_password/skip']['pressed'])) {
-		cancelPasswordChange(session('admin_userid'));
+		cancelPasswordChange($_SESSION['admin_userid'] ?? false);
 		
 		if ($task == 'change_password') {
 			$task = 'password_changed';
@@ -1786,7 +1814,7 @@ function changePasswordAJAX(&$source, &$tags, &$fields, &$values, $changes, &$ta
 		if (!$currentPassword) {
 			$tags['tabs']['change_password']['errors'][] = adminPhrase('Please enter your current password.');
 		
-		} elseif (!engToBoolean(checkPasswordAdmin(session('admin_username'), $details, $currentPassword))) {
+		} elseif (!engToBoolean(checkPasswordAdmin($_SESSION['admin_username'] ?? false, $details, $currentPassword))) {
 			$tags['tabs']['change_password']['errors'][] = adminPhrase('_MSG_PASS_WRONG');
 		}
 		
@@ -1808,7 +1836,7 @@ function changePasswordAJAX(&$source, &$tags, &$fields, &$values, $changes, &$ta
 		
 		//If no errors with validation, then save new password
 		if (empty($tags['tabs']['change_password']['errors'])) {
-			setPasswordAdmin(session('admin_userid'), $newPassword, 0);
+			setPasswordAdmin($_SESSION['admin_userid'] ?? false, $newPassword, 0);
 			
 			if ($task == 'change_password') {
 				$task = 'password_changed';
@@ -1820,7 +1848,7 @@ function changePasswordAJAX(&$source, &$tags, &$fields, &$values, $changes, &$ta
 	
 	
 	//Show the password strength box
-	$strength = passwordValuesToStrengths(checkPasswordStrength(arrayKey($fields['change_password/password'], 'current_value'), true));
+	$strength = passwordValuesToStrengths(checkPasswordStrength(($fields['change_password/password']['current_value'] ?? false), true));
 	$fields['change_password/password_strength']['snippet']['html'] =
 		'<div class="password_'. $strength. '"><span>'. adminPhrase($strength). '</span></div>';
 	
@@ -2478,7 +2506,7 @@ function diagnosticsAJAX(&$source, &$tags, &$fields, &$values, $changes, $task, 
 	
 	
 	//On multisite sites, don't allow local Admins to change the directory paths
-	if (globalDBDefined() && !session('admin_global_id')) {
+	if (globalDBDefined() && !($_SESSION['admin_global_id'] ?? false)) {
 		$_SESSION['zenario_installer_disallow_changes_to_dirs'] = true;
 	
 	//Only allow changes to the directories if they were not correctly set to start with
@@ -2608,8 +2636,9 @@ function congratulationsAJAX(&$source, &$tags, &$fields, &$values, $changes) {
 
 
 function redirectAdmin($getRequest, $useAliasInAdminMode = false) {
-	$cID = $cType = false;
-	$request = arrayKey($getRequest, 'cID');
+	
+	$cID = $cType = $redirectNeeded = $aliasInURL = false;
+	resolveContentItemFromRequest($cID, $cType, $redirectNeeded, $aliasInURL, $getRequest, $getRequest, []);
 	
 	$domain = ($useAliasInAdminMode || !checkPriv())? primaryDomain() : adminDomain();
 	
@@ -2621,19 +2650,11 @@ function redirectAdmin($getRequest, $useAliasInAdminMode = false) {
 		
 	} elseif (!empty($getRequest['desturl']) && checkPriv()) {
 		return httpOrhttps(). $domain. $getRequest['desturl'];
-		
-	} elseif ($cID = (int) $request) {
-		$cType = ifNull(preg_replace('/\W/', '', arrayKey($getRequest, 'cType')), 'html');
+	}
 	
-	} elseif (getCIDAndCTypeFromTagId($cID, $cType, $request)) {
-		$cType = ifNull(preg_replace('/\W/', '', $cType), 'html');
-	
-	} elseif ($request && ($content = getRow('content_items', array('id', 'type'), array('alias' => $request)))) {
-		$cID = $content['id'];
-		$cType = $content['type'];
-	
-	} elseif ($cID = session('destCID')) {
-		$cType = session('destCType');
+	if (!$cID && !empty($_SESSION['destCID'])) {
+		$cID = $_SESSION['destCID'];
+		$cType = $_SESSION['destCType'] ?? 'html';
 	}
 	
 	if ($cID && checkPerm($cID, $cType)) {

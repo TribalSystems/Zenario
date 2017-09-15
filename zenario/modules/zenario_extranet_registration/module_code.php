@@ -88,26 +88,26 @@ class zenario_extranet_registration extends zenario_extranet {
 			}
 			
 			if (!empty($_SESSION['extranetUserID'])) {
-				if (get('confirm_email') && $this->isEmailAddressVerified($_SESSION['extranetUserID'])) {
+				if (($_GET['confirm_email'] ?? false) && $this->isEmailAddressVerified($_SESSION['extranetUserID'])) {
 					$this->mode = 'modeVerificationAlreadyDone';
 				} else {
 					$this->mode = 'modeLoggedIn';
 				}
-			} elseif (post('extranet_resend') && ($this->setting('initial_email_address_status')=='not_verified')) {
+			} elseif (($_POST['extranet_resend'] ?? false) && ($this->setting('initial_email_address_status')=='not_verified')) {
 				$this->validateFormFields('Resend_Form');
-				$user = $this->getDetailsFromEmail(post('email'));
+				$user = $this->getDetailsFromEmail($_POST['email'] ?? false);
 				if ((!$this->errors) && (!empty($user['id'])) ) {
-					$this->sendVerificationEmail(arrayKey($user,'id'));
+					$this->sendVerificationEmail($user['id'] ?? false);
 					$this->mode = 'modeResent';
 				} else {
 					$this->mode = 'modeResend';
 				}
-			} elseif (get('extranet_resend') && ($this->setting('initial_email_address_status')=='not_verified')) {
+			} elseif (($_GET['extranet_resend'] ?? false) && ($this->setting('initial_email_address_status')=='not_verified')) {
 				$this->mode = 'modeResend';
-			} elseif (post('extranet_register')){
+			} elseif ($_POST['extranet_register'] ?? false){
 				$this->scrollToTopOfSlot();
 				
-				if (post('screen_name')) {
+				if ($_POST['screen_name'] ?? false) {
 					$_POST['screen_name'] = trim($_POST['screen_name']);
 				}
 				
@@ -117,8 +117,8 @@ class zenario_extranet_registration extends zenario_extranet {
 					$this->mode = 'modeRegistration';
 				}
 				
-			} elseif (get('confirm_email') && ($this->setting('initial_email_address_status')=='not_verified')) { 
-				if ($userId = $this->getUserIdFromHashCode(get('hash'))){
+			} elseif (($_GET['confirm_email'] ?? false) && ($this->setting('initial_email_address_status')=='not_verified')) { 
+				if ($userId = $this->getUserIdFromHashCode($_GET['hash'] ?? false)){
 					if (!$this->isEmailAddressVerified($userId)){
 						$this->setEmailVerified($userId);
 						$this->applyAccountActivationPolicy($userId);
@@ -259,7 +259,7 @@ class zenario_extranet_registration extends zenario_extranet {
 		$fields = parent::validateFormFields($section, $contactsCountAsUnregistered);
 		if ($section=='Registration_Form') {
 			if ($this->setting('user_password')=='user_to_choose_password'){
-				$errors = $this->validatePassword(post('extranet_new_password'),post('extranet_new_password_confirm'),false,get_class($this));
+				$errors = $this->validatePassword($_POST['extranet_new_password'] ?? false,($_POST['extranet_new_password_confirm'] ?? false),false,get_class($this));
 				if (count($errors)) {
 					$this->errors = array_merge ($this->errors, $errors);
 					return false;
@@ -293,9 +293,9 @@ class zenario_extranet_registration extends zenario_extranet {
 		$fields = $this->validateFormFields('Registration_Form', $contactsCountAsUnregistered);
 		
 		if ($this->setting('user_email_verification')) {
-			if (!post('email_confirm')) {
+			if (!($_POST['email_confirm'] ?? false)) {
 				$this->errors[] = array('Error' => $this->phrase('Please re-enter your email address.'));
-			} elseif (post('email') != post('email_confirm')) {
+			} elseif (($_POST['email'] ?? false) != $_POST['email_confirm'] ?? false) {
 				$this->errors[] = array('Error' => $this->phrase('The email addresses you entered do not match.'));
 			}
 		}
@@ -305,8 +305,8 @@ class zenario_extranet_registration extends zenario_extranet {
 		}
 		
 		if ($this->useScreenName) {
-			if (post('screen_name')){
-				$fields['screen_name'] = post('screen_name');
+			if ($_POST['screen_name'] ?? false){
+				$fields['screen_name'] = $_POST['screen_name'] ?? false;
 				$fields['screen_name_confirmed'] = 1;
 			} else {
 				$this->errors[] = array('Error' => $this->phrase('_ERROR_SCREEN_NAME'));
@@ -325,7 +325,7 @@ class zenario_extranet_registration extends zenario_extranet {
 		if ($this->setting('initial_account_status')=='pending'){
 			$fields['status'] = 'pending';
 			if ($this->setting('user_password')=='user_to_choose_password'){
-				$fields['password'] = post('extranet_new_password');
+				$fields['password'] = $_POST['extranet_new_password'] ?? false;
 			} else {
 				$fields['password'] = createPassword();
 			}
@@ -334,13 +334,13 @@ class zenario_extranet_registration extends zenario_extranet {
 		}
 		$fields['created_date'] = date("Y-m-d H:i:s");
 		if ($this->setting('user_password')=='user_to_choose_password'){
-			$fields['password'] = post('extranet_new_password');
+			$fields['password'] = $_POST['extranet_new_password'] ?? false;
 		} else {
 			$fields['password'] = createPassword();
 		}
 		$fields['ip'] = visitorIP();
 		
-		if(request('extranet_terms_and_conditions') && $this->setting('requires_terms_and_conditions') && $this->setting('terms_and_conditions_page')){
+		if(($_REQUEST['extranet_terms_and_conditions'] ?? false) && $this->setting('requires_terms_and_conditions') && $this->setting('terms_and_conditions_page')){
 			$fields['terms_and_conditions_accepted'] = 1;
 		}
 		
@@ -359,7 +359,7 @@ class zenario_extranet_registration extends zenario_extranet {
 		}
 		
 		//Allow contacts to register, turning their contact account into a user account
-		$userId = getRow('users', 'id', ['email' => post('email'), 'status' => 'contact']);
+		$userId = getRow('users', 'id', ['email' => ($_POST['email'] ?? false), 'status' => 'contact']);
 		
 		$userId = saveUser($fields2, $userId);
 		
@@ -433,7 +433,7 @@ class zenario_extranet_registration extends zenario_extranet {
 			}
 			
 			
-			zenario_email_template_manager::sendEmailsUsingTemplate(arrayKey($emailMergeFields,'email'),$this->setting('verification_email_template'),$emailMergeFields,array());
+			zenario_email_template_manager::sendEmailsUsingTemplate($emailMergeFields['email'] ?? false,$this->setting('verification_email_template'),$emailMergeFields,array());
 		}
 	}
 
@@ -538,7 +538,7 @@ class zenario_extranet_registration extends zenario_extranet {
 					setUsersPassword($userId, $password);
 				}
 			}
-			zenario_email_template_manager::sendEmailsUsingTemplate(arrayKey($emailMergeFields,'email'),$this->setting('welcome_email_template'),$emailMergeFields,array());
+			zenario_email_template_manager::sendEmailsUsingTemplate($emailMergeFields['email'] ?? false,$this->setting('welcome_email_template'),$emailMergeFields,array());
 		}
 	}
 
@@ -701,14 +701,14 @@ class zenario_extranet_registration extends zenario_extranet {
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
 		switch ($path) {
 			case "zenario__users/panels/zenario_extranet_registration__code_groups":
-				if (post('action') == 'add_group_to_code') {
+				if (($_POST['action'] ?? false) == 'add_group_to_code') {
 					setRow(
 						ZENARIO_EXTRANET_REGISTRATION_PREFIX. 'code_groups',
 						array(),
-						array('code_id' => $refinerId, 'group_id' => post('group_id')));
+						array('code_id' => $refinerId, 'group_id' => ($_POST['group_id'] ?? false)));
 				}
 	
-				if (post('action') == 'remove_group_from_code') {
+				if (($_POST['action'] ?? false) == 'remove_group_from_code') {
 					foreach (explode(',', $ids) as $id) {
 						deleteRow(
 							ZENARIO_EXTRANET_REGISTRATION_PREFIX. 'code_groups',
@@ -717,7 +717,7 @@ class zenario_extranet_registration extends zenario_extranet {
 				}
 				break;
 			case "zenario__users/panels/zenario_extranet_registration__codes":
-				if (post('action') == 'delete_code') {
+				if (($_POST['action'] ?? false) == 'delete_code') {
 					foreach (explode(',', $ids) as $id) {
 						deleteRow(
 							ZENARIO_EXTRANET_REGISTRATION_PREFIX. 'codes',

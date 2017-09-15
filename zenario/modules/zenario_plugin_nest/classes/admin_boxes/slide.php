@@ -5,7 +5,7 @@ class zenario_plugin_nest__admin_boxes__slide extends zenario_plugin_nest {
 	
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
-		if (!get('refiner__nest')) {
+		if (!($_GET['refiner__nest'] ?? false)) {
 			exit;
 		}
 		
@@ -13,7 +13,7 @@ class zenario_plugin_nest__admin_boxes__slide extends zenario_plugin_nest {
 		if (empty(cms_core::$vars)) {
 			require editionInclude('checkRequestVars');
 		}
-		$box['lovs']['coreVars'] = array();
+		$box['lovs']['coreVars'] = !empty($box['lovs']['coreVars']) ? $box['lovs']['coreVars'] : array();
 		foreach (cms_core::$vars as $key => $val) {
 			$box['lovs']['coreVars'][$key] = $key;
 		}
@@ -42,6 +42,7 @@ class zenario_plugin_nest__admin_boxes__slide extends zenario_plugin_nest {
 			
 			$values['details/invisible_in_nav'] = $details['invisible_in_nav'];
 			$values['details/show_back'] = $details['show_back'];
+			$values['details/show_embed'] = $details['show_embed'];
 			$values['details/show_refresh'] = $details['show_refresh'];
 			$values['details/show_auto_refresh'] = $details['show_auto_refresh'];
 			$values['details/auto_refresh_interval'] = $details['auto_refresh_interval'];
@@ -93,7 +94,7 @@ class zenario_plugin_nest__admin_boxes__slide extends zenario_plugin_nest {
 			$box['identifier']['value'] = $details['slide_num'];
 		
 		} else {
-			$box['key']['instanceId'] = get('refiner__nest');
+			$box['key']['instanceId'] = $_GET['refiner__nest'] ?? false;
 			$instance = getPluginInstanceDetails($box['key']['instanceId']);
 			
 			if ($instance['content_id']) {
@@ -154,7 +155,7 @@ class zenario_plugin_nest__admin_boxes__slide extends zenario_plugin_nest {
 		
 		if (!$instance['content_id'] && (getNumLanguages() > 1)) {
 			$mrg = array(
-				'def_lang_name' => htmlspecialchars(getLanguageName(setting('default_language'))),
+				'def_lang_name' => htmlspecialchars(getLanguageName(cms_core::$defaultLang)),
 				'phrases_panel' => htmlspecialchars(absCMSDirURL(). 'zenario/admin/organizer.php#zenario__languages/panels/phrases')
 			);
 			
@@ -220,6 +221,7 @@ class zenario_plugin_nest__admin_boxes__slide extends zenario_plugin_nest {
 			'param_2' => '',
 			'always_visible_to_admins' => 1,
 			'show_back' => 0,
+			'show_embed' => $values['details/show_embed'],
 			'show_refresh' => 0,
 			'show_auto_refresh' => 0,
 			'auto_refresh_interval' => 60,

@@ -28,7 +28,7 @@
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
 //If a language has not yet been enabled, then we cannot do anything.
-if (!setting('default_language')
+if (!cms_core::$defaultLang
  || !checkRowExists('languages', array())) {
 	return;
 }
@@ -54,7 +54,7 @@ if ($resultSp = getRows('special_pages', true, array())) {
 		
 		if (!$sp['equiv_id']) {
 			//If the special page hasn't been created yet, make sure it is created.
-			$langsToCreate[setting('default_language')] = true;
+			$langsToCreate[cms_core::$defaultLang] = true;
 		
 		} else {
 			$thisLang = getContentLang($sp['equiv_id'], $sp['content_type']);
@@ -71,8 +71,8 @@ if ($resultSp = getRows('special_pages', true, array())) {
 			}
 		
 		//Otherwise to ensure that the special page exists for the default language we may need to create one
-		} elseif ($thisLang && $thisLang != setting('default_language') && !isset($equivs[setting('default_language')])) {
-			$langsToCreate[setting('default_language')] = true;
+		} elseif ($thisLang && $thisLang != cms_core::$defaultLang && !isset($equivs[cms_core::$defaultLang])) {
+			$langsToCreate[cms_core::$defaultLang] = true;
 		}
 		
 		if (!empty($langsToCreate)) {
@@ -120,7 +120,7 @@ if ($resultSp = getRows('special_pages', true, array())) {
 								
 								
 									//Try to add an alias (so long as the alias is not taken)
-									if ($alias = arrayKey($page, 'default_alias')) {
+									if ($alias = $page['default_alias'] ?? false) {
 										if (!is_array(validateAlias($alias))) {
 											setRow('content_items', array('alias' => $alias), array('id' => $cID, 'type' => $cType));
 										} else {
@@ -131,7 +131,7 @@ if ($resultSp = getRows('special_pages', true, array())) {
 									}
 								
 									setRow('content_item_versions',
-										array('title' => arrayKey($page, 'default_title'), 'layout_id' => $layoutId),
+										array('title' => ($page['default_title'] ?? false), 'layout_id' => $layoutId),
 										array('id' => $cID, 'type' => $cType, 'version' => $cVersion));
 								
 									if (!$sp['equiv_id']) {
@@ -212,20 +212,20 @@ if ($resultSp = getRows('special_pages', true, array())) {
 										$menuId = saveMenuDetails(array(
 											'section_id' => $sectionId,
 											'redundancy' => $redundancy,
-											'name' => arrayKey($page, 'menu_title'),
-											'rel_tag' => arrayKey($page, 'menu_rel_tag'),
+											'name' => ($page['menu_title'] ?? false),
+											'rel_tag' => ($page['menu_rel_tag'] ?? false),
 											'target_loc' => 'int',
 											'content_id' => $cID,
 											'content_type' => $cType,
 											'hide_private_item' => 
-												engToBooleanArray($page, 'only_show_to_visitors_who_are_logged_in')?
+												engToBoolean($page['only_show_to_visitors_who_are_logged_in'] ?? false)?
 													3
 												: (
-													engToBooleanArray($page, 'only_show_to_visitors_who_are_logged_out')?
+													engToBoolean($page['only_show_to_visitors_who_are_logged_out'] ?? false)?
 														2
 													:	0)));
 									}
-									saveMenuText($menuId, $langId, array('name' => arrayKey($page, 'menu_title')));
+									saveMenuText($menuId, $langId, array('name' => ($page['menu_title'] ?? false)));
 									
 									$redundancy = 'secondary';
 								}
@@ -239,20 +239,20 @@ if ($resultSp = getRows('special_pages', true, array())) {
 										$menuId = saveMenuDetails(array(
 											'section_id' => $sectionId,
 											'redundancy' => $redundancy,
-											'name' => arrayKey($page, 'footer_menu_title'),
-											'rel_tag' => arrayKey($page, 'menu_rel_tag'),
+											'name' => ($page['footer_menu_title'] ?? false),
+											'rel_tag' => ($page['menu_rel_tag'] ?? false),
 											'target_loc' => 'int',
 											'content_id' => $cID,
 											'content_type' => $cType,
 											'hide_private_item' => 
-												engToBooleanArray($page, 'only_show_to_visitors_who_are_logged_in')?
+												engToBoolean($page['only_show_to_visitors_who_are_logged_in'] ?? false)?
 													3
 												: (
-													engToBooleanArray($page, 'only_show_to_visitors_who_are_logged_out')?
+													engToBoolean($page['only_show_to_visitors_who_are_logged_out'] ?? false)?
 														2
 													:	0)));
 									}
-									saveMenuText($menuId, $langId, array('name' => arrayKey($page, 'footer_menu_title')));
+									saveMenuText($menuId, $langId, array('name' => ($page['footer_menu_title'] ?? false)));
 								}
 							
 								//Update the wordcount and other stats

@@ -44,7 +44,7 @@ require CMS_ROOT. 'zenario/includes/tuix.inc.php';
 useGZIP();
 
 //Add the admin id and type up as constants
-define('ADMIN_ID', (int) session('admin_userid'));
+define('ADMIN_ID', (int) ($_SESSION['admin_userid'] ?? false));
 
 
 function searchOrganizerColumn(&$whereStatement, $columnName, $serachText, $exactMatch, $not, $asciiCharactersOnly) {
@@ -89,7 +89,7 @@ function searchOrganizerColumn(&$whereStatement, $columnName, $serachText, $exac
 $mode = false;
 $tagPath = '';
 $modules = array();
-$debugMode = (bool) get('_debug');
+$debugMode = (bool) ($_GET['_debug'] ?? false);
 $customJoin = false;
 $organizerQueryIds = false;
 $organizerQueryDetails = false;
@@ -99,21 +99,21 @@ $compatibilityClassNames = array();
 cms_core::$skType = $type = 'organizer';
 
 //Work out which mode this should be for Organizer
-if (get('_xml') || get('method_call') == 'showSitemap') {
+if (($_GET['_xml'] ?? false) || ($_GET['method_call'] ?? false) == 'showSitemap') {
 	define('ORGANIZER_MODE', $mode = 'xml');
-} elseif (get('_select_mode')) {
+} elseif ($_GET['_select_mode'] ?? false) {
 	define('ORGANIZER_MODE', $mode = 'select');
-} elseif (get('_quick_mode')) {
+} elseif ($_GET['_quick_mode'] ?? false) {
 	define('ORGANIZER_MODE', $mode = 'quick');
-} elseif (get('_typeahead_search')) {
+} elseif ($_GET['_typeahead_search'] ?? false) {
 	define('ORGANIZER_MODE', $mode = 'typeahead_search');
-} elseif (get('_get_item_name')) {
+} elseif ($_GET['_get_item_name'] ?? false) {
 	define('ORGANIZER_MODE', $mode = 'get_item_name');
 } elseif (!empty($_REQUEST['_get_item_links'])) {
 	define('ORGANIZER_MODE', $mode = 'get_item_links');
-} elseif (get('_get_item_data')) {
+} elseif ($_GET['_get_item_data'] ?? false) {
 	define('ORGANIZER_MODE', $mode = 'get_item_data');
-} elseif (get('_get_matched_ids')) {
+} elseif ($_GET['_get_matched_ids'] ?? false) {
 	define('ORGANIZER_MODE', $mode = 'get_matched_ids');
 } else {
 	define('ORGANIZER_MODE', $mode = 'full');
@@ -129,7 +129,7 @@ if ($mode != 'xml') {
 }
 
 
-define('FOCUSED_LANGUAGE_ID__NO_QUOTES', ifNull(ifNull(request('languageId'), get('refiner__language')), setting('default_language'), 'en'));
+define('FOCUSED_LANGUAGE_ID__NO_QUOTES', preg_replace('@[^\w-]@', '', $_REQUEST['languageId'] ?? $_GET['refiner__language'] ?? cms_core::$defaultLang ?? 'en'));
 define('FOCUSED_LANGUAGE_ID', "'". sqlEscape(FOCUSED_LANGUAGE_ID__NO_QUOTES). "'");
 
 
@@ -138,11 +138,11 @@ define('FOCUSED_LANGUAGE_ID', "'". sqlEscape(FOCUSED_LANGUAGE_ID__NO_QUOTES). "'
 
 //See if there is a requested path.
 $requestedPath = false;
-if (get('method_call') == 'showSitemap') {
+if (($_GET['method_call'] ?? false) == 'showSitemap') {
 	$requestedPath = 'zenario__content/hidden_nav/sitemap/panel';
 
-} elseif (request('path')) {
-	$requestedPath = preg_replace('/[^\w\/]/', '', request('path'));
+} elseif ($_REQUEST['path'] ?? false) {
+	$requestedPath = preg_replace('/[^\w\/]/', '', ($_REQUEST['path'] ?? false));
 }
 cms_core::$skPath = $requestedPath;
 
@@ -201,10 +201,10 @@ class zenario_organizer {
 			$tableJoin = preg_replace('/\s\s+/', ' ', trim($tableJoin));
 			$words = preg_split('/\W+/', strtoupper($tableJoin), 4);
 	
-			if (arrayKey($words, 1) != 'JOIN'
-			 && arrayKey($words, 2) != 'JOIN'
-			 && arrayKey($words, 1) != 'STRAIGHT_JOIN'
-			 && arrayKey($words, 2) != 'STRAIGHT_JOIN') {
+			if (($words[1] ?? false) != 'JOIN'
+			 && ($words[2] ?? false) != 'JOIN'
+			 && ($words[1] ?? false) != 'STRAIGHT_JOIN'
+			 && ($words[2] ?? false) != 'STRAIGHT_JOIN') {
 				$tableJoin = 'LEFT JOIN '. $tableJoin;
 			}
 	
@@ -213,8 +213,8 @@ class zenario_organizer {
 	}
 }
 
-if (get('_filters')) {
-	zenario_organizer::$filters = json_decode(get('_filters'), true);
+if ($_GET['_filters'] ?? false) {
+	zenario_organizer::$filters = json_decode($_GET['_filters'] ?? false, true);
 }
 
 
@@ -248,7 +248,7 @@ if ($debugMode) {
 }
 
 //Always require Admin Permissions, except for Organizer which has a feature where feeds from some panels can be made public
-if (!checkPriv() && !($mode == 'xml' && engToBooleanArray($tags, 'xml', 'allow_unauthenticated_xml_access'))) {
+if (!checkPriv() && !($mode == 'xml' && engToBoolean($tags['xml']['allow_unauthenticated_xml_access'] ?? false))) {
 	header('Zenario-Admin-Logged_Out: 1');
 	echo '<!--Logged_Out-->', adminPhrase('You have been logged out.');
 	exit;
@@ -305,7 +305,7 @@ if (!$requestedPath || empty($tags['class_name'])) {
 	foreach ($refinersPresent as $req => $def) {
 		if (isset($_GET[$req])) {
 			$refiners = '';
-			foreach (explode(',', get($req)) as $i => $refiner) {
+			foreach (explode(',', ($_GET[$req] ?? false)) as $i => $refiner) {
 				$refiners .= $i? ',' : '';
 				$refiner = decodeItemIdForOrganizer($refiner);
 				
@@ -330,8 +330,8 @@ if (!$requestedPath || empty($tags['class_name'])) {
 		}
 	}
 	
-	if (request('_combineItem')) {
-		define('COMBINE_ITEM__NO_QUOTES', request('_combineItem'));
+	if ($_REQUEST['_combineItem'] ?? false) {
+		define('COMBINE_ITEM__NO_QUOTES', ($_REQUEST['_combineItem'] ?? false));
 	}
 	
 	//Start to populate the Organizer Panel:
@@ -350,7 +350,7 @@ if (!$requestedPath || empty($tags['class_name'])) {
 	}
 	
 	//Have any columns been added that need formatting from their own Module?
-	if (!get('_queued')) {
+	if (!($_GET['_queued'] ?? false)) {
 		if (isset($tags['columns']) && is_array($tags['columns'])) {
 			foreach ($tags['columns'] as $colName => &$col) {
 				if (is_array($col) && !empty($col['class_name'])) {
@@ -365,10 +365,10 @@ if (!$requestedPath || empty($tags['class_name'])) {
 		
 		//Handle the old name if it's not been changed yet
 		if (method_exists($module, 'lineStorekeeper')) {
-			$module->lineStorekeeper($requestedPath, $tags, request('refinerName'), request('refinerId'), $mode);
+			$module->lineStorekeeper($requestedPath, $tags, ($_REQUEST['refinerName'] ?? false), ($_REQUEST['refinerId'] ?? false), $mode);
 		}
 		
-		$module->preFillOrganizerPanel($requestedPath, $tags, request('refinerName'), request('refinerId'), $mode);
+		$module->preFillOrganizerPanel($requestedPath, $tags, ($_REQUEST['refinerName'] ?? false), ($_REQUEST['refinerId'] ?? false), $mode);
 	}
 	
 	
@@ -389,7 +389,7 @@ if (!$requestedPath || empty($tags['class_name'])) {
 			$tags['columns'] = array();
 		}
 		
-		$encodeItemIdForOrganizer = engToBooleanArray($tags, 'db_items', 'encode_id_column');
+		$encodeItemIdForOrganizer = engToBoolean($tags['db_items']['encode_id_column'] ?? false);
 		
 		if (!isset($tags['items']) || !is_array($tags['items'])) {
 			$tags['items'] = array();
@@ -550,21 +550,21 @@ if (!$requestedPath || empty($tags['class_name'])) {
 		
 		
 		//Apply a refiners, if this panel has any and one has been selected
-		if (get('refinerName') && !empty($tags['refiners'][get('refinerName')])) {
+		if (($_GET['refinerName'] ?? false) && !empty($tags['refiners'][($_GET['refinerName'] ?? false)])) {
 			
 			//allow_unauthenticated_xml_access must be repeated on a refiner if they are both used
-			if (!checkPriv() && !($mode == 'xml' && engToBooleanArray($tags, 'refiners', get('refinerName'), 'allow_unauthenticated_xml_access'))) {
+			if (!checkPriv() && !($mode == 'xml' && engToBooleanArray($tags, 'refiners', ($_GET['refinerName'] ?? false), 'allow_unauthenticated_xml_access'))) {
 				header('Zenario-Admin-Logged_Out: 1');
 				echo '<!--Logged_Out-->', adminPhrase('You have been logged out.');
 				exit;
 			}
 			
 			$refinerWhere = false;
-			if (isset($_GET['_search']) && !empty($tags['refiners'][get('refinerName')]['sql_when_searching'])) {
-				$refinerWhere = ltrim($tags['refiners'][get('refinerName')]['sql_when_searching']);
+			if (isset($_GET['_search']) && !empty($tags['refiners'][($_GET['refinerName'] ?? false)]['sql_when_searching'])) {
+				$refinerWhere = ltrim($tags['refiners'][($_GET['refinerName'] ?? false)]['sql_when_searching']);
 			
-			} elseif (!empty($tags['refiners'][get('refinerName')]['sql'])) {
-				$refinerWhere = ltrim($tags['refiners'][get('refinerName')]['sql']);
+			} elseif (!empty($tags['refiners'][($_GET['refinerName'] ?? false)]['sql'])) {
+				$refinerWhere = ltrim($tags['refiners'][($_GET['refinerName'] ?? false)]['sql']);
 			}
 			if ($refinerWhere !== false) {
 				if (substr($refinerWhere, 0, 3) == 'AND') {
@@ -585,11 +585,11 @@ if (!$requestedPath || empty($tags['class_name'])) {
 			
 			//Add any table-joins for refiners
 			$refinerJoin = false;
-			if (isset($_GET['_search']) && !empty($tags['refiners'][get('refinerName')]['table_join_when_searching'])) {
-				$refinerJoin = $tags['refiners'][get('refinerName')]['table_join_when_searching'];
+			if (isset($_GET['_search']) && !empty($tags['refiners'][($_GET['refinerName'] ?? false)]['table_join_when_searching'])) {
+				$refinerJoin = $tags['refiners'][($_GET['refinerName'] ?? false)]['table_join_when_searching'];
 			
-			} elseif (!empty($tags['refiners'][get('refinerName')]['table_join'])) {
-				$refinerJoin = $tags['refiners'][get('refinerName')]['table_join'];
+			} elseif (!empty($tags['refiners'][($_GET['refinerName'] ?? false)]['table_join'])) {
+				$refinerJoin = $tags['refiners'][($_GET['refinerName'] ?? false)]['table_join'];
 			}
 			if ($refinerJoin !== false) {
 				zenario_organizer::noteTableJoin($sortExtraTables, $refinerJoin);
@@ -602,7 +602,7 @@ if (!$requestedPath || empty($tags['class_name'])) {
 			}
 			unset($refinerJoin);
 		
-		} elseif (engToBooleanArray($tags, 'refiner_required')) {
+		} elseif (engToBoolean($tags['refiner_required'] ?? false)) {
 			echo 'A refiner was required, but none was set.';
 			exit;
 		}
@@ -623,7 +623,7 @@ if (!$requestedPath || empty($tags['class_name'])) {
 				}
 				
 				//Add it to the sort if we're sorting by it
-				if ($colName == get('_sort_col') && !engToBooleanArray($col, 'disallow_sorting')) {
+				if ($colName == ($_GET['_sort_col'] ?? false) && !engToBoolean($col['disallow_sorting'] ?? false)) {
 					if (!empty($col['sort_column'])) {
 						$sortColumn = $col['sort_column'];
 					} else {
@@ -653,8 +653,8 @@ if (!$requestedPath || empty($tags['class_name'])) {
 					
 					
 					
-					if ($colName == get('_sort_col')
-					 || (($isFiltered || isset($_GET['_search'])) && engToBooleanArray($col, 'searchable'))
+					if ($colName == ($_GET['_sort_col'] ?? false)
+					 || (($isFiltered || isset($_GET['_search'])) && engToBoolean($col['searchable'] ?? false))
 					 || ($isFiltered && $filterFormat && in(
 							$filterFormat,
 							'enum', 'yes_or_no',
@@ -678,7 +678,7 @@ if (!$requestedPath || empty($tags['class_name'])) {
 			
 			$first = true;
 			foreach ($tags['columns'] as $colName => &$col) {
-				if (!empty($col['db_column']) && engToBooleanArray($col, 'searchable')) {
+				if (!empty($col['db_column']) && engToBoolean($col['searchable'] ?? false)) {
 					//Group functions can't be used in a query
 					if (!preg_match('/COUNT\s*\(/i', $col['db_column'])) {
 						
@@ -720,7 +720,7 @@ if (!$requestedPath || empty($tags['class_name'])) {
 			
 			if (is_array($col)
 			 && !empty(zenario_organizer::$filters[$colName]['v'])
-			 && !engToBooleanArray($col, 'disallow_filtering')) {
+			 && !engToBoolean($col['disallow_filtering'] ?? false)) {
 				
 				$value_ = zenario_organizer::$filters[$colName]['v'];
 				
@@ -877,7 +877,7 @@ if (!$requestedPath || empty($tags['class_name'])) {
 		
 		//Order by the sort column
 		if ($sortColumn) {
-			if (get('_sort_desc')) {
+			if ($_GET['_sort_desc'] ?? false) {
 				$orderBy = $sortColumnDesc. ", ". $groupBy;
 			} else {
 				$orderBy = $sortColumn. ", ". $groupBy;
@@ -940,24 +940,24 @@ if (!$requestedPath || empty($tags['class_name'])) {
 				//Note that this code is similar to the logic in zenario/ajax.php that normally handles
 				//the handleOrganizerPanelAJAX() and organizerPanelDownload() methods, except this version
 				//also runs preFillOrganizerPanel() and includes a list of ids
-				if (!request('__pluginClassName__')
-				 || empty($modules[request('__pluginClassName__')])) {
+				if (!($_REQUEST['__pluginClassName__'] ?? false)
+				 || empty($modules[($_REQUEST['__pluginClassName__'] ?? false)])) {
 					echo 'Error, could not find the module for this button on this panel.';
 					exit;
 				}
 			
-				if (post('_download')) {
-					$modules[request('__pluginClassName__')]->organizerPanelDownload($requestedPath, $_GET['id'], request('refinerName'), request('refinerId'));
+				if ($_POST['_download'] ?? false) {
+					$modules[($_REQUEST['__pluginClassName__'] ?? false)]->organizerPanelDownload($requestedPath, $_GET['id'], ($_REQUEST['refinerName'] ?? false), ($_REQUEST['refinerId'] ?? false));
 			
 				} else {
-					$newIds = $modules[request('__pluginClassName__')]->handleOrganizerPanelAJAX($requestedPath, $_GET['id'], '', request('refinerName'), request('refinerId'));
+					$newIds = $modules[($_REQUEST['__pluginClassName__'] ?? false)]->handleOrganizerPanelAJAX($requestedPath, $_GET['id'], '', ($_REQUEST['refinerName'] ?? false), ($_REQUEST['refinerId'] ?? false));
 
 					if ($newIds && !is_array($newIds)) {
 						$newIds = explode(',', $newIds);
 					}
 			
 					if ($newIds) {
-						if (!is_array(session('sk_new_ids'))) {
+						if (!is_array($_SESSION['sk_new_ids'] ?? false)) {
 							$_SESSION['sk_new_ids'] = array();
 						}
 						foreach ($newIds as $id) {
@@ -1091,7 +1091,7 @@ if (!$requestedPath || empty($tags['class_name'])) {
 			}
 			
 			//For panel requests that are part of a queue, don't attempt to fetch any ids, just get a count.
-			if (get('_queued')) {
+			if ($_GET['_queued'] ?? false) {
 				$count = sqlNumRows($result);
 			
 			//Otherwise get the list of ids in the correctly sorted order
@@ -1116,9 +1116,9 @@ if (!$requestedPath || empty($tags['class_name'])) {
 				}
 				
 				//If "_limit" is in the request, this means that server side sorting/pagination is being used
-				if (get('_limit')) {
+				if ($_GET['_limit'] ?? false) {
 					//Apply pagination using the limit
-					$start = (int) get('_start');
+					$start = (int) ($_GET['_start'] ?? false);
 				
 					if ($start >= $count) {
 						$start = 0;
@@ -1138,13 +1138,13 @@ if (!$requestedPath || empty($tags['class_name'])) {
 					
 						//Change the start position appropriately
 						if ($pos !== false) {
-							$start = $pos - ($pos % (int) get('_limit'));
+							$start = $pos - ($pos % (int) ($_GET['_limit'] ?? false));
 						}
 					}
 				
 					//Set which page this should be
-					$tags['__page__'] = 1 + (int) ($start / (int) get('_limit'));
-					$stop = $start + (int) get('_limit');
+					$tags['__page__'] = 1 + (int) ($start / (int) ($_GET['_limit'] ?? false));
+					$stop = $start + (int) ($_GET['_limit'] ?? false);
 				
 					$startV = $start;
 					$stopV = $stop;
@@ -1216,13 +1216,13 @@ if (!$requestedPath || empty($tags['class_name'])) {
 		
 		//When I do the work to add a new type of CSV export, the code to handle it should probably go here!
 		
-		//if (request('new_csv_mode') {
+		//if (($_REQUEST['new_csv_mode'] ?? false) {
 		//	foreach ($tags['__item_sort_order__'] as $id) {
 		//		some_module::some_function($requestedPath, $id);
 		//	}
 		//} else
 		
-		if (!get('_queued')) {
+		if (!($_GET['_queued'] ?? false)) {
 			
 			//If we've not been using pagination, count the number of items
 			if (!$in) {
@@ -1361,9 +1361,9 @@ if (!$requestedPath || empty($tags['class_name'])) {
 		}
 	
 	} else {
-		if (get('refinerName') && !empty($tags['refiners'][get('refinerName')])) {
+		if (($_GET['refinerName'] ?? false) && !empty($tags['refiners'][($_GET['refinerName'] ?? false)])) {
 			//allow_unauthenticated_xml_access must repeated it on a refiner 
-			if (!checkPriv() && !($mode == 'xml' && engToBooleanArray($tags, 'refiners', get('refinerName'), 'allow_unauthenticated_xml_access'))) {
+			if (!checkPriv() && !($mode == 'xml' && engToBooleanArray($tags, 'refiners', ($_GET['refinerName'] ?? false), 'allow_unauthenticated_xml_access'))) {
 				header('Zenario-Admin-Logged_Out: 1');
 				echo '<!--Logged_Out-->', adminPhrase('You have been logged out.');
 				exit;
@@ -1382,10 +1382,10 @@ if (!$requestedPath || empty($tags['class_name'])) {
 		
 		//Handle the old name if it's not been changed yet
 		if (method_exists($module, 'fillStorekeeper')) {
-			$module->fillStorekeeper($requestedPath, $tags, request('refinerName'), request('refinerId'), $mode);
+			$module->fillStorekeeper($requestedPath, $tags, ($_REQUEST['refinerName'] ?? false), ($_REQUEST['refinerId'] ?? false), $mode);
 		}
 		
-		$module->fillOrganizerPanel($requestedPath, $tags, request('refinerName'), request('refinerId'), $mode);
+		$module->fillOrganizerPanel($requestedPath, $tags, ($_REQUEST['refinerName'] ?? false), ($_REQUEST['refinerId'] ?? false), $mode);
 	}
 	
 	//Set the current item count
@@ -1437,7 +1437,7 @@ if ($mode == 'get_item_data') {
 //I also need to set the path for Menu Nodes
 } elseif ($mode == 'get_item_name' || $mode == 'get_item_links' || $mode == 'typeahead_search') {
 	//Add information on the item
-	$output = array('item' => arrayKey($tags, 'item'), 'columns' => array());
+	$output = array('item' => ($tags['item'] ?? false), 'columns' => array());
 	
 	if (isset($tags['items'])) {
 		$output['items'] = $tags['items'];
@@ -1524,7 +1524,7 @@ if ($mode == 'xml') {
 	$xml->openURI('php://output');
 	$xml->startDocument('1.0', 'UTF-8');
 	$xml->setIndent(4);
-	$xml->startElement(ifNull(arrayKey($tags, 'xml', 'outer_tag'), 'organizer'));
+	$xml->startElement(ifNull($tags['xml']['outer_tag'] ?? false, 'organizer'));
 	
 	
 	if (!empty($tags['xml']['outer_tag_attributes']) && is_array($tags['xml']['outer_tag_attributes'])) {
@@ -1534,7 +1534,7 @@ if ($mode == 'xml') {
 	}
 	
 	
-	if (engToBooleanArray($tags, 'xml', 'only_show_items_tag')) {
+	if (engToBoolean($tags['xml']['only_show_items_tag'] ?? false)) {
 		$tags = $tags['items'];
 	} else {
 		//Remove a few things we don't need for an XML feed
@@ -1589,13 +1589,13 @@ if ($mode == 'xml') {
 } else {
 	header('Content-Type: text/javascript; charset=UTF-8');
 	
-	if (request('_script')) {
+	if ($_REQUEST['_script'] ?? false) {
 		echo 'zenarioO.lookForBranches(zenarioO.map = ';
 	}
 	
 	jsonEncodeForceObject($tags);
 	
-	if (request('_script')) {
+	if ($_REQUEST['_script'] ?? false) {
 		echo ');';
 	}
 }

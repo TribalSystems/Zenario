@@ -145,10 +145,10 @@ if (cms_core::$canCache
 		
 		$cacheStatusText = implode('', $chToSaveStatus);
 		
-		if (cleanDownloads() && ($path = createCacheDir(pageCacheDir($chKnownRequests). $cacheStatusText, 'pages', false))) {
+		if (cleanCacheDir() && ($path = createCacheDir(pageCacheDir($chKnownRequests). $cacheStatusText, 'pages', false))) {
 			foreach ($clearCacheBy as $if => $set) {
 				touch(CMS_ROOT. $path. $if);
-				chmod(CMS_ROOT. $path. $if, 0666);
+				@chmod(CMS_ROOT. $path. $if, 0666);
 			}
 			
 			
@@ -177,7 +177,7 @@ if (cms_core::$canCache
 			//Put a marker on the page to note that it came from the cache
 			if ($caching_debug_info) {
 				touch(CMS_ROOT. $path. 'show_cache_info');
-				chmod(CMS_ROOT. $path. 'show_cache_info', 0666);
+				@chmod(CMS_ROOT. $path. 'show_cache_info', 0666);
 				$html = str_replace('<div class="zenario_cache_in_use"', '<div class="zenario_from_cache"', $html);
 			
 			} else {
@@ -187,9 +187,9 @@ if (cms_core::$canCache
 			file_put_contents(CMS_ROOT. $path. 'tag_id', cms_core::$cType. '_'. cms_core::$cID);
 			file_put_contents(CMS_ROOT. $path. 'cached_files', $images);
 			file_put_contents(CMS_ROOT. $path. 'page.html', $html);
-			chmod(CMS_ROOT. $path. 'tag_id', 0666);
-			chmod(CMS_ROOT. $path. 'cached_files', 0666);
-			chmod(CMS_ROOT. $path. 'page.html', 0666);
+			@chmod(CMS_ROOT. $path. 'tag_id', 0666);
+			@chmod(CMS_ROOT. $path. 'cached_files', 0666);
+			@chmod(CMS_ROOT. $path. 'page.html', 0666);
 			
 			zenario_page_caching__logStats(array('writes', 'total'));
 			return;

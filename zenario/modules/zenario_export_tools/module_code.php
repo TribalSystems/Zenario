@@ -84,10 +84,10 @@ class zenario_export_tools extends module_base_class {
 				$box['tabs']['import']['notices']['okay']['show'] = false;
 				
 				if ($values['import/file']
-				 && ($importFile = getPathOfUploadedFileInCacheDir($values['import/file']))
+				 && ($importFile = Ze\File::getPathOfUploadedInCacheDir($values['import/file']))
 				 && (is_file($importFile))) {
 					$targetCID = $targetCType = $error = false;
-					$mimeType = documentMimeType($values['import/file']);
+					$mimeType = Ze\File::mimeType($values['import/file']);
 					
 					if ($mimeType == 'text/html' || $mimeType == 'application/xhtml+xml') {
 						if (zenario_export_tools::importContentItem(file_get_contents($importFile), false, true, $targetCID, $targetCType, $error, $box['key']['cID'], $box['key']['cType'])) {
@@ -134,11 +134,11 @@ class zenario_export_tools extends module_base_class {
 				exitIfNotCheckPriv('_PRIV_IMPORT_CONTENT_ITEM', $box['key']['cID'], $box['key']['cType']);
 				
 				if ($values['import/file']
-				 && ($importFile = getPathOfUploadedFileInCacheDir($values['import/file']))
+				 && ($importFile = Ze\File::getPathOfUploadedInCacheDir($values['import/file']))
 				 && (is_file($importFile))) {
 				
 					$targetCID = $targetCType = $error = false;
-					$mimeType = documentMimeType($importFile);
+					$mimeType = Ze\File::mimeType($importFile);
 				
 					if ($mimeType == 'text/html' || $mimeType == 'application/xhtml+xml') {
 						if (zenario_export_tools::importContentItem(file_get_contents($importFile), false, false, $targetCID, $targetCType, $error, $box['key']['cID'], $box['key']['cType'])) {
@@ -303,7 +303,7 @@ class zenario_export_tools extends module_base_class {
 				$menuNode['section_id'] = menuSectionName($menuNode['section_id']);
 				
 				if (($menuText = getRow('menu_text', array('name', 'descriptive_text'), array('menu_id' => $menuNode['id'], 'language_id' => $content['language_id'])))
-				 || ($menuText = getRow('menu_text', array('name', 'descriptive_text'), array('menu_id' => $menuNode['id'], 'language_id' => setting('default_language'))))) {
+				 || ($menuText = getRow('menu_text', array('name', 'descriptive_text'), array('menu_id' => $menuNode['id'], 'language_id' => cms_core::$defaultLang)))) {
 					zenario_export_tools::openTagStart($isXML, $f, 'menu');
 					zenario_export_tools::addAtt($isXML, $f, 'id', $menuNode['id']);
 					zenario_export_tools::addAtt($isXML, $f, 'section_id', $menuNode['section_id']);
@@ -722,9 +722,9 @@ class zenario_export_tools extends module_base_class {
 							foreach (explode($sep, $thing) as $atts) {
 								$att = explode(':', $atts, 2);
 								if (!empty($att[0])) {
-									$xml .= ' '. $att[0]. '="'. zenario_export_tools::HTMLToXML(arrayKey($att, 1)). '"';
+									$xml .= ' '. $att[0]. '="'. zenario_export_tools::HTMLToXML($att[1] ?? false). '"';
 									
-									if ($att[0] == 'format' && (arrayKey($att, 1) == 'text' || arrayKey($att, 1) == 'translatable_text')) {
+									if ($att[0] == 'format' && (($att[1] ?? false) == 'text' || ($att[1] ?? false) == 'translatable_text')) {
 										$isHTML = false;
 									}
 								}
@@ -1046,7 +1046,7 @@ class zenario_export_tools extends module_base_class {
 									continue 3;
 								}
 							
-							} elseif ($tSlotName >= ifNull(arrayKey($previousSlots, $iSlotName), '', '')) {
+							} elseif ($tSlotName >= ifNull($previousSlots[$iSlotName] ?? false, '', '')) {
 								$passedSlot = true;
 							}
 						}
@@ -1076,11 +1076,11 @@ class zenario_export_tools extends module_base_class {
 					 && ($slotName = (string) $plugin->attributes()->slot)
 					 && ($moduleId = getModuleIdByClassName($className))) {
 						
-						if ($slotName = arrayKey($matchesImportToTemplate, $slotName)) {
+						if ($slotName = $matchesImportToTemplate[$slotName] ?? false) {
 							$images = array();
 							$nestedPlugins = array();
 							
-							if ($instanceId = arrayKey($slotContents, $slotName, 'instance_id')) {
+							if ($instanceId = $slotContents[$slotName]['instance_id'] ?? false) {
 								//Look for any Nested Tabs that match up with the Nested Tabs we are importing
 								if ($plugin->slide) {
 									foreach ($plugin->slide as $slide) {

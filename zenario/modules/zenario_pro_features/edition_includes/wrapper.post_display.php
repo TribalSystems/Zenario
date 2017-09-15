@@ -28,15 +28,14 @@
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
 
-if (cms_core::$canCache 
- && empty($_GET['admin'])
- && setting('caching_enabled') && setting('cache_css_js_wrappers')) {
-	$type = str_replace(array('.cache_wrapper', '.php'), '', basename($_SERVER['PHP_SELF']));
+if (cms_core::$canCache) {
+	
+	$type = str_replace(array('.wrapper', '.php'), '', basename($_SERVER['PHP_SELF']));
 	$chFile = pageCacheDir($_GET, $type);
 	
-	if (cleanDownloads() && ($path = createCacheDir(pageCacheDir($_GET, $type), 'pages', false))) {
+	if (cleanCacheDir() && ($path = createCacheDir(pageCacheDir($_GET, $type), 'pages', false))) {
 		file_put_contents(CMS_ROOT. $path. $type, ob_get_contents());
-		chmod(CMS_ROOT. $path. $type, 0666);
+		@chmod(CMS_ROOT. $path. $type, 0666);
 		
 		echo "\n/* ", $path. $type, ' was written to the page cache */';
 		return;

@@ -27,4 +27,7 @@ description: >
     </p>
 
 is_abstract: true
+
+# Reminder: you need to increment the LATEST_REVISION_NO in this module's
+# latest_revision_no.inc.php file if you change any of the fields below:
 is_pluggable: false

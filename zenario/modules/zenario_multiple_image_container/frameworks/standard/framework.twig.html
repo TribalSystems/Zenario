@@ -17,8 +17,12 @@
 				{% elseif Image.Image_Link_Href %} 
 					<a {{Image.Image_Link_Href}}{{Image.Target_Blank}}>
 				{% endif %}
-				
+					
+					{% if this.setting('lazy_load') %} 
+						<img class="lazy" data-src="{{Image.Src|escape}}" alt="{{Image.Alt|escape}}" title="{{Image.Title|escape}}" width="{{Image.Width|escape}}" height="{{Image.Height|escape}}"/>
+					{% else %}
 						<img src="{{Image.Src|escape}}" alt="{{Image.Alt|escape}}" title="{{Image.Title|escape}}" width="{{Image.Width|escape}}" height="{{Image.Height|escape}}"/>
+					{% endif %}
 				
 				{% if Image.Floating_Box %} 
 						<span class="banner_image_zoom" title="{{'Enlarge this image'|trans}}">{{"Enlarge this image"|trans}}</span>

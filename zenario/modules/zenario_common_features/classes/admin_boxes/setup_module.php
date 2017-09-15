@@ -83,7 +83,7 @@ class zenario_common_features__admin_boxes__setup_module extends module_base_cla
 				$box['max_height'] = 110;
 			}
 	
-			if (session('admin_global_id')) {
+			if ($_SESSION['admin_global_id'] ?? false) {
 				unset($box['tabs']['confirm']['fields']['grant_perms']['values']['myself']);
 				$box['tabs']['confirm']['fields']['grant_perms']['values']['site_admins']['label'] =
 					adminPhrase('Grant all administrators the permissions added by this module');
@@ -169,7 +169,7 @@ class zenario_common_features__admin_boxes__setup_module extends module_base_cla
 	
 	
 			if (!engToBoolean($box['tabs']['confirm']['fields']['grant_perms']['hidden'])
-			 && (($values['confirm/grant_perms'] == 'myself' && !session('admin_global_id')) || $values['confirm/grant_perms'] == 'site_admins')
+			 && (($values['confirm/grant_perms'] == 'myself' && !($_SESSION['admin_global_id'] ?? false)) || $values['confirm/grant_perms'] == 'site_admins')
 			 && ($perms = scanModulePermissionsInTUIXDescription($module['class_name']))) {
 		
 				if ($values['confirm/grant_perms'] == 'myself') {
@@ -181,7 +181,7 @@ class zenario_common_features__admin_boxes__setup_module extends module_base_cla
 					}
 				}
 		
-				if (!session('admin_global_id')) {
+				if (!($_SESSION['admin_global_id'] ?? false)) {
 					setAdminSession(adminId());
 				}
 			}

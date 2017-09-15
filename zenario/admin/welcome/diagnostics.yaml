@@ -161,6 +161,32 @@ diagnostics:
                     snippet:
                         html: PNG Support enabled in PHP
                     visible_if: zenarioAW.togglePressed()
+                optional:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_level
+                    snippet:
+                        html: Optional requirements
+                    visible_if: zenarioAW.togglePressed(2)
+                show_optional: *show_subsection
+                optional_curl:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_field
+                    snippet:
+                        html: |
+                            curl extension enabled in PHP
+                            <br/><small>Needed for translating pages using Google Translate</small>
+                    visible_if: zenarioAW.togglePressed()
+                optional_zip:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_field
+                    snippet:
+                        html: |
+                            zip extension enabled in PHP
+                            <br/><small>Needed for creating document extracts</small>
+                    visible_if: zenarioAW.togglePressed()
                 
                 
                 

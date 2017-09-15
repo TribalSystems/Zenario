@@ -56,6 +56,7 @@ zenario.mainSlot = false;
 zenario.signalsInProgress = {};
 zenario.signalHandlers = {};
 zenario.adinsActions = {};
+zenario.jsLibs = {};
 
 
 zenario.getEl = false;
@@ -75,6 +76,7 @@ zenario.adminId = 0;
 var zenario_conductor = createZenarioLibrary('_conductor');
 zenario_conductor.slots = {};
 zenario_conductor.setCommands =
+zenario_conductor.mergeRequests =
 zenario_conductor.registerGetRequest =
 zenario_conductor.clearRegisteredGetRequest =
 zenario_conductor.getRegisteredGetRequest =
@@ -93,6 +95,7 @@ zenario_conductor.go ==> { return undefined; };
 zenario.callback = function() {
 	this.isOwnCallback = false;
 	this.isWrapper = false;
+	this.wasPoked = false;
 	this.results = [undefined];
 	this.completes = [false];
 	this.done = false;
@@ -149,12 +152,20 @@ methods.add = function(cb) {
 	return this;
 };
 
+//Force a callback to run it's functions even if nothing has been registered yet
+//(If something has been registered, this will do nothing.)
+methods.poke = function() {
+	this.wasPoked = true;
+	this.completes[0] = true;
+	this.checkComplete();
+};
+
 //Check to see if the callback is complete and trigger the callback function if so.
 //An internal function, no need to call it.
 methods.checkComplete = function() {
 	var i, link, fun;
 	
-	if (!this.isOwnCallback && !this.isWrapper) {
+	if (!this.isOwnCallback && !this.isWrapper && !this.wasPoked) {
 		return;
 	}
 	
@@ -547,7 +558,7 @@ var loadingScripts = {},
 	scriptsLoadedCallback = new zenario.callback;
 
 zenario.loadScript =
-zenario.loadLibrary = function(path, callback, alreadyLoaded) {
+zenario.loadLibrary = function(path, callback, alreadyLoaded, stylesheet) {
 
 	var library =
 			loadedScripts[path] =
@@ -565,6 +576,10 @@ zenario.loadLibrary = function(path, callback, alreadyLoaded) {
 		library.loading = true;
 		
 		loadingScripts[path] = true;
+		
+		if (stylesheet) {
+			$('head').append($('<link rel="stylesheet" type="text/css" href="' + htmlspecialchars(stylesheet) + '">'));
+		}
 		
 		$.ajax({
 			url: path,
@@ -595,7 +610,7 @@ zenario.eventLoadedScripts = function() {
 
 //Lazy-load the datepicker library when needed
 zenario.loadDatePicker = function(async) {
-	return zenario.loadScript(URLBasePath + 'zenario/libraries/mit/jquery/jquery-ui.datepicker.min.js?v=' + zenarioCSSJSVersionNumber,
+	return zenario.loadLibrary(URLBasePath + 'zenario/libraries/mit/jquery/jquery-ui.datepicker.min.js?v=' + zenarioCSSJSVersionNumber,
 		async, $.datepicker);
 };
 
@@ -818,6 +833,11 @@ zenario.scrollToSlotTop = function(containerIdSlotNameOrEl, neverScrollDown, tim
 
 	if (offset === undefined) {
 		offset = -80;
+	}
+	
+	//For hacks where something like a sticky menu takes up space at the top so an offset is needed
+	if (window._scrollToTopOffset) {
+		offset = (offset || 0) - window._scrollToTopOffset;
 	}
 
 	//Check that the top of the slot is actually visible
@@ -1526,7 +1546,8 @@ zenario.replacePluginSlotContents = function(slotName, instanceId, resp, additio
 		floatingBoxExtraParams = {},
 		containerId = 'plgslt_' + slotName,
 		domSlot = get(containerId),
-		flags, flagVal;
+		flags, flagVal,
+		ocb = new zenario.callback;
 	
 	//Look through the flags at the top of the AJAX return
 	resp = zenario.splitFlagsFromMessage(resp);
@@ -1539,39 +1560,6 @@ zenario.replacePluginSlotContents = function(slotName, instanceId, resp, additio
 		//However, if this was a POST submission, ignore this check as we don't want to re-submit the post data
 	if (!isFormPost && resp.responseText.match(/<(link|script|style)/i)) {
 		forceReloadHref = zenario.linkToItem(zenario.cID, zenario.cType, additionalRequests);
-	}
-	
-	if (flags.PAGE_TITLE) {
-		document.title = flags.PAGE_TITLE;
-	}
-	
-	//Watch out for the "In Edit Mode" tag from modules in their edit modes
-	beingEdited = flags.IN_EDIT_MODE;
-	isVersionControlled = flags.WIREFRAME;
-	instanceId = flags.INSTANCE_ID;
-	slideId = flags.TAB_ID;
-	level = 1*flags.LEVEL;
-	
-	domSlot.className = 'zenario_slot ' + (flags.CSS_CLASS || '');
-	
-	//Allow modules to name JavaScript function(s) they wish to be run
-	var script, i = 1;
-	while (script = flags['SCRIPT' + i] || flags['SCRIPT_BEFORE' + i]) {
-		if (flags['SCRIPT' + i]) {
-			scriptsToRun.push(script);
-		} else {
-			scriptsToRunBefore.push(script);
-		}
-		++i;
-	}
-	
-	if (scrollToTopOfSlot === undefined) {
-		scrollToTopOfSlot = flags.SCROLL_TO_TOP;
-	}
-	
-	//Allow modules to open themselves in a floating box
-	if (showInFloatingBox = flags.SHOW_IN_FLOATING_BOX) {
-		floatingBoxExtraParams = (flags.FLOATING_BOX_PARAMS && JSON.parse(flags.FLOATING_BOX_PARAMS)) || {};
 	}
 	
 	if (forceReloadHref) {
@@ -1592,124 +1580,181 @@ zenario.replacePluginSlotContents = function(slotName, instanceId, resp, additio
 		}
 	}
 	
-	//Stop any animations currently on the slot
-	$(domSlot).stop(true, true).animate({opacity: 1}, 200, function() {
-		if (zenario.browserIsIE()) {
-			this.style.removeAttribute('filter');
+	if (flags.PAGE_TITLE) {
+		document.title = flags.PAGE_TITLE;
+	}
+	
+	//Watch out for the "In Edit Mode" tag from modules in their edit modes
+	beingEdited = flags.IN_EDIT_MODE;
+	isVersionControlled = flags.WIREFRAME;
+	instanceId = flags.INSTANCE_ID;
+	slideId = flags.TAB_ID;
+	level = 1*flags.LEVEL;
+	
+	domSlot.className = 'zenario_slot ' + (flags.CSS_CLASS || '');
+	
+	//Add any libraries needed
+	var libInfo, i = 1;
+	while ((libInfo = flags['JS_LIB' + i++]) && (libInfo = JSON.parse(libInfo)))	 {
+		(function(script, stylesheet) {
+			var cb = new zenario.callback;
+			ocb.add(cb);
+			
+			zenario.loadLibrary(
+				URLBasePath + 'zenario/' + script,
+				function() {
+					zenario.jsLibs[script] = true;
+					cb.call();
+				},
+				zenario.jsLibs[script],
+				stylesheet && (URLBasePath + 'zenario/' + stylesheet)
+			);
+		})(libInfo[0], libInfo[1]);
+	}
+	
+	
+	ocb.after(function() {
+	
+		//Allow modules to name JavaScript function(s) they wish to be run
+		i = 1;
+		while (script = flags['SCRIPT' + i++]) {
+			scriptsToRun.push(script);
 		}
+		i = 1;
+		while (script = flags['SCRIPT_BEFORE' + i++]) {
+			scriptsToRunBefore.push(script);
+		}
+	
+		if (scrollToTopOfSlot === undefined) {
+			scrollToTopOfSlot = flags.SCROLL_TO_TOP;
+		}
+	
+		//Allow modules to open themselves in a floating box
+		if (showInFloatingBox = flags.SHOW_IN_FLOATING_BOX) {
+			floatingBoxExtraParams = (flags.FLOATING_BOX_PARAMS && JSON.parse(flags.FLOATING_BOX_PARAMS)) || {};
+		}
+	
+		//Stop any animations currently on the slot
+		$(domSlot).stop(true, true).animate({opacity: 1}, 200, function() {
+			if (zenario.browserIsIE()) {
+				this.style.removeAttribute('filter');
+			}
 		
-		//Fix a problem where the fading in/out can leave an inline style 
-		this.style.opacity = '';
-	});
+			//Fix a problem where the fading in/out can leave an inline style 
+			this.style.opacity = '';
+		});
 	
 	
-	if (showInFloatingBox) {
-		zenario.colorboxOpen = slotName;
-		zenario.colorboxFormChanged = false;
-		var params = {
-			transition: 'none',
-			html: resp.responseText,
-			onOpen: => {
-				var cb = get('colorbox');
-				cb.className = domSlot.className;
-				$(cb).hide().fadeIn();
-			},
-			onComplete: => {
-				zenario.addJQueryElements('#colorbox ');
+		if (showInFloatingBox) {
+			zenario.colorboxOpen = slotName;
+			zenario.colorboxFormChanged = false;
+			var params = {
+				transition: 'none',
+				html: resp.responseText,
+				onOpen: => {
+					var cb = get('colorbox');
+					cb.className = domSlot.className;
+					$(cb).hide().fadeIn();
+				},
+				onComplete: => {
+					zenario.addJQueryElements('#colorbox ');
 				
-				//Allow modules to call JavaScript function(s) after they have been refreshed
-				foreach (scriptsToRun as var script) {
-					if (zenario.slots[slotName]) {
-						zenario.callScript(scriptsToRun[script], zenario.slots[slotName].moduleClassName);
+					//Allow modules to call JavaScript function(s) after they have been refreshed
+					foreach (scriptsToRun as var script) {
+						if (zenario.slots[slotName]) {
+							zenario.callScript(scriptsToRun[script], zenario.slots[slotName].moduleClassName);
+						}
 					}
-				}
 				
-				$('#cboxLoadedContent').find('form').on('keyup change', 'input, select, textarea', function() {
-					zenario.colorboxFormChanged = true;
-				});
-			},
-			onClosed: => {
-				get('colorbox').className = '';
+					$('#cboxLoadedContent').find('form').on('keyup change', 'input, select, textarea', function() {
+						zenario.colorboxFormChanged = true;
+					});
+				},
+				onClosed: => {
+					get('colorbox').className = '';
+					zenario.colorboxOpen = false;
+				}
+			};
+			// Add any extra parsed parameters
+			for (var i in floatingBoxExtraParams) {
+				if (!$.inArray(i, ['closeConfirmMessage', 'alwaysShowConfirmMessage']) && (params[i] === undefined)) {
+					params[i] = floatingBoxExtraParams[i];
+				}
+			}
+			$.colorbox(params);
+		
+			zenario.colorboxAlwaysShowConfirmMessage = floatingBoxExtraParams.alwaysShowConfirmMessage;
+		
+			if (floatingBoxExtraParams.closeConfirmMessage && !zenario.colorboxCloseConfirmMessageSet) {
+				zenario.colorboxCloseConfirmMessageSet = true;
+				var originalClose = $.colorbox.close;
+				$.colorbox.close = function() {
+					var response;
+					if (zenario.colorboxFormChanged || zenario.colorboxAlwaysShowConfirmMessage) {
+						response = confirm(floatingBoxExtraParams.closeConfirmMessage);
+						if(!response){
+							return; // Do nothing.
+						}
+					}
+					zenario.colorboxFormChanged = false;
+					originalClose();
+				};
+			}
+		
+			zenario.resizeColorbox();
+	
+		} else {
+			if (zenario.colorboxOpen) {
+				$.colorbox.close();
 				zenario.colorboxOpen = false;
 			}
-		};
-		// Add any extra parsed parameters
-		for (var i in floatingBoxExtraParams) {
-			if (!$.inArray(i, ['closeConfirmMessage', 'alwaysShowConfirmMessage']) && (params[i] === undefined)) {
-				params[i] = floatingBoxExtraParams[i];
-			}
-		}
-		$.colorbox(params);
 		
-		zenario.colorboxAlwaysShowConfirmMessage = floatingBoxExtraParams.alwaysShowConfirmMessage;
-		
-		if (floatingBoxExtraParams.closeConfirmMessage && !zenario.colorboxCloseConfirmMessageSet) {
-			zenario.colorboxCloseConfirmMessageSet = true;
-			var originalClose = $.colorbox.close;
-			$.colorbox.close = function() {
-				var response;
-				if (zenario.colorboxFormChanged || zenario.colorboxAlwaysShowConfirmMessage) {
-					response = confirm(floatingBoxExtraParams.closeConfirmMessage);
-					if(!response){
-						return; // Do nothing.
+			if (!window.zenario_inIframe && zenario.inAdminMode) {
+				//Admins need some more tasks, other than just changing the innerHTML
+				zenarioA.replacePluginSlot(slotName, instanceId, level, slideId, resp, scriptsToRunBefore);
+			} else {
+				foreach (scriptsToRunBefore as var script) {
+					if (zenario.slots[slotName]) {
+						zenario.callScript(scriptsToRunBefore[script], zenario.slots[slotName].moduleClassName);
 					}
 				}
-				zenario.colorboxFormChanged = false;
-				originalClose();
-			};
-		}
+			
+				//If we're not in admin mode, just refresh the slot's innerHTML
+				zenario.slot([[slotName, instanceId, zenario.slots[slotName].moduleId, level, slideId, undefined, beingEdited, isVersionControlled]]);
+				domSlot.innerHTML = resp.responseText;
+			}
 		
-		zenario.resizeColorbox();
-	
-	} else {
-		if (zenario.colorboxOpen) {
-			$.colorbox.close();
-			zenario.colorboxOpen = false;
-		}
-		
-		if (!window.zenario_inIframe && zenario.inAdminMode) {
-			//Admins need some more tasks, other than just changing the innerHTML
-			zenarioA.replacePluginSlot(slotName, instanceId, level, slideId, resp, scriptsToRunBefore);
-		} else {
-			foreach (scriptsToRunBefore as var script) {
+			//Allow modules to call JavaScript function(s) after they have been refreshed
+			foreach (scriptsToRun as var script) {
 				if (zenario.slots[slotName]) {
-					zenario.callScript(scriptsToRunBefore[script], zenario.slots[slotName].moduleClassName);
+					zenario.callScript(scriptsToRun[script], zenario.slots[slotName].moduleClassName);
 				}
 			}
-			
-			//If we're not in admin mode, just refresh the slot's innerHTML
-			zenario.slot([[slotName, instanceId, zenario.slots[slotName].moduleId, level, slideId, undefined, beingEdited, isVersionControlled]]);
-			domSlot.innerHTML = resp.responseText;
-		}
 		
-		//Allow modules to call JavaScript function(s) after they have been refreshed
-		foreach (scriptsToRun as var script) {
-			if (zenario.slots[slotName]) {
-				zenario.callScript(scriptsToRun[script], zenario.slots[slotName].moduleClassName);
+			zenario.addJQueryElements('#' + containerId + ' ');
+		
+		
+			if (scrollToTopOfSlot && !zenarioAB.isOpen) {
+				//Scroll to the top of a slot if needed
+				zenario.scrollToSlotTop(slotName, true);
+			}
+		
+		
+			//Attempt to record the current AJAX reload in the URL bar
+			if (recordInURL) {
+				zenario.recordRequestsInURL(slotName, additionalRequests);
 			}
 		}
-		
-		zenario.addJQueryElements('#' + containerId + ' ');
-		
-		
-		if (scrollToTopOfSlot && !zenarioAB.isOpen) {
-			//Scroll to the top of a slot if needed
-			zenario.scrollToSlotTop(slotName, true);
-		}
-		
-		
-		//Attempt to record the current AJAX reload in the URL bar
-		if (recordInURL) {
-			zenario.recordRequestsInURL(slotName, additionalRequests);
-		}
-	}
 	
-	if (zenario.inAdminMode) {
-		zenarioA.checkSlotsBeingEdited();
-		zenarioA.scanHyperlinksAndDisplayStatus(containerId);
-	}
+		if (zenario.inAdminMode) {
+			zenarioA.checkSlotsBeingEdited();
+			zenarioA.scanHyperlinksAndDisplayStatus(containerId);
+		}
 	
-	zenario.sendSignal('eventSlotUpdated', {slotName: slotName, instanceId: instanceId, flags: flags}, zenario.inAdminMode);
+		zenario.sendSignal('eventSlotUpdated', {slotName: slotName, instanceId: instanceId, flags: flags}, zenario.inAdminMode);
+	});
+	
+	ocb.poke();
 };
 
 zenario.recordRequestsInURL = function(slotName, requests) {
@@ -1775,6 +1820,7 @@ zenario.callScript = function(script, className, secondTime) {
 			//If the library wasn't on the page, but there are scripts still loading,
 			//then try again after they have loaded
 			if (!secondTime && !_.isEmpty(loadingScripts)) {
+				
 				scriptsLoadedCallback.after( => {
 					zenario.callScript(script, className, true);
 				});
@@ -1974,12 +2020,24 @@ zenario.removeClassesToColorbox = function(cssClasses) {
 	}
 };
 
+//Check whether a DOM element is still in the document, or if it has been removed
+zenario.inDoc = function(el) {
+	if (document.contains) {
+		return document.contains(el);
+	} else {
+		return !!$(el).closest('body').length;
+	}
+};
+
 //Add jQuery elements automatically by class name
 zenario.addJQueryElements = function(path, adminFacing) {
 	
 	if (!path || path === undefined) {
 		path = '';
 	}
+	
+	//Initiate the jQuery plugin for lazy-loading images
+	$("img.lazy").Lazy();
 	
 	//Fancybox/Lightbox replacement
 	$(path + "a[rel^='colorbox'], a[rel^='lightbox']").colorbox({
@@ -2000,7 +2058,7 @@ zenario.addJQueryElements = function(path, adminFacing) {
 		$(path + 'textarea[placeholder]').placeholder();
 	}
 	
-	//jQuery datepickers
+	//jQuery datepickers (plugin frameworks version)
 	$(path + 'input.jquery_datepicker').each(function(i, el) {
 		zenario.loadDatePicker();
 		
@@ -2372,7 +2430,7 @@ zenario.addPluginJavaScript = function(moduleId, callback) {
 		filePath += '&admin=1';
 	}
 	
-	return zenario.loadScript(URLBasePath + filePath, callback);
+	return zenario.loadLibrary(URLBasePath + filePath, callback);
 };
 
 
@@ -2445,12 +2503,31 @@ zenario.canCopy = function(text) {
 	return !!$copy[0].select;
 };
 zenario.copy = function(text) {
-	var textarea = zenario.canCopy() && $copy[0];
 	
-	if (textarea) {
-		textarea.value = text;
-		textarea.select();
-		return document.execCommand('copy');
+	var textarea,
+		rv = false;
+	
+	if (zenario.canCopy()) {
+		
+		if (typeof text == 'object') {
+			text.focus();
+			text.select();
+			rv = document.execCommand('copy');
+			text.setSelectionRange(0, 0);
+			text.blur();
+		
+		} else {
+	
+			var textarea = $copy[0];
+	
+			if (textarea) {
+				textarea.value = text;
+				textarea.select();
+				rv = document.execCommand('copy');
+			}
+		}
+		
+		return true;
 	}
 	
 	return false;
@@ -2673,7 +2750,7 @@ zenario.init = function(
 	//Note I am loading this syncronously, which is deprecated on modern browsers,
 	//but it's not deprecated on any browser old enough not to have the JSON library built in as standard!
 	if (!window.JSON) {
-		zenario.loadScript(URLBasePath + 'zenario/libraries/public_domain/json/json2.min.js', false);
+		zenario.loadLibrary(URLBasePath + 'zenario/libraries/public_domain/json/json2.min.js', false);
 	}
 
 	//Add the Math.log10() function, if it's not defined natively
@@ -2802,6 +2879,16 @@ zenario.exitFullScreen = function() {
 	}
 };
 
+
+//Replace the zenarioSBC() function in body.js (which was specifically written for a small filesize)
+//with a jQuery-based version (which should be a little more efficient)
+window.zenarioSBC = function(condition, metClassName, notMetClassName) {
+	if (condition) {
+		$('body').removeClass(notMetClassName).addClass(metClassName);
+	} else {
+		$('body').removeClass(metClassName).addClass(notMetClassName);
+	}
+};
 
 
 

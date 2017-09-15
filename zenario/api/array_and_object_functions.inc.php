@@ -26,9 +26,15 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+//This function is deprecated since php 7.0; please use the null coalescing operator (??) instead!
 //	function arrayKey(&$array, $key, $key2 = false, $key3 = false, $key4 = false, $key5 = false, $key6 = false, $key7 = false, $key8 = false, $key9 = false) {}
 
-
+function sortByOrd($a, $b) {
+	if ($a['ord'] == $b['ord']) {
+        return 0;
+    }
+    return ($a['ord'] < $b['ord']) ? -1 : 1;
+}
 
 function arrayValuesToKeys($a) {
 	$o = array();
@@ -204,7 +210,7 @@ function putErrorsOnAdminBoxTabs(&$box, $e, $defaultTab = false, $specifics = ar
 	}
 		
 	foreach ($errors as $fieldName => &$error) {
-		$error = array('c' => $error, 't' => arrayKey($specifics, $fieldName));
+		$error = array('c' => $error, 't' => ($specifics[$fieldName] ?? false));
 	}
 	
 	if (!empty($box['tabs'])) {
@@ -282,48 +288,6 @@ function SimpleXMLString(&$string) {
 	} catch (Exception $e) {
 		return false;
 	}
-}
-
-function SimpleXMLCURL($url, &$xml, &$error) {
-	$error = false;
-	
-	if (!function_exists('curl_init') || !($curl = @curl_init())) {
-		return false;
-	}
-	
-	curl_setopt($curl, CURLOPT_FAILONERROR, true); 
-	curl_setopt($curl, CURLOPT_HEADER, false);
-	curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-	curl_setopt($curl, CURLOPT_TIMEOUT, 15);
-	curl_setopt($curl, CURLOPT_VERBOSE, false);
-	curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
-	curl_setopt($curl, CURLOPT_MAXREDIRS, 10);
-	curl_setopt($curl, CURLOPT_URL, $url);
-	curl_setopt($curl, CURLOPT_REFERER, httpHost());
-	curl_setopt($curl, CURLOPT_POST, false);
-	
-	$xml = curl_exec($curl);
-	curl_close($curl);
-	
-	if ($xml === false) {
-		return false;
-		
-	} elseif (!$xml) {
-		return false;
-		
-	} else {
-		try {
-			$xml = @new SimpleXMLElement($xml);
-		} catch (Exception $e) {
-			$xml = false;
-		}
-		
-		if (!$xml) {
-			return false;
-		}
-	}
-	
-	return true;
 }
 
 function sqlArraySort(&$phpArray) {

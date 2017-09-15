@@ -1242,11 +1242,21 @@ _sql
 	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]user_characteristics`
 _sql
 
+);  revision(40401
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]custom_dataset_fields`
+	MODIFY COLUMN `type` enum('group','checkbox','checkboxes','date','editor','radios','centralised_radios','select','centralised_select','text','textarea','url','other_system_field','dataset_select','dataset_picker','file_picker','repeat_start','repeat_end') NOT NULL DEFAULT 'other_system_field',
+	ADD COLUMN `min_rows` tinyint(1) unsigned NOT NULL DEFAULT '0',
+	ADD COLUMN `max_rows` tinyint(1) unsigned NOT NULL DEFAULT '0',
+	ADD COLUMN `repeat_start_id` int(10) unsigned NOT NULL DEFAULT '0'
+_sql
+
 
 
 
 //Add new system field for users called send_delayed_registration_email
-);  revision(40193
+//(N.b. this was added in an after-branch patch in 7.6 revision 40193, so we need to check if it's not already there.)
+);	if (needRevision(40790) && !sqlNumRows('SHOW COLUMNS FROM '. DB_NAME_PREFIX. 'users LIKE "send_delayed_registration_email"'))	revision( 40790
 , <<<_sql
 	ALTER TABLE `[[DB_NAME_PREFIX]]users`
 	ADD COLUMN `send_delayed_registration_email` tinyint(1) NOT NULL default 0
@@ -1257,4 +1267,14 @@ _sql
 	ALTER TABLE `[[DB_NAME_PREFIX]]users`
 	ADD KEY (`send_delayed_registration_email`)
 _sql
+
+
+//Add a new column to allow system fields to be hidden from the dataset editor. Must be set to allow changing the visibility.
+); revision( 40881
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]custom_dataset_fields`
+	ADD COLUMN `allow_admin_to_change_export` tinyint(1) NOT NULL DEFAULT 0 AFTER `allow_admin_to_change_visibility`
+_sql
+
 );
+

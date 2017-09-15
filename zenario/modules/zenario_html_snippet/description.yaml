@@ -13,6 +13,9 @@ description: |
         For security, PHP code will not be executed.
     </p>
 category: pluggable
+
+# Reminder: you need to increment the LATEST_REVISION_NO in this module's
+# latest_revision_no.inc.php file if you change any of the fields below:
 css_class_name: zenario_html_snippet
 is_pluggable: true
 can_be_version_controlled: true

@@ -53,7 +53,7 @@ class zenario_extranet_user_profile_view_2 extends module_base_class {
 			
 			$url = $width = $height = false;
 			if (($imageId = getRow('users', 'image_id', $userId))
-			 && imageLink($width, $height, $url, $imageId, ifNull((int) $this->setting('max_user_image_width'), 120), ifNull((int) $this->setting('max_user_image_height'), 120))) {
+			 && Ze\File::imageLink($width, $height, $url, $imageId, ifNull((int) $this->setting('max_user_image_width'), 120), ifNull((int) $this->setting('max_user_image_height'), 120))) {
 				$this->data['User_Image'] = true;
 				$this->data['Image_Src'] = htmlspecialchars($url);
 				$this->data['Image_Width'] = $width;

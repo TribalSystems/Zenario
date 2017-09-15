@@ -31,8 +31,8 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 $value = '';
 
 $postValue = null;
-if (isset($_POST[arrayKey($attributes, 'name')]) && $this->checkPostIsMine()) {
-	$postValue = $_POST[arrayKey($attributes, 'name')];
+if (isset($_POST[($attributes['name'] ?? false)]) && $this->checkPostIsMine()) {
+	$postValue = $_POST[($attributes['name'] ?? false)];
 }
 
 //Ensure single-checkboxes always have a value of 1
@@ -44,8 +44,8 @@ if (!$i && $type == 'checkbox') {
 	$value = $postValue;
 
 //Check the GET
-} elseif ($type != 'submit' && $type != 'checkbox' && $type != 'radio' && isset($_GET[arrayKey($attributes, 'name')])) {
-	$value = $_GET[arrayKey($attributes, 'name')];
+} elseif ($type != 'submit' && $type != 'checkbox' && $type != 'radio' && isset($_GET[($attributes['name'] ?? false)])) {
+	$value = $_GET[($attributes['name'] ?? false)];
 
 //Check for a value from a LOV
 } elseif ($i && $type != 'toggle') {
@@ -64,8 +64,8 @@ if (!$i && $type == 'checkbox') {
 	$value = ($type == 'checkbox' || $type == 'toggle')? $attributes['value'] : $this->phrase($attributes['value']);
 
 //Check for a value in the merge fields
-} elseif (isset($mergeFieldsRow[arrayKey($attributes, 'name')])) {
-	$value = $mergeFieldsRow[arrayKey($attributes, 'name')];
+} elseif (isset($mergeFieldsRow[($attributes['name'] ?? false)])) {
+	$value = $mergeFieldsRow[($attributes['name'] ?? false)];
 }
 
 
@@ -77,10 +77,10 @@ if ($type === false) {
 
 //There's no need to re-upload a file that's already been uploaded
 if ($type == 'file') {
-	if ($value && preg_match('@^cache/uploads/[\w\-]+/[\w\.-]+\.upload$@', $value) && file_exists(CMS_ROOT. $value)) {
+	if ($value && preg_match('@^private/uploads/[\w\-]+/[\w\.-]+\.upload$@', $value) && file_exists(CMS_ROOT. $value)) {
 		echo htmlspecialchars(substr(basename($value), 0, -7));
 		echo '
-			<input type="hidden" name="', htmlspecialchars(arrayKey($attributes, 'name')), '" value="', htmlspecialchars($value), '">'; 
+			<input type="hidden" name="', htmlspecialchars($attributes['name'] ?? false), '" value="', htmlspecialchars($value), '">'; 
 		return;
 	} else {
 		$value = null;
@@ -90,7 +90,7 @@ if ($type == 'file') {
 //LOVs only: Add the $rowNum to the name and id as needed to avoid clashes
 if ($i) {
 	if ($type == 'checkbox' || $type == 'toggle') {
-		$attributes['name'] = arrayKey($attributes, 'name'). '__'. $i;
+		$attributes['name'] = ($attributes['name'] ?? false). '__'. $i;
 	}
 	if (isset($attributes['id'])) {
 		$attributes['id'] = $attributes['id']. '__'. $i;
@@ -99,7 +99,7 @@ if ($i) {
 
 //Checkboxes/Radiogroups only: If the form has already been submitted, overwrite the "checked" attribute depending on whether the checkbox/radiogroup was chosen
 if ($type == 'checkbox' && $this->checkPostIsMine()) {
-	if (isset($_POST[arrayKey($attributes, 'name')])) {
+	if (isset($_POST[($attributes['name'] ?? false)])) {
 		$attributes['checked'] = 'checked';
 	} else {
 		unset($attributes['checked']);
@@ -112,15 +112,15 @@ if ($type == 'checkbox' && $this->checkPostIsMine()) {
 		unset($attributes['checked']);
 	}
 
-} elseif ($type == 'date' && !arrayKey($attributes, 'name')) {
+} elseif ($type == 'date' && !($attributes['name'] ?? false)) {
 	$type = 'text';
 
 } elseif ($type == 'date' && !$readonly) {
 	
-	$attributes['id'] = ifNull(arrayKey($attributes, 'id'), $attributes['name']);
+	$attributes['id'] = ifNull($attributes['id'] ?? false, $attributes['name']);
 	
 	$values = explode('-', $value, 3);
-	if (!(int) arrayKey($values, 0) || !(int) arrayKey($values, 1) || !(int) arrayKey($values, 2)) {
+	if (!(int) ($values[0] ?? false) || !(int) ($values[1] ?? false) || !(int) ($values[2] ?? false)) {
 		if ($value === 'TODAY') {
 			$value = date('Y-m-d');
 			$values = explode('-', $value, 3);
@@ -146,8 +146,8 @@ if ($type == 'checkbox' && $this->checkPostIsMine()) {
 			</select>';
 	}
 	
-	$attributes['class'] = 'jquery_datepicker '. arrayKey($attributes, 'class');
-	$attributes['onkeyup'] = 'zenario.dateFieldKeyUp(this, event); '. arrayKey($attributes, 'onkeyup');
+	$attributes['class'] = 'jquery_datepicker '. ($attributes['class'] ?? false);
+	$attributes['onkeyup'] = 'zenario.dateFieldKeyUp(this, event); '. ($attributes['onkeyup'] ?? false);
 }
 
 
@@ -223,7 +223,7 @@ if (!$readonly) {
 		if ($i) {
 			//Toggles need their value/class name set differently depending on whether they are open, to try and mirror radiogroups as close as is possible
 			echo '<input type="submit" value="';
-			$attributes['class'] = arrayKey($attributes, 'class'). ' toggle';
+			$attributes['class'] = ($attributes['class'] ?? false). ' toggle';
 			
 			if ($value == $saveVal) {
 				echo '&bull;';
@@ -272,7 +272,7 @@ if ($i) {
 	switch ($type) {
 		case 'checkbox':
 		case 'radio':
-			$showLabel = !$readonly || engToBooleanArray($attributes, 'checked');
+			$showLabel = !$readonly || engToBoolean($attributes['checked'] ?? false);
 			break;
 		case 'select':
 			$showLabel = $readonly && $saveVal == $value;
@@ -287,7 +287,7 @@ if ($i) {
 } elseif ($readonly) {
 	switch ($type) {
 		case 'checkbox':
-			$showLabel = engToBooleanArray($attributes, 'checked');
+			$showLabel = engToBoolean($attributes['checked'] ?? false);
 			break;
 		case 'date':
 		case 'file':
@@ -304,7 +304,7 @@ if ($i) {
 if ($showLabel) {
 	//Display the field's value
 	echo '
-		<label', !empty($attributes['id'])? ' for="'. htmlspecialchars(arrayKey($attributes, 'id')). '"' : '', '>';
+		<label', !empty($attributes['id'])? ' for="'. htmlspecialchars($attributes['id'] ?? false). '"' : '', '>';
 	
 	if ($type == 'password') {
 		echo preg_replace('/./', '*', $value);
@@ -320,7 +320,7 @@ if ($showLabel) {
 
 if ($addHiddenField) {
 	echo '
-		<input type="hidden" name="', htmlspecialchars(arrayKey($attributes, 'name')), '" value="', htmlspecialchars($value), '">';
+		<input type="hidden" name="', htmlspecialchars($attributes['name'] ?? false), '" value="', htmlspecialchars($value), '">';
 }
 
 
