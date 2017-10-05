@@ -10,7 +10,7 @@ zenario__modules:
                     parent: view_dropdown
                     priv: _PRIV_VIEW_REUSABLE_PLUGIN
                     visible_if: |
-                        item.module_class_name && !item.module_class_name.match(/slide/)
+                        item.module_class_name == 'zenario_plugin_nest'
                     label: Plugins in this nest
                     hide_in_select_mode: true
                     link:
@@ -22,7 +22,7 @@ zenario__modules:
                     parent: view_dropdown
                     priv: _PRIV_VIEW_REUSABLE_PLUGIN
                     visible_if: |
-                        item.module_class_name && item.module_class_name.match(/slide/)
+                        item.module_class_name == 'zenario_slideshow'
                     label: Plugins in this slideshow
                     hide_in_select_mode: true
                     link:

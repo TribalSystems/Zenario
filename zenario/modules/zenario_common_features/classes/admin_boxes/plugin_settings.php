@@ -512,12 +512,12 @@ class zenario_common_features__admin_boxes__plugin_settings extends module_base_
 							adminPhrase('Add CSS classes by picking existing ones from the list or by writing your own in the text box.');
 					}
 				
-					$box['tabs']['this_css_tab']['label'] = $this->phrase('CSS (this [[display_name]])', $module);
+					$box['tabs']['this_css_tab']['label'] = adminPhrase('CSS (this [[display_name]])', $module);
 				
 					if (substr($module['display_name'], 0, -1) == 's') {
-						$box['tabs']['all_css_tab']['label'] = $this->phrase('CSS (all [[display_name]]es)', $module);
+						$box['tabs']['all_css_tab']['label'] = adminPhrase('CSS (all [[display_name]]es)', $module);
 					} else {
-						$box['tabs']['all_css_tab']['label'] = $this->phrase('CSS (all [[display_name]]s)', $module);
+						$box['tabs']['all_css_tab']['label'] = adminPhrase('CSS (all [[display_name]]s)', $module);
 					}
 				} else {
 					$box['tabs']['this_css_tab']['hidden'] = true;

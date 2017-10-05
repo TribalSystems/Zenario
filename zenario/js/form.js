@@ -1041,6 +1041,7 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 		indent,
 		newRow,
 		snippet,
+		atts,
 		html = '',
 		i, v, val, displayVal,
 		splitValues,
@@ -2006,8 +2007,10 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 		
 		//Add set the name and id
 		if (lov === undefined) {
+			atts = field;
 			overrides.id = id;
 		} else {
+			atts = $.extend({}, field, lovField);
 			overrides.id = id + '___' + lov;
 			extraAtt[__$class] += ' control_for__' + id;
 		}
@@ -2022,7 +2025,7 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 		}
 		
 		
-		html += this.outputAtts(field, extraAtt, extraAttAfter, overrides);
+		html += this.outputAtts(atts, extraAtt, extraAttAfter, overrides);
 		
 		var valAttribute = htmlspecialchars(isButton? field.value : value, false, 'asis'),
 			emptyValue = '';
@@ -2221,48 +2224,7 @@ var allowedAtt = {
 methods.outputAtts = function(atts, extraAtt, extraAttAfter, overrides, allowEverything) {
 	
 	var att,
-		html = '',
-		//Most attributes that are part of the HTML spec we'll pass on directly
-		allowedAtt = {
-			'id': true,
-			'name': true, //radio groups only
-			'size': true,
-			'maxlength': true,
-			'accesskey': true,
-			'class': true,
-			'cols': true,
-			'dir': true,
-			'readonly': true,
-			'rows': true,
-			'style': true,
-			'tabindex': true,
-			'title': true,
-			'disabled': true,
-			'onblur': true,
-			'onchange': true,
-			'onclick': true,
-			'ondblclick': true,
-			'onfocus': true,
-			'onmousedown': true,
-			'onmousemove': true,
-			'onmouseout': true,
-			'onmouseover': true,
-			'onmouseup': true,
-			'onkeydown': true,
-			'onkeypress': true,
-			'onkeyup': true,
-			'onselect': true,
-	
-			//New HTML 5 attributes
-			'autocomplete': true,
-			'autofocus': true,
-			'max': true,
-			'min': true,
-			'pattern': true,
-			'placeholder': true,
-			'required': true,
-			'step': true
-		};
+		html = '';
 	
 	foreach (atts as att) {
 		if ((!overrides || overrides[att] == undefined)

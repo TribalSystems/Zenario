@@ -59,8 +59,11 @@ class zenario_common_features__admin_boxes__export_dataset extends module_base_c
 		$dataset = getDatasetDetails($box['key']['dataset']);
 		$sql = self::getExportableDatasetFieldsSQL($dataset['id']);
 		$result = sqlSelect($sql);
+		
 		$systemFields = array();
 		$customFields = array();
+		$checkboxFields = array();
+		
 		$datasetColumns = array();
 		$datasetColumnIdLink = array();
 		$datasetFields = array();
@@ -69,18 +72,18 @@ class zenario_common_features__admin_boxes__export_dataset extends module_base_c
 		$ord = 0;
 		while ($row = sqlFetchAssoc($result)) {
 			// Never export encrypted passwords
-			if ($dataset['system_table'] == 'users' && !setting('plaintext_extranet_user_passwords') && $row['db_column'] == 'password') {
+			if (!$row['db_column'] || ($dataset['system_table'] == 'users' && !setting('plaintext_extranet_user_passwords') && $row['db_column'] == 'password')) {
 				continue;
 			}
 			
-			if ($row['db_column']) {
-				if ($row['is_system_field']) {
-					$systemFields[] = $row['db_column'];
-				} else {
-					$customFields[] = $row['db_column'];
-				}
-				$datasetColumnIdLink[$row['db_column']] = $row['id'];
+			if ($row['type'] == 'checkboxes') {
+				$checkboxFields[] = $row['id'];
+			} elseif ($row['is_system_field']) {
+				$systemFields[] = $row['db_column'];
+			} else {
+				$customFields[] = $row['db_column'];
 			}
+			$datasetColumnIdLink[$row['db_column']] = $row['id'];
 			
 			$datasetColumns[$row['id']] = !empty($row['db_column']) ? $row['db_column'] : $row['field_name'];
 			
@@ -150,6 +153,22 @@ class zenario_common_features__admin_boxes__export_dataset extends module_base_c
 				}
 			}
 		}
+		foreach ($checkboxFields as $fieldId) {
+			$sql = '
+				SELECT l.linking_id, GROUP_CONCAT(v.label ORDER BY v.ord) AS labels
+				FROM ' . DB_NAME_PREFIX . 'custom_dataset_values_link l
+				LEFT JOIN ' . DB_NAME_PREFIX . 'custom_dataset_field_values v
+					ON l.value_id = v.id
+					AND v.field_id = ' . (int)$fieldId . '
+				WHERE l.dataset_id = ' . (int)$dataset['id'] . '
+				AND l.linking_id IN (' . inEscape($box['key']['export_ids']) . ')
+				GROUP BY l.linking_id';
+			$result = sqlSelect($sql);
+			while ($row = sqlFetchAssoc($result)) {
+				$data[$row['linking_id']][$fieldId] = $row['labels'];
+			}	
+		}
+		
 		
 		// Sort row values
 		foreach ($data as $recordId => $record) {
@@ -174,7 +193,7 @@ class zenario_common_features__admin_boxes__export_dataset extends module_base_c
 			// Write column headers then data to CSV
 			fputcsv($f, $datasetColumns);
 			foreach ($data as $row) {
-				fwrite($f, implode(',', $row) . PHP_EOL);
+				fputcsv($f, $row);
 			}
 			fclose($f);
 			

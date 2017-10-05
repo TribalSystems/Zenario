@@ -160,8 +160,8 @@ methods.setScroll = function($panel) {
 	
 			if (itemId = zenarioO.getKeyId(true)) {
 			
-				if (position = that.getItemPosition(itemId)) {
-					scrollTo = Math.max(0, position.top + $panel.scrollTop() - Math.floor($panel.height() / 4));
+				if (position = that.getItemPosition($panel, itemId)) {
+					scrollTo = Math.max(0, position.top - Math.floor($panel.height() / 4));
 		
 					//Snap the view instantly to the item
 					$panel.scrollTop(scrollTo).trigger('scroll');
@@ -186,9 +186,12 @@ methods.setScroll = function($panel) {
 
 
 //Get the position of an item in Organizer, i.e. for the setScroll() function to scroll to it
-methods.getItemPosition = function(itemId) {
+methods.getItemPosition = function($panel, itemId) {
 	var $item = $(get('organizer_item_' + itemId)),
 		position = $item.position();
+	
+	//In list/grid view, we need to include the current scroll position to the top offset
+	position.top += $panel.scrollTop();
 	
 	return position;
 };

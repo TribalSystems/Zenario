@@ -182,18 +182,25 @@ methods.getItems = function() {
 
 
 //Get the position of an item in Organizer, i.e. for the setScroll() function to scroll to it
-methods.getItemPosition = function(itemId) {
-	var $item = $(get('organizer_item_' + itemId)),
-		position = $item.position();
+methods.getItemPosition = function($panel, itemId) {
 	
-	//Hack for hiearchy view - if the element doesn't have a position, try its parent
-	if (position
-	 && position.top == 0
-	 && position.left == 0) {
-		position = $item.parent().position();
+	var $item = $(get('organizer_item_' + itemId)),
+		thisPosition,
+		outPosition;
+	
+	//If the element doesn't have a position, keep trying its parents
+	while ($item
+		&& $item[0]
+		&& $item[0].id != 'organizer_items_wrapper'
+		&& (thisPosition = $item.position())) {
+			
+			if (thisPosition.top) {
+				outPosition = thisPosition;
+			}
+			$item = $item.parent();
 	}
 	
-	return position;
+	return outPosition;
 };
 
 methods.setupHierarchy = function($header, $panel, $footer) {

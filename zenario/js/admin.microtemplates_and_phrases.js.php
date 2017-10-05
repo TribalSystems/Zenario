@@ -61,7 +61,7 @@ foreach(array(
 	'after' => 'On or after:',
 	'am' => 'AM',
 	'applyChanges' => 'Apply changes',
-	'atCurrentSize' => 'at current window size',
+	'atMax' => 'at max',
 	'before' => 'On or before:',
 	'branchNum' => 'Branch #',
 	'cancel' => 'Cancel',

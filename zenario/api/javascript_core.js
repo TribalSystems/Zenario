@@ -47,6 +47,20 @@ zenario.lib(function(
 	//They are actually defined below.
 ) {
 	"use strict";
+	
+	var userAgent = navigator.userAgent,
+		scrollBody,
+		di,
+		docClasses = {},
+		docClassesSplit = document.body.className.split(' ');
+	
+	for (di in docClassesSplit) {
+		docClasses[docClassesSplit[di]] = true;
+	}
+	
+	di = docClassesSplit = undefined;
+	scrollBody = docClasses.edge || docClasses.safari? 'body' : 'html, body';
+	
 
 	/**
 	  * This section lists important JavaScript functions from the core CMS in Visitor Mode
@@ -338,7 +352,7 @@ zenario.lib(function(
 	zenario.scrollTop = function(value, time, el) {
 	
 		if (el === undefined) {
-			el = zenario.browserIsWebKit() || zenario.browserIsEdge()? 'body' : 'html';
+			el = scrollBody;
 		}
 	
 		if (value === undefined) {
@@ -351,7 +365,7 @@ zenario.lib(function(
 	};
 
 	zenario.scrollLeft = function(value) {
-		var $body = $(zenario.browserIsWebKit() || zenario.browserIsEdge()? 'body' : 'html');
+		var $body = $(scrollBody);
 	
 		if (value === undefined) {
 			return $body.scrollLeft();
@@ -360,23 +374,12 @@ zenario.lib(function(
 		}
 	};
 	
-	
-	var di,
-		docClasses = {},
-		docClassesSplit = document.body.className.split(' ');
-	
-	for (di in docClassesSplit) {
-		docClasses[docClassesSplit[di]] = true;
-	}
-	
-	di = docClassesSplit = undefined;
-	
 
 	zenario.versionOfIE = function(n) {
-		if (/opera|OPERA/.test(navigator.userAgent)) {
+		if (/opera|OPERA/.test(userAgent)) {
 			return false;
 		}
-		var ver = /MSIE ([0-9]{1,}[\.0-9]{0,})/.exec(navigator.userAgent);
+		var ver = /MSIE ([0-9]{1,}[\.0-9]{0,})/.exec(userAgent);
 		return ver && ver[1] && 1*ver[1];
 	};
 
@@ -427,11 +430,11 @@ zenario.lib(function(
 	};
 
 	zenario.browserIsiPad = function() {
-		return /iPad/.test(navigator.userAgent);
+		return /iPad/.test(userAgent);
 	};
 
 	zenario.browserIsiPhone = function() {
-		return /iPhone/.test(navigator.userAgent);
+		return /iPhone/.test(userAgent);
 	};
 
 	zenario.browserIsMobile = function() {

@@ -245,7 +245,7 @@ class zenario_phi_parser {
 		
 		
 		//Try to catch control statements with their next line of code immediately after them
-		if (preg_match('@^([\{\}\s]*for\s*\(.*?\s*in\s*.*?\s*\:\s*.*?\)|for\s*\(.*?\s*in\s*.*?\)|(if|elseif|else if)\s*\(.*?\)|else|continue|next|break|function\s*\w+\s*\(.*?\)|\w+\s*(=|\<-)\s*function\s*\(.*?\))([\{\}\s]*[^\{\}\s\;]+.*)$@i', $line, $matches)) {
+		if (preg_match('@^([\{\}\s]*for\s*\(.*?\s*in\s*.*?\s*\:\s*.*?\)|for\s*\(.*?\s*in\s*.*?\)|(if|elseif|else if)\s*\(.*?\)|else|continue|next|break|function\s*\w+\s*\(.*?\)|\w+\s*(=|\<-)\s*function\s*\(.*?\))(\s*[\{\}]+\s*[^\{\}\s\;]+.*)$@i', $line, $matches)) {
 			//Deal with this case by splitting the line into two lines
 			new zenario_phi_parser($lineNumber, trim($matches[1]));
 			$line = trim($matches[4]);

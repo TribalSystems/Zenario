@@ -666,67 +666,117 @@ zenarioA.getGridSlotDetails = function(slotName) {
 			columns: false,
 			width: false,
 			widthInfo: false
-		};
+		},
+		maxCols = zenarioGrid.cols,
+		maxWidth = zenarioGrid.maxWidth;
 	
 	if ($gridspan.length) {
 		//Attempt to get the CSS class names of the wrapper of the slot
 		//(it's easier to look this up using JavaScript than it is to work it out in fillAllAdminSlotControls() in php).
-		grid.cssClass = $gridspan.attr(__$class),
+		grid.cssClass = $gridspan.attr('class'),
 		
 		//Strip out "alpha" and "omega" from the class names
 		grid.cssClass = grid.cssClass.replace(' alpha ', ' ').replace(' omega ', ' ');
 		
 		//Get the actual width of the slot
 		var fluidWidth = false,
-			widthInfo = '',
+			width, widthInfo, wasMaxWidth = false,
 			pxWidth = $gridspan.width(),
 			container,
+			
+			si, styleSheet,
+			ri, rule, rules,
+			mi, mule, mules,
+			selectorText, match,
+			
 		
 			//Try and read the number of columns from the css class names, e.g. "span3"
-			css = $gridspan.attr(__$class) || '',
+			css = $gridspan.attr('class') || '',
 			columns = css.match(/\bspan\d+\b/);
 	
 		if (columns) {
 			columns = 1 * columns[0].match(/\d+/);
 		}
 	
-		try {
-			//Loop through each stylesheet/rule, checking to see if there is a grid and a "span" rule that matches this span
-			//Adapted from http://stackoverflow.com/questions/324486/how-do-you-read-css-rule-values-with-javascript
-			outerLoop:
-			foreach (document.styleSheets as var i => var s) {
-				var rules = s.rules || s.cssRules;
-		
-				innerLoop:
-				foreach (rules as var j => var rule) {
-					if (rule.selectorText
-					 && rule.style.width
-					 && ('' + rule.selectorText).match(/\.span/)
-					 && $gridspan.is(rule.selectorText)) {
-						widthInfo = rule.style.width;
-						break outerLoop;
-					}
-				}
-			}
-		} catch (e) {
-			widthInfo = '';
-		}
-	
-		if (!widthInfo) {
-			widthInfo = pxWidth + 'px';
-		} else if (!widthInfo.match(/\d+px/)) {
-			fluidWidth = true;
-		}
-	
-		if (fluidWidth) {
-			widthInfo += ' (' + pxWidth + ' px ' + phrase.atCurrentSize + ')';
-		}
-	
 		if (columns) {
 			if (columns == 1) {
-				widthInfo = '1 column, ' + widthInfo;
+				widthInfo = '1 column';
 			} else {
-				widthInfo = columns + ' columns, ' + widthInfo;
+				widthInfo = columns + ' columns';
+			}
+			
+			selectorText = '.container_' + maxCols;
+			if (columns != maxCols) {
+				selectorText += ' .span' + columns;
+			}
+			
+			//If we're using a grid-template, try to work out the width of this slot
+			//from the CSS
+			if (maxCols && maxWidth) {
+				try {
+					//Loop through each stylesheet/rule, checking to see if there is a grid and a "span" rule that matches this span
+					//Adapted from http://stackoverflow.com/questions/324486/how-do-you-read-css-rule-values-with-javascript
+					outerLoop:
+					foreach (document.styleSheets as si => styleSheet) {
+					
+						if (!styleSheet.href
+						 || !styleSheet.href.indexOf('zenario_custom/templates/grid_templates/')) {
+							continue;
+						}
+					
+						rules = styleSheet.rules || styleSheet.cssRules;
+						//console.log('rules', rules);
+		
+						//middleLoop:
+						foreach (rules as ri => rule) {
+						
+							if (rule.selectorText
+							 && rule.selectorText == selectorText) {
+								if (width = rule.style.width) {
+									break outerLoop;
+								
+								} else if (width = rule.style['max-width']) {
+									wasMaxWidth = true;
+									break outerLoop;
+								}
+							}
+						
+						
+							mules = rule.rules || rule.cssRules;
+		
+							//innerLoop:
+							foreach (mules as mi => mule) {
+						
+								if (mule.selectorText
+								 && mule.selectorText == selectorText) {
+									if (width = mule.style.width) {
+										break outerLoop;
+								
+									} else if (width = mule.style['max-width']) {
+										wasMaxWidth = true;
+										break outerLoop;
+									}
+								}
+							}
+						}
+					}
+				} catch (e) {
+					width = '';
+				}
+			
+			
+				if (width) {
+					
+					widthInfo += ', ' + width;
+					
+					if ((match = width.match(/^(\d+\.?\d*)\%$/))
+					 && (match = 1 * maxWidth * 0.01 * match[1])) {
+						widthInfo += ' (' + Math.ceil(match) + ' px ' + phrase.atMax + ')';
+					
+					} else if (wasMaxWidth) {
+						widthInfo += ' ' + phrase.atMax;
+					}
+				}
 			}
 		}
 		
@@ -737,7 +787,7 @@ zenarioA.getGridSlotDetails = function(slotName) {
 		
 		//Work out the size of the container
 		if ((container = $gridspan.closest('div.container'))
-		 && (container = container.attr(__$class))
+		 && (container = container.attr('class'))
 		 && (container = container.match(/container_(\d+)/))
 		 && (container[1])) {
 			grid.container = 1*container[1];
