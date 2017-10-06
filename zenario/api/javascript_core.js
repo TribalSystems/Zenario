@@ -47,6 +47,24 @@ zenario.lib(function(
 	//They are actually defined below.
 ) {
 	"use strict";
+	
+	var userAgent = navigator.userAgent,
+		scrollBody,
+		di,
+		docClasses = {},
+		docClassesSplit = document.body.className.split(' ');
+	
+	for (di in docClassesSplit) {
+		docClasses[docClassesSplit[di]] = true;
+	}
+	
+	di = docClassesSplit = undefined;
+	scrollBody = docClasses.edge
+			  || docClasses.safari
+			  || userAgent.match(/Chrom(e|ium)\/(60|5\d)\./)?
+				'body'
+			  : 'html, body';
+	
 
 	/**
 	  * This section lists important JavaScript functions from the core CMS in Visitor Mode
@@ -338,7 +356,7 @@ zenario.lib(function(
 	zenario.scrollTop = function(value, time, el) {
 	
 		if (el === undefined) {
-			el = zenario.browserIsWebKit() || zenario.browserIsEdge()? 'body' : 'html';
+			el = scrollBody;
 		}
 	
 		if (value === undefined) {
@@ -351,7 +369,7 @@ zenario.lib(function(
 	};
 
 	zenario.scrollLeft = function(value) {
-		var $body = $(zenario.browserIsWebKit() || zenario.browserIsEdge()? 'body' : 'html');
+		var $body = $(scrollBody);
 	
 		if (value === undefined) {
 			return $body.scrollLeft();
@@ -359,31 +377,44 @@ zenario.lib(function(
 			return $body.scrollLeft(value);
 		}
 	};
+	
 
 	zenario.versionOfIE = function(n) {
-		if (/opera|OPERA/.test(navigator.userAgent)) {
+		if (/opera|OPERA/.test(userAgent)) {
 			return false;
 		}
-		var ver = /MSIE ([0-9]{1,}[\.0-9]{0,})/.exec(navigator.userAgent);
+		var ver = /MSIE ([0-9]{1,}[\.0-9]{0,})/.exec(userAgent);
 		return ver && ver[1] && 1*ver[1];
 	};
 
 	zenario.browserIsIE = function(n) {
-		var ver = zenario.versionOfIE();
+		if (docClasses.ie) {
+			if (n === undefined) {
+				return true;
 		
-		return ver && (n? ver <= n: true);
+			} else {
+				while (n > 5) {
+					if (docClasses['ie' + n]) {
+						return true;
+					}
+					--n;
+				}
+			}
+		}
+		
+		return false;
 	};
 
 	zenario.browserIsChrome = function() {
-		return /Chrome/.test(navigator.userAgent);
+		return docClasses.chrome;
 	};
 
 	zenario.browserIsEdge = function() {
-		return /Edge\//.test(navigator.userAgent);
+		return docClasses.edge;
 	};
 
 	zenario.browserIsFirefox = function() {
-		return /Firefox/.test(navigator.userAgent);
+		return docClasses.ff;
 	};
 
 	zenario.browserIsRetina = function() {
@@ -391,23 +422,23 @@ zenario.lib(function(
 	};
 
 	zenario.browserIsSafari = function() {
-		return /Safari/.test(navigator.userAgent);
+		return docClasses.safari;
 	};
 
 	zenario.browserIsWebKit = function() {
-		return /WebKit/.test(navigator.userAgent);
+		return docClasses.webkit;
 	};
 
 	zenario.browserIsOpera = function() {
-		return /Opera/.test(navigator.userAgent);
+		return docClasses.opera;
 	};
 
 	zenario.browserIsiPad = function() {
-		return /iPad/.test(navigator.userAgent);
+		return /iPad/.test(userAgent);
 	};
 
 	zenario.browserIsiPhone = function() {
-		return /iPhone/.test(navigator.userAgent);
+		return /iPhone/.test(userAgent);
 	};
 
 	zenario.browserIsMobile = function() {

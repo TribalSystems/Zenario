@@ -140,7 +140,11 @@ class zenario_common_features__admin_boxes__upload_replacement_document extends 
 				$newRedirect = $oldFile['short_checksum'] . '/' . $document['filename'];
 				$sql = '
 					INSERT IGNORE INTO ' . DB_NAME_PREFIX . 'document_public_redirects (document_id, file_id, path)
-					VALUES (' . (int)$documentId . ', ' . (int)$oldFile['id'] . ',"' . mb_substr($newRedirect, 0, 255, 'UTF-8') . '")';
+					VALUES (
+						'. (int) $documentId. ',
+						'. (int) $oldFile['id']. ',
+						\''. sqlEscape(mb_substr($newRedirect, 0, 255, 'UTF-8')). '\'
+					)';
 				sqlQuery($sql);
 				zenario_common_features::remakeDocumentRedirectHtaccessFiles($documentId);
 				zenario_common_features::generateDocumentPublicLink($documentId);
