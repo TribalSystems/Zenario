@@ -59,7 +59,11 @@ zenario.lib(function(
 	}
 	
 	di = docClassesSplit = undefined;
-	scrollBody = docClasses.edge || docClasses.safari? 'body' : 'html, body';
+	scrollBody = docClasses.edge
+			  || docClasses.safari
+			  || userAgent.match(/Chrom(e|ium)\/(60|5\d)\./)?
+				'body'
+			  : 'html, body';
 	
 
 	/**

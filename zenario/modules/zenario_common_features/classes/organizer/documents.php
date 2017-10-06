@@ -365,8 +365,8 @@ class zenario_common_features__organizer__documents extends module_base_class {
 					$internalLink = $result;
 					$html .= '
 						<h3>The hyperlinks to your document are shown below:</h3>
-						Full hyperlink: <br><input type="text" style="width: 488px;" value = "'.$fullLink.'"/><br>
-						Internal hyperlink:<br><input type="text" style="width: 488px;" value = "'. $internalLink . '"/>';
+						Full hyperlink: <br><input type="text" style="width: 488px;" value="'. htmlspecialchars($fullLink). '"/><br>
+						Internal hyperlink:<br><input type="text" style="width: 488px;" value="'. htmlspecialchars($internalLink). '"/>';
 				}
 			}
 			echo '<!--Message_Type:' . $messageType . '-->' . $html;
