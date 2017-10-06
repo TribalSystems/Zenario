@@ -47,6 +47,16 @@ zenario.lib(function(
 	//They are actually defined below.
 ) {
 	"use strict";
+	
+	var userAgent = navigator.userAgent,
+		scrollBody = (
+			/Edge\//.test(userAgent)
+		 || (/Safari/.test(userAgent)
+		  && !/Chrome\//.test(userAgent))
+		)?
+			'body'
+		  : 'html, body';
+	
 
 	/**
 	  * This section lists important JavaScript functions from the core CMS in Visitor Mode
@@ -333,7 +343,7 @@ zenario.lib(function(
 	zenario.scrollTop = function(value, time, el) {
 	
 		if (el === undefined) {
-			el = zenario.browserIsWebKit() || zenario.browserIsEdge()? 'body' : 'html';
+			el = scrollBody;
 		}
 	
 		if (value === undefined) {
@@ -346,7 +356,7 @@ zenario.lib(function(
 	};
 
 	zenario.scrollLeft = function(value) {
-		var $body = $(zenario.browserIsWebKit() || zenario.browserIsEdge()? 'body' : 'html');
+		var $body = $(scrollBody);
 	
 		if (value === undefined) {
 			return $body.scrollLeft();
@@ -356,10 +366,10 @@ zenario.lib(function(
 	};
 
 	zenario.versionOfIE = function(n) {
-		if (/opera|OPERA/.test(navigator.userAgent)) {
+		if (/opera|OPERA/.test(userAgent)) {
 			return false;
 		}
-		var ver = /MSIE ([0-9]{1,}[\.0-9]{0,})/.exec(navigator.userAgent);
+		var ver = /MSIE ([0-9]{1,}[\.0-9]{0,})/.exec(userAgent);
 		return ver && ver[1] && 1*ver[1];
 	};
 
@@ -370,15 +380,15 @@ zenario.lib(function(
 	};
 
 	zenario.browserIsChrome = function() {
-		return /Chrome/.test(navigator.userAgent);
+		return /Chrome/.test(userAgent);
 	};
 
 	zenario.browserIsFirefox = function() {
-		return /Firefox/.test(navigator.userAgent);
+		return /Firefox/.test(userAgent);
 	};
 
 	zenario.browserIsEdge = function() {
-		return /Edge\//.test(navigator.userAgent);
+		return /Edge\//.test(userAgent);
 	};
 
 	zenario.browserIsRetina = function() {
@@ -386,23 +396,23 @@ zenario.lib(function(
 	};
 
 	zenario.browserIsSafari = function() {
-		return /Safari/.test(navigator.userAgent);
+		return /Safari/.test(userAgent);
 	};
 
 	zenario.browserIsWebKit = function() {
-		return /WebKit/.test(navigator.userAgent);
+		return /WebKit/.test(userAgent);
 	};
 
 	zenario.browserIsOpera = function() {
-		return /Opera/.test(navigator.userAgent);
+		return /Opera/.test(userAgent);
 	};
 
 	zenario.browserIsiPad = function() {
-		return /iPad/.test(navigator.userAgent);
+		return /iPad/.test(userAgent);
 	};
 
 	zenario.browserIsiPhone = function() {
-		return /iPhone/.test(navigator.userAgent);
+		return /iPhone/.test(userAgent);
 	};
 
 	zenario.browserIsMobile = function() {
