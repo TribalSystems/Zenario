@@ -221,7 +221,7 @@ switch ($path) {
 					FROM ".DB_NAME_PREFIX."documents
 					WHERE type = 'folder' 
 					AND folder_id =".$parentfolderId."
-					AND folder_name = '".$newDocumentName."' 
+					AND folder_name = '".sqlEscape($newDocumentName)."' 
 					AND id != ". $documentId;
 	
 				$documentIdList = array();
