@@ -32,7 +32,7 @@
 				
 				{% if location.map_image %}
 					<div class="image map"> 
-						<img src="{{location.map_image}}">
+						<img src="{{location.map_image}}" alt="{{location.alt_tag|escape}}">
 					</div>
 				{% endif %}
 				
@@ -178,7 +178,7 @@
 									
 									{% if location.list_image %}
 										<div class="image list"> 
-											<img src="{{location.list_image}}">
+											<img src="{{location.list_image}}" alt="{{location.alt_tag|escape}}">
 										</div>
 									{% endif %}
 									

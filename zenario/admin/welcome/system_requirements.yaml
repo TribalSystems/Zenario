@@ -82,7 +82,7 @@ system_requirements:
                     grouping: sub_table
                     full_width: true
                     snippet:
-                        html: MySQL version 5.5.3 or later
+                        html: MySQL client and MySQL server version 5.5.3 or later
                     visible_if: zenarioAW.togglePressed()
                 mb:
                     grouping: sub_table

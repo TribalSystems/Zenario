@@ -86,6 +86,14 @@ docTools.parseSchema = function(mode, schema, specificTag, linkToRef) {
 		delete schema.description;
 		
 		
+		//Hack to fix a crash in handlebars
+		try {
+			schema.properties.insert_image_button.type = 'object';
+			schema.properties.insert_link_button.type = 'object';
+		} catch (e) {
+		}
+		
+		
 		var p, prop;
 		if (schema.properties) {
 			for (p in schema.properties) {
@@ -110,6 +118,7 @@ docTools.parseSchema = function(mode, schema, specificTag, linkToRef) {
 			
 			}
 		}
+		
 		
 		return schema;
 	} else {

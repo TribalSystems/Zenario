@@ -5126,12 +5126,21 @@ function getSlotContents(
 				
 		foreach ($slots as $slotName => $dummy) {
 			if (!empty($slotContents[$slotName]['class_name']) && !empty($slotContents[$slotName]['instance_id'])) {
+				
+				$thisSettings = $thisFrameworkAndCSS = false;
+				if ($overrideSettings !== false && $slotName == request('slotName')) {
+					$thisSettings = $overrideSettings;
+				}
+				if ($overrideFrameworkAndCSS !== false && $slotName == request('slotName')) {
+					$thisFrameworkAndCSS = $overrideFrameworkAndCSS;
+				}
+				
 				$edition::loadPluginInstance(
 					$slotContents, $slotName,
 					$cID, $cType, $cVersion,
 					$layoutId, $templateFamily, $templateFileBaseName,
 					$specificInstanceId, $specificSlotName, $ajaxReload,
-					$runPlugins, $overrideSettings, $overrideFrameworkAndCSS);
+					$runPlugins, $thisSettings, $thisFrameworkAndCSS);
 		
 			} elseif (!empty($slotContents[$slotName]['level'])) {
 				setupNewBaseClassPlugin($slotName);

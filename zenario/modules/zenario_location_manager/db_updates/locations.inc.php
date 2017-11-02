@@ -386,6 +386,31 @@ _sql
 	MODIFY COLUMN `filename` varchar(255) NOT NULL default ''
 _sql
 
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations`
+	ADD KEY (`description`)
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations`
+	ADD KEY (`city`)
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations`
+	ADD KEY (`state`)
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations`
+	ADD KEY (`postcode`)
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations`
+	ADD KEY (`status`)
+_sql
+
 ); 	revision( 78
 
 , <<<_sql
@@ -611,7 +636,221 @@ _sql
 	ADD COLUMN `hide_pin` tinyint(5) NOT NULL default 0
 	AFTER map_center_longitude
 _sql
- 
+
+);
+
+if (needRevision(135)) {
+	$dataset = getDatasetDetails(ZENARIO_LOCATION_MANAGER_PREFIX. 'locations');
+	
+	$columnsToMigrate = array();
+	
+	$key = array(
+		'db_column' => 'phone',
+		'dataset_id' => $dataset['id']);
+	$cols = array('label' => 'Phone:', 'is_system_field' => 0);
+	
+	if (checkRowExists('custom_dataset_fields', $key)) {
+		$sql = "SELECT COUNT('phone') as count FROM " . DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX. "locations 
+			WHERE phone IS NOT NULL AND phone <> ''";
+		$result = sqlQuery($sql);
+		$count = sqlFetchArray($result);
+		if ($count['count'] > 0) {
+			//change to custom field
+			$fieldId = setRow('custom_dataset_fields', $cols, $key);
+			createDatasetFieldInDB($fieldId);
+			$columnsToMigrate[] = 'phone';
+		} else {
+			//otherwise remove from custom dataset fields
+			deleteRow('custom_dataset_fields', $key);
+		}
+	}
+	
+	
+	$key = array(
+		'db_column' => 'fax',
+		'dataset_id' => $dataset['id']);
+	$cols = array('label' => 'Fax:', 'is_system_field' => 0);
+	
+	if (checkRowExists('custom_dataset_fields', $key)) {
+		$sql = "SELECT COUNT('fax') as count FROM " . DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX. "locations 
+			WHERE fax IS NOT NULL AND fax <> ''";
+		$result = sqlQuery($sql);
+		$count = sqlFetchArray($result);
+		if ($count['count'] > 0) {
+			//change to custom field
+			$fieldId = setRow('custom_dataset_fields', $cols, $key);
+			createDatasetFieldInDB($fieldId);
+			$columnsToMigrate[] = 'fax';
+		} else {
+			//otherwise remove from custom dataset fields
+			deleteRow('custom_dataset_fields', $key);
+		}
+	}
+	
+	$key = array(
+		'db_column' => 'url',
+		'dataset_id' => $dataset['id']);
+	$cols = array('label' => 'url:', 'is_system_field' => 0);
+	
+	if (checkRowExists('custom_dataset_fields', $key)) {
+		$sql = "SELECT COUNT('url') as count FROM " . DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX. "locations 
+			WHERE url IS NOT NULL AND url <> ''";
+		$result = sqlQuery($sql);
+		$count = sqlFetchArray($result);
+		if ($count['count'] > 0) {
+			//change to custom field
+			$fieldId = setRow('custom_dataset_fields', $cols, $key);
+			createDatasetFieldInDB($fieldId);
+			$columnsToMigrate[] = 'url';
+		} else {
+			//otherwise remove from custom dataset fields
+			deleteRow('custom_dataset_fields', $key);
+		}
+	}
+	
+	
+	$key = array(
+		'db_column' => 'last_accessed',
+		'dataset_id' => $dataset['id']);
+	$cols = array('label' => 'url last accessed:', 'is_system_field' => 0);
+	
+	if (checkRowExists('custom_dataset_fields', $key)) {
+		$sql = "SELECT COUNT('last_accessed') as count FROM " . DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX. "locations 
+			WHERE last_accessed IS NOT NULL AND last_accessed <> ''";
+		$result = sqlQuery($sql);
+		$count = sqlFetchArray($result);
+		if ($count['count'] > 0) {
+			//change to custom field
+			$fieldId = setRow('custom_dataset_fields', $cols, $key);
+			createDatasetFieldInDB($fieldId);
+			$columnsToMigrate[] = 'last_accessed';
+		} else {
+			//otherwise remove from custom dataset fields
+			deleteRow('custom_dataset_fields', $key);
+		}
+	}
+	
+	
+	$key = array(
+		'db_column' => 'summary',
+		'dataset_id' => $dataset['id']);
+	$cols = array('label' => 'Summary:','is_system_field' => 0, 'tab_name' => 'details');
+	
+	if (checkRowExists('custom_dataset_fields', $key)) {
+		$sql = "SELECT COUNT('summary') as count FROM " . DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX. "locations 
+			WHERE summary IS NOT NULL AND summary <> ''";
+		$result = sqlQuery($sql);
+		$count = sqlFetchArray($result);
+		if ($count['count'] > 0) {
+			//change to custom field
+			$fieldId = setRow('custom_dataset_fields', $cols, $key);
+			createDatasetFieldInDB($fieldId);
+			$columnsToMigrate[] = 'summary';
+		} else {
+			//otherwise remove from custom dataset fields
+			deleteRow('custom_dataset_fields', $key);
+		}
+	}
+	
+	
+	if ($columnsToMigrate) {
+		$columnsToMigrateCommaList = implode(',', $columnsToMigrate);
+		
+		$sql = "
+			INSERT INTO " . DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX. "locations_custom_data 
+			(" . $columnsToMigrateCommaList . ",location_id) 
+			SELECT ";
+		
+		foreach ($columnsToMigrate as $column) {
+			$sql .= "IFNULL(l." . $column . ", ''), ";
+		}
+		
+		$sql .= "
+			id
+			FROM " . DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX. "locations as l 
+			ON DUPLICATE KEY UPDATE ";
+		
+		foreach ($columnsToMigrate as $column) {
+			$sql .= $column . " = IFNULL(l." . $column . ", ''),";
+		}
+		
+		$sql = rtrim($sql, ",");
+		
+		sqlQuery($sql);
+	}
+	revision(135);
+}
+
+revision( 136
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations`
+	DROP COLUMN `phone`,
+	DROP COLUMN `fax`,
+	DROP COLUMN `url`,
+	DROP COLUMN `last_accessed`,
+	DROP COLUMN `summary`
+_sql
+
+);
+
+if (needRevision(140)) {
+	$dataset = getDatasetDetails(ZENARIO_LOCATION_MANAGER_PREFIX. 'locations');
+	
+	$columnsToMigrate = array();
+
+	$key = array(
+		'db_column' => 'email',
+		'dataset_id' => $dataset['id']);
+	$cols = array('label' => 'Email:', 'is_system_field' => 0);
+	
+	if (checkRowExists('custom_dataset_fields', $key)) {
+		$sql = "SELECT COUNT('email') as count FROM " . DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX. "locations 
+			WHERE email IS NOT NULL AND email <> ''";
+		$result = sqlQuery($sql);
+		$count = sqlFetchArray($result);
+		if ($count['count'] > 0) {
+			//change to custom field
+			$fieldId = setRow('custom_dataset_fields', $cols, $key);
+			createDatasetFieldInDB($fieldId);
+			$columnsToMigrate[] = 'email';
+		}
+	}
+	
+	if ($columnsToMigrate) {
+		$columnsToMigrateCommaList = implode(',', $columnsToMigrate);
+		
+		$sql = "
+			INSERT INTO " . DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX. "locations_custom_data 
+			(" . $columnsToMigrateCommaList . ",location_id) 
+			SELECT ";
+		
+		foreach ($columnsToMigrate as $column) {
+			$sql .= "IFNULL(l." . $column . ", ''), ";
+		}
+		
+		$sql .= "
+			id
+			FROM " . DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX. "locations as l 
+			ON DUPLICATE KEY UPDATE ";
+		
+		foreach ($columnsToMigrate as $column) {
+			$sql .= $column . " = IFNULL(l." . $column . ", ''),";
+		}
+		
+		$sql = rtrim($sql, ",");
+		
+		sqlQuery($sql);
+	}
+	revision(140);
+
+}
+
+revision( 141
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations`
+	DROP COLUMN `email`
+_sql
+
 // Adding pending status to locations (Workstream T10170)
 ); revision( 145
 
@@ -620,6 +859,84 @@ _sql
 	MODIFY COLUMN `status` enum('pending','active','suspended') NOT NULL DEFAULT 'active'
 _sql
 
-);
+//Attempt to convert some columns with a utf8-3-byte character set to a 4-byte character set
+);	revision( 160
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]accreditors` SET `name` = SUBSTR(`name`, 1, 250) WHERE CHAR_LENGTH(`name`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]accreditors` MODIFY COLUMN `name` varchar(250) CHARACTER SET utf8mb4 NOT NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations` SET `address1` = SUBSTR(`address1`, 1, 250) WHERE CHAR_LENGTH(`address1`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations` MODIFY COLUMN `address1` varchar(250) CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations` SET `address2` = SUBSTR(`address2`, 1, 250) WHERE CHAR_LENGTH(`address2`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations` MODIFY COLUMN `address2` varchar(250) CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations` SET `city` = SUBSTR(`city`, 1, 250) WHERE CHAR_LENGTH(`city`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations` MODIFY COLUMN `city` varchar(250) CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations` SET `content_type` = SUBSTR(`content_type`, 1, 250) WHERE CHAR_LENGTH(`content_type`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations` MODIFY COLUMN `content_type` varchar(250) CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations` MODIFY COLUMN `country_id` varchar(5) CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations` SET `description` = SUBSTR(`description`, 1, 250) WHERE CHAR_LENGTH(`description`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations` MODIFY COLUMN `description` varchar(250) CHARACTER SET utf8mb4 NOT NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations` SET `external_id` = SUBSTR(`external_id`, 1, 250) WHERE CHAR_LENGTH(`external_id`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations` MODIFY COLUMN `external_id` varchar(250) CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations` SET `locality` = SUBSTR(`locality`, 1, 250) WHERE CHAR_LENGTH(`locality`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations` MODIFY COLUMN `locality` varchar(250) CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations` SET `postcode` = SUBSTR(`postcode`, 1, 250) WHERE CHAR_LENGTH(`postcode`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations` MODIFY COLUMN `postcode` varchar(250) CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations` SET `state` = SUBSTR(`state`, 1, 250) WHERE CHAR_LENGTH(`state`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations` MODIFY COLUMN `state` varchar(250) CHARACTER SET utf8mb4 NULL
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]location_images` SET `filename` = SUBSTR(`filename`, 1, 250) WHERE CHAR_LENGTH(`filename`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]location_images` MODIFY COLUMN `filename` varchar(250) CHARACTER SET utf8mb4 NOT NULL default ''
+_sql
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]scores` SET `name` = SUBSTR(`name`, 1, 250) WHERE CHAR_LENGTH(`name`) > 250
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]scores` MODIFY COLUMN `name` varchar(250) CHARACTER SET utf8mb4 NOT NULL
+_sql
+
+); 
 
 

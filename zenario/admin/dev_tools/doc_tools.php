@@ -33,7 +33,13 @@ echo
 				exit;
 		}
 		
-		$schema = zenarioReadTUIXFile(CMS_ROOT. 'zenario/api/'. $schema);
+		//Prefer to document HEAD if possible
+		$apiDir = '/var/www/zenario-source/HEAD/zenario/api/';
+		if (!is_dir($apiDir)) {
+			$apiDir = CMS_ROOT. 'zenario/api/';
+		}
+		
+		$schema = zenarioReadTUIXFile($apiDir. $schema);
 		unset($schema['common_definitions']);
 		
 		$docsonBaseUrl = '../../libraries/apache/docson';
@@ -43,7 +49,7 @@ echo '
     <meta charset="utf-8">
     <link rel="stylesheet" href="', $docsonBaseUrl, '/css/docson.css">
     <script src="', $docsonBaseUrl, '/lib/require.js"></script></head>
-    <script src="doc_tools.js"></script>';
+    <script src="doc_tools.js?v=6"></script>';
     
     if ($_GET['linkToRef'] ?? false) {
     	echo "

@@ -278,8 +278,11 @@ class zenario_location_map_and_listing extends module_base_class {
 			$row['listingClick'] = "
 				zenario_location_map_and_listing.listingClick(this, ". (int) $row['id']. ");";
 			
-			$row['map_image'] = self::getStickyImage($row['id'],"map");
-			$row['list_image'] = self::getStickyImage($row['id'],"list");
+			$imageId = getRow(ZENARIO_LOCATION_MANAGER_PREFIX. 'location_images','image_id',array('sticky_flag' => '1', 'location_id' => $row['id']));
+			
+			$row['alt_tag'] = getRow('files', 'alt_tag', $imageId);
+			$row['map_image'] = self::getStickyImageLink($imageId,"map");
+			$row['list_image'] = self::getStickyImageLink($imageId,"list");
 			
 			$row['descriptive_page'] = false;
 			if($this->setting('show_view_button') && $row['equiv_id'] && $row['content_type']){
@@ -556,25 +559,22 @@ class zenario_location_map_and_listing extends module_base_class {
 		}
 	}
 	
-	public function getStickyImage($locationId, $mode){
-		if(is_numeric($locationId) && $mode){
-			if($this->setting('show_images')){
-				$imageId = getRow(ZENARIO_LOCATION_MANAGER_PREFIX. 'location_images','image_id',array('sticky_flag' => '1', 'location_id' => $locationId));
-				$url = $width = $height = false;
-				if($mode == "map"){
-					$widthImage = $this->setting('map_view_thumbnail_width'); 
-					$heightImage = $this->setting('map_view_thumbnail_height');
-					$canvas = $this->setting('map_view_thumbnail_canvas'); 
-					$offset = $this->setting('map_view_thumbnail_offset');
-				}else{
-					$widthImage = $this->setting('list_view_thumbnail_width'); 
-					$heightImage = $this->setting('list_view_thumbnail_height');
-					$canvas = $this->setting('list_view_thumbnail_canvas'); 
-					$offset = $this->setting('list_view_thumbnail_offset');
-				}
-				Ze\File::imageLink($width, $height, $url, $imageId,$widthImage,$heightImage,$canvas,$offset);
-				return $url;
+	public function getStickyImageLink($imageId, $mode) {
+		if ($imageId && $mode && $this->setting('show_images')) {
+			$url = $width = $height = false;
+			if($mode == "map"){
+				$widthImage = $this->setting('map_view_thumbnail_width'); 
+				$heightImage = $this->setting('map_view_thumbnail_height');
+				$canvas = $this->setting('map_view_thumbnail_canvas'); 
+				$offset = $this->setting('map_view_thumbnail_offset');
+			}else{
+				$widthImage = $this->setting('list_view_thumbnail_width'); 
+				$heightImage = $this->setting('list_view_thumbnail_height');
+				$canvas = $this->setting('list_view_thumbnail_canvas'); 
+				$offset = $this->setting('list_view_thumbnail_offset');
 			}
+			Ze\File::imageLink($width, $height, $url, $imageId, $widthImage, $heightImage, $canvas, $offset);
+			return $url;
 		}
 		return false;
 	}

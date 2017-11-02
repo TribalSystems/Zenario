@@ -441,7 +441,7 @@ function systemRequirementsAJAX(&$source, &$tags, &$fields, &$values, $changes, 
 		
 		if ($mysqlVersion) {
 			$fields['0/mysql_2']['post_field_html'] =
-				adminPhrase('&nbsp;(<em>you have version [[version]]</em>)', array('version' => htmlspecialchars($mysqlVersion)));
+				adminPhrase('&nbsp;(<em>your client is version [[version]]</em>)', array('version' => htmlspecialchars($mysqlVersion)));
 		}
 		
 		if (!$mysqlVersion
