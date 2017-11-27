@@ -2648,7 +2648,6 @@ zenarioO.selectItems = function(itemsIn) {
 	var i, id, selectItems = {},
 		changes = false,
 		selectThisItem,
-		inRange = start === undefined,
 		selectedItems = zenarioO.pi.returnSelectedItems();
 	
 	if (_.isArray(itemsIn)) {

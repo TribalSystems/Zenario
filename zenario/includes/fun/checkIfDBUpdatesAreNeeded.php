@@ -272,6 +272,7 @@ if ($andDoUpdates) {
 	cms_core::$dbCols = array();
 	
 	setSetting('last_successful_db_update', time());
+	setSetting('zenario_version', getCMSVersionNumber());
 }
 
 if (!$revisionsNeeded) {

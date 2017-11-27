@@ -534,7 +534,7 @@ class zenario_user_forms__organizer__form_fields_gui extends module_base_class {
 						if (isset($page['next_button_text'])) {
 							$values['next_button_text'] = $this->sanitizeTextForSQL($page['next_button_text']);
 						}
-						if (isset($values['previous_button_text'])) {
+						if (isset($page['previous_button_text'])) {
 							$values['previous_button_text'] = $this->sanitizeTextForSQL($page['previous_button_text']);
 						}
 						$values['hide_in_page_switcher'] = !empty($page['hide_in_page_switcher']);

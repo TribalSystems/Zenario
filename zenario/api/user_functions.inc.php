@@ -473,10 +473,12 @@ function saveUser($values, $id = false, $doSave = true) {
 		//...has no special characters...
 		if (!validateScreenName($values['screen_name'])) {
 			$e->add('screen_name', '_ERROR_SCREEN_NAME_INVALID');
-		
 		//...and is not already taken by a different row.
 		} elseif (checkRowExists('users', array('screen_name' => $values['screen_name'], 'id' => array('!' => $id)))) {
 			$e->add('screen_name', '_ERROR_SCREEN_NAME_IN_USE');
+		//...and is not too long.
+		} elseif (strlen($values['screen_name']) > 50) {
+			$e->add('screen_name', 'Your Screen Name cannot be more than 50 characters long.');
 		}
 	}
 	

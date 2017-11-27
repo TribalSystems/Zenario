@@ -1067,7 +1067,6 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 							$errorMessage = 'No existing record found for ID column '.$field['db_column'];
 							self::addErrorMessage($problems, $errorCount, $errorMessage, $lineNumber, $columnIndex);
 						} elseif ($rowCount > 1) {
-							// TODO this should be a warning, not an error.
 							$errorMessage = 'More than one existing record found for ID column '.$field['db_column'];
 							self::addErrorMessage($problems, $errorCount, $errorMessage, $lineNumber, $columnIndex);
 						}
@@ -1101,7 +1100,10 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 							}
 						}
 					} elseif ($field['db_column'] == 'screen_name') {
-						self::recordUniqueImportValue(self::$screenNames, $value, $lineNumber);
+						if ($errorLines = self::recordUniqueImportValue(self::$screenNames, $value, $lineNumber)) {
+							$errorMessage = 'More than one line in the file has the same screen name ('.implode(', ',$errorLines).')';
+							self::addErrorMessage($problems, $errorCount, $errorMessage, $lineNumber, $columnIndex);
+						}
 					}
 				}
 				

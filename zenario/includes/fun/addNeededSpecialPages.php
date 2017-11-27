@@ -205,7 +205,7 @@ if ($resultSp = getRows('special_pages', true, array())) {
 								$redundancy = 'primary';
 								if (!empty($page['menu_title']) && ($sectionId = menuSectionId('Main'))) {
 									
-									if ($menu = getMenuItemFromContent($cID, $cType, false, 'Main', true)) {
+									if ($menu = getMenuItemFromContent($sp['equiv_id'], $sp['content_type'], false, 'Main', true)) {
 										$menuId = $menu['id'];
 									
 									} else {
@@ -232,7 +232,7 @@ if ($resultSp = getRows('special_pages', true, array())) {
 								
 								if (!empty($page['footer_menu_title']) && ($sectionId = menuSectionId('Footer'))) {
 									
-									if ($menu = getMenuItemFromContent($cID, $cType, false, 'Footer', true)) {
+									if ($menu = getMenuItemFromContent($sp['equiv_id'], $sp['content_type'], false, 'Footer', true)) {
 										$menuId = $menu['id'];
 									
 									} else {

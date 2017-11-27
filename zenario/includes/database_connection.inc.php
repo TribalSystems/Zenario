@@ -403,7 +403,7 @@ function reportDatabaseError($errtext = '', $errno = '', $error = '', $sql = '',
 		EMAIL_ADDRESS_GLOBAL_SUPPORT,
 		$addressToOverriddenBy,
 		$nameTo = false,
-		$addressFrom = false,
+		$addressFrom = setting('email_address_from') ?: EMAIL_ADDRESS_GLOBAL_SUPPORT,
 		$nameFrom = false,
 		false, false, false,
 		$isHTML = false);

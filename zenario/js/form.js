@@ -1162,7 +1162,8 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 		//Allow people writing YAML files to put HTML tags in as property names
 		//as a tidier shortcut to using pre/post field HTML.
 		foreach (field as prop) {
-			if (match = prop.match(/^<(\/?)(\w+)/)) {
+			if (prop[0] == '<'
+			 && (match = prop.match(/^<(\/?)(\w+)/))) {
 				
 				//Add any HTML in the value on as well
 				if (field[prop] && _.isString(field[prop])) {
@@ -1866,6 +1867,13 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 					var $field = $(that.get(id)),
 						domTab = that.get('zenario_abtab'),
 						tabDisplay = domTab.style.display;
+					
+					//TinyMCE can fail to load if there was already an editor on the page with the same name.
+					//Attempt to try and tidy this up as a work-around
+					try {
+						$field.tinymce().remove();
+					} catch (e) {
+					}
 				
 					//Temporarily set the tab's display to be visible, even if an animation was hiding it.
 					//This is a little hack to make sure that TinyMCE can get the correct width and height

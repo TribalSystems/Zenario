@@ -196,7 +196,7 @@ if ($installed) {
 		  AND revision_no < ". (26960). "
 		LIMIT 1";
 
-	if (sqlFetchRow(sqlQuery($sql))) {
+	if (sqlFetchRow(sqlSelect($sql))) {
 		//If this looks like a very old version of Zenario, direct people to update to 7.0.2 first
 		echo '
 			<p>
@@ -208,6 +208,48 @@ if ($installed) {
 			</p><p>
 				As soon as you have updated your site to version 7.0.2 you can then update to the
 				latest version of Zenario.
+			</p>';
+		exit;
+	}
+	
+	//Catch the case where someone has accidentally pointed a database running a later version of Zenario
+	//at a previous version of the software.
+	$sql = "
+		SELECT revision_no
+		FROM ". DB_NAME_PREFIX. "local_revision_numbers
+		WHERE path IN ('admin/db_updates/step_1_update_the_updater_itself', 'admin/db_updates/step_2_update_the_database_schema', 'admin/db_updates/step_4_migrate_the_data')
+		  AND patchfile IN ('updater_tables.inc.php', 'admin_tables.inc.php', 'content_tables.inc.php', 'user_tables.inc.php')
+		  AND revision_no > ". (int) LATEST_REVISION_NO. "
+		LIMIT 1";
+
+	if ($dbRev = sqlFetchRow(sqlSelect($sql))) {
+		
+		
+		$sql = "
+			SELECT value
+			FROM ". DB_NAME_PREFIX. "site_settings
+			WHERE name = 'zenario_version'";
+		$dbVer = sqlFetchRow(sqlSelect($sql));
+		
+		
+		//If this looks like a very old version of Zenario, direct people to update to at least 7.5 first
+		echo '
+			<p>
+				You are seeing this message because your database contains an installation of Zenario from a later version.
+			</p><p>
+				This software is version <code>'. ZENARIO_VERSION. '</code> of Zenario, the highest supported DB revision is <code>#'. LATEST_REVISION_NO. '</code>.
+			</p><p>';
+		
+		if ($dbVer) {
+			$dbVer = preg_replace('@^([\d\\.]*).*@', '$1', trim($dbVer[0]));
+			echo '
+				Your database contains version <code>'. htmlspecialchars($dbVer). '</code> of Zenario, at DB revision <code>#'. (int) $dbRev[0]. '</code>.';
+		} else {
+			echo '
+				Your database is at DB revision <code>#'. (int) $dbRev[0]. '</code>.';
+		}
+		
+		echo '
 			</p>';
 		exit;
 	}
