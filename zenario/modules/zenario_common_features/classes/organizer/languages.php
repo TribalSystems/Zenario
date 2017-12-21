@@ -290,7 +290,7 @@ _text
 		
 				// Enable a language
 				if (($_POST['enable_language'] ?? false) && ($_POST['id'] ?? false)) {
-					echo '<!--Open_Admin_Box:zenario_setup_language//' . ($_POST['id'] ?? false) . '-->';
+					echo '<!--Open_Admin_Box:zenario_setup_language//' . eschyp($_POST['id'] ?? false) . '-->';
 				}
 		
 				break;

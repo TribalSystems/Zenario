@@ -30,10 +30,20 @@ Options -Indexes
 <IfModule mod_deflate.c>
 	#SetOutputFilter DEFLATE
 	AddOutputFilterByType DEFLATE text/css text/csv text/html text/plain text/xml text/javascript application/javascript application/x-javascript
-	php_flag zlib.output_compression Off
+	<IfModule mod_php5.c>
+		php_flag zlib.output_compression Off
+	</IfModule>
+	<IfModule mod_php7.c>
+		php_flag zlib.output_compression Off
+	</IfModule>
 </IfModule>
 <IfModule !mod_deflate.c>
-	php_flag zlib.output_compression On
+	<IfModule mod_php5.c>
+		php_flag zlib.output_compression On
+	</IfModule>
+	<IfModule mod_php7.c>
+		php_flag zlib.output_compression On
+	</IfModule>
 </IfModule>
 
 <IfModule mod_rewrite.c>

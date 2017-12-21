@@ -711,16 +711,23 @@ methods.formatFieldDetails = function(fields, item, mode, page) {
 			if (item.visibility == 'visible_on_condition' && item.visible_condition_field_id) {
 				var conditionField = this.getField(item.visible_condition_field_id);
 				if (conditionField) {
+					
 					if (conditionField.type == 'checkboxes') {
 						fields.visible_condition_checkboxes_field_value.values = conditionField.lov;
 						fields.visible_condition_field_value._hidden = true;
 						fields.visible_condition_checkboxes_operator._hidden = false;
+					} else if (conditionField.type == 'checkbox' || conditionField.type == 'group') {
+						//Nothing to do
 					} else {
-						if (conditionField.type != 'checkbox' && conditionField.type != 'group') {
-							fields.visible_condition_field_value.values = conditionField.lov;
-							fields.visible_condition_field_value.empty_value = '-- Any value --';
+						fields.visible_condition_field_value.empty_value = '-- Any value --';
+						fields.visible_condition_field_value.values = conditionField.lov;
+						fields.visible_condition_field_type.values = _.clone(fields.visible_condition_field_type.values);
+						fields.visible_condition_field_type.values.visible_if_one_of = {label: 'Visible if one of...'};
+						
+						if (item.visible_condition_field_type == 'visible_if_one_of') {
+							fields.visible_condition_checkboxes_field_value.values = conditionField.lov;
+							fields.visible_condition_field_value._hidden = true;
 						}
-						fields.visible_condition_checkboxes_field_value._hidden = true;
 					}
 				}
 			}

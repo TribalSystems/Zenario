@@ -548,6 +548,39 @@ if (file_exists(CMS_ROOT. 'zenario_siteconfig.php') && filesize(CMS_ROOT. 'zenar
 	require CMS_ROOT. 'zenario_siteconfig.php';
 }
 
+//Attempt to calculate the SUBDIRECTORY, if not set already
+//(Note that similar logic is used to validate the SUBDIRECTORY at the top of admin/welcome.php)
+if (!defined('SUBDIRECTORY')) {
+	//Get the original included filepath
+	$file = substr($_SERVER['SCRIPT_FILENAME'], strlen(CMS_ROOT));
+
+	//Get the included location
+	$self = $_SERVER['PHP_SELF'];
+
+	//If the two don't match up, try chopping the filenames off the ends of the path
+	if (substr($self, -strlen($file)) != $file) {
+		$pos = max(strrpos($file, '/'), strrpos($file, '\\'), -1);
+		$file = substr($file, 0, $pos? $pos + 1 : 0);
+	
+		$pos = max(strrpos($self, '/'), strrpos($self, '\\'), -1);
+		$self = substr($self, 0, $pos? $pos + 1 : 0);
+	
+		unset($pos);
+	}
+
+	//Trim the included location by the filepath to get the current SUBDIRECTORY
+	if (strlen($file)) {
+		$subdir = substr($self, 0, -strlen($file));
+	} elseif ($self) {
+		$subdir = $self;
+	} else {
+		$subdir = '/';
+	}
+
+	define('SUBDIRECTORY', $subdir);
+	unset($file, $self, $subdir);
+}
+
 
 //Set the error level if specified in the site configs, defaulting to (E_ALL & ~E_NOTICE | E_STRICT) if not defined or if the site configs have not yet been included
 if (defined('ERROR_REPORTING_LEVEL')) {

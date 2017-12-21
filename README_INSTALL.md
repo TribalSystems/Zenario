@@ -6,7 +6,7 @@ System Requirements
 
 To run Zenario you will need a web server/hosted account with the following:
 
-*   Apache Server version 2
+*   Apache Server version 2.4.7 or later
 *   PHP version 7.0 or later
 *   MySQL version 5.5.3 or later (or an equivalent MariaDB version)
 *   An empty MySQL (or MariaDB) database to install to

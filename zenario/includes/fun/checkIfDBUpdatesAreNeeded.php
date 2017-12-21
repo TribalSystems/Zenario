@@ -273,6 +273,8 @@ if ($andDoUpdates) {
 	
 	setSetting('last_successful_db_update', time());
 	setSetting('zenario_version', getCMSVersionNumber());
+	setSetting('css_js_html_files_last_changed', '');
+	setSetting('css_js_version', '');
 }
 
 if (!$revisionsNeeded) {

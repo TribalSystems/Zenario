@@ -36,7 +36,7 @@ system_requirements:
                     grouping: sub_table
                     full_width: true
                     snippet:
-                        html: Apache http server
+                        html: Apache http server version 2.4.7 or later
                     visible_if: zenarioAW.togglePressed()
                 php:
                     grouping: sub_table

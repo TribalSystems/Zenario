@@ -323,7 +323,7 @@ function getSettingsFromDefaultMenuPosition($position, &$parentId, &$startOrEnd)
 
 
 function createDraft(&$cIDTo, $cIDFrom, $cType, &$cVersionTo, $cVersionFrom = false, $languageId = false, $adminId = false, $useCIDIfItDoesntExist = false, $cTypeFrom = false) {
-	require funIncPath(__FILE__, __FUNCTION__);
+	return require funIncPath(__FILE__, __FUNCTION__);
 }
 
 function updateVersion($cID, $cType, $cVersion, $version = array(), $forceMarkAsEditsMade = false) {
@@ -544,8 +544,6 @@ function saveContent($content, $cID, $cType, $cVersion, $slotName = false, $modu
 			'name' => $settingName));
 	
 	syncInlineFileContentLink($cID, $cType, $cVersion);
-	
-	updateVersion($cID, $cType, $cVersion);
 }
 
 

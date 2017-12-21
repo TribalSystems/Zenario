@@ -21,6 +21,23 @@
                 window.onbeforeunload = function() {
                     return true;
                 }
+                
+                if (zenario_conductor !== undefined) {
+                	var phrase = this.phrase('Changes you made may not be saved.');
+                	zenario_conductor.confirmOnClose(
+                		containerId,
+                		function() {
+                			return true;
+                		},
+                		function(after) {
+                			if (confirm(phrase)) {
+                				after();
+                			}
+                		},
+                		phrase
+                	);
+                }
+                
             }
             if (formFinalSubmitSuccessfull) {
                 window.onbeforeunload = null;
@@ -198,8 +215,12 @@
 									} else {
 										value = $tcField.val();
 									}
-							
-									visible = Boolean((tcField.value === '' && value) || (tcField.value !== '' && (tcField.value == value)));
+									
+									if (typeof(tcField.value) == 'string' && tcField.value.split(',').length > 1) {
+										visible = tcField.value.split(',').indexOf(value) !== -1;
+									} else {
+										visible = Boolean((tcField.value === '' && value) || (tcField.value !== '' && (tcField.value == value)));
+									}
 								}
 								
 								visible = tcField.invert ? !visible : visible;

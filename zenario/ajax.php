@@ -742,12 +742,6 @@ if ($methodCall == 'showFile') {
 //Refresh a Plugin in a slot
 } elseif ($methodCall == 'refreshPlugin') {
 			
-	function eschyp($text) {
-		$searches = array('`', '-', ':', "\n", "\r");
-		$replaces = array('`t', '`h', '`c', '`n', '`r');
-		return str_replace($searches, $replaces, $text);
-	}
-	
 	$module = &cms_core::$slotContents[$slotName]['class'];
 	
 	//Display an info section at the top of the result, to help the CMS pick up on a few things

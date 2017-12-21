@@ -194,15 +194,22 @@ class zenario_user_forms__organizer__form_fields_gui extends module_base_class {
 				$field['default_value_options'] = 'method';
 			}
 			
+			$field['visible_condition_field_type'] = $field['visible_condition_invert'] ? 'visible_if_not' : 'visible_if';
 			if ($field['visibility'] == 'visible_on_condition' && $field['visible_condition_field_id'] && isset($fields[$field['visible_condition_field_id']])) {
 				$conditionFieldType = $fields[$field['visible_condition_field_id']]['type'];
-				if ($conditionFieldType == 'checkboxes') {
-					$field['visible_condition_checkboxes_field_value'] = explode(',', $field['visible_condition_field_value']);
+				
+				$values = explode(',', $field['visible_condition_field_value']);
+				if (count($values) > 1 || $conditionFieldType == 'checkboxes') {
+					$field['visible_condition_checkboxes_field_value'] = $values;
+					if ($conditionFieldType != 'checkboxes') {
+						$field['visible_condition_field_type'] = 'visible_if_one_of';
+					}
 				} elseif ($conditionFieldType == 'checkbox' || $conditionFieldType == 'group') {
 					$field['visible_condition_field_value'] = $field['visible_condition_field_value'] ? 'checked' : 'unchecked';
 				}
 			}
 			
+			$field['mandatory_condition_field_type'] = $field['mandatory_condition_invert'] ? 'mandatory_if_not' : 'mandatory_if';
 			if ($field['readonly_or_mandatory'] == 'conditional_mandatory' && $field['mandatory_condition_field_id'] && isset($fields[$field['mandatory_condition_field_id']])) {
 				$conditionFieldType = $fields[$field['mandatory_condition_field_id']]['type'];
 				if ($conditionFieldType == 'checkboxes') {
@@ -211,9 +218,6 @@ class zenario_user_forms__organizer__form_fields_gui extends module_base_class {
 					$field['mandatory_condition_field_value'] = $field['mandatory_condition_field_value'] ? 'checked' : 'unchecked';
 				}
 			}
-			
-			$field['visible_condition_field_type'] = $field['visible_condition_invert'] ? 'visible_if_not' : 'visible_if';
-			$field['mandatory_condition_field_type'] = $field['mandatory_condition_invert'] ? 'mandatory_if_not' : 'mandatory_if';
 			
 			foreach ($defaultValues as $defaultValueName => $defaultValue) {
 				if (empty($field[$defaultValueName]) && (!isset($field[$defaultValueName]) || $field[$defaultValueName] !== 0)) {
@@ -733,35 +737,37 @@ class zenario_user_forms__organizer__form_fields_gui extends module_base_class {
 			$values['visible_condition_field_id'] = (int)$tempFieldIdLink[$item['visible_condition_field_id']];
 			$values['visible_condition_invert'] = ($item['visible_condition_field_type'] == 'visible_if_not');
 			$conditionFieldType = $fields[$item['visible_condition_field_id']]['type'];
-			switch ($conditionFieldType) {
-				case 'select':
-				case 'radios':
-					$value = $item['visible_condition_field_value'];
+			
+			if ($item['visible_condition_field_type'] == 'visible_if_one_of' || $conditionFieldType == 'checkboxes') {
+				$tValues = array();
+				foreach ($item['visible_condition_checkboxes_field_value'] as $tValue) {
 					if (empty($fields[$item['visible_condition_field_id']]['dataset_field_id'])) {
-						$value = $tempValueIdLink[$value] ?? '';
+						$tValue = $tempValueIdLink[$tValue] ?? '';
 					}
-					$values['visible_condition_field_value'] = $value;
-					break;
-				case 'checkboxes':
+					$tValues[] = $tValue;
+				}
+				$values['visible_condition_field_value'] = implode(',', $tValues);
+				if ($conditionFieldType == 'checkboxes') {
 					$values['visible_condition_checkboxes_operator'] = $item['visible_condition_checkboxes_operator'];
-					if ($item['visible_condition_checkboxes_field_value']) {
-						$tValues = array();
-						foreach ($item['visible_condition_checkboxes_field_value'] as $tValue) {
-							if (empty($fields[$item['visible_condition_field_id']]['dataset_field_id'])) {
-								$tValue = $tempValueIdLink[$tValue] ?? '';
-							}
-							$tValues[] = $tValue;
+				}
+			} else {
+				switch ($conditionFieldType) {
+					case 'select':
+					case 'radios':
+						$value = $item['visible_condition_field_value'];
+						if (empty($fields[$item['visible_condition_field_id']]['dataset_field_id'])) {
+							$value = $tempValueIdLink[$value] ?? '';
 						}
-						$values['visible_condition_field_value'] = implode(',', $tValues);
-					}
-					break;
-				case 'checkbox':
-				case 'group':
-					$values['visible_condition_field_value'] = (!empty($item['visible_condition_field_value']) && $item['visible_condition_field_value'] == 'checked') ? 1 : 0;
-					break;
-				default:
-					$values['visible_condition_field_value'] = $this->sanitizeTextForSQL($item['visible_condition_field_value']);
-					break;
+						$values['visible_condition_field_value'] = $value;
+						break;
+					case 'checkbox':
+					case 'group':
+						$values['visible_condition_field_value'] = (!empty($item['visible_condition_field_value']) && $item['visible_condition_field_value'] == 'checked') ? 1 : 0;
+						break;
+					default:
+						$values['visible_condition_field_value'] = $this->sanitizeTextForSQL($item['visible_condition_field_value']);
+						break;
+				}
 			}
 		}
 		return $values;

@@ -259,3 +259,5 @@ if ($newDraftCreated) {
 
 	sendSignal("eventDraftCreated", array("cIDTo" => $cIDTo, "cIDFrom" => $cIDFrom, "cTypeTo" => $cTypeTo, "cVersionTo" => $cVersionTo, "cVersionFrom" => $cVersionFrom, "cTypeFrom" => $cTypeFrom));
 }
+
+return $newDraftCreated;

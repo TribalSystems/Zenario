@@ -553,7 +553,12 @@ class zenario_user_forms extends module_base_class {
 					case 'select':
 					case 'centralised_radios':
 					case 'centralised_select':
-						$visible = ($condition['value'] && ($condition['value'] == $condition['current_value'])) || (!$condition['value'] && $condition['current_value']);
+						$conditionValues = explode(',', $condition['value']);
+						if (count($conditionValues) > 1) {
+							$visible = in_array($condition['current_value'], $conditionValues);
+						} else {
+							$visible = ($condition['value'] && ($condition['value'] == $condition['current_value'])) || (!$condition['value'] && $condition['current_value']);
+						}
 						break;
 					case 'checkboxes':
 						$visible = false;
@@ -1914,8 +1919,8 @@ class zenario_user_forms extends module_base_class {
 									</div>
 								</div>
 								<div class="section_wrap">
-									<label>' . static::fPhrase('Upload images', array(), $t) . '</label>
-									<input type="button" class="open_popup_2" value="' . static::fPhrase('Upload multiple images', array(), $t) . '">
+									<label>' . static::fPhrase('Upload multiple images as a single PDF', array(), $t) . '</label>
+									<input type="button" class="open_popup_2" value="' . static::fPhrase('Start...', array(), $t) . '">
 								</div>
 								<div class="section_wrap save">
 									<input type="button" class="save" value="' . static::fPhrase('Save', array(), $t) . '">

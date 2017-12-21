@@ -211,6 +211,12 @@ function isInfoTag($tagName) {
 	//	|| $tagName === 'ord';
 }
 
+function eschyp($text) {
+	$searches = array('`', '-', ':', "\n", "\r");
+	$replaces = array('`t', '`h', '`c', '`n', '`r');
+	return str_replace($searches, $replaces, $text);
+}
+
 function jsEscape($text) {
 	return strtr(addcslashes($text, "\\\n\r\"'"), array('&' => '\\x26', '<' => '\\x3c', '>' => '\\x3e'));
 }

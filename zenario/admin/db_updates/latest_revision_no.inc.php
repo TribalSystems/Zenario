@@ -34,7 +34,7 @@ define('INSTALLER_DEFAULT_THEME', 'duke_street');
 
 define('ZENARIO_MAJOR_VERSION', '7');
 define('ZENARIO_MINOR_VERSION', '7');
-define('ZENARIO_REVISION', '43763');
+define('ZENARIO_REVISION', '44148');
 define('ZENARIO_VERSION', '7.7');
 define('ZENARIO_IS_HEAD', false);
 

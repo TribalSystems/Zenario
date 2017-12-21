@@ -965,7 +965,8 @@ class zenario_common_features__admin_boxes__content extends module_base_class {
 		}
 		
 		//Create a new Content Item, or a new Draft of a Content Item, as needed.
-		createDraft($box['key']['cID'], $box['key']['source_cID'], $box['key']['cType'], $box['key']['cVersion'], $box['key']['source_cVersion'], $values['meta_data/language_id']);
+		$newDraftCreated = createDraft($box['key']['cID'], $box['key']['source_cID'], $box['key']['cType'], $box['key']['cVersion'], $box['key']['source_cVersion'], $values['meta_data/language_id']);
+		$forceMarkAsEditsMade = $newDraftCreated;
 
 		if (!$box['key']['cID']) {
 			exit;
@@ -1090,15 +1091,13 @@ class zenario_common_features__admin_boxes__content extends module_base_class {
 				$version['file_id'] = $values['file/file'];
 			}
 		}
+		
+		$changes = !empty($version);
 
-		//Update the latest version
-		if (!empty($version) || $newLayoutId) {
-			updateVersion($box['key']['cID'], $box['key']['cType'], $box['key']['cVersion'], $version);
-	
-			//Update the layout
-			if ($newLayoutId) {
-				changeContentItemLayout($box['key']['cID'], $box['key']['cType'], $box['key']['cVersion'], $newLayoutId);
-			}
+		//Update the layout
+		if ($newLayoutId) {
+			changeContentItemLayout($box['key']['cID'], $box['key']['cType'], $box['key']['cVersion'], $newLayoutId);
+			$changes = true;
 		}
 
 
@@ -1117,9 +1116,15 @@ class zenario_common_features__admin_boxes__content extends module_base_class {
 					if (!empty($box['tabs']['content'. $i]['edit_mode']['on'])) {
 						stripAbsURLsFromAdminBoxField($box['tabs']['content'. $i]['fields']['content']);
 						saveContent($values['content'. $i. '/content'], $box['key']['cID'], $box['key']['cType'], $box['key']['cVersion'], $slot);
+						$changes = true;
 					}
 				}
 			}
+		}
+		
+		//Update the content_item_versions table
+		if ($changes) {
+			updateVersion($box['key']['cID'], $box['key']['cType'], $box['key']['cVersion'], $version, $forceMarkAsEditsMade);
 		}
 
 

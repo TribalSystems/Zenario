@@ -79,6 +79,7 @@ zenario__user_forms:
                                         label: Visible if...
                                     visible_if_not:
                                         label: Visible if not...
+                                format_onchange: true
                                 visible_if: |
                                     item.visibility == 'visible_on_condition' && item.visible_condition_field_id
                                 indent: 2
