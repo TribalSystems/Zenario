@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2017, Tribal Limited
+ * Copyright (c) 2018, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -2367,7 +2367,7 @@ _sql
 	  AND ps.nest = 0
 	WHERE np.is_slide = 1
 	  AND np.states != ''
-	GROUP BY np.instance_id
+	GROUP BY np.instance_id, ps.is_content
 _sql
 
 ); revision(38669

@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2017, Tribal Limited
+ * Copyright (c) 2018, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -27,14 +27,14 @@
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
-define('LATEST_REVISION_NO', 41253);	//N.b. 8.0 starts at revision #41550
+define('LATEST_REVISION_NO', 41254);	//N.b. 8.0 starts at revision #41550
 define('LATEST_BIG_CHANGE_REVISION_NO', 41252);
 define('INSTALLER_REVISION_NO', 33430);
 define('INSTALLER_DEFAULT_THEME', 'duke_street');
 
 define('ZENARIO_MAJOR_VERSION', '7');
 define('ZENARIO_MINOR_VERSION', '7');
-define('ZENARIO_REVISION', '44148');
+define('ZENARIO_REVISION', '44223');
 define('ZENARIO_VERSION', '7.7');
 define('ZENARIO_IS_HEAD', false);
 

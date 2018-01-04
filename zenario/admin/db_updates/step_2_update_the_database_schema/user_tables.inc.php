@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2017, Tribal Limited
+ * Copyright (c) 2018, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -1274,6 +1274,14 @@ _sql
 , <<<_sql
 	ALTER TABLE `[[DB_NAME_PREFIX]]custom_dataset_fields`
 	ADD COLUMN `allow_admin_to_change_export` tinyint(1) NOT NULL DEFAULT 0 AFTER `allow_admin_to_change_visibility`
+_sql
+
+
+//Post-branch patch: fix a bad table definition that sometimes causes a db-error when restoring a backup/migrating a site
+); revision( 41254
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]user_content_accesslog`
+	MODIFY COLUMN `hit_datetime` datetime NOT NULL DEFAULT '1970-01-01 00:00:00'
 _sql
 
 );

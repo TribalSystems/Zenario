@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2017, Tribal Limited
+ * Copyright (c) 2018, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -577,7 +577,7 @@ if (checkRowExists('content_item_versions', array('id' => $cID, 'type' => $cType
 	$adminToolbar['sections']['history']['buttons']['content_item_right']['label'] = adminPhrase('Next version ([[status]])', $mrg);
 	$adminToolbar['sections']['history']['buttons']['content_item_right']['tooltip'] =
 		adminPhrase('View next version'). '|'.
-		adminPhrase('Version status: [[status]]', array('status' => $mrg));
+		adminPhrase('Version status: [[status]]', $mrg);
 
 	unset($adminToolbar['sections']['history']['buttons']['no_content_right']);
 

@@ -1076,7 +1076,7 @@ CREATE TABLE `[[DB_NAME_PREFIX]]user_characteristic_values_link` (
 DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]user_content_accesslog`;
 CREATE TABLE `[[DB_NAME_PREFIX]]user_content_accesslog` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `hit_datetime` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `hit_datetime` datetime NOT NULL DEFAULT '1970-01-01 00:00:00',
   `user_id` int(10) unsigned NOT NULL DEFAULT '0',
   `content_id` int(10) unsigned NOT NULL DEFAULT '0',
   `content_type` varchar(20) NOT NULL DEFAULT '',

@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2017, Tribal Limited
+ * Copyright (c) 2018, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -150,6 +150,14 @@ function connectToDatabase($dbhost = 'localhost', $dbname, $dbuser, $dbpass, $db
 			 && mysqli_query($dbconnection,"SET character_set_connection='utf8mb4'")
 			 && mysqli_query($dbconnection,"SET character_set_results='utf8mb4'")
 			 && mysqli_query($dbconnection,"SET character_set_server='utf8mb4'")) {
+				
+				if (defined('DEBUG_USE_STRICT_MODE') && DEBUG_USE_STRICT_MODE) {
+					mysqli_query($dbconnection,"SET @@SESSION.sql_mode = 'STRICT_ALL_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_ZERO_DATE,NO_ZERO_IN_DATE'");
+				} else {
+					mysqli_query($dbconnection,"SET @@SESSION.sql_mode = ''");
+				}
+				//N.b. we don't support the new ONLY_FULL_GROUP_BY option in 5.7, as some of our queries rely on this being disabled.
+				
 				return $dbconnection;
 			}
 		}
@@ -167,9 +175,6 @@ function loadSiteConfig() {
 
 	//Connect to the database
 	connectLocalDB();
-	if (defined('DEBUG_USE_STRICT_MODE') && DEBUG_USE_STRICT_MODE) {
-		sqlSelect("SET @@SESSION.sql_mode = 'STRICT_ALL_TABLES'");
-	}
 	
 	//Don't directly show a Content Item if a major Database update needs to be applied
 	if (defined('CHECK_IF_MAJOR_REVISION_IS_NEEDED')) {
