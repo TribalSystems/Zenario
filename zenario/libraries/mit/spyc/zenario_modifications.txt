@@ -1,1 +1,0 @@
-Removed the code for access from the command line at the bottom of Spyc.php

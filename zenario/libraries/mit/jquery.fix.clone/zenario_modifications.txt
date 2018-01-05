@@ -1,7 +1,0 @@
-Small modification so that the new function does not override the old one
-
-Replace:
-  jQuery.fn.clone = function () {
-
-With:
-  jQuery.fn.cloneProperly = function () {

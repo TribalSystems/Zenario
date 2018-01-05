@@ -1,7 +1,0 @@
-zenario__administration:
-    nav:
-        error_log:
-            label: Error log
-            tooltip: Manage logged errors
-            link:
-                path: zenario__administration/panels/error_log

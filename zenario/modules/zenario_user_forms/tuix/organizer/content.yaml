@@ -1,7 +1,0 @@
-zenario__content:
-    panels:
-        content:
-            refiners:
-                form_id:
-                    table_join:
-                    sql:

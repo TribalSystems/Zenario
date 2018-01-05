@@ -1,1 +1,0 @@
-This file is used to check if someone has attempted to update Zenario by copying the new version over the top of their existing version.

@@ -1,9 +1,0 @@
-zenario__administration:
-	panels:
-		site_settings:
-			items:
-				#	The new item to add, which will form the Settings Group. We should
-				#	prefix it with our Module name to help avoid any name-clashes.
-				zenario_scheduled_task_manager__site_settings_group:
-					name: Scheduled Task Manager
-					desc: Settings for deleting data from the job logs.

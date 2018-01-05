@@ -1,9 +1,0 @@
-# You must use a tab-size of 4 spaces to edit this file.
----
-zenario__users:
-    panels:
-        users:
-            refiners:
-                zenario_newsletter__recipients:
-                    table_join: ""
-                    sql: 'FALSE'

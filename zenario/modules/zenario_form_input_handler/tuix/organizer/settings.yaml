@@ -1,9 +1,0 @@
-# You must use a tab-size of 4 spaces to edit this file.
----
-zenario__administration:
-    panels:
-        site_settings:
-            items:
-                zenario_form_input_handler:
-                    name: Form Input Handler
-                    desc: Settings for the Form Input Handler.

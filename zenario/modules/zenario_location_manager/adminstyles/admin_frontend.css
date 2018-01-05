@@ -1,8 +1,0 @@
-#zenario_at_top_left_menu ul li ul .zenario_at__goto_locations a{
-	padding-left: 30px;
-}
-
-#zenario_at_top_left_menu ul li ul .zenario_at__goto_locations a {
-	background: url('images/locations-leftbar-icons.png') #393939 no-repeat scroll left;
-	background-position: -4px -40px;
-}

@@ -1,7 +1,0 @@
-zenario__administration:
-	panels:
-		site_settings:
-			items:
-				zenario_menu__site_settings_group:
-					name: Menu
-					desc: Settings for menus.
