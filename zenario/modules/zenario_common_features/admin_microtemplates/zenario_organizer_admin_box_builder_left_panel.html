@@ -1,0 +1,94 @@
+<% if (m.mode == 'new_fields') { %>
+	<div id="organizer_field_type_list_outer" class="field_type_list_outer">
+		<div class="field_type_list_header field_type_section">
+			<h5>Add fields</h5>
+		</div>
+		<h6>Standard</h6>
+		<div class="field_type_list field_type_section">
+			<% if (m.use_groups_field) { %>
+				<div class="field_type" data-type="group"><span class="group"></span><h4>Group</h4></div>
+			<% } %>
+			<div class="field_type" data-type="checkbox"><span class="flag"></span><h4>Flag</h4></div>
+			<div class="field_type" data-type="text"><span class="text"></span><h4>Text</h4></div>
+			<div class="field_type" data-type="textarea"><span class="textarea"></span><h4>Textarea</h4></div>
+			<div class="field_type" data-type="select"><span class="select"></span><h4>Select list</h4></div>
+			<div class="field_type" data-type="radios"><span class="radios"></span><h4>Radios</h4></div>
+			<div class="field_type" data-type="checkboxes"><span class="checkboxes"></span><h4>Checkboxes</h4></div>
+			<div class="field_type" data-type="repeat_start"><span class="repeat_start"></span><h4>Repeat block</h4></div>
+		</div>
+		<h6>Special</h6>
+		<div class="field_type_list field_type_section">
+			<div class="field_type" data-type="date"><span class="date"></span><h4>Date</h4></div>
+			<div class="field_type" data-type="url"><span class="url"></span><h4>URL</h4></div>
+			<div class="field_type" data-type="editor"><span class="editor"></span><h4>Editor</h4></div>
+			<div class="field_type" data-type="file_picker"><span class="file_picker"></span><h4>File picker</h4></div>
+		</div>
+		<h6>Centralised data source</h6>
+		<div id="organizer_centralised_field_type_list" class="field_type_list field_type_section">
+			<div class="field_type" data-type="centralised_radios"><span class="centralised_radios"></span><h4>Radios</h4></div>
+			<div class="field_type" data-type="centralised_select"><span class="centralised_select"></span><h4>Select list</h4></div>
+			<div class="field_type" data-type="dataset_select"><span class="dataset_select"></span><h4>Dataset select</h4></div>
+			<div class="field_type" data-type="dataset_picker"><span class="dataset_picker"></span><h4>Dataset picker</h4></div>
+		</div>
+	</div>
+<% } else if (m.mode == 'field_details') { %>
+	<div id="organizer_field_details_outer" class="field_details_outer">
+		<div id="organizer_field_details_inner" class="field_details_inner">
+			<div class="field_details_header">
+				<div id="zenario_field_details_header_content" class="field_details_header_content">
+					<div class="field_name">
+						<h5>{{m.field_label|e}}</h5>
+					</div>
+					<div class="field_buttons">
+						<span class="add_new_field">Add new field</span>
+					</div>
+					<div class="field_info">
+						<span class="field_type_message">{{m.type|e}} {{m.record_count|e}}</span>
+					</div> 
+				</div>
+			</div>
+			<% if (!m.hide_tab_bar) { %>
+				<div id="organizer_field_details_tabs" class="field_details_tabs">
+					<!-- TUIX tabs -->
+				</div>
+			<% } %>
+			
+			<div id="organizer_field_details" class="field_details">
+				<form id="organizer_field_details_form">
+					<!-- TUIX fields -->
+				</form>
+			</div>
+		</div>
+	</div>
+<% } else if (m.mode == 'tab_details') { %>
+	<div id="organizer_tab_details_outer" class="tab_details_outer">
+		<div id="organizer_tab_details_inner" class="tab_details_inner">
+			<div class="tab_details_header">
+				<div id="zenario_tab_details_header_content" class="tab_details_header_content">
+					<div class="field_name">
+						<h5>{{m.tab_label|e}}</h5>
+					</div>
+					<div class="field_buttons">
+						<span class="add_new_field">Add new field</span>
+					</div>
+				</div>
+			</div>
+			<% if (!m.hide_tab_bar) { %>
+				<div id="organizer_tab_details_tabs" class="tab_details_tabs">
+					<!-- TUIX tabs -->
+				</div>
+			<% } %>
+			
+			<div id="organizer_tab_details" class="tab_details">
+				<form id="organizer_tab_details_form">
+					<!-- TUIX fields -->
+				</form>
+			</div>
+			<% if (!m.is_system_field) { %>
+				<div class="bottom_buttons">
+					<input id="organizer_remove_form_tab" type="button" value="Delete tab"/>
+				</div>
+			<% } %>
+		</div>
+	</div>
+<% } %>

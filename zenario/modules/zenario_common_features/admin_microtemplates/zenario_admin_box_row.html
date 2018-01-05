@@ -1,0 +1,135 @@
+<% var e, error, n, notice; %>
+
+<% if (zenario.engToBoolean(m.errors)) { %>
+	<div class="zfab_error_wrap zfab_row"><div class="zfab_row_inner"><div class="messageDisplay zfab_error">
+		<% foreach (m.errors as e => error) { %>
+			<div class="zfab_error_inner">
+				{{zenario.htmlspecialchars(error.message, true)}}
+			</div>
+		<% } %>
+	</div></div></div>
+<% } %>	
+<% foreach (m.notices as n => notice) { %>
+	<div class="{{notice.type|escape}}DisplayRow zfab_row">
+		<div class="zfab_row_inner">
+			<div class="messageDisplay">
+				<div>
+					{{zenario.htmlspecialchars(notice.message, true)}}
+				</div>
+			</div>
+		</div>
+	</div>
+<% } %>
+
+<% if (m.fields) { %>
+	<%
+		var f,
+			field,
+			ff = m.fields[0],
+			rowHasError = false,
+			hadKeySymbol = false;
+	%>
+	
+	<% foreach (m.fields as f => field) { %>
+		<% if (field.error) { %>
+			<% rowHasError = true; %>
+			<% break; %>
+		<% } %>	
+	<% } %>	
+	
+	<% if (ff._lastVisibleGrouping !== ff.grouping) { %>
+		<% if (ff._lastVisibleGrouping) { %>
+			</fieldset>
+		<% } %>
+		<% if (ff.grouping) { %>
+			<% var grouping = m.grouping || {}; %>
+			<fieldset class="zenario_grouping zenario_grouping__{{ff.grouping|escape}} {{grouping.grouping_css_class|escape}}" style="{{grouping.grouping_style|escape}}">
+		<% } %>
+	<% } %>
+	<% if (ff.legend) { %>
+		<legend class="zenario_legend zenario_legend_for__{{ff._id|escape}}"><span>{{ff.legend}}</span></legend>
+	<% } %>
+	
+	<div id="row__{{ff._id|escape}}" style="{{ff.row_style|escape}}" class="
+		zfab_row
+		zenario_ab_row__{{ff._id|escape}}
+		{{rowHasError? 'zenario_row_with_error' : ''}}
+		{{ff.error? 'zenario_row_with_error_on_first_field' : ''}}
+		{{ff.row_class|escape}}
+		{{ff.pressed? 'zenario_row_pressed' : ''}}
+		{{ff.type=='checkbox'? 'zenario_single_line' : ''}}
+		{{ff._hideOnOpen? 'zenario_hide_row_on_open' : ''}}
+		{{ff.indent? 'zenario_indent_level zenario_indent_level_' +  (1*ff.indent) : ''}}
+		zenario_row_for_{{ff.snippet? 'snippet' : ff.upload? 'upload' : ff.pick_items? 'pick_items' : ff.type |escape}}
+	">
+		
+		<div class="zfab_row_inner">
+			
+			<% if (!zenario.engToBoolean(ff.full_width)) { %>
+				<% foreach (m.fields as f => field) { %>
+					<% if (field.side_note) { %>
+						<div class="zenario_side_note_wrap zenario_side_note_wrap_for_field">
+							<div class="zenario_side_note">
+								<div class="zenario_note_icon"></div>
+								<div class="zenario_note_content">{{zenario.unfun(field.side_note)}}</div>
+							</div>
+						</div>
+					<% } %>
+				<% } %>
+				<% if (ff.label && !zenario.IN(ff.type, 'checkbox', 'radio')) { %>
+					<div class="title {{ff._hideOnOpen? 'zenario_hide_on_open' : ''}} {{ff._showOnOpen? 'zenario_show_on_open' : ''}}">
+						<label class="{{ff.label_class|escape}}" for="{{ff._id|escape}}">
+							{{ff.label}}
+						</label>
+					
+						<% if (ff.encrypted && zenario.IN(ff.type, 'checkboxes', 'radios')) { %>
+							<span class="zfab_encrypted_field">🔑 </span>
+							<% hadKeySymbol = true; %>
+						<% } %>
+					</div>
+				<% } %>
+			<% } %>
+			
+			<div class="
+				zfab_row_fields
+				{{ff._hideOnOpen? 'zenario_hide_on_open' : ''}}
+				{{ff._showOnOpen? 'zenario_show_on_open' : ''}}
+				{{ff.type=='checkbox'? 'zenario_input_checkbox' : ''}}
+			">
+				<% foreach (m.fields as f => field) { %>
+					{{field._html}}
+					
+					<% if (!hadKeySymbol && field.encrypted) { %>
+						<span class="zfab_encrypted_field">🔑 </span>
+					<% } %>
+					
+					<% if (field.show_phrase_icon) { %>
+						<a class="zenario_fab_phrase_icon" title="{{zenarioA.phrase.translatedField}}"></a>
+					<% } %>
+					
+				<% } %>
+			</div>
+			<% foreach (m.fields as f => field) { %>
+				<% if (field.note_below) { %>
+					<div class="zenario_note_below">
+						<div class="zenario_note_icon"></div>
+						<div class="zenario_note_content">{{zenario.unfun(field.note_below)}}</div>
+					</div>
+				<% } %>
+			<% } %>
+			<% foreach (m.fields as f => field) { %>
+				<% if (field.error && field.error != true) { %>
+					<div class="zfab_inline_error">
+						{{zenario.htmlspecialchars(field.error, true)}}
+					</div>
+				<% } %>	
+			<% } %>	
+		</div>
+	</div>
+	
+	<% if (ff._isLastRow) { %>
+		<% if (ff.grouping) { %>
+			</fieldset>
+		<% } %>
+	<% } %>
+<% } %>

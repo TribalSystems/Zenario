@@ -1,0 +1,31 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+plugin_settings:
+    tabs:
+        first_tab:
+            label: Display
+            fields:
+                use_specific_search_results_page:
+                    plugin_setting:
+                        name: use_specific_search_results_page
+                    label: 'Use a specific Search Results Page:'
+                    type: checkbox
+                    value: ""
+                    format_onchange: Yes
+                specific_search_results_page:
+                    plugin_setting:
+                        name: specific_search_results_page
+                        foreign_key_to: content
+                        dangling_cross_references: remove
+                    label: 'Search Results Page:'
+                    pick_items:
+                        path: zenario__content/panels/content/refiners/filter_by_lang////
+                        min_path: zenario__content/panels/content
+                        max_path: zenario__content/panels/content
+                        target_path: zenario__content/panels/content
+                        disallow_refiners_looping_on_min_path: true
+                        select_phrase: select a content item...
+                        hide_remove_button: true
+                    validation:
+                        required_if_not_hidden: Please select a content item
+    module_class_name: zenario_search_entry_box

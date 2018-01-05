@@ -1,0 +1,121 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_content:
+    tabs:
+        privacy:
+            hidden: false
+            label: Permissions
+            edit_mode:
+                enabled: ""
+                priv: _PRIV_EDIT_CONTENT_ITEM_PERMISSIONS
+            fields:
+                desc:
+                    full_width: Yes
+                    snippet:
+                        html: Use this screen to edit permissions for this content item.
+                
+                privacy:
+                    label: 'Visibility:'
+                    type: radios
+                    value: public
+                    values:
+                        public:
+                            label: Public, visible to everyone
+                        logged_out:
+                            label: Public, only show to visitors who are NOT logged in
+                        logged_in:
+                            label: Private, only show to extranet users who are logged in
+                        group_members:
+                            label: 'Private, only show to extranet users in the group(s):'
+                            split_values_if_selected: true
+                        in_smart_group:
+                            label: 'Private, only show to extranet users in the smart group:'
+                            split_values_if_selected: true
+                        logged_in_not_in_smart_group:
+                            label: 'Private, only show to extranet users NOT in the smart group:'
+                            split_values_if_selected: true
+                        with_role:
+                            label: 'Private, only show to extranet users with the following role(s) at ANY location:'
+                            split_values_if_selected: true
+                        call_static_method:
+                            label: "Call a module's static method to decide (advanced):"
+                            split_values_if_selected: true
+                        send_signal:
+                            label: Send a signal to decide (advanced)
+                    format_onchange: true
+                    validation:
+                        required_if_not_hidden: Please select a visibility option
+                group_ids:
+                    indent: 1
+                    visible_if: >
+                        zenarioAB.value('privacy') == 'group_members'
+                    type: checkboxes
+                    no_values_message: No groups defined
+                    validation:
+                        required_if_not_hidden: Please select a group
+                smart_group_id:
+                    indent: 1
+                    visible_if: >
+                        zenario.IN(zenarioAB.value('privacy'), 'in_smart_group', 'logged_in_not_in_smart_group')
+                    type: select
+                    empty_value: ' -- Select -- '
+                    validation:
+                        required_if_not_hidden: Please select a smart group
+                role_ids:
+                    indent: 1
+                    visible_if: >
+                        zenarioAB.value('privacy') == 'with_role'
+                    type: checkboxes
+                    no_values_message: No roles defined
+                    validation:
+                        required_if_not_hidden: Please select a role
+                module_class_name:
+                    indent: 1
+                    visible_if: >
+                        zenarioAB.value('privacy') == 'call_static_method'
+                    label: 'Module class name:'
+                    type: text
+                    maxlength: 200
+                method_name:
+                    indent: 1
+                    hide_with_previous_field: true
+                    label: 'Static method name:'
+                    type: text
+                    maxlength: 127
+                param_1:
+                    indent: 1
+                    hide_with_previous_field: true
+                    label: 'Parameter 1:'
+                    type: text
+                    maxlength: 255
+                param_2:
+                    indent: 1
+                    hide_with_previous_field: true
+                    label: 'Parameter 2:'
+                    type: text
+                    maxlength: 255
+                signal_name:
+                    indent: 1
+                    visible_if: >
+                        zenarioAB.value('privacy') == 'send_signal'
+                    snippet:
+                        label: 'The following signal will be sent:'
+                        html: |
+                             <br/>
+                             <code>eventCheckContentItemPermission($userId, $cID, $cType, $cVersion)</code>
+                
+                clist_warning:
+                    indent: 1
+                    visible_if: >
+                        zenario.IN(zenarioAB.value('privacy'), 'in_smart_group', 'logged_in_not_in_smart_group', 'call_static_method', 'send_signal')
+                    snippet:
+                        html: |
+                            Content items with this permission
+                            will never appear in content summary lists,
+                            even if a user can access them.
+                
+                privacy_part_2:
+                    snippet:
+                        show_split_values_from: privacy
+                    note_below: |
+                        Content items are always visible to logged in administrators.

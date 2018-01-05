@@ -1,0 +1,31 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_slide:
+    lovs:
+        title_merge_fields:
+            company:
+                label: 'Company'
+            '[[company_id]]':
+                parent: company
+                data-class: company_icon
+                label: 'Company ID: [[company_id]]'
+            '[[company_name]]':
+                parent: company
+                data-class: company_icon
+                label: 'Company name: [[company_name]]'
+            
+            location:
+                label: 'Location'
+            '[[location_id]]':
+                parent: location
+                data-class: location_icon
+                label: 'Location ID: [[location_id]]'
+            '[[location_name]]':
+                parent: location
+                data-class: location_icon
+                label: 'Location name: [[location_name]]'
+            
+            '[[user_first_and_last_name]]':
+                parent: misc
+                data-class: user_icon
+                label: 'User first and last name: [[user_first_and_last_name]]'

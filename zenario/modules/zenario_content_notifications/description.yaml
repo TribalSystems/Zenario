@@ -1,0 +1,66 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+author_name: Tribal Systems
+copyright_info: © Tribal Limited
+editions: ProBusiness, Enterprise
+start_running_on_install: false
+license_info: 'Modified BSD License'
+display_name: Content Notifications
+description: |
+    <p>This module provides tools for team administration, so that: (i) Administrators who are authors only, can have a publish-request button; and (ii) Administrators can ask to receive an automated email whenever content items are published.</p>
+
+    <p>In the first feature, the module allows one or more Publishers to receive content item-related requests. (There is a new permission beneath Publisher which allows administrators to opt in, and a second flag which the administrator may actually opt in so as to then receive the requests).<p>
+
+    <p>The requests include: Publish; Trash; and other ad hoc item-related change requests.</p>
+
+    <p>There is a new &quot;Publish...&quot; button on the admin toolbar (visible to Author administrators who do <i>not</i> have publishing permission). When clicked, the author sees a box in which he can write a comment and send the request-to-publish to the nominated publishers.</p>
+
+    <p>When the request is made, an email is sent to all opted-in administrators, and a copy of the request is attached to that version of the content item.</p>
+
+    <p>Content items which have such a request are displayed with a yellow note icon, both on the admin toolbar and in Organizer. It is then up to the publisher to either publish the content item, or delete the draft if they don't want to approve it.</p>
+
+    <p>This is a powerful tool for delegating authoring ability over a site's content to a wider pool of authors, with a streamlined author-publishing process.</p>
+
+    <p>The second feature described above allows any administrator to monitor key events on the site, including the drafting, publishing and trashing of a content item, and also the changing of any menu node text.<p>
+
+    <p>The CMS monitors all such changes and sends an automated email to administrators who have opted to be informed of such changes.<p>
+
+    <p>The wording of the emails can be changed in the Configuration area in Organizer.</p>
+category: management
+keywords: >
+    notifications, update, inform, monitor, team
+
+# Reminder: you need to increment the LATEST_REVISION_NO in this module's
+# latest_revision_no.inc.php file if you change any of the fields below:
+vlp_class_name: zenario_content_notifications
+css_class_name: zenario_content_notifications
+is_pluggable: false
+can_be_version_controlled: false
+nestable: false
+
+# Warning: adding a new dependency to an existing module will break any existing sites
+# where the dependency is not running.
+# You can fix this on a per-site basis by manually running the dependency, i.e. by running
+#   UPDATE zenario_modules SET status = 'module_running' WHERE class_name = 'dependency'
+# in MySQL and then going to /admin/ to apply database updates.
+# If this is a core module, consider using runNewModuleDependency() in a 
+# database-revision in zenario/admin/db_updates/step_4_migrate_the_data/plugins.inc.php
+# to fix it automatically for every site.
+dependencies:
+    zenario_pro_features: true
+signals:
+    signal1:
+        name: eventContentPublished
+        static: true
+    signal2:
+        name: eventDraftCreated
+        static: true
+    signal3:
+        name: eventMenuNodeTextAdded
+        static: true
+    signal4:
+        name: eventMenuNodeTextUpdated
+        static: true
+    signal5:
+        name: eventContentDeleted
+        static: true

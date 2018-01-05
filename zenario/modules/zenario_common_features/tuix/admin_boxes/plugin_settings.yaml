@@ -1,0 +1,84 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+plugin_settings:
+    css_class: zenario_fab_plugin 
+    key:
+        id: ""
+        instanceId: ""
+        isVersionControlled: ""
+        cID: ""
+        cType: ""
+        cVersion: ""
+        slotName: ""
+        languageId: ""
+        eggId: ""
+        slideNum: ""
+        usesConductor: false
+        moduleId: ""
+        frontEnd: ""
+        isFEA: false
+    identifier:
+        css_class: plugin_album_instance
+        label: Plugin
+        value: ''
+    tabs:
+        first_tab:
+            label: Details
+            fields:
+                instance_name:
+                    label: 'Plugin name:'
+                    type: text
+                    redraw_onchange: true
+                    redraw_immediately_onchange: true
+                duplicate_or_rename:
+                    indent: 1
+                    visible_if: |
+                        tuix.key.instanceId &&
+                        tuix.tabs.first_tab.fields.instance_name.current_value != undefined &&
+                        tuix.tabs.first_tab.fields.instance_name.current_value != tuix.tabs.first_tab.fields.instance_name.value
+                    type: radios
+                    cols: 2
+                    value: rename
+                    values:
+                        rename:
+                            label: Rename
+                        replace:
+                            label: Save as new plugin and place here
+                        duplicate:
+                            label: Save as new plugin in library
+        custom_tuix:
+            label: Custom TUIX
+            ord: 999999998
+            visible_if: |
+                tuix.key.isFEA
+            fields:
+                '~custom_yaml~':
+                    same_row: true
+                    plugin_setting:
+                        name: '~custom_yaml~'
+                    type: code_editor
+                    language: yaml
+                    tall_as_possible: true
+                '~custom_json~':
+                    same_row: true
+                    plugin_setting:
+                        name: '~custom_json~'
+                    type: hidden
+        last_tab:
+            label: Help
+            ord: 999999999
+            fields:
+                module_description:
+                    label: 'Module description:'
+                    ord: 1
+                    snippet:
+                        html: {}
+    confirm:
+        show: No
+        message: |
+            You are editing a Published Content Item.
+                            
+                            The CMS will make an identical Draft version for you to work on privately. Visitors will only see your changes when you Publish the new version.
+        button_message: Create a Draft
+        cancel_button_message: Cancel
+        message_type: warning

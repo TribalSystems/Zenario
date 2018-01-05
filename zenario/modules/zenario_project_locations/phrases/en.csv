@@ -1,0 +1,58 @@
+,,In the Admin Back-end, English is used for all of the interfaces. However if your
+,,Module is a slotable Plugin then you will need to provide an output for visitors to
+,,the site, and any text should be output in the same language as the Content Item
+,,that the Plugin is on.
+
+,,Do enable this, Tribiq CMS uses Phrases. Phrases consist of a Phrase Code (by which
+,,they are referenced in your PHP code and your frameworks) and some localized text
+,,(which the visitor will see on the screen).
+
+,,While you could force your users to write their own Phrases for your Plugin, we
+,,recommend that you ship your Module with at least a set of predefined phrases in
+,,English.
+
+,,The 'phrases' directory of your Module should contain CSV files such as this one,
+,,containing the Phrases for each language you wish to ship with.
+,,The files need to be named after the language codes of the languages they are for,
+,,for example 'en.csv' or 'fr.csv'.
+
+,,When your Module is installed, the Phrases from these files will be copied into the
+,,visitor phrases core table in the database.
+
+,,Note that if you choose to inherit the Phrases of a different Module, you should not
+,,create any phrase files as you are not using your own Phrases.
+
+,,The format of these csv files is identical to the format used in the Export/Import
+,,Language Phrases tools in the CMS, except that only Phrases for your Module should
+,,appear.
+,,These can be created using a spreadsheet program, or if you are careful to manually
+,,add all of the escape characters, a text editor.
+,,The format is as follows:
+
+
+"Target Language ID"
+en
+
+Module
+zenario_project_locations
+
+"Phrase Code",Translation
+_BACK,"Back"
+_NEXT,"Next"
+_PREV,"Back"
+_CLEAR_FORM,"Clear Form"
+_ALL_COUNTRIES,"All Countries"
+_ALL_REGIONS,"All Regions"
+_ALL_SUB_REGIONS,"All Subregions"
+_ALL_SERVICES,"All Services"
+_ALL_SECTORS,"All Sectors"
+_CHOOSE_COUNTRY:,"Location:"
+_CHOOSE_REGION:,"Region:"
+_CHOOSE_SECTOR:,"Sector:"
+_CHOOSE_SERVICE:,"Service:"
+_CHOOSE_SUBREGION:,"Sub-region:"
+_TAB_RESULTS_LISTING,"Results by listing"
+_TAB_RESULTS_MAP,"Results by map"
+_PANEL_INTRO,"Search our projects"
+_NO_PROJECTS_FOUND,"Sorry, no projects could be found matching your criteria. Perhaps you should try broadening your search?"
+

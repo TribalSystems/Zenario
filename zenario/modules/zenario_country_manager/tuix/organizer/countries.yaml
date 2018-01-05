@@ -1,0 +1,220 @@
+# You must use a tab-size of 4 spaces to edit this file.
+
+zenario__languages:
+    panels:
+        countries:
+            title: Countries
+            view_mode: list
+            multiple_select_mode_title: Select countries
+            select_mode_title: Select a country
+            db_items:
+                table: '[[DB_NAME_PREFIX]][[ZENARIO_COUNTRY_MANAGER_PREFIX]]country_manager_countries AS c'
+                id_column: c.id
+            default_sort_column: country_name
+            columns:
+                country_code:
+                    title: ISO code
+                    db_column: c.id
+                    show_by_default: true
+                    searchable: true
+                    width: xsmall
+                country_name:
+                    title: Internal name
+                    db_column: c.english_name
+                    show_by_default: true
+                    searchable: true
+                    width: large
+                vlp_phrase:
+                    title: Visitor phrase code
+                    db_column: "CONCAT('_COUNTRY_NAME_',c.id)"
+                    show_by_default: true
+                    width: large
+                country_status:
+                    title: Status
+                    db_column: "IF(c.active=1,'active','suspended')"
+                    show_by_default: true
+                    width: xsmall
+            item:
+                css_class: zenario_country_manager_country
+                name: Country
+                names: Countries
+                tooltip_when_link_is_active: "View this country's regions"
+                link:
+                    path: zenario__languages/panels/regions
+                    branch: true
+                    refiner: country_code_filter
+            collection_buttons:
+                create_country:
+                    priv: _PRIV_MANAGE_COUNTRY
+                    ord: "1"
+                    css_class: zenario_create_a_new
+                    hide_on_filter: true
+                    label: Create a country
+                    admin_box:
+                        path: zenario_country_manager__country
+                        create_another: true
+            item_buttons:
+                edit_country:
+                    label: Properties
+                    hide_in_select_mode: true
+                    admin_box:
+                        path: zenario_country_manager__country
+                view_dropdown:
+                    label: View
+                    multiple_select: true
+                    hide_when_children_are_not_visible: true
+                edit_phrases:
+                    parent: view_dropdown
+                    label: Visitor names (phrases)
+                    hide_in_select_mode: true
+                    with_columns_set:
+                        traits.show_localizations: true
+                    admin_box:
+                        path: zenario_phrase
+                        key:
+                            loadCountryName: true
+                action_dropdown:
+                    label: Actions
+                    multiple_select: true
+                    hide_when_children_are_not_visible: true
+                activate_country:
+                    parent: action_dropdown
+                    priv: _PRIV_MANAGE_COUNTRY
+                    label: Activate
+                    with_columns_set:
+                        traits.suspended: true
+                    hide_in_select_mode: true
+                    traits.multiple_select: true
+                    multiple_select_tooltip: Activate selected Countries
+                    ajax:
+                        confirm:
+                            message: 'Are you sure you wish to activate the country "[[country_name]]"?'
+                            multiple_select_message: Are you sure you wish to activate the selected countries?
+                            button_message: Activate
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            action: activate_country
+                suspend_country:
+                    parent: action_dropdown
+                    priv: _PRIV_MANAGE_COUNTRY
+                    label: Suspend
+                    with_columns_set:
+                        traits.active: true
+                    hide_in_select_mode: true
+                    traits.multiple_select: true
+                    multiple_select_tooltip: Suspend selected Countries
+                    ajax:
+                        confirm:
+                            message: 'Are you sure you wish to suspend the country "[[country_name]]"?'
+                            multiple_select_message: Are you sure you wish to suspend the selected countries?
+                            button_message: Suspend
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            action: suspend_country
+                remove_country:
+                    priv: _PRIV_MANAGE_COUNTRY
+                    label: Delete
+                    hide_in_select_mode: true
+                    multiple_select: true
+                    multiple_select_tooltip: Delete selected Countries
+                    ajax:
+                        confirm:
+                            message: 'Are you sure you wish to delete the Country "[[country_name]]" and all its visitor names (phrases)?'
+                            multiple_select_message: >
+                                Are you sure you wish to delete the selected countries and
+                                all their visitor names (phrases)?
+                            button_message: Delete
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            action: delete_country
+                    with_columns_set:
+                        traits.can_delete_country: true
+        regions:
+            title: Regions
+            name: Regions
+            view_mode: list
+            db_items:
+                table: |
+                    [[DB_NAME_PREFIX]][[ZENARIO_COUNTRY_MANAGER_PREFIX]]country_manager_regions AS r
+                id_column: r.id
+            default_sort_column: region_name
+            columns:
+                region_name:
+                    title: Region Name
+                    db_column: name
+                    show_by_default: true
+                    searchable: true
+                region_type:
+                    title: Region Type
+                    db_column: region_type
+                    show_by_default: true
+                    searchable: true
+                    hidden: true
+
+            refiners:
+                parent_id:
+                    sql: 'r.parent_id=[[REFINER_ID]]'
+                country_code_filter:
+                    sql: 'r.country_id=[[REFINER_ID]]'
+            refiner_required: false
+            item:
+                css_class: zenario_country_manager_region
+                name: Region
+                names: Regions
+                tooltip_when_link_is_active: 'View Sub-Regions of this Region'
+                link:
+                    path: zenario__languages/panels/regions
+                    branch: true
+                    refiner: parent_id
+            collection_buttons:
+                create_region:
+                    priv: _PRIV_MANAGE_COUNTRY
+                    ord: "1"
+                    css_class: zenario_create_a_new
+                    hide_on_filter: true
+                    label: Create
+                    admin_box:
+                        path: zenario_country_manager__region
+                        create_another: true
+            item_buttons:
+                edit_region:
+                    label: Properties
+                    hide_in_select_mode: true
+                    admin_box:
+                        path: zenario_country_manager__region
+                view_dropdown:
+                    label: View
+                    multiple_select: true
+                    hide_when_children_are_not_visible: true
+                edit_phrases:
+                    parent: view_dropdown
+                    label: Phrases
+                    hide_in_select_mode: true
+                    with_columns_set:
+                        traits.show_localizations: true
+                    admin_box:
+                        path: zenario_phrase
+                        key:
+                            loadRegionName: true
+                remove_region:
+                    priv: _PRIV_MANAGE_COUNTRY
+                    label: Delete
+                    hide_in_select_mode: true
+                    multiple_select: true
+                    multiple_select_tooltip: Delete selected Regions
+                    ajax:
+                        confirm:
+                            message: 'Are you sure you wish to delete the Region "[[region_name]]" and all its localized phrases?'
+                            multiple_select_message: >
+                                Are you sure you wish to delete the selected regions and all
+                                their localized phrases?
+                            button_message: Delete
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            action: delete_region
+                    with_columns_set:
+                        traits.can_delete_region: true

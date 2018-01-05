@@ -1,0 +1,102 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_path:
+    key:
+        id: ''
+        instanceId: ''
+        state: ''
+        to_state: ''
+        linkToOtherContentItem: false
+        equiv_id: 0
+        content_type: ''
+    max_height: 450
+    hide_tab_bar: true
+    #identifier:
+    #    css_class: ''
+    #    label: 'Path:'
+    #    value: ''
+    tabs:
+        path:
+            label: Details
+            edit_mode:
+                enabled: true
+                always_on: true
+            fields:
+                commands:
+                    type: radios
+                    #cols: 3
+                    values:
+                        back:
+                            ord: -2
+                            label: Back button (back)
+                        submit:
+                            ord: -1
+                            label: Submit button (submit)
+                        '#custom#':
+                            ord: 999999
+                            label: 'Custom:'
+                    value: back
+                    redraw_onchange: true
+                    validation:
+                        required: |
+                            Please select a command
+                command_custom:
+                    indent: 1
+                    visible_if:
+                        lib.valueIs: 'commands, #custom#'
+                    type: text
+                    maxlength: 100
+                    placeholder: Enter a command name
+                    onkeydown: >
+                        if (this.value != ''
+                         && (event.keyCode == 13 || event.keyCode > 45)) {
+                            zenario.get('commands___#custom#').checked = true;
+                        }
+                    validation:
+                        no_spaces: |
+                            Please don't enter any spaces in the command's name
+                        screen_name: |
+                            Please don't enter any special characters in the command's name
+                
+                citem:
+                    visible_if: |
+                        lib.tuix.key.linkToOtherContentItem
+                    label: 'Content item'
+                    pick_items:
+                        path: zenario__content/panels/content/refiners/filter_by_lang////
+                        min_path: zenario__content/panels/content
+                        max_path: zenario__content/panels/content
+                        target_path: zenario__content/panels/content
+                        select_phrase: Select a content item...
+                        hide_remove_button: true
+                    validation:
+                        required_if_not_hidden: Please select a content item
+                to_state:
+                    visible_if: |
+                        lib.tuix.key.linkToOtherContentItem
+                    label: 'Slide number or state letter'
+                    type: text
+                    maxlength: 2
+                    style: |
+                        width: 2em;
+                    validation:
+                        required_if_not_hidden: Please enter either a slide number or state letter
+                        no_spaces: Please enter either a number or a letter
+                        screen_name: Please enter either a number or a letter
+                    side_note: Enter the number of a slide, or the letter of a state, but not both.
+                is_forwards:
+                    visible_if: |
+                        !lib.tuix.key.linkToOtherContentItem &&
+                        !lib.valueIn('commands', 'back', 'submit')
+                    type: checkbox
+                    label: 'Specify as forward link for smart breadcrumbs'
+                    maxlength: 2
+                    side_note: |
+                        Each slide can only have one forward link.
+                        
+                        Setting a path as a forward link will un-flag any other forward link
+                        from that slide.
+                        
+                        If no slides are set as forward links, then the conductor will try to
+                        automatically select one, based on which other slides use smart breadcrumbs.
+                    

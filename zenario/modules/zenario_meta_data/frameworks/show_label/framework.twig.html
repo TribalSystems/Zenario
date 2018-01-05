@@ -1,0 +1,44 @@
+{% if show_date %}
+	<div class="publication_date">
+		<span >{{"_RELEASE_DATE:"|trans}}</span> {{Date}}
+	</div>
+{% endif %}
+
+{% if show_title %}
+	<div class="page_title">
+		<span>{{"_PAGE_TITLE:"|trans}}</span> {{Title}}
+	</div>
+{% endif %}
+
+{% if show_description %}
+	<div class="page_description">
+		<span>{{"_PAGE_DESCRIPTION:"|trans}}</span> {{Description}}
+	</div>
+{% endif %}
+
+{% if show_categories %}
+	<div class="categories">
+		<span>{{"_CATEGORIES:"|trans}}</span>
+			{% if categories %}
+				<a>{{Category}}</a>{{Comma}}
+			[/cms:section name="categories"]
+	</div>
+{% endif %}
+
+{% if show_keywords %}
+	<div class="keywords">
+		<span>{{"_KEYWORDS:"|trans}}</span> {{Keywords}}
+	</div>
+{% endif %}
+
+{% if show_language %}
+	<div class="language">
+		<span>{{"_LANGUAGE:"|trans}}</span> {{Language}}
+	</div>
+{% endif %}
+
+{% if show_writer_name %}
+	<div class="writer_name">
+		<span>{{"_WRITER_NAME:"|trans}}</span> {{Writer_name}}
+	</div>
+{% endif %}

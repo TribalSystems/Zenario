@@ -1,0 +1,45 @@
+#    You can create new admin permissions by defining new fields in the Permissions
+#    admin box.
+#    
+#    To count as an admin permission:
+#        - The fields should be placed under zenario_admin/tabs/permissions/fields
+#        - The fields should have the "is_admin_permission" property set to true
+#        - The fields should be in the "specific_actions" grouping
+#    
+#    You may have:
+#        - A "type: checkbox" field on its own to act as a single permission.
+#        - A "type: checkboxes" field on its own to act as a list of
+#          permissions.
+#        - A "type:" checkboxes field with the "checking_child_checks_parents"
+#          property set to act as a list of permissions with hierarchal dependencies.
+#        - A "type: checkbox" field immediately followed by a
+#          "type: checkboxes: field to act as a list of permissions that can
+#          be quickly turned on or off by the first checkbox. This will also add a
+#          toggle button to allow the longer list to be hidden.
+#    
+#    The CMS will then add the CSS, JavaScript, loading logic and saving logic needed.
+zenario_admin:
+    tabs:
+        permissions:
+            fields:
+                perm_manage_forms:
+                    is_admin_permission: true
+                    grouping: specific_actions
+                    type: checkbox
+                    full_width: true
+                    post_field_label: Forms
+                perm_manage_forms_permissions:
+                    is_admin_permission: true
+                    grouping: specific_actions
+                    type: checkboxes
+                    full_width: true
+                    checking_child_checks_parents: true
+                    values:
+                        _PRIV_VIEW_FORMS:
+                            label: View Forms
+                        _PRIV_MANAGE_FORMS:
+                            parent: _PRIV_VIEW_FORMS
+                            label: Create, Edit, Delete Forms
+                        _PRIV_VIEW_FORM_RESPONSES:
+                            parent: _PRIV_VIEW_FORMS
+                            label: View users' form responses

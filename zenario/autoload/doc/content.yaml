@@ -1,0 +1,141 @@
+---
+checkPerm:
+  summary: |
+    Checks whether the current Visitor has permissions to see a given Content Item
+  desc: |
+    <h2>Description</h2>
+    <p>Checks whether the current Visitor has permissions to see a given Content Item</p>
+    <h2>Parameters</h2>
+    <h3><code>$cID</code></h3>
+    <p style="margin-left: 40px;">The Content Id of the Content Item.</p>
+    <h3><code>$cType</code></h3>
+    <p style="margin-left: 40px;">The Content Type of the Content Item.</p>
+    <h3><code>$cVersion</code></h3>
+    <p style="margin-left: 40px;">The version. Defaults to the latest published version in Visitor mode.</p>
+    <h2>Return Value</h2>
+    <p>Returns whether the specified item can be seen by the current Visitor.</p>
+getCIDAndCTypeFromTagId:
+  summary: |
+    This function takes a tag id and splits it up into a Content Id and a Content Type.
+  desc: |
+    <h2>Description</h2>
+    <p>This function takes a tag id and splits it up into a Content Id and a Content Type.</p>
+    <h2>Parameters</h2>
+    <h3><code>&amp;$cID</code></h3>
+    <p style="margin-left: 40px;">The Content Id (i.e. the number) that was in the tag id.</p>
+    <h3><code>&amp;$cType</code></h3>
+    <p style="margin-left: 40px;">The Content Type (i.e. the word part) that was in the tag id.</p>
+    <h3><code>$tagId</code></h3>
+    <p style="margin-left: 40px;">A tag id, e.g. "html_1" or "picture_17".</p>
+    <h2>Return Value</h2>
+    <p>This function will return true if passed a tag id in the correct format, otherwise it will return false.</p>
+isDraft:
+  summary: |
+    This function allows you to check whether a Content Item has a draft.
+  desc: |
+    <h2>Description</h2>
+    <p>This function allows you to check whether a Content Item has a draft.</p>
+    <h2>Examples</h2>
+    <p>There are three different ways of calling this function:</p>
+    <h3>&nbsp;By status text</h3>
+    <pre>$content = getRow('content', array('status'), array('id' =&gt; 1, 'type' =&gt; 'html'));<br />isDraft($content['status']);</pre>
+    <p>You can pass in the status a Content Item in to check whether that status indicates that a draft exists.</p>
+    <h3>&nbsp;By Content Item</h3>
+    <pre>isDraft(1, 'html');</pre>
+    <p>You can pass in a <span class="code">$cID</span> and <span class="code">$cType</span> to check if that Content Item has a draft.</p>
+    <h3>&nbsp;By Content version</h3>
+    <pre>isDraft(1, 'html', 2);</pre>
+    <p>From Zenario 7.0.0 onwards, you can pass in a <span class="code">$cID</span>, <span class="code">$cType</span> and a <span class="code">$cVersion</span> to check if a specific version of a Content Item is a draft.</p>
+isPublished:
+  summary: |
+    This function allows you to check whether a Content Item is published.
+  desc: |
+    <h2>Description</h2>
+    <p>This function allows you to check whether a Content Item is published.</p>
+    <h2>Examples</h2>
+    <p>There are three different ways of calling this function:</p>
+    <h3>&nbsp;By status text</h3>
+    <pre>$content = getRow('content', array('status'), array('id' =&gt; 1, 'type' =&gt; 'html'));<br />isPublished($content['status']);</pre>
+    <p>You can pass in the status a Content Item in to check whether that status indicates that the Content Item is published.</p>
+    <h3>&nbsp;By Content Item</h3>
+    <pre>isPublished(1, 'html');</pre>
+    <p>You can pass in a <span class="code">$cID</span> and <span class="code">$cType</span> to check if that Content Item is published.</p>
+    <h3>&nbsp;By Content version</h3>
+    <pre>isPublished(1, 'html', 2);</pre>
+    <p>From Zenario 7.0.0 onwards, you can pass in a <span class="code">$cID</span>, <span class="code">$cType</span> and a <span class="code">$cVersion</span> to check if a specific version of a Content Item is the published version.</p>
+isSpecialPage:
+  summary: |
+    This checks whether a given Content Item is a Special Page.
+  desc: |
+    <h2>Description</h2>
+    <p>This checks whether a given Content Item is a Special Page.</p>
+    <h2>Where You Can Use It</h2>
+    <p>From Zenario 7.0.0 onwards.</p>
+    <h2>Return Value</h2>
+    <p>This function will return false if the given Content Item is not special, otherwise it will return the code name for the special page (e.g. "tribiq_home" or "tribiq_login").</p>
+    <p>Note that if a site has more than one language enabled, this function counts the translations of a special page to be special pages as well.</p>
+langEquivalentItem:
+  summary: |
+    Given a specified Content Item, this function will check the database for a translation of that item in the visitor's current language.
+  desc: |
+    <h2>Description</h2>
+    <p>Given a specified Content Item, this function will check the database for a translation of that item <span>in the visitor's current language</span>.</p>
+    <h2>Where You Can Use It</h2>
+    <p>From Zenario 7.0.0 onwards.</p>
+    <h2>Parameters</h2>
+    <h3><code>$cID</code></h3>
+    <p style="margin-left: 40px;">The Content Id of a Content Item.</p>
+    <h3><code>$cType</code></h3>
+    <p style="margin-left: 40px;">The Content Type of a Content Item.</p>
+    <p style="margin-left: 40px;">Alternately you can set <span class="code">$cType</span> to false and put a tag id into <span class="code">$cID</span>. Doing so will always &nbsp;alter the values of <span class="code">$cID</span> and <span class="code">$cType</span>, even if no translation was found.</p>
+    <h3><code>$langId</code></h3>
+    <p style="margin-left: 40px;">The language id to look for; this will default to the visitor's current language if not specified.</p>
+    <h2>Return Value</h2>
+    <p>If the specified Content Item does not exist, the values of <span class="code">$cID</span> and <span class="code">$cType</span> will not be touched and this function will return true.</p>
+    <p>If the specified Content Item exists but a translation in the desired language was not found, the values of <span class="code">$cID</span> and <span class="code">$cType</span> will not be touched and this function will return true.</p>
+    <p>If a translation was found, the values of <span class="code">$cID</span> and <span class="code">$cType</span> will be changed to the Content Id and Content Type of the translation and this function will return true.</p>
+langSpecialPage:
+  summary: |
+    Given a type of Special Page, this function looks up the Content Id and Type of that page.
+  desc: |
+    <h2>Description</h2>
+    <p>Given a type of Special Page, this function looks up the Content Id and Type of that page.</p>
+    <h2>Parameters</h2>
+    <h3><code>$pageType</code></h3>
+    <p style="margin-left: 40px;">A type of special page, e.g. tribiq_home.</p>
+    <h3><code>&amp;$cID</code></h3>
+    <h3><code>&amp;$cType</code></h3>
+    <p style="margin-left: 40px;">If the page is found, the Content Id and Type will be placed in these variables.</p>
+    <h3><code>$preferredLanguageId</code></h3>
+    <p style="margin-left: 40px;">The Language that you would prefer the page to be in, if this is a Special Page that exists in more than one Language.</p>
+    <p style="margin-left: 40px;">Will default to the language of the page the Visitor last looked at.</p>
+    <h3><code>$languageMustMatch</code></h3>
+    <p style="margin-left: 40px;">If this is set, only pages in your preferred language will be returned.</p>
+    <h2>Return Value</h2>
+    <p>True or false, depending on whether that page was found.</p>
+sqlToSearchContentTable:
+  summary: |
+    This generates a fragment of a SQL statement that you can use to query Content Items in the database.
+  desc: |
+    <h2>Summary</h2>
+    <p>This generates a fragment of a SQL statement that you can use to query Content Items in the database.</p>
+    <h2>Description</h2>
+    <p>This function is designed to be used in Plugins that list Content Items. It returns part of a SQL statement to match Content Items, with the idea that you can modify the inputs and concatenate extra logic onto the end to customise the resulting functionality to your needs.</p>
+    <h2>Parameters</h2>
+    <h3><code>$hidePrivateItems</code></h3>
+    <p style="margin-left: 40px;">Whether to hide private items from Visitors/Extranet Users who cannot see them.</p>
+    <h3><code>$onlyShow</code></h3>
+    <p style="margin-left: 40px;">If set to 'public', this will ensure that only Content Items that are publicly visible will be matched.</p>
+    <p style="margin-left: 40px;">If set to 'private', this will ensure that only Content Items that are not publicly visible will be matched.</p>
+    <h3><code>$extraJoinSQL</code></h3>
+    <p style="margin-left: 40px;">Any extra table joins you need. This will be placed in the middle of the SQL fragment returned.</p>
+    <h3><code>$includeSpecialPages</code></h3>
+    <p style="margin-left: 40px;">Whether to include special pages (such as the home page or the extranet login page) in the list.</p>
+    <p style="margin-left: 40px;">If this is set to <span class="code">false</span>, they will be excluded.</p>
+    <p style="margin-left: 40px;">If set to <span class="code">true</span>, they will be included (but only if they match the other conditions that you specify).</p>
+    <h2>Return Value</h2>
+    <p>A fragment of a SQL statement containing FROM, JOIN and WHERE statements.</p>
+    <p>Note that you must prepend the SELECT statement to the beginning yourself.&nbsp;You may also add further logic to the WHERE statement by appending to the resulting string.</p>
+    <h2>Example</h2>
+    <pre>$sql =<br />    "SELECT c.id, c.type, v.version".<br />    sqlToSearchContentTable().<br />    "AND v.title LIKE '%e%'";<br />$result = my_mysql_query($sql);&nbsp;</pre>
+    <p>This would get a list of all Content Items that have the letter 'e' in their title.</p>

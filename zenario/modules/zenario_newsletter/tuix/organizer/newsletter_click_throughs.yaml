@@ -1,0 +1,58 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__email_template_manager:
+    panels:
+        newsletter_click_throughs:
+            title: "Click throughs for Newsletter:"
+            view_mode: list
+            default_sort_column: link_ordinal
+            db_items:
+                table: |
+                    [[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters_hyperlinks AS nh
+                id_column: nh.id
+            refiners:
+                click_through_id:
+                    sql: |
+                        nh.newsletter_id = [[REFINER_ID]]
+            columns:
+                id:
+                    title: ID
+                    format: id
+                    db_column: nh.id
+                    searchable: Yes
+                    show_by_default: No
+                    width: xxsmall
+                    align_right: Yes
+                link_ordinal:
+                    title: Ordinal
+                    db_column: nh.link_ordinal
+                    searchable: Yes
+                    show_by_default: Yes
+                    width: xsmall
+                    align_right: Yes
+                link_text:
+                    title: Link text
+                    db_column: nh.link_text
+                    searchable: Yes
+                    show_by_default: Yes
+                    width: medium
+                hyperlink:
+                    title: hyperlink
+                    db_column: nh.hyperlink
+                    searchable: Yes
+                    show_by_default: Yes
+                clickthrough_count:
+                    title: Count
+                    db_column: nh.clickthrough_count
+                    searchable: Yes
+                    show_by_default: Yes
+                    width: xsmall
+                    align_right: Yes
+                last_clicked_date:
+                    title: Last Clicked
+                    db_column: nh.last_clicked_date
+                    searchable: Yes
+                    format: datetime
+                    show_by_default: Yes
+                    width: medium
+            no_items_message: "No links were found in the newsletter, or the newsletter has not yet been sent."

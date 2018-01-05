@@ -1,0 +1,182 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+site_settings:
+    setting_group: domains
+    title: Editing the domain used by your site
+    max_height: 400
+    tabs:
+        primary_domain:
+            label: Primary domain
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_SITE_SETTING
+            fields:
+                description:
+                    full_width: true
+                    snippet:
+                        html: |
+                            <p>
+                                If your site can be accessed using more than one domain name, please set your primary one here.
+                                Links to your site will use this domain.
+                            </p><p>
+                                If you use a non-default port number (i.e. not 80), then this domain should also include
+                                the port number,  e.g. <code>example.com:443</code>
+                            </p>
+                primary_domain:
+                    site_setting:
+                        name: primary_domain
+                    label: 'Primary domain:'
+                    type: radios
+                    value: ""
+                    values:
+                        none:
+                            ord: 1
+                            label: No primary domain; allow visitors to view site on any domain pointing to it
+                        new:
+                            ord: 4
+                            label: 'Set a new domain as the primary domain; redirect all visitors to there:'
+                    redraw_onchange: true
+                                
+                new:
+                    indent: 1
+                    type: text
+                    label: 'Domain:'
+                    visible_if: |
+                        zenarioAB.value('primary_domain') == 'new'
+                    style: |
+                        width: 15em;
+                    note_below: |
+                        Please enter a domain name in this box, e.g. example.com.
+                        <br/>
+                        The domain you enter will be checked to see if it points to this site before this box is saved.
+            disable_autofocus: true
+                        
+        admin_domain:
+            label: Admin domain
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_SITE_SETTING
+            fields:
+                description:
+                    full_width: true
+                    snippet:
+                        html: |
+                            <p>
+                                If your site can be accessed using more than one domain name, please set
+                                the one that you wish to use in admin mode here.
+                                Administrators will be directed to the admin domain when they log in.
+                            </p>
+                            <p>
+                                If you set an admin domain, this must be a domain that you can access,
+                                otherwise you will be unable to log into admin mode.
+                            </p>
+                            <p>
+                                As a precaution to stop you losing access to your site, the system will only
+                                allow you to set the current domain (and port number) as the admin domain.
+                                To use another domain (or port number), first select the
+                                    <em style="font-style: italic;">any domain</em>
+                                option, and then log into the other domain (or port number) in admin mode.
+                            </p>
+                admin_domain:
+                    site_setting:
+                        name: admin_domain
+                    label: 'Admin domain:'
+                    type: radios
+                    value: ""
+                    values:
+                        none:
+                            ord: 1
+                            label: No admin domain; allow administrators to view site on any domain pointing to it
+                    redraw_onchange: true
+                admin_domain_is_public:
+                    site_setting:
+                        name: admin_domain_is_public
+                    visible_if: |
+                        zenarioAB.value('admin_domain') != 'none'
+                    indent: 1
+                    label: 'Is public'
+                    type: checkbox
+                    value: 1
+                    side_note: |
+                        Auto-redirect when user types /admin in browser address bar.
+                    indent: 1
+        cookie_domain:
+            label: Cookie domain
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_SITE_SETTING
+            fields:
+                description:
+                    full_width: true
+                    snippet:
+                        html: |
+                            <p>
+                                If you are using multiple sub-domains for your site, and a cookie domain is set,
+                                then cookies set in the browser, an administrator's login, and an extranet user's
+                                login will persist across the domain and any sub-domains.
+                            </p><p>
+                                For example, a setting of '<code>example.com</code>' will persist cookies across all sites at
+                                <code>*.example.com</code> where '<code>*</code>' means any sub-domain, as well as <code>example.com</code> itself.
+                            </p><p>
+                                You should use this if you use a sub-domains to denote languages, such as
+                                <code>example.com</code>, <code>en.example.com</code>, <code>de.example.com</code> and <code>fr.example.com</code>.
+                            </p><p>
+                                It should be blank if you're not using sub-domains.
+                            </p>
+                
+                
+                zenario_siteconfig:
+                    type: grouping
+                    name: zenario_siteconfig
+                
+                cookie_domain:
+                    grouping: zenario_siteconfig
+                    legend: Set in the <code>zenario_siteconfig.php</code> file
+                    
+                    label: 'Cookie domain:'
+                    readonly: true
+                    type: text
+                    style: |
+                        width: 15em;
+        cookie_free_domain:
+            label: Cookie-free domain
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_SITE_SETTING
+            fields:
+                description:
+                    full_width: true
+                    snippet:
+                        html: |
+                            <p>
+                                If you have a second domain name pointing to this site, you may use this as a cookie-free domain
+                                from which to serve images, CSS files and JavaScript files.
+                            </p><p>
+                                This must be a domain that points to this site, and to be cookie-free it must not share cookies with this domain.
+                            </p><p>
+                                For example, if your primary domain was <code>www.example.com</code>, you could use  <code>static.example.com</code> as a cookie-free domain.
+                                However if your primary domain was  <code>example.com</code>, you couldn't use  <code>static.example.com</code> as a cookie-free domain as this
+                                subdomain would share cookies with  <code>example.com</code> - but you could set up a whole new domain (e.g. <code>example-images.com</code>)
+                                to use as a cookie-free domain.
+                            </p>
+                use_cookie_free_domain:
+                    site_setting:
+                        name: use_cookie_free_domain
+                    label: 'Use a cookie-free domain for hosting static files:'
+                    type: checkbox
+                    value: ""
+                    redraw_onchange: true
+                cookie_free_domain:
+                    site_setting:
+                        name: cookie_free_domain
+                    visible_if: |
+                        zenarioAB.value('use_cookie_free_domain')
+                    indent: 1
+                    label: 'Cookie-free domain:'
+                    type: text
+                    style: |
+                        width: 15em;
+                    note_below: |
+                        Please enter a domain name in this box, e.g. example.com.
+                        <br/>
+                        The domain you enter will be checked to see if it points to this site before this box is saved.

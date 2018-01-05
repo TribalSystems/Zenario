@@ -1,0 +1,35 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+author_name: Tribal Systems
+copyright_info: © Tribal Limited
+editions: Community, Pro, ProBusiness, Enterprise
+start_running_on_install: false
+license_info: 'Modified BSD License'
+display_name: Raw Twig Snippet
+description: |
+    <p>
+        Displays a block of Twig code in the given slot.
+    </p>
+category: pluggable
+keywords: edit, twig, html
+
+# Reminder: you need to increment the LATEST_REVISION_NO in this module's
+# latest_revision_no.inc.php file if you change any of the fields below:
+css_class_name: zenario_html_snippet
+is_pluggable: true
+can_be_version_controlled: false
+nestable: true
+default_instance_name: Untitled Twig Snippet
+inheritance:
+    inherit_settings_from_module: zenario_html_snippet
+
+# Warning: adding a new dependency to an existing module will break any existing sites
+# where the dependency is not running.
+# You can fix this on a per-site basis by manually running the dependency, i.e. by running
+#   UPDATE zenario_modules SET status = 'module_running' WHERE class_name = 'dependency'
+# in MySQL and then going to /admin/ to apply database updates.
+# If this is a core module, consider using runNewModuleDependency() in a 
+# database-revision in zenario/admin/db_updates/step_4_migrate_the_data/plugins.inc.php
+# to fix it automatically for every site.
+dependencies:
+    zenario_html_snippet: true

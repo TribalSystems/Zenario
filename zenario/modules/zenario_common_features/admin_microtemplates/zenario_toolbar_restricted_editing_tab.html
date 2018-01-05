@@ -1,0 +1,19 @@
+<div class="zenario_at_toolbar_container_top">
+	<div class="zenario_at_content zenario_at_toolbar">
+		<% if (!zenarioT.hidden(m.sections.edit)) { %>
+			<div class="zenario_at_edit">
+				{{zenarioT.microTemplate('zenario_toolbar_button', m.sections.restricted_editing)}}
+			</div>
+		<% } %>
+	</div>
+</div>
+<div class="zenario_at_toolbar_container_bottom">
+	<div id="zenario_at_lower_section">
+		<div class="zenario_at_infobar zenario_at_infobar_title">
+			{{zenarioAT.tuix.meta_info.title|escape}}
+		</div>
+		<div class="zenario_at_infobar_version_half">
+			{{zenarioAT.tuix.meta_info.version|escape}}
+		</div>
+	</div>
+</div>

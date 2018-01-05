@@ -1,0 +1,165 @@
+zenario_project_locations__project:
+    priv: _PRIV_MANAGE_PROJECT_LOCATIONS
+    title: Creating a project
+    key:
+        id:
+    tabs:
+        details:
+            label: Details
+            
+            edit_mode:
+                priv: _PRIV_MANAGE_PROJECT_LOCATIONS
+                enabled: Yes
+                on: Yes
+                always_on: Yes
+                enable_revert: Yes
+            
+            fields:
+                name:
+                    label: 'Name:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: 'Please enter a project name'
+                summary:
+                    label: 'Summary:'
+                    type: editor
+                    dont_trim: true
+                content_item:
+                    label: 'Descriptive HTML page:'
+                    pick_items:
+                        target_path: zenario__content/panels/content
+                        min_path: zenario__content/panels/content
+                        max_path: zenario__content/panels/content
+                        nothing_selected_phrase: Nothing selected
+                        select_phrase: Select HTML page...
+                    note_below: 'You can define an HTML page which has a more complete description of the project. Visitors will see a link from the project summary to that page.'
+                client_name:
+                    label: 'Client name:'
+                    type: text
+                architect_name:
+                    label: 'Architect name:'
+                    type: text
+                contractor_name:
+                    label: 'Contractor name:'
+                    type: text
+                address1:
+                    label: 'Address line 1:'
+                    type: text
+                address2:
+                    label: 'Address line 2:'
+                    type: text
+                locality:
+                    label: 'Locality:'
+                    type: text
+                city:
+                    label: 'City/Town:'
+                    type: text
+                state:
+                    label: 'State:'
+                    type: text
+                postcode:
+                    label: 'Postcode/ZIP code:'
+                    type: text
+                country:
+                    label: 'Country:'
+                    type: select
+                    values:
+                        0: -- Select a country --
+                    format_onchange: Yes
+                region:
+                    label: 'Region:'
+                    type: select
+                    values:
+                        0: -- Select a region --
+                    hidden: true
+                    select_phrase: Select Region...
+                services:
+                    label: 'Services:'
+                    type: checkboxes
+                    load_values_from_organizer_path: zenario__projects/nav/project_services/panel
+                sectors:
+                    label: 'Sectors:'
+                    type: checkboxes
+                    load_values_from_organizer_path: zenario__projects/nav/project_sectors/panel
+                zoom:
+                    type: hidden
+                    same_row: Yes
+                map_center_lat:
+                    type: hidden
+                    same_row: Yes
+                map_center_lng:
+                    type: hidden
+                    same_row: Yes
+                map_lookup:
+                    label: 'Place map pin using:;
+                    ord: 998
+                    snippet:
+                        html:
+                    visible_if: zenarioAB.editModeOn()
+                map_edit:
+                    label: 'Map:'
+                    ord: 999
+                    snippet:
+                        html:
+                    visible_if: zenarioAB.editModeOn()
+                    note_below: Fine tune your map by setting the zoom level and dragging/dropping the pin
+                map_view:
+                    label: 'Map:'
+                    ord: 999
+                    snippet:
+                        html:
+                    visible_if: !zenarioAB.editModeOn()
+                    note_below: Fine tune your map by setting the zoom level and dragging/dropping the pin
+                marker_lat:
+                    label: 'Latitude:'
+                    type: text
+                    readonly: Yes
+                    ord: 9991
+                    value:
+                marker_lng:
+                    label: 'Longitude:'
+                    type: text
+                    readonly: Yes
+                    row_class: disabled_map_fields
+                    ord: 9992
+                    value:
+                last_updated:
+                    label: 'Last updated:'
+                    type: date
+                    readonly: Yes
+                    row_class: disabled_map_fields
+                    ord: 9998
+                last_updated_admin_id:
+                    label: 'Last updated by:'
+                    type: text
+                    readonly: Yes
+                    row_class: disabled_map_fields
+                    ord: 9999            
+        image:
+            label: 'Add image'
+            
+            edit_mode:
+                priv: _PRIV_MANAGE_PROJECT_LOCATIONS
+                enabled: Yes
+                on: Yes
+                always_on: Yes
+                enable_revert: Yes
+            fields:
+                image:
+                    full_width: Yes
+                    snippet:
+                        html: ""
+                image_id:
+                    label: 'Image:'
+                    pick_items: 
+                        path: zenario__projects/nav/images/panel
+                        min_path: zenario__projects/nav/images/panel
+                        max_path: zenario__projects/nav/images/panel
+                        target_path: zenario__projects/nav/images/panel
+                        disallow_refiners_looping_on_min_path: Yes
+                        select_phrase: Select image...
+                        nothing_selected_phrase: No image
+                    format_onchange: Yes
+                alt_tag:
+                    label: 'Alt tag:'
+                    type: text

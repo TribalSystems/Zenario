@@ -1,0 +1,87 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+site_settings:
+    setting_group: zenario_newsletter__site_settings_group
+    title: Editing settings for newsletters
+    tabs:
+        zenario_newsletter__site_settings:
+            edit_mode:
+                enabled: Yes
+                priv: _PRIV_EDIT_SITE_SETTING
+                on: Yes
+            label: Details
+            fields:
+                zenario_newsletter__default_from_name:
+                    label: 'Default "From" name:'
+                    site_setting:
+                        name: zenario_newsletter__default_from_name
+                    type: text
+                    validation:
+                        required: Please enter default "From" name.
+                zenario_newsletter__default_from_email_address:
+                    label: 'Default "From" address:'
+                    site_setting:
+                        name: zenario_newsletter__default_from_email_address
+                    type: text
+                    validation:
+                        required: Please enter default "From" email address.
+                        email: Please enter valid "From" email address.
+                zenario_newsletter__default_unsubscribe_text:
+                    label: 'Default "Unsubscribe" text:'
+                    site_setting:
+                        name: zenario_newsletter__default_unsubscribe_text
+                    type: textarea
+                    validation:
+                        required: Please enter default "Unsubscribe" text.
+                    value: 'To unsubscribe, please click the following link or copy and paste it into your browser:'
+                zenario_newsletter__default_delete_account_text:
+                    label: 'Default "Delete my account" text:'
+                    site_setting:
+                        name: zenario_newsletter__default_delete_account_text
+                    type: textarea
+                    validation:
+                        required: Please enter default "Delete account" text.
+                    value: 'To have your details deleted from the website that sent you this email, please click the following link or copy and paste it into your browser:'
+                zenario_newsletter__all_newsletters_opt_out:
+                    label: 'User opt-out flag:'
+                    side_note: 'When a recipient clicks an Unsubscribe link, set this flag.'
+                    site_setting:
+                        name: zenario_newsletter__all_newsletters_opt_out
+                    type: select
+                    empty_value: '-- Select --'
+                    validation:
+                        required: Please select the flag on the user/contact record that should be set when a recipient clicks an Unsubscribe link.
+            
+                zenario_newsletter__enable_opened_emails:
+                    label: 'Enable opened-email tracking'
+                    side_note: 'Check this option to enable tracking of opened emails.'
+                    site_setting:
+                        name: zenario_newsletter__enable_opened_emails
+                    type: checkbox
+
+        styles:
+            label: Pre-defined styles
+            edit_mode:
+                enabled: false
+            fields:
+                description:
+                    full_width: true
+                    snippet:
+                        html: |
+                            These pre-defined styles will be available when composing a newsletter or an email template.
+                            You can add more by editing the <code>zenario_custom/site_description.yaml</code> file.
+                email_style_formats:
+                    type: code_editor
+                    tall_as_possible: true
+                    dont_trim: true
+                    language: yaml
+                    style: |
+                        height: 30em;
+                description2:
+                    full_width: true
+                    snippet:
+                        html: |
+                            See
+                                <a href="http://www.tinymce.com/wiki.php/Configuration:style_formats" target="_blank">
+                                    http://www.tinymce.com/wiki.php/Configuration:style_formats</a>
+                            for more information.

@@ -1,0 +1,101 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+site_settings:
+    setting_group: zenario_form_input_handler
+    title: Viewing/Editing Settings for the Form Input Handler
+    tabs:
+        zenario_form_input_handler__sfs:
+            label: Special Fields
+            edit_mode:
+                enabled: Yes
+                priv: _PRIV_EDIT_SITE_SETTING
+                on: No
+            fields:
+                description:
+                    full_width: Yes
+                    snippet:
+                        html: >
+                            This tab contains settings for the Form Input Handler.
+                            Enable a Special Field, then set the Label that will be used
+                            as a column heading in Storekeeper and set the Field Name to
+                            match the field name used in your form.
+                zenario_form_input_handler__sf_1_enable:
+                    label: 'Enable Special Field 1:'
+                    type: checkbox
+                    format_onchange: Yes
+                zenario_form_input_handler__sf_1_label:
+                    label: 'Special Field 1 Label:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: You must enter a Label for Special Field 1
+                    size: "30"
+                zenario_form_input_handler__sf_1_field_name:
+                    label: 'Special Field 1 Field Name:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: You must enter a Field Name for Special Field 1
+                    size: "30"
+                zenario_form_input_handler__sf_2_enable:
+                    label: 'Enable Special Field 2:'
+                    type: checkbox
+                    format_onchange: Yes
+                zenario_form_input_handler__sf_2_label:
+                    label: 'Special Field 2 Label:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: You must enter a Label for Special Field 2
+                    size: "30"
+                zenario_form_input_handler__sf_2_field_name:
+                    label: 'Special Field 2 Field Name:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: You must enter a Field Name for Special Field 2
+                    size: "30"
+                zenario_form_input_handler__sf_3_enable:
+                    label: 'Enable Special Field 3:'
+                    type: checkbox
+                    format_onchange: Yes
+                zenario_form_input_handler__sf_3_label:
+                    label: 'Special Field 3 Label:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: You must enter a Label for Special Field 3
+                    size: "30"
+                zenario_form_input_handler__sf_3_field_name:
+                    label: 'Special Field 3 Field Name:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: You must enter a Field Name for Special Field 3
+                    size: "30"
+                zenario_form_input_handler__sf_4_enable:
+                    label: 'Enable Special Field 4:'
+                    type: checkbox
+                    format_onchange: Yes
+                zenario_form_input_handler__sf_4_label:
+                    label: 'Special Field 4 Label:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: You must enter a Label for Special Field 4
+                    size: "30"
+                zenario_form_input_handler__sf_4_field_name:
+                    label: 'Special Field 4 Field Name:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: You must enter a Field Name for Special Field 4
+                    size: "30"
+                zenario_form_input_handler__sf_5_enable:
+                    label: 'Enable Special Field 5:'
+                    type: checkbox
+                    format_onchange: Yes
+                zenario_form_input_handler__sf_5_label:
+                    label: 'Special Field 5 Label:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: You must enter a Label for Special Field 5
+                    size: "30"
+                zenario_form_input_handler__sf_5_field_name:
+                    label: 'Special Field 5 Field Name:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: You must enter a Field Name for Special Field 5
+                    size: "30"

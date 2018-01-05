@@ -1,0 +1,74 @@
+zenario__projects: 
+    nav: 
+        project_services: 
+            panel: 
+                title: Define project services
+                view_mode: list
+                disable_grid_view: Yes
+                disable_summary_view: Yes
+                default_sort_column: name
+                db_items: 
+                    table: "[[DB_NAME_PREFIX]][[ZENARIO_PROJECT_LOCATIONS_PREFIX]]project_location_services AS pservice"
+                    id_column: pservice.id
+                item:
+                    css_class: project_locations__services
+                reorder:
+                    priv: _PRIV_MANAGE_PROJECT_LOCATIONS
+                    column: sort
+                columns: 
+                    id: 
+                        title: id
+                        db_column: pservice.id
+                        searchable: Yes
+                        align_right: Yes
+                    name: 
+                        title: Name
+                        db_column: pservice.name
+                        show_by_default: Yes
+                        searchable: Yes
+                        width: large
+                    vlp_phrase: 
+                        title: VLP Phrase
+                        db_column: "concat('_PROJECT_PORTFOLIO_SERVICE_', pservice.id)"
+                        show_by_default: No
+                        searchable: No
+                    sort: 
+                        title: Sort
+                        db_column: pservice.sort
+                        show_by_default: Yes
+                        width: small
+                        align_right: Yes
+                item: 
+                    css_class: zenario__project_locations_service
+                collection_buttons: 
+                    create_service: 
+                        priv: _PRIV_MANAGE_PROJECT_LOCATIONS
+                        label: Create
+                        hide_in_select_mode: Yes
+                        css_class: zenario_create_a_new
+                        hide_on_filter: true
+                        admin_box: 
+                            path: zenario_project_location_service
+                item_buttons: 
+                    edit: 
+                        hide_in_select_mode: Yes
+                        priv: _PRIV_MANAGE_PROJECT_LOCATIONS
+                        label: Edit
+                        admin_box: 
+                            path: zenario_project_location_service
+                    delete: 
+                        hide_in_select_mode: Yes
+                        priv: _PRIV_MANAGE_PROJECT_LOCATIONS
+                        ord: "99"
+                        label: Delete
+                        multiple_select: Yes
+                        multiple_select_tooltip: Delete these project service
+                        ajax: 
+                            confirm: 
+                                message: "Are you sure you wish to delete the project service \"[[name]]\"?"
+                                multiple_select_message: "Are you sure you wish to delete the selected project services?"
+                                button_message: Delete
+                                cancel_button_message: Cancel
+                                message_type: warning
+                            request: 
+                                action: delete_project_service

@@ -1,0 +1,73 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+author_name: Tribal Systems
+copyright_info: © Tribal Limited
+editions: ProBusiness, Enterprise
+start_running_on_install: false
+license_info: 'Modified BSD License'
+display_name: Incoming Email Manager
+description: |
+                <p>
+                    The Incoming Email Manager Module provides support for other Modules to receive and respond to or handle email.
+                    It provides two different methods for reading emails: It can receive email that is directed to it from a forwarder,
+                    or it can fetch email from a Mailbox via IMAP.
+                </p>
+                <p>
+                    An email forwarder is an email address that forwards every email it receives to a different email address,
+                    or to a script. 
+                </p>
+                <p>
+                    If you or your server administrator can create an email forwarder, and you set this to forward email to the script
+                    provided by the Incoming Email Manager Module, then you can set up an email address which will pass any incoming
+                    email that it receives to this Email Handler.
+                </p>
+                <p>
+                    If your server administrator has enabled IMAP support
+                    (see <a target="_blank" href="http://php.net/manual/en/imap.requirements.php">
+                        http://php.net/manual/en/imap.requirements.php</a>),
+                    the Incoming Email Manager can periodically connect to a mailbox to check for email.
+                </p>
+                <p>
+                    By default the mailbox will be checked for new email every 5 minutes. However you may set Time,
+                    Day and/or Month rules to adjust when the mailbox is to be checked, using similar controls to Scheduled Tasks.
+                </p>
+                <p>
+                    In order for other Modules to make use of the Incoming Email Manager functionality, they register an Incoming Email Manager Job
+                    in their description.xml file. This tells the Incoming Email Manager to pass the incoming email's details to a given function in
+                    their module_code.php file.
+                </p>
+                <p>
+                    After the Incoming Email Manager has fetched an email and an Email Handler has processed it,
+                    the email can be either deleted from the source mailbox, or moved to a different mailbox. Settings are provided
+                    for you to move successfully processed emails to one mailbox and those that were not successfully processed to another mailbox.
+                    This is useful for debugging and maintaining an accurate audit trail.
+                </p>
+                <p>
+                    The Incoming Email Manager Module comes bundled with the 
+                        <a href="http://www.phpclasses.org/package/3169-PHP-Decode-MIME-e-mail-messages.html" target="_blank">
+                            mimeparser</a>
+                    library under the
+                        <a href="http://www.opensource.org/licenses/bsd-license.php" target="_blank">
+                            BSD</a>
+                    license.
+                    You may only copy, modify or redistribute this library under the terms of its license.
+                </p>
+category: management
+keywords: email, imap, inbox, mail, pop, pop3
+dependencies:
+    zenario_email_template_manager: Yes
+    zenario_scheduled_task_manager: Yes
+jobs:
+    job:
+        name: jobCheckEmails
+        manager_class_name: zenario_scheduled_task_manager
+        static: Yes
+        months: jan,feb,mar,apr,may,jun,jul,aug,sep,oct,nov,dec
+        days: mon,tue,wed,thr,fri,sat,sun
+        hours: >
+            0h,1h,2h,3h,4h,5h,6h,7h,8h,9h,10h,11h,12h,13h,14h,15h,16h,17h,18h,19h,20h,21h,22h,23h
+        minutes: 0m,5m,10m,15m,20m,25m,30m,35m,40m,45m,50m,55m
+        log_on_action: No
+        log_on_no_action: No
+        email_on_action: No
+        email_on_no_action: No

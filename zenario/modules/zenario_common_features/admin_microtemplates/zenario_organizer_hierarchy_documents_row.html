@@ -1,0 +1,40 @@
+<% if (m.canDrag) { %>
+	<div class="organizer_drag_handle dd-handle dd3-handle <% if (m.tuix.type == 'folder') { %> folder <% } else { %> document <% } %>"></div>
+<% } %>
+
+<div
+	id="organizer_item_{{m.id|escape}}"
+	data-id="{{m.id|escape}}"
+	onclick="zenarioO.pi.itemClick('{{m.id|escape}}', event);"
+	class="
+		organizer_row
+		{{m.selected? ' organizer_selected' : ''|escape}}
+		{{m.css_class|escape}}
+		{{m.canClickThrough? 'organizer_doubleclickable' : ''|escape}}
+		<% if (m.tuix.type == 'folder') { %> folder <% } else { %> document <% } %>
+		
+		<% if (zenarioO.searchTerm !== undefined) { %>
+			{{zenarioO.nonSearchMatches[m.id]? 'organizer_non_search_match' : 'organizer_search_match'|escape}}
+		<% } %>
+	
+		<% if (zenarioO.chooseButtonActive()) { %>
+			{{zenarioO.checkItemPickable(m.id)? 'organizer_can_choose' : 'organizer_cant_choose'|escape}}
+		<% } %>
+	"
+>
+
+	<div class="organizer_cell organizer_checkbox_col organizer_documents_area" onclick="zenarioO.pi.checkboxClick('{{m.id|escape}}', event); return false;" ondblclick="return zenario.stop(event);">
+		<input type="checkbox" {{m.selected? ' checked="checked"' : ''}} id="organizer_itemcheckbox_{{m.id|escape}}" />
+	</div>
+	<div class="organizer_cell firstcol listicon" style="width: {{39 + 39 * m.maxNumberOfInlineButtons|escape}}px;">
+		<div
+			class="image organizer_item_image {{m.image_css_class|escape}}"
+			{{m.image? 'style="background-image: url(\'' + htmlspecialchars(m.image) + '\'); background-position: left center;"' : ''}}
+			title="{{m.tooltip|escape}}"
+		></div>
+	</div>
+	<div class="organizer_cells_items organizer_documents_items">
+		{{zenarioT.microTemplate('zenario_organizer_hierarchy_documents_row_line', m.lines)}}
+		{{m.inline_buttons? '<div class="organizer_inline_buttons" style="width: ' + (m.inline_buttons.length * 20) + 'px;">' + zenarioT.microTemplate('zenario_organizer_hierarchy_inline_button', m.inline_buttons) + '</div>' : ''}}
+	</div>
+</div>

@@ -1,0 +1,21 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+author_name: Tribal Systems
+copyright_info: © Tribal Limited
+editions: ProBusiness, Enterprise
+start_running_on_install: true
+license_info: 'Modified BSD License'
+display_name: Confidential User Documents
+class_name: zenario_user_documents
+description: |
+    <p>Allows you to upload documents that can be accessed by one user only.</p>
+    
+    <p>Its plugin, when placed on a password-protected page, displays a list of the confidential documents of the logged in user.</p>
+category: management
+keywords: >
+    user, file, document, documents, download, upload, pdf, doc, docx, xls, xlsx, confidential, sharing
+
+default_framework: standard
+default_instance_name: List of Confidential User Documents
+dependencies:
+    zenario_users: Yes

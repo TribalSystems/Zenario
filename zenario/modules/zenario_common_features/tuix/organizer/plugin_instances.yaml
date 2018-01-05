@@ -1,0 +1,203 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__modules:
+    panels:
+        plugins:
+            key:
+                skinId: ''
+            title: Plugin Library
+            view_mode: list
+            db_items:
+                table: '[[DB_NAME_PREFIX]]plugin_instances AS pi'
+                id_column: pi.id
+                where_statement: WHERE pi.content_id = 0
+            refiners:
+                plugin:
+                    sql: 'pi.module_id = [[REFINER_ID]]'
+            columns:
+                id:
+                    format: id
+                    db_column: pi.id
+                    searchable: true
+                code:
+                    title: ID
+                    format: id
+                    always_show: true
+                    db_column: "CONCAT('P', IF (pi.id < 10, LPAD(CAST(pi.id AS CHAR), 2, '0'), CAST(pi.id AS CHAR)))"
+                    sort_column: pi.id
+                    searchable: true
+                    width: xxsmall
+                name:
+                    title: Name
+                    db_column: pi.name
+                    searchable: true
+                    show_by_default: true
+                module_id:
+                    db_column: plg.id
+                plugin:
+                    title: Module
+                    db_column: plg.display_name
+                    table_join: '[[DB_NAME_PREFIX]]modules AS plg ON plg.id = pi.module_id'
+                    searchable: true
+                module_class_name:
+                    db_column: plg.class_name
+                    table_join: '[[DB_NAME_PREFIX]]modules AS plg ON plg.id = pi.module_id'
+                framework:
+                    title: Framework
+                    db_column: pi.framework
+                usage:
+                    title: Usage
+                    show_by_default: true
+                    width: xlarge
+                filename:
+                    db_column: img_f.filename
+                    table_join: |
+                        LEFT JOIN [[DB_NAME_PREFIX]]plugin_settings AS img_ps
+                           ON img_ps.instance_id = pi.id
+                          AND img_ps.foreign_key_to = 'file'
+                        LEFT JOIN [[DB_NAME_PREFIX]]files AS img_f
+                           ON img_f.id = img_ps.foreign_key_id
+                          AND img_f.`usage` = 'image'
+                          AND img_f.mime_type IN ('image/gif', 'image/png', 'image/jpeg', 'image/svg+xml')
+                checksum:
+                    db_column: img_f.checksum
+                    table_join: |
+                        LEFT JOIN [[DB_NAME_PREFIX]]plugin_settings AS img_ps
+                           ON img_ps.instance_id = pi.id
+                          AND img_ps.foreign_key_to = 'file'
+                        LEFT JOIN [[DB_NAME_PREFIX]]files AS img_f
+                           ON img_f.id = img_ps.foreign_key_id
+                          AND img_f.`usage` = 'image'
+                          AND img_f.mime_type IN ('image/gif', 'image/png', 'image/jpeg', 'image/svg+xml')
+                mime_type:
+                    server_side_only: true
+                    db_column: img_f.mime_type
+                    table_join: |
+                        LEFT JOIN [[DB_NAME_PREFIX]]plugin_settings AS img_ps
+                           ON img_ps.instance_id = pi.id
+                          AND img_ps.foreign_key_to = 'file'
+                        LEFT JOIN [[DB_NAME_PREFIX]]files AS img_f
+                           ON img_f.id = img_ps.foreign_key_id
+                          AND img_f.`usage` = 'image'
+                          AND img_f.mime_type IN ('image/gif', 'image/png', 'image/jpeg', 'image/svg+xml')
+            item:
+                name: Plugin
+                names: Plugins
+                css_class: plugin_album_instance
+            collection_buttons:
+                create:
+                    priv: _PRIV_MANAGE_REUSABLE_PLUGIN
+                    css_class: zenario_create_a_new
+                    hide_on_filter: true
+                    label: Create a plugin
+                    only_show_on_refiner: plugin
+                    admin_box:
+                        path: plugin_settings
+                        create_another: true
+            item_buttons:
+                edit:
+                    priv: _PRIV_VIEW_REUSABLE_PLUGIN
+                    label: Edit plugin settings
+                    admin_box:
+                        path: plugin_settings
+                framework_and_css:
+                    priv: _PRIV_VIEW_REUSABLE_PLUGIN
+                    label: 'CSS & framework'
+                    admin_box:
+                        path: plugin_css_and_framework
+                view_dropdown:
+                    label: View
+                    multiple_select: true
+                    hide_when_children_are_not_visible: true
+                view:
+                    parent: view_dropdown
+                    label: View image
+                    tooltip: View image
+                    popout:
+                        href: zenario/file.php
+                        options:
+                            type: image
+                    with_columns_set:
+                        has_image: true
+                usage_layouts:
+                    parent: view_dropdown
+                    label: "Layouts using this plugin"
+                    visible_if_for_all_selected_items: item.usage_layouts > 0
+                    hide_in_select_mode: true
+                    link:
+                        path: zenario__layouts/panels/layouts
+                        branch: true
+                        refiner: plugin_instance_usage
+                    width: xsmall
+                    align_right: true
+                usage_item:
+                    parent: view_dropdown
+                    label: "Items using this plugin"
+                    visible_if_for_all_selected_items: item.usage_item > 0
+                    hide_in_select_mode: true
+                    link:
+                        path: zenario__content/panels/content
+                        branch: true
+                        refiner: plugin_instance_usage
+                    width: xsmall
+                    align_right: true
+                view_content_items:
+                    parent: view_dropdown
+                    label: Effective usage
+                    visible_if_for_all_selected_items: item.usage_item > 0 || item.usage_layouts > 0
+                    hide_in_select_mode: true
+                    link:
+                        path: zenario__content/panels/content
+                        branch: true
+                        refiner: plugin_instance_effective_usage
+                action_dropdown:
+                    label: Actions
+                    multiple_select: true
+                    hide_when_children_are_not_visible: true
+                duplicate:
+                    parent: action_dropdown
+                    priv: _PRIV_MANAGE_REUSABLE_PLUGIN
+                    label: Duplicate
+                    admin_box:
+                        path: zenario_duplicate_plugin
+                delete:
+                    priv: _PRIV_MANAGE_REUSABLE_PLUGIN
+                    ord: "99"
+                    label: Delete
+                    multiple_select: true
+                    hide_in_select_mode: false
+                    visible_if_for_all_selected_items: item.usage_item == 0 && item.usage_layouts == 0
+                    ajax:
+                        confirm:
+                            message: |
+                                Are you sure you wish to delete plugin "[[name]]"?
+                                
+                                Its settings will be deleted but any attached images will be left in the Media panel.
+                            multiple_select_message: Are you sure you wish to delete these plugins?
+                            button_message: Delete
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            delete: "1"
+                delete_used:
+                    priv: _PRIV_MANAGE_REUSABLE_PLUGIN
+                    ord: "99"
+                    label: Delete
+                    hide_in_select_mode: true
+                    visible_if_for_all_selected_items: item.usage_item > 0 || item.usage_layouts > 0
+                    ajax:
+                        confirm:
+                            message: |
+                                This plugin is currently used on [[usage_item]] content item(s) and [[usage_layouts]] layout(s).
+                                
+                                Deleting it will remove it from these content items and layouts, and this may have an immediate effect on published pages.
+                                
+                                Any attached images will be left in the "Plugins' images" panel.
+                                
+                                Are you still sure you wish to delete plugin "[[name]]"?
+                            multiple_select_message: Are you sure you wish to delete these plugins?
+                            button_message: Delete
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            delete: "1"

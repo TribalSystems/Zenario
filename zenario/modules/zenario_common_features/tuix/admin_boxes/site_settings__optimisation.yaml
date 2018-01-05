@@ -1,0 +1,181 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+site_settings:
+    setting_group: optimisation
+    title: Editing site optimisation settings
+    tabs:
+        caching:
+            label: Caching and file wrappers
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_SITE_SETTING
+                on: false
+            
+            fields:
+                description:
+                    full_width: true
+                    snippet:
+                        html: |
+                            This tab contains settings for caching the output of the CMS into static files,
+                            to reduce the load on your server and make your web pages load more quickly for visitors.
+                            
+                            Visitors' browsers may cache files, even if the caching in the CMS is disabled.
+                            You may prevent this by enabling development mode,
+                            or by pressing the &quot;Clear cache and check for changes&quot; button.
+                        
+                cache_images:
+                    label: 'Cache images'
+                    type: checkbox
+                    readonly: true
+                    note_below: ''
+                
+                fab_use_cache_dir:
+                    ord: 997
+                    site_setting:
+                        name: fab_use_cache_dir
+                    label: 'Cache floating admin boxes'
+                    type: checkbox
+                    value: 1
+                    note_below: |
+                        If enabled, files will be written to the <code>cache/</code> directory to
+                        help speed up the floating admin boxes.
+                        
+                        If you are running on a cloud server you may need to disable this.
+                
+                css_wrappers:
+                    ord: 998
+                    site_setting:
+                        name: css_wrappers
+                        value: visitors_only
+                    label: 'CSS file wrappers'
+                    type: select
+                    values:
+                        on:
+                            label: Always on
+                        visitors_only:
+                            label: On for visitors only
+                        off:
+                            label: Always off
+                    value: on
+                    note_below: |
+                        Reduce the number of downloads by combining multiple CSS files together.
+                        This will make your website load faster, but designers may want to turn this off for easier debugging.
+                        (Core files for the CMS will always be combined.)
+                
+                js_wrappers:
+                    ord: 999
+                    label: 'JavaScript file wrappers'
+                    type: select
+                    values:
+                        on:
+                            label: Always on
+                    value: on
+                    readonly: true
+                    note_below: |
+                        Reduce the number of downloads by combining multiple JavaScript files together.
+                        (This cannot be disabled.)
+                
+                defer_js:
+                    site_setting:
+                        name: defer_js
+                    ord: 999
+                    label: 'Defer JavaScript in visitor mode'
+                    type: checkbox
+                    note_below: |
+                        Deferring JavaScript may make your pages load more quickly on mobile devices,
+                        but may cause issues for visitors using Internet Explorer versions 9 and earlier.
+                        Certain plugins may also stop working properly if this option is enabled.
+                        
+        
+        clear_cache:
+            priv: _PRIV_EDIT_SITE_SETTING
+            label: Clear the Cache
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_SITE_SETTING
+                on: true
+                always_on: true
+            notices:
+                notice:
+                    type: success
+                    message: The cache has been cleared.
+                    show: false
+            fields:
+                description:
+                    full_width: true
+                    snippet:
+                        html: |
+                            <p>
+                                Any change that could potentially affect your whole site
+                                (e.g. changes to plugin settings, site settings, layouts or phrases)
+                                will trigger the deletion of every cached web page and plugin
+                                from the <code>cache/</code> directory.
+                            </p><p>
+                                Any change that affects only a specific content item
+                                (such as publishing a draft, hiding or trashing a published page)
+                                will only trigger the deletion of related files.
+                            </p><p>
+                                Any change that does not relate to the contents of a page
+                                (e.g. a change to an administrator, email template or newsletter) will not
+                                delete any web page or plugin from the <code>cache/</code> directory.
+                            </p><p>
+                                Any changes made to a module's PHP code or frameworks
+                                will also trigger the deletion of every cached web page and plugin
+                                from the <code>cache/</code> directory,
+                                however the check for this slows down your site, so is only performed
+                                when the site is in development mode and is viewed by an administrator.
+                            </p><p>
+                                If you wish to manually clear the cache you may do so by pressing this button.
+                            </p>
+                clear_cache:
+                    full_width: false
+                    type: submit
+                    value: 'Clear cache and check for changes'
+                    class: submit_selected
+                    format_onchange: true
+                    note_below: |
+                        <p>This button will:</p>
+                        <ul>
+                            <li>remove cached web pages, cached plugins, skin <code>.css</code> files, plugin <code>.js</code> and <code>.yaml</code> files from the server's <code>cache/</code> directory</li>
+                            <li>clear visitors' browsers' caches, on next load</li>
+                            <li>clear a reverse proxy cache, if used, on next load</li>
+                            <li>clear Organizer's cached data</li>
+                        </ul>
+        
+        speed:
+            label: Server settings
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_SITE_SETTING
+            fields:
+                description:
+                    full_width: true
+                    snippet:
+                        html: >
+                            This tab contains settings that you change on the server to make your web pages load
+                            more quickly for visitors.
+                zenario_siteconfig: 
+                    type: grouping
+                    name: zenario_siteconfig
+                compress_web_pages:
+                    grouping: zenario_siteconfig
+                    label: Compression enabled
+                    type: checkbox
+                    value: "1"
+                    note_below: |
+                        Compress files to reduce bandwidth and download times, if a visitor's browser supports compression.
+                have_query_cache:
+                    grouping: zenario_siteconfig
+                    label: 'Caching of SQL queries enabled'
+                    type: checkbox
+                    readonly: true
+                    note_below: |
+                        Enabling the query cache in MySQL will speed up the CMS when repeated queries are made to the database,
+                        resulting in faster page-generation times and less load on the server.
+                        This feature can be enabled by your server administrator.
+                query_cache_size:
+                    grouping: zenario_siteconfig
+                    label: 'Query cache Size'
+                    type: text
+                    style: 'width: 6em;'
+                    readonly: true

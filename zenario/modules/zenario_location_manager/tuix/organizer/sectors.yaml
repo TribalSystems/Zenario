@@ -1,0 +1,143 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__locations:
+    nav:
+        sectors:
+            panel:
+                title: Sectors (top level)
+                no_items_message: No sectors defined, click "Define a sector" to create one.
+                view_mode: list
+                db_items:
+                    table: '[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]sectors AS s'
+                    id_column: s.id
+                    where_statement: |
+                        WHERE ('[[ORGANIZER_MODE]]' = 'get_item_name'
+                            OR '[[ORGANIZER_MODE]]' = 'typeahead_search'
+                            OR [[REFINER__SUB_SECTORS]] IS NOT NULL
+                            OR s.parent_id = 0)
+                refiners:
+                    location_sectors:
+                        sql: 's.id IN (SELECT sector_id FROM [[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]location_sector_score_link WHERE location_id IN [[REFINER_IDS]])'
+                    sub_sectors:
+                        sql: 's.parent_id IN ([[REFINER_IDS]])'
+                columns:
+                    name:
+                        title: Name
+                        db_column: s.name
+                        show_by_default: Yes
+                        searchable: Yes
+                        width: large
+                    score:
+                        title: Score
+                        db_column: lssl.score_id
+                        table_join: '[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]location_sector_score_link AS lssl ON lssl.sector_id = s.id'
+                        show_by_default: Yes
+                        align_right: Yes
+                        width: xsmall
+                    subsectors:
+                        title: Sub-Sectors
+                        db_column: |
+                            (
+                                                                SELECT COUNT(DISTINCT s2.id)
+                                                                FROM [[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]sectors AS s2
+                                                                WHERE s2.parent_id = s.id
+                                                            )
+                        show_by_default: Yes
+                        align_right: Yes
+                        width: small
+                    locations:
+                        title: Locations
+                        db_column: |
+                            (
+                                                                SELECT COUNT(DISTINCT lssl2.location_id)
+                                                                FROM [[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]location_sector_score_link AS lssl2
+                                                                WHERE lssl2.sector_id = s.id
+                                                            )
+                        show_by_default: Yes
+                        align_right: Yes
+                        width: small
+                item:
+                    css_class: zenario_location_manager_sector
+                    link:
+                        path: zenario__locations/nav/sectors/panel
+                        branch: Yes
+                        refiner: sub_sectors
+                disable_close_up_view: Yes
+                collection_buttons:
+                    create_sector:
+                        priv: _PRIV_MANAGE_LOCATIONS
+                        ord: "1"
+                        label: Define a sector
+                        css_class: zenario_create_a_new
+                        admin_box:
+                            path: zenario_location_manager__sector
+                    add_sector:
+                        ord: "1"
+                        label: Add a sector
+                        pick_items:
+                            path: zenario__locations/nav/sectors/panel
+                            target_path: zenario__locations/nav/sectors/panel
+                            min_path: zenario__locations/nav/sectors/panel
+                            multiple_select: Yes
+                            request:
+                                action: add_sector
+                item_buttons:
+                    view_sector_locations:
+                        ord: "1"
+                        label: View locations in this sector
+                        link:
+                            path: zenario__locations/panel
+                            refiner: sector_locations
+                            branch: Yes
+                    action_dropdown:
+                        label: Actions
+                        multiple_select: Yes
+                        hide_when_children_are_not_visible: Yes
+                    rename_sector:
+                        parent: action_dropdown
+                        label: Rename
+                        hide_in_select_mode: Yes
+                        admin_box:
+                            path: zenario_location_manager__sector
+                    delete_sector:
+                        parent: action_dropdown
+                        label: Delete
+                        hide_in_select_mode: Yes
+                        ajax:
+                            confirm:
+                                message: 'Are you sure you wish to delete the sector "[[name]]"?'
+                                button_message: Delete
+                                cancel_button_message: Cancel
+                                message_type: warning
+                            request:
+                                action: delete_sector
+                    remove_sector:
+                        ord: "2"
+                        css_class: delete
+                        tooltip: Remove this sector
+                        multiple_select: Yes
+                        ajax:
+                            confirm:
+                                message: 'Are you sure you wish to remove the sector "[[name]]" from this lcation?'
+                                multiple_select_message: >
+                                    Are you sure you wish to remove the selected sectors from
+                                    this location?
+                                button_message: Remove
+                                cancel_button_message: Cancel
+                                message_type: warning
+                            request:
+                                action: remove_sector
+                    increase_score:
+                        ord: "2"
+                        css_class: add
+                        tooltip: Increase Score
+                        ajax:
+                            request:
+                                action: increase_score
+                    decrease_score:
+                        ord: "2"
+                        css_class: add
+                        tooltip: Decrease Score
+                        ajax:
+                            request:
+                                action: decrease_score

@@ -1,0 +1,4 @@
+site_settings:
+    priv: _PRIV_VIEW_SITE_SETTING
+    key:
+        id: ""

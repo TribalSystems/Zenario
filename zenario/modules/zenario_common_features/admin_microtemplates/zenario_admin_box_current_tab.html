@@ -1,0 +1,26 @@
+<form class="zenario_ab__{{m.path|escape}} thickbox" onsubmit="return false;">
+	{{m.revert}}
+	<div class="zenario_ab_tab__{{m.tabId|escape}} thickbox_table div_table">
+		
+		{{zenarioT.microTemplate('zenario_admin_box_row', m.rows)}}
+	
+	</div>
+</form>
+
+<% if (!zenario.engToBoolean(zenarioAB.tuix.hide_tab_bar)) { %>
+	<a class="zfab_np zfab_prev
+		<% if (zenarioAB.prevTab) { %>
+			" onclick="zenarioAB.clickTab('{{zenarioAB.prevTab|e}}');
+		<% } else { %>
+			zfab_disabled
+		<% } %>
+	">{{zenarioA.phrase.prev}}</a>
+	
+	<a class="zfab_np zfab_next
+		<% if (zenarioAB.nextTab) { %>
+			" onclick="zenarioAB.clickTab('{{zenarioAB.nextTab|e}}');
+		<% } else { %>
+			zfab_disabled
+		<% } %>
+	">{{zenarioA.phrase.next}}</a>
+<% } %>

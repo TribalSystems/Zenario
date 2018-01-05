@@ -1,0 +1,133 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__layouts:
+    panels:
+        skins:
+            #back_link: zenario__layouts/panels/layouts
+            title: Skins
+            db_items:
+                table: >
+                    [[DB_NAME_PREFIX]]skins AS s
+                    INNER JOIN [[DB_NAME_PREFIX]]template_families AS tf
+                    ON s.family_name = tf.family_name
+                id_column: s.id
+            no_items_message: There are no Skins.
+            view_mode: list
+            disable_close_up_view: Yes
+            disable_grid_view: Yes
+            disable_summary_view: Yes
+            default_sort_column: path
+            label_format_for_grid_view: '[[display_name]]'
+            columns:
+                name:
+                    title: Directory Name
+                    db_column: s.name
+                    searchable: Yes
+                display_name:
+                    title: Display Name
+                    db_column: s.display_name
+                    show_by_default: Yes
+                    searchable: Yes
+                path:
+                    title: Path
+                    db_column: "CONCAT('[[CMS_ROOT]]zenario_custom/templates/', s.family_name, '/skins/', s.name, '/')"
+                    show_by_default: Yes
+                default:
+                    title: Default
+                    db_column: s.id = tf.skin_id    
+                    format: yes_or_no
+                    show_by_default: Yes
+                missing:
+                    title: Missing
+                    db_column: s.missing
+                    format: yes_or_no
+                    show_by_default: Yes
+                family_name:
+                    title: Template Family
+                    db_column: s.family_name
+                    show_by_default: Yes
+                    searchable: Yes
+                usage_layouts:
+                    title: Usage in Layouts
+                    db_column: |
+                        (
+                            SELECT COUNT(*)
+                            FROM [[DB_NAME_PREFIX]]layouts AS stc
+                            WHERE stc.skin_id = s.id
+                        )
+                    align_right: Yes
+                    show_by_default: Yes
+                status:
+                    title: Status
+                    show_by_default: Yes
+                    width: xlarge
+                extension_of_skin:
+                    db_column: s.extension_of_skin
+                extension_of_skin_display_name:
+                    title: Extension of Skin
+                    db_column: s2.display_name
+                    table_join: |
+                        LEFT JOIN [[DB_NAME_PREFIX]]skins AS s2
+                                                     ON s.family_name = s2.family_name
+                                                    AND s.extension_of_skin = s2.name
+                    show_by_default: Yes
+                extended_by_skins:
+                    title: Extended by Skins
+                    db_column: |
+                        (
+                                                        SELECT GROUP_CONCAT(
+                                                            s3.display_name
+                                                            ORDER BY s3.display_name DESC
+                                                            SEPARATOR ', ')
+                                                        FROM [[DB_NAME_PREFIX]]skins AS s3
+                                                        WHERE s.family_name = s3.family_name
+                                                          AND s.name = s3.extension_of_skin
+                                                    )
+            refiners:
+                template_family:
+                    sql: 's.family_name = [[REFINER__TEMPLATE_FAMILY]]'
+                usable_in_template_family:
+                    sql: |
+                        s.family_name = [[REFINER__USABLE_IN_TEMPLATE_FAMILY]]
+                template_family__panel_above:
+                    sql: 's.family_name = [[REFINER__TEMPLATE_FAMILY]]'
+            item:
+                name: Skin
+                names: Skins
+                css_class: skin
+                tooltip_when_link_is_active: 'View files in Skin &quot;[[name]]&quot;'
+                link:
+                    path: zenario__layouts/panels/skin_files
+                    branch: Yes
+                    refiner: skin
+            inline_buttons:
+                missing_skin:
+                    css_class: zenario_ib_warning
+                   # tooltip: |
+                    #    The Skin is missing!
+                    visible_if: >
+                        item.missing
+            item_buttons:
+                make_default:
+                    priv: _PRIV_EDIT_TEMPLATE
+                    label: Make default
+                    hide_in_select_mode: true
+                    without_columns_set:
+                        default: true
+                    ajax:
+                        confirm:
+                            message: |
+                                You are about to change the default skin for the "[[display_name]]" layout.
+                                
+                                When you do this, any content items that use this layout will immediately change their appearance to use the new default skin.
+                                
+                                Are you sure you wish to proceed?
+                            button_message: Make default
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            make_default: 1
+                action_dropdown:
+                    label: Actions
+                    multiple_select: Yes
+                    hide_when_children_are_not_visible: Yes

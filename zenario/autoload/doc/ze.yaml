@@ -1,0 +1,86 @@
+---
+ifNull:
+    summary: |
+        Takes up to three inputs, and returns the first that evaluates to true.
+    desc: |
+        <h2>Description</h2>
+        <p>Takes up to three inputs, and returns the first that evaluates to true.</p>
+        <p>Available in both PHP and JavaScript.</p>
+        <h2>Shortcut for</h2>
+        <pre>$a? $a : ($b? $b : $c)</pre>
+
+get:
+    summary: |
+        A shortcut to the PHP $_GET variable.
+    desc: |
+        <h2>Description</h2>
+        <p>A shortcut to the PHP <code>$_GET</code> variable.</p>
+        <h2>Short for</h2>
+        <pre>isset($_GET[$name])? $_GET[$name] : false</pre>
+
+request:
+    summary: |
+        A shortcut to the PHP $_REQUEST variable.
+    desc: |
+        <h2>Description</h2>
+        <p>A shortcut to the PHP <code>$_REQUEST</code> variable.</p>
+        <h2>Short for</h2>
+        <pre>isset($_REQUEST[$name])? $_REQUEST[$name] : false</pre>
+
+post:
+    summary: |
+        A shortcut to the PHP $_POST variable.
+    desc: |
+        <h2>Description</h2>
+        <p>A shortcut to the PHP <code>$_POST</code> variable.</p>
+        <h2>Short for</h2>
+        <pre>isset($_POST[$name])? $_POST[$name] : false</pre>
+
+session:
+    summary: |
+        A shortcut to the PHP $_SESSION variable.
+    desc: |
+        <h2>Description</h2>
+        <p>A shortcut to the PHP <code>$_SESSION</code> variable.</p>
+        <h2>Short for</h2>
+        <pre>isset($_SESSION[$name])? $_SESSION[$name] : false</pre>
+
+setting:
+    summary: |
+        This function looks up the value of a site setting from the site_settings table.
+    desc: |
+        <h2>Description</h2>
+        <p>This function looks up the value of a site setting from the <code>site_settings</code> table.</p>
+        <h2>Parameters</h2>
+        <h3><code>$name</code></h3>
+        <p style="margin-left: 40px;">The name of the site-setting that you wish to retrieve.</p>
+        <h2>Return Value</h2>
+        <p>The site setting's value.</p>
+        <h2>Example</h2>
+        <pre>$emailAddressFrom = ze::setting('email_address_admin');
+        </pre>
+        <p>This example gets the site's default support email address from the site settings.</p>
+
+moduleDir:
+    summary: |
+        Returns the path that a given module is installed at.
+    desc: |
+        <h2>Summary</h2>
+        <p>Returns the path that a given module is installed at.</p>
+        <h2>Description</h2>
+        <p>Modules can be installed in either:</p>
+        <ul><li>
+            The <code>zenario/modules/</code> directory
+        </li><li>
+            The <code>zenario_extra_modules/</code> directory
+        </li><li>
+            The <code>zenario_custom/modules/</code> directory
+        </li></ul>
+        <p>Your code should work regardless of where your module is placed, so if you need to use to your module's directory in your code then you should call this function to access its path.</p>
+        <h2>Parameters</h2>
+        <h3><code>$moduleName</code></h3>
+        <p style="margin-left: 40px;">The name of the module.</p>
+        <h3><code>$subDir</code></h3>
+        <p style="margin-left: 40px;">Some modules may also read things from their sub-directories. (For example, plugins use frameworks from their sub-directories.) You can set this parameter to check for an existence of the specified subdirectory instead.</p>
+        <h2>Return Value</h2>
+        <p>The path (from the CMS root) to your module's directory (or sub-directory if requested).</p>

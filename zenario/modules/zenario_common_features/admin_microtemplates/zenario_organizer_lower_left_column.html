@@ -1,0 +1,49 @@
+<div
+	data-position="top"
+	onclick="zenarioAB.enableOrDisableSite();"
+	
+	data-tooltip-options="
+		{position: {my: 'left center', at: 'right top', collision: 'flipfit'}}
+	"
+	
+	{% if (!zenarioA.siteSettings.site_enabled) { %}
+		class="organizer_enabled_disabled site_disabled"
+		title="Site disabled and in development mode."
+	
+	{% } else if (zenarioA.siteSettings.site_mode == 'production') { %}
+		class="organizer_enabled_disabled site_enabled"
+		title="Site enabled and in production mode."
+	
+	{% } else { %}
+		class="organizer_enabled_disabled site_enabled_development"
+		title="Site enabled and in development mode."
+	{% } %}
+></div>
+<div
+	class="organizer_info_box"
+	data-step="16" data-position="top"
+	data-intro="{{'<p><strong>Information</strong></p><p>Click here to find out the software and installation details about the CMS version you are using.</p>'|escape}}"
+	onclick="zenarioA.infoBox();"
+	title="View site info"
+	data-tooltip-options="
+		{position: {my: 'left center', at: 'right top', collision: 'flipfit'}}
+	"
+></div>
+<div
+	class="organizer_diagnostics"
+	onclick="zenario.goToURL('welcome.php?task=diagnostics&amp;og=' + encodeURIComponent(zenarioO.getHash()));"
+	title="View site diagnostics"
+	data-tooltip-options="
+		{position: {my: 'left center', at: 'right top', collision: 'flipfit'}}
+	"
+></div>
+<div
+	class="organizer_help"
+	data-step="17" data-position="top"
+	data-intro="{{'<p><strong>CMS Tour guide</strong></p><p>Click here to begin the tour on how to use this software system.</p>'|escape}}"
+	onclick="zenarioA.showHelp('#zenario_fbog [data-intro]:visible');"
+	title="CMS Tour guide"
+	data-tooltip-options="
+		{position: {my: 'left center', at: 'right top', collision: 'flipfit'}}
+	"
+></div>

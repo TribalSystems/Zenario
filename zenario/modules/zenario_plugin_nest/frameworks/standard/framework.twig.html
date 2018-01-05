@@ -1,0 +1,127 @@
+<div class="nest_wrap">
+	{% if this.setting('show_heading') %}
+		<div class="nest_title">
+			{% if this.setting('heading_tag') %}
+				<{{this.setting('heading_tag')}}>{{this.setting('heading_text')|trans|e}}</{{this.setting('heading_tag')}}>
+			{% else %}
+				<h1>{{this.setting('heading_text')|trans|e}}</h1>
+			{% endif %}
+		</div>
+	{% endif %}
+	
+	{% if Tabs %}
+		{% if this.setting('show_tabs') %}
+			<div class="nest_tabs">
+				{% for Tab in Tabs %}
+					{% if Tab.Tab_Link or Tab.Tab_Name %}
+						<ul>
+							<li class="{{Tab.Class|e}}">
+								<div class="left_end"></div>
+									<a {{Tab.Tab_Link}}>{{Tab.Tab_Name}}</a>
+								<div class="right_end"></div>
+							</li>
+						</ul>
+					{% endif %}
+				{% endfor %}
+			</div>
+		{% endif %}
+		
+		<div class="nest_plugins_wrap">
+			{% for Tab in Tabs %}
+				{% if Tab.Plugins %}
+					{% if Tab.Show_Back or Tab.Show_Refresh %}
+						<div class="nest_buttons">
+							{% if Tab.Show_Back %}
+								{% if this.cCommandEnabled('back') %}
+									<a
+										class="nest_back nest_go_back"
+										href="{{this.cBackLink()|escape}}"
+										onclick="zenario_conductor.goBack('{{slotName|escape}}'); return false;"
+									>
+									<i class="fa fa-caret-left" aria-hidden="true"></i>
+									{{this.phrase('Back')}}</a>
+								{% else %}
+									<a
+										class="nest_back nest_browser_back"
+										onclick="
+											if (document.referrer) {
+												history.back();
+												return false;
+											}
+										"
+									>
+									<i class="fa fa-caret-left" aria-hidden="true"></i>
+									{{this.phrase('Back')}}</a>
+								{% endif %}
+							{% endif %}
+							
+							{% if Tab.Show_Auto_Refresh %}
+								<a
+									class="nest_refresh auto_refresh"
+									onclick="zenario_conductor.autoRefresh('{{slotName|escape}}', {{Tab.Auto_Refresh_Interval|escape}});"
+								>
+								<i class="fa fa-circle" aria-hidden="true"></i>
+								{{this.phrase('Auto refresh')}}</a>
+								<div class="stop_auto_refresh">
+									<a
+										class="nest_refresh"
+										onclick="zenario_conductor.stopAutoRefresh('{{slotName|escape}}');"
+									>
+									<i class="fa fa-circle" aria-hidden="true"></i>
+									{{this.phrase('Stop auto refreshing')}}</a>
+									<p>{{this.phrase('Last Updated: [[updated]]', {updated: Tab.Last_Updated})}}</p>
+								</div>
+							{% endif %}
+							{% if Tab.Show_Refresh %}
+								<a
+									class="nest_refresh"
+									onclick="zenario.refreshSlot('{{slotName|escape}}');"
+								>
+								<i class="fa fa-refresh" aria-hidden="true"></i>
+								{{this.phrase('Refresh')}}</a>
+							{% endif %}
+						</div>
+					{% endif %}
+					
+					<div class="nest_plugins" {% if Tab.Hidden %} style="display: none;" {% endif %} >
+						{% set first = true %}
+						{% for Plugin in Tab.Plugins %}
+							{% do this.showPlugin(Plugin, true, first) %}
+							{% set first = false %}
+						{% endfor %}
+					</div>
+					
+					{% if Tab.Show_Embed_Disabled %}
+						<a
+							class="nest_show_embed nest_show_embed_disabled"
+						>{{'Embedding is disabled'|trans}}</a>
+					
+					{% elseif Tab.Show_Embed %}
+						<a
+							class="nest_show_embed"
+							onclick="zenario_plugin_nest.embed({{Tab.Embed|escape}});"
+						>{{'Embed'|trans}}</a>
+					{% endif %}
+				{% endif %}
+			{% endfor %}
+		</div>
+	{% endif %}
+	
+	{% if this.setting('show_next_prev_buttons') %}
+		<a {{Prev_Link}} class="prev{{Prev_Disabled}}">
+			<div>
+				<span>{{this.phrase('_PREV')}}</span>
+			</div>
+		</a>
+		<div class="background_prev"></div>
+		
+		<a {{Next_Link}} class="next{{Next_Disabled}}">
+			<div >
+				<span>{{this.phrase('_NEXT')}}</span>
+			</div>
+		</a>
+		<div class="background_next"></div>
+	{% endif %}
+	
+	
+</div>

@@ -1,0 +1,37 @@
+.organizer_top_level_image.locations_top_level {
+	background: url('images/icon-locations-off.svg') no-repeat center / auto 16px;
+}
+
+#zenario_at_top_left_menu .organizer_top_level_image.locations_top_level,
+#organizer_leftColumn .legend_on a.locations_top_level,
+.organizer_top_level_image.locations_top_level:hover {
+	background: url('images/icon-locations-on.svg') no-repeat center / auto 16px;
+}
+
+
+
+.organizer_item_image.zenario_location_manager_location {
+	background:url('images/location-list-icon.png') no-repeat -15px center;
+}
+
+.organizer_item_image.zenario_location_manager_sector {
+	background: 1px 2px no-repeat;
+	background-image: url('images/location-manager-sector-list.png');
+}
+
+.organizer_item_image.zenario_location_manager_supplier {
+	background: center center no-repeat;
+	background-image: url('images/suppliers-list-icons.png');
+}
+
+.organizer_item_image.zenario_location_manager_areas {
+	background: center center no-repeat;
+	background-image: url('images/areas-list-icon.png');
+}
+
+.organizer_item_image.zenario_location_manager_ratings {
+	background: center center no-repeat;
+	background-image: url('images/accreditors-list-icon.png');
+}
+
+

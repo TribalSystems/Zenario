@@ -1,0 +1,8 @@
+<div class="organizer_cell organizer_column {{m.css_class|escape}}" style="width: {{m.width|escape}}px;">
+	{{zenarioT.microTemplate('zenario_organizer_value', m)}}
+	
+	<% if (m.children) { %>
+		{{zenarioT.microTemplate('zenario_organizer_list_cell_lines', m.children)}}
+	<% } %>
+	
+</div>

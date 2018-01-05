@@ -1,0 +1,29 @@
+{% if parentNest %}
+	{% set slides = parentNest.getSlides() %}
+	{% set slideNum = parentNest.getSlideNum() %}
+	
+	{% if slides %}
+		<div class="switch_views assetwolf_switch_views switch_views_dropdown">
+			<ul>
+				<li>
+					{% if slides[slideNum] %}
+						<a>{{slides[slideNum].name_or_title|trans}}</a>
+					{% endif %}
+					<ul>
+						{% for slide in slides %}
+							{% if not slide.invisible_in_nav %}
+								<li class="
+									{% if slide.slideNum == slideNum %}
+										current
+									{% endif %}
+								">
+									<a {{parentNest.refreshPluginSlotTabAnchor('slideId=' ~ slide.id, false)}}>{{slide.name_or_title|trans}}</a>
+								</li>
+							{% endif %}
+						{% endfor %}
+					</ul>
+				</li>
+			</ul>
+		</div>
+	{% endif %}
+{% endif %}

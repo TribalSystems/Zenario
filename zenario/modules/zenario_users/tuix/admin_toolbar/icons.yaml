@@ -1,0 +1,10 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+sections:
+    icons:
+        buttons:
+            item_permissions:
+                css_class: zenario_at_icon_permissions
+                admin_box:
+                  path: zenario_content_privacy
+                ord: 15

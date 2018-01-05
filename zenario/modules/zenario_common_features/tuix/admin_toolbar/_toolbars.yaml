@@ -1,0 +1,354 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+toolbars:
+    preview:
+        ord: 10
+        label: Browse
+        tooltip: Browse your site
+        page_mode: preview
+        toolbar_microtemplate: zenario_toolbar_preview_tab
+    create:
+        ord: 20
+        priv: _PRIV_CREATE_FIRST_DRAFT
+        label: New...
+        tooltip: Create new content items
+        page_mode: preview
+        toolbar_microtemplate: zenario_toolbar_create_tab
+    edit_disabled:
+        ord: 30
+        priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
+        label: Edit
+        tooltip: ''
+        page_mode: edit_disabled
+        toolbar_microtemplate: zenario_toolbar_edit_tab
+    edit:
+        ord: 31
+        priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
+        label: Edit
+        tooltip: Do version-controlled editing of this content item
+        page_mode: edit
+        toolbar_microtemplate: zenario_toolbar_edit_tab
+    rollback:
+        ord: 32
+        priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
+        label: Edit
+        tooltip: You are viewing a previous version of this content item
+        page_mode: rollback
+        toolbar_microtemplate: zenario_toolbar_edit_tab
+    restricted_editing:
+        ord: 33
+        priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
+        label: Restricted editing
+        tooltip: Editing this content item is restricted
+        page_mode: preview
+        toolbar_microtemplate: zenario_toolbar_restricted_editing_tab
+    item:
+        ord: 40
+        priv: _PRIV_MANAGE_ITEM_SLOT
+        label: Edit plugins
+        tooltip: Edit or configure plugins in this content item's slots
+        page_mode: item
+        toolbar_microtemplate: zenario_toolbar_item_tab
+    menu1:
+        ord: 50
+        priv: _PRIV_EDIT_MENU_TEXT
+        label: Edit menu
+        tooltip: >
+            Edit menu node text, and the site map
+        css_class: zenario_at_menu_tab zenario_at_menu_tab_primary
+        page_mode: menu
+        toolbar_microtemplate: zenario_toolbar_menu_tab
+    menu_secondary:
+        ord: 51
+        priv: _PRIV_EDIT_MENU_TEXT
+        parent: menu1
+        label: 
+        css_class: zenario_at_menu_tab zenario_at_menu_tab_secondary
+        page_mode: menu
+        tooltip: Secondary menu node|Make changes to the navigation hierarchy
+        toolbar_microtemplate: zenario_toolbar_menu_tab
+    layout:
+        ord: 60
+        priv: _PRIV_MANAGE_TEMPLATE_SLOT
+        label: Layout
+        tooltip: |
+            <p>Configure plugins in the slots of this item's layout.</p>
+            <p>Any changes made on the layout will affect all content items using this layout!</p>
+        page_mode: layout
+        toolbar_microtemplate: zenario_toolbar_layout_tab
+sections:
+    layout:
+        appears_in_toolbars:
+            layout: true
+        buttons:
+            id_and_name:
+                hidden: true
+                label: 
+            usage:
+                hidden: true
+                label:
+            settings:
+                priv: _PRIV_VIEW_TEMPLATE
+                hide_in_select_mode: true
+                label: Layout properties
+                admin_box:
+                    path: zenario_layout
+            edit_grid:
+                priv: _PRIV_EDIT_TEMPLATE
+                hide_in_select_mode: true
+                label: Edit layout with Gridmaker
+                tooltip: Edit the slots on this layout. Change their size, CSS classes and mobile device options.
+                popout:
+                    href: zenario/admin/grid_maker/grid_maker.php?loadTemplateFile=1
+                    width: 100%
+                    height: 100%
+                    maxWidth: 100%
+                    maxHeight: 100%
+                    initialWidth: 100%
+                    initialHeight: 100%
+                    iframe: true
+                    fixed: true
+                    transition: none
+                    css_class: zenario_grid_maker
+                with_columns_set:
+                    traits.grid: true
+                without_columns_set:
+                    missing: true
+            edit_skin:
+                priv: _PRIV_EDIT_CSS
+                label: Edit skin
+                #admin_box: 
+                #    key:
+                #        skinId: 0
+                #    path: zenario_skin_editor
+                onclick: |
+                    zenarioSE.open();
+            skq:
+                label: Organize layouts
+                tooltip: View this layout among other layouts
+                organizer_quick:
+                    path: 
+                    target_path: zenario__layouts/panels/layouts
+                    min_path: zenario__layouts/panels/layouts
+                    max_path: false
+                    disallow_refiners_looping_on_min_path: false
+                    reload_admin_toolbar: true
+    
+    slot_controls:
+        buttons:
+            slot_control_dropdown:
+                css_class: zenario_at_slot_control_dropdown
+                label: Slots
+                hide_when_children_are_not_visible: true
+                        
+            item_head:
+                parent: slot_control_dropdown
+                priv: _PRIV_MANAGE_ITEM_SLOT
+                visible_if: |
+                    zenarioA.checkSpecificPermsOnThisPage()
+                appears_in_toolbars:
+                    item: true
+                label: <head> HTML
+                onmouseover: zenarioA.closeSlotControls();
+                admin_box:
+                    path: zenario_head_foot_slot
+                    key:
+                        mode: head
+                        level: item
+            item_foot:
+                ord: 9999
+                parent: slot_control_dropdown
+                priv: _PRIV_MANAGE_ITEM_SLOT
+                visible_if: |
+                    zenarioA.checkSpecificPermsOnThisPage()
+                appears_in_toolbars:
+                    item: true
+                label: HTML before </body>
+                onmouseover: zenarioA.closeSlotControls();
+                admin_box:
+                    path: zenario_head_foot_slot
+                    key:
+                        mode: foot
+                        level: item
+            
+            global:
+                parent: slot_control_dropdown
+                appears_in_toolbars:
+                    layout: true
+                label: Global <head> and <body> HTML
+                onmouseover: zenarioA.closeSlotControls();
+                admin_box:
+                    path: site_settings
+                    key:
+                        id: head_and_foot
+            layout_head:
+                parent: slot_control_dropdown
+                appears_in_toolbars:
+                    layout: true
+                label: Layout-wide <head> HTML
+                onmouseover: zenarioA.closeSlotControls();
+                admin_box:
+                    path: zenario_head_foot_slot
+                    key:
+                        mode: head
+                        level: layout
+            layout_foot:
+                ord: 9999
+                parent: slot_control_dropdown
+                appears_in_toolbars:
+                    layout: true
+                label: Layout-wide HTML before </body>
+                onmouseover: zenarioA.closeSlotControls();
+                admin_box:
+                    path: zenario_head_foot_slot
+                    key:
+                        mode: foot
+                        level: layout
+
+    
+    status_button:
+        buttons:
+            status_button:
+                css_class: zenario_at_status_button
+                label: 
+                tooltip: 
+            publish:
+                appears_in_toolbars: &publish_appears_in_toolbars
+                    preview: true
+                    edit_disabled: true
+                    edit: true
+                    rollback: true
+                    restricted_editing: true
+                    item: true
+                priv: _PRIV_PUBLISH_CONTENT_ITEM
+                visible_if: |
+                    zenarioA.checkSpecificPermsOnThisPage()
+                label: Publish
+                css_class: zenario_at_big_action_button zenario_at_publish_button
+                admin_box:
+                    path: zenario_publish
+            
+            start_editing:
+                # Warning: the presence of this button affects how the zenarioA.draft() function
+                # works. If this button is missing then zenarioA.draft() won't attempt to make
+                # a draft!
+                appears_in_toolbars: *publish_appears_in_toolbars
+                priv: _PRIV_CREATE_REVISION_DRAFT
+                visible_if: |
+                    zenarioA.checkSpecificPermsOnThisPage()
+                label: Make a draft
+                css_class: zenario_at_big_action_button zenario_at_start_editing
+                ajax:
+                    priv: _PRIV_CREATE_REVISION_DRAFT
+                    confirm:
+                        message: |
+                            When you want to edit a content item, the CMS makes a draft version. This won't be seen by site visitors until it is published.
+                            
+                            Make a draft?
+                        message__editing_published: |
+                            You are editing a published content item.
+                                
+                            The CMS will make a draft version. This won't been seen by visitors until it is published.
+                        button_message: Make a draft
+                        button_message__just_view: Just view settings
+                        cancel_button_message: Cancel
+                        message_type: warning
+                    request:
+                        create_draft: 1
+                        switch_to_edit_mode: 1
+            cant_start_editing:
+                appears_in_toolbars: *publish_appears_in_toolbars
+                priv: _PRIV_CREATE_REVISION_DRAFT
+                visible_if: |
+                    zenarioA.checkSpecificPermsOnThisPage()
+                label: "Can't edit"
+                css_class: zenario_at_big_action_button zenario_at_cant_start_editing
+                tooltip: >
+                    You cannot edit this version because a draft exists. Use the
+                    Navigate tab to return to the latest draft.
+            
+            delete_draft:
+                appears_in_toolbars: *publish_appears_in_toolbars
+                priv: _PRIV_DELETE_DRAFT
+                visible_if: |
+                    zenarioA.checkSpecificPermsOnThisPage()
+                label: Delete draft
+                css_class: zenario_at_big_action_button zenario_delete_draft 
+                ajax:
+                    confirm:
+                        message: |
+                            You are about to delete the current draft version of this content item. Any edits you've made on this draft version will be lost.
+                            
+                            This will not affect the published version, if one exists.
+                            
+                            Are you sure you wish to proceed?
+                        button_message: Delete draft
+                        cancel_button_message: Cancel
+                        message_type: warning
+                    request:
+                        delete: 1
+            republish:
+                appears_in_toolbars: *publish_appears_in_toolbars
+                priv: _PRIV_CREATE_REVISION_DRAFT
+                visible_if: |
+                    zenarioA.checkSpecificPermsOnThisPage()
+                label: Re-publish
+                css_class: zenario_at_big_action_button zenario_unhide_content
+                admin_box:
+                    path: zenario_publish
+            redraft:
+                appears_in_toolbars: *publish_appears_in_toolbars
+                priv: _PRIV_CREATE_REVISION_DRAFT
+                visible_if: |
+                    zenarioA.checkSpecificPermsOnThisPage()
+                label: Re-draft
+                css_class: zenario_at_big_action_button zenario_redraft_content 
+                tooltip: >
+                    Re-draft this content item|This will create a new draft of
+                    this content item, which will be available to visitors if
+                    you Publish it.
+                ajax:
+                    confirm:
+                        message: >
+                            Do you wish to re-draft this content item? This will create
+                            a new draft of this content item, which will be available to
+                            visitors if you Publish it.
+                        button_message: Re-draft
+                        cancel_button_message: Cancel
+                        message_type: question
+                    request:
+                        create_draft: 1
+            hide_content:
+                appears_in_toolbars: *publish_appears_in_toolbars
+                priv: _PRIV_HIDE_CONTENT_ITEM
+                visible_if: |
+                    zenarioA.checkSpecificPermsOnThisPage()
+                label: Hide
+                css_class: zenario_at_big_action_button zenario_hide_content 
+                ajax:
+                    confirm:
+                        message: |
+                            Hiding this content item will make it not visible to visitors. Any menu nodes linking to it will also be hidden.
+                            
+                            You can restore the item to public view by creating a new draft and then re-publishing.
+                            
+                            Are you sure you wish to proceed?
+                        button_message: Hide
+                        cancel_button_message: Cancel
+                        message_type: warning
+                    request:
+                        hide: 1
+            trash_content:
+                appears_in_toolbars: *publish_appears_in_toolbars
+                priv: _PRIV_HIDE_CONTENT_ITEM
+                visible_if: |
+                    zenarioA.checkSpecificPermsOnThisPage()
+                label: Trash
+                css_class: zenario_at_big_action_button zenario_trash_content 
+                
+                admin_box:
+                    path: zenario_trash
+
+meta_info:
+    title: ''
+    version: ''

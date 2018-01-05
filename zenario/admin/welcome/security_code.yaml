@@ -1,0 +1,83 @@
+security_code:
+    tab: security_code
+    tabs:
+        security_code:
+            edit_mode:
+                enabled: true
+                on: true
+                always_on: true
+            show_errors_after_field: description
+            fields:
+                
+                title:
+                    full_width: true
+                    snippet:
+                        h1: Two-factor authentication check
+
+                not_seen_you:
+                    full_width: true
+                    snippet:
+                        p: We've not seen you logging in from this computer, or this browser before.
+
+                not_seen_you_ip:
+                    full_width: true
+                    snippet:
+                        p: We've not seen you logging in from this IP address, this computer, or this browser before.
+
+                timeout:
+                    full_width: true
+                    snippet:
+                        p: |
+                            It's been a while since your last authentication check on this computer/this browser,
+                            and we need to re-authenticate you.
+
+                timeout_ip:
+                    full_width: true
+                    snippet:
+                        p: |
+                            It's been a while since your last authentication check from this IP address/this computer/this browser,
+                            and we need to re-authenticate you.
+                
+                code_sent:
+                    full_width: true
+                    snippet:
+                        p: |
+                            We've sent a code to the email address registered at this account.
+                            Please check your email and enter the code in the box below to confirm it's you.
+                
+                code:
+                    label: "Code:"
+                    type: text
+                    row_class: row_form
+                    return_key_presses_button: next
+                    style: |
+                        width: 6em;
+                submit:
+                    value: Submit
+                    type: submit
+                    full_width: true
+                    style: |
+                        float: right;
+                resend:
+                    value: Resend email
+                    type: submit
+                    same_row: true
+                    style: |
+                        float: right;
+                previous:
+                    value: "Return to site front-end"
+                    type: submit
+                    full_width: true
+                    style: |
+                        float: left;
+                    class: return_front_end
+                    same_row: false
+            notices:
+                email_resent:
+                    show: false
+                    type: success
+                    message: |
+                        The email has been resent.
+                        
+                        (If you have not received this then please check your "spam" folder
+                        in case the email has been mis-filed.)

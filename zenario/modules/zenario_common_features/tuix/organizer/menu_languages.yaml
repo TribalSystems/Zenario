@@ -1,0 +1,38 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__menu:
+    panels:
+        #Show the administrator a list of languages on the site, and get them to choose one.
+        #When they choose one by clicking on the folder, show the Menu Sections and then Menu Nodes
+        #in that language.
+        by_language:
+            title: Menu Languages
+            no_items_message: >
+                No Languages have been enabled. You must enable a Language
+                before creating any Menu Nodes.
+            view_mode: list
+            disable_grid_view: true
+            php: true
+            db_items:
+                table: '[[DB_NAME_PREFIX]]languages AS l'
+                id_column: l.id
+                client_side: true
+            refiners:
+                show_language_choice:
+                    exists: true
+            columns:
+                name:
+                    title: Language Name
+                    searchable: true
+                    db_column: l.id
+                    format: language_english_name_with_id
+                    show_by_default: true
+            item:
+                name: Language
+                names: Languages
+                css_class: ""
+                tooltip_when_link_is_active: 'View menu sections in the language &quot;[[name]]&quot;.'
+                link:
+                    path: zenario__menu/panels/sections
+                    branch: true
+                    refiner: language

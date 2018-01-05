@@ -1,0 +1,84 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+plugin_settings:
+    tabs:
+        first_tab:
+            label: Display
+            fields:
+                show_private_items:
+                    plugin_setting:
+                        name: show_private_items
+                    label: 'Show Threads in Private Forums:'
+                    type: checkbox
+                    value: "1"
+                    format_onchange: Yes
+                hide_private_items:
+                    plugin_setting:
+                        name: hide_private_items
+                    label: 'Private Forums:'
+                    type: select
+                    value: "1"
+                    values:
+                        1:
+                            ord: "1"
+                            label: >
+                                Only show links to Threads in Private Forums to authorized
+                                visitors
+                        0:
+                            ord: "2"
+                            label: Show links to Threads in Private Forums to all visitors
+                excerpt_length:
+                    plugin_setting:
+                        name: excerpt_length
+                    label: 'Show characters from description/extract:'
+                    type: select
+                    values:
+                        50:
+                            label: "50"
+                        100:
+                            label: "100"
+                        200:
+                            label: "200"
+                        500:
+                            label: "500"
+                    value: "200"
+                date_format:
+                    plugin_setting:
+                        name: date_format
+                    label: 'Date Format:'
+                    type: select
+                    value: _LONG
+                    values:
+                        _SHORT:
+                            label: Short
+                        _MEDIUM:
+                            label: Medium
+                        _LONG:
+                            label: Long
+        pagination:
+            label: Pagination
+            fields:
+                pagination_style_search:
+                    plugin_setting:
+                        name: pagination_style_search
+                    label: 'Pagination style:'
+                    type: select
+                    value: zenario_common_features::pagCloseWithNPIfNeeded
+                page_size_search:
+                    plugin_setting:
+                        name: page_size_search
+                    label: 'Number of Results per Page:'
+                    type: select
+                    values:
+                        10:
+                            label: "10"
+                        12:
+                            label: "12"
+                        15:
+                            label: "15"
+                        20:
+                            label: "20"
+                        30:
+                            label: "30"
+                    value: "12"
+    module_class_name: zenario_forum_search

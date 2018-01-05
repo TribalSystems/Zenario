@@ -1,0 +1,144 @@
+<div class="calendar">
+
+	{% if Event_calendar_year_view %}
+		<div class="calendar_content">
+			{% if Calendar_year_view_title %}
+				<div class="calendar_title">
+					<h2>{{"_CALENDAR_TITLE"|trans}}</h2>
+				</div>
+			{% endif %}
+			
+			{% if Calendar_year_view_header %}
+				<div class="calendar_header">
+					<div class="calendar_month">
+						<h2>{{Year_number}}</h2>
+					</div>
+				</div>
+			{% endif %}
+			{% if Calendar_year_view_content %}
+				<div class="calendar_month_content">
+				<table cellspacing="1" class="calendar">
+		    		<tbody>
+						{% for row in Months_row_element %}
+							<tr class="monthrow" >
+								{% for item in row.Months_cell_element %}
+									<td class="monthcell {{item.Current_month}}">
+										<span>
+											<a class="{{item.Current_month}} {{item.Month_with_events}}" {{item.Anchor}} onmouseover="{{item.On_mouseover_script}}" >{{item.Month_label}} {{item.Month_event_span}}</a>
+										</span>
+									</td>
+								{% endfor %}
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+				</div>
+			{% endif %}
+			{% if Calendar_year_view_footer %}
+				<div class="calendar_bottom">
+					<div class="calendar_bottom_inner">
+						<div class="calendar_prev">
+							<a onclick="{{Previous_year_onclick}}return false;" href="#">{{Previous_year_name}}</a>
+						</div>
+						<div class="calendar_next">
+							<a onclick="{{Next_year_onclick}}return false;" href="#">{{Next_year_name}}</a>
+						</div>
+					</div>
+				</div>
+			{% endif %}
+    	</div>
+	{% endif %}
+	
+
+	{% if Event_calendar_month_view %}
+		<div class="calendar_content">
+			{% if Calendar_month_view_title %}
+				<div class="calendar_title">
+					<h2>{{"_CALENDAR_TITLE"|trans}}</h2>
+				</div>
+			{% endif %}
+			{% if Calendar_month_view_header %}
+				<div class="calendar_header">
+					<div class="calendar_month">
+						<h2>{{Full_date}}</h2>
+					</div>
+				</div>
+			{% endif %}
+
+			{% if Calendar_month_view_content %}
+				<div class="calendar_month_content">
+				<table cellspacing="1" class="calendar">
+		    		<tbody>
+						{% if Table_header %}
+	    	    			<tr class="day_header">
+    	   				     	<td>{{Cal_day_1}}</td>
+    	   				     	<td>{{Cal_day_2}}</td>
+    	   				     	<td>{{Cal_day_3}}</td>
+    	   				     	<td>{{Cal_day_4}}</td>
+    	   				     	<td>{{Cal_day_5}}</td>
+    	   				     	<td>{{Cal_day_6}}</td>
+    	   				     	<td>{{Cal_day_7}}</td>
+       					 	</tr>
+						{% endif %}
+						{% for row in Days_row_element %}
+							<tr class="dayrow" >
+								{% for item in row.Days_cell_element %}
+									<td class="{{item.Td_day_class_name}}">
+										<span>
+											<a class="{{item.Day_class_name}}" {{item.Anchor}} onmouseover="{{item.On_mouseover_script}}" >{{item.Day_label}}  {{item.Day_event_span}}</a>
+										</span>
+									</td>
+								{% endfor %}
+							</tr>
+						{% endfor %}
+		    		</tbody>
+				</table>
+				</div>
+			{% endif %}
+
+			{% if Calendar_month_view_footer %}
+				<div class="calendar_bottom">
+					<div class="calendar_bottom_inner">
+						<div class="calendar_prev">
+							<a onclick="{{Previous_month_onclick}}return false;" href="#">{{Previous_month_name}}</a>
+						</div>
+						<div class="calendar_next">
+							<a onclick="{{Next_month_onclick}}return false;" href="#">{{Next_month_name}}</a>
+						</div>
+					</div>
+				</div>
+			{% endif %}
+		</div>
+	{% endif %}
+	
+
+	{% if EFrame %}
+		<div class="day_view">
+            <div class="day_view_wrap">
+   	    	     <div class="day_view_inner">
+    	    	    <div class="day_view_title">
+			            <h1>{{Date_of_event}}</h1>
+			            <!-- Show events in the window --> 
+			            {{Event_counter_class_in_window}}
+            		</div>
+            		<div class="day_view_events_list">
+            			<ul>
+							{% for event in Single_event %}
+								<li>
+									<div class="day_view_event">
+										{{event.StickyImage}}
+										<h3>
+											<a href="{{event.SUBDIR}}?cID={{event.Event_id}}&cType={{event.Content_type}}" target="_parent">{{event.Event_title}}</a>
+										</h3>
+										<p class="day_view_event_time"> {{event.Time_of_event}}</p>
+                                    	<p class="day_view_event_summary"> {{event.Event_summary}}</p>
+									</div>
+								</li>
+							{% endfor %}
+						</ul>
+    	        	</div>
+    	        </div>
+        	</div>
+ 		</div>
+	{% endif %}
+</div> 

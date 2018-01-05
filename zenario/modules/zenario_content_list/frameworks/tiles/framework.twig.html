@@ -1,0 +1,85 @@
+{% if RSS %}<?xml version="1.0" encoding="UTF-8" ?>
+	<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+		<channel>
+			<atom:link href="{{RSS_Link}}" rel="self" type="application/xml" />
+			<title>{{Title}}</title>
+			<link>{{Link}}</link>
+			<description>{{Description}}</description>
+			
+			{% for item in RSS_Item %}
+				<item>
+					<title>{{item.Title}}</title>
+					<description>{{item.Excerpt_Text}}</description>
+					<link>{{item.Full_Link}}</link>
+					<guid>{{item.Full_Link}}</guid>
+					{% if item.Language %}
+						<language>{{item.Language}}</language>
+					{% endif %}
+					{% if item.Date %}
+						<pubDate>{{item.Date}}</pubDate>
+					{% endif %}
+				</item>
+			{% endfor %}
+		</channel>
+	</rss>
+{% else %}
+
+	{% if Rows %}
+		{% if Show_RSS_Link %}
+			<div class="content_list_rss_link"><a href="{{RSS_Link}}"><span>{{'_RSS'|trans}}</span></a></div>
+		{% endif %}
+		{% if Show_Title %}
+			<{{Title_Tags}}>{{Title_With_Content}}</{{Title_Tags}}>
+		{% endif %}
+		<div class="content_list_listing">
+			{% for item in Row %}
+				<a {{item.Link}}{{item.Target_Blank}}>
+				<div class="content_list_data_row data_row_{{this.oddOrEven()}}">
+					{% if Show_Sticky_Image %}
+						<div class="sticky_image">
+							{{item.Sticky_Image}}
+						</div>
+					{% endif %}
+					<div class="content_list_text">
+						{% if Show_Item_Title %}
+							<h2 class="content_list_title {{item.Content_Type|e}}">
+								{{item.Title|e}}
+								{% if 'Language' in item%}<span>({{item.Language|e}})</span>{% endif %}
+							</h2>
+						{% endif %}
+						{% if Show_Author_Image %}
+							<div class="content_list_author_image">
+								<img alt="{{item.Author_Image_Alt|e}}" src="{{item.Author_Image_Src|e}}" width="{{item.Author_Image_Width|e}}" height="{{item.Author_Image_Height|e}}"/>
+							</div>
+						{% endif %}
+						{% if Show_Author %}
+							<p class="content_list_author">{{item.Author|e}}</p>
+						{% endif %}
+						{% if Show_Date %}
+							<p class="content_list_date">{{item.Date|e}}</p>
+						{% endif %}
+						{% if Show_Excerpt %}
+							<div class="content_list_excerpt">{{item.Excerpt_Text}}</div>
+						{% endif %}
+					</div>
+				</div>
+				</a>
+			{% endfor %}
+			{% if More %}
+				<a class="content_list_more_link" {{More_Link}}>{{More_Link_Title|e}}</a>
+			{% endif %}
+		</div>
+	{% endif %}
+	{% if No_Rows %}
+		{% if Show_No_Title %}
+			<{{Title_Tags}}>{{Title_With_No_Content|e}}</{{Title_Tags}}>
+		{% endif %}
+	{% endif %}
+	{% if Years %}
+		<form class="content_list_date_select">
+			{{'_PUBLISHED:'|trans}}
+		</form>
+	{% endif %}
+	{{Pagination}}
+
+{% endif %}

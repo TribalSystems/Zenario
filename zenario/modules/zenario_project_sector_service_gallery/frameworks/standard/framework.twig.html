@@ -1,0 +1,28 @@
+<div class="zenario_project_plocations_search">
+	<h1>Related Projects</h1>
+	<div class="project_plocations_search_results">
+		<div id="project_list" class="search_results_list">
+			{% if No_Rows %}
+			<div class="project_search_results_panel">{{"_NO_PROJECTS_FOUND"|trans}}</div>
+			{% endif %}
+		</div>
+                        <!--ListResults-start-->
+			<div class="project_search_results_panel" id="project_search_results_only_list">
+				<div class="project_search_results_listing">
+					{% if Results %}
+					<div id="{{html_id}}" class="project_result_item">
+						<h3>
+							{{project_link_start}}
+							    {{location}}
+							{{project_link_end}}
+						</h3>
+						<h4>{{client_name}}</h4>
+						<div class="content">{{Sticky_image_HTML_tag}} {{content_summary}}</div>
+					</div>
+					{% endif %}
+				</div>
+				{{Pagination}}
+			</div>
+                        <!--ListResults-end-->
+	</div>
+</div>

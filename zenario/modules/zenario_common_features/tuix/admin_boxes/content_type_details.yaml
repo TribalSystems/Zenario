@@ -1,0 +1,214 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_content_type_details:
+    key:
+        id: ""
+        idFromOrganizer: ''
+    identifier:
+        label: Content type
+    hide_tab_bar: true
+    tabs:
+        details:
+            edit_mode:
+                priv: _PRIV_EDIT_CONTENT_TYPE
+                enabled: true
+            fields:
+                module_id:
+                    label: 'Module:'
+                    readonly: true
+                    pick_items:
+                        path: zenario__modules/panels/modules
+                        target_path: zenario__modules/panels/modules
+                        min_path: zenario__modules/panels/modules
+                        max_path: zenario__modules/panels/modules
+                        disallow_refiners_looping_on_min_path: true
+                content_type_name_en:
+                    label: 'Name (singular):'
+                    type: text
+                    maxlength: "255"
+                    validation:
+                        required: Please enter a name.
+                content_type_plural_en:
+                    label: 'Name (plural):'
+                    type: text
+                    maxlength: "255"
+                default_layout_id:
+                    label: 'Default layout:'
+                    pick_items:
+                        path: ""
+                        #target_path: zenario__layouts/panels/layouts
+                        #min_path: zenario__layouts/panels/layouts
+                        #max_path: zenario__layouts/panels/layouts
+                        disallow_refiners_looping_on_min_path: true
+                        one_to_one_choose_phrase: Choose layout
+                        select_phrase: Select layout...
+                        hide_remove_button: true
+                
+                default_permissions:
+                    label: 'Default permissions for new content items:'
+                    type: radios
+                    values:
+                        public:
+                            label: Public, visible to everyone
+                        logged_in:
+                            label: Private, only show to extranet users who are logged in
+                
+                hide_private_item:
+                    label: 'Default privacy for new menu nodes:'
+                    type: select
+                    values:
+                        - 
+                            ord: 0
+                            label: Show to visitors and extranet users, even if the target content item is private
+                        - 
+                            ord: 1
+                            label: Obey the privacy setting of the content item
+                        - 
+                            ord: 2
+                            label: Show to visitors, hide from extranet users
+                        - 
+                            ord: 3
+                            label: Only show to extranet users
+                    side_note: >
+                        If the linked-to content item is private, you can control
+                        when the menu node is displayed.
+                
+                set_default_parent_menu_node:
+                    label: 'When creating, auto-attach to menu'
+                    type: checkbox
+                    side_note: |
+                        When a content item of this type is created, automatically attach it to the menu.
+                    redraw_onchange: true
+                default_menu_position:
+                    indent: 1
+                    hide_if_previous_outdented_value_isnt: 1
+                    label: 'Position:'
+                    pick_items:
+                        path: zenario__menu/panels/menu_position/refiners/create////
+                        min_path: zenario__menu/panels/menu_position
+                        disallow_refiners_looping_on_min_path: true
+                        select_phrase: Place menu node...
+                        hide_info_button: true
+                        visible_if_for_all_selected_items: |
+                            zenario.engToBoolean(item.parent_menu_id) &&
+                            ((zenario.engToBoolean(item.menu_id) && item.is_first) || zenario.engToBoolean(item.is_dummy_child))
+                    validation:
+                        required_if_not_hidden: |
+                            Please choose a parent menu node.
+                            (You cannot make new content items be automatically added to the top level of the site's navigation.)
+                
+                menu_node_position_edit:
+                    indent: 1
+                    hide_if_previous_outdented_value_isnt: 1
+                    label: 'Adminitrator override:'
+                    type: select
+                    values:
+                        suggest:
+                            label: Allow administrator to override
+                        force:
+                            label: Don't allow administrator to override
+                    value: force
+                    side_note: |
+                        Choose whether the auto-allocated menu position may be changed by the administrator.
+                
+                hide_menu_node:
+                    label: 'Invisible in menu navigation'
+                    type: checkbox
+                    side_note: |
+                        Make the auto-created menu node be invisible
+                        (will appear in a breadcrumb trail but not in the menu navigation).
+                
+                auto_flag_feature_image:
+                    label: 'Flag the first-uploaded image as feature image'
+                    type: checkbox
+                    value: 1
+                    side_note: |
+                        When a content item has a feature image, that image can appear on a content summary list.
+                        Check here to make the image first uploaded to a content item be made the feature image.
+                
+                enable_categories:
+                    label: 'Support for categories:'
+                    type: radios
+                    cols: 3
+                    value: 0
+                    values:
+                        enabled:
+                            label: Enabled
+                        disabled:
+                            label: Disabled
+                    side_note: |
+                        When enabled, administrator will be able to assign content items of this content type to categories.
+                        This is useful if you use a Content Summary List plugin, for example to make a list of recent news items.
+                description_field:
+                    label: 'Description field:'
+                    type: radios
+                    cols: 3
+                    values:
+                        optional:
+                            label: 'Enabled'
+                        mandatory:
+                            label: 'Mandatory'
+                        hidden:
+                            label: 'Disabled (not recommended)'
+                    side_note: |
+                        This allows administrators to enter a description meta tag for content items,
+                        which is useful for giving search engines information about the page. 
+                keywords_field:
+                    label: 'Keywords field:'
+                    type: radios
+                    cols: 3
+                    values:
+                        optional:
+                            label: 'Enabled'
+                        mandatory:
+                            label: 'Mandatory (not recommended)'
+                        hidden:
+                            label: Disabled
+                    side_note: |
+                        This allows administrators to enter a keywords meta tag for content items.
+                        Search engines usually disregard this meta tag, but it can help with on-site searching.
+                release_date_field:
+                    label: 'Release date field:'
+                    type: radios
+                    cols: 3
+                    values:
+                        optional:
+                            label: 'Enabled'
+                        mandatory:
+                            label: 'Mandatory'
+                        hidden:
+                            label: Disabled
+                    side_note: |
+                        This allows administrators to give content items a &quot;publication date&quot;.
+                        This will appear on the page itself and in a Content Summary List that lists the content item
+                        (subject to appropriate plugin settings).
+                        Recommended for news, blog or other date-sensitive content.
+                writer_field:
+                    label: 'Writer field:'
+                    type: radios
+                    cols: 3
+                    values:
+                        optional:
+                            label: 'Enabled'
+                        mandatory:
+                            label: 'Mandatory'
+                        hidden:
+                            label: Disabled
+                summary_field:
+                    label: 'Content summary:'
+                    type: radios
+                    cols: 3
+                    values:
+                        optional:
+                            label: 'Enabled'
+                        mandatory:
+                            label: 'Mandatory'
+                        hidden:
+                            label: Disabled
+                    redraw_onchange: true
+                enable_summary_auto_update:
+                    label: 'Enable auto-update of summaries'
+                    type: checkbox
+                    visible_if: "zenarioAB.value('summary_field') != 'hidden'"
+                    indent: 1
+                

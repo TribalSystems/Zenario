@@ -1,0 +1,130 @@
+.organizer_top_level_image.zenario_newsletter_newsletters_top_level {
+	background: url('../../../admin/images/sprites/org-icons-v5.png') no-repeat;
+	background-position: -57px -107px;
+}
+
+#zenario_at_top_left_menu .organizer_top_level_image.zenario_newsletter_newsletters_top_level,
+#organizer_leftColumn .legend_on a.zenario_newsletter_newsletters_top_level,
+.organizer_top_level_image.zenario_newsletter_newsletters_top_level:hover {
+	background-position: -107px -107px;
+}
+
+
+
+#rightColumn .zenario_newsletter_designs {
+	background: transparent url(images/list_newsletters_design_collection_icon.png) no-repeat scroll 0 0;
+}
+
+#rightColumn .zenario_newsletter_design {
+	background: transparent url(images/list_newsletters_design_icon.png) no-repeat scroll 0 0;
+}
+
+#rightColumn .zenario_newsletter_newsletters {
+	background: transparent url(images/list_newsletters_collection_icon.png) no-repeat scroll 0 0;
+}
+
+#rightColumn .zenario_newsletter_drafts {
+	background: transparent url(images/list_newsletters_draft_collection_icon.png) no-repeat scroll 0 0;
+}
+
+#rightColumn .zenario_newsletter_in_progress_newsletters {
+	background: transparent url(images/list_newsletters_inprogress_collection_icon.png) no-repeat scroll 0 0;
+}
+
+#rightColumn .zenario_newsletter_sent_newsletters {
+	background: transparent url(images/list_newsletters_sent_collection_icon.png) no-repeat scroll 0 0;
+}
+
+#rightColumn .zenario_newsletter_draft {
+	background: transparent url(images/list_newsletters_draft_icon.png) no-repeat scroll 0 0;
+}
+
+#rightColumn .zenario_newsletter_in_progress_newsletter {
+	background: transparent url(images/list_newsletters_inprogress_icon.png) no-repeat scroll 0 0;
+}
+
+#rightColumn .zenario_newsletter_sent_newsletter {
+	background: transparent url(images/list_newsletters_sent_icon.png) no-repeat scroll 0 0;
+}
+
+#rightColumn div.organizer_item .zenario_newsletter_designs {
+	background: transparent url(images/newsletter_design_collection_grid_icon.gif) no-repeat scroll 0 6px;
+}
+
+#rightColumn div.organizer_item .zenario_newsletter_design {
+	background: transparent url(images/newsletter_design_grid_icon.gif) no-repeat scroll 0 6px;
+}
+
+#rightColumn div.organizer_item .zenario_newsletter_newsletters {
+	background: transparent url(images/newsletter_collection_grid_icon.gif) no-repeat scroll 0 6px;
+}
+
+#rightColumn div.organizer_item .zenario_newsletter_drafts {
+	background: transparent url(images/newsletter_in_draft.gif) no-repeat scroll 0 6px;
+}
+
+#rightColumn div.organizer_item .zenario_newsletter_in_progress_newsletters {
+	background: transparent url(images/newsletter_in_progress.gif) no-repeat scroll 0 6px;
+}
+
+#rightColumn div.organizer_item .zenario_newsletter_sent_newsletters {
+	background: transparent url(images/newsletter_sent.gif) no-repeat scroll 0 6px;
+}
+
+#rightColumn div.organizer_item .zenario_newsletter_draft {
+	background: transparent url(images/newsletter_in_draft_grid_icon.gif) no-repeat scroll 0 6px;
+}
+
+#rightColumn div.organizer_item .zenario_newsletter_in_progress_newsletter {
+	background: transparent url(images/newsletter_in_progress_grid_icon.gif) no-repeat scroll 0 6px;
+}
+
+#rightColumn div.organizer_item .zenario_newsletter_sent_newsletter {
+	background: transparent url(images/newsletter_sent_grid_icon.gif) no-repeat scroll 0 6px;
+}
+
+
+
+
+#header .toolbar div.zenario_newsletter_use div {
+	background: url(images/use_newsletter_btn_off.gif) no-repeat 0 -2px;
+}
+
+#header .toolbar div.zenario_newsletter_use:hover div {
+	background: url(images/use_newsletter_btn_over.gif) no-repeat 0 -2px;
+}
+
+#header .toolbar div.zenario_newsletter_send div {
+	background: url(images/send_newsletter_btn_off.gif) no-repeat 0 -2px;
+}
+
+#header .toolbar div.zenario_newsletter_send:hover div {
+	background: url(images/send_newsletter_btn_over.gif) no-repeat 0 -2px;
+}
+
+
+
+
+.zenario_newsletter_log__failed {
+	height: 20px !important;
+	padding-left: 30px !important;
+	background-position: 5px 1px !important;
+	background-repeat: no-repeat !important;
+	background-image: url(images/failed_icon.png) !important;
+}
+
+.zenario_newsletter_log__not_yet_sent {
+	height: 20px !important;
+	padding-left: 30px !important;
+	background-position: 5px 1px !important;
+	background-repeat: no-repeat !important;
+	background-image: url(images/progress_icon.png) !important;
+}
+
+.zenario_newsletter_log__sent {
+	height: 20px !important;
+	padding-left: 30px !important;
+	background-position: 5px 1px !important;
+	background-repeat: no-repeat !important;
+	background-image: url(images/sent_icon.png) !important;
+}

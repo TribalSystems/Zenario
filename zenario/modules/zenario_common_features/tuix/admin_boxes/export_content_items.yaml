@@ -1,0 +1,28 @@
+# You must use a tab-size of 4 spaces to edit this file.
+zenario_export_content_items:
+    key:
+        id: ''
+        type: ''
+    title: Export
+    hide_tab_bar: Yes
+    save_button_message: Export
+    cancel_button_message: Cancel
+    max_height: 110
+    tabs:
+        download:
+            label: File
+            edit_mode:
+                enabled: true
+            fields:
+                type:
+                    label: 'Format:'
+                    type: radios
+                    values:
+                        csv: 'CSV'
+                        excel: 'Excel'
+                    value: csv
+                    validation:
+                        required: Please select a download format.
+    confirm:
+        download: true
+            

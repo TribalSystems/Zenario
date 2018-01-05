@@ -1,0 +1,59 @@
+zenario_export_user_responses:
+    priv: _PRIV_MANAGE_FORMS
+    key:
+        form_id: ''
+    title: Export user responses
+    hide_tab_bar: true
+    max_height: 300
+    save_button_message: Export
+    confirm:
+        download: true
+    tabs:
+        details:
+            label: 'Details'
+            edit_mode:
+                enabled: true
+            fields:
+                responses_to_export:
+                    label: 'Options:'
+                    type: radios
+                    values:
+                        all:
+                            ord: 1
+                            label: 'All responses'
+                        today:
+                            ord: 2
+                            label: 'Responses so far today'
+                        last_2_days:
+                            ord: 3
+                            label: 'Responses in the last 2 days'
+                        last_week:
+                            ord: 4
+                            label: 'Responses in the last week'
+                        specific_date_range:
+                            ord: 5
+                            label: 'Responses from specific date range..'
+                        from_id:
+                            ord: 6
+                            label: 'Responses from ID onwards..'
+                    value: all
+                    redraw_onchange: true
+                
+                date_from:
+                    label: 'From:'
+                    type: date
+                    visible_if: zenarioAB.value('responses_to_export') === 'specific_date_range'
+                    indent: 1
+                date_to:
+                    label: 'To:'
+                    type: date
+                    visible_if: zenarioAB.value('responses_to_export') === 'specific_date_range'
+                    indent: 1
+                response_id:
+                    label: 'Response ID:'
+                    type: text
+                    style: 'width:5em;'
+                    visible_if: zenarioAB.value('responses_to_export') === 'from_id'
+                    indent: 1
+                    side_note: |
+                        All responses with an ID equal to or greater than this value will be exported. There must be an actual response with this ID.

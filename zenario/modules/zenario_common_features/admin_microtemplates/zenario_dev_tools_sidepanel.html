@@ -1,0 +1,82 @@
+<% if (m.object.schema && m.object.schema.properties && typeof m.object.data == 'object') { %>
+	<div class="sidepanel_title">
+		<% if (m.object.parent && m.object.parent.schema && m.object.parent.schema.additionalProperties) { %>
+			<% if (!m.object.lastTag) { %>
+				 Documentation:
+			<% } else { %>
+				 "{{m.object.lastTag|escape}}" documentation:
+			<% } %>
+		<% } else { %>
+			<% if (!m.object.tag) { %>
+				 Documentation:
+			<% } else { %>
+				 "{{m.object.tag|escape}}" documentation:
+			<% } %>
+		<% } %>
+	</div>
+	
+	<% if (m.object.url) { %>
+		<div class="info">
+			<span><a target="_blank" href="{{m.object.url|escape}}">{{m.object.url.replace('http://', '')|escape}}</a></span>
+		</div>
+	<% } %>
+
+	<table id="properties_table" class="properties_table">
+		<tr>
+			<th>Property</th>
+			<th>Type</th>
+		</tr>
+		
+		<% for (var prop in m.object.schema.properties) { %>
+			
+			<% var mTooltip = {data: m.object.data[prop], isRequired: m.object.requiredProperties[prop], schema: m.object.schema.properties[prop], tag: prop}; %>
+			<% var tooltip = zenarioT.microTemplate('zenario_dev_tools_tooltip', mTooltip); %>
+			
+			<% if (mTooltip.data === undefined) { %>
+				<% if (mTooltip.isRequired) { %>
+					<tr title="{{tooltip|escape}}" class="property undefined_property required">
+						<td class="property_name">
+							<span>
+				<% } else { %>
+					<tr title="{{tooltip|escape}}" class="property undefined_property">
+						<td class="property_name">
+							<span>
+				<% } %>
+			<% } else { %>
+				<% if (mTooltip.isRequired) { %>
+					<tr title="{{tooltip|escape}}" class="property defined_property required">
+						<td class="property_name">
+							<span>
+				<% } else { %>
+					<tr title="{{tooltip|escape}}" class="property defined_property">
+						<td class="property_name">
+							<span>
+				<% } %>
+			<% } %>
+						<input type="text" readonly="readonly" value="{{prop|escape}}"/>
+					</span>
+				</td>
+				<td class="property_desc">
+					<div>
+						<% if (m.object.schema.properties[prop].additionalProperties && m.object.schema.properties[prop].additionalProperties.properties) { %>
+							Array of elements
+						
+						<% } else if (m.object.schema.properties[prop].additionalProperties && m.object.schema.properties[prop].additionalProperties.type) { %>
+							Array of {{m.object.schema.properties[prop].additionalProperties.type|escape}}
+						
+						<% } else if (m.object.schema.properties[prop].enum) { %>
+							<% if (typeof m.object.schema.properties[prop].enum == 'string') { %>
+								enum ({{m.object.schema.properties[prop].enum|escape}})
+							<% } else { %>
+								enum ({{m.object.schema.properties[prop].enum.join(', ')|escape}})
+							<% } %>
+						
+						<% } else { %>
+							{{m.object.schema.properties[prop].type|escape}}
+						<% } %>
+					</div>
+				</td>
+			</tr>
+		<% } %>
+	</table>
+<% } %>

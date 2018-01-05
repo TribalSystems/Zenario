@@ -1,0 +1,40 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+sections:
+    edit:
+        buttons:
+            export: &export
+                priv: _PRIV_EXPORT_CONTENT_ITEM
+                parent: action_dropdown
+                label: Export
+                tooltip: >
+                    Export|Download a file containing the text of this Content
+                    Item
+                admin_box:
+                    path: zenario_export_tools__export
+            import:
+                priv: _PRIV_IMPORT_CONTENT_ITEM
+                visible_if: |
+                    zenarioA.checkSpecificPermsOnThisPage()
+                parent: action_dropdown
+                label: Import
+                tooltip: >
+                    Import|Import a file containing new text for this Content
+                    Item
+                admin_box:
+                    path: zenario_export_tools__import
+            translate:
+                priv: _PRIV_IMPORT_CONTENT_ITEM
+                visible_if: |
+                    zenarioA.checkSpecificPermsOnThisPage()
+                parent: action_dropdown
+                label: Google Translate
+                tooltip: >
+                    Translate this Content Item|Translate this Content Item into
+                    a different language using Google Translate
+                admin_box:
+                    path: zenario_export_tools__google_translate
+    
+    restricted_editing:
+        buttons:
+            export: *export

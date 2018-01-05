@@ -1,0 +1,21 @@
+{% if mp3 %}
+
+<script type="text/javascript">  
+	AudioPlayer.embed("audioplayer_{{containerId}}", {  
+	soundFile: "{{mp3Path}}",
+	titles: "{{title}}",
+	initialvolume: "{{initialvolume}}",
+	autostart: "{{autostart}}",
+	remaining: "{{remaining}}",
+	animation: "{{animation}}",
+	loop: "{{loop}}",
+	rtl:"{{rtl}}"
+	});  
+</script>
+
+<div id="audio_container">
+	<div id="audioplayer_{{containerId}}">
+		<p>You need to install the lastest version of the Adobe Flash Player to listen to this audio. <br> <a href="http://get.adobe.com/flashplayer/">Download it from Adobe.</a></p>
+	</div>
+</div>
+{% endif %}

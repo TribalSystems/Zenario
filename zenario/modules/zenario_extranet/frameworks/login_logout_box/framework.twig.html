@@ -1,0 +1,30 @@
+{% if Redirect_Message %}
+	<p>{{Redirect_Message|e}}</p>
+{% endif %}
+
+<div class="extranet_wrap">
+	<div class="extranet_outer_wrap">
+		<div class="extranet_inner_wrap">
+			{% if Login %}
+				<div class="extranet_links">
+					{% if Login_Link_Section %}
+						<div><a {{Login_Link}}>{{"_LOGIN"|trans}}</a></div>
+					{% endif %}
+				</div>
+			{% endif %}
+			{% if Logged_In %}
+				{% if Welcome_Message_Section %}
+					<div class="extranet_welcome_text">{{Welcome_Message}}</div>
+				{% endif %}
+				<div class="extranet_links">
+					{% if Logout_Link_Section %}
+						<div>
+							<a {{Logout_Link}}>{{"_LOGOUT"|trans}}</a>
+						</div>
+					{% endif %}
+				</div>
+			{% endif %}
+
+		</div>
+	</div>
+</div>

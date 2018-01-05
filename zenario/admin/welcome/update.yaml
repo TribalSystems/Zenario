@@ -1,0 +1,37 @@
+update:
+    tab: 1
+    tabs:
+        1:
+            edit_mode:
+                enabled: true
+                on: true
+                always_on: true
+            fields:
+                description:
+                    full_width: true
+                    pre_field_html: |
+                        <h1>This site has had a software update</h1>
+                        <p>
+                    snippet:
+                        html: "&nbsp;"
+                    post_field_html: |
+                        </p>
+                why:
+                    pre_field_html: "What's being updated?"
+                    type: toggle
+                    format_onchange: true
+                    full_width: true
+                updates:
+                    full_width: true
+                    pre_field_html: |
+                        <div class="zenario_reason">
+                    snippet:
+                        html: "&nbsp;"
+                    post_field_html: |
+                        </div>
+                apply:
+                    value: Apply Updates
+                    type: submit
+                    full_width: true
+                    style: |
+                        float: right;

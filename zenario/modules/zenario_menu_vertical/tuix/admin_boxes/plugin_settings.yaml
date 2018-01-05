@@ -1,0 +1,38 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+plugin_settings:
+    tabs:
+        first_tab:
+            
+            # As this Module inherits the Plugin Settings of the Menu Module,
+            # we only need to list the names and default values of the Settings where
+            # we want the default values to be different.
+            
+            fields:
+                menu_start_from:
+                    plugin_setting:
+                        name: menu_start_from
+                    value: _MENU_LEVEL_2
+                menu_number_of_levels:
+                    plugin_setting:
+                        name: menu_number_of_levels
+                    value: "3"
+                menu_show_all_branches:
+                    plugin_setting:
+                        name: menu_show_all_branches
+                change_welcome_message:
+                    plugin_setting:
+                        name: change_welcome_message
+                    label: Customise welcome message
+                    type: checkbox
+                    format_onchange: true
+                welcome_message:
+                    plugin_setting:
+                        name: welcome_message
+                    type: text
+                    label: Welcome message
+                    visible_if: "zenarioAB.value('change_welcome_message')"
+                    value: "Welcome, [[first_name]] [[last_name]]"
+                    note_below: 'This is only relevent if the framework includes the merge field "welcome_message".'
+                    show_phrase_icon: true
+    module_class_name: zenario_menu_vertical

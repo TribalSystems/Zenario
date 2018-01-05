@@ -1,0 +1,79 @@
+<div class="zenario_project_plocations_search">
+	<h1>Project Locations</h1>
+	<div class="project_plocations_search_criteria">
+		{{Open_Form}}
+		<h2>{{"_PANEL_INTRO"|trans}}</h2>
+
+		{{"_CHOOSE_COUNTRY:"|trans}} {{this.frameworkField({'type': "select", 'class': "input_select", 'name': "country_id", 'source_method': "getCountryOptions", 'onchange': "this.form.region_id &&
+		(this.form.region_id.value=0);this.form.doSearch.click()"})}}
+
+		{% if HasRegions %} {{"_CHOOSE_REGION:"|trans}} {{this.frameworkField({'type': "select", 'class': "input_select", 'name': "region_id", 'source_method': "getRegionOptions", 'onchange': "this.form.doSearch.click()"})}} {% endif %} 
+
+		{{"_CHOOSE_SERVICE:"|trans}}
+		{{this.frameworkField({'type': "select", 'class': "input_select", 'name': "service_id", 'source_method': "getServicesOptions", 'onchange': "this.form.doSearch.click()"})}} {{"_CHOOSE_SECTOR:"|trans}} {{this.frameworkField({'type': "select", 'class': "input_select", 'name': "sector_id", 'source_method': "getSectorsOptions", 'onchange': "this.form.doSearch.click()"})}}
+		<div class="form_button">
+			<div class="nice_btn">
+				<div class="r">
+					<input type="submit" class="i" name="doSearch" value="Search" />
+				</div>
+			</div>
+		</div>
+		{{Close_Form}}
+	</div>
+	<div class="project_plocations_search_results">
+		<p>Choose the search criteria: by location, by service or by
+			sector.</p>
+		<div id="project_list" class="search_results_list">
+			{% if HasResults %}
+				<div class="project_search_results_tabs">
+					<ul>
+						<li class="tab_on">{{"_TAB_RESULTS_MAP"|trans}}</li>
+						<!--<li class="tab_map" onclick="showPanel('project_map','project_list');">Results by map</li>-->
+						<li class="tab_map">{{"_TAB_RESULTS_LISTING"|trans}}</li>
+					</ul>
+				</div>
+				<div class="project_search_results_panel">
+					<div id="map_canvas" style="width: 600px; height: 400px;"></div>
+				</div>
+			{% endif %}
+			{% if No_Rows %}
+				<div class="project_search_results_panel">{{"_NO_PROJECTS_FOUND"|trans}}</div>
+			{% endif %}
+		</div>
+		<div id="project_map" class="search_results_map">
+			<div class="project_search_results_tabs">
+				<ul>
+					<!--<li class="tab_list" onclick="showPanel('project_list','project_map');">Results by listing</li>-->
+					<li class="tab_list">{{"_TAB_RESULTS_MAP"|trans}}</li>
+					<li class="tab_on">{{"_TAB_RESULTS_LISTING"|trans}}</li>
+				</ul>
+			</div>
+                        <!--ListResults-start-->
+			<div class="project_search_results_panel" id="project_search_results_only_list">
+				<div class="project_search_results_listing">
+					{% for item in Results %}
+						<div id="{{item.html_id}}" class="project_result_item">
+							<h3>
+								{{item.location}}
+							</h3>
+							<h4>{{item.client_name}}</h4>
+							<div class="content">{{item.Sticky_image_HTML_tag}} {{item.content_summary}}</div>
+						</div>
+					{% endfor %}
+				</div>
+				{{Pagination}}
+			</div>
+                        <!--ListResults-end-->
+		</div>
+	</div>
+</div>
+
+<div id="map-info-window-template" style="display:none;">
+<div class="project_result_item">
+<h3>
+{{location}}
+</h3>
+<h4>{{client_name}}</h4>
+<div class="content">{{Sticky_image_HTML_tag}} {{content_summary}}</div>
+</div>
+</div>

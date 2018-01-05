@@ -1,0 +1,9 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__administration:
+    panels:
+        site_settings:
+            items:
+                zenario_content_notifications:
+                    name: Content notifications
+                    desc: Settings for content notifications.

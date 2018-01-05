@@ -1,0 +1,18 @@
+.zenario_news_ticker__default_style input[type='text'] {
+	width:94%;
+	height:40px;
+	line-height:40px;
+	padding:0 3%;
+	border:0;
+	-webkit-border-radius: 0;
+	-moz-border-radius: 0;
+	border-radius: 0;
+	color:#fff;
+	background:#364155;
+	font-size:0.867em;
+	text-transform:uppercase;
+}
+
+.zenario_news_ticker__default_style input.has_link {
+	cursor:pointer;
+}

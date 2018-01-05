@@ -1,0 +1,30 @@
+zenario_export_access_log:
+    key:
+        filename: ''
+        tag_id: ''
+        user_id: ''
+    title: Export
+    download: true
+    hide_tab_bar: true
+    save_button_message: Export
+    cancel_button_message: Cancel
+    max_height: 160
+    
+    tabs:
+        details:
+            label: Details
+            edit_mode:
+                enabled: true
+            fields:
+                desc:
+                    snippet:
+                        html: ''
+                format:
+                    label: 'Format:'
+                    type: radios
+                    values:
+                        csv: 'CSV'
+                        excel: 'Excel'
+                    value: csv
+                    validation:
+                        required: Please select a download format.

@@ -1,0 +1,20 @@
+<div class="extranet_wrap">
+    <div class="extranet_outer_wrap">
+        <div class="extranet_inner_wrap">
+            
+            {% if Message_Display %}
+                <div class="extranet_message">{{Message}}</div>
+            {% endif %}
+            
+            {% if Login %}
+		<h1>{{"_LOGGED_OUT"|trans}}</h1>
+                <div class="extranet_links">
+                    {% if Login_Link_Section %}
+                        <div><a {{Login_Link}}>{{"_LOGIN"|trans}}</a></div>
+                    {% endif %}
+                </div>
+            {% endif %} 
+            
+        </div>
+    </div>
+</div>

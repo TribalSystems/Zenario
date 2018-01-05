@@ -1,0 +1,53 @@
+site_settings:
+	setting_group: zenario_user_forms__site_settings_group
+	title: |
+		Settings for Forms
+	tabs:
+		zenario_user_forms_emails:
+			label: Emails
+			edit_mode:
+				enabled: Yes
+			fields:
+				zenario_user_forms_admin_email_attachments:
+					site_setting:
+						name: zenario_user_forms_admin_email_attachments
+					label: 'When sending response emails to administrators, attach uploaded files'
+					type: checkbox
+					side_note: |
+						Emails sent to administrators will include attachments. If not set, administrators will need to log in to Zenario to retrieve uploads.
+		zenario_user_forms_profanity_filter:
+			label:  Profanity filter
+			edit_mode:
+				enabled: Yes
+			fields:
+				zenario_user_forms_set_profanity_filter:
+					site_setting:
+						name: zenario_user_forms_set_profanity_filter
+					label: 'Enable profanity filtering'
+					row_class: sub_field
+					type: checkbox
+					side_note: |
+						Check this box if you would like to enable profanity filtering on text fields in forms. If this is checked a new property will be available in the form properties section of the forms.
+					redraw_onchange: true
+					disabled: false
+				zenario_user_forms_set_profanity_tolerence:
+					site_setting:
+						name: zenario_user_forms_set_profanity_tolerence
+					label: 'Tolerance level:'
+					type: select
+					values:
+						5:
+							ord: 0
+							label: Low
+						10:
+							ord: 1
+							label: Medium
+						15:
+							ord: 2
+							label: High
+					value: 5
+					side_note: |
+						You can set the tolerance level of profanity which will be allowed. Setting a higher tolerance can allow offensive swear words to be emailed.
+					visible_if: |
+						zenarioAB.value('zenario_user_forms_set_profanity_filter')
+					disabled: false

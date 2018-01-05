@@ -1,0 +1,153 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+author_name: Tribal Systems
+copyright_info: © Tribal Limited
+editions: Community, Pro, ProBusiness, Enterprise
+start_running_on_install: false
+license_info: 'Modified BSD License'
+is_abstract: true
+fill_organizer_nav: true
+display_name: Common Features
+description: |
+    <p>This Module provides all the standard features for Zenario.</p>
+            <p>
+                All of the administrative interfaces for the standard functionality of your Zenario 
+                installation are defined in this Module including Content, the Menu, Categories, 
+                Templates, Layouts, languages, images, movies, Users, Modules, Administration, 
+                the Dropbox, Settings, Backups, and URLs.
+            </p>
+            <p>This Module defines interfaces including the Storekeeper panels, the Admin Boxes and the Admin Toolbar. </p>
+category: core
+vlp_class_name: zenario_common_features
+content_types:
+    content_type:
+        content_type_id: html
+        content_type_name_en: HTML page
+        content_type_plural_en: HTML pages
+        enable_summary_auto_update: No
+        description_field: optional
+        keywords_field: hidden
+        summary_field: optional
+        release_date_field: optional
+special_pages:
+    zenario_home:
+        page_type: zenario_home
+        default_alias: home
+        default_title: Home
+        default_content: |
+            <h1>Welcome to your new Zenario site!</h1>
+            <p>Congratulations, you have just installed your new Zenario site.</p>
+            <p>You may add another page by clicking "Menu" on the Admin Toolbar, then clicking a yellow icon with the "star" symbol. When you do this, you can create an HTML web page content item and a menu node linking to it.</p>
+            <p>Content items will be visible to administrators only until published. Click on the "Publish" button to make them visible to regular site visitors.</p>
+            <p>You will also need to make your site visible to visitors by enabling it
+                in Organizer, in the
+                <a href="zenario/admin/organizer.php#zenario__administration/panels/site_settings//site_disabled">Configuration -&gt; Site settings</a>
+                section.
+            </p>
+            <p>You can get support and downloads at <a href="http://zenar.io" target="_blank">http://zenar.io</a>.</p>
+            <p>We hope you enjoy using Zenario.</p>
+        menu_title: Home
+        footer_menu_title: Home
+        logic: create_and_maintain_in_all_languages
+        layout: Home page
+    zenario_not_found:
+        page_type: zenario_not_found
+        default_alias: not-found
+        default_title: Not Found
+        default_content: |
+            <h1>Error 404: Page or CMS Item Not Found</h1>
+                            <p>The requested Item was not found on this server or may not be accessed.</p>
+        publish: Yes
+        logic: create_and_maintain_in_default_language
+    zenario_no_access:
+        page_type: zenario_no_access
+        default_alias: no-access
+        default_title: No Access
+        default_content: |
+            <h1>Access Permission Denied (401)</h1>
+                            <p>Sorry, you have tried to access an item that requires a higher level of permissions than you currently possess.</p>
+        publish: Yes
+        logic: create_and_maintain_in_default_language
+    zenario_example_page:
+        page_type: zenario_example_page
+        default_alias: second-page
+        default_title: Second page
+        default_content: |
+            <h1>This is a simple content page</h1>
+            
+            <p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis
+                dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla consequat massa quis enim.
+                Donec pede justo, fringilla vel, aliquet nec, vulputate eget, arcu.</p>
+
+            <p>In enim justo, rhoncus ut, imperdiet a, venenatis vitae, justo. Nullam dictum felis eu pede mollis pretium. Integer tincidunt. Cras dapibus.
+                Vivamus elementum semper nisi. Aenean vulputate eleifend tellus. Aenean leo ligula, porttitor eu, consequat vitae, eleifend ac, enim.
+                Aliquam lorem ante, dapibus in, viverra quis, feugiat a, tellus.</p>
+
+            <p>Phasellus viverra nulla ut metus varius laoreet. Quisque rutrum. Aenean imperdiet. Etiam ultricies nisi vel augue. Curabitur ullamcorper
+                ultricies nisi. Nam eget dui. Etiam rhoncus. Maecenas tempus, tellus eget condimentum rhoncus, sem quam semper libero, sit amet adipiscing
+                sem neque sed ipsum. Nam quam nunc, blandit vel, luctus pulvinar, hendrerit id, lorem. Maecenas nec odio et ante tincidunt tempus.
+                Donec vitae sapien ut libero venenatis faucibus. Nullam quis ante. Etiam sit amet orci eget eros faucibus tincidunt. Duis leo. Sed fringilla
+                mauris sit amet nibh. Donec sodales sagittis magna.</p>
+            
+            <h2>This is a simple content page</h2>
+            
+            <p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis
+                dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla consequat massa quis enim.
+                Donec pede justo, fringilla vel, aliquet nec, vulputate eget, arcu.</p>
+
+            <p>In enim justo, rhoncus ut, imperdiet a, venenatis vitae, justo. Nullam dictum felis eu pede mollis pretium. Integer tincidunt. Cras dapibus.
+                Vivamus elementum semper nisi. Aenean vulputate eleifend tellus. Aenean leo ligula, porttitor eu, consequat vitae, eleifend ac, enim.
+                Aliquam lorem ante, dapibus in, viverra quis, feugiat a, tellus.</p>
+
+            <p>Phasellus viverra nulla ut metus varius laoreet. Quisque rutrum. Aenean imperdiet. Etiam ultricies nisi vel augue. Curabitur ullamcorper
+                ultricies nisi. Nam eget dui. Etiam rhoncus. Maecenas tempus, tellus eget condimentum rhoncus, sem quam semper libero, sit amet adipiscing
+                sem neque sed ipsum. Nam quam nunc, blandit vel, luctus pulvinar, hendrerit id, lorem. Maecenas nec odio et ante tincidunt tempus.
+                Donec vitae sapien ut libero venenatis faucibus. Nullam quis ante. Etiam sit amet orci eget eros faucibus tincidunt. Duis leo. Sed fringilla
+                mauris sit amet nibh. Donec sodales sagittis magna.</p>
+        menu_title: Second page
+        logic: create_in_default_language_on_install
+pagination_types:
+    pagSelectList:
+        function_name: pagSelectList
+        label: Select list
+    pagCurrentWithNP:
+        function_name: pagCurrentWithNP
+        label: Current page number with Next/Previous
+    pagCurrentWithFNPL:
+        function_name: pagCurrentWithFNPL
+        label: Current page number with First/Next/Previous/Last
+    pagAll:
+        function_name: pagAll
+        label: All page numbers
+    pagAllWithNPIfNeeded:
+        function_name: pagAllWithNPIfNeeded
+        label: All page numbers with Next/Previous if needed
+    pagCloseWithNPIfNeeded:
+        function_name: pagCloseWithNPIfNeeded
+        label: Nearby page numbers with Next/Previous if needed
+    pagCloseWithNP:
+        function_name: pagCloseWithNP
+        label: Nearby page numbers with Next/Previous
+    pagCloseWithFNPLIfNeeded:
+        function_name: pagCloseWithFNPLIfNeeded
+        label: Nearby page numbers with First/Next/Previous/Last if needed
+    pagCloseWithFNPL:
+        function_name: pagCloseWithFNPL
+        label: Nearby page numbers with First/Next/Previous/Last
+jobs:
+    job:
+        name: jobPublishContent
+        static: Yes
+        months: jan,feb,mar,apr,may,jun,jul,aug,sep,oct,nov,dec
+        days: mon,tue,wed,thr,fri,sat,sun
+        hours: >
+            0h,1h,2h,3h,4h,5h,6h,7h,8h,9h,10h,11h,12h,13h,14h,15h,16h,17h,18h,19h,20h,21h,22h,23h
+        minutes: 0m,5m,10m,15m,20m,25m,30m,35m,40m,45m,50m,55m,59m
+        log_on_action: Yes
+        log_on_no_action: No
+        email_on_action: No
+        email_on_no_action: No
+centralised_lists:
+    -
+        method_name: getSalutations
+        label: Salutations

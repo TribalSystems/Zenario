@@ -1,0 +1,63 @@
+zenario__email_template_manager:
+    panels:
+        newsletter_templates:
+            title: Newsletter templates
+            view_mode: list
+            no_items_message: No newsletter templates have been created.
+            db_items:
+                table: |
+                    [[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_templates AS nt
+                id_column: nt.id
+            columns:
+                id:
+                    title: ID
+                    format: id
+                    db_column: nt.id
+                    searchable: Yes
+                    show_by_default: No
+                    width: xxsmall
+                    right_align: true
+                name:
+                    title: Name
+                    db_column: nt.name
+                    searchable: Yes
+                    show_by_default: Yes
+                    width: xlarge
+                date_created:
+                    title: Date created
+                    db_column: nt.date_created
+                    show_by_default: No
+                    format: datetime
+                date_modified:
+                    title: Date modified
+                    db_column: nt.date_modified
+                    show_by_default: No
+                    format: datetime
+            collection_buttons:
+                create:
+                    priv: _PRIV_EDIT_NEWSLETTER
+                    css_class: zenario_create_a_new
+                    hide_on_filter: true
+                    label: Create a newsletter template
+                    admin_box:
+                        path: zenario_newsletter_template
+                    hide_in_select_mode: true
+            item_buttons:
+                edit:
+                    label: Edit newsletter template
+                    admin_box:
+                        path: zenario_newsletter_template
+                    hide_in_select_mode: true
+                delete:
+                    label: Delete
+                    multiple_select: Yes
+                    ajax:
+                        confirm:
+                            message: 'Are you sure you wish to delete the newsletter template "[[name]]"?'
+                            multiple_select_message: Are you sure you wish to delete these newsletter templates?
+                            button_message: Delete
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            delete: "1"
+                    hide_in_select_mode: true

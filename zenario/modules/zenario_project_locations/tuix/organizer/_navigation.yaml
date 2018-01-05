@@ -1,0 +1,15 @@
+zenario__projects: 
+    priv: _PRIV_VIEW_PROJECT_LOCATIONS
+    css_class: Projects_top_level
+    label: Development Projects
+    tooltip: Create and manage development projects for displaying on a map or listing to visitors
+    nav: 
+        projects: 
+            label: Projects
+        project_sectors: 
+            label: Sectors
+        project_services: 
+            label: Services
+        images: 
+            label: Images
+            hidden: Yes

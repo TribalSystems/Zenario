@@ -1,0 +1,83 @@
+---
+get:
+  summary: |
+    A shortcut to the PHP $_GET variable.
+  desc: |
+    <h2>Description</h2>
+    <p>A shortcut to the PHP&nbsp;<code>$_GET</code>&nbsp;variable.</p>
+    <h2>Short for</h2>
+    <pre>isset($_GET[$name])? $_GET[$name] : false</pre>
+    <p><span class="Apple-style-span" style="color: #007fa3; font-family: TeXGyreAdventor, arial, verdana, sans-serif; font-size: 16px; font-weight: bold;">Where You Can Use It</span></p>
+    <p>From Zenario 7.0.0 onwards.</p>
+ifNull:
+  summary: |
+    Takes up to three inputs, and returns the first that evaluates to true.
+    Available in both PHP and JavaScript.
+  desc: |
+    <h2>Description</h2>
+    <p>Takes up to three inputs, and returns the first that evaluates to true.</p>
+    <p>Available in both PHP and JavaScript.</p>
+    <h2>Where You Can Use It</h2>
+    <p>The PHP version is available from Zenario 7.0.0 onwards.</p>
+    <p>The JavaScript version is available from 5.2.4 onwards.</p>
+    <h2>Shortcut for</h2>
+    <pre>$a? $a : ($b? $b : $c)<br /></pre>
+post:
+  summary: |
+    A shortcut to the PHP $_POST variable.
+  desc: |
+    <h2>Description</h2>
+    <p>A shortcut to the PHP <code>$_POST</code> variable.</p>
+    <h2>Short for</h2>
+    <pre>isset($_POST[$name])? $_POST[$name] : false<br /></pre>
+    <h2>Where You Can Use It</h2>
+    <p>From Zenario 7.0.0 onwards.</p>
+request:
+  summary: |
+    A shortcut to the PHP $_REQUEST variable.
+  desc: |
+    <h2>Description</h2>
+    <p>A shortcut to the PHP <code>$_REQUEST</code> variable.</p>
+    <h2>Short for</h2>
+    <pre>isset($_REQUEST[$name])? $_REQUEST[$name] : false<br /></pre>
+    <h2>Where You Can Use It</h2>
+    <p>From Zenario 7.0.0 onwards.</p>
+session:
+  summary: |
+    A shortcut to the PHP $_SESSION variable.
+  desc: |
+    <h2>Description</h2>
+    <p>A shortcut to the PHP <code>$_SESSION</code> variable.</p>
+    <h2>Short for</h2>
+    <pre>isset($_SESSION[$name])? $_SESSION[$name] : false<br /></pre>
+    <h2>Where You Can Use It</h2>
+    <p>From Zenario 7.0.0 onwards.</p>
+SimpleXMLString:
+  summary: |
+    Takes a string, and attempts to convert it into a SimpleXMLElement object.
+  desc: |
+    <h2>Summary</h2>
+    <p>Takes a string, and attempts to convert it into a <code>SimpleXMLElement</code> object.</p>
+    <h2>Where You Can Use It</h2>
+    <p>Can be used in methods called by plugins. From Zenario 7.0.0 onwards.</p>
+    <h2>Description</h2>
+    <p>A shortcut function to PHP's <code>SimpleXMLElement</code> functionality.</p>
+    <h2>Parameters</h2>
+    <h3><code>&amp;$string</code></h3>
+    <p style="margin-left: 40px;">A variable that contains an XML string.</p>
+    <h2>Return Value</h2>
+    <p>A <code>SimpleXMLElement</code>, or false on failure.</p>
+    <h2>Example</h2>
+    <pre>$xml = file_get_contents($file);
+    $obj = SimpleXMLString($xml);
+    </pre>
+sqlQuery:
+  summary: |
+    A shortcut to the sqlSelect() and sqlUpdate() functions.
+  desc: |
+    <h2>Description</h2>
+    <p>A shortcut&nbsp;to the <span class="code">sqlSelect()</span> and&nbsp;<span class="code">sqlUpdate()</span>&nbsp;functions.</p>
+    <h2>Where You Can Use It</h2>
+    <p>From Zenario 7.0.0 onwards.</p>
+    <h2>Summary</h2>
+    <p>If you enter a&nbsp;SQL query, this function&nbsp;will call either <span class="code">sqlSelect()</span>&nbsp;or&nbsp;<span class="code">sqlUpdate()</span>&nbsp;depending on whether it looks&nbsp;like a select or an update statement.</p>

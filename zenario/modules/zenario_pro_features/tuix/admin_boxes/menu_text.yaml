@@ -1,0 +1,15 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_menu_text:
+    priv: _PRIV_EDIT_MENU_TEXT
+    tabs:
+        text:
+            fields:
+                zenario_pro_features__invisible:
+                    ord: 4000
+                    label: 'Invisible in menu navigation'
+                    type: checkbox
+                    format_onchange: true
+                    side_note: >
+                        If invisible, menu text will appear in breadcrumb trail
+                        only.

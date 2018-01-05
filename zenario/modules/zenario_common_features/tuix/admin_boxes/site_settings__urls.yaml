@@ -1,0 +1,120 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+site_settings:
+    setting_group: urls
+    title: Editing settings for URLs
+    tabs:
+        urls:
+            label: URLs
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_SITE_SETTING
+                on: No
+            fields:
+                description:
+                    full_width: true
+                    snippet:
+                        html: >
+                            This tab contains settings for generating URLs for the pages
+                            on your site.
+                mod_rewrite_enabled:
+                    site_setting:
+                        name: mod_rewrite_enabled
+                    label: 'Use friendly URLs'
+                    type: checkbox
+                    value: ""
+                    redraw_onchange: true
+                    note_below: |
+                        Turn this on if your Apache installation has support for mod_rewrite and is configured with rewrite rules.
+                        This may improve search engine optimization.
+                        <br/>
+                        Please see <a href="http://zenar.io/search-engine-friendly-urls.html" target="_blank">zenar.io/search-engine-friendly-urls.html</a>
+                        for more information.
+                mod_rewrite_suffix:
+                    site_setting:
+                        name: mod_rewrite_suffix
+                    visible_if: |
+                        zenarioAB.value('mod_rewrite_enabled')
+                    label: 'mod_rewrite Suffix:'
+                    type: select
+                    value: ""
+                    empty_value: '-- No Suffix --'
+                    note_below: |
+                        An optional suffix which every friendly URL will have.
+                        Internal links created by the CMS will have this suffix.
+                mod_rewrite_slashes:
+                    site_setting:
+                        name: mod_rewrite_slashes
+                    visible_if: |
+                        zenarioAB.value('mod_rewrite_enabled')
+                    label: 'Show menu structure in friendly URLs'
+                    type: checkbox
+                    value: ''
+                    redraw_onchange: true
+                    note_below: |
+                        Enabling this option will cause the menu structure to appear
+                        as a folder-structure in the friendly URLs.
+                        This may further improve search engine optimization.
+                        
+                translations_different_aliases:
+                    visible_if: |
+                        zenarioA.multipleLanguagesEnabled()
+                    site_setting:
+                        name: translations_different_aliases
+                    label: 'Aliases:'
+                    type: select
+                    empty_value: Content items in a translation chain have the same alias
+                    values:
+                        1: Content items in a translation chain may have different aliases
+                    value: "1"
+                    note_below: |
+                        This setting is not retroactive;
+                        existing aliases will not be affected when you change it.
+                        
+                translations_hide_language_code:
+                    visible_if: |
+                        zenarioA.multipleLanguagesEnabled()
+                        && !zenarioAB.value('mod_rewrite_slashes')
+                    site_setting:
+                        name: translations_hide_language_code
+                    full_width: true
+                    type: select
+                    empty_value: Always add the language code
+                    values:
+                        1: Hide the language code if possible
+                    value: "1"
+                note_a:
+                    visible_if: |
+                        zenarioA.multipleLanguagesEnabled()
+                        && !zenarioAB.value('mod_rewrite_slashes')
+                    same_row: true
+                    snippet:
+                        html: ''
+                    note_below: >
+                        If shown, the language code will be added after the alias using a comma,
+                        e.g.: example.com/pagename,en
+                note_b:
+                    visible_if: |
+                        zenarioA.multipleLanguagesEnabled()
+                        && zenarioAB.value('mod_rewrite_slashes')
+                    same_row: true
+                    snippet:
+                        html: ''
+                    note_below: >
+                        The language code will always be added before the alias using a slash,
+                        e.g.: example.com/en/pagename
+                note_c:
+                    same_row: true
+                    snippet:
+                        html: ''
+                    note_below: >
+                        For the languages that have a language-specific domain name,
+                        the domain will be used to show the language instead,
+                        e.g.: en.example.com/pagename
+                note_d:
+                    same_row: true
+                    snippet:
+                        html: ''
+                    note_below: >
+                        Your language-specific domain names will be used to show the language,
+                        e.g.: en.example.com/pagename

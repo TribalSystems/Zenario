@@ -1,0 +1,25 @@
+site_settings:
+    setting_group: email
+    tabs:
+        email:
+            fields:
+                period_to_delete_the_email_template_sending_log: 
+                    site_setting:
+                        name: period_to_delete_the_email_template_sending_log
+                    label: "Delete data from sent email log:"
+                    type: select
+                    values: 
+                        "7": 
+                            label: Delete data older than 7 days
+                            ord: "1"
+                        "30": 
+                            label: Delete data older than 1 month
+                            ord: "2"
+                        "90": 
+                            label: Delete data older than 3 months
+                            ord: "3"
+                        "365": 
+                            label: Delete data older than 1 year
+                            ord: "4"
+                    empty_value: "Never delete"
+                    note_below: "Warning: Data older than specified period will be permanently deleted when the next sent email is logged."

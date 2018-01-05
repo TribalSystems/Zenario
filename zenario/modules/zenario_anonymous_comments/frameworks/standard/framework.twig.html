@@ -1,0 +1,472 @@
+{% if Slot %}
+	{% if Rows %}
+		{% if Show_Title %}
+			<h1>{{Title_With_Content}}</h1>
+		{% endif %}
+		<table cellspacing="0"><tr>
+			<td class="tl"></td><td class="tc"></td><td class="xt"></td><td class="tc"></td><td class="xt"></td><td class="tc"></td><td class="xt"></td><td class="tc"></td><td class="xt"></td><td class="tc"></td><td class="tr"></td>
+		</tr><tr>
+			<th class="ml"></th><th class="mc first_column">
+				{{"_FORUM"|trans}}
+			</th><th class="xm"></th><th class="mc">
+				{{"_THREADS"|trans}}
+			</th><th class="xm"></th><th class="mc">
+				{{"_POSTS"|trans}}
+			</th><th class="xm"></th><th class="mc">
+				{{"_LAST_POST"|trans}}
+			</th><th class="mr"></th>
+		{% for item in Row %}
+			</tr><tr>
+				<td class="xl"></td><td class="xc"></td><td class="x"></td><td class="xc"></td><td class="x"></td><td class="xc"></td><td class="x"></td><td class="xc"></td><td class="x"></td><td class="xc"></td><td class="xr"></td>
+			</tr><tr class="{{this.oddOrEven()}}">
+				<td class="ml"></td><td class="mc thread_title first_column">
+					{% if item.Show_Sticky_Image %}
+						<div class="sticky_image">
+							<a {{item.Link}} class="{{item.Status_Class}}">
+								{{item.Sticky_Image}}
+							</a>
+						</div>
+					{% endif %}
+					<h2><a {{item.Link}} class="{{item.Status_Class}}">{{item.Title}}</a></h2>
+					{% if item.Show_Excerpt %}
+						<div class="forum_excerpt">{{item.Excerpt_Text}}</div>
+					{% endif %}
+				</td><td class="xm"></td><td class="mc topics">
+					{{item.Thread_Count}}
+				</td><td class="xm"></td><td class="mc replies">
+					{{item.Post_Count}}
+				</td><td class="xm"></td><td class="mc">
+					{{item.Updated_By_On}}
+				</td><td class="mr"></td>
+		{% endfor %}
+		</tr><tr>
+			<td class="bl"></td><td class="bc"></td><td class="xb"></td><td class="bc"></td><td class="xb"></td><td class="bc"></td><td class="xb"></td><td class="bc"></td><td class="xb"></td><td class="bc"></td><td class="br"></td>
+		</tr></table>
+	{% endif %}
+	{% if No_Rows %}
+	{% endif %}
+	{% if Years %}
+	{% endif %}
+{% endif %}
+
+
+
+{% if Threads %}
+	{% if Subscribed_To_Forum %}
+		<div class="subscribed forum_message">{{'_SUBSCRIBED_TO_FORUM'|trans}}</div>
+	{% endif %}
+	<table cellspacing="0"><tr>
+		<td class="tl"></td><td class="tc"></td><td class="xt"></td><td class="tc"></td><td class="xt"></td><td class="tc"></td><td class="xt"></td><td class="tc"></td><td class="xt"></td><td class="tc"></td><td class="tr"></td>
+	</tr><tr>
+		<th class="ml"></th><th class="mc title_thread_title first_column">
+			{{"_THREAD_TITLE"|trans}}
+		</th><th class="xm"></th><th class="mc title_poster">
+			{{"_THREAD_POSTER"|trans}}
+		</th><th class="xm"></th><th class="mc title_replies">
+			{{"_REPLIES"|trans}}
+		</th><th class="xm"></th><th class="mc title_updated">
+			{{"_LAST_POST"|trans}}
+		</th><th class="mr"></th>
+	{% for item in Thread %}
+	</tr><tr>
+		<td class="xl"></td><td class="xc"></td><td class="x"></td><td class="xc"></td><td class="x"></td><td class="xc"></td><td class="x"></td><td class="xc"></td><td class="x"></td><td class="xc"></td><td class="xr"></td>
+	</tr><tr class="{{this.oddOrEven()}} {{item.Employee}}">
+		<td class="ml"></td><td class="mc thread_title first_column">
+			<h2><a href="{{item.Hyperlink}}" class="{{item.Status_Class}}">{{item.Title}}</a></h2>
+		</td><td class="xm"></td><td class="mc poster">
+			{{item.Posted_By}}
+		</td><td class="xm"></td><td class="mc replies">
+			{{item.Replies_Count}}
+		</td><td class="xm"></td><td class="mc updated">
+			{{item.Updated_By_On}}
+		</td><td class="mr"></td>
+	{% endfor %}
+	</tr><tr>
+		<td class="bl"></td><td class="bc"></td><td class="xb"></td><td class="bc"></td><td class="xb"></td><td class="bc"></td><td class="xb"></td><td class="bc"></td><td class="xb"></td><td class="bc"></td><td class="br"></td>
+	</tr></table>
+	
+	{% if Confirmation_Box %}
+		{{Open_Form}}
+			<div class="confirmation_box">
+			<div class="confirmation_box_inner"><div class="confirmation_box_wrap">
+				<div class="top"><div class="tl"></div><div class="tr"></div></div>
+				<div class="confirmation_box_center">
+		
+					<div class="question_icon"></div>	
+						
+					<div class="post_area">
+						{{Confirmation_Message}}
+					</div>
+					
+					<div class="buttons">
+						<div class="control_btn"><div class="r"><a class="i" {{Cancel_Link}}>{{'_CANCEL'|trans}}</a></div></div>
+						<div class="control_btn"><div class="r"><input class="i" type="submit" value="{{Submit_Button_Text}}" /></div></div>
+					</div>
+				
+				</div>
+				</div>
+				<div class="bottom"><div class="bl"></div><div class="br"></div></div>
+			</div></div>
+		{{Close_Form}}
+	{% endif %}
+	
+	{{Pagination}}
+	
+	{% if Thread_Controls %}
+		<div class="buttons">
+			{% if Forum_Login_To_Post %}
+				<div class="main_btn"><div class="r"><a class="i" {{Login_To_Post_Link}}>{{'_PLEASE_LOGIN_TO_POST'|trans}}</a></div></div>
+			{% endif %}
+			{% if Add_New_Thread %}
+				<div class="main_btn"><div class="r"><a class="i" {{Add_New_Thread_Link}}>{{'_ADD_THREAD'|trans}}</a></div></div>
+			{% endif %}
+			{% if Forum_Profile_Link %}
+				<div class="main_btn"><div class="r"><p>{{Forum_Profile_Link}}</p></div></div>
+			{% endif %}
+		</div>
+		
+		<div class="buttons moderators_buttons">
+			{% if Login_To_Subs_Forum %}
+				<div class="main_btn"><div class="r"><a class="i" {{Login_To_Post_Link}}>{{'_PLEASE_LOGIN_TO_SUBS_FORUM'|trans}}</a></div></div>
+			{% endif %}
+			{% if Subs_To_Forum %}
+				<div class="main_btn"><div class="r"><a class="i" {{Subs_To_Forum_Link}}>{{'_SUBS_TO_FORUM'|trans}}</a></div></div>
+			{% endif %}
+			{% if Unsubs_To_Forum %}
+				<div class="forum_btn"><div class="r"><a class="i" {{Unsubs_To_Forum_Link}}>{{'_UNSUBS_TO_FORUM'|trans}}</a></div></div>
+			{% endif %}
+		</div>
+		<div class="buttons users_buttons">
+			{% if Forum_Locked %}
+				<div class="forum_btn"><div class="r"><a class="i">{{'_FORUM_LOCKED'|trans}}</a></div></div>
+			{% endif %}
+			{% if Mark_Forum_Read %}
+				<div class="forum_btn"><div class="r"><a class="i" {{Mark_Forum_Read_Link}}>{{'_MARK_FORUM_READ'|trans}}</a></div></div>
+			{% endif %}
+		</div>
+	{% endif %}
+{% endif %}
+
+
+{% if Posts %}
+	{% if Subscribed_To_Thread %}
+		<div class="subscribed forum_message">{{'_SUBSCRIBED_TO_THREAD'|trans}}</div>
+	{% endif %}
+  <div class="{{Post_Class}}">
+	{% if Search %}
+		{{Search.Open_Form}}
+			{{this.frameworkField({'type': "text", 'name': "searchString", 'class': "search_term"})}}
+			<input type="submit" value="{{'_SEARCH'|trans}}" class="search_button" />
+		{{Search.Close_Form}}
+	{% endif %}
+	
+	{% if Search_No_Results %}
+		<div class="search_no_results">
+			<p>{{"_SEARCH_RETURNED_NO_RESULTS"|trans}}</p>
+		</div>
+	{% endif %}
+	
+	<a name="zenario_comments_start_here"></a>
+	{% for item in Post %}
+		{% if item.Show_Thread_Title_With_Link %}
+			<h1>
+				{% if item.Show_Forum_Title_With_Link %}
+					<a href="{{item.Forum_Link}}">{{item.Forum_Title}}</a>
+					-&gt;
+				{% endif %}
+				<a href="{{item.Thread_Link}}">{{item.Thread_Title}}</a>
+			</h1>
+		{% endif %}
+		<div class="{{this.oddOrEven()}} {{item.Employee}}">
+			<div class="comments_box_inner"><div class="comments_box_wrap">
+			<div class="top"><div class="tl"></div><div class="tr"></div></div>
+			<div class="comments_box_center">
+				<div class="user_info">
+					<div class="user_info_avatar">
+						{% if item.Show_Avatar %}
+							<img class="avatar" src="{{item.Src}}" width="{{item.Width}}" height="{{item.Height}}" alt="{{item.Username}}" />
+						{% endif %}
+						{% if No_Avatar %}
+							<div class="no_avatar"></div>
+						{% endif %}
+					</div>
+					<div class="user_info_data">
+						<div class="username">{{item.Username_Link}}</div>
+						<div class="username email">{{item.Email}}</div>
+						{% if item.Show_User_Title %}
+							<div class="title">{{item.Title}}</div>
+						{% endif %}
+						{% if item.Show_Online %}
+							<div class="online">{{"_ONLINE"|trans}}</div>
+						{% endif %}
+						{% if item.Show_Offline %}
+							<div class="offline">{{"_OFFLINE"|trans}}</div>
+						{% endif %}
+						{% if item.Show_Post_Count %}
+							<div class="post_count">{{item.Post_Count}}</div>
+						{% endif %}
+						{% if item.Show_Join_Date %}
+							<div class="join_date">{{item.Join_Date}}</div>
+						{% endif %}
+					</div>
+				</div>
+				
+				<div class="date_posted">{{item.Date_Posted}}
+					{% if item.Pending_Post %}
+						<span style="color:red;">{{"_POST_PENDING_INFO"|trans}}</span>
+					{% endif %}
+				</div>
+				<div class="post_area">{{item.Post_Text}}</div>
+				
+				<div class="post_images">
+					{% for file in item.Post_Uploads_Links %}
+					<div class="banner_image" >
+						<a href="{{file.File_Link}}"
+							{% if file.File_Thumbnail %}
+								rel="colorbox-forum-{{file.Post_Id}}" class="enlarge_in_fancy_box cboxElement" data-box-title="{{file.Caption}}"
+							{% endif %}
+						>
+						{% if file.File_Thumbnail %}
+							<img src='{{file.File_Thumbnail}}'>
+							<span class="banner_image_zoom" title="{{'_ENLARGE_THIS_IMAGE'|trans}}">{{'_ENLARGE_THIS_IMAGE'|trans}}</span>
+						{% endif %}
+						({{file.File_Extension}}) {{file.Caption}}</a><br />
+					</div>
+					{% endfor %}
+				</div>
+				
+				
+				{% if item.Post_Controls %}
+					<div class="buttons">
+					{% if item.Quote_Post %}
+						<div class="quote_button control_btn"><div class="r"><a class="i" {{item.Quote_Post_Link}}>{{"_QUOTE_POST"|trans}}</a></div></div>
+					{% endif %}
+					{% if item.Edit_Post %}
+						<div class="edit_button control_btn"><div class="r"><a class="i" {{item.Edit_Post_Link}}>{{"_EDIT_POST"|trans}}</a></div></div>
+					{% endif %}
+					{% if item.Delete_Post %}
+						<div class="delete_button control_btn"><div class="r"><a class="i" {{item.Delete_Post_Link}}>{{"_DELETE_POST"|trans}}</a></div></div>
+					{% endif %}
+					{% if item.Approve_Post %}
+						<div class="aprove_button control_btn"><div class="r"><a class="i" {{item.Approve_Post_Link}}>{{"_APPROVE_POST"|trans}}</a></div></div>
+					{% endif %}
+					{% if item.Report_Post %}
+						<div class="report_button control_btn"><div class="r"><a class="i" {{item.Report_Post_Link}}>{{"_REPORT_POST"|trans}}</a></div></div>
+					{% endif %}
+					</div>
+				{% endif %}
+			</div>
+			<div class="bottom"><div class="bl"></div><div class="br"></div></div>
+		  </div></div>
+		</div>
+	{% endfor %}
+	{% if Post_Message %}
+		{% if Post_Errors %}
+			<div class="confirmation_box post_errors">
+			<div class="confirmation_box_inner"><div class="confirmation_box_wrap">
+				<div class="top"><div class="tl"></div><div class="tr"></div></div>
+				<div class="confirmation_box_center">
+		
+					<div class="question_icon post_error_icon"></div>	
+					
+					<div class="post_error_padding">&nbsp;</div>	
+					
+					{% for item in Post_Error %}
+						<div class="post_area post_error">
+							{{item.Error}}
+						</div>
+					{% endfor %}
+					
+					<div class="post_error_padding">&nbsp;</div>	
+				</div>
+				</div>
+				<div class="bottom"><div class="bl"></div><div class="br"></div></div>
+			</div></div>
+			<div class="post_error_padding">&nbsp;</div>	
+		{% endif %}
+			
+		{{Post_Message.Open_Form}}
+			{% if Show_Post_Title %}
+				<div class="comments_label">{{Post_Message.Title_Text}}</div>
+				<div class="comments_post_title">{{Post_Message.Post_Title}}</div>
+			{% endif %}
+			{% if Show_Post_Name %}
+				<div class="comments_label">{{"_NAME:"|trans}}</div>
+				<div class="comments_post_title comments_post_name">{{Post_Name}}</div>
+			{% endif %}
+			{% if Show_Post_Email %}
+				<div class="comments_label">{{"_EMAIL:"|trans}}</div>
+				<div class="comments_post_title comments_post_email">{{Post_Email}}</div>
+			{% endif %}
+			
+			<div class="comments_form"><div class="comments_box_inner"><div class="comments_box_wrap">
+				<div class="top"><div class="tl"></div><div class="tr"></div></div>
+				<div class="comments_box_center">
+					
+					<div class="user_info">
+						{% if Post_Message.Posting_Show_Avatar %}
+							<img class="avatar" src="{{Post_Message.Src}}" width="{{Post_Message.Width}}" height="{{Post_Message.Height}}" alt="{{Post_Message.Username}}" />
+						{% endif %}
+						{% if Post_Message.Posting_No_Avatar %}
+							<div class="no_avatar"></div>
+						{% endif %}
+						<div class="username">{{Post_Message.Username_Link}}</div>
+						<div class="username email">{{Post_Message.Email}}</div>
+						{% if Post_Message.Posting_Show_Title %}
+							<div class="title">{{Post_Message.Title}}</div>
+						{% endif %}
+						{% if Post_Message.Posting_Show_Online %}
+							<div class="online">{{"_ONLINE"|trans}}</div>
+						{% endif %}
+						{% if Post_Message.Posting_Show_Offline %}
+							<div class="offline">{{"_OFFLINE"|trans}}</div>
+						{% endif %}
+						{% if Post_Message.Posting_Show_Post_Count %}
+							<div class="post_count">{{Post_Message.Post_Count}}</div>
+						{% endif %}
+						{% if Post_Message.Posting_Show_Join_Date %}
+							<div class="join_date">{{Post_Message.Join_Date}}</div>
+						{% endif %}
+					</div>
+					
+					<div class="comments_label">{{Post_Message.Label_Text}}</div>
+		
+					{{Post_Message.Post_Text}}
+					
+					
+					{% if Show_File_Uploads %}  
+						<div class="comments_files_upload">
+							{% if Post_Uploads_Links_To_Edit %}
+								<div class="comments_file_to_upload">
+									<div class="uploaded_image"><a href='{{File_Link}}'><img src='{{File_Thumbnail}}'></a> </div>
+									<div class="uploaded_image_options">
+										<div><label>{{"_FILE_CAPTION"|trans}}</label> <input type='text' name='file_caption_{{File_Id}}' value='{{Caption}}'></div>
+										<div><label>{{"_DELETE_FILE"|trans}}</label> <input type='checkbox' name='remove_files[]' value='{{File_Id}}'></div>
+									</div>
+								</div>
+							{% endif %}
+						</div>
+						
+						<div class="comments_files_upload_form">
+							<label>{{"_UPLOAD_NEW_IMAGE"|trans}}</label><input name="filesToUpload[]" type="file" multiple="multiple" />
+						</div>
+					{% endif %}
+					
+					{% if Captcha %}
+						<div class="label">{{"_CAPTCHA:"|trans}}</div>
+						{{Captcha}}
+					{% endif %}
+					
+					<div class="buttons">
+						<div class="main_btn"><div class="r"><input class="i" type="submit" value="{{Post_Message.Submit_Button_Text}}" /></div></div>
+						<div class="main_btn"><div class="r"><a class="i" {{Post_Message.Cancel_Link}}>{{'_CANCEL'|trans}}</a></div></div>
+					</div>
+				</div>
+				<div class="bottom"><div class="bl"></div><div class="br"></div></div>
+			</div></div></div>
+			
+			{% if Show_Post_Screening_Notice %}
+				<div class="comments_label comments_screening_notice">{{"_POST_SCREENING_NOTICE"|trans}}</div>
+			{% endif %}
+		{{Post_Message.Close_Form}}
+	{% endif %}
+	{% if Confirmation_Box %}
+		{{Confirmation_Box.Open_Form}}
+			<div class="confirmation_box">
+			<div class="confirmation_box_inner"><div class="confirmation_box_wrap">
+				<div class="top"><div class="tl"></div><div class="tr"></div></div>
+				<div class="confirmation_box_center">
+		
+					<div class="question_icon"></div>	
+						
+					<div class="post_area">
+						{{Confirmation_Box.Confirmation_Message}}
+					</div>
+					
+					<div class="buttons">
+						<div class="control_btn"><div class="r"><a class="i" {{Confirmation_Box.Cancel_Link}}>{{'_CANCEL'|trans}}</a></div></div>
+						<div class="control_btn"><div class="r"><input class="i" type="submit" value="{{Confirmation_Box.Submit_Button_Text}}" /></div></div>
+					</div>
+				
+				</div>
+				</div>
+				<div class="bottom"><div class="bl"></div><div class="br"></div></div>
+			</div></div>
+		{{Confirmation_Box.Close_Form}}
+	{% endif %}
+	
+	{{Pagination}}
+	
+	<div class="buttons">
+		{% if Add_Reply %}
+			<div class="{{this.oddOrEven()}} comments_description">
+				<div class="comments_box_inner"><div class="comments_box_wrap">
+					<div class="top"><div class="tl"></div><div class="tr"></div></div>
+					<div class="comments_box_center">
+						<div class="comments_description_text">
+							<p>{{"_ADD_MESSAGE_DESCRIPTION"|trans}}</p>
+							<div class="main_btn"><div class="r"><a class="i" {{Add_Reply_Link}}">{{'_ADD_REPLY'|trans}}</a></div></div>
+								<br />&nbsp;
+						</div>
+					</div>
+					<div class="bottom"><div class="bl"></div><div class="br"></div></div>
+				</div></div>
+			</div>
+		{% endif %}
+		{% if Comments_Profile_Link %}
+			<div class="{{this.oddOrEven()}} comments_description">
+				<div class="comments_box_inner"><div class="comments_box_wrap">
+					<div class="comments_box_center">
+						<div class="comments_description_text">
+							<p>{{Comments_Profile_Link}}</p>
+						</div>
+					</div>
+				</div></div>
+			</div>
+		{% endif %}
+		{% if Login_To_Post %}
+			<div class="{{this.oddOrEven()}} comments_description">
+				<div class="comments_box_inner"><div class="comments_box_wrap">
+					<div class="top"><div class="tl"></div><div class="tr"></div></div>
+					<div class="comments_box_center">
+						<div class="comments_description_text">
+							<p>{{"_LOGIN_DESCRIPTION"|trans}}</p>
+							<div class="main_btn"><div class="r"><a class="i" {{Login_To_Post_Link}}>{{'_PLEASE_LOGIN_TO_POST'|trans}}</a></div></div>
+							<br />&nbsp;
+						</div>
+					</div>
+					<div class="bottom"><div class="bl"></div><div class="br"></div></div>
+				</div></div>
+			</div>
+		{% endif %}
+		<div class="moderators_buttons">
+			{% if Login_To_Subs_To_Thread %}
+				<div class="main_btn"><div class="r"><a class="i" {{Login_To_Post_Link}}">{{'_PLEASE_LOGIN_TO_SUBS'|trans}}</a></div></div>
+			{% endif %}
+			{% if Subs_To_Thread %}
+				<div class="main_btn"><div class="r"><a class="i" {{Subs_To_Thread_Link}}">{{'_SUBS_TO_THREAD'|trans}}</a></div></div>
+			{% endif %}
+			{% if Unsubs_To_Thread %}
+				<div class="forum_btn"><div class="r"><a class="i" {{Unsubs_To_Thread_Link}}">{{'_UNSUBS_TO_THREAD'|trans}}</a></div></div>
+			{% endif %}
+			{% if Thread_Locked %}
+				<div class="forum_btn"><div class="r"><a class="i">{{'_THREAD_LOCKED'|trans}}</a></div></div>
+			{% endif %}
+		</div>
+		<div class="users_buttons">
+			{% if Lock_Thread %}
+				<div class="forum_btn"><div class="r"><a class="i" {{Lock_Thread_Link}}">{{'_LOCK_THREAD'|trans}}</a></div></div>
+			{% endif %}
+			{% if Unlock_Thread %}
+				<div class="forum_btn"><div class="r"><a class="i" {{Unlock_Thread_Link}}">{{'_UNLOCK_THREAD'|trans}}</a></div></div>
+			{% endif %}
+			{% if Move_Thread %}
+				<div class="forum_btn"><div class="r"><a class="i" {{Move_Thread_Link}}>{{'_MOVE_THREAD'|trans}}</a></div></div>
+			{% endif %}	
+			{% if Delete_Thread %}
+				<div class="forum_btn"><div class="r"><a class="i" {{Delete_Thread_Link}}">{{'_DELETE_THREAD'|trans}}</a></div></div>
+			{% endif %}	
+		</div>
+	</div>
+  </div>
+{% endif %}

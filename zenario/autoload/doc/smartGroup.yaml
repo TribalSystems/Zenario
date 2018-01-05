@@ -1,0 +1,15 @@
+---
+isUserIn:
+  summary: |
+    Checks whether an extranet user is in a given smart group.
+  desc: |
+    <h2>Description</h2>
+    <p>Checks whether an extranet user is in a given smart group.</p>
+    <h2>Parameters</h2>
+    <h3><code>$smartGroupId</code></h3>
+    <p style="margin-left: 40px;">The id of a smart group.</p>
+    <h3><code>$userId</code></h3>
+    <p style="margin-left: 40px;">The id of a user. If this is not specified then it will default to the currently logged in user.</p>
+    <h2>Return Value</h2>
+    <p>Returns whether the user is in the group.</p>
+    <p>If <span class="code">$userId</span> was not&nbsp;specified and the current visitor is not logged in, then it will always return <span class="code">false</span>.</p>

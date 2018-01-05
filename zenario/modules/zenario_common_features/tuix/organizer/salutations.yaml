@@ -1,0 +1,48 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__languages:
+    panels:
+        salutations:
+            title: Salutations
+            no_items_message: No salutations have been defined
+            panel_type: list
+            db_items:
+                table: '[[DB_NAME_PREFIX]]lov_salutations AS l'
+                id_column: l.id
+            columns:
+                name:
+                    title: Salutation
+                    db_column: l.name
+                    always_show: true
+                    searchable: true
+                    width: xlarge
+            default_sort_column: name
+            item:
+                css_class: zenario_forum__forum
+            collection_buttons:
+                create:
+                    tooltip: Define a new salutation
+                    css_class: zenario_create_a_new
+                    hide_on_filter: true
+                    label: Create
+                    admin_box:
+                        path: zenario_salutation
+                        create_another: true
+            item_buttons:
+                edit:
+                    tooltip: Edit salutation
+                    label: Edit
+                    admin_box:
+                        path: zenario_salutation
+                delete:
+                    multiple_select: true
+                    label: Delete
+                    ajax:
+                        request:
+                            delete: 1
+                        confirm:
+                            message: 'Are you sure you wish to delete the salutation "[[name]]"?'
+                            multiple_select_message: Are you sure you wish to delete the selected salutations?
+                            button_message: Delete
+                            cancel_button_message: Cancel
+                            message_type: warning

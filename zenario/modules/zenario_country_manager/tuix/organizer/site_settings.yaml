@@ -1,0 +1,7 @@
+zenario__administration:
+    panels:
+        site_settings:
+            items:
+                zenario_country_manager__site_settings_group:
+                    name: Countries and regions
+                    desc: How countries, regions (and potentially states and cities) work on this site.

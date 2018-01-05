@@ -1,0 +1,465 @@
+install:
+    tab: 0
+    tabs:
+        0:
+            edit_mode:
+                enabled: true
+                on: true
+                always_on: true
+            fields:
+                blurb:
+                    full_width: true
+                    snippet:
+                        html: |
+                            <h1>Welcome to Zenario</h1>
+                            <p>It looks like the CMS has not yet been installed at this location.</p>
+                why:
+                    pre_field_html: "Why?"
+                    type: toggle
+                    redraw_onchange: true
+                    full_width: true
+                    visible_if: "zenarioAW.togglePressed(1, tuixObject)"
+                reason:
+                    full_width: true
+                    pre_field_html: |  
+                        <div class="zenario_reason">
+                    snippet:
+                        html: "&nbsp;"
+                    post_field_html: |
+                        </div>
+                    visible_if: zenarioAW.togglePressed()
+                next:
+                    value: Begin Installation
+                    type: submit
+                    class: begin_installation
+                    full_width: true
+        1:
+            edit_mode:
+                enabled: true
+                on: true
+                always_on: true
+            fields:
+                blurb:
+                    full_width: true
+                    snippet:
+                        html: |
+                            <h1>Step 1: License</h1>
+                            <p>Please read the following carefully:</p>
+                license:
+                    pre_field_html: |
+                        <pre style="
+                            height: 225px;
+                            overflow-x: hidden;
+                            overflow-y: scroll;
+                            padding: 3px;
+                        ">
+                    full_width: true
+                    snippet:
+                        url: ""
+                        cache: true
+                    post_field_html: "</pre>"
+                i_agree:
+                    type: checkbox
+                    full_width: true
+                    post_field_html: |
+                        <label for="i_agree">
+                            I agree to the license
+                        </label>
+                    note_below: |
+                        Zenario comes bundled with several third-party software libraries, under the 
+                            <a href="http://opensource.org/licenses/Apache-2.0" target="_blank">
+                                Apache</a>,
+                            <a href="http://opensource.org/licenses/BSD-3-Clause" target="_blank">
+                                BSD</a>,
+                            <a href="http://opensource.org/licenses/LGPL-2.1" target="_blank">
+                                LGPL</a>,
+                            <a href="http://opensource.org/licenses/MIT" target="_blank">
+                                MIT</a> and
+                            <a href="http://opensource.org/licenses/OFL-1.1" target="_blank">
+                                OFL</a>
+                        open source licenses.
+                        You may only copy, modify or redistribute each library under the terms of its license.
+                    redraw_onchange: true
+                blurb2:
+                    full_width: true
+                    snippet:
+                        html: |
+                            <h1>Installation Method</h1>
+                            <p>To get your site running you may either perform a fresh install or restore from a backup
+                                that you have previously taken.</p>
+                fresh_install:
+                    value: Fresh Install
+                    type: submit
+                    full_width: true
+                    disabled_if: |
+                        !zenarioAW.value('i_agree')
+                restore:
+                    value: Restore from Backup
+                    type: submit
+                    same_row: true
+                    disabled_if: |
+                        !zenarioAW.value('i_agree')
+        3:
+            edit_mode:
+                enabled: true
+                on: true
+                always_on: true
+            fields:
+                description:
+                    full_width: true
+                    snippet:
+                        html: |
+                            <h1>Step 2: Database</h1>
+                            <p>Please enter information about your database.</p>
+                host:
+                    label: "Host, and optional port number:"
+                    type: text
+                    value: localhost
+                    row_class: row_form
+                    return_key_presses_button: next
+                port:
+                    same_row: true
+                    #label: "Database port number:"
+                    type: text
+                    placeholder: 3306
+                    #note_below: 'You can leave this blank to use the default value'
+                    return_key_presses_button: next
+                name:
+                    label: "Database Name:"
+                    type: text
+                    row_class: row_form
+                    return_key_presses_button: next
+                user:
+                    label: "Database User:"
+                    type: text
+                    row_class: row_form
+                    return_key_presses_button: next
+                password:
+                    label: "Password:"
+                    type: password
+                    row_class: row_form
+                    return_key_presses_button: next
+                prefix:
+                    label: "Table Prefix:"
+                    type: text
+                    row_class: row_form
+                    return_key_presses_button: next
+                previous:
+                    value: Back
+                    type: submit
+                    full_width: true
+                    style: |
+                        float: left;
+                next:
+                    value: Next
+                    type: submit
+                    same_row: true
+                    style: |
+                        float: right;
+            show_errors_after_field: description
+        4:
+            edit_mode:
+                enabled: true
+                on: true
+                always_on: true
+            fields:
+                description:
+                    full_width: true
+                    snippet:
+                        html: |
+                            <h1>Step 3: Your Site's Content</h1>
+                            <p>
+                                Please choose the initial language, date format and skin of your site.
+                            </p>
+                
+                # Old code for sample sites, commented out as we don't currently use them
+                #sample:
+                #    full_width: true
+                #    type: radios
+                #    row_class: row_form
+                #    value: "0"
+                
+                language_id:
+                    label: 'Primary website language:'
+                    type: select
+                    empty_value: ' -- None -- '
+                    value: 'en-us'
+                
+                vis_date_format_short:
+                    site_setting:
+                        name: vis_date_format_short
+                    label: 'Short date format:'
+                    type: select
+                    value: '%e/%c/%Y'
+                    values:
+                        '%e/%c/%y':
+                            label: ''
+                        '%e/%c/%Y':
+                            label: ''
+                        '%d/%m/%y':
+                            label: ''
+                        '%d/%m/%Y':
+                            label: ''
+#                       '%e.%c.%Y':
+#                           label: ''
+                        '%d.%m.%Y':
+                            label: ''
+#                       '%d-%m-%y':
+#                           label: ''
+#                       '%d-%m-%Y':
+#                           label: ''
+                        '%c/%e/%y':
+                            label: ''
+                        '%c/%e/%Y':
+                            label: ''
+#                       '%c/%d/%y':
+#                           label: ''
+                        '%m/%d/%y':
+                            label: ''
+                        '%m/%d/%Y':
+                            label: ''
+#                       '%Y/%m/%d':
+#                           label: ''
+#                       '%Y.%m.%d':
+#                           label: ''
+                        '%Y-%m-%d':
+                            label: ''
+                    validation:
+                        required: Please enter a short date format.
+                vis_date_format_med:
+                    site_setting:
+                        name: vis_date_format_med
+                    label: 'Medium date format:'
+                    type: select
+                    value: '%e [[_MONTH_SHORT_%m]] %Y'
+                    values:
+                        '%e [[_MONTH_SHORT_%m]] %y':
+                            label: ''
+                        '%e [[_MONTH_SHORT_%m]] %Y':
+                            label: ''
+                        '[[_MONTH_SHORT_%m]] %e, %Y':
+                            label: ''
+                    validation:
+                        required: Please enter a medium date format.
+                vis_date_format_long:
+                    site_setting:
+                        name: vis_date_format_long
+                    label: 'Long date format:'
+                    type: select
+                    value: '[[_WEEKDAY_%w]] %D [[_MONTH_LONG_%m]] %Y'
+                    values:
+                        '%D [[_MONTH_LONG_%m]] %Y':
+                            label: ''
+                        '[[_MONTH_LONG_%m]] %D, %Y':
+                            label: ''
+                        '[[_WEEKDAY_%w]] %D [[_MONTH_LONG_%m]] %Y':
+                            label: ''
+                        '[[_WEEKDAY_%w]] [[_MONTH_LONG_%m]] %D, %Y':
+                            label: ''
+                    note_below: >
+                        Month and day names will be translated into your site's language.
+                
+                theme:
+                    #full_width: true
+                    label: 'Skin:'
+                    pre_field_html: |
+                        <div class="horizontal_scroll">
+                            <div>
+                    type: radios
+                    value: duke_street
+                    post_field_html: |
+                        </div></div>
+                previous:
+                    value: Back
+                    type: submit
+                    full_width: true
+                    style: |
+                        float: left;
+                next:
+                    value: Next
+                    type: submit
+                    same_row: true
+                    style: |
+                        float: right;
+            show_errors_after_field: description
+        5:
+            edit_mode:
+                enabled: true
+                on: true
+                always_on: true
+            fields:
+                description:
+                    full_width: true
+                    snippet:
+                        html: |
+                            <h1>Step 4: Your Admin Account</h1>
+                            <p>Please enter your details so we can make your first administrator account.</p>
+                first_name:
+                    label: "Your First Name:"
+                    type: text
+                    row_class: row_form
+                    return_key_presses_button: next
+                last_name:
+                    label: "Your Last Name:"
+                    type: text
+                    row_class: row_form
+                    return_key_presses_button: next
+                email:
+                    label: "Your Email:"
+                    type: text
+                    row_class: row_form
+                    return_key_presses_button: next
+                username:
+                    label: "Choose a Username:"
+                    type: text
+                    row_class: row_form
+                    return_key_presses_button: next
+                password:
+                    label: "Choose a Password:"
+                    type: password
+                    onkeyup: zenarioAW.quickValidateWelcomePage(300);
+                    row_class: row_form
+                    return_key_presses_button: next
+                password_strength:
+                    same_row: true
+                    snippet:
+                        html: "&nbsp;"
+                re_password:
+                    label: "Re-enter your Password:"
+                    type: password
+                    row_class: row_form
+                    return_key_presses_button: next
+                previous:
+                    value: Back
+                    type: submit
+                    full_width: true
+                    style: |
+                        float: left;
+                next:
+                    value: Next
+                    type: submit
+                    same_row: true
+                    style: |
+                        float: right;
+            show_errors_after_field: description
+        6:
+            edit_mode:
+                enabled: true
+                on: true
+                always_on: true
+            fields:
+                description:
+                    full_width: true
+                    snippet:
+                        html: |
+                            <h1>Step 3: Support email address</h1>
+                            <p>Please enter an email address for receiving notification of system errors and database errors.</p>
+                email:
+                    label: "Support email address:"
+                    type: text
+                    row_class: row_form
+                    return_key_presses_button: next
+                description2:
+                    full_width: true
+                    snippet:
+                        html: |
+                            <h1>Step 4: Restore a Backup</h1>
+                            <p>Please enter the path and filename of a backup file to restore.</p>
+                path:
+                    label: "Path:"
+                    type: text
+                    row_class: row_form
+                    onkeyup: zenarioAW.quickValidateWelcomePage(500);
+                    return_key_presses_button: next
+                path_status:
+                    full_width: true
+                    snippet:
+                        pre_field_html: |
+                            <div style="text-align: right;">
+                        html: "&nbsp;"
+                        post_field_html: |
+                            </div>
+                previous:
+                    value: Back
+                    type: submit
+                    full_width: true
+                    style: |
+                        float: left;
+                next:
+                    value: Next
+                    type: submit
+                    same_row: true
+                    style: |
+                        float: right;
+            show_errors_after_field: description
+        7:
+            edit_mode:
+                enabled: true
+                on: true
+                always_on: true
+            fields:
+                description:
+                    full_width: true
+                    snippet:
+                        html: |
+                            <h1>Step 5: Site Configuration File</h1>
+                            <p>
+                                The following file is necessary for Zenario to run,
+                                and this installer can either write the file for you
+                                (subject to necessary permissions),
+                                or you may populate the file yourself
+                                (by copying the text shown in the box below):
+                            </p>
+                zenario_siteconfig:
+                    type: textarea
+                    row_class: row_form
+                    full_width: true
+                    readonly: readonly
+                previous:
+                    value: Back
+                    type: submit
+                    full_width: true
+                    style: |
+                        float: left;
+                do_it_for_me:
+                    value: Do it for me
+                    type: submit
+                    same_row: true
+                    style: |
+                        float: right;
+                    onclick: "zenarioA.nowDoingSomething('installing');"
+                ive_done_it:
+                    value: "I've done it myself"
+                    type: submit
+                    same_row: true
+                    style: |
+                        float: right;
+                    onclick: "zenarioA.nowDoingSomething('installing');"
+            show_errors_after_field: description
+        8:
+            edit_mode:
+                enabled: true
+                on: true
+                always_on: true
+            fields:
+                description:
+                    full_width: true
+                    snippet:
+                        html: |
+                            <h1>Step 6: Installation</h1>
+                            <p>We're sorry, but it looks like something went wrong there.</p>
+                            <p>You can try the installation again, or go back and change your settings.</p>
+                previous:
+                    value: Back
+                    type: submit
+                    full_width: true
+                    style: |
+                        float: left;
+                try_again:
+                    value: Check Again
+                    type: submit
+                    same_row: true
+                    style: |
+                        float: right;
+                    onclick: "zenarioA.nowDoingSomething('installing');"
+            show_errors_after_field: description

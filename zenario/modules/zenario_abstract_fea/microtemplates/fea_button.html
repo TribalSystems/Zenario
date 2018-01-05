@@ -1,0 +1,41 @@
+<% if (m.children) { %>
+    <div class="button_with_children_wrap">
+<% } %>
+
+<a
+    title="{{m.tooltip|escape}}"
+    
+    <% if (m._isDisabled) { %>
+		class="zfea_button zfea_button_disabled {{m.css_class|escape}}"
+	
+	<% } else { %>
+		class="zfea_button {{m.css_class|escape}}"
+		
+		<% if (m.href) { %>
+			href="{{m.href|escape}}"
+			
+			<% if (m.new_window) { %>
+				target="_blank"
+			<% } %>
+		<% } %>
+		
+		<% if (m.onclick && !(m.href && m.new_window)) { %>
+			onclick="{{m.onclick|escape}}"
+		<% } %>
+	<% } %>
+>
+	<% if (m.icon_left) { %>
+		<i class="{{m.icon_left|escape}}" aria-hidden="true"></i>
+	<% } %>
+    
+    <span>{{m.label|escape}}</span>
+	
+	<% if (m.icon_right) { %>
+		<i class="{{m.icon_right|escape}}" aria-hidden="true"></i>
+	<% } %>
+</a>
+
+<% if (m.children) { %>
+	    <ul>{{zenario.microTemplate('fea_button_children', m.children)}}</ul>
+    </div>
+<% } %>

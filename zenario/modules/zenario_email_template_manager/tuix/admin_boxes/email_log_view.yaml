@@ -1,0 +1,44 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_email_log_view:
+    title: "Email log view"
+    key:
+        id: ""
+    identifier: 
+        css_class: log
+        label: Email log ID
+    tabs:
+        email:
+            label: Email
+            edit_mode:
+                priv: _PRIV_MANAGE_EMAIL_TEMPLATE
+            fields:
+                sent_form_text:
+                    snippet:
+                        html: ''
+                email_template_name:
+                    label: |
+                        Template name:
+                    type: text
+                email_subject:
+                    label: |
+                        Subject
+                    type: text
+                email_address_to:
+                    label: |
+                        Address to:
+                    type: text
+                email_address_replyto:
+                    label: |
+                        Reply to:
+                    type: text
+                email_address_from:
+                    label: |
+                        From:
+                    type: text
+                email_body_non_escaped:
+                    label: |
+                        Body:
+                    snippet: 
+                        html: ''
+      

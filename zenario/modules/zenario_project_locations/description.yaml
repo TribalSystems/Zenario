@@ -1,0 +1,43 @@
+---
+display_name: 'Project Locations Manager'
+author_name: Tribal Systems
+copyright_info: © Tribal Limited
+editions: 'ProBusiness, Enterprise'
+start_running_on_install: false
+license_info: 'Modified BSD License'
+description: >
+    <p>The Project Locations Manager can be used to model a real world project.</p>
+    <p> Various kinds of project can be represented by this module, the project can optionally include a location (including map details), a descriptive page or both. </p>
+category: management
+keywords: 'project'
+content_types: 
+    content_type: 
+        content_type_id: project
+        content_type_name_en: Project description
+        content_type_plural_en: Project descriptions
+        default_template_name: Project Layout
+        enable_summary_auto_update: false
+        description_field: optional
+        keywords_field: hidden
+        summary_field: optional
+        release_date_field: optional
+        writer_field: hidden
+
+# Warning: adding a new dependency to an existing module will break any existing sites
+# where the dependency is not running.
+# You can fix this on a per-site basis by manually running the dependency, i.e. by running
+#   UPDATE zenario_modules SET status = 'module_running' WHERE class_name = 'dependency'
+# in MySQL and then going to /admin/ to apply database updates.
+# If this is a core module, consider using runNewModuleDependency() in a 
+# database-revision in zenario/admin/db_updates/step_4_migrate_the_data/plugins.inc.php
+# to fix it automatically for every site.
+dependencies:
+    zenario_country_manager: true
+    zenario_location_manager: true
+
+# Reminder: you need to increment the LATEST_REVISION_NO in this module's
+# latest_revision_no.inc.php file if you change any of the fields below:
+is_pluggable: true
+can_be_version_controlled: false
+nestable: true
+default_framework: standard

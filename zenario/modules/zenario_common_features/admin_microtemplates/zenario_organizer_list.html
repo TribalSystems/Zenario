@@ -1,0 +1,53 @@
+<div
+	id="organizer_list_view"
+	class="
+		organizer_list_view
+		
+		<% if (m.useTallRows) { %>
+			organizer_list_view_with_tall_rows
+			<% zenarioO.firstColWidth = 65 + (20 * m.maxNumberOfInlineButtons); %>
+		
+		<% } else { %>
+			organizer_list_view_with_short_rows
+			<% zenarioO.firstColWidth = 30 + 20 * m.maxNumberOfInlineButtons + (m.canClickThrough? 9 : 0); %>
+		<% } %>
+	"
+>
+
+	<% if (m.items.length) { %>
+		<div class="organizer_header">
+			<div class="organizer_row">
+				<div id="organizer_non_sortable_resizeable_cols" class="organizer_non_sortable_resizeable_cols">
+					<% if (zenarioO.inspectionViewEnabled()) { %>
+						<div class="organizer_slidedown_view_toggle_header organizer_cell"></div>
+					<% } %>
+					<div id="organizer_checkbox_col" class="organizer_cell">
+						<% if (zenarioO.multipleSelectEnabled) { %>
+							<div onclick="zenarioO.toggleAllItems();">
+								<input
+									type="checkbox"
+									id="organizer_toggle_all_items_checkbox"
+									{{m.allItemsSelected? ' checked="checked"' : ''}}
+								/>
+							</div>
+						<% } %>
+					</div>
+					<div class="organizer_cell action_column firstcol" style="width: {{zenarioO.firstColWidth}}px;">&nbsp;</div>
+				</div>
+				<div class="organizer_sort_and_resize_wrapper" style="min-width: {{m.totalWidth|escape}}px;">
+					{{zenarioT.microTemplate('zenario_organizer_list_header', m.columns)}}
+				</div>
+			</div>
+		</div>
+	<% } %>
+	<div class="organizer_list_view_body_wrap">
+		<div id="organizer_items_wrapper" class="organizer_list_view_body {{m.reordering|escape}}">
+			
+			<% if (m.items.length) { %>
+				{{zenarioT.microTemplate('zenario_organizer_list_row', m.items)}}
+			<% } else { %>
+				{{zenarioT.microTemplate('zenario_organizer_no_items', m)}}
+			<% } %>
+		</div>
+	</div>
+</div>

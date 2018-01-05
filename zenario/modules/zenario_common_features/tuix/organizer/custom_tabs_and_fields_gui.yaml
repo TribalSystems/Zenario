@@ -1,0 +1,345 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__administration:
+    panels:
+        custom_tabs_and_fields_gui:
+            panel_type: admin_box_builder
+            
+            tab_details:
+                hide_tab_bar: true
+                tabs:
+                    details:
+                        label: Details
+                        fields:
+                            tab_label:
+                                label: 'Label:'
+                                type: text
+                                maxlength: 255
+                                validation:
+                                    required: 'Please enter a label'
+                            parent_field_id:
+                                label: 'Conditional display on field:'
+                                type: select
+                                values: boolean_fields
+                                empty_value: -- No conditional display --
+                                visible_if: |
+                                    !item.is_system_field 
+            
+            field_details:
+                tabs:
+                    details:
+                        label: Details
+                        fields:
+                            message:
+                                pre_field_html: <div class="info_message">
+                                snippet:
+                                    html: |
+                                        This system field does not have a recognisable type so you cannot edit its details.
+                                post_field_html: </div>
+                                visible_if: |
+                                    item.type == 'other_system_field' && item.tuix_type != "pick_items"
+                            field_label:
+                                label: 'Label:'
+                                type: text
+                                maxlength: 255
+                                note_below: The text of the label that appears before the field.
+                                visible_if: |
+                                    item.type != 'other_system_field'
+                            db_column:
+                                label: 'Code name:'
+                                type: text
+                                maxlength: 64
+                                note_below: This will be used for the name of the column in the database.
+                                readonly_if: |
+                                    item.is_protected || item.is_system_field
+                                visible_if: |
+                                    item.type != 'other_system_field' && item.type != 'repeat_start' && (!item.is_system_field || item.db_column)
+                            values_source:
+                                label: 'Source:'
+                                type: select
+                                empty_value: -- Select --
+                                values: centralised_lists
+                                format_onchange: true
+                                visible_if: |
+                                    !item.is_system_field && (item.type == 'centralised_radios' || item.type == 'centralised_select')
+                            values_source_filter:
+                                label: ''
+                                type: text
+                                maxlength: 255
+                                note_below: Set a filter for the source.
+                                visible_if: |
+                                    !item.is_system_field && (item.type == 'centralised_radios' || item.type == 'centralised_select') && item.values_source
+                            
+                            dataset_foreign_key_id:
+                                label: 'Source:'
+                                type: select
+                                values: datasets
+                                visible_if: |
+                                    !item.is_system_field && (item.type == 'dataset_select' || item.type == 'dataset_picker')
+                            is_protected:
+                                label: Protected
+                                type: checkbox
+                                format_onchange: true
+                                note_below: A protected field is important to the operation of the site.
+                                visible_if: |
+                                    item.type != 'other_system_field' && item.type != 'repeat_start'
+                                format_onchange: true
+                            
+                            protected_warning:
+                                visible_if: |
+                                    item.is_protected == 0 && item.was_protected
+                                snippet:
+                                    html: |
+                                        <strong>Deleting or changing the code name of this field may break your site.</strong>
+                            is_readonly:
+                                label: Readonly
+                                type: checkbox
+                                visible_if: |
+                                    !item.is_system_field && (item.type == 'group' || item.type == 'checkbox' || item.type == 'text')
+                            include_in_export:
+                                label: Include in export
+                                type: checkbox
+                                visible_if: |
+                                    (item.type != 'other_system_field' && item.type != 'repeat_start' && (item.db_column || item.is_new_field)) || item.allow_admin_to_change_export
+                            autocomplete:
+                                label: Autocomplete
+                                type: checkbox
+                                note_below: Display a list below of all unique values for this field that you can choose from.
+                                visible_if: |
+                                    item.type == 'text'
+                            multiple_select:
+                                label: Allow multiple files
+                                type: checkbox
+                                visible_if: |
+                                    item.type == 'file_picker'
+                            store_file:
+                                label: 'File storage:'
+                                type: radios
+                                values: 
+                                    in_docstore:
+                                        label: Docstore
+                                    in_database:
+                                        label: Database
+                                visible_if: |
+                                    item.type == 'file_picker'
+                            extensions:
+                                label: 'Allowed file types:'
+                                type: text
+                                note_below: Enter a comma seperated list of allowed file types (e.g. .png, .jpg, .jpeg, .gif).
+                                visible_if: |
+                                    item.type == 'file_picker'
+                            width:
+                                label: 'Width of the field on the admin box:'
+                                type: select
+                                empty_value: -- Default width -- 
+                                values:
+                                    1:
+                                        label: 1 character (em)
+                                    5:
+                                        label: 5 characters (em)
+                                    10:
+                                        label: 10 characters (em)
+                                    25:
+                                        label: 25 characters (em)
+                                    40:
+                                        label: 40 characters (em)
+                                    56:
+                                        label: 56 characters (em)
+                                visible_if: |
+                                    item.type == 'textarea'
+                            height:
+                                label: 'Height of the field on the admin box:'
+                                type: select
+                                empty_value: -- Default rows -- 
+                                values:
+                                    3:
+                                        label: 3 rows
+                                    5:
+                                        label: 5 rows
+                                    10:
+                                        label: 10 rows
+                                    20:
+                                        label: 20 rows
+                                visible_if: |
+                                    item.type == 'editor' || item.type == 'textarea'
+                            admin_box_visibility:
+                                label: 'Visibility:'
+                                type: select
+                                values:
+                                    show:
+                                        label: Show
+                                    show_on_condition:
+                                        label: Show on condition
+                                    hide:
+                                        label: Hide
+                                format_onchange: true
+                                visible_if: |
+                                    item.type != 'other_system_field' || item.tuix_type == 'pick_items'
+                            parent_id:
+                                label: 'Conditional display on field:'
+                                type: select
+                                empty_value: -- Select --
+                                values: boolean_fields
+                                visible_if: |
+                                    (item.type != 'other_system_field' || item.tuix_type == 'pick_items') && item.admin_box_visibility == 'show_on_condition'
+                                indent: 1
+                            note_below:
+                                label: 'Note below:'
+                                type: text
+                                maxlength: 255
+                                note_below: A message to administrators below the field.
+                                visible_if: |
+                                    item.type != 'other_system_field' && item.type != 'repeat_start' && (item.is_system_field || (item.admin_box_visibility != 'hide'))
+                            side_note:
+                                label: 'Side note:'
+                                type: text
+                                maxlength: 255
+                                note_below: A message to administrators that appears to the side when hovering over the field.
+                                visible_if: |
+                                    item.type != 'other_system_field' && item.type != 'repeat_start' && (item.is_system_field || (item.admin_box_visibility != 'hide'))
+                            
+                            min_rows:
+                                label: 'Minimum rows:'
+                                type: text
+                                value: 1
+                                maxlength: 250
+                                note_below: The number of rows that are always shown and cannot be deleted.
+                                visible_if: |
+                                    item.type == 'repeat_start'
+                            max_rows:
+                                label: 'Maximum rows:'
+                                type: text
+                                value: 5
+                                maxlength: 250
+                                note_below: The maximum number of rows that can be added.
+                                visible_if: |
+                                    item.type == 'repeat_start'
+                    validation:
+                        label: Validation
+                        visible_if: |
+                            item.type != 'other_system_field' && item.type != 'repeat_start'
+                        fields:
+                            message:
+                                pre_field_html: <div class="info_message">
+                                snippet:
+                                    html: |
+                                        You cannot change the validation of a system field.
+                                post_field_html: </div>
+                                visible_if: |
+                                    item.is_system_field
+                            required:
+                                label: Required
+                                type: checkbox
+                                note_below: An administrator will not be able to save a record until all of the required fields are complete.
+                                format_onchange: true
+                                visible_if: |
+                                    !item.is_system_field
+                            required_message:
+                                label: 'Message if not complete:'
+                                type: text
+                                maxlength: 255
+                                visible_if: |
+                                    !item.is_system_field && item.required
+                                indent: 1
+                            validation:
+                                label: 'Validation:'
+                                type: radios
+                                value: none
+                                values:
+                                    none:
+                                        label: 'None'
+                                    email:
+                                        label: 'Email'
+                                    emails:
+                                        label: 'Multiple emails'
+                                    no_spaces:
+                                        label: 'No spaces allowed'
+                                    numeric:
+                                        label: 'Numeric'
+                                    screen_name:
+                                        label: 'Screen name'
+                                format_onchange: true
+                                note_below: An administrator will not be able to save a record if this field does not match the validation rule chosen.
+                                visible_if: |
+                                     !item.is_system_field && item.type == 'text'
+                            validation_message:
+                                label: 'Message if not valid:'
+                                type: text
+                                maxlength: 255
+                                visible_if: |
+                                    !item.is_system_field && item.type == 'text' && item.validation && item.validation != 'none'
+                                indent: 1
+                    organizer:
+                        label: Organizer
+                        visible_if: |
+                            item.type != 'other_system_field' && item.type != 'repeat_start'
+                        fields:
+                            show_in_organizer:
+                                label: Show in Organizer panel
+                                type: checkbox
+                                format_onchange: true
+                                visible_if: |
+                                    !item.is_system_field
+                            create_index:
+                                type: radios
+                                values:
+                                    no_index: 
+                                        label: Don't index
+                                    index:
+                                        label: Index
+                                value: index
+                                format_onchange: true
+                                visible_if: |
+                                    !item.is_system_field && item.show_in_organizer 
+                                indent: 1
+                            searchable:
+                                label: Allow searching in Organizer
+                                type: checkbox
+                                visible_if: |
+                                    !item.is_system_field && ((['date', 'editor', 'text', 'textarea', 'url'].indexOf(item.type) != -1) ? item.show_in_organizer : (item.show_in_organizer && item.create_index == 'index'))
+                                indent: 2
+                            sortable:
+                                label: Allow sorting in Organizer
+                                type: checkbox
+                                visible_if: |
+                                    !item.is_system_field && item.show_in_organizer && (item.create_index == 'index') && (['checkboxes', 'radios', 'centralised_radios', 'select', 'centralised_select'].indexOf(item.type) == -1)
+                                indent: 2
+                            organizer_visibility:
+                                label: 'Visibility:'
+                                type: select
+                                values:
+                                    hide:
+                                        label: 'Hide by default'
+                                    show_by_default:
+                                        label: 'Show by default'
+                                    always_show:
+                                        label: 'Always show'
+                                note_below: Administrators will not be able to hide this field in Organizer if it is set to "Always show".
+                                visible_if: |
+                                    !item.is_system_field && item.show_in_organizer
+                                indent: 1
+                            hide_in_organizer:
+                                label: Hide in Organizer panel
+                                type: checkbox
+                                visible_if: |
+                                    item.is_system_field
+                                
+                    values:
+                        visible_if: |
+                            ['select', 'radios', 'checkboxes', 'centralised_radios', 'centralised_select'].indexOf(item.type) != -1
+                        label: Values
+                        fields:
+                            message:
+                                pre_field_html: <div class="info_message">
+                                snippet:
+                                    html: |
+                                        You cannot change the values of a system field.
+                                post_field_html: </div>
+                                visible_if: |
+                                    item.is_system_field || (item.type == 'centralised_radios' || item.type == 'centralised_select')
+                            values:
+                                type: values_list
+                                visible_if: |
+                                    !item.is_system_field && !(item.type == 'centralised_radios' || item.type == 'centralised_select')
+                                    
+                                

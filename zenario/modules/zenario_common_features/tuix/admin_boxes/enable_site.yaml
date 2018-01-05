@@ -1,0 +1,93 @@
+zenario_enable_site: 
+    priv: _PRIV_EDIT_SITE_SETTING
+    key: 
+        id: ""
+    hide_tab_bar: true
+    title: Site status
+    tabs: 
+        site: 
+            edit_mode: 
+                enabled: true
+                on: true
+                always_on: true
+            show_errors_after_field: desc
+            notices: 
+                checked: 
+                    type: success
+                    message: Cache cleared; checked for changes.
+                    show: false
+            fields: 
+                desc:
+                    snippet:
+                        html: |
+                            Use this screen to set the running status of the site.
+                enable_site_production: 
+                    type: radio
+                    name: radio
+                    redraw_onchange: true
+                    label: |
+                        Site enabled; production mode
+                    note_below: |
+                        Maximum speed through use of the cache. If developers make changes to .css and .yaml files, changes may not be seen until the button below is clicked.
+                enable_site_development: 
+                    type: radio
+                    name: radio
+                    redraw_onchange: true
+                    label: |
+                        Site enabled; development mode
+                    note_below: |
+                        For designers and developers. Site will run more slowly in admin mode because Zenario will check for changes in .css and .yaml files on each page load.
+                disable_site: 
+                    type: radio
+                    name: radio
+                    format_onchange: true
+                    label: |
+                        Site disabled; development mode
+                    note_below: |
+                        Site not available to visitors, only available via admin mode. Site will run more slowly in admin mode because Zenario will check for changes in .css and .yaml files on each page load.
+                disabled_snippet:
+                    indent: 1
+                    visible_if: |
+                        zenarioAB.value('disable_site')
+                    snippet:
+                        html: >
+                            Zenario will display a holding page, as follows.
+                site_disabled_title:
+                    indent: 1
+                    visible_if: |
+                        zenarioAB.value('disable_site')
+                    label: "Browser title:"
+                    type: text
+                site_disabled_message:
+                    indent: 1
+                    visible_if: |
+                        zenarioAB.value('disable_site')
+                    label: "Message:"
+                    type: editor
+                    dont_trim: true
+                    editor_options:
+                        convert_urls: false
+                        relative_urls: false
+                    rows: 4
+                    cols: 80
+                desc3:
+                    snippet:
+                        html: >
+                            <p>
+                                Click the following button to clear cache and check for changes. This should only be needed in production mode.
+                            </p>
+                
+                clear_cache:
+                    indent: 1
+                    type: submit
+                    value: 'Clear cache and check for changes'
+                    class: submit_selected
+                    format_onchange: true
+                    note_below: |
+                        <p>This button will:</p>
+                        <ul>
+                            <li>remove cached web pages, cached plugins, skin <code>.css</code> files, plugin <code>.js</code> and <code>.yaml</code> files from the server's <code>cache/</code> directory</li>
+                            <li>clear visitors' browsers' caches, on next load</li>
+                            <li>clear a reverse proxy cache, if used, on next load</li>
+                            <li>clear Organizer's cached data</li>
+                        </ul>

@@ -1,0 +1,23 @@
+plugin_settings:
+    module_class_name: zenario_current_time
+    tabs:
+        first_tab:
+            fields:
+                time_format: 
+                    plugin_setting: 
+                        name: time_format
+                    label: "Time format:"
+                    type: select
+                    value: '%H:%i:%s'
+                    empty_value: "-- Select --"
+                    values: 
+                        '%H:%i': 
+                            label: '09:00'
+                        "%l:%i %p": 
+                            label: "9:00 AM"
+                        '%H:%i:%s': 
+                            label: '09:00:00'
+                        "%l:%i:%s %p": 
+                            label: "9:00:00 AM"
+                    validation: 
+                        required: Please enter a time format.

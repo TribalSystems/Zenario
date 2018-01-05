@@ -1,0 +1,34 @@
+<% if (zenarioT.showDevTools()) { %>
+	<div class="zenario_debug" onclick="zenarioA.debug('zenarioO', true);"><div></div></div>
+<% } %>
+<div id="organizer_topLevelNav">
+	<div id="organizer_topLevelNavInner">
+		{{zenarioT.microTemplate('zenario_organizer_nav_top_level', m.items)}}
+	</div>
+</div>
+<div class="organizer_sectionTitleTextAnd2ndLevelNav">
+	<div class="organizer_sectionTitleText">
+		<div class="organizer_sectionTitle">
+			{{m.items[m.selected1st].label|escape}}
+		</div>
+		<div class="organizer_sectionText">
+			{{m.items[m.selected1st].tooltip|escape}}
+		</div>
+		<div 
+			class="open_tutorial_button" 
+			onclick="zenarioA.showTutorial('{{m.items[m.selected1st].id|escape}}')"
+			data-step="0.5"
+			data-position="right"
+			data-intro="<p><strong>Tutorials and help</strong></p><p> To open the help and tutorials window, click here.</p>"
+		>
+			<p>Help?</p>
+		</div>
+	</div>
+	<div class="organizer_2ndLevelNav">
+		{{zenarioT.microTemplate('zenario_organizer_nav_second_level', m.items[m.selected1st].items)}}
+	</div>
+</div>
+<div id="organizer_topLevelNavScroll">
+	<div id="organizer_topLevelNavScrollUp">▲</div>
+	<div id="organizer_topLevelNavScrollDown">▼</div>
+</div>

@@ -1,0 +1,75 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_alias:
+    key:
+        id: ""
+        cID: ""
+        cType: ""
+        equivId: ''
+    max_height: 400
+    hide_tab_bar: true
+    tabs:
+        meta_data:
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_DRAFT
+            fields:
+                alias:
+                    label: 'Alias:'
+                    type: text
+                    maxlength: 75
+                    onkeyup: zenarioAB.validateAlias();
+                    onchange: zenarioAB.tuix.___alias_changed = true;
+                    side_note: |
+                        An alias for this content item, and part of its URL.
+                        The combination of a content item's alias and its language code is unique.
+                        Lower case only, may not contain spaces or special characters.
+                    post_field_html: '<div id="alias_warning_display"></div>'
+                language_id:
+                    label: 'Language:'
+                    type: select
+                    readonly: true
+                update_translations:
+                    visible_if: zenarioA.multipleLanguagesEnabled()
+                    label: 'For Translations:'
+                    type: select
+                    values:
+                        update_all:
+                            ord: 1
+                            label: Update all aliases
+                        update_this:
+                            ord: 2
+                            label: Just update this translation
+                    onchange: zenarioAB.validateAlias();
+                    redraw_onchange: true
+                lang_code_in_url:
+                    visible_if: |
+                        zenarioA.multipleLanguagesEnabled()
+                        && zenarioAB.value('update_translations') == 'update_this'
+                        && !(zenarioA.siteSettings.mod_rewrite_enabled && zenarioA.siteSettings.mod_rewrite_slashes)
+                    label: 'Language code:'
+                    type: select
+                    values:
+                        show:
+                            ord: 1
+                            label: Always add the language code
+                        hide:
+                            ord: 2
+                            label: Hide the language code if possible
+                        default:
+                            ord: 3
+                            label__show: Use default behaviour (Always add the language code)
+                            label__hide: Use default behaviour (Hide the language code if possible)
+                    onchange: zenarioAB.validateAlias();
+                lang_code_in_url_dummy:
+                    visible_if: |
+                        zenarioA.multipleLanguagesEnabled()
+                        && zenarioAB.value('update_translations') != 'update_this'
+                        && !(zenarioA.siteSettings.mod_rewrite_enabled && zenarioA.siteSettings.mod_rewrite_slashes)
+                    label: 'Language code:'
+                    type: select
+                    readonly: true
+                    values:
+                        show:
+                            ord: 1
+                            label: Always add the language code

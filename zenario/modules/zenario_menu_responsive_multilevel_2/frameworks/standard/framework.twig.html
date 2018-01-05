@@ -1,0 +1,27 @@
+{% import _self as self %}
+{% macro childNodes(nodes) %}
+	{% import _self as self %}
+	<ul>
+		{% for node in nodes %}
+			<li class="{{node.Class}}">
+				{{node.Hyperlink}}
+				
+				{% if node.children %}
+					{{ self.childNodes(node.children) }}
+				{% endif %}
+			</li>
+		{% endfor %}
+	</ul>
+{% endmacro %}
+
+<ul class="slimmenu" id="{{containerId}}_slimmenu" style="visibility:hidden;">
+	{% for node in nodes %}
+		<li class="{{node.Class}}">
+			{{node.Hyperlink}}
+			
+			{% if node.children %}
+				{{ self.childNodes(node.children) }}
+			{% endif %}
+		</li>
+	{% endfor %}
+</ul>

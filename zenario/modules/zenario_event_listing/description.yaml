@@ -1,0 +1,52 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+display_name: Event Listing
+author_name: Tribal Systems
+copyright_info: © Tribal Limited
+editions: ProBusiness, Enterprise
+start_running_on_install: false
+license_info: 'Modified BSD License'
+description: |
+            <p>
+                This Module displays a list of Events to a visitor.
+            </p>
+            </p>
+                Inserting an Instance of this Module into a Slot on a visitor-facing page will display a
+                list of Events (which may take place on a single or multiple days).
+            <p>
+            </p>
+                The Events in the listing can be filtered by all events in a given time period, events 
+                from a certain Category in a given time period or events associated with a Location's 
+                HTML page that fall within the time period.
+            <p>
+            </p>
+                When filtering using a time period you can choose between the current day, the current 
+                week, the current calendar month, the current year or all time.
+            <p>
+            </p>
+                You can further filter your Event Listing by choosing to display current events, future
+                events and/or past events.
+            <p>
+category: pluggable
+keywords: calendar, event, list
+
+# Reminder: you need to increment the LATEST_REVISION_NO in this module's
+# latest_revision_no.inc.php file if you change any of the fields below:
+vlp_class_name: zenario_event_listing
+css_class_name: zenario_event_listing
+default_framework: standard
+is_pluggable: true
+default_instance_name: Event Listing
+nestable: true
+
+# Warning: adding a new dependency to an existing module will break any existing sites
+# where the dependency is not running.
+# You can fix this on a per-site basis by manually running the dependency, i.e. by running
+#   UPDATE zenario_modules SET status = 'module_running' WHERE class_name = 'dependency'
+# in MySQL and then going to /admin/ to apply database updates.
+# If this is a core module, consider using runNewModuleDependency() in a 
+# database-revision in zenario/admin/db_updates/step_4_migrate_the_data/plugins.inc.php
+# to fix it automatically for every site.
+dependencies:
+    zenario_location_manager: true
+    zenario_ctype_event: true

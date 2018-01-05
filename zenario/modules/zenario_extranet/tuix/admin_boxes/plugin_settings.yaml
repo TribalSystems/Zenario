@@ -1,0 +1,300 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+plugin_settings:
+    module_class_name: zenario_extranet
+    tabs:
+        first_tab:
+            label: Login
+            fields:
+                login_with:
+                    plugin_setting:
+                        name: login_with
+                    label: 'Login with:'
+                    type: radios
+                    values:
+                        Email:
+                            label: Email
+                        Screen_Name:
+                            label: >
+                                Screen Name (requires the "user_use_screen_name" site
+                                setting enabled)
+                    value: Email
+                enable_remember_me:
+                    plugin_setting:
+                        name: enable_remember_me
+                    label: 'Offer to remember screen name or email'
+                    type: checkbox
+                    value: "1"
+                    side_note: Allow User to have his screen name stored using a cookie.
+                enable_log_me_in:
+                    plugin_setting:
+                        name: enable_log_me_in
+                    label: 'Offer persistent login'
+                    type: checkbox
+                    value: ""
+                    side_note: >
+                        Allow User to stay logged in using a cookie until they
+                        manually log out.
+                hide_registration_link:
+                    plugin_setting:
+                        name: hide_registration_link
+                    label: "Don't show link to registration page"
+                    type: checkbox
+                    value: ""
+                    side_note: >
+                        Don't show link to the registration page even if a registration page does exist.
+                
+                label_description:
+                    full_width: Yes
+                    snippet:
+                        html: >
+                            The settings below allow you to control the headings and field labels.
+                main_login_heading:
+                    plugin_setting:
+                        name: main_login_heading
+                    label: 'Main heading:'
+                    type: text
+                    value: "Sign in"
+                    show_phrase_icon: true
+                email_field_label:
+                    plugin_setting:
+                        name: email_field_label
+                    label: 'Email field label:'
+                    type: text
+                    value: "Your Email:"
+                    show_phrase_icon: true
+                screen_name_field_label:
+                    plugin_setting:
+                        name: screen_name_field_label
+                    label: 'Screen name field label:'
+                    type: text
+                    value: "Your Screen Name:"
+                    show_phrase_icon: true
+                password_field_label:
+                    plugin_setting:
+                        name: password_field_label
+                    label: 'Password field label:'
+                    type: text
+                    value: "Your Password:"
+                    show_phrase_icon: true
+                login_button_text:
+                    plugin_setting:
+                        name: login_button_text
+                    label: 'Login button text:'
+                    type: text
+                    value: "Login"
+                    show_phrase_icon: true
+        welcome_back_page:
+            label: Action after login
+            fields:
+                description:
+                    full_width: Yes
+                    snippet:
+                        html: >
+                            These settings control what happens after an Extranet User
+                            logs in. The only apply if this Plugin is placed on the
+                            Extranet Login page.
+                requires_terms_and_conditions:
+                    plugin_setting:
+                        name: requires_terms_and_conditions
+                    label: 'Require terms and conditions to be accepted'
+                    type: checkbox
+                    value: ""
+                    format_onchange: Yes
+                    side_note: >
+                        Refers to terms_and_conditions_accepted flag in Users dataset.
+                        If the user has not accepted the terms and condictions the
+                        login will fail and the user will see an additional checkbox
+                        asking them to accept the T's and C's.
+                terms_and_conditions_page:
+                    plugin_setting:
+                        name: terms_and_conditions_page
+                        foreign_key_to: content
+                    label: 'Terms and conditions page:'
+                    pick_items:
+                        path: zenario__content/panels/content/refiners/filter_by_lang////
+                        min_path: zenario__content/panels/content
+                        max_path: zenario__content/panels/content
+                        target_path: zenario__content/panels/content
+                        disallow_refiners_looping_on_min_path: true
+                        select_phrase: Select a content item...
+                        hide_remove_button: true
+                    validation:
+                        required_if_not_hidden: Please select a terms and conditions page
+                    side_note: >
+                        A link to this page will be placed in the "Accept our terms and conditions" checkbox text.
+                show_welcome_page:
+                    plugin_setting:
+                        name: show_welcome_page
+                    label: 'Redirect to Welcome Back page:'
+                    type: radios
+                    value: _NEVER
+                    values:
+                        _ALWAYS:
+                            ord: "1"
+                            label: Always redirect to the Welcome Back page
+                        _IF_NO_PREVIOUS_PAGE:
+                            ord: "2"
+                            label: >
+                                As second priority; if another private content item was
+                                requested, redirect to that content item.
+                        _NEVER:
+                            ord: "3"
+                            label: >
+                                Never (redirect to requested private content item, or else to the
+                                previous page viewed).
+                    format_onchange: Yes
+                welcome_page:
+                    plugin_setting:
+                        name: welcome_page
+                        foreign_key_to: content
+                    label: 'Welcome Back Page:'
+                    pick_items:
+                        path: zenario__content/panels/content/refiners/filter_by_lang////
+                        min_path: zenario__content/panels/content
+                        max_path: zenario__content/panels/content
+                        target_path: zenario__content/panels/content
+                        disallow_refiners_looping_on_min_path: true
+                        select_phrase: Select a content item...
+                        hide_remove_button: true
+                    validation:
+                        required_if_not_hidden: >
+                            Please select a "welcome back" page
+        error_messages:
+            label: Error messages
+            fields:
+                description:
+                    full_width: Yes
+                    snippet:
+                        html: >
+                            These settings control what the user sees if the login 
+                            process fails.
+                email_address_required_error_text:
+                    label: 'If no email address is entered:'
+                    type: text
+                    value: "Please enter your email address."
+                    show_phrase_icon: true
+                password_required_error_text:
+                    label: 'If no password is entered:'
+                    type: text
+                    value: "Please enter your password."
+                    show_phrase_icon: true
+                screen_name_required_error_text:
+                    label: 'If no screen name is entered:'
+                    type: text
+                    show_phrase_icon: true
+                    value: "Please enter your screen name."
+                invalid_email_error_text:
+                    label: 'If email entered is not in a vaild format:'
+                    type: text
+                    show_phrase_icon: true
+                    value: "Please enter a valid email address"
+                email_not_in_db_message:
+                    plugin_setting:
+                        name: email_not_in_db_message
+                    label: 'If email address is not in the database:'
+                    type: text
+                    value: "This email address is not associated with any account."
+                    show_phrase_icon: true
+                screen_name_not_in_db_message:
+                    plugin_setting:
+                        name: screen_name_not_in_db_message
+                    label: 'If screen name is not in the database:'
+                    type: text
+                    value: "This screen name is not associated with any account."
+                    show_phrase_icon: true
+                wrong_password_message:
+                    plugin_setting:
+                        name: wrong_password_message
+                    label: 'If email address is in the database but the password is incorrect:'
+                    type: text
+                    value: "The password you have entered is incorrect."
+                    show_phrase_icon: true
+                password_expired_message:
+                    plugin_setting:
+                        name: password_expired_message
+                    label: 'If a new user was given a password that needed to be changed, and the password expired:'
+                    type: text
+                    value: "Your temporary password has expired. You will need to reset your password before you can log in."
+                    show_phrase_icon: true
+                account_suspended_message:
+                    plugin_setting:
+                        name: account_suspended_message
+                    label: 'If user account is suspended:'
+                    type: text
+                    value: "Your account is suspended. Please contact the site administrator for assistance."
+                    show_phrase_icon: true
+                account_pending_message:
+                    plugin_setting:
+                        name: account_pending_message
+                    label: 'If user account is pending (email verified):'
+                    type: text
+                    value: "Your account has not yet been activated by the site administator. Please contact us for further assistance."
+                    show_phrase_icon: true
+                account_not_verified_message:
+                    plugin_setting:
+                        name: account_not_verified_message
+                    label: 'If user account is pending and email address not verified:'
+                    type: text
+                    value: "It looks like you have not yet verified your email address. If you have not received a verification email, please <a [[resend_verification_email]]>click here to have this site send you a new verification email</a>."
+                    show_phrase_icon: true
+                contact_not_extranet_message:
+                    plugin_setting:
+                        name: contact_not_extranet_message
+                    label: 'If email entered is a contact not a extranet user:'
+                    type: text
+                    value: "The email address entered is associated with a contact, not an extranet user. Please contact the administrator for more assistance."
+                    show_phrase_icon: true
+                accept_terms_and_conditions_message:
+                    plugin_setting:
+                        name: accept_terms_and_conditions_message
+                    label: "If user hasn't accepted terms and conditions:"
+                    type: text
+                    value: "It looks like you have not yet accepted our terms and conditions, please accept these to continue using our site."
+                    show_phrase_icon: true
+                
+                
+                sub_description:
+                    full_width: Yes
+                    snippet:
+                        html: "Error messages for changing password:"
+                
+                no_new_password_error_text:
+                    label: 'If no new password is entered:'
+                    type: text
+                    value: "Please enter new password."
+                    show_phrase_icon: true
+                no_new_repeat_password_error_text:
+                    label: 'If no new repeat password is entered:'
+                    type: text
+                    value: "Please repeat your new Password."
+                    show_phrase_icon: true
+                new_passwords_do_not_match:
+                    plugin_setting:
+                        name: new_passwords_do_not_match
+                    label: 'If the new password and repeat new password fields do not match:'
+                    type: text
+                    value: "Your repeated Password does not match."
+                    show_phrase_icon: true
+                new_password_length_message:
+                    plugin_setting:
+                        name: new_password_length_message
+                    label: 'If new password is not over min length:'
+                    type: text
+                    value: "Please ensure that your new Password is at least [[min_password_length]] characters long."
+                    show_phrase_icon: true
+                new_password_not_strong_enough_message:
+                    plugin_setting:
+                        name: new_password_not_strong_enough_message
+                    label: 'If new password is not stong enough:'
+                    type: text
+                    value: "The new Password provided is not strong enough. Please make the password longer, or try mixing in upper and lower case letters, numbers or non-alphanumeric characters."
+                    show_phrase_icon: true
+                new_password_same_as_old_message:
+                    plugin_setting:
+                        name: new_password_same_as_old_message
+                    label: 'If new password is the same as the old password:'
+                    type: text
+                    value: "Your new Password is the same as your old Password."
+                    show_phrase_icon: true
+

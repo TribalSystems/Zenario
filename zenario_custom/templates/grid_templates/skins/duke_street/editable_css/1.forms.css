@@ -1,0 +1,342 @@
+/* Reset element properties
+--------------------------------------------------------------------------------------------------*/
+
+.zenario_skin input,
+.zenario_skin button,
+.zenario_skin select {
+    -webkit-border-radius: 0;
+}
+
+/* Form fields
+--------------------------------------------------------------------------------------------------*/
+
+.zenario_skin form {
+	margin:0;
+	padding:0;
+}
+
+.zenario_skin input,
+.zenario_skin button,
+.zenario_skin select,
+.zenario_skin textarea,
+#colorbox input,
+#colorbox button,
+#colorbox select,
+#colorbox textarea {
+	font-size:1em;
+	font-family:Arial;
+}
+
+.zenario_skin input[type='text'],
+.zenario_skin input[type='password'],
+.zenario_skin input[type='email'],
+.zenario_skin textarea,
+#colorbox input[type='text'],
+#colorbox input[type='password'],
+#colorbox input[type='email'],
+#colorbox textarea {
+	width:80%;
+	padding:0 10px;
+	color:#7a8080;
+	border:1px solid #7a8080;
+	-webkit-border-radius: 2px;
+	-moz-border-radius: 2px;
+	border-radius: 2px;
+}
+
+.zenario_skin textarea,
+#colorbox textarea {
+	padding-top:8px;
+	padding-bottom:8px;
+}
+
+.zenario_skin input[type='text'],
+.zenario_skin input[type='password'],
+.zenario_skin input[type='email'],
+.zenario_skin select,
+#colorbox input[type='text'],
+#colorbox input[type='password'],
+#colorbox input[type='email'],
+#colorbox select {
+	height:30px;
+	line-height:30px;
+}
+
+.zenario_skin input[type='file'] {
+	font-size:0.867em;
+	background:#d8d8d3;
+	padding:1% 2%;
+	width: 96%;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+/* Buttons
+--------------------------------------------------------------------------------------------------*/
+
+.zenario_skin input[type='submit'],
+.zenario_skin input[type='button'],
+.zenario_skin button,
+#colorbox input[type='submit'],
+#colorbox input[type='button'],
+#colorbox button {
+	cursor:pointer;
+}
+
+.zenario_skin input[type='submit'],
+.zenario_skin input[type='button'],
+.zenario_skin button,
+#colorbox input[type='submit'],
+#colorbox input[type='button'],
+#colorbox button,
+.extranet_wrap a.nice_button,
+.zenario_comments .users_buttons a,
+.zenario_comments .control_btn a,
+.zenario_comments .control_btn a,
+.zenario_comments .main_btn a,
+.zenario_document_container #archive_download_link a {
+	background-color:#d33534;
+   	border:0;
+   	-webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    border-radius: 4px;
+   	display: inline-block;
+   	-webkit-transition: all 0.2s ease-in-out;
+    -moz-transition: all 0.2s ease-in-out;
+    transition: all 0.2s ease-in-out;
+   	text-align: center;
+   	color:#FFF;
+   	padding:0 15px;
+}
+
+.zenario_skin .mce-btn button {
+    background-color: transparent;
+    min-width: 0;
+}
+
+.zenario_skin .mce-btn button:hover {
+    background-color: transparent;
+    border:0;
+    text-decoration:none;
+}
+
+.zenario_skin .mce-splitbtn .mce-open:hover {
+    border-left: 1px solid #CCCCCC;
+    border-right: 1px solid #CCCCCC;
+    border-radius: 0;
+    -moz-border-radius: 0;
+    -webkit-border-radius: 0;
+}
+
+.zenario_skin input[type='submit'],
+.zenario_skin input[type='button'],
+.zenario_skin button,
+#colorbox input[type='submit'],
+#colorbox input[type='button'],
+#colorbox button,
+.extranet_wrap a.nice_button {
+	min-width:130px;
+}
+
+.zenario_comments .users_buttons a,
+.zenario_comments .control_btn a,
+.zenario_comments .main_btn a,
+.zenario_comments .main_btn input[type='submit'],
+.zenario_skin .zenario_search_results form input[type="submit"],
+.zenario_document_container #archive_download_link a {
+	min-width:0;
+}
+
+.zenario_skin input[type='submit'],
+.zenario_skin input[type='button'],
+.zenario_skin button,
+#colorbox input[type='submit'],
+#colorbox input[type='button'],
+#colorbox button,
+.extranet_wrap a.nice_button,
+.zenario_comments .main_btn a,
+.zenario_document_container #archive_download_link a {
+   	height: 34px;
+}
+
+.zenario_skin input[type='submit'],
+.zenario_skin input[type='button'],
+.zenario_skin button,
+#colorbox input[type='submit'],
+#colorbox input[type='button'],
+#colorbox button {
+	line-height:32px;
+}
+
+.extranet_wrap a.nice_button,
+.zenario_comments .main_btn a,
+.zenario_document_container #archive_download_link a {
+	line-height:34px;
+}
+
+.zenario_skin input[type='submit']:hover,
+.zenario_skin input[type='button']:hover,
+.zenario_skin button:hover,
+#colorbox input[type='submit']:hover,
+#colorbox input[type='button']:hover,
+#colorbox button:hover,
+.extranet_wrap a.nice_button:hover,
+.zenario_cookie_consent_status .cookie_button_area .cookie_button a:hover,
+.zenario_comments .users_buttons a:hover,
+.zenario_comments .control_btn a:hover,
+.zenario_comments .main_btn a:hover,
+.zenario_comments .main_btn input[type='submit']:hover,
+.zenario_document_container #archive_download_link a:hover {
+   background-color:#364255;
+   border:0;
+   text-decoration:none;
+}
+
+.extranet_wrap a.nice_button:hover,
+.zenario_cookie_consent_status .cookie_button_area .cookie_button a:hover,
+.zenario_document_container #archive_download_link a:hover {
+	text-decoration:none;
+}
+
+#colorbox button#cboxClose {	
+	width:24px;
+	height:24px;
+	line-height:24px;
+	border:0;
+	padding:0;
+   	-webkit-transition: none;
+    -moz-transition: none;
+    transition: none;
+}
+
+/* Grey buttons
+--------------------------------------------------------------------------------------------------*/
+
+.zenario_comments .users_buttons a,
+.zenario_comments .buttons a,
+.zenario_comments .main_btn a,
+.zenario_comments .main_btn input[type='submit'],
+.zenario_comments .control_btn input[type="submit"] {
+	background:#7A8080;
+	color:#FFF;
+}
+
+/* Small buttons
+--------------------------------------------------------------------------------------------------*/
+
+.zenario_skin .zenario_extranet_user_image input[type="submit"],
+.zenario_cookie_consent_status .cookie_button_area .cookie_button a,
+.zenario_comments .users_buttons a,
+.zenario_comments .control_btn a,
+.zenario_comments .control_btn input[type="submit"] {
+	height:24px;
+	line-height:24px;
+	font-size:0.8em;
+	min-width:auto;
+	padding:0 10px;
+}
+
+.zenario_skin .zenario_extranet_user_image input[type="submit"],
+.zenario_comments .control_btn input[type="submit"] {
+	line-height:22px;
+}
+
+.extranet_wrap a.nice_button,
+.zenario_skin .zenario_extranet_user_image input[type="submit"],
+.zenario_cookie_consent_status .cookie_button_area .cookie_button a,
+.zenario_comments .users_buttons a,
+.zenario_comments .control_btn a {
+	display:inline-block;
+}
+
+.extranet_wrap a.nice_button {
+	padding:0;
+}
+
+/* Fix for captcha
+--------------------------------------------------------------------------------------------------*/
+
+#recaptcha_widget_div {
+	margin-top:10px;
+}
+
+#recaptcha_area, 
+#recaptcha_table { 
+	line-height: 0!important;
+}
+
+.recaptchatable a, 
+.recaptchatable a:hover {
+	color:#A51400 !important;
+}
+
+.recaptcha_only_if_privacy {
+	position:absolute !important;
+	width:100px;
+	left:185px !important;
+}
+
+/* Messages
+--------------------------------------------------------------------------------------------------*/
+
+.error,
+.success,
+.warning,
+.contact_form_error,
+.contact_form_message,
+.confirm_email_text,
+.extranet_error,
+.extranet_message,
+.extranet_confirm,
+.form_error,
+.errors_in_floating_box,
+.email_friend_popup_msg_sent,
+.zenario_comments .confirmation_box .post_error,
+.zenario_comments .confirmation_box .post_area {
+	border-width:1px;
+	border-style:solid;
+	width:80%;
+	padding:3px 10px;
+	margin-bottom:8px;
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
+	border-radius: 3px;
+	font-size:0.933em;
+}
+
+/* - Error ---------------------------------------------------------------------------------------*/
+	
+	.error,
+	.contact_form_error,
+	.extranet_error,
+	.form_error,
+	.errors_in_floating_box,
+	.zenario_comments .confirmation_box .post_area.post_error {
+		background:#FCE4E1;
+		border-color:#FAD3C7;	
+		color:#AF0615;
+		font-size:0.867em;
+	}
+	
+/* - Success --------------------------------------------------------------------------------------*/
+	
+	.success,
+	.contact_form_message,
+	.confirm_email_text,
+	.extranet_message,
+	.email_friend_popup_msg_sent {
+		background:#DFF1C1;
+		border-color:#AEDC64;
+		color:#0F7F12;
+	}
+
+/* - Warning -------------------------------------------------------------------------------------*/
+
+	.extranet_confirm,
+	.warning,
+	.zenario_comments .confirmation_box .post_area {
+		background:#FFF6BF;
+		border-color:#FFD324;
+		color:#817134;
+	}

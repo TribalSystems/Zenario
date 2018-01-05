@@ -1,0 +1,103 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_pro_features_spare_alias:
+    priv: _PRIV_MANAGE_SPARE_ALIAS
+    title: Creating a spare alias (301 redirect)
+    key:
+        id: ""
+        id_is_error_log_id: false
+    hide_tab_bar: Yes
+    tabs:
+        spare_alias:
+            edit_mode:
+                enabled: Yes
+            show_errors_after_field: description
+            fields:
+                description:
+                    full_width: Yes
+                    snippet:
+                        html: |
+                            Use this panel to define a spare alias (permanent redirect).
+                            
+                            When a visitor follows a link to a spare alias on this site, the CMS responds with a permanent redirect. This can be a redirect to a content item, or another URL.
+                            
+                            Spare aliases are handy if a page's URL has changed (thus avoiding a Not Found message),
+                            or if you want to give the same page several aliases.
+                grouping_left:
+                    name: left
+                    type: grouping
+                alias:
+                    grouping: left
+                    label: 'Spare alias:'
+                    type: text
+                    maxlength: "75"
+                    style: 'width:350px'
+                    onkeyup: |
+                        var $preview = $('#spare_alias_preview');
+                        var alias = $(this).val();
+                        var preview = $preview.data('base') + alias;
+                        var target = false;
+                        if (zenarioAB.value("target_loc") == "int") {
+                            target = zenarioAB.value("redirect_target_url")
+                        } else {
+                            target = get("ext_url").value;
+                            var pattern = /^((http|https|ftp):\/\/)/;
+                            if (!pattern.test(target)) {
+                                target = 'http://' + target;
+                            }
+                        }
+                        if (alias !== "") {
+                            preview += $preview.data('suffix');
+                        }
+                        $preview.text(preview).prop('href', target);
+                    post_field_html: |
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span style="font-size:30px;position:absolute;">⟶</span>
+                preview:
+                    grouping: left
+                    pre_field_html: 'Preview:<br>'
+                    snippet:
+                        html: ''
+                 redirect_target_url:
+                    grouping: left
+                    type: text
+                    style: display:none;
+                grouping_right:
+                    name: right
+                    type: grouping
+                target_loc:
+                    grouping: right
+                    label: 'Destination:'
+                    type: select
+                    value: int
+                    values:
+                        int:
+                            ord: "2"
+                            label: Link to a content item
+                        ext:
+                            ord: "3"
+                            label: Link to an external URL
+                    format_onchange: Yes
+                hyperlink_target:
+                    grouping: right
+                    label: 'Content item:'
+                    pick_items:
+                        path: zenario__content/panels/content
+                        min_path: zenario__content/panels/content
+                        max_path: zenario__content/panels/content
+                        target_path: zenario__content/panels/content
+                        select_phrase: Select content item...
+                        hide_remove_button: Yes
+                    validation:
+                        required_if_not_hidden: Please select a content item
+                    format_onchange: Yes
+                    indent: 1
+                ext_url:
+                    grouping: right
+                    label: 'External URL:'
+                    type: url
+                    maxlength: "255"
+                    validation:
+                        required_if_not_hidden: Please enter a URL
+                    indent: 1
+                    onkeyup: |
+                        $('#alias').keyup();

@@ -1,0 +1,591 @@
+diagnostics:
+    key:
+        first_viewing: true
+    tab: 0
+    tabs:
+        0:
+            edit_mode:
+                enabled: true
+                on: true
+                always_on: true
+            show_errors_after_field: description
+            fields:
+                description:
+                    full_width: true
+                    snippet:
+                        html: "<h1>Diagnostics</h1>"
+                
+                sub_table:
+                    type: grouping
+                    name: sub_table
+                
+                system_requirements:
+                    grouping: sub_table
+                    full_width: true
+                    snippet:
+                        html: System Requirements
+                    visible_if: zenarioAW.togglePressed(1)
+                show_system_requirements: &show_section
+                    grouping: sub_table
+                    type: toggle
+                    redraw_onchange: true
+                    same_row: true
+                    visible_if: "zenarioAW.togglePressed(1, tuixObject)"
+                
+                server:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_level
+                    snippet:
+                        html: Web Server
+                    visible_if: zenarioAW.togglePressed(2)
+                show_server: &show_subsection
+                    grouping: sub_table
+                    type: toggle
+                    redraw_onchange: true
+                    same_row: true
+                    visible_if: "zenarioAW.togglePressed(2, tuixObject)"
+                server_1:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_field
+                    snippet:
+                        html: Apache http server version 2.4.7 or later
+                    visible_if: zenarioAW.togglePressed()
+                php:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_level
+                    snippet:
+                        html: PHP
+                    visible_if: zenarioAW.togglePressed(2)
+                show_php: *show_subsection
+                php_1:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_field
+                    snippet:
+                        html: PHP version 7.0 or later
+                    visible_if: zenarioAW.togglePressed()
+                opcache_misconfigured:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_level
+                    snippet:
+                        html: |
+                            In your <code>php.ini</code> you have <code>opcache.enable</code>
+                            turned on, and you have <code>opcache.dups_fix</code> turned off.
+                            
+                            This may cause occasional PHP &ldquo;fatal errors&rdquo; on your site.
+                            
+                            Please edit your <code>php.ini</code> and either turn <code>opcache.enable</code> off
+                            or else turn <code>opcache.dups_fix</code> on.
+                    visible_if: zenarioAW.togglePressed()
+                mysql:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_level
+                    snippet:
+                        html: MySQL
+                    visible_if: zenarioAW.togglePressed(2)
+                show_mysql: *show_subsection
+                mysql_1:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_field
+                    snippet:
+                        html: MySQLi extension enabled in PHP
+                    visible_if: zenarioAW.togglePressed()
+                mysql_2:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_field
+                    snippet:
+                        html: MySQL client and MySQL server version 5.5.3 or later
+                    visible_if: zenarioAW.togglePressed()
+                mb:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_level
+                    snippet:
+                        html: Unicode Support
+                    visible_if: zenarioAW.togglePressed(2)
+                show_mb: *show_subsection
+                mb_1:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_field
+                    snippet:
+                        html: ctype extension enabled in PHP
+                    visible_if: zenarioAW.togglePressed()
+                mb_2:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_field
+                    snippet:
+                        html: mbstring extension enabled in PHP
+                    visible_if: zenarioAW.togglePressed()
+                gd:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_level
+                    snippet:
+                        html: Image Manipulation
+                    visible_if: zenarioAW.togglePressed(2)
+                show_gd: *show_subsection
+                gd_1:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_field
+                    snippet:
+                        html: GD Library enabled in PHP
+                    visible_if: zenarioAW.togglePressed()
+                gd_2:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_field
+                    snippet:
+                        html: GIF Read Support enabled in PHP
+                    visible_if: zenarioAW.togglePressed()
+                gd_3:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_field
+                    snippet:
+                        html: JPG Support enabled in PHP
+                    visible_if: zenarioAW.togglePressed()
+                gd_4:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_field
+                    snippet:
+                        html: PNG Support enabled in PHP
+                    visible_if: zenarioAW.togglePressed()
+                optional:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_level
+                    snippet:
+                        html: Optional requirements
+                    visible_if: zenarioAW.togglePressed(2)
+                show_optional: *show_subsection
+                optional_mod_deflate:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_field
+                    snippet:
+                        html: |
+                            deflate module enabled in Apache
+                            <br/><small>Needed for compressing files, for a faster page-load</small>
+                    visible_if: zenarioAW.togglePressed()
+                optional_mod_expires:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_field
+                    snippet:
+                        html: |
+                            expires module enabled in Apache
+                            <br/><small>Needed for images and files to be cached in the visitors browser, for a faster page-load</small>
+                    visible_if: zenarioAW.togglePressed()
+                optional_mod_rewrite:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_field
+                    snippet:
+                        html: |
+                            rewrite module enabled in Apache
+                            <br/><small>Needed for friendly URLs</small>
+                    visible_if: zenarioAW.togglePressed()
+                optional_curl:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_field
+                    snippet:
+                        html: |
+                            curl extension enabled in PHP
+                            <br/><small>Needed for translating pages using Google Translate</small>
+                    visible_if: zenarioAW.togglePressed()
+                optional_zip:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_field
+                    snippet:
+                        html: |
+                            zip extension enabled in PHP
+                            <br/><small>Needed for creating document extracts</small>
+                    visible_if: zenarioAW.togglePressed()
+                
+                
+                
+                
+                
+                
+                dirs:
+                    grouping: sub_table
+                    full_width: true
+                    snippet:
+                        html: Directories
+                    visible_if: zenarioAW.togglePressed(1)
+                show_dirs: *show_section
+                
+                dir_1:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_level
+                    snippet:
+                        html: Backup Storage Area
+                    visible_if: zenarioAW.togglePressed(2)
+                show_dir_1: *show_subsection
+                dir_1_blurb:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_field
+                    snippet:
+                        html: |
+                            If you wish to store site backups on your server, you should create a directory
+                            on your server in which to keep them.
+                            It should start with a slash, but do not add a trailing slash.
+                    visible_if: zenarioAW.togglePressed()
+                backup_dir: &changeable_dir
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_field
+                    type: text
+                    visible_if: zenarioAW.togglePressed()
+                backup_dir_status:
+                    grouping: sub_table
+                    full_width: true
+                    snippet:
+                        html: "&nbsp;"
+                    visible_if: zenarioAW.togglePressed()
+                
+                dir_2:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_level
+                    snippet:
+                        html: Document Secure Store (Docstore)
+                    visible_if: zenarioAW.togglePressed(2)
+                show_dir_2: *show_subsection
+                dir_2_blurb:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_field
+                    snippet:
+                        html: |
+                            You should create a directory on your server where Documents can be stored by the CMS.
+                            Please enter the absolute path to the directory.
+                            It should start with a slash, but do not add a trailing slash.
+                    visible_if: zenarioAW.togglePressed()
+                docstore_dir: *changeable_dir
+                docstore_dir_status: &dir_status
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_field
+                    snippet:
+                        html: "&nbsp;"
+                    visible_if: zenarioAW.togglePressed()
+                
+                dir_3:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_level
+                    snippet:
+                        html: Templates Directory
+                    visible_if: zenarioAW.togglePressed(2)
+                show_dir_3: *show_subsection
+                dir_3_blurb:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_field
+                    snippet:
+                        html: |
+                            Zenario uses template files to form the layout of web pages.
+                            These may be edited by an administrator, and Zenario writes them to the following directory.
+                            Please ensure it exists and is writable by the web server:
+                    visible_if: zenarioAW.togglePressed()
+                template_dir: &readonly_dir
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_field
+                    type: text
+                    readonly: readonly
+                    visible_if: zenarioAW.togglePressed()
+                template_dir_status: *dir_status
+                
+                dir_4:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_level
+                    snippet:
+                        html: CSS Directories
+                    visible_if: zenarioAW.togglePressed(2)
+                show_dir_4: *show_subsection
+                dir_4_blurb:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_field
+                    snippet:
+                        html: ''
+                    visible_if: zenarioAW.togglePressed()
+                skin_dir_1: *readonly_dir
+                skin_dir_status_1: *dir_status
+                skin_dir_2: *readonly_dir
+                skin_dir_status_2: *dir_status
+                skin_dir_3: *readonly_dir
+                skin_dir_status_3: *dir_status
+                skin_dir_4: *readonly_dir
+                skin_dir_status_4: *dir_status
+                skin_dir_5: *readonly_dir
+                skin_dir_status_5: *dir_status
+                skin_dir_6: *readonly_dir
+                skin_dir_status_6: *dir_status
+                skin_dir_7: *readonly_dir
+                skin_dir_status_7: *dir_status
+                skin_dir_8: *readonly_dir
+                skin_dir_status_8: *dir_status
+                skin_dir_9: *readonly_dir
+                skin_dir_status_9: *dir_status
+                
+                dir_5:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_level
+                    snippet:
+                        html: Cache Directory
+                    visible_if: zenarioAW.togglePressed(2)
+                show_dir_5: *show_subsection
+                dir_5_blurb:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_field
+                    snippet:
+                        html: |
+                            Zenario can store generated files in a cache directory to speed up performance and reduce load on the database.
+                            Please ensure it exists and is writable by the web server:
+                    visible_if: zenarioAW.togglePressed()
+                cache_dir: *readonly_dir
+                cache_dir_status: *dir_status
+                
+                dir_6:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_level
+                    snippet:
+                        html: Private Directory
+                    visible_if: zenarioAW.togglePressed(2)
+                show_dir_6: *show_subsection
+                dir_6_blurb:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_field
+                    snippet:
+                        html: |
+                            Zenario uses a cache directory to store documents and images temporarily
+                            while they are downloaded by users.
+                            Please ensure it exists and is writable by the web server:
+                    visible_if: zenarioAW.togglePressed()
+                private_dir: *readonly_dir
+                private_dir_status: *dir_status
+                
+                dir_7:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_level
+                    snippet:
+                        html: Public Directory
+                    visible_if: zenarioAW.togglePressed(2)
+                show_dir_7: *show_subsection
+                dir_7_blurb:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_field
+                    snippet:
+                        html: |
+                            Zenario uses a directory to store documents that are publicly available.
+                            This directory MUST be writable by the web server.
+                    visible_if: zenarioAW.togglePressed()
+                public_dir: *readonly_dir
+                public_dir_status: *dir_status
+                
+                
+                site:
+                    grouping: sub_table
+                    full_width: true
+                    snippet:
+                        html: Site configuration
+                    hide_on_install: true
+                    visible_if: zenarioAW.togglePressed(1)
+                show_site:
+                    grouping: sub_table
+                    type: toggle
+                    redraw_onchange: true
+                    same_row: true
+                    hide_on_install: true
+                    visible_if: "zenarioAW.togglePressed(1, tuixObject)"
+                site_description_missing:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_level
+                    snippet:
+                        html: |
+                            This site's description file is missing.
+                            Please create the <code>zenario_custom/site_description.yaml</code> file,
+                            e.g. by copying or symlinking one of the files from the
+                            <code>zenario/api/sample_site_descriptions/</code> directory.
+                    hide_on_install: true
+                    visible_if: zenarioAW.togglePressed()
+                site_disabled: &blank_child
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_level
+                    snippet:
+                        html: ''
+                    hide_on_install: true
+                    visible_if: zenarioAW.togglePressed()
+                site_special_pages_unpublished: *blank_child
+                public_documents: *blank_child
+                site_automated_backups: *blank_child
+                scheduled_task_manager: *blank_child
+                spare_domains_without_primary_domain:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_level
+                    snippet:
+                        html: |
+                            Domain name redirects have been created for this site, but they will not function because no primary domain is defined.
+                            Please go to
+                            <a href="organizer.php#zenario__administration/panels/site_settings//domains~.site_settings~tprimary_domain~k{&quot;id&quot;%3A&quot;domains&quot;}" target="_blank">
+                                <em>Domains</em> in the site settings
+                            </a>
+                            to define a primary domain.
+                            
+                    hide_on_install: true
+                    visible_if: zenarioAW.togglePressed()
+                forwarded_ip_misconfigured:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_level
+                    snippet:
+                        html: |
+                            The <code>USE_FORWARDED_IP</code> constant is enabled
+                            in your <code>zenario_siteconfig.php</code> file,
+                            but you are not using a load balancer or a proxy,
+                            or your load balancer or proxy is misconfigured.
+                    visible_if: zenarioAW.togglePressed()
+                errors_not_shown:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_level
+                    snippet:
+                        html: |
+                            Your site is in development mode,
+                            but if you're developing modules you would not be able to see PHP errors and notices.
+                            (The <code>ERROR_REPORTING_LEVEL</code>
+                            should be set to <code>(E_ALL | E_NOTICE | E_STRICT)</code>
+                            in your <code>zenario_siteconfig.php</code> file - or
+                            click the hammer icon at the bottom left of Organizer
+                            to fully enable the site.)
+                    hide_on_install: true
+                    visible_if: zenarioAW.togglePressed()
+                notices_shown:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_level
+                    snippet:
+                        html: |
+                            Your site is in production mode, but you are showing PHP notices.
+                            <br/>
+                            (The <code>ERROR_REPORTING_LEVEL</code>
+                            should be set to <code>(E_ALL & ~E_NOTICE & ~E_STRICT)</code>
+                            in your <code>zenario_siteconfig.php</code> file.)
+                    hide_on_install: true
+                    visible_if: zenarioAW.togglePressed()
+                email_addresses_overridden:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_level
+                    snippet:
+                        html: ''
+                            #You have &ldquo;Email debug mode&rdquo; enabled...
+                    hide_on_install: true
+                    visible_if: zenarioAW.togglePressed()
+                #email_addresses_not_overridden:
+                #    grouping: sub_table
+                #    full_width: true
+                #    row_class: sub_level
+                #    snippet:
+                #        html: |
+                #            Your site is in development mode
+                #            but you do not have &ldquo;Email debug mode&rdquo; enabled under
+                #            <em>Configuration -&gt; Site Settings-&gt; Email -&gt; Debug</em> in Organizer.
+                #    hide_on_install: true
+                #    visible_if: zenarioAW.togglePressed()
+                bad_extra_module_symlinks: *blank_child
+                module_errors: *blank_child
+                no_ssl_for_login:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_level
+                    snippet:
+                        html: |
+                            This site has a login for extranet users,
+                            but doesn't use HTTPS to secure the transmission of passwords and other personal data.
+                            We recommend you ask your system administrator to make this site run using HTTPS.
+                    hide_on_install: true
+                    visible_if: zenarioAW.togglePressed()
+                two_factor_security:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_level
+                    snippet:
+                        html: |
+                            This site contains user-related data,
+                            but you are not protecting your admin-login with two-factor authentication.
+                            Please edit the <code>zenario_custom/site_description.yaml</code> file
+                            to enable two-factor authentication.
+                    hide_on_install: true
+                    visible_if: zenarioAW.togglePressed()
+                robots_txt: *blank_child
+                
+                
+                
+                
+                
+                content:
+                    grouping: sub_table
+                    full_width: true
+                    snippet:
+                        html: Site content
+                    hide_on_install: true
+                    visible_if: zenarioAW.togglePressed(1)
+                show_content:
+                    grouping: sub_table
+                    type: toggle
+                    redraw_onchange: true
+                    same_row: true
+                    hide_on_install: true
+                    visible_if: "zenarioAW.togglePressed(1, tuixObject)"
+                content_nothing_unpublished: *blank_child
+                    snippet:
+                        html: You have no unpublished content items.
+                content_unpublished_1: *blank_child
+                content_unpublished_2: *blank_child
+                content_unpublished_3: *blank_child
+                content_unpublished_4: *blank_child
+                content_unpublished_5: *blank_child
+                content_more_unpublished: *blank_child
+                
+                
+                continue:
+                    value: Continue
+                    type: submit
+                    full_width: true
+                    style: |
+                        float: right;
+                check_again:
+                    value: Check again
+                    type: submit
+                    same_row: true
+                    style: |
+                        float: right;

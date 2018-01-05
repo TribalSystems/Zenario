@@ -1,0 +1,183 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_job:
+    priv: _PRIV_VIEW_SCHEDULED_TASK
+    key:
+        id: ""
+        manager_class_name: ""
+    tabs:
+        time_and_day:
+            ord: "10"
+            edit_mode:
+                enabled: true
+                priv: _PRIV_MANAGE_SCHEDULED_TASK
+            label: Time and Day
+            fields:
+                desc:
+                    full_width: true
+                    snippet:
+                        html: |
+                            Use this tab to set on which time each day and on which days of the week this task will run.
+                                                            Every condition set must be met for the task to run.
+                
+                old_format_warning:
+                    pre_field_html: <div class="zenario_fbWarning">
+                    snippet:
+                        html: |
+                            The settings saved for frequency and time appear to be in an old format and may not be properly represented in the options below. Before saving, please make sure
+                            the settings are correct for this task.
+                    post_field_html: </div>
+                    hidden: true
+                frequency:
+                    label: 'Frequency:'
+                    type: select
+                start_at_hours:
+                    label: 'Starting at:'
+                    type: select
+                    post_field_html: ':'
+                start_at_minutes:
+                    type: select
+                    same_row: true
+                
+                days_desc:
+                    full_width: true
+                    snippet:
+                        html: '<b>On:</b>'
+                mon:
+                    label: 'Monday'
+                    type: checkbox
+                tue:
+                    label: 'Tuesday'
+                    type: checkbox
+                wed:
+                    label: 'Wednesday'
+                    type: checkbox
+                thr:
+                    label: 'Thursday'
+                    type: checkbox
+                fri:
+                    label: 'Friday'
+                    type: checkbox
+                sat:
+                    label: 'Saturday'
+                    type: checkbox
+                sun:
+                    label: 'Sunday'
+                    type: checkbox
+            show_errors_after_field: desc
+        month:
+            ord: "20"
+            edit_mode:
+                enabled: true
+                priv: _PRIV_MANAGE_SCHEDULED_TASK
+            label: Month
+            fields:
+                desc:
+                    full_width: true
+                    snippet:
+                        html: |
+                            Use this tab to set on which months of the year, and on which days of those months, this task will run.
+                                                            Every condition set must be met for the task to run.
+                jan:
+                    label: 'January'
+                    type: checkbox
+                feb:
+                    label: 'Feburary'
+                    type: checkbox
+                mar:
+                    label: 'March'
+                    type: checkbox
+                apr:
+                    label: 'April'
+                    type: checkbox
+                may:
+                    label: 'May'
+                    type: checkbox
+                jun:
+                    label: 'June'
+                    type: checkbox
+                jul:
+                    label: 'July'
+                    type: checkbox
+                aug:
+                    label: 'August'
+                    type: checkbox
+                sep:
+                    label: 'September'
+                    type: checkbox
+                oct:
+                    label: 'October'
+                    type: checkbox
+                nov:
+                    label: 'November'
+                    type: checkbox
+                dec:
+                    label: 'December'
+                    type: checkbox
+                first_n_days_of_month:
+                    label: 'Days of the month:'
+                    type: select
+                    note_below: |
+                        You may use this option in combination with the Time and Day option on the previous tab;
+                                                    for example to run a task on the first Monday of a month.
+            show_errors_after_field: desc
+        reporting:
+            ord: "30"
+            edit_mode:
+                enabled: true
+                priv: _PRIV_MANAGE_SCHEDULED_TASK
+            label: Reporting
+            fields:
+                desc:
+                    full_width: true
+                    snippet:
+                        html: >
+                            Use this tab to control when log entries are made and when
+                            emails are sent.
+                log_on_error:
+                    label: 'On error write log entry'
+                    type: checkbox
+                    readonly: true
+                    value: "1"
+                email_on_error:
+                    label: 'On error send email'
+                    type: checkbox
+                    readonly: true
+                    value: "1"
+                email_address_on_error:
+                    indent: 1
+                    label: 'Email address:'
+                    type: text
+                    maxlength: "200"
+                    note_below: |
+                        Error notifications will always be sent to the support email address for the site
+                                                        ([[email]], as specified in your zenario_siteconfig.php file).
+                                                        <br/>
+                                                        If a different email address is entered above, error notifications will be sent to both addresses.
+                log_on_action:
+                    label: 'On action write log entry'
+                    type: checkbox
+                email_on_action:
+                    label: 'On action send email'
+                    type: checkbox
+                    redraw_onchange: true
+                email_address_on_action:
+                    indent: 1
+                    hide_if_previous_outdented_value_isnt: 1
+                    label: 'Email address:'
+                    type: text
+                    maxlength: "200"
+                log_on_no_action:
+                    label: 'If no action write log entry'
+                    type: checkbox
+                email_on_no_action:
+                    label: 'If no action send email'
+                    type: checkbox
+                    redraw_onchange: true
+                email_address_on_no_action:
+                    indent: 1
+                    hide_if_previous_outdented_value_isnt: 1
+                    label: 'Email address:'
+                    type: text
+                    maxlength: "200"
+            show_errors_after_field: desc

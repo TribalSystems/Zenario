@@ -1,0 +1,15 @@
+.organizer_inline_buttons .zenario_users_active_status {
+	background: url('images/icon-user-status-green-active.svg') no-repeat center center / 16px 16px;
+}
+
+.organizer_inline_buttons .zenario_users_contact_status {
+	background: url('images/icon-user-status-blue-contact.svg') no-repeat center center / 16px 16px;
+}
+
+.organizer_inline_buttons .zenario_users_pending_status {
+	background: url('images/icon-user-status-orange-pending.svg') no-repeat center center / 16px 16px;
+}
+
+.organizer_inline_buttons .zenario_users_suspended_status {
+	background: url('images/icon-user-status-brown-suspended.svg') no-repeat center center / 16px 16px;
+}

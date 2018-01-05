@@ -1,0 +1,53 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+author_name: Tribal Systems
+copyright_info: © Tribal Limited
+editions: Pro, ProBusiness, Enterprise
+start_running_on_install: false
+license_info: 'Modified BSD License'
+display_name: Extranet Password Reset
+description: |
+    <p>This Module allows registered Extranet Users who have forgotten their Password to reset by entering their email address</p>
+    <p>When you install this Module it will automatically create a Password Reset page on your site. The Module inserts a plugin of this Module on that page.</p>
+    <p>Registered Extranet Users will then be able to enter the email address with which they have registered, and the Module will send an email containing a link to a page where they can enter a new password.</p>
+    <p>The default behaviour is to have just one Password Reset page, however on a multilingual site you may create a Password Reset page for each Language by creating translations of the original Password Reset page in each Language.</p>
+    <p>This Module installs a password reset Email Template, which can be edited. The selected Email Template can contain merge fields which will be replaced by real values when the email is sent:</p>
+    <ul>
+        <li>[[first_name]] - User's first name.</li>
+        <li>[[last_name]] - User's last name.</li>
+        <li>[[screen_name]] - User's screen name.</li>
+        <li>[[email]] - User's email address.</li>
+        <li>[[hash]] - A hash code required to activate the email address.</li>
+        <li>[[ip_address]] - The IP address of the computer from which email address change was requested.</li>
+        <li>[[cms_url]] - A Website URL.</li>
+    </ul>
+category: pluggable
+keywords: extranet, password, reset, user
+
+# Reminder: you need to increment the LATEST_REVISION_NO in this module's
+# latest_revision_no.inc.php file if you change any of the fields below:
+vlp_class_name: zenario_extranet
+css_class_name: zenario_extranet_password_reset
+is_pluggable: true
+nestable: true
+default_framework: standard
+special_pages:
+    special_page:
+        page_type: zenario_password_reset
+        default_alias: password-reset
+        default_title: Password Reset
+        footer_menu_title: Password Reset
+        only_show_to_visitors_who_are_logged_out: true
+        logic: create_and_maintain_in_default_language
+
+# Warning: adding a new dependency to an existing module will break any existing sites
+# where the dependency is not running.
+# You can fix this on a per-site basis by manually running the dependency, i.e. by running
+#   UPDATE zenario_modules SET status = 'module_running' WHERE class_name = 'dependency'
+# in MySQL and then going to /admin/ to apply database updates.
+# If this is a core module, consider using runNewModuleDependency() in a 
+# database-revision in zenario/admin/db_updates/step_4_migrate_the_data/plugins.inc.php
+# to fix it automatically for every site.
+dependencies:
+    zenario_extranet: true
+default_instance_name: Extranet Password Reset

@@ -1,0 +1,62 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_newsletter_template:
+    title: "Creating a newsletter template"
+    key:
+        id: ""
+    tabs:
+        details:
+            label: Body
+            edit_mode:
+                priv: _PRIV_EDIT_NEWSLETTER
+                always_on: true
+                enabled: true
+            fields:
+                name:
+                    label: 'Template Name:'
+                    type: text
+                    maxlength: "255"
+                    validation:
+                        required: Please enter a name for this newsletter template
+                body:
+                    full_width: true
+                    type: editor
+                    dont_trim: true
+                    editor_options:
+                        convert_urls: false
+                        relative_urls: false
+                    style: >
+                        width: 98%;
+                    rows: 30
+                    insert_image_button:
+                        pick_items:
+                            path: zenario__content/panels/image_library
+                            target_path: zenario__content/panels/image_library
+                            min_path: zenario__content/panels/image_library
+                            max_path: zenario__content/panels/image_library
+                            disallow_refiners_looping_on_min_path: true
+                    insert_link_button:
+                        exists: true
+        
+        advanced:
+            label: Advanced
+            edit_mode:
+                priv: _PRIV_EDIT_NEWSLETTER
+                always_on: true
+                enabled: true
+            fields:
+                desc:
+                    snippet:
+                        html: >
+                            Use this tab to add CSS styles and media queries, for email-clients
+                            that support these features.
+                head:
+                    label: 'HTML in head of email:'
+                    type: code_editor
+                    tall_as_possible: true
+                    dont_trim: true
+                    language: html
+                    style: >
+                        width: 98%;
+                    rows: 30
+                

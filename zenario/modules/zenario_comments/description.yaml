@@ -1,0 +1,75 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+author_name: Tribal Systems
+copyright_info: © Tribal Limited
+editions: Pro, ProBusiness, Enterprise
+start_running_on_install: false
+license_info: 'Modified BSD License'
+display_name: Comments
+description: |
+    <p>This Module allows Extranet Users to write comments on Content Items, thereby adding a useful
+                feedback feature to your web pages.</p>
+            <p>It also enables the basic functionality needed to install a Forum.</p>
+            <p>The comments editor is equipped with a rich text editor, the features of which can be enabled
+                or disabled in this Module's settings.</p>
+            <p>You can restrict posting comments and grant moderation privileges to selected Groups.
+                You can allow Users to modify and/or delete their own posts and report an offensive comment.</p>
+            <p>This Module allows you to optionally display information about the person posting each comment,
+                including: name, online status, post count, sign-up date, job title and avatar.</p>
+            <p>Every time a new comment is created or an existing comment is edited, an email notification can be set to a specified
+                email address (typically the Website administrator). You can create and select your own Email
+                Template and this will be used to send the report. The selected Email Template can contain various
+                Merge Fields that will be replaced by real values when the email is sent. You can use the following
+                fields in the Emails sent by the Comments Module:</p>
+            <ul>
+                <li>[[cms_url]] - The URL to the website.</li>
+                <li>[[link]] - A link to the page.</li>
+                <li>[[message]] - The message that was just created or edited.</li>
+                <li>[[page_title]] - The title of the page.</li>
+                <li>[[poster_screen_name]] - The Screen Name of the Extranet User who posted the message.
+                    (Note that this will only appear if Screen Names are enabled in the Site Settings.)</li>
+                <li>[[poster_username]] - The Username of the Extranet User who posted the message.</li>
+            </ul>
+            <p>If the subscription feature is enabled, Extranet Users can subscribed to a page to receive notifications
+                of any comments made there. Each subscriber will be sent an email when a comment is posted on that page.
+                These emails also use an Email Template, in which you can use any of the fields above (except for
+                [[poster_username]] as Usernames are private), and in addition the following fields:</p>
+            <ul>
+                <li>[[subscriber_email]] - The email of the subscribing Extranet User.</li>
+                <li>[[subscriber_title]] - The title of the subscribing Extranet User.</li>
+                <li>[[subscriber_first_name]] - The first name of the subscribing Extranet User.</li>
+                <li>[[subscriber_middle_name]] - The middle name of the subscribing Extranet User.</li>
+                <li>[[subscriber_last_name]] - The last name of the subscribing Extranet User.</li>
+                <li>[[subscriber_screen_name]] - The Screen Name of the subscribing Extranet User.</li>
+                <li>[[subscriber_username]] - The Username of the subscribing Extranet User.</li>
+            </ul>
+category: pluggable
+keywords: comment, forum, post, chat, blog, message
+
+# Reminder: you need to increment the LATEST_REVISION_NO in this module's
+# latest_revision_no.inc.php file if you change any of the fields below:
+vlp_class_name: zenario_anonymous_comments
+css_class_name: zenario_comments
+is_pluggable: true
+can_be_version_controlled: false
+nestable: true
+default_framework: standard
+default_instance_name: Comments
+
+# Warning: adding a new dependency to an existing module will break any existing sites
+# where the dependency is not running.
+# You can fix this on a per-site basis by manually running the dependency, i.e. by running
+#   UPDATE zenario_modules SET status = 'module_running' WHERE class_name = 'dependency'
+# in MySQL and then going to /admin/ to apply database updates.
+# If this is a core module, consider using runNewModuleDependency() in a 
+# database-revision in zenario/admin/db_updates/step_4_migrate_the_data/plugins.inc.php
+# to fix it automatically for every site.
+dependencies:
+    zenario_anonymous_comments: true
+    zenario_extranet: true
+inheritance:
+    inherit_frameworks_from_module: zenario_anonymous_comments
+    include_javascript_from_module: zenario_anonymous_comments
+signals:
+    signal:
+        name: eventUserDeleted

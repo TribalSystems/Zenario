@@ -1,0 +1,85 @@
+
+	<div id="zenario_at_top_left_menu">
+		<ul>
+			<li class="zenario_at_top_left_dropdown zenario_at_button_with_children">
+				<a
+					class="zenario_at_top_left_org_link"
+					href="{{zenarioATLinks.organizer|escape}}#{{zenarioATLinks.organizer_hash|escape}}"
+					id="zenario_organizer_button"
+				><span class="zenario_at_button_main">
+					Go to Organizer
+				</span></a>
+				<ul>{{zenarioT.microTemplate('zenario_toolbar_organizer_link', zenarioO.setNavigation(true).items)}}</ul>
+			</li>
+		</ul>
+	</div>
+	<div id="zenario_at_title">
+		<div class="zenario_at_title_label">Admin Toolbar</div>
+		<div class="zenario_at_title_for">for {{zenarioATLinks.tag|escape}}</div>
+	</div>
+	<div id="zenario_at_logout_link">
+		<a
+			id="zenario_logout_button"
+			{{zenarioATLinks.logout}}
+			title="{{zenarioA.phrase.logout}}"
+			data-tooltip-options="{tooltipClass:\'zenario_admin_tooltip\'}"
+		></a>
+	</div>
+	<div id="zenario_at">
+		<div class="zenario_at_container zenario_at_tabs_container">
+			<div class="zenario_at_content zenario_at_tabs">
+				{{zenarioT.microTemplate('zenario_toolbar_tab', m.tabs)}}
+			</div>
+		</div>
+		<div class="zenario_at_status_icons_container">
+			<div class="zenario_at_status_icons">
+				{{zenarioT.microTemplate('zenario_toolbar_status_icon', m.sections.icons)}}
+			</div>
+		</div>
+		<div class="zenario_at_container zenario_at_toolbar_container">
+			<div id="zenario_at_toolbars">
+		
+				<% if (zenarioT.showDevTools()) { %>
+					<div class="zenario_at_dev_icons" style="<% if (false) { %>display: none;<% } %>">
+						<div
+							class="zenario_at_dev_icon zenario_debug"
+							onclick="zenarioA.debug('zenarioAT');"
+						><div></div></div>
+						
+						<div
+							class="zenario_at_dev_icon organizer_info_box"
+							onclick="zenarioA.infoBox();"
+							title="About Zenario"
+						></div>
+					
+						<% if (zenario.engToBoolean(zenarioA.siteSettings.site_enabled)) { %>
+							<% if (zenarioA.siteSettings.site_mode == 'production') { %>
+								<div
+									class="zenario_at_dev_icon site_enabled"
+									onclick="zenarioAB.enableOrDisableSite();"
+									title="Site enabled; production mode"
+								></div>
+							<% } else { %>
+								<div
+									class="zenario_at_dev_icon site_enabled_development"
+									onclick="zenarioAB.enableOrDisableSite();"
+									title="Site enabled; development mode"
+								></div>
+							<% } %>
+						<% } else { %>
+							<div
+								class="zenario_at_dev_icon site_disabled"
+								onclick="zenarioAB.enableOrDisableSite();"
+								title="Site disabled; development mode"
+							></div>
+						<% } %>
+					</div>
+				<% } %>
+		
+				<div class="zenario_at_status_button">
+					{{zenarioT.microTemplate('zenario_toolbar_status_icon', m.sections.status_button)}}
+				</div>
+				{{zenarioT.microTemplate(m.toolbar_microtemplate, m)}}
+			</div>
+		</div>
+	</div>

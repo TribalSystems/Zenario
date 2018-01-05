@@ -1,0 +1,73 @@
+
+
+<% if (zenarioAB.tuix.configure) { %>
+	<a
+		class="zenario_fabConfigure"
+		target="_blank"
+		href="{{zenarioAB.tuix.configure.link|e}}"
+		title="{{zenarioAB.tuix.configure.tooltip|e}}"
+		data-tooltip-options="
+			{position: {my: 'left+2 center', at: 'right center', collision: 'flipfit'}}
+		"
+	></a>
+<% } %>
+
+<% if (zenarioAB.hasPreviewWindow && !m.isReadOnly) { %>
+	<% if (zenario.cID && zenarioAB.tuix.key.slotName) { %>
+		<% switch (zenarioAB.path) { %>
+			<% case "plugin_settings": %>
+				<input type="button"
+					id="zenario_fabPreviewFullPage"
+					value="{{zenarioA.phrase.previewFullWidth|e}}"
+					onclick="zenarioAB.showPreviewInPopoutBox(false, true);"/>
+			<% break; %>
+			<% case "plugin_css_and_framework": %>
+				<input type="button"
+					id="zenario_fabPreviewFullPage"
+					value="{{zenarioA.phrase.previewFullPage|e}}"
+					onclick="zenarioAB.showPreviewInPopoutBox(true, true);"/>
+		<% } %>
+	<% } %>
+	
+	<input type="button" value="{{zenarioA.phrase.updatePreview|e}}" onclick="
+			zenarioAB.updatePreview(1);
+		" class="" id="zenario_fabUpdatePreview"/>
+<% } %>
+
+<% if (zenarioAB.tuix.save_and_continue_button_message) { %>
+	<input id="zenario_fabSaveAndContinue"  type="button" value="{{zenarioAB.tuix.save_and_continue_button_message|e}}"
+	
+	<% if (m.isReadOnly) { %>
+		 class="submit_disabled"/>
+	<% } else { %>
+		 class="submit_selected" onclick="zenarioAB.save(undefined, true);"/>
+	<% } %>
+<% } %>
+
+<% if (zenarioAB.createAnotherObject) { %>
+	<input id="zenario_fabCreateAnother"  type="button" value="{{zenarioA.phrase.createAnother}}"
+	
+	<% if (m.isReadOnly) { %>
+		 class="submit_disabled"/>
+	<% } else { %>
+		 class="submit_selected" onclick="zenarioAB.save(undefined, false, true);"/>
+	<% } %>
+<% } %>
+
+<% if (zenarioAB.tuix.save_button_message || zenarioAB.tuix.save_button_message === undefined) { %>
+	<input id="zenario_fabSave"  type="button" value="{{zenarioAB.tuix.save_button_message || zenarioA.phrase.save|e}}"
+
+	<% if (m.isReadOnly) { %>
+		 class="submit_disabled"/>
+	<% } else { %>
+		 class="submit_selected" onclick="zenarioAB.save();"/>
+	<% } %>
+<% } %>
+
+<% if (zenarioAB.tuix.cancel_button_message) { %>
+	<input type="button" value="{{zenarioAB.tuix.cancel_button_message|e}}" onclick="zenarioAB.close();">
+<% } %>
+
+<% if (zenarioAB.tuix.extra_button_html) { %>
+	{{zenarioAB.tuix.extra_button_html}}
+<% } %>

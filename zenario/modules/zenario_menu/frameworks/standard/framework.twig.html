@@ -1,0 +1,47 @@
+{% import _self as self %}
+{% macro childNodes(nodes) %}
+	{% import _self as self %}
+	<ul>
+		{% for node in nodes %}
+			<li class="{{node.Class}}">
+				<div class="left_end"></div>
+					<span class="menu_image">{{node.Image}}</span>
+					{{node.Hyperlink}}
+					
+					{% if node.children %}
+						{{ self.childNodes(node.children) }}
+					{% endif %}
+				<div class="right_end"></div>
+			</li>
+		{% endfor %}
+	</ul>
+{% endmacro %}
+
+{% set hasChildren = false %}
+
+<div class="wrap_menu">
+<div class="wrap_menu_outer">
+<div class="wrap_menu_inner">
+	{% for node in nodes %}
+		<ul>
+			<li class="{{node.Class}}">
+				<div class="left_end"></div>
+					<span class="menu_image">{{node.Image}}</span>
+					{{node.Hyperlink}}
+					
+					{% if node.children %}
+						{{ self.childNodes(node.children) }}
+						
+						{% set hasChildren = true %}
+					{% endif %}
+				<div class="right_end"></div>
+			</li>
+		</ul>
+	{% endfor %}
+</div>
+</div>
+</div>
+
+{% if hasChildren %}
+	{% do this.jQuery('#' ~ containerId ~ ' .level1.has_child > a', 'doubleTapToGo') %}
+{% endif %}

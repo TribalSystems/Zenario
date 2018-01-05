@@ -1,0 +1,78 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__content:
+    panels:
+        document_folders:
+            item:
+                css_class: zenario_folder_item
+            title: Documents
+            db_items:
+                table: |
+                    [[DB_NAME_PREFIX]]documents AS d
+                    LEFT JOIN [[DB_NAME_PREFIX]]files AS f ON d.file_id = f.id
+                where_statement: WHERE d.type = 'folder'
+                id_column: d.id
+                client_side: true
+            
+            panel_type: hierarchy
+            reorder:
+                column: ordinal
+                hierarchy_view_mode: parent_ids_and_ordinals
+                lazy_load: true
+            
+            hierarchy:
+                column: folder_id
+                db_column: d.folder_id
+            
+            disable_periodic_refresh: true
+            default_sort_column: name
+            columns:
+                id:
+                    title: ID
+                    format: id
+                    searchable: true
+                    db_column: d.id
+                    show_by_default: false
+                    align_right: true
+                    width: xxsmall
+                ordinal:
+                    title: Ordinal
+                    db_column: d.ordinal
+                    show_by_default: false
+                    align_right: true
+                    width: xxsmall
+                type:
+                    title: Type
+                    searchable: true
+                    db_column: d.type
+                    show_by_default: false
+                folder_id:
+                    title: Folder ID
+                    db_column: d.folder_id
+                    show_by_default: false
+                    align_right: true
+                    width: xxsmall
+                name:
+                    title: Name
+                    db_column: "concat(ifNull(f.filename, \'\'), ifNull(d.folder_name, \'\'))"
+                    show_by_default: true
+                    width: xxlarge
+                filesize:
+                    title: File size
+                    width: small
+                    show_by_default: true
+                folder_file_count:
+                    title: Files and folder count
+                has_image:
+                    title: Has image
+                    db_column: d.thumbnail_id
+                    width: xxsmall
+                    format: yes_or_no
+                plaintext_extract_details:
+                    title: Extract text
+                    width: xxlarge
+                dont_autoset_metadata:
+                    title: Protected from auto-set
+                    db_column: d.dont_autoset_metadata
+                    width: small
+                    format: yes_or_no

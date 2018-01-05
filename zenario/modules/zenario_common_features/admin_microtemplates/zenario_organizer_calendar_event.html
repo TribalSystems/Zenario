@@ -1,0 +1,11 @@
+<div
+	id="organizer_item_{{m.id|escape}}"
+	data-id="{{m.id|escape}}"
+	onclick="zenarioO.pi.itemClick('{{m.id|escape}}', event); zenario.stop(event);"
+	class="
+		calendar-organizer-event
+		{{m.css_class|escape}}
+		{{m.selected? ' organizer_selected' : ''|escape}}
+		{{m.canClickThrough? 'organizer_doubleclickable' : ''|escape}}">
+	{{m.label}}
+</div>

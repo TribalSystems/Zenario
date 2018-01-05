@@ -30,17 +30,11 @@ Options -Indexes
 <IfModule mod_deflate.c>
 	#SetOutputFilter DEFLATE
 	AddOutputFilterByType DEFLATE text/css text/csv text/html text/plain text/xml text/javascript application/javascript application/x-javascript
-	<IfModule mod_php5.c>
-		php_flag zlib.output_compression Off
-	</IfModule>
 	<IfModule mod_php7.c>
 		php_flag zlib.output_compression Off
 	</IfModule>
 </IfModule>
 <IfModule !mod_deflate.c>
-	<IfModule mod_php5.c>
-		php_flag zlib.output_compression On
-	</IfModule>
 	<IfModule mod_php7.c>
 		php_flag zlib.output_compression On
 	</IfModule>
@@ -93,4 +87,7 @@ Options -Indexes
 	
 	# A rule for testing whether the htaccess file is working
 	RewriteRule ^zenario/includes/test_files/is_htaccess_working\.txt$ zenario/includes/test_files/htaccess_is_working.txt [L]
+	
+	# A rule to catch anything pointing to the old "libraries" directory from version 7.
+	RewriteRule ^zenario/libraries/(.*)$ zenario/libs/manually_maintained/$1 [L]
 </IfModule>

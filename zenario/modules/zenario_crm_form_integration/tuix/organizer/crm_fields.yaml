@@ -1,0 +1,46 @@
+zenario__user_forms:
+    panels:
+        zenario_crm_form_integration__fields:
+            priv: _PRIV_MANAGE_FORMS
+            title: Form fields with CRM names
+            db_items:
+                table: |
+                    [[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields AS ff
+                    INNER JOIN [[DB_NAME_PREFIX]][[ZENARIO_CRM_FORM_INTEGRATION_PREFIX]]form_crm_fields fcf
+                        ON ff.id = fcf.form_field_id
+                id_column: ff.id
+            columns:
+                id:
+                    title: ID
+                    format: id
+                    db_column: ff.id
+                    align_right: true
+                    width: xxsmall
+                    show_by_default: true
+                ordinal:
+                    title: Ordinal
+                    db_column: fcf.ordinal
+                    align_right: true
+                    width: xxsmall
+                    show_by_default: true
+                name:
+                    title: Name
+                    db_column: ff.name
+                    searchable: true
+                    show_by_default: true
+                    width: xxlarge
+            reorder:
+                column: ordinal
+            refiners:
+                crm_field_name_and_form_id:
+                    sql: |
+                        ff.user_form_id = (
+                            SELECT ff2.user_form_id
+                            FROM [[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields ff2
+                            WHERE ff2.id = [[REFINER_ID]]
+                        )
+                        AND fcf.field_crm_name = (
+                            SELECT fcf2.field_crm_name
+                            FROM [[DB_NAME_PREFIX]][[ZENARIO_CRM_FORM_INTEGRATION_PREFIX]]form_crm_fields fcf2
+                            WHERE fcf2.form_field_id = [[REFINER_ID]]
+                        )

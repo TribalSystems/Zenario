@@ -1,0 +1,41 @@
+zenario__user_forms:
+    panels:
+        zenario_crm_form_integration__field_names:
+            priv: _PRIV_MANAGE_FORMS
+            title: CRM fields
+            no_items_message: No CRM fields were found.
+            
+            refiners:
+                form_id:
+                    
+            item:
+                link:
+                    path: zenario__user_forms/panels/zenario_crm_form_integration__fields
+                    branch: true
+                    refiner: crm_field_name_and_form_id
+            columns:
+                field_name:
+                    title: Field
+                    always_show: true
+                    width: xlarge
+                field_crm_name:
+                    title: Target CRM field name
+                    searchable: true
+                    always_show: true
+                    width: xlarge
+                field_crm_name_count:
+                    title: Field count
+                    always_show: true
+                    align_right: true
+                    width: xxsmall
+                    tooltip: Field count
+            default_sort_column: field_crm_name
+            item_buttons:
+                properties:
+                    priv: _PRIV_MANAGE_FORMS
+                    label: Edit field
+                    admin_box:
+                        path: zenario_crm_form_integration__field_name
+                        key:
+                            form_id: ''
+                

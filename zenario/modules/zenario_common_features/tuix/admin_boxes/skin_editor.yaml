@@ -1,0 +1,42 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_skin_editor:
+    css_class: zenario_skin_editor 
+    key:
+        id: ''
+        cID: ''
+        cType: ''
+        cVersion: ''
+        skinId: false
+        newTabOrd: 0
+    tabs:
+        template:
+            hidden: true
+            label: ''
+            tooltip: ''
+            edit_mode:
+                priv: _PRIV_EDIT_CSS
+                enabled: true
+            fields:
+                css_source:
+                    full_width: true
+                    type: code_editor
+                    dont_trim: true
+                    language: css
+                    style: >
+                        width: 100%;
+                        min-width: 100px;
+                        height: 100%;
+                        min-height: 50px;
+                    
+                    #N.b. this is done specifically in admin_skin_editor.js
+                    #tall_as_possible: true
+                    
+                use_css_file:
+                    same_row: true
+                    type: hidden
+                    value: 1
+                css_filename:
+                    same_row: true
+                    type: hidden
+    save_and_continue_button_message: Save and continue

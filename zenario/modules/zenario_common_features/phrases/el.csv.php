@@ -1,0 +1,40 @@
+"<?php if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed'); ?>"
+
+"Zenario VISITOR LANGUAGE PACK WORKSHEET",,"Target Language ID"
+"(Do not edit this column)","To create a new Language Pack, change the value of the cell to the right to the ID for the language you are creating ->",el
+
+Plugin
+zenario_common_features
+
+"Phrase Code",Translation
+_MONTH_LONG_01,"Ιανουάριος"
+_MONTH_LONG_02,"Φεβρουάριος"
+_MONTH_LONG_03,"Μάρτιος"
+_MONTH_LONG_04,"Απρίλιος"
+_MONTH_LONG_05,"Μάιος"
+_MONTH_LONG_06,"Ιούνιος"
+_MONTH_LONG_07,"Ιούλιος"
+_MONTH_LONG_08,"Αύγουστος"
+_MONTH_LONG_09,"Σεπτέμβριος"
+_MONTH_LONG_10,"Οκτώβριος"
+_MONTH_LONG_11,"Νοέμβριος"
+_MONTH_LONG_12,"Δεκέμβριος"
+_MONTH_SHORT_01,"Ιανουάριος"
+_MONTH_SHORT_02,"Φεβρουάριος"
+_MONTH_SHORT_03,"Μάρτιος"
+_MONTH_SHORT_04,"Απρίλιος"
+_MONTH_SHORT_05,"Μάιος"
+_MONTH_SHORT_06,"Ιούνιος"
+_MONTH_SHORT_07,"Ιούλιος"
+_MONTH_SHORT_08,"Αύγουστος"
+_MONTH_SHORT_09,"Σεπτέμβριος"
+_MONTH_SHORT_10,"Οκτώβριος"
+_MONTH_SHORT_11,"Νοέμβριος"
+_MONTH_SHORT_12,"Δεκέμβριος"
+_WEEKDAY_0,"Κυριακή"
+_WEEKDAY_1,"Δευτέρα"
+_WEEKDAY_2,"Τρίτη"
+_WEEKDAY_3,"Τετάρτη"
+_WEEKDAY_4,"Πέμπτη"
+_WEEKDAY_5,"Παρασκευή"
+_WEEKDAY_6,"Σάββατο"

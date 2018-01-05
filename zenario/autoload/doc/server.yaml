@@ -1,0 +1,45 @@
+---
+sendEmail:
+  summary: |
+    A shortcut function to sending an PHPMailer.
+  desc: |
+    <h2>Description</h2>
+    <p>A shortcut function to sending an PHPMailer.</p>
+    <h2>Where You Can Use It</h2>
+    <p>From Zenario 7.0.0 onwards.</p>
+    <h2>Parameters</h2>
+    <h3><code>$subject</code></h3>
+    <p style="margin-left: 40px;">The subject of the email</p>
+    <h3><code>$body</code></h3>
+    <p style="margin-left: 40px;">The body of the email. Should be in HTML format; a plain-text version will be generated using PHP's <code>html_entity_decode()</code> and <code>strip_tags()</code> functions.</p>
+    <h3><code>$addressTo</code></h3>
+    <p style="margin-left: 40px;">The email address to send to. May be overriden (please see the $addressToOverridenBy argument description below)</p>
+    <h3><code>$addressToOverridenBy</code></h3>
+    <p style="margin-left: 40px;">Passed by reference. If a value of this argument is non empty string after function call, argument contains real, overridden destination address where the email was sent. The recipient email addresses can be overridden globally by using global site settings <em>debug_override_enable</em> and <em>debug_override_email_address</em>. These site settings can be changed under the Organizer Panel: <strong>Administration -&gt; Settings -&gt; Email</strong>.</p>
+    <h3><code>$nameTo</code></h3>
+    <p style="margin-left: 40px;">A display name for the email address to send to. Defaults to the email address itself.</p>
+    <h3><code>$addressFrom</code></h3>
+    <p style="margin-left: 40px;">The email address to send from. If this is not set, then <code>$addressFrom</code> and <code>$nameFrom</code> will default to the values defined in the site's configuration.</p>
+    <h3><code>$nameFrom</code></h3>
+    <p style="margin-left: 40px;">A display name for the email address to send to. Defaults to the email address itself if an address is provided, otherwise uses the value defined in the site's configuration.</p>
+    <h3><code>$attachements</code></h3>
+    <p style="margin-left: 40px;">An array of filenames with pathes, that resides in the filesystem and should be sent as email attachments.</p>
+    <h3><code>$attachmentFilenameMappings</code></h3>
+    <p style="margin-left: 40px;">An array of strings that will be used as filenames visible to the email recipient. The first file from $attachments array will be attached to the email under the name defined by the first member of the $attachmentFilenameMappings array, the second file under the name defined by second member, and so on. If no corresponding entry exists in the $attachmentFilenameMappings file will be attached under it's real filename.</p>
+    <h3><code>$precedence<br /></code></h3>
+    <p style="margin-left: 40px;">This argument defines value of the message precedence header.</p>
+    <h2>Return Value</h2>
+    <p>Returns true if the email was sent successfully, otherwise returns false.</p>
+    <h2>Example</h2>
+    <pre>$addressToOverriddenBy = '';<br />sendEmail(<br />    'Test Email',<br />    '&lt;h1&gt;Test Email&lt;/h1&gt;&lt;p&gt;This is a test&lt;/p&gt;',<br />    'yourname@example.com',<br />    $addressToOverriddenBy<br />);</pre>
+    <p>This line sends a test email. Can be useful for debugging.</p>
+isWindows:
+  summary: |
+    This function checks the operating system name of the server Zenario is running on.
+  desc: |
+    <h2>Description</h2>
+    <p>This function checks the operating system name of the server Zenario is running on.</p>
+    <h2>Where You Can Use It</h2>
+    <p>From Zenario 7.0.0 onwards.</p>
+    <h2>Return Value</h2>
+    <p>Returns true if the the server is a Windows server.</p>

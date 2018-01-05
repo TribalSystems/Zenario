@@ -1,0 +1,20 @@
+<li 
+	id="zenario_at_button__{{m.id|e}}"
+	class="
+		{{m.css_class|escape}}
+		{{m.disabled? 'zenario_at_button_disabled' : ''}}
+	"
+	<% if (m.onmouseover) { %>
+		onmouseover="{{m.onmouseover|escape}}"
+	<% } %>
+>
+	<a
+		title="{{m.tooltip|escape}}"
+		onclick="{{m.onclick|escape}}"
+		<% if (m.href) { %>
+			href="{{m.href|escape}}"
+		<% } %>
+	>
+		<span>{{m.label|escape}}</span>
+	</a>
+</li>

@@ -1,0 +1,111 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__locations:
+    location_sectors:
+        panel:
+            title: Sectors
+            view_mode: list
+            db_items:
+                table: '[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]sectors AS s'
+                id_column: s.id
+                client_side: Yes
+            default_sort_column: path
+            refiners:
+                location_sectors:
+                    sql: 's.id IN (SELECT sector_id FROM [[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]location_sector_score_link WHERE location_id IN [[REFINER_IDS]])'
+                sub_sectors:
+                    sql: 's.parent_id IN ([[REFINER_IDS]])'
+            columns:
+                sticky:
+                    title: Primary
+                    format: yes_or_no
+                    db_column: lssl.sticky_flag
+                    table_join: |
+                        [[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]location_sector_score_link AS lssl
+                                                    ON lssl.sector_id = s.id
+                                                    AND lssl.location_id = [[REFINER__LOCATION_SECTORS]]
+                    show_by_default: Yes
+                    width: xsmall
+                label_name:
+                    db_column: s.name
+                    searchable: Yes
+                label_name2:
+                    db_column: s.name
+                    searchable: Yes
+                path:
+                    title: Sector path
+                    php: Yes
+                    show_by_default: Yes
+                    width: xlarge
+                name:
+                    title: Sector name
+                    db_column: s.name
+                    table_join: '[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]sectors AS ps ON s.parent_id = ps.id'
+                    searchable: Yes
+                    width: medium
+                score:
+                    title: Score
+                    db_column: lssl.score_id
+                    table_join: |
+                        [[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]location_sector_score_link AS lssl
+                                                    ON lssl.sector_id = s.id
+                                                    AND lssl.location_id = [[REFINER__LOCATION_SECTORS]]
+                    show_by_default: Yes
+                    align_right: Yes
+                    width: xsmall
+            default_sort_column: label_name
+            item:
+                css_class: zenario_location_manager_sector
+            disable_close_up_view: Yes
+            collection_buttons:
+                add:
+                    label: Assign to a sector
+                    pick_items:
+                        path: zenario__locations/nav/sectors/panel
+                        target_path: zenario__locations/nav/sectors/panel
+                        min_path: zenario__locations/nav/sectors/panel
+                        max_path: zenario__locations/nav/sectors/panel
+                        request:
+                            action: add_sector
+                        multiple_select: Yes
+            item_buttons:
+                increase_score:
+                    ord: "2"
+                    label: Increase score
+                    ajax:
+                        request:
+                            action: increase_score
+                    with_columns_set:
+                        traits.not_at_max: true
+                decrease_score:
+                    ord: "2"
+                    label: Decrease score
+                    ajax:
+                        request:
+                            action: decrease_score
+                    with_columns_set:
+                        traits.not_at_min: true
+                sticky:
+                    ord: "1000"
+                    label: Make primary
+                    with_columns_set:
+                        traits.not_sticky: true
+                    ajax:
+                        confirm:
+                            message: 'Are you sure you wish to make sector "[[label_name2]]" the primary for this location?'
+                            button_message: Make primary
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            action: make_sticky
+                remove:
+                    ord: "1000"
+                    label: Remove sector
+                    ajax:
+                        confirm:
+                            message: 'Are you sure you wish to remove the location from sector "[[label_name2]]"?'
+                            button_message: Remove
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            action: remove_sector

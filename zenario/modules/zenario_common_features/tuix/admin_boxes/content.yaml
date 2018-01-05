@@ -1,0 +1,743 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_content:
+    key:
+        id: ''
+        cID: ''
+        cType: ''
+        cVersion: ''
+        
+        source_cID: ''
+        source_cVersion: ''
+        
+        create_from_content_panel: ''
+        create_from_toolbar: ''
+        from_cID: ''
+        from_cType: ''
+        from_mID: 0
+        
+        translate: ''
+        equivId: ''
+        id_is_menu_node_id: ''
+        id_is_parent_menu_node_id: ''
+        duplicate: ''
+        duplicate_from_menu: ''
+        
+        target_cType: ''
+        target_title: ''
+        target_alias: ''
+        target_language_id: ''
+        target_template_id: ''
+        target_menu_parent: ''
+        target_menu_section: ''
+        target_menu_title: ''
+        
+        last_title: ''
+        
+    identifier:
+        css_class: content_draft
+        label: Content item ID
+    title: Creating a content item
+    tabs:
+        meta_data:
+            ord: 10
+            label: Meta Data
+            edit_mode:
+                enabled: false
+                priv: _PRIV_EDIT_DRAFT
+            notices:
+                archived_template:
+                    show: false
+                    type: warning
+                    message: The chosen Layout is archived.
+            fields:
+                title:
+                    ord: 20
+                    label: 'Browser title:'
+                    type: text
+                    maxlength: 125
+                    onkeyup: |
+                        zenarioAB.contentTitleChange();
+                        cnt = $('#title').val().length;
+                        if(cnt<1) {
+                            $('#snippet__title_length').attr('class','title_red');
+                        } else if (cnt<20) {
+                            $('#snippet__title_length').attr('class','title_orange');
+                        } else if (cnt<40) {
+                            $('#snippet__title_length').attr('class','title_yellow');
+                        } else if (cnt<66) {
+                            $('#snippet__title_length').attr('class','title_green');
+                        } else {
+                            $('#snippet__title_length').attr('class','title_yellow');
+                        }
+                        $('#snippet__title_counter').html(cnt);
+                        
+                        zenarioAB.updateSEP();
+                    post_field_html: |
+                        <div class="snippet__title" >
+                            <div id="snippet__title_length" class="[[initial_class_name]]">
+                                <span id="snippet__title_counter">[[initial_characters_count]]</span>
+                            </div>
+                        </div>
+                language_id:
+                    ord: 30
+                    label: 'Language:'
+                    type: select
+                publication_date:
+                    ord: 31
+                    label: 'Release date:'
+                    type: date
+                    change_month_and_year: true
+                    same_row: true
+                    pre_field_html: |
+                        <label for="publication_date" style="font-weight:bold;">
+                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                Release Date:
+                            </label>
+                
+                
+                
+                menu:
+                    ord: 32
+                    type: grouping
+                    name: menu
+                create_menu_node:
+                    grouping: menu
+                    type: checkbox
+                    label: Add to menu navigation
+                    value: 1
+                    redraw_onchange: true
+                no_menu_warning:
+                    grouping: menu
+                    indent: 1
+                    hide_if_previous_outdented_value_isnt: ''
+                    snippet:
+                        div_class: zenario_fbWarning
+                        div: 'Warning: if not added to menu navigation, this page might be hard for users to find.'
+                menu_pos_locked_warning:
+                    grouping: menu
+                    indent: 1
+                    hidden: true
+                    hide_if_previous_outdented_value_isnt: 1
+                    snippet:
+                        div_class: zenario_fbWarning
+                        div: 'The initial menu position for content items of this type has been locked.'
+                menu_pos:
+                    grouping: menu
+                    indent: 1
+                    hide_if_previous_outdented_value_isnt: 1
+                    type: radios
+                    value: specific
+                    values:
+                        before:
+                            label: Just before current position
+                        after:
+                            label: Just after current position
+                        under:
+                            label: Underneath current position
+                        specific:
+                            label: Specific position (advanced)...
+                    redraw_onchange: true
+                menu_pos_before:
+                    grouping: menu
+                    indent: 2
+                    hide_with_previous_outdented_field: true
+                    hide_if_previous_outdented_value_isnt: before
+                    readonly: true
+                    pick_items: &pick_menu_pos
+                        path: zenario__menu/panels/menu_position/refiners/create////
+                        min_path: zenario__menu/panels/menu_position
+                        disallow_refiners_looping_on_min_path: true
+                        select_phrase: Place menu node...
+                        hide_info_button: true
+                        visible_if_for_all_selected_items: |
+                            zenario.engToBoolean(item.menu_id) || zenario.engToBoolean(item.is_dummy_child)
+                menu_pos_after:
+                    grouping: menu
+                    indent: 2
+                    hide_with_previous_outdented_field: true
+                    hide_if_previous_outdented_value_isnt: after
+                    readonly: true
+                    pick_items: *pick_menu_pos
+                menu_pos_under:
+                    grouping: menu
+                    indent: 2
+                    hide_with_previous_outdented_field: true
+                    hide_if_previous_outdented_value_isnt: under
+                    readonly: true
+                    pick_items: *pick_menu_pos
+                menu_pos_specific:
+                    grouping: menu
+                    indent: 2
+                    hide_with_previous_outdented_field: true
+                    hide_if_previous_outdented_value_isnt: specific
+                    pick_items: *pick_menu_pos
+                    validation:
+                        required_if_not_hidden: Please select a position.
+                menu_text:
+                    grouping: menu
+                    indent: 1
+                    hide_if_previous_outdented_value_isnt: 1
+                    label: 'Menu node text:'
+                    type: text
+                    maxlength: 255
+                    onchange: zenarioAB.tuix.___menu_text_changed = true;
+                    validation:
+                        required_if_not_hidden: Please enter some text for the menu node.
+                
+                
+                
+                #Old code
+                #warning_message:
+                #    ord: 33
+                #    pre_field_html: <div class="zenario_fbWarning">
+                #    snippet:
+                #        html: ''
+                #    post_field_html: </div>
+                #    hidden: true
+                #create_menu:
+                #    ord: 34
+                #    label: 'Add to menu'
+                #    type: checkbox
+                #    format_onchange: true
+                #at_position:
+                #    ord: 35
+                #    label: 'Menu options:'
+                #    type: radios
+                #    values:
+                #        orphan:
+                #            label: Don't add to menu (orphan)
+                #        after_current:
+                #            label: Add to menu, just after the current page
+                #        specific_position:
+                #            label: Add to menu at a specific position (advanced)
+                #    value: after_current
+                #    format_onchange: true
+                #menu_title:
+                #    ord: 36
+                #    label: 'Menu node text:'
+                #    type: text
+                #    maxlength: 255
+                #    onchange: zenarioAB.tuix.___menu_title_changed = true;
+                #    onkeyup: |
+                #        if (get('menu_path')) {
+                #            get('menu_path').value = 
+                #                !get('menu_title').value ?
+                #                    ''
+                #                :    !get('menu_parent_path').value ?
+                #                        get('menu_title').value
+                #                    :    get('menu_parent_path').value + ' -> ' + get('menu_title').value;
+                #        }
+                #    validation:
+                #        required_if_not_hidden: Please enter some text for the menu node.
+                #    indent: 1
+                #specific_position:
+                #    ord: 37
+                #    label: 'Attach to menu:'
+                #    pick_items:
+                #        path: zenario__menu/panels/menu_position/refiners/create////
+                #        min_path: zenario__menu/panels/menu_position
+                #        disallow_refiners_looping_on_min_path: true
+                #        select_phrase: Place menu node...
+                #        hide_info_button: true
+                #        visible_if_for_all_selected_items: |
+                #            zenario.engToBoolean(item.menu_id) || zenario.engToBoolean(item.is_dummy_child)
+                #    indent: 1
+                #    validation:
+                #        required_if_not_hidden: Please choose a place in the menu or leave it as an orphan.
+                #
+                #menu_path:
+                #    ord: 41
+                #    label: 'Path preview:'
+                #    type: text
+                #    disabled: disabled
+                #    class: zenario_textbox_noborder
+                #    indent: 1
+                #menu_parent_path:
+                #    same_row: true
+                #    ord: 42
+                #    type: hidden
+                #    indent: 1
+                
+                
+                
+                
+                alias:
+                    ord: 50
+                    label: 'Alias:'
+                    type: text
+                    maxlength: 75
+                    onkeyup: |
+                        zenarioAB.updateSEP();
+                    onchange: zenarioAB.tuix.___alias_changed = true;
+                    note_below: |
+                        An alias for this content item, and part of its URL.
+                        The combination of the content item's alias and its language code is unique across the site.
+                        Lower case only, may not contain spaces or special characters.
+                    post_field_html: '<div id="alias_warning_display"></div>'
+                description:
+                    ord: 70
+                    label: 'Description meta tag:'
+                    type: textarea
+                    style: height:45px
+                    onkeyup: |
+                        cnt = $('#description').val().length;
+                        if(cnt<1) {
+                            $('#snippet__description_length').attr('class','description_red');
+                        } else if (cnt<50) {
+                            $('#snippet__description_length').attr('class','description_orange');
+                        } else if (cnt<100) {
+                            $('#snippet__description_length').attr('class','description_yellow');
+                        } else if (cnt<156) {
+                            $('#snippet__description_length').attr('class','description_green');
+                        } else {
+                            $('#snippet__description_length').attr('class','description_yellow');
+                        }
+                        $('#snippet__description_counter').html(cnt);
+                    
+                        zenarioAB.updateSEP();
+                    post_field_html: |
+                        <div class="snippet__description" >
+                            <div id="snippet__description_length" class="[[initial_class_name]]">
+                                <span id="snippet__description_counter">[[initial_characters_count]]</span>
+                            </div>
+                        </div>
+                
+                sitemap:
+                    ord: 75
+                    label: 'XML sitemap:'
+                sitemap_disabled:
+                    ord: sitemap.1
+                    same_row: true
+                    visible_if: |
+                        !zenarioA.siteSettings.sitemap_enabled
+                    type: text
+                    value: Not enabled for this site.
+                    readonly: true
+                    show_as_a_span_when_readonly: true
+                    
+                    enable_microtemplates_in_properties: true
+                    post_field_html: |
+                        <% link = 'zenario/admin/organizer.php#zenario__administration/panels/site_settings//xml_sitemap~.site_settings~tsitemap~k{"id"%3A"xml_sitemap"}'; %>
+                        <a
+                            target="_blank"
+                            href="{{URLBasePath|e}}{{link|e}}"
+                        >
+                            More
+                        </a>
+                excluded_from_sitemap:
+                    ord: sitemap.2
+                    same_row: true
+                    visible_if: |
+                        zenarioA.siteSettings.sitemap_enabled
+                    type: text
+                    value: Automatically excluded
+                    readonly: true
+                    show_as_a_span_when_readonly: true
+                included_in_sitemap:
+                    ord: sitemap.3
+                    same_row: true
+                    visible_if: |
+                        zenarioA.siteSettings.sitemap_enabled
+                    type: text
+                    value: Automatically included
+                    readonly: true
+                    show_as_a_span_when_readonly: true
+                exclude_from_sitemap:
+                    ord: sitemap.4
+                    same_row: true
+                    hide_with_previous_field: true
+                    type: checkbox
+                    pre_field_html: '('
+                    label: Exclude
+                    post_field_html: ')'
+                    redraw_onchange: true
+                search_engine_preview:
+                    ord: sitemap.5
+                    indent: 1
+                    hide_with_previous_field: true
+                    visible_if: |
+                        !zenarioAB.value('exclude_from_sitemap')
+                    label: 'Search engine results preview:'
+                    snippet:
+                        microtemplate: zenario_admin_box_search_engine_preview
+                    
+                
+                keywords:
+                    ord: 80
+                    label: 'Keywords meta tag:'
+                    type: textarea
+                    style: height:30px
+                    onkeyup: "$('#snippet__keywords_counter').html($('#keywords').val().length);"
+                    post_field_html: |
+                        <div class="snippet__keywords" >
+                            <div id="snippet__keywords_length" class="[[initial_class_name]]">
+                                <span id="snippet__keywords_counter">[[initial_characters_count]]</span>
+                            </div>
+                        </div>
+                writer_id:
+                    ord: 100
+                    label: 'Writer:'
+                    pick_items:
+                        path: zenario__users/panels/administrators
+                        target_path: zenario__users/panels/administrators
+                        min_path: zenario__users/panels/administrators
+                        select_phrase: Select an Administrator...
+                        nothing_selected_phrase: Nobody selected
+                    format_onchange: true
+                writer_name:
+                    ord: 110
+                    label: 'Writer name:'
+                    type: text
+                    hidden: true
+                    note_below: >
+                        You may edit this name to provide an alternative to that
+                        stored against the Administrator.
+                content_summary:
+                    label: 'Summary:'
+                    ord: 130
+                    type: editor
+                    dont_trim: true
+                    insert_link_button:
+                        exists: true
+                    style: |
+                        height: 12em;
+                lock_summary_view_mode:
+                    label: 'Protected'
+                    ord: 140
+                    hidden: true
+                    visible_if: '!zenarioAB.editModeOn()'
+                    type: checkbox
+                    note_below: >
+                        Protected Summaries will not be updated when you edit
+                        content using the WYSIWYG Editor Plugin.
+                lock_summary_edit_mode:
+                    label: 'Protect'
+                    ord: 150
+                    hidden: true
+                    visible_if: zenarioAB.editModeOn()
+                    type: checkbox
+                    note_below: >
+                        By protecting the Summary, changes made using the WYSIWYG
+                        Editor Plugin cannot be synced to the Summary.
+                layout_id:
+                    ord: 160
+                    label: 'Layout:'
+                    pick_items:
+                        path: zenario__layouts/panels/layouts
+                        target_path: zenario__layouts/panels/layouts
+                        min_path: zenario__layouts/panels/layouts
+                        max_path: zenario__layouts/panels/layouts
+                        disallow_refiners_looping_on_min_path: true
+                        one_to_one_choose_phrase: Choose this Layout
+                        select_phrase: Select a Layout...
+                        hide_remove_button: true
+                    format_onchange: true
+        content_dropdown:
+            ord: 25
+            label: Content
+        content1:
+            ord: 25.01
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_DRAFT
+            parent: content_dropdown
+            fields:
+                content:
+                    full_width: true
+                    type: editor
+                    dont_trim: true
+                    insert_link_button:
+                        exists: true
+                    style: 'width: 750px; height: 250px;'
+                thumbnail:
+                    full_width: true
+                    snippet:
+                        html: ''
+        content2:
+            ord: 25.02
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_DRAFT
+            parent: content_dropdown
+            fields:
+                content:
+                    full_width: true
+                    type: editor
+                    dont_trim: true
+                    insert_link_button:
+                        exists: true
+                    style: 'width: 750px; height: 250px;'
+                thumbnail:
+                    full_width: true
+                    snippet:
+                        html: ''
+        content3:
+            ord: 25.03
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_DRAFT
+            parent: content_dropdown
+            fields:
+                content:
+                    full_width: true
+                    type: editor
+                    dont_trim: true
+                    insert_link_button:
+                        exists: true
+                    style: 'width: 750px; height: 250px;'
+                thumbnail:
+                    full_width: true
+                    snippet:
+                        html: ''
+        content4:
+            ord: 25.04
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_DRAFT
+            parent: content_dropdown
+            fields:
+                content:
+                    full_width: true
+                    type: editor
+                    dont_trim: true
+                    insert_link_button:
+                        exists: true
+                    style: 'width: 750px; height: 250px;'
+                thumbnail:
+                    full_width: true
+                    snippet:
+                        html: ''
+        css:
+            ord: 31
+            label: Background & CSS
+            edit_mode:
+                enabled: false
+                priv: _PRIV_EDIT_CONTENT_ITEM_TEMPLATE
+            fields:
+                desc:
+                    full_width: true
+                    snippet:
+                        html: |
+                            Use this screen to set the background for this content item.
+                background_image:
+                    label: 'Background image:'
+                    upload:
+                        multi: false
+                        accept: 'image/*'
+                        extensions:
+                            - .gif
+                            - .jpg
+                            - .jpeg
+                            - .png
+                        drag_and_drop: true
+                        reorder_items: false
+                    pick_items:
+                        path: zenario__content/panels/background_images
+                        target_path: zenario__content/panels/background_images
+                        min_path: zenario__content/panels/background_images
+                        max_path: zenario__content/panels/background_images
+                        multiple_select: false
+                        select_phrase: 'Use existing...'
+                    redraw_onchange: true
+                
+                bg_color:
+                    label: 'Background color:'
+                    type: color_picker
+                    color_picker_options:
+                        allowEmpty: true
+                        showInput: true
+                        showPalette: true
+                        showInitial: true
+                        clickoutFiresChange: true
+                    maxlength: 64
+                
+                bg_position:
+                    label: 'Background position:'
+                    type: select
+                    empty_value: "[ Don't specify ]"
+                    values:
+                        'left top':
+                            label: '↖ Top left'
+                        'center top':
+                            label: '↑ Top center'
+                        'right top':
+                            label: '↗ Top right'
+                        'left center':
+                            label: '← Left center'
+                        'center center':
+                            label: '• Center'
+                        'right center':
+                            label: '→ Right center'
+                        'left bottom':
+                            label: '↙ Bottom left'
+                        'center bottom':
+                            label: '↓ Bottom center'
+                        'right bottom':
+                            label: '↘ Bottom right'
+                
+                bg_repeat:
+                    label: 'Background repeat:'
+                    type: select
+                    empty_value: "[ Don't specify ]"
+                    values:
+                        repeat:
+                            label: ' ⸬ Repeat in all directions'
+                        repeat-x:
+                            label: ' … Repeat horizontally'
+                        repeat-y:
+                            label: ' ⋮ Repeat vertically'
+                        no-repeat:
+                            label: " • Don't repeat"
+                
+                desc2:
+                    full_width: true
+                    snippet:
+                        html: |
+                            If you wish to style this content item specifically in your skin, you may give it one or more CSS class names.
+                            A <code>&lt;div&gt;</code> with these class names will be added to this page.
+                css_class:
+                    label: 'CSS class names:'
+                    type: text
+                    maxlength: 100
+        
+        file:
+            ord: 35
+            label: File
+            edit_mode:
+                enabled: true
+            fields:
+                file:
+                    ord: 20
+                    label: 'File:'
+                    upload:
+                        drag_and_drop: true
+                        accept: ''
+                        extensions: []
+        
+        # A placeholder for the Privacy Tab, which the Users Module will add here if it is running!
+        privacy:
+            ord: 40
+            hidden: true
+            fields: {}
+        
+        categories:
+            ord: 50
+            label: Categories
+            edit_mode:
+                enabled: false
+                priv: _PRIV_EDIT_CONTENT_ITEM_CATEGORIES
+            fields:
+                desc:
+                    full_width: true
+                    snippet:
+                        html: ''
+                categories:
+                    label: 'Categories:'
+                    type: checkboxes
+                    values: ''
+                    checking_child_checks_parents: true
+                no_categories:
+                    label: 'Categories:'
+                    snippet:
+                        html: No Categories have been created.
+        
+        plugins:
+            ord: 90
+            hidden: true
+            label: Plugins
+            edit_mode:
+                enabled: false
+                priv: _PRIV_EDIT_DRAFT
+            fields:
+                desc:
+                    snippet:
+                        p: ''
+                th_slotname:
+                    <table class="zfab_grey_table"><tr><th>:
+                    snippet:
+                        label: Slot name
+                    </th>:
+                th_module:
+                    <th>:
+                    snippet:
+                        label: Module
+                    </th>:
+                th_plugin:
+                    <th>:
+                    snippet:
+                        label: Plugin
+                    </th>:
+                th_action:
+                    <th>:
+                    snippet:
+                        label: Action
+                    </th></tr>:
+                table_end:
+                    ord: 999999
+                    </table>:
+            custom_template_fields:
+                slotname__znz:
+                    <tr><td>:
+                    type: text
+                    show_as_a_span: true
+                    readonly: true
+                    </td>:
+                module__znz:
+                    <td>:
+                    type: text
+                    show_as_a_span: true
+                    readonly: true
+                    </td>:
+                plugin__znz:
+                    <td>:
+                    type: text
+                    show_as_a_span: true
+                    readonly: true
+                    css_class: zfab_plugin_icon
+                    </td>:
+                instance_id__znz:
+                    type: hidden
+                    hidden: true
+                    readonly: true
+                action__znz:
+                    <td>:
+                    type: select
+                    empty_value: ' -- Please choose what to do with this plugin -- '
+                    values: plugin_actions
+                    redraw_onchange: true
+                    validation:
+                        only_validate_when_saving: true
+                        required: true
+                new_name__znz:
+                    <br/>:
+                    indent: 1
+                    css_class: zenario_indent_level_1
+                    visible_if: |
+                        lib.value('action__znz') == 'duplicate'
+                    type: text
+                    maxlength: 250
+                    validation:
+                        only_validate_when_not_hidden: true
+                        required: true
+                        non_present:
+                            table: plugin_instances
+                            column: name
+                            message: |
+                                The name "[[name]]" is already in use.
+                row_end__znz:
+                    </td></tr>:
+                
+    
+    lovs:
+        plugin_actions:
+            original:
+                label: Use the same plugin here too
+            duplicate:
+                label: Duplicate the plugin and place the copy here
+    
+    confirm:
+        show: false
+        html: true
+        cancel_button_message: Cancel
+        message_type: warning

@@ -1,0 +1,18 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__form_input_handler:
+    css_class: zenario_form_input_handler_top_level
+    name: Form Input Handler
+    tooltip: >
+        Configure how your site processes form data, and sends
+        emails based on rules which you define
+    default_sort_column: Section
+    nav:
+        forms_with_submitted_data:
+            name: Forms inbox
+
+        email_rulesets:
+            name: Email Rulesets
+            tooltip: >
+                Configure rules for sending emails containing form submitted
+                data

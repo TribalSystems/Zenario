@@ -1,0 +1,94 @@
+<form class="zenario_grid_form zenario_grid_properties_form" onsubmit="return false;">
+	<div class="content_wrap">
+	<h3>{{zenarioA.phrase.gridProperties}}</h3>
+	<div id="zenario_grid_error"></div>
+	
+	<input type="hidden" name="type" value="{{htmlspecialchars(m.type)}}" maxlength="100"/>
+	
+	<% if (m.type == 'slot' || m.type == 'grid_break_with_slot') { %>
+		<p>{{zenarioA.phrase.gridSlotName}}</p>
+		<input type="text" name="name" value="{{htmlspecialchars(m.name)}}" maxlength="100"/>
+	<% } %>
+	
+	<% if (m.type != 'grid_break') { %>
+		<p>{{zenarioA.phrase.gridCSSClass}}</p>
+		<input type="text" name="css_class" value="{{htmlspecialchars(m.css_class)}}" maxlength="100"/>
+	<% } %>
+	
+	<% if (m.type == 'space' || m.type == 'grid_break') { %>
+		<p>{{zenarioA.phrase.gridHtml}}</p>
+		<textarea name="html">{{htmlspecialchars(m.html)}}</textarea>
+	<% } %>
+	
+	<% if (m.type == 'slot') { %>
+		<div class="zenario_grid_slot_heights">
+			<% var h, heights = ['small', 'medium', 'large', 'xlarge', 'xxlarge']; %>
+			<% for (h in heights) { %>
+				<input type="radio" name="height" value="{{heights[h]}}"
+					id="zenario_grid_height_{{heights[h]}}"
+					{{(heights[h] == m.height || (h == 0 && !m.height)? 'checked="checked"' : '')}}
+				/>
+				<label for="zenario_grid_height_{{heights[h]}}">{{heights[h]}}</label>
+				<% if (h % 3 == 2) { %>
+					<br/>
+				<% } %>
+			<% } %>
+		</div>
+		<br/>
+	<% } %>
+	
+	<% var show = false, showFirst = false, showOnly = false; %>
+	
+	<% if (m.type == 'grid_break' || m.type == 'grid_break_with_slot') { %>
+		<p>{{zenarioA.phrase.gridGridCSSClass}}</p>
+		<input type="text" name="grid_css_class" value="{{htmlspecialchars(m.grid_css_class)}}" maxlength="100"/>
+		
+		<% if (m.type == 'grid_break_with_slot') { %>
+			<% show = showOnly = true; %>
+		<% } %>
+	
+	<% } else if (zenarioG.data.responsive && m.type == 'space') { %>
+		<p>
+			<input type="radio" name="small" id="grid_resp_hide" value="hide" checked="checked"/>
+			<label for="grid_resp_hide">{{zenarioA.phrase.gridResp_hide}}</label>
+		</p>
+	
+	<% } else if (zenarioG.data.responsive) { %>
+		<% show = true; %>
+		
+		<% if (1*m.is_last) { %>
+			<% showFirst = true; %>
+		<% } else if (1*m.is_full) { %>
+			<% showOnly = true; %>
+		<% } %>
+	<% } %>
+	
+	
+	
+	
+	<% if (show) { %>
+		<p>
+			<input type="radio" name="small" id="grid_resp_always" value="" {{(!m.small? 'checked="checked"' : '')}}/>
+			<label for="grid_resp_always">{{zenarioA.phrase.gridResp_always}}</label>
+			
+			<br/>
+			<input type="radio" name="small" id="grid_resp_hide" value="hide" {{('hide' == m.small? 'checked="checked"' : '')}}/>
+			<label for="grid_resp_hide">{{zenarioA.phrase.gridResp_hide}}</label>
+		
+			<% if (showFirst) { %>
+				<br/>
+				<input type="radio" name="small" id="grid_resp_first" value="first" {{('first' == m.small? 'checked="checked"' : '')}}/>
+				<label for="grid_resp_first">{{zenarioA.phrase.gridResp_first}}</label>
+			<% } %>
+			<% if (showOnly) { %>
+				<br/>
+				<input type="radio" name="small" id="grid_resp_only" value="only" {{('only' == m.small? 'checked="checked"' : '')}}/>
+				<label for="grid_resp_only">{{zenarioA.phrase.gridResp_only}}</label>
+			<% } %>
+		</p>
+	<% } %>
+	
+
+	<div class="nice_button"><div class="r"><input type="submit" id="zenario_grid_slotname_button" class="i" value="{{zenarioA.phrase.gridSaveProperties}}"/></div></div>
+	</div>
+</form>

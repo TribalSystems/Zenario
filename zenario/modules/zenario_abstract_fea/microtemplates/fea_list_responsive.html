@@ -1,0 +1,9 @@
+<% if (zenarioL.mobile) { %>
+	{{m.lib.pMicroTemplate('list_blocks', m)}}
+<% } else { %>
+	{{m.lib.pMicroTemplate('list', m)}}
+<% } %>
+
+<% var lib = m.lib; %>
+<% lib.on('resizeToMobile', function() { lib.drawList(); }); %>
+<% lib.on('resizeToDesktop', function() { lib.drawList(); }); %>

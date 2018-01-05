@@ -1,0 +1,191 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__social:
+    tooltip: >
+        Configure the forums on your site and Administer comments
+        made by Extranet Users
+    nav:
+        forums:
+            label: Forums
+            tooltip: View and manage the forums on your site
+            panel:
+                php: Yes
+                view_mode: summary
+                disable_grid_view: Yes
+                title: Forums
+                select_mode_title: Select a Forum
+                no_items_message: |
+                    No Forums have been created; please put a Forum Plugin on a Content Item and then
+                                            click 'Set a Forum on this Content Item' to create your first Forum.
+                db_items:
+                    table: '[[DB_NAME_PREFIX]][[ZENARIO_FORUM_PREFIX]]forums AS f'
+                    id_column: f.id
+                refiners:
+                    exclude_forum:
+                        sql: 'f.id != [[REFINER__EXCLUDE_FORUM]]'
+                    no_thread_page:
+                        sql: thread_content_id = 0
+                    no_new_thread_page:
+                        sql: new_thread_content_id = 0
+                columns:
+                    ordinal:
+                        title: Ordinal
+                        db_column: f.ordinal
+                        align_right: Yes
+                    title:
+                        title: Title
+                    thread_count:
+                        title: '# Threads'
+                        db_column: f.thread_count
+                        align_right: Yes
+                    post_count:
+                        title: '# Posts'
+                        db_column: f.post_count
+                        align_right: Yes
+                    date_updated:
+                        title: Last Activity
+                        db_column: f.date_updated
+                        format: datetime
+                    locked:
+                        title: Locked
+                        db_column: f.locked
+                        format: yes_or_no
+                    forum_content_id:
+                        db_column: f.forum_content_id
+                    forum_content_type:
+                        db_column: f.forum_content_type
+                    forum_link:
+                        title: Forum Page
+                        db_column: "CONCAT(f.forum_content_type, '_', f.forum_content_id)"
+                        item_link: content_item
+                        show_by_default: Yes
+                    thread_link:
+                        title: Page for Viewing Thread
+                        db_column: "CONCAT(f.thread_content_type, '_', f.thread_content_id)"
+                        item_link: content_item
+                        show_by_default: Yes
+                    new_thread_link:
+                        title: Page for New Threads
+                        db_column: "CONCAT(f.new_thread_content_type, '_', f.new_thread_content_id)"
+                        item_link: content_item
+                        show_by_default: Yes
+                    categories:
+                        title: Categories
+                default_sort_column: title
+                item:
+                    name: Forum
+                    names: Forums
+                    css_class: zenario_forum__forum
+                    tooltip: |
+                        To change the order Forums appear in lists, use Grid View, then simply drag and drop.
+                                                    Changes will take effect immediately.
+                inline_buttons:
+                    view_frontend:
+                        css_class: view_frontend
+                        tooltip: View in Front-end window
+                        frontend_link:
+                            exists: Yes
+                        visible_if: >
+                            zenario.engToBoolean(item.frontend_link)
+                    inspect:
+                        css_class: inspect
+                        tooltip: View in floating box
+                        popout:
+                            iframe: Yes
+                        visible_if: >
+                            zenario.engToBoolean(item.frontend_link)
+                item_buttons:
+                    lock_forum:
+                        priv: _PRIV_MODERATE_USER_COMMENTS
+                        hide_in_select_mode: Yes
+                        css_class: zenario_item_unlocked
+                        tooltip: Lock Forum
+                        ajax:
+                            confirm:
+                                message: 'Are you sure you wish to lock the "[[title]]" Forum? This will prevent any further messages being posted.'
+                                button_message: Lock
+                                cancel_button_message: Cancel
+                                message_type: warning
+                            request:
+                                lock_forum: "1"
+                        with_columns_set:
+                            traits.unlocked: true
+                    unlock_forum:
+                        priv: _PRIV_MODERATE_USER_COMMENTS
+                        hide_in_select_mode: Yes
+                        css_class: zenario_item_locked_by_you
+                        tooltip: Unlock Forum
+                        ajax:
+                            confirm:
+                                message: 'Are you sure you wish to unlock the "[[title]]" Forum? This will allow messages to be posted.'
+                                button_message: Unlock
+                                cancel_button_message: Cancel
+                                message_type: question
+                            request:
+                                unlock_forum: "1"
+                        with_columns_set:
+                            traits.locked: true
+                    remove_thread_page:
+                        ord: "97"
+                        priv: _PRIV_MANAGE_ITEM_SLOT
+                        hide_in_select_mode: Yes
+                        name: Remove "View Thread" page
+                        tooltip: >
+                            Remove the link between this Forum and its "View Thread"
+                            page
+                        ajax:
+                            confirm:
+                                message: |
+                                    Are you sure you wish to remove the link between the "[[title]]" Forum and its "View Thread" page?
+                                                                            
+                                                                            This will not prevent Threads from being viewed.
+                                                                            
+                                                                            Please not that the unlinked Content Item will continue to exist and will not be deleted.
+                                button_message: Remove
+                                cancel_button_message: Cancel
+                                message_type: warning
+                            request:
+                                remove_thread_page: "1"
+                        with_columns_set:
+                            traits.has_thread_page: true
+                    remove_new_thread_page:
+                        ord: "98"
+                        priv: _PRIV_MANAGE_ITEM_SLOT
+                        hide_in_select_mode: Yes
+                        name: Remove "New Thread" page
+                        tooltip: Remove the link between this Forum and its "New Thread" page
+                        ajax:
+                            confirm:
+                                message: |
+                                    Are you sure you wish to remove the link between the "[[title]]" Forum and its "New Thread" page?
+                                                                            
+                                                                            This will not prevent Threads from being created.
+                                                                            
+                                                                            Please not that the unlinked Content Item will continue to exist and will not be deleted.
+                                button_message: Remove
+                                cancel_button_message: Cancel
+                                message_type: warning
+                            request:
+                                remove_new_thread_page: "1"
+                        with_columns_set:
+                            traits.has_new_thread_page: true
+                    remove_forum:
+                        ord: "99"
+                        priv: _PRIV_MANAGE_ITEM_SLOT
+                        hide_in_select_mode: Yes
+                        name: Delete Forum
+                        tooltip: Delete this empty Forum
+                        ajax:
+                            confirm:
+                                message: 'Are you sure you wish to delete the "[[title]]" Forum? This will not delete the Content Item.'
+                                button_message: Delete
+                                cancel_button_message: Cancel
+                                message_type: warning
+                            request:
+                                remove_forum: "1"
+                        with_columns_set:
+                            traits.empty: true
+                reorder:
+                    priv: _PRIV_REORDER_MENU_ITEM
+                    column: ordinal
+                disable_periodic_refresh: Yes

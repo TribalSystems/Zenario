@@ -1,0 +1,28 @@
+<div class="
+	zenario_toolbar_tab
+	{{m.selected || m.childSelected? 'zenario_tabOrTabsChildSelected' : ''}}
+">
+	<div class="
+		zenario_toolbar zenario_toolbar__{{m.id|escape}} {{m.css_class|escape}}
+		{{m.selected? 'zenario_toolbar_on' : ''}}
+	">
+		<div class="zenario_middle">
+			<div
+				class="zenario_middle_inner"
+				title="{{m.tooltip|escape}}"
+				onclick="zenarioAT.clickTab('{{m.id|escape}}');"
+			>{{m.label|escape}}</div>
+			
+	
+			<% if (m.children && (m.selected || m.childSelected)) { %>
+				<div class="zenario_toolbar_tab_children">
+					{{zenarioT.microTemplate('zenario_toolbar_tab_children', m.children)}}
+				</div>
+			<% } %>
+		</div> 
+	
+		<% if (m.warning_icon) { %>
+			<del class="{{m.warning_icon|escape}}"><del></del></del>
+		<% } %>
+	</div>
+</div>

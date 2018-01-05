@@ -1,0 +1,34 @@
+{% if Events_List %}
+	<div class="event_listing">
+
+		{% if Title %}
+			<h2>{{Title}}</h2>
+		{% endif %}
+		
+		{% for Event in Event_Row_On_List %}
+			<div class="single_event">
+			    {% if Event.Sticky_image_HTML_tag %}
+                    <div class="single_event_sticky_image">
+                        <a class="single_event_image_link" href="{{Event.Link_To_Event}}">
+                            {{Event.Sticky_image_HTML_tag}}
+                        </a>
+                    </div>
+				{% endif %}
+				<div class="single_event_description">
+					<div class="event_title">
+						<h2><a href="{{Event.Link_To_Event}}">{{Event.Event_Title}}</a></h2>
+					</div>
+					<span class="single_event_date">{{Event.Event_Dates}}</span>
+					<span class="single_event_location">{{Event.Event_location}}</span>
+					<span class="single_event_description">{{Event.Event_Description}}</span>
+					<a class="single_event_more_link" href="{{Event.Link_To_Event}}" >{{'_MORE'|trans}}</a>
+				</div>
+			</div>
+		{% endfor %}
+	</div>
+	{{Pagination}}
+{% elseif No_Events %}
+    <div class="no_events_to_show" > 
+		{{'_NO_EVENTS_TO_DISPLAY'|trans}}
+	</div>
+{% endif %}

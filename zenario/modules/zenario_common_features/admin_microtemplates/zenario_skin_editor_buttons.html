@@ -1,0 +1,29 @@
+<input type="button" value="{{zenarioA.phrase.updatePreview|e}}" onclick="
+		if (zenarioSE.canUpdatePreview) {
+			zenarioSE.updatePreview(1);
+		}
+	" class="submit_disabled" id="zenario_fabUpdatePreview"/>
+
+<input id="zenario_fabSaveAndContinue"  type="button" value="{{zenarioSE.tuix.save_and_continue_button_message|e}}"
+
+<% if (m.isReadOnly) { %>
+	 class="submit_disabled"/>
+<% } else { %>
+	 class="{{_.isEmpty(zenarioSE.changed)? 'submit_disabled' : 'submit_selected'}}"
+	 onclick="
+		if (zenarioSE.canUpdatePreview) {
+			zenarioSE.updatePreview(1);
+		}
+	 	if (!_.isEmpty(zenarioSE.changed)) {
+	 		zenarioSE.save(undefined, true);
+	 	}
+	 "/>
+<% } %>
+<input id="zenario_fabSave"  type="button" value="{{zenarioSE.tuix.save_button_message || zenarioA.phrase.save|e}}"
+
+<% if (m.isReadOnly) { %>
+	 class="submit_disabled"/>
+<% } else { %>
+	 class="{{_.isEmpty(zenarioSE.changed)? 'submit_disabled' : 'submit_selected'}}"
+	 onclick="zenarioSE.save();"/>
+<% } %>

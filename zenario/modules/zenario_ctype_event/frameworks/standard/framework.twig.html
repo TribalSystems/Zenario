@@ -1,0 +1,29 @@
+{% if Error_no_event_content_type %}
+	{{"_ERROR_NO_EVENT_CONTENT_TYPE"|trans}}
+{% endif %}
+
+
+{% if Event_Details %}
+	<div class="Event_details">
+		<h1>{{title}}</h1>
+		<h3>{{dates_range}}</h3>
+		<div class="event_weekdays_details_wrap">
+			{% for day in Event_On_Weekday_Details %}
+				<div class="event_weekday">
+					{{day.weekday}}: {{day.time}}
+				</div>
+			{% endfor %}
+		</div>
+		{% if stop_dates %}
+			<div class="event_stopdates">
+				{{"_STOP_DATES:"|trans}} {{stop_dates}}
+			</div>
+		{% endif %}
+
+		{% if More_Info_Url %}
+			<div class="event_more_info">
+				{{"_MORE_INFO:"|trans}} <a target="_blank" href="{{event_url}}"/>{{event_url}}</a>
+			</div>
+		{% endif %}
+	</div>
+{% endif %}

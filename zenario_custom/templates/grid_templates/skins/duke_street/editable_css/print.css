@@ -1,0 +1,112 @@
+.zenario_slot,
+.hide_from_print,
+.zenario_fbAdmin,
+.pluginAdminLinks,
+.zenario_social_tools,
+object,
+form,
+.zenario_toolbar_header,
+div.zenario_cookie_consent,
+.clear,
+.pad_slot,
+#google_translate_element,
+.admin_link 
+{
+	display:none;
+}
+
+.zenario_slot.banner_masthead,
+.Grid_Body .zenario_slot
+{
+	display:block !important;
+}
+
+.Grid_Body .zenario_slot.zenario_anonymous_comments,
+.Grid_Body .zenario_slot.zenario_comments,
+.Grid_Body .zenario_slot.zenario_email_a_friend,
+.Grid_Body .zenario_slot.zenario_extranet,
+.Grid_Body .zenario_slot.zenario_extranet_change_email,
+.Grid_Body .zenario_slot.zenario_extranet_change_password,
+.Grid_Body .zenario_slot.zenario_extranet_logout,
+.Grid_Body .zenario_slot.zenario_extranet_password_reminder,
+.Grid_Body .zenario_slot.zenario_extranet_password_reset,
+.Grid_Body .zenario_slot.zenario_extranet_registration,
+.Grid_Body .zenario_slot.zenario_font_size,
+.Grid_Body .zenario_slot.zenario_google_map,
+.Grid_Body .zenario_slot.zenario_menu,
+.Grid_Body .zenario_slot.zenario_menu_multicolumn,
+.Grid_Body .zenario_slot.zenario_menu_responsive_multilevel,
+.Grid_Body .zenario_slot.zenario_menu_vertical,
+.Grid_Body .zenario_slot.zenario_print_page,
+.Grid_Body .zenario_slot.zenario_promo_menu,
+.Grid_Body .zenario_slot.zenario_revealable_panel,
+.Grid_Body .zenario_slot.zenario_slideshow_2,
+.Grid_Body .zenario_slot.zenario_user_forms {
+	display:none !important;
+}
+
+body,
+*
+{
+	font-family:arial,verdana,helvetica;
+	font-size:13px;
+}
+    
+h1, h2, h3, h4, h5, h6
+{
+	font-family:arial,verdana,helvetica;
+    font-weight:normal;
+}
+
+h1
+{
+	font-size:24px;
+}
+
+h2
+{
+	font-size:20px;
+}
+
+h3
+{
+	font-size:18px;
+}
+
+h4
+{
+	font-size:16px;
+}
+
+h5
+{
+	font-size:14px;
+}
+
+h6
+{
+	font-size:12px;
+}
+
+table tr th,
+table tr td {
+	border:1px solid #000;
+}
+
+img {
+	border:none;
+}
+
+a {
+	color:#000;
+}
+
+.zenario_breadcrumbs {
+	font-size:10px;
+	padding-bottom:10px;
+}
+
+.zenario_content_list .content_list_data_row {
+	border-bottom:1px dotted #000;
+	padding:10px 0;
+}

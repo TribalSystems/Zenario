@@ -1,0 +1,545 @@
+---
+
+top_level_page: ref_of_elements_and_properties
+pages:
+    - toolbars
+    - buttons
+
+
+common_definitions:
+    stringy: &stringy
+        - number
+        - string
+    variable: &variable
+        - boolean
+        - number
+        - string
+        - "null"
+    css_class: &css_class
+        type: string
+        description: A CSS class name for the item, which should define its icon.
+    ord: &ord
+        type: *stringy
+        description: >
+            This controls the order in which elements are drawn on the screen.
+            
+            If not set, it defaults to the order the CMS finds them in.
+            
+            From version 7.3 onwards, if you are inserting elements into another module's TUIX,
+            you can use syntax of the form "name_of_other_element.001"
+            to place an element after the named element in the order.
+    copy_of: &copy_of
+        type: string
+        description: >
+            You can enter the code-name of another element (this must be element with the same
+            parent element) to copy the properties from.
+            
+            Any other properties you set will override the copied properties.
+            
+            If the element that you are attempting to copy is missing, unset, or not yet loaded,
+            then your element will be removed.
+            
+            This works from version 8.0 onwards.
+    hidden: &hidden
+        type: boolean
+        html_description: >
+            <p>If you want to hide and show TUIX elements such as toolbar buttons, toolbar tabs or Admin Box fields in different situations, you can set the <span class="code">&lt;hidden&gt;</span> property to hide them in your php methods such as <span class="code">fillAdminToolbar()</span>, <span class="code">formatAdminBox()</span> and <span class="code">preFillOrganizerPanel()</span>.</p>
+            <p>Anything with the hidden property set to true will be hidden from view. But note that data is still sent from the server to the client.</p>
+    visible_if: &visible_if
+        type: string
+        html_description: >
+            <p>In some cases, you may wish to conditionally show something that you can't alter in your php methods (for example, whether empty slots are currently being shown).</p>
+            <p>You can use this property to provide a snippet of JavaScript, which will be evaluated every time your button, tab or field is to be shown. Your button, tab or field will only be shown if the evaluated code returns <span class="code">true</span>.</p>
+            <p>A few useful conditions might be:</p>
+            <ul>
+                <li><code>!zenario.browserIsIE()</code>
+                    <ul><li>Do not show something in Internet Explorer</li></ul></li>
+                <li><code>!zenario.browserIsIE(7)</code>
+                    <ul><li>Do not show something in Internet Explorer versions 7 or earlier</li></ul></li>
+                <li><code>zenarioA.siteSettings.my_setting</code>
+                    <ul><li>Only show something when a Site Setting is enabled. (But note that only numeric Site Settings are available in JavaScript.)</li></ul></li>
+                <li><code>zenarioA.showGridOn</code>
+                    <ul><li>Only show a button when the grid shown.</li></ul></li>
+                <li><code>!zenarioA.showGridOn</code>
+                    <ul><li>Only show a button when the grid is not shown.</li></ul></li>
+            </ul>
+
+$schema: 'http://json-schema.org/draft-04/schema#'
+title: Admin Toolbar Schema
+
+type: object
+properties:
+    toolbars:
+        type: object
+        description: >
+            The Admin Toolbar is a collection of multiple toolbars.
+        additionalProperties:
+            type: object
+            description: >
+                Each toolbar consists of a tab that the admin can click to open it,
+                and a microtemplate that is drawn when open.
+            required:
+                - label
+                - page_mode
+                - toolbar_microtemplate
+            additionalProperties: false
+            properties:
+                label:
+                    type: *stringy
+                    description: >
+                        The label for this toolbar's tab.
+                tooltip:
+                    type: string
+                    description: >
+                        A tooltip for this tab.
+                        From 6.1.1 onwards this is also visible on the screen.
+                css_class: *css_class
+                ord: *ord
+                copy_of: *copy_of
+                hidden: *hidden
+                visible_if: *visible_if
+                
+                parent:
+                    type: string
+                    description: >
+                        Enter the name of another toolbar here to make your toolbar's tab appear
+                        under the named toolbar's tab as a sub-tab.
+                        
+                        There's a limit of 2 levels; you can't have a sub-tab inside another sub-tab.
+                
+                toolbar_microtemplate:
+                    type: string
+                    description: >
+                        You need to enter the name of a microtemplate that will be used to
+                        draw this toolbar when it is open.
+                
+                page_mode:
+                    enum:
+                        - preview
+                        - edit
+                        - edit_disabled
+                        - rollback
+                        - menu
+                        - layout
+                    description: >
+                        The page mode to use when this toolbar is selected.
+                        
+                        The page mode is added to the <body> tag of the page as a CSS class.
+                
+                        Different Slots and Actions appear in the front-end of the site
+                        depending on the current page mode.
+
+
+   sections:
+       type: object
+       description: >
+           Sections of a toolbar are wrappers that can contain one or more buttons.
+       additionalProperties:
+           type: object
+           description: >
+               Each section has some conditional display logic, and an array of buttons.
+           additionalProperties: false
+           properties:
+               hidden: *hidden
+               visible_if: *visible_if
+               
+               buttons:
+                    type: object
+                    description: >
+                        An array containing all of the buttons that should
+                        be drawn on this section.
+                    
+                    additionalProperties:
+                        type: object
+                        description: >
+                            A button on this section of the Admin Toolbar.
+                        oneOf:
+                            -
+                                required:
+                                    - ajax
+                            -
+                                required:
+                                    - admin_box
+                            -
+                                required:
+                                    - help
+                            -
+                                required:
+                                    - navigation_path
+                            -
+                                required:
+                                    - onclick
+                            -
+                                required:
+                                    - organizer_quick
+                            -
+                                required:
+                                    - pick_items
+                            -
+                                required:
+                                    - popout
+                        properties:
+                            ord: *ord
+                            copy_of: *copy_of
+                            css_class: *css_class
+                            label:
+                                type: string
+                                description: >
+                                    A label for this button
+                            tooltip:
+                                type: string
+                                description: >
+                                    A tooltip for this button
+                            
+                            parent:
+                                type: string
+                                description: >
+                                    Enter the name of another button here to make your button appear
+                                    under the named button as a dropdown.
+                                    
+                                    There's a limit of 2 levels; you can't have a dropdown inside another dropdown.
+                            
+                            hide_when_children_are_not_visible:
+                                type: boolean
+                                description: >
+                                    If you set this property, the button will be hidden when it has no
+                                    visible children.
+                            
+                            hidden: *hidden
+                            visible_if: *visible_if
+                            
+                            appears_in_toolbars:
+                                type: object
+                                additionalProperties:
+                                    type: boolean
+                                description: >
+                                    If a section is used on multiple toolbars, but you only want a button
+                                    on that section to appear in specific ones of those, you can set this property.
+                                    
+                                    
+                                    E.g.:
+                                    <pre>appears_in_toolbars:
+                                    
+                                        &nbsp;&nbsp;&nbsp;&nbsp;edit:
+                                        
+                                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;true</pre>
+                            
+                            #In addition, a button should have one (and only one) of the following properties as an action:
+                            ajax: &ajax
+                                type: object
+                                description: >
+                                    An AJAX button sends an AJAX request to your <code>handleAdminToolbarAJAX()</code> method,
+                                    then reloads the page after request is complete.
+                                properties:
+                                    confirm:
+                                        type: object
+                                        description: >
+                                            Use this to display a confirmation prompt before performing the AJAX action.
+                                        properties:
+                                            message:
+                                                type: string
+                                                description: >
+                                                    A message for the confirmation prompt.
+                                            html: &message_html
+                                                type: boolean
+                                                description: >
+                                                    If this is set, the message will not be html-escaped.
+                                            button_message:
+                                                type: string
+                                                description: >
+                                                    A message for the confirm button
+                                            cancel_button_message:
+                                                type: string
+                                                description: >
+                                                    A message for the cancel button
+                                            message_type:
+                                                enum:
+                                                    - none
+                                                    - error
+                                                    - warning
+                                                    - question
+                                                    - success
+                                                default: none
+                                                description: >
+                                                    The type of message. A different styling will be applied for each different type.
+                                                    
+                                                    Defaults to "none" if not set.
+                                    request: &request
+                                        type: object
+                                        additionalProperties:
+                                            type: *variable
+                                            description: >
+                                                A variable to put in the $_GET or $_POST of the AJAX request.
+                                        description: >
+                                            You can use the request property to add requests to the AJAX request.
+                                    
+                                            These will be in the $_GET when seeking confirmation, and in the $_POST
+                                            when performing the action.
+                            
+                            admin_box: &admin_box
+                                type: object
+                                description: >
+                                    This lets you open an Admin Box that you have written in your Module,
+                                    or call an Admin Box from a different Module.
+                                properties:
+                                    path:
+                                        description: >
+                                            The tag path to the Admin Box.
+                                            
+                                            (This will just be one property long, as Admin Boxes all sit at the top-level in their schema.)
+                                    key:
+                                        type: object
+                                        additionalProperties:
+                                            type: *variable
+                                            description: >
+                                                A variable or meta-information to pass into the key of the Admin Box.
+                                        description: >
+                                            Any variables set here will be passed on to the key of the Admin Box.
+                                    tab:
+                                        type: *stringy
+                                        description: >
+                                            The name of a tab to open up in.
+                                        default: (the first tab of the Admin Box)
+                                    values:
+                                        type: object
+                                        additionalProperties:
+                                            type: object
+                                            description: >
+                                                The key of a tab in the Admin Box
+                                            additionalProperties:
+                                                type: *variable
+                                                description: >
+                                                    The key and initial value of a field in the admin box.
+                                        commented_out_html_description: |
+                                            <p>You can enter some initial values for the fields in your admin box by passing
+                                            in an array of arrays (tabs => (fields => values)).</p>
+                                    
+                                            <p>These values will override the default values for the fields, but won't
+                                            overwritten any values set in PHP in your <code>fillAdminBox()</code> method.</p>
+                            
+                            onclick:
+                                type: string
+                                description: >
+                                    Some JavaScript code to run when your button is clicked.
+                                    
+                                    This works from version 7.1 onwards.
+                            
+                            
+                            help: &help
+                                type: object
+                                description: >
+                                    This property provides you with a simple way of displaying a short pop-up message.
+                                required:
+                                    - message
+                                properties:
+                                    message:
+                                        type: string
+                                        description: >
+                                            A help message to display when clicking on this button.
+                                    html: *message_html
+                                    message_type:
+                                        enum:
+                                            - none
+                                            - error
+                                            - warning
+                                            - question
+                                            - success
+                                        default: question
+                                        description: >
+                                            The type of message. A different styling will be applied for each different type.
+                            
+                            navigation_path:
+                                type: string
+                                description: >
+                                    A button with the navigation_path property will open Organizer and go to
+                                    the specified path when pressed.
+                                
+                            
+                            organizer_quick: &organizer_quick
+                                type: object
+                                description: >
+                                    This will display Organizer in quick mode when clicked.
+                                required:
+                                    - path
+                                properties:
+                                    path:
+                                        type: string
+                                        description: >
+                                            The path of the panel in Organizer that you wish to show.
+                                    
+                                            You may enter either a tag path or a navigation path, but if you enter a
+                                            navigation path you cannot leave the min_path and target_path properties unset.
+                                    min_path:
+                                        type: string
+                                        default: (defaults to the path property)
+                                        description: >
+                                            You must enter the tag path of a panel to act as a barrier to navigation.
+                                    
+                                            If the disallow_refiners_looping_on_min_path property is set,
+                                            the back button will not be shown on this panel.
+                                    
+                                            If the disallow_refiners_looping_on_min_path property is not set,
+                                            the back button will not be shown on this panel if it were to navigate
+                                            away from the panel.
+                                            Refiners that "loop", going from and to the same panel over and over again,
+                                            will still show the back button.
+                                    
+                                            If you enter a navigation path it will be converted to a tag path for you.
+                                    max_path:
+                                        type:
+                                            - string
+                                            - boolean
+                                        default: (defaults to the target_path property)
+                                        description: >
+                                            You can enter the path of a panel to act as a barrier to navigation.
+                                    
+                                            This works like a limit; the Admin will not be able to navigate away from this
+                                            panel except by pressing the back button.
+                                    
+                                            If you enter a navigation path it will be converted to a tag path for you.
+                                    
+                                            If you don't want to use a limit you can also set this property to false to disable it.
+                                    disallow_refiners_looping_on_min_path:
+                                        type: boolean
+                                        description: >
+                                            This modifies the logic for how the min_path property works with refiners.
+                            
+                    
+                            pick_items: &pick_items
+                                type: object
+                                description: >
+                                    A pick items button will display Organizer in select mode when clicked,
+                                    and will let an Admin pick items from a panel.
+                                    
+                                    Finally, your <code>handleAdminToolbarAJAX()</code> method will be called with the
+                                    tag id of the page (e.g. html_42) and the id chosen from the picker.
+                                required:
+                                    - path
+                                oneOf:
+                                    -
+                                        required:
+                                            - request
+                                    -
+                                        required:
+                                            - ajax
+                                properties:
+                                    path:
+                                        type: string
+                                        description: >
+                                            The path of the panel in Organizer that you wish to show.
+                                    
+                                            You may enter either a tag path or a navigation path, but if you enter a
+                                            navigation path you cannot leave the min_path and target_path properties unset.
+                                    target_path:
+                                        type: string
+                                        default: (defaults to the path property)
+                                        description: >
+                                            The tag path of the panel in Organizer where the "Choose" button should be shown.
+                                    
+                                            If you enter a navigation path it will be converted to a tag path for you.
+                                    min_path:
+                                        type: string
+                                        default: (defaults to the path property)
+                                        description: >
+                                            You must enter the tag path of a panel to act as a barrier to navigation.
+                                    
+                                            If the disallow_refiners_looping_on_min_path property is set,
+                                            the back button will not be shown on this panel.
+                                    
+                                            If the disallow_refiners_looping_on_min_path property is not set,
+                                            the back button will not be shown on this panel if it were to navigate
+                                            away from the panel.
+                                            Refiners that "loop", going from and to the same panel over and over again,
+                                            will still show the back button.
+                                    
+                                            If you enter a navigation path it will be converted to a tag path for you.
+                                    max_path:
+                                        type:
+                                            - string
+                                            - boolean
+                                        default: (defaults to the target_path property)
+                                        description: >
+                                            You can enter the path of a panel to act as a barrier to navigation.
+                                    
+                                            This works like a limit; the Admin will not be able to navigate away from this
+                                            panel except by pressing the back button.
+                                    
+                                            If you enter a navigation path it will be converted to a tag path for you.
+                                    
+                                            If you don't want to use a limit you can also set this property to false to disable it.
+                                    disallow_refiners_looping_on_min_path:
+                                        type: boolean
+                                        description: >
+                                            This modifies the logic for how the min_path property works with refiners.
+                            
+                                    one_to_one_choose_phrase:
+                                        type: string
+                                        default: Choose
+                                        description: >
+                                            A phrase for the choose button.
+                            
+                                    multiple_select:
+                                        type: boolean
+                                        description: >
+                                            Setting this option will allow an Administrator to pick multiple values.
+                                            They will be stored as comma-separated values.
+                                    one_to_many_choose_phrase:
+                                        type: string
+                                        default: (defaults to the one_to_one_choose_phrase property)
+                                        description: >
+                                            A phrase for the choose button then multiple items are selected.
+                            
+                                    allow_no_selection:
+                                        type: boolean
+                                        description: >
+                                            Setting this property will allow an Admin to press the "choose" button without
+                                            anything selected.
+                                    
+                                            You would use this option if you wanted them to select a location or a refiner
+                                            in Organizer rather than an item specifically; you can check the variables
+                                            set in the POST request to see which refiners were in use and which values they
+                                            had.
+                                    
+                                            A typical example of what you might see in the POST request might be:
+                                                <code>child&#95;&#95;refinerName=language&child&#95;&#95;refinerId=1&child&#95;&#95;refiner&#95;&#95;language=en</code>
+                                    one_to_many_choose_phrase:
+                                        type: string
+                                        default: (defaults to the one_to_one_choose_phrase property)
+                                        description: >
+                                            A phrase for the choose button if no items are selected in Select Mode and
+                                            <code>allow_no_selection</code> is enabled.
+                            
+                                    request: *request
+                                    ajax: *ajax
+                    
+                            popout: &popout
+                                type: object
+                                description: >
+                                    This property allows you to open a Pop-out window when an Admin clicks on your button.
+                                    A typical usage would be to display a bigger version of an image or movie.
+                            
+                                    This is implemented using the Colorbox library.
+                                required:
+                                    - href
+                                properties:
+                                    href:
+                                        type: string
+                                        description: >
+                                            A link to a page/image/animation you wish to be shown.
+                                    title:
+                                        type: string
+                                        description: >
+                                            Use this property to add a title for the floating box.
+                                        #default: (the item's name)
+                            
+                                    css_class:
+                                        type: string
+                                        description: >
+                                            A CSS class name to place on the floating box.
+                                additionalProperties:
+                                    type: *variable
+                                    description: >
+                                        Any additional properties will be passed on to the Colorbox library.
+                                
+                                        You can see http://www.jacklmoore.com/colorbox/ for a description of
+                                        what other properties are available.

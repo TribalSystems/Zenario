@@ -1,0 +1,203 @@
+system_requirements:
+    key:
+        first_viewing: true
+    tab: 0
+    tabs:
+        0:
+            edit_mode:
+                enabled: true
+                on: true
+                always_on: true
+            fields:
+                description_unmet:
+                    full_width: true
+                    snippet:
+                        html: |
+                            <h1>System Requirements</h1>
+                            <p>It looks like your server doesn't meet the requirements for Zenario.</p>
+                
+                sub_table:
+                    type: grouping
+                    name: sub_table
+                
+                server:
+                    grouping: sub_table
+                    full_width: true
+                    snippet:
+                        html: Web Server
+                    visible_if: zenarioAW.togglePressed(1)
+                show_server: &show_section
+                    grouping: sub_table
+                    type: toggle
+                    redraw_onchange: true
+                    same_row: true
+                    visible_if: "zenarioAW.togglePressed(1, tuixObject)"
+                server_1:
+                    grouping: sub_table
+                    full_width: true
+                    snippet:
+                        html: Apache http server version 2.4.7 or later
+                    visible_if: zenarioAW.togglePressed()
+                php:
+                    grouping: sub_table
+                    full_width: true
+                    snippet:
+                        html: PHP
+                    visible_if: zenarioAW.togglePressed(1)
+                show_php: *show_section
+                php_1:
+                    grouping: sub_table
+                    full_width: true
+                    snippet:
+                        html: PHP version 7.0 or later
+                    visible_if: zenarioAW.togglePressed()
+                opcache_misconfigured:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_level
+                    snippet:
+                        html: |
+                            In your <code>php.ini</code> you have <code>opcache.enable</code>
+                            turned on, and you have <code>opcache.dups_fix</code> turned off.
+                            
+                            This may cause occasional PHP &ldquo;fatal errors&rdquo; on your site.
+                            
+                            Please edit your <code>php.ini</code> and either turn <code>opcache.enable</code> off
+                            or else turn <code>opcache.dups_fix</code> on.
+                    visible_if: zenarioAW.togglePressed()
+                mysql:
+                    grouping: sub_table
+                    full_width: true
+                    snippet:
+                        html: MySQL
+                    visible_if: zenarioAW.togglePressed(1)
+                show_mysql: *show_section
+                mysql_1:
+                    grouping: sub_table
+                    full_width: true
+                    snippet:
+                        html: MySQLi extension enabled in PHP
+                    visible_if: zenarioAW.togglePressed()
+                mysql_2:
+                    grouping: sub_table
+                    full_width: true
+                    snippet:
+                        html: MySQL client and MySQL server version 5.5.3 or later
+                    visible_if: zenarioAW.togglePressed()
+                mb:
+                    grouping: sub_table
+                    full_width: true
+                    snippet:
+                        html: Unicode Support
+                    visible_if: zenarioAW.togglePressed(1)
+                show_mb: *show_section
+                mb_1:
+                    grouping: sub_table
+                    full_width: true
+                    snippet:
+                        html: ctype extension enabled in PHP
+                    visible_if: zenarioAW.togglePressed()
+                mb_2:
+                    grouping: sub_table
+                    full_width: true
+                    snippet:
+                        html: mbstring extension enabled in PHP
+                    visible_if: zenarioAW.togglePressed()
+                gd:
+                    grouping: sub_table
+                    full_width: true
+                    snippet:
+                        html: Image Manipulation
+                    visible_if: zenarioAW.togglePressed(1)
+                show_gd: *show_section
+                gd_1:
+                    grouping: sub_table
+                    full_width: true
+                    snippet:
+                        html: GD Library enabled in PHP
+                    visible_if: zenarioAW.togglePressed()
+                gd_2:
+                    grouping: sub_table
+                    full_width: true
+                    snippet:
+                        html: GIF Read Support enabled in PHP
+                    visible_if: zenarioAW.togglePressed()
+                gd_3:
+                    grouping: sub_table
+                    full_width: true
+                    snippet:
+                        html: JPG Support enabled in PHP
+                    visible_if: zenarioAW.togglePressed()
+                gd_4:
+                    grouping: sub_table
+                    full_width: true
+                    snippet:
+                        html: PNG Support enabled in PHP
+                    visible_if: zenarioAW.togglePressed()
+                optional:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_level
+                    snippet:
+                        html: Optional requirements
+                    visible_if: zenarioAW.togglePressed(1)
+                show_optional: *show_section
+                optional_mod_deflate:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_field
+                    snippet:
+                        html: |
+                            deflate module enabled in Apache
+                            <br/><small>Needed for compressing files, for a faster page-load</small>
+                    visible_if: zenarioAW.togglePressed()
+                optional_mod_expires:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_field
+                    snippet:
+                        html: |
+                            expires module enabled in Apache
+                            <br/><small>Needed for images and files to be cached in the visitors browser, for a faster page-load</small>
+                    visible_if: zenarioAW.togglePressed()
+                optional_mod_rewrite:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_field
+                    snippet:
+                        html: |
+                            rewrite module enabled in Apache
+                            <br/><small>Needed for friendly URLs</small>
+                    visible_if: zenarioAW.togglePressed()
+                optional_curl:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_field
+                    snippet:
+                        html: |
+                            curl extension enabled in PHP
+                            <br/><small>Needed for translating pages using Google Translate</small>
+                    visible_if: zenarioAW.togglePressed()
+                optional_zip:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_field
+                    snippet:
+                        html: |
+                            zip extension enabled in PHP
+                            <br/><small>Needed for creating document extracts</small>
+                    visible_if: zenarioAW.togglePressed()
+                
+                
+                continue:
+                    value: Continue
+                    type: submit
+                    full_width: true
+                    style: |
+                        float: right;
+                check_again:
+                    value: Check again
+                    type: submit
+                    same_row: true
+                    style: |
+                        float: right;

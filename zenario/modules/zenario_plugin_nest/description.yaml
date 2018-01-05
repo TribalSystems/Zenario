@@ -1,0 +1,50 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+display_name: Nest
+author_name: Tribal Systems
+copyright_info: © Tribal Limited
+editions: Community, Pro, ProBusiness, Enterprise
+start_running_on_install: true
+license_info: 'Modified BSD License'
+description: |
+    <p>
+        This Module allows you to set up and manage a collection of multiple plugins inside the same slot (which is called a nest).
+        Any plugin that is marked as &quot;nestable&quot; in its description may placed inside.
+    </p><p>
+        Plugins in a nest are further sub-divided into different sections called &quot;slides&quot;,
+        only one of which may be visible at any one time.
+        The links to each slide can be invisible, appear visually as a tab, or in some other visual form,
+        depending on the CSS and framework.
+    </p><p>
+        You can restrict a slide's visibility:
+        <ul>
+            <li>to logged-in extranet users</li>
+            <li>to logged-in extranet users in a given group</li>
+            <li>to logged-in extranet users in a given smart group</li>
+            <li>by calling a static method from another module, e.g. <code>checkVisitorInCountries()</code> from the <code>zenario_geoip_lookup</code> module</li>
+        </ul>
+    </p><p>
+        There are lots of advanced uses of this plugin. You can:
+        <ul>
+            <li>
+                create multiple slides, with a WYSIWYG Editor or Banner on each slide, to create a tabbed area
+            </li>
+            <li>
+                hide the tab links and use slides with different logic for their visibility
+                to create a nest that shows different plugins for different extranet users
+            </li>
+        </ul>
+    </p>
+
+category: pluggable
+keywords: multiple, nest, panel, plugin, slot
+
+# Reminder: you need to increment the LATEST_REVISION_NO in this module's
+# latest_revision_no.inc.php file if you change any of the fields below:
+vlp_class_name: zenario_plugin_nest
+css_class_name: zenario_plugin_nest
+default_framework: standard
+is_pluggable: true
+can_be_version_controlled: false
+nestable: false
+default_instance_name: Untitled Nest

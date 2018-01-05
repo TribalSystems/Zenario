@@ -1,0 +1,24 @@
+<% if (m.image_tags) { %>
+	<% if (m.col.microtemplate) { %>
+		<div class="organizer_image_label">
+			<span>{{zenarioT.microTemplate(m.col.microtemplate, m)}}</span>
+		</div>
+	
+	<% } else if (m.value !== undefined) { %>
+		<div class="organizer_image_label">
+			<span>{{m.value}}</span>
+		</div>
+	<% } %>
+	
+	<div class="organizer_image_tags">
+		{{zenarioT.microTemplate('zenario_image_tag', m.image_tags)}}
+	</div>
+
+<% } else { %>
+	<% if (m.col.microtemplate) { %>
+		{{zenarioT.microTemplate(m.col.microtemplate, m)}}
+	
+	<% } else { %>
+		<span>{{m.value}}</span>
+	<% } %>
+<% } %>

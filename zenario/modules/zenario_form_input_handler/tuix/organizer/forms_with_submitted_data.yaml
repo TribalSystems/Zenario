@@ -1,0 +1,42 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__form_input_handler:
+    nav:
+        forms_with_submitted_data:
+            panel:
+                title: Forms with Submitted Data
+                view_mode: list
+                db_items:
+                    table: '[[DB_NAME_PREFIX]][[ZENARIO_FORM_INPUT_HANDLER_PREFIX]]form_submissions AS s'
+                    id_column: "CONCAT(s.content_type,'_',s.content_id)"
+                default_sort_column: form_submitted_from_page_name
+                item:
+                    css_class: zenario_form_input_handler_form_submissions
+                    tooltip_when_link_is_active: 'View submissions for this Form'
+                    link:
+                        path: zenario__form_input_handler/form_submissions/panel
+                        branch: Yes
+                        refiner: content_item_filter
+                    tooltip: 'View completed forms from visitors'
+                columns:
+                    form_submitted_from_page_name:
+                        db_column: "CONCAT(s.content_type,'_',s.content_id)"
+                        show_by_default: Yes
+                        searchable: Yes
+                    form_submitted_from_page:
+                        title: Submitted from page
+                        db_column: "CONCAT(s.content_type,'_',s.content_id)"
+                        item_link: content_item_or_url
+                        show_by_default: Yes
+                        searchable: Yes
+                    form_submissions_count:
+                        title: Submissions Count
+                        db_column: 'COUNT(*)'
+                        show_by_default: Yes
+                    form_submissions_last_submission_date:
+                        title: Last Submission Date
+                        db_column: MAX(submission_datetime)
+                        show_by_default: Yes
+                        format: date
+                        searchable: Yes
+                        search_column: submission_datetime

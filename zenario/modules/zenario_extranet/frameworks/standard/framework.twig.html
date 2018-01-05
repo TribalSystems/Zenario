@@ -1,0 +1,123 @@
+{% if Redirect_Message %}
+	<p>{{Redirect_Message|e}}</p>
+{% endif %}
+
+<div class="extranet_wrap">
+	<div class="extranet_outer_wrap">
+		<div class="extranet_inner_wrap">
+		
+		{% if Message_Display %}
+			<div class="extranet_message">{{Message}}</div>
+		{% endif %}
+		
+		{% if Login_Form %}
+			<div>
+				
+				{{openForm}}
+				
+					<h2>{{main_login_heading}}</h2>
+			
+					{% for item in Error_Display %}
+						<div class="extranet_error">{{item.Error}}</div>
+					{% endfor %}
+				
+					{% if Login_with_screen_name %}
+						<div class="extranet_field">
+							<div class="label"><label for="extranet_screen_name">{{screen_name_field_label}}</label></div>
+							{{this.frameworkField({'type': "text", 'name': "extranet_screen_name", 'id': "extranet_screen_name", 'required': "true", 'class': "extranet_text"})}}
+						</div>
+					{% endif %}
+					{% if Login_with_email %}
+						<div class="extranet_field">
+							<div class="label"><label for="extranet_email">{{email_field_label}}</label></div>
+							{{this.frameworkField({'type': "text", 'name': "extranet_email", 'id': "extranet_email", 'required': "true", 'pattern': "email", 'class': "extranet_text"})}}
+						</div>
+					{% endif %}
+					<div class="extranet_field">
+						<div class="label"><label for="extranet_password">{{password_field_label}}</label></div>
+						{{this.frameworkField({'type': "password", 'name': "extranet_password", 'id': "extranet_password", 'required': "true", 'class': "extranet_password"})}}
+					</div>
+					{% if Ts_And_Cs_Section %}
+						<div class="extranet_terms_and_conditions">
+							{{this.frameworkField({'type': "checkbox", 'name': "extranet_terms_and_conditions", 'id': "extranet_terms_and_conditions"})}}
+							<label for="extranet_terms_and_conditions">{{Ts_And_Cs_Link}}</label>
+						</div>
+					{% endif %}
+					
+					{% if Remember_Me_Section %}
+						<div class="extranet_remember_me">
+							{{this.frameworkField({'type': "checkbox", 'name': "extranet_remember_me", 'id': "extranet_remember_me", 'checked': "checked"})}}
+							<label for="extranet_remember_me">{{"_REMEMBER_ME"|trans}}</label>
+						</div>
+					{% endif %}
+					{% if Log_Me_In_Section %}
+						<div class="extranet_log_me_in">
+							{{this.frameworkField({'type': "checkbox", 'name': "extranet_log_me_in", 'id': "extranet_log_me_in", 'checked': "checked"})}}
+							<label for="extranet_log_me_in">{{"_LOG_ME_IN"|trans}}</label>
+						</div>
+					{% endif %}
+					
+					<div class="extranet_btn"><div class="r"><input type="submit" name="extranet_login" class="login_entry_button i" value="{{login_button_text}}" /></div></div>
+				
+				{{ this.closeForm() }}
+				
+			</div>
+			<div class="extranet_links">
+				{% if Forget_Password_Link_Section %}
+					<div class="extranet_link_forget_password"><a {{Forget_Password_Link}}>{{"_FORGOTTEN_PASSWORD"|trans}}</a></div>
+				{% endif %}
+				{% if Reset_Password_Link_Section %}
+					<div class="extranet_link_reset_password"><a {{Reset_Password_Link}}>{{"Forgotten password?"|trans}}</a></div>
+				{% endif %}
+				{% if Registration_Link_Section %}
+					<div class="extranet_link_registration">{{"New user?"|trans}} <a {{Registration_Link}}>{{"Sign up"|trans}}</a></div>
+				{% endif %}
+			</div>
+		{% endif %}
+		{% if Logged_In %}
+			{% if Welcome_Message_Section %}
+				<div class="extranet_welcome_text">{{Welcome_Message}}</div>
+			{% endif %}
+			{% if Destination_url_section %} 
+				<div class="extranet_requested_link">
+					{{"_REQUESTED_LINK:"|trans}}
+					<a href="{{destURL_Link}}">{{destURL_Title}}</a>
+				</div>
+			{% endif %}
+			<div class="extranet_links">
+				{% if Change_Password_Link_Section %}
+					<div>
+						<a {{Change_Password_Link}}>{{"_CHANGE_PASSWORD"|trans}}</a>
+					</div>
+				{% endif %}
+				{% if Logout_Link_Section %}
+					<div>
+						<a {{Logout_Link}}>{{"_LOGOUT"|trans}}</a>
+					</div>
+				{% endif %}
+			</div>
+		{% endif %}
+		
+		 {% if Change_Password_Form %}
+			<h1>{{"_CHANGE_PASSWORD_TITLE"|trans}}</h1>
+			
+			{% for item in Password_Error_Display %}
+				<div class="extranet_error">{{item.Error}}</div>
+			{% endfor %}
+			
+			<div>
+				<div class="extranet_field">
+					<div class="label"><label for="extranet_new_password">{{"_NEW_PASSWORD"|trans}}:</label></div>
+					{{this.frameworkField({'type': "password", 'name': "extranet_new_password", 'id': "extranet_new_password", 'pattern': "new_password", 'required': "true", 'class': "extranet_password"})}}
+				</div>
+				<div class="extranet_field">
+					<div class="label"><label for="extranet_new_password_confirm">{{"_NEW_PASSWORD_REPEAT"|trans}}:</label></div>
+					{{this.frameworkField({'type': "password", 'name': "extranet_new_password_confirm", 'id': "extranet_new_password_confirm", 'required': "true", 'class': "extranet_password"})}}
+				</div>
+				<div class="extranet_btn"><div class="r"><input type="submit" name="extranet_change_password" class="extranet_submit i" value="{{'_CHANGE_PASSWORD'|trans}}" /></div></div>
+			</div>
+		{% endif %}
+		
+		</div>
+	</div>
+</div>

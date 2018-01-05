@@ -1,0 +1,26 @@
+<% if (m.col.sparkline) { %>
+	{% m.lib.hadSparkline = true; %}
+
+<% } else if (m.col.microtemplate) { %>
+	{{m.lib.microTemplate(m.col.microtemplate, m)}}
+
+<% } else if (m.col.html || m.col.twig_snippet) { %>
+	{{m.item[m.col.id]}}
+
+<% } else if (m.col.is_icon) { %>
+	<span class="fea_icon {{m.item[m.col.id]|escape}}"></span>
+    
+<% } else if (m.item[m.col.id] && m.col.values && m.col.values[m.item[m.col.id]]) { %>
+	{{m.col.values[m.item[m.col.id]]|escape}}
+<!--
+	If a column is empty, and the column has an empty value defined,
+	then show the empty value
+-->
+<% } else if (!m.item[m.col.id] && m.col.empty_value) { %>
+	{{m.col.empty_value|escape}}
+<!--
+	Otherwise, just display the value of the column
+-->
+<% } else { %>
+	{{m.item[m.col.id]|escape}}
+<% } %>

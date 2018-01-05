@@ -1,0 +1,53 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_trash:
+    priv: _PRIV_HIDE_CONTENT_ITEM
+    key:
+        id: ""
+        cID: ""
+        cType: ""
+    tabs:
+        trash:
+            edit_mode:
+                enabled: true
+                always_on: true
+                enable_revert: false
+            
+            notices:
+                trash_item:
+                    type: warning
+                    message: |
+                            If you trash this content item it will:
+                             - no longer be visible to visitors
+                             - be removed from the menu
+                             - lose its alias
+                            
+                            Are you sure you wish to trash this content item?
+                trash_items:
+                    type: warning
+                    message: |
+                            Trashed content items will:
+                             - be no longer visible to visitors
+                             - be removed from the menu
+                             - lose their alias
+                            
+                            Are you sure you wish to trash these content items?
+                    
+            
+            fields:
+                links_warning:
+                    snippet:
+                        html:
+                trash_options:
+                    type: radios
+                    values:
+                        remove:
+                            label: 'Keep the plugin(s) but remove their links'
+                        delete_instance:
+                            label: 'Delete the plugin(s) altogether'
+                    value: remove
+                    hidden: true
+    max_height: 150
+    hide_tab_bar: true
+    save_button_message: Trash
+    cancel_button_message: Cancel

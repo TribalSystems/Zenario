@@ -1,0 +1,11 @@
+ul#categories_list li ul li {
+	margin-left: 2em;
+}
+
+ul#categories_list li input {
+	margin-right: 1em;
+}
+
+ul#categories_list li {
+	margin: 3px 0px 3px 0px;
+}

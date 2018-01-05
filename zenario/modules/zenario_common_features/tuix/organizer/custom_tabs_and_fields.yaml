@@ -1,0 +1,31 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__administration:
+    panels:
+        custom_fields:
+            title: Custom dataset fields
+            db_items:
+                table: '[[DB_NAME_PREFIX]]custom_dataset_fields AS cdf'
+                id_column: cdf.id
+                where_statement: 'WHERE cdf.type != "other_system_field" AND cdf.db_column != ""'
+            default_sort_column: label
+            label_format_for_picked_items: '[[label]]'
+            refiners:
+                dataset_id:
+                    sql: 'cdf.dataset_id = [[REFINER_ID]]'
+            columns:
+                label:
+                    title: Label
+                    searchable: true
+                    db_column: IF(cdf.label != '', cdf.label, cdf.default_label)
+                    always_show: true
+                field_name:
+                    title: Field name
+                    searchable: false
+                    db_column: cdf.field_name
+                    always_show: true
+                type:
+                    title: Type
+                    searchable: false
+                    db_column: cdf.type
+                    always_show: true

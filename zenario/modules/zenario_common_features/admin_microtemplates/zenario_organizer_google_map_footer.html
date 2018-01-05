@@ -1,0 +1,7 @@
+<div class="google_map_footer">
+	{{zenarioO.tuix.__item_count__ || m.items}} locations have map coordinates.
+	
+	<% if (zenarioO.tuix.db_items && zenarioO.tuix.db_items.max_limit_hit) { %>
+		Only {{zenarioO.tuix.db_items.max_limit}} are being shown.
+	<% } %>
+</div>

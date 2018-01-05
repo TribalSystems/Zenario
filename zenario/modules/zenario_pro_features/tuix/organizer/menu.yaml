@@ -1,0 +1,59 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__menu:
+    nav:
+        #If there's only one language enabled, show an "Edit sections" link
+        #to the menu sections panel so admins can still create/edit/delete them.
+        menu_sections:
+            ord: 999999
+            css_class: menu_section_edit
+            label: Edit sections
+            tooltip: Create, rename and delete menu sections
+            link:
+                path: ''
+    panels:
+        sections:
+            collection_buttons:
+                create:
+                    priv: _PRIV_ADD_MENU_SECTION
+                    css_class: zenario_create_a_new
+                    hide_on_filter: true
+                    label: Create a menu section
+                    hide_in_select_mode: true
+                    admin_box:
+                        path: zenario_menu_section
+            item_buttons:
+                rename:
+                    priv: _PRIV_ADD_MENU_SECTION
+                    label: Rename section
+                    ord: 5
+                    hide_in_select_mode: true
+                    admin_box:
+                        path: zenario_menu_section
+                delete:
+                    priv: _PRIV_DELETE_MENU_SECTION
+                    label: Delete section
+                    ord: 10
+                    hide_in_select_mode: true
+                    ajax:
+                        confirm:
+                            message: 'Are you sure you wish to delete the menu section "[[name]]"?'
+                            button_message: Delete
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            delete_menu_section: 1
+                    with_columns_set:
+                        traits.empty: true
+        menu_nodes:
+            columns:
+                zenario_pro_features__invisible:
+                    visible_if: |
+                        zenarioO.searchTerm !== undefined
+                    show_by_default: true
+                    title: Invisible
+                    format: yes_or_no
+                    yes_phrase: Invisible
+                    no_phrase: ''
+                    db_column: mi.invisible
+

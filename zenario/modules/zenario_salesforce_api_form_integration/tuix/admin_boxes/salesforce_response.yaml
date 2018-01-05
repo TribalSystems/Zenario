@@ -1,0 +1,26 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+salesforce_api_form_integration__salesforce_response:
+    title: Salesforce response
+    key:
+        id: ''
+    hide_tab_bar: true
+    cancel_button_message: Close
+    save_button_message: ''
+    tabs:
+        details:
+            label: Details
+            edit_mode:
+                enabled: true
+                always_on: true
+            fields:
+                datetime:
+                    label: 'Date/time:'
+                oauth_status:
+                    label: 'OAuth response status:'
+                oauth_response:
+                    label: 'OAuth response JSON:'
+                salesforce_status:
+                    label: 'Salesforce response status:'
+                salesforce_response:
+                    label: 'Salesforce response JSON:'

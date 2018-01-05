@@ -1,0 +1,10 @@
+<span class="{{m.css_class|escape}}">
+	<a <% if (m.href) { %> href="{{m.href|escape}}" <% } %>
+		title="{{m.tooltip|escape}}"
+		data-tooltip-options="{show: {duration: 250, easing: 'linear'} }"
+		onclick="{{m.onclick|escape}}"
+	>
+		<span>{{m.label|escape}}</span>
+	</a>
+	{{m.children? '<ul>' + zenarioT.microTemplate('zenario_organizer_button_children', m.children) + '</ul>'  : ''}}
+</span>

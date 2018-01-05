@@ -1,0 +1,82 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+sections:
+    icons:
+        buttons:
+            item_categories_some:
+                ord: 10
+                css_class: zenario_at_icon_categories_some
+                tooltip: Content Item Categories|
+                admin_box:
+                    priv: _PRIV_EDIT_CONTENT_ITEM_CATEGORIES
+                    path: zenario_content_categories
+            item_categories_none:
+                ord: 11
+                css_class: zenario_at_icon_categories_none
+                tooltip: Content Item Categories|None
+                admin_box:
+                    priv: _PRIV_EDIT_CONTENT_ITEM_CATEGORIES
+                    path: zenario_content_categories
+            layout_id: 
+                ord: 18
+                css_class: zenario_at_icon_layout
+                tooptip: Content Item Layout
+                admin_box:
+                    path: zenario_content_layout
+            language_id:
+                ord: 19
+                css_class: zenario_at_icon_language
+                label: ""
+            alias_dropdown:
+                ord: 20
+                css_class: zenario_at_icon_alias
+                #css_class: zenario_at_icon_alias zenario_at_icon_no_alias
+            copy_url:
+                ord: 21
+                visible_if: zenario.canCopy()
+                parent: alias_dropdown
+                label: Copy URL/alias to clipboard
+            go_to_alias:
+                ord: 22
+                parent: alias_dropdown
+                label: Go to content item via its alias
+            no_alias:
+                ord: 23
+                parent: alias_dropdown
+                tooltip: This content item does not have an alias
+            alias:
+                priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
+                visible_if: |
+                    zenarioA.checkSpecificPermsOnThisPage()
+                    && (zenario.cID == zenario.equivId || zenarioA.siteSettings.translations_different_aliases)
+                ord: 24
+                parent: alias_dropdown
+                label: Edit alias
+                admin_box:
+                    path: zenario_alias
+            title:
+                ord: 40
+                css_class: zenario_at_icon_title
+                tooltip: ""
+                admin_box:
+                    priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
+                    path: zenario_content
+            version_3:
+                ord: 50
+                hidden: true
+                css_class: zenario_at_icon_version
+                label: ""
+            version_2:
+                ord: 60
+                hidden: true
+                css_class: zenario_at_icon_version
+                label: ""
+            version_1:
+                ord: 70
+                hidden: true
+                css_class: zenario_at_icon_version
+                label: ""
+            tag_id:
+                ord: 80
+                css_class: zenario_at_icon_tag_id
+                label: ""

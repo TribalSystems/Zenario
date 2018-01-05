@@ -1,0 +1,415 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__modules:
+    panels:
+        nested_plugins:
+            panel_type: hierarchy
+            key:
+                usesConductor: false
+                instanceId: ''
+                skinId: ''
+                cID: ''
+                cType: ''
+                cVersion: ''
+            db_items:
+                table: |
+                    [[DB_NAME_PREFIX]]nested_plugins AS np
+                    LEFT JOIN [[DB_NAME_PREFIX]]nested_plugins AS p
+                       ON p.instance_id = np.instance_id
+                      AND p.is_slide = 1
+                      AND p.slide_num = np.slide_num
+                id_column: np.id
+            refiners:
+                nest:
+                    sql: 'np.instance_id = [[REFINER_ID]]'
+            refiner_required: true
+            view_mode: list
+            disable_grid_view: true
+            hierarchy:
+                column: parent
+                db_column: |
+                    IF (np.is_slide, NULL, p.id)
+                max_depth: 2
+                send_full_hierarchy_onchange: true
+                start_with_all_items_open: true
+                    
+            columns:
+                prefix:
+                    title: Prefix
+                    show_by_default: true
+                name_or_title:
+                    title: Name
+                    db_column: np.name_or_title
+                    css_class: organizer_long_title
+                    show_by_default: true
+                    width: large
+                states:
+                    db_column: np.states
+                cols:
+                    title: Columns
+                    db_column: np.cols
+                    show_by_default: true
+                    format: enum
+                    empty_value: Full-width
+                    values:
+                        '-1':
+                            label: Grouped with previous
+                        1:
+                            label: 1 col
+                small_screens:
+                    title: Small screens
+                    db_column: np.small_screens
+                    show_by_default: true
+                    format: enum
+                    values:
+                        show:
+                            label: Shown on desktop and mobile
+                            css_class: organizer_icon_show_on_desktop_and_mobile
+                        hide:
+                            label: Shown on desktop only
+                            css_class: organizer_icon_show_on_desktop_only
+                        only:
+                            label: Shown on mobile only
+                            css_class: organizer_icon_show_on_mobile_only
+                makes_breadcrumbs:
+                    title: Use for smart breadcrumbs
+                    db_column: IF (np.makes_breadcrumbs, np.makes_breadcrumbs, '')
+                    show_by_default: true
+                    format: enum
+                    values:
+                        1:
+                            label: Breadcrumbs
+                        2:
+                            label: Hidden, breadcrumbs only
+                
+                parent:
+                    hidden: true
+                    db_column: |
+                        IF (np.is_slide, NULL, p.id)
+                ordinal:
+                    #hidden: true
+                    db_column: IF (np.is_slide, np.slide_num, np.ord)
+                
+                module_class_name:
+                    db_column: m.class_name
+                    table_join: '[[DB_NAME_PREFIX]]modules AS m ON np.module_id = m.id'
+                framework:
+                    hidden: true
+                    title: Framework
+                    db_column: np.framework
+                is_slide:
+                    db_column: np.is_slide
+                filename:
+                    db_column: img_f.filename
+                    table_join: |
+                        LEFT JOIN [[DB_NAME_PREFIX]]plugin_settings AS img_ps
+                           ON img_ps.instance_id = np.instance_id
+                          AND img_ps.egg_id = np.id
+                          AND img_ps.foreign_key_to = 'file'
+                          AND np.is_slide = 0
+                        LEFT JOIN [[DB_NAME_PREFIX]]files AS img_f
+                           ON img_f.id = img_ps.foreign_key_id
+                          AND `usage` = 'image'
+                          AND img_f.mime_type IN ('image/gif', 'image/png', 'image/jpeg', 'image/svg+xml')
+                checksum:
+                    db_column: img_f.checksum
+                    table_join: |
+                        LEFT JOIN [[DB_NAME_PREFIX]]plugin_settings AS img_ps
+                           ON img_ps.instance_id = np.instance_id
+                          AND img_ps.egg_id = np.id
+                          AND img_ps.foreign_key_to = 'file'
+                          AND np.is_slide = 0
+                        LEFT JOIN [[DB_NAME_PREFIX]]files AS img_f
+                           ON img_f.id = img_ps.foreign_key_id
+                          AND `usage` = 'image'
+                          AND img_f.mime_type IN ('image/gif', 'image/png', 'image/jpeg', 'image/svg+xml')
+                mime_type:
+                    server_side_only: true
+                    db_column: img_f.mime_type
+                    table_join: |
+                        LEFT JOIN [[DB_NAME_PREFIX]]plugin_settings AS img_ps
+                           ON img_ps.instance_id = np.instance_id
+                          AND img_ps.egg_id = np.id
+                          AND img_ps.foreign_key_to = 'file'
+                          AND np.is_slide = 0
+                        LEFT JOIN [[DB_NAME_PREFIX]]files AS img_f
+                           ON img_f.id = img_ps.foreign_key_id
+                          AND `usage` = 'image'
+                          AND img_f.mime_type IN ('image/gif', 'image/png', 'image/jpeg', 'image/svg+xml')
+            default_sort_column: name_or_title
+            item:
+                name: Nested slide/plugin
+                names: Nested slides and plugins
+                tooltip: >
+                    To reorder items, simply drag and drop.
+                    Changes will take effect immediately.
+            disable_periodic_refresh: true
+            reorder:
+                column: ordinal
+            collection_buttons:
+                add_slide:
+                    hide_on_filter: true
+                    only_show_on_refiner: nest
+                    css_class: zenario_create_a_new
+                    label: Add a slide
+                    admin_box:
+                        path: zenario_slide
+                nest_settings:
+                    only_show_on_refiner: nest
+                    label: Nest properties
+                    visible_if: |
+                        !tuix.key.isSlideshow
+                    admin_box:
+                        path: plugin_settings
+                        key:
+                            instanceId: ""
+                slideshow_settings:
+                    only_show_on_refiner: nest
+                    label: Slideshow properties
+                    visible_if: |
+                        tuix.key.isSlideshow
+                    admin_box:
+                        path: plugin_settings
+                        key:
+                            instanceId: ""
+                #framework_and_css:
+                #    only_show_on_refiner: nest
+                #    label: 'Nest CSS & framework'
+                #    admin_box:
+                #        path: plugin_css_and_framework
+                #        key:
+                #            instanceId: ""
+                conductor:
+                    priv: _PRIV_VIEW_REUSABLE_PLUGIN
+                    visible_if: |
+                        tuix.key.usesConductor
+                    label: Nest conductor settings (advanced)
+                    hide_in_select_mode: true
+                    link:
+                        path: zenario__modules/panels/conductor
+                        branch: true
+                        refiner: from_nested_plugins
+            item_buttons:
+                add_plugin:
+                    hide_on_filter: true
+                    only_show_on_refiner: nest
+                    hide_when_children_are_not_visible: true
+                    css_class: zenario_create_a_new
+                    label: Add a plugin
+                    with_columns_set:
+                        is_slide: true
+                #add_twig_snippet:
+                #    hide_on_filter: true
+                #    only_show_on_refiner: nest
+                #    hide_when_children_are_not_visible: true
+                #    css_class: zenario_create_a_new
+                #    label: Add twig snippet
+                #    with_columns_set:
+                #        traits.is_slide: true
+                copy_plugin_instance:
+                    ord: 999
+                    parent: add_plugin
+                    hide_on_filter: true
+                    only_show_on_refiner: nest
+                    css_class: zenario_create_a_new
+                    label: Copy plugin from library...
+                    combine_items:
+                        path: zenario__modules/panels/modules/refiners/nestable_only////
+                        path_if_wireframe: zenario__modules/panels/modules/refiners/nestable_wireframes_only////
+                        target_path: zenario__modules/panels/plugins
+                        min_path: zenario__modules/panels/modules
+                        max_path: ''
+                        disallow_refiners_looping_on_min_path: true
+                        one_to_one_choose_phrase: Copy
+                        ajax:
+                            request:
+                                copy_plugin_instance: 1
+                upload_banner:
+                    hide_on_filter: true
+                    only_show_on_refiner: nest
+                    visible_if: |
+                        tuix.key.isSlideshow
+                    label: Upload an image
+                    css_class: zenario_create_a_new
+                    upload:
+                        fileExt: '*.gif;*.jpg;*.png;*.jpe;*.jpeg;*.pjpeg'
+                        fileDesc: Images
+                        multi: true
+                        drag_and_drop: true
+                        request:
+                            upload_banner: 1
+                    with_columns_set:
+                        is_slide: true
+                tab_settings:
+                    only_show_on_refiner: nest
+                    label: Slide properties
+                    with_columns_set:
+                        is_slide: true
+                    admin_box:
+                        path: zenario_slide
+                plugin_settings:
+                    only_show_on_refiner: nest
+                    label: Edit plugin
+                    without_columns_set:
+                        is_slide: true
+                    admin_box:
+                        path: plugin_settings
+                framework_and_css:
+                    only_show_on_refiner: nest
+                    label: 'Plugin CSS & framework'
+                    without_columns_set:
+                        is_slide: true
+                    admin_box:
+                        path: plugin_css_and_framework
+                
+                cols:
+                    only_show_on_refiner: nest
+                    label: '[[cols]]'
+                    without_columns_set:
+                        is_slide: true
+                group_with_previous:
+                    parent: cols
+                    label: Group with previous
+                    ajax:
+                        request:
+                            set_cols: 1
+                            cols: -1
+                full_width:
+                    ord: 9999
+                    parent: cols
+                    label: Full width
+                    ajax:
+                        request:
+                            set_cols: 1
+                            cols: 0
+                1:
+                    parent: cols
+                    label: 1 col
+                    ajax:
+                        request:
+                            set_cols: 1
+                            cols: 1
+                
+                small_screens:
+                    only_show_on_refiner: nest
+                    label: '[[small_screens]]'
+                    without_columns_set:
+                        is_slide: true
+                show:
+                    parent: small_screens
+                    label: Show on desktop and mobile
+                    ajax:
+                        request:
+                            small_screens: show
+                hide:
+                    parent: small_screens
+                    label: Show on desktop only
+                    ajax:
+                        request:
+                            small_screens: hide
+                only:
+                    parent: small_screens
+                    label: Show on mobile only
+                    ajax:
+                        request:
+                            small_screens: only
+                    disabled_if: |
+                        item.cols != 0 && item.cols != -1
+                    disabled_tooltip: |
+                        Only available for the "Full width" and "Group with previous" options
+                
+                breadcrumbs:
+                    only_show_on_refiner: nest
+                    hide_when_children_are_not_visible: true
+                    label: Smart breadcrumbs
+                use_for_breadcrumbs:
+                    parent: breadcrumbs
+                    label: Use for smart breadcrumbs
+                    ajax:
+                        request:
+                            use_for_breadcrumbs: 1
+                    without_columns_set:
+                        is_slide: true
+                    visible_if: |
+                        tuix.key.usesConductor && !(1*item.makes_breadcrumbs)
+                show_and_use_for_breadcrumbs:
+                    parent: breadcrumbs
+                    label: Show plugin
+                    ajax:
+                        request:
+                            use_for_breadcrumbs: 1
+                    without_columns_set:
+                        is_slide: true
+                    visible_if: |
+                        tuix.key.usesConductor && item.makes_breadcrumbs == 2
+                hide_and_use_for_breadcrumbs:
+                    parent: breadcrumbs
+                    label: Hide and use for smart breadcrumbs only
+                    ajax:
+                        request:
+                            use_for_breadcrumbs: 2
+                    without_columns_set:
+                        is_slide: true
+                    visible_if: |
+                        tuix.key.usesConductor && item.makes_breadcrumbs != 2
+                stop_using_for_breadcrumbs:
+                    parent: breadcrumbs
+                    label: Stop using for smart breadcrumbs
+                    ajax:
+                        request:
+                            use_for_breadcrumbs: 0
+                    without_columns_set:
+                        is_slide: true
+                    visible_if: |
+                        tuix.key.usesConductor && 1*item.makes_breadcrumbs
+                
+                view:
+                    label: View image
+                    popout:
+                        href: zenario/file.php
+                        options:
+                            type: image
+                    with_columns_set:
+                        image: true
+                duplicate:
+                    only_show_on_refiner: nest
+                    label: Duplicate plugin
+                    without_columns_set:
+                        is_slide: true
+                    ajax:
+                        confirm:
+                            html: true
+                            button_message: Duplicate
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            duplicate_plugin: 1
+                remove_plugin:
+                    only_show_on_refiner: nest
+                    ord: 99
+                    label: Delete
+                    without_columns_set:
+                        is_slide: true
+                    ajax:
+                        confirm:
+                            html: true
+                            button_message: Delete
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            remove_plugin: 1
+                remove_tab:
+                    only_show_on_refiner: nest
+                    ord: 100
+                    label: Delete
+                    with_columns_set:
+                        is_slide: true
+                    visible_if: item.ordinal != 1
+                    ajax:
+                        confirm:
+                            html: true
+                            button_message: Delete
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            remove_tab: 1

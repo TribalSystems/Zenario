@@ -1,0 +1,72 @@
+<div class="headerPanel headerPanelControls">
+
+	<div id="organizer_search_placeholder"></div>
+
+	<div id="organizer_topRightButtons">
+	
+
+		<div
+			style="display: none;"
+			id="organizer_viewOptions"
+			class="viewMode toolbar secondToolbar"
+		>
+			<div
+				id="organizer_listViewOptionsDropdown"
+				data-step="8" data-position="left" data-intro="
+					{{'<p><strong>Adjust view</strong></p><p>This button lets you sort how you wish to view items in the panel, using filters.</p>'|escape}}
+				"
+			> 
+				<a onclick="zenarioO.showViewOptions(event);" title="{{zenarioA.phrase.skAdjustView}}"></a>
+			</div>
+		</div>
+
+
+
+		<div class="viewMode toolbar secondToolbar">
+			<div
+				id="organizer_refreshRightColumn"
+				data-step="7" data-position="left" data-intro="
+					{{'<p><strong>Refresh</strong></p><p>This is a refresh button. Used to refresh a page to ensure changes are applied.</p>'|escape}}
+				"
+			>
+				<a onclick="zenarioO.reloadButton();" title="{{zenarioA.phrase.skRefreshView}}"></a>
+			</div>
+		</div>
+
+		<div
+			style="display: none;"
+			id="organizer_switch_view_wrap"
+			class="viewMode toolbar firstToolbar"
+			data-step="5" data-position="down" data-intro="
+				{{'<p><strong>Switch view</strong></p><p>This allows you to view items in the panel in a different view.</p>'|escape}}
+			"
+		></div>
+		
+		
+		<% if (zenarioO.pi.returnPageSize() !== false) { %>
+			<% var prefs = zenarioO.prefs[zenarioO.path] || {}; %>
+			<div class="organizer_pageSize">
+				<label for="organizer_pageSize">Page size:</label>
+				<select id="organizer_pageSize" onchange="zenarioO.changePageSize(this.value);">
+					<option value="20" {{prefs.pageSize == 20? 'selected="selected"' : ''}}>20</option>
+					<option value="" {{!prefs.pageSize? 'selected="selected"' : ''}}>50</option>
+					<option value="100" {{prefs.pageSize == 100? 'selected="selected"' : ''}}>100</option>
+					<option value="200" {{prefs.pageSize == 200? 'selected="selected"' : ''}}>200</option>
+				</select>
+			</div>
+		<% } %>
+		
+		
+		<% if (m.quickFilters && m.quickFilters.length) { %>
+			<div id="organizer_quickFilter">
+				{{zenarioT.microTemplate('zenario_organizer_quick_filter_button', m.quickFilters)}}
+			</div>
+		<% } %>
+		
+		<div id="organizer_selected" style="display: none;">
+			<span id="organizer_itemSelected"></span>
+		</div>
+	</div>
+
+
+</div>

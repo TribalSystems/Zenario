@@ -1,0 +1,66 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__administration:
+    panels:
+        spare_domains:
+            title: Domain name redirects
+            no_items_message: |
+                When a domain name redirect is defined visitors to that domain name are redirected
+                to a specified content item under the primary domain.
+            view_mode: list
+            db_items:
+                table: '[[DB_NAME_PREFIX]]spare_domain_names AS sdn'
+                id_column: sdn.requested_url
+                encode_id_column: Yes
+                client_side: Yes
+            columns:
+                frontend_link:
+                    title: Domain
+                    db_column: sdn.requested_url
+                    searchable: Yes
+                    show_by_default: Yes
+                    width: xlarge
+                content_item:
+                    title: Target
+                    show_by_default: Yes
+                    db_column: "CONCAT(sdn.content_type, '_', sdn.content_id)"
+                    item_link: content_item
+                    width: xlarge
+            default_sort_column: url
+            item:
+                css_class: url_item
+            collection_buttons:
+                create:
+                    priv: _PRIV_MANAGE_SPARE_DOMAIN_NAME
+                    css_class: zenario_create_a_new
+                    hide_on_filter: true
+                    label: Create
+                    admin_box:
+                        path: zenario_spare_domains
+                        create_another: true
+            inline_buttons:
+                view_frontend:
+                    css_class: view_frontend
+                    tooltip: Go to content item in front-end window
+                    frontend_link:
+                        exists: Yes
+                    visible_if: >
+                        zenario.engToBoolean(item.frontend_link)
+            item_buttons:
+                edit:
+                    priv: _PRIV_MANAGE_SPARE_DOMAIN_NAME
+                    label: Properties
+                    admin_box:
+                        path: zenario_spare_domains
+                delete:
+                    priv: _PRIV_MANAGE_SPARE_DOMAIN_NAME
+                    label: Delete
+                    hide_in_select_mode: Yes
+                    ajax:
+                        confirm:
+                            message: 'Are you sure that you wish to delete the domain name redirect "[[frontend_link]]"?'
+                            button_message: Delete
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            delete: "1"

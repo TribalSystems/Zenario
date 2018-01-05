@@ -1,0 +1,20 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_document_folder:
+    title: Create folder
+    key: 
+        id: ''
+        add_folder: ''
+    max_height: "250"
+    tabs:
+        details:
+            label: Details
+            edit_mode:
+                on: Yes
+                always_on: Yes
+                enabled: Yes
+            fields:
+                folder_name:
+                    label: 'Folder name:'
+                    type: text
+                    maxlength: "255"

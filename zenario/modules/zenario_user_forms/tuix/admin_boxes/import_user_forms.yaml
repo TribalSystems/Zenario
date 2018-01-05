@@ -1,0 +1,38 @@
+---
+zenario_import_user_forms:
+    key:
+        id: ''
+        show_save_button: ''
+    title: 'Importing forms'
+    hide_tab_bar: true
+    save_button_message: Import now
+    tab: file
+    tabs:
+        file:
+            label: File
+            edit_mode:
+                enabled: true
+            fields:
+                form_json:
+                    label: 'Upload form:'
+                    upload:
+                        extensions: .json
+                    side_note: |
+                        Upload a forms file. You can get this by selecting one or more forms and clicking "Export". This will be a JSON file.
+                next:
+                    value: Next
+                    type: submit
+                    ord: 999999
+        preview:
+            label: Preview
+            edit_mode:
+                enabled: true
+            fields:
+                preview:
+                    snippet:
+                        html: 
+                previous:
+                    value: Previous
+                    type: submit
+                    ord: 999998
+                    

@@ -1,0 +1,14 @@
+.zenario_meta_data__default_style {
+	background:#E5E5DE;
+	padding:15px;
+}
+
+.zenario_meta_data__default_style h2 {
+	color:#27303f;
+	font-size:1em;
+	margin:0;
+}
+
+.zenario_meta_data__default_style h2:first-child {
+	font-size:1.333em;
+}

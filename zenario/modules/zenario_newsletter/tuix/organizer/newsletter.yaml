@@ -1,0 +1,308 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__email_template_manager:
+    panels:
+        newsletters:
+            title: Newsletters
+            db_items:
+                table: |
+                    [[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters AS n
+                id_column: n.id
+                where_statement: |
+                    WHERE n.status = '_DRAFT'
+                custom_where_statement_if_archive: |
+                    WHERE n.status = '_ARCHIVED'
+            view_mode: list
+            default_sort_column: date_sent
+            bold_columns_in_list_view: newsletter_name
+            default_sort_desc: true
+            refiners:
+                drafts:
+                    sql: |
+                        n.status = '_DRAFT'
+                outbox:
+                    sql: |
+                        n.status = '_IN_PROGRESS'
+                archive:
+                    sql: |
+                        n.status = '_ARCHIVED'
+            columns:
+                id:
+                    title: ID
+                    db_column: n.id
+                    searchable: true
+                    show_by_default: true
+                    width: xsmall
+                newsletter_name:
+                    title: Name
+                    db_column: n.newsletter_name
+                    searchable: true
+                    show_by_default: true
+                    width: xlarge
+                subject:
+                    title: Subject
+                    db_column: n.subject
+                    searchable: true
+                    show_by_default: true
+                    width: large
+                recipients:
+                    title: Recipients
+                    show_by_default: true
+                    align_right: true
+                    width: xsmall
+                email_address_from:
+                    title: Address From
+                    db_column: n.email_address_from
+                    searchable: true
+                email_name_from:
+                    title: Name From
+                    db_column: n.email_name_from
+                    searchable: true
+                smart_groups:
+                    title: Smart groups
+                    db_column: |
+                        (SELECT 
+                            GROUP_CONCAT(DISTINCT IFNULL(sg.name, CONCAT('[smart group ID: ', nsgl.smart_group_id, ' was removed]')) SEPARATOR ', ')
+                        FROM 
+                            [[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_smart_group_link nsgl
+                        LEFT JOIN 
+                            [[DB_NAME_PREFIX]]smart_groups sg
+                        ON
+                            nsgl.smart_group_id= sg.id
+                        WHERE
+                            nsgl.newsletter_id = n.id
+                        )
+                    show_by_default: true
+                smart_group_rules:
+                    title: Smart group rules
+                    db_column: n.smart_group_descriptions_when_sent_out
+                    show_by_default: true
+                progress_sent:
+                    title: 'Sent'
+                    db_column: |
+                        (
+                            SELECT COUNT(DISTINCT nuls.user_id)
+                            FROM [[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link AS nuls
+                            WHERE nuls.newsletter_id = n.id
+                              AND nuls.email_sent != 0
+                        )
+                    show_by_default: true
+                    align_right: true
+                    width: xsmall
+                progress_total:
+                    title: 'Total'
+                    db_column: |
+                        (
+                            SELECT COUNT(DISTINCT nult.user_id)
+                            FROM [[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link AS nult
+                            WHERE nult.newsletter_id = n.id
+                        )
+                    show_by_default: true
+                    align_right: true
+                    width: xsmall
+                recipient_users:
+                    title: Recipients
+                    db_column: |
+                        (
+                            SELECT COUNT(DISTINCT nul.user_id)
+                            FROM [[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link AS nul
+                            WHERE nul.newsletter_id = n.id
+                        )
+                    show_by_default: true
+                    align_right: true
+                    width: xsmall
+                date_created:
+                    title: Date/time created
+                    db_column: n.date_created
+                    format: datetime
+                date_modified:
+                    title: Date/time modified
+                    db_column: n.date_modified
+                    format: datetime
+                date_sent:
+                    title: Date/time sent
+                    db_column: n.date_sent
+                    searchable: true
+                    format: datetime
+                    show_by_default: true
+                opened:
+                    title: Opened
+                    searchable: true
+                    format: text
+                    show_by_default: true
+                    align_right: true
+                    width: xsmall
+                opened_percentage:
+                    title: Opened %
+                    searchable: true
+                    format: text
+                    show_by_default: true
+                    align_right: true
+                    width: xsmall
+                clicked:
+                    title: Clicked
+                    searchable: true
+                    format: text
+                    show_by_default: true
+                    align_right: true
+                    width: xsmall
+                clicked_percentage:
+                    title: Clicked %
+                    searchable: true
+                    format: text
+                    show_by_default: true
+                    align_right: true
+                    width: xsmall
+            item:
+                name: Newsletter
+                names: Newsletters
+                css_class: ""
+            enable_close_up_view: true
+            no_items_message: ""
+            collection_buttons:
+                create:
+                    priv: _PRIV_EDIT_NEWSLETTER
+                    css_class: zenario_create_a_new
+                    hide_on_filter: true
+                    label: Create a Newsletter
+                    admin_box:
+                        path: zenario_newsletter
+                process:
+                    css_class: process
+                    label: Outbox
+                    link:
+                        path: zenario__email_template_manager/panels/newsletters
+                        refiner: outbox
+                        branch: false
+                archive:
+                    css_class: archive
+                    label: Archive
+                    link:
+                        path: zenario__email_template_manager/panels/newsletters
+                        refiner: archive
+                        branch: false
+                newletter_templates:
+                    label: Templates
+                    link:
+                        path: zenario__email_template_manager/panels/newsletter_templates
+                    
+            item_buttons:
+                edit:
+                    css_class: settings
+                    label: Edit newsletter
+                    admin_box:
+                        path: zenario_newsletter
+                view_dropdown:
+                    label: View
+                    hide_when_children_are_not_visible: true
+                group_members:
+                    priv: _PRIV_VIEW_USER
+                    css_class: group_members
+                    parent: view_dropdown
+                    label: Recipients
+                    link:
+                        path: zenario__users/panels/users
+                        branch: true
+                        refiner: zenario_newsletter__recipients
+                    hide_in_select_mode: true
+                recipients1:
+                    priv: _PRIV_VIEW_USER
+                    css_class: group_members
+                    parent: view_dropdown
+                    label: Recipients
+                    only_show_on_refiner: outbox
+                    link:
+                        path: zenario__email_template_manager/panels/newsletter_log
+                        branch: true
+                        refiner: newsletter
+                    hide_in_select_mode: true
+                recipients2:
+                    priv: _PRIV_VIEW_USER
+                    css_class: group_members
+                    parent: view_dropdown
+                    label: Recipients
+                    only_show_on_refiner: archive
+                    link:
+                        path: zenario__email_template_manager/panels/newsletter_log
+                        branch: true
+                        refiner: newsletter
+                    hide_in_select_mode: true
+                images:
+                    css_class: view_items_images
+                    parent: view_dropdown
+                    label: Images
+                    link:
+                        path: zenario__content/panels/email_images_for_newsletters
+                        branch: true
+                        refiner: newsletter
+                    hide_in_select_mode: true
+                click_throughs:
+                    parent: view_dropdown
+                    visible_if: |
+                        !!zenarioO.refiner
+                    hide_in_select_mode: true
+                    label: Click-throughs
+                    link: 
+                        path: zenario__email_template_manager/panels/newsletter_click_throughs
+                        branch: true
+                        refiner: click_through_id
+                
+                actions_dropdown:
+                    label: Actions
+                    multiple_select: true
+                    hide_when_children_are_not_visible: true
+                send:
+                    priv: _PRIV_SEND_NEWSLETTER
+                    css_class: zenario_newsletter_send
+                    label: Live send
+                    admin_box:
+                        path: zenario_live_send
+                    hide_in_select_mode: true
+                    disabled_if_for_any_selected_items: item.recipients == 0
+                
+                resume:
+                    priv: _PRIV_SEND_NEWSLETTER
+                    css_class: zenario_newsletter_send
+                    parent: actions_dropdown
+                    label: Resume
+                    ajax:
+                        confirm:
+                            message: |
+                                If you do not have the Scheduled Task Module and you attempt to send a Newsletter to a very large number of recipients, the script to send the Newsletter may time out (especially if it takes more than 10 minutes to run).
+                                If this happens, you can resume sending it by pressing this button.
+                                Please do not attempt to send a Newsletter more than once every ten minutes, or if the statuses on the "Recipients of the Newsletter" are still changing.
+                                Do you wish to resume sending the Newsletter "[[newsletter_name]]"?
+                            button_message: Resume sending
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            resume: 1
+                    only_show_on_refiner: outbox
+                    hide_in_select_mode: true
+                duplicate:
+                    ord: "88"
+                    priv: _PRIV_EDIT_NEWSLETTER
+                    parent: actions_dropdown
+                    label: Duplicate
+                    multiple_select: No
+                    ajax:
+                        request:
+                            duplicate: 1
+                    hide_in_select_mode: true
+                delete:
+                    ord: "99"
+                    priv: _PRIV_EDIT_NEWSLETTER
+                    css_class: delete
+                    parent: actions_dropdown
+                    label: Delete
+                    multiple_select: true
+                    ajax:
+                        confirm:
+                            message: 'Are you sure you wish to delete the Draft Newsletter "[[newsletter_name]]"?'
+                            multiple_select_message: Are you sure you wish to delete these Draft Newsletters?
+                            button_message: Delete
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            delete: 1
+                    hide_in_select_mode: true

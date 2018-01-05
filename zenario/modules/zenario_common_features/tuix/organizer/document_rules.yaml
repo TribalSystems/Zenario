@@ -1,0 +1,115 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__content:
+    panels:
+        document_rules:
+            priv: _PRIV_VIEW_DOCUMENTS
+            view_mode: list
+            disable_grid_view: true
+            item:
+                css_class: zenario_document_auto_set_rule
+            title: Rules for auto-setting document metadata
+            no_items_message: No rules have been created
+            db_items:
+                table: |
+                    [[DB_NAME_PREFIX]]document_rules AS dr
+                id_column: dr.id
+            default_sort_column: ordinal
+            columns:
+                ordinal:
+                    title: '#'
+                    db_column: dr.ordinal
+                    show_by_default: true
+                    align_right: true
+                    width: xxsmall
+                use:
+                    title: Use
+                    db_column: dr.`use`
+                    width: large
+                    format: enum
+                    values:
+                        filename_without_extension: 'Filename without extension'
+                        filename_and_extension: 'Filename and extension'
+                        extension: 'Extension'
+                    show_by_default: true
+                pattern:
+                    title: Pattern
+                    db_column: dr.pattern
+                    show_by_default: true
+                    width: medium
+                action:
+                    title: Action
+                    db_column: dr.action
+                    width: large
+                    format: enum
+                    values:
+                        set_field: 'Set field to value:'
+                        move_to_folder: 'Move document to folder:'
+                    show_by_default: true
+                field_id:
+                    title: Field
+                    db_column: dr.field_id
+                    show_by_default: true
+                    width: medium
+                    format: enum
+                set_to:
+                    title: Value
+                    show_by_default: true
+                    width: medium
+                folder_id:
+                    title: Folder
+                    db_column: dr.folder_id
+                    show_by_default: true
+                    width: medium
+                    format: enum
+                replacement:
+                    db_column: dr.replacement
+                replacement_is_regexp:
+                    db_column: dr.replacement_is_regexp
+                stop_processing_rules:
+                    title: Stop processing rules like this
+                    db_column: dr.stop_processing_rules
+                    show_by_default: true
+                    width: large
+                    format: yes_or_no
+            reorder:
+                column: ordinal
+            collection_buttons:
+                create_rule:
+                    priv: _PRIV_EDIT_DOCUMENTS
+                    label: Create a rule
+                    css_class: zenario_create_a_new
+                    hide_on_filter: true
+                    admin_box:
+                        path: zenario_document_rule
+            item_buttons:
+                properties:
+                    priv: _PRIV_EDIT_DOCUMENTS
+                    hide_in_select_mode: true
+                    label: Properties
+                    admin_box:
+                        path: zenario_document_rule
+                duplicate:
+                    priv: _PRIV_EDIT_DOCUMENTS
+                    hide_in_select_mode: true
+                    label: Duplicate
+                    multiple_select: false
+                    ajax: 
+                        request: 
+                            duplicate: 1
+                delete:
+                    priv: _PRIV_EDIT_DOCUMENTS
+                    hide_in_select_mode: true
+                    label: Delete
+                    multiple_select: true
+                    ajax: 
+                        confirm: 
+                            message: >
+                                Are you sure you want to delete the rule "[[pattern]]"?
+                            multiple_select_message: >
+                                Are you sure you want to delete the selected rules?
+                            message_type: warning
+                            button_message: Delete
+                            cancel_button_message: Cancel
+                        request: 
+                            delete: 1

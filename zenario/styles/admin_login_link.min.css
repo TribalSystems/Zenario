@@ -1,0 +1,5 @@
+body div.admin_login_link{position:fixed;z-index:9999999;text-align:center;font-size:12px;background:#fafafa;border:#fafafa 0;padding:5px 9px 4px;border-radius:7px;box-shadow:0 0 10px 0 gray}
+body div.admin_login_link.alll{left:0;border-top-left-radius:0;border-bottom-left-radius:0}body div.admin_login_link.allc{right:47%}body div.admin_login_link.allr{right:0;border-top-right-radius:0;border-bottom-right-radius:0}
+body div.admin_login_link a.admin_login_link{display:inline-block;color:#000;font-family:Verdana,Arial,Helvetica,sans-serif;text-transform:uppercase;text-decoration:none}
+body div.admin_login_link a.admin_login_link:hover{text-decoration:underline}body div.admin_login_link a.clear_admin_cookie{position:absolute;top:-6px;right:0;width:10px;height:5px;padding-top:4px;line-height:0;font-size:10px;color:#fff;background:#333;text-decoration:none;box-shadow:0 0 4px 0 gray;border-radius:6px;border:#333 solid 2px}
+body div.admin_login_link a.clear_admin_cookie:before{content:"×"}

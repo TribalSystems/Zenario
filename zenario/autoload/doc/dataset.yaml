@@ -1,0 +1,18 @@
+---
+fieldValue:
+  summary: |
+    This gives you the value of a field on a record in a dataset.
+  desc: |
+    <h2>Description</h2>
+    <p>This gives you&nbsp;the value of a field on a record in a dataset.</p>
+    <h2>Parameters</h2>
+    <h3><code>$dataset</code></h3>
+    <p style="margin-left: 40px;">The id, table-name or label of a dataset.</p>
+    <h3><code>$cfield</code></h3>
+    <p style="margin-left: 40px;">The id or column-name of a field in that&nbsp;dataset.</p>
+    <h3><code>$recordId</code></h3>
+    <p style="margin-left: 40px;">The id of record in the dataset.</p>
+    <h3><code>$returnCSV</code></h3>
+    <p style="margin-left: 40px;">If a checkboxes or multiple-picker field is requested, by default&nbsp;this function will return&nbsp;a string of&nbsp;comma-separated values.</p>
+    <p style="margin-left: 40px;">If you set this to false, it will return an array of values&nbsp;instead.</p>
+    <p style="margin-left: 40px;">(Fields that can only contain single values will&nbsp;never return an array.)</p>

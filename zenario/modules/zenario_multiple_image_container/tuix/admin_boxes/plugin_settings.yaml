@@ -1,0 +1,155 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+plugin_settings:
+    module_class_name: zenario_multiple_image_container
+    tabs:
+        mobile_tab:
+            hidden: true
+        
+        first_tab:
+            label: Images
+            fields:
+                # Overwrite the single image picker from the Banner Plugin with a multiple image picker
+                image:
+                    plugin_setting:
+                        #name: image
+                        foreign_key_to: 'multiple_files'
+                        use_value_for_plugin_name: false
+                        
+                    label: Images
+                    pick_items:
+                        path: zenario__content/panels/image_library
+                        min_path: zenario__content/panels/image_library
+                        max_path: zenario__content/panels/image_library
+                        target_path: zenario__content/panels/image_library
+                        multiple_select: true
+                        select_phrase: Select from Organizer...
+                    #value: ""
+                    format_onchange: false
+                    upload:
+                        multi: true
+                        accept: 'image/*'
+                        extensions:
+                            - .gif
+                            - .jpg
+                            - .jpeg
+                            - .png
+                        drag_and_drop: true
+                        reorder_items: true
+                    validation:
+                        required_if_not_hidden: false
+                
+                lazy_load:
+                    indent: 0
+                    visible_if: true
+                    plugin_setting:
+                        name: lazy_load
+                    label: Lazy load images
+                    type: checkbox
+                    side_note: |
+                        This will cause the images to be loaded when they scroll into view,
+                        rather than loading them all at once.
+
+        links:
+            ord: 1.5
+            label: Links and titles
+            custom_template_fields:
+
+                image_thumb_znz: 
+                    type: grouping
+                    name: 'image_thumb image_thumb_znz'
+                
+                image_znz:
+                    grouping: 'image_thumb image_thumb_znz'
+                    row_class: zfab_just_show_image_thumb
+                    readonly: true
+                    pick_items:
+                        path: zenario__content/panels/image_library
+                        min_path: zenario__content/panels/image_library
+                        max_path: zenario__content/panels/image_library
+                        target_path: zenario__content/panels/image_library
+                    value: znz
+                    upload:
+                        multi: true
+                        accept: 'image/*'
+                        extensions:
+                            - .gif
+                            - .jpg
+                            - .jpeg
+                            - .png
+                
+                image_link_znz: 
+                    type: grouping
+                    name: 'image_link image_link_znz'
+                
+                image_title_znz:
+                    grouping: 'image_link image_link_znz'
+                    plugin_setting:
+                        name: image_title_znz
+                    label: 'Title:'
+                    type: text
+                    
+                link_type_znz:
+                    grouping: 'image_link image_link_znz'
+                    plugin_setting:
+                        name: link_type_znz
+                    type: select
+                    value: _NO_LINK
+                    values:
+                        _NO_LINK:
+                            label: No link
+                        _CONTENT_ITEM:
+                            label: Link to a content item
+                        _EXTERNAL_URL:
+                            label: Link to an external URL
+                        _ENLARGE_IMAGE:
+                            label: Enlarge image in floating box
+                    redraw_onchange: true
+                hyperlink_target_znz:
+                    indent: 1
+                    visible_if: |
+                        zenarioAB.value('link_type_znz') == '_CONTENT_ITEM'
+                    grouping: 'image_link image_link_znz'
+                    plugin_setting:
+                        name: hyperlink_target_znz
+                        foreign_key_to: content
+                    pick_items:
+                        path: zenario__content/panels/content/refiners/filter_by_lang////
+                        min_path: zenario__content/panels/content
+                        max_path: zenario__content/panels/content
+                        target_path: zenario__content/panels/content
+                        select_phrase: Select a content item...
+                        hide_remove_button: true
+                url_znz:
+                    indent: 1
+                    visible_if: |
+                        zenarioAB.value('link_type_znz') == '_EXTERNAL_URL'
+                    grouping: 'image_link image_link_znz'
+                    plugin_setting:
+                        name: url_znz
+                    type: url
+                    maxlength: "255"
+                    value: ""
+                target_blank_znz:
+                    indent: 1
+                    visible_if: |
+                        zenario.IN(zenarioAB.value('link_type_znz'), '_CONTENT_ITEM', '_EXTERNAL_URL')
+                    grouping: 'image_link image_link_znz'
+                    plugin_setting:
+                        name: target_blank_znz
+                    type: select
+                    empty_value: 'Open in the same window'
+                    values:
+                        1:
+                            label: Open in a new window
+                        2:
+                            label: Open in a floating box
+                    value: "" 
+            
+            fields:
+                # Annoying bug: you need to add an actual new field to be able to run
+                # your placeholder methods!
+                test:
+                    hidden: true
+                    
+                        

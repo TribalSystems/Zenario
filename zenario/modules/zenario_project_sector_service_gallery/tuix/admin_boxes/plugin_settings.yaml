@@ -1,0 +1,78 @@
+plugin_settings: 
+    max_height: "450"
+    tabs: 
+        first_tab: 
+            fields: 
+                results_per_page: 
+                    plugin_setting: 
+                        name: results_per_page
+                    label: "Number of results per page:"
+                    type: text
+                    validation: 
+                        required_if_not_hidden: Please enter the number of results per page.
+                        numeric: The number of results per page must be a number.
+                    value: "10"
+                    maxlength: "5"
+                    style: "width: 5em;"
+                    note_below: The number of results per page to be shown when when visitor views the given sector or service.
+                canvas: 
+                    plugin_setting: 
+                        name: canvas
+                    label: "Image canvas:"
+                    type: select
+                    value: unlimited
+                    values: 
+                        unlimited: 
+                            ord: "1"
+                            label: Unlimited size
+                        fixed_width: 
+                            ord: "2"
+                            label: Constrain by width
+                        fixed_height: 
+                            ord: "3"
+                            label: Constrain by height
+                        resize: 
+                            ord: "4"
+                            label: Constrain by width and height
+                        resize_and_crop: 
+                            ord: "5"
+                            label: Resize and crop
+                    format_onchange: Yes
+                    note_below: The feature image will be used from the matching content items.
+                sticky_image_width: 
+                    plugin_setting: 
+                        name: sticky_image_width
+                    label: "Width:"
+                    type: text
+                    validation: 
+                        required_if_not_hidden: Please enter a width.
+                        numeric: The width must be a number.
+                    value: "120"
+                    maxlength: "5"
+                    style: "width: 5em;"
+                    post_field_html: "&nbsp;pixels"
+                sticky_image_height: 
+                    plugin_setting: 
+                        name: sticky_image_height
+                    label: "Height:"
+                    type: text
+                    validation: 
+                        required_if_not_hidden: Please enter a height.
+                        numeric: The height must be a number.
+                    value: "120"
+                    maxlength: "5"
+                    style: "width: 5em;"
+                    post_field_html: "&nbsp;pixels"
+                plugin_service_id: 
+                    plugin_setting: 
+                        name: plugin_service_id
+                    label: "Services:"
+                    type: checkboxes
+                    note_below: Projects will only show if they are in one of the services ticked above and in one of the sectors ticked below.
+                plugin_sector_id: 
+                    plugin_setting: 
+                        name: plugin_sector_id
+                    label: "Sectors:"
+                    type: checkboxes
+                    note_below: "Projects will only show if they're in one of the sectors and in one of the services ticked above."
+    module_class_name: zenario_project_sector_service_gallery

@@ -1,0 +1,122 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_job:
+    priv: _PRIV_VIEW_SCHEDULED_TASK
+    tabs:
+        zenario_incoming_email_manager__fetch:
+            ord: "2"
+            visible_if: "zenarioAB.tuix.key.manager_class_name == 'zenario_incoming_email_manager'"
+            edit_mode:
+                enabled: Yes
+                priv: _PRIV_MANAGE_SCHEDULED_TASK
+            label: Fetch Email from a Mailbox
+            fields:
+                desc:
+                    full_width: Yes
+                    snippet:
+                        html: |
+                            <p>
+                                                                    If your server administrator has enabled IMAP support
+                                                                    (see <a target="_blank" href="http://php.net/manual/en/imap.requirements.php">
+                                                                        http://php.net/manual/en/imap.requirements.php</a>),
+                                                                    the Incoming Email Manager can periodically connect to a mailbox and pass any email there to this Email Handler.
+                                                                </p>
+                                                                <p>
+                                                                    By default the mailbox will be checked for new email every 5 minutes. However you may set Time,
+                                                                    Day and/or Month rules to adjust when the mailbox is be checked, using similar controls to Scheduled Tasks.
+                                                                </p>
+                fetch_enable:
+                    hidden: true
+                    full_width: Yes
+                    type: checkbox
+                    redraw_onchange: Yes
+                    post_field_html: |
+                        &nbsp;
+                                                        <label style="font-weight: bold;" for="fetch_enable">Enable fetching email from a mailbox</label>
+                desc2:
+                    full_width: Yes
+                    snippet:
+                        html: |
+                            <p>
+                                                                    To fetch email, you will need to know the connection details for an email server, and a username and password for
+                                                                    an account on that server.
+                                                                </p>
+                                                                <p>
+                                                                    The server connection details should consist of the domain name and port number of the email server
+                                                                    (e.g. <code>mail.example.com:143</code>), some optional flags (e.g. <code>/ssl</code>),
+                                                                    then the mailbox to read from (e.g. <code>INBOX</code>).
+                                                                    See <a target="_blank" href="http://uk.php.net/manual/en/function.imap-open.php">
+                                                                        http://uk.php.net/manual/en/function.imap-open.php
+                                                                    </a> for a full technical description.
+                                                                </p>
+                    visible_if: "zenarioAB.value('fetch_enable')"
+                fetch_server:
+                    label: 'Server and Mailbox Folder:'
+                    pre_field_html: '{'
+                    post_field_html: '}'
+                    type: text
+                    maxlength: "196"
+                    style: 'width: 25em;'
+                    visible_if: "zenarioAB.value('fetch_enable')"
+                fetch_mailbox:
+                    same_row: Yes
+                    type: text
+                    maxlength: "255"
+                    style: 'width: 12em;'
+                    visible_if: "zenarioAB.value('fetch_enable')"
+                    note_below: ""
+                fetch_username:
+                    label: 'Username:'
+                    type: text
+                    maxlength: "128"
+                    visible_if: "zenarioAB.value('fetch_enable')"
+                fetch_password:
+                    label: 'Password:'
+                    type: password
+                    maxlength: "255"
+                    visible_if: "zenarioAB.value('fetch_enable')"
+                desc3:
+                    full_width: Yes
+                    snippet:
+                        html: |
+                            <p>
+                                                                    After the Incoming Email Manager has fetched an email and this Email Handler as processed it,
+                                                                    the email can be either deleted from the source mailbox, or moved it to a different mailbox.
+                                                                    Keeping processed email in a different mailbox may be useful for auditing or debugging.
+                                                                </p>
+                                                                <p>
+                                                                    If you choose to move processed email to a different mailbox, this must be a mailbox that exists
+                                                                    on the account, and must be a different mailbox than the mailbox used for incoming email.
+                                                                </p>
+                    visible_if: "zenarioAB.value('fetch_enable')"
+                fetch_keep_mail:
+                    label: 'After processing an email:'
+                    type: select
+                    values:
+                        1: Move it to a different mailbox folder
+                    empty_value: Delete it from the server
+                    visible_if: "zenarioAB.value('fetch_enable')"
+                    redraw_onchange: Yes
+                fetch_processed_mailbox:
+                    label: 'Mailbox Folder to move to:'
+                    type: text
+                    maxlength: "255"
+                    visible_if: "zenarioAB.value('fetch_enable') && zenarioAB.value('fetch_keep_mail')"
+                fetch_keep_errors:
+                    label: 'If there is an error processing an email:'
+                    type: select
+                    empty_value: Move it to a different mailbox folder
+                    readonly: Yes
+                    visible_if: "zenarioAB.value('fetch_enable')"
+                fetch_error_mailbox:
+                    label: 'Mailbox Folder to move to:'
+                    type: text
+                    maxlength: "255"
+                    visible_if: "zenarioAB.value('fetch_enable')"
+            notices:
+                not_enabled:
+                    type: warning
+                    message: |
+                        The Scheduled Task for checking email is not running.
+                                                    You must enable this first before you can fetch email from a mailbox.
+            show_errors_after_field: desc

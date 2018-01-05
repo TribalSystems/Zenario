@@ -1,0 +1,46 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_spare_domains:
+    priv: _PRIV_MANAGE_SPARE_DOMAIN_NAME
+    title: Creating a domain name redirect
+    key:
+        id: ""
+    hide_tab_bar: Yes
+    max_height: 350
+    tabs:
+        details:
+            edit_mode:
+                enabled: Yes
+            show_errors_after_field: description
+            fields:
+                description:
+                    full_width: Yes
+                    snippet:
+                        html: |
+                            You can define a domain name redirect, so that visitors to that Domain Name are redirected to a specified Content Item under the Admin URL. 
+                            Use this panel to define a domain name redirect and the target Content Item. 
+                            Note that DNS and your web server must be correctly set up to map the Spare Domain to the CMS directory.
+                requested_url:
+                    label: |
+                        Domain name:
+                    type: text
+                    pre_field_html: "http://"
+                    side_note: "Please do not include http:// or https:// in your domain name."
+                    
+                add_www:
+                    label: |
+                        Add www subdomain:
+                    type: checkbox
+                    note_below: |
+                        For example, if you entered "website.com" in the field above, ticking this checkbox would automatically add "www.website.com" for you as well.
+
+                content:
+                    label: |
+                        Content item:
+                    pick_items:
+                        path: zenario__content/panels/content
+                        min_path: zenario__content/panels/content
+                        max_path: zenario__content/panels/content
+                        target_path: zenario__content/panels/content
+                        select_phrase: Select content item...
+                        hide_remove_button: Yes

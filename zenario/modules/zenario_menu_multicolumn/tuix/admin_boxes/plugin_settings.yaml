@@ -1,0 +1,62 @@
+# You must use a tab-size of 4 spaces to edit this file.
+#
+#    This file contains a TUIX description of the tabs and fields in an Admin Box.
+#    You can find out more about how to define Admin Boxes at:
+#        http://zenar.io/ref-tag-admin_boxes.html
+#    
+#    This file contains TUIX definitions, which behave slightly differently than
+#    regular XML tags. You can find out more about the differences on the following
+#    pages:
+#        http://zenar.io/creating-numeric-tuix-tags.html
+#        http://zenar.io/merging-tuix-tags.html
+#        http://zenar.io/reserved-tuix-tags.html
+#        http://zenar.io/universal-tuix-tags.html
+#
+#    To define your Plugin Settings, you must use the "plugin_settings" path, and
+#    your first tag must have an attribute called "module_class_name" set to your
+#    Module's class name. This marks that these fields should go in your Plugin
+#    Settings Admin Box.
+---
+plugin_settings:
+    module_class_name: zenario_menu_multicolumn
+    tabs:
+        first_tab:
+            label: Multi-column dropdown
+            fields:
+                menu_number_of_levels:
+                    plugin_setting:
+                        name: menu_number_of_levels
+                    value: "3"
+                    hidden: true
+                menu_show_all_branches:
+                    value: "1"
+                    hidden: true
+                reverse_order:
+                    value: ""
+                    hidden: true
+                page_size:
+                    plugin_setting:
+                        name: max_items_per_column
+                    label: 'Max per column:'
+                    type: select
+                    values:
+                        2: "2"
+                        3: "3"
+                        4: "4"
+                        5: "5"
+                        6: "6"
+                        7: "7"
+                        8: "8"
+                        9: "9"
+                        10: "10"
+                        11: "11"
+                        12: "12"
+                        13: "13"
+                        14: "14"
+                        15: "15"
+                        16: "16"
+                        17: "17"
+                        18: "18"
+                        19: "19"
+                        20: "20"
+                    value: "8"

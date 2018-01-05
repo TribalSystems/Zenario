@@ -1,0 +1,65 @@
+{% set first = true %}
+{% set smart = false %}
+{% set title = '' %}
+{% set hasSmartBCs = false %}
+{% set separator = this.setting('breadcrumb_trail_separator') %}
+
+{% for node in nodes %}
+	{% if first %}
+		{% set first = false %}
+	{% else %}
+		{{separator}}
+	{% endif %}
+	
+	<span class="
+		breadcrumb
+		{{node.Class}}
+		{% if smart %}
+			breadcrumb_parent
+		{% endif %}
+	">
+		{{node.Hyperlink}}
+		
+		{% if smart %}
+			{% set hasSmartBCs = true %}
+			
+			<ul class="smart_breadcrumbs vertical_breadcrumbs">
+				<li class="sb_title">{{title|escape}}</li>
+				{% for vb in smart %}
+					<li class="
+						{{vb.Class}}
+						{% if vb.current %}current{% endif %}
+					">
+						{{vb.Hyperlink}}
+					</li>
+				{% endfor %}
+			</ul>
+		{% endif %}
+		
+		{% set smart = node.Smart %}
+		{% set title = node.Name %}
+	</span>
+{% endfor %}
+
+{% if smart %}
+	{% set hasSmartBCs = true %}
+	
+	{{separator}}
+	<span class="breadcrumb breadcrumb_parent next_level">
+		<a>
+			...
+		</a>
+		<ul class="smart_breadcrumbs vertical_breadcrumbs">
+			<li class="sb_title">{{title|escape}}</li>
+			{% for vb in smart %}
+				<li class="{{vb.Class}}">
+					{{vb.Hyperlink}}
+				</li>
+			{% endfor %}
+		</ul>
+	</span>
+{% endif %}
+
+{% if hasSmartBCs %}
+	{% do this.jQuery('#' ~ containerId ~ ' .breadcrumb_parent > a', 'doubleTapToGo') %}
+{% endif %}

@@ -1,0 +1,17 @@
+<span class="tag_name">
+	{{m.tag|escape}}
+</span>
+
+<br>
+&nbsp; &nbsp;
+<% if (m.internalCMSProperty.isGlobal) { %>
+	global property (works anywhere in TUIX)
+<% } else { %>
+	internal CMS property (meta-information added by the CMS)
+<% } %>
+
+<% if (m.internalCMSProperty.description) { %>
+	<span class="tooltip_desc">
+		{{marked(m.internalCMSProperty.description, {breaks: true})}}
+	</span>
+<% } %>

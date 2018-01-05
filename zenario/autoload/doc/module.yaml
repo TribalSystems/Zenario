@@ -1,0 +1,35 @@
+---
+inc:
+  summary: |
+    Includes the PHP class/code of a Plugin.
+  desc: |
+    <h2>Summary</h2>
+    <p>Includes the PHP class/code of a Plugin.</p>
+    <h2>Description</h2>
+    <p>This will also include any dependancies that a Plugin has as needed.</p>
+    <p>Plugins and their dependancies will only be included once, so you can safely call this function multiple times without worrying about including the same Plugin twice.</p>
+    <h2>Parameters</h2>
+    <h3><code>$pluginClass</code></h3>
+    <p style="margin-left: 40px;">The class name of a Plugin to include.</p>
+    <h2>Return Value</h2>
+    <p>If a Plugin is not installed or running, of if any of its dependancies are not installed or running, then this function will return&nbsp;<span class="code">false</span>.</p>
+    <p>Otherwise it will include the Plugin (and its dependancies) and then return <span class="code">true</span>.</p>
+sendSignal:
+  summary: |
+    This allows you to send a Signal.
+  desc: |
+    <h2>Description</h2>
+    <p>This allows you to send a Signal.</p>
+    <h2>Where You Can Use It</h2>
+    <p>From Zenario 7.0.0 onwards.</p>
+    <h2>Parameters</h2>
+    <h3><code>$signalName</code></h3>
+    <p style="margin-left: 40px;">The name of the signal to send.</p>
+    <p style="margin-left: 40px;">This should be prefixed with your Plugin's name, to avoid any name clashes with signals send by other Plugins.</p>
+    <p style="margin-left: 40px;">Any Plugin handling this signal will need to make a method with this name in order to handle it.</p>
+    <h3><code>$signalParams</code></h3>
+    <p style="margin-left: 40px;">An array of inputs that will be giving to functions handling the signal.</p>
+    <h2>Return Value</h2>
+    <p>An array of the class names of any Plugins that handled the signal and the results that they returned from their placeholder functions, in the form class_name =&gt; return result.</p>
+    <p>For example, if plugin_a and plugin_b handles the signal, and plugin_a returns no result and plugin_b returns true, the return value would be:</p>
+    <pre>array(<br />    'plugin_a' =&gt; null,<br />    'plugin_b' =&gt; true);</pre>

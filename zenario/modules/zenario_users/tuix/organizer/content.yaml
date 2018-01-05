@@ -1,0 +1,39 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__content:
+    panels:
+        content:
+            refiners:
+                group_members:
+                    table_join: |
+                        INNER JOIN [[DB_NAME_PREFIX]]group_link AS gcl
+                            ON gcl.link_to = 'group'
+                            AND gcl.link_to_id = [[REFINER_ID]]
+                            AND gcl.link_from = 'chain'
+                            AND gcl.link_from_id = c.equiv_id
+                            AND gcl.link_from_char = c.type
+            item_buttons:
+                privacy:
+                    ord: 3.1
+                    parent: property_dropdown
+                    priv: _PRIV_EDIT_CONTENT_ITEM_PERMISSIONS
+                    label: Edit permissions
+                    multiple_select: true
+                    admin_box:
+                        path: zenario_content_privacy
+                    without_columns_set:
+                        traits.ghost: true
+                
+                user_access_log:
+                    parent: view_dropdown
+                    hide_in_select_mode: Yes
+                    css_class: log
+                    label: Access log for this content item
+                    link:
+                        path: zenario__users/panels/access_log
+                        branch: Yes
+                        refiner: content
+                    with_columns_set:
+                        traits.log_access: true
+                    without_columns_set:
+                        traits.ghost: true

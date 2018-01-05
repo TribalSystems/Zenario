@@ -1,0 +1,211 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+sections:
+    no_menu_nodes:
+        priv: _PRIV_VIEW_MENU_ITEM
+        buttons:
+            menu_path:
+                hidden: true
+                css_class: zenario_at_infobar_menu_orphaned
+                label: '[Orphaned page]'
+            menu_section:
+                hidden: true
+                label: '[Orphaned page]'
+            quick_add_to_menu:
+                priv: _PRIV_ADD_MENU_ITEM
+                label: Attach content item to menu
+                css_class: zenario_create_a_new
+                tooltip: >
+                    This content item is orphaned (not in the menu). Click to
+                    add it to the menu (use its browser title as the menu text).
+                pick_items:
+                    path: zenario__menu/panels/menu_position/refiners/create////
+                    target_path: zenario__menu/panels/menu_position
+                    min_path: zenario__menu/panels/menu_position
+                    disallow_refiners_looping_on_min_path: true
+                    one_to_one_choose_phrase: Create menu node
+                    visible_if_for_all_selected_items: >
+                        zenario.engToBoolean(item.menu_id) || zenario.engToBoolean(item.is_dummy_child)
+                    request:
+                        mass_add_to_menu: 1
+    primary_menu_node:
+        priv: _PRIV_VIEW_MENU_ITEM
+        buttons:
+            menu_path:
+                hidden: true
+                label: ""
+            menu_section:
+                hidden: true
+                label: ""
+            edit_menu_text:
+                priv: _PRIV_EDIT_MENU_TEXT
+                visible_if: |
+                    zenarioA.checkSpecificPermsOnThisPage()
+                label: Edit menu text
+                tooltip: Edit the text of this menu node in the navigation
+                admin_box:
+                    path: zenario_menu_text
+                    key:
+                        mID: ""
+                        languageId: ""
+            edit_menu_item:
+                priv: _PRIV_EDIT_MENU_ITEM
+                label: Menu node properties
+                tooltip: Edit the text of this menu node in the navigation
+                admin_box:
+                    path: zenario_menu
+                    key:
+                        mID: ""
+                        languageId: ""
+            view_menu_node_in_sk:
+                priv: _PRIV_EDIT_MENU_ITEM
+                label: Organize menu...
+                organizer_quick:
+                    path: ""
+                    target_path: zenario__menu/panels/menu_nodes
+                    min_path: zenario__menu/panels/menu_nodes
+                    max_path: zenario__menu/panels/menu_nodes
+                    disallow_refiners_looping_on_min_path: No
+                    reload_menu_slots: true
+                    reload_admin_toolbar: true
+            advanced_dropdown:
+                label: More actions
+                hide_when_children_are_not_visible: true
+            quick_add_to_menu:
+                priv: _PRIV_ADD_MENU_ITEM
+                label: Create secondary node
+                parent: advanced_dropdown
+                tooltip: Create another menu node linking to this item
+                pick_items:
+                    path: zenario__menu/panels/menu_position/refiners/create////
+                    target_path: zenario__menu/panels/menu_position
+                    disallow_refiners_looping_on_min_path: true
+                    one_to_one_choose_phrase: Create secondary menu node
+                    visible_if_for_all_selected_items: >
+                        zenario.engToBoolean(item.menu_id) || zenario.engToBoolean(item.is_dummy_child)
+                    request:
+                        mass_add_to_menu: 1
+            detach:
+                priv: _PRIV_EDIT_MENU_ITEM
+                label: Detach content item
+                parent: advanced_dropdown
+                ajax:
+                    confirm:
+                        message: |
+                            Are you sure you wish to detach this content item from the menu?
+                            
+                            Its menu node will become unlinked. If there is a secondary menu node, it will be promoted to be the primary node.
+                        message__orphaned: |
+                            Are you sure you wish to detach this content item from the menu?
+                            
+                            The content item will become "orphaned", and site visitors may have difficulty navigating to it. Its menu node will not be deleted but will become an unlinked menu node.
+                        button_message: Detach
+                        cancel_button_message: Cancel
+                        message_type: warning
+                    request:
+                        mID: ""
+                        languageId: ""
+                        menu_item: 1
+                        detach: 1
+    secondary_menu_node:
+        priv: _PRIV_VIEW_MENU_ITEM
+        buttons:
+            menu_path:
+                hidden: true
+                css_class: ""
+                label: ""
+            menu_section:
+                hidden: true
+                label: ""
+            edit_menu_item:
+                priv: _PRIV_EDIT_MENU_ITEM
+                label: Secondary menu node properties
+                admin_box:
+                    path: zenario_menu
+                    key:
+                        mID: ""
+                        languageId: ""
+            edit_menu_text:
+                priv: _PRIV_EDIT_MENU_TEXT
+                visible_if: |
+                    zenarioA.checkSpecificPermsOnThisPage()
+                    && zenarioA.adminHasSpecificPerms
+                label: Secondary menu node text
+                admin_box:
+                    path: zenario_menu_text
+                    key:
+                        mID: ""
+                        languageId: ""
+            view_menu_node_in_sk:
+                priv: _PRIV_EDIT_MENU_ITEM
+                label: Organize menu...
+                organizer_quick:
+                    path: ""
+                    target_path: zenario__menu/panels/menu_nodes
+                    min_path: zenario__menu/panels/menu_nodes
+                    max_path: zenario__menu/panels/menu_nodes
+                    disallow_refiners_looping_on_min_path: No
+                    reload_menu_slots: true
+                    reload_admin_toolbar: true
+            advanced_dropdown:
+                label: Advanced
+                hide_when_children_are_not_visible: true
+            make_primary:
+                priv: _PRIV_EDIT_MENU_ITEM
+                label: Make primary
+                parent: advanced_dropdown
+                tooltip: >
+                    Make this menu node the primary node, so that this path is
+                    used in any breadcrumb trail.
+                ajax:
+                    confirm:
+                        message: |
+                            Are you sure you wish to make this node the primary node for this content item?
+                            
+                            Any breadcrumb trail or site map that shows a path to this content item will now reflect the path to this node in its menu section.
+                        button_message: Make primary
+                        cancel_button_message: Cancel
+                        message_type: warning
+                    request:
+                        mID: ""
+                        menu_item: 1
+                        make_primary: 1
+            detach:
+                priv: _PRIV_EDIT_MENU_ITEM
+                label: Detach content item
+                parent: advanced_dropdown
+                tooltip: Detach this content item from this secondary menu node
+                ajax:
+                    confirm:
+                        message: |
+                            Are you sure you wish to detach this content item from the menu?
+                            
+                            This secondary menu node will become unlinked, but its primary node will not be affected.
+                        message__orphaned: |
+                            Are you sure you wish to detach this content item from the menu?
+                            
+                            The content item will become orphaned, and its menu node will become unlinked.
+                        button_message: Detach
+                        cancel_button_message: Cancel
+                        message_type: warning
+                    request:
+                        mID: ""
+                        languageId: ""
+                        menu_item: 1
+                        detach: 1
+            delete:
+                priv: _PRIV_DELETE_MENU_ITEM
+                parent: advanced_dropdown
+                label: Delete menu node
+                ajax:
+                    confirm:
+                        message: |
+                            Are you sure that you wish to delete this secondary menu node?
+                        button_message: Delete
+                        cancel_button_message: Cancel
+                        message_type: warning
+                    request:
+                        mID: ""
+                        languageId: ""
+                        menu_item: 1
+                        delete: 1

@@ -1,0 +1,85 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+site_settings:
+    setting_group: embedding
+    title: Options for embedding elements of this site in third-party sites
+    max_height: 400
+    tabs:
+        embedding:
+            label: Embedding
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_SITE_SETTING
+            fields:
+                description:
+                    full_width: true
+                    snippet:
+                        html: |
+                            <p>
+                                Zenario can permit elements of this website to be embedded in third-party sites. Slots on specific
+                                content items, or entire content items, can be embedded.
+                            </p>
+                            <p>
+                                Use these options to control what elements of this site can be embedded, and which other sites
+                                are allowed to do this.
+                            </p>
+                xframe_options:
+                    site_setting:
+                        name: xframe_options
+                    label: 'Domains that can embed elements of this site:'
+                    type: radios
+                    value: this
+                    values:
+                        this:
+                            label: Block embedding from all third-party domains
+                        all:
+                            label: Allow any domain to embed (not recommended)
+                        specific:
+                            label: 'Allow the following domains to embed:'
+                    redraw_onchange: true
+                xframe_domains:
+                    site_setting:
+                        name: xframe_domains
+                    visible_if:
+                        zenarioAB.valueIn: xframe_options, specific
+                    indent: 1
+                    type: text
+                    placeholder: eg. zenar.io, tribalsystems.uk
+                    note_below: |
+                        Comma-separate multiple domains, e.g. zenar.io, tribalsystems.uk.
+                        Do not include http.
+                    validation:
+                        required_if_not_hidden: Please enter at least one domain
+                xframe_target:
+                    site_setting:
+                        name: xframe_target
+                    visible_if:
+                        zenarioAB.valueIn: xframe_options, specific, all
+                    indent: 1
+                    label: 'What can be embedded:'
+                    type: radios
+                    value: anything
+                    values:
+                        slots_with_nests:
+                            label: Slots with nests only
+                        all_slots:
+                            label: Slots with any plugin
+                        anything:
+                            label: Slots with any plugin and entire content items
+                    validation:
+                        required_if_not_hidden: Please select what can be embedded
+                admin_mode_warning:
+                    visible_if:
+                        zenarioAB.valueIn: xframe_options, specific, all
+                    indent: 1
+                    full_width: true
+                    snippet:
+                        html: |
+                            <p>
+                                Attention server admins: your Apache config may override these settings.
+                                To ensure that these settings are not overriden, the correct Apache config line is:
+                            </p>
+                            <pre>
+                                Header setifempty X-Frame-Options SAMEORIGIN
+                            </pre>
+                            

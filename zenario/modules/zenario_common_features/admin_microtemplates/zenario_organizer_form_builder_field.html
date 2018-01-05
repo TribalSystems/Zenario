@@ -1,0 +1,139 @@
+<% if (m._fields) { %>
+
+<div class="grouping <% if (m._isSortable) { %> is_sortable <% } %>">
+	{{zenarioT.microTemplate('zenario_organizer_form_builder_field', m._fields)}}
+</div>
+
+<% } else { %>
+<div 
+	id="organizer_form_field_{{m.id}}" 
+	class="form_field {{m.type}} {{m.css_classes}}
+		<% if (m.dataset_field_id) { %> linked_field <% } %>
+		<% if (m._isSortable) { %> is_sortable <% } %> 
+		<% if (m.selected) { %> selected <% } %>"
+	data-id="{{m.id}}"
+	<% if (m._inRepeat) { %>
+		style="padding-left:50px;"
+	<% } %>
+>
+	<div class="form_field_arrow"></div>
+	<div class="form_field_details_wrapper">
+		<% if (m.type == 'checkbox' || m.type == 'group') { %>
+			<div class="checkbox_wrapper">
+				<input type="checkbox" disabled/>
+				<label class="label">{{m.field_label|e}}</label>
+			</div>
+		<% } else if (m.type == 'checkboxes') { %>
+			<span class="label">{{m.field_label|e}}</span>
+			<div id="organizer_form_field_values_{{m.id}}">
+				{{zenarioT.microTemplate('zenario_organizer_admin_box_builder_checkbox_values_preview', m.lov)}}
+			</div>
+		
+		<% } else if (m.type == 'date') { %>
+			<span class="label">{{m.field_label|e}}</span>
+			<input type="text" value="{{m.value}}" readonly class="datepicker"/>
+		
+		<% } else if (m.type == 'radios') { %>
+			<span class="label">{{m.field_label|e}}</span>
+			<div id="organizer_form_field_values_{{m.id}}">
+				{{zenarioT.microTemplate('zenario_organizer_admin_box_builder_radio_values_preview', m.lov)}}
+			</div>
+		
+		<% } else if (m.type == 'centralised_radios') { %>
+			<span class="label">{{m.field_label|e}}</span>
+			<div id="organizer_form_field_values_{{m.id}}">
+				{{zenarioT.microTemplate('zenario_organizer_admin_box_builder_radio_values_preview', m.lov)}}
+			</div>
+		
+		<% } else if (m.type == 'select') { %>
+			<span class="label">{{m.field_label|e}}</span>
+			<select readonly disabled>
+				<option>-- Select --</option>
+				{{zenarioT.microTemplate('zenario_organizer_admin_box_builder_select_values', m.lov)}}
+			</select>
+		
+		<% } else if (m.type == 'centralised_select') { %>
+			<span class="label">{{m.field_label|e}}</span>
+			<select readonly disabled>
+				<option>-- Select --</option>
+				{{zenarioT.microTemplate('zenario_organizer_admin_box_builder_select_values', m.lov)}}
+			</select>
+			
+		<% } else if (m.type == 'text') { %>
+			<span class="label">{{m.field_label|e}}</span>
+			<input type="text" value="" readonly placeholder="{{m.placeholder}}"/>
+		
+		<% } else if (m.type == 'textarea') { %>
+			<span class="label">{{m.field_label|e}}</span>
+			<textarea disabled placeholder="{{m.placeholder}}"></textarea>
+		
+		<% } else if (m.type == 'url') { %>
+			<span class="label">{{m.field_label|e}}</span>
+			<input type="text" value="http://" readonly class="url"/>
+		
+		<% } else if (m.type == 'attachment') { %>
+			<span class="label">{{m.field_label|e}}</span>
+			<input type="button" value="Choose a file..."/>
+			
+		<% } else if (m.type == 'file_picker') { %>
+			<span class="label">{{m.field_label|e}}</span>
+			<input type="button" value="Choose a file..."/>
+				    
+		<% } else if (m.type == 'section_description') { %>
+			<span class="label">{{m.field_label|e}}</span>
+			<p class="description">{{m.description|e}}</p>
+			
+		<% } else if (m.type == 'calculated') { %>
+			<span class="label">{{m.field_label|e}}</span>
+			<input type="text" value="" readonly/>
+			
+		<% } else if (m.type == 'restatement') { %>
+			<span class="label">{{m.field_label|e}}</span>
+			<input type="text" value="" readonly/>
+		
+		<% } else if (m.type == 'repeat_start') { %>
+			<div class="border"></div>
+			<span>Repeating section start</span>
+			
+		<% } else if (m.type == 'repeat_end') { %>
+			<div class="border"></div>
+		
+		<% } else { %>
+			<span class="label">{{m.field_label|e}}</span>
+			<div class="other"></div>
+		<% } %>
+		
+		<% if (m.type != 'page_break' && m.type != 'section_description') { %>
+			<div id="organizer_form_field_note_below_{{m.id|e}}" class="zenario_note_below" <% if (!m.note_to_user) { %> style="display:none;" <% } %>>
+				<div class="zenario_note_icon"></div>
+				<div class="zenario_note_content">{{m.note_to_user}}</div>
+			</div>
+		<% } %>
+	</div>
+	
+	<% if (m.type != 'page_end') { %>
+        <div class="form_field_classes" style="display:none;">
+        	<span class="field_icon not_visible" title="<% if (m.visibility == 'hidden') { %>Hidden<% } else { %>Visible on condition<% } %>" <% if (m.visibility == 'visible') { %>style="display:none;"<% } %>>Vis</span>
+        	<span class="field_icon mandatory" title="<% if (m.readonly_or_mandatory == 'mandatory') { %>Mandatory<% } else { %>Mandatory on condition<% } %>" <% if (m.readonly_or_mandatory != 'mandatory' && m.readonly_or_mandatory != 'conditional_mandatory' && m.readonly_or_mandatory != "mandatory_if_visible") { %>style="display:none;"<% } %>>Mand</span>
+        	<span class="field_icon validation" title="Validation" <% if (m.field_validation == 'none') { %>style="display:none;"<% } %>>Val</span>
+            <span class="field_icon css" title="{{m.css_classes|e}}" <% if (!m.css_classes) { %>style="display:none;"<% } %>>CSS</span>
+            <span class="field_icon div" title="{{m.div_wrap_class|e}}" <% if (!m.div_wrap_class) { %>style="display:none;"<% } %>>Div</span>
+        </div>
+    
+        <div id="organizer_form_field_inline_buttons_{{m.id|e}}" class="form_field_inline_buttons" <% if (!m.selected) { %> style="display:none;" <% } %>>
+        	<% if (!m._hideDragButton) { %>
+            	<span class="drag_icon"></span>
+            <% } %>
+            <% if (!m._hideDeleteButton) { %>
+           		<span class="delete_icon <% if (m.form_type == 'registration' && m.db_column == 'email') { %>disabled<% } else { %>enabled<% } %}" data-id="{{m.id|e}}">Delete</span>
+           	<% } %>
+           	<% if (!m._hideDuplicateButton) { %>
+           		<span class="duplicate_icon" data-id="{{m.id|e}}">Duplicate</span>
+           	<% } %>
+           	<% if (m.type == 'repeat_start' && m.dataset_field_id) { %>
+           		<span class="update_repeat_field_icon" data-id="{{m.id|e}}">Update</span>
+           	<% } %>
+        </div>
+	<% } %>
+</div>
+<% } %>

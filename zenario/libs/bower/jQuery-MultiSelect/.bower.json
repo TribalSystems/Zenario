@@ -1,0 +1,36 @@
+{
+  "author": "nobleclem",
+  "name": "jQuery-MultiSelect",
+  "description": "Turn a multiselect list into a nice and easy to use list with checkboxes",
+  "main": [
+    "jquery.multiselect.js",
+    "jquery.multiselect.css"
+  ],
+  "license": "MIT",
+  "authors": [
+    "nobleclem"
+  ],
+  "moduleType": [],
+  "keywords": [
+    "jquery",
+    "MultiSelect",
+    "CheckBox"
+  ],
+  "homepage": "https://github.com/nobleclem/jQuery-MultiSelect",
+  "ignore": [
+    "*/.",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "_release": "d09d127a0f",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "d09d127a0f949d97729f443f099d157a217a3896"
+  },
+  "_source": "https://github.com/nobleclem/jQuery-MultiSelect.git",
+  "_target": "*",
+  "_originalSource": "nobleclem/jQuery-MultiSelect=nobleclem/jQuery-MultiSelect"
+}

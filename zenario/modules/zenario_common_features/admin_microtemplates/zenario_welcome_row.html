@@ -1,0 +1,66 @@
+<% var e, error, n, notice; %>
+
+<% if (zenario.engToBoolean(m.errors)) { %>
+	<div class="zfab_error_wrap"><div><div class="zfab_error messageDisplay">
+		<% foreach (m.errors as e => error) { %>
+			<div class="zfab_error_inner">
+				{{zenario.htmlspecialchars(error.message, true)}}
+			</div>
+		<% } %>
+	</div></div></div>
+<% } %>	
+<% foreach (m.notices as n => notice) { %>
+	<div class="{{notice.type|escape}}DisplayRow"><div><div class="messageDisplay"><div>
+		{{zenario.htmlspecialchars(notice.message, true)}}
+	</div></div></div></div>
+<% } %>
+
+<% if (m.fields) { %>
+	<% var ff = m.fields[0]; %>
+	
+	<% if (ff._lastVisibleGrouping !== ff.grouping) { %>
+		<% if (ff._lastVisibleGrouping) { %>
+			</fieldset>
+		<% } %>
+		<% if (ff.grouping) { %>
+			<% var grouping = m.grouping || {}; %>
+			<fieldset class="zenario_grouping zenario_grouping__{{ff.grouping|escape}} {{grouping.grouping_css_class|escape}}" style="{{grouping.grouping_style|escape}}">
+		<% } %>
+	<% } %>
+	<% if (ff.legend) { %>
+		<legend class="zenario_legend zenario_legend_for__{{ff._id|escape}}"><span>{{ff.legend}}</span></legend>
+	<% } %>
+	
+	<div id="row__{{ff._id|escape}}" style="{{ff.row_style|escape}}" class="
+		zenario_ab_row
+		zenario_ab_row__{{ff._id|escape}}
+		{{ff.row_class|escape}}
+		{{ff.pressed? 'zenario_row_pressed' : ''}}
+		{{ff._hideOnOpen? 'zenario_hide_row_on_open' : ''}}
+		zenario_row_for_{{ff.snippet? 'snippet' : ff.upload? 'upload' : ff.pick_items? 'pick_items' : ff.type |escape}}
+	">
+		<% if (zenario.engToBoolean(ff.full_width)) { %>
+			<div >
+		<% } else { %>
+			<div class="title" {{zenario.browserIsIE(8)? ' style="width: 25%"' : ''}}>
+				<div class="{{ff._hideOnOpen? 'zenario_hide_on_open' : ''}} {{ff._showOnOpen? 'zenario_show_on_open' : ''}}">
+					<label for="{{ff._id|escape}}">{{ff.label}}</label>
+				</div>
+			</div><div>
+		<% } %>
+				<div class="
+					zfab_row_fields
+					{{ff._hideOnOpen? 'zenario_hide_on_open' : ''}}
+					{{ff._showOnOpen? 'zenario_show_on_open' : ''}}
+				">
+					{{zenarioT.microTemplate('zenario_welcome_field', m.fields)}}
+				</div>
+			</div>
+	</div>
+	
+	<% if (ff._isLastRow) { %>
+		<% if (ff.grouping) { %>
+			</fieldset>
+		<% } %>
+	<% } %>
+<% } %>

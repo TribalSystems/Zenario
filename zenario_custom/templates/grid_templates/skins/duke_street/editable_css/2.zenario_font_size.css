@@ -1,0 +1,53 @@
+.zenario_font_size__default_style {
+	background:#546178;
+	clear:both;
+	overflow:hidden;
+}
+
+.zenario_font_size__default_style div {
+	display:inline-block;
+	float:left;
+}
+
+.zenario_font_size__default_style div,
+.zenario_font_size__default_style div a {
+	color:#FFF;
+	text-transform:uppercase;
+}
+
+.zenario_font_size__default_style div.font_size_text,
+.zenario_font_size__default_style div a {
+	padding:8px;
+}
+
+.zenario_font_size__default_style div.font_size_text {
+	padding-left:10px;
+	font-size:12px;
+}
+
+.zenario_font_size__default_style div a {
+	display:block;
+	width:24px;
+	text-align:center;
+	border-right:1px solid #FFF;
+	font-size:13px;
+}
+
+.zenario_font_size__default_style div a:hover {
+	background:#364155;
+	text-decoration:none;
+}
+
+.zenario_font_size__default_style div.font_size_decrease a {
+	border-left:1px solid #FFF;
+	font-size:10.5px;
+}
+
+.zenario_font_size__default_style div.font_size_reset a {
+	font-size:12px;
+	background:#364155;
+}
+
+.zenario_font_size__default_style div.font_size_increase a {
+	font-size:13px;
+}

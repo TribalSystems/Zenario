@@ -1,0 +1,37 @@
+<div class="zenario_at_toolbar_container_top">
+	<div class="zenario_at_content zenario_at_toolbar">
+		<% if (!zenarioT.hidden(m.sections.history)) { %>
+			<div class="zenario_at_history">
+				{{zenarioT.microTemplate('zenario_toolbar_button', m.sections.history)}}
+			</div>
+		<% } %>
+		<% if (!zenarioT.hidden(m.sections.translations)) { %>
+			<div class="zenario_at_translations">
+				{{zenarioT.microTemplate('zenario_toolbar_button', m.sections.translations)}}
+			</div>
+		<% } %>
+		<% if (!zenarioT.hidden(m.sections.extranet_user)) { %>
+			<div class="zenario_at_extranet_user">
+				{{zenarioT.microTemplate('zenario_toolbar_button', m.sections.extranet_user)}}
+			</div>
+			
+		<% } %>
+		<% if (!zenarioT.hidden(m.sections.help)) { %>
+			<div class="zenario_at_help">
+				{{zenarioT.microTemplate('zenario_toolbar_button', m.sections.page_preview_sizes)}}
+			</div>
+		<% } %>
+		<% if (!zenarioT.hidden(m.sections.help)) { %>
+			<div class="zenario_at_help">
+				{{zenarioT.microTemplate('zenario_toolbar_button', m.sections.help)}}
+			</div>
+		<% } %>
+	</div>
+</div>
+<div class="zenario_at_toolbar_container_bottom">
+	<div id="zenario_at_lower_section">
+		<div class="zenario_at_infobar_version_full">
+			{{zenarioAT.tuix.meta_info.version|escape}}
+		</div>
+	</div>
+</div>

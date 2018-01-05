@@ -1,0 +1,25 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+display_name: Recently Viewed Pages
+author_name: Tribal Systems
+copyright_info: © Tribal Limited
+editions: ProBusiness, Enterprise
+start_running_on_install: false
+license_info: 'Modified BSD License'
+description: |
+            <p>This Module maintains and displays a list of recently viewed Content Items seen by a visitor.</p>
+    
+            <p>To use, create a plugin and insert it into a Slot on all Content Items that you would like to be recorded as "recently viewed". To apply to the entire site, insert the Module at the Template Family Layer.</p>
+    
+            <p>Plugins of this Module can be configured in various ways, for example to record only, to display only, or to record and display. Inclusion can be based on Category and/or Content Type, and specific pages can be ignored. "Pots" are used to separate the counts, so a site could for example have a Pot recording viewings of Documents and separately to record viewings of HTML Pages. A Recently Viewed Documents panel could appear on any HTML Page Content Item.</p>
+category: pluggable
+keywords: pages, recent, viewed, visited
+
+# Reminder: you need to increment the LATEST_REVISION_NO in this module's
+# latest_revision_no.inc.php file if you change any of the fields below:
+is_pluggable: true
+vlp_class_name: zenario_recently_viewed
+css_class_name: zenario_recently_viewed
+default_instance_name: Recently Viewed Pages
+default_framework: standard
+nestable: true

@@ -1,0 +1,72 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__content:
+    panels:
+        dataset_files:
+            title: Existing files
+            no_items_message: There are no existing files
+            no_return: true
+            
+            
+            db_items:
+                table: |
+                    [[DB_NAME_PREFIX]]files AS f
+                    INNER JOIN [[DB_NAME_PREFIX]]custom_dataset_files_link AS cdfl
+                       ON cdfl.file_id = f.id
+                id_column: f.id
+                where_statement: |
+                    WHERE f.`usage` = 'dataset_file'
+            
+            panel_type: grid_or_list
+            #panel_type: multi_line_list_or_grid
+            #use_tall_rows: true
+            #grid_view_microtemplate: zenario_grid_view_image
+            #slidedown_view_microtemplate: zenario_slidedown_view_image
+            
+            refiners:
+                field:
+                    sql: |
+                        cdfl.field_id = [[REFINER__FIELD]]
+            
+            columns:
+                id:
+                    db_column: f.id
+                filename:
+                    title: Filename
+                    searchable: true
+                    db_column: f.filename
+                    show_by_default: true
+                checksum:
+                    db_column: f.checksum
+                short_checksum:
+                    db_column: f.short_checksum
+                mime_type:
+                    server_side_only: true
+                    db_column: f.mime_type
+                size:
+                    title: Size
+                    format: filesize
+                    db_column: f.size
+                    show_by_default: true
+                    align_right: true
+                    width: xsmall
+                width:
+                    title: Width
+                    searchable: true
+                    db_column: f.width
+                    show_by_default: true
+                    align_right: true
+                    width: xsmall
+                height:
+                    title: Height
+                    searchable: true
+                    db_column: f.height
+                    show_by_default: true
+                    align_right: true
+                    width: xsmall
+            default_sort_column: filename
+            
+            item:
+                name: File
+                names: Files
+                css_class: dropbox_file

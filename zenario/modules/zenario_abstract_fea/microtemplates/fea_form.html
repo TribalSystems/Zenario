@@ -1,0 +1,37 @@
+{{m.lib.pMicroTemplate('dev_tools', m)}}
+
+<div class="
+	zfea
+	zfea_{{m.lib.path|escape}}
+	{{m.tuix.css_class|escape}}
+	
+	<% if (m.tuix.show_overlay_layer) { %>
+		modal_window
+	<% } %>
+	
+	<% if (m.lib.newlyNavigated) { %>
+		zfea_newly_navigated
+	<% } %>
+">
+	<div class="zfea_back_button">
+		{{m.lib.pMicroTemplate('button', m.tuix.sortedCollectionButtons, 'back')}}
+	</div>
+	<div class="zfea_top_buttons">
+		{{m.lib.pMicroTemplate('button', m.tuix.sortedCollectionButtons, 'top')}}
+	</div>
+	
+	<% if (m.tuix.form_title) { %>
+		<h1>{{m.tuix.form_title|escape}}</h1>
+	<% } %>
+	
+	<form onsubmit="return false;">
+		<div>{{m.lib.pMicroTemplate('row', m.rows)}}</div>
+		<div>
+			{{m.lib.pMicroTemplate('button', m.tuix.sortedCollectionButtons, false)}}
+		</div>
+	</form>
+</div>
+
+<% if (m.tuix.show_overlay_layer) { %>
+	<div class="overlay_layer"></div>
+<% } %>

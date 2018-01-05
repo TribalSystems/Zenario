@@ -1,0 +1,521 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+site_settings:
+    setting_group: external_programs
+    title: Editing settings for external programs
+    tabs:
+                    
+                    
+        antiword:
+            label: Antiword
+            edit_mode:
+                priv: _PRIV_EDIT_SITE_SETTING
+                enabled: true
+                on: false
+                format_on_edit: true
+                format_on_cancel_edit: true
+                format_on_revert: true
+            fields:
+                desc:
+                    full_width: true
+                    snippet:
+                        html: |
+                            <p>
+                                When you upload a Word document, Zenario will attempt to
+                                scan the document and create a plain-text extract.
+                                This extract is not directly visible to visitors,
+                                but plugins may use it to find documents that match a visitor's search.
+                            </p><p>
+                                For Word documents with the new <code>.docx</code> extension,
+                                Zenario can create an extract without help.
+                            </p><p>
+                                For Word documents with the old <code>.doc</code> extension,
+                                Zenario needs the help of an external tool called Antiword.
+                            </p><p>
+                                If Antiword is not installed on your server then your server administrator will need to install it;
+                                e.g. by running:
+                                <br/>
+                                <code>&nbsp; &nbsp; sudo apt-get install antiword</code>
+                                <br/>
+                                on Ubuntu.
+                            </p><p>
+                                Zenario can only use Antiword if it is running on a Unix-based server;
+                                there is not support for this feature on a Windows server.
+                            </p>
+                antiword_path:
+                    name: antiword_path
+                    site_setting:
+                        name: antiword_path
+                    label: 'Antiword path:'
+                    type: select
+                    value: PATH
+                    empty_value: ' -- Do not use antiword -- '
+                    values:
+                        'PATH':
+                            label: "Use your server's PATH environment variable"
+                        '/usr/bin/':
+                            label: '/usr/bin/antiword'
+                        '/usr/local/bin/':
+                            label: '/usr/local/bin/antiword'
+                    format_onchange: true
+                    style: >
+                        margin-right: 0.5em;
+                test:
+                    same_row: true
+                    visible_if:
+                        zenarioAB.value: antiword_path
+                    type: submit
+                    value: Test
+                    class: submit
+                    can_be_pressed_in_view_mode: true
+                    format_onchange: true
+            show_errors_after_field: desc
+            notices:
+                success:
+                    show: ""
+                    type: success
+                    message: Antiword is working successfully.
+                error:
+                    show: ""
+                    type: error
+                    message: Antiword is not correctly set up.
+
+        ghostscript:
+            label: Ghostscript
+            edit_mode:
+                priv: _PRIV_EDIT_SITE_SETTING
+                enabled: true
+                on: false
+                format_on_edit: true
+                format_on_cancel_edit: true
+            fields:
+                desc:
+                    full_width: true
+                    snippet:
+                        html: |
+                            <p>
+                                When you upload a PDF file, Zenario will attempt to
+                                scan the file and create a thumbnail of the first page that can be used as stick image.
+                            </p><p>
+                                To get a thumbnail from a PDF file,
+                                Zenario needs the help of a program called "gs" (ghostscript).
+                            </p><p>
+                                If ghostscript is not installed on your server then your server administrator will need to install it;
+                                e.g. by running:
+                                <br/>
+                                <code>&nbsp; &nbsp; sudo apt-get install ghostscript</code>
+                                <br/>
+                                on Ubuntu.
+                            </p><p>
+                                Zenario can only use ghostscript if it is running on a Unix-based server;
+                                there is not support for this feature on a Windows server.
+                            </p>
+                ghostscript_dpi:
+                    name: ghostscript_dpi
+                    site_setting:
+                        name: ghostscript_dpi
+                    label: 'ghostscript output DPI:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: Please enter a DPI number.
+                        numeric: The DPI must be a number.
+                    value: "72"
+                    style: 'width: 6em; margin-right: 0.5em;'
+                    note_below: |
+                        This setting define the image definition that will be produced (higher definition also creates big images).
+                        Recomended values can be any of 72, 150, 300, 600 (default 72).
+                ghostscript_path:
+                    name: ghostscript_path
+                    site_setting:
+                        name: ghostscript_path
+                    label: 'ghostscript path:'
+                    type: select
+                    value: PATH
+                    empty_value: ' -- Do not use ghostscript -- '
+                    values:
+                        'PATH':
+                            label: "Use your server's PATH environment variable"
+                        '/usr/bin/':
+                            label: '/usr/bin/gs'
+                        '/usr/local/bin/':
+                            label: '/usr/local/bin/gs'
+                    format_onchange: true
+                    style: >
+                        margin-right: 0.5em;
+                test:
+                    same_row: true
+                    visible_if:
+                        zenarioAB.value: ghostscript_path
+                    type: submit
+                    value: Test
+                    class: submit
+                    can_be_pressed_in_view_mode: true
+                    format_onchange: true
+            show_errors_after_field: desc
+            notices:
+                success:
+                    show: ""
+                    type: success
+                    message: ghostscript is working successfully.
+                error:
+                    show: ""
+                    type: error
+                    message: ghostscript is not correctly set up.
+        
+        
+
+        jpeg:
+            label: JPEG Image Optimizers
+            edit_mode:
+                priv: _PRIV_EDIT_SITE_SETTING
+                enabled: true
+                on: false
+                format_on_edit: true
+                format_on_cancel_edit: true
+                format_on_revert: true
+            show_errors_after_field: desc
+            fields:
+                desc:
+                    full_width: true
+                    snippet:
+                        html: |
+                            <p>
+                                When Zenario writes a JPEG image to either the
+                                <code>/public/images/</code> or the
+                                <code>/private/images/</code> directory,
+                                it will try to use one of the following programs to optimize
+                                the image.
+                            </p><p>
+                                You only need one of these programs installed,
+                                Zenario will call whichever is running.
+                            </p>
+                jpegtran_path:
+                    name: jpegtran_path
+                    site_setting:
+                        name: jpegtran_path
+                    label: 'jpegtran path:'
+                    type: select
+                    value: '/usr/bin/'
+                    empty_value: ' -- Do not use jpegtran -- '
+                    values:
+                        '/usr/bin/':
+                            label: '/usr/bin/jpegtran'
+                        '/usr/local/bin/':
+                            label: '/usr/local/bin/jpegtran'
+                    format_onchange: true
+                    style: >
+                        margin-right: 0.5em;
+                test_jpegtran:
+                    same_row: true
+                    visible_if:
+                        zenarioAB.value: jpegtran_path
+                    type: submit
+                    value: Test
+                    class: submit
+                    can_be_pressed_in_view_mode: true
+                    format_onchange: true
+                jpegoptim_path:
+                    name: jpegoptim_path
+                    site_setting:
+                        name: jpegoptim_path
+                    label: 'jpegoptim path:'
+                    type: select
+                    value: '/usr/bin/'
+                    empty_value: ' -- Do not use jpegoptim -- '
+                    values:
+                        '/usr/bin/':
+                            label: '/usr/bin/jpegoptim'
+                        '/usr/local/bin/':
+                            label: '/usr/local/bin/jpegoptim'
+                    format_onchange: true
+                    style: >
+                        margin-right: 0.5em;
+                test_jpegoptim:
+                    same_row: true
+                    visible_if:
+                        zenarioAB.value: jpegoptim_path
+                    type: submit
+                    value: Test
+                    class: submit
+                    can_be_pressed_in_view_mode: true
+                    format_onchange: true
+            notices:
+                success_jpegoptim:
+                    show: false
+                    type: success
+                    message: jpegoptim is working successfully.
+                error_jpegoptim:
+                    show: false
+                    type: error
+                    message: jpegoptim is not correctly set up.
+                success_jpegtran:
+                    show: false
+                    type: success
+                    message: jpegtran is working successfully.
+                error_jpegtran:
+                    show: false
+                    type: error
+                    message: jpegtran is not correctly set up.
+
+        mysql:
+            label: MySQL
+            edit_mode:
+                priv: _PRIV_EDIT_SITE_SETTING
+                enabled: true
+                on: false
+                format_on_edit: true
+                format_on_cancel_edit: true
+                format_on_revert: true
+            fields:
+                desc:
+                    full_width: true
+                    snippet:
+                        html: |
+                            <p>
+                                If you wish to create or restore a database backup, it is much faster
+                                to call MySQL directly.
+                            </p><p>
+                                Zenario can only call MySQL directly if it is running on a Unix-based server;
+                                there is not support for this feature on a Windows server.
+                            </p>
+                mysql_path:
+                    name: mysql_path
+                    site_setting:
+                        name: mysql_path
+                    label: 'mysql path:'
+                    type: select
+                    value: PATH
+                    empty_value: ' -- Do not use mysql -- '
+                    values:
+                        'PATH':
+                            label: "Use your server's PATH environment variable"
+                        '/usr/bin/':
+                            label: '/usr/bin/mysql'
+                        '/usr/local/bin/':
+                            label: '/usr/local/bin/mysql'
+                        '/Applications/AMPPS/mysql/bin/':
+                            label: '/Applications/AMPPS/mysql/bin/mysql'
+                    format_onchange: true
+                    style: >
+                        margin-right: 0.5em;
+                test:
+                    same_row: true
+                    visible_if:
+                        zenarioAB.value: mysql_path
+                    type: submit
+                    value: Test
+                    class: submit
+                    can_be_pressed_in_view_mode: true
+                    format_onchange: true
+                mysqldump_path:
+                    name: mysqldump_path
+                    site_setting:
+                        name: mysqldump_path
+                    label: 'mysqldump path:'
+                    type: select
+                    value: PATH
+                    empty_value: ' -- Do not use mysqldump -- '
+                    values:
+                        'PATH':
+                            label: "Use your server's PATH environment variable"
+                        '/usr/bin/':
+                            label: '/usr/bin/mysqldump'
+                        '/usr/local/bin/':
+                            label: '/usr/local/bin/mysqldump'
+                        '/Applications/AMPPS/mysql/bin/':
+                            label: '/Applications/AMPPS/mysql/bin/mysqldump'
+                    format_onchange: true
+                    style: >
+                        margin-right: 0.5em;
+                test2:
+                    same_row: true
+                    visible_if:
+                        zenarioAB.value: mysqldump_path
+                    type: submit
+                    value: Test
+                    class: submit
+                    can_be_pressed_in_view_mode: true
+                    format_onchange: true
+            show_errors_after_field: desc
+            notices:
+                success:
+                    show: false
+                    type: success
+                    message: mysql is working successfully.
+                error:
+                    show: false
+                    type: error
+                    message: mysql is not correctly set up.
+                success2:
+                    show: false
+                    type: success
+                    message: mysqldump is working successfully.
+                error2:
+                    show: false
+                    type: error
+                    message: mysqldump is not correctly set up.
+        
+        
+        pdftotext:
+            label: PDF-to-Text
+            edit_mode:
+                priv: _PRIV_EDIT_SITE_SETTING
+                enabled: true
+                on: false
+                format_on_edit: true
+                format_on_cancel_edit: true
+            fields:
+                desc:
+                    full_width: true
+                    snippet:
+                        html: |
+                            <p>
+                                When you upload a PDF file, Zenario will attempt to
+                                scan the file and create a plain-text extract.
+                                This extract is not directly visible to visitors,
+                                but plugins may use it to find documents that match a visitor's search.
+                            </p><p>
+                                To get an extract from a PDF file,
+                                Zenario needs the help of a program called pdftotext,
+                                which is part of an external library called Poppler.
+                            </p><p>
+                                If Poppler is not installed on your server then your server administrator will need to install it;
+                                e.g. by running:
+                                <br/>
+                                <code>&nbsp; &nbsp; sudo apt-get install poppler-utils</code>
+                                <br/>
+                                on Ubuntu.
+                            </p><p>
+                                Zenario can only use pdftotext and Poppler if it is running on a Unix-based server;
+                                there is not support for this feature on a Windows server.
+                            </p>
+                pdftotext_path:
+                    name: pdftotext_path
+                    site_setting:
+                        name: pdftotext_path
+                    label: 'pdftotext path:'
+                    type: select
+                    value: PATH
+                    empty_value: ' -- Do not use pdftotext -- '
+                    values:
+                        'PATH':
+                            label: "Use your server's PATH environment variable"
+                        '/usr/bin/':
+                            label: '/usr/bin/pdftotext'
+                        '/usr/local/bin/':
+                            label: '/usr/local/bin/pdftotext'
+                    format_onchange: true
+                    style: >
+                        margin-right: 0.5em;
+                test:
+                    same_row: true
+                    visible_if:
+                        zenarioAB.value: pdftotext_path
+                    type: submit
+                    value: Test
+                    class: submit
+                    can_be_pressed_in_view_mode: true
+                    format_onchange: true
+            show_errors_after_field: desc
+            notices:
+                success:
+                    show: ""
+                    type: success
+                    message: pdftotext is working successfully.
+                error:
+                    show: ""
+                    type: error
+                    message: pdftotext is not correctly set up.
+        
+        png:
+            label: PNG Image Optimizers
+            edit_mode:
+                priv: _PRIV_EDIT_SITE_SETTING
+                enabled: true
+                on: false
+                format_on_edit: true
+                format_on_cancel_edit: true
+                format_on_revert: true
+            show_errors_after_field: desc
+            fields:
+                desc:
+                    full_width: true
+                    snippet:
+                        html: |
+                            <p>
+                                When Zenario writes a PNG image to either the
+                                <code>/public/images/</code> or the
+                                <code>/private/images/</code> directory,
+                                it will try to use the following programs to optimize
+                                the image.
+                            </p><p>
+                                Zenario will call both of these programs if they are running,
+                                so please install both of them for best results.
+                            </p>
+                optipng_path:
+                    name: optipng_path
+                    site_setting:
+                        name: optipng_path
+                    label: 'optipng path:'
+                    type: select
+                    value: '/usr/bin/'
+                    empty_value: ' -- Do not use optipng -- '
+                    values:
+                        '/usr/bin/':
+                            label: '/usr/bin/optipng'
+                        '/usr/local/bin/':
+                            label: '/usr/local/bin/optipng'
+                    format_onchange: true
+                    style: >
+                        margin-right: 0.5em;
+                test_optipng:
+                    same_row: true
+                    visible_if:
+                        zenarioAB.value: optipng_path
+                    type: submit
+                    value: Test
+                    class: submit
+                    can_be_pressed_in_view_mode: true
+                    format_onchange: true
+                advpng_path:
+                    name: advpng_path
+                    site_setting:
+                        name: advpng_path
+                    label: 'advpng path:'
+                    type: select
+                    value: '/usr/bin/'
+                    empty_value: ' -- Do not use advpng -- '
+                    values:
+                        '/usr/bin/':
+                            label: '/usr/bin/advpng'
+                        '/usr/local/bin/':
+                            label: '/usr/local/bin/advpng'
+                    format_onchange: true
+                    style: >
+                        margin-right: 0.5em;
+                test_advpng:
+                    same_row: true
+                    visible_if:
+                        zenarioAB.value: advpng_path
+                    type: submit
+                    value: Test
+                    class: submit
+                    can_be_pressed_in_view_mode: true
+                    format_onchange: true
+            notices:
+                success_optipng:
+                    show: false
+                    type: success
+                    message: optipng is working successfully.
+                error_optipng:
+                    show: false
+                    type: error
+                    message: optipng is not correctly set up.
+                success_advpng:
+                    show: false
+                    type: success
+                    message: advpng is working successfully.
+                error_advpng:
+                    show: false
+                    type: error
+                    message: advpng is not correctly set up.

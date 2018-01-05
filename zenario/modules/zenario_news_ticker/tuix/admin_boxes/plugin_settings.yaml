@@ -1,0 +1,84 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+plugin_settings:
+	tabs:
+		first_tab:
+			label: Settings
+			fields:
+				content_type:
+					label: 'Content type:'
+					plugin_setting:
+						name: content_type
+					type: select
+					empty_value: All Content Types
+					load_values_from_organizer_path: zenario__content/panels/content_types
+					value: news
+				suppress_link_to_content_item:
+					label: 'Suppress link to content item'
+					plugin_setting:
+						name: suppress_link_to_content_item
+					type: checkbox
+					side_note: "Check this to have the title displayed, but don't make a hyperlink to the content item."
+				filter_by_category:
+					label: 'Filter by category'
+					plugin_setting:
+						name: filter_by_category
+					type: checkbox
+					format_onchange: true
+				category:
+					label: 'Category:'
+					plugin_setting:
+						name: category
+					type: select  
+					empty_value: -- Select --
+					load_values_from_organizer_path: zenario__content/panels/categories
+					validation:
+						required_if_not_hidden: Please select a category
+				filter_by_release_date:
+					label: 'Filter by release date'
+					plugin_setting:
+						name: filter_by_release_date
+					type: checkbox
+					format_onchange: true
+					side_note: Show results by order of release date, latest first
+				result_count:
+					label: 'Number of results to show:'
+					plugin_setting:
+						name: result_count
+					type: select
+					values:
+						1: 1
+						2: 2
+						3: 3
+						4: 4
+						5: 5
+						6: 6
+						7: 7
+						8: 8
+						9: 9
+						10: 10
+					value: 3
+					side_note: The number of results to show
+		filter:
+			label: Display
+			fields:
+				data_field:
+					label: 'Data field:'
+					type: select
+					plugin_setting:
+						name: data_field
+					values:
+						title:
+							label: Title
+						description:
+							label: Description
+						content_summary:
+							label: Summary
+					value: title
+				size:
+					label: 'Number of characters to be displayed:'
+					plugin_setting:
+						name: size
+					type: text
+					value: "100"
+	module_class_name: zenario_news_ticker

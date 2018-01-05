@@ -1,0 +1,23 @@
+zenario_duplicate_plugin: 
+    priv: _PRIV_MANAGE_REUSABLE_PLUGIN
+    key: 
+        id: ""
+        duplicate: ""
+    tabs: 
+        instance: 
+            edit_mode: 
+                enabled: true
+            fields: 
+                desc: 
+                    full_width: true
+                    snippet: 
+                        html: Use this screen to create a copy of this plugin.
+                    visible_if: zenarioAB.tuix.key.duplicate
+                name: 
+                    label: "Plugin name:"
+                    type: text
+                    maxlength: "250"
+                    validation: 
+                        required: Please enter a new name for this plugin.
+    max_height: 160
+    hide_tab_bar: true

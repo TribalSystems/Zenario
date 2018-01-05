@@ -1,0 +1,25 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+sections:
+    history:
+        buttons:
+            versions_dropdown:
+                label: Versions
+                hide_when_children_are_not_visible: Yes
+            content_item_right:
+                parent: versions_dropdown
+                tooltip: ""
+            content_item_current:
+                parent: versions_dropdown
+                tooltip: ""
+            content_item_left:
+                parent: versions_dropdown
+                tooltip: ""
+            no_content_right:
+                label: "You're looking at the latest version"
+                parent: versions_dropdown
+                css_class: zenario_no_content_right
+            no_content_left:
+                parent: versions_dropdown
+                css_class: zenario_no_content_left
+                label: No previous version exists

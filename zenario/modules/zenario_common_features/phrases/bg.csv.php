@@ -1,0 +1,40 @@
+"<?php if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed'); ?>"
+
+"Zenario VISITOR LANGUAGE PACK WORKSHEET",,"Target Language ID"
+"(Do not edit this column)","To create a new Language Pack, change the value of the cell to the right to the ID for the language you are creating ->",bg
+
+Plugin
+zenario_common_features
+
+"Phrase Code",Translation
+_MONTH_LONG_01,"януари"
+_MONTH_LONG_02,"февруари"
+_MONTH_LONG_03,"март"
+_MONTH_LONG_04,"април"
+_MONTH_LONG_05,"май"
+_MONTH_LONG_06,"юни"
+_MONTH_LONG_07,"юли"
+_MONTH_LONG_08,"август"
+_MONTH_LONG_09,"септември"
+_MONTH_LONG_10,"октомври"
+_MONTH_LONG_11,"ноември"
+_MONTH_LONG_12,"декември"
+_MONTH_SHORT_01,"януари"
+_MONTH_SHORT_02,"февруари"
+_MONTH_SHORT_03,"март"
+_MONTH_SHORT_04,"април"
+_MONTH_SHORT_05,"май"
+_MONTH_SHORT_06,"юни"
+_MONTH_SHORT_07,"юли"
+_MONTH_SHORT_08,"август"
+_MONTH_SHORT_09,"септември"
+_MONTH_SHORT_10,"октомври"
+_MONTH_SHORT_11,"ноември"
+_MONTH_SHORT_12,"декември"
+_WEEKDAY_0,"неделя"
+_WEEKDAY_1,"понеделник"
+_WEEKDAY_2,"вторник"
+_WEEKDAY_3,"сряда"
+_WEEKDAY_4,"четвъртък"
+_WEEKDAY_5,"петък"
+_WEEKDAY_6,"събота"

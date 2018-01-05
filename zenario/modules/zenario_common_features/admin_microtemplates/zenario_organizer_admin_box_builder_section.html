@@ -1,0 +1,6 @@
+<div class="form_section <% if (!m.fields || m.fields.length == 0) { %>empty<% } %>">
+	{{zenarioT.microTemplate('zenario_organizer_admin_box_builder_field', m.fields)}}
+	<% if (!m.fields || m.fields.length == 0) { %>
+		<span class="no_fields_message">There are no fields on this tab</span>
+	<% } %>
+</div>

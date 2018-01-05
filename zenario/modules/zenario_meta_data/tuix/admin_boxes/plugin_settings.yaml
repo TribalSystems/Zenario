@@ -1,0 +1,225 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+plugin_settings:
+    module_class_name: zenario_meta_data
+    tabs:
+        first_tab:
+            label: Details
+            fields:
+                show_date:
+                    plugin_setting:
+                        name: show_date
+                    label: "Show item's release date"
+                    type: checkbox
+                    value: "1"
+                    format_onchange: Yes
+                date_format:
+                    plugin_setting:
+                        name: date_format
+                    label: 'Date format:'
+                    type: radios
+                    value: _MEDIUM
+                    values:
+                        _SHORT:
+                            label: Short
+                        _MEDIUM:
+                            label: Medium
+                        _LONG:
+                            label: Long
+                    indent: 1
+                show_title:
+                    plugin_setting:
+                        name: show_title
+                    label: 'Show title'
+                    type: checkbox
+                    value: "1"
+                show_description:
+                    plugin_setting:
+                        name: show_description
+                    label: 'Show description'
+                    type: checkbox
+                    value: "1"
+                show_summary:
+                    plugin_setting:
+                        name: show_summary
+                    label: 'Show summary'
+                    type: checkbox
+                    value: "1"
+                show_categories:
+                    plugin_setting:
+                        name: show_categories
+                    label: 'Show public categories'
+                    type: checkbox
+                    value: ""
+                show_keywords:
+                    plugin_setting:
+                        name: show_keywords
+                    label: 'Show keywords'
+                    type: checkbox
+                    value: "1"
+                show_language_name:
+                    plugin_setting:
+                        name: show_language_name
+                    label: 'Show language name'
+                    type: checkbox
+                    value: "1"
+                show_language:
+                    plugin_setting:
+                        name: show_language
+                    label: 'Show language'
+                    type: checkbox
+                    value: "1"
+                show_writer_name:
+                    plugin_setting:
+                        name: show_writer_name
+                    label: 'Show writer name'
+                    type: checkbox
+                    value: "1"
+                show_writer_image:
+                    plugin_setting:
+                        name: show_writer_image
+                    label: 'Show writer image'
+                    type: checkbox
+                    value: '0'
+                    format_onchange: true
+                
+                canvas:
+                    plugin_setting:
+                        name: canvas
+                    label: 'Image canvas:'
+                    type: select
+                    value: unlimited
+                    values:
+                        unlimited:
+                            ord: "1"
+                            label: Unlimited size
+                        fixed_width:
+                            ord: "2"
+                            label: Constrain by width
+                        fixed_height:
+                            ord: "3"
+                            label: Constrain by height
+                        fixed_width_and_height:
+                            ord: "4"
+                            label: Constrain by width and height
+                        resize_and_crop:
+                            ord: "5"
+                            label: Resize and crop
+                    format_onchange: Yes
+                    indent: 1
+                width:
+                    plugin_setting:
+                        name: width
+                    label: 'Width:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: Please enter a width.
+                        numeric: The width must be a number.
+                    value: ""
+                    maxlength: "5"
+                    style: 'width: 5em;'
+                    post_field_html: '&nbsp;pixels'
+                    indent: 2
+                height:
+                    plugin_setting:
+                        name: height
+                    label: 'Height:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: Please enter a height.
+                        numeric: The height must be a number.
+                    value: ""
+                    maxlength: "5"
+                    style: 'width: 5em;'
+                    post_field_html: '&nbsp;pixels'
+                    indent: 2
+                offset:
+                    plugin_setting:
+                        name: offset
+                    label: 'Offset:'
+                    type: text
+                    style: 'width: 50px;'
+                    value: "0"
+                    slider:
+                        min: "-10"
+                        max: "10"
+                        before_field: true
+                        style: 'width: 200px;'
+                    side_note: |
+                        Moving the slider to the left will move the image left or down;
+                        moving the slider to the right will move the image right or up.
+                    indent: 2
+                
+                show_sticky_image:
+                    plugin_setting:
+                        name: show_sticky_image
+                    label: 'Show feature image'
+                    type: checkbox
+                    format_onchange: true
+                    
+                sticky_image_canvas:
+                    plugin_setting:
+                        name: sticky_image_canvas
+                    label: 'Image canvas:'
+                    type: select
+                    value: unlimited
+                    values:
+                        unlimited:
+                            ord: "1"
+                            label: Unlimited size
+                        fixed_width:
+                            ord: "2"
+                            label: Constrain by width
+                        fixed_height:
+                            ord: "3"
+                            label: Constrain by height
+                        fixed_width_and_height:
+                            ord: "4"
+                            label: Constrain by width and height
+                        resize_and_crop:
+                            ord: "5"
+                            label: Resize and crop
+                    format_onchange: Yes
+                    indent: 1
+                sticky_image_width:
+                    plugin_setting:
+                        name: sticky_image_width
+                    label: 'Width:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: Please enter a width.
+                        numeric: The width must be a number.
+                    value: ""
+                    maxlength: "5"
+                    style: 'width: 5em;'
+                    post_field_html: '&nbsp;pixels'
+                    indent: 2
+                sticky_image_height:
+                    plugin_setting:
+                        name: sticky_image_height
+                    label: 'Height:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: Please enter a height.
+                        numeric: The height must be a number.
+                    value: ""
+                    maxlength: "5"
+                    style: 'width: 5em;'
+                    post_field_html: '&nbsp;pixels'
+                    indent: 2
+                sticky_image_offset:
+                    plugin_setting:
+                        name: sticky_image_offset
+                    label: 'Offset:'
+                    type: text
+                    style: 'width: 50px;'
+                    value: "0"
+                    slider:
+                        min: "-10"
+                        max: "10"
+                        before_field: true
+                        style: 'width: 200px;'
+                    side_note: |
+                        Moving the slider to the left will move the image left or down;
+                        moving the slider to the right will move the image right or up.
+                    indent: 2

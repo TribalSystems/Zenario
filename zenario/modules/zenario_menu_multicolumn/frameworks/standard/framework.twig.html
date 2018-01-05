@@ -1,0 +1,32 @@
+{% for node in nodes %}
+	<ul>
+		<li>
+			{{node.item}}
+			{% if node.has_children %}
+				<div class="columns_wrap"><div class="column">
+					{% for level2node in node.children %}
+						{% if level2node.top_of_column %}
+							{% if level2node.current_in_col %}
+								{% for i in range(level2node.current_in_col, node.max_items_per_column) %}
+									<div class="node node-level-3"></div>
+								{% endfor %}
+							{% endif %}
+							</div><div class="column">
+						{% endif %}
+						<div class="node node-level-2">{{level2node.item}}</div>
+						{% for level3node in level2node.children %}
+							{% if level3node.top_of_column %}
+								</div><div class="column"> 
+								<div class="node node-level-3 first-node">{{level3node.item}}</div>
+							{% else %}
+								<div class="node node-level-3">{{level3node.item}}</div>
+							{% endif %}
+						{% endfor %}
+					{% endfor %}
+				</div></div>
+			{% endif %}
+		</li>
+	</ul>
+{% endfor %}
+
+{% do this.jQuery('#' ~ containerId ~ ' > ul > li > a.has_child', 'doubleTapToGo') %}

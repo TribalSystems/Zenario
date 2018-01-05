@@ -1,0 +1,254 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__content:
+    panels:
+        inline_images_for_content:
+            panel_type: multi_line_list_or_grid
+            use_tall_rows: true
+            
+            no_items_in_search_message: This content item has no images belonging to it. Click above to upload images from your local machine, or add an image from the library.
+            grid_view_microtemplate: zenario_grid_view_image
+            slidedown_view_microtemplate: zenario_slidedown_view_image
+            
+            db_items:
+                table: |
+                    (SELECT 1) as dummy
+                    INNER JOIN [[DB_NAME_PREFIX]]content_items AS c
+                       ON c.tag_id = [[REFINER__CONTENT]]
+                    INNER JOIN [[DB_NAME_PREFIX]]content_item_versions AS v
+                       ON v.id = c.id
+                      AND v.type = c.type
+                      AND v.version = c.admin_version
+                    INNER JOIN [[DB_NAME_PREFIX]]inline_images AS ii
+                       ON ii.foreign_key_to = 'content'
+                      AND ii.foreign_key_id = c.id
+                      AND ii.foreign_key_char = c.type
+                      AND ii.foreign_key_version = c.admin_version
+                    INNER JOIN [[DB_NAME_PREFIX]]files AS f
+                       ON f.id = ii.image_id
+                      AND f.`usage` = 'image'
+                      AND f.mime_type IN ('image/gif', 'image/png', 'image/jpeg', 'image/svg+xml')
+                id_column: f.id
+            
+            refiners:
+                content:
+                    exists: true
+            refiner_required: true
+            
+            columns:
+                id:
+                    db_column: f.id
+                filename:
+                    title: Filename
+                    searchable: true
+                    db_column: f.filename
+                    show_by_default: true
+                alt_tag:
+                    title: Default alt-tag
+                    searchable: true
+                    db_column: f.alt_tag
+                    length_limit: "64"
+                title:
+                    db_column: f.title
+                checksum:
+                    db_column: f.checksum
+                short_checksum:
+                    db_column: f.short_checksum
+                mime_type:
+                    server_side_only: true
+                    db_column: f.mime_type
+                size:
+                    title: Size
+                    format: filesize
+                    db_column: f.size
+                    show_by_default: true
+                width:
+                    title: Width
+                    searchable: true
+                    db_column: f.width
+                    show_by_default: true
+                height:
+                    title: Height
+                    searchable: true
+                    db_column: f.height
+                    show_by_default: true
+                privacy:
+                    title: Privacy
+                    db_column: f.privacy
+                    show_by_default: true
+                    width: medium
+                    format: enum
+                    values:
+                        auto: Will auto-detect
+                        public: Public
+                        private: Private
+                in_use_here:
+                    title: In use here
+                    db_column: ii.in_use
+                    format: yes_or_no
+                    show_by_default: true
+                in_use_elsewhere:
+                    title: In use elsewhere
+                    db_column: |
+                        (
+                            SELECT 1
+                            FROM [[DB_NAME_PREFIX]]inline_images AS uii
+                            WHERE uii.image_id = f.id
+                              AND uii.in_use = 1
+                              AND uii.archived = 0
+                              AND (uii.foreign_key_to, uii.foreign_key_id, uii.foreign_key_char, uii.foreign_key_version)
+                              NOT IN (('content', c.id, c.type, c.admin_version))
+                            LIMIT 1
+                        )
+                    format: yes_or_no
+                    show_by_default: true
+                    width: xsmall
+                duplicate_filename:
+                    db_column: |
+                        (
+                            SELECT 1
+                            FROM [[DB_NAME_PREFIX]]files AS df
+                            WHERE df.`usage` = f.`usage`
+                              AND df.filename = f.filename
+                              AND df.archived = 0
+                              AND df.id != f.id
+                            LIMIT 1
+                        )
+                sticky_flag:
+                    title: Feature image
+                    db_column: v.feature_image_id = f.id
+                    show_by_default: true
+                    format: yes_or_no
+            default_sort_column: filename
+            label_format_for_popouts: |
+                [[filename]]
+                [[[width]] × [[height]]]
+            label_format_for_picked_items: |
+                [[filename]]
+                [[[width]] × [[height]]]
+            item:
+                name: Image
+                names: Images
+                css_class: media_image
+            collection_buttons:
+                upload:
+                    label: Upload images
+                    css_class: zenario_create_a_new
+                    hide_on_filter: true
+                    upload:
+                        fileExt: '*.gif;*.jpg;*.png;*.jpe;*.jpeg;*.pjpeg'
+                        fileDesc: Images
+                        multi: true
+                        drag_and_drop: true
+                        request:
+                            upload: true
+                add:
+                    label: Add image from image library
+                    pick_items:
+                        path: zenario__content/panels/image_library
+                        target_path: zenario__content/panels/image_library
+                        min_path: zenario__content/panels/image_library
+                        disallow_refiners_looping_on_min_path: true
+                        one_to_one_choose_phrase: Use
+                        multiple_select: true
+                        request:
+                            add: "1"
+            inline_buttons:
+                view:
+                    css_class: inspect
+                    tooltip: View image
+                    popout:
+                        href: zenario/file.php
+                        options:
+                            type: image
+            item_buttons:
+                edit:
+                    priv: _PRIV_MANAGE_MEDIA
+                    label: Properties
+                    tooltip: Rename image or add a title
+                    admin_box:
+                        path: zenario_image
+                view_dropdown:
+                    label: View
+                    multiple_select: true
+                    hide_when_children_are_not_visible: true
+                view:
+                    label: View image
+                    popout:
+                        href: zenario/file.php
+                        options:
+                            type: image
+                action_dropdown:
+                    label: Actions
+                    multiple_select: true
+                    hide_when_children_are_not_visible: true
+                make_sticky:
+                    priv: _PRIV_SET_CONTENT_ITEM_STICKY_IMAGE
+                    label: Flag as feature image
+                    hide_in_select_mode: false
+                    visible_if: |
+                        !zenario.engToBoolean(item.sticky_flag)
+                    ajax:
+                        confirm:
+                            message: |
+                                Do you wish to use "[[filename]]" as the feature image for this content item?
+                                
+                                The feature image can appear automatically in banners, content summary lists and other managed links to this content item.
+                            button_message: Flag as feature image
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            make_sticky: true
+                make_unsticky:
+                    priv: _PRIV_SET_CONTENT_ITEM_STICKY_IMAGE
+                    label: Unflag as feature image
+                    hide_in_select_mode: false
+                    visible_if_for_all_selected_items: |
+                        item.sticky_flag
+                    ajax:
+                        confirm:
+                            message: 'Are you sure you wish to stop using the image "[[filename]]" as the feature image?'
+                            button_message: Unflag as feature image
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            make_unsticky: true
+                delete:
+                    priv: _PRIV_MANAGE_MEDIA
+                    label: Delete
+                    multiple_select: true
+                    hide_in_select_mode: true
+                    visible_if_for_all_selected_items: >
+                        !zenario.engToBoolean(item.in_use_here) && !zenario.engToBoolean(item.in_use_elsewhere)
+                    ajax:
+                        confirm:
+                            message: 'Are you sure you wish to delete the unused image "[[filename]]"?'
+                            multiple_select_message: Are you sure you wish to delete these unused images?
+                            button_message: Delete
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            delete: "1"
+                
+                remove:
+                    priv: _PRIV_MANAGE_MEDIA
+                    label: Detach from content item
+                    multiple_select: true
+                    hide_in_select_mode: false
+                    disabled_if_for_any_selected_items: |
+                        item.in_use_here || item.sticky_flag
+                    disabled_tooltip: |
+                        You cannot detach an image that is in use.
+                        
+                        To remove the image, first edit the WYSIWYG Editor or Banner and remove it from there.
+                    ajax:
+                        confirm:
+                            message: |
+                                Are you sure you wish to detach the image "[[filename]]" from this content item?
+                            multiple_select_message: |
+                                Are you sure you wish to detach these images from this content item?
+                            button_message: Detach
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            remove: 1

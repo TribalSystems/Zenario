@@ -1,0 +1,20 @@
+{% import _self as self %}
+{% macro childNodes(nodes, level) %}
+	{% import _self as self %}
+	<ul>
+		{% for node in nodes %}
+			<li class="{{node.Class}}">
+				<h{{level}}>{{node.Hyperlink}}</h{{level}}>
+				
+				{% if node.children %}
+					{{ self.childNodes(node.children, max(level + 1, 4)) }}
+				{% endif %}
+			</li>
+		{% endfor %}
+	</ul>
+{% endmacro %}
+
+<h1>{{"_SITEMAP"|trans}}</h1>
+<ul class="sitemap">
+	{{ self.childNodes(nodes, 1) }}
+</ul>

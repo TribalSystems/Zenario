@@ -1,0 +1,17 @@
+<li class="
+	{{m.css_class|escape}}
+	{{m.disabled? 'organizer_button_disabled' : ''}}
+">
+	<a
+		title="{{m.tooltip|escape}}"
+		onclick="{{m.onclick|escape}}"
+		<% if (m.href) { %>
+			href="{{m.href|escape}}"
+			<% if (m.new_window) { %>
+				target="_blank"
+			<% } %>
+		<% } %>
+	>
+		<span>{{m.label|escape}}</span>
+	</a>
+</li>

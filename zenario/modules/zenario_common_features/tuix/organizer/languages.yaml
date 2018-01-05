@@ -1,0 +1,197 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__languages:
+    panels:
+        languages:
+            title: Enabled languages
+            view_mode: list
+            disable_grid_view: No
+            db_items:
+                table: |
+                    [[DB_NAME_PREFIX]]visitor_phrases AS vp
+                                        LEFT JOIN [[DB_NAME_PREFIX]]languages AS l ON l.id = vp.language_id
+                id_column: vp.language_id
+                client_side: true
+                custom_where_statement_if_at_least_one_language_enabled: |
+                    WHERE l.id IS NOT NULL
+                custom_where_statement_if_no_languages_enabled: |
+                    WHERE l.id IS NULL
+            refiners:
+                not_enabled:
+                    exists: true
+                plugin:
+                    exists: true
+            
+            bold_columns_in_list_view: name
+            default_sort_column: name
+            
+            columns:
+                name:
+                    title: Language Name
+                    searchable: true
+                    db_column: vp.local_text
+                    show_by_default: true
+                    width: medium
+                code:
+                    title: Code
+                    searchable: true
+                    db_column: vp.language_id
+                    width: small
+                english_name:
+                    title: English Name
+                    searchable: true
+                    table_join: |
+                        LEFT JOIN [[DB_NAME_PREFIX]]visitor_phrases AS en
+                           ON en.module_class_name = 'zenario_common_features'
+                          AND en.language_id = vp.language_id
+                          AND en.code = '__LANGUAGE_ENGLISH_NAME__'
+                    db_column: en.local_text
+                    width: medium
+                language_local_name:
+                    title: Local Name
+                    searchable: true
+                    table_join: |
+                        LEFT JOIN [[DB_NAME_PREFIX]]visitor_phrases AS lo
+                           ON lo.module_class_name = 'zenario_common_features'
+                          AND lo.language_id = vp.language_id
+                          AND lo.code = '__LANGUAGE_LOCAL_NAME__'
+                    db_column: lo.local_text
+                    show_by_default: true
+                    width: medium
+                enabled:
+                    db_column: l.id
+                default:
+                    title: Default language
+                    table_join: |
+                        LEFT JOIN [[DB_NAME_PREFIX]]site_settings AS si
+                           ON si.name = 'default_language'
+                          AND si.value = l.id
+                    db_column: si.name
+                    format: yes_or_no
+                    show_by_default: true
+                    width: small
+                phrase_count:
+                    title: Phrases
+                    db_column: COUNT(DISTINCT vp.code, vp.module_class_name)
+                    show_by_default: true
+                    align_right: true
+                    width: xsmall
+                domain:
+                    title: Domain
+                    searchable: true
+                    db_column: l.domain
+                homepage_id:
+                    title: Homepage
+                    item_link: content_item
+                    width: large
+                search_type:
+                    title: Search type
+                    db_column: |
+                        IF(search_type='simple','MySQL "LIKE"', 'MySQL full-text')
+                    width: medium
+                translate_phrases:
+                    title: Translate phrases
+                    format: yes_or_no
+                    db_column: l.translate_phrases
+                    value: 1
+            label_format_for_grid_view: '[[english_name]] ([[code]])'
+            item:
+                name: Language
+                names: Languages
+                css_class: language
+            collection_buttons:
+                add:
+                    priv: _PRIV_MANAGE_LANGUAGE_CONFIG
+                    label: Add a language
+                    css_class: zenario_create_a_new
+                    hide_on_filter: true
+                    hide_in_select_mode: true
+                    pick_items:
+                        path: zenario__languages/panels/languages/refiners/not_enabled////
+                        target_path: zenario__languages/panels/languages
+                        min_path: zenario__languages/panels/languages
+                        max_path: zenario__languages/panels/languages
+                        disallow_refiners_looping_on_min_path: true
+                        request:
+                            enable_language: '1'
+                create:
+                    priv: _PRIV_MANAGE_LANGUAGE_CONFIG
+                    label: Define a language
+                    css_class: zenario_create_a_new
+                    hide_on_filter: true
+                    hide_in_select_mode: true
+                    tooltip: "Define a language that's not listed here"
+                    admin_box:
+                        path: zenario_create_vlp
+                default_language:
+                    priv: _PRIV_EDIT_SITE_SETTING
+                    label: Change default language...
+                    hide_in_select_mode: true
+                    admin_box:
+                        path: site_settings
+                        key:
+                            id: default_language
+                help:
+                    label: Help
+                    hide_in_select_mode: true
+                    help:
+                        message: |
+                            This panel lists all of the languages enabled on your site. This means the languages that visitors see when viewing your content.
+                            
+                            Every language has its own defined home page, an HTML content item.
+                            
+                            One language must be defined as the "default", and that language's home page is the one to which the CMS directs visitors  when they arrive at your site (if they don't request a URL of a specific page).
+                            
+                            To add a language to your site, click "Add a language" and select the language from the list in order to enable it. If you don't see the language you want, you can define a new language with a few parameters.
+            item_buttons:
+                edit:
+                    label: Edit settings for this language
+                    with_columns_set:
+                        traits.enabled: true
+                    admin_box:
+                        path: zenario_setup_language
+                        tab: settings
+                    hide_in_select_mode: true
+                view_dropdown:
+                    label: View
+                    multiple_select: true
+                    hide_when_children_are_not_visible: true
+                    hide_in_select_mode: true
+                action_dropdown:
+                    label: Actions
+                    multiple_select: true
+                    hide_when_children_are_not_visible: true
+                    hide_in_select_mode: true
+                add_language:
+                    parent: action_dropdown
+                    priv: _PRIV_MANAGE_LANGUAGE_CONFIG
+                    label: Enable this language
+                    with_columns_set:
+                        traits.not_enabled: true
+                    admin_box:
+                        path: zenario_setup_language
+                        tab: phrases
+                    hide_in_select_mode: true
+                delete:
+                    label: Delete phrases
+                    priv: _PRIV_MANAGE_LANGUAGE_PHRASE
+                    with_columns_set:
+                        traits.not_enabled: true
+                    ajax:
+                        confirm:
+                            message: 'Are you sure that you wish to delete the phrases you have added for the language "[[name]]"?'
+                            button_message: Delete
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            delete: "1"
+                    hide_in_select_mode: true
+                delete_language:
+                    label: Delete language and its content
+                    priv: _PRIV_MANAGE_LANGUAGE_CONFIG
+                    with_columns_set:
+                        traits.enabled: true
+                        traits.can_delete: true
+                    admin_box:
+                        path: zenario_delete_language
+                    hide_in_select_mode: true

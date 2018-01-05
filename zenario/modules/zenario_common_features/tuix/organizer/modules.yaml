@@ -1,0 +1,342 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__modules:
+    panels:
+        modules:
+            title: Modules
+            disable_periodic_refresh: true
+            view_mode: list
+            enable_close_up_view: true
+            slidedown_view_microtemplate: zenario_slidedown_view_module
+            
+            db_items:
+                table: >
+                    [[DB_NAME_PREFIX]]modules as m
+                id_column: m.id
+                client_side: true
+                
+                # Don't show missing modules if they were never run
+                # Also hide abstract modules from full/quick/select mode
+                where_statement: >
+                    WHERE (missing = 0 OR status != 'module_not_initialized')
+                      AND
+                        IF ('[[ORGANIZER_MODE]]' IN ('full', 'quick', 'select'),
+                            status != 'module_is_abstract',
+                            TRUE
+                        )
+            
+            default_sort_column: display_name
+            
+            quick_filter_buttons:
+                all:
+                    ord: 1
+                    label: "All"
+                    column: status
+                    remove_filter: true
+                module_not_initialized:
+                    ord: 2
+                    label: "Uninitialised"
+                    column: status
+                    value: module_not_initialized
+                module_running:
+                    ord: 3
+                    label: "Running"
+                    column: status
+                    value: module_running
+                module_suspended:
+                    ord: 4
+                    label: "Suspended"
+                    column: status
+                    value: module_suspended
+                    
+            refiners:
+                nestable_only:
+                    sql: 'status = "module_running" AND is_pluggable = 1 AND nestable = 1'
+                phrases_only:
+                    sql: 'is_pluggable = 1 AND vlp_class IS NOT NULL AND vlp_class = class_name'
+                slotable_only:
+                    sql: 'status = "module_running" AND is_pluggable = 1'
+                wireframe_only:
+                    sql: 'status = "module_running" AND is_pluggable = 1 AND can_be_version_controlled = 1'
+                nestable_wireframes_only:
+                    sql: 'status = "module_running" AND is_pluggable = 1 AND nestable = 1 AND can_be_version_controlled = 1'
+                custom_modules:
+                    sql: 'category = "custom"'
+                core_modules:
+                    sql: 'category = "core"'
+                content_type_modules:
+                    sql: 'category = "content_type"'
+                management_modues:
+                    sql: 'category = "management"'
+                pluggable_modules:
+                    sql: 'category = "pluggable"'
+            
+            columns:
+                id:
+                    title: ID
+                    format: id
+                    db_column: m.id
+                    show_by_default: false
+                    searchable: true
+                    width: xxsmall
+                    align_right: true
+                display_name:
+                    title: Name
+                    db_column: m.display_name
+                    show_by_default: true
+                    searchable: true
+                    width: large
+                    always_show: true
+                class_name:
+                    title: Directory/class name
+                    db_column: m.class_name
+                    show_by_default: true
+                    searchable: true
+                    width: large
+                    always_show: true
+                path:
+                    title: Directory path
+                    show_by_default: No
+                    searchable: No
+                    width: xlarge
+                status:
+                    title: Status
+                    db_column: m.status
+                    show_by_default: true
+                    format: enum
+                    values:
+                        module_not_initialized: Uninitialised
+                        module_running: Running
+                        module_suspended: Suspended
+                    width: small
+                    always_show: true
+                vlp_class:
+                    db_column: m.vlp_class
+                category:
+                    title: Category
+                    db_column: m.category
+                    format: enum
+                    values:
+                        custom: Custom module
+                        core: Core module
+                        content_type: Content type defining module
+                        management: Management module
+                        pluggable: Pluggable module
+                    width: small
+                keywords:
+                    title: Keywords
+                    searchable: true
+                    hidden: true
+                special_page:
+                    title: Linked Special Page
+                    show_by_default: true
+                    item_link: content_item
+                is_pluggable:
+                    db_column: m.is_pluggable
+                    title: Pluggable
+                    format: yes_or_no
+                    width: xxsmall
+                    hidden: true
+                nestable:
+                    db_column: m.nestable
+                    title: Nestable
+                    format: yes_or_no
+                    width: xxsmall
+                can_be_version_controlled:
+                    db_column: m.can_be_version_controlled
+                comment:
+                    exists: true
+                editions: {}
+                edition:
+                    db_column: m.edition
+                in_edition:
+                    db_column: '1'
+            label_format_for_grid_view: |
+                [[display_name]]
+                [[comment]]
+            item:
+                name: Module
+                names: Modules
+                css_class: plugin
+                link:
+                    path: zenario__modules/panels/plugins
+                    branch: true
+                    refiner: plugin
+                tooltip: |
+                        View this module's plugins
+            hidden_nav:
+                view_frameworks:
+                    panel:
+                        title: Frameworks
+                        no_items_message: This module has no frameworks
+                        columns:
+                            name:
+                                title: Directory name
+                                show_by_default: true
+                            filename:
+                                title: Filename
+                                show_by_default: true
+                            path:
+                                title: Path
+                                show_by_default: true
+                        refiners:
+                            module:
+                                exists: true
+                        view_mode: list
+                        disable_grid_view: true
+                        disable_summary_view: true
+                        item:
+                            name: Framework
+                            names: Frameworks
+                            css_class: dropbox_file
+                        item_buttons:
+                            view_dropdown:
+                                label: View
+                                multiple_select: true
+                                hide_when_children_are_not_visible: true
+                            code:
+                                parent: view_dropdown
+                                label: Code
+                                admin_box:
+                                    path: zenario_view_source_code
+                                    key:
+                                        type: framework
+                                    
+            collection_buttons:
+                all_instances:
+                    select_mode_only: true
+                    label: View all plugins
+                    link:
+                        path: zenario__modules/panels/plugins
+                        branch: true
+                        refiner: album
+            item_buttons:
+                edit_ctype:
+                    visible_if: |
+                        item.category == 'content_type'
+                        && item.status == 'module_running'
+                    label: Content type settings
+                    admin_box:
+                        path: zenario_content_type_details
+                view_dropdown:
+                    label: View
+                    multiple_select: true
+                    hide_when_children_are_not_visible: true
+                view_instances:
+                    label: Module's plugins
+                    parent: view_dropdown
+                    visible_if: |
+                        item.is_pluggable && item.status == 'module_running'
+                    link:
+                        path: zenario__modules/panels/plugins
+                        branch: true
+                        refiner: plugin
+                usage_layouts:
+                    parent: view_dropdown
+                    label: "Layouts with module's plugins"
+                    with_columns_set:
+                        is_pluggable: true
+                    hide_in_select_mode: true
+                    link:
+                        path: zenario__layouts/panels/layouts
+                        branch: true
+                        refiner: module_usage
+                usage_item:
+                    parent: view_dropdown
+                    label: "Content items using this module's plugins"
+                    with_columns_set:
+                        is_pluggable: true
+                    hide_in_select_mode: true
+                    link:
+                        path: zenario__content/panels/content
+                        branch: true
+                        refiner: module_usage
+                phrases:
+                    priv: _PRIV_VIEW_LANGUAGE
+                    parent: view_dropdown
+                    label: "Module's phrases"
+                    with_columns_set:
+                        uses_vlps: true
+                    hide_in_select_mode: true
+                    link:
+                        path: zenario__languages/panels/phrases
+                        branch: true
+                        refiner: language_and_plugin
+                show_frameworks:
+                    parent: view_dropdown
+                    label: "Module's frameworks"
+                    hide_in_select_mode: true
+                    with_columns_set:
+                        is_pluggable: true
+                    link:
+                        path: zenario__modules/panels/modules/hidden_nav/view_frameworks/panel
+                        branch: true
+                        refiner: module
+                view_content_items:
+                    parent: view_dropdown
+                    label: Effective usage
+                    with_columns_set:
+                        is_pluggable: true
+                    hide_in_select_mode: true
+                    link:
+                        path: zenario__content/panels/content
+                        branch: true
+                        refiner: module_effective_usage
+                action_dropdown:
+                    label: Actions
+                    multiple_select: true
+                    hide_when_children_are_not_visible: true
+                suspend:
+                    parent: action_dropdown
+                    priv: _PRIV_RUN_MODULE
+                    label: Suspend module
+                    visible_if: |
+                        item.status == 'module_running'
+                    hide_in_select_mode: true
+                    ajax:
+                        confirm:
+                            message: 'Are you sure that you wish to suspend the module "[[display_name]]"?'
+                            button_message: Suspend
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            suspend: "1"
+                uninstall:
+                    parent: action_dropdown
+                    priv: _PRIV_RESET_MODULE
+                    label: Uninitialise and delete data
+                    visible_if: |
+                        item.status != 'module_running' && item.status != 'module_not_initialized'
+                    hide_in_select_mode: true
+                    ajax:
+                        confirm:
+                            button_message: Delete data and Reset
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            uninstall: "1"
+                remove:
+                    priv: _PRIV_RESET_MODULE
+                    label: Remove
+                    visible_if: |
+                        !item.code_present
+                    hide_in_select_mode: true
+                    ajax:
+                        confirm:
+                            button_message: Delete data and remove
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            remove: "1"
+                run:
+                    priv: _PRIV_RUN_MODULE
+                    label: Start module
+                    visible_if: |
+                        item.status != 'module_running' && item.code_present
+                    hide_in_select_mode: true
+                    admin_box:
+                        path: zenario_setup_module
+                    disabled_if: |
+                        !zenario.engToBoolean(item.in_edition)
+                    disabled_tooltip: |
+                        In order to start this module, your site needs to be upgraded to Zenario [[edition]].

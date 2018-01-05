@@ -1,0 +1,81 @@
+<% if (!m._hidden) { %>
+	<% if (m.pre_field_html) { %>
+		{{m.pre_field_html}}
+	<% } %>
+	<% if (m.snippet && m.snippet.html) { %>
+		{{m.snippet.html}}
+	<% } else { %>
+		<div id="tuix_field__{{m.id|e}}" class="field field_{{m.id|e}} <% if (m.indent) { %> zenario_indent_level_{{m.indent|e}} <% } %>">
+			<% if (m.type == 'text') { %>
+				<div class="title">{{m.label|e}}</div>
+				<div class="value">
+					<input id="field__{{m.id|e}}" name="{{m.id|e}}" type="text" value="{{m._value|e}}" onkeyup="zenarioO.pi.fieldDetailsChanged('{{m.path|e}}','{{m.id|e}}');"
+						<% if (m.maxlength) { %> maxlength="{{m.maxlength|e}}"<% } %>
+						<% if (m._readonly) { %> readonly="readonly" <% } %>
+					/>
+				</div>
+			<% } else if (m.type == 'select') { %>
+				<div class="title">{{m.label|e}}</div>
+				<div class="value">
+					<select id="field__{{m.id|e}}" name="{{m.id|e}}" onchange="zenarioO.pi.fieldDetailsChanged('{{m.path|e}}','{{m.id|e}}');" 
+						<% if (m._disabled) { %> disabled="disabled" <% } %>
+					>
+						{{zenarioT.microTemplate('zenario_organizer_admin_box_builder_select_optgroups', m._values)}}
+					</select>
+				</div>
+			<% } else if (m.type == 'radios') { %>
+				<div class="title">{{m.label|e}}</div>
+				<div class="value">
+					{{zenarioT.microTemplate('zenario_organizer_admin_box_builder_radio_values', m._values)}}
+				</div>
+			<% } else if (m.type == 'checkboxes') { %>
+				<div class="title">{{m.label|e}}</div>
+				<div class="value">
+					{{zenarioT.microTemplate('zenario_organizer_admin_box_builder_checkbox_values', m._values)}}
+				</div>
+			<% } else if (m.type == 'checkbox') { %>
+				<div class="value">
+					<input id="field__{{m.id|e}}" name="{{m.id|e}}" type="checkbox" onchange="zenarioO.pi.fieldDetailsChanged('{{m.path|e}}','{{m.id|e}}');"
+						<% if (m._value) { %> checked="checked" <% } %>
+						<% if (m._disabled) { %> disabled="disabled" <% } %>
+					/>
+					<label for="field__{{m.id|e}}" class="title">{{m.label|e}}</label>
+				</div>
+			<% } else if (m.type == 'textarea') { %>
+				<div class="title">{{m.label|e}}</div>
+				<div class="value">
+					<textarea id="field__{{m.id|e}}" name="{{m.id|e}}" onkeyup="zenarioO.pi.fieldDetailsChanged('{{m.path|e}}','{{m.id|e}}');">{{m._value|e}}</textarea>
+				</div>
+			<% } else if (m.type == 'values_list') { %>
+				<% if (m._readonly) { %>
+					You cannot edit a dataset field's values
+				<% } else { %>
+				<div id="field_values_list"></div>
+				<div class="bottom_buttons">
+					<input type="button" id="organizer_add_a_field_value" value="Add a value"/>
+				</div>
+				<% } %>
+			<% } else if (m.type == 'calculation_code') { %>
+				<div class="value">
+					<textarea readonly>{{m._value|e}}</textarea>
+					<input type="button" id="edit_field_calculation" value="Edit calculation">
+				</div>
+			<% } else if (m.type == 'translations') { %>
+				<div id="organizer_field_translations"></div>
+			<% } else if (m.type == 'centralised_crm_buttons') { %>
+				<div class="centralised_crm_buttons">
+					<input type="button" id="organizer_crm_button__set_labels" value="Set option label as CRM value"/>
+					<input type="button" id="organizer_crm_button__set_values" value="Set option value as CRM value"/>
+				</div>
+			<% } else if (m.type == 'crm_values') { %>
+				<div id="organizer_field_crm_values"></div>
+			<% } %>
+			<% if (m.note_below) { %>
+				<div class="note_below">{{m.note_below|e}}</div>
+			<% } %>
+		</div>
+	<% } %>
+	<% if (m.post_field_html) { %>
+		{{m.post_field_html}}
+	<% } %>
+<% } %>

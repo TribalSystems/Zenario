@@ -1,0 +1,20 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+plugin_settings:
+    tabs:
+        first_tab:
+            label: Settings
+            fields:
+                minimum_font_size:
+                    label: 'Minimum font size (px):'
+                    type: text
+                    plugin_setting:
+                        name: minimum_font_size
+                    value: "8"
+                maximum_font_size:
+                    label: 'Maximum font size (px):'
+                    type: text
+                    plugin_setting:
+                        name: maximum_font_size
+                    value: "12"
+    module_class_name: zenario_font_size

@@ -1,0 +1,16 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__content:
+    panels:
+        content:
+            refiners:
+                zenario__locations__create_content:
+                    sql: |
+                        c.type = 'html'
+                        AND c.language_id = [[FOCUSED_LANGUAGE_ID]]
+    hidden_nav:
+        zenario__locations__create_content:
+            link:
+                branch: Yes
+                path: zenario__content/panels/content
+                refiner: zenario__locations/panel__create_content

@@ -1,0 +1,19 @@
+<div id="organizer_rightColumnApplyCancel" class="organizer_toolbar clearfix">
+	<div class="toolbar" id="organizer_applyCancelToolbar">
+		<span id="organizer_applyCancelToolbarButtons" class="toolbarButtons">
+			<ul>
+				<li class="label_without_icon organizer_applyButton">
+					<a id="organizer_applyButton" class="{{m.confirm_css}}">
+						<span><% if (m.confirm_text) { %>{{m.confirm_text}}<% } else { %>{{zenarioA.phrase.applyChanges}}<% } %></span>
+					</a>
+				</li>
+			</ul><ul>
+				<li class="label_without_icon organizer_cancelButton">
+					<a id="organizer_cancelButton">
+						<span><% if (m.cancel_text) { %>{{m.cancel_text}}<% } else { %>{{zenarioA.phrase.cancel}}<% } %></span>
+					</a>
+				</li>
+			</ul>
+		</span>
+	</div>
+</div>

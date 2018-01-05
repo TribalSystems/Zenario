@@ -1,0 +1,18 @@
+.organizer_top_level_image.zenario__social {
+	background: url('images/icon-social-off.svg') no-repeat center / 16px 16px;
+}
+
+#zenario_at_top_left_menu .organizer_top_level_image.zenario__social,
+#organizer_leftColumn .legend_on a.zenario__social,
+.organizer_top_level_image.zenario__social:hover {
+	background: url('images/icon-social-on.svg') no-repeat center / 16px 16px;
+}
+
+
+#rightColumn div.organizer_item .pending_comment {
+	background: transparent url(images/pending-comments-grid-icon.gif) no-repeat scroll 0 6px;
+}
+
+#rightColumn table tr td div.pending_comment {
+	background: transparent url(images/pending-comments-list-icon.png) no-repeat scroll 50% 50%;
+}

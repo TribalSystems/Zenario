@@ -1,0 +1,12 @@
+<div
+	class="
+		organizer_cell_line
+		<% if (m.firstLine) { %>firstline<% } else if (!m.no_italics) { %>otherline<% } %>
+		{{m.css_class|e}}
+	"
+	style="
+		height:{{m.height|e}}px
+	"
+>
+	{{zenarioT.microTemplate('zenario_organizer_value', m)}}
+</div>

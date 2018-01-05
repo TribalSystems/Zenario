@@ -1,0 +1,7 @@
+zenario__languages:
+    nav:
+        countries:
+            label: Countries
+            tooltip: "Configure countries and regions which will be available to your site's modules"
+            link:
+                path: zenario__languages/panels/countries

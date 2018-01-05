@@ -1,0 +1,30 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+plugin_settings:
+    tabs:
+        first_tab:
+            label: Sitemap Settings
+            fields:
+                menu_section:
+                    plugin_setting:
+                        name: menu_section
+                        foreign_key_to: menu_section
+                        dangling_cross_references: delete_instance
+                    label: 'Menu Section:'
+                    pick_items:
+                        path: zenario__menu/panels/sections
+                        min_path: zenario__menu/panels/sections
+                        max_path: zenario__menu/panels/sections
+                        target_path: zenario__menu/panels/sections
+                        select_phrase: Select Menu Section...
+                        hide_remove_button: Yes
+                    value: "1"
+                    validation:
+                        required: Please select a menu section
+                show_invisible_menu_items:
+                    plugin_setting:
+                        name: show_invisible_menu_items
+                    label: 'Show Menu Items that are Invisible:'
+                    type: checkbox
+                    value: ""
+    module_class_name: zenario_sitemap

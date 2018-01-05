@@ -1,0 +1,17 @@
+<div class="location_rating_wrap">
+
+	<h2>{{Location_Rating_Title}}</h2>
+
+	{% if Score_Type_Numeric %}
+		<div class="location_rating_type location_rating_numeric">
+			<span class="label">{{Numeric_Score_Label}}</span>{{Numeric_Score}}
+		</div>
+	{% endif %}
+
+	{% if Score_Type_Boolean %}
+		<div class="location_rating_type location_rating_boolean">
+			<span class="label">{{Boolean_Score_Label}}</span>
+		</div>
+	{% endif %}
+
+</div>

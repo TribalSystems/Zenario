@@ -1,0 +1,276 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+plugin_settings:
+    module_class_name: zenario_plugin_nest
+    tabs:
+        first_tab:
+            label: Display
+            fields:
+                show_heading:
+                    plugin_setting:
+                        name: show_heading
+                    label: 'Show a heading'
+                    type: checkbox
+                    redraw_onchange: true
+                heading_text:
+                    plugin_setting:
+                        name: heading_text
+                    indent: 1
+                    visible_if: zenarioAB.value('show_heading')
+                    label: Heading
+                    type: text
+                    placeholder: 'Type your heading here'
+                heading_tag: 
+                    plugin_setting: 
+                        name: heading_tag
+                    label: "Heading tag:"
+                    indent: 1
+                    visible_if: zenarioAB.value('show_heading')
+                    type: select
+                    values: 
+                        h1: Heading 1
+                        h2: Heading 2
+                        h3: Heading 3
+                        h4: Heading 4
+                        h5: Heading 5
+                        h6: Heading 6
+                        p: Paragraph
+                    value: h1
+                    side_note: Choose which HTML tag the heading will be displayed in.
+                
+                enable_conductor:
+                    plugin_setting:
+                        name: enable_conductor
+                    label: 'Enable nest conductor (advanced)'
+                    type: checkbox
+                    redraw_onchange: true
+                    side_note: |
+                        The nest conductor can be used to turn a plugin nest into a modal AJAX application.
+                
+                show_tabs:
+                    plugin_setting:
+                        name: show_tabs
+                    visible_if: |
+                        !zenarioAB.value('enable_conductor')
+                    label: 'Show tabs'
+                    type: checkbox
+                
+                show_next_prev_buttons:
+                    plugin_setting:
+                        name: show_next_prev_buttons
+                    hide_with_previous_field: true
+                    label: 'Show next/previous buttons'
+                    type: checkbox
+                    redraw_onchange: true
+                next_prev_buttons_loop:
+                    plugin_setting:
+                        name: next_prev_buttons_loop
+                    indent: 1
+                    hide_with_previous_field: true
+                    visible_if: |
+                        zenarioAB.value('show_next_prev_buttons')
+                    label: 'Loop next/previous buttons'
+                    type: checkbox
+                    side_note: |
+                        I.e. pressing the Next button on the last tab goes to the first tab.
+                        Only applies to Frameworks with Next/Previous buttons.
+        
+        breadcrumbs:
+            label: Breadcrumbs
+            fields:
+                bc_add:
+                    plugin_setting:
+                        name: bc_add
+                    type: checkbox
+                    label: Add breadcrumbs to the top of each slide
+                    redraw_onchange: true
+                bc_cols:
+                    plugin_setting:
+                        name: bc_cols
+                    indent: 1
+                    hide_if_previous_outdented_value_isnt: 1
+                    title: Columns
+                    type: select
+                    label: Columns
+                    empty_value: Full-width
+                    values: grid_cols
+                
+                bc_menu_section:
+                    plugin_setting:
+                        name: bc_menu_section
+                        foreign_key_to: menu_section
+                        dangling_cross_references: delete_instance
+                        use_value_for_plugin_name: 2
+                    indent: 1
+                    hide_if_previous_outdented_value_isnt: 1
+                    label: 'Menu Section:'
+                    pick_items:
+                        path: zenario__menu/panels/sections
+                        min_path: zenario__menu/panels/sections
+                        max_path: zenario__menu/panels/sections
+                        target_path: zenario__menu/panels/sections
+                        select_phrase: Select Menu Section...
+                        hide_remove_button: true
+                    value: "1"
+                    validation:
+                        required_if_not_hidden: Please select a menu section
+                        
+                bc_breadcrumb_trail:
+                    plugin_setting:
+                        name: bc_breadcrumb_trail
+                    indent: 1
+                    hide_if_previous_outdented_value_isnt: 1
+                    label: "First breadcrumb:"
+                    type: radios
+                    values:
+                        do_not_prefix:
+                            label: "Use the top level menu node"
+                        site_home_page:
+                            label: "Use the home page"
+                        other_menu_node:
+                            label: "Use a specific menu node"
+                    value: site_home_page
+                    format_onchange: true
+                    side_note: On multi-lingual sites, the link will always point to the page in the current visitor language, if it exists.
+                    
+                bc_breadcrumb_prefix_menu:
+                    plugin_setting:
+                        name: bc_breadcrumb_prefix_menu
+                        foreign_key_to: content
+                        dangling_cross_references: delete_instance
+                        use_value_for_plugin_name: 1
+                    indent: 1
+                    hide_if_previous_outdented_value_isnt: 1
+                    visible_if: >
+                        zenarioAB.value('bc_breadcrumb_trail') == 'other_menu_node'
+                    label: 'Menu node:'
+                    pick_items:
+                        path: zenario__menu/panels/menu_position/refiners/existing////
+                        min_path: zenario__menu/panels/menu_position
+                        select_phrase: Select menu node...
+                        disallow_refiners_looping_on_min_path: true
+                        hide_remove_button: true
+                        visible_if_for_all_selected_items: |
+                            zenario.engToBoolean(item.menu_id)
+                    validation:
+                        required_if_not_hidden: Please select a menu node
+                        
+                bc_breadcrumb_trail_separator:
+                    plugin_setting:
+                        name: bc_breadcrumb_trail_separator
+                    indent: 1
+                    hide_if_previous_outdented_value_isnt: 1
+                    label: 'Breadcrumb trail separator:'
+                    type: text
+                    value: '»'
+                    style: 'width: 5em;'
+        size:
+            label: Image size
+            fields:
+                desc:
+                    full_width: true
+                    snippet:
+                        html: |
+                            The following settings let you set default values to apply to Banner Plugins that have an image.
+                            The values you choose here will apply to every Banner, unless overridden by settings of individual Banners.
+                banner_canvas:
+                    plugin_setting:
+                        name: banner_canvas
+                    label: Size constraint
+                    type: select
+                    value: unlimited
+                    values:
+                        unlimited:
+                            label: Unlimited size
+                        fixed_width:
+                            label: Constrain by width
+                        fixed_height:
+                            label: Constrain by height
+                        fixed_width_and_height:
+                            label: Constrain by width and height
+                        resize_and_crop:
+                            label: Resize and crop
+                    format_onchange: true
+                banner_width:
+                    plugin_setting:
+                        name: banner_width
+                    indent: 1
+                    label: 'Width:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: Please enter a width.
+                        numeric: The width must be a number.
+                    value: ""
+                    maxlength: 5
+                    style: 'width: 5em;'
+                    post_field_html: '&nbsp;pixels'
+                banner_height:
+                    plugin_setting:
+                        name: banner_height
+                    indent: 1
+                    label: 'Height:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: Please enter a height.
+                        numeric: The height must be a number.
+                    value: ""
+                    maxlength: 5
+                    style: 'width: 5em;'
+                    post_field_html: '&nbsp;pixels'
+                enlarge_image:
+                    plugin_setting:
+                        name: enlarge_image
+                    label: 'Enlarge images in a floating box:'
+                    type: checkbox
+                    format_onchange: true
+                enlarge_canvas:
+                    plugin_setting:
+                        name: enlarge_canvas
+                    indent: 1
+                    label: 'Enlarged image canvas:'
+                    type: select
+                    value: unlimited
+                    values:
+                        unlimited:
+                            ord: 1
+                            label: Unlimited size
+                        fixed_width:
+                            ord: 2
+                            label: Constrain by width
+                        fixed_height:
+                            ord: 3
+                            label: Constrain by height
+                        fixed_width_and_height:
+                            ord: 4
+                            label: Constrain by width and height
+                    format_onchange: true
+                enlarge_width:
+                    plugin_setting:
+                        name: enlarge_width
+                    indent: 2
+                    label: 'Width:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: Please enter an enlarged width.
+                        numeric: The enlarged width must be a number.
+                    value: ""
+                    maxlength: 5
+                    style: 'width: 5em;'
+                    post_field_html: '&nbsp;pixels'
+                enlarge_height:
+                    plugin_setting:
+                        name: enlarge_height
+                    indent: 2
+                    label: 'Height:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: Please enter an enlarged height.
+                        numeric: The enlarged height must be a number.
+                    value: ""
+                    maxlength: 5
+                    style: 'width: 5em;'
+                    post_field_html: '&nbsp;pixels'
+    lovs:
+        grid_cols:
+            1:
+                label: 1 col

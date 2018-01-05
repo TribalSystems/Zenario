@@ -1,0 +1,81 @@
+plugin_settings:
+    module_class_name: zenario_user_forms
+    tabs:
+        first_tab:
+            label: Settings
+            fields:
+                user_form:
+                    label: 'Form:'
+                    plugin_setting:
+                        name: user_form
+                    pick_items:
+                        path: zenario__user_forms/panels/user_forms
+                        min_path: zenario__user_forms/panels/user_forms
+                        max_path: zenario__user_forms/panels/user_forms
+                        target_path: zenario__user_forms/panels/user_forms
+                        select_phrase: Select Form...
+                        hide_remove_button: true
+                    validation:
+                        required: Please choose a Form
+                    format_onchange: true
+                display_mode:
+                    plugin_setting:
+                        name: display_mode
+                    label: 'Display mode:'
+                    type: radios
+                    values:
+                        inline_in_page: 
+                            label: Inline in page
+                        in_modal_window: 
+                            label: In modal window
+                        inline_popup:
+                            label: Inline popup
+                    value: inline_in_page
+                    format_onchange: true
+                display_text:
+                    plugin_setting:
+                        name: display_text
+                    label: 'Display text:'
+                    type: text
+                    value: Click me
+                    side_note: |
+                        This text will be translated
+                    validation:
+                        required_if_not_hidden: Please enter text to be used as a link to the form
+                    indent: 1
+                show_fullscreen_button:
+                    plugin_setting:
+                        name: show_fullscreen_button
+                    label: 'Show fullscreen button'
+                    type: checkbox
+                    indent: 1
+                    visible_if: zenarioAB.value('display_mode') == 'inline_in_page'
+                show_print_page_button:
+                    plugin_setting:
+                        name: show_print_page_button
+                    label: 'Show print page button'
+                    type: checkbox
+                    indent: 1
+                    visible_if: zenarioAB.value('display_mode') == 'inline_in_page'
+                    redraw_onchange: true
+                print_page_button_pages:
+                    plugin_setting:
+                        name: print_page_button_pages
+                    label: 'Pages to show button on:'
+                    type: text
+                    indent: 2
+                    visible_if: (zenarioAB.value('display_mode') == 'inline_in_page') && zenarioAB.value('show_print_page_button')
+                    side_note: A comma seperated list of page numbers to display the print page button on
+                    value: 1
+                partial_completion_button_position:
+                    plugin_setting:
+                        name: partial_completion_button_position
+                    label: 'Show "Save and complete later" button at:'
+                    type: select
+                    values:
+                        top:
+                            label: Top
+                        bottom:
+                            label: Bottom
+                    value: bottom
+                

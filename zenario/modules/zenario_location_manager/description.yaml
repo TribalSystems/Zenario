@@ -1,0 +1,27 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+display_name: Location Manager
+author_name: Tribal Systems
+copyright_info: © Tribal Limited
+editions: ProBusiness, Enterprise
+start_running_on_install: false
+license_info: 'Modified BSD License'
+description: |
+    <p>The Location Manager can be used to model any kind of location in the real world.</p>
+    <p>For example, you can use it to store the locations of customers, individuals, important buildings, venues for events, and much more. This Module can be extended by other Modules which add more context-specific information.</p>
+    <p>With Location Manager, you can create a Location with a name, a street address, contact details and a Google map. The Google map pin can be fine-tuned manually if you need to make fine adjustments to the location. </p>
+    <p>Each Location can optionally be linked to a Content Item. You can use this feature to create an HTML Page (or an Item of a different Content Type) which describes that Location.</p>
+category: management
+keywords: geographical, location, place
+dependencies:
+    zenario_country_manager: Yes
+signals:
+    signal1:
+        name: eventContentDeleted
+        static: Yes
+    signal2:
+        name: eventLocationDeleted
+        static: Yes
+    signal3:
+        name: eventSectorDeleted
+        static: Yes

@@ -1,0 +1,65 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_translate_phrase:
+    priv: _PRIV_MANAGE_LANGUAGE_PHRASE
+    title: ""
+    key:
+        id: ""
+        code: ""
+        language_id: ""
+        module_class_name: ""
+        is_code: false
+    hide_tab_bar: true
+    tabs:
+        phrase:
+            label: Phrase
+            edit_mode:
+                priv: _PRIV_MANAGE_LANGUAGE_PHRASE
+                enabled: true
+                always_on: true
+            fields: 
+                module:
+                    label: 'Module:'
+                    pick_items:
+                        path: zenario__modules/panels/modules
+                    readonly: true
+                code:
+                    hidden: true
+                    label: 'Code:'
+                    type: textarea
+                    readonly: true
+                    rows: 2
+                
+                left_column:
+                    type: grouping
+                    name: left_column
+                phrase:
+                    grouping: left_column
+                    label: 'Phrase:'
+                    type: textarea
+                    readonly: true
+                    rows: 4
+                
+                right_column:
+                    type: grouping
+                    name: right_column
+                
+                local_text:
+                    grouping: right_column
+                    label: ''
+                    type: textarea
+                    rows: 4
+                    side_note >
+                            This is HTML text.
+                            Any special characters such as <code>&amp;</code> <code>&quot;</code> <code>&lt;</code> or <code>&gt;</code>
+                            should be escaped (i.e. by replacing them with <code>&amp;amp;</code> <code>&amp;quot;</code> <code>&amp;lt;</code>
+                            and <code>&amp;gt;</code> respectively).
+                
+                protect_flag:
+                    grouping: right_column
+                    label: Protect
+                    type: checkbox
+                    visible_if: |
+                        zenarioAB.editModeOn()
+                    side_note : >
+                        Protecting a Phrase will stop it from being overwritten when importing phrases.

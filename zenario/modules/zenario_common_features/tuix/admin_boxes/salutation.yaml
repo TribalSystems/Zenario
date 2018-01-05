@@ -1,0 +1,29 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_salutation:
+    title: Adding a new salutation
+    title_for_existing_records: Editing the salutation "[[details/name]]"
+    key:
+        id: ''
+    max_height: 175
+    hide_tab_bar: true
+    tabs:
+        details:
+            edit_mode:
+                enabled: true
+                always_on: true
+            fields:
+                desc:
+                    snippet:
+                        p: |
+                            Salutations are not translated.
+                            On a multilingual site you should create all of the language/salutation
+                            permutations you need here.
+                name:
+                    label: 'Salutation:'
+                    type: text
+                    maxlength: 20
+                    style: |
+                        width: 20em;
+                    validation:
+                        required: Please enter a salutation.

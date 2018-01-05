@@ -1,0 +1,102 @@
+---
+addAmp:
+  summary: |
+    Automatically adds an & onto the start of a request string if the string is not empty and there is not one there already.
+  desc: |
+    <h2>Description</h2>
+    <p>Automatically adds an <span class="code">&amp;</span> onto the start of a request string if the string is not empty and there is not one there already.</p>
+    <h2>Parameters</h2>
+    <h3><code>$request</code></h3>
+    <p style="margin-left: 40px;">A request string</p>
+    <h2>Return Value</h2>
+    <p>The same request string, with an <span class="code">&amp;</span> added if&nbsp;necessary.</p>
+decodeIdForOrganizer:
+  summary: |
+    This function can be used to give you the original value of an id encoded with the encodeItemIdForOrganizer() function.
+  desc: |
+    <h2>Description</h2>
+    <p>This function can be used to give you the original value of an id encoded with the <span class="code">encodeItemIdForOrganizer()</span> function.</p>
+    <h2>Parameters</h2>
+    <h3><code>$id</code></h3>
+    <p style="margin-left: 40px;">An id encoded with the <span class="code">encodeItemIdForOrganizer()</span> function.</p>
+    <h2>Return Value</h2>
+    <p>The original id.</p>
+encodeIdForOrganizer:
+  summary: |
+    Takes a string, and converts it into a format that is safe to use in comma-separated lists, URLS and/or Organizer item ids.
+  desc: |
+    <h2>Description</h2>
+    <p>Takes a string, and converts it into a format that is safe to use in comma-separated lists, URLS and/or Organizer item ids.</p>
+    <h2>Parameters</h2>
+    <h3><code>$id</code></h3>
+    <p style="margin-left: 40px;">A string to form the id.</p>
+    <h2>Return Value</h2>
+    <p>The encoded string.</p>
+engToBoolean:
+  summary: |
+    Takes a string, and returns either a 1 or a 0 depending on whether the string looks affirmative or negative.
+    Available in both PHP and JavaScript.
+  desc: |
+    <h2>Description</h2>
+    <p>Takes a string, and returns either a 1 or a 0 depending on whether the string looks affirmative or negative.</p>
+    <p>Available in both PHP and JavaScript.</p>
+    <h2>Where You Can Use It</h2>
+    <p>From Zenario 7.0.0 onwards.</p>
+    <h2>Return Value</h2>
+    <p>Returns a 0 if <span class="code">$text</span> is empty, false, null, undefined, zero, false, "off" or "no". Otherwise it returns 1.</p>
+    <p>Note that $text is case insensitive, so "YES", "Yes" and "yes" would all return 1, and "NO", "No" and "no" would all return 0.</p>
+HTMLId:
+  summary: |
+    Encodes a string into something suitable for a HTML ID by replacing anything non-alphanumeric with an underscore.
+  desc: |
+    <h2>Description</h2>
+    <p>Encodes a string into something suitable for a HTML ID by replacing anything&nbsp;non-alphanumeric with an underscore.</p>
+    <h2>Parameters</h2>
+    <h3><code>$text</code></h3>
+    <p style="margin-left: 40px;">A string that may contain non-alphanumeric characters.</p>
+    <h2>Return Value</h2>
+    <p>The same string with the&nbsp;non-alphanumeric characters replaced.</p>
+urlRequest:
+  summary: |
+    Turns a PHP associative array into a URL request string.
+  desc: |
+    <h2>Description</h2>
+    <p>Turns a PHP associative array into a URL request string.</p>
+    <h2>Where You Can Use It</h2>
+    <p>From Zenario 7.0.0 onwards.</p>
+    <h2>Parameters</h2>
+    <h3><code>$arr</code></h3>
+    <p style="margin-left: 40px;">A PHP array.</p>
+    <h2>Return Value</h2>
+    <p>The array, turned into a request string.</p>
+validateEmailAddress:
+  summary: |
+    Checks if an email address is valid.
+  desc: |
+    <h2>Description</h2>
+    <p>Checks if an email address is valid.</p>
+    <p>In 6.0.6 the <span class="code">$multiple</span> parameter was added.</p>
+    <h2>Parameters</h2>
+    <h3><code>$email</code></h3>
+    <p style="margin-left: 40px;">An email address.</p>
+    <h3><code>$multiple</code></h3>
+    <p style="margin-left: 40px;">From 6.0.6.</p>
+    <p style="margin-left: 40px;">If this option is set, you may enter multiple email addresses separated by a comma or a semi-colon.</p>
+    <h2>Return Value</h2>
+    <p>Returns <span class="code">true</span> or <span class="code">false</span>, depending on whether the syntax of an email address is valid.</p>
+validateScreenName:
+  summary: |
+    Checks whether a given Screen Name is valid.
+  desc: |
+    <h2>Summary</h2>
+    <p>Checks whether a given Screen Name is valid.</p>
+    <h2>Where You Can Use It</h2>
+    <p>From Zenario 7.0.0 onwards.</p>
+    <h2>Description</h2>
+    <p>Valid Screen Names contain only alphanumeric characters, underscores and hyphens.</p>
+    <p>If support for Unicode is enabled on your server then this function will also allow non-English characters, such as &agrave;, &igrave; or &uuml;.</p>
+    <h2>Parameters</h2>
+    <h3><code>$screenName</code></h3>
+    <p style="margin-left: 40px;">The Screen Name to check.</p>
+    <h2>Return Value</h2>
+    <p>Returns whether the given Screen Name had a valid syntax.</p>

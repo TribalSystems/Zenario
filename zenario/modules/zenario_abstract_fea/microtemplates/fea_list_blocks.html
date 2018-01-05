@@ -1,0 +1,151 @@
+<%
+	var containerId = m.lib.containerId, tuix = m.tuix;
+	zenario.sendSignal('eventListPreDisplay', {containerId: containerId, microTemplate: 'fea_list_blocks', tuix: tuix});
+%>
+
+
+{{m.lib.pMicroTemplate('dev_tools', m)}}
+
+
+<div class="
+	zfea zfea_blocks zfea_{{m.lib.path|e}}
+	{{m.tuix.css_class|e}}
+">
+	{{m.tuix.header_html}}
+	
+	<% if (m.tuix.title !== undefined) { %>
+	    <% if (m.tuix.title_tags) { %>
+		    <{{m.tuix.title_tags|e}}>{{m.tuix.title|e}}</{{m.tuix.title_tags|e}}>
+		<% } else { %>
+		    <h1>{{m.tuix.title|e}}</h1>
+		<% } %>
+	<% } %>
+	
+	<div class="zfea_back_button">
+		<% if (zenarioT.find(m.tuix.sortedCollectionButtons, 'back')) { %>
+			{{m.lib.pMicroTemplate('button', m.tuix.sortedCollectionButtons, 'back')}}
+		<% } %>
+	</div>
+	<div class="zfea_buttons zfea_top_buttons">
+		<% if (zenarioT.find(m.tuix.sortedCollectionButtons, 'top')) { %>
+			{{m.lib.pMicroTemplate('button', m.tuix.sortedCollectionButtons, 'top')}}
+		<% } %>
+	</div>
+	
+	<% var ci, col, chi, child, bi, button, ii, item, tag, headerId = false, firstItem = true; %>
+	
+	{{m.lib.pMicroTemplate('list_search', m)}}
+	
+	<% if (m.tuix.item_count_message && m.tuix.__item_count__ > 1) { %>
+		<div class="item_count">
+			<p>{{m.tuix.item_count_message.replace("[[count]]", m.tuix.__item_count__)|e}}</p> 
+		</div>
+	<% } %>
+	
+	<% if (m.tuix.subtitle !== undefined) { %>
+		<div class="subtitle">
+			<h1>{{m.tuix.subtitle|e}}</h1>
+		</div>
+	<% } %>
+	
+	<% if (m.tuix.sortedCollectionButtons.length) { %>
+		<div class="sorted_buttons">
+			<% if (zenarioT.find(m.tuix.sortedCollectionButtons, false)) { %>
+				{{m.lib.pMicroTemplate('button', m.tuix.sortedCollectionButtons, false)}}
+			<% } %>
+		</div>
+	<% } %>
+	
+	<% if (!_.isEmpty(m.tuix.columns)) { %>
+		<div class="zfea_block_list_wrap">
+			<% foreach (m.tuix.sortedItems as ii => item) { %>
+				
+				<% if (m.tuix.has_headers) { %>
+					<% if (item.header_id != headerId) { %>
+						<% if (headerId !== false) { %> 
+							</div></div>
+						<% } %>
+						<% headerId = item.header_id; %>
+						<div class="section">
+							<h4>{{item.header_name|e}}</h4>
+							<div class="zfea_block_list_wrap_inner">
+					<% } %>
+				<% } %>
+				
+				<div class="zfea_block item_{{item.id|e}} {{item.row_class|e}}">
+					<% var sameRow = false; %>
+					<% foreach (m.tuix.sortedColumns as ci => col) { %>
+						
+						<% if (item[col.id] === undefined) {
+							continue;
+						} %>
+						
+						<% if (m.tuix.sortedColumns[+ci + 1] && m.tuix.sortedColumns[+ci + 1].same_row && !sameRow) { %>
+							<% sameRow = true; %>
+							<div class="wrap_div">
+						<% } %>
+						
+						<% tag = col.tag ? col.tag : 'p'; %>
+						<{{tag|e}}
+							id="{{('zfea_' + m.lib.containerId + '_row_' + ii + '_col_' + ci)|e}}"
+							data-label="{{col.title|e}}" 
+							class="
+								column_{{col.id|e}} 
+								{{col.css_class|e}}
+								<% if (ci == 0) { %>
+									zfea_first_col
+								<% } %>
+								<% if (item.cell_css_classes && item.cell_css_classes[col.id]) { %>
+									{{item.cell_css_classes[col.id]|e}}
+								<% } %>"
+						>
+							<span class="icon"></span>
+							<span class="label">
+								{{col.blocks_title|e}}
+								{{m.lib.pMicroTemplate('list_cell', {col: col, item: item})}}
+							</span>
+						</{{tag|e}}>
+						
+						<% if (col.same_row && sameRow && (!m.tuix.sortedColumns[+ci + 1] || !m.tuix.sortedColumns[+ci + 1].same_row)) { %>
+							<% sameRow = false; %>
+							</div>
+						<% } %>
+					<% } %>
+					<% if (item.sortedItemButtons.length) { %>
+						<div class="buttons">
+							{{m.lib.pMicroTemplate('button', item.sortedItemButtons)}}
+						</div>
+					<% } %>
+				</div>
+				
+			<% } %>
+			
+			<%
+				if (!zenarioL.mobile && m.lib.mode != 'view_data_pool_block') {
+					m.lib.after(function() {
+						var maxHeight = 0;
+						$('#' + m.lib.containerId + ' .zfea_block_list_wrap .zfea_block')
+							.each(function() { maxHeight = Math.max(maxHeight, $(this).height()); })
+							.height(maxHeight);
+					});
+				}
+			%>
+			<% if (m.tuix.sortedItems.length == 0) { %>
+				<% if (m.tuix.no_items_message) { %>
+					<div class="zfea_no_items_message">{{m.tuix.no_items_message}}</div>
+				<% } %>
+			<% } %>
+		</div>
+	<% } %>
+	
+	{{m.lib.pMicroTemplate('list_pagination', m)}}
+	
+	{{m.tuix.footer_html}}
+</div>
+
+
+<%
+	m.lib.after(function() {
+		zenario.sendSignal('eventListPostDisplay', {containerId: containerId, microTemplate: 'fea_list_blocks', tuix: tuix});
+	});
+%>

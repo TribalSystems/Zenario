@@ -1,0 +1,22 @@
+<div id="zenarioSE">
+	<!--
+	<div id="zenario_fabBox_readonlyMarker"><div>{{zenarioA.phrase.readonly}}</div></div>
+	<div id="zenario_fabOpenPreview">
+		<a onclick="zenarioSE.showPreviewInPopoutBox();">{{zenarioA.phrase.preview}}</a>
+	</div>
+	-->
+	<a class="zenarioSE_Close" onclick="zenarioSE.closeButton();"></a>
+	<div id="zenarioSE_Preview"></div>
+	<div id="zenarioSE_Controls">
+		<div id="zenario_fabTabs"></div>
+		<div id="zenario_fabBox_Body">
+			<% if (zenarioT.showDevTools()) { %>
+				<div class="zenario_debug" onclick="zenarioA.debug('zenarioSE');"><div></div></div>
+			<% } %>
+		
+			<div id="zenario_abtab" style="display: none;"></div>
+		
+			<div class="zenario_fbButtons" id="zenario_fbButtons"></div>
+		</div>
+	</div>
+</div>

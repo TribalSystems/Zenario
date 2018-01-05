@@ -1,0 +1,34 @@
+<div class="zenario_at_toolbar_container_top">
+	<div class="zenario_at_content zenario_at_toolbar">
+		<% if (!zenarioT.hidden(m.sections.layout)) { %>
+			<div class="zenario_at_template">
+				{{zenarioT.microTemplate('zenario_toolbar_button', m.sections.layout)}}
+			</div>
+		<% } %>
+		<% if (!zenarioT.hidden(m.sections.slot_controls)) { %>
+			<div class="zenario_at_slot_controls">
+				{{zenarioT.microTemplate('zenario_toolbar_button', m.sections.slot_controls)}}
+			</div>
+		<% } %>
+		<% if (!zenarioT.hidden(m.sections.slot_wand)) { %>
+			<div class="zenario_at_slot_wand">
+				{{zenarioT.microTemplate('zenario_toolbar_button', m.sections.slot_wand)}}
+			</div>
+		<% } %>
+		<% if (!zenarioT.hidden(m.sections.help)) { %>
+			<div class="zenario_at_help">
+				{{zenarioT.microTemplate('zenario_toolbar_button', m.sections.help)}}
+			</div>
+		<% } %>
+	</div>
+</div>
+<div class="zenario_at_toolbar_container_bottom">
+	<div id="zenario_at_lower_section">
+		<div class="zenario_at_infobar zenario_at_infobar_layout_id_and_name">
+			{{zenarioAT.tuix.sections.layout.buttons.id_and_name.label|escape}}
+		</div>
+		<div class="zenario_at_infobar zenario_at_infobar_layout_usage">
+			{{zenarioAT.tuix.sections.layout.buttons.usage.label|escape}}
+		</div>
+	</div>
+</div>

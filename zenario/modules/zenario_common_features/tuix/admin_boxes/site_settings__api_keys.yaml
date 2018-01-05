@@ -1,0 +1,51 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+site_settings:
+    title: Editing API keys
+    setting_group: api_keys
+    tabs:
+        dropbox:
+            label: Dropbox
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_SITE_SETTING
+            fields:
+                description:
+                    full_width: Yes
+                    snippet:
+                        html: This tab contains API keys for dropbox.
+                dropbox_api_key:
+                    site_setting:
+                        name: dropbox_api_key
+                    label: 'Dropbox API Key:'
+                    type: text
+                    note_below: |
+                        An application key that can use the Dropbox API.
+                                                        You can obtain a key at
+                                                        <a href="https://www.dropbox.com/developers/apps" target="_blank">
+                                                            https://www.dropbox.com/developers/apps
+                                                        </a>.
+        google_maps:
+            label: Google Maps
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_SITE_SETTING
+            fields:
+                google_maps_api_key:
+                    site_setting:
+                        name: google_maps_api_key
+                    label: 'Google Maps API key:'
+                    type: text
+        vimeo:
+            label: Vimeo
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_SITE_SETTING
+            fields:
+                vimeo_access_token:
+                    site_setting:
+                        name: vimeo_access_token
+                    label: 'Vimeo access token:'
+                    type: text
+                    note_below: |
+                        Create an access token here: <a href="https://developer.vimeo.com/apps" target="_blank">https://developer.vimeo.com/apps</a>

@@ -1,0 +1,14 @@
+<div class="links">
+	{% set first = true %}
+	{% for node in nodes %}
+		<span class="{{node.Class}}">
+			{% if first %}
+				{% set first = false %}
+			{% else %}
+				|
+			{% endif %}
+			
+			{{node.Hyperlink}}
+		</span>
+	{% endfor %}
+</div>

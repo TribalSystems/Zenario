@@ -1,0 +1,101 @@
+zenario_backup:
+    key:
+        id: ''
+        server: false
+    priv: _PRIV_BACKUP_SITE
+    max_height: 500
+    hide_tab_bar: true
+    identifier:
+        css_class: backup
+    title: ''
+    tabs:
+        details:
+            edit_mode:
+                enabled: true
+            notices:
+                are_you_sure:
+                    show: true
+                    type: info
+                    message: ''
+            fields:
+                desc1a:
+                    visible_if: |
+                        tuix.key.id
+                    snippet:
+                        html: |
+                            This tool allows you to download a database backup of your site that you previously stored on your server.
+                desc1b:
+                    visible_if: |
+                        !tuix.key.id && !tuix.key.server
+                    snippet:
+                        html: |
+                            This tool allows you to download a database backup of your site that you previously stored on your server.
+                desc1c:
+                    visible_if: |
+                        !tuix.key.id && tuix.key.server
+                    snippet:
+                        html: |
+                            This tool allows you to create a database backup of your site and store it on your server.
+                desc2:
+                    snippet:
+                        html: |
+                            This backup will not contain the <code>docstore/</code> or <code>zenario_custom/</code> directories.
+                            You should back up and restore these separately to preserve your documents,
+                            custom frameworks, custom modules, layouts and skins.
+                desc3:
+                    snippet:
+                        html: |
+                            If you have very large images, or animations, on your site then you may need to increase your
+                            <a target="_blank" href="http://dev.mysql.com/doc/refman/5.0/en/server-system-variables.html#sysvar_max_allowed_packet">
+                                max_allowed_packet size</a>
+                            before you can restore the created database backup. Please see 
+                            <a target="_blank" href="http://dev.mysql.com/doc/refman/5.0/en/packet-too-large.html">
+                                http://dev.mysql.com/doc/refman/5.0/en/packet-too-large.html</a>
+                            for details.
+                
+                gzip:
+                    indent: 1
+                    visible_if: |
+                        !tuix.key.id
+                    type: checkbox
+                    label: Compress backup file for a smaller filesize
+                    value: 1
+                encrypt:
+                    indent: 1
+                    visible_if: |
+                        !tuix.key.id
+                    type: checkbox
+                    label: Encrypt backup file
+                    note_below: |
+                        Encrypted backups can only be restored on a site where the encryption keys match the encryption keys
+                        that existed when the backup was taken.
+                
+                desc4:
+                    visible_if: |
+                        !tuix.key.server
+                    snippet:
+                        html: |
+                            Please confirm your administrator password:
+                
+                username:
+                    indent: 1
+                    hide_with_previous_field: true
+                    label: "Username:"
+                    type: text
+                    readonly: true
+                password:
+                    indent: 1
+                    hide_with_previous_field: true
+                    label: "Password:"
+                    type: password
+                    
+                desc5:
+                    snippet:
+                        html: |
+                            This may take several minutes to complete. Are you sure you wish to continue?
+                    
+    save_button_message: ''
+    #download: true
+    cancel_button_message: Cancel
+    #confirm:
+    #    download: true

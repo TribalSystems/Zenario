@@ -1,0 +1,133 @@
+#zenario_tutorial_other_videos {
+	position: relative; 
+	top: 0px; 
+	left: 0px; 
+	min-height: 230px;
+	overflow: hidden;
+}
+
+#zenario_tutorial_other_videos div.slides {
+	position: absolute; 
+	left: 0px; 
+	top: 0px; 
+	min-width: 645px; 
+	height: 150px; overflow: hidden;
+}
+
+#zenario_tutorial_other_videos div.slides div {
+	cursor: pointer; 
+}
+
+#zenario_tutorial_other_videos div.loading {
+	position: absolute; 
+	top: 0px; 
+	left: 0px;
+}
+
+#zenario_tutorial_other_videos div.loading_background {
+	filter: alpha(opacity=70); 
+	opacity:0.7; 
+	position: absolute; 
+	display: block;
+	background-color: #000; 
+	top: 0px; 
+	left: 0px;
+	width: 100%;
+	height:100%;
+}
+
+#zenario_tutorial_other_videos div.loading_image {
+	position: absolute; 
+	display: block; 
+	background: url(../libs/manually_maintained/mit/jssor/images/loading.gif) no-repeat center center;
+	top: 0px; 
+	left: 0px;
+	width: 100%;
+	height:100%;
+}
+
+/* jssor slider arrow navigator skin css */
+/*
+.arrowleft              (normal)
+.arrowright              (normal)
+.arrowleft:hover        (normal mouseover)
+.arrowright:hover        (normal mouseover)
+.arrowleftdn            (mousedown)
+.arrowrightdn            (mousedown)
+*/
+#zenario_tutorial_other_videos .arrowleft, 
+#zenario_tutorial_other_videos .arrowleftdn {
+	left: 8px;
+}
+
+#zenario_tutorial_other_videos .arrowright, 
+#zenario_tutorial_other_videos .arrowrightdn {
+	right: 8px;
+}
+
+#zenario_tutorial_other_videos .arrowleft,
+#zenario_tutorial_other_videos .arrowright, 
+#zenario_tutorial_other_videos .arrowleftdn, 
+#zenario_tutorial_other_videos .arrowrightdn
+{
+	width: 40px; 
+	height: 40px; 
+	position: absolute;
+	cursor: pointer;
+	display: block;
+	background: url('../libs/manually_maintained/mit/jssor/images/arrows-navigtion-states.png') no-repeat;
+	overflow:hidden;
+}
+
+#zenario_tutorial_other_videos .arrowleft { 
+	background-position: -3px -5px;
+}
+
+#zenario_tutorial_other_videos .arrowleft,
+#zenario_tutorial_other_videos .arrowleft:hover,
+#zenario_tutorial_other_videos .arrowleftdn,
+#zenario_tutorial_other_videos .arrowright,
+#zenario_tutorial_other_videos .arrowright:hover,
+#zenario_tutorial_other_videos .arrowrightdn {
+	display: none;
+	position: absolute;
+	top: 57px!important;
+}
+
+#zenario_tutorial_other_videos .arrowright { background-position: -63px -5px; }
+#zenario_tutorial_other_videos .arrowleft:hover { background-position: -119px -5px; }
+#zenario_tutorial_other_videos .arrowright:hover { background-position: -179px -5px; }
+#zenario_tutorial_other_videos .arrowleftdn { background-position: -235px -5px; }
+#zenario_tutorial_other_videos .arrowrightdn { background-position: -295px -5px; }
+
+/* jssor slider bullet navigator skin 03 css */
+/*
+.bullet div           (normal)
+.bullet div:hover     (normal mouseover)
+.bullet .av           (active)
+.bullet .av:hover     (active mouseover)
+.bullet .dn           (mousedown)
+*/
+#zenario_tutorial_other_videos .bullet div, 
+#zenario_tutorial_other_videos .bullet div:hover, 
+#zenario_tutorial_other_videos .bullet .av
+{
+	position: absolute; 
+	width: 19px; 
+	height: 19px; 
+	text-align:center; 
+	line-height:19px; 
+	color:White; 
+	font-size:12px;
+	
+	background: url('../libs/manually_maintained/mit/jssor/images/counter-states.png') no-repeat;
+	overflow:hidden;
+	cursor: pointer;
+}
+#zenario_tutorial_other_videos .bullet div { background-position: 5px 5px; }
+#zenario_tutorial_other_videos .bullet div:hover, 
+#zenario_tutorial_other_videos .bullet .av:hover { background-position: 5px 5px; }
+#zenario_tutorial_other_videos .bullet .av { background-position: -55px 5px; }
+#zenario_tutorial_other_videos .bullet .dn, 
+#zenario_tutorial_other_videos .bullet .dn:hover { background-position: -85px 4px; }
+

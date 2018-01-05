@@ -1,0 +1,145 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<title>Class: RFC 822 e-mail addresses parser</title>
+</head>
+<body>
+<center><h1>Class: RFC 822 e-mail addresses parser</h1></center>
+<hr />
+<ul>
+<p><b>Version:</b> <tt>@(#) $Id: rfc822_addresses.php,v 1.6 2008/01/05 06:36:08 mlemos Exp $</tt></p>
+<h2><a name="table_of_contents">Contents</a></h2>
+<ul>
+<li><a href="#2.1.1">Summary</a></li>
+<ul>
+<li><a href="#3.2.0">Name</a></li>
+<li><a href="#3.2.0.0">Author</a></li>
+<li><a href="#3.2.0.1">Copyright</a></li>
+<li><a href="#3.2.0.2">Version</a></li>
+<li><a href="#3.2.0.3">Purpose</a></li>
+<li><a href="#3.2.0.4">Usage</a></li>
+</ul>
+<li><a href="#4.1.1">Variables</a></li>
+<ul>
+<li><a href="#5.2.5">error</a></li>
+<li><a href="#5.2.6">error_position</a></li>
+<li><a href="#5.2.7">ignore_syntax_errors</a></li>
+<li><a href="#5.2.8">warnings</a></li>
+</ul>
+<li><a href="#6.1.1">Functions</a></li>
+<ul>
+<li><a href="#7.2.2">ParseAddressList</a></li>
+</ul>
+</ul>
+<p><a href="#table_of_contents">Top of the table of contents</a></p>
+</ul>
+<hr />
+<ul>
+<h2><li><a name="2.1.1">Summary</a></li></h2>
+<ul>
+<h3><a name="3.2.0">Name</a></h3>
+<p>RFC 822 e-mail addresses parser</p>
+<h3><a name="3.2.0.0">Author</a></h3>
+<p>Manuel Lemos (<a href="mailto:mlemos-at-acm.org">mlemos-at-acm.org</a>)</p>
+<h3><a name="3.2.0.1">Copyright</a></h3>
+<p>Copyright &copy; (C) Manuel Lemos 2006 - 2008</p>
+<h3><a name="3.2.0.2">Version</a></h3>
+<p>@(#) $Id: rfc822_addresses.php,v 1.6 2008/01/05 06:36:08 mlemos Exp $</p>
+<h3><a name="3.2.0.3">Purpose</a></h3>
+<p>Parse e-mail addresses from headers of <a href="http://www.ietf.org/rfc/rfc822.txt">RFC 822</a> compliant e-mail messages.</p>
+<h3><a name="3.2.0.4">Usage</a></h3>
+<p>Use the function <tt><a href="#function_ParseAddressList">ParseAddressList</a></tt> function to retrieve the list of e-mail addresses contained in e-mail message headers like <tt>From</tt>, <tt>To</tt>, <tt>Cc</tt> or <tt>Bcc</tt>.</p>
+<p><a href="#table_of_contents">Table of contents</a></p>
+</ul>
+</ul>
+<hr />
+<ul>
+<h2><li><a name="variables"></a><a name="4.1.1">Variables</a></li></h2>
+<ul>
+<li><tt><a href="#variable_error">error</a></tt></li><br />
+<li><tt><a href="#variable_error_position">error_position</a></tt></li><br />
+<li><tt><a href="#variable_ignore_syntax_errors">ignore_syntax_errors</a></tt></li><br />
+<li><tt><a href="#variable_warnings">warnings</a></tt></li><br />
+<p><a href="#table_of_contents">Table of contents</a></p>
+<h3><a name="variable_error"></a><li><a name="5.2.5">error</a></li></h3>
+<h3>Type</h3>
+<p><tt><i>string</i></tt></p>
+<h3>Default value</h3>
+<p><tt>''</tt></p>
+<h3>Purpose</h3>
+<p>Store the message that is returned when an error occurs.</p>
+<h3>Usage</h3>
+<p>Check this variable to understand what happened when a call to any of the class functions has failed.</p>
+<p> This class uses cumulative error handling. This means that if one class functions that may fail is called and this variable was already set to an error message due to a failure in a previous call to the same or other function, the function will also fail and does not do anything.</p>
+<p> This allows programs using this class to safely call several functions that may fail and only check the failure condition after the last function call.</p>
+<p> Just set this variable to an empty string to clear the error condition.</p>
+<p><a href="#variables">Variables</a></p>
+<h3><a name="variable_error_position"></a><li><a name="5.2.6">error_position</a></li></h3>
+<h3>Type</h3>
+<p><tt><i>int</i></tt></p>
+<h3>Default value</h3>
+<p><tt>-1</tt></p>
+<h3>Purpose</h3>
+<p>Point to the position of the message data or file that refers to the last error that occurred.</p>
+<h3>Usage</h3>
+<p>Check this variable to determine the relevant position of the message when a parsing error occurs.</p>
+<p><a href="#variables">Variables</a></p>
+<h3><a name="variable_ignore_syntax_errors"></a><li><a name="5.2.7">ignore_syntax_errors</a></li></h3>
+<h3>Type</h3>
+<p><tt><i>bool</i></tt></p>
+<h3>Default value</h3>
+<p><tt>1</tt></p>
+<h3>Purpose</h3>
+<p>Specify whether the class should ignore syntax errors in malformed addresses.</p>
+<h3>Usage</h3>
+<p>Set this variable to 0 if it is necessary to verify whether message data may be corrupted due to to eventual bugs in the program that generated the message.</p>
+<p> Currently the class only ignores some types of syntax errors. Other syntax errors may still cause the <tt><a href="#function_ParseAddressList">ParseAddressList</a></tt> to fail.</p>
+<p><a href="#variables">Variables</a></p>
+<h3><a name="variable_warnings"></a><li><a name="5.2.8">warnings</a></li></h3>
+<h3>Type</h3>
+<p><tt><i>array</i></tt></p>
+<h3>Default value</h3>
+<p><tt>array()</tt></p>
+<h3>Purpose</h3>
+<p>Return a list of positions of the original message that contain syntax errors.</p>
+<h3>Usage</h3>
+<p>Check this variable to retrieve eventual message syntax errors that were ignored when the <tt><a href="#variable_ignore_syntax_errors">ignore_syntax_errors</a></tt> is set to 1.</p>
+<p> The indexes of this array are the positions of the errors. The array values are the corresponding syntax error messages.</p>
+<p><a href="#variables">Variables</a></p>
+<p><a href="#table_of_contents">Table of contents</a></p>
+</ul>
+</ul>
+<hr />
+<ul>
+<h2><li><a name="functions"></a><a name="6.1.1">Functions</a></li></h2>
+<ul>
+<li><tt><a href="#function_ParseAddressList">ParseAddressList</a></tt></li><br />
+<p><a href="#table_of_contents">Table of contents</a></p>
+<h3><a name="function_ParseAddressList"></a><li><a name="7.2.2">ParseAddressList</a></li></h3>
+<h3>Synopsis</h3>
+<p><tt><i>bool</i> ParseAddressList(</tt><ul>
+<tt><i>string</i> </tt><tt><a href="#argument_ParseAddressList_value">value</a></tt><tt>,</tt><br />
+<tt>(output) <i>array</i> </tt><tt><a href="#argument_ParseAddressList_addresses">addresses</a></tt></ul>
+<tt>)</tt></p>
+<h3>Purpose</h3>
+<p>Parse and extract e-mail addresses eventually from headers of an e-mail message.</p>
+<h3>Usage</h3>
+<p>Pass a string value with a list of e-mail addresses to the <tt><a href="#argument_ParseAddressList_value">value</a></tt>. The <tt><a href="#argument_ParseAddressList_addresses">addresses</a></tt> returns the list of e-mail addresses found.</p>
+<h3>Arguments</h3>
+<ul>
+<p><tt><b><a name="argument_ParseAddressList_value">value</a></b></tt> - String with a list of e-mail addresses to parse.</p>
+<p><tt><b><a name="argument_ParseAddressList_addresses">addresses</a></b></tt> - Return the list of parsed e-mail addresses. Each entry in the list is an associative array.</p>
+<p> For normal addresses, this associative array has the entry 'address' set to the e-mail address. If the address has an associated name, it is stored in the entry 'name'.</p>
+<p> For address groups, there is the entry 'name'. The group addresses list are stored in the entry 'group' as an array. The structure of the group addresses list array is the same as this addresses list array argument.</p>
+</ul>
+<h3>Return value</h3>
+<p>This function returns 1 if the specified value is parsed successfully. Otherwise, check the variables <tt><a href="#variable_error">error</a></tt> and <tt><a href="#variable_error_position">error_position</a></tt> to determine what error occurred and the relevant value position.</p>
+<p><a href="#functions">Functions</a></p>
+<p><a href="#table_of_contents">Table of contents</a></p>
+</ul>
+</ul>
+
+<hr />
+<address>Manuel Lemos (<a href="mailto:mlemos-at-acm.org">mlemos-at-acm.org</a>)</address>
+</body>
+</html>

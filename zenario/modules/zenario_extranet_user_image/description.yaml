@@ -1,0 +1,23 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+author_name: Tribal Systems
+copyright_info: © Tribal Limited
+editions: ProBusiness, Enterprise
+start_running_on_install: false
+license_info: 'Modified BSD License'
+display_name: Extranet User Image
+description: |
+    <p>This module allows registered extranet users upload and change their display picture.</p>
+            <p>You can set the minimum dimensions of the uploaded image. Any attempt by a user to upload a smaller image will result in an error message.</p>
+            <p>You can specify the maximum width and height of the displayed image. The CMS will proportionally reduce the size of larger images so that their dimensions are within the constraints.</p>
+category: pluggable
+keywords: extranet, image, photo, user
+
+# Reminder: you need to increment the LATEST_REVISION_NO in this module's
+# latest_revision_no.inc.php file if you change any of the fields below:
+vlp_class_name: zenario_extranet_user_image
+css_class_name: zenario_extranet_user_image
+is_pluggable: true
+nestable: true
+default_framework: standard
+default_instance_name: Extranet User Image

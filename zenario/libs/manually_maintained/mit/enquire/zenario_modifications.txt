@@ -1,0 +1,73 @@
+Fixed a bug where enquire would give an error and stop script execution on old versions of IE
+(it's fine that it doesn't work, but it shouldn't stop script execution):
+
+  Replaced:
+	var matchMedia = window.matchMedia;
+	
+  With:
+	var matchMedia = window.matchMedia;
+	
+	if (!matchMedia) {
+		return;
+	}
+
+
+Added a new "doesntMatch" option to target mobile pages
+
+	After:
+        on : function() {
+
+	Added:
+        notOn : function() {
+            !this.initialised && this.setup();
+            this.options.doesntMatch && this.options.doesntMatch();
+        },
+    
+    
+    Replaced:
+            this.matches() && qh.on();
+    
+    With:
+            if (this.matches()) qh.on(); else qh.notOn();
+    
+    
+    Replaced:
+        /**
+         * coordinates the unmatch event for the handler
+         *
+         * @function
+         */
+        off : function() {
+            this.options.unmatch && this.options.unmatch();
+        },
+
+        /**
+         * called when a handler is to be destroyed.
+         * delegates to the destroy or unmatch callbacks, depending on availability.
+         *
+         * @function
+         */
+        destroy : function() {
+            this.options.destroy ? this.options.destroy() : this.off();
+        },
+    
+    With:
+        /**
+         * coordinates the unmatch event for the handler
+         *
+         * @function
+         */
+        off : function() {
+            this.options.unmatch && this.options.unmatch();
+            this.options.doesntMatch && this.options.doesntMatch();
+        },
+
+        /**
+         * called when a handler is to be destroyed.
+         * delegates to the destroy or unmatch callbacks, depending on availability.
+         *
+         * @function
+         */
+        destroy : function() {
+            this.options.destroy ? this.options.destroy() : (this.options.unmatch && this.options.unmatch());
+        },

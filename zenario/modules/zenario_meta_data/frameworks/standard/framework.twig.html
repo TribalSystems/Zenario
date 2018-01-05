@@ -1,0 +1,47 @@
+{% if show_date %}
+	<h2>{{Date}}</h2>
+{% endif %}
+
+{% if show_title %}
+	<h2>{{Title}}</h2>
+{% endif %}
+	
+{% if show_description %}
+	<h2>{{Description}}</h2>
+{% endif %}
+
+{% if show_summary %}
+	<h2>{{Summary}}</h2>
+{% endif %}
+
+{% if show_categories %}
+	<h2>
+		{% for item in categories %}
+			<a>{{item.Category}}</a>{{item.Comma}}
+		{% endfor %}
+	</h2>
+{% endif %}
+
+{% if show_keywords %}
+	<h2>{{Keywords}}</h2>
+{% endif %}
+
+{% if show_language_name %}
+	<h2>{{Language_name}}</h2>
+{% endif %}
+
+{% if show_language %}
+	<h2>{{Language}}</h2>
+{% endif %}
+
+{% if show_writer_name %}
+	<h2>{{Writer_name}}</h2>
+{% endif %}
+
+{% if show_writer_image %}
+	<img alt="{{Writer_Alt}}" src="{{Writer_Src}}"/>
+{% endif %}
+
+{% if show_sticky_image %}
+	<img alt="{{Sticky_Image_Alt}}" src="{{Sticky_Image_Src}}"/>
+{% endif %}

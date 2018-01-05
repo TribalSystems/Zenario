@@ -1,0 +1,20 @@
+<html>
+<head>
+<script id="google_api" type="text/javascript" src=""></script>
+<script type="text/javascript">
+
+function init() {
+	var map = new GMap2(document.getElementById("map"));
+	map.addControl(new GSmallMapControl());
+	map.setCenter(new GLatLng(37.4419, -122.1419), 13);
+	map.setUIToDefault();
+}
+
+</script>
+</head>
+<body onload="init()">
+
+<div id="map" style="width: 300px;height: 300px"></div>
+
+</body>
+</html>

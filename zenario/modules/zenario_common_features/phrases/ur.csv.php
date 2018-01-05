@@ -1,0 +1,40 @@
+"<?php if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed'); ?>"
+
+"Zenario VISITOR LANGUAGE PACK WORKSHEET",,"Target Language ID"
+"(Do not edit this column)","To create a new Language Pack, change the value of the cell to the right to the ID for the language you are creating ->",ur
+
+Plugin
+zenario_common_features
+
+"Phrase Code",Translation
+_MONTH_LONG_01,"جنوری"
+_MONTH_LONG_02,"فروری"
+_MONTH_LONG_03,"مارچ"
+_MONTH_LONG_04,"اپریل"
+_MONTH_LONG_05,"مئی"
+_MONTH_LONG_06,"جون"
+_MONTH_LONG_07,"جولائی"
+_MONTH_LONG_08,"اگست"
+_MONTH_LONG_09,"ستمبر"
+_MONTH_LONG_10,"اکتوبر"
+_MONTH_LONG_11,"نومبر"
+_MONTH_LONG_12,"دسمبر"
+_MONTH_SHORT_01,"جنوری"
+_MONTH_SHORT_02,"فروری"
+_MONTH_SHORT_03,"مارچ"
+_MONTH_SHORT_04,"اپریل"
+_MONTH_SHORT_05,"مئی"
+_MONTH_SHORT_06,"جون"
+_MONTH_SHORT_07,"جولائی"
+_MONTH_SHORT_08,"اگست"
+_MONTH_SHORT_09,"ستمبر"
+_MONTH_SHORT_10,"اکتوبر"
+_MONTH_SHORT_11,"نومبر"
+_MONTH_SHORT_12,"دسمبر"
+_WEEKDAY_0,"اتوار"
+_WEEKDAY_1,"پیر"
+_WEEKDAY_2,"منگل"
+_WEEKDAY_3,"بدھ"
+_WEEKDAY_4,"جمعرات"
+_WEEKDAY_5,"جمعہ"
+_WEEKDAY_6,"ہفتہ"

@@ -1,0 +1,278 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_newsletter:
+    save_and_continue_button_message: 'Save and Continue'
+    save_button_message: "Save and Close"
+    title: Creating a newsletter
+    key:
+        id: ""
+    identifier:
+        css_class: zenario_newsletter_draft
+        label: Newsletter ID
+    tabs:
+        meta_data:
+            label: Meta Data
+            edit_mode:
+                priv: _PRIV_EDIT_NEWSLETTER
+                always_on: true
+                enabled: true
+            fields:
+                newsletter_name:
+                    label: 'Newsletter name:'
+                    type: text
+                    maxlength: "255"
+                    validation:
+                        required: Please enter an internal name for this newsletter (for administrator use only).
+                subject:
+                    label: 'Subject line:'
+                    type: text
+                    maxlength: "500"
+                    validation:
+                        required: Please enter a Subject line for this newsletter.
+                email_name_from:
+                    label: 'From name/email:'
+                    type: text
+                    maxlength: "255"
+                    style: width:290px
+                    validation:
+                        required: Please enter the From name.
+                email_address_from:
+                    type: text
+                    pre_field_html: '<span style="font-weight:bold;">&nbsp;&nbsp;&nbsp;&lt;&nbsp;</span>'
+                    post_field_html: '<span style="font-weight:bold;">&nbsp;&nbsp;&nbsp;&gt;&nbsp;</span>'
+                    maxlength: "100"
+                    style: width:250px
+                    same_row: true
+                    validation:
+                        required: Please enter an email address.
+                        email: >
+                            The email address you entered doesn't appear to be valid.
+                load_content_source:
+                    label: 'Load content:'
+                    type: select
+                    empty_value: -- Select --
+                    values:
+                        use_newsletter_template: 
+                            label: Use newsletter template...
+                            ord: 2
+                        use_email_template: 
+                            label: Use email template...
+                            ord: 3
+                        copy_from_archived_newsletter: 
+                            label: Copy from archived newsletter...
+                            ord: 4
+                    format_onchange: true
+                load_content_source_newsletter_template:
+                    label: 'Newsletter template:'
+                    pick_items:
+                        path: zenario__email_template_manager/panels/newsletter_templates
+                        target_path: zenario__email_template_manager/panels/newsletter_templates
+                        min_path: zenario__email_template_manager/panels/newsletter_templates
+                        select_phrase: Select newsletter template...
+                        nothing_selected_phrase: Select newsletter template...
+                    format_onchange: true
+                load_content_source_email_template:
+                    label: 'Email template:'
+                    pick_items:
+                        path: zenario__email_template_manager/panels/email_templates
+                        target_path: zenario__email_template_manager/panels/email_templates
+                        min_path: zenario__email_template_manager/panels/email_templates
+                        select_phrase: Select email template...
+                        nothing_selected_phrase: Select email template...
+                    format_onchange: true
+                load_content_source_archived_newsletter:
+                    label: 'Archived newsletter:'
+                    pick_items:
+                        path: zenario__email_template_manager/panels/newsletters/refiners/archive////
+                        target_path: zenario__email_template_manager/panels/newsletters
+                        min_path: zenario__email_template_manager/panels/newsletters
+                        select_phrase: Select newsletter...
+                        nothing_selected_phrase: No newsletter selected
+                    format_onchange: true
+                load_content_cancel:
+                    pre_field_html: 'Warning: You have already started entering content. All content you have entered into the body will be erased. Continue?<br/><div style="float:right">'
+                    type: submit
+                    class: submit
+                    value: Cancel
+                load_content_continue:
+                    type: submit
+                    class: submit
+                    value: Continue
+                    same_row: true
+                    post_field_html: '</div style="float:right">'
+                body:
+                    full_width: true
+                    style: |
+                        height: 20em;
+                    type: editor
+                    dont_trim: true
+                    editor_options:
+                        toolbar: 'undo redo | image link unlink | bold italic | removeformat | fontsizeselect | formatselect | alignleft aligncenter alignright alignjustify | numlist bullist | outdent indent | code fullscreen'
+                        convert_urls: false
+                        relative_urls: false
+                    insert_image_button:
+                        pick_items:
+                            path: ""
+                            target_path: ""
+                            min_path: ""
+                            max_path: ""
+                            disallow_refiners_looping_on_min_path: true
+                    insert_link_button:
+                        exists: true
+                add_user_field:
+                    label: 'Add user field:'
+                    type: select
+                    empty_value: -- Select --
+                    format_onchange: true
+                test_send_email_address:
+                    type: text
+                    maxlength: "100"
+                    label: 'Send a sample email:'
+                    side_note: |
+                        You can enter your email address here, or perhaps that of a colleage, to send a sample or test email. You'll need to enter at least a subject line and some content.
+                test_send_button_dummy:
+                    same_row: true
+                    type: submit
+                    value: Send sample
+                    visible_if: '!zenarioAB.tuix.key.id'
+                    class: 'submit_disabled'
+                    onclick: 'return false;'
+                test_send_button:
+                    same_row: true
+                    type: submit
+                    format_onchange: true
+                    can_be_pressed_in_view_mode: true
+                    value: Test Send
+                    visible_if: 'zenarioAB.tuix.key.id'
+                    class: 'submit_selected'
+            notices:
+                test_send_sucesses:
+                    show: ""
+                    type: success
+                    message: ""
+                test_send_error:
+                    show: ""
+                    type: error
+                    message: ""
+        unsub_exclude:
+            label: Recipients
+            edit_mode:
+                priv: _PRIV_EDIT_NEWSLETTER
+                always_on: true
+                enabled: true
+            
+            notices:
+                no_opt_out_group:
+                    type: warning
+                    show: false
+            fields:
+                recipients:
+                    label: 'Recipients:'
+                    side_note: "Use a smart newsletter group to define who you're sending to (note that you can have a smart newsletter group that includes all users)."
+                    pick_items:
+                        path: zenario__users/panels/smart_groups/refiners/smart_newsletter_group////
+                        target_path: zenario__users/panels/smart_groups
+                        min_path: zenario__users/panels/smart_groups
+                        multiple_select: true
+                        select_phrase: "Select recipients' smart newsletter group(s)..."
+                        nothing_selected_phrase: "No recipients' smart newsletter groups selected"
+                exclude_recipients_with_opt_out:
+                    label: Exclude recipients with newsletter opt-out field checked
+                    type: checkbox
+                    side_note: >
+                        Recipients who have previously clicked the Unsubscribe link will not receive this newsletter. There is no need to add a rule to exclude these recipients from your smart group.
+                    value: 1
+                    readonly: true
+                
+                
+                unsubscribe_link:
+                    label: 'Unsubscribe link:'
+                    type: radios
+                    values:
+                        none:
+                            ord: 1
+                            label: Don't include an Unsubscribe link
+                        unsub:
+                            ord: 2
+                            label: Add an Unsubscribe link (but don't delete the user's account)
+                            side_note: |
+                                Recipients who click the unsubscribe link will have
+                                the newsletter opt-out field checked.
+                        delete:
+                            ord: 3
+                            label:  Add an Unsubscribe link (delete the user's account)
+                            side_note: |
+                                Recipients who click this will have all of their details deleted, i.e. the recipient's user record.
+                    format_onchange: true
+                    validation:
+                        required_if_not_hidden: Please choose whether to show an unsubscribe link or not.
+                
+                unsubscribe_text:
+                    label: 'Unsubscribe text:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: Please enter an unsubscribe text.
+                    post_field_html: '<div id="unsubscribe_info"></div>'
+                    onkeyup: "$('#unsubscribe_info').html('Preview: ' + $('#unsubscribe_text').val() + ' ' + $('#example_unsubscribe_url_underlined_and_hidden').val());"
+                example_unsubscribe_url_underlined_and_hidden:
+                    type: text
+                    same_row: true
+                    style: display:none;
+                
+                delete_account_text:
+                    label: 'Unsubscribe text:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: Please enter delete account text.
+                    post_field_html: '<div id="delete_account_info"></div>'
+                    onkeyup: "$('#delete_account_info').html('Preview: ' + $('#delete_account_text').val() + ' ' + $('#example_delete_account_url_underlined_and_hidden').val());"
+                example_delete_account_url_underlined_and_hidden:
+                    type: text
+                    same_row: true
+                    style: display:none;
+                
+                
+                
+                exclude_previous_newsletters_recipients_enable:
+                    label: 'Exclude recipients of earlier newsletters:'
+                    type: checkbox
+                    side_note: >
+                        You may exclude recipients to whom you sent earlier
+                        newsletters.
+                    format_onchange: true
+                exclude_previous_newsletters_recipients:
+                    label: 'Select newsletter(s):'
+                    pick_items:
+                        path: zenario__email_template_manager/panels/newsletters/refiners/archive////
+                        target_path: zenario__email_template_manager/panels/newsletters
+                        min_path: zenario__email_template_manager/panels/newsletters
+                        multiple_select: true
+                        select_phrase: Select newsletter(s)...
+                        nothing_selected_phrase: No newsletters selected
+                    validation:
+                        required_if_not_hidden: >
+                            Please select an archived newsletter whose recipients you
+                            wish to exclude in the new newsletter.
+        
+        advanced:
+            label: Advanced
+            edit_mode:
+                priv: _PRIV_EDIT_NEWSLETTER
+                always_on: true
+                enabled: true
+            fields:
+                desc:
+                    snippet:
+                        html: >
+                            Use this tab to add CSS styles and media queries, for email-clients
+                            that support these features.
+                head:
+                    label: 'HTML in head of email:'
+                    type: code_editor
+                    tall_as_possible: true
+                    dont_trim: true
+                    language: html
+                    style: >
+                        width: 98%;
+                        height: 30em;
+                    rows: 30

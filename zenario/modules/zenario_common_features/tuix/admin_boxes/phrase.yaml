@@ -1,0 +1,40 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_phrase:
+    priv: _PRIV_VIEW_LANGUAGE
+    title: ""
+    key:
+        id: ""
+        code: ""
+        language_id: ""
+        module_class_name: ""
+        is_code: false
+        translation: false
+        loadCountryName: false
+        loadRegionName: false
+    hide_tab_bar: true
+    tabs:
+        phrase:
+            label: Phrase
+            edit_mode:
+                priv: _PRIV_MANAGE_LANGUAGE_PHRASE
+                enabled: true
+                always_on: true
+            fields:
+                module:
+                    label: 'Module:'
+                    pick_items:
+                        path: zenario__modules/panels/modules
+                        target_path: zenario__modules/panels/modules
+                        min_path: zenario__modules/panels/modules
+                        max_path: zenario__modules/panels/modules
+                        disallow_refiners_looping_on_min_path: true
+                        select_phrase: Select Module...
+                        nothing_selected_phrase: No Module Selected
+                        hide_remove_button: true
+                    validation:
+                        required: Please select a Module.
+                code:
+                    type: textarea
+                    readonly: true
+                    rows: 2

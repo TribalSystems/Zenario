@@ -1,0 +1,1218 @@
+html, body  {
+	height: 100%;
+	overflow:auto;
+	margin:0px;
+	padding:0px;
+	background:url('../admin/images/welcome/bg-dotted.gif');
+}
+
+body.webkit input {
+    line-height: inherit !important;
+}
+	
+/* WRAP BOX */
+
+#welcome_outer {
+	height:100%;
+	max-height:100%;
+	width:100%;
+}
+
+.welcome {
+	padding-top:35px;
+}
+
+.welcome .zenario_version p.version {
+	width:620px;
+	margin:auto;
+	text-align:right;
+	color:#0298C3;
+	padding-bottom:8px;
+}
+
+.welcome .welcome_wrap {
+	width:650px;
+	margin:auto;
+	position:relative;
+	background:#F6F6F6;
+	border:2px solid #333;
+	-webkit-box-shadow: 0 0 3px 0 rgba(0,0,0,0.70);
+	box-shadow: 0 0 3px 0 rgba(0,0,0,0.70);
+	-webkit-border-radius: 1px;
+	-moz-border-radius: 1px;
+	border-radius: 1px;
+}
+
+.welcome .welcome_inner {
+	width:590px;
+	padding:15px 30px 20px 30px;
+}
+
+.welcome input[readonly] {
+	background-color: #CBCBCB!important;
+}
+
+/* Header */
+
+.welcome .welcome_header_logo {
+	text-align:center;
+	padding-bottom:15px;
+	background:url('../admin/images/welcome/border-line-grey-white.gif') repeat-x bottom;
+}
+
+/* Tables */
+
+.welcome #zenario_abtab {
+	margin-top:20px;
+}
+
+* html .welcome #zenario_abtab 
+{
+	height:600px;
+}
+
+.welcome div.thickbox_table
+{
+	width:100%;
+	overflow:hidden;
+}
+
+.welcome div.thickbox_table #row__blurb > div,
+.welcome div.thickbox_table .zfab_error_wrap
+{
+	background:url('../admin/images/welcome/border-line-grey-white.gif') repeat-x bottom;
+	padding-bottom: 20px;
+}
+
+.welcome div.zenario_ab_tab__login .zfab_error_wrap,
+.welcome div.zenario_ab_tab__forgot .zfab_error_wrap {
+	padding-bottom:0;
+	background:none;
+}
+
+.welcome div.thickbox_table .zenario_ab_row {	
+	clear:both;
+	margin-bottom: 20px;
+}
+
+.welcome div.thickbox_table .zenario_ab_row.zenario_ab_row__next {
+	text-align: center;
+}
+
+.welcome div.thickbox_table .zenario_ab_row.zenario_ab_row__code {
+	margin-bottom: 20px;
+}
+
+.welcome div.thickbox_table .zenario_ab_row.zenario_ab_row__ignore_apache_mysql_requirements {
+	margin-bottom: 35px;
+}
+
+.welcome .zenario_ab_row__skip {
+	margin-top:20px;
+}
+
+/* Sys Requirements Screen */
+
+.welcome fieldset.zenario_grouping__sub_table {
+	clear:both;
+	width:100%;
+	background:#FFF;
+	margin: 20px 0;
+	padding: 3px;
+	box-sizing: border-box;
+	
+	border:3px solid #C5E2F4;
+	-moz-border-radius: 3px;
+	border-radius: 3px;
+	
+	max-height: none;
+	overflow: visible;	
+}
+
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .zenario_ab_row {
+	padding-bottom:0;
+	margin-bottom:2px;
+}
+
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .zenario_ab_row > div
+{
+	padding:5px 5px 5px 20px;
+	overflow:hidden;
+}
+.welcome #row__sub_table_open td fieldset.zenario_grouping__sub_table tr:first-child td,
+.welcome #row__sub_table_close td
+{
+	height: 0px;
+	padding-top: 0px;
+	padding-bottom: 0px;
+}
+
+.welcome fieldset.zenario_grouping__sub_table tr td span
+{
+	float:left;
+}
+
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .section_valid,
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .sub_section_valid
+{
+	background-color: #C3F1D7;
+}
+
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .section_invalid,
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .sub_section_invalid
+{
+	background-color: #FCE7E6;
+}
+
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .section_warning,
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .sub_section_warning
+{
+	background-color: #faedd3;
+}
+
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .valid,
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .invalid,
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .warning,
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .sub_valid,
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .sub_invalid,
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .sub_warning
+{
+	background:#FFF !important;
+}
+
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .valid > div,
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .invalid > div,
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .warning > div,
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .sub_valid > div,
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .sub_invalid > div,
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .sub_warning > div
+{
+	padding:5px 5px 5px 40px;
+}
+
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .valid > div,
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .sub_valid > div
+{
+	background:url('../admin/images/icon-success.png') no-repeat 15px 5px;
+}
+
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .invalid > div,
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .sub_invalid > div
+{
+	background:url('../admin/images/error-icon-small.png') no-repeat 15px 5px;
+}
+
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .warning > div,
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .sub_warning > div
+{
+	background:url('../admin/images/icon-warning.png') no-repeat 15px 5px;
+}
+
+/* Diagnostics */
+
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .sub_section_valid > div,
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .sub_section_invalid > div,
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .sub_section_warning > div
+{
+	border-left:20px solid #FFF;
+}
+
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .sub_valid > div,
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .sub_invalid > div,
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .sub_warning > div
+{
+	border-left:40px solid #FFF;
+}
+
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .sub_field > div
+{
+	border-left:60px solid #FFF;
+}
+
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .sub_field input.input_text
+{
+	margin-left:10px;
+}
+
+/* Updates */
+
+.welcome div.zenario_show_on_open {
+	max-height:300px;
+	overflow:auto;
+}
+.welcome table.revisions {
+	width:100%;
+	margin-left: auto;
+	margin-right: auto;
+	
+	border: 2px solid #6f6f6f;
+	border-collapse:collapse;
+}
+
+.welcome div.thickbox_table tr td table.revisions td {
+	padding: 5px 10px;
+	border-radius: 5px;
+	-moz-border-radius: 5px;
+}
+
+.welcome table.revisions tr th,
+.welcome table.revisions tr td {
+	padding:4px 10px;
+	border:1px solid #ccc;
+}
+
+.welcome table.revisions tr th {
+	background-color: #ccc;
+}
+
+.welcome table.revisions tr.even td {
+	background-color: #f6f6f6;
+}
+
+.welcome table.revisions tr.odd td {
+	background-color: #fff;
+}
+
+/* Login */
+
+.welcome div.zenario_ab_tab__login,
+.welcome div.problem {
+	width:445px;
+	margin:auto;
+	overflow:visible;
+}
+
+.welcome div.problem h1 {
+	margin: 20px 0;
+}
+
+/* Inputs */
+
+.welcome div.thickbox_table input.input_text,
+.welcome div.thickbox_table input.input_password,
+.welcome div.thickbox_table .row_form textarea
+{
+	width:420px;
+	height:40px;
+	line-height:40px;
+	padding:0 10px;
+	background:#FFF;
+	border:1px solid #E9E9E9;
+	border-top:2px solid #ABABAB;
+	border-left:2px solid #ABABAB;
+	-moz-border-radius: 3px;
+	border-radius: 3px;
+}
+
+.welcome div.thickbox_table input.username,
+.welcome div.thickbox_table input.password {
+	width:390px;
+	padding-left:40px;
+}
+
+.welcome div.thickbox_table input.username {
+	background-image:url('../admin/images/welcome/user-icon.png');
+	background-repeat:no-repeat;
+	background-position:10px center;
+}
+
+.welcome div.thickbox_table input.password {
+	background:#FFF url('../admin/images/welcome/password-icon.png');
+	background-repeat:no-repeat;
+	background-position:10px center;
+}
+
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table input.input_text {
+	height:30px;
+	line-height:30px;
+}
+
+.welcome .zenario_ab_row__host input#host {
+	width: 300px;
+}
+
+.welcome .zenario_ab_row__host input#port {
+	width: 80px;
+	margin-left: 12px;
+}
+
+/*.welcome div.thickbox_table input.input_text:focus,
+.welcome div.thickbox_table input.input_password:focus
+{
+	border-color:#333;
+}*/
+
+.welcome div.thickbox_table .row_form textarea
+{
+	width:565px;
+	height:130px;
+}
+
+.welcome div.thickbox_table input.input_checkbox
+{
+	margin-right:5px;
+}
+
+.welcome div.thickbox_table input#backup_dir,
+.welcome div.thickbox_table input#docstore_dir,
+.welcome div.thickbox_table input#template_dir,
+.welcome div.thickbox_table input#cache_dir,
+.welcome div.thickbox_table input#public_dir,
+.welcome div.thickbox_table input#private_dir
+{
+	width: 90%;
+}
+
+/* Logo */
+
+
+.welcome div.Tokenize ul,
+.welcome div.Tokenize ul li {
+	padding:0;
+	margin:0;
+	list-style:none;
+	/*display: inline-block;*/
+    position: relative;
+}
+
+.welcome div.Tokenize {
+	margin-top: 10px;
+	width:99%;
+	min-height:120px;
+	border:1px solid #d9dadb;
+	background:#FFF;
+	-webkit-border-radius: 4px;
+	-moz-border-radius: 4px;
+	border-radius: 4px;
+}
+
+.welcome .Tokenize .TokensContainer {
+	width: 380px;
+	width:calc(100% - 6px);
+	height: auto;
+	overflow-y: hidden;
+	padding:2px;
+}
+
+.welcome .zenario_row_input_button {
+    float: left;
+}
+
+.welcome .zenario_row_input_button .form_picked_item {
+	background-color: transparent !important;
+	border: none;
+	width: 100%;
+}
+
+.welcome .Tokenize .TokensContainer .Token {
+	width:calc(100% - 12px);
+	height: auto;
+}
+
+.welcome div.Tokenize ul.TokensContainer li {
+	white-space:nowrap;
+}
+
+.welcome div.Tokenize ul.TokensContainer li.Token {   
+	overflow:hidden;
+	background-color: #eff2f7;
+    border: 1px solid #ccd5e3;
+    line-height: 18px;
+    padding: 5px 5px;
+}
+
+.welcome div.Tokenize ul.TokensContainer li.Token, 
+.welcome div.Tokenize ul.TokensContainer li.TokenSearch {
+	margin:0;
+	float:left;
+}
+
+.welcome  div.Tokenize ul.TokensContainer li.Token a.Close {
+	color: #a6b4ce;
+    cursor: pointer;
+    float: right;
+    font-family: Arial,Helvetica,sans-serif !important;
+    font-size: 16px !important;
+    line-height: 18px;
+	margin:0 2px 0 3px !important;
+    padding: 0;
+}
+
+.welcome div.Tokenize ul.TokensContainer li.Token a.Close,
+.welcome div.Tokenize ul.TokensContainer li.Token span {
+	height:auto;
+	min-height:22px;
+	line-height:22px !important;
+}
+
+.welcome div.Tokenize ul.TokensContainer li.Token a.Close:hover {
+	text-decoration:none;
+}
+
+.welcome div.TokenizeMeasure, 
+.welcome div.Tokenize ul li span, 
+.welcome div.Tokenize ul.TokensContainer li.TokenSearch input {
+    font-family: Arial,Helvetica,sans-serif;
+    font-size: 12px;
+}
+
+.welcome  div.Tokenize ul.TokensContainer li.Token span.zfea_picked_file_wrapper img {
+	margin-top:2px;
+}
+
+.welcome div.Tokenize ul.TokensContainer, 
+.welcome div.Tokenize ul.Dropdown {
+	border:0;
+	margin:1px;
+}
+
+.welcome div.Tokenize .zfea_picked_file_wrapper {
+	float:left;
+	min-width:20px;
+	padding-right:0.5em;
+}
+
+.welcome div.Tokenize .TokensContainer .Placeholder {
+	opacity: 1;
+	line-height:22px;
+	padding:0 0 0 5px;
+}
+
+.welcome div.Tokenize .TokenSearch {
+	display: none;
+}
+
+.welcome input[type="button"].launch_keeper {
+	font-size: 1.1em;
+	background: #0099a9;
+    border: 0;
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    border-radius: 4px;
+    display: inline-block;
+    -webkit-transition: all 0.2s ease-in-out;
+    -moz-transition: all 0.2s ease-in-out;
+    transition: all 0.2s ease-in-out;
+    text-align: center;
+    color: #FFF;
+    padding: 0 10px;
+    height: 34px;
+    line-height: 32px;
+    cursor: pointer;
+}
+
+.welcome input[type="button"].launch_keeper,
+.welcome input[type="button"].launch_keeper:hover {
+	background:transparent;
+	color:#0099a9;
+}
+
+/* Buttons */
+
+.welcome div.thickbox_table input.input_submit,
+.welcome div.thickbox_table input.pressed,
+.welcome div.thickbox_table input.not_pressed
+{
+	border:1px solid #007FA4;
+	-moz-border-radius: 3px;
+	border-radius: 3px;
+}
+
+.welcome div.thickbox_table input.input_submit:focus,
+.welcome div.thickbox_table input.pressed:focus,
+.welcome div.thickbox_table input.not_pressed:focus
+{
+	/*border:2px solid #6FAABA;*/
+}
+
+* html .welcome div.thickbox_table input.input_submit 
+{
+	width: 5px;
+	overflow: visible;
+} 
+
+.welcome div.thickbox_table input.input_submit
+{
+	width:auto !important;
+	padding:8px 20px;
+	font-size:12px;
+}
+
+.welcome div.thickbox_table input.begin_installation {
+	-moz-border-radius:20px 20px 20px 20px;
+	-moz-box-shadow:0 1px 5px #999999;
+	border:1px solid #ABB4BB;
+	padding:12px 20px 12px 20px;
+}
+.welcome div.thickbox_table div#row__zenario_siteconfig textarea#zenario_siteconfig{
+	line-height: 16px;
+	font-size: 10.4px;
+	font-family: Monaco, monospace;
+	height: 300px;
+}
+.welcome div.thickbox_table input.pressed,
+.welcome div.thickbox_table input.not_pressed
+{
+	width:40px !important;
+	padding:5px 8px 5px 8px;
+	margin-left:10px;
+}
+
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table input.input_toggle
+{
+	float:right;
+	width:23px !important;
+	height:23px !important;
+	padding:0 !important;
+}
+
+.welcome div.thickbox_table input.input_submit
+{
+	background:#0398C3;
+	color:#FFF;
+	font-weight:bold;
+}
+/*
+.welcome div.thickbox_table input#previous
+{
+	background:#FFF url('../admin/images/welcome/btn_prev_bg.gif') no-repeat left bottom;
+}
+
+.welcome div.thickbox_table input.begin_installation
+{
+	background:#FFF url('../admin/images/welcome/btn_bg.jpg') no-repeat right top;
+}
+*/
+.welcome div.thickbox_table tr#row__fresh_install input.disabled,
+.welcome div.thickbox_table tr#row__previous input.disabled
+{
+	border:2px solid #C8CCCF;
+	background:#FFF url('../admin/images/welcome/btn_next_disabled_bg.gif') no-repeat right bottom;
+}
+.welcome div.thickbox_table #row__fresh_install input.disabled,
+.welcome div.thickbox_table #row__previous input.disabled{
+	background-color: #C8CCCF;
+	color: #e1e1e1;
+	border-color: #afafaf;
+}
+.welcome div.thickbox_table input.pressed
+{
+	background:#FFF url('../admin/images/welcome/btn_toggle_opened_bg.gif') no-repeat bottom;
+}
+
+.welcome div.thickbox_table input.not_pressed
+{
+	background:#FFF url('../admin/images/welcome/btn_toggle_closed_bg.gif') no-repeat bottom;
+}
+
+.welcome div.thickbox_table input:focus
+{
+	outline: none; 
+}
+
+.welcome div.thickbox_table input::-moz-focus-inner 
+{ 
+	border: 0; 
+}
+
+.welcome div.thickbox_table input#skip,
+.welcome div.thickbox_table input#resend,
+.welcome div.thickbox_table input#ive_done_it
+{
+	margin-right:10px;
+}
+
+.welcome div.thickbox_table input#restore,
+.welcome div.thickbox_table input#restore_disabled,
+.welcome div.thickbox_table input#fresh_install,
+.welcome div.thickbox_table input#fresh_install_disabled,
+.welcome div.thickbox_table input#check_again,
+.welcome div.thickbox_table input#save_and_continue
+{
+	float:right;
+}
+
+.welcome div.thickbox_table input#restore,
+.welcome div.thickbox_table input#restore_disabled,
+.welcome div.thickbox_table input#check_again,
+.welcome div.thickbox_table input#save_and_continue
+{
+	margin-right:10px;
+}
+
+.welcome div.thickbox_table input.input_submit,
+.welcome div.thickbox_table input.input_toggle
+{
+	cursor: pointer;
+	cursor: hand;
+}
+
+.welcome div.thickbox_table tr#row__fresh_install input.disabled
+{
+	cursor: default;
+}
+
+/* Plain buttons, Forgotten password, Return front-end */
+
+.welcome div.thickbox_table tr#row__forgot div {
+	padding:0 0 10px;
+}
+
+.welcome div.thickbox_table input#forgot,
+.welcome div.thickbox_table input.return_front_end {
+	background:transparent;
+	border:0;
+	padding:0;
+	font-weight:normal;
+}
+
+.welcome div.thickbox_table input#forgot {
+	color:#6F6F6F;
+	font-size:12px;
+	text-decoration:underline;
+}
+
+.welcome div.thickbox_table input.return_front_end {
+	color:#333;
+	font-size:13px;
+	background:url('../admin/images/welcome/arrow-return-front-end.png') no-repeat 0 center;
+	padding-left:12px;
+}
+
+.welcome div.thickbox_table .zenario_ab_row__submit {
+	overflow:hidden;
+}
+
+.welcome div.thickbox_table input#resend {
+	position:absolute;
+	right:20px;
+	bottom:30px;
+	float:none !important;
+	padding:0;
+	border:0;
+	background:transparent;
+	color:#333;
+	font-weight:normal;
+	text-decoration:underline;
+}
+
+/* Message */
+
+.welcome #row__reason .zenario_reason{
+	padding: 10px 10px;
+	display: inline-block!important;
+	background: #f9f9f9;
+	border: 3px solid #0398c3;
+	-moz-border-radius: 3px;
+	border-radius: 3px;
+}
+
+.welcome div.thickbox_table input#password
+{
+	float:left;
+}
+
+.welcome div.thickbox_table tr#row__sample div
+{
+	padding-left: 50px;
+}
+
+.welcome div.thickbox_table tr#row__sample input
+{
+	margin-top: 5px;
+}
+
+.welcome div.thickbox_table tr#row__sample label
+{
+	font-weight: bold;
+}
+
+.welcome div.thickbox_table .password__WEAK,
+.welcome div.thickbox_table .password__MEDIUM,
+.welcome div.thickbox_table .password__STRONG,
+.welcome div.thickbox_table .password__VERY_STRONG
+{
+	width:80px;
+	float:left;
+	line-height:2em;
+	text-align:center;
+	margin:3px 0 0 10px;
+	padding:0 5px;
+}
+
+.welcome div.thickbox_table .password__WEAK
+{
+	background:#FCA4A3;
+}
+
+.welcome div.thickbox_table .password__MEDIUM
+{
+	background:#FFCC33;
+}
+
+.welcome div.thickbox_table .password__STRONG
+{
+	background:#53F27C;
+}
+
+.welcome div.thickbox_table .password__VERY_STRONG
+{
+	background:#33CCFF;
+}
+
+.welcome div.thickbox_table .zfab_error_wrap {
+	overflow:hidden;
+	margin-bottom:10px;
+}
+
+.welcome div.zenario_ab_tab__login .zfab_error_wrap,
+.welcome div.zenario_ab_tab__forgot .zfab_error_wrap {
+	margin-bottom:0;
+}
+
+.welcome div.thickbox_table .zfab_error 
+{
+	margin-bottom:20px;
+	background:url('../admin/images/error-icon-small.png') no-repeat 0 0 ;
+}
+
+.welcome div.thickbox_table .zfab_error_wrap .zfab_error_inner
+{
+	margin-left:25px;
+	padding:5px;
+	border:1px solid #D49699;
+	background:#FCE7E6;
+	font-size:11.5px;
+	margin-bottom: 10px;
+}
+
+.welcome div.thickbox_table .successDisplayRow .messageDisplay {
+	min-height: 20px;
+	padding:6px 10px 6px 10px;
+	margin-bottom:20px;
+	line-height:1.4em;
+	vertical-align:middle;
+	font-size:12px;
+	background-color:#F5F5F5;
+	color:#01AC02;	
+	border:2px solid #01AC02;
+}
+
+.welcome div.thickbox_table .successDisplayRow .messageDisplay div {
+	background:url('../admin/images/icon-success.png') no-repeat left 0;
+	padding-left:25px;
+}
+
+.welcome div.thickbox_table #row__path_status div
+{
+	padding-left:0;
+}
+
+
+/* Fonts Colors */
+
+.welcome,
+.welcome textarea,
+.welcome div.thickbox_table input
+{
+	font-family:verdana,arial,helvetica;
+}
+
+.welcome div.thickbox_table #row__why
+{
+	font-weight:bold;
+}
+
+.welcome,
+.welcome textarea
+{
+	font-size:12px;
+}
+
+.welcome h1,
+.welcome h2,
+.welcome p {
+	padding:0;
+	margin:0;
+}
+
+.welcome h1 {
+	font-size:18px;
+	font-weight:normal;
+}
+
+.welcome h2 {
+	font-size:16px;
+	font-weight:normal;
+}
+
+.welcome div.thickbox_table #row__path_status div {
+	font-size:14px;
+}
+
+.welcome div.thickbox_table input.username,
+.welcome div.thickbox_table input.password,
+.welcome div.zenario_ab_tab__forgot input#email {
+	font-size:13px;
+}
+
+.welcome div.thickbox_table input.begin_installation {
+	font-size:12px;
+}
+
+.welcome .zenario_version p.version {
+	font-size:11px;
+}
+
+.welcome,
+.welcome textarea,
+.welcome div.thickbox_table input {
+	color:#333;
+}
+
+.welcome div.thickbox_table input.username,
+.welcome div.thickbox_table input.password {
+	color:#6f6f6f;
+}
+
+.welcome h1,
+.welcome #snippet__link a,
+.welcome .zenario_note_below a,
+.welcome div.thickbox_table #row__path_status div
+{
+	color:#007FA3;
+}
+
+.welcome div.thickbox_table tr#row__fresh_install input.disabled,
+.welcome div.thickbox_table tr#row__previous input.disabled
+{
+	color:#ADADAD;
+}
+
+.welcome div.thickbox_table .zfab_error_wrap .zfab_error_inner
+{
+	color:#E00800;
+}
+
+.welcome div.thickbox_table #snippet__password_strength
+{
+	color:#000;
+	float: right;
+	margin-right: 40px;
+}
+
+.welcome .zenario_ab_tab__login .zenario_ab_row__remember_me {
+	position:relative;
+	display:inline-block;
+	cursor:pointer;
+	margin-bottom:0;
+}
+
+.welcome .zenario_ab_tab__login .zenario_ab_row__forgot {
+	display:inline-block;
+	position:relative;
+	top:-15px;
+	z-index:9;
+}
+
+.welcome .zenario_ab_tab__login .zenario_ab_row__previous {
+	position:absolute;
+	bottom:0;
+	left:20px;
+}
+
+.horizontal_scroll > div {
+	padding: 10px 0;
+	overflow-x: scroll;
+	white-space:nowrap;
+}
+
+.horizontal_scroll > div div.zenario_group_col_1 {
+	float:none;
+	display:inline-block;
+}
+
+.horizontal_scroll img {
+	width: 250px;
+	height: 150px;
+	vertical-align: middle;
+}
+
+.horizontal_scroll br {
+	display: none;
+}
+/* License */
+.welcome .zenario_ab_row__i_agree .zenario_note_below,
+.welcome .zenario_ab_row__blurb span#snippet__blurb p,
+.welcome .zenario_ab_row__blurb2 span#snippet__blurb2 p{
+	margin-top: 5px;
+	line-height: 1.4em;
+}
+/* System requirements */
+.welcome .zenario_ab_row__description span#snippet__description h1{
+	margin-bottom: 5px;
+}
+.welcome .zenario_ab_row__description span#snippet__description p{
+	margin-bottom: 15px;
+}
+.welcome .zenario_ab_row .title{
+	margin-bottom: 5px;
+}
+.welcome .zenario_ab_row .title label{
+	font-size: 1.1em;
+}
+.welcome div.thickbox_table input#password{
+	float: none;
+}
+.welcome #row__license pre{
+	font-family: verdana;
+	font-size: 0.95em;
+}
+/* Reset password */
+.welcome #row__current_password title,
+.welcome #row__password title,
+.welcome #row__re_password title{
+	margin: 15px 0 5px 0;
+}
+.welcome #row__re_password {
+	clear: both;
+	padding: 0 0 15px;
+}
+
+/*
+	Notes below fields, Side notes
+*/
+
+#zenario_abtab .zenario_note_below {
+	background:#b1e6fd;
+	-webkit-border-radius: 4px;
+	-moz-border-radius: 4px;
+	border-radius: 4px;
+}
+
+#zenario_abtab .zenario_note_below,
+#zenario_abtab .zenario_side_note_wrap .zenario_side_note  { 
+	font-size:10px;
+	color:#333;
+}
+
+/*
+	Notes below fields
+*/
+
+#zenario_abtab .zenario_note_below {
+	float: none;
+	clear: both;
+	width: 98%;
+	padding:3px 5px 5px 7px;
+	position:relative;
+	z-index:1;
+	top:8px;
+	margin-bottom:8px;
+}
+
+/*
+	Side notes
+*/
+
+#zenario_abtab .zenario_side_note_wrap {
+	position: relative;
+	z-index:9;
+	float: right;
+	width: 200px;
+	height: 0;
+	line-height: 1px;
+	text-align: left;
+	display: none;
+	margin:2px 0 0 10px;
+}
+
+#zenario_abtab .zfab_row:hover .zenario_side_note_wrap {
+	display: block;
+}
+
+#zenario_abtab .zenario_side_note_wrap .zenario_side_note {
+	/*z-index: 99;*/
+	padding:5px 10px;
+	font-size: 10px;
+	line-height: 14px;
+	position: absolute;
+	background:#E0E0E0;
+	-webkit-border-radius: 4px;
+	-webkit-border-top-left-radius: 0;
+	-moz-border-radius: 4px;
+	-moz-border-radius-topleft: 0;
+	border-radius: 4px;
+	border-top-left-radius: 0;
+}
+
+#zenario_abtab .zenario_side_note_wrap .zenario_side_note:after { 
+	right: 100%; 
+	top:0;
+	border: solid transparent; 
+	content: " "; 
+	height: 0; 
+	width: 0; 
+	position: absolute; 
+	pointer-events: none; 
+	border-color: rgba(224, 224, 224, 0); 
+	border-right-color: #E0E0E0; 
+	border-width: 6px;  
+}
+
+/* Login note */
+
+
+#zenario_abtab .zenario_ab_tab__login .zenario_ab_row__remember_me .zenario_note_below {
+	position:absolute;
+	top:28px;
+	left:-35px;
+	background:#333333 url('../admin/images/welcome/admin-btn-for-tooltip.png') no-repeat right 10px;
+	color:#FFF;
+	width:265px;
+	padding:10px 80px 10px 10px;
+	-webkit-border-radius: 2px;
+	-moz-border-radius: 2px;
+	border-radius: 2px;
+	-webkit-box-shadow: 0 0 3px 0 #666666;
+	box-shadow: 0 0 3px 0 #666666;
+	z-index:99;
+}
+
+#zenario_abtab .zenario_ab_tab__login .zenario_ab_row__remember_me .zenario_note_below:after { 
+	bottom: 100%; 
+	left: 25%; 
+	border: solid transparent; 
+	content: " "; 
+	height: 0; 
+	width: 0; 
+	position: absolute; 
+	pointer-events: none; 
+	border-color: rgba(51, 51, 51, 0); 
+	border-bottom-color: #333333; 
+	border-width: 6px; 
+	margin-left: -6px; 
+}
+
+#zenario_abtab .zenario_ab_tab__login .zenario_ab_row__remember_me .zenario_note_below {
+	visibility:hidden;
+  	opacity:0;
+  	transition: all 0.4s ease-in-out;
+  	-webkit-transition: all 0.4s ease-in-out;
+	-moz-transition: all 0.4s ease-in-out;
+	-o-transition: all 0.4s ease-in-out;
+	transition: all 0.4s ease-in-out;
+}
+
+#zenario_abtab .zenario_ab_tab__login .zenario_ab_row__remember_me:hover .zenario_note_below,
+body.ie #zenario_abtab .zenario_ab_tab__login .zenario_ab_row__remember_me .zenario_note_below {
+	visibility:visible;
+	opacity:1;
+	transition-delay:0s;
+	cursor:default;
+}
+
+body.ie #zenario_abtab .zenario_ab_tab__login .zenario_ab_row__remember_me .zenario_note_below {
+	display:none;
+}
+
+body.ie #zenario_abtab .zenario_ab_tab__login .zenario_ab_row__remember_me:hover .zenario_note_below {
+	display:block;
+}
+
+
+/*
+	Content item icons, for the lift of your drafts
+*/
+
+.organizer_item_image {
+	display: inline-block;
+	width: 12px;
+	height: 11px;
+	background-repeat: no-repeat;
+	background-size: 25.5px 2000px;
+}
+
+.organizer_item_image.home_content_draft_published {
+	background-position: -8px -323px;
+	background-image: url('../admin/images/sprites/sprite-list-icons-single-col-v2.png');
+}
+.organizer_item_image.home_content_published {
+	background-position: -8px -22px;
+	background-image: url('../admin/images/sprites/sprite-list-icons-single-col-v2.png');
+}
+.organizer_item_image.home_content_draft {
+	background-position: -8px -298px;
+	background-image: url('../admin/images/sprites/sprite-list-icons-single-col-v2.png');
+}
+.organizer_item_image.special_content_draft_published {
+	background-position: -8px -423px;
+	background-image: url('../admin/images/sprites/sprite-list-icons-single-col-v2.png');
+}
+.organizer_item_image.special_content_published {
+	background-position: -8px -72px;
+	background-image: url('../admin/images/sprites/sprite-list-icons-single-col-v2.png');
+}
+.organizer_item_image.special_content_draft_hidden {
+	background-position: -8px -448px;
+	background-image: url('../admin/images/sprites/sprite-list-icons-single-col-v2.png');
+}
+.organizer_item_image.special_content_hidden {
+	background-position: -8px -175px;
+	background-image: url('../admin/images/sprites/sprite-list-icons-single-col-v2.png');
+}
+.organizer_item_image.special_content_draft {
+	background-position: -8px -398px;
+	background-image: url('../admin/images/sprites/sprite-list-icons-single-col-v2.png');
+}
+.organizer_item_image.special_content_draft_trashed {
+	background-position: -8px -448px;
+	background-image: url('../admin/images/sprites/sprite-list-icons-single-col-v2.png');
+}
+.organizer_item_image.special_content_trashed {
+	background-position: -8px -123px;
+	background-image: url('../admin/images/sprites/sprite-list-icons-single-col-v2.png');
+}
+.organizer_item_image.content_draft_published {
+	background-position: -8px -223px;
+	background-image: url('../admin/images/sprites/sprite-list-icons-single-col-v2.png');
+}
+.organizer_item_image.content_published {
+	background-position: -8px -47px;
+	background-image: url('../admin/images/sprites/sprite-list-icons-single-col-v2.png');
+}
+.organizer_item_image.content_draft_hidden {
+	background-position: -8px -273px;
+	background-image: url('../admin/images/sprites/sprite-list-icons-single-col-v2.png');
+}
+.organizer_item_image.content_hidden {
+	background-position: -8px -147px;
+	background-image: url('../admin/images/sprites/sprite-list-icons-single-col-v2.png');
+}
+.organizer_item_image.content_draft {
+	background-position: -8px -197px;
+	background-image: url('../admin/images/sprites/sprite-list-icons-single-col-v2.png');
+}
+.organizer_item_image.content_draft_trashed {
+	background-position: -8px -247px;
+	background-image: url('../admin/images/sprites/sprite-list-icons-single-col-v2.png');
+}
+.organizer_item_image.content_trashed {
+	background-position: -8px -97px;
+	background-image: url('../admin/images/sprites/sprite-list-icons-single-col-v2.png');
+}
+
+
+
+
+
+
+/*
+	Set the font on the "you were just redirected..." message
+	(which is actually powered by the toast jQuery library)
+*/
+
+#toast-container {
+	font-family: verdana, arial, helvetica;
+    font-size: 13px;
+}

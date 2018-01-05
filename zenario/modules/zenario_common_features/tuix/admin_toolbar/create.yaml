@@ -1,0 +1,18 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+sections:
+    create:
+        buttons:
+            duplicate_content:
+                ord: 999
+                appears_in_toolbars:
+                    create: true
+                priv: _PRIV_CREATE_FIRST_DRAFT
+                label: Duplicate this content item
+                css_class: zenario_at_big_action_button zenario_duplicate 
+                admin_box:
+                    path: zenario_content
+                    key:
+                        duplicate: 1
+            dummy_button:
+                hidden: true

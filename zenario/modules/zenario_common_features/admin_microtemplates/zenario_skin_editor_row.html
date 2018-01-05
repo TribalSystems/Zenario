@@ -1,0 +1,12 @@
+<% if (m.fields) { %>
+	<% var f; %>
+	<% var firstField = m.fields[0]; %>
+
+	<div id="row__{{firstField._id|escape}}" class="
+		zenario_ab_row__{{firstField._id|escape}}
+	">
+		<% for (f in m.fields) { %>
+			{{m.fields[f]._html}}
+		<% } %>
+	</div>
+<% } %>
