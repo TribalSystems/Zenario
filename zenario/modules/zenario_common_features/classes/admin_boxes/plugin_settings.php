@@ -864,7 +864,6 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 			}
 		}
 
-		$syncLibraryPluginFiles = [];
 		$syncContent = false;
 		$pk = [
 			'instance_id' => $box['key']['instanceId'],
@@ -998,22 +997,6 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 												//Work out whether this is a version controlled or synchronized Instance
 												if (!$instance['content_id']) {
 													$value['is_content'] = 'synchronized_setting';
-									
-													switch ($field['plugin_setting']['foreign_key_to'] ?? false) {
-														case 'file':
-															if ($fileId = (int) trim($value['value'])) {
-																$syncLibraryPluginFiles[$fileId] = ['id' => $fileId];
-															}
-															break;
-										
-														case 'multiple_files':
-															foreach (ze\ray::explodeAndTrim($value['value']) as $fileId) {
-																if ($fileId = (int) $fileId) {
-																	$syncLibraryPluginFiles[$fileId] = ['id' => $fileId];
-																}
-															}
-															break;
-													}
 											
 						
 												} elseif (ze\ring::engToBoolean($field['plugin_setting']['is_searchable_content'] ?? false)) {
@@ -1131,10 +1114,7 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 					ze\contentAdm::updateVersion($instance['content_id'], $instance['content_type'], $instance['content_version']);
 
 				} else {
-					ze\contentAdm::syncInlineFiles(
-						$syncLibraryPluginFiles,
-						['foreign_key_to' => 'library_plugin', 'foreign_key_id' => $box['key']['instanceId']],
-						$keepOldImagesThatAreNotInUse = false);
+					ze\contentAdm::resyncLibraryPluginFiles($box['key']['instanceId'], $instance);
 				}
 		
 				break;

@@ -512,16 +512,29 @@ class contentAdm {
 			\ze\contentAdm::syncInlineFileContentLink($instance['content_id'], $instance['content_type'], $instance['content_version']);
 	
 		} else {
-			$sql = '
-				SELECT foreign_key_id AS id
-				FROM '. DB_NAME_PREFIX. 'plugin_settings
-				WHERE foreign_key_to = \'file\'
-				  AND instance_id = '. (int) $instanceId;
-	
-			$syncLibraryPluginFiles = \ze\sql::fetchAssocs($sql, false, 'id');
+			//Get all of the images used in a plugin's settings
+			$fileIds = [];
+			$sql = "
+				SELECT value
+				FROM ". DB_NAME_PREFIX. "plugin_settings
+				WHERE foreign_key_to IN('file', 'multiple_files')
+				  AND instance_id = ". (int) $instanceId;
+			$result = \ze\sql::select($sql);
+
+			while ($fileIdsInPlugin = \ze\sql::fetchRow($result)) {
+				foreach (\ze\ray::explodeAndTrim($fileIdsInPlugin[0], true) as $fileId) {
+					$fileIds[$fileId] = $fileId;
+				}
+			}
+			
+			if (empty($fileIds)) {
+				$files = [];
+			} else {
+				$files = \ze\row::getArray('files', ['id', 'usage', 'privacy'], ['id' => $fileIds]);
+			}
 	
 			\ze\contentAdm::syncInlineFiles(
-				$syncLibraryPluginFiles,
+				$files,
 				['foreign_key_to' => 'library_plugin', 'foreign_key_id' => $instanceId],
 				$keepOldImagesThatAreNotInUse = false);
 		}

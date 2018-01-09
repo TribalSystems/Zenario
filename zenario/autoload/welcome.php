@@ -532,29 +532,33 @@ class welcome {
 	
 	
 		$optionalRequirementsMet = true;
-		$apacheModules = apache_get_modules();
 		
-		if (!in_array('mod_deflate', $apacheModules)) {
-			$optionalRequirementsMet = false;
-			$fields['0/optional_mod_deflate']['row_class'] = $warning;
-	
+		$fields['0/optional_mod_deflate']['row_class'] = $valid;
+		$fields['0/optional_mod_expires']['row_class'] = $valid;
+		$fields['0/optional_mod_rewrite']['row_class'] = $valid;
+		
+		if (!function_exists('apache_get_modules')) {
+			$fields['0/optional_mod_deflate']['hidden'] = true;
+			$fields['0/optional_mod_expires']['hidden'] = true;
+			$fields['0/optional_mod_rewrite']['hidden'] = true;
+		
 		} else {
-			$fields['0/optional_mod_deflate']['row_class'] = $valid;
+			$apacheModules = apache_get_modules();
+		
+			if (!in_array('mod_deflate', $apacheModules)) {
+				$optionalRequirementsMet = false;
+				$fields['0/optional_mod_deflate']['row_class'] = $warning;
+			}
+			if (!in_array('mod_expires', $apacheModules)) {
+				$optionalRequirementsMet = false;
+				$fields['0/optional_mod_expires']['row_class'] = $warning;
+			}
+			if (!in_array('mod_rewrite', $apacheModules)) {
+				$optionalRequirementsMet = false;
+				$fields['0/optional_mod_rewrite']['row_class'] = $warning;
+			}
 		}
-		if (!in_array('mod_expires', $apacheModules)) {
-			$optionalRequirementsMet = false;
-			$fields['0/optional_mod_expires']['row_class'] = $warning;
-	
-		} else {
-			$fields['0/optional_mod_expires']['row_class'] = $valid;
-		}
-		if (!in_array('mod_rewrite', $apacheModules)) {
-			$optionalRequirementsMet = false;
-			$fields['0/optional_mod_rewrite']['row_class'] = $warning;
-	
-		} else {
-			$fields['0/optional_mod_rewrite']['row_class'] = $valid;
-		}
+		
 		if (!extension_loaded('curl')) {
 			$optionalRequirementsMet = false;
 			$fields['0/optional_curl']['row_class'] = $warning;

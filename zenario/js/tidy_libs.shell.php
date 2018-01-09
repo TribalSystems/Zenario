@@ -60,3 +60,16 @@ removeUnwantedCode('jquery/src');
 removeUnwantedCode('respond/cross-domain');
 removeUnwantedCode('respond/src');
 
+
+
+
+$RecursiveDirectoryIterator = new \RecursiveDirectoryIterator(CMS_ROOT. 'zenario/libs/');
+$RecursiveIteratorIterator = new \RecursiveIteratorIterator($RecursiveDirectoryIterator);
+
+foreach ($RecursiveIteratorIterator as $dir) {
+	if ($dir->isDir()
+	 && ($pos = strpos($dir->getPathname(), '.git/.'))
+	 && ($pos > strlen($dir->getPathname()) - 7)) {
+		exec('svn del --force '. escapeshellarg($dir->getPathname()));
+	}
+}

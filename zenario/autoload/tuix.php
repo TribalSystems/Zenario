@@ -1649,6 +1649,7 @@ class tuix {
 					if (isset($t[$i='side_note'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i);
 					if (isset($t[$i='note_below'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i);
 					if (isset($t[$i='empty_value'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i);
+					if (isset($t[$i='error_on_form_message'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i);
 					
 					if (isset($t[$i='validation']) && is_array($t[$i])) {
 						foreach ($t[$i] as $j => $object) {

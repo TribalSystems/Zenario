@@ -26,7 +26,7 @@
 			<% rowHasError = true; %>
 			<% break; %>
 		<% } %>	
-	<% } %>	
+	<% } %>
 	
 	<% if (ff._lastVisibleGrouping !== ff.grouping) { %>
 		<% if (ff._lastVisibleGrouping) { %>
@@ -39,6 +39,12 @@
 	<% } %>
 	<% if (ff.legend) { %>
 		<legend class="zfea_form_legend zfea_form_legend_for__{{ff._id|escape}}"><span>{{ff.legend}}</span></legend>
+	<% } %>
+	
+	<% if (ff.error_on_form_message && m.lib.errorOnForm) { %>
+		<div class="error">
+			{{zenario.htmlspecialchars(ff.error_on_form_message, true)}}
+		</div>
 	<% } %>
 	
 	<div id="row__{{ff._id|escape}}" style="{{ff.row_style|escape}}" class="

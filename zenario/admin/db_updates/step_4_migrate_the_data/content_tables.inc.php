@@ -453,3 +453,22 @@ if (ze\dbAdm::needRevision(43720)) {
 	ze\menuAdm::recalcAllHierarchy();
 	ze\dbAdm::revision(43720);
 }
+
+
+
+//Fix any bad data left over from a bug where the images used by library plugins were not correctly tracked in the linking tables
+if (ze\dbAdm::needRevision(43723)) {
+	
+	$sql = "
+		SELECT id, content_id, content_type, content_version
+		FROM ". DB_NAME_PREFIX. "plugin_instances
+		WHERE content_id = 0";
+	
+	$result = ze\sql::select($sql);
+	while ($instance = ze\sql::fetchAssoc($result)) {
+		ze\contentAdm::resyncLibraryPluginFiles($instance['id'], $instance);
+	}
+	
+	ze\dbAdm::revision(43723);
+}
+

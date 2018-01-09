@@ -149,7 +149,7 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 		
 		
 		if (isset($fields['speed/compress_web_pages'])) {
-			if (in_array('mod_deflate', apache_get_modules())) {
+			if (function_exists('apache_get_modules') && in_array('mod_deflate', apache_get_modules())) {
 				$values['speed/compress_web_pages'] = 1;
 				$fields['speed/compress_web_pages']['readonly'] = true;
 				$fields['speed/compress_web_pages']['note_below'] .=

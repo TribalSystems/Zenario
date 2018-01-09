@@ -2386,6 +2386,15 @@ additionalProperties:
                                         
                                         From version 7.3 onwards the CMS will automatically apply a substr() when the field is saved.
                                 
+                                error_on_form_message:
+                                    type: string
+                                    description: >
+                                        If there is an error on the form, display this message just above this field.
+                                        (Does not work for fields with the same_row property.)
+                                        
+                                        This works in FEA forms, from version 8.0 onwards.
+                                
+                                
                                 rows:
                                     type: integer
                                     description: Sets the rows HTML attribute (doesn't apply to code or html editors). For multiple checkboxes/radiogroups, this will apply to each checkbox/radio option, unless overwritten.

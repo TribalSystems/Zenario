@@ -101,6 +101,7 @@ zenarioAB.updateHash = function() {
 zenarioAB.setTitle = function(isReadOnly) {
 	
 	var title, values, c, v, string2, identifier, id,
+		$zenario_fabBox = $('#zenario_fabBox'),
 		$zenario_fabId = $('#zenario_fabId');
 	
 	if (!(title = zenarioAB.getTitle())) {
@@ -123,8 +124,10 @@ zenarioAB.setTitle = function(isReadOnly) {
 	 && (identifier.value = identifier.value || (zenarioAB.tuix.key.id && zenario.decodeItemIdForOrganizer(zenarioAB.tuix.key.id)))) {
 		
 		$zenario_fabId.show().html(zenarioAB.microTemplate(this.mtPrefix + '_identifier', identifier));
+		$zenario_fabBox.addClass('zfab_with_identifier');
 	} else {
 		$zenario_fabId.hide();
+		$zenario_fabBox.removeClass('zfab_with_identifier');
 	}
 	
 	if (zenarioO.path && zenarioO.tuix) {
@@ -166,11 +169,9 @@ zenarioAB.size = function(refresh) {
 			if (get('zenario_fbMain')) {
 				if (hideTabBar) {
 					get('zenario_fbMain').style.top = '0px';
-					get('zenario_fbButtons').style.paddingBottom = '7px';
 					get('zenario_fabTabs').style.display = 'none';
 				} else {
 					get('zenario_fbMain').style.top = '24px';
-					get('zenario_fbButtons').style.paddingBottom = '31px';
 					get('zenario_fabTabs').style.display = zenario.browserIsIE()? '' : 'inherit';
 				}
 			}

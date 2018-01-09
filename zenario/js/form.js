@@ -590,7 +590,7 @@ methods.drawFields = function(cb, microTemplate, scanForHiddenFieldsWithoutDrawi
 		tabs = this.tuix.tabs[tab],
 		groupings = this.groupings[tab],
 		sortedFields = this.sortedFields[tab],
-		errorOnForm,
+		errorOnFormMessage,
 		html = '',
 		groupingIsHidden = false,
 		forceNewRowForNewGrouping,
@@ -618,6 +618,7 @@ methods.drawFields = function(cb, microTemplate, scanForHiddenFieldsWithoutDrawi
 		this.ffoving = 0;
 		this.splitValues = {};
 		this.tallAsPossibleField = undefined;
+		this.errorOnForm = false;
 		this.disableDragDropUpload();
 	
 		if (!this.savedAndContinued(tab) && this.editCancelEnabled(tab)) {
@@ -635,6 +636,7 @@ methods.drawFields = function(cb, microTemplate, scanForHiddenFieldsWithoutDrawi
 		if (this.editModeOn()) {
 			if (tabs.errors) {
 				foreach (tabs.errors as i => error) {
+					this.errorOnForm = true;
 					data.errors.push({message: error});
 				}
 			}
@@ -642,9 +644,11 @@ methods.drawFields = function(cb, microTemplate, scanForHiddenFieldsWithoutDrawi
 			if (fields) {
 				foreach (fields as i => field) {
 					if (field.error) {
+						this.errorOnForm = true;
+						
 						//If inline errors are enabled, just have one generic error message
-						if (this.enableInlineErrors() && (errorOnForm = this.tuix.error_on_form_message || phrase.errorOnForm)) {
-							data.errors.push({message: errorOnForm});
+						if (this.enableInlineErrors() && (errorOnFormMessage = this.tuix.error_on_form_message || phrase.errorOnForm)) {
+							data.errors.push({message: errorOnFormMessage});
 							break;
 						
 						} else {
@@ -962,7 +966,6 @@ methods.focusField = function(field, selectionStart, selectionEnd) {
 				domField.selectionStart = selectionStart;
 				domField.selectionEnd = selectionEnd;
 			} catch (e) {
-				console.log('Ace editor could not load that language', language);
 			}
 		}
 	}
@@ -1076,8 +1079,15 @@ methods.setLastFocus = function(id) {
 	details = {id: id};
 	
 	if (dom) {
-		details.ss = dom.selectionStart;
-		details.se = dom.selectionEnd;
+		//(N.b. this can cause a crash on some fields/browsers if the selection is set on the wrong type of field,
+		// so I've put a try/catch here out of paranoia.
+		try {
+			details.ss = dom.selectionStart;
+			details.se = dom.selectionEnd;
+		} catch (e) {
+			details.ss =
+			details.se = undefined;
+		}
 	}
 	
 	return details;
