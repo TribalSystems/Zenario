@@ -34,11 +34,7 @@ namespace ze;
 
 
 public static function round($n) {
-	if (version_compare(PHP_VERSION, '5.3.0', '>=')) {
-		return round($n, 3, PHP_ROUND_HALF_DOWN);
-	} else {
-		return round($n, 3);
-	}
+	return round($n, 3, PHP_ROUND_HALF_DOWN);
 }
 
 

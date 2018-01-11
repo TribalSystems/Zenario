@@ -1146,4 +1146,20 @@ _sql
 	ADD KEY (`in_sitemap`)
 _sql
 
+
+//A bug with the backups could cause the user_perm_settings table to be skipped.
+//Recreate it if this is happened, so those backups are not invalidated.
+//N.b. I don't want to recrate the table if it's correctly there, so this is a rare
+//situation where I want to use "CREATE TABLE IF NOT EXISTS" in a db-update.
+//Normally you must use "DROP TABLE IF EXISTS".
+);	ze\dbAdm::revision( 43725
+, <<<_sql
+	CREATE TABLE IF NOT EXISTS `[[DB_NAME_PREFIX]]user_perm_settings` (
+		`name` varchar(255) CHARACTER SET ascii NOT NULL,
+		`value` varchar(255) CHARACTER SET ascii,
+		PRIMARY KEY (`name`),
+		KEY (`value`)
+	)
+_sql
+
 );

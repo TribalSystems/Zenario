@@ -170,6 +170,13 @@ table.table_list tr .sorted_buttons {
 	text-align:right;
 }
 
+/* Sorted buttons width
+--------------------------------------------------------------------------------------------------*/
+
+.zenario_users_fea table.table_list tr .sorted_buttons {
+	width:180px;
+}
+
 /* Block list like block
 --------------------------------------------------------------------------------------------------*/
 
@@ -2164,6 +2171,7 @@ body.retina #colorbox .connection_tabbed_panel .simulator_img {
 	background: white;
 	border: solid 1px black;
 	position:relative;
+	margin-top:10px;
 }
 
 .paginator_slider .ui-slider-handle {
@@ -2172,6 +2180,11 @@ body.retina #colorbox .connection_tabbed_panel .simulator_img {
 	position: absolute;
 	top: -4px;
 	background-color:black;
+}
+
+.paginator_slider .ui-slider-handle.ui-state-hover {
+	background:#333;
+	cursor:pointer;
 }
 
 .zfea_pagination {

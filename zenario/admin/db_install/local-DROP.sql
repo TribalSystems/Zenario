@@ -84,6 +84,7 @@ DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]user_content_accesslog`;
 DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]user_content_link`;
 DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]user_form_fields`;
 DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]user_forms`;
+DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]user_perm_settings`;
 DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]user_signin_log`;
 DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]user_sync_log`;
 DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]users`;

@@ -209,10 +209,9 @@ class server {
 	}
 
 	//Formerly "checkFunctionEnabled()"
-	public static function checkFunctionEnabled($name, $checkSafeMode = true) {
+	public static function checkFunctionEnabled($name) {
 		try {
 			return @is_callable($name)
-				&& !($checkSafeMode && version_compare(PHP_VERSION, '5.4.0', '<') && ini_get('safe_mode'))
 				&& !(($disable_functions = ini_get('disable_functions')) && (preg_match('/\b'. $name. '\b/i', $disable_functions) !== 0));
 		} catch (\Exception $e) {
 			return false;

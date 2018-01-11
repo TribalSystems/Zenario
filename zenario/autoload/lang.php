@@ -178,13 +178,7 @@ class lang {
 				} else {
 					$filename = '';
 			
-					if (version_compare(PHP_VERSION, '5.4.0', '>=')) {
-						$back = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
-					} elseif (version_compare(PHP_VERSION, '5.3.6', '>=')) {
-						$back = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
-					} else {
-						$back = debug_backtrace(false);
-					}
+					$back = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
 			
 					if (!empty($back[$backtraceOffset]['file'])) {
 						//Strip off the CMS root

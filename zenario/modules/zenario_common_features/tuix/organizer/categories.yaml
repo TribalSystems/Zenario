@@ -11,7 +11,6 @@ zenario__content:
                 table: '[[DB_NAME_PREFIX]]categories AS cat'
                 custom_where_statement_top_level: WHERE cat.parent_id = 0
                 id_column: cat.id
-                client_side: Yes
             refiners:
                 top_level:
                     sql: cat.parent_id = 0
