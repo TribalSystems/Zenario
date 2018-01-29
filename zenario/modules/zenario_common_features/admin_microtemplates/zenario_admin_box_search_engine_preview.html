@@ -1,5 +1,6 @@
 <% var desc = zenarioAB.cutText(zenarioAB.currentValue('description'), 155); %>
 <% var title = zenarioAB.cutText(zenarioAB.currentValue('title'), 65); %>
+<% var alias = zenarioAB.value('actual_alias') || zenarioAB.currentValue('alias'); %>
 
 <div class="zfab_search_engine_preview">
 	<h3 class="zfab_sep_title">
@@ -13,7 +14,7 @@
 	</h3>
 	<div class="zfab_sep_url">
 		<div>
-			<cite id="zfab_sep_url">{{URLBasePath|e}}{{zenarioAB.currentValue('alias')|e}}</cite>
+			<cite id="zfab_sep_url">{{URLBasePath|e}}{{alias|e}}</cite>
 		</div>
 		<span id="zfab_sep_desc" class="zfab_sep_desc">
 			{{desc|e}}

@@ -333,7 +333,7 @@ class menu {
 
 
 	//Formerly "shouldShowMenuItem()"
-	public static function shouldShow(&$row, &$cachingRestrictions, $language, $getFullMenu, $adminMode) {
+	public static function shouldShow(&$row, &$cachingRestrictions, $language, $getFullMenu = false, $adminMode = false) {
 	
 		// Hide menu node if static method is set
 		if (!empty($row['module_class_name'])) {
@@ -424,7 +424,7 @@ class menu {
 
 
 	//Formerly "lookForMenuItems()"
-	public static function query($parentMenuId, $language, $sectionId, $currentMenuId, $recurseCount, $showInvisibleMenuItems, $getFullMenu, $adminMode) {
+	public static function query($language, $menuId, $byParent = true, $sectionId = false, $showInvisibleMenuItems = false, $getFullMenu = false, $adminMode = false) {
 	
 		$sql = "
 			SELECT
@@ -491,10 +491,19 @@ class menu {
 			$sql .= "
 				AND c.status IN ('published', 'published_with_draft')";
 		}
+		
+		if ($byParent) {
+			$sql .= "
+				WHERE m.parent_id = ". (int) $menuId;
+		} else {
+			$sql .= "
+				WHERE m.id = ". (int) $menuId;
+		}
 	
-		$sql .= "
-			WHERE m.parent_id = ". (int) $parentMenuId. "
+		if ($sectionId) {
+			$sql .= "
 			  AND m.section_id = ". (int) $sectionId;
+		}
 	
 		if (!$showInvisibleMenuItems) {
 			$sql .= "
@@ -539,7 +548,7 @@ class menu {
 		$edition = \ze::$edition;
 		$rows = array();
 		if ($showMissingMenuNodes && $language != \ze::$defaultLang) {
-			$result = \ze\menu::query($parentMenuId, \ze::$defaultLang, $sectionId, $currentMenuId, $recurseCount, $showInvisibleMenuItems, $getFullMenu, $adminMode);
+			$result = \ze\menu::query(\ze::$defaultLang, $parentMenuId, true, $sectionId, $showInvisibleMenuItems, $getFullMenu, $adminMode);
 			while ($row = \ze\sql::fetchAssoc($result)) {
 				if (empty($row['css_class'])) {
 					$row['css_class'] = 'missing';
@@ -551,7 +560,7 @@ class menu {
 			}
 		}
 	
-		$result = \ze\menu::query($parentMenuId, $language, $sectionId, $currentMenuId, $recurseCount, $showInvisibleMenuItems, $getFullMenu, $adminMode);
+		$result = \ze\menu::query($language, $parentMenuId, true, $sectionId, $showInvisibleMenuItems, $getFullMenu, $adminMode);
 		while ($row = \ze\sql::fetchAssoc($result)) {
 			$rows[$row['mID']] = $row;
 		}
@@ -621,71 +630,8 @@ class menu {
 				}
 			
 				if ($showMenuItem) {
-					if ($row['target_loc'] == 'ext' && $row['ext_url']) {
-						$row['url'] = $row['ext_url'];
+					\ze\menu::format($row, $requests);
 				
-						//Allow anyone writing a static method to easily add extra requests to the URL
-						//by using the extra_requests property
-						if (!empty($row['extra_requests'])) {
-							if (is_array($row['extra_requests'])) {
-								$row['url'] .= '&'. http_build_query($row['extra_requests']);
-							} else {
-								$row['url'] .= '&'. $row['extra_requests'];
-							}
-						}
-
-
-
-						
-					} else if ($row['target_loc'] == 'int' && $row['cID']) {
-						$request = '';
-						$downloadDocument = ($row['cType'] == 'document' && !$row['use_download_page']);
-						if ($downloadDocument) {
-							$request = '&download=1';
-						}
-						if (isset($row['placeholder'])) {
-							$request .= '&visLang='. rawurlencode($language);
-						}
-						if ($requests) {
-							$request .= \ze\ring::addAmp($requests);
-						}
-						//Allow anyone writing a static method to easily add extra requests to the URL
-						//by using the extra_requests property
-						if (!empty($row['extra_requests'])) {
-							if (is_array($row['extra_requests'])) {
-								$request .= '&'. http_build_query($row['extra_requests']);
-							} else {
-								$request .= '&'. $row['extra_requests'];
-							}
-						}
-					
-						if (\ze::$cID == $row['cID'] && \ze::$cType == $row['cType'] && \ze::$menuTitle !== false) {
-							$row['name'] = \ze::$menuTitle;
-						}
-					
-						$link = \ze\link::toItem($row['cID'], $row['cType'], false, $request, $row['alias'], $row['add_registered_get_requests']);
-					
-						if ($downloadDocument) {
-							$row['onclick'] = \ze\file::trackDownload($link);
-						}
-					
-						$row['url'] = $link;
-						if (!empty($row['anchor'])) {
-							$row['url'] .= '#'.$row['anchor'];
-						}
-			
-					} else {
-						$row['url'] = '';
-					}
-				
-					if ($row['accesskey']) {
-						$row['title'] = \ze\admin::phrase('_ACCESS_KEY_EQUALS', array('key' => $row['accesskey']));
-					}
-		
-					if ($row['open_in_new_window']) {
-						$row['target'] = '_blank';
-					}
-			
 				} else {
 					$row['url'] = '';
 					unset($row['onclick']);
@@ -720,7 +666,7 @@ class menu {
 						//Otherwise if we're not recursing, check that at least one of the children are in fact visible to the current Visitor
 						} else {
 							$row['children'] = false;
-							$result2 = \ze\menu::query($row['mID'], $language, $sectionId, $currentMenuId, $recurseCount, $showInvisibleMenuItems, $getFullMenu, $adminMode);
+							$result2 = \ze\menu::query($language, $row['mID'], true, $sectionId, $showInvisibleMenuItems, $getFullMenu, $adminMode);
 							while ($row2 = \ze\sql::fetchAssoc($result2)) {
 								if ($row2['target_loc'] != 'none' && (empty($row2['invisible']) || $showInvisibleMenuItems) && \ze\menu::shouldShow($row2, $cachingRestrictions, $language, $getFullMenu, $adminMode)) {
 									$row['children'] = true;
@@ -771,5 +717,71 @@ class menu {
 		}
 	
 		return $rows;
+	}
+	
+	
+	public static function format(&$row, $requests = false) {
+		if ($row['target_loc'] == 'ext' && $row['ext_url']) {
+			$row['url'] = $row['ext_url'];
+	
+			//Allow anyone writing a static method to easily add extra requests to the URL
+			//by using the extra_requests property
+			if (!empty($row['extra_requests'])) {
+				if (is_array($row['extra_requests'])) {
+					$row['url'] .= '&'. http_build_query($row['extra_requests']);
+				} else {
+					$row['url'] .= '&'. $row['extra_requests'];
+				}
+			}
+			
+		} else if ($row['target_loc'] == 'int' && $row['cID']) {
+			$request = '';
+			$downloadDocument = ($row['cType'] == 'document' && !$row['use_download_page']);
+			if ($downloadDocument) {
+				$request = '&download=1';
+			}
+			if (isset($row['placeholder'])) {
+				$request .= '&visLang='. rawurlencode($language);
+			}
+			if ($requests) {
+				$request .= \ze\ring::addAmp($requests);
+			}
+			//Allow anyone writing a static method to easily add extra requests to the URL
+			//by using the extra_requests property
+			if (!empty($row['extra_requests'])) {
+				if (is_array($row['extra_requests'])) {
+					$request .= '&'. http_build_query($row['extra_requests']);
+				} else {
+					$request .= '&'. $row['extra_requests'];
+				}
+			}
+		
+			if (\ze::$cID == $row['cID'] && \ze::$cType == $row['cType'] && \ze::$menuTitle !== false) {
+				$row['name'] = \ze::$menuTitle;
+			}
+		
+			$link = \ze\link::toItem($row['cID'], $row['cType'], false, $request, $row['alias'], $row['add_registered_get_requests']);
+		
+			if ($downloadDocument) {
+				$row['onclick'] = \ze\file::trackDownload($link);
+			}
+		
+			$row['url'] = $link;
+			if (!empty($row['anchor'])) {
+				$row['url'] .= '#'.$row['anchor'];
+			}
+
+		} else {
+			$row['url'] = '';
+		}
+	
+		if ($row['accesskey']) {
+			$row['title'] = \ze\admin::phrase('_ACCESS_KEY_EQUALS', ['key' => $row['accesskey']]);
+		}
+
+		if ($row['open_in_new_window']) {
+			$row['target'] = '_blank';
+		}
+
 	}
 }

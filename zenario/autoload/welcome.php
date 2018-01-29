@@ -2292,7 +2292,9 @@ class welcome {
 		$fields['0/content']['row_class'] = 'section_valid';
 	
 		//Don't show the "site" section yet if we've just finished an install
-		if ($freshInstall || !\ze\row::exists('languages', [])) {
+		if ($freshInstall
+		 || $task == 'install'
+		 || !\ze\row::exists('languages', [])) {
 			foreach ($tags['tabs'][0]['fields'] as $fieldName => &$field) {
 				if (!empty($field['hide_on_install'])) {
 					$field['hidden'] = true;

@@ -275,6 +275,9 @@ zenario_content:
                         The combination of the content item's alias and its language code is unique across the site.
                         Lower case only, may not contain spaces or special characters.
                     post_field_html: '<div id="alias_warning_display"></div>'
+                actual_alias:
+                    type: text
+                    hidden: true
                 description:
                     ord: 70
                     label: 'Description meta tag:'

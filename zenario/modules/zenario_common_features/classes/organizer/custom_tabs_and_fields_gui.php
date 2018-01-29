@@ -306,7 +306,7 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 				}
 				
 				$existingDatasetFields = [];
-				$result = ze\row::query('custom_dataset_fields', ['id', 'tab_name', 'is_system_field', 'db_column', 'type', 'allow_admin_to_change_visibility', 'allow_admin_to_change_export', 'protected', 'min_rows', 'max_rows', 'repeat_start_id'], ['dataset_id' => $datasetId]);
+				$result = ze\row::query('custom_dataset_fields', ['id', 'tab_name', 'is_system_field', 'db_column', 'type', 'allow_admin_to_change_visibility', 'allow_admin_to_change_export', 'protected', 'min_rows', 'max_rows', 'repeat_start_id', 'create_index'], ['dataset_id' => $datasetId]);
 				while ($row = ze\sql::fetchAssoc($result)) {
 					$existingDatasetFields[$row['id']] = $row;
 				}
@@ -533,11 +533,6 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 							$values['repeat_start_id'] = $repeatStartField ? $repeatStartField['id'] : 0;
 						}
 						if ($values) {
-							if (isset($values['db_column'])) {
-								//Make sure there are no clashes by renaming columns to unique name and then to new name later
-								$field['_db_column'] = $values['db_column'];
-								$field['temp_db_column'] = $values['db_column'] = '__tmp_col_' . (++$columnIndex) . '-' . ze\ring::randomFromSet();
-							}
 							ze\row::update('custom_dataset_fields', $values, $field['id']);
 						}
 						
@@ -558,12 +553,18 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 						
 						//Update dataset field db columns
 						if (empty($dField['is_system_field'])
-							&& (!empty($field['_changed'])
-								|| ($oldName && $oldName !== $field['db_column'])
+							&& $field['db_column']
+							&& (($oldName !== $field['db_column'])
 								|| ($oldRows != $newRows)
+								|| ($dField && isset($values['create_index']) && ($values['create_index'] != $dField['create_index']))
 							)
 						) {
-							$columnUpdates[$field['id']] = ['db_column' => $field['_db_column'], 'temp_db_column' => $field['temp_db_column'], 'new_rows' => $newRows, 'old_rows' => $oldRows];
+							//Make sure there are no clashes by renaming columns to unique name and then to new name later
+							$field['temp_db_column'] = '__tmp_col_' . (++$columnIndex) . '_' . ze\ring::randomFromSet();
+							ze\row::update('custom_dataset_fields', ['db_column' => $field['temp_db_column']], $field['id']);
+							
+							
+							$columnUpdates[$field['id']] = ['db_column' => $field['db_column'], 'temp_db_column' => $field['temp_db_column'], 'new_rows' => $newRows, 'old_rows' => $oldRows];
 							ze\datasetAdm::createFieldInDB($field['id'], $oldName, $newRows, $oldRows);
 						}
 						

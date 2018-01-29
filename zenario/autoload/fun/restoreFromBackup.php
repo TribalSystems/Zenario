@@ -290,7 +290,7 @@ password="'. DBPASS. '"';
 		
 		//Attempt to run the SQL. Note there are no further checks done on it, so of course it may not be valid.
 		//I'll also check whether it failed or succeeded
-		$success = @\ze\sql::select(str_replace($searchInFile, $replaceInFile, $statements[$i]));
+		$success = @\ze::$lastDB->query(str_replace($searchInFile, $replaceInFile, $statements[$i]));
 					
 		//Even if it failed, we'll keep running the SQL statements. But we'll log the failures and report at the end.
 		if (!$success) {

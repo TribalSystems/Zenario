@@ -32,7 +32,11 @@ namespace ze;
 class escape {
 
 
-	
+	//Remove non-ascii characters
+	public static function ascii($text) {
+		return preg_replace('@[^(\x20-\x7E)]*@', '', $text);
+	}
+
 
 	//Formerly "eschyp()"
 	public static function hyp($text) {

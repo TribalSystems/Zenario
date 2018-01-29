@@ -3,7 +3,7 @@ zenario_backup:
         id: ''
         server: false
     priv: _PRIV_BACKUP_SITE
-    max_height: 500
+    max_height: 650
     hide_tab_bar: true
     identifier:
         css_class: backup
@@ -23,25 +23,22 @@ zenario_backup:
                         tuix.key.id
                     snippet:
                         html: |
-                            This tool allows you to download a database backup of your site that you previously stored on your server.
+                            This tool allows you to download a backup of your site's database, that you previously stored on your server.
                 desc1b:
                     visible_if: |
                         !tuix.key.id && !tuix.key.server
                     snippet:
                         html: |
-                            This tool allows you to download a database backup of your site that you previously stored on your server.
+                            This tool allows you to create and download a backup of your site's database.
                 desc1c:
                     visible_if: |
                         !tuix.key.id && tuix.key.server
                     snippet:
                         html: |
-                            This tool allows you to create a database backup of your site and store it on your server.
+                            This tool allows you to create a backup of your site's database, and store it on your server.
                 desc2:
                     snippet:
-                        html: |
-                            This backup will not contain the <code>docstore/</code> or <code>zenario_custom/</code> directories.
-                            You should back up and restore these separately to preserve your documents,
-                            custom frameworks, custom modules, layouts and skins.
+                        html: ''
                 desc3:
                     snippet:
                         html: |

@@ -537,8 +537,8 @@ class datasetAdm {
 					$sql .= "
 						CHANGE COLUMN `". \ze\escape::sql($oldName). "` ";
 					
-					if ($field['create_index'] && $oldColType == 'tinyint') {
-						//Bugfix - when changing a tinyint to a varchar, remove any null values
+					if ($field['create_index'] && $oldColType == 'TINYTEXT') {
+						//Bugfix - when changing a TINYTEXT to a varchar, remove any null values
 						\ze\sql::update("
 							UPDATE `". DB_NAME_PREFIX. \ze\escape::sql($dataset['table']). "`
 							SET `". \ze\escape::sql($oldName). "` = ''

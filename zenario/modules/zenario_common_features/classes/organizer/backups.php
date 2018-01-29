@@ -57,6 +57,23 @@ class zenario_common_features__organizer__backups extends ze\moduleBaseClass {
 			}
 		}
 		
+		
+		if (isset($panel['item_buttons']['restore'])) {
+			if (\ze\db::hasGlobal()) {
+				$restoreMsg = '<p>'. ze\admin::phrase("This tool allows you to restore a backup of your site's local database."). '</p>';
+			} else {
+				$restoreMsg = '<p>'. ze\admin::phrase("This tool allows you to restore a backup of your site's database."). '</p>';
+			}
+			if (\ze\db::hasGlobal()) {
+				$restoreMsg .= '<p>'. ze\admin::phrase("All content on the site will be replaced with the content from the database backup; all of the current local administrators, content and users on your site will be overwritten. This may take several minutes to complete."). '</p>';
+			} else {
+				$restoreMsg .= '<p>'. ze\admin::phrase("All content on the site will be replaced with the content from the database backup; all of the current administrators, content and users on your site will be overwritten. This may take several minutes to complete."). '</p>';
+			}
+		
+			$panel['item_buttons']['restore']['ajax']['confirm']['message'] = 
+				$restoreMsg.
+				$panel['item_buttons']['restore']['ajax']['confirm']['message'];
+        }    
 	}
 	
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {

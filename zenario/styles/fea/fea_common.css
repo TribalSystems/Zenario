@@ -838,6 +838,22 @@ body.mobile .zfea_blocks.aw_list .zfea_block_list_wrap .zfea_block {
 	list-style:disc;
 }
 
+.zfea_confirm_member_notice .zfea_confirm_buttons {
+	text-align:center;
+}
+
+.zfea_confirm_member_notice .zfea_confirm_buttons form {
+	display:inline-block;
+}
+
+.zfea_confirm_member_notice .zfea_confirm_buttons form .zfea_do_it {
+	float:right;
+}
+
+.zfea_confirm_member_notice .zfea_confirm_buttons form .zfea_cancel {
+	float:left;
+}
+
 /* Storefront physical products
 --------------------------------------------------------------------------------------------------*/
 
@@ -1114,11 +1130,13 @@ body.mobile .zfea_blocks.aw_list .zfea_block_list_wrap .zfea_block {
 }
 
 .modal_window .confirm_warning,
+.modal_window .warning,
 .zfea.confirm_warning .messageDisplay div {
-	background:url("../images/icon-warning-triangle.svg") no-repeat scroll 0 0 / 47px 40px;
+	background:url("images/icon-warning-triangle.svg") no-repeat scroll 0 0 / 47px 40px;
     min-height: 40px;
     padding: 5px 0 0 60px;
     text-align:left !important;
+    color:inherit;
 }
 
 /* Buttons, nest top buttons

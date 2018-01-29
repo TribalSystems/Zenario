@@ -125,11 +125,8 @@ class zenario_common_features__admin_boxes__export_dataset extends ze\moduleBase
 				$idColumn = ze\row::idColumnOfTable($recordTable['table']);
 				$recordTable['fields'][] = $idColumn;
 				
-				$sql = '
-					SELECT ' . ze\escape::in($recordTable['fields'], 'identifier') . '
-					FROM ' . DB_NAME_PREFIX . ze\escape::sql($recordTable['table']) . '
-					WHERE ' . ze\escape::sql($idColumn) . ' IN (' . ze\escape::in($box['key']['export_ids']) . ')';
-				$result = ze\sql::select($sql);
+				//Use an internal function to get the data in case some columns are encrypted
+				$result = ze\row::query($recordTable['table'], $recordTable['fields'], [$idColumn => explode(',', $box['key']['export_ids'])]);
 				
 				while ($row = ze\sql::fetchAssoc($result)) {
 					if (!isset($data[$row[$idColumn]])) {

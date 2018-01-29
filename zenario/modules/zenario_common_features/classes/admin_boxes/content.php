@@ -206,6 +206,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 		
 					if (!ze::setting('translations_different_aliases')) {
 						$fields['meta_data/alias']['readonly'] = true;
+						$values['meta_data/actual_alias'] = ze\content::formatTag($content['id'], $content['type'], $content['alias'], $box['key']['target_language_id']);
 						$box['tabs']['meta_data']['fields']['alias']['note_below'] = ze\admin::phrase('Note: on this site, aliases are the same on all content items in a translation chain.');
 					}
 				}
@@ -261,6 +262,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 	
 			} else {
 				//The options to set the alias, categories or privacy (if it is there!) should be hidden when not creating something
+				$values['meta_data/actual_alias'] = ze\content::formatTag($content['id'], $content['type'], $content['alias'], $content['language_id']);
 				$fields['meta_data/alias']['hidden'] = true;
 				$box['tabs']['categories']['hidden'] = true;
 				$box['tabs']['privacy']['hidden'] = true;
@@ -1080,9 +1082,20 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 	
 	protected function fillMenu(&$box, &$fields, &$values, $contentType, $content, $version) {
 		
+		$defaultPos = '';
+		
 		//If a content item was set as the "from" or "source", attempt to get details of its primary menu node
 		if ($box['key']['from_cID']) {
 			$menu = ze\menu::getFromContentItem($box['key']['from_cID'], $box['key']['from_cType']);
+			
+			//Change the default to "after" if there's a known position
+			$defaultPos = 'after';
+		
+		//Watch out for the "create a child" option from Organizer
+		} elseif ($box['key']['target_menu_parent']) {
+			$menu = ze\menu::details($box['key']['target_menu_parent']);
+			$defaultPos = 'under';
+		
 		} else {
 			$menu = false;
 		}
@@ -1113,14 +1126,15 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			$values['meta_data/create_menu_node'] = 1;
 		
 		} else {
+			$beforeNode = 0;
+			$underNode = 1;
+			
 			if ($menu) {
 				//Set the menu positions for before/after/under
-				$beforeNode = 0;
-				$underNode = 1;
-				$values['meta_data/menu_pos_before'] = $menu['section_id'] . '_' . $menu['id'] . '_' . $beforeNode;
-				$values['meta_data/menu_pos_under'] = $menu['section_id'] . '_' . $menu['id'] . '_' . $underNode;
+				$values['meta_data/menu_pos_before'] = $menu['section_id']. '_'. $menu['id']. '_'. $beforeNode;
+				$values['meta_data/menu_pos_under'] = $menu['section_id']. '_'. $menu['id']. '_'. $underNode;
 				$values['meta_data/menu_pos_after'] =
-				$values['meta_data/menu_pos_specific'] = $menu['section_id'] . '_' . $menu['parent_id'] . '_' . $underNode;
+				$values['meta_data/menu_pos_specific'] = $menu['section_id']. '_'. $menu['parent_id']. '_'. $underNode;
 			
 				//That last line of code above will actually place the new menu node at the end of the current line.
 				//If there's a menu node after the current one, then that's not technically the position after this one,
@@ -1134,16 +1148,21 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 					ORDER BY ordinal ASC
 					LIMIT 1
 				')) {
-					$values['meta_data/menu_pos_after'] = $menu['section_id'] . '_' . $nextNodeId . '_' . $beforeNode;
+					$values['meta_data/menu_pos_after'] = $menu['section_id']. '_'. $nextNodeId. '_'. $beforeNode;
 				}
-				//Change the default to "after" if there's a known position
-				$values['meta_data/menu_pos'] = 'after';
+				
+				$values['meta_data/menu_pos'] = $defaultPos;
 			
 			} else {
 				//Remove the before/under/after options if we didn't find them above
 				unset($fields['meta_data/menu_pos']['values']['before']);
 				unset($fields['meta_data/menu_pos']['values']['under']);
 				unset($fields['meta_data/menu_pos']['values']['after']);
+				
+				//If we know the menu section we're aiming to create in, at least pre-populate that
+				if ($box['key']['target_menu_section']) {
+					$values['meta_data/menu_pos_specific'] = $box['key']['target_menu_section']. '_0_'. $underNode;
+				}
 			}
 			
 			if ($contentType['default_parent_menu_node']) {

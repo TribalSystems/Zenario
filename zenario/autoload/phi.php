@@ -251,16 +251,16 @@ class phi {
 	public static function product(...$in) {
 		$a = [];
 		self::toArray($in, $a);
-		return NumbersPHP\Statistic::product($a);
+		return \NumbersPHP\Statistic::product($a);
 	}
 	public static function factorial($n) {
-		return NumbersPHP\Statistic::factorial($n);
+		return \NumbersPHP\Statistic::factorial($n);
 	}
 	public static function gcd($a, $b) {
-		return NumbersPHP\Statistic::gcd($a, $b);
+		return \NumbersPHP\Statistic::gcd($a, $b);
 	}
 	public static function lcm($a, $b) {
-		return NumbersPHP\Statistic::lcm($a, $b);
+		return \NumbersPHP\Statistic::lcm($a, $b);
 	}
 
 	
@@ -315,7 +315,7 @@ class phi {
 			return null;
 		
 		} else {
-			return NumbersPHP\Statistic::median($a);
+			return \NumbersPHP\Statistic::median($a);
 		}
 	}
 	public static function mode(...$in) {
@@ -326,7 +326,7 @@ class phi {
 			return null;
 		
 		} else {
-			return NumbersPHP\Statistic::mode($a);
+			return \NumbersPHP\Statistic::mode($a);
 		}
 	}
 	public static function standardDev(...$in) {
@@ -337,7 +337,7 @@ class phi {
 			return null;
 		
 		} else {
-			return NumbersPHP\Statistic::standardDev($a);
+			return \NumbersPHP\Statistic::standardDev($a);
 		}
 	}
 	public static function firstQuartile(...$in) {
@@ -348,7 +348,7 @@ class phi {
 			return null;
 		
 		} else {
-			return NumbersPHP\Statistic::firstQuartile($a);
+			return \NumbersPHP\Statistic::firstQuartile($a);
 		}
 	}
 	public static function thirdQuartile(...$in) {
@@ -359,7 +359,7 @@ class phi {
 			return null;
 		
 		} else {
-			return NumbersPHP\Statistic::thirdQuartile($a);
+			return \NumbersPHP\Statistic::thirdQuartile($a);
 		}
 	}
 	

@@ -344,7 +344,7 @@ if ($getUploadedFileInCacheDir) {
 
 	} else {
 		$sql .= "
-		WHERE `usage` = '". ze\escape::sql($usage). "'";
+		WHERE `usage` = '". ze\escape::sql(ze\escape::ascii($usage)). "'";
 
 		if ($checksum) {
 			$sql .= "

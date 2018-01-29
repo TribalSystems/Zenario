@@ -428,6 +428,7 @@ tinymce.PluginManager.add('link', function(editor) {
 				classListCtrl
 			],
 			onSubmit: function(e) {
+				zenario.saveScrollTop();
 				/*eslint dot-notation: 0*/
 				var href;
 

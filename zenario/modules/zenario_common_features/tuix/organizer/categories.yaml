@@ -27,15 +27,17 @@ zenario__content:
                     branch: Yes
             columns:
                 id:
-                    title: id
+                    title: ID
                     db_column: cat.id
                     searchable: Yes
                     align_right: Yes
+                    disallow_sorting: Yes
                 name:
                     title: Name
                     searchable: Yes
                     db_column: cat.name
                     show_by_default: Yes
+                    width: xlarge
                 item_count:
                     title: Content Items
                     db_column: |
@@ -49,16 +51,19 @@ zenario__content:
                             WHERE cil.category_id = cat.id
                         )
                     show_by_default: Yes
+                    align_right: Yes
+                    disallow_sorting: Yes
                 public:
                     title: Public
                     db_column: cat.public
                     format: yes_or_no
-                    show_by_default: Yes
+                    disallow_sorting: Yes
                 path:
                     title: Path
                 children:
                     title: Sub-categories
                     show_by_default: Yes
+                    align_right: Yes
             default_sort_column: name
             label_format_for_picked_items: |
                 [[name]]

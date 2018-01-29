@@ -269,6 +269,14 @@ zenario.lib(function(
 		}
 	};
 	
+	//Hack to try and fix a bug in TinyMCE where the scroll position changes when inserting/editing an image or link
+	zenario.saveScrollTop = function() {
+		var scrollTop = zenario.scrollTop();
+		setTimeout(function() {
+			zenario.scrollTop(scrollTop);
+		}, 0);
+	};
+	
 	
 	zenario.versionOfIE = function(n) {
 		if (/opera|OPERA/.test(userAgent)) {

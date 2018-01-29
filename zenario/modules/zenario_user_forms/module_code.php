@@ -3171,12 +3171,6 @@ class zenario_user_forms extends ze\moduleBaseClass {
 	
 	private function getTemplateEmailMergeFields($userId, $toAdmin = false) {
 		$mergeFields = [];
-		//Data merge fields
-		foreach ($this->fields as $fieldId => $field) {
-			$column = $field['db_column'] ? $field['db_column'] : 'unlinked_' . $field['type'] . '_' . $fieldId;
-			$display = static::getFieldDisplayValue($field, $field['value']);
-			$mergeFields[$column] = $display;
-		}
 		//User merge fields
 		if ($userId) {
 			$user = ze\user::details($userId);
@@ -3185,9 +3179,14 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			$mergeFields['last_name'] = $user['last_name'];
 			$mergeFields['user_id'] = $userId;
 		}
+		//Data merge fields (after user merge fields so form merge fields are not overridden)
+		foreach ($this->fields as $fieldId => $field) {
+			$column = $field['db_column'] ? $field['db_column'] : 'unlinked_' . $field['type'] . '_' . $fieldId;
+			$display = static::getFieldDisplayValue($field, $field['value']);
+			$mergeFields[$column] = $display;
+		}
 		//Other merge fields
 		$mergeFields['cms_url'] = ze\link::absolute();
-		
 		$mergeFields['users_datetime'] = ze\date::formatDateTime(time(), '_MEDIUM');
 		$mergeFields['datetime'] = ze\date::formatDateTime(date('Y-m-d H:i:s'), '_MEDIUM');
 		

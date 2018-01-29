@@ -17,8 +17,8 @@ description: |
         Settings -&gt; File and Image Handling</em>.</p>
     
     <p>If you just wish to use this menu for mobile devices, then you can put it into a slot, edit your layout
-        in grid maker, and then set the &quot;Hide on small screens&quot; option for that slot in grid maker.
-        Likewise, you can set the &quot;Only show on small screens&quot; to only show it on a desktop computer.</p>
+        in grid maker, and then set the &quot;Show on mobile only&quot; option for that slot in grid maker.
+        Likewise, you can set the &quot;Show on desktop only&quot; to only show it on a desktop computer.</p>
     
     <p>It supports multiple menu sections, providing support for different menu trees.</p>
     

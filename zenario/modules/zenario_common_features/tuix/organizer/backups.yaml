@@ -80,13 +80,7 @@ zenario__administration:
                     ajax:
                         confirm:
                             message: |
-                                <p>This tool allows you to restore a database backup of your Zenario site.</p>
-                                                                            
-                                <p>All content on the site will be replaced with the content from the database backup;
-                                    all of the current administrators, content and users on your site will be overwritten.
-                                    This may take several minutes to complete.</p>
-                                                                            
-                                <p>This will not effect the <code>docstore/</code> or <code>zenario_custom/</code> directories.
+                                <p>This will not affect the <code>docstore/</code> or <code>zenario_custom/</code> directories.
                                     You should back up and restore these separately to preserve your documents,
                                     custom frameworks, custom modules, layouts and skins.</p>
                                 

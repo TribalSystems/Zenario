@@ -579,7 +579,7 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 					}
 				}
 				
-				if ($mode === 'full') {
+				if ($mode === 'full' || $mode == 'get_item_data') {
 					$item['frontend_link'] = DIRECTORY_INDEX_FILENAME. '?cID='. $item['id']. '&cType='. $item['type']. '&zenario_sk_return=navigation_path';
 				}
 		

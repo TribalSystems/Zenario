@@ -460,6 +460,20 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 			}
 		}
 		
+		if (isset($box['tabs']['wkhtmltopdf'])) {
+			$box['tabs']['wkhtmltopdf']['notices']['error']['show'] =
+			$box['tabs']['wkhtmltopdf']['notices']['success']['show'] = false;
+			
+			if (!empty($box['tabs']['wkhtmltopdf']['fields']['test']['pressed'])) {
+				if (($programPath = ze\server::programPathForExec($values['wkhtmltopdf/wkhtmltopdf_path'], 'wkhtmltopdf'))
+				 && ($rv = exec(escapeshellarg($programPath) .' --version'))) {
+					$box['tabs']['wkhtmltopdf']['notices']['success']['show'] = true;
+				} else {
+					$box['tabs']['wkhtmltopdf']['notices']['error']['show'] = true;
+				}
+			}
+		}
+		
 		if (isset($fields['automated_backups/test'])
 		 && $values['automated_backups/check_automated_backups']
 		 && (!isset($fields['automated_backups/test']['note_below'])

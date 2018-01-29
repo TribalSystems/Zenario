@@ -32,10 +32,10 @@
 			{% if item.Document_Type == 'file' %}
 				<div class="level_{{item.Document_Level}}">
 					<a href="{{item.Document_Link}}" target="_blank" onclick="{{item.Google_Analytics_Link}}">
-						{% if item.Title_Folder_Exists %}
-							{{item.title}}
+						{% if item.Title_Folder_Exists and item.Title_Exists %}
+							{{item.Title_Exists}}
 						{% else %}
-							{% if item.Title_Folder_Exists %} {{item.title}} {% else %} {{item.Document_Link_Text}} {% endif %}
+							{{item.Document_Link_Text}}
 						{% endif %}
 					</a>
 					

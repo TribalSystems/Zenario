@@ -519,3 +519,51 @@ site_settings:
                     show: false
                     type: error
                     message: advpng is not correctly set up.
+        wkhtmltopdf:
+            label: wkhtmltopdf
+            edit_mode:
+                priv: _PRIV_EDIT_SITE_SETTING
+                enabled: true
+            fields:
+                desc:
+                    full_width: true
+                    snippet:
+                        html: |
+                            <p>
+                                This program is not needed for Zenario to run but should be enabled if you run a module that needs to generate a PDF.
+                            </p>
+                wkhtmltopdf_path:
+                    site_setting:
+                        name: wkhtmltopdf_path
+                    label: 'wkhtmltopdf path:'
+                    type: select
+                    value: PATH
+                    empty_value: ' -- Do not use wkhtmltopdf -- '
+                    values:
+                        'PATH':
+                            label: "Use your server's PATH environment variable"
+                        '/usr/bin/':
+                            label: '/usr/bin/wkhtmltopdf'
+                        '/usr/local/bin/':
+                            label: '/usr/local/bin/wkhtmltopdf'
+                    format_onchange: true
+                    style: >
+                        margin-right: 0.5em;
+                test:
+                    same_row: true
+                    visible_if:
+                        zenarioAB.value: wkhtmltopdf_path
+                    type: submit
+                    value: Test
+                    class: submit
+                    can_be_pressed_in_view_mode: true
+                    format_onchange: true
+            notices:
+                success:
+                    show: ""
+                    type: success
+                    message: wkhtmltopdf is working successfully.
+                error:
+                    show: ""
+                    type: error
+                    message: wkhtmltopdf is not correctly set up.

@@ -120,6 +120,7 @@ tinymce.PluginManager.add('image', function(editor) {
 		}
 
 		function onSubmitForm() {
+			zenario.saveScrollTop();
 			var figureElm, oldImg;
 
 			function waitLoad(imgElm) {
@@ -252,12 +253,6 @@ tinymce.PluginManager.add('image', function(editor) {
 
 				waitLoad(imgElm);
 			});
-
-			//Hack to fix a bug where the scroll changes when editing an existing image
-			var scrollTop = zenario.scrollTop();
-			setTimeout(function() {
-				zenario.scrollTop(scrollTop);
-			}, 0);
 		}
 
 		function removePixelSuffix(value) {

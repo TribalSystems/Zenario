@@ -22,6 +22,13 @@ zenario__locations:
                 sql: 'l.id IN (SELECT location_id FROM [[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]location_sector_score_link WHERE sector_id IN [[REFINER_IDS]])'
             map:
                 sql: 'l.id = l.id'
+            
+            #These are set in zenario_organization_manager preFillOrganizerPanel
+            #Need to be here because other modules use these that are unrelated (i.e. zenario_user_timers)
+            zenario_organization_manager__organizations:
+                sql: ''
+            zenario_organization_manager__simple_locations:
+                sql: ''
         db_items:
             table: |
                 [[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations AS l
