@@ -626,7 +626,7 @@ methods.checkRequests = function(request, forDisplay, itemId, merge, keepClutter
 		
 		//Remove any empty values to avoid clutter
 		if (!keepClutter) {
-			if (_.isEmpty(value) || value === '0') {
+			if ((typeof value == 'number')? !value : (_.isEmpty(value) || value === '0')) {
 				delete request[key];
 			}
 		}

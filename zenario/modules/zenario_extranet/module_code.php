@@ -104,6 +104,15 @@ class zenario_extranet extends ze\moduleBaseClass {
 							$this->subSections['Log_Me_In_Section'] = true;
 						}
 						
+						if ($this->setting('requires_terms_and_conditions') == "always") {
+							$this->subSections['Ts_And_Cs_Section'] = true;
+							$cID = $cType = false;
+							$this->getCIDAndCTypeFromSetting($cID, $cType, 'terms_and_conditions_page');
+							ze\content::langEquivalentItem($cID, $cType);
+							$TCLink = array( 'TCLink' =>$this->linkToItem($cID, $cType, true));
+							$this->objects['Ts_And_Cs_Link'] =  $this->phrase('_T_C_LINK', $TCLink);
+						}
+						
 						if (!$this->useScreenName || $this->setting('login_with') == 'Email') {
 							$this->subSections['Login_with_email'] = true;
 							$this->objects['extranet_email'] = $_COOKIE['COOKIE_LAST_EXTRANET_EMAIL'] ?? false;
@@ -123,8 +132,9 @@ class zenario_extranet extends ze\moduleBaseClass {
 						
 						$this->redirectToPage();
 					}
+					
 					if ($this->hasLoginForm) {
-						if ($this->setting('requires_terms_and_conditions') && $this->setting('terms_and_conditions_page') && $this->showTermsAndConditionsCheckbox) {
+						if ($this->setting('requires_terms_and_conditions') == 1 && $this->setting('terms_and_conditions_page') && $this->showTermsAndConditionsCheckbox) {
 							$this->subSections['Ts_And_Cs_Section'] = true;
 							$cID = $cType = false;
 							$this->getCIDAndCTypeFromSetting($cID, $cType, 'terms_and_conditions_page');
@@ -447,7 +457,9 @@ class zenario_extranet extends ze\moduleBaseClass {
 								$this->user_id = $user['id'];
 								$this->old_password = $_POST['extranet_password'] ?? false;
 			
-							} elseif ($this->setting('requires_terms_and_conditions') && $this->setting('terms_and_conditions_page') && !$user['terms_and_conditions_accepted']) {
+							} elseif ($this->setting('requires_terms_and_conditions') && $this->setting('terms_and_conditions_page') 
+								&& (!$user['terms_and_conditions_accepted'] 
+									|| ($this->setting('requires_terms_and_conditions') == 'always' && !$_REQUEST['extranet_terms_and_conditions']))) {
 								//show terms and conditions checkbox
 								$errorMessage = $this->setting('accept_terms_and_conditions_message');
 								$this->errors[] = ['Error' => $errorMessage];

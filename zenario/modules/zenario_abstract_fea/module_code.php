@@ -428,4 +428,100 @@ class zenario_abstract_fea extends ze\moduleBaseClass {
             }
         }
 	}
+	
+	
+	//Add dataset fields onto an FEA form
+	//Called in fillVisitorTUIX
+	protected function setupDatasetFields(&$tags, &$fields, &$values, $tab, $dataset, $datasetFieldIds, $recordId, $startOrd = 99, $edit = true) {
+		
+		foreach ($datasetFieldIds as $datasetFieldId) {
+			$datasetField = ze\dataset::fieldDetails($datasetFieldId, $dataset);
+			if (!$datasetField) {
+				continue;
+			}
+			
+			$newInput = [
+				'ord' => $startOrd++,
+				'label'=> $datasetField['label'].":",
+				'type' => $datasetField['type'],
+				'placeholder' => $this->phrase("Optional"),
+				'value' => ''
+			];
+			if ($edit) {
+				if ($recordId) {
+					$newInput['value'] = ze\dataset::fieldValue($dataset, $datasetField, $recordId);
+				}
+			} else {
+				$newInput['type'] = 'text';
+				$newInput['readonly'] = true;
+				$newInput['show_as_a_span_when_readonly'] = true;
+				$newInput['value'] = ze\dataset::fieldValue($dataset, $datasetField, $recordId, true, true);
+			}
+			
+			if ($datasetField['type'] == 'checkbox' || $datasetField['type'] == 'group') {
+				if ($edit) {
+					$newInput['type'] = 'checkbox';
+					$newInput['label'] = $datasetField['label'];
+				} else {
+					$newInput['value'] = $newInput['value'] ? $this->phrase('Yes') : $this->phrase('No');
+				}
+			} elseif ($datasetField['type'] == 'centralised_select' || $datasetField['type'] == 'select') {
+				if ($edit) {
+					$newInput['type'] = "select";
+					$newInput['empty_value'] = " -- Select --";
+				} else {
+					$list = ze\dataset::fieldLOV($datasetField);
+					if (isset($list[$newInput['value']])) {
+						$newInput['value'] = $list[$newInput['value']];
+					}
+				}
+			} elseif ($datasetField['type'] == 'centralised_radios') {
+				if ($edit) {
+					$newInput['type'] = "radios";
+				}
+			}
+			
+			if ($edit && in_array($datasetField['type'], ['centralised_select', 'centralised_radios', 'select', 'radios', 'checkboxes'])) {
+				$newInput['values'] = ze\dataset::fieldLOV($datasetField);
+			}
+			
+			//Merge any custom tuix with fields
+			if ($datasetField['db_column']) {
+				$identifier = $datasetField['db_column'];
+				if (isset($tags['tabs'][$tab]['fields']['custom_field_' . $datasetFieldId])) {
+					ze\tuix::merge($newInput, $tags['tabs'][$tab]['fields']['custom_field_' . $datasetFieldId]);
+					unset($tags['tabs'][$tab]['fields']['custom_field_' . $datasetFieldId]);
+				}
+			} else {
+				$identifier = $datasetFieldId;
+			}
+			if (isset($tags['tabs'][$tab]['fields']['custom_field_' . $identifier])) {
+				ze\tuix::merge($newInput, $tags['tabs'][$tab]['fields']['custom_field_' . $identifier]);
+			}
+			$tags['tabs'][$tab]['fields']['custom_field_' . $identifier] = $newInput;
+		}
+		ze\tuix::addOrdinalsToTUIX($tags['tabs'][$tab]['fields']);
+		ze\tuix::readValues($tags, $fields, $values, $changes, $filling = true, $resetErrors = false);
+	}
+	
+	//Save dataset fields on an FEA form added by setupDatasetFields(...)
+	//Called in saveVisitorTUIX
+	protected function saveDatasetFields(&$tags, &$fields, &$values, $tab, $dataset, $datasetFieldIds, $recordId) {
+		
+		foreach ($datasetFieldIds as $datasetFieldId) {
+			$datasetField = ze\dataset::fieldDetails($datasetFieldId, $dataset);
+			if (!$datasetField) {
+				continue;
+			}
+			
+			$identifier = $datasetField['db_column'] ? $datasetField['db_column'] : $datasetFieldId;
+			if ($datasetField['type'] == 'checkboxes') {
+				ze\dataset::updateCheckboxField($dataset['id'], $datasetFieldId, $recordId, $values[$tab.'/custom_field_'.$identifier]);
+			} else {
+				ze\row::set($dataset['table'], [$datasetField['db_column'] => $values[$tab.'/custom_field_'.$identifier]], $recordId);
+			}
+		}
+	}
+	
+	
 }

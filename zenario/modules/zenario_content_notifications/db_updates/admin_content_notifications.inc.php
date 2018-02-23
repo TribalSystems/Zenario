@@ -118,7 +118,7 @@ _sql
 		`content_version` int(10) unsigned NOT NULL,
 		`admin_id` int(10) unsigned NOT NULL,
 		`action_requested` enum('publish','trash','other') NOT NULL default 'other',
-		`datetime_requested` datetime DEFAULT NULL,
+		`datetime_requested` datetime NOT NULL DEFAULT '1970-01-01 00:00:00',
 		`note` mediumtext,
 		PRIMARY KEY (`content_id`,`content_type`,`content_version`,`datetime_requested`),
 		KEY (`admin_id`),

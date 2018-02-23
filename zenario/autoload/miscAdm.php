@@ -393,6 +393,17 @@ class miscAdm {
 	
 		} elseif ($forceScan) {
 			$changed = true;
+		
+		//T11275: Trigger a rescan if someone changes the site description file.
+		} elseif (file_exists(CMS_ROOT. 'zenario_custom/site_description.yaml')
+			   && filemtime(CMS_ROOT. 'zenario_custom/site_description.yaml') > $lastChanged) {
+			
+			//Do a full rescan of everything.
+			\ze\skinAdm::clearCache();
+			
+			//N.b. the ze\skinAdm::clearCache() function includes a call to this one,
+			//with $forceScan set to true, so we can stop running the current call.
+			return;
 	
 		//In production mode, only run this check if it looks like there's
 		//been a core software update since the last time we ran
@@ -403,10 +414,10 @@ class miscAdm {
 		} else {
 			$changed = false;
 			foreach (\ze::moduleDirs('tuix/') as $tuixDir) {
-			
+		
 				$RecursiveDirectoryIterator = new \RecursiveDirectoryIterator(CMS_ROOT. $tuixDir);
 				$RecursiveIteratorIterator = new \RecursiveIteratorIterator($RecursiveDirectoryIterator);
-			
+		
 				foreach ($RecursiveIteratorIterator as $file) {
 					if ($file->isFile()
 					 && $file->getMTime() > $lastChanged) {
@@ -415,7 +426,6 @@ class miscAdm {
 					}
 				}
 			}
-			chdir(CMS_ROOT);
 		}
 	
 	

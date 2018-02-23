@@ -1490,6 +1490,8 @@ additionalProperties:
                                                     type: string
                                                     description: >
                                                         The name of the table (excluding the DB_NAME_PREFIX).
+                                                        
+                                                        You can use mergefields such as [[EXAMPLE_MODULE_4_PREFIX]] if you need to use a module's table.
                                                 column:
                                                     type: string
                                                     description: >

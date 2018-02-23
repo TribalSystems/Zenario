@@ -2289,6 +2289,12 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			);
 		}
 		
+		//There is also the option to externaly load a value with a post request
+		$mergeName = $this->getFormFieldMergeName($field);
+		if (!empty($_POST['preload_from_post']) && $mergeName && isset($_POST[$mergeName])) {
+			$value = $_POST[$mergeName];
+		}
+		
 		$value = is_null($value) ? false : $value;
 		return $value;
 	}
@@ -3169,6 +3175,10 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		}
 	}
 	
+	private function getFormFieldMergeName($field) {
+		return $field['db_column'] ? $field['db_column'] : 'unlinked_' . $field['type'] . '_' . $field['id'];
+	}
+	
 	private function getTemplateEmailMergeFields($userId, $toAdmin = false) {
 		$mergeFields = [];
 		//User merge fields
@@ -3181,7 +3191,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		}
 		//Data merge fields (after user merge fields so form merge fields are not overridden)
 		foreach ($this->fields as $fieldId => $field) {
-			$column = $field['db_column'] ? $field['db_column'] : 'unlinked_' . $field['type'] . '_' . $fieldId;
+			$column = $this->getFormFieldMergeName($field);
 			$display = static::getFieldDisplayValue($field, $field['value']);
 			$mergeFields[$column] = $display;
 		}

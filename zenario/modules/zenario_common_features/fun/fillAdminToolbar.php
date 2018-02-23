@@ -1168,7 +1168,7 @@ if (isset($adminToolbar['sections']['icons']['buttons']['item_categories_some'])
 
 //Content Item type has categories enabled
 if (ze\row::exists('content_types', ['enable_categories' => 0, 'content_type_id' => $content['type']])) {
-	unset($adminToolbar['sections']['edit']['buttons']['category_dropdown']);
+	unset($adminToolbar['sections']['edit']['buttons']['categories']);
 	unset($adminToolbar['sections']['icons']['buttons']['item_categories_some']);
 	unset($adminToolbar['sections']['icons']['buttons']['item_categories_none']);
 }

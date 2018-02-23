@@ -44,6 +44,44 @@ plugin_settings:
                     side_note: >
                         Don't show link to the registration page even if a registration page does exist.
                 
+                requires_terms_and_conditions:
+                    plugin_setting:
+                        name: requires_terms_and_conditions
+                    label: 'Require terms and conditions to be accepted'
+                    type: select
+                    value: ""
+                    values:
+                        0:
+                            label: "Not required"
+                        1:
+                            label: "If user has not accepted T's and C's before"
+                        always:
+                            label: "User must accept T's and C's every time they login (even if accepted previously)"
+                    format_onchange: Yes
+                    side_note: >
+                        Refers to terms_and_conditions_accepted flag in Users dataset.
+                        If the user has not accepted the terms and condictions the
+                        login will fail and the user will see an additional checkbox
+                        asking them to accept the T's and C's.
+                terms_and_conditions_page:
+                    plugin_setting:
+                        name: terms_and_conditions_page
+                        foreign_key_to: content
+                    label: 'Terms and conditions page:'
+                    pick_items:
+                        path: zenario__content/panels/content/refiners/filter_by_lang////
+                        min_path: zenario__content/panels/content
+                        max_path: zenario__content/panels/content
+                        target_path: zenario__content/panels/content
+                        disallow_refiners_looping_on_min_path: true
+                        select_phrase: Select a content item...
+                        hide_remove_button: true
+                    validation:
+                        required_if_not_hidden: Please select a terms and conditions page
+                    side_note: >
+                        A link to this page will be placed in the "Accept our terms and conditions" checkbox text.
+                    indent: 1
+                
                 label_description:
                     full_width: Yes
                     snippet:
@@ -94,35 +132,6 @@ plugin_settings:
                             These settings control what happens after an Extranet User
                             logs in. The only apply if this Plugin is placed on the
                             Extranet Login page.
-                requires_terms_and_conditions:
-                    plugin_setting:
-                        name: requires_terms_and_conditions
-                    label: 'Require terms and conditions to be accepted'
-                    type: checkbox
-                    value: ""
-                    format_onchange: Yes
-                    side_note: >
-                        Refers to terms_and_conditions_accepted flag in Users dataset.
-                        If the user has not accepted the terms and condictions the
-                        login will fail and the user will see an additional checkbox
-                        asking them to accept the T's and C's.
-                terms_and_conditions_page:
-                    plugin_setting:
-                        name: terms_and_conditions_page
-                        foreign_key_to: content
-                    label: 'Terms and conditions page:'
-                    pick_items:
-                        path: zenario__content/panels/content/refiners/filter_by_lang////
-                        min_path: zenario__content/panels/content
-                        max_path: zenario__content/panels/content
-                        target_path: zenario__content/panels/content
-                        disallow_refiners_looping_on_min_path: true
-                        select_phrase: Select a content item...
-                        hide_remove_button: true
-                    validation:
-                        required_if_not_hidden: Please select a terms and conditions page
-                    side_note: >
-                        A link to this page will be placed in the "Accept our terms and conditions" checkbox text.
                 show_welcome_page:
                     plugin_setting:
                         name: show_welcome_page

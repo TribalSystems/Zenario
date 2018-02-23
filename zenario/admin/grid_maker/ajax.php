@@ -421,6 +421,9 @@ if (is_array($data) && ze\gridAdm::validateData($data)) {
 		}
 	}
 
+} elseif (!empty($_GET['thumbnail'])) {
+	header('location: '. ze\link::absolute(). 'zenario/admin/images/icon-layout-on-state-v2.svg');
+
 } else {
 	echo ze\admin::phrase('This grid design is invalid.');
 }

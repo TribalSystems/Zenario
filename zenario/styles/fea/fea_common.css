@@ -777,6 +777,12 @@ body.mobile .zfea_blocks.aw_list .zfea_block_list_wrap .zfea_block {
 	margin-bottom:20px;
 }
 
+.zenario_conference_fea .zfea_zenario_list_abstracts table tr td.sorted_buttons.multi_select_buttons {
+	vertical-align:top;
+	background:#fbf290;
+	padding-top:0;
+}
+
 /* Storefront documents
 --------------------------------------------------------------------------------------------------*/
 

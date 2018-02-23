@@ -336,11 +336,14 @@ if (!$requestedPath || empty($tags['class_name'])) {
 		}
 	}
 	
+	$queued = !empty($_GET['_queued']);
+	$sortCol = $_GET['_sort_col'] ?? false;
+	
 	//Have any columns been added that need formatting from their own Module?
-	if (!($_GET['_queued'] ?? false)) {
-		if (isset($tags['columns']) && is_array($tags['columns'])) {
-			foreach ($tags['columns'] as $colName => &$col) {
-				if (is_array($col) && !empty($col['class_name'])) {
+	if (isset($tags['columns']) && is_array($tags['columns'])) {
+		foreach ($tags['columns'] as $colName => &$col) {
+			if (is_array($col) && !empty($col['class_name'])) {
+				if (!$queued || $colName == $sortCol) {
 					ze\tuix::includeModule($modules, $col, $type, $requestedPath, $settingGroup);
 				}
 			}
@@ -588,7 +591,7 @@ if (!$requestedPath || empty($tags['class_name'])) {
 		}
 		
 		
-		//Loop through each database-column defined in the XML schema
+		//Loop through each database-column defined in the YAML files
 		$columns = "";
 		$sortColumn = false;
 		$sortColumnDesc = false;
@@ -603,7 +606,7 @@ if (!$requestedPath || empty($tags['class_name'])) {
 				}
 				
 				//Add it to the sort if we're sorting by it
-				if ($colName == ($_GET['_sort_col'] ?? false) && !ze\ring::engToBoolean($col['disallow_sorting'] ?? false)) {
+				if ($colName == $sortCol && !ze\ring::engToBoolean($col['disallow_sorting'] ?? false)) {
 					if (!empty($col['sort_column'])) {
 						$sortColumn = $col['sort_column'];
 					} else {
@@ -633,7 +636,7 @@ if (!$requestedPath || empty($tags['class_name'])) {
 					
 					
 					
-					if ($colName == ($_GET['_sort_col'] ?? false)
+					if ($colName == $sortCol
 					 || (($isFiltered || isset($_GET['_search'])) && ze\ring::engToBoolean($col['searchable'] ?? false))
 					 || ($isFiltered && $filterFormat && ze::in(
 							$filterFormat,
@@ -1071,7 +1074,7 @@ if (!$requestedPath || empty($tags['class_name'])) {
 			}
 			
 			//For panel requests that are part of a queue, don't attempt to fetch any ids, just get a count.
-			if ($_GET['_queued'] ?? false) {
+			if ($queued) {
 				$count = ze\sql::numRows($result);
 			
 			//Otherwise get the list of ids in the correctly sorted order
@@ -1202,7 +1205,7 @@ if (!$requestedPath || empty($tags['class_name'])) {
 		//	}
 		//} else
 		
-		if (!($_GET['_queued'] ?? false)) {
+		if (!$queued) {
 			
 			//If we've not been using pagination, count the number of items
 			if (!$in) {

@@ -690,12 +690,11 @@ zenarioA.getGridSlotDetails = function(slotName) {
 			//If we're using a grid-template, try to work out the width of this slot
 			//from the CSS
 			if (maxCols && maxWidth) {
-				try {
-					//Loop through each stylesheet/rule, checking to see if there is a grid and a "span" rule that matches this span
-					//Adapted from http://stackoverflow.com/questions/324486/how-do-you-read-css-rule-values-with-javascript
-					outerLoop:
-					foreach (document.styleSheets as si => styleSheet) {
-					
+				//Loop through each stylesheet/rule, checking to see if there is a grid and a "span" rule that matches this span
+				//Adapted from http://stackoverflow.com/questions/324486/how-do-you-read-css-rule-values-with-javascript
+				outerLoop:
+				foreach (document.styleSheets as si => styleSheet) {
+					try {
 						if (!styleSheet.href
 						 || !styleSheet.href.indexOf('zenario_custom/templates/grid_templates/')) {
 							continue;
@@ -736,9 +735,9 @@ zenarioA.getGridSlotDetails = function(slotName) {
 								}
 							}
 						}
+					} catch (e) {
+						width = '';
 					}
-				} catch (e) {
-					width = '';
 				}
 			
 			

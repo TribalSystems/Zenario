@@ -235,9 +235,20 @@ class zenario_ctype_event extends ze\moduleBaseClass {
 						if (!$values['zenario_ctype_event__when_and_where/start_date']) {
 							$box['tabs']['zenario_ctype_event__when_and_where']['errors']['incomplete_dates'] = ze\admin::phrase("Your Event's Start and End Dates must be defined.");
 						}
+						if ($values['zenario_ctype_event__when_and_where/start_date']) {
+							$start_time_hours = $values['zenario_ctype_event__when_and_where/start_time_hours'] ?: '00';
+							$start_time_minutes = $values['zenario_ctype_event__when_and_where/start_time_minutes'] ?: '00';
+							$end_time_hours = $values['zenario_ctype_event__when_and_where/end_time_hours'] ?: '00';
+							$end_time_minutes = $values['zenario_ctype_event__when_and_where/end_time_minutes'] ?: '00';
+						} else {
+							$start_time_hours =
+							$start_time_minutes =
+							$end_time_hours =
+							$end_time_minutes = '00';
+						}
 	
-						if ((($values['zenario_ctype_event__when_and_where/start_time_hours'] * 100 + $values['zenario_ctype_event__when_and_where/start_time_minutes']) 
-									> ($values['zenario_ctype_event__when_and_where/end_time_hours'] * 100 + $values['zenario_ctype_event__when_and_where/end_time_minutes'])
+						if ((($start_time_hours * 100 + $start_time_minutes) 
+									> ($end_time_hours * 100 + $end_time_minutes)
 							) && (!$values['zenario_ctype_event__when_and_where/late_evening_event'])) {
 	
 							$box['tabs']['zenario_ctype_event__when_and_where']['errors']['incorrect_time'] = ze\admin::phrase('The Event cannot finish earlier than it starts. Please set the "Late evening Event" flag the Event runs past midnight.');
@@ -256,24 +267,37 @@ class zenario_ctype_event extends ze\moduleBaseClass {
 					if ($url == 'http://') {
 						$url = null;
 					}
+					
+					if ($values['zenario_ctype_event__when_and_where/start_date']) {
+						$start_time_hours = $values['zenario_ctype_event__when_and_where/start_time_hours'] ?: '00';
+						$start_time_minutes = $values['zenario_ctype_event__when_and_where/start_time_minutes'] ?: '00';
+						$end_time_hours = $values['zenario_ctype_event__when_and_where/end_time_hours'] ?: '00';
+						$end_time_minutes = $values['zenario_ctype_event__when_and_where/end_time_minutes'] ?: '00';
+					} else {
+						$start_time_hours =
+						$start_time_minutes =
+						$end_time_hours =
+						$end_time_minutes = '00';
+					}
+					
 					$details = [
 						"id" => $box['key']['cID'],
 						"version" => $box['key']['cVersion'],
 						"version" => $box['key']['cVersion'],
 						"start_date" => $values['zenario_ctype_event__when_and_where/start_date'],
 						"start_time" => (
-										(($values['zenario_ctype_event__when_and_where/start_time_hours'] ?? false) 
-											&& ($values['zenario_ctype_event__when_and_where/start_time_minutes'] ?? false)
+										(($start_time_hours ?? false) 
+											&& ($start_time_minutes ?? false)
 												&& ($values['zenario_ctype_event__when_and_where/specify_time'] ?? false))?
-										 ($values['zenario_ctype_event__when_and_where/start_time_hours'] . ":" . $values['zenario_ctype_event__when_and_where/start_time_minutes']): 
+										 ($start_time_hours . ":" . $start_time_minutes): 
 										 null
 										 ),
 						"end_date" => $values['zenario_ctype_event__when_and_where/end_date'],
 						"end_time" => (
-										(($values['zenario_ctype_event__when_and_where/end_time_hours'] ?? false) 
-											&& ($values['zenario_ctype_event__when_and_where/end_time_minutes'] ?? false) 
+										(($end_time_hours ?? false) 
+											&& ($end_time_minutes ?? false) 
 												&& ($values['zenario_ctype_event__when_and_where/specify_time'] ?? false))?
-										 ($values['zenario_ctype_event__when_and_where/end_time_hours'] . ":" . $values['zenario_ctype_event__when_and_where/end_time_minutes']): 
+										 ($end_time_hours . ":" . $end_time_minutes): 
 										 null
 									   ),
 						"specify_time" => ze\ring::engToBoolean($values['zenario_ctype_event__when_and_where/specify_time']),

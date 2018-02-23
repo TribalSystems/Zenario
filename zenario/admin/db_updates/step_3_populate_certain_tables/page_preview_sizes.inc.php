@@ -27,16 +27,26 @@
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
-define('LATEST_REVISION_NO', 43726);	//N.b. 8.0 starts at revision #43770
-define('LATEST_BIG_CHANGE_REVISION_NO', 43721);
-define('INSTALLER_REVISION_NO', 41600);
-define('INSTALLER_DEFAULT_THEME', 'duke_street');
 
-define('ZENARIO_IS_HEAD', false);
-define('ZENARIO_VERSION', '8.0');
-define('ZENARIO_MAJOR_VERSION', '8');
-define('ZENARIO_MINOR_VERSION', '0');
-define('ZENARIO_IS_BUILD', true);
-define('ZENARIO_REVISION', '45032');
+//Warning:
+	//This update will always be run with each update; no matter what the version numbers are!
 
-define('TINYMCE_DIR', 'zenario/libs/manually_maintained/lgpl/tinymce_4_5_7b/');
+
+//Populate the page_preview_sizes table with some initial values, if it is empty
+if (!ze\sql::numRows("SELECT 1 FROM ". DB_NAME_PREFIX. "page_preview_sizes LIMIT 1")) {
+	
+	ze\sql::update("
+		INSERT INTO ". DB_NAME_PREFIX. "page_preview_sizes
+		(width, height, description, is_default, ordinal, type)
+		VALUES 
+		(1680, 1050, 'Current computers', 0, 1, 'desktop'),
+		(1280, 1024, 'Not that old computers', 0, 2, 'desktop'),
+		(1024, 768, 'Old computers', 0, 3, 'desktop'),
+		(1440, 900, 'Other laptops', 0, 4, 'laptop'),
+		(1366, 769, 'Laptop 15.7\"', 0, 5, 'laptop'),
+		(1280, 800, 'Laptop 15.4\"', 0, 6, 'laptop'),
+		(1024, 600, 'Netbook', 1, 7, 'laptop'),
+		(768, 1024, 'iPad portrait', 0, 8, 'tablet'),
+		(320, 480, 'HVGA - iPhone, Android, Palm Pre', 0, 9, 'smartphone')
+	");
+}

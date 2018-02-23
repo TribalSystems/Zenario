@@ -52,10 +52,28 @@ class tuix {
 	public static function readFile($path, $useCache = true, $updateCache = true) {
 		$type = explode('.', $path);
 		$type = $type[count($type) - 1];
-	
+		
+		//Check to see if the file is actually there
 		if (!file_exists($path)) {
-			echo 'Could not find file '. $path;
-			exit;
+			//T10201: Add a workaround to fix an occasional bug where the tuix_file_contents table is out of date
+			//Try to catch the case where the file was deleted in the filesystem but
+			//not from the tuix_file_contents table, and we've not noticed this yet
+			if (\ze::$lastDB
+			 && \ze::$lastDB == \ze::$localDB) {
+			
+				//Look for bad rows from the table
+				$sql = "
+					DELETE FROM ". DB_NAME_PREFIX. "tuix_file_contents
+					WHERE '". \ze\escape::sql($path). "' LIKE CONCAT('%modules/', module_class_name, '/tuix/', type, '/', filename)";
+			
+				//If we found any, delete them and flag that the cache table might be out of date
+				if ($affectedRows = \ze\sql::update($sql, false, false)) {
+					\ze\site::setSetting('yaml_files_last_changed', '');
+				
+					//Attempt to continue normally
+					return [];
+				}
+			}
 		}
 	
 		//Attempt to use a cached copy of this TUIX file
@@ -86,30 +104,6 @@ class tuix {
 			
 			case 'yml':
 			case 'yaml':
-			
-				//Check to see if the file is actually there
-				if (!file_exists($path)) {
-					//T10201: Add a workaround to fix an occasional bug where the tuix_file_contents table is out of date
-					//Try to catch the case where the file was deleted in the filesystem but
-					//not from the tuix_file_contents table, and we've not noticed this yet
-					if (\ze::$lastDB
-					 && \ze::$lastDB == \ze::$localDB) {
-					
-						//Look for bad rows from the table
-						$sql = "
-							DELETE FROM ". DB_NAME_PREFIX. "tuix_file_contents
-							WHERE '". \ze\escape::sql($path). "' LIKE CONCAT('%modules/', module_class_name, '/tuix/', type, '/', filename)";
-					
-						//If we found any, delete them and flag that the cache table might be out of date
-						if ($affectedRows = \ze\sql::update($sql, false, false)) {
-							\ze\site::setSetting('yaml_files_last_changed', '');
-						
-							//Attempt to continue normally
-							return [];
-						}
-					}
-				}
-			
 				$contents = file_get_contents($path);
 			
 				//If it was missing or unreadable, display an error and then exit.
@@ -1441,7 +1435,7 @@ class tuix {
 						$ids = $field['validation']['non_present']['ids'] ?? [];
 						$ids[$field['validation']['non_present']['column']] = $fieldValue;
 						
-						if (\ze\row::exists($field['validation']['non_present']['table'], $ids)) {
+						if (\ze\row::exists(\ze\dbAdm::addConstantsToString($field['validation']['non_present']['table']), $ids)) {
 							$field['error'] = $field['validation']['non_present']['message'];
 							
 							if (is_string($field['error'])) {
