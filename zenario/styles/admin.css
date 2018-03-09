@@ -491,7 +491,7 @@ input, textarea, button {
 	width: 18px;
 	height: 18px;
 	display: block;
-	background: #D2D0D1 url('../admin/images/icon-bug.svg') no-repeat center / auto 12px;
+	background: #D2D0D1 url('../admin/images/icon-bug.png') no-repeat center / 12px 12px;
 	cursor:pointer;
 	-webkit-border-radius:50%;
 	-moz-border-radius:50%;

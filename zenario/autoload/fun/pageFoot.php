@@ -74,7 +74,7 @@ echo '
 	//Note that page caching may cause the wrong user id to be set.
 	//As with ($_SESSION['extranetUserID'] ?? false), anything that changes behaviour by Extranet User should not allow the page to be cached.
 echo '
-'. $scriptTag. '>'. $inlineStart. 'zenario.init("'. \ze::setting('css_js_version'). '", ', (int) ($_SESSION['extranetUserID'] ?? false), ', "', \ze\escape::js(\ze\content::currentLangId()), '", "', \ze\escape::js(\ze::setting('google_recaptcha_theme')), '", "', \ze\escape::js(\ze::setting('vis_date_format_datepicker')), '", "'. \ze\escape::js(DIRECTORY_INDEX_FILENAME). '", ', (int) \ze\cookie::canSet(), ', ', (int) \ze::$equivId, ', ', (int) \ze::$cID, ', "', \ze\escape::js(\ze::$cType), '", ', (int) \ze::$skinId, ');'. $inlineStop. '</script>';
+'. $scriptTag. '>'. $inlineStart. 'zenario.init("'. \ze::setting('css_js_version'). '",', (int) ($_SESSION['extranetUserID'] ?? 0), ',"', \ze\escape::js(\ze\content::currentLangId()), '","', \ze\escape::js(\ze::setting('google_recaptcha_theme')), '","', \ze\escape::js(\ze::setting('vis_date_format_datepicker')), '","', \ze\escape::js(DIRECTORY_INDEX_FILENAME), '",', (int) \ze\cookie::canSet(), ',', (int) \ze::$equivId, ',', (int) \ze::$cID, ',"', \ze\escape::js(\ze::$cType), '",', (int) \ze::$skinId, ',', (int) \ze::setting('mod_rewrite_slashes'), ');'. $inlineStop. '</script>';
 
 
 

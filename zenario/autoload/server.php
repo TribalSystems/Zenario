@@ -228,6 +228,20 @@ class server {
 	}
 
 
+	//Create a symlink if this is a UN*X server, otherwise just copy the file on a Windows server
+	public static function symlinkOrCopy($pathFrom, $pathTo, $chmod = null) {
+		if (\ze\server::isWindows()) {
+			copy($pathFrom, $pathTo);
+		} else {
+			symlink($pathFrom, $pathTo);
+		}
+		
+		if ($chmod !== null) {
+			@chmod($pathTo, $chmod);
+		}
+	}
+
+
 
 
 

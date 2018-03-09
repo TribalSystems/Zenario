@@ -88,14 +88,6 @@ if (($instance = ze\plugin::details($addPluginInstance))
 		WHERE instance_id = ". (int) $addPluginInstance;
 	ze\sql::select($sql);  //No need to check the cache as the other statements should clear it correctly
 	
-	
-	//Delete the instance that was just copied if it looks like it was created just to place in this nest
-	if ($instanceId != $addPluginInstance && !$instance['content_id']
-	 && !ze\row::exists('plugin_layout_link', ['instance_id' => $addPluginInstance])
-	 && !ze\row::exists('plugin_item_link', ['instance_id' => $addPluginInstance])) {
-		ze\pluginAdm::delete($addPluginInstance);
-	}
-	
 	ze\contentAdm::resyncLibraryPluginFiles($instanceId, $instance);
 	
 	

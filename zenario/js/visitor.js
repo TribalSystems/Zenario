@@ -2252,7 +2252,7 @@ zenario.replacePluginSlotContents = function(slotName, instanceId, resp, additio
 					$(cb).hide().fadeIn();
 				},
 				onComplete: => {
-					zenario.addJQueryElements('#colorbox ');
+					zenario.addJQueryElements('#colorbox ', false, beingEdited);
 				
 					//Allow modules to call JavaScript function(s) after they have been refreshed
 					foreach (scriptsToRun as var script) {
@@ -2325,19 +2325,19 @@ zenario.replacePluginSlotContents = function(slotName, instanceId, resp, additio
 					zenario.callScript(scriptsToRun[script], zenario.slots[slotName].moduleClassName);
 				}
 			}
+			
+			
+			//Attempt to record the current AJAX reload in the URL bar
+			if (recordInURL) {
+				zenario.recordRequestsInURL(slotName, additionalRequests);
+			}
 		
-			zenario.addJQueryElements('#' + containerId + ' ');
+			zenario.addJQueryElements('#' + containerId + ' ', false, beingEdited);
 		
 		
 			if (scrollToTopOfSlot && !zenarioAB.isOpen) {
 				//Scroll to the top of a slot if needed
 				zenario.scrollToSlotTop(slotName, true);
-			}
-		
-		
-			//Attempt to record the current AJAX reload in the URL bar
-			if (recordInURL) {
-				zenario.recordRequestsInURL(slotName, additionalRequests);
 			}
 		}
 	
@@ -2743,10 +2743,19 @@ zenario.setChildrenToTheSameHeight = function(path) {
 };
 
 //Add jQuery elements automatically by class name
-zenario.addJQueryElements = function(path, adminFacing) {
+zenario.addJQueryElements = function(path, adminFacing, beingEdited) {
 	
 	if (!path || !defined(path)) {
 		path = '';
+	}
+	
+	//If the "Show menu structure in friendly URLs" setting is set, watch out for any links, e.g.:
+		//<a href="#top">
+	//that would break due to this setting being enabled, and automatically fix them.
+	if (!beingEdited && zenario.slashesInURL) {
+		$(path + 'a[href^="#"]').each(function(i, el) {
+			el.href = location.pathname + location.search + el.href.replace(URLBasePath, '');
+		});
 	}
 	
 	zenario.setChildrenToTheSameHeight(path);
@@ -3437,7 +3446,9 @@ zenario.init = function(
 	equivId,
 	cID,
 	cType,
-	skinId
+	skinId,
+	
+	slashesInURL
 ) {
 
 	window.zenarioCSSJSVersionNumber = zenarioCSSJSVersionNumber;
@@ -3457,6 +3468,8 @@ zenario.init = function(
 	zenario.cID = cID || undefined;
 	zenario.cType = cType || undefined;
 	zenario.skinId = skinId || undefined;
+	
+	zenario.slashesInURL = !!slashesInURL;
 	
 	
 

@@ -1,0 +1,27 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+author_name: Tribal Systems
+copyright_info: © Tribal Limited
+editions: Community, Pro, ProBusiness, Enterprise
+start_running_on_install: false
+license_info: 'Modified BSD License'
+display_name: Copyright
+
+description: >
+    <p>
+        Copyright
+    </p><p>
+        This module provides a simple plugin that displays a copyright notice (e.g. Copyright (c) Tribiq 2001-2012).
+    </p><p>
+        There are settings avaliavle to change the company name, start-year, end-year and a link to a content item or external URL.
+    </p>
+category: pluggable
+
+# Reminder: you need to increment the LATEST_REVISION_NO in this module's
+# latest_revision_no.inc.php file if you change any of the fields below:
+vlp_class_name: zenario_copyright
+is_pluggable: true
+can_be_version_controlled: false
+nestable: true
+default_framework: standard
+default_instance_name: Copyright notice

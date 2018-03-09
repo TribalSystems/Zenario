@@ -1159,6 +1159,7 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 		upload = field.upload,
 		pick_items = field.pick_items,
 		disabled = field.disabled,
+		validation = field.validation || {},
 		isDatePicker = fieldType == 'date' || fieldType == 'datetime',
 		hidden,
 		hideOnOpen,
@@ -1576,6 +1577,9 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 		if (field.error) {
 			extraAtt['class'] += 'zenario_field_with_error ';
 		}
+		if (validation.required || validation.required_if_not_hidden) {
+			extraAtt['class'] += 'zenario_required_field ';
+		}
 	}
 	
 	
@@ -1746,7 +1750,7 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 			extraAtt['class'] += 'disabled ';
 		}
 		
-		if (field.validation && field.validation.numeric) {
+		if (validation.numeric) {
 			extraAtt.onkeyup =
 				(extraAtt.onkeyup || '') +
 				"lib.keepNumeric(this)";

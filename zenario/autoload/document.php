@@ -37,7 +37,7 @@ class document {
 	//Formerly "zenario_common_features::uploadDocument()"
 	public static function upload($filepath, $filename, $folderId = false) {
 		$fileId = \ze\file::addToDatabase('hierarchial_file', $filepath, $filename, false,false,true);
-		\ze\document::create($fileId, $filename, $folderId);
+		return \ze\document::create($fileId, $filename, $folderId);
 	}
 	
 	//Formerly "zenario_common_features::createDocument()"

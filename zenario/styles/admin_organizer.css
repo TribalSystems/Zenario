@@ -1353,7 +1353,7 @@ div.organizer_pageSize {
 }
 
 #organizer_bottomWrap #organizer_lowerLeftColumn .organizer_help {
-	background: center center no-repeat url('../admin/images/help-tour-icon.png');
+	background: url('../admin/images/icon-footer-cms-tour-guide.png') no-repeat center / 18px 18px;
 }
 
 #organizer_bottomWrap #organizer_lowerLeftColumn .organizer_diagnostics {
@@ -1616,7 +1616,7 @@ div.organizer_pageSize {
 }
 
 .organizer_top_level_image.zenario_cms_core_languages {
-	background: url('../admin/images/icon-international-off.svg') no-repeat center / auto 18px;
+	background: url('../admin/images/icon-international-off.png') no-repeat center / 18px 18px;
 }
 
 .organizer_top_level_image.zenario_cms_core_content {
@@ -1670,7 +1670,7 @@ div.organizer_pageSize {
 #zenario_at_top_left_menu .organizer_top_level_image.zenario_cms_core_languages,
 #organizer_leftColumn .legend_on a.zenario_cms_core_languages,
 .organizer_top_level_image.zenario_cms_core_languages:hover {
-	background: url('../admin/images/icon-international-on.svg') no-repeat center / 18px 18px;
+	background: url('../admin/images/icon-international-on.png') no-repeat center / 18px 18px;
 }
 
 #zenario_at_top_left_menu .organizer_top_level_image.zenario_cms_core_plugins,

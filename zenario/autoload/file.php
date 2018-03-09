@@ -439,13 +439,9 @@ class file {
 		//Attempt to add/symlink the file in the cache directory
 		} elseif ($path && (\ze\cache::cleanDirs()) && ($dir = \ze\cache::createDir($hash, 'downloads', $onlyForCurrentVisitor))) {
 			$url = $dir. ($version['filename'] ?: $file['filename']);
-		
+			
 			if (!file_exists(CMS_ROOT. $url)) {
-				if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-					copy($path, CMS_ROOT. $url);
-				} else {
-					symlink($path, CMS_ROOT. $url);
-				}
+				\ze\server::symlinkOrCopy($path, CMS_ROOT. $url, 0666);
 			}
 	
 		//Otherwise, we'll need to link to file.php for the file
@@ -585,19 +581,20 @@ class file {
 	public static function createPublicLink($fileId) {
 		$path = self::docstorePath($fileId, false);
 		$file = \ze\row::get('files', ['short_checksum', 'filename'], $fileId);
+		$filename = $file['filename'];
 	
-		$dirPath = 'public' . '/downloads/' . $file['short_checksum'];
-		$symFolder =  CMS_ROOT . $dirPath;
-		$symPath = $symFolder . '/' . $file['filename'];
-		$link = $dirPath . '/' . $file['filename'];
+		$relDir = 'public'. '/downloads/'. $file['short_checksum'];
+		$absDir =  CMS_ROOT. $relDir;
+		$relPath = $relDir. '/'. rawurlencode($filename);
+		$absPath = $absDir. '/'. $filename;
 	
-		if (!file_exists($symPath)) {
-			if(!file_exists($symFolder)) {
-				mkdir($symFolder);
+		if (!file_exists($absPath)) {
+			if (!file_exists($absDir)) {
+				mkdir($absDir);
 			}
-			symlink($path, $symPath);
+			\ze\server::symlinkOrCopy($path, $absPath, 0666);
 		}
-		return $link;
+		return $relPath;
 	}
 
 	//Formerly "createPrivateLink()"
@@ -646,6 +643,8 @@ class file {
 		 || !($file = \ze\row::get('files', ['usage', 'short_checksum', 'checksum', 'filename', 'location', 'path'], $fileId))) {
 			return false;
 		}
+		
+		$filename = $file['filename'];
 	
 		//Workout a hash for the file
 		if (!$hash) {
@@ -662,37 +661,34 @@ class file {
 			$path = \ze\cache::createDir($hash, $type, false);
 		}
 	
-		//Otherwise attempt to create the resized version in the cache directory
 		if ($path) {
 	
-			//If the image is already available, all we need to do is link to it
-			if (file_exists($path. $file['filename'])) {
-				return $path. rawurlencode($file['filename']);
+			//If the file is already there, just return the link
+			if (file_exists(CMS_ROOT. $path. $filename)) {
+				return $path. rawurlencode($filename);
 			}
 		
-			//Attempt to add the image inside the cache directory
+			//Otherwise we need to add it
 			if ($file['location'] == 'db') {
-				$file['data'] = \ze\row::get('files', 'data', $fileId);
+				$data = \ze\row::get('files', 'data', $fileId);
+				file_put_contents(CMS_ROOT. $path. $filename, $data);
+				unset($data);
+				@chmod(CMS_ROOT. $path. $filename, 0666);
 		
 			} elseif ($pathDS = self::docstorePath($file['path'], true, $customDocstorePath)) {
-				$file['data'] = file_get_contents($pathDS);
+				
+				\ze\server::symlinkOrCopy($pathDS, CMS_ROOT. $path. $filename, 0666);
 		
 			} else {
 				return false;
 			}
 		
-			if (file_put_contents(CMS_ROOT. $path. $file['filename'], $file['data'])) {
-				@chmod(CMS_ROOT. $path. $file['filename'], 0666);
-				return $path. rawurlencode($file['filename']);
-			}
+			return $path. rawurlencode($filename);
 		}
 	
 		//If we could not use the cache directory, we'll have to link to file.php and load the file from the database each time on the fly.
-		return 'zenario/file.php?usage='. $file['usage']. '&c='. $file['checksum']. '&filename='. urlencode($file['filename']);
+		return 'zenario/file.php?usage='. $file['usage']. '&c='. $file['checksum']. '&filename='. urlencode($filename);
 	}
-
-	//Format a file type for display
-	//	function formatFileTypeNicely($type) {}
 
 	//Formerly "guessAltTagFromFilename()"
 	public static function guessAltTagFromname($filename) {
@@ -1267,7 +1263,7 @@ class file {
 		if ($strict) {
 			$filename = preg_replace('@[^\w\.-]@', '', $filename);
 		} else {
-			$filename = str_replace(['/', '\\'], '', $filename);
+			$filename = str_replace(['/', '\\', ':', '*', '?', '"', '<', '>', '|'], '', $filename);
 		}
 		if ($filename === '') {
 			$filename = '_';

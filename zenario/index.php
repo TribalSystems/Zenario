@@ -344,12 +344,6 @@ echo '
 <meta name="keywords" content="', htmlspecialchars(ze::$pageKeywords), '" />';
 
 
-//If we were to include a <base> tag, this would be a more reliable way of handling relative URLs
-//on pages with slashes in their alias. However using the <base> tag will break links to #anchors that
-//may be on the page.
-//echo '
-//<base href="', htmlspecialchars(ze\link::absolute()), '" />';
-
 // Add hreflang tags
 if (ze\lang::count() > 1) {
 	// If there are no important get requests

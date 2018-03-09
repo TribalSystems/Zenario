@@ -1,0 +1,178 @@
+plugin_settings:
+    module_class_name: zenario_copyright
+    maxheight: 300
+    tabs:
+        first_tab:
+            label: Details
+            fields:
+                company_name:
+                    plugin_setting:
+                        name: company_name
+                    label: 'Company name:'
+                    type: text
+                    value: 'Tribiq'
+                    maxlength: 255
+                    validation:
+                        required: Please enter a company name.
+                        
+                year_display:
+                    plugin_setting:
+                        name: year_display
+                    label: 'Year display:'
+                    type: select
+                    values:
+                        do_not_display_year: 
+                            label: "Don't display year"
+                            ord: 1
+                        display_single_year: 
+                            label: 'Display single year'
+                            ord: 2
+                        display_year_range: 
+                            label: 'Display year range'
+                            ord: 3
+                    empty_value: "-- Select --"
+                    format_onchange: true
+                    validation:
+                        required: Please select an option for year display.
+                        
+                display_single_year:
+                    visible_if: "zenarioAB.value('year_display') == 'display_single_year'"
+                    plugin_setting:
+                        name: display_single_year
+                    label: 'Year display:'
+                    type: radios
+                    indent: 1
+                    values:
+                        current_year: 
+                            label: "Current year"
+                            ord: 1
+                        specific_year: 
+                            label: 'Specific year'
+                            ord: 2
+                    value: current_year
+                    format_onchange: true
+                    validation:
+                        required_if_not_hidden: Please select an option for year display.
+                    
+                specific_year:
+                    visible_if: "zenarioAB.value('display_single_year') == 'specific_year' && zenarioAB.value('year_display') == 'display_single_year'"
+                    plugin_setting:
+                        name: specific_year
+                    label: 'Year:'
+                    type: text
+                    indent: 2
+                    maxlength: 10
+                    style: 'width: 5em;'
+                    validation:
+                        required_if_not_hidden: Please enter a specific year.
+                        numeric: The year must be a number.
+                        
+                start_year:
+                    visible_if: "zenarioAB.value('year_display') == 'display_year_range'"
+                    plugin_setting:
+                        name: start_year
+                    label: 'Start year:'
+                    type: text
+                    maxlength: 10
+                    indent: 1
+                    style: 'width: 5em;'
+                    validation:
+                        required_if_not_hidden: Please enter a start year.
+                        numeric: The height must be a number.
+                        
+                end_year_type:
+                    visible_if: "zenarioAB.value('year_display') == 'display_year_range'"
+                    plugin_setting:
+                        name: end_year_type
+                    label: 'End year:'
+                    type: radios
+                    indent: 1
+                    values:
+                        current_year: 
+                            label: "Current year"
+                            ord: 1
+                        specific_year: 
+                            label: 'Specific year'
+                            ord: 2
+                    format_onchange: true
+                    value: current_year
+                    validation:
+                        required_if_not_hidden: Please select an option for year display.
+                    
+                end_year:
+                    visible_if: "zenarioAB.value('end_year_type') == 'specific_year' && zenarioAB.value('year_display') == 'display_year_range'"
+                    plugin_setting:
+                        name: end_year
+                    label: 'End year:'
+                    type: text
+                    indent: 2
+                    maxlength: 10
+                    style: 'width: 5em;'
+                    validation:
+                        required_if_not_hidden: Please enter an end year.
+                        numeric: The end year must be a number.
+                link_type:
+                    plugin_setting:
+                        name: link_type
+                    label: 'Link'
+                    type: radios
+                    values:
+                        no_link: 
+                            label: 'No link'
+                            ord: 1
+                        external: 
+                            label: 'Link to an external URL'
+                            ord: 2
+                        internal: 
+                            label: 'Link to a Content Item'
+                            ord: 3
+                    value: no_link
+                    format_onchange: true
+                    
+                hyperlink_target:
+                    visible_if: "zenarioAB.value('link_type') == 'internal'"
+                    plugin_setting:
+                        name: hyperlink_target
+                        foreign_key_to: content
+                        dangling_cross_references: delete_instance
+                    label: 'Content Item'
+                    indent: 1
+                    pick_items:
+                        path: zenario__content/panels/content/refiners/filter_by_lang////
+                        min_path: zenario__content/panels/content
+                        max_path: zenario__content/panels/content
+                        target_path: zenario__content/panels/content
+                        disallow_refiners_looping_on_min_path: true
+                        select_phrase: select a content item...
+                        hide_remove_button: true
+                    validation:
+                        required_if_not_hidden: Please select a content item.
+                    format_onchange: true
+                use_translation:
+                    visible_if: "zenarioAB.value('link_type') == 'internal'"
+                    plugin_setting:
+                        name: use_translation
+                    label: "Link to content item in this page's language, if it exists"
+                    type: checkbox
+                    indent: 1
+                    value: ""
+                    side_note: |
+                        If the destination content item has a translation in the visitor's language, link to that.
+                url:
+                    visible_if: "zenarioAB.value('link_type') == 'external'"
+                    plugin_setting:
+                        name: url
+                    label: 'External URL'
+                    indent: 1
+                    type: url
+                    maxlength: 255
+                    value: ""
+                
+                target_blank:
+                    visible_if: "zenarioAB.value('link_type') == 'external'"
+                    plugin_setting:
+                        name: target_blank
+                    label: 'Open in a new window'
+                    indent: 1
+                    type: checkbox
+                    value: ""

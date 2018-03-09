@@ -85,6 +85,19 @@ zenario_backup:
                     hide_with_previous_field: true
                     label: "Password:"
                     type: password
+                    pre_field_html: |
+                        <input type="text" name="dummy_username" autocomplete="off" tabindex="-1" style="
+                            position: fixed;
+                            top: -1000px;
+                            width: 1px;
+                            height: 1px;
+                        "/>
+                        <input type="password" name="dummy_password" autocomplete="off" tabindex="-1" style="
+                            position: fixed;
+                            top: -1000px;
+                            width: 1px;
+                            height: 1px;
+                        "/>
                     
                 desc5:
                     snippet:
