@@ -33,7 +33,7 @@ class zenario_common_features__admin_boxes__export_content_items extends ze\modu
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		
 		// Get row headers
-		$headers = array(
+		$headers = [
 			'ID/alias',
 			'Alias',
 			'Language',
@@ -47,7 +47,7 @@ class zenario_common_features__admin_boxes__export_content_items extends ze\modu
 			'Latest version created by',
 			'Images and animations',
 			'Translations'
-		);
+		];
 		
 		// Get Rows
 		$sql = '
@@ -89,7 +89,7 @@ class zenario_common_features__admin_boxes__export_content_items extends ze\modu
 			ORDER BY c.tag_id';
 		
 		$result = ze\sql::select($sql);
-		$statusEnglishNames = array(
+		$statusEnglishNames = [
 			'first_draft' => 'First draft',
 			'published_with_draft' => 'Published with draft',
 			'hidden_with_draft' => 'Hidden with draft',
@@ -97,13 +97,13 @@ class zenario_common_features__admin_boxes__export_content_items extends ze\modu
 			'published' => 'Published',
 			'hidden' => 'Hidden',
 			'trashed' => 'Trashed'
-		);
-		$admins = array();
+		];
+		$admins = [];
 		$languages = ze\lang::getLanguages();
-		$rows = array();
+		$rows = [];
 		
 		
-		$headers = array(
+		$headers = [
 			'ID',
 			'Alias',
 			'Language',
@@ -117,10 +117,10 @@ class zenario_common_features__admin_boxes__export_content_items extends ze\modu
 			'Latest version created by',
 			'Images and animations',
 			'Translations'
-		);
+		];
 		
 		while ($row = ze\sql::fetchAssoc($result)) {
-			$contentItem = array();
+			$contentItem = [];
 			$contentItem['tag_id'] = $row['tag_id'];
 			$contentItem['alias'] = $row['alias'];
 			$contentItem['language'] = ze\lang::name($row['language_id']);
@@ -177,7 +177,7 @@ class zenario_common_features__admin_boxes__export_content_items extends ze\modu
 		if (isset($admins[$adminId])) {
 			$creatingAuthor = $admins[$adminId];
 		} else {
-			$creatingAuthorDetails = ze\row::get('admins', array('first_name', 'last_name'), $adminId);
+			$creatingAuthorDetails = ze\row::get('admins', ['first_name', 'last_name'], $adminId);
 			if ($creatingAuthorDetails) {
 				$creatingAuthor = $creatingAuthorDetails['first_name'] . ' ' . $creatingAuthorDetails['last_name'];
 			}

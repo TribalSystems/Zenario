@@ -73,6 +73,31 @@ plugin_settings:
                     note_below: >
                         Categories containing matching content items will be
                         displayed to the visitor so that he may refine his search.
+                search_label:
+                    plugin_setting:
+                        name: search_label
+                    label: 'Show "Search" label'
+                    type: checkbox
+                    value: 0
+                    format_onchange: Yes
+                search_placeholder:
+                    plugin_setting:
+                        name: search_placeholder
+                    label: 'Show "Search the site" placeholder'
+                    type: checkbox
+                    value: 0
+                    format_onchange: Yes
+                search_placeholder_phrase:
+                    indent: 1
+                    plugin_setting:
+                        name: search_placeholder_phrase
+                    label: 'Search placeholder phrase:'
+                    type: text
+                    format_onchange: Yes
+                    visible_if:
+                        lib.value: search_placeholder
+                    validation:
+                        required_if_not_hidden: Please enter a phrase
         weightings:
             ord: "3"
             label: Weightings

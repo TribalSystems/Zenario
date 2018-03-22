@@ -27,7 +27,7 @@
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
-$mergeFields = array(); 
+$mergeFields = []; 
 
 if (!$userId && $name && $email) {
 	$formFields['poster_username'] =
@@ -57,7 +57,7 @@ if (ze\module::inc('zenario_email_template_manager')) {
 		$this->setting('email_address_for_reports'),
 		$this->setting('email_template_for_approve_requests'),
 		$mergeFields,
-		array(),
-		array(),
-		array('message' => true, 'poster_screen_name' => true));
+		[],
+		[],
+		['message' => true, 'poster_screen_name' => true]);
 }

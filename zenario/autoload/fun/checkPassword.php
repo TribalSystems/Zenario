@@ -111,7 +111,7 @@ if (!$details) {
 
 
 //Do their passwords match?
-foreach (array('password' => 'password_salt', 'reset_password' => 'reset_password_salt') as $col => $sCol) {
+foreach (['password' => 'password_salt', 'reset_password' => 'reset_password_salt'] as $col => $sCol) {
 	if ($details[$col] === null) {
 		continue;
 	}

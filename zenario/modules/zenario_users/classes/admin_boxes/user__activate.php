@@ -61,7 +61,7 @@ class zenario_users__admin_boxes__user__activate extends zenario_users {
 					WHERE
 						id=" . $id;
 			ze\sql::update($sql);
-			ze\module::sendSignal("eventUserStatusChange",array("userId" => $id, "status" => "active"));
+			ze\module::sendSignal("eventUserStatusChange",["userId" => $id, "status" => "active"]);
 		}
 	}
 	
@@ -74,7 +74,7 @@ class zenario_users__admin_boxes__user__activate extends zenario_users {
 				//Encrypted password, show ****
 				$mergeFields['password'] = '********';
 				
-				$result = ze\module::sendSignal("requestAdditionalEmailTemplateMergeFields",array("userId" => $box['key']['id']));
+				$result = ze\module::sendSignal("requestAdditionalEmailTemplateMergeFields",["userId" => $box['key']['id']]);
 	
 				if (is_array($result)) {
 					foreach ($result as $moduleName => $moduleResult) {

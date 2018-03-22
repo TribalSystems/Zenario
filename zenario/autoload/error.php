@@ -29,7 +29,7 @@
 namespace ze;
 
 class error {
-	public $errors = array();
+	public $errors = [];
 	
 	public function __construct($a = null, $b = null) {
 		if ($a !== null) {

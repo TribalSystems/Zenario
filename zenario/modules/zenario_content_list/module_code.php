@@ -59,8 +59,8 @@ class zenario_content_list extends ze\moduleBaseClass {
 				v.publisher_id,
 				v.writer_id,
 				v.writer_name,
-				IFNULL(v.publication_date, c.first_created_datetime) AS `content_table_date`,
-				publication_date as release_date,
+				IFNULL(v.release_date, c.first_created_datetime) AS `content_table_date`,
+				release_date,
 				". ($this->dataField ?: "''"). " AS `content_table_data`";
 		if ($this->setting('show_author_image')) {
 			$sql .= ', 
@@ -87,7 +87,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 		//Filter by a categories if requested
 		if ($categories = $this->setting('category')) {
 			foreach (ze\ray::explodeAndTrim($categories, true) as $catId) {
-				if (ze\row::exists('categories', array('id' => (int) $catId))) {
+				if (ze\row::exists('categories', ['id' => (int) $catId])) {
 					if ($this->setting('refine_type') != 'any_categories') {
 						$sql .= "
 					INNER";
@@ -105,7 +105,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 		}
 		if ($this->setting('enable_omit_category') && ($categories = $this->setting('omit_category'))) {
 			foreach (ze\ray::explodeAndTrim($categories, true) as $catId) {
-				if (ze\row::exists('categories', array('id' => (int) $catId))) {
+				if (ze\row::exists('categories', ['id' => (int) $catId])) {
 					$sql .= "
 					LEFT JOIN ". DB_NAME_PREFIX. "category_item_link AS cil_". (int) $catId. "
 					   ON cil_". (int) $catId. ".equiv_id = c.equiv_id
@@ -189,7 +189,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 		$first = true;
 		if ($this->setting('refine_type') == 'any_categories' && ($categories = $this->setting('category'))) {
 			foreach (ze\ray::explodeAndTrim($categories, true) as $catId) {
-				if (ze\row::exists('categories', array('id' => (int) $catId))) {
+				if (ze\row::exists('categories', ['id' => (int) $catId])) {
 					if ($first) {
 						$sql .= "
 							AND (";
@@ -209,7 +209,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 		
 		if ($this->setting('enable_omit_category') && ($categories = $this->setting('omit_category'))) {
 			foreach (ze\ray::explodeAndTrim($categories, true) as $catId) {
-				if (ze\row::exists('categories', array('id' => (int) $catId))) {
+				if (ze\row::exists('categories', ['id' => (int) $catId])) {
 					$sql .= "
 						AND cil_". (int) $catId. ".category_id IS NULL";
 				}
@@ -244,11 +244,11 @@ class zenario_content_list extends ze\moduleBaseClass {
 		
 		if ($this->setting('release_date')=='date_range'){
 			$sql .= "
-				AND DATE(v.publication_date) >= '" . ze\escape::sql($startDate) . "'
+				AND DATE(v.release_date) >= '" . ze\escape::sql($startDate) . "'
 				";
 			
 			$sql .= "
-				AND DATE(v.publication_date) <=  '" . ze\escape::sql($endDate) . "'
+				AND DATE(v.release_date) <=  '" . ze\escape::sql($endDate) . "'
 				";
 		}
 
@@ -263,13 +263,13 @@ class zenario_content_list extends ze\moduleBaseClass {
 			
 			switch ($this->setting('relative_units')){
 				case 'days':
-					$sql .= " AND publication_date " . $sqlOperator . " DATE_SUB(DATE(NOW()), INTERVAL " . (int)$this->setting('relative_value') . " DAY)  ";
+					$sql .= " AND release_date " . $sqlOperator . " DATE_SUB(DATE(NOW()), INTERVAL " . (int)$this->setting('relative_value') . " DAY)  ";
 					break;
 				case 'months':
-					$sql .= " AND publication_date " . $sqlOperator . " DATE_SUB(DATE(NOW()), INTERVAL " . (int)$this->setting('relative_value') . " MONTH)  ";
+					$sql .= " AND release_date " . $sqlOperator . " DATE_SUB(DATE(NOW()), INTERVAL " . (int)$this->setting('relative_value') . " MONTH)  ";
 					break;
 				case 'years':
-					$sql .= " AND publication_date " . $sqlOperator . " DATE_SUB(DATE(NOW()), INTERVAL " . (int)$this->setting('relative_value') . " YEAR)  ";
+					$sql .= " AND release_date " . $sqlOperator . " DATE_SUB(DATE(NOW()), INTERVAL " . (int)$this->setting('relative_value') . " YEAR)  ";
 					break;
 			}
 		}
@@ -279,7 +279,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 			$priorToDate = $this->setting('prior_to_date');
 			
 			$sql .= "
-				AND DATE(v.publication_date) <  '".ze\escape::sql($priorToDate)."'
+				AND DATE(v.release_date) <  '".ze\escape::sql($priorToDate)."'
 				";
 		}
 		//on_date
@@ -288,7 +288,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 
 			
 			$sql .= "
-				AND DATE(v.publication_date) =  '" . ze\escape::sql($onDate) . "'
+				AND DATE(v.release_date) =  '" . ze\escape::sql($onDate) . "'
 				";
 		}
 		//after_date
@@ -296,7 +296,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 			$afterDate = $this->setting('after_date');
 			
 			$sql .= "
-				AND DATE(v.publication_date) >  '" . ze\escape::sql($afterDate) . "'
+				AND DATE(v.release_date) >  '" . ze\escape::sql($afterDate) . "'
 				";
 		}
 		
@@ -376,7 +376,11 @@ class zenario_content_list extends ze\moduleBaseClass {
 		
 		if ($this->setting('data_field') == 'description') {
 			$this->dataField = 'v.description';
-		} elseif ($this->setting('data_field') == 'content_summary') {
+		} elseif ($this->setting('data_field') == 'content_summary'
+			&& ($this->setting('content_type') == 'all'
+				|| !ze\row::exists('content_types', ['content_type_id' => $this->setting('content_type'), 'summary_field' => 'hidden'])
+			)
+		) {
 			$this->dataField = 'v.content_summary';
 		} else {
 			$this->dataField = false;
@@ -398,7 +402,6 @@ class zenario_content_list extends ze\moduleBaseClass {
 		
 		if ($result = $this->lookForContent()) {
 			while($row = ze\sql::fetchAssoc($result)) {
-				
 				$item = [];
 				
 				if ($this->dataField == 'v.description') {
@@ -409,10 +412,13 @@ class zenario_content_list extends ze\moduleBaseClass {
 					}
 				
 				} elseif ($this->dataField == 'v.content_summary') {
-					if ($this->isRSS) {
-						$item['Excerpt_Text'] = ze\escape::xml(html_entity_decode(strip_tags($row['content_table_data']), ENT_QUOTES, 'UTF-8'));
-					} else {
-						$item['Excerpt_Text'] = $row['content_table_data'];
+					
+					if ($this->setting('content_type') != 'all' || !ze\row::exists('content_types', ['content_type_id' => $row['type'], 'summary_field' => 'hidden'])) {
+						if ($this->isRSS) {
+							$item['Excerpt_Text'] = ze\escape::xml(html_entity_decode(strip_tags($row['content_table_data']), ENT_QUOTES, 'UTF-8'));
+						} else {
+							$item['Excerpt_Text'] = $row['content_table_data'];
+						}
 					}
 				}
 				if ($row['writer_id']) {
@@ -768,7 +774,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 		
 		$this->framework(
 			'Outer', 
-			array(
+			[
 				'More_Link' => $moreLink,
 				'More_Link_Title' => $moreLinkText,
 				'Pagination' => $pagination,
@@ -778,8 +784,8 @@ class zenario_content_list extends ze\moduleBaseClass {
 				'Title_With_Content' => $titleWithContent,
 				'Title_With_No_Content' => ((bool)$this->setting('show_headings_if_no_items')) ? $titleWithNoContent: null,
 				'Title_Tags' => $this->setting('heading_tags') ? $this->setting('heading_tags') : 'h1'
-			),
-			array(
+			],
+			[
 				'Slot' => true,
 				'More' => (bool) $moreLink,
 				'No_Rows' => empty($this->items),
@@ -795,7 +801,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 				'Show_Title' => (bool)$this->setting('show_headings'),
 				'Show_No_Title' => (bool)$this->setting('show_headings_if_no_items'),
 				'Show_Category' => (bool)$this->setting('show_content_items_lowest_category') && (bool)ze::setting('enable_display_categories_on_content_lists')
-			)
+			]
 		);
 		
 	}
@@ -805,13 +811,13 @@ class zenario_content_list extends ze\moduleBaseClass {
 		
 		$this->framework(
 			'Outer', 
-			array(
+			[
 				'Description' => ze\escape::xml(ze\content::description($this->cID, $this->cType, $this->cVersion)),
 				'Link' => ze\escape::xml($this->linkToItem($this->cID, $this->cType, true)),
 				'RSS_Link' => ze\escape::xml($this->showRSSLink(true, false)),
 				'Title' => ze\escape::xml(ze\content::title($this->cID, $this->cType, $this->cVersion)),
 				'Results' => $this->rows,
-			),
+			],
 			[
 				'RSS' => true,
 				'Rows' => true,
@@ -856,11 +862,11 @@ class zenario_content_list extends ze\moduleBaseClass {
 	}
 	
 	public function fillAdminSlotControls(&$controls) {
-		$controls['notes']['filter_settings'] = array(
+		$controls['notes']['filter_settings'] = [
 			'ord' => 0,
 			'label' => '',
 			'css_class' => 'zenario_slotControl_filterSettings',
-			'page_modes' => ['edit' => true, 'item' => true, 'layout' => true]);
+			'page_modes' => ['edit' => true, 'item' => true, 'layout' => true]];
 		
 		$this->fillAdminSlotControlsShowFilterSettings($controls);
 	}
@@ -874,7 +880,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 		} else {
 			$controls['notes']['filter_settings']['label'] .=
 				ze\admin::phrase('Source Content Type: [[ctype]]',
-					array('ctype' => htmlspecialchars(ze\content::getContentTypeName($this->setting('content_type')))));
+					['ctype' => htmlspecialchars(ze\content::getContentTypeName($this->setting('content_type')))]);
 		}
 		
 		switch ($this->setting('only_show')) {
@@ -914,7 +920,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 			
 			} else {
 				$controls['notes']['filter_settings']['label'] .= '<br/>'. ze\admin::phrase('Menu Levels: Content in the menu up to [[child_item_levels]] levels below',
-														array('child_item_levels' => (int) $this->setting('child_item_levels')));
+														['child_item_levels' => (int) $this->setting('child_item_levels')]);
 			}
 		}
 		

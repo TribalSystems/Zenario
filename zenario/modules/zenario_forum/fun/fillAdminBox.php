@@ -30,12 +30,12 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 switch ($path) {
 	case 'zenario_forum_setup':
-		if (!ze\row::exists(ZENARIO_FORUM_PREFIX. "forums", array('thread_content_id' => 0))) {
+		if (!ze\row::exists(ZENARIO_FORUM_PREFIX. "forums", ['thread_content_id' => 0])) {
 			$box['tabs']['forum']['fields']['view_thread']['hidden'] = true;
 			$box['tabs']['forum']['fields']['new_thread']['value'] = 1;
 		
 		}
-		if (!ze\row::exists(ZENARIO_FORUM_PREFIX. "forums", array('new_thread_content_id' => 0))) {
+		if (!ze\row::exists(ZENARIO_FORUM_PREFIX. "forums", ['new_thread_content_id' => 0])) {
 			$box['tabs']['forum']['fields']['new_thread']['hidden'] = true;
 			$box['tabs']['forum']['fields']['view_thread']['value'] = 1;
 		}

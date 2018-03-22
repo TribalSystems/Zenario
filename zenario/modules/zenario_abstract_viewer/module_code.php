@@ -35,12 +35,12 @@ class zenario_abstract_viewer extends zenario_abstract_manager {
 	
 	protected static $requestVar = 'id';
 	
-	protected $merge = array(
+	protected $merge = [
 		'id' => 0,
-		'ids' => array(),
+		'ids' => [],
 		'show' => false,
-		'values' => array()
-	);
+		'values' => []
+	];
 
 	//Return the date format to use for any dates we see
 	//Intended to be easily overwritten

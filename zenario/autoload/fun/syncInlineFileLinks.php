@@ -57,11 +57,11 @@ if ($usage == 'image'
 		$checksum = $links[$i + 2];
 		$explode = explode('_', $links[$i + 3]);
 		$filename = $links[$i + 4];
-		$params = array(
+		$params = [
 			'mode' => $explode[0],
 			'width' => $width = (int) ($explode[1] ?? false),
 			'height' => $height = (int) ($explode[2] ?? false),
-			'offset' => $offset = (int) ($explode[3] ?? false));
+			'offset' => $offset = (int) ($explode[3] ?? false)];
 		
 		$mode = 'unlimited';
 		if (\ze::in($params['mode'], 'unlimited', 'stretch', 'resize_and_crop', 'fixed_width', 'fixed_height', 'resize')) {

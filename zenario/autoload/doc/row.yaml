@@ -17,7 +17,7 @@ exists:
     <h2>Return Value</h2>
     <p>Returns true if the given row exists or false if it does not.</p>
     <h2>Notes</h2>
-    <p>Queries will be run against the last database that was connected to. This will be the local database, unless you switch database using a function such as&nbsp;<span class="code">connectGlobalDB()</span> or&nbsp;<span class="code">connectHubDB()</span>.</p>
+    <p>Queries will be run against the last database that was connected to. This will be the local database, unless you switch database using a function such as&nbsp;<span class="code">connectGlobalDB()</span>.</p>
     <h2>Example</h2>
     <pre>checkRowExists('users', array('username' =&gt; 'Bob'));
     </pre>
@@ -44,7 +44,7 @@ delete:
     <h2>Return Value</h2>
     <p>Returns the results of a <span class="code">mysqli_affected_rows()</span> call.</p>
     <h2>Notes</h2>
-    <p>Queries will be run against the last database that was connected to. This will be the local database, unless you switch database using a function such as&nbsp;<span class="code">connectGlobalDB()</span> or&nbsp;<span class="code">connectHubDB()</span>.</p>
+    <p>Queries will be run against the last database that was connected to. This will be the local database, unless you switch database using a function such as&nbsp;<span class="code">connectGlobalDB()</span>.</p>
     <h2>Example</h2>
     <pre>deleteRow(MY_ANIMAL_MANAGER_PREFIX. 'animals', array('name' =&gt; 'Chicken'));
     </pre>
@@ -94,7 +94,7 @@ get:
     <p>If no row was found, this function returns false.</p>
     <p>Otherwise, if <code>$cols</code> was given the name of a column then it returns the value of a column, but if <code>$cols</code> was given an array of column names then it returns an associative array of keys (column names)&nbsp;=&gt; values.</p>
     <h2>Notes</h2>
-    <p>Queries will be run against the last database that was connected to. This will be the local database, unless you switch database using a function such as&nbsp;<span class="code">connectGlobalDB()</span> or&nbsp;<span class="code">connectHubDB()</span>.</p>
+    <p>Queries will be run against the last database that was connected to. This will be the local database, unless you switch database using a function such as&nbsp;<span class="code">connectGlobalDB()</span>.</p>
     <h2>Example</h2>
     <pre>getRow('users', 'email', array('username' =&gt; 'Bob'));
     </pre>
@@ -127,7 +127,7 @@ query:
     <h2>Return Value</h2>
     <p>The result of a <code>mysql_query()</code>&nbsp;function call.</p>
     <h2>Notes</h2>
-    <p>Queries will be run against the last database that was connected to. This will be the local database, unless you switch database using a function such as&nbsp;<span class="code">connectGlobalDB()</span> or&nbsp;<span class="code">connectHubDB()</span>.</p>
+    <p>Queries will be run against the last database that was connected to. This will be the local database, unless you switch database using a function such as&nbsp;<span class="code">connectGlobalDB()</span>.</p>
     <h2>Example</h2>
     <pre>getRows('users', array('id, 'username'), array('first_name' =&gt; 'Bob'), 'last_name');
     </pre>
@@ -160,7 +160,7 @@ getArray:
     <p>If the table has one column declared as a primary key, the array will be an associative array indexed by this column.</p>
     <p>If <span class="code">$cols</span> was given the name of a column then the array will be a one-dimensional array, containing one entry for value of the column. Otherwise it will be a two-dimensional array, containing an&nbsp;associative arrays of keys (column names) =&gt; values for each row.</p>
     <h2>Notes</h2>
-    <p>Queries will be run against the last database that was connected to. This will be the local database, unless you switch database using a function such as&nbsp;<span class="code">connectGlobalDB()</span> or&nbsp;<span class="code">connectHubDB()</span>.</p>
+    <p>Queries will be run against the last database that was connected to. This will be the local database, unless you switch database using a function such as&nbsp;<span class="code">connectGlobalDB()</span>.</p>
 insert:
   summary: |
     Inserts a row in a given table in the database.
@@ -182,7 +182,7 @@ insert:
     <h2>Return Value</h2>
     <p>This function returns the result of a <code>mysqli_insert_id()</code> call.</p>
     <h2>Notes</h2>
-    <p>Queries will be run against the last database that was connected to. This will be the local database, unless you switch database using a function such as&nbsp;<span class="code">connectGlobalDB()</span> or&nbsp;<span class="code">connectHubDB()</span>.</p>
+    <p>Queries will be run against the last database that was connected to. This will be the local database, unless you switch database using a function such as&nbsp;<span class="code">connectGlobalDB()</span>.</p>
     <h2>Example</h2>
     <pre>insertRow(MY_ANIMAL_MANAGER_PREFIX. 'animals', array('name' =&gt; 'Chicken'));
     </pre>
@@ -254,7 +254,7 @@ set:
     <p>The primary key will also be returned when updating a row in the table, even if the primary key was not specified in the <span class="code">$ids</span> array.</p>
     <p>This only applies to tables with a single-column primary key.</p>
     <h2>Notes</h2>
-    <p>Queries will be run against the last database that was connected to. This will be the local database, unless you switch database using a function such as&nbsp;<span class="code">connectGlobalDB()</span> or&nbsp;<span class="code">connectHubDB()</span>.</p>
+    <p>Queries will be run against the last database that was connected to. This will be the local database, unless you switch database using a function such as&nbsp;<span class="code">connectGlobalDB()</span>.</p>
     <h2>Example</h2>
     <pre>setRow(MY_ANIMAL_MANAGER_PREFIX. 'animals', array('name' =&gt; 'Chicken'), array('id' =&gt; 7));
     </pre>
@@ -285,7 +285,7 @@ update:
     <h2>Return Value</h2>
     <p>This function returns the result of a <span class="code">mysqli_affected_rows()</span> call. Note that this can be 0 even if rows were matched, as <span class="code">mysqli_affected_rows()</span> only returns the number of rows where the values were changed to something new.</p>
     <h2>Notes</h2>
-    <p>Queries will be run against the last database that was connected to. This will be the local database, unless you switch database using a function such as&nbsp;<span class="code">connectGlobalDB()</span> or&nbsp;<span class="code">connectHubDB()</span>.</p>
+    <p>Queries will be run against the last database that was connected to. This will be the local database, unless you switch database using a function such as&nbsp;<span class="code">connectGlobalDB()</span>.</p>
     <h2>Example</h2>
     <pre>updateRow(MY_ANIMAL_MANAGER_PREFIX. 'animals', array('name' =&gt; 'Chicken'), array('id' =&gt; 7));
     </pre>

@@ -38,17 +38,17 @@ if (ze\dbAdm::needRevision(120)) {
 	$result = ze\sql::select($sql);
 	
 	while ($row = ze\sql::fetchAssoc($result)) {
-		$files = array();
+		$files = [];
 		$htmlChanged = false;
 		ze\contentAdm::syncInlineFileLinks($files, $row['body'], $htmlChanged);
 		
 		if ($htmlChanged) {
-			ze\row::update('email_templates', array('body' => $row['body']), array('id' => $row['id']));
+			ze\row::update('email_templates', ['body' => $row['body']], ['id' => $row['id']]);
 		}
 		
 		ze\contentAdm::syncInlineFiles(
 			$files,
-			array('foreign_key_to' => 'email_template', 'foreign_key_id' => $row['id'], 'foreign_key_char' => $row['code']),
+			['foreign_key_to' => 'email_template', 'foreign_key_id' => $row['id'], 'foreign_key_char' => $row['code']],
 			$keepOldImagesThatAreNotInUse = false);
 	}
 

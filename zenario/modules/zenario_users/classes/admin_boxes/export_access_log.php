@@ -30,25 +30,24 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_users__admin_boxes__export_access_log extends zenario_users {
 	
 	public function adminBoxDownload($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		$headers = array();
-		$rows = array();
+		$headers = [];
+		$rows = [];
 		$filename = false;
 		$format = $values['details/format'];
 		$filename = str_replace('/', ' ', $box['key']['filename']);
 		// Export accesses for content item
 		if ($tagId = $box['key']['tag_id']) {
-			$headers = array(
+			$headers = [
 				'Time accessed',
 				'User ID',
 				'First name',
 				'Last name',
-				'Email',
-				'IP address'
-			);
+				'Email'
+			];
 			$cID = $cType = false;
 			ze\content::getCIDAndCTypeFromTagId($cID, $cType, $tagId);
 			$sql = '
-				SELECT l.hit_datetime, l.user_id, [u.first_name], [u.last_name], [u.email], l.ip
+				SELECT l.hit_datetime, l.user_id, [u.first_name], [u.last_name], [u.email]
 				FROM [user_content_accesslog AS l]
 				INNER JOIN [users AS u]
 					ON l.user_id = u.id
@@ -61,23 +60,21 @@ class zenario_users__admin_boxes__export_access_log extends zenario_users {
 			}
 		// Export accesses for user
 		} elseif ($userId = $box['key']['user_id']) {
-			$headers = array(
+			$headers = [
 				'Time accessed',
-				'Content item',
-				'IP address'
-			);
+				'Content item'
+			];
 			$sql = '
-				SELECT l.hit_datetime, l.content_id, l.content_type, l.content_version, l.ip
+				SELECT l.hit_datetime, l.content_id, l.content_type, l.content_version
 				FROM ' . DB_NAME_PREFIX . 'user_content_accesslog l
 				WHERE l.user_id = ' . (int)$userId . '
 				ORDER BY l.hit_datetime DESC';
 			$result = ze\sql::select($sql);
 			while ($row = ze\sql::fetchAssoc($result)) {
-				$contentAccess = array(
+				$contentAccess = [
 					$row['hit_datetime'],
-					ze\content::formatTag($row['content_id'], $row['content_type']),
-					$row['ip']
-				);
+					ze\content::formatTag($row['content_id'], $row['content_type'])
+				];
 				$rows[] = $contentAccess;
 			}
 		}

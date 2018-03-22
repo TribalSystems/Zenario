@@ -32,12 +32,12 @@ class zenario_common_features__organizer__document_rules extends ze\moduleBaseCl
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
 		
 		//ze\datasetAdm::listCustomFields($dataset, $flat = true, $filter = false, $customOnly = true, $useOptGroups = false)
-		$panel['columns']['field_id']['values'] = ze\datasetAdm::listCustomFields('documents', false, array('!' => 'group', '!' => 'checkboxes', '!' => 'other_system_field'), true, true);
+		$panel['columns']['field_id']['values'] = ze\datasetAdm::listCustomFields('documents', false, ['!' => 'group', '!' => 'checkboxes', '!' => 'other_system_field'], true, true);
 		$panel['columns']['folder_id']['values'] = ze\miscAdm::generateDocumentFolderSelectList(true);
 		
 		//Look up all of the fields that have been used
-		$lovs = array();
-		foreach (array_unique(ze\row::getArray('document_rules', 'field_id', array('action' => 'set_field', 'replacement_is_regexp' => 0))) as $fieldId) {
+		$lovs = [];
+		foreach (array_unique(ze\row::getArray('document_rules', 'field_id', ['action' => 'set_field', 'replacement_is_regexp' => 0])) as $fieldId) {
 			$lovs[$fieldId] = ze\dataset::fieldLOV($fieldId);
 		}
 		
@@ -69,7 +69,7 @@ class zenario_common_features__organizer__document_rules extends ze\moduleBaseCl
 		
 		if ($_POST['reorder'] ?? false) {
 			foreach (ze\ray::explodeAndTrim($ids) as $id) {
-				ze\row::update('document_rules', array('ordinal' => $_POST['ordinals'][$id]), $id);
+				ze\row::update('document_rules', ['ordinal' => $_POST['ordinals'][$id]], $id);
 			}
 			
 		} elseif ($_POST['duplicate'] ?? false) {
@@ -98,8 +98,8 @@ class zenario_common_features__organizer__document_rules extends ze\moduleBaseCl
 		
 		//Tidy up the ordinals
 		$i = 0;
-		foreach (ze\row::getArray('document_rules', 'id', array(), 'ordinal') as $id) {
-			ze\row::update('document_rules', array('ordinal' => ++$i), $id);
+		foreach (ze\row::getArray('document_rules', 'id', [], 'ordinal') as $id) {
+			ze\row::update('document_rules', ['ordinal' => ++$i], $id);
 		}
 	}
 	

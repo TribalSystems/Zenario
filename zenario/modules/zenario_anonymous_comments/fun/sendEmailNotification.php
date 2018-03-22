@@ -29,28 +29,28 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 //Send notification emails to Admins
 
-$comment = ze\row::get(ZENARIO_ANONYMOUS_COMMENTS_PREFIX . 'user_comments', array(
+$comment = ze\row::get(ZENARIO_ANONYMOUS_COMMENTS_PREFIX . 'user_comments', [
 									'poster_id', 
 									'message_text', 
 									'content_id', 
 									'content_type',
 									'poster_name', 
 									'poster_email'
-									),
-								array( 'id' => (int) $commentId)
+									],
+								[ 'id' => (int) $commentId]
 				);
 
-$poster = array();
+$poster = [];
 if ($comment['poster_id'] && ze\module::inc('zenario_users')) {
 	$poster = ze\user::details($comment['poster_id']);
 }
 
-$formFields = array(
+$formFields = [
 	'cms_url' => ze\link::absolute(),
 	'link' => ze\link::toItem($comment['content_id'], $comment['content_type'], true, '', false, false, true),
 	'message' => $comment['message_text'],
 	'page_title' => ze\content::title($comment['content_id'], $comment['content_type']),
-	'poster_screen_name' => '');
+	'poster_screen_name' => ''];
 
 if (!empty($poster['id'])) {
 	$formFields['poster_screen_name'] = $this->getUserScreenName($poster['id']);
@@ -68,14 +68,14 @@ if (!empty($poster['id'])) {
 	$formFields['poster_screen_name'] = $comment['poster_email'];
 }
 
-$notification = ze\row::get(ZENARIO_ANONYMOUS_COMMENTS_PREFIX  . 'comment_content_items', array(
+$notification = ze\row::get(ZENARIO_ANONYMOUS_COMMENTS_PREFIX  . 'comment_content_items', [
 																						'send_notification_email',
 																						'notification_email_address',
 																						'notification_email_template'
-																						),
-																					array(	'content_id' => $comment['content_id'],
+																						],
+																					[	'content_id' => $comment['content_id'],
 																							'content_type' => $comment['content_type']
-																						 ) );
+																						 ] );
 
 if ($notification['send_notification_email'] && $notification['notification_email_address'] && 
 		$notification['notification_email_template'] && ze\module::inc('zenario_email_template_manager')) {
@@ -89,7 +89,7 @@ if ($notification['send_notification_email'] && $notification['notification_emai
 		$notification['notification_email_address'],
 		$notification['notification_email_template'],
 		$formFields,
-		array(),
-		array(),
-		array('message' => true));
+		[],
+		[],
+		['message' => true]);
 }

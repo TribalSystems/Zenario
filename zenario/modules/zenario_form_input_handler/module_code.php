@@ -551,16 +551,16 @@ class zenario_form_input_handler extends ze\moduleBaseClass {
 				$my_fields = &$box['tabs']['email_details']['fields'];
 				foreach ($arr as $it){
 					if (!$it['attachment']){
-						$my_fields[$it['label']] = array('label' => $it['label'] . ':',
+						$my_fields[$it['label']] = ['label' => $it['label'] . ':',
 								'ord' => $it['ordinal'],
-								'snippet' => array('html' => htmlspecialchars($it['value'])));
+								'snippet' => ['html' => htmlspecialchars($it['value'])]];
 					} else {
-						$my_fields[$it['label']]=array('label'=>htmlspecialchars($it['label']),
+						$my_fields[$it['label']]=['label'=>htmlspecialchars($it['label']),
 									'type' => 'text', 
 									'ord' => $it['ordinal'], 
-									'snippet' => array('html' => '<a href="'. $this->showFileLink('submission_id=' . 
+									'snippet' => ['html' => '<a href="'. $this->showFileLink('submission_id=' . 
 											$it['submission_id'] . '&ordinal=' . $it['ordinal']) .  
-											'" target="_blank"   >' . ze\admin::phrase('Download') . '</a>'));
+											'" target="_blank"   >' . ze\admin::phrase('Download') . '</a>']];
 					}
 				}
 

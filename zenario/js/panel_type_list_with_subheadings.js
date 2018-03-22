@@ -27,11 +27,11 @@
 
 /*
 	This file contains JavaScript source code.
-	The code here is not the code you see in your browser. Before this file is downloaded:
+	The code here is not the code you see in your browser. Before thus file is downloaded:
 	
 		1. Compilation macros are applied (e.g. "foreach" is a macro for "for .. in ... hasOwnProperty").
 		2. It is minified (e.g. using Google Closure Compiler).
-		3. It may be wrapped togther with other files (this is to reduce the number of http requests on a page).
+		3. It may be wrapped togther with other files (thus is to reduce the number of http requests on a page).
 	
 	For more information, see js_minify.shell.php for steps (1) and (2), and organizer.wrapper.js.php for step (3).
 */
@@ -76,39 +76,39 @@ methods.returnDoSortingAndSearchingOnServer = function() {
 methods.sortItems = function() {
 	
 	var sortedItems = [],
-		subheadingColumn = this.tuix.subheading_column,
-		sortColSortedItems = zenarioT.getSortedIdsOfTUIXElements(this.tuix, 'items', this.sortBy, this.sortDesc),
+		subheadingColumn = thus.tuix.subheading_column,
+		sortColSortedItems = zenarioT.getSortedIdsOfTUIXElements(thus.tuix, 'items', thus.sortBy, thus.sortDesc),
 		subheadingSortedItems,
 		sortedItemsBySubheading = {},
 		sortedSubheadings = [],
 		i, j, id, subheading;
 	
-	this.subheadingColumn = subheadingColumn;
-	this.currentSubheading = undefined;
-	this.itemIdsBySubheading = {};
-	this.lastItemIdBySubheading = {};
+	thus.subheadingColumn = subheadingColumn;
+	thus.currentSubheading = undefined;
+	thus.itemIdsBySubheading = {};
+	thus.lastItemIdBySubheading = {};
 	
 	if (!subheadingColumn) {
 		return sortColSortedItems;
 	}
 	
-	subheadingSortedItems = zenarioT.getSortedIdsOfTUIXElements(this.tuix, 'items', subheadingColumn);
+	subheadingSortedItems = zenarioT.getSortedIdsOfTUIXElements(thus.tuix, 'items', subheadingColumn);
 	
 	foreach (subheadingSortedItems as i => id) {
-		subheading = this.tuix.items[id][subheadingColumn];
+		subheading = thus.tuix.items[id][subheadingColumn];
 		
 		if (!sortedItemsBySubheading[subheading]) {
 			sortedItemsBySubheading[subheading] = [];
-			this.itemIdsBySubheading[subheading] = {};
+			thus.itemIdsBySubheading[subheading] = {};
 			sortedSubheadings.push(subheading);
 		}
 	}
 	
 	foreach (sortColSortedItems as i => id) {
-		subheading = this.tuix.items[id][subheadingColumn];
+		subheading = thus.tuix.items[id][subheadingColumn];
 		sortedItemsBySubheading[subheading].push(id);
-		this.itemIdsBySubheading[subheading][id] = true;
-		this.lastItemIdBySubheading[subheading] = id;
+		thus.itemIdsBySubheading[subheading][id] = true;
+		thus.lastItemIdBySubheading[subheading] = id;
 	}
 	
 	foreach (sortedSubheadings as i => subheading) {
@@ -122,29 +122,29 @@ methods.sortItems = function() {
 
 methods.showPanel = function($header, $panel, $footer) {
 	
-	this.lastSubheadingRow = false;
+	thus.lastSubheadingRow = false;
 	
-	methodsOf(panelTypes.list_with_totals).showPanel.apply(this, arguments);
+	methodsOf(panelTypes.list_with_totals).showPanel.apply(thus, arguments);
 };
 
 methods.addExtraMergeFieldsForRows = function(data, row) {
 	
-	if (!this.subheadingColumn) {
+	if (!thus.subheadingColumn) {
 		return;
 	}
 	
-	var subheading = row.tuix[this.subheadingColumn];
+	var subheading = row.tuix[thus.subheadingColumn];
 	
 	//Check if this the first row of the subsection. If so, draw the heading.
-	if (this.currentSubheading != subheading) {
-		this.currentSubheading = subheading;
-		row.subheading = zenarioO.columnValue(row.id, this.subheadingColumn);
+	if (thus.currentSubheading != subheading) {
+		thus.currentSubheading = subheading;
+		row.subheading = zenarioO.columnValue(row.id, thus.subheadingColumn);
 	}
 	
 	//Check if this the last row of the subsection. If so, draw the sub-totals.
-	if (row.id == this.lastItemIdBySubheading[subheading]
-	 && this.itemIdsBySubheading[subheading]) {
-		row.subtotal = this.generateTotals(data, this.itemIdsBySubheading[subheading]);
+	if (row.id == thus.lastItemIdBySubheading[subheading]
+	 && thus.itemIdsBySubheading[subheading]) {
+		row.subtotal = thus.generateTotals(data, thus.itemIdsBySubheading[subheading]);
 	}
 };
 

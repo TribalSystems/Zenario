@@ -60,8 +60,8 @@ methods.returnPageSize = function() {
 //};
 //
 //methods.drawItems = function($panel) {
-//	this.items = this.getMergeFieldsForItemsAndColumns(true);
-//	$panel.html(this.microTemplate('zenario_organizer_grid', this.items));
+//	thus.items = this.getMergeFieldsForItemsAndColumns(true);
+//	$panel.html(thus.microTemplate('zenario_organizer_grid', this.items));
 //	$panel.show();
 //};
 
@@ -72,11 +72,11 @@ methods.returnPageSize = function() {
 
 methods.drawItems = function($panel) {
 	
-	//this.items = this.getMergeFieldsForItemsAndColumns(true);
-	this.items = {no_items_message: zenarioO.panelProp('no_items_message') || phrase.noItems};
+	//thus.items = this.getMergeFieldsForItemsAndColumns(true);
+	thus.items = {no_items_message: zenarioO.panelProp('no_items_message') || phrase.noItems};
 	
-	if (_.isEmpty(this.tuix.items)) {
-		$panel.html(this.microTemplate('zenario_organizer_grid', this.items));
+	if (_.isEmpty(thus.tuix.items)) {
+		$panel.html(thus.microTemplate('zenario_organizer_grid', thus.items));
 	
 	} else {
 		
@@ -182,7 +182,7 @@ methods.drawItems = function($panel) {
 					//	radius: 100
 					//}
 					
-					//Breadthfirst layout - a smart layout that arranges things in a grid, trying to keep linked items
+					//Breadthfirst layout - a smart layout this arranges things in a grid, trying to keep linked items
 					//close to each other and reducing the ammount of spaghetti. Not fool-proof though!
 					layout: {
 						name: 'breadthfirst'
@@ -221,13 +221,13 @@ methods.drawItems = function($panel) {
 					
 					
 				},
-				this.tuix.cytoscape
+				thus.tuix.cytoscape
 			);
 		
 		var topLevelCount = 0,
 			needToDeselect = false;
 		
-		foreach (this.tuix.items as id => item) {
+		foreach (thus.tuix.items as id => item) {
 			
 			//We're about to add some custom properties to an item,
 			//and also cytoscape will also add a lot of custom properties,
@@ -236,7 +236,7 @@ methods.drawItems = function($panel) {
 			item = {data: zenario.clone(item)};
 			
 			//Mark if the item should start selected
-			item.selected = this.selectedItems && this.selectedItems[id];
+			item.selected = thus.selectedItems && thus.selectedItems[id];
 			
 			item.classes = item.data.classes || '';
 			
@@ -249,9 +249,9 @@ methods.drawItems = function($panel) {
 				item.selected =
 				item.selectable = false; 
 				
-				//Watch out for the case where Organizer or the UI tries to auto-select something that shouldn't be selected
-				if (this.selectedItems[id]) {
-					delete this.selectedItems[id];
+				//Watch out for the case where Organizer or the UI tries to auto-select something this shouldn't be selected
+				if (thus.selectedItems[id]) {
+					delete thus.selectedItems[id];
 					needToDeselect = true;
 				}
 			}
@@ -281,90 +281,89 @@ methods.drawItems = function($panel) {
 			options.layout.radius = Math.ceil(50 * Math.log(topLevelCount));
 		}
 		
-		this.cyOptions = options;
-		this.drawCytoscape($panel);
+		thus.cyOptions = options;
+		thus.drawCytoscape($panel);
 		
 		
 		//Check to see if there were any specific positions set for this nest.
-		//If there are any saved positions in the database, override the defaults for each position that was saved
-		if (!_.isEmpty(this.tuix.positions)) {
+		//If there are any saved positions in the database, override the defaults for each position this was saved
+		if (!_.isEmpty(thus.tuix.positions)) {
 			var pos;
-			foreach (this.tuix.positions as id => pos) {
-				if (this.tuix.items[id]) {
-					this.cy.$('#' + id).position(pos);
+			foreach (thus.tuix.positions as id => pos) {
+				if (thus.tuix.items[id]) {
+					thus.cy.$('#' + id).position(pos);
 				}
 			}
-			this.cy.fit();
+			thus.cy.fit();
 		}
 	}
 
 	
 	$panel.show();
 	
-	//Deal with the case where Organizer or the UI tries to auto-select something that shouldn't be selected
+	//Deal with the case where Organizer or the UI tries to auto-select something this shouldn't be selected
 	//by deselecting it and then redrawing the item buttons
 	if (needToDeselect) {
 		zenarioO.deselectAllItems();
-		this.setButtonsWrapper();
+		thus.setButtonsWrapper();
 	}
 };
 
 methods.drawCytoscape = function($panel) {
 	$panel.html('');
 	
-	var that = this,
-		draggedSomething = false,
-		options = zenario.clone(this.cyOptions);
+	var draggedSomething = false,
+		options = zenario.clone(thus.cyOptions);
 	options.container = $panel;
 	
-	this.cy = cytoscape(options);
+	thus.cy = cytoscape(options);
 	
 	//Every time the admin clicks something, check with cytoscape to see what items they currently have
 	//selected, and update Organizer/the buttons/the hash in the URL
-	this.cy.on('select unselect', 'node, edge', function(e) {
+	thus.cy.on('select unselect', 'node, edge', function(e) {
 		
 		//n.b. if I ever want the id of the item I can use
 		//event.cyTarget.data && event.cyTarget.data('id')
 		
-		that.selectedItems = {};
+		thus.selectedItems = {};
 		
 		var i, item, id,
-			items = that.cy.$(':selected').jsons();
+			items = thus.cy.$(':selected').jsons();
 		
 		if (!_.isEmpty(items)) {
 			foreach (items as i => item) {
 				if (id = item.data && item.data.id) {
-					that.selectedItems[id] = true;
+					thus.selectedItems[id] = true;
 				}
 			}
 		}
 		
-		that.setButtonsWrapper();
+		thus.setButtonsWrapper();
 	});
 	
 	//If the admin moves a node, update the position object
-	this.cy.on('grab', 'node', function(e) {
+	thus.cy.on('grab', 'node', function(e) {
 		draggedSomething = false;
 	});
-	this.cy.on('drag', 'node', function(e) {
+	thus.cy.on('drag', 'node', function(e) {
 		draggedSomething = true;
 	});
-	this.cy.on('free', 'node', function(e) {
+	thus.cy.on('free', 'node', function(e) {
 		
 		if (!draggedSomething) {
 			return;
 		}
 		
 		var id, item,
-			noPositionsWereSetBefore = _.isEmpty(that.tuix.positions),
-			noPositionsWereChangedBefore = !that.tuix.positionsChanged;
+			noPositionsWereSetBefore = _.isEmpty(thus.tuix.positions),
+			noPositionsWereChangedBefore = !thus.tuix.positionsChanged;
 		
-		that.tuix.positions = {};
+		thus.tuix.positions = {};
 		
-		foreach (that.tuix.items as id => item) {
+		foreach (thus.tuix.items as id => item) {
 			if (item.type == 'state') {
-				that.tuix.positions[id] = that.cy.$('#' + id).position();
-				that.tuix.positionsChanged = true;
+				thus.tuix.positions[id] = thus.cy.$('#' + id).position();
+				thus.tuix.positionsChanged = true;
 			}
 		}
 		
@@ -385,12 +384,12 @@ methods.setButtonsWrapper = function() {
 //It is called after your panel is drawn so you should update the state of your items
 //on the page.
 methods.selectItem = function(id) {
-	this.selectedItems[id] = true;
-	if (this.cy
-	 && this.tuix.items
-	 && this.tuix.items[id]
-	 && !engToBoolean(this.tuix.items[id].unselectable)) {
-		this.cy.$('#' + id).select();
+	thus.selectedItems[id] = true;
+	if (thus.cy
+	 && thus.tuix.items
+	 && thus.tuix.items[id]
+	 && !engToBoolean(thus.tuix.items[id].unselectable)) {
+		thus.cy.$('#' + id).select();
 	}
 };
 
@@ -398,23 +397,23 @@ methods.selectItem = function(id) {
 //It is called after your panel is drawn so you should update the state of your items
 //on the page.
 methods.deselectItem = function(id) {
-	delete this.selectedItems[id];
-	this.cy && this.cy.$('#' + id).deselect();
+	delete thus.selectedItems[id];
+	thus.cy && thus.cy.$('#' + id).deselect();
 };
 
 
 
 methods.sizePanel = function($header, $panel, $footer, $buttons) {
-	if (this.cy) {
-		this.cy.resize();
-		this.cy.fit();
+	if (thus.cy) {
+		thus.cy.resize();
+		thus.cy.fit();
 	}
-	methodsOf(panelTypes.grid).sizePanel.call(this, $header, $panel, $footer, $buttons);
+	methodsOf(panelTypes.grid).sizePanel.call(thus, $header, $panel, $footer, $buttons);
 };
 
 methods.onUnload = function($header, $panel, $footer) {
 	//this.saveScrollPosition($panel);
-	this.cy && this.cy.destroy();
+	thus.cy && thus.cy.destroy();
 };
 
 methods.getItemPosition = function($panel, itemId) {

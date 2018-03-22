@@ -79,7 +79,7 @@ if (!$cID
  && $aliasInURL
  && !is_numeric($aliasInURL)
  && ($_SERVER['SCRIPT_FILENAME'] == CMS_ROOT. 'index.php' || $_SERVER['SCRIPT_FILENAME'] == CMS_ROOT. DIRECTORY_INDEX_FILENAME)
- && ($spareAlias = ze\row::get('spare_aliases', array('target_loc', 'content_id', 'content_type', 'ext_url'), array('alias' => $aliasInURL)))) {
+ && ($spareAlias = ze\row::get('spare_aliases', ['target_loc', 'content_id', 'content_type', 'ext_url'], ['alias' => $aliasInURL]))) {
 	
 	if ($spareAlias['target_loc'] == 'int' && $spareAlias['content_id']) {
 		header(

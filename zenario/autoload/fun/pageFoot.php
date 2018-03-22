@@ -37,13 +37,13 @@ $isWelcome = $mode === true || $mode === 'welcome';
 $isWizard = $mode === 'wizard';
 $isWelcomeOrWizard = $isWelcome || $isWizard;
 $isOrganizer = $mode === 'organizer';
-$inAdminMode = \ze\priv::check();
+$isAdmin = \ze::isAdmin();
 
 if ($absURL = \ze\link::absoluteIfNeeded(!$isWelcomeOrWizard)) {
 	$prefix = $absURL. 'zenario/';
 }
 
-if (!$inAdminMode
+if (!$isAdmin
  && !$isWelcomeOrWizard
  && $defer
  && \ze::setting('defer_js')) {
@@ -82,12 +82,7 @@ echo '
 
 	
 //Add JS needed for the CMS in Admin mode
-if ($inAdminMode) {
-	
-	if (!$isWelcome) {
-		\ze\miscAdm::checkForChangesInYamlFiles();
-	}
-	
+if ($isAdmin) {
 	//Write all of the slot controls to the page
 	echo '
 <div id="zenario_slotControls">';
@@ -97,31 +92,31 @@ if ($inAdminMode) {
 </div>';
 	
 	//Note down that we need various extra libraries in admin mode...
-	\ze::requireJsLib('zenario/js/ace.wrapper.js.php', null, true);
+	\ze::requireJsLib('zenario/js/ace.wrapper.js.php');
 }
 
-if ($inAdminMode || $isWelcomeOrWizard) {
+if ($isAdmin || $isWelcomeOrWizard) {
 	//...or on the admin-login screen
 	\ze::requireJsLib('zenario/libs/manually_maintained/mit/jquery/jquery-ui.admin.min.js');
 	\ze::requireJsLib('zenario/libs/manually_maintained/mit/jquery/jquery-ui.datepicker.min.js');
-	\ze::requireJsLib('zenario/js/tuix.wrapper.js.php', null, true);
+	\ze::requireJsLib('zenario/js/tuix.wrapper.js.php');
 	\ze::requireJsLib('zenario/js/admin.microtemplates_and_phrases.js.php');
-	\ze::requireJsLib('zenario/js/admin.wrapper.js.php', null, true);
+	\ze::requireJsLib('zenario/js/admin.wrapper.js.php');
 }
 
 
 $checkPrefixes = $prefix != 'zenario/';
 
-foreach (\ze::$jsLibs as $lib => $libInfo) {
+foreach (\ze::$jsLibs as $lib => $stylesheet) {
 	
-	if ($libInfo[0]) {
+	if ($stylesheet) {
 		if ($checkPrefixes) {
-			if ($libInfo[0][0] != '/'
-			 && strpos($libInfo[0], '://') === false) {
-				$libInfo[0] = $prefix. '../'. $libInfo[0];
+			if ($stylesheet[0] != '/'
+			 && strpos($stylesheet, '://') === false) {
+				$stylesheet = $prefix. '../'. $stylesheet;
 			}
 		}
-		echo "\n", '<link rel="stylesheet" type="text/css" media="screen" href="', $prefix, htmlspecialchars($libInfo[0]). '?', $libInfo[1]? $v : $w, '"/>';
+		echo "\n", '<link rel="stylesheet" type="text/css" media="screen" href="', $prefix, htmlspecialchars($stylesheet). '?', $v, '"/>';
 	}
 	
 	if ($checkPrefixes) {
@@ -130,18 +125,18 @@ foreach (\ze::$jsLibs as $lib => $libInfo) {
 			$lib = $prefix. '../'. $lib;
 		}
 	}
-	echo "\n", $scriptTag, ' src="', htmlspecialchars($lib). '?', $libInfo[1]? $v : $w, '"></script>';
+	echo "\n", $scriptTag, ' src="', htmlspecialchars($lib). '?', $v, '"></script>';
 }
 	
 
-if ($inAdminMode && !$isWelcomeOrWizard) {
+if ($isAdmin && !$isWelcomeOrWizard) {
 	require CMS_ROOT. 'zenario/autoload/fun/pageFootInAdminMode.php';
 }
 
 
 //Add JS needed for modules
 if (!$isWelcomeOrWizard && \ze::$pluginJS) {
-	if ($inAdminMode) {
+	if ($isAdmin) {
 		\ze::$pluginJS .= '&amp;admin=1';
 	}
 	
@@ -151,7 +146,7 @@ if (!$isWelcomeOrWizard && \ze::$pluginJS) {
 
 
 //Add JS needed for modules in Admin Mode in the frontend
-if ($inAdminMode && \ze::$cID) {
+if ($isAdmin && \ze::$cID) {
 	$jsModuleIds = '';
 	foreach (\ze\module::runningModules() as $module) {
 		if (\ze::moduleDir($module['class_name'], 'js/admin_frontend.js', true)
@@ -181,7 +176,7 @@ if ($inAdminMode && \ze::$cID) {
 //Are there plugins on this page..?
 if (!empty(\ze::$slotContents) && is_array(\ze::$slotContents)) {
 	//Include the JS for any plugin instances on the page, if they have any
-	$scriptTypes = array([], [], []);
+	$scriptTypes = [[], [], []];
 	foreach(\ze::$slotContents as $slotName => &$instance) {
 		if (!empty($instance['class'])) {
 			$scriptTypesHere = [];
@@ -238,9 +233,9 @@ if (!empty(\ze::$slotContents) && is_array(\ze::$slotContents)) {
 '. $scriptTag. '>'. $inlineStart;
 	//Add encapculated objects for slots
 	$i = 0;
-	echo "\n", 'zenario.slot([';
+	echo "\n", 'zenario._s([';
 	foreach (\ze::$slotContents as $slotName => &$instance) {
-		if (isset($instance['class']) || $inAdminMode) {
+		if (isset($instance['class']) || $isAdmin) {
 			echo
 				$i++? ',' : '',
 				'["',
@@ -262,7 +257,7 @@ if (!empty(\ze::$slotContents) && is_array(\ze::$slotContents)) {
 				$isMainSlot = isset($instance['class']) && ($instance['level'] ?? false) == 1 && substr($slotName, 0, 1) == 'M';
 				$beingEdited = $instance['class']->beingEdited();
 				
-				if ($inAdminMode) {
+				if ($isAdmin) {
 					$isVersionControlled = (int) !empty($instance['content_id']);
 					
 					echo ',', (int) $slideId, ',', (int) $isMainSlot, ',', (int) $beingEdited, ',', (int) $isVersionControlled;
@@ -336,20 +331,20 @@ if (\ze::$cID) {
 				}
 		}
 		
-		if (!empty($templateHTML[0]) && (empty($templateHTML[2]) || !$inAdminMode)) {
+		if (!empty($templateHTML[0]) && (empty($templateHTML[2]) || !$isAdmin)) {
 			echo "\n\n". $templateHTML[0], "\n\n";
 		}
 	}
 	
-	if (!empty($itemHTML[0]) && (empty($itemHTML[2]) || !$inAdminMode)) {
+	if (!empty($itemHTML[0]) && (empty($itemHTML[2]) || !$isAdmin)) {
 		echo "\n\n". $itemHTML[0], "\n\n";
 	}
 }
 
-if (\ze::$cID && $includeAdminToolbar && $inAdminMode && !$isWelcomeOrWizard) {
+if (\ze::$cID && $includeAdminToolbar && $isAdmin && !$isWelcomeOrWizard) {
 	$data_rev = (int) \ze\row::get('local_revision_numbers', 'revision_no', ['path' => 'data_rev']);
 	
-	$params = htmlspecialchars(http_build_query(array(
+	$params = htmlspecialchars(http_build_query([
 		'id' => \ze::$cType. '_'. \ze::$cID,
 		'cID' => \ze::$cID,
 		'cType' => \ze::$cType,
@@ -357,7 +352,7 @@ if (\ze::$cID && $includeAdminToolbar && $inAdminMode && !$isWelcomeOrWizard) {
 		'get' => $importantGetRequests,
 		'_script' => 1,
 		'data_rev' => (int) \ze\row::get('local_revision_numbers', 'revision_no', ['path' => 'data_rev'])
-	)));
+	]));
 	
 	echo '
 '. $scriptTag. ' src="', $prefix, 'admin/admin_toolbar.ajax.php?', $v, '&amp;', $params, '"></script>';

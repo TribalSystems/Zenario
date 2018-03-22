@@ -41,11 +41,11 @@ if (ze\priv::check()) {
 	if ($cID && $cType && $cVersion
 	 && $cID != -1) {
 		$layoutId = ze\content::layoutId($cID, $cType, $cVersion);
-		$slotKey = array(
+		$slotKey = [
 			'content_id' => $cID,
 			'content_type' => $cType,
 			'content_version' => $cVersion,
-			'slot_name' => $slotName);
+			'slot_name' => $slotName];
 	
 	} elseif (ze::request('layoutId')) {
 		$layoutId = (int) ze::request('layoutId');
@@ -104,20 +104,20 @@ if (ze\priv::check()) {
 		
 		$realDir = realpath($logicalDir = CMS_ROOT. 'zenario');
 		
-		$infoBox = array('title' => ze\admin::phrase('About Zenario'), 'sections' => []);
-		$section = array('title' => ze\admin::phrase('Software Information'), 'fields' => []);
+		$infoBox = ['title' => ze\admin::phrase('About Zenario'), 'sections' => []];
+		$section = ['title' => ze\admin::phrase('Software Information'), 'fields' => []];
 		
-		$section['fields'][] = array('label' => ze\admin::phrase('Edition:'), 'value' => ze\site::description('edition'));
-		$section['fields'][] = array('label' => ze\admin::phrase('License:'), 'value' => ze\site::description('license_info'));
-		$section['fields'][] = array('label' => ze\admin::phrase('Version:'), 'value' => ze\site::versionNumber());
+		$section['fields'][] = ['label' => ze\admin::phrase('Edition:'), 'value' => ze\site::description('edition')];
+		$section['fields'][] = ['label' => ze\admin::phrase('License:'), 'value' => ze\site::description('license_info')];
+		$section['fields'][] = ['label' => ze\admin::phrase('Version:'), 'value' => ze\site::versionNumber()];
 		
 		if ($svninfo = ze\welcome::svnInfo()) {
-			$section['fields'][] = array('label' => ze\admin::phrase('SVN revision no:'), 'value' => $svninfo['Revision']);
+			$section['fields'][] = ['label' => ze\admin::phrase('SVN revision no:'), 'value' => $svninfo['Revision']];
 		
 			if (!empty($svninfo['Last Changed Date'])) {
 			
 				if ($date = ze\date::formatDateTime($svninfo['Last Changed Date'], false, ze\admin::languageIdForDatesInAdminMode())) {
-					$section['fields'][] = array('label' => ze\admin::phrase('Last SVN commit applied to this site:'), 'value' => $date);
+					$section['fields'][] = ['label' => ze\admin::phrase('Last SVN commit applied to this site:'), 'value' => $date];
 				}
 			}
 		}
@@ -126,21 +126,21 @@ if (ze\priv::check()) {
 		
 		
 		if (!(defined('ZENARIO_IS_DEMO_SITE') && ZENARIO_IS_DEMO_SITE)) {
-			$section = array('title' => ze\admin::phrase('Installation Information'), 'fields' => []);
+			$section = ['title' => ze\admin::phrase('Installation Information'), 'fields' => []];
 			
 			if (ze\admin::setting('show_dev_tools')) {
 				if ((function_exists('gethostname') && ($hostName = @gethostname()))
 				 || ($hostName = @php_uname('n'))) {
-					$section['fields'][] = array('label' => ze\admin::phrase('Server name:'), 'value' => $hostName);
+					$section['fields'][] = ['label' => ze\admin::phrase('Server name:'), 'value' => $hostName];
 				}
 				
-				$section['fields'][] = array('label' => ze\admin::phrase('Server IP:'), 'value' => $_SERVER['SERVER_ADDR']);
+				$section['fields'][] = ['label' => ze\admin::phrase('Server IP:'), 'value' => $_SERVER['SERVER_ADDR']];
 				
 				if ($realDir == $logicalDir) {
-					$section['fields'][] = array('label' => ze\admin::phrase('Directory:'), 'value' => CMS_ROOT, 'class' => 'zenario_infoBoxDirectory');
+					$section['fields'][] = ['label' => ze\admin::phrase('Directory:'), 'value' => CMS_ROOT, 'class' => 'zenario_infoBoxDirectory'];
 				} else {
-					$section['fields'][] = array('label' => ze\admin::phrase('Client directory:'), 'value' => CMS_ROOT, 'class' => 'zenario_infoBoxDirectory');
-					$section['fields'][] = array('label' => ze\admin::phrase('Install directory:'), 'value' => dirname($realDir), 'class' => 'zenario_infoBoxDirectory');
+					$section['fields'][] = ['label' => ze\admin::phrase('Client directory:'), 'value' => CMS_ROOT, 'class' => 'zenario_infoBoxDirectory'];
+					$section['fields'][] = ['label' => ze\admin::phrase('Install directory:'), 'value' => dirname($realDir), 'class' => 'zenario_infoBoxDirectory'];
 				}
 				
 				if (($row = ze\sql::fetchRow('SHOW VARIABLES LIKE "version"'))
@@ -159,21 +159,21 @@ if (ze\priv::check()) {
 				}
 				
 				if (ze\db::hasGlobal()) {
-					$section['fields'][] = array('label' => ze\admin::phrase('Global [[dbms]] database:', $mrg), 'value' => 
-						ze\admin::phrase('[[DBNAME_GLOBAL]] on [[DBHOST_GLOBAL]], prefix [[DB_NAME_PREFIX_GLOBAL]]', get_defined_constants()));
-					$section['fields'][] = array('label' => ze\admin::phrase('Local [[dbms]] database:', $mrg), 'value' => 
-						ze\admin::phrase('[[DBNAME]] on [[DBHOST]], prefix [[DB_NAME_PREFIX]]', get_defined_constants()));
+					$section['fields'][] = ['label' => ze\admin::phrase('Global [[dbms]] database:', $mrg), 'value' => 
+						ze\admin::phrase('[[DBNAME_GLOBAL]] on [[DBHOST_GLOBAL]], prefix [[DB_NAME_PREFIX_GLOBAL]]', get_defined_constants())];
+					$section['fields'][] = ['label' => ze\admin::phrase('Local [[dbms]] database:', $mrg), 'value' => 
+						ze\admin::phrase('[[DBNAME]] on [[DBHOST]], prefix [[DB_NAME_PREFIX]]', get_defined_constants())];
 					
 					if ($size) {
-						$section['fields'][] = array('label' => ze\admin::phrase('Local database size:', $mrg), 'value' => $formattedSize);
+						$section['fields'][] = ['label' => ze\admin::phrase('Local database size:', $mrg), 'value' => $formattedSize];
 					}
 					
 				} else {
-					$section['fields'][] = array('label' => ze\admin::phrase('[[dbms]] database:', $mrg), 'value' =>
-						ze\admin::phrase('[[DBNAME]] on [[DBHOST]], prefix [[DB_NAME_PREFIX]]', get_defined_constants()));
+					$section['fields'][] = ['label' => ze\admin::phrase('[[dbms]] database:', $mrg), 'value' =>
+						ze\admin::phrase('[[DBNAME]] on [[DBHOST]], prefix [[DB_NAME_PREFIX]]', get_defined_constants())];
 					
 					if ($size) {
-						$section['fields'][] = array('label' => ze\admin::phrase('[[dbms]] size:', $mrg), 'value' => $formattedSize);
+						$section['fields'][] = ['label' => ze\admin::phrase('[[dbms]] size:', $mrg), 'value' => $formattedSize];
 					}
 				}
 				
@@ -194,14 +194,14 @@ if (ze\priv::check()) {
 						}
 					}
 					
-					$section['fields'][] = array('label' => ze\admin::phrase('MongoDB database:'), 'value' =>
-						ze\admin::phrase('[[DBNAME]] on [[DBHOST]]', ['DBNAME' => MONGODB_DBNAME, 'DBHOST' => $host]));
+					$section['fields'][] = ['label' => ze\admin::phrase('MongoDB database:'), 'value' =>
+						ze\admin::phrase('[[DBNAME]] on [[DBHOST]]', ['DBNAME' => MONGODB_DBNAME, 'DBHOST' => $host])];
 				}
 				
 				$infoBox['sections'][] = $section;
 			
 			} elseif (ze\priv::check('_PRIV_EDIT_ADMIN')) {
-				$section['fields'][] = array('label' => ze\admin::phrase('Enable developer tools to see full info')/*, 'value' => ''*/);
+				$section['fields'][] = ['label' => ze\admin::phrase('Enable developer tools to see full info')/*, 'value' => ''*/];
 				$infoBox['sections'][] = $section;
 			}
 		}
@@ -275,10 +275,10 @@ if (ze\priv::check()) {
 		//Insert a version-controlled plugin into a slot
 		} elseif (ze::get('addPlugin')) {
 			
-			$mrg = array('pages' => ze\layoutAdm::usage($layoutId, false, false),
+			$mrg = ['pages' => ze\layoutAdm::usage($layoutId, false, false),
 							'published' => ze\layoutAdm::usage($layoutId, false, true),
 							'display_name' => htmlspecialchars(ze\module::displayName(ze::get('addPlugin'))),
-							'slotName' => htmlspecialchars(ze::get('slotName')));
+							'slotName' => htmlspecialchars(ze::get('slotName'))];
 			
 			if ($mrg['pages'] == 1) {
 				echo ze\admin::phrase(
@@ -334,7 +334,7 @@ if (ze\priv::check()) {
 				exit;
 			
 			} elseif (!isset($_SESSION['admin_copied_contents']['allowed'][$oldContent['class_name']])) {
-				echo ze\admin::phrase('Content copied from a [[display_name]] cannot be used here', array('display_name' => ze\module::getModuleDisplayNameByClassName($oldContent['class_name'])));
+				echo ze\admin::phrase('Content copied from a [[display_name]] cannot be used here', ['display_name' => ze\module::getModuleDisplayNameByClassName($oldContent['class_name'])]);
 				exit;
 			
 			} else {
@@ -358,15 +358,15 @@ if (ze\priv::check()) {
 		//(Get the number of Content Items that use this template/template family)
 		} elseif ((ze::get('removePlugin') || ze::get('movePlugin')) && $level == 2) {
 			
-			$mrg = array('pages' => ze\layoutAdm::usage($layoutId, false, false), 'published' => ze\layoutAdm::usage($layoutId, false, true));
+			$mrg = ['pages' => ze\layoutAdm::usage($layoutId, false, false), 'published' => ze\layoutAdm::usage($layoutId, false, true)];
 
 			$placement = ze\row::get(
 				'plugin_layout_link',
 				['module_id', 'instance_id'],
-				array(
+				[
 					'slot_name' => $slotName,
 					'family_name' => $templateFamily,
-					'layout_id' => $layoutId));
+					'layout_id' => $layoutId]);
 			
 			if (!empty($placement['module_id']) && !$placement['instance_id']) {
 				$mrg['display_name'] = htmlspecialchars(ze\module::displayName($placement['module_id']));
@@ -411,7 +411,7 @@ if (ze\priv::check()) {
 		
 			//To move at an item level, we need only check this Content Item
 			if ($level == 1 && ze\priv::check('_PRIV_MANAGE_ITEM_SLOT', $cID, $cType, $cVersion)) {
-				$version = array(array('content_id' => $cID, 'content_type' => $cType, 'content_version' => $cVersion));
+				$version = [['content_id' => $cID, 'content_type' => $cType, 'content_version' => $cVersion]];
 				$tables['plugin_item_link'] = $version;
 				$tables['plugin_instances'] = $version;
 		
@@ -460,20 +460,20 @@ if (ze\priv::check()) {
 							$sourcePluginItem =
 								ze\row::get('plugin_item_link',
 									['module_id', 'instance_id'],
-									array('content_id' => $id['content_id'], 'content_type' => $id['content_type'], 'content_version' => $id['content_version'], 'slot_name' => ze::post('slotNameSource')));
+									['content_id' => $id['content_id'], 'content_type' => $id['content_type'], 'content_version' => $id['content_version'], 'slot_name' => ze::post('slotNameSource')]);
 							$destinationPluginItem =
 								ze\row::get('plugin_item_link',
 									['module_id', 'instance_id'],
-									array('content_id' => $id['content_id'], 'content_type' => $id['content_type'], 'content_version' => $id['content_version'], 'slot_name' => ze::post('slotNameDestination')));
+									['content_id' => $id['content_id'], 'content_type' => $id['content_type'], 'content_version' => $id['content_version'], 'slot_name' => ze::post('slotNameDestination')]);
 						}
 					}
 				
 					$i = 0;
-					foreach (array(
+					foreach ([
 						ze::post('slotNameSource') => '%%%',
 						ze::post('slotNameDestination') => ze::post('slotNameSource'),
 						'%%%' => ze::post('slotNameDestination')
-					) as $from => $to) {
+					] as $from => $to) {
 						if ($table == 'plugin_instances') {
 							//The settings for Wireframe modules are stored by Content Item, Version, Slot and Plugin ID. But not Level.
 							//To work around the possibly problem of moving the settings at the wrong level due to no level information,

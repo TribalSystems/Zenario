@@ -1,0 +1,31 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_user__delete:
+    priv: _PRIV_EDIT_USER
+    key:
+        id: ""
+    max_height: 150
+    hide_tab_bar: true
+    save_button_message: Delete
+    cancel_button_message: Cancel
+    tabs:
+        details:
+            label: Details
+            edit_mode:
+                enabled: true
+                always_on: true
+            notices:
+                are_you_sure:
+                    show: true
+                    type: warning
+                    message: >
+                        Are you sure you wish to delete the user "[[identifier]]"?
+            fields:
+                delete_options:
+                    type: radios
+                    values:
+                        delete_account:
+                            label: Delete account
+                        delete_all_data:
+                            label: Delete account and all other data (email sent log, form responses, etc.)
+                    value: delete_account

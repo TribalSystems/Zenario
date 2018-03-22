@@ -32,8 +32,8 @@ class zenario_newsletter__admin_boxes__newsletter_template extends zenario_newsl
 
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		if ($id = $box['key']['id']) {
-			$templateDetails = ze\row::get(ZENARIO_NEWSLETTER_PREFIX. 'newsletter_templates', array('name', 'head', 'body'), array('id' => $id));
-			$box['title'] = ze\admin::phrase('Editing the newsletter template "[[name]]"', array('name' => $templateDetails['name']));
+			$templateDetails = ze\row::get(ZENARIO_NEWSLETTER_PREFIX. 'newsletter_templates', ['name', 'head', 'body'], ['id' => $id]);
+			$box['title'] = ze\admin::phrase('Editing the newsletter template "[[name]]"', ['name' => $templateDetails['name']]);
 			$values['details/name'] = $templateDetails['name'];
 			$values['details/body'] = $templateDetails['body'];
 			$values['advanced/head'] = $templateDetails['head'];
@@ -58,10 +58,10 @@ class zenario_newsletter__admin_boxes__newsletter_template extends zenario_newsl
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		ze\contentAdm::addAbsURLsToAdminBoxField($box['tabs']['details']['fields']['body']);
 		
-		$record = array(
+		$record = [
 			'name' => $values['details/name'],
 			'body' => $values['details/body'],
-			'head' => $values['advanced/head']);
+			'head' => $values['advanced/head']];
 		
 		if ($box['key']['id']) {
 			$record['date_modified'] = ze\date::now();
@@ -74,17 +74,17 @@ class zenario_newsletter__admin_boxes__newsletter_template extends zenario_newsl
 		$box['key']['id'] = ze\row::set(ZENARIO_NEWSLETTER_PREFIX. 'newsletter_templates', $record, $box['key']['id']);
 		
 		$body = $values['details/body'];
-		$files = array();
+		$files = [];
 		$htmlChanged = false;
 		ze\file::addImageDataURIsToDatabase($body, ze\link::absolute());
 		ze\contentAdm::syncInlineFileLinks($files, $body, $htmlChanged);
 		ze\contentAdm::syncInlineFiles(
 			$files,
-			array('foreign_key_to' => 'newsletter_template', 'foreign_key_id' => $box['key']['id']),
+			['foreign_key_to' => 'newsletter_template', 'foreign_key_id' => $box['key']['id']],
 			$keepOldImagesThatAreNotInUse = false);
 		
 		if ($htmlChanged) {
-			ze\row::set(ZENARIO_NEWSLETTER_PREFIX. 'newsletter_templates', array('body' => $body), $box['key']['id']);
+			ze\row::set(ZENARIO_NEWSLETTER_PREFIX. 'newsletter_templates', ['body' => $body], $box['key']['id']);
 		}
 	}
 }

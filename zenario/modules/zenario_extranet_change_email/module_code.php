@@ -87,7 +87,7 @@ class zenario_extranet_change_email extends zenario_extranet {
 							id = " . (int) $row['user_id'];
 				ze\sql::update($sql);
 				
-				ze\module::sendSignal("eventUserEmailChanged",array("user_id" => $row['user_id'], "old_email" => $userDetails['email'], "new_email" => $row['new_email']));
+				ze\module::sendSignal("eventUserEmailChanged",["user_id" => $row['user_id'], "old_email" => $userDetails['email'], "new_email" => $row['new_email']]);
 				
 				$sql = "DELETE FROM " 
 						. DB_NAME_PREFIX . ZENARIO_EXTRANET_CHANGE_EMAIL_PREFIX . "new_user_emails 
@@ -121,12 +121,12 @@ class zenario_extranet_change_email extends zenario_extranet {
 		if (!$this->errors){
 			
 			if (!ze\user::checkPassword(ze\user::id(), ($_POST['extranet_password'] ?? false))) {
-				$this->errors[] = array('Error'=>$this->phrase('_INCORRECT_PASSWORD'));
+				$this->errors[] = ['Error'=>$this->phrase('_INCORRECT_PASSWORD')];
 			}
 
 
-			if (ze\row::exists('users', array('email' => ($_POST['extranet_email'] ?? false)))) {
-				$this->errors[] = array('Error'=>$this->phrase('_EMAIL_ALREADY_IN_USE'));
+			if (ze\row::exists('users', ['email' => ($_POST['extranet_email'] ?? false)])) {
+				$this->errors[] = ['Error'=>$this->phrase('_EMAIL_ALREADY_IN_USE')];
 			}
 
 			if(!$this->errors){
@@ -143,12 +143,11 @@ class zenario_extranet_change_email extends zenario_extranet {
 					$userDetails = ze\user::details(ze\user::id());
 					$userDetails['new_email'] =  $_POST['extranet_email'] ?? false;
 					$userDetails['hash'] =  $hash;
-					$userDetails['ip_address'] = ze\user::ip();
 					$userDetails['cms_url'] = ze\link::absolute();
 					$userDetails['email_confirmation_link'] = $this->linkToItem($this->cID, $this->cType, $fullPath = true, $request = '&action=confirm_email&hash='. $hash);
 					
-					if (!zenario_email_template_manager::sendEmailsUsingTemplate($_POST['extranet_email'] ?? false,$this->setting('confirmation_email_template'),$userDetails,array())){
-						$this->errors[] = array('Error'=>$this->phrase('_COULD_NOT_SEND_CONFIRMATION_EMAIL'));
+					if (!zenario_email_template_manager::sendEmailsUsingTemplate($_POST['extranet_email'] ?? false,$this->setting('confirmation_email_template'),$userDetails,[])){
+						$this->errors[] = ['Error'=>$this->phrase('_COULD_NOT_SEND_CONFIRMATION_EMAIL')];
 						return false;
 					}
 
@@ -156,7 +155,7 @@ class zenario_extranet_change_email extends zenario_extranet {
 					$this->mode = 'modeLoggedIn';
 					return true;
 				} else {
-					$this->errors[] = array('Error'=>$this->phrase('_COULD_NOT_SEND_CONFIRMATION_EMAIL'));
+					$this->errors[] = ['Error'=>$this->phrase('_COULD_NOT_SEND_CONFIRMATION_EMAIL')];
 					return false;
 				}
 			} else {

@@ -38,7 +38,7 @@ if ((ze\module::canActivate($moduleClassName))
  && ($filepath = ze::moduleDir($moduleClassName, false, $checkExists = true))) {
 	
 	$with = '';
-	$matches = array();
+	$matches = [];
 	if (($file_get_contents = file_get_contents(CMS_ROOT. $filepath))
 	 && (preg_match('@\{\#.*?(\bwith\b\s*\{.*?\})\s*\#\}@', $file_get_contents, $matches))) {
 		$with = $matches[1]. ' ';
@@ -48,13 +48,13 @@ if ((ze\module::canActivate($moduleClassName))
 	
 	ze\row::set(
 		'plugin_settings',
-		array(
+		[
 			'value' => '{% include ze::moduleDir(\''. $moduleClassName. '\', \''. $snippetName. '\') '. $with. '%}',
-			'is_content' => $instance['content_id']? 'version_controlled_setting' : 'synchronized_setting'),
-		array(
+			'is_content' => $instance['content_id']? 'version_controlled_setting' : 'synchronized_setting'],
+		[
 			'instance_id' => $instanceId,
 			'egg_id' => $eggId,
-			'name' => 'html'));
+			'name' => 'html']);
 	
 	return $eggId;
 } else {

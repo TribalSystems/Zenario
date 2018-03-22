@@ -61,7 +61,7 @@ class menuAdm {
 		/*
 		if ($menuDetails) {
 			$limit = 20;
-			$ancestors = array($menuId);
+			$ancestors = [$menuId];
 			if ($ancestorId = $menuDetails['parent_id']) {
 				do {
 					$ancestors[] = $ancestorId;
@@ -181,7 +181,7 @@ class menuAdm {
 			}
 		}
 
-		if ($menuId && ($lastMenu = \ze\row::get('menu_nodes', array('target_loc', 'equiv_id', 'content_type'), $menuId))) {
+		if ($menuId && ($lastMenu = \ze\row::get('menu_nodes', ['target_loc', 'equiv_id', 'content_type'], $menuId))) {
 			if ($lastMenu['target_loc'] == 'int' && $lastMenu['equiv_id'] && $lastMenu['content_type']) {
 				$lastEquivId = $lastMenu['equiv_id'];
 				$lastCType = $lastMenu['content_type'];
@@ -284,7 +284,7 @@ class menuAdm {
 
 		} elseif ($recalc && $resyncIfNeeded) {
 			//If this was a Menu Node being moved, recalculate the entire menu hierarchy
-			if ($menu = \ze\row::get('menu_nodes', array('section_id'), $menuId)) {
+			if ($menu = \ze\row::get('menu_nodes', ['section_id'], $menuId)) {
 				\ze\menuAdm::recalcHierarchy($menu['section_id']);
 			}
 		}
@@ -296,7 +296,7 @@ class menuAdm {
 	//Formerly "saveMenuText()"
 	public static function saveText($menuId, $languageId, $submission, $neverCreate = false) {
 
-		$textExists = \ze\row::get('menu_text', array('name'), array('menu_id' => $menuId, 'language_id' => $languageId));
+		$textExists = \ze\row::get('menu_text', ['name'], ['menu_id' => $menuId, 'language_id' => $languageId]);
 	
 		//Update or create a new entry, depending on whether one already exists
 		if (!$textExists) {
@@ -310,8 +310,8 @@ class menuAdm {
 			//For new translations of an existing Menu Node with an external URL, default the URL to the
 			//URL of an existing translation if it was not provided.
 			if (!isset($submission['ext_url'])
-			 && (($url = \ze\row::get('menu_text', 'ext_url', array('menu_id' => $menuId, 'language_id' => \ze::$defaultLang)))
-			  || ($url = \ze\row::get('menu_text', 'ext_url', array('menu_id' => $menuId))))) {
+			 && (($url = \ze\row::get('menu_text', 'ext_url', ['menu_id' => $menuId, 'language_id' => \ze::$defaultLang]))
+			  || ($url = \ze\row::get('menu_text', 'ext_url', ['menu_id' => $menuId])))) {
 				$submission['ext_url'] = $url;
 			}
 	
@@ -342,10 +342,10 @@ class menuAdm {
 		
 			if (isset($submission['name'])) {
 				if (!$textExists) {
-					\ze\module::sendSignal('eventMenuNodeTextAdded', array('menuId' => $menuId, 'languageId' => $languageId, 'newText' => $submission['name']));
+					\ze\module::sendSignal('eventMenuNodeTextAdded', ['menuId' => $menuId, 'languageId' => $languageId, 'newText' => $submission['name']]);
 			
 				} elseif ($submission['name'] != $textExists['name']) {
-					\ze\module::sendSignal('eventMenuNodeTextUpdated', array('menuId' => $menuId, 'languageId' => $languageId, 'newText' => $submission['name'], 'oldText' => $textExists['name']));
+					\ze\module::sendSignal('eventMenuNodeTextUpdated', ['menuId' => $menuId, 'languageId' => $languageId, 'newText' => $submission['name'], 'oldText' => $textExists['name']]);
 				}
 			}
 		}
@@ -353,7 +353,7 @@ class menuAdm {
 
 	//Formerly "removeMenuText()"
 	public static function removeText($menuId, $languageId) {
-		\ze\row::delete('menu_text', array('language_id' => $languageId, 'menu_id' => $menuId));
+		\ze\row::delete('menu_text', ['language_id' => $languageId, 'menu_id' => $menuId]);
 	}
 
 	//Formerly "addContentItemsToMenu()"
@@ -383,7 +383,7 @@ class menuAdm {
 
 		$menuId = false;
 		$lastEquivTag = false;
-		$menuIds = array();
+		$menuIds = [];
 		$result = \ze\sql::select($sql);
 		while ($row = \ze\sql::fetchAssoc($result)) {
 			if ($lastEquivTag != $row['content_type']. '_'. $row['equiv_id']) {
@@ -451,8 +451,8 @@ class menuAdm {
 		$numMoves = 0;
 		$idsList = '';
 		$sectionId = false;
-		$sectionIds = array();
-		$menuNodes = array();
+		$sectionIds = [];
+		$menuNodes = [];
 		$newNeighbour = false;
 		$newSectionId = \ze\menu::sectionId($newSectionId);
 
@@ -480,12 +480,12 @@ class menuAdm {
 			}
 	
 			foreach ($ids as $id) {
-				if ($menuDetails = \ze\row::get('menu_nodes', array('section_id', 'parent_id', 'ordinal'), $id)) {
+				if ($menuDetails = \ze\row::get('menu_nodes', ['section_id', 'parent_id', 'ordinal'], $id)) {
 					$menuNodes[$id] = $menuDetails;
 					$idsList .= ($idsList? ',' : ''). (int) $id;
 			
 					//Remove the ordinal, to be fixed later
-					\ze\row::update('menu_nodes', array('ordinal' => 0), $id);
+					\ze\row::update('menu_nodes', ['ordinal' => 0], $id);
 				}
 			}
 	
@@ -506,9 +506,9 @@ class menuAdm {
 					$sectionIds[$menuDetails['section_id']] = true;
 				}
 		
-				$submission = array(
+				$submission = [
 					'parent_id' => $newParentId,
-					'parentMenuID' => -1);
+					'parentMenuID' => -1];
 		
 				//If there was a specific ordinal chosen, move there
 				if ($newNeighbour !== false) {
@@ -520,12 +520,12 @@ class menuAdm {
 
 		} else {
 			foreach ($ids as $id) {
-				if ($menuDetails = \ze\row::get('menu_nodes', array('section_id', 'parent_id', 'ordinal'), $id)) {
+				if ($menuDetails = \ze\row::get('menu_nodes', ['section_id', 'parent_id', 'ordinal'], $id)) {
 					$menuNodes[$id] = $menuDetails;
 					$idsList .= ($idsList? ',' : ''). (int) $id;
 			
 					//Remove the ordinal, to be fixed later
-					\ze\row::update('menu_nodes', array('ordinal' => 0), $id);
+					\ze\row::update('menu_nodes', ['ordinal' => 0], $id);
 				}
 			}
 	
@@ -548,9 +548,9 @@ class menuAdm {
 					$sectionIds[$menuDetails['section_id']] = true;
 				}
 		
-				$submission = array(
+				$submission = [
 					'parent_id' => 0,
-					'parentMenuID' => -1);
+					'parentMenuID' => -1];
 		
 				//If there was a specific ordinal chosen, move there
 				if ($newNeighbour !== false) {
@@ -574,15 +574,15 @@ class menuAdm {
 		}
 
 		//Renumber the ordinal of all the sections we've just moved from
-		$renumbers = array();
+		$renumbers = [];
 		foreach ($menuNodes as $id => $menuDetails) {
 			if (!isset($renumbers[$menuDetails['section_id']. '_'. $menuDetails['parent_id']])) {
 		
-				$result = \ze\row::query('menu_nodes', array('id', 'ordinal'), array('section_id' => $menuDetails['section_id'], 'parent_id' => $menuDetails['parent_id']), 'ordinal');
+				$result = \ze\row::query('menu_nodes', ['id', 'ordinal'], ['section_id' => $menuDetails['section_id'], 'parent_id' => $menuDetails['parent_id']], 'ordinal');
 				$o = 0;
 				while ($row = \ze\sql::fetchAssoc($result)) {
 					if ($row['ordinal'] != ++$o) {
-						\ze\row::set('menu_nodes', array('ordinal' => $o), $row['id']);
+						\ze\row::set('menu_nodes', ['ordinal' => $o], $row['id']);
 					}
 				}
 		
@@ -595,7 +595,7 @@ class menuAdm {
 
 		//Delete and recalculate the menu hierarchy for every section that has been effected
 		foreach ($sectionIds as $sectionId => $dummy) {
-			\ze\row::delete('menu_hierarchy', array('section_id' => $sectionId));
+			\ze\row::delete('menu_hierarchy', ['section_id' => $sectionId]);
 		}
 
 		foreach ($sectionIds as $sectionId => $dummy) {
@@ -611,19 +611,19 @@ class menuAdm {
 			return;
 		}
 	
-		$result = \ze\row::query('menu_nodes', 'id', array('parent_id' => $id));
+		$result = \ze\row::query('menu_nodes', 'id', ['parent_id' => $id]);
 		while ($row = \ze\sql::fetchAssoc($result)) {
 			\ze\menuAdm::delete($row['id'], false);
 		}
 	
 		$content = \ze\menu::getContentItem($id);
 	
-		\ze\row::delete('menu_nodes', array('id' => $id));
-		\ze\row::delete('menu_text', array('menu_id' => $id));
-		\ze\row::delete('menu_positions', array('menu_id' => $id));
-		\ze\row::delete('menu_hierarchy', array('child_id' => $id));
-		\ze\row::delete('menu_hierarchy', array('ancestor_id' => $id));
-		\ze\module::sendSignal('eventMenuNodeDeleted', array('menuId' => $id));
+		\ze\row::delete('menu_nodes', ['id' => $id]);
+		\ze\row::delete('menu_text', ['menu_id' => $id]);
+		\ze\row::delete('menu_positions', ['menu_id' => $id]);
+		\ze\row::delete('menu_hierarchy', ['child_id' => $id]);
+		\ze\row::delete('menu_hierarchy', ['ancestor_id' => $id]);
+		\ze\module::sendSignal('eventMenuNodeDeleted', ['menuId' => $id]);
 	
 		//If this Content Item had any other Menu Nodes, make sure that one of the remaining is a primary
 		if ($content) {
@@ -710,8 +710,8 @@ class menuAdm {
 
 	//Formerly "recalcMenuHierarchy()"
 	public static function recalcHierarchy($sectionId) {
-		\ze\row::delete('menu_hierarchy', array('section_id' => $sectionId));
-		\ze\row::delete('menu_positions', array('section_id' => $sectionId, 'menu_id' => array('!' => 0)));
+		\ze\row::delete('menu_hierarchy', ['section_id' => $sectionId]);
+		\ze\row::delete('menu_positions', ['section_id' => $sectionId, 'menu_id' => ['!' => 0]]);
 		\ze\menuAdm::recalcTopLevelPositions();
 	
 		$sql = "
@@ -749,7 +749,7 @@ class menuAdm {
 			WHERE section_id = ". (int) $sectionId;
 		\ze\sql::update($sql);
 	
-		$ancestors = array();
+		$ancestors = [];
 		self::recalcHierarchyR($sectionId, 0, $ancestors, 0);
 	}
 
@@ -774,7 +774,7 @@ class menuAdm {
 		while ($row = \ze\sql::fetchAssoc($result)) {
 		
 			if ($row['section_id'] != $sectionId) {
-				\ze\row::update('menu_nodes', array('section_id' => $sectionId), $row['id']);
+				\ze\row::update('menu_nodes', ['section_id' => $sectionId], $row['id']);
 			}
 		
 			foreach ($ancestors as $ancestor => $separationOffset) {
@@ -808,7 +808,7 @@ class menuAdm {
 		\ze\sql::update($sql);
 	
 		//Delete all of the top-level entries
-		\ze\row::delete('menu_positions', array('menu_id' => 0));
+		\ze\row::delete('menu_positions', ['menu_id' => 0]);
 	
 		//Insert new entries
 		$sql = "

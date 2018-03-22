@@ -232,10 +232,10 @@ class lang {
 			
 				\ze\row::set(
 					'visitor_phrases',
-					array(
+					[
 						'seen_in_visitor_mode' => (!$cli && \ze\priv::check())? 0 : 1,
 						'seen_in_file' => substr($filename, 0, 0xff),
-						'seen_at_url' => $url),
+						'seen_at_url' => $url],
 					[
 						'language_id' => \ze::$defaultLang,
 						'module_class_name' => $moduleClass,
@@ -250,10 +250,10 @@ class lang {
 				if (\ze::$defaultLang != $languageId) {
 					\ze\row::set(
 						'visitor_phrases',
-						array(
+						[
 							'seen_in_visitor_mode' => (!$cli && \ze\priv::check())? 0 : 1,
 							'seen_in_file' => '-',
-							'seen_at_url' => '-'),
+							'seen_at_url' => '-'],
 						[
 							'language_id' => $languageId,
 							'module_class_name' => $moduleClass,
@@ -282,6 +282,21 @@ class lang {
 		foreach ($content as $i => &$str) {
 			if ($i % 2 === 1) {
 				//Every odd element will be a phrase code
+				
+				//Look out for Twig-style flags at the end of the phrase code's name
+				if (false !== ($pos = strpos($str, '|'))) {
+					$filter = trim(substr($str, $pos + 1));
+					$str = trim(substr($str, 0, $pos));
+					
+					switch ($filter) {
+						case 'e':
+						case 'escape':
+							//html escaping anything using the "escape" flag
+							$string .= htmlspecialchars($replace[$str] ?? '');
+							continue 2;
+					}
+				}
+				
 				$string .= $replace[$str] ?? '';
 			} else {
 				//Every even element will be plain text
@@ -363,9 +378,9 @@ class lang {
 				  count($labels)-1);
 	
 		$mrg = 
-			array('size' => 
+			['size' => 
 				round($size / pow(1024, $order), $precision)
-			);
+			];
 	
 		if ($adminMode) {
 			return \ze\admin::phrase($labels[$order], $mrg);

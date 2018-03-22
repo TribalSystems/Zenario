@@ -31,41 +31,41 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 //Add a new Banner to the nest, placing it in the right-most slide
 if (($moduleId = ze\module::id('zenario_banner'))
  && ($instance = ze\plugin::details($instanceId))
- && ($image = ze\row::get('files', array('id', 'filename', 'width', 'height'), array('usage' => 'image', 'id' => $imageId)))) {
+ && ($image = ze\row::get('files', ['id', 'filename', 'width', 'height'], ['usage' => 'image', 'id' => $imageId]))) {
 	
 	$eggId = self::addPlugin($moduleId, $instanceId, $slideNum, ze\admin::phrase('[[filename]] [[[width]] × [[height]]]', $image), $inputIsSlideId);
 	
 	ze\row::set(
 		'plugin_settings',
-		array(
+		[
 			'value' => '_CUSTOM_IMAGE',
-			'is_content' => $instance['content_id']? 'version_controlled_setting' : 'synchronized_setting'),
-		array(
+			'is_content' => $instance['content_id']? 'version_controlled_setting' : 'synchronized_setting'],
+		[
 			'instance_id' => $instanceId,
 			'egg_id' => $eggId,
-			'name' => 'image_source'));
+			'name' => 'image_source']);
 	
 	ze\row::set(
 		'plugin_settings',
-		array(
+		[
 			'value' => $image['id'],
 			'is_content' => $instance['content_id']? 'version_controlled_setting' : 'synchronized_setting',
 			'foreign_key_to' => 'file',
-			'foreign_key_id' => $image['id']),
-		array(
+			'foreign_key_id' => $image['id']],
+		[
 			'instance_id' => $instanceId,
 			'egg_id' => $eggId,
-			'name' => 'image'));
+			'name' => 'image']);
 	
 	ze\row::set(
 		'plugin_settings',
-		array(
+		[
 			'value' => $image['filename'],
-			'is_content' => $instance['content_id']? 'version_controlled_setting' : 'synchronized_setting'),
-		array(
+			'is_content' => $instance['content_id']? 'version_controlled_setting' : 'synchronized_setting'],
+		[
 			'instance_id' => $instanceId,
 			'egg_id' => $eggId,
-			'name' => 'alt_tag'));
+			'name' => 'alt_tag']);
 	
 	ze\contentAdm::resyncLibraryPluginFiles($instanceId, $instance);
 	

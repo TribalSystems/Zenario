@@ -32,8 +32,8 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 //This Plugin displays an image; it is intended to be used at the top of a page to display a Masthead
 class zenario_banner extends ze\moduleBaseClass {
 	
-	protected $mergeFields = array();
-	protected $subSections = array();
+	protected $mergeFields = [];
+	protected $subSections = [];
 	protected $empty = false;
 	
 	protected $editing = false;
@@ -137,7 +137,7 @@ class zenario_banner extends ze\moduleBaseClass {
 				
 				if (!ze\content::getCIDAndCTypeFromTagId($cID, $cType, $this->setting($hyperlink_target))
 				 || !(($equivId = ze\content::equivId($cID, $cType))
-				   && ze\row::exists('content_items', array('equiv_id' => $equivId, 'type' => $cType, 'status' => array('!1' => 'trashed', '!2' => 'deleted'))))) {
+				   && ze\row::exists('content_items', ['equiv_id' => $equivId, 'type' => $cType, 'status' => ['!1' => 'trashed', '!2' => 'deleted']]))) {
 					
 					$this->setSetting($link_type, '_NO_LINK', true);
 					$this->setSetting($hyperlink_target, '', true);
@@ -204,13 +204,13 @@ class zenario_banner extends ze\moduleBaseClass {
 		
 		 || ($this->setting('image_source') == '_PICTURE'
 		  && (ze\content::getCIDAndCTypeFromTagId($pictureCID, $pictureCType, $this->setting("picture")))
-		  && ($imageId = ze\row::get("versions", "file_id", array("id" => $pictureCID, 'type' => $pictureCType, "version" => ze\content::version($pictureCID, $pictureCType)))))
+		  && ($imageId = ze\row::get("versions", "file_id", ["id" => $pictureCID, 'type' => $pictureCType, "version" => ze\content::version($pictureCID, $pictureCType)])))
 		 
 		 || ($this->setting('image_source') == '_STICKY_IMAGE'
 		  && $cID
 		  && ($imageId = ze\file::itemStickyImageId($cID, $cType)))) {
 			
-			$cols = array();
+			$cols = [];
 			if (!$this->setting('alt_tag')) {
 				$cols[] = 'alt_tag';
 			}
@@ -615,7 +615,7 @@ class zenario_banner extends ze\moduleBaseClass {
 			//If we're reloading via AJAX, we need to call a JavaScript function to add the style to the head.
 			//Otherwise we can use addToPageHead() below.
 			if ($this->styles !== '' && $this->methodCallIs('refreshPlugin')) {
-				$this->callScriptBeforeAJAXReload('zenario_banner', 'addToPageHead', $this->containerId, $this->styles);
+				$this->callScriptBeforeAJAXReload('zenario', 'addStyles', $this->containerId, $this->styles);
 			}
 			
 			return true;
@@ -695,11 +695,11 @@ class zenario_banner extends ze\moduleBaseClass {
 			}
 			
 			if (isset($controls['actions']['settings'])) {
-				$controls['actions']['banner_edit_title'] = array(
+				$controls['actions']['banner_edit_title'] = [
 					'ord' => 1.1,
 					'label' => ze\admin::phrase('Edit title & HTML (inline)'),
 					'page_modes' => $controls['actions']['settings']['page_modes'],
-					'onclick' => htmlspecialchars_decode($this->editTitleInlineOnClick()));
+					'onclick' => htmlspecialchars_decode($this->editTitleInlineOnClick())];
 				$controls['actions']['settings']['label'] = ze\admin::phrase('Edit contents (admin box)');
 			}
 			

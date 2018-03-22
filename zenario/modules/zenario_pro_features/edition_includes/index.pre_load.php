@@ -193,7 +193,7 @@ if (!isset($_SESSION['admin_logged_into_site'])
 												if ((file_exists(($chPath = 'cache/pages/'. $chDirAllRequests. $chU. $chG. $chP. $chS. $chC. '/'). 'page.html'))
 												 || ($chG && (file_exists(($chPath = 'cache/pages/'. $chDirKnownRequests. $chU. $chG. $chP. $chS. $chC. '/'). 'page.html')))) {
 													
-													zenario_page_caching__logStats(array('hits', 'total'));
+													zenario_page_caching__logStats(['hits', 'total']);
 													touch($chPath. 'accessed');
 												
 												

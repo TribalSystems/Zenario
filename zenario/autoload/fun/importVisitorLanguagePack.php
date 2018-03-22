@@ -237,7 +237,7 @@ for ($i = 1; true; ++$i) {
 	) {
 		echo
 			\ze\admin::phrase('This spreadsheet contains phrases in [[lang]], which you do not have permissions to change',
-				array('lang' => \ze\lang::name($subheadings['language_id'])));
+				['lang' => \ze\lang::name($subheadings['language_id'])]);
 		exit;
 	
 	//Otherwise try to import this phrase

@@ -42,11 +42,11 @@ if ($urlNLink
  && $urlT != 'XXXXXXXXXXXXXXX'
  && $urlT != 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
  && ze\module::inc('zenario_newsletter')) {
-	$newsletterId = ze\row::get(ZENARIO_NEWSLETTER_PREFIX. "newsletter_user_link", "newsletter_id", array('tracker_hash' => ze\escape::sql($urlT)));
+	$newsletterId = ze\row::get(ZENARIO_NEWSLETTER_PREFIX. "newsletter_user_link", "newsletter_id", ['tracker_hash' => ze\escape::sql($urlT)]);
 	
-	if ($hyperlinkDetails = ze\row::get(ZENARIO_NEWSLETTER_PREFIX. "newsletters_hyperlinks", array("id", "hyperlink", "link_ordinal", "clickthrough_count"), array('hyperlink_hash' => ze\escape::sql($urlNLink)))) {
+	if ($hyperlinkDetails = ze\row::get(ZENARIO_NEWSLETTER_PREFIX. "newsletters_hyperlinks", ["id", "hyperlink", "link_ordinal", "clickthrough_count"], ['hyperlink_hash' => ze\escape::sql($urlNLink)])) {
 		$hyperlinkDetails["clickthrough_count"] = $hyperlinkDetails["clickthrough_count"] + 1;
-		ze\row::update(ZENARIO_NEWSLETTER_PREFIX. "newsletters_hyperlinks", array('clickthrough_count' => $hyperlinkDetails["clickthrough_count"], 'last_clicked_date' => ze\date::now()), array('id' => $hyperlinkDetails["id"]));
+		ze\row::update(ZENARIO_NEWSLETTER_PREFIX. "newsletters_hyperlinks", ['clickthrough_count' => $hyperlinkDetails["clickthrough_count"], 'last_clicked_date' => ze\date::now()], ['id' => $hyperlinkDetails["id"]]);
 		$sql = "
 			UPDATE ". DB_NAME_PREFIX. ZENARIO_NEWSLETTER_PREFIX. "newsletter_user_link SET
 				time_clicked_through = NOW(),
@@ -69,11 +69,11 @@ if ($urlNLink
 	}
 } elseif ($urlNLink && ze\module::inc('zenario_newsletter')) {
 
-$hyperlinkDetails = ze\row::get(ZENARIO_NEWSLETTER_PREFIX. "newsletters_hyperlinks", array("id", "hyperlink", "link_ordinal", "clickthrough_count"), array('hyperlink_hash' => ze\escape::sql($urlNLink)));
+$hyperlinkDetails = ze\row::get(ZENARIO_NEWSLETTER_PREFIX. "newsletters_hyperlinks", ["id", "hyperlink", "link_ordinal", "clickthrough_count"], ['hyperlink_hash' => ze\escape::sql($urlNLink)]);
 	
 	$hyperlinkDetails["clickthrough_count"] = $hyperlinkDetails["clickthrough_count"] + 1;
 	
-	ze\row::update(ZENARIO_NEWSLETTER_PREFIX. "newsletters_hyperlinks", array('clickthrough_count' => $hyperlinkDetails["clickthrough_count"], 'last_clicked_date' => ze\date::now()), array('id' => $hyperlinkDetails["id"]));
+	ze\row::update(ZENARIO_NEWSLETTER_PREFIX. "newsletters_hyperlinks", ['clickthrough_count' => $hyperlinkDetails["clickthrough_count"], 'last_clicked_date' => ze\date::now()], ['id' => $hyperlinkDetails["id"]]);
 
 }
 if($hyperlinkDetails) {

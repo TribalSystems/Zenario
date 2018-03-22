@@ -35,7 +35,7 @@ class zenario_user_forms__admin_boxes__plugin_settings extends ze\moduleBaseClas
 		}
 		
 		$formId = $values['first_tab/user_form'];
-		$form = ze\row::get(ZENARIO_USER_FORMS_PREFIX . 'user_forms', array('allow_partial_completion', 'partial_completion_mode'), $formId);
+		$form = ze\row::get(ZENARIO_USER_FORMS_PREFIX . 'user_forms', ['allow_partial_completion', 'partial_completion_mode'], $formId);
 		$fields['first_tab/partial_completion_button_position']['hidden'] = !($form && $form['allow_partial_completion'] && $form['partial_completion_mode'] == 'button' || $form['partial_completion_mode'] == 'auto_and_button');
 	}
 	

@@ -32,7 +32,7 @@ class zenario_common_features__admin_boxes__export_vlp extends ze\moduleBaseClas
 
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		
-		$phrases = array();
+		$phrases = [];
 		$sql = "
 			SELECT COUNT(*)
 			FROM (
@@ -214,11 +214,11 @@ class zenario_common_features__admin_boxes__export_vlp extends ze\moduleBaseClas
 			$sheet->getProtection()->setSheet(true); 
 			$editableBit = $sheet->getStyle('E2:E'. $i);
 			$editableBit->getProtection()->setLocked(PHPExcel_Style_Protection::PROTECTION_UNPROTECTED);
-			$editableBit->applyFromArray(array(
-				'fill' => array(
+			$editableBit->applyFromArray([
+				'fill' => [
 					'type' => PHPExcel_Style_Fill::FILL_SOLID,
-					'color' => array('rgb' => 'e0ffe0')
-			)));
+					'color' => ['rgb' => 'e0ffe0']
+			]]);
 		}
 		
 		switch ($extension) {

@@ -106,12 +106,12 @@ class phi {
 		
 		
 		//Initialise a Twig instance for Phi
-		self::$twig = new \Twig_Environment(new \Zenario_Twig_String_Loader(), array(
+		self::$twig = new \Twig_Environment(new \Zenario_Twig_String_Loader(), [
 			'cache' => new \Zenario_Phi_Twig_Cache(),
 			'autoescape' => false,
 			'debug' => false,
 			'auto_reload' => true
-		));
+		]);
 		
 		//Include a Twig extension that enables support for breaks and continues
 		self::$twig->addExtension(new \MNBreakAndContinueTwigExtension());
@@ -210,6 +210,7 @@ class phi {
 			$whitelist['getAllChildIds'] = 'assetwolf_common_fun::getAllChildIds';
 			$whitelist['getImmediateChildIds'] = 'assetwolf_common_fun::getImmediateChildIds';
 			$whitelist['getInheritedMetadata'] = 'assetwolf_common_fun::getInheritedMetadata';
+			$whitelist['getParentNodeId'] = 'assetwolf_common_fun::getParentNodeId';
 			$whitelist['getMetadata'] = 'assetwolf_common_fun::getMetadata';
 			$whitelist['query'] = 'assetwolf_common_fun::query';
 		}
@@ -379,7 +380,7 @@ class phi {
 	
 	
 	
-	public static function runTwig($twigCode, &$outputs, $vars = array(), $testing = false) {
+	public static function runTwig($twigCode, &$outputs, $vars = [], $testing = false) {
 		self::$testing = $testing;
 		self::$output = null;
 		self::$outputs = &$outputs;
@@ -399,7 +400,7 @@ class phi {
 		return self::$output;
 	}
 	
-	public static function carefullyRunTwig($twigCode, &$outputs, $vars = array()) {
+	public static function carefullyRunTwig($twigCode, &$outputs, $vars = []) {
 		try {
 			return self::runTwig($twigCode, $outputs, $vars);
 		} catch (\Exception $e) {
@@ -407,15 +408,15 @@ class phi {
 		}
 	}
 	
-	public static function runPhi($phiCode, &$outputs, $vars = array(), $allowFunctions = false) {
+	public static function runPhi($phiCode, &$outputs, $vars = [], $allowFunctions = false) {
 		return \ze\phiParser::runPhi($phiCode, $outputs, $vars, $allowFunctions);
 	}
 	
-	public static function carefullyRunPhi($phiCode, &$outputs, $vars = array(), $allowFunctions = false) {
+	public static function carefullyRunPhi($phiCode, &$outputs, $vars = [], $allowFunctions = false) {
 		return \ze\phiParser::carefullyRunPhi($phiCode, $outputs, $vars, $allowFunctions);
 	}
 	
-	public static function testPhi($phiCode, &$outputs, $vars = array(), $allowFunctions = false) {
+	public static function testPhi($phiCode, &$outputs, $vars = [], $allowFunctions = false) {
 		return \ze\phiParser::testPhi($phiCode, $outputs, $vars, $allowFunctions);
 	}
 	

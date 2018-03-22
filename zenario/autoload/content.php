@@ -345,7 +345,7 @@ class content {
 					  AND language_id = '". \ze\escape::sql($langId). "'";
 			
 				if ($checkVisible) {
-					$adminMode = !empty($_SESSION['admin_logged_into_site']) && \ze\priv::check();
+					$adminMode = \ze::isAdmin();
 				
 					//If an admin is logged in, any drafts/hidden content items should effect which language they get directed to
 					//If not, only published pages should effect the logic.
@@ -460,7 +460,7 @@ class content {
 	const langIdFromTwig = true;
 	//Formerly "getContentLang()"
 	public static function langId($cID, $cType = false) {
-		return \ze\row::get('content_items', 'language_id', array('id' => $cID, 'type' => ($cType ?: 'html')));
+		return \ze\row::get('content_items', 'language_id', ['id' => $cID, 'type' => ($cType ?: 'html')]);
 	}
 
 	//Try to work out what content item is being accessed
@@ -469,7 +469,7 @@ class content {
 	public static function resolveFromRequest(&$cID, &$cType, &$redirectNeeded, &$aliasInURL, $get, $request, $post) {
 		$aliasInURL = '';
 		$equivId = $cID = $cType = $reqLangId = $redirectNeeded = $languageSpecificDomain = $hierarchicalAliasInURL = false;
-		$adminMode = !empty($_SESSION['admin_logged_into_site']) && \ze\priv::check();
+		$adminMode = \ze::isAdmin();
 	
 		//Check that we're on the domain we're expecting.
 		//If not, flag that any links we generate should contain the full path and domain name.
@@ -874,7 +874,7 @@ class content {
 				'version',
 				'title', 'description', 'keywords',
 				'layout_id', 'css_class', 'feature_image_id',
-				'publication_date', 'published_datetime', 'created_datetime',
+				'release_date', 'published_datetime', 'created_datetime',
 				'rss_slot_name', 'rss_nest'];
 		
 			$version = \ze\row::get('content_item_versions', $versionColumns, ['id' => $content['id'], 'type' => $content['type'], 'version' => $versionNumber]);
@@ -1121,7 +1121,7 @@ class content {
 		\ze::$pageKeywords = $version['keywords'];
 	
 		\ze::$itemCSS = $version['css_class'];
-		\ze::$date = ($version['publication_date'] ?: ($version['published_datetime'] ?: $version['created_datetime']));
+		\ze::$date = ($version['release_date'] ?: ($version['published_datetime'] ?: $version['created_datetime']));
 		\ze::$rss = $version['rss_nest']. '_'. $version['rss_slot_name'];
 	
 		\ze::$isDraft =

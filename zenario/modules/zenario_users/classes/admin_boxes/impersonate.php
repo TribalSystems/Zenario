@@ -37,7 +37,7 @@ class zenario_users__admin_boxes__impersonate extends zenario_users {
 			
 			$fields['impersonate/desc']['snippet']['html'] =
 				ze\admin::phrase('This action will log you in as user "[[name]]", so that you will see the site as they see it.',
-					array('name' => ze\user::identifier($box['key']['id'])));
+					['name' => ze\user::identifier($box['key']['id'])]);
 		} else {
 			
 			//This code would auto-populate the picker, however this logic is done elsewhere
@@ -51,7 +51,7 @@ class zenario_users__admin_boxes__impersonate extends zenario_users {
 			$box['max_height'] += 150;
 			$fields['impersonate/desc']['snippet']['html'] =
 				ze\admin::phrase('This action will log you in as the selected user, so that you will see the site as they see it.',
-					array('name' => ze\user::identifier($box['key']['id'])));
+					['name' => ze\user::identifier($box['key']['id'])]);
 		}
 	}
 	

@@ -45,9 +45,7 @@
 				{% if location.phone %}
 					{% set phone = location.phone|escape %}
 					<div class="zenario_lmal_phone">
-						{% trans %}
-							T: {{phone}}
-						{% endtrans %}
+						{{"T: [[phone]]"|trans({phone: phone})}}
 					</div>
 				{% endif %}
 				{% if location.email %}
@@ -226,9 +224,7 @@
 									{% if location.phone %}
 										{% set phone = location.phone|escape %}
 										<div class="zenario_lmal_phone">
-											{% trans %}
-												T: {{phone}}
-											{% endtrans %}
+											{{"T: [[phone]]"|trans({phone: phone})}}
 										</div>
 									{% endif %}
 									{% if location.email %}

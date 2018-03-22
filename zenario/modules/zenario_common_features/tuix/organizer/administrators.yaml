@@ -95,9 +95,9 @@ zenario__users:
                     title: Last login
                     db_column: |
                         a.last_login
-                    format: date
+                    format: datetime
                     show_by_default: true
-                    width: small
+                    width: medium
                 last_platform:
                     title: Last login browser & IP address
                     db_column: |

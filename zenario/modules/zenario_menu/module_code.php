@@ -288,7 +288,7 @@ class zenario_menu extends ze\moduleBaseClass {
 		$sections = [];
 		//if (!empty($row['descriptive_text'])) {
 		//	if ($this->checkFrameworkSectionExists('Sub_Text')) {
-		//		$sections['Sub_Text'] = array('Sub_Text' => htmlspecialchars($row['descriptive_text']));
+		//		$sections['Sub_Text'] = ['Sub_Text' => htmlspecialchars($row['descriptive_text'])];
 		//	}
 		//}
 		

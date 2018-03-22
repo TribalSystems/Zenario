@@ -43,14 +43,14 @@ class zenario_common_features__organizer__skins extends ze\moduleBaseClass {
 		
 		if (($refinerName == 'template_family' || $refinerName == 'template_family__panel_above')
 		 && $templateFamily = ze\ring::decodeIdForOrganizer($_GET['refiner__template_family'] ?? false)) {
-			$panel['title'] = ze\admin::phrase('Skins in the template directory "[[family]]"', array('family' => $templateFamily));
+			$panel['title'] = ze\admin::phrase('Skins in the template directory "[[family]]"', ['family' => $templateFamily]);
 			$panel['no_items_message'] = ze\admin::phrase('There are no skins for this template directory.');
 			unset($panel['columns']['family_name']['title']);
 		
 		} elseif ($refinerName == 'usable_in_template_family'
 		 && $templateFamily = ze\ring::decodeIdForOrganizer($_GET['refiner__usable_in_template_family'] ?? false)) {
-			$panel['title'] = ze\admin::phrase('Skins in the directory "[[family]]"', array('family' => $templateFamily));
-			$panel['no_items_message'] = ze\admin::phrase('There are no skins in the directory "[[family]]"', array('family' => $templateFamily));
+			$panel['title'] = ze\admin::phrase('Skins in the directory "[[family]]"', ['family' => $templateFamily]);
+			$panel['no_items_message'] = ze\admin::phrase('There are no skins in the directory "[[family]]"', ['family' => $templateFamily]);
 			unset($panel['columns']['family_name']['title']);
 		}
 		
@@ -76,7 +76,7 @@ class zenario_common_features__organizer__skins extends ze\moduleBaseClass {
 		if ($path != 'zenario__layouts/panels/skins') return;
 		
 		if (($_POST['make_default'] ?? false) && ze\priv::check('_PRIV_EDIT_TEMPLATE')) {
-			ze\row::update('template_families', array('skin_id' => $ids), ze\ring::decodeIdForOrganizer($_REQUEST['refiner__template_family'] ?? false));
+			ze\row::update('template_families', ['skin_id' => $ids], ze\ring::decodeIdForOrganizer($_REQUEST['refiner__template_family'] ?? false));
 			ze\skinAdm::checkForChangesInFiles($runInProductionMode = true, $forceScan = true);
 		}
 	}

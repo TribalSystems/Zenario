@@ -42,16 +42,16 @@ class zenario_recently_viewed extends ze\moduleBaseClass {
 	   	}
 
 		if ($_POST['recently_viewed_pages_submit'] ?? false) {
-			$recentlyViewedItems = array();
+			$recentlyViewedItems = [];
 		
 			foreach ($_POST as $key => $value) {
 				if (substr($key,0,5)=="item_") {
 					$itemArray = explode("_",$value);
-					$recentlyViewedItems[] = array("cID" => $itemArray[0],"cType" => $itemArray[1]);
+					$recentlyViewedItems[] = ["cID" => $itemArray[0],"cType" => $itemArray[1]];
 				}
 			}
 		
-			ze\module::sendSignal('eventRecentlyViewedItemsSubmitted', array("items" => $recentlyViewedItems, 'slotName' => $this->slotName));
+			ze\module::sendSignal('eventRecentlyViewedItemsSubmitted', ["items" => $recentlyViewedItems, 'slotName' => $this->slotName]);
 		}
 
     	if ($this->setting("action")=="record_and_display" || $this->setting("action")=="display_only") {
@@ -62,7 +62,7 @@ class zenario_recently_viewed extends ze\moduleBaseClass {
 	}
 	
     function showSlot() {
-		$frameworkArray = array();
+		$frameworkArray = [];
 
 		if (($_GET["mode"] ?? false)=="delete_recent_item") {
 			$this->deleteRecentlyViewedItem($_GET["key"] ?? false);
@@ -97,13 +97,13 @@ class zenario_recently_viewed extends ze\moduleBaseClass {
 												$i++;
 												
 												if ($i<=$this->setting("number_to_record")) {
-													$frameworkArray[] = array(
+													$frameworkArray[] = [
 																				"Recently_Viewed_Item_Title" => ze\content::title($recentlyViewItem['cID'],$recentlyViewItem['cType']),
 																				"Recently_Viewed_Item_Url" => $this->linkToItem($recentlyViewItem['cID'],$recentlyViewItem['cType']),
 																				"Recently_Viewed_Item_Key" => $recentlyViewItem['cID'] . "_" . $recentlyViewItem['cType'],
 																				"Recently_Viewed_Item_Href_And_Onclick" => $this->refreshPluginSlotAnchor("&mode=delete_recent_item&no_cache=1&key=" . $recentlyViewItem['cID'] . "_" . $recentlyViewItem['cType']),
 																				"Ordinal" => $i
-																		);
+																		];
 												}
 											}
 										}
@@ -117,7 +117,7 @@ class zenario_recently_viewed extends ze\moduleBaseClass {
 		}
     	
     	if ($_POST['recently_viewed_pages_submit'] ?? false) {
-	  		$this->framework("Outer",array(),array("Items_Submitted" => true));
+	  		$this->framework("Outer",[],["Items_Submitted" => true]);
     	} elseif ($frameworkArray) {
 				
 			if ($this->setting('order')=='most_recent_first'){
@@ -125,23 +125,23 @@ class zenario_recently_viewed extends ze\moduleBaseClass {
 			} 
     		
     		if ($this->setting("action")=="record_and_display" || $this->setting("action")=="display_only") {
-				$mergefields = array();
+				$mergefields = [];
 			
 				$mergeFields['Open_Form']=$this->openForm();
 				$mergeFields['Close_Form']=$this->closeForm();
 	
-				$this->framework("Outer",$mergeFields,array("Recently_Viewed_Items" => $frameworkArray,"Items_Not_Submitted" => true));
+				$this->framework("Outer",$mergeFields,["Recently_Viewed_Items" => $frameworkArray,"Items_Not_Submitted" => true]);
 			}
 	  	} else {
 			if ($this->setting("action")=="record_and_display" || $this->setting("action")=="display_only") {
-				$this->framework("Outer",array(),array("No_Items_Viewed" => true));
+				$this->framework("Outer",[],["No_Items_Viewed" => true]);
 			}
 	  	}
     }
 
 	function checkNumberOfRecentItems () {
      	if (!isset($_SESSION['recently_viewed_items'])) {
-    		$_SESSION['recently_viewed_items'] = array();
+    		$_SESSION['recently_viewed_items'] = [];
     	} else {
     		foreach ($_SESSION['recently_viewed_items'] as $instanceKey => &$instance) {
     			if ($instanceKey==(int)$this->setting('pot')) {
@@ -193,7 +193,7 @@ class zenario_recently_viewed extends ze\moduleBaseClass {
 						foreach ($contentCategories as $contentCategory) {
 							if ($contentCategory['id']==$this->setting("category")) {
 								if ($recordItem) {
-			  						$_SESSION['recently_viewed_items'][(int)$this->setting('pot')][$this->cType][$contentCategory['id']][$this->cID . "_" . $this->cType] = array("cID" => $this->cID, "cType" => $this->cType);
+			  						$_SESSION['recently_viewed_items'][(int)$this->setting('pot')][$this->cType][$contentCategory['id']][$this->cID . "_" . $this->cType] = ["cID" => $this->cID, "cType" => $this->cType];
 			  						break;
 			  					}
 							}
@@ -201,7 +201,7 @@ class zenario_recently_viewed extends ze\moduleBaseClass {
 					}
 		  		} else {
 					if ($recordItem) {
-		  				$_SESSION['recently_viewed_items'][(int)$this->setting('pot')][$this->cType][''][$this->cID . "_" . $this->cType] = array("cID" => $this->cID, "cType" => $this->cType);    
+		  				$_SESSION['recently_viewed_items'][(int)$this->setting('pot')][$this->cType][''][$this->cID . "_" . $this->cType] = ["cID" => $this->cID, "cType" => $this->cType];    
 		  			}
     			}
 	  		}

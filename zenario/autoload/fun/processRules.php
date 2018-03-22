@@ -30,13 +30,13 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 //Load details on document auto-processing rules, and the documents dataset
 if ((!$dataset = \ze\dataset::details('documents'))
  || (!$fields = \ze\datasetAdm::listCustomFields($dataset, false))
- || (!$rules = \ze\row::getArray('document_rules', true, array(), 'ordinal'))
+ || (!$rules = \ze\row::getArray('document_rules', true, [], 'ordinal'))
  || (empty($rules))) {
 	return false;
 }
 
 //Look up all of the fields that have been used
-$lovs = array();
+$lovs = [];
 foreach ($rules as $rule) {
 	if ($rule['field_id'] && !isset($lovs[$rule['field_id']])) {
 		$lovs[$rule['field_id']] = \ze\dataset::fieldLOV($rule['field_id']);
@@ -45,7 +45,7 @@ foreach ($rules as $rule) {
 
 //Loop through each of the document ids that we are to update
 if (is_numeric($documentIds)) {
-	$documentIds = array($documentIds);
+	$documentIds = [$documentIds];
 } elseif (!is_array($documentIds)) {
 	$documentIds = \ze\ray::explodeAndTrim($documentIds, true);
 }
@@ -54,12 +54,12 @@ foreach ($documentIds as $documentId) {
 	
 	//Attempt to get details of the document, including the filename
 	//Only look for documents without the dont_autoset_metadata flag set
-	if (($fileId = \ze\row::get('documents', 'file_id', array('id' => $documentId, 'type' => 'file', 'dont_autoset_metadata' => 0)))
+	if (($fileId = \ze\row::get('documents', 'file_id', ['id' => $documentId, 'type' => 'file', 'dont_autoset_metadata' => 0]))
 	 && ($filename = \ze\row::get('files', 'filename', $fileId))) {
 		
-		$stops = array();
-		$values = array();
-		$checkboxesValues = array();
+		$stops = [];
+		$values = [];
+		$checkboxesValues = [];
 		$moveToFolder = false;
 		
 		//Get the name and extension from the filename
@@ -145,7 +145,7 @@ foreach ($documentIds as $documentId) {
 					if ($field['type'] == 'checkboxes') {
 						if ($replacement) {
 							if (!isset($checkboxesValues[$rule['field_id']])) {
-								$checkboxesValues[$rule['field_id']] = array();
+								$checkboxesValues[$rule['field_id']] = [];
 							}
 							$checkboxesValues[$rule['field_id']][$replacement] = true;
 						}
@@ -181,7 +181,7 @@ foreach ($documentIds as $documentId) {
 		
 		//Move the document to a folder if asked to
 		if ($moveToFolder) {
-			\ze\row::update('documents', array('folder_id' => $moveToFolder), $documentId);
+			\ze\row::update('documents', ['folder_id' => $moveToFolder], $documentId);
 		}
 		
 		//Save all of the values of the fields

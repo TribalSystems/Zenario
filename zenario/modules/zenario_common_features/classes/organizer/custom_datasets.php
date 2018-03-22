@@ -31,11 +31,11 @@ class zenario_common_features__organizer__custom_datasets extends ze\moduleBaseC
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
 		
-		$panel['items'] = ze\row::getArray('custom_datasets', true, array());
+		$panel['items'] = ze\row::getArray('custom_datasets', true, []);
 			
 		foreach ($panel['items'] as $id => &$item) {
 			if ($item['extends_admin_box']) {
-				if (!ze\row::exists('tuix_file_contents', array('type' => 'admin_boxes', 'path' => $item['extends_admin_box']))) {
+				if (!ze\row::exists('tuix_file_contents', ['type' => 'admin_boxes', 'path' => $item['extends_admin_box']])) {
 					$item['link'] = false;
 					$item['type'] = ze\admin::phrase('Extends system dataset [[extends_admin_box]] (module not enabled!)', $item);
 				} else {

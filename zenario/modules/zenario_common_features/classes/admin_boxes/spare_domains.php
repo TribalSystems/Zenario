@@ -40,7 +40,7 @@ class zenario_common_features__admin_boxes__spare_domains extends ze\moduleBaseC
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		if ($box['key']['id']) {
-			$record = ze\row::get('spare_domain_names', true, array('requested_url' => ze\ring::decodeIdForOrganizer($box['key']['id'])));
+			$record = ze\row::get('spare_domain_names', true, ['requested_url' => ze\ring::decodeIdForOrganizer($box['key']['id'])]);
 			//$this->fillFieldValues($values, $record);
 
 			$values['details/requested_url'] = $record['requested_url'];
@@ -62,25 +62,25 @@ class zenario_common_features__admin_boxes__spare_domains extends ze\moduleBaseC
 				$box['tabs']['details']['errors'][] = ze\admin::phrase('Please enter a valid domain name.');
 			
 			} else {
-				if (ze\row::exists('spare_domain_names', array('requested_url' => $values['details/requested_url']))) {
+				if (ze\row::exists('spare_domain_names', ['requested_url' => $values['details/requested_url']])) {
 					$box['tabs']['details']['errors'][] =
 						ze\admin::phrase('The domain "[[details/requested_url]]" is already used as a spare domain name.', $values);
 				
-				} elseif (ze\row::exists('languages', array('domain' => $values['details/requested_url']))) {
+				} elseif (ze\row::exists('languages', ['domain' => $values['details/requested_url']])) {
 					$box['tabs']['details']['errors'][] =
 						ze\admin::phrase('The domain "[[details/requested_url]]" is already used as a language specific domain.', $values);
 				}
 				
 				if (!empty($values['details/add_www'])) {
-					if (ze\row::exists('spare_domain_names', array('requested_url' => 'www.'. $values['details/requested_url']))) {
+					if (ze\row::exists('spare_domain_names', ['requested_url' => 'www.'. $values['details/requested_url']])) {
 						$box['tabs']['details']['errors'][] =
 							ze\admin::phrase('The domain "[[domain]]" is already used as a spare domain name.',
-								array('domain' => 'www.'. $values['details/requested_url']));
+								['domain' => 'www.'. $values['details/requested_url']]);
 					
-					} elseif (ze\row::exists('languages', array('domain' => 'www.'. $values['details/requested_url']))) {
+					} elseif (ze\row::exists('languages', ['domain' => 'www.'. $values['details/requested_url']])) {
 						$box['tabs']['details']['errors'][] =
 							ze\admin::phrase('The domain "[[domain]]" is already used as a language specific domain.',
-								array('domain' => 'www.'. $values['details/requested_url']));
+								['domain' => 'www.'. $values['details/requested_url']]);
 					}
 				}
 			}			

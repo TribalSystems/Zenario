@@ -32,7 +32,7 @@ class zenario_common_features__admin_boxes__upload_replacement_document extends 
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		$documentId = $box['key']['id'];
-		$document = ze\row::get('documents', array('thumbnail_id', 'extract_wordcount'), $documentId);
+		$document = ze\row::get('documents', ['thumbnail_id', 'extract_wordcount'], $documentId);
 		if (!$document['thumbnail_id']) {
 			$fields['file/keep_thumbnail_image']['hidden'] = true;
 		}
@@ -52,10 +52,11 @@ class zenario_common_features__admin_boxes__upload_replacement_document extends 
 				if($row['number_of_files'] > 1){
 					$numberOfFiles = (int)$row['number_of_files'] - 1;
 					
+					$fields['file/desc']['hidden'] = false;
 					if($numberOfFiles == 1){
-						$fields['file/desc']['snippet']['html'] = ze\admin::phrase('A replacement document cannot be uploaded because there is 1 more document with the name "[[filename]]".',array('filename'=>$filename));
+						$fields['file/desc']['snippet']['html'] = ze\admin::phrase('A replacement document cannot be uploaded because there is 1 more document with the name "[[filename]]".',['filename'=>$filename]);
 					}else{
-						$fields['file/desc']['snippet']['html'] = ze\admin::phrase('A replacement document cannot be uploadeded because there are [[number_of_files]] more documents with the name "[[filename]]".',array('number_of_files'=>$numberOfFiles,'filename'=>$filename));
+						$fields['file/desc']['snippet']['html'] = ze\admin::phrase('A replacement document cannot be uploadeded because there are [[number_of_files]] more documents with the name "[[filename]]".',['number_of_files'=>$numberOfFiles,'filename'=>$filename]);
 					}
 					
 					$box['tabs']['file']['edit_mode']['enabled'] = 0;
@@ -66,7 +67,7 @@ class zenario_common_features__admin_boxes__upload_replacement_document extends 
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
 		$location = ze\file::getPathOfUploadInCacheDir($values['file/upload']);
-		$file = array();
+		$file = [];
 		if (is_readable($location)
 			 && is_file($location)
 			 && ($file['size'] = filesize($location))
@@ -74,9 +75,9 @@ class zenario_common_features__admin_boxes__upload_replacement_document extends 
 			 && ($file['checksum'] = ze::base16To64($file['checksum']))
 		) {
 			$documentId = $box['key']['id'];
-			$document = ze\row::get('documents', array('file_id'), $documentId);
-			$key = array('checksum' => $file['checksum'], 'id' => $document['file_id']);
-			if ($existingFile = ze\row::get('files', array('id', 'filename', 'location', 'path'), $key)) {
+			$document = ze\row::get('documents', ['file_id'], $documentId);
+			$key = ['checksum' => $file['checksum'], 'id' => $document['file_id']];
+			if ($existingFile = ze\row::get('files', ['id', 'filename', 'location', 'path'], $key)) {
 				if (ze\file::docstorePath($existingFile['id'], false)){
 					$fields['file/upload']['error'] = ze\admin::phrase('The replacement document is the same as the current document.');
 				}
@@ -87,40 +88,40 @@ class zenario_common_features__admin_boxes__upload_replacement_document extends 
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		$documentId = $box['key']['id'];
-		$document = ze\row::get('documents', array('file_id', 'filename'), $documentId);
+		$document = ze\row::get('documents', ['file_id', 'filename'], $documentId);
 		$replacementDocument = $values['file/upload'];
 		$replacementDocumentPath = ze\file::getPathOfUploadInCacheDir($replacementDocument);
 		$replacementDocumentName = basename(ze\file::getPathOfUploadInCacheDir($replacementDocument));
 		
 		if ($replacementDocumentPath && $replacementDocumentName) {
 			//Find if old file has public link
-			$oldFile = ze\row::get('files', array('id', 'filename', 'short_checksum'), $document['file_id']);
+			$oldFile = ze\row::get('files', ['id', 'filename', 'short_checksum'], $document['file_id']);
 			$oldFilePath = CMS_ROOT . 'public/downloads/' . $oldFile['short_checksum'];
 			$publicLink = is_link($oldFilePath . '/' . $document['filename']);
 			
 			//Upload new file
 			$newFileId = ze\file::addToDatabase('hierarchial_file', $replacementDocumentPath, false, false, false, true);
-			$newFile = ze\row::get('files', array('filename', 'short_checksum'), $newFileId);
+			$newFile = ze\row::get('files', ['filename', 'short_checksum'], $newFileId);
 			
 			if (!$values['file/keep_meta_data']) {
-				ze\row::update('documents', array('title' => ""), array('id' => $documentId));
+				ze\row::update('documents', ['title' => ""], ['id' => $documentId]);
 				ze\row::delete('documents_custom_data', $documentId);
 			}
 			
-			$documentProperties = array(
+			$documentProperties = [
 				'file_id' => $newFileId,
 				'filename' => $replacementDocumentName,
 				'file_datetime' => date("Y-m-d H:i:s")
-			);
+			];
 			
 			//Copy privacy if a document with the same file already exists
-			$docWithSameFile = ze\row::get('documents', array('privacy', 'filename'), array('file_id' => $newFileId));
+			$docWithSameFile = ze\row::get('documents', ['privacy', 'filename'], ['file_id' => $newFileId]);
 			if ($docWithSameFile) {
 				$documentProperties['filename'] = $docWithSameFile['filename'];
 				if ($docWithSameFile['privacy'] == 'public') {
 					$documentProperties['privacy'] = $docWithSameFile['privacy'];
 				} elseif ($publicLink) {
-					ze\row::update('documents', array('privacy' => 'public'), array('file_id' => $newFileId));
+					ze\row::update('documents', ['privacy' => 'public'], ['file_id' => $newFileId]);
 				}
 			}
 			
@@ -146,6 +147,10 @@ class zenario_common_features__admin_boxes__upload_replacement_document extends 
 						\''. ze\escape::sql(mb_substr($newRedirect, 0, 255, 'UTF-8')). '\'
 					)';
 				ze\sql::update($sql);
+				
+				//Delete any redirects to the same document to stop infinite redirect shenanigans
+				ze\row::delete('document_public_redirects', ['document_id' => $documentId, 'file_id' => $newFileId]);
+				
 				ze\document::remakeRedirectHtaccessFiles($documentId);
 				ze\document::generatePublicLink($documentId);
 			}

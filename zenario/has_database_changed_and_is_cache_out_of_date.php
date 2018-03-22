@@ -49,4 +49,4 @@ echo ze::setting('yaml_version'), '___';
 echo ze\db::codeLastUpdated(), '___';
 
 //Echo the the current data revision number. (This is incremented every time data is changed in the database.)
-echo ze\row::get('local_revision_numbers', 'revision_no', array('path' => 'data_rev'));
+echo ze\row::get('local_revision_numbers', 'revision_no', ['path' => 'data_rev']);

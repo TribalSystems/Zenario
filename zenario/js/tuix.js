@@ -1502,6 +1502,98 @@ zenarioT.splitDataFromErrorMessage = function(resp) {
 	return resp;
 };
 
+//JSON encode some TUIX, and also apply some common replacements as a simple way to try and get the size down a bit
+//N.b. not currently used, so commented out to save space
+//zenarioT.stringify = function(codedTUIX) {
+//	return JSON.stringify(
+//		codedTUIX.replace(/%/g, "%C")
+//		
+//		.replace(/"\:false/g, "%0")
+//		.replace(/"\:true/g, "%1")
+//		.replace(/"ajax"\:/g, "%a")
+//		.replace(/"confirm"\:/g, "%f")
+//		.replace(/"css_class"\:/g, "%c")
+//		.replace(/"disabled"\:/g, "%d")
+//		.replace(/"empty_value"\:/g, "%w")
+//		.replace(/"enable_microtemplates_in_properties"\:/g, "%b")
+//		.replace(/"grouping"\:/g, "%g")
+//		.replace(/"hidden"\:/g, "%h")
+//		.replace(/"hide_if_previous_value_isnt"\:/g, "%7")
+//		.replace(/"hide_when_children_are_not_visible"\:/g, "%8")
+//		.replace(/"hide_with_previous_field"\:/g, "%9")
+//		.replace(/"label"\:/g, "%l")
+//		.replace(/"last_edited"\:/g, "%e")
+//		.replace(/"message"\:/g, "%m")
+//		.replace(/"name"\:/g, "%n")
+//		.replace(/"onclick"\:/g, "%k")
+//		.replace(/"ord"\:/g, "%o")
+//		.replace(/"parent"\:/g, "%p")
+//		.replace(/"placeholder"\:/g, "%q")
+//		.replace(/"post_field_html"\:/g, "%3")
+//		.replace(/"pre_field_html"\:/g, "%2")
+//		.replace(/"readonly"\:/g, "%z")
+//		.replace(/"redraw_immediately_onchange"\:/g, "%4")
+//		.replace(/"redraw_onchange"\:/g, "%5")
+//		.replace(/"row_class"\:/g, "%r")
+//		.replace(/"snippet"\:/g, "%s")
+//		.replace(/"title"\:/g, "%i")
+//		.replace(/"tooltip"\:/g, "%t")
+//		.replace(/"tuix"\:/g, "%x")
+//		.replace(/"type"\:/g, "%y")
+//		.replace(/"value"\:/g, "%u")
+//		.replace(/"visible_if"\:/g, "%v")
+//		
+//		.replace(/\~/g, "%S").replace(/"/g, "~").replace(/\+/g, "%P").replace(/\:/g, "+")
+//	);
+//};
+
+
+//Reverse of the above
+zenarioT.parse = function(codedTUIX) {
+	return JSON.parse(codedTUIX
+		.replace(/\~/g, '"').replace(/%S/g, '~').replace(/\+/g, ':').replace(/%P/g, '+')
+		
+		.replace(/%0/g, '":false')
+		.replace(/%1/g, '":true')
+		.replace(/%2/g, '"pre_field_html":')
+		.replace(/%3/g, '"post_field_html":')
+		.replace(/%4/g, '"redraw_immediately_onchange":')
+		.replace(/%5/g, '"redraw_onchange":')
+		.replace(/%7/g, '"hide_if_previous_value_isnt":')
+		.replace(/%8/g, '"hide_when_children_are_not_visible":')
+		.replace(/%9/g, '"hide_with_previous_field":')
+		.replace(/%a/g, '"ajax":')
+		.replace(/%b/g, '"enable_microtemplates_in_properties":')
+		.replace(/%c/g, '"css_class":')
+		.replace(/%d/g, '"disabled":')
+		.replace(/%e/g, '"last_edited":')
+		.replace(/%f/g, '"confirm":')
+		.replace(/%g/g, '"grouping":')
+		.replace(/%h/g, '"hidden":')
+		.replace(/%i/g, '"title":')
+		.replace(/%k/g, '"onclick":')
+		.replace(/%l/g, '"label":')
+		.replace(/%m/g, '"message":')
+		.replace(/%n/g, '"name":')
+		.replace(/%o/g, '"ord":')
+		.replace(/%p/g, '"parent":')
+		.replace(/%q/g, '"placeholder":')
+		.replace(/%r/g, '"row_class":')
+		.replace(/%s/g, '"snippet":')
+		.replace(/%t/g, '"tooltip":')
+		.replace(/%u/g, '"value":')
+		.replace(/%v/g, '"visible_if":')
+		.replace(/%w/g, '"empty_value":')
+		.replace(/%x/g, '"tuix":')
+		.replace(/%y/g, '"type":')
+		.replace(/%z/g, '"readonly":')
+		
+		.replace(/%C/g, "%")
+	);
+};
+
+
+
 
 
 //

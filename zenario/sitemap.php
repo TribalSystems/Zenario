@@ -77,7 +77,19 @@ $xml->startDocument('1.0', 'UTF-8');
 			$xml->writeElement('loc', ze\link::toItem($item['id'], $item['type'], true, '', $item['alias'], false, true));
 			$xml->endElement();
 		}
+	
+//send signal
+$returnedPages = ze\module::sendSignal('pagesToAddToSitemap', []);
 
+//write xml
+foreach($returnedPages as $pages) {
+	foreach ($pages as $page) {
+		$xml->startElement('url');
+		$xml->writeElement('lastmod', substr($page['published_datetime'], 0, 10));
+		$xml->writeElement('loc', ze\link::toItem($page['id'], $page['type'], true, $page['requests'], $page['alias'], false, true));
+		$xml->endElement();
+	}
+}
 	$xml->endElement();
 $xml->endDocument();
 $xml->flush();

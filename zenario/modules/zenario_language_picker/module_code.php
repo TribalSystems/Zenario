@@ -34,8 +34,8 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 class zenario_language_picker extends ze\moduleBaseClass {
 	
-	var $sections = array();
-	var $langs = array();
+	var $sections = [];
+	var $langs = [];
 	
 	function init()	{
 		$this->allowCaching(
@@ -47,7 +47,7 @@ class zenario_language_picker extends ze\moduleBaseClass {
 		$useEquivs = $this->setting('destination') != 'home';
 		$useHomepage = $this->setting('destination') != 'equiv_only';
 		
-		$adminMode = !empty($_SESSION['admin_logged_into_site']) && ze\priv::check();
+		$adminMode = ze::isAdmin();
 		
 		$equivs = [];
 		if ($useEquivs) {

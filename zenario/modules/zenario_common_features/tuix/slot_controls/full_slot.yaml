@@ -66,6 +66,17 @@ full_slot:
                 edit: true
                 item: true
                 layout: true
+        vc:
+            css_class: zenario_slotControl_vc
+            label: '(version controlled)'
+            page_modes:
+                edit: true
+        vc_warning:
+            css_class: zenario_slotControl_vc
+            label: '(version controlled, use Edit tab)'
+            page_modes:
+                item: true
+                layout: true
         reusable_plugin_details:
             css_class: zenario_slotControl_reusable zenario_slotControl_reusablePluginDetails
             page_modes:
@@ -232,6 +243,12 @@ full_slot:
                 layout: true
         module_name:
             css_class: zenario_slotControl_module
+            page_modes:
+                item: true
+                layout: true
+        vc:
+            css_class: zenario_slotControl_vc
+            label: '(version controlled)'
             page_modes:
                 item: true
                 layout: true

@@ -47,11 +47,11 @@ class twig {
 	
 	public static function init() {
 		//Initialise Twig
-		self::$twig = new \Twig_Environment(new \Zenario_Twig_Loader(), array(
+		self::$twig = new \Twig_Environment(new \Zenario_Twig_Loader(), [
 			'cache' => new \Zenario_Twig_Cache(),
 			'autoescape' => false,
 			'auto_reload' => true
-		));
+		]);
 
 		//Add the I18n extension to add support for translating text
 		self::$twig->addExtension(new \Twig_Extensions_Extension_I18n());

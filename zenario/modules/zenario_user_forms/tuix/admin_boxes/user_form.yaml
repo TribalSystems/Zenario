@@ -118,7 +118,25 @@ zenario_user_form:
                     validation:
                         required_if_not_hidden: 'Please enter a message for users when loading an uncompleted form.'
                     indent: 2
-        
+                enable_partial_completion_get_request:
+                    ord: 14.3
+                    label: 'Enable get request'
+                    type: checkbox
+                    visible_if: zenarioAB.value('allow_partial_completion')
+                    indent: 1
+                    redraw_onchange: true
+                    side_note: Allows a user to have more than one saved response per form based on the value of a GET request.
+                partial_completion_get_request:
+                    ord: 14.4
+                    label: 'Get request:'
+                    type: text
+                    maxlength: 250
+                    validaiton:
+                        required_if_not_hidden: Please enter a GET request.
+                    visible_if: zenarioAB.value('allow_partial_completion') && zenarioAB.value('enable_partial_completion_get_request')
+                    indent: 2
+                    
+                
                 show_page_switcher:
                     ord: 15
                     label: Show page switcher
@@ -329,7 +347,7 @@ zenario_user_form:
                     format_onchange: true
         
                 send_email_to_logged_in_user:
-                    label: Send to logged in user/account created from form
+                    label: Send to logged-in user's email (if user logged in or new account was created)
                     type: checkbox
                     format_onchange: true
                     indent: 1
@@ -360,7 +378,7 @@ zenario_user_form:
                         required_if_not_hidden: Please select an email template for user emails.
                     indent: 3
                 send_email_to_email_from_field:
-                    label: Choose an email field from the form
+                    label: Send to email specified in form field...
                     type: checkbox
                     format_onchange: true
                     indent: 1
@@ -565,6 +583,71 @@ zenario_user_form:
                         Broadcast the submitted form data to other modules for them to process (advanced)
                     note_below: |
                         Signal name: eventUserFormSubmitted
+        data_deletion:
+            label: Data deletion
+            ord: 2.1
+            edit_mode:
+                enabled: true
+                always_on: true
+            notices:
+                scheduled_task_not_running:
+                    type: warning
+                    message: | 
+                        The scheduled task "jobDataProtectionCleanup" is not running. Data will be deleted when there is activity in the appropriate type of data handling (e.g. when an email is sent, a user logs in, or a form is submitted).
+                    show: false
+                scheduled_task_running:
+                    type: success
+                    message: |
+                        The scheduled task "jobDataProtectionCleanup" is running. Data will be deleted according to these rules on a daily basis.
+                    show: false
+            fields:
+                period_to_delete_response_headers:
+                    label: 'How long should responses from this form be saved?'
+                    type: select
+                    empty_value: Use site-wide setting
+                    values:
+                        never_save:
+                            label: Don't save
+                        1:
+                            label: Delete after 1 day
+                        7:
+                            label: Delete after 1 week
+                        30:
+                            label: Delete after 1 month
+                        90:
+                            label: Delete after 3 months
+                        365:
+                            label: Delete after 1 year
+                        never_delete:
+                            label: Save forever  
+                    format_onchange: true
+                
+                delete_content_sooner:
+                    visible_if: |
+                        ['never_save', ''].indexOf(zenarioAB.value('period_to_delete_response_headers')) === -1
+                    indent: 1
+                    label: Delete content sooner (just save headers)
+                    type: checkbox
+                    redraw_onchange: true
+                
+                period_to_delete_response_content:
+                    visible_if: zenarioAB.value('delete_content_sooner')
+                    hide_with_previous_field: true
+                    indent: 2
+                    type: select
+                    values:
+                        never_save:
+                            label: Don't save
+                        1:
+                            label: Delete after 1 day
+                        7:
+                            label: Delete after 1 week
+                        30:
+                            label: Delete after 1 month
+                        90:
+                            label: Delete after 3 months
+                        365:
+                            label: Delete after 1 year
         anti_spam:
             label: Anti-spam
             ord: 3

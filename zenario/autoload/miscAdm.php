@@ -116,9 +116,9 @@ class miscAdm {
 	
 		$ord = 0;
 		foreach ($output as &$row) {
-			$row = array(
+			$row = [
 				'ord' => ++$ord,
-				'label' => str_repeat($pad, $row['level']). $row[$labelCol]);
+				'label' => str_repeat($pad, $row['level']). $row[$labelCol]];
 		
 			if ($flat) {
 				$row = $row['label'];
@@ -345,7 +345,7 @@ class miscAdm {
 		}
 	
 		//Delete anything that wasn't picked from the linking table
-		//E.g. \ze\row::delete('group_content_link', array('equiv_id' => 42, 'content_type' => 'test', 'group_id' => array('!' => [1, 2, 3, 4, 5, 6, 7, 8])));
+		//E.g. \ze\row::delete('group_content_link', ['equiv_id' => 42, 'content_type' => 'test', 'group_id' => ['!' => [1, 2, 3, 4, 5, 6, 7, 8]]]);
 		$key[$idCol] = ['!' => $ids];
 		\ze\row::delete($table, $key);
 	
@@ -399,7 +399,7 @@ class miscAdm {
 			   && filemtime(CMS_ROOT. 'zenario_custom/site_description.yaml') > $lastChanged) {
 			
 			//Do a full rescan of everything.
-			\ze\skinAdm::clearCache();
+			\ze\skinAdm::clearCache(true);
 			
 			//N.b. the ze\skinAdm::clearCache() function includes a call to this one,
 			//with $forceScan set to true, so we can stop running the current call.
@@ -430,6 +430,19 @@ class miscAdm {
 	
 	
 		if ($changed) {
+			
+			//Remove all cached calls to ze\tuix::load() if the YAML files have changed.
+			//(I'm not going to the trouble of working out which individual files have changed
+			// and selectively removing them, ad that would be too fiddly. This is a complete wipe.
+			// But note that the ze\tuix::readFile() function does use timestamps on a per-file basis for its caching.)
+			\ze\cache::deleteDir(CMS_ROOT. 'cache/tuix/admin_boxes');
+			\ze\cache::deleteDir(CMS_ROOT. 'cache/tuix/admin_toolbar');
+			\ze\cache::deleteDir(CMS_ROOT. 'cache/tuix/organizer');
+			\ze\cache::deleteDir(CMS_ROOT. 'cache/tuix/slot_controls');
+			\ze\cache::deleteDir(CMS_ROOT. 'cache/tuix/visitor');
+			\ze\cache::deleteDir(CMS_ROOT. 'cache/tuix/wizards');
+			
+			
 			//Look to see what datasets are on the system, and which datasets extend which FABs
 			$datasets = [];
 			$datasetFABs = [];
@@ -522,7 +535,7 @@ class miscAdm {
 										$settingGroup = '';
 								
 										$key2 = $path. '//'. $settingGroup;
-										$tuixFiles[$key][$key2] = array(
+										$tuixFiles[$key][$key2] = [
 											'type' => $type,
 											'path' => $path,
 											'panel_type' => $panelType,
@@ -532,7 +545,7 @@ class miscAdm {
 											'last_modified' => $filemtime,
 											'checksum' => $md5_file,
 											'status' => empty($tuixFiles[$key][$key2])? 'new' : 'updated'
-										);
+										];
 									}
 								}
 						
@@ -563,7 +576,7 @@ class miscAdm {
 										}
 								
 										$key2 = $path. '//'. $settingGroup;
-										$tuixFiles[$key][$key2] = array(
+										$tuixFiles[$key][$key2] = [
 											'type' => $type,
 											'path' => $path,
 											'panel_type' => '',
@@ -573,7 +586,7 @@ class miscAdm {
 											'last_modified' => $filemtime,
 											'checksum' => $md5_file,
 											'status' => empty($tuixFiles[$key][$key2])? 'new' : 'updated'
-										);
+										];
 									}
 								}
 							}
@@ -658,10 +671,10 @@ class miscAdm {
 					if (is_array($tab) && (!empty($tab['label']) || !empty($tab['dataset_label']))) {
 						++$tabCount;
 						$tabDetails = \ze\row::get('custom_dataset_tabs', true, ['dataset_id' => $datasetId, 'name' => $tabName]);
-						$values = array(
+						$values = [
 							'is_system_field' => 1,
 							'default_label' => \ze::ifNull($tab['dataset_label'] ?? false, ($tab['label'] ?? false), '')
-						);
+						];
 						if (!$tabDetails || !$tabDetails['ord']) {
 							$values['ord'] = (float)(($tab['ord'] ?? false) ?: $tabCount);
 						}
@@ -678,12 +691,12 @@ class miscAdm {
 									++$fieldCount;
 								
 									$fieldDetails = \ze\row::get('custom_dataset_fields', true, ['dataset_id' => $datasetId, 'tab_name' => $tabName, 'is_system_field' => 1, 'field_name' => $fieldName]);
-									$values = array(
+									$values = [
 										'default_label' => \ze::ifNull($field['dataset_label'] ?? false, ($field['label'] ?? false), ''),
 										'is_system_field' => 1,
 										'allow_admin_to_change_visibility' => !empty($field['allow_admin_to_change_visibility']),
 										'allow_admin_to_change_export' => !empty($field['allow_admin_to_change_export'])
-									);
+									];
 									if (!$fieldDetails || !$fieldDetails['ord']) {
 										$values['ord'] = (float) (($field['ord'] ?? false) ?: $fieldCount);
 									}

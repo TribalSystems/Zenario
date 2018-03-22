@@ -49,7 +49,7 @@ class dbAdm {
 	//Formerly "getAllCurrentRevisionNumbers()"
 	public static function getAllCurrentRevisionNumbers() {
 
-		$modulesToRevisionNumbers = array();
+		$modulesToRevisionNumbers = [];
 	
 		//Attempt to get all of the rows from the revision numbers table
 		$sql = "
@@ -129,7 +129,7 @@ class dbAdm {
 		for ($i = 0; $i < ($andDoUpdates? 2 : 1); ++$i) {
 			$revisionsNeeded = false;
 			$currentRevisionOut = false;
-			$modules = array();
+			$modules = [];
 	
 			//Query the database, get all of the current revision numbers
 			$currentRevisions = \ze\dbAdm::getAllCurrentRevisionNumbers();
@@ -139,7 +139,7 @@ class dbAdm {
 			//revision number for each patch
 	
 			//Add in some patch file paths which should always be there
-			$directoriesAndTheirRevisionNumbers = array(
+			$directoriesAndTheirRevisionNumbers = [
 	
 				//Add in updates for the database updater itself
 				'zenario/admin/db_updates/step_1_update_the_updater_itself'	=> LATEST_REVISION_NO,
@@ -153,11 +153,11 @@ class dbAdm {
 		
 				//Major updates may need table data converted to the correct format
 				'zenario/admin/db_updates/step_4_migrate_the_data'	=> LATEST_REVISION_NO
-			);
+			];
 	
 			$desc = false;
 			$unorderedModules = \ze\module::modules($onlyGetRunningPlugins = false, $ignoreUninstalledPlugins = true, $dbUpdateSafemode = true);
-			$orderedModules = array();
+			$orderedModules = [];
 			do {
 				$progressMade = false;
 				foreach ($unorderedModules as &$module) {
@@ -238,7 +238,7 @@ class dbAdm {
 				//Look through each file in each directory
 				//Given a path to a directory - which should have two subdirectories (local and global), each of which with 
 				//patch files inside - this function scans the local or global sub-directories, looking for patch files or folders
-				$files = array();
+				$files = [];
 		
 				//Account for any Modules in the zenario_custom/modules or zenario_extra_modules directories;
 				//these should override modules in the zenario/modules directory
@@ -345,7 +345,7 @@ class dbAdm {
 									} elseif (\ze\ring::chopPrefix('zenario/modules/', $path)) {
 										$paths = explode('/', $path, 4);
 								
-										$modules[$paths[2]] = array($currentRevision, $latestRevisionNumber);
+										$modules[$paths[2]] = [$currentRevision, $latestRevisionNumber];
 									}
 								}
 							}
@@ -358,7 +358,7 @@ class dbAdm {
 
 		if ($andDoUpdates) {
 			//Reset the cached table details, in case any of the definitions are out of date
-			\ze::$dbCols = array();
+			\ze::$dbCols = [];
 			
 			\ze\site::setSetting('last_successful_db_update', time());
 			\ze\site::setSetting('zenario_version', \ze\site::versionNumber());
@@ -370,7 +370,7 @@ class dbAdm {
 			return $andDoUpdates? true : false;
 		} else {
 			//print_r($modules);
-			return array($currentRevisionOut, $modules);
+			return [$currentRevisionOut, $modules];
 		}
 	}
 
@@ -602,7 +602,7 @@ class dbAdm {
 	//Organizer needs reloading if a module that adds to Organizer, or has a content type, is installed or uninstalled
 	//Formerly "needToReloadOrganizerWhenModuleIsInstalled()"
 	public static function needToReloadOrganizerWhenModuleIsInstalled($moduleName) {
-		$tags = array();
+		$tags = [];
 		return \ze::moduleDir($moduleName, 'tuix/organizer', true)
 		 || (\ze\moduleAdm::loadDescription($moduleName, $tags) && (!empty($tags['content_types'])));
 	}
@@ -615,8 +615,8 @@ class dbAdm {
 	//Formerly "initialiseBackupFunctions()"
 	public static function initialiseBackupFunctions($includeWarnings = false) {
 	
-		$errors = array();
-		$warnings = array();
+		$errors = [];
+		$warnings = [];
 	
 		//Check the docstore directory is correctly defined, exists, and has the correct permissions
 		if (!\ze::setting('docstore_dir')) {
@@ -626,11 +626,11 @@ class dbAdm {
 			//$docpath = \ze::setting('docstore_dir');
 		
 			//if (!file_exists($docpath)) {
-				//$mrg = array('dirpath' => $docpath);
+				//$mrg = ['dirpath' => $docpath];
 				//$errors[] = \ze\admin::phrase('_FIX_DOCSTORE_DIR_TO_BACKUP'). '<br />'. \ze\admin::phrase('_DIRECTORY_DOES_NOT_EXIST', $mrg);
 		
 			//} elseif (!is_readable($docpath) || !is_writeable($docpath)) {
-				//$mrg = array('dirpath' => $docpath);
+				//$mrg = ['dirpath' => $docpath];
 				//$errors[] = \ze\admin::phrase('_FIX_DOCSTORE_DIR_TO_BACKUP'). '<br />'. \ze\admin::phrase('_DIRECTORY_NOT_READ_AND_WRITEABLE', $mrg);
 			//}
 		}
@@ -643,11 +643,11 @@ class dbAdm {
 			$dirpath = \ze::setting('backup_dir');
 		
 			if (!file_exists($dirpath)) {
-				$mrg = array('dirpath' => $dirpath);
+				$mrg = ['dirpath' => $dirpath];
 				$errors[] = \ze\admin::phrase('_DIRECTORY_DOES_NOT_EXIST', $mrg);
 		
 			} elseif (!is_readable($dirpath) || !is_writeable($dirpath)) {
-				$mrg = array('dirpath' => $dirpath);
+				$mrg = ['dirpath' => $dirpath];
 				$errors[] = \ze\admin::phrase('_DIRECTORY_NOT_READ_AND_WRITEABLE', $mrg);
 			}
 		}
@@ -698,7 +698,7 @@ class dbAdm {
 	
 		$prefixLength = strlen($refiner);
 
-		$importedTables = array();
+		$importedTables = [];
 		$sql = "SHOW TABLES";
 		$result = \ze\sql::select($sql);
 	
@@ -717,18 +717,18 @@ class dbAdm {
 	
 		//Get a list of Modules that are installed on the site
 		//Note - don't do this if the modules table might not be present
-		$modules = array();
+		$modules = [];
 		if (!$dbUpdateSafeMode) {
 			$modules = \ze\ray::valuesToKeys(\ze\row::getArray(
 				'modules',
 				'id',
-				array('status' => array('!' => 'module_not_initialized')))
+				['status' => ['!' => 'module_not_initialized']])
 			);
 		}
 	
 		//Get a list of tables that are used on the site
-		$usedTables = array();
-		foreach (array('local-DROP.sql', 'local-admin-DROP.sql') as $file) {
+		$usedTables = [];
+		foreach (['local-DROP.sql', 'local-admin-DROP.sql'] as $file) {
 			if ($tables = file_get_contents(CMS_ROOT. 'zenario/admin/db_install/'. $file)) {
 				foreach(preg_split('@`\[\[DB_NAME_PREFIX\]\](\w+)`@', $tables, -1,  PREG_SPLIT_DELIM_CAPTURE) as $i => $table) {
 					if ($i % 2) {
@@ -747,7 +747,7 @@ class dbAdm {
 
 		$prefixLength = strlen(DB_NAME_PREFIX);
 	
-		$existingTables = array();
+		$existingTables = [];
 		$sql = "SHOW TABLES";
 		$result = \ze\sql::select($sql);
 	
@@ -797,13 +797,13 @@ class dbAdm {
 		
 		
 			//Add the table to our list
-			$existingTables[] = array(
+			$existingTables[] = [
 				'name' => $tableName,
 				'actual_name' => $row[0],
 				'prefix' => $prefix,
 				'in_use' => $inUse,
 				'reset' => $reset,
-				'view' => $view);
+				'view' => $view];
 		}
 	
 		return $existingTables;
@@ -992,7 +992,7 @@ class dbAdm {
 		(\ze\welcome::runSQL(false, 'local-INSERT.sql', $error));
 	
 		//Reset the cached table details, in case any of the definitions are out of date
-		\ze::$dbCols = array();
+		\ze::$dbCols = [];
 	
 		//Add the admin-related revision numbers back in
 		foreach ($revisions as &$revision) {
@@ -1100,7 +1100,7 @@ class dbAdm {
 	//Formerly "configFileSize()"
 	public static function configFileSize($size) {
 		//Define labels to use
-		$labels = array('', 'K', 'M', 'G', 'T');
+		$labels = ['', 'K', 'M', 'G', 'T'];
 		$precision = 0;
 	
 		//Work out which of the labels to use, based on how many powers of 1024 go into the size, and

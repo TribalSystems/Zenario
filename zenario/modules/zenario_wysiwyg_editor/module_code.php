@@ -48,9 +48,9 @@ class zenario_wysiwyg_editor extends zenario_html_snippet {
 	}
 	
 	protected function openEditor() {
-		//$text = str_replace(array(" ", "\n", "\r", "\t", ""), '', strip_tags($this->setting('html')));
+		//$text = str_replace([" ", "\n", "\r", "\t", ""], '', strip_tags($this->setting('html')));
 		$text = $this->setting('html');
-		$summary = trim(strip_tags(ze\row::get('content_item_versions', 'content_summary', array('id' => $this->cID, 'type' => $this->cType, 'version' => $this->cVersion))));
+		$summary = trim(strip_tags(ze\row::get('content_item_versions', 'content_summary', ['id' => $this->cID, 'type' => $this->cType, 'version' => $this->cVersion])));
 		$summaryMatches =
 			$summary == trim(strip_tags($text))
 		 || $summary == trim(strip_tags(zenario_wysiwyg_editor::generateSummary($text)));
@@ -89,7 +89,7 @@ class zenario_wysiwyg_editor extends zenario_html_snippet {
 						$box['tabs']['first_tab']['fields']['sync_summary']['hidden'] = true;
 					} else {
 						$summary = trim(strip_tags(ze\row::get('content_item_versions', 'content_summary',
-										array('id' => $box['key']['cID'], 'type' => $box['key']['cType'], 'version' => $box['key']['cVersion']))));
+										['id' => $box['key']['cID'], 'type' => $box['key']['cType'], 'version' => $box['key']['cVersion']])));
 						
 						$box['tabs']['first_tab']['fields']['sync_summary']['value'] =
 							!$summary || $summary == trim(strip_tags($box['tabs']['first_tab']['fields']['html']['value']));
@@ -158,11 +158,11 @@ class zenario_wysiwyg_editor extends zenario_html_snippet {
 	protected function summaryLocked($cID, $cType, $cVersion) {
 		return
 			!ze\row::get('content_types', 'enable_summary_auto_update', $cType)
-		 || ze\row::get('content_item_versions', 'lock_summary', array('id' => $cID, 'type' => $cType, 'version' => $cVersion));
+		 || ze\row::get('content_item_versions', 'lock_summary', ['id' => $cID, 'type' => $cType, 'version' => $cVersion]);
 	}
 	
 	protected function syncSummary($cID, $cType, $cVersion, $html) {
-		ze\row::set('content_item_versions', array('content_summary' => $html), array('id' => $cID, 'type' => $cType, 'version' => $cVersion));
+		ze\row::set('content_item_versions', ['content_summary' => $html], ['id' => $cID, 'type' => $cType, 'version' => $cVersion]);
 	}
 	
 	
@@ -228,12 +228,12 @@ class zenario_wysiwyg_editor extends zenario_html_snippet {
 			if (ze::$isDraft) {
 				echo
 					'<div class="zenario_editor_placeholder_text only_show_in_edit_mode">',
-						ze\admin::phrase('<h2>Write something here</h2><p>This is a WYSIWYG editor, but it\'s empty.</p><p>Double-click in this panel to edit.</p>', array('slotName' => $this->slotName)),
+						ze\admin::phrase('<h2>Write something here</h2><p>This is a WYSIWYG editor, but it\'s empty.</p><p>Double-click in this panel to edit.</p>', ['slotName' => $this->slotName]),
 					'</div>';
 			} else {
 				echo
 					'<div class="zenario_editor_placeholder_text only_show_in_edit_mode">',
-						ze\admin::phrase('<h2>Write something here</h2><p>This is a WYSIWYG editor, but it\'s empty.</p><p>With the Edit tab selected, click &quot;Start editing&quot; to edit.</p>', array('slotName' => $this->slotName)),
+						ze\admin::phrase('<h2>Write something here</h2><p>This is a WYSIWYG editor, but it\'s empty.</p><p>With the Edit tab selected, click &quot;Start editing&quot; to edit.</p>', ['slotName' => $this->slotName]),
 					'</div>';
 			}
 		}
@@ -290,11 +290,11 @@ class zenario_wysiwyg_editor extends zenario_html_snippet {
 		 && (ze::$isDraft || ze::$status == 'published')
 		 && ze\priv::check('_PRIV_EDIT_DRAFT', ze::$cID, ze::$cType)) {
 			if (!$this->editing) {
-				$controls['actions']['zenario_wysiwyg_editor__edit_inline'] = array(
+				$controls['actions']['zenario_wysiwyg_editor__edit_inline'] = [
 					'ord' => 0,
-					'page_modes' => array('edit' => true),
+					'page_modes' => ['edit' => true],
 					'label' => ze\admin::phrase('Edit contents'),
-					'onclick' => htmlspecialchars_decode($this->editInlineButtonOnClick()));
+					'onclick' => htmlspecialchars_decode($this->editInlineButtonOnClick())];
 				
 				//To avoid confusion, you sholudn't be able to edit the contents of a Wireframe WYSIWYG Editor inline AND in the settings box
 				//The only thing you can change is the CSS and framework
@@ -302,7 +302,7 @@ class zenario_wysiwyg_editor extends zenario_html_snippet {
 			
 			//You also shouldn't be able to access any of the slot controls whilst the WYSIWYG Editor is open!
 			} else {
-				$controls['actions'] = array();
+				$controls['actions'] = [];
 			}
 		}
 	}

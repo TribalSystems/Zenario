@@ -62,7 +62,7 @@ while ($row = ze\sql::fetchAssoc($result)) {
 	
 	ze\row::update(
 		'nested_plugins',
-		array('slide_num' => ($slideNum ?: 1), 'ord' => $thisOrd),
+		['slide_num' => ($slideNum ?: 1), 'ord' => $thisOrd],
 		['instance_id' => $instanceId, 'id' => $row['id']]);
 }
 

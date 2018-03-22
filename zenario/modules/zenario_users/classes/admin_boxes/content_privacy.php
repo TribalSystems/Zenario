@@ -48,7 +48,7 @@ class zenario_users__admin_boxes__content_privacy extends zenario_users {
 		
 		$total = 0;
 		$tagSQL = "";
-		$tagIds = array();
+		$tagIds = [];
 		$equivId = $cType = false;
 		
 		if (($_REQUEST['equivId'] ?? false) && ($_REQUEST['cType'] ?? false)) {
@@ -91,14 +91,14 @@ class zenario_users__admin_boxes__content_privacy extends zenario_users {
 							
 							if ($chain['privacy'] == 'group_members') {
 								$chain['group_ids'] =
-									ze\escape::in(ze\row::getArray('group_link', 'link_to_id', array('link_to' => 'group', 'link_from' => 'chain', 'link_from_id' => $equivId, 'link_from_char' => $cType)), true);
+									ze\escape::in(ze\row::getArray('group_link', 'link_to_id', ['link_to' => 'group', 'link_from' => 'chain', 'link_from_id' => $equivId, 'link_from_char' => $cType]), true);
 							} else {
 								$chain['group_ids'] = '';
 							}
 							
 							if ($chain['privacy'] == 'with_role') {
 								$chain['role_ids'] =
-									ze\escape::in(ze\row::getArray('group_link', 'link_to_id', array('link_to' => 'role', 'link_from' => 'chain', 'link_from_id' => $equivId, 'link_from_char' => $cType)), true);
+									ze\escape::in(ze\row::getArray('group_link', 'link_to_id', ['link_to' => 'role', 'link_from' => 'chain', 'link_from_id' => $equivId, 'link_from_char' => $cType]), true);
 							} else {
 								$chain['role_ids'] = '';
 							}
@@ -145,15 +145,15 @@ class zenario_users__admin_boxes__content_privacy extends zenario_users {
 				$box['confirm']['show'] = true;
 				$box['confirm']['message'] =
 					ze\admin::phrase('This will update the permissions of all content items in [[count]] translation chains.',
-						array('count' => $total));
+						['count' => $total]);
 				
 				$box['title'] =
 					ze\admin::phrase('Changing permissions for [[count]] translation chains',
-						array('count' => $total));
+						['count' => $total]);
 			} else {
 				$box['title'] =
 					ze\admin::phrase('Changing permissions for the content item "[[tag]]" and its translations',
-						array('tag' => ze\content::formatTag($equivId, $cType)));
+						['tag' => ze\content::formatTag($equivId, $cType)]);
 			}
 			
 		} else {
@@ -161,15 +161,15 @@ class zenario_users__admin_boxes__content_privacy extends zenario_users {
 				$box['confirm']['show'] = true;
 				$box['confirm']['message'] =
 					ze\admin::phrase('This will update the permissions of [[count]] content items.',
-						array('count' => $total));
+						['count' => $total]);
 				
 				$box['title'] =
 					ze\admin::phrase('Changing permissions for [[count]] content items',
-						array('count' => $total));
+						['count' => $total]);
 			} else {
 				$box['title'] =
 					ze\admin::phrase('Changing permissions for the content item "[[tag]]"',
-						array('tag' => ze\content::formatTag($equivId, $cType)));
+						['tag' => ze\content::formatTag($equivId, $cType)]);
 			}
 		}
 		

@@ -63,6 +63,20 @@ site_settings:
                             label: Strong
                         _VERY_STRONG:
                             label: Very strong
+                new_admin_email_expiry:
+                    site_setting:
+                        name: new_admin_email_expiry
+                    label: Expiry time for new admin notifications
+                    type: select
+                    values:
+                        1:
+                            label: 1 day
+                        3:
+                            label: 3 days
+                        7:
+                            label: 7 days
+                    value: 7
+                    side_note: When a new admin is created they are sent a link that they can use to access the site and set a password for their accounts. Choose how long it takes before this link expires.
                 
                 zenario_site_description:
                     type: grouping
@@ -104,10 +118,6 @@ site_settings:
                 enabled: true
                 priv: _PRIV_EDIT_SITE_SETTING
             fields:
-                description:
-                    full_width: true
-                    snippet:
-                    html: This tab contain email templates.
                 notification_to_new_admin:
                     site_setting:
                         name: notification_to_new_admin
@@ -123,7 +133,7 @@ site_settings:
                         hide_remove_button: true
                     validation:
                         required_if_not_hidden: Please select an email template
-                    
-                    value: zenario_common_features__notification_to_new_admin
+                    value: zenario_common_features__notification_to_new_admin_no_password
+                
                     
                     

@@ -452,6 +452,7 @@ additionalProperties:
                                         - error
                                         - warning
                                         - question
+                                        - information
                                         - success
                                     description: >
                                         The type of notice. A different styling will be applied for each different type.
@@ -1479,6 +1480,22 @@ additionalProperties:
                                                 
                                                 From version 8 onwards, you can enter a value of true to highlight the field in red without a message.
                                         
+                                        
+                                        unique_a: &unique
+                                            type: *booly
+                                            description: >
+                                                Add this property to two or more fields on the same tab to check that the user
+                                                enters different values into each field.
+                                                If the same value is entered twice, this error message will be displayed.
+                                                
+                                                You can enter a value of true to highlight the field in red without a message.
+                                                
+                                                This works from version 8.1 onwards.
+                                        
+                                        unique_b: *unique
+                                        unique_c: *unique
+                                                
+                                                
                                         non_present:
                                             type: object
                                             description: >
@@ -2056,6 +2073,19 @@ additionalProperties:
                                             title:
                                                 type: *stringy
                                                 description: Sets the title HTML attribute on a checkbox or radio option.
+                                
+                                values_visible_if:
+                                    type: string
+                                    description: >
+                                        A shortcut to setting the visible_if property on every value for a select list/checkboxes/radios field.
+                                        
+                                        This works from version 8.1 onwards.
+                                values_disabled_if:
+                                    type: string
+                                    description: >
+                                        A shortcut to setting the disabled_if property on every value for a select list.
+                                        
+                                        This works from version 8.1 onwards.
                                 
                                 no_values_message:
                                     type: string

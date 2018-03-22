@@ -27,16 +27,16 @@
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
-$errArray = array();
+$errArray = [];
 
 if(isset($_POST['name']) && !$_POST['name']) {
 	$errArray[] = ze\admin::phrase('_MSG_ENTER_ALL_FIELDS');
 }
 
 if (isset($_POST['name']) && ze\categoryAdm::exists($_POST['name'], $_POST['catId'], $_POST['parent_id'])) {
-	$errArray[] = ze\admin::phrase('_MSG_CATEGORY_ALREADY_EXISTS', array('name' => htmlspecialchars($_POST['name'])));
+	$errArray[] = ze\admin::phrase('_MSG_CATEGORY_ALREADY_EXISTS', ['name' => htmlspecialchars($_POST['name'])]);
 }
 
-echo json_encode(array('valid' => empty($errArray), 'errArray' => $errArray));
+echo json_encode(['valid' => empty($errArray), 'errArray' => $errArray]);
 
 return false;

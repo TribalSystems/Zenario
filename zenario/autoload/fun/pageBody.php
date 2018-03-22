@@ -34,7 +34,7 @@ $bodyTag = '<body class="desktop no_js '. \ze\cache::browserBodyClass();
 if (\ze\priv::check()) {
 	if ($includeAdminToolbar && \ze::$cID) {
 		//Set the current Admin Toolbar tab in Admin Mode
-		$toolbars = array();
+		$toolbars = [];
 		\ze\admin::pageBodyAdminClass($bodyTag, $toolbars);
 	} else {
 		$includeAdminToolbar = false;

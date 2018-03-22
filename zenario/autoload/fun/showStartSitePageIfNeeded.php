@@ -53,7 +53,7 @@ if ($reportDBOutOfDate && \ze\priv::check()) {
 	$adminLink = 'zenario/admin/welcome.php?cID='. rawurlencode($_REQUEST['cID'] ?? false). '&cType='. rawurlencode($_REQUEST['cType'] ?? false);
 
 //If you need to enable a language, the "here" link should point to the languages panel
-} elseif (!\ze\row::exists('languages', array())) {
+} elseif (!\ze\row::exists('languages', [])) {
 	$errorMessage = \ze::setting('site_disabled_message');
 	$adminLink = 'zenario/admin/welcome.php?og=zenario__languages/panels/languages';
 
@@ -63,7 +63,7 @@ if ($reportDBOutOfDate && \ze\priv::check()) {
 	$adminLink = 'zenario/admin/welcome.php?og=zenario__administration/panels/site_settings//site_disabled';
 }
 
-$errorMessage = \ze\admin::phrase($errorMessage, array('admin_link' => htmlspecialchars($adminLink)));
+$errorMessage = \ze\admin::phrase($errorMessage, ['admin_link' => htmlspecialchars($adminLink)]);
 
 //Workaround for a bug where TinyMCE can add "zenario/admin" into the login link a second time
 $errorMessage = str_replace('zenario/admin/zenario/admin', 'zenario/admin', $errorMessage);

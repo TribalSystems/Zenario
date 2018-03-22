@@ -15,7 +15,7 @@ imagefilledrectangle($img->getHandle(), 0, 0, $width-1, 0, $img->getExactColor(0
 imagefilledrectangle($img->getHandle(), 0, $height-1, $width-1, $height-1, $img->getExactColor(0x92, 0x92, 0x92));
 //imagefilledrectangle($img->getHandle(), 0, 0, 0, $height-1, $img->getExactColor(0x92, 0x92, 0x92));
 
-foreach (array(50 => $height - 2, 10 => 5, 5 => 3) as $step => $tall) {
+foreach ([50 => $height - 2, 10 => 5, 5 => 3] as $step => $tall) {
 	for ($x = 0; $x < $width; $x += $step) {
 		imagefilledrectangle($img->getHandle(), $x, $height-1 - $tall, $x, $height-1, $img->getExactColor(0x92, 0x92, 0x92));
 	}

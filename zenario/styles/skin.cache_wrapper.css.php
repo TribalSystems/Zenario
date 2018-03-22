@@ -65,7 +65,6 @@ echo '
 ';
 
 
-ze\wrapper::outputRulesForSlotMinHeights();
 ze\wrapper::includeSkinFiles($_GET);
 
 

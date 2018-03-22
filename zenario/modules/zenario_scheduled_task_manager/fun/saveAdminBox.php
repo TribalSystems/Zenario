@@ -36,10 +36,10 @@ switch ($path) {
 			
 		if (ze\ring::engToBoolean($box['tabs']['time_and_day']['edit_mode']['on'] ?? false) && empty($box['tabs']['month']['hidden'])) {
 			
-			$columns = array();
+			$columns = [];
 			
 			$days = '';
-			foreach (array('mon','tue','wed','thr','fri','sat','sun') as $day) {
+			foreach (['mon','tue','wed','thr','fri','sat','sun'] as $day) {
 				if ($values['time_and_day/'. $day]) {
 					$days .= ($days? ',' : ''). $day;
 				}
@@ -87,16 +87,16 @@ switch ($path) {
 		if (ze\ring::engToBoolean($box['tabs']['month']['edit_mode']['on'] ?? false) && empty($box['tabs']['month']['hidden'])) {
 			
 			$months = '';
-			foreach (array('jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec') as $month) {
+			foreach (['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'] as $month) {
 				if ($values['month'. '/'. $month]) {
 					$months .= ($months? ',' : ''). $month;
 				}
 			}
 			
 			ze\row::update('jobs',
-				array(
+				[
 					'months' => $months,
-					'first_n_days_of_month' => (int) $values['month/first_n_days_of_month']),
+					'first_n_days_of_month' => (int) $values['month/first_n_days_of_month']],
 				$box['key']['id']);
 		
 		} 
@@ -104,14 +104,14 @@ switch ($path) {
 		if (ze\ring::engToBoolean($box['tabs']['reporting']['edit_mode']['on'] ?? false)) {
 			
 			ze\row::update('jobs',
-				array(
+				[
 					'log_on_action' => (int) $values['reporting/log_on_action'],
 					'log_on_no_action' => (int) $values['reporting/log_on_no_action'],
 					'email_on_action' => (int) $values['reporting/email_on_action'],
 					'email_on_no_action' => (int) $values['reporting/email_on_no_action'],
 					'email_address_on_no_action' => $values['reporting/email_address_on_no_action'],
 					'email_address_on_action' => $values['reporting/email_address_on_action'],
-					'email_address_on_error' => $values['reporting/email_address_on_error']),
+					'email_address_on_error' => $values['reporting/email_address_on_error']],
 				$box['key']['id']);
 		}
 		

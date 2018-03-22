@@ -151,17 +151,17 @@ if (ze\dbAdm::needRevision(16)) {
 	$forms = ze\row::getArray(ZENARIO_USER_FORMS_PREFIX . 'user_forms', 'id');
 	foreach($forms as $formId) {
 		// Get form fields
-		$formFields = ze\row::getArray(ZENARIO_USER_FORMS_PREFIX . 'user_form_fields', 'id', array('user_form_id' => $formId));
+		$formFields = ze\row::getArray(ZENARIO_USER_FORMS_PREFIX . 'user_form_fields', 'id', ['user_form_id' => $formId]);
 		// Set correct ordinal for form fields
-		$fieldNameCount = array();
+		$fieldNameCount = [];
 		foreach ($formFields as $formFieldId) {
 			// Get crm name
-			if ($CRMField = ze\row::get(ZENARIO_CRM_FORM_INTEGRATION_PREFIX.'form_crm_fields', array('field_crm_name', 'ordinal'), $formFieldId)) {
+			if ($CRMField = ze\row::get(ZENARIO_CRM_FORM_INTEGRATION_PREFIX.'form_crm_fields', ['field_crm_name', 'ordinal'], $formFieldId)) {
 				if (!isset($fieldNameCount[$CRMField['field_crm_name']])) {
 					$fieldNameCount[$CRMField['field_crm_name']] = 1;
 				} else {
 					$ord = ++$fieldNameCount[$CRMField['field_crm_name']];
-					ze\row::update(ZENARIO_CRM_FORM_INTEGRATION_PREFIX.'form_crm_fields', array('ordinal' => $ord), array('form_field_id' => $formFieldId));
+					ze\row::update(ZENARIO_CRM_FORM_INTEGRATION_PREFIX.'form_crm_fields', ['ordinal' => $ord], ['form_field_id' => $formFieldId]);
 				}
 			}
 		}
@@ -187,7 +187,7 @@ _sql
 
 // Delete any bad data
 if (ze\dbAdm::needRevision(23)) {
-	ze\row::delete(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'form_crm_fields', array('field_crm_name' => ''));
+	ze\row::delete(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'form_crm_fields', ['field_crm_name' => '']);
 	ze\dbAdm::revision(23);
 }
 

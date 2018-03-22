@@ -134,7 +134,7 @@ class zenario_common_features__admin_boxes__setup_module extends ze\moduleBaseCl
 				WHERE sp.module_class_name = '". ze\escape::sql($module['class_name']). "'
 				ORDER BY c.type, c.equiv_id, c.id";
 	
-			$contentItems = array();
+			$contentItems = [];
 			$result = ze\sql::select($sql);
 			while ($row = ze\sql::fetchAssoc($result)) {
 				$contentItems[] = $row;
@@ -144,14 +144,14 @@ class zenario_common_features__admin_boxes__setup_module extends ze\moduleBaseCl
 				if (count($contentItems) < 2) {
 					$toastMessage =
 						ze\admin::phrase('&quot;[[tag]]&quot; was created by the [[name]] Module. You should review and publish this content item.',
-							array(
+							[
 								'name' => htmlspecialchars($module['display_name']),
-								'tag' => htmlspecialchars(ze\content::formatTag($contentItems[0]['id'], $contentItems[0]['type'], $contentItems[0]['alias'], $contentItems[0]['language_id']))));
+								'tag' => htmlspecialchars(ze\content::formatTag($contentItems[0]['id'], $contentItems[0]['type'], $contentItems[0]['alias'], $contentItems[0]['language_id']))]);
 		
 				} else {
 					$toastMessage =
 						ze\admin::phrase('The following content items were created by the [[name]] Module, you should review and publish them:',
-							array('name' => htmlspecialchars($module['display_name']))).
+							['name' => htmlspecialchars($module['display_name'])]).
 						'<ul>';
 			
 					foreach ($contentItems as $contentItem) {
@@ -161,9 +161,9 @@ class zenario_common_features__admin_boxes__setup_module extends ze\moduleBaseCl
 					$toastMessage .= '</ul>';
 				}
 		
-				$box['toast'] = array(
+				$box['toast'] = [
 					'message' => $toastMessage,
-					'options' => array('timeOut' => 0, 'extendedTimeOut' => 0));
+					'options' => ['timeOut' => 0, 'extendedTimeOut' => 0]];
 			}
 	
 	
@@ -175,7 +175,7 @@ class zenario_common_features__admin_boxes__setup_module extends ze\moduleBaseCl
 				if ($values['confirm/grant_perms'] == 'myself') {
 					ze\adminAdm::savePerms(ze\admin::id(), $perms);
 				} else {
-					$result = ze\row::query('admins', 'id', array('authtype' => 'local', 'status' => 'active'));
+					$result = ze\row::query('admins', 'id', ['authtype' => 'local', 'status' => 'active']);
 					while ($admin = ze\sql::fetchAssoc($result)) {
 						ze\adminAdm::savePerms($admin['id'], $perms);
 					}

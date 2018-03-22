@@ -151,16 +151,16 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 				'_HIGH'		=> 12];
 		
 		$fields = [];
-		$fields[] =	array('name' => 'c.alias',				'weighting' => $weights[$this->setting('alias_weighting')]);
+		$fields[] =	['name' => 'c.alias',				'weighting' => $weights[$this->setting('alias_weighting')]];
 		$fields[] =	['name' => 'c.language_id',		'weighting' => 0];
-		$fields[] =	array('name' => 'v.title',				'weighting' => $weights[$this->setting('title_weighting')]);
-		$fields[] =	array('name' => 'v.keywords',			'weighting' => $weights[$this->setting('keywords_weighting')]);
-		$fields[] =	array('name' => 'v.description',		'weighting' => $weights[$this->setting('description_weighting')]);
-		$fields[] =	array('name' => 'v.filename',			'weighting' => $weights[$this->setting('filename_weighting')]);
-		$fields[] =	array('name' => 'v.content_summary',	'weighting' => $weights[$this->setting('content_summary_weighting')]);
+		$fields[] =	['name' => 'v.title',				'weighting' => $weights[$this->setting('title_weighting')]];
+		$fields[] =	['name' => 'v.keywords',			'weighting' => $weights[$this->setting('keywords_weighting')]];
+		$fields[] =	['name' => 'v.description',		'weighting' => $weights[$this->setting('description_weighting')]];
+		$fields[] =	['name' => 'v.filename',			'weighting' => $weights[$this->setting('filename_weighting')]];
+		$fields[] =	['name' => 'v.content_summary',	'weighting' => $weights[$this->setting('content_summary_weighting')]];
 		$fields[] =	['name' => 'v.feature_image_id',	'weighting' => 0];
-		$fields[] =	array('name' => 'cc.text',				'weighting' => $weights[$this->setting('content_weighting')]);
-		$fields[] =	array('name' => 'cc.extract',			'weighting' => $weights[$this->setting('extract_weighting')]);
+		$fields[] =	['name' => 'cc.text',				'weighting' => $weights[$this->setting('content_weighting')]];
+		$fields[] =	['name' => 'cc.extract',			'weighting' => $weights[$this->setting('extract_weighting')]];
 
 		$this->fields = [];
 		
@@ -257,7 +257,7 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 		
 		if ($this->searchString) {
 			$this->sections['Search_Result_Heading'] = true;
-			$this->mergeFields['Search_Results_For'] = $this->phrase( '_SEARCH_RESULTS_FOR', array('term' => htmlspecialchars('"'. $this->searchString. '"')));
+			$this->mergeFields['Search_Results_For'] = $this->phrase( '_SEARCH_RESULTS_FOR', ['term' => htmlspecialchars('"'. $this->searchString. '"')]);
 		}
 		
 		$this->drawSearchBox();
@@ -295,6 +295,11 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 			} else {
 				$this->sections[$Search_No_Results] = true;
 			}
+		}
+		
+		if ($this->setting('search_placeholder')) {
+			$this->sections['Placeholder'] = true;
+			$this->sections['Placeholder_Phrase'] = $this->setting('search_placeholder_phrase');
 		}
 		
 		$this->drawCategories();
@@ -383,12 +388,12 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 		$this->sections['Search_Result_Tab'] = [];
 		foreach($this->fields as $cType => $fields) {
 			$results = &$this->results[$cType];
-			$this->sections['Search_Result_Tab'][$cType] = array(
+			$this->sections['Search_Result_Tab'][$cType] = [
 					'Tab_On' => $results['Tab_On'],
 					'Tab_Onclick' => $results['Tab_Onclick'],
 					'Type' => $this->phrase('_'. $cType),
 					'Record_Count' => $results['Record_Count']
-			);
+			];
 		}		
 	}
 	
@@ -602,14 +607,14 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 			}
 		}
 		
-		return array(
+		return [
 			"Record_Count" => $recordCount,
 			"search_results" => $searchresults,
 			"pagination" => $pagination,
 			"offset" => $record_number,
 			"Tab_On" => $cType == $this->cTypeToSearch? '_on' :null,
 			"Tab_Onclick" => $this->refreshPluginSlotAnchor('&ctab='. rawurlencode($cType). $this->getSearchRequestParameters() . '&searchString='. rawurlencode($this->searchString))
-		);
+		];
 		
 		
 	}
@@ -634,6 +639,12 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 				$fields['first_tab/sticky_image_show']['hidden'] = !$values['first_tab/show_default_stick_image'];
 				$hidden = !($values['first_tab/show_default_stick_image'] && $values['first_tab/sticky_image_show']);
 				$this->showHideImageOptions($fields, $values, 'first_tab', $hidden, 'sticky_image_');
+				
+				if ($box['tabs']['first_tab']['fields']['search_placeholder'] == true
+					&& empty($box['tabs']['first_tab']['fields']['search_placeholder_phrase']['value'])) {
+					$box['tabs']['first_tab']['fields']['search_placeholder_phrase']['value'] = 'Search the site';
+				}
+				
 				break;
 		}
 	}

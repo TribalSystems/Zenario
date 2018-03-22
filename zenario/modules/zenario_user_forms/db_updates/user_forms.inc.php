@@ -175,9 +175,9 @@ _sql
 
 // Make an initial sample form
 if (ze\dbAdm::needRevision(19)) {
-	if (!ze\row::exists(ZENARIO_USER_FORMS_PREFIX. 'user_forms', array('name' => 'Simple contact form'))) {
+	if (!ze\row::exists(ZENARIO_USER_FORMS_PREFIX. 'user_forms', ['name' => 'Simple contact form'])) {
 		// Create form
-		$userFormId = ze\row::insert(ZENARIO_USER_FORMS_PREFIX. 'user_forms', array(
+		$userFormId = ze\row::insert(ZENARIO_USER_FORMS_PREFIX. 'user_forms', [
 			'name' => 'Simple contact form',
 			'send_email_to_admin' => 1,
 			'admin_email_addresses' => ze::setting('email_address_admin'),
@@ -188,11 +188,11 @@ if (ze\dbAdm::needRevision(19)) {
 			'success_message' => 'Thank you!',
 			'user_duplicate_email_action' => 'merge',
 			'title' => 'Please enter your details'
-		));
+		]);
 		
 		// Create form fields
-		$emailFieldId = ze\row::get('custom_dataset_fields', 'id', array('field_name' => 'email', 'is_system_field' => 1));
-		ze\row::insert(ZENARIO_USER_FORMS_PREFIX. 'user_form_fields', array(
+		$emailFieldId = ze\row::get('custom_dataset_fields', 'id', ['field_name' => 'email', 'is_system_field' => 1]);
+		ze\row::insert(ZENARIO_USER_FORMS_PREFIX. 'user_form_fields', [
 			'user_form_id' => $userFormId,
 			'user_field_id' => $emailFieldId,
 			'ord' => 1,
@@ -202,9 +202,9 @@ if (ze\dbAdm::needRevision(19)) {
 			'required_error_message' => 'Please enter your email address',
 			'validation' => 'email',
 			'validation_error_message' => 'Please enter a valid email address'
-		));
-		$firstNameFieldId = ze\row::get('custom_dataset_fields', 'id', array('field_name' => 'first_name', 'is_system_field' => 1));
-		ze\row::insert(ZENARIO_USER_FORMS_PREFIX. 'user_form_fields', array(
+		]);
+		$firstNameFieldId = ze\row::get('custom_dataset_fields', 'id', ['field_name' => 'first_name', 'is_system_field' => 1]);
+		ze\row::insert(ZENARIO_USER_FORMS_PREFIX. 'user_form_fields', [
 			'user_form_id' => $userFormId,
 			'user_field_id' => $firstNameFieldId,
 			'ord' => 2,
@@ -212,9 +212,9 @@ if (ze\dbAdm::needRevision(19)) {
 			'label' => 'First name',
 			'name' => 'First name',
 			'required_error_message' => 'Please enter your first name'
-		));
-		$lastNameFieldId = ze\row::get('custom_dataset_fields', 'id', array('field_name' => 'last_name', 'is_system_field' => 1));
-		ze\row::insert(ZENARIO_USER_FORMS_PREFIX. 'user_form_fields', array(
+		]);
+		$lastNameFieldId = ze\row::get('custom_dataset_fields', 'id', ['field_name' => 'last_name', 'is_system_field' => 1]);
+		ze\row::insert(ZENARIO_USER_FORMS_PREFIX. 'user_form_fields', [
 			'user_form_id' => $userFormId,
 			'user_field_id' => $lastNameFieldId,
 			'ord' => 3,
@@ -222,7 +222,7 @@ if (ze\dbAdm::needRevision(19)) {
 			'label' => 'Last name',
 			'name' => 'Last name',
 			'required_error_message' => 'Please enter your last name'
-		));
+		]);
 	}
 	ze\dbAdm::revision(19);
 }
@@ -342,18 +342,18 @@ if (ze\dbAdm::needRevision(51)) {
 	$result = ze\sql::select($sql);
 	while ($row = ze\sql::fetchAssoc($result)) {
 		if ($row['numeric_field_1'] && $row['numeric_field_2'] && $row['calculation_type']) {
-			$calculationCode = array();
-			$calculationCode[] = array('type' => 'field', 'value' => $row['numeric_field_1']);
-			$calculationCode[] = array('type' => ($row['calculation_type'] == '+') ? 'operation_addition' : 'operation_subtraction');
-			$calculationCode[] = array('type' => 'field', 'value' => $row['numeric_field_2']);
+			$calculationCode = [];
+			$calculationCode[] = ['type' => 'field', 'value' => $row['numeric_field_1']];
+			$calculationCode[] = ['type' => ($row['calculation_type'] == '+') ? 'operation_addition' : 'operation_subtraction'];
+			$calculationCode[] = ['type' => 'field', 'value' => $row['numeric_field_2']];
 			
 			$calculationCode = json_encode($calculationCode);
 			
 			if ($calculationCode) {
 				ze\row::update(
 					ZENARIO_USER_FORMS_PREFIX . 'user_form_fields', 
-					array('calculation_code' => $calculationCode),
-					array('id' => $row['id'])
+					['calculation_code' => $calculationCode],
+					['id' => $row['id']]
 				);
 			}
 			
@@ -393,11 +393,11 @@ if (ze\dbAdm::needRevision(54)) {
 			$row = ze\sql::fetchAssoc($result);
 			if ($row) {
 				$set = true;
-				ze\row::update(ZENARIO_USER_FORMS_PREFIX . 'user_forms', array('reply_to_email_field' => $row['id']), $form['id']);
+				ze\row::update(ZENARIO_USER_FORMS_PREFIX . 'user_forms', ['reply_to_email_field' => $row['id']], $form['id']);
 			}
 		}
 		if (!$set) {
-			ze\row::update(ZENARIO_USER_FORMS_PREFIX . 'user_forms', array('reply_to_email_field' => 0), $form['id']);
+			ze\row::update(ZENARIO_USER_FORMS_PREFIX . 'user_forms', ['reply_to_email_field' => 0], $form['id']);
 		}
 		
 		$set = false;
@@ -413,11 +413,11 @@ if (ze\dbAdm::needRevision(54)) {
 			$row = ze\sql::fetchAssoc($result);
 			if ($row) {
 				$set = true;
-				ze\row::update(ZENARIO_USER_FORMS_PREFIX . 'user_forms', array('reply_to_first_name' => $row['id']), $form['id']);
+				ze\row::update(ZENARIO_USER_FORMS_PREFIX . 'user_forms', ['reply_to_first_name' => $row['id']], $form['id']);
 			}
 		}
 		if (!$set) {
-			ze\row::update(ZENARIO_USER_FORMS_PREFIX . 'user_forms', array('reply_to_first_name' => 0), $form['id']);
+			ze\row::update(ZENARIO_USER_FORMS_PREFIX . 'user_forms', ['reply_to_first_name' => 0], $form['id']);
 		}
 		
 		$set = false;
@@ -433,11 +433,11 @@ if (ze\dbAdm::needRevision(54)) {
 			$row = ze\sql::fetchAssoc($result);
 			if ($row) {
 				$set = true;
-				ze\row::update(ZENARIO_USER_FORMS_PREFIX . 'user_forms', array('reply_to_last_name' => $row['id']), $form['id']);
+				ze\row::update(ZENARIO_USER_FORMS_PREFIX . 'user_forms', ['reply_to_last_name' => $row['id']], $form['id']);
 			}
 		}
 		if (!$set) {
-			ze\row::update(ZENARIO_USER_FORMS_PREFIX . 'user_forms', array('reply_to_last_name' => 0), $form['id']);
+			ze\row::update(ZENARIO_USER_FORMS_PREFIX . 'user_forms', ['reply_to_last_name' => 0], $form['id']);
 		}
 	}
 	ze\dbAdm::revision(54);
@@ -486,7 +486,7 @@ _sql
 );
 
 if (ze\dbAdm::needRevision(62)) {
-    ze\row::update(ZENARIO_USER_FORMS_PREFIX . 'user_forms', array('partial_completion_mode' => 'button'), array('allow_partial_completion' => 1));
+    ze\row::update(ZENARIO_USER_FORMS_PREFIX . 'user_forms', ['partial_completion_mode' => 'button'], ['allow_partial_completion' => 1]);
     ze\dbAdm::revision(62);
 }
 
@@ -526,7 +526,7 @@ if (ze\dbAdm::needRevision(66)) {
 	$result = ze\sql::select($sql);
 	while ($form = ze\sql::fetchAssoc($result)) {
 		if (!empty($form['send_email_to_user'])) {
-			$details = array();
+			$details = [];
 			if (!empty($form['user_email_field'])) {
 				$details['send_email_to_email_from_field'] = true;
 				$details['user_email_use_template_for_email_from_field'] = true;
@@ -1020,7 +1020,7 @@ if (ze\dbAdm::needRevision(107)) {
 	$result = ze\sql::select($sql);
 	while ($form = ze\sql::fetchAssoc($result)) {
 		$ord = 0;
-		$pageFields = array();
+		$pageFields = [];
 		
 		$sql = '
 			SELECT * 
@@ -1030,7 +1030,7 @@ if (ze\dbAdm::needRevision(107)) {
 		$fieldsResult = ze\sql::select($sql);
 		while ($field = ze\sql::fetchAssoc($fieldsResult)) {
 			if ($field['field_type'] == 'page_break') {
-				$page = array(
+				$page = [
 					'form_id' => $form['id'],
 					'ord' => ++$ord,
 					'name' => $field['name'],
@@ -1043,7 +1043,7 @@ if (ze\dbAdm::needRevision(107)) {
 					'next_button_text' => $field['next_button_text'] ? $field['next_button_text'] : 'Next',
 					'previous_button_text' => $field['previous_button_text'],
 					'hide_in_page_switcher' => $field['hide_in_page_switcher']
-				);
+				];
 				$pageId = ze\row::insert(ZENARIO_USER_FORMS_PREFIX . 'pages', $page);
 				if ($pageFields) {
 					$sql = '
@@ -1051,20 +1051,20 @@ if (ze\dbAdm::needRevision(107)) {
 						SET page_id = ' . (int)$pageId . ' WHERE id IN (' . implode(',', array_keys($pageFields)) . ')';
 					ze\sql::update($sql);
 				}
-				$pageFields = array();
+				$pageFields = [];
 			} else {
 				$pageFields[$field['id']] = $field;
 			}
 		}
 		
-		$page = array(
+		$page = [
 			'form_id' => $form['id'],
 			'ord' => ++$ord,
 			'name' => $form['page_end_name'],
 			'label' => $form['page_end_name'],
 			'previous_button_text' => $form['default_previous_button_text'],
 			'hide_in_page_switcher' => $form['hide_final_page_in_page_switcher']
-		);
+		];
 		$pageId = ze\row::insert(ZENARIO_USER_FORMS_PREFIX . 'pages', $page);
 		if ($pageFields) {
 			$sql = '
@@ -1074,7 +1074,7 @@ if (ze\dbAdm::needRevision(107)) {
 		}
 	}
 	
-	ze\row::delete(ZENARIO_USER_FORMS_PREFIX . 'user_form_fields', array('field_type' => 'page_break'));
+	ze\row::delete(ZENARIO_USER_FORMS_PREFIX . 'user_form_fields', ['field_type' => 'page_break']);
 	
 	
 	
@@ -1166,7 +1166,7 @@ if (ze\dbAdm::needRevision(114)) {
 			ORDER BY p.ord, uff.ord';
 		$result = ze\sql::select($sql);
 		while ($field = ze\sql::fetchAssoc($result)) {
-			ze\row::update(ZENARIO_USER_FORMS_PREFIX . 'user_form_fields', array('repeat_start_id' => $repeatStartId), $field['id']);
+			ze\row::update(ZENARIO_USER_FORMS_PREFIX . 'user_form_fields', ['repeat_start_id' => $repeatStartId], $field['id']);
 			
 			if ($field['field_type'] == 'repeat_start') {
 				$repeatStartId = $field['id'];
@@ -1332,4 +1332,57 @@ _sql
 	WHERE `hide_in_page_switcher` = 0
 _sql
 
+); ze\dbAdm::revision(180
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
+	ADD COLUMN `partial_completion_get_request` varchar(250) CHARACTER SET utf8mb4 NULL AFTER `partial_completion_message`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_partial_response`
+	ADD COLUMN `get_request_value` int(10) unsigned DEFAULT NULL AFTER `form_id`
+_sql
+
+); ze\dbAdm::revision(181
+, <<<_sql
+	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]predefined_text_targets`
+_sql
+, <<<_sql
+	CREATE TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]predefined_text_targets` (
+		`form_field_id` int(10) unsigned NOT NULL,
+		`button_label` varchar(250) CHARACTER SET utf8mb4 NOT NULL,
+		PRIMARY KEY (`form_field_id`)
+	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+_sql
+
+, <<<_sql
+	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]predefined_text_triggers`
+_sql
+, <<<_sql
+	CREATE TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]predefined_text_triggers` (
+		`id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+		`target_form_field_id` int(10) unsigned NOT NULL,
+		`form_field_id` int(10) unsigned NOT NULL DEFAULT 0,
+		`form_field_value_id` int(10) unsigned NOT NULL DEFAULT 0,
+		`ord` int(10) unsigned NOT NULL DEFAULT 0,
+		`text` text,
+		PRIMARY KEY (`id`)
+	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+_sql
+
+//Add individual options to forms on the period to delete the response
+); ze\dbAdm::revision(182
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
+	ADD COLUMN `period_to_delete_response_headers` varchar(255) NOT NULL DEFAULT '',
+	ADD COLUMN `period_to_delete_response_content` varchar(255) NOT NULL DEFAULT ''
+_sql
+
+//Add a column to user responces to note whether data has been deleted from it
+); ze\dbAdm::revision(184
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response`
+	ADD COLUMN `user_deleted` tinyint(1) NOT NULL DEFAULT '0',
+	ADD COLUMN `data_deleted` tinyint(1) NOT NULL DEFAULT '0'
+_sql
 );

@@ -44,15 +44,15 @@ var
 
 methods.init = function() {
 	var now = new Date();
-	this.month = now.getMonth();
-	this.year = now.getFullYear();
+	thus.month = now.getMonth();
+	thus.year = now.getFullYear();
 };
 
 //Use this to add any requests you need to the AJAX URL used to call your panel
 methods.returnAJAXRequests = function() {
 	return {
-		year: this.year,
-		month: this.month
+		year: thus.year,
+		month: thus.month
 	};
 };
 
@@ -73,7 +73,7 @@ methods.returnSearchingEnabled = function() {
 };
 
 methods.returnPanelTitle = function() {
-	return this.tuix.title;
+	return thus.tuix.title;
 };
 
 methods.showPanel = function($header, $panel, $footer) {
@@ -81,12 +81,12 @@ methods.showPanel = function($header, $panel, $footer) {
 	$footer.html('').show();
 	
 	var 
-		itemsDetails = this.tuix,
-		items = this.tuix.items,
+		itemsDetails = thus.tuix,
+		items = thus.tuix.items,
 		itemsByDate = [],
-		date_column = this.tuix.date_column,
-		labelFormat = this.tuix.label_format_for_calendar,
-		singleEvent = this.tuix.use_single_event;
+		date_column = thus.tuix.date_column,
+		labelFormat = thus.tuix.label_format_for_calendar,
+		singleEvent = thus.tuix.use_single_event;
 	
 	foreach (items as var key => var item) {
 		item.label = zenarioO.applyMergeFields(labelFormat, false, key, true);
@@ -105,13 +105,13 @@ methods.showPanel = function($header, $panel, $footer) {
 	
 	var 
 		html = '',
-		data = methods.getCalendar(this.year, this.month, itemsByDate);
+		data = methods.getCalendar(thus.year, thus.month, itemsByDate);
 	
-	html = this.microTemplate('zenario_organizer_calendar', {weeks: data});
+	html = thus.microTemplate('zenario_organizer_calendar', {weeks: data});
 	
 	$panel.html(html).show();
 	
-	this.updateEventsDetails();
+	thus.updateEventsDetails();
 };
 
 methods.getCalendar = function(year, month, data) {
@@ -219,12 +219,12 @@ methods.showButtons = function($buttons) {
 };
 
 methods.nextMonth = function() {
-	++this.month;
+	++thus.month;
 	zenarioO.load();
 };
 
 methods.prevMonth = function() {
-	--this.month;
+	--thus.month;
 	zenarioO.load();
 };
 /*
@@ -265,7 +265,7 @@ methods.selectDay = function(eventIds) {
 	
 	if (eventIds && eventIds.length) {
 		foreach (eventIds as var i => var id) {
-			this.selectItem(id);
+			thus.selectItem(id);
 		}
 	}
 	
@@ -278,16 +278,16 @@ methods.selectDay = function(eventIds) {
 //It is called after your panel is drawn so you should update the state of your items
 //on the page.
 methods.selectItem = function(id) {
-	methodsOf(panelTypes.base).selectItem.call(this, id);
-	this.updateEventsDetails();
+	methodsOf(panelTypes.base).selectItem.call(thus, id);
+	thus.updateEventsDetails();
 };
 
 //This method should cause an item to be deselected
 //It is called after your panel is drawn so you should update the state of your items
 //on the page.
 methods.deselectItem = function(id) {
-	methodsOf(panelTypes.base).deselectItem.call(this, id);
-	this.updateEventsDetails();
+	methodsOf(panelTypes.base).deselectItem.call(thus, id);
+	thus.updateEventsDetails();
 };
 
 
@@ -298,7 +298,7 @@ methods.updateEventsDetails = function() {
 		$eventsDetails = $('#calendar-organizer-events-details-title'),
 		html = '';
 	
-	foreach (this.selectedItems as id) {
+	foreach (thus.selectedItems as id) {
 		
 		html += 'Item selected: ' + htmlspecialchars(id) + '<br/>';
 		

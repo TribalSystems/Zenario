@@ -37,13 +37,13 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 				$box['tabs']['details']['errors'][] = ze\admin::phrase("Error. Please enter a Name");
 				break;
 			}
-			if (!($box['key']['id'] ?? false) && ze\row::exists(ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_countries', array('id' => ($values['details/code'] ?? false)))) {
+			if (!($box['key']['id'] ?? false) && ze\row::exists(ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_countries', ['id' => ($values['details/code'] ?? false)])) {
 				$box['tabs']['details']['errors'][] = ze\admin::phrase("Error. Country code must be unique.");
 				break;
 			}
 			$countries = ze\row::query(ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_countries', 
-									array('id','english_name'), 
-										array('english_name' => ($values['details/name'] ?? false)));
+									['id','english_name'], 
+										['english_name' => ($values['details/name'] ?? false)]);
 			while($country = ze\sql::fetchAssoc($countries)) {
 				if (($box['key']['id'] ?? false) != $country['id'] ?? false)  {
 					$box['tabs']['details']['errors'][] = ze\admin::phrase("Error. Country name must be unique.");
@@ -69,14 +69,14 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 				if ($regions = self::getRegions('all','','',false,$parentRegionId,$regionName,$regionId)) {
 					$box['tabs']['details']['errors'][] =  
 						ze\admin::phrase('Error. The Sub-Region "[[subregion_name]]" already exists in the Region "[[region_name]]"',
-							array('subregion_name' => $regionName, 'region_name' => self::getEnglishRegionName($parentRegionId)));
+							['subregion_name' => $regionName, 'region_name' => self::getEnglishRegionName($parentRegionId)]);
 					break;
 				} 
 			} elseif ($countryCode) {
 				if ($regions = self::getRegions('all',$countryCode,'',false,0,$regionName,$regionId)) {
 					$box['tabs']['details']['errors'][] = 
 						ze\admin::phrase('Error. The Region "[[region_name]]" already exists in the Country "[[country_name]]"',
-							array('region_name' => $regionName, 'country_name' => self::getEnglishCountryName($countryCode)));
+							['region_name' => $regionName, 'country_name' => self::getEnglishCountryName($countryCode)]);
 					break;
 				}
 			} else {

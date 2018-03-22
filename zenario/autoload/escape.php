@@ -45,7 +45,7 @@ class escape {
 
 	//Formerly "jsEscape()"
 	public static function js($text) {
-		return strtr(addcslashes($text, "\\\n\r\"'"), array('&' => '\\x26', '<' => '\\x3c', '>' => '\\x3e'));
+		return strtr(addcslashes($text, "\\\n\r\"'"), ['&' => '\\x26', '<' => '\\x3c', '>' => '\\x3e']);
 	}
 
 	//Formerly "jsOnClickEscape()", "jsOnclickEscape()"
@@ -55,7 +55,7 @@ class escape {
 
 	//Formerly "XMLEscape()"
 	public static function xml($text) {
-		return str_ireplace(array("'", '&nbsp;'), array('&apos;', ' '), htmlspecialchars($text));
+		return str_ireplace(["'", '&nbsp;'], ['&apos;', ' '], htmlspecialchars($text));
 	}
 
 

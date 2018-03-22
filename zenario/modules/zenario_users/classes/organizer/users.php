@@ -75,21 +75,11 @@ class zenario_users__organizer__users extends zenario_users {
 			$panel['collection_buttons']['export']['hidden'] = true;
 		}
 		
-		//Change the enum option for user type if this site is a hub or is connected to a hub
-		if (zenario_users::validateUserSyncSiteConfig()) {
-			if (zenario_users::thisIsHub()) {
-				unset($panel['columns']['type']['values']['from_hub']);
-				$panel['columns']['type']['values']['local'] = ze\admin::phrase('Hub user');
-			} else {
-				$panel['columns']['type']['values']['local'] = ze\admin::phrase('Satellite user');
-			}
-		}
-		
 		
 		
 		//Add user images to each user, if they have an image
 		foreach ($panel['items'] as $id => &$item) {
-			$item['traits'] = array();
+			$item['traits'] = [];
 				
 			if (!empty($item['checksum'])) {
 				$item['traits']['has_image'] = true;
@@ -132,12 +122,12 @@ class zenario_users__organizer__users extends zenario_users {
 			
 			//if ($item['last_login']) {
 			//	$item['last_login'] = ze\date::format($item['last_login'], ze::setting('vis_date_format_med'));
-			//	$item['readable_last_login'] = ze\admin::phrase('Last login: [[last_login]]', array('last_login' => $item['last_login']));
+			//	$item['readable_last_login'] = ze\admin::phrase('Last login: [[last_login]]', ['last_login' => $item['last_login']]);
 			//} elseif ($item['status'] != 'contact') {
 			//	$item['readable_last_login'] = ze\admin::phrase('Last login: Never');
 			//}
 			
-			//$item['readable_name'] = implode(' ', array_filter(array($item['salutation'], $item['first_name'], $item['last_name'])));
+			//$item['readable_name'] = implode(' ', array_filter([$item['salutation'], $item['first_name'], $item['last_name']]));
 			
 			// Get a users groups
 			$groups = ze\user::groups($id, true, true);
@@ -158,7 +148,7 @@ class zenario_users__organizer__users extends zenario_users {
 			//$item['groups'] = implode(', ', $groups);
 			
 			//if ($groups) {
-			//	$item['readable_groups'] = ze\admin::phrase('Groups: [[groups]]', array('groups' => $item['groups']));
+			//	$item['readable_groups'] = ze\admin::phrase('Groups: [[groups]]', ['groups' => $item['groups']]);
 			//} else {
 			//	$item['readable_groups'] = ze\admin::phrase('Groups: None');
 			//}
@@ -236,9 +226,9 @@ class zenario_users__organizer__users extends zenario_users {
 			foreach (explode(',', $ids) as $userId) {
 				ze\user::addToGroup($userId, ($_POST['refiner__group_members'] ?? false));
 			}
-		} elseif ($_POST['suspend_user'] ?? false) {
-			if (ze\priv::check('_PRIV_EDIT_USER')) {
-				static::suspendUser($ids);
+		} elseif (($_POST['suspend_user'] ?? false) && ze\priv::check('_PRIV_EDIT_USER')) {
+			foreach (explode(',', $ids) as $id) {
+				static::suspendUser($id);
 			}
 			
 		//Set a new avatar for a User/Users

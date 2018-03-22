@@ -385,7 +385,7 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 					if (($result = ze\sql::select($sql)) && ($row = ze\sql::fetchAssoc($result))) {
 						$box['tabs']['advanced']['errors'][] =
 							ze\admin::phrase('The access key "[[accesskey]]" is in use! It is currently assigned to the Menu Node "[[menuitem]]".',
-								array('accesskey' => $values['advanced/accesskey'], 'menuitem' => ze\menu::name($row['id'], $box['key']['languageId'])));
+								['accesskey' => $values['advanced/accesskey'], 'menuitem' => ze\menu::name($row['id'], $box['key']['languageId'])]);
 					}
 				}
 			}

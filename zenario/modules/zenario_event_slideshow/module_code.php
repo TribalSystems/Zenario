@@ -29,7 +29,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 class zenario_event_slideshow extends ze\moduleBaseClass {
 	
-	private $data = array();
+	private $data = [];
 	
 	public function init() {
 		$this->data['maxHeight'] = $this->setting('slide_height');

@@ -109,11 +109,11 @@ class zenario_common_features__admin_boxes__content_layout extends ze\moduleBase
 		if ($total > 1) {
 			$box['title'] =
 				ze\admin::phrase('Changing the layout of [[count]] content items',
-					array('count' => $total));
+					['count' => $total]);
 		} else {
 			$box['title'] =
 				ze\admin::phrase('Changing the layout of the content item "[[tag]]"',
-					array('tag' => ze\content::formatTag($cID, $cType)));
+					['tag' => ze\content::formatTag($cID, $cType)]);
 		}
 		
 	}
@@ -158,11 +158,11 @@ class zenario_common_features__admin_boxes__content_layout extends ze\moduleBase
 				
 			} else {
 				//Multiple comma-seperated items
-				$mrg = array(
+				$mrg = [
 					'draft' => 0,
 					'hidden' => 0,
 					'published' => 0,
-					'trashed' => 0);
+					'trashed' => 0];
 				
 				$tagIds = ze\ray::explodeAndTrim($box['key']['id']);
 				foreach ($tagIds as $tagId) {
@@ -250,7 +250,7 @@ class zenario_common_features__admin_boxes__content_layout extends ze\moduleBase
 				ze\layoutAdm::changeContentItemLayout($cID, $cType, $cVersion, $values['layout_id']);
 				
 				//Mark this version as updated
-				ze\contentAdm::updateVersion($cID, $cType, $cVersion, $version = array(), $forceMarkAsEditsMade = true);
+				ze\contentAdm::updateVersion($cID, $cType, $cVersion, $version = [], $forceMarkAsEditsMade = true);
 			}
 		}
 		

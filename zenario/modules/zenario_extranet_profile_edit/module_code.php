@@ -44,16 +44,16 @@ class zenario_extranet_profile_edit extends zenario_user_forms {
 			$this->data['extranet_profile_mode_class'] = 'extranet_view_profile';
 			
 			//Screen name confirmed
-			if (ze::setting('user_use_screen_name') && ze\row::exists('users', array('id' => $userId, 'screen_name_confirmed' => 0))) {
+			if (ze::setting('user_use_screen_name') && ze\row::exists('users', ['id' => $userId, 'screen_name_confirmed' => 0])) {
 				$screenName = ze\row::get('users', 'screen_name', $userId);
 				if (!empty($_POST['extranet_confirm_screen_name'])) {
-					ze\row::update('users', array('screen_name_confirmed' => 1), array('id' => $userId));
-					$this->data['extranet_screen_name_confirmed_message'] = $this->phrase('You\'ve confirmed you\'re happy to use "[[screen_name]]" as your public screen name.', array('screen_name' => $screenName));
+					ze\row::update('users', ['screen_name_confirmed' => 1], ['id' => $userId]);
+					$this->data['extranet_screen_name_confirmed_message'] = $this->phrase('You\'ve confirmed you\'re happy to use "[[screen_name]]" as your public screen name.', ['screen_name' => $screenName]);
 				} else {
 					$this->data['extranet_openForm'] = $this->openForm();
 					$this->data['extranet_closeForm'] = $this->closeForm();
 					$this->data['extranet_screen_name_unconfirmed'] = true;
-					$this->data['extranet_screen_name_confirmed_info'] = $this->phrase('It looks like you\'ve not confirmed that you\'re happy with your screen name, "[[screen_name]]". This name will be shown in messages you post on this site. If you\'d like to change it please click the "Edit profile" button, or if you\'re happy with it please click here to confirm:', array('screen_name' => $screenName));
+					$this->data['extranet_screen_name_confirmed_info'] = $this->phrase('It looks like you\'ve not confirmed that you\'re happy with your screen name, "[[screen_name]]". This name will be shown in messages you post on this site. If you\'d like to change it please click the "Edit profile" button, or if you\'re happy with it please click here to confirm:', ['screen_name' => $screenName]);
 				}
 			}
 		}

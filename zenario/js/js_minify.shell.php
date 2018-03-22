@@ -178,11 +178,11 @@ if ((is_dir($dir = 'zenario/styles/')) && ($scan = scandir($dir))) {
 }
 
 //Minify plugin/module js files
-foreach (array(
+foreach ([
 	'zenario/modules/',
 	//'zenario_custom/modules/'
 	'zenario_extra_modules/'
-) as $path) {
+] as $path) {
 	if (is_dir($path)) {
 		if ($scan = scandir($path)) {
 			foreach ($scan as $module) {

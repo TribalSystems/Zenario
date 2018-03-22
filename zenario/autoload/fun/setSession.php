@@ -36,18 +36,18 @@ $adminCols = [
 //Load this admin's details
 if ($admin = \ze\row::get('admins', $adminCols, $adminIdL)) {
 	
-	$privs = array();
-	$content_items = array();
-	$languages = array();
-	$menu_nodes = array();
-	$menu_sections = array();
+	$privs = [];
+	$content_items = [];
+	$languages = [];
+	$menu_nodes = [];
+	$menu_sections = [];
 	
 	switch ($admin['permissions']) {
 		
 		case 'all_permissions':
 			//For backwards compatability with a few old bits of the system,
 			//add an action called "_ALL" if someone's permission option is set to "all_permissions"
-			$privs = array('_ALL' => true);
+			$privs = ['_ALL' => true];
 			break;
 		
 		case 'specific_actions':

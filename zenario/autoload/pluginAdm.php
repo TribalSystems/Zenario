@@ -49,7 +49,7 @@ class pluginAdm {
 		}
 	
 		//Check to see if an instance of that name already exists
-		if (\ze\row::exists('plugin_instances', array('name' => $instanceName))) {
+		if (\ze\row::exists('plugin_instances', ['name' => $instanceName])) {
 			if (!$forceName) {
 				$errors[] = \ze\admin::phrase('_ERROR_INSTANCE_NAME_EXISTS');
 				return false;
@@ -91,14 +91,18 @@ class pluginAdm {
 		$module = \ze\module::details($moduleId);
 	
 		$skLink = 'zenario/admin/organizer.php?fromCID='. (int) $cID. '&fromCType='. urlencode($cType);
-		$modulesLink = '#zenario__modules/panels/modules//' . $moduleId;
-	
-		$info['module_name']['label'] =
-			\ze\admin::phrase('<a target="_blank" href="[[link]]">[[display_name]]</a>',
-				array(
-					'link' => htmlspecialchars($skLink . $modulesLink),
-					'class_name' => htmlspecialchars($module['class_name']),
-					'display_name' => htmlspecialchars($module['display_name'])));
+		
+		//$modulesLink = '#zenario__modules/panels/modules//' . $moduleId;
+		//
+		//$mrg = [
+		//	'link' => htmlspecialchars($skLink . $modulesLink),
+		//	'class_name' => htmlspecialchars($module['class_name']),
+		//	'display_name' => htmlspecialchars($module['display_name'])
+		//];
+		//$info['module_name']['label'] =
+		//	\ze\admin::phrase('<a target="_blank" href="[[link]]">[[display_name]]</a>', $mrg);
+		
+		$info['module_name']['label'] = htmlspecialchars($module['display_name']);
 	
 		if ($isVersionControlled) {
 			$pluginAdminName =
@@ -109,6 +113,9 @@ class pluginAdm {
 			unset($info['reusable_plugin_name'], $info['reusable_plugin_usage']);
 	
 		} else {
+			unset($info['vc']);
+			unset($info['vc_warning']);
+			
 			if ($isNest) {
 				$pluginAdminName = \ze\admin::phrase('nest');
 				$ucPluginAdminName = \ze\admin::phrase('Nest');
@@ -238,37 +245,37 @@ class pluginAdm {
 			  AND module_class_name = '". \ze\escape::sql($className). "'
 			LIMIT 1";
 	
-		$frameworks = array();
+		$frameworks = [];
 		if (($result = \ze\sql::select($sql))
 		 && ($row = \ze\sql::fetchRow($result))) {
 			$frameworks = \ze\pluginAdm::listFrameworks($row[0], $limit, true);
 		}
 	
 		//Look through this module's framework directories
-		foreach (array(
+		foreach ([
 			'zenario/modules/',
 			'zenario_extra_modules/',
 			'zenario_custom/modules/',
 			'zenario_custom/frameworks/'
-		) as $moduleDir) {
+		] as $moduleDir) {
 			if (is_dir($path = CMS_ROOT. $moduleDir. $className. '/frameworks/')) {
 				foreach(scandir($path) as $themeName) {
 					if (substr($themeName, 0, 1) != '.') {
 						//Only list a framework if the .html file is present
 						if (is_file($path. $themeName. '/framework.html')) {
-							$frameworks[$themeName] = array(
+							$frameworks[$themeName] = [
 								'name' => $themeName,
 								'label' => $themeName,
 								'path' => $path. $themeName. '/framework.html',
 								'filename' => 'framework.html',
-								'module_class_name' => $className);
+								'module_class_name' => $className];
 						} elseif (is_file($path. $themeName. '/framework.twig.html')) {
-							$frameworks[$themeName] = array(
+							$frameworks[$themeName] = [
 								'name' => $themeName,
 								'label' => $themeName,
 								'path' => $path. $themeName. '/framework.twig.html',
 								'filename' => 'framework.twig.html',
-								'module_class_name' => $className);
+								'module_class_name' => $className];
 						}
 					}
 				}
@@ -287,7 +294,7 @@ class pluginAdm {
 	//Gets a list of pagination options for modules
 	//Formerly "paginationOptions()"
 	public static function paginationOptions() {
-		$options = array();
+		$options = [];
 	
 		foreach (\ze\module::runningModules() as $module) {
 			if (\ze\moduleAdm::getPaginationTypesFromDescription($module['class_name'], $paginationTypes)) {
@@ -304,10 +311,10 @@ class pluginAdm {
 	//Remove any Version Controlled plugin settings, that are not actually being used for a Content Item
 	//Formerly "removeUnusedVersionControlledPluginSettings()"
 	public static function removeUnusedVCs($cID, $cType, $cVersion) {
-		$slotContents = array();
+		$slotContents = [];
 		\ze\plugin::slotContents($slotContents, $cID, $cType, $cVersion, false, false, false, false, false, false, $runPlugins = false);
 	
-		$result = \ze\row::query('plugin_instances', array('id', 'slot_name'), array('content_id' => $cID, 'content_type' => $cType, 'content_version' => $cVersion));
+		$result = \ze\row::query('plugin_instances', ['id', 'slot_name'], ['content_id' => $cID, 'content_type' => $cType, 'content_version' => $cVersion]);
 		while ($instance = \ze\sql::fetchAssoc($result)) {
 			if ($instance['id'] != ($slotContents[$instance['slot_name']]['instance_id'] ?? false)) {
 				\ze\pluginAdm::delete($instance['id']);
@@ -323,10 +330,10 @@ class pluginAdm {
 		if (!$cTypeFrom) {
 			$cTypeFrom = $cType;
 		}
-		$slotContents = array();
+		$slotContents = [];
 		\ze\plugin::slotContents($slotContents, $cIDFrom, $cTypeFrom, $cVersionFrom, false, false, false, false, false, false, $runPlugins = false);
 	
-		$result = \ze\row::query('plugin_instances', array('id', 'slot_name'), array('content_id' => $cIDFrom, 'content_type' => $cTypeFrom, 'content_version' => $cVersionFrom));
+		$result = \ze\row::query('plugin_instances', ['id', 'slot_name'], ['content_id' => $cIDFrom, 'content_type' => $cTypeFrom, 'content_version' => $cVersionFrom]);
 		while ($instance = \ze\sql::fetchAssoc($result)) {
 			if (!$slotName || $slotName == $instance['slot_name']) {
 				if ($instance['id'] == ($slotContents[$instance['slot_name']]['instance_id'] ?? false)) {
@@ -349,7 +356,7 @@ class pluginAdm {
 
 		if ($createNewInstance) {
 			//Copy an instance
-			$values = array();
+			$values = [];
 			$values['name'] = $newName;
 			$values['framework'] = $instance['framework'];
 			$values['css_class'] = $instance['css_class'];
@@ -573,10 +580,10 @@ class pluginAdm {
 	
 			\ze\pluginAdm::manageCSSFile('copy', $oldInstanceId, false, $instanceId);
 	
-			\ze\module::sendSignal('eventPluginInstanceDuplicated', array('oldInstanceId' => $oldInstanceId, 'newInstanceId' => $instanceId));
+			\ze\module::sendSignal('eventPluginInstanceDuplicated', ['oldInstanceId' => $oldInstanceId, 'newInstanceId' => $instanceId]);
 	
 		} else {
-			\ze\row::update('plugin_instances', array('name' => $newName), $instanceId);
+			\ze\row::update('plugin_instances', ['name' => $newName], $instanceId);
 		}
 
 		return true;
@@ -588,7 +595,7 @@ class pluginAdm {
 	//Formerly "getPluginsUsageOnLayouts()"
 	public static function usageOnLayouts($instanceIds) {
 	
-		$usage = array('active' => 0, 'archived' => 0);
+		$usage = ['active' => 0, 'archived' => 0];
 	
 		$sql = "
 			SELECT l.status, COUNT(DISTINCT l.layout_id)
@@ -622,7 +629,7 @@ class pluginAdm {
 			return 0;
 		}
 	
-		$layoutIds = array();
+		$layoutIds = [];
 		if (!$itemLayerOnly) {
 			$sql2 = "
 				SELECT l.layout_id
@@ -730,11 +737,11 @@ class pluginAdm {
 		}
 	
 		//Replace the slot
-		foreach (array('plugin_item_link', 'plugin_layout_link') as $table) {
+		foreach (['plugin_item_link', 'plugin_layout_link'] as $table) {
 			\ze\row::update(
 				$table,
-				array('module_id' => $newmoduleId, 'instance_id' => $newInstanceId),
-				array('module_id' => $oldmoduleId, 'instance_id' => $oldInstanceId));
+				['module_id' => $newmoduleId, 'instance_id' => $newInstanceId],
+				['module_id' => $oldmoduleId, 'instance_id' => $oldInstanceId]);
 		}
 	
 		//Remove the item level placement if needed
@@ -755,7 +762,7 @@ class pluginAdm {
 	//Formerly "managePluginCSSFile()"
 	public static function manageCSSFile($action, $oldInstanceId, $oldEggId = false, $newInstanceId = false, $newEggId = false) {
 	
-		$instance = \ze\row::get('plugin_instances', array('module_id', 'content_id'), $oldInstanceId);
+		$instance = \ze\row::get('plugin_instances', ['module_id', 'content_id'], $oldInstanceId);
 	
 		//Don't do anything for version controlled plugins
 		if (!$instance || $instance['content_id']) {
@@ -781,7 +788,7 @@ class pluginAdm {
 		$oldFilename = '2.'. $oldFilename. '.css';
 		$newFilename = '2.'. $newFilename. '.css';
 	
-		$skins = \ze\row::getArray('skins', array('id', 'family_name', 'name'), array('missing' => 0));
+		$skins = \ze\row::getArray('skins', ['id', 'family_name', 'name'], ['missing' => 0]);
 	
 		foreach ($skins as $skin) {
 			$skinWritableDir = CMS_ROOT. \ze\content::skinPath($skin['family_name'], $skin['name']). 'editable_css/';
@@ -818,7 +825,7 @@ class pluginAdm {
 	//Formerly "deletePluginInstance()"
 	public static function delete($instanceId) {
 	
-		foreach (\ze\row::getArray('nested_plugins', 'id', array('is_slide' => 0, 'instance_id' => $instanceId)) as $eggId) {
+		foreach (\ze\row::getArray('nested_plugins', 'id', ['is_slide' => 0, 'instance_id' => $instanceId]) as $eggId) {
 			\ze\pluginAdm::manageCSSFile('delete', $instanceId, $eggId);
 		}
 		\ze\pluginAdm::manageCSSFile('delete', $instanceId);
@@ -834,20 +841,20 @@ class pluginAdm {
 			  AND np.is_slide = 1
 			WHERE np.instance_id = ". $instanceId);
 	
-		foreach (array(
+		foreach ([
 			'nested_paths', 'plugin_instance_store',
 			'plugin_settings', 'plugin_item_link', 'plugin_layout_link'
-		) as $table) {
-			\ze\row::delete($table, array('instance_id' => $instanceId));
+		] as $table) {
+			\ze\row::delete($table, ['instance_id' => $instanceId]);
 		}
-		\ze\row::delete('inline_images', array('foreign_key_to' => 'library_plugin', 'foreign_key_id' => $instanceId));
+		\ze\row::delete('inline_images', ['foreign_key_to' => 'library_plugin', 'foreign_key_id' => $instanceId]);
 	
-		\ze\module::sendSignal('eventPluginInstanceDeleted', array('instanceId' => $instanceId));
+		\ze\module::sendSignal('eventPluginInstanceDeleted', ['instanceId' => $instanceId]);
 	}
 
 	//Formerly "deleteVersionControlledPluginSettings()"
 	public static function deleteVC($cID, $cType, $cVersion) {
-		$result = \ze\row::query('plugin_instances', array('id'), array('content_id' => $cID, 'content_type' => $cType, 'content_version' => $cVersion));
+		$result = \ze\row::query('plugin_instances', ['id'], ['content_id' => $cID, 'content_type' => $cType, 'content_version' => $cVersion]);
 		while ($row = \ze\sql::fetchAssoc($result)) {
 			\ze\pluginAdm::delete($row['id']);
 		}
@@ -871,23 +878,23 @@ class pluginAdm {
 		if ($moduleId || $instanceId !== '') {
 			$placementId = \ze\row::set(
 				'plugin_item_link',
-				array(
+				[
 					'module_id' => $moduleId,
-					'instance_id' => $instanceId),
-				array(
+					'instance_id' => $instanceId],
+				[
 					'slot_name' => $slotName,
 					'content_id' => $cID,
 					'content_type' => $cType,
-					'content_version' => $cVersion));
+					'content_version' => $cVersion]);
 		
 		} else {
 			\ze\row::delete(
 				'plugin_item_link',
-				array(
+				[
 					'slot_name' => $slotName,
 					'content_id' => $cID,
 					'content_type' => $cType,
-					'content_version' => $cVersion));
+					'content_version' => $cVersion]);
 		}
 	}
 	
@@ -911,21 +918,21 @@ class pluginAdm {
 		if ($moduleId) {
 			$placementId = \ze\row::set(
 				'plugin_layout_link',
-				array(
+				[
 					'module_id' => $moduleId,
-					'instance_id' => $instanceId),
-				array(
+					'instance_id' => $instanceId],
+				[
 					'slot_name' => $slotName,
 					'family_name' => $templateFamily,
-					'layout_id' => $layoutId));
+					'layout_id' => $layoutId]);
 		
 		} else {
 			\ze\row::delete(
 				'plugin_layout_link',
-				array(
+				[
 					'slot_name' => $slotName,
 					'family_name' => $templateFamily,
-					'layout_id' => $layoutId));
+					'layout_id' => $layoutId]);
 		}
 	}
 
@@ -936,13 +943,13 @@ class pluginAdm {
 		if ($cID && $cType && $cVersion) {
 			\ze\row::delete(
 				'plugin_item_link',
-				array(
+				[
 					'module_id' => 0,
 					'instance_id' => 0,
 					'content_id' => $cID,
 					'content_type' => $cType,
 					'content_version' => $cVersion,
-					'slot_name' => $slotName));
+					'slot_name' => $slotName]);
 		}
 	}
 

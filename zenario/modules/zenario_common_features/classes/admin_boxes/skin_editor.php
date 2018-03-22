@@ -33,7 +33,7 @@ ze\module::incSubclass('zenario_common_features', 'admin_boxes', 'plugin_setting
 
 class zenario_common_features__admin_boxes__skin_editor extends zenario_common_features__admin_boxes__plugin_settings {
 	
-	protected $files = array(
+	protected $files = [
 		'0.reset.css' => "Enter CSS here to reset the browser's default styles.",
 		'1.fonts.css' => 'This should contain styles for fonts.',
 		'1.forms.css' => 'This should contain styles for form elements, e.g. <code>&lt;input&gt;s<code>, <code>&lt;select&gt;s<code> and <code>&lt;textareas&gt;s<code>.',
@@ -41,7 +41,7 @@ class zenario_common_features__admin_boxes__skin_editor extends zenario_common_f
 		'3.misc.css' => "This should contain styles anything that doesn't fit in another category, e.g. pagination.",
 		'4.responsive.css' => 'This should contain rules for mobile devices.',
 		'print.css' => 'This should contain rules for printing.'
-	);
+	];
 	
 	protected function addSlide(&$box, &$fields, &$values, $file, $desc) {
 		
@@ -86,9 +86,9 @@ class zenario_common_features__admin_boxes__skin_editor extends zenario_common_f
 			$box['tabs'][$file]['fields']['css_filename']['value'] = $file;
 		}
 		
-		$fields = array();
-		$values = array();
-		$changes = array();
+		$fields = [];
+		$values = [];
+		$changes = [];
 		ze\tuix::readValues($box, $fields, $values, $changes, $filling = true, $resetErrors = false);
 	}
 	
@@ -97,7 +97,7 @@ class zenario_common_features__admin_boxes__skin_editor extends zenario_common_f
 		//I'm calling this function to initialise some variables in the extended class
 		$this->getPluginCSSFilepath($box, false);
 		
-		if (!$box['key']['skinId'] || !($skin = ze\row::get('skins', array('display_name'), $box['key']['skinId']))) {
+		if (!$box['key']['skinId'] || !($skin = ze\row::get('skins', ['display_name'], $box['key']['skinId']))) {
 			echo ze\admin::phrase('Skin not found!');
 			exit;
 		}

@@ -27,11 +27,11 @@
 
 /*
 	This file contains JavaScript source code.
-	The code here is not the code you see in your browser. Before this file is downloaded:
+	The code here is not the code you see in your browser. Before thus file is downloaded:
 	
 		1. Compilation macros are applied (e.g. "foreach" is a macro for "for .. in ... hasOwnProperty").
 		2. It is minified (e.g. using Google Closure Compiler).
-		3. It may be wrapped togther with other files (this is to reduce the number of http requests on a page).
+		3. It may be wrapped togther with other files (thus is to reduce the number of http requests on a page).
 	
 	For more information, see js_minify.shell.php for steps (1) and (2), and organizer.wrapper.js.php for step (3).
 */
@@ -69,14 +69,14 @@ var methods = methodsOf(
 //Use this to add any requests you need to the AJAX URL used to call your panel
 methods.returnAJAXRequests = function() {
 	
-	if (defined(this.searchTerm)) {
+	if (defined(thus.searchTerm)) {
 		return {};
 	
-	} else if (!_.isEmpty(this.openItemsInHierarchy)) {
-		return {_openItemsInHierarchy: _.keys(this.openItemsInHierarchy).join(',')};
+	} else if (!_.isEmpty(thus.openItemsInHierarchy)) {
+		return {_openItemsInHierarchy: _.keys(thus.openItemsInHierarchy).join(',')};
 	
-	} else if (this.requestedItem) {
-		return {_openToItemInHierarchy: this.requestedItem};
+	} else if (thus.requestedItem) {
+		return {_openToItemInHierarchy: thus.requestedItem};
 	
 	} else {
 		return {_openItemsInHierarchy: ''};
@@ -87,21 +87,21 @@ methods.returnAJAXRequests = function() {
 
 //You should return the page size you wish to use, or false to disable pagination
 methods.returnPageSize = function() {
-	if (!defined(this.searchTerm)) {
+	if (!defined(thus.searchTerm)) {
 		return false;
 	} else {
-		return methodsOf(panelTypes.list).returnPageSize.call(this);
+		return methodsOf(panelTypes.list).returnPageSize.call(thus);
 	}
 };
 
 
 //Whether to enable searching on a panel
 methods.returnSearchingEnabled = function() {
-	return methodsOf(panelTypes.list).returnSearchingEnabled.call(this);
+	return methodsOf(panelTypes.list).returnSearchingEnabled.call(thus);
 };
 
 methods.returnDoSortingAndSearchingOnServer = function() {
-	if (!defined(this.searchTerm)) {
+	if (!defined(thus.searchTerm)) {
 		return false;
 	} else {
 		return true;
@@ -112,20 +112,20 @@ methods.returnDoSortingAndSearchingOnServer = function() {
 //Draw the panel, as well as the header at the top and the footer at the bottom
 //This is called every time the panel is loaded, refreshed or when something in the header toolbar is changed.
 methods.showPanel = function($header, $panel, $footer) {
-	if (!defined(this.searchTerm)) {
-		return methodsOf(panelTypes.hierarchy).showPanel.apply(this, arguments);
+	if (!defined(thus.searchTerm)) {
+		return methodsOf(panelTypes.hierarchy).showPanel.apply(thus, arguments);
 	} else {
-		return methodsOf(panelTypes.list).showPanel.apply(this, arguments);
+		return methodsOf(panelTypes.list).showPanel.apply(thus, arguments);
 	}
 };
 
 //Draw (or hide) the button toolbar
 //This is called every time different items are selected, the panel is loaded, refreshed or when something in the header toolbar is changed.
 methods.showButtons = function($buttons) {
-	if (!defined(this.searchTerm)) {
-		return methodsOf(panelTypes.hierarchy).showButtons.apply(this, arguments);
+	if (!defined(thus.searchTerm)) {
+		return methodsOf(panelTypes.hierarchy).showButtons.apply(thus, arguments);
 	} else {
-		return methodsOf(panelTypes.list).showButtons.apply(this, arguments);
+		return methodsOf(panelTypes.list).showButtons.apply(thus, arguments);
 	}
 };
 
@@ -152,7 +152,7 @@ methods.showButtons = function($buttons) {
 
 
 methods.expandItem = function() {
-	this.recordOpenItems();
+	thus.recordOpenItems();
 	
 	if ($('#organizer_hierarchy_view .organizer_hierarchy_view_lazy_loading:visible').size()) {
 		//zenarioO.saveSelection();

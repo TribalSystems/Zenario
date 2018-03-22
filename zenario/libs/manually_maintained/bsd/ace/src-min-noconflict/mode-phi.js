@@ -111,14 +111,15 @@
 			//N.b. I removed a few such as attribute from the autocomplete/documentation but they're still usable
 			
 			//Assetwolf's functions
-			'getHistoricValue': {input: 'key, timestamp[, assetId]', returns: 'value'},
-			'getMetadata': {input: 'name[, assetId]', returns: 'value'},
-			'getInheritedMetadata': {input: 'name[, assetId]', returns: 'value'},
+			'getHistoricValue': {input: 'key, timestamp[, nodeId]', returns: 'value'},
+			'getMetadata': {input: 'name[, nodeId]', returns: 'value'},
+			'getInheritedMetadata': {input: 'name[, nodeId]', returns: 'value'},
 			'getTimestamp': {input: 'description[, timestamp]', returns: 'number'},
 			'getMinValue': {input: 'key, fromTimestamp, toTimestamp[, assetIds]', returns: 'value'},
 			'getMaxValue': {input: 'key, fromTimestamp, toTimestamp[, assetIds]', returns: 'value'},
-			'getAllChildIds': {input: '[schema[, assetId]]', returns: 'ids'},
-			'getImmediateChildIds': {input: '[schema[, assetId]]', returns: 'ids'},
+			'getAllChildIds': {input: '[schema[, nodeId]]', returns: 'ids'},
+			'getImmediateChildIds': {input: '[schema[, nodeId]]', returns: 'ids'},
+			'getParentNodeId': {input: '[schema[, nodeId]]', returns: 'id'},
 			'query': {input: 'fromTimestamp, toTimestamp, assetIds', returns: 'cursor'},
 			
 			//Misc functions

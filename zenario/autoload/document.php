@@ -51,13 +51,13 @@ class document {
 		$row = \ze\sql::fetchRow($result);
 		$ordinal = $row[0] ? $row[0] : 1;
 		
-		$documentProperties = array(
+		$documentProperties = [
 			'type' => 'file',
 			'file_id' => $fileId,
 			'folder_id' => 0,
 			'filename' => $filename,
 			'file_datetime' => date("Y-m-d H:i:s"),
-			'ordinal' => $ordinal);
+			'ordinal' => $ordinal];
 		
 		//Copy privacy if a document with the same file already exists
 		$docWithSameFile = \ze\row::get('documents', ['privacy', 'filename'], ['file_id' => $fileId]);
@@ -319,6 +319,13 @@ class document {
 		$result = \ze\sql::select($sql);
 		$newFile = \ze\sql::fetchAssoc($result);
 		
+		//Delete any existing htaccess file in this documents public directory, which may happen if a file is reuploaded
+		$path = CMS_ROOT . 'public/downloads/' . $newFile['short_checksum'] . '/.htaccess';
+		if (file_exists($path)) {
+			unlink($path);
+		}
+		
+		//Make redirects for public links that point to this document
 		$result = \ze\row::query('document_public_redirects', ['path'], ['document_id' => $documentId]);
 		while ($redirect = \ze\sql::fetchAssoc($result)) {
 			$parts = explode('/', $redirect['path']);

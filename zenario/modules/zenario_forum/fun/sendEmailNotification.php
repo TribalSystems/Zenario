@@ -28,12 +28,12 @@
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
 
-$forumMessage = ze\row::get(ZENARIO_FORUM_PREFIX. "user_posts", array('message_text', 'poster_id'), array('id' => $postId));
+$forumMessage = ze\row::get(ZENARIO_FORUM_PREFIX. "user_posts", ['message_text', 'poster_id'], ['id' => $postId]);
 
 $userId = $forumMessage['poster_id'];
 
 
-$formFields = array(
+$formFields = [
 	'cms_url' => ze\link::absolute(),
 	'forum_link' =>
 		ze\link::toItem(
@@ -46,7 +46,7 @@ $formFields = array(
 			$this->forum['thread_content_id'], $this->forum['thread_content_type'], true,
 			'&forum_thread='. $this->threadId. '&comm_page='. $this->page, false, false, true),
 	'thread_title' => $newThreadTitle? $newThreadTitle : ze\row::get(ZENARIO_FORUM_PREFIX. 'threads', 'title', $this->threadId),
-	'poster_screen_name' => '');
+	'poster_screen_name' => ''];
 
 if (ze::setting('user_use_screen_name')) {
 	$formFields['poster_screen_name'] = ze\user::screenName($userId);
@@ -64,9 +64,9 @@ if ($this->setting('send_notification_email')
 			$this->setting('post_notification_email_template')
 		 :	$this->setting('new_thread_notification_email_template'),
 		$formFields,
-		array(),
-		array(),
-		array('message' => true));
+		[],
+		[],
+		['message' => true]);
 }
 
 
@@ -109,17 +109,17 @@ if ($newPost
 					$this->setting('post_subs_email_template')
 				 :	$this->setting('new_thread_subs_email_template'),
 				$formFields,
-				array(),
-				array(),
-				array('message' => true));
+				[],
+				[],
+				['message' => true]);
 			
 			ze\row::update(
 				ZENARIO_COMMENTS_PREFIX. 'user_subscriptions',
-				array('last_notified' => ze\date::now()),
-				array(
+				['last_notified' => ze\date::now()],
+				[
 					'user_id' => $row['id'],
 					'forum_id' => $this->forumId,
-					'thread_id' => $newThreadTitle === false? $this->threadId : 0));
+					'thread_id' => $newThreadTitle === false? $this->threadId : 0]);
 		}
 	}
 }

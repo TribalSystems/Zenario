@@ -32,6 +32,11 @@ extension_of_skin: ''
 # Enter CSS class name names here to have them added to a <div> that wraps the page.
 css_class: ''
 
+# Import FEA plugins styles and FontAwesome.
+import:
+    - zenario/styles/fea/fea_common.css
+    - zenario/styles/fea/fea_font_awesome.css
+
 # Style formats are class names that can be selected in the WYSIWYG Editor
 # under the Styles menu.
 # 

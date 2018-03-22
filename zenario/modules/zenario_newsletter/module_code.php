@@ -37,12 +37,12 @@ class zenario_newsletter extends ze\moduleBaseClass {
 
 	protected static function newsletterRecipients($id, $mode) {
 		if (!ze\row::exists(ZENARIO_NEWSLETTER_PREFIX. 'newsletters', $id) || 
-			!ze\row::exists(ZENARIO_NEWSLETTER_PREFIX. 'newsletter_smart_group_link', array('newsletter_id' => $id)) ) {
+			!ze\row::exists(ZENARIO_NEWSLETTER_PREFIX. 'newsletter_smart_group_link', ['newsletter_id' => $id]) ) {
 			return false;
 		} 
 		
-		$parts = array();
-		foreach ( ze\row::getArray(ZENARIO_NEWSLETTER_PREFIX. 'newsletter_smart_group_link', 'smart_group_id', array('newsletter_id' => $id)) as $smartGroupId )  {
+		$parts = [];
+		foreach ( ze\row::getArray(ZENARIO_NEWSLETTER_PREFIX. 'newsletter_smart_group_link', 'smart_group_id', ['newsletter_id' => $id]) as $smartGroupId )  {
 			if ($rv = self::newsletterRecipientsPart($id, $mode, $smartGroupId)) {
 				$parts[] = $rv;
 			}
@@ -67,10 +67,10 @@ class zenario_newsletter extends ze\moduleBaseClass {
 					ze\sql::update($sql, false, false);
 					return ze\sql::affectedRows();
 				case 'get_sql':
-					return array(
+					return [
 								'table_join' =>  "(" . implode(" UNION ", $parts) . ") r ON r.id = u.id",
 								'where_statement' => " r.id IS NOT NULL "
-								);
+								];
 			}
 		} else {
 			switch ($mode) {
@@ -124,7 +124,7 @@ class zenario_newsletter extends ze\moduleBaseClass {
 		foreach (ze\row::getArray(
 			ZENARIO_NEWSLETTER_PREFIX. 'newsletter_sent_newsletter_link',
 			'sent_newsletter_id',
-			array('newsletter_id' => $id)
+			['newsletter_id' => $id]
 		) as $sentNewsletterId) {
 			$sql .= "
 				LEFT JOIN ". DB_NAME_PREFIX. ZENARIO_NEWSLETTER_PREFIX. "newsletter_user_link AS nul_". (int) $sentNewsletterId. "
@@ -250,7 +250,7 @@ class zenario_newsletter extends ze\moduleBaseClass {
 	//Send a test email
 	function testSendNewsletter($head, $body, $adminDetails, $email, $subject, $emailAddresFrom, $emailNameFrom, $newsletterId) {
 		
-		$newsletterArray = array("id" => $newsletterId,"body" => $body);
+		$newsletterArray = ["id" => $newsletterId,"body" => $body];
 		$body = zenario_newsletter::createTrackerHyperlinks($newsletterArray);
 		//Check if there is a User set up with this email address
 		if (!$user = self::getUserDetails(['email' => $email])) {
@@ -319,7 +319,7 @@ class zenario_newsletter extends ze\moduleBaseClass {
 		}
 		
 		// Get admins
-		$admins = array();
+		$admins = [];
 		$sql = '
 			SELECT
 				id,
@@ -361,8 +361,8 @@ class zenario_newsletter extends ze\moduleBaseClass {
 				$admin['first_name']. ' '. $admin['last_name'],
 				$newsletter['email_address_from'],
 				$newsletter['email_name_from'],
-				array(),
-				array(),
+				[],
+				[],
 				'bulk');
 		}
 	}
@@ -441,8 +441,8 @@ class zenario_newsletter extends ze\moduleBaseClass {
 			zenario_newsletter::sendNewsletterToUser($userNewsletter, $hashes['user_id'], $hashes);
 		}
 		
-		ze\row::update(ZENARIO_NEWSLETTER_PREFIX. 'newsletters', array('status' => '_ARCHIVED'), $id);
-		ze\row::update('inline_images', array('archived' => 1), array('foreign_key_to' => 'newsletter', 'foreign_key_id' => $id));
+		ze\row::update(ZENARIO_NEWSLETTER_PREFIX. 'newsletters', ['status' => '_ARCHIVED'], $id);
+		ze\row::update('inline_images', ['archived' => 1], ['foreign_key_to' => 'newsletter', 'foreign_key_id' => $id]);
 	}
 	
 	
@@ -484,8 +484,8 @@ class zenario_newsletter extends ze\moduleBaseClass {
 			$user['first_name']. ' '. $user['last_name'],
 			$newsletter['email_address_from'],
 			$newsletter['email_name_from'],
-			array(),
-			array(),
+			[],
+			[],
 			'bulk'
 		)) {
 			
@@ -527,12 +527,12 @@ class zenario_newsletter extends ze\moduleBaseClass {
 						}
 						if(!$isDeleteOrSubLink) {
 							preg_match('@>(.+)<@', $str, $linktextArray);//Finds link text
-							$hyperlinkId = ze\row::set(ZENARIO_NEWSLETTER_PREFIX. "newsletters_hyperlinks", array("newsletter_id" => $newsletter["id"], "link_ordinal"=> $linkCount, "hyperlink"=>$href, "link_text" => $linktextArray[1], "clickthrough_count" => 0, "last_clicked_date" => NULL), array("newsletter_id" => $newsletter["id"], "link_ordinal"=> $linkCount)); // create hyperlink record
+							$hyperlinkId = ze\row::set(ZENARIO_NEWSLETTER_PREFIX. "newsletters_hyperlinks", ["newsletter_id" => $newsletter["id"], "link_ordinal"=> $linkCount, "hyperlink"=>$href, "link_text" => $linktextArray[1], "clickthrough_count" => 0, "last_clicked_date" => NULL], ["newsletter_id" => $newsletter["id"], "link_ordinal"=> $linkCount]); // create hyperlink record
 							$sql = "UPDATE " . DB_NAME_PREFIX. ZENARIO_NEWSLETTER_PREFIX. "newsletters_hyperlinks SET
 									hyperlink_hash = SHA('" . $hyperlinkId . "_" . $newsletter['id'] . "')
 									WHERE id = " . $hyperlinkId;
 							ze\sql::update($sql);
-							$hyperlinkHash = ze\row::get(ZENARIO_NEWSLETTER_PREFIX. "newsletters_hyperlinks", "hyperlink_hash", array('id' => $hyperlinkId)); //get hyper_hash code 
+							$hyperlinkHash = ze\row::get(ZENARIO_NEWSLETTER_PREFIX. "newsletters_hyperlinks", "hyperlink_hash", ['id' => $hyperlinkId]); //get hyper_hash code 
 							if ($userId && $hashes) {
 								$trackerHyperlink = zenario_newsletter::getTrackerURL() . 'link_tracker.php?' . 't=' . $hashes['tracker_hash'] . '&' . 'nlink=' . $hyperlinkHash;
 								$outputHTML .= 'href="'. htmlspecialchars($trackerHyperlink) . '"';
@@ -564,8 +564,8 @@ class zenario_newsletter extends ze\moduleBaseClass {
 		$removeFromGroups = 'XXXXXXXXXXXXXXX',
 		$deleteAccountHash = 'XXXXXXXXXXXXXXX'
 	) {
-		$search = array();
-		$replace = array();
+		$search = [];
+		$replace = [];
 		if (isset($user['admin_account'])) {
 			if(isset($user['salutation'])){
 				$search[] = '[[SALUTATION]]';
@@ -605,19 +605,19 @@ class zenario_newsletter extends ze\moduleBaseClass {
 	public static function deleteNewsletter($id) {
 		if (zenario_newsletter::checkIfNewsletterIsADraft($id)) {
 			
-			ze\module::sendSignal('eventNewsletterDeleted', array($id));
+			ze\module::sendSignal('eventNewsletterDeleted', [$id]);
 			
 			ze\row::delete(ZENARIO_NEWSLETTER_PREFIX . 'newsletters', $id);
-			ze\row::delete(ZENARIO_NEWSLETTER_PREFIX . 'newsletter_sent_newsletter_link', array('newsletter_id' => $id));
-			ze\row::delete(ZENARIO_NEWSLETTER_PREFIX . 'newsletter_smart_group_link', array('newsletter_id' => $id));
-			ze\row::delete('inline_images', array('foreign_key_to' => 'newsletter', 'foreign_key_id' => $id));
+			ze\row::delete(ZENARIO_NEWSLETTER_PREFIX . 'newsletter_sent_newsletter_link', ['newsletter_id' => $id]);
+			ze\row::delete(ZENARIO_NEWSLETTER_PREFIX . 'newsletter_smart_group_link', ['newsletter_id' => $id]);
+			ze\row::delete('inline_images', ['foreign_key_to' => 'newsletter', 'foreign_key_id' => $id]);
 		}
 	}
 
 	public static function deleteNewsletterTemplate($id) {
 		ze\row::delete(ZENARIO_NEWSLETTER_PREFIX. 'newsletter_templates', $id);
 		
-		$key = array('foreign_key_to' => 'newsletter_template', 'foreign_key_id' => $id);
+		$key = ['foreign_key_to' => 'newsletter_template', 'foreign_key_id' => $id];
 		ze\row::delete('inline_images', $key);
 	}
 	

@@ -40,7 +40,7 @@ class zenario_newsletter__organizer__newsletter_log extends zenario_newsletter {
 		$panel['title'] = ze\admin::phrase('Recipients of the Newsletter "[[newsletter_name]]"', $details);
 		
 		foreach($panel['items'] as &$item) {
-			$item['cell_css_classes'] = array();
+			$item['cell_css_classes'] = [];
 			if (!$item['email_sent']) {
 				//$item['cell_css_classes']['email_sent'] = 'zenario_newsletter_log__not_yet_sent';
 				$item['email_sent'] = ze\admin::phrase('Not Yet Sent');

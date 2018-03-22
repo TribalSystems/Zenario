@@ -113,12 +113,12 @@ if ($this->eggId && isset($this->parentNest)) {
 		echo '
 			<a
 				class="zenario_slotButton zenario_swapPlugin"
-				title="', htmlspecialchars(\ze\admin::phrase('Click to swap with the Plugin in the Slot "[[slotname]]"', array('slotname' => $this->slotName))), '"
+				title="', htmlspecialchars(\ze\admin::phrase('Click to swap with the Plugin in the Slot "[[slotname]]"', ['slotname' => $this->slotName])), '"
 				onclick="return zenarioA.doMovePlugin(this, \''. $this->slotName. '\');"
 			></a>
 			<a
 				class="zenario_slotButton zenario_movePlugin"
-				title="', htmlspecialchars(\ze\admin::phrase('Click to move into the empty Slot "[[slotname]]"', array('slotname' => $this->slotName))), '"
+				title="', htmlspecialchars(\ze\admin::phrase('Click to move into the empty Slot "[[slotname]]"', ['slotname' => $this->slotName])), '"
 				onclick="return zenarioA.doMovePlugin(this, \''. $this->slotName. '\');"
 			></a>
 			<a

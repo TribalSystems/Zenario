@@ -42,7 +42,7 @@ class zenario_common_features__admin_boxes__export_dataset extends ze\moduleBase
 			'<p>Only dataset fields marked to be included in exports will appear in your download. You can mark fields by checking the "Include in export" option in the <a href="zenario/admin/organizer.php?#zenario__administration/panels/custom_datasets/item_buttons/edit_gui//[[dataset]]//" target="zenario_dataset_editor">dataset editor<a>.</p>
 			<br>
 			<p>If you\'re running any filters you will export the filtered view instead of all records.</p>'
-		, array('dataset' => $box['key']['dataset']));
+		, ['dataset' => $box['key']['dataset']]);
 	}
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
@@ -60,15 +60,15 @@ class zenario_common_features__admin_boxes__export_dataset extends ze\moduleBase
 		$sql = self::getExportableDatasetFieldsSQL($dataset['id']);
 		$result = ze\sql::select($sql);
 		
-		$systemFields = array();
-		$customFields = array();
-		$checkboxFields = array();
+		$systemFields = [];
+		$customFields = [];
+		$checkboxFields = [];
 		
-		$datasetColumns = array();
-		$datasetColumnIdLink = array();
-		$datasetFields = array();
-		$rowTemplate = array();
-		$data = array();
+		$datasetColumns = [];
+		$datasetColumnIdLink = [];
+		$datasetFields = [];
+		$rowTemplate = [];
+		$data = [];
 		$ord = 0;
 		while ($row = ze\sql::fetchAssoc($result)) {
 			// Never export encrypted passwords
@@ -99,7 +99,7 @@ class zenario_common_features__admin_boxes__export_dataset extends ze\moduleBase
 		//Get location descriptive page (if export is enabled for it)
 		$locationContentItemFieldId = false;
 		if (ze\module::inc('zenario_location_manager') && $dataset['system_table'] == ZENARIO_LOCATION_MANAGER_PREFIX . 'locations') {
-			$fieldId = ze\row::get('custom_dataset_fields', 'id', array('dataset_id' => $dataset['id'], 'tab_name' => 'content_item', 'field_name' => 'content_item'));
+			$fieldId = ze\row::get('custom_dataset_fields', 'id', ['dataset_id' => $dataset['id'], 'tab_name' => 'content_item', 'field_name' => 'content_item']);
 			if (isset($datasetColumns[$fieldId])) {
 				$locationContentItemFieldId = $fieldId;
 				$systemFields[] = 'equiv_id';
@@ -108,16 +108,16 @@ class zenario_common_features__admin_boxes__export_dataset extends ze\moduleBase
 		}
 		
 		// Array of tables to get data from
-		$recordTables = array(
-			array(
+		$recordTables = [
+			[
 				'table' => $dataset['system_table'],
 				'fields' => $systemFields
-			),
-			array(
+			],
+			[
 				'table' => $dataset['table'],
 				'fields' => $customFields
-			)
-		);
+			]
+		];
 		
 		// Get data
 		foreach ($recordTables as $recordTable) {

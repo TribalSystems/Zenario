@@ -36,11 +36,11 @@ class zenario_plugin_nest__organizer__conductor extends zenario_plugin_nest__org
 	
 	protected static $colourNo = 1.0;
 	
-	protected static $stateNames = array(
+	protected static $stateNames = [
 		'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z',
 		'aa','ab','ac','ad','ae','af','ag','ah','ai','aj','ak','al','am','an','ao','ap','aq','ar','as','at','au','av','aw','ax','ay','az',
 		'ba','bb','bc','bd','be','bf','bg','bh','bi','bj','bk','bl'
-	);
+	];
 	
 	protected static function getColourPart($colourNo, $offset) {
 		return (int) 127.5 * (1.0 + cos($colourNo + $offset * M_PI * 2.0 / 3.0));
@@ -54,7 +54,7 @@ class zenario_plugin_nest__organizer__conductor extends zenario_plugin_nest__org
 	protected static function addStateToSlide($instanceId, $slideId = false) {
 		
 		//Get all of the existing states
-		$existingStatesOnSlides = ze\row::getArray('nested_plugins', 'states', array('instance_id' => $instanceId, 'is_slide' => 1));
+		$existingStatesOnSlides = ze\row::getArray('nested_plugins', 'states', ['instance_id' => $instanceId, 'is_slide' => 1]);
 		
 		//The above will give us an array of CSV, which is no use to us.
 		//Convert to flat CSV, then to an array, to flatten it out and make it usable
@@ -72,8 +72,8 @@ class zenario_plugin_nest__organizer__conductor extends zenario_plugin_nest__org
 					}
 				
 					ze\row::update('nested_plugins',
-						array('states' => $stateNames),
-						array('instance_id' => $instanceId, 'is_slide' => 1, 'id' => $slideId));
+						['states' => $stateNames],
+						['instance_id' => $instanceId, 'is_slide' => 1, 'id' => $slideId]);
 				}
 				
 				return $stateName;
@@ -91,16 +91,16 @@ class zenario_plugin_nest__organizer__conductor extends zenario_plugin_nest__org
 		//There should only be one per nest, but I'll write a loop anyway just in case there's bad data
 		$slides = ze\row::getArray('nested_plugins',
 			'states',
-			array('instance_id' => $instanceId, 'is_slide' => 1, 'states' => array($state)));
+			['instance_id' => $instanceId, 'is_slide' => 1, 'states' => [$state]]);
 		
 		//N.b. if you have a SET column in MySQL, from Zenario 7.4 onwards you can use code of the form:
-			//ze\row::get('table', 'col', array('set_column' => array('value')))
-			//ze\row::get('table', 'col', array('set_column' => array('value1', 'value2')))
+			//ze\row::get('table', 'col', ['set_column' => ['value']])
+			//ze\row::get('table', 'col', ['set_column' => ['value1', 'value2']])
 		//to use FIND_IN_SET() in MySQL. (An "OR" is used in the second case.)
 		
 		//If you want to look for an exact set of values, then
-			//ze\row::get('table', 'col', array('set_column' => 'value'))
-			//ze\row::get('table', 'col', array('set_column' => 'value1,value2'))
+			//ze\row::get('table', 'col', ['set_column' => 'value'])
+			//ze\row::get('table', 'col', ['set_column' => 'value1,value2'])
 		//will still work as it did before 7.4.
 		
 		
@@ -113,7 +113,7 @@ class zenario_plugin_nest__organizer__conductor extends zenario_plugin_nest__org
 		
 			//As long as there will be at least one state left on each slide, do the deletion
 			if (!empty($states)) {
-				ze\row::update('nested_plugins', array('states' => implode(',', array_keys($states))), $slideId);
+				ze\row::update('nested_plugins', ['states' => implode(',', array_keys($states))], $slideId);
 				
 				//Also delete any paths going from or to that state
 				self::deletePath($instanceId, $state);
@@ -123,14 +123,14 @@ class zenario_plugin_nest__organizer__conductor extends zenario_plugin_nest__org
 	
 	protected static function ensureEachSlideHasAtLeastOneState($instanceId) {
 		//Look for slides with no states created, and make sure that they have at least one state each
-		foreach (ze\row::getArray('nested_plugins', 'id', array('instance_id' => $instanceId, 'is_slide' => 1, 'states' => ''), 'slide_num') as $slideId) {
+		foreach (ze\row::getArray('nested_plugins', 'id', ['instance_id' => $instanceId, 'is_slide' => 1, 'states' => ''], 'slide_num') as $slideId) {
 			static::addStateToSlide($instanceId, $slideId);
 		}
 	}
 	
 	protected static function addPath($instanceId, $from, $to) {
 		if ($from != $to) {
-			ze\row::set('nested_paths', array(), array('instance_id' => $instanceId, 'from_state' => $from, 'to_state' => $to));
+			ze\row::set('nested_paths', [], ['instance_id' => $instanceId, 'from_state' => $from, 'to_state' => $to]);
 		}
 	}
 	
@@ -140,8 +140,8 @@ class zenario_plugin_nest__organizer__conductor extends zenario_plugin_nest__org
 		$newToState, $newEquivId = 0, $newContentType = ''
 	) {
 		ze\row::update('nested_paths',
-			array('to_state' => $newToState, 'equiv_id' => $newEquivId, 'content_type' => $newContentType),
-			array('instance_id' => $instanceId, 'from_state' => $fromState, 'to_state' => $oldToState, 'equiv_id' => $oldEquivId, 'content_type' => $oldContentType),
+			['to_state' => $newToState, 'equiv_id' => $newEquivId, 'content_type' => $newContentType],
+			['instance_id' => $instanceId, 'from_state' => $fromState, 'to_state' => $oldToState, 'equiv_id' => $oldEquivId, 'content_type' => $oldContentType],
 			$ignore = true);
 	}
 	
@@ -159,8 +159,8 @@ class zenario_plugin_nest__organizer__conductor extends zenario_plugin_nest__org
 		
 		
 		//Get all of the existing slides and states
-		$coloursForStates = array();
-		$slides = ze\row::getArray('nested_plugins', array('id', 'slide_num', 'name_or_title', 'states'), array('instance_id' => $instance['instance_id'], 'is_slide' => 1));
+		$coloursForStates = [];
+		$slides = ze\row::getArray('nested_plugins', ['id', 'slide_num', 'name_or_title', 'states'], ['instance_id' => $instance['instance_id'], 'is_slide' => 1]);
 		
 		if (count($slides) < 1) {
 			$panel['no_items_message'] = ze\admin::phrase('Please add at least one slide to this nest to use the nest conductor.');
@@ -184,7 +184,7 @@ class zenario_plugin_nest__organizer__conductor extends zenario_plugin_nest__org
 				$multipleStates = count($states) > 1;
 				
 				$id = 'slide_'. $slide['id'];
-				$panel['items'][$id] = array(
+				$panel['items'][$id] = [
 					'id' => $id,
 					'type' => 'slide',
 					'label' => $slide['name_or_title'],
@@ -192,7 +192,7 @@ class zenario_plugin_nest__organizer__conductor extends zenario_plugin_nest__org
 						'state' => $multipleStates? '' : $states[0],
 						'slideId' => $slide['id']
 					]
-				);
+				];
 				
 				if ($multipleStates) {
 					$panel['items'][$id]['selected_label'] = ze\admin::phrase('Slide [[slide_num]]', $slide);
@@ -204,7 +204,7 @@ class zenario_plugin_nest__organizer__conductor extends zenario_plugin_nest__org
 				foreach ($states as $state) {
 					
 					$stateId = 'state_'. $state;
-					$panel['items'][$stateId] = array(
+					$panel['items'][$stateId] = [
 						'id' => $stateId,
 						'type' => 'state',
 						'label' => $slide['slide_num']. $state,
@@ -215,7 +215,7 @@ class zenario_plugin_nest__organizer__conductor extends zenario_plugin_nest__org
 							'state' => $state,
 							'slideId' => $slide['id']
 						]
-					);
+					];
 					
 					$slide['state'] = $state;
 					if ($multipleStates) {
@@ -232,7 +232,7 @@ class zenario_plugin_nest__organizer__conductor extends zenario_plugin_nest__org
 						$label = ze\admin::phrase('[[slide_num]]. [[name_or_title]]', $slide);
 					}
 					
-					$panel['item_buttons']['add_path_'. $state] = array(
+					$panel['item_buttons']['add_path_'. $state] = [
 						'ord' => ++$ord,
 						'only_show_on_refiner' => 'from_nested_plugins',
 						'parent' => 'add_path',
@@ -242,14 +242,14 @@ class zenario_plugin_nest__organizer__conductor extends zenario_plugin_nest__org
 	                     && item.key.state
 						 && item.key.state != '. json_encode($state). '
 						 && !tuix.items["path_" + item.key.state + "_" + '. json_encode($state). ']',
-						'admin_box' => array(
+						'admin_box' => [
 							'path' => 'zenario_path',
-							'key' => array(
+							'key' => [
 								'to_state' => $state
-							)
-						)
-					);
-					$panel['item_buttons']['redirect_path_'. $state] = array(
+							]
+						]
+					];
+					$panel['item_buttons']['redirect_path_'. $state] = [
 						'ord' => ++$ord,
 						'only_show_on_refiner' => 'from_nested_plugins',
 						'parent' => 'redirect_path',
@@ -258,13 +258,13 @@ class zenario_plugin_nest__organizer__conductor extends zenario_plugin_nest__org
 							item.type == "path"
 						 && item.source != '. json_encode($stateId). '
 						 && !tuix.items["path_" + item.from_state + "_" + '. json_encode($state). ']',
-						'ajax' => array(
+						'ajax' => [
 							'class_name' => $c,
-							'request' => array(
+							'request' => [
 								'redirect_path' => $state
-							)
-						)
-					);
+							]
+						]
+					];
 					
 					
 					//Get all of the existing paths from this state
@@ -290,16 +290,16 @@ class zenario_plugin_nest__organizer__conductor extends zenario_plugin_nest__org
 							
 							//Add a box for that content item, if it doesn't already have one
 							if (!isset($panel['items'][$citemId])) {
-								$panel['items'][$citemId] = array(
+								$panel['items'][$citemId] = [
 									'id' => $citemId,
 									'type' => 'slide',
 									'label' => $formatedTag,
 									'unselectable' => true
-								);
+								];
 							}
 							//Add this state into the box, if it's not already there
 							if (!isset($panel['items'][$citemStateId])) {
-								$panel['items'][$citemStateId] = array(
+								$panel['items'][$citemStateId] = [
 									'id' => $citemStateId,
 									'type' => 'state',
 									'label' => $edge['to_state'],
@@ -307,7 +307,7 @@ class zenario_plugin_nest__organizer__conductor extends zenario_plugin_nest__org
 									'color' => $coloursForStates[$citemStateId] = self::getAColour(),
 									'can_delete' => false,
 									'unselectable' => true
-								);
+								];
 							}
 							
 							$target = $citemStateId;
@@ -334,15 +334,18 @@ class zenario_plugin_nest__organizer__conductor extends zenario_plugin_nest__org
 							}
 						}
 				
-						$cssClasses = '';
+						$cssClasses = 'dotted';
 						$commands = ze\ray::explodeAndTrim($edge['commands']);
 						$commands = implode(', ', $commands);
 						
-						if ($commands == '') {
+						if ($commands == 'back') {
 							$cssClasses = 'dashed';
+						
+						} elseif ($edge['is_forwards']) {
+							$cssClasses = '';
 						}
 			
-						$panel['items'][$pathId] = array(
+						$panel['items'][$pathId] = [
 							'id' => $pathId,
 							'type' => 'path',
 							'label' => $commands,
@@ -353,7 +356,7 @@ class zenario_plugin_nest__organizer__conductor extends zenario_plugin_nest__org
 							'target' => $target,
 							'color' => $colour,
 							'selected_label' => $selected_label
-						);
+						];
 					}
 				}
 			}

@@ -460,7 +460,7 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 				ON cdf.tab_name = cdt.name
 				AND cdf.dataset_id = cdt.dataset_id
 			WHERE cdf.dataset_id = ' . (int)$dataset['id'] . '
-			AND cdf.field_name NOT IN ("identifier", "created_date", "modified_date", "last_login", "last_login_ip", "last_profile_update_in_frontend", "suspended_date", "email_verified", "status", "password", "password_needs_changing", "screen_name_confirmed", "send_activation_email_to_user")';
+			AND cdf.field_name NOT IN ("identifier", "created_date", "modified_date", "last_login", "last_profile_update_in_frontend", "suspended_date", "email_verified", "status", "password", "password_needs_changing", "screen_name_confirmed", "send_activation_email_to_user")';
 		if ($repeatStartId) {
 			$sql .= '
 				AND cdf.repeat_start_id = ' . (int)$repeatStartId;

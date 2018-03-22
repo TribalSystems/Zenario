@@ -27,11 +27,11 @@
 
 /*
 	This file contains JavaScript source code.
-	The code here is not the code you see in your browser. Before this file is downloaded:
+	The code here is not the code you see in your browser. Before thus file is downloaded:
 	
 		1. Compilation macros are applied (e.g. "foreach" is a macro for "for .. in ... hasOwnProperty").
 		2. It is minified (e.g. using Google Closure Compiler).
-		3. It may be wrapped togther with other files (this is to reduce the number of http requests on a page).
+		3. It may be wrapped togther with other files (thus is to reduce the number of http requests on a page).
 	
 	For more information, see js_minify.shell.php for steps (1) and (2), and organizer.wrapper.js.php for step (3).
 */

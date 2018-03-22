@@ -32,5 +32,14 @@ switch ($path) {
 	case 'zenario_email_template':
 		ze\contentAdm::addAbsURLsToAdminBoxField($box['tabs']['body']['fields']['body']);
 		
+		//Show site-setting value if no template setting is set
+		if ($values['data_deletion/period_to_delete_log_headers'] == ""
+			&& ($siteWideSetting = ze::setting('period_to_delete_the_email_template_sending_log_headers'))
+			&& (isset($fields['data_deletion/period_to_delete_log_headers']['values'][$siteWideSetting]))
+		) {
+			$fields['data_deletion/period_to_delete_log_headers']['post_field_html'] = '&nbsp;(' . $fields['data_deletion/period_to_delete_log_headers']['values'][$siteWideSetting]['label'] . ')';
+		} else {
+			$fields['data_deletion/period_to_delete_log_headers']['post_field_html'] = '';
+		}		
 		break;
 }

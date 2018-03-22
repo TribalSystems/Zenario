@@ -1,12 +1,20 @@
 {% if Events_List %}
-	<div class="event_listing">
+	{% if Event_elements_equal_height %}
+		<div class="event_listing setmychildren">
+	{% else %}
+		<div class="event_listing">
+	{% endif %}
 
 		{% if Title %}
 			<h2>{{Title}}</h2>
 		{% endif %}
 		
 		{% for Event in Event_Row_On_List %}
-			<div class="single_event">
+			{% if Event_elements_equal_height %}
+				<div class="single_event tothesameheight">
+			{% else %}
+				<div class="single_event">
+			{% endif %}
 			    {% if Event.Sticky_image_HTML_tag %}
                     <div class="single_event_sticky_image">
                         <a class="single_event_image_link" href="{{Event.Link_To_Event}}">
@@ -19,7 +27,15 @@
 						<h2><a href="{{Event.Link_To_Event}}">{{Event.Event_Title}}</a></h2>
 					</div>
 					<span class="single_event_date">{{Event.Event_Dates}}</span>
-					<span class="single_event_location">{{Event.Event_location}}</span>
+					{% if Event.Event_location_name %}
+						<span class="single_event_location_name">{{Event.Event_location_name}}</span>
+					{% endif %}
+					{% if Event.Event_location_city %}
+						<span class="single_event_location_city">{{Event.Event_location_city}}</span>
+					{% endif %}
+					{% if Event.Event_location_country %}
+						<span class="single_event_location_country">{{Event.Event_location_country}}</span>
+					{% endif %}
 					<span class="single_event_description">{{Event.Event_Description}}</span>
 					<a class="single_event_more_link" href="{{Event.Link_To_Event}}" >{{'_MORE'|trans}}</a>
 				</div>

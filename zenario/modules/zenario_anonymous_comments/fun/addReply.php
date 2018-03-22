@@ -35,7 +35,6 @@ $sql = "
 		content_type = '". ze\escape::sql($this->cType). "',
 		date_posted = NOW(),
 		poster_id = ". (int) $userId. ",
-		poster_ip = '". ze\escape::sql(ze\user::ip()). "',
 		poster_name = '". ze\escape::sql($name). "',
 		poster_email = '". ze\escape::sql($email). "',
 		poster_session_id = '". ze\escape::sql(ze\user::hashPassword(ze\link::primaryDomain(), session_id())). "',

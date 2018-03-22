@@ -37,8 +37,8 @@ class zenario_search_entry_box_predictive_probusiness extends zenario_search_res
 	
 	
 	function showSlot() {
-		$this->sections = array();
-		$this->mergeFields = array();
+		$this->sections = [];
+		$this->mergeFields = [];
 		
 		$cID = $cType = false;
 		if ($this->setting('use_specific_search_results_page') && $this->getCIDAndCTypeFromSetting($cID, $cType, 'specific_search_results_page')) {
@@ -49,6 +49,15 @@ class zenario_search_entry_box_predictive_probusiness extends zenario_search_res
 		
 		if ($cID == $this->cID && $cType == $this->cType) {
 			$cID = $cType = false;
+		}
+		
+		if ($this->setting('search_label')) {
+			$this->sections['Search_Label'] = true;
+		}
+		
+		if ($this->setting('search_placeholder')) {
+			$this->sections['Placeholder'] = true;
+			$this->sections['Placeholder_Phrase'] = $this->setting('search_placeholder_phrase');
 		}
 		
 		$this->drawSearchBox($cID, $cType);
@@ -63,7 +72,7 @@ class zenario_search_entry_box_predictive_probusiness extends zenario_search_res
 		//header('Content-type: application/json');
 		header("Content-type: text/javascript; charset=UTF-8");
 		
-		$output = array();
+		$output = [];
 		
 		if ($this->searchString) {
 			$this->doSearch($this->searchString);
@@ -71,10 +80,10 @@ class zenario_search_entry_box_predictive_probusiness extends zenario_search_res
 			foreach ($this->results as &$resultType) {
 				if (isset($resultType['search_results']) && is_array($resultType['search_results'])) {
 					foreach ($resultType['search_results'] as &$result) {
-						$output[] = array(
+						$output[] = [
 							'value' => htmlspecialchars_decode($result['title']),
 							'label' => $result['title']. ($result['description']? '<br/><small>'. $result['description']. '</small>' : ''),
-							'url' => htmlspecialchars_decode($result['url']));
+							'url' => htmlspecialchars_decode($result['url'])];
 					}
 				}
 			}
@@ -106,6 +115,11 @@ class zenario_search_entry_box_predictive_probusiness extends zenario_search_res
 			case 'plugin_settings':
 				$box['tabs']['first_tab']['fields']['specific_search_results_page']['hidden'] = 
 					!$values['first_tab/use_specific_search_results_page'];
+				
+				if ($box['tabs']['first_tab']['fields']['search_placeholder'] == true
+					&& empty($box['tabs']['first_tab']['fields']['search_placeholder_phrase']['value'])) {
+					$box['tabs']['first_tab']['fields']['search_placeholder_phrase']['value'] = 'Search the site';
+				}
 
 				break;
 		}
@@ -165,14 +179,14 @@ class zenario_search_entry_box_predictive_probusiness extends zenario_search_res
 	function doSearch($searchTerm) {
 		zenario_search_results::doSearch($searchTerm);
 		/*
-		$this->sections['Search_Result_Tab'] = array();
+		$this->sections['Search_Result_Tab'] = [];
 		foreach($this->fields as $cType => $fields) {
-			$this->sections['Search_Result_Tab'][$cType] = array(
+			$this->sections['Search_Result_Tab'][$cType] = [
 				'Tab_On' => $this->results[$cType]['Tab_On'],
 				'Tab_Onclick' => $this->results[$cType]['Tab_Onclick'],
 				'Type' => $this->phrase('_'. $cType),
 				'Record_Count' =>$this->results[$cType]['Record_Count']
-			);
+			];
 		}
 		*/
 	}

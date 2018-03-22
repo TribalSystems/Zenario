@@ -29,7 +29,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 class zenario_slideshow_2 extends ze\moduleBaseClass {
 	
-	public $slideData = array();
+	public $slideData = [];
 	public $placeholderCSS = '';
 	public $allowCaching = true;
 	
@@ -42,7 +42,7 @@ class zenario_slideshow_2 extends ze\moduleBaseClass {
 		if ($this->slideData["slides"] = $this->getSlideDetails('main')) {
 			$mobileImages = false;
 			$missingMobileImage = false;
-			$mobileImageDetails = array();
+			$mobileImageDetails = [];
 			$maxWidth = 0;
 			$maxHeight = 0;
 			$maxMobileWidth = 0;
@@ -62,7 +62,7 @@ class zenario_slideshow_2 extends ze\moduleBaseClass {
 					if ($slide['slide_visibility'] == 'call_static_method') {
 						if (!(ze\module::inc($slide['plugin_class'])
 							&& (method_exists($slide['plugin_class'], $slide['method_name']))
-							&& (call_user_func(array($slide['plugin_class'], $slide['method_name']),$slide['param_1'], $slide['param_2']))))
+							&& (call_user_func([$slide['plugin_class'], $slide['method_name']],$slide['param_1'], $slide['param_2']))))
 						{
 							unset($this->slideData["slides"][$index]);
 						}
@@ -122,18 +122,18 @@ class zenario_slideshow_2 extends ze\moduleBaseClass {
 				}
 				
 				// Get slides max desktop width and height
-				if (($height = max(array($slide['height'], $slide['r_height']))) > $maxHeight) {
+				if (($height = max([$slide['height'], $slide['r_height']])) > $maxHeight) {
 					$maxHeight = $height;
 				}
-				if (($width = max(array($slide['width'], $slide['r_width']))) > $maxWidth) {
+				if (($width = max([$slide['width'], $slide['r_width']])) > $maxWidth) {
 					$maxWidth = $width;
 				}
 				
 				// Add a placeholder image to appear while js loads, or in case of no js
 				if (!$placeholderSlide) {
-					$this->slideData['placeholder'] = array(
+					$this->slideData['placeholder'] = [
 						'image_src' => $slide['image_src'],
-						'mobile_image_src' => $slide['mobile_image_src']);
+						'mobile_image_src' => $slide['mobile_image_src']];
 					$this->placeholderCSS = "
 						#".$this->containerId."_placeholder_image {
 						 display:block;
@@ -169,7 +169,7 @@ class zenario_slideshow_2 extends ze\moduleBaseClass {
 			// Add a heading
 			$this->slideData['heading'] = $this->phrase($this->setting('heading'));
 			
-			$settings = array(
+			$settings = [
 				'desktop_height' => $maxHeight,
 				'desktop_width' => $maxWidth,
 				'mobile_height' => $maxMobileHeight,
@@ -184,7 +184,7 @@ class zenario_slideshow_2 extends ze\moduleBaseClass {
 				'navigation_style' => $this->setting("navigation_style"),
 				'mobile_options' => $this->setting('mobile_options'),
 				'desktop_resize_greater_than_image' => (int)$this->setting('desktop_resize_greater_than_image'),
-				'has_mobile_images' => $mobileImages);
+				'has_mobile_images' => $mobileImages];
 			
 			$this->callScript(
 				"zenario_slideshow_2", 
@@ -222,21 +222,21 @@ class zenario_slideshow_2 extends ze\moduleBaseClass {
 				if ($this->setting('banner_width') && $this->setting('banner_height')) {
 					$recommededSize = true;
 					$recommededSizeMessage = ze\admin::phrase('Recommended dimensions: [[width]] x [[height]]', 
-						array(
+						[
 							'width' => $this->setting('banner_width'), 
 							'height' => $this->setting('banner_height')
-						)
+						]
 					);
 				}
 				
-				$details = array(
+				$details = [
 					'tabs' => ($this->setting('navigation_style') == 'thumbnail_navigator'),
 					'mobile_option' => $this->setting('mobile_options'),
 					'slides' => $this->getSlideDetails('admin'),
 					'dataset_fields' => ze\datasetAdm::listCustomFields('users', false, 'boolean_and_groups_only', false),
 					'recommededSize' => true,
 					'recommededSizeMessage' => $recommededSizeMessage
-				);
+				];
 				header('Content-Type: text/javascript; charset=UTF-8');
 				echo json_encode($details);
 				break;
@@ -248,7 +248,7 @@ class zenario_slideshow_2 extends ze\moduleBaseClass {
 				
 			case "add_slides_from_organizer": 
 				$keys = explode(',', ($_GET["ids"] ?? false));
-				$data = array();
+				$data = [];
 				foreach($keys as $key) {
 					$data[] = $this->getNewImageDetails($key);
 				}
@@ -267,7 +267,7 @@ class zenario_slideshow_2 extends ze\moduleBaseClass {
 				
 				
 				$ordinals = explode(',', ($_POST["ordinals"] ?? false));
-				$errors = array();
+				$errors = [];
 				// Check for errors
 				foreach ($slides as $key => $value) {
 					// Validation for slides
@@ -314,24 +314,24 @@ class zenario_slideshow_2 extends ze\moduleBaseClass {
 				if (empty($errors)) {
 					
 					// Delete currently saved slides if not in save data.
-					$ids = ze\row::getArray(ZENARIO_SLIDESHOW_2_PREFIX. 'slides', array('image_id'), array('instance_id' => $this->instanceId));
+					$ids = ze\row::getArray(ZENARIO_SLIDESHOW_2_PREFIX. 'slides', ['image_id'], ['instance_id' => $this->instanceId]);
 					foreach ($ids as $key => $slideDetails) {
 						if (array_search($key, $ordinals) === false) {
-							ze\row::delete(ZENARIO_SLIDESHOW_2_PREFIX. 'slides', array("id" => $key));
-							if (!ze\row::exists(ZENARIO_SLIDESHOW_2_PREFIX . 'slides', array('instance_id' => $this->instanceId, 'image_id' => $slideDetails['image_id']))) {
+							ze\row::delete(ZENARIO_SLIDESHOW_2_PREFIX. 'slides', ["id" => $key]);
+							if (!ze\row::exists(ZENARIO_SLIDESHOW_2_PREFIX . 'slides', ['instance_id' => $this->instanceId, 'image_id' => $slideDetails['image_id']])) {
 								ze\row::delete('inline_images', 
-									array(
+									[
 										'image_id' => $slideDetails['image_id'],
 										'foreign_key_to' => 'library_plugin', 
 										'foreign_key_id' => $this->instanceId
-									)
+									]
 								);
 							}
 						}
 					}
 					
 					foreach ($slides as $key => $value) {
-						if (!in_array($value['slide_visibility'], array('logged_in_with_field', 'logged_in_without_field'))) {
+						if (!in_array($value['slide_visibility'], ['logged_in_with_field', 'logged_in_without_field'])) {
 							$value['field_id'] = 0;
 						}
 						
@@ -348,9 +348,9 @@ class zenario_slideshow_2 extends ze\moduleBaseClass {
 								break;
 						}
 						
-						if (ze\row::exists(ZENARIO_SLIDESHOW_2_PREFIX. "slides", array("id" => $key))) {
+						if (ze\row::exists(ZENARIO_SLIDESHOW_2_PREFIX. "slides", ["id" => $key])) {
 							ze\row::update(ZENARIO_SLIDESHOW_2_PREFIX . "slides",
-								array(
+								[
 									"ordinal" => array_search($key, $ordinals),
 									"mobile_slide_extra_html" => $value["mobile_slide_extra_html"],
 									"mobile_slide_title" => $value["mobile_slide_title"],
@@ -374,8 +374,8 @@ class zenario_slideshow_2 extends ze\moduleBaseClass {
 									"link_to_translation_chain" => $value["link_to_translation_chain"],
 									"transition_code" => isset($value["transition_code"]) ? $value["transition_code"] : '',
 									"use_transition_code" => $value["use_transition_code"],
-									"hidden" => $value["hidden"]),
-								array("id" => $key));
+									"hidden" => $value["hidden"]],
+								["id" => $key]);
 								
 							$this->saveImageForSlide($key, $value, "image_id");
 							$this->saveImageForSlide($key, $value, "rollover_image_id");
@@ -383,7 +383,7 @@ class zenario_slideshow_2 extends ze\moduleBaseClass {
 								
 						} else {
 							$newKey = ze\row::insert(ZENARIO_SLIDESHOW_2_PREFIX. "slides",
-								array(
+								[
 									"image_id" => 0,
 									"ordinal" => array_search($key, $ordinals),
 									"instance_id" => $this->instanceId,
@@ -409,7 +409,7 @@ class zenario_slideshow_2 extends ze\moduleBaseClass {
 									"link_to_translation_chain" => $value["link_to_translation_chain"],
 									"transition_code" => $value["transition_code"],
 									"use_transition_code" => $value["use_transition_code"],
-									"hidden" => $value["hidden"]));
+									"hidden" => $value["hidden"]]);
 							
 							$this->saveImageForSlide($newKey, $value, "image_id");
 							$this->saveImageForSlide($newKey, $value, "rollover_image_id");
@@ -446,31 +446,31 @@ class zenario_slideshow_2 extends ze\moduleBaseClass {
 				$path = ze\file::getPathOfUploadInCacheDir($value[$prefix. "cache_id"]);
 				if ($id = ze\file::addToDatabase("image", $path)) {
 					ze\row::update(ZENARIO_SLIDESHOW_2_PREFIX. "slides", 
-						array($image_id => $id),
-						array("id" => $key));
+						[$image_id => $id],
+						["id" => $key]);
 				}
 			} else {
 				if ($id = ze\file::copyInDatabase("image", $value[$image_id], $value[$prefix. "filename"])) {
 					// new image from organizer
 					ze\row::update(ZENARIO_SLIDESHOW_2_PREFIX. "slides",
-						array($image_id => $id),
-						array("id" => $key));
+						[$image_id => $id],
+						["id" => $key]);
 				}
 			}
 			
 			ze\row::set('inline_images', 
-				array('in_use' => 1), 
-				array(
+				['in_use' => 1], 
+				[
 					'image_id' => $id, 
 					'foreign_key_to' => 'library_plugin', 
 					'foreign_key_id' => $this->instanceId
-				)
+				]
 			);
 			
 		} else {
 			ze\row::update(ZENARIO_SLIDESHOW_2_PREFIX. "slides", 
-				array($image_id => NULL),
-				array("id" => $key));
+				[$image_id => NULL],
+				["id" => $key]);
 		}
 	}
 	
@@ -479,7 +479,7 @@ class zenario_slideshow_2 extends ze\moduleBaseClass {
 		$mainMode = ($mode == 'main');
 		$mobileMode = ($mode == 'mobile');
 		
-		$data = array();
+		$data = [];
 		$sql = "
 			SELECT
 				s.mobile_overwrite_alt_tag, 
@@ -521,8 +521,8 @@ class zenario_slideshow_2 extends ze\moduleBaseClass {
 			ORDER BY s.ordinal";
 		$result = ze\sql::select($sql);
 		while ($row1 = ze\sql::fetchAssoc($result)) {
-			$row2 = array();
-			$row3 = array();
+			$row2 = [];
+			$row3 = [];
 			
 			$url = "";
 			$row1['true_height'] = $row1["height"];
@@ -658,7 +658,7 @@ class zenario_slideshow_2 extends ze\moduleBaseClass {
 	public function fillAdminSlotControls(&$controls) {
 		if (isset($controls['actions']['settings'])) {
 			$controls['actions']['settings']['label'] = ze\admin::phrase('Slideshow properties');
-			$controls['actions']['slideshow_settings'] = array(
+			$controls['actions']['slideshow_settings'] = [
 				'ord' => 1.1,
 				'label' => ze\admin::phrase('Choose slideshow images'),
 				'page_modes' => $controls['actions']['settings']['page_modes'],
@@ -667,7 +667,7 @@ class zenario_slideshow_2 extends ze\moduleBaseClass {
 					slotName, 
 					\''. ze\escape::js($this->pluginAJAXLink()). '\'
 				);'
-			);
+			];
 		}
 	}
 	
@@ -688,7 +688,7 @@ class zenario_slideshow_2 extends ze\moduleBaseClass {
 	}
 	
 	public static function eventPluginInstanceDuplicated($oldInstanceId, $newInstanceId) {
-		$oldSlideshowSettings = ze\row::getArray(ZENARIO_SLIDESHOW_2_PREFIX. 'slides', true, array('instance_id' => $oldInstanceId));
+		$oldSlideshowSettings = ze\row::getArray(ZENARIO_SLIDESHOW_2_PREFIX. 'slides', true, ['instance_id' => $oldInstanceId]);
 		foreach ($oldSlideshowSettings as $slideId => $slideDetails) {
 			unset($slideDetails['id']);
 			$slideDetails['instance_id'] = $newInstanceId;
@@ -698,26 +698,26 @@ class zenario_slideshow_2 extends ze\moduleBaseClass {
 	
 	public static function eventPluginInstanceDeleted($instanceId) {
 		// Delete slides
-		ze\row::delete(ZENARIO_SLIDESHOW_2_PREFIX. 'slides', array('instance_id' => $instanceId));
+		ze\row::delete(ZENARIO_SLIDESHOW_2_PREFIX. 'slides', ['instance_id' => $instanceId]);
 	}
 	
 	public static function removeContentItemFromSlideLinks($cID, $cType) {
 		$tagID = ze\content::formatTag($cID, $cType, false);
 		$result = ze\row::query(
 			ZENARIO_SLIDESHOW_2_PREFIX . 'slides', 
-			array('id', 'target_loc', 'dest_url'), 
-			array('target_loc' => 'internal', 'dest_url' => $tagID)
+			['id', 'target_loc', 'dest_url'], 
+			['target_loc' => 'internal', 'dest_url' => $tagID]
 		);
 		while ($row = ze\sql::fetchAssoc($result)) {
 			ze\row::update(
 				ZENARIO_SLIDESHOW_2_PREFIX . 'slides', 
-				array(
+				[
 					'target_loc' => 'none', 
 					'dest_url' => null, 
 					'link_to_translation_chain' => 0,
 					'open_in_new_window' => 0
-				), 
-				array('id' => $row['id'])
+				], 
+				['id' => $row['id']]
 			);
 		}
 	}
@@ -729,7 +729,7 @@ class zenario_slideshow_2 extends ze\moduleBaseClass {
 	
 	public static function eventContentDeleted($cID, $cType, $cVersion) {
 		// Remove any internal links from slides to this content item if the content item has been fully deleted
-		$contentItem = ze\row::get('content_items', array('status'), array('id' => $cID, 'type' => $cType));
+		$contentItem = ze\row::get('content_items', ['status'], ['id' => $cID, 'type' => $cType]);
 		if ($contentItem === false || $contentItem['status'] === 'deleted') {
 			self::removeContentItemFromSlideLinks($cID, $cType);
 		}

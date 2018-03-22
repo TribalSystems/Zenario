@@ -63,13 +63,13 @@ class zenario_common_features__admin_boxes__categories extends ze\moduleBaseClas
 			$box['tabs']['details']['errors'][] = ze\admin::phrase('Please enter a name');
 		}
 		if (isset($values['name']) && ze\categoryAdm::exists($values['name'], $box['key']['id'], $box['key']['parent_id'])) {
-			$box['tabs']['details']['errors'][] = ze\admin::phrase('A category called "[[name]]" already exists.', array('name' => htmlspecialchars($values['name'])));
+			$box['tabs']['details']['errors'][] = ze\admin::phrase('A category called "[[name]]" already exists.', $values);
 		}
 	}
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		
-		$row = array('name' => $values['name'], 'public' => $values['public']);
+		$row = ['name' => $values['name'], 'public' => $values['public']];
 		
 		if (!empty($box['key']['parent_id'])) {
 			$row['parent_id'] = $box['key']['parent_id'];
@@ -88,7 +88,7 @@ class zenario_common_features__admin_boxes__categories extends ze\moduleBaseClas
 		
 		if ($values['public']) {
 			foreach (ze\lang::getLanguages() as $lang) {
-				if (!ze\row::exists('visitor_phrases', array('language_id' => $lang['id'], 'code' => '_CATEGORY_'. (int) $box['key']['id'], 'module_class_name' => 'zenario_common_features'))) {
+				if (!ze\row::exists('visitor_phrases', ['language_id' => $lang['id'], 'code' => '_CATEGORY_'. (int) $box['key']['id'], 'module_class_name' => 'zenario_common_features'])) {
 					$sql = "
 				INSERT INTO ". DB_NAME_PREFIX. "visitor_phrases SET
 					language_id = '". ze\escape::sql($lang['id']). "',

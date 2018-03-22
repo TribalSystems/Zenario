@@ -196,7 +196,7 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 
 				//If this is a new instance, try and ensure that the name we are suggesting is unique
 				if (!$box['key']['instanceId']) {
-					$count = ze\row::count('plugin_instances', array('name' => ['LIKE' => $instanceName. '%']));
+					$count = ze\row::count('plugin_instances', ['name' => ['LIKE' => $instanceName. '%']]);
 					if ($count) {
 						$instanceName .= ' ('. ($count + 1). ')';
 					}
@@ -281,29 +281,29 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 				if ($box['key']['eggId'] && $box['key']['isVersionControlled']) {
 					$title = 
 						ze\admin::phrase('Editing a plugin of the "[[module]]" module, in the [[instanceName]]',
-							array('module' => htmlspecialchars($module['display_name']),
-								  'instanceName' => htmlspecialchars($instanceName)));
+							['module' => htmlspecialchars($module['display_name']),
+								  'instanceName' => htmlspecialchars($instanceName)]);
 		
 				} elseif ($box['key']['eggId']) {
 					$title = 
 						ze\admin::phrase('Editing a plugin of the "[[module]]" module, in the nest "[[instanceName]]"',
-							array('module' => htmlspecialchars($module['display_name']),
-								  'instanceName' => htmlspecialchars($instanceName)));
+							['module' => htmlspecialchars($module['display_name']),
+								  'instanceName' => htmlspecialchars($instanceName)]);
 		
 				} elseif ($box['key']['isVersionControlled']) {
 					$title = 
 						ze\admin::phrase('Editing the [[module]]',
-							array('module' => htmlspecialchars($module['display_name'])));
+							['module' => htmlspecialchars($module['display_name'])]);
 		
 				} elseif ($box['key']['instanceId']) {
 					$title = 
 						ze\admin::phrase('Editing a plugin of the module "[[module]]"',
-							array('module' => htmlspecialchars($module['display_name'])));
+							['module' => htmlspecialchars($module['display_name'])]);
 		
 				} else {
 					$title = 
 						ze\admin::phrase('Creating a plugin of the "[[module]]" module',
-							array('module' => htmlspecialchars($module['display_name'])));
+							['module' => htmlspecialchars($module['display_name'])]);
 				}
 		
 				// Get modules description file
@@ -373,7 +373,7 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 					}
 					if (!isset($fields['framework_tab/framework']['values'][$framework])) {
 						$fields['framework_tab/framework']['values'][$framework] =
-							array('ord' => 0, 'label' => ze\admin::phrase('[[framework]] (missing from filesystem)', ['framework' => $framework]));
+							['ord' => 0, 'label' => ze\admin::phrase('[[framework]] (missing from filesystem)', ['framework' => $framework])];
 					}
 
 				} else {
@@ -507,24 +507,24 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 				if ($box['key']['eggId'] && $box['key']['isVersionControlled']) {
 					$title = 
 						ze\admin::phrase('CSS & framework for a plugin of the "[[module]]" module, in the [[instanceName]]',
-							array('module' => htmlspecialchars($module['display_name']),
-								  'instanceName' => htmlspecialchars($instanceName)));
+							['module' => htmlspecialchars($module['display_name']),
+								  'instanceName' => htmlspecialchars($instanceName)]);
 		
 				} elseif ($box['key']['eggId']) {
 					$title = 
 						ze\admin::phrase('CSS & framework for a plugin of the "[[module]]" module, in the nest "[[instanceName]]"',
-							array('module' => htmlspecialchars($module['display_name']),
-								  'instanceName' => htmlspecialchars($instanceName)));
+							['module' => htmlspecialchars($module['display_name']),
+								  'instanceName' => htmlspecialchars($instanceName)]);
 		
 				} elseif ($box['key']['isVersionControlled']) {
 					$title = 
 						ze\admin::phrase('CSS & framework for the [[module]]',
-							array('module' => htmlspecialchars($module['display_name'])));
+							['module' => htmlspecialchars($module['display_name'])]);
 		
 				} else {
 					$title = 
 						ze\admin::phrase('CSS & framework for a plugin of the module "[[module]]"',
-							array('module' => htmlspecialchars($module['display_name'])));
+							['module' => htmlspecialchars($module['display_name'])]);
 				}
 		
 				break;
@@ -675,7 +675,7 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 				
 							if (ze\sql::fetchRow($sql)) {
 								$fields['first_tab/instance_name']['error'] =
-									ze\admin::phrase('A plugin with the name "[[name]]" already exists. Please choose a different name.', array('name' => $values['first_tab/instance_name']));
+									ze\admin::phrase('A plugin with the name "[[name]]" already exists. Please choose a different name.', ['name' => $values['first_tab/instance_name']]);
 							}
 						}
 					}
@@ -724,9 +724,9 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 					);
 				
 			} else {
-				$mrg = array(
+				$mrg = [
 					'pages' => ze\pluginAdm::usage($box['key']['instanceId'], false),
-					'published' => ze\pluginAdm::usage($box['key']['instanceId'], true));
+					'published' => ze\pluginAdm::usage($box['key']['instanceId'], true)];
 		
 				if ($mrg['published'] > 0
 				 || $mrg['pages'] > ($box['key']['frontEnd']? 1 : 0)) {
@@ -1102,7 +1102,7 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 						$eggName = ze\module::displayName($box['key']['moduleId']);
 					}
 	
-					ze\row::update('nested_plugins', array('name_or_title' => mb_substr($eggName, 0, 250, 'UTF-8')), $box['key']['eggId']);
+					ze\row::update('nested_plugins', ['name_or_title' => mb_substr($eggName, 0, 250, 'UTF-8')], $box['key']['eggId']);
 				}
 
 				if ($instance['content_id']) {

@@ -209,13 +209,36 @@ _sql
 	ADD COLUMN `readonly` tinyint(1) NOT NULL DEFAULT 0 AFTER `sortable`
 _sql
 
+//Remove the user syncing tech, as no-one uses it now
+); ze\dbAdm::revision( 44170
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]users`
+	DROP COLUMN `global_id`
+_sql
 
-//Post-branch patch: fix a bad table definition that sometimes causes a db-error when restoring a backup/migrating a site
-); ze\dbAdm::revision( 43722
+
+//Fix a bad table definition that sometimes causes a db-error when restoring a backup/migrating a site
+); ze\dbAdm::revision( 44180
 , <<<_sql
 	ALTER TABLE `[[DB_NAME_PREFIX]]user_content_accesslog`
 	MODIFY COLUMN `hit_datetime` datetime NOT NULL DEFAULT '1970-01-01 00:00:00'
 _sql
 
-);
+//Delete where user IP addresses are stored according to GDPR (General Data Protection Regulation)
+); ze\dbAdm::revision( 44267
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]user_content_accesslog`
+	DROP COLUMN `ip`
+_sql
 
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]user_signin_log`
+	DROP COLUMN `ip`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]users`
+	DROP COLUMN `last_login_ip`
+_sql
+
+);

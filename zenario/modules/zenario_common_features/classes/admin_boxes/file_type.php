@@ -47,7 +47,7 @@ class zenario_common_features__admin_boxes__file_type extends ze\moduleBaseClass
 		} elseif (ze\file::isExecutable($values['details/type'])) {
 			$box['tabs']['details']['errors'][] = ze\admin::phrase('You may not register an executable file type.');
 		
-		} elseif (ze\row::exists('document_types', array('type' => $values['details/type']))) {
+		} elseif (ze\row::exists('document_types', ['type' => $values['details/type']])) {
 			$box['tabs']['details']['errors'][] = ze\admin::phrase('This extension is already registered in the CMS.');
 		}
 	}
@@ -57,7 +57,7 @@ class zenario_common_features__admin_boxes__file_type extends ze\moduleBaseClass
 		
 		ze\priv::exitIfNot('_PRIV_EDIT_CONTENT_TYPE');
 		
-		ze\row::insert('document_types', array('type' => $values['details/type'], 'mime_type' => $values['details/mime_type']));
+		ze\row::insert('document_types', ['type' => $values['details/type'], 'mime_type' => $values['details/mime_type']]);
 		$box['key']['id'] = $values['details/type'];
 	}
 }

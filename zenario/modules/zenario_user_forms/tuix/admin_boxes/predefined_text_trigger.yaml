@@ -1,0 +1,35 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_user_forms__predefined_text_trigger:
+    key:
+        id: ''
+    title: Creating a trigger
+    hide_tab_bar: true
+    max_height: 300
+    tabs:
+        details:
+            label: Details
+            edit_mode:
+                enabled: true
+                always_on: true
+            fields:
+                form_field_id:
+                    label: 'Trigger field:'
+                    type: select
+                    empty_value: -- Select --
+                    validation:
+                        required: Choose a trigger field from the form.
+                    format_onchange: true
+                form_field_value_id:
+                    label: 'Trigger field value:'
+                    type: select
+                    empty_value: -- Select --
+                    validation:
+                        required_if_not_hidden: Choose a trigger field value.
+                    indent: 1
+                text:
+                    label: 'Text:'
+                    type: textarea
+                    tall_as_possible: true
+                    validation:
+                        required: Enter some text.

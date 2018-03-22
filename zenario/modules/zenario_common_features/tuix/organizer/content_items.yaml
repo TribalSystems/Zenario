@@ -10,7 +10,7 @@ zenario__content:
             title: All content items, flat view
             
             #panel_type: list_with_subheadings
-            #subheading_column: publication_date
+            #subheading_column: release_date
             
             slidedown_view_microtemplate: zenario_slidedown_view_content_item
             no_items_message: No content items have been created.
@@ -396,10 +396,10 @@ zenario__content:
                     format: datetime
                 publisher_id:
                     db_column: v.publisher_id
-                publication_date:
+                release_date:
                     ord: 24
                     title: Release date
-                    db_column: v.publication_date
+                    db_column: v.release_date
                     format: date
                 lock_owner_id:
                     db_column: c.lock_owner_id

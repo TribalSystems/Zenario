@@ -58,7 +58,7 @@ class zenario_location_listing extends ze\moduleBaseClass {
 	protected function buildmysql_query($count = false) {
 		$dbColumnName  = false;
 		if ((int) $this->setting('location_filter')) {
-			$dbColumnName  = ze\row::get('custom_dataset_fields','db_column',array('id'=>$this->setting('location_filter')));
+			$dbColumnName  = ze\row::get('custom_dataset_fields','db_column',['id'=>$this->setting('location_filter')]);
 		}
 		
 		

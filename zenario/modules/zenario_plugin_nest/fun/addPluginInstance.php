@@ -44,14 +44,14 @@ if (($instance = ze\plugin::details($addPluginInstance))
 	
 	$eggId = ze\row::insert(
 		'nested_plugins',
-		array(
+		[
 			'instance_id' => $instanceId,
 			'slide_num' => $slideNum,
 			'ord' => $ord,
 			'module_id' => $instance['module_id'],
 			'framework' => $instance['framework'],
 			'css_class' => $instance['css_class'],
-			'name_or_title' => ze\module::displayName($instance['module_id'])));
+			'name_or_title' => ze\module::displayName($instance['module_id'])]);
 	
 	$sql = "
 		INSERT INTO ". DB_NAME_PREFIX. "plugin_settings (

@@ -31,14 +31,14 @@ class zenario_users__organizer__content extends zenario_users {
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
 		foreach ($panel['items'] as $id => &$item) {
-			if (ze::setting('log_user_access') && !ze::in($item['privacy'], 'public', 'logged_out')) {
+			if (ze::setting('period_to_delete_the_user_content_access_log') != 'never_save' && !ze::in($item['privacy'], 'public', 'logged_out')) {
 				$item['traits']['log_access'] = true;
 			}
 		}
 		if ($refinerName == 'group_members') {
 			$group = ze\user::getGroupLabel($refinerId);
-			$panel['title'] = ze\admin::phrase('Content items protected by the Group "[[group]]"', array('group' => $group));
-			$panel['no_items_message'] = ze\admin::phrase('There are no Content items protected by the Group "[[group]]"', array('group' => $group));
+			$panel['title'] = ze\admin::phrase('Content items protected by the Group "[[group]]"', ['group' => $group]);
+			$panel['no_items_message'] = ze\admin::phrase('There are no Content items protected by the Group "[[group]]"', ['group' => $group]);
 			unset($panel['collection_buttons']['create']);
 		}
 	}

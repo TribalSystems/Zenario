@@ -36,7 +36,7 @@ class zenario_newsletter__organizer__users extends zenario_newsletter {
 			$details = $this->loadDetails($_GET['refiner__zenario_newsletter__recipients'] ?? false);
 			$panel['title'] = ze\admin::phrase('Recipients for the Newsletter "[[newsletter_name]]"', $details);
 			
-			foreach (array('collection_buttons', 'item_buttons') as $tag) {
+			foreach (['collection_buttons', 'item_buttons'] as $tag) {
 				foreach ($panel[$tag] as $name => &$button) {
 					if (is_array($button)) {
 						if (substr($name, 0, 20) != 'zenario_newsletter__') {

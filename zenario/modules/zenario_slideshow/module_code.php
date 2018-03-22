@@ -46,15 +46,15 @@ class zenario_slideshow extends zenario_plugin_nest {
 		
 		//When a Nest is first inserted, it will be empty.
 		//If the Nest is empty, call the resyncNest function just in case being empty is not a valid state.
-		} elseif (ze\priv::check() && !ze\row::exists('nested_plugins', array('instance_id' => $this->instanceId))) {
-			call_user_func(array($this->moduleClassName, 'resyncNest'), $this->instanceId);
+		} elseif (ze\priv::check() && !ze\row::exists('nested_plugins', ['instance_id' => $this->instanceId])) {
+			call_user_func([$this->moduleClassName, 'resyncNest'], $this->instanceId);
 		}
 		
 		
 		$this->loadTabs();
 		
 		if (empty($this->slides)) {
-			$this->slides = array(1 => array('id' => 0, 'slide_num' => 1, 'name_or_title' => ''));
+			$this->slides = [1 => ['id' => 0, 'slide_num' => 1, 'name_or_title' => '']];
 		}
 		
 		foreach ($this->slides as &$slide) {
@@ -75,7 +75,7 @@ class zenario_slideshow extends zenario_plugin_nest {
 			$link = $this->tabLink($tabOrd);
 			
 			if (!isset($this->sections['Tab'])) {
-				$this->sections['Tab'] = array();
+				$this->sections['Tab'] = [];
 			}
 			
 			$this->sections['Tab'][$slide['slide_num']] = [
@@ -134,12 +134,12 @@ class zenario_slideshow extends zenario_plugin_nest {
 		
 		if ($mode = $this->setting('mode')) {
 			
-			$opt = array(
+			$opt = [
 				'timeout' => $this->setting('use_timeout')? (int) $this->setting('timeout') : 0,
 				'pause' => $this->setting('use_timeout')? (int) $this->setting('pause') : 0,
 				'next_prev_buttons_loop' => (bool) $this->setting('next_prev_buttons_loop'),
 				$this->editingTabNum !== false? $this->editingTabNum - 1 : 0
-			);
+			];
 			
 			switch ($mode) {
 				case 'cycle':

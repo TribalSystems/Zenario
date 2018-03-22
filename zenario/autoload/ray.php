@@ -44,7 +44,7 @@ class ray {
 
 	//Formerly "arrayValuesToKeys()"
 	public static function valuesToKeys($a) {
-		$o = array();
+		$o = [];
 		if (is_array($a)) {
 			foreach ($a as $k => &$v) {
 				//if (!is_array($v) && !is_object($v))
@@ -72,7 +72,7 @@ class ray {
 	//Explode a string, and return any values that aren't empty and/or whitespace
 	//Formerly "explodeAndTrim()"
 	public static function explodeAndTrim($string, $mustBeNumeric = false, $separator = ',') {
-		$a = array();
+		$a = [];
 		foreach (explode($separator, $string) as $id) {
 			if (($id = trim($id))
 			 && (!$mustBeNumeric || ($id = (int) $id))) {
@@ -84,7 +84,7 @@ class ray {
 
 	//Formerly "explodeDecodeAndTrim()"
 	public static function explodeDecodeAndTrim($string, $separator = ',') {
-		$a = array();
+		$a = [];
 		foreach (explode($separator, $string) as $id) {
 			if ($id = \ze\ring::decodeIdForOrganizer(trim($id))) {
 				$a[] = $id;
@@ -117,7 +117,7 @@ class ray {
 	//Formerly "oneDimensionalArray()"
 	public static function oneD(&$a) {
 		if (!is_array($a)) {
-			$a = array($a);
+			$a = [$a];
 			return;
 		}
 
@@ -167,7 +167,7 @@ class ray {
 			$collate = \ze\sql::fetchRow($result);
 		
 			$first = true;
-			$arraysOfArrays = array();
+			$arraysOfArrays = [];
 			$sql = "
 				SELECT *
 				FROM (";
@@ -197,7 +197,7 @@ class ray {
 			$sql .= ") x
 				ORDER BY 2";
 		
-			$phpArray = array();
+			$phpArray = [];
 			$result = \ze\sql::select($sql);
 			while ($row = \ze\sql::fetchRow($result)) {
 				if ($arraysOfArrays[$row[0]]) {

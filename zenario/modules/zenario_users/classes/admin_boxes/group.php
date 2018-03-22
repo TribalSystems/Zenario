@@ -31,7 +31,7 @@ class zenario_users__admin_boxes__group extends zenario_users {
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		if ($box['key']['id']) {
-			$groupDetails = ze\row::get('custom_dataset_fields', array('label', 'db_column'), $box['key']['id']);
+			$groupDetails = ze\row::get('custom_dataset_fields', ['label', 'db_column'], $box['key']['id']);
 			
 			$box['title'] = ze\admin::phrase('Editing the group "[[label]]"', $groupDetails);
 			
@@ -54,7 +54,7 @@ class zenario_users__admin_boxes__group extends zenario_users {
 			) {
 				$fields['details/db_column']['error'] =
 					ze\admin::phrase('The code name "[[db_column]]" is already in use.', 
-						array('db_column' => $fields['details/db_column']['current_value']));
+						['db_column' => $fields['details/db_column']['current_value']]);
 			}
 		}
 	}
@@ -63,10 +63,10 @@ class zenario_users__admin_boxes__group extends zenario_users {
 		
 		ze\priv::exitIfNot('_PRIV_MANAGE_GROUP');
 		
-		$groupDetails = array(
+		$groupDetails = [
 			'label' => $values['details/name'], 
 			'db_column' => $values['details/db_column'],
-		);
+		];
 		
 		$oldName = false;
 		if ($box['key']['id']) {

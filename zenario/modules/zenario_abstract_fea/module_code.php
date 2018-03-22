@@ -40,7 +40,7 @@ class zenario_abstract_fea extends ze\moduleBaseClass {
 			$tags['microtemplate'] = $microtemplate;
 		}
 		
-		foreach (array('columns', 'item_buttons', 'collection_buttons') as $tag) {
+		foreach (['columns', 'item_buttons', 'collection_buttons'] as $tag) {
 			if (isset($tags[$tag]) && is_array($tags[$tag])) {
 				ze\tuix::addOrdinalsToTUIX($tags[$tag]);
 			}
@@ -49,11 +49,63 @@ class zenario_abstract_fea extends ze\moduleBaseClass {
 	
 	
 	protected function feaAJAXRequestIfNeeded($pages = []) {
-		if (!$this->isFeaAJAX()) {
+		
+		if ($this->beingDisplayed && !$this->isFeaAJAX()) {
 			$mode = $this->getMode();
 			$path = $this->getPathFromMode($mode);
 			$requests = $this->passRequests($mode, $path);
-			$this->feaAJAXRequest($this->moduleClassName, $path, $requests, $mode, $pages);
+			
+			$libraryName = $this->moduleClassName;
+			
+			$this->feaAJAXRequest($libraryName, $path, $requests, $mode, $pages);
+		}
+	}
+	
+	
+	protected function feaAJAXRequest($libraryName, $path, $requests, $mode = '', $pages = []) {
+		
+		if ($this->beingDisplayed
+		 && !$this->isFeaAJAX()
+		 && $this->returnVisitorTUIXEnabled($path)) {
+			
+			//Code to use a second AJAX load if this was already an AJAX load
+			//if (!empty($_REQUEST['method_call'])) {
+			//	$this->callScriptBeforeFoot(
+			//		$libraryName, 'init',
+			//		$this->containerId,
+			//		$path, $requests, $mode, $pages);
+			//	return;
+			//}
+			
+			
+			//Initialise the FEA library, setting $request to -1 to indicate that
+			//we'll be inserting the data by calling the loadData() function.
+			$this->callScript(
+				$libraryName, 'init',
+				$this->containerId,
+				$path, -1, $mode, $pages);
+		
+			//Trim any empty requests
+			foreach ($requests as $key => $val) {
+				if (!$val) {
+					unset($requests[$key]);
+				}
+			}
+			//Add the path and mode if not there already
+			$requests['path'] = $path;
+			$requests['mode'] = $mode;
+			
+			//Populate the TUIX tags, and run the fillVisitorTUIX() method
+			$tags = [];
+			ze\tuix::visitorTUIX($this, $path, $tags);
+			
+			//Output the tags onto the page and pass them through to the loadData() function.
+			$this->callScript(
+				$this->returnGlobalName(),
+				'loadData',
+				$requests,
+				ze\tuix::stringify($tags)
+			);
 		}
 	}
 	
@@ -124,45 +176,15 @@ class zenario_abstract_fea extends ze\moduleBaseClass {
 	}
 
 	public function init() {
-		ze::requireJsLib('zenario/js/tuix.wrapper.js.php', null, true);
+		ze::requireJsLib('zenario/js/tuix.wrapper.js.php');
 		
 		return true;
 	}
 
 	public function showSlot() {
-		//$this->twigFramework(array());
+		//$this->twigFramework([]);
 	}
 	
-	
-	protected function feaAJAXRequest($libraryName, $path, $requests, $mode = '', $pages = []) {
-		
-		if (!$this->beingDisplayed) {
-			return;
-		}
-		
-		//If this is the initial page load, rather than doing an AJAX request,
-		//instead write a script tag to the bottom of the page
-		if (empty($_REQUEST['method_call'])) {
-			$this->setScriptTag = $this->pluginVisitorTUIXLink(true, $path, $requests);
-			$requests = -1;
-		}
-		
-		//Initialise the FEA library
-		$this->callScriptBeforeFoot(
-			$libraryName, 'init',
-			$this->containerId,
-			$path, $requests, $mode, $pages);
-	}
-	
-	protected $setScriptTag = '';
-	
-	public function addToPageFoot() {
-		
-		if ($this->setScriptTag !== '') {
-			echo '
-<script type="text/javascript" src="', htmlspecialchars($this->setScriptTag), '"></script>';
-		}
-	}
 	
 	
 	protected function sqlSelect($sql) {
@@ -338,8 +360,8 @@ class zenario_abstract_fea extends ze\moduleBaseClass {
 		}
 		unset($sql);
 		
-		$tags['items'] = array();
-		$tags['__item_sort_order__'] = array();
+		$tags['items'] = [];
+		$tags['__item_sort_order__'] = [];
 		while ($item = ze\sql::fetchAssoc($result)) {
 			$id = $item[$idCol];
 			$this->formatItemRow($item, $path, $tags, $fields, $values);
@@ -372,7 +394,11 @@ class zenario_abstract_fea extends ze\moduleBaseClass {
 		} else {
 			if ($this->checkThingEnabled('search_box') && !empty($_REQUEST['search'])) {
 				$mrg = ['search' => $_REQUEST['search']];
-				$tags['__items_phrase__'] = $this->nphrase('1 item found from search "[[search]]"', '[[count]] items found from search "[[search]]"', $itemCount, $mrg);
+				if($itemCount) {
+					$tags['__items_phrase__'] = $this->nphrase('1 item found from search "[[search]]"', '[[count]] items found from search "[[search]]"', $itemCount, $mrg);
+				} else {
+					$tags['__items_phrase__'] = $this->phrase('No items found from search "[[search]]"', $mrg);
+				}
 			} elseif ($itemCount) {
 				$tags['__items_phrase__'] = $this->nphrase('1 item', '[[count]] items', $itemCount);
 			}
@@ -408,7 +434,7 @@ class zenario_abstract_fea extends ze\moduleBaseClass {
 		$modePath = $this->getPathFromMode($values['first_tab/mode']);
         
         foreach (ze\row::getDistinctArray(
-            'tuix_file_contents', 'path', array('type' => 'visitor', 'module_class_name' => $this->moduleClassName)
+            'tuix_file_contents', 'path', ['type' => 'visitor', 'module_class_name' => $this->moduleClassName]
         ) as $feaPath) {
             if (isset($box['tabs']['phrases.'. $feaPath])) {
                 $box['tabs']['phrases.'. $feaPath]['hidden'] = true;
@@ -417,11 +443,11 @@ class zenario_abstract_fea extends ze\moduleBaseClass {
                 if (isset($box['tabs']['phrases.'. $feaPath])) {
                     $box['tabs']['phrases.'. $feaPath]['hidden'] = false;
                 } else {
-                    $box['tabs']['phrases.'. $feaPath] = array(
+                    $box['tabs']['phrases.'. $feaPath] = [
                         'edit_mode' => $box['tabs']['first_tab']['edit_mode'],
-                        'fields' => array(),
-                        'label' => ze\admin::phrase('Phrases ([[mode]])', array('mode' => str_replace('_', ' ', $this->getModeFromPath($feaPath))))
-                    );
+                        'fields' => [],
+                        'label' => ze\admin::phrase('Phrases ([[mode]])', ['mode' => str_replace('_', ' ', $this->getModeFromPath($feaPath))])
+                    ];
                     $box['key']['feaPath'] = $feaPath;
                     ze\tuix::setupOverridesForPhrases($box, $box['tabs']['phrases.'. $feaPath]['fields'], $feaPath);
                 }

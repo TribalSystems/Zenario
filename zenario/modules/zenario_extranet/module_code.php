@@ -132,14 +132,13 @@ class zenario_extranet extends ze\moduleBaseClass {
 						
 						$this->redirectToPage();
 					}
-					
 					if ($this->hasLoginForm) {
 						if ($this->setting('requires_terms_and_conditions') == 1 && $this->setting('terms_and_conditions_page') && $this->showTermsAndConditionsCheckbox) {
 							$this->subSections['Ts_And_Cs_Section'] = true;
 							$cID = $cType = false;
 							$this->getCIDAndCTypeFromSetting($cID, $cType, 'terms_and_conditions_page');
 							ze\content::langEquivalentItem($cID, $cType);
-							$TCLink = array( 'TCLink' =>$this->linkToItem($cID, $cType, true));
+							$TCLink = [ 'TCLink' =>$this->linkToItem($cID, $cType, true)];
 							$this->objects['Ts_And_Cs_Link'] =  $this->phrase('_T_C_LINK', $TCLink);
 						}
 					}
@@ -201,7 +200,7 @@ class zenario_extranet extends ze\moduleBaseClass {
 			$this->subSections['Login_title_section'] = true;
 			$this->subSections['Login_Form'] = true;
 			
-			if ($this->cID == $cID && $this->cType == $cType) {
+			if (($this->cID == $cID && $this->cType == $cType) || !$this->setting('redirect_to_login_page_on_submit')) {
 				$this->objects['openForm'] = $this->openForm(
 					'',' class="form-horizontal"',
 					$action = false,
@@ -242,7 +241,7 @@ class zenario_extranet extends ze\moduleBaseClass {
 			$this->objects['Reset_Password_Link'] = $this->linkToItemAnchor($cID, $cType);
 		}
 		
-		if (ze\content::langSpecialPage('zenario_registration', $cID, $cType) && !$this->setting('hide_registration_link')) {
+		if (ze\content::langSpecialPage('zenario_registration', $cID, $cType)) {
 			$this->subSections['Registration_Link_Section'] = true;
 			$this->objects['Registration_Link'] = $this->linkToItemAnchor($cID, $cType);
 		}
@@ -250,6 +249,31 @@ class zenario_extranet extends ze\moduleBaseClass {
 		if (ze\content::langSpecialPage('zenario_registration', $cID, $cType)) {
 			$this->subSections['Resend_Link_Section'] = true;
 			$this->objects['Resend_Link'] = $this->linkToItemAnchor($cID, $cType, false, '&extranet_resend=1');
+		}
+		
+		
+		//Update the link to the registration page according to plugin settings
+		if ($this->setting('show_link_to_registration_page')) {
+			if ($tagId = $this->setting('registration_page')) {
+				$cID = $cType = false;
+				ze\content::getCIDAndCTypeFromTagId($cID, $cType, $tagId);
+				$this->objects['Registration_Link'] = $this->linkToItemAnchor($cID, $cType);
+				$this->objects['Resend_Link'] = $this->linkToItemAnchor($cID, $cType, false, '&extranet_resend=1');
+			}
+		} else {
+			$this->subSections['Registration_Link_Section'] = false;
+			$this->subSections['Resend_Link_Section'] = false;
+		}
+		
+		//Update the link to the login page according to plugin settings
+		if ($this->setting('show_link_to_login_page')) {
+			if ($tagId = $this->setting('login_page')) {
+				$cID = $cType = false;
+				ze\content::getCIDAndCTypeFromTagId($cID, $cType, $tagId);
+				$this->objects['Login_Link'] = $this->linkToItemAnchor($cID, $cType);
+			}
+		} else {
+			$this->subSections['Login_Link_Section'] = false;
 		}
 	}
 	
@@ -264,7 +288,7 @@ class zenario_extranet extends ze\moduleBaseClass {
 	
 	protected function addLoggedInLinks() {
 		$this->subSections['Welcome_Message_Section'] = true;
-		$this->objects['Welcome_Message'] = $this->phrase('_WELCOME', array('user' => htmlspecialchars($_SESSION['extranetUser_firstname'] ?? false)));
+		$this->objects['Welcome_Message'] = $this->phrase('_WELCOME', ['user' => htmlspecialchars($_SESSION['extranetUser_firstname'] ?? false)]);
 		
 		if (ze\content::langSpecialPage('zenario_change_password', $cID, $cType)) {
 			$this->subSections['Change_Password_Link_Section'] = true;
@@ -442,7 +466,7 @@ class zenario_extranet extends ze\moduleBaseClass {
 				if ($user['status'] != "contact") {
 					if ($user['password_expired']) {
 						$errorMessage = $this->setting('password_expired_message');
-						$this->errors[] = array('Error' => $this->phrase($errorMessage));
+						$this->errors[] = ['Error' => $this->phrase($errorMessage)];
 					
 					} elseif (ze\user::checkPassword($user['id'], ($_POST['extranet_password'] ?? false))) {
 						//password correct
@@ -474,42 +498,42 @@ class zenario_extranet extends ze\moduleBaseClass {
 							if ($user['status'] == 'suspended') {
 								//user is suspended, show error
 								$errorMessage = $this->setting('account_suspended_message');
-								$this->errors[] = array('Error' => $this->phrase($errorMessage));
+								$this->errors[] = ['Error' => $this->phrase($errorMessage)];
 							} elseif ($user['status'] == 'pending') {
 								//user is pending, show error
-								if(ze\row::get('users', 'email_verified', array('email' => ($_POST['extranet_email'] ?? false)))) {
+								if(ze\row::get('users', 'email_verified', ['email' => ($_POST['extranet_email'] ?? false)])) {
 									//user has verified email, wanting on admin to activate there account.
 									$errorMessage = $this->setting('account_pending_message');
-									$this->errors[] = array('Error' => $this->phrase($errorMessage));
+									$this->errors[] = ['Error' => $this->phrase($errorMessage)];
 								} else {
 									//email address still needs to be verified
 									$errorMessage = $this->setting('account_not_verified_message');
 									$cType = $cId = false;
 									ze\content::langSpecialPage('zenario_registration', $cID, $cType);
-									$this->errors[] = array('Error' => $this->phrase($errorMessage, array('resend_verification_email' => $this->linkToItemAnchor($cID, $cType, true, 'extranet_resend=1' ))));
+									$this->errors[] = ['Error' => $this->phrase($errorMessage, ['resend_verification_email' => $this->linkToItemAnchor($cID, $cType, true, 'extranet_resend=1' )])];
 								}
 							}
 						}
 					} else {
 						//password incorrect
 						$errorMessage = $this->setting('wrong_password_message');
-						$this->errors[] = array('Error' => $this->phrase($errorMessage));
+						$this->errors[] = ['Error' => $this->phrase($errorMessage)];
 					}
 				} else {
 					//User is not externet user just a contact
 					$errorMessage = $this->setting('contact_not_extranet_message');
-					$this->errors[] = array('Error' => $this->phrase($errorMessage));
+					$this->errors[] = ['Error' => $this->phrase($errorMessage)];
 				}
 			} else {
 				//email address or screen name not in DB
 				if (!$this->useScreenName || $this->setting('login_with') == 'Email') {
 					//email
 					$errorMessage = $this->setting('email_not_in_db_message');
-					$this->errors[] = array('Error' => $this->phrase($errorMessage));
+					$this->errors[] = ['Error' => $this->phrase($errorMessage)];
 				} else {
 					//screen name
 					$errorMessage = $this->setting('screen_name_not_in_db_message');
-					$this->errors[] = array('Error' => $this->phrase($errorMessage));
+					$this->errors[] = ['Error' => $this->phrase($errorMessage)];
 				}
 			
 			}
@@ -548,19 +572,19 @@ class zenario_extranet extends ze\moduleBaseClass {
 	
 	public static function getFirstName_framework($mergeFields){
 		if (ze\user::id()){
-			return htmlspecialchars(ze\row::get('users','first_name',array('id'=>userId())));
+			return htmlspecialchars(ze\row::get('users','first_name',['id'=>userId()]));
 		}
 	}
 
 	public static function getLastName_framework($mergeFields){
 		if (ze\user::id()){
-			return htmlspecialchars(ze\row::get('users','last_name',array('id'=>userId())));
+			return htmlspecialchars(ze\row::get('users','last_name',['id'=>userId()]));
 		}
 	}
 
 	public static function getEmailAddress_framework($mergeFields){
 		if (ze\user::id()){
-			return htmlspecialchars(ze\row::get('users','email',array('id'=>userId())));
+			return htmlspecialchars(ze\row::get('users','email',['id'=>userId()]));
 		}
 	}
 	
@@ -597,39 +621,39 @@ class zenario_extranet extends ze\moduleBaseClass {
 		if (trim($oldPassword)==='' && $oldPassword!==false)  {
 			//no password entered
 			$errorMessage = $this->setting('no_password_entered_message') ? $this->setting('no_password_entered_message') : '_ERROR_OLD_PASSWORD';
-			$errors[] = array('Error' => $this->phrase($errorMessage));
+			$errors[] = ['Error' => $this->phrase($errorMessage)];
 		} elseif ($oldPassword && !ze\user::checkPassword($userId, $oldPassword)) {
 			//password incorrect
 			$errorMessage = $this->setting('wrong_password_message') ? $this->setting('wrong_password_message') : '_ERROR_PASS_NOT_VERIFIED';
-			$errors[] = array('Error' => $this->phrase($errorMessage));
+			$errors[] = ['Error' => $this->phrase($errorMessage)];
 		}
 	
 		if (!$newPassword) {
-			$errors[] = array('Error' => ze\lang::phrase('_ERROR_NEW_PASSWORD', false, $vlpClass));
+			$errors[] = ['Error' => ze\lang::phrase('_ERROR_NEW_PASSWORD', false, $vlpClass)];
 		
 		} elseif ($oldPassword && ($newPassword === $oldPassword)) {
 			//new password is the same as old
 			$errorMessage = $this->setting('new_password_same_as_old_message') ? $this->setting('new_password_same_as_old_message') : '_ERROR_NEW_PASSWORD_SAME_AS_OLD';
-			$errors[] = array('Error' => $this->phrase($errorMessage));
+			$errors[] = ['Error' => $this->phrase($errorMessage)];
 		
 		} elseif (strlen($newPassword) < ze::setting('min_extranet_user_password_length')) {
 			//password not long enough
 			$errorMessage = $this->setting('new_password_length_message') ? $this->setting('new_password_length_message') : '_ERROR_NEW_PASSWORD_LENGTH';
-			$errors[] = array('Error' => $this->phrase($errorMessage, array('min_password_length' => ze::setting('min_extranet_user_password_length'))));
+			$errors[] = ['Error' => $this->phrase($errorMessage, ['min_password_length' => ze::setting('min_extranet_user_password_length')])];
 		
 		} elseif (!$confirmation) {
 			//no repeat password
-			$errors[] = array('Error' => ze\lang::phrase('_ERROR_REPEAT_NEW_PASSWORD', false, $vlpClass));
+			$errors[] = ['Error' => ze\lang::phrase('_ERROR_REPEAT_NEW_PASSWORD', false, $vlpClass)];
 		
 		} elseif ($newPassword !== $confirmation) {
 			//passwords don't match
 			$errorMessage = $this->setting('new_passwords_do_not_match') ? $this->setting('new_passwords_do_not_match') : '_ERROR_NEW_PASSWORD_MATCH';
-			$errors[] = array('Error' => $this->phrase($errorMessage));
+			$errors[] = ['Error' => $this->phrase($errorMessage)];
 	
 		} elseif (!ze\user::checkPasswordStrength($newPassword,ze::setting('min_extranet_user_password_strength'))) {
 			//password not strong enough
 			$errorMessage = $this->setting('new_password_not_strong_enough_message') ? $this->setting('new_password_not_strong_enough_message') : '_ERROR_NEW_PASSWORD_NOT_STRONG_ENOUGH';
-			$errors[] = array('Error' => $this->phrase($errorMessage));
+			$errors[] = ['Error' => $this->phrase($errorMessage)];
 		
 		}
 	

@@ -43,8 +43,8 @@ class zenario_common_features__organizer__administrators extends ze\moduleBaseCl
 		
 		foreach ($panel['items'] as $id => &$item) {
 			
-			$item['traits'] = array();
-			$item['has_permissions'] = ze\row::exists('action_admin_link', array('admin_id' => $id));
+			$item['traits'] = [];
+			$item['has_permissions'] = ze\row::exists('action_admin_link', ['admin_id' => $id]);
 			
 			if ($id == ($_SESSION['admin_userid'] ?? false)) {
 				$item['traits']['current_admin'] = true;
@@ -78,11 +78,11 @@ class zenario_common_features__organizer__administrators extends ze\moduleBaseCl
 			$panel['no_items_message'] = ze\admin::phrase('No Administrators have been Trashed.');
 		
 		} else {
-			$panel['trash']['empty'] = !ze\row::exists('admins', array('status' => 'deleted'));
+			$panel['trash']['empty'] = !ze\row::exists('admins', ['status' => 'deleted']);
 		}
 		
 		if (!zenario_common_features::canCreateAdditionalAdmins()) {
-			$tooltip = ze\admin::phrase('The maximum number of client administrators has been reached ([[i]])', array('i' => ze\site::description('max_local_administrators')));
+			$tooltip = ze\admin::phrase('The maximum number of client administrators has been reached ([[i]])', ['i' => ze\site::description('max_local_administrators')]);
 			$panel['collection_buttons']['create']['disabled'] = 
 			$panel['item_buttons']['restore_admin']['disabled'] = true;
 			$panel['collection_buttons']['create']['disabled_tooltip'] = 
@@ -92,8 +92,8 @@ class zenario_common_features__organizer__administrators extends ze\moduleBaseCl
 		
 		if (ze\sql::numRows(ze\row::query(
 			'admins',
-			array('id'),
-			array('status' => 'active', 'authtype' => 'local')
+			['id'],
+			['status' => 'active', 'authtype' => 'local']
 		)) < 2) {
 			if (isset($panel['collection_buttons']['copy_perms'])) {
 				$panel['collection_buttons']['copy_perms']['disabled'] = true;

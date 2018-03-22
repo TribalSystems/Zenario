@@ -31,14 +31,14 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 if (ze::$canCache) {
 	
 	function pageCacheDir(&$requests, $type) {
-		$type = str_replace(array('.', ' '), '-', $type. '-'. ze\cache::browserBodyClass(). '-');
+		$type = str_replace(['.', ' '], '-', $type. '-'. ze\cache::browserBodyClass(). '-');
 		
 		$text = json_encode($requests);
 		return $type. substr(preg_replace('/[^\w_]+/', '-', $text), 1, 33). ze::hash64($text, 16). '-';
 	}
 	
 	
-	$type = str_replace(array('.wrapper', '.php'), '', basename($_SERVER['PHP_SELF']));
+	$type = str_replace(['.wrapper', '.php'], '', basename($_SERVER['PHP_SELF']));
 	$chFile = pageCacheDir($_GET, $type);
 	
 	if (file_exists(($chPath = 'cache/pages/'. $chFile. '/'). $type)) {

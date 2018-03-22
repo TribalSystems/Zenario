@@ -29,8 +29,8 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 // This plugin lets visitors print a page
 class zenario_print_page extends ze\moduleBaseClass {
-	var $mergeFields = array();
-	var $sections = array();
+	var $mergeFields = [];
+	var $sections = [];
 	function init() {
 		return true;
 	}

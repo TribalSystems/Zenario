@@ -43,7 +43,7 @@ class zenario_common_features__admin_boxes__site_reset extends ze\moduleBaseClas
 
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
 		ze\priv::exitIfNot('_PRIV_RESET_SITE');
-		$details = array();
+		$details = [];
 		
 		if (!$values['site/password']) {
 			$box['tabs']['site']['errors'][] =

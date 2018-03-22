@@ -175,9 +175,9 @@ class zenario_export_tools extends ze\moduleBaseClass {
 					if (zenario_export_tools::createExportFile($post['q'], false, false, $box['key']['cID'], $box['key']['cType'], $box['key']['cVersion'])) {
 						
 						$url = 'https://www.googleapis.com/language/translate/v2';
-						$options = array(
+						$options = [
 							CURLOPT_HTTPHEADER => ['X-HTTP-Method-Override: GET'],
-							CURLOPT_SSL_VERIFYPEER => false);
+							CURLOPT_SSL_VERIFYPEER => false];
 						
 						if ($responce = ze\curl::fetch($url, $post, $options)) {
 							if ($json = json_decode($responce, true)) {
@@ -328,7 +328,7 @@ class zenario_export_tools extends ze\moduleBaseClass {
 			zenario_export_tools::openTagEnd($isXML, $encodeHTMLAtt, $f);
 			zenario_export_tools::closeTag($isXML, $f, 'template');
 			
-			$slotContents = false;
+			$slotContents = [];
 			ze\plugin::slotContents($slotContents, $cID, $cType, $cVersion, false, false, false, false, false, false, $runPlugins = false);
 			$slotsOnTemplate = zenario_export_tools::getSlotsOnTemplate($template['family_name'], $template['file_base_name']);
 			
@@ -951,7 +951,7 @@ class zenario_export_tools extends ze\moduleBaseClass {
 			}
 			
 			//Loop through the slots on the template, seeing what Modules are placed where
-			$slotContents = false;
+			$slotContents = [];
 			ze\plugin::slotContents($slotContents, $cID, $cType, $cVersion, false, false, false, false, false, false, false, $runPlugins = false);
 			$slotsOnTemplate = zenario_export_tools::getSlotsOnTemplate($template['family_name'], $template['file_base_name']);
 			
@@ -1086,10 +1086,10 @@ class zenario_export_tools extends ze\moduleBaseClass {
 									foreach ($plugin->slide as $slide) {
 										if ($id = 
 											ze\row::get('nested_plugins', 'id',
-												array(
+												[
 													'instance_id' => $instanceId,
 													'is_slide' => 1,
-													'slide_num' => (int) $slide->attributes()->slideNum))
+													'slide_num' => (int) $slide->attributes()->slideNum])
 										) {
 											$nestedPlugins[] = $id;
 										}
@@ -1102,12 +1102,12 @@ class zenario_export_tools extends ze\moduleBaseClass {
 										if ($nestedModuleId = ze\module::id($egg->attributes()->class)) {
 											if ($id = 
 												ze\row::get('nested_plugins', 'id', 
-													array(
+													[
 														'instance_id' => $instanceId,
 														'is_slide' => 0,
 														'slide_num' => (int) $egg->attributes()->slideNum,
 														'ord' => (int) $egg->attributes()->ord,
-														'module_id' => $nestedModuleId))
+														'module_id' => $nestedModuleId])
 											) {
 												$nestedPlugins[] = $id;
 											}
@@ -1151,21 +1151,21 @@ class zenario_export_tools extends ze\moduleBaseClass {
 							ze\row::delete('plugin_settings', $key);
 							
 							//Add the new settings
-							ze\row::set('plugin_instances', array('framework' => (string) $plugin->attributes()->framework), $instanceId);
+							ze\row::set('plugin_instances', ['framework' => (string) $plugin->attributes()->framework], $instanceId);
 							
 							//Import/update the tabs
 							if ($plugin->slide) {
 								foreach ($plugin->slide as $slide) {
 									ze\row::set(
 										'nested_plugins',
-										array(
+										[
 											'ord' => 0,
 											'module_id' => 0,
-											'name_or_title' => zenario_export_tools::getValue($slide)),
-										array(
+											'name_or_title' => zenario_export_tools::getValue($slide)],
+										[
 											'instance_id' => $instanceId,
 											'is_slide' => 1,
-											'slide_num' => (int) $slide->attributes()->slideNum));
+											'slide_num' => (int) $slide->attributes()->slideNum]);
 								}
 							}
 							
@@ -1182,9 +1182,9 @@ class zenario_export_tools extends ze\moduleBaseClass {
 										
 										$nestedPlugins[$slideNum][$ord] = ze\row::set(
 											'nested_plugins',
-											array(
+											[
 												'framework' => $egg->attributes()->framework,
-												'name_or_title' => $egg->attributes()->name_or_title),
+												'name_or_title' => $egg->attributes()->name_or_title],
 											[
 												'instance_id' => $instanceId,
 												'is_slide' => 0,

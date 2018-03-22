@@ -37,7 +37,7 @@ class zenario_users__admin_boxes__site_settings extends ze\moduleBaseClass {
 				$box['tabs']['inactive_user_email']['fields']['user_dataset_field_to_receive_emails']['values'] = $groups;
 		
 				// Disable setting for deleting unconfirmed user accounts if scheduled task manager is not enabled
-				$scheduledTaskManagerRunning = ze\row::exists('modules', array('class_name' => 'zenario_scheduled_task_manager', 'status' => 'module_running'));
+				$scheduledTaskManagerRunning = ze\row::exists('modules', ['class_name' => 'zenario_scheduled_task_manager', 'status' => 'module_running']);
 				if (!$scheduledTaskManagerRunning 
 					|| !ze::setting('jobs_enabled') 
 					|| !ze\module::inc('zenario_scheduled_task_manager')
@@ -51,23 +51,25 @@ class zenario_users__admin_boxes__site_settings extends ze\moduleBaseClass {
 		
 				// Show list of users dataset tabs
 				$dataset = ze\dataset::details('users');
-				$result = ze\row::query('custom_dataset_tabs', array('label', 'default_label', 'ord', 'name'), array('dataset_id' => $dataset['id']), 'label');
+				$result = ze\row::query('custom_dataset_tabs', ['label', 'default_label', 'ord', 'name'], ['dataset_id' => $dataset['id']], 'label');
 				while ($row = ze\sql::fetchAssoc($result)) {
 					$label = $row['label'] ? $row['label'] : $row['default_label'];
 					if ($label !== false && $label !== '') {
-						$fields['groups/default_groups_dataset_tab']['values'][$row['name']] = array(
+						$fields['groups/default_groups_dataset_tab']['values'][$row['name']] = [
 							'label' => $label,
 							'ord' => $row['ord']
-						);
+						];
 						
-						$fields['flags/default_flags_dataset_tab']['values'][$row['name']] = array(
+						$fields['flags/default_flags_dataset_tab']['values'][$row['name']] = [
 							'label' => $label,
 							'ord' => $row['ord']
-						);
+						];
 					}
 				}
+				
+				$link = ze\link::absolute() . '/zenario/admin/organizer.php#zenario__administration/panels/site_settings//data_protection~.site_settings~tdata_protection~k{"id"%3A"data_protection"}';
+				$fields['names/data_protection_link']['snippet']['html'] = ze\admin::phrase('See the <a target="_blank" href="[[link]]">data protection</a> panel for settings on how long to user sign-in and content-access logs.', ['link' => htmlspecialchars($link)]);
 				break;
-			
 			
 			case 'perms':
 				//Check to see what's running
@@ -137,6 +139,57 @@ class zenario_users__admin_boxes__site_settings extends ze\moduleBaseClass {
 				}
 				
 				break;
+			case 'data_protection':
+				//Show a table of users dataset fields and whether they are encrypted or not
+				$dataset = ze\dataset::details('users');
+				$sql = '
+					SELECT cdf.id, cdf.db_column, cdf.is_system_field, cdf.type
+					FROM ' . DB_NAME_PREFIX . 'custom_dataset_fields cdf
+					INNER JOIN ' . DB_NAME_PREFIX . 'custom_dataset_tabs cdt
+						ON cdf.tab_name = cdt.name
+						AND cdf.dataset_id = cdt.dataset_id
+					WHERE cdf.dataset_id = ' . (int)$dataset['id'] . '
+					AND db_column != ""
+					ORDER BY cdt.ord, cdf.ord';
+				$result = ze\sql::select($sql);
+				$html = '
+					<table class="basic_table">
+						<tr>
+							<th style="width:25%;">' . htmlspecialchars(ze\admin::phrase('Database field name')) . '</th>
+							<th style="width:25%;">' . htmlspecialchars(ze\admin::phrase('Data type')) . '</th>
+							<th style="width:25%;">' . htmlspecialchars(ze\admin::phrase('Security')) . '</th>
+							<th style="width:25%;">' . htmlspecialchars(ze\admin::phrase('Comment')) . '</th>
+						</tr>';
+				while ($row = ze\sql::fetchAssoc($result)) {
+					$table = $row['is_system_field'] ? $dataset['system_table'] : $dataset['table'];
+					
+					if ($row['db_column'] == 'password') {
+						$security = 'Encrypted';
+						$comment = '1-way encrypted';
+					} elseif (ze\db::columnIsEncrypted($table, $row['db_column'])) {
+						$security = 'Encrypted';
+						$comment = '';
+					} elseif (in_array($row['db_column'], ['salutation', 'first_name', 'last_name', 'screen_name', 'identifier', 'email']) || (!$row['is_system_field'] && $row['type'] == 'text')) {
+						$security = 'Not encrypted';
+						$comment = 'Can encrypt';
+					} else {
+						$security = 'Not encrypted';
+						$comment = '';
+					}
+					
+					$html .= '
+						<tr>
+							<td>' . htmlspecialchars($row['db_column']) . '</td>
+							<td>' . htmlspecialchars(ze\datasetAdm::getFieldTypeDescription($row['type'])) . '</td>
+							<td>' . htmlspecialchars(ze\admin::phrase($security)) . '</td>
+							<td>' . htmlspecialchars(ze\admin::phrase($comment)) . '</td>
+						</tr>';
+				}
+				$html .= '
+					<table>';
+				$fields['data_encryption/dataset_fields']['snippet']['html'] = $html;
+				
+				break;
 		}
 	}
 	
@@ -155,7 +208,7 @@ class zenario_users__admin_boxes__site_settings extends ze\moduleBaseClass {
 			
 					$box['tabs']['names']['notices']['turning_on_screen_names']['show'] =
 						$screenNamesOn && !$screenNamesWereOn
-						&& ze\row::exists('users', array('screen_name' => array('!' => '')));
+						&& ze\row::exists('users', ['screen_name' => ['!' => '']]);
 				}
 		
 		
@@ -185,8 +238,8 @@ class zenario_users__admin_boxes__site_settings extends ze\moduleBaseClass {
 					$fields['inactive_user_email/inactive_user_email_template_1']['error'] = ze\admin::phrase('Please select an email template for the second period.');
 				}
 				
-				if ($values['passwords/min_extranet_user_password_length'] < 3 || $values['passwords/min_extranet_user_password_length'] > 32){
-					$fields['passwords/min_extranet_user_password_length']['error'] = ze\admin::phrase('The minimum password lengt must be a number between 3 and 32.');
+				if ($values['passwords/min_extranet_user_password_length'] < 5 || $values['passwords/min_extranet_user_password_length'] > 32){
+					$fields['passwords/min_extranet_user_password_length']['error'] = ze\admin::phrase('The minimum password length must be between 5 and 32.');
 				}
 				
 		}
@@ -206,19 +259,19 @@ class zenario_users__admin_boxes__site_settings extends ze\moduleBaseClass {
 				
 							if ($screenNamesWereOn) {
 								//If we're turning screen names off, all users will be affected!
-								$affectedUsers = array();
+								$affectedUsers = [];
 							} else {
 								//If we're turning screen names on, only users with a screen name will be affected
-								$affectedUsers = array('screen_name' => array('!' => ''));
+								$affectedUsers = ['screen_name' => ['!' => '']];
 							}
 				
 							//Clear the previous identifiers
-							ze\row::update('users', array('identifier' => null), $affectedUsers);
+							ze\row::update('users', ['identifier' => null], $affectedUsers);
 				
 							//Loop through all users and set identifiers
-							$result = ze\row::query('users', array('id', 'screen_name', 'first_name', 'last_name', 'email'), $affectedUsers);
+							$result = ze\row::query('users', ['id', 'screen_name', 'first_name', 'last_name', 'email'], $affectedUsers);
 							while ($user = ze\sql::fetchAssoc($result)) {
-								ze\row::update('users', array('identifier' => ze\userAdm::generateIdentifier($user['id'], $user)), $user['id']);
+								ze\row::update('users', ['identifier' => ze\userAdm::generateIdentifier($user['id'], $user)], $user['id']);
 							}
 						}
 					}

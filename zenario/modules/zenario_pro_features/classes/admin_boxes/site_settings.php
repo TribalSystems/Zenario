@@ -39,7 +39,7 @@ class zenario_pro_features__admin_boxes__site_settings extends ze\moduleBaseClas
 		}
 		
 		
-		$mrg = array('ip' => ze::setting('limit_caching_debug_info_by_ip') ?: ze\user::ip());
+		$mrg = ['ip' => ze::setting('limit_caching_debug_info_by_ip') ?: ze\user::ip()];
 		
 		if (!$values['caching/limit_caching_debug_info_by_ip'] = (bool) ze::setting('limit_caching_debug_info_by_ip')) {
 			$fields['caching/limit_caching_debug_info_by_ip']['label'] = 

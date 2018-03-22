@@ -65,7 +65,7 @@ switch ($path) {
 		
 			 || ($values['first_tab/image_source'] == '_PICTURE'
 			  && (ze\content::getCIDAndCTypeFromTagId($pictureCID, $pictureCType, $values['first_tab/picture']))
-			  && ($imageId = ze\row::get("versions", "file_id", array("id" => $pictureCID, 'type' => $pictureCType, "version" => ze\content::version($pictureCID, $pictureCType)))))
+			  && ($imageId = ze\row::get("versions", "file_id", ["id" => $pictureCID, 'type' => $pictureCType, "version" => ze\content::version($pictureCID, $pictureCType)])))
 		 
 			 || ($values['first_tab/image_source'] == '_STICKY_IMAGE'
 			  && (ze\content::getCIDAndCTypeFromTagId($cID, $cType, $values['first_tab/hyperlink_target']))
@@ -102,7 +102,7 @@ switch ($path) {
 		
 		if ($imagePicked
 		 && $imageId
-		 && ($image = ze\row::get('files', array('width', 'height', 'alt_tag', 'title', 'floating_box_title'), $imageId))) {
+		 && ($image = ze\row::get('files', ['width', 'height', 'alt_tag', 'title', 'floating_box_title'], $imageId))) {
 			$editModeOn = ze\ring::engToBoolean($box['tabs']['first_tab']['edit_mode']['on'] ?? false);
 			
 			$fields['first_tab/alt_tag']['multiple_edit']['original_value'] = $image['alt_tag'];
@@ -187,7 +187,7 @@ switch ($path) {
 		//Don't show the translations checkbox if this can never be translated
 		$fields['text/translate_text']['hidden'] =
 			$box['key']['isVersionControlled']
-		 || !ze\row::exists('languages', array('translate_phrases' => 1));
+		 || !ze\row::exists('languages', ['translate_phrases' => 1]);
 		
 		//Don't show notes about translations if this won't be translated
 		if ($fields['text/translate_text']['hidden'] || !$values['text/translate_text']) {
@@ -201,10 +201,10 @@ switch ($path) {
 		
 		} else {
 			
-			$mrg = array(
+			$mrg = [
 				'def_lang_name' => htmlspecialchars(ze\lang::name(ze::$defaultLang)),
 				'phrases_panel' => htmlspecialchars(ze\link::absolute(). 'zenario/admin/organizer.php#zenario__languages/panels/phrases')
-			);
+			];
 			
 			$fields['text/text']['show_phrase_icon'] =
 			$fields['text/title']['show_phrase_icon'] =

@@ -91,7 +91,6 @@ $debugMode = (bool) ($_GET['_debug'] ?? false);
 $customJoin = false;
 $organizerQueryIds = false;
 $organizerQueryDetails = false;
-$loadDefinition = true;
 $settingGroup = '';
 $compatibilityClassNames = [];
 ze::$skType = $type = 'organizer';
@@ -213,26 +212,24 @@ if ($_GET['_filters'] ?? false) {
 
 
 
-if ($loadDefinition) {
-	//Scans the Module directory for Modules with the relevant TUIX files, read them, and get a php array
-	$moduleFilesLoaded = [];
-	$tags = [];
-	$originalTags = [];
-	ze\tuix::load($moduleFilesLoaded, $tags, $type, $requestedPath, $settingGroup, $compatibilityClassNames);
+//Scans the Module directory for Modules with the relevant TUIX files, read them, and get a php array
+$moduleFilesLoaded = [];
+$tags = [];
+$originalTags = [];
+ze\tuix::load($moduleFilesLoaded, $tags, $type, $requestedPath, $settingGroup, $compatibilityClassNames);
+
+
+//If we had a requested path, drill straight down to that level
+if ($requestedPath) {
 	
-	
-	//If we had a requested path, drill straight down to that level
-	if ($requestedPath) {
+	foreach(explode('/', $requestedPath) as $path) {
+		if (isset($tags[$path]) && is_array($tags[$path])) {
+			$tags = $tags[$path];
+			$tagPath .= '/'. $path;
 		
-		foreach(explode('/', $requestedPath) as $path) {
-			if (isset($tags[$path]) && is_array($tags[$path])) {
-				$tags = $tags[$path];
-				$tagPath .= '/'. $path;
-			
-			} else {
-				echo ze\admin::phrase('The requested path "[[path]]" was not found in the system. If you have just updated or added files to the CMS, you will need to reload the page.', ['path' => $requestedPath]);
-				exit;
-			}
+		} else {
+			echo ze\admin::phrase('The requested path "[[path]]" was not found in the system. If you have just updated or added files to the CMS, you will need to reload the page.', ['path' => $requestedPath]);
+			exit;
 		}
 	}
 }
@@ -250,7 +247,7 @@ if (!$requestedPath || empty($tags['class_name'])) {
 	foreach(ze\row::getArray(
 		'modules',
 		['class_name'],
-		array('fill_organizer_nav' => 1, 'status' => ['module_running', 'module_is_abstract'])
+		['fill_organizer_nav' => 1, 'status' => ['module_running', 'module_is_abstract']]
 	) as $moduleWithNav) {
 		ze\tuix::includeModule($modules, $moduleWithNav, $type, $requestedPath, $settingGroup);
 	}
@@ -431,7 +428,7 @@ if (!$requestedPath || empty($tags['class_name'])) {
 				foreach (ze\row::getArray(
 					'custom_dataset_fields',
 					true,
-					array('dataset_id' => $dataset['id'], 'organizer_visibility' => ['!' => 'none'], 'is_system_field' => 0),
+					['dataset_id' => $dataset['id'], 'organizer_visibility' => ['!' => 'none'], 'is_system_field' => 0],
 					['tab_name', 'ord']
 				) as $cfield) {
 					$cCol = [];
@@ -1374,9 +1371,7 @@ if ($debugMode) {
 //Tidy away some organizer tags
 //Remove anything the current admin has no access to, count each tags' children
 $removedColumns = false;
-if ($loadDefinition) {
-	ze\tuix::parse2($tags, $removedColumns, $type, $requestedPath, $mode);
-}
+ze\tuix::parse2($tags, $removedColumns, $type, $requestedPath, $mode);
 
 //Don't send any SQL to the client
 if (isset($tags['items']) && is_array($tags['items']) && is_array($removedColumns)) {
@@ -1401,7 +1396,7 @@ if ($mode == 'get_item_data') {
 //I also need to set the path for Menu Nodes
 } elseif ($mode == 'get_item_name' || $mode == 'get_item_links' || $mode == 'typeahead_search') {
 	//Add information on the item
-	$output = array('item' => ($tags['item'] ?? false), 'columns' => []);
+	$output = ['item' => ($tags['item'] ?? false), 'columns' => []];
 	
 	if (isset($tags['items'])) {
 		$output['items'] = $tags['items'];

@@ -253,16 +253,16 @@ if (ze\dbAdm::needRevision(160)) {
 	require_once CMS_ROOT. 'zenario/libs/manually_maintained/mit/markitup/bbcode2html.inc.php';
 
 	$allowable_tags = '<br><p><pre><blockquote><code><em><strong><span><sup><sub><ul><li><ol><a><img>';
-	$allowedStyles = array('padding-left' => true, 'text-decoration' => true);
+	$allowedStyles = ['padding-left' => true, 'text-decoration' => true];
 	
-	$result = ze\row::query(ZENARIO_FORUM_PREFIX. 'user_posts', array('id', 'message_text'), array());
+	$result = ze\row::query(ZENARIO_FORUM_PREFIX. 'user_posts', ['id', 'message_text'], []);
 	while ($row = ze\sql::fetchAssoc($result)) {
 		
 		BBCode2Html($row['message_text'], false, true, true, false);
 		
 		ze\row::update(
 			ZENARIO_FORUM_PREFIX. 'user_posts',
-			array('message_text' => ze\ring::sanitiseHTML($row['message_text'], $allowable_tags, $allowedStyles)),
+			['message_text' => ze\ring::sanitiseHTML($row['message_text'], $allowable_tags, $allowedStyles)],
 			$row['id']);
 	}
 	unset($row);

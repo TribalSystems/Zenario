@@ -55,7 +55,7 @@ if (!empty($_POST['rerun'])
 switch ($path) {
 	case 'zenario__administration/panels/zenario_scheduled_task_manager__scheduled_tasks':
 		if (!empty($_POST['rerun']) && ze\priv::check('_PRIV_MANAGE_SCHEDULED_TASK')) {
-			ze\row::update('jobs', array('status' => 'rerun_scheduled'), $ids);
+			ze\row::update('jobs', ['status' => 'rerun_scheduled'], $ids);
 			return $ids;
 		
 		} elseif (!empty($_POST['enable_all']) && ze\priv::check('_PRIV_MANAGE_SCHEDULED_TASK')) {
@@ -70,13 +70,13 @@ switch ($path) {
 			
 		} elseif (!empty($_POST['enable']) && ze\priv::check('_PRIV_MANAGE_SCHEDULED_TASK')) {
 			foreach (explode(',', $ids) as $id) {
-				ze\row::update('jobs', array('enabled' => 1), $id);
+				ze\row::update('jobs', ['enabled' => 1], $id);
 			}
 			return $ids;
 			
 		} elseif (!empty($_POST['suspend']) && ze\priv::check('_PRIV_MANAGE_SCHEDULED_TASK')) {
 			foreach (explode(',', $ids) as $id) {
-				ze\row::update('jobs', array('enabled' => 0), $id);
+				ze\row::update('jobs', ['enabled' => 0], $id);
 			}
 			return $ids;
 		
@@ -103,7 +103,7 @@ switch ($path) {
 			return '';
 		
 		} elseif (!empty($_POST['truncate']) && ze\priv::check('_PRIV_MANAGE_SCHEDULED_TASK')) {
-			ze\row::delete('job_logs', array('job_id' => $_POST['refiner__job']));
+			ze\row::delete('job_logs', ['job_id' => $_POST['refiner__job']]);
 			return '';
 		}
 		

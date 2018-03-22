@@ -88,11 +88,11 @@ if (ze::$canCache
 	}
 	
 	if ($caching_debug_info) {
-		$chSlots = array();
+		$chSlots = [];
 		foreach (ze::$slotContents as $slotName => &$instance) {
 			if (!empty($instance['instance_id']) && !empty($instance['class'])) {
-				$chSlots[$slotName] = array();
-				foreach (array('cache_if', 'clear_cache_by', 'disallow_caching', 'served_from_cache') as $detail) {
+				$chSlots[$slotName] = [];
+				foreach (['cache_if', 'clear_cache_by', 'disallow_caching', 'served_from_cache'] as $detail) {
 					if (isset($instance[$detail])) {
 						$chSlots[$slotName][$detail] = $instance[$detail];
 					}
@@ -132,7 +132,7 @@ if (ze::$canCache
 	
 	
 	if ($canCache) {
-		$clearCacheBy = array();
+		$clearCacheBy = [];
 		foreach (ze::$slotContents as $slotName => &$instance) {
 			if (!empty($instance['clear_cache_by'])) {
 				foreach ($instance['clear_cache_by'] as $if => $set) {
@@ -191,18 +191,18 @@ if (ze::$canCache
 			@chmod(CMS_ROOT. $path. 'cached_files', 0666);
 			@chmod(CMS_ROOT. $path. 'page.html', 0666);
 			
-			zenario_page_caching__logStats(array('writes', 'total'));
+			zenario_page_caching__logStats(['writes', 'total']);
 			return;
 		}
 	}
 	
 	
 	if ($pluginsFromCache) {
-		zenario_page_caching__logStats(array('partial_hits', 'total'));
+		zenario_page_caching__logStats(['partial_hits', 'total']);
 	} elseif ($pluginsCached) {
-		zenario_page_caching__logStats(array('partial_writes', 'total'));
+		zenario_page_caching__logStats(['partial_writes', 'total']);
 	} else {
-		zenario_page_caching__logStats(array('misses', 'total'));
+		zenario_page_caching__logStats(['misses', 'total']);
 	}
 }
 

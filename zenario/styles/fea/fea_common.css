@@ -170,21 +170,14 @@ table.table_list tr .sorted_buttons {
 	text-align:right;
 }
 
-/* Sorted buttons width
---------------------------------------------------------------------------------------------------*/
-
-.zenario_users_fea table.table_list tr .sorted_buttons {
-	width:180px;
-}
-
 /* Block list like block
 --------------------------------------------------------------------------------------------------*/
 
-.zfea_blocks.aw_list .zfea_block_list_wrap {
+.zfea_blocks .zfea_block_list_wrap {
 	padding-bottom:10px;
 }
 
-.zfea_blocks.aw_list .zfea_block_list_wrap .zfea_block {
+.zfea_blocks .zfea_block_list_wrap .zfea_block {
 	position:relative;
 	float:left;
 	width:calc(31% - 34px);
@@ -196,12 +189,12 @@ table.table_list tr .sorted_buttons {
 	border-radius: 10px;
 }
 
-.zfea_blocks.aw_list .zfea_block_list_wrap .zfea_block:before,
-.zfea_blocks.aw_list .zfea_block_list_wrap .zfea_block:after,
-.zfea_blocks.aw_list .zfea_block_list_wrap:before,
-.zfea_blocks.aw_list .zfea_block_list_wrap:after,
-.zfea_blocks.aw_list .zfea_block_list_wrap_inner:before,
-.zfea_blocks.aw_list .zfea_block_list_wrap_inner:after {
+.zfea_blocks .zfea_block_list_wrap .zfea_block:before,
+.zfea_blocks .zfea_block_list_wrap .zfea_block:after,
+.zfea_blocks .zfea_block_list_wrap:before,
+.zfea_blocks .zfea_block_list_wrap:after,
+.zfea_blocks .zfea_block_list_wrap_inner:before,
+.zfea_blocks .zfea_block_list_wrap_inner:after {
 	content: '.';
 	width: 0;
 	height: 0;
@@ -212,17 +205,17 @@ table.table_list tr .sorted_buttons {
 	visibility: hidden;
 }
 
-.zfea_blocks.aw_list .zfea_block_list_wrap:after,
-.zfea_blocks.aw_list .zfea_block_list_wrap_inner:after,
-.zfea_blocks.aw_list .zfea_block_list_wrap .zfea_block:after {
+.zfea_blocks .zfea_block_list_wrap:after,
+.zfea_blocks .zfea_block_list_wrap_inner:after,
+.zfea_blocks .zfea_block_list_wrap .zfea_block:after {
 	clear: both;
 }
 
-.zfea_blocks.aw_list .zfea_block_list_wrap .zfea_block.clickable {
+.zfea_blocks .zfea_block_list_wrap .zfea_block.clickable {
 	cursor:pointer;
 }
 
-.zfea_blocks.aw_list .zfea_block_list_wrap .zfea_block > svg {
+.zfea_blocks .zfea_block_list_wrap .zfea_block > svg {
 	position:absolute;
 	left:0;
 	right:0;
@@ -230,33 +223,33 @@ table.table_list tr .sorted_buttons {
 	z-index:1;
 }
 
-.zfea_blocks.aw_list .zfea_block_list_wrap .zfea_block p {
+.zfea_blocks .zfea_block_list_wrap .zfea_block p {
 	position:relative;
 	z-index:2;
 	margin:0 0 3px;
 }
 
-.zfea_blocks.aw_list .zfea_block_list_wrap .zfea_block p.column_image_id img {
+.zfea_blocks .zfea_block_list_wrap .zfea_block p.column_image_id img {
 	max-width:22px !important;
 	max-height:22px !important;
 }
 
-.zfea_blocks.aw_list .zfea_block_list_wrap .zfea_block p.column_asset_name {
+.zfea_blocks .zfea_block_list_wrap .zfea_block p.column_asset_name {
 	font-size:18px;
 	font-weight:600;
 }
 
-.zfea_blocks.aw_list .zfea_block_list_wrap .zfea_block p.column_hierarchy_breadcrumbs {
+.zfea_blocks .zfea_block_list_wrap .zfea_block p.column_hierarchy_breadcrumbs {
 	font-size:12px;
 	line-height:1.5em;
 }
 
-.zfea_blocks.aw_list .zfea_block_list_wrap .zfea_block p:first-child {
+.zfea_blocks .zfea_block_list_wrap .zfea_block p:first-child {
 	font-size:1.2em;
 	font-weight:bold;
 }
 
-.zfea_blocks.aw_list .zfea_block_list_wrap .zfea_block .buttons {
+.zfea_blocks .zfea_block_list_wrap .zfea_block .buttons {
 	position:relative;
 	z-index:2;
 	text-align:center;
@@ -264,17 +257,17 @@ table.table_list tr .sorted_buttons {
 	padding:0 8px;
 }
 
-.zfea_blocks.aw_list .zfea_block_list_wrap .zfea_block .buttons a {
+.zfea_blocks .zfea_block_list_wrap .zfea_block .buttons a {
 	margin:2px auto;
 }
 
-.zfea_blocks.aw_list .sorted_buttons {
+.zfea_blocks .sorted_buttons {
 	float:none;
 	display:block;
 	text-align:right;
 }
 
-body.mobile .zfea_blocks.aw_list .zfea_block_list_wrap .zfea_block {
+body.mobile .zfea_blocks .zfea_block_list_wrap .zfea_block {
 	width:calc(50% - 34px - 2%);
 }
 
@@ -777,12 +770,6 @@ body.mobile .zfea_blocks.aw_list .zfea_block_list_wrap .zfea_block {
 	margin-bottom:20px;
 }
 
-.zenario_conference_fea .zfea_zenario_list_abstracts table tr td.sorted_buttons.multi_select_buttons {
-	vertical-align:top;
-	background:#fbf290;
-	padding-top:0;
-}
-
 /* Storefront documents
 --------------------------------------------------------------------------------------------------*/
 
@@ -840,26 +827,6 @@ body.mobile .zfea_blocks.aw_list .zfea_block_list_wrap .zfea_block {
 	padding-bottom:3px;
 }
 
-.zenario_storefront_documents_fea .storefront_document_description ul {
-	list-style:disc;
-}
-
-.zfea_confirm_member_notice .zfea_confirm_buttons {
-	text-align:center;
-}
-
-.zfea_confirm_member_notice .zfea_confirm_buttons form {
-	display:inline-block;
-}
-
-.zfea_confirm_member_notice .zfea_confirm_buttons form .zfea_do_it {
-	float:right;
-}
-
-.zfea_confirm_member_notice .zfea_confirm_buttons form .zfea_cancel {
-	float:left;
-}
-
 /* Storefront physical products
 --------------------------------------------------------------------------------------------------*/
 
@@ -903,24 +870,8 @@ body.mobile .zfea_blocks.aw_list .zfea_block_list_wrap .zfea_block {
     text-align: right;
 }
 
-.zenario_storefront_physical_products_fea table th {
-	white-space: nowrap;
-}
-
-.zenario_storefront_physical_products_fea table tr .sorted_buttons {
+.zenario_storefront_physical_products_fea .zfea_zenario_list_products table .sorted_buttons {
 	width:205px;
-}
-
-/* Locations
---------------------------------------------------------------------------------------------------*/
-
-.zenario_locations_fea .zfea_zenario_list_locations p.column_description.zfea_first_col .label {
-	font-size:20px;
-	font-weight:700;
-}
-
-.zenario_locations_fea .zfea_zenario_list_locations.zfea_blocks .buttons {
-	margin-top:10px;
 }
 
 /* Tokenize
@@ -1136,13 +1087,11 @@ body.mobile .zfea_blocks.aw_list .zfea_block_list_wrap .zfea_block {
 }
 
 .modal_window .confirm_warning,
-.modal_window .warning,
 .zfea.confirm_warning .messageDisplay div {
-	background:url("images/icon-warning-triangle.svg") no-repeat scroll 0 0 / 47px 40px;
+	background:url("../images/icon-warning-triangle.svg") no-repeat scroll 0 0 / 47px 40px;
     min-height: 40px;
     padding: 5px 0 0 60px;
     text-align:left !important;
-    color:inherit;
 }
 
 /* Buttons, nest top buttons
@@ -1417,7 +1366,6 @@ a.nest_show_embed,
 .zenario_skin input[type="submit"].small_button,
 .zenario_skin .small_button,
 .zenario_skin .fea_filter,
-.manual_input span.label,
 .nest_buttons a,
 a.zfea_button,
 a.nest_show_embed {
@@ -1435,9 +1383,10 @@ a.nest_show_embed {
 }
 
 .manual_input span.label {
-	font-size:2em;
-	height:62px;
-	line-height:62px;
+	font-size:18px;
+	height:40px;
+	line-height:36px;
+	font-weight:600;
 }
 
 .zenario_skin input[type="button"].small_button,
@@ -1498,6 +1447,7 @@ a.nest_show_embed {
 }
 
 .zenario_skin .button_with_children_wrap ul li a.fea_filter {
+	white-space:normal;
 	-webkit-border-radius:0;
 	-moz-border-radius:0;
 	border-radius:0;
@@ -2195,7 +2145,6 @@ body.retina #colorbox .connection_tabbed_panel .simulator_img {
 	background: white;
 	border: solid 1px black;
 	position:relative;
-	margin-top:10px;
 }
 
 .paginator_slider .ui-slider-handle {
@@ -2204,11 +2153,6 @@ body.retina #colorbox .connection_tabbed_panel .simulator_img {
 	position: absolute;
 	top: -4px;
 	background-color:black;
-}
-
-.paginator_slider .ui-slider-handle.ui-state-hover {
-	background:#333;
-	cursor:pointer;
 }
 
 .zfea_pagination {
@@ -2393,6 +2337,10 @@ body.retina #colorbox .connection_tabbed_panel .simulator_img {
 	line-height:28px;
 }
 
+.graph_options .fa.fa-calendar {
+	left:-32px;
+}
+
 .fa.fa-caret-left,
 .fa.fa-circle,
 .fa.fa-refresh {
@@ -2438,6 +2386,10 @@ body.retina #colorbox .connection_tabbed_panel .simulator_img {
 .zenario_skin .zfea .search_form .input-group.clear_search .fa.fa-times-circle {
 	top:8px;
 	font-size:18px;
+}
+
+.button_arrow_right {
+	white-space:normal !important;
 }
 
 /* Smart breadcrumbs
@@ -2833,6 +2785,10 @@ body.mobile .zfea_zenario_list_orders .zfea_block_list_wrap .zfea_block p.column
 	.zenario_storefront_documents_fea .view_storefront_document .price_info .price_info_links {
 		text-align:center;
 		padding-top:10px;
+	}
+	
+	body.mobile .zfea_blocks .zfea_block_list_wrap .zfea_block {
+		width:calc(100% - 30px - 2% - 6px);
 	}
 }
 

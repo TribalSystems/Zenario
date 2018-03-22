@@ -55,7 +55,14 @@ zenario_user__details:
                             label: Suspended extranet user
                             tooltip: "A suspended user who cannot log in"
                     redraw_onchange: true
+                
+                screen_name_grouping:
+                    dataset_label: '[Screen name grouping]'
+                    type: grouping
+                    name: screen_name_grouping
+                
                 screen_name: 
+                    grouping: screen_name_grouping
                     label: "Screen Name"
                     type: text
                     visible_if: |
@@ -65,6 +72,7 @@ zenario_user__details:
                     maxlength: 50
                     
                 suggest_screen_name:
+                    grouping: screen_name_grouping
                     same_row: true
                     visible_if: |
                         !zenarioAB.tuix.key.id
@@ -81,7 +89,8 @@ zenario_user__details:
                                     }
                             "/>
                 screen_name_confirmed:
-                    label: 'Screen Name chosen/ accepted by user'
+                    grouping: screen_name_grouping
+                    label: 'Screen Name chosen/accepted by user'
                     type: checkbox
                     visible_if: |
                         zenarioAB.tuix.key.id
@@ -98,6 +107,7 @@ zenario_user__details:
                     name: password_grouping
                 
                 change_password:
+                    dataset_label: '[Change password toggle]'
                     grouping: password_grouping
                     priv: _PRIV_EDIT_USER
                     type: toggle
@@ -244,12 +254,6 @@ zenario_user__details:
                     label: "Last Login"
                     type: date
                     change_month_and_year: true
-                    readonly: true
-                last_login_ip: 
-                    visible_if: |
-                        zenarioAB.value('status', 'details') != 'contact'
-                    label: "Last Login IP"
-                    type: text
                     readonly: true
                 last_profile_update_in_frontend: 
                     visible_if: |

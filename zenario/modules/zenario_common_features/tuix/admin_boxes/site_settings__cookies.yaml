@@ -8,12 +8,12 @@ site_settings:
         cookies:
             label: Cookie Policy
             edit_mode:
-                enabled: Yes
+                enabled: true
                 priv: _PRIV_EDIT_SITE_SETTING
-                on: No
+                on: false
             fields:
                 description:
-                    full_width: Yes
+                    full_width: true
                     snippet:
                         html: |
                             <p>
@@ -33,9 +33,8 @@ site_settings:
                         explicit:
                             ord: "2"
                             label: "Explicit consent: require visitor's consent before setting cookies"
-                    redraw_onchange: Yes
+                    redraw_onchange: true
                 description__dont_inform:
-                    ord: "90"
                     snippet:
                         html: |
                             <p>
@@ -50,9 +49,8 @@ site_settings:
                         zenarioAB.value('cookie_require_consent') == 'implied'
                     values:
                         message_continue: A consent message with a "Continue" button
-                    redraw_onchange: Yes
+                    redraw_onchange: true
                 description__implied:
-                    ord: "91"
                     snippet:
                         html: |
                             <p>
@@ -73,9 +71,8 @@ site_settings:
                         message_accept_reject: >
                             A consent message with an "Accept" button and a "Reject"
                             button
-                    redraw_onchange: Yes
+                    redraw_onchange: true
                 description__explicit__message_accept:
-                    ord: "92"
                     snippet:
                         html: |
                             <p>
@@ -96,7 +93,6 @@ site_settings:
                         zenarioAB.value('cookie_require_consent') == 'explicit' &&
                         zenarioAB.value('cookie_consent_type__explicit') != 'message_accept_reject'
                 description__explicit__message_accept_reject:
-                    ord: "93"
                     snippet:
                         html: |
                             <p>
@@ -116,6 +112,60 @@ site_settings:
                     visible_if: |
                         zenarioAB.value('cookie_require_consent') == 'explicit' &&
                         zenarioAB.value('cookie_consent_type__explicit') == 'message_accept_reject'
+        
+                _COOKIE_CONSENT_IMPLIED_MESSAGE:
+                    indent: 1
+                    visible_if: |
+                        zenarioAB.value('cookie_require_consent') == 'implied'
+                    label: Message
+                    type: editor
+                    insert_link_button: true
+                    validation:
+                        required_if_not_hidden: Please enter a message
+                _COOKIE_CONSENT_CONTINUE:
+                    indent: 1
+                    visible_if: |
+                        zenarioAB.value('cookie_require_consent') == 'implied'
+                    label: Continue button text
+                    type: text
+                    validation:
+                        required_if_not_hidden: true
+                
+                _COOKIE_CONSENT_MESSAGE:
+                    indent: 1
+                    visible_if: |
+                        zenarioAB.value('cookie_require_consent') == 'explicit'
+                    label: Message
+                    type: editor
+                    insert_link_button: true
+                    validation:
+                        required_if_not_hidden: Please enter a message
+                _COOKIE_CONSENT_ACCEPT:
+                    indent: 1
+                    visible_if: |
+                        zenarioAB.value('cookie_require_consent') == 'explicit'
+                    label: Accept button text
+                    type: text
+                    validation:
+                        required_if_not_hidden: true
+                _COOKIE_CONSENT_REJECT:
+                    indent: 1
+                    visible_if: |
+                        zenarioAB.value('cookie_require_consent') == 'explicit' &&
+                        zenarioAB.value('cookie_consent_type__explicit') == 'message_accept_reject'
+                    label: Reject button text
+                    type: text
+                    validation:
+                        required_if_not_hidden: true
+                _COOKIE_CONSENT_CLOSE:
+                    indent: 1
+                    visible_if: |
+                        zenarioAB.value('cookie_require_consent') == 'explicit'
+                    label: Close button text
+                    type: text
+                    validation:
+                        required_if_not_hidden: true
+        
         cookie_timeouts:
             label: Timeouts
             edit_mode:

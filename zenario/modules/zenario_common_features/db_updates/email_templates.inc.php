@@ -31,7 +31,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 //Currently there's no nice way to do this using an XML or YAML file, so they need to be
 //added into the database using a SQL statement.
 
-ze\dbAdm::revision(195, "
+ze\dbAdm::revision(217, "
 	INSERT INTO [[DB_NAME_PREFIX]]email_templates (
 		module_class_name,
 		`code`,
@@ -45,22 +45,19 @@ ze\dbAdm::revision(195, "
 		allow_attachments
 	) VALUES (
 		'zenario_common_features',
-		'zenario_common_features__notification_to_new_admin',
-		'Notification to new Admin',
+		'zenario_common_features__notification_to_new_admin_no_password',
+		'Notification to new Admin (no password)',
 		'Your Zenario administrator account',
 		'". ze\escape::sql(ze::setting('email_address_from')). "',
 		'". ze\escape::sql(ze::setting('email_name_from')). "',
 		'<h1>Administrator account created</h1>
 <p>Dear&nbsp;[[first_name]] [[last_name]],</p>
 <p><br>You have been created an administrator account on [[cms_url]].</p>
-<p>Here are your administrator login details:</p>
-<p>username: [[username]]</p>
-<p>password: [[password]]</p>
+<p>Your username is <strong>[[username]]</strong>.</p>
 <p>&nbsp;</p>
 <p>What to do now:</p>
-<p>1) Please follow this link to the Admin area of your site: [[cms_url]]admin</p>
-<p>2) Follow the login procedure using the provided&nbsp;username and password.</p>
-<p>3) Start administering your site!</p>
+<p>1) Follow this link to create a password: [[new_admin_cms_url]]</p>
+<p>2) Login and start administering your site!</p>
 <p>Remember that you can always log in with administrator access by putting \"/admin\" after your site\'s domain name. Also please note that this is an Administrator login, not an Extranet User login (if the site has a password-protected area for visitors).</p>
 <p>&nbsp;</p>
 <p>This is an auto-generated email from [[cms_url]]&nbsp;, please do not try to reply.<br> <br> Thank you.&nbsp;</p>',
@@ -72,5 +69,12 @@ ze\dbAdm::revision(195, "
 		module_class_name = VALUES(module_class_name),
 		`subject` = VALUES(`subject`),
 		`body` = VALUES(`body`)
-"
+",
+
+<<<_sql
+	UPDATE [[DB_NAME_PREFIX]]site_settings
+	SET value = "zenario_common_features__notification_to_new_admin_no_password"
+	WHERE name = "notification_to_new_admin"
+_sql
+
 );

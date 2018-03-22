@@ -71,7 +71,6 @@ ze\cache::incJS('zenario/js/panel_type_form_builder_base_class');
 ze\cache::incJS('zenario/js/panel_type_form_builder');
 ze\cache::incJS('zenario/js/panel_type_admin_box_builder');
 
-ze\cache::incJS('zenario/js/panel_type_schematic_builder');
 
 
 //Run post-display actions

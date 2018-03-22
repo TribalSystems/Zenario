@@ -11,7 +11,7 @@ plugin_settings:
                     type: text
                     plugin_setting:
                         name: company_name
-                    value: zenario
+                    value: Tribal Ltd.
                     style: width:450px;
                 address:
                     label: 'Address:'
@@ -19,8 +19,7 @@ plugin_settings:
                     plugin_setting:
                         name: address
                     value: >
-                        zenario, Dukesbridge House, 23 Duke Street, Reading, RG1 4SA,
-                        United Kingdom
+                        Blagrave House, 17 Blagrave Street, Reading, England RG1 1QB
                 width:
                     plugin_setting:
                         name: width

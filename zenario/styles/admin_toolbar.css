@@ -27,46 +27,6 @@
 
 /* new toolbar */
 
-#zenario_at_logout_link a,
-#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_alias a,
-#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_title a {
-	background-image:url('../admin/images/sprites/org-icons-v5.png');
-}
-
-#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_permissions_closed_no_access a,
-#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_permissions_closed_group_members a,
-#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_permissions_closed_specific_users a {
-	width: 22px;
-	height: 22px;
-	display: block;
-	float: right;
-}
-
-#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_permissions_closed_no_access a {
-	background-image:url('../admin/images/no-regular-access-admin-toolbar-icon.png');
-}
-
-#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_permissions_closed_group_members a,
-#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_permissions_closed_specific_users a {
-	background-image:url('../admin/images/password-protected-group-admin-toolbar-icon.png');
-}
-
-#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_categories_none a,
-#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_categories_some a {
-	-webkit-border-radius: 2px;
-	-moz-border-radius: 2px;
-	border-radius: 2px;
-	cursor:pointer;
-}
-
-#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_categories_none a {
-	background:#E2E2E2 url('../admin/images/icon-categories-dark-v2.svg') no-repeat center center / auto 14px;
-}
-
-#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_categories_some a {
-	background:#C5E8F4 url('../admin/images/icon-categories-on.svg') no-repeat center center / auto 14px;
-}
-
 #zenario_at_wrap {
 	background:#F6F6F6;
 	border-bottom:1px solid #CACACA;
@@ -86,7 +46,7 @@
 	display:block;
 	width:38px;
 	height:41px;
-	background-position: -753px -6px;
+	background:url('../admin/images/icon-logout.svg') no-repeat center / 14px auto;
 	position:absolute;
 	z-index:103;
 	right:15px;
@@ -188,7 +148,7 @@
 
 #zenario_at #zenario_at_toolbars .zenario_at_status_button .zenario_at_status_button_published a {
 	color:#01AD03;
-	background:url('../admin/images/published-tick-icon.png') no-repeat left 0;
+	background:url('../admin/images/icon-tick-green-circle.svg') no-repeat left 0 / 16px 16px;
 	padding:0 0 0 22px;
 }
 
@@ -443,19 +403,59 @@
 	color:#3c3c3c;
 }
 
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_categories_none a,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_categories_some a,
 #zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_language a,
 #zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_version a,
 #zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_tag_id a,
-#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_layout a {
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_layout a,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_permissions a,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_alias a,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_title a {
 	height:22px;
 	background:#E2E2E2;
 	float:right;
-	text-align:center;
-	padding:0 4px;
 	line-height:22px;
 	-webkit-border-radius: 2px;
 	-moz-border-radius: 2px;
 	border-radius: 2px;
+}
+
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_permissions a {
+	width:22px;
+}
+
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_categories_some a,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_categories_none a,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_alias a,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_title a {
+	width:24px;
+}
+
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_language a,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_version a,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_tag_id a,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_layout a {
+	text-align:center;
+	padding:0 4px;
+}
+
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_categories_none a,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_categories_some a,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_permissions a,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_alias a,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_title a {
+	background-repeat:no-repeat;
+	background-position:center center;
+	background-size:auto 16px;
+}
+
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_categories_none a,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_categories_some a,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_permissions a,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_layout a,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_title a {
+	cursor:pointer;
 }
 
 #zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_tag_id_special_page a {	
@@ -494,72 +494,57 @@
 	text-shadow:0 1px 1px #333;
 }
 
-#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_version a {
-}
-
-#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_categories_some a,
-#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_categories_none a,
-#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_permissions a,
-#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .item_permissions_closed a,
-#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_alias a,
-#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_title a {
-	width:24px;
-	height:22px;
-	display:block;
-	float:right;
-}
-
-#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_categories_some a {
-	cursor:pointer;
-}
-
-#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_permissions a {
-	cursor:pointer;
-}
-
-#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_permissions. a {
-	cursor:pointer;
-}
-
-#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_layout a {
-	cursor:pointer;
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_permissions.privacy_with_role a {
+	background-color:#AAEBCC;
 }
 
 #zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_permissions.privacy_group_members a {
-	background: url('../admin/images/privacy/admin_toolbar/group_members.png') no-repeat;
-}
-
-#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_permissions.privacy_with_role a {
-	background: url('../admin/images/privacy/admin_toolbar/with_role.png') no-repeat;
+	background-color:#D8AEEB;
 }
 
 #zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_permissions.privacy_logged_in a {
-	background: url('../admin/images/privacy/admin_toolbar/logged_in.png') no-repeat;
+	background-color:#EBACB3;
 }
 
 #zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_permissions.privacy_send_signal a,
 #zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_permissions.privacy_call_static_method a {
-	background: url('../admin/images/privacy/admin_toolbar/php.png') no-repeat;
-}
-
-#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_permissions.privacy_public a,
-#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_permissions.privacy_logged_out a {
-	background: url('../admin/images/privacy/admin_toolbar/public.png') no-repeat;
+	background-color:#EBD8AA;
 }
 
 #zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_permissions.privacy_in_smart_group a,
 #zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_permissions.privacy_logged_in_not_in_smart_group a {
-	background: url('../admin/images/privacy/admin_toolbar/smart_group.png') no-repeat;
+	background-color:#ABD3EB;
 }
 
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_permissions.privacy_public a,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_permissions.privacy_logged_out a,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_alias a {
+	background-color:#e2e2e2;
+}
+
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_categories_none a {
+	background-image:url('../admin/images/icon-categories-dark-v2.svg');
+	background-size:auto 14px;
+}
+
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_categories_some a {
+	background-image:url('../admin/images/icon-categories-on.svg');
+	background-size:auto 14px;
+	background-color:#C5E8F4;
+}
+
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_permissions a {
+	background-image:url('../admin/images/icon-permissions.svg');
+}
 
 #zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_alias a {
-	background-position:-810px -112px;
+	background-image:url('../admin/images/icon-copy-url.svg');
+	background-size:auto 16px;
 }
 
 #zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_title a {
-	background-position:-762px -112px;
-	cursor: pointer;
+	background-image:url('../admin/images/icon-title.svg');
+	background-size:18px auto;
 }
 
 #zenario_at .zenario_at_tabs .zenario_toolbar .zenario_middle .zenario_middle_inner {
@@ -1086,7 +1071,10 @@ body.zenario_pageMode_layout #zenario_at .zenario_at_toolbar > div > ul > li.zen
 	-moz-border-radius: 3px;
 	border-radius: 3px;
 	-webkit-box-shadow: 0px 0px 3px 0px #888;
-	box-shadow: 0px 0px 3px 0px #888;  
+	box-shadow: 0px 0px 3px 0px #888; 
+	max-height:400px;
+	overflow-y:auto;
+	overflow-x:hidden; 
 }
 
 #zenario_at ul ul:after {

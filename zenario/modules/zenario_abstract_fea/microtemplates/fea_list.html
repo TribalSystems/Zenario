@@ -1,6 +1,6 @@
 <%
-	var containerId = m.lib.containerId, tuix = m.tuix;
-	zenario.sendSignal('eventListPreDisplay', {containerId: containerId, microTemplate: 'fea_list', tuix: tuix});
+	var containerId = m.lib.containerId, tuix = m.tuix, lib = m.lib;
+	zenario.sendSignal('eventListPreDisplay', {containerId: containerId, microTemplate: 'fea_list', tuix: tuix, lib: lib});
 %>
 
 
@@ -37,17 +37,17 @@
 	<% } %>
 	
 	<div class="zfea_back_button">
-		<% if (zenarioT.find(m.tuix.sortedCollectionButtons, 'back')) { %>
-			{{m.lib.pMicroTemplate('button', m.tuix.sortedCollectionButtons, 'back')}}
+		<% if (zenarioT.find(m.thus.sortedCollectionButtons, 'back')) { %>
+			{{m.lib.pMicroTemplate('button', m.thus.sortedCollectionButtons, 'back')}}
 		<% } %>
 	</div>
 	<div class="zfea_buttons zfea_top_buttons">
-		<% if (zenarioT.find(m.tuix.sortedCollectionButtons, 'top')) { %>
-			{{m.lib.pMicroTemplate('button', m.tuix.sortedCollectionButtons, 'top')}}
+		<% if (zenarioT.find(m.thus.sortedCollectionButtons, 'top')) { %>
+			{{m.lib.pMicroTemplate('button', m.thus.sortedCollectionButtons, 'top')}}
 		<% } %>
 	</div>
 	
-	<% var ci, col, chi, child, bi, button, ii, item, firstItem = true; %>
+	<% var ci, col, chi, child, bi, button, oi, log, logName, gi, lg, lgName, ii, item, firstItem = true; %>
 	
 	{{m.lib.pMicroTemplate('list_search', m)}}
 	
@@ -59,8 +59,8 @@
 	
 	<% if (m.tuix.hide_column_headings) { %>
 		<div class="zfea_buttons sorted_buttons single_select_buttons">
-			<% if (zenarioT.find(m.tuix.sortedCollectionButtons, false)) { %>
-				{{m.lib.pMicroTemplate('button', m.tuix.sortedCollectionButtons, false)}}
+			<% if (zenarioT.find(m.thus.sortedCollectionButtons, false)) { %>
+				{{m.lib.pMicroTemplate('button', m.thus.sortedCollectionButtons, false)}}
 			<% } %>
 		</div>
 	<% } %>
@@ -77,126 +77,162 @@
 				table_list
 				{{m.tuix.table_css_class|e}}
 			">
-				<tr>
-					<% if (!m.tuix.hide_column_headings) { %>
-						<% if (m.lib.multiSelectButtonsExist) { %>
-							<th class="zfea_check_all zfea_always_visible">
-								<input
-									type="checkbox"
-									class="zfea_check_all"
-									id="zfea_check_all_{{m.lib.containerId|e}}"
-									onclick="{{m.lib.fun('checkAllCheckboxes')}}(this);"
-								/>
-							</th>
-						<% } %>
-						<% foreach (m.tuix.sortedColumns as ci => col) { %>
-							<th
-								class="
-									<% if (ci == 0) { %>
-										zfea_first_col
-									<% } %>
-									<% if (ci < alVisCols) { %>
-										zfea_always_visible
-									<% } %>
-								"
-							><div><span>{{col.title|e}}</span></div></th>
-						<% } %>
-						<% if (m.tuix.itemHasItemButton || m.tuix.sortedCollectionButtons.length) { %>
-							<th class="sorted_buttons">
-								<% if (zenarioT.find(m.tuix.sortedCollectionButtons, false)) { %>
-									{{m.lib.pMicroTemplate('button', m.tuix.sortedCollectionButtons, false)}}
-								<% } %>
-							</th>
-						<% } %>
-					<% } %>
-				</tr>
-				<% foreach (m.tuix.sortedItems as ii => item) { %>
-					<tr class="zfea_row {{item.row_class|e}}">
-						<% if (m.lib.multiSelectButtonsExist) { %>
-							<td class="zfea_check_item zfea_always_visible">
-								<input
-									type="checkbox"
-									class="zfea_check_item"
-									data-item_id="{{item.id|e}}"
-									onclick="{{m.lib.fun('updateItemButtons')}}();"
-								/>
+				<% foreach (m.thus.sortedListOuterGroupings as oi => logName) { %>
+					<% log = m.tuix.list_outer_groupings && m.tuix.list_outer_groupings[logName] || {}; %>
+			
+					<% if (log.label) { %>
+						<tr class="zfea_list_outer_grouping">
+							<td colspan="99">
+								<h4>{{log.label|escape}}</h4>
 							</td>
+						</tr>
+					<% } %>
+			
+					<% foreach (m.thus.sortedListGroupings as gi => lgName) { %>
+						<% lg = m.tuix.list_groupings && m.tuix.list_groupings[lgName] || {}; %>
+					
+						<% if (m.tuix.list_outer_groupings && lg.list_outer_grouping != logName) { %>
+							<% continue; %>
 						<% } %>
-						<% foreach (m.tuix.sortedColumns as ci => col) { %>
-							<td
-								id="{{('zfea_' + m.lib.containerId + '_row_' + ii + '_col_' + ci)|e}}"
-								data-label="{{col.title|e}}" 
-								class="
-									<% if (ci == 0) { %>
-										zfea_first_col
-									<% } %>
-									<% if (ci < alVisCols) { %>
-										zfea_always_visible
-									<% } %>
-								"
-								style="
-									<% if (col.align_right) { %>
-										text-align: right;
-									<% } %>
-								"
-							>
-
-					
-								<div class="col_value col_value_for__{{col.id|e}} 
-								
-									<% if (item.cell_css_classes && item.cell_css_classes[col.id]) { %>
-										{{item.cell_css_classes[col.id]|e}}
-									<% } %>
-									" 
-									<% if (item.cell_tooltip && item.cell_tooltip[col.id]) { %>
-										title="{{item.cell_tooltip[col.id]|e}}"
-									<% } %>
-								>
-									{{m.lib.pMicroTemplate('list_cell', {col: col, item: item})}}
-					
-									<% if (col.children) { %>
-										<% foreach (col.children as chi => child) { %>
+			
+							<% if (lg = m.tuix.list_groupings && m.tuix.list_groupings[lgName]) { %>
+								<tr class="zfea_list_grouping">
+									<td colspan="99">
+										<h5>{{lg.label|escape}}</h5>
+									</td>
+								</tr>
+							<% } %>
 							
-											</div><div class="col_child_value  col_value_for__{{child.id|e}}">
-												<% if (child.title) { %>
-													<label>{{child.title|e}}</label>
+								<tr>
+									<% if (!m.tuix.hide_column_headings) { %>
+										<% if (m.lib.multiSelectButtonsExist) { %>
+											<th class="zfea_check_all zfea_always_visible">
+												<input
+													type="checkbox"
+													class="zfea_check_all"
+													id="zfea_check_all_{{m.lib.containerId|e}}"
+													onclick="{{m.lib.fun('checkAllCheckboxes')}}(this);"
+												/>
+											</th>
+										<% } %>
+										<% foreach (m.thus.sortedColumns as ci => col) { %>
+											<th
+												class="
+													<% if (ci == 0) { %>
+														zfea_first_col
+													<% } %>
+													<% if (ci < alVisCols) { %>
+														zfea_always_visible
+													<% } %>
+												"
+											><div><span>{{col.title|e}}</span></div></th>
+										<% } %>
+										<% if (m.tuix.__itemHasItemButton || m.thus.sortedCollectionButtons.length) { %>
+											<th class="sorted_buttons">
+												<% if (zenarioT.find(m.thus.sortedCollectionButtons, false)) { %>
+													{{m.lib.pMicroTemplate('button', m.thus.sortedCollectionButtons, false)}}
 												<% } %>
-									
-												{{m.lib.pMicroTemplate('list_cell', {col: child, item: item})}}
+											</th>
 										<% } %>
 									<% } %>
-								</div>
-							</td>
-						<% } %>
-						<% if (m.tuix.itemHasItemButton || m.tuix.sortedCollectionButtons.length) { %>
-							<td class="sorted_buttons single_select_buttons">
-								<% if (item.sortedItemButtons.length) { %>
-									{{m.lib.pMicroTemplate('button', item.sortedItemButtons)}}
-								<% } else { %>
-									&nbsp;
+								</tr>
+								<% foreach (m.thus.sortedItems as ii => item) { %>
+					
+									<% if (m.tuix.list_groupings && item.list_grouping != lgName) { %>
+										<% continue; %>
+									<% } %>
+					
+					
+									<tr class="zfea_row {{item.row_class|e}}">
+										<% if (m.lib.multiSelectButtonsExist) { %>
+											<td class="zfea_check_item zfea_always_visible">
+												<input
+													type="checkbox"
+													class="zfea_check_item"
+													data-item_id="{{item.id|e}}"
+													onclick="{{m.lib.fun('updateItemButtons')}}();"
+												/>
+											</td>
+										<% } %>
+										<% foreach (m.thus.sortedColumns as ci => col) { %>
+											<td
+												id="{{('zfea_' + m.lib.containerId + '_row_' + ii + '_col_' + ci)|e}}"
+												data-label="{{col.title|e}}" 
+												class="
+													{{col.css_class|e}}
+													<% if (ci == 0) { %>
+														zfea_first_col
+													<% } %>
+													<% if (ci < alVisCols) { %>
+														zfea_always_visible
+													<% } %>
+												"
+												style="
+													<% if (col.align_right) { %>
+														text-align: right;
+													<% } %>
+												"
+											>
+
+				
+												<div class="col_value col_value_for__{{col.id|e}} 
+							
+													<% if (item.cell_css_classes && item.cell_css_classes[col.id]) { %>
+														{{item.cell_css_classes[col.id]|e}}
+													<% } %>
+													" 
+													<% if (item.cell_tooltip && item.cell_tooltip[col.id]) { %>
+														title="{{item.cell_tooltip[col.id]|e}}"
+													<% } %>
+												>
+													{{m.lib.pMicroTemplate('list_cell', {col: col, item: item})}}
+				
+													<% if (col.children) { %>
+														<% foreach (col.children as chi => child) { %>
+															<% if (m.lib.childColumnVisible(child.id, item.id)) { %>
+																</div><div class="col_child_value  col_value_for__{{child.id|e}}">
+																	<% if (child.title) { %>
+																		<label>{{child.title|e}}</label>
+																	<% } %>
+								
+																	{{m.lib.pMicroTemplate('list_cell', {col: child, item: item})}}
+															<% } %>
+														<% } %>
+													<% } %>
+												</div>
+											</td>
+										<% } %>
+										<% if (m.tuix.__itemHasItemButton || m.thus.sortedCollectionButtons.length) { %>
+											<td class="sorted_buttons single_select_buttons">
+												<% if (item.__sortedItemButtons.length) { %>
+													{{m.lib.pMicroTemplate('button', item.__sortedItemButtons)}}
+												<% } else { %>
+													&nbsp;
+												<% } %>
+											</td>
+										<% } %>
+										<% if (firstItem) { %>
+											<td
+												class="sorted_buttons multi_select_buttons"
+												id="multi_select_buttons_td_{{m.lib.containerId}}"
+												style="display: none;"
+												rowspan="{{m.thus.sortedItems.length}}"
+											>
+												<div id="multi_select_buttons_{{m.lib.containerId}}"></div>
+											</td>
+										<% } %>
+									</tr>
+									<% firstItem = false; %>
 								<% } %>
-							</td>
-						<% } %>
-						<% if (firstItem) { %>
-							<td
-								class="sorted_buttons multi_select_buttons"
-								id="multi_select_buttons_td_{{m.lib.containerId}}"
-								style="display: none;"
-								rowspan="{{m.tuix.sortedItems.length}}"
-							>
-								<div id="multi_select_buttons_{{m.lib.containerId}}"></div>
-							</td>
-						<% } %>
-					</tr>
-					<% firstItem = false; %>
+								<% if (m.thus.sortedItems.length == 0) { %>
+										<% if (m.tuix.no_items_message) { %>
+											<tr class="zfea_no_items_message"><td colspan="100%">{{m.tuix.no_items_message}}</td></tr>
+										<% } %>
+								<% } %>
+	
+	
+					<% } %>
 				<% } %>
-				<% if (m.tuix.sortedItems.length == 0) { %>
-						<% if (m.tuix.no_items_message) { %>
-							<tr class="zfea_no_items_message"><td colspan="100%">{{m.tuix.no_items_message}}</td></tr>
-						<% } %>
-				<% } %>
-		
-		
 			</table>
 		</div>
 	<% } %>
@@ -210,6 +246,6 @@
 
 <%
 	m.lib.after(function() {
-		zenario.sendSignal('eventListPostDisplay', {containerId: containerId, microTemplate: 'fea_list', tuix: tuix});
+		zenario.sendSignal('eventListPostDisplay', {containerId: containerId, microTemplate: 'fea_list', tuix: tuix, lib: lib});
 	});
 %>

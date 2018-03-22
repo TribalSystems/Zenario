@@ -33,17 +33,17 @@ class phiParser {
 	
 	
 	
-	public static function runPhi($phiCode, &$outputs, $vars = array(), $allowFunctions = false) {
+	public static function runPhi($phiCode, &$outputs, $vars = [], $allowFunctions = false) {
 		$twigCode = self::phiToTwig($phiCode, $allowFunctions);
 		return \ze\phi::runTwig($twigCode, $outputs, $vars);
 	}
 	
-	public static function carefullyRunPhi($phiCode, &$outputs, $vars = array(), $allowFunctions = false) {
+	public static function carefullyRunPhi($phiCode, &$outputs, $vars = [], $allowFunctions = false) {
 		$twigCode = self::phiToTwig($phiCode, $allowFunctions);
 		return \ze\phi::carefullyRunTwig($twigCode, $outputs, $vars);
 	}
 	
-	public static function testPhi($phiCode, &$outputs, $vars = array(), $allowFunctions = false) {
+	public static function testPhi($phiCode, &$outputs, $vars = [], $allowFunctions = false) {
 	
 		//Attempt to run the code
 		$error = false;
@@ -238,7 +238,7 @@ class phiParser {
 	protected function __construct($lineNumber, $line, $useBrackets = true) {
 		
 		$line = trim($line, $character_mask = " \t\n\r\0\x0B". ';');
-		$matches = array();
+		$matches = [];
 		
 		
 		//Try to catch control statements with their next line of code immediately after them
@@ -500,12 +500,13 @@ class phiParser {
 		if ($line == '') {
 			//empty lines
 			$this->isEmpty = true;
-	
+		
 		//Examples of for-loops in Twig:
 			//{% for i in 0..10 %}
 			//{% for user in users %}
 			//{% for key, user in users %}
-	
+		
+		//Look for for loops. Try to accept both Twig and PHP formats of loop
 		} elseif (preg_match('@^for\s*\((.*?)\s*in\s*(.*?)\s*\:\s*(.*?)\)$@i', $line, $matches)) {
 			$this->isFor = true;
 			$line = '{% for '. $matches[1]. ' in '. $matches[2]. '..'. $matches[3]. ' %}';
@@ -513,6 +514,14 @@ class phiParser {
 		} elseif (preg_match('@^for\s*\((.*?)\s*in\s*(.*?)\)$@i', $line, $matches)) {
 			$this->isFor = true;
 			$line = '{% for '. $matches[1]. ' in '. $matches[2]. ' %}';
+	
+		} elseif (preg_match('@^foreach\s*\((.*?)\s*as\s*(.*?)\s*=>\s*(.*?)\)$@i', $line, $matches)) {
+			$this->isFor = true;
+			$line = '{% for '. $matches[2]. ', '. $matches[3]. ' in '. $matches[1]. ' %}';
+	
+		} elseif (preg_match('@^foreach\s*\((.*?)\s*as\s*(.*?)\)$@i', $line, $matches)) {
+			$this->isFor = true;
+			$line = '{% for '. $matches[2]. ' in '. $matches[1]. ' %}';
 	
 		} elseif (preg_match('@^(if|elseif|else if)\s*\((.*?)\)$@i', $line, $matches)) {
 			$this->isIf = true;

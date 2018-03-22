@@ -52,7 +52,7 @@ if (!ze\module::inc('zenario_newsletter')) {
 }
 
 
-if ($link = ze\row::get(ZENARIO_NEWSLETTER_PREFIX. 'newsletter_user_link', array('user_id', 'newsletter_id'), array('remove_hash' => ($_REQUEST['t'] ?? false)))) {
+if ($link = ze\row::get(ZENARIO_NEWSLETTER_PREFIX. 'newsletter_user_link', ['user_id', 'newsletter_id'], ['remove_hash' => ($_REQUEST['t'] ?? false)])) {
 	
 	if (!ze\user::isInGroup(ze::setting('zenario_newsletter__all_newsletters_opt_out'), $link['user_id'])) {
 		if (!($_POST['confirm'] ?? false)) {

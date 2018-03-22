@@ -79,10 +79,10 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
 		$panel['key']['parentId'] =
 		$panel['key']['parentMenuID'] = $menuParent['id'] ?? false;
 		
-		$mrg = array(
+		$mrg = [
 			'lang' => ze\lang::name($panel['key']['languageId']),
 			'language_name' => ze\lang::name($panel['key']['languageId'], false),
-			'section' => ze\menu::sectionName($panel['key']['sectionId']));
+			'section' => ze\menu::sectionName($panel['key']['sectionId'])];
 
 		//Hide the "view content items under this menu node" if not showing the default language
 		if ($panel['key']['languageId'] != ze::$defaultLang) {

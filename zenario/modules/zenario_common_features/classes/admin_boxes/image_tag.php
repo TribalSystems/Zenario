@@ -33,7 +33,7 @@ class zenario_common_features__admin_boxes__image_tag extends ze\moduleBaseClass
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		
 		if ($box['key']['id']) {
-			if (!$details = ze\row::get('image_tags', true, array('name' => $box['key']['id']))) {
+			if (!$details = ze\row::get('image_tags', true, ['name' => $box['key']['id']])) {
 				echo ze\admin::phrase('Could not find a tag with the name "[[name]]"', $details);
 				exit;
 			}
@@ -46,7 +46,7 @@ class zenario_common_features__admin_boxes__image_tag extends ze\moduleBaseClass
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
 		
 		if ($values['details/name'] == $box['key']['id']) {
-		} elseif (ze\row::exists('image_tags', array('name' => $values['details/name']))) {
+		} elseif (ze\row::exists('image_tags', ['name' => $values['details/name']])) {
 			$box['tabs']['details']['errors'][] = ze\admin::phrase('A tag name with this name already exists.');
 		}
 	}
@@ -54,14 +54,14 @@ class zenario_common_features__admin_boxes__image_tag extends ze\moduleBaseClass
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		ze\priv::exitIfNot('_PRIV_MANAGE_MEDIA');
 		
-		$ids = array();
+		$ids = [];
 		if ($box['key']['id']) {
-			$ids = array('name' => $box['key']['id']);
+			$ids = ['name' => $box['key']['id']];
 		}
 		
 		ze\row::set(
 			'image_tags',
-			array('name' => $values['details/name'], 'color' => $values['details/color']),
+			['name' => $values['details/name'], 'color' => $values['details/color']],
 			$ids
 		);
 	}

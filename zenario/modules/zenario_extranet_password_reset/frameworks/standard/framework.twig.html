@@ -13,6 +13,10 @@
 				<div class="extranet_error">{{item.Error}}</div>
 			{% endfor %}
             
+            {% if Contact_For_Reset %}
+            	<p>{{Contact_For_Reset_Message}}</p>
+            {% endif %}
+            
             {% if Reset_Password_Form %}
                 <div>
                     <div class="extranet_field">

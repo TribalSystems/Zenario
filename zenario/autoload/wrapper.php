@@ -65,28 +65,6 @@ class wrapper {
 	}
 
 
-	//Formerly "outputRulesForSlotMinHeights()"
-	public static function outputRulesForSlotMinHeights() {
-		echo '
-.container .medium_slot .zenario_slot {
-	min-height: 150px;
-}
-
-.container .large_slot .zenario_slot {
-	min-height: 225px;
-}
-
-.container .xlarge_slot .zenario_slot {
-	min-height: 300px;
-}
-
-.container .xxlarge_slot .zenario_slot {
-	min-height: 375px;
-}';
-	}
-
-
-
 	//Formerly "includeSkinFiles()"
 	public static function includeSkinFiles(&$req, $linkV = false, $overrideCSS = false) {
 	
@@ -108,7 +86,7 @@ class wrapper {
 		}
 	
 		$templateFamily = $skin['family_name'];
-		$skins = array($skin['name']);
+		$skins = [$skin['name']];
 	
 		$limit = 10;
 		do {
@@ -134,12 +112,15 @@ class wrapper {
 			}
 		
 		
-			$files = array(array(), array(), array(), array());
+			$files = [[], [], [], []];
 			$browsers = explode(' ', \ze\cache::browserBodyClass());
 			foreach ($browsers as &$browser) {
 				$browser = 'style_'. $browser. '.css';
 			}
 			$browsers = array_flip($browsers);
+			
+			//Add the default styles
+			$files[1][] = ['zenario/styles/', 'visitor.min.css', 'zenario/styles/', false];
 		
 			if ($skin['import']) {
 				foreach (explode("\n", $skin['import']) as $import) {
@@ -255,14 +236,14 @@ class wrapper {
 					if (!empty($req['editor'])) {
 						switch ($name) {
 							case 'tinymce.css':
-								$files[0][] = array($skinPath, $file, $skinPathURL, $inEditableDir);
+								$files[0][] = [$skinPath, $file, $skinPathURL, $inEditableDir];
 						}
 				
 					} elseif (!empty($req['print'])) {
 						switch ($name) {
 							case 'print.css':
 							case 'stylesheet_print.css':
-								$files[0][] = array($skinPath, $file, $skinPathURL, $inEditableDir);
+								$files[0][] = [$skinPath, $file, $skinPathURL, $inEditableDir];
 						}
 				
 					} else {
@@ -274,7 +255,7 @@ class wrapper {
 						
 							//reset.css should always be first (0)
 							case 'reset.css':
-								$files[0][] = array($skinPath, $file, $skinPathURL, $inEditableDir);
+								$files[0][] = [$skinPath, $file, $skinPathURL, $inEditableDir];
 								break;
 						
 							//browser-specific stylesheets are alwats last (3),
@@ -296,14 +277,14 @@ class wrapper {
 							case 'style_safari.css':
 							case 'style_webkit.css':
 								if (isset($browsers[$name])) {
-									$files[3][] = array($skinPath, $file, $skinPathURL, $inEditableDir);
+									$files[3][] = [$skinPath, $file, $skinPathURL, $inEditableDir];
 								}
 								break;
 						
 							//Non-editable CSS files should be second (1),
 							//then editable CSS files should be third (2)
 							default:
-								$files[$inEditableDir? 2 : 1][] = array($skinPath, $file, $skinPathURL, $inEditableDir);
+								$files[$inEditableDir? 2 : 1][] = [$skinPath, $file, $skinPathURL, $inEditableDir];
 						}
 					}
 				}

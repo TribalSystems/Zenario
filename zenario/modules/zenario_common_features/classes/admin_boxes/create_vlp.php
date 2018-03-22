@@ -47,7 +47,7 @@ class zenario_common_features__admin_boxes__create_vlp extends ze\moduleBaseClas
 			$box['tabs']['details']['errors'][] = ze\admin::phrase('The Language Code can only contain lower-case letters, numbers, underscores or hyphens.');
 		
 		} elseif (ze\contentAdm::checkIfLanguageCanBeAdded($values['details/language_id'])) {
-			$box['tabs']['details']['errors'][] = ze\admin::phrase('The Language Code [[id]] already exists', array('id' => $values['details/language_id']));
+			$box['tabs']['details']['errors'][] = ze\admin::phrase('The Language Code [[id]] already exists', ['id' => $values['details/language_id']]);
 		}
 		
 	}
@@ -58,33 +58,33 @@ class zenario_common_features__admin_boxes__create_vlp extends ze\moduleBaseClas
 		
 		ze\row::set(
 			'visitor_phrases',
-			array(
+			[
 				'local_text' => $values['details/english_name'],
-				'protect_flag' => 1),
-			array(
+				'protect_flag' => 1],
+			[
 				'code' => '__LANGUAGE_ENGLISH_NAME__',
 				'language_id' => $values['details/language_id'],
-				'module_class_name' => 'zenario_common_features'));
+				'module_class_name' => 'zenario_common_features']);
 		
 		ze\row::set(
 			'visitor_phrases',
-			array(
+			[
 				'local_text' => $values['details/language_local_name'],
-				'protect_flag' => 1),
-			array(
+				'protect_flag' => 1],
+			[
 				'code' => '__LANGUAGE_LOCAL_NAME__',
 				'language_id' => $values['details/language_id'],
-				'module_class_name' => 'zenario_common_features'));
+				'module_class_name' => 'zenario_common_features']);
 		
 		ze\row::set(
 			'visitor_phrases',
-			array(
+			[
 				'local_text' => ze\ring::decodeIdForOrganizer($values['details/flag_filename']),
-				'protect_flag' => 1),
-			array(
+				'protect_flag' => 1],
+			[
 				'code' => '__LANGUAGE_FLAG_FILENAME__',
 				'language_id' => $values['details/language_id'],
-				'module_class_name' => 'zenario_common_features'));
+				'module_class_name' => 'zenario_common_features']);
 		
 		$box['key']['id'] = $values['details/language_id'];
 	}

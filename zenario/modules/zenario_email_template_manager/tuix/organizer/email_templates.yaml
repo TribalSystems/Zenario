@@ -77,7 +77,6 @@ zenario__email_template_manager:
                 date_created:
                     title: Created at
                     db_column: T.date_created
-                    searchable: true
                     show_by_default: false
                     format: datetime
                     width: small
@@ -89,7 +88,6 @@ zenario__email_template_manager:
                 date_modified:
                     title: Last modified at
                     db_column: "IFNULL(date_modified,'---')"
-                    searchable: true
                     show_by_default: false
                     format: datetime
                     width: small
@@ -101,7 +99,6 @@ zenario__email_template_manager:
                 last_sent:
                     title: Last sent
                     db_column: T.last_sent
-                    searchable: true
                     show_by_default: true
                     format: datetime
                     empty_value: Never used

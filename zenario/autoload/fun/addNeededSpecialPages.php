@@ -29,17 +29,17 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 //If a language has not yet been enabled, then we cannot do anything.
 if (!\ze::$defaultLang
- || !\ze\row::exists('languages', array())) {
+ || !\ze\row::exists('languages', [])) {
 	return;
 }
 
 //Have we set up special pages before or is this the first time..?
 //Check the special pages table, if there are already linked pages then this isn't the first time
-$firstSetup = !\ze\row::exists('special_pages', array('equiv_id' => array('!' => 0)));
+$firstSetup = !\ze\row::exists('special_pages', ['equiv_id' => ['!' => 0]]);
 
 
 //Look for any special pages
-if ($resultSp = \ze\row::query('special_pages', true, array())) {
+if ($resultSp = \ze\row::query('special_pages', true, [])) {
 	while ($sp = \ze\sql::fetchAssoc($resultSp)) {
 		
 		if (!$firstSetup
@@ -49,8 +49,8 @@ if ($resultSp = \ze\row::query('special_pages', true, array())) {
 		}
 		
 		$thisLang = false;
-		$equivs = array();
-		$langsToCreate = array();
+		$equivs = [];
+		$langsToCreate = [];
 		
 		if (!$sp['equiv_id']) {
 			//If the special page hasn't been created yet, make sure it is created.
@@ -63,7 +63,7 @@ if ($resultSp = \ze\row::query('special_pages', true, array())) {
 		
 		//If the create_and_maintain_in_all_languages logic is used, also ensure that an equiv exists for each extra Language
 		if ($sp['logic'] == 'create_and_maintain_in_all_languages') {
-			$result = \ze\row::query('languages', array('id'), array());
+			$result = \ze\row::query('languages', ['id'], []);
 			while ($row = \ze\sql::fetchAssoc($result)) {
 				if (!isset($langsToCreate[$row['id']]) && !isset($equivs[$row['id']]) && $row['id'] != $thisLang) {
 					$langsToCreate[$row['id']] = true;
@@ -122,7 +122,7 @@ if ($resultSp = \ze\row::query('special_pages', true, array())) {
 									//Try to add an alias (so long as the alias is not taken)
 									if ($alias = $page['default_alias'] ?? false) {
 										if (!is_array(\ze\contentAdm::validateAlias($alias))) {
-											\ze\row::set('content_items', array('alias' => $alias), array('id' => $cID, 'type' => $cType));
+											\ze\row::set('content_items', ['alias' => $alias], ['id' => $cID, 'type' => $cType]);
 										} else {
 											$alias = '';
 										}
@@ -131,8 +131,8 @@ if ($resultSp = \ze\row::query('special_pages', true, array())) {
 									}
 								
 									\ze\row::set('content_item_versions',
-										array('title' => ($page['default_title'] ?? false), 'layout_id' => $layoutId),
-										array('id' => $cID, 'type' => $cType, 'version' => $cVersion));
+										['title' => ($page['default_title'] ?? false), 'layout_id' => $layoutId],
+										['id' => $cID, 'type' => $cType, 'version' => $cVersion]);
 								
 									if (!$sp['equiv_id']) {
 										$sp['equiv_id'] = $cID;
@@ -148,24 +148,24 @@ if ($resultSp = \ze\row::query('special_pages', true, array())) {
 									if ($sp['logic'] != 'create_in_default_language_on_install') {
 										\ze\row::update(
 											'special_pages',
-											array(
+											[
 												'equiv_id' => $sp['equiv_id'],
-												'content_type' => $sp['content_type']),
-											array(
-												'page_type' => $sp['page_type']));
+												'content_type' => $sp['content_type']],
+											[
+												'page_type' => $sp['page_type']]);
 									}
 								
 									//We'll need to put a something on this page
 									//Work out a free main slot to put a Plugin in
-									$template = \ze\row::get('layouts', array('layout_id', 'file_base_name', 'family_name'), $layoutId);
+									$template = \ze\row::get('layouts', ['layout_id', 'file_base_name', 'family_name'], $layoutId);
 									$slotName = \ze\layoutAdm::mainSlotByName($template['family_name'], $template['file_base_name']);
 							
 									//Check if this Plugin is Slotable, and if so attempt to put this Plugin on the page
 									if ($module['is_pluggable']) {
 										//Otherwise set a Reusable Instance there
-										if (!$instanceId = \ze\row::get('plugin_instances', 'id', array('module_id' => $module['id'], 'content_id' => 0))) {
+										if (!$instanceId = \ze\row::get('plugin_instances', 'id', ['module_id' => $module['id'], 'content_id' => 0])) {
 											//Create a new reusable instance if one does not already exist
-											$errors = array();
+											$errors = [];
 											\ze\pluginAdm::create(
 												$module['id'],
 												$desc['default_instance_name'],
@@ -176,27 +176,27 @@ if ($resultSp = \ze\row::query('special_pages', true, array())) {
 										\ze\pluginAdm::updateItemSlot($instanceId, $slotName, $cID, $cType, $cVersion, $module['id']);
 							
 									//Otherwise have the option to place a HTML Snippet in there
-									} elseif (!empty($page['default_content']) && ($snippetId = \ze\row::get('modules', 'id', array('class_name' => 'zenario_wysiwyg_editor')))) {
+									} elseif (!empty($page['default_content']) && ($snippetId = \ze\row::get('modules', 'id', ['class_name' => 'zenario_wysiwyg_editor']))) {
 								
 										//Try to find an editor
 										if ($editorSlot = \ze\contentAdm::mainSlot($cID, $cType, $cVersion)) {
 											$instanceId = \ze\row::insert(
 												'plugin_instances',
-												array(
+												[
 													'module_id' => $snippetId,
 													'content_id' => $cID,
 													'content_type' => $cType,
 													'content_version' => $cVersion,
-													'slot_name' => $editorSlot));
+													'slot_name' => $editorSlot]);
 								
 											\ze\row::insert(
 												'plugin_settings',
-												array(
+												[
 													'instance_id' => $instanceId,
 													'name' => 'html',
 													'value' => $page['default_content'],
 													'is_content' => 'version_controlled_content',
-													'format' => 'translatable_html'));
+													'format' => 'translatable_html']);
 										}
 									}
 								}
@@ -209,7 +209,7 @@ if ($resultSp = \ze\row::query('special_pages', true, array())) {
 										$menuId = $menu['id'];
 									
 									} else {
-										$menuId = \ze\menuAdm::save(array(
+										$menuId = \ze\menuAdm::save([
 											'section_id' => $sectionId,
 											'redundancy' => $redundancy,
 											'name' => ($page['menu_title'] ?? false),
@@ -223,9 +223,9 @@ if ($resultSp = \ze\row::query('special_pages', true, array())) {
 												: (
 													\ze\ring::engToBoolean($page['only_show_to_visitors_who_are_logged_out'] ?? false)?
 														2
-													:	0)));
+													:	0)]);
 									}
-									\ze\menuAdm::saveText($menuId, $langId, array('name' => ($page['menu_title'] ?? false)));
+									\ze\menuAdm::saveText($menuId, $langId, ['name' => ($page['menu_title'] ?? false)]);
 									
 									$redundancy = 'secondary';
 								}
@@ -236,7 +236,7 @@ if ($resultSp = \ze\row::query('special_pages', true, array())) {
 										$menuId = $menu['id'];
 									
 									} else {
-										$menuId = \ze\menuAdm::save(array(
+										$menuId = \ze\menuAdm::save([
 											'section_id' => $sectionId,
 											'redundancy' => $redundancy,
 											'name' => ($page['footer_menu_title'] ?? false),
@@ -250,9 +250,9 @@ if ($resultSp = \ze\row::query('special_pages', true, array())) {
 												: (
 													\ze\ring::engToBoolean($page['only_show_to_visitors_who_are_logged_out'] ?? false)?
 														2
-													:	0)));
+													:	0)]);
 									}
-									\ze\menuAdm::saveText($menuId, $langId, array('name' => ($page['footer_menu_title'] ?? false)));
+									\ze\menuAdm::saveText($menuId, $langId, ['name' => ($page['footer_menu_title'] ?? false)]);
 								}
 							
 								//Update the wordcount and other stats

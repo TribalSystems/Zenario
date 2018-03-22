@@ -905,6 +905,26 @@ body.zenario_fbog__isOpen .zenario_fbAdmin .zenario_fbButtons input.zenario_fabE
 }
 
 /*
+	Styles for tables added in html snippets
+*/
+
+#zenario_fbAdminFloatingBox table.basic_table {
+	border:1px solid #000;
+	color:#555;
+}
+
+#zenario_fbAdminFloatingBox table.basic_table th {
+	font-weight:bold;
+	background:#f0f0f0;
+}
+
+#zenario_fbAdminFloatingBox table.basic_table th,
+#zenario_fbAdminFloatingBox table.basic_table td {
+	padding:3px 8px;
+}
+
+
+/*
 	Allow the descriptions in the site settings to have a little bit of a margin
 */
 
@@ -996,6 +1016,25 @@ body.zenario_fbog__isOpen .zenario_fbAdmin .zenario_fbButtons input.zenario_fabE
 	text-align:right;
 }
 
+#zenario_fbAdminMessage .document_hyperlinks_message .document_hyperlinks_content {
+	padding-bottom:10px;
+}
+
+#zenario_fbAdminMessage .document_hyperlinks_message .document_hyperlinks_content .document_hyperlinks_label {
+	padding-bottom:5px;
+}
+
+#zenario_fbAdminMessage .document_hyperlinks_message .document_hyperlinks_content .document_hyperlinks_label span.note {
+    font-size: 11px;
+    font-style: italic;
+    display: block;
+}
+
+#zenario_fbAdminMessage .document_hyperlinks_message .document_hyperlinks_content input[type="text"] {
+	font-family:Verdana,Tahoma,Arial,Helvetica,sans-serif;
+	padding:3px 6px;
+}
+
 #zenario_fbAdminInner .thickbox_table .title,
 #zenario_fbAdminInner .div_table .zfab_row .zfab_row_inner.label,
 #zenario_fbAdminInner .div_table .zfab_row .title {
@@ -1039,7 +1078,7 @@ body.zenario_fbog__isOpen .zenario_fbAdmin .zenario_fbButtons input.zenario_fabE
 
 #zenario_fbAdminInner .thickbox_table .zenario_single_line .zenario_input_checkbox .zenario_fab_custom_field_label__group {
 	padding-left:24px;
-	background:url('../admin/images/icon-groups.png') no-repeat 2px 2px;
+	background: url('../admin/images/icon-groups.svg') no-repeat 2px 2px / 16px;
 }
 
 #zenario_fbAdminInner .div_table .zfab_row.zenario_single_line .zfab_row_inner {
@@ -1412,7 +1451,7 @@ div.mandatory_field {
 }
 
 #zenario_fbAdminInner .thickbox_table .successDisplayRow .messageDisplay div {
-	background:url(../admin/images/icon-success.png) no-repeat left 0;
+	background:url('../admin/images/icon-tick-green-circle.svg') no-repeat left 0 / 16px 16px;
 	padding-left:25px;
 }
 
@@ -1574,7 +1613,9 @@ body.ff #zenario_fbAdminInner #row__template_level_box input#template_empty {
 	bottom: 10px;
 }
 
-
+#zenario_fbAdminInner form.zenario_ab__zenario_import .zfab_row.zenario_ab_row__file_column_headers select {
+	width:23em;
+}
 
 
 
@@ -4291,7 +4332,7 @@ div.Tokenize ul.TokensContainer li.Token .organizer_item_image.zenario_menunode_
 }
 
 #zenario_fbAdminFloatingBox #zenario_fbAdminInner .success_icon {
-	background:url(../admin/images/icon-success.png) no-repeat left 0;
+	background:url('../admin/images/icon-tick-green-circle.svg') no-repeat left 0 / 16px 16px;
 	padding-left:25px;
 }
 
@@ -4312,7 +4353,7 @@ div.Tokenize ul.TokensContainer li.Token .organizer_item_image.zenario_menunode_
 }
 
 .zenario_fab_plugin .organizer_item_image.zenario_folder_item {
-	background:url("../admin/images/icon-document-folder-white.png") no-repeat center center;
+	background:url("../admin/images/icon-folder-closed-white.svg") no-repeat center center / 16px 16px;
 }
 
 .zenario_fab_plugin .organizer_item_image.menu_section {
@@ -4320,11 +4361,11 @@ div.Tokenize ul.TokensContainer li.Token .organizer_item_image.zenario_menunode_
 }
 
 .zenario_fab_plugin .organizer_item_image.roles,
-.zenario_fab_plugin #zenario_fbMain .organizer_item_image.roles {
-	background:url("../admin/images/icon-roles-white.png") no-repeat center center;
+.zenario_fab_plugin #zenario_fbMain .organizer_item_image.roles  {
+	background:url("../admin/images/icon-roles-white.svg") no-repeat center center / 16px 16px;
 }
 
-.zenario_fab_plugin .organizer_item_image.zenario_user_forms {
+.zenario_fab_plugin .organizer_item_image.zenario_user_forms{
 	background:url("../admin/images/icon-forms-white.svg") no-repeat center center / 16px 16px;
 }
 
@@ -4472,6 +4513,7 @@ body.zenario_fbAdminFloatingBox__isOpen > div.ui-selectmenu-menu ul.ui-menu {
 body.zenario_fbAdminFloatingBox__isOpen > div.ui-selectmenu-menu ul.ui-menu .ui-menu-item {
 	padding-left:1.5em;
 }
+
 
 /* RESPONSIVE STYLES
 --------------------------------------------------------------------------------------------------*/

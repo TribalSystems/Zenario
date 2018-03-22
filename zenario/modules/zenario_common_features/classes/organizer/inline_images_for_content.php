@@ -33,13 +33,13 @@ ze\module::incSubclass('zenario_common_features', 'organizer', 'zenario__content
 class zenario_common_features__organizer__inline_images_for_content extends zenario_common_features__organizer__image_library {
 	
 	protected static function setFeatureImage($content, $imageId = 0) {
-		ze\contentAdm::updateVersion($content['id'], $content['type'], $content['admin_version'], array('feature_image_id' => $imageId));
+		ze\contentAdm::updateVersion($content['id'], $content['type'], $content['admin_version'], ['feature_image_id' => $imageId]);
 		ze\contentAdm::syncInlineFileContentLink($content['id'], $content['type'], $content['admin_version']);
 	}
 	
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
 		
-		if (!$content = ze\row::get('content_items', array('id', 'type', 'admin_version'), array('tag_id' => $refinerId))) {
+		if (!$content = ze\row::get('content_items', ['id', 'type', 'admin_version'], ['tag_id' => $refinerId])) {
 			exit;
 
 		} elseif (($_POST['make_sticky'] ?? false) && ze\priv::check('_PRIV_SET_CONTENT_ITEM_STICKY_IMAGE', $content['id'], $content['type'])) {
@@ -49,11 +49,11 @@ class zenario_common_features__organizer__inline_images_for_content extends zena
 			self::setFeatureImage($content, 0);
 
 		} else {
-			$key = array(
+			$key = [
 				'foreign_key_to' => 'content',
 				'foreign_key_id' => $content['id'],
 				'foreign_key_char' => $content['type'],
-				'foreign_key_version' => $content['admin_version']);
+				'foreign_key_version' => $content['admin_version']];
 			$privCheck = ze\priv::check('_PRIV_EDIT_DRAFT', $content['id'], $content['type']);
 	
 			$return = require ze::funIncPath('zenario_common_features', 'media.handleOrganizerPanelAJAX');

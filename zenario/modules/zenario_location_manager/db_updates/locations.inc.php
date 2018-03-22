@@ -642,12 +642,12 @@ _sql
 if (ze\dbAdm::needRevision(135)) {
 	$dataset = ze\dataset::details(ZENARIO_LOCATION_MANAGER_PREFIX. 'locations');
 	
-	$columnsToMigrate = array();
+	$columnsToMigrate = [];
 	
-	$key = array(
+	$key = [
 		'db_column' => 'phone',
-		'dataset_id' => $dataset['id']);
-	$cols = array('label' => 'Phone:', 'is_system_field' => 0);
+		'dataset_id' => $dataset['id']];
+	$cols = ['label' => 'Phone:', 'is_system_field' => 0];
 	
 	if (ze\row::exists('custom_dataset_fields', $key)) {
 		$sql = "SELECT COUNT('phone') as count FROM " . DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX. "locations 
@@ -666,10 +666,10 @@ if (ze\dbAdm::needRevision(135)) {
 	}
 	
 	
-	$key = array(
+	$key = [
 		'db_column' => 'fax',
-		'dataset_id' => $dataset['id']);
-	$cols = array('label' => 'Fax:', 'is_system_field' => 0);
+		'dataset_id' => $dataset['id']];
+	$cols = ['label' => 'Fax:', 'is_system_field' => 0];
 	
 	if (ze\row::exists('custom_dataset_fields', $key)) {
 		$sql = "SELECT COUNT('fax') as count FROM " . DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX. "locations 
@@ -687,10 +687,10 @@ if (ze\dbAdm::needRevision(135)) {
 		}
 	}
 	
-	$key = array(
+	$key = [
 		'db_column' => 'url',
-		'dataset_id' => $dataset['id']);
-	$cols = array('label' => 'url:', 'is_system_field' => 0);
+		'dataset_id' => $dataset['id']];
+	$cols = ['label' => 'url:', 'is_system_field' => 0];
 	
 	if (ze\row::exists('custom_dataset_fields', $key)) {
 		$sql = "SELECT COUNT('url') as count FROM " . DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX. "locations 
@@ -709,10 +709,10 @@ if (ze\dbAdm::needRevision(135)) {
 	}
 	
 	
-	$key = array(
+	$key = [
 		'db_column' => 'last_accessed',
-		'dataset_id' => $dataset['id']);
-	$cols = array('label' => 'url last accessed:', 'is_system_field' => 0);
+		'dataset_id' => $dataset['id']];
+	$cols = ['label' => 'url last accessed:', 'is_system_field' => 0];
 	
 	if (ze\row::exists('custom_dataset_fields', $key)) {
 		$sql = "SELECT COUNT('last_accessed') as count FROM " . DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX. "locations 
@@ -731,10 +731,10 @@ if (ze\dbAdm::needRevision(135)) {
 	}
 	
 	
-	$key = array(
+	$key = [
 		'db_column' => 'summary',
-		'dataset_id' => $dataset['id']);
-	$cols = array('label' => 'Summary:','is_system_field' => 0, 'tab_name' => 'details');
+		'dataset_id' => $dataset['id']];
+	$cols = ['label' => 'Summary:','is_system_field' => 0, 'tab_name' => 'details'];
 	
 	if (ze\row::exists('custom_dataset_fields', $key)) {
 		$sql = "SELECT COUNT('summary') as count FROM " . DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX. "locations 
@@ -796,12 +796,12 @@ _sql
 if (ze\dbAdm::needRevision(140)) {
 	$dataset = ze\dataset::details(ZENARIO_LOCATION_MANAGER_PREFIX. 'locations');
 	
-	$columnsToMigrate = array();
+	$columnsToMigrate = [];
 
-	$key = array(
+	$key = [
 		'db_column' => 'email',
-		'dataset_id' => $dataset['id']);
-	$cols = array('label' => 'Email:', 'is_system_field' => 0);
+		'dataset_id' => $dataset['id']];
+	$cols = ['label' => 'Email:', 'is_system_field' => 0];
 	
 	if (ze\row::exists('custom_dataset_fields', $key)) {
 		$sql = "SELECT COUNT('email') as count FROM " . DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX. "locations 

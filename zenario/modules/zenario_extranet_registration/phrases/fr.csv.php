@@ -13,12 +13,12 @@ _CHANGE_PASSWORD,Cliquez-ici pour modifier votre mot de passe
 _COULD_NOT_SEND_REGISTRATION_EMAIL,Il semble y avoir un problème avec notre système de courrier électronique. Nous ne pouvons pas vous envoyer un e-mail de vérification.
 _EMAIL:,Email:
 _ERROR_EMAIL,S'il vous plaît entrer votre adresse e-mail.
-_ERROR_EMAIL_IN_USE,Ce courrier électronique est déjà utilisée sur ce site.
+_ERROR_EMAIL_NAME_IN_USE,Ce courrier électronique est déjà utilisée sur ce site.
 _ERROR_EMAIL_NOT_IN_USE,Cette adresse email n'est pas associée à un compte.
 _ERROR_EMAIL_VERIFIED,Cette adresse email a déjà été vérifiée.
 _ERROR_FIRST_NAME,S'il vous plaît entrer votre prénom.
-_ERROR_INVALID_EMAIL,S'il vous plaît entrer une adresse email valide.
-_ERROR_INVALID_SCREEN_NAME,Votre nom d'écran contient des caractères spéciaux. S'il vous plaît choisir un nom d'écran qui ne contient que des caractères de texte.
+_ERROR_EMAIL_INVALID,S'il vous plaît entrer une adresse email valide.
+_ERROR_SCREEN_NAME_INVALID,Votre nom d'écran contient des caractères spéciaux. S'il vous plaît choisir un nom d'écran qui ne contient que des caractères de texte.
 _ERROR_LAST_NAME,S'il vous plaît entrer votre nom de famille.
 _ERROR_SCREEN_NAME,S'il vous plaît entrer votre nom d'écran.
 _ERROR_SCREEN_NAME_IN_USE,Ce nom d'écran est déjà utilisé sur ce site.

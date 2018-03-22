@@ -94,7 +94,7 @@ class zenario_comments extends zenario_anonymous_comments {
 		$result = ze\sql::select($sql);
 		
 		$forumDetails = ze\sql::fetchAssoc($result);
-		$coreDetails = ze\row::get('users', array('screen_name', 'created_date', 'image_id'), $userId);
+		$coreDetails = ze\row::get('users', ['screen_name', 'created_date', 'image_id'], $userId);
 		
 		if ($this->setting('show_user_avatars')) {
 			$width = $height = $url = false;
@@ -124,13 +124,13 @@ class zenario_comments extends zenario_anonymous_comments {
 		
 		if ($this->setting('show_user_post_counts')) {
 			$sections['Show_Post_Count'] = $sections['Posting_Show_Post_Count'] = true;
-			$mrg = array('post_count' => $forumDetails['post_count']);
+			$mrg = ['post_count' => $forumDetails['post_count']];
 			$mergeFields['Post_Count'] = $this->phrase('_POST_COUNT', $mrg);
 		}
 		
 		if ($this->setting('show_user_join_dates')) {
 			$sections['Show_Join_Date'] = $sections['Posting_Show_Join_Date'] = true;
-			$mrg = array('date' => ze\date::format($coreDetails['created_date'], $this->setting('date_format')));
+			$mrg = ['date' => ze\date::format($coreDetails['created_date'], $this->setting('date_format'))];
 			$mergeFields['Join_Date'] = $this->phrase('_JOIN_DATE', $mrg);
 		}
 	}
@@ -189,26 +189,26 @@ class zenario_comments extends zenario_anonymous_comments {
 	function hasSubsThread() {
 		return ze\row::exists(
 			ZENARIO_COMMENTS_PREFIX. 'user_subscriptions',
-			array(
+			[
 				'user_id' => ze\user::id(),
 				'content_id' => $this->cID,
 				'content_type' => $this->cType,
 				'forum_id' => 0,
-				'thread_id' => 0));
+				'thread_id' => 0]);
 	}
 	
 	protected function subs($subs, $thread = true) {
-		$key = array(
+		$key = [
 			'user_id' => ze\user::id(),
 			'content_id' => $this->cID,
 			'content_type' => $this->cType,
 			'forum_id' => 0,
-			'thread_id' => 0);
+			'thread_id' => 0];
 		
 		if ($subs) {
 			ze\row::set(
 				ZENARIO_COMMENTS_PREFIX. 'user_subscriptions',
-				array('date_subscribed' => ze\date::now()),
+				['date_subscribed' => ze\date::now()],
 				$key);
 		
 		} else {
@@ -221,7 +221,7 @@ class zenario_comments extends zenario_anonymous_comments {
 	
 	//Check the mirror table to the users table for a given user, and add them in if needed
 	function checkUserIsInForumsUserTable($userId) {
-		if (!ze\row::exists(ZENARIO_COMMENTS_PREFIX. 'users', array('user_id' => $userId))) {
+		if (!ze\row::exists(ZENARIO_COMMENTS_PREFIX. 'users', ['user_id' => $userId])) {
 			$sql = "
 				INSERT INTO ". DB_NAME_PREFIX. ZENARIO_COMMENTS_PREFIX. "users
 					(user_id, latest_activity)
@@ -275,7 +275,7 @@ class zenario_comments extends zenario_anonymous_comments {
 	}
 
 	function deletePostById($id) {
-		$posterId = ze\row::get(ZENARIO_ANONYMOUS_COMMENTS_PREFIX . 'user_comments', 'poster_id', array('id' =>  $id ));
+		$posterId = ze\row::get(ZENARIO_ANONYMOUS_COMMENTS_PREFIX . 'user_comments', 'poster_id', ['id' =>  $id ]);
 		
 		zenario_anonymous_comments::deletePostById($id);
 		
@@ -342,7 +342,7 @@ class zenario_comments extends zenario_anonymous_comments {
 			return ze\row::get(
 				ZENARIO_COMMENTS_PREFIX. 'users',
 				'latest_activity',
-				array('user_id' => (int) $userId));
+				['user_id' => (int) $userId]);
 		} else {
 			return false;
 		}
@@ -368,7 +368,7 @@ class zenario_comments extends zenario_anonymous_comments {
 			return (int) ze\row::get(
 				ZENARIO_COMMENTS_PREFIX. 'users',
 				'post_count',
-				array('user_id' => (int) $userId));
+				['user_id' => (int) $userId]);
 		} else {
 			return false;
 		}
@@ -385,7 +385,7 @@ class zenario_comments extends zenario_anonymous_comments {
 			$userId = ze\user::id();
 		}
 		if ($userId) {
-			$confirmed = ze\row::get('users', 'screen_name_confirmed', array('id' => $userId));
+			$confirmed = ze\row::get('users', 'screen_name_confirmed', ['id' => $userId]);
 			return (bool)$confirmed;
 		}
 		return false;
@@ -398,7 +398,7 @@ class zenario_comments extends zenario_anonymous_comments {
 			$profileAnchor = $this->linkToItemAnchor($cID, $cType);
 			$this->sections['Comments_Profile_Link'] = true;
 			$profileLink =  '<a '.$profileAnchor.'>'. $this->phrase('your profile').'</a>';
-			$this->mergeFields['Comments_Profile_Link'] = $this->phrase('You must confirm your screen name on [[profile_link]] in order to comment.', array('profile_link' => $profileLink));
+			$this->mergeFields['Comments_Profile_Link'] = $this->phrase('You must confirm your screen name on [[profile_link]] in order to comment.', ['profile_link' => $profileLink]);
 		}
 		parent::showThreadActions();
 	}

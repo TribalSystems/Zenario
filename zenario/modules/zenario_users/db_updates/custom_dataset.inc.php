@@ -80,20 +80,41 @@ if (ze\dbAdm::needRevision(52)) {
 	
 	if ($statusField = ze\dataset::fieldDetails('status', 'users', ['id'])) {
 		
-		$stats = array('created_on' => ze\date::now(), 'created_by' => ze\admin::id(), 'last_modified_on' => ze\date::now(), 'last_modified_by' => ze\admin::id());
+		$stats = ['created_on' => ze\date::now(), 'created_by' => ze\admin::id(), 'last_modified_on' => ze\date::now(), 'last_modified_by' => ze\admin::id()];
 		
-		$key = array('name' => 'All active users');
+		$key = ['name' => 'All active users'];
 		if (!ze\row::exists('smart_groups', $key)) {
 			$smartGroupId = ze\row::set('smart_groups', $stats, $key);
-			ze\row::set('smart_group_rules', array('field_id' => $statusField['id'], 'value' => 'active'), array('ord' => 1, 'smart_group_id' => $smartGroupId));
+			ze\row::set('smart_group_rules', ['field_id' => $statusField['id'], 'value' => 'active'], ['ord' => 1, 'smart_group_id' => $smartGroupId]);
 		}
 		
-		$key = array('name' => 'All contacts');
+		$key = ['name' => 'All contacts'];
 		if (!ze\row::exists('smart_groups', $key)) {
 			$smartGroupId = ze\row::set('smart_groups', $stats, $key);
-			ze\row::set('smart_group_rules', array('field_id' => $statusField['id'], 'value' => 'contact'), array('ord' => 1, 'smart_group_id' => $smartGroupId));
+			ze\row::set('smart_group_rules', ['field_id' => $statusField['id'], 'value' => 'contact'], ['ord' => 1, 'smart_group_id' => $smartGroupId]);
 		}
 	}
 	
 	ze\dbAdm::revision(52);
 }
+
+//Rename dataset
+if (ze\dbAdm::needRevision(70)) {
+	$datasetId = ze\datasetAdm::register(
+		'Users/Contacts',
+		'users_custom_data',
+		'users',
+		'zenario_user__details',
+		'zenario__users/panels/users',
+		'_PRIV_VIEW_USER',
+		'_PRIV_EDIT_USER');
+}
+
+//IP addresses have been deleted according to GDPR (General Data Protection Regulation)
+//Delete the dataset field
+if (ze\dbAdm::needRevision(71)) {
+	$dataset = ze\dataset::details('users');
+	ze\row::delete('custom_dataset_fields', ['dataset_id' => $dataset['id'], 'db_column' => 'last_login_ip']);
+}
+
+	

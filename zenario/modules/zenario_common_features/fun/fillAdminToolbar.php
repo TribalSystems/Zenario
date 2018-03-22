@@ -205,10 +205,10 @@ if ($cVersion == ze::$adminVersion && ze::$status == 'hidden') {
 
 if (ze::$adminVersion == 1
  || !ze::in ($cVersion, ze::$visitorVersion, ze::$adminVersion)
- || !ze\row::exists('content_item_versions', array(
+ || !ze\row::exists('content_item_versions', [
 		'id' => ze::$cID,
 		'type' => ze::$cType,
-		'version' => ['!' => [ze::$visitorVersion, ze::$adminVersion]])
+		'version' => ['!' => [ze::$visitorVersion, ze::$adminVersion]]]
 )) {
 	unset($adminToolbar['sections']['edit']['buttons']['delete_archives']);
 }
@@ -339,9 +339,9 @@ if (!ze::$isDraft) {
 
 //The Content Item is locked
 } else {
-	$mrg = array(
+	$mrg = [
 		'name' => htmlspecialchars(ze\admin::formatName($content['lock_owner_id'])),
-		'time' => ze\admin::timeDiff(ze\date::now(), $content['locked_datetime'], 300));
+		'time' => ze\admin::timeDiff(ze\date::now(), $content['locked_datetime'], 300)];
 	
 	if ($mrg['time'] === true) {
 		$mrg['time'] = ze\admin::phrase('< 5 minutes');
@@ -368,9 +368,9 @@ if (!ze::$isDraft) {
 		
 		if (isset($adminToolbar['toolbars']['edit'])) {
 			$adminToolbar['toolbars']['edit']['help'] =
-				array(
+				[
 					'message' => ze\admin::phrase('This content item is locked by another administrator. Certain functions may not be available.'),
-					'message_type' => 'warning');
+					'message_type' => 'warning'];
 		}
 		
 		unset($adminToolbar['sections']['edit']['buttons']['lock']);
@@ -389,9 +389,9 @@ if (!ze::$isDraft) {
 		
 		if (isset($adminToolbar['toolbars']['edit'])) {
 			$adminToolbar['toolbars']['edit']['help'] =
-				array(
+				[
 					'message' => ze\admin::phrase('This content item is locked by another administrator. Certain functions may not be available.'),
-					'message_type' => 'warning');
+					'message_type' => 'warning'];
 		}
 		
 		unset($adminToolbar['sections']['edit']['buttons']['lock']);
@@ -430,9 +430,9 @@ if (isset($adminToolbar['sections']['edit']['buttons']['item_meta_data'])) {
 		$tooltip .= 
 			'<br/>'. ze\admin::phrase('Release date:'). ' ';
 		
-		if ($version['publication_date']) {
+		if ($version['release_date']) {
 			$tooltip .= 
-				htmlspecialchars(ze\date::format($version['publication_date']));
+				htmlspecialchars(ze\date::format($version['release_date']));
 		}
 	}
 	
@@ -553,7 +553,7 @@ if (!$isMultilingual) {
 
 //Set up the version history navigation, including a left arrow, the current item in view and a right arrow, with the correct icons and tooltips on each
 if ($cVersion > 1 && ze\row::exists('content_item_versions', ['id' => $cID, 'type' => $cType, 'version' => $cVersion - 1])) {
-	$mrg = array('status' => ze\contentAdm::getContentItemVersionStatus($content, $cVersion - 1));
+	$mrg = ['status' => ze\contentAdm::getContentItemVersionStatus($content, $cVersion - 1)];
 	$adminToolbar['sections']['history']['buttons']['content_item_left']['css_class'] = ze\contentAdm::getContentItemVersionToolbarIcon($content, $cVersion - 1, 'zenario_at_prev_version_');
 	$adminToolbar['sections']['history']['buttons']['content_item_left']['frontend_link'] = DIRECTORY_INDEX_FILENAME. '?cID='. $cID. '&cType='. $cType. '&cVersion='. ($cVersion - 1);
 	$adminToolbar['sections']['history']['buttons']['content_item_left']['label'] = ze\admin::phrase('View previous ([[status]])', $mrg);
@@ -567,7 +567,7 @@ if ($cVersion > 1 && ze\row::exists('content_item_versions', ['id' => $cID, 'typ
 }
 
 
-$mrg = array('status' => ze\contentAdm::getContentItemVersionStatus($content, $cVersion));
+$mrg = ['status' => ze\contentAdm::getContentItemVersionStatus($content, $cVersion)];
 $adminToolbar['sections']['history']['buttons']['content_item_current']['css_class'] = ze\contentAdm::getContentItemVersionToolbarIcon($content, $cVersion, 'zenario_at_current_version_');
 $adminToolbar['sections']['history']['buttons']['content_item_current']['label'] = ze\admin::phrase('This version ([[status]])', $mrg);
 $adminToolbar['sections']['history']['buttons']['content_item_current']['tooltip'] =
@@ -588,7 +588,7 @@ if (isset($adminToolbar['sections']['status_button']['buttons']['publish'])) {
 
 
 if (ze\row::exists('content_item_versions', ['id' => $cID, 'type' => $cType, 'version' => $cVersion + 1])) {
-	$mrg = array('status' => ze\contentAdm::getContentItemVersionStatus($content, $cVersion + 1));
+	$mrg = ['status' => ze\contentAdm::getContentItemVersionStatus($content, $cVersion + 1)];
 	$adminToolbar['sections']['history']['buttons']['content_item_right']['css_class'] = ze\contentAdm::getContentItemVersionToolbarIcon($content, $cVersion + 1, 'zenario_at_next_version_');
 	$adminToolbar['sections']['history']['buttons']['content_item_right']['frontend_link'] = DIRECTORY_INDEX_FILENAME. '?cID='. $cID. '&cType='. $cType. '&cVersion='. ($cVersion + 1);
 	$adminToolbar['sections']['history']['buttons']['content_item_right']['label'] = ze\admin::phrase('Next version ([[status]])', $mrg);
@@ -821,10 +821,10 @@ if (isset($adminToolbar['sections']['primary_menu_node'])) {
 				(ze\row::exists('menu_nodes', ['parent_id' => $menuItem['id']])? '_with_children' : '_without_children');
 		
 			
-			$mrg = array(
+			$mrg = [
 				'path' => htmlspecialchars($menuItem['path']),
 				'level' => htmlspecialchars($level),
-				'section' => htmlspecialchars(ze\menu::sectionName($menuItem['section_id'])));
+				'section' => htmlspecialchars(ze\menu::sectionName($menuItem['section_id']))];
 			
 			foreach (['edit_menu_item', 'edit_menu_text', 'view_menu_node_in_sk'] as $button) {
 				if (isset($adminToolbar['sections']['menu'. $i]['buttons'][$button]['tooltip'])) {
@@ -869,7 +869,7 @@ if (isset($adminToolbar['sections']['create'])) {
 	// Create a 'create button' for each content type in the order HTML, News, Events, Others dropdown (Alphabetical)
 	$ord = 3;
 	foreach (ze\content::getContentTypes(false, true) as $contentTypeId => $contentType) {
-		$button = array(
+		$button = [
 			'priv' => '_PRIV_CREATE_FIRST_DRAFT',
 			'label' => $contentType['content_type_name_en'],
 			'css_class' => 'zenario_create_a_new',
@@ -888,7 +888,7 @@ if (isset($adminToolbar['sections']['create'])) {
 					'target_language_id' => ze::$langId
 				]
 			]
-		);
+		];
 		
 		switch ($contentTypeId) {
 			case 'html':
@@ -916,7 +916,7 @@ if (isset($adminToolbar['sections']['create'])) {
 //
 
 //Set labels and tooltips
-$mrg = array(
+$mrg = [
 	'tagId' => $tagId,
 	'cID' => ze::$cID,
 	'cType' => ze::$cType,
@@ -926,7 +926,7 @@ $mrg = array(
 	'alias' => ze::$alias,
 	'lang' => ze\lang::name(ze::$langId),
 	'wordcount' => (int) ze\row::get('content_cache', 'text_wordcount', ['content_id' => ze::$cID, 'content_type' => ze::$cType, 'content_version' => ze::$cVersion])
-);
+];
 
 if (ze::$cVersion < ze::$adminVersion
  || ze::$cVersion < ze::$visitorVersion) {
@@ -1007,7 +1007,7 @@ $adminToolbar['sections']['icons']['buttons']['layout_id']['tooltip'] =
 
 $visitorURL = ze\link::toItem(
 	$cID, $cType, $fullPath = true, $request = '', ze::$alias,
-	$autoAddImportantRequests = false, $useAliasInAdminMode = true);
+	$autoAddImportantRequests = false, $forceAliasInAdminMode = true);
 
 if (isset($adminToolbar['sections']['icons']['buttons']['copy_url'])) {
 	$adminToolbar['sections']['icons']['buttons']['copy_url']['onclick'] =
@@ -1020,7 +1020,7 @@ if (isset($adminToolbar['sections']['icons']['buttons']['copy_url'])) {
 		'if (!zenarioA.checkSlotsBeingEdited()) zenarioAT.draw();';
 }
 if (isset($adminToolbar['sections']['icons']['buttons']['go_to_alias'])) {
-	$adminToolbar['sections']['icons']['buttons']['go_to_alias']['label'] = ze\admin::phrase('Go to content item via its alias "[[alias]]"', array('alias' => (ze::$alias)));
+	$adminToolbar['sections']['icons']['buttons']['go_to_alias']['label'] = ze\admin::phrase('Go to content item via its alias "[[alias]]"', ['alias' => (ze::$alias)]);
 	$adminToolbar['sections']['icons']['buttons']['go_to_alias']['frontend_link'] = $visitorURL;
 } else {
 	$adminToolbar['sections']['icons']['buttons']['no_alias']['label'] = ze\admin::phrase('This content item does not have an alias');
@@ -1175,7 +1175,7 @@ $ord = 2000;
 $lookForSlots = ['family_name' => $layout['family_name'], 'file_base_name' => $layout['file_base_name']];
 foreach(ze\row::getArray('template_slot_link', ['ord', 'slot_name'], $lookForSlots, ['ord', 'slot_name']) as $slot) {
 	$adminToolbar['sections']['slot_controls']['buttons']['slot_'. $slot['slot_name']] =
-		array(
+		[
 			'ord' => ++$ord,
 			'parent' => 'slot_control_dropdown',
 			'css_class' => 'zenario_atSlotControl',
@@ -1187,7 +1187,7 @@ foreach(ze\row::getArray('template_slot_link', ['ord', 'slot_name'], $lookForSlo
 			'disabled_if' => 'zenarioAT.slotDisabled("'. ze\escape::js($slot['slot_name']). '");',
 			'onmouseover' => 'return zenarioA.openSlotControls(this, this, "'. ze\escape::js($slot['slot_name']). '", true);',
 			'onclick' => 'return false;'
-		);
+		];
 }
 
 
@@ -1218,12 +1218,12 @@ foreach ($pagePreviews as $pagePreview) {
 	$description = $pagePreview['description'];
 	$label = $previewLabel. ' '.$width.' x '.$height.' ('.$description.')';
 	
-	$pagePreviewButton = array(
+	$pagePreviewButton = [
 		'parent' => 'page_preview_sizes',
 		'label' => $width.' × '.$height.', '.$description,
 		'css_class' => 'zenario_small_preview_icon_'.$pagePreview['type'],
 		'onclick' => "zenarioA.showPagePreview(". (int) $width. ", ". (int) $height. ", '". ze\escape::js($description). "')"
-	);
+	];
 			
 	if ($pagePreview['is_default']) {
 		$pagePreviewButton['label'] .= ' (Default)';

@@ -34,8 +34,8 @@ ze\cache::start();
 
 
 function esctick($text) {
-	$searches = array('`', '~');
-	$replaces = array('`t', '`s');
+	$searches = ['`', '~'];
+	$replaces = ['`t', '`s'];
 	return str_replace($searches, $replaces, $text);
 }
 
@@ -44,8 +44,8 @@ $output = '';
 
 
 //Get a few phrases used in admin mode
-$phrases = array();
-foreach(array(
+$phrases = [];
+foreach([
 
 	'_BYTES' => ' B',
 	'_GBYTES' => ' GB',
@@ -322,7 +322,7 @@ _help
 	'gridTemplateFileName' => 'Template filename:',
 	'gridUndo' => 'Undo'
 
-) as $code => $phrase) {
+] as $code => $phrase) {
 	$output .= esctick($code). '~'. esctick($phrase). '~';
 }
 

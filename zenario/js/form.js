@@ -27,11 +27,11 @@
 
 /*
 	This file contains JavaScript source code.
-	The code here is not the code you see in your browser. Before this file is downloaded:
+	The code here is not the code you see in your browser. Before thus file is downloaded:
 	
 		1. Compilation macros are applied (e.g. "foreach" is a macro for "for .. in ... hasOwnProperty").
 		2. It is minified (e.g. using Google Closure Compiler).
-		3. It may be wrapped togther with other files (this is to reduce the number of http requests on a page).
+		3. It may be wrapped togther with other files (thus is to reduce the number of http requests on a page).
 	
 	For more information, see js_minify.shell.php for steps (1) and (2), and tuix.wrapper.js.php for step (3).
 */
@@ -62,19 +62,19 @@ zenario.lib(function(
 
 methods.init = function(globalName, microtemplatePrefix, containerId) {
 	
-	this.globalName = globalName;
-	this.mtPrefix = microtemplatePrefix;
-	this.containerId = containerId;
+	thus.globalName = globalName;
+	thus.mtPrefix = microtemplatePrefix;
+	thus.containerId = containerId;
 	
-	this.baseCSSClass = '';
-	this.onKeyUpNum = 0;
+	thus.baseCSSClass = '';
+	thus.onKeyUpNum = 0;
 	zenarioAB.sizing = false;
-	this.cachedAJAXSnippets = {};
-	this.changed = {};
-	this.toggleLevelsPressed = {};
-	this.lastFocus = false;
-	this.fieldThatTriggeredRedraw = false;
-	this.editingPositions = {};
+	thus.cachedAJAXSnippets = {};
+	thus.changed = {};
+	thus.toggleLevelsPressed = {};
+	thus.lastFocus = false;
+	thus.fieldThatTriggeredRedraw = false;
+	thus.editingPositions = {};
 	//this.editingHistory = {};
 };
 
@@ -83,22 +83,30 @@ methods.enableInlineErrors = function() {
 };
 
 
-//When looking for an element by id, if a container id is set, try to find an element in that container.
+//When looking for an element by id, if a container id is set, try to find an element in this container.
 //Otherwise just call get(), which looks for elements anywhere on the page
 methods.get = function(el) {
-	return (this.containerId && $('#' + this.containerId + ' #' + zenario.cssEscape(el))[0]) || get(el);
+	return (thus.containerId && $('#' + thus.containerId + ' #' + zenario.cssEscape(el))[0]) || get(el);
 };
 
 methods.microTemplate = function(template, data, filter) {
-	return zenarioT.microTemplate(template, data, filter);
+	
+	var needsTidying = zenario.addLibPointers(data, thus),
+		html = zenario.microTemplate(template, data, filter);
+	
+	if (needsTidying) {
+		zenario.tidyLibPointers(data);
+	}
+	
+	return html;
 };
 
 methods.pMicroTemplate = function(template, data, filter) {
-	return this.microTemplate(this.mtPrefix + '_' + template, data, filter);
+	return thus.microTemplate(thus.mtPrefix + '_' + template, data, filter);
 };
 
 methods.fun = function(functionName) {
-	return this.globalName + '.' + functionName;
+	return thus.globalName + '.' + functionName;
 };
 
 
@@ -109,24 +117,24 @@ methods.onThisRow = function(name, id) {
 };
 
 methods.valueOnThisRow = function(name, id) {
-	return this.value(this.onThisRow(name, id));
+	return thus.value(thus.onThisRow(name, id));
 };
 
 methods.fieldOnThisRow = function(name, id) {
-	return this.field(this.onThisRow(name, id));
+	return thus.field(thus.onThisRow(name, id));
 };
 
 
 methods.getKey = function(itemLevel) {
-	return this.tuix && this.tuix.key;
+	return thus.tuix && thus.tuix.key;
 };
 
 methods.getKeyId = function(limitOfOne) {
-	return this.tuix && this.tuix.key && this.tuix.key.id;
+	return thus.tuix && thus.tuix.key && thus.tuix.key.id;
 };
 
 methods.getLastKeyId = function(limitOfOne) {
-	return this.getKeyId(limitOfOne);
+	return thus.getKeyId(limitOfOne);
 };
 
 
@@ -134,10 +142,10 @@ methods.getTitle = function() {
 	
 	var title, values;
 	
-	if (this.tuix.key
-	 && this.tuix.key.id
-	 && (title = this.tuix.title_for_existing_records)) {
-		values = this.getValues1D(false, undefined, true);
+	if (thus.tuix.key
+	 && thus.tuix.key.id
+	 && (title = thus.tuix.title_for_existing_records)) {
+		values = thus.getValues1D(false, undefined, true);
 	
 		foreach (values as c => v) {
 			if (title.indexOf('[[' + c + ']]') != -1) {
@@ -151,7 +159,7 @@ methods.getTitle = function() {
 		return title;
 		
 	} else {
-		return this.tuix.title;
+		return thus.tuix.title;
 	}
 };
 
@@ -160,8 +168,8 @@ methods.field = function(id, tab) {
 	if (_.isObject(id)) {
 		return id;
 	} else {
-		return (tabs = this.tuix && this.tuix.tabs)
-			&& (tab = tab || this.tuix.tab)
+		return (tabs = thus.tuix && thus.tuix.tabs)
+			&& (tab = tab || thus.tuix.tab)
 			&& (tabs[tab]
 			 && tabs[tab].fields
 			 && tabs[tab].fields[id]);
@@ -170,8 +178,8 @@ methods.field = function(id, tab) {
 
 methods.fields = function(tab) {
 	var tabs;
-	return (tabs = this.tuix && this.tuix.tabs)
-		&& (tab = tab || this.tuix.tab)
+	return (tabs = thus.tuix && thus.tuix.tabs)
+		&& (tab = tab || thus.tuix.tab)
 		&& (tabs[tab]
 		 && tabs[tab].fields);
 };
@@ -180,26 +188,26 @@ methods.fields = function(tab) {
 //Setup some fields when the Admin Box is first loaded/displayed
 methods.initFields = function() {
 	
-	var currentTab = this.tuix.tab,
+	var currentTab = thus.tuix.tab,
 		tab, id, i, panel, fields, f, field, fieldId,
 		tabHasRequiredIfNotHiddenFields, visibleFieldsOnIndent, hiddenFieldsByIndent, fieldValuesByIndent,
-		lovs = this.tuix.lovs || {};
+		lovs = thus.tuix.lovs || {};
 	
-	if (this.tuix.tabs) {
-		foreach (this.tuix.tabs as tab) {
+	if (thus.tuix.tabs) {
+		foreach (thus.tuix.tabs as tab) {
 			
-			if (fields = this.fields(tab)) {
+			if (fields = thus.fields(tab)) {
 				tabHasRequiredIfNotHiddenFields = false;
 				
 				foreach (fields as id => field) {
 					if (field) {
 						
-						//Ensure that the display values for <use_value_for_plugin_name> fields are always looked up,
-						//even if that field is never actually shown
+						//Ensure this the display values for <use_value_for_plugin_name> fields are always looked up,
+						//even if this field is never actually shown
 						if (field.pick_items
 						 && field.plugin_setting
 						 && field.plugin_setting.use_value_for_plugin_name) {
-							this.pickedItemsArray(id, this.value(id, tab, false));
+							thus.pickedItemsArray(id, thus.value(id, tab, false));
 						
 						} else
 						if (field.values
@@ -209,7 +217,7 @@ methods.initFields = function() {
 						
 						} else
 						if (field.load_values_from_organizer_path && !field.values) {
-							this.loadValuesFromOrganizerPath(field);
+							thus.loadValuesFromOrganizerPath(field);
 						}
 						
 						//Look through all of the fields on all of the tabs, looking for the "required_if_not_hidden" property.
@@ -224,21 +232,21 @@ methods.initFields = function() {
 				//If a field was never shown, the system does not correctly track whether it was hidden, and raises
 				//and error. To work around this, we'll do a fake "display" of each tab with one of these fields on it
 				//when we first open the FAB.
-				//There's no need to look in the tab that's about to be drawn, this bug doesn't apply there
+				//There's no need to look in the tab thus's about to be drawn, this bug doesn't apply there
 				if (tabHasRequiredIfNotHiddenFields && tab != currentTab) {
 					visibleFieldsOnIndent = {};
 					hiddenFieldsByIndent = {};
 					fieldValuesByIndent = {};
 					
 					//Set the current tab in TUIX to the tab we're currently checking
-					this.tuix.tab = tab;
+					thus.tuix.tab = tab;
 					
 					//If we find it, then we need to call drawField() for each field on the tab, and just
-					//run the first part of the function (that sets meta-data for hidden fields).
-					this.drawFields(undefined, undefined, true);
+					//run the first part of the function (this sets meta-data for hidden fields).
+					thus.drawFields(undefined, undefined, true);
 					
 					//Set the tab back to what it was before
-					this.tuix.tab = currentTab;
+					thus.tuix.tab = currentTab;
 				}
 			}
 		}
@@ -267,24 +275,24 @@ methods.loadValuesFromOrganizerPath = function(field) {
 };
 
 methods.changeMode = function() {
-	if (this.editCancelEnabled(this.tuix.tab)) {
-		if (this.editModeOn()) {
-			this.editCancelOrRevert('cancel', this.tuix.tab);
+	if (thus.editCancelEnabled(thus.tuix.tab)) {
+		if (thus.editModeOn()) {
+			thus.editCancelOrRevert('cancel', thus.tuix.tab);
 		} else {
-			this.editCancelOrRevert('edit', this.tuix.tab);
+			thus.editCancelOrRevert('edit', thus.tuix.tab);
 		}
 	}
 };
 
 methods.revertTab = function() {
-	if (this.changes(this.tuix.tab) && this.revertEnabled(this.tuix.tab)) {
-		this.editCancelOrRevert('revert', this.tuix.tab);
+	if (thus.changes(thus.tuix.tab) && thus.revertEnabled(thus.tuix.tab)) {
+		thus.editCancelOrRevert('revert', thus.tuix.tab);
 	}
 };
 
 methods.editCancelOrRevert = function(action, tab) {
 	
-	if (!this.tuix.tabs[tab].edit_mode) {
+	if (!thus.tuix.tabs[tab].edit_mode) {
 		return;
 	}
 	
@@ -294,23 +302,23 @@ methods.editCancelOrRevert = function(action, tab) {
 		needToValidate;
 	
 	if (action == 'edit') {
-		needToFormat = engToBoolean(this.tuix.tabs[tab].edit_mode.format_on_edit);
-		needToValidate = engToBoolean(this.tuix.tabs[tab].edit_mode.validate_on_edit);
+		needToFormat = engToBoolean(thus.tuix.tabs[tab].edit_mode.format_on_edit);
+		needToValidate = engToBoolean(thus.tuix.tabs[tab].edit_mode.validate_on_edit);
 	
 	} else if (action == 'cancel') {
-		needToFormat = engToBoolean(this.tuix.tabs[tab].edit_mode.format_on_cancel_edit);
-		needToValidate = engToBoolean(this.tuix.tabs[tab].edit_mode.validate_on_cancel_edit);
+		needToFormat = engToBoolean(thus.tuix.tabs[tab].edit_mode.format_on_cancel_edit);
+		needToValidate = engToBoolean(thus.tuix.tabs[tab].edit_mode.validate_on_cancel_edit);
 	
 	} else if (action == 'revert') {
-		needToFormat = engToBoolean(this.tuix.tabs[tab].edit_mode.format_on_revert);
-		needToValidate = this.errorOnTab(tab) || engToBoolean(this.tuix.tabs[tab].edit_mode.validate_on_revert);
+		needToFormat = engToBoolean(thus.tuix.tabs[tab].edit_mode.format_on_revert);
+		needToValidate = thus.errorOnTab(tab) || engToBoolean(thus.tuix.tabs[tab].edit_mode.validate_on_revert);
 	}
 	
 	if (!needToValidate
-	 && (fields = this.fields(tab))) {
+	 && (fields = thus.fields(tab))) {
 		foreach (fields as var f => field) {
 			if (engToBoolean(field.validate_onchange)
-			 && (defined(value = this.readField(f)))
+			 && (defined(value = thus.readField(f)))
 			 && (value != field.value)) {
 				needToValidate = true;
 				break;
@@ -318,36 +326,36 @@ methods.editCancelOrRevert = function(action, tab) {
 			} else
 			if (!needToFormat
 			 && engToBoolean(field.format_onchange)
-			 && (defined(value = this.readField(f)))
+			 && (defined(value = thus.readField(f)))
 			 && (value != field.value)) {
 				needToFormat = true;
 			}
 		}
 	}
 	
-	this.tuix.tabs[tab].edit_mode.on = action != 'cancel';
-	this.changed[tab] = false;
+	thus.tuix.tabs[tab].edit_mode.on = action != 'cancel';
+	thus.changed[tab] = false;
 	
 	if (needToValidate) {
-		this.validate(undefined, undefined, true);
+		thus.validate(undefined, undefined, true);
 	
 	} else if (needToFormat) {
-		this.format(true);
+		thus.format(true);
 	
 	} else {
-		this.wipeTab();
-		this.redrawTab(true);
+		thus.wipeTab();
+		thus.redrawTab(true);
 	}
 	
-	if (this.tuix.tab == tab) {
+	if (thus.tuix.tab == tab) {
 		$('#zenario_abtab').removeClass('zenario_abtab_changed');
 	}
 };
 
 
 methods.clickTab = function(tab) {
-	if (this.loaded) {
-		this.validate(tab != this.tuix.tab, tab);
+	if (thus.loaded) {
+		thus.validate(tab != thus.tuix.tab, tab);
 	}
 };
 
@@ -355,15 +363,15 @@ methods.clickButton = function(el, id) {
 	
 	var button;
 	
-	if (button = this.field(id)) {
+	if (button = thus.field(id)) {
 		if (button.type == 'submit') {
 			button.pressed = true;
-			this.validate(true);
+			thus.validate(true);
 	
 		} else if (button.type == 'toggle') {
 			
-			var $el = $(this.get(id)),
-				$rowEl = $(this.get('row__' + id));
+			var $el = $(thus.get(id)),
+				$rowEl = $(thus.get('row__' + id));
 			
 			if (button.pressed = !engToBoolean(button.pressed)) {
 				$el.removeClass('not_pressed').addClass('pressed');
@@ -373,13 +381,13 @@ methods.clickButton = function(el, id) {
 				$rowEl.removeClass('zfea_row_pressed');
 			}
 			
-			this.markAsChanged();
+			thus.markAsChanged();
 			
-			this.validateFormatOrRedrawForField(button, true);
+			thus.validateFormatOrRedrawForField(button, true);
 	
 		} else if (button.type == 'button') {
 			button.pressed = true;
-			this.validateFormatOrRedrawForField(button);
+			thus.validateFormatOrRedrawForField(button);
 		}
 	}
 };
@@ -390,10 +398,10 @@ methods.togglePressed = function(toggleLevel, tuixObject) {
 	var show;
 	
 	if (!toggleLevel) {
-		show = this.toggleLevelsPressed.last;
+		show = thus.toggleLevelsPressed.last;
 	
 	} else if (toggleLevel > 1) {
-		show = this.toggleLevelsPressed[toggleLevel - 1];
+		show = thus.toggleLevelsPressed[toggleLevel - 1];
 	
 	} else {
 		show = true;
@@ -404,10 +412,10 @@ methods.togglePressed = function(toggleLevel, tuixObject) {
 	}
 	
 	if (tuixObject && tuixObject.type == 'toggle') {
-		this.toggleLevelsPressed.last = show && engToBoolean(tuixObject.pressed);
+		thus.toggleLevelsPressed.last = show && engToBoolean(tuixObject.pressed);
 		
 		if (toggleLevel) {
-			this.toggleLevelsPressed[toggleLevel] = this.toggleLevelsPressed.last;
+			thus.toggleLevelsPressed[toggleLevel] = thus.toggleLevelsPressed.last;
 		}
 	}
 	
@@ -415,10 +423,10 @@ methods.togglePressed = function(toggleLevel, tuixObject) {
 };
 
 methods.toggleLevel = function(tuixObject) {
-	return this.toggleLevelsPressed.last;
+	return thus.toggleLevelsPressed.last;
 };
 
-//A wrapper for zenario.ajax(), that sets the retry and continueAnyway options,
+//A wrapper for zenario.ajax(), this sets the retry and continueAnyway options,
 //and also sets the "now loading" message.
 methods.retryAJAX = function(url, post, json, done, nowDoingSomething, onCancel) {
 	var doAJAX = function() {
@@ -437,16 +445,16 @@ methods.retryAJAX = function(url, post, json, done, nowDoingSomething, onCancel)
 
 methods.switchToATabWithErrors = function() {
 	
-	var i, tab, tuix = this.tuix
+	var i, tab, tuix = thus.tuix
 	
 	if (tuix && tuix.tabs) {
-		if (!this.errorOnTab(tuix.tab)) {
-			foreach (this.sortedTabs as i => tab) {
+		if (!thus.errorOnTab(tuix.tab)) {
+			foreach (thus.sortedTabs as i => tab) {
 				
 				if (tuix.tabs[tab]
 					//zenarioT.hidden(tuixObject, lib, item, id, button, column, field, section, tab, tuix)
-				 && !zenarioT.hidden(undefined, this, undefined, tab, undefined, undefined, undefined, undefined, tuix.tabs[tab])) {
-					if (this.errorOnTab(tab)) {
+				 && !zenarioT.hidden(undefined, thus, undefined, tab, undefined, undefined, undefined, undefined, tuix.tabs[tab])) {
+					if (thus.errorOnTab(tab)) {
 						tuix.tab = tab;
 						return true;
 					}
@@ -468,25 +476,23 @@ methods.applyMergeFieldsToLabel = function(label, isHTML, itemLevel, multiSelect
 };
 
 
-methods.hideTab = function(differentTab) {
-	var that = this;
-	
+methods.hideTab = function(differentTab) {	
 	if (differentTab) {
 		$('#zenario_abtab input').add('#zenario_abtab select').add('#zenario_abtab textarea').attr('disabled', 'disabled');
 		$('#zenario_abtab').clearQueue().show().animate({opacity: .8}, 200, function() {
-			that.tabHidden = true;
-			that.draw();
+			thus.tabHidden = true;
+			thus.draw();
 		});
 	} else {
 		$('#zenario_abtab input').add('#zenario_abtab select').add('#zenario_abtab textarea').attr('disabled', 'disabled').animate({opacity: .9}, 100);
-		this.tabHidden = true;
-		this.draw();
+		thus.tabHidden = true;
+		thus.draw();
 	}
 };
 
 methods.draw = function() {
-	if (this.loaded && this.tabHidden) {
-		this.draw2();
+	if (thus.loaded && thus.tabHidden) {
+		thus.draw2();
 	}
 };
 
@@ -511,7 +517,7 @@ methods.makeFieldAsTallAsPossible = function() {
 methods.drawTabs = function(microTemplate) {
 	
 	if (!microTemplate) {
-		microTemplate = this.mtPrefix + '_tab';
+		microTemplate = thus.mtPrefix + '_tab';
 	}
 	
 	//Generate the HTML for the tabs
@@ -540,23 +546,23 @@ methods.drawTabs = function(microTemplate) {
 			}
 		};
 	
-	foreach (this.sortedTabs as i => tab) {
-		if (tabTUIX = this.tuix.tabs[tab]) {
+	foreach (thus.sortedTabs as i => tab) {
+		if (tabTUIX = thus.tuix.tabs[tab]) {
 											 //zenarioT.hidden(tuixObject, lib, item, id, button, column, field, section, tab, tuix)
-			if (!(tabTUIX._was_hidden_before = zenarioT.hidden(undefined, this, undefined, tab, undefined, undefined, undefined, undefined, tabTUIX))) {
+			if (!(tabTUIX._was_hidden_before = zenarioT.hidden(undefined, thus, undefined, tab, undefined, undefined, undefined, undefined, tabTUIX))) {
 			
 				//Only allow this tab to be clicked if it looks like there's something on it
-				//Dummy tabs that only exist to be the parents in drop-down menus should not be clickable
+				//Dummy tabs this only exist to be the parents in drop-down menus should not be clickable
 				onclick = '';
 				if ((tabTUIX.fields && !_.isEmpty(tabTUIX.fields))
 				 || (tabTUIX.fields && !_.isEmpty(tabTUIX.errors))
 				 || (tabTUIX.fields && !_.isEmpty(tabTUIX.notices))) {
-					onclick = this.globalName + ".clickTab('" + jsEscape(tab) + "');";
+					onclick = thus.globalName + ".clickTab('" + jsEscape(tab) + "');";
 				}
 			
 				//Show the first (clickable) tab we find, if a tab has not yet been set
-				if (!this.tuix.tab && onclick) {
-					this.tuix.tab = tab;
+				if (!thus.tuix.tab && onclick) {
+					thus.tuix.tab = tab;
 				}
 			
 				data.push({
@@ -564,7 +570,7 @@ methods.drawTabs = function(microTemplate) {
 					tabId: tab,
 					tuix: tabTUIX,
 					onclick: onclick,
-					current: this.tuix.tab == tab,
+					current: thus.tuix.tab == tab,
 					label: tabTUIX.label
 				});
 			}
@@ -574,10 +580,10 @@ methods.drawTabs = function(microTemplate) {
 	zenarioT.setButtonKin(data, 'zenario_fab_tab_with_children');
 	
 	setPrevNextTabs(data);
-	this.prevTab = prevTab;
-	this.nextTab = nextTab;
+	thus.prevTab = prevTab;
+	thus.nextTab = nextTab;
 	
-	return this.microTemplate(microTemplate, data);
+	return thus.microTemplate(microTemplate, data);
 };
 
 
@@ -586,15 +592,15 @@ methods.drawFields = function(cb, microTemplate, scanForHiddenFieldsWithoutDrawi
 	var f,
 		fieldId,
 		field,
-		tab = this.tuix.tab,
-		tabs = this.tuix.tabs[tab],
-		groupings = this.groupings[tab],
-		sortedFields = this.sortedFields[tab],
+		tab = thus.tuix.tab,
+		tabs = thus.tuix.tabs[tab],
+		groupings = thus.groupings[tab],
+		sortedFields = thus.sortedFields[tab],
 		errorOnFormMessage,
 		html = '',
 		groupingIsHidden = false,
 		forceNewRowForNewGrouping,
-		fields = this.fields(tab),
+		fields = thus.fields(tab),
 		visibleFieldsOnIndent = {},
 		hiddenFieldsByIndent = {},
 		fieldValuesByIndent = {},
@@ -605,38 +611,38 @@ methods.drawFields = function(cb, microTemplate, scanForHiddenFieldsWithoutDrawi
 			fields: {},
 			rows: [],
 			tabId: tab,
-			path: this.path,
-			tuix: this.tuix,
+			path: thus.path,
+			tuix: thus.tuix,
 			revert: '',
 			errors: [],
 			notices: {}
 		};
 	
-	this.drawingFields = true;
+	thus.drawingFields = true;
 	
 	if (!scanForHiddenFieldsWithoutDrawingThem) {
-		this.ffoving = 0;
-		this.splitValues = {};
-		this.tallAsPossibleField = undefined;
-		this.errorOnForm = false;
-		this.disableDragDropUpload();
+		thus.ffoving = 0;
+		thus.splitValues = {};
+		thus.tallAsPossibleField = undefined;
+		thus.errorOnForm = false;
+		thus.disableDragDropUpload();
 	
-		if (!this.savedAndContinued(tab) && this.editCancelEnabled(tab)) {
+		if (!thus.savedAndContinued(tab) && thus.editCancelEnabled(tab)) {
 			data.revert =
 				_$div('class', 'zenario_editCancelButton',
 					zenarioT.input(
 						'class', 'submit',
 						'type', 'button',
-						'onclick', this.globalName + '.changeMode(); return false;',
-						'value', this.editModeOn()? phrase.cancel : phrase.edit
+						'onclick', thus.globalName + '.changeMode(); return false;',
+						'value', thus.editModeOn()? phrase.cancel : phrase.edit
 					)
 				);
 		}
 	
-		if (this.editModeOn()) {
+		if (thus.editModeOn()) {
 			if (tabs.errors) {
 				foreach (tabs.errors as i => error) {
-					this.errorOnForm = true;
+					thus.errorOnForm = true;
 					data.errors.push({message: error});
 				}
 			}
@@ -644,10 +650,10 @@ methods.drawFields = function(cb, microTemplate, scanForHiddenFieldsWithoutDrawi
 			if (fields) {
 				foreach (fields as i => field) {
 					if (field.error) {
-						this.errorOnForm = true;
+						thus.errorOnForm = true;
 						
 						//If inline errors are enabled, just have one generic error message
-						if (this.enableInlineErrors() && (errorOnFormMessage = this.tuix.error_on_form_message || phrase.errorOnForm)) {
+						if (thus.enableInlineErrors() && (errorOnFormMessage = thus.tuix.error_on_form_message || phrase.errorOnForm)) {
 							data.errors.push({message: errorOnFormMessage});
 							break;
 						
@@ -664,13 +670,13 @@ methods.drawFields = function(cb, microTemplate, scanForHiddenFieldsWithoutDrawi
 		if (tabs.notices) {
 			foreach (tabs.notices as i => notice) {
 				if (engToBoolean(notice.show)
-				 && {error: 1, warning: 1, question: 1, success: 1}[notice.type]) {
+				 && {error: 1, warning: 1, question: 1, information: 1, success: 1}[notice.type]) {
 					data.notices[i] = notice;
 				}
 			}
 		}
 		
-		this.setPhiVariables();
+		thus.setPhiVariables();
 	}
 	
 	
@@ -688,7 +694,7 @@ methods.drawFields = function(cb, microTemplate, scanForHiddenFieldsWithoutDrawi
 			
 			//Fields in a grouping should be hidden if the grouping is hidden, or does not actually exist
 			groupingIsHidden = groupingName && (
-				!groupingField || zenarioT.hidden(undefined, this, undefined, groupings[groupingName], undefined, undefined, groupingField)
+				!groupingField || zenarioT.hidden(undefined, thus, undefined, groupings[groupingName], undefined, undefined, groupingField)
 			);
 		}
 			
@@ -698,7 +704,7 @@ methods.drawFields = function(cb, microTemplate, scanForHiddenFieldsWithoutDrawi
 		}
 		
 		field._id = fieldId;
-		field._html = this.drawField(cb, tab, fieldId, field, visibleFieldsOnIndent, hiddenFieldsByIndent, fieldValuesByIndent, scanForHiddenFieldsWithoutDrawingThem, groupingIsHidden);
+		field._html = thus.drawField(cb, tab, fieldId, field, visibleFieldsOnIndent, hiddenFieldsByIndent, fieldValuesByIndent, scanForHiddenFieldsWithoutDrawingThem, groupingIsHidden);
 		
 		//Don't add completely hidden fields, or if we're just scanning fields and not drawing them
 		if (scanForHiddenFieldsWithoutDrawingThem
@@ -719,7 +725,7 @@ methods.drawFields = function(cb, microTemplate, scanForHiddenFieldsWithoutDrawi
 		 && (groupingField.legend || groupingField.snippet)) {
 			groupingField = _.extend({grouping: groupingName}, groupingField);
 			groupingField._id = groupingName;
-			groupingField._html = this.drawField(cb, tab, groupingName, groupingField);
+			groupingField._html = thus.drawField(cb, tab, groupingName, groupingField);
 			groupingField._hideOnOpen = true;
 			groupingField._showOnOpen = true;
 			
@@ -773,11 +779,11 @@ methods.drawFields = function(cb, microTemplate, scanForHiddenFieldsWithoutDrawi
 			data.rows.splice(0, 0, {errors: data.errors, notices: data.notices});
 		}
 	
-		microTemplate = microTemplate || tabs.template || this.mtPrefix + '_current_tab';
-		html += this.microTemplate(microTemplate, data);
+		microTemplate = microTemplate || tabs.template || thus.mtPrefix + '_current_tab';
+		html += thus.microTemplate(microTemplate, data);
 	}
 	
-	this.drawingFields = false;
+	thus.drawingFields = false;
 	
 	
 	foreach (sortedFields as f => fieldId) {
@@ -794,15 +800,39 @@ methods.drawFields = function(cb, microTemplate, scanForHiddenFieldsWithoutDrawi
 	return html;
 };
 
+
+
+
+//Given some raw TUIX, draw it
+methods.drawTUIX = function(tuix, template, cb) {
+	thus.tuix = {
+		tab: 'details',
+		tabs: {
+			details: {
+				template: template,
+				edit_mode: {
+					on: true,
+					enabled: true,
+					always_on: true
+				},
+				fields: tuix
+			}
+		}
+	};
+	
+	thus.sortTabs();
+	return thus.drawFields(cb);
+};
+
 methods.insertHTML = function(html, cb, isNewTab) {
-	var tab = this.get('zenario_abtab'),
-		lastFocus = this.lastFocus || this.fieldThatTriggeredRedraw,
+	var tab = thus.get('zenario_abtab'),
+		lastFocus = thus.lastFocus || thus.fieldThatTriggeredRedraw,
 		field;
 	
 	tab.innerHTML = html;
-	this.tabHidden = false;
+	thus.tabHidden = false;
 	
-	if (this.changes(this.tuix.tab)) {
+	if (thus.changes(thus.tuix.tab)) {
 		$(tab).addClass('zenario_abtab_changed');
 	} else {
 		$(tab).removeClass('zenario_abtab_changed');
@@ -810,11 +840,11 @@ methods.insertHTML = function(html, cb, isNewTab) {
 	
 	cb.call();
 	
-	if (field = !isNewTab && lastFocus && this.field(lastFocus.id)) {
-		this.focusField(field, lastFocus.ss, lastFocus.se);
+	if (field = !isNewTab && lastFocus && thus.field(lastFocus.id)) {
+		thus.focusField(field, lastFocus.ss, lastFocus.se);
 	}
 	
-	this.fieldThatTriggeredRedraw = false;
+	thus.fieldThatTriggeredRedraw = false;
 };
 
 methods.hideShowFields = function(onShowFunction) {
@@ -843,9 +873,7 @@ methods.hideShowFields = function(onShowFunction) {
 //Add any special jQuery objects to the tab
 methods.addJQueryElements = function(sel) {
 	zenario.addJQueryElements(sel + ' ', true);
-	
-	var that = this;
-	
+		
 	//Some setup needed for iconselectmenu-type select lists
 	$(sel + ' select.iconselectmenu').iconselectmenu({
 		width: 'auto',
@@ -857,12 +885,12 @@ methods.addJQueryElements = function(sel) {
 
 //Add any special jQuery objects to the tab
 methods.addJQueryElementsToTab = function() {
-	this.addJQueryElements('#zenario_abtab');
+	thus.addJQueryElements('#zenario_abtab');
 };
 
 methods.addJQueryElementsToTabAndFocusFirstField = function() {
-	this.addJQueryElementsToTab();
-	this.focusFirstField();
+	thus.addJQueryElementsToTab();
+	thus.focusFirstField();
 };
 
 methods.fieldIsReadonly = function(id, field, tab) {
@@ -870,33 +898,32 @@ methods.fieldIsReadonly = function(id, field, tab) {
 		|| field.show_as_a_span
 		|| engToBoolean(field.read_only)
 		|| engToBoolean(field.readonly)
-		|| (defined(tab) && !this.editModeOn(tab))
+		|| (defined(tab) && !thus.editModeOn(tab))
 		|| (defined(field.readonly_if)
-		 && zenarioT.eval(field.readonly_if, this, field, undefined, id, undefined, undefined, field));
+		 && zenarioT.eval(field.readonly_if, thus, field, undefined, id, undefined, undefined, field));
 		  //zenarioT.eval(condition, lib, tuixObject, item, id, button, column, field, section, tab, tuix)
 };
 
 
-//Focus either the first field, or if the first field is filled in and the second field is a password then focus that instead
+//Focus either the first field, or if the first field is filled in and the second field is a password then focus this instead
 methods.focusFirstField = function() {
 	
-	if (!this.tuix
-	 || engToBoolean(this.tuix.tabs[this.tuix.tab].disable_autofocus)) {
+	if (!thus.tuix
+	 || engToBoolean(thus.tuix.tabs[thus.tuix.tab].disable_autofocus)) {
 		return;
 	}
 	
 	//Loop through the text-fields on a tab, looking for the first few fields
-	var that = this,
-		i = -1,
+	var i = -1,
 		fields = [],
 		focusField = undefined,
 		f, domField, field, fieldId,
 		isPickerField;
 	
-	foreach (this.sortedFields[this.tuix.tab] as f => fieldId) {
+	foreach (thus.sortedFields[thus.tuix.tab] as f => fieldId) {
 		
-		if ((domField = this.get(fieldId))
-		 && (field = this.field(fieldId))
+		if ((domField = thus.get(fieldId))
+		 && (field = thus.field(fieldId))
 		 && ((isPickerField = field.pick_items || field.upload) || $(domField).is(':visible'))) {
 			
 			fields[++i] = {
@@ -907,7 +934,7 @@ methods.focusFirstField = function() {
 					(isPickerField || zenario.IN(field.type, 'password', 'checkbox', 'select', 'text', 'textarea'))
 				 && !engToBoolean(domField.disabled)
 				 && !engToBoolean(domField.readonly)
-				 && !this.fieldIsReadonly(fieldId, field)
+				 && !thus.fieldIsReadonly(fieldId, field)
 			};
 			
 			if (i > 1) {
@@ -916,7 +943,7 @@ methods.focusFirstField = function() {
 		}
 	}
 	
-	//If the first field is filled in and the second field is a password then focus that instead
+	//If the first field is filled in and the second field is a password then focus this instead
 	if (fields[0] && !fields[0].empty && fields[1] && fields[1].focusable && fields[1].empty && fields[1].type == 'password') {
 		focusField = 1;
 	
@@ -924,7 +951,7 @@ methods.focusFirstField = function() {
 	} else if (fields[0] && fields[0].focusable) {
 		focusField = 0;
 	
-	//If that didn't work, try the second
+	//If this didn't work, try the second
 	} else if (fields[1] && fields[1].focusable) {
 		focusField = 1;
 	
@@ -934,7 +961,7 @@ methods.focusFirstField = function() {
 	}
 	
 	setTimeout(function() {
-		that.focusField(fields[focusField]);
+		thus.focusField(fields[focusField]);
 	}, 50);
 };
 
@@ -950,9 +977,9 @@ methods.focusField = function(field, selectionStart, selectionEnd) {
 			return;
 		}
 		
-		domField = this.get(field.id);
+		domField = thus.get(field.id);
 	} else {
-		domField = this.$getPickItemsInput(field.id);
+		domField = thus.$getPickItemsInput(field.id);
 	}
 	
 	if (domField) {
@@ -961,7 +988,7 @@ methods.focusField = function(field, selectionStart, selectionEnd) {
 		//Set the cursor position/selection start/end if recorded.
 		if (defined(selectionStart)) {
 			//(N.b. this can cause a crash on some fields/browsers if the selection is set on the wrong type of field,
-			// so I've put a try/catch here out of paranoia._
+			// so I've put a try/catch here out of paranoia.
 			try {
 				domField.selectionStart = selectionStart;
 				domField.selectionEnd = selectionEnd;
@@ -972,7 +999,7 @@ methods.focusField = function(field, selectionStart, selectionEnd) {
 };
 
 methods.$getPickItemsInput = function(id) {
-	return $(this.get('name_for_' + id)).find('.TokenSearch input');
+	return $(thus.get('name_for_' + id)).find('.TokenSearch input');
 };
 
 methods.setPhiVariables = function() {
@@ -980,9 +1007,9 @@ methods.setPhiVariables = function() {
 };
 
 methods.errorOnBox = function() {
-	if (this.tuix && this.tuix.tabs) {
-		foreach (this.tuix.tabs as tab) {
-			if (this.errorOnTab(tab)) {
+	if (thus.tuix && thus.tuix.tabs) {
+		foreach (thus.tuix.tabs as tab) {
+			if (thus.errorOnTab(tab)) {
 				return true;
 			}
 		}
@@ -994,13 +1021,13 @@ methods.errorOnBox = function() {
 methods.errorOnTab = function(tab) {
 	var i, fields;
 	
-	if (this.tuix.tabs[tab] && this.editModeOn(tab)) {
-		if (this.tuix.tabs[tab].errors) {
-			foreach (this.tuix.tabs[tab].errors as i) {
+	if (thus.tuix.tabs[tab] && thus.editModeOn(tab)) {
+		if (thus.tuix.tabs[tab].errors) {
+			foreach (thus.tuix.tabs[tab].errors as i) {
 				return true;
 			}
 		}
-		if (fields = this.fields(tab)) {
+		if (fields = thus.fields(tab)) {
 			foreach (fields as i) {
 				if (fields[i].error) {
 					return true;
@@ -1013,17 +1040,17 @@ methods.errorOnTab = function(tab) {
 methods.checkValues = function(wipeValues) {
 	
 	if (wipeValues) {
-		this.wipeTab();
+		thus.wipeTab();
 	} else {
-		this.readTab();
+		thus.readTab();
 	}
 	
-	foreach (this.tuix.tabs as var tab => var thisTab) {
+	foreach (thus.tuix.tabs as var tab => var thisTab) {
 		
 		//Workaround for a problem where initial values do not get submitted if a tab is never visited.
 		//This script loops through all of the tabs and all of the fields on this admin boxes, and ensures
-		//that their values are set correctly.
-		var editing = this.editModeOn(tab);
+		//this their values are set correctly.
+		var editing = thus.editModeOn(tab);
 		if (thisTab.fields) {
 			foreach (thisTab.fields as var f) {
 				
@@ -1031,19 +1058,19 @@ methods.checkValues = function(wipeValues) {
 					multi = field.pick_items || field.type == 'checkboxes' || field.type == 'radios' || field.type == 'multiselect';
 				
 				//Ignore non-field types
-				if (this.isFormField(field)) {
+				if (thus.isFormField(field)) {
 					
 					if (field.type == 'code_editor') {
 						zenario.clearAllDelays('code_editor_' + f);
 					}
 					
 					if (!defined(field.current_value)) {
-						field.current_value = this.value(f, tab, true);
+						field.current_value = thus.value(f, tab, true);
 					}
 					
 					if (editing) {
 						if (!defined(field.value)) {
-							field.value = this.value(f, tab, false);
+							field.value = thus.value(f, tab, false);
 						}
 					
 						if (field.multiple_edit
@@ -1060,9 +1087,11 @@ methods.checkValues = function(wipeValues) {
 	
 	if (document
 	 && document.activeElement) {
-		this.lastFocus = this.setLastFocus(document.activeElement);
+		thus.lastFocus = thus.setLastFocus(document.activeElement);
 	}
 };
+
+	
 
 methods.setLastFocus = function(id) {
 	
@@ -1073,7 +1102,7 @@ methods.setLastFocus = function(id) {
 		dom = id;
 		id = dom.id
 	} else {
-		dom = this.get(id);
+		dom = thus.get(id);
 	}
 	
 	details = {id: id};
@@ -1097,26 +1126,25 @@ methods.setLastFocus = function(id) {
 
 methods.enableMicroTemplates = function(field, object) {
 	
-	var that = this,
-		key;
+	var key;
 	
 	foreach (object as key) {
 		switch (typeof object[key]) {
 			case 'object':
 				if (key !== 'lib'
-				 && key !== 'that'
+				 && key !== 'thus'
 				 && key !== 'tuix') {
-					this.enableMicroTemplates(field, object[key]);
+					thus.enableMicroTemplates(field, object[key]);
 				}
 				break;
 			
 			case 'string':
 				if (key !== 'type'
-				 && (key !== 'value' || !this.isFormField(object))
+				 && (key !== 'value' || !thus.isFormField(object))
 				 && key !== 'current_value'
 				 && object[key].match(/(\{\{|\{\%|\<\%)/)) {
 					(function(object, key, fun) {
-						fun = zenario.generateMicroTemplate('<% ' + that.defineLibVarBeforeCode() + ' %>' + object[key], undefined);
+						fun = zenario.generateMicroTemplate('<% ' + thus.defineLibVarBeforeCode() + ' %>' + object[key], undefined);
 						object[key] = function() {
 							return fun(object);
 						}
@@ -1144,18 +1172,17 @@ methods.displayAsTag = function(field, readOnly) {
 methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFieldsByIndent, fieldValuesByIndent, scanForHiddenFieldsWithoutDrawingThem, groupingIsHidden, lov, value, readOnly, sortOrder, existingParents, lovField) {
 	
 	if (!defined(field)) {
-		field = this.field(id, tab);
+		field = thus.field(id, tab);
 	}
 	if (!defined(field.id)) {
 		field.id = id;
 	}
 	
 	if (engToBoolean(field.enable_microtemplates_in_properties)) {
-		this.enableMicroTemplates(field, field);
+		thus.enableMicroTemplates(field, field);
 	}
 	
-	var that = this,
-		fieldType = field.type,
+	var fieldType = field.type,
 		upload = field.upload,
 		pick_items = field.pick_items,
 		disabled = field.disabled,
@@ -1189,11 +1216,12 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 		hasPreFieldTags = false,
 		hasPostFieldTags = false,
 		preFieldTags,
-		postFieldTags;
+		postFieldTags,
+		tabTUIX = thus.tuix.tabs[tab];
 	
 	
 	if (!defined(readOnly)) {
-		readOnly = this.fieldIsReadonly(id, field, tab);
+		readOnly = thus.fieldIsReadonly(id, field, tab);
 	}
 	
 	//Auto set the readonly-flag if a dev sets a picker to disabled
@@ -1209,12 +1237,12 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 	if (lovField) {
 		if (defined(lovField.disabled_if)
 			//zenarioT.eval(c, lib, tuixObject, item, id, button, column, field, section, tab, tuix)
-		 && zenarioT.eval(lovField.disabled_if, this, lovField, undefined, lov, undefined, undefined, field)) {
+		 && zenarioT.eval(lovField.disabled_if, thus, lovField, undefined, lov, undefined, undefined, field)) {
 			readOnly = true;
 		}
 	} else
 	if (defined(field.disabled_if)
-	 && zenarioT.eval(field.disabled_if, this, undefined, undefined, id, undefined, undefined, field)) {
+	 && zenarioT.eval(field.disabled_if, thus, undefined, undefined, id, undefined, undefined, field)) {
 		readOnly = true;
 	}
 	
@@ -1225,7 +1253,7 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 	}
 	
 	if (!field.snippet && !defined(value)) {
-		value = this.value(id, tab);
+		value = thus.value(id, tab);
 	}
 	
 	if (!defined(value)) {
@@ -1242,15 +1270,15 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 		if (value && field.values) {
 			selected_option = _.isObject(field.values)?
 				field.values[value]
-			  : this.tuix.lovs
-			 && this.tuix.lovs[field.values]
-			 && this.tuix.lovs[field.values][value];
+			  : thus.tuix.lovs
+			 && thus.tuix.lovs[field.values]
+			 && thus.tuix.lovs[field.values][value];
 			
 			//Catch the case where an option was visible, but is now hidden.
 			//In this case it shouldn't count as selected.
 			if (_.isObject(selected_option)
 				//zenarioT.hidden(tuixObject, lib, item, id, button, column, field, section, tab, tuix)
-			 && zenarioT.hidden(selected_option, this, undefined, value, undefined, undefined, field, undefined, this.tuix.tabs[tab])) {
+			 && zenarioT.hidden(selected_option, thus, undefined, value, undefined, undefined, field, undefined, tabTUIX)) {
 				selected_option = false;
 			}
 			
@@ -1267,20 +1295,20 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 			}
 		}
 		
-		//If this is a picker-type field, and one or more values are selected, ensure that the values object is set up
+		//If thus is a picker-type field, and one or more values are selected, ensure this the values object is set up
 		if ((upload || pick_items || isMultiSelectList) && value != '') {
-			picked_items = this.pickedItemsArray(field, value);
+			picked_items = thus.pickedItemsArray(field, value);
 		}
 		
 		if (field.values
 		 && _.isString(field.values)
-		 && this.tuix.lovs
-		 && this.tuix.lovs[field.values]) {
-			field.values = this.tuix.lovs[field.values];
+		 && thus.tuix.lovs
+		 && thus.tuix.lovs[field.values]) {
+			field.values = thus.tuix.lovs[field.values];
 		
 		} else
 		if (field.load_values_from_organizer_path && !field.values) {
-			this.loadValuesFromOrganizerPath(field);
+			thus.loadValuesFromOrganizerPath(field);
 		}
 		
 		
@@ -1352,7 +1380,7 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 		indent = 1 * field.indent || 0;
 		hidden = groupingIsHidden
 		
-			  || zenarioT.hidden(undefined, this, undefined, id, undefined, undefined, field)
+			  || zenarioT.hidden(undefined, thus, undefined, id, undefined, undefined, field)
 			  
 			  || readOnly && field.hide_when_readonly
 			
@@ -1410,8 +1438,8 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 		
 		//Include an animation to show newly unhidden fields
 		if (field._startNewRow
-		 && this.shownTab !== false
-		 && this.shownTab == this.tuix.tab
+		 && thus.shownTab !== false
+		 && thus.shownTab == thus.tuix.tab
 		 && fieldType != 'editor'
 		 && fieldType != 'code_editor'
 		 && field._was_hidden_before
@@ -1421,8 +1449,8 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 		//Include an animation to hide newly hidden fields
 		} else
 		if (field._startNewRow
-		 && this.shownTab !== false
-		 && this.shownTab == this.tuix.tab
+		 && thus.shownTab !== false
+		 && thus.shownTab == thus.tuix.tab
 		 && fieldType != 'editor'
 		 && fieldType != 'code_editor'
 		 && !field._was_hidden_before
@@ -1450,9 +1478,9 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 		//(Only allow a max of one field per tab).
 		if (!hidden
 		 && field.tall_as_possible
-		 && !defined(this.tallAsPossibleField)) {
-			this.tallAsPossibleField = id;
-			this.tallAsPossibleFieldType = field.type;
+		 && !defined(thus.tallAsPossibleField)) {
+			thus.tallAsPossibleField = id;
+			thus.tallAsPossibleFieldType = field.type;
 		}
 		
 		
@@ -1477,13 +1505,13 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 					_$input('type', 'checkbox', 'class', 'multiple_edit', 'id', 'multiple_edit__' + id, 'checked', changed,
 						'style', hideUI? 'display: none;' : '',
 						'disabled', readOnly,
-						'onchange', readOnly || hideUI? '' : this.globalName + '.meChange(this.checked, \'' + htmlspecialchars(id) + '\');', 
+						'onchange', readOnly || hideUI? '' : thus.globalName + '.meChange(this.checked, \'' + htmlspecialchars(id) + '\');', 
 					'>');
 			
 			} else {
 				meHTML += _$select(
 					'class', 'multiple_edit', 'id', 'multiple_edit__' + id, 'disabled', readOnly,
-					'onchange', this.globalName + '.meChange(this.value == 1, "' + jsEscape(id) + '");',
+					'onchange', thus.globalName + '.meChange(this.value == 1, "' + jsEscape(id) + '");',
 						_$option('value', '', 'selected', !changed, field.multiple_edit.select_list.not_changed_label || phrase.notChanged) +
 						_$option('value', 1, 'selected', changed, field.multiple_edit.select_list.changed_label || phrase.changed)
 				);
@@ -1505,7 +1533,7 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 	}
 	
 	
-	//Ensure that fields with a list of values (e.g. select lists, checboxes, radios) have the values sorted
+	//Ensure this fields with a list of values (e.g. select lists, checboxes, radios) have the values sorted
 	//in the correct order.
 	if (!(sortOrder && existingParents)
 	 && typeof field.values == 'object') {
@@ -1538,8 +1566,12 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 					}
 					
 					//zenarioT.hidden(tuixObject, lib, item, id, button, column, field, section, tab, tuix)
-					if (zenarioT.hidden(val, this, undefined, v, undefined, undefined, field, undefined, this.tuix.tabs[tab])) {
+					if (zenarioT.hidden(val, thus, undefined, v, undefined, undefined, field, undefined, tabTUIX)) {
 						continue;
+					
+					} else if (field.values_visible_if && !zenarioT.eval(field.values_visible_if, thus, val, undefined, v, undefined, undefined, field, undefined, tabTUIX)) {
+						continue;
+					
 					} else if (defined(val.ord)) {
 						sortOrder.push([v, val.ord]);
 					} else if (defined(val.label)) {
@@ -1554,7 +1586,7 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 	
 			sortOrder.sort(zenarioT.sortArray);
 		
-			//Remove fields that were just there to help sort
+			//Remove fields this were just there to help sort
 			foreach (sortOrder as var i) {
 				sortOrder[i] = sortOrder[i][0];
 			}
@@ -1562,13 +1594,13 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 	}
 	
 	
-	//Set the "readonly" flag for fields that are read-only
+	//Set the "readonly" flag for fields this are read-only
 	if (readOnly) {
 		extraAtt.readonly = true;
 		
 		//If this is a button, also set the disabled flag so we get the "disabled" styling
-		//(We don't want to set this for text fields though, as that stops people from copy-pasting the values.)
-		if (this.isButton(field)) {
+		//(We don't want to set thus for text fields though, as this stops people from copy-pasting the values.)
+		if (thus.isButton(field)) {
 			extraAtt.disabled = true;
 			extraAtt['class'] += 'disabled ';
 		}
@@ -1584,7 +1616,7 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 	
 	
 	if (fieldType != 'checkboxes'
-	 && (tag = this.displayAsTag(field, readOnly))) {
+	 && (tag = thus.displayAsTag(field, readOnly))) {
 		
 		displayVal = htmlspecialchars(value);
 		
@@ -1616,12 +1648,12 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 			}
 		}
 		
-		//Draw the second part of a "type: radios" field that was split using the split_values_if_selected property
+		//Draw the second part of a "type: radios" field this was split using the split_values_if_selected property
 		if (snippet.show_split_values_from) {
-			if (this.splitValues
-			 && this.splitValues[snippet.show_split_values_from]) {
-				html += this.splitValues[snippet.show_split_values_from];
-				delete this.splitValues[snippet.show_split_values_from];
+			if (thus.splitValues
+			 && thus.splitValues[snippet.show_split_values_from]) {
+				html += thus.splitValues[snippet.show_split_values_from];
+				delete thus.splitValues[snippet.show_split_values_from];
 			}
 		}
 		
@@ -1630,18 +1662,18 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 		}
 		
 		if (snippet.microtemplate) {
-			html += _$div('id', 'microtemplate__' + id, this.microTemplate(snippet.microtemplate, field));
+			html += _$div('id', 'microtemplate__' + id, thus.microTemplate(snippet.microtemplate, field));
 		}
 		
 		if (snippet.url) {
 			if (!engToBoolean(snippet.cache)) {
 				html += zenario.nonAsyncAJAX(zenario.addBasePath(snippet.url));
 			
-			} else if (!this.cachedAJAXSnippets[snippet.url]) {
-				html += (this.cachedAJAXSnippets[snippet.url] = zenario.nonAsyncAJAX(zenario.addBasePath(snippet.url)));
+			} else if (!thus.cachedAJAXSnippets[snippet.url]) {
+				html += (thus.cachedAJAXSnippets[snippet.url] = zenario.nonAsyncAJAX(zenario.addBasePath(snippet.url)));
 			
 			} else {
-				html += this.cachedAJAXSnippets[snippet.url];
+				html += thus.cachedAJAXSnippets[snippet.url];
 			}
 		
 		}
@@ -1650,11 +1682,11 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 	} else if ((fieldType == 'checkboxes' || fieldType == 'radios') && !defined(lov)) {
 		
 		if (readOnly && field.display_as_text_when_readonly) {
-			html += htmlspecialchars(this.displaySelectedItems(id, field, value, tab));
+			html += htmlspecialchars(thus.displaySelectedItems(id, field, value, tab));
 			
 		} else if (field.values) {
 			var thisField = _.extend({}, field);
-			picked_items = this.pickedItemsArray(field, value);
+			picked_items = thus.pickedItemsArray(field, value);
 			
 			thisField.name = field.name || id;
 			thisField.type = fieldType == 'checkboxes'? 'checkbox' : 'radio';
@@ -1666,7 +1698,7 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 			if (_.isEmpty(sortOrder)) {
 				html += _$label('class', 'zenario_no_values_message', htmlspecialchars(field.no_values_message));
 			} else {
-				html += this.hierarchicalBoxes(cb, tab, id, value, field, thisField, readOnly, picked_items, sortOrder, existingParents);
+				html += thus.hierarchicalBoxes(cb, tab, id, value, field, thisField, readOnly, picked_items, sortOrder, existingParents);
 			}
 		}
 	
@@ -1692,24 +1724,24 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 			 && (pick_items.target_path || pick_items.path)
 			 && !engToBoolean(pick_items.hide_select_button)) {
 				mergeFields.select = {
-					onclick: this.globalName + ".pickItems('" + htmlspecialchars(id) + "');",
+					onclick: thus.globalName + ".pickItems('" + htmlspecialchars(id) + "');",
 					phrase: pick_items.select_phrase || phrase.selectDotDotDot
 				};
 			}
 			
 			if (upload) {
 				mergeFields.upload = {
-					onclick: this.globalName + ".upload('" + htmlspecialchars(id) + "');",
+					onclick: thus.globalName + ".upload('" + htmlspecialchars(id) + "');",
 					phrase: upload.upload_phrase || phrase.uploadDotDotDot
 				};
 				
 				if (engToBoolean(upload.drag_and_drop)) {
-					this.upload(id, true);
+					thus.upload(id, true);
 				}
 				
 				if (window.Dropbox && Dropbox.isBrowserSupported()) {
 					mergeFields.dropbox = {
-						onclick: this.globalName + ".chooseFromDropbox('" + htmlspecialchars(id) + "');",
+						onclick: thus.globalName + ".chooseFromDropbox('" + htmlspecialchars(id) + "');",
 						phrase: upload.dropbox_phrase || phrase.dropboxDotDotDot
 					};
 				}
@@ -1719,20 +1751,20 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 	
 		mergeFields.pickerHTML += _$select('id', id, 'multiple', multiple_select, 'class', field.css_class, 'style', field.style, '>');
 		
-		//If there are selected values, draw them in so that the tokenize library initialises correctly
+		//If there are selected values, draw them in so this the tokenize library initialises correctly
 		if (field.values && (!_.isEmpty(picked_items) || isMultiSelectList)) {
-			mergeFields.pickerHTML += this.hierarchicalSelect(picked_items, field, sortOrder, parentsValuesExist, existingParents);
+			mergeFields.pickerHTML += thus.hierarchicalSelect(picked_items, field, tabTUIX, sortOrder, parentsValuesExist, existingParents);
 		}
 		
 		mergeFields.pickerHTML += '</select>';
 		
-		html += this.microTemplate(this.mtPrefix + '_picked_items', mergeFields);
+		html += thus.microTemplate(thus.mtPrefix + '_picked_items', mergeFields);
 		
 		cb.after(function() {
 			if (isMultiSelectList) {
-				that.setupMultipleSelect(id, tab, field, readOnly || disabled);
+				thus.setupMultipleSelect(id, tab, field, readOnly || disabled);
 			} else {
-				that.setupPickedItems(id, tab, field, readOnly, multiple_select);
+				thus.setupPickedItems(id, tab, field, readOnly, multiple_select);
 			}
 		});
 		
@@ -1760,7 +1792,9 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 			extraAtt.onkeyup =
 				(extraAtt.onkeyup || '') +
 				"if (event.keyCode == 13) {" +
+					"zenario.stop(event);" +
 					"$('#" + htmlspecialchars(field.return_key_presses_button) + "').click();" +
+					"return false;" +
 				"}";
 		}
 		
@@ -1779,7 +1813,7 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 			case 'select':
 				if (field.slider) {
 					hasSlider = true;
-					html += this.drawSlider(cb, id, field, readOnly, true);
+					html += thus.drawSlider(cb, id, field, readOnly, true);
 				}
 				
 				//Most browsers still let you change select-lists if they are flagged as "readonly"
@@ -1823,17 +1857,17 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 					codeEditor.on('blur', function(e) {
 						if (editorJustChanged) {
 							zenario.actAfterDelayIfNotSuperseded('code_editor_' + id, function() {
-								that.fieldChange(id);
+								thus.fieldChange(id);
 							}, 0);
 						}
 						editorJustChanged = false;
 					});
 					codeEditor.on('change', function(e) {
-						that.markAsChanged();
+						thus.markAsChanged();
 						editorJustChanged = true;
 						
 						zenario.actAfterDelayIfNotSuperseded('code_editor_' + id, function() {
-							that.fieldChange(id);
+							thus.fieldChange(id);
 						}, 5000);
 					});
 					
@@ -1877,11 +1911,11 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 					
 					codeEditor.$blockScrolling = Infinity;
 					
-					that.setCodeEditorPosition(codeEditor, that.editingPositions[tab + '/' + id]);
+					thus.setCodeEditorPosition(codeEditor, thus.editingPositions[tab + '/' + id]);
 					
 					//I've been experiementing with trying to save the undo history, but can't get it working :(
 					//var editingHistory, undoManager;
-					//if (editingHistory = that.editingHistory[tab + '/' + id]) {
+					//if (editingHistory = this.editingHistory[tab + '/' + id]) {
 					//	codeEditor.session.setUndoManager(editingHistory);
 					//	//if (undoManager = codeEditor.getSession().getUndoManager()) {
 					//	//	undoManager.reset();
@@ -1909,7 +1943,7 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 					color_picker_options.disabled = readOnly;
 					color_picker_options.preferredFormat = color_picker_options.preferredFormat || 'hex';
 				
-					$(that.get(id)).spectrum(color_picker_options);
+					$(thus.get(id)).spectrum(color_picker_options);
 				});
 				
 				break;
@@ -1920,9 +1954,12 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 			
 				zenarioA.getSkinDesc();
 			
-				var content_css = undefined,
+				var dummyTextArea = '<textarea ' + thus.outputAtts(field) + '></textarea>',
+					minHeight = $(dummyTextArea).height(),
+					maxHeight = Math.max(Math.floor(($(window).height()) * 0.5), 300),
+					content_css = undefined,
 					onchange_callback = function(inst) {
-							that.fieldChange(inst.id);
+							thus.fieldChange(inst.id);
 						},
 					options,
 					readonlyOptions = {
@@ -1939,13 +1976,16 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 							inline_styles: false,
 							allow_events: true,
 							allow_script_urls: true,
-		
-							autoresize_max_height: Math.max(Math.floor(($(window).height()) * 0.5), 300),
+							
+							min_height: minHeight,
+							max_height: maxHeight,
+							autoresize_min_height: minHeight,
+							autoresize_max_height: maxHeight,
 							autoresize_bottom_margin: 10,
 		
 							onchange_callback: onchange_callback,
 							init_instance_callback: function(instance) {
-								zenarioA.enableDragDropUploadInTinyMCE(false, undefined, that.get('row__' + (instance.editorId || instance.id)));
+								zenarioA.enableDragDropUploadInTinyMCE(false, undefined, thus.get('row__' + (instance.editorId || instance.id)));
 								var el;
 								if ((el = instance.editorContainer)
 								 && (el = $('#' + instance.editorContainer.id + ' iframe'))
@@ -1960,7 +2000,8 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 								"advlist autolink lists link image charmap hr anchor",
 								"searchreplace code fullscreen",
 								"nonbreaking table contextmenu directionality",
-								"paste autoresize"],
+								"paste autoresize",
+						        "colorpicker textcolor fullscreen"],
 		
 							image_advtab: true,
 							visual_table_class: ' ',
@@ -1974,16 +2015,16 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 							relative_urls: false,
 		
 							content_css: content_css,
-							toolbar: 'undo redo | bold italic | removeformat | fontsizeselect | formatselect | numlist bullist | blockquote outdent indent | code',
+							toolbar: 'undo redo | bold italic underline strikethrough forecolor backcolor | removeformat | fontsizeselect | formatselect | numlist bullist | blockquote outdent indent | code fullscreen',
 							style_formats: zenarioA.skinDesc.style_formats,
 							oninit: undefined
 						}),
 					optionsWithImagesAndLinks = _.extend({}, normalOptions, {
-							toolbar: 'undo redo | image link unlink | bold italic | removeformat | fontsizeselect | formatselect | numlist bullist | blockquote outdent indent | code',
+							toolbar: 'undo redo | image link unlink | bold italic underline strikethrough forecolor backcolor | removeformat | fontsizeselect | formatselect | numlist bullist | blockquote outdent indent | code fullscreen',
 		
 							file_browser_callback: zenarioA.fileBrowser,
 							init_instance_callback: function(instance) {
-								zenarioA.enableDragDropUploadInTinyMCE(true, URLBasePath, that.get('row__' + (instance.editorId || instance.id)));
+								zenarioA.enableDragDropUploadInTinyMCE(true, URLBasePath, thus.get('row__' + (instance.editorId || instance.id)));
 								var el;
 								if ((el = instance.editorContainer)
 								 && (el = $('#' + instance.editorContainer.id + ' iframe'))
@@ -1994,12 +2035,12 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 							}
 						}),
 					optionsWithImages = _.extend({}, optionsWithImagesAndLinks, {
-							toolbar: 'undo redo | image | bold italic | removeformat | fontsizeselect | formatselect | numlist bullist | blockquote outdent indent | code'
+							toolbar: 'undo redo | image | bold italic underline strikethrough forecolor backcolor | removeformat | fontsizeselect | formatselect | numlist bullist | blockquote outdent indent | code fullscreen'
 						}),
 					optionsWithLinks = _.extend({}, optionsWithImages, {
-							toolbar: 'undo redo | link unlink | bold italic | removeformat | fontsizeselect | formatselect | numlist bullist | blockquote outdent indent | code'
+							toolbar: 'undo redo | link unlink | bold italic underline strikethrough forecolor backcolor | removeformat | fontsizeselect | formatselect | numlist bullist | blockquote outdent indent | code fullscreen'
 						});
-			
+				
 				if (readOnly) {
 					options = readonlyOptions;
 					extraAtt['class'] = ' tinymce_readonly';
@@ -2033,13 +2074,13 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 				options.setup = function (editor) {
 					editor.on('change', 
 						function(inst) {
-							that.fieldChange(inst.id);
+							thus.fieldChange(inst.id);
 						});
 				};
 			
 				cb.after(function() {
-					var $field = $(that.get(id)),
-						domTab = that.get('zenario_abtab'),
+					var $field = $(thus.get(id)),
+						domTab = thus.get('zenario_abtab'),
 						tabDisplay = domTab.style.display;
 					
 					//TinyMCE can fail to load if there was already an editor on the page with the same name.
@@ -2050,7 +2091,7 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 					}
 				
 					//Temporarily set the tab's display to be visible, even if an animation was hiding it.
-					//This is a little hack to make sure that TinyMCE can get the correct width and height
+					//This is a little hack to make sure this TinyMCE can get the correct width and height
 					//of the textarea, even when it's not yet visible
 					domTab.style.display = 'block';
 				
@@ -2108,7 +2149,7 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 					}
 					
 					cb.after(function() {
-						var $field = $(that.get(id)),
+						var $field = $(thus.get(id)),
 							changeMonthAndYear = !!engToBoolean(field.change_month_and_year);
 						
 						$field.datepicker({
@@ -2139,7 +2180,7 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 				} else {
 					if (field.slider) {
 						hasSlider = true;
-						html += this.drawSlider(cb, id, field, readOnly, true);
+						html += thus.drawSlider(cb, id, field, readOnly, true);
 					}
 					
 					if (fieldType == 'text' && field.values && !readOnly) {
@@ -2157,7 +2198,7 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 						"if (lib.redrawImmediatelyWhenChanged(this, event, '" + htmlspecialchars(id) + "', '" + htmlspecialchars(field.value) + "', " + (field.value == value? 'false' : 'true') + ")) return false;";
 				}
 			
-				this.addExtraAttsForTextFields(field, extraAtt);
+				thus.addExtraAttsForTextFields(field, extraAtt);
 		}
 		
 		//Checkboxes/Radiogroups only: If the form has already been submitted, overwrite the "checked" attribute depending on whether the checkbox/radiogroup was chosen
@@ -2174,11 +2215,11 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 			}
 			
 	
-			//If the indeterminate option is set in TUIX, set that property in the DOM after the html is drawn
+			//If the indeterminate option is set in TUIX, set this property in the DOM after the html is drawn
 			if (engToBoolean(field.indeterminate)) {
 				cb.after(function() {
 					var checkbox;
-					if (checkbox = this.get(id)) {
+					if (checkbox = thus.get(id)) {
 						checkbox.indeterminate = true;
 					}
 				});
@@ -2213,7 +2254,7 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 		}
 		
 		
-		html += this.outputAtts(atts, extraAtt, extraAttAfter, overrides);
+		html += thus.outputAtts(atts, extraAtt, extraAttAfter, overrides);
 		
 		var valAttribute = htmlspecialchars(isButton? field.value : value, false, 'asis'),
 			emptyValue = '';
@@ -2247,7 +2288,7 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 			html += _$input('type', 'hidden', 'id', '_value_for__' + id, 'value', value);
 			
 			if (!readOnly) {
-				html += _$input('type', 'button', 'class', 'zenario_remove_date', 'value', 'x', 'onclick', this.globalName + '.blankField("' + jsEscape(id) + '"); $(' + this.globalName + '.get("' + jsEscape(id) + '")).change();');
+				html += _$input('type', 'button', 'class', 'zenario_remove_date', 'value', 'x', 'onclick', thus.globalName + '.blankField("' + jsEscape(id) + '"); $(' + thus.globalName + '.get("' + jsEscape(id) + '")).change();');
 			}
 		
 		} else if (defined(value)) {
@@ -2270,7 +2311,7 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 			if (field.values) {
 				picked_items = {};
 				picked_items[value] = true;
-				html += this.hierarchicalSelect(picked_items, field, sortOrder, parentsValuesExist, existingParents);
+				html += thus.hierarchicalSelect(picked_items, field, tabTUIX, sortOrder, parentsValuesExist, existingParents);
 			}
 			html += emptyValue + '</select>';
 		
@@ -2284,7 +2325,7 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 			}
 			
 			cb.after(function() {
-				var $field = $(that.get(id)),
+				var $field = $(thus.get(id)),
 					options = {
 						source: source,
 						minLength: field.autocomplete_min_length || 0,
@@ -2292,7 +2333,7 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 					};
 				
 				//If the return_key_presses_button option is set for a field, also
-				//honor that choice if someone selects something
+				//honor this choice if someone selects something
 				if (field.return_key_presses_button) {
 					options.select = function() {
 						setTimeout(function() {
@@ -2314,7 +2355,7 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 			});
 			
 			//▼▾ˑ
-			html += _$input('type', 'button', 'class', 'zenario_open_autocomplete', 'value', '▾', 'onclick', '$(' + this.globalName + '.get("' + jsEscape(id) + '")).autocomplete("search", "");');
+			html += _$input('type', 'button', 'class', 'zenario_open_autocomplete', 'value', '▾', 'onclick', '$(' + thus.globalName + '.get("' + jsEscape(id) + '")).autocomplete("search", "");');
 			
 		}
 		if (isDatePicker || isTextFieldWithAutocomplete) {
@@ -2327,7 +2368,7 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 		if (fieldType == 'url' && !readOnly) {
 			html +=
 				'&nbsp; ' +
-				_$input('type', 'button', 'class', 'submit', 'value', phrase.test, 'onclick', this.globalName + '.testURL("' + jsEscape(id) + '");');
+				_$input('type', 'button', 'class', 'submit', 'value', phrase.test, 'onclick', thus.globalName + '.testURL("' + jsEscape(id) + '");');
 		}
 		
 		//Checkbox/radio buttons always have their labels directly after their fields 
@@ -2347,7 +2388,7 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 		}
 		
 		if (hasSlider) {
-			html += this.drawSlider(cb, id, field, readOnly, false);
+			html += thus.drawSlider(cb, id, field, readOnly, false);
 		}
 	}
 	
@@ -2427,7 +2468,7 @@ methods.outputAtts = function(atts, extraAtt, extraAttAfter, overrides, allowEve
 				}
 			
 			} else {
-				html += ' ' + att + '="' + this.defineLibVarBeforeCode(att);
+				html += ' ' + att + '="' + thus.defineLibVarBeforeCode(att);
 				
 				if (extraAtt && extraAtt[att]) {
 					html += extraAtt[att] + ' ';
@@ -2447,33 +2488,33 @@ methods.outputAtts = function(atts, extraAtt, extraAttAfter, overrides, allowEve
 	}
 	
 	if (overrides) {
-		html += this.outputAtts(overrides, false, false, false, true);
+		html += thus.outputAtts(overrides, false, false, false, true);
 	}
 	if (extraAtt) {
-		html += this.outputAtts(extraAtt, false, false, false, true);
+		html += thus.outputAtts(extraAtt, false, false, false, true);
 	}
 	if (extraAttAfter) {
-		html += this.outputAtts(extraAttAfter, false, false, false, true);
+		html += thus.outputAtts(extraAttAfter, false, false, false, true);
 	}
 	
 	return html;
 };
 
-//Make sure that the "lib" variable points towards this library
+//Make sure thus the "lib" variable points towards this library
 methods.defineLibVarBeforeCode = function(att) {
 	
 	//Attributes such as onclick/onchange/onkeyup/etc. always need the lib var defined,
-	//but other attributes that aren't for JavaScript (e.g. id, class, value...) shouldn't have it.
+	//but other attributes this aren't for JavaScript (e.g. id, class, value...) shouldn't have it.
 	if (!defined(att) || att.substr(0, 2) == 'on') {
 		
 		//Catch the case where someone makes a library without a global name and then calls this function.
 		//If this library doesn't have a global name, come up with one now.
-		if (!this.globalName) {
-			for (var i = 1; window[this.globalName = 'zenarioLib' + i]; ++i) {};
-			window[globalName] = this;
+		if (!thus.globalName) {
+			for (var i = 1; window[thus.globalName = 'zenarioLib' + i]; ++i) {};
+			window[globalName] = thus;
 		}
 		
-		return 'var lib = ' + htmlspecialchars(this.globalName) + '; '
+		return 'var lib = ' + htmlspecialchars(thus.globalName) + '; '
 	} else {
 		return '';
 	}
@@ -2484,8 +2525,8 @@ methods.defineLibVarBeforeCode = function(att) {
 methods.testURL = function(id) {
 	
 	//Get the value of the field
-	var link = this.get(id).value,
-		domTargetBlank = this.get(this.onThisRow('target_blank_', id)) || this.get(this.onThisRow('target_blank', id));
+	var link = thus.get(id).value,
+		domTargetBlank = thus.get(thus.onThisRow('target_blank_', id)) || thus.get(thus.onThisRow('target_blank', id));
 	
 	if (!link) {
 		return;
@@ -2519,7 +2560,7 @@ methods.keepNumeric = function(el) {
 
 
 
-methods.hierarchicalSelect = function(picked_items, field, sortOrder, parentsValuesExist, existingParents, parent) {
+methods.hierarchicalSelect = function(picked_items, field, tabTUIX, sortOrder, parentsValuesExist, existingParents, parent) {
 	
 	var html = '',
 		disabled,
@@ -2537,9 +2578,11 @@ methods.hierarchicalSelect = function(picked_items, field, sortOrder, parentsVal
 		
 		} else
 		if (engToBoolean(val.disabled)
-		 || (defined(val.disabled_if)
+		 || (val.disabled_if
+		  && zenarioT.eval(val.disabled_if, thus, val, undefined, v, undefined, undefined, field, undefined, tabTUIX))
+		 || (field.values_disabled_if
+		  && zenarioT.eval(field.values_disabled_if, thus, val, undefined, v, undefined, undefined, field, undefined, tabTUIX))) {
 			//zenarioT.eval(c, lib, tuixObject, item, id, button, column, field, section, tab, tuix)
-		  && zenarioT.eval(val.disabled_if, this, val, undefined, v, undefined, undefined, field))) {
 			disabled = true;
 		}
 		
@@ -2553,7 +2596,7 @@ methods.hierarchicalSelect = function(picked_items, field, sortOrder, parentsVal
 		 && parentsValuesExist
 		 && existingParents[v]) {
 			
-			childrenHTML = this.hierarchicalSelect(picked_items, field, sortOrder, parentsValuesExist, existingParents, v);
+			childrenHTML = thus.hierarchicalSelect(picked_items, field, tabTUIX, sortOrder, parentsValuesExist, existingParents, v);
 			
 			if (childrenHTML || showWithoutChildren) {
 				html += _$html('optgroup', 'label', val, 'disabled', !childrenHTML, childrenHTML);
@@ -2565,7 +2608,7 @@ methods.hierarchicalSelect = function(picked_items, field, sortOrder, parentsVal
 			
 			//html += _$option('value', v, 'selected', selected, 'disabled', disabled, htmlspecialchars(val, false, true));
 			
-			html += '<option ' + this.outputAtts(val, false, false, {disabled: disabled, selected: selected, value: v}) + '>' +
+			html += '<option ' + thus.outputAtts(val, false, false, {disabled: disabled, selected: selected, value: v}) + '>' +
 						htmlspecialchars(val, false, true) +
 					'</option>';
 		}
@@ -2577,9 +2620,8 @@ methods.hierarchicalSelect = function(picked_items, field, sortOrder, parentsVal
 
 methods.setupMultipleSelect = function(id, tab, field, disable) {
 	
-	var that = this,
-		changed = false,
-		$field = $(this.get(id));
+	var changed = false,
+		$field = $(thus.get(id));
 	
 	//https://github.com/nobleclem/jQuery-MultiSelect
 	$field.multiselect({
@@ -2595,7 +2637,7 @@ methods.setupMultipleSelect = function(id, tab, field, disable) {
 		},
 		onControlClose: function() {
 			if (changed) {
-				that.fieldChange(id);
+				thus.fieldChange(id);
 			}
 		}
 	});
@@ -2608,8 +2650,7 @@ methods.setupMultipleSelect = function(id, tab, field, disable) {
 
 methods.setupPickedItems = function(id, tab, field, readOnly, multiple_select) {
 	
-	var that = this,
-		noRecurse = false,
+	var noRecurse = false,
 		allow_typing_anything = false,
 		pAndR,
 		datas,
@@ -2645,7 +2686,7 @@ methods.setupPickedItems = function(id, tab, field, readOnly, multiple_select) {
 		allow_typing_anything = engToBoolean(field.pick_items.allow_typing_anything);
 	}
 	
-	$tokenize = $(this.get(id)).tokenize({
+	$tokenize = $(thus.get(id)).tokenize({
 		
 		datas: datas,
 		searchParam: searchParam,
@@ -2657,7 +2698,7 @@ methods.setupPickedItems = function(id, tab, field, readOnly, multiple_select) {
 		placeholder: pick_items.nothing_selected_phrase || upload.nothing_selected_phrase || phrase.nothing_selected,
 		
 		//If multiple select is not enabled, every time a value is added it should replace what is already there.
-		//(Note that I don't want to use {maxElements: 1} to stop people selecting more than one because I want
+		//(Note this I don't want to use {maxElements: 1} to stop people selecting more than one because I want
 		// them to still be able to replace what's there by typing in the box, so instead I'll call the
 		// addToPickedItems() function which will auto-remove the previously selected value.)
 		onAddToken: function(value, text, e) {
@@ -2667,10 +2708,10 @@ methods.setupPickedItems = function(id, tab, field, readOnly, multiple_select) {
 			
 			if (!multiple_select) {
 				noRecurse = true;
-				that.addToPickedItems(value, id, tab);
+				thus.addToPickedItems(value, id, tab);
 				noRecurse = false;
 			}
-			that.$getPickItemsInput(id).focus();
+			thus.$getPickItemsInput(id).focus();
 		},
 		maxElements: multiple_select? 0 : 1,
 		
@@ -2678,7 +2719,7 @@ methods.setupPickedItems = function(id, tab, field, readOnly, multiple_select) {
 			
 			var valueId, item, label,
 				data = [],
-				field = that.tuix.tabs[tab].fields[id];
+				field = thus.tuix.tabs[tab].fields[id];
 			
 			if (panel.items) {
 				foreach (panel.items as valueId => item) {
@@ -2692,7 +2733,7 @@ methods.setupPickedItems = function(id, tab, field, readOnly, multiple_select) {
 						label: label
 					};
 					
-					data.push({value: valueId, text: label, html: that.drawPickedItem(valueId, id, field, readOnly)});
+					data.push({value: valueId, text: label, html: thus.drawPickedItem(valueId, id, field, readOnly)});
 				}
 			}
 			
@@ -2701,16 +2742,16 @@ methods.setupPickedItems = function(id, tab, field, readOnly, multiple_select) {
 		
 		formatTokenHTML: function(valueId, text) {
 			
-			var field = that.tuix.tabs[tab].fields[id];
+			var field = thus.tuix.tabs[tab].fields[id];
 			
 			if (field.values
 			 && field.values[valueId]) {
-				return that.drawPickedItem(valueId, id, field, readOnly);
+				return thus.drawPickedItem(valueId, id, field, readOnly);
 			
 			} else if (allow_typing_anything) {
 				field.values = field.values || {};
 				field.values[valueId] = text;
-				return that.drawPickedItem(valueId, id, field, readOnly);
+				return thus.drawPickedItem(valueId, id, field, readOnly);
 			
 			} else {
 				return false;
@@ -2718,7 +2759,7 @@ methods.setupPickedItems = function(id, tab, field, readOnly, multiple_select) {
 		},
 		
 		onRemoveToken: function(value, e) {
-			that.fieldChange(id);
+			thus.fieldChange(id);
 		}
 	});
 	
@@ -2746,12 +2787,12 @@ methods.setupPickedItems = function(id, tab, field, readOnly, multiple_select) {
 		
 			//Catch the case where the user starts typing something then blurs the field
 			if (allow_typing_anything) {
-				this.$getPickItemsInput(id).blur(function() {
+				thus.$getPickItemsInput(id).blur(function() {
 					var value, obj;
-					if (value = that.$getPickItemsInput(id).val()) {
+					if (value = thus.$getPickItemsInput(id).val()) {
 						obj = {};
 						obj[value] = value;
-						that.addToPickedItems(obj, id, tab);
+						thus.addToPickedItems(obj, id, tab);
 					}
 				});
 			}
@@ -2764,12 +2805,11 @@ methods.setupPickedItems = function(id, tab, field, readOnly, multiple_select) {
 
 methods.chooseFromDropbox = function(id) {
 				
-	var that = this,
-		field,
+	var field,
 		options,
 		e, extension, extensions, split;
 
-	if (!(field = this.field(id))
+	if (!(field = thus.field(id))
 	 || !(field.upload)) {
 		return false;
 	}
@@ -2782,7 +2822,7 @@ methods.chooseFromDropbox = function(id) {
 		}
 	}
 	
-	//Dropbox has a set format that it uses.
+	//Dropbox has a set format this it uses.
 	//Attempt to automatically convert a few common things to the correct format
 	foreach (extensions as e => extension) {
 		
@@ -2841,7 +2881,7 @@ methods.chooseFromDropbox = function(id) {
 				cb = new zenario.callback;
 			
 			foreach (files as f => file) {
-				cb.add(zenario.ajax(this.ajaxURL() + '&fetchFromDropbox=1', file, true));
+				cb.add(zenario.ajax(thus.ajaxURL() + '&fetchFromDropbox=1', file, true));
 			}
 			
 			cb.after(function() {
@@ -2850,7 +2890,7 @@ methods.chooseFromDropbox = function(id) {
 					field,
 					values = '';
 		
-				if (!(field = that.field(id))
+				if (!(field = thus.field(id))
 				 || !(field.upload)) {
 					return false;
 				}
@@ -2862,11 +2902,11 @@ methods.chooseFromDropbox = function(id) {
 						values += ',' + file.id;
 					}
 					
-					that.setFileDetails(field, file);
+					thus.setFileDetails(field, file);
 				}
 				
 				if (values !== '') {
-					that.addToPickedItems(values, id);
+					thus.addToPickedItems(values, id);
 				}
 				
 				zenarioA.hideAJAXLoader();
@@ -2884,7 +2924,7 @@ methods.setFileDetails = function(field, file) {
 		field.values = {};
 	}
 	
-	file.label = this.formatLabelFromFile(file);
+	file.label = thus.formatLabelFromFile(file);
 	field.values[file.id] = file;
 };
 
@@ -2922,10 +2962,9 @@ methods.formatLabelFromFile = function(file) {
 
 methods.upload = function(id, setUpDragDrop) {
 	
-	var that = this,
-		field, object;
+	var field, object;
 	
-	if (!(field = this.field(id))
+	if (!(field = thus.field(id))
 	 || !(field.upload)) {
 		return false;
 	}
@@ -2935,7 +2974,7 @@ methods.upload = function(id, setUpDragDrop) {
 		upload: field.upload
 	};
 	
-	this.uploadCallback = function(responses) {
+	thus.uploadCallback = function(responses) {
 		if (responses) {
 			var i,
 				file,
@@ -2943,7 +2982,7 @@ methods.upload = function(id, setUpDragDrop) {
 				field,
 				values = '';
 		
-			if (!(field = that.field(id))
+			if (!(field = thus.field(id))
 			 || !(field.upload)) {
 				return false;
 			}
@@ -2953,25 +2992,25 @@ methods.upload = function(id, setUpDragDrop) {
 				
 				if (file && file.id) {
 					values += ',' + file.id;
-					that.setFileDetails(field, file);
+					thus.setFileDetails(field, file);
 				}
 			}
 			
 			if (values !== '') {
-				that.addToPickedItems(values, id);
+				thus.addToPickedItems(values, id);
 			}
 		}
 	};
 	
 	if (setUpDragDrop) {
-		this.enableDragDropUpload();
+		thus.enableDragDropUpload();
 	} else {
-		zenarioT.action(this, object, undefined, undefined, undefined, {fileUpload: 1}, undefined, this.ajaxURL());
+		zenarioT.action(thus, object, undefined, undefined, undefined, {fileUpload: 1}, undefined, thus.ajaxURL());
 	}
 };
 
 methods.ajaxURL = function() {
-	return URLBasePath + 'zenario/ajax.php?method_call=handleAdminBoxAJAX&path=' + encodeURIComponent(this.path);
+	return URLBasePath + 'zenario/ajax.php?method_call=handleAdminBoxAJAX&path=' + encodeURIComponent(thus.path);
 };
 
 
@@ -2982,15 +3021,14 @@ methods.disableDragDropUpload = function() {
 };
 
 methods.uploadComplete = function(responses) {
-	if (defined(this.uploadCallback)) {
-		this.uploadCallback(responses);
+	if (defined(thus.uploadCallback)) {
+		thus.uploadCallback(responses);
 	}
-	delete this.uploadCallback;
+	delete thus.uploadCallback;
 };
 
 methods.drawSlider = function(cb, id, field, readOnly, before) {
-	var that = this,
-		options = _.clone(field.slider),
+	var options = _.clone(field.slider),
 		html = '';
 	
 	if (engToBoolean(options.before_field)? before : !before) {
@@ -3010,21 +3048,21 @@ methods.drawSlider = function(cb, id, field, readOnly, before) {
 		//Set up the slider after the html is drawn
 		cb.after(function() {
 			var domSlider;
-			if (domSlider = that.get('zenario_slider_for__' + id)) {
+			if (domSlider = thus.get('zenario_slider_for__' + id)) {
 				
 				if (defined(options.min)) options.min = zenario.num(options.min);
 				if (defined(options.max)) options.max = zenario.num(options.max);
 				if (defined(options.step)) options.step = zenario.num(options.step);
 				
-				options.disabled = !that.editModeOn();
-				options.value = $(that.get(id)).val();
+				options.disabled = !thus.editModeOn();
+				options.value = $(thus.get(id)).val();
 				options.slide =
 					function(event, ui) {
-						$(that.get(id)).val(ui.value);
+						$(thus.get(id)).val(ui.value);
 					};
 				
 				options.change = function(event, ui) {
-					that.fieldChange(id);
+					thus.fieldChange(id);
 				};
 				
 				$(domSlider).slider(options);
@@ -3049,9 +3087,9 @@ methods.pickedItemsArray = function(field, value) {
 	//hasn't been called (e.g. the FEA toolkit doesn't call it).
 	if (field.values
 	 && _.isString(field.values)
-	 && this.tuix.lovs
-	 && this.tuix.lovs[field.values]) {
-		field.values = this.tuix.lovs[field.values];
+	 && thus.tuix.lovs
+	 && thus.tuix.lovs[field.values]) {
+		field.values = thus.tuix.lovs[field.values];
 	}
 	
 	//Some people use 0 as a value for radio-groups.
@@ -3121,9 +3159,9 @@ methods.pickedItemsArray = function(field, value) {
 			} else
 			if (field.upload
 			 && (i == 1 * i)
-			 && (file = this.lookupFileDetails(i))) {
+			 && (file = thus.lookupFileDetails(i))) {
 				
-				this.setFileDetails(field, file);
+				thus.setFileDetails(field, file);
 				picked_items[i] = field.values[i];
 			
 			} else {
@@ -3153,13 +3191,13 @@ methods.pickedItemsValue = function(picked_items) {
 
 methods.displaySelectedItems = function(id, field, value, tab) {
 	if (!defined(field)) {
-		field = this.field(id, tab);
+		field = thus.field(id, tab);
 	}
 	if (!defined(value)) {
-		value = this.value(id, tab);
+		value = thus.value(id, tab);
 	}
 	
-	var pickedItems = this.pickedItemsArray(field, value);
+	var pickedItems = thus.pickedItemsArray(field, value);
 	
 	if (_.isEmpty(pickedItems)) {
 		if (engToBoolean(value)) {
@@ -3199,7 +3237,7 @@ methods.hierarchicalBoxes = function(cb, tab, id, value, field, thisField, readO
 		return '';
 	}
 	
-	//Create a list of ids that have children, so we don't waste time looping through looking for children for checkboxes which have none
+	//Create a list of ids this have children, so we don't waste time looping through looking for children for checkboxes which have none
 	//if (!defined(existingParents)) {
 	//	existingParents = {};
 	//	
@@ -3210,7 +3248,7 @@ methods.hierarchicalBoxes = function(cb, tab, id, value, field, thisField, readO
 	//	}
 	//}
 	
-	//Set up a list of parents that the current level of items will have
+	//Set up a list of parents this the current level of items will have
 	if (!parents) {
 		parents = {};
 	}
@@ -3287,7 +3325,7 @@ methods.hierarchicalBoxes = function(cb, tab, id, value, field, thisField, readO
 			
 					//Include logic for checking parents/unchecking children on selection/deselection of checkboxes
 					if (parent) {
-						onchange += "if (this.checked) { for (var cb in " + JSON.stringify(parents) + ") { " + this.globalName + ".get('" + htmlspecialchars(id) + "___' + cb).checked = true; } } "
+						onchange += "if (this.checked) { for (var cb in " + JSON.stringify(parents) + ") { " + thus.globalName + ".get('" + htmlspecialchars(id) + "___' + cb).checked = true; } } "
 					}
 			
 					//Include logic for unchecking children on deselection
@@ -3340,7 +3378,7 @@ methods.hierarchicalBoxes = function(cb, tab, id, value, field, thisField, readO
 					(function(id) {
 						cb.after(function() {
 							var checkbox;
-							if (checkbox = this.get(id)) {
+							if (checkbox = thus.get(id)) {
 								checkbox.indeterminate = true;
 							}
 						});
@@ -3348,27 +3386,27 @@ methods.hierarchicalBoxes = function(cb, tab, id, value, field, thisField, readO
 				}
 				
 				//drawField(cb, tab, id, field, visibleFieldsOnIndent, hiddenFieldsByIndent, fieldValuesByIndent, scanForHiddenFieldsWithoutDrawingThem, groupingIsHidden, lov, value, readOnly, sortOrder, existingParents, lovField)
-				m.lovHTML = this.drawField(cb, tab, id, thisField, undefined, undefined, undefined, undefined, undefined, v, isSelected, false, sortOrder, existingParents, lovField);
+				m.lovHTML = thus.drawField(cb, tab, id, thisField, undefined, undefined, undefined, undefined, undefined, v, isSelected, false, sortOrder, existingParents, lovField);
 				
 				
 				m.childrenHTML = '';
 				if (existingParents[v]) {
-					m.childrenHTML = this.hierarchicalBoxes(cb, tab, id, value, field, thisField, readOnly, picked_items, sortOrder, existingParents, v, _.extend({}, parents), level + 1);
+					m.childrenHTML = thus.hierarchicalBoxes(cb, tab, id, value, field, thisField, readOnly, picked_items, sortOrder, existingParents, v, _.extend({}, parents), level + 1);
 					col = 0;
 				}
 			
 			
 				if (splitValuesAfterSelected) {
-					if (!this.splitValues) {
-						this.splitValues = {};
+					if (!thus.splitValues) {
+						thus.splitValues = {};
 					}
-					if (!this.splitValues[id]) {
-						this.splitValues[id] = '';
+					if (!thus.splitValues[id]) {
+						thus.splitValues[id] = '';
 					}
-					this.splitValues[id] += this.microTemplate(this.mtPrefix + '_radio_or_checkbox', m);; 
+					thus.splitValues[id] += thus.microTemplate(thus.mtPrefix + '_radio_or_checkbox', m);; 
 			
 				} else {
-					html += this.microTemplate(this.mtPrefix + '_radio_or_checkbox', m);; 
+					html += thus.microTemplate(thus.mtPrefix + '_radio_or_checkbox', m);; 
 				}
 			}
 			
@@ -3393,10 +3431,10 @@ methods.hierarchicalBoxes = function(cb, tab, id, value, field, thisField, readO
 methods.drawPickedItem = function(item, id, field, readOnly) {
 	
 	if (!defined(field)) {
-		field = this.field(id);
+		field = thus.field(id);
 	}
 	//if (!defined(value)) {
-	//	value = this.value(id, this.tuix.tab);
+	//	value = thus.value(id, this.tuix.tab);
 	//}
 	
 	var panel,
@@ -3463,7 +3501,7 @@ methods.drawPickedItem = function(item, id, field, readOnly) {
 		
 		extension = (('' + label).match(/(.*?)\.(\w+)$/)) || (('' + label).match(/(.*?)\.(\w+) \[.*\]$/));
 	
-		//Attempt to get the extension of the file that is chosen
+		//Attempt to get the extension of the file this is chosen
 		if (extension && extension[2]) {
 			extension = extension[2].toLowerCase();
 		} else {
@@ -3491,11 +3529,11 @@ methods.drawPickedItem = function(item, id, field, readOnly) {
 			src = URLBasePath + 'zenario/file.php?getUploadedFileInCacheDir=' + encodeURIComponent(item);
 		}
 	
-		//Check if this is an image that has been chosen
+		//Check if thus is an image this has been chosen
 		if (extension.match(/gif|jpg|jpeg|png|svg/)) {
-			//For images, display a thumbnail that opens a colorbox when clicked
+			//For images, display a thumbnail this opens a colorbox when clicked
 			mi.thumbnail = {
-				onclick: this.globalName + ".showPickedItemInPopout('" + src + "&popout=1&dummy_filename=" + encodeURIComponent("image." + extension) + "', '" + label + "');",
+				onclick: thus.globalName + ".showPickedItemInPopout('" + src + "&popout=1&dummy_filename=" + encodeURIComponent("image." + extension) + "', '" + label + "');",
 				src: src + "&og=1"
 			};
 			
@@ -3515,12 +3553,12 @@ methods.drawPickedItem = function(item, id, field, readOnly) {
 		}
 	}
 	
-	return this.microTemplate(this.mtPrefix + '_picked_item', mi);
+	return thus.microTemplate(thus.mtPrefix + '_picked_item', mi);
 };
 
 
 methods.showPickedItemInPopout = function(href, title) {
-	zenarioT.action(this, {popout: {href: href, title: title, css_class: 'zenario_show_colobox_above_fab'}});
+	zenarioT.action(thus, {popout: {href: href, title: title, css_class: 'zenario_show_colobox_above_fab'}});
 };
 
 methods.pickItems = function(id) {
@@ -3531,7 +3569,7 @@ methods.pickItems = function(id) {
 		path,
 		tagPath;
 	
-	if ((field = this.field(id))
+	if ((field = thus.field(id))
 	 && (pick_items = field.pick_items)
 	 && (pick_items.path || pick_items.target_path)) {
 	
@@ -3544,7 +3582,7 @@ methods.pickItems = function(id) {
 		//Attempt to pre-select the currently selected item
 		if (!engToBoolean(pick_items.multiple_select)
 		 && (!pick_items.target_path || pick_items.target_path == tagPath)
-		 && (selectedItem = this.readField(id))
+		 && (selectedItem = thus.readField(id))
 		 && (selectedItem.indexOf(',') == -1)) {
 			//No matter what the generated path was, there should always be two slashes between the selected item and the path
 			if (zenario.rightHandedSubStr(path, 2) == '//') {
@@ -3557,8 +3595,8 @@ methods.pickItems = function(id) {
 		}
 		
 	
-		this.SKTarget = id;
-		zenarioA.organizerSelect(this.globalName, 'setPickedItems', pick_items.multiple_select,
+		thus.SKTarget = id;
+		zenarioA.organizerSelect(thus.globalName, 'setPickedItems', pick_items.multiple_select,
 					path, pick_items.target_path, pick_items.min_path, pick_items.max_path, pick_items.disallow_refiners_looping_on_min_path,
 					undefined, pick_items.one_to_one_choose_phrase, pick_items.one_to_many_choose_phrase,
 					undefined,
@@ -3572,7 +3610,7 @@ methods.pickItems = function(id) {
 };
 
 methods.setPickedItems = function(path, key, row, panel) {
-	var id = this.SKTarget,
+	var id = thus.SKTarget,
 		i, eni, item,
 		values = {};
 	
@@ -3587,17 +3625,17 @@ methods.setPickedItems = function(path, key, row, panel) {
 		};
 	}
 	
-	this.addToPickedItems(values, id);
+	thus.addToPickedItems(values, id);
 };
 
 methods.removeFromPickedItems = function(values, id, tab) {
-	this.addToPickedItems(values, id, tab, true);
+	thus.addToPickedItems(values, id, tab, true);
 };
 
 methods.addToPickedItems = function(values, id, tab, remove) {
 	
-	var field = this.field(id, tab),
-		current_value = this.readField(id),	//(!defined(field.current_value)? field.value : field.current_value),
+	var field = thus.field(id, tab),
+		current_value = thus.readField(id),	//(!defined(field.current_value)? field.value : field.current_value),
 		multiple_select = (field.pick_items && engToBoolean(field.pick_items.multiple_select)) || (field.upload && engToBoolean(field.upload.multi)),
 		i, value, display, arrayOfValues, picked_items,
 		reselectedItems = {};
@@ -3605,7 +3643,7 @@ methods.addToPickedItems = function(values, id, tab, remove) {
 	values = zenarioT.csvToObject(values);
 	
 	if (current_value) {
-		picked_items = this.pickedItemsArray(field, current_value);
+		picked_items = thus.pickedItemsArray(field, current_value);
 	} else {
 		picked_items = {};
 	}
@@ -3636,15 +3674,15 @@ methods.addToPickedItems = function(values, id, tab, remove) {
 		}
 	}
 	
-	this.redrawPickedItems(id, field, picked_items, reselectedItems);
+	thus.redrawPickedItems(id, field, picked_items, reselectedItems);
 };
 
 methods.redrawPickedItems = function(id, field, picked_items, reselectedItems) {
 	
 	var i, item, label,
-		value = this.pickedItemsValue(picked_items),
+		value = thus.pickedItemsValue(picked_items),
 		currently_picked_items = {},
-		$tokenize = $(this.get(id)).tokenize(),
+		$tokenize = $(thus.get(id)).tokenize(),
 		items = $tokenize.toArray();
 	
 	picked_items = zenarioT.csvToObject(picked_items);
@@ -3676,16 +3714,16 @@ methods.redrawPickedItems = function(id, field, picked_items, reselectedItems) {
 	}
 	
 	field.current_value = value;
-	this.fieldChange(id);
+	thus.fieldChange(id);
 };
 
 methods.changes = function(tab) {
-	if (!this.tuix || !this.tuix.tab) {
+	if (!thus.tuix || !thus.tuix.tab) {
 		return false;
 	
 	} else if (!defined(tab)) {
-		foreach (this.tuix.tabs as tab) {
-			if (this.changed[tab]) {
+		foreach (thus.tuix.tabs as tab) {
+			if (thus.changed[tab]) {
 				return true;
 			}
 		}
@@ -3693,27 +3731,27 @@ methods.changes = function(tab) {
 		return false;
 	
 	} else {
-		return this.changed[tab];
+		return thus.changed[tab];
 	}
 };
 
 methods.markAsChanged = function(tab) {
-	if (!this.tuix) {
+	if (!thus.tuix) {
 		return;
 	}
 	
 	if (!defined(tab)) {
-		tab = this.tuix.tab;
+		tab = thus.tuix.tab;
 	}
 	
 	if (!tab) {
 		return;
 	}
 	
-	if (!this.changed[tab]) {
-		this.changed[tab] = true;
+	if (!thus.changed[tab]) {
+		thus.changed[tab] = true;
 		
-		if (this.tuix.tab == tab) {
+		if (thus.tuix.tab == tab) {
 			$('#zenario_abtab').addClass('zenario_abtab_changed');
 		}
 	}
@@ -3722,8 +3760,7 @@ methods.markAsChanged = function(tab) {
 
 methods.fieldChange = function(id, lov) {
 	
-	var that = this,
-		field = this.field(id);
+	var field = thus.field(id);
 	
 	if (!field) {
 		return;
@@ -3740,10 +3777,10 @@ methods.fieldChange = function(id, lov) {
 	}
 	
 	
-	this.markAsChanged();
+	thus.markAsChanged();
 	
 	if (engToBoolean(field.multiple_edit)) {
-		this.meMarkChanged(id);
+		thus.meMarkChanged(id);
 	}
 	
 	//If a field has changed, check whether we need to redraw, format or validate the FAB.
@@ -3751,18 +3788,18 @@ methods.fieldChange = function(id, lov) {
 	//would be destroyed mid-tab-select.
 	//I'm using setTimeout() as little hack to allow the tab switching to finish first.
 	setTimeout(function() {
-		that.validateFormatOrRedrawForField(field);
+		thus.validateFormatOrRedrawForField(field);
 	}, 1);
 };
 
 methods.validateFormatOrRedrawForField = function(field, isToggleButton) {
 	
 	if (typeof field == 'string') {
-		this.fieldThatTriggeredRedraw = this.setLastFocus(field);
-		field = this.field(field);
+		thus.fieldThatTriggeredRedraw = thus.setLastFocus(field);
+		field = thus.field(field);
 	
 	} else if (field.id) {
-		this.fieldThatTriggeredRedraw = this.setLastFocus(field.id);
+		thus.fieldThatTriggeredRedraw = thus.setLastFocus(field.id);
 	}
 	
 	var validate = engToBoolean(field.validate_onchange),
@@ -3772,25 +3809,25 @@ methods.validateFormatOrRedrawForField = function(field, isToggleButton) {
 
 		
 	if (validate) {
-		if (this.ffoving < 3) {
-			this.ffoving = 3;
-			this.validate();
+		if (thus.ffoving < 3) {
+			thus.ffoving = 3;
+			thus.validate();
 		}
 		return true;
 	
 	} else if (format) {
-		if (this.ffoving < 2) {
-			this.ffoving = 2;
-			this.format();
+		if (thus.ffoving < 2) {
+			thus.ffoving = 2;
+			thus.format();
 		}
 		return true;
 	
 	} else {
 		if (redraw) {
-			if (this.ffoving < 1) {
-				this.ffoving = 1;
-				this.readTab();
-				this.redrawTab();
+			if (thus.ffoving < 1) {
+				thus.ffoving = 1;
+				thus.readTab();
+				thus.redrawTab();
 			}
 		}
 		
@@ -3812,12 +3849,12 @@ methods.redrawImmediatelyWhenChanged = function(el, event, id, originalValue, ba
 		
 		zenario.stop(event);
 		
-		this.fieldThatTriggeredRedraw = this.setLastFocus(id);
+		thus.fieldThatTriggeredRedraw = thus.setLastFocus(id);
 	
-		if (this.ffoving < 1) {
-			this.ffoving = 1;
-			this.readTab();
-			this.redrawTab();
+		if (thus.ffoving < 1) {
+			thus.ffoving = 1;
+			thus.readTab();
+			thus.redrawTab();
 		}
 	}
 	
@@ -3832,22 +3869,22 @@ methods.meMarkChanged = function(id, current_value, value) {
 		}
 	}
 	
-	this.field(id).multiple_edit._changed = true;
-	this.meSetCheckbox(id, true);
+	thus.field(id).multiple_edit._changed = true;
+	thus.meSetCheckbox(id, true);
 };
 
 methods.meSetCheckbox = function(id, changed) {
-	if (this.get('multiple_edit__' + id).type == 'checkbox') {
-		this.get('multiple_edit__' + id).checked = changed;
+	if (thus.get('multiple_edit__' + id).type == 'checkbox') {
+		thus.get('multiple_edit__' + id).checked = changed;
 	} else {
-		this.get('multiple_edit__' + id).value = changed? 1 : '';
+		thus.get('multiple_edit__' + id).value = changed? 1 : '';
 	}
 };
 
 //The admin changes a multiple-edit checkbox
 methods.meChange = function(changed, id, confirm) {
 	
-	var field = this.field(id);
+	var field = thus.field(id);
 	
 	//Update its state in the schema
 	if (changed) {
@@ -3858,14 +3895,14 @@ methods.meChange = function(changed, id, confirm) {
 		if (!confirm
 		 && engToBoolean(field.multiple_edit.warn_when_abandoning_changes)
 		 && defined(field.multiple_edit.original_value)
-		 && this.readField(id) != field.multiple_edit.original_value) {
+		 && thus.readField(id) != field.multiple_edit.original_value) {
 		 	
 			var buttonsHTML =
-				_$input('type', 'button', 'class', 'submit_selected', 'value', phrase.abandonChanges, 'onclick', this.globalName + '.meChange(false, "' + jsEscape(id) + '", true);') + 
+				_$input('type', 'button', 'class', 'submit_selected', 'value', phrase.abandonChanges, 'onclick', thus.globalName + '.meChange(false, "' + jsEscape(id) + '", true);') + 
 				_$input('type', 'button', 'class', 'submit', 'value', phrase.cancel);
 			
 			zenarioA.floatingBox(phrase.abandonChangesConfirm, buttonsHTML, 'warning');
-			this.meSetCheckbox(id, true);
+			thus.meSetCheckbox(id, true);
 			return;
 		}
 		
@@ -3881,61 +3918,61 @@ methods.meChange = function(changed, id, confirm) {
 			field.multiple_edit.original_value;
 		}
 		
-		if (this.get(id) && !field.pick_items) {
-			if (this.get(id).type == 'checkbox') {
-				this.get(id).checked = value? true : false;
+		if (thus.get(id) && !field.pick_items) {
+			if (thus.get(id).type == 'checkbox') {
+				thus.get(id).checked = value? true : false;
 			} else {
-				$(this.get(id)).val(value || '');
+				$(thus.get(id)).val(value || '');
 			}
 		} else {
-			//Some non-standard fields - i.e. fields that couldn't be changed using $().val() - will need a complete redraw of the tab to achieve
+			//Some non-standard fields - i.e. fields this couldn't be changed using $().val() - will need a complete redraw of the tab to achieve
 			var cb = new zenario.callback,
-				html = this.drawFields(cb);
-			this.insertHTML(html, cb);
+				html = thus.drawFields(cb);
+			thus.insertHTML(html, cb);
 		}
 	}
 	
-	this.meSetCheckbox(id, changed);
+	thus.meSetCheckbox(id, changed);
 	
-	this.validateFormatOrRedrawForField(id);
+	thus.validateFormatOrRedrawForField(id);
 };
 
 
 methods.currentValue = function(f, tab, readOnly) {
 	
 	if (!readOnly
-	 && !this.drawingFields
+	 && !thus.drawingFields
 	 && (!defined(tab)
-	  || tab == this.tuix.tab)) {
-		return this.readField(f);
+	  || tab == thus.tuix.tab)) {
+		return thus.readField(f);
 	} else {
-		return this.value(f, tab, readOnly);
+		return thus.value(f, tab, readOnly);
 	}
 };
 
 //Get the value of a field
 methods.value = function(f, tab, readOnly) {
 	if (!tab) {
-		tab = this.tuix.tab;
+		tab = thus.tuix.tab;
 	}
 	
 	var value = '',
 		first = true,
-		field = this.field(f, tab);
+		field = thus.field(f, tab);
 	
 	if (!field) {
 		return '';
 	}
 	
 	if (!defined(readOnly)) {
-		readOnly = this.fieldIsReadonly(f, field, tab);
+		readOnly = thus.fieldIsReadonly(f, field, tab);
 	}
 	
 	if (!field
 	 || field.snippet
 	 || field.type == 'grouping') {
 	
-	} else if (this.isButton(field)) {
+	} else if (thus.isButton(field)) {
 		value = !!field.pressed;
 	
 	} else if (!readOnly && defined(field.current_value)) {
@@ -3950,7 +3987,7 @@ methods.value = function(f, tab, readOnly) {
 	
 	//Sometimes numbers might be returned as strings.
 	//This is usually fine, except for '0', which evaluates to true when we want it to evaluate to false,
-	//so correct that here!
+	//so correct this here!
 	if (value === '0') {
 		return 0;
 	
@@ -3964,39 +4001,39 @@ methods.value = function(f, tab, readOnly) {
 };
 
 methods.mode = function(k) {
-	return this.value('mode');
+	return thus.value('mode');
 };
 
 methods.keyIn = function(k) {
-	return _.contains(arguments, this.tuix.key[k], 1);
+	return _.contains(arguments, thus.tuix.key[k], 1);
 };
 
 methods.keyIs = function(k, v) {
-	return this.tuix.key[k] == v;
+	return thus.tuix.key[k] == v;
 };
 
 methods.key = function(k) {
-	return this.tuix.key[k];
+	return thus.tuix.key[k];
 };
 
 methods.modeIn = function() {
-	return _.contains(arguments, this.mode());
+	return _.contains(arguments, thus.mode());
 };
 
 methods.modeIs = function(m) {
-	return this.mode() == m;
+	return thus.mode() == m;
 };
 
 methods.valueIn = function(f) {
-	return _.contains(arguments, this.value(f), 1);
+	return _.contains(arguments, thus.value(f), 1);
 };
 
 methods.valueIs = function(f, v) {
-	return this.value(f) == v;
+	return thus.value(f) == v;
 };
 
 methods.valueIsNot = function(f, v) {
-	return this.value(f) != v;
+	return thus.value(f) != v;
 };
 
 methods.isButton = function(field) {
@@ -4032,27 +4069,27 @@ methods.setCodeEditorPosition = function(codeEditor, editingPositions) {
 methods.appendCodeEditorValue = function(editorId, value) {
 	
 	var codeEditor = ace.edit(editorId),
-		pos = this.getCodeEditorPosition(codeEditor);
+		pos = thus.getCodeEditorPosition(codeEditor);
 	
 	codeEditor.setValue(codeEditor.getValue() + value);
 	
-	this.setCodeEditorPosition(codeEditor, pos);
+	thus.setCodeEditorPosition(codeEditor, pos);
 };
 
 
 
 methods.readField = function(f) {
 	var value = undefined,
-		tab = this.tuix.tab,
-		field = this.field(f, tab),
+		tab = thus.tuix.tab,
+		field = thus.field(f, tab),
 		el;
 	
 	//Non-field types
-	if (!this.isFormField(field)) {
+	if (!thus.isFormField(field)) {
 		return undefined;
 	}
 	
-	var readOnly = this.fieldIsReadonly(f, field, tab),
+	var readOnly = thus.fieldIsReadonly(f, field, tab),
 		hidden = field._was_hidden_before;
 	
 	//Update logic for multiple edit fields
@@ -4068,7 +4105,7 @@ methods.readField = function(f) {
 			var v, current_value = '', first = true;
 			
 			foreach (field.values as var v) {
-				if (this.get(f + '___' + v) && this.get(f + '___' + v).checked) {
+				if (thus.get(f + '___' + v) && thus.get(f + '___' + v).checked) {
 					current_value += (first? '' : ',') + v;
 					first = false;
 				}
@@ -4089,8 +4126,8 @@ methods.readField = function(f) {
 	
 
 	//Fields with seperate values to display values
-	if (this.get('_value_for__' + f)) {
-		field.current_value = value = this.get('_value_for__' + f).value;
+	if (thus.get('_value_for__' + f)) {
+		field.current_value = value = thus.get('_value_for__' + f).value;
 	
 	//Editors
 	} else if ((field.type == 'editor' || field.type == 'code_editor') && !readOnly) {
@@ -4108,7 +4145,7 @@ methods.readField = function(f) {
 			if (codeEditor = ace.edit(f)) {
 				content = codeEditor.getValue();
 				
-				this.editingPositions[tab + '/' + f] = this.getCodeEditorPosition(codeEditor);
+				thus.editingPositions[tab + '/' + f] = thus.getCodeEditorPosition(codeEditor);
 				
 				//I've been experiementing with trying to save the undo history, but can't get it working :(
 				//var undoManager;
@@ -4137,7 +4174,7 @@ methods.readField = function(f) {
 	
 	//Normal fields
 	} else {
-		if (!readOnly && (el = this.get(f))) {
+		if (!readOnly && (el = thus.get(f))) {
 			if (field.type == 'checkbox' || field.type == 'radio') {
 				value = el.checked? true : false;
 			
@@ -4175,19 +4212,19 @@ methods.readField = function(f) {
 };
 
 methods.blankField = function(f) {
-	this.setFieldValue(f, '');
+	thus.setFieldValue(f, '');
 };
 
 methods.setFieldValue = function(f, val) {
-	var tab = this.tuix.tab
-		field = this.field(f, tab);
+	var tab = thus.tuix.tab
+		field = thus.field(f, tab);
 	
-	if (this.get(f)) {
-		$(this.get(f)).val(val);
+	if (thus.get(f)) {
+		$(thus.get(f)).val(val);
 	}
 	
-	if (this.get('_value_for__' + f)) {
-		this.get('_value_for__' + f).value = val;
+	if (thus.get('_value_for__' + f)) {
+		thus.get('_value_for__' + f).value = val;
 	}
 	
 	field.current_value = val;
@@ -4199,30 +4236,30 @@ methods.setFieldValue = function(f, val) {
 methods.readTab = function() {
 	var value,
 		values = {},
-		fields = this.fields(),
+		fields = thus.fields(),
 		f;
 	
-	this.lastScrollTop = $('#zenario_fbAdminInner').scrollTop();
+	thus.lastScrollTop = $('#zenario_fbAdminInner').scrollTop();
 	
 	foreach (fields as f) {
-		if (defined(value = this.readField(f))) {
+		if (defined(value = thus.readField(f))) {
 			values[f] = value;
 		}
 	}
 	
 	if (document
 	 && document.activeElement) {
-		this.lastFocus = this.setLastFocus(document.activeElement);
+		thus.lastFocus = thus.setLastFocus(document.activeElement);
 	}
 	
 	return values;
 };
 
 methods.wipeTab = function() {
-	var tab = this.tuix.tab,
+	var tab = thus.tuix.tab,
 		value,
 		values = {},
-		fields = this.fields(),
+		fields = thus.fields(),
 		f, field;
 	
 	foreach (fields as f => field) {
@@ -4235,8 +4272,8 @@ methods.wipeTab = function() {
 };
 
 methods.redrawTab = function() {
-	this.tuix.shake = false;
-	this.draw2();
+	thus.tuix.shake = false;
+	thus.draw2();
 };
 
 
@@ -4250,9 +4287,9 @@ methods.redrawTab = function() {
 //Get a URL needed for an AJAX request
 methods.getURL = function(action) {
 	//Outdate any validation attempts
-	++this.onKeyUpNum;
+	++thus.onKeyUpNum;
 	
-	return this.returnAJAXURL(action);
+	return thus.returnAJAXURL(action);
 };
 
 methods.returnAJAXURL = function(action) {
@@ -4293,24 +4330,24 @@ methods.sortTabs = function() {
 	//Build an array to sort, containing:
 		//0: The item's actual index
 		//1: The value to sort by
-	this.sortedTabs = [];
-	if (this.tuix.tabs) {
-		foreach (this.tuix.tabs as var i => var thisTab) {
+	thus.sortedTabs = [];
+	if (thus.tuix.tabs) {
+		foreach (thus.tuix.tabs as var i => var thisTab) {
 			if (thisTab) {
-				this.sortedTabs.push([i, thisTab.ord]);
+				thus.sortedTabs.push([i, thisTab.ord]);
 			}
 		}
 	}
 	
 	//Sort this array
-	this.sortedTabs.sort(zenarioT.sortArray);
+	thus.sortedTabs.sort(zenarioT.sortArray);
 	
-	this.groupings = {};
-	this.sortedFields = {};
+	thus.groupings = {};
+	thus.sortedFields = {};
 	
-	foreach (this.sortedTabs as var i) {
-		var tab = this.sortedTabs[i] = this.sortedTabs[i][0];
-		this.sortFields(tab);
+	foreach (thus.sortedTabs as var i) {
+		var tab = thus.sortedTabs[i] = thus.sortedTabs[i][0];
+		thus.sortFields(tab);
 		//this.sortedTabOrders[tab] = i;
 	}
 };
@@ -4323,9 +4360,9 @@ methods.sortFields = function(tab) {
 	//Build an array to sort, containing:
 		//0: The item's actual index
 		//1: The value to sort by
-	this.groupings[tab] = {};
-	this.sortedFields[tab] = [];
-	if (fields = this.fields(tab)) {
+	thus.groupings[tab] = {};
+	thus.sortedFields[tab] = [];
+	if (fields = thus.fields(tab)) {
 		
 		//Look for groupings among the fields.
 		//Groupings work like placeholders; the fields in the grouping should all have
@@ -4334,7 +4371,7 @@ methods.sortFields = function(tab) {
 			if (field.type
 			 && field.type == 'grouping') {
 				groupingOrds[field.name || i] = 1*field.ord;
-				this.groupings[tab][field.name || i] = i;
+				thus.groupings[tab][field.name || i] = i;
 			}
 		}
 		
@@ -4352,17 +4389,17 @@ methods.sortFields = function(tab) {
 						groupingOrd = undefined;
 					}
 				
-					this.sortedFields[tab].push([i, field.ord, groupingOrd]);
+					thus.sortedFields[tab].push([i, field.ord, groupingOrd]);
 				}
 			}
 		}
 	
 		//Sort this array
-		this.sortedFields[tab].sort(zenarioT.sortArrayWithGrouping);
+		thus.sortedFields[tab].sort(zenarioT.sortArrayWithGrouping);
 	
-		//Remove fields that were just there to help sort
-		foreach (this.sortedFields[tab] as i) {
-			this.sortedFields[tab][i] = this.sortedFields[tab][i][0];
+		//Remove fields this were just there to help sort
+		foreach (thus.sortedFields[tab] as i) {
+			thus.sortedFields[tab][i] = thus.sortedFields[tab][i][0];
 		}
 	}
 };
@@ -4374,12 +4411,12 @@ methods.sortFields = function(tab) {
 
 
 methods.setData = function(data) {
-	this.tuix = data;
+	thus.tuix = data;
 };
  
 
 methods.setDataDiff = function(data) {
-	this.syncAdminBoxFromServerToClient(data, this.tuix);
+	thus.syncAdminBoxFromServerToClient(data, thus.tuix);
 };
 
 //Sync updates from the server to the array stored on the client
@@ -4409,7 +4446,7 @@ methods.syncAdminBoxFromServerToClient = function($serverTags, $clientTags) {
 			$clientTags[$key] = $val;
 		
 		} else {
-			this.syncAdminBoxFromServerToClient($val, $clientTags[$key]);
+			thus.syncAdminBoxFromServerToClient($val, $clientTags[$key]);
 		}
 	}
 };
@@ -4417,12 +4454,12 @@ methods.syncAdminBoxFromServerToClient = function($serverTags, $clientTags) {
 
 
 methods.sendStateToServer = function() {
-	return JSON.stringify(this.tuix);
+	return JSON.stringify(thus.tuix);
 };
 
 methods.sendStateToServerDiff = function() {
 	var $serverTags = {};
-	this.syncAdminBoxFromClientToServerR($serverTags, this.tuix);
+	thus.syncAdminBoxFromClientToServerR($serverTags, thus.tuix);
 	
 	return JSON.stringify($serverTags);
 };
@@ -4477,7 +4514,7 @@ methods.syncAdminBoxFromClientToServerR = function($serverTags, $clientTags, $ke
 			} else if ($type == 'array') {
 				if ('object' == typeof $clientTags[$key0]) {
 					$serverTags[$key0] = {};
-					this.syncAdminBoxFromClientToServerR($serverTags[$key0], $clientTags[$key0], $key0, $key1, $key2, $key3, $key4, $key5);
+					thus.syncAdminBoxFromClientToServerR($serverTags[$key0], $clientTags[$key0], $key0, $key1, $key2, $key3, $key4, $key5);
 				}
 			}
 		}
@@ -4495,29 +4532,29 @@ methods.syncAdminBoxFromClientToServerR = function($serverTags, $clientTags, $ke
 
 
 methods.getValueArrayofArrays = function(leaveAsJSONString) {
-	return zenario.nonAsyncAJAX(this.getURL(), zenario.urlRequest({_read_values: true, _box: this.sendStateToServer()}), !leaveAsJSONString);
+	return zenario.nonAsyncAJAX(thus.getURL(), zenario.urlRequest({_read_values: true, _box: thus.sendStateToServer()}), !leaveAsJSONString);
 };
 
 methods.getValues1D = function(pluginSettingsOnly, useTabNames, getInitialValues, ignoreReadonlyFields, ignoreHiddenFields) {
 	
 	var t, tab, f, field, name, value, values = {};
 	
-	if (this.tuix
-	 && this.tuix.tabs) {
-		foreach (this.tuix.tabs as t => tab) {
+	if (thus.tuix
+	 && thus.tuix.tabs) {
+		foreach (thus.tuix.tabs as t => tab) {
 			if (tab.fields) {
 				foreach (tab.fields as f => field) {
 					
 					name = f;
 					
-					if (!this.isFormField(field)
-					 || (ignoreReadonlyFields && this.fieldIsReadonly(f, field, t))
+					if (!thus.isFormField(field)
+					 || (ignoreReadonlyFields && thus.fieldIsReadonly(f, field, t))
 					 || (ignoreHiddenFields && (tab._was_hidden_before || field._was_hidden_before))
 					 || (pluginSettingsOnly && !(name = field.plugin_setting && field.plugin_setting.name))) {
 						continue;
 					}
 					
-					value = this.currentValue(f, t, getInitialValues);
+					value = thus.currentValue(f, t, getInitialValues);
 					
 					if (!useTabNames) {
 						values[name] = value;
@@ -4538,7 +4575,7 @@ methods.getValues1D = function(pluginSettingsOnly, useTabNames, getInitialValues
 methods.insertText = function(el, text) {
 	
 	if (_.isString(el)) {
-		el = this.get(el);
+		el = thus.get(el);
 	}
 	
 	if (el) {
@@ -4558,7 +4595,7 @@ methods.callFunctionOnEditors = function(action) {
 	
 	var fields, f, field;
 	
-	if (window.tinyMCE && (fields = this.fields())) {
+	if (window.tinyMCE && (fields = thus.fields())) {
 		foreach (fields as var f => field) {
 			
 			if (field.type == 'editor') {
@@ -4583,27 +4620,26 @@ methods.callFunctionOnEditors = function(action) {
 
 methods.format = function(wipeValues) {
 	var url;
-	if (!this.loaded || !(url = this.getURL('format'))) {
+	if (!thus.loaded || !(url = thus.getURL('format'))) {
 		return;
 	}
 	
-	var that = this,
-		currentTab = this.tuix && this.tuix.tab;
+	var currentTab = thus.tuix && thus.tuix.tab;
 	
-	this.loaded = false;
-	this.hideTab();
+	thus.loaded = false;
+	thus.hideTab();
 	
-	this.checkValues(wipeValues);
+	thus.checkValues(wipeValues);
 	
-	this.retryAJAX(
+	thus.retryAJAX(
 		url,
-		{_format: true, _box: this.sendStateToServer()},
+		{_format: true, _box: thus.sendStateToServer()},
 		true,
 		function(data) {
-			that.load(data);
-			that.switchTabIfRequested(currentTab);
-			that.sortTabs();
-			that.draw();
+			thus.load(data);
+			thus.switchTabIfRequested(currentTab);
+			thus.sortTabs();
+			thus.draw();
 		},
 		'loading'
 	);
@@ -4611,35 +4647,34 @@ methods.format = function(wipeValues) {
 
 methods.validate = function(differentTab, tab, wipeValues, callBack) {
 	var url;
-	if (!this.loaded || !(url = this.getURL('validate'))) {
+	if (!thus.loaded || !(url = thus.getURL('validate'))) {
 		return;
 	}
 	
-	this.differentTab = differentTab;
-	this.loaded = false;
-	this.hideTab(differentTab);
+	thus.differentTab = differentTab;
+	thus.loaded = false;
+	thus.hideTab(differentTab);
 	
-	this.checkValues(wipeValues);
+	thus.checkValues(wipeValues);
 	
-	var that = this,
-		currentTab = this.tuix && this.tuix.tab;
+	var currentTab = thus.tuix && thus.tuix.tab;
 	
 	if (differentTab) {
-		that.tuix.switchToTab = tab;
+		thus.tuix.switchToTab = tab;
 	}
 	
-	this.retryAJAX(
+	thus.retryAJAX(
 		url,
-		{_validate: true, _box: this.sendStateToServer()},
+		{_validate: true, _box: thus.sendStateToServer()},
 		true,
 		function(data) {
-			if (that.load(data)) {
-				that.switchTabIfRequested(currentTab);
+			if (thus.load(data)) {
+				thus.switchTabIfRequested(currentTab);
 			}
 	
-			that.sortTabs();
-			that.switchToATabWithErrors();
-			that.draw();
+			thus.sortTabs();
+			thus.switchToATabWithErrors();
+			thus.draw();
 	
 			if (callBack) {
 				callBack();
@@ -4651,18 +4686,18 @@ methods.validate = function(differentTab, tab, wipeValues, callBack) {
 
 methods.switchTabIfRequested = function(currentTab) {
 	//Switch to another tab if requested
-	if (this.tuix.switchToTab) {
+	if (thus.tuix.switchToTab) {
 		
-		currentTab = currentTab || this.tuix && this.tuix.tab;
+		currentTab = currentTab || thus.tuix && thus.tuix.tab;
 		
 		//Don't switch to another tab if there were errors on the current tab
-		if (this.errorOnTab(currentTab)) {
-			this.tuix.tab = currentTab;
+		if (thus.errorOnTab(currentTab)) {
+			thus.tuix.tab = currentTab;
 		} else {
-			this.tuix.tab = this.tuix.switchToTab;
+			thus.tuix.tab = thus.tuix.switchToTab;
 		}
 		
-		delete this.tuix.switchToTab;
+		delete thus.tuix.switchToTab;
 	}
 };
 

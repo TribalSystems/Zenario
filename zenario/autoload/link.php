@@ -180,7 +180,7 @@ class link {
 	//Formerly "importantGetRequests()"
 	public static function importantGetRequests($includeCIDAndType = false) {
 
-		$importantGetRequests = array();
+		$importantGetRequests = [];
 		foreach(\ze::$importantGetRequests as $getRequest => $defaultValue) {
 			if (isset($_GET[$getRequest]) && $_GET[$getRequest] != $defaultValue) {
 				$importantGetRequests[$getRequest] = $_GET[$getRequest];
@@ -203,13 +203,13 @@ class link {
 	const toEquivalentItemFromTwig = true;
 	//Formerly "linkToEquivalentItem()"
 	public static function toEquivalentItem(
-		$cID, $cType = 'html', $languageId = false, $fullPath = false, $request = '', $useAliasInAdminMode = false
+		$cID, $cType = 'html', $languageId = false, $fullPath = false, $request = '', $forceAliasInAdminMode = false
 	) {
 
 		if (\ze\content::langEquivalentItem($cID, $cType, $languageId)) {
 			return \ze\link::toItem(
 				$cID, $cType, $fullPath, $request, false,
-				false, $useAliasInAdminMode,
+				false, $forceAliasInAdminMode,
 				false, $languageId
 			);
 		} else {
@@ -224,7 +224,7 @@ class link {
 	//Formerly "linkToItemStayInCurrentLanguage()"
 	public static function toItemInVisitorsLanguage(
 		$cID, $cType = 'html', $fullPath = false, $request = '', $alias = false,
-		$autoAddImportantRequests = false, $useAliasInAdminMode = false,
+		$autoAddImportantRequests = false, $forceAliasInAdminMode = false,
 		$equivId = false, $languageId = false
 	) {
 	
@@ -235,7 +235,7 @@ class link {
 
 		return \ze\link::toItem(
 			$cID, $cType, $fullPath, $request, $alias,
-			$autoAddImportantRequests, $useAliasInAdminMode,
+			$autoAddImportantRequests, $forceAliasInAdminMode,
 			$equivId, $languageId, $stayInCurrentLanguage
 		);
 	}
@@ -247,7 +247,7 @@ class link {
 	//Formerly "linkToItem()"
 	public static function toItem(
 		$cID, $cType = 'html', $fullPath = false, $request = '', $alias = false,
-		$autoAddImportantRequests = false, $useAliasInAdminMode = false,
+		$autoAddImportantRequests = false, $forceAliasInAdminMode = false,
 		$equivId = false, $languageId = false, $stayInCurrentLanguage = false
 	) {
 	
@@ -276,11 +276,11 @@ class link {
 		}
 	
 	
-		$adminMode = !empty($_SESSION['admin_logged_into_site']) && \ze\priv::check();
+		$adminMode = \ze::isAdmin();
 		$mod_rewrite_enabled = \ze::setting('mod_rewrite_enabled');
 		$mod_rewrite_slashes = \ze::setting('mod_rewrite_slashes');
 		$mod_rewrite_suffix = \ze::setting('mod_rewrite_suffix');
-		$useAlias = $useAliasInAdminMode || !$adminMode;
+		$useAlias = !$adminMode || $forceAliasInAdminMode || \ze::setting('mod_rewrite_admin_mode');;
 		$multilingual = \ze\lang::count() > 1;
 		$returnSlashForHomepage = false;
 		$langSpecificDomain = false;

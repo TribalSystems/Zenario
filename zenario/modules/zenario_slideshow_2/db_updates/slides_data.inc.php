@@ -134,11 +134,11 @@ _sql
 //automatically add 3 images (that are hard-coded by filename) to the first slideshow.
 if (ze\dbAdm::needRevision(23)) {
 	if (($moduleId = ze\module::id('zenario_slideshow_2'))
-	 && ($instanceId = ze\row::get('plugin_instances', 'id', array('module_id' => $moduleId)))
-	 && (!ze\row::exists(ZENARIO_SLIDESHOW_2_PREFIX. 'slides', array()))) {
+	 && ($instanceId = ze\row::get('plugin_instances', 'id', ['module_id' => $moduleId]))
+	 && (!ze\row::exists(ZENARIO_SLIDESHOW_2_PREFIX. 'slides', []))) {
 		$ordinal = 0;
-		foreach (ze\row::getArray('files', array('id', 'filename'), array('usage' => 'image')) as $image) {
-			$slide = array();
+		foreach (ze\row::getArray('files', ['id', 'filename'], ['usage' => 'image']) as $image) {
+			$slide = [];
 			
 			switch ($image['filename']) {
 				case 'cityscape.jpg':

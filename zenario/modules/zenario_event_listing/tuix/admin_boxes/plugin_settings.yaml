@@ -380,7 +380,32 @@ plugin_settings:
                     plugin_setting:
                         name: show_location
                     type: checkbox
-                    value: "1"
+                    value: 0
+                    format_onchange: true
+                show_location_name:
+                    label: 'Show venue name'
+                    indent: 1
+                    plugin_setting:
+                        name: show_location_name
+                    type: checkbox
+                    value: 1
+                    format_onchange: true
+                show_location_city:
+                    label: 'Show city'
+                    indent: 1
+                    plugin_setting:
+                        name: show_location_city
+                    type: checkbox
+                    value: 1
+                    format_onchange: true
+                show_location_country:
+                    label: 'Show country'
+                    indent: 1
+                    plugin_setting:
+                        name: show_location_country
+                    type: checkbox
+                    value: 1
+                    format_onchange: true
                 date_display:
                     label: 'Date display:'
                     plugin_setting:
@@ -427,6 +452,14 @@ plugin_settings:
                         show_start_and_end_time:
                             label: Show start and end time
                     value: show_start_and_end_time
+                make_event_elements_equal_height:
+                    label: 'Make all event elements equal height'
+                    side_note: 'Use this to improve the layout if your CSS causes events to be listed in a 2-d grid.'
+                    plugin_setting:
+                        name: make_event_elements_equal_height
+                    type: checkbox
+                    value: 0
+                    format_onchange: yes
         pagination:
             label: Pagination
             fields:

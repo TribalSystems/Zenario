@@ -148,6 +148,7 @@ class ze {
 	public static $dbCols = [];
 	public static $groups = '';
 	public static $signalsCurrentlyTriggered = [];
+	public static $googleRecaptchaElements = [];
 	public static $importantGetRequests = [];
 	public static $locationDependant = false;
 	public static $canCache;
@@ -163,7 +164,7 @@ class ze {
 	public static $pageDesc = '';
 	public static $pageImage = 0;
 	public static $pageKeywords = '';
-	public static $pageOGType = 'webpage';
+	public static $pageOGType = 'website';
 	public static $moduleClassNameForPhrases = '';
 	public static $langs = [];
 	public static $timezone = null;
@@ -192,6 +193,10 @@ class ze {
 	public static $execEnabled = null;
 
 	
+	
+	public static function isAdmin() {
+		return !empty($_SESSION['admin_logged_into_site']) && ze\priv::check();
+	}
 	
 	public static function errorOnScreen($errno, $errstr, $errfile, $errline) {
 		ze::$canCache = false;
@@ -345,8 +350,8 @@ class ze {
 	}
 
 	//Formerly "requireJsLib()"
-	public static function requireJsLib($lib, $stylesheet = null, $cacheWrappers = true) {
-		ze::$jsLibs[$lib] = [$stylesheet, $cacheWrappers];
+	public static function requireJsLib($lib, $stylesheet = null) {
+		ze::$jsLibs[$lib] = $stylesheet;
 	}
 
 	//Formerly "editionInclude()"

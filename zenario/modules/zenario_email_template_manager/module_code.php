@@ -30,8 +30,8 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_email_template_manager extends ze\moduleBaseClass {
 
 	public static function getTemplateNames() {
-		$rv = array();
-		$result = ze\row::query('email_templates', array('code', 'template_name'), array(), 'template_name');
+		$rv = [];
+		$result = ze\row::query('email_templates', ['code', 'template_name'], [], 'template_name');
 		while ($row = ze\sql::fetchAssoc($result)) {
 			$rv[$row['code']] = $row['template_name'];
 		}
@@ -40,24 +40,24 @@ class zenario_email_template_manager extends ze\moduleBaseClass {
 
 
 	public static function getTemplateById($id) {
-		return ze\row::get('email_templates', true, array('id' => $id));
+		return ze\row::get('email_templates', true, ['id' => $id]);
 	}
 
 	public static function getTemplateByCode($code) {
-		return ze\row::get('email_templates', true, array('code' => $code));
+		return ze\row::get('email_templates', true, ['code' => $code]);
 	}
 
 	public static function getTemplatesByNameIndexedByCode($name, $strict = true){
 		
 		if ($strict) {
-			$where = array('template_name' => $name);
+			$where = ['template_name' => $name];
 		} else {
-			$where = array('template_name' => array('LIKE' => '%'. $name. '%'));
+			$where = ['template_name' => ['LIKE' => '%'. $name. '%']];
 		}
 		
 		$result = ze\row::query('email_templates', true, $where);
 		
-		$rv = array();
+		$rv = [];
 		while ($row = ze\sql::fetchAssoc($result)){
 			$rv[$row['code']] = $row;
 		}
@@ -65,14 +65,14 @@ class zenario_email_template_manager extends ze\moduleBaseClass {
 	}
 	
 	public static function getLogRecordById($id) {
-		return ze\row::get(ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX. 'email_template_sending_log', true, array('id' => $id));
+		return ze\row::get(ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX. 'email_template_sending_log', true, ['id' => $id]);
 	}
 	
 		
 	
 	public static function sendEmails(
-		$rcpts, $subject, $addressFrom, $nameFrom, $body, $mergeFields=array(), 
-		$attachments=array(), $attachmentFilenameMappings=array(), 
+		$rcpts, $subject, $addressFrom, $nameFrom, $body, $mergeFields=[], 
+		$attachments=[], $attachmentFilenameMappings=[], 
 		$templateNo = 0, $disableHTMLEscaping = false, 
 		$addressReplyTo = false, $nameReplyTo = false,
 		$ccs = '', $bccs = '', $debugOverride = ''
@@ -115,7 +115,7 @@ class zenario_email_template_manager extends ze\moduleBaseClass {
 			(
 	$subject, $body, $addressTo, &$addressToOverriddenBy,
 	$nameTo = false, $addressFrom = false, $nameFrom = false, 
-	$attachments = array(), $attachmentFilenameMappings = array(),
+	$attachments = [], $attachmentFilenameMappings = [],
 	$precedence = 'bulk', $isHTML = true, $exceptions = false,
 	$addressReplyTo = false, $nameReplyTo = false, $warningEmailCode = false,
 	$ccs = '', $bccs = ''
@@ -177,21 +177,28 @@ class zenario_email_template_manager extends ze\moduleBaseClass {
 		$addressFrom, $nameFrom,
 		$attachments, $attachmentFilenameMappings,
 		$templateNo, $status,
-		$senderCmsObjectArray = array(),
+		$senderCmsObjectArray = [],
 		$addressReplyTo = false, $nameReplyTo = false
 	) {
-	
 		self::clearOldData();
+		
+		//Check if this email should be logged
+		$template = ze\row::get('email_templates', ['template_name', 'period_to_delete_log_headers', 'period_to_delete_log_content'], $templateNo);
+		if ($template['period_to_delete_log_headers'] == 'never_save'
+			|| ($template['period_to_delete_log_headers'] == '' && ze::setting('period_to_delete_the_email_template_sending_log_headers') == 'never_save')
+		) {
+			return false;
+		}
 		
 		$sql = "
 			INSERT INTO ". DB_NAME_PREFIX. ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX. "email_template_sending_log SET
-				module_id = ". (int) ze\row::get('plugin_instances', 'module_id', array('id' => ($senderCmsObjectArray['instanceId'] ?? false))). ",
+				module_id = ". (int) ze\row::get('plugin_instances', 'module_id', ['id' => ($senderCmsObjectArray['instanceId'] ?? false)]). ",
 				instance_id = ". (int) ($senderCmsObjectArray['instanceId'] ?? false). ",
 				content_id = ". (int) ($senderCmsObjectArray['cID'] ?? false). ",
 				content_type = '". ze\escape::sql($senderCmsObjectArray['cType'] ?? false). "',
 				content_version = ". (int) ($senderCmsObjectArray['cVersion'] ?? false). ",
 				email_template_id = ". (int) $templateNo. ",
-				email_template_name = '". ze\escape::sql(ze\row::get('email_templates', 'template_name', array('id' => $templateNo))). "',
+				email_template_name = '". ze\escape::sql($template['template_name']). "',
 				email_subject = '". ze\escape::sql($subject). "',
 				email_address_to = '". ze\escape::sql($addressTo). "',
 				email_address_to_overridden_by = '". ze\escape::sql($addressToOverriddenBy). "',
@@ -200,7 +207,7 @@ class zenario_email_template_manager extends ze\moduleBaseClass {
 				attachment_present = ". (int) !empty($attachments). ",
 				sent_datetime = '". ze\escape::sql(ze\date::now()). "',
 				`status` = '". ze\escape::sql($status? 'success' : 'failure'). "'";
-		
+
 		if ($addressReplyTo) {
 			$sql .= ",
 				email_address_replyto = '". ze\escape::sql($addressReplyTo). "'";
@@ -210,6 +217,12 @@ class zenario_email_template_manager extends ze\moduleBaseClass {
 				email_name_replyto = '". ze\escape::sql($nameReplyTo). "'";
 		}
 		
+		//Check if this email's content should be logged
+		if ($template['period_to_delete_log_content'] == 'never_save') {
+			$body = ze\admin::phrase('Body not saved because the email template setting for data deletion is set to "Don\'t save".');
+		} elseif ($template['period_to_delete_log_content'] == '' && ze::setting('period_to_delete_the_email_template_sending_log_content') == 'never_save') {
+			$body = ze\admin::phrase('Body not saved because the site-wide setting for email data deletion is set to "Don\'t save".');
+		}
 		if (strlen($body) < 100000) {
 			$sql .= ",
 				email_body = '". ze\escape::sql($body). "'";
@@ -217,30 +230,108 @@ class zenario_email_template_manager extends ze\moduleBaseClass {
 			$sql .= ",
 				email_body = '". ze\escape::sql(ze\admin::phrase('Body too large to save')). "'";
 		}
-		
+
 		ze\sql::update($sql, false, false);
+		return true;
 	}
 	
 	
-	public static function clearOldData(){
-		if($days = ze::setting('period_to_delete_the_email_template_sending_log')){
-			if(is_numeric($days)){
-				$today = date('Y-m-d');
-				$date = date('Y-m-d', strtotime('-'.$days.' day', strtotime($today)));
-				if($date){
-					$sql = " 
-						DELETE FROM ". DB_NAME_PREFIX. ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX. "email_template_sending_log
-						WHERE sent_datetime < '".ze\escape::sql($date)."'";
-					ze\sql::update($sql);
-				}
+	public static function clearOldData() {
+		$cleared = 0;
+		
+		//Delete email log headers
+		
+		//Clear the sending log for templates with individual settings
+		$sql = '
+			SELECT id, period_to_delete_log_headers
+			FROM ' . DB_NAME_PREFIX . 'email_templates
+			WHERE period_to_delete_log_headers != ""';
+		$result = ze\sql::select($sql);
+		while ($row = ze\sql::fetchAssoc($result)) {
+			$days = $row['period_to_delete_log_headers'];
+			if ($days && is_numeric($days)) {
+				$date = date('Y-m-d', strtotime('-'.$days.' day', strtotime(date('Y-m-d'))));
+				$sql = '
+					DELETE FROM ' . DB_NAME_PREFIX . ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX . 'email_template_sending_log
+					WHERE email_template_id = ' . (int)$row['id'] . '
+					AND sent_datetime < "' . ze\escape::sql($date) . '"';
+				ze\sql::update($sql);
+				$cleared += ze\sql::affectedRows();
+			}
+		}
+		
+		//Clear email template sending log for the rest
+		$days = ze::setting('period_to_delete_the_email_template_sending_log_headers');
+		if ($days && is_numeric($days)) {
+			$date = date('Y-m-d', strtotime('-'.$days.' day', strtotime(date('Y-m-d'))));
+			$sql = '
+				DELETE etsl.*
+				FROM ' . DB_NAME_PREFIX . ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX . 'email_template_sending_log etsl
+				LEFT JOIN ' . DB_NAME_PREFIX . 'email_templates et
+					ON etsl.email_template_id = et.id
+				WHERE (et.period_to_delete_log_headers IS NULL OR et.period_to_delete_log_headers = "")
+				AND etsl.sent_datetime < "' . ze\escape::sql($date) . '"';
+			ze\sql::update($sql);
+			$cleared += ze\sql::affectedRows();
+		}
+		
+		
+		//Delete email log content
+		
+		//Clear the sending log for templates with individual settings
+		$sql = '
+			SELECT id, period_to_delete_log_content
+			FROM ' . DB_NAME_PREFIX . 'email_templates
+			WHERE period_to_delete_log_content != ""';
+		$result = ze\sql::select($sql);
+		while ($row = ze\sql::fetchAssoc($result)) {
+			$days = $row['period_to_delete_log_content'];
+			if ($days && is_numeric($days)) {
+				$date = date('Y-m-d', strtotime('-'.$days.' day', strtotime(date('Y-m-d'))));
+				$sql = '
+					UPDATE ' . DB_NAME_PREFIX . ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX . 'email_template_sending_log
+					SET email_body = "[Email body deleted]"
+					WHERE email_template_id = ' . (int)$row['id'] . '
+					AND sent_datetime < "' . ze\escape::sql($date) . '"';
+				ze\sql::update($sql);
+				$cleared += ze\sql::affectedRows();
+			}
+		}
+		
+		//Clear email template sending log for the rest
+		$days = ze::setting('period_to_delete_the_email_template_sending_log_content');
+		if ($days && is_numeric($days)) {
+			$date = date('Y-m-d', strtotime('-'.$days.' day', strtotime(date('Y-m-d'))));
+			$sql = '
+				UPDATE ' . DB_NAME_PREFIX . ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX . 'email_template_sending_log etsl
+				LEFT JOIN ' . DB_NAME_PREFIX . 'email_templates et
+					ON etsl.email_template_id = et.id
+				SET etsl.email_body = "[Email body deleted]"
+				WHERE (et.period_to_delete_log_content IS NULL OR et.period_to_delete_log_content = "")
+				AND etsl.sent_datetime < "' . ze\escape::sql($date) . '"';
+			ze\sql::update($sql);
+			$cleared += ze\sql::affectedRows();
+		}
+		return $cleared;
+	}
+	
+	public static function eventUserDeleted($userId, $deleteAllData) {
+		//When deleting all data about a user, delete their sent email log message content but keep the header
+		if ($deleteAllData) {
+			if ($userEmail = ze\row::get('users', 'email', $userId)) {
+				$sql = '
+					UPDATE ' . DB_NAME_PREFIX . ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX . 'email_template_sending_log
+					SET email_body = "[Email body deleted]", email_address_to = "[User deleted]"
+					WHERE email_address_to = "' . ze\escape::sql($userEmail) . '"';
+				ze\sql::update($sql);
 			}
 		}
 	}
 	
 	
 	public static function sendEmailsUsingTemplate(
-		$rcpts, $templateCode, $mergeFields = array(),
-		$attachments = array(), $attachmentFilenameMappings = array(),
+		$rcpts, $templateCode, $mergeFields = [],
+		$attachments = [], $attachmentFilenameMappings = [],
 		$disableHTMLEscaping = false, $addressReplyTo = false, $nameReplyTo = false
 	) {
 		if ($template = self::getTemplateByCode($templateCode)) {
@@ -280,7 +371,7 @@ class zenario_email_template_manager extends ze\moduleBaseClass {
 		return false;
 	}
 	
-		//If this email template has HTML in the <head>, we'll need to send the email as a full webpage
+	//If this email template has HTML in the <head>, we'll need to send the email as a full webpage
 	public static function putHeadOnBody(&$head, &$body) {
 		
 		if ($head && trim($head)) {
@@ -333,7 +424,7 @@ class zenario_email_template_manager extends ze\moduleBaseClass {
 	
 	//Deprecated, don't call!
 	public static function getTemplates(){
-		$rv=array();
+		$rv=[];
 		$sql = 'SELECT 
 					id,
 					code,

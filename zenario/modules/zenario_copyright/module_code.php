@@ -29,14 +29,14 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 class zenario_copyright extends ze\moduleBaseClass {
 	
-	private $data = array();
+	private $data = [];
 	
 	public function init() {
 		$companyName = $this->setting('company_name');
 		if($yearDisplay = $this->setting('year_display')){
 			switch($yearDisplay){
 				case 'do_not_display_year':
-					$this->data['copyrightNotice'] = $this->phrase('Copyright [[c]] [[companyName]]', array('c' => '&#169;','companyName' => $companyName));
+					$this->data['copyrightNotice'] = $this->phrase('Copyright [[c]] [[companyName]]', ['c' => '&#169;','companyName' => $companyName]);
 					break;
 				case 'display_single_year':
 					if($displaySingleYear = $this->setting('display_single_year')){
@@ -45,7 +45,7 @@ class zenario_copyright extends ze\moduleBaseClass {
 						}else{
 							$endYear = date('Y');
 						}
-						$this->data['copyrightNotice'] = $this->phrase('Copyright [[c]] [[companyName]] [[year]]', array('c' => '&#169;','companyName' => $companyName,'year' => $endYear));
+						$this->data['copyrightNotice'] = $this->phrase('Copyright [[c]] [[companyName]] [[year]]', ['c' => '&#169;','companyName' => $companyName,'year' => $endYear]);
 					}
 					break;
 				case 'display_year_range':
@@ -57,7 +57,7 @@ class zenario_copyright extends ze\moduleBaseClass {
 						}
 						$year = $this->setting('start_year').'-'.$endYear;
 					
-						$this->data['copyrightNotice'] = $this->phrase('Copyright [[c]] [[companyName]] [[year]]', array('c' => '&#169;','companyName' => $companyName,'year' => $year));
+						$this->data['copyrightNotice'] = $this->phrase('Copyright [[c]] [[companyName]] [[year]]', ['c' => '&#169;','companyName' => $companyName,'year' => $year]);
 					}
 					break;
 			}

@@ -55,7 +55,7 @@ class zenario_users__admin_boxes__user__welcome_email extends zenario_users {
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
 		$userIds = explode(',', $box['key']['id']);
 		foreach ($userIds as $userId) {
-			$user = ze\row::get('users', array('identifier', 'email'), $userId);
+			$user = ze\row::get('users', ['identifier', 'email'], $userId);
 			if (!$user['email']) {
 				$box['tabs']['details']['errors'][] = ze\admin::phrase('The user "[[identifier]]" must have an email address to send a welcome email.', $user);
 			}
@@ -70,7 +70,7 @@ class zenario_users__admin_boxes__user__welcome_email extends zenario_users {
 					$mergeFields = ze\user::details($userId);
 					if (isset($values['details/reset_password']) && $values['details/reset_password']) {
 						$mergeFields['password'] = ze\ring::random(8);
-						ze\userAdm::save(array('password' => $mergeFields['password']), $userId);
+						ze\userAdm::save(['password' => $mergeFields['password']], $userId);
 					} elseif (isset($values['details/include_password']) && $values['details/include_password']) {
 						//show plain text password
 					} else {

@@ -48,6 +48,13 @@ empty_slot:
             page_modes:
                 item: true
                 layout: true
+        vc:
+            css_class: zenario_slotControl_vc
+            label: '(version controlled)'
+            page_modes:
+                edit: true
+                item: true
+                layout: true
         empty:
             ord: "11"
             label: '[Empty slot]'
@@ -106,6 +113,12 @@ empty_slot:
         in_this_slot:
             css_class: zenario_slotControl_inThisSlot
             label: 'In this slot on this layout (overridden):'
+            page_modes:
+                item: true
+                layout: true
+        vc:
+            css_class: zenario_slotControl_vc
+            label: '(version controlled)'
             page_modes:
                 item: true
                 layout: true

@@ -33,15 +33,44 @@ switch ($path) {
 		if (ze\ring::engToBoolean($box['tabs']['meta_data']['edit_mode']['on'] ?? false)) {
 			ze\priv::exitIfNot('_PRIV_MANAGE_EMAIL_TEMPLATE');
 			
-			$key = array('template_name' => $values['meta_data/template_name']);
+			$key = ['template_name' => $values['meta_data/template_name']];
 			if ($box['key']['id'] && !$box['key']['duplicate']) {
-				$key['code'] = array('!' => $box['key']['id']);
+				$key['code'] = ['!' => $box['key']['id']];
 			}
 			
 			if (ze\row::exists('email_templates', $key)) {
 				$box['tabs']['meta_data']['errors'][] = ze\admin::phrase('Please ensure the Name you give this Email Template is Unique.');
 			}
+			
+			$headersDays = $values['data_deletion/period_to_delete_log_headers'];
+			$contentDays = $values['data_deletion/period_to_delete_log_content'];
+			
+			if ($values['data_deletion/delete_log_content_sooner']
+				&& ((is_numeric($headersDays) && is_numeric($contentDays) && ($contentDays > $headersDays))
+					|| (is_numeric($headersDays) && $contentDays == 'never_delete')
+					|| ($headersDays == 'never_save' && $contentDays != 'never_save')
+				)
+			) {
+				$fields['data_deletion/period_to_delete_log_content']['error'] = ze\admin::phrase('You cannot save content for longer than the headers.');
+			}
+			
 		}
-		
 		break;
+	case 'site_settings':
+		if ($settingGroup == 'data_protection') {
+			//Make sure you cannot ask content to be stored longer than headers
+			$headersDays = $values['data_protection/period_to_delete_the_email_template_sending_log_headers'];
+			$contentDays = $values['data_protection/period_to_delete_the_email_template_sending_log_content'];
+			
+			if ($values['data_protection/delete_form_response_log_content_sooner']
+				&& ((is_numeric($headersDays) && is_numeric($contentDays) && ($contentDays > $headersDays))
+					|| (is_numeric($headersDays) && $contentDays == 'never_delete')
+					|| ($headersDays == 'never_save' && $contentDays != 'never_save')
+				)
+			) {
+				$fields['data_protection/period_to_delete_the_email_template_sending_log_content']['error'] = ze\admin::phrase('You cannot save content for longer than the headers.');
+			}
+		}
+		break;
+		
 }

@@ -60,11 +60,11 @@ class zenario_common_features__organizer__content_types extends ze\moduleBaseCla
 				$item['defaults'] = ze\admin::phrase('Version-controlled content items');
 				
 				if ($item['default_parent_menu_node']) {
-					$mrg = array('menu_path' => ze\menuAdm::pathWithSection($item['default_parent_menu_node']));
+					$mrg = ['menu_path' => ze\menuAdm::pathWithSection($item['default_parent_menu_node'])];
 					$item['defaults'] .= ze\admin::phrase(', new items attached to menu under [[menu_path]]', $mrg);
 				}
 				
-				$with = array();
+				$with = [];
 				if ($item['description_field'] != 'hidden') {
 					$with[] = ze\admin::phrase('meta description');
 				}
@@ -82,7 +82,7 @@ class zenario_common_features__organizer__content_types extends ze\moduleBaseCla
 				}
 				
 				if (!empty($with)) {
-					$item['defaults'] .= ze\admin::phrase(', with [[with]]', array('with' => implode(', ', $with)));
+					$item['defaults'] .= ze\admin::phrase(', with [[with]]', ['with' => implode(', ', $with)]);
 				}
 			}
 		}

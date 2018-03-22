@@ -101,7 +101,9 @@ body .zenario_skin select.assetwolf_input_keys option,
 .zfea_assetwolf_edit_schema table input[id*="alias_"],
 .zfea_assetwolf_edit_schema table tr td.current_value_col,
 .zfea_assetwolf_view_schema table tr td span[id*="__key__"],
-.zfea_assetwolf_edit_schema table tr td span[id*="__key__"] {
+.zfea_assetwolf_edit_schema table tr td span[id*="__key__"],
+.zfea_assetwolf_view_schema table tr td span[id*="__alias__"],
+.zfea_assetwolf_edit_schema table tr td span[id*="__alias__"] {
 	font-family:"Courier New", Courier, monospace;
 }
 
@@ -154,8 +156,19 @@ table.table_list tr th:last-child {
 	-moz-border-radius:0 4px 0 0;
 }
 
+.zfea_assetwolf_list_schemas table tr th.sorted_buttons {
+	width:140px;
+}
+
 .aw_a_list table tr th.sorted_buttons {
 	width:200px;
+}
+
+.zfea_assetwolf_list_scheduled_reports table tr th.sorted_buttons,
+.zfea_assetwolf_list_scheduled_reports table tr td.sorted_buttons,
+.aw_list table tr th.sorted_buttons,
+.aw_list table tr td.sorted_buttons {
+	width:220px;
 }
 
 .zfea table tr th.sorted_buttons,
@@ -169,7 +182,8 @@ table.table_list tr th:last-child {
 	text-align:right;
 }
 
-.zfea table th.sorted_buttons a {
+.zfea table th.sorted_buttons a,
+.aw_list table tr th {
 	white-space:nowrap;
 }
 
@@ -191,15 +205,36 @@ table tr td.no_items_message:last-child {
 	margin-right:20px;
 }
 
-.zfea_assetwolf_list_scheduled_reports table tr th.sorted_buttons,
-.zfea_assetwolf_list_scheduled_reports table tr td.sorted_buttons,
-.aw_list table tr th.sorted_buttons,
-.aw_list table tr td.sorted_buttons {
-	width:220px;
+/*	Styles for the list schema plugin.
+--------------------------------------------------------------------------------------------------*/
+
+.zfea_assetwolf_list_schemas .col_value_for__usage {
+	/*background: radial-gradient(circle at center, rgba(255,0,0,1) 0%, rgba(255,0,0,1) 50%, rgba(255,255,255,0) 51%, rgba(255,255,255,0) 100%);*/
+	position:relative;
+	top:-10px;
+	float:right;
+	width:19px;
+	height:19px;
+	line-height:18px;
+	padding-top:0;
+	font-size:10px;
+	background:red;
+	color: white;
+	text-align: center;
+	-webkit-border-radius:50%;
+	-moz-border-radius:50%;
+	border-radius:50%;
 }
 
-.aw_list table tr th {
-	white-space:nowrap;
+.aw_schema_fields .col_child_value {
+	font-style: normal;
+	font-family: 'Courier New', Courier, 'Lucida Sans Typewriter', 'Lucida Typewriter', monospace;
+	line-height:1.4em;
+}
+
+.aw_schema_fields .col_child_value label,
+.aw_schema_fields .col_child_value .fea_empty_value {
+	font-family: Arial, sans-serif;
 }
 
 /*	Some initial placeholder styles written by Chris for the toggle buttons for the Alias
@@ -485,6 +520,14 @@ table.mqtt_details tr td,
 .list_of_assets table tr td,
 .list_of_assets_resource_usage table tr td {
 	padding:5px 10px;
+}
+
+.mqtt_message.asset pre {
+  white-space: pre-wrap;       /* css-3 */
+ white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+ white-space: -pre-wrap;      /* Opera 4-6 */
+ white-space: -o-pre-wrap;    /* Opera 7 */
+ word-wrap: break-word;       /* Internet Explorer 5.5+ */
 }
 
 /* Resource usage
@@ -1879,6 +1922,11 @@ body.desktop .zfea_form_grouping__asset_details .zfea_form_row.zfea_form_row__im
 	background-size: 22px;
 }
 
+table tr td div.col_value.asset_status {
+	width:auto;
+	padding:0 0 0 20px;
+}
+
 .status_classes .asset_status.warning,
 .status_classes .asset_status.ackd_alarm {
 	background-color: #EE8131
@@ -2112,6 +2160,14 @@ body.desktop .zfea_form_grouping__asset_details .zfea_form_row.zfea_form_row__im
 .zfea_zenario_edit_company h1 {
 	padding-left:40px;
 	background:url('images/icon-pencil-dark-grey.svg') no-repeat 10px 3px / 16px 15px;
+}
+
+.zfea_assetwolf_edit_global_setup_options table input[type="text"] {
+	width:90% !important;
+}
+
+.zfea_assetwolf_edit_global_setup_options table tr td:first-child input[type="text"] {
+	width:2em !important;
 }
 
 /* Map canvas
@@ -2373,7 +2429,7 @@ fieldset.zfea_form_grouping.zfea_form_grouping__last_edit_info {
 .zfea_form_note_below {
 	clear:both;
 	display:block;
-	margin-top:5px;
+	margin-bottom:8px;
 	padding:3px 8px;
 	font-size:0.813em;
 	line-height:18px;
@@ -2659,7 +2715,7 @@ span.awf_data_out_of_date,
 .zfea_popout.zfea_popout_edit_schemas .zfea_popout_inner .zfea_popout_form h3,
 .zfea_popout.zfea_popout_edit_schemas .zfea_popout_inner .zfea_popout_form div,
 .zfea_popout.zfea_popout_edit_schemas .zfea_popout_inner .zfea_popout_form label,
-.zfea_popout.zfea_popout_edit_schemas .zfea_popout_inner .zfea_popout_form input,
+.zfea_popout.zfea_popout_edit_schemas .zfea_popout_inner .zfea_popout_form div input,
 .zfea_popout.zfea_popout_edit_schemas .zfea_popout_inner .zfea_popout_form textarea {
 	text-align:left;
 }
@@ -2679,6 +2735,21 @@ span.awf_data_out_of_date,
 
 .zfea_popout.zfea_popout_edit_schemas .zfea_popout_inner .zfea_popout_form .input_button {
 	margin-top:10px;
+}
+
+.zfea_popout.zfea_popout_edit_schemas .zfea_popout_inner .zfea_popout_form .zfea_form_radio_or_checkbox {
+	overflow:hidden;
+}
+
+.zfea_popout.zfea_popout_edit_schemas .zfea_popout_inner .zfea_popout_form div input,
+.zfea_popout.zfea_popout_edit_schemas .zfea_popout_inner .zfea_popout_form div label {
+	display:inline-block;
+	float:left;
+}
+
+.zfea_popout.zfea_popout_edit_schemas .zfea_popout_inner .zfea_popout_form input[type="checkbox"],
+.zfea_popout.zfea_popout_edit_schemas .zfea_popout_inner .zfea_popout_form input[type="radio"] {
+	margin:3px 5px 0 0;
 }
 
 .zfea_popout .zfea_popout_inner .zfea_popout_form input[type="text"],
@@ -2747,43 +2818,52 @@ span.awf_data_out_of_date,
 /* Colorbox, popup aw data entry
 --------------------------------------------------------------------------------------------------*/
 
-.zfea_popout.assetwolf_data_entry_popout .zfea_popout_inner {
+.zfea_popout.assetwolf_data_entry_popout .zfea_popout_inner,
+.zfea_assetwolf_send_command_popout .zfea_popout_inner {
 	width:400px;
 }
 
-.zfea_popout.assetwolf_data_entry_popout .zfea_form_row.zfea_form_row__asset_name h2 {
+.zfea_popout.assetwolf_data_entry_popout .zfea_form_row.zfea_form_row__asset_name h2,
+.zfea_assetwolf_send_command_popout .zfea_form_row.zfea_form_row__asset_name h2 {
 	border-bottom: 2px solid #d9dadb;
     padding-bottom: 10px;
 }
 
-.zfea_popout.assetwolf_data_entry_popout .zfea_form_row.zfea_form_row__title h3 {
+.zfea_popout.assetwolf_data_entry_popout .zfea_form_row.zfea_form_row__title h3,
+.zfea_assetwolf_send_command_popout .zfea_form_row.zfea_form_row__title h3 {
 	border-bottom: 0;
     font-size:1.2em;
     font-weight:600;
 }
 
 .zfea_popout.assetwolf_data_entry_popout .zfea_form_row.zfea_form_row__title,
-.zfea_popout.assetwolf_data_entry_popout .zfea_form_row.zfea_form_row__title h3 {
+.zfea_popout.assetwolf_data_entry_popout .zfea_form_row.zfea_form_row__title h3,
+.zfea_assetwolf_send_command_popout .zfea_form_row.zfea_form_row__title,
+.zfea_assetwolf_send_command_popout .zfea_form_row.zfea_form_row__title h3 {
     padding-bottom: 0;
 }
 
-.zfea_popout.assetwolf_data_entry_popout fieldset.zfea_form_grouping__submit_buttons {
+.zfea_popout.assetwolf_data_entry_popout fieldset.zfea_form_grouping__submit_buttons,
+.zfea_assetwolf_send_command_popout fieldset.zfea_form_grouping__submit_buttons {
 	text-align:center;
 }
 
-.zfea_popout.assetwolf_data_entry_popout fieldset.zfea_form_grouping__submit_buttons .zfea_form_row {
+.zfea_popout.assetwolf_data_entry_popout fieldset.zfea_form_grouping__submit_buttons .zfea_form_row,
+.zfea_assetwolf_send_command_popout fieldset.zfea_form_grouping__submit_buttons .zfea_form_row {
 	display:inline-block;
 	padding-bottom:0;
 }
 
-.zfea_popout.assetwolf_data_entry_popout fieldset.zfea_form_grouping__submit_buttons .zfea_form_row input[type="button"] {
+.zfea_popout.assetwolf_data_entry_popout fieldset.zfea_form_grouping__submit_buttons .zfea_form_row input[type="button"],
+.zfea_assetwolf_send_command_popout fieldset.zfea_form_grouping__submit_buttons .zfea_form_row input[type="button"] {
 	height:40px;
 	line-height:38px;
 	padding:0 20px;
 	font-size:1em;
 }
 
-.zfea_popout.assetwolf_data_entry_popout .zfea_form_row.zfea_row_for_button {
+.zfea_popout.assetwolf_data_entry_popout .zfea_form_row.zfea_row_for_button,
+.zfea_assetwolf_send_command_popout .zfea_form_row.zfea_row_for_button {
 	text-align:right;
 }
 
@@ -3016,9 +3096,14 @@ span.awf_data_out_of_date,
 	font-weight:700;
 }
 
+.assetwolf_2.field_large,
+.assetwolf_2.field_small {
+	margin-bottom:10px !important;
+}
+
 .assetwolf_2.field_large .aw__field,
 .assetwolf_2.field_large div[class*="aw_field__"] {
-	padding:10px 20px 15px;
+	padding:2px 20px 8px;
 }
 
 .assetwolf_2.field_small .aw__field,
@@ -3220,7 +3305,7 @@ body.touch .assetwolf_2_schematics .mode_view .icon_button.edit_icon {
 
 .assetwolf_2_schematics .mode_view .info .hotspot_popup:after {
 	right: 100%;
-	top: 10%;
+	top: 20%;
 	border: solid transparent;
 	content: " ";
 	height: 0;
@@ -3282,6 +3367,25 @@ body.mobile .assetwolf_2_schematics .mode_view .info .hotspot_popup .inner .wrap
 	right:0;
 }
 
+/* Schematics mode view, manual input buttons */
+
+.assetwolf_2_schematics .mode_view .info .hotspot_popup div.manual_input {
+	display:inline-block;
+	margin:5px 5px 5px 0;
+}
+
+.assetwolf_2_schematics .mode_view .info .hotspot_popup .manual_input span.label {
+	padding-left:20px;
+	padding-right:20px;
+	background-repeat:no-repeat;
+	background-position:12px center;
+	background-size:auto 30px;
+	background-color:#fff;
+	border-radius:25px;
+	border:3px solid #333;
+	color:#333;
+}
+
 /* Schematics mode edit */
 
 .assetwolf_2_schematics .schematic_builder_panel {
@@ -3310,19 +3414,19 @@ body.mobile .assetwolf_2_schematics .mode_view .info .hotspot_popup .inner .wrap
 	float:right;
 }
 
-.assetwolf_2_schematics div[id*="_schematic_builder"] .title,
-.assetwolf_2_schematics div[id*="_schematic_builder"] .controls {
+.assetwolf_2_schematics div.schematic_builder .title,
+.assetwolf_2_schematics div.schematic_builder .controls {
 	width:100%;
 	overflow:hidden;
 	clear:both;
 	float:none;
 }
 
-.assetwolf_2_schematics div[id*="_schematic_builder"] .title {
+.assetwolf_2_schematics div.schematic_builder .title {
 	padding-bottom:10px;
 }
 
-.assetwolf_2_schematics div[id*="_schematic_builder"] .title h2 {
+.assetwolf_2_schematics div.schematic_builder .title h2 {
 	font-size:1.571em;
 }
 
@@ -3334,9 +3438,30 @@ body.mobile .assetwolf_2_schematics .mode_view .info .hotspot_popup .inner .wrap
 	height:130px;
 	padding:5px 10px 5px;
 	margin:auto;
+	position:relative;
 }
 
-.assetwolf_2_schematics div[id*="_schematic_builder"] .controls p.error {
+.assetwolf_2_schematics .schematic_builder_panel .header .controls > .icon {
+	width:26px;
+	height:26px;
+	display:inline-block;
+	position:absolute;
+	z-index:9;
+	top:15px;
+	left:15px;
+	background-repeat:no-repeat;
+	background-position:center;
+	background-size:24px;
+	/*background-size:20px;
+	background-color:grey;
+	-webkit-border-radius:2px;
+	-moz-border-radius:2px;
+	border-radius:2px;*/
+	-webkit-filter: invert(.8);
+  	filter: invert(.8);
+}
+
+.assetwolf_2_schematics div.schematic_builder .controls p.error {
 	clear:both;
 	float:none;
 	margin:0;
@@ -3346,14 +3471,14 @@ body.mobile .assetwolf_2_schematics .mode_view .info .hotspot_popup .inner .wrap
 	text-align:left;
 }
 
-.assetwolf_2_schematics div[id*="_schematic_builder"] .canvas_wrap {
+.assetwolf_2_schematics div.schematic_builder .canvas_wrap {
 	/*display:inline-block;*/
 	background:#FFF;
 	position:relative;
 	z-index:1;
 }
 
-.assetwolf_2_schematics div[id*="_schematic_builder"] .canvas_wrap .canvas_dimensions {
+.assetwolf_2_schematics div.schematic_builder .canvas_wrap .canvas_dimensions {
     display: inline-block;
     padding: 2px 8px;
 	background: rgba(0,0,0,0.7);
@@ -3366,7 +3491,7 @@ body.mobile .assetwolf_2_schematics .mode_view .info .hotspot_popup .inner .wrap
     z-index:1;
 }
 
-.assetwolf_2_schematics div[id*="_schematic_builder"] .layer_navigation > div {
+.assetwolf_2_schematics div.schematic_builder .layer_navigation > div {
 	float:left;
 	width:calc(33.33% - 30px);
 	height:22px;
@@ -3385,12 +3510,12 @@ body.mobile .assetwolf_2_schematics .mode_view .info .hotspot_popup .inner .wrap
 	cursor:pointer;
 }
 
-.assetwolf_2_schematics div[id*="_schematic_builder"] .layer_navigation > div.current {
+.assetwolf_2_schematics div.schematic_builder .layer_navigation > div.current {
 	background:#0097ae;
 	position:relative;
 }
 
-.assetwolf_2_schematics div[id*="_schematic_builder"] .layer_navigation > div.current:after {
+.assetwolf_2_schematics div.schematic_builder .layer_navigation > div.current:after {
 	top: 100%;
 	left: 50%;
 	border: solid transparent;
@@ -3405,54 +3530,59 @@ body.mobile .assetwolf_2_schematics .mode_view .info .hotspot_popup .inner .wrap
 	margin-left: -10px;
 }
 
-.assetwolf_2_schematics div[id*="_schematic_builder"] .layer_navigation > div:hover {
+.assetwolf_2_schematics div.schematic_builder .layer_navigation > div:hover {
 	opacity:0.85;
 }
 
-.assetwolf_2_schematics div[id*="_schematic_builder"] .layer_navigation > div.current:hover {
+.assetwolf_2_schematics div.schematic_builder .layer_navigation > div.current:hover {
 	opacity:1;
 }
 
-.assetwolf_2_schematics div[id*="_schematic_builder"] .controls .buttons div.field {
+.assetwolf_2_schematics div.schematic_builder .controls .buttons div.zfea_form_row {
 	display:inline-block;
-	float:left;
 	margin-right:10px;
+	height:32px;
+	padding-bottom:0;
 }
 
-.assetwolf_2_schematics div[id*="_schematic_builder"] .controls .buttons div.field label {
+.assetwolf_2_schematics div.schematic_builder .controls .buttons div.zfea_form_row:first-child {
+	padding-left:30px;
+}
+
+.assetwolf_2_schematics div.schematic_builder .controls .buttons div.zfea_form_row label {
 	float:left;
 	line-height:34px;
 	padding-right:3px;
 }
 
-.assetwolf_2_schematics div[id*="_schematic_builder"] .controls .buttons div.field input[type="checkbox"] {
+.assetwolf_2_schematics div.schematic_builder .controls .buttons div.zfea_form_row input[type="checkbox"] {
 	float:left;
 	margin-right:4px;
 }
 
-.assetwolf_2_schematics div[id*="_schematic_builder"] .controls .buttons div.field input[type="checkbox"]+label {
+.assetwolf_2_schematics div.schematic_builder .controls .buttons div.zfea_form_row input[type="checkbox"]+label {
 	color:#191919;
 }
 
-.assetwolf_2_schematics div[id*="_schematic_builder"] .controls .buttons select {
+.assetwolf_2_schematics div.schematic_builder .controls .buttons select {
 	height:31px;
 	line-height:31px;
 }
 
-.assetwolf_2_schematics div[id*="_schematic_builder"] .controls .buttons select#field_input__schema_field_id {
+.assetwolf_2_schematics div.schematic_builder .controls .buttons select#field_input__schema_field_id {
 	width:230px;
 	font-family: 'Courier New', Courier, 'Lucida Sans Typewriter', 'Lucida Typewriter', monospace;
 }
 
-/*.assetwolf_2_schematics div[id*="_schematic_builder"] .controls .buttons select#field_input__alarm_source {
+/*.assetwolf_2_schematics div.schematic_builder .controls .buttons select#field_input__alarm_source {
 	width:180px;
 }*/
 
-.assetwolf_2_schematics div[id*="_schematic_builder"] .controls .buttons select#field_input__position {
+.assetwolf_2_schematics div.schematic_builder .controls .buttons select#field_input__position {
 	width:150px;
 }
 
-.assetwolf_2_schematics div[id*="_schematic_builder"] .controls .buttons input[type="checkbox"] {
+.assetwolf_2_schematics div.schematic_builder .controls .buttons input[type="checkbox"] {
 	margin-top:9px;
 }
 
@@ -3473,6 +3603,11 @@ body.mobile .assetwolf_2_schematics .mode_view .info .hotspot_popup .inner .wrap
 .assetwolf_2_schematics .schematic_builder_panel .controls .buttons.data_layer_selected .form_fields {
 	width:calc(100% - 200px);
 	float:left;
+	text-align:left;
+}
+
+.assetwolf_2_schematics .schematic_builder_panel .controls .buttons.data_layer_selected .form_fields .zfea_form_row div {
+	display: inline;
 }
 
 .assetwolf_2_schematics .schematic_builder_panel .controls .buttons.data_layer_selected .options_button {
@@ -3488,6 +3623,8 @@ body.mobile .assetwolf_2_schematics .mode_view .info .hotspot_popup .inner .wrap
 
 .assetwolf_2_schematics .schematic_builder_panel .controls .buttons.data_layer_selected.form_panel .form_fields {
 	overflow:hidden;
+	overflow-y:auto;
+	height:115px;
 }
 
 .assetwolf_2_schematics .schematic_builder_panel .controls .buttons.data_layer_selected.form_panel .form_fields > .field {
@@ -3525,16 +3662,28 @@ body.mobile .assetwolf_2_schematics .mode_view .info .hotspot_popup .inner .wrap
 	background-image:url('images/icon-upload-plan-white.svg');
 }
 
-.assetwolf_2_schematics .schematic_builder_panel .controls .buttons.data_layer_nothing_selected .inner_content_area input.add_foreground_rectangle {
+.assetwolf_2_schematics .schematic_builder_panel .controls .buttons.data_layer_nothing_selected .inner_content_area input.add.icon,
+.assetwolf_2_schematics .schematic_builder_panel .header .controls > .icon.icon {
+	background-image:url('images/icon-add-state-white.svg');
+}
+
+.assetwolf_2_schematics .schematic_builder_panel .controls .buttons.data_layer_nothing_selected .inner_content_area input.add.rectangle,
+.assetwolf_2_schematics .schematic_builder_panel .header .controls > .icon.rectangle {
 	background-image:url('images/icon-rectangle-white.svg');
 }
 
-.assetwolf_2_schematics .schematic_builder_panel .controls .buttons.data_layer_nothing_selected .inner_content_area input.add_foreground_polygon {
+.assetwolf_2_schematics .schematic_builder_panel .controls .buttons.data_layer_nothing_selected .inner_content_area input.add.polygon,
+.assetwolf_2_schematics .schematic_builder_panel .header .controls > .icon.polygon {
 	background-image:url('images/icon-polygon-white.svg');
 }
 
-.assetwolf_2_schematics .schematic_builder_panel .controls .buttons.data_layer_nothing_selected .inner_content_area input.add_foreground_hotspot {
+.assetwolf_2_schematics .schematic_builder_panel .controls .buttons.data_layer_nothing_selected .inner_content_area input.add.hotspot,
+.assetwolf_2_schematics .schematic_builder_panel .header .controls > .icon.hotspot {
 	background-image:url('images/icon-hotspot-white.svg');
+}
+
+.assetwolf_2_schematics .schematic_builder_panel .controls .buttons.data_layer_nothing_selected .inner_content_area input.add.icon {
+	background-image:url('images/icon-add-state-white.svg');
 }
 
 .assetwolf_2_schematics .schematic_builder_panel .controls .buttons input.delete_all[type="button"] {
@@ -3563,23 +3712,34 @@ body.mobile .assetwolf_2_schematics .mode_view .info .hotspot_popup .inner .wrap
 	opacity:1;
 }
 
-.assetwolf_2_schematics .schematic_builder_panel .controls .buttons .field.field__opacity {
+.assetwolf_2_schematics .schematic_builder_panel .controls #row__field_input__opacity,
+.assetwolf_2_schematics .schematic_builder_panel .controls #row__field_input__opacity div {
+	display:inline;
 	overflow:hidden;
 }
 
-.assetwolf_2_schematics .schematic_builder_panel .controls .buttons .field.field__opacity label,
-.assetwolf_2_schematics .schematic_builder_panel .controls .buttons .field.field__opacity div,
-.assetwolf_2_schematics .schematic_builder_panel .controls .buttons .field.field__opacity input {
+.assetwolf_2_schematics .schematic_builder_panel .controls #row__field_input__opacity label,
+.assetwolf_2_schematics .schematic_builder_panel .controls #row__field_input__opacity div.field_slider__opacity,
+.assetwolf_2_schematics .schematic_builder_panel .controls #row__field_input__opacity input {
 	display:inline-block;
 }
 
-.assetwolf_2_schematics .schematic_builder_panel .controls .buttons .field.field__opacity input {
+.assetwolf_2_schematics .schematic_builder_panel .controls #row__field_input__opacity input {
 	width:40px;
 }
 
-.assetwolf_2_schematics .schematic_builder_panel .controls .buttons .field.field__opacity .ui-slider {
+.assetwolf_2_schematics .schematic_builder_panel .controls #row__field_input__opacity div.field_slider__opacity {
 	width:200px;
 	margin:0 20px 0 10px;
+	overflow: visible;
+}
+
+.assetwolf_2_schematics .schematic_builder_panel .controls #row__field_input__opacity div.zfea_row_fields > div {
+	float: left;
+}
+
+.assetwolf_2_schematics .schematic_builder_panel .controls #row__field_input__opacity div.zfea_row_fields > div.title {
+	float: none;
 }
 
 .assetwolf_2_schematics .schematic_builder_panel .controls .buttons input[type="button"] {
@@ -3609,13 +3769,13 @@ body.mobile .assetwolf_2_schematics .schematic_builder_panel .controls .buttons.
 	font-size:12px;
 }
 
-body.mobile .assetwolf_2_schematics div[id*="_schematic_builder"] .controls .buttons div.field label {
+body.mobile .assetwolf_2_schematics div.schematic_builder .controls .buttons div.zfea_form_row label {
 	/*float:none;
 	line-height:1.2em;*/
 	font-size:12px;
 }
 
-body.mobile .assetwolf_2_schematics div[id*="_schematic_builder"] .controls .buttons select {
+body.mobile .assetwolf_2_schematics div.schematic_builder .controls .buttons select {
 	max-width:190px;
 }
 
@@ -3661,22 +3821,6 @@ body.mobile .assetwolf_2_schematics div[id*="_schematic_builder"] .controls .but
 	display:inline-block;
 	float:left;
 	padding-right:5px;
-}
-
-.aw_dp_list.aw_list .zfea_block_list_wrap > div p[class*="column_field"] span,
-.assetwolf_2_schematics .mode_view .info .hotspot_popup p[class*="column_field"] {
-	background-color:#333;
-	color:#fff;
-}
-
-.assetwolf_2_schematics .mode_view .info .hotspot_popup p[class*="column_field"] .label {
-	position: absolute;
-	top: 50%;
-	transform: translateY(-50%);
-	left:58px;
-	padding-top:0;
-	padding-bottom:0;
-	height:auto;
 }
 
 .assetwolf_2_schematics .mode_view .info .hotspot_popup.blue_dis_schema p[class*="column_field"] .label,

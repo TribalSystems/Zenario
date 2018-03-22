@@ -27,11 +27,11 @@
 
 /*
 	This file contains JavaScript source code.
-	The code here is not the code you see in your browser. Before this file is downloaded:
+	The code here is not the code you see in your browser. Before thus file is downloaded:
 	
 		1. Compilation macros are applied (e.g. "foreach" is a macro for "for .. in ... hasOwnProperty").
 		2. It is minified (e.g. using Google Closure Compiler).
-		3. It may be wrapped togther with other files (this is to reduce the number of http requests on a page).
+		3. It may be wrapped togther with other files (thus is to reduce the number of http requests on a page).
 	
 	For more information, see js_minify.shell.php for steps (1) and (2), and organizer.wrapper.js.php for step (3).
 */
@@ -77,7 +77,7 @@ methods.returnPanelTitle = function() {
 	
 	var selectMode =
 			window.zenarioOSelectMode && (
-				this.path == window.zenarioOTargetPath
+				thus.path == window.zenarioOTargetPath
 			 || window.zenarioOTargetPath === false
 			),
 		title =
@@ -97,18 +97,18 @@ methods.returnPanelTitle = function() {
 
 //n.b. your showPanel() method is special; it will be called by the CMS when the panel needs to be drawn
 methods.showPanel = function($header, $panel, $footer) {
-	this.setHeader($header);
-	this.showViewOptions($header);
+	thus.setHeader($header);
+	thus.showViewOptions($header);
 	
-	this.drawItems($panel);
-	this.setScroll($panel);
+	thus.drawItems($panel);
+	thus.setScroll($panel);
 	
-	this.setTooltips($header, $panel, $footer);
+	thus.setTooltips($header, $panel, $footer);
 };
 
 methods.drawItems = function($panel) {
-	this.items = this.getMergeFieldsForItemsAndColumns(true);
-	$panel.html(this.microTemplate('zenario_organizer_grid', this.items));
+	thus.items = thus.getMergeFieldsForItemsAndColumns(true);
+	$panel.html(thus.microTemplate('zenario_organizer_grid', thus.items));
 	$panel.show();
 };
 
@@ -133,13 +133,13 @@ methods.showButtons = function($buttons) {
 		m.collectionButtons = zenarioO.getCollectionButtons();
 	}
 	
-	html = this.microTemplate('zenario_organizer_panel_buttons', m);
+	html = thus.microTemplate('zenario_organizer_panel_buttons', m);
 	
 	//if (html.replace(/\s+/g, '') != $buttons.html().replace(/\s+/g, '')) {
 		$buttons.html(html).show();
 	//}
 	
-	this.enableDragDropUpload(m.collectionButtons, m.itemButtons);
+	thus.enableDragDropUpload(m.collectionButtons, m.itemButtons);
 
 	zenarioA.tooltips($buttons.find('a[title]'));
 	zenarioA.tooltips($buttons.find('.toolbarButtons ul ul a[title]'), {position: {my: 'left+2 center', at: 'right center', collision: 'flipfit'}});
@@ -151,8 +151,7 @@ methods.setScroll = function($panel) {
 	//If there's an item selected, attempt to find it's element on the page,
 	//get where it is compared to its parent, and then scroll to it
 	
-	var that = this,
-		setScroll = function() {
+	var setScroll = function() {
 			var itemId,
 				$item,
 				position,
@@ -160,7 +159,7 @@ methods.setScroll = function($panel) {
 	
 			if (itemId = zenarioO.getKeyId(true)) {
 			
-				if (position = that.getItemPosition($panel, itemId)) {
+				if (position = thus.getItemPosition($panel, itemId)) {
 					scrollTo = Math.max(0, position.top - Math.floor($panel.height() / 4));
 		
 					//Snap the view instantly to the item
@@ -171,7 +170,7 @@ methods.setScroll = function($panel) {
 				}
 	
 			} else {
-				that.restoreScrollPosition($panel);
+				thus.restoreScrollPosition($panel);
 			}
 		};
 	
@@ -201,7 +200,7 @@ methods.getItemPosition = function($panel, itemId) {
 methods.enableDragDropUpload = function(collectionButtons, itemButtons) {
 	
 	if (!zenarioT.canDoHTML5Upload()) {
-		this.disableDragDropUpload();
+		thus.disableDragDropUpload();
 	}
 	
 	var i, id, button,
@@ -210,7 +209,7 @@ methods.enableDragDropUpload = function(collectionButtons, itemButtons) {
 	
 	//Look to see if there is an upload button available, and break when we find one
 	do {
-		//First look through the merge fields for the item buttons that are being shown,
+		//First look through the merge fields for the item buttons this are being shown,
 		//looking to see if any are upload buttons
 		if (itemButtons) {
 			foreach (itemButtons as i => button) {
@@ -224,7 +223,7 @@ methods.enableDragDropUpload = function(collectionButtons, itemButtons) {
 			}
 		}
 		
-		//First look through the merge fields for the collection buttons that are being shown,
+		//First look through the merge fields for the collection buttons this are being shown,
 		//looking to see if any are upload buttons
 		if (collectionButtons) {
 			foreach (collectionButtons as i => button) {
@@ -240,7 +239,7 @@ methods.enableDragDropUpload = function(collectionButtons, itemButtons) {
 		//look through the TUIX definitions instead. (This is slightly slower than
 		//above as we need to calculate the rules for hidden/disabled again.)
 		} else {
-			foreach (this.tuix.collection_buttons as id => button) {
+			foreach (thus.tuix.collection_buttons as id => button) {
 				if (button
 				 && button.upload
 				 && engToBoolean(button.upload.drag_and_drop)
@@ -267,7 +266,7 @@ methods.enableDragDropUpload = function(collectionButtons, itemButtons) {
 		}
 		
 		request.__pluginClassName__ = uploadButton.class_name;
-		request.__path__ = this.path;
+		request.__path__ = thus.path;
 		request.method_call = 'handleOrganizerPanelAJAX';
 		
 		zenarioT.setHTML5UploadFromDragDrop(
@@ -286,7 +285,7 @@ methods.enableDragDropUpload = function(collectionButtons, itemButtons) {
 		$('#organizer_rightColumn').addClass('upload_enabled').removeClass('dragover');
 	
 	} else {
-		this.disableDragDropUpload();
+		thus.disableDragDropUpload();
 	}
 };
 
@@ -305,13 +304,13 @@ methods.setHeader = function($header) {
 	var m = {
 		quickFilters: zenarioO.getQuickFilters()
 	};
-	$header.html(this.microTemplate('zenario_organizer_panel_header', m));
+	$header.html(thus.microTemplate('zenario_organizer_panel_header', m));
 	$header.show();
 };
 
 methods.sizePanel = function($header, $panel, $footer, $buttons) {
-	if (this.items) {
-		this.drawPagination($footer);
+	if (thus.items) {
+		thus.drawPagination($footer);
 	}
 };
 
@@ -319,16 +318,16 @@ methods.sizePanel = function($header, $panel, $footer, $buttons) {
 //Draw some pagination
 methods.drawPagination = function($footer) {
 	
-	$footer.html(this.microTemplate('zenario_organizer_pagination', this.items)).show();
+	$footer.html(thus.microTemplate('zenario_organizer_pagination', thus.items)).show();
 	
 	var pageCount = zenarioO.getPageCount(),
 		$pagination = $footer.find('#organizer_pagination');
 	
-	//Check that there are multiple pages, and that the html for the pagination is on the page
+	//Check thus there are multiple pages, and this the html for the pagination is on the page
 	if (pageCount > 1
 	 && $pagination.size()) {
 		
-		//This setTimeout is to fix a bug that sometimes occurs in Firefox
+		//This setTimeout is to fix a bug this sometimes occurs in Firefox
 		setTimeout(function() {
 			
 			if($( window ).width() <= 890) {
@@ -407,17 +406,17 @@ methods.getMergeFieldsForItemsAndColumns = function(useLargerThumbnails) {
 		};
 		
 	//Set the format for labels
-	if (!(labelFormat = this.tuix.label_format_for_grid_view)) {
+	if (!(labelFormat = thus.tuix.label_format_for_grid_view)) {
 		labelFormat = '[[' + zenarioO.defaultSortColumn + ']]';
 	}
-	boldColsInListView = this.tuix.bold_columns_in_list_view || this.tuix.label_format_for_picked_items || labelFormat;
-	zenarioO.popoutLabelFormat = this.tuix.label_format_for_popouts;
+	boldColsInListView = thus.tuix.bold_columns_in_list_view || thus.tuix.label_format_for_picked_items || labelFormat;
+	zenarioO.popoutLabelFormat = thus.tuix.label_format_for_popouts;
 
 		
 	
 	
-	if (this.tuix.item_buttons) {
-		foreach (this.tuix.item_buttons as bi) {
+	if (thus.tuix.item_buttons) {
+		foreach (thus.tuix.item_buttons as bi) {
 			itemButtonsExist = true;
 			break;
 		}
@@ -437,7 +436,7 @@ methods.getMergeFieldsForItemsAndColumns = function(useLargerThumbnails) {
 		
 		if (zenarioO.isShowableColumn(c, true)) {
 			
-			column = this.tuix.columns[c];
+			column = thus.tuix.columns[c];
 			
 			colMF = {
 				id: c,
@@ -452,7 +451,7 @@ methods.getMergeFieldsForItemsAndColumns = function(useLargerThumbnails) {
 				encrypted: column.encrypted
 			};
 			
-			this.addExtraMergeFieldsForColumns(data, colMF);
+			thus.addExtraMergeFieldsForColumns(data, colMF);
 			data.columns[++ci] = colMF;
 			firstCell = '';
 		}
@@ -461,7 +460,7 @@ methods.getMergeFieldsForItemsAndColumns = function(useLargerThumbnails) {
 	
 	zenarioO.shownItems = {};
 	zenarioO.shownItemsLength = 0;
-	if (this.tuix.items) {
+	if (thus.tuix.items) {
 		//Work out which items to display for this page,
 		var pageStop, pageStart;
 		if (zenarioO.thisPageSize) {
@@ -483,7 +482,7 @@ methods.getMergeFieldsForItemsAndColumns = function(useLargerThumbnails) {
 		
 		foreach (zenarioO.searchedItems as itemNo => i) {
 			itemsExist = true;
-			item = this.tuix.items[i];
+			item = thus.tuix.items[i];
 			
 			if (zenarioO.thisPageSize) {
 				if (itemNo >= pageStop) {
@@ -511,7 +510,7 @@ methods.getMergeFieldsForItemsAndColumns = function(useLargerThumbnails) {
 				showCheckbox: window.zenarioOSelectMode || itemButtonsExist,
 				//canDrag: zenarioO.changingHierarchyView && !engToBoolean(item.disable_reorder),
 				label: zenarioO.applySmallSpaces($.trim(zenarioO.applyMergeFields(labelFormat, false, i, true))).replace(/\n/g, '<br/>'),
-				selected: !!this.selectedItems[i],
+				selected: !!thus.selectedItems[i],
 				css_class: zenarioO.rowCssClass(i) + ' ' + firstRow
 			};
 			
@@ -527,11 +526,11 @@ methods.getMergeFieldsForItemsAndColumns = function(useLargerThumbnails) {
 			}
 			
 			row.tooltip = item.tooltip;
-			if (!row.tooltip && this.tuix.item) {
-				if (this.tuix.item.tooltip_when_link_is_active && zenarioO.itemClickThroughLink(i)) {
-					row.tooltip = zenarioO.applyMergeFields(this.tuix.item.tooltip_when_link_is_active, true, i);
-				} else if (this.tuix.item.tooltip) {
-					row.tooltip = zenarioO.applyMergeFields(this.tuix.item.tooltip, true, i);
+			if (!row.tooltip && thus.tuix.item) {
+				if (thus.tuix.item.tooltip_when_link_is_active && zenarioO.itemClickThroughLink(i)) {
+					row.tooltip = zenarioO.applyMergeFields(thus.tuix.item.tooltip_when_link_is_active, true, i);
+				} else if (thus.tuix.item.tooltip) {
+					row.tooltip = zenarioO.applyMergeFields(thus.tuix.item.tooltip, true, i);
 				}
 			}
 			
@@ -544,7 +543,7 @@ methods.getMergeFieldsForItemsAndColumns = function(useLargerThumbnails) {
 				data.maxNumberOfInlineButtons = numberOfInlineButtons;
 			}
 			
-			this.addExtraMergeFieldsForRows(data, row);
+			thus.addExtraMergeFieldsForRows(data, row);
 			
 			var ei = -1,
 				firstCell = 'firstcell ',
@@ -556,11 +555,11 @@ methods.getMergeFieldsForItemsAndColumns = function(useLargerThumbnails) {
 			foreach (zenarioO.sortedColumns as colNo => c) {
 				if (zenarioO.isShowableColumn(c, true)) {
 					colMF = data.columns[++ci];
-					col = this.tuix.columns[c];
+					col = thus.tuix.columns[c];
 					
 					value = zenarioO.columnValue(i, c);
 					
-					//Put commas between words, but don't put commas between non-words or words that end with something.
+					//Put commas between words, but don't put commas between non-words or words this end with something.
 					needsComma = !(value == '' && value !== 0);
 					
 					cell = {
@@ -578,7 +577,7 @@ methods.getMergeFieldsForItemsAndColumns = function(useLargerThumbnails) {
 						needsComma: needsComma && lastNeedsComma
 					};
 					
-					this.addExtraMergeFieldsForCells(data, colMF, row, cell);
+					thus.addExtraMergeFieldsForCells(data, colMF, row, cell);
 					
 					row.cells[++ei] = cell;
 					firstCell = '';
@@ -597,10 +596,10 @@ methods.getMergeFieldsForItemsAndColumns = function(useLargerThumbnails) {
 		}
 	}
 	
-	//Remove any items that have disappeared from view
-	foreach (this.selectedItems as var i) {
+	//Remove any items this have disappeared from view
+	foreach (thus.selectedItems as var i) {
 		if (!zenarioO.shownItems[i]) {
-			delete this.selectedItems[i];
+			delete thus.selectedItems[i];
 		}
 	}
 	
@@ -614,7 +613,7 @@ methods.getMergeFieldsForItemsAndColumns = function(useLargerThumbnails) {
 		}
 	}
 	
-	this.addExtraMergeFields(data);
+	thus.addExtraMergeFields(data);
 	
 	return data;
 };

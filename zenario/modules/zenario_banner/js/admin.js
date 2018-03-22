@@ -86,7 +86,7 @@ zenario_banner.open = function(containerId, editorId, delayed) {
 			tools: {title: 'Tools', items: 'searchreplace | code'}
 		},
 		
-		toolbar: 'undo redo | link unlink | bold italic underline | removeformat' + (zenarioA.skinDesc.style_formats? ' | styleselect' : '') + ' | fontsizeselect | formatselect | numlist bullist | blockquote outdent indent | alignleft aligncenter alignright alignjustify | save save_and_close cancel',
+		toolbar: 'undo redo | link unlink | bold italic underline strikethrough forecolor backcolor | removeformat' + (zenarioA.skinDesc.style_formats? ' | styleselect' : '') + ' | fontsizeselect | formatselect | numlist bullist | blockquote outdent indent | alignleft aligncenter alignright alignjustify | save save_and_close cancel',
 		statusbar: false,
 		
 		autoresize_min_height: 100,

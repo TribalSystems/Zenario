@@ -29,7 +29,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 class zenario_event_listing extends ze\moduleBaseClass {
 
-    protected $data = array();
+    protected $data = [];
     
 	public function init() {
 		$this->allowCaching(
@@ -80,7 +80,7 @@ class zenario_event_listing extends ze\moduleBaseClass {
 				break;
 		}
 
-		$eventRows = array();
+		$eventRows = [];
 		if ($sql = $this->buildQuery($periodName, $periodShift)){
 			
 			//Get a count of how many items we have to display
@@ -90,7 +90,7 @@ class zenario_event_listing extends ze\moduleBaseClass {
 			$totalPages = (int) ceil($rows / $this->setting('page_size'));
 			
 			//Loop through each page to display, and add its details to an array of merge fields
-			$pages = array();
+			$pages = [];
 			for ($i = 1; $i <= $this->setting('page_limit') && $i <= $totalPages; ++$i) {
 				$pages[$i] = '&page='. $i;
 			}
@@ -104,7 +104,7 @@ class zenario_event_listing extends ze\moduleBaseClass {
 			
 			$result = ze\sql::select($sql . ze\sql::limit($this->page, $this->setting('page_size'), $this->setting('offset')));
 			while($row = ze\sql::fetchAssoc($result)){
-			    $eventRow = array();
+			    $eventRow = [];
 				$eventRow['Link_To_Event'] = $this->linkToItem($row['id'], 'event');
 				
 				if ($this->setting('show_sticky_images')) {
@@ -133,18 +133,27 @@ class zenario_event_listing extends ze\moduleBaseClass {
 					$eventRow['Event_Description'] = nl2br($eventRow['Event_Description']);
 				}
 
-				if ($this->setting('show_location') && ze::setting('zenario_ctype_event__location_field') != 'hidden') {
+				if ($this->setting('show_location_name') && ze::setting('zenario_ctype_event__location_field') != 'hidden') {
 					if (ze::setting('zenario_ctype_event__location_text')) {
-						$eventRow['Event_location'] = $row['location'];
+						$eventRow['Event_location_name'] = $row['location'];
 					} elseif (($locationId = $row['location_id'] ?? false) 
 						&& ze\module::inc('zenario_location_manager')
 						&& ($location = zenario_location_manager::getLocationDetails($locationId))
 					) {
-						$eventRow['Event_location'] = $location['description'];
+						$eventRow['Event_location_name'] = $location['description'];
 					}
 				}
 				
-				$datetime = array();
+				if ($this->setting('show_location_city')) {
+					$eventRow['Event_location_city'] = ze\row::get(ZENARIO_LOCATION_MANAGER_PREFIX . 'locations', 'city', ['id' => $row['location_id']]);
+				}
+				
+				if ($this->setting('show_location_country')) {
+					$countryId = ze\row::get(ZENARIO_LOCATION_MANAGER_PREFIX . 'locations', 'country_id', ['id' => $row['location_id']]);
+					$eventRow['Event_location_country'] = ze\row::get(ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_countries', 'english_name', ['id' => $countryId]);
+				}
+				
+				$datetime = [];
 				$datetime['start_date'] = '';
 				$datetime['end_date'] = '';
 				$datetime['start_time'] = '';
@@ -236,6 +245,10 @@ class zenario_event_listing extends ze\moduleBaseClass {
 				$this->pagination('pagination_style', $this->page, $pages, $this->data['Pagination']);
 			}
 			
+			if ($this->setting('make_event_elements_equal_height')) {
+				$this->data['Event_elements_equal_height'] = true;
+			}
+			
 			$this->data['Events_List'] = true;
 			$this->data['Event_Row_On_List'] = $eventRows;
 		} else {
@@ -295,7 +308,7 @@ class zenario_event_listing extends ze\moduleBaseClass {
 
 	protected function expandPeriodAsSQLSafeArray($periodBegin,$periodEnd,$periodName){
 		
-		$rv=array();
+		$rv=[];
 		if (($startDay= $this->getDayNumber($periodBegin)) && ($endDay= $this->getDayNumber($periodEnd)) && ($startDay<=$endDay) ) {
 			if (($periodName=='week') || ($periodName=='today')) {
 				$sql = " ";
@@ -319,7 +332,7 @@ class zenario_event_listing extends ze\moduleBaseClass {
 
 	protected function splitPeriod($periodDaysSortedArray,$cutDate){
 		
-		$rv = array('before'=>array(),'now_and_after'=>array());
+		$rv = ['before'=>[],'now_and_after'=>[]];
 		if ($cutDay = $this->getDayNumber($cutDate)){
 			foreach ($periodDaysSortedArray as $K=>$V){
 				if ($K<$cutDay){
@@ -451,7 +464,7 @@ class zenario_event_listing extends ze\moduleBaseClass {
 				$sql = "SELECT IF(YEAR(" . $this->displayForAsSQLDateString() . ")=YEAR('" . $periodStart ."'),'[[_MONTH_LONG_%m]]','[[_MONTH_LONG_%m]] %Y') AS format";
 				$result = ze\sql::select($sql);
 				if ($row = ze\sql::fetchAssoc($result)){
-					$rv = $this->phrase("_MONTH_ONWARDS", array('month_name' => ze\date::format($periodStart,$row['format'])) );
+					$rv = $this->phrase("_MONTH_ONWARDS", ['month_name' => ze\date::format($periodStart,$row['format'])] );
 				}
 				break;
 			case 'year':
@@ -482,7 +495,7 @@ class zenario_event_listing extends ze\moduleBaseClass {
 				if ($period){
 					if ($this->setting('category_list')){
 						foreach (explode(',', $this->setting('category_list')) as $catId) {
-							if ($catId && ze\row::exists('categories', array('id' => (int) $catId))) {
+							if ($catId && ze\row::exists('categories', ['id' => (int) $catId])) {
 								$categoryJoin .=" INNER JOIN ". DB_NAME_PREFIX. "category_item_link AS cil_". (int) $catId. "
 												   ON cil_". (int) $catId. ".equiv_id = c.equiv_id
 												  AND cil_". (int) $catId. ".content_type = c.type
@@ -526,7 +539,7 @@ class zenario_event_listing extends ze\moduleBaseClass {
 						  AND c.language_id = '". ze\escape::sql(ze::$langId). "'";
 					} elseif ($this->setting('language_selection') == 'specific_languages') { 
 						//Return content in languages selected by admin
-						$arr = array('');
+						$arr = [''];
 						foreach(explode(",", $this->setting('specific_languages')) as $langCode)  {
 							$arr[] = ze\escape::sql($langCode);
 						}
@@ -580,7 +593,7 @@ class zenario_event_listing extends ze\moduleBaseClass {
 							break;
 					}
 					
-					if (!in_array($periodName, array('date_range', 'today'))) {
+					if (!in_array($periodName, ['date_range', 'today'])) {
 						$sql .=" AND (false ";
 						if ($this->setting('past')){
 							$sql .=" OR ( ce.end_date<'" . date('Y-m-d') . "' )";
@@ -655,7 +668,7 @@ class zenario_event_listing extends ze\moduleBaseClass {
 				$fields['first_tab/ongoing']['hidden'] = 
 				$fields['first_tab/future']['hidden'] = 
 				$fields['first_tab/past']['hidden'] = 
-					in_array($values['first_tab/period_mode'], array('today_only', 'date_range'));
+					in_array($values['first_tab/period_mode'], ['today_only', 'date_range']);
 				
 				$fields['pagination/page_limit']['hidden'] = 
 				$fields['pagination/pagination_style']['hidden'] = 
@@ -671,9 +684,28 @@ class zenario_event_listing extends ze\moduleBaseClass {
         
                 $fields['each_item/default_image_id']['hidden'] = 
                     !($values['each_item/show_sticky_images'] && $values['each_item/fall_back_to_default_image']);
-        
+                   
+                $fields['each_item/show_location_name']['hidden'] = 
+                $fields['each_item/show_location_city']['hidden'] = 
+                $fields['each_item/show_location_country']['hidden'] = 
+                	!($values['each_item/show_location']);
+                	
                 $hidden = !$values['each_item/show_sticky_images'];
                 $this->showHideImageOptions($fields, $values, 'each_item', $hidden);
+				break;
+		}
+	}
+	
+	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
+    
+    	switch ($path) {
+			case 'plugin_settings':
+				if ($values['each_item/show_location'] == true
+					&& $values['each_item/show_location_name'] == false
+					&& $values['each_item/show_location_city'] == false
+					&& $values['each_item/show_location_country'] == false) {
+						$fields['each_item/show_location']['error'] = 'Please choose at least one of the filters below';
+				}
 				break;
 		}
 	}

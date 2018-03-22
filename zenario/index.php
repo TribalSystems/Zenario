@@ -82,9 +82,10 @@ function slot($slotName, $mode = false) {
 }
 
 
-if ($checkPriv = ze\priv::check()) {
+if ($isAdmin = ze::isAdmin()) {
 	require CMS_ROOT. 'zenario/adminheader.inc.php';
 	ze\skinAdm::checkForChangesInFiles();
+	ze\miscAdm::checkForChangesInYamlFiles();
 	
 	//ze\admin::setSession($_SESSION['admin_userid'], $_SESSION['admin_global_id']);
 
@@ -100,7 +101,7 @@ if ($checkPriv = ze\priv::check()) {
 $cID = $cType = $content = $version = $redirectNeeded = $aliasInURL = false;
 ze\content::resolveFromRequest($cID, $cType, $redirectNeeded, $aliasInURL, $_GET, $_REQUEST, $_POST);
 
-if ($redirectNeeded && empty($_POST) && !($redirectNeeded == 302 && $checkPriv)) {
+if ($redirectNeeded && empty($_POST) && !($redirectNeeded == 302 && $isAdmin)) {
 	
 	//When fixing the language code in the URL, make sure we redirect using the full path
 	//as the language code might be in the domain/subdomain.
@@ -231,7 +232,7 @@ ze\cache::start();
 //Check whether we should allow cross-site iframes
 do {
 	//Never allow in admin mode
-	if ($checkPriv) {
+	if ($isAdmin) {
 		break;
 	}
 	
@@ -329,8 +330,12 @@ if (ze::$langId !== ze::$visLang) {
 
 $imageWidth = $imageHeight = $imageURL = false;
 if (ze::$pageImage && ze\file::imageLink($imageWidth, $imageHeight, $imageURL, ze::$pageImage, 0, 0, 'resize', 0, false, $fullPath = true)) {
+	$mimeType = ze\row::get('files', 'mime_type', ze::$pageImage);
 	echo '
-<meta property="og:image" content="', htmlspecialchars($imageURL), '"/>';
+<meta property="og:image:type" content="' . htmlspecialchars($mimeType) . '" />
+<meta property="og:image" content="', htmlspecialchars($imageURL), '"/>
+<meta property="og:image:width" content="' . htmlspecialchars($imageWidth) . '" />
+<meta property="og:image:height" content="' . htmlspecialchars($imageHeight) . '" />';
 	if (ze\link::protocol() == "https://") {
 		echo '
 <meta property="og:image:secure_url" content="', htmlspecialchars($imageURL), '"/>';
@@ -514,7 +519,7 @@ if ($specificInstance || $specificSlot) {
 				'<a href="zenario/admin/organizer.php">Go to Organizer</a>',
 			'</div>';
 		
-		if (!$checkPriv && defined('DEBUG_SEND_EMAIL') && DEBUG_SEND_EMAIL === true) {
+		if (!$isAdmin && defined('DEBUG_SEND_EMAIL') && DEBUG_SEND_EMAIL === true) {
 			ze\db::reportError($msg);
 		}
 	}
@@ -523,7 +528,7 @@ if ($specificInstance || $specificSlot) {
 	ze\content::pageFoot('zenario/', false, true, true, true);
 	
 	//If someone just changed the CSS for a plugin, scroll down to that plugin to show the changes
-	if ($checkPriv && !empty($_SESSION['scroll_slot_on_'. ze::$cType. '_'. ze::$cID])) {
+	if ($isAdmin && !empty($_SESSION['scroll_slot_on_'. ze::$cType. '_'. ze::$cID])) {
 		echo '
 			<script type="text/javascript">
 				zenario.scrollToSlotTop("'. ze\escape::js($_SESSION['scroll_slot_on_'. ze::$cType. '_'. ze::$cID]). '", false, 300);

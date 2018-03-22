@@ -136,7 +136,7 @@ $getUploadedFileInCacheDir =
 //Attempt to get the id from the request
 	//(This is only allowed under certain situations, as images may be protected or not public.)
 if ($usage == 'user' && ($_REQUEST['user_id'] ?? false)) {
-	$id = ze\row::get('users', 'image_id', array('id' => ($_REQUEST['user_id'] ?? false)));
+	$id = ze\row::get('users', 'image_id', ['id' => ($_REQUEST['user_id'] ?? false)]);
 
 } elseif ($usage == 'template' && ($_REQUEST['layout_id'] ?? false)) {
 	$id = ze\row::get('layouts', 'image_id', ($_REQUEST['layout_id'] ?? false));

@@ -30,8 +30,8 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_search_entry_box extends zenario_search_results {
 	
 	function showSlot() {
-		$this->sections = array();
-		$this->mergeFields = array();
+		$this->sections = [];
+		$this->mergeFields = [];
 		
 		$cID = $cType = false;
 		if ($this->setting('use_specific_search_results_page') && $this->getCIDAndCTypeFromSetting($cID, $cType, 'specific_search_results_page')) {
@@ -42,6 +42,15 @@ class zenario_search_entry_box extends zenario_search_results {
 		
 		if ($cID == $this->cID && $cType == $this->cType) {
 			$cID = $cType = false;
+		}
+		
+		if ($this->setting('search_label')) {
+			$this->sections['Search_Label'] = true;
+		}
+		
+		if ($this->setting('search_placeholder')) {
+			$this->sections['Placeholder'] = true;
+			$this->sections['Placeholder_Phrase'] = $this->setting('search_placeholder_phrase');
 		}
 		
 		$this->drawSearchBox($cID, $cType);
@@ -73,6 +82,11 @@ class zenario_search_entry_box extends zenario_search_results {
 			case 'plugin_settings':
 				$box['tabs']['first_tab']['fields']['specific_search_results_page']['hidden'] = 
 					!$values['first_tab/use_specific_search_results_page'];
+					
+				if ($box['tabs']['first_tab']['fields']['search_placeholder'] == true
+					&& empty($box['tabs']['first_tab']['fields']['search_placeholder_phrase']['value'])) {
+					$box['tabs']['first_tab']['fields']['search_placeholder_phrase']['value'] = 'Search the site';
+				}
 
 				break;
 		}

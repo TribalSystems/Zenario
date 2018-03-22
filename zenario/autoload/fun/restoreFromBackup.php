@@ -87,9 +87,9 @@ if (!$g = $open($backupPath, 'rb')) {
 	//If we were restoring up from an encrypted file, delete the plain-text copy
 	if ($encrypted) {
 		unlink($backupPath);
-		$failures[] = \ze\admin::phrase('Could not open the file [[file]].', array('file' => $encryptedBackupPath));
+		$failures[] = \ze\admin::phrase('Could not open the file [[file]].', ['file' => $encryptedBackupPath]);
 	} else {
-		$failures[] = \ze\admin::phrase('Could not open the file [[file]].', array('file' => $backupPath));
+		$failures[] = \ze\admin::phrase('Could not open the file [[file]].', ['file' => $backupPath]);
 	}
 	
 	return false;
@@ -165,7 +165,7 @@ while($reading) {
 			$statements[$i] = preg_replace('@^[ \t]*--[^"\']*?$@m', '', $statements[$i]);
 			
 			//Try to work out what type of statement this is
-			$matches = array();
+			$matches = [];
 			if (!preg_match('@^[^`\'\"]*\b(ALTER|COMMIT|CREATE DATABASE|CREATE TABLE|DROP|INSERT|LOCK|REPLACE|SELECT|SET|SHOW|START|TRUNCATE|UNLOCK|UPDATE|USE)\b@m', $statements[$i], $matches)) {
 				//Throw out anything that doesn't conform to the norm!
 				$failures[] = 'Statement '. $statementNo. ":\n". $statements[$i]. "\n\nThis does not look like a backup file made by Zenario, mysqldump or phpMyAdmin. Only those formats are supported.\n\n\n";

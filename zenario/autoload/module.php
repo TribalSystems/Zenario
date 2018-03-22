@@ -111,7 +111,7 @@ class module {
 	//Formerly "canActivateModule()"
 	public static function canActivate($name, $fetchBy = 'name', $activate = false) {
 	
-		$error = array();
+		$error = [];
 		$missingPlugin = false;
 	
 		if ($module = \ze\module::details($name, $fetchBy)) {
@@ -134,7 +134,7 @@ class module {
 		
 			$class = new $module['class_name'];
 		
-			$class->setInstance(array(false, false, false, false, false, false, $module['class_name'], $module['vlp_class'], $module['id'], false, false, false, false, false));
+			$class->setInstance([false, false, false, false, false, false, $module['class_name'], $module['vlp_class'], $module['id'], false, false, false, false, false]);
 
 			return $class;
 		} else {
@@ -165,7 +165,7 @@ class module {
 				LIMIT 1");
 		}
 	
-		$missingPlugin = array();
+		$missingPlugin = [];
 	
 		if ($module
 		 && ($module['status'] == 'module_running' || $module['status'] == 'module_is_abstract')
@@ -212,7 +212,7 @@ class module {
 		//Take the path, and try to get the name of the last tag in the tag path.
 		//(But if the last tag is "panel", remove that as the second-last tag will be more helpful.)
 		//Also try to remove the prefix from above.
-		$matches = array();
+		$matches = [];
 		preg_match('@.*/_*(\w+)@', str_replace('/'. $prefix. '_', '/', str_replace('/panel', '', '/'. $path)), $matches);
 	
 		if (empty($matches[1])) {
@@ -226,7 +226,7 @@ class module {
 		//Also check for a filepath by stripping off the classname from the path
 		//e.g. (zenario_example_manager__test could be called test.php)
 		if (!is_file($phpPath)) {
-			$matches = array();
+			$matches = [];
 			preg_match('@.*/_*(\w+)@', str_replace('/'. $moduleClassName. '_', '/', str_replace('/panel', '', '/'. $path)), $matches);
 			$phpPathAlt = $basePath. '/classes/'. $type. '/'. $matches[1]. '.php';
 			if (is_file($phpPathAlt)) {
@@ -294,7 +294,7 @@ class module {
 				\ze\module::setPrefix($row);
 			} else {
 				//Otherwise report a dependancy as missing, then stop
-				$missingPlugin = array('module' => $row['dependency_class_name']);
+				$missingPlugin = ['module' => $row['dependency_class_name']];
 				return false;
 			}
 		}
@@ -331,7 +331,7 @@ class module {
 
 	//Formerly "getModuleInheritances()"
 	public static function inheritances($moduleClassName, $type, $includeCurrent = true, $recurseLimit = 9) {
-		$inheritances = array();
+		$inheritances = [];
 	
 		if ($includeCurrent) {
 			$inheritances[] = $moduleClassName;
@@ -386,15 +386,15 @@ class module {
 				  )
 				ORDER BY signal_name, module_class_name";
 	
-			$returns = array();
+			$returns = [];
 			$result = \ze\sql::select($sql);
 			while($row = \ze\sql::fetchAssoc($result)) {
 				if (\ze\module::inc($row['class_name'])) {
 					if ($row['static_method']) {
-						$returns[$row['class_name']] = call_user_func_array(array($row['class_name'], $signalName), $signalParams);
+						$returns[$row['class_name']] = call_user_func_array([$row['class_name'], $signalName], $signalParams);
 					} else {
 						$module = new $row['class_name'];
-						$returns[$row['class_name']] = call_user_func_array(array($module, $signalName), $signalParams);
+						$returns[$row['class_name']] = call_user_func_array([$module, $signalName], $signalParams);
 					}
 				}
 			}

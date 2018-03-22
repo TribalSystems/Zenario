@@ -162,7 +162,7 @@ class zenario_user_profile_search extends ze\moduleBaseClass {
 			
 			$result = ze\sql::select($sql);
 			$options = [];
-			$options[0] = array('id' => 0, 'name' => $this->phrase('_ANYWHERE_IN_THE_WORLD'));
+			$options[0] = ['id' => 0, 'name' => $this->phrase('_ANYWHERE_IN_THE_WORLD')];
 			while($row = ze\sql::fetchAssoc($result)){
 				$options[$row['id']] = $row;
 			}
@@ -181,7 +181,7 @@ class zenario_user_profile_search extends ze\moduleBaseClass {
 		if(!count($this->select_fields)) {
 			$this->select_fields = ze\row::getArray('custom_dataset_fields', 
 				true, 
-				array(
+				[
 					'db_column' => 
 						[
 							'first_name', 
@@ -190,7 +190,7 @@ class zenario_user_profile_search extends ze\moduleBaseClass {
 							'bus_country_id',
 						],
 					'dataset_id' => $dataset['id']
-				)
+				]
 			);
 		}
 		return $this->select_fields;
@@ -201,7 +201,7 @@ class zenario_user_profile_search extends ze\moduleBaseClass {
 		if(!count($this->popup_fields)) {
 			$this->popup_fields = ze\row::getArray('custom_dataset_fields', 
 				true, 
-				array(
+				[
 					'db_column' => 
 						[
 							'salutation',
@@ -230,7 +230,7 @@ class zenario_user_profile_search extends ze\moduleBaseClass {
 							'other_languages_spoken'
 						],
 					'dataset_id' => $dataset['id']
-				)
+				]
 			);
 		}
 		return $this->popup_fields;

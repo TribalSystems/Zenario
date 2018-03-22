@@ -33,33 +33,33 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 //Set the current Admin Toolbar tab in Admin Mode
 //Set up which toolbars will be on the Admin Toolbar, and which is currently picked
-$toolbars['preview'] = array('ord' => 10, 'label' => \ze\admin::phrase('Navigate'));
+$toolbars['preview'] = ['ord' => 10, 'label' => \ze\admin::phrase('Navigate')];
 
 if (\ze::$status != 'trashed' && (\ze::$cVersion == \ze::$adminVersion || (\ze::$visitorVersion && \ze::$cVersion == \ze::$visitorVersion))) {
 	if (\ze\priv::check('_PRIV_VIEW_MENU_ITEM')) {
-		$toolbars['menu1'] = array('ord' => 20, 'label' => \ze\admin::phrase('Menu'));
+		$toolbars['menu1'] = ['ord' => 20, 'label' => \ze\admin::phrase('Menu')];
 	}
 }
 
 //Only show one of rollback/edit, depending on the version in view and its status
 if (\ze::$cVersion != \ze::$adminVersion || \ze::$status == 'trashed') {
-	$toolbars['rollback'] = array('ord' => 41, 'label' => \ze\admin::phrase('Edit'));
+	$toolbars['rollback'] = ['ord' => 41, 'label' => \ze\admin::phrase('Edit')];
 
 } elseif (\ze\priv::check('_PRIV_EDIT_DRAFT', \ze::$cID, \ze::$cType)) {
-	$toolbars['edit'] = array('ord' => 41, 'label' => \ze\admin::phrase('Edit'));
+	$toolbars['edit'] = ['ord' => 41, 'label' => \ze\admin::phrase('Edit')];
 
 } else {
-	$toolbars['edit_disabled'] = array('ord' => 41, 'label' => \ze\admin::phrase('Edit'));
+	$toolbars['edit_disabled'] = ['ord' => 41, 'label' => \ze\admin::phrase('Edit')];
 }
 
 //Only show slot/layout on the current version
 if (\ze::$cVersion == \ze::$adminVersion) {
 	
 	if (\ze\priv::check('_PRIV_MANAGE_ITEM_SLOT')) {
-		$toolbars['item'] = array('ord' => 50, 'label' => \ze\admin::phrase('Item'));
+		$toolbars['item'] = ['ord' => 50, 'label' => \ze\admin::phrase('Item')];
 	}
 	if (\ze\priv::check('_PRIV_MANAGE_TEMPLATE_SLOT')) {
-		$toolbars['layout'] = array('ord' => 51, 'label' => \ze\admin::phrase('Layout'));
+		$toolbars['layout'] = ['ord' => 51, 'label' => \ze\admin::phrase('Layout')];
 	}
 }
 

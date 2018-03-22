@@ -36,7 +36,7 @@ class zenario_ctype_event extends ze\moduleBaseClass {
 	public $targetVersion = false;
 	public $targetType = false;
 	
-	protected $data = array();
+	protected $data = [];
 	
 	function init() {
 		$this->allowCaching(
@@ -73,39 +73,39 @@ class zenario_ctype_event extends ze\moduleBaseClass {
 		}
 		
 		
-		$weekdays = array();
+		$weekdays = [];
 		if ($event=$this->getEventDetails($this->targetID,$this->targetVersion)){
 
 			$this->data['title']=htmlspecialchars(ze\content::title($this->targetID, $this->targetType, $this->targetVersion));
 
 			if (($event['start_date'] ?? false)==($event['end_date'] ?? false)){
-				$this->data['dates_range']=$this->phrase('_SINGLE_DAY_DATE_RANGE',array('date'=> ze\date::format($event['start_date'] ?? false,$this->setting('date_format'),false,false)));
+				$this->data['dates_range']=$this->phrase('_SINGLE_DAY_DATE_RANGE',['date'=> ze\date::format($event['start_date'] ?? false,$this->setting('date_format'),false,false)]);
 			} else {
-				$this->data['dates_range']=$this->phrase('_MULTIPLE_DAYS_DATE_RANGE',array('start_date'=> ze\date::format($event['start_date'] ?? false,$this->setting('date_format'),false,false)
-																								,'end_date'=> ze\date::format($event['end_date'] ?? false,$this->setting('date_format'),false,false)));
+				$this->data['dates_range']=$this->phrase('_MULTIPLE_DAYS_DATE_RANGE',['start_date'=> ze\date::format($event['start_date'] ?? false,$this->setting('date_format'),false,false)
+																								,'end_date'=> ze\date::format($event['end_date'] ?? false,$this->setting('date_format'),false,false)]);
 			}
 			
 			if (ze\module::inc('zenario_event_days_and_dates')){
-				foreach (array('sun','mon','tue','wed','thu','fri','sat') as $K=>$day){
+				foreach (['sun','mon','tue','wed','thu','fri','sat'] as $K=>$day){
 					if (($event['day_' . $day . '_on']) && ($event['day_' . $day . '_start_time']) && ($event['day_' . $day . '_start_time']!='00:00:00'))   {
-						$weekdays[] = array(
+						$weekdays[] = [
 							'weekday' => ze\lang::phrase('_WEEKDAY_' . $K ),
 							'time' => (
 								($event['day_' . $day . '_start_time'] != $event['day_' . $day . '_end_time'] && $event['day_' . $day . '_end_time'] && ($event['day_' . $day . '_end_time']!='00:00:00')) ? 
 								$this->phrase(
 									'_MULTIPLE_HOURS_EVENT_RANGE',
-									array(
+									[
 										'start_time'=> ze\date::formatTime($event['day_' . $day . '_start_time'],ze::setting('vis_time_format'),''),
-										'end_time'=> ze\date::formatTime($event['day_' . $day . '_end_time'],ze::setting('vis_time_format'),''))
+										'end_time'=> ze\date::formatTime($event['day_' . $day . '_end_time'],ze::setting('vis_time_format'),'')]
 								) : 
 								$this->phrase(
 									'_SINGLE_HOUR_EVENT_RANGE',
-									array(
+									[
 										'time'=> ze\date::formatTime($event['day_' . $day . '_start_time'],ze::setting('vis_time_format'),'')
-									)
+									]
 								)
 							)
-						);
+						];
 					}
 				}
 			}
@@ -114,10 +114,10 @@ class zenario_ctype_event extends ze\moduleBaseClass {
 			} else {
 				if (!empty($event['start_time']) && (($event['start_time'] ?? false)!='00:00:00')){
 					if (!empty($event['end_time']) && (($event['start_time'] ?? false)!=($event['end_time'] ?? false))){
-						$this->data['dates_range'] .= " " . $this->phrase('_MULTIPLE_HOURS_EVENT_RANGE',array('start_time'=> ze\date::formatTime($event['start_time'],ze::setting('vis_time_format'),''),
-																									'end_time'=> ze\date::formatTime($event['end_time'],ze::setting('vis_time_format'),'')));
+						$this->data['dates_range'] .= " " . $this->phrase('_MULTIPLE_HOURS_EVENT_RANGE',['start_time'=> ze\date::formatTime($event['start_time'],ze::setting('vis_time_format'),''),
+																									'end_time'=> ze\date::formatTime($event['end_time'],ze::setting('vis_time_format'),'')]);
 					} else {
-						$this->data['dates_range'] .= " " .  $this->phrase('_SINGLE_HOUR_EVENT_RANGE',array('time'=> ze\date::formatTime($event['start_time'],ze::setting('vis_time_format'),'')));
+						$this->data['dates_range'] .= " " .  $this->phrase('_SINGLE_HOUR_EVENT_RANGE',['time'=> ze\date::formatTime($event['start_time'],ze::setting('vis_time_format'),'')]);
 					}
 				}
 			}
@@ -198,7 +198,7 @@ class zenario_ctype_event extends ze\moduleBaseClass {
 		switch ($path) {
 			case 'zenario_content':
 				if ($box['key']['cType'] == 'event') {				
-					$fields['meta_data/publication_date']['hidden'] = true;
+					$fields['meta_data/release_date']['hidden'] = true;
 					
 					if ($values['zenario_ctype_event__when_and_where/specify_time']) {
 						$hideTimes = false;
@@ -338,7 +338,7 @@ class zenario_ctype_event extends ze\moduleBaseClass {
 	public static function getEventDetails ($id,$version) {
 		return ze\row::get(
 					ZENARIO_CTYPE_EVENT_PREFIX . "content_event",
-					array(
+					[
 						"id",
 						"version",
 						"start_date",
@@ -372,11 +372,11 @@ class zenario_ctype_event extends ze\moduleBaseClass {
 						"location",
 						"url",
 						"stop_dates"
-					),
-					array(
+					],
+					[
 						"id" => $id,
 						"version" => $version
-					)
+					]
 				);
 	}	
 

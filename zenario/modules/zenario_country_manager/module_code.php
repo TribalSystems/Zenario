@@ -90,7 +90,7 @@ class zenario_country_manager extends ze\moduleBaseClass {
 		$rv = [];
 		$values = self::getCountryFullInfo($countryActivityFilter,$countryId);
 		foreach($values as $K=>$V)
-			$rv[strtoupper($K)]=array('phrase'=>self::adminPhrase($langId,'_COUNTRY_NAME_' . strtoupper($K)),'country_id'=>strtoupper($K));
+			$rv[strtoupper($K)]=['phrase'=>self::adminPhrase($langId,'_COUNTRY_NAME_' . strtoupper($K)),'country_id'=>strtoupper($K)];
 		return $rv;
 	}
 
@@ -107,7 +107,7 @@ class zenario_country_manager extends ze\moduleBaseClass {
 		$rv = [];
 		$values = self::getCountryFullInfo($countryActivityFilter,$countryId);
 		foreach($values as $K=>$V)
-			$rv['COUNTRY_' . strtoupper($K)]=array('phrase'=>self::adminPhrase($langId,'_COUNTRY_NAME_' . strtoupper($K)),'country_id'=>strtoupper($K));
+			$rv['COUNTRY_' . strtoupper($K)]=['phrase'=>self::adminPhrase($langId,'_COUNTRY_NAME_' . strtoupper($K)),'country_id'=>strtoupper($K)];
 		return $rv;
 	}
 
@@ -125,7 +125,7 @@ class zenario_country_manager extends ze\moduleBaseClass {
 		$rv = [];
 		$values = self::getRegions($countryActivityFilter,$countryId,$regionId);
 		foreach($values as $K=>$V)
-			$rv[$V['id']]= array('phrase'=> self::adminPhrase($langId, $V['name']),'id'=>$V['id'], 'country_id'=>$V['country_id']);
+			$rv[$V['id']]= ['phrase'=> self::adminPhrase($langId, $V['name']),'id'=>$V['id'], 'country_id'=>$V['country_id']];
 		return $rv;
 	}
 	
@@ -265,7 +265,7 @@ class zenario_country_manager extends ze\moduleBaseClass {
 
 		$res = ze\sql::select($sql);
 		while ($row = ze\sql::fetchAssoc($res))
-			$rv[strtoupper($row['id'])]=array('english_name'=>$row['english_name'],'vlp_phrase'=>'_COUNTRY_NAME_' . strtoupper($row['id']),  'status'=> $row['active']);
+			$rv[strtoupper($row['id'])]=['english_name'=>$row['english_name'],'vlp_phrase'=>'_COUNTRY_NAME_' . strtoupper($row['id']),  'status'=> $row['active']];
 		return $rv;
 	}
 

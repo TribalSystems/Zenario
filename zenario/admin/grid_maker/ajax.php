@@ -63,7 +63,7 @@ if (is_array($data) && ze\gridAdm::validateData($data)) {
 	}
 	if (($_POST['save'] ?? false) || ($_POST['saveas'] ?? false)) {
 		header('Content-Type: text/javascript; charset=UTF-8');
-		$a = array();
+		$a = [];
 		$preview = !($_POST['confirm'] ?? false);
 		$layoutName = false;
 		$fileBaseName = false; 
@@ -73,7 +73,7 @@ if (is_array($data) && ze\gridAdm::validateData($data)) {
 			if (!($_POST['layoutName'] ?? false)) {
 				$a['error'] = ze\admin::phrase('Please enter a name for your Layout.');
 			
-			} elseif (($_POST['saveas'] ?? false) && ze\row::exists('layouts', array('name' => ($_POST['layoutName'] ?? false)))) {
+			} elseif (($_POST['saveas'] ?? false) && ze\row::exists('layouts', ['name' => ($_POST['layoutName'] ?? false)])) {
 				$a['error'] = ze\admin::phrase('A Layout with that name already exists. Please enter a different name.');
 			
 			} else {
@@ -101,7 +101,7 @@ if (is_array($data) && ze\gridAdm::validateData($data)) {
 		if (empty($a)) {
 			
 			//Attempt to save, and report on what happened
-			$slots = array();
+			$slots = [];
 			$status =
 				ze\gridAdm::generateDirectory($data, $slots, $writeToFS = true, $preview, $fileBaseName);
 			
@@ -118,7 +118,7 @@ if (is_array($data) && ze\gridAdm::validateData($data)) {
 				$a['success'] = ze\admin::phrase('Your template file has previously been saved to the filesystem.');
 			
 			} elseif (($_POST['saveas'] ?? false) && $status['template_file_exists']) {
-				$a['error'] = ze\admin::phrase('A template file "[[fileName]]" already exists. Please enter a different name.', array('fileName' => $fileName));
+				$a['error'] = ze\admin::phrase('A template file "[[fileName]]" already exists. Please enter a different name.', ['fileName' => $fileName]);
 			}
 			
 			if (empty($a)) {
@@ -144,8 +144,8 @@ if (is_array($data) && ze\gridAdm::validateData($data)) {
 					} elseif ($status['template_file_larger']) {
 						$a['message'] .= "\n\n". ze\admin::phrase('The template file "[[template_file_path]]" will be overwritten, removing slots.', $status);
 						
-						if (ze\row::exists('layouts', array('family_name' => $status['family_name'], 'file_base_name' => $status['file_base_name']))
-						 && ze\row::exists('template_slot_link', array('family_name' => $status['family_name'], 'file_base_name' => $status['file_base_name']))) {
+						if (ze\row::exists('layouts', ['family_name' => $status['family_name'], 'file_base_name' => $status['file_base_name']])
+						 && ze\row::exists('template_slot_link', ['family_name' => $status['family_name'], 'file_base_name' => $status['file_base_name']])) {
 							$a['message'] .= "\n\n". ze\admin::phrase('This will affect your site, as any slots that are removed will no longer be visible.');
 						}
 					
@@ -160,7 +160,7 @@ if (is_array($data) && ze\gridAdm::validateData($data)) {
 						$a['message'] .= "\n\n". ze\admin::phrase('The CSS file "[[template_css_file_path]]" will be overwritten.', $status);
 					}
 					
-					$a['message'] .= "\n\n". ze\admin::phrase('(Path: [[CMS_ROOT]]).', array('CMS_ROOT' => CMS_ROOT));
+					$a['message'] .= "\n\n". ze\admin::phrase('(Path: [[CMS_ROOT]]).', ['CMS_ROOT' => CMS_ROOT]);
 				
 				} else {
 					$a['success'] = '';
@@ -187,7 +187,7 @@ if (is_array($data) && ze\gridAdm::validateData($data)) {
 						if (!$layoutId
 						 || !($submission = ze\row::get('layouts', true, $layoutId))) {
 							//If we're not copying a layout, set some default options
-							$submission = array();
+							$submission = [];
 							$submission['content_type'] = 'html';
 							
 							//Get the default Skin for this Template Family
@@ -218,8 +218,8 @@ if (is_array($data) && ze\gridAdm::validateData($data)) {
 						if ($renameSlotsInDatabase) {
 						
 							//If this is from an existing Layout, check what the slot names originally were and what they are now.
-							$newNames = array();
-							$oldToNewNames = array();
+							$newNames = [];
+							$oldToNewNames = [];
 							ze\gridAdm::checkForRenamedSlots($data, $newNames, $oldToNewNames);
 						
 							foreach ($oldToNewNames as $oldName => $newName) {
@@ -228,10 +228,10 @@ if (is_array($data) && ze\gridAdm::validateData($data)) {
 								if (empty($oldToNewNames[$newName])
 								 && !ze\row::exists(
 										'template_slot_link',
-										array(
+										[
 											'family_name' => $layout['family_name'],
 											'file_base_name' => $layout['file_base_name'],
-											'slot_name' => $newName)
+											'slot_name' => $newName]
 								)) {
 									//Switch the slot names in the system
 									$sql = "
@@ -291,7 +291,7 @@ if (is_array($data) && ze\gridAdm::validateData($data)) {
 		exit;
 	
 	} elseif (!empty($_REQUEST['zip'])) {
-		$slots = array();
+		$slots = [];
  		$status = ze\gridAdm::generateDirectory($data, $slots, $writeToFS = false);
  		if (ze::isError($status)) {
  			echo ze\admin::phrase($status);
@@ -319,7 +319,7 @@ if (is_array($data) && ze\gridAdm::validateData($data)) {
 	
 		
 		if (($_REQUEST['html'] ?? false) || !($_REQUEST['css'] ?? false)) {
-			$slots = array();
+			$slots = [];
 			ze\gridAdm::generateHTML($html, $data, $slots);
 		}
 		if (($_REQUEST['css'] ?? false) || !($_REQUEST['html'] ?? false)) {
@@ -403,16 +403,32 @@ if (is_array($data) && ze\gridAdm::validateData($data)) {
 			$previewBG = '<div class="main_container_preview zenario_grid_bg_preview container container_';
 			
 			echo
+				str_replace(
+					[
+						'<div class="container container_',
+						'<div class="container-fluid container_'
+					],
+					[
+						'<div class="main_container_preview zenario_grid_bg_preview container container_',
+						'<div class="main_container_preview zenario_grid_bg_preview container-fluid container_'
+					],
 					str_replace(
-						array(
-							'<div class="container container_',
-							'<div class="container-fluid container_'),
-						array(
-							'<div class="main_container_preview zenario_grid_bg_preview container container_',
-							'<div class="main_container_preview zenario_grid_bg_preview container-fluid container_'),
-						str_replace("<!--php ze\\plugin::slot('", '<div class="zenario_grid_border">', str_replace(array("', 'grid'); -->", "', 'outside_of_grid'); -->", "'); -->"), '</div>',
-							str_replace('<'. '?', '<!--', str_replace('?'. '>', '-->', 
-								$html
+						"<!--php ze\\plugin::slot('",
+						'<div class="zenario_grid_border">',
+						str_replace(
+							[
+								"', 'grid'); -->",
+								"', 'outside_of_grid'); -->",
+								"'); -->"
+							],
+							'</div>',
+							str_replace(
+								'<'. '?',
+								'<!--',
+								str_replace(
+									'?'. '>',
+									'-->', 
+									$html
 					)))));
 			
 			echo

@@ -41,17 +41,17 @@ switch ($path) {
 		$folderId = $box['key']['id'];
 		if(!$folderId ){
 			//create a new folder
-			$folderNameSaved=ze\row::get('documents', 'folder_name', array('folder_name' => $values['details/folder_name'], 'type' => 'folder', 'folder_id' => 0));
+			$folderNameSaved=ze\row::get('documents', 'folder_name', ['folder_name' => $values['details/folder_name'], 'type' => 'folder', 'folder_id' => 0]);
 			if ($folderNameSaved){
-				$box['tabs']['details']['errors'][] = ze\admin::phrase('The folder name “[[folder_name]]” is already taken. Please choose a different name.', array('folder_name' => $values['details/folder_name']));
+				$box['tabs']['details']['errors'][] = ze\admin::phrase('The folder name “[[folder_name]]” is already taken. Please choose a different name.', ['folder_name' => $values['details/folder_name']]);
 			}
 		}else{
 			//create a subfolder
-			$subFolderNameSaved=ze\row::get('documents', 'folder_name', array('folder_name' => $values['details/folder_name'], 'type' => 'folder','folder_id' => $folderId));
-			//$folderParentName=ze\row::get('documents', 'folder_name', array('type' => 'folder','id' => $folderId));
+			$subFolderNameSaved=ze\row::get('documents', 'folder_name', ['folder_name' => $values['details/folder_name'], 'type' => 'folder','folder_id' => $folderId]);
+			//$folderParentName=ze\row::get('documents', 'folder_name', ['type' => 'folder','id' => $folderId]);
 			if ($subFolderNameSaved){
-				$box['tabs']['details']['errors'][] = ze\admin::phrase('The folder name “[[subfolder_name]]” is already taken. Please choose a different name.', array('subfolder_name' => $values['details/folder_name']));
-				//$box['tabs']['details']['errors'][] = ze\admin::phrase('The folder name “[[subfolder_name]]” is already taken in the selected folder "[[folder_parent_name]]". Please choose a different name.', array('subfolder_name' => $values['details/folder_name'],'folder_parent_name'=>$folderParentName));
+				$box['tabs']['details']['errors'][] = ze\admin::phrase('The folder name “[[subfolder_name]]” is already taken. Please choose a different name.', ['subfolder_name' => $values['details/folder_name']]);
+				//$box['tabs']['details']['errors'][] = ze\admin::phrase('The folder name “[[subfolder_name]]” is already taken in the selected folder "[[folder_parent_name]]". Please choose a different name.', ['subfolder_name' => $values['details/folder_name'],'folder_parent_name'=>$folderParentName]);
 			}
 		}
 		
@@ -70,34 +70,34 @@ switch ($path) {
 		//avoid duplicate folder
 		//folder validation
 		$documentId = $box['key']['id'];
-		$isfolder=ze\row::get('documents', 'type', array('type' => 'folder','id' => $documentId));
+		$isfolder=ze\row::get('documents', 'type', ['type' => 'folder','id' => $documentId]);
 		if ($isfolder){
 			$moveToRoot = $values['details/move_to_root'];
 			$moveToFolderId = $values['details/move_to'];
 	
 			$folderId = $box['key']['id'];
-			$folderName=ze\row::get('documents', 'folder_name', array('type' => 'folder','id' => $folderId));
+			$folderName=ze\row::get('documents', 'folder_name', ['type' => 'folder','id' => $folderId]);
 	
 			if($moveToRoot){
-				$parentfolderId=ze\row::get('documents', 'folder_id', array('type' => 'folder','id' => $folderId));
+				$parentfolderId=ze\row::get('documents', 'folder_id', ['type' => 'folder','id' => $folderId]);
 				if (!$parentfolderId){
-					$box['tabs']['details']['errors'][] = ze\admin::phrase('The folder “[[folder_name]]” is already in root.', array('folder_name' => $folderName));
+					$box['tabs']['details']['errors'][] = ze\admin::phrase('The folder “[[folder_name]]” is already in root.', ['folder_name' => $folderName]);
 				}else{
-					$folderNameSaved=ze\row::get('documents', 'folder_name', array('folder_name' => $folderName, 'type' => 'folder','folder_id' => 0));
+					$folderNameSaved=ze\row::get('documents', 'folder_name', ['folder_name' => $folderName, 'type' => 'folder','folder_id' => 0]);
 					if ($folderNameSaved){
-						$box['tabs']['details']['errors'][] = ze\admin::phrase('The folder name “[[folder_name]]” is already taken. Please choose a different name.', array('folder_name' => $folderName));
-						//$box['tabs']['details']['errors'][] = ze\admin::phrase('The folder name “[[subfolder_name]]” is already taken in the selected folder "[[folder_parent_name]]". Please choose a different name.', array('subfolder_name' => $values['details/folder_name'],'folder_parent_name'=>$folderParentName));
+						$box['tabs']['details']['errors'][] = ze\admin::phrase('The folder name “[[folder_name]]” is already taken. Please choose a different name.', ['folder_name' => $folderName]);
+						//$box['tabs']['details']['errors'][] = ze\admin::phrase('The folder name “[[subfolder_name]]” is already taken in the selected folder "[[folder_parent_name]]". Please choose a different name.', ['subfolder_name' => $values['details/folder_name'],'folder_parent_name'=>$folderParentName]);
 					}
 				}
 			}elseif($moveToFolderId){
-				$parentfolderId=ze\row::get('documents', 'folder_id', array('type' => 'folder','id' => $folderId));
+				$parentfolderId=ze\row::get('documents', 'folder_id', ['type' => 'folder','id' => $folderId]);
 				if ($moveToFolderId == $parentfolderId){
-					$box['tabs']['details']['errors'][] = ze\admin::phrase('The folder “[[subfolder_name]]” is already in the target folder selected.', array('subfolder_name' => $folderName));
+					$box['tabs']['details']['errors'][] = ze\admin::phrase('The folder “[[subfolder_name]]” is already in the target folder selected.', ['subfolder_name' => $folderName]);
 				}else{
-					$folderNameSaved=ze\row::get('documents', 'folder_name', array('folder_name' => $folderName, 'type' => 'folder','folder_id' => $folderId));
+					$folderNameSaved=ze\row::get('documents', 'folder_name', ['folder_name' => $folderName, 'type' => 'folder','folder_id' => $folderId]);
 					if ($folderNameSaved){
-						$box['tabs']['details']['errors'][] = ze\admin::phrase('The folder name “[[subfolder_name]]” is already taken. Please choose a different name.', array('subfolder_name' => $folderName));
-						//$box['tabs']['details']['errors'][] = ze\admin::phrase('The folder name “[[subfolder_name]]” is already taken in the selected folder "[[folder_parent_name]]". Please choose a different name.', array('subfolder_name' => $values['details/folder_name'],'folder_parent_name'=>$folderParentName));
+						$box['tabs']['details']['errors'][] = ze\admin::phrase('The folder name “[[subfolder_name]]” is already taken. Please choose a different name.', ['subfolder_name' => $folderName]);
+						//$box['tabs']['details']['errors'][] = ze\admin::phrase('The folder name “[[subfolder_name]]” is already taken in the selected folder "[[folder_parent_name]]". Please choose a different name.', ['subfolder_name' => $values['details/folder_name'],'folder_parent_name'=>$folderParentName]);
 					}
 				}
 	
@@ -115,11 +115,11 @@ switch ($path) {
 			$box['tabs']['details']['errors'][] = ze\admin::phrase('Please enter a name.');
 		}else{
 			$documentId = $box['key']['id'];
-			$isfolder=ze\row::get('documents', 'type', array('type' => 'folder','id' => $documentId));
-			$parentfolderId=ze\row::get('documents', 'folder_id', array('type' => 'folder','id' => $documentId));
+			$isfolder=ze\row::get('documents', 'type', ['type' => 'folder','id' => $documentId]);
+			$parentfolderId=ze\row::get('documents', 'folder_id', ['type' => 'folder','id' => $documentId]);
 			$newDocumentName = trim($values['details/document_name']);
 			if ($isfolder){
-				$folderNameAlreadyExists=ze\row::exists('documents', array('type' => 'folder','folder_id' => $parentfolderId,'folder_name'=>$newDocumentName));
+				$folderNameAlreadyExists=ze\row::exists('documents', ['type' => 'folder','folder_id' => $parentfolderId,'folder_name'=>$newDocumentName]);
 				$sql =  "
 					SELECT id
 					FROM ".DB_NAME_PREFIX."documents
@@ -128,7 +128,7 @@ switch ($path) {
 					AND folder_name = '".ze\escape::sql($newDocumentName)."' 
 					AND id != ". (int)$documentId;
 	
-				$documentIdList = array();
+				$documentIdList = [];
 				$result = ze\sql::select($sql);
 				while($row = ze\sql::fetchAssoc($result)) {
 						$documentIdList[] = $row;
@@ -136,7 +136,7 @@ switch ($path) {
 				$numberOfIds = count($documentIdList);
 
 				if ($numberOfIds > 0){
-					$box['tabs']['details']['errors'][] = ze\admin::phrase('The folder name “[[folder_name]]” is already taken. Please choose a different name.', array('folder_name' => $newDocumentName));
+					$box['tabs']['details']['errors'][] = ze\admin::phrase('The folder name “[[folder_name]]” is already taken. Please choose a different name.', ['folder_name' => $newDocumentName]);
 				}
 			}
 		}

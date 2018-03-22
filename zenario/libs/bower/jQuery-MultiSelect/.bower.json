@@ -24,11 +24,11 @@
     "test",
     "tests"
   ],
-  "_release": "d09d127a0f",
+  "_release": "a7dcf60c49",
   "_resolution": {
     "type": "branch",
     "branch": "master",
-    "commit": "d09d127a0f949d97729f443f099d157a217a3896"
+    "commit": "a7dcf60c49ef61f04ad61c3e42dda16665367dbb"
   },
   "_source": "https://github.com/nobleclem/jQuery-MultiSelect.git",
   "_target": "*",

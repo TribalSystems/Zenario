@@ -34,7 +34,7 @@ class zenario_common_features__organizer__phrases extends ze\moduleBaseClass {
 		if ($path != 'zenario__languages/panels/phrases') return;
 		
 		if (!$refinerName || $refinerName == 'language' || $refinerName == 'language_and_plugin') {
-			$mrg = array('lang_name' => htmlspecialchars(ze\lang::name(FOCUSED_LANGUAGE_ID__NO_QUOTES)));
+			$mrg = ['lang_name' => htmlspecialchars(ze\lang::name(FOCUSED_LANGUAGE_ID__NO_QUOTES))];
 	
 			if ($refinerName == 'language_and_plugin') {
 				if ($module = ze\module::details($_GET['refiner__language_and_plugin'] ?? false)) {
@@ -63,7 +63,7 @@ class zenario_common_features__organizer__phrases extends ze\moduleBaseClass {
 			}
 
 		} elseif ($refinerName == 'translations') {
-			$mrg = ze\row::get('visitor_phrases', array('code', 'module_class_name'), $refinerId);
+			$mrg = ze\row::get('visitor_phrases', ['code', 'module_class_name'], $refinerId);
 	
 			if ($mrg['display_name'] = ze\module::getModuleDisplayNameByClassName($mrg['module_class_name'])) {
 				$panel['title'] = ze\admin::phrase('Translations of the Phrase "[[code]]" (source: "[[display_name]]" Module)', $mrg);
@@ -100,7 +100,7 @@ class zenario_common_features__organizer__phrases extends ze\moduleBaseClass {
 				}
 		
 				$panel['columns'][$language['id']] =
-					array(
+					[
 						'class_name' => 'zenario_common_features',
 						'title' => 'Text in '.$language['english_name'],
 						'show_by_default' => true,
@@ -108,9 +108,9 @@ class zenario_common_features__organizer__phrases extends ze\moduleBaseClass {
 						'ord' => $ord,
 						'db_column' => $dbColumnText,
 						'table_join' => $tableJoin
-					);
+					];
 				$panel['columns']['protect_'. $language['id']] =
-					array(
+					[
 						'class_name' => 'zenario_common_features',
 						'title' => 'Protect '.$language['english_name'],
 						'show_by_default' => true,
@@ -119,7 +119,7 @@ class zenario_common_features__organizer__phrases extends ze\moduleBaseClass {
 						'width' => 'xxsmall',
 						'db_column' => $dbColumnFlag,
 						'table_join' => $tableJoin
-					);
+					];
 		
 				$ord += 0.02;
 			}
@@ -127,9 +127,9 @@ class zenario_common_features__organizer__phrases extends ze\moduleBaseClass {
 
 		// Hide import button if not showing module phrases OR no phrases directory found
 		if (($refinerName == 'language_and_plugin') && file_exists(CMS_ROOT . ze::moduleDir(ze\module::className($refinerId)) . 'phrases/')) {
-			$moduleDetails = ze\row::get('modules', array('class_name', 'display_name'), $refinerId);
+			$moduleDetails = ze\row::get('modules', ['class_name', 'display_name'], $refinerId);
 			$importFiles = ze\phraseAdm::scanModulePhraseDir($moduleDetails['class_name'], 'number and file');
-			$list = array();
+			$list = [];
 			$languages = ze\lang::getLanguages(false, true, true);
 	
 			foreach ($languages as $langId => $language) {
@@ -145,9 +145,9 @@ class zenario_common_features__organizer__phrases extends ze\moduleBaseClass {
 						'[[name]] ([[count]] phrase)',
 						'[[name]] ([[count]] phrases)',
 						$count,
-						array(
+						[
 							'name' => $language['english_name'], 
-							'count' => $count));
+							'count' => $count]);
 				}
 			}
 			$list = implode(', ', $list);
@@ -157,10 +157,10 @@ class zenario_common_features__organizer__phrases extends ze\moduleBaseClass {
 				This will re-import phrases from the config files in the module\'s "phrases" directory: [[list_of_languages_and_phrase_count]].
 		
 				Existing phrases that are marked as "protected" will not be overwritten, but all non-protected phrases will be overwritten.
-			', array(
+			', [
 				'display_name' => $moduleDetails['display_name'], 
 				'class_name' => $moduleDetails['class_name'],
-				'list_of_languages_and_phrase_count' => $list));
+				'list_of_languages_and_phrase_count' => $list]);
 	
 			unset($panel['collection_buttons']['import_phrases']);
 		} else {
@@ -172,16 +172,16 @@ class zenario_common_features__organizer__phrases extends ze\moduleBaseClass {
 			foreach ($languages as $langId => $language) {
 				if ($language['translate_phrases']
 				 && ze\priv::onLanguage('_PRIV_MANAGE_LANGUAGE_PHRASE', $langId)) {
-					$panel['collection_buttons'][] = array(
+					$panel['collection_buttons'][] = [
 						'ord' => ++$ord,
 						'class_name' => 'zenario_common_features',
 						'parent' => 'export_phrases_dropdown',
 						'label' => ze\admin::phrase('Export phrases for translation into [[english_name]]', $language),
-						'admin_box' => array(
+						'admin_box' => [
 							'path' => 'zenario_export_vlp',
-							'key' => array(
+							'key' => [
 								'id' => $langId
-					)));
+					]]];
 				}
 			}
 		}
@@ -193,15 +193,15 @@ class zenario_common_features__organizer__phrases extends ze\moduleBaseClass {
 		foreach ($languages as $langId => $language) {
 			if (ze\priv::onLanguage('_PRIV_MANAGE_LANGUAGE_PHRASE', $langId)) {
 				
-				$button = array(
+				$button = [
 					'ord' => ++$ord,
 					'class_name' => 'zenario_common_features',
 					'parent' => 'edit_dropdown',
-					'admin_box' => array(
+					'admin_box' => [
 						'path' => 'zenario_translate_phrase',
-						'key' => array(
+						'key' => [
 							'language_id' => $langId
-				)));
+				]]];
 				
 				if ($language['translate_phrases']) {
 					$button['label'] = ze\admin::phrase('Edit phrase in [[english_name]]', $language);
@@ -281,7 +281,7 @@ class zenario_common_features__organizer__phrases extends ze\moduleBaseClass {
 					$mrg = ze\sql::fetchAssoc($result);
 			
 					if (is_numeric($ids)) {
-						$mrg['code'] = ze\row::get('visitor_phrases', 'code', array('id' => $ids));
+						$mrg['code'] = ze\row::get('visitor_phrases', 'code', ['id' => $ids]);
 						echo '<p>', ze\admin::phrase('Are you sure you wish to delete the Phrase &quot;[[code]]&quot;?', $mrg), '</p>';
 					} else {
 						echo '<p>', ze\admin::phrase('Are you sure you wish to delete the selected Phrases?'), '</p>';
@@ -299,14 +299,14 @@ class zenario_common_features__organizer__phrases extends ze\moduleBaseClass {
 				} elseif ($_POST['delete_phrase'] ?? false) {
 					$result = ze\sql::select("SELECT l.id". $sql);
 					while ($row = ze\sql::fetchAssoc($result)) {
-						ze\row::delete('visitor_phrases', array('id' => $row['id']));
+						ze\row::delete('visitor_phrases', ['id' => $row['id']]);
 					}
 				}
 			}
 	
 			if (($_POST['delete_phrase'] ?? false) && ze\priv::check('_PRIV_MANAGE_LANGUAGE_PHRASE')) {
 				foreach (ze\ray::explodeAndTrim($ids) as $id) {
-					ze\row::delete('visitor_phrases', array('id' => $id));
+					ze\row::delete('visitor_phrases', ['id' => $id]);
 				}
 			}
 
@@ -314,8 +314,8 @@ class zenario_common_features__organizer__phrases extends ze\moduleBaseClass {
 			//Merge phrases together
 			$className = false;
 			$newCode = false;
-			$codes = array();
-			$idsToKeep = array();
+			$codes = [];
+			$idsToKeep = [];
 			$returnId = false;
 	
 			//Look through the phrases that have been collected and:
@@ -400,9 +400,9 @@ class zenario_common_features__organizer__phrases extends ze\moduleBaseClass {
 			}
 
 		} elseif ($_REQUEST['reimport_phrases'] ?? false) {
-			if ($refinerId && ($moduleDetails = ze\row::get('modules', array('class_name', 'display_name'), $refinerId))) {
+			if ($refinerId && ($moduleDetails = ze\row::get('modules', ['class_name', 'display_name'], $refinerId))) {
 				$importFiles = ze\phraseAdm::scanModulePhraseDir($moduleDetails['class_name'], 'number and file');
-				$list = array();
+				$list = [];
 				$languages = ze\lang::getLanguages(false, true, true);
 		
 				foreach ($languages as $langId => $language) {

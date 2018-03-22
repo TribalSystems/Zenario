@@ -35,7 +35,7 @@ if (!empty($this->postingErrors)) {
 }
 
 
-$this->sections['Post_Message'] = array();
+$this->sections['Post_Message'] = [];
 $this->showPostScreenTopFields($titleText);
 
 
@@ -62,7 +62,7 @@ if (isset($_POST['comm_message'])) {
 	$this->sections['Post_Message']['Post_Text'] =
 		zenario_anonymous_comments::sanitiseHTML(
 			'<blockquote>'.
-				'<b>'. $this->phrase('_SAID', array('user' => $this->getUserScreenName($this->post['poster_id']))). '</b>'.
+				'<b>'. $this->phrase('_SAID', ['user' => $this->getUserScreenName($this->post['poster_id'])]). '</b>'.
 				"<br/>".
 				$this->post['message_text'].
 			"</blockquote><p>&nbsp;</p>"
@@ -123,8 +123,8 @@ if (!empty($this->post) && $quoteMode != 'quote') {
 
 
 if (($_REQUEST['comm_request'] ?? false) == 'post_reply') {
-	if ($this->setting('enable_captcha')) {
+	if ($this->enableCaptcha()) {
 		$this->sections['Captcha'] = true;
-		$this->sections['Post_Message']['Captcha'] = $this->captcha();
+		$this->mergeFields['Captcha'] = $this->captcha2();
 	}
 }

@@ -1,6 +1,6 @@
 <% var e, error, n, notice; %>
 
-<% if (zenario.engToBoolean(m.errors)) { %>
+<% if (!_.isEmpty(m.errors)) { %>
 	<% foreach (m.errors as e => error) { %>
 		<div class="error">
 			{{zenario.htmlspecialchars(error.message, true)}}
@@ -41,7 +41,7 @@
 		<legend class="zfea_form_legend zfea_form_legend_for__{{ff._id|escape}}"><span>{{ff.legend}}</span></legend>
 	<% } %>
 	
-	<% if (ff.error_on_form_message && m.lib.errorOnForm) { %>
+	<% if (ff.error_on_form_message && m.thus.errorOnForm) { %>
 		<div class="error">
 			{{zenario.htmlspecialchars(ff.error_on_form_message, true)}}
 		</div>

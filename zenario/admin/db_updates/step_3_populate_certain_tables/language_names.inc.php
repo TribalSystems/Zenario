@@ -36,12 +36,12 @@ $languages = require CMS_ROOT. 'zenario/includes/language_names.inc.php';
 
 foreach ($languages as $langId => $phrases) {
 	
-	foreach (array('__LANGUAGE_ENGLISH_NAME__', '__LANGUAGE_FLAG_FILENAME__', '__LANGUAGE_LOCAL_NAME__') as $i => $code) {
+	foreach (['__LANGUAGE_ENGLISH_NAME__', '__LANGUAGE_FLAG_FILENAME__', '__LANGUAGE_LOCAL_NAME__'] as $i => $code) {
 		
-		$key = array('code' => $code, 'language_id' => $langId, 'module_class_name' => 'zenario_common_features');
+		$key = ['code' => $code, 'language_id' => $langId, 'module_class_name' => 'zenario_common_features'];
 		
 		if (!ze\row::exists('visitor_phrases', $key)) {
-			ze\row::set('visitor_phrases', array('local_text' => $phrases[$i]), $key);
+			ze\row::set('visitor_phrases', ['local_text' => $phrases[$i]], $key);
 		}
 	}
 }

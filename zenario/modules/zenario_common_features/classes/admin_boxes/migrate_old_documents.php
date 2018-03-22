@@ -35,7 +35,7 @@ class zenario_common_features__admin_boxes__migrate_old_documents extends ze\mod
 		if (ze\module::statusByName('zenario_ctype_document') == 'module_running') {
 			if ($box['key']['id']) {
 				
-				$fields['details/html']['snippet']['html'] = ze\admin::phrase('For each document meta data field below, select a dataset field to migrate the data to. If no dataset field is chosen then the data won\'t be saved. (<a [[link]]>Edit dataset fields</a>)', array('link' => 'href="'. htmlspecialchars(ze\link::absolute(). 'zenario/admin/organizer.php#zenario__administration/panels/custom_datasets'). '" target="_blank"'));
+				$fields['details/html']['snippet']['html'] = ze\admin::phrase('For each document meta data field below, select a dataset field to migrate the data to. If no dataset field is chosen then the data won\'t be saved. (<a [[link]]>Edit dataset fields</a>)', ['link' => 'href="'. htmlspecialchars(ze\link::absolute(). 'zenario/admin/organizer.php#zenario__administration/panels/custom_datasets'). '" target="_blank"']);
 				
 				// Set select lists for dataset fields
 				$link = '';
@@ -43,7 +43,7 @@ class zenario_common_features__admin_boxes__migrate_old_documents extends ze\mod
 				if ($details = ze\dataset::details('documents')) {
 					$link = ze\link::absolute(). 'zenario/admin/organizer.php?#zenario__administration/panels/custom_datasets//'.$details['id'];
 				}
-				$textDocumentDatasetFields = ze\row::getArray('custom_dataset_fields', array('label', 'default_label'), array('type' => 'text', 'dataset_id' => $datasetDetails['id']), 'ord');
+				$textDocumentDatasetFields = ze\row::getArray('custom_dataset_fields', ['label', 'default_label'], ['type' => 'text', 'dataset_id' => $datasetDetails['id']], 'ord');
 				$textDocumentDatasetFields = array_map(function($e) { return $e['label'] ? $e['label'] : $e['default_label']; }, $textDocumentDatasetFields);
 				
 				if (empty($textDocumentDatasetFields)) {
@@ -56,7 +56,7 @@ class zenario_common_features__admin_boxes__migrate_old_documents extends ze\mod
 					$fields['details/title']['values'] = $fields['details/language_id']['values'] = $textDocumentDatasetFields;
 				}
 				$textAreaDocumentDatasetFields = 
-					ze\row::getArray('custom_dataset_fields', 'label', array('type' => 'textarea', 'dataset_id' => $datasetDetails['id']));
+					ze\row::getArray('custom_dataset_fields', 'label', ['type' => 'textarea', 'dataset_id' => $datasetDetails['id']]);
 				if (empty($textAreaDocumentDatasetFields)) {
 					$fields['details/description']['hidden'] = $fields['details/keywords']['hidden'] = true;
 					$fields['details/description_warning']['hidden'] = $fields['details/keywords_warning']['hidden'] = false;
@@ -67,7 +67,7 @@ class zenario_common_features__admin_boxes__migrate_old_documents extends ze\mod
 					$fields['details/description']['values'] = $fields['details/keywords']['values'] = $textAreaDocumentDatasetFields;
 				}
 				$editorDocumentDatasetFields = 
-					ze\row::getArray('custom_dataset_fields', 'label', array('type' => 'editor', 'dataset_id' => $datasetDetails['id']));
+					ze\row::getArray('custom_dataset_fields', 'label', ['type' => 'editor', 'dataset_id' => $datasetDetails['id']]);
 				if (empty($editorDocumentDatasetFields)) {
 					$fields['details/content_summary']['hidden'] = true;
 					$fields['details/content_summary_warning']['hidden'] = false;
@@ -84,7 +84,7 @@ class zenario_common_features__admin_boxes__migrate_old_documents extends ze\mod
 		
 		$datasetDetails = ze\dataset::details('documents');
 		$documentList = explode(',',$box['key']['id']);
-		$documentData = array();
+		$documentData = [];
 		
 		// Get folder ID
 		$folder_id = 0;
@@ -104,15 +104,15 @@ class zenario_common_features__admin_boxes__migrate_old_documents extends ze\mod
 		$succeeded = 0;
 		
 		// Get filenames of all documents in this folder in to check for uniqueness
-		$existingDocumentNamesInFolder = array();
-		$result = ze\row::query('documents', array('filename'), array('folder_id' => $folder_id));
+		$existingDocumentNamesInFolder = [];
+		$result = ze\row::query('documents', ['filename'], ['folder_id' => $folder_id]);
 		while ($row = ze\sql::fetchAssoc($result)) {
 		    $existingDocumentNamesInFolder[$row['filename']] = true;
 		}
 		
 		foreach($documentList as $tagId) {
 			// Get old document details
-			$documentData = array();
+			$documentData = [];
 			$sql = '
 				SELECT c.language_id, v.title, v.description, v.keywords, v.content_summary, v.file_id, v.created_datetime, v.filename
 				FROM '.DB_NAME_PREFIX.'content_items AS c
@@ -127,34 +127,34 @@ class zenario_common_features__admin_boxes__migrate_old_documents extends ze\mod
 			    continue;
 			}
 			
-			$documentProperties = array(
+			$documentProperties = [
 				'ordinal' => $ordinal,
 				'type' => 'file', 
 				'file_id' => $documentData['file_id'], 
 				'folder_id' => $folder_id,
 				'file_datetime' => $documentData['created_datetime'],
-				'filename' => $documentData['filename']);
+				'filename' => $documentData['filename']];
 			$extraProperties = ze\document::addExtract($documentProperties['file_id']);
 			
 			$properties = array_merge($documentProperties, $extraProperties);
 			// Create new document
 			$documentId = ze\row::insert('documents', $properties);
 			
-			$userAssignedMetaDataFields = array('title', 'language_id', 'description', 'keywords', 'content_summary');
+			$userAssignedMetaDataFields = ['title', 'language_id', 'description', 'keywords', 'content_summary'];
 			foreach ($userAssignedMetaDataFields as $metaField) {
 			    if (!empty($values['details/' . $metaField])) {
 			        $datasetField = ze\dataset::fieldDetails($values['details/' . $metaField], $datasetDetails['id']);
 			        if ($datasetField['is_system_field']) {
-			            ze\row::update('documents', array($datasetField['db_column'] => $documentData[$metaField]), $documentId);
+			            ze\row::update('documents', [$datasetField['db_column'] => $documentData[$metaField]], $documentId);
 			        } else {
-			            ze\row::set('documents_custom_data', array($datasetField['db_column'] => $documentData[$metaField]), array('document_id' => $documentId));
+			            ze\row::set('documents_custom_data', [$datasetField['db_column'] => $documentData[$metaField]], ['document_id' => $documentId]);
 			        }
 			    }
 			}
 			$succeeded++;
 			
 			// Hide document
-			ze\row::update('content_items', array('status' => 'hidden'), array('tag_id' => $tagId));
+			ze\row::update('content_items', ['status' => 'hidden'], ['tag_id' => $tagId]);
 			$ordinal++;
 		}
 		// Code to show success messages after migrating documents
@@ -167,7 +167,7 @@ class zenario_common_features__admin_boxes__migrate_old_documents extends ze\mod
 				'[[failed]] file could not be migrated as a document with the same filename already exists in that folder.',
 				'[[failed]] files could not be migrated as a document with the same filename already exists in that folder.',
 				$failed,
-				array('failed' => $failed));
+				['failed' => $failed]);
 			$box['popout_message'] .= '</p>';
 		} elseif ($failed && $succeeded) {
 			$box['popout_message'] .= "<!--Message_Type:Warning-->";
@@ -176,7 +176,7 @@ class zenario_common_features__admin_boxes__migrate_old_documents extends ze\mod
 				'[[failed]] file could not be migrated as a document with the same filename already exists in that folder.',
 				'[[failed]] files could not be migrated as a document with the same filename already exists in that folder.',
 				$failed,
-				array('failed' => $failed));
+				['failed' => $failed]);
 			$box['popout_message'] .= '</p>';
 			
 			$box['popout_message'] .= '<p>';
@@ -184,7 +184,7 @@ class zenario_common_features__admin_boxes__migrate_old_documents extends ze\mod
 				'[[succeeded]] file was successfully migrated.',
 				'[[succeeded]] files were successfully migrated.',
 				$succeeded,
-				array('succeeded' => $succeeded));
+				['succeeded' => $succeeded]);
 			$box['popout_message'] .= '</p>';
 			
 		} else {
@@ -194,7 +194,7 @@ class zenario_common_features__admin_boxes__migrate_old_documents extends ze\mod
 				'[[succeeded]] file was successfully migrated.',
 				'[[succeeded]] files were successfully migrated.',
 				$succeeded,
-				array('succeeded' => $succeeded));
+				['succeeded' => $succeeded]);
 			$box['popout_message'] .= '</p>';
 		}
 	}

@@ -28,14 +28,11 @@
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
 
-$egg = ze\row::get('nested_plugins', array('instance_id', 'name_or_title'), $eggId);
+$egg = ze\row::get('nested_plugins', ['instance_id', 'name_or_title'], $eggId);
 
 //Display a confirmation box, asking the admin if they want to delete the plugin
 $message =
-	'<p>'. ze\admin::phrase(
-		'Are you sure you wish to duplicate the &quot;[[name]]&quot; Plugin?',
-		array('name' => htmlspecialchars($egg['name_or_title']))
-	). '</p>';
+	'<p>'. ze\admin::phrase('Are you sure you wish to duplicate the &quot;[[name_or_title|escape]]&quot; Plugin?', $egg). '</p>';
 
 $usage = ze\pluginAdm::usage($egg['instance_id'], false);
 $usagePublished = ze\pluginAdm::usage($egg['instance_id'], true);
@@ -44,14 +41,13 @@ if ($usage > 1 || $usagePublished > 0) {
 	$message .=
 		'<p>'. ze\admin::phrase(
 			'This will affect <span class="zenario_x_published_items">[[published]] Published Content Item(s)</span> <span class="zenario_y_items">(<a href="[[link]]" target="_blank">[[pages]] Content Item(s) in total</a>).</span>',
-			array(
+			[
 				'pages' => (int) $usage,
 				'published' => (int) $usagePublished,
-				'link' => htmlspecialchars(ze\pluginAdm::usageOrganizerLink($egg['instance_id'])))
+				'link' => htmlspecialchars(ze\pluginAdm::usageOrganizerLink($egg['instance_id']))]
 		). '</p>';
 }
 
 return $message;
 
 
-?>

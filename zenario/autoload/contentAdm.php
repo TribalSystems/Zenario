@@ -181,7 +181,7 @@ class contentAdm {
 	
 		if (!($content = \ze\row::get('content_items', ['admin_version', 'alias', 'status'], ['id' => $cID, 'type' => $cType]))
 		 || !($cVersion = $content['admin_version'])
-		 || !($version = \ze\row::get('content_item_versions', ['publication_date'], ['id' => $cID, 'type' => $cType, 'version' => $cVersion]))) {
+		 || !($version = \ze\row::get('content_item_versions', ['release_date'], ['id' => $cID, 'type' => $cType, 'version' => $cVersion]))) {
 			return false;
 		}
 	
@@ -196,9 +196,9 @@ class contentAdm {
 		$version['publisher_id'] = $adminId;
 		$version['published_datetime'] = \ze\date::now();
 	
-		if (!$version['publication_date']
+		if (!$version['release_date']
 		 && \ze::setting('auto_set_release_date') == 'on_publication_if_not_set') {
-			$version['publication_date'] = \ze\date::now();
+			$version['release_date'] = \ze\date::now();
 		}
 	
 		\ze\row::update('content_items', $content, ['id' => $cID, 'type' => $cType]);
@@ -746,7 +746,7 @@ class contentAdm {
 
 		$cVersion = \ze\row::get('content_items', 'admin_version', ['id' => $cID, 'type' => $cType]);
 		\ze\row::update('content_items', ['visitor_version' => 0, 'status' => 'trashed', 'alias' => ''], ['id' => $cID, 'type' => $cType]);
-		\ze\row::update('content_item_versions', array('concealer_id' => $adminId, 'concealed_datetime' => \ze\date::now()), ['id' => $cID, 'type' => $cType, 'version' => $cVersion]);
+		\ze\row::update('content_item_versions', ['concealer_id' => $adminId, 'concealed_datetime' => \ze\date::now()], ['id' => $cID, 'type' => $cType, 'version' => $cVersion]);
 	
 		\ze\contentAdm::removeItemFromMenu($cID, $cType);
 		\ze\contentAdm::removeEquivalence($cID, $cType);
@@ -776,7 +776,7 @@ class contentAdm {
 	
 		//Update the Content Item's status to "hidden"
 		\ze\row::update('content_items', ['visitor_version' => 0, 'status' => 'hidden', 'lock_owner_id' => 0], ['id' => $cID, 'type' => $cType]);
-		\ze\row::update('content_item_versions', array('concealer_id' => $adminId, 'concealed_datetime' => \ze\date::now()), ['id' => $cID, 'type' => $cType, 'version' => $content['admin_version']]);
+		\ze\row::update('content_item_versions', ['concealer_id' => $adminId, 'concealed_datetime' => \ze\date::now()], ['id' => $cID, 'type' => $cType, 'version' => $content['admin_version']]);
 	
 		\ze\contentAdm::flagImagesInArchivedVersions($cID, $cType);
 		\ze\contentAdm::hideOrShowContentItemsMenuNode($cID, $cType, $oldStatus, 'hidden');
@@ -1045,7 +1045,7 @@ class contentAdm {
 		}
 	
 		//Remove any Visitor Phrases, except for Visitor Pharses from the Common Features Module
-		\ze\row::delete('visitor_phrases', array('language_id' => $langId, 'module_class_name' => ['!1' => 'zenario_common_features', '!2' => '']));
+		\ze\row::delete('visitor_phrases', ['language_id' => $langId, 'module_class_name' => ['!1' => 'zenario_common_features', '!2' => '']]);
 	
 		\ze\row::delete('languages', $langId);
 	}
@@ -1313,7 +1313,7 @@ class contentAdm {
 						  AND gcl.link_from_char = '". \ze\escape::sql($chain['type']). "'");
 			
 					if (count($groupNames) > 1) {
-						$groupNames = array(implode(', ', $groupNames));
+						$groupNames = [implode(', ', $groupNames)];
 						return \ze\admin::phrase('Private, only show to extranet users in the groups: [[0]]', $groupNames);
 					} else {
 						return \ze\admin::phrase('Private, only show to extranet users in the group: [[0]]', $groupNames);
@@ -1346,7 +1346,7 @@ class contentAdm {
 							  AND gcl.link_from_char = '". \ze\escape::sql($chain['type']). "'");
 			
 						if (count($roleNames) > 1) {
-							$roleNames = array(implode(', ', $roleNames));
+							$roleNames = [implode(', ', $roleNames)];
 							return \ze\admin::phrase('Private, only show to extranet users with the following roles at ANY location: [[0]]', $roleNames);
 						} else {
 							return \ze\admin::phrase('Private, only show to extranet users with the following role at ANY location: [[0]]', $roleNames);
@@ -1571,7 +1571,7 @@ class contentAdm {
 			$vals['equiv_id'] = $cID;
 		
 			//Check if another Content Item is using this alias; if so, we need to remove the alias.
-			if ($content['alias'] && \ze\row::exists('content_items', array('alias' => $content['alias'], 'tag_id' => ['!' => $content['tag_id']]))) {
+			if ($content['alias'] && \ze\row::exists('content_items', ['alias' => $content['alias'], 'tag_id' => ['!' => $content['tag_id']]])) {
 				$vals['alias'] = '';
 			}
 		
@@ -1631,10 +1631,10 @@ class contentAdm {
 	//If they are, then the VLP can be added as a language
 	//Formerly "checkIfLanguageCanBeAdded()"
 	public static function checkIfLanguageCanBeAdded($languageId) {
-		return 3 == \ze\row::count('visitor_phrases', array(
+		return 3 == \ze\row::count('visitor_phrases', [
 			'language_id' => $languageId,
 			'code' => ['__LANGUAGE_ENGLISH_NAME__', '__LANGUAGE_LOCAL_NAME__', '__LANGUAGE_FLAG_FILENAME__'],
-			'module_class_name' => 'zenario_common_features'));
+			'module_class_name' => 'zenario_common_features']);
 	}
 
 	//Formerly "aliasURLIsValid()"
@@ -1651,7 +1651,7 @@ class contentAdm {
 		}
 	
 		foreach (\ze\lang::getLanguages() as $lang) {
-			$field['values'][$lang['id']] = array('ord' => ++$ord, 'label' => $lang['english_name']. ' ('. $lang['id']. ')');
+			$field['values'][$lang['id']] = ['ord' => ++$ord, 'label' => $lang['english_name']. ' ('. $lang['id']. ')'];
 		}
 	}
 	

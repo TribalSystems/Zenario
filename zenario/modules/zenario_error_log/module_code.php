@@ -38,7 +38,7 @@ class zenario_error_log extends ze\moduleBaseClass {
 		if (strlen($httpReferer) > 65535) {
 			$httpReferer = mb_substr($httpReferer, 0, 65532, 'UTF-8').'...';
 		}
-		ze\row::insert(ZENARIO_ERROR_LOG_PREFIX.'error_log', array('logged' => $logged, 'page_alias' => $pageAlias, 'referrer_url' => $httpReferer));
+		ze\row::insert(ZENARIO_ERROR_LOG_PREFIX.'error_log', ['logged' => $logged, 'page_alias' => $pageAlias, 'referrer_url' => $httpReferer]);
 		
 		//Delete old log entries according to site setting
 		if ($days = ze::setting('period_to_delete_error_log')) {
@@ -90,12 +90,12 @@ class zenario_error_log extends ze\moduleBaseClass {
 			$moduleId = ze\module::id('zenario_error_log');
 			$job = ze\row::get(
 				'jobs', 
-				array('last_action'), 
-				array(
+				['last_action'], 
+				[
 					'manager_class_name' => 'zenario_scheduled_task_manager',
 					'job_name' => 'jobReportErrors',
 					'module_id' => $moduleId
-				)
+				]
 			);
 			if (!$job['last_action']) {
 				echo 'No errors to report';

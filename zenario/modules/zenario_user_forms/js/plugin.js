@@ -799,6 +799,20 @@
 			});
 		})();
 		
+		//Init predefined text field buttons
+		$('#' + containerId + '_user_form input.set_predefined_text').on('click', function() {
+			var fieldId = $(this).data('id');
+			var reload = true;
+			if ($('#' + containerId + '_field_' + fieldId + ' textarea').val()) {
+				reload = confirm(phrases.set_predefined_text_warning);
+			}
+			if (reload) {
+				var request = {};
+				request['set_predefined_text_' + fieldId] = true;
+				that.submitForm(containerId, request);
+			}
+		});
+		
 		function sortByOrd(a, b) {
 			if (a.ord < b.ord) 
 				return -1;
@@ -901,7 +915,3 @@
    	};
 	
 })(zenario_user_forms);
-
-zenario_user_forms.recaptchaCallback = function(){
-	$(recaptchaCallback);
-}; 

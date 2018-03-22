@@ -3,23 +3,18 @@
 }
 
 #organizer_leftColumn div.legend_on a.Projects_top_level,
-#organizer_leftColumn div.organizer_legend a.Projects_top_level:hover { 
+#organizer_leftColumn div.organizer_legend a.Projects_top_level:hover,
+#zenario_at_top_left_menu .organizer_top_level_image.Projects_top_level{ 
 	background: url('images/icon-development-projects-on.svg') no-repeat center / auto 18px;
 }
-
-
      
 .organizer_item_image.project_locations__projects {
 	background: -15px -15px no-repeat;
 	background-image: url('images/projects-list-icon.png');
 }
 
-
-
-
 .organizer_item_image.zenario__project_locations_sector {
-	background: -15px center no-repeat;
-	background-image: url('images/sectors-list-icon.png');
+	background: url('images/icon-sectors.svg') no-repeat center / auto 18px;
 }
 
 

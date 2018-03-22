@@ -38,7 +38,7 @@ switch ($path) {
 		
 		$total = 0;
 		$tagSQL = "";
-		$tagIds = array();
+		$tagIds = [];
 		$equivId = $cType = false;
 		
 		if (($_REQUEST['equivId'] ?? false) && ($_REQUEST['cType'] ?? false)) {
@@ -79,10 +79,10 @@ switch ($path) {
 			$fields['categories/no_categories']['hidden'] = true;
 			$box['tabs']['categories']['fields']['desc']['snippet']['html'] = 
 				ze\admin::phrase('You can put content item(s) into one or more categories. (<a[[link]]>Define categories</a>.)',
-					array('link' => ' href="'. htmlspecialchars(ze\link::absolute(). 'zenario/admin/organizer.php#zenario__content/panels/categories'). '" target="_blank"'));
+					['link' => ' href="'. htmlspecialchars(ze\link::absolute(). 'zenario/admin/organizer.php#zenario__content/panels/categories'). '" target="_blank"']);
 			
 			
-			$inCats = array();
+			$inCats = [];
 			$sql = "
 				SELECT l.category_id, COUNT(DISTINCT c.tag_id) AS cnt
 				FROM ". DB_NAME_PREFIX. "content_items AS c
@@ -127,15 +127,15 @@ switch ($path) {
 				$box['confirm']['show'] = true;
 				$box['confirm']['message'] =
 					ze\admin::phrase('This will update the categories of [[count]] content items and their translations.',
-						array('count' => $total));
+						['count' => $total]);
 				
 				$box['title'] =
 					ze\admin::phrase('Changing categories for [[count]] content items and their translations',
-						array('count' => $total));
+						['count' => $total]);
 			} else {
 				$box['title'] =
 					ze\admin::phrase('Changing categories for the content item "[[tag]]" and its translations',
-						array('tag' => ze\content::formatTag($equivId, $cType)));
+						['tag' => ze\content::formatTag($equivId, $cType)]);
 			}
 			
 		} else {
@@ -143,15 +143,15 @@ switch ($path) {
 				$box['confirm']['show'] = true;
 				$box['confirm']['message'] =
 					ze\admin::phrase('This will update the categories of [[count]] content items.',
-						array('count' => $total));
+						['count' => $total]);
 				
 				$box['title'] =
 					ze\admin::phrase('Changing categories for [[count]] content items',
-						array('count' => $total));
+						['count' => $total]);
 			} else {
 				$box['title'] =
 					ze\admin::phrase('Changing categories for the content item "[[tag]]"',
-						array('tag' => ze\content::formatTag($equivId, $cType)));
+						['tag' => ze\content::formatTag($equivId, $cType)]);
 			}
 		}
 		
@@ -169,7 +169,7 @@ switch ($path) {
 		
 		$total = 0;
 		$tagSQL = "";
-		$tagIds = array();
+		$tagIds = [];
 		$equivId = $cType = false;
 		
 		if (($_REQUEST['equivId'] ?? false) && ($_REQUEST['cType'] ?? false)) {
@@ -213,10 +213,10 @@ switch ($path) {
 			
 			$box['tabs']['categories_add']['fields']['desc']['snippet']['html'] = 
 				ze\admin::phrase('You can put content item(s) into one or more categories. (<a[[link]]>Define categories</a>.)',
-					array('link' => ' href="'. htmlspecialchars(ze\link::absolute(). 'zenario/admin/organizer.php#zenario__content/panels/categories'). '" target="_blank"'));
+					['link' => ' href="'. htmlspecialchars(ze\link::absolute(). 'zenario/admin/organizer.php#zenario__content/panels/categories'). '" target="_blank"']);
 			
 			
-			$inCats = array();
+			$inCats = [];
 			$sql = "
 				SELECT l.category_id, COUNT(DISTINCT c.tag_id) AS cnt
 				FROM ". DB_NAME_PREFIX. "content_items AS c
@@ -259,15 +259,15 @@ switch ($path) {
 				$box['confirm']['show'] = true;
 				$box['confirm']['message'] =
 					ze\admin::phrase('This will update the categories of [[count]] content items and their translations.',
-						array('count' => $total));
+						['count' => $total]);
 				
 				$box['title'] =
 					ze\admin::phrase('Changing categories for [[count]] content items and their translations',
-						array('count' => $total));
+						['count' => $total]);
 			} else {
 				$box['title'] =
 					ze\admin::phrase('Changing categories for the content item "[[tag]]" and its translations',
-						array('tag' => ze\content::formatTag($equivId, $cType)));
+						['tag' => ze\content::formatTag($equivId, $cType)]);
 			}
 			
 		} else {
@@ -275,15 +275,15 @@ switch ($path) {
 				$box['confirm']['show'] = true;
 				$box['confirm']['message'] =
 					ze\admin::phrase('This will update the categories of [[count]] content items.',
-						array('count' => $total));
+						['count' => $total]);
 				
 				$box['title'] =
 					ze\admin::phrase('Changing categories for [[count]] content items',
-						array('count' => $total));
+						['count' => $total]);
 			} else {
 				$box['title'] =
 					ze\admin::phrase('Changing categories for the content item "[[tag]]"',
-						array('tag' => ze\content::formatTag($equivId, $cType)));
+						['tag' => ze\content::formatTag($equivId, $cType)]);
 			}
 		}
 		
@@ -301,7 +301,7 @@ switch ($path) {
 		
 		$total = 0;
 		$tagSQL = "";
-		$tagIds = array();
+		$tagIds = [];
 		$equivId = $cType = false;
 		
 		if (($_REQUEST['equivId'] ?? false) && ($_REQUEST['cType'] ?? false)) {
@@ -335,7 +335,7 @@ switch ($path) {
 		
 		//foreach ($fields['categories/categories']['values'] as $checkbox){
 		
-			$inCats = array();
+			$inCats = [];
 			$sql = "
 				SELECT l.category_id, COUNT(DISTINCT c.tag_id) AS cnt
 				FROM ". DB_NAME_PREFIX. "content_items AS c
@@ -380,15 +380,15 @@ switch ($path) {
 				$box['confirm']['show'] = true;
 				$box['confirm']['message'] =
 					ze\admin::phrase('This will update the categories of [[count]] content items and their translations.',
-						array('count' => $total));
+						['count' => $total]);
 				
 				$box['title'] =
 					ze\admin::phrase('Changing categories for [[count]] content items and their translations',
-						array('count' => $total));
+						['count' => $total]);
 			} else {
 				$box['title'] =
 					ze\admin::phrase('Changing categories for the content item "[[tag]]" and its translations',
-						array('tag' => ze\content::formatTag($equivId, $cType)));
+						['tag' => ze\content::formatTag($equivId, $cType)]);
 			}
 			
 		} else {
@@ -396,15 +396,15 @@ switch ($path) {
 				$box['confirm']['show'] = true;
 				$box['confirm']['message'] =
 					ze\admin::phrase('This will update the categories of [[count]] content items.',
-						array('count' => $total));
+						['count' => $total]);
 				
 				$box['title'] =
 					ze\admin::phrase('Changing categories for [[count]] content items',
-						array('count' => $total));
+						['count' => $total]);
 			} else {
 				$box['title'] =
 					ze\admin::phrase('Changing categories for the content item "[[tag]]"',
-						array('tag' => ze\content::formatTag($equivId, $cType)));
+						['tag' => ze\content::formatTag($equivId, $cType)]);
 			}
 		}
 		
@@ -422,16 +422,16 @@ switch ($path) {
 			$parentFolderDetails = 
 				ze\row::get(
 					'documents',
-					array('folder_name'), $box['key']['id']);
+					['folder_name'], $box['key']['id']);
 			$box['title'] = ze\admin::phrase('Create a subfolder inside "[[folder_name]]".', $parentFolderDetails);
-		} elseif ($folderDetails = ze\row::get('documents', array('folder_name'), $box['key']['id'])) {
+		} elseif ($folderDetails = ze\row::get('documents', ['folder_name'], $box['key']['id'])) {
 			$values['details/folder_name'] = $folderDetails['folder_name'];
 			$box['title'] = ze\admin::phrase('Editing folder "[[folder_name]]".', $folderDetails);
 		}
 		break;
 		
 	case 'zenario_document_tag':
-		if ($tagDetails = ze\row::get('document_tags', array('tag_name'), $box['key']['id'])) {
+		if ($tagDetails = ze\row::get('document_tags', ['tag_name'], $box['key']['id'])) {
 			$values['details/tag_name'] = $tagDetails['tag_name'];
 			$box['title'] = ze\admin::phrase('Editing tag "[[tag_name]]".', $tagDetails);
 		}
@@ -440,7 +440,7 @@ switch ($path) {
 	case 'zenario_reorder_documents':
 		if ($box['key']['id']){
 			$folderId = $box['key']['id'];
-			$folderName = ze\row::get('documents', 'folder_name', array('id' => $folderId));
+			$folderName = ze\row::get('documents', 'folder_name', ['id' => $folderId]);
 			//$box['title'] = ze\admin::phrase('Renaming/adding a title to the image "[[folder_name]]".', $folderName);
 			$box['title'] = "Re-order documents for the folder: '".$folderName."'";
 		}else{
@@ -449,7 +449,7 @@ switch ($path) {
 	
 		$datasetDetails = ze\dataset::details('documents');
 		$datasetId = $datasetDetails['id'];
-		if ($datasetDetails = ze\row::getArray('custom_dataset_fields', true, array('dataset_id' => $datasetId, 'is_system_field' => 0))) {
+		if ($datasetDetails = ze\row::getArray('custom_dataset_fields', true, ['dataset_id' => $datasetId, 'is_system_field' => 0])) {
 			foreach ($datasetDetails as $details) {
 				if($details['type'] == 'text' || $details['type'] == 'date') {
 					$datesetFields[]= $details;
@@ -459,7 +459,7 @@ switch ($path) {
 			$i = 3;
 			foreach ($datesetFields as $dataset){
 				$box['tabs']['details']['fields']['reorder']['values'][$dataset['id']] = 
-					array('label' => $dataset['label'] . " - (custom dataset field)", 'ord' => $i);
+					['label' => $dataset['label'] . " - (custom dataset field)", 'ord' => $i];
 				$i++;
 			}
 		}
@@ -469,13 +469,13 @@ switch ($path) {
 	case 'zenario_document_rename':
 			$documentId = $box['key']['id'];
 			
-			$isfolder=ze\row::get('documents', 'type', array('type' => 'folder','id' => $documentId));
+			$isfolder=ze\row::get('documents', 'type', ['type' => 'folder','id' => $documentId]);
 			
 			if ($isfolder){
-				$documentName=ze\row::get('documents', 'folder_name', array('type' => 'folder','id' => $documentId));
+				$documentName=ze\row::get('documents', 'folder_name', ['type' => 'folder','id' => $documentId]);
 				$box['title'] = 'Renaming the folder "'.$documentName.'"';
 			}else{
-				$documentName=ze\row::get('documents', 'filename', array('type' => 'file','id' => $documentId));
+				$documentName=ze\row::get('documents', 'filename', ['type' => 'file','id' => $documentId]);
 				$box['title'] = 'Renaming the file "'.$documentName.'"';
 			}
 			$values['details/document_name'] = $documentName;

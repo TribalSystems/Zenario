@@ -65,14 +65,14 @@ class zenario_common_features__admin_boxes__document_rule extends ze\moduleBaseC
 		}
 		
 		//($dataset, $flat = true, $filter = false, $customOnly = true, $useOptGroups = false)
-		$fields['details/field_id']['values'] = ze\datasetAdm::listCustomFields('documents', false, array('!1' => 'dataset_select', '!2' => 'dataset_picker'), true, true);
+		$fields['details/field_id']['values'] = ze\datasetAdm::listCustomFields('documents', false, ['!1' => 'dataset_select', '!2' => 'dataset_picker'], true, true);
 		//($dataset, $flat = true, $filter = false, $customOnly = true, $useOptGroups = false, $hideEmptyOptGroupParents = false)
 		$fields['details/folder_id']['values'] = ze\miscAdm::generateDocumentFolderSelectList();
 	}
 	
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		
-		$fields['details/field_value']['values'] = array();
+		$fields['details/field_value']['values'] = [];
 		$box['tabs']['details']['notices']['lov']['show'] =
 		$box['tabs']['details']['notices']['date']['show'] =
 		$box['tabs']['details']['notices']['checkbox']['show'] = false;
@@ -249,7 +249,7 @@ class zenario_common_features__admin_boxes__document_rule extends ze\moduleBaseC
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		
-		$rule = array(
+		$rule = [
 			'use' => $values['details/use'],
 			'action' => $values['details/action'],
 			'pattern' => $values['details/pattern'],
@@ -258,7 +258,7 @@ class zenario_common_features__admin_boxes__document_rule extends ze\moduleBaseC
 			'replacement' => '',
 			'apply_second_pass' => 0,
 			'second_pattern' => '',
-			'second_replacement' => '');
+			'second_replacement' => ''];
 		
 		if (!$box['key']['id']) {
 			$sql = "

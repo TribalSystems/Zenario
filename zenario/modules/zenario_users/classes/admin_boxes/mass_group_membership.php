@@ -69,8 +69,8 @@ class zenario_users__admin_boxes__mass_group_membership extends ze\moduleBaseCla
 		//Populate the list of groups
 		$inGroupCount = 0;
 		$totalGroupCount = 0;
-		$pickedItems = array();
-		$fields['groups/groups']['indeterminates'] = array();
+		$pickedItems = [];
+		$fields['groups/groups']['indeterminates'] = [];
 		$fields['groups/groups']['values'] = ze\datasetAdm::listCustomFields('users', $flat = false, 'groups_only', $customOnly = true, $useOptGroups = true, $hideEmptyOptGroupParents = true);
 		
 		foreach ($fields['groups/groups']['values'] as $id => &$v) {
@@ -134,8 +134,8 @@ class zenario_users__admin_boxes__mass_group_membership extends ze\moduleBaseCla
 	
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
-		$initial = array();
-		$current = array();
+		$initial = [];
+		$current = [];
 		
 		if ($fields['groups/groups']['value']) {
 			$initial = explode(',', $fields['groups/groups']['value']);
@@ -186,8 +186,8 @@ class zenario_users__admin_boxes__mass_group_membership extends ze\moduleBaseCla
 	
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		$initial = array();
-		$current = array();
+		$initial = [];
+		$current = [];
 		
 		if ($fields['groups/groups']['value']) {
 			$initial = explode(',', $fields['groups/groups']['value']);

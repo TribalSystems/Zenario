@@ -64,7 +64,7 @@ class zenario_common_features__admin_boxes__menu_text extends ze\moduleBaseClass
 		 && ($values['text/text_in_default_language'] = self::getMenuText($box['key']['id'], ze::$defaultLang))) {
 			$fields['text/text_in_default_language']['label'] =
 				ze\admin::phrase('Menu text ([[english_name]]):',
-					array('english_name' => ze\lang::name(ze::$defaultLang, false)));
+					['english_name' => ze\lang::name(ze::$defaultLang, false)]);
 			
 			$values['text/parent_path_of__text_in_default_language'] = ze\menuAdm::path($box['key']['parentMenuID'], ze::$defaultLang);
 			zenario_common_features::setMenuPath($box['tabs']['text']['fields'], 'text_in_default_language', 'value');
@@ -96,7 +96,7 @@ class zenario_common_features__admin_boxes__menu_text extends ze\moduleBaseClass
 		if ($multilingual) {
 			$fields['text/menu_title']['label'] =
 				ze\admin::phrase('Menu text ([[english_name]]):',
-					array('english_name' => ze\lang::name($box['key']['languageId'], false)));
+					['english_name' => ze\lang::name($box['key']['languageId'], false)]);
 		}
 		
 		//For top-level menu modes, add a note to the "path" field to make it clear that it's

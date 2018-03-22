@@ -36,12 +36,12 @@ function renameModuleDirectory($oldName, $newName, $uninstallOldModule = false, 
 	$oldId = ze\module::id($oldName);
 	
 	if ($newName && $oldId && ($newId = ze\module::id($newName))) {
-		foreach(array(
+		foreach([
 			'content_types', 'jobs', 'signals',
 			'module_dependencies', 'plugin_setting_defs',
 			'nested_plugins', 'plugin_instances',
 			'plugin_item_link', 'plugin_layout_link'
-		) as $table) {
+		] as $table) {
 			$sql = "
 				UPDATE IGNORE ". DB_NAME_PREFIX. $table. " SET
 					module_id = ". (int) $newId. "
@@ -53,7 +53,7 @@ function renameModuleDirectory($oldName, $newName, $uninstallOldModule = false, 
 		$newStatus = ze\row::get('modules', 'status', $newId);
 		
 		if (ze::in($newStatus, 'module_not_initialized', 'module_suspended')) {
-			ze\row::set('modules', array('status' => $oldStatus), $newId);
+			ze\row::set('modules', ['status' => $oldStatus], $newId);
 		}
 		
 		if ($moveEditableCSS
@@ -94,7 +94,7 @@ function renameModuleDirectory($oldName, $newName, $uninstallOldModule = false, 
 	}
 	
 	if ($uninstallOldModule && $oldId) {
-		ze\row::update('modules', array('status' => 'module_not_initialized'), $oldId);
+		ze\row::update('modules', ['status' => 'module_not_initialized'], $oldId);
 	}
 }
 
@@ -103,11 +103,11 @@ function replaceModule($oldName, $newName) {
 	ze\moduleAdm::addNew($skipIfFilesystemHasNotChanged = false);
 	
 	if (($oldId = ze\module::id($oldName)) && ($newId = ze\module::id($newName))) {
-		foreach(array(
+		foreach([
 			'content_types',
 			'nested_plugins', 'plugin_instances',
 			'plugin_item_link', 'plugin_layout_link'
-		) as $table) {
+		] as $table) {
 			$sql = "
 				UPDATE IGNORE ". DB_NAME_PREFIX. $table. " SET
 					module_id = ". (int) $newId. "
@@ -119,10 +119,10 @@ function replaceModule($oldName, $newName) {
 		$newStatus = ze\row::get('modules', 'status', $newId);
 		
 		if ($oldStatus == 'module_running' || $newStatus == 'module_running') {
-			ze\row::set('modules', array('status' => 'module_running'), $newId);
+			ze\row::set('modules', ['status' => 'module_running'], $newId);
 		
 		} elseif ($oldStatus == 'module_suspended' || $newStatus == 'module_suspended') {
-			ze\row::set('modules', array('status' => 'module_suspended'), $newId);
+			ze\row::set('modules', ['status' => 'module_suspended'], $newId);
 		}
 		
 		ze\moduleAdm::uninstall($oldId, $uninstallRunningModules = true);
@@ -159,10 +159,10 @@ function replaceModulePlugins($oldName, $newName, $settingName, $settingValue) {
 		$newStatus = ze\row::get('modules', 'status', $newId);
 		
 		if ($oldStatus == 'module_running' || $newStatus == 'module_running') {
-			ze\row::set('modules', array('status' => 'module_running'), $newId);
+			ze\row::set('modules', ['status' => 'module_running'], $newId);
 		
 		} elseif ($oldStatus == 'module_suspended' || $newStatus == 'module_suspended') {
-			ze\row::set('modules', array('status' => 'module_suspended'), $newId);
+			ze\row::set('modules', ['status' => 'module_suspended'], $newId);
 		}
 		
 		return true;
@@ -180,10 +180,10 @@ function runNewModuleDependency($moduleName, $dependencyName) {
 		$dependencyStatus = ze\row::get('modules', 'status', $dependencyId);
 		
 		if ($moduleStatus == 'module_running' && !ze::in($dependencyStatus, 'module_running', 'module_is_abstract')) {
-			ze\row::set('modules', array('status' => 'module_running'), $dependencyId);
+			ze\row::set('modules', ['status' => 'module_running'], $dependencyId);
 		
 		} elseif ($moduleStatus == 'module_suspended' && !ze::in($dependencyStatus, 'module_running', 'module_suspended', 'module_is_abstract')) {
-			ze\row::set('modules', array('status' => 'module_suspended'), $dependencyId);
+			ze\row::set('modules', ['status' => 'module_suspended'], $dependencyId);
 		}
 		
 		return true;

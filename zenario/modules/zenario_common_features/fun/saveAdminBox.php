@@ -87,9 +87,9 @@ switch ($path) {
 			if($box['key']['id']) {
 				ze\row::update(
 					'documents',
-					array(
+					[
 						'type' => 'folder',
-						'folder_name' => $values['details/folder_name']),
+						'folder_name' => $values['details/folder_name']],
 					$box['key']['id']);
 			} else {
 				$box['key']['id'] = ze\document::createFolder($values['details/folder_name']);
@@ -143,7 +143,7 @@ switch ($path) {
 			}elseif($radioSortBy == 'descending'){
 				$sql .= ' DESC';
 			}
-			$datasetResult = array();
+			$datasetResult = [];
 			$result = ze\sql::select($sql);
 			while($row = ze\sql::fetchAssoc($result)) {
 				$datasetResult[] = $row;
@@ -151,7 +151,7 @@ switch ($path) {
 			//update ordinal in the db
 			$i = 0;
 			foreach ($datasetResult as $result){
-				ze\row::set('documents', array('ordinal' => ++$i), $result['id']);
+				ze\row::set('documents', ['ordinal' => ++$i], $result['id']);
 			}
 		}
 		break;
@@ -160,8 +160,8 @@ switch ($path) {
 		$box['key']['id'] = 
 			ze\row::set(
 				'document_tags',
-				array(
-					'tag_name' => $values['details/tag_name']),
+				[
+					'tag_name' => $values['details/tag_name']],
 				$box['key']['id']);
 		break;
 		
@@ -180,19 +180,19 @@ switch ($path) {
 		$ordinal = $row[0] ? $row[0] : 1;
 		
 		foreach ($documentIds as $documentId) {
-			ze\row::set('documents', array('folder_id' => $folderId, 'ordinal' => $ordinal++), $documentId);
+			ze\row::set('documents', ['folder_id' => $folderId, 'ordinal' => $ordinal++], $documentId);
 		}
 		break;
 		
 	case 'zenario_document_rename':
 		$documentId = $box['key']['id'];
 		$documentName = trim($values['details/document_name']);
-		$isfolder=ze\row::get('documents', 'type', array('type' => 'folder','id' => $documentId));
+		$isfolder=ze\row::get('documents', 'type', ['type' => 'folder','id' => $documentId]);
 		if ($isfolder){
-			ze\row::update('documents', array('folder_name' => $documentName), array('id' => $documentId));
+			ze\row::update('documents', ['folder_name' => $documentName], ['id' => $documentId]);
 		}else{
 			//file
-			ze\row::update('documents', array('filename' => $documentName), array('id' => $documentId));
+			ze\row::update('documents', ['filename' => $documentName], ['id' => $documentId]);
 		}
 		break;
 		

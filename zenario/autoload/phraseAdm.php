@@ -36,22 +36,22 @@ class phraseAdm {
 	//Formerly "secondsToAdminPhrase()"
 	public static function seconds($seconds) {
 		if (!class_exists('DateTime')) {
-			$a = array(
-				array('second', '[[n]] seconds', (int) $seconds));
+			$a = [
+				['second', '[[n]] seconds', (int) $seconds]];
 		} else {
 			$zero = new \DateTime('@0');
 			$dt = $zero->diff(new \DateTime('@'. (int) $seconds));
-			$a = array(
-				array('second', '[[n]] seconds', (int) $dt->format('%s')),
-				array('minute', '[[n]] minutes', (int) $dt->format('%i')),
-				array('hour', '[[n]] hours', (int) $dt->format('%h')), 
-				array('day', '[[n]] days', (int) $dt->format('%a')));
+			$a = [
+				['second', '[[n]] seconds', (int) $dt->format('%s')],
+				['minute', '[[n]] minutes', (int) $dt->format('%i')],
+				['hour', '[[n]] hours', (int) $dt->format('%h')], 
+				['day', '[[n]] days', (int) $dt->format('%a')]];
 		}
 	
 		$t = '';
 		$s = '';
 		foreach ($a as $v) {
-			if ($v = \ze\admin::nPhrase($v[0], $v[1], $v[2], array('n' => $v[2]), '')) {
+			if ($v = \ze\admin::nPhrase($v[0], $v[1], $v[2], ['n' => $v[2]], '')) {
 				$t = $v. $s. $t;
 			
 				if ($s === '') {
@@ -120,12 +120,12 @@ class phraseAdm {
 			//Update or insert the phrase
 			\ze\row::set(
 				'visitor_phrases',
-				array(
-					'local_text' => trim($localText)),
-				array(
+				[
+					'local_text' => trim($localText)],
+				[
 					'language_id' => $languageId,
 					'module_class_name' => $moduleClass,
-					'code' => $phraseCode));
+					'code' => $phraseCode]);
 		
 			//\ze\phraseAdm::isProtected() returns false for phrases that are unprotected, and 0 for phrases that do not exist
 			if ($protected === 0) {
@@ -148,7 +148,7 @@ class phraseAdm {
 
 	//Formerly "scanModulePhraseDir()"
 	public static function scanModulePhraseDir($moduleName, $scanMode) {
-		$importFiles = array();
+		$importFiles = [];
 		if ($path = \ze::moduleDir($moduleName, 'phrases/', true)) {
 			foreach (scandir($path) as $file) {
 				if (is_file($path. $file) && substr($file, 0, 1) != '.') {

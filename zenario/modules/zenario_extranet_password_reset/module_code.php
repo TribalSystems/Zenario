@@ -46,7 +46,7 @@ class zenario_extranet_password_reset extends zenario_extranet {
 			}
 		} elseif (($_REQUEST['extranet_reset_password'] ?? false) && ($userId = $this->getUserIdFromHashCode($_REQUEST['hash'] ?? false))) {
 			if (!$this->checkResetPasswordTime($userId)) {
-				ze\row::update('users', array('reset_password_time' => null), array('id' => $userId));
+				ze\row::update('users', ['reset_password_time' => null], ['id' => $userId]);
 				$this->message = $this->phrase('This link has expired. To reset your password make a new request.');
 				$this->mode = 'modeLogin';
 			} else {
@@ -55,7 +55,7 @@ class zenario_extranet_password_reset extends zenario_extranet {
 					if ($this->changePassword($userId)) {
 						$this->message = $this->phrase('Your Password has been changed.');
 						$this->mode = 'modeLogin';
-						ze\row::update('users', array('reset_password_time' => null), array('id' => $userId));
+						ze\row::update('users', ['reset_password_time' => null], ['id' => $userId]);
 					}
 				}
 			}
@@ -68,11 +68,18 @@ class zenario_extranet_password_reset extends zenario_extranet {
 	protected function modeResetPasswordStage1() {
 		$this->addLoginLinks();
 		
-		echo $this->openForm();
-			$this->subSections['Main_Title'] = true;
-			$this->subSections['Reset_Password_Form'] = true;
+		if ($this->setting('stop_users_reseting_passwords')) {
+			$this->subSections['Contact_For_Reset'] = true;
+			$this->objects['Contact_For_Reset_Message'] = $this->phrase($this->setting('contact_for_reset_message'));
 			$this->framework('Outer', $this->objects, $this->subSections);
-		echo $this->closeForm();
+			
+		} else {
+			echo $this->openForm();
+				$this->subSections['Main_Title'] = true;
+				$this->subSections['Reset_Password_Form'] = true;
+				$this->framework('Outer', $this->objects, $this->subSections);
+			echo $this->closeForm();
+		}
 	}
 	
 	// Display a form that lets the user enter a new password and confirmation
@@ -91,33 +98,41 @@ class zenario_extranet_password_reset extends zenario_extranet {
 		if (!$this->validateFormFields('Reset_Password_Form')) {
 			// Function displays error message so no action here
 		} elseif (!$userDetails = $this->getDetailsFromEmail($_POST['extranet_email'] ?? false)) {
-			$this->errors[] = array('Error' => $this->phrase('Sorry, we couldn\'t find an account associated with that email address.'));
+			$this->errors[] = ['Error' => $this->phrase('Sorry, we couldn\'t find an account associated with that email address.')];
 		} else {
-			if (ze\row::exists('users', array('email' => ($_POST['extranet_email'] ?? false), 'status' => 'pending', 'email_verified' => false  ))) {
-				$this->errors[] = array('Error' => $this->phrase('You have not yet verified your email address. Please click on the link in your verification email.'));
+			if (ze\row::exists('users', ['email' => ($_POST['extranet_email'] ?? false), 'status' => 'pending', 'email_verified' => false  ])) {
+				$this->errors[] = ['Error' => $this->phrase('You have not yet verified your email address. Please click on the link in your verification email.')];
 			} else {
 				ze\userAdm::updateHash($userDetails['id']);
-				ze\row::update('users', array('reset_password_time' => ze\date::now()), array('id' => $userDetails['id']));
+				ze\row::update('users', ['reset_password_time' => ze\date::now()], ['id' => $userDetails['id']]);
 				$userDetails = ze\user::details($userDetails['id']);
-				$userDetails['ip_address'] = ze\user::ip();
 				$userDetails['cms_url'] = ze\link::absolute();
-				$userDetails['reset_url'] = $this->linkToItem($this->cID, $this->cType, $fullPath = true, $request = '&extranet_reset_password=1&hash='. $userDetails['hash']);
+				$userDetails['reset_url'] = static::getExtranetPasswordResetLink($userDetails['id'], $this->cID, $this->cType);
+				
 				if (ze\module::inc('zenario_email_template_manager')){
-					if (zenario_email_template_manager::sendEmailsUsingTemplate($userDetails['email'],$this->setting('password_reset_email_template'),$userDetails,array())){
+					if (zenario_email_template_manager::sendEmailsUsingTemplate($userDetails['email'],$this->setting('password_reset_email_template'),$userDetails,[])){
 						return true;
 					} else {
-						$this->errors[] = array('Error' => $this->phrase('There appears to be a problem with our email system. Please try to retrieve your password again later.'));
+						$this->errors[] = ['Error' => $this->phrase('There appears to be a problem with our email system. Please try to retrieve your password again later.')];
 					}
 				} else {
-					$this->errors[] = array('Error' => $this->phrase('There appears to be a problem with our email system. Please try to retrieve your password again later.'));
+					$this->errors[] = ['Error' => $this->phrase('There appears to be a problem with our email system. Please try to retrieve your password again later.')];
 				}
 			}
 		}
 		return false;
 	}
 	
+	public static function getExtranetPasswordResetLink($userId, $cID = false, $cType = false) {
+		if (!$cID || !$cType) {
+			ze\content::langSpecialPage('zenario_password_reset', $cID, $cType);
+		}
+		$hash = ze\row::get('users', 'hash', $userId);
+		return ze\link::toItem($cID, $cType, $fullPath = true, $request = '&extranet_reset_password=1&hash='. urlencode($hash));
+	}
+	
 	private function getUserIdFromHashCode($hash){
-		if ($hash && ($userId = (int) ze\row::get("users","id",array('hash'=>$hash)))){
+		if ($hash && ($userId = (int) ze\row::get("users","id",['hash'=>$hash]))){
 			return $userId;
 		} else {
 			return 0;

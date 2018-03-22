@@ -40,7 +40,7 @@ class zenario_users__admin_boxes__content extends zenario_users {
 		//Try to load the privacy options from the translation_chains table.
 		if ($cID && $cType
 		 && ($equivId = ze\content::equivId($box['key']['source_cID'], $box['key']['cType']))
-		 && ($chain = ze\row::get('translation_chains', true, array('equiv_id' => $equivId, 'type' => $cType)))) {
+		 && ($chain = ze\row::get('translation_chains', true, ['equiv_id' => $equivId, 'type' => $cType]))) {
 			
 			$values['privacy/privacy'] = $chain['privacy'];
 		}
@@ -65,16 +65,16 @@ class zenario_users__admin_boxes__content extends zenario_users {
 				switch ($chain['privacy']) {
 					case 'group_members':
 						$values['privacy/group_ids'] =
-							ze\escape::in(ze\row::getArray('group_link', 'link_to_id', array('link_to' => 'group', 'link_from' => 'chain', 'link_from_id' => $equivId, 'link_from_char' => $cType)), true);
+							ze\escape::in(ze\row::getArray('group_link', 'link_to_id', ['link_to' => 'group', 'link_from' => 'chain', 'link_from_id' => $equivId, 'link_from_char' => $cType]), true);
 						break;
 					
 					case 'with_role':
 						$values['privacy/role_ids'] =
-							ze\escape::in(ze\row::getArray('group_link', 'link_to_id', array('link_to' => 'role', 'link_from' => 'chain', 'link_from_id' => $equivId, 'link_from_char' => $cType)), true);
+							ze\escape::in(ze\row::getArray('group_link', 'link_to_id', ['link_to' => 'role', 'link_from' => 'chain', 'link_from_id' => $equivId, 'link_from_char' => $cType]), true);
 						break;
 					
 					case 'call_static_method':
-						if ($privacySettings = ze\row::get('translation_chain_privacy', true, array('equiv_id' => $equivId, 'content_type' => $cType))) {
+						if ($privacySettings = ze\row::get('translation_chain_privacy', true, ['equiv_id' => $equivId, 'content_type' => $cType])) {
 							$values['privacy/module_class_name'] = $privacySettings['module_class_name'];
 							$values['privacy/method_name'] = $privacySettings['method_name'];
 							$values['privacy/param_1'] = $privacySettings['param_1'];
@@ -140,7 +140,7 @@ class zenario_users__admin_boxes__content extends zenario_users {
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		
-		$tagIds = array($box['key']['cType']. '_'. $box['key']['cID']);
+		$tagIds = [$box['key']['cType']. '_'. $box['key']['cID']];
 		
 		if (empty($box['tabs']['privacy']['hidden'])
 		 && ze\ring::engToBoolean($box['tabs']['privacy']['edit_mode']['on'] ?? false)

@@ -183,3 +183,13 @@ _sql
 	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX]]email_template_sending_log` MODIFY COLUMN `email_template_name` varchar(250) CHARACTER SET utf8mb4 NULL
 _sql
 );
+
+//Rename a site-setting
+if (ze\dbAdm::needRevision(132)) {
+	$days = ze::setting('period_to_delete_the_email_template_sending_log');
+	if ($days) {
+		ze\site::setSetting('period_to_delete_the_email_template_sending_log_headers', $days);
+		ze\site::setSetting('period_to_delete_the_email_template_sending_log_content', $days);
+	}
+	ze\dbAdm::revision(132);
+}

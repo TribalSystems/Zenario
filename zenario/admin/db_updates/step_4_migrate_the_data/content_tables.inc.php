@@ -41,7 +41,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 //Scan anything related to a Content Item and sync the inline_images table properly
 if (ze\dbAdm::needRevision(30731)) {
 	
-	$result = ze\row::query('content_items', array('id', 'type', 'visitor_version', 'admin_version'), array(), array('type', 'id'));
+	$result = ze\row::query('content_items', ['id', 'type', 'visitor_version', 'admin_version'], [], ['type', 'id']);
 	while ($row = ze\sql::fetchAssoc($result)) {
 		
 		if ($row['visitor_version']) {
@@ -59,11 +59,11 @@ if (ze\dbAdm::needRevision(30731)) {
 if (ze\dbAdm::needRevision(31200)) {
 	$docstoreDir = ze::setting('docstore_dir');
 	
-	foreach (array(
-		array('thumbnail_180x130_data', 'thumbnail_180x130_width', 'thumbnail_180x130_height', 180, 130),
-		array('thumbnail_64x64_data', 'thumbnail_64x64_width', 'thumbnail_64x64_height', 64, 64),
-		array('thumbnail_24x23_data', 'thumbnail_24x23_width', 'thumbnail_24x23_height', 24, 23)
-	) as $c) {
+	foreach ([
+		['thumbnail_180x130_data', 'thumbnail_180x130_width', 'thumbnail_180x130_height', 180, 130],
+		['thumbnail_64x64_data', 'thumbnail_64x64_width', 'thumbnail_64x64_height', 64, 64],
+		['thumbnail_24x23_data', 'thumbnail_24x23_width', 'thumbnail_24x23_height', 24, 23]
+	] as $c) {
 
 		$sql = "
 			SELECT id, location, path, filename, data, mime_type, width, height
@@ -143,7 +143,7 @@ if (ze\dbAdm::needRevision(39440)) {
 
 //Migrate data from documents short_checksum_list column to new table.
 if (ze\dbAdm::needRevision(40190)) {
-	$result = ze\row::query('documents', array('id', 'short_checksum_list'), array());
+	$result = ze\row::query('documents', ['id', 'short_checksum_list'], []);
 	while ($document = ze\sql::fetchAssoc($result)) {
 		if ($document['short_checksum_list']) {
 			$redirects = explode(',', $document['short_checksum_list']);
@@ -357,8 +357,8 @@ if (ze\dbAdm::needRevision(43250)) {
 	//Look for all grid layouts
 	foreach (ze\row::getArray(
 		'layouts',
-		array('layout_id', 'family_name', 'file_base_name'),
-		array('family_name' => 'grid_templates')
+		['layout_id', 'family_name', 'file_base_name'],
+		['family_name' => 'grid_templates']
 	) as $layout) {
 		
 		//Attempt to read the grid data from the template file
@@ -369,7 +369,7 @@ if (ze\dbAdm::needRevision(43250)) {
 			//Attempt to regenerate the .tpl and .css files.
 			//This may fail (e.g. if the files were not writable), but even if it fails it may still return
 			//the slot information.
-			$slots = array();
+			$slots = [];
 			$output = ze\gridAdm::generateDirectory($data, $slots, $writeToFS = true, $preview = false, $layout['file_base_name']);
 			
 			if (ze::isError($output)) {
@@ -457,7 +457,7 @@ if (ze\dbAdm::needRevision(43720)) {
 
 
 //Fix any bad data left over from a bug where the images used by library plugins were not correctly tracked in the linking tables
-if (ze\dbAdm::needRevision(43723)) {
+if (ze\dbAdm::needRevision(44260)) {
 	
 	$sql = "
 		SELECT id, content_id, content_type, content_version
@@ -469,6 +469,36 @@ if (ze\dbAdm::needRevision(43723)) {
 		ze\contentAdm::resyncLibraryPluginFiles($instance['id'], $instance);
 	}
 	
-	ze\dbAdm::revision(43723);
+	ze\dbAdm::revision(44260);
+}
+
+//Migrate data after removing a setting.
+if (ze\dbAdm::needRevision(44269)) {
+	
+	if (!ze::setting('sign_in_access_log')) { 
+		ze\site::setSetting('period_to_delete_sign_in_log', 'never_save');
+	} elseif (!ze::setting('period_to_delete_sign_in_log')) {
+		ze\site::setSetting('period_to_delete_sign_in_log', 'never_delete');
+	}
+	
+	if (!ze::setting('log_user_access')) {
+		ze\site::setSetting('period_to_delete_the_user_content_access_log', 'never_save');
+	} elseif (!ze::setting('period_to_delete_the_user_content_access_log')) {
+		ze\site::setSetting('period_to_delete_the_user_content_access_log', 'never_delete');
+	}
+	
+	ze\dbAdm::revision(44269);
+}
+
+//Migrate data for zenario_extranet after renaming a plugin setting
+if (ze\dbAdm::needRevision(44276)) {
+	
+	$sql = '
+		UPDATE ' . DB_NAME_PREFIX . 'plugin_settings
+		SET name = "show_link_to_registration_page", value = !value
+		WHERE name = "hide_registration_link"';
+	ze\sql::update($sql);
+	
+	ze\dbAdm::revision(44276);
 }
 

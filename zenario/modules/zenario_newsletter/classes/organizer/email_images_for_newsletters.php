@@ -48,9 +48,9 @@ class zenario_newsletter__organizer__email_images_for_newsletters extends zenari
 	}
 	
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
-		$key = array(
+		$key = [
 			'foreign_key_to' => 'newsletter',
-			'foreign_key_id' => $refinerId);
+			'foreign_key_id' => $refinerId];
 		$privCheck = ze\priv::check('_PRIV_EDIT_NEWSLETTER');
 		
 		return require ze::funIncPath('zenario_common_features', 'media.handleOrganizerPanelAJAX');

@@ -48,7 +48,7 @@ class row {
 		$exists = false;
 	
 		if (!$useCache || !isset(\ze::$dbCols[$prefixAndTable])) {
-			\ze::$dbCols[$prefixAndTable] = array();
+			\ze::$dbCols[$prefixAndTable] = [];
 			$useCache = false;
 		}
 	
@@ -161,7 +161,7 @@ class row {
 			if ($ignoreMissingColumns && !$isWhere) {
 				return;
 			} else {
-				\ze\db::reportDatabaseErrorFromHelperFunction(\ze\admin::phrase('The column `[[col]]` does not exist in the table `[[table]]`.', array('col' => $col, 'table' => $tableName)));
+				\ze\db::reportDatabaseErrorFromHelperFunction(\ze\admin::phrase('The column `[[col]]` does not exist in the table `[[table]]`.', ['col' => $col, 'table' => $tableName]));
 			}
 		}
 	
@@ -171,7 +171,7 @@ class row {
 		if ($colDef->encrypted) {
 			if ($isWhere) {
 				if (!$colDef->hashed) {
-					\ze\db::reportDatabaseErrorFromHelperFunction(\ze\admin::phrase('The column `[[col]]` in the table `[[table]]` is encrypted and cannot be used in a WHERE-statement.', array('col' => $col, 'table' => $tableName)));
+					\ze\db::reportDatabaseErrorFromHelperFunction(\ze\admin::phrase('The column `[[col]]` in the table `[[table]]` is encrypted and cannot be used in a WHERE-statement.', ['col' => $col, 'table' => $tableName]));
 				}
 			} else {
 				$sql .= ($first? '' : ','). '`%'. \ze\escape::sql($col). '` = \''. \ze\escape::sql((string) \ze\zewl::encrypt($val, true)). '\'';
@@ -294,7 +294,7 @@ class row {
 	
 	private static function selectInternal(
 		$table, $ids,
-		$ignoreMissingColumns = false, $cols = false, $multiple = false, $mode = false, $orderBy = array(),
+		$ignoreMissingColumns = false, $cols = false, $multiple = false, $mode = false, $orderBy = [],
 		$distinct = false, $returnArrayIndexedBy = false, $addId = false
 	) {
 		$tableName = \ze::$lastDBPrefix. $table;
@@ -304,7 +304,7 @@ class row {
 		}
 	
 		if (\ze::$pkCols[$tableName] === '') {
-			\ze\db::reportDatabaseErrorFromHelperFunction(\ze\admin::phrase('The table `[[table]]` does not exist.', array('table' => $tableName)));
+			\ze\db::reportDatabaseErrorFromHelperFunction(\ze\admin::phrase('The table `[[table]]` does not exist.', ['table' => $tableName]));
 		}
 	
 		if ($cols === true) {
@@ -313,7 +313,7 @@ class row {
 	
 	
 		if ($returnArrayIndexedBy !== false) {
-			$out = array();
+			$out = [];
 		
 			if ($result = self::selectInternal($table, $ids, $ignoreMissingColumns, $cols, true, false, $orderBy, $distinct, false, !$distinct)) {
 				while ($row = \ze\sql::fetchAssoc($result)) {
@@ -352,9 +352,9 @@ class row {
 	
 		if (!is_array($ids)) {
 			if (\ze::$pkCols[$tableName]) {
-				$ids = array(\ze::$pkCols[$tableName] => $ids);
+				$ids = [\ze::$pkCols[$tableName] => $ids];
 			} else {
-				$ids = array('id' => $ids);
+				$ids = ['id' => $ids];
 			}
 		}
 	
@@ -410,11 +410,11 @@ class row {
 						}	
 					
 						if (!isset($dbCols[$col])) {
-							\ze\db::reportDatabaseErrorFromHelperFunction(\ze\admin::phrase('The column `[[col]]` does not exist in the table `[[table]]`.', array('col' => $col, 'table' => $tableName)));
+							\ze\db::reportDatabaseErrorFromHelperFunction(\ze\admin::phrase('The column `[[col]]` does not exist in the table `[[table]]`.', ['col' => $col, 'table' => $tableName]));
 				
 						} elseif ($dbCols[$col]->encrypted) {
 							if ($pre !== '') {
-								\ze\db::reportDatabaseErrorFromHelperFunction(\ze\admin::phrase('The column `[[col]]` in the table `[[table]]` is encrypted. You cannot use MIN(), MAX() or other group-statements on it.', array('col' => $col, 'table' => $tableName)));
+								\ze\db::reportDatabaseErrorFromHelperFunction(\ze\admin::phrase('The column `[[col]]` in the table `[[table]]` is encrypted. You cannot use MIN(), MAX() or other group-statements on it.', ['col' => $col, 'table' => $tableName]));
 							}
 					
 							$sql .= '`%'. \ze\escape::sql($col). '` AS `'. \ze\escape::sql($col). '`';
@@ -432,11 +432,11 @@ class row {
 					}
 				} else {
 					if (!isset($dbCols[$cols])) {
-						\ze\db::reportDatabaseErrorFromHelperFunction(\ze\admin::phrase('The column `[[col]]` does not exist in the table `[[table]]`.', array('col' => $cols, 'table' => $tableName)));
+						\ze\db::reportDatabaseErrorFromHelperFunction(\ze\admin::phrase('The column `[[col]]` does not exist in the table `[[table]]`.', ['col' => $cols, 'table' => $tableName]));
 			
 					} elseif ($dbCols[$cols]->encrypted) {
 						if ($pre !== '') {
-							\ze\db::reportDatabaseErrorFromHelperFunction(\ze\admin::phrase('The column `[[col]]` in the table `[[table]]` is encrypted. You cannot use MIN(), MAX() or other group-statements on it.', array('col' => $cols, 'table' => $tableName)));
+							\ze\db::reportDatabaseErrorFromHelperFunction(\ze\admin::phrase('The column `[[col]]` in the table `[[table]]` is encrypted. You cannot use MIN(), MAX() or other group-statements on it.', ['col' => $cols, 'table' => $tableName]));
 						}
 				
 						$sql .= '`%'. \ze\escape::sql($cols). '` AS `'. \ze\escape::sql($cols). '`';
@@ -471,7 +471,7 @@ class row {
 	
 		if (!empty($orderBy)) {
 			if (!is_array($orderBy)) {
-				$orderBy = array($orderBy);
+				$orderBy = [$orderBy];
 			}
 			$first = true;
 			foreach ($orderBy as $col) {
@@ -532,7 +532,7 @@ class row {
 	}
 	
 	private static function setInternal(
-		$table, $values, $ids = array(),
+		$table, $values, $ids = [],
 		$ignore = false, $ignoreMissingColumns = false,
 		$markNewThingsInSession = false, $insertIfNotPresent = true, $checkCache = true
 	) {
@@ -544,16 +544,16 @@ class row {
 		}
 	
 		if (\ze::$pkCols[$tableName] === '') {
-			\ze\db::reportDatabaseErrorFromHelperFunction(\ze\admin::phrase('The table `[[table]]` does not exist.', array('table' => $tableName)));
+			\ze\db::reportDatabaseErrorFromHelperFunction(\ze\admin::phrase('The table `[[table]]` does not exist.', ['table' => $tableName]));
 		}
 	
 	
 		if (!is_array($ids)) {
 		
 			if (\ze::$pkCols[$tableName]) {
-				$ids = array(\ze::$pkCols[$tableName] => $ids);
+				$ids = [\ze::$pkCols[$tableName] => $ids];
 			} else {
-				$ids = array('id' => $ids);
+				$ids = ['id' => $ids];
 			}
 		}
 	
@@ -610,7 +610,7 @@ class row {
 				INSERT '. ($ignore? 'IGNORE ' : ''). 'INTO `'. \ze\escape::sql($tableName). '` SET ';
 		
 			$first = true;
-			$hadColumns = array();
+			$hadColumns = [];
 			foreach ($values as $col => &$val) {
 				\ze\row::writeCol($tableName, $sql, $col, $val, $first, false, $ignoreMissingColumns);
 				$hadColumns[$col] = true;
@@ -651,7 +651,7 @@ class row {
 
 	//Formerly "insertRow()"
 	public static function insert($table, $values, $ignore = false, $ignoreMissingColumns = false, $markNewThingsInSession = false) {
-		return self::setInternal($table, $values, array(), $ignore, $ignoreMissingColumns, $markNewThingsInSession, true);
+		return self::setInternal($table, $values, [], $ignore, $ignoreMissingColumns, $markNewThingsInSession, true);
 	}
 
 
@@ -675,43 +675,43 @@ class row {
 
 	const queryFromTwig = true;
 	//Formerly "getRows()"
-	public static function query($table, $cols, $ids, $orderBy = array(), $ignoreMissingColumns = false) {
+	public static function query($table, $cols, $ids, $orderBy = [], $ignoreMissingColumns = false) {
 		return self::selectInternal($table, $ids, $ignoreMissingColumns, $cols, true, false, $orderBy);
 	}
 
 	const distinctQueryFromTwig = true;
 	//Formerly "getDistinctRows()"
-	public static function distinctQuery($table, $cols, $ids, $orderBy = array(), $ignoreMissingColumns = false) {
+	public static function distinctQuery($table, $cols, $ids, $orderBy = [], $ignoreMissingColumns = false) {
 		return self::selectInternal($table, $ids, $ignoreMissingColumns, $cols, true, false, $orderBy, true);
 	}
 
 	const getArrayFromTwig = true;
 	//Formerly "getRowsArray()"
-	public static function getArray($table, $cols, $ids = array(), $orderBy = array(), $indexBy = false, $ignoreMissingColumns = false) {
+	public static function getArray($table, $cols, $ids = [], $orderBy = [], $indexBy = false, $ignoreMissingColumns = false) {
 		return self::selectInternal($table, $ids, $ignoreMissingColumns, $cols, true, false, $orderBy, false, $indexBy? $indexBy : true);
 	}
 
 	const getDistinctArrayFromTwig = true;
 	//Formerly "getDistinctRowsArray()"
-	public static function getDistinctArray($table, $cols, $ids = array(), $orderBy = array(), $indexBy = false, $ignoreMissingColumns = false) {
+	public static function getDistinctArray($table, $cols, $ids = [], $orderBy = [], $indexBy = false, $ignoreMissingColumns = false) {
 		return self::selectInternal($table, $ids, $ignoreMissingColumns, $cols, true, false, $orderBy, true, $indexBy? $indexBy : true);
 	}
 
 	const countFromTwig = true;
 	//Formerly "selectCount()"
-	public static function count($table, $ids = array()) {
+	public static function count($table, $ids = []) {
 		return (int) self::selectInternal($table, $ids, false, false, false, 'count');
 	}
 
 	const maxFromTwig = true;
 	//Formerly "selectMax()"
-	public static function max($table, $cols, $ids = array(), $ignoreMissingColumns = false) {
+	public static function max($table, $cols, $ids = [], $ignoreMissingColumns = false) {
 		return self::selectInternal($table, $ids, $ignoreMissingColumns, $cols, false, 'max');
 	}
 
 	const minFromTwig = true;
 	//Formerly "selectMin()"
-	public static function min($table, $cols, $ids = array(), $ignoreMissingColumns = false) {
+	public static function min($table, $cols, $ids = [], $ignoreMissingColumns = false) {
 		return self::selectInternal($table, $ids, $ignoreMissingColumns, $cols, false, 'min');
 	}
 

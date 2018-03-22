@@ -29,43 +29,229 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 class zenario_document_container extends ze\moduleBaseClass {
 	
+	protected $data = [];
+	protected $privacy = false;
+	protected $useDocumentTags = false;
+	
+	protected $dataset = false;
+	protected $datasetFields = [];
+	
 	public function init() {
-		$this->privacy = ze\row::get('translation_chains', 'privacy', array('equiv_id' => ze::$equivId, 'type' => ze::$cType));
 		return true;
 	}
 	
 	public function showSlot() {
-		$userId = ze\user::id();
-		$documentId = $this->setting('document_source');
-		$mergeFields = array();
-		
-		if ($this->setting('container_mode') == 'user_documents' && ze\module::inc('zenario_user_documents')) {
-			// Private user documents
+		$this->privacy = ze\row::get('translation_chains', 'privacy', ['equiv_id' => ze::$equivId, 'type' => ze::$cType]);
+		$mode = $this->setting('container_mode');
+		if ($mode == 'documents') {
+			$documentId = $this->setting('document_source');
+			//Show info in admin mode
 			if (ze\priv::check()) {
-				$this->showUserDocumentPluginAdminInfo();
+				//$this->showDocumentPluginAdminInfo($documentId);
 			}
-			$mergeFields = $this->getDocumentContainerUserDocuments($userId);
-		} else {
-			// Standard documents
-			if (ze\priv::check()) {
-				$this->showDocumentPluginAdminInfo($documentId);
-			}
-			$mergeFields = $this->getDocumentContainerDocuments($documentId);
+			$this->useDocumentTags = ze::setting('enable_document_tags') && $this->setting('document_tags');
+			$this->dataset = ze\dataset::details('documents');
+			$this->datasetFields = ze\dataset::fieldsDetails($this->dataset['id']);
+			$this->getDocumentContainerDocuments($documentId);
 			
-			if ($mergeFields === false) {
+			//Title
+			$this->data['Title_Tags'] = $this->setting('title_tags') ? $this->setting('title_tags') : 'h1';
+			$this->data['main_folder_title'] = false;
+			if ($this->setting('show_folder_name_as_title')) {
+				$this->data['main_folder_title'] = ze\row::get('documents', 'folder_name', $documentId);
+			}
+			
+		} elseif ($mode == 'user_documents') {
+			$userId = ze\user::id();
+			//User documents must be running
+			if (!ze\module::inc('zenario_user_documents')) {
 				return false;
 			}
+			//Show info in admin mode
+			if (ze\priv::check()) {
+				//$this->showUserDocumentPluginAdminInfo();
+			}
+			$this->dataset = ze\dataset::details(ZENARIO_USER_DOCUMENTS_PREFIX . 'user_documents');
+			$this->datasetFields = ze\dataset::fieldsDetails($this->dataset['id']);
+			$this->getDocumentContainerUserDocuments($userId);
 		}
 		
-		$mergeFields['Title_Tags'] = $this->setting('title_tags') ? $this->setting('title_tags') : 'h1';
-		$mergeFields['main_folder_title'] = false;
-		if ($this->setting('show_folder_name_as_title')) {
-			$mergeFields['main_folder_title'] = ze\row::get('documents', 'folder_name', $documentId);
+		if ($this->setting('offer_download_as_zip')) {
+			$documentIds = array_keys($this->data['Documents']);
+			$this->data['Download_Archive'] = true;
+			$this->getArchiveDownloadLink($this->data, $documentIds);
 		}
 		
-		// Display the Plugin
-		$this->framework('Outer', $mergeFields);
+		$this->twigFramework($this->data);
 	}
+	
+	
+	public function getDocumentContainerDocuments($documentId) {
+		$this->data['Documents'] = [];
+		
+		if (!$document = ze\row::get('documents', ['id', 'file_id', 'type', 'thumbnail_id', 'folder_name', 'filename', 'privacy', 'file_datetime', 'title'], $documentId)) {
+			$this->data['error'] = 'no_file';
+			return false;
+		}
+		
+		if ($document['type'] == 'file') {
+			$this->addToDocuments($document);
+		} elseif ($document['type'] == 'folder') {
+			$filesToLoad = $this->setting('show_files_in_folders');
+			if ($filesToLoad == 'folder') {
+				$this->addFilesInFolderToDocuments($documentId);
+			} elseif ($filesToLoad == 'sub-folders') {
+				$this->addFilesInFolderToDocuments($documentId, true, $maxLevel = 2);
+			} elseif ($filesToLoad == 'all') {
+				$this->addFilesInFolderToDocuments($documentId, true);
+			}
+		}
+		return $this->data['Documents'];
+	}
+	
+	
+	private function addToDocuments($document, $isUserDocument = false, $level = 1) {
+		//Add mergefields
+		$document['Document_Level'] = $level;
+		
+		if ($document['type'] == 'folder') {
+			$document['Document_Type'] = 'folder';
+			$document['Document_Mime'] = 'folder';
+			$document['Document_Title'] = $document['folder_name'];
+			$document['Document_Link_Text'] = $document['folder_name'];
+			if ($this->setting('offer_download_as_zip')) {
+				//Add mergefields for archive downloads folder by folder for custom frameworks
+				$document['Download_Archive'] = true;
+				$documents = $this->getFilesInFolder($document['id'], $includeFolders = false);
+				$this->getArchiveDownloadLink($document, array_keys($documents));
+			}
+			
+		} elseif ($document['type'] == 'file') {
+			$file = ze\row::get('files', ['filename', 'created_datetime', 'size', 'mime_type'], $document['file_id']);
+			$document['Document_Created'] = $file['created_datetime'];
+			if (!$isUserDocument) {
+				$document['Document_Title'] = $document['filename'];
+				$document['Document_Link_Text'] = $document['filename'];
+				$document['Document_Link'] = ze\file::getDocumentFrontEndLink($document['id']);
+				//TODO should this be the same link as Document_Link?
+				$fileURL = static::getGoogleAnalyticsDocumentLink($document['file_id'], $this->privacy);
+				$document['Google_Analytics_Link'] = ze\file::trackDownload($fileURL);
+				$document['Document_Type'] = $document['type'];
+			} else {
+				$document['Document_Title'] = $file['filename'];
+				$document['Document_Link_Text'] = htmlspecialchars($file['filename']);
+				$document['Document_Link'] = ze\file::createPrivateLink($document['file_id'], true);
+				$document['Document_Type'] = 'file';
+				$document['file_datetime'] = $document['document_datetime'];
+			}
+			$document['Document_Mime'] = str_replace('/', '_', ze\file::mimeType($document['Document_Link']));
+			
+			if ($this->setting('show_filename')) {
+				//Nothing to do...
+			} elseif ($this->setting('show_title')) {
+				if ($document['title']) {
+					$document['Document_Link_Text'] = $document['title'];
+				} elseif (!$this->setting('show_filename_if_no_title')) {
+					unset($document['Document_Link_Text']);
+				}
+			}
+			
+			if ($this->setting('show_file_size')) {
+				$document['File_Size'] = ze\file::fileSizeConvert($file['size']);
+			}
+			if ($this->setting('show_upload_date')) {
+				$uploadDate = ze\date::formatDateTime($document['file_datetime'], '_MEDIUM');
+				$document['Upload_Date'] = $this->phrase('Uploaded: [[date]]', ['date' => $uploadDate]);
+			}
+			
+			//Add Thumbnail
+			if ($this->setting('show_thumbnails')) {
+				$thumbnailId = $document['thumbnail_id'];
+				//Use file if image
+				if (!$thumbnailId && ze\file::isImageOrSVG($file['mime_type'])) {
+					$thumbnailId = $document['file_id'];
+				}
+				if ($thumbnailId) {
+					$document['Thumbnail'] = static::createThumbnailHtml($thumbnailId, $this->setting('width'),  $this->setting('height'), $this->setting('canvas'), $this->setting('lazy_load_images'));
+				}
+			}
+			
+			//Make document dataset fields available in framework
+			foreach ($this->datasetFields as $dbColumn => $datasetField) {
+				$document[$dbColumn] = ze\dataset::fieldDisplayValue($this->dataset, $datasetField, $document['id']);
+			}
+		}
+		$this->data['Documents'][$document['id']] = $document;
+	}
+	
+	public function getFilesInFolder($folderId, $includeFolders = false) {
+		$files = [];
+		$sql = '
+			SELECT d.id, d.file_id, d.type, d.thumbnail_id, d.folder_name, d.filename, d.privacy, d.file_datetime, d.title
+			FROM ' . DB_NAME_PREFIX . 'documents d';
+		if ($this->useDocumentTags) {
+			$sql .= '
+				LEFT JOIN ' . DB_NAME_PREFIX . 'document_tag_link dtl
+					ON d.id = dtl.document_id';
+		}
+		$sql .= '
+			WHERE d.folder_id = ' . (int)$folderId;
+		if ($this->useDocumentTags) {
+			$sql .= '
+				AND (d.type = "folder" OR dtl.tag_id IN (' . ze\escape::sql($this->setting('document_tags')) . '))';
+		}
+		if (!$includeFolders) {
+			$sql .= '
+				AND d.type = "file"';
+		}
+		$sql .= '
+			GROUP BY d.id
+			ORDER BY d.ordinal';
+		$result = ze\sql::select($sql);
+		while ($row = ze\sql::fetchAssoc($result)) {
+			$files[$row['id']] = $row;
+		}
+		return $files;
+	}
+	
+	private function addFilesInFolderToDocuments($folderId, $recursive = false, $maxLevel = false, $level = 1) {
+		$documents = $this->getFilesInFolder($folderId, $includeFolders = true);
+		
+		foreach ($documents as $document) {
+			if ($document['type'] == 'file') {
+				$this->addToDocuments($document, false, $level);
+			} elseif ($document['type'] == 'folder' && $recursive && (!$maxLevel || $maxLevel > $level)) {
+				//Add an entry for the folder if showing folders
+				if ($this->setting('show_folders_in_results')) {
+					$this->addToDocuments($document, false, $level);
+				}
+				
+				$this->addFilesInFolderToDocuments($document['id'], true, $maxLevel, $level + 1);
+			}
+		}
+	}
+	
+	private function getDocumentContainerUserDocuments($userId) {
+		$this->data['Documents'] = [];
+		//Must be a user
+		if (!$userId) {
+			$this->data['error'] = 'no_user';
+			return false;
+		}
+		
+		$result = ze\row::query(ZENARIO_USER_DOCUMENTS_PREFIX . 'user_documents', ['id', 'type', 'file_id', 'title', 'folder_name', 'thumbnail_id', 'document_datetime'], ['user_id' => $userId], 'ordinal');
+		//Must be at least one file
+		if (!ze\sql::numRows($result)) {
+			$this->data['error'] = 'no_files';
+			return false;
+		}
+		
+		while ($document = ze\sql::fetchAssoc($result)) {
+			$this->addToDocuments($document, $isUserDocument = true);
+		}
+		return $this->data['Documents'];
+	}
+	
 	
 	public function handlePluginAJAX() {
 		//Download archive
@@ -82,15 +268,17 @@ class zenario_document_container extends ze\moduleBaseClass {
 			}
 			
 			if ($this->setting('container_mode') == 'user_documents' && ze\module::inc('zenario_user_documents')) {
+				$sqlSelect = 'd.id, d.file_id, f.filename, f.path, f.filename as doc_filename';
 				$sqlTable = DB_NAME_PREFIX . ZENARIO_USER_DOCUMENTS_PREFIX . 'user_documents';
 				$sqlWhere = 'AND user_id = ' . (int)ze\user::id();
 			} else {
+				$sqlSelect = 'd.id, d.file_id, f.filename, f.path, d.filename as doc_filename';
 				$sqlTable = DB_NAME_PREFIX . 'documents';
 				$sqlWhere = '';
 			}
 			$paths = '';
 			$sql = '
-				SELECT d.id, d.file_id, f.filename, f.path, d.filename as doc_filename
+				SELECT ' . $sqlSelect . '
 				FROM ' . ze\escape::sql($sqlTable) . ' d
 				INNER JOIN '.DB_NAME_PREFIX.'files f
 					ON d.file_id = f.id
@@ -131,14 +319,14 @@ class zenario_document_container extends ze\moduleBaseClass {
 	
 	
 	private function showDocumentPluginAdminInfo($documentId) {
-		if ($documentId && $document = ze\row::get('documents', array('file_id', 'type', 'folder_name','filename','title'), $documentId)) {
+		if ($documentId && $document = ze\row::get('documents', ['file_id', 'type', 'folder_name','filename','title'], $documentId)) {
 			if ($document['type'] == 'file') {
-				if ($file = ze\row::get('files', array('id', 'filename'), $document['file_id'])) {
+				if ($file = ze\row::get('files', ['id', 'filename'], $document['file_id'])) {
 					 $showingText = 'Document ' . '"' . $document['filename'] . '"';
 				} else {
 					$showingText = 'Missing document with file id "' . $document['file_id'] . '"';
 				}
-				$pluginSettingsForEditView = array("Showing: " => $showingText);
+				$pluginSettingsForEditView = ["Showing: " => $showingText];
 			} else {
 				if ($this->setting('show_folders_in_results')) {
 					$showingText = 'Documents and sub-folder names as headings in folder "' .  $document['folder_name'] . '"';
@@ -162,14 +350,14 @@ class zenario_document_container extends ze\moduleBaseClass {
 				if (ze::setting('enable_document_tags') && $this->setting('document_tags')) {
 					$documentTagText = "Only showing documents with one of the following tags:";
 					$documentTagsArray = explode(',', $this->setting('document_tags'));
-					$tagNamesArray = ze\row::getArray('document_tags', 'tag_name', array('id' => $documentTagsArray));
+					$tagNamesArray = ze\row::getArray('document_tags', 'tag_name', ['id' => $documentTagsArray]);
 					foreach ($tagNamesArray as $tagName) {
 						$documentTagText .= " " . $tagName . ",";
 					}
 					$documentTagText = rtrim($documentTagText, ",");
-					$pluginSettingsForEditView = array("Showing: " => $showingText, "Tag filter:" => $documentTagText);
+					$pluginSettingsForEditView = ["Showing: " => $showingText, "Tag filter:" => $documentTagText];
 				} else {
-					$pluginSettingsForEditView = array("Showing: " => $showingText);
+					$pluginSettingsForEditView = ["Showing: " => $showingText];
 				}
 			}
 		} else {
@@ -177,16 +365,16 @@ class zenario_document_container extends ze\moduleBaseClass {
 			if ($documentId) {
 				$showingText = 'Missing document with id "' . $documentId . '"';
 			}
-			$pluginSettingsForEditView = array("Showing: " => $showingText);
+			$pluginSettingsForEditView = ["Showing: " => $showingText];
 		}
 		
 		//use $this->zAPISettings for array of plugin settings
 		$this->twigFramework(
-			array(
+			[
 				'Heading' => 'This is a Document Container plugin', 
 				'Sub_Heading' => 'Automatically shows a list of documents according to its settings (blank if nothing set):', 
 				'Settings' => $pluginSettingsForEditView
-			), 
+			], 
 			false, 
 			false, 
 			'zenario/frameworks/show_plugin_settings.twig.html'
@@ -195,211 +383,23 @@ class zenario_document_container extends ze\moduleBaseClass {
 	
 	private function showUserDocumentPluginAdminInfo() {
 		$this->twigFramework(
-			array(
+			[
 				'Heading' => 'This is a Document container.', 
 				'Sub_Heading' => 'Automatically shows a list of documents according to its settings (blank if nothing set):', 
-				'Settings' => array(
+				'Settings' => [
 					'Showing: ' => 'User documents for logged in user'
-				)
-			), 
+				]
+			], 
 			false, 
 			false, 
 			'zenario/frameworks/show_plugin_settings.twig.html'
 		);
 	}
 	
-	public function getDocumentContainerDocuments($documentId) {
-		$mergeFields = array();
-		
-		if (!$documentId) {
-			$mergeFields['error'] = 'no_files';
-			return $mergeFields;
-		}
-		
-		$document = ze\row::get(
-			'documents', 
-			array(
-				'id', 
-				'file_id', 
-				'type', 
-				'thumbnail_id', 
-				'folder_name',
-				'filename', 
-				'privacy', 
-				'file_datetime', 
-				'title'
-			),
-			$documentId
-		);
-		
-		// Return false if document does not exist
-		if (!$document) {
-			return false;
-		}
-		
-		if ($document['type'] == 'file') {
-			
-			$childFiles = array();
-			if ($childFiles = $this->getFilesInFolder(false, $documentId)) {
-				$childFiles =  $this->addMergeFields($childFiles, $level = 1);
-			}
-			if (isset($childFiles[$documentId])){
-				$mergeFields = $childFiles[$documentId];
-			}
-			
-		} elseif ($document['type'] == 'folder') {
-		
-			$childFiles = array();
-			$level = 1;
-			
-			// Get top level files
-			if ($childFiles = $this->getFilesInFolder($documentId)) {
-				$childFiles =  $this->addMergeFields($childFiles, $level);
-			}
-			
-			// Get folders
-			if ($this->setting('show_files_in_folders') != 'folder') {
-				if ($childFolders = static::getFoldersInFolder($documentId)) {
-					$this->addFilesToDocumentArray($childFiles, $childFolders, $level);
-				}
-			}
-			
-			if ($this->setting('offer_download_as_zip')) {
-				$ids = array_keys($childFiles);
-				
-				$mergeFields['Download_Archive'] = true;
-				$this->getArchiveDownloadLink($mergeFields, $ids);
-			}
-			
-			$mergeFields['Documents'] = $childFiles;
-		}
-		return $mergeFields;
-	}
-	
-	private function getDocumentContainerUserDocuments($userId) {
-		$mergeFields = array();
-		
-		if (!$userId) {
-			$mergeFields['error'] = 'no_user';
-			return $mergeFields;
-		}
-		
-		$documents = ze\row::getArray(
-			ZENARIO_USER_DOCUMENTS_PREFIX . 'user_documents', 
-			array(
-				'id', 
-				'type', 
-				'file_id', 
-				'folder_name', 
-				'thumbnail_id', 
-				'document_datetime', 
-				'title'
-			), 
-			array('user_id' => $userId), 
-			'ordinal'
-		);
-		
-		if (!$documents) {
-			$mergeFields['error'] = 'no_files';
-			return $mergeFields;
-		}
-		
-		if ($this->setting('offer_download_as_zip')) {
-			$ids = array_keys($documents);
-			$mergeFields['Download_Archive'] = true;
-			$this->getArchiveDownloadLink($mergeFields, $ids, $userId);
-		}
-		$fields = ze\dataset::fieldsDetails(ZENARIO_USER_DOCUMENTS_PREFIX. 'user_documents');
-		foreach ($documents as &$document) {
-			$file = ze\row::get('files', array('filename', 'created_datetime', 'size'), $document['file_id']);
-			$link = ze\file::createPrivateLink($document['file_id'], true);
-			$document['Document_Type'] =  'file';
-			$document['Document_Link'] = $link;
-			$document['Document_created_datetime'] = $file['created_datetime'];
-			$document['Document_Mime'] = str_replace('/', '_', ze\file::mimeType($link));
-			$document['Document_Title'] = $file['filename'];
-			$document['Document_Link_Text'] = htmlspecialchars($file['filename']);
-			$document['Document_Level'] = 1;
-			
-			if ($document['thumbnail_id'] && $this->setting('show_thumbnails')) {
-				$thumbnailHtml= static::createThumbnailHtml($document['thumbnail_id'], $this->setting('width'), $this->setting('height'), $this->setting('canvas'), $this->setting('lazy_load_images'));
-				$document['Thumbnail'] = $thumbnailHtml;
-			} else {
-				$document['Thumbnail'] = false;
-			}
-		
-			if($this->setting('show_title')) {
-				$document['Title_Exists'] = true;
-			}
-			
-			if ($this->setting('show_file_size') && $file['size']) {
-				$fileSize = ze\file::fileSizeConvert($file['size']);
-				$document['File_Size'] = $fileSize;
-			}
-			if ($this->setting('show_upload_date') && $document['document_datetime']) {
-				$uploadDate = ze\date::formatDateTime($document['document_datetime'], '_MEDIUM');
-				$document['Upload_Date'] = $this->phrase('Uploaded: [[date]]', array('date' => $uploadDate));
-			}
-			
-		
-			$documentCustomData = ze\row::get(ZENARIO_USER_DOCUMENTS_PREFIX.'user_documents_custom_data', true, $document['id']);
-			
-			foreach ($fields as $fieldName => &$field) {
-				$value = $displayValue = '';
-			
-				if ($documentCustomData && isset($documentCustomData[$fieldName])) {
-					$value = $displayValue = $documentCustomData[$fieldName];
-				
-					switch ($field['type']) {
-						case 'radios':
-						case 'select':
-							$displayValue = ze\dataset::fieldValueLabel($value);
-							break;
-						case 'centralised_radios':
-						case 'centralised_select':
-							if (!isset($field['lov'])) {
-								$field['lov'] = ze\dataset::fieldLOV($field);
-							}
-							if (isset($field['lov'][$value])) {
-								$displayValue = $field['lov'][$value];
-							}
-							break;
-					}
-			
-				} elseif ($field['type'] == 'checkboxes') {
-					//Skip checkboxes for now...
-				}
-			
-				$document[$fieldName] = $displayValue;
-			}
-		}
-		$mergeFields['Documents'] = $documents;
-		return $mergeFields;
-	}
-	
-	private function getDocumentThumbnail($documentThumbnailId, $fileId) {
-		$thumbnailId = false;
-		if ($this->setting('show_thumbnails')) {
-			if ($documentThumbnailId) {
-				$thumbnailId = $documentThumbnailId;
-			} else {
-				$mimeType = ze\row::get('files', 'mime_type', $fileId);
-				if (ze\file::isImageOrSVG($mimeType)) {
-					$thumbnailId = $fileId;
-				}
-			}
-		}
-		$thumbnailHTML = false;
-		if ($thumbnailId) {
-			$thumbnailHTML = static::createThumbnailHtml($thumbnailId, $this->setting('width'), $this->setting('height'), $this->setting('canvas'), $this->setting('lazy_load_images'));
-		}
-		return $thumbnailHTML;
-	}
-	
 	private static function getGoogleAnalyticsDocumentLink($fileId, $privacyLevel = false, $docFilename = false) {
 		$path = 'File not found';
 		if (is_numeric($fileId)) {
-			$file = ze\row::get('files', array('id', 'filename', 'path', 'created_datetime', 'short_checksum'), $fileId);
+			$file = ze\row::get('files', ['id', 'filename', 'path', 'created_datetime', 'short_checksum'], $fileId);
 			if ($docFilename || $file['filename']) {
 				if (!ze\server::isWindows() && $privacyLevel == 'public' && (ze\file::docstorePath($file['id'], false))) {
 					$path = 'public/downloads/' . $file['short_checksum'];
@@ -418,19 +418,16 @@ class zenario_document_container extends ze\moduleBaseClass {
 		return $path;
 	}
 	
-	private function getArchiveDownloadLink(&$mergeFields, $ids, $userId = false) {
+	private function getArchiveDownloadLink(&$mergeFields, $documentIds) {
 		//Show a message if there are no files in the archive
-		$emptyArchive = $this->archiveIsEmpty($ids);
+		$emptyArchive = $this->archiveIsEmpty($documentIds);
 		if ($emptyArchive) {
 			$mergeFields['Empty_Archive'] = true;
 		//Otherwise show a download link
 		} else {
-			$requests = array();
+			$requests = [];
 			$requests['build'] = $this->instanceId;
-			$requests['ids'] = implode(',', $ids);
-			if ($userId) {
-				$requests['user_id'] = $userId;
-			}
+			$requests['ids'] = implode(',', $documentIds);
 			$mergeFields['Anchor_Link'] = 'href="' . $this->pluginAJAXLink($requests) . '"';
 			
 			//Google analytics link
@@ -445,7 +442,7 @@ class zenario_document_container extends ze\moduleBaseClass {
 		$archiveName = $this->setting('zip_file_name');
 		//Otherwise choose the build folder name
 		if (!$archiveName) {
-			$archiveName = ze\row::get('documents', 'folder_name', array('id' => $this->setting('document_source'), 'type' => 'folder'));
+			$archiveName = ze\row::get('documents', 'folder_name', ['id' => $this->setting('document_source'), 'type' => 'folder']);
 		}
 		//Otherwise default to "files"
 		if (!$archiveName) {
@@ -454,10 +451,10 @@ class zenario_document_container extends ze\moduleBaseClass {
 		return $archiveName;
 	}
 	
-	private function archiveIsEmpty($ids) {
+	private function archiveIsEmpty($documentIds) {
 		//Check there is at least 1 non-folder document in the list of ids of the archive
-		foreach ($ids as $documentId) {
-			$fileInArchive = ze\row::exists('documents', array('id' => $documentId, 'type' => 'file'));
+		foreach ($documentIds as $documentId) {
+			$fileInArchive = ze\row::exists('documents', ['id' => $documentId, 'type' => 'file']);
 			if ($fileInArchive) {
 				return false;
 			}
@@ -480,169 +477,8 @@ class zenario_document_container extends ze\moduleBaseClass {
 		}
 	}
 	
-	
-	public function addMergeFields($documents, $level) {
-		foreach ($documents as $key => $childDoc) {
-			$file = ze\row::get('files', array('created_datetime', 'size'), $childDoc['file_id']);
-			$documents[$key]['id'] = $childDoc['id'];
-			$documents[$key]['Document_Type'] = 'file';
-			$documents[$key]['Document_Link'] = ze\file::getDocumentFrontEndLink($childDoc['id']);
-			$fileURL = static::getGoogleAnalyticsDocumentLink($childDoc['file_id'], $this->privacy);
-			$documents[$key]['Google_Analytics_Link'] = ze\file::trackDownload($fileURL);
-			$documents[$key]['Document_Mime'] = str_replace('/', '_', ze\file::mimeType($documents[$key]['Document_Link']));
-			$documents[$key]['Document_created_datetime'] = $file['created_datetime'];
-			$documents[$key]['Document_Title'] = $childDoc['filename'];
-			$documents[$key]['Document_Link_Text'] = $childDoc['filename'];
-			$documents[$key]['Document_Level'] = $level;
-			$documents[$key]['Thumbnail'] = $this->getDocumentThumbnail($childDoc['thumbnail_id'], $childDoc['file_id']);
-			if ($this->setting('show_file_size') && $file['size']) {
-				$fileSize = ze\file::fileSizeConvert($file['size']);
-				$documents[$key]['File_Size'] = $fileSize;
-			}
-			if ($this->setting('show_upload_date') && $childDoc['file_datetime']) {
-				$uploadDate = ze\date::formatDateTime($childDoc['file_datetime'], '_MEDIUM');
-				$documents[$key]['Upload_Date'] = $this->phrase('Uploaded: [[date]]', array('date' => $uploadDate));
-			}
-			if($this->setting('show_title')) {
-				$documents[$key]['Title_Folder_Exists'] = true;
-			}
-			$documents[$key]['Title_Exists'] =  $childDoc['title'];
-			
-			// Make document dataset fields available in framework
-			$fields = ze\dataset::fieldsDetails('documents');
-			$documentCustomData = ze\row::get('documents_custom_data', true, $childDoc['id']);
-			foreach ($fields as $fieldName => &$field) {
-				$value = $displayValue = '';
-				if ($documentCustomData && isset($documentCustomData[$fieldName])) {
-					$value = $displayValue = $documentCustomData[$fieldName];
-				
-					switch ($field['type']) {
-						case 'radios':
-						case 'select':
-							$displayValue = ze\dataset::fieldValueLabel($value);
-							break;
-						case 'centralised_radios':
-						case 'centralised_select':
-							if (!isset($field['lov'])) {
-								$field['lov'] = ze\dataset::fieldLOV($field);
-							}
-							if (isset($field['lov'][$value])) {
-								$displayValue = $field['lov'][$value];
-							}
-							break;
-					}
-			
-				} elseif ($field['type'] == 'checkboxes') {
-					//Skip checkboxes for now...
-				}
-			
-				$documents[$key][$fieldName] = $displayValue;
-			}
-		}
-		
-		return $documents;
-	}
-	
-	public function addFolderMergeFields($folder, $level) {
-		$folder['Document_Type'] =  'folder';
-		$folder['Document_Mime'] = 'folder';
-		$folder['Document_Title'] = $folder['folder_name'];
-		$folder['Document_Link_Text'] = $folder['folder_name'];
-		$folder['Document_Level'] = $level;
-		
-		if ($this->setting('offer_download_as_zip')) {
-			$childFiles= $this->getFilesInFolder($folder['id']);
-			$ids = array_keys($childFiles);
-			
-			$folder['Download_Archive'] = true;
-			$this->getArchiveDownloadLink($folder, $ids);
-		}
-		
-		return $folder;
-	}
-	
-	public function getFilesInFolder($folderId = false, $documentId = false) {
-		$childFiles = array();
-		$useDocumentTags = (ze::setting('enable_document_tags') && $this->setting('document_tags'));
-		
-		$sql = "
-			SELECT 
-				d.id, 
-				d.type, 
-				d.file_id, 
-				d.folder_name, 
-				d.thumbnail_id, 
-				d.filename, 
-				d.privacy, 
-				d.file_datetime, 
-				d.title
-			FROM " . DB_NAME_PREFIX . "documents AS d";
-		
-		if ($useDocumentTags) {
-			$sql .= "
-				LEFT JOIN " . DB_NAME_PREFIX . "document_tag_link AS dtl 
-				ON d.id = dtl.document_id";
-		}
-		
-		$sql .= "
-			WHERE TRUE";
-		
-		if ($folderId) {
-			$sql .= "
-				AND d.folder_id = " . (int)$folderId;
-		} elseif ($documentId) {
-			$sql .= "
-				AND d.id = " . (int)$documentId;
-		}
-		
-		if ($useDocumentTags) {
-			$sql .= "
-				AND dtl.tag_id IN (" . ze\escape::sql($this->setting('document_tags')) . ")";
-		}
-		
-		$sql .= "
-				AND d.type = 'file'
-			GROUP BY d.id
-			ORDER BY d.ordinal" ;
-		
-		$result = ze\sql::select($sql);
-		while ($row = ze\sql::fetchAssoc($result)) {
-			$childFiles[$row['id']] = $row;
-		}
-		
-		return $childFiles;
-	}
-	
-	public static function getFoldersInFolder($folderId) {
-		return ze\row::getArray(
-			'documents', 
-			array('id', 'type', 'file_id', 'folder_name'), 
-			array('folder_id' => $folderId, 'type' => 'folder'),
-			'ordinal'
-		);
-	}
-	
-	public function addFilesToDocumentArray(&$documentArray, $foldersArray, $level) {
-		foreach($foldersArray as $folder) {
-			if($this->setting('show_folders_in_results')) {
-				$folder = $this->addFolderMergeFields($folder, $level);
-				$documentArray[$folder['id']] = $folder;
-			}
-			if($cFiles = $this->getFilesInFolder($folder['id'])) {
-				$cFiles =  $this->addMergeFields($cFiles, $level + 1);
-				
-				foreach($cFiles as $file) {
-					$documentArray[$file['id']] = $file;
-				}
-			}
-			if($this->setting('show_files_in_folders') == 'all' && $cFolders = static::getFoldersInFolder($folder['id'])) {
-				$this->addFilesToDocumentArray($documentArray, $cFolders, $level + 1);
-			}
-		}
-	}
-	
 	public static function createThumbnailHtml($thumbnailFileId, $widthIn, $heightIn, $canvas, $lazyload = false) {
-		$thumbnail = ze\row::get('files', array('id', 'filename', 'path'), $thumbnailFileId);
+		$thumbnail = ze\row::get('files', ['id', 'filename', 'path'], $thumbnailFileId);
 		$thumbnailLink = $width = $height = false;
 		ze\file::imageLink($width, $height, $thumbnailLink, $thumbnailFileId, $widthIn, $heightIn, $canvas);
 		$thumbnailHtml = '<img class="sticky_image ';
@@ -651,24 +487,10 @@ class zenario_document_container extends ze\moduleBaseClass {
 		} else {
 			$thumbnailHtml .= '" src="'. htmlspecialchars($thumbnailLink). '"';
 		}
-			$thumbnailHtml .= ' style="width: '. $width. 'px; height: '. $height. 'px;"/>';
+		$thumbnailHtml .= ' style="width: '. $width. 'px; height: '. $height. 'px;"/>';
 		return $thumbnailHtml;
 	}
 	
-	///This function needs works 
-	public function getDocumentTags($documentId, $returnTagNames = false) {
-		$sql = "SELECT dt.tag_name 
-					FROM " . DB_NAME_PREFIX . "documents AS d 
-					LEFT JOIN " . DB_NAME_PREFIX . "document_tag_link AS dtl 
-						ON d.id = dtl.document_id
-					LEFT JOIN "  . DB_NAME_PREFIX . "document_tags AS dt 
-						ON dtl.tag_id = dt.id
-					WHERE d.id = " . (int)$documentId;
-		$result =ze\sql::select($sql);
-		while ($row = ze\sql::fetchRow($result)) {
-			$childFiles[] = array('id' => $row[0], 'type' => $row[1], 'file_id' => $row[2], 'folder_name' => $row[3]);
-		}
-	}
 	
 	
 	
@@ -677,12 +499,9 @@ class zenario_document_container extends ze\moduleBaseClass {
 		switch ($path) {
 			case 'plugin_settings':
 				if (!ze\module::inc('zenario_user_documents')) {
-					$fields['first_tab/container_mode']['hidden'] = true;
+					$fields['first_tab/container_mode']['values']['user_documents']['disabled'] = true;
+					$fields['first_tab/container_mode']['note_below'] = ze\admin::phrase('The "Confidential User Documents" module must be running to show private documents.');
 				}
-				
-				$fields['show_files_in_folders']['hidden'] = true;
-				$fields['show_folders_in_results']['hidden'] = true;
-				$fields['document_tags']['hidden'] = true;
 				break;
 		}
 	}
@@ -690,58 +509,36 @@ class zenario_document_container extends ze\moduleBaseClass {
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		switch ($path) {
 			case 'plugin_settings':
-				if (!empty($fields['container_mode']['hidden']) || $values['container_mode'] == 'documents') {
-					$fields['document_source']['hidden'] = false;
-					if (ze\row::get('documents', 'type', $values['document_source']) == 'folder') {
-						$fields['show_folder_name_as_title']['hidden'] = false;
-						$fields['show_files_in_folders']['hidden'] = false;
-						$fields['show_folders_in_results']['hidden'] = false;
-						if (ze::setting('enable_document_tags')) {
-							$sql = 'SELECT COUNT(*) FROM '.DB_NAME_PREFIX.'document_tags';
-							$result = ze\sql::select($sql);
-							$row = ze\sql::fetchRow($result);
-							if ($row[0] > 0) {
-								$fields['document_tags']['hidden'] = false;
-							}
-						}
-					} else {
-						$fields['show_files_in_folders']['hidden'] = true;
-						$fields['show_folders_in_results']['hidden'] = true;
-						$fields['document_tags']['hidden'] = true;
-						$fields['show_folder_name_as_title']['hidden'] = true;
-					}
-					if ($values['show_files_in_folders'] == 'folder') {
-						$fields['show_folders_in_results']['hidden'] = true;
-					} else {
-						$fields['show_folders_in_results']['hidden'] = false;
-					}
-				} else {
-					$fields['document_source']['hidden'] = true;
-					$fields['show_files_in_folders']['hidden'] = true;
-					$fields['show_folders_in_results']['hidden'] = true;
-					$fields['document_tags']['hidden'] = true;
+				//Default value
+				if (!$values['first_tab/show_files_in_folders']) {
+					$values['first_tab/show_files_in_folders'] = 'folder';
 				}
 				
-				if($values['first_tab/container_mode'] == 'user_documents') {
-					$fields['first_tab/show_folder_name_as_title']['hidden'] = true;
-					$fields['first_tab/title_tags']['hidden'] = true;
-				} else {
-					$fields['first_tab/show_folder_name_as_title']['hidden'] = false;
+				//Show/hide folder specific options
+				$isFolder = false;
+				if ($values['first_tab/container_mode'] == 'documents' && $values['first_tab/document_source']) {
+					$isFolder = ze\row::get('documents', 'type', $values['first_tab/document_source']) == 'folder';
+				}
+				$fields['first_tab/show_files_in_folders']['hidden'] = !$isFolder;
+				$fields['first_tab/show_folders_in_results']['hidden'] = !$isFolder || ($values['first_tab/show_files_in_folders'] == 'folder');
+				$fields['first_tab/document_tags']['hidden'] = !$isFolder 
+					|| !ze::setting('enable_document_tags') 
+					|| ($values['first_tab/container_mode'] != 'documents');
+				
+				if (!ze\row::count('document_tags', [])) {
+					$fields['first_tab/document_tags']['snippet']['html'] = ze\admin::phrase('There are no document tags');
 				}
 				
+				$fields['first_tab/show_folder_name_as_title']['hidden'] = !$isFolder;
 				
-				$fields['first_tab/zip_file_name']['hidden'] = 
-					!$values['offer_download_as_zip'];
-				
-				if (empty($values['first_tab/zip_file_name']) && !empty($values['first_tab/document_source'])) {
-					$values['first_tab/zip_file_name'] = ze\row::get('documents', 'folder_name', array('id' => $values['document_source']));
-				}
-				
-				$fields['first_tab/title_tags']['hidden'] = !$values['first_tab/show_folder_name_as_title'];
-				
-				
-				$hidden =  !$values['first_tab/show_thumbnails'];
+				//Show/hide thumbnail image options
+				$hidden = !$values['first_tab/show_thumbnails'];
 				$this->showHideImageOptions($fields, $values, 'first_tab', $hidden);
+				
+				//Autofill zip name
+				if (empty($values['first_tab/zip_file_name']) && !empty($values['first_tab/document_source'])) {
+					$values['first_tab/zip_file_name'] = ze\row::get('documents', 'folder_name', $values['document_source']);
+				}
 				break;
 		}
 	}

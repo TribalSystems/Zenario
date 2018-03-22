@@ -1,0 +1,190 @@
+/*
+	Common CSS rules for visitor mode
+*/
+
+
+/*  
+	Cookie Consent form - default styles  
+*/
+
+div.zenario_cookie_consent {
+	overflow:hidden;
+	width:calc(100% - 20px);
+	padding:10px;
+	position: fixed;
+	bottom:0;
+	z-index:99;
+	background: #333;
+	font-family:Arial,Helvetica,Sans-Serif;
+	font-size:12px;
+}
+
+div.zenario_cookie_consent .zenario_cookie_consent_wrap {
+	width:100%;
+	max-width:980px;
+	overflow:hidden;
+	margin:auto;
+}
+
+div.zenario_cookie_consent .zenario_cc_message {
+	width:calc(100% - 215px);
+	margin:auto;
+	float:left;
+	line-height:1.4em;
+}
+
+div.zenario_cookie_consent .zenario_cc_message p:first-child {
+	font-weight:bold;
+}
+
+div.zenario_cookie_consent .zenario_cc_buttons {
+	width:200px;
+	padding-left:15px;
+	float:right;
+	text-align:right;
+}
+
+div.zenario_cookie_consent .zenario_cc_buttons div,
+div.zenario_cookie_consent .zenario_cc_buttons div a {
+	display:inline-block;
+}
+
+div.zenario_cookie_consent .zenario_cc_buttons div {
+	padding-right:20px;
+}
+
+div.zenario_cookie_consent .zenario_cc_buttons a {
+	text-decoration:none;
+}
+
+div.zenario_cookie_consent a:hover {
+	text-decoration:underline;
+}
+
+div.zenario_cookie_consent .zenario_cc_accept a {
+	height:30px;
+	line-height:28px;
+	padding:0 15px;
+	background:#FFFFFF;
+	color:#333;
+	font-weight:bold;
+	-webkit-border-radius: 8px;
+	-moz-border-radius: 8px;
+	border-radius: 8px;
+	-webkit-transition: all 0.2s ease-in-out;
+  	-moz-transition: all 0.2s ease-in-out;
+  	-o-transition: all 0.2s ease-in-out;
+  	transition: all 0.2s ease-in-out;
+}
+
+div.zenario_cookie_consent .zenario_cc_accept a:hover {
+	opacity:0.85;
+	text-decoration:none;
+}
+
+div.zenario_cookie_consent .zenario_cc_close a {
+	position:absolute;
+	top:10px;
+	right:15px;
+	display:block;
+	width:15px;
+	height:15px;
+	text-indent:-99px;
+	font-size:0;
+	line-height:0;
+	cursor:pointer;
+}
+
+div.zenario_cookie_consent .zenario_cc_close a:before, 
+div.zenario_cookie_consent .zenario_cc_close a:after {
+  position: absolute;
+  right:0;
+  content: ' ';
+  height: 15px;
+  width: 2px;
+  background-color: #FFF;
+}
+
+div.zenario_cookie_consent .zenario_cc_close a:before {
+  transform: rotate(45deg);
+}
+
+div.zenario_cookie_consent .zenario_cc_close a:after {
+  transform: rotate(-45deg);
+}
+
+div.zenario_cookie_consent,
+div.zenario_cookie_consent a {
+	color:#FFF;
+}
+
+div.zenario_cookie_consent .zenario_cc_message a {
+	text-decoration:none;
+}
+
+div.zenario_cookie_consent .zenario_cc_message a:hover {
+	text-decoration:underline;
+}
+
+body.no_js div.zenario_cookie_consent .zenario_cc_close,
+.zenario_dn {
+	display: none;
+}
+
+@media all and (max-width: 581px) {
+
+	div.zenario_cookie_consent .zenario_cc_message,
+	div.zenario_cookie_consent .zenario_cc_buttons {
+		width:calc(100% - 20px);
+		float:none;
+		padding-right:20px;
+	}
+	
+	div.zenario_cookie_consent .zenario_cc_buttons {
+		padding-left:0;
+		padding-top:5px;
+		text-align:center;
+	}
+	
+	div.zenario_cookie_consent .zenario_cc_accept a {
+		height:24px;
+		line-height:22px;
+	}
+
+}
+
+/*
+	Datepicker Hide/show different fields for date pickers, depending on whether JavaScript is enabled  
+*/
+
+body.js select.jquery_datepicker {
+	display: none;
+}
+
+body.no_js input.jquery_datepicker {
+	display: none;
+}
+
+#ui-datepicker-div {
+	display: none; /*  Bugfix for jQueryUI Datepicker (all browsers)  */
+}
+
+/*
+	Rules for minimum hieghts on slots
+*/
+
+.container .medium_slot .zenario_slot {
+	min-height: 150px;
+}
+
+.container .large_slot .zenario_slot {
+	min-height: 225px;
+}
+
+.container .xlarge_slot .zenario_slot {
+	min-height: 300px;
+}
+
+.container .xxlarge_slot .zenario_slot {
+	min-height: 375px;
+}

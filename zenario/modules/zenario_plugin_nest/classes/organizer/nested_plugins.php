@@ -56,7 +56,7 @@ class zenario_plugin_nest__organizer__nested_plugins extends zenario_plugin_nest
 				if (ze\module::canActivate($moduleClassName)) {
 					foreach (scandir(CMS_ROOT. $dir) as $file) {
 						if (substr($file, -10) == '.twig.html') {
-							$twigSnippets[] = array($moduleClassName, substr($file, 0, -10), $file);
+							$twigSnippets[] = [$moduleClassName, substr($file, 0, -10), $file];
 						}
 					}
 				}
@@ -87,16 +87,16 @@ class zenario_plugin_nest__organizer__nested_plugins extends zenario_plugin_nest
 			
 					foreach ($modules as $moduleId => $name) {
 						$panel[$buttonType]['add_plugin_'. $moduleId] =
-							array(
+							[
 								'ord' => ++$ord,
 								'parent' => 'add_plugin',
 								'label' => $name,
-								'ajax' => array(
+								'ajax' => [
 									'class_name' => $c,
 									'request' => [
 										'add_plugin' => 1,
 										'moduleId' => $moduleId
-							]));
+							]]];
 					}
 				}
 				
@@ -105,17 +105,17 @@ class zenario_plugin_nest__organizer__nested_plugins extends zenario_plugin_nest
 				//
 				//	foreach ($twigSnippets as $i => $twigSnippet) {
 				//		$panel[$buttonType]['add_twig_snippet_'. $i] =
-				//			array(
+				//			[
 				//				'ord' => ++$ord,
 				//				'parent' => 'add_twig_snippet',
 				//				'label' => $twigSnippet[0]. '/twig/'. $twigSnippet[2],
-				//				'ajax' => array(
+				//				'ajax' => [
 				//					'class_name' => $c,
 				//					'request' => [
 				//						'add_twig_snippet' => 1,
 				//						'moduleClassName' => $twigSnippet[0],
 				//						'snippetName' => $twigSnippet[1]
-				//			]));
+				//			]]];
 				//	}
 				//}
 			}
@@ -132,14 +132,14 @@ class zenario_plugin_nest__organizer__nested_plugins extends zenario_plugin_nest
 					'label' => $label];
 			
 			$panel['item_buttons'][$i] =
-				array(
+				[
 					'parent' => 'cols',
 					'ord' => ++$ord,
 					'label' => $label,
-					'ajax' =>array(
+					'ajax' =>[
 						'class_name' => $c,
 						'request' =>
-							['set_cols' => 1, 'cols' => $i]));
+							['set_cols' => 1, 'cols' => $i]]];
 		}
 	}
 	
@@ -149,11 +149,11 @@ class zenario_plugin_nest__organizer__nested_plugins extends zenario_plugin_nest
 		//Check permissions for Wireframe modules
 		if ($instance['content_id'] && !ze\content::isDraft($instance['content_id'], $instance['content_type'], $instance['content_version'])) {
 			$panel['collection_buttons'] = [];
-			$panel['collection_buttons']['help'] = array(
+			$panel['collection_buttons']['help'] = [
 				'css_class' => 'help',
-				'help' => array(
+				'help' => [
 					'message' =>
-						ze\admin::phrase('This nest is on a published, hidden or archived content item and cannot be edited.<br /><br />Create a Draft to make changes.')));
+						ze\admin::phrase('This nest is on a published, hidden or archived content item and cannot be edited.<br /><br />Create a Draft to make changes.')]];
 			
 			$panel['item_buttons'] = [
 				'view' => $panel['item_buttons']['view'],
@@ -163,11 +163,11 @@ class zenario_plugin_nest__organizer__nested_plugins extends zenario_plugin_nest
 		
 		} elseif ($instance['content_id'] && !ze\priv::check('_PRIV_EDIT_DRAFT', $instance['content_id'], $instance['content_type'], $instance['content_version'])) {
 			$panel['collection_buttons'] = [];
-			$panel['collection_buttons']['help'] = array(
+			$panel['collection_buttons']['help'] = [
 				'css_class' => 'help',
-				'help' => array(
+				'help' => [
 					'message' =>
-						ze\admin::phrase("This content item is locked by another administrator, or you don't have the permissions to modify it.")));
+						ze\admin::phrase("This content item is locked by another administrator, or you don't have the permissions to modify it.")]];
 			
 			$panel['item_buttons'] = [
 				'view' => $panel['item_buttons']['view'],
@@ -363,7 +363,7 @@ class zenario_plugin_nest__organizer__nested_plugins extends zenario_plugin_nest
 			
 			foreach (explode(',', $ids) as $id) {
 				ze\row::update('nested_plugins',
-					array('cols' => ($_POST['cols'] ?? false)),
+					['cols' => ($_POST['cols'] ?? false)],
 					['instance_id' => $instanceId, 'is_slide' => 0, 'id' => $id]);
 				
 				//"only" is only a valid option for full width columns (0) or groupings (-1).
@@ -379,7 +379,7 @@ class zenario_plugin_nest__organizer__nested_plugins extends zenario_plugin_nest
 		} elseif (($_POST['small_screens'] ?? false) && ze::in($_POST['small_screens'] ?? false, 'show', 'hide')) {
 			foreach (explode(',', $ids) as $id) {
 				ze\row::update('nested_plugins',
-					array('small_screens' => ($_POST['small_screens'] ?? false)),
+					['small_screens' => ($_POST['small_screens'] ?? false)],
 					['instance_id' => $instanceId, 'is_slide' => 0, 'id' => $id]);
 			}
 		
@@ -388,8 +388,8 @@ class zenario_plugin_nest__organizer__nested_plugins extends zenario_plugin_nest
 		} elseif (($_POST['small_screens'] ?? false) && ($_POST['small_screens'] ?? false) == 'only') {
 			foreach (explode(',', $ids) as $id) {
 				ze\row::update('nested_plugins',
-					array('small_screens' => ($_POST['small_screens'] ?? false)),
-					array('instance_id' => $instanceId, 'is_slide' => 0, 'cols' => [-1, 0], 'id' => $id));
+					['small_screens' => ($_POST['small_screens'] ?? false)],
+					['instance_id' => $instanceId, 'is_slide' => 0, 'cols' => [-1, 0], 'id' => $id]);
 			}
 		
 		//Flag or unflag which plugin should be used for the breadcrumbs

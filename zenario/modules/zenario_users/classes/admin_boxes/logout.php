@@ -38,7 +38,7 @@ class zenario_users__admin_boxes__logout extends zenario_users {
 		
 		$fields['logout/options']['values']['extranet_user']['label'] =
 			ze\admin::phrase('Logout as extranet user "[[name]]"',
-				array('name' => ze\user::identifier(ze\user::id())));
+				['name' => ze\user::identifier(ze\user::id())]);
 	}
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {

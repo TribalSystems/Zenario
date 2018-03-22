@@ -51,9 +51,9 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 				
 						$panel['title'] =
 							ze\admin::phrase('Images attached to the content item [[tag]], version [[version]]',
-								array(
+								[
 									'tag' => ze\content::formatTagFromTagId($_GET['refiner__content'] ?? false),
-									'version' => ze\row::get('content_items', 'admin_version', array('tag_id' => ($_GET['refiner__content'] ?? false)))));
+									'version' => ze\row::get('content_items', 'admin_version', ['tag_id' => ($_GET['refiner__content'] ?? false)])]);
 				
 						break;
 			
@@ -100,19 +100,19 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 					if (empty($tags)) {
 						$panel['quick_filter_buttons']['tags']['disabled'] = true;
 				
-						$panel['quick_filter_buttons']['dummy_child'] = array(
+						$panel['quick_filter_buttons']['dummy_child'] = [
 							'disabled' => true,
 							'ord' => $ord,
 							'parent' => 'tags',
 							'label' => ze\admin::phrase('No tags exist, edit an image or click "Manage tags" to create tags')
-						);
+						];
 			
 					} else {
 						foreach ($tags as $tagId => $tagName) {
 							++$ord;
 							$codeName = 'tag_'. (int) $tagId;
 				
-							$panel['columns'][$codeName] = array(
+							$panel['columns'][$codeName] = [
 								'db_column' => 'NULL',
 								'search_column' => 
 									"(
@@ -122,7 +122,7 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 										  AND ". $codeName. ".tag_id = ". (int) $tagId. "
 									)",
 								'filter_format' => 'yes_or_no'
-							);
+							];
 				
 							$panel['quick_filter_buttons'][$codeName] = [
 								'ord' => $ord,
@@ -162,7 +162,7 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 						if ($item['in_use_anywhere']) {
 							$mrg = ['used_on' => 'Used on'];
 						} else {
-							$mrg = array('used_on' => 'Attached to (not used)');
+							$mrg = ['used_on' => 'Attached to (not used)'];
 						}
 						
 						if ($usage_content

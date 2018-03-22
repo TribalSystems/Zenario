@@ -98,15 +98,15 @@ class zenario_feed_reader extends ze\moduleBaseClass {
 			} else {
 				$this->link = trim( $this->link );
 				if (  empty( $this->link ) ) {	
-					array_push( $this->content, array( 
+					array_push( $this->content, [ 
 						'title' => htmlspecialchars( trim( $this->title ) ),
 						'description' => ( trim( $this->description) ),
-						'date' =>  trim( $this->date ) ) ); 
+						'date' =>  trim( $this->date ) ] ); 
 				} else {
-					array_push( $this->content, array( 
+					array_push( $this->content, [ 
 						'title' => '<a href="' . trim( $this->link ) . '"' . $this->linkTarget . '>'. htmlspecialchars( trim( $this->title ) ) . '</a>',
 						'description' => ( trim( $this->description) ),
-						'date' =>  trim( $this->date ) ) ); 
+						'date' =>  trim( $this->date ) ] ); 
 				}
 
 				if ($this->setting('rss_date_format')=='backslashed_american'){
@@ -131,7 +131,7 @@ class zenario_feed_reader extends ze\moduleBaseClass {
 			$this->description = '';
 			$this->link = '';
 			$this->date = '';
-			$this->attributes = array();
+			$this->attributes = [];
 			$this->insideItem = false;
 		}
 	}
@@ -191,12 +191,12 @@ class zenario_feed_reader extends ze\moduleBaseClass {
 				break;
 		}
 		
-		$pageMergeFields = array(
+		$pageMergeFields = [
 			'Title' => $title,
 			'Source' => '<p>Feed source: <a href="' . $this->setting( 'feed_source' ) . '">' . $this->setting( 'feed_source' ) . '</a></p>'
-		);
+		];
 
-		$subSections = array( 'Content_Section' => true );
+		$subSections = [ 'Content_Section' => true ];
 		$dateFormat = '';
 
 		if ( "dont_show" == $this->setting( 'show_date_time' ) ) {
@@ -242,13 +242,13 @@ class zenario_feed_reader extends ze\moduleBaseClass {
 				if ( ! $this->setting( 'size' ) > 0 ) {
 					$feedContent['description'] = '';
 				} else {
-					$feedContent['description'] = $this->truncateNicely( trim ( strip_tags( strtr( $feedContent['description'], array( "\n" => '<br> ', "\r\n" =>'<br> ' ) ) ) ) , $this->setting( 'size' ) );
+					$feedContent['description'] = $this->truncateNicely( trim ( strip_tags( strtr( $feedContent['description'], [ "\n" => '<br> ', "\r\n" =>'<br> ' ] ) ) ) , $this->setting( 'size' ) );
 				}
-				$feedMergeFields = array( 
+				$feedMergeFields = [ 
 					'Feed_Title' => $feedContent['title'], 
 					'Feed_Description' => $feedContent['description'], 
 					'Date' => $feedContent['date'] 
-				);
+				];
 				$subSections['Feeds'][] = $feedMergeFields;
 			}
 		$this->framework('Feed_Reader', $pageMergeFields, $subSections );
@@ -272,12 +272,12 @@ class zenario_feed_reader extends ze\moduleBaseClass {
 	}
 
 	protected function getRssFeed() {
-		$this->content = array();
+		$this->content = [];
 		$xml = $this->cache('getLiveFeed', 60 * (int) $this->setting('cache'), $this->setting('feed_source'));
 		xml_parse( $this->xmlParser, $xml );
 		xml_parser_free( $this->xmlParser );
 		if (count($this->newsDates)==0) {
-			return array();
+			return [];
 		} elseif ($this->setting('news_order')=='asc'){
 			array_multisort($this->newsDates, SORT_ASC, $this->content);
 		} elseif($this->setting('news_order')=='desc') {

@@ -32,9 +32,9 @@ if (!empty($_POST['load_tuix_files']) && $data = json_decode($_POST['load_tuix_f
 			 && ($path = ze::moduleDir($module, 'tuix/'. $type. '/'. $file. '.'. $ext, true))) {
 			
 				if ($tags = ze\tuix::readFile($path)) {
-					$dataForFile = array(
+					$dataForFile = [
 						'tags' => $tags,
-						'source' => file_get_contents($path));
+						'source' => file_get_contents($path)];
 				}	
 			}
 		}

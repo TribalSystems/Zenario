@@ -30,15 +30,15 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_location_manager extends ze\moduleBaseClass {
 	
 	public static function setupSectorCheckboxes(&$field, $locationId = false) {
-		$field['values'] = array();
-		if ($result = ze\row::query(ZENARIO_LOCATION_MANAGER_PREFIX . 'sectors', array('id', 'parent_id', 'name'), array(), 'name')) {
+		$field['values'] = [];
+		if ($result = ze\row::query(ZENARIO_LOCATION_MANAGER_PREFIX . 'sectors', ['id', 'parent_id', 'name'], [], 'name')) {
 			while ($row = ze\sql::fetchAssoc($result)) {
-				$field['values'][(int) $row['id']] = array('label' => $row['name'], 'parent' => (int) $row['parent_id']);
+				$field['values'][(int) $row['id']] = ['label' => $row['name'], 'parent' => (int) $row['parent_id']];
 			}
 		}
 		
 		if ($locationId) {
-			$field['value'] = ze\escape::in(ze\row::getArray(ZENARIO_LOCATION_MANAGER_PREFIX . 'location_sector_score_link', 'sector_id', array('location_id' => $locationId)), false);
+			$field['value'] = ze\escape::in(ze\row::getArray(ZENARIO_LOCATION_MANAGER_PREFIX . 'location_sector_score_link', 'sector_id', ['location_id' => $locationId]), false);
 		}
 	}
 
@@ -46,7 +46,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 		$level=0;
 		while(1){
 			$level++;
-			$id = ze\row::get(ZENARIO_LOCATION_MANAGER_PREFIX . 'locations','parent_id',array('id'=>(int)$id));
+			$id = ze\row::get(ZENARIO_LOCATION_MANAGER_PREFIX . 'locations','parent_id',['id'=>(int)$id]);
 			if (!$id){
 				return $level; 
 			}
@@ -64,7 +64,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 		if ($maxLevel<$currentLevel) {
 			$maxLevel++;
 		}
-		$children = ze\row::query(ZENARIO_LOCATION_MANAGER_PREFIX . 'locations', array('id'), array('parent_id'=>$id));
+		$children = ze\row::query(ZENARIO_LOCATION_MANAGER_PREFIX . 'locations', ['id'], ['parent_id'=>$id]);
 		while($child = ze\sql::fetchAssoc($children)){
 			$this->exploreTreeDown($child['id'],$maxLevel,$fuse--,$currentLevel);
 		}
@@ -154,12 +154,12 @@ class zenario_location_manager extends ze\moduleBaseClass {
 					unset($panel['item_buttons']['mark_as_pending']);
 				// Otherwise show a pending quick filter button
 				} else {
-					$panel['quick_filter_buttons']['pending'] = array(
+					$panel['quick_filter_buttons']['pending'] = [
 						'label' => 'Pending',
 						'column' => 'status',
 						'value' => 'pending',
 						'ord' => 1.5
-					);
+					];
 				}
 				
 				// Add dataset ID to import button
@@ -174,8 +174,8 @@ class zenario_location_manager extends ze\moduleBaseClass {
 					$panel['collection_buttons']['export']['hidden'] = true;
 				}
 				
-				$admins = array();
-				$adminsRaw = ze\row::query("admins",array("id","username","authtype"),array("status" => "active"));
+				$admins = [];
+				$adminsRaw = ze\row::query("admins",["id","username","authtype"],["status" => "active"]);
 				if (ze\sql::numRows($adminsRaw)>0) {
 					while ($admin = ze\sql::fetchArray($adminsRaw)) {
 						$admins[$admin['id']] = $admin['username'];
@@ -189,7 +189,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 				$panel['columns']['last_updated_by']['values'] = $admins;
 	
 				foreach ($panel['items'] as $id => &$item) {
-					$item['cell_css_classes'] = array();
+					$item['cell_css_classes'] = [];
 					$item['label'] = $item['description'] . " " . $item['city'] . " " . $item['country'];
 					
 					$locationDetails = self::getLocationDetails($id);
@@ -202,7 +202,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 						$item['cell_css_classes']['status'] = "brown";
 					}
 					
-					if (!ze\ray::issetArrayKey($locationDetails,"parent_id") && !ze\row::exists(ZENARIO_LOCATION_MANAGER_PREFIX . "locations",array("parent_id" => $id))) {
+					if (!ze\ray::issetArrayKey($locationDetails,"parent_id") && !ze\row::exists(ZENARIO_LOCATION_MANAGER_PREFIX . "locations",["parent_id" => $id])) {
 						$item['traits']['not_in_hierarchy'] = true;
 					}
 					
@@ -437,16 +437,16 @@ class zenario_location_manager extends ze\moduleBaseClass {
 	}
     
     public static function getMapPinPlacementMethods() {
-        return array(
+        return [
 			'postcode_country' => 'Postcode and Country',
 			'street_postcode_country' => 'Address Line 1, Postcode and Country',
 			'street_city_country' => 'Address Line 1, City and Country',
 			'locality_postcode_country' => 'Locality, Postcode and Country'
-        );
+        ];
     }
     
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
-		$locationDetails = array();
+		$locationDetails = [];
 	
 		switch ($path) {
 			case "zenario_location_manager__location":
@@ -460,7 +460,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 				if ($box['key']['id']) {
 					$locationDetails = self::getLocationDetails($box['key']['id']);
                   
-                 	$box['title'] = ze\admin::phrase('Editing the location "[[name]]"',array('name' => $locationDetails['description']));
+                 	$box['title'] = ze\admin::phrase('Editing the location "[[name]]"',['name' => $locationDetails['description']]);
                     $box['tabs']['images']['fields']['images']['value'] = ze\escape::in(self::locationsImages($box['key']['id']), 'numeric');
 					$box['tabs']['details']['fields']['external_id']['value'] = $locationDetails['external_id'];
                     $box['tabs']['details']['fields']['name']['value'] = $locationDetails['description'];
@@ -489,7 +489,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
                     $box['tabs']['details']['fields']['last_updated']['value'] = $locationDetails['last_updated'] ?? false;
                 	$box['tabs']['details']['fields']['last_updated']['hidden'] = false;
 
-					$lastUpdatedByAdmin = ze\row::get("admins",array("id","username","authtype"),array("id" => ($locationDetails['last_updated_admin_id'] ?? false)));
+					$lastUpdatedByAdmin = ze\row::get("admins",["id","username","authtype"],["id" => ($locationDetails['last_updated_admin_id'] ?? false)]);
 
                 	$box['tabs']['details']['fields']['last_updated_by']['value'] = ($lastUpdatedByAdmin['username'] ?? false) . ((($lastUpdatedByAdmin['authtype'] ?? false)=="super") ? " (super)":"");
                 	$box['tabs']['details']['fields']['last_updated_by']['hidden'] = false;
@@ -546,7 +546,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 				}
 				
 				if ($box['key']['id']) {
-					$fieldsToCheck = array(
+					$fieldsToCheck = [
 											"name" => "description",
 											"address_line_1" => "address1",
 											"address_line_2" => "address2",
@@ -555,7 +555,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 											"state" => "state",
 											"postcode" => "postcode",
 											"country" => "country_id"
-										);
+										];
 										
 					foreach ($fieldsToCheck as $tuixName => $dbName) {
 						$sql = "SELECT DISTINCT " . ze\escape::sql($dbName) . "
@@ -618,7 +618,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 					} else {
 						$field = &$box['tabs']['sectors']['fields']['sectors'];
 	
-						$field['multiple_edit'] = array();
+						$field['multiple_edit'] = [];
 						
 						self::setupSectorCheckboxes($field);
 						
@@ -641,12 +641,12 @@ class zenario_location_manager extends ze\moduleBaseClass {
 						
 						if ($sectorsPicked) {
 							self::setupSectorCheckboxes($box['tabs']['sectors']['fields']['remove_sectors']);
-							$box['tabs']['sectors']['fields']['remove_sectors']['multiple_edit'] = array();
+							$box['tabs']['sectors']['fields']['remove_sectors']['multiple_edit'] = [];
 						} else {
 							$box['tabs']['sectors']['fields']['remove_sectors']['hidden'] = true;
 						}
 						
-						$items = array();
+						$items = [];
 						foreach ($field['values'] as $id => &$value) {
 							if (!isset($value['marked'])) {
 								//$value['label'] .= ' (0/'. $total. ')';
@@ -663,7 +663,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 						}
 						$box['tabs']['sectors']['fields']['remove_sectors']['value'] = ze\escape::in($items, false);
 	
-						if (ze\row::exists(ZENARIO_LOCATION_MANAGER_PREFIX . "sectors", array())) {
+						if (ze\row::exists(ZENARIO_LOCATION_MANAGER_PREFIX . "sectors", [])) {
 							$box['tabs']['sectors']['fields']['no_sectors']['hidden'] = true;
 						} else {
 							$box['tabs']['sectors']['fields']['sectors']['hidden'] = true;
@@ -683,7 +683,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 				if ($box['key']['id']) {
 					$sectorDetails = self::getSectorDetails($box['key']['id']);
                   
-                 	$box['title'] = ze\admin::phrase('Editing the sector "[[name]]"',array('name' => $sectorDetails['name']));
+                 	$box['title'] = ze\admin::phrase('Editing the sector "[[name]]"',['name' => $sectorDetails['name']]);
                         
 					
                     $box['tabs']['details']['fields']['name']['value'] = $sectorDetails['name'];
@@ -710,7 +710,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 				} else {
 					if ($box['key']['cID']) {
 						if ($locationId = ze\row::get(ZENARIO_LOCATION_MANAGER_PREFIX . "locations", 'id',
-									array("equiv_id" => $box['key']['cID'], "content_type" => $box['key']['cType']))) {
+									["equiv_id" => $box['key']['cID'], "content_type" => $box['key']['cType']])) {
 							$box['tabs']['meta_data']['fields']['content_summary']['hidden'] = true;
 							$box['tabs']['meta_data']['fields']['lock_summary_view_mode']['hidden'] = true;
 							$box['tabs']['meta_data']['fields']['lock_summary_edit_mode']['hidden'] = true;
@@ -718,7 +718,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 							if ($locationDetails = self::getLocationDetails($locationId)) {
 								$box['tabs']['meta_data']['fields']['desc_location_specific']['snippet']['html'] = 
 									ze\admin::phrase("This content item is associated with a location \"[[location]]\". The location's summary will be used.", 
-										array('location' => $locationDetails['description']) );
+										['location' => $locationDetails['description']] );
 							}
 						} else {
 							$box['tabs']['meta_data']['fields']['content_summary']['hidden'] = false;
@@ -737,10 +737,10 @@ class zenario_location_manager extends ze\moduleBaseClass {
 			            if (!$values['zenario_location_manager__default_pin_placement_method']) {
                             $values['zenario_location_manager__default_pin_placement_method'] = $method;
                         }
-			            $fields['zenario_location_manager__default_pin_placement_method']['values'][$method] = array(
+			            $fields['zenario_location_manager__default_pin_placement_method']['values'][$method] = [
 			                'label' => $label,
 			                'ord' => ++$i
-			            );
+			            ];
 			        }
 			    }
 			    break;
@@ -834,11 +834,11 @@ class zenario_location_manager extends ze\moduleBaseClass {
 					}
 				}
 				if (!empty($values['external_id'])) {
-					if (!$box['key']['id'] && ze\row::exists(ZENARIO_LOCATION_MANAGER_PREFIX. 'locations', array('external_id' => $values['external_id']))) {
+					if (!$box['key']['id'] && ze\row::exists(ZENARIO_LOCATION_MANAGER_PREFIX. 'locations', ['external_id' => $values['external_id']])) {
 						$box['tabs']['details']['errors'][] = ze\admin::phrase('A location already exists with this external id.');
 					} else {
-						$oldLocationId = ze\row::get(ZENARIO_LOCATION_MANAGER_PREFIX. 'locations', array('external_id'), array('id' => $box['key']['id']));
-						if (($oldLocationId['external_id'] != $values['external_id']) && (ze\row::exists(ZENARIO_LOCATION_MANAGER_PREFIX. 'locations', array('external_id' => $values['external_id'])))) {
+						$oldLocationId = ze\row::get(ZENARIO_LOCATION_MANAGER_PREFIX. 'locations', ['external_id'], ['id' => $box['key']['id']]);
+						if (($oldLocationId['external_id'] != $values['external_id']) && (ze\row::exists(ZENARIO_LOCATION_MANAGER_PREFIX. 'locations', ['external_id' => $values['external_id']]))) {
 							$box['tabs']['details']['errors'][] = ze\admin::phrase('A location already exists with this external id.');
 						}
 					}
@@ -887,7 +887,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 			case "zenario_location_manager__location":
 				ze\priv::exitIfNot('_PRIV_MANAGE_LOCATIONS');
 				
-				$saveValues = array(
+				$saveValues = [
 					'external_id' => $values['details/external_id'],
 					'description' => $values['details/name'],
 					'address1' => $values['details/address_line_1'],
@@ -905,7 +905,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 					'map_zoom' => $values['details/zoom'] ? $values['details/zoom'] : null,
 					'last_updated' => ze\date::now(),
 					'last_updated_admin_id' => ze\admin::id()
-				);
+				];
 				
 				// Save content item details
 				$saveValues['equiv_id'] = null;
@@ -923,7 +923,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 				if (!$box['key']['id']) {
 					$box['key']['id'] = self::createLocation($saveValues);
 				} else {
-					ze\row::set(ZENARIO_LOCATION_MANAGER_PREFIX . "locations", $saveValues, array("id" => $box['key']['id']));
+					ze\row::set(ZENARIO_LOCATION_MANAGER_PREFIX . "locations", $saveValues, ["id" => $box['key']['id']]);
 				}
 				
 				// Add regions to location
@@ -938,7 +938,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 					if (!empty($values['sectors/sectors'])) {
 						$this->setLocationSectors($box['key']['id'], explode(',', $values['sectors/sectors']));
 					} else {
-						ze\row::delete(ZENARIO_LOCATION_MANAGER_PREFIX . 'location_sector_score_link', array('location_id' => $box['key']['id']));
+						ze\row::delete(ZENARIO_LOCATION_MANAGER_PREFIX . 'location_sector_score_link', ['location_id' => $box['key']['id']]);
 					}
 				}
 				
@@ -947,7 +947,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 				
 					$ord = 0;
 					$sticky = 1;
-					$usedImages = array();
+					$usedImages = [];
 					foreach (explode(',', $values['images/images']) as $image) {
 						$image_id = 0;
 						if ($filepath = ze\file::getPathOfUploadInCacheDir($image)) {
@@ -960,8 +960,8 @@ class zenario_location_manager extends ze\moduleBaseClass {
 							$usedImages[$image_id] = true;
 							ze\row::set(
 								ZENARIO_LOCATION_MANAGER_PREFIX. 'location_images', 
-								array('ordinal' => ++$ord, 'sticky_flag' => $sticky), 
-								array('image_id' => $image_id, 'location_id' => $box['key']['id'])
+								['ordinal' => ++$ord, 'sticky_flag' => $sticky], 
+								['image_id' => $image_id, 'location_id' => $box['key']['id']]
 							);
 							$sticky = 0;
 						}
@@ -977,7 +977,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 				break;
 			case "zenario_location_manager__locations_multiple_edit":
 				ze\priv::exitIfNot('_PRIV_MANAGE_LOCATIONS');
-				$fieldsToChangeSQL = array();
+				$fieldsToChangeSQL = [];
 				
 				foreach ($changes as $fieldName => $fieldValue) {
 					if ($fieldValue==1) {
@@ -1077,8 +1077,8 @@ class zenario_location_manager extends ze\moduleBaseClass {
 						foreach ($locationIds as $locationId) {
 							foreach (explode(',', $values['sectors/sectors']) as $id) {
 								if ($id) {
-									if (!ze\row::exists(ZENARIO_LOCATION_MANAGER_PREFIX .'location_sector_score_link', array('sector_id' => $id, 'location_id' => $locationId))) {
-										ze\row::insert(ZENARIO_LOCATION_MANAGER_PREFIX .'location_sector_score_link', array('sector_id' => $id, 'location_id' => $locationId, 'score_id' => 3, "sticky_flag" => 0));
+									if (!ze\row::exists(ZENARIO_LOCATION_MANAGER_PREFIX .'location_sector_score_link', ['sector_id' => $id, 'location_id' => $locationId])) {
+										ze\row::insert(ZENARIO_LOCATION_MANAGER_PREFIX .'location_sector_score_link', ['sector_id' => $id, 'location_id' => $locationId, 'score_id' => 3, "sticky_flag" => 0]);
 									}
 								}
 							}
@@ -1092,7 +1092,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 						foreach ($box['tabs']['sectors']['fields']['remove_sectors']['values'] as $id => $value) {
 							if (!isset($removeFromSectors[$id])) {
 								foreach ($locationIds as $locationId) {
-									ze\row::delete(ZENARIO_LOCATION_MANAGER_PREFIX . 'location_sector_score_link', array('sector_id' => $id, 'location_id' => $locationId));
+									ze\row::delete(ZENARIO_LOCATION_MANAGER_PREFIX . 'location_sector_score_link', ['sector_id' => $id, 'location_id' => $locationId]);
 								}
 							}
 						}
@@ -1103,22 +1103,22 @@ class zenario_location_manager extends ze\moduleBaseClass {
 				break;
 			case "zenario_location_manager__sector":
 				if ($box['tabs']['details']) {
-					$saveValues = array();
+					$saveValues = [];
 				
 					$saveValues['parent_id'] = $box['key']['parent_id'];
 					
 					$saveValues['name'] = $values['details/name'];
 					
-					$box['key']['id'] = ze\row::set(ZENARIO_LOCATION_MANAGER_PREFIX . "sectors",$saveValues,array("id" => $box['key']['id']));
+					$box['key']['id'] = ze\row::set(ZENARIO_LOCATION_MANAGER_PREFIX . "sectors",$saveValues,["id" => $box['key']['id']]);
 				}
 				break;
 			case "zenario_location_manager__score":
 				if ($box['tabs']['details']) {
-					$saveValues = array();
+					$saveValues = [];
 				
 					$saveValues['name'] = $values['details/name'];
 					
-					$box['key']['id'] = ze\row::set(ZENARIO_LOCATION_MANAGER_PREFIX . "scores",$saveValues,array("id" => $box['key']['id']));
+					$box['key']['id'] = ze\row::set(ZENARIO_LOCATION_MANAGER_PREFIX . "scores",$saveValues,["id" => $box['key']['id']]);
 				}
 				break;
 		}
@@ -1137,14 +1137,14 @@ class zenario_location_manager extends ze\moduleBaseClass {
 					
 							$msg = "Are you sure you wish to delete the Location \"" . $locationDetails['description'] . "\"?";
 
-							$result = ze\row::query(ZENARIO_LOCATION_MANAGER_PREFIX . "locations","id",array("parent_id" => $_GET['id']));
+							$result = ze\row::query(ZENARIO_LOCATION_MANAGER_PREFIX . "locations","id",["parent_id" => $_GET['id']]);
 							
 							$childLocations = 0;
 							$childLocationsWithChildren = 0;
 							
 							if ($childLocations = ze\sql::numRows($result)) {
 								while ($row = ze\sql::fetchAssoc($result)) {
-									$result2 = ze\row::query(ZENARIO_LOCATION_MANAGER_PREFIX . "locations","id",array("parent_id" => $row['id']));
+									$result2 = ze\row::query(ZENARIO_LOCATION_MANAGER_PREFIX . "locations","id",["parent_id" => $row['id']]);
 									
 									if (ze\sql::numRows($result2)>0) {
 										$childLocationsWithChildren++;
@@ -1250,7 +1250,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 									return;
 								}
 								$level1++;
-								$parent = ze\row::get(ZENARIO_LOCATION_MANAGER_PREFIX . 'locations','parent_id',array('id'=>(int)$parent));
+								$parent = ze\row::get(ZENARIO_LOCATION_MANAGER_PREFIX . 'locations','parent_id',['id'=>(int)$parent]);
 							}
 							foreach (explode(",",$ids) as $id) {
 								$level2=0;
@@ -1261,7 +1261,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 								}
 							}
 							foreach (explode(",",$ids) as $id) {
-								ze\row::update(ZENARIO_LOCATION_MANAGER_PREFIX . 'locations',array('parent_id'=>(int)$refinerId),array('id'=>(int)$id));
+								ze\row::update(ZENARIO_LOCATION_MANAGER_PREFIX . 'locations',['parent_id'=>(int)$refinerId],['id'=>(int)$id]);
 							}
 							break;
 						case 'assign_new_parent':
@@ -1284,7 +1284,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 										return;
 									}
 									$level1++;			
-									$parent = ze\row::get(ZENARIO_LOCATION_MANAGER_PREFIX . 'locations','parent_id',array('id'=>(int)$parent));
+									$parent = ze\row::get(ZENARIO_LOCATION_MANAGER_PREFIX . 'locations','parent_id',['id'=>(int)$parent]);
 								
 								}
 								$level2=0;
@@ -1293,25 +1293,25 @@ class zenario_location_manager extends ze\moduleBaseClass {
 									echo 'Error. Number of allowed levels in the Location hierarchy exceeded.';
 									return;
 								}
-								ze\row::update(ZENARIO_LOCATION_MANAGER_PREFIX . 'locations',array('parent_id'=>(int)$ids2),array('id'=>(int)$id));
+								ze\row::update(ZENARIO_LOCATION_MANAGER_PREFIX . 'locations',['parent_id'=>(int)$ids2],['id'=>(int)$id]);
 							}
 							break;
 						case 'make_orphan':
 							ze\priv::exitIfNot('_PRIV_MANAGE_LOCATIONS');
-							ze\row::update(ZENARIO_LOCATION_MANAGER_PREFIX . 'locations',array('parent_id'=>null),array('id'=>(int)$ids));
+							ze\row::update(ZENARIO_LOCATION_MANAGER_PREFIX . 'locations',['parent_id'=>null],['id'=>(int)$ids]);
 							break;
 						
 						case 'geocode_locations':
 							$locationIds = explode(',', $ids);
 							
-							$report = array('overQueryLimit' => false, 'processed' => 0, 'succeeded' => 0, 'errors' => array());
+							$report = ['overQueryLimit' => false, 'processed' => 0, 'succeeded' => 0, 'errors' => []];
 							$description = false;
 							
 							foreach ($locationIds as $locationId) {
 								$report['processed']++;
 								$location = ze\row::get(
 									ZENARIO_LOCATION_MANAGER_PREFIX . 'locations', 
-									array('description', 'address1', 'address2', 'locality', 'city', 'country_id', 'postcode', 'latitude', 'longitude'), 
+									['description', 'address1', 'address2', 'locality', 'city', 'country_id', 'postcode', 'latitude', 'longitude'], 
 									$locationId
 								);
 								
@@ -1362,13 +1362,13 @@ class zenario_location_manager extends ze\moduleBaseClass {
 											) {
 												ze\row::update(
 													ZENARIO_LOCATION_MANAGER_PREFIX . 'locations', 
-													array(
+													[
 														'latitude' => $response['results'][0]['geometry']['location']['lat'],
 														'longitude' => $response['results'][0]['geometry']['location']['lng'],
 														'map_center_latitude' => $response['results'][0]['geometry']['location']['lat'],
 														'map_center_longitude' => $response['results'][0]['geometry']['location']['lng'],
 														'map_zoom' => 16
-													),
+													],
 													$locationId
 												);
 											}
@@ -1495,7 +1495,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 						
 						$locationSectorCount = ze\sql::numRows($result);
 						
-						$locationSectors = array();
+						$locationSectors = [];
 						$stickyFlagSet = false;
 						
 						if ($locationSectorCount>0) {
@@ -1551,7 +1551,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 	
 	private static function recordLocationGeocodeErrorInReport(&$report, $description, $errorCode) {
 		if (!isset($report['errors'][$errorCode])) {
-			$report['errors'][$errorCode] = array('count' => 0, 'first' => false);
+			$report['errors'][$errorCode] = ['count' => 0, 'first' => false];
 		}
 		$report['errors'][$errorCode]['count']++;
 		if ($report['errors'][$errorCode]['first'] === false) {
@@ -1597,7 +1597,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 				</html>';
 	}
 
-	public static function getLocationHierarchyPathAndDeepLinks ($locationId,$output=array("path" => "","link" => ""),$pathSeparator=" -> ",$linkSeparator="//item//",$recurseCount=0) {
+	public static function getLocationHierarchyPathAndDeepLinks ($locationId,$output=["path" => "","link" => ""],$pathSeparator=" -> ",$linkSeparator="//item//",$recurseCount=0) {
 		$locationDetails = self::getLocationDetails($locationId);
 		
 		$output['path'] = ($locationDetails['description'] ?? false) . $pathSeparator . $output['path'];
@@ -1623,7 +1623,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 	}
 
 	public static function getLocationsNamesIndexedById($status='active'){
-		$rv = array();
+		$rv = [];
 		$sql = 'SELECT 
 					id,
 					description 
@@ -1646,7 +1646,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 	}
 
 	public static function getLocationsNamesIndexedByIdOrderedByName($status='active'){
-		$rv = array();
+		$rv = [];
 		$sql = 'SELECT 
 					id,
 					description 
@@ -1668,7 +1668,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 	}
 	
 	public static function getLocationDetails($ID){
-		$rv = array();
+		$rv = [];
 		$sql = 'SELECT id,
 					parent_id,
 					external_id,
@@ -1748,7 +1748,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 	}
 	
 	public static function getChildSectorsIndexedByIdOrderedByName($parentId=0){
-		$rv = array();
+		$rv = [];
 		$sql = "SELECT 
 					id,
 					parent_id,
@@ -1801,7 +1801,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 	}
 
 	public static function getSectorDetails($ID){
-		$rv = array();
+		$rv = [];
 		$sql = 'SELECT 
 					parent_id,
 					name
@@ -1813,7 +1813,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 		return $rv;
 	}
 
-	public static function getSectorPath($ID, $recurseCount = 0, $sectorArray=array()) {
+	public static function getSectorPath($ID, $recurseCount = 0, $sectorArray=[]) {
 		++$recurseCount;
 		
 		if ($recurseCount<=10) {
@@ -1830,7 +1830,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 	}
 
 	public static function getScoreDetails($ID){
-		$rv = array();
+		$rv = [];
 		$sql = 'SELECT name
 				FROM ' .DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . 'scores ';
 		$sql .= 'WHERE id = ' . (int) $ID;
@@ -1841,7 +1841,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 	}
 
 	public static function getLocationSectors($locationID) {
-		$sectors = array();
+		$sectors = [];
 		
 		$sql = "SELECT sector_id
 				FROM " .DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "location_sector_score_link
@@ -1861,7 +1861,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 	}
 	
 	public static function getLocationSectorDetails($locationID, $sectorID){
-		$rv = array();
+		$rv = [];
 		$sql = 'SELECT 
 					score_id,
 					sticky_flag
@@ -1876,7 +1876,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 	
 	// Still used on choosewhere
 	public static function getPrimarySectorDetails($locationID){
-		$stickySector = ze\row::get(ZENARIO_LOCATION_MANAGER_PREFIX . 'location_sector_score_link', 'sector_id', array('location_id' => $locationID, 'sticky_flag' => 1));
+		$stickySector = ze\row::get(ZENARIO_LOCATION_MANAGER_PREFIX . 'location_sector_score_link', 'sector_id', ['location_id' => $locationID, 'sticky_flag' => 1]);
 		return $stickySector;
 	}
 	
@@ -1894,7 +1894,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 
 	
 	//Create a new location
-	public static function createLocation($details, $customDetails = array()) {
+	public static function createLocation($details, $customDetails = []) {
 		//When creating a new location, set status as pending if setting is set
 		if (ze::setting('zenario_location_manager__enable_pending_status')) {
 			$details['status'] = 'pending';
@@ -1909,25 +1909,25 @@ class zenario_location_manager extends ze\moduleBaseClass {
 			ze\row::insert(ZENARIO_LOCATION_MANAGER_PREFIX . 'locations_custom_data', $customDetails);
 		}
 		
-		ze\module::sendSignal('eventLocationCreated', array('locationId' => $locationId));
+		ze\module::sendSignal('eventLocationCreated', ['locationId' => $locationId]);
 		return $locationId;
 	}
 	
 	public static function deleteLocation($locationId) {
 		ze\row::delete(ZENARIO_LOCATION_MANAGER_PREFIX . 'locations', $locationId);
-		ze\module::sendSignal('eventLocationDeleted', array("locationId" => $locationId));
+		ze\module::sendSignal('eventLocationDeleted', ["locationId" => $locationId]);
 	}
 
 	public static function activateLocation($locationId) {
-		ze\row::update(ZENARIO_LOCATION_MANAGER_PREFIX . "locations", array('status' => 'active'), $locationId);
+		ze\row::update(ZENARIO_LOCATION_MANAGER_PREFIX . "locations", ['status' => 'active'], $locationId);
 	}
 
 	public static function suspendLocation($locationId) {
-		ze\row::update(ZENARIO_LOCATION_MANAGER_PREFIX . "locations", array('status' => 'suspended'), $locationId);
+		ze\row::update(ZENARIO_LOCATION_MANAGER_PREFIX . "locations", ['status' => 'suspended'], $locationId);
 	}
 	
 	public static function markLocationAsPending($locationId) {
-		ze\row::update(ZENARIO_LOCATION_MANAGER_PREFIX . "locations", array('status' => 'pending'), $locationId);
+		ze\row::update(ZENARIO_LOCATION_MANAGER_PREFIX . "locations", ['status' => 'pending'], $locationId);
 	}
 
 	public static function deleteSector($ID, $recurseCount = 0){
@@ -1952,7 +1952,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 			}
 		}
 
-		ze\module::sendSignal('eventSectorDeleted', array("sectorId" => $ID));
+		ze\module::sendSignal('eventSectorDeleted', ["sectorId" => $ID]);
 	}
 
 	public static function removeSector($locationId,$sectorId=false){
@@ -2056,30 +2056,30 @@ class zenario_location_manager extends ze\moduleBaseClass {
 	}
 	
 	public static function handleMediaUpload($filename, $maxSize, $locationId) {
-		$error = array();
+		$error = [];
 		if ($_FILES[$filename] ?? false) {
 			if (is_uploaded_file($_FILES[$filename]['tmp_name'])) {
 				if ($_FILES[$filename]['size'] > $maxSize) {
-					$error['document'] = ze\admin::phrase('_FILE_UPLOAD_ERROR_SIZE', array('size' => $maxSize));
+					$error['document'] = ze\admin::phrase('_FILE_UPLOAD_ERROR_SIZE', ['size' => $maxSize]);
 				}		
 				
 				$image = getimagesize($_FILES[$filename]['tmp_name']);
-				if (!in_array($image['mime'], array('image/jpeg','image/gif','image/png','image/jpg','image/pjpeg'))) {
+				if (!in_array($image['mime'], ['image/jpeg','image/gif','image/png','image/jpg','image/pjpeg'])) {
 					$error['document'] = ze\admin::phrase('_INVALID_IMAGE_TYPE');
 				}
 			} else {
 				switch ($_FILES[$filename]['error']) {
 					case 1:
-						$error['document'] = ze\admin::phrase( '_FILE_UPLOAD_ERROR_SIZE', array( 'size' => $maxSize ) );
+						$error['document'] = ze\admin::phrase( '_FILE_UPLOAD_ERROR_SIZE', [ 'size' => $maxSize ] );
 						break;
 					case 2:
-						$error['document'] = ze\admin::phrase( '_FILE_UPLOAD_ERROR_SIZE', array( 'size' => $maxSize ) );
+						$error['document'] = ze\admin::phrase( '_FILE_UPLOAD_ERROR_SIZE', [ 'size' => $maxSize ] );
 						break;
 					case 3:
-						$error['document'] = ze\admin::phrase( '_FILE_UPLOAD_ERROR_PARTIAL_UPLOAD', array( 'size' => $maxSize ) );
+						$error['document'] = ze\admin::phrase( '_FILE_UPLOAD_ERROR_PARTIAL_UPLOAD', [ 'size' => $maxSize ] );
 						break;
 					default:
-						$error['document'] = ze\admin::phrase( '_FILE_UPLOAD_ERROR_EMPTY', array( 'size' => $maxSize ) );
+						$error['document'] = ze\admin::phrase( '_FILE_UPLOAD_ERROR_EMPTY', [ 'size' => $maxSize ] );
 				}		
 			}
 		
@@ -2089,7 +2089,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 				return $error;
 			}
 		} else {
-			return array(ze\admin::phrase("_ERR_FILE_SIZE_GREATER_THAN_SERVER_LIMIT"));
+			return [ze\admin::phrase("_ERR_FILE_SIZE_GREATER_THAN_SERVER_LIMIT")];
 		}
 	}
 
@@ -2125,13 +2125,13 @@ class zenario_location_manager extends ze\moduleBaseClass {
 		
 		ze\row::set(
 			ZENARIO_LOCATION_MANAGER_PREFIX . "location_sector_score_link",
-			array(
+			[
 				"location_id" => $locationId, 
 				"sector_id" => $sectorId, 
 				"score_id" => 3, 
 				"sticky_flag" => $stickyFlag
-			),
-			array("location_id" => $locationId, "sector_id" => $sectorId)
+			],
+			["location_id" => $locationId, "sector_id" => $sectorId]
 		);
 		
 		$sectorDetails = self::getSectorDetails($sectorId);
@@ -2194,7 +2194,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 	}
 
 	public function setLocationSectors($locationId, $sectors) {
-		$currentStickySector=ze\row::get(ZENARIO_LOCATION_MANAGER_PREFIX . 'location_sector_score_link', 'sector_id',array('sticky_flag' => 1,'location_id' => $locationId));
+		$currentStickySector=ze\row::get(ZENARIO_LOCATION_MANAGER_PREFIX . 'location_sector_score_link', 'sector_id',['sticky_flag' => 1,'location_id' => $locationId]);
 	
 		$oldStickyFlag = 0;
 		$stickyflag = 0;
@@ -2205,7 +2205,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 			}
 		}
 			
-		ze\row::delete(ZENARIO_LOCATION_MANAGER_PREFIX . 'location_sector_score_link', array('location_id' => $locationId));
+		ze\row::delete(ZENARIO_LOCATION_MANAGER_PREFIX . 'location_sector_score_link', ['location_id' => $locationId]);
 
 		foreach ($sectors as $value) {
 			$sector = self::getSectorDetails($value);
@@ -2220,11 +2220,11 @@ class zenario_location_manager extends ze\moduleBaseClass {
 			
 			ze\row::insert(
 				ZENARIO_LOCATION_MANAGER_PREFIX . 'location_sector_score_link',
-				array(
+				[
 					'sector_id' => $value,
 					'location_id' => $locationId,
 					'score_id' => 3,
-					'sticky_flag' => ($value==$oldStickyFlag) | ($stickyflag & !$stickySet)));
+					'sticky_flag' => ($value==$oldStickyFlag) | ($stickyflag & !$stickySet)]);
 			$stickySet |= $stickyflag;
 		}
 	}
@@ -2239,13 +2239,13 @@ class zenario_location_manager extends ze\moduleBaseClass {
 		
 		ze\row::delete(
 			ZENARIO_LOCATION_MANAGER_PREFIX . "location_sector_score_link",
-			array("location_id" => $locationId, "sector_id" => $sectorId)
+			["location_id" => $locationId, "sector_id" => $sectorId]
 		);
 		
 		$result = ze\row::query(
 			ZENARIO_LOCATION_MANAGER_PREFIX . "sectors",
-			array("id"),
-			array("parent_id" => $sectorId)
+			["id"],
+			["parent_id" => $sectorId]
 		);
 		
 		if ($result) {
@@ -2266,12 +2266,12 @@ class zenario_location_manager extends ze\moduleBaseClass {
 	
 	public static function eventContentDeleted ($cID,$cType,$cVersion) {
 		//check to see if status is trashed or deleted
-		$contentStatus = ze\row::get('content_items', 'status', array('equiv_id' => $cID, 'type'=> $cType));
+		$contentStatus = ze\row::get('content_items', 'status', ['equiv_id' => $cID, 'type'=> $cType]);
 		
 		if($contentStatus == 'deleted' || $contentStatus == 'trashed') {
 			ze\row::update(ZENARIO_LOCATION_MANAGER_PREFIX . "locations",
-					array("equiv_id" => null,"content_type" => null),
-						array("equiv_id" => $cID,"content_type" => $cType));
+					["equiv_id" => null,"content_type" => null],
+						["equiv_id" => $cID,"content_type" => $cType]);
 		}
 	}
 
@@ -2280,25 +2280,25 @@ class zenario_location_manager extends ze\moduleBaseClass {
 		// Remove parent_id from any child locations
 		ze\row::update(
 			ZENARIO_LOCATION_MANAGER_PREFIX . 'locations',
-			array('parent_id' => null),
-			array('parent_id' => $locationID)
+			['parent_id' => null],
+			['parent_id' => $locationID]
 		);
 		
 		// Delete sector score links
 		ze\row::delete(
 			ZENARIO_LOCATION_MANAGER_PREFIX . "location_sector_score_link",
-			array("location_id" => $locationID)
+			["location_id" => $locationID]
 		);
 	}
 
 	public static function eventSectorDeleted ($sectorId) {
-		ze\row::delete(ZENARIO_LOCATION_MANAGER_PREFIX . "location_sector_score_link",array("sector_id" => $sectorId));
+		ze\row::delete(ZENARIO_LOCATION_MANAGER_PREFIX . "location_sector_score_link",["sector_id" => $sectorId]);
 	}
 	
 	
 	
     public static function locationsImages($locationId) {
-        return ze\row::getArray(ZENARIO_LOCATION_MANAGER_PREFIX. 'location_images', 'image_id', array('location_id' => $locationId), 'ordinal');
+        return ze\row::getArray(ZENARIO_LOCATION_MANAGER_PREFIX. 'location_images', 'image_id', ['location_id' => $locationId], 'ordinal');
     }
     public static function addImage($locationId, $location, $filename = false) {
         $image_id = ze\file::addToDatabase('location', $location, $filename, true);
@@ -2307,14 +2307,14 @@ class zenario_location_manager extends ze\moduleBaseClass {
         	$filename = basename($location);
         }
         
-        ze\row::set(ZENARIO_LOCATION_MANAGER_PREFIX. 'location_images', array('filename' => $filename), array('image_id' => $image_id, 'location_id' => $locationId));
+        ze\row::set(ZENARIO_LOCATION_MANAGER_PREFIX. 'location_images', ['filename' => $filename], ['image_id' => $image_id, 'location_id' => $locationId]);
         return $image_id;
     }
     
     public static function deleteImage($locationId, $imageId) {
-        ze\row::delete( ZENARIO_LOCATION_MANAGER_PREFIX. 'location_images', array('image_id' => $imageId, 'location_id' => $locationId));
-        if (!ze\row::exists(ZENARIO_LOCATION_MANAGER_PREFIX. 'location_images', array('image_id' => $imageId))) {
-            ze\row::delete( 'files', array('id' => $imageId, 'usage' => 'location'));
+        ze\row::delete( ZENARIO_LOCATION_MANAGER_PREFIX. 'location_images', ['image_id' => $imageId, 'location_id' => $locationId]);
+        if (!ze\row::exists(ZENARIO_LOCATION_MANAGER_PREFIX. 'location_images', ['image_id' => $imageId])) {
+            ze\row::delete( 'files', ['id' => $imageId, 'usage' => 'location']);
         }
     }
     
@@ -2322,13 +2322,13 @@ class zenario_location_manager extends ze\moduleBaseClass {
 	public static function locationStatus($mode, $value = false) {
 		switch ($mode) {
 			case ze\dataset::LIST_MODE_INFO:
-				return array('can_filter' => false);
+				return ['can_filter' => false];
 			case ze\dataset::LIST_MODE_LIST:
-				return array(
+				return [
 					'pending' => 'Pending',
 					'active' => 'Active',
 					'suspended' => 'Suspended'
-				);
+				];
 		}
 	}
 }

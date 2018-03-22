@@ -195,6 +195,9 @@ class zenario_common_features__admin_boxes__admin extends ze\moduleBaseClass {
 			$box['tabs']['password']['edit_mode']['enable_revert'] =
 			$box['tabs']['permissions']['edit_mode']['enable_revert'] = false;
 			$values['is_client_account'] = true;
+			
+			//Show a notice that the admin will set their own password
+			$box['tabs']['password']['notices']['new_admin']['show'] = true;
 		}
 		
 		$fields['permissions/specific_languages']['values'] = [];
@@ -219,7 +222,7 @@ class zenario_common_features__admin_boxes__admin extends ze\moduleBaseClass {
 		
 		$fields['permissions/permissions']['values']['specific_languages']['side_note'] =
 			ze\admin::phrase($fields['permissions/permissions']['values']['specific_languages']['side_note'],
-				array('default_language' => (ze::$defaultLang ?: 'en')));
+				['default_language' => (ze::$defaultLang ?: 'en')]);
 		
 	}
 
@@ -265,14 +268,14 @@ class zenario_common_features__admin_boxes__admin extends ze\moduleBaseClass {
 							//Add a toggle field just after the single checkbox, which can show/hide the multiple checkboxes
 							$toggle = $rowStart. '_toggle';
 							if (empty($box['tabs']['permissions']['fields'][$toggle])) {
-								$box['tabs']['permissions']['fields'][$toggle] = array(
+								$box['tabs']['permissions']['fields'][$toggle] = [
 										'grouping' => 'specific_actions',
 										'ord' => $box['tabs']['permissions']['fields'][$rowStart]['ord']. '.1',
 										'type' => 'toggle',
 										'same_row' => true,
 										'visible_if' => 'zenarioAB.togglePressed(1, tuixObject)',
 										'redraw_onchange' => true,
-										'can_be_pressed_in_view_mode' => true);
+										'can_be_pressed_in_view_mode' => true];
 							}
 
 							$field['row_class'] = 'zenario_hierarchical_perms';
@@ -352,6 +355,10 @@ class zenario_common_features__admin_boxes__admin extends ze\moduleBaseClass {
 			if ($editing && ($details['authtype'] != 'local' || !ze\priv::check('_PRIV_EDIT_ADMIN'))) {
 				exit;
 			}
+			
+			if (ze\ring::engToBoolean($box['tabs']['password']['edit_mode']['on'] ?? false)) {
+				ze\priv::exitIfNot('_PRIV_CHANGE_ADMIN_PASSWORD');
+			}
 
 		} else {
 			ze\priv::exitIfNot('_PRIV_CREATE_ADMIN');
@@ -362,47 +369,37 @@ class zenario_common_features__admin_boxes__admin extends ze\moduleBaseClass {
 			//Attempt to ensure that username and email are unique.
 			//However if the Admin is not trying to change the username/email, then apply a "grandfather rule" and let existing bad data stay as it is.
 			if (!$box['key']['id'] || $values['details/username'] != $details['username']) {
-				if (ze\row::exists('admins', array('username' => $values['details/username'], 'id' => array('!' => (int) $box['key']['id'])))
+				if (ze\row::exists('admins', ['username' => $values['details/username'], 'id' => ['!' => (int) $box['key']['id']]])
 				|| (ze\db::connectGlobal()
-						&& ze\row::exists('admins', array('username' => $values['details/username'], 'id' => array('!' => (int) $box['key']['global_id']))))) {
+						&& ze\row::exists('admins', ['username' => $values['details/username'], 'id' => ['!' => (int) $box['key']['global_id']]]))) {
 					$box['tabs']['details']['errors'][] = ze\admin::phrase('An Administrator with this Username already exists. Please choose a different Username.');
 				}
 				ze\db::connectLocal();
 			}
 
 			if (!$box['key']['id'] || $values['details/email'] != $details['email']) {
-				if (ze\row::exists('admins', array('email' => $values['details/email'], 'id' => array('!' => (int) $box['key']['id'])))
+				if (ze\row::exists('admins', ['email' => $values['details/email'], 'id' => ['!' => (int) $box['key']['id']]])
 				|| (ze\db::connectGlobal()
-						&& ze\row::exists('admins', array('email' => $values['details/email'], 'id' => array('!' => (int) $box['key']['global_id']))))) {
+						&& ze\row::exists('admins', ['email' => $values['details/email'], 'id' => ['!' => (int) $box['key']['global_id']]]))) {
 					$box['tabs']['details']['errors'][] = ze\admin::phrase('An Administrator with this Email Address already exists. Please choose a different Email Address.');
 				}
 				ze\db::connectLocal();
 			}
 		}
 		
-		
-		//The password fields are on different tabs in create/edit modes
-		$pTab = false;
-		if ($newAdmin = !$box['key']['id']) {
-			$pTab = 'details';
-		} elseif (ze\ring::engToBoolean($box['tabs']['password']['edit_mode']['on'] ?? false)) {
-			$pTab = 'password';
-			ze\priv::exitIfNot('_PRIV_CHANGE_ADMIN_PASSWORD');
-		}
-		
 		//Check the password fields
-		if ($pTab) {
-			if (!$values[$pTab. '/'. 'password']) {
-				$box['tabs'][$pTab]['errors'][] = ze\admin::phrase('Please enter a Password.');
+		if ($box['key']['id'] && ze\ring::engToBoolean($box['tabs']['password']['edit_mode']['on'] ?? false)) {
+			if (!$values['password/password']) {
+				$box['tabs']['password']['errors'][] = ze\admin::phrase('Please enter a Password.');
 
-			} elseif (!ze\user::checkPasswordStrength($values[$pTab. '/'. 'password'])) {
-				$box['tabs'][$pTab]['errors'][] = ze\admin::phrase('The password provided is not strong enough. Please make the password longer, or try mixing in upper and lower case letters, numbers or non-alphanumeric characters.');
+			} elseif (!ze\user::checkPasswordStrength($values['password/password'])) {
+				$box['tabs']['password']['errors'][] = ze\admin::phrase('The password provided is not strong enough. Please make the password longer, or try mixing in upper and lower case letters, numbers or non-alphanumeric characters.');
 
-			} elseif (!$values[$pTab. '/'. 'password_confirm']) {
-				$box['tabs'][$pTab]['errors'][] = ze\admin::phrase('Please enter a password in both password fields.');
+			} elseif (!$values['password/password_confirm']) {
+				$box['tabs']['password']['errors'][] = ze\admin::phrase('Please enter a password in both password fields.');
 
-			} elseif ($values[$pTab. '/'. 'password'] != $values[$pTab. '/'. 'password_confirm']) {
-				$box['tabs'][$pTab]['errors'][] = ze\admin::phrase('Please ensure that the passwords you submit are identical.');
+			} elseif ($values['password/password'] != $values['password/password_confirm']) {
+				$box['tabs']['password']['errors'][] = ze\admin::phrase('Please ensure that the passwords you submit are identical.');
 			}
 		}
 		
@@ -472,27 +469,30 @@ class zenario_common_features__admin_boxes__admin extends ze\moduleBaseClass {
 
 			$box['key']['id'] = ze\row::set('admins', $details, (int) $box['key']['id']);
 			ze\contentAdm::deleteUnusedImagesByUsage('admin');
+			
+			if ($newAdmin) {
+				ze\adminAdm::updateHash($box['key']['id']);
+			}
 		}
 		
 		//send email if inform by email checked
-		if ($pTab
-		 && $values[$pTab. '/inform_by_email']
-		 && ze\module::inc('zenario_email_template_manager')) {
-			
-			$email_details = array(
+		if ($newAdmin && ze\module::inc('zenario_email_template_manager')) {
+			$hash = ze\row::get('admins', 'hash', $box['key']['id']);
+			$email_details = [
 				'username' => $values['details/username'],
 				'first_name' => $values['details/first_name'],
 				'last_name' => $values['details/last_name'],
 				'email' => $values['details/email'],
-				'password' => $values[$pTab. '/password'],
-				'cms_url' => ze\link::absolute());
+				'cms_url' => ze\link::absolute(),
+				'new_admin_cms_url' => ze\link::absolute() . 'zenario/admin/welcome.php?task=new_admin&hash=' . $hash
+			];
 			
 			zenario_email_template_manager::sendEmailsUsingTemplate($email_details['email'], ze::setting('notification_to_new_admin'), $email_details, []);
 		}
 		
 		//Set a password
-		if ($pTab) {
-			ze\adminAdm::setPassword($box['key']['id'], $values[$pTab. '/'. 'password'], ze\ring::engToBoolean($values[$pTab. '/'. 'password_needs_changing']), $isPasswordReset = false);
+		if (!$newAdmin && ze\ring::engToBoolean($box['tabs']['password']['edit_mode']['on'] ?? false) && $values['password/password']) {
+			ze\adminAdm::setPassword($box['key']['id'], $values['password/password'], ze\ring::engToBoolean($values['password/password_needs_changing']), $isPasswordReset = false);
 		}
 
 

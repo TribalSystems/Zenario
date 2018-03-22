@@ -172,6 +172,24 @@ plugin_settings:
                         numeric: The number of miliseconds to wait must be a number.
                     side_note: |
                        When the user type words to search wait the above amount of miliseconds before send the request. Default 500 ms.
+                search_placeholder:
+                    plugin_setting:
+                        name: search_placeholder
+                    label: 'Show "Search the site" placeholder'
+                    type: checkbox
+                    value: 0
+                    format_onchange: Yes
+                search_placeholder_phrase:
+                    indent: 1
+                    plugin_setting:
+                        name: search_placeholder_phrase
+                    label: 'Search placeholder phrase:'
+                    type: text
+                    format_onchange: Yes
+                    visible_if:
+                        lib.value: search_placeholder
+                    validation:
+                        required_if_not_hidden: Please enter a phrase
                     
         content_types:
             ord: "2"

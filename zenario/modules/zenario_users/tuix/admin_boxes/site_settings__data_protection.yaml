@@ -1,0 +1,68 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+site_settings:
+    setting_group: data_protection
+    tabs:
+        data_protection:
+            fields:
+                period_to_delete_sign_in_log: 
+                    site_setting:
+                        name: period_to_delete_sign_in_log
+                    label: "How long should the user sign-in log be saved?"
+                    type: select
+                    values: 
+                        never_save: 
+                            label: Don't save
+                        1:
+                            label: Delete after 1 day
+                        7:
+                            label: Delete after 1 week
+                        30:
+                            label: Delete after 1 month
+                        90: 
+                            label: Delete after 3 months
+                        365: 
+                            label: Delete after 1 year
+                        730: 
+                            label: Delete after 2 years
+                        never_delete:
+                            label: Save forever
+                    value: never_delete
+                period_to_delete_the_user_content_access_log: 
+                    site_setting:
+                        name: period_to_delete_the_user_content_access_log
+                    label: "How long should the user content-access log be saved?"
+                    type: select
+                    values: 
+                        never_save: 
+                            label: Don't save
+                        1:
+                            label: Delete after 1 day
+                        7:
+                            label: Delete after 1 week
+                        30:
+                            label: Delete after 1 month
+                        90: 
+                            label: Delete after 3 months
+                        365: 
+                            label: Delete after 1 year
+                        730: 
+                            label: Delete after 2 years
+                        never_delete:
+                            label: Save forever
+                    value: never_delete
+        data_encryption:
+            label: Data encryption
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_SITE_SETTING
+                on: false
+            fields:
+                description:
+                    snippet:
+                        html: |
+                            <p>Zenario can store certain data in an encrypted format. Here is how data on the users database table is stored.</p>
+                            <p>Please contact your CMS support team to encrypt further data fields.</p>
+                dataset_fields:
+                    snippet:
+                        html: ''

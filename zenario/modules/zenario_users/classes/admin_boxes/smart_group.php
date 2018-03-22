@@ -43,7 +43,7 @@ class zenario_users__admin_boxes__smart_group extends zenario_users {
 			$box['key']['intended_usage'] = $details['intended_usage'];
 			
 			//Load all of the created rules
-			$rules = ze\row::getArray('smart_group_rules', true, array('smart_group_id' => $box['key']['id']), 'ord');
+			$rules = ze\row::getArray('smart_group_rules', true, ['smart_group_id' => $box['key']['id']], 'ord');
 			
 			//Create a row of fields for each rule
 			foreach ($rules as $rule) {
@@ -133,7 +133,7 @@ class zenario_users__admin_boxes__smart_group extends zenario_users {
 			}
 		}
 		
-		$changes = array();
+		$changes = [];
 		$multiRows = $this->setupRuleRows($box, $fields, $values, $changes, $filling = true, $n);
 		$box['key']['num_rules'] = $multiRows['numRows'];
 		
@@ -162,12 +162,12 @@ class zenario_users__admin_boxes__smart_group extends zenario_users {
 		
 		
 		//Keep track of which things have parents
-		$unsets = array();
-		$optGroups = array(
-			'flags' => array(),
-			'groups' => array(),
-			'lists' => array()
-		);
+		$unsets = [];
+		$optGroups = [
+			'flags' => [],
+			'groups' => [],
+			'lists' => []
+		];
 		
 		//Get a list of tabs and fields, and loop through it
 		$box['lovs']['fields'] = ze\datasetAdm::listCustomFields('users', $flat = false, $filter = false, $customOnly = false, $useOptGroups = true);
@@ -190,11 +190,11 @@ class zenario_users__admin_boxes__smart_group extends zenario_users {
 				//If a field is flagged as "fundamental", add it to the main list and remove it from the second list
 				//Note that currently "fundamental" is only implemented for lists.
 				if ($field['fundamental'] && ze::in($field['type'], 'radios', 'select', 'centralised_radios', 'centralised_select')) {
-					$box['lovs']['types'][$fieldId] = array(
+					$box['lovs']['types'][$fieldId] = [
 						'ord' => $field['ord'],
 						'parent' => 'user_fields',
 						'label' => $field['label']
-					);
+					];
 					$unsets[] = $fieldId;
 					continue;
 				}
@@ -329,11 +329,11 @@ class zenario_users__admin_boxes__smart_group extends zenario_users {
 					$i=1;
 					foreach($activityBands as $activityBand){
 						if(isset($fields['smart_group/activity_bands__'. $n])){
-						$fields['smart_group/activity_bands__'. $n]['values'][$activityBand['id']] = array(
+						$fields['smart_group/activity_bands__'. $n]['values'][$activityBand['id']] = [
 							'ord' => ++$i,
 							'label' => $activityBand['name'],
 							'value' => $activityBand['id']
-						);
+						];
 						}
 					}
 				}
@@ -355,18 +355,18 @@ class zenario_users__admin_boxes__smart_group extends zenario_users {
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
 		ze\priv::exitIfNot('_PRIV_MANAGE_GROUP');
 		
-		if (ze\row::exists('smart_groups', array('name' => $values['smart_group/name'], 'id' => array('!' => $box['key']['id'])))) {
+		if (ze\row::exists('smart_groups', ['name' => $values['smart_group/name'], 'id' => ['!' => $box['key']['id']]])) {
 			$fields['smart_group/name']['error'] = ze\admin::phrase('A smart group with the name "[[smart_group/name]]" already exists. Please choose a different name.', $values);
 		}
 	}
 	
 	public function getRulesFromFields(&$box, &$fields, &$values) {
-		$rules = array();
+		$rules = [];
 		for ($n = 1; $n <= $box['key']['num_rules']; ++$n) {
 			
 			if ($type = $values['smart_group/type__'. $n]) {
 			
-				$rule = array();
+				$rule = [];
 				$rule['field_id'] = 0;
 				$rule['field2_id'] = 0;
 				$rule['field3_id'] = 0;
@@ -461,7 +461,7 @@ class zenario_users__admin_boxes__smart_group extends zenario_users {
 		ze\priv::exitIfNot('_PRIV_MANAGE_GROUP');
 		
 		//Save the basic details of the smart group
-		$details = array();
+		$details = [];
 		$details['name'] = $values['smart_group/name'];
 		$details['must_match'] = $values['smart_group/must_match'];
 		$details['last_modified_on'] = ze\date::now();
@@ -478,10 +478,10 @@ class zenario_users__admin_boxes__smart_group extends zenario_users {
 		
 		//Loop through saving all of the rules
 		$ord = 0;
-		$ords = array();
+		$ords = [];
 		foreach ($this->getRulesFromFields($box, $fields, $values) as $rule) {
 			$ords[] = ++$ord;
-			$key = array();
+			$key = [];
 			$key['ord'] = $ord;
 			$key['smart_group_id'] = $box['key']['id'];
 			unset($rule['must_match']);

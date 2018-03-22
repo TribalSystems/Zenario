@@ -39,7 +39,7 @@ switch ($path) {
 			$item['title'] = ze\content::title($cTypeAndCID[1], $cTypeAndCID[0]);
 			$item['frontend_link'] = ze\link::toItem($cTypeAndCID[1], $cTypeAndCID[0]);
 			
-			$item['traits'] = array();
+			$item['traits'] = [];
 			if (!$item['thread_count'] && !$item['post_count']) {
 				$item['traits']['empty'] = true;
 			}

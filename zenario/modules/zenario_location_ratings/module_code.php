@@ -183,7 +183,7 @@ class zenario_location_ratings extends zenario_location_manager {
 	}
 	
 	static function getAccreditors(){
-		$rv = array();
+		$rv = [];
 		$sql = 'SELECT id,
 					name,
 					score_type
@@ -197,7 +197,7 @@ class zenario_location_ratings extends zenario_location_manager {
 	}
 
 	static function getAccreditorDetails($ID){
-		$rv = array();
+		$rv = [];
 		$sql = 'SELECT name,
 					score_type
 				FROM ' .DB_NAME_PREFIX . ZENARIO_LOCATION_RATINGS_PREFIX . 'accreditors ';
@@ -211,7 +211,7 @@ class zenario_location_ratings extends zenario_location_manager {
 	static function getAccreditorScores($ID){
 		$accreditor = self::getAccreditorDetails($ID);
 	
-		$scores = array();
+		$scores = [];
 		$sql = 'SELECT id,
 					score
 				FROM ' .DB_NAME_PREFIX . ZENARIO_LOCATION_RATINGS_PREFIX . 'accreditor_scores ';
@@ -236,7 +236,7 @@ class zenario_location_ratings extends zenario_location_manager {
 	}
 
 	static function getAccreditorScore($id){
-		return ze\row::get(ZENARIO_LOCATION_RATINGS_PREFIX . "accreditor_scores",array("id","score"),array("id" => $id));
+		return ze\row::get(ZENARIO_LOCATION_RATINGS_PREFIX . "accreditor_scores",["id","score"],["id" => $id]);
 	}
 
 	static function getLocationAccreditorScores ($locationId) {
@@ -249,7 +249,7 @@ class zenario_location_ratings extends zenario_location_manager {
 		$result = ze\sql::select($sql);
 				
 		if (ze\sql::numRows($result)>0) {
-			$locationAccreditorScores = array();
+			$locationAccreditorScores = [];
 			
 			while ($row = ze\sql::fetchArray($result)) {
 				$locationAccreditorScores[] = $row;
@@ -331,8 +331,8 @@ class zenario_location_ratings extends zenario_location_manager {
 	public function showSlot() {
 		$locationId = parent::getLocationIdFromContentItem($this->cID,$this->cType);
 		
-		$mergeFields = array();
-		$subSections = array();
+		$mergeFields = [];
+		$subSections = [];
 		
 		$mergeFields['Location_Rating_Title'] = $this->phrase("_LOCATION_RATING_TITLE");
 		
@@ -343,14 +343,14 @@ class zenario_location_ratings extends zenario_location_manager {
 					
 					if ($accreditor['score_type']=="numeric") {
 						$subSections['Score_Type_Numeric'] = true;
-						$mergeFields['Numeric_Score_Label'] = $this->phrase("_NUMERIC_LOCATION_SCORE",array("name" => $accreditor['name']));
+						$mergeFields['Numeric_Score_Label'] = $this->phrase("_NUMERIC_LOCATION_SCORE",["name" => $accreditor['name']]);
 						$mergeFields['Numeric_Score'] = $this->getStars($locationAccreditorScore['score']);
 					} elseif ($accreditor['score_type']=="alpha") {
 					
 					} elseif ($accreditor['score_type']=="boolean") {
 						if ($locationAccreditorScore['score']=="Yes") {
 							$subSections['Score_Type_Boolean'] = true;
-							$mergeFields['Boolean_Score_Label'] = $this->phrase("_BOOLEAN_LOCATION_SCORE", array("name" => $accreditor['name']));
+							$mergeFields['Boolean_Score_Label'] = $this->phrase("_BOOLEAN_LOCATION_SCORE", ["name" => $accreditor['name']]);
 						}
 					}
 				}
@@ -375,7 +375,7 @@ class zenario_location_ratings extends zenario_location_manager {
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		switch ($path) {
 			case "zenario_location_manager__location":
-				$locationAccreditationScoreIds = array();
+				$locationAccreditationScoreIds = [];
 				
 				if ($box['key']['id']) {      
 					if ($locationAccreditations = self::getLocationAccreditorScores($box['key']['id'])) {
@@ -391,7 +391,7 @@ class zenario_location_ratings extends zenario_location_manager {
 					$i = 2;
 
 					foreach ($accreditors as $accreditor) {
-						$scores = array();
+						$scores = [];
 					
 						if ($accreditorScores = $this->getAccreditorScores($accreditor['id'])) {
 							$scoreId = false;
@@ -399,10 +399,10 @@ class zenario_location_ratings extends zenario_location_manager {
 							$scoreOrd = 1;
 							
 							foreach ($accreditorScores as $accreditorScore) {
-								$scores[$accreditorScore['id']] = array(
+								$scores[$accreditorScore['id']] = [
 																			"label" => $accreditorScore['score'],
 																			"ord" => $scoreOrd
-																		);
+																		];
 								
 								$scoreOrd++;
 								
@@ -412,14 +412,14 @@ class zenario_location_ratings extends zenario_location_manager {
 							}
 						}
 
-						$box['tabs']['zenario_location_ratings__accreditation']['fields']['accreditor_' . $accreditor['id']] = array(
+						$box['tabs']['zenario_location_ratings__accreditation']['fields']['accreditor_' . $accreditor['id']] = [
 																																		"ord" => $i,
 																																		"label" => $accreditor['name'] . ":",
 																																		"type" => "select",
 																																		"values" => $scores,
 																																		"value" => $scoreId,
 																																		"empty_value" => " -- Select a Rating -- "
-																																	);
+																																	];
 																																
 						$i++;
 					}
@@ -429,8 +429,8 @@ class zenario_location_ratings extends zenario_location_manager {
 				break;
 			case "zenario_location_manager__locations_multiple_edit":
 				if ($box['key']['id']) {      
-					$locationAccreditationScoreIds = array();
-					$locationAccreditationScoreIdsFinal = array();
+					$locationAccreditationScoreIds = [];
+					$locationAccreditationScoreIdsFinal = [];
 					
 					$locationIds = explode(",",$box['key']['id']);
 					
@@ -456,7 +456,7 @@ class zenario_location_ratings extends zenario_location_manager {
 						$i = 2;
 	
 						foreach ($accreditors as $accreditor) {
-							$scores = array();
+							$scores = [];
 						
 							if ($accreditorScores = $this->getAccreditorScores($accreditor['id'])) {
 								$scoreId = false;
@@ -470,15 +470,15 @@ class zenario_location_ratings extends zenario_location_manager {
 								}
 							}
 	
-							$box['tabs']['zenario_location_ratings__accreditation']['fields']['accreditor_' . $accreditor['id']] = array(
+							$box['tabs']['zenario_location_ratings__accreditation']['fields']['accreditor_' . $accreditor['id']] = [
 																																			"ord" => $i,
 																																			"label" => $accreditor['name'] . ":",
 																																			"type" => "select",
 																																			"values" => $scores,
 																																			"value" => $scoreId,
 																																			"empty_value" => " -- Select a Rating -- ",
-																																			"multiple_edit" => array("exists" => true)
-																																		);
+																																			"multiple_edit" => ["exists" => true]
+																																		];
 																																	
 							$i++;
 						}
@@ -563,11 +563,11 @@ class zenario_location_ratings extends zenario_location_manager {
 			case "zenario_location_manager__location":
 				if (ze\ring::engToBoolean($box['tabs']['zenario_location_ratings__accreditation']['edit_mode']['on'] ?? false)) {
 					if ($accreditors = $this->getAccreditors()) {
-						$newAccreditationScores = array();
+						$newAccreditationScores = [];
 					
 						foreach ($accreditors as $accreditor) {
 							if (ze\ray::issetArrayKey($values,'zenario_location_ratings__accreditation/accreditor_' . $accreditor['id'])) {
-								$newAccreditationScores[] = array("accreditor_id" => $accreditor['id'], "score" => ze\ray::value($values,'zenario_location_ratings__accreditation/accreditor_' . $accreditor['id']));
+								$newAccreditationScores[] = ["accreditor_id" => $accreditor['id'], "score" => ze\ray::value($values,'zenario_location_ratings__accreditation/accreditor_' . $accreditor['id'])];
 							}
 						}
 						
@@ -582,7 +582,7 @@ class zenario_location_ratings extends zenario_location_manager {
 			case "zenario_location_manager__locations_multiple_edit":
 				if (ze\ring::engToBoolean($box['tabs']['zenario_location_ratings__accreditation']['edit_mode']['on'] ?? false)) {
 					if ($accreditors = $this->getAccreditors()) {
-						$newAccreditationScores = array();
+						$newAccreditationScores = [];
 
 						$locationIds = explode(",",$box['key']['id']);
 			
@@ -616,7 +616,7 @@ class zenario_location_ratings extends zenario_location_manager {
 				if (ze\ray::issetArrayKey($box,"key","id")) {
 					$oldAccreditorDetails = $this->getAccreditorDetails($box['key']['id']);
 
-					ze\row::update(ZENARIO_LOCATION_RATINGS_PREFIX . "accreditors",array("name" => ($values['accreditor/name'] ?? false),"score_type" => ($values['accreditor/score_type'] ?? false)),array("id" => $box['key']['id']));	
+					ze\row::update(ZENARIO_LOCATION_RATINGS_PREFIX . "accreditors",["name" => ($values['accreditor/name'] ?? false),"score_type" => ($values['accreditor/score_type'] ?? false)],["id" => $box['key']['id']]);	
 					
 					$newAccreditorDetails = $this->getAccreditorDetails($box['key']['id']);
 					
@@ -624,16 +624,16 @@ class zenario_location_ratings extends zenario_location_manager {
 						$this->prepopulateAccreditorScores($box['key']['id']);
 					}
 				} else {
-					$accreditorId = ze\row::insert(ZENARIO_LOCATION_RATINGS_PREFIX . "accreditors",array("name" => ($values['accreditor/name'] ?? false),"score_type" => ($values['accreditor/score_type'] ?? false)));	
+					$accreditorId = ze\row::insert(ZENARIO_LOCATION_RATINGS_PREFIX . "accreditors",["name" => ($values['accreditor/name'] ?? false),"score_type" => ($values['accreditor/score_type'] ?? false)]);	
 					$this->prepopulateAccreditorScores($accreditorId);
 				}
 				
 				break;
 			case "zenario_location_ratings__accreditor_rating":
 				if (ze\ray::issetArrayKey($box,"key","id")) {
-					ze\row::update(ZENARIO_LOCATION_RATINGS_PREFIX . "accreditor_scores",array("score" => ($values['accreditor_rating/rating'] ?? false),"accreditor_id" => ($box["key"]["accreditor_id"] ?? false)),array("id" => $box['key']['id'],"accreditor_id" => $box['key']['accreditor_id']));	
+					ze\row::update(ZENARIO_LOCATION_RATINGS_PREFIX . "accreditor_scores",["score" => ($values['accreditor_rating/rating'] ?? false),"accreditor_id" => ($box["key"]["accreditor_id"] ?? false)],["id" => $box['key']['id'],"accreditor_id" => $box['key']['accreditor_id']]);	
 				} else {
-					ze\row::insert(ZENARIO_LOCATION_RATINGS_PREFIX . "accreditor_scores",array("score" => ($values['accreditor_rating/rating'] ?? false),"accreditor_id" => ($box["key"]["accreditor_id"] ?? false)));	
+					ze\row::insert(ZENARIO_LOCATION_RATINGS_PREFIX . "accreditor_scores",["score" => ($values['accreditor_rating/rating'] ?? false),"accreditor_id" => ($box["key"]["accreditor_id"] ?? false)]);	
 				}
 				
 				break;

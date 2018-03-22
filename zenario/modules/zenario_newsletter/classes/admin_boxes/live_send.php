@@ -38,7 +38,7 @@ class zenario_newsletter__admin_boxes__live_send extends zenario_newsletter {
 				'Are you sure you wish to send the Newsletter "[[newsletter_name]]" to [[recipients]] Recipient? Click-throughs counts will be reset.',
 				'Are you sure you wish to send the Newsletter "[[newsletter_name]]" to [[recipients]] Recipients? Click-throughs counts will be reset.',
 				$recipients,
-				array('newsletter_name' => $newsletter['newsletter_name'], 'recipients' => $recipients));
+				['newsletter_name' => $newsletter['newsletter_name'], 'recipients' => $recipients]);
 				
 			$sql = '
 				SELECT COUNT(*) 
@@ -50,7 +50,7 @@ class zenario_newsletter__admin_boxes__live_send extends zenario_newsletter {
 			if ($row[0] > 1) {
 				$fields['send/admin_options']['values']['all_admins']['label'] = ze\admin::phrase(
 					'Send all [[count]] administrators a copy of the email', 
-					array('count' => $row[0]));
+					['count' => $row[0]]);
 			} else {
 				unset($fields['send/admin_options']['values']['all_admins']);
 			}
@@ -60,7 +60,7 @@ class zenario_newsletter__admin_boxes__live_send extends zenario_newsletter {
 		// Scheduled publishing options
 		if (ze\module::inc('zenario_scheduled_task_manager')) {
 			$allJobsEnabled = ze::setting('jobs_enabled');
-			$scheduledSendingEnabled = ze\row::get('jobs', 'enabled', array('job_name' => 'jobSendNewsletters', 'module_class_name' => 'zenario_newsletter'));
+			$scheduledSendingEnabled = ze\row::get('jobs', 'enabled', ['job_name' => 'jobSendNewsletters', 'module_class_name' => 'zenario_newsletter']);
 			if (!($allJobsEnabled && $scheduledSendingEnabled)) {
 				$scheduledTaskLink = ze\link::absolute() . 
 					'zenario/admin/organizer.php#zenario__administration/panels/zenario_scheduled_task_manager__scheduled_tasks';
@@ -116,8 +116,8 @@ class zenario_newsletter__admin_boxes__live_send extends zenario_newsletter {
 			
 			} else {
 				//Update it to the "_IN_PROGRESS" state
-				$smartGroupDescriptions = array();
-				foreach ( ze\row::getArray(ZENARIO_NEWSLETTER_PREFIX. 'newsletter_smart_group_link', 'smart_group_id', array('newsletter_id' => $ids)) as $smartGroupId )  {
+				$smartGroupDescriptions = [];
+				foreach ( ze\row::getArray(ZENARIO_NEWSLETTER_PREFIX. 'newsletter_smart_group_link', 'smart_group_id', ['newsletter_id' => $ids]) as $smartGroupId )  {
 					$smartGroupDescriptions[] = ze\contentAdm::getSmartGroupDescription($smartGroupId);
 				}
 				$smartGroupDescriptions = (count($smartGroupDescriptions)>1?'(':'') . ze\admin::phrase(implode(") OR (", $smartGroupDescriptions )) . (count($smartGroupDescriptions)>1?')':'');
@@ -153,7 +153,7 @@ class zenario_newsletter__admin_boxes__live_send extends zenario_newsletter {
 							
 							if ($values['send/send_time_options'] == 'schedule') {
 								$date = ze\date::formatDateTime($scheduledSendDate, '_MEDIUM');
-								$msg .= '<p>'. ze\admin::phrase('This Newsletter will commence sending on [[date]].', array('date' => $date)). '</p>';
+								$msg .= '<p>'. ze\admin::phrase('This Newsletter will commence sending on [[date]].', ['date' => $date]). '</p>';
 							} else {
 								$msg .= '<p>'. ze\admin::phrase('This Newsletter will commence sending within the next 5 minutes.'). '</p>';
 							}

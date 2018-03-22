@@ -115,7 +115,7 @@ if ($requestedPath = ze::ifNull($_REQUEST['name'] ?? false, ($_REQUEST['path'] ?
 	$modules = array_unique(ze\row::getArray('tuix_file_contents', 'module_class_name', ['type' => 'wizards', 'path' => $requestedPath]));
 	
 	if (!empty($modules)) {
-		$moduleIds = ze\row::getArray('modules', 'id', array('status' => ['module_running', 'module_is_abstract'], 'class_name' => $modules));
+		$moduleIds = ze\row::getArray('modules', 'id', ['status' => ['module_running', 'module_is_abstract'], 'class_name' => $modules]);
 		
 		if (!empty($moduleIds)) {
 			echo '
@@ -147,7 +147,7 @@ echo '
 <div id="welcome_outer">
 	<div id="welcome" class="welcome">
 		<div class="zenario_version"><p class="version">
-			', ze\admin::phrase('Zenario [[version]]', array('version' => ze\site::versionNumber())), '
+			', ze\admin::phrase('Zenario [[version]]', ['version' => ze\site::versionNumber()]), '
 		</p></div>
 		<div class="welcome_wrap">
 			<div class="welcome_inner">
@@ -166,7 +166,7 @@ echo '
 	</div>
 	<div id="no_something" class="welcome">
 		<div class="zenario_version"><p class="version">
-			', ze\admin::phrase('Zenario [[version]]', array('version' => ze\site::versionNumber())), '
+			', ze\admin::phrase('Zenario [[version]]', ['version' => ze\site::versionNumber()]), '
 		</p></div>
 		<div class="welcome_wrap">
 			<div class="welcome_inner">

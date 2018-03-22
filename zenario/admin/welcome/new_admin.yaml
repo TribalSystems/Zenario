@@ -1,0 +1,39 @@
+new_admin:
+    tab: new_admin
+    tabs:
+        new_admin:
+            edit_mode:
+                enabled: true
+                on: true
+                always_on: true
+            show_errors_after_field: description
+            fields:
+                description:
+                    full_width: true
+                    snippet:
+                        html: |
+                            <h1>Welcome [[username]]!</h1>
+                            <p>
+                                After entering a password you can login and begin administrating your site.
+                            </p>
+                password:
+                    label: "Password:"
+                    type: password
+                    onkeyup: zenarioAW.quickValidateWelcomePage(300);
+                    row_class: row_form
+                    return_key_presses_button: change_password
+                password_strength:
+                    same_row: true
+                    snippet:
+                        html: "&nbsp;"
+                re_password:
+                    label: "Re-enter your Password:"
+                    type: password
+                    row_class: row_form
+                    return_key_presses_button: change_password
+                save_password_and_login:
+                    value: Save and login
+                    type: submit
+                    full_width: true
+                    style: |
+                        float: right;

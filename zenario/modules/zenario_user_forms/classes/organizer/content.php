@@ -32,13 +32,13 @@ class zenario_user_forms__organizer__content extends ze\moduleBaseClass {
 	public function preFillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
 		if ($refinerName == 'form_id') {
 			$formId = $refinerId;
-			$form = ze\row::get(ZENARIO_USER_FORMS_PREFIX . 'user_forms', array('name'), $formId);
+			$form = ze\row::get(ZENARIO_USER_FORMS_PREFIX . 'user_forms', ['name'], $formId);
 			$panel['title'] = ze\admin::phrase('Content items on which the form "[[name]]" is used', $form);
 			$panel['no_items_message'] = ze\admin::phrase('There are no content items using the form "[[name]]".', $form);
 			$panel['collection_buttons']['create']['hidden'] = true;
 			
 			//Get plugins using this form
-			$instanceIds = array();
+			$instanceIds = [];
 			$moduleIds = zenario_user_forms::getFormModuleIds();
 			if ($moduleIds) {
 				$sql = '

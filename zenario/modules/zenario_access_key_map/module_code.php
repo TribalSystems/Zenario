@@ -57,11 +57,11 @@ class zenario_access_key_map extends ze\moduleBaseClass {
 	
 	public function showSlot() {
 		$cachingRestrictions = false;
-		$mergeFields = array();
-		$subSections = array();
+		$mergeFields = [];
+		$subSections = [];
 		$mergeFields['Access_Key_Map'] = $this->phrase( '_ACCESS_KEY_MAP' );
 		$notFound = true;
-		$menus = array();
+		$menus = [];
 		
 		
 		//Firstly, get every section/parent id that has an access key in it
@@ -115,9 +115,9 @@ class zenario_access_key_map extends ze\moduleBaseClass {
 		
 		} else {
 			//Sort the Menu Names in order
-			usort($menus, array('zenario_access_key_map', 'sort'));
+			usort($menus, ['zenario_access_key_map', 'sort']);
 			
-			$accessKeys = array();
+			$accessKeys = [];
 			foreach ($menus as &$menu) {
 				$accessKeys[$menu['accesskey']] = $menu['name'];
 			}

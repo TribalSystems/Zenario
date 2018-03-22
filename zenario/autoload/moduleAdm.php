@@ -202,7 +202,7 @@ class moduleAdm {
 	
 		//Check to see if there are any other versions of the same module running.
 		//If we find another version running, don't let this version be activated!
-		} elseif (\ze\row::exists('modules', array('id' => ['!' => $id], 'class_name' => $module['class_name'], 'status' => ['module_running', 'module_is_abstract']))) {
+		} elseif (\ze\row::exists('modules', ['id' => ['!' => $id], 'class_name' => $module['class_name'], 'status' => ['module_running', 'module_is_abstract']])) {
 			return \ze\admin::phrase('_ANOTHER_VERSION_OF_PLUGIN_IS_INSTALLED');
 	
 		} elseif (!\ze\moduleAdm::loadDescription($module['class_name'], $desc)) {
@@ -288,7 +288,7 @@ class moduleAdm {
 					return false;
 		
 				} else {
-					\ze\row::update('modules', ['status' => 'module_running'], array('id' => $id, 'status' => ['module_suspended', 'module_not_initialized']));
+					\ze\row::update('modules', ['status' => 'module_running'], ['id' => $id, 'status' => ['module_suspended', 'module_not_initialized']]);
 			
 					//Have a safety feature whereby if the installation fails, the module will be immediately uninstalled
 					//However this shouldn't be used for upgrading a module to a different version
@@ -433,7 +433,7 @@ class moduleAdm {
 		if (\ze\sql::fetchRow($result)) {
 			echo \ze\admin::phrase(
 				'Cannot Suspend the module &quot;[[module]]&quot; as the Core CMS depends on it.',
-				array('module' => htmlspecialchars(\ze\module::getModuleDisplayNameByClassName($module['class_name']))));
+				['module' => htmlspecialchars(\ze\module::getModuleDisplayNameByClassName($module['class_name']))]);
 			exit;
 		}
 	
@@ -449,9 +449,9 @@ class moduleAdm {
 			if (\ze\module::status($row['module_id']) == 'module_running') {
 				echo \ze\admin::phrase(
 					'Cannot Suspend the module &quot;[[moduleName]]&quot; as the &quot;[[dependencyName]]&quot; module depends on it.',
-					array(
+					[
 						'moduleName' => htmlspecialchars(\ze\module::getModuleDisplayNameByClassName($module['class_name'])),
-						'dependencyName' => htmlspecialchars(\ze\module::getModuleDisplayNameByClassName($row['module_class_name']))));
+						'dependencyName' => htmlspecialchars(\ze\module::getModuleDisplayNameByClassName($row['module_class_name']))]);
 				exit;
 			}
 		}
@@ -471,9 +471,9 @@ class moduleAdm {
 		if ($row = \ze\sql::fetchAssoc($result)) {
 			echo \ze\admin::phrase(
 				'Cannot uninitialise the module &quot;[[moduleName]]&quot; as the &quot;[[dependencyName]]&quot; module depends on it.',
-				array(
+				[
 					'moduleName' => htmlspecialchars(\ze\module::getModuleDisplayNameByClassName($module['class_name'])),
-					'dependencyName' => htmlspecialchars(\ze\module::getModuleDisplayNameByClassName($row['module_class_name'])))
+					'dependencyName' => htmlspecialchars(\ze\module::getModuleDisplayNameByClassName($row['module_class_name']))]
 			);
 			exit;
 		}
@@ -669,12 +669,12 @@ class moduleAdm {
 		\ze\sql::update($sql);
 
 		//Look to see which dependencies this Module has
-		$dependencies = array(
+		$dependencies = [
 			'dependency' => [],
 			'inherit_frameworks' => [],
 			'include_javascript' => [],
 			'inherit_settings' => []
-		);
+		];
 
 		foreach (\ze\moduleAdm::readDependencies($moduleClassName, $desc) as $module) {
 			$dependencies['dependency'][$module] = $module;
@@ -735,20 +735,20 @@ class moduleAdm {
 						$specialPageChanges = true;
 						\ze\row::insert(
 							'special_pages',
-							array(
+							[
 								'module_class_name' => $moduleClassName,
 								'logic' => $logic,
 								'publish' => \ze\ring::engToBoolean($page['publish'] ?? false),
-								'page_type' => $page['page_type']));
+								'page_type' => $page['page_type']]);
 			
 					} elseif (!$specialPage['module_class_name'] || $specialPage['module_class_name'] == $moduleClassName) {
 						$specialPageChanges = true;
 						\ze\row::update(
 							'special_pages',
-							array(
+							[
 								'module_class_name' => $moduleClassName,
 								'logic' => $logic,
-								'publish' => \ze\ring::engToBoolean($page['publish'] ?? false)),
+								'publish' => \ze\ring::engToBoolean($page['publish'] ?? false)],
 							[
 								'page_type' => $page['page_type']]);
 			

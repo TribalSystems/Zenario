@@ -65,15 +65,15 @@ class zenario_common_features__organizer__skin_files extends ze\moduleBaseClass 
 			}
 			
 			
-			$panel['items'] = array();
+			$panel['items'] = [];
 			if (is_dir(CMS_ROOT. $dir)) {
 				foreach (scandir(CMS_ROOT. $dir) as $file) {
 					if (substr($file, 0, 1) != '.') {
-						$item = array(
+						$item = [
 							'name' => $file,
 							'href' => $dir. $file,
 							'path' => CMS_ROOT. $dir. $file,
-							'filesize' => filesize(CMS_ROOT. $dir. $file));
+							'filesize' => filesize(CMS_ROOT. $dir. $file)];
 						
 						if (is_file(CMS_ROOT. $dir. $file)) {
 							if (substr($file, -4) == '.gif'

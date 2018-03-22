@@ -296,7 +296,7 @@ class zenario_project_locations extends ze\moduleBaseClass {
 			
 			$result_container_id = $this->containerId . '_result_'. $row['tag_id'];
 			$title = htmlspecialchars($row['title']);	
-			$rows[] = array(
+			$rows[] = [
 				'html_id' => $result_container_id,
 				'client_name' => htmlspecialchars($row['client_name']),
 				'architect_name' => htmlspecialchars($row['architect_name']),
@@ -305,15 +305,15 @@ class zenario_project_locations extends ze\moduleBaseClass {
 				'location' => $project_link_start.htmlspecialchars($row['name']).$project_link_end,
 				'title' => $title,
 				'Sticky_image_HTML_tag' => $img_tag
-			);
+			];
 
 //				if(!$row['latitude']) $row['latitude']='0'; if(!$row['logitude']) $row['logitude']='0';				
-				$location_points[] = array(
+				$location_points[] = [
 							floatval($row['latitude']), 
 							floatval($row['longitude']),
 							$title,
 							$result_container_id
-				);
+				];
 			}
 
 		return [$rows, $location_points];
@@ -518,7 +518,7 @@ class zenario_project_locations extends ze\moduleBaseClass {
 					$fields['last_updated']['value'] = $projectDetails['last_updated'] ?? false;
 					$fields['last_updated']['hidden'] = false;
 
-					$lastUpdatedByAdmin = ze\row::get("admins",["id","username","authtype"],array("id" => ($projectDetails['last_updated_admin_id'] ?? false)));
+					$lastUpdatedByAdmin = ze\row::get("admins",["id","username","authtype"],["id" => ($projectDetails['last_updated_admin_id'] ?? false)]);
 					$fields['last_updated_admin_id']['value'] = ($lastUpdatedByAdmin['username'] ?? false) . ((($lastUpdatedByAdmin['authtype'] ?? false)=="super") ? " (super)":"");
 					$fields['last_updated_admin_id']['hidden'] = false;
  
@@ -618,7 +618,7 @@ class zenario_project_locations extends ze\moduleBaseClass {
 					$fields['region']['value'] = 0;
 				} else {
 					$fields['region']['hidden'] = false;
-					$fields['region']['values'] = array(0 => ["id" => 0, "name" => "--Select a region--"]);
+					$fields['region']['values'] = [0 => ["id" => 0, "name" => "--Select a region--"]];
 					foreach ($regionsByCountry as $key => $value) {
 						$fields['region']['values'][$key] = $value;
 					}

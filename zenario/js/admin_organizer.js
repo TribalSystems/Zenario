@@ -3243,8 +3243,8 @@ zenarioO.changePassword = function() {
 
 //Reload Organizer, making sure to go via the admin login page in case a login/db_update is needed
 zenarioO.reloadPage =
-zenarioO.refreshPage = function(hash, dontAutoDetectMode, task) {
-	if (zenarioO.stop) {
+zenarioO.refreshPage = function(hash, dontAutoDetectMode, task, force) {
+	if (!force && zenarioO.stop) {
 		return false;
 	}
 
@@ -3710,25 +3710,10 @@ zenarioO.getColumnFilterType = function(c) {
 
 zenarioO.setViewOptions = function() {
 	
-	zenarioVO.shownTab = 'cp';
-	zenarioVO.tuix = {
-		tab: 'cp',
-		tabs: {
-			cp: {
-				template: 'zenario_filters_popup',
-				edit_mode: {
-					on: true,
-					enabled: true,
-					always_on: true
-				},
-				fields: {}
-			}
-		}
-	};
-		//Backwards compatability for any old code
-		//zenarioVO.focus = zenarioVO.tuix;	
+	var fields = {},
+		cb = new zenario.callback;
 	
-	zenarioVO.tuix.tabs.cp.fields.showcol__title_ = {
+	fields.showcol__title_ = {
 		ord: -3,
 		full_width: true,
 		pre_field_html: '<div class="organizer_colPickerTitle_show" style="">',
@@ -3736,7 +3721,7 @@ zenarioO.setViewOptions = function() {
 		post_field_html: '</div>'
 	};
 	
-	zenarioVO.tuix.tabs.cp.fields.sortcol__title_ = {
+	fields.sortcol__title_ = {
 		ord: -1,
 		same_row: true,
 		pre_field_html: '<div class="organizer_colPickerTitle_sort">',
@@ -3755,13 +3740,13 @@ zenarioO.setViewOptions = function() {
 		if ((column = zenarioO.tuix.columns[c])
 		 && (zenarioO.isShowableColumn(c, false))) {
 			
-			zenarioVO.tuix.tabs.cp.fields['start_of_row__' + c] = {
+			fields['start_of_row__' + c] = {
 				ord: 100 * colNo,
 				full_width: true,
 				snippet: {html: ''}
 			}
 			
-			zenarioVO.tuix.tabs.cp.fields['showcol_' + c] = {
+			fields['showcol_' + c] = {
 				ord: 100 * colNo + 4,
 				same_row: true,
 				type: 'toggle',
@@ -3774,12 +3759,12 @@ zenarioO.setViewOptions = function() {
 			};
 			
 			if (zenarioO.showCSVInViewOptions) {
-				delete zenarioVO.tuix.tabs.cp.fields['showcol_' + c].onclick;
+				delete fields['showcol_' + c].onclick;
 				
 				if (engToBoolean(engToBoolean(column.server_side_only))) {
-					zenarioVO.tuix.tabs.cp.fields['showcol_' + c].style = 'visibility: hidden;';
+					fields['showcol_' + c].style = 'visibility: hidden;';
 				} else {
-					zenarioVO.tuix.tabs.cp.fields['showcol_' + c].disabled = 'disabled';
+					fields['showcol_' + c].disabled = 'disabled';
 				}
 				
 				var value = zenarioO.shownColumns[c];
@@ -3789,7 +3774,7 @@ zenarioO.setViewOptions = function() {
 					value = prefs.shownColumnsInCSV[c];
 				}
 				
-				zenarioVO.tuix.tabs.cp.fields['showcsv_' + c] = {
+				fields['showcsv_' + c] = {
 					ord: 100 * colNo + 5,
 					same_row: true,
 					type: 'checkbox',
@@ -3801,7 +3786,7 @@ zenarioO.setViewOptions = function() {
 				};
 			}
 			
-			zenarioVO.tuix.tabs.cp.fields['sortcol_' + c] = {
+			fields['sortcol_' + c] = {
 				ord: 100 * colNo + 6,
 				same_row: true,
 				snippet: {
@@ -3833,7 +3818,7 @@ zenarioO.setViewOptions = function() {
 						dateAfter = dates[0];
 					}
 					
-					zenarioVO.tuix.tabs.cp.fields['date_after_col_' + c] = {
+					fields['date_after_col_' + c] = {
 						ord: 100 * colNo + 7,
 						row_class: 'zenario_date_filters_for_field',
 						label: '<span class="zenario_date_filters_phrase">' + phrase.after + '</span>',
@@ -3843,7 +3828,7 @@ zenarioO.setViewOptions = function() {
 						hidden: hidden,
 						_was_hidden_before: hiddenPreviously
 					};
-					zenarioVO.tuix.tabs.cp.fields['date_before_col_' + c] = {
+					fields['date_before_col_' + c] = {
 						ord: 100 * colNo + 8,
 						row_class: 'zenario_date_filters_for_field',
 						label: '<span class="zenario_date_filters_phrase">' + phrase.before + "</span>",
@@ -3853,7 +3838,7 @@ zenarioO.setViewOptions = function() {
 						hidden: hidden,
 						_was_hidden_before: hiddenPreviously
 					};
-					zenarioVO.tuix.tabs.cp.fields['v' + c] = {
+					fields['v' + c] = {
 						ord: 100 * colNo + 9,
 						same_row: true,
 						type: 'hidden',
@@ -3870,7 +3855,7 @@ zenarioO.setViewOptions = function() {
 						label = label.replace(/\s*:/, ':');
 					}
 					
-					zenarioVO.tuix.tabs.cp.fields['v' + c] = {
+					fields['v' + c] = {
 						ord: 100 * colNo + 7,
 						row_class: 'zenario_filters_for_field yes_or_no',
 						snippet: {
@@ -3918,7 +3903,7 @@ zenarioO.setViewOptions = function() {
 						}
 					}
 					
-					zenarioVO.tuix.tabs.cp.fields['v' + c] = {
+					fields['v' + c] = {
 						ord: 100 * colNo + 7,
 						row_class: 'zenario_filters_for_field enum',
 						label: invertLink + (zenarioO.getFilterValue('not', c)? phrase.isnt : phrase.is) + '</a>',
@@ -3942,7 +3927,7 @@ zenarioO.setViewOptions = function() {
 						labelPhrase = exact? phrase.is : phrase.like;
 					}
 					
-					zenarioVO.tuix.tabs.cp.fields['v' + c] = {
+					fields['v' + c] = {
 						ord: 100 * colNo + 7,
 						row_class: 'zenario_filters_for_field',
 						label: invertLink + labelPhrase + '</a>',
@@ -3955,7 +3940,7 @@ zenarioO.setViewOptions = function() {
 				}
 				
 				if (zenarioO.getColumnFilterType(c)) {
-					zenarioVO.tuix.tabs.cp.fields['togglefilter_' + c] = {
+					fields['togglefilter_' + c] = {
 						ord: 100 * colNo + 2,
 						same_row: true,
 						pre_field_html: '<div class="organizer_togglefilter">',
@@ -3970,7 +3955,7 @@ zenarioO.setViewOptions = function() {
 			}
 			
 			if (zenarioO.showCSVInViewOptions) {
-				zenarioVO.tuix.tabs.cp.fields['up__' + c] = {
+				fields['up__' + c] = {
 					ord: 100 * colNo + 1,
 					same_row: true,
 					pre_field_html: '<div class="organizer_mov_col">',
@@ -3981,7 +3966,7 @@ zenarioO.setViewOptions = function() {
 					title: phrase.moveColForward
 				};
 				
-				zenarioVO.tuix.tabs.cp.fields['down__' + c] = {
+				fields['down__' + c] = {
 					ord: 100 * colNo + 2,
 					same_row: true,
 					type: 'toggle',
@@ -3993,11 +3978,11 @@ zenarioO.setViewOptions = function() {
 				};
 				
 				if (lastCol !== false) {
-					zenarioVO.tuix.tabs.cp.fields['up__' + c].style = '';
-					zenarioVO.tuix.tabs.cp.fields['up__' + c].onclick = 'zenarioO.switchColumnOrder(' + colNo + ', ' + lastCol + ', true)';
+					fields['up__' + c].style = '';
+					fields['up__' + c].onclick = 'zenarioO.switchColumnOrder(' + colNo + ', ' + lastCol + ', true)';
 					
-					zenarioVO.tuix.tabs.cp.fields['down__' + lastColName].style = '';
-					zenarioVO.tuix.tabs.cp.fields['down__' + lastColName].onclick = 'zenarioO.switchColumnOrder(' + colNo + ', ' + lastCol + ', true)';
+					fields['down__' + lastColName].style = '';
+					fields['down__' + lastColName].onclick = 'zenarioO.switchColumnOrder(' + colNo + ', ' + lastCol + ', true)';
 				}
 			}
 			lastCol = colNo;
@@ -4030,7 +4015,7 @@ zenarioO.setViewOptions = function() {
 	}
 	
 	if (showResetButton) {
-		zenarioVO.tuix.tabs.cp.fields.reset = {
+		fields.reset = {
 			ord: 100 * colNo + 12,
 			full_width: true,
 			type: 'toggle',
@@ -4039,13 +4024,7 @@ zenarioO.setViewOptions = function() {
 		};
 	}
 	
-	//html += zenarioVO.draw2();
-	
-	zenarioVO.sortTabs();
-	var cb = new zenario.callback,
-		html = zenarioVO.drawFields(cb);
-	
-	get('zenario_fbAdminViewModeOptions').innerHTML = html;
+	get('zenario_fbAdminViewModeOptions').innerHTML = zenarioVO.drawTUIX(fields, 'zenario_filters_popup', cb);
 	
 	zenario.addJQueryElements('#zenario_fbAdminViewModeOptions ', true);
 	cb.call();

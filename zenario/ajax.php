@@ -46,7 +46,6 @@ if ($methodCall == 'handleOrganizerPanelAJAX') {
 	ze::$skPath = $path = $_REQUEST['__path__'] ?? false;
 }
 
-
 $isForPlugin = ($_REQUEST['cID'] ?? false) && ($_REQUEST['cType'] ?? false) && ($_REQUEST['instanceId'] ?? false);
 
 //Check which method call is being requested
@@ -155,7 +154,7 @@ if ($methodCall == 'refreshPlugin'
 		|| $methodCall == 'showStandalonePage') {
 	
 	//Allow handleAJAX, showFile, showImage and showStandalonePage to be for visitors or admins as needed
-	if (($_SESSION['admin_logged_in'] ?? false) || $methodCall == 'handleOrganizerPanelAJAX' || $methodCall == 'handleAdminToolbarAJAX') {
+	if (!empty($_SESSION['admin_logged_in']) || $methodCall == 'handleOrganizerPanelAJAX' || $methodCall == 'handleAdminToolbarAJAX') {
 		require 'adminheader.inc.php';
 	} else {
 		require 'visitorheader.inc.php';
@@ -328,251 +327,44 @@ if ($methodCall == 'showFile') {
 		$module = &ze::$slotContents[$slotName]['class'];
 	}
 	
+	
 	$filling = $methodCall == 'fillVisitorTUIX' || empty($_POST['_tuix']);
 	$saving = !$filling && $methodCall == 'saveVisitorTUIX';
 	$validating = !$filling && ($saving || $methodCall == 'validateVisitorTUIX');
 	
+	$requestedPath = $_REQUEST['path'] ?? false;
 	
-	$callbackFromScriptTags = $filling && !empty($_REQUEST['_script']);
+	$debugMode = ze::isAdmin() && ze::get('_debug');
 	
-	header('Content-Type: text/javascript; charset=UTF-8');
-	
-	class zenario_ajax_static_vars {
-		public static $hadFatalError = true;
-		public static $returnGlobalName = true;
-		public static function onShutdown() {
-			if (zenario_ajax_static_vars::$hadFatalError) {
-				$error = ob_get_clean();
-				
-				echo zenario_ajax_static_vars::$returnGlobalName, '.AJAXErrorHandler({
-					responseText: ', json_encode($error), '
-				});';
-				
-				exit;
-			}
-		}
-	}
-	zenario_ajax_static_vars::$returnGlobalName = $module->returnGlobalName();
-	
-	if ($callbackFromScriptTags) {
-		ob_start();
-		register_shutdown_function(['zenario_ajax_static_vars', 'onShutdown']);
-	}
 	
 	//Exit if no path is specified
-	if (!$requestedPath = $_REQUEST['path'] ?? false) {
+	if (!$requestedPath) {
 		echo 'No path specified!';
 		exit;
-	}
-	$debugMode = ze\priv::check() && (bool) ($_GET['_debug'] ?? false);
-	
-	ze::$skType = 'visitor';
-	ze::$skPath = $requestedPath;
-	
+
 	//Check to see if this path is allowed.
-	if (!$module->returnVisitorTUIXEnabled($requestedPath)) {
+	} else if (!$module->returnVisitorTUIXEnabled($requestedPath)) {
 		echo 'You do not have access to this plugin in this mode, or the plugin settings are incomplete.';
 		exit;
 	}
 	
-	$tags = [];
-	$originalTags = [];
-	$moduleFilesLoaded = [];
-	ze\tuix::load($moduleFilesLoaded, $tags, 'visitor', $requestedPath);
 	
-	if (empty($tags[$requestedPath])) {
-		echo 'Path not found!';
-		exit;
-	}
-	$tags = $tags[$requestedPath];
-	$clientTags = false;
-	
+	header('Content-Type: text/javascript; charset=UTF-8');
 	
 	//Small hack for phrases:
 	//Try to note down the first YAML file that was used, and use this to report the path that the phrase was found in
 	//(Note that this may be wrong if more than one YAML file is used, but usually we only use one YAML file for each path)
 	if (!empty($moduleFilesLoaded[$moduleClassName]['paths'])) {
 		foreach ($moduleFilesLoaded[$moduleClassName]['paths'] as $yamlFilePath) {
-			ze\TUIX::$yamlFilePath = $yamlFilePath;
+			ze\tuix::$yamlFilePath = $yamlFilePath;
 			break;
 		}
 	}
 	
-	
-	if ($debugMode) {
-		$staticTags = $tags;
-	}
-
-	//Debug mode - show the TUIX before it's been modified
-	if ($debugMode) {
-		$modules = [$moduleClassName = $module];
-		
-		
-		if (!ze\tuix::looksLikeFAB($tags)) {
-			//Logic for initialising an Admin Box
-			if (!empty($tags['key']) && is_array($tags['key'])) {
-				foreach ($tags['key'] as $key => &$value) {
-					if (!empty($_REQUEST[$key])) {
-						$value = $_REQUEST[$key];
-					}
-				}
-			}
-			ze\tuix::$feaDebugMode = true;
-			$module->fillVisitorTUIX($requestedPath, $tags, $fields, $values);
-		}
-		
-		
-		ze\tuix::displayDebugMode($staticTags, $modules, $moduleFilesLoaded, $tagPath = $requestedPath, false, ze\tuix::$feaSelectQuery, ze\tuix::$feaSelectCountQuery);
-		exit;
-	}
-	
-	$doSave = false;
-	if ($filling) {
-		//Logic for initialising an Admin Box
-		if (!empty($tags['key']) && is_array($tags['key'])) {
-			foreach ($tags['key'] as $key => &$value) {
-				if (!empty($_REQUEST[$key])) {
-					$value = $_REQUEST[$key];
-				}
-			}
-		}
-		
-		$fields = [];
-		$values = [];
-		$changes = [];
-		if (ze\tuix::looksLikeFAB($tags)) {
-			ze\tuix::readValues($tags, $fields, $values, $changes, $filling, $resetErrors = false);
-		}
-	
-		$module->fillVisitorTUIX($requestedPath, $tags, $fields, $values);
-	
-	
-	} else {
-		$clientTags = json_decode($_POST['_tuix'], true);
-	
-		ze\tuix::loadCopyFromServer($tags, $clientTags);
-		
-		ze\tuix::syncFromClientToServer($tags, $clientTags);
-		
-		if (!empty($_REQUEST['_useSync'])) {
-			$originalTags = $tags;
-		}
-		
-		if (ze::in($methodCall, 'validateVisitorTUIX', 'saveVisitorTUIX')) {
-			
-	
-			$fields = [];
-			$values = [];
-			$changes = [];
-			if (ze\tuix::looksLikeFAB($tags)) {
-				ze\tuix::readValues($tags, $fields, $values, $changes, $filling, $resetErrors = true, $checkLOVs = true);
-				
-				foreach ($tags['tabs'] as $tabName => &$tab) {
-					ze\tuix::applyValidation($tab, $saving);
-				}
-			}
-			
-			$module->validateVisitorTUIX($requestedPath, $tags, $fields, $values, $changes, $saving);
-			
-			
-			if ($saving) {
-				//Check if there are any errors
-				$doSave = true;
-				if (ze\tuix::looksLikeFAB($tags)) {
-					foreach ($tags['tabs'] as &$tab) {
-						if (!empty($tab['errors'])) {
-							$doSave = false;
-							break;
-						}
-					
-						if (!empty($tab['fields']) && is_array($tab['fields'])) {
-							foreach ($tab['fields'] as &$field) {
-								if (!empty($field['error'])) {
-									$doSave = false;
-									break 2;
-								}
-							}
-						}
-					}
-				}
-				
-				if ($doSave) {
-					$fields = [];
-					$values = [];
-					$changes = [];
-					if (ze\tuix::looksLikeFAB($tags)) {
-						ze\tuix::readValues($tags, $fields, $values, $changes, $filling, $resetErrors = false);
-					}
-					
-					$module->saveVisitorTUIX($requestedPath, $tags, $fields, $values, $changes);
-				}
-			}
-		}
-		
-	}
-	
-	if (!$doSave) {
-		$fields = [];
-		$values = [];
-		$changes = [];
-		if (ze\tuix::looksLikeFAB($tags)) {
-			ze\tuix::readValues($tags, $fields, $values, $changes, $filling, $resetErrors = false, $checkLOVs = false, $addOrds = true);
-		}
-
-		$module->formatVisitorTUIX($requestedPath, $tags, $fields, $values, $changes);
-	}
-	
-	if (ze\tuix::looksLikeFAB($tags)) {
-		//Try to save a copy of the admin box in the cache directory
-		ze\tuix::saveCopyOnServer($tags);
-		
-		if (!empty($originalTags)) {
-			$output = [];
-			ze\tuix::syncFromServerToClient($tags, $originalTags, $output);
-	
-			$tags = $output;
-		}
-	}
-	
-
-	
-	
-	if ($callbackFromScriptTags) {
-		
-		$error = ob_get_clean();
-		
-		if ($error) {
-			echo zenario_ajax_static_vars::$returnGlobalName, '.AJAXErrorHandler({
-				data: {},
-				responseText: ', json_encode($error), ',
-				zenario_continueAnyway: function() {';
-		}
-		
-		$requests = $_GET;
-		unset($requests['cID']);
-		unset($requests['cType']);
-		unset($requests['cVersion']);
-		unset($requests['method_call']);
-		unset($requests['moduleClassName']);
-		unset($requests['instanceId']);
-		unset($requests['slotName']);
-		unset($requests['eggId']);
-		unset($requests['_script']);
-		echo zenario_ajax_static_vars::$returnGlobalName, '.loadFromScriptCallback(', json_encode($requests), ', ';
-	}
+	$tags = [];
+	ze\tuix::visitorTUIX($module, $requestedPath, $tags, $filling, $validating, $saving, $debugMode);
 	
 	ze\ray::jsonDump($tags);
-	
-	if ($callbackFromScriptTags) {
-		echo ');';
-		
-		if ($error) {
-			echo '}});';
-		}
-	}
-	
-	zenario_ajax_static_vars::$hadFatalError = false;
-	
 	
 	
 //Show an image
@@ -882,10 +674,10 @@ if ($methodCall == 'showFile') {
 		
 		if (!empty(ze::$jsLibs)) {
 			$i = 0;
-			foreach (ze::$jsLibs as $lib => $libInfo) {
+			foreach (ze::$jsLibs as $lib => $stylesheet) {
 				echo
 					'<!--JS_LIB'. ++$i. ':',
-						ze\escape::hyp(json_encode([$lib, $libInfo[0]])),
+						ze\escape::hyp(json_encode([$lib, $stylesheet])),
 					'-->';
 			}
 		}

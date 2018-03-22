@@ -1,0 +1,74 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__user_forms:
+    panels:
+        predefined_text_triggers:
+            title: Pre-defined text triggers
+            priv: _PRIV_MANAGE_FORMS
+            no_items_message: No triggers have been defined.
+            db_items:
+                table: |
+                    [[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]predefined_text_triggers AS ptt
+                    INNER JOIN [[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields uff
+                        ON ptt.form_field_id = uff.id
+                id_column: ptt.id
+            refiners:
+                target_form_field_id:
+                    sql: ptt.target_form_field_id = [[REFINER_ID]]    
+            refiner_required: true
+             
+            item:
+                css_class: zenario_user_forms__predefined_text_triggers
+            
+            default_sort_column: ord
+            reorder:
+                column: ord
+            columns:
+                ord:
+                    title: '#'
+                    db_column: ptt.ord
+                    always_show: true
+                    align_right: true
+                    width: xxsmall
+                name:
+                    title: Form field trigger
+                    db_column: uff.name
+                    always_show: true
+                    width: xlarge
+                text:
+                    title: Text
+                    db_column: SUBSTR(ptt.text, 1, 40)
+                    always_show: true
+                    width: large
+
+            
+            collection_buttons:
+                create:
+                    css_class: zenario_create_a_new
+                    hide_in_select_mode: true
+                    hide_on_filter: true
+                    label: Create a trigger
+                    admin_box:
+                        path: zenario_user_forms__predefined_text_trigger
+            
+            item_buttons:
+                edit:
+                    hide_in_select_mode: true
+                    label: Edit
+                    admin_box:
+                        path: zenario_user_forms__predefined_text_trigger
+                delete:
+                    hide_in_select_mode: true
+                    label: Delete
+                    multiple_select: true
+                    ajax:
+                        confirm:
+                            message_type: warning
+                            message: |
+                                Are you sure you want to delete the trigger "[[name]]"?
+                            multiple_select_message: |
+                                Are you sure you wish to delete these triggers?
+                            button_message: Delete
+                            cancel_button_message: Cancel
+                        request:
+                            delete_trigger: 1

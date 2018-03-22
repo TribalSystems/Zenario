@@ -27,11 +27,11 @@
 
 /*
 	This file contains JavaScript source code.
-	The code here is not the code you see in your browser. Before this file is downloaded:
+	The code here is not the code you see in your browser. Before thus file is downloaded:
 	
 		1. Compilation macros are applied (e.g. "foreach" is a macro for "for .. in ... hasOwnProperty").
 		2. It is minified (e.g. using Google Closure Compiler).
-		3. It may be wrapped togther with other files (this is to reduce the number of http requests on a page).
+		3. It may be wrapped togther with other files (thus is to reduce the number of http requests on a page).
 	
 	For more information, see js_minify.shell.php for steps (1) and (2), and admin.wrapper.js.php for step (3).
 */
@@ -55,66 +55,68 @@ zenario.lib(function(
 
 
 
-methods.start = function(path, key, tab, values) {
-	var that = this;
+methods.microTemplate = function(template, data, filter) {
+	return zenarioT.microTemplate(template, data, filter);
+};
+
+methods.start = function(path, key, tab, values) {	
+	thus.tabHidden = true;
+	thus.differentTab = false;
 	
-	this.tabHidden = true;
-	this.differentTab = false;
+	thus.path = path || '';
 	
-	this.path = path || '';
-	
-	this.tuix = {};
+	thus.tuix = {};
 		//Backwards compatability for any old code
-		this.focus = this.tuix;
+		thus.focus = thus.tuix;
 	
-	this.key = key || {};
-	this.tab = tab;
-	this.shownTab = false;
-	this.url = this.getURL('start');
+	thus.key = key || {};
+	thus.tab = tab;
+	thus.shownTab = false;
+	thus.url = thus.getURL('start');
 	
-	that.retryAJAX(
-		that.url,
+	thus.retryAJAX(
+		thus.url,
 		{_fill: true, _values: values? JSON.stringify(values) : ''},
 		true,
 		function(data) {
-			if (that.load(data)) {
-				if (that.tab) {
-					that.tuix.tab = that.tab;
+			if (thus.load(data)) {
+				if (thus.tab) {
+					thus.tuix.tab = thus.tab;
 				}
 			
-				delete that.key;
-				delete that.tab;
+				delete thus.key;
+				delete thus.tab;
 			
-				that.sortTabs();
-				that.initFields();
-				that.draw();
+				thus.sortTabs();
+				thus.initFields();
+				thus.draw();
 			} else {
-				that.close(true);
+				thus.close(true);
 			}
 		},
 		'loading',
 		function() {
-			that.close(true);
+			thus.close(true);
 		}
 	);
 };
 
 methods.load = function(data) {
-	this.loaded = true;
+	thus.loaded = true;
 	
 	if (data.toast
 	 && zenarioA.toast) {
 		zenarioA.toast(data.toast);
 	}
 	
-	if (this.callFunctionOnEditors('isDirty')) {
-		this.markAsChanged();
+	if (thus.callFunctionOnEditors('isDirty')) {
+		thus.markAsChanged();
 	}
 	
-	this.callFunctionOnEditors('remove');
-	this.setData(data);
+	thus.callFunctionOnEditors('remove');
+	thus.setData(data);
 	
-	if (!this.tuix || (!this.tuix.tabs && !defined(this.tuix.go_to_url))) {
+	if (!thus.tuix || (!thus.tuix.tabs && !defined(thus.tuix.go_to_url))) {
 		zenarioA.showMessage(phrase.couldNotOpenBox, true, 'error');
 		return false;
 	}
@@ -124,11 +126,10 @@ methods.load = function(data) {
 
 
 methods.animateInTab = function(html, cb, $shakeme) {
-	var that = this,
-		needToShake = (!defined(this.tuix.shake)? this.differentTab && this.errorOnTab(this.tuix.tab) : engToBoolean(this.tuix.shake));
+	var needToShake = (!defined(thus.tuix.shake)? thus.differentTab && thus.errorOnTab(thus.tuix.tab) : engToBoolean(thus.tuix.shake));
 
 	//If this is the current tab...
-	if (this.shownTab == this.tuix.tab) {
+	if (thus.shownTab == thus.tuix.tab) {
 	
 		//...shake the tab if there are errors...
 		if (needToShake
@@ -142,17 +143,17 @@ methods.animateInTab = function(html, cb, $shakeme) {
 				distance: 5,
 				mode: 'effect',
 				complete: function() {
-					that.insertHTML(html, cb);
+					thus.insertHTML(html, cb);
 					
 					$('#zenario_abtab').clearQueue().show().animate({opacity: 1}, 75, function() {
 						if (zenario.browserIsIE()) {
-							this.style.removeAttribute('filter');
+							thus.style.removeAttribute('filter');
 						}
 						
-						that.addJQueryElementsToTabAndFocusFirstField();
+						thus.addJQueryElementsToTabAndFocusFirstField();
 					});
 					
-					that.hideShowFields();
+					thus.hideShowFields();
 				}
 			});
 			
@@ -160,40 +161,40 @@ methods.animateInTab = function(html, cb, $shakeme) {
 		} else {
 			//Fade in a tab if it was hidden
 			//(It's probably not hidden but just in case)
-			this.insertHTML(html, cb);
+			thus.insertHTML(html, cb);
 			
-			var lastScrollTop = this.lastScrollTop;
+			var lastScrollTop = thus.lastScrollTop;
 			
 			$('#zenario_abtab').clearQueue().show().animate({opacity: 1}, 150, function() {
 				if (zenario.browserIsIE()) {
-					this.style.removeAttribute('filter');
+					thus.style.removeAttribute('filter');
 				}
 				
 				if (!needToShake
 				 && defined(lastScrollTop)) {
-					that.addJQueryElementsToTab();
+					thus.addJQueryElementsToTab();
 				} else {
-					that.addJQueryElementsToTabAndFocusFirstField();
+					thus.addJQueryElementsToTabAndFocusFirstField();
 				}
 			});
 			
 			//Attempt to preserve the previous scroll height if this is the same tab as last time
 			$('#zenario_fbAdminInner').scrollTop(lastScrollTop);
 			
-			this.hideShowFields();
+			thus.hideShowFields();
 		}
 		
-		delete this.tuix.shake;
+		delete thus.tuix.shake;
 	
 	//A new/different tab - fade it in
 	} else {
-		this.insertHTML(html, cb, true);
+		thus.insertHTML(html, cb, true);
 		$('#zenario_abtab').clearQueue().show().animate({opacity: 1}, 150, function() {
 			if (zenario.browserIsIE()) {
-				this.style.removeAttribute('filter');
+				thus.style.removeAttribute('filter');
 			}
 			
-			that.addJQueryElementsToTabAndFocusFirstField();
+			thus.addJQueryElementsToTabAndFocusFirstField();
 		});
 	}
 };

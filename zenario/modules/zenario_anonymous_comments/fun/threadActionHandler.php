@@ -34,17 +34,17 @@ if (($_POST['comm_request'] ?? false) == 'post_reply' && $this->canMakePost()) {
 	$name = '';
 	$email = '';
 	
-	if ($this->setting('enable_captcha')) {
-		if (!$this->checkCaptcha()) {
+	if ($this->enableCaptcha()) {
+		if (!$this->checkCaptcha2()) {
 			$failure = true;
-			$this->postingErrors[] = array('Error' => $this->phrase('_CAPTCHA_INVALID'));
+			$this->postingErrors[] = ['Error' => $this->phrase('_CAPTCHA_INVALID')];
 		}
 	}
 	
 	if ($this->setting('show_name')) {
 		if (empty($_POST['comm_name'])) {
 			$failure = true;
-			$this->postingErrors[] = array('Error' => $this->phrase('_ERROR_NAME'));
+			$this->postingErrors[] = ['Error' => $this->phrase('_ERROR_NAME')];
 		} else {
 			$name = $_POST['comm_name'];
 		}
@@ -53,11 +53,11 @@ if (($_POST['comm_request'] ?? false) == 'post_reply' && $this->canMakePost()) {
 	if ($this->setting('show_email')) {
 		if (empty($_POST['comm_email'])) {
 			$failure = true;
-			$this->postingErrors[] = array('Error' => $this->phrase('_ERROR_EMAIL'));
+			$this->postingErrors[] = ['Error' => $this->phrase('_ERROR_EMAIL')];
 		
 		} elseif (!ze\ring::validateEmailAddress($_POST['comm_email'])) {
 			$failure = true;
-			$this->postingErrors[] = array('Error' => $this->phrase('_ERROR_INVALID_EMAIL'));
+			$this->postingErrors[] = ['Error' => $this->phrase('_ERROR_INVALID_EMAIL')];
 		
 		} else {
 			$email = $_POST['comm_email'];
@@ -66,7 +66,7 @@ if (($_POST['comm_request'] ?? false) == 'post_reply' && $this->canMakePost()) {
 	
 	if (empty($_POST['comm_message'])) {
 		$failure = true;
-		$this->postingErrors[] = array('Error' => $this->phrase('_ERROR_MESSAGE'));
+		$this->postingErrors[] = ['Error' => $this->phrase('_ERROR_MESSAGE')];
 	}
 	
 	if (!$failure) {
@@ -88,12 +88,12 @@ if (($_POST['comm_request'] ?? false) == 'post_reply' && $this->canMakePost()) {
 	if (empty($_POST['comm_title'])) {
 		//complain about required fields
 		$failure = true;
-		$this->postingErrors[] = array('Error' => $this->phrase('_ERROR_TITLE'));
+		$this->postingErrors[] = ['Error' => $this->phrase('_ERROR_TITLE')];
 	}
 	if (empty($_POST['comm_message'])) {
 		//complain about required fields
 		$failure = true;
-		$this->postingErrors[] = array('Error' => $this->phrase('_ERROR_MESSAGE'));
+		$this->postingErrors[] = ['Error' => $this->phrase('_ERROR_MESSAGE')];
 	}
 	
 	if (!$failure) {
@@ -106,7 +106,7 @@ if (($_POST['comm_request'] ?? false) == 'post_reply' && $this->canMakePost()) {
 	} else {
 		//complain about required fields
 		$failure = true;
-		$this->postingErrors[] = array('Error' => $this->phrase('_ERROR_MESSAGE'));
+		$this->postingErrors[] = ['Error' => $this->phrase('_ERROR_MESSAGE')];
 	}
 	
 } elseif (($_POST['comm_request'] ?? false) == 'lock_thread' && $this->canLockThread()) {
@@ -131,7 +131,7 @@ if (($_POST['comm_request'] ?? false) == 'post_reply' && $this->canMakePost()) {
 	} else {
 		//complain about required fields
 		$failure = true;
-		$this->postingErrors[] = array('Error' => $this->phrase('_ERROR_MESSAGE'));
+		$this->postingErrors[] = ['Error' => $this->phrase('_ERROR_MESSAGE')];
 	}
 	
 }

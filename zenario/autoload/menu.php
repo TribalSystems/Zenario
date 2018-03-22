@@ -37,7 +37,7 @@ class menu {
 	//Formerly "getContentFromMenu()"
 	public static function getContentItem($mID, $recurseLimit = 0) {
 	
-		if ($menu = \ze\row::get('menu_nodes', array('id', 'equiv_id', 'content_type', 'parent_id'), $mID)) {
+		if ($menu = \ze\row::get('menu_nodes', ['id', 'equiv_id', 'content_type', 'parent_id'], $mID)) {
 			if ($menu['equiv_id'] && $menu['content_type']) {
 				$menu['content_id'] = $menu['equiv_id'];
 				return $menu;
@@ -184,10 +184,10 @@ class menu {
 	//Formerly "menuSectionId()"
 	public static function sectionId($sectionIdOrName, $checkExists = false) {
 		if (!is_numeric($sectionIdOrName)) {
-			return \ze\row::get('menu_sections', 'id', array('section_name' => $sectionIdOrName));
+			return \ze\row::get('menu_sections', 'id', ['section_name' => $sectionIdOrName]);
 	
 		} elseif ($checkExists) {
-			return \ze\row::get('menu_sections', 'id', array('id' => $sectionIdOrName));
+			return \ze\row::get('menu_sections', 'id', ['id' => $sectionIdOrName]);
 	
 		} else {
 			return $sectionIdOrName;
@@ -197,7 +197,7 @@ class menu {
 	//Formerly "menuSectionName()"
 	public static function sectionName($sectionIdOrName) {
 		if (is_numeric($sectionIdOrName)) {
-			return \ze\row::get('menu_sections', 'section_name', array('id' => $sectionIdOrName));
+			return \ze\row::get('menu_sections', 'section_name', ['id' => $sectionIdOrName]);
 		} else {
 			return $sectionIdOrName;
 		}
@@ -249,7 +249,7 @@ class menu {
 			$row['descriptive_text'] = null;
 			$row['ext_url'] = null;
 		
-			if ($text = \ze\row::get('menu_text', array('name', 'descriptive_text', 'ext_url'), array('menu_id' => $mID, 'language_id' => $langId))) {
+			if ($text = \ze\row::get('menu_text', ['name', 'descriptive_text', 'ext_url'], ['menu_id' => $mID, 'language_id' => $langId])) {
 				$row['name'] = $text['name'];
 				$row['descriptive_text'] = $text['descriptive_text'];
 				$row['ext_url'] = $text['ext_url'];
@@ -323,12 +323,12 @@ class menu {
 
 	//Formerly "isMenuItemAncestor()"
 	public static function isAncestor($childId, $ancestorId) {
-		return \ze\row::exists('menu_hierarchy', array('child_id' => $childId, 'ancestor_id' => $ancestorId));
+		return \ze\row::exists('menu_hierarchy', ['child_id' => $childId, 'ancestor_id' => $ancestorId]);
 	}
 
 	//Formerly "getMenuParent()"
 	public static function parentId($mID) {
-		return \ze\row::get('menu_nodes', 'parent_id', array('id' => $mID));
+		return \ze\row::get('menu_nodes', 'parent_id', ['id' => $mID]);
 	}
 
 
@@ -341,7 +341,7 @@ class menu {
 			if (!(\ze\module::inc($row['module_class_name']))
 			 || !(method_exists($row['module_class_name'], $row['method_name']))
 			 || !($overrides = call_user_func(
-					array($row['module_class_name'], $row['method_name']),
+					[$row['module_class_name'], $row['method_name']],
 						$row['param_1'], $row['param_2'])
 			)) {
 				//A little hack - return null so we can tell the difference
@@ -542,11 +542,11 @@ class menu {
 			$level1counter = 0;
 		}
 	
-		$adminMode = !empty($_SESSION['admin_logged_into_site']) && \ze\priv::check();
+		$adminMode = \ze::isAdmin();
 	
 		//Look up all of the Menu Items on this level
 		$edition = \ze::$edition;
-		$rows = array();
+		$rows = [];
 		if ($showMissingMenuNodes && $language != \ze::$defaultLang) {
 			$result = \ze\menu::query(\ze::$defaultLang, $parentMenuId, true, $sectionId, $showInvisibleMenuItems, $getFullMenu, $adminMode);
 			while ($row = \ze\sql::fetchAssoc($result)) {
@@ -567,7 +567,7 @@ class menu {
 	
 		if (!empty($rows)) {
 			$menuIds = '';
-			$unsets = array();
+			$unsets = [];
 			foreach ($rows as &$row) {
 				$row['on'] = false;
 				$row['children'] = false;

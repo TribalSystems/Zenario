@@ -47,11 +47,11 @@ if (!$tabName) {
 
 } elseif (is_numeric($tabName)) {
 	$message =
-		'<p>'. ze\admin::phrase('Are you sure you wish to delete Tab [[tab]]? Any Plugins it contains will be moved to the next tab and will not be deleted.', array('tab' => htmlspecialchars($tabName))). '</p>';
+		'<p>'. ze\admin::phrase('Are you sure you wish to delete Tab [[tab]]? Any Plugins it contains will be moved to the next tab and will not be deleted.', ['tab' => htmlspecialchars($tabName)]). '</p>';
 
 } else {
 	$message =
-		'<p>'. ze\admin::phrase('Are you sure you wish to delete the &quot;[[tab]]&quot; Tab? Any Plugins it contains will be moved to the next tab and will not be deleted.', array('tab' => htmlspecialchars($tabName))). '</p>';
+		'<p>'. ze\admin::phrase('Are you sure you wish to delete the &quot;[[tab]]&quot; Tab? Any Plugins it contains will be moved to the next tab and will not be deleted.', ['tab' => htmlspecialchars($tabName)]). '</p>';
 }
 
 
@@ -62,10 +62,10 @@ if ($usage > 1 || $usagePublished > 0) {
 	$message .=
 		'<p>'. ze\admin::phrase(
 			'This will affect <span class="zenario_x_published_items">[[published]] Published Content Item(s)</span> <span class="zenario_y_items">(<a href="[[link]]" target="_blank">[[pages]] Content Item(s) in total</a>).</span>',
-			array(
+			[
 				'pages' => $usage,
 				'published' => $usagePublished,
-				'link' => htmlspecialchars(ze\pluginAdm::usageOrganizerLink($instanceId)))
+				'link' => htmlspecialchars(ze\pluginAdm::usageOrganizerLink($instanceId))]
 		). '</p>';
 }
 

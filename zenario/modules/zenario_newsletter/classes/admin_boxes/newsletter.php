@@ -61,7 +61,7 @@ class zenario_newsletter__admin_boxes__newsletter extends zenario_newsletter {
 						ze\row::getArray(
 							ZENARIO_NEWSLETTER_PREFIX. 'newsletter_smart_group_link',
 							'smart_group_id',
-							array('newsletter_id' => $box['key']['id'])
+							['newsletter_id' => $box['key']['id']]
 							), 
 							true
 						);			
@@ -78,7 +78,7 @@ class zenario_newsletter__admin_boxes__newsletter extends zenario_newsletter {
 					ze\row::getArray(
 						ZENARIO_NEWSLETTER_PREFIX. 'newsletter_sent_newsletter_link',
 						'sent_newsletter_id',
-						array('newsletter_id' => $box['key']['id'], 'include' => 0)),
+						['newsletter_id' => $box['key']['id'], 'include' => 0]),
 					true);
 			
 			if (ze::setting('zenario_newsletter__default_unsubscribe_text') && !$values['unsub_exclude/unsubscribe_text']) {
@@ -114,7 +114,7 @@ class zenario_newsletter__admin_boxes__newsletter extends zenario_newsletter {
 			$nameCandidate = '';
 			while ($fuse--) {
 				$nameCandidate = ze\admin::phrase('Newsletter ' . ze\date::format(date('Y-m-d'), '_LONG') . ($i>1?(' (' . (int) $i . ')'):''));
-				if (!ze\row::exists(ZENARIO_NEWSLETTER_PREFIX . "newsletters", array('newsletter_name' => $nameCandidate))) {
+				if (!ze\row::exists(ZENARIO_NEWSLETTER_PREFIX . "newsletters", ['newsletter_name' => $nameCandidate])) {
 					break;
 				}
 				$i++;
@@ -192,7 +192,7 @@ class zenario_newsletter__admin_boxes__newsletter extends zenario_newsletter {
 				&& (ze\ray::engToBooleanArray($box,'tabs','meta_data','fields','load_content_continue','pressed') || (!$values['meta_data/body'])) ) {
 
 			$clearCopyFromSourceFields = true;
-			$emailTemplate = ze\row::get(ZENARIO_NEWSLETTER_PREFIX. 'newsletter_templates', array('head', 'body'), array('id' => $values['meta_data/load_content_source_newsletter_template']));
+			$emailTemplate = ze\row::get(ZENARIO_NEWSLETTER_PREFIX. 'newsletter_templates', ['head', 'body'], ['id' => $values['meta_data/load_content_source_newsletter_template']]);
 			$values['meta_data/body'] = $emailTemplate['body'];
 			$values['advanced/head'] = $emailTemplate['head'];
 		}
@@ -277,7 +277,7 @@ class zenario_newsletter__admin_boxes__newsletter extends zenario_newsletter {
 					}
 					
 					if (!ze\ring::validateEmailAddress($email)) {
-						$error .= ($error? "\n" : ''). ze\admin::phrase('"[[email]]" is not a valid email address.', array('email' => $email));
+						$error .= ($error? "\n" : ''). ze\admin::phrase('"[[email]]" is not a valid email address.', ['email' => $email]);
 					
 					} elseif (!$values['meta_data/body']) {
 						$error .= ($error? "\n" : ''). ze\admin::phrase('The test email(s) could not be sent because your Newsletter is blank.');
@@ -295,7 +295,7 @@ class zenario_newsletter__admin_boxes__newsletter extends zenario_newsletter {
 						break;
 					
 					} else {
-						$success .= ($success? "\n" : ''). ze\admin::phrase('Test email sent to "[[email]]".', array('email' => $email));
+						$success .= ($success? "\n" : ''). ze\admin::phrase('Test email sent to "[[email]]".', ['email' => $email]);
 					}
 				}
 			}
@@ -317,7 +317,7 @@ class zenario_newsletter__admin_boxes__newsletter extends zenario_newsletter {
 		if (ze\ring::engToBoolean($box['tabs']['meta_data']['edit_mode']['on'] ?? false)) {
 			if (ze\row::exists(
 				ZENARIO_NEWSLETTER_PREFIX. 'newsletters',
-				array('newsletter_name' => $values['meta_data/newsletter_name'], 'id' => array('!' => $box['key']['id']))
+				['newsletter_name' => $values['meta_data/newsletter_name'], 'id' => ['!' => $box['key']['id']]]
 			)) {
 				$box['tabs']['meta_data']['errors'][] = ze\admin::phrase('Please ensure the Name you give this Newsletter is Unique.');
 			}
@@ -333,14 +333,14 @@ class zenario_newsletter__admin_boxes__newsletter extends zenario_newsletter {
 			
 			
 			$id = $box['key']['id'];
-			$record = array(
+			$record = [
 				'newsletter_name' => $values['meta_data/newsletter_name'],
 				'subject' => $values['meta_data/subject'],
 				'email_name_from' => $values['meta_data/email_name_from'],
 				'email_address_from' => $values['meta_data/email_address_from'],
 				'body' =>  $values['meta_data/body'],
 				'head' => $values['advanced/head']
-			);
+			];
 			
 			if($id) {
 				$record['date_modified'] = ze\date::now();
@@ -353,50 +353,50 @@ class zenario_newsletter__admin_boxes__newsletter extends zenario_newsletter {
 			
 			$box['key']['id'] = ze\row::set(ZENARIO_NEWSLETTER_PREFIX. 'newsletters', $record, $id);
 
-			ze\row::delete(ZENARIO_NEWSLETTER_PREFIX . 'newsletter_smart_group_link', array('newsletter_id' => $box['key']['id']));
+			ze\row::delete(ZENARIO_NEWSLETTER_PREFIX . 'newsletter_smart_group_link', ['newsletter_id' => $box['key']['id']]);
 			foreach (explode(',', $values['unsub_exclude/recipients']) as $smartGroupId) {
 				if ((int)$smartGroupId) {
-					ze\row::insert(ZENARIO_NEWSLETTER_PREFIX . 'newsletter_smart_group_link', array('newsletter_id' => $box['key']['id'], 'smart_group_id' => (int) $smartGroupId)); 
+					ze\row::insert(ZENARIO_NEWSLETTER_PREFIX . 'newsletter_smart_group_link', ['newsletter_id' => $box['key']['id'], 'smart_group_id' => (int) $smartGroupId]); 
 				}
 			}
 
 
 			$body = $values['meta_data/body'];
-			$files = array();
+			$files = [];
 			$htmlChanged = false;
 			ze\file::addImageDataURIsToDatabase($body, ze\link::absolute());
 			ze\contentAdm::syncInlineFileLinks($files, $body, $htmlChanged);
 			ze\contentAdm::syncInlineFiles(
 				$files,
-				array('foreign_key_to' => 'newsletter', 'foreign_key_id' => $box['key']['id']),
+				['foreign_key_to' => 'newsletter', 'foreign_key_id' => $box['key']['id']],
 				$keepOldImagesThatAreNotInUse = true);
 			
 			if ($htmlChanged) {
-				ze\row::set(ZENARIO_NEWSLETTER_PREFIX. 'newsletters', array('body' => $body), $box['key']['id']);
+				ze\row::set(ZENARIO_NEWSLETTER_PREFIX. 'newsletters', ['body' => $body], $box['key']['id']);
 			}
 		}
 		
 		if ($box['key']['id'] && ze\ring::engToBoolean($box['tabs']['unsub_exclude']['edit_mode']['on'] ?? false)) {
 			ze\row::set(
 				ZENARIO_NEWSLETTER_PREFIX. 'newsletters',
-				array(
+				[
 					'unsubscribe_text' 
 							=> ($values['unsubscribe_link'] == 'unsub') ? $values['unsubscribe_text']: null,
 					'delete_account_text' 
 							=> ($values['unsubscribe_link'] == 'delete') ? $values['delete_account_text']: null
-					),
+					],
 				$box['key']['id']);
 
 			ze\row::delete(
 				ZENARIO_NEWSLETTER_PREFIX. 'newsletter_sent_newsletter_link',
-				array('newsletter_id' => $box['key']['id'], 'include' => 0));
+				['newsletter_id' => $box['key']['id'], 'include' => 0]);
 			
 			if (ze\ray::engToBooleanArray($values,'exclude_previous_newsletters_recipients_enable')) {
 				foreach (explode(',', $values['exclude_previous_newsletters_recipients']) as $id) {
 					if ($id) {
 						ze\row::insert(
 							ZENARIO_NEWSLETTER_PREFIX. 'newsletter_sent_newsletter_link',
-							array('newsletter_id' => $box['key']['id'], 'include' => 0, 'sent_newsletter_id' => $id));
+							['newsletter_id' => $box['key']['id'], 'include' => 0, 'sent_newsletter_id' => $id]);
 					}
 				}
 			}

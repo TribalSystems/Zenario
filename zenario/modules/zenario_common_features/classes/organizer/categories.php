@@ -48,12 +48,12 @@ class zenario_common_features__organizer__categories extends ze\moduleBaseClass 
 		
 		$langs = ze\lang::getLanguages();
 		foreach($langs as $lang) {
-			$panel['columns']['lang_'. $lang['id']] = array('title' => $lang['id']);
+			$panel['columns']['lang_'. $lang['id']] = ['title' => $lang['id']];
 		}
 		
 		
 		foreach ($panel['items'] as $id => &$item) {
-			$item['traits'] = array();
+			$item['traits'] = [];
 			
 			if($item['id']){
 				$sql =" SELECT count(id) as number_of_categories
@@ -75,7 +75,7 @@ class zenario_common_features__organizer__categories extends ze\moduleBaseClass 
 				foreach($langs as $lang) {
 						$item['lang_'. $lang['id']] =
 							ze\row::get('visitor_phrases', 'local_text',
-										array('language_id' => $lang['id'], 'code' => '_CATEGORY_'. (int) $id, 'module_class_name' => 'zenario_common_features'));
+										['language_id' => $lang['id'], 'code' => '_CATEGORY_'. (int) $id, 'module_class_name' => 'zenario_common_features']);
 				}
 			}
 			
@@ -85,8 +85,8 @@ class zenario_common_features__organizer__categories extends ze\moduleBaseClass 
 		
 		
 		if ($_GET['refiner__parent_category'] ?? false) {
-			$mrg = array(
-				'category' => ze\category::name($_GET['refiner__parent_category'] ?? false));
+			$mrg = [
+				'category' => ze\category::name($_GET['refiner__parent_category'] ?? false)];
 			$panel['title'] = ze\admin::phrase('Sub-categories of "[[category]]"', $mrg);
 			$panel['no_items_message'] = ze\admin::phrase('Category "[[category]]" has no sub-categories.', $mrg);
 		}

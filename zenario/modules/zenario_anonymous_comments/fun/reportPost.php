@@ -27,12 +27,12 @@
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
-$mergeFields = array(); 
+$mergeFields = []; 
 
 if (!empty($_SESSION['extranetUserID']) && ze\module::inc('zenario_users')) {
 	$user = ze\user::details($_SESSION['extranetUserID']);
 } else {
-	$user = array('email' => '', 'screen_name' => ze\admin::phrase('Anonymous'));
+	$user = ['email' => '', 'screen_name' => ze\admin::phrase('Anonymous')];
 }
 
 $request = '';
@@ -57,6 +57,6 @@ zenario_email_template_manager::sendEmailsUsingTemplate(
 	$this->setting('email_address_for_reports'),
 	$this->setting('email_template_for_reports'),
 	$mergeFields,
-	array(),
-	array(),
-	array('text_message' => true, 'report_message' => true, 'poster_screen_name' => true, 'last_editor_screen_name' => true, 'reporter_screen_name' => true));
+	[],
+	[],
+	['text_message' => true, 'report_message' => true, 'poster_screen_name' => true, 'last_editor_screen_name' => true, 'reporter_screen_name' => true]);

@@ -27,11 +27,11 @@
 
 /*
 	This file contains JavaScript source code.
-	The code here is not the code you see in your browser. Before this file is downloaded:
+	The code here is not the code you see in your browser. Before thus file is downloaded:
 	
 		1. Compilation macros are applied (e.g. "foreach" is a macro for "for .. in ... hasOwnProperty").
 		2. It is minified (e.g. using Google Closure Compiler).
-		3. It may be wrapped togther with other files (this is to reduce the number of http requests on a page).
+		3. It may be wrapped togther with other files (thus is to reduce the number of http requests on a page).
 	
 	For more information, see js_minify.shell.php for steps (1) and (2), and organizer.wrapper.js.php for step (3).
 */
@@ -66,43 +66,43 @@ var methods = methodsOf(
 
 
 methods.showPanel = function($header, $panel, $footer) {
-	this.setHeader($header);
-	this.showViewOptions($header);
+	thus.setHeader($header);
+	thus.showViewOptions($header);
 	
-	this.drawItems($panel);
-	this.setupListViewColumns($panel);
-	this.setScroll($panel);
+	thus.drawItems($panel);
+	thus.setupListViewColumns($panel);
+	thus.setScroll($panel);
 	
-	this.setTooltips($header, $panel, $footer);
+	thus.setTooltips($header, $panel, $footer);
 	
-	this.setupReordering($panel);
+	thus.setupReordering($panel);
 };
 
 
 //Disable pagination if we're reordering items
 methods.returnPageSize = function() {
-	if (this.ordinalColumn()) {
+	if (thus.ordinalColumn()) {
 		return false;
 	} else {
-		return methodsOf(panelTypes.grid).returnPageSize.call(this);
+		return methodsOf(panelTypes.grid).returnPageSize.call(thus);
 	}
 };
 
 
 
 methods.drawItems = function($panel) {
-	this.items = this.getMergeFieldsForItemsAndColumns();
-	$panel.html(this.microTemplate('zenario_organizer_list', this.items));
+	thus.items = thus.getMergeFieldsForItemsAndColumns();
+	$panel.html(thus.microTemplate('zenario_organizer_list', thus.items));
 	$panel.show();
 };
 
 
 //Disable pagination if we're reordering items
 methods.drawPagination = function($footer) {
-	if (this.ordinalColumn()) {
-		$footer.html(this.microTemplate('zenario_organizer_pagination', this.items)).show();
+	if (thus.ordinalColumn()) {
+		$footer.html(thus.microTemplate('zenario_organizer_pagination', thus.items)).show();
 	} else {
-		methodsOf(panelTypes.grid).drawPagination.apply(this, arguments);
+		methodsOf(panelTypes.grid).drawPagination.apply(thus, arguments);
 	}
 };
 
@@ -113,7 +113,7 @@ methods.drawPagination = function($footer) {
 
 
 methods.returnInspectionViewEnabled = function() {
-	return !!this.tuix.slidedown_view_microtemplate;
+	return !!thus.tuix.slidedown_view_microtemplate;
 };
 
 methods.openInspectionView = function(id) {
@@ -121,7 +121,7 @@ methods.openInspectionView = function(id) {
 	var oldId = zenarioO.inspectionViewItemId();
 	
 	if (oldId) {
-		this.closeInspectionView(oldId);
+		thus.closeInspectionView(oldId);
 	}
 	
 	//Select the item we're opening inspection mode for
@@ -138,7 +138,7 @@ methods.openInspectionView = function(id) {
 		$slide
 			.clearQueue()
 			.removeClass('organizer_slidedown_view_closed').addClass('organizer_slidedown_view_open')
-			.html(this.microTemplate(zenarioO.tuix.slidedown_view_microtemplate, {id: id}))
+			.html(thus.microTemplate(zenarioO.tuix.slidedown_view_microtemplate, {id: id}))
 			.slideDown();
 	}
 	
@@ -181,14 +181,14 @@ methods.closeInspectionView = function(id) {
 methods.addExtraMergeFieldsForColumns = function(data, column) {
 	
 	var c = column.id,
-		prefs = zenarioO.prefs[this.path] || {},
+		prefs = zenarioO.prefs[thus.path] || {},
 		columnWidth;
 	
 	if (prefs.colSizes
 	 && prefs.colSizes[c]) {
 		columnWidth = Math.max(prefs.colSizes[c], zenarioO.columnWidths.xxsmall);
 	} else {
-		columnWidth = this.tuix.columns[c].width;
+		columnWidth = thus.tuix.columns[c].width;
 	}
 	
 	if (columnWidth && zenarioO.columnWidths[columnWidth]) {
@@ -214,7 +214,7 @@ methods.addExtraMergeFieldsForCells = function(data, column, row, cell) {
 
 //Add a flag if we are using the taller rows
 methods.addExtraMergeFields = function(data) {
-	if (engToBoolean(this.tuix.use_tall_rows)) {
+	if (engToBoolean(thus.tuix.use_tall_rows)) {
 		data.useTallRows = true;
 	}
 };
@@ -232,8 +232,7 @@ methods.setupListViewColumns = function($panel) {
 		});
 	}
 
-	var that = this,
-		$sortAndResizeWrapper = $panel.find('.organizer_sort_and_resize_wrapper'),
+	var $sortAndResizeWrapper = $panel.find('.organizer_sort_and_resize_wrapper'),
 		$sortables = $panel.find('.organizer_sort_and_resize_wrapper .organizer_sortable'),
 		$resizables = $panel.find('.organizer_sort_and_resize_wrapper .organizer_resizable'),
 		sortAndResizeable$Cols = {},
@@ -249,7 +248,7 @@ methods.setupListViewColumns = function($panel) {
 				}
 			});
 			
-			//Some hacks to try and stop things that are supposed to be on one line wrapping on various browsers/browser zoom levels
+			//Some hacks to try and stop things this are supposed to be on one line wrapping on various browsers/browser zoom levels
 			//#organizer_list_view has the width we want, with overflow-x: hidden;
 			//#organizer_list_view .organizer_row has an extra 20 pixels of leeway, which should hopefully be hidden by the above
 			widthWithExtraMarginForZoomErrors = width;
@@ -261,7 +260,7 @@ methods.setupListViewColumns = function($panel) {
 			$('#organizer_list_view .organizer_row').css('min-width', widthWithExtraMarginForZoomErrors + 'px');
 		},
 		sortHandler = function(event, ui) {
-			that.saveScrollPosition($panel);
+			thus.saveScrollPosition($panel);
 			
 			$sortables.each(function(i, el) {
 				var id = el.id;
@@ -275,10 +274,10 @@ methods.setupListViewColumns = function($panel) {
 				}
 			});
 			
-			that.restoreScrollPosition($panel);
+			thus.restoreScrollPosition($panel);
 		},
 		resizeHandler = function(event, ui, save) {
-			that.saveScrollPosition($panel);
+			thus.saveScrollPosition($panel);
 			
 			var id = $(ui.element).attr('id');
 			if (id) {
@@ -296,7 +295,7 @@ methods.setupListViewColumns = function($panel) {
 				}
 			}
 			
-			that.restoreScrollPosition($panel);
+			thus.restoreScrollPosition($panel);
 		};
 	
 	$resizables.resizable({
@@ -325,7 +324,7 @@ methods.setupListViewColumns = function($panel) {
 		},
 		sort: sortHandler,
 		stop: function(event, ui) {
-			that.saveScrollPosition($panel);
+			thus.saveScrollPosition($panel);
 			
 			sortHandler(event, ui);
 			setTimeout(
@@ -342,7 +341,7 @@ methods.setupListViewColumns = function($panel) {
 			
 			zenarioO.switchColumnOrder(newOrder);
 			
-			that.restoreScrollPosition($panel);
+			thus.restoreScrollPosition($panel);
 		}
 	});
 	
@@ -356,18 +355,17 @@ methods.setupListViewColumns = function($panel) {
 };
 
 methods.setupReordering = function($panel) {
-	var that = this,
-		ordCol = that.ordinalColumn();
+	var ordCol = thus.ordinalColumn();
 	
 	//Start reordering running, if it is enabled on this panel, and we're not currently searching
-	if (ordCol && !defined(this.searchTerm)) {
+	if (ordCol && !defined(thus.searchTerm)) {
 		$panel
 			.find('#organizer_items_wrapper')
 			.sortable({
 				opacity: 0.8,
 				cancel: '.organizer_slidedown_view,input,textarea,button,select,option',
 				start: function() {
-					that.closeInspectionView();
+					thus.closeInspectionView();
 					zenarioO.disableInteraction();
 				},
 				stop: function (sorted, ui) {
@@ -402,7 +400,7 @@ methods.setupReordering = function($panel) {
 					foreach (zenarioO.searchedItems as itemNo => i) {
 						if (items[i]) {
 							oldOrder.push(i);
-							values.push(that.tuix.items[i][ordCol]);
+							values.push(thus.tuix.items[i][ordCol]);
 						}
 					}
 				
@@ -424,7 +422,7 @@ methods.setupReordering = function($panel) {
 					//Send these results via AJAX
 					var actionTarget =
 						'zenario/ajax.php?' +
-							'__pluginClassName__=' + that.tuix.reorder.class_name +
+							'__pluginClassName__=' + thus.tuix.reorder.class_name +
 							'&__path__=' + zenarioO.path +
 							'&method_call=handleOrganizerPanelAJAX';
 				
@@ -446,7 +444,7 @@ methods.setupReordering = function($panel) {
 
 //Is reordering enabled, and if so, which column is being used
 methods.ordinalColumn = function() {
-	return !window.zenarioOSelectMode && this.tuix.reorder && this.tuix.reorder.column;
+	return !window.zenarioOSelectMode && thus.tuix.reorder && thus.tuix.reorder.column;
 };
 
 

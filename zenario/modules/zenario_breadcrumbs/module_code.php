@@ -65,7 +65,7 @@ class zenario_breadcrumbs extends zenario_menu {
 	
 	public function showLayoutPreview() {
 		
-		$dummyMenuNode = array(
+		$dummyMenuNode = [
 			'mID' => '',
 			'name' => '',
 			'target_loc' => 'ext',
@@ -90,11 +90,11 @@ class zenario_breadcrumbs extends zenario_menu {
 			'image_id' => '',
 			'rollover_image_id' => '',
 			'on' => true,
-			'children' => array());
+			'children' => []];
 		
-		$menuArray = array($dummyMenuNode);
+		$menuArray = [$dummyMenuNode];
 		$menuArray[0]['name'] = ze\admin::phrase('Bread');
-		$menuArray[0]['children'] = array($dummyMenuNode);
+		$menuArray[0]['children'] = [$dummyMenuNode];
 		$menuArray[0]['children'][0]['name'] = ze\admin::phrase('Crumbs');
 		
 		$mergeFields = [
@@ -174,6 +174,7 @@ class zenario_breadcrumbs extends zenario_menu {
 			//Loop through each back link
 			$copy = $nodes[$ni];
 			$first = true;
+			$ci = 0;
 			foreach ($backs as $state => $back) {
 				
 				$name = $this->parentNest->formatTitleText($this->phrase($back['slide']['name_or_title']));
@@ -182,18 +183,19 @@ class zenario_breadcrumbs extends zenario_menu {
 					$autoAddImportantRequests = false
 				);
 				
-				//For the first conductor link, override the last breadcrumb rather than adding
-				//a second identical breadcrumbs.
+				//For the first conductor link, override the last breadcrumb rather than adding a second identical breadcrumb.
 				if ($first) {
 					$first = false;
-					//$nodes[$ni]['name'] = $name;
 					$nodes[$ni]['url'] = $url;
 				
 				} else {
-					//For all subsequent  links, create a new breadcrumb as a copy of the previous one
-					$nodes[$ni]['current'] = false;
+					//Remove the "current" highlight from any previous links.
+					for (; $ci <= $ni; ++$ci) {
+						$nodes[$ci]['current'] = false;
+					}
 				
-					//Change the name and link
+					//For all subsequent  links, create a new breadcrumb as a copy of the previous one,
+					//with the name and link changed.
 					$copy['open_in_new_window'] = false;
 					$copy['name'] = $name;
 					$copy['url'] = $url;

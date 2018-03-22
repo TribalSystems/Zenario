@@ -37,7 +37,7 @@ class zenario_common_features__admin_boxes__delete_language extends ze\moduleBas
 		$box['tabs']['site']['notices']['are_you_sure']['message'] =
 			ze\admin::phrase(
 				'Are you sure that you wish to delete the Language "[[lang]]"? All Content Items and Menu Node text in this Language will also be deleted. THIS CANNOT BE UNDONE!',
-				array('lang' => ze\lang::name($box['key']['id'])));
+				['lang' => ze\lang::name($box['key']['id'])]);
 	}
 
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
@@ -48,7 +48,7 @@ class zenario_common_features__admin_boxes__delete_language extends ze\moduleBas
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
 		
 		ze\priv::exitIfNot('_PRIV_MANAGE_LANGUAGE_CONFIG');
-		$details = array();
+		$details = [];
 		
 		if (!ze\contentAdm::allowDeleteLanguage($box['key']['id'])) {
 			$box['tabs']['site']['errors'][] =

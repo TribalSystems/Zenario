@@ -231,7 +231,7 @@ zenarioA.showMessage = function(resp, buttonsHTML, messageType, modal, htmlEscap
 		if (zenarioO.init
 		 && zenarioO.path
 		 && zenarioA.isFullOrganizerWindow) {
-			buttonsHTML = _$input('type', 'button', 'value', phrase.login, 'class', 'submit_selected', 'onclick', 'zenarioO.reloadPage(undefined, true);');
+			buttonsHTML = _$input('type', 'button', 'value', phrase.login, 'class', 'submit_selected', 'onclick', 'zenarioO.reloadPage(undefined, true, undefined, true);');
 			
 			addCancel = "zenario.goToURL(URLBasePath);";
 		

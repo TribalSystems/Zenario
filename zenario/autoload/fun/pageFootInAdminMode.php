@@ -52,7 +52,7 @@ if ($includeOrganizer) {
 		INNER JOIN ". DB_NAME_PREFIX. "modules AS m
 		   ON m.class_name = tfc.module_class_name
 		  AND m.status IN ('module_running', 'module_is_abstract')
-		WHERE tfc.panel_type IN ('google_map', 'google_map_or_list', 'network_graph', 'schematic_builder')";
+		WHERE tfc.panel_type IN ('google_map', 'google_map_or_list', 'network_graph')";
 	
 	$panelTypes = \ze\ray::valuesToKeys(\ze\sql::fetchValues($sql));
 	
@@ -67,11 +67,6 @@ if ($includeOrganizer) {
 	if (isset($panelTypes['network_graph'])) {
 		echo '
 '. $scriptTag. ' src="', $prefix, 'libs/manually_maintained/mit/cytoscape/cytoscape.min.js"></script>';
-	}
-	
-	if (isset($panelTypes['schematic_builder'])) {
-		echo '
-'. $scriptTag. ' src="', $prefix, 'libs/bower/fabric/dist/fabric.min.js"></script>';
 	}
 	
 	echo '

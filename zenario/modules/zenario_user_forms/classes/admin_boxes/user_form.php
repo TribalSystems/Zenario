@@ -34,13 +34,14 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 			$box['tab'] = $box['key']['tab'];
 		}
 		
+		$fields['anti_spam/captcha_type']['values'] = ['word' => 'Words (Captcha 1.0)', 'math' => 'Maths'];
 		
-		$fields['anti_spam/captcha_type']['values'] = array('word' => 'Words', 'math' => 'Maths');
+		$link = ze\link::absolute()."zenario/admin/organizer.php?#zenario__administration/panels/site_settings//captcha";
 		
 		if (ze::setting('google_recaptcha_site_key') && ze::setting('google_recaptcha_secret_key')) {
-			$fields['anti_spam/captcha_type']['values']['pictures'] = 'Pictures';
+			$fields['anti_spam/captcha_type']['values']['pictures'] = 'Pictures (Captcha 2.0)';
+			$fields['anti_spam/captcha_type']['note_below'] = 'Captcha settings can be found in  <a href="' . $link. '" target="_blank">Site Settings</a>';
 		} else {
-			$link = ze\link::absolute()."zenario/admin/organizer.php?#zenario__administration/panels/site_settings//captcha";
 			$fields['anti_spam/captcha_type']['note_below'] = 'To enable pictures captcha (most friendly for the user)  please enter the <a href="' . $link. '" target="_blank">api key details</a>';
 		}
 		
@@ -78,7 +79,7 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 		}
 		if ($defaultLanguageName) {
 			$fields['details/translate_text']['side_note'] = ze\admin::phrase(
-				'This will cause all displayable text from this form to be translated when used in a Forms plugin. This should be disabled if you enter non-[[default_language]] text into the form field admin boxes.', array('default_language' => $defaultLanguageName));
+				'This will cause all displayable text from this form to be translated when used in a Forms plugin. This should be disabled if you enter non-[[default_language]] text into the form field admin boxes.', ['default_language' => $defaultLanguageName]);
 		}
 		
 		
@@ -92,12 +93,18 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 			}
 			if (!$record['clear_partial_data_message']) {
 				$record['clear_partial_data_message'] = $values['clear_partial_data_message'];
-			}	
+			}
+			if ($record['partial_completion_get_request']) {
+				$record['enable_partial_completion_get_request'] = true;
+			}
+			if ($record['period_to_delete_response_content']) {
+				$record['delete_content_sooner'] = true;
+			}
 			
 			$this->fillFieldValues($fields, $record);
 			
 			$box['key']['type'] = $record['type'];
-			$box['title'] = ze\admin::phrase('Editing the Form "[[name]]"', array('name' => $record['name']));
+			$box['title'] = ze\admin::phrase('Editing the Form "[[name]]"', ['name' => $record['name']]);
 			
 			if ($record['title'] !== null && $record['title'] !== '') {
 				$values['details/show_title'] = true;
@@ -116,20 +123,20 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 			}
 			
 			// Find all text form fields from the selected form
-			$formTextFieldLabels = array();
-			$formEmailFieldLabels = array();
+			$formTextFieldLabels = [];
+			$formEmailFieldLabels = [];
 			$formTextFields = zenario_user_forms::getTextFormFields($box['key']['id']);
 			
 			foreach ($formTextFields as $formTextField) {
-				$formTextFieldLabels[$formTextField['id']] = array(
+				$formTextFieldLabels[$formTextField['id']] = [
 					'ord' => $formTextField['ord'],
 					'label' => $formTextField['name']
-				);
+				];
 				if ($formTextField['field_validation'] == 'email' || $formTextField['dataset_field_validation'] == 'email') {
-					$formEmailFieldLabels[$formTextField['id']] = array(
+					$formEmailFieldLabels[$formTextField['id']] = [
 						'ord' => $formTextField['ord'],
 						'label' => $formTextField['name']
-					);
+					];
 				}
 			}
 			
@@ -160,18 +167,18 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 			}
 			if ($translatableLanguage) {
 				// Get translatable fields for this field type
-				$fieldsToTranslate = array(
+				$fieldsToTranslate = [
 					'title' => $record['title'],
 					'success_message' => $record['success_message'],
 					'submit_button_text' => $record['submit_button_text'],
-					'duplicate_email_address_error_message' => $record['duplicate_email_address_error_message']);
+					'duplicate_email_address_error_message' => $record['duplicate_email_address_error_message']];
 				
 				// Get any existing phrases that translatable fields have
-				$existingPhrases = array();
+				$existingPhrases = [];
 				foreach($fieldsToTranslate as $name => $value) {
 					$phrases = ze\row::query('visitor_phrases', 
-						array('local_text', 'language_id'), 
-						array('code' => $value, 'module_class_name' => 'zenario_user_forms'));
+						['local_text', 'language_id'], 
+						['code' => $value, 'module_class_name' => 'zenario_user_forms']);
 					while ($row = ze\sql::fetchAssoc($phrases)) {
 						$existingPhrases[$name][$row['language_id']] = $row['local_text'];
 					}
@@ -180,7 +187,7 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 				$lastKey = end($keys);
 				$ord = 0;
 				
-				$box['tabs']['translations']['fields'] = array();
+				$box['tabs']['translations']['fields'] = [];
 				
 				foreach($fieldsToTranslate as $name => $value) {
 					// Create label for field with english translation (if set)
@@ -196,10 +203,10 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 						$html .= ' (No text is defined in the default language)';
 					}
 					
-					$box['tabs']['translations']['fields'][$name] = array(
+					$box['tabs']['translations']['fields'][$name] = [
 						'ord' => $ord,
-						'snippet' => array(
-							'html' =>  $html));
+						'snippet' => [
+							'html' =>  $html]];
 					
 					// Create an input box for each translatable language and look for existing phrases
 					foreach($languages as $language) {
@@ -208,22 +215,22 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 							if (isset($existingPhrases[$name]) && isset($existingPhrases[$name][$language['id']])) {
 								$value = $existingPhrases[$name][$language['id']];
 							}
-							$box['tabs']['translations']['fields'][$name.'__'.$language['id']] = array(
+							$box['tabs']['translations']['fields'][$name.'__'.$language['id']] = [
 								'ord' => $ord++,
 								'label' => $language['english_name']. ':',
 								'type' => 'text',
 								'value' => $value,
 								'readonly' => $readOnly,
-								'side_note' => $sideNote);
+								'side_note' => $sideNote];
 						}
 					}
 					
 					// Add linebreak after each field
 					if ($name != $lastKey) {
-						$box['tabs']['translations']['fields'][$name.'_break'] = array(
+						$box['tabs']['translations']['fields'][$name.'_break'] = [
 							'ord' => $ord,
-							'snippet' => array(
-								'html' => '<hr/>'));
+							'snippet' => [
+								'html' => '<hr/>']];
 					}
 					$ord++;
 					$box['tabs']['translations']['hidden'] = $record['translate_text'];
@@ -262,7 +269,7 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 		
 		$dataset = ze\dataset::details('users');
 		$emailDatasetField = ze\dataset::fieldDetails('email', $dataset);
-		if (!ze\row::exists(ZENARIO_USER_FORMS_PREFIX . 'user_form_fields', array('user_form_id' => $box['key']['id'], 'user_field_id' => $emailDatasetField['id'])) && $box['key']['type'] != 'registration') {
+		if (!ze\row::exists(ZENARIO_USER_FORMS_PREFIX . 'user_form_fields', ['user_form_id' => $box['key']['id'], 'user_field_id' => $emailDatasetField['id']]) && $box['key']['type'] != 'registration') {
 			$fields['data/email_html']['hidden'] = false;
 			$values['data/save_data'] = false;
 			$fields['data/save_data']['disabled'] = true;
@@ -270,6 +277,13 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 		
 		if (!$values['use_honeypot']) {
 			$values['honeypot_label'] = 'Please don\'t type anything in this field';
+		}
+		
+		//Show a warning if the scheduled task for deleting content is not running.
+		if (!ze\module::inc('zenario_scheduled_task_manager') || !zenario_scheduled_task_manager::checkScheduledTaskRunning('jobDataProtectionCleanup')) {
+			$box['tabs']['data_deletion']['notices']['scheduled_task_not_running']['show'] = true;
+		} else {
+			$box['tabs']['data_deletion']['notices']['scheduled_task_running']['show'] = true;
 		}
 	}
 	
@@ -282,11 +296,11 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 	}
 	
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		$fields['details/translate_text']['hidden'] = !ze\row::exists('languages', array('translate_phrases' => 1));
+		$fields['details/translate_text']['hidden'] = !ze\row::exists('languages', ['translate_phrases' => 1]);
 		
 		// Display translation boxes for translatable fields with a value entered
 		$languages = ze\lang::getLanguages(false, true, true);
-		$fieldsToTranslate = array('title', 'success_message', 'submit_button_text', 'duplicate_email_address_error_message');
+		$fieldsToTranslate = ['title', 'success_message', 'submit_button_text', 'duplicate_email_address_error_message'];
 		foreach($fieldsToTranslate as $fieldName) {
 			$fields['translations/'.$fieldName]['snippet']['html'] = '<b>'.$fields[$fieldName]['label'].'</b>';
 			if (!empty($values[$fieldName])) {
@@ -373,12 +387,21 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 		
 		$fields['details/success_message']['hidden'] = $values['data/success_message_type'] != 'show_success_message';
 		
+		if ($values['data_deletion/period_to_delete_response_headers'] == ""
+			&& ($siteWideSetting = ze::setting('period_to_delete_the_form_response_log_headers'))
+			&& isset($fields['data_deletion/period_to_delete_response_headers']['values'][$siteWideSetting])
+		) {
+			$fields['data_deletion/period_to_delete_response_headers']['post_field_html'] = '&nbsp;(' . $fields['data_deletion/period_to_delete_response_headers']['values'][$siteWideSetting]['label'] . ')';
+		} else {
+			$fields['data_deletion/period_to_delete_response_headers']['post_field_html'] = '';
+		}
+		
 		if (ze\module::inc('zenario_extranet')) {
 			$fields['data/duplicate_submission_message']['hidden'] = !$values['data/no_duplicate_submissions'];
 		}
 		
 		if (!empty($box['key']['id'])) {
-			$box['title'] = ze\admin::phrase('Editing the Form "[[name]]"', array('name' => $values['details/name']));
+			$box['title'] = ze\admin::phrase('Editing the Form "[[name]]"', ['name' => $values['details/name']]);
 		}
 		
 		
@@ -453,7 +476,7 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 			}
 			$result = ze\sql::select($sql);
 			if (ze\sql::numRows($result) > 0) {
-				$errors[] = ze\admin::phrase('The name "[[name]]" is used by another form.', array('name' => $values['details/name']));
+				$errors[] = ze\admin::phrase('The name "[[name]]" is used by another form.', ['name' => $values['details/name']]);
 			}
 		}
 		
@@ -472,12 +495,25 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 			&& empty($values['data/send_email_to_admin'])) {
 			$errors[] = ze\admin::phrase('This form is currently not using the data submitted in any way. Please select at least one of the following options.');
 		}
+		
+		//Make sure you cannot ask content to be stored longer than headers
+		$headersDays = $values['data_deletion/period_to_delete_response_headers'];
+		$contentDays = $values['data_deletion/period_to_delete_response_content'];
+		
+		if ($values['data_deletion/delete_content_sooner']
+			&& ((is_numeric($headersDays) && is_numeric($contentDays) && ($contentDays > $headersDays))
+				|| (is_numeric($headersDays) && $contentDays == 'never_delete')
+				|| ($headersDays == 'never_save' && $contentDays != 'never_save')
+			)
+		) {
+			$fields['data_deletion/period_to_delete_response_content']['error'] = ze\admin::phrase('You cannot save content for longer than the headers.');
+		}
 	}
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		ze\priv::exitIfNot('_PRIV_MANAGE_FORMS');
 		
-		$record = array();
+		$record = [];
 		$record['name'] = $values['name'];
 		
 		$title = '';
@@ -586,6 +622,7 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 		$record['partial_completion_message'] = null;
 		$record['allow_clear_partial_data'] = 0;
 		$record['clear_partial_data_message'] = null;
+		$record['partial_completion_get_request'] = null;
 		if (!empty($values['allow_partial_completion'])) {
 			if ($values['partial_completion_mode__auto'] && $values['partial_completion_mode__button']) {
 				$record['partial_completion_mode'] = 'auto_and_button';
@@ -602,6 +639,10 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 			if ($record['allow_clear_partial_data'] = !empty($values['allow_clear_partial_data'])) {
 				$record['clear_partial_data_message'] = $values['clear_partial_data_message'];
 			}
+			
+			if (!empty($values['enable_partial_completion_get_request'])) {
+				$record['partial_completion_get_request'] = $values['partial_completion_get_request'];
+			}
 		}
 		
 		$record['enable_summary_page_required_checkbox'] = 0;
@@ -616,18 +657,26 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 			}
 		}
 		
+		$record['period_to_delete_response_headers'] = $values['period_to_delete_response_headers'];
+		if ($values['period_to_delete_response_headers'] && $values['delete_content_sooner']) {
+			$record['period_to_delete_response_content'] = $values['period_to_delete_response_content'];
+		} else {
+			$record['period_to_delete_response_content'] = '';
+		}
+		
+		
 		if ($id = $box['key']['id']) {
-			ze\row::set(ZENARIO_USER_FORMS_PREFIX . 'user_forms', $record, array('id' => $id));
+			ze\row::set(ZENARIO_USER_FORMS_PREFIX . 'user_forms', $record, ['id' => $id]);
 			
 			if (!$record['partial_completion_message']) {
 				zenario_user_forms::deleteOldPartialResponse($id);
 			}
 			
 			
-			$formProperties = ze\row::get(ZENARIO_USER_FORMS_PREFIX . 'user_forms', array('translate_text'), array('id' => $id));
+			$formProperties = ze\row::get(ZENARIO_USER_FORMS_PREFIX . 'user_forms', ['translate_text'], ['id' => $id]);
 			// Save translations
 			if ($formProperties['translate_text']) { 
-				$translatableFields = array('title', 'success_message', 'submit_button_text', 'duplicate_email_address_error_message');
+				$translatableFields = ['title', 'success_message', 'submit_button_text', 'duplicate_email_address_error_message'];
 				
 				// Update phrase code if phrases are changed to keep translation chain
 				$fieldsToTranslate = ze\row::get(ZENARIO_USER_FORMS_PREFIX . 'user_forms', $translatableFields, $id);
@@ -661,50 +710,50 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 					if ($identicalPhraseFound) {
 						foreach($languages as $language) {
 							// Create or overwrite new phrases with the new english code
-							$setArray = array('code' => $values[$name]);
+							$setArray = ['code' => $values[$name]];
 							if (!empty($language['translate_phrases'])) {
 								$setArray['local_text'] = ($values['translations/'.$name.'__'.$language['id']] !== '') ? $values['translations/'.$name.'__'.$language['id']] : null;
 							}
 							ze\row::set('visitor_phrases', 
 								$setArray,
-								array(
+								[
 									'code' => $values[$name],
 									'module_class_name' => 'zenario_user_forms',
-									'language_id' => $language['id']));
+									'language_id' => $language['id']]);
 						}
 					} else {
 						// If nothing else is using the same phrase code...
-						if (!ze\row::exists('visitor_phrases', array('code' => $values[$name], 'module_class_name' => 'zenario_user_forms'))) {
+						if (!ze\row::exists('visitor_phrases', ['code' => $values[$name], 'module_class_name' => 'zenario_user_forms'])) {
 							ze\row::update('visitor_phrases', 
-								array('code' => $values[$name]), 
-								array('code' => $oldCode, 'module_class_name' => 'zenario_user_forms'));
+								['code' => $values[$name]], 
+								['code' => $oldCode, 'module_class_name' => 'zenario_user_forms']);
 							foreach($languages as $language) {
 								if ($language['translate_phrases'] && !empty($values['translations/'.$name.'__'.$language['id']])) {
 									ze\row::set('visitor_phrases',
-										array(
-											'local_text' => ($values['translations/'.$name.'__'.$language['id']] !== '' ) ? $values['translations/'.$name.'__'.$language['id']] : null), 
-										array(
+										[
+											'local_text' => ($values['translations/'.$name.'__'.$language['id']] !== '' ) ? $values['translations/'.$name.'__'.$language['id']] : null], 
+										[
 											'code' => $values[$name], 
 											'module_class_name' => 'zenario_user_forms', 
-											'language_id' => $language['id']));
+											'language_id' => $language['id']]);
 								}
 								
 							}
 						// If code already exists, and nothing else is using the code, delete current phrases, and update/create new translations
 						} else {
-							ze\row::delete('visitor_phrases', array('code' => $oldCode, 'module_class_name' => 'zenario_user_forms'));
+							ze\row::delete('visitor_phrases', ['code' => $oldCode, 'module_class_name' => 'zenario_user_forms']);
 							if (isset($values[$name]) && !empty($values[$name])) {
 								foreach($languages as $language) {
-									$setArray = array('code' => $values[$name]);
+									$setArray = ['code' => $values[$name]];
 									if (!empty($language['translate_phrases'])) {
 										$setArray['local_text'] = ($values['translations/'.$name.'__'.$language['id']] !== '' ) ? $values['translations/'.$name.'__'.$language['id']] : null;
 									}
 									ze\row::set('visitor_phrases',
 										$setArray,
-										array(
+										[
 											'code' => $values[$name], 
 											'module_class_name' => 'zenario_user_forms', 
-											'language_id' => $language['id']));
+											'language_id' => $language['id']]);
 								}
 							}
 						}
@@ -716,7 +765,7 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 			if ($box['key']['type']) {
 				$record['type'] = $box['key']['type'];
 			}
-			$formId = ze\row::set(ZENARIO_USER_FORMS_PREFIX . 'user_forms', $record, array());
+			$formId = ze\row::set(ZENARIO_USER_FORMS_PREFIX . 'user_forms', $record, []);
 			
 			// Add default form fields for form types
 			if (!$box['key']['id']) {

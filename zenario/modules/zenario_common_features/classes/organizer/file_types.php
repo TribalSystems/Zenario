@@ -38,7 +38,7 @@ class zenario_common_features__organizer__file_types extends ze\moduleBaseClass 
 		
 		foreach ($panel['items'] as &$item) {
 			if ($item['custom']) {
-				$item['traits'] = array('custom' => true);
+				$item['traits'] = ['custom' => true];
 			}
 		}
 	}
@@ -48,7 +48,7 @@ class zenario_common_features__organizer__file_types extends ze\moduleBaseClass 
 		
 		if (($_POST['delete'] ?? false) && ze\priv::check('_PRIV_EDIT_CONTENT_TYPE')) {
 			foreach (ze\ray::explodeAndTrim($ids) as $id) {
-				ze\row::delete('document_types', array('type' => ze\ring::decodeIdForOrganizer($id), 'custom' => 1));
+				ze\row::delete('document_types', ['type' => ze\ring::decodeIdForOrganizer($id), 'custom' => 1]);
 			}
 		}
 	}

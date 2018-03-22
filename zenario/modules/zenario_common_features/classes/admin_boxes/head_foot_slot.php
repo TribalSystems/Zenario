@@ -107,12 +107,12 @@ class zenario_common_features__admin_boxes__head_foot_slot extends ze\moduleBase
 			if ($box['key']['level'] == 'item') {
 				$box['title'] = ze\admin::phrase('<head> HTML for the content item "[[tag]]", version [[version]]', ['tag' => $formatTag, 'version' => $box['key']['cVersion']]);
 				$fields['slot/description']['snippet']['html'] =
-					ze\admin::phrase('Add HTML within the <code>&lt;head&gt;</code> tag for this content item (can include &lt;style&gt; tags for CSS):');
+					ze\admin::phrase('Add HTML within the <code>&lt;head&gt;</code> tag for this content item (e.g. <code>&lt;meta&gt;</code> and <code>&lt;style&gt;</code> tags):');
 				
 			} elseif ($box['key']['level'] == 'layout') {
 				$box['title'] = ze\admin::phrase('<head> HTML for the layout "[[id_and_name]]"', $layout);
 				$fields['slot/description']['snippet']['html'] =
-					ze\admin::phrase('Add HTML within the <code>&lt;head&gt;</code> tag for this layout (can include &lt;style&gt; tags for CSS):');
+					ze\admin::phrase('Add HTML within <code>&lt;head&gt;</code> that affects all content items using this layout (e.g. <code>&lt;meta&gt;</code> and <code>&lt;style&gt;</code> tags):');
 			}
 	
 		} else {
@@ -166,8 +166,8 @@ class zenario_common_features__admin_boxes__head_foot_slot extends ze\moduleBase
 			$box['confirm']['message'] =
 				ze\admin::phrase(
 					'<p>You are making changes to a Slot on a Layout.</p><p>This change will affect <span class="zenario_x_published_items">[[published]] Published Content Item(s)</span> <span class="zenario_y_items">([[pages]] Content Item(s) in total).</span></p><p>Are you sure you wish to continue?</p>',
-					array('pages' => ze\layoutAdm::usage($box['key']['layoutId'], false, false),
-							'published' => ze\layoutAdm::usage($box['key']['layoutId'], false, true)));
+					['pages' => ze\layoutAdm::usage($box['key']['layoutId'], false, false),
+							'published' => ze\layoutAdm::usage($box['key']['layoutId'], false, true)]);
 	
 			$box['confirm']['button_message'] = ze\admin::phrase('Save');
 		}

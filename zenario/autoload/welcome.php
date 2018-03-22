@@ -54,7 +54,7 @@ class welcome {
 
 	//Formerly "quickValidateWelcomePage()"
 	public static function quickValidateWelcomePage(&$values, &$rowClasses, &$snippets, $tab) {
-		if ($tab == 5 || $tab == 'change_password') {
+		if ($tab == 5 || $tab == 'change_password' || $tab == 'new_admin') {
 			$strength = \ze\user::passwordValuesToStrengths(\ze\user::checkPasswordStrength($values['password'], true));
 			$snippets['password_strength'] = '<div class="password_'. $strength. '"><span>'. \ze\admin::phrase($strength). '</span></div>';
 	
@@ -219,7 +219,7 @@ class welcome {
 
 	//Formerly "installerReportError()"
 	public static function installerReportError() {
-		return "\n". \ze\admin::phrase('(Error [[errno]]: [[error]])', array('errno' => \ze\sql::errno(), 'error' => \ze\sql::error()));
+		return "\n". \ze\admin::phrase('(Error [[errno]]: [[error]])', ['errno' => \ze\sql::errno(), 'error' => \ze\sql::error()]);
 	}
 	
 
@@ -405,7 +405,7 @@ class welcome {
 		$phpRequirementsMet = false;
 		$phpVersion = phpversion();
 		$fields['0/php_1']['post_field_html'] =
-			\ze\admin::phrase('&nbsp;(<em>you have version [[version]]</em>)', array('version' => htmlspecialchars($phpVersion)));
+			\ze\admin::phrase('&nbsp;(<em>you have version [[version]]</em>)', ['version' => htmlspecialchars($phpVersion)]);
 	
 		if (!\ze\welcome::compareVersionNumber($phpVersion, '7.0.0')) {
 			$fields['0/php_1']['row_class'] = $invalid;
@@ -467,7 +467,7 @@ class welcome {
 		
 			if ($mysqlVersion) {
 				$fields['0/mysql_2']['post_field_html'] =
-					\ze\admin::phrase('&nbsp;(<em>your client is version [[version]]</em>)', array('version' => htmlspecialchars($mysqlVersion)));
+					\ze\admin::phrase('&nbsp;(<em>your client is version [[version]]</em>)', ['version' => htmlspecialchars($mysqlVersion)]);
 			}
 		
 			if (!$mysqlVersion
@@ -1056,15 +1056,15 @@ class welcome {
 			case 4:
 			
 				//Old code for sample sites, commented out as we don't currently use them
-				//$fields['4/sample']['values'] = array(
-				//	0 => array(
+				//$fields['4/sample']['values'] = [
+				//	0 => [
 				//		'label' => \ze\admin::phrase('Blank Site:'),
-				//		'note_below' => \ze\admin::phrase('An empty site, ready for you to choose a language.')));
+				//		'note_below' => \ze\admin::phrase('An empty site, ready for you to choose a language.')]];
 				//
 				//foreach (listSampleSites() as $dir => $path) {
-				//	$fields['4/sample']['values'][$dir] = array(
+				//	$fields['4/sample']['values'][$dir] = [
 				//		'label' => $dir. ': ',
-				//		'note_below' => file_get_contents($path. 'description.txt'));
+				//		'note_below' => file_get_contents($path. 'description.txt')];
 				//}
 			
 				//Format the labels for the date format picker fields
@@ -1091,13 +1091,13 @@ class welcome {
 				if (empty($fields['4/theme']['values'])) {
 					$fields['4/theme']['values'] = [];
 					foreach (\ze\welcome::listSampleThemes() as $dir => $imageSrc) {
-						$fields['4/theme']['values'][$dir] = array(
+						$fields['4/theme']['values'][$dir] = [
 							'label' => '',
 							'post_field_html' =>
 								'<label for="theme___'. htmlspecialchars($dir). '">
 									<img src="'. htmlspecialchars('../../'. $imageSrc). '"/>
 								</label>'
-						);
+						];
 					}
 				}
 			
@@ -1284,19 +1284,19 @@ class welcome {
 		
 						//Set a random first data-revision number
 						//(If someone is doing repeated fresh installs, this stops data from an old one getting cached and used in another)
-						\ze\row::set('local_revision_numbers', array('revision_no' => rand(1, 32767)), ['path' => 'data_rev', 'patchfile' => 'data_rev']);
+						\ze\row::set('local_revision_numbers', ['revision_no' => rand(1, 32767)], ['path' => 'data_rev', 'patchfile' => 'data_rev']);
 					
 					
 						$freshInstall = true;
 					
 						//Create an Admin, and give them all of the core permissions
-						$details = array(
+						$details = [
 							'username' => $merge['USERNAME'],
 							'first_name' => $merge['admin_first_name'],
 							'last_name' => $merge['admin_last_name'],
 							'email' => $merge['EMAIL_ADDRESS_GLOBAL_SUPPORT'],
 							'created_date' => \ze\date::now(),
-							'status' => 'active');
+							'status' => 'active'];
 					
 						$adminId = \ze\row::insert('admins', $details);
 						\ze\adminAdm::setPassword($adminId, $merge['PASSWORD']);
@@ -1414,46 +1414,7 @@ class welcome {
 						\ze\admin::phrase($adminIdL->__toString());
 			
 				} else {
-					if ($values['login/remember_me']) {
-						\ze\cookie::set('COOKIE_LAST_ADMIN_USER', $values['login/username']);
-						\ze\cookie::clear('COOKIE_DONT_REMEMBER_LAST_ADMIN_USER');
-					} else {
-						\ze\cookie::set('COOKIE_DONT_REMEMBER_LAST_ADMIN_USER', '1');
-						\ze\cookie::clear('COOKIE_LAST_ADMIN_USER');
-					}
-				
-					if ($details['type'] == 'global') {
-						\ze\admin::setSession($adminIdL, $details['id']);
-					} else {
-						\ze\admin::setSession($adminIdL);
-					}
-					\ze\cookie::setConsent();
-				
-					//Note the time this admin last logged in
-						//This might fail if this site needs a db_update and the last_login_ip column does not exist.
-				
-					require_once CMS_ROOT. 'zenario/libs/manually_maintained/mit/browser/lib/browser.php';
-					$browser = new \Browser();
-				
-					$sql = "
-						UPDATE ". DB_NAME_PREFIX. "admins SET
-							last_login = NOW(),
-							last_login_ip = '". \ze\escape::sql(\ze\user::ip()). "',
-							last_browser = '". \ze\escape::sql($browser->getBrowser()). "',
-							last_browser_version = '". \ze\escape::sql($browser->getVersion()). "',
-							last_platform = '". \ze\escape::sql($browser->getPlatform()). "'
-						WHERE id = ". (int) $adminIdL;
-					@\ze\sql::select($sql);
-				
-					// Update last domain, so primaryDomain can return a domain name if the primary domain site setting is not set.
-					if (!\ze\link::adminDomainIsPrivate()) {
-						\ze\site::setSetting('last_primary_domain', \ze\link::primaryDomain());
-					}
-				
-					//Don't offically mark the admin as "logged in" until they've passed all of the
-					//checks in the admin login screen
-					$_SESSION['admin_logged_in'] = false;
-				
+					\ze\admin::logIn($adminIdL, $values['login/remember_me']);
 					return true;
 				}
 			}
@@ -1555,12 +1516,12 @@ class welcome {
 			$admins = \ze\row::getArray(
 				'admins',
 				['first_name', 'last_name', 'username', 'authtype'],
-				array(
+				[
 					'status' => 'active',
 					'id' => \ze\row::getArray(
 						'action_admin_link',
 						'admin_id',
-						array('action_name' => ['_ALL', '_PRIV_APPLY_DATABASE_UPDATES']))),
+						['action_name' => ['_ALL', '_PRIV_APPLY_DATABASE_UPDATES']])],
 				['first_name', 'last_name', 'username', 'authtype']
 			);
 		
@@ -1601,7 +1562,7 @@ class welcome {
 	
 	
 		$fields['1/description']['snippet']['html'] =
-			\ze\admin::phrase('We need to update your database (<code>[[database]]</code>) to match.', array('database' => htmlspecialchars(DBNAME)));
+			\ze\admin::phrase('We need to update your database (<code>[[database]]</code>) to match.', ['database' => htmlspecialchars(DBNAME)]);
 	
 	
 		if ($tags['tab'] == 1 && !empty($fields['1/why']['pressed'])) {
@@ -1630,7 +1591,7 @@ class welcome {
 				}
 		
 				if ($currentRevisionNumber != $latestRevisionNumber) {
-					$revisions['core'] = array('name' => ' '. \ze\admin::phrase('Core files'), 'from' => $currentRevisionNumber, 'to' => $latestRevisionNumber);
+					$revisions['core'] = ['name' => ' '. \ze\admin::phrase('Core files'), 'from' => $currentRevisionNumber, 'to' => $latestRevisionNumber];
 				}
 		
 				if (!empty($modules)) {
@@ -1938,6 +1899,43 @@ class welcome {
 	
 		return false;
 	}
+	
+	
+	public static function newAdminAJAX(&$source, &$tags, &$fields, &$values, $changes, $task, $adminId) { 
+		//Set password if the Admin presses the save and login button
+		if (!empty($fields['new_admin/save_password_and_login']['pressed'])) {
+			$password = $values['new_admin/password'];
+			$passwordConfirm = $values['new_admin/re_password'];
+			
+			if (!$password) {
+				$tags['tabs']['new_admin']['errors'][] = \ze\admin::phrase('Please enter a password.');
+				
+			} elseif (!\ze\user::checkPasswordStrength($password)) {
+				$tags['tabs']['new_admin']['errors'][] = \ze\admin::phrase('_MSG_PASS_STRENGTH');
+				
+			} elseif (!$passwordConfirm) {
+				$tags['tabs']['new_admin']['errors'][] = \ze\admin::phrase('Please repeat your Password.');
+				
+			} elseif ($password != $passwordConfirm) {
+				$tags['tabs']['new_admin']['errors'][] = \ze\admin::phrase('_MSG_PASS_2');
+				
+			}
+			
+			//If no errors with validation, then save password and login
+			if (empty($tags['tabs']['new_admin']['errors'])) {
+				\ze\adminAdm::setPassword($adminId, $password, 0);
+				\ze\admin::logIn($adminId);
+				return true;
+			}
+		}
+		
+		//Show the password strength box
+		$strength = \ze\user::passwordValuesToStrengths(\ze\user::checkPasswordStrength(($fields['new_admin/password']['current_value'] ?? false), true));
+		$fields['new_admin/password_strength']['snippet']['html'] =
+			'<div class="password_'. $strength. '"><span>'. \ze\admin::phrase($strength). '</span></div>';
+		
+		return false;
+	}
 
 
 
@@ -1973,9 +1971,9 @@ class welcome {
 		$fields['0/dirs']['row_class'] = 'section_valid';
 	
 	
-		$mrg = array(
+		$mrg = [
 			'dir' => $dir = $values['0/backup_dir'],
-			'basename' => $dir? htmlspecialchars(basename($dir)) : '');
+			'basename' => $dir? htmlspecialchars(basename($dir)) : ''];
 	
 		if (!$dir) {
 			$fields['0/backup_dir_status']['row_class'] = 'sub_invalid';
@@ -2000,9 +1998,9 @@ class welcome {
 		}
 	
 	
-		$mrg = array(
+		$mrg = [
 			'dir' => $dir = $values['0/docstore_dir'],
-			'basename' => $dir? htmlspecialchars(basename($dir)) : '');
+			'basename' => $dir? htmlspecialchars(basename($dir)) : ''];
 	
 		if (!$dir) {
 			$fields['0/docstore_dir_status']['row_class'] = 'sub_invalid';
@@ -2030,9 +2028,9 @@ class welcome {
 		//Check to see if the templates & grid templates directories exist,
 		//and that the grid templates directory and all of the files inside are writable.
 		//(A site setting can be set to stop this check.)
-		$mrg = array(
+		$mrg = [
 			'dir' => $dir = $tdir,
-			'basename' => $dir? htmlspecialchars(basename($dir)) : '');
+			'basename' => $dir? htmlspecialchars(basename($dir)) : ''];
 	
 		if (!is_dir($tdir)) {
 			$fields['0/template_dir_status']['row_class'] = 'sub_invalid';
@@ -2072,7 +2070,7 @@ class welcome {
 				$fields['0/template_dir_status']['row_class'] = 'sub_invalid';
 				$fields['0/template_dir_status']['snippet']['html'] =
 					\ze\admin::phrase('<code>[[short_path]]</code> is not writable, please make it writable (e.g. use &quot;chmod 666 [[file]]&quot;).',
-						array('short_path' => htmlspecialchars('grid_templates/'. $fileNotWritable), 'file' => htmlspecialchars($fileNotWritable)));
+						['short_path' => htmlspecialchars('grid_templates/'. $fileNotWritable), 'file' => htmlspecialchars($fileNotWritable)]);
 		
 			} else {
 				$fields['0/template_dir_status']['row_class'] = 'sub_valid';
@@ -2100,9 +2098,9 @@ class welcome {
 			$tags['tabs'][0]['fields']['skin_dir_'. $i]['value'] =
 			$tags['tabs'][0]['fields']['skin_dir_'. $i]['current_value'] = $skinWritableDir;
 		
-			$mrg = array(
+			$mrg = [
 				'dir' => $dir = $tdir,
-				'basename' => $dir? htmlspecialchars(basename($skinWritableDir)) : '');
+				'basename' => $dir? htmlspecialchars(basename($skinWritableDir)) : ''];
 		
 			if (!is_dir($skinWritableDir)) {
 				$skinDirsValid = false;
@@ -2147,7 +2145,7 @@ class welcome {
 					$tags['tabs'][0]['fields']['skin_dir_status_'. $i]['row_class'] = 'sub_warning';
 					$tags['tabs'][0]['fields']['skin_dir_status_'. $i]['snippet']['html'] =
 						\ze\admin::phrase('<code>[[short_path]]</code> is not writable, please make it writable (e.g. use &quot;chmod 666 [[file]]&quot;).',
-							array('short_path' => htmlspecialchars('editable_css/'. $fileNotWritable), 'file' => htmlspecialchars($fileNotWritable)));
+							['short_path' => htmlspecialchars('editable_css/'. $fileNotWritable), 'file' => htmlspecialchars($fileNotWritable)]);
 		
 				} else {
 					$tags['tabs'][0]['fields']['skin_dir_status_'. $i]['row_class'] = 'sub_valid';
@@ -2364,10 +2362,10 @@ class welcome {
 			}
 		
 		
-			$mrg = array(
+			$mrg = [
 				'DBNAME' => DBNAME,
 				'path' => \ze::setting('automated_backup_log_path'),
-				'link' => htmlspecialchars('organizer.php#zenario__administration/panels/site_settings//dirs~.site_settings~tautomated_backups~k{"id"%3A"dirs"}'));
+				'link' => htmlspecialchars('organizer.php#zenario__administration/panels/site_settings//dirs~.site_settings~tautomated_backups~k{"id"%3A"dirs"}')];
 		
 			if (!\ze::setting('check_automated_backups')) {
 				$fields['0/site_automated_backups']['row_class'] = 'valid';
@@ -2526,6 +2524,25 @@ class welcome {
 			} else {
 				$fields['0/email_addresses_overridden']['hidden'] = true;
 			}
+			
+			
+			//Check for missing modules
+			$missingModules = [];
+			foreach(\ze\row::getArray('modules', ['class_name', 'display_name'], ['status' => 'module_running'], 'class_name') as $module) {
+				if (!\ze::moduleDir($module['class_name'], 'module_code.php', true)) {
+					$missingModules[$module['class_name']] = \ze\admin::phrase('[[display_name|escape]] (<code>[[class_name|escape]]</code>)', $module);
+				}
+			}
+			
+			if (!$fields['0/missing_modules']['hidden'] = empty($missingModules)) {
+				$show_error = true;
+				$fields['0/missing_modules']['row_class'] = 'invalid';
+				$fields['0/missing_modules']['snippet']['html'] =
+					\ze\admin::phrase('Files for the following modules are missing:').
+					'<ul><li>'.
+						implode('</li><li>', $missingModules).
+					'</li></ul>';
+			}
 		
 			$badSymlinks = [];
 			if (is_dir($dir = CMS_ROOT. 'zenario_extra_modules/')) {
@@ -2549,7 +2566,7 @@ class welcome {
 				$fields['0/bad_extra_module_symlinks']['row_class'] = 'warning';
 				$show_warning = true;
 			
-				$mrg = array('module' => array_pop($badSymlinks), 'version' => ZENARIO_MAJOR_VERSION. '.'. ZENARIO_MINOR_VERSION);
+				$mrg = ['module' => array_pop($badSymlinks), 'version' => ZENARIO_MAJOR_VERSION. '.'. ZENARIO_MINOR_VERSION];
 				if (empty($badSymlinks)) {
 					$fields['0/bad_extra_module_symlinks']['snippet']['html'] =
 						\ze\admin::phrase('The <code>[[module]]</code> symlink in the <code>zenario_extra_modules/</code> directory is linked to the wrong version of Zenario. It should be linked to version [[version]].', $mrg);
@@ -2845,7 +2862,7 @@ class welcome {
 
 	//Formerly "protectBackupAndDocstoreDirsIfPossible()"
 	public static function protectBackupAndDocstoreDirsIfPossible() {
-		foreach (array(\ze::setting('backup_dir'), \ze::setting('docstore_dir')) as $dir) {
+		foreach ([\ze::setting('backup_dir'), \ze::setting('docstore_dir')] as $dir) {
 			if ($dir
 			 && is_dir($dir)
 			 && is_writeable($dir)
@@ -2888,12 +2905,12 @@ class welcome {
 
 
 	//Formerly "redirectAdmin()"
-	public static function redirectAdmin($getRequest, $useAliasInAdminMode = false) {
+	public static function redirectAdmin($getRequest, $forceAliasInAdminMode = false) {
 		
 		$cID = $cType = $redirectNeeded = $aliasInURL = false;
 		\ze\content::resolveFromRequest($cID, $cType, $redirectNeeded, $aliasInURL, $getRequest, $getRequest, []);
 		
-		$domain = ($useAliasInAdminMode || !\ze\priv::check())? \ze\link::primaryDomain() : \ze\link::adminDomain();
+		$domain = ($forceAliasInAdminMode || !\ze\priv::check())? \ze\link::primaryDomain() : \ze\link::adminDomain();
 	
 		if (!empty($getRequest['og']) && \ze\priv::check()) {
 			return
@@ -2915,7 +2932,7 @@ class welcome {
 		
 			unset($getRequest['task'], $getRequest['cID'], $getRequest['cType'], $getRequest['cVersion']);
 		
-			return \ze\link::toItem($cID, $cType, true, http_build_query($getRequest), false, false, $useAliasInAdminMode);
+			return \ze\link::toItem($cID, $cType, true, http_build_query($getRequest), false, false, $forceAliasInAdminMode);
 		} else {
 			return (DIRECTORY_INDEX_FILENAME ?: SUBDIRECTORY);
 		}

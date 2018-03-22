@@ -85,7 +85,7 @@ class zenario_common_features__admin_boxes__backup extends ze\moduleBaseClass {
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
 		ze\priv::exitIfNot('_PRIV_BACKUP_SITE');
-		$details = array();
+		$details = [];
 		
 		if (!$box['key']['server']) {
 			if (!$values['details/password']) {

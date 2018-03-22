@@ -521,6 +521,7 @@ diagnostics:
                 #            <em>Configuration -&gt; Site Settings-&gt; Email -&gt; Debug</em> in Organizer.
                 #    hide_on_install: true
                 #    visible_if: zenarioAW.togglePressed()
+                missing_modules: *blank_child
                 bad_extra_module_symlinks: *blank_child
                 module_errors: *blank_child
                 no_ssl_for_login:

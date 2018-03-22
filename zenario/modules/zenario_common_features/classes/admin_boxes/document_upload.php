@@ -31,7 +31,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_common_features__admin_boxes__document_upload extends ze\moduleBaseClass {
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
-		$folderDetails= ze\row::get('documents', array('id','folder_name'), array('id' => $box['key']['id'],'type'=>'folder'));
+		$folderDetails= ze\row::get('documents', ['id','folder_name'], ['id' => $box['key']['id'],'type'=>'folder']);
 		if ($folderDetails) {
 			$box['title'] = 'Uploading document for the folder "'.$folderDetails['folder_name'].'"';
 			$documentProperties['folder_id'] = $box['key']['id'];
@@ -44,10 +44,14 @@ class zenario_common_features__admin_boxes__document_upload extends ze\moduleBas
 		}
 		
 		$documentsUploaded = explode(',',$values['upload_document/document__upload']);
-		$documentNameList=array();
+		$documentNameList = [];
 		$found = false;
 		foreach ($documentsUploaded  as $document) {
-			$filename = basename(ze\file::getPathOfUploadInCacheDir($document));
+			if (is_numeric($document)) {
+				$filename = ze\row::get('files', 'filename', $document);
+			} else {
+				$filename = basename(ze\file::getPathOfUploadInCacheDir($document));
+			}
 			if ($documentNameList){
 					if (in_array($filename,$documentNameList)){
 						$found=true;
@@ -83,7 +87,7 @@ class zenario_common_features__admin_boxes__document_upload extends ze\moduleBas
 			foreach ($documentNameList as $name){
 				if (array_search($name, $fileNameList) !== false) {
 					$nameDetails = explode(".",$name);
-					$box['tabs']['upload_document']['errors'][] = ze\admin::phrase('A file named "[[filename]]" with extension ".[[extension]]" already exists in this folder!', array('filename' => $nameDetails[0],'extension'=>$nameDetails[1]));
+					$box['tabs']['upload_document']['errors'][] = ze\admin::phrase('A file named "[[filename]]" with extension ".[[extension]]" already exists in this folder!', ['filename' => $nameDetails[0],'extension'=>$nameDetails[1]]);
 					break;
 				}
 			}
@@ -91,17 +95,22 @@ class zenario_common_features__admin_boxes__document_upload extends ze\moduleBas
 	}
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		$inFolder = ze\row::get('documents', 'id', array('id' => $box['key']['id'], 'type' => 'folder'));
+		$inFolder = ze\row::get('documents', 'id', ['id' => $box['key']['id'], 'type' => 'folder']);
 		$folderId = $inFolder ? $box['key']['id'] : false;
 		
 		$documentsUploaded = explode(',',$values['upload_document/document__upload']);
 		$documentId = false;
 		foreach ($documentsUploaded as $document) {
-			$filepath = ze\file::getPathOfUploadInCacheDir($document);
-			$filename = basename(ze\file::getPathOfUploadInCacheDir($document));
-			
-			if ($filepath && $filename) {
-				$documentId = ze\document::upload($filepath, $filename, $folderId);
+			if (is_numeric($document)) {
+				$filename = ze\row::get('files', 'filename', $document);
+				$documentId = zenario_common_features::createDocument($document, $filename, $folderId);
+			} else {
+				$filepath = ze\file::getPathOfUploadInCacheDir($document);
+				$filename = basename(ze\file::getPathOfUploadInCacheDir($document));
+				
+				if ($filepath && $filename) {
+					$documentId = ze\document::upload($filepath, $filename, $folderId);
+				}
 			}
 		}
 		$box['key']['id'] = $documentId;

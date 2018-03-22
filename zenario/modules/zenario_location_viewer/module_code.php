@@ -57,7 +57,7 @@ class zenario_location_viewer extends ze\moduleBaseClass {
 					return true;
 				}
 				if ($this->setting('location_user')) {
-					if (!(ze\row::exists(ZENARIO_ORGANIZATION_MANAGER_PREFIX. 'user_role_location_link', array('user_id' => ze\user::id(), 'location_id' => $locationId)))){
+					if (!(ze\row::exists(ZENARIO_ORGANIZATION_MANAGER_PREFIX. 'user_role_location_link', ['user_id' => ze\user::id(), 'location_id' => $locationId]))){
 						$this->data['access_denied'] = true;
 						return true;
 					}

@@ -17,23 +17,50 @@ zenario__languages:
                     db_column: c.id
                     show_by_default: true
                     searchable: true
+                    always_show: true
                     width: xsmall
                 country_name:
                     title: Internal name
                     db_column: c.english_name
                     show_by_default: true
                     searchable: true
+                    always_show: true
                     width: large
+                regions_count:
+                    title: Regions
+                    disallow_sorting: true
+                    show_by_default: true
+                    width: small
                 vlp_phrase:
                     title: Visitor phrase code
+                    disallow_sorting: true
                     db_column: "CONCAT('_COUNTRY_NAME_',c.id)"
-                    show_by_default: true
+                    show_by_default: false
                     width: large
                 country_status:
                     title: Status
+                    disallow_sorting: true
                     db_column: "IF(c.active=1,'active','suspended')"
                     show_by_default: true
+                    format: enum
+                    values:
+                        active: Active
+                        suspended: Suspended
+                    always_show: true
                     width: xsmall
+            quick_filter_buttons:
+                all:
+                    label: 'All'
+                    column: country_status
+                    remove_filter: true
+                active:
+                    label: 'Active'
+                    column: country_status
+                    value: active
+                suspended:
+                    label: 'Suspended'
+                    column: country_status
+                    value: suspended
             item:
                 css_class: zenario_country_manager_country
                 name: Country
@@ -55,7 +82,7 @@ zenario__languages:
                         create_another: true
             item_buttons:
                 edit_country:
-                    label: Properties
+                    label: Edit country
                     hide_in_select_mode: true
                     admin_box:
                         path: zenario_country_manager__country
@@ -130,8 +157,6 @@ zenario__languages:
                             message_type: warning
                         request:
                             action: delete_country
-                    with_columns_set:
-                        traits.can_delete_country: true
         regions:
             title: Regions
             name: Regions
@@ -181,7 +206,7 @@ zenario__languages:
                         create_another: true
             item_buttons:
                 edit_region:
-                    label: Properties
+                    label: Edit region
                     hide_in_select_mode: true
                     admin_box:
                         path: zenario_country_manager__region
@@ -216,5 +241,3 @@ zenario__languages:
                             message_type: warning
                         request:
                             action: delete_region
-                    with_columns_set:
-                        traits.can_delete_region: true

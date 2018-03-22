@@ -193,7 +193,7 @@ body.webkit input {
 .welcome div.thickbox_table fieldset.zenario_grouping__sub_table .valid > div,
 .welcome div.thickbox_table fieldset.zenario_grouping__sub_table .sub_valid > div
 {
-	background:url('../admin/images/icon-success.png') no-repeat 15px 5px;
+	background:url('../admin/images/icon-tick-green-circle.svg') no-repeat 15px 5px / 16px 16px;
 }
 
 .welcome div.thickbox_table fieldset.zenario_grouping__sub_table .invalid > div,
@@ -799,7 +799,7 @@ body.webkit input {
 }
 
 .welcome div.thickbox_table .successDisplayRow .messageDisplay div {
-	background:url('../admin/images/icon-success.png') no-repeat left 0;
+	background:url('../admin/images/icon-tick-green-circle.svg') no-repeat left 0 / 16px 16px;
 	padding-left:25px;
 }
 

@@ -43,7 +43,7 @@ class zenario_common_features__organizer__site_settings extends ze\moduleBaseCla
 		
 		//If a favicon is set, change the icon of the favicon to that icon
 		if (ze::setting('favicon')
-		 && ($icon = ze\row::get('files', array('id', 'mime_type', 'filename', 'checksum'), ze::setting('favicon')))) {
+		 && ($icon = ze\row::get('files', ['id', 'mime_type', 'filename', 'checksum'], ze::setting('favicon')))) {
 			if ($icon['mime_type'] == 'image/vnd.microsoft.icon' || $icon['mime_type'] == 'image/x-icon') {
 				$url = ze\file::link($icon['id']);
 			} else {

@@ -34,8 +34,8 @@ if (!$smartGroup = \ze\row::get('smart_groups', ['intended_usage', 'must_match']
 
 $rules = \ze\row::getArray(
 	'smart_group_rules',
-	array('type_of_check', 'field_id', 'field2_id', 'field3_id', 'field4_id', 'field5_id', 'role_id','activity_band_id', 'not', 'value'),
-	array('smart_group_id' => $smartGroupId),
+	['type_of_check', 'field_id', 'field2_id', 'field3_id', 'field4_id', 'field5_id', 'role_id','activity_band_id', 'not', 'value'],
+	['smart_group_id' => $smartGroupId],
 	'ord'
 );
 $list = $smartGroup['intended_usage'] == 'smart_newsletter_group';
@@ -51,7 +51,7 @@ if (empty($rules)) {
 $or = count($rules) > 1 && $smartGroup['must_match'] == 'any';
 
 
-$descs = array();
+$descs = [];
 
 foreach ($rules as $rule) {
 	
@@ -78,7 +78,7 @@ foreach ($rules as $rule) {
 		
 						//If you filter by group, an "OR" logic containing multiple groups is allowed.
 						//Check if multiple groups have been picked...
-						$groups = array();
+						$groups = [];
 						if ($field['type'] == 'group') {
 							if ($rule['field2_id']) $groups[] = $rule['field2_id'];
 							if ($rule['field3_id']) $groups[] = $rule['field3_id'];

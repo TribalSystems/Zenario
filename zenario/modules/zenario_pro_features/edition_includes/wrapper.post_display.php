@@ -30,7 +30,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 if (ze::$canCache) {
 	
-	$type = str_replace(array('.wrapper', '.php'), '', basename($_SERVER['PHP_SELF']));
+	$type = str_replace(['.wrapper', '.php'], '', basename($_SERVER['PHP_SELF']));
 	$chFile = pageCacheDir($_GET, $type);
 	
 	if (ze\cache::cleanDirs() && ($path = ze\cache::createDir(pageCacheDir($_GET, $type), 'pages', false))) {

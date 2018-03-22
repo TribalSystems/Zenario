@@ -138,16 +138,16 @@ if (ze\dbAdm::needRevision(160)) {
 	require_once CMS_ROOT. 'zenario/libs/manually_maintained/mit/markitup/bbcode2html.inc.php';
 	
 	$allowable_tags = '<br><p><pre><blockquote><code><em><strong><span><sup><sub><ul><li><ol><a><img>';
-	$allowedStyles = array('padding-left' => true, 'text-decoration' => true);
+	$allowedStyles = ['padding-left' => true, 'text-decoration' => true];
 	
-	$result = ze\row::query(ZENARIO_ANONYMOUS_COMMENTS_PREFIX. 'user_comments', array('id', 'message_text'), array());
+	$result = ze\row::query(ZENARIO_ANONYMOUS_COMMENTS_PREFIX. 'user_comments', ['id', 'message_text'], []);
 	while ($row = ze\sql::fetchAssoc($result)) {
 		
 		BBCode2Html($row['message_text'], false, true, true, false);
 		
 		ze\row::update(
 			ZENARIO_ANONYMOUS_COMMENTS_PREFIX. 'user_comments',
-			array('message_text' => ze\ring::sanitiseHTML($row['message_text'], $allowable_tags, $allowedStyles)),
+			['message_text' => ze\ring::sanitiseHTML($row['message_text'], $allowable_tags, $allowedStyles)],
 			$row['id']);
 	}
 	unset($row);
@@ -190,6 +190,12 @@ _sql
 	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_ANONYMOUS_COMMENTS_PREFIX]]user_comments` MODIFY COLUMN `poster_name` varchar(50) CHARACTER SET utf8mb4 NOT NULL default ''
 _sql
 
-); 
+); ze\dbAdm::revision( 171
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_ANONYMOUS_COMMENTS_PREFIX]]user_comments`
+	DROP COLUMN `poster_ip`
+_sql
+
+);
 
 

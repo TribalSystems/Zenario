@@ -39,20 +39,20 @@ class zenario_common_features__admin_boxes__admin_copy_perms extends ze\moduleBa
 		}
 		
 		$fields['copy/copy_from']['values'] =
-		$fields['copy/copy_to']['values'] = array();
+		$fields['copy/copy_to']['values'] = [];
 		
 		foreach (ze\row::getArray(
 			'admins',
-			array('first_name', 'last_name', 'username', 'authtype'),
-			array('status' => 'active', 'authtype' => 'local')
+			['first_name', 'last_name', 'username', 'authtype'],
+			['status' => 'active', 'authtype' => 'local']
 		) as $adminId => $admin) {
 			
-			$fields['copy/copy_from']['values'][$adminId] = array(
-				'label' => ze\admin::formatName($admin));
+			$fields['copy/copy_from']['values'][$adminId] = [
+				'label' => ze\admin::formatName($admin)];
 			
-			$fields['copy/copy_to']['values'][$adminId] = array(
+			$fields['copy/copy_to']['values'][$adminId] = [
 				'label' => ze\admin::formatName($admin),
-				'visible_if' => "id != zenario.adminId && id != zenarioAB.value('copy_from')");
+				'visible_if' => "id != zenario.adminId && id != zenarioAB.value('copy_from')"];
 		}
 	}
 
@@ -66,9 +66,9 @@ class zenario_common_features__admin_boxes__admin_copy_perms extends ze\moduleBa
 		$count = count($adminsTo);
 		
 		if ($count == 1) {
-			$box['confirm']['message'] = ze\admin::phrase("Are you sure you wish to overwrite the permissions of [[name]]?", array('name' => ze\admin::formatName($adminsTo[0])));
+			$box['confirm']['message'] = ze\admin::phrase("Are you sure you wish to overwrite the permissions of [[name]]?", ['name' => ze\admin::formatName($adminsTo[0])]);
 		} else {
-			$box['confirm']['message'] = ze\admin::phrase("Are you sure you wish to overwrite the permissions of the [[count]] selected administrators?", array('count' => $count));
+			$box['confirm']['message'] = ze\admin::phrase("Are you sure you wish to overwrite the permissions of the [[count]] selected administrators?", ['count' => $count]);
 		}
 	}
 	
@@ -79,18 +79,18 @@ class zenario_common_features__admin_boxes__admin_copy_perms extends ze\moduleBa
 		
 		if ($adminFrom = ze\row::get(
 			'admins',
-			array('permissions', 'specific_languages', 'specific_content_items', 'specific_menu_areas'),
-			array('status' => 'active', 'authtype' => 'local', 'id' => $values['copy/copy_from'])
+			['permissions', 'specific_languages', 'specific_content_items', 'specific_menu_areas'],
+			['status' => 'active', 'authtype' => 'local', 'id' => $values['copy/copy_from']]
 		)) {
 			
-			$perms = array();
+			$perms = [];
 			if ($adminFrom['permissions'] == 'specific_actions') {
 				$perms = ze\admin::loadPerms($values['copy/copy_from']);
 			}
 			
 			foreach (ze\ray::explodeAndTrim($values['copy/copy_to'], true) as $adminIdTo) {
 				if ($adminIdTo != ze\admin::id()
-				 && ze\row::exists('admins',array('status' => 'active', 'authtype' => 'local', 'id' => $adminIdTo))) {
+				 && ze\row::exists('admins',['status' => 'active', 'authtype' => 'local', 'id' => $adminIdTo])) {
 					ze\adminAdm::savePerms($adminIdTo, $adminFrom['permissions'], $perms, $adminFrom);
 				}
 			}

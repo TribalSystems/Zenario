@@ -35,9 +35,9 @@ $sql = "
 	  AND file_base_name = '". \ze\escape::sql(\ze::$templateFileBaseName). "'";
 $result = \ze\sql::select($sql);
 
-$newSlots = array();
-$missingSlots = array();
-$existingSlots = array();
+$newSlots = [];
+$missingSlots = [];
+$existingSlots = [];
 while($row = \ze\sql::fetchAssoc($result)) {
 	$existingSlots[$row['slot_name']] = true;
 }

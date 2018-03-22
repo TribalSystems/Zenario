@@ -33,7 +33,7 @@ if (ze::$canCache
  && ze::setting('caching_enabled') && ze::setting('cache_ajax')
  && ze::in($_REQUEST['method_call'] ?? false, 'refreshPlugin', 'showFloatingBox', 'showRSS', 'showSlot')) {
 	
-	$chToSaveStatus = array();
+	$chToSaveStatus = [];
 	$chToSaveStatus['u'] = 'u';
 	$chToSaveStatus['g'] = 'g';
 	$chToSaveStatus['p'] = 'p';
@@ -75,7 +75,7 @@ if (ze::$canCache
 	}
 	
 	if ($canCache) {
-		$clearCacheBy = array();
+		$clearCacheBy = [];
 		foreach (ze::$slotContents as $slotName => &$instance) {
 			if (!empty($instance['clear_cache_by'])) {
 				foreach ($instance['clear_cache_by'] as $if => $set) {

@@ -94,6 +94,6 @@ if (ze\module::inc($managerClassName)) {
 		$args = $argv;
 		array_shift($args);
 		array_shift($args);
-		call_user_func_array(array($managerClassName, 'step'. $step), $args);
+		call_user_func_array([$managerClassName, 'step'. $step], $args);
 	}
 }

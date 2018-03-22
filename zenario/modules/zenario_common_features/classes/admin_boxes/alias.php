@@ -47,7 +47,7 @@ class zenario_common_features__admin_boxes__alias extends ze\moduleBaseClass {
 		$box['tabs']['meta_data']['fields']['alias']['value'] =
 			ze\content::alias($box['key']['cID'], $box['key']['cType']);
 		$box['tabs']['meta_data']['fields']['lang_code_in_url']['value'] =
-			ze\row::get('content_items', 'lang_code_in_url', array('id' => $box['key']['cID'], 'type' => $box['key']['cType']));
+			ze\row::get('content_items', 'lang_code_in_url', ['id' => $box['key']['cID'], 'type' => $box['key']['cType']]);
 		
 		if (ze::setting('translations_different_aliases')) {
 			$box['tabs']['meta_data']['fields']['update_translations']['value'] = 'update_this';
@@ -76,21 +76,25 @@ class zenario_common_features__admin_boxes__alias extends ze\moduleBaseClass {
 		
 		//If every language has a specific domain name, there's no point in showing the
 		//lang_code_in_url field as it will never be used.
-		$langSpecificDomainsUsed = ze\row::exists('languages', array('domain' => array('!' => '')));
-		$langSpecificDomainsNotUsed = ze\row::exists('languages', array('domain' => ''));
+		$langSpecificDomainsUsed = ze\row::exists('languages', ['domain' => ['!' => '']]);
+		$langSpecificDomainsNotUsed = ze\row::exists('languages', ['domain' => '']);
 		
 		if ($langSpecificDomainsUsed && !$langSpecificDomainsNotUsed) {
 			$box['tabs']['meta_data']['fields']['lang_code_in_url']['hidden'] =
 			$box['tabs']['meta_data']['fields']['lang_code_in_url_dummy']['hidden'] = true;
 		}
 		
-		
-		ze\contentAdm::getLanguageSelectListOptions($box['tabs']['meta_data']['fields']['language_id']);
-		$box['tabs']['meta_data']['fields']['language_id']['value'] = ze\content::langId($box['key']['cID'], $box['key']['cType']);
+		//Hide the language if there is only 1 enabled.
+		if (ze\lang::count() > 1) {
+			ze\contentAdm::getLanguageSelectListOptions($box['tabs']['meta_data']['fields']['language_id']);
+			$box['tabs']['meta_data']['fields']['language_id']['value'] = ze\content::langId($box['key']['cID'], $box['key']['cType']);
+		} else {
+			$box['tabs']['meta_data']['fields']['language_id']['hidden'] = true;
+		}
 		
 		$box['title'] =
 			ze\admin::phrase('Editing the alias for content item "[[tag]]"',
-				array('tag' => ze\content::formatTag($box['key']['cID'], $box['key']['cType'])));
+				['tag' => ze\content::formatTag($box['key']['cID'], $box['key']['cType'])]);
 		
 	}
 
@@ -113,9 +117,9 @@ class zenario_common_features__admin_boxes__alias extends ze\moduleBaseClass {
 		if (ze\priv::check('_PRIV_EDIT_DRAFT', $box['key']['cID'], $box['key']['cType'])) {
 			
 			$equivId = ze\content::equivId($box['key']['cID'], $box['key']['cType']);
-			$cols = array('alias' => ze\contentAdm::tidyAlias($values['meta_data/alias']));
-			$key = array('id' => $box['key']['cID'], 'type' => $box['key']['cType']);
-			$equivKey = array('equiv_id' => $equivId, 'type' => $box['key']['cType']);
+			$cols = ['alias' => ze\contentAdm::tidyAlias($values['meta_data/alias'])];
+			$key = ['id' => $box['key']['cID'], 'type' => $box['key']['cType']];
+			$equivKey = ['equiv_id' => $equivId, 'type' => $box['key']['cType']];
 			
 			if (ze\lang::count() > 1) {
 				if ($equivId == $box['key']['cID']

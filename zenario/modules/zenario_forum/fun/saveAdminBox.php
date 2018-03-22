@@ -34,13 +34,13 @@ switch ($path) {
 		if ($values['forum/view_thread']) {
 			ze\row::update(
 				ZENARIO_FORUM_PREFIX. 'forums',
-				array('thread_content_id' => $box['key']['cID'], 'thread_content_type' => $box['key']['cType']),
+				['thread_content_id' => $box['key']['cID'], 'thread_content_type' => $box['key']['cType']],
 				$values['forum/view_thread_forum']);
 		
 		} elseif ($values['forum/new_thread']) {
 			ze\row::update(
 				ZENARIO_FORUM_PREFIX. 'forums',
-				array('new_thread_content_id' => $box['key']['cID'], 'new_thread_content_type' => $box['key']['cType']),
+				['new_thread_content_id' => $box['key']['cID'], 'new_thread_content_type' => $box['key']['cType']],
 				$values['forum/new_thread_forum']);
 		}
 		

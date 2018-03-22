@@ -53,7 +53,7 @@ if ($requestedPath) {
 	  AND x.path = '". \ze\escape::sql($requestedPath). "'";
 }
 
-$settingGroups = array();
+$settingGroups = [];
 //For module Settings, use the "module_class_name" attribute to only show the related settings
 //However compatilibity now includes inheriting module Settings, so include module Settings from
 //compatible modules as well
@@ -80,7 +80,7 @@ if ($type == 'visitor' || !empty($settingGroups)) {
 		AND x.setting_group IN(". \ze\escape::in($settingGroups). ")";
 }
 
-$files = array();
+$files = [];
 $result = \ze\sql::select($sql);
 while ($file = \ze\sql::fetchAssoc($result)) {
 	$files[] = $file;

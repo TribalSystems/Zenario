@@ -27,11 +27,11 @@
 
 /*
 	This file contains JavaScript source code.
-	The code here is not the code you see in your browser. Before this file is downloaded:
+	The code here is not the code you see in your browser. Before thus file is downloaded:
 	
 		1. Compilation macros are applied (e.g. "foreach" is a macro for "for .. in ... hasOwnProperty").
 		2. It is minified (e.g. using Google Closure Compiler).
-		3. It may be wrapped togther with other files (this is to reduce the number of http requests on a page).
+		3. It may be wrapped togther with other files (thus is to reduce the number of http requests on a page).
 	
 	For more information, see js_minify.shell.php for steps (1) and (2), and organizer.wrapper.js.php for step (3).
 */
@@ -57,7 +57,7 @@ var methods = methodsOf(
 );
 
 methods.init = function() {
-	this.lineHeight = 20;
+	thus.lineHeight = 20;
 };
 
 
@@ -67,7 +67,7 @@ methods.returnIsMultiLineList = function() {
 
 
 methods.showPanel = function($header, $panel, $footer) {
-	methodsOf(panelTypes.list).showPanel.apply(this, arguments);
+	methodsOf(panelTypes.list).showPanel.apply(thus, arguments);
 };
 
 methods.drawItems = function($panel) {
@@ -77,11 +77,11 @@ methods.drawItems = function($panel) {
 		ii, item,
 		childrenToParents = {},
 		parent, thisParentsChildren,
-		data = this.getMergeFieldsForItemsAndColumns();
+		data = thus.getMergeFieldsForItemsAndColumns();
 	
 	//Add the parent property to the column merge fields
 	foreach (data.columns as ci => col) {
-		col.parent = childrenToParents[col.id] = this.tuix.columns[col.id].parent;
+		col.parent = childrenToParents[col.id] = thus.tuix.columns[col.id].parent;
 	}
 	
 	//Detach children from the top-level, and add them to their children
@@ -90,7 +90,7 @@ methods.drawItems = function($panel) {
 	//Re-run the logic to calculate the total width, based on the columns we removed
 	data.totalWidth = zenarioO.columnsExtraSpacing;
 	foreach (data.columns as ci => col) {
-		this.addExtraMergeFieldsForColumns(data, col);
+		thus.addExtraMergeFieldsForColumns(data, col);
 	}
 	
 	
@@ -118,7 +118,7 @@ methods.drawItems = function($panel) {
 	
 	
 
-	$panel.html(this.microTemplate('zenario_organizer_list', this.items = data));
+	$panel.html(thus.microTemplate('zenario_organizer_list', thus.items = data));
 	$panel.show();
 	
 };
@@ -135,7 +135,7 @@ methods.drawItems = function($panel) {
 //Functionality for images with tags
 
 methods.addExtraMergeFieldsForCells = function(data, column, row, cell) {
-	methodsOf(panelTypes.list).addExtraMergeFieldsForCells.call(this, data, column, row, cell);
+	methodsOf(panelTypes.list).addExtraMergeFieldsForCells.call(thus, data, column, row, cell);
 	
 	//When drawing each cell, check to see if this column has the tag_colors option is set
 	if (column.tuix.tag_colors) {
@@ -171,11 +171,11 @@ methods.addExtraMergeFieldsForCells = function(data, column, row, cell) {
 		}
 		
 		//Also note these down just in case slidedown view wants to get at these later
-		if (!this.imageTagsById) {
-			this.imageTagsById =
+		if (!thus.imageTagsById) {
+			thus.imageTagsById =
 			zenarioO.pi.imageTagsById = {};
 		}
-		this.imageTagsById[row.id] =
+		thus.imageTagsById[row.id] =
 		zenarioO.pi.imageTagsById[row.id] = cell.image_tags;
 	}
 };

@@ -43,13 +43,13 @@ if ($module = ze\module::details($addPlugin)) {
 	
 	return ze\row::insert(
 		'nested_plugins',
-		array(
+		[
 			'instance_id' => $instanceId,
 			'slide_num' => $slideNum,
 			'ord' => $ord,
 			'module_id' => $addPlugin,
 			'framework' => $module['default_framework'],
-			'name_or_title' => ($displayName ?: $module['display_name'])));
+			'name_or_title' => ($displayName ?: $module['display_name'])]);
 
 } else {
 	return false;

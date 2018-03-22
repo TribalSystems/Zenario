@@ -61,7 +61,7 @@ class zenario_news_ticker extends ze\moduleBaseClass {
 		}
 		if ($this->setting('filter_by_release_date') && $this->setting('result_count')) {
 			$sql .= '
-				ORDER BY v.publication_date DESC
+				ORDER BY v.release_date DESC
 				LIMIT '. (int)$this->setting('result_count');
 		}
 		
@@ -82,9 +82,9 @@ class zenario_news_ticker extends ze\moduleBaseClass {
 				default:
 					break;
 			}
-			$text = $this->truncateNicely( trim ( html_entity_decode( strip_tags( strtr( $text, array( "\n" => '<br> ', "\r\n" =>'<br> ' ) ) ), ENT_COMPAT, 'UTF-8' ) ) , $this->setting( 'size' ) );
+			$text = $this->truncateNicely( trim ( html_entity_decode( strip_tags( strtr( $text, [ "\n" => '<br> ', "\r\n" =>'<br> ' ] ) ), ENT_COMPAT, 'UTF-8' ) ) , $this->setting( 'size' ) );
 			
-			$this->mergeFields = array();
+			$this->mergeFields = [];
 			
 			if ($this->setting('suppress_link_to_content_item')){
 				$linkToContentItem = '';
@@ -107,7 +107,7 @@ class zenario_news_ticker extends ze\moduleBaseClass {
 
 
 	function getCategoryFilterSQL(){
-		if ($this->setting('filter_by_category') && $this->setting('category') && ze\row::exists('categories', array('id' => $this->setting('category')))) {
+		if ($this->setting('filter_by_category') && $this->setting('category') && ze\row::exists('categories', ['id' => $this->setting('category')])) {
 			return "
 			INNER JOIN ". DB_NAME_PREFIX. "category_item_link AS cil
 			   ON cil.equiv_id = c.id

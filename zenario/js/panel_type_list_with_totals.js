@@ -27,11 +27,11 @@
 
 /*
 	This file contains JavaScript source code.
-	The code here is not the code you see in your browser. Before this file is downloaded:
+	The code here is not the code you see in your browser. Before thus file is downloaded:
 	
 		1. Compilation macros are applied (e.g. "foreach" is a macro for "for .. in ... hasOwnProperty").
 		2. It is minified (e.g. using Google Closure Compiler).
-		3. It may be wrapped togther with other files (this is to reduce the number of http requests on a page).
+		3. It may be wrapped togther with other files (thus is to reduce the number of http requests on a page).
 	
 	For more information, see js_minify.shell.php for steps (1) and (2), and organizer.wrapper.js.php for step (3).
 */
@@ -80,8 +80,8 @@ methods.generateTotals = function(data, itemsToCount) {
 				foundANumber = false;
 				maxDecimalPlaces = 0;
 				
-				if (this.tuix.items) {
-					foreach (this.tuix.items as itemId => item) {
+				if (thus.tuix.items) {
+					foreach (thus.tuix.items as itemId => item) {
 						
 						if (!itemsToCount || itemsToCount[itemId]) {
 							
@@ -116,13 +116,13 @@ methods.generateTotals = function(data, itemsToCount) {
 		}
 	}
 	
-	return this.microTemplate('zenario_organizer_list_total', data);
+	return thus.microTemplate('zenario_organizer_list_total', data);
 };
 
 
 methods.showPanel = function($header, $panel, $footer) {
 	
-	methodsOf(panelTypes.list).showPanel.apply(this, arguments);
+	methodsOf(panelTypes.list).showPanel.apply(thus, arguments);
 	
 	var ci,
 		column,
@@ -134,13 +134,13 @@ methods.showPanel = function($header, $panel, $footer) {
 		decimalPlaces,
 		maxDecimalPlaces;
 	
-	if(this.items.maxNumberOfInlineButtons > 0) {
-		this.items.rowWidth = 30 * this.items.maxNumberOfInlineButtons; 
+	if(thus.items.maxNumberOfInlineButtons > 0) {
+		thus.items.rowWidth = 30 * thus.items.maxNumberOfInlineButtons; 
 	} else {
-		this.items.rowWidth = 30;
+		thus.items.rowWidth = 30;
 	}
 	
-	var html = this.generateTotals(this.items),
+	var html = thus.generateTotals(thus.items),
 		$totals = $(html),
 		$listView = $('#organizer_list_view .organizer_list_view_body_wrap');
 	

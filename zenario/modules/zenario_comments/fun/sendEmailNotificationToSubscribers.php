@@ -30,37 +30,37 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 //Send notification emails to Users
 
-$comment = ze\row::get(ZENARIO_ANONYMOUS_COMMENTS_PREFIX . 'user_comments', array(
+$comment = ze\row::get(ZENARIO_ANONYMOUS_COMMENTS_PREFIX . 'user_comments', [
 									'poster_id', 
 									'message_text', 
 									'content_id', 
 									'content_type',
 									'poster_name', 
 									'poster_email'
-									),
-								array( 'id' => (int) $commentId));
+									],
+								[ 'id' => (int) $commentId]);
 
 $poster = ze\user::details($comment['poster_id']);
 
 
-$formFields = array(
+$formFields = [
 	'cms_url' => ze\link::absolute(),
 	'link' => ze\link::toItem($comment['content_id'], $comment['content_type'], true, '', false, false, true),
 	'message' => $comment['message_text'],
 	'page_title' => ze\content::title($comment['content_id'], $comment['content_type']),
-	'poster_screen_name' => '');
+	'poster_screen_name' => ''];
 
 if (ze::setting('user_use_screen_name')) {
 	$formFields['poster_screen_name'] = ze\user::screenName($poster['id']);
 }
 
-$subscriptionsConfig =  ze\row::get(ZENARIO_ANONYMOUS_COMMENTS_PREFIX  . 'comment_content_items', array(
+$subscriptionsConfig =  ze\row::get(ZENARIO_ANONYMOUS_COMMENTS_PREFIX  . 'comment_content_items', [
 																						'enable_subs',
 																						'comment_subs_email_template'
-																						),
-																					array(	'content_id' => $comment['content_id'],
+																						],
+																					[	'content_id' => $comment['content_id'],
 																							'content_type' => $comment['content_type']
-																						 ) );
+																						 ] );
 																						 
 
 if ($newPost
@@ -100,19 +100,19 @@ if ($newPost
 				$row['email'],
 				$subscriptionsConfig['comment_subs_email_template'],
 				$formFields,
-				array(),
-				array(),
-				array('message' => true));
+				[],
+				[],
+				['message' => true]);
 			
 			ze\row::update(
 				ZENARIO_COMMENTS_PREFIX. 'user_subscriptions',
-				array('last_notified' => ze\date::now()),
-				array(
+				['last_notified' => ze\date::now()],
+				[
 					'user_id' => $row['id'],
 					'content_id' => $comment['content_id'],
 					'content_type' => $comment['content_type'],
 					'forum_id' => 0,
-					'thread_id' => 0));
+					'thread_id' => 0]);
 		}
 	}
 }

@@ -32,7 +32,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 class zenario_forum_list extends zenario_content_list {
 	
-	protected $forums = array();
+	protected $forums = [];
 	var $showScreennames = false;
 	
 	public function init() {
@@ -114,7 +114,7 @@ class zenario_forum_list extends zenario_content_list {
 			
 			$mergeFields['Updated_By'] = $this->getUserScreenNameLink($row['forum_updater_id']);
 			
-			$mergeFields['Updated_By_On'] = $this->phrase('_BY_ON', array('by' => $mergeFields['Updated_By'], 'on' => $mergeFields['Date_Updated']));
+			$mergeFields['Updated_By_On'] = $this->phrase('_BY_ON', ['by' => $mergeFields['Updated_By'], 'on' => $mergeFields['Date_Updated']]);
 		}
 		
 		if (!$row['forum_post_count'] || zenario_forum::markThreadCheckUserHasReadForum($row['forum_id'])) {

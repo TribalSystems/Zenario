@@ -52,6 +52,9 @@ zenario__administration:
                     name: Cookies
                     desc: "Settings that control when cookies are placed on a visitor's computer."
                     keywords: implied consent explicit consent message
+                data_protection:
+                    name: Data Protection
+                    desc: "Settings that control how long data is stored and shows what data is encrypted."
                 date_and_time:
                     name: Date and Time
                     desc: Set the formats used when displaying dates and times.
@@ -107,7 +110,7 @@ zenario__administration:
                         image thumbnail working copy jpeg file upload sizes
                         file download restrict by IP document
                 head_and_foot:
-                    name: Global <head> and <body> HTML
+                    name: Site-wide <head> and <body> HTML
                     desc: |
                         Add HTML to the <head> or <body> tag of all pages on your site.
                 urls:

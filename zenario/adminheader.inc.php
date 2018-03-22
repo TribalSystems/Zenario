@@ -74,11 +74,11 @@ if (!ze\priv::check()) {
 } else {
 	
 	//Load the current admin's settings
-	foreach (ze\row::getArray('admin_setting_defaults', 'default_value', array()) as $adminSettingName => $adminSettingDefaultValue) {
+	foreach (ze\row::getArray('admin_setting_defaults', 'default_value', []) as $adminSettingName => $adminSettingDefaultValue) {
 		ze::$adminSettings[$adminSettingName] = $adminSettingDefaultValue;
 	}
 	
-	foreach (ze\row::getArray('admin_settings', array('name', 'value'), array('admin_id' => ze\admin::id())) as $adminSetting) {
+	foreach (ze\row::getArray('admin_settings', ['name', 'value'], ['admin_id' => ze\admin::id()]) as $adminSetting) {
 		if (ze\ring::chopPrefix('COOKIE_ADMIN_SECURITY_CODE_', $adminSetting['name']) === false) {
 			ze::$adminSettings[$adminSetting['name']] = $adminSetting['value'];
 		}

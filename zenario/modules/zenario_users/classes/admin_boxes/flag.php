@@ -69,8 +69,8 @@ class zenario_users__admin_boxes__flag extends ze\moduleBaseClass {
 		//Populate the list of flags
 		$inflagCount = 0;
 		$totalflagCount = 0;
-		$pickedItems = array();
-		$fields['flags/flags']['indeterminates'] = array();
+		$pickedItems = [];
+		$fields['flags/flags']['indeterminates'] = [];
 		
 		$fields['flags/flags']['values'] = ze\datasetAdm::listCustomFields('users', $flat = false, 'checkbox', $customOnly = true);
 
@@ -141,8 +141,8 @@ class zenario_users__admin_boxes__flag extends ze\moduleBaseClass {
 	
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
-		$initial = array();
-		$current = array();
+		$initial = [];
+		$current = [];
 		
 		if ($fields['flags/flags']['value']) {
 			$initial = explode(',', $fields['flags/flags']['value']);
@@ -193,8 +193,8 @@ class zenario_users__admin_boxes__flag extends ze\moduleBaseClass {
 	
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		$initial = array();
-		$current = array();
+		$initial = [];
+		$current = [];
 		
 		if ($fields['flags/flags']['value']) {
 			$initial = explode(',', $fields['flags/flags']['value']);

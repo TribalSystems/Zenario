@@ -31,7 +31,7 @@ require '../basicheader.inc.php';
 
 //Get a list of module ids from the url
 $modules = array_unique(explode(',', $_GET['ids']));
-$moduleDetails = array();
+$moduleDetails = [];
 
 //Ensure that the site name and subdirectory are part of the ETag, as modules can have different ids on different servers
 $ETag = 'zenario-plugin-js-'. LATEST_REVISION_NO. '--'. $_SERVER["HTTP_HOST"]. '-';
@@ -89,7 +89,7 @@ $moduleDetails = array_reverse($moduleDetails, true);
 
 //Add JavaScript support elements for each Plugin on the page
 
-$includeMicrotemplates = array();
+$includeMicrotemplates = [];
 if (!empty($moduleDetails)) {
 	
 	//Create a namespace for each Plugin used on this page
@@ -140,8 +140,8 @@ if (!empty($moduleDetails)) {
 	if (!empty($includeMicrotemplates)) {
 		
 		function esctick($text) {
-			$searches = array('`', '~');
-			$replaces = array('`t', '`s');
+			$searches = ['`', '~'];
+			$replaces = ['`t', '`s'];
 			return str_replace($searches, $replaces, $text);
 		}
 		

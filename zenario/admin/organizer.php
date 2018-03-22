@@ -37,6 +37,7 @@ if (!ze\priv::check()) {
 	exit;
 }
 
+ze\miscAdm::checkForChangesInYamlFiles();
 
 $prefix = '../';
 ze\content::pageHead($prefix, 'organizer', true);
@@ -68,7 +69,7 @@ if (!empty($_GET['openedInIframe'])) {
 			<div class="last_page_button top_left_button">
 				<a id="last_page_button_link"
 					href="'. htmlspecialchars($backLink = ze\link::toItem($_GET['fromCID'] ?? false, ($_GET['fromCType'] ?? false), true, 'zenario_sk_return=navigation_path')). '"
-					title="'. ze\admin::phrase('Back to&lt;br/&gt;[[citem]]', array('citem' => htmlspecialchars(ze\content::formatTag($_GET['fromCID'] ?? false, ($_GET['fromCType'] ?? false))))). '"></a>
+					title="'. ze\admin::phrase('Back to&lt;br/&gt;[[citem]]', ['citem' => htmlspecialchars(ze\content::formatTag($_GET['fromCID'] ?? false, ($_GET['fromCType'] ?? false)))]). '"></a>
 			</div>';
 	}
 	

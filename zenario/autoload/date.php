@@ -151,12 +151,12 @@ class date {
 	
 		$etime = time() - (int) $timestamp;
 		if ($etime < 1) {
-			return \ze\lang::phrase('[[time_elapsed]] secs ago', array('time_elapsed' => 0), 'zenario_common_features', false, 1, $cli);
+			return \ze\lang::phrase('[[time_elapsed]] secs ago', ['time_elapsed' => 0], 'zenario_common_features', false, 1, $cli);
 		}
 	
-		$units = array('sec', 'min', 'hour', 'day', 'month', 'year');
-		$uPlurals = array('secs', 'mins', 'hours', 'days', 'months', 'years');
-		$uValues = array(1, 60, 3600, 86400);
+		$units = ['sec', 'min', 'hour', 'day', 'month', 'year'];
+		$uPlurals = ['secs', 'mins', 'hours', 'days', 'months', 'years'];
+		$uValues = [1, 60, 3600, 86400];
 		$maxI = array_search($maxPeriod, $units);
 	
 		if ($maxI) {
@@ -172,9 +172,9 @@ class date {
 					$r = round($etime / $uValues[--$i]);
 				
 					if ($r > 1) {
-						$relativeDate = \ze\lang::phrase('[[time_elapsed]] ' . $uPlurals[$i] . ' ago', array('time_elapsed' => $r), 'zenario_common_features', false, 1, $cli);
+						$relativeDate = \ze\lang::phrase('[[time_elapsed]] ' . $uPlurals[$i] . ' ago', ['time_elapsed' => $r], 'zenario_common_features', false, 1, $cli);
 					} else {
-						$relativeDate = \ze\lang::phrase('[[time_elapsed]] ' . $units[$i] . ' ago', array('time_elapsed' => $r), 'zenario_common_features', false, 1, $cli);
+						$relativeDate = \ze\lang::phrase('[[time_elapsed]] ' . $units[$i] . ' ago', ['time_elapsed' => $r], 'zenario_common_features', false, 1, $cli);
 					}
 			
 					if ($addFullTime) {

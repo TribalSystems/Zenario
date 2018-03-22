@@ -226,5 +226,10 @@ zenario.lib(function(
 	
 		this.slots = {};
 		this.outerSlots = {};
+		
+		//Callback to reCaptcha for when a plugin reloads via ajax and needs to re-init the google reCaptcha.
+		this.recaptchaCallback = function() {
+			$(recaptchaCallback);
+		};
 	};
 });

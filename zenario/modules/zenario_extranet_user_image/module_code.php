@@ -40,14 +40,14 @@ class zenario_extranet_user_image extends ze\moduleBaseClass {
 		if ($_POST['extranet_add_image'] ?? false) {
 			if (ze::setting('max_content_image_filesize') < $_FILES['extranet_upload_image']['size']) {
 				$this->sections['Errors'] = true;
-				$this->sections['Error'] = array('Error' => $this->phrase('Your image must be smaller than [[bytes]] bytes', array('bytes'=>setting('max_content_image_filesize'))));
+				$this->sections['Error'] = ['Error' => $this->phrase('Your image must be smaller than [[bytes]] bytes', ['bytes'=>setting('max_content_image_filesize')])];
 			} elseif (empty($_FILES['extranet_upload_image']) || empty($_FILES['extranet_upload_image']['type'])) {
 				$this->sections['Errors'] = true;
-				$this->sections['Error'] = array('Error' => $this->phrase('_ERROR_NO_IMAGE_SELECTED'));
+				$this->sections['Error'] = ['Error' => $this->phrase('_ERROR_NO_IMAGE_SELECTED')];
 			
 			} elseif (!ze\file::isImage($_FILES['extranet_upload_image']['type'])) {
 				$this->sections['Errors'] = true;
-				$this->sections['Error'] = array('Error' => $this->phrase('_ERROR_INVALID_FILE_TYPE'));
+				$this->sections['Error'] = ['Error' => $this->phrase('_ERROR_INVALID_FILE_TYPE')];
 			
 			} else {
 				$image = getimagesize($location = $_FILES['extranet_upload_image']['tmp_name']);
@@ -62,11 +62,11 @@ class zenario_extranet_user_image extends ze\moduleBaseClass {
 					}
 				} else {
 					$this->sections['Errors'] = true;
-					$this->sections['Error'] = array('Error' => $this->phrase('_ERROR_YOUR_UPLOADED_IMAGE_WAS_TOO_SMALL_IMAGE_SHOULD_BE_AT_LEAST_X_PIXELS_WIDE_AND_X_PIXELS_HIGH', 
+					$this->sections['Error'] = ['Error' => $this->phrase('_ERROR_YOUR_UPLOADED_IMAGE_WAS_TOO_SMALL_IMAGE_SHOULD_BE_AT_LEAST_X_PIXELS_WIDE_AND_X_PIXELS_HIGH', 
 																					[	'width' => $minWidth,
 																							'height' => $minHeight
 																						] 
-																			));
+																			)];
 				}
 							
 

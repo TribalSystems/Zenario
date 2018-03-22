@@ -90,7 +90,7 @@ if ($dbUpdateSafemode) {
 
 
 //Fetch details on each plugin
-$modules = array();
+$modules = [];
 if ($result) {
 	while ($module = \ze\sql::fetchAssoc($result)) {
 		//Is the plugin's prefix defined? Define it now if not.

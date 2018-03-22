@@ -116,14 +116,6 @@ zenario__users:
                     title: Groups
                     width: medium
                     always_show: true
-                type:
-                    title: Sync type
-                    db_column: "IF (u.global_id = 0, 'local', 'from_hub')"
-                    format: enum
-                    values:
-                        local: Local user
-                        from_hub: Hub user
-                    width: small
                 creation_method:
                     title: Creation method
                     db_column: u.creation_method
@@ -139,11 +131,6 @@ zenario__users:
                     title: Last Login
                     db_column: u.last_login
                     format: datetime
-                    width: xsmall
-                last_login_ip:
-                    server_side_only: true
-                    title: Last IP
-                    db_column: u.last_login_ip
                     width: xsmall
                 checksum:
                     db_column: f.checksum
@@ -429,11 +416,13 @@ zenario__users:
                     parent: action_dropdown
                     priv: _PRIV_EDIT_USER
                     label: Suspend
+                    multiple_select: true
                     with_columns_set:
                         traits.active: true
                     ajax:
                         confirm:
                             message: 'Are you sure you want to suspend the user "[[identifier]]"?'
+                            multiple_select_message: 'Are you sure you wish to suspend the selected users?'
                             button_message: Suspend
                             cancel_button_message: Cancel
                             message_type: warning
@@ -454,19 +443,9 @@ zenario__users:
                     multiple_select_label: Delete user/contact
                     hide_in_select_mode: true
                     priv: _PRIV_EDIT_USER
-                    disabled_if_for_any_selected_items: >
-                        item.type == 'from_hub'
-                    disabled_tooltip: 'Hub users can only be deleted from the hub site. If the hub record has just been deleted, it should be deleted here within 5 minutes.'
                     multiple_select: true
-                    ajax:
-                        confirm:
-                            message: 'Are you sure you want to delete the user "[[identifier]]"?'
-                            multiple_select_message: Are you sure you wish to delete the selected users?
-                            button_message: Delete
-                            cancel_button_message: Cancel
-                            message_type: warning
-                        request:
-                            delete_user: "1"
+                    admin_box:
+                        path: zenario_user__delete
             inline_buttons:
                 active:
                     css_class: zenario_users_active_status

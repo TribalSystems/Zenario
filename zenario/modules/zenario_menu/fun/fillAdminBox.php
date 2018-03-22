@@ -35,7 +35,7 @@ switch ($path) {
 			$box['tabs']['first_tab']['fields']['show_missing_menu_nodes']['side_note'] =
 				ze\admin::phrase(
 					'Show missing menu node text in the default language ([[english_name]]) where translated menu text is missing. (A CSS classname of "<code>missing</code>" will be added to these nodes.)',
-					array('english_name' => ze\lang::name(ze::$defaultLang)));
+					['english_name' => ze\lang::name(ze::$defaultLang)]);
 		
 		} else {
 			$box['tabs']['first_tab']['fields']['show_missing_menu_nodes']['hidden'] = true;

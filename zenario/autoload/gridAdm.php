@@ -522,7 +522,7 @@ public static function generateHTMLR(&$html, &$lines, &$data, &$grouping, &$slot
 	
 	//Loop through the cells for this container, keeping track of their widths
 	$lines = [];
-	$lines[$lineNum = 0] = array('height' => 1, 'line' => []);
+	$lines[$lineNum = 0] = ['height' => 1, 'line' => []];
 	$widthSoFarThisLine = 0;
 	foreach ($grouping['cells'] as $i => $cell) {
 		
@@ -566,9 +566,9 @@ public static function generateHTMLR(&$html, &$lines, &$data, &$grouping, &$slot
 		if ($widthSoFarThisLine + $cell['width'] > $gCols) {
 			//Also add a space if needed, if the grids didn't quite match the line-length
 			if ($gCols > $widthSoFarThisLine) {
-				$lines[$lineNum]['line'][] = array('space' => true, 'width' => $gCols - $widthSoFarThisLine, 'class' => \ze\content::rationalNumberGridClass($gCols - $widthSoFarThisLine, $gCols));
+				$lines[$lineNum]['line'][] = ['space' => true, 'width' => $gCols - $widthSoFarThisLine, 'class' => \ze\content::rationalNumberGridClass($gCols - $widthSoFarThisLine, $gCols)];
 			}
-			$lines[++$lineNum] = array('height' => 1, 'line' => []);
+			$lines[++$lineNum] = ['height' => 1, 'line' => []];
 			$widthSoFarThisLine = 0;
 		}
 		
@@ -580,7 +580,7 @@ public static function generateHTMLR(&$html, &$lines, &$data, &$grouping, &$slot
 	
 	//Add an empty space onto the end if we didn't finish one line exactly
 	if ($gCols > $widthSoFarThisLine) {
-		$lines[$lineNum]['line'][] = array('space' => true, 'width' => $gCols - $widthSoFarThisLine, 'class' => \ze\content::rationalNumberGridClass($gCols - $widthSoFarThisLine, $gCols));
+		$lines[$lineNum]['line'][] = ['space' => true, 'width' => $gCols - $widthSoFarThisLine, 'class' => \ze\content::rationalNumberGridClass($gCols - $widthSoFarThisLine, $gCols)];
 	}
 	
 	foreach ($lines as &$line) {
@@ -806,13 +806,13 @@ public static function updateMetaInfoInDB(&$data, &$slots, &$layout) {
 					
 	//Update the information on the grid in the layouts table
 	\ze\row::update('layouts',
-		array(
+		[
 			'cols' => ($data['cols'] ?? false),
 			'min_width' => ($data['minWidth'] ?? false),
 			'max_width' => ($data['maxWidth'] ?? false),
 			'fluid' => ($data['fluid'] ?? false),
 			'responsive' => ($data['responsive'] ?? false)
-		),
+		],
 		$layout['layout_id']);
 
 	//Remove any deleted slots from the database
@@ -831,11 +831,11 @@ public static function updateMetaInfoInDB(&$data, &$slots, &$layout) {
 	foreach ($slots as $slotName => $slot) {
 		\ze\row::set(
 			'template_slot_link',
-			array(
+			[
 				'ord' => $slot['ord'],
 				'cols' => $slot['width'],
 				'small_screens' => (($slot['small'] ?? false) ?: 'show')
-			),
+			],
 			[
 				'family_name' => $layout['family_name'],
 				'file_base_name' => $layout['file_base_name'],
@@ -1192,7 +1192,7 @@ public static function generateDirectory(&$data, &$slots, $writeToFS = false, $p
 				$tFilename = basename(self::$tempDir. $tFilePath);
 				$cssFilename = basename(self::$tempDir. $cssFilePath);
 			
-				$msg = \ze\admin::phrase('Sorry, the CMS could not write to the following files in the [[dir]] directory:', array('dir' => htmlspecialchars($tDir)));
+				$msg = \ze\admin::phrase('Sorry, the CMS could not write to the following files in the [[dir]] directory:', ['dir' => htmlspecialchars($tDir)]);
 				
 				$msg .= '<br/><ul><li>'. htmlspecialchars($tFilename). '</li><li>'. htmlspecialchars($cssFilename). '</li></ul>';
 				

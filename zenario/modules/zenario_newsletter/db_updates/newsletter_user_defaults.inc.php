@@ -36,16 +36,16 @@ if (ze\dbAdm::needRevision(131)) {
 		exit;
 	}
 	
-	$key = array(
+	$key = [
 		'db_column' => 'all_newsletters_opt_out',
-		'dataset_id' => $dataset['id']);
-	$cols = array(
+		'dataset_id' => $dataset['id']];
+	$cols = [
 			'tab_name' => 'details',
 			'ord' => 999,
 			'label' => 'Opt out of newsletters',
 			'type' => 'checkbox',
 			'organizer_visibility' => 'hide',
-			'sortable' => 1);
+			'sortable' => 1];
 	
 	if (!ze\row::exists('custom_dataset_fields', $key)) {
 		$optOutFieldId = ze\row::set('custom_dataset_fields', $cols, $key);

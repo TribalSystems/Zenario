@@ -147,8 +147,8 @@ class moduleAPI {
 		$this->zAPICallScriptWhenLoaded(2, $args);
 	}
 	
-	public final function requireJsLib($lib, $stylesheet = null, $cacheWrappers = true) {
-		\ze::requireJsLib($lib, $stylesheet, $cacheWrappers);
+	public final function requireJsLib($lib, $stylesheet = null) {
+		\ze::requireJsLib($lib, $stylesheet);
 	}
 	
 	//Deprecated, please use one of the above
@@ -204,14 +204,14 @@ class moduleAPI {
 		
 		if ($changeInDB) {
 			\ze\row::set('plugin_settings',
-				array(
+				[
 					'value' => $value,
 					'is_content' => $this->isVersionControlled? ($isContent? 'version_controlled_content' : 'version_controlled_setting') : 'synchronized_setting',
 					'format' => $format,
 					'foreign_key_to' => $foreignKeyTo,
 					'foreign_key_id' => $foreignKeyId,
 					'foreign_key_char' => $foreignKeyChar,
-					'dangling_cross_references' => $danglingCrossReferences),
+					'dangling_cross_references' => $danglingCrossReferences],
 				['name' => $name, 'instance_id' => $this->instanceId, 'egg_id' => $this->eggId]);
 		}
 	}
@@ -492,7 +492,7 @@ class moduleAPI {
 	}
 	
 	public final function refreshPluginSlotAnchorAndJS($requests = '', $scrollToTopOfSlot = true, $fadeOutAndIn = true) {
-		return array($this->refreshPluginSlotAnchor($requests, $scrollToTopOfSlot), $this->refreshPluginSlotJS($requests, $scrollToTopOfSlot, $fadeOutAndIn));
+		return [$this->refreshPluginSlotAnchor($requests, $scrollToTopOfSlot), $this->refreshPluginSlotJS($requests, $scrollToTopOfSlot, $fadeOutAndIn)];
 	}
 	
 	public final function refreshPluginSlotJS($requests = '', $scrollToTopOfSlot = true, $fadeOutAndIn = true) {
@@ -536,13 +536,68 @@ class moduleAPI {
 	 //  Initialization Functions  //
 	////////////////////////////////
 	
+	//Depricated
 	protected final function captcha() {
 		return require \ze::funIncPath(__FILE__, __FUNCTION__);
 	}
 	
+	//Depricated
 	protected final function checkCaptcha() {
 		return require \ze::funIncPath(__FILE__, __FUNCTION__);
 	}
+	
+	//Get HTML for google reCaptcha 2.0 and init
+	protected final function captcha2() {
+		$this->callScript($this->moduleClassName, 'recaptchaCallback');
+		return '<div id="' . $this->containerId . '_google_recaptcha"></div>';
+	}
+	
+	//Put the google reCaptcha 2.0 library on the page and the module callback
+	protected final function loadCaptcha2Lib() {
+		$captchaId = $this->containerId . '_google_recaptcha';
+		
+		if (!\ze::$googleRecaptchaElements) {
+			\ze::$googleRecaptchaElements = [];
+		}
+		\ze::$googleRecaptchaElements[] = $captchaId;
+	}
+	
+	//Validate google reCaptcha 2.0
+	protected final function checkCaptcha2() {
+		$recaptchaResponse = $_POST['g-recaptcha-response'] ?? false;
+		if ($recaptchaResponse) {
+			$secretKey = \ze::setting('google_recaptcha_secret_key');
+			$URL = "https://www.google.com/recaptcha/api/siteverify?secret=".$secretKey."&response=".$recaptchaResponse;
+		
+			$request = file_get_contents($URL);
+			$response = json_decode($request, true);
+		
+			return is_array($response) && !empty($response['success']);
+		}
+		return false;
+	}
+	
+	//Get HTML for securimage captcha
+	protected final function mathCaptcha() {
+		return '
+			<p>
+				<img id="siimage" style="border: 1px solid #000; margin-right: 15px" src="zenario/libs/manually_maintained/mit/securimage/securimage_show.php?sid=<?php echo md5(uniqid()) ?>" alt="CAPTCHA Image" align="left">
+				&nbsp;
+				<a tabindex="-1" style="border-style: none;" href="#" title="Refresh Image" onclick="document.getElementById(\'siimage\').src = \'zenario/libs/manually_maintained/mit/securimage/securimage_show.php?sid=\' + Math.random(); this.blur(); return false">
+					<img src="zenario/libs/manually_maintained/mit/securimage/images/refresh.png" alt="Reload Image" onclick="this.blur()" align="bottom" border="0">
+				</a><br />
+				' . $this->phrase('Do the maths:') . '<br />
+				<input type="text" name="captcha_code" size="12" maxlength="16" class="math_captcha_input"/>
+			</p>';
+	}
+	
+	//Validate securimage captcha
+	protected final function checkMathCaptcha() {
+		require_once CMS_ROOT. 'zenario/libs/manually_maintained/mit/securimage/securimage.php';
+		$securimage = new \Securimage();
+		return isset($_POST['captcha_code']) && $securimage->check($_POST['captcha_code']) != false;
+	}
+	
 
 	public final function forcePageReload($reload = true) {
 		$this->zAPIForcePageReload($reload);
@@ -619,23 +674,23 @@ class moduleAPI {
 	
 	public final function linkToItem(
 		$cID, $cType = 'html', $fullPath = false, $request = '', $alias = false,
-		$autoAddImportantRequests = false, $useAliasInAdminMode = false
+		$autoAddImportantRequests = false, $forceAliasInAdminMode = false
 	) {
-		return \ze\link::toItem($cID, $cType, $fullPath, $request, $alias, $autoAddImportantRequests, $useAliasInAdminMode);
+		return \ze\link::toItem($cID, $cType, $fullPath, $request, $alias, $autoAddImportantRequests, $forceAliasInAdminMode);
 	}
 	
 	public final function linkToItemAnchor(
 		$cID, $cType = 'html', $fullPath = false, $request = '', $alias = false,
-		$autoAddImportantRequests = false, $useAliasInAdminMode = false
+		$autoAddImportantRequests = false, $forceAliasInAdminMode = false
 	) {
-		return ' href="'. htmlspecialchars(\ze\link::toItem($cID, $cType, $fullPath, $request, $alias, $autoAddImportantRequests, $useAliasInAdminMode)). '"';
+		return ' href="'. htmlspecialchars(\ze\link::toItem($cID, $cType, $fullPath, $request, $alias, $autoAddImportantRequests, $forceAliasInAdminMode)). '"';
 	}
 	
 	public final function linkToItemAnchorAndJS(
 		$cID, $cType = 'html', $fullPath = false, $request = '', $alias = false,
-		$autoAddImportantRequests = false, $useAliasInAdminMode = false
+		$autoAddImportantRequests = false, $forceAliasInAdminMode = false
 	) {
-		return array($this->linkToItemAnchor($cID, $cType, $fullPath, $request, $alias, $autoAddImportantRequests, $useAliasInAdminMode), $this->linkToItemJS($cID, $cType, $request));
+		return [$this->linkToItemAnchor($cID, $cType, $fullPath, $request, $alias, $autoAddImportantRequests, $forceAliasInAdminMode), $this->linkToItemJS($cID, $cType, $request)];
 	}
 	
 	public final function linkToItemJS($cID, $cType = 'html', $request = '') {
@@ -1530,7 +1585,7 @@ class moduleBaseClass extends moduleAPI {
 			echo \ze\admin::phrase('[Empty Slot]');
 		} else {
 			echo \ze\admin::phrase('[[[module]]]',
-				array('module' => htmlspecialchars(\ze\module::getModuleDisplayNameByClassName($this->moduleClassName))));
+				['module' => htmlspecialchars(\ze\module::getModuleDisplayNameByClassName($this->moduleClassName))]);
 		}
 	}
 	

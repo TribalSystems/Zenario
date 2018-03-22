@@ -31,7 +31,7 @@ class zenario_promo_menu extends zenario_menu_multicolumn {
 	
 	var $menuArray = false;
 	
-	function drawMenu(&$menuArray, $recurseCount = 0, $headerObjects = array(), $subSections = array()) {
+	function drawMenu(&$menuArray, $recurseCount = 0, $headerObjects = [], $subSections = []) {
 		return $menuArray;
 	}
 	
@@ -181,10 +181,10 @@ class zenario_promo_menu extends zenario_menu_multicolumn {
 			case 'zenario_menu':
 				$nodeId = $box['key']['id'];
 				$row = ze\row::get(ZENARIO_PROMO_MENU_PREFIX. 'menu_node_feature_image',
-					array('use_feature_image', 'image_id', 'canvas', 'width', 'height', 'offset', 'use_rollover_image', 'rollover_image_id', 'title', 'text', 'link_type', 'link_visibility', 'dest_url', 'open_in_new_window', 'overwrite_alt_tag'),
-					array('node_id' => $nodeId));
+					['use_feature_image', 'image_id', 'canvas', 'width', 'height', 'offset', 'use_rollover_image', 'rollover_image_id', 'title', 'text', 'link_type', 'link_visibility', 'dest_url', 'open_in_new_window', 'overwrite_alt_tag'],
+					['node_id' => $nodeId]);
 				$box['key']['feature_image_id'] = $row['image_id'] ? $row['image_id'] : '';
-				$file = ze\row::get('files', array('alt_tag'), $row['image_id']);
+				$file = ze\row::get('files', ['alt_tag'], $row['image_id']);
 				$fields['feature_image/zenario_promo_menu__overwrite_alt_tag']['multiple_edit']['original_value'] = 
 					$file['alt_tag'];
 				
@@ -240,7 +240,7 @@ class zenario_promo_menu extends zenario_menu_multicolumn {
 				
 				if ($imageId != $box['key']['feature_image_id']) {
 					$alt_tag = '';
-					if ($imageDetails = ze\row::get('files', array('alt_tag'), $imageId)) {
+					if ($imageDetails = ze\row::get('files', ['alt_tag'], $imageId)) {
 						$alt_tag = $imageDetails['alt_tag'];
 					}
 					$fields['feature_image/zenario_promo_menu__overwrite_alt_tag']['changed'] = false;
@@ -303,9 +303,9 @@ class zenario_promo_menu extends zenario_menu_multicolumn {
 				
 				
 				if ($imageId) {
-					ze\row::set('inline_images', array('image_id' => $imageId, 'in_use' => 1), array('foreign_key_to' => 'menu_node', 'foreign_key_id' => $id, 'foreign_key_char' => 'image'));
+					ze\row::set('inline_images', ['image_id' => $imageId, 'in_use' => 1], ['foreign_key_to' => 'menu_node', 'foreign_key_id' => $id, 'foreign_key_char' => 'image']);
 				} else {
-					ze\row::delete('inline_images', array('foreign_key_to' => 'menu_node', 'foreign_key_id' => $id, 'foreign_key_char' => 'image'));
+					ze\row::delete('inline_images', ['foreign_key_to' => 'menu_node', 'foreign_key_id' => $id, 'foreign_key_char' => 'image']);
 				}
 				$submission['image_id'] = $imageId;
 	
@@ -319,9 +319,9 @@ class zenario_promo_menu extends zenario_menu_multicolumn {
 					$submission['rollover_image_id'] = 0;
 				}
 				if ($values['use_rollover_image'] && $rolloverImageId) {
-					ze\row::set('inline_images', array('image_id' => $rolloverImageId, 'in_use' => 1), array('foreign_key_to' => 'menu_node', 'foreign_key_id' => $id, 'foreign_key_char' => 'rollover_image'));
+					ze\row::set('inline_images', ['image_id' => $rolloverImageId, 'in_use' => 1], ['foreign_key_to' => 'menu_node', 'foreign_key_id' => $id, 'foreign_key_char' => 'rollover_image']);
 				} else {
-					ze\row::delete('inline_images', array('foreign_key_to' => 'menu_node', 'foreign_key_id' => $id, 'foreign_key_char' => 'rollover_image'));
+					ze\row::delete('inline_images', ['foreign_key_to' => 'menu_node', 'foreign_key_id' => $id, 'foreign_key_char' => 'rollover_image']);
 				}
 				ze\menuAdm::save($submission, $id);
 				
@@ -331,10 +331,10 @@ class zenario_promo_menu extends zenario_menu_multicolumn {
 				
 				
 				
-				$row = array();
+				$row = [];
 				$nodeId = $box['key']['id'];
 				
-				$featureImage = array(
+				$featureImage = [
 					'use_feature_image' => 0,
 					'image_id' => 0,
 					'canvas' => 'unlimited',
@@ -349,7 +349,7 @@ class zenario_promo_menu extends zenario_menu_multicolumn {
 					'link_visibility' => 'always_show',
 					'dest_url' => '',
 					'open_in_new_window' => 0
-				);
+				];
 				
 				if ($values['feature_image/zenario_promo_menu__feature_image_checkbox'] ) {
 					
@@ -389,27 +389,27 @@ class zenario_promo_menu extends zenario_menu_multicolumn {
 				}
 				
 				if ($featureImage['image_id']) {
-					ze\row::set('inline_images', array('image_id' => $featureImage['image_id'], 'in_use' => 1), array('foreign_key_to' => 'menu_node', 'foreign_key_id' => $nodeId, 'foreign_key_char' => 'feature_image'));
+					ze\row::set('inline_images', ['image_id' => $featureImage['image_id'], 'in_use' => 1], ['foreign_key_to' => 'menu_node', 'foreign_key_id' => $nodeId, 'foreign_key_char' => 'feature_image']);
 				} else {
-					ze\row::delete('inline_images', array('foreign_key_to' => 'menu_node', 'foreign_key_id' => $nodeId, 'foreign_key_char' => 'feature_image'));
+					ze\row::delete('inline_images', ['foreign_key_to' => 'menu_node', 'foreign_key_id' => $nodeId, 'foreign_key_char' => 'feature_image']);
 				}
 				
 				if ($featureImage['rollover_image_id']) {
-					ze\row::set('inline_images', array('image_id' => $featureImage['rollover_image_id'], 'in_use' => 1), array('foreign_key_to' => 'menu_node', 'foreign_key_id' => $nodeId, 'foreign_key_char' => 'rollover_feature_image'));
+					ze\row::set('inline_images', ['image_id' => $featureImage['rollover_image_id'], 'in_use' => 1], ['foreign_key_to' => 'menu_node', 'foreign_key_id' => $nodeId, 'foreign_key_char' => 'rollover_feature_image']);
 				} else {
-					ze\row::delete('inline_images', array('foreign_key_to' => 'menu_node', 'foreign_key_id' => $nodeId, 'foreign_key_char' => 'rollover_feature_image'));
+					ze\row::delete('inline_images', ['foreign_key_to' => 'menu_node', 'foreign_key_id' => $nodeId, 'foreign_key_char' => 'rollover_feature_image']);
 				}
 				
 
 				$featureImage['overwrite_alt_tag'] = $values['feature_image/zenario_promo_menu__overwrite_alt_tag'];
 
-				ze\row::set(ZENARIO_PROMO_MENU_PREFIX. 'menu_node_feature_image', $featureImage, array('node_id' => $nodeId));
+				ze\row::set(ZENARIO_PROMO_MENU_PREFIX. 'menu_node_feature_image', $featureImage, ['node_id' => $nodeId]);
 				break;
 		}
 	}
 	
 	public static function eventMenuNodeDeleted($menuId) {
-		ze\row::delete('inline_images', array('foreign_key_to' => 'menu_node', 'foreign_key_id' => $menuId));
-		ze\row::delete(ZENARIO_PROMO_MENU_PREFIX. 'menu_node_feature_image', array('node_id' => $menuId));
+		ze\row::delete('inline_images', ['foreign_key_to' => 'menu_node', 'foreign_key_id' => $menuId]);
+		ze\row::delete(ZENARIO_PROMO_MENU_PREFIX. 'menu_node_feature_image', ['node_id' => $menuId]);
 	}
 }

@@ -62,57 +62,29 @@ zenario_admin:
                     validation:
                         required: Please enter an Email Address.
                         email: Please enter a valid Email Address.
-                password:
-                    visible_if: '!zenarioAB.tuix.key.id'
-                    label: 'Password:'
-                    type: password
-                    style: 'width: 20em;'
-                suggest_button:
-                    visible_if: '!zenarioAB.tuix.key.id'
-                    same_row: true
-                    snippet:
-                        html: >
-                            <input type="button" onclick="
-                                var suggestedPassword = zenarioA.generateRandomString(8),
-                                    passwordField = zenario.get('password'),
-                                    passwordConfirmField = zenario.get('password_confirm');
-                                passwordField.value = suggestedPassword;
-                                passwordField.type = 'password';
-                                passwordConfirmField.value = suggestedPassword;
-                                passwordConfirmField.type = 'password';
-                            " value="Suggest"/>
-                password_confirm:
-                    visible_if: '!zenarioAB.tuix.key.id'
-                    label: 'Re-confirm Password:'
-                    type: password
-                    style: 'width: 20em;'
                 inform_by_email:
                     visible_if: '!zenarioAB.tuix.key.id'
                     label: 'Inform by email'
                     type: checkbox
+                    disabled: true
+                    value: 1
                     note_below: >
                         If checked, the Administrator will receive an email with the update. 
-                
-                password_needs_changing:
-                    label: 'Password needs changing:'
-                    type: checkbox
-                    note_below: >
-                        If checked, the Administrator will be prompted to change
-                        their password when they next log in.
-                    visible_if: '!zenarioAB.tuix.key.id'
-                
                 is_client_account:
                     label: 'Is client account'
                     type: checkbox
                 
         password:
             priv: _PRIV_CHANGE_ADMIN_PASSWORD
-            visible_if: zenarioAB.tuix.key.id
             label: Password
             edit_mode:
                 enabled: true
                 always_on: false
             notices:
+                new_admin:
+                    show: false
+                    type: information
+                    message: The administrator will recieve a link via email where they can set a password.
                 is_trashed:
                     show: false
                     type: warning
@@ -122,10 +94,12 @@ zenario_admin:
                     full_width: true
                     snippet:
                         html: ""
+                    visible_if: zenarioAB.tuix.key.id
                 password:
                     label: 'Password:'
                     type: password
                     style: 'width: 20em;'
+                    visible_if: zenarioAB.tuix.key.id
                 suggest_button:
                     same_row: true
                     snippet:
@@ -139,22 +113,19 @@ zenario_admin:
                                 passwordConfirmField.value = suggestedPassword;
                                 passwordConfirmField.type = 'password';
                             " value="Suggest"/>
-                    visible_if: zenarioAB.editModeOn()
+                    visible_if: zenarioAB.editModeOn() && zenarioAB.tuix.key.id
                 password_confirm:
                     label: 'Re-confirm Password:'
                     type: password
                     style: 'width: 20em;'
-                inform_by_email:
-                    label: 'Inform by email'
-                    type: checkbox
-                    note_below: >
-                        If checked, the Administrator will receive an email with the update. 
+                    visible_if: zenarioAB.tuix.key.id
                 password_needs_changing:
-                    label: 'Password needs changing:'
+                    label: 'Password needs changing'
                     type: checkbox
                     note_below: >
                         If checked, the Administrator will be prompted to change
                         their password when they next log in.
+                    visible_if: zenarioAB.tuix.key.id
         permissions:
             label: Permissions
             edit_mode:

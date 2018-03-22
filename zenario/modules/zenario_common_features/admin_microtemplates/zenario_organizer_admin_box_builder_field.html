@@ -98,7 +98,7 @@
 				</span>
 				<input type="button" value="Select..." class="lauch_keeper"/>
 			</div>
-		<% } else if (m.display_type == 'file_picker') { %>
+		<% } else if (m.display_type == 'file_picker' || m.display_type == 'upload') { %>
 			<span class="label">{{m.display_label}}</span>
 			<div>
 				<span>
@@ -143,7 +143,9 @@
 	
 	
 	<div id="organizer_form_field_inline_buttons_{{m.id|e}}" class="form_field_inline_buttons" <% if (!m.selected) { %> style="display:none;" <% } %>>
-		<span class="drag_icon"></span>
+		<% if (!m.grouping || (m.grouping && m.first_in_grouping)) { %>
+			<span class="drag_icon"></span>
+		<% } %>
 		<% if (!m.is_system_field) { %>
 			<span class="delete_icon" data-id="{{m.id|e}}">Delete</span>
 		<% } %>

@@ -45,12 +45,17 @@ class zenario_extranet_logout extends zenario_extranet {
 		return true;
 	}
 	
-	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		switch ($path) {
 			case 'plugin_settings':
-				$box['tabs']['first_tab']['fields']['redirect_if_private']['hidden'] = 
-					!$values['first_tab/redirect'];
-
+				//Set the default value of the login page selector to the special page.
+				if (empty($values['first_tab/login_page'])) {
+					$cID = $cType = false;
+					if (ze\content::langSpecialPage('zenario_login', $cID, $cType)) {
+						$tagId = $cType . '_' . $cID;
+						$values['first_tab/login_page'] = $tagId;
+					}
+				}
 				break;
 		}
 	}

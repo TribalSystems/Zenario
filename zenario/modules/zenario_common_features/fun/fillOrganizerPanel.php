@@ -33,9 +33,9 @@ switch ($path) {
 		
 		if ($refinerName == 'module' && ($module = ze\module::details($_GET['refiner__module'] ?? false))) {
 			$panel['title'] =
-				ze\admin::phrase('Frameworks for the Module "[[name]]"', array('name' => $module['display_name']));
+				ze\admin::phrase('Frameworks for the Module "[[name]]"', ['name' => $module['display_name']]);
 			
-			$panel['items'] = array();
+			$panel['items'] = [];
 			foreach (ze\pluginAdm::listFrameworks($module['class_name']) as $dir => $framework) {
 				$panel['items'][ze\ring::encodeIdForOrganizer($dir)] = $framework;
 			}

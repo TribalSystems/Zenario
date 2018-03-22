@@ -36,7 +36,7 @@ class curl {
 	}
 
 	//Formerly "curl()"
-	public static function fetch($URL, $post = false, $options = array(), $saveToFile = false) {
+	public static function fetch($URL, $post = false, $options = [], $saveToFile = false) {
 		if (!function_exists('curl_version')
 		 || !($curl = @curl_init())) {
 			return false;

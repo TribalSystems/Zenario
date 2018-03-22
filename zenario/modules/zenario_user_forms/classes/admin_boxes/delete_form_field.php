@@ -35,12 +35,12 @@ class zenario_user_forms__admin_boxes__delete_form_field extends ze\moduleBaseCl
 			$box['title'] = ze\admin::phrase('Deleting "[[field_name]]"', $box['key']);
 			if ($box['key']['field_type'] == 'page_break' || $box['key']['field_type'] == 'section_description') {
 				$fields['details/warning_message']['snippet']['html'] = 
-					'<p>' . ze\admin::phrase('Are you sure you want to delete this [[field_name]]?', array('field_name' => strtolower($box['key']['field_english_type']))) . '</p>';
+					'<p>' . ze\admin::phrase('Are you sure you want to delete this [[field_name]]?', ['field_name' => strtolower($box['key']['field_english_type'])]) . '</p>';
 			} elseif ($box['key']['field_type'] == 'restatement') {
 				$fields['details/warning_message']['snippet']['html'] = 
 					'<p>' . ze\admin::phrase('Are you sure you want to delete this mirror field?') . '</p>';
 			} else {
-				$responseCount = (int)ze\row::count(ZENARIO_USER_FORMS_PREFIX . 'user_response_data', array('form_field_id' => $fieldId));
+				$responseCount = (int)ze\row::count(ZENARIO_USER_FORMS_PREFIX . 'user_response_data', ['form_field_id' => $fieldId]);
 				
 				// If no responses delete field normally
 				if ($responseCount <= 0) {
@@ -62,7 +62,7 @@ class zenario_user_forms__admin_boxes__delete_form_field extends ze\moduleBaseCl
 								'This field has [[count]] response recorded against it, but there are no fields of the same type on the form. If you want to migrate this fields data to another field then create a new field of type "[[type]]".',
 								'This field has [[count]] responses recorded against it, but there are no fields of the same type on the form. If you want to migrate this fields data to another field then create a new field of type "[[type]]".',
 								$responseCount,
-								array('count' => $responseCount, 'type' => $box['key']['field_english_type'])
+								['count' => $responseCount, 'type' => $box['key']['field_english_type']]
 							) . 
 							'</p>';
 						
@@ -74,7 +74,7 @@ class zenario_user_forms__admin_boxes__delete_form_field extends ze\moduleBaseCl
 								'This field has [[count]] response recorded against it.',
 								'This field has [[count]] responses recorded against it.',
 								$responseCount,
-								array('count' => $responseCount)
+								['count' => $responseCount]
 							) . 
 							'</p>';
 						
@@ -88,7 +88,7 @@ class zenario_user_forms__admin_boxes__delete_form_field extends ze\moduleBaseCl
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		$fieldId = $box['key']['id'];
 		$fields['details/migration_field']['hidden'] = $values['details/delete_field_options'] != 'delete_field_but_migrate_data';
-		$responseCount = (int)ze\row::count(ZENARIO_USER_FORMS_PREFIX . 'user_response_data', array('form_field_id' => $fieldId));
+		$responseCount = (int)ze\row::count(ZENARIO_USER_FORMS_PREFIX . 'user_response_data', ['form_field_id' => $fieldId]);
 		
 		// If migrating data show warning if selected field has existing responses
 		if ($values['details/delete_field_options'] == 'delete_field_but_migrate_data') {
@@ -100,7 +100,7 @@ class zenario_user_forms__admin_boxes__delete_form_field extends ze\moduleBaseCl
 			
 				$otherFieldResponseCount = (int)ze\row::count(
 					ZENARIO_USER_FORMS_PREFIX . 'user_response_data', 
-					array('form_field_id' => $values['details/migration_field'])
+					['form_field_id' => $values['details/migration_field']]
 				);
 				
 				if ($otherFieldResponseCount >= 1) {

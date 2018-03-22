@@ -25,6 +25,9 @@
 				{% endif %}
 				
                 <input type="text" class="search_input_box" id="{{Search_Field_ID}}" name="searchString" 
+                	{% if Placeholder %}
+						placeholder="{{Placeholder_Phrase|trans}}"
+					{% endif %}
                 	value="{{Search_String}}" 
                 		onkeyup="zenario_advanced_search.onKeyUp(this, {{Delay}});" />
 				<input type="submit" class="search_entry_button" name="doSearch" value="{{'_SEARCH'|trans}}" />

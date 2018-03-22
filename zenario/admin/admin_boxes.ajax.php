@@ -241,10 +241,10 @@ if ($debugMode) {
 	if ($dataset = ze\row::get('custom_datasets', true, ['extends_admin_box' => $requestedPath])) {
 		
 		if (ze\priv::check('_PRIV_MANAGE_DATASET')) {
-			$tags['configure'] = array(
+			$tags['configure'] = [
 				'link' => 'zenario/admin/organizer.php#zenario__administration/panels/custom_datasets/item_buttons/edit_gui//'. $dataset['id']. '//',
 				'tooltip' => ze\admin::phrase('This box is editable, go to [[label]] dataset editor', $dataset)
-			);
+			];
 		}
 		
 		//Define the array of tabs if it's not already defined
@@ -270,7 +270,7 @@ if ($debugMode) {
 			 || !is_array($tags['tabs'][$ctab['name']])) {
 				if (!$dataset['edit_priv'] || ze\priv::check($dataset['edit_priv'])) {
 					$tags['tabs'][$ctab['name']] =
-						array('edit_mode' => ['enabled' => true]);
+						['edit_mode' => ['enabled' => true]];
 				}
 			}
 			

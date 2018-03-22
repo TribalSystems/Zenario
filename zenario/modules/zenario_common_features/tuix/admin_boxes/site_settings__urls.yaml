@@ -30,7 +30,17 @@ site_settings:
                         <br/>
                         Please see <a href="http://zenar.io/search-engine-friendly-urls.html" target="_blank">zenar.io/search-engine-friendly-urls.html</a>
                         for more information.
+                mod_rewrite_admin_mode:
+                    indent: 1
+                    site_setting:
+                        name: mod_rewrite_admin_mode
+                    visible_if: |
+                        zenarioAB.value('mod_rewrite_enabled')
+                    label: 'Use friendly URLs in admin mode'
+                    type: checkbox
+                    value: 1
                 mod_rewrite_suffix:
+                    indent: 1
                     site_setting:
                         name: mod_rewrite_suffix
                     visible_if: |
@@ -43,6 +53,7 @@ site_settings:
                         An optional suffix which every friendly URL will have.
                         Internal links created by the CMS will have this suffix.
                 mod_rewrite_slashes:
+                    indent: 1
                     site_setting:
                         name: mod_rewrite_slashes
                     visible_if: |

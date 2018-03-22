@@ -67,7 +67,7 @@ switch ($path) {
 		$details['nov'] = 0x400 & (int) $details['months'];
 		$details['dec'] = 0x800 & (int) $details['months'];
 		
-		foreach (array('time_and_day', 'month', 'reporting') as $tab) {
+		foreach (['time_and_day', 'month', 'reporting'] as $tab) {
 			foreach ($details as $field => $value) {
 				if (isset($box['tabs'][$tab]['fields'][$field])) {
 					$box['tabs'][$tab]['fields'][$field]['value'] = $value;
@@ -108,7 +108,7 @@ switch ($path) {
 		$box['tabs']['reporting']['fields']['email_address_on_error']['note_below'] = 
 			ze\admin::phrase(
 				$box['tabs']['reporting']['fields']['email_address_on_error']['note_below'],
-				array('email' => htmlspecialchars(EMAIL_ADDRESS_GLOBAL_SUPPORT)));
+				['email' => htmlspecialchars(EMAIL_ADDRESS_GLOBAL_SUPPORT)]);
 		
 		
 		if ($box['key']['manager_class_name'] == 'zenario_scheduled_task_manager') {

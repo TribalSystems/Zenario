@@ -33,7 +33,7 @@ class zenario_content_notifications extends ze\moduleBaseClass {
 	public static function getNotes($cID, $cType, $cVersion) {
 		return ze\row::getArray(
 			ZENARIO_CONTENT_NOTIFICATIONS_PREFIX. 'versions_mirror', true, 
-			array('content_id' => $cID, 'content_type' => $cType, 'content_version' => $cVersion),
+			['content_id' => $cID, 'content_type' => $cType, 'content_version' => $cVersion],
 			'datetime_requested');
 	}
 	
@@ -52,7 +52,7 @@ Link: [[link]]', $note);
 	}
 
 	protected function newNote(&$box, &$values) {
-		return array(
+		return [
 				'content_id' => $box['key']['cID'],
 				'content_type' => $box['key']['cType'],
 				'content_version' => $box['key']['cVersion'],
@@ -60,7 +60,7 @@ Link: [[link]]', $note);
 				'action_requested' => $values['action_requested'],
 				'datetime_requested' => ze\date::now(),
 				'note' => $values['note']
-			);
+			];
 	}
 	
 	protected static function getListOfAdminsWhoReceiveNotifications($adminId = false) {
@@ -86,7 +86,7 @@ Link: [[link]]', $note);
 			return (bool) ze\sql::fetchRow($result);
 		
 		} else {
-			$admins_list = array();
+			$admins_list = [];
 			while ($row = ze\sql::fetchAssoc($result)) {
 				$admins_list[$row['id']] = $row;
 			}
@@ -126,8 +126,8 @@ Link: [[link]]', $note);
 	
 	protected static function getAdminNotifications($admin_id) {
 		return ze\row::get(ZENARIO_CONTENT_NOTIFICATIONS_PREFIX . 'admins_mirror', 
-					array('content_request_notification', 'draft_notification', 
-						'published_notification', 'menu_node_notification'), $admin_id);
+					['content_request_notification', 'draft_notification', 
+						'published_notification', 'menu_node_notification'], $admin_id);
 	}
 
 
@@ -206,11 +206,11 @@ Link: [[link]]', $note);
 				 && ($box['key']['id'] == ze\admin::id() || ze\priv::check('_PRIV_EDIT_ADMIN'))) {
 					ze\row::set(
 						ZENARIO_CONTENT_NOTIFICATIONS_PREFIX. 'admins_mirror',
-						array(
+						[
 							'draft_notification' => $values['notifications_tab/draft_notification'],
 							'published_notification' => $values['notifications_tab/published_notification'],
 							'menu_node_notification' => $values['notifications_tab/menu_node_notification'],
-							'content_request_notification' => $values['notifications_tab/content_request_notification']),
+							'content_request_notification' => $values['notifications_tab/content_request_notification']],
 						$box['key']['id']);
 				}
 				
@@ -223,7 +223,7 @@ Link: [[link]]', $note);
 	public static function eventContentDeleted($cID, $cType, $cVersion) {
 		ze\row::delete(
 			ZENARIO_CONTENT_NOTIFICATIONS_PREFIX. 'versions_mirror',
-			array('content_id' => $cID, 'content_type' => $cType, 'content_version' => $cVersion));
+			['content_id' => $cID, 'content_type' => $cType, 'content_version' => $cVersion]);
 	}
 
 	
@@ -263,7 +263,7 @@ Link: [[link]]', $note);
 		$result = ze\sql::select($sql);
 		while ($row = ze\sql::fetchAssoc($result)) {
 			$addressToOverriddenBy = '';
-			ze\server::sendEmail($subject, $body, $row['email'], $addressToOverriddenBy, $nameTo = false, $addressFrom = false, $nameFrom = false, $attachments = array(), $attachmentFilenameMappings = array(), $precedence = 'bulk', $isHTML = false);
+			ze\server::sendEmail($subject, $body, $row['email'], $addressToOverriddenBy, $nameTo = false, $addressFrom = false, $nameFrom = false, $attachments = [], $attachmentFilenameMappings = [], $precedence = 'bulk', $isHTML = false);
 		}
 	}
 
@@ -284,7 +284,7 @@ Link: [[link]]', $note);
 	}
 
 	protected static function getContentFieldsForEmail($cID, $cType, $cVersion) {
-		$record = ze\row::get('content_item_versions', array('tag_id', 'title'), array('id' => $cID, 'type' => $cType, 'version' => $cVersion));
+		$record = ze\row::get('content_item_versions', ['tag_id', 'title'], ['id' => $cID, 'type' => $cType, 'version' => $cVersion]);
 		self::insertFieldsForEmail($record);
 		$url = $record['url'];
 		$record['hyperlink'] = ze\link::toItem($cID, $cType, $fullPath = true, $request = '&cVersion=' . $cVersion);
@@ -322,7 +322,7 @@ Link: [[link]]', $note);
 			}
 		}
 		
-		$record = array();
+		$record = [];
 		self::insertFieldsForEmail($record);
 		$record['previous_menu_node'] = $oldText;
 		$record['new_menu_node'] = $newText;

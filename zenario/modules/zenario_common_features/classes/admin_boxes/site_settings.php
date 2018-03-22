@@ -90,7 +90,7 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 			//used, and whether every language has a language specific URL
 			if (ze\lang::count() > 1) {
 		
-				$langSpecificDomainsUsed = ze\row::exists('languages', array('domain' => ['!' => '']));
+				$langSpecificDomainsUsed = ze\row::exists('languages', ['domain' => ['!' => '']]);
 				$langSpecificDomainsNotUsed = ze\row::exists('languages', ['domain' => '']);
 		
 				if ($langSpecificDomainsUsed) {
@@ -127,11 +127,11 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 			if (isset($box['tabs'][$domainSetting]['fields'][$domainSetting])) {
 				if (ze::setting($domainSetting)) {
 					$box['tabs'][$domainSetting]['fields'][$domainSetting]['values'][ze::setting($domainSetting)] =
-						array('ord' => 2, 'label' => ze\admin::phrase($phrase, array('domain' => ze::setting($domainSetting))));
+						['ord' => 2, 'label' => ze\admin::phrase($phrase, ['domain' => ze::setting($domainSetting)])];
 				}
 				if ($_SERVER['HTTP_HOST'] != ze::setting($domainSetting)) {
 					$box['tabs'][$domainSetting]['fields'][$domainSetting]['values'][$_SERVER['HTTP_HOST']] =
-						array('ord' => 3, 'label' => ze\admin::phrase($phrase, ['domain' => $_SERVER['HTTP_HOST']]));
+						['ord' => 3, 'label' => ze\admin::phrase($phrase, ['domain' => $_SERVER['HTTP_HOST']])];
 				}
 			}
 		}
@@ -236,7 +236,7 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 
 		if (isset($fields['styles/email_style_formats'])) {
 	
-			$yaml = array('email_style_formats' => ze\site::description('email_style_formats'));
+			$yaml = ['email_style_formats' => ze\site::description('email_style_formats')];
 	
 			if (empty($yaml['email_style_formats'])) {
 				$yaml['email_style_formats'] = [];
@@ -263,6 +263,46 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 			}
 		}
 		
+		
+		//Load phrases for cookie messages
+		if (isset($fields['cookies/cookie_require_consent'])) {
+			$values['cookies/_COOKIE_CONSENT_IMPLIED_MESSAGE'] = $this->loadPhrase(true, '_COOKIE_CONSENT_IMPLIED_MESSAGE');
+			$values['cookies/_COOKIE_CONSENT_CONTINUE'] = $this->loadPhrase(false, '_COOKIE_CONSENT_CONTINUE');
+			
+			$values['cookies/_COOKIE_CONSENT_MESSAGE'] = $this->loadPhrase(true, '_COOKIE_CONSENT_MESSAGE');
+			$values['cookies/_COOKIE_CONSENT_ACCEPT'] = $this->loadPhrase(false, '_COOKIE_CONSENT_ACCEPT');
+			$values['cookies/_COOKIE_CONSENT_REJECT'] = $this->loadPhrase(false, '_COOKIE_CONSENT_REJECT');
+			$values['cookies/_COOKIE_CONSENT_CLOSE'] = $this->loadPhrase(false, '_COOKIE_CONSENT_CLOSE');
+			
+			//If multiple languages are enabled, make it clear you're just editing the phrases in the default language
+			$numLanguages = ze\lang::count();
+			if ($numLanguages > 1) {
+				
+				$mrg = ['lang' => ze\lang::name(ze::$defaultLang)];
+				
+				$fields['cookies/_COOKIE_CONSENT_MESSAGE']['label'] =
+				$fields['cookies/_COOKIE_CONSENT_IMPLIED_MESSAGE']['label'] = ze\admin::phrase('Message in [[lang]]', $mrg);
+				
+				$fields['cookies/_COOKIE_CONSENT_CONTINUE']['label'] = ze\admin::phrase('Continue button text in [[lang]]', $mrg);
+				$fields['cookies/_COOKIE_CONSENT_ACCEPT']['label'] = ze\admin::phrase('Accept button text in [[lang]]', $mrg);
+				$fields['cookies/_COOKIE_CONSENT_REJECT']['label'] = ze\admin::phrase('Reject button text in [[lang]]', $mrg);
+				$fields['cookies/_COOKIE_CONSENT_CLOSE']['label'] = ze\admin::phrase('Close button text in [[lang]]', $mrg);
+			}
+		}
+		
+		if ($settingGroup == 'data_protection') {
+			//Show a warning if the scheduled task for deleting content is not running.
+			if (!ze\module::inc('zenario_scheduled_task_manager') 
+				|| !zenario_scheduled_task_manager::checkScheduledTaskRunning('jobDataProtectionCleanup')
+			) {
+				$box['tabs']['data_protection']['notices']['scheduled_task_not_running']['show'] = true;
+			} else {
+				$box['tabs']['data_protection']['notices']['scheduled_task_running']['show'] = true;
+			}
+		}
+		
+		$link = ze\link::absolute() . '/zenario/admin/organizer.php#zenario__administration/panels/site_settings//data_protection~.site_settings~tdata_protection~k{"id"%3A"data_protection"}';
+		$fields['email/data_protection_link']['snippet']['html'] = ze\admin::phrase('See the <a target="_blank" href="[[link]]">data protection</a> panel for settings on how long to store sent email logs.', ['link' => htmlspecialchars($link)]);
 	}
 
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
@@ -499,10 +539,10 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 					);
 			
 				} else {
-					$mrg = array(
+					$mrg = [
 						'DBNAME' => DBNAME,
 						'datetime' => ze\date::formatDateTime($timestamp, false, true)
-					);
+					];
 					$fields['automated_backups/test']['note_below'] = htmlspecialchars(
 						ze\admin::phrase('The database "[[DBNAME]]" was last backed up on [[datetime]]', $mrg)
 					);
@@ -545,7 +585,7 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 					}
 			
 					try {
-						$mrg = array('absCMSDirURL' => ze\link::absolute());
+						$mrg = ['absCMSDirURL' => ze\link::absolute()];
 						$subject = ze\admin::phrase('A test email from [[absCMSDirURL]]', $mrg);
 						$body = ze\admin::phrase('<p>Your email appears to be working.</p><p>This is a test email sent by an administrator at [[absCMSDirURL]].</p>', $mrg);
 						$addressToOverriddenBy = false;
@@ -848,5 +888,52 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 			}
 		}
 		
+		//Save phrases for cookie messages
+		if (isset($fields['cookies/cookie_require_consent'])) {
+			
+			switch ($values['cookies/cookie_require_consent']) {
+				case 'implied':
+					$this->savePhrase(true, '_COOKIE_CONSENT_IMPLIED_MESSAGE', $values['cookies/_COOKIE_CONSENT_IMPLIED_MESSAGE']);
+					$this->savePhrase(false, '_COOKIE_CONSENT_CONTINUE', $values['cookies/_COOKIE_CONSENT_CONTINUE']);
+					break;
+			
+				case 'explicit':
+					$this->savePhrase(true, '_COOKIE_CONSENT_MESSAGE', $values['cookies/_COOKIE_CONSENT_MESSAGE']);
+					$this->savePhrase(false, '_COOKIE_CONSENT_ACCEPT', $values['cookies/_COOKIE_CONSENT_ACCEPT']);
+					$this->savePhrase(false, '_COOKIE_CONSENT_CLOSE', $values['cookies/_COOKIE_CONSENT_CLOSE']);
+					
+					if ($values['cookies/cookie_consent_type__explicit'] == 'message_accept_reject') {
+						$this->savePhrase(false, '_COOKIE_CONSENT_REJECT', $values['cookies/_COOKIE_CONSENT_REJECT']);
+					}
+					break;
+			}
+		}
+	}
+	
+	
+	
+	protected function loadPhrase($keepHTML, $code) {
+		
+		$text = ze\row::get('visitor_phrases',
+			'local_text',
+			['module_class_name' => 'zenario_common_features', 'language_id' => ze::$defaultLang, 'code' => $code]
+		);
+		
+		if (!$keepHTML) {
+			$text = html_entity_decode($text, ENT_QUOTES | ENT_HTML5);
+		}
+		
+		return $text;
+	}
+	protected function savePhrase($isHTML, $code, $text) {
+		
+		if (!$isHTML) {
+			$text = htmlspecialchars($text);
+		}
+		
+		ze\row::set('visitor_phrases', 
+			['local_text' => $text],
+			['module_class_name' => 'zenario_common_features', 'language_id' => ze::$defaultLang, 'code' => $code]
+		);
 	}
 }

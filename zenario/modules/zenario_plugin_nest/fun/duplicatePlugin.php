@@ -42,14 +42,14 @@ if (($egg = ze\pluginAdm::getNestDetails($eggId, $instanceId)) && (!$egg['is_sli
 			  AND slide_num = ". (int) $egg['slide_num']
 		);
 		
-		ze\row::update('nested_plugins', array(
+		ze\row::update('nested_plugins', [
 			'name_or_title' => ze\admin::phrase('[[name_or_title]] (copy)', $egg),
 			'ord' => $egg['ord'] + 1,
 			'framework' => $egg['framework'],
 			'css_class' => $egg['css_class'],
 			'cols' => $egg['cols'],
 			'small_screens' => $egg['small_screens']
-		), $newEggId);
+		], $newEggId);
 		
 		$sql = "
 			INSERT INTO ". DB_NAME_PREFIX. "plugin_settings (

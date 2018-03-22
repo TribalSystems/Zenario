@@ -64,7 +64,7 @@ class zenario_pro_features__admin_boxes__pro_features_spare_alias extends ze\mod
 
 		} else {
 			$details = ze\row::get('spare_aliases', true, $box['key']['id']);
-			$box['title'] = ze\admin::phrase('Editing the alias "[[alias]]"', array('alias' => ($details['alias'])));
+			$box['title'] = ze\admin::phrase('Editing the alias "[[alias]]"', ['alias' => ($details['alias'])]);
 				
 			$box['tabs']['spare_alias']['fields']['alias']['value'] = $details['alias'];
 			$box['tabs']['spare_alias']['fields']['alias']['readonly'] = true;
@@ -96,7 +96,7 @@ class zenario_pro_features__admin_boxes__pro_features_spare_alias extends ze\mod
 		if ($values['spare_alias/target_loc'] == 'int') {
 			$tagId = $values['spare_alias/hyperlink_target'];
 			if ($tagId) {
-				$values['spare_alias/redirect_target_url'] = ze\link::toItem($tagId, 'html', true, '', false, false, $useAliasInAdminMode = true);
+				$values['spare_alias/redirect_target_url'] = ze\link::toItem($tagId, 'html', true, '', false, false, $forceAliasInAdminMode = true);
 			}
 		} elseif ($values['spare_alias/target_loc'] == 'ext') {
 			$target = $values['spare_alias/ext_url'];

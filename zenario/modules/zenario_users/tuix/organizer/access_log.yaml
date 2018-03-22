@@ -93,9 +93,6 @@ zenario__users:
                     db_column: uca.content_version
                     show_by_default: Yes
                     server_side_only: Yes
-                IP_Address:
-                    title: IP address
-                    db_column: uca.ip
             default_sort_column: Time
             default_sort_desc: Yes
             item:

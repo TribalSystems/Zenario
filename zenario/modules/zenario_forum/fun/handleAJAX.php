@@ -29,7 +29,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 
 if ($_POST['create_new_forum'] ?? false) {
-	$ids = array('forum_content_id' => ($_POST['cID'] ?? false), 'forum_content_type' => ($_POST['cType'] ?? false));
+	$ids = ['forum_content_id' => ($_POST['cID'] ?? false), 'forum_content_type' => ($_POST['cType'] ?? false)];
 	
 	if (!ze\row::exists(ZENARIO_FORUM_PREFIX. 'forums', $ids)) {
 		$sql = "
@@ -38,7 +38,7 @@ if ($_POST['create_new_forum'] ?? false) {
 		$result = ze\sql::select($sql);
 		$row = ze\sql::fetchRow($result);
 		
-		ze\row::set(ZENARIO_FORUM_PREFIX. 'forums', array('date_updated' => ze\date::now(), 'ordinal' => $row[0]), $ids);
+		ze\row::set(ZENARIO_FORUM_PREFIX. 'forums', ['date_updated' => ze\date::now(), 'ordinal' => $row[0]], $ids);
 	}
 }
 

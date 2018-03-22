@@ -72,7 +72,7 @@ class zenario_user_forms__admin_boxes__import_user_forms extends ze\moduleBaseCl
 					
 					$formJSON = json_decode($formJSONString, true);
 					foreach ($formJSON['forms'] as $index => $data) {
-						$preview .= '<h4>' . ze\admin::phrase('Form: "[[name]]"', array('name' => $data['form']['name'])) . '</h4><br>';
+						$preview .= '<h4>' . ze\admin::phrase('Form: "[[name]]"', ['name' => $data['form']['name']]) . '</h4><br>';
 						if (!empty($result['errors'][$index])) {
 							$canImport = false;
 							$preview .= static::writePreviewList('Errors', $result['errors'][$index]);

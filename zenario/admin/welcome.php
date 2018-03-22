@@ -262,14 +262,15 @@ if (ze::$lastDB
 }
 
 
-$allowedTasks = array(
+$allowedTasks = [
 	'change_password' => 'change_password',
+	'new_admin' => 'new_admin',
 	'diagnostics' => 'diagnostics',
 	'reload_sk' => 'reload_sk',
 	'end' => 'logout',
 	'logout' => 'logout',
 	'restore' => 'restore',
-	'site_reset' => 'site_reset');
+	'site_reset' => 'site_reset'];
 
 
 
@@ -281,7 +282,7 @@ if (!empty($_SERVER['HTTP_REFERER'])
  && ($refererHost != $currentHost)) {
 	$refererHostWarning =
 		ze\admin::phrase('Your URL has changed. This is the admin login page at "[[currentHost]]", you were previously at "[[refererHost]]".',
-			array('refererHost' => $refererHost, 'currentHost' => $currentHost));
+			['refererHost' => $refererHost, 'currentHost' => $currentHost]);
 }
 
 
@@ -342,7 +343,7 @@ echo '
 <div id="welcome_outer">
 	<div id="welcome" class="welcome">
 		<div class="zenario_version"><p class="version">
-			', ze\admin::phrase('Zenario [[version]]', array('version' => ze\site::versionNumber($revision))), '
+			', ze\admin::phrase('Zenario [[version]]', ['version' => ze\site::versionNumber($revision)]), '
 		</p></div>
 		<div class="welcome_wrap">
 			<div class="welcome_inner">
@@ -361,7 +362,7 @@ echo '
 	</div>
 	<div id="no_something" class="welcome">
 		<div class="zenario_version"><p class="version">
-			', ze\admin::phrase('Zenario [[version]]', array('version' => ze\site::versionNumber($revision))), '
+			', ze\admin::phrase('Zenario [[version]]', ['version' => ze\site::versionNumber($revision)]), '
 		</p></div>
 		<div class="welcome_wrap">
 			<div class="welcome_inner">

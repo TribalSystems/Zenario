@@ -76,7 +76,7 @@ if (!empty($_SERVER['HTTP_HOST'])
  && ze::setting('primary_domain')
  && $_SERVER['HTTP_HOST'] != ze::setting('admin_domain')
  && $_SERVER['HTTP_HOST'] != ze::setting('primary_domain')
- && $redirect = ze\row::get('spare_domain_names', array('content_id', 'content_type'), array('requested_url' => array(ze\link::host(), ze\link::hostWithoutPort())))) {
+ && $redirect = ze\row::get('spare_domain_names', ['content_id', 'content_type'], ['requested_url' => [ze\link::host(), ze\link::hostWithoutPort()]])) {
 	
 	//Catch the case where a language specific domain was used as a redirect. Don't allow the redirect in this case.
 	foreach (ze::$langs as $langId => $lang) {

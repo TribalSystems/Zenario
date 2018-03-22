@@ -83,7 +83,7 @@ class zenario_common_features__admin_boxes__trash extends ze\moduleBaseClass {
 			$plugabbleCount = 0;
 			$versionControlledCount = 0;
 			$currentModule = false;
-			$currentRow = array();
+			$currentRow = [];
 			$linkToLibraryPlugin = '';
 			$linkToVersionControlledPlugin = '';
 			
@@ -126,24 +126,24 @@ class zenario_common_features__admin_boxes__trash extends ze\moduleBaseClass {
 				'<p>There is [[count]] "[[display_name]]" library plugin linking to this Content Item. "[[link]]".</p>',
 				'<p>There are [[count]] "[[display_name]]" library plugins linking to this Content Item. "[[link]]" and [[count2]] other[[s]].</p>', 
 				$plugabbleCount,
-				array(
+				[
 					'count' => $plugabbleCount, 
 					'count2' => $plugabbleCount - 1, 
 					'display_name' => $row['display_name'], 
 					'link' => $linkToLibraryPlugin,
-					's' => ($plugabbleCount - 1) == 1 ? '' : 's'));
+					's' => ($plugabbleCount - 1) == 1 ? '' : 's']);
 		}
 		if ($versionControlledCount) {
 			$message .= ze\admin::nPhrase(
 				'<p>There is [[count]] "[[display_name]]" version controlled plugin linking to this Content Item. "[[link]]".</p>',
 				'<p>There are [[count]] "[[display_name]]" version controlled plugins linking to this Content Item. "[[link]]" plus [[count2]] other plugin[[s]].</p>',
 				$versionControlledCount,
-				array(
+				[
 					'count' => $versionControlledCount, 
 					'count2' => $versionControlledCount - 1,
 					'display_name' => $row['display_name'], 
 					'link' => $linkToVersionControlledPlugin,
-					's' => ($versionControlledCount - 1) == 1 ? '' : 's'));
+					's' => ($versionControlledCount - 1) == 1 ? '' : 's']);
 		}
 	}
 	

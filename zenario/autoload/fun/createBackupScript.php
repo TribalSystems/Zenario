@@ -179,7 +179,7 @@ foreach(\ze\dbAdm::lookupExistingCMSTables() as $table) {
 	//Get details on each column in the current table
 	$sql = 'SHOW COLUMNS FROM `'. $table['actual_name']. '`';
 	$result = \ze\sql::select($sql);
-	$columns = array();
+	$columns = [];
 
 	//Loop through each of them, getting their name and type
 	while($column = \ze\sql::fetchAssoc($result)) {
@@ -187,7 +187,7 @@ foreach(\ze\dbAdm::lookupExistingCMSTables() as $table) {
 	}
 
 	//Generate a list of the columns
-	$pkCols = array();
+	$pkCols = [];
 	$pkColList = '';
 	$columnList = '';
 	$orderBy = '';
@@ -245,7 +245,7 @@ foreach(\ze\dbAdm::lookupExistingCMSTables() as $table) {
 		$ids = \ze\sql::fetchAssocs($sql);
 
 	} else {
-		$ids = array(false);
+		$ids = [false];
 	}
 
 	//Start building insert statements

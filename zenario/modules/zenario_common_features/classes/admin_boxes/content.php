@@ -284,7 +284,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 				$values['meta_data/title'] = $version['title'];
 				$values['meta_data/description'] = $version['description'];
 				$values['meta_data/keywords'] = $version['keywords'];
-				$values['meta_data/publication_date'] = $version['publication_date'];
+				$values['meta_data/release_date'] = $version['release_date'];
 				$values['meta_data/writer_id'] = $version['writer_id'];
 				$values['meta_data/writer_name'] = $version['writer_name'];
 				$values['meta_data/content_summary'] = $version['content_summary'];
@@ -345,8 +345,8 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 				}
 
 				if ($contentTypeDetails['release_date_field'] != 'hidden'
-				 && isset($fields['meta_data/publication_date'])) {
-					$values['meta_data/publication_date'] = ze\date::ymd();
+				 && isset($fields['meta_data/release_date'])) {
+					$values['meta_data/release_date'] = ze\date::ymd();
 				}
 			}
 		}
@@ -385,7 +385,6 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			if (($layoutId = ze::ifNull($box['key']['target_template_id'], ($_GET['refiner__template'] ?? false)))
 			 && ($box['key']['cType'] = ze\row::get('layouts', 'content_type', $layoutId))) {
 		
-				$contentType = ze\row::get('content_types', true, $box['key']['cType']);
 	
 			} elseif ($box['key']['target_menu_parent']
 				   && ($cItem = ze\row::get('menu_nodes', ['equiv_id', 'content_type'], ['id' => $box['key']['target_menu_parent'], 'target_loc' => 'int']))
@@ -393,13 +392,12 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 				   && ($layoutId = ze\content::layoutId($cItem['equiv_id'], $cItem['content_type'], $cItem['admin_version']))) {
 		
 				$box['key']['cType'] = $cItem['content_type'];
-				$contentType = ze\row::get('content_types', true, $box['key']['cType']);
 	
 			} else {
 				$box['key']['cType'] = ($box['key']['target_cType'] ?: ($box['key']['cType'] ?: 'html'));
-				$contentType = ze\row::get('content_types', true, $box['key']['cType']);
 				$layoutId = $contentType['default_layout_id'];
 			}
+			$contentType = ze\row::get('content_types', true, $box['key']['cType']);
 			
 			$values['meta_data/layout_id'] = $layoutId;
 			
@@ -443,7 +441,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 		if (isset($box['tabs']['categories']['fields']['desc'])) {
 			$box['tabs']['categories']['fields']['desc']['snippet']['html'] = 
 				ze\admin::phrase('You can put content item(s) into one or more categories. (<a[[link]]>Define categories</a>.)',
-					array('link' => ' href="'. htmlspecialchars(ze\link::absolute(). 'zenario/admin/organizer.php#zenario__content/categories'). '" target="_blank"'));
+					['link' => ' href="'. htmlspecialchars(ze\link::absolute(). 'zenario/admin/organizer.php#zenario__content/categories'). '" target="_blank"']);
 		
 				if (ze\row::exists('categories', [])) {
 					$fields['categories/no_categories']['hidden'] = true;
@@ -488,7 +486,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 				if ($box['key']['target_language_id'] && $box['key']['target_language_id'] != $content['language_id']) {
 					$box['title'] =
 						ze\admin::phrase('Creating a translation in "[[lang]]" of the content item "[[tag]]" ([[old_lang]]).',
-							array('tag' => $tag, 'old_lang' => $content['language_id'], 'lang' => ze\lang::name($box['key']['target_language_id'])));
+							['tag' => $tag, 'old_lang' => $content['language_id'], 'lang' => ze\lang::name($box['key']['target_language_id'])]);
 			
 				} elseif ($box['key']['source_cVersion'] < $content['admin_version']) {
 					$box['title'] =
@@ -602,7 +600,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 		$fields['meta_data/description']['hidden'] = false;
 		$fields['meta_data/writer']['hidden'] = false;
 		$fields['meta_data/keywords']['hidden'] = false;
-		$fields['meta_data/publication_date']['hidden'] = false;
+		$fields['meta_data/release_date']['hidden'] = false;
 		$fields['meta_data/content_summary']['hidden'] = false;
 		if ($box['key']['cType'] && $details = ze\contentAdm::cTypeDetails($box['key']['cType'])) {
 			if ($details['description_field'] == 'hidden') {
@@ -612,7 +610,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 				$fields['meta_data/keywords']['hidden'] = true;
 			}
 			if ($details['release_date_field'] == 'hidden') {
-				$fields['meta_data/publication_date']['hidden'] = true;
+				$fields['meta_data/release_date']['hidden'] = true;
 			}
 			if ($details['writer_field'] == 'hidden') {
 				$fields['meta_data/writer_id']['hidden'] = true;
@@ -872,8 +870,8 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			if ($details['keywords_field'] == 'mandatory' && !$values['meta_data/keywords']) {
 				$fields['meta_data/keywords']['error'] = ze\admin::phrase('Please enter keywords.');
 			}
-			if ($details['release_date_field'] == 'mandatory' && !$values['meta_data/publication_date']) {
-				$fields['meta_data/publication_date']['error'] = ze\admin::phrase('Please enter a release date.');
+			if ($details['release_date_field'] == 'mandatory' && !$values['meta_data/release_date']) {
+				$fields['meta_data/release_date']['error'] = ze\admin::phrase('Please enter a release date.');
 			}
 			if ($details['writer_field'] == 'mandatory' && !$values['meta_data/writer_id']) {
 				$fields['meta_data/writer_id']['error'] = ze\admin::phrase('Please select a writer.');
@@ -931,7 +929,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			//Only save aliases for first drafts
 			if (!empty($values['meta_data/alias']) && $box['key']['cVersion'] == 1) {
 				if (!$box['key']['translate'] || ze::setting('translations_different_aliases')) {
-					ze\row::set('content_items', array('alias' => ze\contentAdm::tidyAlias($values['meta_data/alias'])), ['id' => $box['key']['cID'], 'type' => $box['key']['cType']]);
+					ze\row::set('content_items', ['alias' => ze\contentAdm::tidyAlias($values['meta_data/alias'])], ['id' => $box['key']['cID'], 'type' => $box['key']['cType']]);
 				}
 			}
 
@@ -940,7 +938,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			
 			$version['description'] = $values['meta_data/description'];
 			$version['keywords'] = $values['meta_data/keywords'];
-			$version['publication_date'] = $values['meta_data/publication_date'];
+			$version['release_date'] = $values['meta_data/release_date'];
 			$version['writer_id'] = $values['meta_data/writer_id'];
 			$version['writer_name'] = $values['meta_data/writer_name'];
 			#$version['in_sitemap'] = $values['meta_data/in_sitemap'];

@@ -53,7 +53,7 @@ class zenario_content_notifications__admin_boxes__content_requests extends zenar
 			$values['action_requested'] = $box['key']['action_requested'];
 		}
 		
-		$box['title'] = ze\admin::phrase('Requests for the content item "[[tag]]"', array('tag' => ze\content::formatTag($box['key']['cID'], $box['key']['cType'])));
+		$box['title'] = ze\admin::phrase('Requests for the content item "[[tag]]"', ['tag' => ze\content::formatTag($box['key']['cID'], $box['key']['cType'])]);
 		
 		
 		$values['existing_requests'] = '';
@@ -95,7 +95,7 @@ class zenario_content_notifications__admin_boxes__content_requests extends zenar
 		
 		foreach (self::getListOfAdminsWhoReceiveNotifications() as $admin) {
 			$addressToOverriddenBy = '';
-			ze\server::sendEmail('Website content request: Item request', $messageText, $admin['email'], $addressToOverriddenBy, $nameTo = false, $addressFrom = false, $nameFrom = false, $attachments = array(), $attachmentFilenameMappings = array(), $precedence = 'bulk', $isHTML = false);
+			ze\server::sendEmail('Website content request: Item request', $messageText, $admin['email'], $addressToOverriddenBy, $nameTo = false, $addressFrom = false, $nameFrom = false, $attachments = [], $attachmentFilenameMappings = [], $precedence = 'bulk', $isHTML = false);
 		}
 	}
 

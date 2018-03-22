@@ -83,14 +83,14 @@ zenario_content:
                     ord: 30
                     label: 'Language:'
                     type: select
-                publication_date:
+                release_date:
                     ord: 31
                     label: 'Release date:'
                     type: date
                     change_month_and_year: true
                     same_row: true
                     pre_field_html: |
-                        <label for="publication_date" style="font-weight:bold;">
+                        <label for="release_date" style="font-weight:bold;">
                                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                 Release Date:
                             </label>
@@ -452,7 +452,7 @@ zenario_content:
                     dont_trim: true
                     insert_link_button:
                         exists: true
-                    style: 'width: 750px; height: 250px;'
+                    style: 'height: 250px;'
                 thumbnail:
                     full_width: true
                     snippet:
@@ -470,7 +470,7 @@ zenario_content:
                     dont_trim: true
                     insert_link_button:
                         exists: true
-                    style: 'width: 750px; height: 250px;'
+                    style: 'height: 250px;'
                 thumbnail:
                     full_width: true
                     snippet:
@@ -488,7 +488,7 @@ zenario_content:
                     dont_trim: true
                     insert_link_button:
                         exists: true
-                    style: 'width: 750px; height: 250px;'
+                    style: 'height: 250px;'
                 thumbnail:
                     full_width: true
                     snippet:
@@ -506,7 +506,7 @@ zenario_content:
                     dont_trim: true
                     insert_link_button:
                         exists: true
-                    style: 'width: 750px; height: 250px;'
+                    style: 'height: 250px;'
                 thumbnail:
                     full_width: true
                     snippet:

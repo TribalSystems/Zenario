@@ -34,17 +34,17 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 				foreach ($panel['items'] as $K => &$item) {
 					
 					if ($item['country_status']=='active') {
-						$item['traits'] = array('active' => true);
+						$item['traits'] = ['active' => true];
 					} else {
-						$item['traits'] = array('suspended' => true);
+						$item['traits'] = ['suspended' => true];
 					}
 					
-					if ( $phraseId = ze\row::get("visitor_phrases", 'id', array('code' => '_COUNTRY_NAME_' . $item['country_code']) )) {
+					if ( $phraseId = ze\row::get("visitor_phrases", 'id', ['code' => '_COUNTRY_NAME_' . $item['country_code']] )) {
 						$item['traits']['show_localizations'] = "Yes";
 					} 
-				
-					if (!ze\row::exists(ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_regions', array('country_id' => $K))) {
-						$item['traits']['can_delete_country'] = true;
+					
+					if (ze\row::exists(ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_regions', ['country_id' => $K])) {
+						$item['regions_count'] = ze\row::count(ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_regions', ['country_id' => $K]) . ' regions';
 					}
 				}
 				break;
@@ -54,12 +54,8 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 					$panel['columns']['region_type']['hidden'] = false;
 				}
 				foreach ($panel['items'] as $K => &$item) {
-					if ( $refinerId && $phraseId = ze\row::get("visitor_phrases", 'id', array('code' => $item['region_name']) )) {
+					if ( $refinerId && $phraseId = ze\row::get("visitor_phrases", 'id', ['code' => $item['region_name']] )) {
 						$item['traits']['show_localizations'] = "Yes";
-					}
-
-					if (!ze\row::exists(ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_regions', array('parent_id' => $K))) {
-						$item['traits']['can_delete_region'] = true;
 					}
 					
 					switch($item['region_type']) {

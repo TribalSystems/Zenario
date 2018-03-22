@@ -6,18 +6,39 @@ plugin_settings:
         first_tab:
             label: Details
             fields:
+                options:
+                    type: grouping
+                    snippet:
+                        label: Options
+                        label_class: subheading
+                filters:
+                    type: grouping
+                    snippet:
+                        label: Filters
+                        label_class: subheading
+                show_labels:
+                    plugin_setting:
+                        name: show_labels
+                    grouping: options
+                    label: "Show labels"
+                    type: checkbox
+                    value: "0"
+                    format_onchange: true
                 show_date:
                     plugin_setting:
                         name: show_date
+                    grouping: filters
                     label: "Show item's release date"
                     type: checkbox
                     value: "1"
-                    format_onchange: Yes
+                    format_onchange: true
                 date_format:
                     plugin_setting:
                         name: date_format
+                    grouping: filters
                     label: 'Date format:'
                     type: radios
+                    format_onchange: true
                     value: _MEDIUM
                     values:
                         _SHORT:
@@ -27,65 +48,217 @@ plugin_settings:
                         _LONG:
                             label: Long
                     indent: 1
+                date_html_tag:
+                    indent: 1
+                    plugin_setting:
+                        name: date_html_tag
+                    grouping: filters
+                    label: Date tags
+                    value: h1
+                    visible_if:
+                        lib.value: show_date
+                    type: select
+                    values: &tags
+                        h1:
+                            label: h1
+                            ord: 1
+                        h2:
+                            label: h2
+                            ord: 2
+                        h3:
+                            label: h3
+                            ord: 3
+                        h4:
+                            label: h4
+                            ord: 4
+                        h5:
+                            label: h5
+                            ord: 5
+                        h6:
+                            label: h6
+                            ord: 6
+                        h7:
+                            label: h7
+                            ord: 7
+                        p:
+                            label: p
+                            ord: 8
                 show_title:
                     plugin_setting:
                         name: show_title
+                    grouping: filters
                     label: 'Show title'
                     type: checkbox
                     value: "1"
+                    format_onchange: true
+                title_html_tag:
+                    indent: 1
+                    plugin_setting:
+                        name: title_html_tag
+                    grouping: filters
+                    label: Title tags
+                    value: h1
+                    visible_if:
+                        lib.value: show_title
+                    type: select
+                    values: *tags
                 show_description:
                     plugin_setting:
                         name: show_description
+                    grouping: filters
                     label: 'Show description'
                     type: checkbox
                     value: "1"
+                    format_onchange: true
+                description_html_tag:
+                    indent: 1
+                    plugin_setting:
+                        name: description_html_tag
+                    grouping: filters
+                    label: Description tags
+                    value: h1
+                    visible_if:
+                        lib.value: show_description
+                    type: select
+                    values: *tags
                 show_summary:
                     plugin_setting:
                         name: show_summary
+                    grouping: filters
                     label: 'Show summary'
                     type: checkbox
                     value: "1"
+                    format_onchange: true
+                summary_html_tag:
+                    indent: 1
+                    plugin_setting:
+                        name: summary_html_tag
+                    grouping: filters
+                    label: Summary tags
+                    value: h1
+                    visible_if:
+                        lib.value: show_summary
+                    type: select
+                    values: *tags
                 show_categories:
                     plugin_setting:
                         name: show_categories
+                    grouping: filters
                     label: 'Show public categories'
                     type: checkbox
+                    note_below: "Categories not marked as Public will not be shown to visitors."
                     value: ""
+                    format_onchange: true
+                categories_html_tag:
+                    indent: 1
+                    plugin_setting:
+                        name: categories_html_tag
+                    grouping: filters
+                    label: Categories tags
+                    value: h1
+                    visible_if:
+                        lib.value: show_categories
+                    type: select
+                    values: *tags
                 show_keywords:
                     plugin_setting:
                         name: show_keywords
+                    grouping: filters
                     label: 'Show keywords'
                     type: checkbox
                     value: "1"
+                    format_onchange: true
+                keywords_html_tag:
+                    indent: 1
+                    plugin_setting:
+                        name: keywords_html_tag
+                    grouping: filters
+                    label: Keywords tags
+                    value: h1
+                    visible_if:
+                        lib.value: show_keywords
+                    type: select
+                    values: *tags
                 show_language_name:
                     plugin_setting:
                         name: show_language_name
+                    grouping: filters
                     label: 'Show language name'
                     type: checkbox
                     value: "1"
+                    format_onchange: true
+                language_name_html_tag:
+                    indent: 1
+                    plugin_setting:
+                        name: language_name_html_tag
+                    grouping: filters
+                    label: Language name tags
+                    value: h1
+                    visible_if:
+                        lib.value: show_language_name
+                    type: select
+                    values: *tags
                 show_language:
                     plugin_setting:
                         name: show_language
+                    grouping: filters
                     label: 'Show language'
                     type: checkbox
                     value: "1"
+                    format_onchange: true
+                language_html_tag:
+                    indent: 1
+                    plugin_setting:
+                        name: language_html_tag
+                    grouping: filters
+                    label: Language tags
+                    value: h1
+                    visible_if:
+                        lib.value: show_language
+                    type: select
+                    values: *tags
                 show_writer_name:
                     plugin_setting:
                         name: show_writer_name
+                    grouping: filters
                     label: 'Show writer name'
                     type: checkbox
                     value: "1"
+                    format_onchange: true
+                writer_name_html_tag:
+                    indent: 1
+                    plugin_setting:
+                        name: writer_name_html_tag
+                    grouping: filters
+                    label: Writer name tags
+                    value: h1
+                    visible_if:
+                        lib.value: show_writer_name
+                    type: select
+                    values: *tags
                 show_writer_image:
                     plugin_setting:
                         name: show_writer_image
+                    grouping: filters
                     label: 'Show writer image'
                     type: checkbox
                     value: '0'
                     format_onchange: true
+                writer_image_label_html_tag:
+                    indent: 1
+                    plugin_setting:
+                        name: writer_image_label_html_tag
+                    grouping: filters
+                    label: Writer image label tags
+                    value: h1
+                    #visible_if: (controlled in module code)
+                    type: select
+                    values: *tags
                 
                 canvas:
                     plugin_setting:
                         name: canvas
+                    grouping: filters
                     label: 'Image canvas:'
                     type: select
                     value: unlimited
@@ -105,11 +278,12 @@ plugin_settings:
                         resize_and_crop:
                             ord: "5"
                             label: Resize and crop
-                    format_onchange: Yes
+                    format_onchange: true
                     indent: 1
                 width:
                     plugin_setting:
                         name: width
+                    grouping: filters
                     label: 'Width:'
                     type: text
                     validation:
@@ -123,6 +297,7 @@ plugin_settings:
                 height:
                     plugin_setting:
                         name: height
+                    grouping: filters
                     label: 'Height:'
                     type: text
                     validation:
@@ -136,6 +311,7 @@ plugin_settings:
                 offset:
                     plugin_setting:
                         name: offset
+                    grouping: filters
                     label: 'Offset:'
                     type: text
                     style: 'width: 50px;'
@@ -153,13 +329,25 @@ plugin_settings:
                 show_sticky_image:
                     plugin_setting:
                         name: show_sticky_image
+                    grouping: filters
                     label: 'Show feature image'
                     type: checkbox
                     format_onchange: true
+                sticky_image_label_html_tag:
+                    indent: 1
+                    plugin_setting:
+                        name: sticky_image_label_html_tag
+                    grouping: filters
+                    label: Feature image label tags
+                    value: h1
+                    #visible_if: (controlled in module code)
+                    type: select
+                    values: *tags
                     
                 sticky_image_canvas:
                     plugin_setting:
                         name: sticky_image_canvas
+                    grouping: filters
                     label: 'Image canvas:'
                     type: select
                     value: unlimited
@@ -179,11 +367,12 @@ plugin_settings:
                         resize_and_crop:
                             ord: "5"
                             label: Resize and crop
-                    format_onchange: Yes
+                    format_onchange: true
                     indent: 1
                 sticky_image_width:
                     plugin_setting:
                         name: sticky_image_width
+                    grouping: filters
                     label: 'Width:'
                     type: text
                     validation:
@@ -197,6 +386,7 @@ plugin_settings:
                 sticky_image_height:
                     plugin_setting:
                         name: sticky_image_height
+                    grouping: filters
                     label: 'Height:'
                     type: text
                     validation:
@@ -210,6 +400,7 @@ plugin_settings:
                 sticky_image_offset:
                     plugin_setting:
                         name: sticky_image_offset
+                    grouping: filters
                     label: 'Offset:'
                     type: text
                     style: 'width: 50px;'
@@ -223,3 +414,21 @@ plugin_settings:
                         Moving the slider to the left will move the image left or down;
                         moving the slider to the right will move the image right or up.
                     indent: 2
+        
+        order_tab:
+            label: Display order
+            fields:
+                reorder_info:
+                    snippet:
+                        html: 'You can choose the display order of meta data fields.'
+                reorder_fields:
+                    plugin_setting:
+                        name: reorder_fields
+                    label: 'Reorder fields:'
+                    pick_items: 
+                        multiple_select: true
+                        nothing_selected_phrase: Select one or more meta data fields.
+                        hide_select_button: true
+                        hide_info_button: true
+                        reorder_items: true
+                    #values:

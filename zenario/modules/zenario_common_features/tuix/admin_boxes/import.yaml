@@ -3,19 +3,29 @@
 zenario_import:
     key:
         id: ''
-        blank_lines: ''
-        warning_lines: ''
-        error_lines: ''
-        file_path: ''
-        ID_column: ''
         dataset: ''
+        
+        reset_key_line: 0
+        create_header_fields: 0
+        guess_key_line: 0
+        update_preview: 0
+        update_actions: 0
+        
+        header_count: ''
+        lines_to_skip: ''
         new_records: ''
+    old_values:
+        file: ''
+        key_line: ''
+        update_key_field: ''
+        header_list: ''
     title: Dataset Import Wizard - Step 1 of 4
     hide_tab_bar: Yes
     save_button_message: Import now
     tab: file
     tabs:
         file:
+            _step: 1
             label: File
             edit_mode:
                 enabled: true
@@ -42,6 +52,7 @@ zenario_import:
                         required: Please upload a CSV file or Excel spreadsheet to import.
                     side_note: |
                         Your file must contain a key-line, with a list of the fields contained in the data. The key-line must be in the first five lines of the file.
+                    format_onchange: true
                 type:
                     label: 'Import action:'
                     type: radios
@@ -60,9 +71,27 @@ zenario_import:
                     type: submit
                     ord: 999999
         headers:
+            _step: 2
             label: Fields
             edit_mode:
                 enabled: true
+            template_fields:
+                file_column_name:
+                    same_row: true
+                    readonly: true
+                    type: text
+                    style: width:20em;
+                file_column_match:
+                    same_row: true
+                    type: select
+                    empty_value: -- Don't import --
+                    format_onchange: true
+                    values: dataset_fields
+                file_column_description:
+                    same_row: true
+                    post_field_html: <br/>
+                    snippet:
+                        html: 'test'
             fields:
                 desc:
                     ord: 0.5
@@ -75,7 +104,7 @@ zenario_import:
                     ord: 1
                     label: 'Line containing field names:'
                     type: select
-                    empty_value: -- Select --
+                    value: 1
                     values:
                         1: 1st Line
                         2: 2nd Line
@@ -125,6 +154,15 @@ zenario_import:
                     snippet:
                         html: |
                             Match field names to database columns.<br/>
+                file_column_headers:
+                    ord: 3
+                    snippet:
+                        html: |
+                            <div style="width:21em;float:left"><b>Field names (from uploaded file)</b></div>
+                            <div style="width:21em;float:left"><b>Database columns</b></div>
+                            <div><b>Field type, input value must be...</b></div>
+                    post_field_html: <br>
+                
                 previous:
                     value: Previous
                     type: submit
@@ -134,9 +172,10 @@ zenario_import:
                     type: submit
                     ord: 999999
         preview:
+            _step: 3
             label: Preview
             edit_mode:
-                    enabled: true
+                enabled: true
             fields:
                 desc:
                     snippet:
@@ -154,19 +193,6 @@ zenario_import:
                     type: code_editor
                     dont_trim: true
                     readonly: true
-                desc2:
-                    snippet:
-                        html: Choose whether to import lines with warnings or skip them. Lines with errors cannot be imported.
-                error_options:
-                    type: radios
-                    values:
-                        skip_warning_lines:
-                            label: 'Skip warning lines'
-                            ord: 1
-                        import_anyway:
-                            label: 'Import anyway'
-                            ord: 2
-                    value: skip_warning_lines
                 previous:
                     value: Previous
                     type: submit
@@ -176,9 +202,27 @@ zenario_import:
                     type: submit
                     ord: 999999
         actions:
+            _step: 4
             label: Actions
             edit_mode:
-                    enabled: true
+                enabled: true
+            notices:
+                screen_name_for_contacts:
+                    show: false
+                    message: |
+                        You have opted to import screen names from your uploaded data, but these are not supported for Contacts. The imported screen name data will be ignored.
+                    type: warning
+            template_fields:
+                dataset_field_value:
+                    same_row: true
+                    post_field_html: <br>
+                    type: text
+                    style: 'width:20em;'
+                dataset_field_name:
+                    same_row: true
+                    readonly: true
+                    type: text
+                    style: 'width:15em;'
             fields:
                 records_statement:
                     snippet:
@@ -190,11 +234,14 @@ zenario_import:
                 send_welcome_email:
                     label: 'Send welcome email'
                     type: checkbox
-                    format_onchange: true
+                    redraw_onchange: true
                     side_note: |
                         Send a welcome email to any newly created active users.
                     hidden: true
                 email_to_send:
+                    hide_with_previous_field: true
+                    visible_if: |
+                        zenarioAB.value('send_welcome_email')
                     label: 'Email template:'
                     pick_items:
                         path: zenario__email_template_manager/panels/email_templates
@@ -203,23 +250,20 @@ zenario_import:
                         target_path: zenario__email_template_manager/panels/email_templates
                         select_phrase: Select Email Template...
                         hide_remove_button: Yes
-                    hidden: true
                     validation:
                         required_if_not_hidden: Please select an email template
                     side_note: >
                         An email based on the selected email template will be sent
                         to the selected users.
-                    hidden: true
                     indent: 1
                 
                 line_break:
                     label: 'Auto-set fields:'
                     snippet:
                         html: |
-                            You can set a value for a field not included in your import. All records will have this value when the import is run.
+                            You can mass-set values for the following fields (these are not present on your import)
                             <br/><br/>
                 previous:
                     value: Previous
                     type: submit
                     ord: 999999
-            

@@ -54,7 +54,7 @@ if (!isset($_SESSION['admin_logged_into_site'])
 	//We can work all of these out exactly except for "g", as registerGetRequest() lets module developers register
 	//anything dynamically. There's a bit of logic later that handles this by checking both cases.
 	
-	$chToLoadStatus = array();
+	$chToLoadStatus = [];
 	$chToLoadStatus['u'] = '';
 	$chToLoadStatus['g'] = '';
 	$chToLoadStatus['p'] = '';

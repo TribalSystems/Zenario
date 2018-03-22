@@ -29,7 +29,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 class zenario_recurring_countdown extends ze\moduleBaseClass {
 	
-	private $data = array();
+	private $data = [];
 	
 	public function init() {
 		$countdown_intervals = $this->setting('countdown_intervals');

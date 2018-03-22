@@ -8,7 +8,7 @@ connectGlobal:
     <h2>Where You Can Use It</h2>
     <p>From Zenario 7.0.0 onwards.</p>
     <h2>Description</h2>
-    <p>When you connect to a database using a function such as <span class="code">connectGlobalDB()</span>, <span class="code">connectHubDB()</span> or <span class="code">connectLocalDB()</span> the database functions will then run queries against that database.</p>
+    <p>When you connect to a database using a function such as <span class="code">connectGlobalDB()</span> or <span class="code">connectLocalDB()</span> the database functions will then run queries against that database.</p>
     <p>You <strong>must</strong> call this function before you query a table in the global database, and you <strong>must</strong> then call <code>connectLocalDB()</code> before querying any local table or calling any of the CMS functions.</p>
     <h2>Return Value</h2>
     <p>If the connection parameters for the global database are not defined then this function will do nothing and return <span class="code">false</span>.</p>
@@ -25,7 +25,7 @@ connectLocal:
     <h2>Where You Can Use It</h2>
     <p>From Zenario 7.0.0 onwards.</p>
     <h2>Description</h2>
-    <p>When you change&nbsp;database using a function such as <span class="code">connectGlobalDB()</span>&nbsp;or&nbsp;<span class="code">connectHubDB()</span>&nbsp;the database functions will then run queries against that database.</p>
+    <p>When you change&nbsp;database using a function such as <span class="code">connectGlobalDB()</span> the database functions will then run queries against that database.</p>
     <p>You <strong>must</strong> call this function to change back&nbsp;before querying any local table or calling any of the CMS functions.</p>
     <h2>Return Value</h2>
     <p>No return value.</p>

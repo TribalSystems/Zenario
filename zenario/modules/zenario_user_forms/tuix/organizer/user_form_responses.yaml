@@ -21,7 +21,7 @@ zenario__user_forms:
                     sql: 'ur.form_id = [[REFINER_ID]]'
             columns:
                 id:
-                    title: Response ID
+                    title: ID
                     format: id
                     db_column: ur.id
                     align_right: true
@@ -31,21 +31,16 @@ zenario__user_forms:
                 response_datetime:
                     title: Date/Time Responded
                     db_column: ur.response_datetime
+                    width: large
                     format: datetime
                     searchable: true
                     always_show: true
                 user:
-                    title: User
-                    db_column: CONCAT(u.first_name, ' ', u.last_name)
+                    title: Identifier if User/Contact
+                    db_column: u.identifier
                     disallow_sorting: true
                     always_show: true
                     width: xlarge
-                email:
-                    title: Email
-                    db_column: u.email
-                    always_show: true
-                    disallow_sorting: true
-                    width: xxlarge
                 blocked_by_profanity_filter:
                     title: Blocked by profanity filter
                     format: text
@@ -74,6 +69,11 @@ zenario__user_forms:
                             ur.crm_response
                         )
                     ord: 99999
+                
+                user_deleted:
+                    db_column: ur.user_deleted
+                data_deleted:
+                    db_column: ur.data_deleted
             item_buttons:
                 view_response:
                     priv: _PRIV_VIEW_FORM_RESPONSES

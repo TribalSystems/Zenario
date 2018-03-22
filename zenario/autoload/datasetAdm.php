@@ -328,6 +328,64 @@ class datasetAdm {
 	
 		return $fields;
 	}
+	
+	public static function getFieldTypeDescription($type, $tuixType = false) {
+		switch ($type) {
+			case 'group':
+				return 'Group';
+			case 'checkbox':
+				return 'Flag';
+			case 'checkboxes':
+				return 'Checkboxes';
+			case 'date':
+				return 'Date';
+			case 'editor':
+				return 'Editor';
+			case 'radios':
+				return 'Radios';
+			case 'centralised_radios':
+				return 'Centralised radios';
+			case 'select':
+				return 'Select';
+			case 'centralised_select':
+				return 'Centralised select';
+			case 'text':
+				return 'Text';
+			case 'textarea':
+				return 'Textarea';
+			case 'url':
+				return 'URL';
+			case 'other_system_field':
+				if ($tuixType) {
+					switch ($tuixType) {
+						case 'html_snippet':
+							return 'HTML snippet';
+						case 'pick_items':
+							return 'Item picker';
+						case 'toggle':
+							return 'Toggle';
+						case 'grouping':
+							return 'Grouping';
+						default:
+							return 'Unknown';
+					}
+				} else {
+					return 'Other system field';
+				}
+			case 'dataset_select':
+				return 'Dataset select';
+			case 'dataset_picker':
+				return 'Dataset picker';
+			case 'file_picker':
+				return 'File picker';
+			case 'repeat_start':
+				return 'Start of repeating section';
+			case 'repeat_end':
+				return 'End of repeating section';
+			default:
+				return 'Unknown';
+		}
+	}
 
 	//Formerly "getGroupPickerCheckboxesForFAB()"
 	public static function getGroupPickerCheckboxesForFAB() {

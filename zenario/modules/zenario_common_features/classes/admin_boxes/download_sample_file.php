@@ -33,7 +33,7 @@ class zenario_common_features__admin_boxes__download_sample_file extends ze\modu
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		// Get user dataset columns
 		$dataset = ze\dataset::details($box['key']['dataset']);
-		$datasetColumns = array();
+		$datasetColumns = [];
 		$sql = '
 			SELECT f.id, f.db_column
 			FROM '.DB_NAME_PREFIX.'custom_dataset_fields f

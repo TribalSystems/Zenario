@@ -36,12 +36,12 @@ class zenario_pro_features__organizer__menu_nodes extends ze\moduleBaseClass {
 			case 'zenario__menu/panels/menu_nodes':
 				if (($_POST['make_invisible'] ?? false) && ze\priv::check('_PRIV_EDIT_MENU_ITEM')) {
 					foreach (explode(',', $ids) as $id) {
-						ze\row::update('menu_nodes', array('invisible' => 1), $id);
+						ze\row::update('menu_nodes', ['invisible' => 1], $id);
 					}
 		
 				} elseif (($_POST['make_visible'] ?? false) && ze\priv::check('_PRIV_EDIT_MENU_ITEM')) {
 					foreach (explode(',', $ids) as $id) {
-						ze\row::update('menu_nodes', array('invisible' => 0), $id);
+						ze\row::update('menu_nodes', ['invisible' => 0], $id);
 					}
 				}
 		

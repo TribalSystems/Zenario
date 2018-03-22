@@ -65,10 +65,10 @@ zenario_head_foot_slot:
     confirm:
         show: false
         message: >
-            <p>You are making changes to a Slot on a Published Content Item.</p>
-            <p>The CMS will make an identical Draft version for you to work on privately.
-             Visitors will only see your changes when you Publish the new version.</p>
+            <p>You are making changes to a slot on a published content item.</p>
+            <p>Zenario will make a draft version that you can work on privately.
+             Visitors will only see the changes when the draft is published.</p>
         html: true
-        button_message: Create a Draft
+        button_message: Create a draft
         cancel_button_message: Cancel
         message_type: warning

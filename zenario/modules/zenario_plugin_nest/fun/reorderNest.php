@@ -29,7 +29,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 //Loop through each changed slide, and set its ordinal
 foreach (explode(',', $ids) as $id) {
-	$key = array('id' => $id, 'instance_id' => ($_POST['refiner__nest'] ?? false), 'is_slide' => 1);
+	$key = ['id' => $id, 'instance_id' => ($_POST['refiner__nest'] ?? false), 'is_slide' => 1];
 	if (ze\row::exists('nested_plugins', $key)) {
 		$newOrd = $_POST['ordinals'][$id];
 		$newParent = $_POST['parent_ids'][$id];
@@ -43,7 +43,7 @@ foreach (explode(',', $ids) as $id) {
 
 //Loop through each changed plugin
 foreach (explode(',', $ids) as $id) {
-	$key = array('id' => $id, 'instance_id' => ($_POST['refiner__nest'] ?? false), 'is_slide' => 0);
+	$key = ['id' => $id, 'instance_id' => ($_POST['refiner__nest'] ?? false), 'is_slide' => 0];
 	if (ze\row::exists('nested_plugins', $key)) {
 		$newOrd = $_POST['ordinals'][$id];
 		$newParent = $_POST['parent_ids'][$id];
@@ -51,9 +51,9 @@ foreach (explode(',', $ids) as $id) {
 		//Plugins must be children of tabs
 		if ($newParent) {
 			//Convert the parent id to a slide number
-			$slideNum = ze\row::get('nested_plugins', 'slide_num', array('id' => $newParent, 'instance_id' => ($_POST['refiner__nest'] ?? false), 'is_slide' => 1));
+			$slideNum = ze\row::get('nested_plugins', 'slide_num', ['id' => $newParent, 'instance_id' => ($_POST['refiner__nest'] ?? false), 'is_slide' => 1]);
 			//Update to the new slide number
-			ze\row::update('nested_plugins', array('slide_num' => ($slideNum ?: (0 ?: 0)), 'ord' => $newOrd), $key);
+			ze\row::update('nested_plugins', ['slide_num' => ($slideNum ?: (0 ?: 0)), 'ord' => $newOrd], $key);
 		}
 	}
 }

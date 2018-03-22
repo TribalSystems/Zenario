@@ -48,7 +48,7 @@ switch ($path) {
 		
 		foreach ($panel['items'] as &$item) {
 			
-			$item['traits'] = array();
+			$item['traits'] = [];
 			
 			if (ze::setting('jobs_enabled')) {
 				if ($item['enabled']) {
@@ -85,7 +85,7 @@ switch ($path) {
 		
 	case 'zenario__administration/panels/zenario_scheduled_task_manager__scheduled_tasks/hidden_nav/log/panel':
 		
-		$panel['title'] = ze\admin::phrase('Logs for the task "[[job]]"', array('job' => ze\row::get('jobs', 'job_name', $refinerId)));
+		$panel['title'] = ze\admin::phrase('Logs for the task "[[job]]"', ['job' => ze\row::get('jobs', 'job_name', $refinerId)]);
 		
 		foreach ($panel['items'] as &$item) {
 			$item['summary'] = nl2br(str_replace("\n\n", "\n", htmlspecialchars($item['summary'])));

@@ -31,181 +31,148 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
-		$layouts = zenario_email_template_manager::getTemplatesByNameIndexedByCode('User Activated',false);
-		if (count($layouts)==0) {
-			$layouts = zenario_email_template_manager::getTemplatesByNameIndexedByCode('Account Activated',false);
+		//Load welcome email templates for new users
+		$layouts = zenario_email_template_manager::getTemplatesByNameIndexedByCode('User Activated', false);
+		if (count($layouts) == 0) {
+			$layouts = zenario_email_template_manager::getTemplatesByNameIndexedByCode('Account Activated', false);
 		}
-		if (count($layouts)){
+		if (count($layouts)) {
 			$template = current($layouts);
 			$fields['actions/email_to_send']['value'] = $template['code'] ?? false;
 		}
+		
+		//Load list of dataset fields
+		$datasetId = $box['key']['dataset'];
+		$dataset = ze\dataset::details($datasetId);
+		$datasetFields = ze\datasetAdm::listCustomFields($datasetId, $flat = false, $filter = false, $customOnly = false, $useOptGroups = true);
+		//Special fields for users dataset
+		if ($dataset['system_table'] == 'users') {
+			$datasetFields['name_split_on_first_space'] = [
+				'ord' => 0.1, 
+				'label' => ze\admin::phrase('Name -> First Name, Last Name, split on first space')
+			];
+			$datasetFields['name_split_on_last_space'] = [
+				'ord' => 0.2, 
+				'label' => ze\admin::phrase('Name -> First Name, Last Name, split on last space')
+			];
+		}
+		$box['lovs']['dataset_fields'] = $datasetFields;
 	}
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
-		// Handle tab naviagtion and validation
+		//Validate stages and navigation
 		$errors = &$box['tabs'][$box['tab']]['errors'];
 		switch ($box['tab']) {
 			case 'file':
-				// --- Validate file tab --- 
-				if (!empty($box['tabs']['file']['fields']['next']['pressed']) && $values['file/file']) {
-					$path = ze\file::getPathOfUploadInCacheDir($values['file/file']);
-					if (pathinfo($path, PATHINFO_EXTENSION) == 'csv') {
-						$string = file_get_contents($path);
-						$isUTF8 = mb_detect_encoding($string, 'UTF-8', true);
-						if ($isUTF8 === false) {
-							$errors[] = ze\admin::phrase('CSV files must be UTF-8 encoded to be imported.');
+				if (!empty($fields['file/next']['pressed'])) {
+					//Check that CSV file is UTF-8 encoded
+					if ($values['file/file']) {
+						$path = ze\file::getPathOfUploadInCacheDir($values['file/file']);
+						if (pathinfo($path, PATHINFO_EXTENSION) == 'csv') {
+							$string = file_get_contents($path);
+							$isUTF8 = mb_detect_encoding($string, 'UTF-8', true);
+							if ($isUTF8 === false) {
+								$errors[] = ze\admin::phrase('CSV files must be UTF-8 encoded to be imported.');
+							}
 						}
-					}
-					if (empty($errors)) {
-						$box['tab'] = 'headers';
+						if (empty($errors)) {
+							$box['tab'] = 'headers';
+						}
 					}
 				}
 				break;
 			case 'headers':
-				// --- Validate headers tab --- 
-				if (!empty($box['tabs']['headers']['fields']['next']['pressed'])) {
-					$updateMode = ($values['file/type'] == 'update_data');
+				if (!empty($fields['headers/next']['pressed'])) {
 					
-					// Validate Key line
-					if (!$values['headers/key_line']) {
-						$errors[] = ze\admin::phrase('Please select the key containing field names');
-					
-					// If updating ensure key field is selected
-					} elseif ($updateMode) {
-						if (!$values['headers/update_key_field']) {
-							$errors[] = ze\admin::phrase('Please select a field name to uniquely identify each line');
+					if (($updateMode = ($values['file/type'] == 'update_data'))) {
+						//Check key fields is selected if updating
+						if ($values['headers/update_key_field'] === '') {
+							$errors[] = ze\admin::phrase('Please select a field name to uniquely identify each line.');
+						} elseif (empty($values['headers/file_column_match_' . $values['headers/update_key_field']])) {
+							$errors[] = ze\admin::phrase('You must match the unique field to a dataset field.');
 						}
-					}
-					if (!$errors) {
-						$datasetId = $box['key']['dataset'];
-						$datasetFieldDetails = self::getAllDatasetFieldDetails($datasetId);
-						$requiredFieldsIncludedInImport = array();
-						$datasetColumns = array();
-						foreach ($datasetFieldDetails as $fieldId => $details) {
-							$datasetColumns[$fieldId] = $details['db_column'];
-							if ($details['required']) {
-								$requiredFieldsIncludedInImport[$fieldId] = false;
+					} else {
+						//Check required dataset fields are imported in insert mode
+						$requiredDatasetFields = [];
+						$datasetFields = ze\dataset::fieldsDetails($box['key']['dataset']);
+						foreach ($datasetFields as $datasetField) {
+							if (!empty($datasetField['required'])) {
+								$requiredDatasetFields[$datasetField['id']] = $datasetField['db_column'];
 							}
 						}
-						$noFieldsMatched = true;
-						$IDColumn = false;
-						$emailColumn = false;
 						foreach ($box['tabs']['headers']['fields'] as $name => $field) {
-							if (self::isGeneratedField($name, $field) && isset($field['type']) && ($field['type'] == 'select')) {
-								$selectListFieldId = $values['headers/' . $name];
-								if ($selectListFieldId) {
-									$noFieldsMatched = false;
-									if (isset($datasetFieldDetails[$selectListFieldId]) && ($datasetFieldDetails[$selectListFieldId]['db_column'] == 'email')) {
-										$emailColumn = true;
-									}
+							if (strpos($name, 'file_column_match') === 0) {
+								unset($requiredDatasetFields[$values['headers/' . $name]]);
+							}
+						}
+						if (!empty($requiredDatasetFields)) {
+							$missingFields = implode(', ', $requiredDatasetFields);
+							$errors[] = ze\admin::phrase('The following required fields are missing: [[missingFields]].', ['missingFields' => $missingFields]);
+						}
+						
+						
+						//Check email field is being imported if updating data based on email in insert mode (users dataset only)
+						$dataset = ze\dataset::details($box['key']['dataset']);
+						if ($dataset['system_table'] == 'users' && ($values['headers/insert_options'] != 'no_update')) {
+							$importingEmailField = false;
+							$emailDatasetField = ze\dataset::fieldDetails('email', $dataset['id']);
+							foreach ($box['tabs']['headers']['fields'] as $name => $field) {
+								if (strpos($name, 'file_column_match') === 0 && $values['headers/' . $name] == $emailDatasetField['id']) {
+									$importingEmailField = true;
+									break;
 								}
-								if ($updateMode && $selectListFieldId && ($name == ('database_column__' . $values['headers/update_key_field']))) {
-									$IDColumn = $values['headers/' . $name];
-								}
-								$currentMatchedFields[$name] = $selectListFieldId;
-								if (isset($requiredFieldsIncludedInImport[$selectListFieldId])) {
-									$requiredFieldsIncludedInImport[$selectListFieldId] = true;
-								}
+							}
+							if (!$importingEmailField) {
+								$errors[] = ze\admin::phrase('You must include the email column to update matching fields on email.');
 							}
 						}
 						
-						// Ensure at least one field is being imported
-						if ($noFieldsMatched) {
-							$errors[] = ze\admin::phrase('You need to match at least one field to continue');
-						} else {
-							// If updating ensure key field is selected
-							if ($updateMode) {
-								if (!$IDColumn) {
-									$errors[] = ze\admin::phrase('You must match the key field to a field name');
-								}
-							}
-							// Validate required fields
-							if (!$updateMode) {
-								$missingRequiredFields = array();
-								foreach ($requiredFieldsIncludedInImport as $fieldId => $found) {
-									if ($found === false) {
-										$missingRequiredFields[] = $datasetColumns[$fieldId];
-									}
-								}
-								if ($missingRequiredFields) {
-									$missingFields = implode(', ', $missingRequiredFields);
-									$errors[] = ze\admin::phrase('The following required fields are missing: [[missingFields]]', array('missingFields' => $missingFields));
-								}
-								$datasetDetails = ze\dataset::details($datasetId);
-								if (!$emailColumn && ($datasetDetails['system_table'] == 'users') && ($values['headers/insert_options'] != 'no_update')) {
-									$errors[] = ze\admin::phrase('You must include the email column to update matching fields on email');
-								}
-							}
+					}
+					//Check at least one header has been matched to a dataset field
+					$fieldMatched = false;
+					foreach ($box['tabs']['headers']['fields'] as $name => $field) {
+						if (strpos($name, 'file_column_match') === 0 && $values['headers/' . $name]) {
+							$fieldMatched = true;
+							break;
 						}
 					}
+					if (!$fieldMatched) {
+						$errors[] = ze\admin::phrase('You need to match at least one field to continue.');
+					}
+					
 					if (empty($errors)) {
 						$box['tab'] = 'preview';
 					}
-				} elseif (!empty($box['tabs']['headers']['fields']['previous']['pressed'])) {
+				} elseif (!empty($fields['headers/previous']['pressed'])) {
 					$box['tab'] = 'file';
 				}
 				break;
 			case 'preview':
-				// --- Validate preview tab --- 
-				if (!empty($box['tabs']['preview']['fields']['previous']['pressed'])) {
-					$box['tab'] = 'headers';
-				} elseif (!empty($box['tabs']['preview']['fields']['next']['pressed'])) {
+				if (!empty($fields['preview/next']['pressed'])) {
 					$box['tab'] = 'actions';
-				} 
+				} elseif (!empty($fields['preview/previous']['pressed'])) {
+					$box['tab'] = 'headers';
+				}
 				break;
 			case 'actions':
-				// --- Validate actions tab --- 
 				if ($saving) {
 					$datasetId = $box['key']['dataset'];
-					$datasetDetails = ze\dataset::details($datasetId);
-					
-					if ($datasetDetails['extends_organizer_panel'] == 'zenario__users/panels/users') {
-						// If importing users then force admin to choose a status
-						$statusField = ze\dataset::fieldDetails('status', $datasetId);
-						if (isset($values['actions/value__' . $statusField['id']]) 
-							&& !$values['actions/value__' . $statusField['id']] 
+					$dataset = ze\dataset::details($datasetId);
+					if ($dataset['system_table'] == 'users') {
+						//If importing users then force admin to choose a status
+						$statusDatasetField = ze\dataset::fieldDetails('status', $datasetId);
+						if (isset($values['actions/dataset_field_value_' . $statusDatasetField['id']])
+							&& !$values['actions/dataset_field_value_' . $statusDatasetField['id']]
+							&& $values['file/type'] == 'insert_data'
 							&& $box['key']['new_records']
 						) {
 							$errors[] = ze\admin::phrase('You must select a status when creating new user records.');
 						}
 					}
-					$datasetFieldDetails = self::getAllDatasetFieldDetails($datasetId);
-					$childFields = array();
-					foreach ($datasetFieldDetails as $fieldId => $details) {
-						
-						// Child fields validation 1. record all fields with parents
-						if ($details['parent_id']) {
-							$childFields[$fieldId] = $details['parent_id'];
-						}
-					}
-					$foundChildFields = array();
-					foreach ($box['tabs']['headers']['fields'] as $name => $field) {
-						if (self::isGeneratedField($name, $field) && isset($field['type']) && ($field['type'] == 'select')) {
-							$selectListFieldId = $values['headers/' . $name];
-							$currentMatchedFields[$name] = $selectListFieldId;
-							
-							// Child fields validation 2. record child fields currently selected
-							if (isset($childFields[$selectListFieldId])) {
-								$foundChildFields[$selectListFieldId] = true;
-							}
-						}
-					}
-					
-					// Child fields validation 3. make sure parent is also selected
-					foreach ($foundChildFields as $childId => $val) {
-						$parentId = $childFields[$childId];
-						
-						if (!in_array($parentId, $currentMatchedFields) && empty($values['value__'.$parentId])) {
-							$errors[] = ze\admin::phrase('You must include the column "[[parent]]" because the column "[[child]]" depends on it.', 
-								array(
-									// This looks really confusing
-									'child' => $datasetFieldDetails[$childId]['db_column'],
-									'parent' => $datasetFieldDetails[$parentId]['db_column'])
-								);
-						}
-					}
-					
-				} elseif (!empty($box['tabs']['actions']['fields']['previous']['pressed'])) {
+				}
+				if (!empty($fields['actions/next']['pressed'])) {
+					//Finish
+				} elseif (!empty($fields['actions/previous']['pressed'])) {
 					$box['tab'] = 'preview';
 				}
 				break;
@@ -213,1217 +180,885 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 	}
 	
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		// Get dataset details
-		$datasetId = $box['key']['dataset'];
-		$datasetDetails = ze\dataset::details($datasetId);
-		$datasetFieldDetails = self::getAllDatasetFieldDetails($datasetId);
+		//Set title
+		$box['title'] = ze\admin::phrase('Dataset Import Wizard - Step [[n]] of 4', ['n' => $box['tabs'][$box['tab']]['_step']]);
+		//Hide save button until final step
+		$box['css_class'] = ($box['tab'] == 'actions') ? '' : 'zenario_fab_default_style zenario_fab_hide_save_button';
 		
-		// Handle navigation
-		$step = 1;
-		switch ($box['tab']) {
-			case 'headers':
-				$fields['headers/update_desc']['hidden'] = 
-				$fields['headers/update_key_field']['hidden'] = 
-					$values['file/type'] != 'update_data';
-				
-				$fields['headers/insert_desc']['hidden'] = 
-				$fields['headers/insert_options']['hidden'] = 
-					($values['file/type'] != 'insert_data') || ($datasetDetails['system_table'] != 'users');
-				$step = 2;
-				break;
-			case 'preview':
-				$step = 3;
-				break;
-			case 'actions':
-				$step = 4;
-				break;
-		}
-		
-		// Set title
-		$box['title'] = 'Dataset Import Wizard - Step ' . $step . ' of 4';
-		
-		// Set CSS class
-		if ($box['tab'] == 'actions') {
-			$box['css_class'] = '';
-		} else {
-			$box['css_class'] = 'zenario_fab_default_style zenario_fab_hide_save_button';
-		}
-		
-		// Stop if step 1
-		if ($box['tab'] == 'file' || !$values['file/file']) {
-			return;
-		}
-		
-		
-		$path = ze\file::getPathOfUploadInCacheDir($values['file/file']);
-		$newFileUploaded = ($path != $box['key']['file_path']);
-		$box['key']['file_path'] = $path;
-		
-		
-		// Include modules if needed
-		switch ($datasetDetails['extends_organizer_panel']) {
-			case 'zenario__locations/panel':
-				ze\module::inc('zenario_location_manager');
-				break;
-		}
-		
-		
-		// Clear old generated fields from fields tab
-		$currentMatchedFields = array();
-		foreach ($box['tabs']['headers']['fields'] as $name => $field) {
-			if (self::isGeneratedField($name, $field)) {
-				if (isset($fields['headers/'.$name]['type']) && ($fields['headers/'.$name]['type'] == 'select')) {
-					$selectListFieldId = $values['headers/'.$name];
-					$currentMatchedFields[$name] = $selectListFieldId;
-				}
-				unset($box['tabs']['headers']['fields'][$name]);
+		if ($box['tab'] == 'file') {
+			
+			if ($box['old_values']['file'] != $values['file/file']) {
+				$box['old_values']['file'] = $values['file/file'];
+				//Actions when import file is changed
+				$box['key']['reset_key_line'] = 1;
+				$box['key']['create_header_fields'] = 1;
+				$box['key']['guess_key_line'] = 1;
+				$box['key']['update_preview'] = 1;
 			}
-		}
-		
-		// Get list of values for header to DB column matching.
-		$DBColumnSelectListValues = ze\datasetAdm::listCustomFields($datasetDetails, $flat = false, $filter = false, $customOnly = false, $useOptGroups = true);
-		// Show an ID field for updates
-		$update = $values['file/type'] == 'update_data';
-		if ($update) {
-			$DBColumnSelectListValues['id'] = array('ord' => 0, 'label' => 'ID Column');
-		}
-		// Show special fields for users
-		if ($datasetDetails['system_table'] == 'users') {
-			$DBColumnSelectListValues['name_split_on_first_space'] = array('ord' => 0.1, 'label' => 'Name -> First Name, Last Name, split on first space');
-			$DBColumnSelectListValues['name_split_on_last_space'] = array('ord' => 0.2, 'label' => 'Name -> First Name, Last Name, split on last space');
-		}
-		$box['lovs']['dataset_fields'] = $DBColumnSelectListValues;
-		
-		
-		// Create an array of field IDs to database columns to use when trying to autoset headers to DB columns
-		$datasetColumns = array();
-		foreach ($datasetFieldDetails as $fieldId => $details) {
-			$datasetColumns[$fieldId] = $details['db_column'];
-		}
-		
-		
-		$keyLine = ($values['headers/key_line'] && !$newFileUploaded) ? $values['headers/key_line'] : 0;
-		
-		
-		$header = false;
-		$headerCount = 0;
-		
-		$previewLinesLimit = 200;
-		$filePreviewString = '';
-		$problems = '';
-		
-		// Track error number and lines with errors
-		$warningCount = 0;
-		$errorCount = 0;
-		$updateCount = 0;
-		$warningLines = array();
-		$errorLines = array();
-		$blankLines = array();
-		
-		$IDColumnIndex = false;
-		
-		// Link between row number and field ID
-		$rowFieldIdLink = array();
-		if (pathinfo($path, PATHINFO_EXTENSION) == 'csv') {
-			ini_set('auto_detect_line_endings', true);
-			$f = fopen($path, 'r');
-			if ($f) {
-				$lineNumber = 0;
-				// Loop through each line
-				while ($line = fgets($f)) {
-					$lineNumber++;
-					if (trim($line) != '') {
-						$lineValues = str_getcsv($line);
-						
-						$thisIsKeyLine = (!$keyLine && !$header) || ($keyLine && $keyLine == $lineNumber);
-						if ($thisIsKeyLine) {
-							$headerCount = count($lineValues);
-							$keyLine = $lineNumber;
-						}
-						$warning = false;
-						$error = false;
-						// Loop through each value
-						foreach ($lineValues as $dataCount => $value) {
-							$value = trim($value);
-							if ($thisIsKeyLine) {
-								// Attempt to autoset db_columns on fields tab
-								$fieldId = array_search(strtolower($value), $datasetColumns);
-								if ($value == 'id') { 
-									$fieldId = $value;
-								}
-								// Fill row field link
-								if (isset($currentMatchedFields['database_column__'.$value]) && !empty($currentMatchedFields['database_column__'.$value])) {
-									$rowFieldIdLink[$dataCount] = $currentMatchedFields['database_column__'.$value];
-								}
-								// Set column headers
-								if ($dataCount == 0) {
-									self::generateFieldHeaders($box, 'csv');
-								}
-								
-								// Set columns table
-								self::generateFieldRow($box, $dataCount, $value, $currentMatchedFields, $fieldId);
-								
-								// Get key field index
-								if ($update && ($value == $values['headers/update_key_field'])) {
-									$IDColumnIndex = $dataCount;
-								}
-								
-								// Set key field values
-								if ($update) {
-									$fields['headers/update_key_field']['values'][$value] = array(
-										'label' => $value,
-										'ord' => $dataCount
-									);
-								}
-							} elseif ($header) {
-								/*
-								// Field errors
-								if (!empty($value) && isset($rowFieldIdLink[$dataCount]) && 
-									!self::validateImportValue($problems, $datasetDetails['system_table'], $datasetFieldDetails, $rowFieldIdLink[$dataCount], $dataCount, $value, $lineNumber)) {
-									$error = true;
-								}
-								*/
-							}
-						}
-						if ($thisIsKeyLine) {
-							$header = true;
-							if ($box['tab'] == 'headers') {
-								break;
-							}
-							if ($IDColumnIndex !== false) {
-								$box['key']['ID_column'] = $rowFieldIdLink[$IDColumnIndex];
-							}
-						} elseif ($header) {
-							
-							// Validate import line
-							$lineProblems = '';
-							$lineErrorCount = self::validateImportLine($lineProblems, $datasetDetails, $datasetFieldDetails, $rowFieldIdLink, $lineValues, $lineNumber, $IDColumnIndex, $update, $values['headers/insert_options'], $updateCount);
-							$problems .= $lineProblems;
-							$error = ($lineErrorCount > 0);
-							
-							// Line errors
-							$dataCount = count($lineValues);
-							if ($dataCount != $headerCount) {
-								if ($dataCount < $headerCount) {
-									$problems .= 'Error (Line '. $lineNumber. '): Too few fields';
-								} else {
-									$problems .= 'Error (Line '. $lineNumber. '): Too many fields';
-								}
-								$error = true;
-								$problems .= "\r\n";
-							}
-							// Record lines with warnings and errors
-							if ($error) {
-								$errorCount++;
-								$errorLines[] = $lineNumber;
-							} elseif ($warning) {
-								$warningCount++;
-								$warningLines[] = $lineNumber;
-							}
-							if ($warning && $error) {
-								$warningCount++;
-							}
-							
-						} else {
-							$blankLines[] = $lineNumber;
-						}
-					} else {
-						$blankLines[] = $lineNumber;
-					}
-					if ($lineNumber <= $previewLinesLimit) {
-						$filePreviewString .= $line;
-					}
-					// Stop if keyline isn't on the first 5 lines
-					if (!$header && $lineNumber >= 5) {
-						break;
-					}
-				}
+			
+		} elseif ($box['tab'] == 'headers') {
+			if ($box['old_values']['key_line'] != $values['headers/key_line']) {
+				$box['old_values']['key_line'] = $values['headers/key_line'];
+				//Actions when key line is changed
+				$box['key']['create_header_fields'] = 1;
+				$box['key']['update_preview'] = 1;
 			}
-		} else {
-			require_once CMS_ROOT . 'zenario/libs/manually_maintained/lgpl/PHPExcel/Classes/PHPExcel.php';
 			
-			// Get file type
-			$inputFileType = PHPExcel_IOFactory::identify($path);
+			//Show/hide insert/update options
+			$datasetId = $box['key']['dataset'];
+			$dataset = ze\dataset::details($datasetId);
+			$fields['headers/insert_desc']['hidden'] = 
+			$fields['headers/insert_options']['hidden'] = 
+				($values['file/type'] != 'insert_data') || ($dataset['system_table'] != 'users');
 			
-			// Create reader object
-			$objReader = PHPExcel_IOFactory::createReader($inputFileType);
-			$objReader->setReadDataOnly(true);
+			$fields['headers/update_desc']['hidden'] = 
+			$fields['headers/update_key_field']['hidden'] = 
+				$values['file/type'] != 'update_data';
 			
-			// Load spreadsheet
-			$objPHPExcel = $objReader->load($path);
-			$worksheet = $objPHPExcel->getSheet(0);
+			if ($box['old_values']['update_key_field'] != $values['headers/update_key_field']) {
+				$box['old_values']['update_key_field'] = $values['headers/update_key_field'];
+				//Actions when key line is changed
+				$box['key']['update_preview'] = 1;
+			}
 			
-			// Columns that first and last headers are stored in
-			$startingColumn = 0;
-			$endingColumn = 0;
-			foreach ($worksheet->getRowIterator() as $row) {
-				$line = array();
-				$lineNumber = $row->getRowIndex();
-				$cellIterator = $row->getCellIterator();
-				$cellIterator->setIterateOnlyExistingCells(false);
-				$started = false;
-				$dataCount = 0;
-				$thisIsKeyLine = (!$keyLine && !$header) || ($keyLine && $keyLine == $lineNumber);
-				$warning = false;
-				$error = false;
-				foreach ($cellIterator as $cell) {
-					$value = $cell->getCalculatedValue();
-					$columnIndex = PHPExcel_Cell::columnIndexFromString($cell->getColumn());
-					// Check for blank rows
-					if (!empty($value) && !$started) {
-						$started = true;
-					}
-					// Set header columns if not set
-					if ($thisIsKeyLine) {
-						if (!is_null($value) && !$startingColumn) {
-							$startingColumn = $endingColumn = $columnIndex;
-							// Set column headers
-							self::generateFieldHeaders($box, 'excel');
-						}
-						if ($startingColumn) {
-							if (empty($value)) {
-								break;
-							}
-							// Include headers in CSV preview
-							$line[] = $value;
-							if ($startingColumn != $columnIndex) {
-								$endingColumn++;
-							}
-							// Attempt to autoset db_columns on fields tab
-							$fieldId = array_search(strtolower($value), $datasetColumns);
-							if ($value == 'id') {
-								$fieldId = $value;
-							}
-							// Fill row field link
-							if (isset($currentMatchedFields['database_column__'.$value]) && !empty($currentMatchedFields['database_column__'.$value])) {
-								$rowFieldIdLink[$dataCount] = $currentMatchedFields['database_column__'.$value];
-							}
-							
-							// Get key field index
-							if ($update && ($value == $values['headers/update_key_field'])) {
-								$IDColumnIndex = $dataCount;
-							}
-							
-							// Set columns table
-							self::generateFieldRow($box, $dataCount, $value, $currentMatchedFields, $fieldId);
-							if ($update) {
-								$fields['headers/update_key_field']['values'][$value] = array(
-									'label' => $value,
-									'ord' => $dataCount
-								);
-							}
-							$dataCount++;
-						}
-					} elseif ($header && ($columnIndex >= $startingColumn) && ($columnIndex <= $endingColumn)) {
-						
-						// Field errors
-						/*
-						$dataCount++;
-						if (!empty($value) && isset($rowFieldIdLink[$dataCount]) && 
-							!self::validateImportValue($problems, $datasetDetails['system_table'], $datasetFieldDetails, $rowFieldIdLink[$dataCount], $dataCount, $value, $lineNumber)) {
-							$error = true;
-						}
-						*/
-						// Make CSV of line for preview
-						$line[] = $value;
-					}
-				}
+			//Show ID column as an option when updating data
+			if ($values['file/type'] == 'update_data') {
+				$box['lovs']['dataset_fields']['id'] = ['ord' => 0, 'label' => ze\admin::phrase('ID Column')];
+			} else {
+				unset($box['lovs']['dataset_fields']['id']);
+			}
+			
+			if ($box['key']['reset_key_line']) {
+				$box['key']['reset_key_line'] = 0;
+				$values['headers/key_line'] = 1;
+			}
+			
+			//Loop through headers in uploaded file and create inputs for them
+			if ($box['key']['create_header_fields']) {
+				$box['key']['create_header_fields'] = 0;
 				
-				if ($started) {
-					if ($thisIsKeyLine) {
-						$keyLine = $lineNumber;
-						$header = true;
-						if ($box['tab'] == 'headers') {
+				//Delete previously generated fields
+				foreach ($box['tabs']['headers']['fields'] as $name => $field) {
+					foreach ($box['tabs']['headers']['template_fields'] as $templateFieldName => $templateField) {
+						if (strpos($name, $templateFieldName) === 0) {
+							unset($box['tabs']['headers']['fields'][$name]);
 							break;
 						}
-						if ($IDColumnIndex !== false) {
-							$box['key']['ID_column'] = $rowFieldIdLink[$IDColumnIndex];
-						}
-					} elseif ($header) {
-						// Validate import line
-						$lineProblems = '';
-						$lineErrorCount = self::validateImportLine($lineProblems, $datasetDetails, $datasetFieldDetails, $rowFieldIdLink, $line, $lineNumber, $IDColumnIndex, $update, $values['headers/insert_options'], $updateCount);
-						$problems .= $lineProblems;
-						$error = ($lineErrorCount > 0);
-						
-						// Record lines with warnings and errors
-						if ($error) {
-							$errorCount++;
-							$errorLines[] = $lineNumber;
-						} elseif ($warning) {
-							$warningCount++;
-							$warningLines[] = $lineNumber;
-						}
-						if ($warning && $error) {
-							$warningCount++;
-						}
-					}
-				}
-				if (!$header || !$started) {
-					$blankLines[] = $lineNumber;
-				}
-				if ($lineNumber <= $previewLinesLimit) {
-					foreach ($line as $key => $value) {
-						if (strpos($value, ',') !== false) {
-							$value = '"'.$value.'"';
-						}
-						$filePreviewString .= $value.', ';
-					}
-					$filePreviewString = rtrim($filePreviewString, ', ');
-					$filePreviewString .= "\n";
-				}
-			}
-		}
-		
-		// Try to autoset keyline field
-		if (!$values['headers/key_line'] || $newFileUploaded) {
-			$values['headers/key_line'] = $keyLine;
-		}
-		
-		// Set preview text
-		$values['preview/csv_preview'] = $filePreviewString;
-		
-		// Set preview errors text
-		$totalLines = $lineNumber;
-		$totalWarnings = $warningCount;
-		$totalErrors = $errorCount;
-		$totalBlanks = count($blankLines);
-		
-		$fields['preview/total_readable_lines']['snippet']['html'] = '<b>Total readable lines:</b> '. ($totalLines - $totalErrors - $totalBlanks - 1);
-		$plural = ($totalErrors == 1) ? '' : 's';
-		$errorsText = $totalErrors. ' error'.$plural;
-		$plural = ($totalWarnings == 1) ? '' : 's';
-		$warningsText = $totalWarnings. ' warning'.$plural;
-		$fields['preview/problems']['label'] = 'Problems ('.$errorsText.', '.$warningsText.'):';
-		$values['preview/problems'] = $problems;
-		
-		$fields['preview/error_options']['hidden'] = $fields['preview/desc2']['hidden'] = (count($warningLines) == 0);
-		
-		$effectedRecords = $totalLines - $totalErrors - $totalBlanks - 1 - $updateCount;
-		
-		if ($values['preview/error_options'] == 'skip_warning_lines') {
-			$effectedRecords -= $totalWarnings;
-		}
-		
-		// Record warning lines for when saving data
-		$box['key']['warning_lines'] = implode(',', $warningLines);
-		$box['key']['error_lines'] = implode(',', $errorLines);
-		$box['key']['blank_lines'] = implode(',', $blankLines);
-		
-		
-		// Set step 4 update/insert statement
-		$plural = ($effectedRecords == 1) ? '' : 's';
-		if ($values['file/type'] == 'insert_data') {
-			$recordStatement = '<b>'.$effectedRecords. '</b> new record'.$plural.' will be created.';
-			$box['key']['new_records'] = $effectedRecords;
-		} else {
-			$recordStatement = '<b>'.$effectedRecords. '</b> record'.$plural.' will be updated.';
-		}
-		if ($updateCount) {
-			$plural = ($updateCount == 1) ? '' : 's';
-			$recordStatement .= ' <b>'.$updateCount.'</b> record'.$plural.' will be updated.';
-		}
-		$fields['actions/records_statement']['snippet']['html'] = $recordStatement;
-		
-		
-		
-		
-		
-		if ($box['tab'] == 'actions') {
-			$userImport = ($datasetDetails['extends_organizer_panel'] == 'zenario__users/panels/users');
-			
-			// Remove previously generated fields
-			foreach($box['tabs']['actions']['fields'] as $name => $field) {
-				if (!in_array($name, array('records_statement', 'email_report', 'line_break', 'previous', 'send_welcome_email', 'email_to_send'))) {
-					unset($box['tabs']['actions']['fields'][$name]);
-				}
-			}
-			
-			// Remove fields set in step 2
-			foreach ($rowFieldIdLink as $index => $fieldId) {
-				unset($datasetFieldDetails[$fieldId]);
-			}
-			
-			// Create a field for each unset dataset field
-			$ord = 1;
-			foreach ($datasetFieldDetails as $fieldId => $datasetField) {
-				// Hide certain fields when importing users
-				if ($userImport) {
-					if ($datasetField['is_system_field'] && $datasetField['db_column'] === 'screen_name_confirmed') {
-						continue;
 					}
 				}
 				
-				// Create field value picker TUIX
-				$ord++;
-				$valueFieldName = 'value__'.$fieldId;
-				$fieldValuePicker = array(
-					'ord' => $ord + 500.5,
-					'same_row' => true,
-					'post_field_html' => '<br/>',
-					'type' => 'text',
-					'style' => 'width: 20em;'
-				);
-				if (!empty($values[$valueFieldName])) {
-					$fieldValuePicker['value'] = $values[$valueFieldName];
-				}
-				$valuesArray = false;
-				switch ($datasetField['type']) {
-					case 'group':
-					case 'checkbox':
-						$fieldValuePicker['type'] = 'checkbox';
-						break;
-					case 'date':
-						$fieldValuePicker['type'] = 'date';
-						break;
-					case 'checkboxes':
-						$fieldValuePicker['readonly'] = true;
-						$fieldValuePicker['value'] = '"Multi-Checkboxes" cannot be imported';
-					case 'editor':
-					case 'textarea':
-					case 'url':
-						$fieldValuePicker['type'] = 'text';
-						$fieldValuePicker['maxlength'] = 255;
-						break;
-					case 'text':
-						
-						// If importing users don't show system text fields for auto complete list
-						if (($datasetDetails['system_table'] == 'users') && $datasetField['is_system_field']) {
-							continue 2;
-						}
-						
-						$fieldValuePicker['type'] = 'text';
-						$fieldValuePicker['maxlength'] = 255;
-						break;
-					case 'radios':
-					case 'select':
-					case 'centralised_radios':
-					case 'centralised_select':
-						$valuesArray = ze\dataset::fieldLOV($datasetField);
-						$fieldValuePicker['type'] = 'select';
-						if ($userImport && $datasetField['db_column'] == 'status') {
-							$fieldValuePicker['empty_value'] = "-- Select --";
-							$fieldValuePicker['format_onchange'] = true;
-							
-							$fields['actions/send_welcome_email']['hidden'] = ($values['file/type'] != 'insert_data') || !isset($values['actions/' . $valueFieldName]) || ($values['actions/' . $valueFieldName] != 'active');
-							$fields['actions/email_to_send']['hidden'] = ($fields['actions/send_welcome_email']['hidden'] || !$values['actions/send_welcome_email']);
-						} else {
-							$fieldValuePicker['empty_value'] = "-- Don't import --";
-						}
-						$fieldValuePicker['values'] = $valuesArray;
-						break;
-				}
-				
-				// Add dataset field validation
-				$validationArray = false;
-				switch ($datasetField['validation']) {
-					case 'email':
-						$validationArray = array('email' => '"'.$datasetField['db_column'].'" is in incorrect format for email');
-						break;
-					case 'emails':
-						$validationArray = array('emails' => '"'.$datasetField['db_column'].'" is in incorrect format for emails');
-						break;
-					case 'no_spaces':
-						$validationArray = array('no_spaces' => '"'.$datasetField['db_column'].'" cannot contain spaces');
-						break;
-					case 'numeric':
-						$validationArray = array('numeric' => '"'.$datasetField['db_column'].'" must be numeric');
-						break;
-					case 'screen_name':
-						$validationArray = array('screen_name' => '"'.$datasetField['db_column'].'" is an invalid screen name');
-						break;
-				}
-				if ($validationArray) {
-					$fieldValuePicker['validation'] = $validationArray;
-				}
-				
-				// Set field label and value picker
-				$box['tabs']['actions']['fields']['label__'.$fieldId] = array(
-					'ord' => $ord + 500,
-					'same_row' => true,
-					'readonly' => true,
-					'type' => 'text',
-					'value' => $datasetField['db_column'],
-					'style' => 'width: 15em;');
-				$box['tabs']['actions']['fields'][$valueFieldName] = $fieldValuePicker;
-			}
-		}
-		
-	}
-	
-	
-	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		$datasetDetails = ze\dataset::details($box['key']['dataset']);
-		
-		// Include modules if needed
-		switch ($datasetDetails['extends_organizer_panel']) {
-			case 'zenario__locations/panel':
-				ze\module::inc('zenario_location_manager');
-				break;
-		}
-		
-		// Get link between fields IDs and column index
-		$keyValues = array();
-		$dataCount = 0;
-		$firstNameFieldDetails = $lastNameFieldDetails = false;
-		foreach ($box['tabs']['headers']['fields'] as $fieldName => $field) {
-			if (isset($field['type']) && ($field['type'] == 'select') && ze\ring::chopPrefix('database_column__', $fieldName)) {
-				if (!empty($field['value'])) {
-					
-					// Look for any custom columns that have been set
-					if (($field['value'] == 'name_split_on_first_space' || $field['value'] == 'name_split_on_last_space') && !$firstNameFieldDetails && !$lastNameFieldDetails) {
-						$firstNameFieldDetails = ze\dataset::fieldDetails('first_name', $datasetDetails);
-						$lastNameFieldDetails = ze\dataset::fieldDetails('last_name', $datasetDetails);
-					}
-					
-					$keyValues[$dataCount] = $field['value'];
-				}
-				$dataCount++;
-			}
-		}
-		
-		// Get the details of dataset fields
-		$datasetFieldDetails = self::getAllDatasetFieldDetails($box['key']['dataset']);
-		
-		// Get the values of fields set in step 4 which are the same for all values
-		$constantValues = array();
-		foreach ($datasetFieldDetails as $fieldId => $fieldDetails) {
-			$fieldName = 'actions/value__'.$fieldId;
-			if (isset($values[$fieldName]) && ($values[$fieldName] != '') && ($fieldDetails['type'] != 'checkboxes')) {
-				$constantValues[$fieldId] = $values[$fieldName];
-			}
-		}
-		
-		// Load lines to ignore
-		$errorLines = $box['key']['error_lines'] ? explode(',', $box['key']['error_lines']) : array();
-		$blankLines = $box['key']['blank_lines'] ? explode(',', $box['key']['blank_lines']) : array();
-		$warningLines = array();
-		if ($values['preview/error_options'] == 'skip_warning_lines') {
-			$warningLines = $box['key']['warning_lines'] ? explode(',', $box['key']['warning_lines']) : array();
-		}
-		$linesToSkip = array_merge($errorLines, $blankLines, $warningLines);
-		
-		
-		$keyLine = $values['headers/key_line'];
-		$unexpectedErrors = array();
-		if ($file = $values['file/file']) {
-			$path = ze\file::getPathOfUploadInCacheDir($file);
-			$mode = ($values['file/type'] == 'insert_data') ? 'insert' : 'update';
-			$importValues = array();
-			if (pathinfo($path, PATHINFO_EXTENSION) == 'csv') {
-				ini_set('auto_detect_line_endings', true);
-				$f = fopen($path, 'r');
-				$lineNumber = 0;
-				while ($line = fgets($f)) {
-					$lineNumber++;
-					
-					// Skip key line and any with errors
-					if (in_array($lineNumber, $linesToSkip) || $lineNumber == $keyLine) {
-						continue;
-					}
-					
-					// Add step 4 values
-					$importValues[$lineNumber] = $constantValues;
-					
-					$data = str_getcsv($line);
-					for ($dataCount = 0; $dataCount < count($data); $dataCount++) {
-						if (isset($keyValues[$dataCount])) {
-							$data[$dataCount] = trim($data[$dataCount]);
-							
-							// Add special cases
-							if ($keyValues[$dataCount] == 'name_split_on_first_space') {
-								if (($pos = strpos($data[$dataCount], ' ')) !== false) {
-									$importValues[$lineNumber][$firstNameFieldDetails['id']] = substr($data[$dataCount], 0, $pos);
-									$importValues[$lineNumber][$lastNameFieldDetails['id']] =  substr($data[$dataCount], $pos + 1);
-								} else {
-									$importValues[$lineNumber][$firstNameFieldDetails['id']] = $data[$dataCount];
+				//Get headers
+				$headers = [];
+				$path = ze\file::getPathOfUploadInCacheDir($values['file/file']);
+				if (pathinfo($path, PATHINFO_EXTENSION) == 'csv') {
+					ini_set('auto_detect_line_endings', true);
+					$file = fopen($path, 'r');
+					if ($file) {
+						$lineNumber = 0;
+						while ($line = fgets($file)) {
+							if (++$lineNumber == $values['headers/key_line']) {
+								$headers = str_getcsv($line);
+								
+								//Try and automatically find the headers if the first few lines are blank
+								if ($box['key']['guess_key_line']
+									&& count($headers) == 1
+									&& trim($headers[0]) == false 
+									&& isset($fields['headers/key_line']['values'][$values['headers/key_line'] + 1])
+								) {
+									$values['headers/key_line']++;
+									continue;
 								}
 								
-							} elseif ($keyValues[$dataCount] == 'name_split_on_last_space') {
-								if (($pos = strrpos($data[$dataCount], ' ')) !== false) {
-									$importValues[$lineNumber][$firstNameFieldDetails['id']] = substr($data[$dataCount], 0, $pos);
-									$importValues[$lineNumber][$lastNameFieldDetails['id']] = substr($data[$dataCount], $pos + 1);
-								} else {
-									$importValues[$lineNumber][$firstNameFieldDetails['id']] = $data[$dataCount];
-								}
-							
-							// Add normal data
-							} else {
-								$importValues[$lineNumber][$keyValues[$dataCount]] = $data[$dataCount];
+								break;
 							}
 						}
 					}
-				}
-				
-			} else {
-				require_once CMS_ROOT.'zenario/libs/manually_maintained/lgpl/PHPExcel/Classes/PHPExcel.php';
-				$inputFileType = PHPExcel_IOFactory::identify($path);
-				$objReader = PHPExcel_IOFactory::createReader($inputFileType);
-				$objReader->setReadDataOnly(true);
-				$objPHPExcel = $objReader->load($path);
-				$worksheet = $objPHPExcel->getSheet(0);
-				$startingColumn = 0;
-				$endingColumn = 0;
-				foreach ($worksheet->getRowIterator() as $row) {
-					$lineNumber = $row->getRowIndex();
-					// Skip errors, blanks and/or warning lines
-					if (in_array($lineNumber, $linesToSkip)) {
-						continue;
-					}
-					$dataCount = 0;
-					// Get the list of matched column headers and db_columns
-					$cellIterator = $row->getCellIterator();
-					$cellIterator->setIterateOnlyExistingCells(false);
-					// Set constant values
-					if ($lineNumber > $keyLine) {
-						$importValues[$lineNumber] = $constantValues;
-					}
-					foreach ($cellIterator as $cell) {
-						$value = $cell->getCalculatedValue();
-						$columnIndex = PHPExcel_Cell::columnIndexFromString($cell->getColumn());
-						if ($lineNumber == $keyLine) {
-							if (!is_null($value) && !$startingColumn) {
-								$startingColumn = $endingColumn = $columnIndex;
-							}
-							if ($startingColumn) {
-								if (empty($value)) {
+				} else {
+					require_once CMS_ROOT . 'zenario/libs/manually_maintained/lgpl/PHPExcel/Classes/PHPExcel.php';
+					//Get file type
+					$inputFileType = PHPExcel_IOFactory::identify($path);
+					//Create reader object
+					$objReader = PHPExcel_IOFactory::createReader($inputFileType);
+					$objReader->setReadDataOnly(true);
+					//Load spreadsheet
+					$objPHPExcel = $objReader->load($path);
+					$worksheet = $objPHPExcel->getSheet(0);
+					
+					$lineNumber = 0;
+					$blankLimit = 5;
+					$blankCount = 0;
+					foreach ($worksheet->getRowIterator() as $row) {
+						if (++$lineNumber == $values['headers/key_line']) {
+							$cellIterator = $row->getCellIterator();
+							foreach ($cellIterator as $cell) {
+								$cellValue = trim($cell->getCalculatedValue());
+								$headers[] = $cellValue;
+								$blankCount = ($cellValue == false) ? $blankCount + 1 : 0;
+								if ($blankCount >= $blankLimit) {
 									break;
 								}
-								if ($startingColumn != $columnIndex) {
-									$endingColumn++;
-								}
 							}
-						} else {
-							if (($columnIndex >= $startingColumn) && ($columnIndex <= $endingColumn)) {
-								if (!is_null($value) && isset($keyValues[$dataCount])) {
-									
-									// Add special cases
-									if ($keyValues[$dataCount] == 'name_split_on_first_space') {
-										if (($pos = strpos(trim($value), ' ')) !== false) {
-											$importValues[$lineNumber][$firstNameFieldDetails['id']] = substr(trim($value), 0, $pos);
-											$importValues[$lineNumber][$lastNameFieldDetails['id']] =  substr(trim($value), $pos + 1);
-										} else {
-											$importValues[$lineNumber][$firstNameFieldDetails['id']] = trim($value);
-										}
-										
-									} elseif ($keyValues[$dataCount] == 'name_split_on_last_space') {
-										if (($pos = strrpos(trim($value), ' ')) !== false) {
-											$importValues[$lineNumber][$firstNameFieldDetails['id']] = substr(trim($value), 0, $pos);
-											$importValues[$lineNumber][$lastNameFieldDetails['id']] = substr(trim($value), $pos + 1);
-										} else {
-											$importValues[$lineNumber][$firstNameFieldDetails['id']] = trim($value);
-										}
-										
-									// Add normal data
-									} else {
-										$importValues[$lineNumber][$keyValues[$dataCount]] = trim($value);
-									}
-								}
-								$dataCount++;
+							if ($blankCount) {
+								$headers = array_splice($headers, 0, -$blankCount);
+								$blankCount = 0;
 							}
-						}
-					}
-				}
-			}
-			// Import data
-			$unexpectedErrors = self::setImportData($values, $box['key']['dataset'], $importValues, $mode, $values['headers/insert_options'], $box['key']['ID_column']);
-			
-		}
-		
-		
-		// Send report email
-		if ($values['actions/email_report']) {
-			$adminDetails = ze\admin::details(ze\admin::id());
-			$path = ze\file::getPathOfUploadInCacheDir($values['file/file']);
-			$filename = pathinfo($path, PATHINFO_BASENAME);
-			$createOrUpdate = 'create';
-			if ($values['file/type'] == 'update_data') {
-				$createOrUpdate = 'update';
-			}
-			$body = "Import settings \n\n";
-			$body .= 'File: '.$filename."\n";
-			$body .= 'Mode: '.$createOrUpdate."\n";
-			$body .= 'Key line: '.$values['headers/key_line']."\n";
-			$body .= strip_tags($fields['actions/records_statement']['snippet']['html'])."\n\n";
-			$body .= "Error log: \n\n";
-			$errorLog = ($values['preview/problems'] ? $values['preview/problems'] : 'No errors or warnings');
-			$body .= $errorLog;
-			/*
-			if ($unexpectedErrors) {
-				$body .= "\n\nUnexpected Errors:\n\n";
-				$body .= $unexpectedErrors;
-			}
-			*/
-			ze\server::sendEmail('Dataset Import Report', $body, $adminDetails['email'], $addressToOverriddenBy, false, false, false, array(), array(), 'bulk', false);
-		}
-	}
-	
-	
-	
-	
-	
-	
-	private static function isGeneratedField($name, $field) {
-		return !in_array($name, array('key_line', 'desc', 'desc2', 'insert_desc', 'insert_options', 'update_desc', 'update_key_field', 'next', 'previous'));
-	}
-	
-	private static $step2FieldWidth = 20;
-	private static function generateFieldHeaders(&$box, $type) {
-		$value = 'Field names';
-		if ($type === 'csv') {
-			$value .= ' (from CSV file)';
-		} else {
-			$value .= ' (from spreadsheet)';
-		}
-		
-		$box['tabs']['headers']['fields']['file_column_headers'] = array(
-			'ord' => 3,
-			'snippet' => array(
-				'html' => '
-					<div style="width:' . (self::$step2FieldWidth + 1) . 'em;float:left;"><b>' . $value . '</b></div>
-					<div><b>Database columns</b></div>
-				'
-			),
-			'post_field_html' => '<br/>'
-		);
-	}
-	
-	private static function generateFieldRow(&$box, $ord, $value, $currentMatchedFields, $fieldId) {
-		$databaseColumnName = 'database_column__'.$value;
-		if (isset($currentMatchedFields[$databaseColumnName])) {
-			$fieldId = $currentMatchedFields[$databaseColumnName];
-		}
-		$box['tabs']['headers']['fields']['file_column__'.$value] = array(
-			'ord' => $ord + 500,
-			'same_row' => true,
-			'readonly' => true,
-			'type' => 'text',
-			'value' => $value,
-			'style' => 'width: ' . self::$step2FieldWidth . 'em;'
-		);
-		$box['tabs']['headers']['fields'][$databaseColumnName] = array(
-			'ord' => $ord + 500.5,
-			'same_row' => true,
-			'post_field_html' => '<br/>',
-			'type' => 'select',
-			'empty_value' => "-- Don't import --",
-			'values' => 'dataset_fields',
-			'value' => $fieldId
-		);
-	}
-	
-	
-	private static $ids = array();
-	private static $emails = array();
-	private static $screenNames = array();
-	private static $systemDataIDColumn = false;
-	
-	
-	private static function validateImportLine(&$problems, $datasetDetails, $datasetFieldDetails, $rowFieldIdLink, $lineValues, $lineNumber, $IDColumnIndex, $update, $insertOption, &$updateCount) {
-		
-		$userSystemFields = array();
-		$DBColumnValueIndexLink = array();
-		$errorCount = 0;
-		
-		$userImport = ($datasetDetails['extends_organizer_panel'] == 'zenario__users/panels/users');
-		$mergeOrOverwriteRow = false;
-		
-		foreach ($rowFieldIdLink as $ord => $fieldId) {
-			$field = false;
-			$columnIndex = $ord + 1;
-			
-			if (isset($datasetFieldDetails[$fieldId])) {
-				$field = $datasetFieldDetails[$fieldId];
-				$DBColumnValueIndexLink[$field['db_column']] = $columnIndex;
-			}
-			
-			// Validate fields
-			if ($field && $field['db_column'] && isset($lineValues[$ord])) {
-				
-				$value = trim($lineValues[$ord]);
-				
-				// If updating, ensure there is a matching field, and not multiple entries
-				if (($IDColumnIndex !== false) && ($ord == $IDColumnIndex)) {
-					if ($value === '') {
-						$errorMessage = 'ID field is blank';
-						self::addErrorMessage($problems, $errorCount, $errorMessage, $lineNumber, $columnIndex);
-					} else {
-						// Record duplicates of chosen ID field in import
-						if ($errorLines = self::recordUniqueImportValue(self::$ids, $value, $lineNumber)) {
-							$errorMessage = 'More than one line in the file has a matching ID column ('.implode(', ',$errorLines).')';
-							self::addErrorMessage($problems, $errorCount, $errorMessage, $lineNumber, $columnIndex);
-						}
-						
-						// Find matching records to update by DB Column
-						$matchingRows = array();
-						if ($field['is_system_field']) {
-							$matchingRows = ze\row::query($datasetDetails['system_table'], $field['db_column'], array($field['db_column'] => $value));
-						} else {
-							$matchingRows = ze\row::query($datasetDetails['table'], $field['db_column'], array($field['db_column'] => $value));
-						}
-						
-						$rowCount = ze\sql::numRows($matchingRows);
-						if ($rowCount == 0) {
-							$errorMessage = 'No existing record found for ID column '.$field['db_column'];
-							self::addErrorMessage($problems, $errorCount, $errorMessage, $lineNumber, $columnIndex);
-						} elseif ($rowCount > 1) {
-							$errorMessage = 'More than one existing record found for ID column '.$field['db_column'];
-							self::addErrorMessage($problems, $errorCount, $errorMessage, $lineNumber, $columnIndex);
-						}
-					}
-				}
-				
-				// Custom users validation
-				if ($userImport && $field['is_system_field']) {
-					$userSystemFields[$field['db_column']] = $value;
-					if (($field['db_column'] == 'email') && ($value !== '')) {
-						if ($errorLines = self::recordUniqueImportValue(self::$emails, $value, $lineNumber)) {
-							$errorMessage = 'More than one line in the file has the same email address ('.implode(', ',$errorLines).')';
-							self::addErrorMessage($problems, $errorCount, $errorMessage, $lineNumber, $columnIndex);
-						} else {
-							// Check if this should be merged/overwrite an existing user
-							if (!$update && ($insertOption != 'no_update')) {
-								$sql = '
-									SELECT COUNT(*)
-									FROM ' . DB_NAME_PREFIX . 'users
-									WHERE email = "' . ze\escape::sql($value) . '"';
-								$result = ze\sql::select($sql);
-								$row = ze\sql::fetchRow($result);
-								$count = $row[0];
-								
-								if ($count == 1) {
-									$mergeOrOverwriteRow = true;
-								} elseif ($count > 1) {
-									$errorMessage = 'More than one user has the same email address';
-									self::addErrorMessage($problems, $errorCount, $errorMessage, $lineNumber, $columnIndex);
-								}
+							//Try and automatically find the headers if the first few lines are blank
+							if ($box['key']['guess_key_line']
+								&& empty($headers)
+								&& isset($fields['headers/key_line']['values'][$values['headers/key_line'] + 1])
+							) {
+								$values['headers/key_line']++;
+								continue;
 							}
-						}
-					} elseif ($field['db_column'] == 'screen_name') {
-						if ($errorLines = self::recordUniqueImportValue(self::$screenNames, $value, $lineNumber)) {
-							$errorMessage = 'More than one line in the file has the same screen name ('.implode(', ',$errorLines).')';
-							self::addErrorMessage($problems, $errorCount, $errorMessage, $lineNumber, $columnIndex);
-						}
-					}
-				}
-				
-				// Validate fields with validation rules
-				$validationError = false;
-				if ($value !== '') {
-					switch ($field['validation']) {
-						case 'email':
-							// Ignore this for users email as it's validated with ze\userAdm::isInvalid()
-							if (!($userImport && ($field['db_column'] == 'email'))) {
-								if (!ze\ring::validateEmailAddress($value)) {
-									$validationError = true;
-									if (!$field['validation_message'])  {
-										$validationErrorMessages[] = 'Value is in incorrect format for email';
-									} else {
-										$validationErrorMessages[] = $field['validation_message'];
-									}
-								}
-							}
+							
 							break;
-						case 'emails':
-							if (!ze\ring::validateEmailAddress($value, true)) {
-								$validationError = true;
-								if (!$field['validation_message']) {
-									$validationErrorMessages[] = 'Value is in incorrect format for emails';
-								} else {
-									$validationErrorMessages[] = $field['validation_message'];
-								}
-							}
-							break;
-						case 'no_spaces':
-							if (preg_replace('/\S/', '', $value)) {
-								$validationError = true;
-								if (!$field['validation_message']) {
-									$validationErrorMessages[] = 'Value cannot contain spaces';
-								} else {
-									$validationErrorMessages[] = $field['validation_message'];
-								}
-							}
-							break;
-						case 'numeric':
-							if (!is_numeric($value)) {
-								$validationError = true;
-								if (!$field['validation_message']) {
-									$validationErrorMessages[] = 'Value must be numeric';
-								} else {
-									$validationErrorMessages[] = $field['validation_message'];
-								}
-							}
-							break;
-						case 'screen_name':
-							if (!ze\ring::validateScreenName($value)) {
-								$validationError = true;
-								if (!$field['validation_message']) {
-									$validationErrorMessages[] = 'Screen name is invalid';
-								} else {
-									$validationErrorMessages[] = $field['validation_message'];
-								}
-							}
-							break;
-					}
-					if ($validationError) {
-						foreach ($validationErrorMessages as $key => $errorMessage) {
-							self::addErrorMessage($problems, $errorCount, $errorMessage, $lineNumber, $columnIndex);
 						}
 					}
 				}
+				$box['key']['guess_key_line'] = 0;
+				$box['old_values']['key_line'] = $values['headers/key_line'];
 				
-				// Validate required fields
-				if ($field['required'] && ($value === '')) {
-					if (!$errorMessage = $field['required_message']) {
-						$errorMessage = 'Value is required but missing';
-					}
-					self::addErrorMessage($problems, $errorCount, $errorMessage, $lineNumber, $columnIndex);
-				}
-				
-				// Validate fields with a values source
-				if ($field['values_source']) {
-					$lov = ze\dataset::centralisedListValues($field['values_source']);
-					if (!isset($lov[$value])) {
-						$cannotImport = true;
-						// If this is a centralised list of countries, allow user to enter country names
-						if ($field['values_source'] == 'zenario_country_manager::getActiveCountries') {
-							$searchArray = array_map('strtolower', $lov);
-							if (in_array(strtolower($value), $searchArray)) {
-								$cannotImport = false;
-							}
-						}
-						
-						if ($cannotImport) {
-							$displayValue = $value;
-							if (strlen($value) >= 33) {
-								$displayValue = substr($value, 0, 30) . '...';
-							}
-							$errorMessage = 'Unknown list value "' . $displayValue . '"';
-							self::addErrorMessage($problems, $errorCount, $errorMessage, $lineNumber, $columnIndex);
-						}
+				$datasetFieldColumns = [];
+				foreach ($box['lovs']['dataset_fields'] as $datasetFieldId => $datasetField) {
+					if (isset($datasetField['db_column'])) {
+						$datasetFieldColumns[$datasetField['db_column']] = $datasetFieldId;
 					}
 				}
 				
-			
-			} elseif (($fieldId == 'id') && isset($lineValues[$ord])) {
+				$fields['headers/update_key_field']['values'] = [];
 				
-				if ($value = trim($lineValues[$ord])) {
-					if (!self::$systemDataIDColumn) {
-						self::$systemDataIDColumn = ze\row::idColumnOfTable($datasetDetails['system_table']);
+				//Create inputs
+				$ord = 500;
+				foreach ($headers as $i => $header) {
+					$header = trim($header);
+					if ($blankHeader = !$header) {
+						$header = ze\admin::phrase('[Header field empty]');
 					}
-					$currentRow = ze\row::getArray($datasetDetails['system_table'], self::$systemDataIDColumn, array(self::$systemDataIDColumn => $value));
-					$rowCount = count($currentRow);
-					if ($rowCount == 0) {
-						$errorMessage = 'No existing record found for ID column '.self::$systemDataIDColumn;
-						self::addErrorMessage($problems, $errorCount, $errorMessage, $lineNumber, $columnIndex);
+					foreach ($box['tabs']['headers']['template_fields'] as $name => $field) {
+						$fieldName = $name . '_' . $i;
+						$field['ord'] = ++$ord;
+						if ($name == 'file_column_name') {
+							$field['value'] = (string)$header;
+						} elseif ($name == 'file_column_match') {
+							$field['readonly'] = $blankHeader;
+							//Prefill this field if it matches any database column names
+							$field['value'] = $field['current_value'] = (string)($datasetFieldColumns[strtolower($header)] ?? false);
+						}
+						$box['tabs']['headers']['fields'][$fieldName] = $field;
 					}
 					
-					if (($IDColumnIndex !== false) && ($ord == $IDColumnIndex)) {
-						if ($value === '') {
-							$errorMessage = 'ID field is blank';
-							self::addErrorMessage($problems, $errorCount, $errorMessage, $lineNumber, $columnIndex);
-						} else {
-							// Record duplicates of chosen ID field in import
-							if ($errorLines = self::recordUniqueImportValue(self::$ids, $value, $lineNumber)) {
-								$errorMessage = 'More than one line in the file has a matching ID column ('.implode(', ',$errorLines).')';
-								self::addErrorMessage($problems, $errorCount, $errorMessage, $lineNumber, $columnIndex);
+					//Set "update key field" values
+					if (!$blankHeader) {
+						$fields['headers/update_key_field']['values'][$i] = ['label' => $header];
+					}
+				}
+				$box['key']['header_count'] = count($headers);
+				ze\tuix::readValues($box, $fields, $values, $changes, $filling = false, $resetErrors = false);
+			}
+			
+			//Update dataset field descriptions
+			for ($i = 0; $i < $box['key']['header_count']; $i++) {
+				$desc = '';
+				if (($datasetFieldId = $values['headers/file_column_match_' . $i])
+					&& ($datasetField = $box['lovs']['dataset_fields'][$datasetFieldId] ?? false)
+					&& isset($datasetField['type'])
+				) {
+					$englishTypeName = ze\dataset::englishTypeName($datasetField['type']);
+					$desc = $englishTypeName;
+					switch ($datasetField['type']) {
+						case 'checkbox':
+						case 'group':
+							$desc .= ', values 0 or 1';
+							break;
+						case 'select':
+						case 'radios':
+							$desc .= ', internal value ID';
+							break;
+						case 'date':
+							$desc .= ', MySQL format (2019-01-01)';
+							break;
+						case 'centralised_radios':
+						case 'centralised_select':
+							$desc .= ', value ID';
+							break;
+						case 'editor': 
+						case 'text':
+						case 'textarea': 
+						case 'url':
+							$table = $datasetField['is_system_field'] ? $dataset['system_table'] : $dataset['table'];
+							$sql = '
+								SELECT COLUMN_NAME, CHARACTER_MAXIMUM_LENGTH
+								FROM information_schema.columns
+								WHERE table_schema = "' . DBNAME . '"
+								AND table_name = "' . ze\escape::sql(DB_NAME_PREFIX . $table) . '"
+								AND COLUMN_NAME = "' . ze\escape::sql($datasetField['db_column']) . '"';
+							$result = ze\sql::select($sql);
+							$row = ze\sql::fetchRow($result);
+							if ($row && $row[1]) {
+								$desc .= ', max ' . $row[1] . ' characters';
+							}
+							break;
+					}
+				}
+				$fields['headers/file_column_description_' . $i]['snippet']['html'] = $desc;
+			}
+			
+			
+		} elseif ($box['tab'] == 'preview') {
+			$headerList = [];
+			foreach ($box['tabs']['headers']['fields'] as $name => $field) {
+				if (strpos($name, 'file_column_match') === 0) {
+					$headerList[] = $values['headers/' . $name];
+				}
+			}
+			$headerList = implode(',', $headerList);
+			if ($box['old_values']['header_list'] != $headerList) {
+				$box['old_values']['header_list'] = $headerList;
+				//Actions when header list is changed
+				$box['key']['update_preview'] = 1;
+			}
+			
+			//Show a preview of the import file
+			if ($box['key']['update_preview']) {
+				$box['key']['update_preview'] = 0;
+				$box['key']['update_actions'] = 1;
+				
+				$dataset = ze\dataset::details($box['key']['dataset']);
+				$lineDatasetFields = [];
+				foreach ($box['tabs']['headers']['fields'] as $name => $field) {
+					if (strpos($name, 'file_column_match') === 0) {
+						$value = false;
+						if ($values['headers/' . $name]) {
+							if (is_numeric($values['headers/' . $name])) {
+								$value = ze\dataset::fieldDetails($values['headers/' . $name]);
+							} else {
+								$value = $values['headers/' . $name];
+							}
+						}
+						$lineDatasetFields[] = $value;
+					}
+				}
+								
+				$previewLinesLimit = 200;
+				$previewString = '';
+				$totalReadableLines = 0;
+				$totalUpdateCount = 0;
+				$totalErrorCount = 0;
+				$values['preview/problems'] = '';
+				
+				$linesToSkip = [];
+				
+				$path = ze\file::getPathOfUploadInCacheDir($values['file/file']);
+				if (pathinfo($path, PATHINFO_EXTENSION) == 'csv') {
+					ini_set('auto_detect_line_endings', true);
+					$file = fopen($path, 'r');
+					if ($file) {
+						$lineNumber = 0;
+						while ($line = fgets($file)) {
+							++$lineNumber;
+							//Add line to preview
+							if ($lineNumber <= $previewLinesLimit) {
+								$previewString .= $line;
+							}
+							//Validate line
+							if ($lineNumber > $values['headers/key_line']) {
+								$line = str_getcsv($line);
+								$errorCount = $this->validateImportRecord($lineNumber, $line, $lineDatasetFields, $dataset, $values, $totalUpdateCount);
+								
+								//Make sure the line has the correct number of fields
+								if (count($line) < count($lineDatasetFields)) {
+									$error = ze\admin::phrase('Too few fields');
+									$this->writeError($error, $errorCount, $values, $lineNumber);
+								} elseif (count($line) > count($lineDatasetFields)) {
+									$error = ze\admin::phrase('Too many fields');
+									$this->writeError($error, $errorCount, $values, $lineNumber);
+								}
+								
+								$totalErrorCount += $errorCount;
+								if (!$errorCount) {
+									++$totalReadableLines;
+								} else {
+									$linesToSkip[] = $lineNumber;
+								}
 							}
 						}
 					}
+				} else {
+					$csv = fopen('php://temp/', 'r+');
+					
+					require_once CMS_ROOT . 'zenario/libs/manually_maintained/lgpl/PHPExcel/Classes/PHPExcel.php';
+					//Get file type
+					$inputFileType = PHPExcel_IOFactory::identify($path);
+					//Create reader object
+					$objReader = PHPExcel_IOFactory::createReader($inputFileType);
+					$objReader->setReadDataOnly(true);
+					//Load spreadsheet
+					$objPHPExcel = $objReader->load($path);
+					$worksheet = $objPHPExcel->getSheet(0);
+				
+					$lineNumber = 0;
+					foreach ($worksheet->getRowIterator() as $row) {
+						++$lineNumber;
+						$cellIterator = $row->getCellIterator();
+						$line = [];
+						foreach ($cellIterator as $cell) {
+							$cellValue = $cell->getCalculatedValue();
+							$line[] = $cellValue;
+						}
+						//Add line to preview
+						if ($lineNumber <= $previewLinesLimit) {
+							fputcsv($csv, $line);
+						}
+						//Validate line
+						if ($lineNumber > $values['headers/key_line']) {
+							$errorCount = $this->validateImportRecord($lineNumber, $line, $lineDatasetFields, $dataset, $values, $totalUpdateCount);
+							$totalErrorCount += $errorCount;
+							if (!$errorCount) {
+								++$totalReadableLines;
+							} else {
+								$linesToSkip[] = $lineNumber;
+							}
+						}
+					}
+					rewind($csv);
+					$previewString = stream_get_contents($csv);
+				}
+				$values['preview/csv_preview'] = $previewString;
+				$fields['preview/problems']['label'] = ze\admin::nphrase('Problems (1 error)', 'Problems ([[n]] errors):', $totalErrorCount, ['n' => $totalErrorCount]);
+				$fields['preview/total_readable_lines']['snippet']['html'] = '<b>' . ze\admin::phrase('Total readable lines:') . '</b> '. $totalReadableLines;
+				
+				$box['key']['lines_to_skip'] = implode(',', $linesToSkip);
+				
+				//Update record statement on actions tab
+				$html = '';
+				if ($values['file/type'] == 'insert_data') {
+					$created = $totalReadableLines - $totalUpdateCount;
+					$box['key']['new_records'] = $created;
+					$html = ze\admin::nphrase('<b>1</b> new record will be created.', '<b>[[n]]</b> new records will be created.', $created, ['n' => $created]);
+					if ($totalUpdateCount) {
+						$html .= ' ' . ze\admin::nphrase('<b>1</b> record will be updated.', '<b>[[n]]</b> record will be updated.', $totalUpdateCount, ['n' => $totalUpdateCount]);
+					}
+				} else {
+					$html = ze\admin::nphrase('<b>1</b> record will be updated.', '<b>[[n]]</b> records will be updated.', $totalReadableLines, ['n' => $totalReadableLines]);
+				}
+				$fields['actions/records_statement']['snippet']['html'] = $html;
+			}
+		} elseif ($box['tab'] == 'actions') {
+			
+			$datasetId = $box['key']['dataset'];
+			$dataset = ze\dataset::details($datasetId);
+			
+			if ($box['key']['update_actions']) {
+				$box['key']['update_actions'] = 0;
+				
+				
+				$datasetFields = $box['lovs']['dataset_fields'];
+				
+				$datasetTabs = [];
+				$result = ze\row::query('custom_dataset_tabs', true, ['dataset_id' => $datasetId], 'ord');
+				while ($row = ze\sql::fetchAssoc($result)) {
+					$datasetTabs[$row['name']] = $row;
 				}
 				
+				//Order dataset fields correctly
+				uasort($datasetFields, function($a, $b) use($datasetTabs) {
+					if (!empty($a['tab_name']) && !empty($b['tab_name'])) {
+						if ($a['tab_name'] == $b['tab_name']) {
+							return $a['ord'] > $b['ord'] ? 1 : -1;
+						} else {
+							return $datasetTabs[$a['tab_name']]['ord'] > $datasetTabs[$b['tab_name']]['ord'] ? 1 : -1;
+						}
+					}
+					return 0;
+				});
+				
+				
+				//Remove dataset fields set in step 2
+				foreach ($box['tabs']['headers']['fields'] as $name => $field) {
+					if (strpos($name, 'file_column_match') === 0 && $values['headers/' . $name]) {
+						unset($datasetFields[$values['headers/' . $name]]);
+					}
+				}
+				
+				//Delete all previously generated data fields
+				foreach ($box['tabs']['actions']['fields'] as $name => $field) {
+					if (strpos($name, 'dataset_field_name') === 0 || strpos($name, 'dataset_field_value') === 0) {
+						unset($box['tabs']['actions']['fields'][$name]);
+					}
+				}
+				
+				$ord = 500;	
+				foreach ($datasetFields as $datasetFieldId => $datasetField) {	
+					if (empty($datasetField['db_column']) || empty($datasetField['tab_name'])) {
+						continue;
+					}
+					
+					//Hide certain fields when importing users
+					if ($dataset['system_table'] == 'users') {
+						if (in_array($datasetField['db_column'], ['screen_name_confirmed', 'created_date', 'modified_date', 'last_login', 'last_profile_update_in_frontend', 'suspended_date'])) {
+							continue;
+						}
+					}
+					
+					foreach ($box['tabs']['actions']['template_fields'] as $name => $field) {
+						$fieldName = $name . '_' . $datasetFieldId;
+						
+						if ($name == 'dataset_field_name') {
+							$field['ord'] = $ord - 1;
+							$field['value'] = $datasetField['db_column'];
+						} elseif ($name == 'dataset_field_value') {
+							$field['ord'] = $ord += 2;
+							$field['value'] = $values['actions/' . $fieldName] ?? false;
+							switch ($datasetField['type']) {
+								case 'group':
+								case 'checkbox':
+									$field['type'] = 'checkbox';
+									break;
+								case 'date':
+									$field['type'] = 'date';
+									break;
+								case 'editor':
+								case 'textarea':
+								case 'url':
+									$field['maxlength'] = 255;
+									break;
+								case 'text':
+									//If importing users don't show system text fields for auto complete list
+									if ($dataset['system_table'] == 'users' && $datasetField['is_system_field']) {
+										continue 3;
+									}
+									$field['maxlength'] = 255;
+									break;
+								case 'radios':
+								case 'select':
+								case 'centralised_radios':
+								case 'centralised_select':
+									$field['values'] = ze\dataset::fieldLOV($datasetFieldId);
+									$field['type'] = 'select';
+									if ($dataset['system_table'] == 'users' && $datasetField['db_column'] == 'status') {
+										$field['empty_value'] = '-- Select --';
+										$field['format_onchange'] = true;
+									} else {
+										$field['empty_value'] = "-- Don't import --";
+									}
+									break;
+								default:
+									continue 3;
+							}
+						}
+						$box['tabs']['actions']['fields'][$fieldName] = $field;
+					}
+				}
+				ze\tuix::readValues($box, $fields, $values, $changes, $filling = false, $resetErrors = false);
+			}
+			
+			if ($dataset['system_table'] == 'users') {
+				//Send welcome email visibility
+				$statusDatasetField = ze\dataset::fieldDetails('status', $dataset);
+				$fieldName = 'dataset_field_value_' . $statusDatasetField['id'];
+				$fields['actions/send_welcome_email']['hidden'] = ($values['file/type'] != 'insert_data') || !isset($values['actions/' . $fieldName]) || ($values['actions/' . $fieldName] != 'active');
+				
+				//Show a warning if importing contacts with screen_name set
+				$screenNameSelected = false;
+				$screenNameDatastField = ze\dataset::fieldDetails('screen_name', $dataset);
+				foreach (explode(',', $box['old_values']['header_list']) as $datasetFieldId) {
+					if ($screenNameDatastField['id'] == $datasetFieldId) {
+						$screenNameSelected = true;
+						break;
+					}
+				}
+				$box['tabs']['actions']['notices']['screen_name_for_contacts']['show'] = $values['actions/' . $fieldName] == 'contact' && $screenNameSelected;
+			}
+		}
+	}
+	
+	private $unqiueIds = [];
+	private $uniqueEmails = [];
+	private $uniqueScreenNames = [];
+	
+	private $centralisedLists = [];
+	
+	private function validateImportRecord($lineNumber, $line, $lineDatasetFields, $dataset, &$values, &$totalUpdateCount) {
+		$errorCount = 0;
+		$userSystemFields = [];
+		$columnNumberLink = [];
+		$mergeOrOverwriteRecord = false;
+		
+		
+		//Validate fields in record
+		foreach ($lineDatasetFields as $index => $datasetField) {
+			if (isset($line[$index])) {
+				$value = trim($line[$index]);
+			} else {
+				$value = '';
+			}
+			$columnNumber = $index + 1;
+			
+			//If updating, ensure there is a matching field, and not multiple entries
+			if ($values['file/type'] == 'update_data' && $index == $values['headers/update_key_field']) {
+				if (!$value) {
+					$error = ze\admin::phrase('ID field is blank');
+					$this->writeError($error, $errorCount, $values, $lineNumber, $columnNumber);
+				} else {
+					//Record duplicates of chosen ID field in import
+					if ($lineNumbers = $this->checkUniqueValue($lineNumber, $value, $this->unqiueIds)) {
+						$error = ze\admin::phrase('More than one line in the file has a matching ID column ([[lines]])', ['lines' => implode(', ', $lineNumbers)]);
+						$this->writeError($error, $errorCount, $values, $lineNumber, $columnNumber);
+					}
+					
+					//Check single matching record exists
+					if ($datasetField == 'id') {
+						$table = !empty($dataset['system_table']) ? $dataset['system_table'] : $dataset['table'];
+						$idColumn = ze\row::idColumnOfTable($table);
+						$existingRecordCount = ze\row::count($dataset['system_table'], [$idColumn => $value]);
+					} elseif ($datasetField['is_system_field']) {
+						$existingRecordCount = ze\row::count($dataset['system_table'], [$datasetField['db_column'] => $value]);
+					} else {
+						$existingRecordCount = ze\row::count($dataset['table'], [$datasetField['db_column'] => $value]);
+					}
+					if ($existingRecordCount == 0) {
+						$error = ze\admin::phrase('No existing record found for ID column "[[db_column]]"', $datasetField);
+						$this->writeError($error, $errorCount, $values, $lineNumber, $columnNumber);
+					} elseif ($existingRecordCount > 1) {
+						$error = ze\admin::phrase('More than one existing record found for ID column "[[db_column]]"', $datasetField);
+						$this->writeError($error, $errorCount, $values, $lineNumber, $columnNumber);
+					}
+				}
+			}
+			
+			if (!is_array($datasetField)) {
+				continue;
+			}
+			
+			$columnNumberLink[$datasetField['db_column']] = $columnNumber;
+			
+			//Custom users validation
+			if ($dataset['system_table'] == 'users' && $datasetField['is_system_field']) {
+				$userSystemFields[$datasetField['db_column']] = $value;
+				if ($datasetField['db_column'] == 'email') {
+					//Check email is unique
+					if ($lineNumbers = $this->checkUniqueValue($lineNumber, $value, $this->uniqueEmails)) {
+						$error = ze\admin::phrase('More than one line in the file has the same email address ([[lines]])', ['lines' => implode(', ', $lineNumbers)]);
+						$this->writeError($error, $errorCount, $values, $lineNumber, $columnNumber);
+					} elseif ($values['file/type'] == 'insert_data' && $values['headers/insert_options'] != 'no_update') {
+						$count = ze\row::count($dataset['system_table'], [$datasetField['db_column'] => $value]);
+						if ($count >= 1) {
+							$mergeOrOverwriteRecord = true;
+						}
+					}
+				} elseif ($datasetField['db_column'] == 'screen_name') {
+					//Check screen_name is unique
+					if ($lineNumbers = $this->checkUniqueValue($lineNumber, $value, $this->uniqueScreenNames)) {
+						$error = ze\admin::phrase('More than one line in the file has the same screen name ([[lines]])', ['lines' => implode(', ', $lineNumbers)]);
+						$this->writeError($error, $errorCount, $values, $lineNumber, $columnNumber);
+					}
+				}
+			}
+			
+			//Check dataset field validation rules
+			if ($value !== '') {
+				switch ($datasetField['validation']) {
+					case 'email':
+						//Ignore this for users email as it's validated with ze\userAdm::isInvalid()
+						if (!($dataset['system_table'] == 'users' && $datasetField['db_column'] == 'email')) {
+							if (!ze\ring::validateEmailAddress($value)) {
+								if (!$error = $datasetField['validation_message'])  {
+									$error = 'Value is in incorrect format for email';
+								}
+								$this->writeError($error, $errorCount, $values, $lineNumber, $columnNumber);
+							}
+						}
+						break;
+					case 'emails':
+						if (!ze\ring::validateEmailAddress($value, true)) {
+							if (!$error = $datasetField['validation_message']) {
+								$error = 'Value is in incorrect format for emails';
+							}
+							$this->writeError($error, $errorCount, $values, $lineNumber, $columnNumber);
+						}
+						break;
+					case 'no_spaces':
+						if (preg_replace('/\S/', '', $value)) {
+							if (!$error = $datasetField['validation_message']) {
+								$error = 'Value cannot contain spaces';
+							}
+							$this->writeError($error, $errorCount, $values, $lineNumber, $columnNumber);
+						}
+						break;
+					case 'numeric':
+						if (!is_numeric($value)) {
+							if (!$error = $datasetField['validation_message']) {
+								$error = 'Value must be numeric';
+							}
+							$this->writeError($error, $errorCount, $values, $lineNumber, $columnNumber);
+						}
+						break;
+					case 'screen_name':
+						if (!ze\ring::validateScreenName($value)) {
+							if (!$error = $datasetField['validation_message']) {
+								$error = 'Screen name is invalid';
+							}
+							$this->writeError($error, $errorCount, $values, $lineNumber, $columnNumber);
+						}
+						break;
+				}
+			}
+			
+			//Validate required fields
+			if ($datasetField['required'] && ($value === '')) {
+				if (!$error = $datasetField['required_message']) {
+					$error = 'Value is required but missing';
+				}
+				$this->writeError($error, $errorCount, $values, $lineNumber, $columnNumber);
+			}
+			
+			//Validate fields with a values source
+			if ($datasetField['values_source']) {
+				if (!isset($this->centralisedLists[$datasetField['values_source']])) {
+					$this->centralisedLists[$datasetField['values_source']] = ze\dataset::centralisedListValues($datasetField['values_source']);
+				}
+				$lov = $this->centralisedLists[$datasetField['values_source']];
+				
+				if (!isset($lov[$value])) {
+					$cannotImport = true;
+					//If this is a centralised list of countries, allow user to enter country names
+					if ($datasetField['values_source'] == 'zenario_country_manager::getActiveCountries') {
+						$searchArray = array_map('strtolower', $lov);
+						if (in_array(strtolower($value), $searchArray)) {
+							$cannotImport = false;
+						}
+					}
+					if ($cannotImport) {
+						$displayValue = $value;
+						if (strlen($value) >= 33) {
+							$displayValue = substr($value, 0, 30) . '...';
+						}
+						$error = ze\admin::phrase('Unknown list value "[[value]]"', ['value' => $displayValue]);
+						$this->writeError($error, $errorCount, $values, $lineNumber, $columnNumber);
+					}
+				}
 			}
 		}
 		
-		if (!$update && $userImport && !$mergeOrOverwriteRow) {
-			
-			$userErrors = ze\userAdm::isInvalid($userSystemFields);
-			if (is_object($userErrors) && $userErrors->errors) {
-				
-				foreach ($userErrors->errors as $db_column => $errorMessage) {
-					$columnIndex = false;
-					if (!empty($DBColumnValueIndexLink[$db_column])) {
-						$columnIndex = $DBColumnValueIndexLink[$db_column];
+		if ($values['file/type'] == 'insert_data' && $dataset['system_table'] == 'users' && !$mergeOrOverwriteRecord) {
+			$result = ze\userAdm::isInvalid($userSystemFields);
+			if (ze::isError($result)) {
+				foreach ($result->errors as $dbColumn => $error) {
+					$columnNumber = false;
+					if (isset($columnNumberLink[$dbColumn])) {
+						$columnNumber = $columnNumberLink[$dbColumn];
 					}
-					switch ($errorMessage) {
+					switch ($error) {
 						case '_ERROR_SCREEN_NAME_INVALID':
-							$errorMessage = 'Screen name invalid';
+							$error = ze\admin::phrase('Screen name invalid');
 							break;
 						case '_ERROR_SCREEN_NAME_IN_USE':
-							$errorMessage = 'Screen name in use';
+							$error = ze\admin::phrase('Screen name in use');
 							break;
 						case '_ERROR_EMAIL_INVALID':
-							$errorMessage = 'Value is in incorrect format for email';
+							$error = ze\admin::phrase('Value is in incorrect format for email');
 							break;
 						case '_ERROR_EMAIL_NAME_IN_USE':
-							$errorMessage = 'Email in use';
+							$error = ze\admin::phrase('Email in use');
 							break;
 					}
-					self::addErrorMessage($problems, $errorCount, $errorMessage, $lineNumber, $columnIndex);
+					$this->writeError($error, $errorCount, $values, $lineNumber, $columnNumber);
 				}
 			}
 		}
 		
-		if ($errorCount == 0 && $mergeOrOverwriteRow) {
-			++$updateCount;
+		if (!$errorCount && $mergeOrOverwriteRecord) {
+			++$totalUpdateCount;
 		}
 		
 		return $errorCount;
 	}
 	
-	private static function recordUniqueImportValue(&$array, $value, $lineNumber) {
-		if (is_string($value)) {
-			$value = strtolower($value);
-		}
-		if (!isset($array[$value])) {
-			$array[$value] = $lineNumber;
-		} elseif (!is_array($array[$value])) {
-			$array[$value] = array($array[$value], $lineNumber);
-			return $array[$value];
-		} else {
-			$array[$value][] = $lineNumber;
-			return $array[$value];
-		}
-		return false;
-	}
-	
-	private static function addErrorMessage(&$problems, &$errorCount, $errorMessage, $lineNumber, $columnNumber) {
-		if ($columnNumber) {
-			$message = 'Error (Line [[line]], Value [[value]]): [[message]][[EOL]]';
-		} else {
-			$message = 'Error (Line [[line]]): [[message]][[EOL]]';
-		}
-		$problems .= ze\admin::phrase($message, array(
-			'line' => $lineNumber,
-			'value' => $columnNumber,
-			'message' => $errorMessage,
-			'EOL' => PHP_EOL
-		));
+	private function writeError($error, &$errorCount, &$values, $lineNumber, $columnNumber = false) {
 		++$errorCount;
-	}
-	
-	private static function getAllDatasetFieldDetails($dataset) {
-		$datasetFieldDetails = array();
-		$sql = '
-			SELECT 
-				f.id, 
-				f.is_system_field,
-				f.db_column, 
-				f.validation, 
-				f.validation_message, 
-				f.required, 
-				f.required_message, 
-				f.type, 
-				f.values_source, 
-				f.parent_id,
-				f.is_system_field
-			FROM '.DB_NAME_PREFIX.'custom_dataset_fields f
-			INNER JOIN '.DB_NAME_PREFIX.'custom_dataset_tabs t
-				ON (f.dataset_id = t.dataset_id) AND (f.tab_name = t.name)
-			WHERE f.dataset_id = '.(int)$dataset. '
-			AND f.db_column != ""
-			ORDER BY t.ord, f.ord';
-		$result = ze\sql::select($sql);
-		while ($row = ze\sql::fetchAssoc($result)) {
-			$datasetFieldDetails[$row['id']] = $row;
+		if ($columnNumber) {
+			$error = ze\admin::phrase('Error (Line [[line]], Value [[value]]): [[message]]', ['line' => $lineNumber, 'value' => $columnNumber, 'message' => $error]);
+		} else {
+			$error = ze\admin::phrase('Error (Line [[line]]): [[message]]', ['line' => $lineNumber, 'message' => $error]);
 		}
-		return $datasetFieldDetails;
+		$values['preview/problems'] .= $error . PHP_EOL;
 	}
 	
-	private static function setImportData($values, $datasetId, $importData, $mode, $insertMode, $keyFieldID) {
-		$datasetDetails = ze\dataset::details($datasetId);
-		$systemDataIDColumn = !empty($datasetDetails['system_table']) ? ze\row::idColumnOfTable($datasetDetails['system_table']) : false;
-		$customDataIDColumn = !empty($datasetDetails['table']) ? ze\row::idColumnOfTable($datasetDetails['table']) : false;
+	private function checkUniqueValue($lineNumber, $value, $uniqueValues) {
+		if (!isset($uniqueValues[$value])) {
+			$uniqueValues[$value] = $lineNumber;
+			return false;
+		} elseif (!is_array($uniqueValues[$value])) {
+			$uniqueValues[$value] = [$uniqueValues[$value], $lineNumber];
+			return $uniqueValues[$value];
+		} else {
+			$uniqueValues[$value][] = $lineNumber;
+			return $uniqueValues[$value];
+		}
+	}
+	
+	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+		//Include required modules
+		$dataset = ze\dataset::details($box['key']['dataset']);
+		$systemIdCol = !empty($dataset['system_table']) ? ze\row::idColumnOfTable($dataset['system_table']) : false;
+		$customIdCol = !empty($dataset['table']) ? ze\row::idColumnOfTable($dataset['table']) : false;
+		if ($dataset['label'] == 'Locations') {
+			ze\module::inc('zenario_location_manager');
+		}
 		
-		$fieldIdDetails = array();
-		$errorMessage = '';
+		//Load lines to skip
+		$linesToSkip = [];
+		if ($box['key']['lines_to_skip']) {
+			$linesToSkip = array_flip(explode(',', $box['key']['lines_to_skip']));
+		}
 		
-		$countryList = array();
+		//Load what dataset field is on each record column
+		$datasetFields = [];
+		$lineDatasetFields = [];
+		foreach ($box['tabs']['headers']['fields'] as $name => $field) {
+			if (strpos($name, 'file_column_match') === 0) {
+				$value = false;
+				if ($values['headers/' . $name]) {
+					$value = $values['headers/' . $name];
+					$datasetFields[$value] = ze\dataset::fieldDetails($value);
+				}
+				$lineDatasetFields[] = $value;
+			}
+		}
 		
-		foreach ($importData as $i => $record) {
-			$error = false;
-			$message = 'Line: '.($i+1)."\n";
-			
-			// Sort data into custom and non-custom
-			$customData = array();
-			$data = array();
-			$id = false;
-			
-			foreach($record as $fieldId => $value) {
-				if ($fieldId) {
-					if ($fieldId == 'id') {
-						//
+		
+		//Load dataset fields used when importing special custom fields
+		$extraDatasetFields = [];
+		if ($dataset['system_table'] == 'users') {
+			foreach (['first_name', 'last_name'] as $dbColumn) {
+				$datasetField = ze\dataset::fieldDetails($dbColumn, $dataset);
+				$extraDatasetFields[$dbColumn] = $datasetField['id'];
+				$datasetFields[$datasetField['id']] = $datasetField;
+			}
+		}
+		
+		//Load constants from "actions" tab
+		$importBaseRecord = [];
+		foreach ($box['tabs']['actions']['fields'] as $name => $field) {
+			$prefix = 'dataset_field_value';
+			if (strpos($name, $prefix) === 0 && $values['actions/' . $name]) {
+				$datasetFieldId = (int)substr($name, strlen($prefix . '_'));
+				$importBaseRecord[$datasetFieldId] = $values['actions/' . $name];
+				$datasetFields[$datasetFieldId] = ze\dataset::fieldDetails($datasetFieldId);
+			}
+		}
+		
+		$importRecords = [];
+		
+		$path = ze\file::getPathOfUploadInCacheDir($values['file/file']);
+		if (pathinfo($path, PATHINFO_EXTENSION) == 'csv') {
+			ini_set('auto_detect_line_endings', true);
+			$file = fopen($path, 'r');
+			if ($file) {
+				$lineNumber = 0;
+				while ($line = fgets($file)) {
+					++$lineNumber;
+					if ($lineNumber > $values['headers/key_line'] && !isset($linesToSkip[$lineNumber])) {
+						$line = str_getcsv($line);
+						$importRecords[$lineNumber] = $this->addRecordToList($line, $importBaseRecord, $lineDatasetFields, $extraDatasetFields);
+					}
+				}
+			}
+		} else {
+			require_once CMS_ROOT . 'zenario/libs/manually_maintained/lgpl/PHPExcel/Classes/PHPExcel.php';
+			//Get file type
+			$inputFileType = PHPExcel_IOFactory::identify($path);
+			//Create reader object
+			$objReader = PHPExcel_IOFactory::createReader($inputFileType);
+			$objReader->setReadDataOnly(true);
+			//Load spreadsheet
+			$objPHPExcel = $objReader->load($path);
+			$worksheet = $objPHPExcel->getSheet(0);
+		
+			$lineNumber = 0;
+			foreach ($worksheet->getRowIterator() as $row) {
+				++$lineNumber;
+				if ($lineNumber > $values['headers/key_line'] && !isset($linesToSkip[$lineNumber])) {
+					$cellIterator = $row->getCellIterator();
+					$line = [];
+					foreach ($cellIterator as $cell) {
+						$cellValue = $cell->getCalculatedValue();
+						$line[] = $cellValue;
+					}
+					$importRecords[$lineNumber] = $this->addRecordToList($line, $importBaseRecord, $lineDatasetFields, $extraDatasetFields);
+				}
+			}
+		}
+		
+		$countryList = [];
+		$countryListFlipped = [];
+		
+		foreach ($importRecords as $lineNumber => $importRecord) {
+			$data = [];
+			$customData = [];
+			$recordId = false;
+			//Sort data into system and custom
+			foreach ($importRecord as $datasetFieldId => $value) {
+				if ($datasetFieldId == 'id') {
+					$recordId = $value;
+				} elseif ($datasetField = $datasetFields[$datasetFieldId] ?? false) {
+					//When importing country, try and match text to Id
+					if (!empty($datasetField['values_source']) && $datasetField['values_source'] == 'zenario_country_manager::getActiveCountries') {
+						if (!$countryList) {
+							$countryList = ze\dataset::centralisedListValues($fieldIdDetails[$fieldId]['values_source']);
+							$countryList = array_map('strtolower', $countryList);
+							$countryListFlipped = array_flip($countryList);
+						}
+						if (!isset($countryList[$value]) && isset($countryListFlipped[strtolower($value)])) {
+							$value = $countryListFlipped[strtolower($value)];
+						}
+					}
+					
+					if ($datasetField['is_system_field']) {
+						$data[$datasetField['db_column']] = $value;
 					} else {
-						if (!isset($fieldIdDetails[$fieldId])) {
-							$fieldIdDetails[$fieldId] = ze\row::get('custom_dataset_fields', array('is_system_field', 'db_column', 'values_source'), $fieldId);
-						}
-						
-						if ($fieldIdDetails[$fieldId]['values_source'] && $fieldIdDetails[$fieldId]['values_source'] == 'zenario_country_manager::getActiveCountries') {
-							if (!$countryList) {
-								$countryList = ze\dataset::centralisedListValues($fieldIdDetails[$fieldId]['values_source']);
-								$countryList = array_map('strtolower', $countryList);
-							}
-							if (!isset($countryList[$value])) {
-								$value = array_search(strtolower($value), $countryList);
-							}
-						}
-						
-						if ($fieldIdDetails[$fieldId]['is_system_field']) {
-							$data[$fieldIdDetails[$fieldId]['db_column']] = $value;
-						} else {
-							$customData[$fieldIdDetails[$fieldId]['db_column']] = $value;
-						}
-						$message .= $fieldIdDetails[$fieldId]['db_column'].': '.$value. "\n";
+						$customData[$datasetField['db_column']] = $value;
 					}
 				}
 			}
 			
-			
-			// Create or update records
-			if ($mode == 'insert') {
+			//Create or update records
+			if ($values['file/type'] == 'insert_data') {
 				
-				// Custom logic to save users
-				if ($datasetDetails['extends_organizer_panel'] == 'zenario__users/panels/users') {
+				//Custom insert for users
+				if ($dataset['system_table'] == 'users') {
 					
-					$userId = false;
+					//Attempt to update fields on email
 					if (!empty($data['email'])) {
-						$userId = ze\row::get($datasetDetails['system_table'], $systemDataIDColumn, array('email' => $data['email']));
+						$recordId = ze\row::get($dataset['system_table'], $systemIdCol, ['email' => $data['email']]);
 					}
-					
-					// Attempt to update fields on email
-					if ($insertMode != 'no_update') {
-						if ($userId) {
-							// Overwrite data
-							if ($insertMode == 'overwrite') {
-								ze\userAdm::save($data, $userId);
-								ze\row::set($datasetDetails['table'], $customData, $userId);
-							
-							// Merge data (only update blank fields)
-							} elseif ($insertMode == 'merge') {
-								$systemKeys = array_keys($data);
-								if ($systemKeys) {
-									$foundData = ze\row::get($datasetDetails['system_table'], $systemKeys, $userId);
-									foreach ($foundData as $col => $val) {
-										if ($val) {
-											unset($data[$col]);
-										}
-									}
-									ze\userAdm::save($data, $userId);
-								}
-								
-								$customkeys = array_keys($customData);
-								if ($customkeys) {
-									$foundData = ze\row::get($datasetDetails['table'], $customkeys, $userId);
-									foreach ($foundData as $col => $val) {
-										if ($val) {
-											unset($customData[$col]);
-										}
-									}
-									ze\row::set($datasetDetails['table'], $customData, $userId);
+					if ($values['headers/insert_options'] == 'overwrite' && $recordId) {
+						ze\userAdm::save($data, $recordId);
+						ze\row::set($dataset['table'], $customData, $recordId);
+						continue;
+					} elseif ($values['headers/insert_options'] == 'merge' && $recordId) {
+						$systemKeys = array_keys($data);
+						if ($systemKeys) {
+							$foundData = ze\row::get($dataset['system_table'], $systemKeys, $recordId);
+							foreach ($foundData as $col => $val) {
+								if ($val) {
+									unset($data[$col]);
 								}
 							}
-							continue;
+							ze\userAdm::save($data, $recordId);
 						}
+						
+						$customkeys = array_keys($customData);
+						if ($customkeys) {
+							$foundData = ze\row::get($dataset['table'], $customkeys, $recordId);
+							foreach ($foundData as $col => $val) {
+								if ($val) {
+									unset($customData[$col]);
+								}
+							}
+							ze\row::set($dataset['table'], $customData, $recordId);
+						}
+						continue;
 					}
 					
 					if (!isset($data['email'])) {
@@ -1436,121 +1071,115 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 						$data['last_name'] = '';
 					}
 					$sendWelcomeEmail = false;
-					if (!$userId && !empty($data['status'])) {
+					if (!$recordId && !empty($data['status'])) {
 						if ($data['status'] != 'contact' && empty($data['password'])) {
 							$data['password'] = ze\userAdm::createPassword();
 						}
 						if ($data['status'] == 'active' && $values['actions/send_welcome_email'] && $values['actions/email_to_send']) {
-							// Send a welcome email
+							//Send a welcome email
 							$sendWelcomeEmail = true;
 						}
 					}
 					
-					// Do not allow screen names to be imported to sites that don't use screen names
+					//Do not allow screen names to be imported to sites that don't use screen names
 					if (!ze::setting('user_use_screen_name')) {
 						unset($data['screen_name']);
 					}
 					
-					$id = ze\userAdm::save($data);
+					$recordId = ze\userAdm::save($data);
+					if (!ze::isError($recordId)) {
+						if ($sendWelcomeEmail && !empty($data['email'])) {
+							$mergeFields = $data;
+							$mergeFields['cms_url'] = ze\link::absolute();
+							zenario_email_template_manager::sendEmailsUsingTemplate($data['email'], $values['actions/email_to_send'], $mergeFields);
+						}
 					
-					if ($sendWelcomeEmail && !empty($data['email'])) {
-						$mergeFields = $data;
-						$mergeFields['cms_url'] = ze\link::absolute();
-						zenario_email_template_manager::sendEmailsUsingTemplate($data['email'], $values['actions/email_to_send'], $mergeFields);
+						//If site uses screen names and no screen name is imported, use the identifier as a screen name
+						if (empty($data['screen_name']) && ze::setting('user_use_screen_name')) {
+							$identifier = ze\user::identifier($recordId);
+							ze\row::update('users', ['screen_name' => $identifier], $recordId);
+						}
 					}
 					
-					// If site uses screen names and no screen name is imported, use the identifier as a screen name
-					if (empty($data['screen_name']) && ze::setting('user_use_screen_name')) {
-						$identifier = ze\user::identifier($id);
-						ze\row::update('users', ['screen_name' => $identifier], $id);
-					}
-				
-				// Custom logic to save locations
-				} elseif ($datasetDetails['extends_organizer_panel'] == 'zenario__locations/panel') {
+				//Custom insert for locations
+				} elseif ($dataset['system_table'] == 'locations') {
 					$data['last_updated_via_import'] = ze\date::now();
-					$id = zenario_location_manager::createLocation($data);
-				
-				// Other datasets
+					$recordId = zenario_location_manager::createLocation($data);
+				//Other datasets
 				} else {
-					if ($datasetDetails['system_table']) {
-						$id = ze\row::insert($datasetDetails['system_table'], $data);
+					if ($dataset['system_table']) {
+						$recordId = ze\row::insert($dataset['system_table'], $data);
 					}
 				}
 				
-				// Add custom data
-				if ($datasetDetails['table']) {
-					$ids = array();
-					if ($id) {
-						$ids[$customDataIDColumn] = $id;
-					}
-					$id = ze\row::set($datasetDetails['table'], $customData, $ids);
+				if ($dataset['table']) {
+					$recordId = ze\row::set($dataset['table'], $customData, $recordId);
 				}
 				
-				if (is_object($id) && get_class($id) == 'ze\error') {
-					foreach ($id->errors as $errorField => $error) {
-						$message .= 'Error code: '. ze\lang::phrase($error);
-					}
-					$error = true;
-				}
 				
-				$message .= "\n\n";
-			
-			// Update records
-			} elseif ($mode == 'update') {
-				
-				// List of IDs to update (just for saftey, should normaly only be 1)
-				$idsToUpdate = array();
-				
-				if ($keyFieldID == 'id') {
-					$idsToUpdate[] = $record['id'];
-				} else {
-					if (!empty($fieldIdDetails[$keyFieldID]['is_system_field'])) {
-						$idsToUpdate = ze\row::getArray(
-							$datasetDetails['system_table'], 
-							$systemDataIDColumn, 
-							array($fieldIdDetails[$keyFieldID]['db_column'] => $data[$fieldIdDetails[$keyFieldID]['db_column']])
-						);
+			} elseif ($values['file/type'] == 'update_data') {
+				//Get Id to update
+				if (!$recordId && ($keyDatasetField = $datasetFields[$lineDatasetFields[$values['headers/update_key_field']]] ?? false)) {
+					if ($keyDatasetField['is_system_field']) {
+						$recordId = ze\row::get($dataset['system_table'], $systemIdCol, [$keyDatasetField['db_column'] => $data[$keyDatasetField['db_column']]]);
 					} else {
-						$idsToUpdate = ze\row::getArray(
-							$datasetDetails['table'], 
-							$customDataIDColumn, 
-							array($fieldIdDetails[$keyFieldID]['db_column'] => $customData[$fieldIdDetails[$keyFieldID]['db_column']])
-						);
+						$recordId = ze\row::get($dataset['table'], $customIdCol, [$keyDatasetField['db_column'] => $customData[$keyDatasetField['db_column']]]);
 					}
 				}
 				
-				// Custom logic to update users
-				if ($datasetDetails['extends_organizer_panel'] == 'zenario__users/panels/users') {
-					if (!ze::setting('user_use_screen_name')) {
-						unset($data['screen_name']);
+				//Update records
+				if ($recordId) {
+					//Custom dataset update rules
+					if ($dataset['system_table'] == 'users') {
+						if (!ze::setting('user_use_screen_name')) {
+							unset($data['screen_name']);
+						}
+						$data['modified_date'] = ze\date::now();
+					} elseif (defined('ZENARIO_LOCATION_MANAGER_PREFIX') && $dataset['system_table'] == ZENARIO_LOCATION_MANAGER_PREFIX . 'locations') {
+						$data['last_updated_via_import'] = ze\date::now();
 					}
-					$data['modified_date'] = ze\date::now();
 					
-				} elseif ($datasetDetails['extends_organizer_panel'] == 'zenario__locations/panel') {
-					$data['last_updated_via_import'] = ze\date::now();
-				}
-				
-				// Update records
-				if (!empty($idsToUpdate)) {
-					foreach ($idsToUpdate as $recordId) {
-						
-						if ($datasetDetails['system_table'] && !empty($data)) {
-							if ($datasetDetails['extends_organizer_panel'] == 'zenario__users/panels/users') {
-								ze\userAdm::save($data, $recordId);
-							} else {
-								ze\row::update($datasetDetails['system_table'], $data, array($systemDataIDColumn => $recordId));
-							}
-						}
-						if ($datasetDetails['table'] && !empty($customData)) {
-							ze\row::set($datasetDetails['table'], $customData, array($customDataIDColumn => $recordId));
+					if ($dataset['system_table'] && $data) {
+						if ($dataset['system_table'] == 'users') {
+							ze\userAdm::save($data, $recordId);
+						} else {
+							ze\row::update($dataset['system_table'], $data, $recordId);
 						}
 					}
+					if ($dataset['table'] && $customData) {
+						ze\row::set($dataset['table'], $customData, $recordId);
+					}
 				}
-			}
-			if ($error) {
-				$errorMessage .= $message;
 			}
 		}
-		return $errorMessage;
+	}
+	
+	private function addRecordToList($line, $importBaseRecord, $lineDatasetFields, $extraDatasetFields) {
+		$importRecord = $importBaseRecord;
+		foreach ($line as $i => $value) {
+			if (!empty($lineDatasetFields[$i])) {
+				$value = trim($value);
+				//Special fields
+				if ($lineDatasetFields[$i] == 'name_split_on_first_space') {
+					if (($pos = strpos($value, ' ')) !== false) {
+						$importRecord[$extraDatasetFields['first_name']] = substr($value, 0, $pos);
+						$importRecord[$extraDatasetFields['last_name']] =  substr($value, $pos + 1);
+					} else {
+						$importRecord[$extraDatasetFields['first_name']] = $value;
+					}
+				} elseif ($lineDatasetFields[$i] == 'name_split_on_last_space') {
+					if (($pos = strrpos($value, ' ')) !== false) {
+						$importRecord[$extraDatasetFields['first_name']] = substr($value, 0, $pos);
+						$importRecord[$extraDatasetFields['last_name']] = substr($value, $pos + 1);
+					} else {
+						$importRecord[$extraDatasetFields['first_name']] = $value;
+					}
+				//Dataset fields
+				} else {
+					$importRecord[$lineDatasetFields[$i]] = $value;
+				}
+			}
+		}
+		return $importRecord;
 	}
 }

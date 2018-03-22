@@ -45,8 +45,8 @@ class zenario_pro_features__admin_boxes__menu_text extends ze\moduleBaseClass {
 
 		if (ze\ring::engToBoolean($box['tabs']['text']['edit_mode']['on'] ?? false) && ze\priv::check('_PRIV_EDIT_MENU_ITEM')) {
 			ze\menuAdm::save(
-				array(
-					'invisible' => $values['text/zenario_pro_features__invisible']),
+				[
+					'invisible' => $values['text/zenario_pro_features__invisible']],
 				$box['key']['id']);
 		}
 	}

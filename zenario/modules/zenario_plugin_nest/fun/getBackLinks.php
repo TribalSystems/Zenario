@@ -28,7 +28,7 @@
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
 
-$backs = array();
+$backs = [];
 
 if ($this->usesConductor && $this->state) {
 
@@ -65,7 +65,7 @@ if ($this->usesConductor && $this->state) {
 	//Define requests for each link
 	$lastBack = false;
 	foreach ($backs as &$back) {
-		$requests = array();
+		$requests = [];
 		
 		//If we're generating a link to the current state, keep all of the registered get requests
 		if ($back['state'] == $this->state) {

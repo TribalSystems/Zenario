@@ -45,7 +45,6 @@ ze\dbAdm::revision(1, "
 		 '" . ze\escape::sql(ze::setting('email_name_from')) . "',
 		 '<p>Dear [[first_name]] [[last_name]],</p>
 		 <p>You (or someone pretending to be you) asked for a reset of your password on <a href=\"[[cms_url]]\">[[cms_url]]</a></p>
-		 <p>This request was made from the IP address: [[ip_address]]</p>
 		 <p>To reset your password, please click the link below</p>
 		 <p><a href=\"[[reset_url]]\">[[reset_url]]</a></p>
 		 <p>&nbsp;</p>

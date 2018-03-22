@@ -71,7 +71,7 @@ class zenario_common_features__organizer__languages extends ze\moduleBaseClass {
 					$panel['columns']['phrase_count']['db_column'] = 'COUNT(DISTINCT IF (NOT [[REFINER__PLUGIN]] OR pl.id=[[REFINER__PLUGIN]],vp.code,NULL))';
 					unset($panel['view_content']);
 
-				} elseif (($atLeastOneLanguageEnabled = ze\row::exists('languages', array())) && $refinerName != 'not_enabled') {
+				} elseif (($atLeastOneLanguageEnabled = ze\row::exists('languages', [])) && $refinerName != 'not_enabled') {
 					$panel['db_items']['where_statement'] = $panel['db_items']['custom_where_statement_if_at_least_one_language_enabled'];
 				
 				} else {
@@ -115,7 +115,7 @@ _text
 			
 			case 'zenario__content/panels/languages':
 				if ($_GET['refiner__template'] ?? false) {
-					$details = ze\row::get('layouts', array('name', 'content_type'), ($_GET['refiner__template'] ?? false));
+					$details = ze\row::get('layouts', ['name', 'content_type'], ($_GET['refiner__template'] ?? false));
 					$panel['title'] = ze\admin::phrase('Content using the Layout "[[name]]"', $details);
 					$panel['no_items_message'] = ze\admin::phrase('There is no Content using the Layout "[[name]]."', $details);
 	
@@ -138,17 +138,17 @@ _text
 					}
 
 				} elseif ($_GET['refiner__content_type'] ?? false) {
-					$mrg = array(
-						'ctype' => ze\content::getContentTypeName($_GET['refiner__content_type'] ?? false));
+					$mrg = [
+						'ctype' => ze\content::getContentTypeName($_GET['refiner__content_type'] ?? false)];
 					$panel['title'] = ze\admin::phrase('[[ctype]] content items', $mrg);
 					$panel['no_items_message'] = ze\admin::phrase('There are no [[ctype]] content items.', $mrg);
 					
 					foreach ($panel['items'] as $id => &$item) {
-						$item['item_count'] = ze\row::count('content_items', array(
+						$item['item_count'] = ze\row::count('content_items', [
 							'language_id' => $id,
-							'status' => array('!1' => 'trashed', '!2' => 'deleted'),
+							'status' => ['!1' => 'trashed', '!2' => 'deleted'],
 							'type' => ($_GET['refiner__content_type'] ?? false)
-						));
+						]);
 					}
 
 				} else {
@@ -156,10 +156,10 @@ _text
 	
 					if (!$refinerName) {
 						foreach ($panel['items'] as $id => &$item) {
-							$item['item_count'] = ze\row::count('content_items', array(
+							$item['item_count'] = ze\row::count('content_items', [
 								'language_id' => $id,
-								'status' => array('!1' => 'trashed', '!2' => 'deleted')
-							));
+								'status' => ['!1' => 'trashed', '!2' => 'deleted']
+							]);
 						}
 		
 						//Count how many Content Equivalences exist in total
@@ -177,7 +177,7 @@ _text
 					}
 				}
 
-				if (empty($panel['items']) && !ze\row::exists('languages', array())) {
+				if (empty($panel['items']) && !ze\row::exists('languages', [])) {
 					foreach ($panel['collection_buttons'] as &$button) {
 						$button['hidden'] = true;
 					}
@@ -196,10 +196,10 @@ _text
 						//If we're looking up a Language Name, we can't rely on the formatting that Storekeeper provides and must use the actual Language Name
 						$item['name'] = ze\lang::name($id, $addIdInBracketsToEnd = true);
 						if (!$item['enabled']) {
-							$item['traits'] = array('not_enabled' => true);
+							$item['traits'] = ['not_enabled' => true];
 				
 						} else {
-							$item['traits'] = array('enabled' => true);
+							$item['traits'] = ['enabled' => true];
 							++$enabledCount;
 					
 							if (ze\contentAdm::allowDeleteLanguage($id)) {
@@ -220,7 +220,7 @@ _text
 					}
 			
 					//If a language specific domain is in use, show that column by default. Otherwise hide it.
-					$langSpecificDomainsUsed = ze\row::exists('languages', array('domain' => array('!' => '')));
+					$langSpecificDomainsUsed = ze\row::exists('languages', ['domain' => ['!' => '']]);
 					if ($langSpecificDomainsUsed) {
 						$panel['columns']['domain']['show_by_default'] = true;
 					}
@@ -245,7 +245,7 @@ _text
 								</p>'
 								);
 							} else {
-								$message = ze\admin::phrase('The maximun number of enabled languages on this site is [[count]]', array('count' => $maxEnabledLanguageCount));
+								$message = ze\admin::phrase('The maximun number of enabled languages on this site is [[count]]', ['count' => $maxEnabledLanguageCount]);
 							}
 							$panel['collection_buttons']['add']['disabled_tooltip'] = $message;
 						}
@@ -256,7 +256,7 @@ _text
 				// When picking a language in select mode hide unnecessary columns
 				if ($mode === 'select') {
 					
-					$columnsVisibleInSelectMode = array('name', 'language_local_name');
+					$columnsVisibleInSelectMode = ['name', 'language_local_name'];
 					
 					foreach ($panel['columns'] as $name => $column) {
 						if (!in_array($name, $columnsVisibleInSelectMode)) {

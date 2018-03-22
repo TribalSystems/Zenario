@@ -159,7 +159,7 @@ class zenario_users extends ze\moduleBaseClass {
 			$details['help_text'] = $details['note_below'];
 			$details['characteristic_id'] = $details['field_id'];
 		} else {
-			$details = array('label' => (string) $id);
+			$details = ['label' => (string) $id];
 		}
 		
 		//Hope whatever code called this still works!
@@ -178,7 +178,7 @@ class zenario_users extends ze\moduleBaseClass {
 		if (!empty($_SESSION['extranetUserID'])
 		&& !isset($_SESSION['extranetUserImpersonated'])
 		&& self::doesContentItemLogUserAccess($cID, $cType, $cVersion)
-		&& ze::setting('log_user_access')) {
+		&& ze::setting('period_to_delete_the_user_content_access_log') != 'never_save') {
 			
 			self::clearOldData();
 			ze::$userAccessLogged = true;
@@ -188,7 +188,6 @@ class zenario_users extends ze\moduleBaseClass {
 				INSERT IGNORE INTO ". DB_NAME_PREFIX. "user_content_accesslog SET
 					user_id = ". (int) $_SESSION['extranetUserID']. ",
 					hit_datetime = NOW(),
-					ip = '". ze\escape::sql(ze\user::ip()). "',
 					content_id = ". (int) $cID. ",
 					content_type = '". ze\escape::sql($cType). "',
 					content_version = ". (int) $cVersion;
@@ -196,25 +195,24 @@ class zenario_users extends ze\moduleBaseClass {
 		}
 	}
 	
-	public static function clearOldData(){
-		if($days = ze::setting('period_to_delete_the_user_content_access_log')){
-			if(is_numeric($days)){
-				$today = date('Y-m-d');
-				$date = date('Y-m-d', strtotime('-'.$days.' day', strtotime($today)));
-				if($date){
-					$sql = " 
-						DELETE FROM ". DB_NAME_PREFIX. "user_content_accesslog 
-						WHERE hit_datetime < '".ze\escape::sql($date)."'";
-					ze\sql::update($sql);
-				}
+	public static function clearOldData() {
+		$days = ze::setting('period_to_delete_the_user_content_access_log');
+		if ($days && is_numeric($days)) {
+			$date = date('Y-m-d', strtotime('-'.$days.' day', strtotime(date('Y-m-d'))));
+			if($date){
+				$sql = " 
+					DELETE FROM ". DB_NAME_PREFIX. "user_content_accesslog 
+					WHERE hit_datetime < '".ze\escape::sql($date)."'";
+				ze\sql::update($sql);
+				return ze\sql::affectedRows();
 			}
 		}
-	
+		return false;
 	}
 	
 	//Check if a content item logs user access
 	public static function doesContentItemLogUserAccess($cID, $cType) {
-		$privacy = ze\row::get('translation_chains', 'privacy', array('equiv_id' => ze\content::equivId($cID, $cType), 'type' => $cType));
+		$privacy = ze\row::get('translation_chains', 'privacy', ['equiv_id' => ze\content::equivId($cID, $cType), 'type' => $cType]);
 		return !ze::in($privacy, 'public', 'logged_out');
 	}
 	
@@ -272,8 +270,8 @@ class zenario_users extends ze\moduleBaseClass {
 		foreach ($tagIds as $tagId) {
 			if (ze\content::getEquivIdAndCTypeFromTagId($equivId, $cType, $tagId)) {
 				
-				$key = array('link_to' => 'group', 'link_from' => 'chain', 'link_from_id' => $equivId, 'link_from_char' => $cType);
-				$chain = array('privacy' => $values['privacy/privacy']);
+				$key = ['link_to' => 'group', 'link_from' => 'chain', 'link_from_id' => $equivId, 'link_from_char' => $cType];
+				$chain = ['privacy' => $values['privacy/privacy']];
 				
 				if ($chain['privacy'] == 'group_members') {
 					ze\miscAdm::updateLinkingTable('group_link', $key, 'link_to_id', $values['privacy/group_ids']);
@@ -288,14 +286,14 @@ class zenario_users extends ze\moduleBaseClass {
 					ze\row::delete('group_link', $key);
 				}
 				
-				$key = array('equiv_id' => $equivId, 'content_type' => $cType);
+				$key = ['equiv_id' => $equivId, 'content_type' => $cType];
 				if ($chain['privacy'] == 'call_static_method') {
-					ze\row::set('translation_chain_privacy', array(
+					ze\row::set('translation_chain_privacy', [
 						'module_class_name' => $values['privacy/module_class_name'],
 						'method_name' => $values['privacy/method_name'],
 						'param_1' => $values['privacy/param_1'],
 						'param_2' => $values['privacy/param_2']
-					), $key);
+					], $key);
 				} else {
 					ze\row::delete('translation_chain_privacy', $key);
 				}
@@ -310,7 +308,7 @@ class zenario_users extends ze\moduleBaseClass {
 				ze\row::set(
 					'translation_chains',
 					$chain,
-					array('equiv_id' => $equivId, 'type' => $cType));
+					['equiv_id' => $equivId, 'type' => $cType]);
 			}
 		}
 	}
@@ -364,260 +362,6 @@ class zenario_users extends ze\moduleBaseClass {
 	//Any deleted Hub Users should be deleted from the satellites
 	
 	
-	protected static $userDB = false;
-	public static function validateUserSyncSiteConfig() {
-		return zenario_pro_features::validateUserSyncSiteConfig();
-	}
-	
-	public static function jobSyncUsers() {
-		$result = zenario_users::syncUsers();
-		
-		if (ze::isError($result)) {
-			echo $result;
-			exit;
-		} else {
-			return $result;
-		}
-	}
-	
-	//Check whether we are on the hub site or a satellite site.
-		//Note that the logic above in validateUserSyncSiteConfig() ensures that a site can't be listed as a hub
-		//and as a satellite.
-	public static function thisIsHub() {
-		if (!zenario_pro_features::validateUserSyncSiteConfig()) {
-			return false;
-		}
-		require CMS_ROOT. 'zenario_usersync_config.php';
-		
-		$thisIsHub =
-			$hub['DBHOST'] == DBHOST
-		 && $hub['DBNAME'] == DBNAME;
-		
-		return $thisIsHub;
-	}
-	
-	public static function connectHubDB() {
-		if (zenario_pro_features::validateUserSyncSiteConfig()
-		 && !zenario_pro_features::thisIsHub()) {
-			
-			require CMS_ROOT. 'zenario_usersync_config.php';
-			
-			if ($dbSelected = ze\db::connect($hub['DBHOST'], $hub['DBNAME'], $hub['DBUSER'], $hub['DBPASS'], ($hub['DBPORT'] ?? false))) {
-				ze::$lastDB = $dbSelected;
-				ze::$lastDBHost = $hub['DBHOST'];
-				ze::$lastDBName = $hub['DBNAME'];
-				ze::$lastDBPrefix = $hub['DB_NAME_PREFIX'];
-				return true;
-			}
-		}
-		
-		return false;
-	}
-	
-	public static function syncUsers() {
-		if (!zenario_pro_features::validateUserSyncSiteConfig()) {
-			return false;
-		}
-		require CMS_ROOT. 'zenario_usersync_config.php';
-		
-		$thisIsHub =
-			$hub['DBHOST'] == DBHOST
-		 && $hub['DBNAME'] == DBNAME;
-		
-		
-		//Get the current time
-		$now = ze\date::now();
-		
-		//Run the sync logic
-		$syncs = 0;
-		$success = zenario_users::syncUsersToSite($syncs, $now, $thisIsHub, $hub, true);
-		foreach ($satellites as $satellite) {
-			$success &= zenario_users::syncUsersToSite($syncs, $now, $thisIsHub, $satellite, false);
-		}
-		
-		//Mark when this function was last run
-		//(If we couldn't connect to a site for whatever reason, the last successful
-		// run date of the sync function should not be updated)
-		if ($success) {
-			ze\site::setSetting('user_last_sync_time', $now, $updateDB = true, $encrypt = false, $clearCache = false);
-		}
-		
-		if ($success) {
-			return $syncs > 0;
-		} else {
-			return new ze\error('Database connection could not be established');
-		}
-	}
-	
-	//This function syncs users with a different database
-	//Currently only the basic details (from the users table) are synced
-	public static function syncUsersToSite(&$syncs, $now, $thisIsHub, $site, $isHub) {
-		$syncedIds = array();
-		
-		//Don't sync this site to itself!
-		if ($site['DBHOST'] == DBHOST
-		 && $site['DBNAME'] == DBNAME) {
-			return true;
-		}
-		
-		//Get the basic details of all Users (on the hub site)
-		//or all Users that have a global id (on the satellite sites)
-		//and have been updated since the last time this function was has run
-		$sql = "
-			SELECT
-				id,
-				global_id,
-				/*parent_id,*/
-				last_login_ip,
-				identifier,
-				screen_name,
-				screen_name_confirmed,
-				password,
-				password_salt,
-				password_needs_changing,
-				/*reset_password_time,*/
-				status,
-				/*image_id,*/
-				last_login,
-				last_profile_update_in_frontend,
-				salutation,
-				first_name,
-				last_name,
-				email,
-				email_verified,
-				created_date,
-				modified_date,
-				suspended_date,
-				last_updated_timestamp,
-				terms_and_conditions_accepted,
-				/*equiv_id,
-				content_type,*/
-				hash,
-				creation_method,
-				ordinal
-			FROM ". DB_NAME_PREFIX. "users
-			WHERE TRUE";
-		//Note that I'm delibrately leaving last_updated_timestamp in as I want to update this!
-		
-		if (!$thisIsHub) {
-			$sql .= "
-			  AND global_id != 0";
-		}
-		
-		if (ze::setting('user_last_sync_time')) {
-			$sql .= "
-			  AND last_updated_timestamp >= '". ze\escape::sql(ze::setting('user_last_sync_time')). "'";
-		}
-		
-		$result = ze\sql::select($sql);
-		
-		//Connect to the other site
-		if ($dbSelected = ze\db::connect($site['DBHOST'], $site['DBNAME'], $site['DBUSER'], $site['DBPASS'], ($site['DBPORT'] ?? false))) {
-			ze::$lastDB = $dbSelected;
-			ze::$lastDBHost = $site['DBHOST'];
-			ze::$lastDBName = $site['DBNAME'];
-			ze::$lastDBPrefix = $site['DB_NAME_PREFIX'];
-		
-		
-			while ($user = ze\sql::fetchAssoc($result)) {
-				//Remember the User's id and global id, then remove them from the array of data
-				$userId = $user['id'];
-				$globalId = $user['global_id'];
-				unset($user['id']);
-				unset($user['global_id']);
-			
-			
-				//Check if we can find a synced User on the remote site, and whether their information is out of date
-				$sql = "
-					SELECT id, global_id, last_updated_timestamp <= '". ze\escape::sql($user['last_updated_timestamp']). "' AS outdated
-					FROM ". $site['DB_NAME_PREFIX']. "users";
-				
-				//The rule for ids is:
-					//The local id on the hub should always match the global id on the satellites
-				//Make sure we match on the right ids, depending on what sites we are syncing:
-				if ($thisIsHub) {
-					//Hub -> satellite
-					$sql .= "
-						WHERE global_id = ". (int) $userId;
-					$syncedIds[] = $userId;
-				
-				} elseif ($isHub) {
-					//satellite -> hub
-					$sql .= "
-						WHERE id = ". (int) $globalId;
-				
-				} else {
-					//satellite -> satellite
-					$sql .= "
-						WHERE global_id = ". (int) $globalId;
-				}
-				
-				$sql .= "
-					LIMIT 1";
-				
-				//Check to see if a linked User exists
-				$result2 = ze\sql::select($sql);
-				if ($linkedUser = ze\sql::fetchAssoc($result2)) {
-					//Update the linked User's details.
-					//We only need to update the data on the site we are connecting to if it was not more recent than
-					//the copy on this site
-					if ($linkedUser['outdated']) {
-						ze\row::update('users', $user, $linkedUser['id']);
-						++$syncs;
-					}
-				
-				//If this site is a hub, and no User record was found on the satellite, add the User record to the satellite
-				} elseif ($thisIsHub) {
-					$user['global_id'] = $userId;
-					ze\row::insert('users', $user);
-					++$syncs;
-				}
-			}
-			
-			//For satellite sites, we should look out for any users that have been recently deleted
-			//(To stop this lost getting too big we'll limit it to deletions in the last 30 days)
-			$deletedIds = array();
-			if (!$thisIsHub) {
-				$sql = "
-					SELECT usl.user_id
-					FROM ". $site['DB_NAME_PREFIX']. "user_sync_log AS usl
-					LEFT JOIN ". $site['DB_NAME_PREFIX']. "users AS u
-					   ON u.id = usl.user_id
-					WHERE u.id IS NULL
-					  AND usl.last_synced_timestamp > DATE_SUB(NOW(), INTERVAL 30 DAY)";
-				$result = ze\sql::select($sql);
-				while ($linkedUser = ze\sql::fetchAssoc($result)) {
-					$deletedIds[] = $linkedUser['user_id'];
-				}
-			}
-			ze\db::connectLocal();
-			
-			if (!$thisIsHub) {
-				if (!empty($deletedIds)) {
-					$sql = "
-						SELECT id
-						FROM ". DB_NAME_PREFIX. "users
-						WHERE global_id IN (". ze\escape::in($deletedIds, 'numeric'). ")";
-					$result = ze\sql::select($sql);
-					while ($linkedUser = ze\sql::fetchAssoc($result)) {
-						ze\userAdm::delete($linkedUser['id']);
-						++$syncs;
-					}
-				}
-			
-			//If this is the hub, we should make a log of all of the user accounts that we have synced to other sites
-			} else {
-				foreach ($syncedIds as $userId) {
-					ze\row::set('user_sync_log', array('last_synced_timestamp' => $now), $userId);
-				}
-			}
-			
-			return true;
-		} else {
-			return false;
-		}
-	}
-	
 	public static function jobRemoveInactivePendingUsers() {
 		if (ze::setting('remove_inactive_users')) {
 			$interval = 28;
@@ -663,13 +407,13 @@ class zenario_users extends ze\moduleBaseClass {
 			$timeUserInactive1 = ze::setting('time_user_inactive_1');
 			$timeUserInactive2 = ze::setting('time_user_inactive_2');
 			
-			$emailSettings =array();
+			$emailSettings =[];
 			if($emailTemplate1 && $timeUserInactive1){
-				$emailSettings[]=array('emailTemplate'=>$emailTemplate1,'period'=>$timeUserInactive1);
+				$emailSettings[]=['emailTemplate'=>$emailTemplate1,'period'=>$timeUserInactive1];
 			}
 			
 			if($emailTemplate2 && $timeUserInactive2){
-				$emailSettings[]=array('emailTemplate'=>$emailTemplate2,'period'=>$timeUserInactive2);
+				$emailSettings[]=['emailTemplate'=>$emailTemplate2,'period'=>$timeUserInactive2];
 			}
 			
 			if($emailSettings){
@@ -678,7 +422,7 @@ class zenario_users extends ze\moduleBaseClass {
 					
 					if(is_array($userDetails) && $userDetails){
 						foreach($userDetails as $user){
-							$emailMergeFields = array();
+							$emailMergeFields = [];
 							$emailMergeFields['salutation'] = $user['salutation'];
 							$emailMergeFields['first_name'] = $user['first_name'];
 							$emailMergeFields['last_name'] = $user['last_name'];
@@ -688,7 +432,7 @@ class zenario_users extends ze\moduleBaseClass {
 																			$user['email'],
 																			$setting['emailTemplate'],
 																			$emailMergeFields,
-																			array(),
+																			[],
 																			false,
 																			true
 																			);
@@ -750,7 +494,7 @@ class zenario_users extends ze\moduleBaseClass {
 		}
 
 		$result = ze\sql::select($sql, ['date' => $date]);
-		$users = array();
+		$users = [];
 		while ($row = ze\sql::fetchAssoc($result)) {
 			$users[] = $row;
 		}
@@ -804,7 +548,7 @@ class zenario_users extends ze\moduleBaseClass {
 		$imageId = ze\file::addToDatabase('user', $_FILES['Filedata']['tmp_name'], rawurldecode($_FILES['Filedata']['name']), true);
 		if ($imageId) {
 			foreach (explode(',', $userIds) as $userId) {
-				ze\row::update('users', array('image_id' => $imageId), $userId);
+				ze\row::update('users', ['image_id' => $imageId], $userId);
 			}
 			ze\contentAdm::deleteUnusedImagesByUsage('user');
 		}
@@ -812,7 +556,7 @@ class zenario_users extends ze\moduleBaseClass {
 	
 	public static function deleteUserImage($userIds) {
 		foreach (explode(',', $userIds) as $userId) {
-			ze\row::update('users', array('image_id' => 0), $userId);
+			ze\row::update('users', ['image_id' => 0], $userId);
 		}
 		ze\contentAdm::deleteUnusedImagesByUsage('user');
 	}
@@ -826,7 +570,7 @@ class zenario_users extends ze\moduleBaseClass {
 			WHERE
 				id = " . (int)$userId;
 		ze\sql::update($sql);
-		ze\module::sendSignal("eventUserStatusChange",array("userId" => $userId, "status" => "suspended"));
+		ze\module::sendSignal("eventUserStatusChange",["userId" => $userId, "status" => "suspended"]);
 	}
 	
 }

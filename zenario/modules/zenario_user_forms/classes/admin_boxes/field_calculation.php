@@ -60,7 +60,7 @@ class zenario_user_forms__admin_boxes__field_calculation extends ze\moduleBaseCl
 	}
 	
 	private static function validateCalculationCode($calculationCode) {
-		$calculationCode = $calculationCode ? $calculationCode : array();
+		$calculationCode = $calculationCode ? $calculationCode : [];
 		// No double operations
 		// No double values
 		// No operations at the start
@@ -74,14 +74,14 @@ class zenario_user_forms__admin_boxes__field_calculation extends ze\moduleBaseCl
 		$parenthesesOffset = 0;
 		foreach ($calculationCode as $step) {
 			++$i;
-			if ($i == 1 && !in_array($step['type'], array('parentheses_open', 'static_value', 'field'))) {
+			if ($i == 1 && !in_array($step['type'], ['parentheses_open', 'static_value', 'field'])) {
 				return new ze\error('Invalid symbol at start of equation.');
 			}
 			
 			$isOperation = $isValue = $isOpenParentheses = $isCloseParentheses = false;
-			if (in_array($step['type'], array('operation_addition', 'operation_subtraction', 'operation_multiplication', 'operation_division'))) {
+			if (in_array($step['type'], ['operation_addition', 'operation_subtraction', 'operation_multiplication', 'operation_division'])) {
 				$isOperation = true;
-			} elseif (in_array($step['type'], array('static_value'))) {
+			} elseif (in_array($step['type'], ['static_value'])) {
 				if ($step['value'] > 999999999999999) {
 					return new ze\error('Static values cannot be greater than 999999999999999.');
 				} elseif ($step['value'] < -999999999999999) {

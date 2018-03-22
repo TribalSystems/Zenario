@@ -38,11 +38,11 @@ class zenario_common_features__organizer__sections extends ze\moduleBaseClass {
 		if ($path != 'zenario__menu/panels/sections') return;
 		
 		if ($_GET['refiner__language'] ?? false) {
-			$panel['title'] = ze\admin::phrase('Menu sections (language [[lang]])', array('lang' => ze\lang::name($_GET['refiner__language'] ?? false)));
+			$panel['title'] = ze\admin::phrase('Menu sections (language [[lang]])', ['lang' => ze\lang::name($_GET['refiner__language'] ?? false)]);
 		}
 		
 		foreach ($panel['items'] as $id => &$item) {
-			$item['traits'] = array('empty' => !ze\row::exists('menu_nodes', array('section_id' => $id)));
+			$item['traits'] = ['empty' => !ze\row::exists('menu_nodes', ['section_id' => $id])];
 		}
 		
 		//In Organizer full mode, if this is the default language,

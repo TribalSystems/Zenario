@@ -34,3 +34,8 @@ admin_floating_box_tabs:
         floating_box_name: View Email Log Record
         tab_ordinal: "1"
         tab_label: Email
+
+signals:
+    - 
+        name: eventUserDeleted
+        static: true

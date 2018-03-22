@@ -30,9 +30,9 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 // This plugin lets visitors email this page to a friend
 class zenario_email_a_friend extends ze\moduleBaseClass {
 	
-	var $mergeFields = array();
-	var $sections = array();
-	var $displaySections = array();
+	var $mergeFields = [];
+	var $sections = [];
+	var $displaySections = [];
 	var $errors = '';
 	
 	function init() {
@@ -53,7 +53,7 @@ class zenario_email_a_friend extends ze\moduleBaseClass {
 		$errStr = '';
 		if ($_POST[$varName] ?? false) {
 			if (strlen($_POST[$varName] ?? false) > $len){
-				$errStr = $this->phrase('_FIELD_LENGTH_EXCEEDED',array('field_name'=>$varLabel)) . '<br/>';
+				$errStr = $this->phrase('_FIELD_LENGTH_EXCEEDED',['field_name'=>$varLabel]) . '<br/>';
 				$this->mergeFields[$varName]='';
 			}
 		} else {
@@ -71,7 +71,7 @@ class zenario_email_a_friend extends ze\moduleBaseClass {
 		$errStr = '';
 		if ($this->checkVar($varName,$varLabel,$len)) {
 			if (!ze\ring::validateEmailAddress($_POST[$varName] ?? false)){
-				$errStr = $this->phrase('_INVALID_EMAIL_ADDRESS',array('field_name'=>$varLabel)) . '<br/>';
+				$errStr = $this->phrase('_INVALID_EMAIL_ADDRESS',['field_name'=>$varLabel]) . '<br/>';
 			}
 		}
 		if ($errStr){
@@ -97,14 +97,14 @@ class zenario_email_a_friend extends ze\moduleBaseClass {
 			$this->checkVar('name',$this->phrase('_SENDER_NAME'),100);
 			
 			if ((!$this->errors) && $this->setting('email_template') ) {
-				$mergeFields = array('sender_name'=>post('name'), 
+				$mergeFields = ['sender_name'=>post('name'), 
 									'your_email'=>post('email'),
 									'sender_message'=>post('msg'),
 									'link_to_page'=>$this->linkToItem($this->cID,$this->cType,true),
 									'page_title'=>getItemTitle($this->cID,$this->cType),
-									'page_description'=>getItemDescription($this->cID,$this->cType,$this->cVersion));
+									'page_description'=>getItemDescription($this->cID,$this->cType,$this->cVersion)];
 																		
-				if (zenario_email_template_manager::sendEmailsUsingTemplate($_POST['email_to'] ?? false,$this->setting('email_template'),$mergeFields,array())){
+				if (zenario_email_template_manager::sendEmailsUsingTemplate($_POST['email_to'] ?? false,$this->setting('email_template'),$mergeFields,[])){
 					$this->displaySections['Email_friend_popup_msg_sent']=true;
 				} else {
 					$this->displaySections['Email_friend_sending_error']=true;

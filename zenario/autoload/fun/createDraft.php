@@ -57,7 +57,7 @@ if (!$cIDTo || !($content = \ze\row::get('content_items', true, ['id' => $cIDTo,
 		$cIDTo = \ze\content::latestId($cTypeTo) + 1;
 	}
 	
-	$content = array(
+	$content = [
 		'equiv_id' => $cIDTo,
 		'id' => $cIDTo,
 		'type' => $cTypeTo,
@@ -66,7 +66,7 @@ if (!$cIDTo || !($content = \ze\row::get('content_items', true, ['id' => $cIDTo,
 		'first_created_datetime' => \ze\date::now(),
 		'visitor_version' => 0,
 		'admin_version' => 1,
-		'status' => 'first_draft');
+		'status' => 'first_draft'];
 	
 	//Create an entry in the translation_chains table for this translation chain if one is not already there
 	$key = ['equiv_id' => $content['equiv_id'], 'type' => $content['type']];
@@ -137,7 +137,7 @@ if (!$cIDFrom
 	
 	if (!empty($contentTypeDetails['release_date_field'])
 	 && $contentTypeDetails['release_date_field'] != 'hidden') {
-		$version['publication_date'] = \ze\date::ymd();
+		$version['release_date'] = \ze\date::ymd();
 	}
 	
 } else {

@@ -81,7 +81,7 @@ class zenario_common_features__admin_boxes__layout extends ze\moduleBaseClass {
 		}
 		
 		$box['tabs']['template']['fields']['content_type']['readonly'] =
-			$box['key']['id'] && !$box['key']['duplicate'] && (ze\row::exists('content_item_versions', array('layout_id' => $box['key']['id'])) || ze\row::exists('content_types', array('default_layout_id' => $box['key']['id'])));
+			$box['key']['id'] && !$box['key']['duplicate'] && (ze\row::exists('content_item_versions', ['layout_id' => $box['key']['id']]) || ze\row::exists('content_types', ['default_layout_id' => $box['key']['id']]));
 		
 		$box['tabs']['template']['fields']['path']['value'] =
 			ze\content::templatePath($box['key']['family_name'], $box['key']['file_base_name']);
@@ -93,7 +93,7 @@ class zenario_common_features__admin_boxes__layout extends ze\moduleBaseClass {
 		//For new Layouts, check how many possible Skins there are for this Template Family.
 		//If there is only one possible choice, choose it by default.
 		if (!$box['key']['id']) {
-			$result = ze\row::query('skins', 'id', array('family_name' => $box['key']['family_name'], 'missing' => 0));
+			$result = ze\row::query('skins', 'id', ['family_name' => $box['key']['family_name'], 'missing' => 0]);
 			if (($row1 = ze\sql::fetchAssoc($result))
 			 && !($row2 = ze\sql::fetchAssoc($result))) {
 				$box['tabs']['template']['fields']['skin_id']['value'] = $row1['id'];
@@ -133,10 +133,10 @@ class zenario_common_features__admin_boxes__layout extends ze\moduleBaseClass {
 			}
 			
 			//Check for any layouts with the same name.
-			$key = array('family_name' => $box['key']['family_name'], 'name' => $values['template/name']);
+			$key = ['family_name' => $box['key']['family_name'], 'name' => $values['template/name']];
 			// If we're saving an existing one, the existing layout should be excluded from this check
 			if ($box['key']['id'] && !$box['key']['duplicate']) {
-				$key['layout_id'] = array('!' => $box['key']['id']);
+				$key['layout_id'] = ['!' => $box['key']['id']];
 			}
 			
 			//Don't allow 2 layouts with the same name, or the same filename
@@ -169,12 +169,12 @@ class zenario_common_features__admin_boxes__layout extends ze\moduleBaseClass {
 			
 			$needToClearCache = false;
 			
-			$layout = array(
+			$layout = [
 				'family_name' => $box['key']['family_name'],
 				'file_base_name' => $box['key']['file_base_name'],
 				'name' => $values['template/name'],
 				'content_type' => $values['content_type'],
-				'skin_id' => $values['skin_id']);
+				'skin_id' => $values['skin_id']];
 			
 			//If registering an existing layout in the system, try to keep it's id if it's of the forum "L01"
 			if (!$box['key']['duplicate']
@@ -225,12 +225,12 @@ class zenario_common_features__admin_boxes__layout extends ze\moduleBaseClass {
 			if ($values['template/skin_id']
 			 && ($family = ze\layoutAdm::familyDetails($box['key']['family_name']))
 			 && !($family['skin_id'])) {
-				ze\row::update('template_families', array('skin_id' => $values['template/skin_id']), $box['key']['family_name']);
+				ze\row::update('template_families', ['skin_id' => $values['template/skin_id']], $box['key']['family_name']);
 			}
 		}
 		
 		if (ze\ring::engToBoolean($box['tabs']['css']['edit_mode']['on'] ?? false) && ze\priv::check('_PRIV_EDIT_TEMPLATE') && $box['key']['id']) {
-			$vals = array();
+			$vals = [];
 			$vals['css_class'] = $values['css/css_class'];
 			
 			if (($filepath = ze\file::getPathOfUploadInCacheDir($values['css/background_image']))

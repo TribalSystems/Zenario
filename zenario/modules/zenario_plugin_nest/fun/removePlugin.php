@@ -46,12 +46,12 @@ if (($instance = ze\plugin::details($instanceId))
 	
 	ze\pluginAdm::manageCSSFile('delete', $instanceId, $eggId);
 	
-	ze\row::delete('nested_plugins', array('instance_id' => $instanceId, 'id' => $eggId));
+	ze\row::delete('nested_plugins', ['instance_id' => $instanceId, 'id' => $eggId]);
 	
 	ze\contentAdm::resyncLibraryPluginFiles($instanceId, $instance);
 	
 	
 	if ($className) {
-		call_user_func(array($className, 'resyncNest'), $instanceId);
+		call_user_func([$className, 'resyncNest'], $instanceId);
 	}
 }

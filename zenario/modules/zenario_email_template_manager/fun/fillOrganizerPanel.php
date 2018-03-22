@@ -31,7 +31,7 @@ switch ($path) {
 	case 'zenario__email_template_manager/panels/email_templates':
 		
 		if ($refinerName == 'module') {
-			$moduleDetails = ze\row::get('modules', array('display_name'), $refinerId);
+			$moduleDetails = ze\row::get('modules', ['display_name'], $refinerId);
 			$panel['title'] = ze\admin::phrase('Email Templates created by the module "[[display_name]]"', $moduleDetails);
 			$panel['no_items_message'] = ze\admin::phrase('There are no Email Templates created by the module "[[display_name]]"', $moduleDetails);
 			
@@ -96,7 +96,7 @@ switch ($path) {
 		}
 
 		foreach($panel['items'] as &$item) {
-			$item['cell_css_classes'] = array();
+			$item['cell_css_classes'] = [];
 			if ($item['status']=='success') {
 				$item['cell_css_classes']['status'] = 'zenario_email_template_manager_log__sent';
 				$item['status'] = ze\admin::phrase('Sent');

@@ -1,6 +1,6 @@
 /**
  * Display a nice easy to use multiselect list
- * @Version: 2.4.2
+ * @Version: 2.4.6
  * @Author: Patrick Springstubbe
  * @Contact: @JediNobleclem
  * @Website: springstubbe.us
@@ -99,10 +99,15 @@
         this.updateSelectAll   = true;
         this.updatePlaceholder = true;
 
+        /* Make sure its a multiselect list */
+        if( !$(this.element).attr('multiple') ) {
+            throw new Error( '[jQuery-MultiSelect] Select list must be a multiselect list in order to use this plugin' );
+        }
+
         /* Options validation checks */
-        if (this.options.search) {
-            if (!this.options.searchOptions.searchText && !this.options.searchOptions.searchValue) {
-                throw new Error('Either searchText or searchValue should be true.');
+        if( this.options.search ){
+            if( !this.options.searchOptions.searchText && !this.options.searchOptions.searchValue ){
+                throw new Error( '[jQuery-MultiSelect] Either searchText or searchValue should be true.' );
             }
         }
 
@@ -191,8 +196,8 @@
             // hide options menus if click happens off of the list placeholder button
             $(document).off('click.ms-hideopts').on('click.ms-hideopts', function( event ){
                 if( !$(event.target).closest('.ms-options-wrap').length ) {
-                    $('.ms-options-wrap > .ms-options.ms-active').each(function(){
-                        $(this).removeClass('ms-active');
+                    $('.ms-options-wrap.ms-active > .ms-options').each(function(){
+                        $(this).closest('.ms-options-wrap').removeClass('ms-active');
 
                         var thisInst = $(this).parent().prev('.jqmsLoaded').data('plugin_multiselect-instance');
 
@@ -202,19 +207,32 @@
                         }
                     });
                 }
+            // hide open option lists if escape key pressed
+            }).bind('keydown', function( event ){
+                if( (event.keyCode || event.which) == 27 ) { // esc key
+                    $(this).trigger('click.ms-hideopts');
+                }
+            });
+
+            // handle pressing enter|space while tabbing through
+            placeholder.bind('keydown', function( event ){
+                var code = (event.keyCode || event.which);
+                if( (code == 13) || (code == 32) ) { // enter OR space
+                    placeholder.trigger( 'mousedown' );
+                }
             });
 
             // disable button action
             placeholder.bind('mousedown',function( event ){
                 // ignore if its not a left click
-                if( event.which != 1 ) {
+                if( event.which && (event.which != 1) ) {
                     return true;
                 }
 
                 // hide other menus before showing this one
-                $('.ms-options-wrap > .ms-options.ms-active').each(function(){
+                $('.ms-options-wrap.ms-active > .ms-options').each(function(){
                     if( $(this).parent().prev()[0] != optionsWrap.parent().prev()[0] ) {
-                        $(this).removeClass('ms-active');
+                        $(this).closest('.ms-options-wrap').removeClass('ms-active');
 
                         var thisInst = $(this).parent().prev('.jqmsLoaded').data('plugin_multiselect-instance');
 
@@ -226,10 +244,10 @@
                 });
 
                 // show/hide options
-                optionsWrap.toggleClass('ms-active');
+                optionsWrap.closest('.ms-options-wrap').toggleClass('ms-active');
 
                 // recalculate height
-                if( optionsWrap.hasClass('ms-active') ) {
+                if( optionsWrap.closest('.ms-options-wrap').hasClass('ms-active') ) {
                     optionsWrap.css( 'maxHeight', '' );
 
                     // cacl default maxHeight
@@ -327,12 +345,12 @@
                     if( optionsList.find('li:not(.optgroup, .selected, .ms-hidden)').length ) {
                         // get unselected vals, mark as selected, return val list
                         optionsList.find('li:not(.optgroup, .selected, .ms-hidden)').addClass('selected');
-                        optionsList.find('li.selected input[type="checkbox"]').prop( 'checked', true );
+                        optionsList.find('li.selected input[type="checkbox"]:not(:disabled)').prop( 'checked', true );
                     }
                     // deselect everything
                     else {
                         optionsList.find('li:not(.optgroup, .ms-hidden).selected').removeClass('selected')
-                        optionsList.find('li:not(.optgroup, .ms-hidden, .selected) input[type="checkbox"]').prop( 'checked', false );
+                        optionsList.find('li:not(.optgroup, .ms-hidden, .selected) input[type="checkbox"]:not(:disabled)').prop( 'checked', false );
                     }
                 }
                 else if( $(this).closest('li').hasClass('optgroup') ) {
@@ -342,12 +360,12 @@
                     // check if any selected if so then select them
                     if( optgroup.find('li:not(.selected, .ms-hidden)').length ) {
                         optgroup.find('li:not(.selected, .ms-hidden)').addClass('selected');
-                        optgroup.find('li.selected input[type="checkbox"]').prop( 'checked', true );
+                        optgroup.find('li.selected input[type="checkbox"]:not(:disabled)').prop( 'checked', true );
                     }
                     // deselect everything
                     else {
                         optgroup.find('li:not(.ms-hidden).selected').removeClass('selected');
-                        optgroup.find('li:not(.ms-hidden, .selected) input[type="checkbox"]').prop( 'checked', false );
+                        optgroup.find('li:not(.ms-hidden, .selected) input[type="checkbox"]:not(:disabled)').prop( 'checked', false );
                     }
                 }
 
@@ -545,7 +563,7 @@
 
                             // add custom user attributes
                             if( thisGOption.hasOwnProperty('attributes') && Object.keys( thisGOption.attributes ).length ) {
-                                //selOption.attr( thisGOption.attributes );
+                                selOption.attr( thisGOption.attributes );
                             }
 
                             // mark option as selected
@@ -754,6 +772,14 @@
             var select         = optionsWrap.parent().prev();
             var selectVals     = select.val() ? select.val() : [];
 
+            // if there are disabled options get those values as well
+            if( select.find('option:selected:disabled').length ) {
+                selectVals = [];
+                select.find('option:selected').each(function(){
+                    selectVals.push( $(this).val() );
+                });
+            }
+
             // get selected options
             var selOpts = [];
             for( key in selectVals ) {
@@ -768,6 +794,13 @@
 
             // UPDATE PLACEHOLDER TEXT WITH OPTIONS SELECTED
             placeholderTxt.text( selOpts.join( ', ' ) );
+
+            if( selOpts.length ) {
+                optionsWrap.closest('.ms-options-wrap').addClass('ms-has-selections');
+            }
+            else {
+                optionsWrap.closest('.ms-options-wrap').removeClass('ms-has-selections');
+            }
 
             // if copy is larger than button width use "# selected"
             if( (placeholderTxt.width() > placeholder.width()) || (selOpts.length != selectVals.length) ) {

@@ -73,16 +73,16 @@ class zenario_pro_features__admin_boxes__menu extends ze\moduleBaseClass {
 				ze\menuAdm::saveText(
 					$box['key']['id'],
 					$lang['id'],
-					array(
-						'descriptive_text' => $values['advanced/descriptive_text__'. $lang['id']]),
+					[
+						'descriptive_text' => $values['advanced/descriptive_text__'. $lang['id']]],
 					$neverCreate = true);
 			}
 		}
 
 		if (ze\ring::engToBoolean($box['tabs']['text']['edit_mode']['on'] ?? false) && ze\priv::check('_PRIV_EDIT_MENU_ITEM')) {
 			ze\menuAdm::save(
-				array(
-					'invisible' => $values['text/zenario_pro_features__invisible']),
+				[
+					'invisible' => $values['text/zenario_pro_features__invisible']],
 				$box['key']['id']);
 		}
 	}

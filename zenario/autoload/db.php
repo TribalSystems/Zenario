@@ -77,10 +77,10 @@ class SQLCol {
 
 class SQLQueryWrapper {
 	public $q;
-	public $colDefs = array();
+	public $colDefs = [];
 	public $colDefsAreSpecfic = false;
 
-	public function __construct($q, $colDefs = array(), $colDefsAreSpecfic = false) {
+	public function __construct($q, $colDefs = [], $colDefsAreSpecfic = false) {
 		$this->q = $q;
 		$this->colDefs = $colDefs;
 		$this->colDefsAreSpecfic = $colDefsAreSpecfic;
@@ -140,6 +140,18 @@ class SQLQueryWrapper {
 				}
 				++$i;
 			}
+		}
+	}
+	
+	public function free() {
+		if (isset($this->q)) {
+			$this->q->free();
+		}
+	}
+	
+	public function close() {
+		if (isset($this->q)) {
+			$this->q->close();
 		}
 	}
 }
@@ -597,14 +609,14 @@ class db {
 		$realDir = dirname(realpath(CMS_ROOT. 'zenario'));
 		$customDir = CMS_ROOT. 'zenario_custom';
 	
-		foreach (array(
+		foreach ([
 			$realDir. '/.svn/.',
 			$customDir. '/.svn/.',
 			$realDir. '/.svn/wc.db',
 			$customDir. '/.svn/wc.db',
 			$customDir. '/site_description.yaml',
 			$realDir. '/zenario/admin/db_updates/latest_revision_no.inc.php'
-		) as $check) {
+		] as $check) {
 			if (file_exists($check)
 			 && ($mtime = (int) filemtime($check))
 			 && ($v < $mtime)) {

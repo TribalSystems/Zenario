@@ -35,8 +35,8 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 class zenario_html_snippet extends ze\moduleBaseClass {
 
-	protected $mergeFields = array();
-	protected $sections = array();
+	protected $mergeFields = [];
+	protected $sections = [];
 	protected $empty = false;
 	protected $raw_html = '';
 	protected $enablePhraseCodeReplace = true;

@@ -36,7 +36,7 @@ $sql = "
 	WHERE thread_id = ". (int) $this->threadId. "
 	GROUP BY poster_id";
 
-$posterIds = array();
+$posterIds = [];
 $result = ze\sql::select($sql);
 while($row = ze\sql::fetchAssoc($result)) {
 	$posterIds[] = $row['poster_id'];

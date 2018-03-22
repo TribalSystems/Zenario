@@ -34,27 +34,27 @@ class zenario_common_features__admin_boxes__document_properties extends ze\modul
 		if ($documentId = $box['key']['id']) {
 			$documentTagsString = '';
 			
-			$documentDetails = ze\row::get('documents',array('file_id', 'thumbnail_id', 'extract', 'extract_wordcount', 'title'),  $documentId);
-			$documentName = ze\row::get('documents', 'filename', array('type' => 'file','id' => $documentId));
-			$box['title'] = ze\admin::phrase('Editing metadata for document "[[filename]]"', array("filename"=>$documentName));
+			$documentDetails = ze\row::get('documents',['file_id', 'thumbnail_id', 'extract', 'extract_wordcount', 'title'],  $documentId);
+			$documentName = ze\row::get('documents', 'filename', ['type' => 'file','id' => $documentId]);
+			$box['title'] = ze\admin::phrase('Editing metadata for document "[[filename]]"', ["filename"=>$documentName]);
 			
 			$fields['details/document_title']['value'] = $documentDetails['title'];
 			$extension = pathinfo($documentName, PATHINFO_EXTENSION);
 			$fields['details/document_extension']['value'] = $extension;
 			$fields['details/document_name']['value'] = pathinfo($documentName, PATHINFO_FILENAME);
 			$fields['details/document_name']['post_field_html'] = '&nbsp;.' . $extension;
-			$fileDatetime=ze\row::get('documents', 'file_datetime', array('type' => 'file','id' => $documentId));
+			$fileDatetime=ze\row::get('documents', 'file_datetime', ['type' => 'file','id' => $documentId]);
 			$fields['details/date_uploaded']['value'] = date('jS F Y H:i', strtotime($fileDatetime));
 			
 			if (ze::setting('enable_document_tags')) {
-				$documentTags = ze\row::getArray('document_tag_link', 'tag_id', array('document_id' => $documentId));
+				$documentTags = ze\row::getArray('document_tag_link', 'tag_id', ['document_id' => $documentId]);
 				foreach ($documentTags as $tag) {
 					$documentTagsString .= $tag . ",";
 				}
 				$fields['details/tags']['value'] = $documentTagsString;
 				$fields['details/link_to_add_tags']['snippet']['html'] = 
 						ze\admin::phrase('To add or edit document tags click <a[[link]]>this link</a>.',
-							array('link' => ' href="'. htmlspecialchars(ze\link::absolute(). 'zenario/admin/organizer.php#zenario__content/panels/document_tags'). '" target="_blank"'));
+							['link' => ' href="'. htmlspecialchars(ze\link::absolute(). 'zenario/admin/organizer.php#zenario__content/panels/document_tags'). '" target="_blank"']);
 			} else {
 				$fields['details/tags']['hidden'] = true;
 			}
@@ -86,7 +86,7 @@ class zenario_common_features__admin_boxes__document_properties extends ze\modul
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
 		$documentId = $box['key']['id'];
-		$parentfolderId=ze\row::get('documents', 'folder_id', array('id' => $documentId));
+		$parentfolderId=ze\row::get('documents', 'folder_id', ['id' => $documentId]);
 		$newDocumentName = trim($values['details/document_name']);
 		
 		if (!$newDocumentName ){
@@ -107,7 +107,7 @@ class zenario_common_features__admin_boxes__document_properties extends ze\modul
 			AND filename = '". ze\escape::sql($newDocumentName). "' 
 			AND id != ". (int) $documentId;
 		
-		$documentIdList = array();
+		$documentIdList = [];
 		$result = ze\sql::select($sql);
 		while($row = ze\sql::fetchAssoc($result)) {
 				$documentIdList[] = $row;
@@ -115,7 +115,7 @@ class zenario_common_features__admin_boxes__document_properties extends ze\modul
 		$numberOfIds = count($documentIdList);
 		
 		if ($numberOfIds > 0){
-			$box['tabs']['details']['errors'][] = ze\admin::phrase('The filename “[[folder_name]]” is already taken. Please choose a different name.', array('folder_name' => $newDocumentName));
+			$box['tabs']['details']['errors'][] = ze\admin::phrase('The filename “[[folder_name]]” is already taken. Please choose a different name.', ['folder_name' => $newDocumentName]);
 		}
 	}
 	
@@ -123,8 +123,8 @@ class zenario_common_features__admin_boxes__document_properties extends ze\modul
 		$documentId = $box['key']['id'];
 		$documentTitle = $values['details/document_title'];
 		
-		$document = ze\row::get('documents', array('filename', 'file_id', 'title'), array('id' => $documentId));
-		$file = ze\row::get('files', array('id', 'filename', 'path', 'created_datetime', 'short_checksum'), $document['file_id']);
+		$document = ze\row::get('documents', ['filename', 'file_id', 'title'], ['id' => $documentId]);
+		$file = ze\row::get('files', ['id', 'filename', 'path', 'created_datetime', 'short_checksum'], $document['file_id']);
 		
 		$oldDocumentName = $document['filename'];
 		if ($documentId) {
@@ -143,14 +143,14 @@ class zenario_common_features__admin_boxes__document_properties extends ze\modul
 			}
 			
 			//Documents with the same file must have the same filename for now or the public link would break.
-			ze\row::update('documents', array('filename' => $documentName), array('file_id' => $document['file_id']));
+			ze\row::update('documents', ['filename' => $documentName], ['file_id' => $document['file_id']]);
 			
 			//Update any htaccess files to redirect to the new path
 			ze\document::remakeRedirectHtaccessFiles($documentId);
 		}
 		
 		if ($document['title'] != $documentTitle) {
-			ze\row::update('documents', array('title' => $documentTitle), $documentId);
+			ze\row::update('documents', ['title' => $documentTitle], $documentId);
 		}
 		
 		//Save document thumbnail image
@@ -161,23 +161,23 @@ class zenario_common_features__admin_boxes__document_properties extends ze\modul
 			if (!in_array($new_image, $old_image)) {
 				if ($path = ze\file::getPathOfUploadInCacheDir($new_image)) {
 					$fileId = ze\file::addToDocstoreDir('document_thumbnail', $path);
-					$fileDetails = array();
+					$fileDetails = [];
 					$fileDetails['thumbnail_id'] = $fileId;
 					//update thumbnail
 					ze\row::set('documents', $fileDetails, $documentId);
 				}
 			}
 		} elseif ($box['key']['delete_thumbnail']) {
-			ze\row::update('documents', array('thumbnail_id' => 0), $documentId);
+			ze\row::update('documents', ['thumbnail_id' => 0], $documentId);
 		}
 	
 		//Save document tags
-		ze\row::delete('document_tag_link', array('document_id' => $documentId));
+		ze\row::delete('document_tag_link', ['document_id' => $documentId]);
 		$tagIds = ze\ray::explodeAndTrim($values['details/tags']);
 		foreach ($tagIds as $tagId) {
 			ze\row::set('document_tag_link', 
-				array('tag_id' => $tagId, 'document_id' => $documentId), 
-				array('tag_id' => $tagId, 'document_id' => $documentId));
+				['tag_id' => $tagId, 'document_id' => $documentId], 
+				['tag_id' => $tagId, 'document_id' => $documentId]);
 		}
 	}
 	

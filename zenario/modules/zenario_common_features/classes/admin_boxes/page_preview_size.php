@@ -32,12 +32,12 @@ class zenario_common_features__admin_boxes__page_preview_size extends ze\moduleB
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		if ($id = $box['key']['id']) {
-			$pagePreviewSize = ze\row::get('page_preview_sizes', array('width', 'height', 'description', 'type'), $id);
+			$pagePreviewSize = ze\row::get('page_preview_sizes', ['width', 'height', 'description', 'type'], $id);
 			$box['title'] = ze\admin::phrase('Editing page preview size "[[width]] x [[height]] [[description]]"', 
-				array(
+				[
 					'width' => $pagePreviewSize['width'],
 					'height' => $pagePreviewSize['height'],
-					'description' => $pagePreviewSize['description']));
+					'description' => $pagePreviewSize['description']]);
 			$values['details/width'] = $pagePreviewSize['width'];
 			$values['details/height'] = $pagePreviewSize['height'];
 			$values['details/description'] = $pagePreviewSize['description'];
@@ -62,21 +62,21 @@ class zenario_common_features__admin_boxes__page_preview_size extends ze\moduleB
 			}
 			ze\row::insert(
 				'page_preview_sizes', 
-				array(
+				[
 					'width' => $values['details/width'], 
 					'height' => $values['details/height'], 
 					'description' => $values['details/description'],
 					'ordinal' => (int)$maxOrdinal,
 					'is_default' => $isDefault,
-					'type' => $values['details/type']));
+					'type' => $values['details/type']]);
 		} else {
 			ze\row::update(
 				'page_preview_sizes', 
-				array(
+				[
 					'width' => $values['details/width'],
 					'height' => $values['details/height'],
 					'description' => $values['details/description'],
-					'type' => $values['details/type'])
+					'type' => $values['details/type']]
 				, $id);
 		}
 	}

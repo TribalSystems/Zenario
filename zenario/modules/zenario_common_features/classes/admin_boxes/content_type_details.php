@@ -36,7 +36,7 @@ class zenario_common_features__admin_boxes__content_type_details extends ze\modu
 		if (is_numeric($box['key']['id'])) {
 			$box['key']['idFromOrganizer'] = $box['key']['id'];
 			
-			if (!$box['key']['id'] = ze\row::get('content_types', 'content_type_id', array('module_id' => $box['key']['id']))) {
+			if (!$box['key']['id'] = ze\row::get('content_types', 'content_type_id', ['module_id' => $box['key']['id']])) {
 				echo ze\admin::phrase('This module does not seem to have a content type associated with it');
 				exit;
 			}
@@ -91,7 +91,7 @@ class zenario_common_features__admin_boxes__content_type_details extends ze\modu
 			case 'video':
 			case 'audio':
 				//HTML, Document, Picture, Video and Audio fields cannot currently be mandatory
-				foreach (array('description_field', 'keywords_field', 'summary_field', 'release_date_field') as $field) {
+				foreach (['description_field', 'keywords_field', 'summary_field', 'release_date_field'] as $field) {
 					$box['tabs']['details']['fields'][$field]['values']['mandatory']['hidden'] = true;
 				}
 				
@@ -124,7 +124,7 @@ class zenario_common_features__admin_boxes__content_type_details extends ze\modu
 		
 		if (ze\priv::check('_PRIV_EDIT_CONTENT_TYPE')) {
 			
-			$vals = array(
+			$vals = [
 				'content_type_name_en' => $values['details/content_type_name_en'],
 				'content_type_plural_en' => $values['details/content_type_plural_en'],
 				'description_field' => $values['details/description_field'],
@@ -142,7 +142,7 @@ class zenario_common_features__admin_boxes__content_type_details extends ze\modu
 				'default_permissions' => $values['details/default_permissions'],
 				'hide_private_item' => $values['details/hide_private_item'],
 				'hide_menu_node' => $values['details/hide_menu_node']
-			);
+			];
 			
 			if ($values['details/summary_field'] != 'hidden') {
 				$vals['enable_summary_auto_update'] = $values['details/enable_summary_auto_update'];
@@ -161,7 +161,7 @@ class zenario_common_features__admin_boxes__content_type_details extends ze\modu
 				case 'picture':
 				case 'html':
 					//HTML/Document/Picture fields cannot currently be mandatory
-					foreach (array('description_field', 'keywords_field', 'summary_field', 'release_date_field') as $field) {
+					foreach (['description_field', 'keywords_field', 'summary_field', 'release_date_field'] as $field) {
 						if ($vals[$field] == 'mandatory') {
 							$vals[$field] = 'optional';
 						}

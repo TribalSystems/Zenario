@@ -556,4 +556,47 @@ class dataset {
 		}
 		return false;
 	}
+	
+	public static function englishTypeName($type) {
+		switch ($type) {
+			case 'group': 
+				return 'Group';
+			case 'checkbox': 
+				return 'Checkbox';
+			case 'checkboxes': 
+				return 'Checkboxes';
+			case 'date': 
+				return 'Date';
+			case 'editor': 
+				return 'Editor';
+			case 'radios':
+				return 'Radios';
+			case 'centralised_radios': 
+				return 'Centralised radios';
+			case 'select': 
+				return 'Select';
+			case 'centralised_select': 
+				return 'Centralised select';
+			case 'text': 
+				return 'Text';
+			case 'textarea': 
+				return 'Textarea';
+			case 'url': 
+				return 'URL';
+			case 'other_system_field': 
+				return 'Other system field';
+			case 'dataset_select': 
+				return 'Dataset select';
+			case 'dataset_picker': 
+				return 'Dataset picker';
+			case 'file_picker': 
+				return 'File picker';
+			case 'repeat_start': 
+				return 'Start of repeating section`';
+			case 'repeat_end': 
+				return 'End of repeating section';
+			default: 
+				return 'Unknown';
+		}
+	}
 }

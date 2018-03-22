@@ -43,14 +43,14 @@ class userAdm {
 
 
 	//Formerly "generateUserIdentifier()"
-	public static function generateIdentifier($userId, $details = array()) {
+	public static function generateIdentifier($userId, $details = []) {
 		//Look up details on this user if not provided
 		if (empty($details)
 		 || !isset($details['email'])
 		 || !isset($details['last_name'])
 		 || !isset($details['first_name'])
 		 || !isset($details['screen_name'])) {
-			$details = \ze\row::get('users', array('screen_name', 'first_name', 'last_name', 'email'), $userId);
+			$details = \ze\row::get('users', ['screen_name', 'first_name', 'last_name', 'email'], $userId);
 		}
 	
 		$baseIdentifier = '';
@@ -82,19 +82,8 @@ class userAdm {
 		if (!\ze::$dbCols[DB_NAME_PREFIX. 'users']['identifier']->encrypted) {
 			//Attempt to generate a unique indentifier
 	
-			// Get all current identifiers from all linked sites
-			$identifiers = array();
-			if (file_exists(CMS_ROOT. 'zenario_usersync_config.php')) {
-				require CMS_ROOT. 'zenario_usersync_config.php';
-				$thisIsHub =
-					$hub['DBHOST'] == DBHOST
-				 && $hub['DBNAME'] == DBNAME;
-		
-				$identifiers = \ze\userAdm::similarIdentifiers($baseIdentifier, $thisIsHub, $hub, $satellites);
-				\ze\db::connectLocal();
-			}
-	
-			// Get similar identifiers from this site
+			// Get all current identifiers from this site
+			$identifiers = [];
 			$sql = '
 				SELECT id, identifier 
 				FROM '.DB_NAME_PREFIX.'users
@@ -144,61 +133,6 @@ class userAdm {
 		}
 	}
 
-	//N.b. this function won't work if identifier is encrypted on a site!
-	//Formerly "getSimilarIdentifiers()"
-	public static function similarIdentifiers($screenName, $thisIsHub, $hub, $satellites) {
-		$identifiers = array();
-		$DBHost = DBHOST;
-		$DBName = DBNAME;
-		// if not thisIsHub, return hubs identifiers
-		if (!$thisIsHub) {
-			if ($dbSelected = \ze\db::connect($hub['DBHOST'], $hub['DBNAME'], $hub['DBUSER'], $hub['DBPASS'], ($hub['DBPORT'] ?? false))) {
-				\ze::$lastDB = $dbSelected;
-				\ze::$lastDBHost = $hub['DBHOST'];
-				\ze::$lastDBName = $hub['DBNAME'];
-				\ze::$lastDBPrefix = $hub['DB_NAME_PREFIX'];
-			
-				$sql = '
-					SELECT id, identifier
-					FROM '. $hub['DB_NAME_PREFIX']. 'users
-					WHERE identifier LIKE "'.\ze\escape::sql($screenName).'%"';
-			
-				$result = \ze\sql::select($sql);
-				while ($user = \ze\sql::fetchAssoc($result)) {
-					$identifiers[strtoupper($user['identifier'])] = $user['id'];
-				}
-			} else {
-				return false;
-			}
-		// If thisIsHub, return all satellite identifiers
-		} else {
-			foreach($satellites as $satellite) {
-				if ($satellite['DBHOST'] == $DBHost
-					&& $satellite['DBNAME'] == $DBName) {
-					continue;
-				} else {
-					if ($dbSelected = \ze\db::connect($satellite['DBHOST'], $satellite['DBNAME'], $satellite['DBUSER'], $satellite['DBPASS'], ($satellite['DBPORT'] ?? false))) {
-						\ze::$lastDB = $dbSelected;
-						\ze::$lastDBHost = $satellite['DBHOST'];
-						\ze::$lastDBName = $satellite['DBNAME'];
-						\ze::$lastDBPrefix = $satellite['DB_NAME_PREFIX'];
-					
-						$sql = '
-							SELECT id, identifier
-							FROM '. $satellite['DB_NAME_PREFIX']. 'users
-							WHERE identifier LIKE "'.\ze\escape::sql($screenName).'%"';
-					
-						$result = \ze\sql::select($sql);
-						while ($user = \ze\sql::fetchAssoc($result)) {
-							$identifiers[strtoupper($user['identifier'])] = $user['id'];
-						}
-					}
-				}
-			}
-		}
-		return $identifiers;
-	}
-
 	//Formerly "getNextScreenName()"
 	public static function nextScreenName() {
 		$sql = "
@@ -208,13 +142,6 @@ class userAdm {
 		$row = \ze\sql::fetchRow($result);
 	
 		$prefix = 'User_';
-	
-		//Default hub users to a different name pattern to try and make collisions less likely
-		if (file_exists(CMS_ROOT. 'zenario_usersync_config.php') && \ze\module::inc('zenario_users')) {
-			if (zenario_users::thisIsHub()) {
-				$prefix = 'Hub_User_';
-			}
-		}
 	
 		return $prefix. $row[0];
 	}
@@ -234,7 +161,7 @@ class userAdm {
 			if (!\ze\ring::validateScreenName($values['screen_name'])) {
 				$e->add('screen_name', '_ERROR_SCREEN_NAME_INVALID');
 			//...and is not already taken by a different row.
-			} elseif (\ze\row::exists('users', array('screen_name' => $values['screen_name'], 'id' => array('!' => $id)))) {
+			} elseif (\ze\row::exists('users', ['screen_name' => $values['screen_name'], 'id' => ['!' => $id]])) {
 				$e->add('screen_name', '_ERROR_SCREEN_NAME_IN_USE');
 			//...and is not too long.
 			} elseif (strlen($values['screen_name']) > 50) {
@@ -260,12 +187,6 @@ class userAdm {
 			}
 		}
 	
-		//Backwards compatability for a couple of renamed columns
-		if (!isset($values['last_login_ip']) && isset($values['ip'])) {
-			$values['last_login_ip'] = $values['ip'];
-			unset($values['ip']);
-		}
-	
 	
 		if (!$id) {
 			$values['created_date'] = \ze\date::now();
@@ -280,14 +201,14 @@ class userAdm {
 			//...and is not already taken by a different row.
 			} else {
 				if ($convertContactToExtranetUser) {
-					if ($exsitingUser = \ze\row::get('users', array('id','status'), array('email' => $values['email']))) {
+					if ($exsitingUser = \ze\row::get('users', ['id','status'], ['email' => $values['email']])) {
 						if ($exsitingUser['status'] == "contact") {
 							$id = $exsitingUser['id'];
 						} else {
 							$e->add('email', '_ERROR_EMAIL_NAME_IN_USE');
 						}
 					}
-				} elseif (\ze\row::exists('users', array('email' => $values['email'], 'id' => array('!' => $id)))) {
+				} elseif (\ze\row::exists('users', ['email' => $values['email'], 'id' => ['!' => $id]])) {
 					$e->add('email', '_ERROR_EMAIL_NAME_IN_USE');
 				}
 			}
@@ -324,7 +245,7 @@ class userAdm {
 			$newId = \ze\row::set('users', $values, $id);
 		
 			$identifier = \ze\userAdm::generateIdentifier($newId);
-			\ze\row::update('users', array('identifier' => $identifier), $newId);
+			\ze\row::update('users', ['identifier' => $identifier], $newId);
 		
 			if ($password !== false) {
 				\ze\userAdm::setPassword($newId, $password);
@@ -334,12 +255,12 @@ class userAdm {
 			if ($id) {
 				\ze\module::sendSignal(
 					'eventUserModified',
-					array('id' => $id));
+					['id' => $id]);
 		
 			} else {
 				\ze\module::sendSignal(
 					'eventUserCreated',
-					array('id' => $newId));
+					['id' => $newId]);
 			}
 		
 			//Return the primary id from the database to the caller
@@ -364,7 +285,7 @@ class userAdm {
 		$password = "";
 		$passwordLength = max(5, (int) \ze::setting('min_extranet_user_password_length'));
 	
-		$passwordCharacters = array();
+		$passwordCharacters = [];
 	
 		if($passwordLength){
 	
@@ -410,7 +331,7 @@ class userAdm {
 		$password = \ze\user::hashPassword($salt, $password);
 	
 	
-		$details = array('password' => $password, 'password_salt' => $salt);
+		$details = ['password' => $password, 'password_salt' => $salt];
 	
 		if ($needsChanging !== -1) {
 			$details['password_needs_changing'] = $needsChanging;
@@ -423,28 +344,44 @@ class userAdm {
 	}
 
 	//Formerly "deleteUser()"
-	public static function delete($userId) {
-		\ze\module::sendSignal('eventUserDeleted', array('userId' => $userId));
+	public static function delete($userId, $deleteAllData = false) {
+		\ze\module::sendSignal('eventUserDeleted', [$userId, $deleteAllData]);
 	
 		\ze\row::delete('users', $userId);
-		\ze\row::delete('users_custom_data', array('user_id' => $userId));
+		\ze\row::delete('users_custom_data', ['user_id' => $userId]);
 	
 		if ($dataset = \ze\dataset::details('users')) {
-			\ze\row::delete('custom_dataset_values_link', array('dataset_id' => $dataset['id'], 'linking_id' => $userId));
+			\ze\row::delete('custom_dataset_values_link', ['dataset_id' => $dataset['id'], 'linking_id' => $userId]);
 		}
 	
 		\ze\contentAdm::deleteUnusedImagesByUsage('user');
+		
+		if ($deleteAllData) {
+			//Delete user signin log
+			$sql = ' 
+				DELETE FROM '. DB_NAME_PREFIX. 'user_signin_log
+				WHERE user_id = ' . (int)$userId;
+			\ze\sql::update($sql);
+			
+			//Delete user content access log
+			$sql = ' 
+				DELETE FROM '. DB_NAME_PREFIX. 'user_content_accesslog 
+				WHERE user_id = ' . (int)$userId;
+			\ze\sql::update($sql);
+		}
 	}
 
 	//Formerly "updateUserHash()"
 	public static function updateHash($userId) {
-	
 		$emailAddress = \ze\row::get('users', 'email', $userId);
-	
 		$sql = "
 			UPDATE ". DB_NAME_PREFIX. "users 
-			SET hash = '". \ze\escape::sql(\ze::hash64($userId. '-'. date('Yz'). '-'. \ze\link::primaryDomain(). '-'. $emailAddress)). "'
+			SET hash = '". \ze\escape::sql(\ze\userAdm::createHash($userId, $emailAddress)). "'
 			WHERE id = ". (int) $userId;
 		\ze\sql::update($sql, false, false);
+	}
+	
+	public static function createHash($userId, $emailAddress) {
+		return \ze::hash64($userId. '-'. date('Yz'). '-'. \ze\link::primaryDomain(). '-'. $emailAddress);
 	}
 }

@@ -10,7 +10,7 @@ class zenario_plugin_nest__admin_boxes__slide extends zenario_plugin_nest {
 		if (empty(ze::$vars)) {
 			require ze::editionInclude('checkRequestVars');
 		}
-		$box['lovs']['coreVars'] = !empty($box['lovs']['coreVars']) ? $box['lovs']['coreVars'] : array();
+		$box['lovs']['coreVars'] = !empty($box['lovs']['coreVars']) ? $box['lovs']['coreVars'] : [];
 		foreach (ze::$vars as $key => $val) {
 			$box['lovs']['coreVars'][$key] = $key;
 		}
@@ -32,7 +32,7 @@ class zenario_plugin_nest__admin_boxes__slide extends zenario_plugin_nest {
 			]);
 		}
 		
-		$details = array();
+		$details = [];
 		if (!empty($box['key']['id'])) {
 			$details = ze\row::get('nested_plugins', true, $box['key']['id']);
 			
@@ -69,9 +69,9 @@ class zenario_plugin_nest__admin_boxes__slide extends zenario_plugin_nest {
 				$values['details/always_visible_to_admins'] = $details['always_visible_to_admins'];
 		
 				$values['details/group_ids'] =
-					ze\escape::in(ze\row::getArray('group_link', 'link_to_id', array('link_to' => 'group', 'link_from' => 'slide', 'link_from_id' => $box['key']['id'])), true);
+					ze\escape::in(ze\row::getArray('group_link', 'link_to_id', ['link_to' => 'group', 'link_from' => 'slide', 'link_from_id' => $box['key']['id']]), true);
 				$values['details/role_ids'] =
-					ze\escape::in(ze\row::getArray('group_link', 'link_to_id', array('link_to' => 'role', 'link_from' => 'slide', 'link_from_id' => $box['key']['id'])), true);
+					ze\escape::in(ze\row::getArray('group_link', 'link_to_id', ['link_to' => 'role', 'link_from' => 'slide', 'link_from_id' => $box['key']['id']]), true);
 			}
 			
 			//Split the request variables up by commas, and populate up to three values in the select lists
@@ -115,7 +115,7 @@ class zenario_plugin_nest__admin_boxes__slide extends zenario_plugin_nest {
 			
 			$box['tabs']['details']['edit_mode']['always_on'] = true;
 			$details['slide_num'] = 1 + (int) self::maxTab($box['key']['instanceId']);
-			$details['name_or_title'] = ze\admin::phrase('Slide [[num]]', array('num' => $details['slide_num']));
+			$details['name_or_title'] = ze\admin::phrase('Slide [[num]]', ['num' => $details['slide_num']]);
 			
 			$instance['slideNum'] = $details['slide_num'];
 			if (false !== strpos($instance['class_name'], 'slide')) {
@@ -164,10 +164,10 @@ class zenario_plugin_nest__admin_boxes__slide extends zenario_plugin_nest {
 		
 		
 		if (!$instance['content_id'] && (ze\lang::count() > 1)) {
-			$mrg = array(
+			$mrg = [
 				'def_lang_name' => htmlspecialchars(ze\lang::name(ze::$defaultLang)),
 				'phrases_panel' => htmlspecialchars(ze\link::absolute(). 'zenario/admin/organizer.php#zenario__languages/panels/phrases')
-			);
+			];
 			
 			$fields['details/name_or_title']['show_phrase_icon'] = true;
 			$fields['details/name_or_title']['note_below'] .=
@@ -220,7 +220,7 @@ class zenario_plugin_nest__admin_boxes__slide extends zenario_plugin_nest {
 			$box['key']['id'] = self::addSlide($box['key']['instanceId'], $values['details/name_or_title']);
 		}
 		
-		$details = array(
+		$details = [
 			'name_or_title' => $values['details/name_or_title'],
 			'invisible_in_nav' => $values['details/invisible_in_nav'],
 			'privacy' => 'public',
@@ -237,7 +237,7 @@ class zenario_plugin_nest__admin_boxes__slide extends zenario_plugin_nest {
 			'auto_refresh_interval' => 60,
 			'request_vars' => '',
 			'global_command' => ''
-		);
+		];
 		
 		if ($values['details/apply_slide_specific_permissions']) {
 			$details['privacy'] = $values['details/privacy'];
@@ -281,7 +281,7 @@ class zenario_plugin_nest__admin_boxes__slide extends zenario_plugin_nest {
 		
 		ze\row::update('nested_plugins', $details, $box['key']['id']);
 		
-		$key = array('link_to' => 'group', 'link_from' => 'slide', 'link_from_id' => $box['key']['id']);
+		$key = ['link_to' => 'group', 'link_from' => 'slide', 'link_from_id' => $box['key']['id']];
 		if ($details['privacy'] == 'group_members') {
 			ze\miscAdm::updateLinkingTable('group_link', $key, 'link_to_id', $values['details/group_ids']);
 		} else {

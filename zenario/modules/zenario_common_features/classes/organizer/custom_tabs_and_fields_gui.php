@@ -84,7 +84,7 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 		$result = ze\row::query(
 			'custom_datasets',
 			['id', 'label'],
-			array('extends_organizer_panel' => ['!' => ''], 'label_field_id' => ['!' => 0]),
+			['extends_organizer_panel' => ['!' => ''], 'label_field_id' => ['!' => 0]],
 			'label'
 		);
 		$ord = 1;
@@ -124,11 +124,11 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 				if (empty($tab['label']) && empty($tab['default_label'])) {
 					continue;
 				}
-				$foundFieldsInTUIX[$tabName] = array(
+				$foundFieldsInTUIX[$tabName] = [
 					'ord' => ++$tabOrdinal,
 					'label' => ze::ifNull($tab['dataset_label'] ?? false, $tab['label'] ?? false),
 					'fields' => []
-				);
+				];
 				if (!empty($tab['fields'])
 					&& is_array($tab['fields'])
 				) {
@@ -149,14 +149,14 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 				continue;
 			}
 			++$tabCount;
-			$tabProperties = array(
+			$tabProperties = [
 				'ord' => $tabCount,
 				'name' => $tab['name'],
 				'tab_label' => $tab['label'],
 				'is_system_field' => 0,
 				'parent_field_id' => (int)$tab['parent_field_id'],
 				'fields' => []
-			);
+			];
 			if ($tab['is_system_field'] && isset($foundFieldsInTUIX[$tab['name']])) {
 				$tabProperties['is_system_field'] = 1;
 				if ($tab['default_label'] && !$tab['label']) {
@@ -182,7 +182,7 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 				}
 				++$fieldCount;
 				
-				$fieldProperties = array(
+				$fieldProperties = [
 					'id' => (int)$field['id'],
 					'parent_id' => (int)$field['parent_id'],
 					'is_system_field' => (int)$field['is_system_field'],
@@ -222,7 +222,7 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 					'min_rows' => (int)$field['min_rows'],
 					'max_rows' => (int)$field['max_rows'],
 					'repeat_start_id' => (int)$field['repeat_start_id']
-				);
+				];
 				
 				//Get record count for fields on first tab. Other tab fields are loaded as their tab is clicked
 				if (($tabCount == 1) && $field['db_column']) {
@@ -263,6 +263,9 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 							$fieldProperties['tuix_type'] = 'html_snippet';
 						} elseif (isset($tuixField['pick_items'])) {
 							$fieldProperties['tuix_type'] = 'pick_items';
+						} elseif (isset($tuixField['upload'])) {
+							$fieldProperties['tuix_type'] = 'upload';
+							$fieldProperties['field_label'] = $tuixField['upload']['upload_phrase'] ?? 'Upload...';
 						}
 					}
 					//Look for groupings on system fields
@@ -583,11 +586,11 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 							$sortedValues = $field['lov'];
 							usort($sortedValues, 'ze\ray::sortByOrd');
 							foreach ($sortedValues as $valueIndex => $value) {
-								$lovValues = array(
+								$lovValues = [
 									'field_id' => $field['id'],
 									'ord' => $valueIndex + 1,
 									'label' => mb_substr(trim($value['label']), 0, 250)
-								);
+								];
 								$ids = [];
 								if (empty($value['_is_new'])) {
 									$ids['id'] = $value['id'];

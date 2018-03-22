@@ -6,6 +6,7 @@ site_settings:
         cookies:
             fields:
                 cookie_consent_for_extranet:
+                    ord: cookie_consent_type__explicit.01
                     site_setting:
                         name: cookie_consent_for_extranet
                     label: 'For the Extranet:'

@@ -29,8 +29,8 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 class zenario_cookie_consent_status extends ze\moduleBaseClass {
 	
-	protected $sections = array();
-	protected $mergeFields = array();
+	protected $sections = [];
+	protected $mergeFields = [];
 	
 	public function init() {
 		

@@ -29,10 +29,10 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 
 if ($this->forumNotSetUp && ze\priv::check('_PRIV_MANAGE_ITEM_SLOT')) {
-	$controls['actions']['create_forum'] = array(
+	$controls['actions']['create_forum'] = [
 		'ord' => 50,
 		'label' => ze\admin::phrase('Create a Forum here'),
-		'page_modes' => array('edit' => true, 'item' => true, 'layout' => true),
+		'page_modes' => ['edit' => true, 'item' => true, 'layout' => true],
 		'onclick' => "
 			zenarioA.floatingBox(
 				'". ze\admin::phrase('Are you sure you wish to create a new Forum on this Content Item?'). "',
@@ -44,24 +44,24 @@ if ($this->forumNotSetUp && ze\priv::check('_PRIV_MANAGE_ITEM_SLOT')) {
 					<input type="button" class="submit" value="'. ze\admin::phrase('Cancel'). '"/>
 				'). "',
 				'warning');
-			return false;");
+			return false;"];
 	
-	if (ze\row::exists(ZENARIO_FORUM_PREFIX. "forums", array('thread_content_id' => 0))
-	 || ze\row::exists(ZENARIO_FORUM_PREFIX. "forums", array('new_thread_content_id' => 0))) {
-		$controls['actions']['setup_forum'] = array(
+	if (ze\row::exists(ZENARIO_FORUM_PREFIX. "forums", ['thread_content_id' => 0])
+	 || ze\row::exists(ZENARIO_FORUM_PREFIX. "forums", ['new_thread_content_id' => 0])) {
+		$controls['actions']['setup_forum'] = [
 			'ord' => 51,
 			'label' => ze\admin::phrase('Use this page as part of an existing Forum'),
-			'page_modes' => array('edit' => true, 'item' => true, 'layout' => true),
+			'page_modes' => ['edit' => true, 'item' => true, 'layout' => true],
 			'onclick' => "
-				zenarioAB.open('zenario_forum_setup', {cID: zenario.cID, cType: zenario.cType}); return false;");
+				zenarioAB.open('zenario_forum_setup', {cID: zenario.cID, cType: zenario.cType}); return false;"];
 	}
 }
 
 if (!$this->forumNotSetUp && (ze\priv::check('_PRIV_MANAGE_ITEM_SLOT') || ze\priv::check('_PRIV_MODERATE_USER_COMMENTS'))) {
-	$controls['actions']['manage_forum'] = array(
+	$controls['actions']['manage_forum'] = [
 		'ord' => 50,
 		'label' => ze\admin::phrase('Manage Forum'),
-		'page_modes' => array('edit' => true, 'item' => true, 'layout' => true),
+		'page_modes' => ['edit' => true, 'item' => true, 'layout' => true],
 		'onclick' => "
-			window.open(URLBasePath + 'zenario/admin/organizer.php#zenario__social/nav/forums/panel//". $this->forumId. "'); return false;");
+			window.open(URLBasePath + 'zenario/admin/organizer.php#zenario__social/nav/forums/panel//". $this->forumId. "'); return false;"];
 }

@@ -3247,31 +3247,49 @@ body.ie8 .organizer_item_image.ghost {
 	cursor: default;
 }
 
-#organizer_rightColumn div.organizer_row.privacy_group_members div.organizer_cell div.privacy_inline_button {
-	background: url('../admin/images/privacy/inline_button/group_members.png') no-repeat;
+#organizer_rightColumn div.organizer_row.privacy_group_members div.organizer_cell div.privacy_inline_button a,
+#organizer_rightColumn div.organizer_row.privacy_with_role div.organizer_cell div.privacy_inline_button a,
+#organizer_rightColumn div.organizer_row.privacy_logged_in div.organizer_cell div.privacy_inline_button a,
+#organizer_rightColumn div.organizer_row.privacy_send_signal div.organizer_cell div.privacy_inline_button a,
+#organizer_rightColumn div.organizer_row.privacy_call_static_method div.organizer_cell div.privacy_inline_button a,
+#organizer_rightColumn div.organizer_row.privacy_public div.organizer_cell div.privacy_inline_button a,
+#organizer_rightColumn div.organizer_row.privacy_logged_out div.organizer_cell div.privacy_inline_button a,
+#organizer_rightColumn div.organizer_row.privacy_in_smart_group div.organizer_cell div.privacy_inline_button a,
+#organizer_rightColumn div.organizer_row.privacy_logged_in_not_in_smart_group div.organizer_cell div.privacy_inline_button a {
+	background-image:url('../admin/images/icon-permissions.svg');
+	background-repeat:no-repeat;
+	background-position:center center;
+	background-size:auto 12px;
+	-webkit-border-radius: 0;
+	-moz-border-radius: 0;
+	border-radius: 0;
 }
 
-#organizer_rightColumn div.organizer_row.privacy_with_role div.organizer_cell div.privacy_inline_button {
-	background: url('../admin/images/privacy/inline_button/with_role.png') no-repeat;
+#organizer_rightColumn div.organizer_row.privacy_group_members div.organizer_cell div.privacy_inline_button a {
+	background-color:#D7ABEA;
 }
 
-#organizer_rightColumn div.organizer_row.privacy_logged_in div.organizer_cell div.privacy_inline_button {
-	background: url('../admin/images/privacy/inline_button/logged_in.png') no-repeat;
+#organizer_rightColumn div.organizer_row.privacy_with_role div.organizer_cell div.privacy_inline_button a {
+	background-color:#AAEBCC;
 }
 
-#organizer_rightColumn div.organizer_row.privacy_send_signal div.organizer_cell div.privacy_inline_button,
-#organizer_rightColumn div.organizer_row.privacy_call_static_method div.organizer_cell div.privacy_inline_button {
-	background: url('../admin/images/privacy/inline_button/php.png') no-repeat;
+#organizer_rightColumn div.organizer_row.privacy_logged_in div.organizer_cell div.privacy_inline_button a {
+	background-color:#EBACB3;
 }
 
-#organizer_rightColumn div.organizer_row.privacy_public div.organizer_cell div.privacy_inline_button,
-#organizer_rightColumn div.organizer_row.privacy_logged_out div.organizer_cell div.privacy_inline_button {
-	background: url('../admin/images/privacy/inline_button/public.png') no-repeat;
+#organizer_rightColumn div.organizer_row.privacy_send_signal div.organizer_cell div.privacy_inline_button a,
+#organizer_rightColumn div.organizer_row.privacy_call_static_method div.organizer_cell div.privacy_inline_button a {
+	background-color:#EBD8AA;
 }
 
-#organizer_rightColumn div.organizer_row.privacy_in_smart_group div.organizer_cell div.privacy_inline_button,
-#organizer_rightColumn div.organizer_row.privacy_logged_in_not_in_smart_group div.organizer_cell div.privacy_inline_button {
-	background: url('../admin/images/privacy/inline_button/smart_group.png') no-repeat;
+#organizer_rightColumn div.organizer_row.privacy_public div.organizer_cell div.privacy_inline_button a,
+#organizer_rightColumn div.organizer_row.privacy_logged_out div.organizer_cell div.privacy_inline_button a {
+	background-color:#e2e2e2;
+}
+
+#organizer_rightColumn div.organizer_row.privacy_in_smart_group div.organizer_cell div.privacy_inline_button a,
+#organizer_rightColumn div.organizer_row.privacy_logged_in_not_in_smart_group div.organizer_cell div.privacy_inline_button a {
+	background-color:#ABD3EB;
 }
 
 #organizer_rightColumn div.organizer_row div.organizer_cell div.zenario_layout_inline_button a {
@@ -3336,16 +3354,15 @@ body.ie8 .organizer_item_image.ghost {
 }
 
 .organizer_item_image.user {
-	background:  -15px -994px no-repeat;
-	background-image: url('../admin/images/sprites/sprite-list-icons-single-col-v2.png');
+	background: url('../admin/images/icon-users-and-contacts.svg') no-repeat center center / 16px;
 }
 
 .organizer_item_image.zenario_suspended_users {
-	background: url('../admin/images/icon-suspended-user-black.png') no-repeat center center;
+	background: url('../admin/images/icon-suspended-users.svg') no-repeat center center / 16px;
 }
 
 .organizer_item_image.zenario_smart_group {
-	background: url('../admin/images/icon-smart-groups-list-dark.png') no-repeat center center;
+	background: url('../admin/images/icon-smart-groups.svg') no-repeat center center / 18px;
 }
 
 .organizer_item_image.zenario_smart_perms_group {
@@ -3357,11 +3374,11 @@ body.ie8 .organizer_item_image.ghost {
 }
 
 .organizer_item_image.zenario_group {
-	background: url('../admin/images/icon-groups.png') no-repeat center center;
+	background: url('../admin/images/icon-groups.svg') no-repeat center center / 16px;
 }
 
 .organizer_item_image.roles {
-	background: url('../admin/images/icon-roles-black.png') no-repeat center center;
+	background: url('../admin/images/icon-roles.svg') no-repeat center center / 16px;
 }
 
 .organizer_item_image.pending_comment {
@@ -3377,8 +3394,7 @@ body.ie8 .organizer_item_image.ghost {
 }
 
 .organizer_item_image.admin_item {
-	background:  -15px -1194px no-repeat;
-	background-image: url('../admin/images/sprites/sprite-list-icons-single-col-v2.png');
+	background: url('../admin/images/icon-administrator.svg') no-repeat center center / 16px;
 }
 
 #organizer_rightColumn div.organizer_row div.organizer_cell div.zenario_char_radios,
@@ -3713,8 +3729,7 @@ body.ie8 .organizer_item_image.ghost {
 }
 
 .organizer_item_image.log {
-	background:  -15px -1244px no-repeat;
-	background-image: url('../admin/images/sprites/sprite-list-icons-single-col-v2.png');
+	background: url('../admin/images/icon-sign-in-log.svg') no-repeat center center / 16px;
 }
 
 #organizer_rightColumn div.organizer_row div.organizer_cell div.media_images,
@@ -5990,7 +6005,7 @@ span.video_title {
 .organizer_form_builder_view .form_outer .form_field.toggle .label, 
 .organizer_admin_box_builder_view .form_outer .form_field.toggle .label {
 	background-image:url("../admin/images/icon-field-checkbox.svg");
-	background-position:1px center;
+	background-position:5px 4px;
 	background-size:12px auto;
 }
 
@@ -6666,11 +6681,7 @@ span.video_title {
 	background-repeat:no-repeat;
 }
 
-.organizer_admin_box_builder_view .form_outer .form_field.radios .label,
-.organizer_admin_box_builder_view .form_outer .form_field.checkbox .label,
 .organizer_admin_box_builder_view .form_outer .form_field.group .label,
-.organizer_form_builder_view .form_outer .form_field.radios .label,
-.organizer_form_builder_view .form_outer .form_field.checkbox .label,
 .organizer_form_builder_view .form_outer .form_field.group .label {
 	display:inline-block;
 }
@@ -6686,8 +6697,19 @@ span.video_title {
     width: 410px;
 }
 
-.organizer_form_builder_view .form_outer .form_field input[type="checkbox"] {
-	
+.organizer_admin_box_builder_view .form_outer .form_field.radios .label,
+.organizer_admin_box_builder_view .form_outer .form_field.checkbox .label,
+.organizer_form_builder_view .form_outer .form_field.radios .label,
+.organizer_form_builder_view .form_outer .form_field.checkbox .label {
+	overflow:hidden;
+	padding-left:25px;
+}
+
+.organizer_admin_box_builder_view .form_outer .form_field.radios [type="radio"],
+.organizer_admin_box_builder_view .form_outer .form_field.checkbox [type="checkbox"],
+.organizer_form_builder_view .form_outer .form_field.radios [type="radio"],
+.organizer_form_builder_view .form_outer .form_field.checkbox [type="checkbox"] {
+	float:left;
 }
 
 .organizer_form_builder_view .form_outer .form_field input[type="text"].form_picked_item,
@@ -6834,8 +6856,8 @@ span.video_title {
 
 .form_outer .form .form_field .form_field_inline_buttons .duplicate_icon,
 .field_value .form_field_value_inline_buttons .duplicate_icon {
-	background:url('../admin/images/icon-duplicate-v2.svg') no-repeat center center / auto 15px;
 	width:24px;
+	background:url('../admin/images/icon-duplicate-v2.svg') no-repeat center center / auto 15px;
 }
 
 .organizer_form_builder_view .field_value,
@@ -6863,7 +6885,8 @@ span.video_title {
 
 .organizer_form_builder_view .form_outer .grouping,
 .organizer_admin_box_builder_view .form_outer .grouping {
-	background:#f6f6f6;
+	border:1px dotted #333;
+	margin-bottom:5px;
 }
 
 /* Form builder buttons,
@@ -6904,124 +6927,6 @@ span.video_title {
 .field_type_list .preview {
 	
 }
-
-/* Schematic
---------------------------------------------------------------------------------------------------*/
-
-#organizer_schematic_builder {
-	text-align:center;
-}
-
-#organizer_schematic_builder > .controls {
-	overflow:hidden;
-	padding:8px;
-	margin-bottom:15px;
-	background:#F6F6F6;
-	border-bottom:1px solid #B6B6B6;
-	color:#000;
-	text-align:left;
-}
-
-#organizer_schematic_builder > .controls .title h2 {
-	margin:0 0 5px;
-	font-size:13px;
-}
-
-#organizer_schematic_builder > .controls .navigation {
-	min-width:50px;
-	min-height:1px;
-	padding-top:21px;
-	float:left;
-}
-
-#organizer_schematic_builder > .controls .fields_wrapper {
-	overflow:hidden;
-	padding-left:10px;
-	border-left:1px solid #DADADA;
-}
-
-#organizer_schematic_builder > .controls .navigation,
-#organizer_schematic_builder > .controls .fields_wrapper .field,
-#organizer_schematic_builder > .controls .fields_wrapper form,
-#organizer_schematic_builder > .controls .fields_wrapper .content,
-#organizer_schematic_builder > .controls .fields_wrapper .label {
-	display:inline-block;
-	padding-right:8px;
-}
-
-#organizer_schematic_builder > .controls .fields_wrapper .field {
-	padding-bottom:4px;
-}
-
-#organizer_schematic_builder .canvas_wrap {
-	position:relative;
-	z-index:1;
-	display:inline-block;
-}
-
-#organizer_schematic_builder .canvas_wrap .canvas_dimensions {
-	position:absolute;
-	z-index:2;
-	bottom:0;
-	right:0;
-	padding:3px 8px 5px;
-	background:#b9b9b9;
-	color:#000;
-	-webkit-border-top-left-radius: 5px;
-	-moz-border-radius-topleft: 5px;
-	border-top-left-radius: 5px;
-}
-
-#organizer_schematic_builder .canvas-container {
-	margin:auto;
-	border:4px solid #b9b9b9 !important;
-}
-
-#organizer_schematic_builder .canvas-container .lower-canvas,
-#organizer_schematic_builder .canvas-container .upper-canvas {
-	border:0 !important;
-}
-
-#organizer_schematic_builder > .controls input,
-#organizer_schematic_builder > .controls select {
-	line-height:20px;
-	font-family:Verdana,Arial,Helvetica,sans-serif;
-	font-size:12px;
-	border:1px solid #b9b9b9;
-}
-
-#organizer_schematic_builder > .controls input[type="text"] {
-	height:20px;
-	padding:0 5px;
-	max-width:150px;
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
-}
-
-#organizer_schematic_builder > .controls input[disabled=""] {
-	color:#777;
-	background:#f0f0f0;
-}
-
-#organizer_schematic_builder > .controls select {
-	max-width:250px;
-}
-
-#organizer_schematic_builder > .controls input[type="button"],
-#organizer_schematic_builder > .controls input[type="submit"] {
-	background:#f6f6f6;
-	cursor:pointer;
-	-webkit-border-radius: 4px;
-	-moz-border-radius: 4px;
-	border-radius: 4px;
-}
-
-#organizer_schematic_builder > .controls .navigation input[type="button"] {
-	padding-left:12px;
-	background:#b9b9b9 url('../admin/images/btn-icon-arrow-left.png') no-repeat 4px center;
-}
-
 
 
 /*

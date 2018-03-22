@@ -89,4 +89,12 @@ _sql
 	ALTER TABLE `[[DB_NAME_PREFIX]]admin_settings` MODIFY COLUMN `value` mediumtext CHARACTER SET utf8mb4 NULL
 _sql
 
+//Add a hash column to admins to allow admins to be created without a password and a personal link to the site can be sent instead
+//and then they can enter their password themselves
+);	ze\dbAdm::revision( 44270
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]admins`
+	ADD COLUMN `hash` varchar(28) CHARACTER SET ascii NOT NULL DEFAULT ''
+_sql
+
 );

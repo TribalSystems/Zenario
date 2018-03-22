@@ -1,0 +1,31 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+site_settings:
+    setting_group: data_protection
+    title: Editing Data Protection settings
+    tabs:
+        data_protection:
+            label: Data recording and deletion
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_SITE_SETTING
+                on: false
+            notices:
+                scheduled_task_not_running:
+                    type: warning
+                    message: | 
+                        The scheduled task "jobDataProtectionCleanup" is not running. Data will be deleted when there is activity in the appropriate type of data handling (e.g. when an email is sent, a user logs in, or a form is submitted).
+                    show: false
+                scheduled_task_running:
+                    type: success
+                    message: |
+                        The scheduled task "jobDataProtectionCleanup" is running. Data will be deleted according to these rules on a daily basis.
+                    show: false
+            fields:
+                description:
+                    snippet:
+                        html: |
+                            <p>Zenario can log emails that it sends (to visitors, users or administrators). It can log when extranet users log in and access content, and it can log data submitted through forms.</p>
+                            <p>Note that data will not be deleted immediately when you save this box, but according to the rules described below.</p>
+
+

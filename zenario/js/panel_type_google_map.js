@@ -42,14 +42,14 @@ var methods = methodsOf(
 
 
 methods.init = function() {
-	this.onIconURL = URLBasePath+'zenario/admin/images/google_map/yellow-map-pin-with-tick.png';
-	this.offIconURL = URLBasePath+'zenario/admin/images/google_map/red-map-pin.png';
+	thus.onIconURL = URLBasePath+'zenario/admin/images/google_map/yellow-map-pin-with-tick.png';
+	thus.offIconURL = URLBasePath+'zenario/admin/images/google_map/red-map-pin.png';
 };
 
 //Use this function to set AJAX URL you want to use to load the panel.
 //Initally the this.tuix variable will just contain a few important TUIX properties
 //and not your the panel definition from TUIX.
-//The default value here is a PHP script that will:
+//The default value here is a PHP script this will:
 	//Load all of the TUIX properties
 	//Call your preFillOrganizerPanel() method
 	//Populate items from the database if you set the db_items property in TUIX
@@ -59,8 +59,8 @@ methods.init = function() {
 methods.returnAJAXURL = function() {
 	return URLBasePath
 		+ 'zenario/admin/organizer.ajax.php?path='
-		+ encodeURIComponent(this.path)
-		+ zenario.urlRequest(this.returnAJAXRequests())
+		+ encodeURIComponent(thus.path)
+		+ zenario.urlRequest(thus.returnAJAXRequests())
 		+ zenario.urlRequest('panel_type=google_map');
 };
 
@@ -71,12 +71,12 @@ methods.returnPageSize = function() {
 
 
 methods.returnPanelTitle = function() {
-	return methodsOf(panelTypes.grid).returnPanelTitle.call(this) + ' (Map)';
+	return methodsOf(panelTypes.grid).returnPanelTitle.call(thus) + ' (Map)';
 };
 
 methods.showPanel = function($header, $panel, $footer) {
-	$header.html(this.microTemplate('zenario_organizer_panel_header', {})).show();
-	var html = this.microTemplate('zenario_organizer_google_map', {});
+	$header.html(thus.microTemplate('zenario_organizer_panel_header', {})).show();
+	var html = thus.microTemplate('zenario_organizer_google_map', {});
 	$panel.html(html).show();
 	
 	var 
@@ -91,10 +91,10 @@ methods.showPanel = function($header, $panel, $footer) {
 		bounds = new google.maps.LatLngBounds(),
 		marker,
 		position,
-		lat = this.tuix.lat_column,
-		lng = this.tuix.lng_column,
-		dblClickItemButton = this.tuix.double_click_item_button,
-		items = this.tuix.items,
+		lat = thus.tuix.lat_column,
+		lng = thus.tuix.lng_column,
+		dblClickItemButton = thus.tuix.double_click_item_button,
+		items = thus.tuix.items,
 		itemsCount = 0,
 		itemsWithLatLng = 0;
 	
@@ -110,20 +110,20 @@ methods.showPanel = function($header, $panel, $footer) {
 			marker = new google.maps.Marker({
 				position: position,
 				map: map,
-				icon: this.offIconURL
+				icon: thus.offIconURL
 			});
 			
-			if (this.selectedItems[key]) {
-				marker.icon = this.onIconURL;
+			if (thus.selectedItems[key]) {
+				marker.icon = thus.onIconURL;
 			}
 			
 			bounds.extend(position);
 			
 			// Select a location on single click
-			google.maps.event.addListener(marker, 'click', this.makeSelectItemCallback(item, marker));
+			google.maps.event.addListener(marker, 'click', thus.makeSelectItemCallback(item, marker));
 			
 			// Open properties admin box on double click
-			google.maps.event.addListener(marker, 'dblclick', this.makeOpenAdminBoxCallback(item, marker, dblClickItemButton));
+			google.maps.event.addListener(marker, 'dblclick', thus.makeOpenAdminBoxCallback(item, marker, dblClickItemButton));
 		}
 	}
 	if (itemsWithLatLng) {
@@ -134,7 +134,7 @@ methods.showPanel = function($header, $panel, $footer) {
 		google.maps.event.trigger(map, "resize");
 		map.setCenter(center); 
 	});
-	html = this.microTemplate('zenario_organizer_google_map_footer', {items: itemsWithLatLng, total: itemsCount});
+	html = thus.microTemplate('zenario_organizer_google_map_footer', {items: itemsWithLatLng, total: itemsCount});
 	$footer.html(html).show();
 };
 
@@ -152,12 +152,12 @@ methods.showButtons = function($buttons) {
 	} else {
 		m.collectionButtons = zenarioO.getCollectionButtons();
 	}
-	html = this.microTemplate('zenario_organizer_panel_buttons', m);
+	html = thus.microTemplate('zenario_organizer_panel_buttons', m);
 	$buttons.html(html).show();
 };
 
 methods.makeOpenAdminBoxCallback = function(item, marker, dblClickItemButton) {
-	var instance = this;
+	var instance = thus;
 	return function() {
 		instance.itemClick(item.id, marker, true);
 		zenarioO.itemButtonClick(dblClickItemButton);
@@ -165,7 +165,7 @@ methods.makeOpenAdminBoxCallback = function(item, marker, dblClickItemButton) {
 };
 
 methods.makeSelectItemCallback = function(item, marker) {
-	var instance = this;
+	var instance = thus;
 	return function() {
 		instance.itemClick(item.id, marker);
 	};
@@ -173,32 +173,32 @@ methods.makeSelectItemCallback = function(item, marker) {
 
 methods.itemClick = function(id, marker, select) {
 	if (zenarioO.multipleSelectEnabled) {
-		if (!select && this.selectedItems[id]) {
-			this.deselectItem(id, marker);
+		if (!select && thus.selectedItems[id]) {
+			thus.deselectItem(id, marker);
 		} else {
-			this.selectItem(id, marker);
+			thus.selectItem(id, marker);
 		}
-		this.lastItemClicked = id;
-	} else if (!zenarioO.multipleSelectEnabled && this.selectedItems[id] && !select) {
+		thus.lastItemClicked = id;
+	} else if (!zenarioO.multipleSelectEnabled && thus.selectedItems[id] && !select) {
 		zenarioO.deselectAllItems();
-		this.lastItemClicked = id;
+		thus.lastItemClicked = id;
 	} else {
 		zenarioO.deselectAllItems();
-		this.selectItem(id, marker);
-		this.lastItemClicked = id;
+		thus.selectItem(id, marker);
+		thus.lastItemClicked = id;
 	}
 	zenarioO.setHash();
 	zenarioO.setButtons();
 }
 
 methods.selectItem = function(id, marker) {
-	marker.setIcon(this.onIconURL);
-	methodsOf(panelTypes.base).selectItem.call(this, id);
+	marker.setIcon(thus.onIconURL);
+	methodsOf(panelTypes.base).selectItem.call(thus, id);
 };
 
 methods.deselectItem = function(id, marker) {
-	marker.setIcon(this.offIconURL);
-	methodsOf(panelTypes.base).deselectItem.call(this, id);
+	marker.setIcon(thus.offIconURL);
+	methodsOf(panelTypes.base).deselectItem.call(thus, id);
 };
 
 methods.updateItemCheckbox = function(id, checked) {

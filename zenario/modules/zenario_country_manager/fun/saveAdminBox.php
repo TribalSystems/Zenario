@@ -33,8 +33,8 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 			
 			ze\row::set(
 				ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_countries', 
-				array('english_name' => $values['details/name']), 
-				array('id' => $values['details/code'])
+				['english_name' => $values['details/name']], 
+				['id' => $values['details/code']]
 			);
 						
 			if ($values['details/update_phrase'] || !$box['key']['id']) {
@@ -42,15 +42,15 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 				foreach ($languages as $language) {
 					ze\row::set(
 						"visitor_phrases", 	
-						array(
+						[
 							'local_text' => $values['details/name'],
 							'protect_flag' => 1
-							), 
-						array(
+							], 
+						[
 							'language_id' => $language['id'],
 							'module_class_name' => 'zenario_country_manager',
 							'code' => '_COUNTRY_NAME_' . $values['details/code']
-						)
+						]
 					); 
 				}
 			}
@@ -82,15 +82,15 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 				foreach ($languages as $language) {
 					ze\row::set(
 						"visitor_phrases", 	
-						array(
+						[
 							'local_text' => $values['details/name'],
 							'protect_flag' => 1
-							), 
-						array(
+							], 
+						[
 							'language_id' => $language['id'],
 							'module_class_name' => 'zenario_country_manager',
 							'code' => $values['details/name']
-						)
+						]
 					); 
 				}
 			}
@@ -98,7 +98,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 			$box['key']['id'] = ze\row::set(
 				ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_regions',
 				$updateArray,
-				array('id' => ($box['key']['id'] ?? false))
+				['id' => ($box['key']['id'] ?? false)]
 			);
 			break;
 	}

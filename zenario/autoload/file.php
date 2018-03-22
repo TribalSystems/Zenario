@@ -134,13 +134,13 @@ class file {
 				//Create resizes for the image as needed.
 				//Working copies should only be created if they are enabled, and the image is big enough to need them.
 				//Organizer thumbnails should always be created, even if the image needs to be scaled up
-				foreach (array(
-					array('working_copy_data', 'working_copy_width', 'working_copy_height', \ze::setting('working_copy_image_size'), \ze::setting('working_copy_image_size'), false),
-					array('working_copy_2_data', 'working_copy_2_width', 'working_copy_2_height', \ze::setting('thumbnail_wc_image_size'), \ze::setting('thumbnail_wc_image_size'), false),
+				foreach ([
+					['working_copy_data', 'working_copy_width', 'working_copy_height', \ze::setting('working_copy_image_size'), \ze::setting('working_copy_image_size'), false],
+					['working_copy_2_data', 'working_copy_2_width', 'working_copy_2_height', \ze::setting('thumbnail_wc_image_size'), \ze::setting('thumbnail_wc_image_size'), false],
 					['thumbnail_180x130_data', 'thumbnail_180x130_width', 'thumbnail_180x130_height', 180, 130, true],
 					['thumbnail_64x64_data', 'thumbnail_64x64_width', 'thumbnail_64x64_height', 64, 64, true],
 					['thumbnail_24x23_data', 'thumbnail_24x23_width', 'thumbnail_24x23_height', 24, 23, true]
-				) as $c) {
+				] as $c) {
 					if ($c[3] && $c[4] && ($c[5] || ($file['width'] > $c[3] || $file['height'] > $c[4]))) {
 						$file[$c[1]] = $image[0];
 						$file[$c[2]] = $image[1];
@@ -293,14 +293,14 @@ class file {
 	
 			//If the file was being stored in the docstore and nothing else uses it...
 			if ($file['path']
-			 && !\ze\row::exists('files', array('id' => ['!' => $fileId], 'path' => $file['path']))) {
+			 && !\ze\row::exists('files', ['id' => ['!' => $fileId], 'path' => $file['path']])) {
 				//...then delete that directory from the docstore
 				\ze\cache::deleteDir(\ze::setting('docstore_dir'). '/'. $file['path']);
 			}
 		
 			//If the file was an image and there's no other copies with a different usage
 			if (self::isImageOrSVG($file['mime_type'])
-			 && !\ze\row::exists('files', array('id' => ['!' => $fileId], 'short_checksum' => $file['short_checksum']))) {
+			 && !\ze\row::exists('files', ['id' => ['!' => $fileId], 'short_checksum' => $file['short_checksum']])) {
 				//...then delete it from the public/images/ directory
 				self::deletePublicImage($file);
 			}
@@ -529,7 +529,7 @@ class file {
 			$type = $parts[count($parts) - 2];
 		}
 	
-		return \ze\row::get('document_types', 'mime_type', array('type' => strtolower($type))) ?: 'application/octet-stream';
+		return \ze\row::get('document_types', 'mime_type', ['type' => strtolower($type)]) ?: 'application/octet-stream';
 	}
 
 	//Formerly "isImage()"
@@ -614,7 +614,7 @@ class file {
 			
 			$file['label'] = $file['filename'];
 			
-			if (!empty($_SESSION['admin_logged_into_site'])) {
+			if (\ze::isAdmin()) {
 				$sql = '
 					SELECT 1
 					FROM '. DB_NAME_PREFIX. 'files
@@ -888,13 +888,13 @@ class file {
 				$wcit = 0.66;
 			}
 		
-			foreach (array(
+			foreach ([
 				['thumbnail_24x23_data', 'thumbnail_24x23_width', 'thumbnail_24x23_height'],
 				['thumbnail_64x64_data', 'thumbnail_64x64_width', 'thumbnail_64x64_height'],
 				['thumbnail_180x130_data', 'thumbnail_180x130_width', 'thumbnail_180x130_height'],
 				['working_copy_data', 'working_copy_width', 'working_copy_height'],
 				['working_copy_2_data', 'working_copy_2_width', 'working_copy_2_height']
-			) as $c) {
+			] as $c) {
 			
 				$xOK = $image[$c[1]] && $newWidth == $image[$c[1]] || ($newWidth < $image[$c[1]] * $wcit);
 				$yOK = $image[$c[1]] && $newHeight == $image[$c[2]] || ($newHeight < $image[$c[2]] * $wcit);
@@ -1234,7 +1234,7 @@ class file {
 		self::plainTextExtract($filePath, $extract['extract']);
 		$extract['extract_wordcount'] = str_word_count($extract['extract']);
 		
-		$mime = self::mimeType($filePath);
+		$mime = \ze\row::get('files', 'mime_type', $fileId);
 		switch ($mime) {
 			case 'application/pdf':
 				if ($imgFile = self::createPpdfFirstPageScreenshotPng($filePath)) {
@@ -1289,19 +1289,19 @@ class file {
 	//Formerly "fileSizeConvert()"
 	public static function fileSizeConvert($bytes) {
 		$bytes = floatval($bytes);
-			$arBytes = array(
-				0 => array(
+			$arBytes = [
+				0 => [
 					"UNIT" => "TB",
 					"VALUE" => pow(1024, 4)
-				),
-				1 => array(
+				],
+				1 => [
 					"UNIT" => "GB",
 					"VALUE" => pow(1024, 3)
-				),
-				2 => array(
+				],
+				2 => [
 					"UNIT" => "MB",
 					"VALUE" => pow(1024, 2)
-				),
+				],
 				3 => [
 					"UNIT" => "KB",
 					"VALUE" => 1024
@@ -1310,7 +1310,7 @@ class file {
 					"UNIT" => "bytes",
 					"VALUE" => 1
 				],
-			);
+			];
 	
 		foreach($arBytes as $arItem) {
 			if($bytes >= $arItem["VALUE"]) {

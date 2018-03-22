@@ -129,6 +129,8 @@ zenario__content:
                     db_column: d.dont_autoset_metadata
                     width: small
                     format: yes_or_no
+                mime_type:
+                    db_column: f.mime_type
             collection_buttons:
                 upload:
                     priv: _PRIV_EDIT_DOCUMENTS
@@ -339,15 +341,16 @@ zenario__content:
                     parent: advanced_dropdown
                     hide_in_select_mode: true
                     visible_if: |
-                        item.name.match(/.pdf$/i) && zenarioA.siteSettings.pdftotext_path && zenarioA.siteSettings.ghostscript_path
-                    label: Rescan text and image
-                    multiple_select: false
+                        item.mime_type == "application/pdf"
+                        && zenarioA.siteSettings.pdftotext_path 
+                        && zenarioA.siteSettings.ghostscript_path
+                    label: Rescan text and thumbnail
                     without_columns_set:
                         traits.is_folder: true
                     ajax:
                         confirm: 
                             message: | 
-                                Are you sure you want to rescan the image and text? 
+                                Are you sure you want to rescan the text and thumbnail? 
                                 
                                 If you are using a custom thumbnail image it will be lost.
                             message_type: warning
@@ -355,6 +358,27 @@ zenario__content:
                             cancel_button_message: Cancel
                         request: 
                             rescan: true
+                rescan_image:
+                    priv: _PRIV_EDIT_DOCUMENTS
+                    parent: advanced_dropdown
+                    hide_in_select_mode: true
+                    visible_if: |
+                        ["image/jpeg", "image/png", "image/gif"].indexOf(item.mime_type) !== -1
+                    label: Rescan thumbnail
+                    without_columns_set:
+                        traits.is_folder: true
+                    ajax:
+                        confirm: 
+                            message: | 
+                                Are you sure you want to rescan the thumbnail? 
+                                
+                                If you are using a custom thumbnail image it will be lost.
+                            message_type: warning
+                            button_message: 'Ok'
+                            cancel_button_message: Cancel
+                        request: 
+                            rescan_image: true
+                    
                 rescan_text:
                     priv: _PRIV_EDIT_DOCUMENTS
                     parent: advanced_dropdown
@@ -364,12 +388,11 @@ zenario__content:
                         item.name.match(/.docx$/i) && zenarioA.siteSettings.antiword_path ||
                         item.name.match(/.pdf$/i) && zenarioA.siteSettings.pdftotext_path
                     label: Rescan text
-                    multiple_select: false
                     without_columns_set:
                         traits.is_folder: true
                     ajax:
                         request: 
-                            rescanText: true
+                            rescan_text: true
                 move_documents:
                     priv: _PRIV_EDIT_DOCUMENTS
                     parent: actions_dropdown
@@ -421,9 +444,7 @@ zenario__content:
                         confirm:
                             message: | 
                                 Are you sure you want to delete the public link for this document? 
-                                
-                                All links pointing to any replacement document will be deleted.
-                                
+                                                                
                                 Anyone with the URL will be unable to access this document.
                             button_message: Delete public link
                             cancel_button_message: Cancel

@@ -1,6 +1,5 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
-
 zenario__user_forms:
     panels:
         user_forms:
@@ -198,8 +197,16 @@ zenario__user_forms:
                     hide_in_select_mode: true
                     hide_on_filter: true
                     hide_when_children_are_not_visible: true
-                export_forms:
+                edit_predefined_text:
                     ord: 6.2
+                    priv: _PRIV_MANAGE_FORMS
+                    parent: advanced_dropdown
+                    label: Edit pre-defined text
+                    link:
+                        path: zenario__user_forms/panels/predefined_text_targets
+                        refiner: user_form_id
+                export_forms:
+                    ord: 6.3
                     priv: _PRIV_MANAGE_FORMS
                     parent: advanced_dropdown
                     hide_in_select_mode: true

@@ -72,7 +72,6 @@ if ($zcmPrefix) {
 		}
 	}
 	
-	
 	if (!ze::$vars['seminarId'] && !empty($_REQUEST['seminarId'])) {
 		ze::$vars['seminarId'] = (int) $_REQUEST['seminarId'];
 		if ($sessionId = ze\row::get($zcmPrefix . 'seminars', 'session_id', ze::$vars['seminarId'])) {
@@ -81,7 +80,7 @@ if ($zcmPrefix) {
 	}
 	if (!ze::$vars['sessionId'] && !empty($_REQUEST['sessionId'])) {
 		ze::$vars['sessionId'] = (int) $_REQUEST['sessionId'];
-		if ($session = ze\row::get($zcmPrefix . 'sessions', array('conference_id', 'day'), ze::$vars['sessionId'])) {
+		if ($session = ze\row::get($zcmPrefix . 'sessions', ['conference_id', 'day'], ze::$vars['sessionId'])) {
 			$_REQUEST['conferenceId'] = $session['conference_id'];
 			$_REQUEST['day'] = $session['day'];
 		}
@@ -112,7 +111,7 @@ if ($zclmPrefix) {
 	if (!ze::$vars['companyId']) {
 		
 		if (ze::$vars['locationId']
-		 && (ze::$vars['companyId'] = ze\row::get($zclmPrefix. 'company_location_link', 'company_id', array('location_id' => ze::$vars['locationId'])))) {
+		 && (ze::$vars['companyId'] = ze\row::get($zclmPrefix. 'company_location_link', 'company_id', ['location_id' => ze::$vars['locationId']]))) {
 		
 		} elseif (!empty($_REQUEST['companyId'])) {
 			ze::$vars['companyId'] = (int) $_REQUEST['companyId'];

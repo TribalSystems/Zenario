@@ -76,7 +76,7 @@ class zenario_newsletter__organizer__image_library extends zenario_newsletter {
 						'[[count]] newsletter',
 						'[[count]] newsletters',
 						$usage_newsletters,
-						array('count' => $usage_newsletters)
+						['count' => $usage_newsletters]
 					);
 					$comma = true;
 				}
@@ -88,7 +88,7 @@ class zenario_newsletter__organizer__image_library extends zenario_newsletter {
 						'[[count]] newsletter template',
 						'[[count]] newsletter templates',
 						$usage_newsletter_templates,
-						array('count' => $usage_newsletter_templates)
+						['count' => $usage_newsletter_templates]
 					);
 				}
 			}

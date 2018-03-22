@@ -53,7 +53,7 @@ class zenario_user_forms__admin_boxes__export_user_responses extends ze\moduleBa
 			} elseif (
 				!ze\row::exists(
 					ZENARIO_USER_FORMS_PREFIX . 'user_response', 
-					array('id' => $values['details/response_id'])
+					['id' => $values['details/response_id']]
 				)
 			) {
 				$errors[] = ze\admin::phrase('Unable to find a response with that ID.');
@@ -72,9 +72,9 @@ class zenario_user_forms__admin_boxes__export_user_responses extends ze\moduleBa
 		$sheet = $objPHPExcel->getActiveSheet();
 		
 		//Get headers
-		$typesNotToExport = array('section_description', 'restatement', 'repeat_start', 'repeat_end');
+		$typesNotToExport = ['section_description', 'restatement', 'repeat_start', 'repeat_end'];
 		$fields = zenario_user_forms::getFormFieldsStatic($formId);
-		$exportHeaders = array();
+		$exportHeaders = [];
 		foreach ($fields as $fieldId => $field) {
 			if (!in_array($field['type'], $typesNotToExport)) {
 				$exportHeaders[$fieldId] = $field['name'];
@@ -94,7 +94,7 @@ class zenario_user_forms__admin_boxes__export_user_responses extends ze\moduleBa
 		$sheet->fromArray($exportHeaders, NULL, 'C1');
 		
 		//Get data
-		$responsesData = array();
+		$responsesData = [];
 		$sql = '
 			SELECT urd.value, urd.form_field_id, ur.id
 			FROM '.DB_NAME_PREFIX. ZENARIO_USER_FORMS_PREFIX .'user_response AS ur
@@ -135,12 +135,12 @@ class zenario_user_forms__admin_boxes__export_user_responses extends ze\moduleBa
 		$result = ze\sql::select($sql);
 		while ($row = ze\sql::fetchAssoc($result)) {
 			if (!isset($responsesData[$row['id']])) {
-				$responsesData[$row['id']] = array();
+				$responsesData[$row['id']] = [];
 			}
 			if (isset($exportHeaders[$row['form_field_id']])) {
 				$field = $fields[$row['form_field_id']];
 				$displayValue = zenario_user_forms::getFieldDisplayValueFromStored($field, $row['value']);
-				$responsesData[$row['id']][$row['form_field_id']] = array();
+				$responsesData[$row['id']][$row['form_field_id']] = [];
 				if ($field['type'] == 'attachment' && $row['value']) {
 					$responsesData[$row['id']][$row['form_field_id']]['link'] = ze\contentAdm::adminFileLink($row['value']);
 				}
@@ -151,14 +151,14 @@ class zenario_user_forms__admin_boxes__export_user_responses extends ze\moduleBa
 		$responseDates = ze\row::getArray(
 			ZENARIO_USER_FORMS_PREFIX. 'user_response', 
 			'response_datetime', 
-			array('form_id' => $formId), 'response_datetime'
+			['form_id' => $formId], 'response_datetime'
 		);
 		
 		//Write data
 		$rowPointer = 1;
 		foreach ($responsesData as $responseId => $responseData) {
 			$rowPointer++;
-			$response = array();
+			$response = [];
 			$response[0] = $responseId;
 			$response[1] = ze\date::formatDateTime($responseDates[$responseId], '_MEDIUM');
 			
@@ -172,7 +172,7 @@ class zenario_user_forms__admin_boxes__export_user_responses extends ze\moduleBa
 			
 			foreach ($response as $columnPointer => $value) {
 				if (!is_array($value)) {
-					$value = array('value' => $value);
+					$value = ['value' => $value];
 				}
 				$sheet->setCellValueExplicitByColumnAndRow($columnPointer, $rowPointer, $value['value']);
 				if (!empty($value['link'])) {
@@ -183,7 +183,7 @@ class zenario_user_forms__admin_boxes__export_user_responses extends ze\moduleBa
 		}
 		
 		
-		$formName = ze\row::get(ZENARIO_USER_FORMS_PREFIX . 'user_forms', 'name', array('id' => $formId));
+		$formName = ze\row::get(ZENARIO_USER_FORMS_PREFIX . 'user_forms', 'name', ['id' => $formId]);
 		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
 		header('Content-Type: application/vnd.ms-excel');
 		header('Content-Disposition: attachment;filename="' . $formName . ' user responses.xls"');

@@ -33,8 +33,8 @@ switch ($path) {
 		ze\contentAdm::addAbsURLsToAdminBoxField($box['tabs']['body']['fields']['body']);
 		
 		
-		$files = array();
-		$columns = array();
+		$files = [];
+		$columns = [];
 		
 		if (ze\ring::engToBoolean($box['tabs']['meta_data']['edit_mode']['on'] ?? false)) {
 			ze\priv::exitIfNot('_PRIV_MANAGE_EMAIL_TEMPLATE');
@@ -69,6 +69,16 @@ switch ($path) {
 			ze\contentAdm::syncInlineFileLinks($files, $columns['body'], $htmlChanged);
 		}
 		
+		if (ze\ring::engToBoolean($box['tabs']['data_deletion']['edit_mode']['on'] ?? false)) {
+			ze\priv::exitIfNot('_PRIV_MANAGE_EMAIL_TEMPLATE');
+			$columns['period_to_delete_log_headers'] = $values['data_deletion/period_to_delete_log_headers'];
+			if ($values['data_deletion/period_to_delete_log_headers'] && $values['data_deletion/delete_log_content_sooner']) {
+				$columns['period_to_delete_log_content'] = $values['data_deletion/period_to_delete_log_content'];
+			} else {
+				$columns['period_to_delete_log_content'] = '';
+			}
+		}
+		
 		if (ze\ring::engToBoolean($box['tabs']['advanced']['edit_mode']['on'] ?? false)) {
 			ze\priv::exitIfNot('_PRIV_MANAGE_EMAIL_TEMPLATE');
 			$columns['head'] = $values['advanced/head'];
@@ -79,18 +89,18 @@ switch ($path) {
 			$columns['modified_by_id'] = ze\admin::id();
 			
 			if ($box['key']['id'] && !$box['key']['duplicate']) {
-				ze\row::update('email_templates', $columns, array('code' => $box['key']['id']));
+				ze\row::update('email_templates', $columns, ['code' => $box['key']['id']]);
 			} else {
 				$columns['date_created'] = ze\date::now();
 				$columns['created_by_id'] = ze\admin::id();
 				$columns['code'] = microtime(). session_id();
 				$box['key']['id'] = $box['key']['numeric_id'] = ze\row::insert('email_templates', $columns);
-				ze\row::update('email_templates', array('code' => $box['key']['id']), array('id' => $box['key']['id']));
+				ze\row::update('email_templates', ['code' => $box['key']['id']], ['id' => $box['key']['id']]);
 			}
 		}
 		
 		//Record the images used in this email template.
-		$key = array('foreign_key_to' => 'email_template', 'foreign_key_id' => $box['key']['numeric_id'], 'foreign_key_char' => $box['key']['id']);
+		$key = ['foreign_key_to' => 'email_template', 'foreign_key_id' => $box['key']['numeric_id'], 'foreign_key_char' => $box['key']['id']];
 		ze\contentAdm::syncInlineFiles($files, $key, $keepOldImagesThatAreNotInUse = false);
 		
 		break;

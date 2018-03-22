@@ -55,7 +55,7 @@ class user {
 	//Formerly "addUserToGroup()"
 	public static function addToGroup($userId, $groupId, $remove = false) {
 		if ($col = \ze\dataset::fieldDBColumn($groupId)) {
-			\ze\row::set('users_custom_data', array($col => ($remove ? 0 : 1)), array('user_id' => $userId));
+			\ze\row::set('users_custom_data', [$col => ($remove ? 0 : 1)], ['user_id' => $userId]);
 		}
 	}
 
@@ -67,11 +67,11 @@ class user {
 			$userId = $_SESSION['extranetUserID'] ?? false;
 		}
 		
-		$groups = array();
+		$groups = [];
 	
 		//Look up a list of group names on the system
 		if (!is_array(\ze::$groups)) {
-			\ze::$groups = \ze\row::getArray('custom_dataset_fields', array('id', 'label', 'db_column'), array('type' => 'group', 'is_system_field' => 0), 'db_column', 'db_column');
+			\ze::$groups = \ze\row::getArray('custom_dataset_fields', ['id', 'label', 'db_column'], ['type' => 'group', 'is_system_field' => 0], 'db_column', 'db_column');
 		}
 	
 		if (!empty(\ze::$groups)) {
@@ -140,7 +140,7 @@ class user {
 			if(is_numeric($group_id)) {
 				return \ze\row::get('custom_dataset_fields', 'label', $group_id);
 			} else {
-				return \ze\row::get('custom_dataset_fields', 'label', array('db_column' => $group_id));
+				return \ze\row::get('custom_dataset_fields', 'label', ['db_column' => $group_id]);
 			}
 		} else {
 			return \ze\admin::phrase("_ALL_EXTRANET_USERS");
@@ -159,7 +159,7 @@ class user {
 				if (isset($_COOKIE['LOG_ME_IN_COOKIE'])
 				 && ($idAndMD5 = explode('_', $_COOKIE['LOG_ME_IN_COOKIE'], 2))
 				 && (count($idAndMD5) == 2)
-				 && ($user = \ze\row::get('users', array('id', 'first_name', 'last_name', 'email', 'screen_name', 'password'), array('id' => (int) $idAndMD5[0], 'status' => 'active')))
+				 && ($user = \ze\row::get('users', ['id', 'first_name', 'last_name', 'email', 'screen_name', 'password'], ['id' => (int) $idAndMD5[0], 'status' => 'active']))
 				 && ($idAndMD5[1] === md5(\ze\link::host(). $user['id']. $user['screen_name']. $user['email']. $user['password']))) {
 					\ze\user::logIn($user['id']);
 				
@@ -173,7 +173,7 @@ class user {
 			} else
 			if (empty($_SESSION['extranetUser_logged_into_site'])
 			 || $_SESSION['extranetUser_logged_into_site'] != COOKIE_DOMAIN. SUBDIRECTORY. \ze::setting('site_id')
-			 || !\ze\row::exists('users', array('id' => (int) $_SESSION['extranetUserID'], 'status' => 'active'))) {
+			 || !\ze\row::exists('users', ['id' => (int) $_SESSION['extranetUserID'], 'status' => 'active'])) {
 				\ze\user::logOut();
 			}
 		}
@@ -183,10 +183,10 @@ class user {
 			//Check if we can find the current admin
 			$admin = false;
 			if (empty($_SESSION['admin_global_id'])) {
-				$admin = \ze\row::get('admins', array('modified_date'), array('authtype' => 'local', 'id' => $_SESSION['admin_userid'], 'status' => 'active'));
+				$admin = \ze\row::get('admins', ['modified_date'], ['authtype' => 'local', 'id' => $_SESSION['admin_userid'], 'status' => 'active']);
 		
 			} elseif (\ze\db::connectGlobal()) {
-				$admin = \ze\row::get('admins', array('modified_date'), array('authtype' => 'local', 'id' => $_SESSION['admin_global_id'], 'status' => 'active'));
+				$admin = \ze\row::get('admins', ['modified_date'], ['authtype' => 'local', 'id' => $_SESSION['admin_global_id'], 'status' => 'active']);
 				\ze\db::connectLocal();
 			}
 		
@@ -304,7 +304,7 @@ class user {
 		if ($userId === null) {
 			$userId = $_SESSION['extranetUserID'] ?? false;
 		}
-		if ($row = \ze\row::get('users', array('first_name', 'last_name'), $userId)) {
+		if ($row = \ze\row::get('users', ['first_name', 'last_name'], $userId)) {
 			return $row['first_name']. ' '. $row['last_name'];
 		}
 		return null;
@@ -312,7 +312,7 @@ class user {
 
 	//Formerly "getUserIdFromScreenName()"
 	public static function getIdFromScreenName($screenName) {
-		return \ze\row::get('users', 'id', array('screen_name' => $screenName));
+		return \ze\row::get('users', 'id', ['screen_name' => $screenName]);
 	}
 
 
@@ -326,7 +326,7 @@ class user {
 	public static function logIn($userId, $impersonate = false) {
 	
 		//Get details on this user
-		$user = \ze\row::get('users', array('id', 'first_name', 'last_name', 'screen_name', 'email', 'password'), $userId);
+		$user = \ze\row::get('users', ['id', 'first_name', 'last_name', 'screen_name', 'email', 'password'], $userId);
 	
 		//Create a login hash (used for the \ze\user::logInAutomatically() function)
 		$user['login_hash'] = $user['id']. '_'. md5(\ze\link::host(). $user['id']. $user['screen_name']. $user['email']. $user['password']);
@@ -336,13 +336,12 @@ class user {
 			//Update their last login time
 			$sql = "
 				UPDATE [users AS u] SET
-					[u.last_login_ip = 0],
 					last_login = NOW()
-				WHERE id = [1]";
-			\ze\sql::update($sql, [\ze\user::ip(), $userId]);
+				WHERE id = [0]";
+			\ze\sql::update($sql, [$userId]);
 		
 	
-			if(\ze::setting('sign_in_access_log')){
+			if(\ze::setting('period_to_delete_sign_in_log') != 'never_save'){
 				require_once CMS_ROOT. 'zenario/libs/manually_maintained/mit/browser/lib/browser.php';
 				$browser = new \Browser();
 		
@@ -363,13 +362,12 @@ class user {
 					INSERT INTO ". DB_NAME_PREFIX. "user_signin_log SET
 						user_id = ". (int)  \ze\escape::sql($userId).",
 						login_datetime = NOW(),
-						ip = '". \ze\escape::sql(\ze\user::ip()). "',
 						browser = '". \ze\escape::sql($browser->getBrowser()). "',
 						browser_version = '". \ze\escape::sql($browser->getVersion()). "',
 						platform = '". \ze\escape::sql($browser->getPlatform()). "'";
 				\ze\sql::update($sql);
 			}
-			\ze\module::sendSignal('eventUserLoggedIn',array('user_id' => $userId));
+			\ze\module::sendSignal('eventUserLoggedIn',['user_id' => $userId]);
 		}
 	
 		$_SESSION['extranetUserID'] = $userId;
@@ -394,7 +392,7 @@ class user {
 	//Formerly "checkUsersPassword()"
 	public static function checkPassword($userId, $password) {
 		//Look up some of this user's details
-		if (!$user = \ze\row::get('users', array('id', 'password', 'password_salt'), (int) $userId)) {
+		if (!$user = \ze\row::get('users', ['id', 'password', 'password_salt'], (int) $userId)) {
 			return false;
 		}
 	
@@ -498,6 +496,8 @@ class user {
 			case 'enterData.asset':
 			case 'enterAnyData.asset':
 			case 'delete.asset':
+			case 'sendCommandTo.asset':
+			case 'sendSimpleCommandTo.asset':
 				return
 					$hasRoleAtLocation =
 					$hasRoleAtCompany =
@@ -552,12 +552,6 @@ class user {
 			case 'view.scheduledReport':
 				return 
 					$hasRoleAtLocationAtCompany = true;
-			case 'sendCommandTo.asset':
-				return
-					$hasRoleAtLocation =
-					$hasRoleAtCompany =
-					$hasRoleAtLocationAtCompany =
-					$directlyAssignedToUser = true;
 			//Reject any unrecognised permission
 			default:
 				return false;
@@ -1068,7 +1062,7 @@ class user {
 	//than everywhere it is used.
 	//Formerly "passwordStrengthsToValues()"
 	public static function passwordStrengthsToValues($strength = false) {
-		$a = array('_WEAK' => 0, '_MEDIUM' => 35, '_STRONG' => 70, '_VERY_STRONG' => 100);
+		$a = ['_WEAK' => 0, '_MEDIUM' => 35, '_STRONG' => 70, '_VERY_STRONG' => 100];
 		//Either return an array, or if $strength is set, return the score for that strength
 		if ($strength) {
 			return $a[$strength];

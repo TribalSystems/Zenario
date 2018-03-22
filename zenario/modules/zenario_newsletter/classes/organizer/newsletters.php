@@ -219,7 +219,7 @@ class zenario_newsletter__organizer__newsletters extends zenario_newsletter {
 				$current_newsletter_name = ze\row::get(ZENARIO_NEWSLETTER_PREFIX . "newsletters", "newsletter_name", $new_id);
 				$new_newsletter_name = preg_replace('/\(copy 1\)$/', "(copy)", $current_newsletter_name);
 				if($new_newsletter_name != $current_newsletter_name) {
-					ze\row::set(ZENARIO_NEWSLETTER_PREFIX . "newsletters", array('newsletter_name' => $new_newsletter_name), $new_id);
+					ze\row::set(ZENARIO_NEWSLETTER_PREFIX . "newsletters", ['newsletter_name' => $new_newsletter_name], $new_id);
 				}
 				
 				return $new_id;

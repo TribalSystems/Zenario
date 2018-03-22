@@ -668,4 +668,15 @@ _sql
 	MODIFY COLUMN `phonecode` int(5) NOT NULL DEFAULT 0
 _sql
 
+); ze\dbAdm::revision(69
+,<<<_sql
+	UPDATE [[DB_NAME_PREFIX]][[ZENARIO_COUNTRY_MANAGER_PREFIX]]country_manager_countries
+	SET `active` = 0 WHERE active IS NULL
+_sql
+
+,<<<_sql
+	ALTER TABLE [[DB_NAME_PREFIX]][[ZENARIO_COUNTRY_MANAGER_PREFIX]]country_manager_countries
+	MODIFY COLUMN `active` tinyint(1) NOT NULL DEFAULT 1
+_sql
+
 );

@@ -45,8 +45,8 @@ if ($_REQUEST['zenario_sk_return'] ?? false) {
 $toolbarTempHTML = file_get_contents(\ze::moduleDir('zenario_common_features', 'admin_microtemplates/zenario_toolbar.html'));
 
 //Add in the merge fields above
-$searches = array();
-$replaces = array();
+$searches = [];
+$replaces = [];
 foreach ($zenarioATLinks as $key => $value) {
 	$searches[] = '{{zenarioATLinks.'. $key. '}}';
 	$searches[] = '{{zenarioATLinks.'. $key. '|e}}';
@@ -58,7 +58,7 @@ foreach ($zenarioATLinks as $key => $value) {
 $toolbarTempHTML = str_replace($searches, $replaces, $toolbarTempHTML);
 
 //Remove all other merge fields.
-$toolbarTempHTML = preg_replace(array('@\{\{.*?\}\}@', '@\{\%.*?\%\}@', '@\<\%.*?\%\>@'), '', $toolbarTempHTML);
+$toolbarTempHTML = preg_replace(['@\{\{.*?\}\}@', '@\{\%.*?\%\}@', '@\<\%.*?\%\>@'], '', $toolbarTempHTML);
 
 //Don't initially show the "bug" icon for the dev tools
 $toolbarTempHTML = str_replace('zenario_debug', 'zenario_debug_hidden', $toolbarTempHTML);

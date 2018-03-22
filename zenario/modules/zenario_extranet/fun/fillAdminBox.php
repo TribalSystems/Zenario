@@ -35,18 +35,27 @@ switch ($path) {
 		}
 		
 		$defaultLangId = ze::$defaultLang;
-		foreach (array(
+		foreach ([
 			'error_messages/invalid_email_error_text' => '_ERROR_INVALID_EXTRANET_EMAIL',		
 			'error_messages/screen_name_required_error_text' => '_ERROR_EXTRANET_SCREEN_NAME',		
 			'error_messages/email_address_required_error_text' => '_ERROR_EXTRANET_EMAIL',			
 			'error_messages/password_required_error_text' => '_ERROR_EXTRANET_PASSWORD',		
 			'error_messages/no_new_password_error_text' => '_ERROR_NEW_PASSWORD',
 			'error_messages/no_new_repeat_password_error_text' => '_ERROR_REPEAT_NEW_PASSWORD'
-		) as $fieldName => $code) {
+		] as $fieldName => $code) {
 			if (isset($fields[$fieldName])) {
-				$values[$fieldName] = ze\row::get('visitor_phrases', 'local_text', array('code' => $code, 'language_id' => $defaultLangId));
+				$values[$fieldName] = ze\row::get('visitor_phrases', 'local_text', ['code' => $code, 'language_id' => $defaultLangId]);
 			}
 		}
-			
+		
+		//Set the default value of the registration page selector to the special page.
+		if (empty($values['first_tab/registration_page'])) {
+			$cID = $cType = false;
+			if (ze\content::langSpecialPage('zenario_registration', $cID, $cType)) {
+				$tagId = $cType . '_' . $cID;
+				$values['first_tab/registration_page'] = $tagId;
+			}
+		}
+		
 		break;
 }

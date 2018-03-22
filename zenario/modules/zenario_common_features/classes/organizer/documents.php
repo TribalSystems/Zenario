@@ -36,7 +36,7 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 		}
 		
 		if (isset($panel['item_buttons']['autoset'])
-		 && !ze\row::exists('document_rules', array())) {
+		 && !ze\row::exists('document_rules', [])) {
 			$panel['item_buttons']['autoset']['disabled'] = true;
 			$panel['item_buttons']['autoset']['disabled_tooltip'] = ze\admin::phrase('No rules for auto-setting document metadata have been created');
 		}
@@ -45,10 +45,10 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 			$filePath = "";
 			$fileId = "";
 			if ($item['type'] == 'folder') {
-				$tempArray = array();
+				$tempArray = [];
 				$item['css_class'] = 'zenario_folder_item';
 				$item['traits']['is_folder'] = true;
-				$tempArray = ze\row::getArray('documents', 'id', array('folder_id' => $item['id']));
+				$tempArray = ze\row::getArray('documents', 'id', ['folder_id' => $item['id']]);
 				$item['folder_file_count'] = count($tempArray);
 				
 				if (!$item['folder_file_count']) {
@@ -59,8 +59,6 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 			} else {
 				//change icon
 				$item['css_class'] = 'zenario_file_item';
-				
-				//var_dump($item);
 				
 				if ($item['filesize']) {
 					$item['filesize'] = ze\file::fileSizeConvert($item['filesize']);
@@ -90,7 +88,7 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 				}
 				
 				if ($item['date_uploaded']) {
-					$item['date_uploaded'] = ze\admin::phrase('Uploaded [[date]]', array('date' => ze\date::formatDateTime($item['date_uploaded'], '_MEDIUM')));
+					$item['date_uploaded'] = ze\admin::phrase('Uploaded [[date]]', ['date' => ze\date::formatDateTime($item['date_uploaded'], '_MEDIUM')]);
 				}
 				if ($item['extract_wordcount']) {
 					$item['extract_wordcount'] = ze\admin::nPhrase(
@@ -130,12 +128,12 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 		$externalProgramError = false;
 		if (($_POST['reorder'] ?? false) || ($_POST['hierarchy'] ?? false)) {
 			$idsArray = explode(',', $ids);
-			$filenamesInFolder = array();
-			$folderNamesInFolder = array();
+			$filenamesInFolder = [];
+			$folderNamesInFolder = [];
 			foreach ($idsArray as $id) {
 				// Foreach moved file
 				if (isset($_POST['parent_ids'][$id])
-					&& ($documentDetails = ze\row::get('documents', array('filename', 'folder_name'), $id))
+					&& ($documentDetails = ze\row::get('documents', ['filename', 'folder_name'], $id))
 				) {
 					$filename = $documentDetails['filename'];
 					$folder_name = $documentDetails['folder_name'];
@@ -191,10 +189,10 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 						}
 						echo '<!--Message_Type:Error-->';
 						if ($parent_id == 0) {
-							$error = ze\admin::phrase('You cannot have more than one [[type]] named "[[name]]" in the root directory', array('name' => $name, 'type' => $type));
+							$error = ze\admin::phrase('You cannot have more than one [[type]] named "[[name]]" in the root directory', ['name' => $name, 'type' => $type]);
 						} else {
 							$problem_folder_name = ze\row::get('documents', 'folder_name', $parent_id);
-							$error = ze\admin::phrase('You cannot have more than one [[type]] named "[[name]]" in the directory "[[folder_name]]"', array('name' => $name, 'folder_name' => $problem_folder_name, 'type' => $type));
+							$error = ze\admin::phrase('You cannot have more than one [[type]] named "[[name]]" in the directory "[[folder_name]]"', ['name' => $name, 'folder_name' => $problem_folder_name, 'type' => $type]);
 						}
 						echo $error;
 						exit;
@@ -206,8 +204,8 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 			//Loop through each moved files and save
 			foreach ($idsArray as $id) {
 				//Look up the current id, folder_id and ordinal
-				if ($file = ze\row::get('documents', array('id', 'folder_id', 'ordinal'), $id)) {
-					$cols = array();
+				if ($file = ze\row::get('documents', ['id', 'folder_id', 'ordinal'], $id)) {
+					$cols = [];
 					
 					//Update the ordinal if it is different
 					if (isset($_POST['ordinals'][$id]) && $_POST['ordinals'][$id] != $file['ordinal']) {
@@ -217,7 +215,7 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 					//Update the folder id if it is different, and remember that we've done this
 					if (isset($_POST['parent_ids'][$id]) && $_POST['parent_ids'][$id] != $file['folder_id']) {
 						$cols['folder_id'] = $_POST['parent_ids'][$id];
-						$folder = ze\row::get('documents', array('id', 'type'), $_POST['parent_ids'][$id]);
+						$folder = ze\row::get('documents', ['id', 'type'], $_POST['parent_ids'][$id]);
 						if ($folder['type'] == "file") {
 							echo '<!--Message_Type:Error-->';
 							echo ze\admin::phrase('Files may not be moved under other files, files can only be placed under folders.');
@@ -243,17 +241,17 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 			
 			ze\fileAdm::exitIfUploadError();
 			$file_id = ze\file::addToDatabase('hierarchial_file', $_FILES['Filedata']['tmp_name'], preg_replace('/([^.a-z0-9\s_]+)/i', '-',$_FILES['Filedata']['name']), false, false, true);
-			$existingFile = ze\row::get('documents', array('id'), array('file_id' => $file_id));
+			$existingFile = ze\row::get('documents', ['id'], ['file_id' => $file_id]);
 			if ($existingFile) {
 				echo "This file has already been uploaded to the files directory!";
 				return $existingFile['id'];
 			}
 			
-			$documentProperties = array(
+			$documentProperties = [
 				'type' =>'file',
 				'file_id' => $file_id,
 				'folder_id' => 0,
-				'ordinal' => 0);
+				'ordinal' => 0];
 				
 			$extraProperties = ze\document::addExtract($file_id);
 			$documentProperties = array_merge($documentProperties, $extraProperties);
@@ -269,7 +267,7 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 			return $documentId;
 			
 		} elseif ($_POST['rescan'] ?? false) {
-			$file_id = ze\row::get('documents', 'file_id', array('id' => $ids));
+			$file_id = ze\row::get('documents', 'file_id', ['id' => $ids]);
 			$documentProperties = ze\document::addExtract($file_id);
 			if (empty($documentProperties['extract']) || empty($documentProperties['thumbnail_id'])) {
 				echo "<!--Message_Type:Error-->";
@@ -300,10 +298,22 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 				echo '<p>', ze\admin::phrase('Successfully updated document image.'), '</p>';
 			}
 			
-			ze\row::update('documents', $documentProperties, array('id' => $ids));
+			ze\row::update('documents', $documentProperties, ['id' => $ids]);
 			
-		}elseif($_POST['rescanText'] ?? false){ 
-			$file_id = ze\row::get('documents', 'file_id', array('id' => $ids));
+		} elseif ($_POST['rescan_image'] ?? false) {
+			$file_id = ze\row::get('documents', 'file_id', ['id' => $ids]);
+			$documentProperties = [];
+			$extract = [];
+			$thumbnailId = false;
+			ze\file::updateDocumentPlainTextExtract($file_id, $extract, $thumbnailId);
+			
+			if ($thumbnailId) {
+				$documentProperties['thumbnail_id'] = $thumbnailId;
+				ze\row::update('documents', $documentProperties, ['id' => $ids]);
+			}
+			
+		} elseif ($_POST['rescan_text'] ?? false) { 
+			$file_id = ze\row::get('documents', 'file_id', ['id' => $ids]);
 			$documentProperties = ze\document::addExtract($file_id);
 			if (empty($documentProperties['extract'])) {
 				echo "<!--Message_Type:Error-->";
@@ -320,22 +330,22 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 				}
 			} else {
 				echo "<p>Successfully updated document text extract.</p>";
-				ze\row::update('documents', array('extract'=>$documentProperties['extract']), array('id' => $ids));
+				ze\row::update('documents', ['extract'=>$documentProperties['extract']], ['id' => $ids]);
 			}
 		
-		}elseif ($_POST['autoset'] ?? false) {
+		} elseif ($_POST['autoset'] ?? false) {
 			ze\document::processRules($ids);
 			
 		} elseif ($_POST['dont_autoset_metadata'] ?? false) {
 			ze\priv::exitIfNot('_PRIV_EDIT_DOCUMENTS');
 			foreach (explode(',', $ids) as $id) {
-				ze\row::update('documents', array('dont_autoset_metadata' => 1), $id);
+				ze\row::update('documents', ['dont_autoset_metadata' => 1], $id);
 			}
 			
 		} elseif ($_POST['allow_autoset_metadata'] ?? false) {
 			ze\priv::exitIfNot('_PRIV_EDIT_DOCUMENTS');
 			foreach (explode(',', $ids) as $id) {
-				ze\row::update('documents', array('dont_autoset_metadata' => 0), $id);
+				ze\row::update('documents', ['dont_autoset_metadata' => 0], $id);
 			}
 		
 		//Remove all of the custom data from a document
@@ -344,7 +354,7 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 			if ($dataset = ze\dataset::details('documents')) {
 				foreach (explode(',', $ids) as $id) {
 					ze\row::delete('documents_custom_data', $id);
-					ze\row::delete('custom_dataset_values_link', array('dataset_id' => $dataset['id'], 'linking_id' => $id));
+					ze\row::delete('custom_dataset_values_link', ['dataset_id' => $dataset['id'], 'linking_id' => $id]);
 				}
 			}
 			
@@ -367,9 +377,25 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 					$fullLink = ze\link::absolute() . $result;
 					$internalLink = $result;
 					$html .= '
+						<div class="document_hyperlinks_message">
 						<h3>The hyperlinks to your document are shown below:</h3>
-						Full hyperlink: <br><input type="text" style="width: 488px;" value="'. htmlspecialchars($fullLink). '"/><br>
-						Internal hyperlink:<br><input type="text" style="width: 488px;" value="'. htmlspecialchars($internalLink). '"/>';
+						<div class="document_hyperlinks_content">
+							<div class="document_hyperlinks_label">Full hyperlink:
+								<span class="note"></span>
+							</div>
+							<div class="document_hyperlinks_field">
+								<input type="text" style="width: 488px;" value="'. htmlspecialchars($fullLink). '"/>
+							</div>
+						</div>
+						<div class="document_hyperlinks_content">
+							<div class="document_hyperlinks_label">Internal hyperlink:
+								<span class="note"></span>
+							</div>
+							<div class="document_hyperlinks_field">
+								<input type="text" style="width: 488px;" value="'. htmlspecialchars($internalLink). '"/>
+							</div>
+						</div>
+						</div>';
 				}
 			}
 			echo '<!--Message_Type:' . $messageType . '-->' . $html;
@@ -397,7 +423,7 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 		if ($externalProgramError) {
 			echo
 				'<p>', ze\admin::phrase('Please go to <a href="[[href]]">Configuration->Site Settings->External</a> programs for help to remedy this.',
-					array('href' => '#zenario__administration/panels/site_settings//external_programs')
+					['href' => '#zenario__administration/panels/site_settings//external_programs']
 				), '</p>';
 		}
 	}

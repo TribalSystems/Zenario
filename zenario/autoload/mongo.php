@@ -105,14 +105,14 @@ class mongo {
 	const countFromTwig = true;
 	//Get a COUNT(*) of rows
 	//Formerly "mongoCount()"
-	public static function count($collection, $ids = array()) {
+	public static function count($collection, $ids = []) {
 		\ze\mongo::parseInputs($collection, $ids);
 		return $collection->count($ids);
 	}
 
 	//Run a query on a collection
 	//Formerly "mongoFind()"
-	public static function find($collection, $cols = array(), $ids = array(), $sort = null, $limit = 0, $queryOptions = array()) {
+	public static function find($collection, $cols = [], $ids = [], $sort = null, $limit = 0, $queryOptions = []) {
 	
 		\ze\mongo::parseInputs($collection, $ids);
 		if (!empty($sort) && is_string($sort)) {
@@ -150,7 +150,7 @@ class mongo {
 	const findOneFromTwig = true;
 	//Run a query on a collection, returning just one row or one property value
 	//Formerly "mongoFindOne()"
-	public static function findOne($collection, $cols = array(), $ids = array(), $sort = null, $queryOptions = array()) {
+	public static function findOne($collection, $cols = [], $ids = [], $sort = null, $queryOptions = []) {
 	
 		$col = false;
 		if (is_array($cols) || $cols === true) {
@@ -170,25 +170,25 @@ class mongo {
 	}
 
 	//Formerly "mongoUpdateOne()"
-	public static function updateOne($collection, $update, $ids, $queryOptions = array()) {
+	public static function updateOne($collection, $update, $ids, $queryOptions = []) {
 		\ze\mongo::parseInputs($collection, $ids);
 		$collection->updateOne($ids, $update, $queryOptions);
 	}
 	
 	//Formerly "mongoUpdateMany()"
-	public static function updateMany($collection, $update, $ids = array(), $queryOptions = array()) {
+	public static function updateMany($collection, $update, $ids = [], $queryOptions = []) {
 		\ze\mongo::parseInputs($collection, $ids);
 		$collection->updateMany($ids, $update, $queryOptions);
 	}
 
 	//Formerly "mongoDeleteOne()"
-	public static function deleteOne($collection, $ids, $queryOptions = array()) {
+	public static function deleteOne($collection, $ids, $queryOptions = []) {
 		\ze\mongo::parseInputs($collection, $ids);
 		$collection->deleteOne($ids, $queryOptions);
 	}
 	
 	//Formerly "mongoDeleteMany()"
-	public static function deleteMany($collection, $ids = array(), $queryOptions = array()) {
+	public static function deleteMany($collection, $ids = [], $queryOptions = []) {
 		\ze\mongo::parseInputs($collection, $ids);
 		$collection->deleteMany($ids, $queryOptions);
 	}

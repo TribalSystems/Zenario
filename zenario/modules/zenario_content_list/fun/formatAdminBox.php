@@ -72,7 +72,7 @@ switch ($path) {
 		//Don't show the translations checkbox if this can never be translated
 		$fields['overall_list/translate_text']['hidden'] =
 			$box['key']['isVersionControlled']
-		 || !ze\row::exists('languages', array('translate_phrases' => 1));
+		 || !ze\row::exists('languages', ['translate_phrases' => 1]);
 		
 		//Don't show notes about translations if this won't be translated
 		if ($fields['overall_list/translate_text']['hidden'] || !$values['overall_list/translate_text']) {
@@ -86,10 +86,10 @@ switch ($path) {
 		
 		} else {
 			
-			$mrg = array(
+			$mrg = [
 				'def_lang_name' => htmlspecialchars(ze\lang::name(ze::$defaultLang)),
 				'phrases_panel' => htmlspecialchars(ze\link::absolute(). 'zenario/admin/organizer.php#zenario__languages/panels/phrases')
-			);
+			];
 			
 			$fields['overall_list/heading_if_items']['show_phrase_icon'] =
 			$fields['overall_list/heading_if_no_items']['show_phrase_icon'] =

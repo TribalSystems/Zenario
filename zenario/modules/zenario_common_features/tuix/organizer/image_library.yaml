@@ -112,6 +112,13 @@ zenario__content:
                 mime_type:
                     server_side_only: true
                     db_column: f.mime_type
+                uploaded_datetime:
+                    title: Uploaded on
+                    format: datetime
+                    width: medium
+                    searchable: true
+                    db_column: f.created_datetime
+                    show_by_default: true
                 size:
                     title: Size
                     format: filesize

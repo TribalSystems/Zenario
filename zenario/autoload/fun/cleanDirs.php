@@ -33,8 +33,8 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 //Define the directory tree in the following format:
 	//$mainDir => $subDir => $lifetime
 
-$directories = array(
-	'cache' => array(
+$directories = [
+	'cache' => [
 		'downloads' => -2,
 		'images' => -2,
 		'fabs' => 4 * 60 * 60,
@@ -43,18 +43,18 @@ $directories = array(
 		'pages' => 2 * 60 * 60,
 		'stats' => -1,
 		'tuix' => -1
-	), 
-	'private' => array(
+	], 
+	'private' => [
 		'downloads' => 5 * 60 * 60,
 		'images' => 2 * 60 * 60,
 		'files' => 2 * 60 * 60,
 		'uploads' => 1 * 60 * 60
-	), 
-	'public' => array(
+	], 
+	'public' => [
 		'downloads' => -1,
 		'images' => -1
-	)
-);
+	]
+];
 
 //If they are older than $lifetime, files and their containing directories should be deleted.
 //A $lifetime of -1 means they should be permenant and never deleted

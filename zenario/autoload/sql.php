@@ -140,7 +140,7 @@ class sql {
 		if (is_string($result)) {
 			$result = \ze\sql::select($result, $mrg);
 		}
-		$out = array();
+		$out = [];
 		while ($row = \ze\sql::fetchRow($result)) {
 			if ($numeric) {
 				$out[] = (int) $row[0];
@@ -157,7 +157,7 @@ class sql {
 		if (is_string($result)) {
 			$result = \ze\sql::select($result, $mrg);
 		}
-		$out = array();
+		$out = [];
 		while ($row = \ze\sql::fetchAssoc($result)) {
 			if ($indexBy === false) {
 				$out[] = $row;
@@ -172,7 +172,7 @@ class sql {
 		if (is_string($result)) {
 			$result = \ze\sql::select($result, $mrg);
 		}
-		$out = array();
+		$out = [];
 		while ($row = \ze\sql::fetchRow($result)) {
 			$out[] = $row;
 		}
@@ -182,7 +182,7 @@ class sql {
 
 
 	//Formerly "sqlAddMergeFields()"
-	public static function addMergeFields(&$sql, &$mrg, &$colDefs, $tables = array()) {
+	public static function addMergeFields(&$sql, &$mrg, &$colDefs, $tables = []) {
 	
 		$cacheQuery = strlen($sql) < 1024;
 	
@@ -312,7 +312,7 @@ class sql {
 						//If a column is hashed then only equals or not-equals is possible; e.g. you can't do < or >
 						if ($colDef->encrypted) {
 							if (!$colDef->hashed) {
-								\ze\db::reportDatabaseErrorFromHelperFunction(\ze\admin::phrase('The column `[[col]]` in the table `[[table]]` is encrypted and cannot be used in a WHERE-statement.', array('col' => $colName, 'table' => $tableName)));
+								\ze\db::reportDatabaseErrorFromHelperFunction(\ze\admin::phrase('The column `[[col]]` in the table `[[table]]` is encrypted and cannot be used in a WHERE-statement.', ['col' => $colName, 'table' => $tableName]));
 							}
 					
 							$colName = '#'. $colName;
@@ -372,14 +372,14 @@ class sql {
 	//Replacement for mysql_query()
 	//Runs a SQL query without updating the revision number or clearing the cache
 	//Formerly "sqlSelect()"
-	public static function select($sql, $mrg = false, $tableName = false) {
+	public static function select($sql, $mrg = false, $tableName = false, $storeResult = true) {
 	
 		if (!\ze::$lastDB) {
 			return false;
 		}
 	
 		//Attempt to get a list of column definitions for the columns we are about to select from
-		$colDefs = array();
+		$colDefs = [];
 		$colDefsAreSpecfic = false;
 		if ($mrg) {
 			\ze\sql::addMergeFields($sql, $mrg, $colDefs);
@@ -391,8 +391,8 @@ class sql {
 			}
 			$colDefs = &\ze::$dbCols[$tableName];
 		}
-	
-		if ($result = \ze::$lastDB->query($sql)) {
+		
+		if ($result = \ze::$lastDB->query($sql, $storeResult? MYSQLI_STORE_RESULT : MYSQLI_USE_RESULT)) {
 			return new SQLQueryWrapper($result, $colDefs, $colDefsAreSpecfic);
 	
 		} else {
@@ -409,7 +409,7 @@ class sql {
 		}
 	
 		if ($mrg) {
-			$colDefs = array();
+			$colDefs = [];
 			\ze\sql::addMergeFields($sql, $mrg, $colDefs);
 		}
 	

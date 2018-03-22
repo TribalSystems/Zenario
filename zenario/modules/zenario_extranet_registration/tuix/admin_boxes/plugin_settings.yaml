@@ -221,6 +221,31 @@ plugin_settings:
 						required_if_not_hidden: Please select a group.
 					indent: 1
 				
+				show_link_to_login_page:
+					plugin_setting:
+						name: show_link_to_login_page
+					label: Show link to login page
+					type: checkbox
+					value: 1
+					redraw_onchange: true
+				login_page:
+					visible_if: zenarioAB.value('show_link_to_login_page')
+					plugin_setting:
+						name: login_page
+						foreign_key_to: content
+					label: 'Login page:'
+					pick_items:
+						path: zenario__content/panels/content/refiners/filter_by_lang////
+						min_path: zenario__content/panels/content
+						max_path: zenario__content/panels/content
+						target_path: zenario__content/panels/content
+						disallow_refiners_looping_on_min_path: true
+						select_phrase: Select a content item...
+						hide_remove_button: true
+					validation:
+						required_if_not_hidden: Please select a login page
+					indent: 1
+				
 		user_activation:
 			label: User activation
 			fields:

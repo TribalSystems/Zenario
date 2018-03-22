@@ -86,6 +86,9 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 					display: block !important;
 				}
 			</style>';
+		if ($this->enableCaptcha()) {
+			$this->loadCaptcha2Lib();
+		}
 	}
 	
 	
@@ -712,7 +715,7 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 	function showPostScreenTopFields($titleText) {
 		if ($this->setting('show_name')) {
 			$this->sections['Show_Post_Name'] = true;
-			
+			$this->sections['Post_Message']['Post_Name'] = '';
 			if (isset($_POST['comm_name'])) {
 				$this->sections['Post_Message']['Post_Name'] = htmlspecialchars($_POST['comm_name']);
 			
@@ -868,7 +871,7 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 				$this->showConfirmBox($this->phrase('_CONFIRM_UNLOCK_THREAD'), $this->phrase('_SUBMIT_UNLOCK_THREAD'));
 				
 			} elseif (($_REQUEST['comm_request'] ?? false) == 'subs_thread' && $this->canSubsThread()) {
-				$this->showConfirmBox($this->phrase('_CONFIRM_SUBS_THREAD', array('email' => htmlspecialchars(ze\user::email()))), $this->phrase('_SUBMIT_SUBS_THREAD'));
+				$this->showConfirmBox($this->phrase('_CONFIRM_SUBS_THREAD', ['email' => htmlspecialchars(ze\user::email())]), $this->phrase('_SUBMIT_SUBS_THREAD'));
 				
 			} elseif (($_REQUEST['comm_request'] ?? false) == 'unsubs_thread' && $this->canSubsThread()) {
 				$this->showConfirmBox($this->phrase('_CONFIRM_UNSUBS_THREAD'), $this->phrase('_SUBMIT_UNSUBS_THREAD'));
@@ -893,7 +896,9 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 		}
 	}
 	
-	
+	function enableCaptcha() {
+		return $this->setting('enable_captcha') && ze::setting('google_recaptcha_site_key') && ze::setting('google_recaptcha_secret_key');
+	}
 	
 	
 	
@@ -908,7 +913,7 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 		return (int) ze\row::get(
 			ZENARIO_ANONYMOUS_COMMENTS_PREFIX. 'comment_content_items',
 			'post_count',
-			array('content_id' => (int) $cID, 'content_type' => $cType));
+			['content_id' => (int) $cID, 'content_type' => $cType]);
 	}
 	
 	public static function commentsOnPage_framework(&$mergeFields) {

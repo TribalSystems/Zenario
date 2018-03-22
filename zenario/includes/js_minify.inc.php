@@ -169,7 +169,9 @@ class zenario_minify {
 		'zenario.addBasePath(' => 'zenario._aBP(',
 		'zenario.addClassesToColorbox(' => 'zenario._aCTC(',
 		'zenario.addJQueryElements(' => 'zenario._aJQE(',
+		'zenario.addLibPointers(' => 'zenario._aLP(',
 		'zenario.addPluginJavaScript(' => 'zenario._aPJS(',
+		'zenario.addStyles(' => 'zenario._aS(',
 		'zenario.addTabIdToURL(' => 'zenario._aTITU(',
 		'zenario.ajax(' => 'zenario._a(',
 		'zenario.applyCompilationMacros(' => 'zenario._aCM(',
@@ -232,7 +234,7 @@ class zenario_minify {
 		'zenario.handlePluginAJAX(' => 'zenario._hPA(',
 		'zenario.htmlspecialchars(' => 'zenario._h(',
 		'zenario.httpOrhttps(' => 'zenario._hO(',
-		'zenario.ifNull(' => 'zenario._iN(',
+		'zenario.hypEscape(' => 'zenario._hE(',
 		'zenario.inDoc(' => 'zenario._iD(',
 		'zenario.inList(' => 'zenario._iL(',
 		'zenario.isFullScreen(' => 'zenario._iFS(',
@@ -260,6 +262,7 @@ class zenario_minify {
 		'zenario.pluginVisitorTUIXLink(' => 'zenario._pVTL(',
 		'zenario.recordRequestsInURL(' => 'zenario._rRIU(',
 		'zenario.refreshPluginSlot(' => 'zenario._rPS(',
+		'zenario.refreshSlot(' => 'zenario._rS(',
 		'zenario.registerPhrases(' => 'zenario._rP(',
 		'zenario.removeClassesToColorbox(' => 'zenario._rCTC(',
 		'zenario.removeLinkStatus(' => 'zenario._rLS(',
@@ -274,6 +277,7 @@ class zenario_minify {
 		'zenario.scrollToSlotTop(' => 'zenario._sTST(',
 		'zenario.scrollTop(' => 'zenario._sT(',
 		'zenario.sendSignal(' => 'zenario._sS(',
+		'zenario.setActiveClass(' => 'zenario._sAC(',
 		'zenario.setChildrenToTheSameHeight(' => 'zenario._sCTTSH(',
 		'zenario.setSessionStorage(' => 'zenario._sSS(',
 		'zenario.showFileLink(' => 'zenario._sFL(',
@@ -286,6 +290,7 @@ class zenario_minify {
 		'zenario.splitFlagsFromMessage(' => 'zenario._sFFM(',
 		'zenario.stop(' => 'zenario._st(',
 		'zenario.submitFormReturningHtml(' => 'zenario._sFRH(',
+		'zenario.tidyLibPointers(' => 'zenario._tLP(',
 		'zenario.tinyMCEGetContent(' => 'zenario._tMGC(',
 		'zenario.toObject(' => 'zenario._tO(',
 		'zenario.tooltips(' => 'zenario._t(',
@@ -296,6 +301,20 @@ class zenario_minify {
 		'zenario.urlRequest(' => 'zenario._uR(',
 		'zenario.versionOfIE(' => 'zenario._vOI(',
 		'zenario.visitorTUIXLink(' => 'zenario._vTL(',
+		'zenario_conductor.backLink(' => 'zenario_conductor._bL(',
+		'zenario_conductor.clearRegisteredGetRequest(' => 'zenario_conductor._cRGR(',
+		'zenario_conductor.commandEnabled(' => 'zenario_conductor._cE(',
+		'zenario_conductor.confirmOnClose(' => 'zenario_conductor._cOC(',
+		'zenario_conductor.confirmOnCloseMessage(' => 'zenario_conductor._cOCM(',
+		'zenario_conductor.enabled(' => 'zenario_conductor._e(',
+		'zenario_conductor.getRegisteredGetRequest(' => 'zenario_conductor._gRGR(',
+		'zenario_conductor.getSlot(' => 'zenario_conductor._gS(',
+		'zenario_conductor.goBack(' => 'zenario_conductor._gB(',
+		'zenario_conductor.link(' => 'zenario_conductor._l(',
+		'zenario_conductor.mergeRequests(' => 'zenario_conductor._mR(',
+		'zenario_conductor.refresh(' => 'zenario_conductor._r(',
+		'zenario_conductor.registerGetRequest(' => 'zenario_conductor._rGR(',
+		'zenario_conductor.setCommands(' => 'zenario_conductor._sC(',
 		'zenarioT.action(' => 'zenarioT._a(',
 		'zenarioT.canDoHTML5Upload(' => 'zenarioT._cDHTML5U(',
 		'zenarioT.checkActionUnique(' => 'zenarioT._cAU(',
@@ -319,6 +338,7 @@ class zenario_minify {
 		'zenarioT.onChangeOrSearch(' => 'zenarioT._oCOS(',
 		'zenarioT.onbeforeunload(' => 'zenarioT._o(',
 		'zenarioT.option(' => 'zenarioT._op(',
+		'zenarioT.parse(' => 'zenarioT._pa(',
 		'zenarioT.prop(' => 'zenarioT._pr(',
 		'zenarioT.resizeImage(' => 'zenarioT._rI(',
 		'zenarioT.select(' => 'zenarioT._s(',
@@ -443,6 +463,7 @@ class zenario_minify {
 		'zenarioAB.clickTab(' => 'zenarioAB._cT(',
 		'zenarioAB.closeBox(' => 'zenarioAB._cB(',
 		'zenarioAB.contentTitleChange(' => 'zenarioAB._cTC(',
+		'zenarioAB.cutText(' => 'zenarioAB._cuTe(',
 		'zenarioAB.enableOrDisableSite(' => 'zenarioAB._eODS(',
 		'zenarioAB.generateAlias(' => 'zenarioAB._gA(',
 		'zenarioAB.makeFieldAsTallAsPossible(' => 'zenarioAB._mFATAP(',
@@ -459,6 +480,7 @@ class zenario_minify {
 		'zenarioAB.start(' => 'zenarioAB._st(',
 		'zenarioAB.svgSelected(' => 'zenarioAB._sS(',
 		'zenarioAB.updateHash(' => 'zenarioAB._uH(',
+		'zenarioAB.updateSEP(' => 'zenarioAB._uS(',
 		'zenarioAB.validateAlias(' => 'zenarioAB._vA(',
 		'zenarioAB.validateAliasGo(' => 'zenarioAB._vAG(',
 		'zenarioAB.viewFrameworkSource(' => 'zenarioAB._vFS(',
@@ -693,9 +715,14 @@ class zenario_minify {
 function applyCompilationMacros($code) {
 	
 	//Check if this JavaScript file uses the zenario.lib function.
+	$isZenarioLib =
+		false !== strpos($code, 'zenario.lib(');
 	$isZenarioLibWithAllInputs =
-		false !== strpos($code, 'zenario.lib(')
+		$isZenarioLib
 	 && false !== strpos($code, 'extensionOf, methodsOf, has');
+	$usesThus =
+		$isZenarioLib
+	 && false !== strpos($code, 'thus');
 	
 	//If so, we can use the has() shortcut.
 	//If not, we need to write out zenario.has() in full.
@@ -705,12 +732,22 @@ function applyCompilationMacros($code) {
 		$has = 'zenario.has';
 	}
 	
+	//Use the shortcuts for some string methods properties to save space
+	if ($isZenarioLib) {
+		$code = preg_replace('@.([mrs])(atch|eplace|plit)\(@', '.$1(', $code);
+	}
+	
+	//Automatically add "var thus = this;" to the start of any method declarations
+	if ($usesThus) {
+		$code = preg_replace('@(\bmethods\.[\w\$]+\s*=\s*function\s*\([^\)]*\)\s*\{)@', '$1 var thus = this;', $code);
+	}
+	
 	//Some special custom logic for zenario core libraries
 	//Attempt to replace methods with their shortnames from the list above
 	$code = str_replace(array_keys(zenario_minify::$shortNames), array_values(zenario_minify::$shortNames), $code);
 	
-	$patterns = array();
-	$replacements = array();
+	$patterns = [];
+	$replacements = [];
 	
 	//"foreach" is a macro for "for .. in ... hasOwnProperty"
 	$patterns[] = '@\bforeach\b\s*\(\s*(.+?)\s*\bas\b\s*(\bvar\b |)\s*(.+?)\s*\=\>\s*(\bvar\b |)\s*(.+?)\s*\)\s*\{@';
@@ -722,7 +759,7 @@ function applyCompilationMacros($code) {
 	//So we'll try and make do with a few replacements instead!
 	$patterns[] = '@\(([\w\s,]*)\)\s*\=\>\s*\{@';
 	$replacements[] = 'function ($1) {';
-	$patterns[] = '@(\b\w+\b)\s*\=\>\s*\{@';
+	$patterns[] = '@(\b[\w\$]+\b)\s*\=\>\s*\{@';
 	$replacements[] = 'function ($1) {';
 	
 	//Not actually standard JavaScript but looks nice
@@ -740,7 +777,7 @@ function minify($dir, $file, $level, $ext = '.js', $string = false) {
 	
 	$isCSS = $ext == '.css';
 	$yamlToJSON = $ext == '.yaml';
-	$output = array();
+	$output = [];
 	
 	if ($yamlToJSON) {
 		$srcFile = $dir. $file. $ext;

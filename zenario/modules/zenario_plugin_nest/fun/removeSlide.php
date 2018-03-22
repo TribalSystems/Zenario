@@ -34,10 +34,10 @@ if (($slide = ze\pluginAdm::getNestDetails($eggId, $instanceId)) && ($slide['is_
 	$slideNum = $slide['slide_num'] > 1? $slide['slide_num'] - 1 : 1;
 	
 	//Delete the slide
-	ze\row::delete('nested_plugins', array('instance_id' => $instanceId, 'id' => $eggId));
+	ze\row::delete('nested_plugins', ['instance_id' => $instanceId, 'id' => $eggId]);
 	
 	if ($className) {
-		call_user_func(array($className, 'resyncNest'), $instanceId);
+		call_user_func([$className, 'resyncNest'], $instanceId);
 	}
 	
 	foreach (ze\ray::explodeAndTrim($slide['states']) as $state) {

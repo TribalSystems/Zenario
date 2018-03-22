@@ -153,7 +153,7 @@ if ($type == 'checkbox' || $type == 'radio') {
 	}
 
 	$j = 0;
-	foreach (array(31 => 1, 12 => 1, (int) date('Y') + 10 => (int) date('Y') - 10) as $to => $from) {
+	foreach ([31 => 1, 12 => 1, (int) date('Y') + 10 => (int) date('Y') - 10] as $to => $from) {
 		$v = (int) $values[3 - ++$j];
 		$html .= '
 			<select class="jquery_datepicker" name="'. htmlspecialchars($name). '__'. $j. '" id="'. htmlspecialchars($attributes['id']). '__'. $j. '">

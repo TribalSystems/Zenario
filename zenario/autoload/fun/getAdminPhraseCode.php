@@ -29,7 +29,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 
 if (!isset(\ze::$apcFoundCodes[$lang]) || !is_array(\ze::$apcFoundCodes[$lang])) {
-	\ze::$apcFoundCodes[$lang] = array();
+	\ze::$apcFoundCodes[$lang] = [];
 	\ze::$apcDirs[$lang] = \ze::moduleDirs('admin_phrase_codes/');
 
 } elseif (isset(\ze::$apcFoundCodes[$lang][$target])) {

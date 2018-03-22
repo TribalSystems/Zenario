@@ -33,8 +33,8 @@ class admin {
 
 	//Formerly "adminId()"
 	public static function id() {
-		if (($_SESSION['admin_logged_into_site'] ?? false) && ($_SESSION['admin_logged_into_site'] ?? false) == COOKIE_DOMAIN. SUBDIRECTORY. \ze::setting('site_id')) {
-			return ($_SESSION['admin_userid'] ?? false);
+		if (\ze::isAdmin()) {
+			return $_SESSION['admin_userid'] ?? false;
 		} else {
 			return false;
 		}
@@ -217,8 +217,8 @@ class admin {
 			return true;
 		}
 	
-		$singular = array(\ze\admin::phrase('1 day'), \ze\admin::phrase('1 hour'), \ze\admin::phrase('1 minute'), \ze\admin::phrase('1 second'));
-		$plural = array(\ze\admin::phrase('[[n]] days'), \ze\admin::phrase('[[n]] hours'), \ze\admin::phrase('[[n]] minutes'), \ze\admin::phrase('[[n]] seconds'));
+		$singular = [\ze\admin::phrase('1 day'), \ze\admin::phrase('1 hour'), \ze\admin::phrase('1 minute'), \ze\admin::phrase('1 second')];
+		$plural = [\ze\admin::phrase('[[n]] days'), \ze\admin::phrase('[[n]] hours'), \ze\admin::phrase('[[n]] minutes'), \ze\admin::phrase('[[n]] seconds')];
 	
 		foreach ($singular as $i => $phrase) {
 			if ($row[$i] || $i == 3) {
@@ -368,7 +368,7 @@ class admin {
 		);
 	
 		if ($destorySession) {
-			if (($_SESSION['admin_logged_into_site'] ?? false) == COOKIE_DOMAIN. SUBDIRECTORY. \ze::setting('site_id')) {
+			if (\ze::isAdmin()) {
 				if (isset($_COOKIE[session_name()])) {
 					\ze\cookie::clear(session_name());
 				}
@@ -383,7 +383,7 @@ class admin {
 	//Formerly "languageIdForDatesInAdminMode()"
 	public static function languageIdForDatesInAdminMode() {
 		return \ze::ifNull(
-			\ze\row::get('visitor_phrases', 'language_id', array('code' => '_WEEKDAY_0', 'language_id' => ['en', 'en-gb', 'en-us'])),
+			\ze\row::get('visitor_phrases', 'language_id', ['code' => '_WEEKDAY_0', 'language_id' => ['en', 'en-gb', 'en-us']]),
 			\ze::$defaultLang,
 			'en-us');
 	}
@@ -414,10 +414,50 @@ class admin {
 			'_PRIV_VIEW_LANGUAGE' => true,
 			'_PRIV_MANAGE_LANGUAGE_PHRASE' => true];
 	}
-
-
-
 	
+	public static function logIn($adminId, $rememberMe = false) {
+		$admin = \ze\row::get('admins', ['username', 'authtype', 'global_id'], $adminId);
+		
+		if ($rememberMe) {
+			\ze\cookie::set('COOKIE_LAST_ADMIN_USER', $admin['username']);
+			\ze\cookie::clear('COOKIE_DONT_REMEMBER_LAST_ADMIN_USER');
+		} else {
+			\ze\cookie::set('COOKIE_DONT_REMEMBER_LAST_ADMIN_USER', '1');
+			\ze\cookie::clear('COOKIE_LAST_ADMIN_USER');
+		}
+
+		if ($admin['authtype'] == 'super') {
+			\ze\admin::setSession($adminId, $admin['global_id']);
+		} else {
+			\ze\admin::setSession($adminId);
+		}
+		\ze\cookie::setConsent();
+
+		//Note the time this admin last logged in
+			//This might fail if this site needs a db_update and the last_login_ip column does not exist.
+
+		require_once CMS_ROOT. 'zenario/libs/manually_maintained/mit/browser/lib/browser.php';
+		$browser = new \Browser();
+
+		$sql = "
+			UPDATE ". DB_NAME_PREFIX. "admins SET
+				last_login = NOW(),
+				last_login_ip = '". \ze\escape::sql(\ze\user::ip()). "',
+				last_browser = '". \ze\escape::sql($browser->getBrowser()). "',
+				last_browser_version = '". \ze\escape::sql($browser->getVersion()). "',
+				last_platform = '". \ze\escape::sql($browser->getPlatform()). "'
+			WHERE id = ". (int) $adminId;
+		@\ze\sql::select($sql);
+
+		// Update last domain, so primaryDomain can return a domain name if the primary domain site setting is not set.
+		if (!\ze\link::adminDomainIsPrivate()) {
+			\ze\site::setSetting('last_primary_domain', \ze\link::primaryDomain());
+		}
+
+		//Don't offically mark the admin as "logged in" until they've passed all of the
+		//checks in the admin login screen
+		$_SESSION['admin_logged_in'] = false;
+	}
 	
 	
 }

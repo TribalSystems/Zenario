@@ -13,7 +13,11 @@
 			placeholder="{{m.tuix.search_bar_placeholder|e}}"
 			{{zenarioT.onChangeOrSearch()}}="return {{m.lib.fun('doSearch')}}(event);"
 		/>
-		<input type="submit" value="&#xf002;"/>
+		<% if (m.tuix.search_button_message) { %>
+			<input type="submit" value="{{m.tuix.search_button_message|e}}"/>
+		<% } else { %>
+			<input type="submit" value="&#xf002;"/>
+		<% } %>
 
 		<% if (m.lib.showClearSearchButton()) { %>
 			<input type="button" class="clear_search" value="&#xf057;" onclick="
@@ -24,17 +28,17 @@
 	</form>
 <% } %>
 
-<% if (zenarioT.find(m.tuix.sortedCollectionButtons, 'search')) { %>
+<% if (zenarioT.find(m.thus.sortedCollectionButtons, 'search')) { %>
 	<div class="zfea_buttons zfea_search_buttons">
-		{{m.lib.pMicroTemplate('button', m.tuix.sortedCollectionButtons, 'search')}}
+		{{m.lib.pMicroTemplate('button', m.thus.sortedCollectionButtons, 'search')}}
 	</div>
 <% } %>
 
 <% if (_.isEmpty(m.tuix.columns)) { %>
-	<% if (zenarioT.find(m.tuix.sortedCollectionButtons, false)) { %>
-		<% m.tuix.sortedCollectionButtons.forEach(function(button) { button.label = button.no_search_label ? button.no_search_label : button.label }); %>
+	<% if (zenarioT.find(m.thus.sortedCollectionButtons, false)) { %>
+		<% m.thus.sortedCollectionButtons.forEach(function(button) { button.label = button.no_search_label ? button.no_search_label : button.label }); %>
 		<div class="sorted_buttons">
-			{{m.lib.pMicroTemplate('button', m.tuix.sortedCollectionButtons, false)}}
+			{{m.lib.pMicroTemplate('button', m.thus.sortedCollectionButtons, false)}}
 		</div>
 	<% } %>
 <% } %>

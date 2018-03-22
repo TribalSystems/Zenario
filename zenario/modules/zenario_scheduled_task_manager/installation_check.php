@@ -28,10 +28,10 @@
 
 function checkInstallationCanProceed() {
 	if (ze\server::isWindows()) {
-		return array(ze\admin::phrase('Sorry, this Module requires a Unix-based server to run.'));
+		return [ze\admin::phrase('Sorry, this Module requires a Unix-based server to run.')];
 	
 	} elseif (!ze\server::execEnabled()) {
-		return array(ze\admin::phrase('Sorry, this Module requires the exec() function enabled on your server.'));
+		return [ze\admin::phrase('Sorry, this Module requires the exec() function enabled on your server.')];
 	
 	} else {
 		return true;

@@ -73,11 +73,11 @@ if ($_REQUEST['quickValidate'] ?? false) {
 	
 	$values = json_decode($_POST['values'], true);
 	$rowClasses = json_decode($_POST['row_classes'], true);
-	$snippets = array();
+	$snippets = [];
 	
 	ze\welcome::quickValidateWelcomePage($values, $rowClasses, $snippets, ($_POST['tab'] ?? false));
 	
-	echo json_encode(array('row_classes' => $rowClasses, 'snippets' => $snippets));
+	echo json_encode(['row_classes' => $rowClasses, 'snippets' => $snippets]);
 	exit;
 }
 
@@ -90,16 +90,16 @@ if ($_REQUEST['quickValidate'] ?? false) {
 
 
 //Include all of the yaml files in the install directory
-$clientTags = array();
-$tags = array();
-$source = array();
-$dummy = array();
-$fields = array();
-$values = array();
-$changes = array();
+$clientTags = [];
+$tags = [];
+$source = [];
+$dummy = [];
+$fields = [];
+$values = [];
+$changes = [];
 ze\tuix::load($dummy, $source, 'welcome');
 
-$removedColumns = array();
+$removedColumns = [];
 ze\tuix::parse2($source, $removedColumns, 'welcome');
 
 
@@ -167,6 +167,38 @@ if ($systemRequirementsMet && $installed) {
 		ze\welcome::logoutAdminAJAX($tags, $getRequest);
 		$loggedIn = false;
 	
+	//Allow a newly created admin to set their password
+	} else
+	if ($task == 'new_admin' && ($hash = $getRequest['hash'] ?? false)) {
+		ze\welcome::prepareAdminWelcomeScreen('new_admin', $source, $tags, $fields, $values, $changes);	
+		$loggedIn = false;
+		
+		//Check if this link has expired
+		$sql = '
+			SELECT username, id
+			FROM ' . DB_NAME_PREFIX . 'admins
+			WHERE hash = "' . ze\escape::sql($hash) . '"
+			AND DATE_ADD(created_date, INTERVAL ' . (int)ze::setting('new_admin_email_expiry') . ' DAY) >= NOW()
+			AND password = ""';
+		$result = ze\sql::select($sql);
+		$admin = ze\sql::fetchAssoc($result);
+		
+		if (!$admin) {
+			$tags['tabs']['new_admin']['errors'][] = \ze\admin::phrase('This link is invalid or has expired. Please contact an administrator.');
+			$fields['new_admin/description']['hidden'] = true;
+			$fields['new_admin/password']['hidden'] = true;
+			$fields['new_admin/password_strength']['hidden'] = true;
+			$fields['new_admin/re_password']['hidden'] = true;
+			$fields['new_admin/save_password_and_login']['hidden'] = true;
+		} else {
+			ze\lang::applyMergeFields($fields['new_admin/description']['snippet']['html'], $admin);
+			$loggedIn = ze\welcome::newAdminAJAX($source, $tags, $fields, $values, $changes, $getRequest, $admin['id']);
+		
+			if ($loggedIn) {
+				unset($getRequest['hash']);
+			}
+		}
+		
 	//If a specific admin domain is set, check that they are logging into the admin domain
 	//Also, if the admin_use_ssl option is set, check that they are trying to log in correctly using ssl if it is requested.
 	} else
@@ -243,10 +275,10 @@ if ($systemRequirementsMet && $installed) {
 				if (ze\priv::check('_PRIV_APPLY_DATABASE_UPDATES', false, false, false, $welcomePage = true)
 					//Also let them through if there are no admins on this site that can do a database update
 					//to avoid you getting stuck out of your site!
-				 || !ze\row::exists('action_admin_link', array('action_name' => array('_ALL', '_PRIV_APPLY_DATABASE_UPDATES')))
+				 || !ze\row::exists('action_admin_link', ['action_name' => ['_ALL', '_PRIV_APPLY_DATABASE_UPDATES']])
 					//Also allow the admin to do the update if revision #33720 hasn't been applied yet, as
 					//before then _PRIV_APPLY_DATABASE_UPDATES didn't exist.
-				 || !($revision_no = ze\row::get('local_revision_numbers', 'revision_no', array('path' => 'admin/db_updates/step_2_update_the_database_schema', 'patchfile' => 'admin_tables.inc.php')))
+				 || !($revision_no = ze\row::get('local_revision_numbers', 'revision_no', ['path' => 'admin/db_updates/step_2_update_the_database_schema', 'patchfile' => 'admin_tables.inc.php']))
 				 || ($revision_no < 33720)) {
 					
 					//If we can, show the screen to apply database updates
@@ -319,7 +351,7 @@ $tags['_task'] = $task;
 if (empty($clientTags)) {
 	echo json_encode($tags);
 } else {
-	$output = array();
+	$output = [];
 	ze\tuix::syncFromServerToClient($tags, $clientTags, $output);
 	echo json_encode($output);
 }

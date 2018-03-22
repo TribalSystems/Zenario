@@ -5,7 +5,7 @@ require 'tree_explorer.fun.php';
 
 $v = ze\db::codeVersion();
 
-$levelNodesCount = array();
+$levelNodesCount = [];
 
 if (($_GET["type"] ?? false)=="section") {
 	$parameters = "?section_id=" . ($_GET["id"] ?? false) . "&language=" . ($_GET["language"] ?? false);
@@ -16,7 +16,7 @@ if (($_GET["type"] ?? false)=="section") {
 	}
 
 } elseif (($_GET["type"] ?? false)=="menu_node") {
-	$sectionId = ze\row::get("menu_nodes","section_id",array("id" => ($_GET["id"] ?? false)));
+	$sectionId = ze\row::get("menu_nodes","section_id",["id" => ($_GET["id"] ?? false)]);
 
 	$parameters = "?section_id=" . $sectionId . "&menu_id=" . ($_GET["id"] ?? false) . "&language=" . ($_GET["language"] ?? false);
 

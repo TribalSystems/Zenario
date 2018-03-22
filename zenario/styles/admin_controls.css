@@ -523,6 +523,14 @@ div.zenario_slotControlsWrap .zenario_slotControlsWrap_overridden_info .zenario_
 	font-size: 9px;
 }
 
+div.zenario_slotControlsWrap .zenario_slotControlsWrap_info .zenario_slotControl_vc,
+div.zenario_slotControlsWrap .zenario_slotControlsWrap_overridden_info .zenario_slotControl_vc {
+	margin-top: 0;
+	padding-top: 0;
+	color: #c0c0c0;
+	font-size: 9px;
+}
+
 div.zenario_slotControlsWrap .zenario_slotControlsWrap_info .zenario_slotControl_locked,
 div.zenario_slotControlsWrap .zenario_slotControlsWrap_overridden_info .zenario_slotControl_locked {
 	padding: 3px;

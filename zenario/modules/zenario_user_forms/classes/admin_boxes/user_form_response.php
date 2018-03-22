@@ -31,8 +31,8 @@ class zenario_user_forms__admin_boxes__user_form_response extends ze\moduleBaseC
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		$responseId = $box['key']['id'];
-		$box['title'] = ze\admin::phrase('Form response [[id]]', array('id' => $responseId));
-		$responseDetails = ze\row::get(ZENARIO_USER_FORMS_PREFIX. 'user_response', array('response_datetime', 'crm_response', 'form_id'), $responseId);
+		$box['title'] = ze\admin::phrase('Form response [[id]]', ['id' => $responseId]);
+		$responseDetails = ze\row::get(ZENARIO_USER_FORMS_PREFIX. 'user_response', ['response_datetime', 'crm_response', 'form_id'], $responseId);
 		$formId = $responseDetails['form_id'];
 		$values['response_datetime'] = ze\date::formatDateTime($responseDetails['response_datetime'], 'vis_date_format_med');
 		
@@ -51,11 +51,11 @@ class zenario_user_forms__admin_boxes__user_form_response extends ze\moduleBaseC
 	private function getFormDataFromResponse($responseId) {
 		$result = ze\row::query(
 			ZENARIO_USER_FORMS_PREFIX . 'user_response_data',
-			array('form_field_id', 'value', 'internal_value'),
-			array('user_response_id' => $responseId, 'field_row' => 0)
+			['form_field_id', 'value', 'internal_value'],
+			['user_response_id' => $responseId, 'field_row' => 0]
 		);
-		$responseData = array();
-		$data = array();
+		$responseData = [];
+		$data = [];
 		while ($row = ze\sql::fetchAssoc($result)) {
 			$data[zenario_user_forms::getFieldName($row['form_field_id'])] = $row['internal_value'] !== null ? $row['internal_value'] : $row['value'];
 		}

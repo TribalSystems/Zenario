@@ -46,7 +46,7 @@ if ($_SESSION['destURL'] ?? false) {
 		}
 		//Check to see if the destination URL is private or public
 		$equivId = ze\content::equivId($_SESSION['destCID'] ?? false, ($_SESSION['destCType'] ?? false));
-		$privacy = ze\row::get('translation_chains', 'privacy', array('equiv_id' => $equivId, 'type' => ($_SESSION['destCType'] ?? false)));
+		$privacy = ze\row::get('translation_chains', 'privacy', ['equiv_id' => $equivId, 'type' => ($_SESSION['destCType'] ?? false)]);
 	}
 }
 

@@ -37,5 +37,5 @@ if (ze::$rss
  && empty($_REQUEST['instanceId'])
  && ($rss = explode('_', ze::$rss, 2))
  && (!empty($rss[1]))) {
-	ze\row::set('content_item_versions', array('rss_slot_name' => $rss[1], 'rss_nest' => (int) $rss[0]), array('id' => ze::$cID, 'type' => ze::$cType, 'version' => ze::$cVersion));
+	ze\row::set('content_item_versions', ['rss_slot_name' => $rss[1], 'rss_nest' => (int) $rss[0]], ['id' => ze::$cID, 'type' => ze::$cType, 'version' => ze::$cVersion]);
 }

@@ -198,7 +198,7 @@ class skinAdm {
 
 	//This function clears as many cached/stored things as possible!
 	//Formerly "zenarioClearCache()"
-	public static function clearCache() {
+	public static function clearCache($checkForGridChanges = false) {
 	
 		//Update the data-revision number in the database to clear anything stored in Organizer's local storage
 		\ze\db::updateDataRevisionNumber();
@@ -226,6 +226,30 @@ class skinAdm {
 		//Check for changes in TUIX, Layout and Skin files
 		\ze\miscAdm::checkForChangesInYamlFiles($forceScan = true);
 		\ze\skinAdm::checkForChangesInFiles($runInProductionMode = true, $forceScan = true);
+		
+		if ($checkForGridChanges) {
+			//Rescan grid template for slots
+			foreach (\ze\row::getArray(
+				'layouts',
+				['layout_id', 'family_name', 'file_base_name'],
+				['family_name' => 'grid_templates']
+			) as $layout) {
+		
+				//Attempt to read the grid data from the template file
+				if (($data = \ze\gridAdm::readLayoutCode($layout['layout_id']))
+				 && (!empty($data['cells']))
+				 && (\ze\gridAdm::validateData($data))) {
+				
+					//Get meta info on all of the slots
+					$html = '';
+					$slots = [];
+					\ze\gridAdm::generateHTML($html, $data, $slots);
+				
+					//Update the slot information in the database
+					\ze\gridAdm::updateMetaInfoInDB($data, $slots, $layout);
+				}
+			}
+		}
 	}
 
 	//Include a checksum calculated from the modificaiton dates of any css/js/html files
@@ -401,9 +425,9 @@ class skinAdm {
 									\ze\row::set(
 										'template_files',
 										['missing' => 0],
-										array(
+										[
 											'family_name' => $family,
-											'file_base_name' => substr($templateFile, 0, -8)));
+											'file_base_name' => substr($templateFile, 0, -8)]);
 								}
 							}
 					

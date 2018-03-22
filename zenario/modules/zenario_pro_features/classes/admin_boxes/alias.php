@@ -36,7 +36,7 @@ class zenario_pro_features__admin_boxes__alias extends ze\moduleBaseClass {
 			//which is not already in the spare aliases table.
 			if (empty($box['tabs']['meta_data']['fields']['alias']['value'])
 			 || !ze\content::isPublished($box['key']['cID'], $box['key']['cType'])
-			 || ze\row::exists('spare_aliases', array('alias' => $box['tabs']['meta_data']['fields']['alias']['value']))) {
+			 || ze\row::exists('spare_aliases', ['alias' => $box['tabs']['meta_data']['fields']['alias']['value']])) {
 				$box['tabs']['meta_data']['fields']['zenario_pro_features__create_spare_alias']['hidden'] = true;
 			}
 		}
@@ -61,12 +61,12 @@ class zenario_pro_features__admin_boxes__alias extends ze\moduleBaseClass {
 			&& $box['tabs']['meta_data']['fields']['alias']['value']
 			&& $box['tabs']['meta_data']['fields']['alias']['value'] != $box['tabs']['meta_data']['fields']['alias']['current_value']) {
 		
-				$row = array(
+				$row = [
 						'ext_url' => '',
 						'content_id' => $box['key']['cID'],
 						'content_type' => $box['key']['cType'],
 						'created_datetime' => ze\date::now(),
-						'alias' => $box['tabs']['meta_data']['fields']['alias']['value']);
+						'alias' => $box['tabs']['meta_data']['fields']['alias']['value']];
 		
 				ze\row::insert('spare_aliases', $row);
 			}

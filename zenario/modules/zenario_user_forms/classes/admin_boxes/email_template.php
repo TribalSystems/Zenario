@@ -30,7 +30,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_user_forms__admin_boxes__email_template extends ze\moduleBaseClass {
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
-		$forms = ze\row::getArray(ZENARIO_USER_FORMS_PREFIX . 'user_forms', 'name', array('status' => 'active'), 'name');
+		$forms = ze\row::getArray(ZENARIO_USER_FORMS_PREFIX . 'user_forms', 'name', ['status' => 'active'], 'name');
 		$fields['body/user_form']['values'] = $forms;
 	}
 	
@@ -63,24 +63,24 @@ class zenario_user_forms__admin_boxes__email_template extends ze\moduleBaseClass
 				ORDER BY p.ord, uff.ord';
 			
 			$result = ze\sql::select($sql);
-			$formFields = array();
-			$formFields['all'] = array(
+			$formFields = [];
+			$formFields['all'] = [
 				'ord' => -1,
 				'label' => ze\admin::phrase('Add all to template')
-			);
+			];
 			while ($row = ze\sql::fetchAssoc($result)) {
-				if (!in_array($row['field_type'], array('section_description', 'repeat_start', 'repeat_end', 'restatement'))) {
+				if (!in_array($row['field_type'], ['section_description', 'repeat_start', 'repeat_end', 'restatement'])) {
 					if (!isset($formFields['page_' . $row['page_id']])) {
-						$formFields['page_' . $row['page_id']] = array(
+						$formFields['page_' . $row['page_id']] = [
 							'ord' => $row['page_ord'] + 10,
 							'label' => $row['page_name']
-						);
+						];
 					}
-					$formFields[$row['id']] = array(
+					$formFields[$row['id']] = [
 						'ord' => $row['ord'] + 10,
 						'label' => trim($row['name'], " \t\n\r\0\x0B:"),
 						'parent' => 'page_' . $row['page_id']
-					);
+					];
 				}
 			}
 			$fields['body/user_form_field']['values'] = $formFields;

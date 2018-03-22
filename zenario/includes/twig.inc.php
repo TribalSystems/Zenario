@@ -194,7 +194,7 @@ function zenario_callLibFromTwig($lib, $fun, ...$args) {
 
 
 //Define the phrase() and the nphrase() functions for use in Twig frameworks
-function nphrase($text, $pluralText = false, $n = 1, $replace = array(), $moduleClass = 'lookup', $languageId = false, $backtraceOffset = 1, $cli = false) {
+function nphrase($text, $pluralText = false, $n = 1, $replace = [], $moduleClass = 'lookup', $languageId = false, $backtraceOffset = 1, $cli = false) {
 	return ze\lang::nphrase($text, $pluralText, $n, $replace, $moduleClass, $languageId, $backtraceOffset, $cli);
 }
 

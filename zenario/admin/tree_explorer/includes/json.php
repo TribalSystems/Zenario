@@ -9,7 +9,7 @@ $allowCaching = true;
 if ($_GET["section_id"] ?? false) {
 	if ($_GET["menu_id"] ?? false) {
 		if ($menuArray = ze\menu::getStructure($cachingRestrictions, ($_GET["section_id"] ?? false),false,($_GET["menu_id"] ?? false),0,100,false,false,false,true)) {
-			$levelNodesCount = array();
+			$levelNodesCount = [];
 		
 			generateMenuForJSON($menuArray, $levelNodesCount,($_GET['sk'] ?? false), ($_GET['language'] ?? false));
 		}
@@ -20,7 +20,7 @@ if ($_GET["section_id"] ?? false) {
 			$menuNode = ze\menu::details($_GET["menu_id"] ?? false,"en");
 		}
 
-		$menuNodeAttributes = ze\row::get("menu_nodes",array("redundancy","invisible"),array("id" => ($_GET["menu_id"] ?? false)));
+		$menuNodeAttributes = ze\row::get("menu_nodes",["redundancy","invisible"],["id" => ($_GET["menu_id"] ?? false)]);
 	
 		$redundancy = $menuNodeAttributes['redundancy'];
 		$visibility = $menuNodeAttributes['invisible'] ? "invisible" : "visible";
@@ -33,16 +33,16 @@ if ($_GET["section_id"] ?? false) {
 			$subMenuArray = $menuArray;
 		}
 
-		$menuArray = array('name' => $top, 'redundancy' => $redundancy, 'visibility' => $visibility,'children' => $subMenuArray);
+		$menuArray = ['name' => $top, 'redundancy' => $redundancy, 'visibility' => $visibility,'children' => $subMenuArray];
 	} else {
 		if ($menuArray = ze\menu::getStructure($cachingRestrictions,($_GET["section_id"] ?? false),false,0,0,100,false,false,false,true)) {
-			$levelNodesCount = array();
+			$levelNodesCount = [];
 			
 			generateMenuForJSON($menuArray, $levelNodesCount, ($_GET['sk'] ?? false), ($_GET['language'] ?? false));
 		}
 		
 		$top = ze\menu::sectionName($_GET["section_id"] ?? false);
-		$menuArray = array('name' => $top, 'children' => $menuArray, "section" => true);
+		$menuArray = ['name' => $top, 'children' => $menuArray, "section" => true];
 	}
 }
 

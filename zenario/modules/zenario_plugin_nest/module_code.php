@@ -186,7 +186,7 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 						} else {
 							$embedLink = ze\link::toItem(
 								ze::$cID, ze::$cType, $fullPath = true, $request = '&zembedded=1&method_call=showSingleSlot&slotName='. $this->slotName,
-								ze::$alias, $autoAddImportantRequests = true, $useAliasInAdminMode = true);
+								ze::$alias, $autoAddImportantRequests = true, $forceAliasInAdminMode = true);
 							
 							$mergefields = [
 								'title' => $this->phrase('Embed this plugin on a third-party website'),
@@ -210,7 +210,7 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 							$tabMergeFields['Show_Embed'] = true;
 							$tabMergeFields['Embed'] = json_encode($mergefields);
 							
-							ze::requireJsLib('zenario/libs/bower/toastr/toastr.min.js', 'zenario/libs/bower/toastr/toastr.min.css', true);
+							ze::requireJsLib('zenario/libs/bower/toastr/toastr.min.js', 'zenario/libs/bower/toastr/toastr.min.css');
 						}
 					}
 					
@@ -621,11 +621,11 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 						) ?: 12;
 				}
 				
-				$this->minigrid[$slotNameNestId] = array(
+				$this->minigrid[$slotNameNestId] = [
 					'cols' => min($egg['cols'], $this->maxColumns),
 					'small_screens' => $egg['small_screens'],
 					'group_with_next' => false
-				);
+				];
 				
 				$lastSlotNameNestId = $slotNameNestId;
 			}

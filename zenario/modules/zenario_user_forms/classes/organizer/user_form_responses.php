@@ -30,7 +30,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_user_forms__organizer__user_form_responses extends ze\moduleBaseClass {
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
-		$form = ze\row::get(ZENARIO_USER_FORMS_PREFIX . 'user_forms', array('name', 'profanity_filter_text'), $refinerId);
+		$form = ze\row::get(ZENARIO_USER_FORMS_PREFIX . 'user_forms', ['name', 'profanity_filter_text'], $refinerId);
 		$panel['title'] = ze\admin::phrase('Responses for form "[[name]]"', $form);
 		
 		if (!ze::setting('zenario_user_forms_set_profanity_filter') || !$form['profanity_filter_text']) {
@@ -40,8 +40,8 @@ class zenario_user_forms__organizer__user_form_responses extends ze\moduleBaseCl
 		} else {
 			foreach($panel['items'] as $id => &$item) {
 				$profanityValues = ze\row::get(ZENARIO_USER_FORMS_PREFIX. 'user_response',
-					array('blocked_by_profanity_filter', 'profanity_filter_score', 'profanity_tolerance_limit'),
-					array('id' => $id));
+					['blocked_by_profanity_filter', 'profanity_filter_score', 'profanity_tolerance_limit'],
+					['id' => $id]);
 				$profanityValueForPanel = ($profanityValues['blocked_by_profanity_filter'] == 1 ? "Yes" : "No");
 				$item['blocked_by_profanity_filter'] = $profanityValueForPanel;
 				$item['profanity_filter_score'] = $profanityValues['profanity_filter_score'];
@@ -73,33 +73,8 @@ class zenario_user_forms__organizer__user_form_responses extends ze\moduleBaseCl
 		
 		//Get user and email from form response details if they cannot be found from the recorded user Id
 		foreach ($panel['items'] as $responseId => $response) {
-			if (!$response['email']) {
-				$firstName = $lastName = $email = '';
-				$sql = '
-					SELECT urd.value, cdf.db_column
-					FROM ' . DB_NAME_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_response_data urd
-					INNER JOIN ' . DB_NAME_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_form_fields uff
-						ON urd.form_field_id = uff.id
-					INNER JOIN ' . DB_NAME_PREFIX . 'custom_dataset_fields cdf
-						ON uff.user_field_id = cdf.id
-					WHERE urd.user_response_id = ' . (int)$responseId . '
-					AND cdf.db_column IN ("first_name", "last_name", "email")';
-				$result = ze\sql::select($sql);
-				while ($row = ze\sql::fetchAssoc($result)) {
-					switch ($row['db_column']) {
-						case 'first_name':
-							$firstName = $row['value'];
-							break;
-						case 'last_name':
-							$lastName = $row['value'];
-							break;
-						case 'email':
-							$email = $row['value'];
-							break;
-					}
-				}
-				$panel['items'][$responseId]['user'] = trim($firstName . ' ' . $lastName);
-				$panel['items'][$responseId]['email'] = $email;
+			if (!$response['user']) {
+				$panel['items'][$responseId]['user'] = ze\admin::phrase('[Anonymous visitor]');
 			}
 		}
 		
@@ -118,8 +93,8 @@ class zenario_user_forms__organizer__user_form_responses extends ze\moduleBaseCl
 		if (($_POST['delete_form_responses'] ?? false) && $formId) {
 			$result = ze\row::query(
 				ZENARIO_USER_FORMS_PREFIX . 'user_response', 
-				array('id'), 
-				array('form_id' => $formId)
+				['id'], 
+				['form_id' => $formId]
 			);
 			while ($row = ze\sql::fetchAssoc($result)) {
 				zenario_user_forms::deleteFormResponse($row['id']);

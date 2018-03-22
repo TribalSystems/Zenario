@@ -52,7 +52,7 @@ if (!empty($_REQUEST['keep_session_alive'])) {
 	$_SESSION['page_mode'] = $_POST['_save_page_mode'];
 
 } elseif (isset($_REQUEST['_get_link_statuses'])) {
-    $statuses = array();
+    $statuses = [];
     if (isset($_POST['links']) && ($links = $_POST['links'])) {
         
         
@@ -207,13 +207,7 @@ if (!empty($_REQUEST['keep_session_alive'])) {
 	
 	ze\db::connectLocal();
 	
-	$checkPriv =
-		!empty($_SERVER['HTTP_HOST'])
-	 && !empty($_SESSION['admin_userid'])
-	 && !empty($_SESSION['admin_logged_into_site'])
-	 && $_SESSION['admin_logged_into_site'] == COOKIE_DOMAIN. SUBDIRECTORY. ze::setting('site_id');
-	
-	if ($checkPriv) {
+	if (ze::isAdmin()) {
 		$sql = "
 			SELECT id, filename, width, height, checksum, `usage`
 			FROM ". DB_NAME_PREFIX. "files
@@ -233,13 +227,7 @@ if (!empty($_REQUEST['keep_session_alive'])) {
 	
 	ze\db::connectLocal();
 	
-	$checkPriv =
-		!empty($_SERVER['HTTP_HOST'])
-	 && !empty($_SESSION['admin_userid'])
-	 && !empty($_SESSION['admin_logged_into_site'])
-	 && $_SESSION['admin_logged_into_site'] == COOKIE_DOMAIN. SUBDIRECTORY. ze::setting('site_id');
-	
-	if ($checkPriv) {
+	if (ze::isAdmin()) {
 		if (!empty($_POST['_save_prefs']) && !empty($_POST['prefs'])) {
 			$sql = "
 				REPLACE INTO ". DB_NAME_PREFIX. "admin_organizer_prefs SET
@@ -283,12 +271,12 @@ if (!empty($_REQUEST['keep_session_alive'])) {
 } elseif (isset($_POST['screen_name_suggestion'])) {
 	
 	require CMS_ROOT. 'zenario/adminheader.inc.php';
-	echo ze\userAdm::generateIdentifier(false, array(
+	echo ze\userAdm::generateIdentifier(false, [
 		'first_name' => ($_POST['first_name'] ?? false),
 		'last_name' => ($_POST['last_name'] ?? false),
 		'email' => ($_POST['email'] ?? false),
 		'screen_name' => ''
-	));
+	]);
 
 
 } elseif (isset($_POST['_validate_alias'])) {
@@ -326,7 +314,7 @@ if (!empty($_REQUEST['keep_session_alive'])) {
 				$thisAlias[2] = $alias;
 			
 			} else {
-				$thisAlias = array('default', ($_POST['langId'] ?? false), $alias);
+				$thisAlias = ['default', ($_POST['langId'] ?? false), $alias];
 			}
 			
 			if ($_POST['lang_code_in_url'] ?? false) {
@@ -344,9 +332,9 @@ if (!empty($_REQUEST['keep_session_alive'])) {
 			$nextAlias = ze\sql::fetchRow($result);
 			
 			
-			$lines = array();
+			$lines = [];
 			$i = 0;
-			foreach (array(ze\admin::phrase('Prev:') => $lastAlias, ze\admin::phrase('This:') => $thisAlias, ze\admin::phrase('Next:') => $nextAlias) as $phrase => $content) {
+			foreach ([ze\admin::phrase('Prev:') => $lastAlias, ze\admin::phrase('This:') => $thisAlias, ze\admin::phrase('Next:') => $nextAlias] as $phrase => $content) {
 				++$i;
 				if ($content) {
 					$line = $phrase. ' '. ($i == 2? '<i>' : '');
@@ -397,7 +385,7 @@ if (!empty($_REQUEST['keep_session_alive'])) {
 		}
 	
 	} else {
-		$lines = array();
+		$lines = [];
 	}
 	
 	

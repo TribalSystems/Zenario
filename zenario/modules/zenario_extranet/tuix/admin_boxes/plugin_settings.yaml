@@ -35,14 +35,41 @@ plugin_settings:
                     side_note: >
                         Allow User to stay logged in using a cookie until they
                         manually log out.
-                hide_registration_link:
+                                
+                show_link_to_registration_page:
                     plugin_setting:
-                        name: hide_registration_link
-                    label: "Don't show link to registration page"
+                        name: show_link_to_registration_page
+                    label: Show link to registration page
                     type: checkbox
-                    value: ""
+                    value: 1
+                    redraw_onchange: true
+                registration_page:
+                    visible_if: zenarioAB.value('show_link_to_registration_page')
+                    plugin_setting:
+                        name: registration_page
+                        foreign_key_to: content
+                    label: 'Registration page:'
+                    pick_items:
+                        path: zenario__content/panels/content/refiners/filter_by_lang////
+                        min_path: zenario__content/panels/content
+                        max_path: zenario__content/panels/content
+                        target_path: zenario__content/panels/content
+                        disallow_refiners_looping_on_min_path: true
+                        select_phrase: Select a content item...
+                        hide_remove_button: true
+                    validation:
+                        required_if_not_hidden: Please select a registration page
+                    indent: 1
+                
+                 
+                redirect_to_login_page_on_submit:
+                    plugin_setting:
+                        name: redirect_to_login_page_on_submit
+                    label: Redirect to the login special page after submit
+                    type: checkbox
+                    value: 1
                     side_note: >
-                        Don't show link to the registration page even if a registration page does exist.
+                        This setting does nothing if the plugin is already on the login special page.
                 
                 requires_terms_and_conditions:
                     plugin_setting:
@@ -81,6 +108,8 @@ plugin_settings:
                     side_note: >
                         A link to this page will be placed in the "Accept our terms and conditions" checkbox text.
                     indent: 1
+                    visible_if: |
+                        zenarioAB.value('requires_terms_and_conditions')
                 
                 label_description:
                     full_width: Yes
@@ -154,6 +183,7 @@ plugin_settings:
                                 previous page viewed).
                     format_onchange: Yes
                 welcome_page:
+                    indent: 1
                     plugin_setting:
                         name: welcome_page
                         foreign_key_to: content

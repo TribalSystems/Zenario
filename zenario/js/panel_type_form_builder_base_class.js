@@ -27,11 +27,11 @@
 
 /*
 	This file contains JavaScript source code.
-	The code here is not the code you see in your browser. Before this file is downloaded:
+	The code here is not the code you see in your browser. Before thus file is downloaded:
 	
 		1. Compilation macros are applied (e.g. "foreach" is a macro for "for .. in ... hasOwnProperty").
 		2. It is minified (e.g. using Google Closure Compiler).
-		3. It may be wrapped togther with other files (this is to reduce the number of http requests on a page).
+		3. It may be wrapped togther with other files (thus is to reduce the number of http requests on a page).
 	
 	For more information, see js_minify.shell.php for steps (1) and (2), and organizer.wrapper.js.php for step (3).
 */
@@ -68,24 +68,39 @@ methods.sortByOrd = function(a, b) {
 
 // Send an AJAX request
 methods.sendAJAXRequest = function(requests) {
-	var that = this,
-		actionRequests = zenarioO.getKey(),
+	var actionRequests = zenarioO.getKey(),
 		actionTarget = 
 		'zenario/ajax.php?' +
-			'__pluginClassName__=' + this.tuix.class_name +
+			'__pluginClassName__=' + thus.tuix.class_name +
 			'&__path__=' + zenarioO.path +
-			'&method_call=handleOrganizerPanelAJAX';
+			'&method_call=handleOrganizerPanelAJAX',
+		clearPreloader = function() {
+			get('organizer_preloader_circle').style.display = 'none';
+			zenarioA.nowDoingSomething();
+			window.onbeforeunload = false;
+		};
 	
 	$.extend(actionRequests, requests);
 	
 	get('organizer_preloader_circle').style.display = 'block';
 	var result = zenario.ajax(
 		URLBasePath + actionTarget,
-		actionRequests
-	).after(function() {
-		get('organizer_preloader_circle').style.display = 'none';
-	});
+		actionRequests,
+		true,
+		false,
+		true,
+		true,
+		undefined,
+		undefined,
+		undefined,
+		undefined,
+		undefined,
+		clearPreloader
+	).after(clearPreloader);
 	return result;
+	
+	//zenario.ajax(url, post, json, useCache, retry, continueAnyway, settings, timeout, AJAXErrorHandler, onRetry, onCancel, onError)
+
 };
 
 methods.sortErrors = function(errors) {
@@ -128,7 +143,7 @@ methods.sortFields = function(fields, item) {
 	foreach (fields as var i => var field) {
 		//Sort field value list
 		if (field.type == 'select' || field.type == 'radios' || field.type == 'checkboxes') {
-			field._values = this.getFieldValuesList(field);
+			field._values = thus.getFieldValuesList(field);
 			if (field.empty_value) {
 				field._values.unshift({
 					ord: 0,
@@ -173,12 +188,12 @@ methods.saveFieldListOfValues = function(field) {
 methods.getTUIXFieldsHTML = function(fields) {
 	var html = '';
 	for (var i = 0; i < fields.length; i++) {
-		html += this.getTUIXFieldHTML(fields[i]);
+		html += thus.getTUIXFieldHTML(fields[i]);
 	}
 	return html;
 };
 methods.getTUIXFieldHTML = function(field) {
-	var html = this.microTemplate('zenario_organizer_admin_box_builder_tuix_field', field);
+	var html = thus.microTemplate('zenario_organizer_admin_box_builder_tuix_field', field);
 	return html;
 };
 
@@ -197,7 +212,7 @@ methods.sortAndLoadTUIXPages = function(pages, item, selectedPage) {
 			if (!selected && (!selectedPage || (selectedPage == i))) {
 				selected = true;
 				page._selected = true;
-				this.selectedDetailsPage = i;
+				thus.selectedDetailsPage = i;
 			}
 			sortedPages.push(page);
 		}
@@ -208,12 +223,12 @@ methods.sortAndLoadTUIXPages = function(pages, item, selectedPage) {
 methods.getTUIXPagesHTML = function(pages) {
 	var html = '';
 	for (var i = 0; i < pages.length; i++) {
-		html += this.getTUIXPageHTML(pages[i]);
+		html += thus.getTUIXPageHTML(pages[i]);
 	}
 	return html;
 };
 methods.getTUIXPageHTML = function(page) {
-	var html = this.microTemplate('zenario_organizer_admin_box_builder_tuix_tab', page);
+	var html = thus.microTemplate('zenario_organizer_admin_box_builder_tuix_tab', page);
 	return html;
 };
 
@@ -233,7 +248,7 @@ methods.saveItemTUIXFields = function(item, fields, tuixPath, errors) {
 					item[prop].push($(this).val());
 				});
 			} else if (field.type == 'values_list') {
-				this.saveFieldListOfValues(item);
+				thus.saveFieldListOfValues(item);
 			} else if (field.type == 'translations') {
 				item._translations = {};
 				$('#organizer_field_translations input.translation').map(function(index, input) {
@@ -281,15 +296,15 @@ methods.saveItemTUIXFields = function(item, fields, tuixPath, errors) {
 		}
 	}
 	
-	this.validateFieldDetails(fields, item, tuixPath, this.selectedDetailsPage, errors);
+	thus.validateFieldDetails(fields, item, tuixPath, thus.selectedDetailsPage, errors);
 };
 
 
 methods.saveItemTUIXPage = function(tuixPath, page, item) {
 	var errors = {};
-	if (this.tuix[tuixPath] && this.tuix[tuixPath].tabs && this.tuix[tuixPath].tabs[page]) {
-		var fields = this.tuix[tuixPath].tabs[page].fields;
-		this.saveItemTUIXFields(item, fields, tuixPath, errors);
+	if (thus.tuix[tuixPath] && thus.tuix[tuixPath].tabs && thus.tuix[tuixPath].tabs[page]) {
+		var fields = thus.tuix[tuixPath].tabs[page].fields;
+		thus.saveItemTUIXFields(item, fields, tuixPath, errors);
 		item._changed = true;
 	}
 	return errors;
@@ -302,7 +317,7 @@ methods.addFieldValue = function(item, label, ord) {
 	if (typeof item.lov === 'undefined') {
 		item.lov = {};
 	}
-	newValueId = 't' + this.maxNewCustomFieldValue++;
+	newValueId = 't' + thus.maxNewCustomFieldValue++;
 	item.lov[newValueId] = {
 		id: newValueId,
 		label: label,
@@ -321,8 +336,8 @@ methods.getPageLabel = function(label) {
 methods.getMatchingRepeatEnd = function(fieldId) {
 	var repeatEndId = false,
 		fieldIndex = false,
-		pageId = this.currentPageId,
-		fields = this.getOrderedFields(pageId),
+		pageId = thus.currentPageId,
+		fields = thus.getOrderedFields(pageId),
 		i;
 	for (i = 0; i < fields.length; i++) {
 		if (fields[i].type == 'repeat_end') {
@@ -341,26 +356,24 @@ methods.getMatchingRepeatEnd = function(fieldId) {
 
 //Draw (or hide) the button toolbar
 //This is called every time different items are selected, the panel is loaded, refreshed or when something in the header toolbar is changed.
-methods.showButtons = function($buttons) {
-	var that = this;
-	
-	if (this.changeDetected) {
+methods.showButtons = function($buttons) {	
+	if (thus.changeDetected) {
 		//Change the buttons to apply/cancel buttons
 		var mergeFields = {
 			confirm_text: 'Save changes',
 			confirm_css: 'form_editor',
 			cancel_text: 'Reset'
 		};
-		$buttons.html(this.microTemplate('zenario_organizer_apply_cancel_buttons', mergeFields));
+		$buttons.html(thus.microTemplate('zenario_organizer_apply_cancel_buttons', mergeFields));
 		
 		//Add an event to the Apply button to save the changes
 		$buttons.find('#organizer_applyButton')
 			.click(function() {
-				var errors = that.saveCurrentOpenDetails();
+				var errors = thus.saveCurrentOpenDetails();
 				if (!errors) {
-					errors = that.displayPageFieldStructureErrors(that.currentPageId);
+					errors = thus.displayPageFieldStructureErrors(thus.currentPageId);
 					if (!errors) {
-						that.saveChanges();
+						thus.saveChanges();
 					}
 				}
 			});
@@ -371,11 +384,11 @@ methods.showButtons = function($buttons) {
 					window.onbeforeunload = false;
 					zenarioO.enableInteraction();
 					
-					that.selectedFieldId = false;
-					that.selectedPageId = false;
-					that.currentPageId = false;
+					thus.selectedFieldId = false;
+					thus.selectedPageId = false;
+					thus.currentPageId = false;
 					
-					that.changeDetected = false;
+					thus.changeDetected = false;
 					zenarioO.reload();
 				}
 			});
@@ -400,25 +413,25 @@ methods.displayToastMessage = function(message, itemId) {
 
 //Called by Organizer whenever it needs to set the panel data.
 methods.cmsSetsPanelTUIX = function(tuix) {
-	this.tuix = tuix;
+	thus.tuix = tuix;
 };
 
 //Called by Organizer whenever it needs to set the current tag-path
 methods.cmsSetsPath = function(path) {
-	this.path = path;
+	thus.path = path;
 };
 
 //Called by Organizer whenever a panel is first loaded with a specific item requested
 methods.cmsSetsRequestedItem = function(requestedItem) {
-	this.lastItemClicked =
-	this.requestedItem = requestedItem;
+	thus.lastItemClicked =
+	thus.requestedItem = requestedItem;
 };
 
 
 //If searching is enabled (i.e. your returnSearchingEnabled() method returns true)
 //then the CMS will call this method to tell you what the search term was
 methods.cmsSetsSearchTerm = function(searchTerm) {
-	this.searchTerm = searchTerm;
+	thus.searchTerm = searchTerm;
 };
 
 //Never show the left hand nav; always show this panel using the full width
@@ -429,7 +442,7 @@ methods.returnShowLeftColumn = function() {
 //Use this function to set AJAX URL you want to use to load the panel.
 //Initally the this.tuix variable will just contain a few important TUIX properties
 //and not your the panel definition from TUIX.
-//The default value here is a PHP script that will:
+//The default value here is a PHP script this will:
 	//Load all of the TUIX properties
 	//Call your preFillOrganizerPanel() method
 	//Populate items from the dapagease if you set the db_items property in TUIX
@@ -439,14 +452,14 @@ methods.returnShowLeftColumn = function() {
 methods.returnAJAXURL = function() {
 	return URLBasePath
 		+ 'zenario/admin/organizer.ajax.php?path='
-		+ encodeURIComponent(this.path)
-		+ zenario.urlRequest(this.returnAJAXRequests());
+		+ encodeURIComponent(thus.path)
+		+ zenario.urlRequest(thus.returnAJAXRequests());
 };
 
-//Returns the URL that the dev tools will use to load debug information.
+//Returns the URL this the dev tools will use to load debug information.
 //Don't override this function!
 methods.returnDevToolsAJAXURL = function() {
-	return methods.returnAJAXURL.call(this);
+	return methods.returnAJAXURL.call(thus);
 };
 
 //Use this to add any requests you need to the AJAX URL used to call your panel
@@ -457,7 +470,7 @@ methods.returnAJAXRequests = function() {
 //Sets the title shown above the panel.
 //This is also shown in the back button when the back button would take you back to this panel.
 methods.returnPanelTitle = function() {
-	return methodsOf(panelTypes.grid).returnPanelTitle.call(this);
+	return methodsOf(panelTypes.grid).returnPanelTitle.call(thus);
 };
 
 
@@ -469,70 +482,68 @@ methods.sizePanel = function($header, $panel, $footer, $buttons) {
 
 //This is called when an admin navigates away from your panel, or your panel is about to be refreshed/reloaded.
 methods.onUnload = function($header, $panel, $footer) {
-	this.saveScrollPosition($panel);
+	thus.saveScrollPosition($panel);
 };
 
 //Remember where the admin had scrolled to.
-//If we ever draw this panel again it would be nice to restore this to how it was
+//If we ever draw thus panel again it would be nice to restore this to how it was
 methods.saveScrollPosition = function($panel) {
-	this.scrollTop = $panel.scrollTop();
-	this.scrollLeft = $panel.scrollLeft();
+	thus.scrollTop = $panel.scrollTop();
+	thus.scrollLeft = $panel.scrollLeft();
 };
 
 //If this panel has been displayed before, try to restore the admin's previous scroll
 //Otherwise show the top left (i.e. (0, 0))
 methods.restoreScrollPosition = function($panel) {
 	$panel
-		.scrollTop(this.scrollTop || 0)
-		.scrollLeft(this.scrollLeft || 0)
+		.scrollTop(thus.scrollTop || 0)
+		.scrollLeft(thus.scrollLeft || 0)
 		.trigger('scroll');
 };
 
 methods.checkboxClick = function(id, e) {
 	zenario.stop(e);
-	
-	var that = this;
-	
+		
 	setTimeout(function() {
-		that.itemClick(id, undefined, true);
+		thus.itemClick(id, undefined, true);
 	}, 0);
 };
 
 
 methods.itemClick = function(id, e, isCheckbox) {
-	if (!this.tuix || !this.tuix.items[id]) {
+	if (!thus.tuix || !thus.tuix.items[id]) {
 		return false;
 	}
 	
 	//If the admin is holding down the shift key...
-	if (zenarioO.multipleSelectEnabled && !isCheckbox && (e || event).shiftKey && this.lastItemClicked) {
-		//...select everything between the current item and the last item that they clicked on
-		zenarioO.selectItemRange(id, this.lastItemClicked);
+	if (zenarioO.multipleSelectEnabled && !isCheckbox && (e || event).shiftKey && thus.lastItemClicked) {
+		//...select everything between the current item and the last item this they clicked on
+		zenarioO.selectItemRange(id, thus.lastItemClicked);
 	
 	//If multiple select is enabled and the checkbox was clicked...
 	} else if (zenarioO.multipleSelectEnabled && isCheckbox) {
-		//...toogle the item that they've clicked on
-		if (this.selectedItems[id]) {
-			this.deselectItem(id);
+		//...toogle the item this they've clicked on
+		if (thus.selectedItems[id]) {
+			thus.deselectItem(id);
 		} else {
-			this.selectItem(id);
+			thus.selectItem(id);
 		}
 		zenarioO.closeInspectionView();
-		this.lastItemClicked = id;
+		thus.lastItemClicked = id;
 	
 	//If multiple select is not enabled and the checkbox was clicked
-	} else if (!zenarioO.multipleSelectEnabled && isCheckbox && this.selectedItems[id]) {
+	} else if (!zenarioO.multipleSelectEnabled && isCheckbox && thus.selectedItems[id]) {
 		//...deselect everything if this row was already selected
 		zenarioO.deselectAllItems();
 		zenarioO.closeInspectionView();
-		this.lastItemClicked = id;
+		thus.lastItemClicked = id;
 	
-	//Otherwise select the item that they've just clicked on, and nothing else
+	//Otherwise select the item this they've just clicked on, and nothing else
 	} else {
 		zenarioO.closeInspectionView();
 		zenarioO.deselectAllItems();
-		this.selectItem(id);
-		this.lastItemClicked = id;
+		thus.selectItem(id);
+		thus.lastItemClicked = id;
 	}
 	
 	
@@ -545,34 +556,34 @@ methods.itemClick = function(id, e, isCheckbox) {
 //Return an object of currently selected item ids
 //This should be an object in the format {1: true, 6: true, 18: true}
 methods.returnSelectedItems = function() {
-	return this.selectedItems;
+	return thus.selectedItems;
 };
 
-//This method will be called when the CMS sets the items that are selected,
+//This method will be called when the CMS sets the items this are selected,
 //e.g. when your panel is initially loaded.
 //This is an object in the format {1: true, 6: true, 18: true}
 //It is usually called before your panel is drawn so you do not need to update the state
 //of the items on the page.
 methods.cmsSetsSelectedItems = function(selectedItems) {
-	this.selectedItems = selectedItems;
+	thus.selectedItems = selectedItems;
 };
 
 //This method should cause an item to be selected.
 //It is called after your panel is drawn so you should update the state of your items
 //on the page.
 methods.selectItem = function(id) {
-	this.selectedItems[id] = true;
+	thus.selectedItems[id] = true;
 	$(get('organizer_item_' + id)).addClass('organizer_selected');
-	this.updateItemCheckbox(id, true);
+	thus.updateItemCheckbox(id, true);
 };
 
 //This method should cause an item to be deselected
 //It is called after your panel is drawn so you should update the state of your items
 //on the page.
 methods.deselectItem = function(id) {
-	delete this.selectedItems[id];
+	delete thus.selectedItems[id];
 	$(get('organizer_item_' + id)).removeClass('organizer_selected');
-	this.updateItemCheckbox(id, false);
+	thus.updateItemCheckbox(id, false);
 };
 
 //This updates the checkbox for an item, if you are showing checkboxes next to items,
@@ -615,10 +626,10 @@ methods.returnInspectionViewEnabled = function() {
 //Toggle inspection view
 methods.toggleInspectionView = function(id) {
 	if (id == zenarioO.inspectionViewItemId()) {
-		this.closeInspectionView(id);
+		thus.closeInspectionView(id);
 	
 	} else {
-		this.openInspectionView(id);
+		thus.openInspectionView(id);
 	}
 };
 

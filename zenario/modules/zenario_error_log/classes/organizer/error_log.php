@@ -30,7 +30,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_error_log__organizer__error_log extends ze\moduleBaseClass {
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
-		$spareAliases = array();
+		$spareAliases = [];
 		$sql = '
 			SELECT el.id, sa.target_loc, sa.content_id, sa.content_type, sa.ext_url
 			FROM '.DB_NAME_PREFIX.'spare_aliases sa

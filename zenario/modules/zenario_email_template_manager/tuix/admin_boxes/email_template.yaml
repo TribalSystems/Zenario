@@ -162,6 +162,75 @@ zenario_email_template:
                             disallow_refiners_looping_on_min_path: true
                     insert_link_button:
                         exists: true
+        data_deletion:
+            label: Data deletion
+            edit_mode:
+                enabled: true
+                priv: _PRIV_MANAGE_EMAIL_TEMPLATE
+                on: false
+            notices:
+                scheduled_task_not_running:
+                    type: warning
+                    message: | 
+                        The scheduled task "jobDataProtectionCleanup" is not running. Data will be deleted when there is activity in the appropriate type of data handling (e.g. when an email is sent, a user logs in, or a form is submitted).
+                    show: false
+                scheduled_task_running:
+                    type: success
+                    message: |
+                        The scheduled task "jobDataProtectionCleanup" is running. Data will be deleted according to these rules on a daily basis.
+                    show: false
+            fields:
+                period_to_delete_log_headers:
+                    label: 'How long should emails sent with this template be saved?'
+                    type: select
+                    empty_value: Use site-wide setting
+                    values:
+                        never_save:
+                            label: Don't save
+                        1:
+                            label: Delete after 1 day
+                        7:
+                            label: Delete after 1 week
+                        30:
+                            label: Delete after 1 month
+                        90:
+                            label: Delete after 3 months
+                        365:
+                            label: Delete after 1 year
+                        730: 
+                            label: Delete after 2 years
+                        never_delete:
+                            label: Save forever  
+                    format_onchange: true
+                
+                delete_log_content_sooner:
+                    visible_if: |
+                        ['never_save', ''].indexOf(zenarioAB.value('period_to_delete_log_headers')) === -1
+                    indent: 1
+                    label: Delete email body sooner (just save headers)
+                    type: checkbox
+                    redraw_onchange: true
+                
+                period_to_delete_log_content:
+                    visible_if: zenarioAB.value('delete_log_content_sooner')
+                    hide_with_previous_field: true
+                    indent: 2
+                    type: select
+                    values:
+                        never_save:
+                            label: Don't save
+                        1:
+                            label: Delete after 1 day
+                        7:
+                            label: Delete after 1 week
+                        30:
+                            label: Delete after 1 month
+                        90:
+                            label: Delete after 3 months
+                        365:
+                            label: Delete after 1 year
+                        730: 
+                            label: Delete after 2 years
         advanced:
             label: Advanced
             edit_mode:

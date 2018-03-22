@@ -71,17 +71,17 @@ class zenario_users__organizer__smart_groups extends zenario_users {
 			exit;
 	
 		} elseif (($_POST['save_smart_group'] ?? false) && ze\priv::check('_PRIV_MANAGE_GROUP')) {
-			$json = array();
-			$key = array();
-			$values = array();
+			$json = [];
+			$key = [];
+			$values = [];
 					
 			if ($ids) {
-					$key = array('id' => $ids);
+					$key = ['id' => $ids];
 					$json['exists'] = true;
 					$values['name'] = $_POST['name'] ?? false;
 	
 			} else {
-				$key = array('name' => ($_POST['name'] ?? false));
+				$key = ['name' => ($_POST['name'] ?? false)];
 				$json['exists'] = ze\row::exists('smart_groups', $key);
 			}
 	
@@ -119,8 +119,8 @@ class zenario_users__organizer__smart_groups extends zenario_users {
 		} elseif (($_POST['delete'] ?? false) && ze\priv::check('_PRIV_MANAGE_GROUP')) {
 			foreach (explode(',', $ids) as $id) {
 				ze\row::delete('smart_groups', $id);
-				ze\row::delete('smart_group_rules', array('smart_group_id' => $id));
-				ze\module::sendSignal("eventSmartGroupDeleted",array("smartGroupId" => $id));
+				ze\row::delete('smart_group_rules', ['smart_group_id' => $id]);
+				ze\module::sendSignal("eventSmartGroupDeleted",["smartGroupId" => $id]);
 			}
 		}
 			

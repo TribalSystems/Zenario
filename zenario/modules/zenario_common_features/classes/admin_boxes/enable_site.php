@@ -51,7 +51,7 @@ class zenario_common_features__admin_boxes__enable_site extends ze\moduleBaseCla
 		if (!empty($fields['site/clear_cache']['pressed'])) {
 			$box['tabs']['site']['notices']['checked']['show'] = true;
 			
-			ze\skinAdm::clearCache();
+			ze\skinAdm::clearCache(true);
 			
 			$box['tabs']['site']['show_errors_after_field'] = 'desc2';
 		} else {
@@ -70,7 +70,7 @@ class zenario_common_features__admin_boxes__enable_site extends ze\moduleBaseCla
 					ze\admin::phrase('You must apply database updates before you can enable your site.');
 			}
 			
-			if (!ze\row::exists('languages', array())) {
+			if (!ze\row::exists('languages', [])) {
 				$box['tabs']['site']['errors'][] =
 					ze\admin::phrase('You must enable a Language before you can enable your site.');
 			
@@ -80,19 +80,19 @@ class zenario_common_features__admin_boxes__enable_site extends ze\moduleBaseCla
 				
 				$result = ze\row::query(
 					'special_pages',
-					array('equiv_id', 'content_type'),
-					array('logic' => array('create_and_maintain_in_default_language','create_and_maintain_in_all_languages')),
-					array('page_type'));
+					['equiv_id', 'content_type'],
+					['logic' => ['create_and_maintain_in_default_language','create_and_maintain_in_all_languages']],
+					['page_type']);
 				
 				while ($row = ze\sql::fetchAssoc($result)) {
-					if (!ze\row::get('content_items', 'visitor_version', array('id' => $row['equiv_id'], 'type' => $row['content_type']))) {
+					if (!ze\row::get('content_items', 'visitor_version', ['id' => $row['equiv_id'], 'type' => $row['content_type']])) {
 						$tags .= ($tags? ', ' : ''). '"'. ze\content::formatTag($row['equiv_id'], $row['content_type']). '"';
 					}
 				}
 				
 				if ($tags) {
 					$box['tabs']['site']['errors'][] =
-						ze\admin::phrase('You must publish every Special Page needed by the CMS before you can enable your site. Please publish the following pages: [[tags]].', array('tags' => $tags));
+						ze\admin::phrase('You must publish every Special Page needed by the CMS before you can enable your site. Please publish the following pages: [[tags]].', ['tags' => $tags]);
 				}
 			}
 		

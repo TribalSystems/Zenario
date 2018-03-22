@@ -1,47 +1,45 @@
-{% if show_date %}
-	<h2>{{Date}}</h2>
-{% endif %}
+{% for key, meta_data in content %}
+	{% if key == "show_writer_image" %}
+		<div class="{{meta_data.class}}">
+			{% if show_labels %}
+				<{{meta_data.html_tag}}>
+				<span>{{meta_data.label|trans}}:</span>
+				</{{meta_data.html_tag}}>
+			{% endif %}
+			<img alt="{{meta_data.Writer_Alt}}" src="{{meta_data.Writer_Src}}"/>
+		</div>
 
-{% if show_title %}
-	<h2>{{Title}}</h2>
-{% endif %}
+	{% elseif key == "show_sticky_image" %}
+		<div class="{{meta_data.class}}">
+			{% if show_labels %}
+				<{{meta_data.html_tag}}>
+				<span>{{meta_data.label|trans}}:</span>
+				</{{meta_data.html_tag}}>
+			{% endif %}
+			<img alt="{{meta_data.Sticky_Image_Alt}}" src="{{meta_data.Sticky_Image_Src}}"/>
+		</div>
 	
-{% if show_description %}
-	<h2>{{Description}}</h2>
-{% endif %}
+	{% elseif key == "show_categories" %}
+		<div class="{{meta_data.class}}">
+			<{{meta_data.html_tag}}>
+			{% if show_labels %}
+				<span>{{meta_data.label|trans}}:</span>
+			{% endif %}
+				{% for item in categories %}
+					<a>{{item.Category}}</a>{{item.Comma}}
+				{% endfor %}
+			</{{meta_data.html_tag}}>
+		</div>
+	
+	{% else %}
+			<div class="{{meta_data.class}}">
+				<{{meta_data.html_tag}}>
+				{% if show_labels %}
+					<span>{{meta_data.label|trans}}:</span>
+				{% endif %}
+				{{meta_data.value}}
+				</{{meta_data.html_tag}}>
+			</div>
+	{% endif %}
 
-{% if show_summary %}
-	<h2>{{Summary}}</h2>
-{% endif %}
-
-{% if show_categories %}
-	<h2>
-		{% for item in categories %}
-			<a>{{item.Category}}</a>{{item.Comma}}
-		{% endfor %}
-	</h2>
-{% endif %}
-
-{% if show_keywords %}
-	<h2>{{Keywords}}</h2>
-{% endif %}
-
-{% if show_language_name %}
-	<h2>{{Language_name}}</h2>
-{% endif %}
-
-{% if show_language %}
-	<h2>{{Language}}</h2>
-{% endif %}
-
-{% if show_writer_name %}
-	<h2>{{Writer_name}}</h2>
-{% endif %}
-
-{% if show_writer_image %}
-	<img alt="{{Writer_Alt}}" src="{{Writer_Src}}"/>
-{% endif %}
-
-{% if show_sticky_image %}
-	<img alt="{{Sticky_Image_Alt}}" src="{{Sticky_Image_Src}}"/>
-{% endif %}
+{% endfor %}

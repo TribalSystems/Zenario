@@ -54,10 +54,14 @@ class zenario_user_forms__organizer__user_forms extends ze\moduleBaseClass {
 			$panel['no_items_message'] = ze\admin::phrase('There are no registration forms.');
 		}
 		
+		if (!ze::setting('zenario_user_forms_enable_predefined_text')) {
+			$panel['item_buttons']['edit_predefined_text']['hidden'] = true;
+		}
+		
 		
 		//Get plugins using a form
 		$moduleIds = zenario_user_forms::getFormModuleIds();
-		$formPlugins = array();
+		$formPlugins = [];
 		$sql = '
 			SELECT id, name, 0 AS egg_id
 			FROM '.DB_NAME_PREFIX.'plugin_instances
@@ -80,9 +84,9 @@ class zenario_user_forms__organizer__user_forms extends ze\moduleBaseClass {
 		}
 		
 		//Get content items with a plugin using a form on
-		$formUsage = array();
-		$contentItemUsage = array();
-		$layoutUsage = array();
+		$formUsage = [];
+		$contentItemUsage = [];
+		$layoutUsage = [];
 		if ($formPlugins) {
 			$sql = '
 				SELECT pil.content_id, pil.content_type, pil.instance_id
@@ -117,8 +121,8 @@ class zenario_user_forms__organizer__user_forms extends ze\moduleBaseClass {
 			$className = static::getModuleClassNameByInstanceId($instanceId);
 			$moduleName = ze\module::getModuleDisplayNameByClassName($className);
 			
-			if ($formId = ze\row::get('plugin_settings', 'value', array('instance_id' => $instanceId, 'name' => 'user_form'))) {
-				$details = array('instanceId' => $instanceId, 'pluginName' => $pluginName, 'moduleName' => $moduleName);
+			if ($formId = ze\row::get('plugin_settings', 'value', ['instance_id' => $instanceId, 'name' => 'user_form'])) {
+				$details = ['instanceId' => $instanceId, 'pluginName' => $pluginName, 'moduleName' => $moduleName];
 				if (isset($contentItemUsage[$instanceId])) {
 					$details['contentItems'] = $contentItemUsage[$instanceId];
 				}
@@ -133,7 +137,7 @@ class zenario_user_forms__organizer__user_forms extends ze\moduleBaseClass {
 			$pluginUsage = '';
 			$contentUsage = '';
 			$layoutUsage = '';
-			$moduleNames = array();
+			$moduleNames = [];
 			if (isset($formUsage[$id]) && !empty($formUsage[$id])) {
 				$pluginUsage = 'P'. $formUsage[$id][0]['instanceId']. ' '. $formUsage[$id][0]['pluginName'];
 				if (($count = count($formUsage[$id])) > 1) {
@@ -194,7 +198,7 @@ class zenario_user_forms__organizer__user_forms extends ze\moduleBaseClass {
 		ze\priv::exitIfNot('_PRIV_MANAGE_FORMS');
 		if ($_POST['archive_form'] ?? false) {
 			foreach(explode(',', $ids) as $id) {
-				ze\row::update(ZENARIO_USER_FORMS_PREFIX . 'user_forms', array('status' => 'archived'), array('id' => $id));
+				ze\row::update(ZENARIO_USER_FORMS_PREFIX . 'user_forms', ['status' => 'archived'], ['id' => $id]);
 			}
 		} elseif ($_POST['delete_form'] ?? false) {
 			foreach (explode(',', $ids) as $formId) {
@@ -223,7 +227,7 @@ class zenario_user_forms__organizer__user_forms extends ze\moduleBaseClass {
 		}
 		for ($i = 2; $i < 1000; $i++) {
 			$name = $form['name'].' ('.$i.')';
-			if (!ze\row::exists(ZENARIO_USER_FORMS_PREFIX . 'user_forms', array('name' => $name))) {
+			if (!ze\row::exists(ZENARIO_USER_FORMS_PREFIX . 'user_forms', ['name' => $name])) {
 				$form['name'] = $name;
 				break;
 			}
@@ -238,11 +242,11 @@ class zenario_user_forms__organizer__user_forms extends ze\moduleBaseClass {
 	
 	public static function getFormsExportJSON($formIds) {
 		$formIds = ze\ray::explodeAndTrim($formIds);
-		$formsJSON = array(
+		$formsJSON = [
 			'major_version' => ZENARIO_MAJOR_VERSION,
 			'minor_version' => ZENARIO_MINOR_VERSION,
-			'forms' => array()
-		);
+			'forms' => []
+		];
 		foreach ($formIds as $formId) {
 			$formJSON = zenario_user_forms::getFormJSON($formId);
 			$formsJSON['forms'][] = $formJSON;

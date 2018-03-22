@@ -207,12 +207,12 @@ class zenario_forum extends zenario_comments {
 			if (isset($_POST['comm_title']) && empty($_POST['comm_title'])) {
 				//complain about required fields
 				$failure = true;
-				$this->postingErrors[] = array('Error' => $this->phrase('_ERROR_TITLE'));
+				$this->postingErrors[] = ['Error' => $this->phrase('_ERROR_TITLE')];
 			}
 			if (isset($_POST['comm_message']) && empty($_POST['comm_message'])) {
 				//complain about required fields
 				$failure = true;
-				$this->postingErrors[] = array('Error' => $this->phrase('_ERROR_MESSAGE'));
+				$this->postingErrors[] = ['Error' => $this->phrase('_ERROR_MESSAGE')];
 			}
 			
 			if (!empty($_POST['comm_title']) && !empty($_POST['comm_message'])) {
@@ -377,19 +377,19 @@ class zenario_forum extends zenario_comments {
 	function hasSubsThread() {
 		return ze\row::exists(
 			ZENARIO_COMMENTS_PREFIX. 'user_subscriptions',
-			array(
+			[
 				'user_id' => ($_SESSION['extranetUserID'] ?? false),
 				'forum_id' => $this->forumId,
-				'thread_id' => $this->threadId));
+				'thread_id' => $this->threadId]);
 	}
 	
 	function hasSubsForum() {
 		return ze\row::exists(
 			ZENARIO_COMMENTS_PREFIX. 'user_subscriptions',
-			array(
+			[
 				'user_id' => ($_SESSION['extranetUserID'] ?? false),
 				'forum_id' => $this->forumId,
-				'thread_id' => 0));
+				'thread_id' => 0]);
 	}
 	
 	function checkConfirmKey() {
@@ -421,7 +421,7 @@ class zenario_forum extends zenario_comments {
 		if($this->allow_uploads){
 			if(!$location || !strlen($location)) return;
 			if ($fileId = ze\file::addToDatabase(self::$forum_post_upload_dbkey, $location, $file_name, false, false, true)) {
-				$using_ids = array('file_id' => (int)$fileId, 'post_id' => (int)$postId);
+				$using_ids = ['file_id' => (int)$fileId, 'post_id' => (int)$postId];
 				$using_values = $using_ids;
 				$using_values['caption'] = ze\escape::sql($file_name);
 				ze\row::set(ZENARIO_FORUM_PREFIX . 'user_posts_uploads', $using_values, $using_ids);
@@ -448,8 +448,8 @@ class zenario_forum extends zenario_comments {
 				foreach($_POST as $key => $value){
 					$file_id = $this->split_str_value_to_value($key, 'file_caption_');
 					if(is_numeric($file_id) && strlen($value)){
-						ze\row::set(ZENARIO_FORUM_PREFIX . 'user_posts_uploads', array('caption' => ze\escape::sql($value)), 
-							array('post_id' => (int)$postId, 'file_id' => (int)$file_id));
+						ze\row::set(ZENARIO_FORUM_PREFIX . 'user_posts_uploads', ['caption' => ze\escape::sql($value)], 
+							['post_id' => (int)$postId, 'file_id' => (int)$file_id]);
 					}
 				}
 			}
@@ -484,7 +484,7 @@ class zenario_forum extends zenario_comments {
 
 	protected function deleteOneUploadFile($file_id){
 		if($this->allow_uploads){
-			if(!ze\row::get(ZENARIO_FORUM_PREFIX . 'user_posts_uploads', 'file_id', array('file_id' => (int)$file_id))){
+			if(!ze\row::get(ZENARIO_FORUM_PREFIX . 'user_posts_uploads', 'file_id', ['file_id' => (int)$file_id])){
 				ze\file::delete($file_id);
 			}
 		}
@@ -492,7 +492,7 @@ class zenario_forum extends zenario_comments {
 	
 	protected function deleteOneUpload($postId, $file_id){
 		if($this->allow_uploads){
-			ze\row::delete(ZENARIO_FORUM_PREFIX. 'user_posts_uploads', array('post_id' => (int)$postId, 'file_id' => (int)$file_id));
+			ze\row::delete(ZENARIO_FORUM_PREFIX. 'user_posts_uploads', ['post_id' => (int)$postId, 'file_id' => (int)$file_id]);
 			$this->deleteOneUploadFile($file_id);
 		}
 	}
@@ -529,11 +529,11 @@ class zenario_forum extends zenario_comments {
 				
 				$file_link = ze\file::link($file_id);
 				
-				$upload_links[] = array('File_Link' => $file_link, 'File_Thumbnail' => $url, 
+				$upload_links[] = ['File_Link' => $file_link, 'File_Thumbnail' => $url, 
 						'Caption' => htmlspecialchars($caption), 'File_Id' => $file_id,
 						'Post_Id' => $post['id'],
 						'File_Extension' => strtoupper(pathinfo($file_link, PATHINFO_EXTENSION))
-				);
+				];
 			}
 			$sections[$mysection] = $upload_links;
 		}
@@ -881,9 +881,9 @@ class zenario_forum extends zenario_comments {
 	}
 	
 	protected function subs($subs, $thread = true) {
-		$key = array(
+		$key = [
 			'user_id' => ($_SESSION['extranetUserID'] ?? false),
-			'forum_id' => $this->forumId);
+			'forum_id' => $this->forumId];
 		
 		if ($thread) {
 			$key['thread_id'] = $this->threadId;
@@ -897,7 +897,7 @@ class zenario_forum extends zenario_comments {
 			
 			ze\row::set(
 				ZENARIO_COMMENTS_PREFIX. 'user_subscriptions',
-				array('date_subscribed' => ze\date::now()),
+				['date_subscribed' => ze\date::now()],
 				$key);
 		
 		} else {
@@ -1107,7 +1107,7 @@ class zenario_forum extends zenario_comments {
 			$this->scrollToTopOfSlot(false);
 			
 			if (($_REQUEST['comm_request'] ?? false) == 'subs_forum' && $this->canSubsForum() && !$this->hasSubsForum()) {
-				$this->showConfirmBox($this->phrase('_CONFIRM_SUBS_FORUM', array('email' => htmlspecialchars(ze\user::email()))), $this->phrase('_SUBMIT_SUBS_FORUM'));
+				$this->showConfirmBox($this->phrase('_CONFIRM_SUBS_FORUM', ['email' => htmlspecialchars(ze\user::email())]), $this->phrase('_SUBMIT_SUBS_FORUM'));
 				
 			} elseif (($_REQUEST['comm_request'] ?? false) == 'unsubs_forum' && $this->canSubsForum() && $this->hasSubsForum()) {
 				$this->showConfirmBox($this->phrase('_CONFIRM_UNSUBS_FORUM'), $this->phrase('_SUBMIT_UNSUBS_FORUM'));

@@ -31,7 +31,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_pro_features__admin_boxes__menu_section extends ze\moduleBaseClass {
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
-		if ($box['key']['id'] && ($section = ze\row::get('menu_sections', array('section_name'), $box['key']['id']))) {
+		if ($box['key']['id'] && ($section = ze\row::get('menu_sections', ['section_name'], $box['key']['id']))) {
 			$box['tabs']['menu_section']['fields']['section_name']['value'] = $section['section_name'];
 			$box['title'] = ze\admin::phrase('Renaming the Menu Section "[[section_name]]"', $section);
 		} else {
@@ -47,7 +47,7 @@ class zenario_pro_features__admin_boxes__menu_section extends ze\moduleBaseClass
 			} else
 			if (ze\row::exists(
 				'menu_sections',
-				array('section_name' => $values['menu_section/section_name'], 'id' => array('!' => $box['key']['id']))
+				['section_name' => $values['menu_section/section_name'], 'id' => ['!' => $box['key']['id']]]
 			)) {
 				$box['tabs']['menu_section']['errors'][] =
 					ze\admin::phrase('The Menu Section "[[section_name]]" already exists.', $values['menu_section']);
@@ -59,11 +59,11 @@ class zenario_pro_features__admin_boxes__menu_section extends ze\moduleBaseClass
 		
 		//Add if new
 		if (!$box['key']['id']) {
-			ze\row::insert('menu_sections', array('section_name' => $values['menu_section/section_name']));
+			ze\row::insert('menu_sections', ['section_name' => $values['menu_section/section_name']]);
 		
 		//Rename if changed
 		} elseif ($values['menu_section/section_name'] != $box['key']['id']) {
-			ze\row::update('menu_sections', array('section_name' => $values['menu_section/section_name']), $box['key']['id']);
+			ze\row::update('menu_sections', ['section_name' => $values['menu_section/section_name']], $box['key']['id']);
 		}
 		ze\menuAdm::recalcTopLevelPositions();
 	}

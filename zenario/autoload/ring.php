@@ -206,7 +206,7 @@ class ring {
 		if ($multiple) {
 			$addresses = preg_split("/[\,\;]+/", $email);	
 		} else {
-			$addresses = array($email);
+			$addresses = [$email];
 		}
 	
 		foreach ($addresses as &$addr) {
@@ -240,7 +240,7 @@ class ring {
 	}
 
 	//Formerly "sanitiseHTML()"
-	public static function sanitiseHTML($html, $allowable_tags = '', $allowedStyles = array(), $allowedAttributes = array()) {
+	public static function sanitiseHTML($html, $allowable_tags = '', $allowedStyles = [], $allowedAttributes = []) {
 
 		$DOMDocument = new \DOMDocument('1.0', 'UTF-8');
 		libxml_use_internal_errors(true);
@@ -265,7 +265,7 @@ class ring {
 					} elseif ($a == 'src' && $item->tagName == 'img') {
 				
 					} elseif ($a == 'style') {
-						$styles = array();
+						$styles = [];
 					
 						if (!empty($allowedStyles)) {
 						

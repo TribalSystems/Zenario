@@ -388,7 +388,7 @@ class zenario_incoming_email_manager extends ze\moduleBaseClass {
 			
 			case 'zenario__administration/panels/zenario_scheduled_task_manager__scheduled_tasks/hidden_nav/log/panel':
 				if ($_GET['refiner__zenario_incoming_email_manager__incoming_emails'] ?? false) {
-					$panel['title'] = ze\admin::phrase('Logs for Incoming Email Handler "[[job]]"', array('job' => ze\row::get('jobs', 'job_name', $refinerId)));
+					$panel['title'] = ze\admin::phrase('Logs for Incoming Email Handler "[[job]]"', ['job' => ze\row::get('jobs', 'job_name', $refinerId)]);
 				}
 				
 				break;
@@ -492,7 +492,7 @@ class zenario_incoming_email_manager extends ze\moduleBaseClass {
 						
 						} elseif (ze\row::exists(
 							ZENARIO_INCOMING_EMAIL_MANAGER_PREFIX. 'accounts',
-							array('script_recipient_username' => $username, 'job_id' => ['!' => $box['key']['id']])
+							['script_recipient_username' => $username, 'job_id' => ['!' => $box['key']['id']]]
 						)) {
 							//$box['tabs']['zenario_incoming_email_manager__trigger']['errors'][] =
 							//	ze\admin::phrase('A different Incoming Email Handler is already handling that username.');
@@ -526,7 +526,7 @@ class zenario_incoming_email_manager extends ze\moduleBaseClass {
 							if ($server && $username
 							 && ze\row::exists(
 								ZENARIO_INCOMING_EMAIL_MANAGER_PREFIX. 'accounts',
-								array('fetch_server' => $server, 'fetch_username' => $username, 'job_id' => ['!' => $box['key']['id']])
+								['fetch_server' => $server, 'fetch_username' => $username, 'job_id' => ['!' => $box['key']['id']]]
 							)) {
 								//$box['tabs']['zenario_incoming_email_manager__fetch']['errors'][] =
 								//	ze\admin::phrase('A different Incoming Email Handler is already handling that user on that server.');
@@ -722,7 +722,7 @@ class zenario_incoming_email_manager extends ze\moduleBaseClass {
 			zenario_incoming_email_manager::$decodedFiles[$email] = false;
 			zenario_incoming_email_manager::$successfullydecodedFiles[$email] =
 				zenario_incoming_email_manager::$parser->Decode(
-					array('File' => $email, 'SaveBody' => sys_get_temp_dir()),
+					['File' => $email, 'SaveBody' => sys_get_temp_dir()],
 					zenario_incoming_email_manager::$decodedFiles[$email]);
 		}
 		
@@ -869,7 +869,7 @@ class zenario_incoming_email_manager extends ze\moduleBaseClass {
 			while ($email = zenario_incoming_email_manager::fetchEmail()) {
 				
 				if (!$path = zenario_incoming_email_manager::saveDecode($email)) {
-					$output = array(ze\admin::phrase('This email could not be read.'));
+					$output = [ze\admin::phrase('This email could not be read.')];
 					$overallResult = 'error';
 				
 				} else {
@@ -955,7 +955,7 @@ class zenario_incoming_email_manager extends ze\moduleBaseClass {
 		
 		} catch (Exception $e) {
 			$overallResult = 'error';
-			$output = array($e->getMessage());
+			$output = [$e->getMessage()];
 			zenario_scheduled_task_manager::logResult(
 				$overallResult, $output, $unlockWhenDone = true,
 				$managerClassName,
@@ -1039,7 +1039,7 @@ class zenario_incoming_email_manager extends ze\moduleBaseClass {
 				
 				$email = 'php://stdin';
 				if (!$path = zenario_incoming_email_manager::saveDecode($email)) {
-					$output = array(ze\admin::phrase('This email could not be read.'));
+					$output = [ze\admin::phrase('This email could not be read.')];
 					$result = 'error';
 				
 				} else {
@@ -1127,19 +1127,17 @@ class zenario_incoming_email_manager extends ze\moduleBaseClass {
 		}
 	}
 	
-	public static function clearOldData(){
-		if($days = ze::setting('period_to_delete_account_logs')){
-			if(is_numeric($days)){
-				$today = date('Y-m-d');
-				$date = date('Y-m-d', strtotime('-'.$days.' day', strtotime($today)));
-				if($date){
-					$sql = " 
-						DELETE FROM ". DB_NAME_PREFIX. ZENARIO_INCOMING_EMAIL_MANAGER_PREFIX. "account_logs
-						WHERE email_sent < '".ze\escape::sql($date)."'";
-					ze\sql::update($sql);
-				}
-			}
+	public static function clearOldData() {
+		$days = ze::setting('period_to_delete_account_logs');
+		if ($days && is_numeric($days)) {
+			$date = date('Y-m-d', strtotime('-'.$days.' day', strtotime(date('Y-m-d'))));
+			$sql = " 
+				DELETE FROM ". DB_NAME_PREFIX. ZENARIO_INCOMING_EMAIL_MANAGER_PREFIX. "account_logs
+				WHERE email_sent < '".ze\escape::sql($date)."'";
+			ze\sql::update($sql);
+			return ze\sql::affectedRows();
 		}
+		return false;
 	}
 
 	

@@ -20,7 +20,7 @@
 				<td class="xl"></td><td class="xc"></td><td class="x"></td><td class="xc"></td><td class="x"></td><td class="xc"></td><td class="x"></td><td class="xc"></td><td class="x"></td><td class="xc"></td><td class="xr"></td>
 			</tr><tr class="{{this.oddOrEven()}}">
 				<td class="ml"></td><td class="mc thread_title first_column">
-					{% if item.Show_Sticky_Image %}
+					{% if Show_Sticky_Image %}
 						<div class="sticky_image">
 							<a {{item.Link}} class="{{item.Status_Class}}">
 								{{item.Sticky_Image}}
@@ -28,7 +28,7 @@
 						</div>
 					{% endif %}
 					<h2><a {{item.Link}} class="{{item.Status_Class}}">{{item.Title}}</a></h2>
-					{% if item.Show_Excerpt %}
+					{% if Show_Excerpt %}
 						<div class="forum_excerpt">{{item.Excerpt_Text}}</div>
 					{% endif %}
 				</td><td class="xm"></td><td class="mc topics">

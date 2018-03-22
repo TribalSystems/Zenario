@@ -38,7 +38,7 @@ $isWizard = $mode === 'wizard';
 $isWelcomeOrWizard = $isWelcome || $isWizard;
 $isOrganizer = $mode === 'organizer';
 $httpUserAgent = ($_SERVER['HTTP_USER_AGENT'] ?? '');
-$checkPriv = \ze\priv::check();
+$isAdmin = \ze::isAdmin();
 $css_wrappers = \ze::setting('css_wrappers');
 
 
@@ -59,7 +59,7 @@ if (strpos($httpUserAgent, 'MSIE') === false) {
 		|| strpos($httpUserAgent, 'MSIE 9') !== false
 		|| strpos($httpUserAgent, 'MSIE 10') !== false;
 	
-	if ($isWelcomeOrWizard || $checkPriv) {
+	if ($isWelcomeOrWizard || $isAdmin) {
 		echo '
 <script type="text/javascript">
 	if (typeof JSON === "undefined" || ', \ze\ring::engToBoolean($notSupportedInAdminMode), ') {
@@ -88,8 +88,8 @@ if ($absURL = \ze\link::absoluteIfNeeded(!$isWelcomeOrWizard && !$oldIE)) {
 if (!empty(\ze::$slotContents) && is_array(\ze::$slotContents)) {
 	$comma = '';
 	$comma2 = '';
-	$JavaScriptOnPage = array();
-	$themesOnPage = array();
+	$JavaScriptOnPage = [];
+	$themesOnPage = [];
 	
 	foreach(\ze::$slotContents as &$instance) {
 		
@@ -116,7 +116,7 @@ if ($isWelcomeOrWizard || ($isOrganizer && \ze::setting('organizer_favicon') == 
 	}
 	
 	if ($faviconId
-	 && ($icon = \ze\row::get('files', array('id', 'mime_type', 'filename', 'checksum'), $faviconId))
+	 && ($icon = \ze\row::get('files', ['id', 'mime_type', 'filename', 'checksum'], $faviconId))
 	 && ($link = ze\file::link($icon['id'], false, 'public/images'))) {
 		if ($icon['mime_type'] == 'image/vnd.microsoft.icon' || $icon['mime_type'] == 'image/x-icon') {
 			echo "\n", '<link rel="shortcut icon" href="', \ze\link::absolute(), htmlspecialchars($link), '"/>';
@@ -127,7 +127,7 @@ if ($isWelcomeOrWizard || ($isOrganizer && \ze::setting('organizer_favicon') == 
 
 	if (!$isOrganizer
 	 && \ze::setting('mobile_icon')
-	 && ($icon = \ze\row::get('files', array('id', 'mime_type', 'filename', 'checksum'), \ze::setting('mobile_icon')))
+	 && ($icon = \ze\row::get('files', ['id', 'mime_type', 'filename', 'checksum'], \ze::setting('mobile_icon')))
 	 && ($link = ze\file::link($icon['id']))) {
 		echo "\n", '<link rel="apple-touch-icon-precomposed" href="', \ze\link::absolute(), htmlspecialchars($link), '"/>';
 	}
@@ -136,7 +136,7 @@ if ($isWelcomeOrWizard || ($isOrganizer && \ze::setting('organizer_favicon') == 
 
 
 //Add CSS needed for the CMS in Admin mode
-if ($isWelcomeOrWizard || $checkPriv) {
+if ($isWelcomeOrWizard || $isAdmin) {
 	if (!\ze::$skinId) {
 		echo '
 <link rel="stylesheet" type="text/css" media="screen" href="', $prefix, 'libs/manually_maintained/mit/colorbox/colorbox.css?', $v, '"/>';
@@ -177,7 +177,7 @@ if ($isWelcomeOrWizard || $checkPriv) {
 }
 
 //Add the CSS for a skin, if there is a skin, and add CSS needed for any Module Swatches on the page
-if ($overrideFrameworkAndCSS === false && ($css_wrappers == 'on' || ($css_wrappers == 'visitors_only' && !$checkPriv))) {
+if ($overrideFrameworkAndCSS === false && ($css_wrappers == 'on' || ($css_wrappers == 'visitors_only' && !$isAdmin))) {
 	
 	//If wrappers are enabled, link to skin.cache_wrapper.css.php
 	//(Note that wrappers are forced off when viewing a preview of layouts/CSS.)
@@ -191,20 +191,16 @@ if ($overrideFrameworkAndCSS === false && ($css_wrappers == 'on' || ($css_wrappe
 	
 	if (\ze::$skinId || \ze::$layoutId) {
 		
-		echo "\n", '<style type="text/css">';
-		\ze\wrapper::outputRulesForSlotMinHeights();
-		echo "\n", '</style>';
-		
 		//Watch out for the variables from the CSS preview, and translate them to the format
 		//needed by \ze\wrapper::includeSkinFiles() if we see them there.
 		$overrideCSS = false;
 		$overridePrintCSS = false;
 		if ($overrideFrameworkAndCSS !== false) {
-			$files = array();
-			$overrideCSS = array();
-			$overridePrintCSS = array();
+			$files = [];
+			$overrideCSS = [];
+			$overridePrintCSS = [];
 			
-			foreach (array(
+			foreach ([
 				'this_css_tab',
 				'all_css_tab',
 				'0.reset.css',
@@ -214,7 +210,7 @@ if ($overrideFrameworkAndCSS === false && ($css_wrappers == 'on' || ($css_wrappe
 				'3.misc.css',
 				'4.responsive.css',
 				'print.css'
-			) as $tab) {
+			] as $tab) {
 				if (!empty($overrideFrameworkAndCSS[$tab. '/use_css_file'])
 				 && !empty($overrideFrameworkAndCSS[$tab. '/css_filename'])
 				 && isset($overrideFrameworkAndCSS[$tab. '/css_source'])) {
@@ -231,19 +227,19 @@ if ($overrideFrameworkAndCSS === false && ($css_wrappers == 'on' || ($css_wrappe
 					
 					case 'print.css':
 					case 'stylesheet_print.css':
-						$overridePrintCSS[] = array($file, $contents);
+						$overridePrintCSS[] = [$file, $contents];
 						break;
 					
 					default:
-						$overrideCSS[] = array($file, $contents);
+						$overrideCSS[] = [$file, $contents];
 				}
 			}
 		}
 		
-		$req = array('id' => (int) \ze::$skinId, 'print' => '', 'layoutId' => \ze::$layoutId);
+		$req = ['id' => (int) \ze::$skinId, 'print' => '', 'layoutId' => \ze::$layoutId];
 		\ze\wrapper::includeSkinFiles($req, $v, $overrideCSS);
 		
-		$req = array('id' => (int) \ze::$skinId, 'print' => '1');
+		$req = ['id' => (int) \ze::$skinId, 'print' => '1'];
 		\ze\wrapper::includeSkinFiles($req, $v, $overridePrintCSS);
 	}
 }
@@ -262,7 +258,30 @@ if (!empty(\ze::$slotContents) && is_array(\ze::$slotContents)) {
 }
 
 
-if ($checkPriv) {
+//Create the callback for google recaptcha for all modules on this page
+if (!empty(\ze::$googleRecaptchaElements)) {
+	echo '
+<script type="text/javascript">
+	var recaptchaCallback = function() {';
+	
+	foreach (\ze::$googleRecaptchaElements as $elementId) {
+		echo '
+		if (document.getElementById("' . \ze\escape::js($elementId) . '") && document.getElementById("' .  \ze\escape::js($elementId) . '").innerHTML === "" && typeof(grecaptcha) !== "undefined") {
+			grecaptcha.render("' . \ze\escape::js($elementId) . '", {
+				sitekey: "' . \ze\escape::js(\ze::setting('google_recaptcha_site_key')) . '",
+				theme: "' . \ze\escape::js(\ze::setting('google_recaptcha_widget_theme')) . '"
+			})
+		}';
+	}
+	echo '
+	};
+</script>';
+	echo '
+<script src="https://www.google.com/recaptcha/api.js?onload=recaptchaCallback&render=explicit"></script>';
+}
+
+
+if ($isAdmin) {
 	//Add CSS needed for modules in Admin Mode in the frontend
 	if (\ze::$cID) {
 		$cssModuleIds = '';
@@ -329,12 +348,12 @@ if (\ze::$cID) {
 				}
 		}
 		
-		if (!empty($templateHTML['head_html']) && (empty($templateHTML['head_visitor_only']) || !$checkPriv)) {
+		if (!empty($templateHTML['head_html']) && (empty($templateHTML['head_visitor_only']) || !$isAdmin)) {
 			echo "\n\n". $templateHTML['head_html'], "\n\n";
 		}
 	}
 	
-	if (!empty($itemHTML['head_html']) && (empty($itemHTML['head_visitor_only']) || !$checkPriv)) {
+	if (!empty($itemHTML['head_html']) && (empty($itemHTML['head_visitor_only']) || !$isAdmin)) {
 		echo "\n\n". $itemHTML['head_html'], "\n\n";
 	}
 	

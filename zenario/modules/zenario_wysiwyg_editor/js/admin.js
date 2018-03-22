@@ -82,7 +82,8 @@ zenario_wysiwyg_editor.open = function(containerId, editorId, summaryLocked, sum
 		plugins: ["advlist autolink lists link image charmap hr anchor",
         "searchreplace code",
         "nonbreaking zenario_save table contextmenu directionality",
-        "paste autoresize"],
+        "paste autoresize",
+        "colorpicker textcolor visualblocks preview"],
         
         image_advtab: true,
         visual_table_class: ' ',
@@ -111,13 +112,13 @@ directionality	ltr rtl
 			file: {title: 'File', items: ''},
 			edit: {title: 'Edit', items: 'undo redo | cut copy paste | selectall'},
 			insert: {title: 'Insert', items: 'link image | anchor hr charmap'},
-			view: {title: 'View', items: ''},
+			view: {title: 'View', items: 'visualblocks preview'},
 			format: {title: 'Format', items: 'bold italic underline strikethrough superscript subscript' + (zenarioA.skinDesc.style_formats? ' | formats' : '') + ' blockquote | removeformat'},
 			table: {title: 'Table', items: 'inserttable tableprops deletetable | cell row column'},
 			tools: {title: 'Tools', items: 'searchreplace | code'}
 		},
 		
-		toolbar: 'undo redo | image link unlink | bold italic underline | removeformat' + (zenarioA.skinDesc.style_formats? ' | styleselect' : '') + ' | fontsizeselect | formatselect | numlist bullist | blockquote outdent indent | alignleft aligncenter alignright alignjustify | save save_and_close cancel',
+		toolbar: 'undo redo | image link unlink | bold italic underline strikethrough forecolor backcolor | removeformat' + (zenarioA.skinDesc.style_formats? ' | styleselect' : '') + ' | fontsizeselect | formatselect | numlist bullist | blockquote outdent indent | alignleft aligncenter alignright alignjustify | save save_and_close cancel',
 		statusbar: false,
 		
 		

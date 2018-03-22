@@ -1,6 +1,7 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
 plugin_settings:
+    module_class_name: zenario_extranet_logout
     tabs:
         first_tab:
             label: Destination
@@ -8,17 +9,43 @@ plugin_settings:
                 redirect:
                     plugin_setting:
                         name: redirect
-                    label: 'Redirect visitors back to the page they logged out from:'
+                    label: 'Redirect visitors back to the page they logged out from'
                     type: checkbox
                     value: ""
-                    format_onchange: Yes
+                    redraw_onchange: Yes
                 redirect_if_private:
+                    indent: 1
+                    visible_if: zenarioAB.value('redirect')
                     plugin_setting:
                         name: redirect_if_private
-                    label: 'Redirect even if the page is Private:'
+                    label: 'Redirect even if the page is Private'
                     type: checkbox
                     value: ""
-                    note_below: >
+                    side_note: >
                         Visitors will be asked to log back in again in for Private
                         pages.
-    module_class_name: zenario_extranet_logout
+    
+                show_link_to_login_page:
+                    plugin_setting:
+                        name: show_link_to_login_page
+                    label: Show link to login page
+                    type: checkbox
+                    value: 1
+                    redraw_onchange: true
+                login_page:
+                    visible_if: zenarioAB.value('show_link_to_login_page')
+                    plugin_setting:
+                        name: login_page
+                        foreign_key_to: content
+                    label: 'Login page:'
+                    pick_items:
+                        path: zenario__content/panels/content/refiners/filter_by_lang////
+                        min_path: zenario__content/panels/content
+                        max_path: zenario__content/panels/content
+                        target_path: zenario__content/panels/content
+                        disallow_refiners_looping_on_min_path: true
+                        select_phrase: Select a content item...
+                        hide_remove_button: true
+                    validation:
+                        required_if_not_hidden: Please select a login page
+                    indent: 1

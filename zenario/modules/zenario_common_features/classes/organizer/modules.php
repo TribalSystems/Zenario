@@ -115,24 +115,24 @@ class zenario_common_features__organizer__modules extends ze\moduleBaseClass {
 		}
 
 		$languagesExist = false;
-		$emptyListView = array();
-		$inheritedListView = array();
-		$pluginDependencies = array();
-		$moduleTables = array();
+		$emptyListView = [];
+		$inheritedListView = [];
+		$pluginDependencies = [];
+		$moduleTables = [];
 		if ($mode != 'select') {
 			//Prep a list of Languages installed on the site
 			foreach (ze\lang::getLanguages() as $lang) {
-				$panel['columns'][$lang['id']] = array('title' => ze\admin::phrase('Phrases in [[english_name]]', $lang));
+				$panel['columns'][$lang['id']] = ['title' => ze\admin::phrase('Phrases in [[english_name]]', $lang)];
 				$emptyListView[$lang['id']] = '-';
 				$inheritedListView[$lang['id']] = '*';
 				$languagesExist = true;
 			}
 	
 			//Look for (installed) module dependencies
-			$result = ze\row::query('module_dependencies', array('module_class_name', 'dependency_class_name'), array('type' => 'dependency'), 'dependency_class_name');
+			$result = ze\row::query('module_dependencies', ['module_class_name', 'dependency_class_name'], ['type' => 'dependency'], 'dependency_class_name');
 			while($row = ze\sql::fetchAssoc($result)) {
 				if (!isset($pluginDependencies[$row['dependency_class_name']])) {
-					$pluginDependencies[$row['dependency_class_name']] = array();
+					$pluginDependencies[$row['dependency_class_name']] = [];
 				}
 		
 				$pluginDependencies[$row['dependency_class_name']][$row['module_class_name']] = true;
@@ -145,7 +145,7 @@ class zenario_common_features__organizer__modules extends ze\moduleBaseClass {
 					$moduleId = (int) $moduleId[0];
 			
 					if (!isset($moduleTables[$moduleId])) {
-						$moduleTables[$moduleId] = array();
+						$moduleTables[$moduleId] = [];
 					}
 			
 					$moduleTables[$moduleId][] = $table['actual_name'];
@@ -157,49 +157,16 @@ class zenario_common_features__organizer__modules extends ze\moduleBaseClass {
 		}
 
 		//Look for special pages
-		$moduleSpecialPages = array();
-		$result = ze\row::query('special_pages', array('equiv_id', 'content_type', 'module_class_name'), array());
+		$moduleSpecialPages = [];
+		$result = ze\row::query('special_pages', ['equiv_id', 'content_type', 'module_class_name'], []);
 		while ($sp = ze\sql::fetchAssoc($result)) {
 			if (!isset($moduleSpecialPages[$sp['module_class_name']])) {
 				$moduleSpecialPages[$sp['module_class_name']] = $sp['content_type']. '_'. $sp['equiv_id'];
 			}
 		}
 
-		/*
-		$sql = "
-			SELECT
-				id,
-				class_name,
-				class_name AS name,
-				display_name,
-				vlp_class,
-				is_pluggable,
-				can_be_version_controlled,
-				nestable,
-				status
-			FROM " . DB_NAME_PREFIX . "modules";
-		$result = ze\sql::select($sql);
-
-		$missingModules = array();
-		$panel['items'] = array();
-		while ($module = ze\sql::fetchAssoc($result)) {
-	
-			if ($refinerName == 'slotable_only' && !($module['is_pluggable'] && $module['status'] == 'module_running')) {
-				continue;
-	
-			} elseif (($refinerName == 'wireframe_only' || $refinerName == 'nestable_wireframes_only') && !($module['is_pluggable'] && $module['can_be_version_controlled'] && $module['status'] == 'module_running')) {
-				continue;
-	
-			} elseif (($refinerName == 'nestable_only' || $refinerName == 'nestable_wireframes_only') && !($module['is_pluggable'] && $module['nestable'] && $module['status'] == 'module_running')) {
-				continue;
-	
-			} elseif ($refinerName == 'phrases_only' && !($module['is_pluggable'] && $module['vlp_class'] && $module['vlp_class'] == $module['class_name'])) {
-				continue;
-			}
-			*/
-
 		foreach ($panel['items'] as $id => &$module) {
-			$module['cell_css_classes'] = array();
+			$module['cell_css_classes'] = [];
 	
 			if ($path = ze::moduleDir($module['class_name'], 'module_code.php', true)) {
 				$module['path'] = substr(CMS_ROOT. $path, 0, -15);
@@ -288,7 +255,7 @@ class zenario_common_features__organizer__modules extends ze\moduleBaseClass {
 						$module['editions'] = $desc['editions'];
 					}
 					
-					$signals = array();
+					$signals = [];
 					if (!empty($desc['signals']) && is_array($desc['signals'])) {
 						foreach($desc['signals'] as $signal) {
 							if (!empty($signal['name'])) {
@@ -389,9 +356,6 @@ class zenario_common_features__organizer__modules extends ze\moduleBaseClass {
 				$module['status'] = ze\admin::phrase($module['status']);
 		
 			} else {
-				if ($module['status'] == 'module_running'){
-					$missingModules[$module['class_name']] = $module['display_name'] . ' (' . $module['class_name'] . ')' ;
-				}
 		
 				//To do: hide or auto-delete missing modules that aren't running!
 				$module['display_name'] = $module['class_name'] . ' (Module code is missing)';
@@ -399,24 +363,6 @@ class zenario_common_features__organizer__modules extends ze\moduleBaseClass {
 				$module['status'] = ze\admin::phrase('Module code is missing');
 				$module['cell_css_classes']['status'] = "warning";
 			}
-		}
-
-		if (!empty($missingModules) && EMAIL_ADDRESS_GLOBAL_SUPPORT) {
-			asort($missingModules);
-			$subject = ze\admin::phrase('Missing module files on [[HTTP_HOST]]', $_SERVER);
-			$body = ze\admin::phrase('Files for the following modules are missing:'). "\n\n". implode("\r\n", $missingModules);
-			$addressToOverriddenBy = false;
-			ze\server::sendEmail(
-				$subject, $body,
-				EMAIL_ADDRESS_GLOBAL_SUPPORT,
-				$addressToOverriddenBy,
-				$nameTo = false,
-				$addressFrom = false,
-				$nameFrom = false,
-				false, false, false,
-				$isHTML = false,
-				false, false, false,
-				'module_missing');
 		}
 	}
 	
@@ -457,15 +403,15 @@ class zenario_common_features__organizer__modules extends ze\moduleBaseClass {
 				echo ze\admin::phrase('all Plugins derived from this Module, ');
 			}
 	
-			if (ze\row::exists('special_pages', array('module_class_name' => $module['class_name']))) {
+			if (ze\row::exists('special_pages', ['module_class_name' => $module['class_name']])) {
 				echo ze\admin::phrase('all Special Pages for this Module, ');
 			}
 	
-			if (ze\row::exists('centralised_lists', array('module_class_name' => $module['class_name']))) {
+			if (ze\row::exists('centralised_lists', ['module_class_name' => $module['class_name']])) {
 				echo ze\admin::phrase('all centralised lists for this Module, ');
 			}
 	
-			$result = ze\row::query('content_types', 'content_type_name_en', array('module_id' => $ids), 'content_type_name_en');
+			$result = ze\row::query('content_types', 'content_type_name_en', ['module_id' => $ids], 'content_type_name_en');
 			while ($contentType = ze\sql::fetchAssoc($result)) {
 				echo ze\admin::phrase('all Content Items of the "[[content_type_name_en]]" Content Type, ', $contentType);
 			}

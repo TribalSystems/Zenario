@@ -1,0 +1,78 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__user_forms:
+    panels:
+        predefined_text_targets:
+            title: Pre-defined text
+            priv: _PRIV_MANAGE_FORMS
+            no_items_message: No pre-defined text has been defined.
+            db_items:
+                table: |
+                    [[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]predefined_text_targets AS ptt
+                    INNER JOIN [[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields uff
+                        ON ptt.form_field_id = uff.id
+                id_column: ptt.form_field_id
+            refiners:
+                user_form_id:
+                    sql: uff.user_form_id = [[REFINER_ID]]           
+            item:
+                css_class: zenario_user_forms__predefined_text_targets
+            
+            default_sort_column: name
+            columns:
+                name:
+                    title: Form field target
+                    db_column: uff.name
+                    always_show: true
+                    width: xlarge
+                button_label:
+                    title: Button label
+                    db_column: ptt.button_label
+                    always_show: true
+                    width: large
+                trigger_count:
+                    title: No. of triggers
+                    always_show: true
+                    align_right: true
+                    db_column: |
+                        (
+                            SELECT COUNT(*)
+                            FROM [[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]predefined_text_triggers AS pttg
+                            WHERE pttg.target_form_field_id = ptt.form_field_id
+                        )
+            collection_buttons:
+                create:
+                    css_class: zenario_create_a_new
+                    hide_in_select_mode: true
+                    hide_on_filter: true
+                    label: Create a target
+                    admin_box:
+                        path: zenario_user_forms__predefined_text_target
+            
+            item_buttons:
+                edit:
+                    hide_in_select_mode: true
+                    label: Edit
+                    admin_box:
+                        path: zenario_user_forms__predefined_text_target
+                view_triggers:
+                    hide_in_select_mode: true
+                    label: View triggers
+                    link:
+                        path: zenario__user_forms/panels/predefined_text_triggers
+                        refiner: target_form_field_id
+                delete:
+                    hide_in_select_mode: true
+                    label: Delete
+                    multiple_select: true
+                    ajax:
+                        confirm:
+                            message_type: warning
+                            message: |
+                                Are you sure you want to delete the target "[[name]]"?
+                            multiple_select_message: |
+                                Are you sure you wish to delete these targets?
+                            button_message: Delete
+                            cancel_button_message: Cancel
+                        request:
+                            delete_target: 1

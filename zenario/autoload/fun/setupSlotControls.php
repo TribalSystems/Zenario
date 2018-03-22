@@ -28,7 +28,7 @@
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
 $html = '';
-$slotWrapperClasses = array();
+$slotWrapperClasses = [];
 
 //Don't try to add and slot controls if this is a layout preview
 if (\ze::$cID === -1) {
@@ -40,17 +40,17 @@ if (\ze::$cID === -1) {
 if (!empty($slotContents) && is_array($slotContents)) {
 	
 	//Load the TUIX tags for empty slots (these will always be the same)
-	$tagsEmpty = array();
-	$modulesEmpty = array();
+	$tagsEmpty = [];
+	$modulesEmpty = [];
 	\ze\tuix::load($modulesEmpty, $tagsEmpty, 'slot_controls', $path = 'empty_slot');
 	$removedColumns = false;
 	\ze\tuix::parse2($tagsEmpty, $removedColumns, 'slot_controls', $path);
 	$tagsEmpty = $tagsEmpty[$path];
 	
-	$sections = array('info', 'notes', 'actions', 'overridden_info', 'overridden_actions');
+	$sections = ['info', 'notes', 'actions', 'overridden_info', 'overridden_actions'];
 	
 	//Loop through all of the slots
-	$activeModules = array();
+	$activeModules = [];
 	foreach ($slotContents as $slotName => &$instance) {
 		
 		//Only output slot controls for non-nested Plugins.
@@ -58,7 +58,7 @@ if (!empty($slotContents) && is_array($slotContents)) {
 			continue;
 		}
 		
-		$compatibilityClassNames = array();
+		$compatibilityClassNames = [];
 		$level = (int) ($instance['level'] ?? false);
 		$isVersionControlled = !empty($instance['content_id']);
 		$containerId = 'plgslt_'. $slotName;
@@ -79,8 +79,8 @@ if (!empty($slotContents) && is_array($slotContents)) {
 				$compatibilityClassNames[$className] = $className;
 			}
 			
-			$modules = array();
-			$tags = array();
+			$modules = [];
+			$tags = [];
 			\ze\tuix::load($modules, $tags, 'slot_controls', $path = 'full_slot', '', $compatibilityClassNames);
 			$removedColumns = false;
 			\ze\tuix::parse2($tags, $removedColumns, 'slot_controls', $path);

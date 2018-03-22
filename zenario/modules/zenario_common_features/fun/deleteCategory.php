@@ -30,9 +30,9 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 $recurseCount++;
 
 
-ze\row::delete('category_item_link', array('category_id' => $id));
-ze\row::delete('categories', array('id' => $id));
-ze\row::delete('visitor_phrases', array('code' => '_CATEGORY_'. (int) $id, 'module_class_name' => 'zenario_common_features'));
+ze\row::delete('category_item_link', ['category_id' => $id]);
+ze\row::delete('categories', ['id' => $id]);
+ze\row::delete('visitor_phrases', ['code' => '_CATEGORY_'. (int) $id, 'module_class_name' => 'zenario_common_features']);
 ze\contentAdm::removeItemFromPluginSettings('category', $id);
 
 $sql = "
@@ -51,7 +51,7 @@ $sql = "
 ze\sql::update($sql);
 
 
-ze\module::sendSignal("eventCategoryDeleted",array("categoryId" => $id));
+ze\module::sendSignal("eventCategoryDeleted",["categoryId" => $id]);
 
 if ($recurseCount<=10) {
 	$sql = "SELECT id

@@ -129,7 +129,7 @@ class zenario_ctype_audio extends ze\moduleBaseClass {
 		
 		$subSections['Audio'] = true;
 		$mergeFields['Container_id'] = $this->containerId;
-		$mergeFields['Size'] = ze\lang::formatFilesizeNicely(ze\row::get('files','size',array('id'=> ($contentItemDetails['file_id'] ?? false))), 0, false, 'zenario_ctype_audio');
+		$mergeFields['Size'] = ze\lang::formatFilesizeNicely(ze\row::get('files','size',['id'=> ($contentItemDetails['file_id'] ?? false)]), 0, false, 'zenario_ctype_audio');
 		$mergeFields['title'] = $contentItemDetails['title'] ?? false;
 		ze\file::contentLink($url, $this->targetID, $this->targetType, $this->targetVersion);
 		$mergeFields['mp3Path'] = $url;
@@ -202,7 +202,7 @@ class zenario_ctype_audio extends ze\moduleBaseClass {
 					} else {
 						$panel['collection_buttons']['zenario_ctype_audio__create_multiple']['tooltip'] = 
 							ze\admin::phrase('Create multiple Audio files in the Language "[[lang]]"',
-								array('lang' => ze\lang::name((($panel['key']['language'] ?? false) ?: ze::$defaultLang))));
+								['lang' => ze\lang::name((($panel['key']['language'] ?? false) ?: ze::$defaultLang))]);
 					}
 				}
 				
@@ -241,13 +241,13 @@ class zenario_ctype_audio extends ze\moduleBaseClass {
 								echo
 									ze\admin::phrase(
 										'The [[file]] is not an MP3 file.',
-										array('file' => htmlspecialchars($_FILES['Filedata']['name'])));
+										['file' => htmlspecialchars($_FILES['Filedata']['name'])]);
 							
 							} elseif (ze::setting('content_max_filesize') < filesize($_FILES['Filedata']['tmp_name'])) {
 								echo
 									ze\admin::phrase(
 										'The [[file]] is larger than the Maximum Content File Size as set in the Site Settings.',
-										array('file' => htmlspecialchars($_FILES['Filedata']['name'])));
+										['file' => htmlspecialchars($_FILES['Filedata']['name'])]);
 							
 							} else {
 								$filename = preg_replace('/([^.a-z0-9]+)/i', '_', $_FILES['Filedata']['name']);

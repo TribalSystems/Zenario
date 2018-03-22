@@ -34,7 +34,7 @@ class zenario_common_features__admin_boxes__change_tags extends ze\moduleBaseCla
 		if ($ids = $box['key']['id']) {
 			$idsArray = ze\ray::explodeAndTrim($ids);
 			$idsCount = count($idsArray);
-			$tagUsage = array();
+			$tagUsage = [];
 			$sql = '
 				SELECT tag_id, COUNT(image_id) AS count
 				FROM ' . DB_NAME_PREFIX . 'image_tag_link
@@ -44,7 +44,7 @@ class zenario_common_features__admin_boxes__change_tags extends ze\moduleBaseCla
 			while ($row = ze\sql::fetchAssoc($result)) {
 				$tagUsage[$row['tag_id']] = $row['count'];
 			}
-			$tags = array();
+			$tags = [];
 			$counter = 10;
 			$sql = '
 				SELECT id, name AS label, color AS tag_color
@@ -63,13 +63,13 @@ class zenario_common_features__admin_boxes__change_tags extends ze\moduleBaseCla
 				++$counter;
 				$tags[$row['id']] = $row;
 				$label = '';
-				$fieldValues = array();
+				$fieldValues = [];
 				if (!empty($tagUsage[$row['id']])) {
 					$label = ze\admin::nPhrase(
 						' ([[count]] image)',
 						' ([[count]] images)',
 						(int)$tagUsage[$row['id']],
-						array('count' => $tagUsage[$row['id']]));
+						['count' => $tagUsage[$row['id']]]);
 					
 					$fieldValues['remove_tag'] = 'Remove tag';
 					if ($tagUsage[$row['id']] != $idsCount) {
@@ -83,23 +83,23 @@ class zenario_common_features__admin_boxes__change_tags extends ze\moduleBaseCla
 						<label class="zenario_tag zenario_tag_' . $row['tag_color'] . '">' . $row['label'] . '</label>
 					</span>';
 				
-				$box['tabs']['details']['fields']['tag_label_' . $row['id']] = array(
+				$box['tabs']['details']['fields']['tag_label_' . $row['id']] = [
 					'full_width' => true,
 					'ord' => $counter,
 					'snippet' => 
-						array('html' => $html));
-				$box['tabs']['details']['fields']['tag_' . $row['id']] = array(
+						['html' => $html]];
+				$box['tabs']['details']['fields']['tag_' . $row['id']] = [
 					'same_row' => true,
 					'ord' => $counter + 0.1,
 					'type' => 'select',
 					'values' => $fieldValues,
-					'empty_value' => 'Do nothing');
-				$box['tabs']['details']['fields']['image_count_' . $row['id']] = array(
+					'empty_value' => 'Do nothing'];
+				$box['tabs']['details']['fields']['image_count_' . $row['id']] = [
 					'same_row' => true,
 					'full_width' => true,
 					'ord' => $counter + 0.2,
 					'snippet' => 
-						array('html' => $label));
+						['html' => $label]];
 				
 			}
 		}
@@ -108,7 +108,7 @@ class zenario_common_features__admin_boxes__change_tags extends ze\moduleBaseCla
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		ze\priv::exitIfNot('_PRIV_MANAGE_MEDIA');
 		$ids = ze\ray::explodeAndTrim($box['key']['id']);
-		$tags = array();
+		$tags = [];
 		$sql = '
 			SELECT id, name AS label, color AS tag_color
 			FROM ' . DB_NAME_PREFIX . 'image_tags';
@@ -124,9 +124,9 @@ class zenario_common_features__admin_boxes__change_tags extends ze\moduleBaseCla
 		if ($action) {
 			foreach ($ids as $imageId) {
 				if ($action == 'add_tag') {
-					ze\row::set('image_tag_link', array(), array('image_id' => $imageId, 'tag_id' => $tagId));
+					ze\row::set('image_tag_link', [], ['image_id' => $imageId, 'tag_id' => $tagId]);
 				} elseif ($action == 'remove_tag') {
-					ze\row::delete('image_tag_link', array('image_id' => $imageId, 'tag_id' => $tagId));
+					ze\row::delete('image_tag_link', ['image_id' => $imageId, 'tag_id' => $tagId]);
 				}
 			}
 		}

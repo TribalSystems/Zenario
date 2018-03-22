@@ -1,0 +1,28 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_user_forms__predefined_text_target:
+    key:
+        id: ''
+    title: Creating a pre-defined text target field
+    hide_tab_bar: true
+    max_height: 300
+    tabs:
+        details:
+            label: Details
+            edit_mode:
+                enabled: true
+                always_on: true
+            fields:
+                form_field_id:
+                    label: 'Textarea field:'
+                    type: select
+                    empty_value: -- Select --
+                    validation:
+                        required: Choose a textarea field from the form.
+                button_label:
+                    label: 'Button label:'
+                    type: text
+                    value: Auto-fill text
+                    maxlength: 250
+                    validation:
+                        required: Enter a button label.

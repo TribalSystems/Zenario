@@ -49,10 +49,10 @@ class zenario_common_features__organizer__backups extends ze\moduleBaseClass {
 		}
 		
 		if (file_exists($dirpath = ze::setting('backup_dir'))) {
-			$panel['items'] = array();
+			$panel['items'] = [];
 			foreach (scandir($dirpath) as $i => $file) {
 				if (is_file($dirpath. '/'. $file) && substr($file, 0, 1) != '.') {
-					$panel['items'][ze\ring::encodeIdForOrganizer($file)] = array('filename' => $file, 'size' => filesize($dirpath. '/'. $file));
+					$panel['items'][ze\ring::encodeIdForOrganizer($file)] = ['filename' => $file, 'size' => filesize($dirpath. '/'. $file)];
 				}
 			}
 		}
@@ -95,7 +95,7 @@ class zenario_common_features__organizer__backups extends ze\moduleBaseClass {
 			
 			$filename = $_FILES['Filedata']['name'];
 			$ext = pathinfo($filename, PATHINFO_EXTENSION);
-			if (!in_array($ext, array('sql', 'gz'))) {
+			if (!in_array($ext, ['sql', 'gz'])) {
 				echo '<!--Message_Type:Error-->Only .sql or .gz files can be uploaded as database backups';
 			} elseif (file_exists(ze::setting('backup_dir') . '/'. $_FILES['Filedata']['name'])) {
 				echo '<!--Message_Type:Error-->A database backup with the same name already exists';
@@ -107,7 +107,7 @@ class zenario_common_features__organizer__backups extends ze\moduleBaseClass {
 		
 		} elseif (($_POST['restore'] ?? false) && ze\priv::check('_PRIV_RESTORE_SITE')) {
 			//Restore a database backup from the file system
-			$failures = array();
+			$failures = [];
 			if (ze\dbAdm::restoreFromBackup($filename, $failures)) {
 				echo '<!--Reload_Organizer-->';
 			} else {

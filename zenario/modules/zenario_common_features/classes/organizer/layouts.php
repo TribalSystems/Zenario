@@ -68,7 +68,7 @@ class zenario_common_features__organizer__layouts extends ze\moduleBaseClass {
 			}
 		
 		} else {
-			$panel['trash']['empty'] = !ze\row::exists('layouts', array('status' => 'suspended'));
+			$panel['trash']['empty'] = !ze\row::exists('layouts', ['status' => 'suspended']);
 		}
 		
 		if (isset($_GET['refiner__content_type'])) {
@@ -86,35 +86,35 @@ class zenario_common_features__organizer__layouts extends ze\moduleBaseClass {
 		$panel['key']['disableItemLayer'] = true;
 		
 		if ($refinerName == 'content_type') {
-			$panel['title'] = ze\admin::phrase('Layouts available for the "[[name]]" content type', array('name' => ze\content::getContentTypeName($refinerId)));
-			$panel['no_items_message'] = ze\admin::phrase('There are no layouts available for the "[[name]]" content type', array('name' => ze\content::getContentTypeName($refinerId)));
+			$panel['title'] = ze\admin::phrase('Layouts available for the "[[name]]" content type', ['name' => ze\content::getContentTypeName($refinerId)]);
+			$panel['no_items_message'] = ze\admin::phrase('There are no layouts available for the "[[name]]" content type', ['name' => ze\content::getContentTypeName($refinerId)]);
 		
 		} elseif ($_GET['refiner__module_usage'] ?? false) {
-			$mrg = array(
-				'name' => ze\module::displayName($_GET['refiner__module_usage'] ?? false));
+			$mrg = [
+				'name' => ze\module::displayName($_GET['refiner__module_usage'] ?? false)];
 			$panel['title'] = ze\admin::phrase('Layouts on which the module "[[name]]" is used (layout layer)', $mrg);
 			$panel['no_items_message'] = ze\admin::phrase('There are no layouts using the module "[[name]]".', $mrg);
 		
 		} elseif ($_GET['refiner__plugin_instance_usage'] ?? false) {
-			$mrg = array(
-				'name' => ze\plugin::name($_GET['refiner__plugin_instance_usage'] ?? false));
+			$mrg = [
+				'name' => ze\plugin::name($_GET['refiner__plugin_instance_usage'] ?? false)];
 			$panel['title'] = ze\admin::phrase('Layouts on which the plugin "[[name]]" is used (layout layer)', $mrg);
 			$panel['no_items_message'] = ze\admin::phrase('There are no layouts using the plugin "[[name]]".', $mrg);
 		
 		}
 		
-		$panel['columns']['content_type']['values'] = array();
+		$panel['columns']['content_type']['values'] = [];
 		foreach (ze\content::getContentTypes() as $cType) {
 			$panel['columns']['content_type']['values'][$cType['content_type_id']] = $cType['content_type_name_en'];
 		}
 		
-		$foundPaths = array();
-		$defaultLayouts = ze\row::getArray('content_types', 'default_layout_id', array());
+		$foundPaths = [];
+		$defaultLayouts = ze\row::getArray('content_types', 'default_layout_id', []);
 		
 		$templatePreview = '';
 		
 		foreach ($panel['items'] as $id => &$item) {
-			$item['traits'] = array();
+			$item['traits'] = [];
 			
 			
 			//For each Template file that's not missing, check its size and check the contents
@@ -123,11 +123,11 @@ class zenario_common_features__organizer__layouts extends ze\moduleBaseClass {
 			//wasting time scanning the same file more than once.
 			if (empty($item['missing']) && !isset($foundPaths[$item['path']])) {
 				if ($fileContents = @file_get_contents($item['path'])) {
-					$foundPaths[$item['path']] = array(
+					$foundPaths[$item['path']] = [
 						'filesize' => strlen($fileContents),
 						'checksum' => md5($fileContents),
 						'grid' => ze\gridAdm::readCode($fileContents, true, true)
-					);
+					];
 				} else {
 					$foundPaths[$item['path']] = false;
 				}
@@ -168,7 +168,7 @@ class zenario_common_features__organizer__layouts extends ze\moduleBaseClass {
 				}
 				$item['summary'] = $summary;
 				
-				if (!ze\row::exists('content_types', array('default_layout_id' => $id)) && !ze\row::exists('content_item_versions', array('layout_id' => $id))) {
+				if (!ze\row::exists('content_types', ['default_layout_id' => $id]) && !ze\row::exists('content_item_versions', ['layout_id' => $id])) {
 					$item['traits']['deletable'] = true;
 				
 				}
@@ -197,8 +197,8 @@ class zenario_common_features__organizer__layouts extends ze\moduleBaseClass {
 		//Delete a template if it is not in use
 		if (($_POST['delete'] ?? false) && ze\priv::check('_PRIV_EDIT_TEMPLATE')) {
 			foreach (ze\ray::explodeAndTrim($ids) as $id) {
-				if (!ze\row::exists('content_types', array('default_layout_id' => $id))
-				 && !ze\row::exists('content_item_versions', array('layout_id' => $id))) {
+				if (!ze\row::exists('content_types', ['default_layout_id' => $id])
+				 && !ze\row::exists('content_item_versions', ['layout_id' => $id])) {
 				 	ze\layoutAdm::delete($id, true);
 				}
 			}
@@ -207,15 +207,15 @@ class zenario_common_features__organizer__layouts extends ze\moduleBaseClass {
 		//Archive a template
 		} elseif (($_POST['archive'] ?? false) && ze\priv::check('_PRIV_EDIT_TEMPLATE')) {
 			foreach (ze\ray::explodeAndTrim($ids) as $id) {
-				if (!ze\row::exists('content_types', array('default_layout_id' => $id))) {
-					ze\row::update('layouts', array('status' => 'suspended'), $id);
+				if (!ze\row::exists('content_types', ['default_layout_id' => $id])) {
+					ze\row::update('layouts', ['status' => 'suspended'], $id);
 				}
 			}
 		
 		//Restore a template
 		} elseif (($_POST['restore'] ?? false) && ze\priv::check('_PRIV_EDIT_TEMPLATE')) {
 			foreach (ze\ray::explodeAndTrim($ids) as $id) {
-				ze\row::update('layouts', array('status' => 'active'), $id);
+				ze\row::update('layouts', ['status' => 'active'], $id);
 			}
 		}
 	}

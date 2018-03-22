@@ -175,7 +175,7 @@ sections:
                 parent: slot_control_dropdown
                 appears_in_toolbars:
                     layout: true
-                label: Global <head> and <body> HTML
+                label: Site-wide <head> and <body>
                 onmouseover: zenarioA.closeSlotControls();
                 admin_box:
                     path: site_settings

@@ -62,51 +62,51 @@ methods.showPanel = function($header, $panel, $footer) {
 	$header.html('').hide();
 	$footer.html('').show();
 	
-	this.sortOutItems();
+	thus.sortOutItems();
 	
 	//Load main panel
-	var html = this.loadPanelHTML();
+	var html = thus.loadPanelHTML();
 	$panel.html(html).show();
 	
 	//On initial load select the first page
-	if (_.isEmpty(this.tuix.items)) {
-		this.addNewPage(true);
+	if (_.isEmpty(thus.tuix.items)) {
+		thus.addNewPage(true);
 	}
-	if (!this.currentPageId) {
-		var pages = this.getOrderedPages();
+	if (!thus.currentPageId) {
+		var pages = thus.getOrderedPages();
 		if (pages.length > 0) {
-			this.currentPageId = pages[0].id;
+			thus.currentPageId = pages[0].id;
 		}
 	}
 	
-	this.pagesReordered = false;
-	this.deletedPages = [];
-	this.deletedFields = [];
-	this.deletedValues = [];
-	this.changeDetected = false;
-	this.maxNewCustomField = 1;
-	this.maxNewCustomFieldValue = 1;
+	thus.pagesReordered = false;
+	thus.deletedPages = [];
+	thus.deletedFields = [];
+	thus.deletedValues = [];
+	thus.changeDetected = false;
+	thus.maxNewCustomField = 1;
+	thus.maxNewCustomFieldValue = 1;
 	
-	this.selectedDetailsPage = this.selectedDetailsPage ? this.selectedDetailsPage : false;
-	this.selectedFieldId = this.selectedFieldId ? this.selectedFieldId : false;
-	this.selectedPageId = this.selectedPageId ? this.selectedPageId : false;
+	thus.selectedDetailsPage = thus.selectedDetailsPage ? thus.selectedDetailsPage : false;
+	thus.selectedFieldId = thus.selectedFieldId ? thus.selectedFieldId : false;
+	thus.selectedPageId = thus.selectedPageId ? thus.selectedPageId : false;
 	
 	//Load right panel
-	this.loadPagesList(this.currentPageId);
-	this.loadFieldsList(this.currentPageId);
+	thus.loadPagesList(thus.currentPageId);
+	thus.loadFieldsList(thus.currentPageId);
 	
 	//Load left panel
-	if (this.selectedFieldId) {
-		this.loadFieldDetailsPanel(this.selectedFieldId, true);
-	} else if (this.selectedPageId) {
-		this.loadPageDetailsPanel(this.selectedPageId, true);
+	if (thus.selectedFieldId) {
+		thus.loadFieldDetailsPanel(thus.selectedFieldId, true);
+	} else if (thus.selectedPageId) {
+		thus.loadPageDetailsPanel(thus.selectedPageId, true);
 	} else {
-		this.loadNewFieldsPanel(true);
+		thus.loadNewFieldsPanel(true);
 	}
 	
 	//Show Growl message if saved changes
-	if (this.changesSaved) {
-		this.changesSaved = false;
+	if (thus.changesSaved) {
+		thus.changesSaved = false;
 		var toast = {
 			message_type: 'success',
 			message: 'Your changes have been saved!'
@@ -117,7 +117,7 @@ methods.showPanel = function($header, $panel, $footer) {
 
 methods.sortOutItems = function() {
 	var pageId, page, fieldId, field;
-	foreach (this.tuix.fields as fieldId => field) {
+	foreach (thus.tuix.fields as fieldId => field) {
 		//This array is turned into an object when parsed. Turn it back into an array...
 		if (field.invalid_responses) {
 			field.invalid_responses = _.toArray(field.invalid_responses);
@@ -130,7 +130,7 @@ methods.sortOutItems = function() {
 		}
 	}
 	
-	foreach (this.tuix.items as pageId => page) {
+	foreach (thus.tuix.items as pageId => page) {
 		if (page.visible_condition_checkboxes_field_value) {
 			page.visible_condition_checkboxes_field_value = _.toArray(page.visible_condition_checkboxes_field_value);
 		}
@@ -142,32 +142,31 @@ methods.sortOutItems = function() {
 
 methods.loadPanelHTML = function() {
 	var mergeFields = {
-		form_title: this.tuix.form_title
+		form_title: thus.tuix.form_title
 	};
-	var html = this.microTemplate('zenario_organizer_form_builder', mergeFields);
+	var html = thus.microTemplate('zenario_organizer_form_builder', mergeFields);
 	return html;
 };
 
 methods.loadPageDetailsPanel = function(pageId, stopEffect) {
-	this.loadFieldDetailsPanel(pageId, stopEffect, true);
+	thus.loadFieldDetailsPanel(pageId, stopEffect, true);
 	
-	var that = this,
-		label, page, message, fields;
+	var label, page, message, fields;
 	$('#field__name').on('keyup', function() {
-		label = that.getPageLabel($(this).val());
+		label = thus.getPageLabel($(this).val());
 		$('#organizer_form_tab_' + pageId + ' span').text(label);
 	});
 	
 	$('#organizer_remove_form_tab').on('click', function(e) {
-		page = that.tuix.items[pageId];
+		page = thus.tuix.items[pageId];
 		if (page) {
 			message = '<p>Are you sure you want to delete this page?</p>';
-			fields = that.getOrderedFields(pageId);
+			fields = thus.getOrderedFields(pageId);
 			if (fields.length) {
 				message += '<p>All fields on this page will be moved onto the previous page.</p>';
 			}
 			zenarioA.floatingBox(message, 'Delete', 'warning', true, false, function() {
-				that.deletePage(pageId);
+				thus.deletePage(pageId);
 			});
 		}
 	});
@@ -176,13 +175,13 @@ methods.loadPageDetailsPanel = function(pageId, stopEffect) {
 methods.loadFieldDetailsPanel = function(fieldId, stopEffect, isPage) {
 	var field;
 	if (isPage) {
-		field = this.tuix.items[fieldId];
+		field = thus.tuix.items[fieldId];
 		field.type = 'page_break';
 	} else {
-		field = this.tuix.fields[fieldId];
+		field = thus.tuix.fields[fieldId];
 	}
 	
-	var typePhrase = this.getFieldReadableType(field.type);
+	var typePhrase = thus.getFieldReadableType(field.type);
 	if (field.dataset_field_id) {
 		typePhrase += ', linked field → ' + field.db_column;
 	}
@@ -194,7 +193,7 @@ methods.loadFieldDetailsPanel = function(fieldId, stopEffect, isPage) {
 		type: field.type,
 		typePhrase: typePhrase,
 		just_added: field.just_added,
-		hide_tab_bar: this.tuix.field_details.hide_tab_bar,
+		hide_tab_bar: thus.tuix.field_details.hide_tab_bar,
 		is_tab: isPage
 	};
 	if (field.dataset_field_id) {
@@ -204,7 +203,7 @@ methods.loadFieldDetailsPanel = function(fieldId, stopEffect, isPage) {
 		}
 	}
 	
-	var html = this.microTemplate('zenario_organizer_form_builder_left_panel', mergeFields);
+	var html = thus.microTemplate('zenario_organizer_form_builder_left_panel', mergeFields);
 	var $div = $('#organizer_form_builder .form_fields_palette .form_fields_palette_outer').html(html);
 	
 	if (!stopEffect) {
@@ -212,34 +211,33 @@ methods.loadFieldDetailsPanel = function(fieldId, stopEffect, isPage) {
 	}
 	
 	//Load TUIX pages HTML
-	var tuix = this.tuix.field_details.tabs;
-	var pages = this.sortAndLoadTUIXPages(tuix, field, this.selectedDetailsPage);
-	var html = this.getTUIXPagesHTML(pages);
+	var tuix = thus.tuix.field_details.tabs;
+	var pages = thus.sortAndLoadTUIXPages(tuix, field, thus.selectedDetailsPage);
+	var html = thus.getTUIXPagesHTML(pages);
 	$('#organizer_field_details_tabs').html(html);
 	
 	//Add field details page events
-	var that = this;
 	$('#organizer_field_details_tabs .tab').on('click', function() {
 		var page = $(this).data('name');
-		if (page && page != that.selectedDetailsPage) {
-			var errors = that.saveCurrentOpenDetails();
+		if (page && page != thus.selectedDetailsPage) {
+			var errors = thus.saveCurrentOpenDetails();
 			if (!errors) {
-				that.loadFieldDetailsPage(page, fieldId);
+				thus.loadFieldDetailsPage(page, fieldId);
 			}
 		}
 	});
 	
 	//Load TUIX fields html
-	this.loadFieldDetailsPage(this.selectedDetailsPage, fieldId);
+	thus.loadFieldDetailsPage(thus.selectedDetailsPage, fieldId);
 	
 	//Add panel events
 	
 	//Go to new fields panel
 	$('#organizer_field_details_inner span.add_new_field').on('click', function() {
-		var errors = that.saveCurrentOpenDetails();
+		var errors = thus.saveCurrentOpenDetails();
 		if (!errors) {
-			that.highlightField(false);
-			that.loadNewFieldsPanel();
+			thus.highlightField(false);
+			thus.loadNewFieldsPanel();
 		}
 	});
 	
@@ -257,12 +255,12 @@ methods.loadFieldDetailsPanel = function(fieldId, stopEffect, isPage) {
 		$('#zenario_field_details_header_content .view_mode h5').text(name);
 	});
 	$('#field__name').on('keyup', function() {
-		that.changeMadeToPanel();
+		thus.changeMadeToPanel();
 	});
 	
 	//Edit form settings
 	$('input.form_settings').on('click', function() {
-		that.openFormSettings();
+		thus.openFormSettings();
 	});
 };
 
@@ -277,28 +275,29 @@ methods.openFormSettings = function() {
 			if (values.details.show_title) {
 				title = values.details.title;
 			}
-			this.tuix.title = title;
+			thus.tuix.title = title;
 			$('#organizer_form_builder .form_outer .form_header h5').text(title);
 		}
 	);
 };
 
 methods.loadPageDetailsPage = function(page, pageId, errors) {
-	this.loadFieldDetailsPage(page, pageId, errors);
+	thus.loadFieldDetailsPage(page, pageId, errors);
 };
 
 methods.loadFieldDetailsPage = function(page, fieldId, errors) {
-	this.selectedDetailsPage = page;
 	var item;
-	if (this.selectedFieldId && this.tuix.fields[fieldId]) {
-		item = this.tuix.fields[fieldId]
-	} else if (this.selectedPageId && this.tuix.items[fieldId]) {
-		item = this.tuix.items[fieldId];
+	thus.selectedDetailsPage = page;
+	
+	if (thus.selectedFieldId && thus.tuix.fields[fieldId]) {
+		item = thus.tuix.fields[fieldId]
+	} else if (thus.selectedPageId && thus.tuix.items[fieldId]) {
+		item = thus.tuix.items[fieldId];
 		//Final page must be visible
-		var pages = this.getOrderedPages();
+		var pages = thus.getOrderedPages();
 		for (var i = 0; i < pages.length; i++) {
 			if (pages[i].id == item.id) {
-				if (i == (pages.length - 1) && !this.tuix.form_enable_summary_page) {
+				if (i == (pages.length - 1) && !thus.tuix.form_enable_summary_page) {
 					item.visibility = 'visible';
 				}
 				break;
@@ -307,21 +306,21 @@ methods.loadFieldDetailsPage = function(page, fieldId, errors) {
 	}
 	
 	var path = 'field_details/' + page;
-	var tuix = this.tuix.field_details.tabs[page].fields;
-	var fields = this.loadFields(path, tuix, item);
-	var formattedFields = this.formatFieldDetails(fields, item, 'field', page);
-	var sortedFields = this.sortFields(formattedFields, item);
+	var tuix = thus.tuix.field_details.tabs[page].fields;
+	var fields = thus.loadFields(path, tuix, item);
+	var formattedFields = thus.formatFieldDetails(fields, item, 'field', page);
+	var sortedFields = thus.sortFields(formattedFields, item);
 	var html = '';
 	
 	//Add any errors
 	if (!_.isEmpty(errors)) {
-		errors = this.sortErrors(errors);
+		errors = thus.sortErrors(errors);
 		for (var i = 0; i < errors.length; i++) {
 			html += '<p class="error">' + errors[i] + '</p>';
 		}
 	}
 	
-	html += this.getTUIXFieldsHTML(sortedFields);
+	html += thus.getTUIXFieldsHTML(sortedFields);
 	$('#organizer_field_details').html(html);
 	$('#organizer_field_details_tabs .tab').removeClass('on');
 	$('#field_tab__' + page).addClass('on');
@@ -337,9 +336,7 @@ methods.loadFieldDetailsPage = function(page, fieldId, errors) {
 	}
 	
 	//Add events
-	
-	var that = this;
-	
+		
 	if (page == 'details') {
 		$('#field__field_label').on('keyup', function() {
 			$('#organizer_form_field_' + fieldId + ' .label').text($(this).val());
@@ -366,7 +363,7 @@ methods.loadFieldDetailsPage = function(page, fieldId, errors) {
 			$('#edit_field_calculation').on('click', function() {
 				//Get all numeric text fields
 				var numericFields = {};
-				foreach (that.tuix.fields as var tFieldId => var tField) {
+				foreach (thus.tuix.fields as var tFieldId => var tField) {
 					if ((tField.type == 'text' && ['number', 'integer', 'floating_point'].indexOf(tField.field_validation) != -1) 
 						|| (tField.type == 'calculated' && fieldId != tFieldId)
 					) {
@@ -395,9 +392,9 @@ methods.loadFieldDetailsPage = function(page, fieldId, errors) {
 						} else {
 							item.calculation_code = '';
 						}
-						that.changeMadeToPanel();
-						that.saveCurrentOpenDetails();
-						that.loadFieldDetailsPage('details', fieldId);
+						thus.changeMadeToPanel();
+						thus.saveCurrentOpenDetails();
+						thus.loadFieldDetailsPage('details', fieldId);
 					}
 				);
 			});
@@ -413,21 +410,21 @@ methods.loadFieldDetailsPage = function(page, fieldId, errors) {
 		
 	} else if (page == 'values') {
 		if (formattedFields.values && !formattedFields.values._hidden) {
-			var values = this.getOrderedFieldValues(fieldId);
-			html = this.microTemplate('zenario_organizer_admin_box_builder_field_value', values);
+			var values = thus.getOrderedFieldValues(fieldId);
+			html = thus.microTemplate('zenario_organizer_admin_box_builder_field_value', values);
 			
 			$('#field_values_list').html(html).sortable({
 				containment: 'parent',
 				tolerance: 'pointer',
 				axis: 'y',
 				start: function(event, ui) {
-					that.startIndex = ui.item.index();
+					thus.startIndex = ui.item.index();
 				},
 				stop: function(event, ui) {
-					if (that.startIndex != ui.item.index()) {
-						that.saveFieldListOfValues(that.tuix.fields[fieldId]);
-						that.loadFieldValuesListPreview(fieldId);
-						that.changeMadeToPanel();
+					if (thus.startIndex != ui.item.index()) {
+						thus.saveFieldListOfValues(thus.tuix.fields[fieldId]);
+						thus.loadFieldValuesListPreview(fieldId);
+						thus.changeMadeToPanel();
 					}
 				}
 			});
@@ -435,33 +432,33 @@ methods.loadFieldDetailsPage = function(page, fieldId, errors) {
 			$('#field_values_list input').on('keyup', function() {
 				var id = $(this).data('id');
 				$('#organizer_field_value_' + id + ' label').text($(this).val());
-				that.changeMadeToPanel();
+				thus.changeMadeToPanel();
 			});
 			
 			//Add new field value
 			$('#organizer_add_a_field_value').on('click', function() {
-				that.addFieldValue(item);
-				that.saveItemTUIXPage('field_details', page, item);
-				that.loadFieldDetailsPage(page, fieldId);
-				that.loadFieldValuesListPreview(fieldId);
-				that.changeMadeToPanel();
+				thus.addFieldValue(item);
+				thus.saveItemTUIXPage('field_details', page, item);
+				thus.loadFieldDetailsPage(page, fieldId);
+				thus.loadFieldValuesListPreview(fieldId);
+				thus.changeMadeToPanel();
 			});
 			
 			//Delete field value
 			$('#field_values_list .delete_icon').on('click', function() {
 				var id = $(this).data('id');
 				if (item.lov[id]) {
-					that.deletedValues.push(id);
+					thus.deletedValues.push(id);
 					delete(item.lov[id]);
 				}
-				that.saveItemTUIXPage('field_details', page, item);
-				that.loadFieldDetailsPage(page, fieldId);
-				that.loadFieldValuesListPreview(fieldId);
-				that.changeMadeToPanel();
+				thus.saveItemTUIXPage('field_details', page, item);
+				thus.loadFieldDetailsPage(page, fieldId);
+				thus.loadFieldValuesListPreview(fieldId);
+				thus.changeMadeToPanel();
 			});
 		}
 	} else if (page == 'translations') {
-		var transFieldNamesList = _.toArray(this.tuix.field_details.tabs[page].translapagele_fields);
+		var transFieldNamesList = _.toArray(thus.tuix.field_details.tabs[page].translapagele_fields);
 		var transFieldNames = {};
 		for (var i = 0; i < transFieldNamesList.length; i++) {
 			transFieldNames[transFieldNamesList[i]] = true;
@@ -470,10 +467,10 @@ methods.loadFieldDetailsPage = function(page, fieldId, errors) {
 		//Currently translations only support fields on the details page
 		page = 'details';
 		path = 'field_details/' + page;
-		tuix = this.tuix.field_details.tabs[page].fields;
-		fields = this.loadFields(path, tuix, item);
-		formattedFields = this.formatFieldDetails(fields, item, 'field', page);
-		sortedFields = this.sortFields(formattedFields, item);
+		tuix = thus.tuix.field_details.tabs[page].fields;
+		fields = thus.loadFields(path, tuix, item);
+		formattedFields = thus.formatFieldDetails(fields, item, 'field', page);
+		sortedFields = thus.sortFields(formattedFields, item);
 		
 		var visibleTransFieldNamesList = [];
 		foreach (sortedFields as var i => var sField) {
@@ -482,7 +479,7 @@ methods.loadFieldDetailsPage = function(page, fieldId, errors) {
 			}
 		}
 		
-		var languages = this.sortLanguages(this.tuix.languages);
+		var languages = thus.sortLanguages(thus.tuix.languages);
 		var transFields = [];
 		foreach (visibleTransFieldNamesList as var i => var transFieldName) {
 			if (formattedFields[transFieldName] && !formattedFields[transFieldName]._hidden) {
@@ -518,11 +515,11 @@ methods.loadFieldDetailsPage = function(page, fieldId, errors) {
 			}
 		}
 		
-		var html = this.microTemplate('zenario_organizer_form_builder_translatable_field', transFields);
+		var html = thus.microTemplate('zenario_organizer_form_builder_translatable_field', transFields);
 		$('#organizer_field_translations').html(html);
 		
 		$('#organizer_field_translations input').on('keyup', function() {
-			that.changeMadeToPanel();
+			thus.changeMadeToPanel();
 		});
 		
 	} else if (page == 'crm' || page == 'salesforce_api') {
@@ -535,19 +532,19 @@ methods.loadFieldDetailsPage = function(page, fieldId, errors) {
 		var crm_value_name = prefix + '_value';
 		
 		$('#organizer_crm_button__set_labels').on('click', function() {
-			that.changeMadeToPanel();
+			thus.changeMadeToPanel();
 			$('#organizer_field_crm_values input.crm_value_input').each(function(i, e) {
 				var id = $(this).data('id');
 				var value = '';
-				if (that.tuix.fields[fieldId].lov && that.tuix.fields[fieldId].lov[id]) {
-					value = that.tuix.fields[fieldId].lov[id].label;
+				if (thus.tuix.fields[fieldId].lov && thus.tuix.fields[fieldId].lov[id]) {
+					value = thus.tuix.fields[fieldId].lov[id].label;
 				}
 				$(this).val(value);
 			});
 		});
 		
 		$('#organizer_crm_button__set_values').on('click', function() {
-			that.changeMadeToPanel();
+			thus.changeMadeToPanel();
 			$('#organizer_field_crm_values input.crm_value_input').each(function(i, e) {
 				var id = $(this).data('id');
 				$(this).val(id);
@@ -582,20 +579,20 @@ methods.loadFieldDetailsPage = function(page, fieldId, errors) {
 				mergeFields.values.push(value);
 			}
 			
-			mergeFields.values.sort(this.sortByOrd);
+			mergeFields.values.sort(thus.sortByOrd);
 		} else {
-			var values = this.getOrderedFieldValues(fieldId);
+			var values = thus.getOrderedFieldValues(fieldId);
 			foreach (values as var valueId => var value) {
 				value.crm_value_name = crm_value_name;
 				mergeFields.values.push(value);
 			}
 		}
 		
-		var html = this.microTemplate('zenario_organizer_form_builder_crm_values', mergeFields);
+		var html = thus.microTemplate('zenario_organizer_form_builder_crm_values', mergeFields);
 		$('#organizer_field_crm_values').html(html);
 		
 		$('#organizer_field_crm_values input.crm_value_input').on('keyup', function() {
-			that.changeMadeToPanel();
+			thus.changeMadeToPanel();
 		});
 	}
 };
@@ -631,7 +628,7 @@ methods.calculationAdminBoxAddSomthing = function(type, value) {
 		calculationCode.push(code);
 		$('#calculation_code').val(JSON.stringify(calculationCode));
 		
-		this.calculationAdminBoxUpdateDisplay(calculationCode);
+		thus.calculationAdminBoxUpdateDisplay(calculationCode);
 	}
 };
 methods.calculationAdminBoxDelete = function() {
@@ -643,10 +640,10 @@ methods.calculationAdminBoxDelete = function() {
 			$('#calculation_code').val(JSON.stringify(calculationCode));
 		}
 	}
-	this.calculationAdminBoxUpdateDisplay(calculationCode);
+	thus.calculationAdminBoxUpdateDisplay(calculationCode);
 };
 methods.calculationAdminBoxUpdateDisplay = function(calculationCode) {
-	var calculationDisplay = this.getCalculationCodeDisplay(calculationCode);
+	var calculationDisplay = thus.getCalculationCodeDisplay(calculationCode);
 	$('#zenario_calculation_display').text(calculationDisplay);
 };
 methods.getCalculationCodeDisplay = function(calculationCode) {
@@ -654,7 +651,7 @@ methods.getCalculationCodeDisplay = function(calculationCode) {
 		fields, fieldId, field, lastIsParenthesisOpen, i, name;
 	if (calculationCode) {
 		fields = {};
-		foreach (this.tuix.fields as fieldId => field) {
+		foreach (thus.tuix.fields as fieldId => field) {
 			fields[fieldId] = field;
 		}
 		
@@ -717,8 +714,8 @@ methods.formatFieldDetails = function(fields, item, mode, page) {
 			}
 			
 			var values_source = fields.values_source._value;
-			if (values_source && this.tuix.centralised_lists.values[values_source]) {
-				var list = this.tuix.centralised_lists.values[values_source];
+			if (values_source && thus.tuix.centralised_lists.values[values_source]) {
+				var list = thus.tuix.centralised_lists.values[values_source];
 				if (!list.info.can_filter) {
 					fields.values_source_filter._hidden = true;
 				} else {
@@ -727,7 +724,7 @@ methods.formatFieldDetails = function(fields, item, mode, page) {
 			}
 			
 			if (item.visibility == 'visible_on_condition' && item.visible_condition_field_id) {
-				var conditionField = this.getField(item.visible_condition_field_id);
+				var conditionField = thus.getField(item.visible_condition_field_id);
 				if (conditionField) {
 					
 					if (conditionField.type == 'checkboxes') {
@@ -750,7 +747,7 @@ methods.formatFieldDetails = function(fields, item, mode, page) {
 				}
 			}
 			if (item.readonly_or_mandatory == 'conditional_mandatory' && item.mandatory_condition_field_id) {
-				var conditionField = this.getField(item.mandatory_condition_field_id);
+				var conditionField = thus.getField(item.mandatory_condition_field_id);
 				if (conditionField.type == 'checkboxes') {
 					fields.mandatory_condition_checkboxes_field_value.values = conditionField.lov;
 					fields.mandatory_condition_field_value._hidden = true;
@@ -773,15 +770,15 @@ methods.formatFieldDetails = function(fields, item, mode, page) {
 					if (!Array.isArray(item.calculation_code)) {
 						item.calculation_code = $.map(item.calculation_code, function(i) { return i });
 					}
-					fields.calculation_code._value = this.getCalculationCodeDisplay(item.calculation_code);
+					fields.calculation_code._value = thus.getCalculationCodeDisplay(item.calculation_code);
 				}
 			} else if (item.type == 'page_break') {
-				var pages = this.getOrderedPages();
+				var pages = thus.getOrderedPages();
 				for (var i = 0; i < pages.length; i++) {
 					if (pages[i].id == item.id) {
 						if (i == 0) {
 							fields.previous_button_text._hidden = true;
-						} else if (i == (pages.length - 1) && !this.tuix.form_enable_summary_page) {
+						} else if (i == (pages.length - 1) && !thus.tuix.form_enable_summary_page) {
 							fields.next_button_text._hidden = true;
 							fields.visibility._disabled = true;
 						}
@@ -805,15 +802,15 @@ methods.formatFieldDetails = function(fields, item, mode, page) {
 	
 	//Re-draw page tabs for visibility class
 	if (item.type == 'page_break') {
-		this.loadPagesList(this.currentPageId);
+		thus.loadPagesList(thus.currentPageId);
 	}
 	
 	return fields;
 };
 
 methods.getField = function(fieldId) {
-	if (this.tuix.fields[fieldId]) {
-		return this.tuix.fields[fieldId];
+	if (thus.tuix.fields[fieldId]) {
+		return thus.tuix.fields[fieldId];
 	}
 	return false;
 };
@@ -838,7 +835,7 @@ methods.getFieldValuesList = function(field) {
 		}
 	} else if (values == 'centralised_lists') {
 		var i = 0;
-		foreach (this.tuix.centralised_lists.values as var func => var details) {
+		foreach (thus.tuix.centralised_lists.values as var func => var details) {
 			var option = {
 				ord: ++i,
 				label: details.label,
@@ -850,16 +847,16 @@ methods.getFieldValuesList = function(field) {
 		|| values == 'conditional_fields'
 		|| values == 'mirror_fields'
 	) {
-		var tPages = this.getOrderedPages();
+		var tPages = thus.getOrderedPages();
 		usesOptGroups = tPages.length > 1;
 		var ord = 1;
 		for (var i = 0; i < tPages.length; i++) {
-			var tFields = this.getOrderedFields(tPages[i].id);
+			var tFields = thus.getOrderedFields(tPages[i].id);
 			var parentIndex = false;
 			var tPage = tPages[i];
 			for (var j = 0; j < tFields.length; j++) {
 				var tField = tFields[j];
-				if (this.canAddFieldToList(values, tField)) {
+				if (thus.canAddFieldToList(values, tField)) {
 					if (parentIndex === false && usesOptGroups) {
 						parentIndex = sortedValues.push({
 							ord: ord++,
@@ -879,8 +876,8 @@ methods.getFieldValuesList = function(field) {
 			}
 		}
 	} else if (values == 'field_lov') {
-		if (this.tuix.fields[this.selectedFieldId] && this.tuix.fields[this.selectedFieldId].lov) {
-			foreach (this.tuix.fields[this.selectedFieldId].lov as var tValueId => var tValue) {
+		if (thus.tuix.fields[thus.selectedFieldId] && thus.tuix.fields[thus.selectedFieldId].lov) {
+			foreach (thus.tuix.fields[thus.selectedFieldId].lov as var tValueId => var tValue) {
 				var option = {
 					ord: tValue.ord,
 					label: tValue.label,
@@ -915,33 +912,33 @@ methods.getFieldValuesList = function(field) {
 		}
 	}
 	
-	sortedValues.sort(this.sortByOrd);
+	sortedValues.sort(thus.sortByOrd);
 	return sortedValues;	
 };
 
 methods.canAddFieldToList = function(values, field) {
 	if (values == 'centralised_list_filter_fields') {
-		return (field.id != this.selectedFieldId) && (field.type == 'centralised_select' || (field.type == 'text' && field.autocomplete && field.values_source));
+		return (field.id != thus.selectedFieldId) && (field.type == 'centralised_select' || (field.type == 'text' && field.autocomplete && field.values_source));
 	} else if (values == 'conditional_fields') {
-		return (field.id != this.selectedFieldId) && (['checkbox', 'group', 'radios', 'select', 'centralised_radios', 'centralised_select', 'checkboxes'].indexOf(field.type) != -1);
+		return (field.id != thus.selectedFieldId) && (['checkbox', 'group', 'radios', 'select', 'centralised_radios', 'centralised_select', 'checkboxes'].indexOf(field.type) != -1);
 	} else if (values == 'mirror_fields') {
-		return (field.id != this.selectedFieldId) && (['text', 'calculated', 'select', 'centralised_select'].indexOf(field.type) != -1);
+		return (field.id != thus.selectedFieldId) && (['text', 'calculated', 'select', 'centralised_select'].indexOf(field.type) != -1);
 	}
 	return false;
 };
 
 
 methods.loadNewFieldsPanel = function(stopEffect) {
-	this.selectedPageId = false;
-	this.selectedFieldId = false;
+	thus.selectedPageId = false;
+	thus.selectedFieldId = false;
 	
 	//Load HTML
 	var mergeFields = {
 		mode: 'new_fields',
-		datasetTabs: this.getOrderedDatasetPagesAndFields(),
-		link_to_dataset: this.tuix.link_to_dataset
+		datasetTabs: thus.getOrderedDatasetPagesAndFields(),
+		link_to_dataset: thus.tuix.link_to_dataset
 	};
-	var html = this.microTemplate('zenario_organizer_form_builder_left_panel', mergeFields);
+	var html = thus.microTemplate('zenario_organizer_form_builder_left_panel', mergeFields);
 	var $div = $('#organizer_form_builder .form_fields_palette .form_fields_palette_outer').html(html);
 	
 	if (!stopEffect) {
@@ -949,9 +946,7 @@ methods.loadNewFieldsPanel = function(stopEffect) {
 	}
 	
 	//Add events
-	
-	var that = this;
-	
+		
 	//Allow fields to be dragged onto list
 	$('#organizer_field_type_list div.field_type, #organizer_centralised_field_type_list div.field_type, #organizer_linked_field_type_list div.dataset_field').draggable({
 		connectToSortable: '#organizer_form_fields .form_section',
@@ -961,12 +956,12 @@ methods.loadNewFieldsPanel = function(stopEffect) {
 	
 	//Edit form settings
 	$('input.form_settings').on('click', function() {
-		that.openFormSettings();
+		thus.openFormSettings();
 	});
 };
 
 methods.loadPagesList = function(pageId) {
-	foreach (this.tuix.items as var tPageId => var page) {
+	foreach (thus.tuix.items as var tPageId => var page) {
 		if (pageId == tPageId) {
 			page._selected = true;
 		} else {
@@ -975,32 +970,30 @@ methods.loadPagesList = function(pageId) {
 	}
 	
 	//Only show page pages if there is at least 2
-	var pages = this.getOrderedPages();
+	var pages = thus.getOrderedPages();
 	if (pages.length <= 1) {
 		pages = false;
 	}
 	
 	//Load HTML
 	var mergeFields = {pages: pages};
-	var html = this.microTemplate('zenario_organizer_form_builder_tabs', mergeFields);
+	var html = thus.microTemplate('zenario_organizer_form_builder_tabs', mergeFields);
 	$('#organizer_form_tabs').html(html);
 	
 	//Add events
-	
-	var that = this;
-	//Click on a page
+		//Click on a page
 	$('#organizer_form_tabs .tab').on('click', function() {
 		var tPageId = $(this).data('id');
-		if (that.tuix.items[tPageId]) {
-			that.clickPage(tPageId);
+		if (thus.tuix.items[tPageId]) {
+			thus.clickPage(tPageId);
 		}
 	});
 	//Add a new page
 	$('#organizer_add_new_tab').on('click', function() {
-		var errors = that.saveCurrentOpenDetails();
+		var errors = thus.saveCurrentOpenDetails();
 		if (!errors) {
-			that.addNewPage();
-			that.changeMadeToPanel();
+			thus.addNewPage();
+			thus.changeMadeToPanel();
 		}
 	});
 	//Page sorting
@@ -1009,22 +1002,22 @@ methods.loadPagesList = function(pageId) {
 		tolerance: 'pointer',
 		items: 'div.sort',
 		start: function(event, ui) {
-			that.startIndex = ui.item.index();
+			thus.startIndex = ui.item.index();
 		},
 		stop: function(event, ui) {
-			if (that.startIndex != ui.item.index()) {
+			if (thus.startIndex != ui.item.index()) {
 				//Update ordinals
 				$('#organizer_form_tabs .tab.sort').each(function(i) {
 					var tPageId = $(this).data('id');
-					that.tuix.items[tPageId].ord = (i + 1);
+					thus.tuix.items[tPageId].ord = (i + 1);
 				});
-				that.pagesReordered = true;
-				that.changeMadeToPanel();
+				thus.pagesReordered = true;
+				thus.changeMadeToPanel();
 				
 				//If currently viewing a pages details, reload because the content changes depending on position TODO
-				if (that.selectedPageId) {
-					that.saveCurrentOpenDetails();
-					that.loadPageDetailsPanel(that.selectedPageId, true);
+				if (thus.selectedPageId) {
+					thus.saveCurrentOpenDetails();
+					thus.loadPageDetailsPanel(thus.selectedPageId, true);
 				}
 			}
 		}
@@ -1037,17 +1030,17 @@ methods.loadPagesList = function(pageId) {
 		hoverClass: 'ui-state-hover',
 		tolerance: 'pointer',
 		drop: function(event, ui) {
-			var errors = that.saveCurrentOpenDetails();
+			var errors = thus.saveCurrentOpenDetails();
 			if (!errors) {
 				var tPageId = $(this).data('id');
 				var fieldId = $(ui.draggable).data('id');
 			
-				that.moveFieldToPage(that.currentPageId, tPageId, fieldId);
+				thus.moveFieldToPage(thus.currentPageId, tPageId, fieldId);
 			
-				if (fieldId == that.selectedFieldId) {
-					that.loadNewFieldsPanel();
+				if (fieldId == thus.selectedFieldId) {
+					thus.loadNewFieldsPanel();
 				}
-				that.loadFieldsList(that.currentPageId);
+				thus.loadFieldsList(thus.currentPageId);
 			}
 		}
 	});
@@ -1055,16 +1048,16 @@ methods.loadPagesList = function(pageId) {
 
 methods.moveFieldToPage = function(fromPageId, toPageId, fieldId, addToStart) {
 	if (fromPageId != toPageId 
-		&& this.tuix.items[toPageId] 
-		&& this.tuix.items[fromPageId] 
-		&& this.tuix.items[fromPageId].fields[fieldId]
-		&& this.tuix.fields[fieldId].type != 'repeat_end'
+		&& thus.tuix.items[toPageId] 
+		&& thus.tuix.items[fromPageId] 
+		&& thus.tuix.items[fromPageId].fields[fieldId]
+		&& thus.tuix.fields[fieldId].type != 'repeat_end'
 	) {
-		this.tuix.items[toPageId]._pageFieldsReordered = true;
-		this.tuix.items[fromPageId]._pageFieldsReordered = true;
+		thus.tuix.items[toPageId]._pageFieldsReordered = true;
+		thus.tuix.items[fromPageId]._pageFieldsReordered = true;
 		
 		var ord = 1;
-		var toFields = this.getOrderedFields(toPageId);
+		var toFields = thus.getOrderedFields(toPageId);
 		if (toFields.length) {
 			if (addToStart) {
 				ord = toFields[0].ord - 1;
@@ -1074,74 +1067,74 @@ methods.moveFieldToPage = function(fromPageId, toPageId, fieldId, addToStart) {
 		}
 		
 		//Move matching repeat_end for repeat_start
-		if (this.tuix.fields[fieldId].type == 'repeat_start') {
-			var repeatEndId = this.getMatchingRepeatEnd(fieldId);
-			this.tuix.fields[repeatEndId].ord = ord + 0.001;
-			this.tuix.items[toPageId].fields[repeatEndId] = 1;
-			delete(this.tuix.items[fromPageId].fields[repeatEndId]);
+		if (thus.tuix.fields[fieldId].type == 'repeat_start') {
+			var repeatEndId = thus.getMatchingRepeatEnd(fieldId);
+			thus.tuix.fields[repeatEndId].ord = ord + 0.001;
+			thus.tuix.items[toPageId].fields[repeatEndId] = 1;
+			delete(thus.tuix.items[fromPageId].fields[repeatEndId]);
 		}
 		
-		this.tuix.fields[fieldId].ord = ord;
-		this.tuix.items[toPageId].fields[fieldId] = 1;
-		delete(this.tuix.items[fromPageId].fields[fieldId]);
+		thus.tuix.fields[fieldId].ord = ord;
+		thus.tuix.items[toPageId].fields[fieldId] = 1;
+		delete(thus.tuix.items[fromPageId].fields[fieldId]);
 		
-		this.changeMadeToPanel();
+		thus.changeMadeToPanel();
 	}
 };
 
 methods.addNewPage = function(inBackground) {
 	var ord = 1;
-	var pages = this.getOrderedPages();
+	var pages = thus.getOrderedPages();
 	if (pages.length) {
 		ord = pages[pages.length - 1].ord + 1;
 	}
-	this.addNewField('page_break', ord, undefined, undefined, undefined, undefined, inBackground);
+	thus.addNewField('page_break', ord, undefined, undefined, undefined, undefined, inBackground);
 };
 
 methods.clickPage = function(pageId, isNewPage) {
-	if (this.selectedPageId != pageId) {
-		var detailErrors = this.saveCurrentOpenDetails();
-		var structureErrors = this.displayPageFieldStructureErrors(this.currentPageId);
+	if (thus.selectedPageId != pageId) {
+		var detailErrors = thus.saveCurrentOpenDetails();
+		var structureErrors = thus.displayPageFieldStructureErrors(thus.currentPageId);
 		
 		if (!detailErrors && !structureErrors) {
 			//By clicking on the current page you can access it's details
-			if (this.currentPageId == pageId) {
-				this.selectedFieldId = false;
-				this.selectedPageId = pageId;
-				this.selectedDetailsPage = false;
-				this.loadPageDetailsPanel(pageId);
+			if (thus.currentPageId == pageId) {
+				thus.selectedFieldId = false;
+				thus.selectedPageId = pageId;
+				thus.selectedDetailsPage = false;
+				thus.loadPageDetailsPanel(pageId);
 				return;
 			}
-			this.clickPage2(pageId, isNewPage);
+			thus.clickPage2(pageId, isNewPage);
 		}
 	}
 };
 
 methods.clickPage2 = function(pageId, isNewPage) {
-	this.currentPageId = pageId;
+	thus.currentPageId = pageId;
 	if (isNewPage) {
-		this.selectedPageId = pageId;
-		this.loadPageDetailsPanel(pageId);
+		thus.selectedPageId = pageId;
+		thus.loadPageDetailsPanel(pageId);
 	} else {
 		var stopEffect = false;
-		if (!this.selectedFieldId && !this.selectedPageId) {
+		if (!thus.selectedFieldId && !thus.selectedPageId) {
 			stopEffect = true;
 		}
-		this.loadNewFieldsPanel(stopEffect);
+		thus.loadNewFieldsPanel(stopEffect);
 	}
-	this.selectedFieldId = false;
-	this.loadPagesList(pageId);
-	this.loadFieldsList(pageId);
+	thus.selectedFieldId = false;
+	thus.loadPagesList(pageId);
+	thus.loadFieldsList(pageId);
 };
 
 
 methods.getOrderedPages = function() {
 	var orderedPages = [],
 		pageId, page;
-	foreach (this.tuix.items as pageId => page) {
+	foreach (thus.tuix.items as pageId => page) {
 		orderedPages.push(page);
 	}
-	orderedPages.sort(this.sortByOrd);
+	orderedPages.sort(thus.sortByOrd);
 	return orderedPages;
 };
 
@@ -1150,21 +1143,21 @@ methods.fieldDetailsChanged = function(path, field) {
 	path = path.split('/');
 	var mode = path[0],
 		page = path[1],
-		tuixField, value, valuesSource, actionRequests, that, item, title;
+		tuixField, value, valuesSource, actionRequests, thus, item, title;
 	
-	if (page && mode && this.tuix[mode] && this.tuix[mode].tabs[page] && this.tuix[mode].tabs[page].fields[field]) {
-		this.changeMadeToPanel();
-		tuixField = this.tuix[mode].tabs[page].fields[field];
+	if (page && mode && thus.tuix[mode] && thus.tuix[mode].tabs[page] && thus.tuix[mode].tabs[page].fields[field]) {
+		thus.changeMadeToPanel();
+		tuixField = thus.tuix[mode].tabs[page].fields[field];
 		if (tuixField.format_onchange) {
 			if (mode == 'field_details') {
 				//Save
-				if (this.selectedFieldId) {
-					item = this.tuix.fields[this.selectedFieldId];
+				if (thus.selectedFieldId) {
+					item = thus.tuix.fields[thus.selectedFieldId];
 				} else {
-					item = this.tuix.items[this.selectedPageId];
+					item = thus.tuix.items[thus.selectedPageId];
 				}
 				
-				this.saveItemTUIXPage(mode, this.selectedDetailsPage, item);
+				thus.saveItemTUIXPage(mode, thus.selectedDetailsPage, item);
 				if (page == 'details' && field == 'field_validation') {
 					if (item.field_validation == 'email') {
 						item.field_validation_error_message = 'The email address you have entered is not valid, please enter a valid email address.';
@@ -1180,7 +1173,7 @@ methods.fieldDetailsChanged = function(path, field) {
 				}
 				
 				//Load
-				this.loadFieldDetailsPage(this.selectedDetailsPage, item.id);
+				thus.loadFieldDetailsPage(thus.selectedDetailsPage, item.id);
 				
 				if (page == 'details') {
 					if (field == 'visibility') {
@@ -1190,7 +1183,7 @@ methods.fieldDetailsChanged = function(path, field) {
 						} else if (value == 'visible_on_condition') {
 							title = 'Visible on condition';
 						}
-						$('#organizer_form_field_' + this.selectedFieldId + ' .form_field_classes .not_visible').toggle(value != 'visible').prop('title', title);
+						$('#organizer_form_field_' + thus.selectedFieldId + ' .form_field_classes .not_visible').toggle(value != 'visible').prop('title', title);
 					} else if (field == 'readonly_or_mandatory') {
 						value = $('#field__readonly_or_mandatory').val();
 						if (value == 'mandatory') {
@@ -1198,10 +1191,10 @@ methods.fieldDetailsChanged = function(path, field) {
 						} else if (value == 'conditional_mandatory') {
 							title = 'Mandatory on condition';
 						}
-						$('#organizer_form_field_' + this.selectedFieldId + ' .form_field_classes .mandatory').toggle(value == 'mandatory' || value == 'conditional_mandatory' || value == 'mandatory_if_visible').prop('title', title);
+						$('#organizer_form_field_' + thus.selectedFieldId + ' .form_field_classes .mandatory').toggle(value == 'mandatory' || value == 'conditional_mandatory' || value == 'mandatory_if_visible').prop('title', title);
 					} else if (field == 'field_validation') {
 						value = $('#field__field_validation').val();
-						$('#organizer_form_field_' + this.selectedFieldId + ' .form_field_classes .validation').toggle(value != 'none');
+						$('#organizer_form_field_' + thus.selectedFieldId + ' .form_field_classes .validation').toggle(value != 'none');
 					} else if (field == 'values_source') {
 						valuesSource = $('#field__values_source').val();
 						if (valuesSource) {
@@ -1210,15 +1203,13 @@ methods.fieldDetailsChanged = function(path, field) {
 								method: valuesSource,
 								filter: $('#field__values_source_filter').val()
 							};
-							that = this;
-							this.sendAJAXRequest(actionRequests).after(function(lov) {
-								lov = JSON.parse(lov);
+							thus.sendAJAXRequest(actionRequests).after(function(lov) {
 								item.lov = lov;
-								that.loadFieldValuesListPreview(that.selectedFieldId);
+								thus.loadFieldValuesListPreview(thus.selectedFieldId);
 							});
 						} else {
 							item.lov = {};
-							this.loadFieldValuesListPreview(this.selectedFieldId);
+							thus.loadFieldValuesListPreview(thus.selectedFieldId);
 						}
 					}
 				}
@@ -1228,53 +1219,51 @@ methods.fieldDetailsChanged = function(path, field) {
 };
 
 methods.loadFieldValuesListPreview = function(fieldId) {
-	var pageId = this.currentPageId;
-	if (this.tuix.fields[fieldId]) {
-		var field = this.tuix.fields[fieldId];
-		var values = this.getOrderedFieldValues(fieldId, true);
+	var pageId = thus.currentPageId;
+	if (thus.tuix.fields[fieldId]) {
+		var field = thus.tuix.fields[fieldId];
+		var values = thus.getOrderedFieldValues(fieldId, true);
 		var html = false;
 		if (field.type == 'select' || field.type == 'centralised_select') {
-			html = this.microTemplate('zenario_organizer_admin_box_builder_select_values', values);
+			html = thus.microTemplate('zenario_organizer_admin_box_builder_select_values', values);
 			$('#organizer_form_field_' + fieldId + ' select').html(html);
 		} else if (field.type == 'radios' || field.type == 'centralised_radios') {
-			html = this.microTemplate('zenario_organizer_admin_box_builder_radio_values_preview', values);
+			html = thus.microTemplate('zenario_organizer_admin_box_builder_radio_values_preview', values);
 			$('#organizer_form_field_values_' + fieldId).html(html);
 		} else if (field.type == 'checkboxes') {
-			html = this.microTemplate('zenario_organizer_admin_box_builder_checkbox_values_preview', values);
+			html = thus.microTemplate('zenario_organizer_admin_box_builder_checkbox_values_preview', values);
 			$('#organizer_form_field_values_' + fieldId).html(html);
 		}
 	}
 };
 
 methods.loadFieldsList = function(pageId) {
-	var orderedFields = this.getOrderedFields(pageId, true, true);
+	var orderedFields = thus.getOrderedFields(pageId, true, true);
 	
 	//Load HTML
 	var mergeFields = {
 		fields: orderedFields
 	};
-	var html = this.microTemplate('zenario_organizer_form_builder_section', mergeFields);
+	var html = thus.microTemplate('zenario_organizer_form_builder_section', mergeFields);
 	$('#organizer_form_fields').html(html);
 	
-	if (this.selectedFieldId) {
-		this.highlightField(this.selectedFieldId);
+	if (thus.selectedFieldId) {
+		thus.highlightField(thus.selectedFieldId);
 	}
 	
 	//Add events
-	
-	var that = this;
-	//Select a field
+		//Select a field
 	$('#organizer_form_fields div.form_field').on('click', function() {
 		var fieldId = $(this).data('id');
-		if (that.tuix.fields[fieldId]) {
-			that.clickField(fieldId);
+		if (thus.tuix.fields[fieldId]) {
+			thus.clickField(fieldId);
 		}
 	});
 	
 	var hoverTimeoutId;
 	$('#organizer_form_fields div.form_field').hover(
 		function() {
-			var that2 = this;
+			var that2 = thus;
 			if (!hoverTimeoutId) {
 				hoverTimeoutId = setTimeout(function() {
 					hoverTimeoutId = null;
@@ -1288,7 +1277,7 @@ methods.loadFieldsList = function(pageId) {
 				hoverTimeoutId = null;
 			} else {
 				var fieldId = $(this).data('id');
-				if (fieldId != that.selectedFieldId) {
+				if (fieldId != thus.selectedFieldId) {
 					$('#organizer_form_field_' + fieldId + ' .form_field_classes').hide();
 				}
 			}
@@ -1309,30 +1298,30 @@ methods.loadFieldsList = function(pageId) {
 				var datasetPageId = $(this).data('tab_name');
 				var ord = 0.1;
 				var previousFieldId = $(this).prev().data('id');
-				if (previousFieldId && that.tuix.fields[previousFieldId]) {
-					ord = that.tuix.fields[previousFieldId].ord + 0.1;
+				if (previousFieldId && thus.tuix.fields[previousFieldId]) {
+					ord = thus.tuix.fields[previousFieldId].ord + 0.1;
 				} else {
 					var nextFieldId = $(this).next().data('id');
-					if (nextFieldId && that.tuix.fields[nextFieldId]) {
-						ord = that.tuix.fields[nextFieldId].ord - 0.1;
+					if (nextFieldId && thus.tuix.fields[nextFieldId]) {
+						ord = thus.tuix.fields[nextFieldId].ord - 0.1;
 					}
 				}
 				
-				that.addNewField(fieldType, ord, datasetFieldId, datasetPageId);
-				that.updateFieldOrds();
+				thus.addNewField(fieldType, ord, datasetFieldId, datasetPageId);
+				thus.updateFieldOrds();
 			});
 		},
 		start: function(event, ui) {
-			that.startIndex = ui.item.index();
+			thus.startIndex = ui.item.index();
 		},
 		//Detect reorder/new/deleted fields
 		stop: function(event, ui) {
-			if (that.startIndex != ui.item.index()) {
-				that.tuix.items[pageId]._pageFieldsReordered = true;
+			if (thus.startIndex != ui.item.index()) {
+				thus.tuix.items[pageId]._pageFieldsReordered = true;
 				//Update ordinals
-				that.updateFieldOrds();
+				thus.updateFieldOrds();
 				//Redraw fields for indenting
-				that.loadFieldsList(pageId);
+				thus.loadFieldsList(pageId);
 			}
 		}
 	});
@@ -1340,14 +1329,14 @@ methods.loadFieldsList = function(pageId) {
 	$('#organizer_form_fields .delete_icon').on('click', function(e) {
 		e.stopPropagation();
 		var fieldId = $(this).data('id');
-		if (that.tuix.fields[fieldId]) {
+		if (thus.tuix.fields[fieldId]) {
 			//Make sure we can delete this field
-			var errors = that.saveCurrentOpenDetails(true);
+			var errors = thus.saveCurrentOpenDetails(true);
 			if (!errors) {
-				var field = that.tuix.fields[fieldId];
+				var field = thus.tuix.fields[fieldId];
 				var transferFields = {};
 				
-				foreach (that.tuix.fields as var tFieldId => var tField) {
+				foreach (thus.tuix.fields as var tFieldId => var tField) {
 					if (tField.type == field.type && tFieldId != fieldId) {
 						transferFields[tFieldId] = tField.name;
 					}
@@ -1357,9 +1346,9 @@ methods.loadFieldsList = function(pageId) {
 					id: fieldId,
 					field_name: field.name,
 					field_type: field.type,
-					field_english_type: that.getFieldReadableType(field.type)
+					field_english_type: thus.getFieldReadableType(field.type)
 				};
-				//Pass the fields that responses can be transfered to a dummy field via values because this may be too large for the key
+				//Pass the fields this responses can be transfered to a dummy field via values because this may be too large for the key
 				//which is passed in the URL
 				var values = {details: {dummy_field: JSON.stringify(transferFields)}};
 				zenarioAB.open(
@@ -1372,11 +1361,11 @@ methods.loadFieldsList = function(pageId) {
 						if (values.details.delete_field_options == 'delete_field_but_migrate_data' 
 							&& values.details.migration_field
 						) {
-							if (that.tuix.fields[values.details.migration_field]) {
-								that.tuix.fields[values.details.migration_field]._migrate_responses_from = fieldId;
+							if (thus.tuix.fields[values.details.migration_field]) {
+								thus.tuix.fields[values.details.migration_field]._migrate_responses_from = fieldId;
 							}
 						}
-						that.deleteField(fieldId);
+						thus.deleteField(fieldId);
 					}
 				);
 			}
@@ -1386,14 +1375,14 @@ methods.loadFieldsList = function(pageId) {
 	$('#organizer_form_fields .duplicate_icon').on('click', function(e) {
 		e.stopPropagation();
 		var fieldId = $(this).data('id');
-		if (that.tuix.fields[fieldId]) {
-			var errors = that.saveCurrentOpenDetails();
+		if (thus.tuix.fields[fieldId]) {
+			var errors = thus.saveCurrentOpenDetails();
 			if (!errors) {
-				var field = that.tuix.fields[fieldId];
+				var field = thus.tuix.fields[fieldId];
 				message = '<p>Are you sure you want to duplicate the field "' + field.name + '"?</p>';
 				zenarioA.floatingBox(message, 'Duplicate', 'warning', true, false, function() {
-					that.addNewField(field.type, field.ord + 0.1, undefined, undefined, undefined, fieldId);
-					that.updateFieldOrds();
+					thus.addNewField(field.type, field.ord + 0.1, undefined, undefined, undefined, fieldId);
+					thus.updateFieldOrds();
 				});
 			}
 		}
@@ -1403,18 +1392,18 @@ methods.loadFieldsList = function(pageId) {
 	$('#organizer_form_fields .update_repeat_field_icon').on('click', function(e) {
 		e.stopPropagation();
 		var repeatFieldId = $(this).data('id');
-		if (that.tuix.fields[repeatFieldId] && that.tuix.fields[repeatFieldId].dataset_field_id) {
-			var errors = that.saveCurrentOpenDetails();
+		if (thus.tuix.fields[repeatFieldId] && thus.tuix.fields[repeatFieldId].dataset_field_id) {
+			var errors = thus.saveCurrentOpenDetails();
 			if (!errors) {
 				message = '<p>Are you sure you want to update this dataset repeat field?</p>';
 				zenarioA.floatingBox(message, 'Update', 'warning', true, false, function() {
 					
-					var datasetRepeatFieldId = that.tuix.fields[repeatFieldId].dataset_field_id;
+					var datasetRepeatFieldId = thus.tuix.fields[repeatFieldId].dataset_field_id;
 					var datasetRepeatField = false;
 					//Find dataset repeat start field
-					for (var tab in that.tuix.dataset_fields) {
-						if (that.tuix.dataset_fields[tab].fields && that.tuix.dataset_fields[tab].fields[datasetRepeatFieldId]) {
-							var datasetRepeatField = that.tuix.dataset_fields[tab].fields[datasetRepeatFieldId];
+					for (var tab in thus.tuix.dataset_fields) {
+						if (thus.tuix.dataset_fields[tab].fields && thus.tuix.dataset_fields[tab].fields[datasetRepeatFieldId]) {
+							var datasetRepeatField = thus.tuix.dataset_fields[tab].fields[datasetRepeatFieldId];
 							break;
 						}
 					}
@@ -1423,7 +1412,7 @@ methods.loadFieldsList = function(pageId) {
 						var formRepeatFields = [];
 						var datasetRepeatFields = [];
 						//Get form fields inside dataset repeat
-						foreach (that.tuix.fields as var fieldId => var field) {
+						foreach (thus.tuix.fields as var fieldId => var field) {
 							if (field.dataset_repeat_grouping == datasetRepeatField.id && field.type != 'repeat_end' && field.type != 'repeat_start') {
 								formRepeatFields.push(fieldId);
 							}
@@ -1434,43 +1423,43 @@ methods.loadFieldsList = function(pageId) {
 								datasetRepeatFields.push(datasetField);
 							}
 						}
-						datasetRepeatFields.sort(that.sortByOrd);
+						datasetRepeatFields.sort(thus.sortByOrd);
 				
 						//Add new fields and update ordinals
-						var ord = that.tuix.fields[repeatFieldId].ord;
+						var ord = thus.tuix.fields[repeatFieldId].ord;
 						for (var i = 0; i < datasetRepeatFields.length; i++) {
 					
 							var found = false;
 							for (var j = 0; j < formRepeatFields.length; j++) {
-								if (datasetRepeatFields[i].id == that.tuix.fields[formRepeatFields[j]].dataset_field_id) {
-									that.tuix.fields[formRepeatFields[j]].ord = ord + (datasetRepeatFields[i].ord / 1000);
+								if (datasetRepeatFields[i].id == thus.tuix.fields[formRepeatFields[j]].dataset_field_id) {
+									thus.tuix.fields[formRepeatFields[j]].ord = ord + (datasetRepeatFields[i].ord / 1000);
 									found = true;
 									break;
 								}
 							}
 							if (!found) {
 								datasetRepeatFields[i].dataset_repeat_grouping = datasetRepeatField.id;
-								that.addNewField(datasetRepeatFields[i].type, ord + (datasetRepeatFields[i].ord / 1000), false, false, datasetRepeatFields[i]);
+								thus.addNewField(datasetRepeatFields[i].type, ord + (datasetRepeatFields[i].ord / 1000), false, false, datasetRepeatFields[i]);
 							}
 						}
 				
-						//Remove fields that no longer exist
+						//Remove fields this no longer exist
 						for (var i = 0; i < formRepeatFields.length; i++) {
 							var found = false;
 							for (var j = 0; j < datasetRepeatFields.length; j++) {
-								if (that.tuix.fields[formRepeatFields[i]].dataset_field_id == datasetRepeatFields[j].id) {
+								if (thus.tuix.fields[formRepeatFields[i]].dataset_field_id == datasetRepeatFields[j].id) {
 									found = true;
 								}
 							}
 							if (!found) {
-								that.deleteField(formRepeatFields[i]);
+								thus.deleteField(formRepeatFields[i]);
 							}
 						}
 						
 						//Update display
-						that.tuix.items[that.currentPageId]._pageFieldsReordered = true;
-						that.loadFieldsList(that.currentPageId);
-						that.changeMadeToPanel();
+						thus.tuix.items[thus.currentPageId]._pageFieldsReordered = true;
+						thus.loadFieldsList(thus.currentPageId);
+						thus.changeMadeToPanel();
 					}
 				});
 			}
@@ -1478,41 +1467,39 @@ methods.loadFieldsList = function(pageId) {
 	});
 };
 
-methods.updateFieldOrds = function() {
-	var that = this;
-	$('#organizer_form_fields div.form_field').each(function(i) {
+methods.updateFieldOrds = function() {	$('#organizer_form_fields div.form_field').each(function(i) {
 		var fieldId = $(this).data('id');
 		if (fieldId) {
-			that.tuix.fields[fieldId].ord = (i + 1);
+			thus.tuix.fields[fieldId].ord = (i + 1);
 		}
 	});
-	this.changeMadeToPanel();
+	thus.changeMadeToPanel();
 };
 
 methods.deletePage = function(pageId) {
-	var pages = this.getOrderedPages(),
+	var pages = thus.getOrderedPages(),
 		fields, i, j, nextPageId;
 	//Do not allow the final page to be deleted
 	if (pages.length >= 2) {
-		fields = this.getOrderedFields(pageId);
+		fields = thus.getOrderedFields(pageId);
 		for (i = 0; i < pages.length; i++) {
 			if (pages[i].id == pageId) {
 				if (pages[i - 1]) {
 					nextPageId = pages[i - 1].id;
 					for (j = 0; j < fields.length; j++) {
-						this.moveFieldToPage(pageId, nextPageId, fields[j].id);
+						thus.moveFieldToPage(pageId, nextPageId, fields[j].id);
 					}
 				} else {
 					nextPageId = pages[i + 1].id;
 					for (j = fields.length - 1; j >= 0; j--) {
-						this.moveFieldToPage(pageId, nextPageId, fields[j].id, true);
+						thus.moveFieldToPage(pageId, nextPageId, fields[j].id, true);
 					}
 				}
-				this.deletedPages.push(pageId);
-				delete(this.tuix.items[pageId]);
+				thus.deletedPages.push(pageId);
+				delete(thus.tuix.items[pageId]);
 				
-				this.clickPage(nextPageId);
-				this.changeMadeToPanel();
+				thus.clickPage(nextPageId);
+				thus.changeMadeToPanel();
 				break;
 			}
 		}
@@ -1520,36 +1507,36 @@ methods.deletePage = function(pageId) {
 };
 
 methods.deleteField = function(fieldId) {
-	pageId = this.currentPageId;
-	if (this.tuix.fields[fieldId]) {
-		this.changeMadeToPanel();
-		this.deletedFields.push(fieldId);
+	pageId = thus.currentPageId;
+	if (thus.tuix.fields[fieldId]) {
+		thus.changeMadeToPanel();
+		thus.deletedFields.push(fieldId);
 		
-		var field = this.tuix.fields[fieldId];
+		var field = thus.tuix.fields[fieldId];
 		//Delete a repeat start's matching repeat end
 		if (field.type == 'repeat_start') {
-			var repeatEndId = this.getMatchingRepeatEnd(fieldId);
+			var repeatEndId = thus.getMatchingRepeatEnd(fieldId);
 			if (repeatEndId) {
-				this.deletedFields.push(repeatEndId);
-				delete(this.tuix.items[pageId].fields[repeatEndId]);
-				delete(this.tuix.fields[repeatEndId]);
+				thus.deletedFields.push(repeatEndId);
+				delete(thus.tuix.items[pageId].fields[repeatEndId]);
+				delete(thus.tuix.fields[repeatEndId]);
 			}
 		}
 		
 		//When deleting a dataset repeat, remove all fields inside as well.
 		if (field.dataset_repeat_grouping) {
-			var fields = this.getOrderedFields(pageId);
+			var fields = thus.getOrderedFields(pageId);
 			for (var i = 0; i < fields.length; i++) {
 				if (fields[i].dataset_repeat_grouping && fields[i].dataset_repeat_grouping == field.dataset_repeat_grouping && fields[i].type != 'repeat_start') {
-					this.deletedFields.push(fields[i].id);
-					delete(this.tuix.items[pageId].fields[fields[i].id]);
-					delete(this.tuix.fields[fields[i].id]);
+					thus.deletedFields.push(fields[i].id);
+					delete(thus.tuix.items[pageId].fields[fields[i].id]);
+					delete(thus.tuix.fields[fields[i].id]);
 				}
 			}
 		}
 		
 		//Select next field if one exists
-		var fields = this.getOrderedFields(pageId);
+		var fields = thus.getOrderedFields(pageId);
 		var deletedFieldIndex = false;
 		var nextFieldId = false;
 		
@@ -1569,33 +1556,33 @@ methods.deleteField = function(fieldId) {
 			}
 		}
 		
-		if (nextFieldId && this.tuix.fields[nextFieldId].type == 'repeat_end') {
+		if (nextFieldId && thus.tuix.fields[nextFieldId].type == 'repeat_end') {
 			nextFieldId = false;
 		}
 		
-		delete(this.tuix.items[pageId].fields[fieldId]);
-		delete(this.tuix.fields[fieldId]);
+		delete(thus.tuix.items[pageId].fields[fieldId]);
+		delete(thus.tuix.fields[fieldId]);
 		
-		this.loadFieldsList(pageId);
+		thus.loadFieldsList(pageId);
 		if (nextFieldId) {
-			this.clickField(nextFieldId);
+			thus.clickField(nextFieldId);
 		} else {
-			this.loadNewFieldsPanel();
+			thus.loadNewFieldsPanel();
 		}
 	}
 };
 
 methods.addNewField = function(type, ord, datasetFieldId, datasetPageId, datasetField, copyFromFieldId, inBackground) {
-	var newFieldId = 't' + this.maxNewCustomField++;
+	var newFieldId = 't' + thus.maxNewCustomField++;
 	var newField = false;
 	if (datasetField
 		|| (datasetFieldId 
-			&& this.tuix.dataset_fields[datasetPageId] 
-			&& this.tuix.dataset_fields[datasetPageId].fields[datasetFieldId]
+			&& thus.tuix.dataset_fields[datasetPageId] 
+			&& thus.tuix.dataset_fields[datasetPageId].fields[datasetFieldId]
 		)
 	) {
 		if (!datasetField) {
-			datasetField = this.tuix.dataset_fields[datasetPageId].fields[datasetFieldId];
+			datasetField = thus.tuix.dataset_fields[datasetPageId].fields[datasetFieldId];
 		}
 		newField = {
 			type: datasetField.type,
@@ -1621,12 +1608,12 @@ methods.addNewField = function(type, ord, datasetFieldId, datasetPageId, dataset
 			foreach (datasetField.fields as var tFieldId => var tField) {
 				orderedFields.push(tField);
 			}
-			orderedFields.sort(this.sortByOrd);
+			orderedFields.sort(thus.sortByOrd);
 			
 			for (var i = 0; i < orderedFields.length; i++) {
 				var tField = orderedFields[i];
 				tField.dataset_repeat_grouping = datasetField.id;
-				this.addNewField(tField.type, ord + (0.001 * (i + 1)), undefined, undefined, tField);
+				thus.addNewField(tField.type, ord + (0.001 * (i + 1)), undefined, undefined, tField);
 			}
 		}
 		
@@ -1634,21 +1621,21 @@ methods.addNewField = function(type, ord, datasetFieldId, datasetPageId, dataset
 		newField = {
 			type: type,
 			field_label: 'Untitled',
-			name: 'Untitled ' + this.getFieldReadableType(type).toLowerCase()
+			name: 'Untitled ' + thus.getFieldReadableType(type).toLowerCase()
 		};
 		
 		if (type == 'checkboxes' || type == 'radios' || type == 'select') {
 			newField.lov = {};
 			for (var i = 1; i <= 3; i++) {
-				this.addFieldValue(newField, 'Option ' + i);
+				thus.addFieldValue(newField, 'Option ' + i);
 			}
 		} else if (type == 'repeat_start') {
-			this.addNewField('repeat_end', ord + 0.001);
+			thus.addNewField('repeat_end', ord + 0.001);
 		}
 	}
 	
 	//Load default values for fields
-	foreach (this.tuix.field_details.tabs as var pageName => page) {
+	foreach (thus.tuix.field_details.tabs as var pageName => page) {
 		if (page.fields) {
 			foreach (page.fields as var fieldName => var field) {
 				if (defined(field.value) && !defined(newField[fieldName])) {
@@ -1660,14 +1647,14 @@ methods.addNewField = function(type, ord, datasetFieldId, datasetPageId, dataset
 	
 	if (newField) {
 		if (copyFromFieldId) {
-			newField = JSON.parse(JSON.stringify(this.tuix.fields[copyFromFieldId]));
+			newField = JSON.parse(JSON.stringify(thus.tuix.fields[copyFromFieldId]));
 			if (newField.type == 'checkboxes' || newField.type == 'select' || newField.type == 'radios') {
 				var lov = newField.lov;
 				delete(newField.lov);
 				
 				newField.lov = {};
 				for (var valueId in lov) {
-					this.addFieldValue(newField, lov[valueId].label, lov[valueId].ord);
+					thus.addFieldValue(newField, lov[valueId].label, lov[valueId].ord);
 				}
 			}
 		}
@@ -1677,40 +1664,40 @@ methods.addNewField = function(type, ord, datasetFieldId, datasetPageId, dataset
 		newField.just_added = true;
 		newField.id = newFieldId;
 		if (type == 'page_break') {
-			var pages = this.getOrderedPages();
+			var pages = thus.getOrderedPages();
 			newField.name = 'Page ' + (pages.length + 1);
 			newField.fields = {};
-			this.tuix.items[newFieldId] = newField;
+			thus.tuix.items[newFieldId] = newField;
 			if (!inBackground) {
-				this.clickPage(newFieldId, true);
+				thus.clickPage(newFieldId, true);
 			}
 		} else {
-			this.tuix.items[this.currentPageId].fields[newFieldId] = 1;
-			this.tuix.fields[newFieldId] = newField;
+			thus.tuix.items[thus.currentPageId].fields[newFieldId] = 1;
+			thus.tuix.fields[newFieldId] = newField;
 			//Don't bother redrawing if we're adding repeat dataset fields, once is enough.
 			if (datasetField && !datasetFieldId) {
 				return;
 			}
-			this.loadFieldsList(this.currentPageId);
+			thus.loadFieldsList(thus.currentPageId);
 			if (!inBackground) {
-				this.clickField(newFieldId);
+				thus.clickField(newFieldId);
 			}
 		}
 	}
 };
 
 methods.clickField = function(fieldId) {
-	if (this.selectedFieldId != fieldId 
-		&& this.tuix.fields[fieldId]
-		&& this.tuix.fields[fieldId].type != 'repeat_end'
+	if (thus.selectedFieldId != fieldId 
+		&& thus.tuix.fields[fieldId]
+		&& thus.tuix.fields[fieldId].type != 'repeat_end'
 	) {
-		var errors = this.saveCurrentOpenDetails();
+		var errors = thus.saveCurrentOpenDetails();
 		if (!errors) {
-			this.highlightField(fieldId);
-			this.selectedFieldId = fieldId;
-			this.selectedPageId = false;
-			this.selectedDetailsPage = false;
-			this.loadFieldDetailsPanel(fieldId);
+			thus.highlightField(fieldId);
+			thus.selectedFieldId = fieldId;
+			thus.selectedPageId = false;
+			thus.selectedDetailsPage = false;
+			thus.loadFieldDetailsPanel(fieldId);
 		}
 	}
 };
@@ -1718,34 +1705,34 @@ methods.clickField = function(fieldId) {
 methods.saveCurrentOpenDetails = function(deletingField) {
 	var errors = false,
 		item;
-	if (this.selectedFieldId && this.tuix.fields[this.selectedFieldId]) {
+	if (thus.selectedFieldId && thus.tuix.fields[thus.selectedFieldId]) {
 		//Save custom field
 		var $name = $('#field__name');
 		if ($name.length) {
-			this.tuix.fields[this.selectedFieldId].name = $name.val();
+			thus.tuix.fields[thus.selectedFieldId].name = $name.val();
 		}
 		
 		if (deletingField) {
-			errors = this.getDeleteFieldErrors(this.selectedFieldId);
+			errors = thus.getDeleteFieldErrors(thus.selectedFieldId);
 		} else {
-			item = this.tuix.fields[this.selectedFieldId];
-			errors = this.saveItemTUIXPage('field_details', this.selectedDetailsPage, item);
+			item = thus.tuix.fields[thus.selectedFieldId];
+			errors = thus.saveItemTUIXPage('field_details', thus.selectedDetailsPage, item);
 		}
 		
 		if (!_.isEmpty(errors)) {
-			this.loadFieldDetailsPage(this.selectedDetailsPage, this.selectedFieldId, errors);
+			thus.loadFieldDetailsPage(thus.selectedDetailsPage, thus.selectedFieldId, errors);
 		}
-	} else if (this.selectedPageId && this.tuix.items[this.selectedPageId]) {
+	} else if (thus.selectedPageId && thus.tuix.items[thus.selectedPageId]) {
 		//Save custom field
 		var $name = $('#field__name');
 		if ($name.length) {
-			this.tuix.items[this.selectedPageId].name = $name.val();
+			thus.tuix.items[thus.selectedPageId].name = $name.val();
 		}
 		
-		item = this.tuix.items[this.selectedPageId];
-		errors = this.saveItemTUIXPage('field_details', this.selectedDetailsPage, item);
+		item = thus.tuix.items[thus.selectedPageId];
+		errors = thus.saveItemTUIXPage('field_details', thus.selectedDetailsPage, item);
 		if (!_.isEmpty(errors)) {
-			this.loadPageDetailsPage(this.selectedDetailsPage, this.selectedPageId, errors);
+			thus.loadPageDetailsPage(thus.selectedDetailsPage, thus.selectedPageId, errors);
 		}
 	}
 	return !_.isEmpty(errors);
@@ -1753,7 +1740,7 @@ methods.saveCurrentOpenDetails = function(deletingField) {
 
 methods.displayPageFieldStructureErrors = function(pageId) {
 	var errors = [],
-		fields = this.getOrderedFields(pageId),
+		fields = thus.getOrderedFields(pageId),
 		inRepeatBlock = false, 
 		repeatBlockDepth = 0,
 		i, field;
@@ -1791,7 +1778,7 @@ methods.displayPageFieldStructureErrors = function(pageId) {
 		} else {
 			//Validate field types in repeat block
 			if (inRepeatBlock && fieldsAllowedInRepeatBlock.indexOf(field.type) == -1) {
-				errors.push('Field type "' + this.getFieldReadableType(field.type).toLowerCase() + '" is not allowed in a repeat block.');
+				errors.push('Field type "' + thus.getFieldReadableType(field.type).toLowerCase() + '" is not allowed in a repeat block.');
 			}
 		}
 	}
@@ -1813,7 +1800,7 @@ methods.displayPageFieldStructureErrors = function(pageId) {
 methods.getDeleteFieldErrors = function(fieldId) {
 	var errors = {},
 		tFieldId, tField;
-	foreach (this.tuix.fields as tFieldId => var tField) {
+	foreach (thus.tuix.fields as tFieldId => var tField) {
 		if (fieldId != tFieldId) {
 			var usedInCalcField = false;
 			if (tField.type == 'calculated' && tField.calculation_code) {
@@ -1883,7 +1870,7 @@ methods.validateFieldDetails = function(fields, item, mode, page, errors) {
 				if (!item.visible_condition_field_id) {
 					errors.visible_condition_field_id = 'Please select a visible on conditional form field.';
 				} else if (!item.visible_condition_field_value) {
-					conditionField = this.getField(item.visible_condition_field_id);
+					conditionField = thus.getField(item.visible_condition_field_id);
 					if (conditionField && ['checkbox', 'group'].indexOf(conditionField.type) != -1) {
 						errors.visible_condition_field_value = 'Please select a visible on condition form field value.';
 					}
@@ -1905,7 +1892,7 @@ methods.validateFieldDetails = function(fields, item, mode, page, errors) {
 					if (!item.mandatory_condition_field_id) {
 						errors.mandatory_condition_field_id = 'Please select a mandatory on condition form field.';
 					} else if (!item.mandatory_condition_field_value) {
-						conditionField = this.getField(item.mandatory_condition_field_id);
+						conditionField = thus.getField(item.mandatory_condition_field_id);
 						if (conditionField && ['checkbox', 'group'].indexOf(conditionField.type) != -1) {
 							errors.mandatory_condition_field_value = 'Please select a mandatory on condition form field value.';
 						}
@@ -1918,7 +1905,7 @@ methods.validateFieldDetails = function(fields, item, mode, page, errors) {
 						&& ((item.visible_condition_field_id != item.mandatory_condition_field_id)
 							|| item.visible_condition_field_type == 'visible_if' && item.mandatory_condition_field_type == 'mandatory_if_not'
 							|| item.visible_condition_field_type == 'visible_if_not' && item.mandatory_condition_field_type == 'mandatory_if'
-							|| ((conditionField = this.getField(item.mandatory_condition_field_id))
+							|| ((conditionField = thus.getField(item.mandatory_condition_field_id))
 								&& (conditionField.type != 'checkboxes'
 									&& (item.visible_condition_field_value != item.mandatory_condition_field_value)
 								)
@@ -1942,11 +1929,11 @@ methods.validateFieldDetails = function(fields, item, mode, page, errors) {
 			}
 			
 			if (item.type == 'text' && item.field_validation && ['number', 'integer', 'floating_point'].indexOf(item.field_validation) == -1) {
-				foreach (this.tuix.fields as fieldId => field) {
+				foreach (thus.tuix.fields as fieldId => field) {
 					if (field.type == 'calculated' && field.calculation_code) {
 						for (i = 0; i < field.calculation_code.length; i++) {
 							if (field.calculation_code[i].type == 'field' && field.calculation_code[i].value == item.id) {
-								errors.field_validation = 'The field "' + field.name + '" requires this field to be numeric. You must first remove this from that field.';
+								errors.field_validation = 'The field "' + field.name + '" requires this field to be numeric. You must first remove this from this field.';
 								break;
 							}
 						}
@@ -1971,9 +1958,9 @@ methods.validateFieldDetails = function(fields, item, mode, page, errors) {
 			}
 			
 			if (item.custom_code_name) {
-				foreach (this.tuix.fields as fieldId => field) {
+				foreach (thus.tuix.fields as fieldId => field) {
 					if (fieldId != item.id && (item.custom_code_name == field.custom_code_name)) {
-						errors.custom_code_name = 'Another field already has that code name on this form.';
+						errors.custom_code_name = 'Another field already has this code name on this form.';
 					}
 				}
 			}
@@ -2097,14 +2084,14 @@ methods.getOrderedFields = function(pageId, orderValues, groupGroupedFields) {
 		groups = {},
 		fieldId, field, 
 		inRepeat = false;
-	if (this.tuix.items[pageId] && this.tuix.items[pageId].fields) {
+	if (thus.tuix.items[pageId] && thus.tuix.items[pageId].fields) {
 		
-		for (fieldId in this.tuix.items[pageId].fields) {
-			field = this.tuix.fields[fieldId];
+		for (fieldId in thus.tuix.items[pageId].fields) {
+			field = thus.tuix.fields[fieldId];
 			var fieldClone = _.clone(field);
 			
 			if (orderValues) {
-				fieldClone.lov = this.getOrderedFieldValues(fieldId, true);
+				fieldClone.lov = thus.getOrderedFieldValues(fieldId, true);
 			}
 			
 			if (fieldClone.dataset_field_id) {
@@ -2136,7 +2123,7 @@ methods.getOrderedFields = function(pageId, orderValues, groupGroupedFields) {
 	}
 	
 	foreach (groups as groupName => group) {
-		group._fields.sort(this.sortByOrd);
+		group._fields.sort(thus.sortByOrd);
 		if (group._fields.length) {
 			group.ord = group._fields[0].ord;
 			group._isSortable = true;
@@ -2144,7 +2131,7 @@ methods.getOrderedFields = function(pageId, orderValues, groupGroupedFields) {
 		}
 	}
 	
-	sortedFields.sort(this.sortByOrd);
+	sortedFields.sort(thus.sortByOrd);
 	
 	//Remember which fields have a repeat above them for indenting
 	for (var i = 0; i < sortedFields.length; i++) {
@@ -2163,12 +2150,12 @@ methods.getOrderedFields = function(pageId, orderValues, groupGroupedFields) {
 methods.getOrderedFieldValues = function(fieldId, includeEmptyValue) {
 	var sortedValues = [],
 		valueId, value;
-	if (this.tuix.fields[fieldId] && this.tuix.fields[fieldId].lov) {
+	if (thus.tuix.fields[fieldId] && thus.tuix.fields[fieldId].lov) {
 		
-		foreach (this.tuix.fields[fieldId].lov as valueId => value) {
+		foreach (thus.tuix.fields[fieldId].lov as valueId => value) {
 			sortedValues.push(value);
 		}
-		var type = this.tuix.fields[fieldId].type;
+		var type = thus.tuix.fields[fieldId].type;
 		if (includeEmptyValue && (type == 'select' || type == 'centralised_select')) {
 			sortedValues.push({
 				id: 'empty_value',
@@ -2177,7 +2164,7 @@ methods.getOrderedFieldValues = function(fieldId, includeEmptyValue) {
 			});
 		}
 	}
-	sortedValues.sort(this.sortByOrd);
+	sortedValues.sort(thus.sortByOrd);
 	return sortedValues;
 };
 
@@ -2200,37 +2187,35 @@ methods.sortLanguages = function(languages) {
 methods.getOrderedDatasetPagesAndFields = function() {
 	var sortedPages = [];
 	var usedDatasetFields = {};
-	foreach (this.tuix.fields as var fieldId => var field) {
+	foreach (thus.tuix.fields as var fieldId => var field) {
 		if (field.dataset_field_id) {
 			usedDatasetFields[field.dataset_field_id] = true;
 		}
 	}
 	
-	foreach (this.tuix.dataset_fields as var datasetPageName => var datasetPage) {
+	foreach (thus.tuix.dataset_fields as var datasetPageName => var datasetPage) {
 		var datasetPageClone = _.clone(datasetPage);
 		datasetPageClone.fields = [];
 		
 		if (datasetPage.fields) {
 			foreach (datasetPage.fields as var datasetFieldId => var datasetField) {
-				datasetField.readableType = this.getFieldReadableType(datasetField.type);
+				datasetField.readableType = thus.getFieldReadableType(datasetField.type);
 				datasetField.tab_label = datasetPage.label ? datasetPage.label : datasetPage.default_label;
 				if (!usedDatasetFields[datasetFieldId]) {
 					datasetPageClone.fields.push(datasetField);
 				}
 			}
-			datasetPageClone.fields.sort(this.sortByOrd);
+			datasetPageClone.fields.sort(thus.sortByOrd);
 		}
 		
 		sortedPages.push(datasetPageClone);
 	}
-	sortedPages.sort(this.sortByOrd);
+	sortedPages.sort(thus.sortByOrd);
 	return sortedPages;
 };
 
-methods.changeMadeToPanel = function() {
-	var that = this;
-	if (!this.changeDetected) {
-		this.changeDetected = true;
+methods.changeMadeToPanel = function() {	if (!thus.changeDetected) {
+		thus.changeDetected = true;
 		window.onbeforeunload = function() {
 			return 'You are currently editing this form. If you leave now you will lose any unsaved changes.';
 		}
@@ -2240,29 +2225,28 @@ methods.changeMadeToPanel = function() {
 	}
 };
 
-methods.saveChanges = function() {
-	var that = this;
-	var actionRequests = {
+methods.saveChanges = function() {	var actionRequests = {
 		mode: 'save',
-		pages: JSON.stringify(this.tuix.items),
-		fields: JSON.stringify(this.tuix.fields),
-		pagesReordered: this.pagesReordered,
-		deletedPages: JSON.stringify(this.deletedPages),
-		deletedFields: JSON.stringify(this.deletedFields),
-		deletedValues: JSON.stringify(this.deletedValues),
-		currentPageId: this.currentPageId
+		pages: JSON.stringify(thus.tuix.items),
+		fields: JSON.stringify(thus.tuix.fields),
+		pagesReordered: thus.pagesReordered,
+		deletedPages: JSON.stringify(thus.deletedPages),
+		deletedFields: JSON.stringify(thus.deletedFields),
+		deletedValues: JSON.stringify(thus.deletedValues),
+		currentPageId: thus.currentPageId
 	};
-	if (this.selectedPageId) {
-		actionRequests.selectedPageId = this.selectedPageId;
+	if (thus.selectedPageId) {
+		actionRequests.selectedPageId = thus.selectedPageId;
 	}
-	if (this.selectedFieldId) {
-		actionRequests.selectedFieldId = this.selectedFieldId;
+	if (thus.selectedFieldId) {
+		actionRequests.selectedFieldId = thus.selectedFieldId;
 	}
 	
 	zenarioA.nowDoingSomething('saving', true);
-	this.sendAJAXRequest(actionRequests).after(function(info) {
+	thus.sendAJAXRequest(actionRequests).after(function(info) {
+		zenarioA.nowDoingSomething();
+		
 		if (info) {
-			info = JSON.parse(info);
 			if (info.errors) {
 				var message = '';
 				for (var i = 0; i < info.errors.length; i++) {
@@ -2272,17 +2256,16 @@ methods.saveChanges = function() {
 					zenarioA.floatingBox(message);
 				}
 			}
-			that.currentPageId = info.currentPageId;
-			that.selectedPageId = info.selectedPageId
-			that.selectedFieldId = info.selectedFieldId;
+			thus.currentPageId = info.currentPageId;
+			thus.selectedPageId = info.selectedPageId
+			thus.selectedFieldId = info.selectedFieldId;
 		}
 		
-		zenarioA.nowDoingSomething();
 		window.onbeforeunload = false;
 		zenarioO.enableInteraction();
 		
-		that.changeDetected = false;
-		that.changesSaved = true;
+		thus.changeDetected = false;
+		thus.changesSaved = true;
 		
 		zenarioO.reload();
 	});

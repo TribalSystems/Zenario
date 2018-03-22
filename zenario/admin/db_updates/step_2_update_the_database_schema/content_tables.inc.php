@@ -1146,13 +1146,30 @@ _sql
 	ADD KEY (`in_sitemap`)
 _sql
 
+//Rename the publication_date column to release_date
+);	ze\dbAdm::revision( 43770
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]content_item_versions`
+	CHANGE COLUMN `publication_date` `release_date` datetime NULL default NULL
+_sql
+
+
+//Rename yet another mode.
+);	ze\dbAdm::revision( 44000
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]]plugin_settings`
+	SET value = 'edit_global_setup_options'
+	WHERE value = 'edit_options'
+	  AND name = 'mode'
+_sql
+
 
 //A bug with the backups could cause the user_perm_settings table to be skipped.
 //Recreate it if this is happened, so those backups are not invalidated.
 //N.b. I don't want to recrate the table if it's correctly there, so this is a rare
 //situation where I want to use "CREATE TABLE IF NOT EXISTS" in a db-update.
 //Normally you must use "DROP TABLE IF EXISTS".
-);	ze\dbAdm::revision( 43725
+);	ze\dbAdm::revision( 44265
 , <<<_sql
 	CREATE TABLE IF NOT EXISTS `[[DB_NAME_PREFIX]]user_perm_settings` (
 		`name` varchar(255) CHARACTER SET ascii NOT NULL,
@@ -1162,4 +1179,256 @@ _sql
 	)
 _sql
 
+//Add options to delete email logs on a per-template basis
+);	ze\dbAdm::revision( 44268
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]email_templates`
+	ADD COLUMN `period_to_delete_log_headers` varchar(255) NOT NULL DEFAULT '',
+	ADD COLUMN `period_to_delete_log_content` varchar(255) NOT NULL DEFAULT ''
+_sql
+
+
+
+//Combine two frameworks for the meta-data plugin nest into one, and replace
+//the choice with a plugin setting
+);	ze\dbAdm::revision( 44272
+, <<<_sql
+	INSERT IGNORE INTO `[[DB_NAME_PREFIX]]plugin_settings` (
+	  `instance_id`,
+	  `egg_id`,
+	  `name`,
+	  `value`,
+	  `is_content`
+	)
+	SELECT 
+	  pi.id,
+	  0,
+	  'show_labels',
+	  1,
+	  IF (pi.content_id, 'version_controlled_setting', 'synchronized_setting')
+	FROM `[[DB_NAME_PREFIX]]plugin_instances` AS pi
+	WHERE pi.framework = 'show_label'
+	  AND pi.module_id IN (
+			SELECT m.id
+			FROM `[[DB_NAME_PREFIX]]modules` AS m
+			WHERE m.class_name = 'zenario_meta_data'
+		)
+_sql
+
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]]plugin_instances` AS pi
+	SET pi.framework = 'standard'
+	WHERE pi.framework = 'show_label'
+	  AND pi.module_id IN (
+			SELECT m.id
+			FROM `[[DB_NAME_PREFIX]]modules` AS m
+			WHERE m.class_name = 'zenario_meta_data'
+		)
+_sql
+
+, <<<_sql
+	INSERT IGNORE INTO `[[DB_NAME_PREFIX]]plugin_settings` (
+	  `instance_id`,
+	  `egg_id`,
+	  `name`,
+	  `value`,
+	  `is_content`
+	)
+	SELECT 
+	  pi.id,
+	  np.id,
+	  'show_labels',
+	  1,
+	  IF (pi.content_id, 'version_controlled_setting', 'synchronized_setting')
+	FROM `[[DB_NAME_PREFIX]]nested_plugins` AS np
+	INNER JOIN `[[DB_NAME_PREFIX]]plugin_instances` AS pi
+	   ON pi.id = np.instance_id
+	WHERE np.is_slide = 0
+	  AND np.framework = 'show_label'
+	  AND np.module_id IN (
+			SELECT m.id
+			FROM `[[DB_NAME_PREFIX]]modules` AS m
+			WHERE m.class_name = 'zenario_meta_data'
+		)
+_sql
+
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]]nested_plugins` AS np
+	SET np.framework = 'standard'
+	WHERE np.framework = 'show_label'
+	  AND np.module_id IN (
+			SELECT m.id
+			FROM `[[DB_NAME_PREFIX]]modules` AS m
+			WHERE m.class_name = 'zenario_meta_data'
+		)
+_sql
+
+
+//Combine two frameworks for the zenario_search_entry_box plugin nest into one, and replace
+//the choice with a plugin setting
+);	ze\dbAdm::revision( 44274
+, <<<_sql
+	INSERT IGNORE INTO `[[DB_NAME_PREFIX]]plugin_settings` (
+	  `instance_id`,
+	  `egg_id`,
+	  `name`,
+	  `value`,
+	  `is_content`
+	)
+	SELECT 
+	  pi.id,
+	  0,
+	  'search_label',
+	  1,
+	  IF (pi.content_id, 'version_controlled_setting', 'synchronized_setting')
+	FROM `[[DB_NAME_PREFIX]]plugin_instances` AS pi
+	WHERE pi.framework = 'search_label'
+	  AND pi.module_id IN (
+			SELECT m.id
+			FROM `[[DB_NAME_PREFIX]]modules` AS m
+			WHERE m.class_name = 'zenario_search_entry_box'
+		)
+_sql
+
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]]plugin_instances` AS pi
+	SET pi.framework = 'standard'
+	WHERE pi.framework = 'search_label'
+	  AND pi.module_id IN (
+			SELECT m.id
+			FROM `[[DB_NAME_PREFIX]]modules` AS m
+			WHERE m.class_name = 'zenario_search_entry_box'
+		)
+_sql
+
+, <<<_sql
+	INSERT IGNORE INTO `[[DB_NAME_PREFIX]]plugin_settings` (
+	  `instance_id`,
+	  `egg_id`,
+	  `name`,
+	  `value`,
+	  `is_content`
+	)
+	SELECT 
+	  pi.id,
+	  np.id,
+	  'search_label',
+	  1,
+	  IF (pi.content_id, 'version_controlled_setting', 'synchronized_setting')
+	FROM `[[DB_NAME_PREFIX]]nested_plugins` AS np
+	INNER JOIN `[[DB_NAME_PREFIX]]plugin_instances` AS pi
+	   ON pi.id = np.instance_id
+	WHERE np.is_slide = 0
+	  AND np.framework = 'search_label'
+	  AND np.module_id IN (
+			SELECT m.id
+			FROM `[[DB_NAME_PREFIX]]modules` AS m
+			WHERE m.class_name = 'zenario_search_entry_box'
+		)
+_sql
+
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]]nested_plugins` AS np
+	SET np.framework = 'standard'
+	WHERE np.framework = 'search_label'
+	  AND np.module_id IN (
+			SELECT m.id
+			FROM `[[DB_NAME_PREFIX]]modules` AS m
+			WHERE m.class_name = 'zenario_search_entry_box'
+		)
+_sql
+
+, <<<_sql
+	INSERT IGNORE INTO `[[DB_NAME_PREFIX]]plugin_settings` (
+	  `instance_id`,
+	  `egg_id`,
+	  `name`,
+	  `value`,
+	  `is_content`
+	)
+	SELECT 
+	  pi.id,
+	  0,
+	  'search_label',
+	  1,
+	  IF (pi.content_id, 'version_controlled_setting', 'synchronized_setting')
+	FROM `[[DB_NAME_PREFIX]]plugin_instances` AS pi
+	WHERE pi.framework = 'search_label'
+	  AND pi.module_id IN (
+			SELECT m.id
+			FROM `[[DB_NAME_PREFIX]]modules` AS m
+			WHERE m.class_name = 'zenario_search_entry_box_predictive_probusiness'
+		)
+_sql
+
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]]plugin_instances` AS pi
+	SET pi.framework = 'standard'
+	WHERE pi.framework = 'search_label'
+	  AND pi.module_id IN (
+			SELECT m.id
+			FROM `[[DB_NAME_PREFIX]]modules` AS m
+			WHERE m.class_name = 'zenario_search_entry_box_predictive_probusiness'
+		)
+_sql
+
+, <<<_sql
+	INSERT IGNORE INTO `[[DB_NAME_PREFIX]]plugin_settings` (
+	  `instance_id`,
+	  `egg_id`,
+	  `name`,
+	  `value`,
+	  `is_content`
+	)
+	SELECT 
+	  pi.id,
+	  np.id,
+	  'search_label',
+	  1,
+	  IF (pi.content_id, 'version_controlled_setting', 'synchronized_setting')
+	FROM `[[DB_NAME_PREFIX]]nested_plugins` AS np
+	INNER JOIN `[[DB_NAME_PREFIX]]plugin_instances` AS pi
+	   ON pi.id = np.instance_id
+	WHERE np.is_slide = 0
+	  AND np.framework = 'search_label'
+	  AND np.module_id IN (
+			SELECT m.id
+			FROM `[[DB_NAME_PREFIX]]modules` AS m
+			WHERE m.class_name = 'zenario_search_entry_box_predictive_probusiness'
+		)
+_sql
+
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]]nested_plugins` AS np
+	SET np.framework = 'standard'
+	WHERE np.framework = 'search_label'
+	  AND np.module_id IN (
+			SELECT m.id
+			FROM `[[DB_NAME_PREFIX]]modules` AS m
+			WHERE m.class_name = 'zenario_search_entry_box_predictive_probusiness'
+		)
+_sql
+
+
+//Enable "show venue name" (show_location_name) setting in Zenario Event Listing if "show_location" was enabled
+);	ze\dbAdm::revision( 44275
+, <<<_sql
+	INSERT IGNORE INTO `[[DB_NAME_PREFIX]]plugin_settings` (
+	  `instance_id`,
+	  `egg_id`,
+	  `name`,
+	  `value`,
+	  `is_content`
+	)
+	SELECT
+	  `instance_id`,
+	  `egg_id`,
+	  'show_location_name',
+	  `value`,
+	  `is_content`
+	FROM `[[DB_NAME_PREFIX]]plugin_settings` AS ps
+	WHERE ps.name = "show_location"
+_sql
+
 );
+

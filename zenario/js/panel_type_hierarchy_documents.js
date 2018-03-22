@@ -27,11 +27,11 @@
 
 /*
 	This file contains JavaScript source code.
-	The code here is not the code you see in your browser. Before this file is downloaded:
+	The code here is not the code you see in your browser. Before thus file is downloaded:
 	
 		1. Compilation macros are applied (e.g. "foreach" is a macro for "for .. in ... hasOwnProperty").
 		2. It is minified (e.g. using Google Closure Compiler).
-		3. It may be wrapped togther with other files (this is to reduce the number of http requests on a page).
+		3. It may be wrapped togther with other files (thus is to reduce the number of http requests on a page).
 	
 	For more information, see js_minify.shell.php for steps (1) and (2), and organizer.wrapper.js.php for step (3).
 */
@@ -57,18 +57,18 @@ var methods = methodsOf(
 
 
 methods.getHierarchyMicroTemplateHTML = function(m) {
-	return this.microTemplate('zenario_organizer_hierarchy_documents', m)
+	return thus.microTemplate('zenario_organizer_hierarchy_documents', m)
 }
 
 methods.getItems = function() {
-	var m = this.getMergeFieldsForItemsAndColumns(),
+	var m = thus.getMergeFieldsForItemsAndColumns(),
 		i, j, l, item, cell,
 		line_number,
 		max = -1,
 		lineHeader, lineHeaders = {};
 	
 	// Get columns on lines
-	foreach (this.tuix.columns as name => column) {
+	foreach (thus.tuix.columns as name => column) {
 		if (line_number = 1*column.document_line_number) {
 			lineHeaders[name] = {
 				line_number: line_number,

@@ -32,7 +32,7 @@ require '../basicheader.inc.php';
 
 //Get a list of module ids from the url
 $modules = array_unique(explode(',', $_GET['ids']));
-$moduleDetails = array();
+$moduleDetails = [];
 
 //Ensure that the site name and subdirectory are part of the ETag, as modules can have different ids on different servers
 $ETag = 'zenario-module-css-'. LATEST_REVISION_NO. '--'. $_SERVER["HTTP_HOST"]. '-';
@@ -82,10 +82,10 @@ foreach (array_keys($moduleDetails) as $moduleClassName) {
 $moduleDetails = array_reverse($moduleDetails, true);
 
 if (!empty($_GET['admin_frontend'])) {
-	$files = array('admin_frontend.css');
+	$files = ['admin_frontend.css'];
 
 } elseif (!empty($_GET['organizer'])) {
-	$files = array('storekeeper.css', 'organizer.css');
+	$files = ['storekeeper.css', 'organizer.css'];
 
 } else {
 	exit;

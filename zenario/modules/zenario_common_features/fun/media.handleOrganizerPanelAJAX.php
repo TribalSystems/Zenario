@@ -42,7 +42,7 @@ if (($_POST['upload'] ?? false) && $privCheck) {
 	if ($_FILES['Filedata']['tmp_name']
 	 && ($existingChecksum = md5_file($_FILES['Filedata']['tmp_name']))
 	 && ($existingChecksum = ze::base16To64($existingChecksum))) {
-		$existingFilename = ze\row::get('files', 'filename', array('checksum' => $existingChecksum, 'usage' => 'image'));
+		$existingFilename = ze\row::get('files', 'filename', ['checksum' => $existingChecksum, 'usage' => 'image']);
 	}
 	
 	//Try to add the uploaded image to the database
@@ -53,13 +53,13 @@ if (($_POST['upload'] ?? false) && $privCheck) {
 		//If this was a content item or newsletter, attach the uploaded image to the content item/newsletter
 		if ($key) {
 			$key['image_id'] = $fileId;
-			ze\row::set('inline_images', array(), $key);
+			ze\row::set('inline_images', [], $key);
 		}
 		
 		if ($existingFilename && $existingFilename != $_FILES['Filedata']['name']) {
 			echo '<!--Message_Type:Warning-->',
 				ze\admin::phrase('This file already existed on the system, but with a different name. "[[old_name]]" has now been renamed to "[[new_name]]".',
-					array('old_name' => $existingFilename, 'new_name' => $_FILES['Filedata']['name']));
+					['old_name' => $existingFilename, 'new_name' => $_FILES['Filedata']['name']]);
 		} else {
 			echo 1;
 		}
@@ -76,20 +76,20 @@ if (($_POST['upload'] ?? false) && $privCheck) {
 } elseif (($_POST['add'] ?? false) && $key && $privCheck) {
 	foreach (ze\ray::explodeAndTrim($ids, true) as $id) {
 		$key['image_id'] = $id;
-		ze\row::set('inline_images', array(), $key);
+		ze\row::set('inline_images', [], $key);
 	}
 	return $ids;
 
 //Mark images as public
 } elseif (($_POST['mark_as_public'] ?? false) && ze\priv::check('_PRIV_MANAGE_MEDIA')) {
 	foreach (ze\ray::explodeAndTrim($ids, true) as $id) {
-		ze\row::update('files', array('privacy' => 'public'), $id);
+		ze\row::update('files', ['privacy' => 'public'], $id);
 	}
 
 //Mark images as private
 } elseif (($_POST['mark_as_private'] ?? false) && ze\priv::check('_PRIV_MANAGE_MEDIA')) {
 	foreach (ze\ray::explodeAndTrim($ids, true) as $id) {
-		ze\row::update('files', array('privacy' => 'private'), $id);
+		ze\row::update('files', ['privacy' => 'private'], $id);
 		ze\file::deletePublicImage($id);
 	}
 
@@ -121,10 +121,10 @@ if (($_POST['upload'] ?? false) && $privCheck) {
 			'<!--Message_Type:Success-->',
 			'<h3>', ze\admin::phrase('The URL to your image is shown below:'), '</h3>',
 			'<p>', ze\admin::phrase('Full hyperlink:<br/>[[full]]<br/><br/>Internal hyperlink:<br/>[[internal]]<br/>',
-				array(
+				[
 					'full' => '<input type="text" style="width: 488px;" value="'. htmlspecialchars(ze\link::absolute(). $url). '"/>',
 					'internal' => '<input type="text" style="width: 488px;" value="'. htmlspecialchars($url). '"/>'
-			)), '</p>',
+			]), '</p>',
 			'<p>', ze\admin::phrase('If you later make this image private, these links will stop working.'), '</p>';
 		
 	} else {

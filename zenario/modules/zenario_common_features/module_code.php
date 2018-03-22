@@ -242,7 +242,7 @@ class zenario_common_features extends ze\moduleBaseClass {
 					//Otherwise if this is a layout preview, then no instance id is an error!
 					} else {
 						ze\plugin::setupNewBaseClass($slotName);
-						$slot['error'] = ze\admin::phrase('[Plugin Instance not found for the Module &quot;[[module]]&quot;]', array('module' => htmlspecialchars($module['display_name'])));
+						$slot['error'] = ze\admin::phrase('[Plugin Instance not found for the Module &quot;[[display_name|escape]]&quot;]', $module);
 					}
 				}
 			}
@@ -251,7 +251,7 @@ class zenario_common_features extends ze\moduleBaseClass {
 			
 			if ($runPlugins) {
 				ze\plugin::setupNewBaseClass($slotName);
-				$slot['error'] = ze\admin::phrase('[Selected Module &quot;[[module]]&quot; not found, not running, or has missing dependencies]', array('module' => htmlspecialchars($module['display_name'])));
+				$slot['error'] = ze\admin::phrase('[Selected Module &quot;[[display_name|escape]]&quot; not found, not running, or has missing dependencies]', $module);
 			}
 		}
 	}
@@ -426,7 +426,6 @@ class zenario_common_features extends ze\moduleBaseClass {
 	}
 	
 	public static function jobPublishContent($serverTime) {
-		
 		$sql = "
 			SELECT v.id, v.type, v.version, c.status
 			FROM ". DB_NAME_PREFIX. "content_item_versions AS v
@@ -444,7 +443,7 @@ class zenario_common_features extends ze\moduleBaseClass {
 				$adminId = ze\row::get('content_items', 'lock_owner_id', ['id'=>$citem['id'], 'type'=>$citem['type']]);
 				ze\contentAdm::publishContent($citem['id'], $citem['type'], $adminId);
 				$action = true;
-				echo ze\admin::phrase('Published Content Item [[tag]]', array('tag' => ze\content::formatTag($citem['id'], $citem['type']))), "\n";
+				echo ze\admin::phrase('Published Content Item [[tag]]', ['tag' => ze\content::formatTag($citem['id'], $citem['type'])]), "\n";
 			}
 			
 			// Update scheduled time
@@ -461,20 +460,36 @@ class zenario_common_features extends ze\moduleBaseClass {
 		return $action;
 	}
 	
-	public static function canCreateAdditionalAdmins() {
-		$limit = ze\site::description('max_local_administrators');
-		return !$limit || ze\row::count('admins', ['is_client_account' => 1, 'status' => 'active']) < $limit;
+	//A scheduled task to delete stored content
+	public static function jobDataProtectionCleanup() {
+		$actionsTaken = 0;
+		
+		//Modules that want to clear some kind of data have a clearOldData public static method that deletes it
+		//based on some site-setting.
+		$modulesWithDataToClear = [
+			'zenario_email_template_manager',
+			'zenario_scheduled_task_manager',
+			'zenario_incoming_email_manager',
+			'zenario_users',
+			'zenario_user_forms'
+		];
+		
+		foreach ($modulesWithDataToClear as $moduleName) {
+			if (ze\module::inc($moduleName)) {
+				$actionsTaken += call_user_func([$moduleName, 'clearOldData']);
+			}
+		}
+		
+		return $actionsTaken > 0;
 	}
 	
 	
 	
 	
-	
-	
-	
-	
-	
-	
+	public static function canCreateAdditionalAdmins() {
+		$limit = ze\site::description('max_local_administrators');
+		return !$limit || ze\row::count('admins', ['is_client_account' => 1, 'status' => 'active']) < $limit;
+	}
 	
 	//Get the salutation LoV
 	public static function getSalutations($mode, $value = false) {

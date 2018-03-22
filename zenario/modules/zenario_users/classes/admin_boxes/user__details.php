@@ -78,7 +78,6 @@ class zenario_users__admin_boxes__user__details extends ze\moduleBaseClass {
 			$fields['details/status']['readonly'] = true;
 			$fields['details/status']['values'] = [$user['status'] => $fields['details/status']['values'][$user['status']]];
 			
-			$values['dates/last_login_ip'] = $user['last_login_ip'];
 			$values['dates/last_login'] = $user['last_login'];
 			$values['dates/created_date'] = $user['created_date'];
 			$values['dates/modified_date'] = $user['modified_date'];

@@ -32,7 +32,7 @@ class deprecated {
 
 
 	//Formerly "putErrorsOnAdminBoxTabs()"
-	public static function putErrorsOnAdminBoxTabs(&$box, $e, $defaultTab = false, $specifics = array()) {
+	public static function putErrorsOnAdminBoxTabs(&$box, $e, $defaultTab = false, $specifics = []) {
 		if (\ze::isError($e)) {
 			$errors = $e->errors;
 		} elseif (is_array($e)) {
@@ -42,7 +42,7 @@ class deprecated {
 		}
 		
 		foreach ($errors as $fieldName => &$error) {
-			$error = array('c' => $error, 't' => ($specifics[$fieldName] ?? false));
+			$error = ['c' => $error, 't' => ($specifics[$fieldName] ?? false)];
 		}
 	
 		if (!empty($box['tabs'])) {
@@ -68,7 +68,7 @@ class deprecated {
 					$error['t'] = $defaultTab;
 				}
 				if (!isset($box['tabs'][$error['t']]['errors']) || !is_array($box['tabs'][$error['t']]['errors'])) {
-					$box['tabs'][$error['t']]['errors'] = array();
+					$box['tabs'][$error['t']]['errors'] = [];
 				}
 				$box['tabs'][$error['t']]['errors'][] = \ze\admin::phrase($error['c']);
 			}
@@ -117,7 +117,7 @@ class deprecated {
 
 		//echo $sql_start_date, " ", $sql_end_date, "\n";
 
-		return array($sql_start_date, $sql_end_date);
+		return [$sql_start_date, $sql_end_date];
 	}
 
 	//Deprecated function, please call either \ze\sql::select() or \ze\sql::update() instead!
@@ -189,7 +189,7 @@ class deprecated {
 	//Get a description of a table
 	//Formerly "getFields()"
 	public static function getFields($prefix, $tableName, $addPasswordConfirm = false) {
-		$fields = array();
+		$fields = [];
 		$sql = "DESC ". \ze\escape::sql($prefix. $tableName);
 		$result = \ze\sql::select($sql);
 
@@ -219,7 +219,7 @@ class deprecated {
 	
 	//A function to help with saving the returns from these fields
 	//Formerly "addFieldToSQL()"
-	public static function addFieldToSQL(&$sql, $table, $field, $values, $editing, $details = array()) {
+	public static function addFieldToSQL(&$sql, $table, $field, $values, $editing, $details = []) {
 	
 		if ($sql) {
 			$sql .= ",";

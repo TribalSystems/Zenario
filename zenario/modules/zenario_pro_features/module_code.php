@@ -313,17 +313,17 @@ class zenario_pro_features extends zenario_common_features {
 		$this->pageNumbers($currentPage, $pages, $html, 'Smart', $showNextPrev = false, $showFirstLast = false, $alwaysShowNextPrev = false);
 	}
 	
-	public function pagSmartWithNPIfNeeded($currentPage, &$pages, &$html, $links = array(), $extraAttributes = array()) {
+	public function pagSmartWithNPIfNeeded($currentPage, &$pages, &$html, $links = [], $extraAttributes = []) {
 		$this->pageNumbers($currentPage, $pages, $html, 'Smart', $showNextPrev = true, $showFirstLast = false, $alwaysShowNextPrev = false, $links, $extraAttributes);
 	}
 	
-	public function pagSmartWithNP($currentPage, &$pages, &$html, $links = array(), $extraAttributes = array()) {
+	public function pagSmartWithNP($currentPage, &$pages, &$html, $links = [], $extraAttributes = []) {
 		$this->pageNumbers($currentPage, $pages, $html, 'Smart', $showNextPrev = true, $showFirstLast = false, $alwaysShowNextPrev = true, $links, $extraAttributes);
 	}
 	
-	protected function smartPageNumbers($currentPos, $count, $showFirstLast, &$pagesPos, &$pages, &$html, $currentPage, $prevPage, $nextPage, $links = array(), $extraAttributes = array()) {
+	protected function smartPageNumbers($currentPos, $count, $showFirstLast, &$pagesPos, &$pages, &$html, $currentPage, $prevPage, $nextPage, $links = [], $extraAttributes = []) {
 		//Have a set list of positions that will be displayed, if there
-		$positions1 = array(
+		$positions1 = [
 				-999999,
 				-100000, -70000, -40000, -20000,
 				-10000, -7000, -4000, -2000,
@@ -338,8 +338,8 @@ class zenario_pro_features extends zenario_common_features {
 				10000, 20000, 40000, 70000,
 				100000,
 				999999
-			);
-		$positions2 = array();
+			];
+		$positions2 = [];
 		
 		//Check if each is there, and include it if so
 		foreach ($positions1 as $rel) {
@@ -357,7 +357,7 @@ class zenario_pro_features extends zenario_common_features {
 				$pos = $count-1;
 			} else {
 				//Otherwise if the numbers are in range then round numbers, depending on how far away they are from the current page
-				foreach (array(100000, 10000, 1000, 100, 10) as $round) {
+				foreach ([100000, 10000, 1000, 100, 10] as $round) {
 					if ($rel < -$round || $round < $rel) {
 						$pos = $pos - ($currentPos % $round) - 1;
 						break;
@@ -507,8 +507,8 @@ class zenario_pro_features extends zenario_common_features {
 	
 	
 	var $categoryHierarchyOutput = "";
-	var $categoryChildren = Array();
-	var $categoryAncestors = Array();
+	var $categoryChildren = [];
+	var $categoryAncestors = [];
 	
 	
 	public function categoryHasChild ($id) {
@@ -559,17 +559,17 @@ class zenario_pro_features extends zenario_common_features {
 	
 	//protected static $debug = '';
 	//protected static $debug2 = '';
-	protected static $clearCacheBy = array();
-	protected static $clearTags = array();
+	protected static $clearCacheBy = [];
+	protected static $clearTags = [];
 	protected static $clearCacheOnShutdownRegistered = false;
 	protected static $syncUsersOnShutdownRegistered = false;
 	protected static $localDB = false;
 	
-	private static $seenUserSyncSites = array();
+	private static $seenUserSyncSites = [];
 	private static $userSyncSiteConfigSiteIsValid;
 	
-	private static $pluginPageHeadHTML = array();
-	private static $pluginPageFootHTML = array();
+	private static $pluginPageHeadHTML = [];
+	private static $pluginPageFootHTML = [];
 	
 	public static function preSlot($slotName, $showPlaceholderMethod, $useOb = true) {
 		if (ze::$canCache
@@ -620,7 +620,7 @@ class zenario_pro_features extends zenario_common_features {
 	
 	
 				//Look for this slot on the page, and check for any Nested Plugins in child-slots
-				$slots = array();
+				$slots = [];
 				$len = strlen($slotName) + 1;
 				foreach (ze::$slotContents as $slotNameNestId => &$instance) {
 					if ($slotNameNestId == $slotName || substr($slotNameNestId, 0, $len) == $slotName. '-') {
@@ -666,7 +666,7 @@ class zenario_pro_features extends zenario_common_features {
 					if (ze\cache::cleanDirs() && ($path = ze\cache::createDir(pageCacheDir($chKnownRequests, 'plugin'). $cacheStatusText, 'pages', false))) {						
 						
 						//Record the slot vars and class vars for this slot, and if this is a nest, any child-slots
-						$setFiles = array();
+						$setFiles = [];
 						foreach ($slots as $slotNameNestId => &$vars) {
 						
 							//Loop through this slot and any child slots, coming up with the rules as to when we should clear the cache
@@ -681,7 +681,7 @@ class zenario_pro_features extends zenario_common_features {
 								}
 							}
 							
-							$temps = array('class' => null, 'found' => null, 'used' => null);
+							$temps = ['class' => null, 'found' => null, 'used' => null];
 							foreach ($temps as $temp => $dummy) {
 								if (isset(ze::$slotContents[$slotNameNestId][$temp])) {
 									$temps[$temp] = ze::$slotContents[$slotNameNestId][$temp];
@@ -689,7 +689,7 @@ class zenario_pro_features extends zenario_common_features {
 								unset(ze::$slotContents[$slotNameNestId][$temp]);
 							}
 
-							$slots[$slotNameNestId] = array('s' => ze::$slotContents[$slotNameNestId], 'c' => array());
+							$slots[$slotNameNestId] = ['s' => ze::$slotContents[$slotNameNestId], 'c' => []];
 
 							//Note down any html added to the page head
 							if (!empty(zenario_pro_features::$pluginPageHeadHTML[$slotNameNestId])) {
@@ -759,59 +759,6 @@ class zenario_pro_features extends zenario_common_features {
 		}
 	}
 	
-	//Check whether User Sync as been defined in a specifically-named siteconfig file
-	public static function validateUserSyncSiteConfig() {
-		if (isset(zenario_pro_features::$userSyncSiteConfigSiteIsValid)) {
-			return zenario_pro_features::$userSyncSiteConfigSiteIsValid;
-		}
-		
-		zenario_pro_features::$userSyncSiteConfigSiteIsValid = false;
-		
-		//Attempt to load the config
-		if (!is_file(CMS_ROOT. 'zenario_usersync_config.php')) {
-			return;
-		}
-		require CMS_ROOT. 'zenario_usersync_config.php';
-		
-		//Check that the config has one hub and at least one satellite, and that each site is valid
-		if (!isset($hub)
-		 || !isset($satellites)
-		 || !is_array($satellites)
-		 || empty($satellites)
-		 || !zenario_pro_features::validateUserSyncSiteConfigSite($hub)) {
-			return;
-		}
-		foreach ($satellites as $site) {
-			if (!zenario_pro_features::validateUserSyncSiteConfigSite($site)) {
-				return;
-			}
-		}
-		
-		//Don't do anything if the current site site wasn't actually in the config
-		if (!isset(zenario_pro_features::$seenUserSyncSites[DBHOST. '~~'. DBNAME])) {
-			return;
-		}
-		
-		return zenario_pro_features::$userSyncSiteConfigSiteIsValid = true;
-	}
-	
-	private static function validateUserSyncSiteConfigSite($site) {
-		
-		//Check this info looks valid
-		if (empty($site)
-		 || !is_array($site)
-		 || !isset($site['DBHOST'])
-		 || !isset($site['DBNAME'])
-		 || !isset($site['DBUSER'])
-		 || !isset($site['DBPASS'])
-		 || !isset($site['DB_NAME_PREFIX'])
-		 || isset(zenario_pro_features::$seenUserSyncSites[$site['DBHOST']. '~~'. $site['DBNAME']])) {
-			return false;
-		} else {
-			zenario_pro_features::$seenUserSyncSites[$site['DBHOST']. '~~'. $site['DBNAME']] = true;
-			return true;
-		}
-	}
 	
 	
 	
@@ -854,7 +801,7 @@ class zenario_pro_features extends zenario_common_features {
 					
 					//Clear the Menu as well if there is a Menu Node linked to this Content Item
 					$equivId = ze\content::equivId($cID, $cType);
-					if (ze\row::exists('menu_nodes', array('target_loc' => 'int', 'equiv_id' => $equivId, 'content_type' => $cType))) {
+					if (ze\row::exists('menu_nodes', ['target_loc' => 'int', 'equiv_id' => $equivId, 'content_type' => $cType])) {
 						zenario_pro_features::$clearCacheBy['menu'] = true;
 					}
 				
@@ -901,12 +848,8 @@ class zenario_pro_features extends zenario_common_features {
 		//(Note that if we've already declared that we're wiping everything in the cache, then there's no need to keep checking it.)
 		$checkCache = ze::setting('caching_enabled') && empty(zenario_pro_features::$clearCacheBy['all']);
 		
-		//Check if we might need to sync User data
-		$checkUser = ($table == 'users' || !$table) && zenario_pro_features::validateUserSyncSiteConfig();
-		
 		//If there's nothing we need to do, stop here.
-		$mayNeedToDoSomething = $checkCache || $checkUser;
-		if (!$mayNeedToDoSomething) {
+		if (!$checkCache) {
 			return;
 		}
 		
@@ -915,7 +858,7 @@ class zenario_pro_features extends zenario_common_features {
 		if (!$table && $sql) {
 			//Tables that are being changed must be listed before certain keywords in SQL, so there's no need to search the entire
 			//SQL query, just the bit of the query before these words
-			$matches = array();
+			$matches = [];
 			if (preg_match('/\b(LIMIT|ORDER|SELECT|SET|VALUE|VALUES|WHERE)\b/i', $sql, $matches, PREG_OFFSET_CAPTURE)) {
 				$test = substr($sql, 0, $matches[0][1]);
 			} else {
@@ -923,7 +866,7 @@ class zenario_pro_features extends zenario_common_features {
 			}
 			
 			//Loop through any words in the SQL query that start with the DB_NAME_PREFIX
-			$matches = array();
+			$matches = [];
 			if (preg_match_all('/\b'. preg_quote(DB_NAME_PREFIX). '(\w+)\b/', $test, $matches)) {
 				if (!empty($matches[1])) {
 					
@@ -943,16 +886,6 @@ class zenario_pro_features extends zenario_common_features {
 		//If we still couldn't find a table name, then there's nothing else we can do
 		if (!$table) {
 			return;
-		}
-		
-		
-		//If User data has changed, run the sync function
-		if (!zenario_pro_features::$syncUsersOnShutdownRegistered
-		 && $checkUser
-		 && $table == 'users'
-		 && ze\module::inc('zenario_users')) {
-			register_shutdown_function(array('zenario_pro_features', 'syncUsersOnShutdown'));
-			zenario_pro_features::$syncUsersOnShutdownRegistered = true;
 		}
 		
 		
@@ -1109,7 +1042,7 @@ class zenario_pro_features extends zenario_common_features {
 							if (!empty($ids['instance_id'])
 							 && !is_array($ids['instance_id'])) {
 								$table = 'plugin_instances';
-								$ids = array('id' => $ids['instance_id']);
+								$ids = ['id' => $ids['instance_id']];
 							
 							//Attempt to look up an instance id from a nested Plugin
 							} else
@@ -1120,7 +1053,7 @@ class zenario_pro_features extends zenario_common_features {
 								
 								if ($row = ze\sql::fetchAssoc($result)) {
 									$table = 'plugin_instances';
-									$ids = array('id' => $row['instance_id']);
+									$ids = ['id' => $row['instance_id']];
 								
 								} else {
 									//If we couldn't find this setting/nested Plugin, then it may already have been deleted.
@@ -1193,7 +1126,7 @@ class zenario_pro_features extends zenario_common_features {
 			}
 			
 			if (!zenario_pro_features::$clearCacheOnShutdownRegistered && (!empty(zenario_pro_features::$clearCacheBy) || !empty(zenario_pro_features::$clearTags))) {
-				register_shutdown_function(array('zenario_pro_features', 'clearCacheOnShutdown'));
+				register_shutdown_function(['zenario_pro_features', 'clearCacheOnShutdown']);
 				zenario_pro_features::$clearCacheOnShutdownRegistered = true;
 			}
 		}
@@ -1242,20 +1175,16 @@ class zenario_pro_features extends zenario_common_features {
 		
 	}
 	
-	public static function syncUsersOnShutdown() {
-		zenario_users::syncUsers();
-	}
-	
 	
 	
 	public static function eventContentDeleted($cID, $cType, $cVersion) {
-		if (!ze\row::exists('content_item_versions', array('id' => $cID, 'type' => $cType))) {
-			ze\row::delete('spare_aliases', array('content_id' => $cID, 'content_type' => $cType));
+		if (!ze\row::exists('content_item_versions', ['id' => $cID, 'type' => $cType])) {
+			ze\row::delete('spare_aliases', ['content_id' => $cID, 'content_type' => $cType]);
 		}
 	}
 	
 	public static function eventContentTrashed($cID, $cType) {
-		ze\row::delete('spare_aliases', array('content_id' => $cID, 'content_type' => $cType));
+		ze\row::delete('spare_aliases', ['content_id' => $cID, 'content_type' => $cType]);
 	}
 	
 }

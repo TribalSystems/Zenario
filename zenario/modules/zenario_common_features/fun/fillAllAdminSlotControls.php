@@ -46,7 +46,7 @@ if (ze::$cVersion == ze::$adminVersion) {
 	//$canEdit = false;
 }
 
-$pageMode = array();
+$pageMode = [];
 $isNest = !empty(ze::$slotContents[$slotName]['is_nest']);
 
 
@@ -55,8 +55,8 @@ $overriddenPlugin = false;
 if ($level == 1) {
 	$overriddenPlugin = ze\row::get(
 		'plugin_layout_link',
-		array('module_id', 'instance_id'),
-		array('slot_name' => $slotName, 'layout_id' => ze::$layoutId));
+		['module_id', 'instance_id'],
+		['slot_name' => $slotName, 'layout_id' => ze::$layoutId]);
 
 	//Treat the case of hidden (item layer) and empty (layout layer) as just empty
 	if (!$overriddenPlugin && !$moduleId) {
@@ -110,7 +110,7 @@ if ($isVersionControlled) {
 
 //Format options if the slot is empty
 if (!$moduleId) {
-	$pageMode = array('edit' => true, 'layout' => true);
+	$pageMode = ['edit' => true, 'layout' => true];
 	
 	if (!$level) {
 		//Empty slots
@@ -123,16 +123,16 @@ if (!$moduleId) {
 			$i = 0;
 			foreach (ze\row::getArray(
 				'modules',
-				array('id', 'display_name'),
-				array('status' => array('module_running', 'module_is_abstract'), 'is_pluggable' => 1, 'can_be_version_controlled' => 1),
+				['id', 'display_name'],
+				['status' => ['module_running', 'module_is_abstract'], 'is_pluggable' => 1, 'can_be_version_controlled' => 1],
 				'display_name'
 			) as $module) {
-				$controls['actions'][] = array(
+				$controls['actions'][] = [
 					'ord' => ++$i,
 					'label' => ze\admin::phrase('Insert a [[display_name]]', $module),
-					'page_modes' => array('layout' => true),
+					'page_modes' => ['layout' => true],
 					'onclick' => "zenarioA.addNewWireframePlugin(this, '". ze\escape::js($slotName). "', ". (int) $module['id']. ");"
-				);
+				];
 			}
 		}
 	} else {
@@ -141,6 +141,9 @@ if (!$moduleId) {
 		unset($controls['actions']['insert_reusable_on_item_layer']);
 		unset($controls['actions']['insert_reusable_on_layout_layer']);
 	}
+	
+	unset($controls['info']['vc']);
+	unset($controls['info']['vc_warning']);
 	
 
 } else {
@@ -151,7 +154,7 @@ if (!$moduleId) {
 	#	//Set up the embed buttons
 	#	$embedLink = ze\link::toItem(
 	#		$cID, $cType, $fullPath = true, $request = '&zembedded=1&method_call=showSingleSlot&slotName='. $slotName,
-	#		ze::$alias, $autoAddImportantRequests = false, $useAliasInAdminMode = true);
+	#		ze::$alias, $autoAddImportantRequests = false, $forceAliasInAdminMode = true);
 	#
 	#	$controls['info']['embed']['label'] .= '
 	#		<a onclick="zenarioA.copyEmbedHTML(\''. ze\escape::js($embedLink). '\', \''. ze\escape::js($slotName). '\');">'.
@@ -167,12 +170,12 @@ if (!$moduleId) {
 	
 	//Show the wrapping html, id and css class names for the slot
 	if (isset(ze::$slotContents[$slotName]['class']) && !empty(ze::$slotContents[$slotName]['class'])) {
-		$a = array();
+		$a = [];
 		ze::$slotContents[$slotName]['class']->zAPIGetCachableVars($a);
 		$framework = $a[0];
 		$cssClass = $a[4];
 		
-		$controls['info']['slot_css_class']['label'] = ze\admin::phrase('CSS classes: <input class="zenario_class_name_preview" readonly="readonly" value="[[cssClass]]">', array('cssClass' => htmlspecialchars($cssClass)));
+		$controls['info']['slot_css_class']['label'] = ze\admin::phrase('CSS classes: <input class="zenario_class_name_preview" readonly="readonly" value="[[cssClass]]">', ['cssClass' => htmlspecialchars($cssClass)]);
 	} else {
 		unset($controls['info']['slot_css_class']);
 	}
@@ -220,7 +223,7 @@ if (!$moduleId) {
 	if ($isNest
 	 && (($isVersionControlled && $canChange && $level == 1)
 	  || (!$isVersionControlled && ze\priv::check('_PRIV_MANAGE_REUSABLE_PLUGIN')))
-	 && ze\row::exists('nested_plugins', array('is_slide' => 0, 'instance_id' => $instanceId))) {
+	 && ze\row::exists('nested_plugins', ['is_slide' => 0, 'instance_id' => $instanceId])) {
 		$controls['actions']['convert_nest']['page_modes'] = $pageMode;
 	} else {
 		unset($controls['actions']['convert_nest']);
@@ -291,7 +294,7 @@ if (!$couldEdit) {
 
 //If there is a hidden plugin at the layout layer, display info and some actions for that too
 if ($overriddenPlugin) {
-	$overriddenPluginIsNest = ze\row::exists('nested_plugins', array('instance_id' => $overriddenPlugin['instance_id']));
+	$overriddenPluginIsNest = ze\row::exists('nested_plugins', ['instance_id' => $overriddenPlugin['instance_id']]);
 	$overriddenIsVersionControlled = !$overriddenPlugin['instance_id'];
 	ze\pluginAdm::fillSlotControlPluginInfo($overriddenPlugin['module_id'], $overriddenPlugin['instance_id'], $overriddenIsVersionControlled, $cID, $cType, 2, $overriddenPluginIsNest, $controls['overridden_info'], $controls['overridden_actions']);
 	

@@ -33,12 +33,12 @@ class zenario_abstract_list extends zenario_abstract_manager {
 	
 	protected static $requestVar = 'id';
 	
-	protected $merge = array(
-		'paginationData' => array(),
+	protected $merge = [
+		'paginationData' => [],
 		'paginationHTML' => '',
-		'rows' => array(),
+		'rows' => [],
 		'show' => false
-	);
+	];
 	
 	protected $usePagination = false;
 	protected $page = 0;
@@ -46,7 +46,7 @@ class zenario_abstract_list extends zenario_abstract_manager {
 	protected $pageLimit = 0;
 	protected $totalPages = 0;
 	protected $rows = 0;
-	protected $pages = array();
+	protected $pages = [];
 	
 	//Set some basic parameters for pagination
 	//Intended to be easily overwritten
@@ -195,12 +195,12 @@ class zenario_abstract_list extends zenario_abstract_manager {
 			while($values = ze\sql::fetchAssoc($result)) {
 				if (!empty($values[$idColumn])) {
 					
-					$ids = array();
+					$ids = [];
 					static::formatRecord($values[$idColumn], $values, $ids, $this->dateFormat());
 					$this->formatRow($values[$idColumn], $values, $ids);
 				
 					$this->merge['show'] = true;
-					$this->merge['rows'][] = array('values' => $values, 'ids' => $ids, 'id' => $values[$idColumn]);
+					$this->merge['rows'][] = ['values' => $values, 'ids' => $ids, 'id' => $values[$idColumn]];
 				}
 			}
 		}

@@ -46,9 +46,9 @@ switch ($path) {
 		}
 		
 		//Convert all absolute URLs in the HTML Text to relative URLs when saving
-		foreach (array('value', 'current_value') as $value) {
+		foreach (['value', 'current_value'] as $value) {
 			if (isset($box['tabs']['text']['fields']['text'][$value])) {
-				foreach (array('"', "'") as $quote) {
+				foreach (['"', "'"] as $quote) {
 					$box['tabs']['text']['fields']['text'][$value] = 
 						str_replace(
 							$quote. htmlspecialchars(ze\link::absolute()),

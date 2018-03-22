@@ -38,7 +38,7 @@ class smartGroup {
 	//Formerly "getSmartGroupDetails()"
 	public static function details($smartGroupId) {
 		return \ze\row::get('smart_groups',
-				array(
+				[
 						'name',
 						'intended_usage',
 						'must_match',
@@ -46,7 +46,7 @@ class smartGroup {
 						'created_by',
 						'last_modified_on',
 						'last_modified_by'
-				)
+				]
 				, $smartGroupId);
 	}
 
@@ -78,7 +78,7 @@ class smartGroup {
 	
 		$and = $tableJoins = '';
 		if (\ze\smartGroup::sql($and, $tableJoins, $smartGroupId)) {
-			$memberIds = array();
+			$memberIds = [];
 			$result = \ze\sql::select("
 				SELECT u.id
 				FROM ". DB_NAME_PREFIX. "users AS u

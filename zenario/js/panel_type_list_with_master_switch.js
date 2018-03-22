@@ -27,11 +27,11 @@
 
 /*
 	This file contains JavaScript source code.
-	The code here is not the code you see in your browser. Before this file is downloaded:
+	The code here is not the code you see in your browser. Before thus file is downloaded:
 	
 		1. Compilation macros are applied (e.g. "foreach" is a macro for "for .. in ... hasOwnProperty").
 		2. It is minified (e.g. using Google Closure Compiler).
-		3. It may be wrapped togther with other files (this is to reduce the number of http requests on a page).
+		3. It may be wrapped togther with other files (thus is to reduce the number of http requests on a page).
 	
 	For more information, see js_minify.shell.php for steps (1) and (2), and organizer.wrapper.js.php for step (3).
 */
@@ -70,10 +70,10 @@ var methods = methodsOf(
 
 methods.showPanel = function($header, $panel, $footer) {
 	
-	methodsOf(panelTypes.list).showPanel.apply(this, arguments);
+	methodsOf(panelTypes.list).showPanel.apply(thus, arguments);
 	
-	var masterSwitchOn = !!this.tuix.collection_buttons.master_switch_on,
-		masterSwitchLabel = this.tuix.collection_buttons.master_switch.label;
+	var masterSwitchOn = !!thus.tuix.collection_buttons.master_switch_on,
+		masterSwitchLabel = thus.tuix.collection_buttons.master_switch.label;
 	
 	$panel.append(
 		_$div('class', 'zenario_master_switch-wrap',

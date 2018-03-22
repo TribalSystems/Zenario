@@ -27,11 +27,11 @@
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
-$files = array();
+$files = [];
 $content = '';
 
 if ($publishing) {
-	$citemPrivacy = \ze\row::get('translation_chains', 'privacy', array('equiv_id' => \ze\content::equivId($cID, $cType), 'type' => $cType));
+	$citemPrivacy = \ze\row::get('translation_chains', 'privacy', ['equiv_id' => \ze\content::equivId($cID, $cType), 'type' => $cType]);
 	$publishingAPublicPage = $citemPrivacy == 'public';
 } else {
 	$publishingAPublicPage = false;
@@ -40,7 +40,7 @@ if ($publishing) {
 
 
 //Add images linked via Version Controlled modules
-$fileIds = array();
+$fileIds = [];
 $sql = "
 	SELECT ps.value
 	FROM ". DB_NAME_PREFIX. "plugin_instances AS pi
@@ -60,13 +60,13 @@ while ($fileIdsInPlugin = \ze\sql::fetchRow($result)) {
 }
 
 //Note down the sticky image for this Content Item, if there is one
-if ($fileId = \ze\row::get('content_item_versions', 'feature_image_id', array('id' => $cID, 'type' => $cType, 'version' => $cVersion))) {
+if ($fileId = \ze\row::get('content_item_versions', 'feature_image_id', ['id' => $cID, 'type' => $cType, 'version' => $cVersion])) {
 	$fileIds[$fileId] = $fileId;
 }
 
 //Do a quick check to see if all of those ids exist, only add the ones in the database!
 if (!empty($fileIds)) {
-	$files = \ze\row::getArray('files', array('id', 'usage', 'privacy'), array('id' => $fileIds));
+	$files = \ze\row::getArray('files', ['id', 'usage', 'privacy'], ['id' => $fileIds]);
 }
 
 
@@ -94,8 +94,8 @@ while ($row = \ze\sql::fetchAssoc($result)) {
 	if ($htmlChanged) {
 		\ze\row::update(
 			'plugin_settings',
-			array('value' => $row['value']),
-			array('instance_id' => $row['instance_id'], 'name' => $row['name'], 'egg_id' => $row['egg_id']));
+			['value' => $row['value']],
+			['instance_id' => $row['instance_id'], 'name' => $row['name'], 'egg_id' => $row['egg_id']]);
 	}
 }
 
@@ -103,16 +103,16 @@ while ($row = \ze\sql::fetchAssoc($result)) {
 //Update the link table
 \ze\contentAdm::syncInlineFiles(
 	$files,
-	array(
+	[
 		'foreign_key_to' => 'content',
 		'foreign_key_id' => $cID,
 		'foreign_key_char' => $cType,
-		'foreign_key_version' => $cVersion),
+		'foreign_key_version' => $cVersion],
 	$keepOldImagesThatAreNotInUse = true);
 
 //Update the Content in the cache table
 $text = trim(strip_tags($content));
-\ze\row::set('content_cache', array('text' => $text, 'text_wordcount' => str_word_count($text)), array('content_id' => $cID, 'content_type' => $cType, 'content_version' => $cVersion));
+\ze\row::set('content_cache', ['text' => $text, 'text_wordcount' => str_word_count($text)], ['content_id' => $cID, 'content_type' => $cType, 'content_version' => $cVersion]);
 
 
 //Fix for T10031, Images in WYSIWYG Editors staying on "will auto detect" in the image library
@@ -130,7 +130,7 @@ if ($publishing && !empty($files)) {
 	foreach ($files as $fileId => $file) {
 		if ($file['usage'] == 'image'
 		 && $file['privacy'] == 'auto') {
-			\ze\row::update('files', array('privacy' => $privacy), $fileId);
+			\ze\row::update('files', ['privacy' => $privacy], $fileId);
 		}
 	}
 }

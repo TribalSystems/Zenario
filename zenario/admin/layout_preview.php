@@ -39,7 +39,7 @@ if (!$layout = ze\row::get('layouts', true, ($_REQUEST['id'] ?? false))) {
 	exit;
 }
 
-$content = array(
+$content = [
 	'equiv_id' => -1,
 	'id' => -1,
 	'type' => $layout['content_type'],
@@ -48,23 +48,23 @@ $content = array(
 	'language_id' => (ze::$defaultLang ?: 'en'),
 	'admin_version' => 1,
 	'visitor_version' => 0,
-	'lock_owner_id' => 0);
+	'lock_owner_id' => 0];
 
 
-$version = array(
+$version = [
 	'version' => 1,
 	'title' => ze\admin::phrase('Layout Preview'),
 	'description' => '',
 	'keywords' => '',
 	'feature_image_id' => 0,
 	'css_class' => '',
-	'publication_date' => '',
+	'release_date' => '',
 	'published_datetime' => '',
 	'created_datetime' => ze\date::now(),
 	'rss_nest' => '',
 	'rss_slot_name' => '',
 	'version' => 1,
-	'layout_id' => $layout['layout_id']);
+	'layout_id' => $layout['layout_id']];
 
 
 ze\content::setShowableContent($content, $version);

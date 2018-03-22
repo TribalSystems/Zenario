@@ -34,12 +34,12 @@ class categoryAdm {
 	public static function setContentItemCategories($cID, $cType, $categories) {
 		$equivId = \ze\content::equivId($cID, $cType);
 	
-		\ze\row::delete('category_item_link', array('equiv_id' => $equivId, 'content_type' => $cType));
+		\ze\row::delete('category_item_link', ['equiv_id' => $equivId, 'content_type' => $cType]);
 	
 		if (is_array($categories)) {
 			foreach ($categories as $value) {
 				if ($value) {
-					\ze\row::insert('category_item_link', array('category_id' => $value, 'equiv_id' => $equivId, 'content_type' => $cType));
+					\ze\row::insert('category_item_link', ['category_id' => $value, 'equiv_id' => $equivId, 'content_type' => $cType]);
 				}
 			}
 		}
@@ -54,7 +54,7 @@ class categoryAdm {
 	
 		foreach ($categories as $id) {
 			if ($id) {
-				\ze\row::set('category_item_link', array(), array('category_id' => $id, 'equiv_id' => $equivId, 'content_type' => $cType));
+				\ze\row::set('category_item_link', [], ['category_id' => $id, 'equiv_id' => $equivId, 'content_type' => $cType]);
 			}
 		}
 	}
@@ -68,7 +68,7 @@ class categoryAdm {
 	
 		foreach ($categories as $id) {
 			if ($id) {
-				\ze\row::set('category_item_link', array(), array('category_id' => $id, 'equiv_id' => $equivId, 'content_type' => $cType));
+				\ze\row::set('category_item_link', [], ['category_id' => $id, 'equiv_id' => $equivId, 'content_type' => $cType]);
 			}
 		}
 	}
@@ -78,7 +78,7 @@ class categoryAdm {
 		$equivId = \ze\content::equivId($cID, $cType);
 		foreach ($categories as $value) {
 			if ($value) {
-				\ze\row::delete('category_item_link', array('category_id' => $value, 'equiv_id' => $equivId, 'content_type' => $cType));
+				\ze\row::delete('category_item_link', ['category_id' => $value, 'equiv_id' => $equivId, 'content_type' => $cType]);
 			}
 		}		
 	}
@@ -87,13 +87,13 @@ class categoryAdm {
 
 	//Formerly "setupCategoryCheckboxes()"
 	public static function setupFABCheckboxes(&$field, $showTotals = false, $cID = false, $cType = false, $cVersion = false) {
-		$field['values'] = array();
+		$field['values'] = [];
 	
 		$ord = 0;
-		$result = \ze\row::query('categories', array('id', 'parent_id', 'name'), array(), 'name');
+		$result = \ze\row::query('categories', ['id', 'parent_id', 'name'], [], 'name');
 	
 		while ($row = \ze\sql::fetchAssoc($result)) {
-			$field['values'][$row['id']] = array('label' => $row['name'], 'parent' => $row['parent_id'], 'ord' => ++$ord);
+			$field['values'][$row['id']] = ['label' => $row['name'], 'parent' => $row['parent_id'], 'ord' => ++$ord];
 		
 			if ($showTotals) {
 				$sql = "
@@ -112,7 +112,7 @@ class categoryAdm {
 		}
 	
 		if ($cID && $cType && $cVersion) {
-			$field['value'] = \ze\escape::in(\ze\row::getArray('category_item_link', 'category_id', array('equiv_id' => \ze\content::equivId($cID, $cType), 'content_type' => $cType)), true);
+			$field['value'] = \ze\escape::in(\ze\row::getArray('category_item_link', 'category_id', ['equiv_id' => \ze\content::equivId($cID, $cType), 'content_type' => $cType]), true);
 		}
 	}
 
@@ -152,7 +152,7 @@ class categoryAdm {
 	//Formerly "getCategoryPath()"
 	public static function path($id) {
 		$path = '';
-		$categoryAncestors = array();
+		$categoryAncestors = [];
 		\ze\categoryAdm::ancestors($id, $categoryAncestors);
 	
 		foreach ($categoryAncestors as $parentId) {

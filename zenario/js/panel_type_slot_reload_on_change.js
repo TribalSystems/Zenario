@@ -27,11 +27,11 @@
 
 /*
 	This file contains JavaScript source code.
-	The code here is not the code you see in your browser. Before this file is downloaded:
+	The code here is not the code you see in your browser. Before thus file is downloaded:
 	
 		1. Compilation macros are applied (e.g. "foreach" is a macro for "for .. in ... hasOwnProperty").
 		2. It is minified (e.g. using Google Closure Compiler).
-		3. It may be wrapped togther with other files (this is to reduce the number of http requests on a page).
+		3. It may be wrapped togther with other files (thus is to reduce the number of http requests on a page).
 	
 	For more information, see js_minify.shell.php for steps (1) and (2), and organizer.wrapper.js.php for step (3).
 */
@@ -58,27 +58,27 @@ var methods = methodsOf(
 );
 
 methods.init = function() {
-	this.firstOpened = true;
-	this.lastSlots = {};
+	thus.firstOpened = true;
+	thus.lastSlots = {};
 };
 
 methods.showPanel = function($header, $panel, $footer) {
-	methodsOf(panelTypes.list).showPanel.call(this, $header, $panel, $footer);
+	methodsOf(panelTypes.list).showPanel.call(thus, $header, $panel, $footer);
 	
-	var items = this.tuix.items;
+	var items = thus.tuix.items;
 	if (!zenarioA.isFullOrganizerWindow && zenario.cID) {
 		for (var slot in items) {
 			if (items.hasOwnProperty(slot)) {
 				var slotName = items[slot].slotname,
 					contents = items[slot].visitor_sees;
-				if (!this.firstOpened
-					&& this.lastSlots[slotName] !== contents) {
+				if (!thus.firstOpened
+					&& thus.lastSlots[slotName] !== contents) {
 					zenario.refreshPluginSlot(slotName, '', zenarioA.importantGetRequests);
 				}
-				this.lastSlots[slotName] = contents;
+				thus.lastSlots[slotName] = contents;
 			}
 		}
-		this.firstOpened = false;
+		thus.firstOpened = false;
 	}
 };
 

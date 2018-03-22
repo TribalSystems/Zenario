@@ -30,6 +30,15 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 class zenario_menu_multicolumn extends zenario_menu {	
 	
+	function init() {
+		$init = parent::init();
+		
+		$this->onlyFollowOnLinks = false;
+		$this->onlyIncludeOnLinks = false;
+		
+		return $init;
+	}
+	
 	//Recursive function to draw Menu Nodes from the database
 	function getMenuMergeFields(&$menuArray, $depth = 0) {
 		$menuMergeFields = [];
@@ -79,8 +88,8 @@ class zenario_menu_multicolumn extends zenario_menu {
 									$currentInCol = 1;
 									$level3node['top_of_column'] = true;
 								}
+								$level2node['children'][] = $level3node;
 							}
-							$level2node['children'][] = $level3node;
 						}
 						$node['children'][] = $level2node;
 					}
@@ -159,7 +168,7 @@ class zenario_menu_multicolumn extends zenario_menu {
 	
 	
 	public function getNodeLevel($nodeId,$i=1){
-		if($parentId = ze\row::get('menu_nodes', 'parent_id', array('id'=>$nodeId))){
+		if($parentId = ze\row::get('menu_nodes', 'parent_id', ['id'=>$nodeId])){
 			self::getNodeLevel($parentId,++$i);
 		}
 		return $i;
@@ -168,8 +177,8 @@ class zenario_menu_multicolumn extends zenario_menu {
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		switch ($path) {
 			case 'plugin_settings':
-				$fields['menu_start_from']['values'] = array('_MENU_LEVEL_1' => $fields['menu_start_from']['values']['_MENU_LEVEL_1']);
-				$fields['menu_number_of_levels']['values'] = array(1 => 1, 2 => 2, 3 => 3);
+				$fields['menu_start_from']['values'] = ['_MENU_LEVEL_1' => $fields['menu_start_from']['values']['_MENU_LEVEL_1']];
+				$fields['menu_number_of_levels']['values'] = [1 => 1, 2 => 2, 3 => 3];
 				break;
 			
 			case 'zenario_menu':
@@ -220,7 +229,7 @@ class zenario_menu_multicolumn extends zenario_menu {
 			case 'zenario_menu':
 				if (!empty($box['tabs']['advanced']['edit_mode']['on'])) {
 					if ($box['key']['id']) {
-						$details = array();
+						$details = [];
 						if (!$details['top_of_column'] = $values['zenario_menu_multicolumn__top_of_column']) {
 							$details['top_of_column'] = 0;
 						}

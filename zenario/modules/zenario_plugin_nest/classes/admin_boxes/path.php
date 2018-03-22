@@ -67,10 +67,10 @@ class zenario_plugin_nest__admin_boxes__path extends zenario_plugin_nest {
 		$result = ze\sql::select($sql);
 		
 		$ord = 2;
-		$commands = array();
+		$commands = [];
 		while ($egg = ze\sql::fetchAssoc($result)) {
 			$modes = ze\ray::explodeAndTrim($egg['modes']);
-			$tags = array();
+			$tags = [];
 			if ((ze\moduleAdm::loadDescription(ze\module::className($egg['module_id']), $tags))
 			 && !empty($tags['path_commands'])) {
 				foreach($tags['path_commands'] as $command => $details) {

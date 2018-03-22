@@ -269,14 +269,6 @@ zenario.lib(function(
 		}
 	};
 	
-	//Hack to try and fix a bug in TinyMCE where the scroll position changes when inserting/editing an image or link
-	zenario.saveScrollTop = function() {
-		var scrollTop = zenario.scrollTop();
-		setTimeout(function() {
-			zenario.scrollTop(scrollTop);
-		}, 0);
-	};
-	
 	
 	zenario.versionOfIE = function(n) {
 		if (/opera|OPERA/.test(userAgent)) {
@@ -468,14 +460,6 @@ zenario.lib(function(
 	};
 	
 	
-	
-	
-	
-	//Deprecated, please don't use this!
-	window.ifNull =
-	zenario.ifNull = function(a, b, c) {
-		return a || b || c;
-	};
 
 
 
@@ -782,7 +766,7 @@ zenario.nonAsyncAJAX = function(url, post, json, useCache) {
 		//Only works in admin mode.
 		//Can be a function to call, or true to recall this function
 	//timeout: If set, the request will be automatically retried or cancelled after this amount of time.
-zenario.ajax = function(url, post, json, useCache, retry, continueAnyway, settings, timeout, AJAXErrorHandler, onRetry, onCancel) {
+zenario.ajax = function(url, post, json, useCache, retry, continueAnyway, settings, timeout, AJAXErrorHandler, onRetry, onCancel, onError) {
 
 	url = zenario.addBasePath(url);
 	
@@ -807,6 +791,10 @@ zenario.ajax = function(url, post, json, useCache, retry, continueAnyway, settin
 			
 			if (AJAXErrorHandler = AJAXErrorHandler || zenarioA.AJAXErrorHandler) {
 				
+				if (onError) {
+					onError(resp, statusType, statusText);
+				}
+				
 				AJAXErrorHandler(resp, statusType, statusText);
 				hadErrorAndHandledIt = true;
 			}
@@ -826,6 +814,11 @@ zenario.ajax = function(url, post, json, useCache, retry, continueAnyway, settin
 					if (result) {
 						//Try to see if an error-handler has been set to show the error
 						if (AJAXErrorHandler = AJAXErrorHandler || zenarioA.AJAXErrorHandler) {
+				
+							if (onError) {
+								onError(resp, statusType, statusText);
+							}
+							
 							resp.responseText = result;
 							AJAXErrorHandler(resp, statusType, statusText);
 						
@@ -995,6 +988,17 @@ zenario.ajax = function(url, post, json, useCache, retry, continueAnyway, settin
 
 
 
+//Add CSS rules to the page
+zenario.addStyles = function(containerId, html) {
+	
+	var stylesId = containerId + '-styles';
+	
+	//Remove any existing styles for this image, if this is a reload of an existing slot
+	$('#' + stylesId).remove();
+	
+	//Add the new styles
+	$('head').append('<style type="text/css" id="' + stylesId + '">' + html + '</style>');
+};
 
 
 var loadingScripts = {},
@@ -1399,7 +1403,7 @@ zenario.linkToItem = function(cID, cType, request, adminlogin) {
 	
 	//If we're linking to the content item that we're currently on...
 	if (!adminlogin
-	 && !zenario.adminId
+	 && (!zenario.adminId || zenarioA.siteSettings.mod_rewrite_admin_mode)
 	 && cID === zenario.cID) {
 		//...check to see if it is using a friendly URL...
 		if ((canonicalURL = $('link[rel="canonical"]').attr('href'))
@@ -2476,10 +2480,10 @@ zenario.applyCompilationMacros = function(code) {
 	
 	//"foreach" is a macro for "for .. in ... hasOwnProperty"
 	return code.replace(
-		/\bforeach\b\s*\(\s*(.+?)\s*\bas\b\s*(\bvar\b |)\s*(.+?)\s*\=\>\s*(\bvar\b |)\s*(.+?)\s*\)\s*\{/gi,
+		/\bforeach\b\s*\(\s*([^\%\{\}]+?)\s*\bas\b\s*(\bvar\b |)\s*([^\%\{\}]+?)\s*\=\>\s*(\bvar\b |)\s*([^\%\{\}]+?)\s*\)\s*\{/gi,
 		forLoop + ' $4 $5 = $1[$3];'
 	).replace(
-		/\bforeach\b\s*\(\s*(.+?)\s*\bas\b\s*(\bvar\b |)\s*(.+?)\s*\)\s*\{/gi,
+		/\bforeach\b\s*\(\s*([^\%\{\}]+?)\s*\bas\b\s*(\bvar\b |)\s*([^\%\{\}]+?)\s*\)\s*\{/gi,
 		forLoop
 	
 	//Some babel style function definitions
@@ -2573,10 +2577,54 @@ zenario.generateMicroTemplate = function(source, name) {
 	
 	} catch (e) {
 		_.templateSettings = tmp;
-		
-		console.log('Error in microtemplate' + (name? ' ' + name : '') + ': \n\n' + microTemplate);
+		console.log('Error in microtemplate', name, source);
 		throw e;
 	}
+};
+
+zenario.addLibPointers = function(data, that) {
+	
+	var d, needsTidying = true;
+	
+	if (_.isArray(data)) {
+		for (d in data) {
+			data[d].lib =
+			data[d].thus =
+			data[d].that = that;
+			if (that.tuix && !data[d].tuix) data[d].tuix = that.tuix;
+		}
+	} else {
+		if (!defined(data.lib)) {
+			data.lib =
+			data.thus =
+			data.that = that;
+			if (that.tuix && !data.tuix) data.tuix = that.tuix;
+		} else {
+			needsTidying = false;
+		}
+	}
+	
+	return needsTidying;
+};
+
+zenario.tidyLibPointers = function(data) {
+	
+	setTimeout(function() {
+		if (_.isArray(data)) {
+			var d;
+			for (d in data) {
+				delete data[d].lib;
+				delete data[d].thus;
+				delete data[d].that;
+				delete data[d].tuix;
+			}
+		} else {
+			delete data.lib;
+			delete data.thus;
+			delete data.that;
+			delete data.tuix;
+		}
+	}, 1);
 };
 
 zenario.unfun = function(text) {
@@ -2752,11 +2800,16 @@ zenario.addJQueryElements = function(path, adminFacing, beingEdited) {
 	//If the "Show menu structure in friendly URLs" setting is set, watch out for any links, e.g.:
 		//<a href="#top">
 	//that would break due to this setting being enabled, and automatically fix them.
+	
+	//Note: this can break some modules that depend on links like above remaining unedited, e.g. the mmenu
+	//jquery library used in zenario_menu_responsive_push_pull. To work around this such links with the 
+	//with a class starting with "mm-" will be ignored by the code below.
 	if (!beingEdited && zenario.slashesInURL) {
-		$(path + 'a[href^="#"]').each(function(i, el) {
+		$(path + 'a[href^="#"]').not('[class^="mm-"]').each(function(i, el) {
 			el.href = location.pathname + location.search + el.href.replace(URLBasePath, '');
 		});
 	}
+	
 	
 	zenario.setChildrenToTheSameHeight(path);
 	

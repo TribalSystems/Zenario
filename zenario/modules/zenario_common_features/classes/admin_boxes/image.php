@@ -33,7 +33,7 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		if (!$details = ze\row::get(
 			'files',
-			array('id','filename', 'width', 'height', 'size', 'alt_tag', 'floating_box_title', 'short_checksum'),
+			['id','filename', 'width', 'height', 'size', 'alt_tag', 'floating_box_title', 'short_checksum'],
 			$box['key']['id'])
 		) {
 			exit;
@@ -65,7 +65,7 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 			ORDER BY it.name";
 		$result = ze\sql::select($sql);
 		
-		$pickedTagNames = array();
+		$pickedTagNames = [];
 		while ($tag = ze\sql::fetchAssoc($result)) {
 			if ($tag['tag_id']) {
 				$pickedTagNames[] = $tag['name'];
@@ -113,7 +113,7 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 				");
 			
 			
-				$newTags = array();
+				$newTags = [];
 				foreach ($tags as $tagName) {
 					if (!in_array($tagName, $existingTags)) {
 						$newTags[] = $tagName;
@@ -123,7 +123,7 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 				if (!empty($newTags)) {
 					$count = count($newTags);
 					$lastNewTag = array_pop($newTags);
-					$mrg = array('newTags' => implode(', ', $newTags), 'lastNewTag' => $lastNewTag);
+					$mrg = ['newTags' => implode(', ', $newTags), 'lastNewTag' => $lastNewTag];
 					$box['confirm']['show'] = true;
 					$box['confirm']['message'] = ze\admin::nPhrase('The tag [[lastNewTag]] does not exist. Are you sure you wish to create it?',
 						'The tags [[newTags]] and [[lastNewTag]] do not exist. Are you sure you wish to create them?', $count, $mrg);
@@ -141,10 +141,10 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 		//Update the image's details
 		ze\row::update(
 			'files',
-			array(
+			[
 				'filename' => $values['details/filename'],
 				'alt_tag' => $values['details/alt_tag'],
-				'floating_box_title' => $values['details/floating_box_title']),
+				'floating_box_title' => $values['details/floating_box_title']],
 			$box['key']['id']);
 		
 		
@@ -180,7 +180,7 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 		
 		} else {
 			//If no tags were picked, just remove any unused tags.
-			ze\row::delete('image_tag_link', array('image_id' => $box['key']['id']));
+			ze\row::delete('image_tag_link', ['image_id' => $box['key']['id']]);
 		}
 	}
 }

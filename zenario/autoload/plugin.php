@@ -57,7 +57,6 @@ class plugin {
 	
 	
 		$slots = [];
-		$slotContents = [];
 		$modules = \ze\module::runningModules();
 	
 		$whereSlotName = '';
@@ -97,13 +96,13 @@ class plugin {
 		$sql .= "
 			) AS pi";
 	
-		//Don't show missing slots, except for Admins with the correct permissions
-		if (!(\ze\priv::check('_PRIV_MANAGE_ITEM_SLOT') || \ze\priv::check('_PRIV_MANAGE_ITEM_SLOT')) && !($specificInstanceId || $specificSlotName)) {
-			$sql .= "
-			INNER JOIN ". DB_NAME_PREFIX. "template_slot_link AS tsl";
-		} else {
+		//Only show missing slots for Admins with the correct permissions
+		if (\ze::isAdmin() && (\ze\priv::check('_PRIV_MANAGE_ITEM_SLOT') || \ze\priv::check('_PRIV_MANAGE_TEMPLATE_SLOT'))) {
 			$sql .= "
 			LEFT JOIN ". DB_NAME_PREFIX. "template_slot_link AS tsl";
+		} else {
+			$sql .= "
+			INNER JOIN ". DB_NAME_PREFIX. "template_slot_link AS tsl";
 		}
 	
 		$sql .= "
@@ -145,7 +144,7 @@ class plugin {
 		$sql .= "
 				tsl.slot_name IS NOT NULL DESC,
 				tsl.ord,";
-	
+		
 		if ($specificInstanceId || $specificSlotName) {
 			$sql .= "
 				pi.level ASC,

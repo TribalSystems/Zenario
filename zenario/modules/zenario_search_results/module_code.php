@@ -70,14 +70,14 @@ class zenario_search_results extends ze\moduleBaseClass {
 				'_HIGH'		=> 12];
 		
 		$fields = [];
-		$fields[] =	array('name' => 'c.alias',				'weighting' => $weights[$this->setting('alias_weighting')]);
-		$fields[] =	array('name' => 'v.title',				'weighting' => $weights[$this->setting('title_weighting')]);
-		$fields[] =	array('name' => 'v.keywords',			'weighting' => $weights[$this->setting('keywords_weighting')]);
-		$fields[] =	array('name' => 'v.description',		'weighting' => $weights[$this->setting('description_weighting')]);
-		$fields[] =	array('name' => 'v.filename',			'weighting' => $weights[$this->setting('filename_weighting')]);
-		$fields[] =	array('name' => 'v.content_summary',	'weighting' => $weights[$this->setting('content_summary_weighting')]);
-		$fields[] =	array('name' => 'cc.text',				'weighting' => $weights[$this->setting('content_weighting')]);
-		$fields[] =	array('name' => 'cc.extract',			'weighting' => $weights[$this->setting('extract_weighting')]);
+		$fields[] =	['name' => 'c.alias',				'weighting' => $weights[$this->setting('alias_weighting')]];
+		$fields[] =	['name' => 'v.title',				'weighting' => $weights[$this->setting('title_weighting')]];
+		$fields[] =	['name' => 'v.keywords',			'weighting' => $weights[$this->setting('keywords_weighting')]];
+		$fields[] =	['name' => 'v.description',		'weighting' => $weights[$this->setting('description_weighting')]];
+		$fields[] =	['name' => 'v.filename',			'weighting' => $weights[$this->setting('filename_weighting')]];
+		$fields[] =	['name' => 'v.content_summary',	'weighting' => $weights[$this->setting('content_summary_weighting')]];
+		$fields[] =	['name' => 'cc.text',				'weighting' => $weights[$this->setting('content_weighting')]];
+		$fields[] =	['name' => 'cc.extract',			'weighting' => $weights[$this->setting('extract_weighting')]];
 
 		$this->fields = [];
 		$this->fields['%all%'] = $fields;
@@ -150,7 +150,16 @@ class zenario_search_results extends ze\moduleBaseClass {
 		
 		if ($this->searchString) {
 			$this->sections['Search_Result_Heading'] = true;
-			$this->mergeFields['Search_Results_For'] = $this->phrase( '_SEARCH_RESULTS_FOR', array('term' => htmlspecialchars('"'. $this->searchString. '"')));
+			$this->mergeFields['Search_Results_For'] = $this->phrase( '_SEARCH_RESULTS_FOR', ['term' => htmlspecialchars('"'. $this->searchString. '"')]);
+		}
+		
+		if ($this->setting('search_label')) {
+			$this->sections['Search_Label'] = true;
+		}
+		
+		if ($this->setting('search_placeholder')) {
+			$this->sections['Placeholder'] = true;
+			$this->sections['Placeholder_Phrase'] = $this->setting('search_placeholder_phrase');
 		}
 		
 		$this->drawSearchBox();
@@ -443,14 +452,14 @@ class zenario_search_results extends ze\moduleBaseClass {
 			}
 		}
 		
-		return array(
+		return [
 			"Record_Count" => $recordCount,
 			"search_results" => $searchresults,
 			"pagination" => $pagination,
 			"offset" => $record_number,
 			"Tab_On" => $cType == $this->cTypeToSearch? '_on' :null,
 			"Tab_Onclick" => $this->refreshPluginSlotAnchor('&ctab='. rawurlencode($cType). '&category='. (int) $this->category. '&searchString='. rawurlencode($this->searchString))
-		);
+		];
 		
 		
 	}
@@ -473,6 +482,11 @@ class zenario_search_results extends ze\moduleBaseClass {
 			case 'plugin_settings':
 				$box['tabs']['first_tab']['fields']['hide_private_items']['hidden'] = 
 					!$values['first_tab/show_private_items'];
+				
+				if ($box['tabs']['first_tab']['fields']['search_placeholder'] == true
+					&& empty($box['tabs']['first_tab']['fields']['search_placeholder_phrase']['value'])) {
+					$box['tabs']['first_tab']['fields']['search_placeholder_phrase']['value'] = 'Search the site';
+				}
 				
 				break;
 		}

@@ -30,7 +30,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 class zenario_event_calendar extends ze\moduleBaseClass {
 	
-	public $data = array();
+	public $data = [];
 	public $content;
 	public $displaySections;
 	public $mergeFields;
@@ -129,18 +129,18 @@ class zenario_event_calendar extends ze\moduleBaseClass {
 		
 		$this->data['Calendar_month_view_content'] = true;
 		$this->data['Table_header'] = true;
-		$this->data['Cal_day_1'] = mb_substr(ze\lang::phrase('_WEEKDAY_' . (string) ($calendarStartDayOfWeek  ) % 7, array(), false), 0,1,'utf8');
-		$this->data['Cal_day_2'] = mb_substr(ze\lang::phrase('_WEEKDAY_' . (string) ($calendarStartDayOfWeek+1) % 7, array(), false), 0,1,'utf8');
-		$this->data['Cal_day_3'] = mb_substr(ze\lang::phrase('_WEEKDAY_' . (string) ($calendarStartDayOfWeek+2) % 7, array(), false), 0,1,'utf8');
-		$this->data['Cal_day_4'] = mb_substr(ze\lang::phrase('_WEEKDAY_' . (string) ($calendarStartDayOfWeek+3) % 7, array(), false), 0,1,'utf8');
-		$this->data['Cal_day_5'] = mb_substr(ze\lang::phrase('_WEEKDAY_' . (string) ($calendarStartDayOfWeek+4) % 7, array(), false), 0,1,'utf8');
-		$this->data['Cal_day_6'] = mb_substr(ze\lang::phrase('_WEEKDAY_' . (string) ($calendarStartDayOfWeek+5) % 7, array(), false), 0,1,'utf8');
-		$this->data['Cal_day_7'] = mb_substr(ze\lang::phrase('_WEEKDAY_' . (string) ($calendarStartDayOfWeek+6) % 7, array(), false), 0,1,'utf8');
+		$this->data['Cal_day_1'] = mb_substr(ze\lang::phrase('_WEEKDAY_' . (string) ($calendarStartDayOfWeek  ) % 7, [], false), 0,1,'utf8');
+		$this->data['Cal_day_2'] = mb_substr(ze\lang::phrase('_WEEKDAY_' . (string) ($calendarStartDayOfWeek+1) % 7, [], false), 0,1,'utf8');
+		$this->data['Cal_day_3'] = mb_substr(ze\lang::phrase('_WEEKDAY_' . (string) ($calendarStartDayOfWeek+2) % 7, [], false), 0,1,'utf8');
+		$this->data['Cal_day_4'] = mb_substr(ze\lang::phrase('_WEEKDAY_' . (string) ($calendarStartDayOfWeek+3) % 7, [], false), 0,1,'utf8');
+		$this->data['Cal_day_5'] = mb_substr(ze\lang::phrase('_WEEKDAY_' . (string) ($calendarStartDayOfWeek+4) % 7, [], false), 0,1,'utf8');
+		$this->data['Cal_day_6'] = mb_substr(ze\lang::phrase('_WEEKDAY_' . (string) ($calendarStartDayOfWeek+5) % 7, [], false), 0,1,'utf8');
+		$this->data['Cal_day_7'] = mb_substr(ze\lang::phrase('_WEEKDAY_' . (string) ($calendarStartDayOfWeek+6) % 7, [], false), 0,1,'utf8');
 		
-		$this->data['Days_row_element'] = array();
+		$this->data['Days_row_element'] = [];
 		
 		for ($i=1;$i<$currentMonthStartPosition;$i++){
-			$mergeFields[]=array('Day_class_name'=>'empty_day_cell','Day_label'=> ' ','Day_event_span' => "");
+			$mergeFields[]=['Day_class_name'=>'empty_day_cell','Day_label'=> ' ','Day_event_span' => ""];
 		}
 		$j=1;
 		for ($i; ($i<=7*6) && ($j<=$currentMonthLength); $i++){
@@ -155,37 +155,37 @@ class zenario_event_calendar extends ze\moduleBaseClass {
 				}
 				
 				if ($this->setting('event_count') == "event_count_on"){
-					$mergeFields[] = array(
+					$mergeFields[] = [
 						'Anchor'=> ' rel="colorbox" href="'. htmlspecialchars($this->showFloatingBoxLink("&mode=month_view&day=" . (string)(int)$j . "&month=" . (string)(int)$month . "&year=" . (string)(int)$year,1,true,300,-150,17,false,0)). '"',
 						'Day_class_name'=>$day_class_name_var,
 						'Td_day_class_name'=>'event',
 						'Day_label'=> (string)(int)($j++),
 						'Day_event_span' => "<span class='event_count has_events'>".$numberOfEvents."</span>"
-					);
+					];
 				} elseif ($this->setting('event_count') == "event_count_off"){
-					$mergeFields[] = array(
+					$mergeFields[] = [
 						'Anchor'=> ' rel="colorbox" href="'. htmlspecialchars($this->showFloatingBoxLink("&mode=month_view&day=" . (string)(int)$j . "&month=" . (string)(int)$month . "&year=" . (string)(int)$year,1,true,300,-150,17,false,0)). '"',
 						'Day_class_name'=>$day_class_name_var,
 						'Td_day_class_name'=>'event',
 						'Day_label'=> (string)(int)($j++),
 						'Day_event_span' => ""
-					);
+					];
 				}
 			} else {
 				if (($j==date('j',time())) && ($month==date('n',time())) && ($year==date('Y',time()))){ 
-					$mergeFields[]=array('Day_class_name'=>'today','Td_day_class_name'=>'today','Day_label'=> (string)(int)($j++),'Day_event_span' => "");
+					$mergeFields[]=['Day_class_name'=>'today','Td_day_class_name'=>'today','Day_label'=> (string)(int)($j++),'Day_event_span' => ""];
 				} else {
-					$mergeFields[]=array('Day_class_name'=>'day','Day_label'=> (string)(int)($j++),'Day_event_span' => "" );
+					$mergeFields[]=['Day_class_name'=>'day','Day_label'=> (string)(int)($j++),'Day_event_span' => "" ];
 				}
 			}
 			if (($i%7)==0) {
 				$this->data['Days_row_element'][]['Days_cell_element'] = $mergeFields;
-				$mergeFields=array();
+				$mergeFields=[];
 			}
 		}
 		if (count($mergeFields)>0){
 			$this->data['Days_row_element'][]['Days_cell_element'] = $mergeFields;
-			$mergeFields=array();
+			$mergeFields=[];
 		} 
 		
 		$this->data['Calendar_month_view_footer'] = true;
@@ -198,7 +198,7 @@ class zenario_event_calendar extends ze\moduleBaseClass {
 	public function showYearView(){
 		$monthFormat = $this->setting('months_format');
 	
-		$langIDs = array();
+		$langIDs = [];
 		if (($_GET['year'] ?? false) && (($_GET['year'] ?? false)>1969) && (($_GET['year'] ?? false)<2038)){
 			$year=(int)($_GET['year'] ?? false);
 		} else {
@@ -215,10 +215,10 @@ class zenario_event_calendar extends ze\moduleBaseClass {
 		$this->data['Year_number'] = (string)(int)$year;
 		
 		$this->data['Calendar_year_view_content'] = true;
-		$this->data['Months_row_element'] = array();
+		$this->data['Months_row_element'] = [];
 		
 		for ($i=0;$i<3;$i++){
-			$mergeFields = array();
+			$mergeFields = [];
 			for ($j=0;$j<4;$j++){
 				$month=$i*4+$j + 1;
 				$lang = $this->getAllowedLanguages();
@@ -244,21 +244,21 @@ class zenario_event_calendar extends ze\moduleBaseClass {
 					
 					if ($this->setting('event_count') == "event_count_on"){
 					
-						$mergeFields[] = array(	
+						$mergeFields[] = [	
 							'Anchor' =>' rel="colorbox" href="'. htmlspecialchars($this->showFloatingBoxLink("&mode=year_view&month=" . (string)(int)$month . "&year=" . (string)(int)$year,1,true,300,-150,17,false,0)). '"',
 							'Current_month'=>$currentMonthClass,
 							'Month_with_events'=>'month_with_events',
 							'Month_label'=> $monthLabel,
 							'Month_event_span' => "<span class='event_count has_events'>".$monthEvents."</span>"
-						);		
+						];		
 					} elseif ($this->setting('event_count') == "event_count_off"){
-						$mergeFields[]= array(	
+						$mergeFields[]= [	
 							'Anchor' => ' rel="colorbox" href="'. htmlspecialchars($this->showFloatingBoxLink("&mode=year_view&month=" . (string)(int)$month . "&year=" . (string)(int)$year,1,true,300,-150,17,false,0)). '"',
 							'Current_month'=>$currentMonthClass,
 							'Month_with_events'=>'month_with_events',
 							'Month_label'=> $monthLabel,
 							'Month_event_span' => ""
-						);
+						];
 					}		
 				} else {
 					if (($month==date('n',time())) && ($year==date('Y',time()))){ 
@@ -271,7 +271,7 @@ class zenario_event_calendar extends ze\moduleBaseClass {
 							$monthLabel = $monthLong;
 						}
 						
-						$mergeFields[]=array('Current_month'=>'current_month','Month_label'=> $monthLabel,'Month_event_span' => "");
+						$mergeFields[]=['Current_month'=>'current_month','Month_label'=> $monthLabel,'Month_event_span' => ""];
 					} else {
 						$monthShort = ze\date::format(date("Y-m-d",mktime(0,0,0,$month,1,$year)),"[[_MONTH_SHORT_%m]] ",false,false);
 						$monthLong =  ze\date::format(date("Y-m-d",mktime(0,0,0,$month,1,$year)),"[[_MONTH_LONG_%m]] ",false,false);
@@ -282,7 +282,7 @@ class zenario_event_calendar extends ze\moduleBaseClass {
 							$monthLabel = $monthLong;
 						}
 						//No events
-						$mergeFields[]=array('Current_month'=>'','Month_label'=> $monthLabel,'Month_event_span' => "");
+						$mergeFields[]=['Current_month'=>'','Month_label'=> $monthLabel,'Month_event_span' => ""];
 					}
 				}
 			}
@@ -376,7 +376,7 @@ class zenario_event_calendar extends ze\moduleBaseClass {
 		//$sql .= " LIMIT 1";
  
  		$result = ze\sql::select($sql);
-		$events = array();
+		$events = [];
 		while($row = ze\sql::fetchAssoc($result)) {
 			$events[] = $row;
 		}
@@ -520,7 +520,7 @@ class zenario_event_calendar extends ze\moduleBaseClass {
 		//$sql .= " LIMIT 1";
 		
 		$result = ze\sql::select($sql);
-		$events = array();
+		$events = [];
 		while($row = ze\sql::fetchAssoc($result)) {
 			$events[] = $row;
 		}
@@ -621,7 +621,7 @@ class zenario_event_calendar extends ze\moduleBaseClass {
  		if (ze\sql::numRows($result=ze\sql::select($sql))>0 ){
 			while($row=ze\sql::fetchArray($result)){
 				if ((!($this->setting('hide_private_items'))) || ze\content::checkPerm($row['id'],'event',$row['version'])){
-					$retVal[]=array(
+					$retVal[]=[
 						'id'=>$row['id'],
 						'version'=>$row['version'],
 						'title'=>$row['title'],
@@ -634,7 +634,7 @@ class zenario_event_calendar extends ze\moduleBaseClass {
 						'end_time'=>$row['end_time'],
 						'description'=>$row['description'],
 						'content_summary'=>$row['content_summary']
-					);
+					];
 				}
 			}
 		}
@@ -666,7 +666,7 @@ class zenario_event_calendar extends ze\moduleBaseClass {
 		$events = $this->getEventsDesc($_GET['year'] ?? false,($_GET['month'] ?? false),($_GET['day'] ?? false),$langIDs);
 		
 		$this->data['EFrame'] = true;
-		$this->data['Single_event'] = array();
+		$this->data['Single_event'] = [];
 		
 		if (count($events)>0){
 			foreach ($events as $event){
@@ -683,34 +683,34 @@ class zenario_event_calendar extends ze\moduleBaseClass {
 					$htmlStickyImage="";
 				}
 			
-				$arr = array(	
+				$arr = [	
 					'Event_title'=> ($this->setting('show_title')?htmlspecialchars($event['title']):''),
 					'Event_summary'=> ($this->setting('show_summary')?$event['content_summary']:''),
 					'SUBDIR' => SUBDIRECTORY. DIRECTORY_INDEX_FILENAME, 
 					'Event_id'=>(int)$event['id'], 
 					'Content_type'=>'event',
 					'StickyImage'=>$htmlStickyImage
-				);
+				];
 
 				if (($event['start_date'] ?? false)==($event['end_date'] ?? false)){
-					$arr['Time_of_event'] = $this->phrase('_SINGLE_DAY_DATE_RANGE',array('date'=>ze\date::format($event['start_date'] ?? false,$this->setting('date_format'),false,false)));
+					$arr['Time_of_event'] = $this->phrase('_SINGLE_DAY_DATE_RANGE',['date'=>ze\date::format($event['start_date'] ?? false,$this->setting('date_format'),false,false)]);
 				} else {
-					$arr['Time_of_event'] = $this->phrase('_MULTIPLE_DAYS_DATE_RANGE',array('start_date'=>ze\date::format($event['start_date'] ?? false,$this->setting('date_format'),false,false)
-																								,'end_date'=>ze\date::format($event['end_date'] ?? false,$this->setting('date_format'),false,false)));
+					$arr['Time_of_event'] = $this->phrase('_MULTIPLE_DAYS_DATE_RANGE',['start_date'=>ze\date::format($event['start_date'] ?? false,$this->setting('date_format'),false,false)
+																								,'end_date'=>ze\date::format($event['end_date'] ?? false,$this->setting('date_format'),false,false)]);
 				}
 				if ($event['specify_time'] && !empty($event['start_time']) && (($event['start_time'] ?? false)!='00:00:00')){
 					if ( $event['end_time'] && ($event['end_time']!='00:00:00' || $event['next_day_finish']) && (($event['start_time'] ?? false)!=($event['end_time'] ?? false))){
-						$arr['Time_of_event'] .= " " . $this->phrase('_MULTIPLE_HOURS_EVENT_RANGE',array('start_time'=>ze\date::formatTime($event['start_time'],ze::setting('vis_time_format'),''),
-																									'end_time'=>ze\date::formatTime($event['end_time'],ze::setting('vis_time_format'),'')));
+						$arr['Time_of_event'] .= " " . $this->phrase('_MULTIPLE_HOURS_EVENT_RANGE',['start_time'=>ze\date::formatTime($event['start_time'],ze::setting('vis_time_format'),''),
+																									'end_time'=>ze\date::formatTime($event['end_time'],ze::setting('vis_time_format'),'')]);
 					} else {
-						$arr['Time_of_event'] .= " " .  $this->phrase('_SINGLE_HOUR_EVENT_RANGE',array('time'=>ze\date::formatTime($event['start_time'],ze::setting('vis_time_format'),'')));
+						$arr['Time_of_event'] .= " " .  $this->phrase('_SINGLE_HOUR_EVENT_RANGE',['time'=>ze\date::formatTime($event['start_time'],ze::setting('vis_time_format'),'')]);
 					}
 				}
 				
 				$this->data['Single_event'][] = $arr;
 			}
 		} else {
-			$this->data['Single_event'][] = array('Event_title'=>htmlspecialchars($this->phrase('_NO_EVENTS_ON', array('date' => ze\date::format(($_GET['year'] ?? false) . '-' . ($_GET['month'] ?? false) . '-' . ($_GET['day'] ?? false)  ,  $this->setting('date_format'),false,false)))));
+			$this->data['Single_event'][] = ['Event_title'=>htmlspecialchars($this->phrase('_NO_EVENTS_ON', ['date' => ze\date::format(($_GET['year'] ?? false) . '-' . ($_GET['month'] ?? false) . '-' . ($_GET['day'] ?? false)  ,  $this->setting('date_format'),false,false)]))];
 		}
 		
 		if ($_GET['day'] ?? false){
@@ -754,7 +754,7 @@ class zenario_event_calendar extends ze\moduleBaseClass {
 		
 	function getAllowedLanguages(){
 		if ($this->setting('language_selection')=='visitor'){
-			return array(ze::$langId);
+			return [ze::$langId];
 		} else {
 			return $this->getInstalledLangIDs();
 		}

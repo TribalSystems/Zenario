@@ -62,22 +62,22 @@ class zenario_scheduled_task_manager extends ze\moduleBaseClass {
 	}
 	
 	
-	private static $frequencyOptions = array(
-		'1m' => array('label' => 'Every minute', 'ord' => 0.5),
-		'5m' => array('label' => 'Every 5 minutes', 'ord' => 1),
-		'10m' => array('label' => 'Every 10 minutes', 'ord' => 2),
-		'15m' => array('label' => 'Every 15 minutes', 'ord' => 3),
-		'20m' => array('label' => 'Every 20 minutes', 'ord' => 4),
-		'30m' => array('label' => 'Every 30 minutes', 'ord' => 5),
-		'1h' => array('label' => 'Every hour', 'ord' => 6),
-		'2h' => array('label' => 'Every 2 hours', 'ord' => 7),
-		'3h' => array('label' => 'Every 3 hours', 'ord' => 8),
-		'4h' => array('label' => 'Every 4 hours', 'ord' => 9),
-		'6h' => array('label' => 'Every 6 hours', 'ord' => 10),
-		'12h' => array('label' => 'Every 12 hours', 'ord' => 11),
-		'24h' => array('label' => 'Every day', 'ord' => 12));
+	private static $frequencyOptions = [
+		'1m' => ['label' => 'Every minute', 'ord' => 0.5],
+		'5m' => ['label' => 'Every 5 minutes', 'ord' => 1],
+		'10m' => ['label' => 'Every 10 minutes', 'ord' => 2],
+		'15m' => ['label' => 'Every 15 minutes', 'ord' => 3],
+		'20m' => ['label' => 'Every 20 minutes', 'ord' => 4],
+		'30m' => ['label' => 'Every 30 minutes', 'ord' => 5],
+		'1h' => ['label' => 'Every hour', 'ord' => 6],
+		'2h' => ['label' => 'Every 2 hours', 'ord' => 7],
+		'3h' => ['label' => 'Every 3 hours', 'ord' => 8],
+		'4h' => ['label' => 'Every 4 hours', 'ord' => 9],
+		'6h' => ['label' => 'Every 6 hours', 'ord' => 10],
+		'12h' => ['label' => 'Every 12 hours', 'ord' => 11],
+		'24h' => ['label' => 'Every day', 'ord' => 12]];
 	
-	private static $startAtHoursOptions = array(
+	private static $startAtHoursOptions = [
 		'0' => '00',
 		'1' => '01',
 		'2' => '02',
@@ -101,9 +101,9 @@ class zenario_scheduled_task_manager extends ze\moduleBaseClass {
 		'20' => '20',
 		'21' => '21',
 		'22' => '22',
-		'23' => '23');
+		'23' => '23'];
 	
-	private static $startAtMinutesOptions = array(
+	private static $startAtMinutesOptions = [
 		'0' => '00',
 		'5' => '05',
 		'10' => '10',
@@ -115,22 +115,22 @@ class zenario_scheduled_task_manager extends ze\moduleBaseClass {
 		'40' => '40',
 		'45' => '45',
 		'50' => '50',
-		'55' => '55');
+		'55' => '55'];
 	
-	protected static $firstNOptions = array(
+	protected static $firstNOptions = [
 		0 => 'No Filter',
 		1 => 'First Day of the Month only',
 		7 => 'First 7 days of the Month only',
 		-7 => 'Last 7 days of the Month only',
-		-1 => 'Last Day of the Month only');
+		-1 => 'Last Day of the Month only'];
 	
-	protected static $lastRunStatuses = array(
+	protected static $lastRunStatuses = [
 		'never_run' => 'Never Run',
 		'rerun_scheduled' => 'Rerun Scheduled',
 		'in_progress' => 'In Progress',
 		'action_taken' => 'Action Taken',
 		'no_action_taken' => 'No Action Taken',
-		'error' => 'Error');
+		'error' => 'Error'];
 	
 	
 	
@@ -285,9 +285,9 @@ class zenario_scheduled_task_manager extends ze\moduleBaseClass {
 	) {
 		
 		//Lock the job, set some fields
-		ze\row::update('jobs', array('last_run_started' => $serverTime, 'status' => 'in_progress'), $jobId);
+		ze\row::update('jobs', ['last_run_started' => $serverTime, 'status' => 'in_progress'], $jobId);
 		
-		$output = array();
+		$output = [];
 		$result = 
 			exec('php '.
 					escapeshellarg(CMS_ROOT. ze::moduleDir('zenario_scheduled_task_manager', 'cron/run_every_minute.php')).
@@ -326,8 +326,8 @@ class zenario_scheduled_task_manager extends ze\moduleBaseClass {
 		$dontSendLogEmail = false
 	) {
 		$logId = false;
-		$job = array();
-		$log = array();
+		$job = [];
+		$log = [];
 		$log['note'] = '';
 		$log['job_id'] = $jobId;
 		$log['started'] = $serverTime;
@@ -348,9 +348,9 @@ class zenario_scheduled_task_manager extends ze\moduleBaseClass {
 		
 		//Unlock the job, set some more fields
 		if ($unlockWhenDone) {
-			ze\row::update('jobs', $job, array('id' => $jobId));
+			ze\row::update('jobs', $job, ['id' => $jobId]);
 		} else {
-			ze\row::update('jobs', $job, array('id' => $jobId, 'status' => array('!' => 'in_progress')));
+			ze\row::update('jobs', $job, ['id' => $jobId, 'status' => ['!' => 'in_progress']]);
 		}
 		
 		//Have an option to only update the job record, and not add a log.
@@ -361,7 +361,7 @@ class zenario_scheduled_task_manager extends ze\moduleBaseClass {
 		if (!empty($output)) {
 			foreach ($output as $line) {
 				if ($line != '<!--action_taken-->' && $line != '<!--no_action_taken-->') {
-					$log['note'] .= ($log['note']? "\n" : ''). str_replace(array('<br>', '<br/>', '<br />'), "\n", $line);
+					$log['note'] .= ($log['note']? "\n" : ''). str_replace(['<br>', '<br/>', '<br />'], "\n", $line);
 				}
 			}
 		}
@@ -394,19 +394,17 @@ class zenario_scheduled_task_manager extends ze\moduleBaseClass {
 	}
 	
 	
-	public static function clearOldData(){
-		if($days = ze::setting('period_to_delete_job_logs')){
-			if(is_numeric($days)){
-				$today = date('Y-m-d');
-				$date = date('Y-m-d', strtotime('-'.$days.' day', strtotime($today)));
-				if($date){
-					$sql = " 
-						DELETE FROM ". DB_NAME_PREFIX. "job_logs
-						WHERE started < '".ze\escape::sql($date)."'";
-					ze\sql::update($sql);
-				}
-			}
+	public static function clearOldData() {
+		$days = ze::setting('period_to_delete_job_logs');
+		if ($days && is_numeric($days)) {
+			$date = date('Y-m-d', strtotime('-'.$days.' day', strtotime(date('Y-m-d'))));
+			$sql = " 
+				DELETE FROM ". DB_NAME_PREFIX. "job_logs
+				WHERE started < '".ze\escape::sql($date)."'";
+			ze\sql::update($sql);
+			return ze\sql::affectedRows();
 		}
+		return false;
 	}
 	
 	
@@ -496,7 +494,7 @@ class zenario_scheduled_task_manager extends ze\moduleBaseClass {
 			$module = new $moduleClassName;
 		}
 		
-		$returnValue = call_user_func(array($module, $jobName), $serverTime);
+		$returnValue = call_user_func([$module, $jobName], $serverTime);
 		
 		if ($returnValue) {
 			echo "\n<!--action_taken-->";

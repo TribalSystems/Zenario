@@ -26,8 +26,14 @@
  */
 
 
-(function(window, undefined) {
+(function(window, String_prototype, undefined) {
 	"use strict";
+	
+	
+	//A little experiment, try adding a short name for string replaces
+	String_prototype.m = String_prototype.match;
+	String_prototype.r = String_prototype.replace;
+	String_prototype.s = String_prototype.split;
 	
 	
 	var libNum = 0,
@@ -132,18 +138,18 @@
 				text = text.label || text.default_label || text.name || text.field_name;
 			}
 		
-			text = ('' + text).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/\</g, '&lt;').replace(/>/g, '&gt;');
+			text = ('' + text).r(/&/g, '&amp;').r(/"/g, '&quot;').r(/\</g, '&lt;').r(/>/g, '&gt;');
 		
 			if (preserveSpaces) {
 				if (preserveSpaces !== 'asis') {
-					text = text.replace(/ /g, '&nbsp;');
+					text = text.r(/ /g, '&nbsp;');
 				}
 			} else {
 				text = $.trim(text);
 			}
 		
 			if (preserveLineBreaks) {
-				text = text.replace(/\n/g, '<br/>');
+				text = text.r(/\n/g, '<br/>');
 			}
 		
 			return text;
@@ -151,11 +157,11 @@
 		
 		//Escape text for a JavaScript string
 		jsEscape = window.jsEscape = zenario.jsEscape = function(text) {
-			return escape(text).replace(/\%u/g, '\\u').replace(/\%/g, '\\x');
+			return escape(text).r(/\%u/g, '\\u').r(/\%/g, '\\x');
 		},
 		
 		jsUnescape = window.jsUnescape = zenario.jsUnescape = function(text) {
-			return unescape(text.replace(/\\u/gi, '%u').replace(/\\x/gi, '%')).replace(/\\(.)/g, "$1");
+			return unescape(text.r(/\\u/gi, '%u').r(/\\x/gi, '%')).r(/\\(.)/g, "$1");
 		},
 	
 		//Fallback for browsers *cough IE* that don't have a CSS escape function,
@@ -164,7 +170,7 @@
 			if (window.CSS && CSS.escape) {
 				return CSS.escape(text);
 			} else {
-				return text.replace(/[!"#$%&'()*+,.\/:;<=>?@[\\\]^`{|}~]/g, '\\$&');
+				return text.r(/[!"#$%&'()*+,.\/:;<=>?@[\\\]^`{|}~]/g, '\\$&');
 			}
 		};
 	zenario.extensionOf = window.extensionOf = extensionOf;
@@ -190,4 +196,4 @@
 	
 	zenarioO.panelTypes = {};
 
-})(window);
+})(window, String.prototype);

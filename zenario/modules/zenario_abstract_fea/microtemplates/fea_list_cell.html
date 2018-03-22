@@ -17,7 +17,8 @@
 	then show the empty value
 -->
 <% } else if (!m.item[m.col.id] && m.col.empty_value) { %>
-	{{m.col.empty_value|escape}}
+	<span class="fea_empty_value">{{m.col.empty_value|escape}}</span>
+	
 <!--
 	Otherwise, just display the value of the column
 -->

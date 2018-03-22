@@ -31,9 +31,9 @@ namespace ze;
 class adminAdm {
 	
 
-	//or use \ze\adminAdm::savePerms($adminId, $actions = array()) to add specific permissions
+	//or use \ze\adminAdm::savePerms($adminId, $actions = []) to add specific permissions
 	//Formerly "saveAdminPerms()"
-	public static function savePerms($adminId, $permissions, $actions = array(), $details = array()) {
+	public static function savePerms($adminId, $permissions, $actions = [], $details = []) {
 		$clearAllOthers = true;
 	
 		//Catch some alternate parameters where we are trying to add permissions to an exist admin by 
@@ -58,7 +58,7 @@ class adminAdm {
 			case 'all_permissions':
 				//For backwards compatability with a few old bits of the system,
 				//add an action called "_ALL" if someone's permission option is set to "all_permissions"
-				$actions = array('_ALL' => true);
+				$actions = ['_ALL' => true];
 				break;
 			case 'specific_actions':
 				$actions['_ALL'] = false;
@@ -76,16 +76,16 @@ class adminAdm {
 	
 		//Delete any old, existing permissions
 		if ($clearAllOthers) {
-			\ze\row::delete('action_admin_link', array('admin_id' => $adminId));
+			\ze\row::delete('action_admin_link', ['admin_id' => $adminId]);
 		}
 	
 		//Add/remove each permission from the database for this Admin.
 		foreach ($actions as $perm => $set) {
 			if ($set) {
-				\ze\row::set('action_admin_link', array(), array('action_name' => $perm, 'admin_id' => $adminId));
+				\ze\row::set('action_admin_link', [], ['action_name' => $perm, 'admin_id' => $adminId]);
 		
 			} elseif (!$clearAllOthers) {
-				\ze\row::delete('action_admin_link', array('action_name' => $perm, 'admin_id' => $adminId));
+				\ze\row::delete('action_admin_link', ['action_name' => $perm, 'admin_id' => $adminId]);
 			}
 		}
 	
@@ -171,20 +171,20 @@ class adminAdm {
 		//Attempt to connect to the global database
 		if (\ze\db::connectGlobal()) {
 				//Look up the details on the global database
-				$globalAdmins = \ze\row::getArray('admins', $adminColumns, array('authtype' => 'local'));
+				$globalAdmins = \ze\row::getArray('admins', $adminColumns, ['authtype' => 'local']);
 	
 				//For all global admins...
 				foreach ($globalAdmins as $globalId => &$admin) {
 		
 					//...check if they have an image and get the checksum...
 					if ($admin['image_id']) {
-						$admin['image_checksum'] = \ze\row::get('files', 'checksum', array('id' => $admin['image_id']));
+						$admin['image_checksum'] = \ze\row::get('files', 'checksum', ['id' => $admin['image_id']]);
 					} else {
 						$admin['image_checksum'] = false;
 					}
 		
 					//...and get an array of their actions
-					$admin['_actions_'] = \ze\row::getArray('action_admin_link', 'action_name', array('admin_id' => $globalId), 'action_name');
+					$admin['_actions_'] = \ze\row::getArray('action_admin_link', 'action_name', ['admin_id' => $globalId], 'action_name');
 				}
 			\ze\db::connectLocal();
 		} else {
@@ -205,7 +205,7 @@ class adminAdm {
 				$admin['is_client_account'] = 0;
 			}
 	
-			$key = array('global_id' => $admin['global_id']);
+			$key = ['global_id' => $admin['global_id']];
 	
 			//Skip trashed globsl admins that were never on this site in the first place
 			if ($admin['status'] == 'deleted'
@@ -216,11 +216,11 @@ class adminAdm {
 			//Did this admin have an image set?
 			if ($admin['image_checksum'] !== false) {
 				//If so, try to use the same image here, if we can find the image on this site as well
-				if (!$admin['image_id'] = \ze\row::get('files', 'id', array('checksum' => $admin['image_checksum'], 'usage' => 'admin'))) {
+				if (!$admin['image_id'] = \ze\row::get('files', 'id', ['checksum' => $admin['image_checksum'], 'usage' => 'admin'])) {
 			
 					//If we can't find it, get the image from the global database
 					\ze\db::connectGlobal();
-						$image = \ze\row::get('files', array('data', 'filename', 'checksum'), $admin['image_id']);
+						$image = \ze\row::get('files', ['data', 'filename', 'checksum'], $admin['image_id']);
 					\ze\db::connectLocal();
 			
 					//Copy it to the local database and then use the copy
@@ -239,13 +239,13 @@ class adminAdm {
 			$admin['local_id'] = $localId = \ze\row::set('admins', $admin, $key);
 	
 			//Check to see if the specific permissions have changed
-			$actionsHere = \ze\row::getArray('action_admin_link', 'action_name', array('admin_id' => $localId), 'action_name');
+			$actionsHere = \ze\row::getArray('action_admin_link', 'action_name', ['admin_id' => $localId], 'action_name');
 			if (print_r($actions, true) != print_r($actionsHere, true)) {
 		
 				//If so, delete the old ones and re-insert all of the new ones
-				\ze\row::delete('action_admin_link', array('admin_id' => $localId));
+				\ze\row::delete('action_admin_link', ['admin_id' => $localId]);
 				foreach ($actions as $action) {
-					\ze\row::insert('action_admin_link', array('admin_id' => $localId, 'action_name' => $action), true);
+					\ze\row::insert('action_admin_link', ['admin_id' => $localId, 'action_name' => $action], true);
 				}
 			}
 		}
@@ -258,6 +258,16 @@ class adminAdm {
 		} else {
 			return false;
 		}
+	}
+	
+	
+	public static function updateHash($adminId) {
+		$emailAddress = \ze\row::get('admins', 'email', $adminId);
+		$sql = "
+			UPDATE ". DB_NAME_PREFIX. "admins 
+			SET hash = '". \ze\escape::sql(\ze\userAdm::createHash($adminId, $emailAddress)). "'
+			WHERE id = ". (int) $adminId;
+		\ze\sql::update($sql, false, false);
 	}
 
 }

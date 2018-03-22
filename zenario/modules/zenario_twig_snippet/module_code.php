@@ -35,7 +35,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 class zenario_twig_snippet extends zenario_html_snippet {
 	
-	protected $twigVars = array();
+	protected $twigVars = [];
 	protected $enablePhraseCodeReplace = false;
 	
 	function init() {

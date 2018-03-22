@@ -35,17 +35,17 @@ class zenario_common_features__admin_boxes__phrase extends ze\moduleBaseClass {
 		
 		//Show phrases for the country manager
 		if ($box['key']['loadCountryName'] && ze\module::inc('zenario_country_manager')) {
-			$details = array(
+			$details = [
 				'code' => '_COUNTRY_NAME_'. $box['key']['id'],
-				'module_class_name' => 'zenario_country_manager');
+				'module_class_name' => 'zenario_country_manager'];
 			
 		} elseif ($box['key']['loadRegionName'] && ze\module::inc('zenario_country_manager')) {
-			$details = array(
+			$details = [
 				'code' => zenario_country_manager::getEnglishRegionName($box['key']['id']),
-				'module_class_name' => 'zenario_country_manager');
+				'module_class_name' => 'zenario_country_manager'];
 		
 		} else {
-		 	$details = ze\row::get('visitor_phrases', array('code', 'module_class_name'), $box['key']['id']);
+		 	$details = ze\row::get('visitor_phrases', ['code', 'module_class_name'], $box['key']['id']);
 		}
 		
 		//From 7.0.3 we not longer offer the ability to create a new phrase using this box,
@@ -55,8 +55,8 @@ class zenario_common_features__admin_boxes__phrase extends ze\moduleBaseClass {
 		}
 		
 		
-		$existingPhrases = array();
-		$result = ze\row::query('visitor_phrases', array('local_text', 'language_id', 'protect_flag'), array('code'=>$details['code'], 'module_class_name'=>$details['module_class_name']));
+		$existingPhrases = [];
+		$result = ze\row::query('visitor_phrases', ['local_text', 'language_id', 'protect_flag'], ['code'=>$details['code'], 'module_class_name'=>$details['module_class_name']]);
 		while ($row = ze\sql::fetchAssoc($result)) {
 			$existingPhrases[$row['language_id']] = $row;
 		}
@@ -73,9 +73,9 @@ class zenario_common_features__admin_boxes__phrase extends ze\moduleBaseClass {
 			$fields['phrase/code']['label'] = ze\admin::phrase('Phrase:');
 		
 		} else {
-			$mrg = array(
+			$mrg = [
 				'language_english_name' => $languages[ze::$defaultLang]['english_name'],
-				'module_display_name' => ze\module::getModuleDisplayNameByClassName($details['module_class_name']));
+				'module_display_name' => ze\module::getModuleDisplayNameByClassName($details['module_class_name'])];
 				
 			if (!$mrg['module_display_name']) {
 				$mrg['module_display_name'] = $box['key']['module_class_name'];
@@ -107,7 +107,7 @@ class zenario_common_features__admin_boxes__phrase extends ze\moduleBaseClass {
 				 || $hasSomePerms;
 				
 				$box['tabs']['phrase']['fields'][$language['id']] =
-					array(
+					[
 						'class_name' => 'zenario_common_features',
 						'ord' => $ord,
 						'label' => $language['english_name']. ':',
@@ -120,10 +120,10 @@ class zenario_common_features__admin_boxes__phrase extends ze\moduleBaseClass {
 							should be escaped (i.e. by replacing them with <code>&amp;amp;</code> <code>&amp;quot;</code> <code>&amp;lt;</code>
 							and <code>&amp;gt;</code> respectively).",
 						'value' => $phraseValue
-						);
+						];
 		
 				$box['tabs']['phrase']['fields']['protect_flag_'. $language['id']] =
-					array(
+					[
 						'class_name' => 'zenario_common_features',
 						'ord' => $ord + 1,
 						'label' => 'Protect',
@@ -134,7 +134,7 @@ class zenario_common_features__admin_boxes__phrase extends ze\moduleBaseClass {
 						'side_note' =>
 						"Protecting a Phrase will stop it from being overwritten when
 						importing Phrases from a CSV file."
-					);
+					];
 				$ord += 2;
 			}
 		}
@@ -180,8 +180,8 @@ class zenario_common_features__admin_boxes__phrase extends ze\moduleBaseClass {
 			if (ze\priv::onLanguage('_PRIV_MANAGE_LANGUAGE_PHRASE', $language['id'])
 			 && ($box['key']['is_code'] || $language['translate_phrases'])) {
 				ze\row::set('visitor_phrases', 
-					array('local_text' => $values['phrase/'. $language['id']], 'protect_flag' => $values['phrase/protect_flag_'. $language['id']]), 
-					array('code' => $box['key']['code'], 'module_class_name' => $box['key']['module_class_name'], 'language_id' => $language['id']));
+					['local_text' => $values['phrase/'. $language['id']], 'protect_flag' => $values['phrase/protect_flag_'. $language['id']]], 
+					['code' => $box['key']['code'], 'module_class_name' => $box['key']['module_class_name'], 'language_id' => $language['id']]);
 			}
 		}
 	}

@@ -55,7 +55,7 @@ class zenario_pro_features__admin_boxes__content extends ze\moduleBaseClass {
 		&& ($menu = ze\menu::getFromContentItem($box['key']['cID'], $box['key']['cType']))) {
 			ze\row::update(
 			'menu_nodes',
-			array('invisible' => ze\ring::engToBoolean($values['meta_data/menu_invisible'])),
+			['invisible' => ze\ring::engToBoolean($values['meta_data/menu_invisible'])],
 			$menu['id']);
 		}
 	}

@@ -81,8 +81,8 @@ class priv {
 				} else {
 					if (!$content = \ze\row::get(
 						'content_items',
-						array('equiv_id', 'language_id', 'status', 'admin_version', 'lock_owner_id'),
-						array('id' => $editCID, 'type' => $editCType)
+						['equiv_id', 'language_id', 'status', 'admin_version', 'lock_owner_id'],
+						['id' => $editCID, 'type' => $editCType]
 					)) {
 						return false;
 					}

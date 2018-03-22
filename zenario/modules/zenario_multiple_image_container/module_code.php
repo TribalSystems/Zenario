@@ -41,29 +41,29 @@ class zenario_multiple_image_container extends zenario_banner {
 		$width = $height = $url = $widthFullSize = $heightFullSize = $urlFullSize = false;
 		foreach (ze\ray::explodeAndTrim($this->setting('image'), true) as $imageId) {
 			if (($imageId = (int) trim($imageId))
-			 && ($image = ze\row::get('files', array('alt_tag', 'title', 'floating_box_title'), $imageId))
+			 && ($image = ze\row::get('files', ['alt_tag', 'title', 'floating_box_title'], $imageId))
 			 && ((ze\file::imageLink($width, $height, $url, $imageId, $this->setting('width'), $this->setting('height'), $this->setting('canvas'), $this->setting('offset'), $this->setting('retina'))))) {
 				
 				if (!isset($this->mergeFields['Images'])) {
-					$this->mergeFields['Images'] = array();
+					$this->mergeFields['Images'] = [];
 				}
 				
-				$imageMF = array(
+				$imageMF = [
 					'Alt' => $this->phrase($image['alt_tag']),
 					'Src' => $url,
 					'Title' => $this->phrase($image['title']),
 					'Width' => $width,
 					'Height' => $height,
-					'Popout' => false);
+					'Popout' => false];
 				
 				if ($this->setting('link_type_'. $imageId) == '_ENLARGE_IMAGE'
 				 && (ze\file::imageLink($widthFullSize, $heightFullSize, $urlFullSize, $imageId, $this->setting('enlarge_width'), $this->setting('enlarge_height'), $this->setting('enlarge_canvas')))) {
 					
-					$imageMF['Floating_Box'] = array(
+					$imageMF['Floating_Box'] = [
 						'Src' => $urlFullSize,
 						'Width' => $widthFullSize,
 						'Height' => $heightFullSize,
-						'Title' => $this->phrase($image['floating_box_title']));
+						'Title' => $this->phrase($image['floating_box_title'])];
 				} else {
 					$cID = $cType = false;
 					$this->setupLink($imageMF, $cID, $cType, $useTranslation = true, 'link_type_'. $imageId, 'hyperlink_target_'. $imageId, 'target_blank_'. $imageId, 'url_'. $imageId);

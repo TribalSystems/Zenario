@@ -33,14 +33,14 @@ class zenario_location_map_and_listing extends ze\moduleBaseClass {
 	protected $datasetFields;
 	protected $fields;
 	
-	protected $data = array(
-		'tabs' => array(),
-		'locations' => array(),
-		'locations_map_info' => array(),
-		'countries' => array(),
+	protected $data = [
+		'tabs' => [],
+		'locations' => [],
+		'locations_map_info' => [],
+		'countries' => [],
 		'country_id' => '',
 		'postcode' => ''
-	);
+	];
 	
 	public function init() {
 		//Look up details on the locations dataset
@@ -49,27 +49,27 @@ class zenario_location_map_and_listing extends ze\moduleBaseClass {
 		
 		//Check to see if any fields were picked in the Plugin Settings
 		if ($this->setting('list_by_field')) {
-			foreach (array(
+			foreach ([
 				'field1' => 'field1_title', 'field2' => 'field2_title', 'field3' => 'field3_title'
-			) as $fieldIdSetting => $titleSetting) {
+			] as $fieldIdSetting => $titleSetting) {
 				if ($this->setting($fieldIdSetting)
 				 && ($field = ze\dataset::fieldDetails($this->setting($fieldIdSetting)))
 				 && ($field['type'] == 'checkbox')) {
 					$this->fields[] = $field;
 					
-					$this->data['tabs'][] = array(
+					$this->data['tabs'][] = [
 						'db_column' => $field['db_column'],
 						'css_class' => 'zenario_lmal_tab__'. $field['db_column'],
 						'marker_css_class' => 'zenario_lmal_marker__'. $field['db_column'],
 						'title' => $this->setting($titleSetting),
-						'locations' => array()
-					);
+						'locations' => []
+					];
 				}
 			}
 		}
 		
 		if (empty($this->fields)) {
-			$this->data['tabs'][] = array('locations' => array());
+			$this->data['tabs'][] = ['locations' => []];
 		}
 		
 		if ($this->setting('filter_by_country')) {
@@ -147,7 +147,7 @@ class zenario_location_map_and_listing extends ze\moduleBaseClass {
 		
 		$this->data['mapId'] = $this->containerId. '_map';
 		$this->data['mapIframeId'] = $this->containerId. '_map_iframe';
-		$this->data['mapIframeSrc'] = $this->showSingleSlotLink(array('display_map' => 1, 'country_id' => $this->data['country_id'], 'postcode' => $this->data['postcode']));
+		$this->data['mapIframeSrc'] = $this->showSingleSlotLink(['display_map' => 1, 'country_id' => $this->data['country_id'], 'postcode' => $this->data['postcode']]);
 		
 		$this->loadLocations();
 		
@@ -246,7 +246,7 @@ class zenario_location_map_and_listing extends ze\moduleBaseClass {
 		$sql .= "
 			AND (loc.latitude IS NOT NULL AND loc.longitude IS NOT NULL) AND (loc.latitude <> 0 AND loc.longitude <> 0)";
 		
-		$orderBy = array();
+		$orderBy = [];
 		for ($i = 1; $i <= 3; $i++) {
 			switch ($this->setting('order_by_' . $i)){
 				case 'sector_score':
@@ -278,7 +278,7 @@ class zenario_location_map_and_listing extends ze\moduleBaseClass {
 			$row['listingClick'] = "
 				zenario_location_map_and_listing.listingClick(this, ". (int) $row['id']. ");";
 			
-			$imageId = ze\row::get(ZENARIO_LOCATION_MANAGER_PREFIX. 'location_images','image_id',array('sticky_flag' => '1', 'location_id' => $row['id']));
+			$imageId = ze\row::get(ZENARIO_LOCATION_MANAGER_PREFIX. 'location_images','image_id',['sticky_flag' => '1', 'location_id' => $row['id']]);
 			
 			$row['alt_tag'] = ze\row::get('files', 'alt_tag', $imageId);
 			$row['map_image'] = self::getStickyImageLink($imageId,"map");
@@ -352,7 +352,7 @@ class zenario_location_map_and_listing extends ze\moduleBaseClass {
 		}
 		
 		foreach ($this->data['locations'] as $row) {
-			$this->data['locations_map_info'][] = array(
+			$this->data['locations_map_info'][] = [
 				'id' => $row['id'],
 				'htmlId' => $row['htmlId'],
 				'latitude' => $row['latitude'],
@@ -361,13 +361,13 @@ class zenario_location_map_and_listing extends ze\moduleBaseClass {
 				'hide_pin' => $row['hide_pin'],
 				'name' => $row['name'],
 				'css_class' => $row['css_class']
-			);
+			];
 		}
 		
 		// If searching on postcode, add postcode marker to map
 		if ($this->setting('enable_postcode_search') && !empty($this->data['postcode']) && $lat && $lng && $label) {
 			$htmlId = $this->containerId . '_postcode_placeholder';
-			$placeholder = array(
+			$placeholder = [
 				'id' => 'postcode',
 				'htmlId' => $htmlId,
 				'latitude' => $lat,
@@ -376,14 +376,14 @@ class zenario_location_map_and_listing extends ze\moduleBaseClass {
 				'hide_pin' => false,
 				'name' => $label,
 				'css_class' => 'postcode-marker'
-			);
+			];
 			$this->data['locations_map_info'][] = $placeholder;
 		}
 	}
 	
 	protected function filterLocationsByLatLng($lat, $lng) {
-		$distances = array();
-		$locations = array();
+		$distances = [];
+		$locations = [];
 		$showUnits = $this->setting('search_result_distance');
 		$units = false;
 		if ($showUnits == 'km') {
@@ -405,7 +405,7 @@ class zenario_location_map_and_listing extends ze\moduleBaseClass {
 			}
 			if ($units) {
 				$formattedDistance = round($distance, 2);
-				$location['postcode_distance'] = $this->phrase('[[distance]] [[units]]', array('distance' => $formattedDistance, 'units' => $units));
+				$location['postcode_distance'] = $this->phrase('[[distance]] [[units]]', ['distance' => $formattedDistance, 'units' => $units]);
 			}
 			$location['postcode_index'] = $count . '.';
 			$locations[] = $location;
@@ -429,7 +429,7 @@ class zenario_location_map_and_listing extends ze\moduleBaseClass {
 	}
 	
 	protected function getCountryList() {
-		$countries = array();
+		$countries = [];
 		
 		$sql = "
 			SELECT SUBSTR(code, 15), local_text
@@ -481,7 +481,7 @@ class zenario_location_map_and_listing extends ze\moduleBaseClass {
 				<script id="google_api" type="text/javascript" src="https://maps.google.com/maps/api/js?sensor=false&key=' . urlencode(ze::setting('google_maps_api_key')) . '"></script>';
 			
 			//Add icons so the JavaScript code can look up the background image from them
-			$cssClasses = array();
+			$cssClasses = [];
 			foreach ($this->data['locations_map_info'] as $location) {
 				$cssClasses[$location['css_class']] = true;
 			}

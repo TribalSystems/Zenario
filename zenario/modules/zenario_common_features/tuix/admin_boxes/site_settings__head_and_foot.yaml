@@ -2,7 +2,7 @@
 ---
 site_settings:
     setting_group: head_and_foot
-    title: Global <head> and <body> HTML
+    title: Site-wide <head> and <body>
     tabs:
         head:
             label: <head>
@@ -14,7 +14,7 @@ site_settings:
                     full_width: true
                     snippet:
                         html: >
-                            Add HTML within the <code>&lt;head&gt;</code> tag of all pages:
+                            Add HTML within the <code>&lt;head&gt;</code> tag of all pages (e.g. <code>&lt;meta&gt;</code> and <code>&lt;style&gt;</code> tags):
                 sitewide_head:
                     site_setting:
                         name: sitewide_head
@@ -27,7 +27,7 @@ site_settings:
                     style: >
                         height: 25em;
                     note_below: >
-                            Note that changes saved here will take effect across your entire site.
+                        HTML entered here will take effect across the entire site. Use the Layout tab in the admin toolbar, or the Edit Plugins tab, to enter additional HTML that is applied to pages with a given layout, or a specific content item.
         body:
             label: Start of <body>
             edit_mode:

@@ -44,9 +44,9 @@ class zenario_common_features__organizer__plugins extends ze\moduleBaseClass {
 		if (($_GET['refiner__plugin'] ?? false) && !isset($_GET['refiner__all_instances'])) {
 			$panel['title'] =
 			$panel['select_mode_title'] =
-				ze\admin::phrase('"[[name]]" plugins in the library', array('name' => ze\module::displayName($_GET['refiner__plugin'] ?? false)));
+				ze\admin::phrase('"[[name]]" plugins in the library', ['name' => ze\module::displayName($_GET['refiner__plugin'] ?? false)]);
 			$panel['no_items_message'] =
-				ze\admin::phrase('There are no "[[name]]" plugins in the library. Click the "Create" button to create one.', array('name' => ze\module::displayName($_GET['refiner__plugin'] ?? false)));
+				ze\admin::phrase('There are no "[[name]]" plugins in the library. Click the "Create" button to create one.', ['name' => ze\module::displayName($_GET['refiner__plugin'] ?? false)]);
 		}
 		
 		foreach ($panel['items'] as $id => &$item) {

@@ -59,7 +59,7 @@ class zenario_common_features__admin_boxes__duplicate_plugin extends ze\moduleBa
 				
 				$result = ze\sql::select($sql);
 				if (ze\sql::numRows($result)) {
-					$box['tabs']['instance']['errors'][] = ze\admin::phrase('A plugin with the name "[[name]]" already exists. Please choose a different name.', array('name' => $values['instance/name']));
+					$box['tabs']['instance']['errors'][] = ze\admin::phrase('A plugin with the name "[[name]]" already exists. Please choose a different name.', ['name' => $values['instance/name']]);
 				}
 			}
 		}

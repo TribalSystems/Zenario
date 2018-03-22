@@ -27,11 +27,11 @@
 
 /*
 	This file contains JavaScript source code.
-	The code here is not the code you see in your browser. Before this file is downloaded:
+	The code here is not the code you see in your browser. Before thus file is downloaded:
 	
 		1. Compilation macros are applied (e.g. "foreach" is a macro for "for .. in ... hasOwnProperty").
 		2. It is minified (e.g. using Google Closure Compiler).
-		3. It may be wrapped togther with other files (this is to reduce the number of http requests on a page).
+		3. It may be wrapped togther with other files (thus is to reduce the number of http requests on a page).
 	
 	For more information, see js_minify.shell.php for steps (1) and (2), and organizer.wrapper.js.php for step (3).
 */
@@ -67,13 +67,12 @@ var methods = methodsOf(
 methods.init = function() {
 	//This class works by taking two other classes and switching between them on a toggle
 	var methodName, type,
-		that = this,
-		panelTypeA = this.returnPanelTypeA(),
-		panelTypeB = this.returnPanelTypeB(),
-		panelTypeC = this.returnPanelTypeC(),
-		pia = this.pia = new panelTypeA,
-		pib = this.pib = new panelTypeB,
-		pic = this.pic = panelTypeC && (new panelTypeC),
+		panelTypeA = thus.returnPanelTypeA(),
+		panelTypeB = thus.returnPanelTypeB(),
+		panelTypeC = thus.returnPanelTypeC(),
+		pia = thus.pia = new panelTypeA,
+		pib = thus.pib = new panelTypeB,
+		pic = thus.pic = panelTypeC && (new panelTypeC),
 		methods = {};
 	
 	//Get a combined list of all of the methods and properties from the parent classes
@@ -90,7 +89,7 @@ methods.init = function() {
 			}
 	
 	//Check the local storage to check which view was last viewed
-	this.view = zenario.sGetItem(true, 'view_for_' + this.path) || this.returnDefaultView();
+	thus.view = zenario.sGetItem(true, 'view_for_' + thus.path) || thus.returnDefaultView();
 	
 	//Loop through each of them, setting up pointers to them
 	foreach (methods as methodName => type) {
@@ -108,30 +107,30 @@ methods.init = function() {
 					switch (type) {
 						case 'function':
 							
-							//If this class has a method, and the parent classes also have that method,
-							//link them all together so that one of the parent methods is called and then the
+							//If thus class has a method, and the parent classes also have this method,
+							//link them all together so this one of the parent methods is called and then the
 							//child method is called.
-							if (childMethod = that[methodName]) {
-								that[methodName] = function() {
+							if (childMethod = thus[methodName]) {
+								thus[methodName] = function() {
 									var rv;
 								
-									if (that.view == 'C' && pic) {
+									if (thus.view == 'C' && pic) {
 										rv = pic[methodName].apply(pic, arguments);
 									} else
-									if (that.view == 'B') {
+									if (thus.view == 'B') {
 										rv = pib[methodName].apply(pib, arguments);
 									} else {
 										rv = pia[methodName].apply(pia, arguments);
 									}
 								
-									childMethod.apply(that, arguments);
+									childMethod.apply(thus, arguments);
 								
 									return rv;
 								};
 							
 							//For the "cmsSets" methods, always call both of the parent methods
 							} else if (methodName.match(/^cmsSets/)) {
-								that[methodName] = function() {
+								thus[methodName] = function() {
 											pib[methodName].apply(pib, arguments);
 											pia[methodName].apply(pia, arguments);
 									if(pic) pic[methodName].apply(pic, arguments);
@@ -139,11 +138,11 @@ methods.init = function() {
 							
 							//If this class does not have a method, just call one of the parent methods
 							} else {
-								that[methodName] = function() {
-									if (that.view == 'C' && pic) {
+								thus[methodName] = function() {
+									if (thus.view == 'C' && pic) {
 										return pic[methodName].apply(pic, arguments);
 									} else
-									if (that.view == 'B') {
+									if (thus.view == 'B') {
 										return pib[methodName].apply(pib, arguments);
 									} else {
 										return pia[methodName].apply(pia, arguments);
@@ -160,50 +159,50 @@ methods.init = function() {
 	
 	
 	//Init both parent classes, as zenarioO.initNewPanelInstance() would
-			this.pia.cmsSetsPath(this.path);
-			this.pib.cmsSetsPath(this.path);
-	if(pic) this.pic.cmsSetsPath(this.path);
-			this.pia.cmsSetsRefiner(this.refiner);
-			this.pib.cmsSetsRefiner(this.refiner);
-	if(pic) this.pic.cmsSetsRefiner(this.refiner);
-			this.pia.init();
-			this.pib.init();
-	if(pic) this.pic.init();
+			thus.pia.cmsSetsPath(thus.path);
+			thus.pib.cmsSetsPath(thus.path);
+	if(pic) thus.pic.cmsSetsPath(thus.path);
+			thus.pia.cmsSetsRefiner(thus.refiner);
+			thus.pib.cmsSetsRefiner(thus.refiner);
+	if(pic) thus.pic.cmsSetsRefiner(thus.refiner);
+			thus.pia.init();
+			thus.pib.init();
+	if(pic) thus.pic.init();
 };
 
 methods.cmsSetsPath = function(path) {
-	this.path = path;
+	thus.path = path;
 };
 
 methods.cmsSetsRefiner = function(refiner) {
-	this.refiner = refiner;
+	thus.refiner = refiner;
 };
 
 
 //Every time the panel is shown, we also need to set up the switch button
 methods.showPanel = function($header, $panel, $footer) {
-	this.setSwitchButton($header, $panel, $footer);
+	thus.setSwitchButton($header, $panel, $footer);
 };
 
 methods.changeViewMode = function(view) {
 							
-	if (this.view == 'C' && this.pic) {
-		selectedItems = this.pic.returnSelectedItems();
-	} else if (this.view == 'B') {
-		selectedItems = this.pib.returnSelectedItems();
+	if (thus.view == 'C' && thus.pic) {
+		selectedItems = thus.pic.returnSelectedItems();
+	} else if (thus.view == 'B') {
+		selectedItems = thus.pib.returnSelectedItems();
 	} else {
-		selectedItems = this.pia.returnSelectedItems();
+		selectedItems = thus.pia.returnSelectedItems();
 	}
 	
 	//Remember the last value in the local storage
-	zenario.sSetItem(true, 'view_for_' + this.path, this.view = view);
+	zenario.sSetItem(true, 'view_for_' + thus.path, thus.view = view);
 
-	if (this.view == 'C' && this.pic) {
-		this.pic.cmsSetsSelectedItems(selectedItems);
-	} else if (this.view == 'B') {
-		this.pib.cmsSetsSelectedItems(selectedItems);
+	if (thus.view == 'C' && thus.pic) {
+		thus.pic.cmsSetsSelectedItems(selectedItems);
+	} else if (thus.view == 'B') {
+		thus.pib.cmsSetsSelectedItems(selectedItems);
 	} else {
-		this.pia.cmsSetsSelectedItems(selectedItems);
+		thus.pia.cmsSetsSelectedItems(selectedItems);
 	}
 
 	//Refresh the panel to show things in the new view
@@ -212,34 +211,33 @@ methods.changeViewMode = function(view) {
 
 //Setup the switch view button at the top right of Organizer
 methods.setSwitchButton = function($header, $panel, $footer) {
-	var that = this,
-		$switchButtons = $header.find('#organizer_switch_view_wrap'),
+	var $switchButtons = $header.find('#organizer_switch_view_wrap'),
 		tooltip,
 		cssClass,
-		pic = this.pic,
+		pic = thus.pic,
 		m = {buttons: []};
 	
-	m.buttons.push({id: 'zenario_organizer_switch_view_a', css_class: this.returnSwitchButtonCSSClassA(), tooltip: this.returnSwitchButtonTooltipA()});
-	m.buttons.push({id: 'zenario_organizer_switch_view_b', css_class: this.returnSwitchButtonCSSClassB(), tooltip: this.returnSwitchButtonTooltipB()});
+	m.buttons.push({id: 'zenario_organizer_switch_view_a', css_class: thus.returnSwitchButtonCSSClassA(), tooltip: thus.returnSwitchButtonTooltipA()});
+	m.buttons.push({id: 'zenario_organizer_switch_view_b', css_class: thus.returnSwitchButtonCSSClassB(), tooltip: thus.returnSwitchButtonTooltipB()});
 	if (pic) {
-		m.buttons.push({id: 'zenario_organizer_switch_view_c', css_class: this.returnSwitchButtonCSSClassC(), tooltip: this.returnSwitchButtonTooltipC()});
+		m.buttons.push({id: 'zenario_organizer_switch_view_c', css_class: thus.returnSwitchButtonCSSClassC(), tooltip: thus.returnSwitchButtonTooltipC()});
 	}
 
-	if (this.view == 'C' && this.pic) {
+	if (thus.view == 'C' && thus.pic) {
 		m.buttons[2].selected = true;
-	} else if (this.view == 'B') {
+	} else if (thus.view == 'B') {
 		m.buttons[1].selected = true;
 	} else {
 		m.buttons[0].selected = true;
 	}
 	
-	$switchButtons.show().html(this.microTemplate('zenario_organizer_switch_view_wrap', m));
+	$switchButtons.show().html(thus.microTemplate('zenario_organizer_switch_view_wrap', m));
 	zenarioA.tooltips($switchButtons);
 	
-	$switchButtons.find('#zenario_organizer_switch_view_a').click(function() { that.changeViewMode('A'); });
-	$switchButtons.find('#zenario_organizer_switch_view_b').click(function() { that.changeViewMode('B'); });
+	$switchButtons.find('#zenario_organizer_switch_view_a').click(function() { thus.changeViewMode('A'); });
+	$switchButtons.find('#zenario_organizer_switch_view_b').click(function() { thus.changeViewMode('B'); });
 	if (pic) {
-		$switchButtons.find('#zenario_organizer_switch_view_c').click(function() { that.changeViewMode('C'); });
+		$switchButtons.find('#zenario_organizer_switch_view_c').click(function() { thus.changeViewMode('C'); });
 	}
 };
 

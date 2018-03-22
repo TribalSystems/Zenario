@@ -17,6 +17,9 @@ site_settings:
                         html: |
                             This tab contains default settings for the Emails sent by your site.
                             These are also used as default values for any Email Templates created when installing a Module.
+                data_protection_link:
+                    snippet:
+                        html: ''
                 email_address_admin:
                     site_setting:
                         name: email_address_admin

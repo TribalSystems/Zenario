@@ -30,19 +30,19 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 		if (ze\priv::check("_PRIV_MANAGE_COUNTRY")){
 			foreach (explode(',',$ids) as $id) {
 				if (($_POST['action'] ?? false) == 'activate_country') {
-					ze\row::update(ZENARIO_COUNTRY_MANAGER_PREFIX . "country_manager_countries", array('active' => 1), array('id' => $id));
+					ze\row::update(ZENARIO_COUNTRY_MANAGER_PREFIX . "country_manager_countries", ['active' => 1], ['id' => $id]);
 				}
 				if (($_POST['action'] ?? false) == 'suspend_country') {
-					ze\row::update(ZENARIO_COUNTRY_MANAGER_PREFIX . "country_manager_countries", array('active' => 0), array('id' => $id));
+					ze\row::update(ZENARIO_COUNTRY_MANAGER_PREFIX . "country_manager_countries", ['active' => 0], ['id' => $id]);
 				}
 				if (($_POST['action'] ?? false) == 'delete_country') {
 					ze\row::delete("visitor_phrases", 
-								array(
+								[
 										'module_class_name' => 'zenario_country_manager',
 										'code' => '_COUNTRY_NAME_' . $id
-									) 
+									] 
 							);
-					ze\row::delete(ZENARIO_COUNTRY_MANAGER_PREFIX . "country_manager_countries", array('id' => $id));					
+					ze\row::delete(ZENARIO_COUNTRY_MANAGER_PREFIX . "country_manager_countries", ['id' => $id]);					
 
 					$sql = "DELETE FROM "
 								. DB_NAME_PREFIX . "visitor_phrases
@@ -56,21 +56,21 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 												country_id = '" . ze\escape::sql($id) . "'
 											)";
 					ze\sql::update($sql);
-					ze\row::delete(ZENARIO_COUNTRY_MANAGER_PREFIX . "country_manager_regions", array('country_id' => $id));
+					ze\row::delete(ZENARIO_COUNTRY_MANAGER_PREFIX . "country_manager_regions", ['country_id' => $id]);
 					
-					ze\module::sendSignal('eventCountryDeleted', array("countryId" => $id));
+					ze\module::sendSignal('eventCountryDeleted', ["countryId" => $id]);
 				}
 
 				if (($_POST['action'] ?? false) == 'delete_region') {
-					$name = ze\row::get(ZENARIO_COUNTRY_MANAGER_PREFIX . "country_manager_regions", "name", array('id' => $id));
+					$name = ze\row::get(ZENARIO_COUNTRY_MANAGER_PREFIX . "country_manager_regions", "name", ['id' => $id]);
 					ze\row::delete("visitor_phrases", 
-								array(
+								[
 										'module_class_name' => 'zenario_country_manager',
 										'code' => $name
-									) 
+									] 
 							);
-					ze\row::delete(ZENARIO_COUNTRY_MANAGER_PREFIX . "country_manager_regions", array('id' => $id));
-					ze\module::sendSignal('eventRegionDeleted', array("regionId" => $id));
+					ze\row::delete(ZENARIO_COUNTRY_MANAGER_PREFIX . "country_manager_regions", ['id' => $id]);
+					ze\module::sendSignal('eventRegionDeleted', ["regionId" => $id]);
 				}
 			}
 		} else {

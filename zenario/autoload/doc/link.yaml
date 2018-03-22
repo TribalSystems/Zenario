@@ -49,8 +49,8 @@ toItem:
     <h3><code>$autoAddImportantRequests</code></h3>
     <p style="margin-left: 40px;">If this is a link to the current Content Item, set this to include any requests added using the <a href="ref-registergetrequest.html"><span class="code">registerGetRequest()</span></a> function.</p>
     <p style="margin-left: 40px;">Has no affect if linking to a different Content Item.</p>
-    <h3><code>$useAliasInAdminMode</code></h3>
-    <p style="margin-left: 40px;">If you call this function in admin mode, it will not use aliases or friendly URLs. However you can override this and force the use of the alias and friendly URLs in admin mode.</p>
+    <h3><code>$forceAliasInAdminMode</code></h3>
+    <p style="margin-left: 40px;">Set this to <code>true</code> to always use aliases/friendly URLs in admin mode, even if the <em>Use friendly URLs in admin mode</em> site setting is turned off.</p>
     <h2>Return Value</h2>
     <p>A URL. Note that it is not escaped; you must use <code>htmlspecialchars()</code> to escape it if appropriate.</p>
 primaryDomain:

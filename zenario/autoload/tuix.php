@@ -75,7 +75,7 @@ class tuix {
 				}
 			}
 		}
-	
+		
 		//Attempt to use a cached copy of this TUIX file
 			//JSON is a lot faster to read than the other formats, so for speed purposes we create cached JSON copies of files
 		$filemtime = false;
@@ -233,6 +233,54 @@ class tuix {
 		&$modules, &$tags, $type, $requestedPath = '', $settingGroup = '', $compatibilityClassNames = false,
 		$runningModulesOnly = true, $exitIfError = true
 	) {
+		
+		//Check if we can cache the output of this function, and work out a caching path
+		$cachePath = false;
+		if ($runningModulesOnly === true
+		 && ($yaml_files_last_changed = \ze::setting('yaml_files_last_changed'))
+		 && ($cachePath = \ze\cache::createDir($type, 'cache/tuix', $onlyForCurrentVisitor = true, $ip = false))) {
+			
+			//Use the requested tag path in the caching path
+			$cachePath .= str_replace('/', '-', $requestedPath);
+			
+			//Add the settings group if specified
+			if ($settingGroup) {
+				$cachePath .= '-'. $settingGroup;
+			}
+			
+			//Add the $compatibilityClassNames if specified...
+			if (!empty($compatibilityClassNames)) {
+				//...but catch the case where they're the same as the settings group, and don't repeat the same thing twice if so.
+				if (count($compatibilityClassNames) == 1 && in_array($settingGroup, $compatibilityClassNames)) {
+					$cachePath .= '-';
+				} else {
+					$cachePath .= '-'. implode('.', $compatibilityClassNames);
+				}
+			}
+			
+			//Add the time the yaml files last changed to the cache path.
+			//In theory this isn't needed, as the checkForChangesInYamlFiles() function wipes these files,
+			//however this is just an extra safe-guard in case it failes for some reason.
+			$cachePath .= '-'. $yaml_files_last_changed. '.json';
+			
+			
+			//If the cache file already exists, use it and don't bother running the rest of this function
+			if (is_file(CMS_ROOT. $cachePath)
+			 && ($tags = json_decode(file_get_contents($cachePath), true))
+			 && (isset($tags['m']) && is_array($tags['m']))
+			 && (isset($tags['t']) && is_array($tags['t']))) {
+				$modules = $tags['m'];
+				$tags = $tags['t'];
+				return;
+			}
+		}
+		
+		//N.b. if we can't use the caching for the individual object, we can still use caching on a file-by-file basis,
+		//as the ze\tuix::readFile() also uses caching
+		
+		
+		
+		
 		$modules = [];
 		$tags = [];
 	
@@ -256,11 +304,11 @@ class tuix {
 				if (empty($modules[$module['class_name']])) {
 					\ze\module::setPrefix($module);
 				
-					$modules[$module['class_name']] = array(
+					$modules[$module['class_name']] = [
 						'class_name' => $module['class_name'],
 						'depends' => \ze\module::dependencies($module['class_name']),
 						'included' => false,
-						'files' => []);
+						'files' => []];
 				}
 				$modules[$module['class_name']]['files'][] = $module['filename'];
 			}
@@ -332,6 +380,13 @@ class tuix {
 			}
 		}
 		$tags = $tags[$type];
+		
+		
+		//If we can cache this to avoid doing all of this work next time, do so!
+		if ($cachePath) {
+			@file_put_contents($cachePath, json_encode(['m' => $modules, 't' => $tags]));
+			@chmod($cachePath, 0666);
+		}
 	}
 
 
@@ -1364,6 +1419,13 @@ class tuix {
 
 	//Formerly "applyValidationFromTUIXOnTab()"
 	public static function applyValidation(&$tab, $saving) {
+		
+		$uniques = [
+			'a' => [],
+			'b' => [],
+			'c' => []
+		];
+		
 		//Loop through each field, looking for fields with validation set
 		if (isset($tab['fields']) && is_array($tab['fields'])) {
 			foreach ($tab['fields'] as $fieldName => &$field) {
@@ -1444,6 +1506,20 @@ class tuix {
 							continue;
 						}
 					}
+					
+					//Check that unique values
+					if (($msg = $field['validation']['unique_'. ($u = 'a')] ?? false)
+					 || ($msg = $field['validation']['unique_'. ($u = 'b')] ?? false)
+					 || ($msg = $field['validation']['unique_'. ($u = 'c')] ?? false)) {
+						if (isset($uniques[$u][$fieldValue])) {
+							$field['error'] = $msg;
+							continue;
+						} else {
+							$uniques[$u][$fieldValue] = true;
+						}
+					}
+					
+					 
 					
 					
 					
@@ -1774,12 +1850,12 @@ class tuix {
 		}
 		$html .= '
 			</tr>';
-		$fields['phrase_table_start'] = array(
+		$fields['phrase_table_start'] = [
 			'ord' => ++$ord,
 			'snippet' => [
 				'html' => $html
 			]
-		);
+		];
 	
 		$valuesInDB = [];
 		\ze\tuix::loadAllPluginSettings($box, $valuesInDB);
@@ -1787,7 +1863,7 @@ class tuix {
 		
 		foreach (\ze\tuix::lookForPhrases($path) as $ppath => $defaultText) {
 		
-			$fields[$ppath] = array(
+			$fields[$ppath] = [
 				'plugin_setting' => [
 					'name' => $ppath,
 					'value' => $defaultText,
@@ -1808,7 +1884,7 @@ class tuix {
 				'post_field_html' => '
 					</td>
 				'
-			);
+			];
 		
 			if (isset($valuesInDB[$ppath])) {
 				$fields[$ppath]['value'] = $valuesInDB[$ppath];
@@ -1817,7 +1893,7 @@ class tuix {
 			}
 			
 			if ($showSecondLanguageColumn) {
-				$fields[$ppath . '__' . $languageId] = array(
+				$fields[$ppath . '__' . $languageId] = [
 					'value' => \ze\row::get('visitor_phrases', 'local_text', ['code' => $fields[$ppath]['value'], 'language_id' => $languageId, 'module_class_name' => $box['module_class_name']]),
 					'ord' => ++$ord,
 					'same_row' => true,
@@ -1829,26 +1905,26 @@ class tuix {
 					'post_field_html' => '
 						</td></tr>
 					'
-				);
+				];
 			} else {
 				$fields[$ppath]['post_field_html'] .= '</tr>';
 			}
 		}
 	
-		$fields['phrase_table_end'] = array(
+		$fields['phrase_table_end'] = [
 			'ord' => ++$ord,
 			'same_row' => true,
 			'snippet' => [
 				'html' => '
 					</table>'
 			]
-		);
+		];
 	
 		if (\ze\row::exists('languages', ['translate_phrases' => 1])) {
-			$mrg = array(
+			$mrg = [
 				'def_lang_name' => htmlspecialchars(\ze\lang::name(\ze::$defaultLang)),
 				'phrases_panel' => htmlspecialchars(\ze\link::absolute(). 'zenario/admin/organizer.php#zenario__languages/panels/phrases')
-			);
+			];
 		
 			$fields['phrase_table_end']['show_phrase_icon'] = true;
 			$fields['phrase_table_end']['snippet']['html'] .= '
@@ -1992,10 +2068,14 @@ class tuix {
 								$cutName = str_replace('znz', $m, $fieldCodeName);
 								$pstName = str_replace('znz', $m - 1, $fieldCodeName);
 					
-								foreach (['value', 'current_value', 'pressed', 'hidden', '_was_hidden_before'] as $val) {
+								foreach ([
+									'values', 'value', 'current_value', 'pressed',
+									'selected_option', '_display_value',
+									'hidden', '_was_hidden_before'
+								] as $val) {
 									if (isset($tab['fields'][$cutName][$val])) {
 										$tab['fields'][$pstName][$val] = $tab['fields'][$cutName][$val];
-										$tab['fields'][$cutName][$val] = '';
+										unset($tab['fields'][$cutName][$val]);
 									} else {
 										unset($tab['fields'][$pstName][$val]);
 									}
@@ -2311,7 +2391,7 @@ class tuix {
 			$modules_loaded = array_keys($modules);
 		}
 	
-		$tags = array(
+		$tags = [
 			'tuix' => $tags,
 			'tag_path' => substr($tagPath, 1),
 			'modules_loaded' => $modules_loaded,
@@ -2319,7 +2399,7 @@ class tuix {
 			'query_ids' => $queryIds,
 			'query_full_select' => $queryFullSelect,
 			'query_select_count' => $querySelectCount
-		);
+		];
 	
 		header('Content-Type: text/javascript; charset=UTF-8');
 		\ze\ray::jsonDump($tags);
@@ -2423,4 +2503,344 @@ class tuix {
 	}
 
 
+
+
+
+
+	public static function visitorTUIX($module, $requestedPath, &$tags, $filling = true, $validating = false, $saving = false, $debugMode = false) {
+		
+		////Exit if no path is specified
+		//if (!$requestedPath) {
+		//	echo 'No path specified!';
+		//	exit;
+		//}
+		//
+		////Check to see if this path is allowed.
+		//} else if (!$module->returnVisitorTUIXEnabled($requestedPath)) {
+		//	echo 'You do not have access to this plugin in this mode, or the plugin settings are incomplete.';
+		//	exit;
+		//}
+	
+		\ze::$skType = 'visitor';
+		\ze::$skPath = $requestedPath;
+	
+		$tags = [];
+		$originalTags = [];
+		$moduleFilesLoaded = [];
+		\ze\tuix::load($moduleFilesLoaded, $tags, 'visitor', $requestedPath);
+	
+		if (empty($tags[$requestedPath])) {
+			echo 'Path not found!';
+			exit;
+		}
+		$tags = $tags[$requestedPath];
+		$clientTags = false;
+	
+	
+		if ($debugMode) {
+			$staticTags = $tags;
+		}
+
+		//Debug mode - show the TUIX before it's been modified
+		if ($debugMode) {
+			$modules = [$moduleClassName = $module];
+		
+		
+			if (!\ze\tuix::looksLikeFAB($tags)) {
+				//Logic for initialising an Admin Box
+				if (!empty($tags['key']) && is_array($tags['key'])) {
+					foreach ($tags['key'] as $key => &$value) {
+						if (!empty($_REQUEST[$key])) {
+							$value = $_REQUEST[$key];
+						}
+					}
+				}
+				\ze\tuix::$feaDebugMode = true;
+				$module->fillVisitorTUIX($requestedPath, $tags, $fields, $values);
+			}
+		
+		
+			\ze\tuix::displayDebugMode($staticTags, $modules, $moduleFilesLoaded, $tagPath = $requestedPath, false, \ze\tuix::$feaSelectQuery, \ze\tuix::$feaSelectCountQuery);
+			exit;
+		}
+	
+		$doSave = false;
+		if ($filling) {
+			//Logic for initialising an Admin Box
+			if (!empty($tags['key']) && is_array($tags['key'])) {
+				foreach ($tags['key'] as $key => &$value) {
+					if (!empty($_REQUEST[$key])) {
+						$value = $_REQUEST[$key];
+					}
+				}
+			}
+		
+			$fields = [];
+			$values = [];
+			$changes = [];
+			if (\ze\tuix::looksLikeFAB($tags)) {
+				\ze\tuix::readValues($tags, $fields, $values, $changes, $filling, $resetErrors = false);
+			}
+	
+			$module->fillVisitorTUIX($requestedPath, $tags, $fields, $values);
+	
+	
+		} else {
+			$clientTags = json_decode($_POST['_tuix'], true);
+	
+			\ze\tuix::loadCopyFromServer($tags, $clientTags);
+		
+			\ze\tuix::syncFromClientToServer($tags, $clientTags);
+		
+			if (!empty($_REQUEST['_useSync'])) {
+				$originalTags = $tags;
+			}
+		
+			if ($validating || $saving) {
+			
+	
+				$fields = [];
+				$values = [];
+				$changes = [];
+				if (\ze\tuix::looksLikeFAB($tags)) {
+					\ze\tuix::readValues($tags, $fields, $values, $changes, $filling, $resetErrors = true, $checkLOVs = true);
+				
+					foreach ($tags['tabs'] as $tabName => &$tab) {
+						\ze\tuix::applyValidation($tab, $saving);
+					}
+				}
+			
+				$module->validateVisitorTUIX($requestedPath, $tags, $fields, $values, $changes, $saving);
+			
+			
+				if ($saving) {
+					//Check if there are any errors
+					$doSave = true;
+					if (\ze\tuix::looksLikeFAB($tags)) {
+						foreach ($tags['tabs'] as &$tab) {
+							if (!empty($tab['errors'])) {
+								$doSave = false;
+								break;
+							}
+					
+							if (!empty($tab['fields']) && is_array($tab['fields'])) {
+								foreach ($tab['fields'] as &$field) {
+									if (!empty($field['error'])) {
+										$doSave = false;
+										break 2;
+									}
+								}
+							}
+						}
+					}
+				
+					if ($doSave) {
+						$fields = [];
+						$values = [];
+						$changes = [];
+						if (\ze\tuix::looksLikeFAB($tags)) {
+							\ze\tuix::readValues($tags, $fields, $values, $changes, $filling, $resetErrors = false);
+						}
+					
+						$module->saveVisitorTUIX($requestedPath, $tags, $fields, $values, $changes);
+					}
+				}
+			}
+		
+		}
+	
+		if (!$doSave) {
+			$fields = [];
+			$values = [];
+			$changes = [];
+			if (\ze\tuix::looksLikeFAB($tags)) {
+				\ze\tuix::readValues($tags, $fields, $values, $changes, $filling, $resetErrors = false, $checkLOVs = false, $addOrds = true);
+			}
+
+			$module->formatVisitorTUIX($requestedPath, $tags, $fields, $values, $changes);
+		}
+	
+		if (\ze\tuix::looksLikeFAB($tags)) {
+			//Try to save a copy of the admin box in the cache directory
+			\ze\tuix::saveCopyOnServer($tags);
+		
+			if (!empty($originalTags)) {
+				$output = [];
+				\ze\tuix::syncFromServerToClient($tags, $originalTags, $output);
+	
+				$tags = $output;
+			}
+		}
+	}
+	
+	
+	//JSON encode some TUIX, and also apply some common replacements as a simple way to try and get the size down a bit
+	public static function stringify($tags) {
+		return str_replace([
+			'%',
+			
+			'":false',
+			'":true',
+			'"pre_field_html":',
+			'"post_field_html":',
+			'"redraw_immediately_onchange":',
+			'"redraw_onchange":',
+			'"hide_if_previous_value_isnt":',
+			'"hide_when_children_are_not_visible":',
+			'"hide_with_previous_field":',
+			'"ajax":',
+			'"confirm":',
+			'"css_class":',
+			'"disabled":',
+			'"hidden":',
+			'"label":',
+			'"last_edited":',
+			'"message":',
+			'"name":',
+			'"onclick":',
+			'"ord":',
+			'"parent":',
+			'"row_class":',
+			'"title":',
+			'"tooltip":',
+			'"visible_if":',
+			
+			'"enable_microtemplates_in_properties":',
+			'"grouping":',
+			'"placeholder":',
+			'"snippet":',
+			'"value":',
+			'"empty_value":',
+			'"tuix":',
+			'"type":',
+			'"readonly":',
+			
+			'~', '"', '+', ':'
+		], [
+			'%C',
+			
+			'%0',
+			'%1',
+			'%2',
+			'%3',
+			'%4',
+			'%5',
+			'%7',
+			'%8',
+			'%9',
+			'%a',
+			'%f',
+			'%c',
+			'%d',
+			'%h',
+			'%l',
+			'%e',
+			'%m',
+			'%n',
+			'%k',
+			'%o',
+			'%p',
+			'%r',
+			'%i',
+			'%t',
+			'%v',
+			
+			'%b',
+			'%g',
+			'%q',
+			'%s',
+			'%u',
+			'%w',
+			'%x',
+			'%y',
+			'%z',
+			
+			'%S', '~', '%P', '+'
+		], json_encode($tags, JSON_FORCE_OBJECT));
+	}
+	
+	//Reverse of the above, if ever needed
+	//public static function parse($json) {
+	//	return json_decode(str_replace([
+	//		'~', '%S', '+', '%P',
+	//		
+	//		'%0',
+	//		'%1',
+	//		'%2',
+	//		'%3',
+	//		'%4',
+	//		'%5',
+	//		'%7',
+	//		'%8',
+	//		'%9',
+	//		'%a',
+	//		'%f',
+	//		'%c',
+	//		'%d',
+	//		'%h',
+	//		'%l',
+	//		'%e',
+	//		'%m',
+	//		'%n',
+	//		'%k',
+	//		'%o',
+	//		'%p',
+	//		'%r',
+	//		'%i',
+	//		'%t',
+	//		'%v',
+	//		
+	//		'%b',
+	//		'%g',
+	//		'%q',
+	//		'%s',
+	//		'%u',
+	//		'%w',
+	//		'%x',
+	//		'%y',
+	//		'%z',
+	//		
+	//		'%C'
+	//	], [
+	//		'"', '~', ':', '+',
+	//		
+	//		 '":false',
+	//		'":true',
+	//		'"pre_field_html":',
+	//		'"post_field_html":',
+	//		'"redraw_immediately_onchange":',
+	//		'"redraw_onchange":',
+	//		'"hide_if_previous_value_isnt":',
+	//		'"hide_when_children_are_not_visible":',
+	//		'"hide_with_previous_field":',
+	//		'"ajax":',
+	//		'"confirm":',
+	//		'"css_class":',
+	//		'"disabled":',
+	//		'"hidden":',
+	//		'"label":',
+	//		'"last_edited":',
+	//		'"message":',
+	//		 '"name":',
+	//		'"onclick":',
+	//		'"ord":',
+	//		'"parent":',
+	//		'"row_class":',
+	//		'"title":',
+	//		'"tooltip":',
+	//		'"visible_if":',
+	//		
+	//		'"enable_microtemplates_in_properties":',
+	//		'"grouping":',
+	//		'"placeholder":',
+	//		'"snippet":',
+	//		'"value":',
+	//		'"empty_value":',
+	//		'"tuix":',
+	//		'"type":',
+	//		'"readonly":',
+	//		
+	//		'%'
+	//	], $json), true);
+	//}
 }

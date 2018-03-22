@@ -32,8 +32,8 @@ if (isset($controls['actions']['settings']['onclick'])) {
 	//Copy the "settings" button and add a button for editing the nested slides/plugins
 	$controls['actions']['nested_plugins'] = $controls['actions']['settings'];
 	
-	$existingPlugins = ze\row::exists('nested_plugins', array('instance_id' => $this->instanceId, 'is_slide' => 0));
-	//$slideCount = ze\row::count('nested_plugins', array('instance_id' => $this->instanceId, 'is_slide' => 1));
+	$existingPlugins = ze\row::exists('nested_plugins', ['instance_id' => $this->instanceId, 'is_slide' => 0]);
+	//$slideCount = ze\row::count('nested_plugins', ['instance_id' => $this->instanceId, 'is_slide' => 1]);
 	
 	$isSlideshow = false !== strpos($this->moduleClassName, 'slide');
 	

@@ -99,7 +99,7 @@ To correct this, please ask your system administrator to perform a
 			exit;
 		}
 	
-		$file = array();
+		$file = [];
 		$file['filename'] = \ze\file::safeName($filename);
 	
 		//Check if the file is already uploaded
@@ -203,7 +203,7 @@ To correct this, please ask your system administrator to perform a
 		\ze\sql::update($sql);	
 	
 		//Check for a unique key error (i.e. one or more short checksums were left as null)
-		if (\ze\row::exists('files', array('short_checksum' => null))) {
+		if (\ze\row::exists('files', ['short_checksum' => null])) {
 		
 			//Handle the problem by increasing the short checksum length and trying again
 			\ze\site::setSetting('short_checksum_length', 1 + (int) \ze::setting('short_checksum_length'));

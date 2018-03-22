@@ -49,8 +49,6 @@ switch ($path) {
 			}
 			$box['key']['numeric_id'] = $details['id'];
 			
-			
-			
 			$values['meta_data/template_name'] = $details['template_name'];
 			$values['meta_data/subject'] = $details['subject'];
 			$values['meta_data/from_details'] = $details['from_details'];
@@ -75,8 +73,12 @@ switch ($path) {
 			$values['body/body'] = $details['body'];
 			$values['advanced/head'] = $details['head'];
 			
-			
-		
+			$values['data_deletion/period_to_delete_log_headers'] = $details['period_to_delete_log_headers'];
+			if ($details['period_to_delete_log_content']) {
+				$values['data_deletion/delete_log_content_sooner'] = true;
+				$values['data_deletion/period_to_delete_log_content'] = $details['period_to_delete_log_content'];
+			}
+					
 		} else {
 			$values['meta_data/email_address_from_site_settings'] = ze::setting('email_address_from');
 			$values['meta_data/email_name_from_site_settings'] = ze::setting('email_name_from');
@@ -91,6 +93,13 @@ switch ($path) {
 			$box['tabs']['body']['fields']['body']['editor_options']['style_formats'] = $style_formats;
 			$box['tabs']['body']['fields']['body']['editor_options']['toolbar'] =
 				'undo redo | image link unlink | bold italic | removeformat | styleselect | fontsizeselect | formatselect | numlist bullist | outdent indent | code';
+		}
+		
+		//Show a warning if the scheduled task for deleting content is not running.
+		if (!ze\module::inc('zenario_scheduled_task_manager') || !zenario_scheduled_task_manager::checkScheduledTaskRunning('jobDataProtectionCleanup')) {
+			$box['tabs']['data_deletion']['notices']['scheduled_task_not_running']['show'] = true;
+		} else {
+			$box['tabs']['data_deletion']['notices']['scheduled_task_running']['show'] = true;
 		}
 		
 		break;
@@ -110,18 +119,18 @@ switch ($path) {
 				$box['tabs']['email']['fields']['email_body_non_escaped']['snippet']['html'] = $logRecord['email_body'];
 				
 				//Display a one-liner showing where the email came from
-				$mergeFields = array();
+				$mergeFields = [];
 				if (empty($logRecord['content_id'])) {
 					$mergeFields['content_item'] = ze\admin::phrase('n/a');
 				} else {
 					$mergeFields['content_item'] = ze\content::formatTag($logRecord['content_id'], $logRecord['content_type']);
 				}
-				if ($logRecord['module_id'] && ($module = ze\row::get('modules', array('display_name'), $logRecord['module_id']))) {
+				if ($logRecord['module_id'] && ($module = ze\row::get('modules', ['display_name'], $logRecord['module_id']))) {
 					$mergeFields['module'] = ze\admin::phrase('"[[display_name]]" module', $module);
 				} else {
 					$mergeFields['module'] = ze\admin::phrase('n/a');
 				}
-				if ($logRecord['instance_id'] && ($instance = ze\row::get('plugin_instances', array('name'), $logRecord['instance_id']))) {
+				if ($logRecord['instance_id'] && ($instance = ze\row::get('plugin_instances', ['name'], $logRecord['instance_id']))) {
 					$mergeFields['plugin'] = ze\admin::phrase('"[[display_name]]" plugin', $module);
 				} else {
 					$mergeFields['plugin'] = ze\admin::phrase('n/a');

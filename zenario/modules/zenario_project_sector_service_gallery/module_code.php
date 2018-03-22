@@ -288,7 +288,7 @@ class zenario_project_sector_service_gallery extends ze\moduleBaseClass {
 			
 			$result_container_id = $this->containerId . '_result_'. $row['tag_id'];
 			$title = htmlspecialchars($row['title']);			
-			$rows[] = array(
+			$rows[] = [
 				'html_id' => $result_container_id,
 				'client_name' => htmlspecialchars($row['client_name']),
 				'architect_name' => htmlspecialchars($row['architect_name']),
@@ -300,14 +300,14 @@ class zenario_project_sector_service_gallery extends ze\moduleBaseClass {
 				'project_link_end' => $project_link_end,
 				'title' => $title,
 				'Sticky_image_HTML_tag' => $img_tag
-			);
+			];
 				
-			$location_points[] = array(
+			$location_points[] = [
 						floatval($row['latitude']), 
 						floatval($row['longitude']),
 						$title,
 						$result_container_id
-			);
+			];
 		}
 
 		return [$rows, $location_points];

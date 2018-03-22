@@ -298,6 +298,12 @@ additionalProperties:
             type: string
             description: >
                 Use this to set some placeholder text on the search box
+        search_button_message:
+            type: string
+            description: >
+                The message on the search button, if a search button is shown.
+                
+                Defaults to &#xf002; if not set (which is the font-awesome magnifying-glass icon)
         subtitle:
             type: string
             description: >
@@ -330,7 +336,7 @@ additionalProperties:
                     #        Lets you specify a tooltip for the column's header.
                     ord: *ord
                     copy_of: *copy_of
-                    #css_class: *css_class
+                    css_class: *css_class
                     hidden: *hidden
                     visible_if: *visible_if
                     
@@ -381,6 +387,51 @@ additionalProperties:
                             If you also specify a title, then your title will appear in each row as a label.
                             
                             There's a limit of 2 levels; you can't have a column inside a column inside another column.
+                    
+                    visible_if_for_each_item:
+                        type: string
+                        description: >
+                            For columns that have parents, you can enter a snippet of JavaScript code to be evaluated for
+                            each item, to show the column conditionally for each row.
+        
+        list_groupings:
+            type: object
+            description: >
+                You can define some list-groupings to display items in groups.
+                
+                This affects the sorting - items will be sorted by their grouping first, then their normal sort order.
+            
+            additionalProperties:
+                type: object
+                
+                properties:
+                    label:
+                        type: string
+                        description: >
+                            A label for this group. Groups will be sorted by their label.
+                    list_outer_grouping:
+                        type: string
+                        description: >
+                            The code name of the outer-grouping that this belongs to, if using outer-groupings.
+        
+        list_outer_groupings:
+            type: object
+            description: >
+                If you want two levels of grouping, then you can define some outer-groupings,
+                which wrap-around and group the normal groupings.
+                
+                Again this affects the sorting - items will be sorted by their outer-grouping first,
+                then their grouping, then their normal sort order.
+            
+            additionalProperties:
+                type: object
+                
+                properties:
+                    label:
+                        type: string
+                        description: >
+                            A label for this group. Groups will be sorted by their label.
+        
         items:
             type: object
             description: >
@@ -390,6 +441,10 @@ additionalProperties:
                 type: object
                 
                 properties:
+                    list_grouping:
+                        type: string
+                        description: >
+                            The code name of the list-grouping that this item belongs to, if using list-groupings.
                     row_class:
                         type: string
                         description: >

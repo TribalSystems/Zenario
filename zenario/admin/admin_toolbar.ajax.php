@@ -38,24 +38,21 @@ ze\cache::start();
 
 $mode = false;
 $tagPath = '';
-$modules = array();
+$modules = [];
 $debugMode = (bool) ($_GET['_debug'] ?? false);
-$loadDefinition = true;
 $settingGroup = '';
-$compatibilityClassNames = array();
+$compatibilityClassNames = [];
 ze::$skType = $type = 'admin_toolbar';
 ze::$skPath = $requestedPath = false;
 
 
 
 
-if ($loadDefinition) {
-	//Scan the Module directory for Modules with the relevant TUIX files, read them, and get a php array
-	$moduleFilesLoaded = array();
-	$tags = array();
-	$originalTags = array();
-	ze\tuix::load($moduleFilesLoaded, $tags, $type, $requestedPath, $settingGroup, $compatibilityClassNames);
-}
+//Scan the Module directory for Modules with the relevant TUIX files, read them, and get a php array
+$moduleFilesLoaded = [];
+$tags = [];
+$originalTags = [];
+ze\tuix::load($moduleFilesLoaded, $tags, $type, $requestedPath, $settingGroup, $compatibilityClassNames);
 
 if ($debugMode) {
 	$staticTags = $tags;
@@ -88,9 +85,7 @@ if (isset($tags['sections']) && is_array($tags['sections'])) {
 }
 
 $removedColumns = false;
-if ($loadDefinition) {
-	ze\tuix::parse2($tags, $removedColumns, $type, '', $mode);
-}
+ze\tuix::parse2($tags, $removedColumns, $type, '', $mode);
 
 //Debug mode - show the TUIX before it's been modified
 if ($debugMode) {

@@ -71,12 +71,12 @@ class zenario_search_results_pro extends zenario_search_results {
 		
 		$this->sections['Search_Result_Tab'] = [];
 		foreach($this->fields as $cType => $fields) {
-			$this->sections['Search_Result_Tab'][$cType] = array(
+			$this->sections['Search_Result_Tab'][$cType] = [
 				'Tab_On' => $this->results[$cType]['Tab_On'],
 				'Tab_Onclick' => $this->results[$cType]['Tab_Onclick'],
 				'Type' => $this->phrase('_'. $cType),
 				'Record_Count' =>$this->results[$cType]['Record_Count']
-			);
+			];
 		}
 	}
 

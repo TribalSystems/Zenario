@@ -33,8 +33,8 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 				$box['key']['id'] = $_GET['refinerId'] ?? false;
 			}
 			if ($box['key']['id'] ?? false) {
-				$countryName = ze\row::get(ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_countries', 'english_name', array('id' => ($box['key']['id'] ?? false)));
-				$box['title'] = ze\admin::phrase('Renaming the Country "[[country_name]]"', array('country_name' => $countryName));
+				$countryName = ze\row::get(ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_countries', 'english_name', ['id' => ($box['key']['id'] ?? false)]);
+				$box['title'] = ze\admin::phrase('Renaming the Country "[[country_name]]"', ['country_name' => $countryName]);
 
 				$box['tabs']['details']['fields']['code']['value'] = $box['key']['id'] ?? false;
 				$box['tabs']['details']['fields']['code']['readonly'] = true;
@@ -51,26 +51,26 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 			if (($_GET['refinerName'] ?? false)=='parent_id') {
 				$box['key']['parent_id'] = $_GET['refinerId'] ?? false;
 				if ($box['key']['id'] ?? false) {
-					$region = ze\row::get(ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_regions', array('name','region_type'), array('id' => ($box['key']['id'] ?? false)));
-					$box['title'] = ze\admin::phrase('Renaming the Region "[[region_name]]"', array('region_name' => $region['name']));
+					$region = ze\row::get(ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_regions', ['name','region_type'], ['id' => ($box['key']['id'] ?? false)]);
+					$box['title'] = ze\admin::phrase('Renaming the Region "[[region_name]]"', ['region_name' => $region['name']]);
 					$box['tabs']['details']['fields']['name']['value'] = $region['name'];
 					$box['tabs']['details']['fields']['update_phrase']['hidden'] = false;
 					if (ze::setting('zenario_country_manager__region_type_management')) {
 						$box['tabs']['details']['fields']['region_type']['value'] = $region['region_type'];
 					}
 				} elseif ($box['key']['parent_id'] ?? false) {
-					$parentRegion = ze\row::get(ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_regions', array('name'), array('id' => ($box['key']['parent_id'] ?? false)));
+					$parentRegion = ze\row::get(ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_regions', ['name'], ['id' => ($box['key']['parent_id'] ?? false)]);
 					$box['title'] = ze\admin::phrase('Creating a Sub-region of the Region "[[parent_region_name]]"', 
-													array('parent_region_name' => $parentRegion['name']));
+													['parent_region_name' => $parentRegion['name']]);
 					$box['tabs']['details']['fields']['update_phrase']['hidden'] = true;
 				}
 			} elseif ($_GET['refiner__country_code_filter'] ?? false) {
 				$box['key']['country_id'] = $_GET['refiner__country_code_filter'] ?? false;
-				$countryName = ze\row::get(ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_countries', 'english_name', array('id' => ($box['key']['country_id'] ?? false)));
+				$countryName = ze\row::get(ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_countries', 'english_name', ['id' => ($box['key']['country_id'] ?? false)]);
 				if ($box['key']['id'] ?? false) {
-					$region = ze\row::get(ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_regions', array('name', 'region_type'), array('id' => ($box['key']['id'] ?? false)));
+					$region = ze\row::get(ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_regions', ['name', 'region_type'], ['id' => ($box['key']['id'] ?? false)]);
 					$box['title'] = ze\admin::phrase('Renaming the Region "[[region_name]]" in the Country "[[country_name]]"', 
-													array('region_name' => $region['name'], 'country_name' => $countryName));
+													['region_name' => $region['name'], 'country_name' => $countryName]);
 					$box['tabs']['details']['fields']['name']['value'] = $region['name'];
 					$box['tabs']['details']['fields']['update_phrase']['hidden'] = false;
 					if (ze::setting('zenario_country_manager__region_type_management')) {
@@ -78,7 +78,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 					}
 				} else {
 					$box['title'] = ze\admin::phrase('Creating a Region in the Country "[[country_name]]"', 
-													array('country_name' => $countryName));
+													['country_name' => $countryName]);
 					$box['tabs']['details']['fields']['update_phrase']['hidden'] = true;
 				}
 			}

@@ -34,7 +34,7 @@ class zenario_common_features__admin_boxes__translate_phrase extends ze\moduleBa
 		
 		//Don't use this box for editing phrases in the default language
 		if (!$box['key']['language_id']
-		 || !($phraseKey = ze\row::get('visitor_phrases', array('code', 'module_class_name'), $box['key']['id']))) {
+		 || !($phraseKey = ze\row::get('visitor_phrases', ['code', 'module_class_name'], $box['key']['id']))) {
 			exit;
 		}
 		
@@ -46,16 +46,16 @@ class zenario_common_features__admin_boxes__translate_phrase extends ze\moduleBa
 		$translateDefaultLang = $languages[ze::$defaultLang]['translate_phrases'];
 		$translateThisPhraseInDefaultLang = $box['key']['is_code'] || $translateDefaultLang;
 		
-		$mrg = array(
+		$mrg = [
 			'default_lang' => ze\lang::name(ze::$defaultLang),
-			'this_lang' => ze\lang::name($box['key']['language_id']));
+			'this_lang' => ze\lang::name($box['key']['language_id'])];
 		
 		$box['title'] = ze\admin::phrase('Editing a phrase in [[this_lang]]', $mrg);
 		$fields['phrase/phrase']['label'] = ze\admin::phrase('Phrase in [[default_lang]]:', $mrg);
 		$fields['phrase/local_text']['label'] = ze\admin::phrase('Phrase in [[this_lang]]:', $mrg);
 		
 		$phraseKey['language_id'] = ze::$defaultLang;
-		if ($phrase = ze\row::get('visitor_phrases', array('local_text', 'protect_flag'), $phraseKey)) {
+		if ($phrase = ze\row::get('visitor_phrases', ['local_text', 'protect_flag'], $phraseKey)) {
 			
 			if ($translateThisPhraseInDefaultLang) {
 				$values['phrase/phrase'] = $phrase['local_text'];
@@ -65,7 +65,7 @@ class zenario_common_features__admin_boxes__translate_phrase extends ze\moduleBa
 		}
 		
 		$phraseKey['language_id'] = $box['key']['language_id'];
-		if ($phrase = ze\row::get('visitor_phrases', array('local_text', 'protect_flag'), $phraseKey)) {
+		if ($phrase = ze\row::get('visitor_phrases', ['local_text', 'protect_flag'], $phraseKey)) {
 			$values['phrase/local_text'] = $phrase['local_text'];
 			$values['phrase/protect_flag'] = $phrase['protect_flag'];
 		}
@@ -91,8 +91,8 @@ class zenario_common_features__admin_boxes__translate_phrase extends ze\moduleBa
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		if (ze\priv::onLanguage('_PRIV_MANAGE_LANGUAGE_PHRASE', $box['key']['language_id'])) {
 			ze\row::set('visitor_phrases', 
-				array('local_text' => $values['phrase/local_text'], 'protect_flag' => $values['phrase/protect_flag']), 
-				array('code' => $box['key']['code'], 'module_class_name' => $box['key']['module_class_name'], 'language_id' => $box['key']['language_id']));
+				['local_text' => $values['phrase/local_text'], 'protect_flag' => $values['phrase/protect_flag']], 
+				['code' => $box['key']['code'], 'module_class_name' => $box['key']['module_class_name'], 'language_id' => $box['key']['language_id']]);
 		}
 	}
 }

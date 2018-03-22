@@ -41,3 +41,8 @@ dependencies:
     zenario_users: true
     zenario_email_template_manager: true
 default_instance_name: Untitled Form Container
+
+signals:
+    - 
+        name: eventUserDeleted
+        static: true

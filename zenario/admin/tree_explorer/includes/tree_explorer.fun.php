@@ -15,7 +15,7 @@ function generateMenuForJSON (&$array, &$nodesCount, $og = false, $languageId = 
 			foreach($menu as $k => $v) {
 				switch ($k) {
 					case 'mID':
-						$menuNodeAttributes = ze\row::get("menu_nodes",array("redundancy","invisible","target_loc"),array("id" => $v));
+						$menuNodeAttributes = ze\row::get("menu_nodes",["redundancy","invisible","target_loc"],["id" => $v]);
 					
 						$menu['redundancy'] = $menuNodeAttributes['redundancy'];
 						$menu['visibility'] = $menuNodeAttributes['invisible'] ? "invisible" : "visible";

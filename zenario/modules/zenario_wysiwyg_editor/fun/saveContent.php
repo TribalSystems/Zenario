@@ -41,15 +41,15 @@ if (!ze\priv::check('_PRIV_EDIT_DRAFT', ze::$cID, ze::$cType)) {
 	//Save the field in the plugin_settings table.
 	ze\row::set(
 		'plugin_settings',
-		array('is_content' => 'version_controlled_content', 'format' => 'translatable_html', 'value' => $_POST['content__content']),
-		array('name' => 'html', 'instance_id' => $this->instanceId, 'egg_id' => $this->eggId));
+		['is_content' => 'version_controlled_content', 'format' => 'translatable_html', 'value' => $_POST['content__content']],
+		['name' => 'html', 'instance_id' => $this->instanceId, 'egg_id' => $this->eggId]);
 	
 	ze\contentAdm::syncInlineFileContentLink($this->cID, $this->cType, $this->cVersion);
 	
-	$v = array();
+	$v = [];
 	$v['last_modified_datetime'] = ze\date::now();
 	$v['last_author_id'] = $_SESSION['admin_userid'] ?? false;
-	ze\row::update('content_item_versions', $v, array('id' => ze::$cID, 'type' => ze::$cType, 'version' => ze::$cVersion));
+	ze\row::update('content_item_versions', $v, ['id' => ze::$cID, 'type' => ze::$cType, 'version' => ze::$cVersion]);
 
 	
 	if (($_POST['_sync_summary'] ?? false) && !$this->summaryLocked($this->cID, $this->cType, $this->cVersion)) {

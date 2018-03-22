@@ -45,9 +45,9 @@ class zenario_common_features__organizer__page_preview_sizes extends ze\moduleBa
 			ze\sql::update($sql);
 			// Re-calculate ordinals
 			$ord = 1;
-			$pagePreviewSizes = ze\row::getArray('page_preview_sizes', 'id', array(), 'ordinal');
+			$pagePreviewSizes = ze\row::getArray('page_preview_sizes', 'id', [], 'ordinal');
 			foreach ($pagePreviewSizes as $pagePreviewSizeId) {
-				ze\row::update('page_preview_sizes', array('ordinal' => $ord++), $pagePreviewSizeId);
+				ze\row::update('page_preview_sizes', ['ordinal' => $ord++], $pagePreviewSizeId);
 			}
 		
 		} elseif (($_POST['reorder'] ?? false) && ze\priv::check('_PRIV_EDIT_SITE_SETTING')) {
@@ -62,8 +62,8 @@ class zenario_common_features__organizer__page_preview_sizes extends ze\moduleBa
 			}
 		
 		} elseif (($_POST['set_default'] ?? false) && ze\priv::check('_PRIV_EDIT_SITE_SETTING')) {
-			ze\row::update('page_preview_sizes', array('is_default' => 0), array('is_default' => 1));
-			ze\row::update('page_preview_sizes', array('is_default' => 1), array('id' => $ids));
+			ze\row::update('page_preview_sizes', ['is_default' => 0], ['is_default' => 1]);
+			ze\row::update('page_preview_sizes', ['is_default' => 1], ['id' => $ids]);
 		}
 	}
 }
