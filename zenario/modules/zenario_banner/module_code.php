@@ -167,13 +167,13 @@ class zenario_banner extends module_base_class {
 	//In visitor mode, the Plugin is only displayed if this method returns true.
 	function init() {
 		if ($this->isVersionControlled) {
-			if ($_POST['_zenario_save_content_'] ?? false) {
-				$this->setSetting('text', ($_POST['content__content'] ?? false), true, true, 'translatable_html');
-				$this->setSetting('title', ($_POST['content__title'] ?? false), true, true, 'translatable_text');
-				exit;
-			}
 		
 			if (cms_core::$isDraft && checkPriv('_PRIV_EDIT_DRAFT', cms_core::$cID, cms_core::$cType)) {
+				if ($_POST['_zenario_save_content_'] ?? false) {
+					$this->setSetting('text', ($_POST['content__content'] ?? false), true, true, 'translatable_html');
+					$this->setSetting('title', ($_POST['content__title'] ?? false), true, true, 'translatable_text');
+					exit;
+				}
 				
 				$this->editorId = $this->containerId. '_tinymce_content_'. str_replace('.', '', microtime(true));
 			
