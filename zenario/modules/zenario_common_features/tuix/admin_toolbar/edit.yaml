@@ -207,24 +207,6 @@ sections:
                     this version because a draft exists.
 
 
-#view_dropdown
-            #view_items_translations: &view_items_translations
-            #    parent: view_dropdown
-            #    label: Translations of this content item
-            #    organizer_quick:
-            #        target_path: zenario__content/panels/chained
-            #        min_path: zenario__content/panels/chained
-            #        disallow_refiners_looping_on_min_path: true
-            #view_slots:
-            #    visible_if: |
-            #        zenarioA.checkSpecificPermsOnThisPage()
-            #    parent: view_dropdown
-            #    label: Slots and plugins on this content item
-            #    organizer_quick:
-            #        min_path: zenario__content/panels/slots
-            #        target_path: zenario__content/panels/slots
-
-#lock_dropdown
             lock:
                 parent: lock_dropdown
                 priv: _PRIV_EDIT_DRAFT
@@ -305,5 +287,4 @@ sections:
             lock_dropdown: *lock_dropdown
 
             view_items_images: *view_items_images
-            view_items_translations: &view_items_translations
             

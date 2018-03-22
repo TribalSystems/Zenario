@@ -649,6 +649,13 @@ zenarioT.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 		
 		if (!fallback) {
 			var $input = $(html);
+			
+			//This seemingly useless line of code (that I only added for debugging purposes) actually
+			//fixes a glitch where the user's selection is ignored.
+			//I think adding this line stops the garbage collector from removing the field before
+			//the change() function is called.
+			window._zenario_open_file_picker = $input[0];
+			
 			$input.change(function() {
 				
 				if (zenarioCallingLibrary.uploadStart) {

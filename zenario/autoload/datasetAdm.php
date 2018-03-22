@@ -481,7 +481,7 @@ class datasetAdm {
 	}
 
 	//Formerly "createDatasetFieldInDB()"
-	public static function createFieldInDB($fieldId, $oldName = false, $newRows = false, $oldRows = false) {
+	public static function createFieldInDB($fieldId, $oldName = false) {
 		if (($field = \ze\dataset::fieldDetails($fieldId))
 		 && ($dataset = \ze\dataset::details($field['dataset_id']))) {
 		
@@ -567,55 +567,6 @@ class datasetAdm {
 				$sql .= $def;
 			}
 		
-			//Update extra columns for repeating fields
-			if ($newRows || $oldRows) {
-				$start = false;
-				$stop = false;
-				$deleting = false;
-			
-				//Only create
-				if (!$oldRows) {
-					$start = 2;
-					$stop = $newRows;
-				//Only delete
-				} elseif (!$newRows) {
-					$start = 2;
-					$stop = $oldRows;
-					$deleting = true;
-				//Update existing and create some new
-				} elseif ($newRows >= $oldRows) {
-					$start = $oldRows + 1;
-					$stop = $newRows;
-				//Update existing and delete some old
-				} elseif ($newRows < $oldRows) {
-					$start = $newRows + 1;
-					$stop = $oldRows;
-					$deleting = true;
-				}
-			
-				if ($start !== false && $stop !== false) {
-					for ($i = 2; $i <= $stop; $i++) {
-						if ($i >= $start) {
-							if ($deleting) {
-								$sql .= ",
-									DROP COLUMN `" . \ze\escape::sql(\ze\dataset::repeatRowColumnName($field['db_column'], $i)) . "`";
-							} else {
-								$sql .= ",
-									ADD COLUMN `" . \ze\escape::sql(\ze\dataset::repeatRowColumnName($field['db_column'], $i)) . "`" . $def;
-							}
-						} else {
-							if ($oldColType) {
-								$sql .= ",
-									CHANGE COLUMN `" . \ze\escape::sql(\ze\dataset::repeatRowColumnName($oldName, $i)) . "` `" . \ze\escape::sql(\ze\dataset::repeatRowColumnName($field['db_column'], $i)) . "`" . $def;
-							} elseif ($exists) {
-								$sql .= ",
-									MODIFY COLUMN `" . \ze\escape::sql(\ze\dataset::repeatRowColumnName($field['db_column'], $i)) . "`" . $def;
-							}
-						}
-					}
-				}
-			}
-		
 			//Drop any existing keys
 			foreach ($keys as $key) {
 				$sqlK = "
@@ -640,6 +591,85 @@ class datasetAdm {
 			
 				$sql .= ")";
 				\ze\sql::update($sql);
+			}
+		}
+	}
+	
+	public static function createFieldMultiRowsInDB($fieldId, $oldName = false, $newRows = false, $oldRows = false) {
+		//Update extra columns for repeating fields
+		if (($field = \ze\dataset::fieldDetails($fieldId))
+			&& ($dataset = \ze\dataset::details($field['dataset_id']))
+			&& ($newRows || $oldRows)
+		) {
+			$sql = '';
+			
+			$exists = \ze\datasetAdm::checkColumnExistsInDB($dataset['table'], $field['db_column']);
+			
+			$oldColType = false;
+			if (!$exists && $oldName && $oldName != $field['db_column']) {
+				$oldColType = \ze\datasetAdm::checkColumnExistsInDB($dataset['table'], $oldName);
+			}
+			
+			//Get the column definition
+			$def = \ze\datasetAdm::fieldDefinition($field);
+			if ($def === false) {
+				echo \ze\admin::phrase('Error: bad field type!');
+				exit;
+			}
+			
+			$start = false;
+			$stop = false;
+			$deleting = false;
+		
+			//Only create
+			if (!$oldRows) {
+				$start = 2;
+				$stop = $newRows;
+			//Only delete
+			} elseif (!$newRows) {
+				$start = 2;
+				$stop = $oldRows;
+				$deleting = true;
+			//Update existing and create some new
+			} elseif ($newRows >= $oldRows) {
+				$start = $oldRows + 1;
+				$stop = $newRows;
+			//Update existing and delete some old
+			} elseif ($newRows < $oldRows) {
+				$start = $newRows + 1;
+				$stop = $oldRows;
+				$deleting = true;
+			//Just renaming
+			} elseif ($newRows == $oldRows) {
+				$start = 2;
+			}
+		
+			if ($start !== false && $stop !== false) {
+				for ($i = 2; $i <= $stop; $i++) {
+					if ($i >= $start) {
+						if ($deleting) {
+							$sql .= ",
+								DROP COLUMN `" . \ze\escape::sql(\ze\dataset::repeatRowColumnName($field['db_column'], $i)) . "`";
+						} else {
+							$sql .= ",
+								ADD COLUMN `" . \ze\escape::sql(\ze\dataset::repeatRowColumnName($field['db_column'], $i)) . "`" . $def;
+						}
+					} else {
+						if ($oldColType) {
+							$sql .= ",
+								CHANGE COLUMN `" . \ze\escape::sql(\ze\dataset::repeatRowColumnName($oldName, $i)) . "` `" . \ze\escape::sql(\ze\dataset::repeatRowColumnName($field['db_column'], $i)) . "`" . $def;
+						} elseif ($exists) {
+							$sql .= ",
+								MODIFY COLUMN `" . \ze\escape::sql(\ze\dataset::repeatRowColumnName($field['db_column'], $i)) . "`" . $def;
+						}
+					}
+				}
+			}
+			
+			if ($sql) {
+				$sql = "
+					ALTER TABLE `". DB_NAME_PREFIX. \ze\escape::sql($dataset['table']). "`" . trim($sql, ',');
+					\ze\sql::update($sql);
 			}
 		}
 	}

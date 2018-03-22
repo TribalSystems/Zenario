@@ -169,7 +169,7 @@ class zenario_banner extends ze\moduleBaseClass {
 		if ($this->isVersionControlled) {
 		
 			if (ze::$isDraft && ze\priv::check('_PRIV_EDIT_DRAFT', ze::$cID, ze::$cType)) {
-				if ($_POST['_zenario_save_content_'] ?? false) {
+				if (!empty($_POST['_zenario_save_content_'])) {
 					$this->setSetting('text', ($_POST['content__content'] ?? false), true, true, 'translatable_html');
 					$this->setSetting('title', ($_POST['content__title'] ?? false), true, true, 'translatable_text');
 					exit;

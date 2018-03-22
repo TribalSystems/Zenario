@@ -1975,9 +1975,9 @@ zenarioA.fileBrowser = function(field_name, url, type, win) {
 	} else if (type == 'image') {
 		
 		if (fabField
-		 && fabField.insert_link_button
-		 && fabField.insert_link_button.pick_items) {
-			pick_items = fabField.insert_link_button.pick_items;
+		 && fabField.insert_image_button
+		 && fabField.insert_image_button.pick_items) {
+			pick_items = fabField.insert_image_button.pick_items;
 		
 		} else
 		if (!fabField

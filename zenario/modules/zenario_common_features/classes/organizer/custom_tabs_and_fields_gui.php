@@ -363,7 +363,9 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 							$field['_changed'] = true;
 							$fieldId = ze\row::insert('custom_dataset_fields', ['dataset_id' => $datasetId, 'tab_name' => $tab['name'], 'type' => $field['type']]);
 							if ($field['type'] == 'repeat_start') {
-								ze\row::update('custom_dataset_fields', array('db_column' => ze\dataset::repeatStartRowColumnName($fieldId)), $fieldId);
+								$columName = ze\dataset::repeatStartRowColumnName($fieldId);
+								$field['db_column'] = $columName;
+								ze\row::update('custom_dataset_fields', ['db_column' => $columName], $fieldId);
 							}
 						}
 						$oldFieldIdLink[$field['id']] = $fieldId;
@@ -553,7 +555,7 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 						
 						//Update dataset field db columns
 						if (empty($dField['is_system_field'])
-							&& $field['db_column']
+							&& !empty($field['db_column'])
 							&& (($oldName !== $field['db_column'])
 								|| ($oldRows != $newRows)
 								|| ($dField && isset($values['create_index']) && ($values['create_index'] != $dField['create_index']))
@@ -563,9 +565,8 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 							$field['temp_db_column'] = '__tmp_col_' . (++$columnIndex) . '_' . ze\ring::randomFromSet();
 							ze\row::update('custom_dataset_fields', ['db_column' => $field['temp_db_column']], $field['id']);
 							
-							
 							$columnUpdates[$field['id']] = ['db_column' => $field['db_column'], 'temp_db_column' => $field['temp_db_column'], 'new_rows' => $newRows, 'old_rows' => $oldRows];
-							ze\datasetAdm::createFieldInDB($field['id'], $oldName, $newRows, $oldRows);
+							ze\datasetAdm::createFieldInDB($field['id'], $oldName);
 						}
 						
 						//Save field values
@@ -606,7 +607,12 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 					
 					foreach ($columnUpdates as $fieldId => $update) {
 						ze\row::update('custom_dataset_fields', ['db_column' => $update['db_column']], $fieldId);
-						ze\datasetAdm::createFieldInDB($fieldId, $update['temp_db_column'], $update['new_rows'], $update['old_rows']);
+						ze\datasetAdm::createFieldInDB($fieldId, $update['temp_db_column']);
+						
+						//Create multiple columns for fields in a repeating section
+						if ($update['new_rows'] || $update['old_rows']) {
+							ze\datasetAdm::createFieldMultiRowsInDB($fieldId, $update['temp_db_column'], $update['new_rows'], $update['old_rows']);
+						}
 					}
 				}
 				

@@ -461,16 +461,11 @@ if (isset($adminToolbar['sections']['edit']['buttons']['view_slots'])) {
 
 //Multilingual options
 if (!$isMultilingual) {
-	unset($adminToolbar['sections'][$editToolbar]['buttons']['view_items_translations']);
 	if (isset($adminToolbar['sections']['translations'])) {
 		$adminToolbar['sections']['translations']['hidden'] = true;
 	}
 
 } else {
-	if (isset($adminToolbar['sections'][$editToolbar]['buttons']['view_items_translations'])) {
-		$adminToolbar['sections'][$editToolbar]['buttons']['view_items_translations']['organizer_quick']['path'] =
-			'zenario__content/panels/content/item_buttons/zenario_trans__view//'. $tagId. '//';
-	}
 	if (isset($adminToolbar['sections']['translations'])) {
 		$ord = 0;
 		foreach (ze\lang::getLanguages($includeAllLanguages = false, $orderByEnglishName = false, $defaultLangFirst = true) as $lang) {

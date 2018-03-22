@@ -1836,10 +1836,14 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 							that.fieldChange(id);
 						}, 5000);
 					});
+					
+					var language, langTools, isHTML;
 		
 					//Attempt to set the correct language
 					if (language = field.language) {
 						try {
+							isHTML = language == 'html';
+							
 							//Attempt to detect the language from the filename
 							if (language.match(/\.twig\.html$/i)) {
 								language = 'ace/mode/twig';
@@ -1849,14 +1853,25 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 								language = 'ace/mode/' + language;
 							}
 							
+							langTools = ace.require("ace/ext/language_tools");
 							codeEditor.session.setMode(language);
-							codeEditor.setOptions({
-								enableBasicAutocompletion: true,
-								enableLiveAutocompletion: true
-							});
+							
+							if (isHTML) {
+								langTools.setCompleters([]);
+								codeEditor.setOptions({
+									enableBasicAutocompletion: false,
+									enableLiveAutocompletion: false
+								});
+							} else {
+								langTools.setCompleters([langTools.keyWordCompleter]);
+								codeEditor.setOptions({
+									enableBasicAutocompletion: true,
+									enableLiveAutocompletion: true
+								});
+							}
 				
 						} catch (e) {
-							console.log('Ace editor could not load that language', language);
+							console.log('Ace editor could not load this language', language);
 						}
 					}
 					
