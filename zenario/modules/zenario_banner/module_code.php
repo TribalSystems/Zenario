@@ -52,17 +52,17 @@ class zenario_banner extends module_base_class {
 	//In visitor mode, the Plugin is only displayed if this method returns true.
 	function init() {
 		if ($this->isVersionControlled) {
-			if (post('_zenario_save_content_')) {
-				setRow('plugin_settings',
-					array('is_content' => 'version_controlled_content', 'format' => 'translatable_html', 'value' => post('content__content')),
-					array('name' => 'text', 'instance_id' => $this->instanceId, 'nest' => $this->eggId));
-				setRow('plugin_settings',
-					array('is_content' => 'version_controlled_content', 'format' => 'translatable_html', 'value' => post('content__title')),
-					array('name' => 'title', 'instance_id' => $this->instanceId, 'nest' => $this->eggId));
-				exit;
-			}
 		
 			if (cms_core::$isDraft && checkPriv('_PRIV_EDIT_DRAFT', cms_core::$cID, cms_core::$cType)) {
+				if (post('_zenario_save_content_')) {
+					setRow('plugin_settings',
+						array('is_content' => 'version_controlled_content', 'format' => 'translatable_html', 'value' => post('content__content')),
+						array('name' => 'text', 'instance_id' => $this->instanceId, 'nest' => $this->eggId));
+					setRow('plugin_settings',
+						array('is_content' => 'version_controlled_content', 'format' => 'translatable_html', 'value' => post('content__title')),
+						array('name' => 'title', 'instance_id' => $this->instanceId, 'nest' => $this->eggId));
+					exit;
+				}
 				
 				$this->editorId = $this->containerId. '_tinymce_content_'. str_replace('.', '', microtime(true));
 			
