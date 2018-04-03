@@ -44,7 +44,13 @@ class tuix {
 		$file = $file[0];
 	
 		\ze\cache::cleanDirs();
-		return \ze\cache::createDir($dir, $type = 'tuix', $onlyForCurrentVisitor = true, $ip = false). $file. '.json';
+		
+		if ($cd = \ze\cache::createDir($dir, $type = 'tuix', $onlyForCurrentVisitor = true, $ip = false)) {
+			return CMS_ROOT. $cd. $file. '.json';
+		
+		} else {
+			return false;
+		}
 	}
 
 
@@ -261,11 +267,11 @@ class tuix {
 			//Add the time the yaml files last changed to the cache path.
 			//In theory this isn't needed, as the checkForChangesInYamlFiles() function wipes these files,
 			//however this is just an extra safe-guard in case it failes for some reason.
-			$cachePath .= '-'. $yaml_files_last_changed. '.json';
+			$cachePath = CMS_ROOT. $cachePath. '-'. $yaml_files_last_changed. '.json';
 			
 			
 			//If the cache file already exists, use it and don't bother running the rest of this function
-			if (is_file(CMS_ROOT. $cachePath)
+			if (is_file($cachePath)
 			 && ($tags = json_decode(file_get_contents($cachePath), true))
 			 && (isset($tags['m']) && is_array($tags['m']))
 			 && (isset($tags['t']) && is_array($tags['t']))) {

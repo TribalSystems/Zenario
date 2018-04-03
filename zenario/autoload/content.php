@@ -531,13 +531,23 @@ class content {
 		//Attempt to work out what content item we're on, and break out of this logic as soon as it's resolved
 		do {
 	
+			//Show one of the home pages if there's nothing in the request and no language specific domain
 			if (!$reqLangId && !$aliasInURL) {
-				//Show one of the home pages if there's nothing in the request and no language specific domain
 				$equivId = \ze::$homeEquivId;
 				$cType = \ze::$homeCType;
+			
+			//At some point, I might start adding some special cases here, which you can trigger
+			//by adding aliases that start with a ~.
+			//However the only one that we currently use is the ability for Apache to call the CMS to show
+			//a custom 404 page in place of the built-in Apache 404 page.
+			} elseif ($aliasInURL == '~') {
+				$cID = false;
+				$cType = false;
+				\ze::$mustUseFullPath = true;
+				break;
 	
 			} else {
-		
+				
 				//Check for slashes in the alias
 				if (strpos($aliasInURL, '/') !== false) {
 			
@@ -574,10 +584,17 @@ class content {
 			
 					$aliasInURL = $aliasInURL[0];
 				}
-		
+			
+				//Catch the case where someone typed /admin onto the URL to try and login to admin mode
+				if ($aliasInURL === 'admin') {
+					$cID = false;
+					$cType = false;
+					$redirectNeeded = 'admin';
+					break;
+				
 				//Catch the case where the language id is in the URL, and nothing else.
 				//This should be a link to the home page in that language.
-				if ($aliasInURL && isset(\ze::$langs[$aliasInURL])) {
+				} elseif ($aliasInURL && isset(\ze::$langs[$aliasInURL])) {
 					$reqLangId = $aliasInURL;
 					$aliasInURL = false;
 			

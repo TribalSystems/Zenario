@@ -1385,4 +1385,13 @@ _sql
 	ADD COLUMN `user_deleted` tinyint(1) NOT NULL DEFAULT '0',
 	ADD COLUMN `data_deleted` tinyint(1) NOT NULL DEFAULT '0'
 _sql
+
+); ze\dbAdm::revision(185
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
+	MODIFY COLUMN `welcome_message` text CHARACTER SET utf8mb4 DEFAULT NULL
+_sql
+
 );
+
+

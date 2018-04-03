@@ -24,9 +24,11 @@ zenario__layouts:
                     db_column: tf.missing
                     format: yes_or_no
                     show_by_default: true
-                files:
+                skins:
                     title: '# Skins'
                     show_by_default: true
+                files:
+                    title: '# Template files'
                 layouts:
                     title: '# Layouts'
                     show_by_default: true

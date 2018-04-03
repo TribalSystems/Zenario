@@ -42,7 +42,6 @@ _ERROR_EMAIL_INVALID|Please enter a valid email address.
 _ERROR_EMAIL_NAME_IN_USE|This email address is already in use by another user.
 _ERROR_EMAIL_TEMPLATE_MISSING|Sorry, you cannot send an email as the [[template]] Email Template is missing.
 _ERROR_INSTANCE_NAME|Please enter a Name for this Instance of your Module
-_ERROR_INSTANCE_NAME_EXISTS|That Name is already used to describe an Instance of a Module.
 _ERROR_MUST_ENTER_TITLE_FOR_MENU_ITEM|Please ensure you enter a title for this Menu Node.
 _ERROR_SCREEN_NAME_IN_USE|This screen name is already in use.
 _ERROR_SCREEN_NAME_INCOMPLETE|Please enter a screen name.

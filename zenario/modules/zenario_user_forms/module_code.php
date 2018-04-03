@@ -3289,8 +3289,10 @@ class zenario_user_forms extends ze\moduleBaseClass {
 					case 'file_picker':
 					case 'document_upload':
 						$display = [];
-						if ($field['value']) {
-							foreach ($field['value'] as $fileId => $file) {
+						$fileIds = $this->getFieldStorableValue($fieldId);
+						if ($fileIds) {
+							$fileIds = $this->getFieldValueFromStored($field, $fileIds);
+							foreach ($fileIds as $fileId => $file) {
 								$display[] = '<a href="' . ze\link::absolute() . 'zenario/file.php?adminDownload=1&id=' . $fileId . '" target="_blank">' . $file['name'] . '</a>';
 							}
 						}

@@ -101,6 +101,7 @@ class zenario_common_features__organizer__backups extends ze\moduleBaseClass {
 				echo '<!--Message_Type:Error-->A database backup with the same name already exists';
 			} elseif (move_uploaded_file($_FILES['Filedata']['tmp_name'], ze::setting('backup_dir') . '/'. $_FILES['Filedata']['name'])) {
 				echo '<!--Message_Type:Success-->Successfully uploaded the database backup';
+				return ze\ring::encodeIdForOrganizer($filename);
 			} else {
 				echo '<!--Message_Type:Error-->Unable to upload the database backup';
 			}

@@ -51,7 +51,7 @@ class pluginAdm {
 		//Check to see if an instance of that name already exists
 		if (\ze\row::exists('plugin_instances', ['name' => $instanceName])) {
 			if (!$forceName) {
-				$errors[] = \ze\admin::phrase('_ERROR_INSTANCE_NAME_EXISTS');
+				$errors[] = \ze\admin::phrase("There's already a plugin with that name (plugin names must be unique).");
 				return false;
 		
 			//Have the option to attempt to force a unique name

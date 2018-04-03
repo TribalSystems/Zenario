@@ -103,6 +103,12 @@ ze\content::resolveFromRequest($cID, $cType, $redirectNeeded, $aliasInURL, $_GET
 
 if ($redirectNeeded && empty($_POST) && !($redirectNeeded == 302 && $isAdmin)) {
 	
+	if ($redirectNeeded === 'admin'
+	 && !ze\link::adminDomainIsPrivate()) {
+		header('location: '. ze\link::protocol(). ze\link::adminDomain(). SUBDIRECTORY. 'zenario/admin/welcome.php');
+		exit;
+	}
+	
 	//When fixing the language code in the URL, make sure we redirect using the full path
 	//as the language code might be in the domain/subdomain.
 	$fullPath = $redirectNeeded == 302;

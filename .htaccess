@@ -1,5 +1,9 @@
 Options -Indexes
 
+# Uncomment this line and replace /SUBDIRCTORY/ with your subdirectory if
+# you want to show the CMS' not found page in place of Apache's not found page.
+#ErrorDocument 404 /SUBDIRCTORY/index.php?cID=~
+
 <ifModule mod_headers.c>
 	Header setifempty X-Frame-Options SAMEORIGIN
 </ifModule>

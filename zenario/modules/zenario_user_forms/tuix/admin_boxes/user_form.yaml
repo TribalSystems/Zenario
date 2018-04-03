@@ -518,9 +518,8 @@ zenario_user_form:
                     visible_if: zenarioAB.tuix.key.type == 'registration'
                 welcome_message:
                     label: 'Success message:'
-                    type: text
+                    type: textarea
                     value: Welcome!
-                    maxlength: 255
                     indent: 1
                     validation:
                         required_if_not_hidden: Please enter a "Welcome" message.

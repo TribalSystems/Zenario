@@ -202,6 +202,10 @@ class ze {
 		ze::$canCache = false;
 		return false;
 	}
+	
+	public static function esc($text) {
+		return \ze::$dbL->con->escape_string($text);
+	}
 
 	//Formerly "funIncPath()"
 	public static function funIncPath($filePathOrModuleClassName, $functionName) {
