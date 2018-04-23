@@ -45,7 +45,13 @@ ze\cache::start();
 define('ADMIN_ID', (int) ($_SESSION['admin_userid'] ?? false));
 
 
-function searchOrganizerColumn(&$whereStatement, $columnName, $serachText, $exactMatch, $not, $asciiCharactersOnly) {
+function searchOrganizerColumn(&$whereStatement, $columnName, $serachText, $exactMatch, $not, $col) {
+	
+	$asciiCharactersOnly = ze\ring::engToBoolean($col['ascii_only'] ?? false);
+	
+	if (isset($col['chop_prefix_from_search'])) {
+		$serachText = ze\ring::chopPrefix($col['chop_prefix_from_search'], $serachText, $returnStringOnFailure = true);
+	}
 	
 	if ($exactMatch) {
 		if ($not) {
@@ -676,9 +682,8 @@ if (!$requestedPath || empty($tags['class_name'])) {
 							
 							$exactMatch = !empty($col['format']) && $col['format'] == 'id';
 							$not = false;
-							$asciiCharactersOnly = ze\ring::engToBoolean($col['ascii_only'] ?? false);
 							
-							searchOrganizerColumn($whereStatement, $col['search_column'] ?? $col['db_column'], $_GET['_search'], $exactMatch, $not, $asciiCharactersOnly);
+							searchOrganizerColumn($whereStatement, $col['search_column'] ?? $col['db_column'], $_GET['_search'], $exactMatch, $not, $col);
 						}
 					}
 				}
@@ -806,11 +811,10 @@ if (!$requestedPath || empty($tags['class_name'])) {
 							if ($searchable || ze\ring::engToBoolean($col['searchable'] ?? false)) {
 								
 								$not = !empty(zenario_organizer::$filters[$colName]['not']);
-								$asciiCharactersOnly = ze\ring::engToBoolean($col['ascii_only'] ?? false);
 								
 								$whereStatement .= "
 								  AND ";
-								searchOrganizerColumn($whereStatement, $columnName, $value_, $exactMatch, $not, $asciiCharactersOnly);
+								searchOrganizerColumn($whereStatement, $columnName, $value_, $exactMatch, $not, $col);
 							}
 					}
 				}

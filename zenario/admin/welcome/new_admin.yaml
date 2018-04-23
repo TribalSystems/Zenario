@@ -21,7 +21,7 @@ new_admin:
                     type: password
                     onkeyup: zenarioAW.quickValidateWelcomePage(300);
                     row_class: row_form
-                    return_key_presses_button: change_password
+                    return_key_presses_button: save_password_and_login
                 password_strength:
                     same_row: true
                     snippet:
@@ -30,7 +30,7 @@ new_admin:
                     label: "Re-enter your Password:"
                     type: password
                     row_class: row_form
-                    return_key_presses_button: change_password
+                    return_key_presses_button: save_password_and_login
                 save_password_and_login:
                     value: Save and login
                     type: submit

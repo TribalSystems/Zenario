@@ -787,27 +787,29 @@ class user {
 		
 			//Some special cases for dealing with user records
 			case 'user':
-				switch ($perm) {
-					case 'view.user':
-						//Users can always view their own data, this is hard-coded
-						if ($targetId == $authenticatingUserId) {
-							return true;
-						}
-						break;
+				if ($targetId) {
+					switch ($perm) {
+						case 'view.user':
+							//Users can always view their own data, this is hard-coded
+							if ($targetId == $authenticatingUserId) {
+								return true;
+							}
+							break;
 		
-					case 'edit.user':
-						//Users can always edit their own data if the site setting to do so is enabled
-						if ($targetId == $authenticatingUserId && \ze\user::permSetting('edit.oneself')) {
-							return true;
-						}
-						break;
+						case 'edit.user':
+							//Users can always edit their own data if the site setting to do so is enabled
+							if ($targetId == $authenticatingUserId && \ze\user::permSetting('edit.oneself')) {
+								return true;
+							}
+							break;
 		
-					case 'delete.user':
-						//Stop users from deleting themslves
-						if ($targetId == $authenticatingUserId) {
-							return false;
-						}
-						break;
+						case 'delete.user':
+							//Stop users from deleting themslves
+							if ($targetId == $authenticatingUserId) {
+								return false;
+							}
+							break;
+					}
 				}
 				$isUserCheck = true;
 				break;

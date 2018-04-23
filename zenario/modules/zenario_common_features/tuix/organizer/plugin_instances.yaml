@@ -19,6 +19,7 @@ zenario__modules:
                     format: id
                     db_column: pi.id
                     searchable: true
+                    chop_prefix_from_search: P
                 code:
                     title: ID
                     format: id

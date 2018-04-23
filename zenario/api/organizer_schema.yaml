@@ -552,6 +552,22 @@ additionalProperties:
                                         or set in your preFillOrganizerPanel() method.
                                         It can't be changed in your fillOrganizerPanel() method.
                                     default: (defaults to the db_column property)
+                                chop_prefix_from_search:
+                                    type: string
+                                    static: true
+                                    preFillOrganizerPanel: true
+                                    description: >
+                                        Allows you enter a prefix that will be removed from the search text.
+                                        
+                                        E.g. a plugin might be called "P123", but its id is just "123" in the
+                                        database, so the "P" would need to be stripped if the user enters it.
+                                        
+                                        This works from version 8.1 onwards.
+            
+            
+                                        This property must be written in your .yaml file,
+                                        or set in your preFillOrganizerPanel() method.
+                                        It can't be changed in your fillOrganizerPanel() method.
                                 filter_column:
                                     type: string
                                     static: true

@@ -2154,7 +2154,7 @@ class tuix {
 									'hidden' => 'hidden',
 									'_was_hidden_before' => '_was_hidden_before'
 								];
-								if (!self::fieldIsReadonly($tab['fields'][$copyName])) {
+								if (self::fieldIsReadonly($tab['fields'][$copyName])) {
 									$attrs['current_value'] = 'value';
 								}
 							

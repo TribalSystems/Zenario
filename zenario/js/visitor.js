@@ -526,7 +526,7 @@ zenario.callback = function() {
 	this.wasPoked = false;
 	this.results = [undefined];
 	this.completes = [false];
-	this.done = false;
+	this.finished = false;
 	this.funs = [];
 };
 var methods = methodsOf(zenario.callback);
@@ -540,7 +540,7 @@ methods.after = function(fun, that) {
 		
 		//Catch the case where an after() was added after call() was called
 		//Immediately run 
-		if (this.done) {
+		if (this.finished) {
 			setTimeout(this.checkComplete, 0);
 		}
 	}
@@ -549,7 +549,9 @@ methods.after = function(fun, that) {
 
 //Complete the callback with a result
 //The result you give will be added as an arguement to the callback function
-methods.call = function(result) {
+//Note: "call()" is a deprectated alias.
+methods.call = 
+methods.done = function(result) {
 	this.isOwnCallback = true;
 	this.completes[0] = true;
 	this.results[0] = result;
@@ -561,8 +563,17 @@ methods.call = function(result) {
 //Turn this callback into a wrapper for other callbacks
 //Your callback function will be called after all of the callback functions you've added are called,
 //and you'll get multiple arguements passed to your callback function (one per callback).
+//Note: as a shortcut, if you don't specify a callback, this will create one for you and then return it.
+//Otherwise it will return itself so you can chain it if you wish.
 methods.add = function(cb) {
-	this.done = false;
+	
+	if (!defined(cb)) {
+		var requiredCB = new zenario.callback();
+		this.add(requiredCB);
+		return requiredCB;
+	}
+	
+	this.finished = false;
 	this.isWrapper = true;
 	this.completes[0] = true;
 	
@@ -615,7 +626,7 @@ methods.checkComplete = function() {
 		
 		this.funs = [];
 	}
-	this.done = true;
+	this.finished = true;
 };
 
 //Some different examples of how to use the callback function above

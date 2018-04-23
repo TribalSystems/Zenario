@@ -166,38 +166,6 @@ if ($systemRequirementsMet && $installed) {
 	if ($task == 'logout') {
 		ze\welcome::logoutAdminAJAX($tags, $getRequest);
 		$loggedIn = false;
-	
-	//Allow a newly created admin to set their password
-	} else
-	if ($task == 'new_admin' && ($hash = $getRequest['hash'] ?? false)) {
-		ze\welcome::prepareAdminWelcomeScreen('new_admin', $source, $tags, $fields, $values, $changes);	
-		$loggedIn = false;
-		
-		//Check if this link has expired
-		$sql = '
-			SELECT username, id
-			FROM ' . DB_NAME_PREFIX . 'admins
-			WHERE hash = "' . ze\escape::sql($hash) . '"
-			AND DATE_ADD(created_date, INTERVAL ' . (int)ze::setting('new_admin_email_expiry') . ' DAY) >= NOW()
-			AND password = ""';
-		$result = ze\sql::select($sql);
-		$admin = ze\sql::fetchAssoc($result);
-		
-		if (!$admin) {
-			$tags['tabs']['new_admin']['errors'][] = \ze\admin::phrase('This link is invalid or has expired. Please contact an administrator.');
-			$fields['new_admin/description']['hidden'] = true;
-			$fields['new_admin/password']['hidden'] = true;
-			$fields['new_admin/password_strength']['hidden'] = true;
-			$fields['new_admin/re_password']['hidden'] = true;
-			$fields['new_admin/save_password_and_login']['hidden'] = true;
-		} else {
-			ze\lang::applyMergeFields($fields['new_admin/description']['snippet']['html'], $admin);
-			$loggedIn = ze\welcome::newAdminAJAX($source, $tags, $fields, $values, $changes, $getRequest, $admin['id']);
-		
-			if ($loggedIn) {
-				unset($getRequest['hash']);
-			}
-		}
 		
 	//If a specific admin domain is set, check that they are logging into the admin domain
 	//Also, if the admin_use_ssl option is set, check that they are trying to log in correctly using ssl if it is requested.
@@ -221,9 +189,43 @@ if ($systemRequirementsMet && $installed) {
 	
 	//Otherwise, check if the Admin has been logged in, and show the log in section if not
 	} elseif (!$loggedIn = ze\priv::check(false, false, false, false, $welcomePage = true)) {
-		ze\welcome::prepareAdminWelcomeScreen('login', $source, $tags, $fields, $values, $changes);	
-		//Show the login screen
-		$loggedIn = ze\welcome::loginAJAX($source, $tags, $fields, $values, $changes, $getRequest);
+		
+		//Allow a newly created admin to set their password
+		if ($task == 'new_admin' && ($hash = $getRequest['hash'] ?? false)) {
+			ze\welcome::prepareAdminWelcomeScreen('new_admin', $source, $tags, $fields, $values, $changes);	
+			$loggedIn = false;
+		
+			//Check if this link has expired
+			$sql = '
+				SELECT username, id
+				FROM ' . DB_NAME_PREFIX . 'admins
+				WHERE hash = "' . ze\escape::sql($hash) . '"
+				AND DATE_ADD(created_date, INTERVAL ' . (int)ze::setting('new_admin_email_expiry') . ' DAY) >= NOW()
+				AND password = ""';
+			$result = ze\sql::select($sql);
+			$admin = ze\sql::fetchAssoc($result);
+		
+			if (!$admin) {
+				$tags['tabs']['new_admin']['errors'][] = \ze\admin::phrase('This link is invalid or has expired. Please contact an administrator.');
+				$fields['new_admin/description']['hidden'] = true;
+				$fields['new_admin/password']['hidden'] = true;
+				$fields['new_admin/password_strength']['hidden'] = true;
+				$fields['new_admin/re_password']['hidden'] = true;
+				$fields['new_admin/save_password_and_login']['hidden'] = true;
+			} else {
+				ze\lang::applyMergeFields($fields['new_admin/description']['snippet']['html'], $admin);
+				$loggedIn = ze\welcome::newAdminAJAX($source, $tags, $fields, $values, $changes, $getRequest, $admin['id']);
+		
+				if ($loggedIn) {
+					unset($getRequest['hash']);
+				}
+			}
+		
+		} else {
+			ze\welcome::prepareAdminWelcomeScreen('login', $source, $tags, $fields, $values, $changes);	
+			//Show the login screen
+			$loggedIn = ze\welcome::loginAJAX($source, $tags, $fields, $values, $changes, $getRequest);
+		}
 	}
 	
 	if ($loggedIn) {

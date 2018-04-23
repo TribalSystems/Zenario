@@ -1055,6 +1055,37 @@ table.mqtt_details tr td,
 	background:url('images/progressbar-circle-on.png') no-repeat center;
 }
 
+.red_comms_icon,
+.orange_comms_icon,
+.green_comms_icon,
+.not_monitored_comms_icon {
+	display:inline-block;
+	width:22px;
+	height:22px;
+	line-height:22px;
+	text-indent:-99px;
+	font-size:0;
+	position:relative;
+	top:-4px;
+	margin-left:5px;
+}
+
+.red_comms_icon {
+	background: url('images/icon-connection-red.svg') no-repeat center center / 22px;
+}
+
+.orange_comms_icon {
+	background: url('images/icon-connection-orange.svg') no-repeat center center / 22px;
+}
+
+.green_comms_icon {
+	background: url('images/icon-connection-green.svg') no-repeat center center / 22px;
+}
+
+.not_monitored_comms_icon {
+	background: url('images/icon-connection-grey.svg') no-repeat center center / 22px;
+}
+
 /* Locations
 --------------------------------------------------------------------------------------------------*/
 
@@ -1703,11 +1734,13 @@ body.desktop .zfea_form_grouping__asset_details .zfea_form_row.zfea_form_row__im
 /* Edit asset
 --------------------------------------------------------------------------------------------------*/
 
-.zfea_field_tooltip {
+.zfea_field_tooltip,
+.zenario_field_tooltip {
 	width:20px;
 	height:20px;
 	line-height:20px;
 	font-weight:600;
+	background:#ccc;
 	text-align:center;
 	-webkit-border-radius: 50%;
 	-moz-border-radius: 50%;
@@ -2301,7 +2334,10 @@ fieldset.zfea_form_grouping.zfea_form_grouping__last_edit_info {
 	background-image:url('images/icon-title-asset-types.svg');
 }
 
-.zfea_assetwolf_list_commands > h1,
+.zfea_assetwolf_list_commands > h1 {
+	background-image:url('images/icon-commands.svg');
+}
+
 .zfea_assetwolf_list_data_schemas > h1 {
 	background-image:url('images/icon-title-schemas.svg');
 }
@@ -3821,6 +3857,22 @@ body.mobile .assetwolf_2_schematics div.schematic_builder .controls .buttons sel
 	display:inline-block;
 	float:left;
 	padding-right:5px;
+}
+
+.aw_dp_list.aw_list .zfea_block_list_wrap > div p[class*="column_field"] span,
+.assetwolf_2_schematics .mode_view .info .hotspot_popup p[class*="column_field"] {
+	background-color:#333;
+	color:#fff;
+}
+
+.assetwolf_2_schematics .mode_view .info .hotspot_popup p[class*="column_field"] .label {
+	position: absolute;
+	top: 50%;
+	transform: translateY(-50%);
+	left:58px;
+	padding-top:0;
+	padding-bottom:0;
+	height:auto;
 }
 
 .assetwolf_2_schematics .mode_view .info .hotspot_popup.blue_dis_schema p[class*="column_field"] .label,

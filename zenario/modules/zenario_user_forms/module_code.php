@@ -2248,7 +2248,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 	}
 	
 	protected function getFieldCurrentValue($fieldId, $recursionCount = 1) {
-		if ($recursionCount > 999) {
+		if (!isset($this->fields[$fieldId]) || $recursionCount > 999) {
 			return false;
 		}
 		$value = false;
@@ -2258,7 +2258,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			return $this->getCalculatedFieldCurrentValue($fieldId, $recursionCount);
 		} elseif ($field['type'] == 'restatement') {
 			$value = $this->getFieldCurrentValue($field['restatement_field'], ++$recursionCount);
-			return static::getFieldDisplayValue($this->fields[$field['restatement_field']], $value);
+			return static::getFieldDisplayValue($this->fields[$field['restatement_field']] ?? false, $value);
 		}
 		
 		//Check if value has been saved before
@@ -2328,7 +2328,10 @@ class zenario_user_forms extends ze\moduleBaseClass {
 						$equation .= $fieldValue;
 						break;
 					case 'field':
-						$fieldValue = $this->getFieldCurrentValue($step['value'], ++$recursionCount);
+						$fieldValue = false;
+						if ($step['value']) {
+							$fieldValue = $this->getFieldCurrentValue($step['value'], ++$recursionCount);
+						}
 						if (!$fieldValue) {
 							$fieldValue = 0;
 						}
@@ -2402,7 +2405,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 					if ($value === false || ($value > $maxNumberSize) || ($value < $minNumberSize)) {
 						$isNaN = true;
 					}
-				} catch (Exception $e) {
+				} catch (\Exception $e) {
 					$isNaN = true;
 				}
 			}
@@ -3730,7 +3733,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		
 		if ($calculationCode) {
 			foreach ($calculationCode as $index => $step) {
-				if ($step['type'] == 'field' && $this->fields[$step['value']] && ($this->fields[$step['value']]['field_type'] == 'calculated')) {
+				if ($step['type'] == 'field' && $step['value'] && $this->fields[$step['value']] && ($this->fields[$step['value']]['field_type'] == 'calculated')) {
 					$nestedCalculationCode = json_decode($this->fields[$step['value']]['calculation_code']);
 					if ($nestedCalculationCode) {
 						//Surround nested calculation code with parentheses
@@ -4543,9 +4546,10 @@ class calculator {
     public function calculate($input){
     	
     	set_error_handler(function($errno, $errstr, $errfile, $errline) {
-    		throw new Exception($errstr);
+    		throw new \Exception($errstr);
     	});
     	
+    	$result = $input;
         if(strpos($input, '+') != null || strpos($input, '-') != null || strpos($input, '/') != null || strpos($input, '*') != null){
             // Remove white spaces and invalid math chars
             $input = str_replace(',', '.', $input);
@@ -4562,14 +4566,14 @@ class calculator {
             }
             // Calculate the result
             if(preg_match(self::PATTERN, $input, $match)){
-                return $this->compute($match[0]);
+                $result = $this->compute($match[0]);
             }
-            return 0;
+            $result = 0;
         }
         
         restore_error_handler();
         
-        return $input;
+        return $result;
     }
 
     private function compute($input){
