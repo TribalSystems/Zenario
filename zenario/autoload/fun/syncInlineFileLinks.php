@@ -71,12 +71,12 @@ if ($usage == 'image'
 		//Watch out for images that have been resized, either by resizing the image by dragging the handles
 		//on the corners in TinyME, or by manually specifying a width and height in the HTML source
 		$width = $height = $matches = false;
-		if ((preg_match('@[^\w-]width[^\w-]+(\d+)(\w*)[^\w-]@', $links[$i + 1], $matches)) && (!$matches[2] || $matches[2] == 'px')
-		 || (preg_match('@[^\w-]width[^\w-]+(\d+)(\w*)[^\w-]@', $links[$i + 5], $matches)) && (!$matches[2] || $matches[2] == 'px')) {
+		if ((preg_match('@[^\w\%-]width[^\w\%-]+(\d+)(\w*)[^\w\%-]@', $links[$i + 1], $matches)) && (!$matches[2] || $matches[2] == 'px')
+		 || (preg_match('@[^\w\%-]width[^\w\%-]+(\d+)(\w*)[^\w\%-]@', $links[$i + 5], $matches)) && (!$matches[2] || $matches[2] == 'px')) {
 			$width = $matches[1];
 		}
-		if ((preg_match('@[^\w-]height[^\w-]+(\d+)(\w*)[^\w-]@', $links[$i + 1], $matches)) && (!$matches[2] || $matches[2] == 'px')
-		 || (preg_match('@[^\w-]height[^\w-]+(\d+)(\w*)[^\w-]@', $links[$i + 5], $matches)) && (!$matches[2] || $matches[2] == 'px')) {
+		if ((preg_match('@[^\w\%-]height[^\w\%-]+(\d+)(\w*)[^\w\%-]@', $links[$i + 1], $matches)) && (!$matches[2] || $matches[2] == 'px')
+		 || (preg_match('@[^\w\%-]height[^\w\%-]+(\d+)(\w*)[^\w\%-]@', $links[$i + 5], $matches)) && (!$matches[2] || $matches[2] == 'px')) {
 			$height = $matches[1];
 		}
 	
@@ -223,12 +223,12 @@ if (strpos($html, 'zenario/file.php') !== false) {
 		//Watch out for images that have been resized, either by resizing the image by dragging the handles
 		//on the corners in TinyME, or by manually specifying a width and height in the HTML source
 		$width = $height = $matches = false;
-		if ((preg_match('@[^\w-]width[^\w-]+(\d+)(\w*)[^\w-]@', $links[$i + 1], $matches)) && (!$matches[2] || $matches[2] == 'px')
-		 || (preg_match('@[^\w-]width[^\w-]+(\d+)(\w*)[^\w-]@', $links[$i + 3], $matches)) && (!$matches[2] || $matches[2] == 'px')) {
+		if ((preg_match('@[^\w\%-]width[^\w\%-]+(\d+)(\w*)[^\w\%-]@', $links[$i + 1], $matches)) && (!$matches[2] || $matches[2] == 'px')
+		 || (preg_match('@[^\w\%-]width[^\w\%-]+(\d+)(\w*)[^\w\%-]@', $links[$i + 3], $matches)) && (!$matches[2] || $matches[2] == 'px')) {
 			$width = $matches[1];
 		}
-		if ((preg_match('@[^\w-]height[^\w-]+(\d+)(\w*)[^\w-]@', $links[$i + 1], $matches)) && (!$matches[2] || $matches[2] == 'px')
-		 || (preg_match('@[^\w-]height[^\w-]+(\d+)(\w*)[^\w-]@', $links[$i + 3], $matches)) && (!$matches[2] || $matches[2] == 'px')) {
+		if ((preg_match('@[^\w\%-]height[^\w\%-]+(\d+)(\w*)[^\w\%-]@', $links[$i + 1], $matches)) && (!$matches[2] || $matches[2] == 'px')
+		 || (preg_match('@[^\w\%-]height[^\w\%-]+(\d+)(\w*)[^\w\%-]@', $links[$i + 3], $matches)) && (!$matches[2] || $matches[2] == 'px')) {
 			$height = $matches[1];
 		}
 		

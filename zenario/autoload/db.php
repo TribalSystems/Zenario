@@ -512,22 +512,20 @@ class db {
 	}
 
 	//Formerly "reportDatabaseError()"
-	public static function reportError($errtext = '', $errno = '', $error = '', $sql = '', $backtrace = '', $additionalSubject = '') {
-	
+	public static function reportError($errtext = '', $errno = '', $error = '', $sql = '', $backtrace = '', $subjectPrefix = 'Error at ') {
+		
 		if (!empty($_SERVER['HTTP_HOST'])) {
-			$subject = 'Error at '. $_SERVER['HTTP_HOST'];
+			$subject = $subjectPrefix. $_SERVER['HTTP_HOST'];
 	
 		} elseif (!empty(\ze::$siteConfig['primary_domain'])) {
-			$subject = 'Error at '. \ze::$siteConfig['primary_domain'];
+			$subject = $subjectPrefix. \ze::$siteConfig['primary_domain'];
 	
 		} elseif (!empty(\ze::$siteConfig['last_primary_domain'])) {
-			$subject = 'Error at '. \ze::$siteConfig['last_primary_domain'];
+			$subject = $subjectPrefix. \ze::$siteConfig['last_primary_domain'];
 	
 		} else {
-			$subject = 'Error at '. gethostname();
+			$subject = $subjectPrefix. gethostname();
 		}
-	
-		$subject .= $additionalSubject;
 	
 	
 		$body = \ze\user::ip();

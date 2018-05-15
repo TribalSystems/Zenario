@@ -38,7 +38,12 @@ if (\ze\priv::check()) {
 		\ze\admin::pageBodyAdminClass($bodyTag, $toolbars);
 	} else {
 		$includeAdminToolbar = false;
-		$bodyTag .= ' zenario_adminLoggedIn zenario_pageMode_preview zenario_pageModeIsnt_menu zenario_pageModeIsnt_layout zenario_pageModeIsnt_item';
+		
+		if ($extraClassNames != 'zenario_showing_preview') {
+			$bodyTag .= ' zenario_adminLoggedIn';
+		}
+		
+		$bodyTag .= ' zenario_pageMode_preview zenario_pageModeIsnt_edit zenario_pageModeIsnt_edit_disabled zenario_pageModeIsnt_menu zenario_pageModeIsnt_layout zenario_pageModeIsnt_item';
 	}
 } else {
 	$includeAdminToolbar = false;

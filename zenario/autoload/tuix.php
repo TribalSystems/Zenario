@@ -2313,13 +2313,11 @@ class tuix {
 	public static function deTilde($var) {
 		if (is_string($var)
 		 && isset($var[0])
-		 && $var[0] === '`') {
-			if ($var[1] === '1') {
-				$var = '`'. substr($var, 2);
-			} else
-			if ($var[1] === '2') {
-				$var = '/'. substr($var, 2);
-			}
+		 && $var[0] === '~') {
+			return \ze\ring::decodeIdForOrganizer($var);
+			//N.b. Cloudflare sometimes blocks the values of strings in JSON objects, e.g. if it sees HTML code in them.
+			//We're attempting to work around this by calling encodeItemIdForOrganizer() to mask any HTML,
+			//so we need to decode that encoding here.
 		}
 		return $var;
 	}

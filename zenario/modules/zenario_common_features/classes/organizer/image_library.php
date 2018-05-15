@@ -159,7 +159,7 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 						$usage_plugins = (int)$item['usage_plugins'];
 						$usage_menu_nodes = (int)$item['usage_menu_nodes'];
 				
-						if ($item['in_use_anywhere']) {
+						if (!empty($item['in_use_anywhere'])) {
 							$mrg = ['used_on' => 'Used on'];
 						} else {
 							$mrg = ['used_on' => 'Attached to (not used)'];
@@ -284,14 +284,15 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 						}
 						$item['usage_email_templates'] = $text;
 						
-						if ($item['privacy'] == 'auto') {
-							$item['tooltip'] = ze\admin::phrase('[[name]] is Hidden. (will become Public when placed on a public content item, or Private when placed on a private content item)', ['name' => $item['filename']]);
-						} elseif ($item['privacy'] == 'private') {
-							$item['tooltip'] = ze\admin::phrase('[[name]] is Private. (only a logged-in extranet user can access this image via an internal link; URL will change from time to time)', ['name' => $item['filename']]);
-						} elseif ($item['privacy'] == 'public') {
-							$item['tooltip'] = ze\admin::phrase('[[name]] is Public. (any visitor who knows the public link can access it)', ['name' => $item['filename']]);
+						if (isset($item['privacy'])) {
+							if ($item['privacy'] == 'auto') {
+								$item['tooltip'] = ze\admin::phrase('[[name]] is Hidden. (will become Public when placed on a public content item, or Private when placed on a private content item)', ['name' => $item['filename']]);
+							} elseif ($item['privacy'] == 'private') {
+								$item['tooltip'] = ze\admin::phrase('[[name]] is Private. (only a logged-in extranet user can access this image via an internal link; URL will change from time to time)', ['name' => $item['filename']]);
+							} elseif ($item['privacy'] == 'public') {
+								$item['tooltip'] = ze\admin::phrase('[[name]] is Public. (any visitor who knows the public link can access it)', ['name' => $item['filename']]);
+							}
 						}
-						
 					}
 				}
 				

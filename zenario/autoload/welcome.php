@@ -234,11 +234,12 @@ class welcome {
 	public static function prepareAdminWelcomeScreen($path, &$source, &$tags, &$fields, &$values, &$changes) {
 	
 		$resetErrors = true;
+		$clientPath = \ze\tuix::deTilde($tags['path'] ?? '');
 	
 		//If this is the first time we're displaying something,
 		//or we were displaying something different before and have now just switched paths,
 		//then wipe any previous client tags and initialise every tag as they are defined in the .yaml files.
-		if (($tags['path'] ?? false) != $path) {
+		if ($clientPath != $path) {
 			$filling = true;
 		
 			$tags = $source[$path];

@@ -191,20 +191,23 @@ class ze {
 	public static $apcDirs = [];
 	public static $apcFoundCodes = [];
 	public static $execEnabled = null;
+	
+	private static $eSent = false;
+	public static function error($errno, $errstr, $errfile, $errline) {
+		
+		//if (!ze::$eSent && defined('EMAIL_ADDRESS_GLOBAL_SUPPORT')) {
+		//	\ze\db::reportError($errstr, 'in '. $errfile, 'at line '. $errline, '', '', 'PHP error at ');
+		//}
+		
+		ze::$eSent = true;
+		ze::$canCache = false;
+		return false;
+	}
 
 	
 	
 	public static function isAdmin() {
 		return !empty($_SESSION['admin_logged_into_site']) && ze\priv::check();
-	}
-	
-	public static function errorOnScreen($errno, $errstr, $errfile, $errline) {
-		ze::$canCache = false;
-		return false;
-	}
-	
-	public static function esc($text) {
-		return \ze::$dbL->con->escape_string($text);
 	}
 
 	//Formerly "funIncPath()"
@@ -451,11 +454,14 @@ if (!empty($_REQUEST)) ze::trim($_REQUEST);
 
 
 //Set the error level if specified in the site configs, defaulting to (E_ALL & ~E_NOTICE | E_STRICT) if not defined or if the site configs have not yet been included
-if (defined('ERROR_REPORTING_LEVEL')) {
-	error_reporting(ERROR_REPORTING_LEVEL);
-} else {
-	error_reporting(E_ALL & ~E_NOTICE & ~E_STRICT);
+if (!defined('ERROR_REPORTING_LEVEL')) {
+	define('ERROR_REPORTING_LEVEL', E_ALL & ~E_NOTICE & ~E_STRICT);
 }
+error_reporting(ERROR_REPORTING_LEVEL);
+
+//Also add a wrapper to the error handler that checks if a page has a visible error on it
+set_error_handler(['ze', 'error'], ERROR_REPORTING_LEVEL);
+
 
 //Putting "no_cache" in the request should always disable any caching
 ze::$canCache = empty($_REQUEST['no_cache']);

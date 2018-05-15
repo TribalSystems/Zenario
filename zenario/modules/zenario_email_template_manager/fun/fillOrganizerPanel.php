@@ -45,8 +45,10 @@ switch ($path) {
 			$body_extract = strip_tags($panel['items'][$K]['body_extract']);
 			
 			$body_extract_length = 250;
-			if ($length = @strpos($body_extract, ' ', $body_extract_length)) {
-				$body_extract_length = $length;
+			if (strlen($body_extract) > $body_extract_length) {
+				if ($length = strpos($body_extract, ' ', $body_extract_length)) {
+					$body_extract_length = $length;
+				}
 			}
 			
 			$body_extract_snippet = substr($body_extract, 0, $body_extract_length);
@@ -67,7 +69,7 @@ switch ($path) {
 			} else {
 				$panel['items'][$K]['created_by'] = 'n/a';
 			}
-
+			
 			if (!empty($template['modified_by_id'])) {
 				$admin = ze\admin::details($template['modified_by_id'] ?? false);
 				$panel['items'][$K]['modified_by'] = $admin['admin_username'];

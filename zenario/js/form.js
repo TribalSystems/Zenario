@@ -2170,12 +2170,10 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 				} else if (fieldType == 'url') {
 					html += '<input';
 					extraAtt.type = 'url';
-					extraAtt.onfocus =
-						(extraAtt.onfocus || '') +
-						"if(!this.value) this.value = 'http://';";
+					extraAtt.placeholder = 'http://example.com';
 					extraAtt.onblur =
 						(extraAtt.onblur || '') +
-						"if(this.value == 'http://') this.value = '';";
+						"if(this.value && !this.value.match('://')) this.value = 'http://' + this.value;";
 		
 				} else {
 					if (field.slider) {
@@ -4498,14 +4496,9 @@ methods.syncAdminBoxFromClientToServerR = function($serverTags, $clientTags, $ke
 						//Ignore any objects if we were expecting just a simple variable
 						break;
 					case 'string':
-						//Cloudflare sometimes blocks form values if they start with slashes
-						//Work around this by switching them to tidles instead
-						if (val[0] === '`') {
-							val = '`1' + val.substr(1);
-						} else
-						if (val[0] === '/') {
-							val = '`2' + val.substr(1);
-						}
+						val = zenario.encodeItemIdForOrganizer(val);
+						//N.b. Cloudflare sometimes blocks the values of strings in JSON objects, e.g. if it sees HTML code in them.
+						//We're attempting to work around this by calling encodeItemIdForOrganizer() to mask any HTML.
 					default:
 						$serverTags[$key0] = val;
 				}

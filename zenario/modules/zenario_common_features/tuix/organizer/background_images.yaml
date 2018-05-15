@@ -84,20 +84,20 @@ zenario__content:
                 name: Image
                 names: Images
                 css_class: media_image
-            collection_buttons:
-                #upload:
-                #    priv: _PRIV_MANAGE_MEDIA
-                #    label: Upload
-                #    css_class: zenario_create_a_new
-                #    hide_on_filter: true
-                #    hide_in_select_mode: Yes
-                #    upload:
-                #        fileExt: '*.gif;*.jpg;*.png;*.jpe;*.jpeg;*.pjpeg'
-                #        fileDesc: Images
-                #        multi: Yes
-                #        drag_and_drop: Yes
-                #        request:
-                #            upload: Yes
+            #collection_buttons:
+            #    upload:
+            #        priv: _PRIV_MANAGE_MEDIA
+            #        label: Upload
+            #        css_class: zenario_create_a_new
+            #        hide_on_filter: true
+            #        hide_in_select_mode: Yes
+            #        upload:
+            #            fileExt: '*.gif;*.jpg;*.png;*.jpe;*.jpeg;*.pjpeg'
+            #            fileDesc: Images
+            #            multi: Yes
+            #            drag_and_drop: Yes
+            #            request:
+            #                upload: Yes
             inline_buttons:
                 view:
                     css_class: inspect

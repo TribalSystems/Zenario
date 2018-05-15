@@ -728,8 +728,7 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 					'pages' => ze\pluginAdm::usage($box['key']['instanceId'], false),
 					'published' => ze\pluginAdm::usage($box['key']['instanceId'], true)];
 		
-				if ($mrg['published'] > 0
-				 || $mrg['pages'] > ($box['key']['frontEnd']? 1 : 0)) {
+				if ($mrg['published'] > 0) {
 			
 					$box['confirm']['show'] = true;
 					$box['confirm']['html'] = true;
