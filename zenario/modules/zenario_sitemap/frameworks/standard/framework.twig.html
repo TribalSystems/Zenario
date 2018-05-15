@@ -1,17 +1,21 @@
 {% import _self as self %}
 {% macro childNodes(nodes, level) %}
 	{% import _self as self %}
-	<ul>
+	{% if level != 1 %}
+		<ul>
+	{% endif %}
 		{% for node in nodes %}
 			<li class="{{node.Class}}">
-				<h{{level}}>{{node.Hyperlink}}</h{{level}}>
+				<h{{level +1}}>{{node.Hyperlink}}</h{{level +1}}>
 				
 				{% if node.children %}
-					{{ self.childNodes(node.children, max(level + 1, 4)) }}
+					{{ self.childNodes(node.children, min(level + 1, 4)) }}
 				{% endif %}
 			</li>
 		{% endfor %}
-	</ul>
+	{% if level != 1 %}
+		</ul>
+	{% endif %}
 {% endmacro %}
 
 <h1>{{"_SITEMAP"|trans}}</h1>

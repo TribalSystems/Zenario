@@ -5,10 +5,10 @@
 //but if this is a fresh install of the User Forms module then we still want to drop and recreate fresh empty tables anyway.
 ze\dbAdm::revision( 1
 , <<<_sql
-	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
+	DROP TABLE IF EXISTS `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
 _sql
 , <<<_sql
-	CREATE TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` (
+	CREATE TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` (
 		`id` int(10) unsigned NOT NULL AUTO_INCREMENT,
 		`name` varchar(255) NOT NULL,
 		`type` enum('standard','profile','registration') NOT NULL DEFAULT 'standard',
@@ -54,10 +54,10 @@ _sql
 	) ENGINE=MyISAM DEFAULT CHARSET=utf8
 _sql
 , <<<_sql
-	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
+	DROP TABLE IF EXISTS `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
 _sql
 , <<<_sql
-	CREATE TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` (
+	CREATE TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` (
 		`id` int(10) unsigned NOT NULL AUTO_INCREMENT,
 		`user_form_id` int(10) unsigned NOT NULL,
 		`user_field_id` int(10) unsigned DEFAULT '0',
@@ -114,11 +114,11 @@ _sql
 
 ); ze\dbAdm::revision( 10
 , <<<_sql
-	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response`
+	DROP TABLE IF EXISTS `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response`
 _sql
 
 ,<<<_sql
-	CREATE TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response`(
+	CREATE TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response`(
 		`id` int(10) unsigned NOT NULL AUTO_INCREMENT,
 		`user_id` int(10) unsigned NOT NULL,
 		`form_id` int(10) unsigned NOT NULL,
@@ -128,11 +128,11 @@ _sql
 _sql
 
 , <<<_sql
-	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response_data`
+	DROP TABLE IF EXISTS `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response_data`
 _sql
 
 ,<<<_sql
-	CREATE TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response_data`(
+	CREATE TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response_data`(
 		`user_response_id` int(10) unsigned NOT NULL,
 		`form_field_id` int(10) unsigned NOT NULL,
 		`value` text NOT NULL,
@@ -142,27 +142,27 @@ _sql
 
 ); ze\dbAdm::revision (11
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response`
 	ADD COLUMN `internal_value` varchar(255) DEFAULT NULL 
 _sql
 
 ); ze\dbAdm::revision (12
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response`
 	DROP COLUMN `internal_value`
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response_data`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response_data`
 	ADD COLUMN `internal_value` varchar(255) DEFAULT NULL 
 _sql
 
 ); ze\dbAdm::revision (17
 , <<<_sql
-	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]form_field_values`
+	DROP TABLE IF EXISTS `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]form_field_values`
 _sql
 
 ,<<<_sql
-	CREATE TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]form_field_values`(
+	CREATE TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]form_field_values`(
 		`id` int(10) unsigned NOT NULL AUTO_INCREMENT,
 		`form_field_id` int(10) unsigned NOT NULL,
 		`ord` int(10) unsigned NOT NULL,
@@ -229,18 +229,18 @@ if (ze\dbAdm::needRevision(19)) {
 
 ze\dbAdm::revision (22
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response`
 	ADD COLUMN `crm_response` text DEFAULT NULL
 _sql
 
 
 ); ze\dbAdm::revision (25
 , <<<_sql
-	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]form_field_update_link`
+	DROP TABLE IF EXISTS `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]form_field_update_link`
 _sql
 
 ,<<<_sql
-	CREATE TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]form_field_update_link`(
+	CREATE TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]form_field_update_link`(
 		`source_field_id` int(10) unsigned NOT NULL,
 		`target_field_id` int(10) unsigned NOT NULL,
 		PRIMARY KEY (`source_field_id`, `target_field_id`)
@@ -249,13 +249,13 @@ _sql
 
 ); ze\dbAdm::revision( 26
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response`
 	ADD COLUMN blocked_by_profanity_filter BOOLEAN NOT NULL DEFAULT 0
 _sql
 
 ); ze\dbAdm::revision( 27
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response`
 	ADD COLUMN profanity_filter_score INT NOT NULL DEFAULT 0,
 	ADD COLUMN profanity_tolerance_limit INT NOT NULL DEFAULT 0
 _sql
@@ -265,11 +265,11 @@ _sql
 ze\dbAdm::revision(33
 // Create tables for partial form responses
 , <<<_sql
-	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_partial_response`
+	DROP TABLE IF EXISTS `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_partial_response`
 _sql
 
 ,<<<_sql
-	CREATE TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_partial_response`(
+	CREATE TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_partial_response`(
 		`id` int(10) unsigned NOT NULL AUTO_INCREMENT,
 		`user_id` int(10) unsigned NOT NULL,
 		`form_id` int(10) unsigned NOT NULL,
@@ -281,11 +281,11 @@ _sql
 _sql
 
 , <<<_sql
-	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_partial_response_data`
+	DROP TABLE IF EXISTS `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_partial_response_data`
 _sql
 
 ,<<<_sql
-	CREATE TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_partial_response_data`(
+	CREATE TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_partial_response_data`(
 		`user_partial_response_id` int(10) unsigned NOT NULL,
 		`form_field_id` int(10) unsigned NOT NULL,
 		`value` text NOT NULL,
@@ -295,7 +295,7 @@ _sql
 
 ); ze\dbAdm::revision(36
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response_data`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response_data`
 	ADD COLUMN `field_row` int(10) unsigned NOT NULL DEFAULT 0 AFTER `form_field_id`,
 	DROP PRIMARY KEY,
 	ADD PRIMARY KEY (`user_response_id`, `form_field_id`, `field_row`)
@@ -303,7 +303,7 @@ _sql
 
 ); ze\dbAdm::revision(37
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_partial_response_data`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_partial_response_data`
 	ADD COLUMN `field_row` int(10) unsigned NOT NULL DEFAULT 0 AFTER `form_field_id`,
 	DROP PRIMARY KEY,
 	ADD PRIMARY KEY (`user_partial_response_id`, `form_field_id`, `field_row`)
@@ -313,20 +313,20 @@ _sql
 ); ze\dbAdm::revision(48
 // Create a table to store a calculated field's parameters
 , <<<_sql
-	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]calculated_field_parameters`
+	DROP TABLE IF EXISTS `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]calculated_field_parameters`
 _sql
 
 ); ze\dbAdm::revision(49
 // New column for calculated fields
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
 	ADD COLUMN `calculation_code` text
 _sql
 
 ); ze\dbAdm::revision(50
 // New column for calculated fields prefix and postfix
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
 	ADD COLUMN `value_prefix` varchar(255) DEFAULT NULL,
 	ADD COLUMN `value_postfix` varchar(255) DEFAULT NULL
 _sql
@@ -337,7 +337,7 @@ _sql
 if (ze\dbAdm::needRevision(51)) {
 	$sql = '
 		SELECT id, numeric_field_1, numeric_field_2, calculation_type
-		FROM ' . DB_NAME_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_form_fields
+		FROM ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_form_fields
 		WHERE field_type = "calculated"';
 	$result = ze\sql::select($sql);
 	while ($row = ze\sql::fetchAssoc($result)) {
@@ -366,7 +366,7 @@ if (ze\dbAdm::needRevision(51)) {
 ze\dbAdm::revision(52
 // Delete old calculation field columns
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
 	DROP COLUMN `numeric_field_1`,
 	DROP COLUMN `numeric_field_2`,
 	DROP COLUMN `calculation_type`
@@ -377,15 +377,15 @@ _sql
 if (ze\dbAdm::needRevision(54)) {
 	$sql = '
 		SELECT id, reply_to_email_field, reply_to_first_name, reply_to_last_name
-		FROM ' . DB_NAME_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_forms';
+		FROM ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_forms';
 	$result = ze\sql::select($sql);
 	while ($form = ze\sql::fetchAssoc($result)) {
 		$set = false;
 		if (!empty($form['reply_to_email_field'])) {
 			$sql = '
 				SELECT f.id
-				FROM ' . DB_NAME_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_form_fields f
-				INNER JOIN ' . DB_NAME_PREFIX . 'custom_dataset_fields c
+				FROM ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_form_fields f
+				INNER JOIN ' . DB_PREFIX . 'custom_dataset_fields c
 					ON f.user_field_id = c.id
 				WHERE c.db_column = "' . ze\escape::sql($form['reply_to_email_field']) . '"
 				AND f.user_form_id = ' . (int)$form['id'];
@@ -404,8 +404,8 @@ if (ze\dbAdm::needRevision(54)) {
 		if (!empty($form['reply_to_first_name'])) {
 			$sql = '
 				SELECT f.id
-				FROM ' . DB_NAME_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_form_fields f
-				INNER JOIN ' . DB_NAME_PREFIX . 'custom_dataset_fields c
+				FROM ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_form_fields f
+				INNER JOIN ' . DB_PREFIX . 'custom_dataset_fields c
 					ON f.user_field_id = c.id
 				WHERE c.db_column = "' . ze\escape::sql($form['reply_to_first_name']) . '"
 				AND f.user_form_id = ' . (int)$form['id'];
@@ -424,8 +424,8 @@ if (ze\dbAdm::needRevision(54)) {
 		if (!empty($form['reply_to_last_name'])) {
 			$sql = '
 				SELECT f.id
-				FROM ' . DB_NAME_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_form_fields f
-				INNER JOIN ' . DB_NAME_PREFIX . 'custom_dataset_fields c
+				FROM ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_form_fields f
+				INNER JOIN ' . DB_PREFIX . 'custom_dataset_fields c
 					ON f.user_field_id = c.id
 				WHERE c.db_column = "' . ze\escape::sql($form['reply_to_last_name']) . '"
 				AND f.user_form_id = ' . (int)$form['id'];
@@ -445,7 +445,7 @@ if (ze\dbAdm::needRevision(54)) {
 
 ze\dbAdm::revision(55
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
 	MODIFY COLUMN `reply_to_email_field` int(10) unsigned NOT NULL DEFAULT 0,
 	MODIFY COLUMN `reply_to_first_name` int(10) unsigned NOT NULL DEFAULT 0,
 	MODIFY COLUMN `reply_to_last_name` int(10) unsigned NOT NULL DEFAULT 0
@@ -453,33 +453,33 @@ _sql
 
 ); ze\dbAdm::revision(56
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
 	ADD COLUMN `user_email_field` int(10) unsigned NOT NULL DEFAULT 0 AFTER `send_email_to_user`
 _sql
 
 ); ze\dbAdm::revision(58
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
     ADD COLUMN `use_honeypot` tinyint(1) NOT NULL DEFAULT '0',
     ADD COLUMN `honeypot_label` varchar(255) DEFAULT NULL
 _sql
 
 ); ze\dbAdm::revision(60
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
     ADD COLUMN `show_page_switcher` tinyint(1) NOT NULL DEFAULT '0',
     ADD COLUMN `page_switcher_navigation` enum('none', 'only_visited_pages') DEFAULT 'none',
     ADD COLUMN `hide_final_page_in_page_switcher` tinyint(1) NOT NULL DEFAULT '0'
 _sql
 
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
 	ADD COLUMN `hide_in_page_switcher` tinyint(1) NOT NULL DEFAULT '0'
 _sql
 
 ); ze\dbAdm::revision(61
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
     ADD COLUMN `partial_completion_mode` enum('auto', 'button') DEFAULT NULL AFTER `allow_partial_completion`
 _sql
 
@@ -492,20 +492,20 @@ if (ze\dbAdm::needRevision(62)) {
 
 ze\dbAdm::revision(63
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
 	ADD COLUMN `page_end_name` varchar(255) DEFAULT 'Page end'
 _sql
 
 ); ze\dbAdm::revision(64
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
 	ADD COLUMN `show_month_year_selectors` tinyint(1) NOT NULL DEFAULT '0'
 _sql
 
 //Allow a form to send multiple user emails
 ); ze\dbAdm::revision(65
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
 	ADD COLUMN `send_email_to_logged_in_user` tinyint(1) NOT NULL DEFAULT '0' AFTER `user_email_template`,
 	ADD COLUMN `user_email_use_template_for_logged_in_user` tinyint(1) NOT NULL DEFAULT '0' AFTER `send_email_to_logged_in_user`,
 	ADD COLUMN `user_email_template_logged_in_user` varchar(255) DEFAULT NULL AFTER `user_email_use_template_for_logged_in_user`,
@@ -522,7 +522,7 @@ _sql
 if (ze\dbAdm::needRevision(66)) {
 	$sql = '
 		SELECT id, send_email_to_user, user_email_field, user_email_template
-		FROM ' . DB_NAME_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_forms';
+		FROM ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_forms';
 	$result = ze\sql::select($sql);
 	while ($form = ze\sql::fetchAssoc($result)) {
 		if (!empty($form['send_email_to_user'])) {
@@ -544,26 +544,26 @@ if (ze\dbAdm::needRevision(66)) {
 //Drop old columns
 ze\dbAdm::revision(67
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
 	DROP COLUMN `send_email_to_user`,
 	DROP COLUMN `user_email_template`
 _sql
 
 ); ze\dbAdm::revision(68
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_partial_response`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_partial_response`
 	ADD COLUMN `max_page_reached` int(10) unsigned NOT NULL DEFAULT 1
 _sql
 
 ); ze\dbAdm::revision(69
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
 	MODIFY COLUMN `partial_completion_mode` enum('auto','button', 'auto_and_button') DEFAULT NULL
 _sql
 
 ); ze\dbAdm::revision(70
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
 	DROP COLUMN `create_another_form_submission_record`,
 	ADD COLUMN `update_linked_fields` tinyint(1) NOT NULL DEFAULT 0 AFTER `user_duplicate_email_action`,
 	ADD COLUMN `no_duplicate_submissions` tinyint(1) NOT NULL DEFAULT 0 AFTER `update_linked_fields`,
@@ -572,422 +572,422 @@ _sql
 _sql
 
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
 	ADD COLUMN `preload_dataset_field_user_data` tinyint(1) NOT NULL DEFAULT 1 AFTER `placeholder`
 _sql
 
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
+	UPDATE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
 	SET `add_logged_in_user_to_group` = `add_user_to_group`
 _sql
 
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
+	UPDATE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
 	SET `update_linked_fields` = 1
 	WHERE `save_data` = 1 AND `user_duplicate_email_action` = 'overwrite'
 _sql
 
 ); ze\dbAdm::revision(80
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]form_field_values`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]form_field_values`
 	ADD COLUMN `is_invalid` tinyint(1) NOT NULL DEFAULT 0
 _sql
 
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
 	ADD COLUMN `invalid_field_value_error_message` varchar(255) DEFAULT NULL
 _sql
 
 ); ze\dbAdm::revision(81
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
 	ADD COLUMN `visible_condition_invert` tinyint(1) NOT NULL DEFAULT 0 AFTER `visible_condition_field_id`,
 	ADD COLUMN `mandatory_condition_invert` tinyint(1) NOT NULL DEFAULT 0 AFTER `mandatory_condition_field_id`
 _sql
 
 ); ze\dbAdm::revision(82
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
 	ADD COLUMN `allow_clear_partial_data` tinyint(1) NOT NULL DEFAULT 0 AFTER `partial_completion_message`,
 	ADD COLUMN `clear_partial_data_message` varchar(255) DEFAULT NULL AFTER `allow_clear_partial_data`
 _sql
 
 ); ze\dbAdm::revision(83
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
 	ADD COLUMN `enable_summary_page` tinyint(1) NOT NULL DEFAULT 0
 _sql
 
 ); ze\dbAdm::revision(84
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
 	ADD COLUMN `visible_condition_checkboxes_operator` enum('AND', 'OR') NOT NULL DEFAULT 'AND' AFTER `visible_condition_invert`,
 	ADD COLUMN `mandatory_condition_checkboxes_operator` enum('AND', 'OR') NOT NULL DEFAULT 'AND' AFTER `mandatory_condition_invert`
 _sql
 
 ); ze\dbAdm::revision(85
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
 	ADD COLUMN `word_limit` int(10) unsigned DEFAULT NULL
 _sql
 
 ); ze\dbAdm::revision(100
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
 	MODIFY COLUMN `field_type` enum('checkbox','checkboxes','date','editor','radios','centralised_radios','select','centralised_select','text','textarea','url','attachment','page_break','section_description','calculated','restatement','repeat_start','repeat_end','pdf_upload') DEFAULT NULL
 _sql
 
 ); ze\dbAdm::revision(101
 
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]form_field_values` SET `label` = SUBSTR(`label`, 1, 250) WHERE CHAR_LENGTH(`label`) > 250
+	UPDATE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]form_field_values` SET `label` = SUBSTR(`label`, 1, 250) WHERE CHAR_LENGTH(`label`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]form_field_values` MODIFY COLUMN `label` varchar(250) CHARACTER SET utf8mb4 NOT NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]form_field_values` MODIFY COLUMN `label` varchar(250) CHARACTER SET utf8mb4 NOT NULL
 _sql
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` SET `admin_email_addresses` = SUBSTR(`admin_email_addresses`, 1, 250) WHERE CHAR_LENGTH(`admin_email_addresses`) > 250
+	UPDATE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` SET `admin_email_addresses` = SUBSTR(`admin_email_addresses`, 1, 250) WHERE CHAR_LENGTH(`admin_email_addresses`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` MODIFY COLUMN `admin_email_addresses` varchar(250) CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` MODIFY COLUMN `admin_email_addresses` varchar(250) CHARACTER SET utf8mb4 NULL
 _sql
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` SET `admin_email_template` = SUBSTR(`admin_email_template`, 1, 250) WHERE CHAR_LENGTH(`admin_email_template`) > 250
+	UPDATE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` SET `admin_email_template` = SUBSTR(`admin_email_template`, 1, 250) WHERE CHAR_LENGTH(`admin_email_template`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` MODIFY COLUMN `admin_email_template` varchar(250) CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` MODIFY COLUMN `admin_email_template` varchar(250) CHARACTER SET utf8mb4 NULL
 _sql
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` SET `clear_partial_data_message` = SUBSTR(`clear_partial_data_message`, 1, 250) WHERE CHAR_LENGTH(`clear_partial_data_message`) > 250
+	UPDATE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` SET `clear_partial_data_message` = SUBSTR(`clear_partial_data_message`, 1, 250) WHERE CHAR_LENGTH(`clear_partial_data_message`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` MODIFY COLUMN `clear_partial_data_message` varchar(250) CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` MODIFY COLUMN `clear_partial_data_message` varchar(250) CHARACTER SET utf8mb4 NULL
 _sql
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` SET `default_next_button_text` = SUBSTR(`default_next_button_text`, 1, 250) WHERE CHAR_LENGTH(`default_next_button_text`) > 250
+	UPDATE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` SET `default_next_button_text` = SUBSTR(`default_next_button_text`, 1, 250) WHERE CHAR_LENGTH(`default_next_button_text`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` MODIFY COLUMN `default_next_button_text` varchar(250) CHARACTER SET utf8mb4 NULL default 'Next'
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` MODIFY COLUMN `default_next_button_text` varchar(250) CHARACTER SET utf8mb4 NULL default 'Next'
 _sql
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` SET `default_previous_button_text` = SUBSTR(`default_previous_button_text`, 1, 250) WHERE CHAR_LENGTH(`default_previous_button_text`) > 250
+	UPDATE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` SET `default_previous_button_text` = SUBSTR(`default_previous_button_text`, 1, 250) WHERE CHAR_LENGTH(`default_previous_button_text`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` MODIFY COLUMN `default_previous_button_text` varchar(250) CHARACTER SET utf8mb4 NULL default 'Back'
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` MODIFY COLUMN `default_previous_button_text` varchar(250) CHARACTER SET utf8mb4 NULL default 'Back'
 _sql
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` SET `duplicate_email_address_error_message` = SUBSTR(`duplicate_email_address_error_message`, 1, 250) WHERE CHAR_LENGTH(`duplicate_email_address_error_message`) > 250
+	UPDATE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` SET `duplicate_email_address_error_message` = SUBSTR(`duplicate_email_address_error_message`, 1, 250) WHERE CHAR_LENGTH(`duplicate_email_address_error_message`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` MODIFY COLUMN `duplicate_email_address_error_message` varchar(250) CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` MODIFY COLUMN `duplicate_email_address_error_message` varchar(250) CHARACTER SET utf8mb4 NULL
 _sql
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` SET `duplicate_submission_message` = SUBSTR(`duplicate_submission_message`, 1, 250) WHERE CHAR_LENGTH(`duplicate_submission_message`) > 250
+	UPDATE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` SET `duplicate_submission_message` = SUBSTR(`duplicate_submission_message`, 1, 250) WHERE CHAR_LENGTH(`duplicate_submission_message`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` MODIFY COLUMN `duplicate_submission_message` varchar(250) CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` MODIFY COLUMN `duplicate_submission_message` varchar(250) CHARACTER SET utf8mb4 NULL
 _sql
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` SET `honeypot_label` = SUBSTR(`honeypot_label`, 1, 250) WHERE CHAR_LENGTH(`honeypot_label`) > 250
+	UPDATE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` SET `honeypot_label` = SUBSTR(`honeypot_label`, 1, 250) WHERE CHAR_LENGTH(`honeypot_label`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` MODIFY COLUMN `honeypot_label` varchar(250) CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` MODIFY COLUMN `honeypot_label` varchar(250) CHARACTER SET utf8mb4 NULL
 _sql
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` SET `name` = SUBSTR(`name`, 1, 250) WHERE CHAR_LENGTH(`name`) > 250
+	UPDATE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` SET `name` = SUBSTR(`name`, 1, 250) WHERE CHAR_LENGTH(`name`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` MODIFY COLUMN `name` varchar(250) CHARACTER SET utf8mb4 NOT NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` MODIFY COLUMN `name` varchar(250) CHARACTER SET utf8mb4 NOT NULL
 _sql
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` SET `page_end_name` = SUBSTR(`page_end_name`, 1, 250) WHERE CHAR_LENGTH(`page_end_name`) > 250
+	UPDATE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` SET `page_end_name` = SUBSTR(`page_end_name`, 1, 250) WHERE CHAR_LENGTH(`page_end_name`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` MODIFY COLUMN `page_end_name` varchar(250) CHARACTER SET utf8mb4 NULL default 'Page end'
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` MODIFY COLUMN `page_end_name` varchar(250) CHARACTER SET utf8mb4 NULL default 'Page end'
 _sql
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` SET `partial_completion_message` = SUBSTR(`partial_completion_message`, 1, 250) WHERE CHAR_LENGTH(`partial_completion_message`) > 250
+	UPDATE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` SET `partial_completion_message` = SUBSTR(`partial_completion_message`, 1, 250) WHERE CHAR_LENGTH(`partial_completion_message`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` MODIFY COLUMN `partial_completion_message` varchar(250) CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` MODIFY COLUMN `partial_completion_message` varchar(250) CHARACTER SET utf8mb4 NULL
 _sql
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` SET `redirect_location` = SUBSTR(`redirect_location`, 1, 250) WHERE CHAR_LENGTH(`redirect_location`) > 250
+	UPDATE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` SET `redirect_location` = SUBSTR(`redirect_location`, 1, 250) WHERE CHAR_LENGTH(`redirect_location`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` MODIFY COLUMN `redirect_location` varchar(250) CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` MODIFY COLUMN `redirect_location` varchar(250) CHARACTER SET utf8mb4 NULL
 _sql
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` SET `submit_button_text` = SUBSTR(`submit_button_text`, 1, 250) WHERE CHAR_LENGTH(`submit_button_text`) > 250
+	UPDATE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` SET `submit_button_text` = SUBSTR(`submit_button_text`, 1, 250) WHERE CHAR_LENGTH(`submit_button_text`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` MODIFY COLUMN `submit_button_text` varchar(250) CHARACTER SET utf8mb4 NULL default 'Submit'
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` MODIFY COLUMN `submit_button_text` varchar(250) CHARACTER SET utf8mb4 NULL default 'Submit'
 _sql
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` SET `success_message` = SUBSTR(`success_message`, 1, 250) WHERE CHAR_LENGTH(`success_message`) > 250
+	UPDATE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` SET `success_message` = SUBSTR(`success_message`, 1, 250) WHERE CHAR_LENGTH(`success_message`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` MODIFY COLUMN `success_message` varchar(250) CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` MODIFY COLUMN `success_message` varchar(250) CHARACTER SET utf8mb4 NULL
 _sql
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` SET `title` = SUBSTR(`title`, 1, 250) WHERE CHAR_LENGTH(`title`) > 250
+	UPDATE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` SET `title` = SUBSTR(`title`, 1, 250) WHERE CHAR_LENGTH(`title`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` MODIFY COLUMN `title` varchar(250) CHARACTER SET utf8mb4 NULL default ''
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` MODIFY COLUMN `title` varchar(250) CHARACTER SET utf8mb4 NULL default ''
 _sql
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` SET `user_email_template_from_field` = SUBSTR(`user_email_template_from_field`, 1, 250) WHERE CHAR_LENGTH(`user_email_template_from_field`) > 250
+	UPDATE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` SET `user_email_template_from_field` = SUBSTR(`user_email_template_from_field`, 1, 250) WHERE CHAR_LENGTH(`user_email_template_from_field`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` MODIFY COLUMN `user_email_template_from_field` varchar(250) CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` MODIFY COLUMN `user_email_template_from_field` varchar(250) CHARACTER SET utf8mb4 NULL
 _sql
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` SET `user_email_template_logged_in_user` = SUBSTR(`user_email_template_logged_in_user`, 1, 250) WHERE CHAR_LENGTH(`user_email_template_logged_in_user`) > 250
+	UPDATE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` SET `user_email_template_logged_in_user` = SUBSTR(`user_email_template_logged_in_user`, 1, 250) WHERE CHAR_LENGTH(`user_email_template_logged_in_user`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` MODIFY COLUMN `user_email_template_logged_in_user` varchar(250) CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` MODIFY COLUMN `user_email_template_logged_in_user` varchar(250) CHARACTER SET utf8mb4 NULL
 _sql
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `autocomplete_class_name` = SUBSTR(`autocomplete_class_name`, 1, 250) WHERE CHAR_LENGTH(`autocomplete_class_name`) > 250
+	UPDATE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `autocomplete_class_name` = SUBSTR(`autocomplete_class_name`, 1, 250) WHERE CHAR_LENGTH(`autocomplete_class_name`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `autocomplete_class_name` varchar(250) CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `autocomplete_class_name` varchar(250) CHARACTER SET utf8mb4 NULL
 _sql
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `autocomplete_method_name` = SUBSTR(`autocomplete_method_name`, 1, 250) WHERE CHAR_LENGTH(`autocomplete_method_name`) > 250
+	UPDATE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `autocomplete_method_name` = SUBSTR(`autocomplete_method_name`, 1, 250) WHERE CHAR_LENGTH(`autocomplete_method_name`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `autocomplete_method_name` varchar(250) CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `autocomplete_method_name` varchar(250) CHARACTER SET utf8mb4 NULL
 _sql
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `autocomplete_no_filter_placeholder` = SUBSTR(`autocomplete_no_filter_placeholder`, 1, 250) WHERE CHAR_LENGTH(`autocomplete_no_filter_placeholder`) > 250
+	UPDATE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `autocomplete_no_filter_placeholder` = SUBSTR(`autocomplete_no_filter_placeholder`, 1, 250) WHERE CHAR_LENGTH(`autocomplete_no_filter_placeholder`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `autocomplete_no_filter_placeholder` varchar(250) CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `autocomplete_no_filter_placeholder` varchar(250) CHARACTER SET utf8mb4 NULL
 _sql
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `autocomplete_param_1` = SUBSTR(`autocomplete_param_1`, 1, 250) WHERE CHAR_LENGTH(`autocomplete_param_1`) > 250
+	UPDATE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `autocomplete_param_1` = SUBSTR(`autocomplete_param_1`, 1, 250) WHERE CHAR_LENGTH(`autocomplete_param_1`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `autocomplete_param_1` varchar(250) CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `autocomplete_param_1` varchar(250) CHARACTER SET utf8mb4 NULL
 _sql
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `autocomplete_param_2` = SUBSTR(`autocomplete_param_2`, 1, 250) WHERE CHAR_LENGTH(`autocomplete_param_2`) > 250
+	UPDATE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `autocomplete_param_2` = SUBSTR(`autocomplete_param_2`, 1, 250) WHERE CHAR_LENGTH(`autocomplete_param_2`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `autocomplete_param_2` varchar(250) CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `autocomplete_param_2` varchar(250) CHARACTER SET utf8mb4 NULL
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `calculation_code` text CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `calculation_code` text CHARACTER SET utf8mb4 NULL
 _sql
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `css_classes` = SUBSTR(`css_classes`, 1, 250) WHERE CHAR_LENGTH(`css_classes`) > 250
+	UPDATE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `css_classes` = SUBSTR(`css_classes`, 1, 250) WHERE CHAR_LENGTH(`css_classes`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `css_classes` varchar(250) CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `css_classes` varchar(250) CHARACTER SET utf8mb4 NULL
 _sql
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `custom_code_name` = SUBSTR(`custom_code_name`, 1, 250) WHERE CHAR_LENGTH(`custom_code_name`) > 250
+	UPDATE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `custom_code_name` = SUBSTR(`custom_code_name`, 1, 250) WHERE CHAR_LENGTH(`custom_code_name`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `custom_code_name` varchar(250) CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `custom_code_name` varchar(250) CHARACTER SET utf8mb4 NULL
 _sql
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `default_value` = SUBSTR(`default_value`, 1, 250) WHERE CHAR_LENGTH(`default_value`) > 250
+	UPDATE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `default_value` = SUBSTR(`default_value`, 1, 250) WHERE CHAR_LENGTH(`default_value`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `default_value` varchar(250) CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `default_value` varchar(250) CHARACTER SET utf8mb4 NULL
 _sql
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `default_value_class_name` = SUBSTR(`default_value_class_name`, 1, 250) WHERE CHAR_LENGTH(`default_value_class_name`) > 250
+	UPDATE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `default_value_class_name` = SUBSTR(`default_value_class_name`, 1, 250) WHERE CHAR_LENGTH(`default_value_class_name`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `default_value_class_name` varchar(250) CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `default_value_class_name` varchar(250) CHARACTER SET utf8mb4 NULL
 _sql
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `default_value_method_name` = SUBSTR(`default_value_method_name`, 1, 250) WHERE CHAR_LENGTH(`default_value_method_name`) > 250
+	UPDATE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `default_value_method_name` = SUBSTR(`default_value_method_name`, 1, 250) WHERE CHAR_LENGTH(`default_value_method_name`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `default_value_method_name` varchar(250) CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `default_value_method_name` varchar(250) CHARACTER SET utf8mb4 NULL
 _sql
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `default_value_param_1` = SUBSTR(`default_value_param_1`, 1, 250) WHERE CHAR_LENGTH(`default_value_param_1`) > 250
+	UPDATE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `default_value_param_1` = SUBSTR(`default_value_param_1`, 1, 250) WHERE CHAR_LENGTH(`default_value_param_1`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `default_value_param_1` varchar(250) CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `default_value_param_1` varchar(250) CHARACTER SET utf8mb4 NULL
 _sql
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `default_value_param_2` = SUBSTR(`default_value_param_2`, 1, 250) WHERE CHAR_LENGTH(`default_value_param_2`) > 250
+	UPDATE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `default_value_param_2` = SUBSTR(`default_value_param_2`, 1, 250) WHERE CHAR_LENGTH(`default_value_param_2`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `default_value_param_2` varchar(250) CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `default_value_param_2` varchar(250) CHARACTER SET utf8mb4 NULL
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `description` text CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `description` text CHARACTER SET utf8mb4 NULL
 _sql
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `div_wrap_class` = SUBSTR(`div_wrap_class`, 1, 250) WHERE CHAR_LENGTH(`div_wrap_class`) > 250
+	UPDATE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `div_wrap_class` = SUBSTR(`div_wrap_class`, 1, 250) WHERE CHAR_LENGTH(`div_wrap_class`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `div_wrap_class` varchar(250) CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `div_wrap_class` varchar(250) CHARACTER SET utf8mb4 NULL
 _sql
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `invalid_field_value_error_message` = SUBSTR(`invalid_field_value_error_message`, 1, 250) WHERE CHAR_LENGTH(`invalid_field_value_error_message`) > 250
+	UPDATE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `invalid_field_value_error_message` = SUBSTR(`invalid_field_value_error_message`, 1, 250) WHERE CHAR_LENGTH(`invalid_field_value_error_message`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `invalid_field_value_error_message` varchar(250) CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `invalid_field_value_error_message` varchar(250) CHARACTER SET utf8mb4 NULL
 _sql
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `label` = SUBSTR(`label`, 1, 250) WHERE CHAR_LENGTH(`label`) > 250
+	UPDATE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `label` = SUBSTR(`label`, 1, 250) WHERE CHAR_LENGTH(`label`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `label` varchar(250) CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `label` varchar(250) CHARACTER SET utf8mb4 NULL
 _sql
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `mandatory_condition_field_value` = SUBSTR(`mandatory_condition_field_value`, 1, 250) WHERE CHAR_LENGTH(`mandatory_condition_field_value`) > 250
+	UPDATE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `mandatory_condition_field_value` = SUBSTR(`mandatory_condition_field_value`, 1, 250) WHERE CHAR_LENGTH(`mandatory_condition_field_value`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `mandatory_condition_field_value` varchar(250) CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `mandatory_condition_field_value` varchar(250) CHARACTER SET utf8mb4 NULL
 _sql
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `name` = SUBSTR(`name`, 1, 250) WHERE CHAR_LENGTH(`name`) > 250
+	UPDATE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `name` = SUBSTR(`name`, 1, 250) WHERE CHAR_LENGTH(`name`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `name` varchar(250) CHARACTER SET utf8mb4 NOT NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `name` varchar(250) CHARACTER SET utf8mb4 NOT NULL
 _sql
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `next_button_text` = SUBSTR(`next_button_text`, 1, 250) WHERE CHAR_LENGTH(`next_button_text`) > 250
+	UPDATE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `next_button_text` = SUBSTR(`next_button_text`, 1, 250) WHERE CHAR_LENGTH(`next_button_text`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `next_button_text` varchar(250) CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `next_button_text` varchar(250) CHARACTER SET utf8mb4 NULL
 _sql
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `note_to_user` = SUBSTR(`note_to_user`, 1, 250) WHERE CHAR_LENGTH(`note_to_user`) > 250
+	UPDATE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `note_to_user` = SUBSTR(`note_to_user`, 1, 250) WHERE CHAR_LENGTH(`note_to_user`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `note_to_user` varchar(250) CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `note_to_user` varchar(250) CHARACTER SET utf8mb4 NULL
 _sql
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `placeholder` = SUBSTR(`placeholder`, 1, 250) WHERE CHAR_LENGTH(`placeholder`) > 250
+	UPDATE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `placeholder` = SUBSTR(`placeholder`, 1, 250) WHERE CHAR_LENGTH(`placeholder`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `placeholder` varchar(250) CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `placeholder` varchar(250) CHARACTER SET utf8mb4 NULL
 _sql
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `previous_button_text` = SUBSTR(`previous_button_text`, 1, 250) WHERE CHAR_LENGTH(`previous_button_text`) > 250
+	UPDATE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `previous_button_text` = SUBSTR(`previous_button_text`, 1, 250) WHERE CHAR_LENGTH(`previous_button_text`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `previous_button_text` varchar(250) CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `previous_button_text` varchar(250) CHARACTER SET utf8mb4 NULL
 _sql
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `repeat_error_message` = SUBSTR(`repeat_error_message`, 1, 250) WHERE CHAR_LENGTH(`repeat_error_message`) > 250
+	UPDATE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `repeat_error_message` = SUBSTR(`repeat_error_message`, 1, 250) WHERE CHAR_LENGTH(`repeat_error_message`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `repeat_error_message` varchar(250) CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `repeat_error_message` varchar(250) CHARACTER SET utf8mb4 NULL
 _sql
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `repeat_field_label` = SUBSTR(`repeat_field_label`, 1, 250) WHERE CHAR_LENGTH(`repeat_field_label`) > 250
+	UPDATE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `repeat_field_label` = SUBSTR(`repeat_field_label`, 1, 250) WHERE CHAR_LENGTH(`repeat_field_label`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `repeat_field_label` varchar(250) CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `repeat_field_label` varchar(250) CHARACTER SET utf8mb4 NULL
 _sql
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `required_error_message` = SUBSTR(`required_error_message`, 1, 250) WHERE CHAR_LENGTH(`required_error_message`) > 250
+	UPDATE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `required_error_message` = SUBSTR(`required_error_message`, 1, 250) WHERE CHAR_LENGTH(`required_error_message`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `required_error_message` varchar(250) CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `required_error_message` varchar(250) CHARACTER SET utf8mb4 NULL
 _sql
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `validation_error_message` = SUBSTR(`validation_error_message`, 1, 250) WHERE CHAR_LENGTH(`validation_error_message`) > 250
+	UPDATE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `validation_error_message` = SUBSTR(`validation_error_message`, 1, 250) WHERE CHAR_LENGTH(`validation_error_message`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `validation_error_message` varchar(250) CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `validation_error_message` varchar(250) CHARACTER SET utf8mb4 NULL
 _sql
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `values_source` = SUBSTR(`values_source`, 1, 250) WHERE CHAR_LENGTH(`values_source`) > 250
+	UPDATE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `values_source` = SUBSTR(`values_source`, 1, 250) WHERE CHAR_LENGTH(`values_source`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `values_source` varchar(250) CHARACTER SET utf8mb4 NOT NULL default ''
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `values_source` varchar(250) CHARACTER SET utf8mb4 NOT NULL default ''
 _sql
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `values_source_filter` = SUBSTR(`values_source_filter`, 1, 250) WHERE CHAR_LENGTH(`values_source_filter`) > 250
+	UPDATE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `values_source_filter` = SUBSTR(`values_source_filter`, 1, 250) WHERE CHAR_LENGTH(`values_source_filter`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `values_source_filter` varchar(250) CHARACTER SET utf8mb4 NOT NULL default ''
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `values_source_filter` varchar(250) CHARACTER SET utf8mb4 NOT NULL default ''
 _sql
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `value_postfix` = SUBSTR(`value_postfix`, 1, 250) WHERE CHAR_LENGTH(`value_postfix`) > 250
+	UPDATE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `value_postfix` = SUBSTR(`value_postfix`, 1, 250) WHERE CHAR_LENGTH(`value_postfix`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `value_postfix` varchar(250) CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `value_postfix` varchar(250) CHARACTER SET utf8mb4 NULL
 _sql
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `value_prefix` = SUBSTR(`value_prefix`, 1, 250) WHERE CHAR_LENGTH(`value_prefix`) > 250
+	UPDATE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `value_prefix` = SUBSTR(`value_prefix`, 1, 250) WHERE CHAR_LENGTH(`value_prefix`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `value_prefix` varchar(250) CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `value_prefix` varchar(250) CHARACTER SET utf8mb4 NULL
 _sql
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `visible_condition_field_value` = SUBSTR(`visible_condition_field_value`, 1, 250) WHERE CHAR_LENGTH(`visible_condition_field_value`) > 250
+	UPDATE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` SET `visible_condition_field_value` = SUBSTR(`visible_condition_field_value`, 1, 250) WHERE CHAR_LENGTH(`visible_condition_field_value`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `visible_condition_field_value` varchar(250) CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` MODIFY COLUMN `visible_condition_field_value` varchar(250) CHARACTER SET utf8mb4 NULL
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_partial_response_data` MODIFY COLUMN `value` text CHARACTER SET utf8mb4 NOT NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_partial_response_data` MODIFY COLUMN `value` text CHARACTER SET utf8mb4 NOT NULL
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response` MODIFY COLUMN `crm_response` text CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response` MODIFY COLUMN `crm_response` text CHARACTER SET utf8mb4 NULL
 _sql
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response_data` SET `internal_value` = SUBSTR(`internal_value`, 1, 250) WHERE CHAR_LENGTH(`internal_value`) > 250
+	UPDATE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response_data` SET `internal_value` = SUBSTR(`internal_value`, 1, 250) WHERE CHAR_LENGTH(`internal_value`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response_data` MODIFY COLUMN `internal_value` varchar(250) CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response_data` MODIFY COLUMN `internal_value` varchar(250) CHARACTER SET utf8mb4 NULL
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response_data` MODIFY COLUMN `value` text CHARACTER SET utf8mb4 NOT NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response_data` MODIFY COLUMN `value` text CHARACTER SET utf8mb4 NOT NULL
 _sql
 
 //Rename pdf_upload to document_upload
 ); ze\dbAdm::revision(102
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
 	MODIFY COLUMN `field_type` enum('checkbox','checkboxes','date','editor','radios','centralised_radios','select','centralised_select','text','textarea','url','attachment','page_break','section_description','calculated','restatement','repeat_start','repeat_end', 'pdf_upload', 'document_upload') DEFAULT NULL
 _sql
 
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
+	UPDATE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
 	SET `field_type` = 'document_upload' WHERE `field_type` = 'pdf_upload'
 _sql
 
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
 	MODIFY COLUMN `field_type` enum('checkbox','checkboxes','date','editor','radios','centralised_radios','select','centralised_select','text','textarea','url','attachment','page_break','section_description','calculated','restatement','repeat_start','repeat_end', 'document_upload') DEFAULT NULL
 _sql
 
 //Add column for fields being mandatory if visible
 ); ze\dbAdm::revision(103
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
 	ADD COLUMN `mandatory_if_visible` tinyint(1) NOT NULL DEFAULT '0' AFTER `is_required`
 _sql
 
 //Add column for document upload default combined images filename
 ); ze\dbAdm::revision(104
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
 	ADD COLUMN `combined_filename` varchar(250) CHARACTER SET utf8mb4 DEFAULT NULL
 _sql
 
 //New table to store pages seperatly rather than having page break fields
 ); ze\dbAdm::revision(106
 , <<<_sql
-	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]pages`
+	DROP TABLE IF EXISTS `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]pages`
 _sql
 
 ,<<<_sql
-	CREATE TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]pages`(
+	CREATE TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]pages`(
 		`id` int(10) unsigned NOT NULL AUTO_INCREMENT,
 		`form_id` int(10) unsigned NOT NULL,
 		`ord` int(10) unsigned NOT NULL DEFAULT '1',
@@ -1006,7 +1006,7 @@ _sql
 _sql
 
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
 	ADD COLUMN `page_id` int(10) unsigned NOT NULL AFTER `user_form_id`
 _sql
 
@@ -1016,7 +1016,7 @@ _sql
 if (ze\dbAdm::needRevision(107)) {
 	$sql = '
 		SELECT id, page_end_name, default_previous_button_text, hide_final_page_in_page_switcher
-		FROM ' . DB_NAME_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_forms';
+		FROM ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_forms';
 	$result = ze\sql::select($sql);
 	while ($form = ze\sql::fetchAssoc($result)) {
 		$ord = 0;
@@ -1024,7 +1024,7 @@ if (ze\dbAdm::needRevision(107)) {
 		
 		$sql = '
 			SELECT * 
-			FROM ' . DB_NAME_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_form_fields
+			FROM ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_form_fields
 			WHERE user_form_id = ' . (int)$form['id'] . '
 			ORDER BY ord';
 		$fieldsResult = ze\sql::select($sql);
@@ -1047,7 +1047,7 @@ if (ze\dbAdm::needRevision(107)) {
 				$pageId = ze\row::insert(ZENARIO_USER_FORMS_PREFIX . 'pages', $page);
 				if ($pageFields) {
 					$sql = '
-						UPDATE ' . DB_NAME_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_form_fields
+						UPDATE ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_form_fields
 						SET page_id = ' . (int)$pageId . ' WHERE id IN (' . implode(',', array_keys($pageFields)) . ')';
 					ze\sql::update($sql);
 				}
@@ -1068,7 +1068,7 @@ if (ze\dbAdm::needRevision(107)) {
 		$pageId = ze\row::insert(ZENARIO_USER_FORMS_PREFIX . 'pages', $page);
 		if ($pageFields) {
 			$sql = '
-				UPDATE ' . DB_NAME_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_form_fields
+				UPDATE ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_form_fields
 				SET page_id = ' . (int)$pageId . ' WHERE id IN (' . implode(',', array_keys($pageFields)) . ')';
 			ze\sql::update($sql);
 		}
@@ -1083,7 +1083,7 @@ if (ze\dbAdm::needRevision(107)) {
 
 ze\dbAdm::revision(108
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
 	DROP COLUMN `default_next_button_text`,
 	DROP COLUMN `default_previous_button_text`,
 	DROP COLUMN `hide_final_page_in_page_switcher`,
@@ -1091,7 +1091,7 @@ ze\dbAdm::revision(108
 _sql
 
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
 	MODIFY COLUMN `field_type` enum('checkbox','checkboxes','date','editor','radios','centralised_radios','select','centralised_select','text','textarea','url','attachment','section_description','calculated','restatement','repeat_start','repeat_end','document_upload') DEFAULT NULL,
 	DROP COLUMN `next_button_text`,
 	DROP COLUMN `previous_button_text`,
@@ -1101,37 +1101,37 @@ _sql
 //Replacing a table with a column...
 ); ze\dbAdm::revision(109
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
 	ADD COLUMN `filter_on_field` int(10) unsigned NOT NULL DEFAULT 0
 _sql
 
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` uf
-	INNER JOIN `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]form_field_update_link` ufl 
+	UPDATE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` uf
+	INNER JOIN `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]form_field_update_link` ufl 
 		ON uf.id = ufl.target_field_id
 	SET  uf.filter_on_field = ufl.source_field_id
 _sql
 
 , <<<_sql
-	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]form_field_update_link`
+	DROP TABLE IF EXISTS `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]form_field_update_link`
 _sql
 
 ); ze\dbAdm::revision(110
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]form_field_values`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]form_field_values`
 	MODIFY `ord` int(10) unsigned NOT NULL DEFAULT 0,
 	MODIFY `label` varchar(250) CHARACTER SET utf8mb4 NOT NULL DEFAULT ''
 _sql
 
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
 	MODIFY COLUMN `name` varchar(250) CHARACTER SET utf8mb4 NOT NULL DEFAULT ''
 _sql
 
 //This was never implemented or used
 ); ze\dbAdm::revision(111
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
 	DROP COLUMN `autocomplete_class_name`,
 	DROP COLUMN `autocomplete_method_name`,
 	DROP COLUMN `autocomplete_param_1`,
@@ -1140,7 +1140,7 @@ _sql
 
 ); ze\dbAdm::revision(112
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
 	ADD COLUMN `repeat_start_id` int(10) unsigned NOT NULL DEFAULT '0',
 	DROP COLUMN `show_repeat_field`,
 	DROP COLUMN `repeat_field_label`,
@@ -1153,14 +1153,14 @@ _sql
 if (ze\dbAdm::needRevision(114)) {
 	$sql = '
 		SELECT id
-		FROM ' . DB_NAME_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_forms';
+		FROM ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_forms';
 	$result = ze\sql::select($sql);
 	while ($form = ze\sql::fetchAssoc($result)) {
 		$repeatStartId = false;
 		$sql = '
 			SELECT uff.id, uff.field_type
-			FROM ' . DB_NAME_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_form_fields uff
-			INNER JOIN ' . DB_NAME_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'pages p
+			FROM ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_form_fields uff
+			INNER JOIN ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'pages p
 				ON uff.page_id = p.id
 			WHERE uff.user_form_id = ' . (int)$form['id'] . '
 			ORDER BY p.ord, uff.ord';
@@ -1181,8 +1181,8 @@ if (ze\dbAdm::needRevision(114)) {
 //Migration for max_page_reached stored in form partial responses
 ze\dbAdm::revision(115
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_partial_response` r
-	INNER JOIN `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]pages` p
+	UPDATE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_partial_response` r
+	INNER JOIN `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]pages` p
 		ON r.form_id = p.form_id
 		AND r.max_page_reached = p.ord
 	SET r.max_page_reached = p.id
@@ -1190,14 +1190,14 @@ _sql
 
 ); ze\dbAdm::revision(117
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
 	ADD COLUMN `verification_email_template` varchar(255) DEFAULT NULL,
 	ADD COLUMN `welcome_email_template` varchar(255) DEFAULT NULL
 _sql
 
 ); ze\dbAdm::revision(118
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
 	MODIFY COLUMN `verification_email_template` varchar(250) CHARACTER SET utf8mb4 DEFAULT NULL,
 	MODIFY COLUMN `welcome_email_template` varchar(250) CHARACTER SET utf8mb4 DEFAULT NULL,
 	ADD COLUMN `welcome_message` varchar(250) CHARACTER SET utf8mb4 DEFAULT NULL,
@@ -1206,7 +1206,7 @@ _sql
 
 ); ze\dbAdm::revision(120
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
 	ADD KEY (`user_form_id`),
 	ADD KEY (`page_id`),
 	ADD KEY (`user_field_id`),
@@ -1215,56 +1215,56 @@ _sql
 
 ); ze\dbAdm::revision(121
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
 	ADD COLUMN `no_past_dates` tinyint(1) NOT NULL DEFAULT '0' AFTER `show_month_year_selectors`
 _sql
 
 ); ze\dbAdm::revision(122
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
 	CHANGE `word_limit` `word_count_max` int(10) unsigned DEFAULT NULL,
 	ADD COLUMN `word_count_min` int(10) unsigned DEFAULT NULL AFTER `word_count_max`
 _sql
 
 ); ze\dbAdm::revision(124
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
 	ADD COLUMN `disable_manual_input` tinyint(1) NOT NULL DEFAULT '0'
 _sql
 
 ); ze\dbAdm::revision(126
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
+	UPDATE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
 	SET welcome_email_template = "zenario_users__to_user_account_activated"
 	WHERE welcome_email_template = "zenario_extranet_registration__to_user_account_activation_en"
 _sql
 
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
 	MODIFY COLUMN `success_message` text CHARACTER SET utf8mb4 DEFAULT NULL
 _sql
 
 ); ze\dbAdm::revision(151
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
 	ADD COLUMN `enable_suggested_values` tinyint(1) NOT NULL DEFAULT '0'
 _sql
 
 ); ze\dbAdm::revision(152
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
 	ADD COLUMN `add_row_label` varchar(250) CHARACTER SET utf8mb4 DEFAULT NULL AFTER `max_rows`
 _sql
 
 ); ze\dbAdm::revision(153
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
 	ADD COLUMN `no_future_dates` tinyint(1) NOT NULL DEFAULT '0' AFTER `no_past_dates`
 _sql
 
 ); ze\dbAdm::revision(154
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
 	ADD COLUMN `stop_user_editing_filename` tinyint(1) NOT NULL DEFAULT '0' AFTER `combined_filename`
 _sql
 
@@ -1272,7 +1272,7 @@ _sql
 
 if (ze\dbAdm::needRevision(156)) {
 	$sql = '
-		UPDATE ' . DB_NAME_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_form_fields
+		UPDATE ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_form_fields
 		SET stop_user_editing_filename = 1
 		WHERE field_type = "document_upload"
 		AND (combined_filename IS NOT NULL OR combined_filename != "")';
@@ -1284,13 +1284,13 @@ if (ze\dbAdm::needRevision(156)) {
 
 ze\dbAdm::revision(157
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
 	ADD COLUMN `summary_page_lower_text` text CHARACTER SET utf8mb4 AFTER `enable_summary_page`
 _sql
 
 ); ze\dbAdm::revision(158
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
 	ADD COLUMN `enable_summary_page_required_checkbox` tinyint(1) NOT NULL DEFAULT '0' AFTER `enable_summary_page`,
 	ADD COLUMN `summary_page_required_checkbox_label` varchar(250) CHARACTER SET utf8mb4 NULL AFTER `enable_summary_page_required_checkbox`,
 	ADD COLUMN `summary_page_required_checkbox_error_message` varchar(250) CHARACTER SET utf8mb4 NULL AFTER `summary_page_required_checkbox_label`
@@ -1298,57 +1298,57 @@ _sql
 
 ); ze\dbAdm::revision(159
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
 	ADD COLUMN `set_simple_access_cookie` tinyint(1) NOT NULL DEFAULT '0'
 _sql
 
 ); ze\dbAdm::revision(160
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
 	ADD COLUMN `simple_access_cookie_override_redirect` tinyint(1) NOT NULL DEFAULT '0'
 _sql
 
 ); ze\dbAdm::revision(161
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
 	ADD COLUMN `invert_dataset_result` tinyint(1) NOT NULL DEFAULT '0'
 _sql
 
 ); ze\dbAdm::revision(162
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
 	ADD COLUMN `show_in_summary` tinyint(1) NOT NULL DEFAULT '0'
 _sql
 
 ); ze\dbAdm::revision(163
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]pages`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]pages`
 	ADD COLUMN `show_in_summary` tinyint(1) NOT NULL DEFAULT '0'
 _sql
 
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]pages`
+	UPDATE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]pages`
 	SET `show_in_summary` = 1
 	WHERE `hide_in_page_switcher` = 0
 _sql
 
 ); ze\dbAdm::revision(180
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
 	ADD COLUMN `partial_completion_get_request` varchar(250) CHARACTER SET utf8mb4 NULL AFTER `partial_completion_message`
 _sql
 
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_partial_response`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_partial_response`
 	ADD COLUMN `get_request_value` int(10) unsigned DEFAULT NULL AFTER `form_id`
 _sql
 
 ); ze\dbAdm::revision(181
 , <<<_sql
-	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]predefined_text_targets`
+	DROP TABLE IF EXISTS `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]predefined_text_targets`
 _sql
 , <<<_sql
-	CREATE TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]predefined_text_targets` (
+	CREATE TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]predefined_text_targets` (
 		`form_field_id` int(10) unsigned NOT NULL,
 		`button_label` varchar(250) CHARACTER SET utf8mb4 NOT NULL,
 		PRIMARY KEY (`form_field_id`)
@@ -1356,10 +1356,10 @@ _sql
 _sql
 
 , <<<_sql
-	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]predefined_text_triggers`
+	DROP TABLE IF EXISTS `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]predefined_text_triggers`
 _sql
 , <<<_sql
-	CREATE TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]predefined_text_triggers` (
+	CREATE TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]predefined_text_triggers` (
 		`id` int(10) unsigned NOT NULL AUTO_INCREMENT,
 		`target_form_field_id` int(10) unsigned NOT NULL,
 		`form_field_id` int(10) unsigned NOT NULL DEFAULT 0,
@@ -1373,7 +1373,7 @@ _sql
 //Add individual options to forms on the period to delete the response
 ); ze\dbAdm::revision(182
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
 	ADD COLUMN `period_to_delete_response_headers` varchar(255) NOT NULL DEFAULT '',
 	ADD COLUMN `period_to_delete_response_content` varchar(255) NOT NULL DEFAULT ''
 _sql
@@ -1381,17 +1381,41 @@ _sql
 //Add a column to user responces to note whether data has been deleted from it
 ); ze\dbAdm::revision(184
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response`
 	ADD COLUMN `user_deleted` tinyint(1) NOT NULL DEFAULT '0',
 	ADD COLUMN `data_deleted` tinyint(1) NOT NULL DEFAULT '0'
 _sql
 
-); ze\dbAdm::revision(185
+//Remove word type captchas (Google recaptcha 1.0) because it has been discontinued
+); ze\dbAdm::revision(201
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
+	MODIFY COLUMN `captcha_type` enum('word', 'math','pictures') DEFAULT NULL
+_sql
+
+, <<<_sql
+	UPDATE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
+	SET `captcha_type` = NULL,
+	`use_captcha` = 0
+	WHERE `captcha_type` = 'word'
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
+	MODIFY COLUMN `captcha_type` enum('math','pictures') DEFAULT NULL
+_sql
+
+//Add a setting to control the position of error messages
+); ze\dbAdm::revision(202
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
+	ADD COLUMN `show_errors_below_fields` tinyint(1) NOT NULL DEFAULT '0'
+_sql
+
+); ze\dbAdm::revision(203
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
 	MODIFY COLUMN `welcome_message` text CHARACTER SET utf8mb4 DEFAULT NULL
 _sql
 
 );
-
-

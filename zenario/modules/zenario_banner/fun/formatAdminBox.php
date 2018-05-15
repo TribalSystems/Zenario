@@ -105,23 +105,27 @@ switch ($path) {
 		 && ($image = ze\row::get('files', ['width', 'height', 'alt_tag', 'title', 'floating_box_title'], $imageId))) {
 			$editModeOn = ze\ring::engToBoolean($box['tabs']['first_tab']['edit_mode']['on'] ?? false);
 			
-			$fields['first_tab/alt_tag']['multiple_edit']['original_value'] = $image['alt_tag'];
 			if ($box['first_display'] && !$values['first_tab/alt_tag']) {
 				$fields['first_tab/alt_tag']['value'] = $image['alt_tag'];
 			}
 			if ($editModeOn && !$changes['first_tab/alt_tag']) {
 				$fields['first_tab/alt_tag']['current_value'] = $image['alt_tag'];
 			}
-
-			$fields['first_tab/floating_box_title']['multiple_edit']['original_value'] = $image['floating_box_title'];
-			if ($box['first_display'] && !$values['first_tab/floating_box_title']) {
-				$fields['first_tab/floating_box_title']['value'] = $image['floating_box_title'];
+			
+			if ($image['floating_box_title']) {
+				$merge = '"' . $image['floating_box_title'] . '"';
+			} else {
+				$merge = 'No caption set';
 			}
-			if ($editModeOn && !$changes['first_tab/floating_box_title']) {
-				$fields['first_tab/floating_box_title']['current_value'] = $image['floating_box_title'];
+			$fields['first_tab/floating_box_title_mode']['values']['use_default']['label'] = 'Use default floating box caption (' . htmlspecialchars($merge) .')';
+				
+			if ($box['first_display']) {
+				if (!$values['first_tab/floating_box_title']) {
+					$fields['first_tab/floating_box_title']['value'] = $image['floating_box_title'];
+				}
 			}
 		
-			if	(($values['first_tab/image_source']  == '_CUSTOM_IMAGE' && !($values['first_tab/use_rollover']))
+			if (($values['first_tab/image_source']  == '_CUSTOM_IMAGE' && !($values['first_tab/use_rollover']))
 				|| $values['first_tab/image_source']  == '_PICTURE' ) {
 			} else {
 				if ($values['first_tab/link_type']=='_ENLARGE_IMAGE') {
@@ -130,23 +134,9 @@ switch ($path) {
 				}
 			}
 				
-		} else {
-			$fields['first_tab/alt_tag']['multiple_edit']['original_value'] = '';
-			$fields['first_tab/floating_box_title']['multiple_edit']['original_value'] = '';
 		}
 		
 		$box['first_display'] = false;
-		
-		
-		//if (isset($fields['text/use_phrases'])) {
-		//	$fields['text/use_phrases']['hidden'] =
-		//		ze\lang::count() <= 1
-		//	 && strpos($values['text/text'], '[[') === false
-		//	 && strpos($values['text/text'], ']]') === false
-		//	 && strpos($values['text/title'], '[[') === false
-		//	 && strpos($values['text/title'], ']]') === false;
-		//}
-		
 		
 		$fields['first_tab/hyperlink_target']['hidden'] = 
 		$fields['first_tab/hide_private_item']['hidden'] = 
@@ -161,6 +151,7 @@ switch ($path) {
 		$fields['text/more_link_text']['hidden'] = 
 		$fields['first_tab/target_blank']['hidden'] = 
 			$values['first_tab/link_type'] != '_CONTENT_ITEM'
+		 && $values['first_tab/link_type'] != '_DOCUMENT'
 		 && $values['first_tab/link_type'] != '_EXTERNAL_URL';
 
 		$fields['first_tab/use_translation']['hidden'] = 
@@ -196,8 +187,8 @@ switch ($path) {
 			$fields['text/more_link_text']['show_phrase_icon'] = false;
 			
 			$fields['text/text']['note_below'] =
-			$fields['text/title']['side_note'] =
-			$fields['text/more_link_text']['side_note'] = '';
+			$fields['text/title']['note_below'] =
+			$fields['text/more_link_text']['note_below'] = '';
 		
 		} else {
 			
@@ -213,8 +204,8 @@ switch ($path) {
 			$fields['text/text']['note_below'] = 
 				ze\admin::phrase('To use the phrases system, place your text in double square brackes [[like this]]. This must be in [[def_lang_name]], this site\'s default language.', $mrg);
 			
-			$fields['text/title']['side_note'] =
-			$fields['text/more_link_text']['side_note'] =
+			$fields['text/title']['note_below'] =
+			$fields['text/more_link_text']['note_below'] =
 				ze\admin::phrase('Enter text in [[def_lang_name]], this site\'s default language. <a href="[[phrases_panel]]" target="_blank">Click here to manage translations in Organizer</a>.', $mrg);
 		}
 		
@@ -225,6 +216,27 @@ switch ($path) {
 		$fields['mobile_tab/mobile_image']['hidden'] = $hideMobileOptions;
 		
 		$this->showHideImageOptions($fields, $values, 'mobile_tab', $hideMobileOptions, 'mobile_');
+		
+		//Privacy warning:
+		//Get selected document...
+		if (isset($box['tabs']['first_tab']['fields']['document_id']['current_value'])) {
+			$documentId = $box['tabs']['first_tab']['fields']['document_id']['current_value'];
+		} else {
+			$documentId = $box['tabs']['first_tab']['fields']['document_id']['value'];
+		}
+
+		//...get privacy settings of the document and content item...
+		$document = ze\row::get('documents', ['filename', 'privacy'], ['id' => $documentId]);
+		$contentItemPrivacy = ze\row::get('translation_chains', 'privacy', ['equiv_id' => $box['key']['cID']]);
+
+		//...and display or hide a privacy warning note if necessary.
+		if ($document['privacy'] == 'private' && ($contentItemPrivacy == 'public' || $contentItemPrivacy == 'logged_out')) {
+			$box['tabs']['first_tab']['fields']['privacy_warning']['note_below'] = '<p>Warning: content item is Public, the selected document is Private, so the document will not appear to visitors.</p>';
+		} elseif ($document['privacy'] == 'offline') {
+			$box['tabs']['first_tab']['fields']['privacy_warning']['note_below'] = '<p>Warning: the selected document is Offline, so it will not appear to visitors. Offline documents can be published at any time.</p>';
+		} else {
+			$box['tabs']['first_tab']['fields']['privacy_warning']['note_below'] = '';
+		}
 
 		
 

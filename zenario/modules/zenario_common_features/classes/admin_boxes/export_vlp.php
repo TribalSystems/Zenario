@@ -37,7 +37,7 @@ class zenario_common_features__admin_boxes__export_vlp extends ze\moduleBaseClas
 			SELECT COUNT(*)
 			FROM (
 				SELECT DISTINCT code, module_class_name
-				FROM ". DB_NAME_PREFIX. "visitor_phrases
+				FROM ". DB_PREFIX. "visitor_phrases
 			) AS c";
 		$result = ze\sql::select($sql);
 		list($phrases['total']) = ze\sql::fetchRow($result);
@@ -46,7 +46,7 @@ class zenario_common_features__admin_boxes__export_vlp extends ze\moduleBaseClas
 			SELECT COUNT(*)
 			FROM (
 				SELECT DISTINCT code, module_class_name
-				FROM ". DB_NAME_PREFIX. "visitor_phrases
+				FROM ". DB_PREFIX. "visitor_phrases
 				WHERE language_id = '". ze\escape::sql($box['key']['id']). "'
 			) AS c";
 		$result = ze\sql::select($sql);
@@ -139,14 +139,14 @@ class zenario_common_features__admin_boxes__export_vlp extends ze\moduleBaseClas
 				phrases.local_text AS `". ze\escape::sql(ze\lang::name($languageId, false)). " translation`
 			FROM (
 				SELECT DISTINCT code, module_class_name
-				FROM ". DB_NAME_PREFIX. "visitor_phrases
+				FROM ". DB_PREFIX. "visitor_phrases
 				WHERE code != '__LANGUAGE_FLAG_FILENAME__'
 			) AS codes
-			LEFT JOIN ". DB_NAME_PREFIX. "visitor_phrases AS phrases
+			LEFT JOIN ". DB_PREFIX. "visitor_phrases AS phrases
 			   ON phrases.code = codes.code
 			  AND phrases.module_class_name = codes.module_class_name
 			  AND phrases.language_id = '". ze\escape::sql($languageId). "'
-			LEFT JOIN ". DB_NAME_PREFIX. "visitor_phrases AS reference
+			LEFT JOIN ". DB_PREFIX. "visitor_phrases AS reference
 			   ON reference.code = codes.code
 			  AND reference.module_class_name = codes.module_class_name
 			  AND reference.language_id = '". ze\escape::sql(ze::$defaultLang). "'

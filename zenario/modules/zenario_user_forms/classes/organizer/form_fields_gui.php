@@ -71,10 +71,15 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 		$panel['dataset_fields'] = $this->getPanelDatasetFields();
 		
 		//Check if CRM is enabled on this form
-		$panel['crm_enabled'] = $this->isCRMEnabled($formId);
+		$panel['crm_enabled'] = zenario_user_forms::isFormCRMEnabled($formId, false);
 		
-		//Check if Salesforce api is enabled on this form
-		$panel['salesforce_enabled'] = $this->isSalesforceAPIEnabled($formId);
+		//Check if the form is not in use OR is on a pubic page so that if the "email" dataset field is missing from the form
+		//and another dataset field is present, a warning can be displayed.
+		$instanceIds = zenario_user_forms::getFormPlugins($formId);
+		
+		$panel['not_used_or_on_public_page'] =
+			!ze\pluginAdm::usage($instanceIds)
+		 || ze\pluginAdm::usage($instanceIds, $publishedOnly = false, $itemLayerOnly = false, $reportContentItems = false, $publicPagesOnly = true);
 		
 		
 		//Get form fields
@@ -107,7 +112,7 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 			
 			$field['field_label'] = $field['label'];
 			
-			//Get field LOV, CRM and salesforce values
+			//Get field LOV, CRM values
 			if (in_array($field['type'], ['checkboxes', 'radios', 'select', 'centralised_radios', 'centralised_select', 'text'])) {
 				$field['lov'] = [];
 				if ($field['dataset_field_id'] && $field['type'] != 'text') {
@@ -129,7 +134,7 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 							];
 						}
 					} else {
-						$lov = ze\row::getArray(ZENARIO_USER_FORMS_PREFIX. 'form_field_values', ['id', 'label', 'ord', 'is_invalid'], ['form_field_id' => $field['id']], 'ord');
+						$lov = ze\row::getAssocs(ZENARIO_USER_FORMS_PREFIX. 'form_field_values', ['id', 'label', 'ord', 'is_invalid'], ['form_field_id' => $field['id']], 'ord');
 						$field['invalid_responses'] = [];
 						if (in_array($field['type'], ['checkboxes', 'radios', 'select'])) {
 							foreach ($lov as $valueId => $value) {
@@ -147,17 +152,6 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 							$value['crm_value'] = $valueId;
 						} else {
 							$value['crm_value'] = $value['label'];
-						}
-					}
-					unset($value);
-				}
-				//salesforce values
-				if ($panel['salesforce_enabled']) {
-					foreach ($lov as $valueId => &$value) {
-						if ($field['type'] == 'centralised_radios' || $field['type'] == 'centralised_select') {
-							$value['salesforce_value'] = $valueId;
-						} else {
-							$value['salesforce_value'] = $value['label'];
 						}
 					}
 					unset($value);
@@ -198,7 +192,7 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 			$field['default_value_options'] = 'none';
 			if ($field['default_value'] !== null && $field['default_value'] !== '') {
 				$field['default_value_options'] = 'value';
-				if (in_array($field['type'], ['checkbox', 'group'])) {
+				if (in_array($field['type'], ['checkbox', 'group', 'consent'])) {
 					$field['default_value_lov'] = $field['default_value'] ? 'checked' : 'unchecked';
 				} elseif (in_array($field['type'], ['radios', 'centralised_radios', 'select', 'centralised_select'])) {
 					$field['default_value_lov'] = $field['default_value'];
@@ -219,7 +213,7 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 					if ($conditionFieldType != 'checkboxes') {
 						$field['visible_condition_field_type'] = 'visible_if_one_of';
 					}
-				} elseif ($conditionFieldType == 'checkbox' || $conditionFieldType == 'group') {
+				} elseif ($conditionFieldType == 'checkbox' || $conditionFieldType == 'group' || $conditionFieldType == 'consent') {
 					$field['visible_condition_field_value'] = $field['visible_condition_field_value'] ? 'checked' : 'unchecked';
 				}
 			}
@@ -229,7 +223,7 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 				$conditionFieldType = $fields[$field['mandatory_condition_field_id']]['type'];
 				if ($conditionFieldType == 'checkboxes') {
 					$field['mandatory_condition_checkboxes_field_value'] = explode(',', $field['mandatory_condition_field_value']);
-				} elseif ($conditionFieldType == 'checkbox' || $conditionFieldType == 'group') {
+				} elseif ($conditionFieldType == 'checkbox' || $conditionFieldType == 'group' || $conditionFieldType == 'consent') {
 					$field['mandatory_condition_field_value'] = $field['mandatory_condition_field_value'] ? 'checked' : 'unchecked';
 				}
 			}
@@ -241,7 +235,6 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 			}
 			
 			$field['_crm_data'] = [];
-			$field['_salesforce_data'] = [];
 			$field['_translations'] = [];
 			
 			if (!empty($panel['show_translation_tab'])) {
@@ -270,12 +263,12 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 		//Get CRM data for form fields if crm module is running
 		if ($panel['crm_enabled']) {
 			$sql = '
-				SELECT fcf.form_field_id, fcf.field_crm_name, uff.user_field_id, uff.field_type, cdf.type
-				FROM ' . DB_NAME_PREFIX . ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'form_crm_fields fcf
-				INNER JOIN ' . DB_NAME_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_form_fields uff
+				SELECT cf.form_field_id, cf.name AS field_crm_name, uff.user_field_id, uff.field_type, cdf.type
+				FROM ' . DB_PREFIX . ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'crm_fields cf
+				INNER JOIN ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_form_fields uff
 					ON uff.user_form_id = ' . (int)$formId . '
-					AND fcf.form_field_id = uff.id
-				LEFT JOIN ' . DB_NAME_PREFIX . 'custom_dataset_fields cdf
+					AND cf.form_field_id = uff.id
+				LEFT JOIN ' . DB_PREFIX . 'custom_dataset_fields cdf
 					ON uff.user_field_id = cdf.id';
 			$result = ze\sql::select($sql);
 			while ($row = ze\sql::fetchAssoc($result)) {
@@ -287,11 +280,11 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 					$type = $row['field_type'] ? $row['field_type'] : $row['type'];
 					
 					//Get multi field CRM values
-					if (in_array($type, ['checkboxes', 'select', 'radios', 'centralised_select', 'centralised_radios', 'checkbox', 'group'])) {
+					if (in_array($type, ['checkboxes', 'select', 'radios', 'centralised_select', 'centralised_radios', 'checkbox', 'group', 'consent'])) {
 						$foundCRMValues = [];
 						
 						$crmValues = ze\row::query(
-							ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'form_crm_field_values', 
+							ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'crm_field_values', 
 							[
 								'form_field_value_dataset_id', 
 								'form_field_value_unlinked_id', 
@@ -303,7 +296,7 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 						);
 						
 						while ($crmValue = ze\sql::fetchAssoc($crmValues)) {
-							if ($type == 'checkbox' || $type == 'group') {
+							if ($type == 'checkbox' || $type == 'group' || $type == 'consent') {
 								$state = $crmValue['form_field_value_checkbox_state'] ? 'checked' : 'unchecked';
 								$fields[$row['form_field_id']]['_crm_data']['values'][$state] = [
 									'label' => $crmValue['form_field_value_checkbox_state'],
@@ -330,69 +323,6 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 			}
 		}
 		
-		//Get Salesforce data for form fields if salesforce api module is running
-		if ($panel['salesforce_enabled']) {
-			$sql = '
-				SELECT fcf.form_field_id, fcf.field_crm_name, uff.user_field_id, uff.field_type, cdf.type
-				FROM ' . DB_NAME_PREFIX . ZENARIO_SALESFORCE_API_FORM_INTEGRATION_PREFIX . 'form_crm_fields fcf
-				INNER JOIN ' . DB_NAME_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_form_fields uff
-					ON uff.user_form_id = ' . (int)$formId . '
-					AND fcf.form_field_id = uff.id
-				LEFT JOIN ' . DB_NAME_PREFIX . 'custom_dataset_fields cdf
-					ON uff.user_field_id = cdf.id';
-			$result = ze\sql::select($sql);
-			while ($row = ze\sql::fetchAssoc($result)) {
-				if (isset($fields[$row['form_field_id']])) {
-					//Get CRM field name
-					$fields[$row['form_field_id']]['salesforce_field_crm_name'] = $row['field_crm_name'];
-					$fields[$row['form_field_id']]['salesforce_send_to_crm'] = true;
-					
-					$type = $row['field_type'] ? $row['field_type'] : $row['type'];
-					
-					//Get multi field CRM values
-					if (in_array($type, array('checkboxes', 'select', 'radios', 'centralised_select', 'centralised_radios', 'checkbox', 'group'))) {
-						$foundCRMValues = array();
-						
-						$crmValues = ze\row::query(
-							ZENARIO_SALESFORCE_API_FORM_INTEGRATION_PREFIX . 'form_crm_field_values', 
-							array(
-								'form_field_value_dataset_id', 
-								'form_field_value_unlinked_id', 
-								'form_field_value_centralised_key', 
-								'form_field_value_checkbox_state',
-								'value'
-							), 
-							array('form_field_id' => $row['form_field_id'])
-						);
-						
-						while ($crmValue = ze\sql::fetchAssoc($crmValues)) {
-							if ($type == 'checkbox' || $type == 'group') {
-								$state = $crmValue['form_field_value_checkbox_state'] ? 'checked' : 'unchecked';
-								$fields[$row['form_field_id']]['_salesforce_data']['values'][$state] = array(
-									'label' => $crmValue['form_field_value_checkbox_state'],
-									'salesforce_value' => $crmValue['value']
-								);
-							} elseif ($type == 'centralised_select' || $type == 'centralised_radios') {
-								if (isset($fields[$row['form_field_id']]['lov'][$crmValue['form_field_value_centralised_key']])) {
-									$fields[$row['form_field_id']]['lov'][$crmValue['form_field_value_centralised_key']]['salesforce_value'] = $crmValue['value'];
-								}
-							} else {
-								if ($row['user_field_id']) {
-									if (isset($fields[$row['form_field_id']]['lov'][$crmValue['form_field_value_dataset_id']])) {
-										$fields[$row['form_field_id']]['lov'][$crmValue['form_field_value_dataset_id']]['salesforce_value'] = $crmValue['value'];
-									}
-								} else {
-									if (isset($fields[$row['form_field_id']]['lov'][$crmValue['form_field_value_unlinked_id']])) {
-										$fields[$row['form_field_id']]['lov'][$crmValue['form_field_value_unlinked_id']]['salesforce_value'] = $crmValue['value'];
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-		
 		$pages = [];
 		$pagesResult = ze\row::query(ZENARIO_USER_FORMS_PREFIX . 'pages', true, ['form_id' => $formId], 'ord');
 		
@@ -409,7 +339,7 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 					if ($conditionFieldType != 'checkboxes') {
 						$page['visible_condition_field_type'] = 'visible_if_one_of';
 					}
-				} elseif ($conditionFieldType == 'checkbox' || $conditionFieldType == 'group') {
+				} elseif ($conditionFieldType == 'checkbox' || $conditionFieldType == 'group' || $conditionFieldType == 'consent') {
 					$page['visible_condition_field_value'] = $page['visible_condition_field_value'] ? 'checked' : 'unchecked';
 				}
 			}
@@ -455,8 +385,8 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 		
 		$sql = '
 			SELECT cdf.id, cdf.tab_name, cdf.is_system_field, cdf.fundamental, cdf.field_name, cdf.type, cdf.db_column, cdf.label, cdf.default_label, cdf.ord, cdf.values_source, cdf.values_source_filter
-			FROM ' . DB_NAME_PREFIX . 'custom_dataset_fields cdf
-			INNER JOIN ' . DB_NAME_PREFIX . 'custom_dataset_tabs cdt
+			FROM ' . DB_PREFIX . 'custom_dataset_fields cdf
+			INNER JOIN ' . DB_PREFIX . 'custom_dataset_tabs cdt
 				ON cdf.tab_name = cdt.name
 				AND cdf.dataset_id = cdt.dataset_id
 			WHERE cdf.dataset_id = ' . (int)$dataset['id'] . '
@@ -466,7 +396,7 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 				AND cdf.repeat_start_id = ' . (int)$repeatStartId;
 		} else {
 			$sql .= '
-				AND cdf.type IN ("group", "checkbox", "checkboxes", "date", "editor", "radios", "centralised_radios", "select", "centralised_select", "text", "textarea", "url", "file_picker", "repeat_start")
+				AND cdf.type IN ("group", "checkbox", "consent", "checkboxes", "date", "editor", "radios", "centralised_radios", "select", "centralised_select", "text", "textarea", "url", "file_picker", "repeat_start")
 			AND cdf.repeat_start_id = 0';
 		} 
 		$sql .= '
@@ -510,9 +440,8 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 			case 'save':
 				$form = ze\row::get(ZENARIO_USER_FORMS_PREFIX . 'user_forms', ['translate_text'], $formId);
 				$languages = ze\lang::getLanguages(false, true, true);
-				$crmEnabled = $this->isCRMEnabled($formId);
-				$salesforceEnabled = $this->isSalesforceAPIEnabled($formId);
-				
+				$crmEnabled = zenario_user_forms::isFormCRMEnabled($formId, false);
+								
 				$pagesJSON = $_POST['pages'] ?? false;
 				$pages = json_decode($pagesJSON, true);
 				$fieldsJSON = $_POST['fields'] ?? false;
@@ -670,10 +599,6 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 							//Save field CRM data
 							if ($crmEnabled) {
 								$this->updateFieldCRMData($formId, $fieldId, $field, $tempValueIdLink);
-							}
-							//Save field salesforce data
-							if ($salesforceEnabled) {
-								$this->updateFieldSalesforceData($formId, $fieldId, $field, $tempValueIdLink);
 							}
 							//Update field values
 							if (empty($field['dataset_field_id']) || $field['type'] == 'text') {
@@ -863,6 +788,7 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 						break;
 					case 'checkbox':
 					case 'group':
+					case 'consent':
 						$values['visible_condition_field_value'] = (!empty($item['visible_condition_field_value']) && $item['visible_condition_field_value'] == 'checked') ? 1 : 0;
 						break;
 					default:
@@ -874,57 +800,37 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 		return $values;
 	}
 	
-	
-	
-	private function isCRMEnabled($formId) {
-		if (ze\module::inc('zenario_crm_form_integration')) {
-			if (ze\row::exists(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'form_crm_data', ['form_id' => $formId, 'enable_crm_integration' => 1])) {
-				return true;
-			}
-		}
-		return false;
-	}
-	
-	private function isSalesforceAPIEnabled($formId) {
-		if (ze\module::inc('zenario_salesforce_api_form_integration')) {
-			if (ze\row::exists(ZENARIO_SALESFORCE_API_FORM_INTEGRATION_PREFIX . 'form_crm_link', array('form_id' => $formId, 'enable_crm_integration' => 1))) {
-				return true;
-			}
-		}
-		return false;
-	}
-	
 	private function updateFieldCRMData($formId, $fieldId, $field, $tempValueIdLink) {
 		if (!empty($field['send_to_crm']) && !empty($field['field_crm_name'])) {
-			$formCRMValues = ['field_crm_name' => $field['field_crm_name']];
+			$formCRMValues = ['name' => $field['field_crm_name']];
 			
 			if (
 				!ze\row::exists(
-					ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'form_crm_fields', 
-					['form_field_id' => $fieldId, 'field_crm_name' => $field['field_crm_name']]
+					ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'crm_fields', 
+					['form_field_id' => $fieldId, 'name' => $field['field_crm_name']]
 				)
 			) {
 				//Get next ordinal
 				$maxOrdinalSQL = '
-					SELECT MAX(fcf.ordinal)
-					FROM ' . DB_NAME_PREFIX . ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'form_crm_fields fcf
-					INNER JOIN ' . DB_NAME_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_form_fields uff
+					SELECT MAX(cf.ord)
+					FROM ' . DB_PREFIX . ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'crm_fields cf
+					INNER JOIN ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_form_fields uff
 						ON uff.user_form_id = ' . (int)$formId . '
-						AND fcf.form_field_id = uff.id
-					WHERE fcf.field_crm_name = "' . ze\escape::sql($field['field_crm_name']) . '"';
+						AND cf.form_field_id = uff.id
+					WHERE cf.name = "' . ze\escape::sql($field['field_crm_name']) . '"';
 				$maxOrdinalResult = ze\sql::select($maxOrdinalSQL);
 				$maxOrdinalRow = ze\sql::fetchRow($maxOrdinalResult);
-				$formCRMValues['ordinal'] = $maxOrdinalRow[0] ? $maxOrdinalRow[0] + 1 : 1;
+				$formCRMValues['ord'] = $maxOrdinalRow[0] ? $maxOrdinalRow[0] + 1 : 1;
 			}
 			
-			ze\row::set(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'form_crm_fields', $formCRMValues, ['form_field_id' => $fieldId]);
+			ze\row::set(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'crm_fields', $formCRMValues, ['form_field_id' => $fieldId]);
 			
 			
-			if (($field['type'] == 'checkbox' || $field['type'] == 'group') && !empty($field['_crm_data']['values'])) {
+			if (($field['type'] == 'checkbox' || $field['type'] == 'group' || $field['type'] == 'consent') && !empty($field['_crm_data']['values'])) {
 				foreach ($field['_crm_data']['values'] as $lovId => $lovValue) {
 					$state = ($lovId == 'checked') ? 1 : 0;
 					ze\row::set(
-						ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'form_crm_field_values',
+						ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'crm_field_values',
 						[
 							'value' => $lovValue['crm_value'],
 							'form_field_value_dataset_id' => null,
@@ -949,7 +855,7 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 						$lovId = $lovValue['id'];
 						if ($field['type'] == 'centralised_select' || $field['type'] == 'centralised_radios') {
 							ze\row::set(
-								ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'form_crm_field_values',
+								ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'crm_field_values',
 								[
 									'value' => $lovValue['crm_value'],
 									'form_field_value_dataset_id' => null,
@@ -963,7 +869,7 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 							);
 						} elseif (!empty($field['dataset_field_id'])) {
 							ze\row::set(
-								ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'form_crm_field_values',
+								ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'crm_field_values',
 								[
 									'value' => $lovValue['crm_value'],
 									'form_field_value_centralised_key' => null,
@@ -982,7 +888,7 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 								$lovId = $tempValueIdLink[$lovId];
 								
 								ze\row::set(
-									ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'form_crm_field_values',
+									ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'crm_field_values',
 									[
 										'value' => $lovValue['crm_value'],
 										'form_field_value_centralised_key' => null,
@@ -1002,116 +908,6 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 		} else {
 			//Delete CRM data
 			zenario_crm_form_integration::deleteFieldCRMData($fieldId);
-		}
-	}
-	
-	private function updateFieldSalesforceData($formId, $fieldId, $field, $tempValueIdLink) {
-		if (!empty($field['salesforce_send_to_crm']) && !empty($field['salesforce_field_crm_name'])) {
-			$formCRMValues = array('field_crm_name' => $field['salesforce_field_crm_name']);
-			
-			if (
-				!ze\row::exists(
-					ZENARIO_SALESFORCE_API_FORM_INTEGRATION_PREFIX . 'form_crm_fields', 
-					array('form_field_id' => $fieldId, 'field_crm_name' => $field['salesforce_field_crm_name'])
-				)
-			) {
-				//Get next ordinal
-				$maxOrdinalSQL = '
-					SELECT MAX(fcf.ordinal)
-					FROM ' . DB_NAME_PREFIX . ZENARIO_SALESFORCE_API_FORM_INTEGRATION_PREFIX . 'form_crm_fields fcf
-					INNER JOIN ' . DB_NAME_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_form_fields uff
-						ON uff.user_form_id = ' . (int)$formId . '
-						AND fcf.form_field_id = uff.id
-					WHERE fcf.field_crm_name = "' . ze\escape::sql($field['salesforce_field_crm_name']) . '"';
-				$maxOrdinalResult = ze\sql::select($maxOrdinalSQL);
-				$maxOrdinalRow = ze\sql::fetchRow($maxOrdinalResult);
-				$formCRMValues['ordinal'] = $maxOrdinalRow[0] ? $maxOrdinalRow[0] + 1 : 1;
-			}
-			
-			ze\row::set(ZENARIO_SALESFORCE_API_FORM_INTEGRATION_PREFIX . 'form_crm_fields', $formCRMValues, array('form_field_id' => $fieldId));
-			
-			if (($field['type'] == 'checkbox' || $field['type'] == 'group') && !empty($field['_salesforce_data']['values'])) {
-				foreach ($field['_salesforce_data']['values'] as $lovId => $lovValue) {
-					$state = ($lovId == 'checked') ? 1 : 0;
-					ze\row::set(
-						ZENARIO_SALESFORCE_API_FORM_INTEGRATION_PREFIX . 'form_crm_field_values',
-						array(
-							'value' => $lovValue['salesforce_value'],
-							'form_field_value_dataset_id' => null,
-							'form_field_value_unlinked_id' => null,
-							'form_field_value_centralised_key' => null
-						),
-						array(
-							'form_field_value_checkbox_state' => $state,
-							'form_field_id' => $fieldId
-						)
-					);
-				}
-				
-			} else {
-				
-				//Save values
-				if (isset($field['lov'])) {
-					foreach ($field['lov'] as $i => $lovValue) {
-						if (!isset($lovValue['salesforce_value']) || $lovValue['salesforce_value'] === '') {
-							continue;
-						}
-						$lovId = $lovValue['id'];
-						if ($field['type'] == 'centralised_select' || $field['type'] == 'centralised_radios') {
-							ze\row::set(
-								ZENARIO_SALESFORCE_API_FORM_INTEGRATION_PREFIX . 'form_crm_field_values',
-								array(
-									'value' => $lovValue['salesforce_value'],
-									'form_field_value_dataset_id' => null,
-									'form_field_value_unlinked_id' => null,
-									'form_field_value_checkbox_state' => null
-								),
-								array(
-									'form_field_value_centralised_key' => $lovId,
-									'form_field_id' => $fieldId
-								)
-							);
-						} elseif (!empty($field['dataset_field_id'])) {
-							ze\row::set(
-								ZENARIO_SALESFORCE_API_FORM_INTEGRATION_PREFIX . 'form_crm_field_values',
-								array(
-									'value' => $lovValue['salesforce_value'],
-									'form_field_value_centralised_key' => null,
-									'form_field_value_unlinked_id' => null,
-									'form_field_value_checkbox_state' => null
-								),
-								array(
-									'form_field_value_dataset_id' => $lovId,
-									'form_field_id' => $fieldId
-								)
-							);
-						} else {
-							
-							//Get actual ID if the value was using a temp ID e.g. t1
-							if (isset($tempValueIdLink[$lovId])) {
-								$lovId = $tempValueIdLink[$lovId];
-								
-								ze\row::set(
-									ZENARIO_SALESFORCE_API_FORM_INTEGRATION_PREFIX . 'form_crm_field_values',
-									array(
-										'value' => $lovValue['salesforce_value'],
-										'form_field_value_centralised_key' => null,
-										'form_field_value_dataset_id' => null,
-										'form_field_value_checkbox_state' => null
-									),
-									array(
-										'form_field_value_unlinked_id' => $lovId,
-										'form_field_id' => $fieldId
-									)
-								);
-							}
-						}
-					}
-				}
-			}
-		} else {
-			//Delete CRM data
-			zenario_salesforce_api_form_integration::deleteFieldCRMData($fieldId);
 		}
 	}
 	
@@ -1150,7 +946,7 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 			if ($oldCode) {
 				$sql = '
 					SELECT id
-					FROM ' . DB_NAME_PREFIX.ZENARIO_USER_FORMS_PREFIX . 'user_form_fields
+					FROM ' . DB_PREFIX.ZENARIO_USER_FORMS_PREFIX . 'user_form_fields
 					WHERE ( 
 							label = "'.ze\escape::sql($oldCode).'"
 						OR
@@ -1294,6 +1090,7 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 					break;
 				case 'checkbox':
 				case 'group':
+				case 'consent':
 					$values['mandatory_condition_field_value'] = (!empty($field['mandatory_condition_field_value']) && $field['mandatory_condition_field_value'] == 'checked') ? 1 : 0;
 					break;
 				default:
@@ -1316,7 +1113,7 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 		$values['default_value_param_1'] = null;
 		$values['default_value_param_2'] = null;
 		if ($defaultValueMode == 'value') {
-			if (in_array($field['type'], ['checkbox', 'group']) && isset($field['default_value_lov'])) {
+			if (in_array($field['type'], ['checkbox', 'group', 'consent']) && isset($field['default_value_lov'])) {
 				$values['default_value'] = $field['default_value_lov'] == 'checked' ? 1 : 0;
 			} else if (in_array($field['type'], ['radios', 'centralised_radios', 'select', 'centralised_select']) && isset($field['default_value_lov'])) {
 				$values['default_value'] = $field['default_value_lov'];
@@ -1572,10 +1369,10 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 				cdf.min_rows AS dataset_min_rows,
 				cdf.max_rows AS dataset_max_rows,
 				cdf.repeat_start_id AS dataset_repeat_start_id
-			FROM ' . DB_NAME_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_forms AS uf
-			INNER JOIN ' . DB_NAME_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_form_fields AS uff
+			FROM ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_forms AS uf
+			INNER JOIN ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_form_fields AS uff
 				ON uf.id = uff.user_form_id
-			LEFT JOIN ' . DB_NAME_PREFIX . 'custom_dataset_fields AS cdf
+			LEFT JOIN ' . DB_PREFIX . 'custom_dataset_fields AS cdf
 				ON uff.user_field_id = cdf.id
 			WHERE TRUE';
 		if ($formId) {

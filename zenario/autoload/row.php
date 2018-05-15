@@ -35,149 +35,73 @@ namespace ze;
 class row {
 
 
-
-
-	
-	
-	
-
-	//Check a table definition and see which columns are numeric
-	//Formerly "checkTableDefinition()"
-	public static function cacheTableDef($prefixAndTable, $checkExists = false, $useCache = false) {
-		$pkCol = false;
-		$exists = false;
-	
-		if (!$useCache || !isset(\ze::$dbCols[$prefixAndTable])) {
-			\ze::$dbCols[$prefixAndTable] = [];
-			$useCache = false;
-		}
-	
-		if (!\ze::$lastDB) {
-			return false;
-		}
-	
-		if (!$useCache) {
-			if ($checkExists
-			 && !(($result = \ze\sql::select("SHOW TABLES LIKE '". \ze\escape::sql($prefixAndTable). "'"))
-			   && (\ze\sql::fetchRow($result))
-			)) {
-				return false;
-			}
-	
-			if ($result = \ze\sql::select('SHOW COLUMNS FROM `'. \ze\escape::sql($prefixAndTable). '`')) {
-				while ($row = \ze\sql::fetchRow($result)) {
-					$col = &$row[0];
-				
-					//Look out for encrypted versions of columns
-					if ($col[0] === '%') {
-						//If they exist, load the encryption wrapper library
-						\ze\zewl::init();
-						//Record that this column should be encrypted
-						\ze::$dbCols[$prefixAndTable][substr($col, 1)]->encrypted = true;
-				
-					//Look out for hashed versions of columns
-					} elseif ($col[0] === '#') {
-						//Record that this column should be hashed
-						\ze::$dbCols[$prefixAndTable][substr($col, 1)]->hashed = true;
-				
-					} else {
-						$exists = true;
-					
-						$colDef = new SQLCol;
-						$colDef->col = $col;
-					
-						switch (substr($row[1], 0, strcspn($row[1], ' ('))) {
-							case 'tinyint':
-							case 'smallint':
-							case 'mediumint':
-							case 'int':
-							case 'integer':
-							case 'bigint':
-								$colDef->isInt = true;
-								break;
-				
-							case 'float':
-							case 'double':
-							case 'decimal':
-								$colDef->isFloat = true;
-								break;
-				
-							case 'datetime':
-							case 'date':
-							case 'timestamp':
-							case 'time':
-							case 'year':
-								$colDef->isTime = true;
-								break;
-				
-							case 'set':
-								$colDef->isSet = true;
-								break;
-						}
-			
-						//Also check to see if there is a single primary key column
-						if ($row[3] == 'PRI') {
-							if ($pkCol === false) {
-								$pkCol = $col;
-							} else {
-								$pkCol = true;
-							}
-						}
-					
-						\ze::$dbCols[$prefixAndTable][$col] = $colDef;
-					}
-				}
-			}
-	
-			if (!$exists) {
-				\ze::$pkCols[$prefixAndTable] = '';
-	
-			} elseif ($pkCol !== false && $pkCol !== true) {
-				\ze::$pkCols[$prefixAndTable] = $pkCol;
-	
-			} else {
-				\ze::$pkCols[$prefixAndTable] = false;
-			}
-		}
-	
-		if ($checkExists && is_string($checkExists)) {
-			return
-				is_array(\ze::$dbCols[$prefixAndTable])
-				&& isset(\ze::$dbCols[$prefixAndTable][$checkExists]);
-		}
-	
-		return !empty(\ze::$dbCols[$prefixAndTable]);
+	public static function whereCol($tableName, $alias, $col, $sign, $val, $first = false) {
+		$sql = '';
+		static::writeCol($sql, DB_PREFIX. $tableName, $alias === ''? '' : $alias. '.', $col, $val, $first, true, false, false, $sign);
+		return $sql;
 	}
+	public static function setCol($tableName, $alias, $col, $sign, $val, $first = false) {
+		$sql = '';
+		static::writeCol($sql, DB_PREFIX. $tableName, $alias === ''? '' : $alias. '.', $col, $val, $first, false, false, false, $sign);
+		return $sql;
+	}
+
+
 
 	//Helper function for selectInternal
 	//Formerly "checkRowExistsCol()"
-	public static function writeCol(&$tableName, &$sql, &$col, &$val, &$first, $isWhere, $ignoreMissingColumns = false, $sign = '=', $in = 0, $wasNot = false) {
-	
-		if (!isset(\ze::$dbCols[$tableName][$col])) {
-			\ze\row::cacheTableDef($tableName);
+	public static function writeCol(&$sql, $tableName, $alias, $col, $val, &$first, $isWhere, $ignoreMissingColumns = false, $path = false, $sign = '=', $in = 0, $wasNot = false) {
+		
+		if (!isset(static::$db->cols[$tableName][$col])) {
+			static::$db->checkTableDef($tableName);
 		}
 	
-		if (!isset(\ze::$dbCols[$tableName][$col])) {
+		if (!isset(static::$db->cols[$tableName][$col])) {
 			if ($ignoreMissingColumns && !$isWhere) {
 				return;
+			
 			} else {
-				\ze\db::reportDatabaseErrorFromHelperFunction(\ze\admin::phrase('The column `[[col]]` does not exist in the table `[[table]]`.', ['col' => $col, 'table' => $tableName]));
+				//If not, check if that's because we're looking up a path in a JSON column.
+				//We'll use the format of the name of the column, then either a "." or a "[" to mark the start of the JSON selector,
+				//e.g. "data.pressure" or "data[0]"
+				$pos = strpos($col, '.');
+				$posB = strpos($col, '[');
+			
+				if ($posB !== false) {
+					if ($pos !== false) {
+						$pos = min($posB, $pos);
+					} else {
+						$pos = $posB;
+					}
+				}
+			
+				if ($pos
+				 && ($doc = substr($col, 0, $pos))
+				 && ($path = substr($col, $pos))
+				 && (isset(static::$db->cols[$tableName][$doc]))
+				 && (static::$db->cols[$tableName][$doc]->isJSON)) {
+					$col = $doc;
+					//$path = $path;
+				
+				} else {
+					\ze\db::reportDatabaseErrorFromHelperFunction(\ze\admin::phrase('The column `[[col]]` does not exist in the table `[[table]]`.', ['col' => $col, 'table' => $tableName]));
+				}
 			}
 		}
 	
-		$colDef = &\ze::$dbCols[$tableName][$col];
+		$d = &static::$db->cols[$tableName][$col];
 	
 	
-		if ($colDef->encrypted) {
+		if ($d->encrypted) {
 			if ($isWhere) {
-				if (!$colDef->hashed) {
+				if (!$d->hashed) {
 					\ze\db::reportDatabaseErrorFromHelperFunction(\ze\admin::phrase('The column `[[col]]` in the table `[[table]]` is encrypted and cannot be used in a WHERE-statement.', ['col' => $col, 'table' => $tableName]));
 				}
 			} else {
-				$sql .= ($first? '' : ','). '`%'. \ze\escape::sql($col). '` = \''. \ze\escape::sql((string) \ze\zewl::encrypt($val, true)). '\'';
+				$sql .= ($first? '' : ','). $alias. '`%'. \ze\escape::sql($col). '` = \''. \ze\escape::sql((string) \ze\zewl::encrypt($val, true)). '\'';
 			
-				if ($colDef->hashed) {
-					$sql .= ', `#'. \ze\escape::sql($col). '` = \''. \ze\escape::sql(\ze\db::hashDBColumn($val)). '\'';
+				if ($d->hashed) {
+					$sql .= ', '. $alias. '`#'. \ze\escape::sql($col). '` = \''. \ze\escape::sql(\ze\db::hashDBColumn($val)). '\'';
 				}
 			
 				$first = false;
@@ -190,19 +114,19 @@ class row {
 			$firstIn = true;
 			foreach ($val as $sign2 => &$val2) {
 				if (is_numeric($sign2) || substr($sign2, 0, 1) == '=') {
-					if ($colDef->isSet) {
+					if ($d->isSet) {
 						if ($firstIn) {
-							\ze\row::writeCol($tableName, $sql, $col, $val2, $first, $isWhere, $ignoreMissingColumns, $wasNot? 'NOT (' : '(', 1);
+							static::writeCol($sql, $tableName, $alias, $col, $val2, $first, $isWhere, $ignoreMissingColumns, $path, $wasNot? 'NOT (' : '(', 1);
 							$firstIn = false;
 						} else {
-							\ze\row::writeCol($tableName, $sql, $col, $val2, $first, $isWhere, $ignoreMissingColumns, ' OR ', 2);
+							static::writeCol($sql, $tableName, $alias, $col, $val2, $first, $isWhere, $ignoreMissingColumns, $path, ' OR ', 2);
 						}
 					} else {
 						if ($firstIn) {
-							\ze\row::writeCol($tableName, $sql, $col, $val2, $first, $isWhere, $ignoreMissingColumns, $wasNot? 'NOT IN (' : 'IN (', 1);
+							static::writeCol($sql, $tableName, $alias, $col, $val2, $first, $isWhere, $ignoreMissingColumns, $path, $wasNot? 'NOT IN (' : 'IN (', 1);
 							$firstIn = false;
 						} else {
-							\ze\row::writeCol($tableName, $sql, $col, $val2, $first, $isWhere, $ignoreMissingColumns, ', ', 2);
+							static::writeCol($sql, $tableName, $alias, $col, $val2, $first, $isWhere, $ignoreMissingColumns, $path, ', ', 2);
 						}
 					}
 				}
@@ -225,11 +149,19 @@ class row {
 				 || $sign2 === '>='
 				 || $sign2 === 'LIKE'
 				 || $sign2 === 'NOT LIKE') {
-					\ze\row::writeCol($tableName, $sql, $col, $val2, $first, $isWhere, $ignoreMissingColumns, $sign2, 0, $isNot);
+					static::writeCol($sql, $tableName, $alias, $col, $val2, $first, $isWhere, $ignoreMissingColumns, $path, $sign2, 0, $isNot);
 				}
 			}
 		
 			return;
+		}
+		
+		//Catch the case where the caller is trying to update part of a JSON doc.
+		//We can't add this here, as there might be multiple paths to update, and if so they all need to be grouped together.
+		//So instead we'll note down some info and then return that to the calling function.
+		if ($path !== false && !$isWhere) {
+			$aor = is_null($val)? '-' : '+';
+			return [$col => [$aor => ['$'. $path => $val]]];
 		}
 	
 		$cSql = '';
@@ -246,14 +178,18 @@ class row {
 			}
 			$first = false;
 		
-			if ($colDef->hashed) {
-				$cSql = '`#'. \ze\escape::sql($col). '` ';
+			if ($d->hashed) {
+				$cSql = $alias. '`#'. \ze\escape::sql($col). '` ';
+			
+			} elseif ($path !== false) {
+				$cSql = $alias. '`'. \ze\escape::sql($col). '`->"$'. \ze\escape::sql($path). '" ';
+			
 			} else {
-				$cSql = '`'. \ze\escape::sql($col). '` ';
+				$cSql = $alias. '`'. \ze\escape::sql($col). '` ';
 			}
 		}
 	
-		if ($val === null || (!$val && $colDef->isTime)) {
+		if ($val === null || (!$val && $d->isTime)) {
 			if ($in) {
 				$sql .= $cSql. $sign. 'NULL';
 		
@@ -267,21 +203,30 @@ class row {
 				$sql .= $cSql. 'IS NOT NULL';
 			}
 	
-		} elseif ($colDef->hashed) {
+		} elseif ($d->hashed) {
 			$sql .= $cSql. $sign. '\''. \ze\escape::sql(\ze\db::hashDBColumn($val)). '\'';
 	
-		} elseif ($colDef->isFloat) {
-			$sql .= $cSql. $sign. ' '. (float) $val;
-	
-		} elseif ($colDef->isInt) {
+		} elseif ($d->isInt) {
 			$sql .= $cSql. $sign. ' '. (int) $val;
 	
-		} elseif ($colDef->isSet && $in) {
+		} elseif ($d->isFloat) {
+			$sql .= $cSql. $sign. ' '. (float) $val;
+	
+		} elseif ($d->isJSON) {
+			if ($path !== false) {
+				$sql .= $cSql. $sign. \ze\escape::stringToIntOrFloat($val, true);
+			} else {
+				$sql .= $cSql. $sign. \ze\escape::json($val);
+			}
+	
+		} elseif ($d->isSet && $in) {
 			$sql .= $sign. 'FIND_IN_SET(\''. \ze\escape::sql((string) $val). '\', '. $cSql. ')';
 	
 		} else {
 			$sql .= $cSql. $sign. ' \''. \ze\escape::sql((string) $val). '\'';
 		}
+		
+		return;
 	}
 
 
@@ -289,46 +234,48 @@ class row {
 	//Declare a function to check if something exists in the database
 	//Formerly "checkRowExists()"
 	public static function exists($table, $ids, $ignoreMissingColumns = false) {
-		return self::selectInternal($table, $ids, $ignoreMissingColumns);
+		return static::selectInternal($table, $ids, $ignoreMissingColumns);
 	}
 	
 	private static function selectInternal(
 		$table, $ids,
 		$ignoreMissingColumns = false, $cols = false, $multiple = false, $mode = false, $orderBy = [],
-		$distinct = false, $returnArrayIndexedBy = false, $addId = false
+		$distinct = false, $returnArrayIndexedBy = false, $addId = false, $storeResult = true
 	) {
-		$tableName = \ze::$lastDBPrefix. $table;
+		$tableName = static::$db->prefix. $table;
 	
-		if (!isset(\ze::$dbCols[$tableName])) {
-			\ze\row::cacheTableDef($tableName);
+		if (!isset(static::$db->cols[$tableName])) {
+			static::$db->checkTableDef($tableName);
 		}
+		$dbCols = &static::$db->cols[$tableName];
+		$pkCol = &static::$db->pks[$tableName];
 	
-		if (\ze::$pkCols[$tableName] === '') {
+		if ($pkCol === '') {
 			\ze\db::reportDatabaseErrorFromHelperFunction(\ze\admin::phrase('The table `[[table]]` does not exist.', ['table' => $tableName]));
 		}
 	
 		if ($cols === true) {
-			$cols = array_keys(\ze::$dbCols[$tableName]);
+			$cols = array_keys($dbCols);
 		}
 	
 	
 		if ($returnArrayIndexedBy !== false) {
 			$out = [];
 		
-			if ($result = self::selectInternal($table, $ids, $ignoreMissingColumns, $cols, true, false, $orderBy, $distinct, false, !$distinct)) {
-				while ($row = \ze\sql::fetchAssoc($result)) {
+			if ($result = static::selectInternal($table, $ids, $ignoreMissingColumns, $cols, true, false, $orderBy, $distinct, false, !$distinct)) {
+				while ($row = $result->fAssoc()) {
 				
 					$id = false;
 					if (is_string($returnArrayIndexedBy) && isset($row[$returnArrayIndexedBy])) {
 						$id = $row[$returnArrayIndexedBy];
 				
-					} elseif (isset($row['[[ id column ]]'])) {
-						$id = $row['[[ id column ]]'];
+					} elseif (isset($row['[[ id ]]'])) {
+						$id = $row['[[ id ]]'];
 				
-					} elseif (($idCol = \ze::$pkCols[$tableName]) && (isset($row[$idCol]))) {
+					} elseif (($idCol = $pkCol) && (isset($row[$idCol]))) {
 						$id = $row[$idCol];
 					}
-					unset($row['[[ id column ]]']);
+					unset($row['[[ id ]]']);
 				
 					if (is_string($cols)) {
 						if ($id) {
@@ -351,12 +298,13 @@ class row {
 	
 	
 		if (!is_array($ids)) {
-			if (\ze::$pkCols[$tableName]) {
-				$ids = [\ze::$pkCols[$tableName] => $ids];
+			if ($pkCol) {
+				$ids = [$pkCol => $ids];
 			} else {
 				$ids = ['id' => $ids];
 			}
 		}
+		$colDefs = [];
 	
 		do {
 			switch ($mode) {
@@ -385,9 +333,7 @@ class row {
 					$pre = '';
 					$suf = '';
 			}
-		
-			$dbCols = &\ze::$dbCols[$tableName];
-		
+			
 			if (empty($cols)) {
 				$sql = '
 					SELECT 1';
@@ -407,54 +353,17 @@ class row {
 							$first = false;
 						} else {
 							$sql .= ',';
-						}	
-					
-						if (!isset($dbCols[$col])) {
-							\ze\db::reportDatabaseErrorFromHelperFunction(\ze\admin::phrase('The column `[[col]]` does not exist in the table `[[table]]`.', ['col' => $col, 'table' => $tableName]));
-				
-						} elseif ($dbCols[$col]->encrypted) {
-							if ($pre !== '') {
-								\ze\db::reportDatabaseErrorFromHelperFunction(\ze\admin::phrase('The column `[[col]]` in the table `[[table]]` is encrypted. You cannot use MIN(), MAX() or other group-statements on it.', ['col' => $col, 'table' => $tableName]));
-							}
-					
-							$sql .= '`%'. \ze\escape::sql($col). '` AS `'. \ze\escape::sql($col). '`';
-				
-						} else {
-							$sql .= $pre. '`'. \ze\escape::sql($col). '`'. $suf;
-			
-							if ($pre !== '' || $suf !== '') {
-								$sql .= ' AS `'. \ze\escape::sql($col). '`';
-						
-							} elseif ($addId && $col == \ze::$pkCols[$tableName]) {
-								$addId = false;
-							}
 						}
+						
+						static::selCol($colDefs, $addId, $sql, $pre, $suf, $tableName, $pkCol, $col, $dbCols);
 					}
 				} else {
-					if (!isset($dbCols[$cols])) {
-						\ze\db::reportDatabaseErrorFromHelperFunction(\ze\admin::phrase('The column `[[col]]` does not exist in the table `[[table]]`.', ['col' => $cols, 'table' => $tableName]));
-			
-					} elseif ($dbCols[$cols]->encrypted) {
-						if ($pre !== '') {
-							\ze\db::reportDatabaseErrorFromHelperFunction(\ze\admin::phrase('The column `[[col]]` in the table `[[table]]` is encrypted. You cannot use MIN(), MAX() or other group-statements on it.', ['col' => $cols, 'table' => $tableName]));
-						}
-				
-						$sql .= '`%'. \ze\escape::sql($cols). '` AS `'. \ze\escape::sql($cols). '`';
-			
-					} else {
-						$sql .= $pre. '`'. \ze\escape::sql($cols). '`'. $suf;
-		
-						if ($pre !== '' || $suf !== '') {
-							$sql .= ' AS `'. \ze\escape::sql($cols). '`';
-					
-						} elseif ($addId && $cols == \ze::$pkCols[$tableName]) {
-							$addId = false;
-						}
-					}
+					static::selCol($colDefs, $addId, $sql, $pre, $suf, $tableName, $pkCol, $cols, $dbCols);
 				}
 	
-				if ($addId && \ze::$pkCols[$tableName]) {
-					$sql .= ', `'. \ze\escape::sql(\ze::$pkCols[$tableName]). '` as `[[ id column ]]`';
+				if ($addId && $pkCol) {
+					$sql .= ', `'. \ze\escape::sql($pkCol). '` as `[[ id ]]`';
+					$colDefs[] = $dbCols[$pkCol];
 				}
 			}
 		} while(false);
@@ -466,8 +375,9 @@ class row {
 	
 		$first = true;
 		foreach($ids as $col => &$val) {
-			\ze\row::writeCol($tableName, $sql, $col, $val, $first, true, $ignoreMissingColumns);
+			static::writeCol($sql, $tableName, '', $col, $val, $first, true, $ignoreMissingColumns);
 		}
+		
 	
 		if (!empty($orderBy)) {
 			if (!is_array($orderBy)) {
@@ -497,21 +407,27 @@ class row {
 		if (!$multiple) {
 			$sql .= '
 				LIMIT 1';
+		
+		} elseif (!is_bool($multiple)) {
+			$sql .= '
+				LIMIT '. (int) $multiple;
 		}
 	
 	
 		if ($mode == 'delete') {
 			$values = false;
-			$affectedRows = \ze\db::reviewQueryForChanges($sql, $ids, $values, $table, true);
+			if ($affectedRows = static::$db->reviewQueryForChanges($sql, $ids, $values, $table, true)) {
+				\ze\db::updateDataRevisionNumber();
+			}
 			return $affectedRows;
 	
 		} else {
-			$result = \ze\sql::select($sql, false, $tableName);
+			$result = static::doSelect($sql, $storeResult, $colDefs);
 		
 			if ($multiple) {
 				return $result;
 		
-			} elseif (!$row = \ze\sql::fetchAssoc($result)) {
+			} elseif (!$row = $result->fAssoc()) {
 				return false;
 		
 			} elseif (is_array($cols)) {
@@ -525,10 +441,69 @@ class row {
 			}
 		}
 	}
+	
+	
+
+
+
+	protected static function selCol(&$colDefs, &$addId, &$sql, $pre, $suf, $tableName, $pkCol, $col, $dbCols) {
+		
+		//Check that the column we're looking for exists
+		if (!isset($dbCols[$col])) {
+			
+			//If not, check if that's because we're looking up a path in a JSON column.
+			//We'll use the format of the name of the column, then either a "." or a "[" to mark the start of the JSON selector,
+			//e.g. "data.pressure" or "data[0]"
+			$pos = strpos($col, '.');
+			$posB = strpos($col, '[');
+			
+			if ($posB !== false) {
+				if ($pos !== false) {
+					$pos = min($posB, $pos);
+				} else {
+					$pos = $posB;
+				}
+			}
+			
+			if ($pos
+			 && ($doc = substr($col, 0, $pos))
+			 && ($path = substr($col, $pos))
+			 && (isset($dbCols[$doc]))
+			 && ($dbCols[$doc]->isJSON)) {
+				
+				$sql .= $pre. '`'. \ze\escape::sql($doc). '`->"$'. \ze\escape::sql($path). '"'. $suf. ' AS `'. \ze\escape::sql($col). '`';
+				$colDefs[] = $dbCols[$doc];
+			
+			} else {
+				\ze\db::reportDatabaseErrorFromHelperFunction(\ze\admin::phrase('The column `[[col]]` does not exist in the table `[[table]]`.', ['col' => $col, 'table' => $tableName]));
+			}
+
+		} elseif ($dbCols[$col]->encrypted) {
+			if ($pre !== '') {
+				\ze\db::reportDatabaseErrorFromHelperFunction(\ze\admin::phrase('The column `[[col]]` in the table `[[table]]` is encrypted. You cannot use MIN(), MAX() or other group-statements on it.', ['col' => $col, 'table' => $tableName]));
+			}
+
+			$sql .= '`%'. \ze\escape::sql($col). '` AS `'. \ze\escape::sql($col). '`';
+			$colDefs[] = $dbCols[$col];
+
+		} else {
+			$sql .= $pre. '`'. \ze\escape::sql($col). '`'. $suf;
+
+			if ($pre !== '' || $suf !== '') {
+				$sql .= ' AS `'. \ze\escape::sql($col). '`';
+
+			} elseif ($addId && $col == $pkCol) {
+				$addId = false;
+			}
+			$colDefs[] = $dbCols[$col];
+		}
+	}
+	
+	
 
 	//Formerly "setRow()"
 	public static function set($table, $values, $ids, $ignore = false, $ignoreMissingColumns = false, $markNewThingsInSession = false) {
-		return self::setInternal($table, $values, $ids, $ignore, $ignoreMissingColumns, $markNewThingsInSession);
+		return static::setInternal($table, $values, $ids, $ignore, $ignoreMissingColumns, $markNewThingsInSession);
 	}
 	
 	private static function setInternal(
@@ -537,70 +512,116 @@ class row {
 		$markNewThingsInSession = false, $insertIfNotPresent = true, $checkCache = true
 	) {
 		$sqlW = '';
-		$tableName = \ze::$lastDBPrefix. $table;
+		$tableName = static::$db->prefix. $table;
 	
-		if (!isset(\ze::$dbCols[$tableName])) {
-			\ze\row::cacheTableDef($tableName);
+		if (!isset(static::$db->cols[$tableName])) {
+			static::$db->checkTableDef($tableName);
 		}
 	
-		if (\ze::$pkCols[$tableName] === '') {
+		if (static::$db->pks[$tableName] === '') {
 			\ze\db::reportDatabaseErrorFromHelperFunction(\ze\admin::phrase('The table `[[table]]` does not exist.', ['table' => $tableName]));
 		}
 	
 	
 		if (!is_array($ids)) {
 		
-			if (\ze::$pkCols[$tableName]) {
-				$ids = [\ze::$pkCols[$tableName] => $ids];
+			if (static::$db->pks[$tableName]) {
+				$ids = [static::$db->pks[$tableName] => $ids];
 			} else {
 				$ids = ['id' => $ids];
 			}
 		}
 	
-		if (!$insertIfNotPresent || (!empty($ids) && self::selectInternal($table, $ids))) {
+		if (!$insertIfNotPresent || (!empty($ids) && static::selectInternal($table, $ids))) {
 			$affectedRows = 0;
 			
 			$updatesNeeded = !empty($values);
-			$returnPK = $insertIfNotPresent && \ze::$pkCols[$tableName];
+			$returnPK = $insertIfNotPresent && static::$db->pks[$tableName];
 			
 			if ($updatesNeeded || $returnPK) {
 				$first = true;
 				foreach($ids as $col => &$val) {
-					\ze\row::writeCol($tableName, $sqlW, $col, $val, $first, true, $ignoreMissingColumns);
+					static::writeCol($sqlW, $tableName, '', $col, $val, $first, true, $ignoreMissingColumns);
 				}
 			}
 			
 			if ($updatesNeeded) {
 				$sql = '
 					UPDATE '. ($ignore? 'IGNORE ' : ''). '`'. \ze\escape::sql($tableName). '` SET ';
-			
+				
 				$first = true;
+				$jsonUpdates = [];
 				foreach ($values as $col => &$val) {
-					\ze\row::writeCol($tableName, $sql, $col, $val, $first, false, $ignoreMissingColumns);
+					$thisUpdates = static::writeCol($sql, $tableName, '', $col, $val, $first, false, $ignoreMissingColumns);
+					
+					if (!is_null($thisUpdates)) {
+						$jsonUpdates = array_merge_recursive($jsonUpdates, $thisUpdates);
+					}
+				}
+				
+				//If there are individual updates to JSON documents, these need to be handled separately
+				if ($jsonUpdates !== []) {
+					foreach ($jsonUpdates as $col => $jus) {
+						if ($first) {
+							$first = false;
+						} else {
+							$sql .= ', ';
+						}
+						
+						$sql .= '`'. \ze\escape::sql($col). '` = ';
+						
+						//For unsets, we need to use JSON_REMOVE(), e.g. JSON_REMOVE(data, '$.path', ...)
+						//For other updates we need to use JSON_SET(), e.g. JSON_SET(data, '$.path', 789, ...)
+						//These functions can both take multiple inputs if there are multiple paths to remove/update.
+						if (isset($jus['-'])) {
+							if (isset($jus['+'])) {
+								$sql .= 'JSON_SET(JSON_REMOVE(`'. \ze\escape::sql($col). '`';
+							} else {
+								$sql .= 'JSON_REMOVE(`'. \ze\escape::sql($col). '`';
+							}
+							
+							foreach ($jus['-'] as $path => $val) {
+								$sql .= ', \''. \ze\escape::sql($path). '\'';
+							}
+							$sql .= ')';
+						}
+						
+						if (isset($jus['+'])) {
+							if (!isset($jus['-'])) {
+								$sql .= 'JSON_SET(`'. \ze\escape::sql($col). '`';
+							}
+							
+							foreach ($jus['+'] as $path => $val) {
+								$sql .= ', \''. \ze\escape::sql($path). '\', ';
+								
+								if (is_array($val)) {
+									$sql .= \ze\escape::json($val);
+								} else {
+									$sql .= \ze\escape::stringToIntOrFloat($val, true);
+								}
+							}
+							$sql .= ')';
+						}
+					}
 				}
 			
-				\ze\sql::update($sql. $sqlW, false, false);
-				if (($affectedRows = \ze\sql::affectedRows()) > 0
+				static::doUpdate($sql. $sqlW);
+				if (($affectedRows = static::$db->con->affected_rows) > 0
 				 && $checkCache) {
 				
 					if (empty($ids)) {
 						$dummy = false;
-						\ze\db::reviewQueryForChanges($sql, $values, $dummy, $table);
+						static::$db->reviewQueryForChanges($sql, $values, $dummy, $table);
 					} else {
-						\ze\db::reviewQueryForChanges($sql, $ids, $values, $table);
+						static::$db->reviewQueryForChanges($sql, $ids, $values, $table);
 					}
 				}
 			}
 		
 			if ($returnPK) {
-				if (($sql = 'SELECT `'. \ze\escape::sql(\ze::$pkCols[$tableName]). '` FROM `'. \ze\escape::sql($tableName). '` '. $sqlW)
-				 && ($result = \ze\sql::select($sql))
-				 && ($row = \ze\sql::fetchRow($result))
-				) {
-					return $row[0];
-				} else {
-					return false;
-				}
+				$result = static::doSelect('SELECT `'. \ze\escape::sql(static::$db->pks[$tableName]). '` FROM `'. \ze\escape::sql($tableName). '` '. $sqlW);
+				$row = $result->fRow();
+				return $row[0] ?? false;
 			} else {
 				return $affectedRows;
 			}
@@ -612,30 +633,30 @@ class row {
 			$first = true;
 			$hadColumns = [];
 			foreach ($values as $col => &$val) {
-				\ze\row::writeCol($tableName, $sql, $col, $val, $first, false, $ignoreMissingColumns);
+				static::writeCol($sql, $tableName, '', $col, $val, $first, false, $ignoreMissingColumns);
 				$hadColumns[$col] = true;
 			}
 		
 			foreach ($ids as $col => &$val) {
 				if (!isset($hadColumns[$col])) {
-					\ze\row::writeCol($tableName, $sql, $col, $val, $first, false, $ignoreMissingColumns);
+					static::writeCol($sql, $tableName, '', $col, $val, $first, false, $ignoreMissingColumns);
 				}
 			}
 		
-			\ze\sql::update($sql, false, false);
-			$id = \ze\sql::insertId();
+			static::doUpdate($sql);
+			$id = static::$db->con->insert_id;
 		
 			if ($markNewThingsInSession) {
 				$_SESSION['new_id_in_'. $table] = $id;
 			}
 		
 			if ($checkCache
-			 && \ze\sql::affectedRows() > 0) {
+			 && static::$db->con->affected_rows > 0) {
 				if (empty($ids)) {
 					$dummy = false;
-					\ze\db::reviewQueryForChanges($sql, $values, $dummy, $table);
+					static::$db->reviewQueryForChanges($sql, $values, $dummy, $table);
 				} else {
-					\ze\db::reviewQueryForChanges($sql, $ids, $values, $table);
+					static::$db->reviewQueryForChanges($sql, $ids, $values, $table);
 				}
 			}
 		
@@ -651,77 +672,93 @@ class row {
 
 	//Formerly "insertRow()"
 	public static function insert($table, $values, $ignore = false, $ignoreMissingColumns = false, $markNewThingsInSession = false) {
-		return self::setInternal($table, $values, [], $ignore, $ignoreMissingColumns, $markNewThingsInSession, true);
+		return static::setInternal($table, $values, [], $ignore, $ignoreMissingColumns, $markNewThingsInSession, true);
 	}
 
 
 	//Formerly "updateRow()"
 	public static function update($table, $values, $ids, $ignore = false, $ignoreMissingColumns = false) {
-		return self::setInternal($table, $values, $ids, $ignore, $ignoreMissingColumns, false, false);
+		return static::setInternal($table, $values, $ids, $ignore, $ignoreMissingColumns, false, false);
 	}
 
 
 
 	//Formerly "deleteRow()"
 	public static function delete($table, $ids, $multiple = true) {
-		return self::selectInternal($table, $ids, false, false, $multiple, 'delete');
+		return static::selectInternal($table, $ids, false, false, $multiple, 'delete');
 	}
 
 	const getFromTwig = true;
 	//Formerly "getRow()"
-	public static function get($table, $cols, $ids, $ignoreMissingColumns = false) {
-		return self::selectInternal($table, $ids, $ignoreMissingColumns, $cols);
+	public static function get($table, $cols, $ids, $orderBy = [], $ignoreMissingColumns = false) {
+		return static::selectInternal($table, $ids, $ignoreMissingColumns, $cols, false, false, $orderBy);
 	}
 
 	const queryFromTwig = true;
 	//Formerly "getRows()"
-	public static function query($table, $cols, $ids, $orderBy = [], $ignoreMissingColumns = false) {
-		return self::selectInternal($table, $ids, $ignoreMissingColumns, $cols, true, false, $orderBy);
+	public static function query($table, $cols, $ids, $orderBy = [], $indexBy = false, $ignoreMissingColumns = false, $limit = false, $storeResult = true) {
+		return static::selectInternal($table, $ids, $ignoreMissingColumns, $cols, $limit ?: true, false, $orderBy, false, $indexBy, false, $storeResult);
 	}
 
 	const distinctQueryFromTwig = true;
 	//Formerly "getDistinctRows()"
-	public static function distinctQuery($table, $cols, $ids, $orderBy = [], $ignoreMissingColumns = false) {
-		return self::selectInternal($table, $ids, $ignoreMissingColumns, $cols, true, false, $orderBy, true);
+	public static function distinctQuery($table, $cols, $ids, $orderBy = [], $indexBy = false, $ignoreMissingColumns = false, $limit = false, $storeResult = true) {
+		return static::selectInternal($table, $ids, $ignoreMissingColumns, $cols, $limit ?: true, false, $orderBy, true, $indexBy, false, $storeResult);
 	}
 
-	const getArrayFromTwig = true;
+	const getAssocsFromTwig = true;
 	//Formerly "getRowsArray()"
-	public static function getArray($table, $cols, $ids = [], $orderBy = [], $indexBy = false, $ignoreMissingColumns = false) {
-		return self::selectInternal($table, $ids, $ignoreMissingColumns, $cols, true, false, $orderBy, false, $indexBy? $indexBy : true);
+	public static function getAssocs($table, $cols, $ids = [], $orderBy = [], $indexBy = false, $ignoreMissingColumns = false, $limit = false) {
+		return static::selectInternal($table, $ids, $ignoreMissingColumns, $cols, $limit ?: true, false, $orderBy, false, $indexBy? $indexBy : true);
+	}
+	
+	const getValuesFromTwig = true;
+	//Alternate name for getAssocs() - included for consistency with the ze\sql library
+	public static function getValues($table, $cols, $ids = [], $orderBy = [], $indexBy = false, $ignoreMissingColumns = false, $limit = false) {
+		return static::selectInternal($table, $ids, $ignoreMissingColumns, $cols, $limit ?: true, false, $orderBy, false, $indexBy? $indexBy : true);
+	}
+	
+	const getDistinctValuesFromTwig = true;
+	public static function getDistinctValues($table, $cols, $ids = [], $orderBy = [], $indexBy = false, $ignoreMissingColumns = false, $limit = false) {
+		return static::selectInternal($table, $ids, $ignoreMissingColumns, $cols, $limit ?: true, false, $orderBy, true, $indexBy? $indexBy : true);
+	}
+	
+	//Deprecated old name for getAssocs()
+	public static function getArray($table, $cols, $ids = [], $orderBy = [], $indexBy = false, $ignoreMissingColumns = false, $limit = false) {
+		return static::selectInternal($table, $ids, $ignoreMissingColumns, $cols, $limit ?: true, false, $orderBy, false, $indexBy? $indexBy : true);
 	}
 
-	const getDistinctArrayFromTwig = true;
+	const getDistinctAssocsFromTwig = true;
 	//Formerly "getDistinctRowsArray()"
-	public static function getDistinctArray($table, $cols, $ids = [], $orderBy = [], $indexBy = false, $ignoreMissingColumns = false) {
-		return self::selectInternal($table, $ids, $ignoreMissingColumns, $cols, true, false, $orderBy, true, $indexBy? $indexBy : true);
+	public static function getDistinctAssocs($table, $cols, $ids = [], $orderBy = [], $indexBy = false, $ignoreMissingColumns = false) {
+		return static::selectInternal($table, $ids, $ignoreMissingColumns, $cols, true, false, $orderBy, true, $indexBy? $indexBy : true);
 	}
 
 	const countFromTwig = true;
 	//Formerly "selectCount()"
 	public static function count($table, $ids = []) {
-		return (int) self::selectInternal($table, $ids, false, false, false, 'count');
+		return (int) static::selectInternal($table, $ids, false, false, false, 'count');
 	}
 
 	const maxFromTwig = true;
 	//Formerly "selectMax()"
 	public static function max($table, $cols, $ids = [], $ignoreMissingColumns = false) {
-		return self::selectInternal($table, $ids, $ignoreMissingColumns, $cols, false, 'max');
+		return static::selectInternal($table, $ids, $ignoreMissingColumns, $cols, false, 'max');
 	}
 
 	const minFromTwig = true;
 	//Formerly "selectMin()"
 	public static function min($table, $cols, $ids = [], $ignoreMissingColumns = false) {
-		return self::selectInternal($table, $ids, $ignoreMissingColumns, $cols, false, 'min');
+		return static::selectInternal($table, $ids, $ignoreMissingColumns, $cols, false, 'min');
 	}
 
 
 	//Look up the name of the primary/foreign key column
 	//Formerly "getIdColumnOfTable()"
 	public static function idColumnOfTable($table, $guess = false) {
-		\ze\row::cacheTableDef(DB_NAME_PREFIX. $table);		
-		if (\ze::$pkCols[DB_NAME_PREFIX. $table]) {
-			return \ze::$pkCols[DB_NAME_PREFIX. $table];
+		static::$db->checkTableDef(DB_PREFIX. $table);		
+		if (static::$db->pks[DB_PREFIX. $table]) {
+			return static::$db->pks[DB_PREFIX. $table];
 	
 		} elseif ($guess) {
 			return 'id';
@@ -730,5 +767,46 @@ class row {
 			return false;
 		}
 	}
+	
+	
+	
+	
+	protected static function doSelect($sql, $storeResult = true, $colDefs = []) {
+	
+		if ($result = static::$db->con->query($sql, $storeResult? MYSQLI_STORE_RESULT : MYSQLI_USE_RESULT)) {
+			return new queryCursor(static::$db, $result, $colDefs);
+	
+		} else {
+			\ze\db::handleError(static::$db->con, $sql);
+		}
+	}
+	
+	protected static function doUpdate($sql) {
+	
+		if ($result = static::$db->con->query($sql)) {
+		
+			if (static::$db->con->affected_rows) {
+				\ze\db::updateDataRevisionNumber();
+			}
+			return $result;
+	
+		} else {
+			\ze\db::handleError(static::$db->con, $sql);
+		}
+	}
 
+
+
+	
+	protected static $db;
+	public static function init(&$db) {
+		static::$db = &$db;
+	}
 }
+\ze\row::init(\ze::$dbL);
+
+//class rowGlobal extends row {}
+//\ze\rowGlobal::init(\ze::$dbG);
+//
+//class rowDA extends row {}
+//\ze\rowDA::init(\ze::$dbD);

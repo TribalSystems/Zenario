@@ -1,0 +1,47 @@
+zenario__user_forms:
+    panels:
+        user_forms:
+            columns:
+                has_crm_response:
+                    table_join: |
+                        [[DB_PREFIX]][[ZENARIO_CRM_FORM_INTEGRATION_PREFIX]]form_crm_link fcl
+                            ON f.id = fcl.form_id
+                        LEFT JOIN [[DB_PREFIX]][[ZENARIO_CRM_FORM_INTEGRATION_PREFIX]]last_crm_requests lcr
+                            ON fcl.id = lcr.link_id
+                    db_column: COUNT(lcr.link_id)
+            item_buttons:
+                crm_dropdown:
+                    ord: 20
+                    label: CRM integration
+                    hide_when_children_are_not_visible: true
+                crm_headers:
+                    priv: _PRIV_MANAGE_FORMS
+                    label: CRM headers
+                    parent: crm_dropdown
+                    admin_box:
+                        path: zenario_user_form
+                        key:
+                            tab: crm_integration
+                crm_fields:
+                    priv: _PRIV_MANAGE_FORMS
+                    label: CRM fields
+                    parent: crm_dropdown
+                    link:
+                        path: zenario__user_forms/panels/crm_field_names
+                        refiner: form_id
+                view_last_crm_request:
+                    priv: _PRIV_MANAGE_FORMS
+                    label: Last CRM request
+                    parent: crm_dropdown
+                    disabled_if: !item.has_crm_response
+                    disabled_tooltip: No CRM requests have been sent from this form
+                    admin_box:
+                        path: zenario__last_crm_request
+                
+                zenario_salesforce_api_form_integration__view_salesforce_response_log:
+                    visible_if: zenarioA.siteSettings.zenario_salesforce_api_form_integration__enable
+                    label: Salesforce response log
+                    parent: view_dropdown
+                    link:
+                        path: zenario__user_forms/panels/salesforce_response_log
+                        refiner: form_id

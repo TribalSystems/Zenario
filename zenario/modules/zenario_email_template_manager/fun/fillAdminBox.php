@@ -31,8 +31,9 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 switch ($path) {
 	case 'zenario_email_template':
 		
-		$fields['meta_data/email_address_from_site_settings']['note_below'] = ze\admin::phrase('Go to')." <a href='".ze\link::absolute()."zenario/admin/organizer.php?#zenario__administration/panels/site_settings//email' target='_blank'>".ze\admin::phrase('Email site settings')."</a>";
-		
+		$href = 'zenario/admin/organizer.php#zenario__administration/panels/site_settings//email~.site_settings~ttemplate~k{"id"%3A"email"}';
+		ze\lang::applyMergeFields($fields['meta_data/use_standard_email_template']['values']['yes']['label'], ['link' => '<a href="' . htmlspecialchars($href) . '" target="_blank">view</a>']);
+				
 		if ($box['key']['id']) {
 			$details = $this->getTemplateByCode($box['key']['id']);
 			
@@ -52,25 +53,22 @@ switch ($path) {
 			$values['meta_data/template_name'] = $details['template_name'];
 			$values['meta_data/subject'] = $details['subject'];
 			$values['meta_data/from_details'] = $details['from_details'];
-			
-
-			
-			$values['meta_data/email_address_from_site_settings'] = ze::setting('email_address_from');
-			$values['meta_data/email_name_from_site_settings'] = ze::setting('email_name_from');
-			
-			
+						
 			$values['meta_data/email_address_from'] = $details['email_address_from'];
 			$values['meta_data/email_name_from'] = $details['email_name_from'];
 			
+			if ($details['debug_override']) {
+				$values['meta_data/mode'] = 'debug';
+				$values['meta_data/debug_email_address'] = $details['debug_email_address'];
+			}
 			
-			$values['meta_data/debug_override'] = $details['debug_override'];
-			$values['meta_data/debug_email_address'] = $details['debug_email_address'];
 			$values['meta_data/send_cc'] = $details['send_cc'];
 			$values['meta_data/cc_email_address'] = $details['cc_email_address'];
 			$values['meta_data/send_bcc'] = $details['send_bcc'];
 			$values['meta_data/bcc_email_address'] = $details['bcc_email_address'];
 			
-			$values['body/body'] = $details['body'];
+			$values['meta_data/use_standard_email_template'] = $details['use_standard_email_template'] ? 'yes' : 'no';
+			$values['meta_data/body'] = $details['body'];
 			$values['advanced/head'] = $details['head'];
 			
 			$values['data_deletion/period_to_delete_log_headers'] = $details['period_to_delete_log_headers'];
@@ -80,26 +78,41 @@ switch ($path) {
 			}
 					
 		} else {
-			$values['meta_data/email_address_from_site_settings'] = ze::setting('email_address_from');
-			$values['meta_data/email_name_from_site_settings'] = ze::setting('email_name_from');
-			
+			$values['meta_data/use_standard_email_template'] = 'yes';
 			
 			$values['meta_data/email_address_from'] = ze::setting('email_address_from');
 			$values['meta_data/email_name_from'] = ze::setting('email_name_from');
 		}
 		
-		$style_formats = ze\site::description('email_style_formats');
-		if (!empty($style_formats)) {
-			$box['tabs']['body']['fields']['body']['editor_options']['style_formats'] = $style_formats;
-			$box['tabs']['body']['fields']['body']['editor_options']['toolbar'] =
+		$styleFormats = ze\site::description('email_style_formats');
+		if (!empty($styleFormats)) {
+			$fields['meta_data/body']['editor_options']['style_formats'] = 
+			$fields['preview/body']['editor_options']['style_formats'] = $styleFormats;
+			$fields['meta_data/body']['editor_options']['toolbar'] =
+			$fields['preview/body']['editor_options']['toolbar'] = 
 				'undo redo | image link unlink | bold italic | removeformat | styleselect | fontsizeselect | formatselect | numlist bullist | outdent indent | code';
 		}
+		
+		//Set current admin's email as test send address
+		$adminDetails = ze\admin::details(ze\admin::id());
+		$values['meta_data/test_send_email_address'] = $adminDetails['admin_email'];
 		
 		//Show a warning if the scheduled task for deleting content is not running.
 		if (!ze\module::inc('zenario_scheduled_task_manager') || !zenario_scheduled_task_manager::checkScheduledTaskRunning('jobDataProtectionCleanup')) {
 			$box['tabs']['data_deletion']['notices']['scheduled_task_not_running']['show'] = true;
 		} else {
 			$box['tabs']['data_deletion']['notices']['scheduled_task_running']['show'] = true;
+		}
+		
+		//Show a warning if the email template is in debug mode
+		if (ze::setting('debug_override_enable')) {
+			$box['tabs']['meta_data']['notices']['debug_mode']['show'] = true;
+			$box['tabs']['meta_data']['notices']['debug_mode']['message'] = ze\admin::phrase('This site is in email debug mode. Emails sent by this site will be redirected to "[[email]]".', ['email' => trim(ze::setting('debug_override_email_address'))]);
+		} elseif ($values['meta_data/mode'] == 'debug') {
+			$box['tabs']['meta_data']['notices']['debug_mode']['show'] = true;
+			$box['tabs']['meta_data']['notices']['debug_mode']['message'] = ze\admin::phrase('This email template is in debug mode. Emails sent with this template will be redirected to the specified email address.');
+		} else {
+			$box['tabs']['meta_data']['notices']['debug_mode']['show'] = false;
 		}
 		
 		break;
@@ -144,6 +157,22 @@ switch ($path) {
 				}
 				$fields['email/sent_form_text']['snippet']['html'] = ze\admin::phrase('Sent from: [[content_item]], [[module]], [[plugin]], [[attachment]]', $mergeFields);
 			}
+		}
+		break;
+	
+	case 'site_settings':
+		if ($settingGroup == 'data_protection') {
+			
+			//Show the number of sent emails currently stored
+			$count = ze\row::count(ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX . 'email_template_sending_log');
+			$note = ze\admin::nphrase('1 record currently stored.', '[[count]] records currently stored.', $count);
+			
+			if ($count) {
+				$min = ze\row::min(ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX . 'email_template_sending_log', 'sent_datetime');
+				$note .= ' ' . ze\admin::phrase('Oldest record from [[date]].', ['date' => ze\date::formatDateTime($min, '_MEDIUM')]);
+			}
+			$fields['data_protection/period_to_delete_the_email_template_sending_log_headers']['note_below'] = $note;
+			
 		}
 		break;
 }

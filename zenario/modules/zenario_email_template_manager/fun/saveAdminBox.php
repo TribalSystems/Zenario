@@ -30,7 +30,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 switch ($path) {
 	case 'zenario_email_template':
 		
-		ze\contentAdm::addAbsURLsToAdminBoxField($box['tabs']['body']['fields']['body']);
+		ze\contentAdm::addAbsURLsToAdminBoxField($box['tabs']['meta_data']['fields']['body']);
 		
 		
 		$files = [];
@@ -42,8 +42,8 @@ switch ($path) {
 			$columns['subject'] = $values['meta_data/subject'];
 			
 			if ($values['meta_data/from_details'] == "site_settings"){
-				$columns['email_address_from'] = $values['meta_data/email_address_from_site_settings'];
-				$columns['email_name_from'] = $values['meta_data/email_name_from_site_settings'];
+				$columns['email_address_from'] = ze::setting('email_address_from');
+				$columns['email_name_from'] = ze::setting('email_name_from');
 			}else{
 				$columns['email_address_from'] = $values['meta_data/email_address_from'];
 				$columns['email_name_from'] = $values['meta_data/email_name_from'];
@@ -51,19 +51,23 @@ switch ($path) {
 			
 			$columns['from_details'] = $values['meta_data/from_details'];
 			
-			$columns['debug_email_address'] =
-				($columns['debug_override'] = $values['meta_data/debug_override'])? $values['meta_data/debug_email_address'] : '';
+			if ($values['meta_data/mode'] == 'debug') {
+				$columns['debug_override'] = true;
+				$columns['debug_email_address'] = $values['meta_data/debug_email_address'];
+			} else {
+				$columns['debug_override'] = false;
+				$columns['debug_email_address'] = '';
+			}
 
 			$columns['cc_email_address'] =
 				($columns['send_cc'] = $values['meta_data/send_cc'])? $values['meta_data/cc_email_address'] : '';
 
 			$columns['bcc_email_address'] =
 				($columns['send_bcc'] = $values['meta_data/send_bcc'])? $values['meta_data/bcc_email_address'] : '';
-		}
-		
-		if (ze\ring::engToBoolean($box['tabs']['body']['edit_mode']['on'] ?? false)) {
-			ze\priv::exitIfNot('_PRIV_MANAGE_EMAIL_TEMPLATE');
-			$columns['body'] = $values['body/body'];
+			
+			
+			$columns['use_standard_email_template'] = $values['meta_data/use_standard_email_template'] == 'yes';
+			$columns['body'] = $values['meta_data/body'];
 			$htmlChanged = false;
 			ze\file::addImageDataURIsToDatabase($columns['body'], ze\link::absolute());
 			ze\contentAdm::syncInlineFileLinks($files, $columns['body'], $htmlChanged);

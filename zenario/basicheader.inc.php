@@ -93,12 +93,12 @@ if (!defined('SUBDIRECTORY')) {
 
 
 class ze {
-	public static $globalDB;
-	public static $localDB;
-	public static $lastDB;
-	public static $lastDBHost;
-	public static $lastDBName;
-	public static $lastDBPrefix;
+	//Databases used
+	public static $dbD;	//Data archive, for asset data and other large storage
+	public static $dbG;	//Global database, for multisite admins
+	public static $dbL;	//Local database, for all site content
+	
+	//To do: Remove this line in version 8.2!
 	public static $mongoDB;
 	
 	public static $edition = '';
@@ -144,8 +144,6 @@ class ze {
 	public static $homeCID = 0;
 	public static $homeEquivId = 0;
 	public static $homeCType = '';
-	public static $pkCols = [];
-	public static $dbCols = [];
 	public static $groups = '';
 	public static $signalsCurrentlyTriggered = [];
 	public static $googleRecaptchaElements = [];
@@ -336,10 +334,11 @@ class ze {
 			return ze::$siteConfig[$settingName];
 		}
 	
-		if (ze::$lastDB) {
+		if (ze::$dbL) {
+			
 			$sql = "
-				SELECT IFNULL(value, default_value), ". (isset(ze::$dbCols[DB_NAME_PREFIX. 'site_settings']['encrypted'])? 'encrypted' : '0'). "
-				FROM ". DB_NAME_PREFIX. "site_settings
+				SELECT IFNULL(value, default_value), ". (isset(ze::$dbL->cols[DB_PREFIX. 'site_settings']['encrypted'])? 'encrypted' : '0'). "
+				FROM ". DB_PREFIX. "site_settings
 				WHERE name = '". ze\escape::sql($settingName). "'";
 			if ($row = ze\sql::fetchRow($sql)) {
 				if ($row[1]) {
@@ -415,6 +414,19 @@ class ze {
 		return $a ?: ($b ?: $c);
 	}
 	
+	public static function define($a, $b) {
+		if (!defined($a)) {
+			define($a, $b);
+		}
+	}
+	public static function defineBC($n, $o) {
+		if (defined($n)) {
+			ze::define($o, constant($n));
+		} elseif (defined($o)) {
+			define($n, constant($o));
+		}
+	}
+	
 	//A shortcut function to in_array, that looks similar to the MySQL IN() function
 	//Formerly "in()"
 	public static function in($needle, ...$haystack) {
@@ -454,9 +466,7 @@ if (!empty($_REQUEST)) ze::trim($_REQUEST);
 
 
 //Set the error level if specified in the site configs, defaulting to (E_ALL & ~E_NOTICE | E_STRICT) if not defined or if the site configs have not yet been included
-if (!defined('ERROR_REPORTING_LEVEL')) {
-	define('ERROR_REPORTING_LEVEL', E_ALL & ~E_NOTICE & ~E_STRICT);
-}
+ze::define('ERROR_REPORTING_LEVEL', E_ALL & ~E_NOTICE & ~E_STRICT);
 error_reporting(ERROR_REPORTING_LEVEL);
 
 //Also add a wrapper to the error handler that checks if a page has a visible error on it
@@ -475,26 +485,14 @@ if ($tz = @date_default_timezone_get()) {
 }
 
 //Make sure the the cookie/session constants are set
-if (!defined('COOKIE_DOMAIN')) {
-	define('COOKIE_DOMAIN', '');
-}
-if (!defined('COOKIE_TIMEOUT')) {
-	define('COOKIE_TIMEOUT', 8640000);
-}
-if (!defined('SESSION_TIMEOUT')) {
-	define('SESSION_TIMEOUT', 0);
-}
-if (!defined('DIRECTORY_INDEX_FILENAME')) {
-	define('DIRECTORY_INDEX_FILENAME', 'index.php');
-}
-
-if (defined('DBHOST') && !defined('DBPORT')) {
-	define('DBPORT', '');
-}
-if (defined('DBHOST_GLOBAL') && !defined('DBPORT_GLOBAL')) {
-	define('DBPORT_GLOBAL', '');
-}
-
+ze::define('COOKIE_DOMAIN', '');
+ze::define('COOKIE_TIMEOUT', 8640000);
+ze::define('SESSION_TIMEOUT', 0);
+ze::define('DIRECTORY_INDEX_FILENAME', 'index.php');
+ze::defineBC('DB_PREFIX', 'DB_NAME_PREFIX');
+ze::defineBC('DB_PREFIX_GLOBAL', 'DB_NAME_PREFIX_GLOBAL');
+if (defined('DBHOST')) ze::define('DBPORT', '');
+if (defined('DBHOST_GLOBAL')) ze::define('DBPORT_GLOBAL', '');
 
 
 //Some standard constant definitions

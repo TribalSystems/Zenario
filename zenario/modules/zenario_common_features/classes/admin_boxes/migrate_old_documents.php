@@ -43,7 +43,7 @@ class zenario_common_features__admin_boxes__migrate_old_documents extends ze\mod
 				if ($details = ze\dataset::details('documents')) {
 					$link = ze\link::absolute(). 'zenario/admin/organizer.php?#zenario__administration/panels/custom_datasets//'.$details['id'];
 				}
-				$textDocumentDatasetFields = ze\row::getArray('custom_dataset_fields', ['label', 'default_label'], ['type' => 'text', 'dataset_id' => $datasetDetails['id']], 'ord');
+				$textDocumentDatasetFields = ze\row::getAssocs('custom_dataset_fields', ['label', 'default_label'], ['type' => 'text', 'dataset_id' => $datasetDetails['id']], 'ord');
 				$textDocumentDatasetFields = array_map(function($e) { return $e['label'] ? $e['label'] : $e['default_label']; }, $textDocumentDatasetFields);
 				
 				if (empty($textDocumentDatasetFields)) {
@@ -56,7 +56,7 @@ class zenario_common_features__admin_boxes__migrate_old_documents extends ze\mod
 					$fields['details/title']['values'] = $fields['details/language_id']['values'] = $textDocumentDatasetFields;
 				}
 				$textAreaDocumentDatasetFields = 
-					ze\row::getArray('custom_dataset_fields', 'label', ['type' => 'textarea', 'dataset_id' => $datasetDetails['id']]);
+					ze\row::getValues('custom_dataset_fields', 'label', ['type' => 'textarea', 'dataset_id' => $datasetDetails['id']]);
 				if (empty($textAreaDocumentDatasetFields)) {
 					$fields['details/description']['hidden'] = $fields['details/keywords']['hidden'] = true;
 					$fields['details/description_warning']['hidden'] = $fields['details/keywords_warning']['hidden'] = false;
@@ -67,7 +67,7 @@ class zenario_common_features__admin_boxes__migrate_old_documents extends ze\mod
 					$fields['details/description']['values'] = $fields['details/keywords']['values'] = $textAreaDocumentDatasetFields;
 				}
 				$editorDocumentDatasetFields = 
-					ze\row::getArray('custom_dataset_fields', 'label', ['type' => 'editor', 'dataset_id' => $datasetDetails['id']]);
+					ze\row::getValues('custom_dataset_fields', 'label', ['type' => 'editor', 'dataset_id' => $datasetDetails['id']]);
 				if (empty($editorDocumentDatasetFields)) {
 					$fields['details/content_summary']['hidden'] = true;
 					$fields['details/content_summary_warning']['hidden'] = false;
@@ -95,11 +95,10 @@ class zenario_common_features__admin_boxes__migrate_old_documents extends ze\mod
 		// Get next ordinal in folder
 		$sql = '
 			SELECT MAX(ordinal)
-			FROM '.DB_NAME_PREFIX.'documents
+			FROM '.DB_PREFIX.'documents
 			WHERE folder_id = '.(int)$folder_id;
-		$result = ze\sql::select($sql);
-		$maxOrdinal = ze\sql::fetchArray($result);
-		$ordinal = empty($maxOrdinal[0]) ? 1 : (int)$maxOrdinal[0] + 1;
+		$maxOrdinal = ze\sql::fetchValue($sql);
+		$ordinal = empty($maxOrdinal) ? 1 : (int)$maxOrdinal + 1;
 		$failed = 0;
 		$succeeded = 0;
 		
@@ -115,8 +114,8 @@ class zenario_common_features__admin_boxes__migrate_old_documents extends ze\mod
 			$documentData = [];
 			$sql = '
 				SELECT c.language_id, v.title, v.description, v.keywords, v.content_summary, v.file_id, v.created_datetime, v.filename
-				FROM '.DB_NAME_PREFIX.'content_items AS c
-				INNER JOIN '.DB_NAME_PREFIX.'content_item_versions AS v
+				FROM '.DB_PREFIX.'content_items AS c
+				INNER JOIN '.DB_PREFIX.'content_item_versions AS v
 					ON (c.tag_id = v.tag_id AND c.admin_version = v.version)
 				WHERE c.tag_id = "'.ze\escape::sql($tagId).'"';
 			$result = ze\sql::select($sql);

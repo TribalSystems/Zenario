@@ -128,6 +128,45 @@
 .title_with_icons .zfea .zfea_top_buttons {
 }
 
+/* Field date
+--------------------------------------------------------------------------------------------------*/
+
+.zenario_skin input[readonly].zenario_datepicker {
+	width:150px;
+	background:transparent;
+}
+
+.zenario_skin .zenario_field_widget_wrap {
+	overflow:hidden;
+	margin-right:10px;
+}
+
+.zenario_skin .zenario_field_widget_wrap .zenario_datepicker,
+.zenario_skin .zenario_field_widget_wrap .zenario_remove_date {
+	float:left;
+}
+
+.zenario_skin .zenario_field_widget_wrap .zenario_datepicker {
+	margin-right:4px;
+}
+
+.zenario_skin .zenario_field_widget_wrap .zenario_remove_date {
+	margin-top:4px;
+	border:0 !important;
+	background:#ccc !important;
+	color:#555 !important;
+	width:20px;
+	height:20px;
+	padding:0 0 4px 0;
+	text-align:center;
+	-webkit-border-radius:50%;
+	-moz-border-radius:50%;
+	border-radius:50%;
+	margin-left:3px;
+	font-size:13px;
+	font-family:arial;
+}
+
 /* Tables
 --------------------------------------------------------------------------------------------------*/
 
@@ -783,6 +822,20 @@ body.mobile .zfea_blocks .zfea_block_list_wrap .zfea_block {
 	margin-bottom:20px;
 }
 
+.zenario_conference_fea .zfea_zenario_list_abstracts .table_list .sorted_buttons.multi_select_buttons {
+	position:relative;
+	width:275px;
+	background:#fbf290;
+}
+
+.zenario_conference_fea .zfea_zenario_list_abstracts table tr td.sorted_buttons.multi_select_buttons > div {
+	position:absolute;
+	top:-10px;
+	left:0;
+	right:0;
+	text-align:center;
+}
+
 /* Storefront products
 --------------------------------------------------------------------------------------------------*/
 
@@ -1006,20 +1059,40 @@ body.mobile .zfea_blocks .zfea_block_list_wrap .zfea_block {
 	padding-right:0.5em;
 }
 
-.zenario_skin .Tokenize .TokensContainer .Placeholder {
+/*.zenario_skin .Tokenize .TokensContainer .Placeholder {
 	opacity: 1;
 	line-height:22px;
 	padding:0 0 0 5px;
 	color:#999;
 	position:relative;
+}*/
+
+/*.zenario_skin .Tokenize.OnlyOne .TokensContainer {
+	position:relative;
+}*/
+
+.zenario_skin .Tokenize .TokensContainer .Placeholder {    
+    padding-left: 5px;
+    opacity: .9;
 }
 
 .zenario_skin .Tokenize.OnlyOne .TokensContainer {
-	position:relative;
+	min-height: 30px;
 }
 
 .zenario_skin .Tokenize.OnlyOne .TokenSearch {
 	position:absolute;
+}
+
+.zenario_skin .Tokenize.OnlyOne .TokenSearch,
+.zenario_skin .Tokenize.OnlyOne .TokenSearch input {
+	height:30px;
+	line-height:30px;
+	font-size:1em;
+}
+
+.zenario_skin .Tokenize.OnlyOne .TokenSearch input {
+	padding:0 5px;
 }
 
 .zenario_skin div.Tokenize ul.Dropdown li.Hover {
@@ -2726,6 +2799,14 @@ body.mobile .zfea_zenario_list_orders .zfea_block_list_wrap .zfea_block p.column
 }
 
 body.mobile .zfea_zenario_list_orders .zfea_block_list_wrap .zfea_block p.column_created {
+	text-align:right;
+}
+	
+/* Breakpoint
+--------------------------------------------------------------------------------------------------*/
+	
+body.mobile .zfea div.sorted_buttons {
+	float:none;
 	text-align:right;
 }
 

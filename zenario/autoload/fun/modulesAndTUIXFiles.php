@@ -36,8 +36,8 @@ if ($getIndividualFiles) {
 }
 
 $sql .= "
-	FROM ". DB_NAME_PREFIX. "tuix_file_contents AS x
-	INNER JOIN ". DB_NAME_PREFIX. "modules AS m
+	FROM ". DB_PREFIX. "tuix_file_contents AS x
+	INNER JOIN ". DB_PREFIX. "modules AS m
 	   ON x.module_class_name = m.class_name";
 
 if ($runningModulesOnly) {

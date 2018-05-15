@@ -41,18 +41,6 @@ ze::$vars['roomId'] =
 ze::$vars['streamId'] = 
 ze::$vars['abstractId'] = 0;
 
-//For the API documenter FEA
-ze::$vars['classMethod'] = $_REQUEST['classMethod'] ?? '';
-
-//For orders FEA
-ze::$vars['orderId'] = $_REQUEST['orderId'] ?? '';
-
-//Generic named variables
-ze::$vars['id1'] = $_REQUEST['id1'] ?? '';
-ze::$vars['id2'] = $_REQUEST['id2'] ?? '';
-ze::$vars['id3'] = $_REQUEST['id3'] ?? '';
-ze::$vars['responseId'] = $_REQUEST['responseId'] ?? '';
-
 $status = require ze::editionInclude('checkRequestVars', $continueFrom = 'zenario_pro_features');
 if (!$status) {
 	return $status;

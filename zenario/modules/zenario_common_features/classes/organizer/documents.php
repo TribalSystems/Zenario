@@ -48,7 +48,7 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 				$tempArray = [];
 				$item['css_class'] = 'zenario_folder_item';
 				$item['traits']['is_folder'] = true;
-				$tempArray = ze\row::getArray('documents', 'id', ['folder_id' => $item['id']]);
+				$tempArray = ze\row::getValues('documents', 'id', ['folder_id' => $item['id']]);
 				$item['folder_file_count'] = count($tempArray);
 				
 				if (!$item['folder_file_count']) {
@@ -66,17 +66,19 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 				
 				$item['css_class'] .= ' zenario_document_privacy_' . $item['privacy'];
 				
-				$privicyPhraseAuto = ze\admin::phrase('[[name]] is Hidden. (will become Public when a link to it is made from a public content item, or Private when a link is made on a private content item)', $item);
-				$privicyPhrasePrivate = ze\admin::phrase('[[name]] is Private. (only a logged-in extranet user can access this document via an internal link; URL will change from time to time)', $item);
-				$privicyPhrasePublic = ze\admin::phrase('[[name]] is Public. (any visitor who knows the public link can access it)', $item);
+				$privacyPhraseOffline = ze\admin::phrase('[[name]] is Offline. (will become Public when a link to it is made from a public content item, or Private when a link is made on a private content item)', $item);
+				$privacyPhrasePrivate = ze\admin::phrase('[[name]] is Private. (only a logged-in extranet user can access this document via an internal link; URL will change from time to time)', $item);
+				$privacyPhrasePublic = ze\admin::phrase('[[name]] is Public. (any visitor who knows the public link can access it)', $item);
 				
-				if ($item['privacy'] == 'auto') {
-					$item['tooltip'] = $privicyPhraseAuto;
+				if ($item['privacy'] == 'offline') {
+					$item['tooltip'] = $privacyPhraseOffline;
+					$item['traits']['offline'] = true;
 				} elseif ($item['privacy'] == 'private') {
-					$item['tooltip'] = $privicyPhrasePrivate;
+					$item['tooltip'] = $privacyPhrasePrivate;
+					$item['traits']['private'] = true;
 				} elseif ($item['privacy'] == 'public') {
-					$item['tooltip'] = $privicyPhrasePublic;
-					$item['traits']['public_link'] = true;
+					$item['tooltip'] = $privacyPhrasePublic;
+					$item['traits']['public'] = true;
 					
 					$dirPath = 'public' . '/downloads/' . $item['short_checksum'];
 					$frontLink = $dirPath . '/' . $item['filename'];
@@ -88,7 +90,7 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 				}
 				
 				if ($item['date_uploaded']) {
-					$item['date_uploaded'] = ze\admin::phrase('Uploaded [[date]]', ['date' => ze\date::formatDateTime($item['date_uploaded'], '_MEDIUM')]);
+					$item['date_uploaded'] = ze\admin::phrase('Uploaded [[date]]', ['date' => ze\date::formatDateTime($item['date_uploaded'], '_MEDIUM', \ze::$defaultLang)]);
 				}
 				if ($item['extract_wordcount']) {
 					$item['extract_wordcount'] = ze\admin::nPhrase(
@@ -144,7 +146,7 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 					$parent_id = $_POST['parent_ids'][$id];
 					$sql = '
 						SELECT id
-						FROM ' . DB_NAME_PREFIX . 'documents
+						FROM ' . DB_PREFIX . 'documents
 						WHERE 1=1 ';
 					if ($isFolder) {
 						$sql .= ' AND folder_name = "' . ze\escape::sql($folder_name) . '"';
@@ -366,53 +368,88 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 		} elseif ($_POST['generate_public_link'] ?? false) {
 			$messageType = 'Success';
 			$html = '';
-			foreach (explode(',', $ids) as $id) {
+			$idsArray = explode(',', $ids);
+			$count = count($idsArray);
+			
+			foreach ($idsArray as $id) {
 				$result = ze\document::generatePublicLink($id);
 				
 				if (ze::isError($result)) {
-					$html .= $result->errors['message'] . '<br/>';
-					$messageType = 'Error';
+					
+					//Show error message only if 1 item was selected
+					if($count == 1) {
+						$html .= $result->errors['message'] . '<br/>';
+						$messageType = 'Error';
+					}
 				} else {
-					$result = str_replace(' ', '%20', $result);
-					$fullLink = ze\link::absolute() . $result;
-					$internalLink = $result;
-					$html .= '
-						<div class="document_hyperlinks_message">
-						<h3>The hyperlinks to your document are shown below:</h3>
-						<div class="document_hyperlinks_content">
-							<div class="document_hyperlinks_label">Full hyperlink:
-								<span class="note"></span>
+					
+					//Show success message only if 1 item was selected
+					if($count == 1) {
+						$result = str_replace(' ', '%20', $result);
+						$fullLink = ze\link::absolute() . $result;
+						$internalLink = $result;
+						$html .= '
+							<div class="document_hyperlinks_message">
+							<h3>The hyperlinks to your document are shown below:</h3>
+							<div class="document_hyperlinks_content">
+								<div class="document_hyperlinks_label">Full hyperlink:
+									<span class="note"></span>
+								</div>
+								<div class="document_hyperlinks_field">
+									<input type="text" style="width: 488px;" value="'. htmlspecialchars($fullLink). '"/>
+								</div>
 							</div>
-							<div class="document_hyperlinks_field">
-								<input type="text" style="width: 488px;" value="'. htmlspecialchars($fullLink). '"/>
+							<div class="document_hyperlinks_content">
+								<div class="document_hyperlinks_label">Internal hyperlink:
+									<span class="note"></span>
+								</div>
+								<div class="document_hyperlinks_field">
+									<input type="text" style="width: 488px;" value="'. htmlspecialchars($internalLink). '"/>
+								</div>
 							</div>
-						</div>
-						<div class="document_hyperlinks_content">
-							<div class="document_hyperlinks_label">Internal hyperlink:
-								<span class="note"></span>
-							</div>
-							<div class="document_hyperlinks_field">
-								<input type="text" style="width: 488px;" value="'. htmlspecialchars($internalLink). '"/>
-							</div>
-						</div>
-						</div>';
-				}
+							</div>';
+					}
+				}			
 			}
-			echo '<!--Message_Type:' . $messageType . '-->' . $html;
-		
-		} elseif($_POST['delete_public_link'] ?? false) {
+			
+			if($count == 1) {
+				echo '<!--Message_Type:' . $messageType . '-->' . $html;
+			}
+			
+		} elseif ($_POST['make_document_private'] ?? false) {
+			$idsArray = explode(',', $ids);
+			$count = count($idsArray);
+			
+			foreach ($idsArray as $id) {
+				ze\row::set('documents', ['privacy' => 'private'], ['id' => $id]);
+				
+				//Check if the file had a public link before, and remove it if necessary
+				ze\document::deletePubliclink($id, $documentDeleted = false, $privacy = 'private');
+			}
+			
+		} elseif($_POST['make_offline'] ?? false) {
 			ze\priv::exitIfNot('_PRIV_EDIT_DOCUMENTS');
-			foreach (explode(',', $ids) as $id) {
+			$idsArray = explode(',', $ids);
+			$count = count($idsArray);
+			
+			foreach ($idsArray as $id) {
 				$result = ze\document::deletePubliclink($id);
 				
 				if ($result === true) {
-					echo "<!--Message_Type:Success-->";
-					echo 'Public link was deleted successfully.';
+					
+					//Show success message only if 1 item was selected
+					if($count == 1) {
+						echo "<!--Message_Type:Success-->";
+						echo 'Public link was deleted successfully.';
+					}
 				} else {
-					echo '<!--Message_Type:Error-->';
-					echo $result;
+					
+					//Show error message only if 1 item was selected
+					if($count == 1) {
+						echo '<!--Message_Type:Error-->';
+						echo $result;
+					}
 				}
-				
 			}
 		} elseif ($_POST['regenerate_public_links'] ?? false) {
 			ze\priv::exitIfNot('_PRIV_REGENERATE_DOCUMENT_PUBLIC_LINKS');
@@ -430,25 +467,8 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 	
 	
 	public function organizerPanelDownload($path, $ids, $refinerName, $refinerId) {
-		$file =  ze\row::get('files', true, ze\row::get('documents', 'file_id', $ids));
-		$fileName = ze\row::get('documents', 'filename', $ids);
-		if ($file['path']) {
-			header('Content-Description: File Transfer');
-			header('Content-Type: application/octet-stream');
-			header('Content-Disposition: attachment; filename="'.$fileName.'"');
-			header("Content-Type: application/force-download");
-			header("Content-Type: application/octet-stream");
-			header("Content-Type: application/download");
-			header('Content-Transfer-Encoding: binary');
-			header('Connection: Keep-Alive');
-			header('Expires: 0');
-			header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
-			header('Pragma: public');
-			header('Content-Length: ' . filesize(ze\file::docstorePath($file['id'])));
-			readfile(ze\file::docstorePath($file['id']));
-		} else {
-			header('location: '. ze\link::absolute(). 'zenario/file.php?adminDownload=1&download=1&id='. ze\row::get('files', 'id', ze\row::get('documents', 'file_id', $ids)));
-		}
+		$document = ze\row::get('documents', ['file_id', 'filename'], $ids);
+		ze\file::stream($document['file_id'], $document['filename']);
 		exit;
 	}
 	

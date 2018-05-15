@@ -7,8 +7,8 @@ zenario__layouts:
             title: Skins
             db_items:
                 table: >
-                    [[DB_NAME_PREFIX]]skins AS s
-                    INNER JOIN [[DB_NAME_PREFIX]]template_families AS tf
+                    [[DB_PREFIX]]skins AS s
+                    INNER JOIN [[DB_PREFIX]]template_families AS tf
                     ON s.family_name = tf.family_name
                 id_column: s.id
             no_items_message: There are no Skins.
@@ -52,7 +52,7 @@ zenario__layouts:
                     db_column: |
                         (
                             SELECT COUNT(*)
-                            FROM [[DB_NAME_PREFIX]]layouts AS stc
+                            FROM [[DB_PREFIX]]layouts AS stc
                             WHERE stc.skin_id = s.id
                         )
                     align_right: Yes
@@ -67,7 +67,7 @@ zenario__layouts:
                     title: Extension of Skin
                     db_column: s2.display_name
                     table_join: |
-                        LEFT JOIN [[DB_NAME_PREFIX]]skins AS s2
+                        LEFT JOIN [[DB_PREFIX]]skins AS s2
                                                      ON s.family_name = s2.family_name
                                                     AND s.extension_of_skin = s2.name
                     show_by_default: Yes
@@ -79,7 +79,7 @@ zenario__layouts:
                                                             s3.display_name
                                                             ORDER BY s3.display_name DESC
                                                             SEPARATOR ', ')
-                                                        FROM [[DB_NAME_PREFIX]]skins AS s3
+                                                        FROM [[DB_PREFIX]]skins AS s3
                                                         WHERE s.family_name = s3.family_name
                                                           AND s.name = s3.extension_of_skin
                                                     )

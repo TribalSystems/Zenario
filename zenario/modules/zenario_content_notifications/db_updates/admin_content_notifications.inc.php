@@ -32,11 +32,11 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 ze\dbAdm::revision( 1
 //Create a table to show extra information on users, such as post counts and signatures
 , <<<_sql
-	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]][[ZENARIO_CONTENT_NOTIFICATIONS_PREFIX]]admin_content_notifications`
+	DROP TABLE IF EXISTS `[[DB_PREFIX]][[ZENARIO_CONTENT_NOTIFICATIONS_PREFIX]]admin_content_notifications`
 _sql
 
 , <<<_sql
-	CREATE TABLE `[[DB_NAME_PREFIX]][[ZENARIO_CONTENT_NOTIFICATIONS_PREFIX]]admin_content_notifications`(
+	CREATE TABLE `[[DB_PREFIX]][[ZENARIO_CONTENT_NOTIFICATIONS_PREFIX]]admin_content_notifications`(
 		`admin_id` int(10) unsigned NOT NULL,
 		`draft_notification` tinyint(1) NOT NULL default 0,
 		`published_notification` tinyint(1) NOT NULL default 0,
@@ -47,7 +47,7 @@ _sql
 
 //Add default values for site settings
 , <<<_sql
-	INSERT INTO `[[DB_NAME_PREFIX]]site_settings`
+	INSERT INTO `[[DB_PREFIX]]site_settings`
 	(name, default_value)
 	VALUES
 		('content_notification_email_subject', 'Website content notification: Item {{published_drafted_trashed}}'),
@@ -88,7 +88,7 @@ _sql
 
 );	ze\dbAdm::revision(2
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_CONTENT_NOTIFICATIONS_PREFIX]]admin_content_notifications`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_CONTENT_NOTIFICATIONS_PREFIX]]admin_content_notifications`
 	ADD COLUMN `content_request_notification` tinyint(1) NOT NULL default 0
 _sql
 
@@ -96,23 +96,23 @@ _sql
 //Give the admin_content_notifications table a more sensible name!
 );	ze\dbAdm::revision(3
 , <<<_sql
-	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]][[ZENARIO_CONTENT_NOTIFICATIONS_PREFIX]]admins_mirror`
+	DROP TABLE IF EXISTS `[[DB_PREFIX]][[ZENARIO_CONTENT_NOTIFICATIONS_PREFIX]]admins_mirror`
 _sql
 
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_CONTENT_NOTIFICATIONS_PREFIX]]admin_content_notifications`
-	RENAME TO `[[DB_NAME_PREFIX]][[ZENARIO_CONTENT_NOTIFICATIONS_PREFIX]]admins_mirror`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_CONTENT_NOTIFICATIONS_PREFIX]]admin_content_notifications`
+	RENAME TO `[[DB_PREFIX]][[ZENARIO_CONTENT_NOTIFICATIONS_PREFIX]]admins_mirror`
 _sql
 
 
 //Create a proper linking table
 );	ze\dbAdm::revision(4
 , <<<_sql
-	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]][[ZENARIO_CONTENT_NOTIFICATIONS_PREFIX]]versions_mirror`
+	DROP TABLE IF EXISTS `[[DB_PREFIX]][[ZENARIO_CONTENT_NOTIFICATIONS_PREFIX]]versions_mirror`
 _sql
 
 , <<<_sql
-	CREATE TABLE `[[DB_NAME_PREFIX]][[ZENARIO_CONTENT_NOTIFICATIONS_PREFIX]]versions_mirror` (
+	CREATE TABLE `[[DB_PREFIX]][[ZENARIO_CONTENT_NOTIFICATIONS_PREFIX]]versions_mirror` (
 		`content_id` int(10) unsigned NOT NULL,
 		`content_type` varchar(20) NOT NULL,
 		`content_version` int(10) unsigned NOT NULL,
@@ -130,7 +130,7 @@ _sql
 ); ze\dbAdm::revision(10
 
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]]site_settings`
+	UPDATE `[[DB_PREFIX]]site_settings`
 	SET default_value = 'This is an automated message from the website at {{url}}.
 
 Item {{published_drafted_trashed}}, details:
@@ -147,7 +147,7 @@ To change your notification set-up, go to your profile at {{admin_profile_url}}'
 _sql
 
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]]site_settings`
+	UPDATE `[[DB_PREFIX]]site_settings`
 	SET default_value = 'This is an automated message from the website at {{url}}.
 
 Menu node {{created_updated}}, details:
@@ -167,7 +167,7 @@ To change your notification set-up, go to your profile at {{admin_profile_url}}'
 _sql
 
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]]site_settings`
+	UPDATE `[[DB_PREFIX]]site_settings`
 	SET default_value = 'The administrator {{admin_name}} on the site {{url}} is requesting 
 to {{publish_draft_trash}} the content item {{tag_id}}.
     
@@ -184,7 +184,7 @@ _sql
 //Fix a bad column definition that's causing problems on MySQL 5.7
 );	ze\dbAdm::revision(13
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_CONTENT_NOTIFICATIONS_PREFIX]]versions_mirror`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_CONTENT_NOTIFICATIONS_PREFIX]]versions_mirror`
 	MODIFY COLUMN `datetime_requested` datetime NOT NULL DEFAULT '1970-01-01 00:00:00'
 _sql
 );

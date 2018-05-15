@@ -54,7 +54,7 @@ if (($instance = ze\plugin::details($addPluginInstance))
 			'name_or_title' => ze\module::displayName($instance['module_id'])]);
 	
 	$sql = "
-		INSERT INTO ". DB_NAME_PREFIX. "plugin_settings (
+		INSERT INTO ". DB_PREFIX. "plugin_settings (
 			instance_id,
 			name,
 			egg_id,
@@ -84,11 +84,14 @@ if (($instance = ze\plugin::details($addPluginInstance))
 			foreign_key_id,
 			foreign_key_char,
 			dangling_cross_references
-		FROM ". DB_NAME_PREFIX. "plugin_settings
+		FROM ". DB_PREFIX. "plugin_settings
 		WHERE instance_id = ". (int) $addPluginInstance;
-	ze\sql::select($sql);  //No need to check the cache as the other statements should clear it correctly
+	ze\sql::cacheFriendlyUpdate($sql);  //No need to check the cache as the other statements should clear it correctly
 	
 	ze\contentAdm::resyncLibraryPluginFiles($instanceId, $instance);
+	
+	//Update the request vars for this slide
+	ze\pluginAdm::setSlideRequestVars($instanceId, $slideNum);
 	
 	
 	return $eggId;

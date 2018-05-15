@@ -54,8 +54,8 @@ class dbAdm {
 		//Attempt to get all of the rows from the revision numbers table
 		$sql = "
 			SELECT path, patchfile, revision_no
-			FROM ". DB_NAME_PREFIX. "local_revision_numbers
-			WHERE patchfile != 'mongo.inc.php'";
+			FROM ". DB_PREFIX. "local_revision_numbers
+			WHERE patchfile != 'data_archive.inc.php'";
 	
 		//If we fail, rather than exist with an error message and crash the entire admin section,
 		//just return that there are no updates
@@ -85,12 +85,20 @@ class dbAdm {
 				$modulesToRevisionNumbers[$row['path']. '/'. $row['patchfile']] = $row['revision_no'];
 			}
 		}
+		
+		//If this site has a data archive, and it's been populated, attempt to run checks on that as well.
+		if (\ze\db::connectDataArchive()
+		 && \ze::$dbD->checkTableDef(DB_PREFIX_DA. 'data_archive_revision_numbers', true)) {
 	
-		//If MongoDB is connected, check for MongoDB revisions
-		//(N.b. this will also set the \ze::$mongoDB variable if successful)
-		if ($local_revision_numbers = \ze\mongo::collection('local_revision_numbers', $returnFalseOnError = true)) {
-			$cursor = \ze\mongo::find($local_revision_numbers, [], ['path' => [§exists => 1], 'patchfile' => [§exists => 1], 'revision_no' => [§exists => 1]]);
-			while ($row = \ze\mongo::fetchRow($cursor)) {
+			//Attempt to get all of the rows from the revision numbers table
+			$sql = "
+				SELECT path, patchfile, revision_no
+				FROM ". DB_PREFIX_DA. "data_archive_revision_numbers
+				WHERE patchfile = 'data_archive.inc.php'";
+			
+			$result = \ze\sqlDA::select($sql);
+			
+			while ($row = \ze\sqlDA::fetchAssoc($result)) {
 			
 				//Copy-paste of the above
 				if (($chop = \ze\ring::chopPrefix('plugins/', $row['path']))
@@ -267,10 +275,9 @@ class dbAdm {
 						if (substr($file, 0, 1) == '.' || $file == 'latest_revision_no.inc.php') {
 							continue;
 				
-						//If this is a patchfile for MongoDB, and if MongoDB wasn't loaded earlier
-						//during the \ze\dbAdm::getAllCurrentRevisionNumbers() function, then we don't have a connected MongoDB,
-						//and so skip this update.
-						} elseif ($file == 'mongo.inc.php' && !isset(\ze::$mongoDB)) {
+						//If this is a patchfile for the data archive, and the data archive was not set up,
+						//then skip this update.
+						} elseif ($file == 'data_archive.inc.php' && !\ze\db::hasDataArchive()) {
 							continue;
 				
 						} else {
@@ -358,7 +365,7 @@ class dbAdm {
 
 		if ($andDoUpdates) {
 			//Reset the cached table details, in case any of the definitions are out of date
-			\ze::$dbCols = [];
+			\ze\dbAdm::resetTableDefs();
 			
 			\ze\site::setSetting('last_successful_db_update', time());
 			\ze\site::setSetting('zenario_version', \ze\site::versionNumber());
@@ -396,17 +403,18 @@ class dbAdm {
 			$path = 'modules/'. $chop;
 		}
 	
-		if ($updateFile == 'mongo.inc.php') {
-			if ($local_revision_numbers = \ze\mongo::collection('local_revision_numbers', $returnFalseOnError = true)) {
-				\ze\mongo::updateOne($local_revision_numbers,
-					[§set => ['revision_no' => (int) $revisionNumber]],
-					['path' => $path, 'patchfile' => $updateFile],
-					['upsert' => true]
-				);
-			}
+		if ($updateFile == 'data_archive.inc.php') {
+			$sql = "
+				REPLACE INTO  ". DB_PREFIX_DA. "data_archive_revision_numbers SET
+				  path = '". \ze\escape::sql($path). "',
+				  patchfile = '". \ze\escape::sql($updateFile). "',
+				  revision_no = ". (int) $revisionNumber;
+	
+			\ze\sqlDA::update($sql);
+		
 		} else {
 			$sql = "
-				REPLACE INTO  ". DB_NAME_PREFIX. "local_revision_numbers SET
+				REPLACE INTO  ". DB_PREFIX. "local_revision_numbers SET
 				  path = '". \ze\escape::sql($path). "',
 				  patchfile = '". \ze\escape::sql($updateFile). "',
 				  revision_no = ". (int) $revisionNumber;
@@ -458,7 +466,7 @@ class dbAdm {
 		//Otherwise assume the file will be a php file with a series of revisions
 		} else {
 			//Clear any cached information on the existing database tables, as this can cause database errors if it's used when out-of-date
-			\ze\dbAdm::resetStructureCache();
+			\ze\dbAdm::resetTableDefs();
 		
 			//Set the inputs into global variables, so we can remember them for this revision
 			//without needing to add extra parameters to every function (which would make the update files look messy!)
@@ -474,9 +482,14 @@ class dbAdm {
 			$updateFile = \ze::$dbupUpdateFile;
 			$currentRevision = \ze::$dbupCurrentRevision;
 			$uninstallPluginOnFail = \ze::$dbupUninstallPluginOnFail;
+			
+			\ze::$dbupPath = false;
+			\ze::$dbupUpdateFile = false;
+			\ze::$dbupCurrentRevision = false;
+			\ze::$dbupUninstallPluginOnFail = false;
 		
 			//Clear any cached information on the existing database tables, as this can cause database errors if it's used when out-of-date
-			\ze\dbAdm::resetStructureCache();
+			\ze\dbAdm::resetTableDefs();
 		}
 	
 		//Update the current revision in the database to the latest, so this will not be triggered again.
@@ -498,9 +511,15 @@ class dbAdm {
 	}
 
 	//Formerly "resetDatabaseStructureCache()"
-	public static function resetStructureCache() {
-		\ze::$dbCols = [];
-		\ze::$pkCols = [];
+	public static function resetTableDefs() {
+		if (isset(\ze::$dbL)) {
+			\ze::$dbL->cols = [];
+			\ze::$dbL->pks = [];
+		}
+		if (isset(\ze::$dbD)) {
+			\ze::$dbD->cols = [];
+			\ze::$dbD->pks = [];
+		}
 	}
 
 	//This function is used for database revisions. It's called from the patch files.
@@ -520,6 +539,12 @@ class dbAdm {
 			return;
 		}
 		//If the above wasn't true, then we'll need to apply the update
+		
+		if (\ze::$dbupUpdateFile == 'data_archive.inc.php') {
+			$db = \ze::$dbD;
+		} else {
+			$db = \ze::$dbL;
+		}
 	
 	
 		//Loop through all of the arguments given after the first
@@ -527,13 +552,13 @@ class dbAdm {
 		$count = func_num_args();
 		while ($i < $count && ($sql = func_get_arg($i++))) {
 		
-			//Run the SQL, using str_replace to subsitute in the values of DB_NAME_PREFIX
+			//Run the SQL, using str_replace to subsitute in the values of DB_PREFIX
 			$sql = \ze\dbAdm::addConstantsToString($sql, false);
-			$result = @\ze::$lastDB->query($sql);
+			$result = @$db->con->query($sql);
 		
 			//Handle errors
 			if ($result === false) {
-				$errNo = \ze\sql::errno();
+				$errNo = $db->con->errno;
 			
 				//Ignore "column already exists" errors
 				if ($errNo == 1060 && !preg_match('/\s*CREATE\s*TABLE\s*/i', $sql)) {
@@ -548,7 +573,7 @@ class dbAdm {
 				//Otherwise we can't recover from this error
 			
 				//Report the error
-				echo "Database query error: ".\ze\sql::errno().", ".\ze\sql::error().", $sql";
+				echo 'Database query error: '. $errNo. ', '. $db->con->error. ', '. $sql;
 			
 				//If this was the installation of a Module, then remove everything that the Module has installed
 				if (\ze::$dbupUninstallPluginOnFail) {
@@ -574,28 +599,36 @@ class dbAdm {
 	//Take a string, and add any defined constants in using the [[CONSTANT_NAME]] format
 	//Formerly "addConstantsToString()"
 	public static function addConstantsToString($sql, $replaceUnmatchedConstants = true) {
-		//Get a list of defined constants
-		$constants = get_defined_constants();
-	
-		$constantValues = array_values($constants);
-		$constants = array_keys($constants);
-	
-		//Add our standard substitution pattern to the keys
-		array_walk($constants, 'ze\\dbAdm::addConstantToString');
-	
-		$sql = str_replace($constants, $constantValues, $sql);
-	
-		if ($replaceUnmatchedConstants) {
-			$sql = str_replace('[[SQL_IN]]', '', $sql);
-			$sql = preg_replace('/\[\[\w+\]\]/', 'NULL', $sql);
+		
+		$content = explode('[[', $sql);
+		$sql = '';
+		$first = true;
+		
+		foreach ($content as &$str) {
+			if ($first) {
+				$first = false;
+			
+			} elseif (false !== ($sbe = strpos($str, ']]'))) {
+				$mf = substr($str, 0, $sbe);
+				$str = substr($str, $sbe + 2);
+				
+				if (defined($mf)) {
+					$sql .= constant($mf);
+				
+				} elseif ($replaceUnmatchedConstants) {
+					if ($mf !== 'SQL_IN') {
+						$sql .= 'NULL';
+					}
+				
+				} else {
+					$sql .= '[['. $mf. ']]';
+				}
+			}
+			
+			$sql .= $str;
 		}
-	
+		
 		return $sql;
-	}
-
-	//Formerly "addConstantToString()"
-	public static function addConstantToString(&$value, $key) {
-		$value = '[['. $value. ']]';
 	}
 
 
@@ -655,8 +688,8 @@ class dbAdm {
 		//Check if there are any admins with management rights in the database
 		$sql = "
 			SELECT 1
-			FROM ". DB_NAME_PREFIX. "admins AS a
-			INNER JOIN ". DB_NAME_PREFIX. "action_admin_link AS aal
+			FROM ". DB_PREFIX. "admins AS a
+			INNER JOIN ". DB_PREFIX. "action_admin_link AS aal
 			   ON aal.admin_id = a.id
 			WHERE a.status = 'active'
 			  AND aal.action_name IN ('_ALL', '_PRIV_EDIT_ADMIN')
@@ -719,33 +752,15 @@ class dbAdm {
 		//Note - don't do this if the modules table might not be present
 		$modules = [];
 		if (!$dbUpdateSafeMode) {
-			$modules = \ze\ray::valuesToKeys(\ze\row::getArray(
+			$modules = \ze\ray::valuesToKeys(\ze\row::getAssocs(
 				'modules',
 				'id',
 				['status' => ['!' => 'module_not_initialized']])
 			);
 		}
 	
-		//Get a list of tables that are used on the site
-		$usedTables = [];
-		foreach (['local-DROP.sql', 'local-admin-DROP.sql'] as $file) {
-			if ($tables = file_get_contents(CMS_ROOT. 'zenario/admin/db_install/'. $file)) {
-				foreach(preg_split('@`\[\[DB_NAME_PREFIX\]\](\w+)`@', $tables, -1,  PREG_SPLIT_DELIM_CAPTURE) as $i => $table) {
-					if ($i % 2) {
-						$usedTables[$table] = true;
-					}
-				}
-			}
-		}
-	
-		//If the count looks wrong, don't use this check
-		//(There are over 50 tables used in the CMS, as per zenario/admin/db_install/local-DROP.sql and local-admin-DROP.sql)
-		if (count($usedTables) < 50) {
-			$usedTables = false;
-		}
-	
 
-		$prefixLength = strlen(DB_NAME_PREFIX);
+		$prefixLength = strlen(DB_PREFIX);
 	
 		$existingTables = [];
 		$sql = "SHOW TABLES";
@@ -753,7 +768,7 @@ class dbAdm {
 	
 		while($row = \ze\sql::fetchRow($result)) {
 			//Check whether this table matches the global or the local prefix
-			$matchesLocal = substr($row[0], 0, $prefixLength) === DB_NAME_PREFIX;
+			$matchesLocal = substr($row[0], 0, $prefixLength) === DB_PREFIX;
 		
 			//If we get no matches, we're not interested
 			if (!$matchesLocal) {
@@ -762,31 +777,16 @@ class dbAdm {
 		
 			//Strip the prefix off of the tablename
 			$tableName = substr($row[0], $prefixLength);
-			$prefix = 'DB_NAME_PREFIX';
+			$prefix = 'DB_PREFIX';
 		
 		
 			$moduleId = false;
-			if (substr($tableName, 0, 3) == 'mod' && ($moduleId = (int) preg_replace('/mod(\d*)_.*/', '\1', $tableName))) {
-				$inUse = empty($modules) || isset($modules[$moduleId]);
-		
-			} else {
-				$inUse = empty($usedTables) || isset($usedTables[$tableName]);
-			}
-		
-		
-			//Mark anything that begins with v_ as a view
-			if (substr($tableName, 0, 2) == 'v_' || preg_match('/plg\d*_v_/', $tableName) || preg_match('/mod\d*_v_/', $tableName)) {
-				$view = true;
-			} else {
-				$view = false;
+			if (substr($tableName, 0, 3) == 'mod') {
+				$moduleId = (int) preg_replace('/mod(\d*)_.*/', '\1', $tableName);
 			}
 		
 			//A few tables should be dropped by the "reset site" feature; mark these
-			if ($view) {
-				//Ignore views
-				$reset = 'no';
-		
-			} else if ($moduleId) {
+			if ($moduleId) {
 				//Any module tables should be just dropped
 				$reset = 'drop';
 		
@@ -800,10 +800,10 @@ class dbAdm {
 			$existingTables[] = [
 				'name' => $tableName,
 				'actual_name' => $row[0],
+				'module_id' => $moduleId,
 				'prefix' => $prefix,
-				'in_use' => $inUse,
-				'reset' => $reset,
-				'view' => $view];
+				'reset' => $reset
+			];
 		}
 	
 		return $existingTables;
@@ -981,7 +981,7 @@ class dbAdm {
 		//look up the revision numbers of the admin tables from the local_revision_numbers table
 		$sql = "
 			SELECT `path`, revision_no
-			FROM ". DB_NAME_PREFIX. "local_revision_numbers
+			FROM ". DB_PREFIX. "local_revision_numbers
 			WHERE patchfile = 'admin_tables.inc.php'";
 		$revisions = \ze\sql::fetchAssocs($sql);
 	
@@ -992,16 +992,16 @@ class dbAdm {
 		(\ze\welcome::runSQL(false, 'local-INSERT.sql', $error));
 	
 		//Reset the cached table details, in case any of the definitions are out of date
-		\ze::$dbCols = [];
+		\ze\dbAdm::resetTableDefs();
 	
 		//Add the admin-related revision numbers back in
 		foreach ($revisions as &$revision) {
 			$sql = "
-				REPLACE INTO ". DB_NAME_PREFIX. "local_revision_numbers SET
+				REPLACE INTO ". DB_PREFIX. "local_revision_numbers SET
 					patchfile = 'admin_tables.inc.php',
 					`path` = '". \ze\escape::sql($revision['path']). "',
 					revision_no = ". (int) $revision['revision_no'];
-			@\ze\sql::select($sql);
+			@\ze\sql::cacheFriendlyUpdate($sql);
 		}
 	
 		//Populate the Modules table with all of the Modules in the system,
@@ -1044,7 +1044,7 @@ class dbAdm {
 		//Attempt to keep the directory, primary domain and ssl site settings from the existing installation or the installer,
 		//as the chances are that their values in the backup will be wrong
 	
-		$encryptedColExists = \ze\row::cacheTableDef(DB_NAME_PREFIX. 'site_settings', 'encrypted', $useCache = false);
+		$encryptedColExists = \ze::$dbL->checkTableDef(DB_PREFIX. 'site_settings', 'encrypted');
 	
 		foreach ([
 			'backup_dir', 'docstore_dir', 'automated_backup_log_path',
@@ -1056,7 +1056,7 @@ class dbAdm {
 		] as $setting) {
 			if (isset(\ze::$siteConfig[$setting])) {
 				$sql = "
-					INSERT INTO ". DB_NAME_PREFIX. "site_settings
+					INSERT INTO ". DB_PREFIX. "site_settings
 					SET name = '". \ze\escape::sql($setting). "',
 						value = '". \ze\escape::sql(\ze::$siteConfig[$setting]). "'";
 		
@@ -1073,18 +1073,18 @@ class dbAdm {
 						encrypted = 0";
 				}
 		
-				\ze\sql::select($sql);
+				\ze\sql::cacheFriendlyUpdate($sql);
 			}
 		}
 	
 		$sql = "
-			DELETE FROM ". DB_NAME_PREFIX. "site_settings
+			DELETE FROM ". DB_PREFIX. "site_settings
 			WHERE name IN (
 				'css_js_version', 'css_js_html_files_last_changed',
 				'yaml_version', 'yaml_files_last_changed',
 				'zenario_version', 'module_description_hash'
 			)";
-		\ze\sql::select($sql);
+		\ze\sql::cacheFriendlyUpdate($sql);
 	}
 
 	//This function generates a random key which can be used to identify a site.

@@ -84,9 +84,9 @@ _MSG_NO_STATUS|No Status
 _MSG_OTHER_USERNAME_USER|This User already exists. Please choose a different username.
 _MSG_PASS|Please enter a password in both password fields.
 _MSG_PASS_2|Please ensure that the passwords you submit are identical.
-_MSG_PASS_NOT_CHANGED|Your new Password must be different of the Current Password.
+_MSG_PASS_NOT_CHANGED|Your new password must be different from your current password.
 _MSG_PASS_STRENGTH|The password provided is not strong enough. Please make the password longer, or try mixing in upper and lower case letters, numbers or non-alphanumeric characters.
-_MSG_PASS_WRONG|You did not type your Current Password correctly.
+_MSG_PASS_WRONG|You did not type your current password correctly.
 _MSG_VALID_EMAIL_ADMIN|Please ensure you enter a valid email address.
 _NO|No
 _NO_ADMINS_TO_BACKUP|There are no Local Administrators for this site with Management rights. We recommend you create one before taking a backup.
@@ -96,7 +96,7 @@ _OCT|October
 _OK|OK
 _PASSWORD|Password
 _PASSWORD:|Password:
-_PASSWORD_RECONFIRM:|Re-confirm Password:
+_PASSWORD_RECONFIRM:|Re-confirm password:
 _PLEASE_SELECT|Please select
 _RES_ADDRESS1:|Residence Address 1:
 _RES_ADDRESS2:|Residence Address 2:

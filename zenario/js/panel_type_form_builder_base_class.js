@@ -154,12 +154,12 @@ methods.sortFields = function(fields, item) {
 		}
 		
 		if (field.visible_if && typeof(field._hidden) === 'undefined') {
-			if (!zenarioT.doEval(field.visible_if, undefined, undefined, item)) {
+			if (!zenarioT.doEval(field.visible_if, undefined, undefined, item, undefined, undefined, undefined, undefined, undefined, undefined, thus.tuix)) {
 				field._hidden = true;
 			}
 		}
 		if (field.readonly_if && typeof(field._readonly) === 'undefined') {
-			if (zenarioT.doEval(field.readonly_if, undefined, undefined, item)) {
+			if (zenarioT.doEval(field.readonly_if, undefined, undefined, item, undefined, undefined, undefined, undefined, undefined, undefined, thus.tuix)) {
 				field._readonly = true;
 			}
 		}
@@ -411,60 +411,11 @@ methods.displayToastMessage = function(message, itemId) {
 	//Do nothing, don't show the message!
 };
 
-//Called by Organizer whenever it needs to set the panel data.
-methods.cmsSetsPanelTUIX = function(tuix) {
-	thus.tuix = tuix;
-};
 
-//Called by Organizer whenever it needs to set the current tag-path
-methods.cmsSetsPath = function(path) {
-	thus.path = path;
-};
-
-//Called by Organizer whenever a panel is first loaded with a specific item requested
-methods.cmsSetsRequestedItem = function(requestedItem) {
-	thus.lastItemClicked =
-	thus.requestedItem = requestedItem;
-};
-
-
-//If searching is enabled (i.e. your returnSearchingEnabled() method returns true)
-//then the CMS will call this method to tell you what the search term was
-methods.cmsSetsSearchTerm = function(searchTerm) {
-	thus.searchTerm = searchTerm;
-};
 
 //Never show the left hand nav; always show this panel using the full width
 methods.returnShowLeftColumn = function() {
 	return false;
-};
-
-//Use this function to set AJAX URL you want to use to load the panel.
-//Initally the this.tuix variable will just contain a few important TUIX properties
-//and not your the panel definition from TUIX.
-//The default value here is a PHP script this will:
-	//Load all of the TUIX properties
-	//Call your preFillOrganizerPanel() method
-	//Populate items from the dapagease if you set the db_items property in TUIX
-	//Call your fillOrganizerPanel() method
-//You can skip these steps and not do an AJAX request by returning false instead,
-//or do something different by returning a URL to a different PHP script
-methods.returnAJAXURL = function() {
-	return URLBasePath
-		+ 'zenario/admin/organizer.ajax.php?path='
-		+ encodeURIComponent(thus.path)
-		+ zenario.urlRequest(thus.returnAJAXRequests());
-};
-
-//Returns the URL this the dev tools will use to load debug information.
-//Don't override this function!
-methods.returnDevToolsAJAXURL = function() {
-	return methods.returnAJAXURL.call(thus);
-};
-
-//Use this to add any requests you need to the AJAX URL used to call your panel
-methods.returnAJAXRequests = function() {
-	return {};
 };
 
 //Sets the title shown above the panel.
@@ -473,137 +424,6 @@ methods.returnPanelTitle = function() {
 	return methodsOf(panelTypes.grid).returnPanelTitle.call(thus);
 };
 
-
-//Called whenever Organizer is resized - i.e. when the administrator resizes their window.
-//It's also called on the first load of your panel after your showPanel() and setButtons() methods have been called.
-methods.sizePanel = function($header, $panel, $footer, $buttons) {
-	//...
-};
-
-//This is called when an admin navigates away from your panel, or your panel is about to be refreshed/reloaded.
-methods.onUnload = function($header, $panel, $footer) {
-	thus.saveScrollPosition($panel);
-};
-
-//Remember where the admin had scrolled to.
-//If we ever draw thus panel again it would be nice to restore this to how it was
-methods.saveScrollPosition = function($panel) {
-	thus.scrollTop = $panel.scrollTop();
-	thus.scrollLeft = $panel.scrollLeft();
-};
-
-//If this panel has been displayed before, try to restore the admin's previous scroll
-//Otherwise show the top left (i.e. (0, 0))
-methods.restoreScrollPosition = function($panel) {
-	$panel
-		.scrollTop(thus.scrollTop || 0)
-		.scrollLeft(thus.scrollLeft || 0)
-		.trigger('scroll');
-};
-
-methods.checkboxClick = function(id, e) {
-	zenario.stop(e);
-		
-	setTimeout(function() {
-		thus.itemClick(id, undefined, true);
-	}, 0);
-};
-
-
-methods.itemClick = function(id, e, isCheckbox) {
-	if (!thus.tuix || !thus.tuix.items[id]) {
-		return false;
-	}
-	
-	//If the admin is holding down the shift key...
-	if (zenarioO.multipleSelectEnabled && !isCheckbox && (e || event).shiftKey && thus.lastItemClicked) {
-		//...select everything between the current item and the last item this they clicked on
-		zenarioO.selectItemRange(id, thus.lastItemClicked);
-	
-	//If multiple select is enabled and the checkbox was clicked...
-	} else if (zenarioO.multipleSelectEnabled && isCheckbox) {
-		//...toogle the item this they've clicked on
-		if (thus.selectedItems[id]) {
-			thus.deselectItem(id);
-		} else {
-			thus.selectItem(id);
-		}
-		zenarioO.closeInspectionView();
-		thus.lastItemClicked = id;
-	
-	//If multiple select is not enabled and the checkbox was clicked
-	} else if (!zenarioO.multipleSelectEnabled && isCheckbox && thus.selectedItems[id]) {
-		//...deselect everything if this row was already selected
-		zenarioO.deselectAllItems();
-		zenarioO.closeInspectionView();
-		thus.lastItemClicked = id;
-	
-	//Otherwise select the item this they've just clicked on, and nothing else
-	} else {
-		zenarioO.closeInspectionView();
-		zenarioO.deselectAllItems();
-		thus.selectItem(id);
-		thus.lastItemClicked = id;
-	}
-	
-	
-	zenarioO.setButtons();
-	zenarioO.setHash();
-	
-	return false;
-};
-
-//Return an object of currently selected item ids
-//This should be an object in the format {1: true, 6: true, 18: true}
-methods.returnSelectedItems = function() {
-	return thus.selectedItems;
-};
-
-//This method will be called when the CMS sets the items this are selected,
-//e.g. when your panel is initially loaded.
-//This is an object in the format {1: true, 6: true, 18: true}
-//It is usually called before your panel is drawn so you do not need to update the state
-//of the items on the page.
-methods.cmsSetsSelectedItems = function(selectedItems) {
-	thus.selectedItems = selectedItems;
-};
-
-//This method should cause an item to be selected.
-//It is called after your panel is drawn so you should update the state of your items
-//on the page.
-methods.selectItem = function(id) {
-	thus.selectedItems[id] = true;
-	$(get('organizer_item_' + id)).addClass('organizer_selected');
-	thus.updateItemCheckbox(id, true);
-};
-
-//This method should cause an item to be deselected
-//It is called after your panel is drawn so you should update the state of your items
-//on the page.
-methods.deselectItem = function(id) {
-	delete thus.selectedItems[id];
-	$(get('organizer_item_' + id)).removeClass('organizer_selected');
-	thus.updateItemCheckbox(id, false);
-};
-
-//This updates the checkbox for an item, if you are showing checkboxes next to items,
-//and the "all items selected" checkbox, if it is on the page.
-methods.updateItemCheckbox = function(id, checked) {
-	
-	//Check to see if there is a checkbox next to this item first.
-	var checkbox = get('organizer_itemcheckbox_' + id);
-	
-	if (checkbox) {
-		$(get('organizer_itemcheckbox_' + id)).prop('checked', checked);
-	}
-	
-	//Change the "all items selected" checkbox, if it is on the page.
-	if (zenarioO.allItemsSelected()) {
-		$('#organizer_toggle_all_items_checkbox').prop('checked', true);
-	} else {
-		$('#organizer_toggle_all_items_checkbox').prop('checked', false);
-	}
-};
 
 
 //Return whether you are allowing multiple items to be selected in full and quick mode.
@@ -621,26 +441,6 @@ methods.returnSearchingEnabled = function() {
 //Return whether you want to enable inspection view
 methods.returnInspectionViewEnabled = function() {
 	return false;
-};
-
-//Toggle inspection view
-methods.toggleInspectionView = function(id) {
-	if (id == zenarioO.inspectionViewItemId()) {
-		thus.closeInspectionView(id);
-	
-	} else {
-		thus.openInspectionView(id);
-	}
-};
-
-//This method should open inspection view
-methods.openInspectionView = function(id) {
-	//...
-};
-
-//This method should close inspection view
-methods.closeInspectionView = function(id) {
-	//...
 };
 
 }, zenarioO.panelTypes);

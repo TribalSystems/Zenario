@@ -107,7 +107,7 @@ if (!empty(\ze::$slotContents) && is_array(\ze::$slotContents)) {
 if ($isWelcomeOrWizard || ($isOrganizer && \ze::setting('organizer_favicon') == 'zenario')) {
 	echo "\n", '<link rel="shortcut icon" href="', \ze\link::absolute(), 'zenario/admin/images/favicon.ico"/>';
 
-} elseif (\ze::$lastDB) {
+} elseif (\ze::$dbL) {
 	
 	if ($isOrganizer && \ze::setting('organizer_favicon') == 'custom') {
 		$faviconId = \ze::setting('custom_organizer_favicon');
@@ -311,7 +311,7 @@ if (\ze::$cID) {
 	//Look up the background image and any HTML to add to the HEAD from the content item
 	$sql = "
 		SELECT head_html, head_cc, head_visitor_only, head_overwrite, bg_image_id, bg_color, bg_position, bg_repeat
-		FROM ". DB_NAME_PREFIX. "content_item_versions
+		FROM ". DB_PREFIX. "content_item_versions
 		WHERE id = ". (int) \ze::$cID. "
 		  AND type = '". \ze\escape::sql(\ze::$cType). "'
 		  AND version = ". (int) \ze::$cVersion;
@@ -331,7 +331,7 @@ if (\ze::$cID) {
 	//Look up the background image and any HTML to add to the HEAD from the layout
 	$sql = "
 		SELECT head_html, head_cc, head_visitor_only, bg_image_id, bg_color, bg_position, bg_repeat
-		FROM ". DB_NAME_PREFIX. "layouts
+		FROM ". DB_PREFIX. "layouts
 		WHERE layout_id = ". (int) \ze::$layoutId;
 	$result = \ze\sql::select($sql);
 	$templateHTML = \ze\sql::fetchAssoc($result);

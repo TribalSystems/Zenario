@@ -8,8 +8,8 @@ zenario__user_forms:
             no_items_message: No triggers have been defined.
             db_items:
                 table: |
-                    [[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]predefined_text_triggers AS ptt
-                    INNER JOIN [[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields uff
+                    [[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]predefined_text_triggers AS ptt
+                    LEFT JOIN [[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields uff
                         ON ptt.form_field_id = uff.id
                 id_column: ptt.id
             refiners:

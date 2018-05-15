@@ -10,19 +10,20 @@ zenario__menu:
             title: All Menu Nodes
             db_items:
                 table: |
-                    [[DB_NAME_PREFIX]]menu_nodes AS mi
-                    INNER JOIN [[DB_NAME_PREFIX]]menu_sections AS ms
+                    [[DB_PREFIX]]menu_nodes AS mi
+                    INNER JOIN [[DB_PREFIX]]menu_sections AS ms
                        ON mi.section_id = ms.id
-                    LEFT JOIN [[DB_NAME_PREFIX]]menu_text AS mt
+                    LEFT JOIN [[DB_PREFIX]]menu_text AS mt
                        ON mt.menu_id = mi.id
                       AND mt.language_id = [[FOCUSED_LANGUAGE_ID]]
-                    LEFT JOIN [[DB_NAME_PREFIX]]content_items AS c
+                    LEFT JOIN [[DB_PREFIX]]content_items AS c
                        ON mi.equiv_id = c.equiv_id
                       AND mi.content_type = c.type
                       AND c.language_id = [[FOCUSED_LANGUAGE_ID]]
                 id_column: mi.id
                 custom_where_statement_if_no_missing_items: WHERE mt.menu_id IS NOT NULL
                 client_side: true
+                max_limit: 1000
             
             panel_type: hierarchy_with_lazy_load
             reorder:
@@ -41,7 +42,7 @@ zenario__menu:
                     exists: true
                 following_item_link:
                     table_join: |
-                        INNER JOIN [[DB_NAME_PREFIX]]menu_nodes AS mnil
+                        INNER JOIN [[DB_PREFIX]]menu_nodes AS mnil
                              ON mnil.section_id = mi.section_id
                             /*AND mnil.parent_id = mi.parent_id*/
                             AND mnil.id = [[REFINER__FOLLOWING_ITEM_LINK]]
@@ -49,10 +50,17 @@ zenario__menu:
                     sql: 'mi.section_id = [[REFINER__SECTION]]'
                 children:
                     table_join: |
-                        INNER JOIN [[DB_NAME_PREFIX]]menu_hierarchy AS cmh
+                        INNER JOIN [[DB_PREFIX]]menu_hierarchy AS cmh
                              ON cmh.ancestor_id = [[REFINER__CHILDREN]]
                             AND cmh.child_id != [[REFINER__CHILDREN]]
                             AND cmh.child_id = mi.id
+                menu_nodes_using_image:
+                    always_show_flat_view: true
+                    table_join: |
+                        INNER JOIN [[DB_PREFIX]]inline_images AS ii
+                           ON ii.foreign_key_to = 'menu_node'
+                          AND ii.foreign_key_id = mi.id
+                          AND ii.image_id = [[REFINER_ID]]
             label_format_for_picked_items: '[[section_name]] | [[name]]'
             columns:
                 invisible_menu_node: 
@@ -95,7 +103,7 @@ zenario__menu:
                     db_column: |
                         (
                             SELECT COUNT(DISTINCT mi2.id)
-                            FROM [[DB_NAME_PREFIX]]menu_nodes AS mi2
+                            FROM [[DB_PREFIX]]menu_nodes AS mi2
                             WHERE mi2.parent_id = mi.id
                         )
                 redundancy:
@@ -106,7 +114,7 @@ zenario__menu:
                             IF (
                                 (
                                     SELECT COUNT(*)
-                                    FROM [[DB_NAME_PREFIX]]menu_nodes AS mi2
+                                    FROM [[DB_PREFIX]]menu_nodes AS mi2
                                     WHERE mi.equiv_id = mi2.equiv_id
                                     AND mi.content_type = mi2.content_type
                                 ) = 1,
@@ -120,14 +128,14 @@ zenario__menu:
                     db_column: |
                         (
                             SELECT COUNT(DISTINCT mt_count.language_id)
-                            FROM [[DB_NAME_PREFIX]]menu_text AS mt_count
+                            FROM [[DB_PREFIX]]menu_text AS mt_count
                             WHERE mt_count.menu_id = mi.id
                         )
                 sync_assist:
                     db_column: |
                         (
                             SELECT COUNT(DISTINCT mt_sa.language_id)
-                            FROM [[DB_NAME_PREFIX]]menu_text AS mt_sa
+                            FROM [[DB_PREFIX]]menu_text AS mt_sa
                             WHERE mt_sa.menu_id = mi.id
                               AND mt_sa.language_id IN ([[ZENARIO_SYNC_ASSIST_LANGS]])
                         )
@@ -148,8 +156,10 @@ zenario__menu:
                         )
                     item_link: content_item_or_url
                     show_by_default: true
-                internal_target:
-                    db_column: "mi.target_loc = 'int' AND mi.equiv_id"
+                equiv_id:
+                    db_column: mi.equiv_id
+                ext_url:
+                    db_column: mt.ext_url
                 target_content_id:
                     db_column: c.id
                 target_content_type:

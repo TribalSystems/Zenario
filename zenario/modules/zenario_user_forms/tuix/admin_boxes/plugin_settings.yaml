@@ -8,6 +8,7 @@ plugin_settings:
                     label: 'Form:'
                     plugin_setting:
                         name: user_form
+                        foreign_key_to: user_form
                     pick_items:
                         path: zenario__user_forms/panels/user_forms
                         min_path: zenario__user_forms/panels/user_forms

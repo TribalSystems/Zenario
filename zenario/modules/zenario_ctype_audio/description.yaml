@@ -9,7 +9,7 @@ display_name: Content Type Audio
 description: |
     <p>This is the base Module for Audio Content Items in Zenario.</p>
                 <p>This Module creates a slotable Plugin which displays an audio player which visitors can use to listen to audio content.</p>
-                <p>The administrator can use the Module settings to change the time display mode, initial volume, autoplay on load and loop feature.</p>
+                <p>The administrator can use the Module settings to change the autoplay on load and loop feature.</p>
                 <p>This Module works MPEG-1 or MPEG-2 Audio Layer III files, more commonly referred to as MP3 files, with the extension '.mp3'.</p>
 category: content_type
 keywords: audio, mp3, mpeg, mpg, sound, play, player

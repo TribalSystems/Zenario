@@ -151,12 +151,12 @@ class zenario_user_profile_search extends ze\moduleBaseClass {
 		$search_fields = $this->getSearchFields();
 		if ($country_field = $search_fields['country']) {
 			$sql = "SELECT cmc.id, IFNULL(vs.local_text, CONCAT('_COUNTRY_NAME_', cmc.id)) as name
-				FROM " . DB_NAME_PREFIX . ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_countries
-				AS cmc LEFT JOIN ' . DB_NAME_PREFIX . "visitor_phrases AS vs
+				FROM " . DB_PREFIX . ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_countries
+				AS cmc LEFT JOIN ' . DB_PREFIX . "visitor_phrases AS vs
 						ON CONCAT('_COUNTRY_NAME_',cmc.id) = vs.code
 						AND vs.language_id = '" . ze\escape::sql(ze::$visLang) . "'
 				WHERE cmc.id IN(SELECT DISTINCT `" . $country_field['name'] . "` FROM " 
-						. DB_NAME_PREFIX . ($country_field['is_system_field'] ? 'users' : 'users_custom_data') 
+						. DB_PREFIX . ($country_field['is_system_field'] ? 'users' : 'users_custom_data') 
 				. ")
 				ORDER BY 2";
 			
@@ -179,7 +179,7 @@ class zenario_user_profile_search extends ze\moduleBaseClass {
 	protected function getSelectFields(){
 		$dataset = ze\dataset::details('users');
 		if(!count($this->select_fields)) {
-			$this->select_fields = ze\row::getArray('custom_dataset_fields', 
+			$this->select_fields = ze\row::getAssocs('custom_dataset_fields', 
 				true, 
 				[
 					'db_column' => 
@@ -199,7 +199,7 @@ class zenario_user_profile_search extends ze\moduleBaseClass {
 	protected function getPopupFields() {
 		$dataset = ze\dataset::details('users');
 		if(!count($this->popup_fields)) {
-			$this->popup_fields = ze\row::getArray('custom_dataset_fields', 
+			$this->popup_fields = ze\row::getAssocs('custom_dataset_fields', 
 				true, 
 				[
 					'db_column' => 
@@ -285,8 +285,8 @@ class zenario_user_profile_search extends ze\moduleBaseClass {
 				$sql .= ',
 					(
 						SELECT GROUP_CONCAT(v.label SEPARATOR ", ")
-						FROM ' . DB_NAME_PREFIX . 'custom_dataset_field_values v
-						INNER JOIN ' . DB_NAME_PREFIX . 'custom_dataset_values_link l
+						FROM ' . DB_PREFIX . 'custom_dataset_field_values v
+						INNER JOIN ' . DB_PREFIX . 'custom_dataset_values_link l
 							ON v.id = l.value_id
 						WHERE v.field_id = ' . (int)$field['id'] . '
 							AND l.linking_id = u.id
@@ -304,8 +304,8 @@ class zenario_user_profile_search extends ze\moduleBaseClass {
 	protected function selectFrom() {
 		$dataset = ze\dataset::details('users');
 		
-		$sql = "FROM " . DB_NAME_PREFIX . "users u
-				INNER JOIN " . DB_NAME_PREFIX . "users_custom_data uc
+		$sql = "FROM " . DB_PREFIX . "users u
+				INNER JOIN " . DB_PREFIX . "users_custom_data uc
 					ON u.id = uc.user_id AND u.status = 'active'";
 		
 		$select_fields = $this->getUserFields();

@@ -58,7 +58,7 @@ if (ze\dbAdm::needRevision(41748)) {
 	
 	$sql = '
 		SELECT DISTINCT admin_id
-		FROM ' . DB_NAME_PREFIX . 'action_admin_link
+		FROM ' . DB_PREFIX . 'action_admin_link
 		WHERE action_name IN ("_PRIV_CREATE_USER", "_PRIV_DELETE_USER", "_PRIV_CHANGE_USER_STATUS", "_PRIV_CHANGE_USER_PASSWORD")';
 	$result = ze\sql::select($sql);
 	while ($row = ze\sql::fetchAssoc($result)) {

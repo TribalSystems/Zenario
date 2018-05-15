@@ -34,7 +34,7 @@ if ($_POST['create_new_forum'] ?? false) {
 	if (!ze\row::exists(ZENARIO_FORUM_PREFIX. 'forums', $ids)) {
 		$sql = "
 			SELECT IFNULL(MAX(ordinal), 0) + 1
-			FROM ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "forums";
+			FROM ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "forums";
 		$result = ze\sql::select($sql);
 		$row = ze\sql::fetchRow($result);
 		

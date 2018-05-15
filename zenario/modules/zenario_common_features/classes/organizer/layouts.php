@@ -54,6 +54,14 @@ class zenario_common_features__organizer__layouts extends ze\moduleBaseClass {
 			unset($panel['trash']);
 			unset($panel['columns']['archived']['title']);
 			$panel['no_items_message'] = ze\admin::phrase('There are no active Layouts for this Content Type.');
+
+		} elseif ($refinerName == 'layouts_using_form') {
+			$mrg = [];
+			if (ze\module::inc('zenario_user_forms')) {
+				$mrg['name'] = zenario_user_forms::getFormName($refinerId);
+			}
+			$panel['title'] = ze\admin::phrase('Layouts using the form "[[name]]"', $mrg);
+			$panel['no_items_message'] = ze\admin::phrase('There are no layouts using the form "[[name]]"', $mrg);
 		
 		} elseif ($mode == 'typeahead_search') {
 			$panel['db_items']['where_statement'] = $panel['db_items']['custom_where_statement__typeahead_search'];
@@ -109,13 +117,17 @@ class zenario_common_features__organizer__layouts extends ze\moduleBaseClass {
 		}
 		
 		$foundPaths = [];
-		$defaultLayouts = ze\row::getArray('content_types', 'default_layout_id', []);
+		$defaultLayouts = ze\row::getValues('content_types', 'default_layout_id', []);
 		
 		$templatePreview = '';
 		
 		foreach ($panel['items'] as $id => &$item) {
 			$item['traits'] = [];
 			
+			//Format the layout Id
+			if ($item['code']) {
+				$item['code'] = ze\layoutAdm::codeName($item['code']);
+			}
 			
 			//For each Template file that's not missing, check its size and check the contents
 			//to see if it has grid data saved inside it.

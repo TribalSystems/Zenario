@@ -31,16 +31,6 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_pro_features__admin_boxes__pro_features_spare_alias extends ze\moduleBaseClass {
 
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values){
-		if (ze\priv::check('_PRIV_MANAGE_SPARE_ALIAS')) {
-			//Only show the "Create a Spare Alias under the old name" field if there is an existing alias,
-			//which is not already in the spare aliases table.
-			if (empty($box['tabs']['meta_data']['fields']['alias']['value'])
-			 || !ze\content::isPublished($box['key']['cID'], $box['key']['cType'])
-			 || ze\row::exists('spare_aliases', ['alias' => $box['tabs']['meta_data']['fields']['alias']['value']])) {
-				$box['tabs']['meta_data']['fields']['zenario_pro_features__create_spare_alias']['hidden'] = true;
-			}
-		}
-		
 		if ($box['key']['id']
 		 && $box['key']['id_is_error_log_id']
 		 && ze\module::inc('zenario_error_log')) {
@@ -66,15 +56,15 @@ class zenario_pro_features__admin_boxes__pro_features_spare_alias extends ze\mod
 			$details = ze\row::get('spare_aliases', true, $box['key']['id']);
 			$box['title'] = ze\admin::phrase('Editing the alias "[[alias]]"', ['alias' => ($details['alias'])]);
 				
-			$box['tabs']['spare_alias']['fields']['alias']['value'] = $details['alias'];
-			$box['tabs']['spare_alias']['fields']['alias']['readonly'] = true;
+			$fields['spare_alias/alias']['value'] = $details['alias'];
+			$fields['spare_alias/alias']['readonly'] = true;
 				
-			$box['tabs']['spare_alias']['fields']['target_loc']['value'] = $details['target_loc'];
+			$fields['spare_alias/target_loc']['value'] = $details['target_loc'];
 				
 			if ($details['target_loc'] == 'int') {
-				$box['tabs']['spare_alias']['fields']['hyperlink_target']['value'] = $details['content_type']. '_'. $details['content_id'];
+				$fields['spare_alias/hyperlink_target']['value'] = $details['content_type']. '_'. $details['content_id'];
 			} else {
-				$box['tabs']['spare_alias']['fields']['ext_url']['value'] = $details['ext_url'];
+				$fields['spare_alias/ext_url']['value'] = $details['ext_url'];
 			}
 		}
 		
@@ -85,10 +75,10 @@ class zenario_pro_features__admin_boxes__pro_features_spare_alias extends ze\mod
 	}
 	
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		$box['tabs']['spare_alias']['fields']['hyperlink_target']['hidden'] = 
+		$fields['spare_alias/hyperlink_target']['hidden'] = 
 			$values['spare_alias/target_loc'] != 'int';
 		
-		$box['tabs']['spare_alias']['fields']['ext_url']['hidden'] = 
+		$fields['spare_alias/ext_url']['hidden'] = 
 			$values['spare_alias/target_loc'] != 'ext';
 		
 		

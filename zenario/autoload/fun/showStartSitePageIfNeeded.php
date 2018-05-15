@@ -30,9 +30,9 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 \ze\cookie::startSession();
 
 $logoURL = $logoWidth = $logoHeight = false;
-if (\ze::$lastDB
+if (\ze::$dbL
  && \ze::setting('brand_logo') == 'custom'
- && ($result = \ze\sql::select("SHOW COLUMNS IN ". DB_NAME_PREFIX. "files WHERE Field = 'thumbnail_64x64_width'"))
+ && ($result = \ze\sql::select("SHOW COLUMNS IN ". DB_PREFIX. "files WHERE Field = 'thumbnail_64x64_width'"))
  && ($dbAtRecentRevision = \ze\sql::fetchRow($result))
  && (ze\file::imageLink($logoWidth, $logoHeight, $logoURL, \ze::setting('custom_logo'), 500, 250, $mode = 'resize', $offset = 0, $retina = true))) {
 	$logoURL = $logoURL;

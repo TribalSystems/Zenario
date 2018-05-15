@@ -142,7 +142,7 @@ plugin_settings:
                         name: password_field_label
                     label: 'Password field label:'
                     type: text
-                    value: "Your Password:"
+                    value: "Your password:"
                     show_phrase_icon: true
                 login_button_text:
                     plugin_setting:
@@ -151,7 +151,7 @@ plugin_settings:
                     type: text
                     value: "Login"
                     show_phrase_icon: true
-        welcome_back_page:
+        action_after_login:
             label: Action after login
             fields:
                 description:
@@ -159,35 +159,33 @@ plugin_settings:
                     snippet:
                         html: >
                             These settings control what happens after an Extranet User
-                            logs in. The only apply if this Plugin is placed on the
-                            Extranet Login page.
+                            logs in.
                 show_welcome_page:
                     plugin_setting:
                         name: show_welcome_page
-                    label: 'Redirect to Welcome Back page:'
                     type: radios
                     value: _NEVER
                     values:
                         _ALWAYS:
                             ord: "1"
-                            label: Always redirect to the Welcome Back page
+                            label: Redirect based on rules
                         _IF_NO_PREVIOUS_PAGE:
                             ord: "2"
                             label: >
-                                As second priority; if another private content item was
-                                requested, redirect to that content item.
+                                Redirect based on rules (but if another private content item was
+                                requested, redirect there instead)
                         _NEVER:
                             ord: "3"
                             label: >
-                                Never (redirect to requested private content item, or else to the
-                                previous page viewed).
+                                Redirect to requested private content item, or else to the
+                                previous page viewed
                     format_onchange: Yes
                 welcome_page:
                     indent: 1
                     plugin_setting:
                         name: welcome_page
                         foreign_key_to: content
-                    label: 'Welcome Back Page:'
+                    label: 'Default redirect page:'
                     pick_items:
                         path: zenario__content/panels/content/refiners/filter_by_lang////
                         min_path: zenario__content/panels/content
@@ -198,7 +196,111 @@ plugin_settings:
                         hide_remove_button: true
                     validation:
                         required_if_not_hidden: >
-                            Please select a "welcome back" page
+                            Please select a default redirect page
+                
+                number_of_redirect_rules:
+                    plugin_setting:
+                        name: number_of_redirect_rules
+                    type: hidden
+                    
+                add_redirect_rule:
+                    indent: 1
+                    type: submit
+                    value: '+ Add a redirect rule'
+                    visible_if: zenarioAB.value('show_welcome_page') != '_NEVER'
+            
+            #Fields for redirect rules (multi-row)
+            redirect_rule_template_fields:
+                redirect_rule_type__znz:
+                    indent: 2
+                    hide_with_previous_outdented_field: true
+                    plugin_setting:
+                        name: redirect_rule_type__znz
+                    label: 'Redirect rule znz:'
+                    type: select
+                    empty_value: -- Select --
+                    values:
+                        group:
+                            label: Group
+                        role:
+                            label: Role
+                    redraw_onchange: true
+                    validation:
+                        required_if_not_hidden: Please select a redirect rule type.
+                
+                remove__znz:
+                    hide_with_previous_field: true
+                    same_row: true
+                    type: submit
+                    value: 'Delete'
+                
+                in_group_label__znz:
+                    indent: 3
+                    hide_with_previous_outdented_field: true
+                    visible_if: zenarioAB.value('redirect_rule_type__znz') == 'group'
+                    snippet:
+                        label: 'If the user is in the group'
+                
+                redirect_rule_group__znz:
+                    hide_with_previous_field: true
+                    visible_if: zenarioAB.value('redirect_rule_type__znz') == 'group'
+                    plugin_setting:
+                        name: redirect_rule_group__znz
+                    same_row: true
+                    type: select
+                    empty_value: -- Select --
+                    values: groups
+                    validation:
+                        required_if_not_hidden: Please select a group.
+                
+                in_group_redirect_label__znz:
+                    hide_with_previous_field: true
+                    visible_if: zenarioAB.value('redirect_rule_type__znz') == 'group'
+                    same_row: true
+                    snippet:
+                        label: 'then redirect to...'
+                
+                has_role_label__znz:
+                    indent: 3
+                    hide_with_previous_outdented_field: true
+                    visible_if: zenarioAB.value('redirect_rule_type__znz') == 'role'
+                    snippet:
+                        label: 'If the user has the role'
+                    
+                redirect_rule_role__znz:
+                    hide_with_previous_field: true
+                    visible_if: zenarioAB.value('redirect_rule_type__znz') == 'role'
+                    plugin_setting:
+                        name: redirect_rule_role__znz
+                    same_row: true
+                    type: select
+                    empty_value: -- Select --
+                    values: roles
+                    validation:
+                        required_if_not_hidden: Please select a role.
+                
+                has_role_redirect_label__znz:
+                    hide_with_previous_field: true
+                    visible_if: zenarioAB.value('redirect_rule_type__znz') == 'role'
+                    same_row: true
+                    snippet:
+                        label: 'at any location then redirect to...'
+                
+                redirect_rule_content_item__znz:
+                    indent: 3
+                    hide_with_previous_outdented_field: true
+                    visible_if: zenarioAB.value('redirect_rule_type__znz')
+                    plugin_setting:
+                        name: redirect_rule_content_item__znz
+                    pick_items:
+                        path: zenario__content/panels/content/refiners/content_type//html//
+                        min_path: zenario__content/panels/content
+                        target_path: zenario__content/panels/content
+                        disallow_refiners_looping_on_min_path: true
+                        select_phrase: Select content item...
+                    validation:
+                        required_if_not_hidden: Please select a content item.
+                
         error_messages:
             label: Error messages
             fields:
@@ -231,6 +333,7 @@ plugin_settings:
                 email_not_in_db_message:
                     plugin_setting:
                         name: email_not_in_db_message
+                        dont_save_default_value: true
                     label: 'If email address is not in the database:'
                     type: text
                     value: "This email address is not associated with any account."
@@ -238,6 +341,7 @@ plugin_settings:
                 screen_name_not_in_db_message:
                     plugin_setting:
                         name: screen_name_not_in_db_message
+                        dont_save_default_value: true
                     label: 'If screen name is not in the database:'
                     type: text
                     value: "This screen name is not associated with any account."
@@ -245,6 +349,7 @@ plugin_settings:
                 wrong_password_message:
                     plugin_setting:
                         name: wrong_password_message
+                        dont_save_default_value: true
                     label: 'If email address is in the database but the password is incorrect:'
                     type: text
                     value: "The password you have entered is incorrect."
@@ -252,6 +357,7 @@ plugin_settings:
                 password_expired_message:
                     plugin_setting:
                         name: password_expired_message
+                        dont_save_default_value: true
                     label: 'If a new user was given a password that needed to be changed, and the password expired:'
                     type: text
                     value: "Your temporary password has expired. You will need to reset your password before you can log in."
@@ -259,6 +365,7 @@ plugin_settings:
                 account_suspended_message:
                     plugin_setting:
                         name: account_suspended_message
+                        dont_save_default_value: true
                     label: 'If user account is suspended:'
                     type: text
                     value: "Your account is suspended. Please contact the site administrator for assistance."
@@ -266,6 +373,7 @@ plugin_settings:
                 account_pending_message:
                     plugin_setting:
                         name: account_pending_message
+                        dont_save_default_value: true
                     label: 'If user account is pending (email verified):'
                     type: text
                     value: "Your account has not yet been activated by the site administator. Please contact us for further assistance."
@@ -273,6 +381,7 @@ plugin_settings:
                 account_not_verified_message:
                     plugin_setting:
                         name: account_not_verified_message
+                        dont_save_default_value: true
                     label: 'If user account is pending and email address not verified:'
                     type: text
                     value: "It looks like you have not yet verified your email address. If you have not received a verification email, please <a [[resend_verification_email]]>click here to have this site send you a new verification email</a>."
@@ -280,6 +389,7 @@ plugin_settings:
                 contact_not_extranet_message:
                     plugin_setting:
                         name: contact_not_extranet_message
+                        dont_save_default_value: true
                     label: 'If email entered is a contact not a extranet user:'
                     type: text
                     value: "The email address entered is associated with a contact, not an extranet user. Please contact the administrator for more assistance."
@@ -287,6 +397,7 @@ plugin_settings:
                 accept_terms_and_conditions_message:
                     plugin_setting:
                         name: accept_terms_and_conditions_message
+                        dont_save_default_value: true
                     label: "If user hasn't accepted terms and conditions:"
                     type: text
                     value: "It looks like you have not yet accepted our terms and conditions, please accept these to continue using our site."
@@ -306,34 +417,38 @@ plugin_settings:
                 no_new_repeat_password_error_text:
                     label: 'If no new repeat password is entered:'
                     type: text
-                    value: "Please repeat your new Password."
+                    value: "Please repeat your new password."
                     show_phrase_icon: true
                 new_passwords_do_not_match:
                     plugin_setting:
                         name: new_passwords_do_not_match
+                        dont_save_default_value: true
                     label: 'If the new password and repeat new password fields do not match:'
                     type: text
-                    value: "Your repeated Password does not match."
+                    value: "The two passwords do not match."
                     show_phrase_icon: true
                 new_password_length_message:
                     plugin_setting:
                         name: new_password_length_message
+                        dont_save_default_value: true
                     label: 'If new password is not over min length:'
                     type: text
-                    value: "Please ensure that your new Password is at least [[min_password_length]] characters long."
+                    value: "Please ensure that your new password is at least [[min_password_length]] characters long."
                     show_phrase_icon: true
                 new_password_not_strong_enough_message:
                     plugin_setting:
                         name: new_password_not_strong_enough_message
+                        dont_save_default_value: true
                     label: 'If new password is not stong enough:'
                     type: text
-                    value: "The new Password provided is not strong enough. Please make the password longer, or try mixing in upper and lower case letters, numbers or non-alphanumeric characters."
+                    value: "The new password provided is not strong enough. Please make the password longer, or try mixing in upper and lower case letters, numbers or non-alphanumeric characters."
                     show_phrase_icon: true
                 new_password_same_as_old_message:
                     plugin_setting:
                         name: new_password_same_as_old_message
+                        dont_save_default_value: true
                     label: 'If new password is the same as the old password:'
                     type: text
-                    value: "Your new Password is the same as your old Password."
+                    value: "Your new password is the same as your old password."
                     show_phrase_icon: true
 

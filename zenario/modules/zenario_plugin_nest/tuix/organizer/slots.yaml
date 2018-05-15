@@ -1,0 +1,45 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__content:
+    panels:
+        slots:
+            item_buttons:
+                insert_nest_on_layout_layer:
+                    class_name: zenario_common_features
+                    parent: insert_dropdown
+                    ord: 99
+                    priv: _PRIV_MANAGE_TEMPLATE_SLOT
+                    label: Insert nest from library...
+                    combine_items:
+                        class_name: zenario_common_features
+                        path: zenario__modules/panels/plugins/refiners/nests////
+                        target_path: zenario__modules/panels/plugins
+                        min_path: zenario__modules/panels/plugins
+                        max_path: zenario__modules/panels/plugins
+                        one_to_one_choose_phrase: Insert nest
+                        request:
+                            level: 2
+                            addPluginInstance: 1
+                    with_columns_set:
+                        traits.empty: true
+                    visible_if: >
+                        zenarioO.refiner && zenarioO.refiner.name == 'template'
+                
+                insert_nest_on_item_layer:
+                    class_name: zenario_common_features
+                    parent: insert_dropdown
+                    label: Insert nest from library...
+                    combine_items:
+                        class_name: zenario_common_features
+                        path: zenario__modules/panels/plugins/refiners/nests////
+                        target_path: zenario__modules/panels/plugins
+                        min_path: zenario__modules/panels/plugins
+                        max_path: zenario__modules/panels/plugins
+                        one_to_one_choose_phrase: Insert nest
+                        request:
+                            level: 1
+                            addPluginInstance: 1
+                    with_columns_set:
+                        traits.empty: true
+                    visible_if: >
+                        zenarioO.refiner && zenarioO.refiner.name == 'content_item'

@@ -30,14 +30,14 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_user_forms__admin_boxes__email_template extends ze\moduleBaseClass {
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
-		$forms = ze\row::getArray(ZENARIO_USER_FORMS_PREFIX . 'user_forms', 'name', ['status' => 'active'], 'name');
-		$fields['body/user_form']['values'] = $forms;
+		$forms = ze\row::getValues(ZENARIO_USER_FORMS_PREFIX . 'user_forms', 'name', ['status' => 'active'], 'name');
+		$fields['meta_data/user_form']['values'] = $forms;
 	}
 	
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		if ($formId = $values['body/user_form']) {
+		if ($formId = $values['meta_data/user_form']) {
 			//Get list of form fields for form
-			$fields['body/user_form_field']['hidden'] = false;
+			$fields['meta_data/user_form_field']['hidden'] = false;
 			$sql = '
 				SELECT
 					uff.id,
@@ -54,10 +54,10 @@ class zenario_user_forms__admin_boxes__email_template extends ze\moduleBaseClass
 					uff.page_id,
 					p.name AS page_name,
 					p.ord AS page_ord
-				FROM '. DB_NAME_PREFIX. ZENARIO_USER_FORMS_PREFIX . 'user_form_fields AS uff
-				INNER JOIN ' . DB_NAME_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'pages p
+				FROM '. DB_PREFIX. ZENARIO_USER_FORMS_PREFIX . 'user_form_fields AS uff
+				INNER JOIN ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'pages p
 					ON uff.page_id = p.id
-				LEFT JOIN '. DB_NAME_PREFIX.'custom_dataset_fields AS cdf
+				LEFT JOIN '. DB_PREFIX.'custom_dataset_fields AS cdf
 					ON uff.user_field_id = cdf.id
 				WHERE uff.user_form_id = '.(int)$formId. '
 				ORDER BY p.ord, uff.ord';
@@ -83,17 +83,17 @@ class zenario_user_forms__admin_boxes__email_template extends ze\moduleBaseClass
 					];
 				}
 			}
-			$fields['body/user_form_field']['values'] = $formFields;
+			$fields['meta_data/user_form_field']['values'] = $formFields;
 			
 			
-			if ($formFieldId = $values['body/user_form_field']) {
+			if ($formFieldId = $values['meta_data/user_form_field']) {
 				//Add form field mergefield onto end of email template
 				$sql = '
 					SELECT 
 						IFNULL(uff.name, cdf.label) AS name, 
 						IFNULL(cdf.db_column, CONCAT(\'unlinked_\', uff.field_type, \'_\', uff.id)) AS mergefield
-					FROM '.DB_NAME_PREFIX.ZENARIO_USER_FORMS_PREFIX . 'user_form_fields AS uff
-					LEFT JOIN '.DB_NAME_PREFIX. 'custom_dataset_fields AS cdf
+					FROM '.DB_PREFIX.ZENARIO_USER_FORMS_PREFIX . 'user_form_fields AS uff
+					LEFT JOIN '.DB_PREFIX. 'custom_dataset_fields AS cdf
 						ON uff.user_field_id = cdf.id
 					WHERE (uff.field_type NOT IN ("page_break", "restatement", "section_description") 
 						OR uff.field_type IS NULL)';
@@ -113,11 +113,11 @@ class zenario_user_forms__admin_boxes__email_template extends ze\moduleBaseClass
 					}
 					$mergeFields .= '[['.$row['mergefield'].']]</p>';
 				}
-				$values['body/body'] .= $mergeFields;
-				$values['body/user_form_field'] = '';
+				$values['meta_data/body'] .= $mergeFields;
+				$values['meta_data/user_form_field'] = '';
 			}
 		} else {
-			$fields['body/user_form_field']['hidden'] = true;
+			$fields['meta_data/user_form_field']['hidden'] = true;
 		}
 	}
 	

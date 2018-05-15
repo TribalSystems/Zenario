@@ -99,7 +99,7 @@ class adminAdm {
 	//Formerly "deleteAdmin()"
 	public static function delete($admin_id, $undo = false) {
 		$sql = "
-			UPDATE ". DB_NAME_PREFIX. "admins SET
+			UPDATE ". DB_PREFIX. "admins SET
 				status = '". ($undo? "active" : "deleted"). "',
 				modified_date = NOW(),
 				password = '',
@@ -123,7 +123,7 @@ class adminAdm {
 	
 		if ($isPasswordReset) {
 			$sql = "
-				UPDATE ". DB_NAME_PREFIX. "admins SET
+				UPDATE ". DB_PREFIX. "admins SET
 					modified_date = NOW(),";
 		
 			if ($requireChange !== null) {
@@ -139,7 +139,7 @@ class adminAdm {
 	
 		} else {
 			$sql = "
-				UPDATE ". DB_NAME_PREFIX. "admins SET
+				UPDATE ". DB_PREFIX. "admins SET
 					modified_date = NOW(),
 					password_salt = '". \ze\escape::sql($salt). "',";
 		
@@ -170,25 +170,23 @@ class adminAdm {
 
 		//Attempt to connect to the global database
 		if (\ze\db::connectGlobal()) {
-				//Look up the details on the global database
-				$globalAdmins = \ze\row::getArray('admins', $adminColumns, ['authtype' => 'local']);
+			//Look up the details on the global database
+			$globalAdmins = \ze\rowGlobal::getArray('admins', $adminColumns, ['authtype' => 'local']);
+
+			//For all global admins...
+			foreach ($globalAdmins as $globalId => &$admin) {
 	
-				//For all global admins...
-				foreach ($globalAdmins as $globalId => &$admin) {
-		
-					//...check if they have an image and get the checksum...
-					if ($admin['image_id']) {
-						$admin['image_checksum'] = \ze\row::get('files', 'checksum', ['id' => $admin['image_id']]);
-					} else {
-						$admin['image_checksum'] = false;
-					}
-		
-					//...and get an array of their actions
-					$admin['_actions_'] = \ze\row::getArray('action_admin_link', 'action_name', ['admin_id' => $globalId], 'action_name');
+				//...check if they have an image and get the checksum...
+				if ($admin['image_id']) {
+					$admin['image_checksum'] = \ze\rowGlobal::get('files', 'checksum', ['id' => $admin['image_id']]);
+				} else {
+					$admin['image_checksum'] = false;
 				}
-			\ze\db::connectLocal();
+	
+				//...and get an array of their actions
+				$admin['_actions_'] = \ze\rowGlobal::getArray('action_admin_link', 'action_name', ['admin_id' => $globalId], 'action_name');
+			}
 		} else {
-			\ze\db::connectLocal();
 			//Return an empty string if the link is not working
 				//I want the "global db not enabled" and "password not correct" states to be different,
 				//yet still both evaulate to false.
@@ -201,7 +199,7 @@ class adminAdm {
 	
 			$admin['global_id'] = $globalId;
 	
-			if (\ze\row::cacheTableDef(DB_NAME_PREFIX. 'admins', 'is_client_account')) {
+			if (\ze::$dbL->checkTableDef(DB_PREFIX. 'admins', 'is_client_account')) {
 				$admin['is_client_account'] = 0;
 			}
 	
@@ -219,9 +217,7 @@ class adminAdm {
 				if (!$admin['image_id'] = \ze\row::get('files', 'id', ['checksum' => $admin['image_checksum'], 'usage' => 'admin'])) {
 			
 					//If we can't find it, get the image from the global database
-					\ze\db::connectGlobal();
-						$image = \ze\row::get('files', ['data', 'filename', 'checksum'], $admin['image_id']);
-					\ze\db::connectLocal();
+					$image = \ze\rowGlobal::get('files', ['data', 'filename', 'checksum'], $admin['image_id']);
 			
 					//Copy it to the local database and then use the copy
 					if ($image !== false) {
@@ -239,7 +235,7 @@ class adminAdm {
 			$admin['local_id'] = $localId = \ze\row::set('admins', $admin, $key);
 	
 			//Check to see if the specific permissions have changed
-			$actionsHere = \ze\row::getArray('action_admin_link', 'action_name', ['admin_id' => $localId], 'action_name');
+			$actionsHere = \ze\row::getValues('action_admin_link', 'action_name', ['admin_id' => $localId], 'action_name');
 			if (print_r($actions, true) != print_r($actionsHere, true)) {
 		
 				//If so, delete the old ones and re-insert all of the new ones
@@ -264,7 +260,7 @@ class adminAdm {
 	public static function updateHash($adminId) {
 		$emailAddress = \ze\row::get('admins', 'email', $adminId);
 		$sql = "
-			UPDATE ". DB_NAME_PREFIX. "admins 
+			UPDATE ". DB_PREFIX. "admins 
 			SET hash = '". \ze\escape::sql(\ze\userAdm::createHash($adminId, $emailAddress)). "'
 			WHERE id = ". (int) $adminId;
 		\ze\sql::update($sql, false, false);

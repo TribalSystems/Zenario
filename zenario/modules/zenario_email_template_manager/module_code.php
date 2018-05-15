@@ -68,6 +68,21 @@ class zenario_email_template_manager extends ze\moduleBaseClass {
 		return ze\row::get(ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX. 'email_template_sending_log', true, ['id' => $id]);
 	}
 	
+	public static function testSendEmailTemplate($body, $adminDetails, $email, $subject, $emailAddresFrom, $emailNameFrom) {
+		//Identify this as a test email
+		$subject .= ' | TEST SEND';
+		
+		//Attempt to send the email
+		$emailOverriddenBy = false;
+		return ze\server::sendEmail(
+			$subject,
+			$body,
+			$email,
+			$emailOverriddenBy,
+			$adminDetails['admin_first_name']. ' '. $adminDetails['admin_last_name'],
+			$emailAddresFrom, $emailNameFrom
+		);
+	}
 		
 	
 	public static function sendEmails(
@@ -191,7 +206,7 @@ class zenario_email_template_manager extends ze\moduleBaseClass {
 		}
 		
 		$sql = "
-			INSERT INTO ". DB_NAME_PREFIX. ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX. "email_template_sending_log SET
+			INSERT INTO ". DB_PREFIX. ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX. "email_template_sending_log SET
 				module_id = ". (int) ze\row::get('plugin_instances', 'module_id', ['id' => ($senderCmsObjectArray['instanceId'] ?? false)]). ",
 				instance_id = ". (int) ($senderCmsObjectArray['instanceId'] ?? false). ",
 				content_id = ". (int) ($senderCmsObjectArray['cID'] ?? false). ",
@@ -244,7 +259,7 @@ class zenario_email_template_manager extends ze\moduleBaseClass {
 		//Clear the sending log for templates with individual settings
 		$sql = '
 			SELECT id, period_to_delete_log_headers
-			FROM ' . DB_NAME_PREFIX . 'email_templates
+			FROM ' . DB_PREFIX . 'email_templates
 			WHERE period_to_delete_log_headers != ""';
 		$result = ze\sql::select($sql);
 		while ($row = ze\sql::fetchAssoc($result)) {
@@ -252,7 +267,7 @@ class zenario_email_template_manager extends ze\moduleBaseClass {
 			if ($days && is_numeric($days)) {
 				$date = date('Y-m-d', strtotime('-'.$days.' day', strtotime(date('Y-m-d'))));
 				$sql = '
-					DELETE FROM ' . DB_NAME_PREFIX . ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX . 'email_template_sending_log
+					DELETE FROM ' . DB_PREFIX . ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX . 'email_template_sending_log
 					WHERE email_template_id = ' . (int)$row['id'] . '
 					AND sent_datetime < "' . ze\escape::sql($date) . '"';
 				ze\sql::update($sql);
@@ -266,8 +281,8 @@ class zenario_email_template_manager extends ze\moduleBaseClass {
 			$date = date('Y-m-d', strtotime('-'.$days.' day', strtotime(date('Y-m-d'))));
 			$sql = '
 				DELETE etsl.*
-				FROM ' . DB_NAME_PREFIX . ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX . 'email_template_sending_log etsl
-				LEFT JOIN ' . DB_NAME_PREFIX . 'email_templates et
+				FROM ' . DB_PREFIX . ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX . 'email_template_sending_log etsl
+				LEFT JOIN ' . DB_PREFIX . 'email_templates et
 					ON etsl.email_template_id = et.id
 				WHERE (et.period_to_delete_log_headers IS NULL OR et.period_to_delete_log_headers = "")
 				AND etsl.sent_datetime < "' . ze\escape::sql($date) . '"';
@@ -281,7 +296,7 @@ class zenario_email_template_manager extends ze\moduleBaseClass {
 		//Clear the sending log for templates with individual settings
 		$sql = '
 			SELECT id, period_to_delete_log_content
-			FROM ' . DB_NAME_PREFIX . 'email_templates
+			FROM ' . DB_PREFIX . 'email_templates
 			WHERE period_to_delete_log_content != ""';
 		$result = ze\sql::select($sql);
 		while ($row = ze\sql::fetchAssoc($result)) {
@@ -289,7 +304,7 @@ class zenario_email_template_manager extends ze\moduleBaseClass {
 			if ($days && is_numeric($days)) {
 				$date = date('Y-m-d', strtotime('-'.$days.' day', strtotime(date('Y-m-d'))));
 				$sql = '
-					UPDATE ' . DB_NAME_PREFIX . ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX . 'email_template_sending_log
+					UPDATE ' . DB_PREFIX . ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX . 'email_template_sending_log
 					SET email_body = "[Email body deleted]"
 					WHERE email_template_id = ' . (int)$row['id'] . '
 					AND sent_datetime < "' . ze\escape::sql($date) . '"';
@@ -303,8 +318,8 @@ class zenario_email_template_manager extends ze\moduleBaseClass {
 		if ($days && is_numeric($days)) {
 			$date = date('Y-m-d', strtotime('-'.$days.' day', strtotime(date('Y-m-d'))));
 			$sql = '
-				UPDATE ' . DB_NAME_PREFIX . ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX . 'email_template_sending_log etsl
-				LEFT JOIN ' . DB_NAME_PREFIX . 'email_templates et
+				UPDATE ' . DB_PREFIX . ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX . 'email_template_sending_log etsl
+				LEFT JOIN ' . DB_PREFIX . 'email_templates et
 					ON etsl.email_template_id = et.id
 				SET etsl.email_body = "[Email body deleted]"
 				WHERE (et.period_to_delete_log_content IS NULL OR et.period_to_delete_log_content = "")
@@ -320,7 +335,7 @@ class zenario_email_template_manager extends ze\moduleBaseClass {
 		if ($deleteAllData) {
 			if ($userEmail = ze\row::get('users', 'email', $userId)) {
 				$sql = '
-					UPDATE ' . DB_NAME_PREFIX . ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX . 'email_template_sending_log
+					UPDATE ' . DB_PREFIX . ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX . 'email_template_sending_log
 					SET email_body = "[Email body deleted]", email_address_to = "[User deleted]"
 					WHERE email_address_to = "' . ze\escape::sql($userEmail) . '"';
 				ze\sql::update($sql);
@@ -338,6 +353,13 @@ class zenario_email_template_manager extends ze\moduleBaseClass {
 			
 			if ($template['head']) {
 				static::putHeadOnBody($template['head'], $template['body']);
+			}
+			if ($template['use_standard_email_template']) {
+				static::putBodyInTemplate($template['body']);
+			}
+			if ($template['from_details'] == 'site_settings') {
+				$template['email_address_from'] = ze::setting('email_address_from');
+				$template['email_name_from'] = ze::setting('email_name_from');
 			}
 			
 			if (self::sendEmails(
@@ -359,7 +381,7 @@ class zenario_email_template_manager extends ze\moduleBaseClass {
 			)) {
 				
 				$sql = "
-					UPDATE ". DB_NAME_PREFIX. "email_templates SET 
+					UPDATE ". DB_PREFIX. "email_templates SET 
 						last_sent = NOW()
 					WHERE id = ". (int) $template['id'];
 				ze\sql::update($sql);
@@ -386,6 +408,12 @@ class zenario_email_template_manager extends ze\moduleBaseClass {
 </body>
 </html>';
 		}
+	}
+	
+	public static function putBodyInTemplate(&$body) {
+		$template = ze::setting('standard_email_template');
+		ze\lang::applyMergeFields($template, ['email_body_content' => $body]);
+		$body = $template;
 	}
 	
 	
@@ -434,7 +462,7 @@ class zenario_email_template_manager extends ze\moduleBaseClass {
 					email_name_from,
 					body
 				FROM '
-					. DB_NAME_PREFIX.  'email_templates';
+					. DB_PREFIX.  'email_templates';
 		$result = ze\sql::select($sql);
 		while($row=ze\sql::fetchAssoc($result))
 			$rv[$row['template_name']]=$row;

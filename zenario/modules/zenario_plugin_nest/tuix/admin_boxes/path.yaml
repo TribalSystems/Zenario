@@ -4,6 +4,7 @@ zenario_path:
     key:
         id: ''
         instanceId: ''
+        slideNum: ''
         state: ''
         to_state: ''
         linkToOtherContentItem: false
@@ -22,7 +23,7 @@ zenario_path:
                 enabled: true
                 always_on: true
             fields:
-                commands:
+                command:
                     type: radios
                     #cols: 3
                     values:
@@ -40,13 +41,14 @@ zenario_path:
                     validation:
                         required: |
                             Please select a command
-                command_custom:
+                custom_command:
                     indent: 1
                     visible_if:
-                        lib.valueIs: 'commands, #custom#'
+                        lib.valueIs: 'command, #custom#'
                     type: text
                     maxlength: 100
-                    placeholder: Enter a command name
+                    label: Custom command name
+                    placeholder: e.g. view_animal
                     onkeydown: >
                         if (this.value != ''
                          && (event.keyCode == 13 || event.keyCode > 45)) {
@@ -54,9 +56,16 @@ zenario_path:
                         }
                     validation:
                         no_spaces: |
-                            Please don't enter any spaces in the command's name
+                            Please don't enter any spaces in the command's name.
                         screen_name: |
-                            Please don't enter any special characters in the command's name
+                            Please don't enter any special characters in the command's name.
+                custom_vars:
+                    indent: 1
+                    hide_with_previous_field: true
+                    type: text
+                    maxlength: 200
+                    label: Request variables (comma-separated)
+                    placeholder: e.g. animalId,barnId
                 
                 citem:
                     visible_if: |
@@ -87,8 +96,9 @@ zenario_path:
                 is_forwards:
                     visible_if: |
                         !lib.tuix.key.linkToOtherContentItem &&
-                        !lib.valueIn('commands', 'back', 'submit')
+                        !lib.valueIn('command', 'back', 'submit')
                     type: checkbox
+                    redraw_onchange: true
                     label: 'Specify as forward link for smart breadcrumbs'
                     maxlength: 2
                     side_note: |
@@ -99,4 +109,12 @@ zenario_path:
                         
                         If no slides are set as forward links, then the conductor will try to
                         automatically select one, based on which other slides use smart breadcrumbs.
+                no_breadcrumb_plugin_set:
+                    indent: 1
+                    hidden: true
+                    hide_with_previous_outdented_field: true
+                    hide_if_previous_outdented_value_isnt: 1
+                    snippet:
+                        div_class: zenario_fbWarning
+                        div: 'Warning: No plugin on this slide is set to generate smart breadcrumbs.'
                     

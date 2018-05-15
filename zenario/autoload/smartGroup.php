@@ -63,8 +63,8 @@ class smartGroup {
 		if (\ze\smartGroup::sql($and, $tableJoins, $smartGroupId)) {
 			return \ze\sql::fetchValue("
 				SELECT COUNT(DISTINCT u.id)
-				FROM ". DB_NAME_PREFIX. "users AS u
-				LEFT JOIN ". DB_NAME_PREFIX. "users_custom_data AS ucd
+				FROM ". DB_PREFIX. "users AS u
+				LEFT JOIN ". DB_PREFIX. "users_custom_data AS ucd
 				   ON ucd.user_id = u.id
 				". $tableJoins. "
 				WHERE TRUE
@@ -81,8 +81,8 @@ class smartGroup {
 			$memberIds = [];
 			$result = \ze\sql::select("
 				SELECT u.id
-				FROM ". DB_NAME_PREFIX. "users AS u
-				LEFT JOIN ". DB_NAME_PREFIX. "users_custom_data AS ucd
+				FROM ". DB_PREFIX. "users AS u
+				LEFT JOIN ". DB_PREFIX. "users_custom_data AS ucd
 				   ON ucd.user_id = u.id
 				". $tableJoins. "
 				WHERE TRUE
@@ -109,8 +109,8 @@ class smartGroup {
 		if ($userId && \ze\smartGroup::sql($and, $tableJoins, $smartGroupId, false)) {
 			return (bool) \ze\sql::fetchRow("
 				SELECT 1
-				FROM ". DB_NAME_PREFIX. "users AS u
-				LEFT JOIN ". DB_NAME_PREFIX. "users_custom_data AS ucd
+				FROM ". DB_PREFIX. "users AS u
+				LEFT JOIN ". DB_PREFIX. "users_custom_data AS ucd
 				   ON ucd.user_id = u.id
 				". $tableJoins. "
 				WHERE u.id = ". (int) $userId. "

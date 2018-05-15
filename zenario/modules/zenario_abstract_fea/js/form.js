@@ -46,7 +46,7 @@ zenario.lib(function(
 
 
 methods.idVarName = function() {
-	return 'id';
+	return thus.specifiedIdVarName || 'id';
 };
 
 
@@ -200,7 +200,7 @@ methods.draw2 = function() {
 };
 
 methods.ajaxURL = function() {
-	return zenario.pluginAJAXLink(undefined, thus.containerId, {path: thus.path});
+	return zenario.pluginAJAXLink(undefined, thus.containerId, _.extend({path: thus.path}, thus.request));
 };
 
 
@@ -615,7 +615,7 @@ methods.checkRequests = function(request, forDisplay, itemId, merge, keepClutter
 	return request;
 };
 
-methods.init = function(globalName, microtemplatePrefix, moduleClassName, containerId, path, request, mode, pages, noPlugin, parent, inPopout, popoutClass) {
+methods.init = function(globalName, microtemplatePrefix, moduleClassName, containerId, path, request, mode, pages, idVarName, noPlugin, parent, inPopout, popoutClass) {
 	
 	methodsOf(zenarioF).init.call(thus, globalName, microtemplatePrefix, containerId);
 	
@@ -630,6 +630,7 @@ methods.init = function(globalName, microtemplatePrefix, moduleClassName, contai
 	thus.parent = parent;
 	thus.inPopout = inPopout;
 	thus.popoutClass = popoutClass = popoutClass || '';
+	thus.specifiedIdVarName = idVarName;
 	
 	
 	if (inPopout) {
@@ -678,6 +679,43 @@ methods.editModeOn = function(tab) {
 methods.editModeAlwaysOn = function(tab) {
 	return true;
 };
+
+
+
+methods.typeaheadSearchEnabled = function(field, id, tab) {
+	
+	var pick_items = field.pick_items;
+	
+	return pick_items && pick_items.enable_type_ahead_search;
+};
+
+methods.typeaheadSearchAJAXURL = function(field, id, tab) {
+	
+	return thus.visitorTUIXLink({_tab: tab, _field: id}, 'tas');
+};
+
+methods.parseTypeaheadSearch = function(field, id, tab, readOnly, data) {
+	
+	
+	var di, item,
+		valueId, label,
+		items = [];
+	
+	foreach (data as di => item) {
+		
+		valueId = item.id;
+		label = item.label || item.name;
+		
+		field.values = field.values || {};
+		field.values[valueId] = item;
+		
+		items.push({value: valueId, text: label, html: thus.drawPickedItem(valueId, id, field, readOnly, true)});
+	}
+	
+	return items;
+};
+
+
 
 
 methods.lookupFileDetails = function(fileId) {
@@ -754,7 +792,10 @@ methods.go = function(request, itemId, wasInitialLoad) {
 		zenario.goToURL(zenario.linkToItem(page.cID, page.cType, request));
 	
 	} else {
-		zenario_conductor.mergeRequests(containerId, request);
+		if (!wasInitialLoad && zenario_conductor.enabled(containerId)) {
+			request = zenario_conductor.request(containerId, 'refresh', request);
+			zenario_conductor.setVars(containerId, _.clone(request));
+		}
 		
 		thus.runLogic(request, function() {
 			if (request.page) {
@@ -1814,7 +1855,7 @@ methods.AJAXErrorHandler = function(resp, statusType, statusText) {
 
 
 
-zenario_abstract_fea.setupAndInit = function(moduleClassName, library, containerId, path, request, mode, pages, noPlugin, parent, inPopout, popoutClass) {
+zenario_abstract_fea.setupAndInit = function(moduleClassName, library, containerId, path, request, mode, pages, idVarName, noPlugin, parent, inPopout, popoutClass) {
 
 	var globalName = moduleClassName + '_' + containerId.replace(/\-/g, '__');
 	
@@ -1822,7 +1863,7 @@ zenario_abstract_fea.setupAndInit = function(moduleClassName, library, container
 		window[globalName] = new library();
 	}
 	
-	window[globalName].init(globalName, 'fea', moduleClassName, containerId, path, request, mode, pages, noPlugin, parent, inPopout, popoutClass);
+	window[globalName].init(globalName, 'fea', moduleClassName, containerId, path, request, mode, pages, idVarName, noPlugin, parent, inPopout, popoutClass);
 	
 	return window[globalName];
 }

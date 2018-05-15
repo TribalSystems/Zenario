@@ -185,7 +185,7 @@ class zenario_users extends ze\moduleBaseClass {
 	
 			//Log the hit
 			$sql = "
-				INSERT IGNORE INTO ". DB_NAME_PREFIX. "user_content_accesslog SET
+				INSERT IGNORE INTO ". DB_PREFIX. "user_content_accesslog SET
 					user_id = ". (int) $_SESSION['extranetUserID']. ",
 					hit_datetime = NOW(),
 					content_id = ". (int) $cID. ",
@@ -201,7 +201,7 @@ class zenario_users extends ze\moduleBaseClass {
 			$date = date('Y-m-d', strtotime('-'.$days.' day', strtotime(date('Y-m-d'))));
 			if($date){
 				$sql = " 
-					DELETE FROM ". DB_NAME_PREFIX. "user_content_accesslog 
+					DELETE FROM ". DB_PREFIX. "user_content_accesslog 
 					WHERE hit_datetime < '".ze\escape::sql($date)."'";
 				ze\sql::update($sql);
 				return ze\sql::affectedRows();
@@ -334,7 +334,7 @@ class zenario_users extends ze\moduleBaseClass {
 	}
 		
 	protected function loggedInAsParentFor($userId){
-		$sql='SELECT id FROM ' . DB_NAME_PREFIX . 'users WHERE id=' . (int)$userId  . ' AND parent_id=' . (int) ($_SESSION['extranetUserID']);
+		$sql='SELECT id FROM ' . DB_PREFIX . 'users WHERE id=' . (int)$userId  . ' AND parent_id=' . (int) ($_SESSION['extranetUserID']);
 		return (ze\sql::numRows(ze\sql::select($sql))==1);
 	}
 	
@@ -370,12 +370,12 @@ class zenario_users extends ze\moduleBaseClass {
 				$interval = $intervalSetting;
 			}
 			$sql = '
-				SELECT u.id, [u.screen_name], [u.first_name], [u.last_name], [u.email], [u.created_date]
-				FROM [users AS u]
+				SELECT u.id, u.screen_name, u.first_name, u.last_name, u.email, u.created_date
+				FROM '. DB_PREFIX. 'users AS u
 				WHERE status = "pending"
 				AND email_verified = 0
-				AND created_date < DATE_SUB(NOW(), INTERVAL [0] DAY)';
-			$result = ze\sql::select($sql, [$interval]);
+				AND created_date < DATE_SUB(NOW(), INTERVAL '. (int) $interval. ' DAY)';
+			$result = ze\sql::select($sql);
 			$count = 0;
 			$message = '';
 			while ($user = ze\sql::fetchAssoc($result)) {
@@ -476,24 +476,24 @@ class zenario_users extends ze\moduleBaseClass {
 		}
 
 		$sql = "
-			SELECT [u.id], [u.salutation], [u.first_name], [u.last_name], [u.email]
-			FROM [users as u]";
+			SELECT u.id, u.salutation, u.first_name, u.last_name, u.email
+			FROM ". DB_PREFIX. "users as u";
 			
 		if ($datasetColumnNameLiveUser){
 			$sql .= "
-				INNER JOIN [users_custom_data AS ucd]
+				INNER JOIN ". DB_PREFIX. "users_custom_data AS ucd
 				   ON ucd.user_id = u.id";
 		}
 		$sql .= "
 			WHERE u.status = 'active'
-			  AND u.last_login BETWEEN [date] AND DATE_ADD([date], INTERVAL 1 DAY)";
+			  AND u.last_login BETWEEN '". ze\escape::sql($datasetColumnNameLiveUser). "' AND DATE_ADD('". ze\escape::sql($datasetColumnNameLiveUser). "', INTERVAL 1 DAY)";
 			
 		if ($datasetColumnNameLiveUser){
 			$sql .= "
 			  AND ucd.`". ze\escape::sql($datasetColumnNameLiveUser). "` = 1";
 		}
 
-		$result = ze\sql::select($sql, ['date' => $date]);
+		$result = ze\sql::select($sql);
 		$users = [];
 		while ($row = ze\sql::fetchAssoc($result)) {
 			$users[] = $row;
@@ -563,7 +563,7 @@ class zenario_users extends ze\moduleBaseClass {
 	
 	public function suspendUser($userId) {
 		$sql ="
-			UPDATE " . DB_NAME_PREFIX . "users
+			UPDATE " . DB_PREFIX . "users
 			SET 
 				status='suspended',
 				suspended_date=NOW()
@@ -571,6 +571,25 @@ class zenario_users extends ze\moduleBaseClass {
 				id = " . (int)$userId;
 		ze\sql::update($sql);
 		ze\module::sendSignal("eventUserStatusChange",["userId" => $userId, "status" => "suspended"]);
+	}
+	
+	public static function requestVarMergeField($name) {
+		switch ($name) {
+			//Allow a user's first/last name to be displayed
+			case 'name':
+				return ze\user::name(ze::$vars['userId']);
+		}
+	}
+	
+	public static function formatConsentUser($consentId) {
+		$consent = ze\row::get('consents', ['first_name', 'last_name', 'email'], $consentId);
+		$user = trim($consent['first_name'] . ' ' . $consent['last_name']);
+		if ($user && $consent['email']) {
+			$user .= ' (' . $consent['email'] . ')';
+		} elseif ($consent['email']) {
+			$user = $consent['email'];
+		}
+		return $user;
 	}
 	
 }

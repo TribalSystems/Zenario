@@ -110,8 +110,43 @@ site_settings:
                     note_below: |
                         The length of time (in days) before an administrator
                         needs to verify access to their email again.
-        
-        
+        #anti_spam:
+        #    label: Anti-spam
+        #    edit_mode:
+        #        enabled: true
+        #        always_on: true
+        #    fields:
+        #        anti_spam_tab_description:
+        #            full_width: true
+        #            snippet:
+        #                html: This tab lets you enable features to control spam.
+        #        use_honeypot:
+        #            label: 'Use honeypot'
+        #            type: checkbox
+        #            format_onchange: true  
+        #            side_note: |
+        #                The form will contain a "honeypot" field. It is in the source of the page made invisible to human visitors using CSS. Because it's invisible, it will only normally be filled in by a "bot"; at the same time it's mandatory to leave it blank.
+        #        honeypot_label:
+        #            label: 'Honeypot field label:'
+        #            type: text
+        #            maxlength: 255
+        #            indent: 1
+        #        use_captcha:
+        #            label: 'Require anonymous visitors to complete a captcha'
+        #            type: checkbox
+        #            format_onchange: true  
+        #        captcha_type:
+        #            label: 'Type of captcha:'
+        #            type: select
+        #            empty_value: '-- Select --'
+        #            values:
+        #            validation: 
+        #                required_if_not_hidden: Please select a type of captcha.
+        #            indent: 1
+        #        extranet_users_use_captcha:
+        #            label: 'Require extranet users to complete a captcha'
+        #            type: checkbox
+        #            indent: 1
         email_template:
             label: Admin email templates
             edit_mode:

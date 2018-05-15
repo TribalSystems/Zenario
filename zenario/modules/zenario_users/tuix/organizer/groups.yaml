@@ -15,7 +15,7 @@ zenario__users:
         groups:
             title: Groups
             db_items:
-                table: '[[DB_NAME_PREFIX]]custom_dataset_fields cdf'
+                table: '[[DB_PREFIX]]custom_dataset_fields cdf'
                 id_column: cdf.id
                 where_statement: WHERE cdf.type = 'group'
             no_items_message: No groups are defined.
@@ -57,6 +57,8 @@ zenario__users:
                     show_by_default: false
                     sortable: true
                     align_right: true
+                protected:
+                    db_column: cdf.protected
             collection_buttons:
                 create:
                     label: Create a group
@@ -81,6 +83,9 @@ zenario__users:
                         request:
                             action: delete
                     priv: _PRIV_MANAGE_GROUP
+                    disabled_if: item.protected
+                    disabled_tooltip: |
+                        This group is protected and cannot be deleted.
                 view_dropdown:
                     label: 'View'
                     hide_when_children_are_not_visible: true

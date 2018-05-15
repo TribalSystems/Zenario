@@ -44,7 +44,7 @@ class zenario_error_log extends ze\moduleBaseClass {
 		if ($days = ze::setting('period_to_delete_error_log')) {
 			$date = date('Y-m-d', strtotime('-' . $days . ' day', strtotime($logged)));
 			$sql = '
-				DELETE FROM ' . DB_NAME_PREFIX . ZENARIO_ERROR_LOG_PREFIX . 'error_log
+				DELETE FROM ' . DB_PREFIX . ZENARIO_ERROR_LOG_PREFIX . 'error_log
 				WHERE logged <= "' . ze\escape::sql($date) . '"';
 			ze\sql::update($sql);
 		}
@@ -71,7 +71,7 @@ class zenario_error_log extends ze\moduleBaseClass {
 		//Get all errors from yesterday
 		$sql = '
 			SELECT logged, page_alias, referrer_url
-			FROM ' . DB_NAME_PREFIX . ZENARIO_ERROR_LOG_PREFIX . 'error_log
+			FROM ' . DB_PREFIX . ZENARIO_ERROR_LOG_PREFIX . 'error_log
 			WHERE logged BETWEEN "' . ze\escape::sql($yesterday->format('Y-m-d 00:00:00')) . '" AND "' . ze\escape::sql($yesterday->format('Y-m-d 23:59:59')) . '"
 			ORDER BY logged DESC';
 		$errors = ze\sql::select($sql);

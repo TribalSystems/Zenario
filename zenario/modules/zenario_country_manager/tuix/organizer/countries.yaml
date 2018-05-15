@@ -8,7 +8,7 @@ zenario__languages:
             multiple_select_mode_title: Select countries
             select_mode_title: Select a country
             db_items:
-                table: '[[DB_NAME_PREFIX]][[ZENARIO_COUNTRY_MANAGER_PREFIX]]country_manager_countries AS c'
+                table: '[[DB_PREFIX]][[ZENARIO_COUNTRY_MANAGER_PREFIX]]country_manager_countries AS c'
                 id_column: c.id
             default_sort_column: country_name
             columns:
@@ -163,7 +163,7 @@ zenario__languages:
             view_mode: list
             db_items:
                 table: |
-                    [[DB_NAME_PREFIX]][[ZENARIO_COUNTRY_MANAGER_PREFIX]]country_manager_regions AS r
+                    [[DB_PREFIX]][[ZENARIO_COUNTRY_MANAGER_PREFIX]]country_manager_regions AS r
                 id_column: r.id
             default_sort_column: region_name
             columns:

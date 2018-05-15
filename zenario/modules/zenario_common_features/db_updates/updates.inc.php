@@ -32,7 +32,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 //in some situations after a migration
 ze\dbAdm::revision(177,
 <<<_sql
-	UPDATE [[DB_NAME_PREFIX]]special_pages
+	UPDATE [[DB_PREFIX]]special_pages
 	SET equiv_id = NULL,
 		content_type = NULL
 	WHERE page_type IN ('zenario_example_page', 'zenario_second_page')

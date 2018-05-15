@@ -16,7 +16,7 @@
  *
  * @author      David Zeller <me@zellerda.com>
  * @license     http://www.opensource.org/licenses/BSD-3-Clause New BSD license
- * @version     2.5.2
+ * @version     2.6
  */
 (function($, tokenize){
 
@@ -179,7 +179,12 @@
             this.searchInput.on('paste', function(){
                 setTimeout(function(){ $this.resizeSearchInput(); }, 10);
                 setTimeout(function(){
-                    var paste_elements = $this.searchInput.val().split(',');
+                    var paste_elements = [];
+                    if(Array.isArray($this.options.delimiter)){
+                        paste_elements = $this.searchInput.val().split(new RegExp($this.options.delimiter.join('|'), 'g'));
+                    } else {
+                        paste_elements = $this.searchInput.val().split($this.options.delimiter);
+                    }
                     if(paste_elements.length > 1){
                         $.each(paste_elements, function(_, value){
                             $this.tokenAdd(value.trim(), '');
@@ -251,6 +256,7 @@
         dropdownShow: function(){
 
             this.dropdown.show();
+            this.options.onDropdownShow(this);
 
         },
 
@@ -380,7 +386,19 @@
          */
         keypress: function(e){
 
-            if(String.fromCharCode(e.which) == this.options.delimiter){
+            var delimiter = false;
+
+            if(Array.isArray(this.options.delimiter)){
+                if(this.options.delimiter.indexOf(String.fromCharCode(e.which)) >= 0){
+                    delimiter = true;
+                }
+            } else {
+                if(String.fromCharCode(e.which) == this.options.delimiter){
+                    delimiter = true;
+                }
+            }
+
+            if(delimiter){
                 e.preventDefault();
                 this.tokenAdd(this.searchInput.val(), '');
             }
@@ -522,9 +540,12 @@
             } else {
 
                 this.debounce(function(){
-                    $.ajax({
+                    if(this.ajax !== undefined){
+                        this.ajax.abort();
+                    }
+                    this.ajax = $.ajax({
                         url: $this.options.datas,
-                        data: $this.options.searchParam + "=" + $this.searchInput.val(),
+                        data: $this.options.searchParam + "=" + encodeURIComponent($this.searchInput.val()),
                         dataType: $this.options.dataType,
                         success: function(data){
                             if(data){
@@ -593,7 +614,7 @@
          */
         tokenAdd: function(value, text, first){
 
-            value = this.escape(value);
+            value = this.escape(value).trim();
 
             if(value == undefined || value == ''){
                 return this;
@@ -624,6 +645,10 @@
                 });
 
             if($('option[value="' + value + '"]', this.select).length){
+                if(!first && ($('option[value="' + value + '"]', this.select).attr('selected') === true ||
+                    $('option[value="' + value + '"]', this.select).prop('selected') === true)){
+                    this.options.onDuplicateToken(value, text, this);
+                }
                 $('option[value="' + value + '"]', this.select).attr('selected', true).prop('selected', true);
             } else if(this.options.newElements || (!this.options.newElements && $('li[data-value="' + value + '"]', this.dropdown).length > 0)) {
                 var option = $('<option />')
@@ -866,6 +891,8 @@
         onClear: function(e){},
         onReorder: function(e){},
         onDropdownAddItem: function(value, text, html, e){},
+        onDropdownShow: function(e){},
+        onDuplicateToken: function(value, text, e){},
         onAjaxError: function(e, xhr, text_status){}
 
     };

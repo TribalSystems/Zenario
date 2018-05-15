@@ -6,8 +6,15 @@ zenario__email_template_manager:
             no_items_message: No newsletter templates have been created.
             db_items:
                 table: |
-                    [[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_templates AS nt
+                    [[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_templates AS nt
                 id_column: nt.id
+            refiners:
+                newsletter_templates_using_image:
+                    table_join: |
+                        INNER JOIN [[DB_PREFIX]]inline_images AS ii
+                           ON ii.foreign_key_to = 'newsletter_template'
+                          AND ii.foreign_key_id = nt.id
+                          AND ii.image_id = [[REFINER_ID]]
             columns:
                 id:
                     title: ID
@@ -33,6 +40,8 @@ zenario__email_template_manager:
                     db_column: nt.date_modified
                     show_by_default: No
                     format: datetime
+            item:
+                css_class: zenario_newsletter_template
             collection_buttons:
                 create:
                     priv: _PRIV_EDIT_NEWSLETTER

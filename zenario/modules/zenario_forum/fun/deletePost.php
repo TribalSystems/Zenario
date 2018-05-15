@@ -31,7 +31,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 //Work out who posted this post
 $sql = "
 	SELECT poster_id
-	FROM ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "user_posts
+	FROM ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "user_posts
 	WHERE thread_id = ". (int) $this->threadId. "
 	  AND id = ". (int) $this->post['id'];
 
@@ -43,7 +43,7 @@ $userId = $row['poster_id'];
 //Check to see if this is the last post in the thread
 $sql = "
 	SELECT MAX(id)
-	FROM ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "user_posts
+	FROM ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "user_posts
 	WHERE thread_id = ". (int) $this->threadId;
 
 $result = ze\sql::select($sql);
@@ -52,7 +52,7 @@ list($maxId) = ze\sql::fetchRow($result);
 
 //Remove the post
 $sql = "
-	DELETE FROM ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "user_posts
+	DELETE FROM ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "user_posts
 	WHERE thread_id = ". (int) $this->threadId. "
 	  AND id = ". (int) $this->post['id'];
 ze\sql::update($sql);

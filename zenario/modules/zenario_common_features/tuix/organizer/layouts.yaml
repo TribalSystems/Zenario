@@ -9,13 +9,13 @@ zenario__layouts:
             grid_view_microtemplate: zenario_grid_view_layout
             db_items:
                 table: >
-                    [[DB_NAME_PREFIX]]template_files AS tf
-                    LEFT JOIN [[DB_NAME_PREFIX]]layouts AS l
+                    [[DB_PREFIX]]template_files AS tf
+                    LEFT JOIN [[DB_PREFIX]]layouts AS l
                        ON l.family_name = tf.family_name
                       AND l.file_base_name = tf.file_base_name
-                    LEFT JOIN [[DB_NAME_PREFIX]]content_types AS ct
+                    LEFT JOIN [[DB_PREFIX]]content_types AS ct
                        ON l.layout_id = ct.default_layout_id
-                    LEFT JOIN [[DB_NAME_PREFIX]]skins AS s
+                    LEFT JOIN [[DB_PREFIX]]skins AS s
                     ON s.id = l.skin_id
                 id_column: "IFNULL(l.layout_id, CONCAT(tf.family_name, '/', tf.file_base_name))"
                 encode_id_column: true
@@ -29,7 +29,7 @@ zenario__layouts:
                     title: ID
                     format: id
                     show_by_default: true
-                    db_column: "CONCAT('L', IF (l.layout_id < 10, LPAD(CAST(l.layout_id AS CHAR), 2, '0'), CAST(l.layout_id AS CHAR)))"
+                    db_column: l.layout_id
                     sort_column: l.layout_id
                     searchable: true
                     width: xxsmall
@@ -101,8 +101,8 @@ zenario__layouts:
                     db_column: |
                         (
                             SELECT COUNT(DISTINCT c.id, c.type)
-                            FROM [[DB_NAME_PREFIX]]content_item_versions AS v
-                            INNER JOIN [[DB_NAME_PREFIX]]content_items AS c
+                            FROM [[DB_PREFIX]]content_item_versions AS v
+                            INNER JOIN [[DB_PREFIX]]content_items AS c
                                ON c.id = v.id
                               AND c.type = v.type
                               AND (c.admin_version = v.version OR c.visitor_version = v.version)
@@ -140,14 +140,22 @@ zenario__layouts:
                     sql: 'content_type = [[REFINER_ID]]'
                 module_usage:
                     table_join: |
-                        INNER JOIN [[DB_NAME_PREFIX]]plugin_layout_link AS pitl
-                                                   ON pitl.module_id = [[REFINER__MODULE_USAGE]]
-                                                  AND pitl.layout_id = l.layout_id
+                        INNER JOIN [[DB_PREFIX]]plugin_layout_link AS pitl
+                           ON pitl.module_id = [[REFINER__MODULE_USAGE]]
+                          AND pitl.layout_id = l.layout_id
                 plugin_instance_usage:
                     table_join: |
-                        INNER JOIN [[DB_NAME_PREFIX]]plugin_layout_link AS pitl
-                                                   ON pitl.instance_id = [[REFINER__PLUGIN_INSTANCE_USAGE]]
-                                                  AND pitl.layout_id = l.layout_id
+                        INNER JOIN [[DB_PREFIX]]plugin_layout_link AS pitl
+                           ON pitl.instance_id = [[REFINER__PLUGIN_INSTANCE_USAGE]]
+                          AND pitl.layout_id = l.layout_id
+                layouts_using_form:
+                    table_join: |
+                        INNER JOIN [[DB_PREFIX]]plugin_settings AS ps
+                           ON ps.foreign_key_to = 'user_form'
+                          AND ps.foreign_key_id = [[REFINER_ID]]
+                        INNER JOIN [[DB_PREFIX]]plugin_layout_link AS pitl
+                           ON pitl.instance_id = ps.instance_id
+                          AND pitl.layout_id = l.layout_id
                 trash:
                     exists: true
             trash:

@@ -309,7 +309,7 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 		
 		//Remove the comment
 		$sql = "
-			DELETE FROM ". DB_NAME_PREFIX. ZENARIO_ANONYMOUS_COMMENTS_PREFIX. "user_comments
+			DELETE FROM ". DB_PREFIX. ZENARIO_ANONYMOUS_COMMENTS_PREFIX. "user_comments
 			WHERE content_id = ". (int) $this->cID. "
 			  AND content_type = '". ze\escape::sql($this->cType). "'
 			  AND id = ". (int) $this->post['id'];
@@ -318,7 +318,7 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 		
 		//Update the post count for the thread
 		$sql = "
-			UPDATE ". DB_NAME_PREFIX. ZENARIO_ANONYMOUS_COMMENTS_PREFIX. "comment_content_items SET
+			UPDATE ". DB_PREFIX. ZENARIO_ANONYMOUS_COMMENTS_PREFIX. "comment_content_items SET
 				post_count = post_count - 1
 			WHERE post_count > 0
 			  AND content_id = ". (int) $this->cID. "
@@ -336,7 +336,7 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 		//Update the post count for the thread
 		$sql = "
 			UPDATE "
-				. DB_NAME_PREFIX. ZENARIO_ANONYMOUS_COMMENTS_PREFIX. "comment_content_items 
+				. DB_PREFIX. ZENARIO_ANONYMOUS_COMMENTS_PREFIX. "comment_content_items 
 			SET	
 				post_count = post_count - 1
 			WHERE 
@@ -349,7 +349,7 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 
 	function approvePost() {
 		$sql = "
-			UPDATE ". DB_NAME_PREFIX. ZENARIO_ANONYMOUS_COMMENTS_PREFIX. "user_comments
+			UPDATE ". DB_PREFIX. ZENARIO_ANONYMOUS_COMMENTS_PREFIX. "user_comments
 				SET status='published'
 			WHERE content_id = ". (int) $this->cID. "
 			  AND content_type = '". ze\escape::sql($this->cType). "'
@@ -366,7 +366,7 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 
 		$sql = "
 			UPDATE "
-				. DB_NAME_PREFIX. ZENARIO_ANONYMOUS_COMMENTS_PREFIX. "user_comments
+				. DB_PREFIX. ZENARIO_ANONYMOUS_COMMENTS_PREFIX. "user_comments
 			SET 
 				status='published'
 			WHERE 
@@ -383,7 +383,7 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 		
 		//Add the comment
 		$sql = "
-			UPDATE ". DB_NAME_PREFIX. ZENARIO_ANONYMOUS_COMMENTS_PREFIX. "user_comments SET
+			UPDATE ". DB_PREFIX. ZENARIO_ANONYMOUS_COMMENTS_PREFIX. "user_comments SET
 				message_text = '". ze\escape::sql(zenario_anonymous_comments::sanitiseHTML($messageText, $this->setting('enable_images'), $this->setting('enable_links'))). "',
 				date_updated = NOW(),
 				updater_id = ". (int) $userId. "
@@ -433,7 +433,7 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 				updater_id,
 				post_count,
 				locked
-			FROM ". DB_NAME_PREFIX. ZENARIO_ANONYMOUS_COMMENTS_PREFIX. "comment_content_items
+			FROM ". DB_PREFIX. ZENARIO_ANONYMOUS_COMMENTS_PREFIX. "comment_content_items
 			WHERE content_id = ". (int) $this->cID. "
 			  AND content_type = '". ze\escape::sql($this->cType). "'";
 		
@@ -445,7 +445,7 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 		
 		//If we didn't find a row, then add one in
 		$sql = "
-			INSERT INTO ". DB_NAME_PREFIX. ZENARIO_ANONYMOUS_COMMENTS_PREFIX. "comment_content_items SET
+			INSERT INTO ". DB_PREFIX. ZENARIO_ANONYMOUS_COMMENTS_PREFIX. "comment_content_items SET
 				content_id = ". (int) $this->cID. ",
 				content_type = '". ze\escape::sql($this->cType). "'";
 		ze\sql::update($sql);
@@ -536,7 +536,7 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 				updater_id,
 				message_text,
 				rating
-			FROM ". DB_NAME_PREFIX. ZENARIO_ANONYMOUS_COMMENTS_PREFIX. "user_comments
+			FROM ". DB_PREFIX. ZENARIO_ANONYMOUS_COMMENTS_PREFIX. "user_comments
 			WHERE content_id = ". (int) $this->cID. "
 			  AND content_type = '". ze\escape::sql($this->cType). "'";
 
@@ -611,7 +611,7 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 	function lockThread($lock) {
 		
 		$sql = "
-			UPDATE ". DB_NAME_PREFIX. ZENARIO_ANONYMOUS_COMMENTS_PREFIX. "comment_content_items SET
+			UPDATE ". DB_PREFIX. ZENARIO_ANONYMOUS_COMMENTS_PREFIX. "comment_content_items SET
 				locked = ". (int) $lock. "
 			WHERE content_id = ". (int) $this->cID. "
 			  AND content_type = '". ze\escape::sql($this->cType). "'";
@@ -725,7 +725,7 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 			} else {
 				$sql = "
 					SELECT poster_name
-					FROM ". DB_NAME_PREFIX. ZENARIO_ANONYMOUS_COMMENTS_PREFIX. "user_comments
+					FROM ". DB_PREFIX. ZENARIO_ANONYMOUS_COMMENTS_PREFIX. "user_comments
 					WHERE poster_session_id = '". ze\escape::sql(ze\user::hashPassword(ze\link::primaryDomain(), session_id())). "'
 					ORDER BY date_posted DESC
 					LIMIT 1";
@@ -751,7 +751,7 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 			} else {
 				$sql = "
 					SELECT poster_email
-					FROM ". DB_NAME_PREFIX. ZENARIO_ANONYMOUS_COMMENTS_PREFIX. "user_comments
+					FROM ". DB_PREFIX. ZENARIO_ANONYMOUS_COMMENTS_PREFIX. "user_comments
 					WHERE poster_session_id = '". ze\escape::sql(ze\user::hashPassword(ze\link::primaryDomain(), session_id())). "'
 					ORDER BY date_posted DESC
 					LIMIT 1";

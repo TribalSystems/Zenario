@@ -89,7 +89,7 @@ class content {
 		if ($onlyCreatable) {
 			$key['is_creatable'] = true;
 		}
-		return \ze\row::getArray('content_types', ['content_type_id', 'content_type_name_en', 'default_layout_id'], $key, 'content_type_id');
+		return \ze\row::getAssocs('content_types', ['content_type_id', 'content_type_name_en', 'default_layout_id'], $key, 'content_type_id');
 	}
 
 	//Formerly "getContentTypeName()"
@@ -173,11 +173,11 @@ class content {
 
 
 		$sql = "
-			FROM ". DB_NAME_PREFIX. "content_item_versions AS v
-			INNER JOIN ". DB_NAME_PREFIX. "content_items AS c
+			FROM ". DB_PREFIX. "content_item_versions AS v
+			INNER JOIN ". DB_PREFIX. "content_items AS c
 			   ON v.id = c.id
 			  AND v.type = c.type
-			INNER JOIN ". DB_NAME_PREFIX. "translation_chains AS tc
+			INNER JOIN ". DB_PREFIX. "translation_chains AS tc
 			   ON c.equiv_id = tc.equiv_id
 			  AND c.type = tc.type";
 	
@@ -223,7 +223,7 @@ class content {
 			$groupsList = "FALSE";
 			foreach (\ze\user::groups($userId) as $groupId => $groupName) {
 				$sql .= "
-					LEFT JOIN ". DB_NAME_PREFIX. "group_link AS gcl". $groupId. "
+					LEFT JOIN ". DB_PREFIX. "group_link AS gcl". $groupId. "
 					   ON gcl". $groupId. ".link_from = 'chain'
 					  AND gcl". $groupId. ".link_from_id = tc.equiv_id
 					  AND gcl". $groupId. ".link_from_char = tc.type
@@ -243,11 +243,11 @@ class content {
 			if ($ZENARIO_ORGANIZATION_MANAGER_PREFIX = \ze\module::prefix('zenario_organization_manager')) {
 				foreach (\ze\sql::fetchValues("
 					SELECT DISTINCT role_id
-					FROM ". DB_NAME_PREFIX. $ZENARIO_ORGANIZATION_MANAGER_PREFIX. "user_role_location_link
+					FROM ". DB_PREFIX. $ZENARIO_ORGANIZATION_MANAGER_PREFIX. "user_role_location_link
 					WHERE user_id = ". (int) $userId
 				) as $roleId) {
 					$sql .= "
-						LEFT JOIN ". DB_NAME_PREFIX. "group_link AS rcl". $roleId. "
+						LEFT JOIN ". DB_PREFIX. "group_link AS rcl". $roleId. "
 						   ON rcl". $roleId. ".link_from = 'chain'
 						  AND rcl". $roleId. ".link_from_id = tc.equiv_id
 						  AND rcl". $roleId. ".link_from_char = tc.type
@@ -330,7 +330,7 @@ class content {
 	
 		$sql = "
 			SELECT id, equiv_id, language_id
-			FROM ". DB_NAME_PREFIX. "content_items
+			FROM ". DB_PREFIX. "content_items
 			WHERE id = ". (int) $cID. "
 			  AND type = '". \ze\escape::sql($cType). "'";
 		$result = \ze\sql::select($sql);
@@ -339,7 +339,7 @@ class content {
 			if ($langId != $row['language_id']) {
 				$sql = "
 					SELECT id
-					FROM ". DB_NAME_PREFIX. "content_items
+					FROM ". DB_PREFIX. "content_items
 					WHERE equiv_id = ". (int) $row['equiv_id']. "
 					  AND type = '". \ze\escape::sql($cType). "'
 					  AND language_id = '". \ze\escape::sql($langId). "'";
@@ -547,7 +547,7 @@ class content {
 				break;
 	
 			} else {
-				
+		
 				//Check for slashes in the alias
 				if (strpos($aliasInURL, '/') !== false) {
 			
@@ -655,7 +655,7 @@ class content {
 					//Attempt to look up a page with this alias
 					$sql = "
 						SELECT id, type, equiv_id, language_id
-						FROM ". DB_NAME_PREFIX. "content_items
+						FROM ". DB_PREFIX. "content_items
 						WHERE alias = '". \ze\escape::sql($aliasInURL). "'";
 			
 					//If an admin is logged in, any drafts/hidden content items should effect which language they get directed to
@@ -749,8 +749,8 @@ class content {
 			//Look at the languages that we have for the requested translation.
 			$sql = "
 				SELECT c.id, c.type, c.equiv_id, c.language_id, c.alias, l.detect, l.detect_lang_codes
-				FROM ". DB_NAME_PREFIX. "content_items AS c
-				INNER JOIN ". DB_NAME_PREFIX. "languages AS l
+				FROM ". DB_PREFIX. "content_items AS c
+				INNER JOIN ". DB_PREFIX. "languages AS l
 				   ON c.language_id = l.id
 				WHERE c.equiv_id = ". (int) $equivId. "
 				  AND c.type = '". \ze\escape::sql($cType). "'";
@@ -854,14 +854,6 @@ class content {
 		return \ze\content::checkPermAndGetShowableContent($content, $cID, $cType, $requestVersion = false);
 	}
 
-	//Formerly "requestVarMergeField()"
-	public static function requestVarMergeField($name) {
-		if (empty(\ze::$vars)) {
-			require \ze::editionInclude('checkRequestVars');
-		}
-		return require \ze::editionInclude('requestVarMergeField');
-	}
-
 	//Check to see if a Content Item exists, and the current visitor/user/admin can see a Content Item
 	//Works like \ze\content::checkPerm() above, except that it will return a permissions error code
 	//It also looks up some details on the Content Item
@@ -911,13 +903,13 @@ class content {
 				SELECT
 					equiv_id, id, type, language_id, alias,
 					visitor_version, admin_version, status, lock_owner_id
-				FROM ". DB_NAME_PREFIX. "content_items
+				FROM ". DB_PREFIX. "content_items
 				WHERE id = ". (int) $cID. "
 				  AND type = '". \ze\escape::sql($cType). "'")
 			)
 		 && ($chain = \ze\sql::fetchAssoc("
 				SELECT equiv_id, type, privacy, smart_group_id
-				FROM ". DB_NAME_PREFIX. "translation_chains
+				FROM ". DB_PREFIX. "translation_chains
 				WHERE equiv_id = ". (int) $content['equiv_id']. "
 				  AND type = '". \ze\escape::sql($cType). "'")
 		)) {
@@ -1021,7 +1013,7 @@ class content {
 						\ze\ray::valuesToKeys(
 							\ze\sql::fetchValues("
 								SELECT DISTINCT role_id
-								FROM ". DB_NAME_PREFIX. $ZENARIO_ORGANIZATION_MANAGER_PREFIX. "user_role_location_link
+								FROM ". DB_PREFIX. $ZENARIO_ORGANIZATION_MANAGER_PREFIX. "user_role_location_link
 								WHERE user_id = ". (int) $userId
 							)
 						);
@@ -1036,7 +1028,7 @@ class content {
 				
 					$sql = "
 						SELECT link_to_id
-						FROM `". DB_NAME_PREFIX. "group_link`
+						FROM `". DB_PREFIX. "group_link`
 						WHERE link_to = '". \ze\escape::sql($linkTo). "'";
 				
 					if (!empty($privacy['equiv_id']) && !empty($privacy['type'])) {
@@ -1157,7 +1149,7 @@ class content {
 			SELECT
 				family_name, layout_id, file_base_name, skin_id, css_class,
 				cols, min_width, max_width, fluid, responsive
-			FROM ". DB_NAME_PREFIX. "layouts
+			FROM ". DB_PREFIX. "layouts
 			ORDER BY
 				content_type = '". \ze\escape::sql(\ze::$cType). "' DESC";
 	
@@ -1430,7 +1422,7 @@ class content {
 				bg_color,
 				bg_position,
 				bg_repeat
-			FROM ". DB_NAME_PREFIX. "layouts
+			FROM ". DB_PREFIX. "layouts
 			WHERE layout_id = ". (int) $layoutId;
 		$result = \ze\sql::select($sql);
 		return \ze\sql::fetchAssoc($result);

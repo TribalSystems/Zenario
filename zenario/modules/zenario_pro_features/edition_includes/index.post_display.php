@@ -115,7 +115,7 @@ if (ze::$canCache
 		
 		echo '
 			<link rel="stylesheet" type="text/css" media="screen" href="', ze::moduleDir('zenario_pro_features', 'adminstyles/cache_info.css'), '?v=', ze::setting('css_js_version'), '"/>
-			<div id="zenario_cache_info" class="zenario_cache_info"><div class="', $css, '" title="', ze\admin::phrase('Click to see caching information for this page.'), '" onclick="
+			<x-zenario-cache-info id="zenario_cache_info" class="zenario_cache_info"><x-zenario-cache-info class="', $css, '" title="', ze\admin::phrase('Click to see caching information for this page.'), '" onclick="
 				if (window.zenario) {
 					if (!window.zenarioCI) {
 						$.getScript(\'', ze::moduleDir('zenario_pro_features', 'js/cache_info.min.js'), '?v=', ze::setting('css_js_version'), '\', function() {zenarioCI.init(', (int) $allowPageCaching, '); });
@@ -123,10 +123,10 @@ if (ze::$canCache
 						zenarioCI.init(', (int) $allowPageCaching, ');
 					}
 				}
-			"></div></div>
+			"></x-zenario-cache-info></x-zenario-cache-info>
 			<script type="text/javascript">
 				window.zenarioCD = {load:', json_encode($chToLoadStatus), ', slots: ', json_encode($chSlots), ', cache_plugins: ', (int) ze::setting('cache_plugins'), '};
-				zenario.tooltips(\'#zenario_cache_info div\');
+				zenario.tooltips(\'#zenario_cache_info *\');
 			</script>';
 	}
 	
@@ -178,7 +178,7 @@ if (ze::$canCache
 			if ($caching_debug_info) {
 				touch(CMS_ROOT. $path. 'show_cache_info');
 				@chmod(CMS_ROOT. $path. 'show_cache_info', 0666);
-				$html = str_replace('<div class="zenario_cache_in_use"', '<div class="zenario_from_cache"', $html);
+				$html = str_replace('<x-zenario-cache-info class="zenario_cache_in_use"', '<x-zenario-cache-info class="zenario_from_cache"', $html);
 			
 			} else {
 				$html .= "\n</body>\n</html>";

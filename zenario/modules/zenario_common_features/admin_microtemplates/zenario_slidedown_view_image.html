@@ -23,18 +23,6 @@
 				<% } %>
 			<% } %>
 			
-			<% if (zenarioO.columnValue(m.id, 'all_usage_content')) { %>
-				<p><strong>Where it's used:</strong> {{zenarioO.columnValue(m.id, 'all_usage_content')}}</p>
-			<% } %>
-			
-			<% if(zenarioO.columnValue(m.id, 'usage_email_templates')) { %>
-				<p><strong>Email templates:</strong> {{zenarioO.columnValue(m.id, 'usage_email_templates')}}</p>
-			<% } %>
-			
-			<% if (zenarioO.tuix.columns.all_usage_newsletters) { %>
-			<p><strong>Newsletters:</strong> {{zenarioO.columnValue(m.id, 'all_usage_newsletters')}}</p>
-			<% } %>
-			
 			<% if (zenarioO.tuix.columns.tags) { %>
 				<div class="slidedown_tags_title">
 					<span><strong>Tags:</strong></span>

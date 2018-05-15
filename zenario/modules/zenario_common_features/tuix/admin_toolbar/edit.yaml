@@ -81,8 +81,8 @@ sections:
             view_items_images: &view_items_images
                 label: Images
                 organizer_quick:
-                    target_path: zenario__content/panels/inline_images_for_content
-                    min_path: zenario__content/panels/inline_images_for_content
+                    target_path: zenario__content/panels/image_library
+                    min_path: zenario__content/panels/image_library
                     disallow_refiners_looping_on_min_path: true
             #view_dropdown: &view_dropdown
             #    label: View
@@ -205,7 +205,6 @@ sections:
                 tooltip: >
                     Rollback this content item|You cannot rollback this item to
                     this version because a draft exists.
-
 
             lock:
                 parent: lock_dropdown

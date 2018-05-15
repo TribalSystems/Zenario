@@ -62,9 +62,11 @@ class zenario_banner extends ze\moduleBaseClass {
 		
 		$mergeFields['Target_Blank'] = '';
 		$link = $downloadFile = $cID = $cType = false;
+		$linkExists = false;
+		$linkTo = $this->setting($link_type);
 		
 		//Check to see if an item is set in the hyperlink_target setting 
-		if ($this->setting($link_type) == '_CONTENT_ITEM'
+		if ($linkTo == '_CONTENT_ITEM'
 		 && ($linkExists = $this->getCIDAndCTypeFromSetting($cID, $cType, $hyperlink_target, $useTranslation))) {
 			
 			$downloadFile = ($cType == 'document' && !$this->setting('use_download_page'));
@@ -124,16 +126,50 @@ class zenario_banner extends ze\moduleBaseClass {
 							$atAll = true, $ifUserLoggedIn = true, $ifGetSet = true, $ifPostSet = true, $ifSessionSet = true, $ifCookieSet = true);
 				}
 			}
+		
+		} else
+		if ($linkTo == '_DOCUMENT'
+		 && ($documentId = $this->setting('document_id'))
+		 && ($linkExists = (bool) $link = ze\file::getDocumentFrontEndLink($documentId))) {
+			
+			$document = ze\row::get('documents', ['filename', 'privacy'], ['id' => $documentId]);
+			$contentItemPrivacy = ze\row::get('translation_chains', 'privacy', ['equiv_id' => ze::$equivId]);
+
+			//Always show public documents,
+			//Don't show private documents on public content items.
+			if ($document['privacy'] == 'public' || ($document['privacy'] == 'private' && $contentItemPrivacy != 'public' && $contentItemPrivacy != 'logged_out')) {
+				//Use the Theme Section for a Masthead with a link and set the link
+				$mergeFields['Link_Href'] =
+				$mergeFields['Image_Link_Href'] =
+					'href="'. htmlspecialchars($link). '"';
+		
+				$mergeFields['Target_Blank'] = ' onclick="'. htmlspecialchars(ze\file::trackDownload($link)). '"';
+		
+				$downloadFile = true;
+				
+				//Only allow caching for public documents.
+				if ($document['privacy'] == 'public') {
+					$this->allowCaching(
+						$atAll = true, $ifUserLoggedIn = true, $ifGetSet = true, $ifPostSet = true, $ifSessionSet = true, $ifCookieSet = true);
+					$this->clearCacheBy(
+						$clearByContent = false, $clearByMenu = false, $clearByUser = false, $clearByFile = true, $clearByModuleData = false);
+				}
+			} else {
+				if (ze\admin::id()) {
+					$mergeFields['privacy_warning'] = true;
+					$mergeFields['filename'] = $document['filename'];
+					$mergeFields['privacy'] = $document['privacy'];
+				}
+			}
 			
 		} else {
-			
 			$this->allowCaching(
 				$atAll = true, $ifUserLoggedIn = true, $ifGetSet = true, $ifPostSet = true, $ifSessionSet = true, $ifCookieSet = true);
 			$this->clearCacheBy(
 				$clearByContent = false, $clearByMenu = false, $clearByUser = false, $clearByFile = false, $clearByModuleData = false);
 			
 			// If the content item this banner was linking to has been removed, update setting to no-link
-			if ($this->setting($link_type) == '_CONTENT_ITEM' && !$linkExists) {
+			if ($linkTo == '_CONTENT_ITEM' && !$linkExists) {
 				
 				if (!ze\content::getCIDAndCTypeFromTagId($cID, $cType, $this->setting($hyperlink_target))
 				 || !(($equivId = ze\content::equivId($cID, $cType))
@@ -144,7 +180,25 @@ class zenario_banner extends ze\moduleBaseClass {
 					$this->setSetting($target_blank, '', true);
 				}
 			
-			} elseif ($this->setting($link_type) == '_EXTERNAL_URL' && ($link = $this->setting($url))) {
+			//If a document that this banner was linking to has been removed, update the settingas not no-link as well.
+			} elseif ($linkTo == '_DOCUMENT' && !$linkExists) {
+				
+				if (ze::isAdmin()) {
+					if ($document = ze\row::get('documents', ['filename', 'privacy'], ['id' => $documentId])) {
+						
+						if ($document['privacy'] == 'offline') {
+							$mergeFields['privacy_warning'] = true;
+							$mergeFields['filename'] = $document['filename'];
+							$mergeFields['privacy'] = $document['privacy'];
+						}
+					
+					} else {
+						$this->setSetting($link_type, '_NO_LINK', true);
+						$this->setSetting('document_id', '', true);
+					}
+				}
+			
+			} elseif ($linkTo == '_EXTERNAL_URL' && ($link = $this->setting($url))) {
 				$mergeFields['Link_Href'] =
 				$mergeFields['Image_Link_Href'] =
 					'href="'. htmlspecialchars($link). '"';
@@ -170,10 +224,12 @@ class zenario_banner extends ze\moduleBaseClass {
 		
 			if (ze::$isDraft && ze\priv::check('_PRIV_EDIT_DRAFT', ze::$cID, ze::$cType)) {
 				if (!empty($_POST['_zenario_save_content_'])) {
-					$this->setSetting('text', ($_POST['content__content'] ?? false), true, true, 'translatable_html');
-					$this->setSetting('title', ($_POST['content__title'] ?? false), true, true, 'translatable_text');
+					$this->setSetting('text', ze\ring::decodeIdForOrganizer($_POST['content__content'] ?? ''), true, true, 'translatable_html');
+					$this->setSetting('title', ze\ring::decodeIdForOrganizer($_POST['content__title'] ?? ''), true, true, 'translatable_text');
 					exit;
 				}
+				//N.b. encodeItemIdForOrganizer() was called on the HTML, to avoid sending RAW HTML over post and potentially
+				//triggering Cloudflare to blocks it, so we need to call decodeIdForOrganizer() to decode it.
 				
 				$this->editorId = $this->containerId. '_tinymce_content_'. str_replace('.', '', microtime(true));
 			
@@ -209,37 +265,6 @@ class zenario_banner extends ze\moduleBaseClass {
 		 || ($this->setting('image_source') == '_STICKY_IMAGE'
 		  && $cID
 		  && ($imageId = ze\file::itemStickyImageId($cID, $cType)))) {
-			
-			$cols = [];
-			if (!$this->setting('alt_tag')) {
-				$cols[] = 'alt_tag';
-			}
-			
-			if ($fancyboxLink && !$this->setting('floating_box_title')) {
-				$cols[] = 'floating_box_title';
-			}
-			
-			if (!empty($cols)) {
-				$image = ze\row::get('files', $cols, $imageId);
-			}
-			
-			if ($this->setting('alt_tag')) {
-				$alt_tag = htmlspecialchars($this->setting('alt_tag'));
-			} else {
-				$alt_tag = htmlspecialchars($image['alt_tag']);
-			}
-			$this->mergeFields['Image_Alt'] = $alt_tag;
-			
-			if ($fancyboxLink) {
-				if ($this->setting('floating_box_title')) {
-					$this->mergeFields['Link_Href'] .= ' data-box-title="'. htmlspecialchars($this->setting('floating_box_title')). '"';
-					$this->mergeFields['Image_Link_Href'] .= ' data-box-title="'. htmlspecialchars($this->setting('floating_box_title')). '"';
-				} else {
-					$this->mergeFields['Link_Href'] .= ' data-box-title="'. htmlspecialchars($image['floating_box_title']). '"';
-					$this->mergeFields['Image_Link_Href'] .= ' data-box-title="'. htmlspecialchars($image['floating_box_title']). '"';
-				}
-			}
-			
 			
 			//Get the resize options for the image from the plugin settings
 			$banner_canvas = $this->setting('canvas');
@@ -288,6 +313,7 @@ class zenario_banner extends ze\moduleBaseClass {
 			}
 			
 			$banner__enlarge_image = true;
+			$banner__enlarge_floating_box_title_mode = $this->setting('floating_box_title_mode');
 			$banner__enlarge_canvas = $this->setting('enlarge_canvas');
 			$banner__enlarge_width = (int) $this->setting('enlarge_width');
 			$banner__enlarge_height = (int) $this->setting('enlarge_height');
@@ -299,6 +325,9 @@ class zenario_banner extends ze\moduleBaseClass {
 				
 				//Set the link type to "_ENLARGE_IMAGE" if it's not already.
 				$this->setSetting('link_type', '_ENLARGE_IMAGE', false);
+				if(!$banner__enlarge_floating_box_title_mode) {
+					$this->setSetting('floating_box_title_mode', 'use_default', false);
+				}
 				
 				$inheritDimensions = true;
 				
@@ -336,6 +365,26 @@ class zenario_banner extends ze\moduleBaseClass {
 					}
 				}
 			}
+			
+			$cols = [];
+			if (!$this->setting('alt_tag')) {
+				$cols[] = 'alt_tag';
+			}
+			
+			if ($this->setting('link_type')=='_ENLARGE_IMAGE' && $this->setting('floating_box_title_mode') != 'overwrite') {
+				$cols[] = 'floating_box_title';
+			}
+			
+			if (!empty($cols)) {
+				$image = ze\row::get('files', $cols, $imageId);
+			}
+			
+			if ($this->setting('alt_tag')) {
+				$alt_tag = htmlspecialchars($this->setting('alt_tag'));
+			} else {
+				$alt_tag = htmlspecialchars($image['alt_tag']);
+			}
+			$this->mergeFields['Image_Alt'] = $alt_tag;
 			
 			
 			$banner_offset = $this->setting('offset');
@@ -491,15 +540,19 @@ class zenario_banner extends ze\moduleBaseClass {
 					if (ze\file::imageLink($widthFullSize, $heightFullSize, $urlFullSize, $imageId, $banner__enlarge_width, $banner__enlarge_height, $banner__enlarge_canvas)) {
 						if ($this->setting('disable_rel')) {
 							$this->mergeFields['Link_Href'] =
-							$this->mergeFields['Image_Link_Href'] = 'rel="colorbox_no_arrows" href="' . htmlspecialchars($urlFullSize) . '" class="enlarge_in_fancy_box"';
+							$this->mergeFields['Image_Link_Href'] = 'rel="colorbox_no_arrows" href="' . htmlspecialchars($urlFullSize) . '" class="enlarge_in_fancy_box" ';
 						} else {
-							$this->mergeFields['Link_Href'] = 'rel="lightbox" href="' . htmlspecialchars($urlFullSize) . '" class="enlarge_in_fancy_box"';
-							$this->mergeFields['Image_Link_Href'] = 'rel="colorbox" href="' . htmlspecialchars($urlFullSize) . '" class="enlarge_in_fancy_box"';
+							$this->mergeFields['Link_Href'] = 'rel="lightbox" href="' . htmlspecialchars($urlFullSize) . '" class="enlarge_in_fancy_box" ';
+							$this->mergeFields['Image_Link_Href'] = 'rel="colorbox" href="' . htmlspecialchars($urlFullSize) . '" class="enlarge_in_fancy_box" ';
 						}
 						
-						
-						
-						
+						if ($this->setting('floating_box_title_mode') == 'overwrite') {
+							$this->mergeFields['Link_Href'] .= ' data-box-title="'. htmlspecialchars($this->setting('floating_box_title')). '"';
+							$this->mergeFields['Image_Link_Href'] .= ' data-box-title="'. htmlspecialchars($this->setting('floating_box_title')). '"';
+						} else {
+							$this->mergeFields['Link_Href'] .= ' data-box-title="'. htmlspecialchars($image['floating_box_title']). '"';
+							$this->mergeFields['Image_Link_Href'] .= ' data-box-title="'. htmlspecialchars($image['floating_box_title']). '"';
+						}
 						
 						//HTML 5 friendly version of the above code
 							//Would need support from colorbox, and ", a[data-colorbox-group]" added to the jQuery pattern that sets colorboxes up
@@ -626,6 +679,30 @@ class zenario_banner extends ze\moduleBaseClass {
 		if ($this->styles !== '') {
 			echo "\n", '<style type="text/css" id="', $this->containerId, '-styles">', "\n", $this->styles, "\n", '</style>';
 		}
+	}
+	
+	public function privacyWarning($field, $contentItemPrivacy) {
+		//Get selected document...
+		if (isset($field['document_id']['current_value'])) {
+			$documentId = $field['document_id']['current_value'];
+		} else {
+			$documentId = $field['document_id']['value'];
+		}
+
+		//...get privacy settings of the document and content item...
+		$document = ze\row::get('documents', ['filename', 'privacy'], ['id' => $documentId]);
+		
+
+		//...and display or hide a privacy warning note if necessary.
+		if ($document['privacy'] == 'private' && ($contentItemPrivacy == 'public' || $contentItemPrivacy == 'logged_out')) {
+			$field['privacy_warning']['note_below'] = '<p>Warning: content item is Public, the selected document is Private, so the document will not appear to visitors.</p>';
+		} elseif ($document['privacy'] == 'offline') {
+			$field['privacy_warning']['note_below'] = '<p>Warning: the selected document is Offline, so it will not appear to visitors. Offline documents can be published at any time.</p>';
+		} else {
+			$field['privacy_warning']['note_below'] = '';
+		}
+		
+		return $field['privacy_warning']['note_below'];
 	}
 	
 	

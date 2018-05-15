@@ -52,152 +52,6 @@ class zenario_common_features__admin_boxes__publish extends ze\moduleBaseClass {
 				ze\admin::phrase('Are you sure you wish to publish the [[count]] selected content items?', ['count' => $count]);
 		}
 		
-		// Show warning if any documents on the page will have their privacy set after publish
-		if (ze\module::inc('zenario_document_container')) {
-			
-			//Temporary little hack to stop some plugins from crashing/causing errors
-			//Ideally the code below needs rewriting to fix this properly though!
-			require ze::editionInclude('checkRequestVars');
-			
-			$nestModuleId = ze\module::id('zenario_plugin_nest');
-			$slideshowModuleId = ze\module::id('zenario_slideshow');
-			$documentContainerModuleId = ze\module::id('zenario_document_container');
-			$showDocumentWarning = false;
-			$documentChangesMessage = [];
-			$documentPrivacyLink = [];
-			$documentPrivacyConflicts = [];
-			
-			foreach ($tags as $tagId) {
-				
-				$documentChangesMessage[$tagId] = '';
-				$documentFoundOnPage = false;
-				$cID = $cType = false;
-				ze\content::getCIDAndCTypeFromTagId($cID, $cType, $tagId);
-				
-				$contentItem = ze\row::get(
-					'content_items', 
-					['admin_version', 'equiv_id'], 
-					['id' => $cID, 'type' => $cType]
-				);
-				$contentPrivacy = ze\row::get(
-					'translation_chains',
-					'privacy',
-					['equiv_id' => $contentItem['equiv_id'], 'type' => $cType]
-				);
-				
-				//Look for all of the plugins on this page
-				ze::$slotContents = [];
-				ze\plugin::slotContents(
-					ze::$slotContents, $cID, $cType, $contentItem['admin_version'],
-					$layoutId = false, $templateFamily = false, $templateFileBaseName = false,
-					$specificInstanceId = false, $specificSlotName = false, $ajaxReload = false,
-					$runPlugins = false);
-				
-				//Look through all of the plugins, looking to see if any of them are document containers, and try to run them.
-				//Also catch the case where there are nests/slideshows with document containers inside, and run those too.
-				foreach (ze::$slotContents as $slotName => $slotInfo) {
-					if ($slotInfo['module_id'] == $documentContainerModuleId
-					 || (ze::in($slotInfo['module_id'], $nestModuleId, $slideshowModuleId)
-					  && ze\row::exists('nested_plugins', ['module_id' => $documentContainerModuleId, 'instance_id' => $slotInfo['instance_id']]))) {
-						ze\plugin::slotContents(
-							ze::$slotContents, $cID, $cType, $contentItem['admin_version'],
-							$layoutId = false, $templateFamily = false, $templateFileBaseName = false,
-							$slotInfo['instance_id'], $slotName, $ajaxReload = false,
-							$runPlugins = true);
-					}
-				}
-				
-				
-				
-				$privacy = 'public';
-				if ($contentPrivacy != 'public') {
-					$privacy = 'private';
-				}
-				
-				if ($count == 1) {
-					$documentChangesMessage[$tagId] .=
-						ze\admin::phrase("When you publish this content item, the following documents will be made [[privacy]] to correspond with this content item's permissions\n",
-							['privacy' => $privacy]
-						);
-				} else {
-					$formattedTag = ze\content::formatTagFromTagId($tagId);
-					$documentChangesMessage[$tagId] .= 
-						"\n". ze\admin::phrase("When you publish the content item \"[[formattedTag]]\", the following documents will be made [[privacy]] to correspond with this content item's permissions\n",
-							['privacy' => $privacy, 'formattedTag' => $formattedTag]
-						);
-				}
-				
-				foreach (ze::$slotContents as $slotName => $slotInfo) {
-					
-					$titleShown = false;
-					
-					if ($slotInfo['module_id'] == $documentContainerModuleId && !empty($slotInfo['class'])) {
-						
-						if ($slotInfo['class']->setting('container_mode') == 'documents') {
-							
-							$documentId = $slotInfo['class']->setting('document_source'); 
-							
-							$documents = $slotInfo['class']->getDocumentContainerDocuments($documentId);
-							
-							if ($documents) {
-								foreach ($documents as $document) {
-									if ($document['type'] == 'file' && $document['privacy'] == 'auto') {
-									
-										$documentFoundOnPage = true;
-										$showDocumentWarning = true;
-									
-										if (isset($documentPrivacyLink[$document['id']]) && $documentPrivacyLink[$document['id']] != $privacy) {
-											$documentPrivacyConflicts[$document['id']] = $document;
-										}
-										$documentPrivacyLink[$document['id']] = $privacy;
-									
-										if (!$titleShown) {
-											if (isset($slotInfo['instance_name'])) {
-												$documentChangesMessage[$tagId] .= "\n". ze\admin::phrase("From the document container plugin \"[[instance_name]]:\n", $slotInfo);
-											} else {
-												$documentChangesMessage[$tagId] .= "\n". ze\admin::phrase("From the document container plugin on slot \"[[slotName]]:\n", ['slotName' => $slotName]);
-											}
-											$titleShown = true;
-										}
-									
-										$documentChangesMessage[$tagId] .= ' - ';
-										$documentChangesMessage[$tagId] .= $document['Document_Title'];
-										$documentChangesMessage[$tagId] .= "\n";
-									}
-								}
-							}
-						}
-					}
-				}
-				if (!$documentFoundOnPage) {
-					unset($documentChangesMessage[$tagId]);
-				}
-			}
-			
-			if ($showDocumentWarning) {
-				$box['tabs']['publish']['notices']['document_changes']['show'] = true;
-				
-				
-				if ($documentPrivacyConflicts) {
-					$box['tabs']['publish']['notices']['document_warning']['show'] = true;
-					$documentWarningMessage = ze\admin::phrase("WARNING: The following documents were found on both public and private pages:\n");
-					
-					foreach ($documentPrivacyConflicts as $documentId => $document) {
-						$documentWarningMessage .= ' - ';
-						$documentWarningMessage .= $document['Document_Title'];
-						$documentWarningMessage .= "\n";
-					}
-					$box['tabs']['publish']['notices']['document_warning']['message'] = $documentWarningMessage;
-				}
-				
-				foreach ($documentChangesMessage as $message) {
-					$box['tabs']['publish']['notices']['document_changes']['message'] .= $message;
-				}
-				
-				$box['max_height'] = false;
-			}
-		}
-		
 		$clash = static::checkForClashingPublicationDates($box['key']['id']);
 		
 		// Scheduled publishing options
@@ -244,20 +98,16 @@ class zenario_common_features__admin_boxes__publish extends ze\moduleBaseClass {
 		$fields['publish/publish_mins']['hidden'] = 
 			(!($values['publish/publish_options'] == 'schedule')
 			|| $fields['publish/publish_options']['hidden']);
-		
-		if ($box['tabs']['publish']['notices']['document_changes']['show'] == false) {
-			$box['max_height'] = (($values['publish/publish_options'] == 'schedule') ? 250 : 150);
-		}
 	}
 	
 	protected static function checkForClashingPublicationDates($tagIds, $date = false) {
 		$sql = "
 			SELECT DATE(v.release_date) AS release_date, c.id, c.type
-			FROM ". DB_NAME_PREFIX. "content_items AS c
-			INNER JOIN ". DB_NAME_PREFIX. "content_types AS ct
+			FROM ". DB_PREFIX. "content_items AS c
+			INNER JOIN ". DB_PREFIX. "content_types AS ct
 			   ON ct.content_type_id = c.type
 			  AND ct.release_date_field != 'hidden'
-			INNER JOIN ". DB_NAME_PREFIX. "content_item_versions AS v
+			INNER JOIN ". DB_PREFIX. "content_item_versions AS v
 			   ON v.id = c.id
 			  AND v.type = c.type
 			  AND v.version = c.admin_version

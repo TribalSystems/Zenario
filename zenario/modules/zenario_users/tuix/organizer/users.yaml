@@ -17,7 +17,7 @@ zenario__users:
             select_mode_title: Select a user
             multiple_select_mode_title: Select user(s)
             db_items:
-                table: '[[DB_NAME_PREFIX]]users AS u'
+                table: '[[DB_PREFIX]]users AS u'
                 id_column: u.id
                 custom_where_statement_if_no_refiner: "WHERE u.status <> 'suspended'"
             refiners:
@@ -111,7 +111,11 @@ zenario__users:
                     no_phrase: Not verified
                     width: xsmall
                     parent: email
-                
+                terms_and_conditions_accepted:
+                    title: Terms and conditions accepted
+                    format: yes_or_no
+                    db_column: u.terms_and_conditions_accepted
+                    show_by_default: false
                 groups:
                     title: Groups
                     width: medium
@@ -134,15 +138,15 @@ zenario__users:
                     width: xsmall
                 checksum:
                     db_column: f.checksum
-                    table_join: "LEFT JOIN [[DB_NAME_PREFIX]]files AS f ON f.id = u.image_id AND f.`usage` = 'user'"
+                    table_join: "LEFT JOIN [[DB_PREFIX]]files AS f ON f.id = u.image_id AND f.`usage` = 'user'"
                 filename:
                     db_column: f.filename
-                    table_join: "LEFT JOIN [[DB_NAME_PREFIX]]files AS f ON f.id = u.image_id AND f.`usage` = 'user'"
+                    table_join: "LEFT JOIN [[DB_PREFIX]]files AS f ON f.id = u.image_id AND f.`usage` = 'user'"
                 has_image:
                     #title: Has Image
                     format: yes_or_no
                     db_column: f.id IS NOT NULL
-                    table_join: "LEFT JOIN [[DB_NAME_PREFIX]]files AS f ON f.id = u.image_id AND f.`usage` = 'user'"
+                    table_join: "LEFT JOIN [[DB_PREFIX]]files AS f ON f.id = u.image_id AND f.`usage` = 'user'"
                     width: xxsmall
                 user_type: {}
                 

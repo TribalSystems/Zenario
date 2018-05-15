@@ -513,7 +513,7 @@ class zenario_pro_features extends zenario_common_features {
 	
 	public function categoryHasChild ($id) {
 		$sql = "SELECT id
-				FROM " . DB_NAME_PREFIX . "categories
+				FROM " . DB_PREFIX . "categories
 				WHERE parent_id = " . (int) $id;
 	
 		$result = ze\sql::select($sql);
@@ -529,17 +529,17 @@ class zenario_pro_features extends zenario_common_features {
 		$recurseCount++;
 	
 		$sql = "SELECT id
-				FROM " . DB_NAME_PREFIX . "categories
+				FROM " . DB_PREFIX . "categories
 				WHERE parent_id = " . (int) $id;
 	
 		$result = ze\sql::select($sql);
 	
 		if (ze\sql::numRows($result)>0) {
-			while ($row = ze\sql::fetchArray($result)) {
-				$this->categoryChildren[] = $row['id'];
+			while ($row = ze\sql::fetchRow($result)) {
+				$this->categoryChildren[] = $row[0];
 	
 				if ($recurseCount<=10) {
-					$this->getCategoryChildren($row['id'],$recurseCount);
+					$this->getCategoryChildren($row[0],$recurseCount);
 				}
 			}
 		}
@@ -769,18 +769,17 @@ class zenario_pro_features extends zenario_common_features {
 		//would messi with the affected rows/insert id.
 		//To avoid this, create a new connection.
 		if (!zenario_pro_features::$localDB) {
-			zenario_pro_features::$localDB = ze\db::connect(DBHOST, DBNAME, DBUSER, DBPASS, DBPORT);
+			zenario_pro_features::$localDB = new \ze\db(DB_PREFIX, DBHOST, DBNAME, DBUSER, DBPASS, DBPORT);
 		}
-		ze::$lastDB = zenario_pro_features::$localDB;
-		ze::$lastDBHost = DBHOST;
-		ze::$lastDBName = DBNAME;
-		ze::$lastDBPrefix = DB_NAME_PREFIX;
+		
+		$activeConnection = \ze::$dbL;
+		\ze::$dbL = zenario_pro_features::$localDB;
 			
 			//Run the checks for clearing the cache
 			zenario_pro_features::clearCacheForContentItem2($cID, $cType, $cVersion, $force, $clearEquivs);
 		
 		//Connect back to the local database when done
-		ze\db::connectLocal();
+		\ze::$dbL = $activeConnection;
 	}
 	
 	public static function clearCacheForContentItem2($cID, $cType, $cVersion, $force, $clearEquivs) {
@@ -831,7 +830,7 @@ class zenario_pro_features extends zenario_common_features {
 			
 			zenario_pro_features::reviewDatabaseQueryForChanges($sql, $ids, $values, $table);
 			
-			ze\sql::update($sql, false, false);
+			ze\sql::cacheFriendlyUpdate($sql);
 			$affectedRows = ze\sql::affectedRows();
 			
 			if ($affectedRows == 0) {
@@ -865,9 +864,9 @@ class zenario_pro_features extends zenario_common_features {
 				$test = $sql;
 			}
 			
-			//Loop through any words in the SQL query that start with the DB_NAME_PREFIX
+			//Loop through any words in the SQL query that start with the DB_PREFIX
 			$matches = [];
-			if (preg_match_all('/\b'. preg_quote(DB_NAME_PREFIX). '(\w+)\b/', $test, $matches)) {
+			if (preg_match_all('/\b'. preg_quote(DB_PREFIX). '(\w+)\b/', $test, $matches)) {
 				if (!empty($matches[1])) {
 					
 					foreach ($matches[1] as $table) {
@@ -1049,7 +1048,7 @@ class zenario_pro_features extends zenario_common_features {
 							if ($table == 'plugin_settings'
 							 && !empty($ids['id'])
 							 && !is_array($ids['id'])) {
-								$result = ze\sql::select("SELECT instance_id FROM ". DB_NAME_PREFIX. $table. " WHERE id = ". (int) $ids['id']);
+								$result = ze\sql::select("SELECT instance_id FROM ". DB_PREFIX. $table. " WHERE id = ". (int) $ids['id']);
 								
 								if ($row = ze\sql::fetchAssoc($result)) {
 									$table = 'plugin_instances';
@@ -1079,7 +1078,7 @@ class zenario_pro_features extends zenario_common_features {
 						 && !is_array($ids['id'])) {
 							$result = ze\sql::select("
 								SELECT id, content_id, content_type, content_version
-								FROM ". DB_NAME_PREFIX. ($table == 'plugin_item_link'? 'plugin_item_link' : 'plugin_instances'). "
+								FROM ". DB_PREFIX. ($table == 'plugin_item_link'? 'plugin_item_link' : 'plugin_instances'). "
 								WHERE id = ". (int) $ids['id']);
 							
 							if (!$ids = ze\sql::fetchAssoc($result)) {

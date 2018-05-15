@@ -51,54 +51,66 @@ class zenario_plugin_nest__admin_boxes__path extends zenario_plugin_nest {
 		
 		
 		//Look up the module ids of all of the plugins used on this page
-		$slideNum = ze\row::get('nested_plugins', 'slide_num', ['instance_id' => $box['key']['instanceId'], 'states' => [$box['key']['state']]]);
+		$box['key']['slideNum'] = ze\row::get('nested_plugins', 'slide_num', ['instance_id' => $box['key']['instanceId'], 'states' => [$box['key']['state']]]);
 		
 		$sql = "
-			SELECT np.module_id, GROUP_CONCAT(DISTINCT ps.value SEPARATOR ', ') AS modes
-			FROM ". DB_NAME_PREFIX. "nested_plugins AS np
-			LEFT JOIN ". DB_NAME_PREFIX. "plugin_settings AS ps
+			SELECT np.module_id, np.makes_breadcrumbs, GROUP_CONCAT(DISTINCT ps.value SEPARATOR ', ') AS modes
+			FROM ". DB_PREFIX. "nested_plugins AS np
+			LEFT JOIN ". DB_PREFIX. "plugin_settings AS ps
 			   ON ps.instance_id = np.instance_id
 			  AND ps.egg_id = np.id
 			  AND ps.name = 'mode'
 			WHERE np.instance_id = ". (int) $box['key']['instanceId']. "
-			  AND np.slide_num = ". (int) $slideNum. "
+			  AND np.slide_num = ". (int) $box['key']['slideNum']. "
 			  AND is_slide = 0
 			GROUP BY np.module_id";
 		$result = ze\sql::select($sql);
 		
 		$ord = 2;
 		$commands = [];
+		$somethingMakesBreadcrumbs = false;
 		while ($egg = ze\sql::fetchAssoc($result)) {
+			
+			if ($egg['makes_breadcrumbs'] > 1) {
+				$somethingMakesBreadcrumbs = true;
+			}
+			
 			$modes = ze\ray::explodeAndTrim($egg['modes']);
 			$tags = [];
 			if ((ze\moduleAdm::loadDescription(ze\module::className($egg['module_id']), $tags))
 			 && !empty($tags['path_commands'])) {
 				foreach($tags['path_commands'] as $command => $details) {
+					
+					if (!empty($details['hidden'])) {
+						continue;
+					}
+					
 					if (!isset($details['modes'])
 					 || !empty(array_intersect($details['modes'], $modes))) {
-						
-						if (empty($details['label'])) {
-							$commands[$command] = $command;
-						} else {
-							$commands[$command] = $details['label']. ' ('. $command. ')';
-						}
+						$commands[$command] = $details;
 					}
 				}
 			}
 		}
 		asort($commands);
-		foreach ($commands as $command => $label) {
-			$fields['path/commands']['values'][$command] = ['ord' => ++$ord, 'label' => $label];
+		foreach ($commands as $command => $details) {
+			$fields['path/command']['values'][$command] = [
+				'ord' => ++$ord,
+				'label' => empty($details['label'])? $command : $details['label']. ' ('. $command. ')',
+				'request_vars' => implode(',', $details['request_vars'] ?? []),
+				'hierarchical_var' => $details['hierarchical_var'] ?? ''
+			];
 		}
 		
 		if ($details = ze\row::get('nested_paths', true, $this->getKey($box))) {
 			$values['path/is_forwards'] = $details['is_forwards'];
+			$values['path/custom_vars'] = $details['request_vars'];
 			
-			if (isset($fields['path/commands']['values'][$details['commands']])) {
-				$values['path/commands'] = $details['commands'];
+			if (isset($fields['path/command']['values'][$details['command']])) {
+				$values['path/command'] = $details['command'];
 			} else {
-				$values['path/command_custom'] = $details['commands'];
-				$values['path/commands'] = '#custom#';
+				$values['path/custom_command'] = $details['command'];
+				$values['path/command'] = '#custom#';
 			}
 			
 			if ($box['key']['linkToOtherContentItem']) {
@@ -120,9 +132,9 @@ class zenario_plugin_nest__admin_boxes__path extends zenario_plugin_nest {
 		}
 		
 		if ($box['key']['linkToOtherContentItem']) {
-			$fields['path/commands']['label'] = ze\admin::phrase('Follow this link when a plugin issues the command:', $box['key']);
+			$fields['path/command']['label'] = ze\admin::phrase('Follow this link when a plugin issues the command:', $box['key']);
 		} else {
-			$fields['path/commands']['label'] = ze\admin::phrase('Go from state [[state]] to state [[to_state]] when a plugin issues the command:', $box['key']);
+			$fields['path/command']['label'] = ze\admin::phrase('Go from state [[state]] to state [[to_state]] when a plugin issues the command:', $box['key']);
 		}
 		
 	
@@ -131,17 +143,28 @@ class zenario_plugin_nest__admin_boxes__path extends zenario_plugin_nest {
 		} else {
 			ze\priv::exitIfNot('_PRIV_VIEW_REUSABLE_PLUGIN');
 		}
+		
+		$fields['path/no_breadcrumb_plugin_set']['hidden'] = $somethingMakesBreadcrumbs;
 	}
 	
 	
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		if ($values['path/commands'] == '#custom#'
-		 && !$values['path/command_custom']) {
-			$fields['path/command_custom']['error'] = ze\admin::phrase('Please enter the name of a command');
+		if ($values['path/command'] == '#custom#'
+		 && !$values['path/custom_command']) {
+			$fields['path/custom_command']['error'] = ze\admin::phrase('Please enter the name of a command');
 		}
 	}
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
+		
+		if ($values['path/command'] == '#custom#') {
+			foreach (ze\ray::explodeAndTrim($values['path/custom_vars']) as $var) {
+				if (!\ze\ring::validateScreenName($var)) {
+					$fields['path/custom_vars']['error'] =
+						$this->phrase("Please don't enter any special characters in the request variables.");
+				}
+			}
+		}
 	}
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
@@ -155,10 +178,16 @@ class zenario_plugin_nest__admin_boxes__path extends zenario_plugin_nest {
 			ze\priv::exitIfNot('_PRIV_MANAGE_REUSABLE_PLUGIN');
 		}
 		
-		if ($values['path/commands'] == '#custom#') {
-			$command = $values['path/command_custom'];
+		if ($values['path/command'] == '#custom#') {
+			$custom = 1;
+			$command = $values['path/custom_command'];
+			$rVar = $values['path/custom_vars'];
+			$hVar = '';
 		} else {
-			$command = $values['path/commands'];
+			$custom = 0;
+			$command = $values['path/command'];
+			$rVar = $fields['path/command']['values'][$command]['request_vars'] ?? '';
+			$hVar = $fields['path/command']['values'][$command]['hierarchical_var'] ?? '';
 		}
 		
 		$equivId = $cType = false;
@@ -194,11 +223,17 @@ class zenario_plugin_nest__admin_boxes__path extends zenario_plugin_nest {
 		ze\row::set(
 			'nested_paths',
 			[
-				'commands' => preg_replace('/\s/', '', $command),
-				'is_forwards' => $values['path/is_forwards']
+				'is_custom' => $custom,
+				'slide_num' => $box['key']['slideNum'],
+				'command' => preg_replace('/\s/', '', $command),
+				'is_forwards' => $values['path/is_forwards'],
+				'request_vars' => $rVar,
+				'hierarchical_var' => $hVar
 			],
 			$this->getKey($box)
 		);
+		
+		ze\pluginAdm::calcConductorHierarchy($box['key']['instanceId']);
 	}
 	
 	public function adminBoxDownload($path, $settingGroup, &$box, &$fields, &$values, $changes) {

@@ -1,0 +1,333 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+styles_fab_white: &styles_fab
+    key:
+        id: 123
+        
+    identifier:
+        css_class: content_draft
+        label: Content item ID
+    title: Styles test FAB
+    tabs:
+        first_tab: &tab
+            label: Fields
+            edit_mode:
+                enabled: true
+            fields:
+                text:
+                    label: Text field
+                    type: text
+                    maxlength: 125
+                    placeholder: "Don't worry, this is optional"
+                required_text:
+                    label: Required text field
+                    type: text
+                    maxlength: 125
+                    value: If you remove this text, you'll get an error.
+                    validation:
+                        required: You removed the text and got an error!
+                radios:
+                    label: Radiogroups
+                    cols: 3
+                    type: radios
+                    values: directions
+                select:
+                    label: Select list
+                    type: select
+                    empty_value: ' -- Select -- '
+                    values: directions
+                picker:
+                    label: Picker
+                    pick_items:
+                        path: zenario__content/panels/content
+                date:
+                    label: Date
+                    type: date
+                    change_month_and_year: true
+                    value: 2001-01-01
+                datetime:
+                    label: Date and time
+                    type: datetime
+                    value: 2001-01-01 09:30:00
+                textarea:
+                    label: Textarea
+                    type: textarea
+                    maxlength: 125
+                    style: |
+                        width: 80%;
+                        height: 5em;
+                    tall_as_possible: true
+        
+        more_fields:
+            label: More fields
+            edit_mode:
+                enabled: true
+            fields:
+                slider:
+                    label: Slider
+                    type: text
+                    value: 90
+                    style: |
+                        width: 50px;
+                    slider:
+                        range: min
+                        min: 0
+                        max: 100
+                        before_field: true
+                    validation:
+                        numeric: This must be numeric
+                url:
+                    label: URL
+                    type: url
+                    side_note: |
+                        This is a side note
+                    note_below: |
+                        This is note below the field.
+                checkbox:
+                    label: Checkbox
+                    type: checkbox
+                checkboxes:
+                    label: Checkboxes
+                    type: checkboxes
+                    values: abc
+                hierarchical_checkboxes:
+                    label: Hierarchical checkboxes
+                    type: checkboxes
+                    values: hierarchical_list
+                    checking_child_checks_parents: true
+                    cols_at_top_level: 2
+                    cols: 1
+                hierarchical_select:
+                    label: Hierarchical select list
+                    type: select
+                    empty_value: ' -- Select -- '
+                    values: hierarchical_list
+                
+        
+        readonly_tab: *tab
+            label: Read-only fields
+            edit_mode:
+                enabled: false
+        editors:
+            label: Editors
+        
+        tab_with_wysiwyg_editor:
+            parent: editors
+            label: WYSIWYG Editor
+            edit_mode:
+                enabled: true
+            fields:
+                editor:
+                    type: editor
+        
+        code_editor:
+            parent: editors
+            label: Code Editor
+            edit_mode:
+                enabled: true
+            fields:
+                editor:
+                    type: code_editor
+                    language: html
+                    style: |
+                        width: 90%;
+                    tall_as_possible: true
+        
+        buttons:
+            label: Buttons
+            edit_mode:
+                enabled: true
+            fields:
+                button:
+                    type: button
+                    label: Normal button
+                    value: Press me
+                submit:
+                    type: submit
+                    label: Submit button
+                    value: Press me
+                toggle:
+                    type: toggle
+                    label: Toggle button
+                    value: Press me
+        
+        tab_with_notices:
+            label: Notices
+            notices: 
+                checked: 
+                    type: success
+                    message: Cache cleared; checked for changes.
+                    show: false
+                
+                error: 
+                    type: error
+                    message: This is an error!
+                    show: true
+                warning: 
+                    type: warning
+                    message: This is a warning!
+                    show: true
+                question: 
+                    type: question
+                    message: This is a question?
+                    show: true
+                information: 
+                    type: information
+                    message: This is information.
+                    show: true
+                success: 
+                    type: success
+                    message: This is a success!
+                    show: true
+            fields:
+                desc:
+                    snippet:
+                        html: ''
+                    
+        images_and_colors:
+            label: Images and colours
+            edit_mode:
+                enabled: true
+            fields:
+                image:
+                    label: Image
+                    upload:
+                        multi: false
+                        accept: 'image/*'
+                        extensions:
+                            - .gif
+                            - .jpg
+                            - .jpeg
+                            - .png
+                        drag_and_drop: true
+                    pick_items:
+                        path: zenario__content/panels/image_library
+                        multiple_select: false
+                        reorder_items: false
+                    redraw_onchange: true
+                multiple_images:
+                    label: Multiple images
+                    upload:
+                        multi: true
+                        accept: 'image/*'
+                        extensions:
+                            - .gif
+                            - .jpg
+                            - .jpeg
+                            - .png
+                        drag_and_drop: true
+                    pick_items:
+                        path: zenario__content/panels/image_library
+                        multiple_select: true
+                        reorder_items: false
+                    redraw_onchange: true
+                multiple_rearrangable_images:
+                    label: Multiple, rearrangable images
+                    upload:
+                        multi: true
+                        accept: 'image/*'
+                        extensions:
+                            - .gif
+                            - .jpg
+                            - .jpeg
+                            - .png
+                        drag_and_drop: true
+                    pick_items:
+                        path: zenario__content/panels/image_library
+                        multiple_select: true
+                        reorder_items: true
+                    redraw_onchange: true
+                
+                colour:
+                    label: Colour
+                    type: color_picker
+                    color_picker_options:
+                        allowEmpty: true
+                        showInput: true
+                        showPalette: true
+                        showInitial: true
+                        clickoutFiresChange: true
+                    maxlength: 64
+                
+    
+    lovs:
+        abc:
+            a: Aye
+            b: Bee
+            c: Sea
+        directions:
+            'left top':
+                label: '↖ Top left'
+            'center top':
+                label: '↑ Top center'
+            'right top':
+                label: '↗ Top right'
+            'left center':
+                label: '← Left center'
+            'center center':
+                label: '• Center'
+            'right center':
+                label: '→ Right center'
+            'left bottom':
+                label: '↙ Bottom left'
+            'center bottom':
+                label: '↓ Bottom center'
+            'right bottom':
+                label: '↘ Bottom right'
+        hierarchical_list:
+            gf:
+                label: Ground floor
+            ff:
+                label: First floor
+            sf:
+                label: Second floor
+            tf:
+                label: Top floor
+            gb:
+                parent: gf
+                label: Bathroom
+            gh:
+                parent: gf
+                label: Hallway
+            go:
+                parent: gf
+                label: Office
+            fb:
+                parent: ff
+                label: Bathroom
+            fh:
+                parent: ff
+                label: Hallway
+            fo:
+                parent: ff
+                label: Office
+            sb:
+                parent: sf
+                label: Bathroom
+            sh:
+                parent: sf
+                label: Hallway
+            so:
+                parent: sf
+                label: Office
+            tb:
+                parent: tf
+                label: Bathroom
+            th:
+                parent: tf
+                label: Hallway
+            to:
+                parent: tf
+                label: Office
+    
+    confirm:
+        show: true
+        message: |
+            Are you sure you want to save?
+        button_message: Save
+        cancel_button_message: Cancel
+        message_type: warning
+
+
+styles_fab_black: *styles_fab
+    css_class: zenario_fab_plugin

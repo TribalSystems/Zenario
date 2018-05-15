@@ -30,11 +30,15 @@
 namespace ze;
 
 class layoutAdm {
+	
+	public static function codeName($layoutId) {
+		return 'L'. str_pad((string) $layoutId, 2, '0', STR_PAD_LEFT);
+	}
 
 
 	//Formerly "getSlotsOnTemplate()"
 	public static function slots($templateFamily, $templateFileBaseName) {
-		return \ze\row::getArray(
+		return \ze\row::getAssocs(
 			'template_slot_link',
 			'slot_name',
 			['family_name' => $templateFamily, 'file_base_name' => $templateFileBaseName],
@@ -166,12 +170,12 @@ class layoutAdm {
 		
 			// Copy slots to duplicated layout
 			if (isset($values['file_base_name'])) {
-				$slots = \ze\row::getArray('template_slot_link', 
+				$slots = \ze\row::getAssocs('template_slot_link', 
 					['family_name', 'slot_name'], 
 					['family_name' => $values['family_name'], 'file_base_name' => $sourceFileBaseName]);
 				if ($slots) {
 					$sql = '
-						INSERT IGNORE INTO '.DB_NAME_PREFIX.'template_slot_link (
+						INSERT IGNORE INTO '.DB_PREFIX.'template_slot_link (
 							family_name,
 							file_base_name,
 							slot_name
@@ -185,7 +189,7 @@ class layoutAdm {
 			}
 		
 			$sql = "
-				REPLACE INTO ". DB_NAME_PREFIX. "plugin_layout_link (
+				REPLACE INTO ". DB_PREFIX. "plugin_layout_link (
 					module_id,
 					instance_id,
 					family_name,
@@ -197,7 +201,7 @@ class layoutAdm {
 					'". \ze\escape::sql($values['family_name']). "',
 					". (int) $layoutId.  ",
 					slot_name
-				FROM ". DB_NAME_PREFIX. "plugin_layout_link
+				FROM ". DB_PREFIX. "plugin_layout_link
 				WHERE layout_id = ". (int) $sourceTemplateId;
 			\ze\sql::update($sql);
 		}
@@ -246,8 +250,8 @@ class layoutAdm {
 					 || ((
 						$sql = "
 							SELECT 1
-							FROM ". DB_NAME_PREFIX. "plugin_settings AS ps
-							INNER JOIN ". DB_NAME_PREFIX. "plugin_setting_defs AS psd
+							FROM ". DB_PREFIX. "plugin_settings AS ps
+							INNER JOIN ". DB_PREFIX. "plugin_setting_defs AS psd
 							   ON psd.module_id = ". (int) $slot['module_id']. "
 							  AND psd.name = ps.name
 							  AND psd.default_value != ps.value
@@ -261,12 +265,12 @@ class layoutAdm {
 					 || ((
 						$sql = "
 							SELECT 1
-							FROM ". DB_NAME_PREFIX. "plugin_settings AS ps
-							INNER JOIN ". DB_NAME_PREFIX. "nested_plugins AS np
+							FROM ". DB_PREFIX. "plugin_settings AS ps
+							INNER JOIN ". DB_PREFIX. "nested_plugins AS np
 							   ON np.instance_id = ps.instance_id
 							  AND np.id = ps.egg_id
 							  AND np.is_slide = 1
-							INNER JOIN ". DB_NAME_PREFIX. "plugin_setting_defs AS psd
+							INNER JOIN ". DB_PREFIX. "plugin_setting_defs AS psd
 							   ON psd.module_id = np.module_id
 							  AND psd.name = ps.name
 							  AND psd.default_value != ps.value
@@ -407,7 +411,7 @@ class layoutAdm {
 	//Quick version of the above that just checks for missing template files
 	//Formerly "checkForMissingTemplateFiles()"
 	public static function checkForMissingFiles() {
-		foreach(\ze\row::getArray('template_files', ['family_name', 'file_base_name', 'missing']) as $tf) {
+		foreach(\ze\row::getAssocs('template_files', ['family_name', 'file_base_name', 'missing']) as $tf) {
 			$missing = (int) !file_exists(CMS_ROOT. \ze\content::templatePath($tf['family_name'], $tf['file_base_name']));
 			if ($missing != $tf['missing']) {
 				\ze\row::update('template_files', ['missing' => $missing], $tf);
@@ -441,7 +445,7 @@ class layoutAdm {
 	public static function generateFileBaseName($layoutName, $layoutId = false) {
 	
 		if (!$layoutId) {
-			$layoutId = \ze\db::getNextAutoIncrementId('layouts');
+			$layoutId = \ze\sql::getNextAutoIncrementId('layouts');
 		}
 	
 		//New logic, return the id
@@ -547,26 +551,26 @@ class layoutAdm {
 	public static function usage($layoutId, $templateFamily = false, $publishedOnly = false, $skinId = false) {
 		$sql = "
 			SELECT COUNT(DISTINCT c.tag_id) AS ctu_". (int) $layoutId. "_". \ze\ring::engToBoolean($templateFamily). "_". \ze\ring::engToBoolean($publishedOnly). "_". (int) $skinId. "
-			FROM ". DB_NAME_PREFIX. "content_items AS c
-			INNER JOIN ". DB_NAME_PREFIX. "content_item_versions as v
+			FROM ". DB_PREFIX. "content_items AS c
+			INNER JOIN ". DB_PREFIX. "content_item_versions as v
 			   ON c.id = v.id
 			  AND c.type = v.type";
 	
 		if ($publishedOnly) {
 			$sql .= "
 			  AND v.version = c.visitor_version
-			INNER JOIN ". DB_NAME_PREFIX. "layouts AS t
+			INNER JOIN ". DB_PREFIX. "layouts AS t
 			   ON t.layout_id = v.layout_id
-			INNER JOIN ". DB_NAME_PREFIX. "template_families AS f
+			INNER JOIN ". DB_PREFIX. "template_families AS f
 			   ON f.family_name = t.family_name
 			WHERE c.status IN ('published_with_draft', 'published')";
 	
 		} else {
 			$sql .= "
 			  AND v.version IN (c.admin_version, c.visitor_version)
-			INNER JOIN ". DB_NAME_PREFIX. "layouts AS t
+			INNER JOIN ". DB_PREFIX. "layouts AS t
 			   ON t.layout_id = v.layout_id
-			INNER JOIN ". DB_NAME_PREFIX. "template_families AS f
+			INNER JOIN ". DB_PREFIX. "template_families AS f
 			   ON f.family_name = t.family_name
 			WHERE c.status IN ('first_draft', 'published_with_draft', 'hidden_with_draft', 'trashed_with_draft', 'published')";
 		}
@@ -595,11 +599,11 @@ class layoutAdm {
 	public static function mainSlotByName($templateFamilyName, $templateFileBaseName, $guess1 = 'Main_3', $guess2 = 'Main') {
 		$sql = "
 			SELECT tsl.slot_name
-			FROM ". DB_NAME_PREFIX. "template_slot_link AS tsl
-			LEFT JOIN ". DB_NAME_PREFIX. "layouts AS t
+			FROM ". DB_PREFIX. "template_slot_link AS tsl
+			LEFT JOIN ". DB_PREFIX. "layouts AS t
 			   ON tsl.family_name = t.family_name
 			  AND tsl.file_base_name = t.file_base_name
-			LEFT JOIN ". DB_NAME_PREFIX. "plugin_layout_link AS pitl
+			LEFT JOIN ". DB_PREFIX. "plugin_layout_link AS pitl
 			   ON tsl.family_name = pitl.family_name
 			  AND t.layout_id = pitl.layout_id
 			  AND tsl.slot_name = pitl.slot_name
@@ -630,11 +634,11 @@ class layoutAdm {
 	
 		$sql = "
 			SELECT tsl.slot_name
-			FROM ". DB_NAME_PREFIX. "layouts AS t
-			INNER JOIN ". DB_NAME_PREFIX. "template_slot_link AS tsl
+			FROM ". DB_PREFIX. "layouts AS t
+			INNER JOIN ". DB_PREFIX. "template_slot_link AS tsl
 			   ON tsl.family_name = t.family_name
 			  AND tsl.file_base_name = t.file_base_name
-			INNER JOIN ". DB_NAME_PREFIX. "plugin_layout_link AS pitl
+			INNER JOIN ". DB_PREFIX. "plugin_layout_link AS pitl
 			   ON pitl.layout_id = t.layout_id
 			  AND pitl.slot_name = tsl.slot_name
 			WHERE pitl.layout_id = ". (int) $layoutId. "

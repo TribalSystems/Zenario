@@ -4,34 +4,38 @@ plugin_css_and_framework:
     css_class: zenario_fab_plugin 
     key:
         id: ''
-        instanceId: ''
-        isVersionControlled: ''
+        frontEnd: ''
+        skinId: false
+        languageId: ''
         cID: ''
         cType: ''
         cVersion: ''
         slotName: ''
-        languageId: ''
+        isVersionControlled: ''
+        instanceId: ''
+        slideNum: ''
         eggId: ''
         moduleId: ''
-        frontEnd: ''
-        skinId: false
+        moduleClassName: ''
+        isFEA: false
+        usesConductor: false
     identifier:
         css_class: plugin_album_instance
-        label: Plugin
+        label: ''
         value: ''
     tabs:
         this_css_tab:
-            label: CSS (this plugin)
+            label: CSS (this ~plugin~)
             fields:
                 css_class:
-                    label: 'CSS classes for this plugin:'
+                    label: 'CSS classes for this ~plugin~:'
                     same_row: true
                     type: text
                     maxlength: 100
                 
                 use_css_file:
                     type: checkbox
-                    label: 'Enter CSS for this plugin:'
+                    label: 'Enter CSS for this ~plugin~:'
                     format_onchange: true
                 
                 css_filename:
@@ -65,16 +69,16 @@ plugin_css_and_framework:
                         Any changes you make to the CSS file will go live immediately upon saving.
         
         all_css_tab:
-            label: CSS (all plugins of this type)
+            label: CSS (all ~plugin~s of this type)
             fields:
                 css_class:
-                    label: 'CSS class for all plugins of this type:'
+                    label: 'CSS class for all ~plugin~s of this type:'
                     snippet:
                         label: ''
                 
                 use_css_file:
                     type: checkbox
-                    label: 'Use a custom CSS file for all plugins of this type'
+                    label: 'Use a custom CSS file for all ~plugin~s of this type'
                     redraw_onchange: true
                     
                 css_filename:

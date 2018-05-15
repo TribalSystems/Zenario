@@ -101,7 +101,7 @@ class contentAdm {
 			// Get first child menu node
 			$sql = '
 				SELECT id
-				FROM ' . DB_NAME_PREFIX . 'menu_nodes
+				FROM ' . DB_PREFIX . 'menu_nodes
 				WHERE parent_id = ' . (int)$menuNode['id'] . '
 				ORDER BY ordinal
 				LIMIT 1';
@@ -214,7 +214,7 @@ class contentAdm {
 	
 	
 		$sql = "
-			DELETE FROM ". DB_NAME_PREFIX. "content_cache
+			DELETE FROM ". DB_PREFIX. "content_cache
 			WHERE content_id = ". (int) $cID. "
 			  AND content_type = '". \ze\escape::sql($cType). "'
 			  AND content_version < ". (int) $cVersion;
@@ -243,13 +243,13 @@ class contentAdm {
 				f.archived AS f_archived,
 				v.id IS NULL AS v_deleted,
 				v.version NOT IN (c.visitor_version, c.admin_version) AS v_archived
-			FROM ". DB_NAME_PREFIX. "inline_images AS ii
-			INNER JOIN ". DB_NAME_PREFIX. "files AS f
+			FROM ". DB_PREFIX. "inline_images AS ii
+			INNER JOIN ". DB_PREFIX. "files AS f
 			   ON ii.image_id = f.id
-			LEFT JOIN ". DB_NAME_PREFIX. "content_items AS c
+			LEFT JOIN ". DB_PREFIX. "content_items AS c
 			   ON ii.foreign_key_id = c.id
 			  AND ii.foreign_key_char = c.type
-			LEFT JOIN ". DB_NAME_PREFIX. "content_item_versions AS v
+			LEFT JOIN ". DB_PREFIX. "content_item_versions AS v
 			   ON ii.foreign_key_id = v.id
 			  AND ii.foreign_key_char = v.type
 			  AND ii.foreign_key_version = v.version
@@ -372,7 +372,7 @@ class contentAdm {
 	
 		if (!empty($instance)) {
 			$instance['class_name'] = \ze\module::className($instance['module_id']);
-			$instance['settings'] = \ze\row::getArray('plugin_settings', true, ['instance_id' => $instance['id'], 'egg_id' => 0]);
+			$instance['settings'] = \ze\row::getAssocs('plugin_settings', true, ['instance_id' => $instance['id'], 'egg_id' => 0]);
 		
 			foreach ($instance['settings'] as &$setting) {
 				unset($setting['instance_id']);
@@ -471,16 +471,15 @@ class contentAdm {
 	}
 
 	//Formerly "syncInlineFiles()"
-	public static function syncInlineFiles(&$files, $key, $keepOldImagesThatAreNotInUse = true) {
+	public static function syncInlineFiles(&$files, $key, $keepOldImagesThatAreNotInUse = true, $isNest = 0, $isSlideshow = 0) {
 	
 		//Mark all existing images as not in use
 		\ze\row::update('inline_images', ['in_use' => 0], $key);
 	
 		//Add in the ones that we actually found, or mark them as in use if they are already there
 		foreach ($files as $file) {
-			$values = ['in_use' => 1];
 			$key['image_id'] = $file['id'];
-			\ze\row::set('inline_images', $values, $key);
+			\ze\row::set('inline_images', ['in_use' => 1, 'is_nest' => $isNest, 'is_slideshow' => $isSlideshow], $key);
 		}
 	
 		//Depending on the logic, either delete the unused images from the linking table,
@@ -498,8 +497,8 @@ class contentAdm {
 	
 		if (is_null($instance)) {
 			$instance = \ze\sql::fetchAssoc('
-				SELECT content_id, content_type, content_version
-				FROM '. DB_NAME_PREFIX. 'plugin_instances
+				SELECT content_id, content_type, content_version, is_nest, is_slideshow
+				FROM '. DB_PREFIX. 'plugin_instances
 				WHERE id = '. (int) $instanceId
 			);
 		}
@@ -516,7 +515,7 @@ class contentAdm {
 			$fileIds = [];
 			$sql = "
 				SELECT value
-				FROM ". DB_NAME_PREFIX. "plugin_settings
+				FROM ". DB_PREFIX. "plugin_settings
 				WHERE foreign_key_to IN('file', 'multiple_files')
 				  AND instance_id = ". (int) $instanceId;
 			$result = \ze\sql::select($sql);
@@ -530,13 +529,15 @@ class contentAdm {
 			if (empty($fileIds)) {
 				$files = [];
 			} else {
-				$files = \ze\row::getArray('files', ['id', 'usage', 'privacy'], ['id' => $fileIds]);
+				$files = \ze\row::getAssocs('files', ['id', 'usage', 'privacy'], ['id' => $fileIds]);
 			}
 	
 			\ze\contentAdm::syncInlineFiles(
 				$files,
 				['foreign_key_to' => 'library_plugin', 'foreign_key_id' => $instanceId],
-				$keepOldImagesThatAreNotInUse = false);
+				$keepOldImagesThatAreNotInUse = false,
+				$instance['is_nest'], $instance['is_slideshow']
+			);
 		}
 	}
 
@@ -573,6 +574,31 @@ class contentAdm {
 		}
 	}
 
+	//Delete images, even if they're used!
+	public static function deleteImage($imageId) {
+		
+		//If a menu node was using this image, remove it from the menu node
+		\ze\row::update('menu_nodes', ['image_id' => 0], ['image_id' => $imageId]);
+		\ze\row::update('menu_nodes', ['rollover_image_id' => 0], ['rollover_image_id' => $imageId]);
+		
+		//Also check the promo menu's tables.
+		//(N.b. this soft include could be converted to a signal if more modules start using images in linking tables...)
+		if (\ze\module::inc('zenario_promo_menu')) {
+			\ze\row::update(ZENARIO_PROMO_MENU_PREFIX. 'menu_node_feature_image', ['image_id' => 0], ['image_id' => $imageId]);
+			\ze\row::update(ZENARIO_PROMO_MENU_PREFIX. 'menu_node_feature_image', ['rollover_image_id' => 0], ['rollover_image_id' => $imageId]);
+		}
+		
+		//If a banner or other plugin was using this image, leave the broken link there
+		//\ze\row::delete('plugin_settings', ['foreign_key_to' => 'file', 'foreign_key_id' => $imageId]);
+		
+		//Remove this image from any content items if it was picked as a feature image
+		\ze\row::update('content_item_versions', ['feature_image_id' => 0], ['feature_image_id' => $imageId]);
+		
+		\ze\row::delete('inline_images', ['image_id' => $imageId]);
+		\ze\file::deletePublicImage($imageId);
+		\ze\file::delete($imageId);
+	}
+
 	//Look for User/Group/Admin files that are not in use, and remove them
 	//Formerly "deleteUnusedImagesByUsage()"
 	public static function deleteUnusedImagesByUsage($usage) {
@@ -583,8 +609,8 @@ class contentAdm {
 	
 		$sql = "
 			SELECT f.id
-			FROM ". DB_NAME_PREFIX. "files AS f
-			LEFT JOIN `". DB_NAME_PREFIX. \ze\escape::sql($usage). "s` AS u
+			FROM ". DB_PREFIX. "files AS f
+			LEFT JOIN `". DB_PREFIX. \ze\escape::sql($usage). "s` AS u
 			   ON u.image_id = f.id
 			WHERE u.image_id IS NULL
 			  AND f.location = 'db'
@@ -610,10 +636,10 @@ class contentAdm {
 	public static function deleteUnusedBackgroundImages() {
 		$sql = "
 			DELETE f.*
-			FROM ". DB_NAME_PREFIX. "files AS f
-			LEFT JOIN ". DB_NAME_PREFIX. "layouts AS l
+			FROM ". DB_PREFIX. "files AS f
+			LEFT JOIN ". DB_PREFIX. "layouts AS l
 			   ON l.bg_image_id = f.id
-			LEFT JOIN ". DB_NAME_PREFIX. "content_item_versions AS v
+			LEFT JOIN ". DB_PREFIX. "content_item_versions AS v
 			   ON v.bg_image_id = f.id
 			WHERE l.bg_image_id IS NULL
 			  AND v.bg_image_id IS NULL
@@ -705,7 +731,7 @@ class contentAdm {
 	
 		$sql = "
 			SELECT MIN(version)
-			FROM ". DB_NAME_PREFIX. "content_item_versions
+			FROM ". DB_PREFIX. "content_item_versions
 			WHERE id = ". (int) $cID. "
 			  AND type = '". \ze\escape::sql($cType). "'";
 	
@@ -795,7 +821,7 @@ class contentAdm {
 		
 			if (\ze\content::isPublished($oldStatus) != \ze\content::isPublished($newStatus)) {
 				$sql = $ids = $values = false;
-				\ze\db::reviewQueryForChanges($sql, $ids, $values, $table = 'menu_nodes');
+				\ze::$dbL->reviewQueryForChanges($sql, $ids, $values, $table = 'menu_nodes');
 			}
 		}
 	}
@@ -843,7 +869,7 @@ class contentAdm {
 		if ($mode == 'remove') {
 			$sql = "
 				DELETE
-				FROM ". DB_NAME_PREFIX. "plugin_settings
+				FROM ". DB_PREFIX. "plugin_settings
 				WHERE foreign_key_to = '". \ze\escape::sql($keyTo). "'
 				  AND foreign_key_id = ". (int) $keyId. "
 				  AND foreign_key_char = '". \ze\escape::sql($keyChar). "'";
@@ -859,10 +885,10 @@ class contentAdm {
 					pi.content_type,
 					pi.content_version,
 					pi.slot_name
-				FROM ". DB_NAME_PREFIX. "plugin_settings AS ps
-				INNER JOIN ". DB_NAME_PREFIX. "plugin_instances AS pi
+				FROM ". DB_PREFIX. "plugin_settings AS ps
+				INNER JOIN ". DB_PREFIX. "plugin_instances AS pi
 				   ON pi.id = ps.instance_id
-				INNER JOIN ". DB_NAME_PREFIX. "modules AS m
+				INNER JOIN ". DB_PREFIX. "modules AS m
 				   ON m.id = pi.module_id
 				WHERE foreign_key_to = '". \ze\escape::sql($keyTo). "'
 				  AND foreign_key_id = ". (int) $keyId. "
@@ -871,7 +897,7 @@ class contentAdm {
 			while ($row = \ze\sql::fetchAssoc($result)) {
 				if ($row['egg_id']) {
 					if (\ze\module::inc($row['class_name'])) {
-						call_user_func([$row['class_name'], 'removePlugin'], $row['class_name'], $row['egg_id'], $row['instance_id']);
+						call_user_func([$row['class_name'], 'removePlugin'], $row['egg_id'], $row['instance_id']);
 					}
 				} else {
 					//Delete this instance
@@ -881,7 +907,7 @@ class contentAdm {
 		} else {
 			$sql = "
 				DELETE
-				FROM ". DB_NAME_PREFIX. "plugin_settings
+				FROM ". DB_PREFIX. "plugin_settings
 				WHERE dangling_cross_references = 'remove'
 				  AND foreign_key_to = '". \ze\escape::sql($keyTo). "'
 				  AND foreign_key_id = ". (int) $keyId. "
@@ -898,10 +924,10 @@ class contentAdm {
 					pi.content_type,
 					pi.content_version,
 					pi.slot_name
-				FROM ". DB_NAME_PREFIX. "plugin_settings AS ps
-				INNER JOIN ". DB_NAME_PREFIX. "plugin_instances AS pi
+				FROM ". DB_PREFIX. "plugin_settings AS ps
+				INNER JOIN ". DB_PREFIX. "plugin_instances AS pi
 				   ON pi.id = ps.instance_id
-				INNER JOIN ". DB_NAME_PREFIX. "modules AS m
+				INNER JOIN ". DB_PREFIX. "modules AS m
 				   ON m.id = pi.module_id
 				WHERE dangling_cross_references = 'delete_instance'
 				  AND foreign_key_to = '". \ze\escape::sql($keyTo). "'
@@ -913,7 +939,7 @@ class contentAdm {
 				if ($row['egg_id']) {
 					if (\ze\module::inc($row['class_name'])) {
 						//Delete this egg from the nest
-						call_user_func([$row['class_name'], 'removePlugin'], $row['class_name'], $row['egg_id'], $row['instance_id']);
+						call_user_func([$row['class_name'], 'removePlugin'], $row['egg_id'], $row['instance_id']);
 					}
 			
 				} elseif ($row['content_id']) {
@@ -999,7 +1025,7 @@ class contentAdm {
 		$lastColour = false;
 		$sql = "
 			SELECT id, name, color
-			FROM ". DB_NAME_PREFIX. "image_tags
+			FROM ". DB_PREFIX. "image_tags
 			WHERE color != 'blue'
 			ORDER BY color";
 	
@@ -1035,8 +1061,8 @@ class contentAdm {
 		//Remove any Menu Nodes that now do not have translations
 		$sql = "
 			SELECT mn.id
-			FROM ". DB_NAME_PREFIX. "menu_nodes AS mn
-			LEFT JOIN ". DB_NAME_PREFIX. "menu_text AS mt
+			FROM ". DB_PREFIX. "menu_nodes AS mn
+			LEFT JOIN ". DB_PREFIX. "menu_text AS mt
 			   ON mt.menu_id = mn.id
 			WHERE mt.menu_id IS NULL";
 		$result = \ze\sql::select($sql);
@@ -1054,7 +1080,7 @@ class contentAdm {
 	public static function contentLastModifiedBy($cID, $cType) {
 		$sql = "
 			SELECT last_author_id
-			FROM ". DB_NAME_PREFIX. "content_item_versions
+			FROM ". DB_PREFIX. "content_item_versions
 			WHERE id = ". (int) $cID. "
 			  AND type = '". \ze\escape::sql($cType). "'
 			ORDER BY version DESC
@@ -1078,7 +1104,7 @@ class contentAdm {
 	
 				//Check which languages this site uses
 				if ($langId === false) {
-					$installedLanguages = \ze\row::getArray('languages', 'id', []);
+					$installedLanguages = \ze\row::getValues('languages', 'id', []);
 				} else {
 					$installedLanguages = [$langId];
 				}
@@ -1250,7 +1276,7 @@ class contentAdm {
 		
 			$sql = "
 				SELECT id, type
-				FROM ". DB_NAME_PREFIX. "content_items
+				FROM ". DB_PREFIX. "content_items
 				WHERE alias = '". \ze\escape::sql($alias). "'";
 		
 			if ($equivId && $cType) {
@@ -1304,8 +1330,8 @@ class contentAdm {
 				case 'group_members':
 					$groupNames = \ze\sql::fetchValues("
 						SELECT IFNULL(label, default_label)
-						FROM ". DB_NAME_PREFIX. "group_link AS gcl
-						INNER JOIN ". DB_NAME_PREFIX. "custom_dataset_fields cdf
+						FROM ". DB_PREFIX. "group_link AS gcl
+						INNER JOIN ". DB_PREFIX. "custom_dataset_fields cdf
 						   ON gcl.link_to_id = cdf.id
 						WHERE gcl.link_to = 'group'
 						  AND gcl.link_from = 'chain'
@@ -1337,8 +1363,8 @@ class contentAdm {
 					if ($ZENARIO_ORGANIZATION_MANAGER_PREFIX = \ze\module::prefix('zenario_organization_manager')) {
 						$roleNames = \ze\sql::fetchValues("
 							SELECT ulr.name
-							FROM ". DB_NAME_PREFIX. "group_link AS gcl
-							INNER JOIN ". DB_NAME_PREFIX. $ZENARIO_ORGANIZATION_MANAGER_PREFIX. "user_location_roles AS ulr
+							FROM ". DB_PREFIX. "group_link AS gcl
+							INNER JOIN ". DB_PREFIX. $ZENARIO_ORGANIZATION_MANAGER_PREFIX. "user_location_roles AS ulr
 							   ON gcl.link_to_id = ulr.id
 							WHERE gcl.link_to = 'role'
 							  AND gcl.link_from = 'chain'
@@ -1380,7 +1406,7 @@ class contentAdm {
 
 	//Formerly "getListOfSmartGroupsWithCounts()"
 	public static function getListOfSmartGroupsWithCounts($intendedUsage = 'smart_permissions_group') {
-		$smartGroups = \ze\row::getArray('smart_groups', 'name', ['intended_usage' => $intendedUsage], 'name');
+		$smartGroups = \ze\row::getValues('smart_groups', 'name', ['intended_usage' => $intendedUsage], 'name');
 		foreach ($smartGroups as $smartGroupId => &$name) {
 			$name .= 
 				' | '.
@@ -1469,8 +1495,8 @@ class contentAdm {
 				
 					//Update the equivs recorded in links to content item stored in any plugins in the plugin library
 					$sql = "
-						UPDATE ". DB_NAME_PREFIX. "plugin_settings AS ps
-						INNER JOIN ". DB_NAME_PREFIX. "plugin_instances AS pi
+						UPDATE ". DB_PREFIX. "plugin_settings AS ps
+						INNER JOIN ". DB_PREFIX. "plugin_instances AS pi
 						   ON pi.id = ps.instance_id
 						  AND pi.content_id = 0
 						SET ps.foreign_key_id = ". (int) $newEquivId. ",
@@ -1509,29 +1535,29 @@ class contentAdm {
 		\ze\row::set('translation_chains', $chain, ['equiv_id' => $newEquivId, 'type' => $cType]);
 	
 		$sql = "
-			INSERT IGNORE INTO ". DB_NAME_PREFIX. "category_item_link (
+			INSERT IGNORE INTO ". DB_PREFIX. "category_item_link (
 				equiv_id, content_type, category_id
 			) SELECT ". (int) $newEquivId. ", content_type, category_id
-			FROM ". DB_NAME_PREFIX. "category_item_link
+			FROM ". DB_PREFIX. "category_item_link
 			WHERE equiv_id = ". (int) $oldEquivId. "
 			  AND content_type = '". \ze\escape::sql($cType). "'";
 		\ze\sql::update($sql);
 	
 		$sql = "
-			INSERT IGNORE INTO ". DB_NAME_PREFIX. "group_link
+			INSERT IGNORE INTO ". DB_PREFIX. "group_link
 				(`link_from`, `link_from_id`, `link_from_char`, `link_to`, `link_to_id`)
 			SELECT `link_from`, ". (int) $newEquivId. ", `link_from_char`, `link_to`, `link_to_id`
-			FROM ". DB_NAME_PREFIX. "group_link
+			FROM ". DB_PREFIX. "group_link
 			WHERE link_from = 'chain'
 			  AND link_from_id = ". (int) $oldEquivId. "
 			  AND link_from_char = '". \ze\escape::sql($cType). "'";
 		\ze\sql::update($sql);
 	
 		$sql = "
-			INSERT IGNORE INTO ". DB_NAME_PREFIX. "translation_chain_privacy (
+			INSERT IGNORE INTO ". DB_PREFIX. "translation_chain_privacy (
 				equiv_id, content_type, module_class_name, method_name, param_1, param_2
 			) SELECT ". (int) $newEquivId. ", content_type, module_class_name, method_name, param_1, param_2
-			FROM ". DB_NAME_PREFIX. "translation_chain_privacy
+			FROM ". DB_PREFIX. "translation_chain_privacy
 			WHERE equiv_id = ". (int) $oldEquivId. "
 			  AND content_type = '". \ze\escape::sql($cType). "'";
 		\ze\sql::update($sql);
@@ -1612,9 +1638,9 @@ class contentAdm {
 		if (($valid = validateLanguage($submission)) && ($valid['valid'])) {
 			//Build up an insert/update statement using the values we have for the fields
 			$sql = "";
-			foreach(\ze\deprecated::getFields(DB_NAME_PREFIX, 'languages') as $field => $details) {
+			foreach(\ze\deprecated::getFields(DB_PREFIX, 'languages') as $field => $details) {
 				if (isset($submission[$field])) {
-					\ze\deprecated::addFieldToSQL($sql, DB_NAME_PREFIX. 'languages', $field, $submission, true, $details);
+					\ze\deprecated::addFieldToSQL($sql, DB_PREFIX. 'languages', $field, $submission, true, $details);
 				}
 			}
 	
@@ -1669,18 +1695,18 @@ class contentAdm {
 	
 		$sql = "
 			SELECT tsl.slot_name
-			FROM ". DB_NAME_PREFIX. "content_item_versions AS v
-			INNER JOIN ". DB_NAME_PREFIX. "layouts AS t
+			FROM ". DB_PREFIX. "content_item_versions AS v
+			INNER JOIN ". DB_PREFIX. "layouts AS t
 			   ON t.layout_id = ". ((int) $forceLayoutId? (int) $forceLayoutId : "v.layout_id"). "
-			INNER JOIN ". DB_NAME_PREFIX. "template_slot_link AS tsl
+			INNER JOIN ". DB_PREFIX. "template_slot_link AS tsl
 			   ON tsl.family_name = t.family_name
 			  AND tsl.file_base_name = t.file_base_name
-			LEFT JOIN ". DB_NAME_PREFIX. "plugin_item_link AS piil
+			LEFT JOIN ". DB_PREFIX. "plugin_item_link AS piil
 			   ON piil.content_id = v.id
 			  AND piil.content_type = v.type
 			  AND piil.content_version = v.version
 			  AND piil.slot_name = tsl.slot_name
-			LEFT JOIN ". DB_NAME_PREFIX. "plugin_layout_link AS pitl
+			LEFT JOIN ". DB_PREFIX. "plugin_layout_link AS pitl
 			   ON pitl.layout_id = t.layout_id
 			  AND pitl.slot_name = tsl.slot_name
 			WHERE v.id = ". (int) $cID. "

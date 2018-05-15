@@ -74,7 +74,7 @@ echo '
 	//Note that page caching may cause the wrong user id to be set.
 	//As with ($_SESSION['extranetUserID'] ?? false), anything that changes behaviour by Extranet User should not allow the page to be cached.
 echo '
-'. $scriptTag. '>'. $inlineStart. 'zenario.init("'. \ze::setting('css_js_version'). '",', (int) ($_SESSION['extranetUserID'] ?? 0), ',"', \ze\escape::js(\ze\content::currentLangId()), '","', \ze\escape::js(\ze::setting('google_recaptcha_theme')), '","', \ze\escape::js(\ze::setting('vis_date_format_datepicker')), '","', \ze\escape::js(DIRECTORY_INDEX_FILENAME), '",', (int) \ze\cookie::canSet(), ',', (int) \ze::$equivId, ',', (int) \ze::$cID, ',"', \ze\escape::js(\ze::$cType), '",', (int) \ze::$skinId, ',', (int) \ze::setting('mod_rewrite_slashes'), ');'. $inlineStop. '</script>';
+'. $scriptTag. '>'. $inlineStart. 'zenario.init("'. \ze::setting('css_js_version'). '",', (int) ($_SESSION['extranetUserID'] ?? 0), ',"', \ze\escape::js(\ze\content::currentLangId()), '","', \ze\escape::js(\ze::setting('vis_date_format_datepicker')), '","', \ze\escape::js(DIRECTORY_INDEX_FILENAME), '",', (int) \ze\cookie::canSet(), ',', (int) \ze::$equivId, ',', (int) \ze::$cID, ',"', \ze\escape::js(\ze::$cType), '",', (int) \ze::$skinId, ',', (int) \ze::setting('mod_rewrite_slashes'), ');'. $inlineStop. '</script>';
 
 
 
@@ -298,7 +298,7 @@ if (\ze::$cID) {
 	
 	$sql = "
 		SELECT foot_html, foot_cc, foot_visitor_only, foot_overwrite
-		FROM ". DB_NAME_PREFIX. "content_item_versions
+		FROM ". DB_PREFIX. "content_item_versions
 		WHERE id = ". (int) \ze::$cID. "
 		  AND type = '". \ze\escape::sql(\ze::$cType). "'
 		  AND version = ". (int) \ze::$cVersion;
@@ -317,7 +317,7 @@ if (\ze::$cID) {
 	if (empty($itemHTML[3])) {
 		$sql = "
 			SELECT foot_html, foot_cc, foot_visitor_only
-			FROM ". DB_NAME_PREFIX. "layouts
+			FROM ". DB_PREFIX. "layouts
 			WHERE layout_id = ". (int) \ze::$layoutId;
 		$result = \ze\sql::select($sql);
 		$templateHTML = \ze\sql::fetchRow($result);

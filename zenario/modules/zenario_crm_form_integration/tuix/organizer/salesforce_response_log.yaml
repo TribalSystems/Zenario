@@ -1,0 +1,42 @@
+zenario__user_forms:
+    panels:
+        salesforce_response_log:
+            title: Salesforce response log
+            no_items_message: No responses are in the log.
+            db_items:
+                table: '[[DB_PREFIX]][[ZENARIO_CRM_FORM_INTEGRATION_PREFIX]]salesforce_response_log AS srl'
+                id_column: srl.id
+            refiners:
+                form_id:
+                    sql: srl.form_id = [[REFINER_ID]]
+            default_sort_column: datetime
+            default_sort_desc: true
+            columns:
+                id:
+                    title: ID
+                    db_column: srl.id
+                    show_by_default: false
+                    align_right: true
+                    width: xxsmall
+                datetime:
+                    title: Date/time
+                    db_column: srl.datetime
+                    format: datetime
+                    always_show: true
+                oauth_status:
+                    title: OAuth response status
+                    db_column: srl.oauth_status
+                    always_show: true
+                    searchable: true
+                    align_right: true
+                salesforce_status:
+                    title: Salesforce response status
+                    db_column: srl.salesforce_status
+                    always_show: true
+                    searchable: true
+                    align_right: true
+            item_buttons:
+                view:
+                    label: View
+                    admin_box:
+                        path: zenario__salesforce_response

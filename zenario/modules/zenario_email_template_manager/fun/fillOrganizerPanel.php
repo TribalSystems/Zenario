@@ -38,6 +38,15 @@ switch ($path) {
 			// Hide collection buttons
 			$panel['collection_buttons']['create_template']['hidden'] = 
 			$panel['collection_buttons']['test']['hidden'] = true;
+		
+		} elseif ($refinerName == 'email_templates_using_image') {
+			$mrg = ze\row::get('files', ['filename'], $refinerId);
+			$panel['title'] = ze\admin::phrase('Email templates using the image "[[filename]]"', $mrg);
+			$panel['no_items_message'] = ze\admin::phrase('There are no email templates using the image "[[filename]]"', $mrg);
+			
+			// Hide collection buttons
+			$panel['collection_buttons']['create_template']['hidden'] = 
+			$panel['collection_buttons']['test']['hidden'] = true;
 		}
 		
 		
@@ -86,6 +95,12 @@ switch ($path) {
 					$panel['items'][$K]['protected']=true;
 				}
 			}
+			
+			if ($item['from_details'] == 'site_settings') {
+				$panel['items'][$K]['email_name_from'] = ze::setting('email_name_from');
+				$panel['items'][$K]['email_address_from'] = ze::setting('email_address_from');
+			}
+			
 		}
 		
 		break;

@@ -29,36 +29,36 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 
 $sql = "
-	DELETE FROM ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "user_unread_threads
+	DELETE FROM ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "user_unread_threads
 	WHERE reader_id = ". (int) $userId;
 ze\sql::update($sql, false, false);
 
 $sql = "
-	UPDATE ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "forums SET
+	UPDATE ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "forums SET
 		updater_id = 0
 	WHERE updater_id = ". (int) $userId;
 ze\sql::update($sql);
 
 $sql = "
-	UPDATE ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "threads SET
+	UPDATE ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "threads SET
 		poster_id = 0
 	WHERE poster_id = ". (int) $userId;
 ze\sql::update($sql);
 
 $sql = "
-	UPDATE ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "threads SET
+	UPDATE ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "threads SET
 		updater_id = 0
 	WHERE updater_id = ". (int) $userId;
 ze\sql::update($sql);
 
 $sql = "
-	UPDATE ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "user_posts SET
+	UPDATE ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "user_posts SET
 		poster_id = 0
 	WHERE poster_id = ". (int) $userId;
 ze\sql::update($sql);
 
 $sql = "
-	UPDATE ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "user_posts SET
+	UPDATE ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "user_posts SET
 		updater_id = 0
 	WHERE updater_id = ". (int) $userId;
 ze\sql::update($sql);

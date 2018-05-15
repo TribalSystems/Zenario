@@ -77,22 +77,6 @@ zenario_plugin_nest.addJavaScript = function(moduleClassName, moduleId) {
 	}
 };
 
-zenario_conductor.cleanRequests = function(requests) {
-	
-	var key, value;
-	
-	if (!_.isEmpty(requests)) {
-		foreach (requests as key => value) {
-			if (value === ''
-			 || value === 0
-			 || value === false
-			 || !defined(value)) {
-				delete requests[key];
-			}
-		}
-	}
-};
-
 
 
 //
@@ -100,6 +84,10 @@ zenario_conductor.cleanRequests = function(requests) {
 //
 
 var slots = zenario_conductor.slots = {},
+	
+	isString = function(string) {
+		return 'string' == typeof string;
+	},
 	
 	getSlot = zenario_conductor.getSlot = function(slot) {
 		
@@ -111,94 +99,53 @@ var slots = zenario_conductor.slots = {},
 			
 			slots[slotName] = {
 				slotName: slotName,
-				key: {},
 				commands: {},
-				exists: false
+				exists: false,
+				vars: {}
 			};
 		}
 	
 		return slots[slotName];
+	},
+	
+	getCommand = zenario_conductor.getCommand = function(slot, command) {
+		if (isString(slot)) {
+			slot = getSlot(slot);
+		}
+		
+		return isString(command)? slot.commands[command] : command;
 	};
 
 
-zenario_conductor.setCommands = function(slot, commands, coreVars, state) {
+
+zenario_conductor.setCommands = function(slot, commands, state, vars) {
 	slot = getSlot(slot);
 	
-	slot.key = {};
 	slot.exists = true;
 	slot.state = state;
 	slot.commands = commands || {};
-	slot.coreVars = coreVars || {};
 	slot.checkChangedOnClose =
 	slot.confirmOnClose =
 	slot.confirmOnCloseMessage = false;
+	
+	zenario_conductor.setVars(slot, vars);
 };
 
-zenario_conductor.linkToOtherContentItem = function(slot, commandDetails, requests) {
-	var key, value,
-		toState = commandDetails[0],
-		cID = commandDetails[2],
-		cType = commandDetails[3];
-	
-	//Make sure that the requests are an object
-	requests = zenario.toObject(requests, true);
-	
-	//Set the state or slide that we're linking to
-	delete requests.state;
-	delete requests.slideId;
-	delete requests.slideNum;
-	
-	if (toState == 1*toState) {
-		requests.slideNum = toState;
-	} else {
-		requests.state = toState;
-	}
-	
-	return zenario.linkToItem(cID, cType, requests);
-};
 
-zenario_conductor.calcRequests = function(slot, commandDetails, requests) {
-	var key, value,
-		toState = commandDetails[0],
-		reqVars = commandDetails[1];
-	
-	//Make sure that the requests are an object
-	requests = zenario.toObject(requests, true);
-	
-	//If we're generating a link to the current state, keep all of the registered get requests
-	if (toState == slot.key.state) {
-		zenario_conductor.mergeRequests(slot, requests);
-	}
-	
-	//Loop through each of the variables needed by the destination
-	foreach (reqVars as key) {
-		//Check the settings on the destination to see if it needs that variable.
-		//If so then try to add it from the core variables.
-		if (!requests[key] && slot.coreVars[key]) {
-			requests[key] = slot.coreVars[key];
-		}
-	}
-	
-	requests.state = toState || '';
-	requests.tab = '';
-	
-	return requests;
-};
 
-zenario_conductor.mergeRequests = function(slot, requests) {
+zenario_conductor.setVars = function(slot, vars) {
 	slot = getSlot(slot);
 	
-	if (slot.exists) {
-		foreach (slot.key as key => value) {
-			if (key !== 'state'
-			 && !defined(requests[key])) {
-				requests[key] = value;
-			}
-		}
-	}
+	vars = vars || {};
+	
+	zenario_conductor.cleanRequests(vars || {});
+	
+	slot.vars[slot.state] = vars;
 };
 
-zenario_conductor.confirmOnCloseMessage = function(slot, command, requests) {
+
+
+zenario_conductor.confirmOnCloseMessage = function() {
 	var s, slot;
 	
 	foreach (slots as s => slot) {
@@ -303,19 +250,6 @@ zenario_conductor.transitionOut = function(slot, transition_out) {
 
 
 
-//
-// The conductor, external/API functions
-//
-zenario_conductor.getRegisteredGetRequest = function(slot, key) {
-	slot = getSlot(slot);
-	
-	if (key) {
-		return slot.key[key];
-	} else {
-		return slot.key;
-	}
-};
-
 //Set an "are you sure" message when closing
 	//checkChangedOnClose: a function that should return true or false
 	//confirmOnClose: a function that should show a confirm box, then call it's input if the user presses "okay"
@@ -330,31 +264,8 @@ zenario_conductor.confirmOnClose = function(slot, checkChangedOnClose, confirmOn
 	}
 };
 
-zenario_conductor.clearRegisteredGetRequest = function(slot, key) {
-	slot = getSlot(slot);
-	
-	var key, value;
-	
-	if (_.isString(key)) {
-		delete slot.key[key];
-	
-	} else if (!_.isEmpty(key)) {
-		foreach (key as key) {
-			delete slot.key[key];
-		}
-	}
-};
 
-zenario_conductor.registerGetRequest = function(slot, currentRequests) {
-	slot = getSlot(slot);
-	
-	slot.key = currentRequests;
-	
-	zenario_conductor.cleanRequests(slot.key);
-};
-
-
-zenario_conductor.go = function(slot, command, requests, clearRegisteredGetRequests/*, recordInURL, scrollToTopOfSlot, fadeOutAndIn, useCache, post*/) {
+zenario_conductor.go = function(slot, command, requests) {
 	slot = getSlot(slot);
 	
 	if (slot.exists) {
@@ -363,12 +274,9 @@ zenario_conductor.go = function(slot, command, requests, clearRegisteredGetReque
 			zenario_conductor.stopAutoRefresh(slot.slotName);
 		}
 		
-		if (clearRegisteredGetRequests) {
-			zenario_conductor.clearRegisteredGetRequest(slot, clearRegisteredGetRequests);
-		}
-		
 		var commandDetails = slot.commands[command],
-			containerId = 'plgslt_' + slot.slotName;
+			containerId = 'plgslt_' + slot.slotName,
+			di, ds;
 		
 		//Remove any code editors from the page, as a work-around to prevent
 		//a bug where the editors sometimes fail to display correctly when displayed a second
@@ -376,7 +284,7 @@ zenario_conductor.go = function(slot, command, requests, clearRegisteredGetReque
 		$('#' + containerId + ' .zenario_embedded_ace_editor').remove();
 		
 		//Handle links to other content items
-		if (commandDetails[2]) {
+		if (commandDetails.cID) {
 			if (command == 'submit') {
 				slot.checkChangedOnClose = false;
 			}
@@ -384,10 +292,16 @@ zenario_conductor.go = function(slot, command, requests, clearRegisteredGetReque
 		
 		//Handle links to other slides
 		} else {
-			requests = zenario_conductor.calcRequests(slot, commandDetails, requests);
-			zenario_conductor.cleanRequests(requests);
 	
 			if (command == 'back') {
+				
+				//If this is a back-link, wipe clear all variables from previous states
+				foreach (commandDetails.descendants as di => ds) {
+					delete slot.vars[ds];
+				}
+				delete slot.vars[slot.state];
+				
+				//Show a fade-out and back in tranisition for pressing the back link
 				zenario_conductor.transitionOut(slot, {
 					animate: {
 						opacity: 0
@@ -397,7 +311,14 @@ zenario_conductor.go = function(slot, command, requests, clearRegisteredGetReque
 					}
 				});
 		
+			} else if (command == 'refresh') {
+				//Don't run any animations for pressing the refresh button, just use the usual animation in zenario.refreshPluginSlot()
+				
+				//(Also, for some reason I can't work out yet, putting a fade-out animation here causes a problem where the
+				// new content does not reappear in!)
+				
 			} else {
+				//Show a fade-out, right scroll, and back in tranisition for any other type of command
 				zenario_conductor.transitionOut(slot, {
 					animate: {
 						opacity: 0,
@@ -410,8 +331,9 @@ zenario_conductor.go = function(slot, command, requests, clearRegisteredGetReque
 			}
 		
 			//zenario.refreshPluginSlot(slotName, instanceId, additionalRequests, recordInURL, scrollToTopOfSlot, fadeOutAndIn, useCache, post)
-			zenario.refreshPluginSlot(slot.slotName, 'lookup', requests, true).after(function() {
+			zenario.refreshPluginSlot(slot.slotName, 'lookup', zenario_conductor.request(slot, commandDetails, requests), true).after(function() {
 				if (command == 'back') {
+					//Show a fade-out and back in tranisition for pressing the back link
 					zenario_conductor.transitionIn(slot, {
 						initial: {
 							opacity: 0
@@ -424,7 +346,12 @@ zenario_conductor.go = function(slot, command, requests, clearRegisteredGetReque
 							duration: 1000
 						}
 					});
+				
+				} else if (command == 'refresh') {
+					//Don't run any animations for pressing the refresh button, just use the usual animation in zenario.refreshPluginSlot()
+				
 				} else {
+					//Show a fade-out, right scroll, and back in tranisition for any other type of command
 					zenario_conductor.transitionIn(slot, {
 						initial: {
 							opacity: 0,
@@ -442,6 +369,8 @@ zenario_conductor.go = function(slot, command, requests, clearRegisteredGetReque
 				}
 			});
 		}
+		
+		return true;
 	}
 };
 
@@ -463,15 +392,7 @@ zenario_conductor.stopAutoRefresh = function(slotName) {
 };
 
 zenario_conductor.refresh = function(slot) {
-	slot = getSlot(slot);
-	
-	if (slot.exists) {
-		var requests = _.extend({no_cache: 1}, slot.key, slot.coreVars);
-		zenario_conductor.cleanRequests(requests);
-		
-		zenario.refreshPluginSlot(slot.slotName, 'lookup', requests, undefined, false);
-		return true;
-	}
+	return zenario_conductor.go(slot, 'refresh');
 };
 
 zenario_conductor.enabled = function(slot) {
@@ -496,6 +417,165 @@ zenario_conductor.commandEnabled = function(slot, commands) {
 	return false;
 };
 
+zenario_conductor.linkToOtherContentItem = function(slot, commandDetails, requests) {
+	var key, value,
+		toState = commandDetails.toState,
+		cID = commandDetails.cID,
+		cType = commandDetails.cType;
+	
+	//Make sure that the requests are an object
+	requests = zenario.toObject(requests, true);
+	
+	zenario_conductor.cleanRequests(requests);
+	
+	//Set the state or slide that we're linking to
+	if (toState == 1*toState) {
+		requests.slideNum = toState;
+	} else {
+		requests.state = toState;
+	}
+	
+	return zenario.linkToItem(cID, cType, requests);
+};
+
+zenario_conductor.request = function(slot, commandDetails, newRequests) {
+	slot = getSlot(slot);
+	
+	commandDetails = getCommand(slot, commandDetails);
+	
+	//The rules for requests should be as follows:
+		//If we're reloading the current state, allow any request variables.
+		//If we're going to a different state, only variables that are registered by one of the plugins on that state are allowed.
+		//If we're going to a different state, that we've been to before, restore all of the variables that it used.
+	
+	//Make sure that the requests are an object
+	newRequests = zenario.toObject(newRequests, true);
+	
+	var i,
+		reqVar,
+		fromState = slot.state,
+		toState = commandDetails.toState,
+		requests = slot.vars[toState],
+		defaultRequests = commandDetails.dRequests,
+		bVar = commandDetails.bVar,
+		hVar = commandDetails.hVar;
+	
+	//If we've been to this state before, try to look up any previous requests that were there.
+	//Then add the requests that were calculated in zenario_plugin_nest/module_code.php.
+	requests = _.extend({}, requests || {}, defaultRequests);
+	
+	//If this is a link to the same slide & state, allow any variables to be added.
+	if (toState == fromState) {
+		_.extend(requests, newRequests);
+	
+	//Otherwise only allow variables that were registered by a plugin there.
+	} else {
+		
+		//Ignore any requests if this is a back link
+		if (!_.isEmpty(newRequests)
+		 && commandDetails.command != 'back') {
+			
+			//Look through the requests this slide takes, and override the defaults
+			//with any specific values set here.
+			foreach (defaultRequests as reqVar) {
+				if (defined(newRequests[reqVar])) {
+					requests[reqVar] = newRequests[reqVar];
+				}
+			}
+		
+			//Catch the case where a basic variable (e.g. dataPoolId) is in the request,
+			//but we need a hierarchical variable (e.g. dataPoolId3).
+			if (bVar !== ''
+			 && !(requests[bVar])
+			 && defined(newRequests[hVar])) {
+				requests[bVar] = newRequests[hVar];
+			}
+		}
+	}
+	
+	//If we're using hierarchical variables, try to only include the specific variable
+	//for this level, and remove variables for all other levels
+	if (hVar
+	 && bVar
+	 && requests[bVar]) {
+		
+		delete requests[hVar];
+		
+		for (i = 1; i < 9; ++i) {
+			reqVar = hVar + i;
+			if (reqVar != bVar) {
+				delete requests[reqVar];
+			}
+		}
+	}
+	
+	zenario_conductor.cleanRequests(requests);
+	
+	requests.state = toState;
+	
+	return requests;
+};
+
+
+zenario_conductor.cleanRequests = function(requests) {
+	
+	var key, value;
+	
+	//Automatically unset any empty requests
+	if (!_.isEmpty(requests)) {
+		foreach (requests as key => value) {
+			if (value === ''
+			 || value === 0
+			 || value === false
+			 || !defined(value)) {
+				delete requests[key];
+			}
+		}
+	}
+	
+	//Clear any standard content item variables
+	delete requests.cID;
+	delete requests.cType;
+	delete requests.cVersion;
+	delete requests.visLang;
+	
+	//Clear any standard plugin variables, unless this is a link to the showSingleSlot() method
+	if (requests.method_call != 'showSingleSlot') {
+		delete requests.method_call;
+		delete requests.slotName;
+		delete requests.instanceId;
+	}
+	
+	//Clear any requests that point to this nest/slide/state
+	delete requests.state;
+	delete requests.slideId;
+	delete requests.slideNum;
+	
+	//Clear some FEA variables
+	delete requests.mode;
+	delete requests.path;
+};
+
+
+
+
+	//To do - rewrite this!
+	zenario_conductor.mergeRequests = function(slot, requests) {
+		slot = getSlot(slot);
+	
+		//if (slot.exists) {
+		//	foreach (slot.key as key => value) {
+		//		if (key !== 'state'
+		//		 && !defined(requests[key])) {
+		//			requests[key] = value;
+		//		}
+		//	}
+		//}
+	};
+
+
+
+
 zenario_conductor.link = function(slot, command, requests) {
 	slot = getSlot(slot);
 	
@@ -504,14 +584,12 @@ zenario_conductor.link = function(slot, command, requests) {
 	if (slot.exists && (commandDetails = slot.commands[command])) {
 		
 		//Handle links to other content items
-		if (commandDetails[2]) {
+		if (commandDetails.cID) {
 			return zenario_conductor.linkToOtherContentItem(slot, commandDetails, requests);
 		
 		//Handle links to other slides
 		} else {
-			requests = zenario_conductor.calcRequests(slot, commandDetails, requests);
-			zenario_conductor.cleanRequests(requests);
-			return zenario.linkToItem(zenario.cID, zenario.cType, requests);
+			return zenario.linkToItem(zenario.cID, zenario.cType, zenario_conductor.request(slot, commandDetails, requests));
 		}
 	} else {
 		return false;

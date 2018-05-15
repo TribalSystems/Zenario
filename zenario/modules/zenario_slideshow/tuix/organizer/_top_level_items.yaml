@@ -1,0 +1,9 @@
+zenario__modules:
+    nav:
+        slideshows:
+            css_class: module
+            label: Slideshow library
+            tooltip: >
+                Library of slideshows that may be used on visitor-facing pages
+            link:
+                path: zenario__modules/panels/plugins/refiners/slideshows////

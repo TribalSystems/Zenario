@@ -48,6 +48,7 @@ ze\cache::incJS('zenario/api/panel_type_base_class');
 ze\cache::incJS('zenario/js/panel_type_grid');
 ze\cache::incJS('zenario/js/panel_type_list');
 ze\cache::incJS('zenario/js/panel_type_list_or_grid');
+ze\cache::incJS('zenario/js/panel_type_list_with_caching_disabled');
 ze\cache::incJS('zenario/js/panel_type_list_with_master_switch');
 ze\cache::incJS('zenario/js/panel_type_list_with_totals');
 ze\cache::incJS('zenario/js/panel_type_list_with_totals_on_refiners');
@@ -59,10 +60,6 @@ ze\cache::incJS('zenario/js/panel_type_hierarchy');
 ze\cache::incJS('zenario/js/panel_type_hierarchy_with_lazy_load');
 ze\cache::incJS('zenario/js/panel_type_hierarchy_documents');
 ze\cache::incJS('zenario/js/panel_type_slot_reload_on_change');
-
-
-ze\cache::incJS('zenario/js/panel_type_calendar');
-ze\cache::incJS('zenario/js/panel_type_calendar_user_timers');
 
 ze\cache::incJS('zenario/js/panel_type_google_map');
 ze\cache::incJS('zenario/js/panel_type_google_map_or_list');

@@ -59,7 +59,7 @@ zenario_pro_features.serverTime = function() {
 };
 
 
-zenario.on('', '', 'eventFillOrganizerLowerLeft', function() {
+zenario.on('', '', 'eventSetOrganizerIcons', function() {
 	var times = zenario.moduleNonAsyncAJAX('zenario_pro_features', 'getBottomLeftInfo=1', true).split('~'),
 		now = new Date(),
 		htmlPC = '',
@@ -125,7 +125,7 @@ zenario.on('', '', 'eventFillOrganizerLowerLeft', function() {
 	zenario_pro_features.serverTimeInterval = setInterval(zenario_pro_features.serverTime, 250);
 	
 	
-	return [[htmlPC, 10], [htmlST, 20], [htmlSC, 20.01]];
+	return {'↗': [[htmlPC, 20]], '↙': [[htmlST, 1], [htmlSC, 1.1]]};
 });
 
 

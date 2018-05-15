@@ -1,0 +1,147 @@
+site_settings:
+    setting_group: zenario_user_forms__site_settings_group
+    tabs:
+        zenario_salesforce_api_form_integration:
+            label: Salesforce
+            edit_mode:
+                enabled: Yes
+            fields:
+                zenario_salesforce_api_form_integration__enable:
+                    site_setting:
+                        name: zenario_salesforce_api_form_integration__enable
+                    label: 'Enable Salesforce API integration'
+                    type: checkbox
+                    redraw_onchange: true
+                zenario_salesforce_api_form_integration__client_id:
+                    visible_if: zenarioAB.value('zenario_salesforce_api_form_integration__enable');
+                    site_setting:
+                        name: zenario_salesforce_api_form_integration__client_id
+                    label: 'Client ID'
+                    type: text
+                zenario_salesforce_api_form_integration__client_secret:
+                    hide_with_previous_field: true
+                    site_setting:
+                        name: zenario_salesforce_api_form_integration__client_secret
+                    label: 'Client secret key'
+                    type: text
+                zenario_salesforce_api_form_integration__username:
+                    hide_with_previous_field: true
+                    site_setting:
+                        name: zenario_salesforce_api_form_integration__username
+                    label: 'Username'
+                    type: text
+                    autocomplete: "off"
+                    pre_field_html: |
+                        <input type="text" name="dummy_username" autocomplete="off" tabindex="-1" style="
+                            position: fixed;
+                            top: -1000px;
+                            width: 1px;
+                            height: 1px;
+                        "/>
+                        <input type="password" name="dummy_password" autocomplete="off" tabindex="-1" style="
+                            position: fixed;
+                            top: -1000px;
+                            width: 1px;
+                            height: 1px;
+                        "/>
+                
+                zenario_salesforce_api_form_integration__password:
+                    hide_with_previous_field: true
+                    site_setting:
+                        name: zenario_salesforce_api_form_integration__password
+                    label: 'Password'
+                    type: password
+                    autocomplete: "off"
+                zenario_salesforce_api_form_integration__security_token:
+                    hide_with_previous_field: true
+                    site_setting:
+                        name: zenario_salesforce_api_form_integration__security_token
+                    label: "User's security token"
+                    type: password
+                    autocomplete: "off"
+                zenario_salesforce_api_form_integration__login_uri:
+                    hide_with_previous_field: true
+                    site_setting:
+                        name: zenario_salesforce_api_form_integration__login_uri
+                    label: 'Login URI'
+                    type: text
+                    value: "https://login.salesforce.com"
+                zenario_salesforce_api_form_integration__log_expiry_time:
+                    hide_with_previous_field: true
+                    site_setting:
+                        name: zenario_salesforce_api_form_integration__log_expiry_time
+                    label: 'Days that log entries are stored for:'
+                    type: select
+                    empty_value: -- Forever --
+                    values:
+                        1: 
+                            label: 1 day
+                        3: 
+                            label: 3 days
+                        7: 
+                            label: 7 days
+                        30: 
+                            label: 30 days
+                        100: 
+                            label: 100 days
+        mailchimp:
+            label: MailChimp
+            edit_mode:
+                enabled: Yes
+            fields:
+                zenario_crm_form_integration__enable_mailchimp:
+                    site_setting:
+                        name: zenario_crm_form_integration__enable_mailchimp
+                    label: 'Enable MailChimp API integration'
+                    type: checkbox
+                    redraw_onchange: true
+                zenario_crm_form_integration__mailchimp_api_key:
+                    visible_if: zenarioAB.value('zenario_crm_form_integration__enable_mailchimp');
+                    site_setting:
+                        name: zenario_crm_form_integration__mailchimp_api_key
+                    label: 'API key:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: Enter your API key.
+                    note_below: |
+                        <a href="https://kb.mailchimp.com/integrations/api-integrations/about-api-keys" target="_blank">Where to find or generate an API key</a>
+                zenario_crm_form_integration__mailchimp_data_center:
+                    hide_with_previous_field: true
+                    site_setting:
+                        name: zenario_crm_form_integration__mailchimp_data_center
+                    label: 'Data center:'
+                    type: text
+                    placeholder: e.g. us6
+                    style: 'width:100px;'
+                    validation:
+                        required_if_not_hidden: Enter the data center.
+                    note_below: |
+                        This is usually the last part of your API key.
+        360lifecycle:
+            label: 360Lifecycle
+            edit_mode:
+                enabled: Yes
+            notices:
+                soap_not_enabled:
+                    show: false
+                    type: warning
+                    message: You must enable the SOAP PHP extension in order to send data to this CRM.
+            fields:
+                zenario_crm_form_integration__enable_360lifecycle:
+                    site_setting:
+                        name: zenario_crm_form_integration__enable_360lifecycle
+                    label: 'Enable 360Lifecycle API integration'
+                    type: checkbox
+                    format_onchange: true 
+                zenario_crm_form_integration__360lifecycle_lead_handler_api_key:
+                    visible_if: zenarioAB.value('zenario_crm_form_integration__enable_360lifecycle');
+                    site_setting:
+                        name: zenario_crm_form_integration__360lifecycle_lead_handler_api_key
+                    label: 'Lead Handler API Key:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: Enter your API key.
+                
+                
+                
+                        

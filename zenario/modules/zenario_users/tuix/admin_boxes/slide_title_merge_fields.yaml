@@ -1,0 +1,9 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_slide:
+    lovs:
+        title_merge_fields:
+            '[[zenario_users:name]]':
+                parent: misc
+                data-class: user_icon
+                label: 'User first and last name: [[zenario_users:name]]'

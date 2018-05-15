@@ -79,6 +79,8 @@ methods.showPanel = function($header, $panel, $footer) {
 		}
 	}
 	
+	thus.editFieldName = false;
+	thus.doneEditingName = false;
 	thus.pagesReordered = false;
 	thus.deletedPages = [];
 	thus.deletedFields = [];
@@ -172,13 +174,21 @@ methods.loadPageDetailsPanel = function(pageId, stopEffect) {
 	});
 };
 
-methods.loadFieldDetailsPanel = function(fieldId, stopEffect, isPage) {
+methods.loadFieldDetailsPanel = function(fieldId, stopEffect, isPage, justAdded) {	
+	thus.editFieldName = false;
+	thus.doneEditingName = false;
+	
 	var field;
 	if (isPage) {
 		field = thus.tuix.items[fieldId];
 		field.type = 'page_break';
 	} else {
 		field = thus.tuix.fields[fieldId];
+	}
+	
+	//Remove "just_added" status if editing after adding
+	if (!justAdded && field.just_added) {
+		delete(field.just_added);
 	}
 	
 	var typePhrase = thus.getFieldReadableType(field.type);
@@ -245,10 +255,14 @@ methods.loadFieldDetailsPanel = function(fieldId, stopEffect, isPage) {
 	$('#zenario_field_details_header_content .edit_field_name_button').on('click', function() {
 		$('#zenario_field_details_header_content .view_mode').hide();
 		$('#zenario_field_details_header_content .edit_mode').show();
+		thus.editFieldName = true;
 	});
 	$('#zenario_field_details_header_content .done_field_name_button').on('click', function() {
 		$('#zenario_field_details_header_content .edit_mode').hide();
 		$('#zenario_field_details_header_content .view_mode').show();
+		
+		thus.editFieldName = false;
+		thus.doneEditingName = true;
 		
 		var name = $('#zenario_field_details_header_content .edit_mode input[name="name"]').val();
 		field.name = name;
@@ -340,8 +354,11 @@ methods.loadFieldDetailsPage = function(page, fieldId, errors) {
 	if (page == 'details') {
 		$('#field__field_label').on('keyup', function() {
 			$('#organizer_form_field_' + fieldId + ' .label').text($(this).val());
-			if (item.just_added) {
-				$('#field__name').val($(this).val().replace(/:/g, ''));
+			
+			if (item.just_added && !thus.editFieldName && !thus.doneEditingName) {
+				var fieldName = $(this).val().replace(/:/g, '');
+				$('#field__name').val(fieldName);
+				$('#field_display__name').text(fieldName);
 			}
 		});
 		
@@ -522,12 +539,10 @@ methods.loadFieldDetailsPage = function(page, fieldId, errors) {
 			thus.changeMadeToPanel();
 		});
 		
-	} else if (page == 'crm' || page == 'salesforce_api') {
+	} else if (page == 'crm') {
 		var prefix = '';
 		if (page == 'crm') {
 			prefix = 'crm';
-		} else if (page == 'salesforce_api') {
-			prefix = 'salesforce';
 		}
 		var crm_value_name = prefix + '_value';
 		
@@ -555,7 +570,7 @@ methods.loadFieldDetailsPage = function(page, fieldId, errors) {
 			values: []
 		};
 		
-		if (item.type == 'checkbox' || item.type == 'group') {
+		if (item.type == 'checkbox' || item.type == 'group' || item.type == 'consent') {
 			var values = {
 				'unchecked': {
 					label: 0, 
@@ -731,7 +746,7 @@ methods.formatFieldDetails = function(fields, item, mode, page) {
 						fields.visible_condition_checkboxes_field_value.values = conditionField.lov;
 						fields.visible_condition_field_value._hidden = true;
 						fields.visible_condition_checkboxes_operator._hidden = false;
-					} else if (conditionField.type == 'checkbox' || conditionField.type == 'group') {
+					} else if (conditionField.type == 'checkbox' || conditionField.type == 'group' || conditionField.type == 'consent') {
 						//Nothing to do
 					} else {
 						fields.visible_condition_field_value.empty_value = '-- Any value --';
@@ -744,6 +759,11 @@ methods.formatFieldDetails = function(fields, item, mode, page) {
 							fields.visible_condition_field_value._hidden = true;
 						}
 					}
+					
+					
+					if (conditionField.type != 'checkboxes' && item.visible_condition_field_type != 'visible_if_one_of') {
+						fields.visible_condition_checkboxes_field_value._hidden = true;
+					}
 				}
 			}
 			if (item.readonly_or_mandatory == 'conditional_mandatory' && item.mandatory_condition_field_id) {
@@ -753,7 +773,7 @@ methods.formatFieldDetails = function(fields, item, mode, page) {
 					fields.mandatory_condition_field_value._hidden = true;
 					fields.mandatory_condition_checkboxes_operator._hidden = false;
 				} else {
-					if (conditionField && conditionField.type != 'checkbox' && conditionField.type != 'group') {
+					if (conditionField && conditionField.type != 'checkbox' && conditionField.type != 'group' && conditionField.type != 'consent') {
 						fields.mandatory_condition_field_value.values = conditionField.lov;
 						fields.mandatory_condition_field_value.empty_value = '-- Any value --';
 					}
@@ -920,7 +940,7 @@ methods.canAddFieldToList = function(values, field) {
 	if (values == 'centralised_list_filter_fields') {
 		return (field.id != thus.selectedFieldId) && (field.type == 'centralised_select' || (field.type == 'text' && field.autocomplete && field.values_source));
 	} else if (values == 'conditional_fields') {
-		return (field.id != thus.selectedFieldId) && (['checkbox', 'group', 'radios', 'select', 'centralised_radios', 'centralised_select', 'checkboxes'].indexOf(field.type) != -1);
+		return (field.id != thus.selectedFieldId) && (['checkbox', 'group', 'consent', 'radios', 'select', 'centralised_radios', 'centralised_select', 'checkboxes'].indexOf(field.type) != -1);
 	} else if (values == 'mirror_fields') {
 		return (field.id != thus.selectedFieldId) && (['text', 'calculated', 'select', 'centralised_select'].indexOf(field.type) != -1);
 	}
@@ -1336,8 +1356,10 @@ methods.loadFieldsList = function(pageId) {
 				var field = thus.tuix.fields[fieldId];
 				var transferFields = {};
 				
+				//Data can be transfered to fields of the same type
+				//Groups can have their data moved into checkbox and consent fields also
 				foreach (thus.tuix.fields as var tFieldId => var tField) {
-					if (tField.type == field.type && tFieldId != fieldId) {
+					if ((tField.type == field.type || (field.type == 'group' && (tField.type == 'checkbox' || tField.type == 'consent'))) && tFieldId != fieldId) {
 						transferFields[tFieldId] = tField.name;
 					}
 				}
@@ -1467,7 +1489,8 @@ methods.loadFieldsList = function(pageId) {
 	});
 };
 
-methods.updateFieldOrds = function() {	$('#organizer_form_fields div.form_field').each(function(i) {
+methods.updateFieldOrds = function() {	
+	$('#organizer_form_fields div.form_field').each(function(i) {
 		var fieldId = $(this).data('id');
 		if (fieldId) {
 			thus.tuix.fields[fieldId].ord = (i + 1);
@@ -1594,6 +1617,11 @@ methods.addNewField = function(type, ord, datasetFieldId, datasetPageId, dataset
 			db_column: datasetField.db_column
 		};
 		
+		if (datasetField.db_column == 'terms_and_conditions_accepted') {
+			newField.field_label = 'By submitting your details you are agreeing that we can store your data for legitimate business purposes and contact you to inform you about our products and services.';
+			newField.note_to_user = 'Full details can be found in our <a href="#">privacy policy.</a>';
+		}
+		
 		if (datasetField.dataset_repeat_grouping) {
 			newField.dataset_repeat_grouping = datasetField.dataset_repeat_grouping;
 		}
@@ -1680,13 +1708,13 @@ methods.addNewField = function(type, ord, datasetFieldId, datasetPageId, dataset
 			}
 			thus.loadFieldsList(thus.currentPageId);
 			if (!inBackground) {
-				thus.clickField(newFieldId);
+				thus.clickField(newFieldId, newField.just_added);
 			}
 		}
 	}
 };
 
-methods.clickField = function(fieldId) {
+methods.clickField = function(fieldId, justAdded) {
 	if (thus.selectedFieldId != fieldId 
 		&& thus.tuix.fields[fieldId]
 		&& thus.tuix.fields[fieldId].type != 'repeat_end'
@@ -1697,7 +1725,7 @@ methods.clickField = function(fieldId) {
 			thus.selectedFieldId = fieldId;
 			thus.selectedPageId = false;
 			thus.selectedDetailsPage = false;
-			thus.loadFieldDetailsPanel(fieldId);
+			thus.loadFieldDetailsPanel(fieldId, undefined, undefined, justAdded);
 		}
 	}
 };
@@ -1832,7 +1860,7 @@ methods.validateFieldDetails = function(fields, item, mode, page, errors) {
 		}
 		
 		if (page == 'details') {
-			if (item.type == 'checkbox' || item.type == 'group') {
+			if (item.type == 'checkbox' || item.type == 'group' || item.type == 'consent') {
 				if (!item.field_label) {
 					errors.field_label = 'Please enter a label for this checkbox.';
 				}
@@ -1871,7 +1899,7 @@ methods.validateFieldDetails = function(fields, item, mode, page, errors) {
 					errors.visible_condition_field_id = 'Please select a visible on conditional form field.';
 				} else if (!item.visible_condition_field_value) {
 					conditionField = thus.getField(item.visible_condition_field_id);
-					if (conditionField && ['checkbox', 'group'].indexOf(conditionField.type) != -1) {
+					if (conditionField && ['checkbox', 'group', 'consent'].indexOf(conditionField.type) != -1) {
 						errors.visible_condition_field_value = 'Please select a visible on condition form field value.';
 					}
 				}
@@ -1893,7 +1921,7 @@ methods.validateFieldDetails = function(fields, item, mode, page, errors) {
 						errors.mandatory_condition_field_id = 'Please select a mandatory on condition form field.';
 					} else if (!item.mandatory_condition_field_value) {
 						conditionField = thus.getField(item.mandatory_condition_field_id);
-						if (conditionField && ['checkbox', 'group'].indexOf(conditionField.type) != -1) {
+						if (conditionField && ['checkbox', 'group', 'consent'].indexOf(conditionField.type) != -1) {
 							errors.mandatory_condition_field_value = 'Please select a mandatory on condition form field value.';
 						}
 					}
@@ -2007,10 +2035,6 @@ methods.validateFieldDetails = function(fields, item, mode, page, errors) {
 			if (item.send_to_crm && !item.field_crm_name) {
 				errors.field_crm_name = 'Please enter a CRM field name.';
 			}
-		} else if (page == 'salesforce_api') {
-			if (item.salesforce_send_to_crm && !item.salesforce_field_crm_name) {
-				errors.salesforce_field_crm_name = 'Please enter a CRM field name.';
-			}
 		}
 	}
 };
@@ -2073,6 +2097,8 @@ methods.getFieldReadableType = function(type) {
 		//Types unique to dataset fields
 		case 'group':
 			return 'Group';
+		case 'consent':
+			return 'Consent';
 		case 'file_picker':
 			return 'File picker';
 	}
@@ -2214,7 +2240,8 @@ methods.getOrderedDatasetPagesAndFields = function() {
 	return sortedPages;
 };
 
-methods.changeMadeToPanel = function() {	if (!thus.changeDetected) {
+methods.changeMadeToPanel = function() {	
+	if (!thus.changeDetected) {
 		thus.changeDetected = true;
 		window.onbeforeunload = function() {
 			return 'You are currently editing this form. If you leave now you will lose any unsaved changes.';
@@ -2225,7 +2252,27 @@ methods.changeMadeToPanel = function() {	if (!thus.changeDetected) {
 	}
 };
 
-methods.saveChanges = function() {	var actionRequests = {
+methods.saveChanges = function() {
+	//Show warning
+	if (thus.tuix.not_used_or_on_public_page) {
+		var hasNonEmailDatasetFields = false;
+		var hasEmailDatasetField = false;
+		foreach (thus.tuix.fields as var fieldId => var field) {
+			if (field.dataset_field_id) {
+				if (field.db_column == 'email') {
+					hasEmailDatasetField = true;
+				} else {
+					hasNonEmailDatasetFields = true;
+				}
+			}
+		}
+		if (hasNonEmailDatasetFields && !hasEmailDatasetField && !confirm("Warning: this form contains fields that are linked to the Users Dataset, but doesn\'t contain the Email field from the Users Dataset.\n\nIf this form is used on a public web page by anonymous visitors, form responses will not be stored in the Users & Contacts database table.\n\nTo overcome this, please add the Email field linked to the Users Dataset.\n\nSave anyway?")) {
+			return;
+		}
+	}
+	
+	
+	var actionRequests = {
 		mode: 'save',
 		pages: JSON.stringify(thus.tuix.items),
 		fields: JSON.stringify(thus.tuix.fields),

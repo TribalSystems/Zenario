@@ -68,15 +68,15 @@ class zenario_common_features__admin_boxes__export_content_items extends ze\modu
 				v.last_author_id,
 				(
 					SELECT COUNT(DISTINCT ii.image_id)
-					FROM ' . DB_NAME_PREFIX . 'inline_images AS ii
+					FROM ' . DB_PREFIX . 'inline_images AS ii
 					WHERE ii.foreign_key_to = "content"
 					  AND ii.foreign_key_id = v.id
 					  AND ii.foreign_key_char = v.type
 					  AND ii.foreign_key_version = v.version
 				) AS inline_files
 				
-			FROM ' . DB_NAME_PREFIX . 'content_items c
-			INNER JOIN ' . DB_NAME_PREFIX . 'content_item_versions AS v
+			FROM ' . DB_PREFIX . 'content_items c
+			INNER JOIN ' . DB_PREFIX . 'content_item_versions AS v
 				ON c.id = v.id
 				AND c.type = v.type
 				AND c.admin_version = v.version

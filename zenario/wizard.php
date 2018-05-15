@@ -112,10 +112,10 @@ echo '
 
 //Add JavaScript libraries for any modules that are running for this path
 if ($requestedPath = ze::ifNull($_REQUEST['name'] ?? false, ($_REQUEST['path'] ?? false))) {
-	$modules = array_unique(ze\row::getArray('tuix_file_contents', 'module_class_name', ['type' => 'wizards', 'path' => $requestedPath]));
+	$modules = array_unique(ze\row::getValues('tuix_file_contents', 'module_class_name', ['type' => 'wizards', 'path' => $requestedPath]));
 	
 	if (!empty($modules)) {
-		$moduleIds = ze\row::getArray('modules', 'id', ['status' => ['module_running', 'module_is_abstract'], 'class_name' => $modules]);
+		$moduleIds = ze\row::getValues('modules', 'id', ['status' => ['module_running', 'module_is_abstract'], 'class_name' => $modules]);
 		
 		if (!empty($moduleIds)) {
 			echo '

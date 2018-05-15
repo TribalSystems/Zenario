@@ -42,7 +42,7 @@ class zenario_newsletter__admin_boxes__live_send extends zenario_newsletter {
 				
 			$sql = '
 				SELECT COUNT(*) 
-				FROM '.DB_NAME_PREFIX.'admins
+				FROM '.DB_PREFIX.'admins
 				WHERE status = \'active\'';
 			$result = ze\sql::select($sql);
 			$row = ze\sql::fetchRow($result);
@@ -117,14 +117,14 @@ class zenario_newsletter__admin_boxes__live_send extends zenario_newsletter {
 			} else {
 				//Update it to the "_IN_PROGRESS" state
 				$smartGroupDescriptions = [];
-				foreach ( ze\row::getArray(ZENARIO_NEWSLETTER_PREFIX. 'newsletter_smart_group_link', 'smart_group_id', ['newsletter_id' => $ids]) as $smartGroupId )  {
+				foreach ( ze\row::getValues(ZENARIO_NEWSLETTER_PREFIX. 'newsletter_smart_group_link', 'smart_group_id', ['newsletter_id' => $ids]) as $smartGroupId )  {
 					$smartGroupDescriptions[] = ze\contentAdm::getSmartGroupDescription($smartGroupId);
 				}
 				$smartGroupDescriptions = (count($smartGroupDescriptions)>1?'(':'') . ze\admin::phrase(implode(") OR (", $smartGroupDescriptions )) . (count($smartGroupDescriptions)>1?')':'');
 				
 				
 				$sql = "
-					UPDATE ". DB_NAME_PREFIX. ZENARIO_NEWSLETTER_PREFIX. "newsletters set
+					UPDATE ". DB_PREFIX. ZENARIO_NEWSLETTER_PREFIX. "newsletters set
 						status = '_IN_PROGRESS',
 						sent_by_id = ". (int) $_SESSION['admin_userid']. ",
 						smart_group_descriptions_when_sent_out = " . ($smartGroupDescriptions?("'" . ze\escape::sql($smartGroupDescriptions) . "'"): 'NULL' ) . ",

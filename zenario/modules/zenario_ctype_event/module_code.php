@@ -382,7 +382,7 @@ class zenario_ctype_event extends ze\moduleBaseClass {
 
 	public static function eventDraftCreated ($cIDTo, $cIDFrom, $cType, $cVersionTo, $cVersionFrom) {
 		if ($cType == 'event' ) {
-			$sql = "INSERT INTO " . DB_NAME_PREFIX . ZENARIO_CTYPE_EVENT_PREFIX . "content_event
+			$sql = "INSERT INTO " . DB_PREFIX . ZENARIO_CTYPE_EVENT_PREFIX . "content_event
 					SELECT " . (int) $cIDTo . " AS id,
 						" . (int) $cVersionTo . " AS version,
 						start_date,
@@ -416,7 +416,7 @@ class zenario_ctype_event extends ze\moduleBaseClass {
 						location,
 						url,
 						stop_dates
-					FROM " . DB_NAME_PREFIX . ZENARIO_CTYPE_EVENT_PREFIX . "content_event
+					FROM " . DB_PREFIX . ZENARIO_CTYPE_EVENT_PREFIX . "content_event
 					WHERE id = " . (int) $cIDFrom . "
 						AND version = " . (int) $cVersionFrom;
 			$result = ze\sql::update($sql);
@@ -425,7 +425,7 @@ class zenario_ctype_event extends ze\moduleBaseClass {
 	
 	public static function eventContentDeleted($cID,$cType,$cVersion) {
 		$sql = "DELETE
-				FROM " . DB_NAME_PREFIX . ZENARIO_CTYPE_EVENT_PREFIX . "content_event
+				FROM " . DB_PREFIX . ZENARIO_CTYPE_EVENT_PREFIX . "content_event
 				WHERE id = " . (int) $cID . "
 					AND version = " . (int) $cVersion;
 				

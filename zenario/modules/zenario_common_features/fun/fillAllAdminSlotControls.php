@@ -48,6 +48,7 @@ if (ze::$cVersion == ze::$adminVersion) {
 
 $pageMode = [];
 $isNest = !empty(ze::$slotContents[$slotName]['is_nest']);
+$isSlideshow = !empty(ze::$slotContents[$slotName]['is_slideshow']);
 
 
 //Check to see if there are entries on the item and layout layer
@@ -82,6 +83,8 @@ switch ($level) {
 		}
 		
 		unset($controls['actions']['insert_reusable_on_layout_layer']);
+		unset($controls['actions']['insert_nest_on_layout_layer']);
+		unset($controls['actions']['insert_slideshow_on_layout_layer']);
 		unset($controls['actions']['remove_from_layout_layer']);
 		
 		break;
@@ -116,12 +119,14 @@ if (!$moduleId) {
 		//Empty slots
 		unset($controls['info']['opaque']);
 		unset($controls['actions']['replace_reusable_on_item_layer']);
+		unset($controls['actions']['replace_nest_on_item_layer']);
+		unset($controls['actions']['replace_slideshow_on_item_layer']);
 	
 		//On the Layout Layer, add an option to insert a Wireframe version of each Plugin
 		//that is flagged as uses wireframe.
 		if (ze\priv::check('_PRIV_MANAGE_TEMPLATE_SLOT')) {
 			$i = 0;
-			foreach (ze\row::getArray(
+			foreach (ze\row::getAssocs(
 				'modules',
 				['id', 'display_name'],
 				['status' => ['module_running', 'module_is_abstract'], 'is_pluggable' => 1, 'can_be_version_controlled' => 1],
@@ -139,7 +144,11 @@ if (!$moduleId) {
 		//Opaque slots
 		unset($controls['info']['empty']);
 		unset($controls['actions']['insert_reusable_on_item_layer']);
+		unset($controls['actions']['insert_nest_on_item_layer']);
+		unset($controls['actions']['insert_slideshow_on_item_layer']);
 		unset($controls['actions']['insert_reusable_on_layout_layer']);
+		unset($controls['actions']['insert_nest_on_layout_layer']);
+		unset($controls['actions']['insert_slideshow_on_layout_layer']);
 	}
 	
 	unset($controls['info']['vc']);
@@ -180,7 +189,7 @@ if (!$moduleId) {
 		unset($controls['info']['slot_css_class']);
 	}
 	
-	ze\pluginAdm::fillSlotControlPluginInfo($moduleId, $instanceId, $isVersionControlled, $cID, $cType, $level, $isNest, $controls['info'], $controls['actions']);
+	ze\pluginAdm::fillSlotControlPluginInfo($moduleId, $instanceId, $isVersionControlled, $cID, $cType, $level, $isNest, $isSlideshow, $controls['info'], $controls['actions']);
 
 	
 	
@@ -240,9 +249,13 @@ if (!$moduleId) {
 	}
 	if (!$couldChange || $level == 1 || $isVersionControlled) {
 		unset($controls['actions']['insert_reusable_on_item_layer']);
+		unset($controls['actions']['insert_nest_on_item_layer']);
+		unset($controls['actions']['insert_slideshow_on_item_layer']);
 	}
 	if (!$couldChange/* || $isVersionControlled*/) {
 		unset($controls['actions']['replace_reusable_on_item_layer']);
+		unset($controls['actions']['replace_nest_on_item_layer']);
+		unset($controls['actions']['replace_slideshow_on_item_layer']);
 	}
 	if (!$couldChange || ($level == 1 && !$overriddenPlugin) || $isVersionControlled || ze::$locked || !ze\priv::check('_PRIV_MANAGE_ITEM_SLOT', $cID, $cType)) {
 		unset($controls['actions']['hide_plugin']);
@@ -280,23 +293,48 @@ if (!$moduleId) {
 	
 	//Don't allow wireframe plugins to be replaced
 	if ($isVersionControlled) {
-		/*unset($controls['actions']['replace_reusable_on_item_layer']);*/
+		//unset($controls['actions']['replace_reusable_on_item_layer']);
+		//unset($controls['actions']['replace_nest_on_item_layer']);
+		//unset($controls['actions']['replace_slideshow_on_item_layer']);
 		unset($controls['actions']['insert_reusable_on_item_layer']);
+		unset($controls['actions']['insert_nest_on_item_layer']);
+		unset($controls['actions']['insert_slideshow_on_item_layer']);
 		unset($controls['actions']['insert_reusable_on_layout_layer']);
+		unset($controls['actions']['insert_nest_on_layout_layer']);
+		unset($controls['actions']['insert_slideshow_on_layout_layer']);
 	}
 }
 
 if (!$couldEdit) {
 	unset($controls['actions']['replace_reusable_on_item_layer']);
+	unset($controls['actions']['replace_nest_on_item_layer']);
+	unset($controls['actions']['replace_slideshow_on_item_layer']);
 	unset($controls['actions']['insert_reusable_on_item_layer']);
+	unset($controls['actions']['insert_nest_on_item_layer']);
+	unset($controls['actions']['insert_slideshow_on_item_layer']);
 }
 
 
 //If there is a hidden plugin at the layout layer, display info and some actions for that too
 if ($overriddenPlugin) {
-	$overriddenPluginIsNest = ze\row::exists('nested_plugins', ['instance_id' => $overriddenPlugin['instance_id']]);
+	$overriddenPluginIsNest = false;
+	$overriddenPluginIsSlideshow = false;
+	
+	if ($overriddenPlugin['instance_id']) {
+		switch (ze\module::className(ze\row::get('plugin_instances', 'module_id', $overriddenPlugin['instance_id']))) {
+			case 'zenario_plugin_nest':
+				$overriddenPluginIsNest = true;
+				$overriddenPluginIsSlideshow = false;
+				break;
+			case 'zenario_slideshow':
+				$overriddenPluginIsNest = true;
+				$overriddenPluginIsSlideshow = true;
+				break;
+		}
+	}
+	
 	$overriddenIsVersionControlled = !$overriddenPlugin['instance_id'];
-	ze\pluginAdm::fillSlotControlPluginInfo($overriddenPlugin['module_id'], $overriddenPlugin['instance_id'], $overriddenIsVersionControlled, $cID, $cType, 2, $overriddenPluginIsNest, $controls['overridden_info'], $controls['overridden_actions']);
+	ze\pluginAdm::fillSlotControlPluginInfo($overriddenPlugin['module_id'], $overriddenPlugin['instance_id'], $overriddenIsVersionControlled, $cID, $cType, 2, $overriddenPluginIsNest, $overriddenPluginIsSlideshow, $controls['overridden_info'], $controls['overridden_actions']);
 	
 	if (!$couldChange) {
 		unset($controls['overridden_actions']['show_plugin']);
@@ -310,22 +348,14 @@ if ($overriddenPlugin) {
 	//Don't allow wireframe plugins to be replaced
 	if ($overriddenIsVersionControlled) {
 		unset($controls['actions']['insert_reusable_on_layout_layer']);
+		unset($controls['actions']['insert_nest_on_layout_layer']);
+		unset($controls['actions']['insert_slideshow_on_layout_layer']);
 	}
 	
 	
 } else {
 	unset($controls['overridden_info']);
 	unset($controls['overridden_actions']);
-}
-
-if (isset($controls['actions']['replace_reusable_on_item_layer'])) {
-	if ($level == 2) {
-		$replace = 'true';
-	} else {
-		$replace = 'false';
-	}
-	$controls['actions']['replace_reusable_on_item_layer']['onclick'] =
-		str_replace('[[overides_layout]]', $replace, $controls['actions']['replace_reusable_on_item_layer']['onclick']);
 }
 
 

@@ -48,7 +48,7 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
 			unset($panel['item_buttons']['zenario_trans__view']);
 			unset($panel['item_buttons']['citems_translations']);
 		} else {
-			$syncAssistLangs = ze\row::getArray('languages', 'id', ['sync_assist' => 1, 'id' => ['!' => ze::$defaultLang]]);
+			$syncAssistLangs = ze\row::getValues('languages', 'id', ['sync_assist' => 1, 'id' => ['!' => ze::$defaultLang]]);
 			if ($this->numSyncAssistLangs = count($syncAssistLangs)) {
 				define('ZENARIO_SYNC_ASSIST_LANGS', ze\escape::in($syncAssistLangs, 'sql'));
 			} else {
@@ -63,7 +63,7 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
 		$path = false;
 		$separator = ' -> ';
 		$sectionSeparator = ': ';
-		$hierarchalSearch = false;
+		$isFlatView = !isset($_REQUEST['_openToItemInHierarchy']) && !isset($_REQUEST['_openItemsInHierarchy']);
 		$numLanguages = ze\lang::count();
 
 		$menuItem = $menuParent = false;
@@ -128,16 +128,20 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
 
 
 		$panel['item']['tooltip_when_link_is_active'] = ze\admin::phrase('View child Menu Nodes of &quot;[[name]]&quot;.');
+		
+		if ($refinerName == 'menu_nodes_using_image') {
+			$mrg = ze\row::get('files', ['filename'], $refinerId);
+			$panel['title'] = ze\admin::phrase('Menu nodes using the image "[[filename]]"', $mrg);
+			$panel['no_items_message'] = ze\admin::phrase('There are no menu nodes using the image "[[filename]]"', $mrg);
 
-		if ($panel['key']['parentId']) {
+		} elseif ($panel['key']['parentId']) {
 			$mrg['parent'] = ze\menu::name($panel['key']['parentId'], $panel['key']['languageId']);
 			$mrg['n'] = ze\menuAdm::level($panel['key']['parentId']) + 1;
 	
 			$panel['title'] = ze\admin::phrase('"[[section]]" Section in [[lang]]: Child Menu Nodes of "[[parent]]" (Level [[n]])', $mrg);
 			$panel['no_items_message'] = ze\admin::phrase('The "[[parent]]" Menu Node has no children.', $mrg);
-			$hierarchalSearch = isset($_GET['_search']);
 	
-			if ($hierarchalSearch) {
+			if ($isFlatView) {
 				$path = ze\menuAdm::path($panel['key']['parentId'], $panel['key']['languageId'], $separator);
 			}
 
@@ -145,7 +149,6 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
 			$panel['title'] = ze\admin::phrase('Menu Nodes in the "[[section]]" Section in [[lang]]', $mrg);
 			$panel['no_items_message'] = ze\admin::phrase('There are no Menu Nodes in the "[[section]]" section.', $mrg);
 			$panel['no_items_in_search_message'] = ze\admin::phrase('No Menu Nodes in the "[[section]]" section match your search.', $mrg);
-			$hierarchalSearch = isset($_GET['_search']);
 
 		} else {
 			unset($panel['reorder']);
@@ -153,7 +156,7 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
 		}
 
 
-		if ($hierarchalSearch) {
+		if ($isFlatView) {
 			$panel['force_view_mode'] = 'list';
 	
 			$panel['columns']['ordinal']['align_right'] = false;
@@ -192,37 +195,29 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
 		foreach ($panel['items'] as &$item) {
 	
 			$id = $item['mid'];
+			
+			$internalTarget = $item['target_loc'] == 'int' && $item['equiv_id'];
 	        
 	        if (isset($defaultMenuNodes[$id])) {
 	            $item['is_content_type_default_menu_node'] = true;
 	        }
 	        
-			if ($item['target_loc'] == 'int' && $item['internal_target']) {
+	        $item['css_class'] = ze\menuAdm::cssClass($item);
+	        
+			if ($internalTarget) {
 				if ($item['redundancy'] == 'unique') {
 					$item['tooltip'] = ze\admin::phrase('This is a unique menu node. No other menu node links to this content item.');
-					$item['css_class'] = 'zenario_menunode_internal_unique';
 				} elseif ($item['redundancy'] == 'primary') {
 					$item['tooltip'] = ze\admin::phrase("This is a primary menu node. There are other secondary menu nodes linking to the same content item.");
-					$item['css_class'] = 'zenario_menunode_internal';
 				} else {
 					$item['tooltip'] = ze\admin::phrase("This is a secondary menu node. There's a primary menu node that also links to this content item.");
-					$item['css_class'] = 'zenario_menunode_internal_secondary';
 				}
 	
 			} elseif ($item['target_loc'] == 'ext' && $item['target']) {
 				$item['tooltip'] = ze\admin::phrase('This menu node links to an external URL.');
-				$item['css_class'] = 'zenario_menunode_external';
 	
 			} else {
-				$item['css_class'] = 'zenario_menunode_unlinked';
 				$item['tooltip'] = ze\admin::phrase('This menu node has no link. Unlinked menu nodes are hidden from visitors unless they have a child menu node that is visible.');
-			}
-	
-			if (empty($item['parent_id'])) {
-				$item['css_class'] .= ' zenario_menunode_toplevel';
-			}
-			if (!empty($item['children'])) {
-				$item['css_class'] .= ' zenario_menunode_with_children';
 			}
 	
 			if ($item['children']) {
@@ -256,7 +251,7 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
 					$item['cell_css_classes'] = [];
 					$item['cell_css_classes']['target'] = 'ghost';
 			
-					if ($item['internal_target'] && !$item['target_content_id']) {
+					if ($internalTarget && !$item['target_content_id']) {
 						$item['traits']['can_duplicate'] = true;
 					}
 				}
@@ -267,7 +262,7 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
 				$item['row_class'] = 'organizer_untranslated_menu_node';
 				$item['tooltip'] = ze\admin::phrase('This menu node has not been translated into [[language_name]].', $mrg);
 		
-				if ($hierarchalSearch) {
+				if ($isFlatView) {
 					if ($path) {
 						$item['path'] = $path. $separator. $item['name'];
 					} else {
@@ -277,7 +272,7 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
 				}
 	
 			} else {
-				if ($hierarchalSearch) {
+				if ($isFlatView) {
 					if ($path) {
 						$item['path'] = $path. $separator. $item['name'];
 		
@@ -288,7 +283,7 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
 		
 				//Missing Menu Nodes to Content Items can be created by duplicating the Content Item
 				if (!$item['target_lang'] || $item['target_lang'] != ($item['text_lang'] ?: $panel['key']['languageId'])) {
-					if ($item['internal_target']) {
+					if ($internalTarget) {
 						$item['traits']['can_duplicate'] = true;
 					}
 				}
@@ -298,7 +293,7 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
 				}
 			}
 	
-			if (!empty($item['internal_target'])) {
+			if (!empty($internalTarget)) {
 				$item['frontend_link'] = ze\link::toItem($item['target_content_id'], $item['target_content_type'], false, 'zenario_sk_return=navigation_path');
 				$item['traits']['content'] = true;
 	
@@ -306,7 +301,7 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
 				$item['frontend_link'] = $item['target'];
 			}
 	
-			if ($mode == 'get_item_links' || $hierarchalSearch) {
+			if ($mode == 'get_item_links' || $isFlatView) {
 				$item['navigation_path'] = ze\menuAdm::organizerLink($id, $panel['key']['languageId']);
 			}
 	
@@ -330,11 +325,12 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
 	
 			unset($item['target_loc']);
 			unset($item['sync_assist']);
-			unset($item['internal_target']);
+			unset($item['equiv_id']);
+			unset($item['ext_url']);
 			unset($item['target_content_id']);
 			unset($item['target_content_type']);
 	
-			if ($hierarchalSearch) {
+			if ($isFlatView) {
 				$item['ordinal'] = ze\menuAdm::path($id, $panel['key']['languageId'], $separator, true);
 			}
 			
@@ -345,7 +341,7 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
 			}
 		}
 
-		if (!$hierarchalSearch) {
+		if (!$isFlatView) {
 			$panel['columns']['path']['hidden'] = true;
 		}
 	}

@@ -30,7 +30,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 //Look in the database for an up to date cache
 $sql = "
 	SELECT store
-	FROM ". DB_NAME_PREFIX. "plugin_instance_store
+	FROM ". DB_PREFIX. "plugin_instance_store
 	WHERE last_updated > NOW() - INTERVAL ". (int) $expiryTimeInSeconds. " SECOND
 	  AND method_name = '". \ze\escape::sql($methodName). "'
 	  AND request = '". \ze\escape::sql($request). "'
@@ -46,7 +46,7 @@ if ($row = \ze\sql::fetchAssoc($result)) {
 $cache = $this->$methodName($request);
 
 $sql = "
-	REPLACE INTO ". DB_NAME_PREFIX. "plugin_instance_store SET
+	REPLACE INTO ". DB_PREFIX. "plugin_instance_store SET
 		store = '". \ze\escape::sql($cache). "',
 		is_cache = 1,
 		last_updated = NOW(),

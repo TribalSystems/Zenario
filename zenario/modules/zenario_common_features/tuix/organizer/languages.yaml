@@ -8,8 +8,8 @@ zenario__languages:
             disable_grid_view: No
             db_items:
                 table: |
-                    [[DB_NAME_PREFIX]]visitor_phrases AS vp
-                                        LEFT JOIN [[DB_NAME_PREFIX]]languages AS l ON l.id = vp.language_id
+                    [[DB_PREFIX]]visitor_phrases AS vp
+                                        LEFT JOIN [[DB_PREFIX]]languages AS l ON l.id = vp.language_id
                 id_column: vp.language_id
                 client_side: true
                 custom_where_statement_if_at_least_one_language_enabled: |
@@ -41,7 +41,7 @@ zenario__languages:
                     title: English Name
                     searchable: true
                     table_join: |
-                        LEFT JOIN [[DB_NAME_PREFIX]]visitor_phrases AS en
+                        LEFT JOIN [[DB_PREFIX]]visitor_phrases AS en
                            ON en.module_class_name = 'zenario_common_features'
                           AND en.language_id = vp.language_id
                           AND en.code = '__LANGUAGE_ENGLISH_NAME__'
@@ -51,7 +51,7 @@ zenario__languages:
                     title: Local Name
                     searchable: true
                     table_join: |
-                        LEFT JOIN [[DB_NAME_PREFIX]]visitor_phrases AS lo
+                        LEFT JOIN [[DB_PREFIX]]visitor_phrases AS lo
                            ON lo.module_class_name = 'zenario_common_features'
                           AND lo.language_id = vp.language_id
                           AND lo.code = '__LANGUAGE_LOCAL_NAME__'
@@ -63,7 +63,7 @@ zenario__languages:
                 default:
                     title: Default language
                     table_join: |
-                        LEFT JOIN [[DB_NAME_PREFIX]]site_settings AS si
+                        LEFT JOIN [[DB_PREFIX]]site_settings AS si
                            ON si.name = 'default_language'
                           AND si.value = l.id
                     db_column: si.name

@@ -14,21 +14,21 @@ zenario__administration:
             title: Scheduled Tasks
             panel_type: list_with_master_switch
             db_items:
-                table: '[[DB_NAME_PREFIX]]jobs AS j'
+                table: '[[DB_PREFIX]]jobs AS j'
                 id_column: j.id
                 custom_where_statement_if_no_refiner: "WHERE manager_class_name = 'zenario_scheduled_task_manager'"
             columns:
-                module:
-                    title: Module name
-                    db_column: j.module_class_name
-                    show_by_default: Yes
-                    width: medium
                 job_name:
                     title: Method name
                     db_column: j.job_name
                     searchable: Yes
                     show_by_default: Yes
                     width: large
+                module:
+                    title: Module name
+                    db_column: j.module_class_name
+                    show_by_default: Yes
+                    width: medium
                 enabled:
                     title: Enabled
                     db_column: j.enabled
@@ -37,72 +37,69 @@ zenario__administration:
                     false_phrase: Disabled
                     show_by_default: Yes
                     width: xsmall
+                    disallow_sorting: true
                 status:
                     title: Status
                     db_column: j.status
                     show_by_default: Yes
                     width: xsmall
+                    disallow_sorting: true
                 months:
                     title: Months
                     db_column: j.months
+                    disallow_sorting: true
                 first_n_days_of_month:
                     title: Month Days
                     db_column: j.first_n_days_of_month
-                days:
-                    title: Days
-                    db_column: j.days
-                hours:
-                    title: Hours
-                    db_column: j.hours
-                minutes:
-                    title: Minutes
-                    db_column: j.minutes
+                    disallow_sorting: true
                 email_address_on_error:
                     title: Email Address (Errors)
                     db_column: j.email_address_on_error
-                log_on_action:
-                    title: Log on Action
-                    db_column: j.log_on_action
-                    format: yes_or_no
+                    disallow_sorting: true
                 email_on_action:
                     title: Email on Action
                     db_column: j.email_on_action
                     format: yes_or_no
+                    disallow_sorting: true
                 email_address_on_action:
                     title: Email Address (on Action)
                     db_column: j.email_address_on_action
-                log_on_no_action:
-                    title: Log on no Action
-                    db_column: j.log_on_no_action
-                    format: yes_or_no
+                    disallow_sorting: true
                 email_on_no_action:
                     title: Email on no Action
                     db_column: j.email_on_no_action
                     format: yes_or_no
+                    disallow_sorting: true
                 email_address_on_no_action:
                     title: Email Address (on no Action)
                     db_column: j.email_address_on_no_action
+                    disallow_sorting: true
                 last_run_started:
                     title: Last run started
                     db_column: j.last_run_started
                     format: datetime
-                    width: xsmall
+                    width: medium
+                    disallow_sorting: true
                 last_run_finished:
                     title: Last run finished
                     db_column: j.last_run_finished
                     format: datetime
                     show_by_default: Yes
-                    width: xsmall
+                    width: medium
+                    disallow_sorting: true
                 last_successful_run:
                     title: Last successful run
                     db_column: j.last_successful_run
                     format: datetime
+                    width: medium
+                    disallow_sorting: true
                 last_action:
                     title: Last action
                     db_column: j.last_action
                     format: datetime
                     show_by_default: Yes
-                    width: xsmall
+                    width: medium
+                    disallow_sorting: true
             default_sort_column: job_name
             item:
                 name: Scheduled Task
@@ -219,7 +216,7 @@ zenario__administration:
                         default_sort_desc: 
                             exists: Yes
                         db_items:
-                            table: '[[DB_NAME_PREFIX]]job_logs AS jl'
+                            table: '[[DB_PREFIX]]job_logs AS jl'
                             id_column: jl.id
                         refiners:
                             job:

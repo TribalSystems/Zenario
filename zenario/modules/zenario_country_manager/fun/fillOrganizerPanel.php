@@ -42,7 +42,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 					if ( $phraseId = ze\row::get("visitor_phrases", 'id', ['code' => '_COUNTRY_NAME_' . $item['country_code']] )) {
 						$item['traits']['show_localizations'] = "Yes";
 					} 
-					
+				
 					if (ze\row::exists(ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_regions', ['country_id' => $K])) {
 						$item['regions_count'] = ze\row::count(ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_regions', ['country_id' => $K]) . ' regions';
 					}

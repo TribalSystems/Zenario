@@ -39,36 +39,43 @@
 		title="{{m.tooltip|escape}}"
 	>
 	
-	
-		<div
-			class="image organizer_item_image {{m.image_css_class|escape}}
+		<div class="organizer_list_view_icon_border">
+			<div
+				class="image organizer_item_image organizer_list_view_icon {{m.image_css_class|escape}}
 			
-				<% if (m.image) { %>
-					<% var ibs = zenarioO.tuix.item_buttons, nbs = zenarioO.tuix.inline_buttons, items = {}; items[m.id] = true; %>
-					
-					<% if (ibs && ibs.view_image && !zenarioO.checkButtonHidden(ibs.view_image, items)) { %>
+					<% if (m.image) { %>
+						organizer_list_view_image
 						
-						organizer_clickable_thumbnail_image" onclick="zenarioO.itemButtonClick('view_image', '{{m.id|escape}}');
+						<%
+							var ibs = zenarioO.tuix.item_buttons,
+								nbs = zenarioO.tuix.inline_buttons,
+								items = {};
+							
+							items[m.id] = true;
+						%>
 					
-					<% } else if (nbs && nbs.view_image && !zenarioO.checkButtonHidden(nbs.view_image, items)) { %>
+						<% if (ibs && ibs.view_image && !zenarioO.checkButtonHidden(ibs.view_image, items)) { %>
 						
-						organizer_clickable_thumbnail_image" onclick="zenarioO.inlineButtonClick('view_image', '{{m.id|escape}}');
+							organizer_clickable_thumbnail_image" onclick="zenarioO.itemButtonClick('view_image', '{{m.id|escape}}');
 					
-					<% } else if (ibs && ibs.view && !zenarioO.checkButtonHidden(ibs.view, items)) { %>
+						<% } else if (nbs && nbs.view_image && !zenarioO.checkButtonHidden(nbs.view_image, items)) { %>
 						
-						organizer_clickable_thumbnail_image" onclick="zenarioO.itemButtonClick('view', '{{m.id|escape}}');
+							organizer_clickable_thumbnail_image" onclick="zenarioO.inlineButtonClick('view_image', '{{m.id|escape}}');
 					
-					<% } else if (nbs && nbs.view && !zenarioO.checkButtonHidden(nbs.view, items)) { %>
+						<% } else if (ibs && ibs.view && !zenarioO.checkButtonHidden(ibs.view, items)) { %>
 						
-						organizer_clickable_thumbnail_image" onclick="zenarioO.inlineButtonClick('view', '{{m.id|escape}}');
+							organizer_clickable_thumbnail_image" onclick="zenarioO.itemButtonClick('view', '{{m.id|escape}}');
 					
-					<% } %>
+						<% } else if (nbs && nbs.view && !zenarioO.checkButtonHidden(nbs.view, items)) { %>
+						
+							organizer_clickable_thumbnail_image" onclick="zenarioO.inlineButtonClick('view', '{{m.id|escape}}');
+					
+						<% } %>
 				
-					" style="background-image: url('{{m.image|escape}}'); background-position: left center;
-				<% } %>
-			"
-		>
-		
+						" style="background-image: url('{{m.image|escape}}');
+					<% } %>
+				"
+			></div>
 		</div>
 		
 		{{m.inline_buttons? '<div class="organizer_inline_buttons" style="width: ' + (m.inline_buttons.length * 20) + 'px;">' + zenarioT.microTemplate('zenario_organizer_list_inline_button', m.inline_buttons) + '</div>' : ''}} 

@@ -31,12 +31,14 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_newsletter__organizer__newsletters extends zenario_newsletter {
 	
 	public function preFillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
+		
+		if (!$refinerName) {
+			$panel['db_items']['where_statement'] = $panel['db_items']['custom_where_statement_if_no_refiner'];
+		}
+		
 		if ($refinerName == 'archive') {
-			$panel['db_items']['where_statement'] = $panel['db_items']['custom_where_statement_if_archive'];
 			$panel['default_sort_column'] = 'date_sent';
 			$panel['bold_columns_in_list_view'] = 'newsletter_name';
-		} elseif ($refinerName == 'outbox') {
-			$panel['db_items']['where_statement'] = '';
 		}
 		
 		if ($refinerName == 'outbox' || $refinerName == 'archive') {
@@ -69,9 +71,23 @@ class zenario_newsletter__organizer__newsletters extends zenario_newsletter {
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
 		$panel['title'] = ze\admin::phrase('Draft Newsletters');
-		$panel['item']['css_class'] = 'zenario_newsletter_draft';
-
-		if ($refinerName == 'outbox' || $refinerName == 'archive') {
+		
+		if ($refinerName == 'outbox') {
+			$panel['title'] = ze\admin::phrase('Newsletter Outbox');
+			$panel['item']['css_class'] = 'zenario_newsletter_in_progress_newsletter';
+	
+		} elseif ($refinerName == 'archive') {
+			$panel['title'] = ze\admin::phrase('Newsletter Archive');
+			$panel['item']['css_class'] = 'zenario_newsletter_sent_newsletter';
+		
+		
+		} else if ($refinerName == 'newsletters_using_image') {
+			$mrg = ze\row::get('files', ['filename'], $refinerId);
+			$panel['title'] = ze\admin::phrase('Newsletters using the image "[[filename]]"', $mrg);
+			$panel['no_items_message'] = ze\admin::phrase('There are no newsletters using the image "[[filename]]"', $mrg);
+		}
+		
+		if ($refinerName) {
 			$panel['collection_buttons']['create']['hidden'] = true;
 			$panel['collection_buttons']['process']['hidden'] = true;
 			$panel['collection_buttons']['archive']['hidden'] = true;
@@ -79,16 +95,24 @@ class zenario_newsletter__organizer__newsletters extends zenario_newsletter {
 			$panel['item_buttons']['send']['hidden'] = true;
 			$panel['item_buttons']['send_dumby']['hidden'] = true;
 			$panel['item_buttons']['duplicate']['hidden'] = true;
-			$panel['item_buttons']['delete']['hidden'] = true;
-			
-			if ($refinerName == 'outbox') {
-				$panel['title'] = ze\admin::phrase('Newsletter Outbox');
-				$panel['item']['css_class'] = 'zenario_newsletter_in_progress_newsletter';
-		
-			} elseif ($refinerName == 'archive') {
-				$panel['title'] = ze\admin::phrase('Newsletter Archive');
-				$panel['item']['css_class'] = 'zenario_newsletter_sent_newsletter';
+			$panel['item_buttons']['delete']['hidden'] = true;	
+
+			if ($refinerName != 'outbox' && $refinerName != 'archive') {
+				foreach($panel['items'] as $id => &$item) {
+					switch ($item['status']) {
+						case '_DRAFT':
+							$item['css_class'] = 'zenario_newsletter_draft';
+							break;
+						case '_IN_PROGRESS':
+							$item['css_class'] = 'zenario_newsletter_in_progress_newsletter';
+							break;
+						case '_ARCHIVED':
+							$item['css_class'] = 'zenario_newsletter_sent_newsletter';
+							break;
+					}
+				} 
 			}
+		
 		} else {
 			foreach($panel['items'] as $id => &$item) {
 			
@@ -107,7 +131,7 @@ class zenario_newsletter__organizer__newsletters extends zenario_newsletter {
 		} else {
 			$sql = '
 				SELECT newsletter_id
-				FROM ' . DB_NAME_PREFIX . ZENARIO_NEWSLETTER_PREFIX . 'newsletter_user_link
+				FROM ' . DB_PREFIX . ZENARIO_NEWSLETTER_PREFIX . 'newsletter_user_link
 			';
 		
 			$result = ze\sql::select($sql);
@@ -118,7 +142,7 @@ class zenario_newsletter__organizer__newsletters extends zenario_newsletter {
 					//For calculating percentages
 					$sql = '
 						SELECT COUNT(DISTINCT user_id) as userCount
-						FROM ' . DB_NAME_PREFIX . ZENARIO_NEWSLETTER_PREFIX . 'newsletter_user_link as nul
+						FROM ' . DB_PREFIX . ZENARIO_NEWSLETTER_PREFIX . 'newsletter_user_link as nul
 						WHERE nul.newsletter_id = '. (int) $id;
 					
 					$result = ze\sql::select($sql);
@@ -128,7 +152,7 @@ class zenario_newsletter__organizer__newsletters extends zenario_newsletter {
 						//For the "Opened" column
 						$sql = '
 							SELECT COUNT(time_received) as opened
-							FROM ' . DB_NAME_PREFIX . ZENARIO_NEWSLETTER_PREFIX . 'newsletter_user_link
+							FROM ' . DB_PREFIX . ZENARIO_NEWSLETTER_PREFIX . 'newsletter_user_link
 							WHERE time_received IS NOT NULL AND newsletter_id = ' . $item['id']
 						;
 						$result = ze\sql::select($sql);
@@ -148,7 +172,7 @@ class zenario_newsletter__organizer__newsletters extends zenario_newsletter {
 					//For "Clicked" column
 					$sql = '
 						SELECT COUNT(time_received) as clicked
-						FROM ' . DB_NAME_PREFIX . ZENARIO_NEWSLETTER_PREFIX . 'newsletter_user_link
+						FROM ' . DB_PREFIX . ZENARIO_NEWSLETTER_PREFIX . 'newsletter_user_link
 						WHERE time_clicked_through IS NOT NULL AND newsletter_id = ' . $item['id'];
 					
 					$result = ze\sql::select($sql);
@@ -191,7 +215,7 @@ class zenario_newsletter__organizer__newsletters extends zenario_newsletter {
 		} elseif (($_POST['duplicate'] ?? false) && ze\priv::check('_PRIV_EDIT_NEWSLETTER')) {
 
 			$admin_id = ze\admin::id();
-			$table_newsletters = DB_NAME_PREFIX . ZENARIO_NEWSLETTER_PREFIX . "newsletters"; 
+			$table_newsletters = DB_PREFIX . ZENARIO_NEWSLETTER_PREFIX . "newsletters"; 
 			$copy_cols = "subject, email_address_from, email_name_from, url, body, 
 				status, delete_account_text, smart_group_descriptions_when_sent_out";
 			
@@ -207,7 +231,7 @@ class zenario_newsletter__organizer__newsletters extends zenario_newsletter {
 			$new_id = ze\sql::insertId();
 			
 			if($new_id) {
-			    $table_newsletter_smart_group_link = DB_NAME_PREFIX . ZENARIO_NEWSLETTER_PREFIX . "newsletter_smart_group_link";
+			    $table_newsletter_smart_group_link = DB_PREFIX . ZENARIO_NEWSLETTER_PREFIX . "newsletter_smart_group_link";
 			    $new_id = (int)$new_id;
 			    
 			    $sql = "INSERT INTO $table_newsletter_smart_group_link(newsletter_id, smart_group_id)

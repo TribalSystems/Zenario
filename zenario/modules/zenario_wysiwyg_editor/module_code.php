@@ -113,7 +113,7 @@ class zenario_wysiwyg_editor extends zenario_html_snippet {
 					$box['tabs']['first_tab']['fields']['html']['insert_image_button']['pick_items']['min_path'] =
 					$box['tabs']['first_tab']['fields']['html']['insert_image_button']['pick_items']['max_path'] =
 					$box['tabs']['first_tab']['fields']['html']['insert_image_button']['pick_items']['target_path'] =
-						'zenario__content/panels/inline_images_for_content';
+						'zenario__content/panels/image_library';
 				
 				} else {
 					unset($box['tabs']['first_tab']['fields']['html']['insert_image_button']);

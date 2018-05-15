@@ -46,7 +46,7 @@ class module {
 				css_class_name,
 				is_pluggable,
 				can_be_version_controlled
-			FROM " . DB_NAME_PREFIX . "modules";
+			FROM " . DB_PREFIX . "modules";
 	
 		if ($fetchBy == 'class' || $fetchBy == 'name') {
 			$sql .= "
@@ -101,10 +101,10 @@ class module {
 	
 		return (bool) \ze\sql::fetchRow("
 			SELECT 1
-			FROM [modules AS m]
-			WHERE class_name = [0]
-			  AND status IN ('module_running', 'module_is_abstract')
-		", [$className]);
+			FROM ". DB_PREFIX. "modules
+			WHERE class_name = '". \ze\escape::sql($className). "'
+			  AND status IN ('module_running', 'module_is_abstract')"
+		);
 	}
 
 
@@ -160,7 +160,7 @@ class module {
 		if (!is_array($module)) {
 			$module = \ze\sql::fetchAssoc("
 				SELECT id, class_name, status
-				FROM ". DB_NAME_PREFIX. "modules
+				FROM ". DB_PREFIX. "modules
 				WHERE class_name = '". \ze\escape::sql($module). "'
 				LIMIT 1");
 		}
@@ -262,8 +262,8 @@ class module {
 				m.class_name,
 				m.id AS module_id,
 				m.vlp_class
-			FROM ". DB_NAME_PREFIX. "module_dependencies AS d
-			LEFT OUTER JOIN ". DB_NAME_PREFIX. "modules AS m
+			FROM ". DB_PREFIX. "module_dependencies AS d
+			LEFT OUTER JOIN ". DB_PREFIX. "modules AS m
 			   ON d.dependency_class_name = m.class_name
 			  AND m.status IN ('module_running', 'module_is_abstract')
 			WHERE d.module_class_name = '". \ze\escape::sql($moduleName). "'
@@ -316,7 +316,7 @@ class module {
 	public static function inheritance($moduleClassName, $type) {
 		$sql = "
 			SELECT dependency_class_name
-			FROM ".  DB_NAME_PREFIX. "module_dependencies
+			FROM ".  DB_PREFIX. "module_dependencies
 			WHERE module_class_name = '". \ze\escape::sql($moduleClassName). "'
 			  AND `type` = '". \ze\escape::sql($type). "'
 			LIMIT 1";
@@ -373,12 +373,12 @@ class module {
 	
 			$sql = "
 				SELECT module_id, module_class_name, module_class_name AS class_name, static_method
-				FROM ". \ze::$lastDBPrefix. "signals
+				FROM ". DB_PREFIX. "signals
 				WHERE signal_name = '". \ze\escape::sql($signalName). "'
 				  AND module_class_name NOT IN (
 					SELECT suppresses_module_class_name
-					FROM ". \ze::$lastDBPrefix. "signals AS e
-					INNER JOIN ". \ze::$lastDBPrefix. "modules AS m
+					FROM ". DB_PREFIX. "signals AS e
+					INNER JOIN ". DB_PREFIX. "modules AS m
 					   ON e.module_id = m.id
 					WHERE e.signal_name = '". \ze\escape::sql($signalName). "'
 					  AND e.suppresses_module_class_name != ''
@@ -428,7 +428,7 @@ class module {
 		if (!is_array($module)) {
 			$module = \ze\sql::fetchAssoc("
 				SELECT id, class_name, status
-				FROM ". DB_NAME_PREFIX. "modules
+				FROM ". DB_PREFIX. "modules
 				WHERE class_name = '". \ze\escape::sql($module). "'
 				  ". ($mustBeRunning? "AND status IN ('module_running', 'module_is_abstract')" : ""). "
 				LIMIT 1");
@@ -493,4 +493,67 @@ class module {
 			return $prefix;
 		}
 	}
+	
+	//Get an array of all a modules plugins (including nested), and also an array of their settings.
+	//Useful for updating plugin settings via a db update.
+	public static function getModuleInstancesAndPluginSettings($className) {
+		$instances = [];
+		
+		//Get moduleId
+		$sql = '
+			SELECT id
+			FROM ' . DB_PREFIX . 'modules
+			WHERE class_name = "' . \ze\escape::sql($className) . '"';
+		$result = \ze\sql::select($sql);
+		$row = \ze\sql::fetchAssoc($result);
+		$moduleId = $row['id'];
+		
+		//Get Ids of plugin instances
+		$sql = '
+			SELECT id
+			FROM ' . DB_PREFIX . 'plugin_instances
+			WHERE module_id = ' . (int)$moduleId;
+		$result = \ze\sql::select($sql);
+		while ($row = \ze\sql::fetchAssoc($result)) {
+			$instances[] = ['instance_id' => $row['id'], 'egg_id' => 0];
+		}
+		
+		//Ids of nested plugins
+		$sql = '
+			SELECT instance_id, id
+			FROM ' . DB_PREFIX . 'nested_plugins
+			WHERE module_id = ' . (int)$moduleId;
+		$result = \ze\sql::select($sql);
+		while ($row = \ze\sql::fetchAssoc($result)) {
+			$instances[] = ['instance_id' => $row['instance_id'], 'egg_id' => $row['id']];
+		}
+		
+		//Load default plugin settings
+		$defaultSettings = [];
+		$sql = '
+			SELECT name, default_value
+			FROM ' . DB_PREFIX . 'plugin_setting_defs
+			WHERE module_id = ' . (int)$moduleId;
+		$result = \ze\sql::select($sql);
+		while ($row = \ze\sql::fetchAssoc($result)) {
+			$defaultSettings[$row['name']] = $row['default_value'];
+		}
+		
+		foreach ($instances as $i => $instance) {
+			$settings = $defaultSettings;
+			//Load individual plugin settings
+			$sql = '
+				SELECT name, value
+				FROM ' . DB_PREFIX . 'plugin_settings
+				WHERE instance_id = ' . (int)$instance['instance_id'] . '
+				AND egg_id = ' . (int)$instance['egg_id'];
+			$result = \ze\sql::select($sql);
+			while ($row = \ze\sql::fetchAssoc($result)) {
+				$settings[$row['name']] = $row['value'];
+			}
+			$instances[$i]['settings'] = $settings;
+		}
+		return $instances;
+	}
+	
 }

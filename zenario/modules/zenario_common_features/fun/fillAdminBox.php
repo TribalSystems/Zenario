@@ -85,8 +85,8 @@ switch ($path) {
 			$inCats = [];
 			$sql = "
 				SELECT l.category_id, COUNT(DISTINCT c.tag_id) AS cnt
-				FROM ". DB_NAME_PREFIX. "content_items AS c
-				INNER JOIN ". DB_NAME_PREFIX. "category_item_link AS l
+				FROM ". DB_PREFIX. "content_items AS c
+				INNER JOIN ". DB_PREFIX. "category_item_link AS l
 				   ON c.equiv_id = l.equiv_id
 				  AND c.type = l.content_type
 				WHERE c.tag_id IN (". ze\escape::in($tagIds). ")
@@ -219,8 +219,8 @@ switch ($path) {
 			$inCats = [];
 			$sql = "
 				SELECT l.category_id, COUNT(DISTINCT c.tag_id) AS cnt
-				FROM ". DB_NAME_PREFIX. "content_items AS c
-				INNER JOIN ". DB_NAME_PREFIX. "category_item_link AS l
+				FROM ". DB_PREFIX. "content_items AS c
+				INNER JOIN ". DB_PREFIX. "category_item_link AS l
 				   ON c.equiv_id = l.equiv_id
 				  AND c.type = l.content_type
 				WHERE c.tag_id IN (". ze\escape::in($tagIds). ")
@@ -338,8 +338,8 @@ switch ($path) {
 			$inCats = [];
 			$sql = "
 				SELECT l.category_id, COUNT(DISTINCT c.tag_id) AS cnt
-				FROM ". DB_NAME_PREFIX. "content_items AS c
-				INNER JOIN ". DB_NAME_PREFIX. "category_item_link AS l
+				FROM ". DB_PREFIX. "content_items AS c
+				INNER JOIN ". DB_PREFIX. "category_item_link AS l
 				   ON c.equiv_id = l.equiv_id
 				  AND c.type = l.content_type
 				WHERE c.tag_id IN (". ze\escape::in($tagIds). ")
@@ -449,7 +449,7 @@ switch ($path) {
 	
 		$datasetDetails = ze\dataset::details('documents');
 		$datasetId = $datasetDetails['id'];
-		if ($datasetDetails = ze\row::getArray('custom_dataset_fields', true, ['dataset_id' => $datasetId, 'is_system_field' => 0])) {
+		if ($datasetDetails = ze\row::getAssocs('custom_dataset_fields', true, ['dataset_id' => $datasetId, 'is_system_field' => 0])) {
 			foreach ($datasetDetails as $details) {
 				if($details['type'] == 'text' || $details['type'] == 'date') {
 					$datesetFields[]= $details;

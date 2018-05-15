@@ -49,6 +49,19 @@ class zenario_user_forms__admin_boxes__site_settings extends ze\moduleBaseClass 
 			
 			$link = ze\link::absolute() . '/zenario/admin/organizer.php#zenario__administration/panels/site_settings//data_protection~.site_settings~tdata_protection~k{"id"%3A"data_protection"}';
 			$fields['zenario_user_forms_emails/data_protection_link']['snippet']['html'] = ze\admin::phrase('See the <a target="_blank" href="[[link]]">data protection</a> panel for settings on how long to store form responses.', ['link' => htmlspecialchars($link)]);
+		
+		} elseif ($settingGroup == 'data_protection') {
+			
+			//Show the number of form responses currently stored
+			$count = ze\row::count(ZENARIO_USER_FORMS_PREFIX . 'user_response');
+			$note = ze\admin::nphrase('1 record currently stored.', '[[count]] records currently stored.', $count);
+						
+			if ($count) {
+				$min = ze\row::min(ZENARIO_USER_FORMS_PREFIX . 'user_response', 'response_datetime');
+				$note .= ' ' . ze\admin::phrase('Oldest record from [[date]].', ['date' => ze\date::formatDateTime($min, '_MEDIUM')]);
+			}
+			$fields['data_protection/period_to_delete_the_form_response_log_headers']['note_below'] = $note;
+			
 		}
 	}
 	
@@ -72,7 +85,7 @@ class zenario_user_forms__admin_boxes__site_settings extends ze\moduleBaseClass 
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		if ($settingGroup == 'zenario_user_forms__site_settings_group') {
 			if(empty($values['zenario_user_forms_set_profanity_filter'])) {
-				$sql = "UPDATE ". DB_NAME_PREFIX. ZENARIO_USER_FORMS_PREFIX . "user_forms SET profanity_filter_text = 0";
+				$sql = "UPDATE ". DB_PREFIX. ZENARIO_USER_FORMS_PREFIX . "user_forms SET profanity_filter_text = 0";
 				ze\sql::update($sql);
 			}
 		}

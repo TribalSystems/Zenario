@@ -1,6 +1,6 @@
 zenario__user_forms:
     panels:
-        zenario_crm_form_integration__field_names:
+        crm_field_names:
             priv: _PRIV_MANAGE_FORMS
             title: CRM fields
             no_items_message: No CRM fields were found.
@@ -10,7 +10,7 @@ zenario__user_forms:
                     
             item:
                 link:
-                    path: zenario__user_forms/panels/zenario_crm_form_integration__fields
+                    path: zenario__user_forms/panels/crm_fields
                     branch: true
                     refiner: crm_field_name_and_form_id
             columns:
@@ -35,7 +35,7 @@ zenario__user_forms:
                     priv: _PRIV_MANAGE_FORMS
                     label: Edit field
                     admin_box:
-                        path: zenario_crm_form_integration__field_name
+                        path: zenario__crm_field_name
                         key:
                             form_id: ''
                 

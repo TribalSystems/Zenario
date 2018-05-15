@@ -50,10 +50,8 @@ class zenario_common_features__admin_boxes__page_preview_size extends ze\moduleB
 		ze\priv::exitIfNot('_PRIV_EDIT_SITE_SETTING');
 		
 		if (!$id = $box['key']['id']) {
-			$sql = 'SELECT max(ordinal) FROM '.DB_NAME_PREFIX.'page_preview_sizes';
-			$result = ze\sql::select($sql);
-			$row = ze\sql::fetchArray($result);
-			$maxOrdinal = $row[0];
+			$sql = 'SELECT max(ordinal) FROM '.DB_PREFIX.'page_preview_sizes';
+			$maxOrdinal = ze\sql::fetchValue($sql);
 			$isDefault = 0;
 			if ($maxOrdinal !== null) {
 				$maxOrdinal = ++$maxOrdinal;

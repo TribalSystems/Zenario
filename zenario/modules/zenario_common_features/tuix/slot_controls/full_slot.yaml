@@ -180,13 +180,14 @@ full_slot:
         replace_reusable_on_item_layer:
             ord: 85
             priv: _PRIV_MANAGE_ITEM_SLOT
-            label: Replace plugin on this content item...
+            label: Show a plugin instead on this content item...
+            label_different: Show a different plugin on this content item...
             page_modes:
                 item: true
             onclick: |
                 if (zenarioA.draft(this.id)) {
                     zenarioAT.clickTab('item');
-                    zenarioA.pickNewPlugin(this, slotName, 1, [[overides_layout]]);
+                    zenarioA.pickNewPlugin(this, slotName, 1, false, [[preselectCurrentChoice]]);
                 }
                 return false;
         
@@ -204,10 +205,11 @@ full_slot:
         insert_reusable_on_layout_layer:
             ord: 87
             priv: _PRIV_MANAGE_TEMPLATE_SLOT
-            label: Replace ~plugin~ with something else...
+            label: Show a plugin instead...
+            label_different: Show a different plugin...
             page_modes:
                 layout: true
-            onclick: return zenarioA.pickNewPlugin(this, slotName, 2);
+            onclick: return zenarioA.pickNewPlugin(this, slotName, 2, false, [[preselectCurrentChoice]]);
         
         remove_from_item_layer:
             ord: 90
@@ -268,7 +270,7 @@ full_slot:
         #            zenarioA.showPlugin(this, slotName);
         #        }
         #        return false;
-        #    label: Show plugin on this content item
+        #    label: Show ~plugin~ on this content item
         remove_from_layout_layer:
             ord: 92
             page_modes:

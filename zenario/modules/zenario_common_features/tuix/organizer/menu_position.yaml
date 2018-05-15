@@ -14,20 +14,21 @@ zenario__menu:
             back_link: false
             db_items:
                 table: |
-                    [[DB_NAME_PREFIX]]menu_positions AS mp
-                    INNER JOIN [[DB_NAME_PREFIX]]menu_sections AS ms
+                    [[DB_PREFIX]]menu_positions AS mp
+                    INNER JOIN [[DB_PREFIX]]menu_sections AS ms
                        ON ms.id = mp.section_id
-                    LEFT JOIN [[DB_NAME_PREFIX]]menu_nodes AS mi
+                    LEFT JOIN [[DB_PREFIX]]menu_nodes AS mi
                        ON mi.id = mp.menu_id
-                    LEFT JOIN [[DB_NAME_PREFIX]]menu_text AS mt
+                    LEFT JOIN [[DB_PREFIX]]menu_text AS mt
                        ON mt.menu_id = mi.id
                       AND mt.language_id = [[FOCUSED_LANGUAGE_ID]]
-                    LEFT JOIN [[DB_NAME_PREFIX]]content_items AS c
+                    LEFT JOIN [[DB_PREFIX]]content_items AS c
                        ON mi.equiv_id = c.equiv_id
                       AND mi.content_type = c.type
                       AND c.language_id = [[FOCUSED_LANGUAGE_ID]]
                 id_column: mp.tag
                 client_side: true
+                max_limit: 1000
             
             refiners:
                 create:

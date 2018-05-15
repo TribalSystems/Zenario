@@ -59,7 +59,7 @@ class zenario_common_features__organizer__backups extends ze\moduleBaseClass {
 		
 		
 		if (isset($panel['item_buttons']['restore'])) {
-			if (\ze\db::hasGlobal()) {
+			if (\ze\db::hasGlobal() || \ze\db::hasDataArchive()) {
 				$restoreMsg = '<p>'. ze\admin::phrase("This tool allows you to restore a backup of your site's local database."). '</p>';
 			} else {
 				$restoreMsg = '<p>'. ze\admin::phrase("This tool allows you to restore a backup of your site's database."). '</p>';
@@ -68,6 +68,9 @@ class zenario_common_features__organizer__backups extends ze\moduleBaseClass {
 				$restoreMsg .= '<p>'. ze\admin::phrase("All content on the site will be replaced with the content from the database backup; all of the current local administrators, content and users on your site will be overwritten. This may take several minutes to complete."). '</p>';
 			} else {
 				$restoreMsg .= '<p>'. ze\admin::phrase("All content on the site will be replaced with the content from the database backup; all of the current administrators, content and users on your site will be overwritten. This may take several minutes to complete."). '</p>';
+			}
+			if (\ze\db::hasDataArchive()) {
+				$restoreMsg .= '<p>'. ze\admin::phrase("This will not affect the contents of data archive database. You should back up and restore this separately."). '</p>';
 			}
 		
 			$panel['item_buttons']['restore']['ajax']['confirm']['message'] = 

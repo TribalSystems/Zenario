@@ -28,122 +28,58 @@
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
 
-
-
 class zenario_ctype_audio extends ze\moduleBaseClass {
-
-	var	$targetID = false;
-	var	$targetVersion = false;
-	var	$targetType = false;
-
+	
+	protected $data = [];
 	
 	function init() {
+		$clearByContent = $this->setting('show_details_and_link') == 'another_content_item';
+		
 		$this->allowCaching(
 			$atAll = true, $ifUserLoggedIn = true, $ifGetSet = true, $ifPostSet = true, $ifSessionSet = true, $ifCookieSet = true);
+		$this->clearCacheBy(
+			$clearByContent, $clearByMenu = false, $clearByUser = false, $clearByFile = true, $clearByModuleData = false);
 		
-		if ($this->setting('show_details_and_link') == 'another_content_item') {
-			$this->clearCacheBy(
-				$clearByContent = true, $clearByMenu = false, $clearByUser = false, $clearByFile = true, $clearByModuleData = false);
-		} else {
-			$this->clearCacheBy(
-				$clearByContent = false, $clearByMenu = false, $clearByUser = false, $clearByFile = true, $clearByModuleData = false);
-		}
-
-		$this->forcePageReload();
 		return true;
 	}
 
-	function addToPageHead() {
-	
-		echo "<script type=\"text/javascript\" src=\"" . ze::moduleDir('zenario_ctype_audio', 'player/audio-player.js') . "\"></script>  
-				<script type=\"text/javascript\">  
-				AudioPlayer.setup(\"" . ze\link::absolute() . ze::moduleDir('zenario_ctype_audio', 'player/player.swf')  . "\", {  
-				width: 290,  
-				transparentpagebg: \"yes\",  
-				left: \"000000\",  
-				lefticon: \"FFFFFF\"  ,
-				});  
-				</script>";
-	}
-
 	function showSlot() {
-		if ($this->setting('show_details_and_link')=='another_content_item'){
+		$targetID = $targetVersion = $targetType = false;
+		if ($this->setting('show_details_and_link') == 'another_content_item'){
 			$item = $this->setting('another_audio');
 			if (count($arr = explode("_",$item))==2){
-				$this->targetID = $arr[1];
-				$this->targetType = $arr[0];
-				if (!$this->targetVersion = ze\content::showableVersion($this->targetID,$this->targetType)){
+				$targetID = $arr[1];
+				$targetType = $arr[0];
+				if (!$targetVersion = ze\content::showableVersion($targetID,$targetType)){
 					return;
 				}
 			}
 		}
-		if (!($this->targetID && $this->targetVersion && $this->targetType)) {
-			$this->targetID = $this->cID;
-			$this->targetVersion = $this->cVersion;
-			$this->targetType = $this->cType;
+		if (!($targetID && $targetVersion && $targetType)) {
+			$targetID = $this->cID;
+			$targetVersion = $this->cVersion;
+			$targetType = $this->cType;
 		}
-		if ($this->targetType!='audio'){
-			if ((int)($_SESSION['admin_userid'] ?? false)){
+		if ($targetType != 'audio'){
+			if (ze\admin::id()) {
 				echo "This Plugin needs to be placed on an Audio Content Item or be configured to point to another Audio Content Item. Please check your Plugin Settings.";
 			}
 			return;
 		}
-
-		$mergeFields = [];
-		$subSections = [];
-		$constraints = [];
-
-		$mergeFields['initialvolume'] = $this->setting('initial_volume');
-		if ($this->setting('autostart')) {
-			$mergeFields['autostart'] = "yes";
-		} else {
-			$mergeFields['autostart'] = "no";
-		}
-
-		if ($this->setting('remaining')) {
-			$mergeFields['remaining'] = "yes";
-		} else {
-			$mergeFields['remaining'] = "no";
-		}
-
-		if ($this->setting('rtl')) {
-			$mergeFields['rtl'] = "yes";
-		} else {
-			$mergeFields['rtl'] = "no";
-		}
-
-		if ($this->setting('animation')) {
-			$mergeFields['animation'] = "yes";
-		} else {
-			$mergeFields['animation'] = "no";
-		}
 		
-		if ($this->setting('loop')) {
-			$mergeFields['loop'] = "yes";
-		} else {
-			$mergeFields['loop'] = "no";
-		}
+		$this->data['mp3'] = true;
+		$this->data['autostart'] = $this->setting('autostart');
+		$this->data['loop'] = $this->setting('loop');
 		
-
-		$contentItemDetails = ze\row::get('content_item_versions',['title','file_id'],['id'=>$this->targetID,'type'=>$this->targetType,'version'=>$this->targetVersion]);
+		$contentItemDetails = ze\row::get('content_item_versions', ['title', 'file_id'], ['id' => $targetID, 'type' => $targetType, 'version' => $targetVersion]);
 		
-		$subSections['Audio'] = true;
-		$mergeFields['Container_id'] = $this->containerId;
-		$mergeFields['Size'] = ze\lang::formatFilesizeNicely(ze\row::get('files','size',['id'=> ($contentItemDetails['file_id'] ?? false)]), 0, false, 'zenario_ctype_audio');
-		$mergeFields['title'] = $contentItemDetails['title'] ?? false;
-		ze\file::contentLink($url, $this->targetID, $this->targetType, $this->targetVersion);
-		$mergeFields['mp3Path'] = $url;
-			
-		$this->framework('mp3', $mergeFields, $subSections);
+		$this->data['Size'] = ze\lang::formatFilesizeNicely(ze\row::get('files','size', ['id' => ($contentItemDetails['file_id'] ?? false)]), 0, false, 'zenario_ctype_audio');
+		$this->data['title'] = $contentItemDetails['title'] ?? false;
+		ze\file::contentLink($url, $targetID, $targetType, $targetVersion);
+		$this->data['mp3Path'] = $url;
 		
-	}
-	
-	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
 		
-	}
-
-	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
-		
+		$this->twigFramework($this->data);
 	}
 
 
@@ -153,14 +89,12 @@ class zenario_ctype_audio extends ze\moduleBaseClass {
 		        $box['tabs']['first_tab']['fields']['another_audio']['hidden'] = !(($values['first_tab/show_details_and_link'] ?? false)=='another_content_item');
 		        break;
 			
-			
 			case 'zenario_content':
 				if ($box['key']['cType'] == 'audio') {
 					$box['tabs']['file']['hidden'] = false;
 					$box['tabs']['file']['fields']['file']['upload']['accept'] = 'audio/*';
 					$box['tabs']['file']['fields']['file']['upload']['extensions'] = ['.mp3'];
 				}
-				
 				break;
 		}
 	}
@@ -189,10 +123,6 @@ class zenario_ctype_audio extends ze\moduleBaseClass {
 		}
 	}
 
-	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		
-	}
-
 	public function preFillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
 		switch ($path) {
 			case 'zenario__content/panels/content':
@@ -205,7 +135,6 @@ class zenario_ctype_audio extends ze\moduleBaseClass {
 								['lang' => ze\lang::name((($panel['key']['language'] ?? false) ?: ze::$defaultLang))]);
 					}
 				}
-				
 				break;
 		}
 	}
@@ -270,17 +199,12 @@ class zenario_ctype_audio extends ze\moduleBaseClass {
 					
 					return $newIds;
 				}
-				
 				break;
 		}
 	}
-
-
+	
 	protected function isFileTypeAllowed($filename) {
-		$mimeType = ze\file::mimeType($filename);
-		
-		return ($mimeType == 'audio/mpeg');
+		return ze\file::mimeType($filename) == 'audio/mpeg';
 	}
-
 
 }

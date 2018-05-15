@@ -33,25 +33,27 @@ if (($instance = ze\plugin::details($instanceId))
  && ($egg = ze\pluginAdm::getNestDetails($eggId, $instanceId))
  && (!$egg['is_slide'])) {
 	$sql = "
-		DELETE FROM ". DB_NAME_PREFIX. "plugin_settings
+		DELETE FROM ". DB_PREFIX. "plugin_settings
 		WHERE instance_id = ". (int) $instanceId. "
 		  AND egg_id != 0
 		  AND egg_id IN (
 			SELECT id
-			FROM ". DB_NAME_PREFIX. "nested_plugins
+			FROM ". DB_PREFIX. "nested_plugins
 			WHERE instance_id = ". (int) $instanceId. "
 			  AND id = ". (int) $eggId. "
 		  )";
-	ze\sql::select($sql);  //No need to check the cache as the other statements should clear it correctly
+	ze\sql::cacheFriendlyUpdate($sql);  //No need to check the cache as the other statements should clear it correctly
 	
 	ze\pluginAdm::manageCSSFile('delete', $instanceId, $eggId);
 	
 	ze\row::delete('nested_plugins', ['instance_id' => $instanceId, 'id' => $eggId]);
 	
-	ze\contentAdm::resyncLibraryPluginFiles($instanceId, $instance);
 	
+	if ($resync) {
+		self::resyncNest($instanceId);
 	
-	if ($className) {
-		call_user_func([$className, 'resyncNest'], $instanceId);
+		ze\contentAdm::resyncLibraryPluginFiles($instanceId, $instance);
+	
+		ze\pluginAdm::setSlideRequestVars($instanceId, false, false, $eggId);
 	}
 }

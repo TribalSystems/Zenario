@@ -59,7 +59,8 @@ if ($methodCall == 'refreshPlugin'
  || ($methodCall == 'fillVisitorTUIX' && $isForPlugin)
  || ($methodCall == 'formatVisitorTUIX' && $isForPlugin)
  || ($methodCall == 'validateVisitorTUIX' && $isForPlugin)
- || ($methodCall == 'saveVisitorTUIX' && $isForPlugin)) {
+ || ($methodCall == 'saveVisitorTUIX' && $isForPlugin)
+ || ($methodCall == 'typeaheadSearchAJAX' && $isForPlugin)) {
 
 	//showRSS and showFloatingBox method calls relate to content items
 	require CMS_ROOT. 'zenario/visitorheader.inc.php';
@@ -151,6 +152,7 @@ if ($methodCall == 'refreshPlugin'
 		|| $methodCall == 'formatVisitorTUIX'
 		|| $methodCall == 'validateVisitorTUIX'
 		|| $methodCall == 'saveVisitorTUIX'
+		|| $methodCall == 'typeaheadSearchAJAX'
 		|| $methodCall == 'showStandalonePage') {
 	
 	//Allow handleAJAX, showFile, showImage and showStandalonePage to be for visitors or admins as needed
@@ -200,7 +202,7 @@ if ($methodCall == 'refreshPlugin'
 	
 	$sql = "
 		SELECT code, local_text
-		FROM ". DB_NAME_PREFIX. "visitor_phrases
+		FROM ". DB_PREFIX. "visitor_phrases
 		WHERE language_id = '". ze\escape::sql($languageId). "'
 		  AND module_class_name = '". ze\escape::sql($_GET['__class__'] ?? false). "'";
 	
@@ -321,20 +323,14 @@ if ($methodCall == 'showFile') {
 } elseif ($methodCall == 'fillVisitorTUIX'
 	   || $methodCall == 'formatVisitorTUIX'
 	   || $methodCall == 'validateVisitorTUIX'
-	   || $methodCall == 'saveVisitorTUIX') {
+	   || $methodCall == 'saveVisitorTUIX'
+	   || $methodCall == 'typeaheadSearchAJAX') {
 	
 	if ($isForPlugin) {
 		$module = &ze::$slotContents[$slotName]['class'];
 	}
 	
-	
-	$filling = $methodCall == 'fillVisitorTUIX' || empty($_POST['_tuix']);
-	$saving = !$filling && $methodCall == 'saveVisitorTUIX';
-	$validating = !$filling && ($saving || $methodCall == 'validateVisitorTUIX');
-	
 	$requestedPath = $_REQUEST['path'] ?? false;
-	
-	$debugMode = ze::isAdmin() && ze::get('_debug');
 	
 	
 	//Exit if no path is specified
@@ -350,19 +346,32 @@ if ($methodCall == 'showFile') {
 	
 	
 	header('Content-Type: text/javascript; charset=UTF-8');
-	
-	//Small hack for phrases:
-	//Try to note down the first YAML file that was used, and use this to report the path that the phrase was found in
-	//(Note that this may be wrong if more than one YAML file is used, but usually we only use one YAML file for each path)
-	if (!empty($moduleFilesLoaded[$moduleClassName]['paths'])) {
-		foreach ($moduleFilesLoaded[$moduleClassName]['paths'] as $yamlFilePath) {
-			ze\tuix::$yamlFilePath = $yamlFilePath;
-			break;
-		}
-	}
-	
 	$tags = [];
-	ze\tuix::visitorTUIX($module, $requestedPath, $tags, $filling, $validating, $saving, $debugMode);
+	
+	if ($methodCall == 'typeaheadSearchAJAX') {
+		$module->typeaheadSearchAJAX($requestedPath, $_REQUEST['_tab'] ?? '', $_REQUEST['_field'] ?? '', $_REQUEST['_search'] ?? '', $tags);
+		
+	} else {
+	
+		//Small hack for phrases:
+		//Try to note down the first YAML file that was used, and use this to report the path that the phrase was found in
+		//(Note that this may be wrong if more than one YAML file is used, but usually we only use one YAML file for each path)
+		if (!empty($moduleFilesLoaded[$moduleClassName]['paths'])) {
+			foreach ($moduleFilesLoaded[$moduleClassName]['paths'] as $yamlFilePath) {
+				ze\tuix::$yamlFilePath = $yamlFilePath;
+				break;
+			}
+		}
+	
+	
+		$filling = $methodCall == 'fillVisitorTUIX' || empty($_POST['_tuix']);
+		$saving = !$filling && $methodCall == 'saveVisitorTUIX';
+		$validating = !$filling && ($saving || $methodCall == 'validateVisitorTUIX');
+	
+		$debugMode = ze::isAdmin() && ze::get('_debug');
+	
+		ze\tuix::visitorTUIX($module, $requestedPath, $tags, $filling, $validating, $saving, $debugMode);
+	}
 	
 	ze\ray::jsonDump($tags);
 	

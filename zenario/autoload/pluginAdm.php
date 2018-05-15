@@ -58,7 +58,7 @@ class pluginAdm {
 			} else {
 				$sql = "
 					SELECT COUNT(*)
-					FROM ". DB_NAME_PREFIX. "plugin_instances
+					FROM ". DB_PREFIX. "plugin_instances
 					WHERE name LIKE '". \ze\escape::sql($instanceName). " (%)'";
 				$result = \ze\sql::select($sql);
 				$row = \ze\sql::fetchRow($result);
@@ -70,24 +70,52 @@ class pluginAdm {
 		if ($onlyValidate) {
 			return true;
 		}
-	
+		
 		//Insert a new record into the instances table
-		$sql = "
-			INSERT INTO ". DB_NAME_PREFIX. "plugin_instances (module_id, name)
-			SELECT id, '". \ze\escape::sql($instanceName). "'
-			FROM ". DB_NAME_PREFIX. "modules
-			WHERE id = ". (int) $moduleId;
-	
-		\ze\sql::update($sql, false, false);  //No need to check the cache as this new instance is not used anywhere yet
-		$instanceId = \ze\sql::insertId();
+		$instance = [
+			'module_id' => $moduleId,
+			'name' => $instanceName,
+			'is_nest' => $moduleId == \ze\module::id('zenario_plugin_nest'),
+			'is_slideshow' => $moduleId == \ze\module::id('zenario_slideshow')
+		];
+		$instanceId = \ze\row::insert('plugin_instances', $instance);
 	
 		return true;
 	}
 
 
 	//Formerly "fillAdminSlotControlPluginInfo()"
-	public static function fillSlotControlPluginInfo($moduleId, $instanceId, $isVersionControlled, $cID, $cType, $level, $isNest, &$info, &$actions) {
-	
+	public static function fillSlotControlPluginInfo($moduleId, $instanceId, $isVersionControlled, $cID, $cType, $level, $isNest, $isSlideshow, &$info, &$actions) {
+
+
+		$pnsType = $isVersionControlled? 99 : ($isSlideshow? 2 : ($isNest? 1 : 0));
+		
+		foreach ([
+			'replace_reusable_on_item_layer' => 0, 'replace_nest_on_item_layer' => 1, 'replace_slideshow_on_item_layer' => 2,
+			'insert_reusable_on_layout_layer' => 0, 'insert_nest_on_layout_layer' => 1, 'insert_slideshow_on_layout_layer' => 2
+		] as $buttonName => $buttonPnsType) {
+			if (isset($actions[$buttonName])) {
+		
+				$button = &$actions[$buttonName];
+		
+				//If this has a different label for replacing like with like, switch to that if we are replacing like with like.
+				if (isset($button['label_different'])) {
+					if ($pnsType === $buttonPnsType) {
+						$button['label'] = $button['label_different'];
+					}
+					unset($button['label_different']);
+				}
+		
+				if ($pnsType === $buttonPnsType) {
+					$preselectCurrentChoice = 'true';
+				} else {
+					$preselectCurrentChoice = 'false';
+				}
+				$button['onclick'] = str_replace('[[preselectCurrentChoice]]', $preselectCurrentChoice, $button['onclick']);
+			}
+		}
+		
+		
 		$module = \ze\module::details($moduleId);
 	
 		$skLink = 'zenario/admin/organizer.php?fromCID='. (int) $cID. '&fromCType='. urlencode($cType);
@@ -116,15 +144,21 @@ class pluginAdm {
 			unset($info['vc']);
 			unset($info['vc_warning']);
 			
-			if ($isNest) {
+			if ($isSlideshow) {
+				$pluginAdminName = \ze\admin::phrase('slideshow');
+				$ucPluginAdminName = \ze\admin::phrase('Slideshow');
+				$pluginsLink = '#zenario__modules/panels/plugins/refiners/slideshows////'. $instanceId;
+			
+			} elseif ($isNest) {
 				$pluginAdminName = \ze\admin::phrase('nest');
 				$ucPluginAdminName = \ze\admin::phrase('Nest');
+				$pluginsLink = '#zenario__modules/panels/plugins/refiners/nests////'. $instanceId;
+			
 			} else {
 				$pluginAdminName = \ze\admin::phrase('plugin');
 				$ucPluginAdminName = \ze\admin::phrase('Plugin');
+				$pluginsLink = '#zenario__modules/panels/modules/item//' . $moduleId. '//'. $instanceId;
 			}
-		
-			$pluginsLink = '#zenario__modules/panels/modules/item//' . $moduleId. '//'. $instanceId;
 		
 			//$info['module_name']['css_class'] = 'zenario_slotControl_reusable';
 		
@@ -211,10 +245,13 @@ class pluginAdm {
 		if (isset($actions) && is_array($actions)) {
 			foreach ($actions as &$action) {
 				if (is_array($action)) {
-					if (!empty($action['label'])) {
+					if (isset($action['label'])) {
 						$action['label'] = str_replace('~plugin~', $pluginAdminName, str_replace('~Plugin~', $ucPluginAdminName, $action['label']));
 					}
-					if (!empty($action['onclick'])) {
+					//if (isset($action['label_different'])) {
+					//	$action['label_different'] = str_replace('~plugin~', $pluginAdminName, str_replace('~Plugin~', $ucPluginAdminName, $action['label']));
+					//}
+					if (isset($action['onclick'])) {
 						$action['onclick'] = str_replace('~plugin~', \ze\escape::js($pluginAdminName), str_replace('~Plugin~', \ze\escape::js($ucPluginAdminName), $action['onclick']));
 					}
 				}
@@ -240,7 +277,7 @@ class pluginAdm {
 		//Search this module's inheritances for frameworks first
 		$sql = "
 			SELECT dependency_class_name
-			FROM ". DB_NAME_PREFIX. "module_dependencies
+			FROM ". DB_PREFIX. "module_dependencies
 			WHERE type = 'inherit_frameworks'
 			  AND module_class_name = '". \ze\escape::sql($className). "'
 			LIMIT 1";
@@ -361,13 +398,15 @@ class pluginAdm {
 			$values['framework'] = $instance['framework'];
 			$values['css_class'] = $instance['css_class'];
 			$values['module_id'] = $instance['module_id'];
-	
+			
 			if ($cID) {
 				$values['content_id'] = $cID;
 				$values['content_type'] = $cType;
 				$values['content_version'] = $cVersion;
 				$values['slot_name'] = $slotName;
 			}
+			$values['is_nest'] = $instance['module_id'] == \ze\module::id('zenario_plugin_nest');
+			$values['is_slideshow'] = $instance['module_id'] == \ze\module::id('zenario_slideshow');
 	
 			$oldInstanceId = $instanceId;
 			$instanceId = \ze\row::insert('plugin_instances', $values);
@@ -375,7 +414,7 @@ class pluginAdm {
 			
 			//Copy any nested Plugins
 			$sql = "
-				INSERT INTO ". DB_NAME_PREFIX. "nested_plugins (
+				INSERT INTO ". DB_PREFIX. "nested_plugins (
 					instance_id,
 					slide_num,
 					ord,
@@ -429,20 +468,24 @@ class pluginAdm {
 					param_1,
 					param_2,
 					always_visible_to_admins
-				FROM ". DB_NAME_PREFIX. "nested_plugins
+				FROM ". DB_PREFIX. "nested_plugins
 				WHERE instance_id = ". (int) $oldInstanceId;
-			\ze\sql::select($sql);  //No need to check the cache as the other statements should clear it correctly
+			\ze\sql::cacheFriendlyUpdate($sql);  //No need to check the cache as the other statements should clear it correctly
 	
 	
 			//Copy paths in the conductor
 			$sql = "
-				INSERT INTO ". DB_NAME_PREFIX. "nested_paths (
+				INSERT INTO ". DB_PREFIX. "nested_paths (
 					instance_id,
 					from_state,
 					to_state,
 					equiv_id,
 					content_type,
-					commands,
+					command,
+					is_custom,
+					request_vars,
+					hierarchical_var,
+					descendants,
 					is_forwards
 				) SELECT
 					". (int) $instanceId. ",
@@ -450,16 +493,20 @@ class pluginAdm {
 					to_state,
 					equiv_id,
 					content_type,
-					commands,
+					command,
+					is_custom,
+					request_vars,
+					hierarchical_var,
+					descendants,
 					is_forwards
-				FROM ". DB_NAME_PREFIX. "nested_paths
+				FROM ". DB_PREFIX. "nested_paths
 				WHERE instance_id = ". (int) $oldInstanceId;
-			\ze\sql::select($sql);  //No need to check the cache as the other statements should clear it correctly
+			\ze\sql::cacheFriendlyUpdate($sql);  //No need to check the cache as the other statements should clear it correctly
 	
 	
 			//Copy any meta info that isn't cached data
 			$sql = "
-				INSERT INTO ". DB_NAME_PREFIX. "plugin_instance_store (
+				INSERT INTO ". DB_PREFIX. "plugin_instance_store (
 					instance_id,
 					method_name,
 					request,
@@ -473,37 +520,37 @@ class pluginAdm {
 					last_updated,
 					store,
 					0
-				FROM ". DB_NAME_PREFIX. "plugin_instance_store
+				FROM ". DB_PREFIX. "plugin_instance_store
 				WHERE instance_id = ". (int) $oldInstanceId. "
 				  AND is_cache = 0";
-			\ze\sql::select($sql);  //No need to check the cache as the other statements should clear it correctly
+			\ze\sql::cacheFriendlyUpdate($sql);  //No need to check the cache as the other statements should clear it correctly
 	
 	
 			//Copy any groups chosen for slides
 			$sql = "
-				INSERT INTO ". DB_NAME_PREFIX. "group_link
+				INSERT INTO ". DB_PREFIX. "group_link
 					(`link_from`, `link_from_id`, `link_from_char`, `link_to`, `link_to_id`)
 				SELECT
 					gsl.link_from,
 					np_new.id,
 					gsl.link_from_char, gsl.link_to, gsl.link_to_id
-				FROM ". DB_NAME_PREFIX. "nested_plugins AS np_old
-				INNER JOIN ". DB_NAME_PREFIX. "group_link AS gsl
+				FROM ". DB_PREFIX. "nested_plugins AS np_old
+				INNER JOIN ". DB_PREFIX. "group_link AS gsl
 				   ON gsl.link_from = 'slide'
 				  AND gsl.link_from_id = np_old.id
-				INNER JOIN ". DB_NAME_PREFIX. "nested_plugins AS np_new
+				INNER JOIN ". DB_PREFIX. "nested_plugins AS np_new
 				   ON np_new.instance_id = ". (int) $instanceId. "
 				  AND np_old.slide_num = np_new.slide_num
 				  AND np_old.ord = np_new.ord
 				WHERE np_old.is_slide = 1
 				  AND np_old.instance_id = ". (int) $oldInstanceId;
 	
-			\ze\sql::select($sql);  //No need to check the cache as the other statements should clear it correctly
+			\ze\sql::cacheFriendlyUpdate($sql);  //No need to check the cache as the other statements should clear it correctly
 	
 	
 			//Copy settings, as well as settings for any nested Plugins
 			$sql = "
-				INSERT INTO ". DB_NAME_PREFIX. "plugin_settings (
+				INSERT INTO ". DB_PREFIX. "plugin_settings (
 					instance_id,
 					egg_id,
 					`name`,
@@ -534,11 +581,11 @@ class pluginAdm {
 					ps.foreign_key_id,
 					ps.foreign_key_char,
 					ps.dangling_cross_references
-				FROM ". DB_NAME_PREFIX. "plugin_settings AS ps
-				LEFT JOIN ". DB_NAME_PREFIX. "nested_plugins AS np_old
+				FROM ". DB_PREFIX. "plugin_settings AS ps
+				LEFT JOIN ". DB_PREFIX. "nested_plugins AS np_old
 				   ON np_old.instance_id = ". (int) $oldInstanceId. "
 				  AND np_old.id = ps.egg_id
-				LEFT JOIN ". DB_NAME_PREFIX. "nested_plugins AS np_new
+				LEFT JOIN ". DB_PREFIX. "nested_plugins AS np_new
 				   ON np_new.instance_id = ". (int) $instanceId. "
 				  AND np_old.slide_num = np_new.slide_num
 				  AND np_old.ord = np_new.ord
@@ -551,14 +598,14 @@ class pluginAdm {
 				  AND ps.name NOT LIKE '\%%'";
 			}
 	
-			\ze\sql::select($sql);  //No need to check the cache as the other statements should clear it correctly
+			\ze\sql::cacheFriendlyUpdate($sql);  //No need to check the cache as the other statements should clear it correctly
 	
 	
 			//Copy any CSS for nested plugins
 			$sql = "
 				SELECT np_old.id AS old_id, np_new.id AS new_id
-				FROM ". DB_NAME_PREFIX. "nested_plugins AS np_old
-				INNER JOIN ". DB_NAME_PREFIX. "nested_plugins AS np_new
+				FROM ". DB_PREFIX. "nested_plugins AS np_old
+				INNER JOIN ". DB_PREFIX. "nested_plugins AS np_new
 				   ON np_new.instance_id = ". (int) $instanceId. "
 				  AND np_old.slide_num = np_new.slide_num
 				  AND np_old.ord = np_new.ord
@@ -599,10 +646,10 @@ class pluginAdm {
 	
 		$sql = "
 			SELECT l.status, COUNT(DISTINCT l.layout_id)
-			FROM ". DB_NAME_PREFIX. "plugin_layout_link AS pll
-			INNER JOIN ". DB_NAME_PREFIX. "layouts AS l
+			FROM ". DB_PREFIX. "plugin_layout_link AS pll
+			INNER JOIN ". DB_PREFIX. "layouts AS l
 			   ON l.layout_id = pll.layout_id
-			INNER JOIN ". DB_NAME_PREFIX. "template_slot_link AS s
+			INNER JOIN ". DB_PREFIX. "template_slot_link AS s
 			   ON s.family_name = l.family_name
 			  AND s.file_base_name = l.file_base_name
 			  AND s.slot_name = pll.slot_name
@@ -623,7 +670,7 @@ class pluginAdm {
 
 	//Check how many content items use a Library plugin
 	//Formerly "checkInstancesUsage()"
-	public static function usage($instanceIds, $publishedOnly = false, $itemLayerOnly = false, $reportContentItems = false) {
+	public static function usage($instanceIds, $publishedOnly = false, $itemLayerOnly = false, $reportContentItems = false, $publicPagesOnly = false) {
 	
 		if (!$instanceIds) {
 			return 0;
@@ -633,10 +680,10 @@ class pluginAdm {
 		if (!$itemLayerOnly) {
 			$sql2 = "
 				SELECT l.layout_id
-				FROM ". DB_NAME_PREFIX. "plugin_layout_link AS pll
-				INNER JOIN ". DB_NAME_PREFIX. "layouts AS l
+				FROM ". DB_PREFIX. "plugin_layout_link AS pll
+				INNER JOIN ". DB_PREFIX. "layouts AS l
 				   ON l.layout_id = pll.layout_id
-				INNER JOIN ". DB_NAME_PREFIX. "template_slot_link AS s
+				INNER JOIN ". DB_PREFIX. "template_slot_link AS s
 				   ON s.family_name = l.family_name
 				  AND s.file_base_name = l.file_base_name
 				  AND s.slot_name = pll.slot_name
@@ -658,8 +705,8 @@ class pluginAdm {
 		}
 	
 		$sql .= "
-			FROM ". DB_NAME_PREFIX. "content_items AS c
-			INNER JOIN ". DB_NAME_PREFIX. "content_item_versions as v
+			FROM ". DB_PREFIX. "content_items AS c
+			INNER JOIN ". DB_PREFIX. "content_item_versions as v
 			   ON c.id = v.id
 			  AND c.type = v.type";
 	
@@ -670,17 +717,25 @@ class pluginAdm {
 			$sql .= "
 			  AND v.version IN (c.admin_version, c.visitor_version)";
 		}
+		
+		if ($publicPagesOnly) {
+			$sql .= "
+				INNER JOIN ". DB_PREFIX . "translation_chains AS tc
+				   ON c.equiv_id = tc.equiv_id
+				  AND c.type = tc.type
+				  AND tc.privacy = 'public'";
+		}
 	
 		$sql .= "
-			INNER JOIN ". DB_NAME_PREFIX. "layouts AS l
+			INNER JOIN ". DB_PREFIX. "layouts AS l
 			   ON l.layout_id = v.layout_id";
 	
 		if ($itemLayerOnly) {
 			$sql .= "
-				INNER JOIN ". DB_NAME_PREFIX. "plugin_item_link as pil";
+				INNER JOIN ". DB_PREFIX. "plugin_item_link as pil";
 		} else {
 			$sql .= "
-				LEFT JOIN ". DB_NAME_PREFIX. "plugin_item_link as pil";
+				LEFT JOIN ". DB_PREFIX. "plugin_item_link as pil";
 		}
 	
 		$sql .= "
@@ -691,10 +746,10 @@ class pluginAdm {
 	
 		if ($itemLayerOnly) {
 			$sql .= "
-				INNER JOIN ". DB_NAME_PREFIX. "template_slot_link as t";
+				INNER JOIN ". DB_PREFIX. "template_slot_link as t";
 		} else {
 			$sql .= "
-				LEFT JOIN ". DB_NAME_PREFIX. "template_slot_link as t";
+				LEFT JOIN ". DB_PREFIX. "template_slot_link as t";
 		}
 	
 		$sql .= "
@@ -726,6 +781,77 @@ class pluginAdm {
 			return \ze\sql::fetchValue($sql);
 		}
 	}
+	
+	
+	public static function getUsage($instanceId) {
+		if (is_array($instanceId)) {
+			$instanceIdSQL = ' IN (' . \ze\escape::in($instanceId) . ')';
+		} else {
+			$instanceIdSQL = ' = ' . (int)$instanceId;
+		}
+
+		$layoutCount = $itemCount = 0;
+		$usage = [];
+
+		if ($instanceId) {
+			//Count how many layouts use this plugin, and get one example
+			$sql = "
+				SELECT DISTINCT pll.layout_id
+				FROM " . DB_PREFIX . "plugin_layout_link AS pll
+				INNER JOIN " . DB_PREFIX . "layouts AS l
+					ON l.layout_id = pll.layout_id
+				WHERE pll.instance_id " . $instanceIdSQL . "
+					AND l.status = 'active'";
+			$result = \ze\sql::select($sql);
+			
+			if ($usage['layouts'] = \ze\sql::numRows($result)) {
+				$usage['layout'] = \ze\sql::fetchValue($result);
+			}
+			
+			//Count how many content items use this plugin, and get one example
+			$usage['content_items'] = [];
+			$sql = "
+				SELECT DISTINCT ci.tag_id
+				FROM " . DB_PREFIX . "plugin_item_link AS pil
+				INNER JOIN " . DB_PREFIX . "content_items AS ci
+					ON ci.id = pil.content_id
+					AND ci.type = pil.content_type
+					AND pil.content_version IN (ci.visitor_version, ci.admin_version)
+					AND ci.status IN ('first_draft', 'published_with_draft', 'hidden_with_draft', 'trashed_with_draft', 'published', 'hidden')
+					AND (pil.content_version, ci.status) IN (
+						(ci.admin_version, 'first_draft'),
+						(ci.admin_version, 'hidden_with_draft'),
+						(ci.admin_version, 'trashed_with_draft'),
+						(ci.admin_version, 'published_with_draft'),
+						(ci.visitor_version, 'published_with_draft'),
+						(ci.visitor_version, 'published'),
+						(ci.admin_version - 1, 'hidden_with_draft'),
+						(ci.admin_version, 'hidden')
+					)
+				INNER JOIN " . DB_PREFIX . "content_item_versions AS viil
+					ON viil.id = pil.content_id
+					AND viil.type = pil.content_type
+					AND viil.version = pil.content_version
+				INNER JOIN " . DB_PREFIX . "layouts AS liil
+					ON liil.layout_id = viil.layout_id
+				INNER JOIN " . DB_PREFIX . "template_slot_link AS tiil
+					ON tiil.family_name = liil.family_name
+					AND tiil.file_base_name = liil.file_base_name
+					AND tiil.slot_name = pil.slot_name
+				WHERE pil.instance_id " . $instanceIdSQL;
+			$result = \ze\sql::select($sql);
+			
+			if ($usage['content_items'] = \ze\sql::numRows($result)) {
+				$usage['content_item'] = \ze\sql::fetchValue($result);
+			}
+		}
+		return $usage;
+	}
+	
+	
+	
+	
+	
 
 	//Replace one instance with another
 	//Formerly "replacePluginInstance()"
@@ -788,7 +914,7 @@ class pluginAdm {
 		$oldFilename = '2.'. $oldFilename. '.css';
 		$newFilename = '2.'. $newFilename. '.css';
 	
-		$skins = \ze\row::getArray('skins', ['id', 'family_name', 'name'], ['missing' => 0]);
+		$skins = \ze\row::getAssocs('skins', ['id', 'family_name', 'name'], ['missing' => 0]);
 	
 		foreach ($skins as $skin) {
 			$skinWritableDir = CMS_ROOT. \ze\content::skinPath($skin['family_name'], $skin['name']). 'editable_css/';
@@ -825,7 +951,7 @@ class pluginAdm {
 	//Formerly "deletePluginInstance()"
 	public static function delete($instanceId) {
 	
-		foreach (\ze\row::getArray('nested_plugins', 'id', ['is_slide' => 0, 'instance_id' => $instanceId]) as $eggId) {
+		foreach (\ze\row::getValues('nested_plugins', 'id', ['is_slide' => 0, 'instance_id' => $instanceId]) as $eggId) {
 			\ze\pluginAdm::manageCSSFile('delete', $instanceId, $eggId);
 		}
 		\ze\pluginAdm::manageCSSFile('delete', $instanceId);
@@ -834,8 +960,8 @@ class pluginAdm {
 	
 		\ze\sql::update("
 			DELETE np.*, gsl.*
-			FROM ". DB_NAME_PREFIX. "nested_plugins AS np
-			LEFT JOIN ". DB_NAME_PREFIX. "group_link AS gsl
+			FROM ". DB_PREFIX. "nested_plugins AS np
+			LEFT JOIN ". DB_PREFIX. "group_link AS gsl
 			   ON gsl.link_from = 'slide'
 			  AND gsl.link_from_id = np.id
 			  AND np.is_slide = 1
@@ -986,7 +1112,7 @@ class pluginAdm {
 				show_refresh,
 				name_or_title,
 				cols, small_screens
-			FROM ". DB_NAME_PREFIX. "nested_plugins
+			FROM ". DB_PREFIX. "nested_plugins
 			WHERE id = ". (int) $eggId;
 	
 		if ($instanceId !== false) {
@@ -1007,6 +1133,333 @@ class pluginAdm {
 	public static function conductorEnabled($instanceId) {
 		return (bool) \ze\row::get('plugin_settings', 'value', ['instance_id' => $instanceId, 'name' => 'enable_conductor', 'egg_id' => 0]);
 	}
+	
+	
+	
+	
+	
+	
+	
+	
+	//Update the request vars that are stored against each slide
+	//You can call this for a specific slide, all slides in a specific nest, every nest & slide on a site that uses a specific plugin,
+	//or for every nest & slide on a site.
+	public static function setSlideRequestVars($instanceId = false, $slideNum = false, $moduleId = false, $eggId = false) {
+		
+		$prevInstance = -1;
+		$moduleCommands = [];
+		$slideRequestVars = [];
+		
+		$knownCommands = [
+			'back' => ['hVar' => '', 'rVars' => ''],
+			'submit' => ['hVar' => '', 'rVars' => '']
+		];
+		
+		$sql = '
+			SELECT
+				slide.instance_id, slide.id AS slide_id,
+				egg.id AS egg_id, egg.module_id, egg.makes_breadcrumbs,
+				ps.value AS mode
+			FROM '. DB_PREFIX. 'nested_plugins AS slide
+			INNER JOIN '. DB_PREFIX. 'nested_plugins AS egg
+			   ON egg.instance_id = slide.instance_id
+			  AND egg.slide_num = slide.slide_num
+			  AND egg.is_slide = 0
+			LEFT JOIN '. DB_PREFIX. 'plugin_settings AS ps
+			   ON ps.instance_id = egg.instance_id
+			  AND ps.egg_id = egg.id
+			  AND ps.name = \'mode\'
+			  AND ps.value IS NOT NULL
+			  AND ps.value != \'\'
+			WHERE slide.is_slide = 1
+			  AND slide.`states` != \'\'';
+		
+		if ($moduleId) {
+			$sql .= '
+			  AND slide.instance_id IN (
+				SELECT DISTINCT module.instance_id
+				FROM '. DB_PREFIX. 'nested_plugins AS module
+				WHERE module.module_id = '. (int) $moduleId. '
+			  )';
+		}
+		
+		if ($instanceId) {
+			$sql .= '
+			  AND slide.instance_id = '. (int) $instanceId;
+			
+			if ($slideNum) {
+				$sql .= '
+			  AND slide.slide_num = '. (int) $slideNum;
+			}
+		}
+		
+		if ($eggId) {
+			$sql .= '
+			  AND egg.id = '. (int) $eggId;
+		}
+			
+		$sql .= '
+			ORDER BY slide.instance_id, slide.id';
+		
+		
+		
+		foreach (\ze\sql::select($sql) as $egg) {
+			
+			$instanceId = $egg['instance_id'];
+			$slideId = $egg['slide_id'];
+			$moduleId = $egg['module_id'];
+			
+			if ($prevInstance !== -1
+			 && $prevInstance != $instanceId) {
+				\ze\pluginAdm::calcConductorHierarchy($prevInstance, $knownCommands);
+			}
+			$prevInstance = $instanceId;
+			
+			
+			
+			//Get the details for this module, if not already loaded
+			if (!isset($moduleCommands[$moduleId])) {
+				$tags = [];
+				if ((\ze\moduleAdm::loadDescription(\ze\module::className($moduleId), $tags))
+				 && !empty($tags['path_commands'])) {
+					
+					//Note down the commands and their variables for each module
+					foreach ($tags['path_commands'] as $command => $commandDetails) {
+						
+						$knownCommands[$command] = [
+							'hVar' => $commandDetails['hierarchical_var'] ?? '',
+							'rVars' => implode(',', $commandDetails['request_vars'] ?? [])
+						];
+					}
+					
+					$moduleCommands[$moduleId] = $tags['path_commands'];
+				} else {
+					$moduleCommands[$moduleId] = [];
+				}
+			}
+			
+			//Check if this module/mode can generate smart breadcrumbs
+			$canMakeBreadcrumbs = $egg['mode'] && !empty($moduleCommands[$moduleId][$egg['mode']]['able_to_generate_smart_breadcrumbs']);
+			
+			//Update the row if it was wrong in the database
+			if ($canMakeBreadcrumbs XOR ((bool) $egg['makes_breadcrumbs'])) {
+				\ze\row::update('nested_plugins', ['makes_breadcrumbs' => (int) $canMakeBreadcrumbs], $egg['egg_id']);
+			}
+		}
+		
+		if ($prevInstance !== -1) {
+			\ze\pluginAdm::calcConductorHierarchy($prevInstance, $knownCommands);
+		}
+	}
 
+	//Remove all of the variables such as dataPoolId1 and dataPoolId2, if they've been previously added
+	private static function cchTrimReqVars($slide) {
+		$out = [];
+		
+		foreach (\ze\ray::explodeAndTrim($slide['request_vars']) as $var) {
+			if (!preg_match('@\d@', substr($var, -1, 1))) {
+				$out[] = $var;
+			}
+		}
+		
+		return $out;
+	}
+
+	//Add some hierarchy information to conductor
+	public static function calcConductorHierarchy($instanceId, $knownCommands = null) {
+		
+		//Update the hierarchical_vars in the nested paths, if this function was chain-called from
+		//the setSlideRequestVars() above. (Otherwise assume this is already correct and doesn't need updating.)
+		if (!is_null($knownCommands)) {
+			\ze\sql::update('
+				UPDATE '. DB_PREFIX. 'nested_paths
+				SET is_custom = 1,
+					hierarchical_var = \'\'
+				WHERE instance_id = '. (int) $instanceId. '
+			');
+			
+			foreach ($knownCommands as $command => $details) {
+				\ze\sql::update('
+					UPDATE '. DB_PREFIX. 'nested_paths
+					SET is_custom = 0,
+						request_vars = \''. \ze\escape::sql($details['rVars']). '\',
+						hierarchical_var = \''. \ze\escape::sql($details['hVar']). '\'
+					WHERE command = \''. \ze\escape::sql($command). '\'
+					  AND instance_id = '. (int) $instanceId. '
+				');
+			}
+		}
+		
+		
+		$level = 1;
+		$map = [];
+		$states = [];
+		$slides = [];
+
+
+		//Look for slides with no back links going from them. These are top-level slides
+		$sql = '
+			SELECT slide.id, slide.slide_num, slide.name_or_title, slide.states
+			FROM '. DB_PREFIX. 'nested_plugins AS slide
+			LEFT JOIN '. DB_PREFIX. 'nested_paths AS path
+			   ON path.instance_id = slide.instance_id
+			  AND path.command IN (\'back\', \'submit\')
+			  AND FIND_IN_SET(path.from_state, slide.states)
+			WHERE slide.is_slide = 1
+			  AND slide.instance_id = '. (int) $instanceId. '
+			  AND path.instance_id IS NULL';
+		
+		//Note down some info on each
+		foreach(\ze\sql::fetchAssocs($sql) as $slide) {
+			
+			$slide['request_vars'] =
+			$slide['untouched_request_vars'] = [];
+			
+			$slide['depth'] = 0;
+			$slide['descendants'] = [];
+			$slide['level'] = $level;
+			$slide['parents'] = '';
+			$slide['hierarchical_var'] = '';
+			
+			foreach (\ze\ray::explodeAndTrim($slide['states']) as $state) {
+				$state = $slide['states'];
+				$states[$state] = $slide;
+			}
+			
+			$slides[$slide['id']] = $slide;
+		}
+		
+		
+		//Do one sweep looking for slides with back links correctly set,
+		//then a second sweep looking for slides with broken back links
+		foreach ([false, true] as $brokenBackLinks) {
+		
+			//Keep looking for states that lead from the states we've already found
+			$progress = true;
+			while ($progress) {
+				$progress = false;
+				++$level;
+	
+				foreach ($states as $fromState => $fromSlide) {
+				
+					$sql = '
+						SELECT slide.id, slide.slide_num, slide.name_or_title, slide.states, path.request_vars, path.hierarchical_var, path.to_state
+						FROM '. DB_PREFIX. 'nested_paths AS path
+						INNER JOIN '. DB_PREFIX. 'nested_plugins AS slide
+						   ON path.instance_id = slide.instance_id
+						  AND FIND_IN_SET(path.to_state, slide.states)
+						'. ($brokenBackLinks? 'LEFT' : 'INNER'). ' JOIN '. DB_PREFIX. 'nested_paths AS back
+						   ON path.instance_id = back.instance_id
+						  AND path.to_state = back.from_state
+						  AND path.from_state = back.to_state
+						  AND back.equiv_id = 0
+						  AND back.command = \'back\'
+						WHERE path.instance_id = '. (int) $instanceId. '
+						  AND path.from_state = \''. \ze\escape::sql($fromState). '\'
+						  AND path.command NOT IN (\'back\', \'submit\')
+						  AND path.to_state NOT IN ('. \ze\escape::in(array_keys($states), 'sql'). ')
+						  AND path.equiv_id = 0';
+					
+					if ($brokenBackLinks) {
+						$sql .= '
+						  AND back.instance_id IS NULL';
+					}
+		
+					foreach (\ze\sql::fetchAssocs($sql) as $slide) {
+						$toState = $slide['to_state'];
+					
+						$slide['request_vars'] =
+						$slide['untouched_request_vars'] = self::cchTrimReqVars($slide);
+					
+						//Build up information about the descendants and parents we've seen so far
+						$slide['depth'] = 0;
+						$slide['descendants'] = [];
+						$slide['level'] = $level;
+			
+						if ($level == 2) {
+							$slide['parents'] = $fromState;
+						} else {
+							$slide['parents'] = $states[$fromState]['parents']. ','. $fromState;
+						}
+					
+						//Get info on the slides above this one in the hierarchy
+						$hVarCounts = [];
+					
+						if ($hVar = $slide['hierarchical_var']) {
+							$hVarCounts[$hVar] = 1;
+						}
+					
+						foreach (\ze\ray::explodeAndTrim($slide['parents']) as $parent) {
+							$states[$parent]['descendants'][] = $toState;
+							$states[$parent]['depth'] = $level;
+						
+							//Work out information on hierarchical variables, e.g. dataPoolId1 and so on
+							if (!empty($states[$parent]['hierarchical_var'])) {
+								$hVar = $states[$parent]['hierarchical_var'];
+							
+								if (isset($hVarCounts[$hVar])) {
+									++$hVarCounts[$hVar];
+								} else {
+									$hVarCounts[$hVar] = 1;
+								}
+							}
+						
+							//Add any variable defined on the parents to the children as well,
+							//just in case those plugins missed defining them.
+							$slide['request_vars'] = array_merge($slide['request_vars'], $states[$parent]['untouched_request_vars']);
+						}
+						$slide['request_vars'] = array_unique($slide['request_vars']);
+					
+						//Add the correct hierarchical variable to each slide's request variables
+						foreach ($hVarCounts as $hVar => $count) {
+							$slide['request_vars'][] = $hVar. $count;
+						
+							//Also remove the base variable
+							$slide['request_vars'] = array_diff($slide['request_vars'], [$hVar]);
+						}
+					
+					
+					
+						$states[$toState] = $slide;
+						$slides[$slide['id']] = $slide;
+					
+					
+						$progress = true;
+					}
+				}
+			}
+		}
+		
+	
+		//For every back link, note down the states that are below that link.
+		//This is so when the back link is followed by the conductor, any variables from the states below can be cleared.
+		\ze\sql::update('
+			UPDATE '. DB_PREFIX. 'nested_paths AS back
+			SET back.descendants = \'\'
+			WHERE back.instance_id = '. (int) $instanceId
+		);
+		
+		foreach ($states as $state => $slide) {
+			\ze\sql::update('
+				UPDATE '. DB_PREFIX. 'nested_paths AS back
+				SET back.descendants = \''. \ze\escape::sql(implode(',', $slide['descendants'])). '\'
+				WHERE back.from_state = \''. \ze\escape::sql($state). '\'
+				  AND back.command = \'back\'
+				  AND back.instance_id = '. (int) $instanceId
+			);
+		}
+		
+		//Update the request_vars on each slide, with the hierarchical variables added
+		foreach ($slides as $slideId => $slide) {
+			\ze\sql::update('
+				UPDATE '. DB_PREFIX. 'nested_plugins
+				SET request_vars = \''. \ze\escape::sql(implode(',', $slide['request_vars'])). '\'
+				WHERE id = '. (int) $slideId
+			);
+		}
+		
+		
+		//N.b. the parents, depth and level variables calculated are currently not used anywhere
+	}
 
 }

@@ -295,19 +295,19 @@ class zenario_forum extends zenario_comments {
 		//Update the user's post count
 		if ($quickAdd) {
 			$sql = "
-				UPDATE ". DB_NAME_PREFIX. ZENARIO_COMMENTS_PREFIX. "users SET
+				UPDATE ". DB_PREFIX. ZENARIO_COMMENTS_PREFIX. "users SET
 					post_count = post_count + 1
 				WHERE user_id = ". (int) $userId;
 		} else {
 			$sql = "
-				UPDATE ". DB_NAME_PREFIX. ZENARIO_COMMENTS_PREFIX. "users SET
+				UPDATE ". DB_PREFIX. ZENARIO_COMMENTS_PREFIX. "users SET
 					post_count = (
 						SELECT COUNT(*)
-						FROM ". DB_NAME_PREFIX. ZENARIO_ANONYMOUS_COMMENTS_PREFIX. "user_comments
+						FROM ". DB_PREFIX. ZENARIO_ANONYMOUS_COMMENTS_PREFIX. "user_comments
 						WHERE poster_id = ". (int) $userId. "
 					) + (
 						SELECT COUNT(*)
-						FROM ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "user_posts
+						FROM ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "user_posts
 						WHERE poster_id = ". (int) $userId. "
 					)
 				WHERE user_id = ". (int) $userId;
@@ -501,8 +501,8 @@ class zenario_forum extends zenario_comments {
 		if($this->allow_uploads){
 			
 			ze\row::delete(ZENARIO_FORUM_PREFIX . 'user_posts_uploads', ['post_id' => $postId]);
-			$file_list = ze\row::getArray(ZENARIO_FORUM_PREFIX . 'user_posts_uploads', 'file_id', ['post_id' => $postId], false, false,
-					DB_NAME_PREFIX.ZENARIO_FORUM_PREFIX);
+			$file_list = ze\row::getValues(ZENARIO_FORUM_PREFIX . 'user_posts_uploads', 'file_id', ['post_id' => $postId], false, false,
+					DB_PREFIX.ZENARIO_FORUM_PREFIX);
 			if(is_array($file_list)){
 				foreach($file_list as $file_id){
 					$this->deleteOneUploadFile($file_id);
@@ -512,7 +512,7 @@ class zenario_forum extends zenario_comments {
 	}
 	
 	protected function getExtraPostInfo(&$post, &$mergeFields, &$sections, $to_edit=false){
-		$post_uploads = ze\row::getArray(ZENARIO_FORUM_PREFIX . 'user_posts_uploads', ['file_id','caption'], 
+		$post_uploads = ze\row::getAssocs(ZENARIO_FORUM_PREFIX . 'user_posts_uploads', ['file_id','caption'], 
 				['post_id' => $post['id']], false);
 		if(is_array($post_uploads)){
 			$mysection = 'Post_Uploads_Links';
@@ -552,7 +552,7 @@ class zenario_forum extends zenario_comments {
 		$post_id = $this->post['id'];
 		//Add the comment
 		$sql = "
-			UPDATE ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "user_posts SET
+			UPDATE ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "user_posts SET
 				message_text = '". ze\escape::sql(zenario_anonymous_comments::sanitiseHTML($messageText, $this->setting('enable_images'), $this->setting('enable_links'))). "',
 				date_updated = NOW(),
 				updater_id = ". (int) $userId. "
@@ -572,7 +572,7 @@ class zenario_forum extends zenario_comments {
 		
 		//Updated the thread's title
 		$sql = "
-			UPDATE ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "threads SET
+			UPDATE ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "threads SET
 				title = '". ze\escape::sql($threadTitle). "'
 			WHERE id = ". (int) $this->threadId;
 		
@@ -627,7 +627,7 @@ class zenario_forum extends zenario_comments {
 		
 		$sql = "
 			SELECT IFNULL(MAX(last_updated_order), 0)
-			FROM ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "threads
+			FROM ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "threads
 			WHERE forum_id = ". (int) $this->forumId;
 		
 		$result = ze\sql::select($sql);
@@ -641,7 +641,7 @@ class zenario_forum extends zenario_comments {
 		
 		$sql = "
 			SELECT last_updated_order
-			FROM ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "threads
+			FROM ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "threads
 			WHERE forum_id = ". (int) $forumId. "
 			  AND id = ". (int) $threadId. "
 			LIMIT 1";
@@ -657,8 +657,8 @@ class zenario_forum extends zenario_comments {
 		
 		$sql = "
 			SELECT t.last_updated_order
-			FROM ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "threads AS t
-			INNER JOIN ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "user_posts AS p
+			FROM ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "threads AS t
+			INNER JOIN ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "user_posts AS p
 			   ON t.id = p.thread_id
 			  AND t.date_updated = p.date_posted
 			WHERE t.forum_id = ". (int) $this->forumId. "
@@ -700,7 +700,7 @@ class zenario_forum extends zenario_comments {
 				thread_content_type,
 				new_thread_content_id,
 				new_thread_content_type
-			FROM ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "forums AS f
+			FROM ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "forums AS f
 			WHERE id = ". (int) $this->forumId;
 		
 		$result = ze\sql::select($sql);
@@ -741,7 +741,7 @@ class zenario_forum extends zenario_comments {
 				post_count,
 				locked,
 				forum_id
-			FROM ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "threads AS t";
+			FROM ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "threads AS t";
 		
 		if ($_REQUEST['forum_thread'] ?? false) {
 			$sql .= "
@@ -783,7 +783,7 @@ class zenario_forum extends zenario_comments {
 				sticky,
 				locked,
 				rating
-			FROM ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "threads
+			FROM ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "threads
 			WHERE forum_id = ". (int) $this->forumId. "
 			ORDER BY ";
 		
@@ -823,7 +823,7 @@ class zenario_forum extends zenario_comments {
 				updater_id,
 				message_text,
 				rating
-			FROM ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "user_posts
+			FROM ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "user_posts
 			WHERE thread_id = ". (int) $this->threadId;
 		
 		if ($_REQUEST['comm_post'] ?? false) {
@@ -869,7 +869,7 @@ class zenario_forum extends zenario_comments {
 	function lockThread($lock) {
 		
 		$sql = "
-			UPDATE ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "threads SET
+			UPDATE ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "threads SET
 				locked = ". (int) $lock. "
 			WHERE id = ". (int) $this->threadId;
 		$result = ze\sql::update($sql);
@@ -910,7 +910,7 @@ class zenario_forum extends zenario_comments {
 	
 	function markForumRead($readerId) {
 		$sql = "
-			DELETE FROM ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "user_unread_threads
+			DELETE FROM ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "user_unread_threads
 			WHERE unread_from != 0
 			  AND unread_to != 0
 			  AND forum_id = ". (int) $this->forumId. "
@@ -922,28 +922,28 @@ class zenario_forum extends zenario_comments {
 	function markOtherThreadsAsLessRecent($threadLastUpdated, $forumId) {
 		
 		$sql = "
-			UPDATE ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "threads SET
+			UPDATE ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "threads SET
 				last_updated_order = last_updated_order - 1
 			WHERE last_updated_order > ". (int) $threadLastUpdated. "
 			  AND forum_id = ". (int) $forumId;
 		ze\sql::update($sql);
 		
 		$sql = "
-			DELETE FROM ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "user_unread_threads
+			DELETE FROM ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "user_unread_threads
 			WHERE unread_to = ". (int) $threadLastUpdated. "
 			  AND unread_from = ". (int) $threadLastUpdated. "
 			  AND forum_id = ". (int) $forumId;
 		ze\sql::update($sql, false, false);
 		
 		$sql = "
-			UPDATE ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "user_unread_threads SET
+			UPDATE ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "user_unread_threads SET
 				unread_from = unread_from - 1
 			WHERE unread_from > ". (int) $threadLastUpdated. "
 			  AND forum_id = ". (int) $forumId;
 		ze\sql::update($sql, false, false);
 		
 		$sql = "
-			UPDATE ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "user_unread_threads SET
+			UPDATE ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "user_unread_threads SET
 				unread_to = unread_to - 1
 			WHERE unread_to > ". (int) $threadLastUpdated. "
 			  AND forum_id = ". (int) $forumId;
@@ -953,7 +953,7 @@ class zenario_forum extends zenario_comments {
 	
 	function markThreadAsMostRecent($latestUpdated) {
 		$sql = "
-			UPDATE ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "threads SET
+			UPDATE ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "threads SET
 				last_updated_order = ". (int) $latestUpdated. "
 			WHERE id = ". (int) $this->threadId;
 		
@@ -971,7 +971,7 @@ class zenario_forum extends zenario_comments {
 		
 		//Extend the spans if possible
 		$sql = "
-			UPDATE ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "user_unread_threads SET
+			UPDATE ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "user_unread_threads SET
 				unread_to = ". (int) $latestUpdated. "
 			WHERE unread_to = ". ((int) $latestUpdated - 1). "
 			  AND forum_id = ". (int) $this->forumId;
@@ -980,16 +980,16 @@ class zenario_forum extends zenario_comments {
 		//Where we couldn't extend a span, we must add a new one.
 		//NOT IN must be used in order not to create any duplicates with the query above
 		$sql = "
-			INSERT INTO ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "user_unread_threads(
+			INSERT INTO ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "user_unread_threads(
 				unread_from, unread_to, forum_id, reader_id
 			)
 			SELECT ". (int) $latestUpdated. ", ". (int) $latestUpdated. ", ". (int) $this->forumId. ", reader_id
-			FROM ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "user_unread_threads
+			FROM ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "user_unread_threads
 			WHERE forum_id = ". (int) $this->forumId. "
 			  AND unread_to = 0
 			  AND reader_id NOT IN (
 				SELECT reader_id
-				FROM ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "user_unread_threads
+				FROM ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "user_unread_threads
 				WHERE forum_id = ". (int) $this->forumId. "
 				  AND unread_to = ". (int) $latestUpdated. "
 			)";
@@ -1001,7 +1001,7 @@ class zenario_forum extends zenario_comments {
 		//Check to see if the user is in the user_unread_threads table for this forum
 		$sql = "
 			SELECT 1
-			FROM ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "user_unread_threads
+			FROM ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "user_unread_threads
 			WHERE forum_id = ". (int) $this->forumId. "
 			  AND reader_id = ". (int) $userId. "
 			LIMIT 1";
@@ -1018,7 +1018,7 @@ class zenario_forum extends zenario_comments {
 		
 		//If not, add a special row in for them so we know we've included them
 		$sql = "
-			INSERT INTO ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "user_unread_threads SET
+			INSERT INTO ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "user_unread_threads SET
 				unread_from = 0,
 				unread_to = 0,
 				forum_id = ". (int) $this->forumId. ",
@@ -1027,7 +1027,7 @@ class zenario_forum extends zenario_comments {
 		
 		//Then mark the forum as unread for them
 		$sql = "
-			INSERT INTO ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "user_unread_threads SET
+			INSERT INTO ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "user_unread_threads SET
 				unread_from = 1,
 				unread_to = ". (int) $latestUpdated. ",
 				forum_id = ". (int) $this->forumId. ",
@@ -1043,7 +1043,7 @@ class zenario_forum extends zenario_comments {
 		
 		$sql = "
 			SELECT 1
-			FROM ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "user_unread_threads
+			FROM ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "user_unread_threads
 			WHERE forum_id = ". (int) $forumId. "
 			  AND reader_id = ". (int) $userId. "
 			  AND unread_from <= ". (int) $latestUpdated. "
@@ -1065,7 +1065,7 @@ class zenario_forum extends zenario_comments {
 		//Otherwise, check to see if there are any unread threads for the user in the forum
 		$sql = "
 			SELECT 1
-			FROM ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "user_unread_threads
+			FROM ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "user_unread_threads
 			WHERE forum_id = ". (int) $forumId. "
 			  AND reader_id = ". (int) $userId. "
 			  AND unread_from != 0
@@ -1080,7 +1080,7 @@ class zenario_forum extends zenario_comments {
 		//Otherwise, check to see if the user has ever been in the forum. (If not, then they've not read it!)
 		$sql = "
 			SELECT 1
-			FROM ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "user_unread_threads
+			FROM ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "user_unread_threads
 			WHERE forum_id = ". (int) $forumId. "
 			  AND reader_id = ". (int) $userId. "
 			  AND unread_from = 0

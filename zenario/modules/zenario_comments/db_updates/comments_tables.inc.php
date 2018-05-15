@@ -32,11 +32,11 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 ze\dbAdm::revision( 1
 //Create a table to show extra information on users, such as post counts and signatures
 , <<<_sql
-	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]][[ZENARIO_COMMENTS_PREFIX]]users`
+	DROP TABLE IF EXISTS `[[DB_PREFIX]][[ZENARIO_COMMENTS_PREFIX]]users`
 _sql
 
 , <<<_sql
-	CREATE TABLE `[[DB_NAME_PREFIX]][[ZENARIO_COMMENTS_PREFIX]]users`(
+	CREATE TABLE `[[DB_PREFIX]][[ZENARIO_COMMENTS_PREFIX]]users`(
 		`user_id` int(10) unsigned NOT NULL,
 		`latest_activity` datetime NULL,
 		`previous_visit` datetime NULL,
@@ -52,7 +52,7 @@ _sql
 //Change the logic for tracking read/unread threads
 );	ze\dbAdm::revision( 5
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_COMMENTS_PREFIX]]users`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_COMMENTS_PREFIX]]users`
 	DROP COLUMN `previous_visit`
 _sql
 
@@ -60,25 +60,25 @@ _sql
 //Drop a table which was created but not implemented for clarity
 );	ze\dbAdm::revision( 23
 , <<<_sql
-	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]][[ZENARIO_COMMENTS_PREFIX]]user_messages`
+	DROP TABLE IF EXISTS `[[DB_PREFIX]][[ZENARIO_COMMENTS_PREFIX]]user_messages`
 _sql
 
 
 //Drop another table which was created but not implemented
 );	ze\dbAdm::revision( 24
 , <<<_sql
-	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]][[ZENARIO_COMMENTS_PREFIX]]user_comment_ratings`
+	DROP TABLE IF EXISTS `[[DB_PREFIX]][[ZENARIO_COMMENTS_PREFIX]]user_comment_ratings`
 _sql
 
 
 //Create a table for user subscriptions
 );	ze\dbAdm::revision( 80
 , <<<_sql
-	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]][[ZENARIO_COMMENTS_PREFIX]]user_subscriptions`
+	DROP TABLE IF EXISTS `[[DB_PREFIX]][[ZENARIO_COMMENTS_PREFIX]]user_subscriptions`
 _sql
 
 , <<<_sql
-	CREATE TABLE `[[DB_NAME_PREFIX]][[ZENARIO_COMMENTS_PREFIX]]user_subscriptions`(
+	CREATE TABLE `[[DB_PREFIX]][[ZENARIO_COMMENTS_PREFIX]]user_subscriptions`(
 		`user_id` int(10) unsigned NOT NULL,
 		`content_id` int(10) unsigned NOT NULL,
 		`content_type` varchar(20) NOT NULL,

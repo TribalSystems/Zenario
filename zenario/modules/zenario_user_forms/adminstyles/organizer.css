@@ -8,10 +8,11 @@
 	background: url('images/icon-forms-on.svg') no-repeat center / 16px 16px;
 }
 
-.organizer_item_image.zenario_user_forms {
-	background: center 1px no-repeat url('images/icon-forms-dark.png');
+.organizer_item_image.zenario_user_forms,
+.organizer_item_image.form_type_registration {
+	background: url('images/icon-forms.svg') no-repeat center / 16px 16px;
 }
 
 .organizer_item_image.zenario_user_forms_archive {
-	background: url('images/icon-archive-black.png') no-repeat center center;
+	background: url('images/icon-archive.svg') no-repeat center / 16px 16px;
 }

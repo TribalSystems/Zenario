@@ -181,3 +181,26 @@ zenario_job:
                     type: text
                     maxlength: "200"
             show_errors_after_field: desc
+        last_run:
+            ord: "40"
+            edit_mode:
+                enabled: true
+                priv: _PRIV_MANAGE_SCHEDULED_TASK
+            label: Last run
+            fields:
+                last_run_started:
+                    label: Last run started
+                    type: datetime
+                    readonly: true
+                last_run_finished:
+                    label: Last run finished
+                    type: datetime
+                    readonly: true
+                last_successful_run:
+                    label: Last successful run
+                    type: datetime
+                    readonly: true
+                last_action:
+                    label: Last action
+                    type: datetime
+                    readonly: true

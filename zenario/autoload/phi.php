@@ -202,17 +202,18 @@ class phi {
 		];
 		
 		//If assetwolf is running and has been included, make its getHistoricValue() function available
-		if (class_exists('assetwolf_common_fun')) {
-			$whitelist['getMinValue'] = 'assetwolf_common_fun::getMinValue';
-			$whitelist['getMaxValue'] = 'assetwolf_common_fun::getMaxValue';
-			$whitelist['getHistoricValue'] = 'assetwolf_common_fun::getHistoricValue';
-			$whitelist['getTimestamp'] = 'assetwolf_common_fun::getTimestamp';
-			$whitelist['getAllChildIds'] = 'assetwolf_common_fun::getAllChildIds';
-			$whitelist['getImmediateChildIds'] = 'assetwolf_common_fun::getImmediateChildIds';
-			$whitelist['getInheritedMetadata'] = 'assetwolf_common_fun::getInheritedMetadata';
-			$whitelist['getParentNodeId'] = 'assetwolf_common_fun::getParentNodeId';
-			$whitelist['getMetadata'] = 'assetwolf_common_fun::getMetadata';
-			$whitelist['query'] = 'assetwolf_common_fun::query';
+		if (class_exists('ze\\assetwolf')) {
+			$whitelist['getMinValue'] = 'ze\\assetwolf::getMinValue';
+			$whitelist['getMaxValue'] = 'ze\\assetwolf::getMaxValue';
+			$whitelist['getHistoricValue'] = 'ze\\assetwolf::getHistoricValue';
+			$whitelist['getMetricValue'] = 'ze\\assetwolf::getMetricValue';
+			$whitelist['getTimestamp'] = 'ze\\assetwolf::getTimestamp';
+			$whitelist['getAllChildIds'] = 'ze\\assetwolf::getAllChildIds';
+			$whitelist['getImmediateChildIds'] = 'ze\\assetwolf::getImmediateChildIds';
+			$whitelist['getInheritedMetadata'] = 'ze\\assetwolf::getInheritedMetadata';
+			$whitelist['getParentNodeId'] = 'ze\\assetwolf::getParentNodeId';
+			$whitelist['getMetadata'] = 'ze\\assetwolf::getMetadata';
+			$whitelist['query'] = 'ze\\assetwolf::query';
 		}
 
 		foreach ($whitelist as $twigName => $phpName) {
@@ -285,12 +286,12 @@ class phi {
 	public static function min(...$in) {
 		$a = [];
 		self::toArray($in, $a);
-		return min($a);
+		if ($a !== []) return min($a);
 	}
 	public static function max(...$in) {
 		$a = [];
 		self::toArray($in, $a);
-		return max($a);
+		if ($a !== []) return max($a);
 	}
 	public static function sum(...$in) {
 		$a = [];

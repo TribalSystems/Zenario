@@ -71,11 +71,17 @@ class fileAdm {
 
 	//Formerly "putUploadFileIntoCacheDir()"
 	public static function putUploadFileIntoCacheDir($filename, $tempnam, $html5_backwards_compatibility_hack = false, $dropboxLink = false) {
+		
+		//Catch the case where the browser or the server URLencoded the filename
+		$filename = rawurldecode($filename);
+		
 		if (!\ze\file::isAllowed($filename)) {
 			echo
-				'<p>', \ze\admin::phrase('You must select a known file format, for example .doc, .docx, .jpg, .pdf, .png or .xls.'), '</p>',
-				'<p>', \ze\admin::phrase('Please also check that your filename does not contain any of the following characters:'), '</p>',
-				'<pre>', htmlspecialchars('\\ / : * ? " < > |'), '</pre>';
+				\ze\admin::phrase('You must select a known file format, for example .doc, .docx, .jpg, .pdf, .png or .xls.'), 
+				"\n\n",
+				\ze\admin::phrase('To add a file format to the known file format list, go to "Configuration -> Uploadable file types" in Organizer.'),
+				"\n\n",
+				\ze\admin::phrase('Please also check that your filename does not contain any of the following characters: ' . "\n" . '\\ / : * ? " < > |');
 			exit;
 		}
 	
@@ -197,7 +203,7 @@ To correct this, please ask your system administrator to perform a
 	
 		//Attempt to fill in any missing short checksums
 		$sql = "
-			UPDATE IGNORE ". DB_NAME_PREFIX. "files
+			UPDATE IGNORE ". DB_PREFIX. "files
 			SET short_checksum = SUBSTR(checksum, 1, ". (int) \ze::setting('short_checksum_length'). ")
 			WHERE short_checksum IS NULL";
 		\ze\sql::update($sql);	
@@ -239,5 +245,59 @@ To correct this, please ask your system administrator to perform a
 				exit;
 		}
 	}
-	
+
+
+
+
+
+
+	//Get the $usage details for an image in the image library.
+	public static function getImageUsage($imageId) {
+		
+		$usage = [];
+		
+		foreach (\ze\sql::fetchAssocs("
+			SELECT foreign_key_to, is_nest, is_slideshow, COUNT(DISTINCT foreign_key_id, foreign_key_char) AS cnt, MIN(foreign_key_id) AS eg
+			FROM ". DB_PREFIX. "inline_images
+			WHERE image_id = ". (int) $imageId. "
+              AND in_use = 1
+			  AND archived = 0
+			  AND foreign_key_to IN ('content', 'library_plugin', 'menu_node', 'email_template', 'newsletter', 'newsletter_template') 
+			GROUP BY foreign_key_to, is_nest, is_slideshow
+		") as $ucat) {
+			$keyTo = $ucat['foreign_key_to'];
+			
+			if ($keyTo == 'content') {
+				$usage['content_items'] = $ucat['cnt'];
+				$usage['content_item'] = \ze\sql::fetchValue("
+					SELECT CONCAT(foreign_key_char, '_', foreign_key_id)
+					FROM ". DB_PREFIX. "inline_images
+					WHERE image_id = ". (int) $imageId. "
+					  AND archived = 0
+					  AND foreign_key_to = 'content'
+					LIMIT 1
+				");
+			
+			} elseif ($keyTo == 'library_plugin') {
+				if ($ucat['is_slideshow']) {
+					$usage['slideshows'] = $ucat['cnt'];
+					$usage['slideshow'] = $ucat['eg'];
+					
+				} elseif ($ucat['is_nest']) {
+					$usage['nests'] = $ucat['cnt'];
+					$usage['nest'] = $ucat['eg'];
+				
+				} else {
+					$usage['plugins'] = $ucat['cnt'];
+					$usage['plugin'] = $ucat['eg'];
+				}
+				
+			} else {
+				$usage[$keyTo. 's'] = $ucat['cnt'];
+				$usage[$keyTo] = $ucat['eg'];
+			}
+		}
+		
+		return $usage;
+	}	
 }

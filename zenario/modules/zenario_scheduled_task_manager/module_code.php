@@ -181,7 +181,7 @@ class zenario_scheduled_task_manager extends ze\moduleBaseClass {
 				status,
 				last_run_started,
 				last_run_started <= DATE_SUB(NOW(), INTERVAL 4 HOUR) AS stuck
-			FROM ". DB_NAME_PREFIX. "jobs
+			FROM ". DB_PREFIX. "jobs
 			WHERE manager_class_name = '". ze\escape::sql($managerClassName). "'
 			  AND `enabled` = 1";
 		
@@ -399,7 +399,7 @@ class zenario_scheduled_task_manager extends ze\moduleBaseClass {
 		if ($days && is_numeric($days)) {
 			$date = date('Y-m-d', strtotime('-'.$days.' day', strtotime(date('Y-m-d'))));
 			$sql = " 
-				DELETE FROM ". DB_NAME_PREFIX. "job_logs
+				DELETE FROM ". DB_PREFIX. "job_logs
 				WHERE started < '".ze\escape::sql($date)."'";
 			ze\sql::update($sql);
 			return ze\sql::affectedRows();
@@ -508,7 +508,7 @@ class zenario_scheduled_task_manager extends ze\moduleBaseClass {
 	public static function checkScheduledTaskRunning($jobName = false, $checkPulse = false, $managerClassName = 'zenario_scheduled_task_manager') {
 		
 		if (!ze::setting('jobs_enabled')
-		|| !ze\row::cacheTableDef(DB_NAME_PREFIX. 'jobs', true)) {
+		|| !ze::$dbL->checkTableDef(DB_PREFIX. 'jobs', true)) {
 			return false;
 		}
 		

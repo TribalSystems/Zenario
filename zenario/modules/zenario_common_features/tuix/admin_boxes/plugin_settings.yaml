@@ -3,30 +3,32 @@
 plugin_settings:
     css_class: zenario_fab_plugin 
     key:
-        id: ""
-        instanceId: ""
-        isVersionControlled: ""
-        cID: ""
-        cType: ""
-        cVersion: ""
-        slotName: ""
-        languageId: ""
-        eggId: ""
-        slideNum: ""
-        usesConductor: false
-        moduleId: ""
-        frontEnd: ""
+        id: ''
+        frontEnd: ''
+        skinId: false
+        languageId: ''
+        cID: ''
+        cType: ''
+        cVersion: ''
+        slotName: ''
+        isVersionControlled: ''
+        instanceId: ''
+        slideNum: ''
+        eggId: ''
+        moduleId: ''
+        moduleClassName: ''
         isFEA: false
+        usesConductor: false
     identifier:
         css_class: plugin_album_instance
-        label: Plugin
+        label: ''
         value: ''
     tabs:
         first_tab:
             label: Details
             fields:
                 instance_name:
-                    label: 'Plugin name:'
+                    label: '~Plugin~ name:'
                     type: text
                     redraw_onchange: true
                     redraw_immediately_onchange: true
@@ -43,9 +45,9 @@ plugin_settings:
                         rename:
                             label: Rename
                         replace:
-                            label: Save as new plugin and place here
+                            label: Save as new ~plugin~ and place here
                         duplicate:
-                            label: Save as new plugin in library
+                            label: Save as new ~plugin~ in library
         custom_tuix:
             label: Custom TUIX
             ord: 999999998

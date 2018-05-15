@@ -12,7 +12,7 @@ zenario__content:
             grid_view_microtemplate: zenario_grid_view_image
             slidedown_view_microtemplate: zenario_slidedown_view_image
             db_items:
-                table: '[[DB_NAME_PREFIX]]files AS f'
+                table: '[[DB_PREFIX]]files AS f'
                 where_statement: |
                     WHERE f.`usage` = 'background_image'
                       AND f.mime_type IN ('image/gif', 'image/png', 'image/jpeg', 'image/svg+xml')
@@ -56,7 +56,7 @@ zenario__content:
                 #    db_column: |
                 #        (
                 #            SELECT COUNT(DISTINCT )
-                #            FROM [[DB_NAME_PREFIX]]content_item_versions
+                #            FROM [[DB_PREFIX]]content_item_versions
                 #            WHERE ...
                 #        )
                 #    show_by_default: Yes
@@ -67,7 +67,7 @@ zenario__content:
                 #    db_column: |
                 #        (
                 #            SELECT COUNT(*)
-                #            FROM [[DB_NAME_PREFIX]]layouts
+                #            FROM [[DB_PREFIX]]layouts
                 #            WHERE ...
                 #        )
                 #    show_by_default: Yes

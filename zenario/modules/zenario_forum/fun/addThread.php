@@ -34,7 +34,7 @@ $this->checkUserIsInForumsUserTable($userId);
 //Add the thread
 $latestUpdated = $this->getLatestUpdated() + 1;
 $sql = "
-	INSERT INTO ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "threads SET
+	INSERT INTO ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "threads SET
 		forum_id = ". (int) $this->forumId. ",
 		date_posted = NOW(),
 		date_updated = NOW(),

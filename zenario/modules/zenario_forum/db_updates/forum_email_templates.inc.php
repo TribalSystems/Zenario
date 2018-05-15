@@ -29,12 +29,10 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 
 ze\dbAdm::revision(80, "
-    INSERT IGNORE INTO [[DB_NAME_PREFIX]]email_templates (
+    INSERT IGNORE INTO [[DB_PREFIX]]email_templates (
     	`code`,
         `template_name`,
         `subject`,
-        `email_address_from`,
-        `email_name_from`,
         `body`,
         `date_created`,
         `created_by_id`,
@@ -43,8 +41,6 @@ ze\dbAdm::revision(80, "
     	'zenario_forum__to_admin_new_thread_notification_en',
         'To Admin: New thread notification',
         'New thread notification',
-        '". ze\escape::sql(ze::setting('email_address_from')). "',
-        '". ze\escape::sql(ze::setting('email_name_from')). "',
         '<p>Dear Admin,</p>
         <p>A new thread has been created in the forum entitled &quot;[[forum_title]]&quot;:</p>
         <p>Title:<br/>[[thread_title]]</p>
@@ -61,12 +57,10 @@ ze\dbAdm::revision(80, "
 
 ", "
 
-    INSERT IGNORE INTO [[DB_NAME_PREFIX]]email_templates (
+    INSERT IGNORE INTO [[DB_PREFIX]]email_templates (
     	`code`,
         `template_name`,
         `subject`,
-        `email_address_from`,
-        `email_name_from`,
         `body`,
         `date_created`,
         `created_by_id`,
@@ -75,8 +69,6 @@ ze\dbAdm::revision(80, "
     	'zenario_forum__to_admin_post_notification_en',
         'To Admin: Post notification',
         'Post notification',
-        '". ze\escape::sql(ze::setting('email_address_from')). "',
-        '". ze\escape::sql(ze::setting('email_name_from')). "',
         '<p>Dear Admin,</p>
         <p>The following message has been left on the thread entitled &quot;[[thread_title]]&quot; in the &quot;[[forum_title]]&quot; forum:</p>
         <p>Message:<br/>[[message]]</p>
@@ -92,12 +84,10 @@ ze\dbAdm::revision(80, "
 
 ", "
 
-    INSERT IGNORE INTO [[DB_NAME_PREFIX]]email_templates (
+    INSERT IGNORE INTO [[DB_PREFIX]]email_templates (
     	`code`,
         `template_name`,
         `subject`,
-        `email_address_from`,
-        `email_name_from`,
         `body`,
         `date_created`,
         `created_by_id`,
@@ -106,8 +96,6 @@ ze\dbAdm::revision(80, "
     	'zenario_forum__new_thread_subs_en',
         'To User: New thread notification',
         'New thread notification',
-        '". ze\escape::sql(ze::setting('email_address_from')). "',
-        '". ze\escape::sql(ze::setting('email_name_from')). "',
         '<p>Dear [[subscriber_screen_name]],</p>
         <p>You are subscribed to new threads in the forum entitled &quot;[[forum_title]]&quot;,
         	and asked to be notified when a new thread is posted in that forum.</p>
@@ -127,12 +115,10 @@ ze\dbAdm::revision(80, "
 
 ", "
 
-    INSERT IGNORE INTO [[DB_NAME_PREFIX]]email_templates (
+    INSERT IGNORE INTO [[DB_PREFIX]]email_templates (
     	`code`,
         `template_name`,
         `subject`,
-        `email_address_from`,
-        `email_name_from`,
         `body`,
         `date_created`,
         `created_by_id`,
@@ -141,8 +127,6 @@ ze\dbAdm::revision(80, "
     	'zenario_forum__post_subs_en',
         'To User: Reply notification',
         'Reply notification',
-        '". ze\escape::sql(ze::setting('email_address_from')). "',
-        '". ze\escape::sql(ze::setting('email_name_from')). "',
         '<p>Dear [[subscriber_screen_name]],</p>
         <p>You are subscribed to the thread entitled &quot;[[thread_title]]&quot; in the &quot;[[forum_title]]&quot; forum,
         	and asked to be notified when a message is posted in that thread.</p>
@@ -161,12 +145,10 @@ ze\dbAdm::revision(80, "
 ");
 
 ze\dbAdm::revision(107, "
-    INSERT IGNORE INTO [[DB_NAME_PREFIX]]email_templates (
+    INSERT IGNORE INTO [[DB_PREFIX]]email_templates (
     	`code`,
         `template_name`,
         `subject`,
-        `email_address_from`,
-        `email_name_from`,
         `body`,
         `date_created`,
         `created_by_id`,
@@ -175,8 +157,6 @@ ze\dbAdm::revision(107, "
     	'zenario_forum__post_report',
         'To Admin: Reported User Forum Post',
         'Reported User Post',
-        '". ze\escape::sql(ze::setting('email_address_from')). "',
-        '". ze\escape::sql(ze::setting('email_name_from')). "',
         '<p>Dear Admin,</p>
         <p>A visitor to your website has reported the following User-submitted forum post as offensive:</p>
 		<p><b>URL: </b><a href=\"[[link]]\">[[link]]</a></p>
@@ -197,31 +177,31 @@ ze\dbAdm::revision(107, "
 ze\dbAdm::revision(140,
 
 <<<_sql
-	UPDATE [[DB_NAME_PREFIX]]email_templates
+	UPDATE [[DB_PREFIX]]email_templates
 	SET `module_class_name` = 'zenario_forum'
 	WHERE `code` = 'zenario_forum__to_admin_new_thread_notification_en'
 _sql
 
 ,<<<_sql
-	UPDATE [[DB_NAME_PREFIX]]email_templates
+	UPDATE [[DB_PREFIX]]email_templates
 	SET `module_class_name` = 'zenario_forum'
 	WHERE `code` = 'zenario_forum__to_admin_post_notification_en'
 _sql
 
 ,<<<_sql
-	UPDATE [[DB_NAME_PREFIX]]email_templates
+	UPDATE [[DB_PREFIX]]email_templates
 	SET `module_class_name` = 'zenario_forum'
 	WHERE `code` = 'zenario_forum__new_thread_subs_en'
 _sql
 
 ,<<<_sql
-	UPDATE [[DB_NAME_PREFIX]]email_templates
+	UPDATE [[DB_PREFIX]]email_templates
 	SET `module_class_name` = 'zenario_forum'
 	WHERE `code` = 'zenario_forum__post_subs_en'
 _sql
 
 ,<<<_sql
-	UPDATE [[DB_NAME_PREFIX]]email_templates
+	UPDATE [[DB_PREFIX]]email_templates
 	SET `module_class_name` = 'zenario_forum'
 	WHERE `code` = 'zenario_forum__post_report'
 _sql

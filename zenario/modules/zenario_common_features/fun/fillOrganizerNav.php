@@ -31,8 +31,8 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 //Sort the items in the following order: html, news, blog then documents.
 $sql = "
 	SELECT content_type_id, content_type_name_en, content_type_plural_en
-	FROM ". DB_NAME_PREFIX. "content_types AS ct
-	INNER JOIN ". DB_NAME_PREFIX. "modules AS m
+	FROM ". DB_PREFIX. "content_types AS ct
+	INNER JOIN ". DB_PREFIX. "modules AS m
 	   ON m.id = ct.module_id
 	  AND m.status IN ('module_running', 'module_is_abstract')
 	ORDER BY
@@ -65,7 +65,7 @@ foreach (ze\sql::fetchAssocs($sql) as $details) {
 //Sort the items in the following order: Main, any others alphabetically, Footer
 $sql = "
 	SELECT id, section_name
-	FROM ". DB_NAME_PREFIX. "menu_sections
+	FROM ". DB_PREFIX. "menu_sections
 	ORDER BY
 		id = 1 DESC,
 		id = 2,

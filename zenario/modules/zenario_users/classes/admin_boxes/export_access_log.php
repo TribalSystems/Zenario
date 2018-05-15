@@ -47,14 +47,14 @@ class zenario_users__admin_boxes__export_access_log extends zenario_users {
 			$cID = $cType = false;
 			ze\content::getCIDAndCTypeFromTagId($cID, $cType, $tagId);
 			$sql = '
-				SELECT l.hit_datetime, l.user_id, [u.first_name], [u.last_name], [u.email]
-				FROM [user_content_accesslog AS l]
-				INNER JOIN [users AS u]
+				SELECT l.hit_datetime, u.id AS user_id, u.first_name, u.last_name, u.email
+				FROM '. DB_PREFIX. 'user_content_accesslog AS l
+				INNER JOIN '. DB_PREFIX. 'users AS u
 					ON l.user_id = u.id
-				WHERE l.content_id = [0]
-				  AND l.content_type = [1]
+				WHERE l.content_id = '. (int) $cID. '
+				  AND l.content_type = \''. \ze\escape::sql($cType). '\'
 				ORDER BY l.hit_datetime DESC';
-			$result = ze\sql::select($sql, [$cID, $cType]);
+			$result = ze\sql::select($sql);
 			while ($row = ze\sql::fetchAssoc($result)) {
 				$rows[] = $row;
 			}
@@ -66,7 +66,7 @@ class zenario_users__admin_boxes__export_access_log extends zenario_users {
 			];
 			$sql = '
 				SELECT l.hit_datetime, l.content_id, l.content_type, l.content_version
-				FROM ' . DB_NAME_PREFIX . 'user_content_accesslog l
+				FROM ' . DB_PREFIX . 'user_content_accesslog l
 				WHERE l.user_id = ' . (int)$userId . '
 				ORDER BY l.hit_datetime DESC';
 			$result = ze\sql::select($sql);

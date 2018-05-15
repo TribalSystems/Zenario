@@ -98,7 +98,7 @@ class zenario_common_features__admin_boxes__spare_domains extends ze\moduleBaseC
 		
 		if ($requested_url = ze\ring::decodeIdForOrganizer($box['key']['id'])) {
 			$sql = "
-				UPDATE ". DB_NAME_PREFIX. "spare_domain_names SET
+				UPDATE ". DB_PREFIX. "spare_domain_names SET
 					content_id = ". (int) $cID. ",
 					content_type = '". ze\escape::sql($cType). "'
 				WHERE requested_url = '". ze\escape::sql($requested_url). "'";
@@ -106,7 +106,7 @@ class zenario_common_features__admin_boxes__spare_domains extends ze\moduleBaseC
 			
 		} else {
 			$sql = "
-				INSERT INTO ". DB_NAME_PREFIX. "spare_domain_names SET
+				INSERT INTO ". DB_PREFIX. "spare_domain_names SET
 					requested_url = '". ze\escape::sql($values['details/requested_url']). "',
 					content_id = ". (int) $cID. ",
 					content_type = '". ze\escape::sql($cType). "'";
@@ -116,7 +116,7 @@ class zenario_common_features__admin_boxes__spare_domains extends ze\moduleBaseC
 			
 			if (!empty($values['details/add_www'])) {
 				$sql = "
-					INSERT INTO ". DB_NAME_PREFIX. "spare_domain_names SET
+					INSERT INTO ". DB_PREFIX. "spare_domain_names SET
 						requested_url = 'www.". ze\escape::sql($values['details/requested_url']). "',
 						content_id = ". (int) $cID. ",
 						content_type = '". ze\escape::sql($cType). "'";

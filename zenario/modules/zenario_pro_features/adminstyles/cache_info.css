@@ -1,11 +1,11 @@
-div.zenario_cache_info {
+x-zenario-cache-info.zenario_cache_info {
 	position: relative;
 	float: right;
 	bottom: 18px;
 	z-index: 9999;
 }
 
-div.zenario_cache_info div {
+x-zenario-cache-info.zenario_cache_info x-zenario-cache-info {
 	height: 18px;
 	width: 15px;
 	position: absolute;
@@ -26,26 +26,26 @@ div.zenario_cache_info div {
 }
 
 .zenario_cache_box h1.zenario_cache_disabled,
-div.zenario_cache_info div.zenario_cache_disabled {
+x-zenario-cache-info.zenario_cache_info x-zenario-cache-info.zenario_cache_disabled {
 	background: url('images/placeholder_cache_disabled_drum.png') top left no-repeat;
 }
 
 .zenario_cache_box h1.zenario_not_cached,
-div.zenario_cache_info div.zenario_not_cached {
+x-zenario-cache-info.zenario_cache_info x-zenario-cache-info.zenario_not_cached {
 	background: url('images/placeholder_not_cached_drum.png') top left no-repeat;
 }
 
 .zenario_cache_box h1.zenario_cache_in_use,
-div.zenario_cache_info div.zenario_cache_in_use {
+x-zenario-cache-info.zenario_cache_info x-zenario-cache-info.zenario_cache_in_use {
 	background: url('images/placeholder_cache_drum.png') top left no-repeat;
 }
 
 .zenario_cache_box h1.zenario_from_cache,
-div.zenario_cache_info div.zenario_from_cache {
+x-zenario-cache-info.zenario_cache_info x-zenario-cache-info.zenario_from_cache {
 	background: url('images/placeholder_from_cache_drum.png') top left no-repeat;
 }
 
-.zenario_slot div.zenario_cache_info {
+.zenario_slot x-zenario-cache-info.zenario_cache_info {
 	bottom: auto;
 }
 

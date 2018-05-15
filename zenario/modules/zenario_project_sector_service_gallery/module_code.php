@@ -60,11 +60,11 @@ class zenario_project_sector_service_gallery extends ze\moduleBaseClass {
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		switch ($path) {
 			case 'plugin_settings':
-				$select_options = ze\row::getArray(ZENARIO_PROJECT_LOCATIONS_PREFIX . 'project_location_services', 'name');
+				$select_options = ze\row::getAssocs(ZENARIO_PROJECT_LOCATIONS_PREFIX . 'project_location_services', 'name');
 				//var_dump($select_options);
 				$box['tabs']['first_tab']['fields']['plugin_service_id']['values'] = $select_options;
 					
-				$select_options = ze\row::getArray(ZENARIO_PROJECT_LOCATIONS_PREFIX .'project_location_sectors', 'name');
+				$select_options = ze\row::getAssocs(ZENARIO_PROJECT_LOCATIONS_PREFIX .'project_location_sectors', 'name');
 				$box['tabs']['first_tab']['fields']['plugin_sector_id']['values'] = $select_options;
 				break;
 		}
@@ -112,8 +112,8 @@ class zenario_project_sector_service_gallery extends ze\moduleBaseClass {
 
 	public function getServicesOptions(){
 		$sql = 'SELECT s.id, IFNULL(vp.local_text, s.name) as name 
-				FROM ' . DB_NAME_PREFIX . ZENARIO_PROJECT_LOCATIONS_PREFIX . 'project_location_services'
-				. ' AS s LEFT JOIN ' . DB_NAME_PREFIX . "visitor_phrases 
+				FROM ' . DB_PREFIX . ZENARIO_PROJECT_LOCATIONS_PREFIX . 'project_location_services'
+				. ' AS s LEFT JOIN ' . DB_PREFIX . "visitor_phrases 
 				AS vp ON CONCAT('_PROJECT_plocations_SERVICE_', s.id) = vp.code
 				AND vp.language_id = '" . ze\escape::sql(ze::$visLang) . "' ORDER BY 2";
 			
@@ -130,8 +130,8 @@ class zenario_project_sector_service_gallery extends ze\moduleBaseClass {
 
 	public function getSectorsOptions(){
 		$sql = 'SELECT s.id, IFNULL(vp.local_text, s.name) as name 
-				FROM ' . DB_NAME_PREFIX . ZENARIO_PROJECT_LOCATIONS_PREFIX . 'project_location_sectors'
-				. ' AS s LEFT JOIN ' . DB_NAME_PREFIX . "visitor_phrases 
+				FROM ' . DB_PREFIX . ZENARIO_PROJECT_LOCATIONS_PREFIX . 'project_location_sectors'
+				. ' AS s LEFT JOIN ' . DB_PREFIX . "visitor_phrases 
 				AS vp ON CONCAT('_PROJECT_plocations_SECTOR_', s.id) = vp.code 
 				AND vp.language_id = '" . ze\escape::sql(ze::$visLang) . "' ORDER BY 2";
 			
@@ -159,13 +159,13 @@ class zenario_project_sector_service_gallery extends ze\moduleBaseClass {
 			
 
 
-		$sql = " FROM ". DB_NAME_PREFIX. ZENARIO_PROJECT_LOCATIONS_PREFIX. "project_locations AS pl ";
+		$sql = " FROM ". DB_PREFIX. ZENARIO_PROJECT_LOCATIONS_PREFIX. "project_locations AS pl ";
 
 //echo "$this->sector_id".'sector_id<br><br>';
 //echo "$this->service_id".'service_id<br><br>';
 		if ($this->sector_id) {
 			$sql .= "
-				INNER JOIN ". DB_NAME_PREFIX. ZENARIO_PROJECT_LOCATIONS_PREFIX. "project_location_sector_link AS plsecl
+				INNER JOIN ". DB_PREFIX. ZENARIO_PROJECT_LOCATIONS_PREFIX. "project_location_sector_link AS plsecl
 				ON plsecl.project_location_id = pl.id
 				AND (";
 			foreach(explode(',', $this->sector_id) as $plugin_sector_id) {
@@ -179,7 +179,7 @@ class zenario_project_sector_service_gallery extends ze\moduleBaseClass {
 		}
 		if ($this->service_id) {
 			$sql .= "
-				INNER JOIN ". DB_NAME_PREFIX. ZENARIO_PROJECT_LOCATIONS_PREFIX. "project_location_service_link AS plserl
+				INNER JOIN ". DB_PREFIX. ZENARIO_PROJECT_LOCATIONS_PREFIX. "project_location_service_link AS plserl
 				ON plserl.project_location_id = pl.id
 				AND (";
 			foreach(explode(',', $this->service_id) as $plugin_service_id) {

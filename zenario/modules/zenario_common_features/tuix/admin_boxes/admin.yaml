@@ -19,6 +19,10 @@ zenario_admin:
                     show: false
                     type: warning
                     message: This administrator is trashed and cannot log in.
+                is_inactive:
+                    show: false
+                    type: warning
+                    message: ''
             fields:
                 desc:
                     full_width: true
@@ -209,7 +213,7 @@ zenario_admin:
                         #one_to_one_choose_phrase:
                         multiple_select: true
                         #one_to_many_choose_phrase:
-                        select_phrase: Select an area
+                        select_phrase: Select part of menu...
                         #nothing_selected_phrase:
                         hide_info_button: true
                     

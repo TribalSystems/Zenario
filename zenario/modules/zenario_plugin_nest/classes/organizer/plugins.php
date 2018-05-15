@@ -34,7 +34,49 @@ class zenario_plugin_nest__organizer__plugins extends ze\moduleBaseClass {
 	}
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
-	
+		
+		switch ($refinerName) {
+			case 'nests':
+			case 'slideshows':
+				
+				foreach ($panel['items'] as $id => &$item) {
+					$slides = max(1, 1 * ze\sql::fetchValue('
+						SELECT COUNT(DISTINCT slide_num)
+						FROM '. DB_PREFIX. 'nested_plugins
+						WHERE instance_id = '. (int) $id
+					));
+					
+					if ($slides > 1) {
+						$item['contents'] = ze\lang::nphrase('1 slide', '[[count]] slides', $slides);
+					
+					} else {
+						$modules = ze\sql::fetchRows('
+							SELECT module_id, COUNT(*)
+							FROM '. DB_PREFIX. 'nested_plugins
+							WHERE instance_id = '. (int) $id. '
+							  AND module_id != 0
+							GROUP BY module_id
+							ORDER BY 2 DESC'
+						);
+						
+						$contents = [];
+						
+						foreach ($modules as $module) {
+							$mrg = [];
+							$mrg['display_name'] = ze\module::displayName($module[0]);
+							$mrg['display_name_plural'] = ze\admin::pluralPhrase($mrg['display_name']);
+							
+							$contents[] = ze\lang::nphrase('1 [[display_name]]', '[[count]] [[display_name_plural]]', $module[1], $mrg);
+						}
+						
+						if (empty($contents)) {
+							$item['contents'] = ze\lang::phrase('Empty');
+						} else {
+							$item['contents'] = implode(', ', $contents);
+						}
+					}
+				}
+		}
 	}
 	
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {

@@ -31,6 +31,11 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 class zenario_abstract_fea extends ze\moduleBaseClass {
 	
+	protected $idVarName = 'id';
+	public function getIdVarName() {
+		return $this->idVarName;
+	}
+	
 	
 	public function fillVisitorTUIX($path, &$tags, &$fields, &$values) {
 		$this->checkThingEnabled();
@@ -48,7 +53,7 @@ class zenario_abstract_fea extends ze\moduleBaseClass {
 	}
 	
 	
-	protected function feaAJAXRequestIfNeeded($pages = []) {
+	protected function runVisitorTUIX($pages = []) {
 		
 		if ($this->beingDisplayed && !$this->isFeaAJAX()) {
 			$mode = $this->getMode();
@@ -57,12 +62,12 @@ class zenario_abstract_fea extends ze\moduleBaseClass {
 			
 			$libraryName = $this->moduleClassName;
 			
-			$this->feaAJAXRequest($libraryName, $path, $requests, $mode, $pages);
+			$this->runVisitorTUIX2($libraryName, $path, $requests, $mode, $pages);
 		}
 	}
 	
 	
-	protected function feaAJAXRequest($libraryName, $path, $requests, $mode = '', $pages = []) {
+	private function runVisitorTUIX2($libraryName, $path, $requests, $mode = '', $pages = []) {
 		
 		if ($this->beingDisplayed
 		 && !$this->isFeaAJAX()
@@ -83,7 +88,9 @@ class zenario_abstract_fea extends ze\moduleBaseClass {
 			$this->callScript(
 				$libraryName, 'init',
 				$this->containerId,
-				$path, -1, $mode, $pages);
+				$path, -1, $mode, $pages,
+				$libraryName, $this->idVarName
+			);
 		
 			//Trim any empty requests
 			foreach ($requests as $key => $val) {
@@ -109,6 +116,14 @@ class zenario_abstract_fea extends ze\moduleBaseClass {
 		}
 	}
 	
+	//Deprecated old names
+	protected function feaAJAXRequestIfNeeded($pages = []) {
+		$this->runVisitorTUIX($pages);
+	}
+	protected function feaAJAXRequest($libraryName, $path, $requests, $mode, $pages) {
+		$this->runVisitorTUIX2();
+	}
+	
 	
 	protected function getMode() {
 		//From version 7.6, if you have a plugin, we'll only allow the plugin to run in the mode chosen in the plugin settings.
@@ -127,12 +142,43 @@ class zenario_abstract_fea extends ze\moduleBaseClass {
 	}
 	
 	protected function passRequests($mode, $path) {
-		$requests = ze::$vars;
-		if ($this->idVarName && !isset($requests[$this->idVarName])) {
-			$requests[$this->idVarName] = $_REQUEST[$this->idVarName] ?? false;
+		
+		//New 8.2 logic, passes all GET requests
+		$vars = array_filter(array_merge($_GET, ze::$vars));
+		
+		unset(
+			//Clear any standard content item variables
+			$vars['cID'], $vars['cType'], $vars['cVersion'], $vars['visLang'],
+			
+			//Clear any requests that point to this nest/slide/state
+			$vars['state'], $vars['slideId'], $vars['slideNum'],
+			
+			//Clear some FEA variables
+			$vars['mode'], $vars['path']
+		);
+		
+		//Clear any standard plugin variables, unless this is a link to the showSingleSlot() method
+		if (!isset($vars['method_call'])
+		 || $vars['method_call'] != 'showSingleSlot') {
+			unset($vars['slotName'], $vars['instanceId'], $vars['method_call']);
 		}
 		
-		return $requests;
+		//Paranoia check, just in case the idVarName is in the POST and not the GET
+		//(Might be okay to delete)
+		if ($this->idVarName
+		 && !isset($vars[$this->idVarName])
+		 && isset($_POST[$this->idVarName])) {
+			$vars[$this->idVarName] = $_POST[$this->idVarName];
+		}
+
+		
+		//Old 8.1 logic, only passes certain variables
+		//$vars = ze::$vars;
+		//if ($this->idVarName && !isset($vars[$this->idVarName])) {
+		//	$vars[$this->idVarName] = $_REQUEST[$this->idVarName] ?? false;
+		//}
+		
+		return $vars;
 	}
 	
 	protected $thingsEnabled;
@@ -203,7 +249,7 @@ class zenario_abstract_fea extends ze\moduleBaseClass {
 			SELECT COUNT(*)';
 	}
 	protected function populateItemsFrom($path, &$tags, &$fields, &$values) {
-		return "FROM ". DB_NAME_PREFIX. "table";
+		return "FROM ". DB_PREFIX. "table";
 	}
 	protected function populateItemsWhere($path, &$tags, &$fields, &$values) {
 		return "WHERE false";
@@ -433,7 +479,7 @@ class zenario_abstract_fea extends ze\moduleBaseClass {
 		
 		$modePath = $this->getPathFromMode($values['first_tab/mode']);
         
-        foreach (ze\row::getDistinctArray(
+        foreach (ze\row::getDistinctAssocs(
             'tuix_file_contents', 'path', ['type' => 'visitor', 'module_class_name' => $this->moduleClassName]
         ) as $feaPath) {
             if (isset($box['tabs']['phrases.'. $feaPath])) {

@@ -1,16 +1,16 @@
 
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]admin_setting_defaults`;
-CREATE TABLE `[[DB_NAME_PREFIX]]admin_setting_defaults` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]admin_setting_defaults`;
+CREATE TABLE `[[DB_PREFIX]]admin_setting_defaults` (
   `name` varchar(255) NOT NULL DEFAULT '',
   `default_value` mediumtext,
   PRIMARY KEY (`name`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]categories`;
-CREATE TABLE `[[DB_NAME_PREFIX]]categories` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]categories`;
+CREATE TABLE `[[DB_PREFIX]]categories` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `parent_id` int(10) unsigned NOT NULL DEFAULT '0',
   `name` varchar(50) CHARACTER SET utf8mb4 NOT NULL,
@@ -23,8 +23,8 @@ CREATE TABLE `[[DB_NAME_PREFIX]]categories` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]category_item_link`;
-CREATE TABLE `[[DB_NAME_PREFIX]]category_item_link` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]category_item_link`;
+CREATE TABLE `[[DB_PREFIX]]category_item_link` (
   `category_id` int(10) unsigned NOT NULL DEFAULT '0',
   `equiv_id` int(10) unsigned NOT NULL DEFAULT '0',
   `content_type` char(20) CHARACTER SET ascii NOT NULL,
@@ -33,8 +33,8 @@ CREATE TABLE `[[DB_NAME_PREFIX]]category_item_link` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]centralised_lists`;
-CREATE TABLE `[[DB_NAME_PREFIX]]centralised_lists` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]centralised_lists`;
+CREATE TABLE `[[DB_PREFIX]]centralised_lists` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `module_class_name` varchar(255) NOT NULL,
   `method_name` varchar(255) NOT NULL,
@@ -43,8 +43,8 @@ CREATE TABLE `[[DB_NAME_PREFIX]]centralised_lists` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]characteristic_user_link`;
-CREATE TABLE `[[DB_NAME_PREFIX]]characteristic_user_link` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]characteristic_user_link`;
+CREATE TABLE `[[DB_PREFIX]]characteristic_user_link` (
   `id` int(10) NOT NULL AUTO_INCREMENT,
   `user_id` int(10) NOT NULL,
   `characteristic_id` int(10) NOT NULL,
@@ -56,8 +56,8 @@ CREATE TABLE `[[DB_NAME_PREFIX]]characteristic_user_link` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]content_cache`;
-CREATE TABLE `[[DB_NAME_PREFIX]]content_cache` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]content_cache`;
+CREATE TABLE `[[DB_PREFIX]]content_cache` (
   `content_id` int(10) unsigned NOT NULL DEFAULT '0',
   `content_type` varchar(20) CHARACTER SET ascii NOT NULL,
   `content_version` int(10) unsigned NOT NULL DEFAULT '0',
@@ -72,8 +72,8 @@ CREATE TABLE `[[DB_NAME_PREFIX]]content_cache` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]content_item_versions`;
-CREATE TABLE `[[DB_NAME_PREFIX]]content_item_versions` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]content_item_versions`;
+CREATE TABLE `[[DB_PREFIX]]content_item_versions` (
   `id` int(10) unsigned NOT NULL,
   `type` varchar(20) CHARACTER SET ascii NOT NULL,
   `tag_id` varchar(32) NOT NULL,
@@ -135,8 +135,8 @@ CREATE TABLE `[[DB_NAME_PREFIX]]content_item_versions` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]content_items`;
-CREATE TABLE `[[DB_NAME_PREFIX]]content_items` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]content_items`;
+CREATE TABLE `[[DB_PREFIX]]content_items` (
   `id` int(10) unsigned NOT NULL,
   `type` varchar(20) CHARACTER SET ascii NOT NULL,
   `tag_id` varchar(32) CHARACTER SET ascii NOT NULL,
@@ -164,8 +164,8 @@ CREATE TABLE `[[DB_NAME_PREFIX]]content_items` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]content_types`;
-CREATE TABLE `[[DB_NAME_PREFIX]]content_types` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]content_types`;
+CREATE TABLE `[[DB_PREFIX]]content_types` (
   `content_type_id` varchar(20) CHARACTER SET ascii NOT NULL,
   `content_type_name_en` varchar(255) NOT NULL DEFAULT '',
   `content_type_plural_en` varchar(255) NOT NULL DEFAULT '',
@@ -193,8 +193,8 @@ CREATE TABLE `[[DB_NAME_PREFIX]]content_types` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]custom_dataset_field_values`;
-CREATE TABLE `[[DB_NAME_PREFIX]]custom_dataset_field_values` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]custom_dataset_field_values`;
+CREATE TABLE `[[DB_PREFIX]]custom_dataset_field_values` (
   `id` int(10) NOT NULL AUTO_INCREMENT,
   `field_id` int(10) NOT NULL,
   `ord` int(10) NOT NULL DEFAULT '0',
@@ -206,8 +206,8 @@ CREATE TABLE `[[DB_NAME_PREFIX]]custom_dataset_field_values` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]custom_dataset_fields`;
-CREATE TABLE `[[DB_NAME_PREFIX]]custom_dataset_fields` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]custom_dataset_fields`;
+CREATE TABLE `[[DB_PREFIX]]custom_dataset_fields` (
   `id` int(10) NOT NULL AUTO_INCREMENT,
   `dataset_id` int(10) unsigned NOT NULL,
   `tab_name` varchar(64) CHARACTER SET ascii NOT NULL,
@@ -259,8 +259,8 @@ CREATE TABLE `[[DB_NAME_PREFIX]]custom_dataset_fields` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]custom_dataset_files_link`;
-CREATE TABLE `[[DB_NAME_PREFIX]]custom_dataset_files_link` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]custom_dataset_files_link`;
+CREATE TABLE `[[DB_PREFIX]]custom_dataset_files_link` (
   `dataset_id` int(10) NOT NULL,
   `field_id` int(10) NOT NULL,
   `linking_id` int(10) NOT NULL,
@@ -272,8 +272,8 @@ CREATE TABLE `[[DB_NAME_PREFIX]]custom_dataset_files_link` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]custom_dataset_tabs`;
-CREATE TABLE `[[DB_NAME_PREFIX]]custom_dataset_tabs` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]custom_dataset_tabs`;
+CREATE TABLE `[[DB_PREFIX]]custom_dataset_tabs` (
   `dataset_id` int(10) unsigned NOT NULL,
   `name` varchar(64) CHARACTER SET ascii NOT NULL,
   `ord` int(10) unsigned NOT NULL DEFAULT '0',
@@ -286,8 +286,8 @@ CREATE TABLE `[[DB_NAME_PREFIX]]custom_dataset_tabs` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]custom_dataset_values_link`;
-CREATE TABLE `[[DB_NAME_PREFIX]]custom_dataset_values_link` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]custom_dataset_values_link`;
+CREATE TABLE `[[DB_PREFIX]]custom_dataset_values_link` (
   `dataset_id` int(10) NOT NULL,
   `value_id` int(10) NOT NULL,
   `linking_id` int(10) NOT NULL,
@@ -297,8 +297,8 @@ CREATE TABLE `[[DB_NAME_PREFIX]]custom_dataset_values_link` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]custom_datasets`;
-CREATE TABLE `[[DB_NAME_PREFIX]]custom_datasets` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]custom_datasets`;
+CREATE TABLE `[[DB_PREFIX]]custom_datasets` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `label` varchar(64) CHARACTER SET utf8mb4 NOT NULL,
   `system_table` varchar(255) CHARACTER SET ascii NOT NULL DEFAULT '',
@@ -314,8 +314,8 @@ CREATE TABLE `[[DB_NAME_PREFIX]]custom_datasets` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]document_public_redirects`;
-CREATE TABLE `[[DB_NAME_PREFIX]]document_public_redirects` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]document_public_redirects`;
+CREATE TABLE `[[DB_PREFIX]]document_public_redirects` (
   `document_id` int(10) unsigned NOT NULL,
   `file_id` int(10) unsigned NOT NULL,
   `path` varchar(255) NOT NULL,
@@ -323,8 +323,8 @@ CREATE TABLE `[[DB_NAME_PREFIX]]document_public_redirects` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]document_rules`;
-CREATE TABLE `[[DB_NAME_PREFIX]]document_rules` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]document_rules`;
+CREATE TABLE `[[DB_PREFIX]]document_rules` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `ordinal` int(10) unsigned NOT NULL DEFAULT '0',
   `use` enum('filename_without_extension','filename_and_extension','extension') NOT NULL DEFAULT 'filename_without_extension',
@@ -343,8 +343,8 @@ CREATE TABLE `[[DB_NAME_PREFIX]]document_rules` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]document_tag_link`;
-CREATE TABLE `[[DB_NAME_PREFIX]]document_tag_link` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]document_tag_link`;
+CREATE TABLE `[[DB_PREFIX]]document_tag_link` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `document_id` int(10) NOT NULL,
   `tag_id` int(10) NOT NULL,
@@ -355,8 +355,8 @@ CREATE TABLE `[[DB_NAME_PREFIX]]document_tag_link` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]document_tags`;
-CREATE TABLE `[[DB_NAME_PREFIX]]document_tags` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]document_tags`;
+CREATE TABLE `[[DB_PREFIX]]document_tags` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `tag_name` varchar(250) CHARACTER SET utf8mb4 NOT NULL,
   PRIMARY KEY (`id`),
@@ -364,8 +364,8 @@ CREATE TABLE `[[DB_NAME_PREFIX]]document_tags` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]document_types`;
-CREATE TABLE `[[DB_NAME_PREFIX]]document_types` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]document_types`;
+CREATE TABLE `[[DB_PREFIX]]document_types` (
   `type` varchar(10) CHARACTER SET utf8mb4 NOT NULL DEFAULT '',
   `mime_type` varchar(128) CHARACTER SET utf8mb4 NOT NULL DEFAULT '',
   `custom` tinyint(1) NOT NULL DEFAULT '1',
@@ -374,8 +374,8 @@ CREATE TABLE `[[DB_NAME_PREFIX]]document_types` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]documents`;
-CREATE TABLE `[[DB_NAME_PREFIX]]documents` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]documents`;
+CREATE TABLE `[[DB_PREFIX]]documents` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `ordinal` int(10) NOT NULL,
   `type` enum('file','folder') NOT NULL DEFAULT 'file',
@@ -398,15 +398,15 @@ CREATE TABLE `[[DB_NAME_PREFIX]]documents` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]documents_custom_data`;
-CREATE TABLE `[[DB_NAME_PREFIX]]documents_custom_data` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]documents_custom_data`;
+CREATE TABLE `[[DB_PREFIX]]documents_custom_data` (
   `document_id` int(10) unsigned NOT NULL,
   PRIMARY KEY (`document_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]email_templates`;
-CREATE TABLE `[[DB_NAME_PREFIX]]email_templates` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]email_templates`;
+CREATE TABLE `[[DB_PREFIX]]email_templates` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `module_class_name` varchar(250) CHARACTER SET utf8mb4 DEFAULT NULL,
   `code` varchar(255) NOT NULL,
@@ -436,8 +436,8 @@ CREATE TABLE `[[DB_NAME_PREFIX]]email_templates` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]files`;
-CREATE TABLE `[[DB_NAME_PREFIX]]files` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]files`;
+CREATE TABLE `[[DB_PREFIX]]files` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `checksum` varchar(32) CHARACTER SET ascii NOT NULL,
   `short_checksum` varchar(24) CHARACTER SET ascii DEFAULT NULL,
@@ -491,8 +491,8 @@ CREATE TABLE `[[DB_NAME_PREFIX]]files` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]group_link`;
-CREATE TABLE `[[DB_NAME_PREFIX]]group_link` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]group_link`;
+CREATE TABLE `[[DB_PREFIX]]group_link` (
   `link_from` enum('chain','slide') NOT NULL,
   `link_from_id` int(10) unsigned NOT NULL,
   `link_from_char` char(20) CHARACTER SET ascii NOT NULL DEFAULT '',
@@ -503,8 +503,8 @@ CREATE TABLE `[[DB_NAME_PREFIX]]group_link` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]image_tag_link`;
-CREATE TABLE `[[DB_NAME_PREFIX]]image_tag_link` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]image_tag_link`;
+CREATE TABLE `[[DB_PREFIX]]image_tag_link` (
   `image_id` int(10) unsigned NOT NULL,
   `tag_id` int(10) unsigned NOT NULL,
   PRIMARY KEY (`image_id`,`tag_id`),
@@ -512,8 +512,8 @@ CREATE TABLE `[[DB_NAME_PREFIX]]image_tag_link` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]image_tags`;
-CREATE TABLE `[[DB_NAME_PREFIX]]image_tags` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]image_tags`;
+CREATE TABLE `[[DB_PREFIX]]image_tags` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(250) CHARACTER SET utf8mb4 NOT NULL,
   `color` enum('blue','red','green','orange','yellow','violet','grey') NOT NULL DEFAULT 'blue',
@@ -523,8 +523,8 @@ CREATE TABLE `[[DB_NAME_PREFIX]]image_tags` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]inline_images`;
-CREATE TABLE `[[DB_NAME_PREFIX]]inline_images` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]inline_images`;
+CREATE TABLE `[[DB_PREFIX]]inline_images` (
   `image_id` int(10) unsigned NOT NULL,
   `foreign_key_to` varchar(64) NOT NULL,
   `foreign_key_id` int(10) unsigned NOT NULL DEFAULT '0',
@@ -539,8 +539,8 @@ CREATE TABLE `[[DB_NAME_PREFIX]]inline_images` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]job_logs`;
-CREATE TABLE `[[DB_NAME_PREFIX]]job_logs` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]job_logs`;
+CREATE TABLE `[[DB_PREFIX]]job_logs` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `job_id` int(10) unsigned NOT NULL,
   `status` enum('action_taken','no_action_taken','error') NOT NULL,
@@ -555,8 +555,8 @@ CREATE TABLE `[[DB_NAME_PREFIX]]job_logs` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]jobs`;
-CREATE TABLE `[[DB_NAME_PREFIX]]jobs` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]jobs`;
+CREATE TABLE `[[DB_PREFIX]]jobs` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `manager_class_name` varchar(200) NOT NULL,
   `job_name` varchar(127) NOT NULL,
@@ -590,8 +590,8 @@ CREATE TABLE `[[DB_NAME_PREFIX]]jobs` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]languages`;
-CREATE TABLE `[[DB_NAME_PREFIX]]languages` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]languages`;
+CREATE TABLE `[[DB_PREFIX]]languages` (
   `id` varchar(15) NOT NULL DEFAULT '',
   `detect` tinyint(1) NOT NULL DEFAULT '0',
   `detect_lang_codes` varchar(100) CHARACTER SET utf8mb4 NOT NULL DEFAULT '',
@@ -608,8 +608,8 @@ CREATE TABLE `[[DB_NAME_PREFIX]]languages` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]last_sent_warning_emails`;
-CREATE TABLE `[[DB_NAME_PREFIX]]last_sent_warning_emails` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]last_sent_warning_emails`;
+CREATE TABLE `[[DB_PREFIX]]last_sent_warning_emails` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `timestamp` datetime NOT NULL,
   `warning_code` enum('document_container__private_file_in_public_folder','module_missing') NOT NULL,
@@ -617,8 +617,8 @@ CREATE TABLE `[[DB_NAME_PREFIX]]last_sent_warning_emails` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]layouts`;
-CREATE TABLE `[[DB_NAME_PREFIX]]layouts` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]layouts`;
+CREATE TABLE `[[DB_PREFIX]]layouts` (
   `layout_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `family_name` varchar(50) CHARACTER SET utf8mb4 NOT NULL DEFAULT '',
   `file_base_name` varchar(255) CHARACTER SET ascii NOT NULL DEFAULT '',
@@ -651,8 +651,8 @@ CREATE TABLE `[[DB_NAME_PREFIX]]layouts` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]local_revision_numbers`;
-CREATE TABLE `[[DB_NAME_PREFIX]]local_revision_numbers` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]local_revision_numbers`;
+CREATE TABLE `[[DB_PREFIX]]local_revision_numbers` (
   `path` varchar(255) NOT NULL,
   `patchfile` varchar(64) NOT NULL,
   `revision_no` int(10) unsigned NOT NULL,
@@ -661,8 +661,8 @@ CREATE TABLE `[[DB_NAME_PREFIX]]local_revision_numbers` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]menu_hierarchy`;
-CREATE TABLE `[[DB_NAME_PREFIX]]menu_hierarchy` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]menu_hierarchy`;
+CREATE TABLE `[[DB_PREFIX]]menu_hierarchy` (
   `section_id` smallint(10) unsigned NOT NULL,
   `ancestor_id` int(10) unsigned NOT NULL,
   `child_id` int(10) unsigned NOT NULL,
@@ -674,8 +674,8 @@ CREATE TABLE `[[DB_NAME_PREFIX]]menu_hierarchy` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]menu_nodes`;
-CREATE TABLE `[[DB_NAME_PREFIX]]menu_nodes` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]menu_nodes`;
+CREATE TABLE `[[DB_PREFIX]]menu_nodes` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `section_id` smallint(10) unsigned NOT NULL,
   `redundancy` enum('primary','secondary') NOT NULL DEFAULT 'primary',
@@ -710,8 +710,8 @@ CREATE TABLE `[[DB_NAME_PREFIX]]menu_nodes` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]menu_positions`;
-CREATE TABLE `[[DB_NAME_PREFIX]]menu_positions` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]menu_positions`;
+CREATE TABLE `[[DB_PREFIX]]menu_positions` (
   `tag` char(18) NOT NULL,
   `section_id` smallint(10) unsigned NOT NULL,
   `menu_id` int(10) unsigned NOT NULL DEFAULT '0',
@@ -723,8 +723,8 @@ CREATE TABLE `[[DB_NAME_PREFIX]]menu_positions` (
 ) ENGINE=MyISAM DEFAULT CHARSET=ascii;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]menu_sections`;
-CREATE TABLE `[[DB_NAME_PREFIX]]menu_sections` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]menu_sections`;
+CREATE TABLE `[[DB_PREFIX]]menu_sections` (
   `id` smallint(10) unsigned NOT NULL AUTO_INCREMENT,
   `section_name` varchar(20) CHARACTER SET utf8mb4 NOT NULL,
   PRIMARY KEY (`id`),
@@ -732,8 +732,8 @@ CREATE TABLE `[[DB_NAME_PREFIX]]menu_sections` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]menu_text`;
-CREATE TABLE `[[DB_NAME_PREFIX]]menu_text` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]menu_text`;
+CREATE TABLE `[[DB_PREFIX]]menu_text` (
   `menu_id` int(10) unsigned NOT NULL,
   `language_id` varchar(10) NOT NULL DEFAULT 'en',
   `name` varchar(250) CHARACTER SET utf8mb4 NOT NULL DEFAULT '',
@@ -744,8 +744,8 @@ CREATE TABLE `[[DB_NAME_PREFIX]]menu_text` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]module_dependencies`;
-CREATE TABLE `[[DB_NAME_PREFIX]]module_dependencies` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]module_dependencies`;
+CREATE TABLE `[[DB_PREFIX]]module_dependencies` (
   `module_id` int(10) unsigned NOT NULL,
   `module_class_name` varchar(200) NOT NULL,
   `dependency_class_name` varchar(200) NOT NULL,
@@ -757,8 +757,8 @@ CREATE TABLE `[[DB_NAME_PREFIX]]module_dependencies` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]modules`;
-CREATE TABLE `[[DB_NAME_PREFIX]]modules` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]modules`;
+CREATE TABLE `[[DB_PREFIX]]modules` (
   `id` int(20) unsigned NOT NULL AUTO_INCREMENT,
   `class_name` varchar(200) NOT NULL,
   `vlp_class` varchar(200) NOT NULL DEFAULT '',
@@ -782,8 +782,8 @@ CREATE TABLE `[[DB_NAME_PREFIX]]modules` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]nested_paths`;
-CREATE TABLE `[[DB_NAME_PREFIX]]nested_paths` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]nested_paths`;
+CREATE TABLE `[[DB_PREFIX]]nested_paths` (
   `instance_id` int(10) unsigned NOT NULL,
   `from_state` char(2) CHARACTER SET ascii NOT NULL,
   `to_state` char(2) CHARACTER SET ascii NOT NULL,
@@ -795,8 +795,8 @@ CREATE TABLE `[[DB_NAME_PREFIX]]nested_paths` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]nested_plugins`;
-CREATE TABLE `[[DB_NAME_PREFIX]]nested_plugins` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]nested_plugins`;
+CREATE TABLE `[[DB_PREFIX]]nested_plugins` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `instance_id` int(10) unsigned NOT NULL,
   `slide_num` smallint(4) unsigned NOT NULL DEFAULT '1',
@@ -829,8 +829,8 @@ CREATE TABLE `[[DB_NAME_PREFIX]]nested_plugins` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]page_preview_sizes`;
-CREATE TABLE `[[DB_NAME_PREFIX]]page_preview_sizes` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]page_preview_sizes`;
+CREATE TABLE `[[DB_PREFIX]]page_preview_sizes` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `width` int(10) unsigned NOT NULL,
   `height` int(10) unsigned NOT NULL,
@@ -843,8 +843,8 @@ CREATE TABLE `[[DB_NAME_PREFIX]]page_preview_sizes` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]plugin_instance_cache`;
-CREATE TABLE `[[DB_NAME_PREFIX]]plugin_instance_cache` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]plugin_instance_cache`;
+CREATE TABLE `[[DB_PREFIX]]plugin_instance_cache` (
   `instance_id` int(10) unsigned NOT NULL,
   `method_name` varchar(64) NOT NULL,
   `request` varchar(255) NOT NULL DEFAULT '',
@@ -854,8 +854,8 @@ CREATE TABLE `[[DB_NAME_PREFIX]]plugin_instance_cache` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]plugin_instances`;
-CREATE TABLE `[[DB_NAME_PREFIX]]plugin_instances` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]plugin_instances`;
+CREATE TABLE `[[DB_PREFIX]]plugin_instances` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(250) CHARACTER SET utf8mb4 NOT NULL DEFAULT '',
   `module_id` int(10) unsigned NOT NULL,
@@ -872,8 +872,8 @@ CREATE TABLE `[[DB_NAME_PREFIX]]plugin_instances` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]plugin_item_link`;
-CREATE TABLE `[[DB_NAME_PREFIX]]plugin_item_link` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]plugin_item_link`;
+CREATE TABLE `[[DB_PREFIX]]plugin_item_link` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `module_id` int(10) unsigned NOT NULL,
   `instance_id` int(10) unsigned NOT NULL DEFAULT '0',
@@ -889,8 +889,8 @@ CREATE TABLE `[[DB_NAME_PREFIX]]plugin_item_link` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]plugin_layout_link`;
-CREATE TABLE `[[DB_NAME_PREFIX]]plugin_layout_link` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]plugin_layout_link`;
+CREATE TABLE `[[DB_PREFIX]]plugin_layout_link` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `module_id` int(10) unsigned NOT NULL,
   `instance_id` int(10) unsigned NOT NULL DEFAULT '0',
@@ -904,8 +904,8 @@ CREATE TABLE `[[DB_NAME_PREFIX]]plugin_layout_link` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]plugin_setting_defs`;
-CREATE TABLE `[[DB_NAME_PREFIX]]plugin_setting_defs` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]plugin_setting_defs`;
+CREATE TABLE `[[DB_PREFIX]]plugin_setting_defs` (
   `module_id` int(10) unsigned NOT NULL,
   `module_class_name` varchar(200) NOT NULL,
   `name` varchar(255) NOT NULL,
@@ -915,8 +915,8 @@ CREATE TABLE `[[DB_NAME_PREFIX]]plugin_setting_defs` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]plugin_settings`;
-CREATE TABLE `[[DB_NAME_PREFIX]]plugin_settings` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]plugin_settings`;
+CREATE TABLE `[[DB_PREFIX]]plugin_settings` (
   `instance_id` int(10) unsigned NOT NULL,
   `name` varchar(255) NOT NULL,
   `egg_id` int(10) unsigned NOT NULL DEFAULT '0',
@@ -938,8 +938,8 @@ CREATE TABLE `[[DB_NAME_PREFIX]]plugin_settings` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]signals`;
-CREATE TABLE `[[DB_NAME_PREFIX]]signals` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]signals`;
+CREATE TABLE `[[DB_PREFIX]]signals` (
   `signal_name` varchar(127) NOT NULL,
   `module_id` int(10) unsigned NOT NULL,
   `module_class_name` varchar(200) NOT NULL,
@@ -951,8 +951,8 @@ CREATE TABLE `[[DB_NAME_PREFIX]]signals` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]site_settings`;
-CREATE TABLE `[[DB_NAME_PREFIX]]site_settings` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]site_settings`;
+CREATE TABLE `[[DB_PREFIX]]site_settings` (
   `name` varchar(255) NOT NULL,
   `value` mediumtext CHARACTER SET utf8mb4,
   `default_value` mediumtext,
@@ -962,8 +962,8 @@ CREATE TABLE `[[DB_NAME_PREFIX]]site_settings` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]skins`;
-CREATE TABLE `[[DB_NAME_PREFIX]]skins` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]skins`;
+CREATE TABLE `[[DB_PREFIX]]skins` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `family_name` varchar(50) NOT NULL,
   `name` varchar(255) NOT NULL,
@@ -982,8 +982,8 @@ CREATE TABLE `[[DB_NAME_PREFIX]]skins` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]smart_group_opt_outs`;
-CREATE TABLE `[[DB_NAME_PREFIX]]smart_group_opt_outs` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]smart_group_opt_outs`;
+CREATE TABLE `[[DB_PREFIX]]smart_group_opt_outs` (
   `smart_group_id` int(10) unsigned NOT NULL,
   `user_id` int(10) unsigned NOT NULL,
   `opted_out_on` datetime NOT NULL,
@@ -994,8 +994,8 @@ CREATE TABLE `[[DB_NAME_PREFIX]]smart_group_opt_outs` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]smart_group_rules`;
-CREATE TABLE `[[DB_NAME_PREFIX]]smart_group_rules` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]smart_group_rules`;
+CREATE TABLE `[[DB_PREFIX]]smart_group_rules` (
   `smart_group_id` int(10) unsigned NOT NULL,
   `ord` int(10) unsigned NOT NULL,
   `type_of_check` enum('user_field','role','activity_band') NOT NULL DEFAULT 'user_field',
@@ -1012,8 +1012,8 @@ CREATE TABLE `[[DB_NAME_PREFIX]]smart_group_rules` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]smart_groups`;
-CREATE TABLE `[[DB_NAME_PREFIX]]smart_groups` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]smart_groups`;
+CREATE TABLE `[[DB_PREFIX]]smart_groups` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(50) CHARACTER SET utf8mb4 NOT NULL,
   `intended_usage` enum('smart_newsletter_group','smart_permissions_group') NOT NULL DEFAULT 'smart_newsletter_group',
@@ -1028,8 +1028,8 @@ CREATE TABLE `[[DB_NAME_PREFIX]]smart_groups` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]spare_aliases`;
-CREATE TABLE `[[DB_NAME_PREFIX]]spare_aliases` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]spare_aliases`;
+CREATE TABLE `[[DB_PREFIX]]spare_aliases` (
   `alias` varchar(75) CHARACTER SET utf8mb4 NOT NULL,
   `target_loc` enum('int','ext') NOT NULL DEFAULT 'int',
   `content_id` int(10) unsigned NOT NULL,
@@ -1044,8 +1044,8 @@ CREATE TABLE `[[DB_NAME_PREFIX]]spare_aliases` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]spare_domain_names`;
-CREATE TABLE `[[DB_NAME_PREFIX]]spare_domain_names` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]spare_domain_names`;
+CREATE TABLE `[[DB_PREFIX]]spare_domain_names` (
   `requested_url` varchar(255) NOT NULL,
   `content_id` int(10) unsigned NOT NULL,
   `content_type` varchar(20) CHARACTER SET ascii NOT NULL,
@@ -1054,8 +1054,8 @@ CREATE TABLE `[[DB_NAME_PREFIX]]spare_domain_names` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]special_pages`;
-CREATE TABLE `[[DB_NAME_PREFIX]]special_pages` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]special_pages`;
+CREATE TABLE `[[DB_PREFIX]]special_pages` (
   `equiv_id` int(10) unsigned DEFAULT NULL,
   `content_type` varchar(20) CHARACTER SET ascii DEFAULT NULL,
   `page_type` varchar(64) NOT NULL,
@@ -1068,8 +1068,8 @@ CREATE TABLE `[[DB_NAME_PREFIX]]special_pages` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]template_families`;
-CREATE TABLE `[[DB_NAME_PREFIX]]template_families` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]template_families`;
+CREATE TABLE `[[DB_PREFIX]]template_families` (
   `family_name` varchar(50) NOT NULL,
   `skin_id` int(10) unsigned DEFAULT NULL,
   `missing` tinyint(1) unsigned NOT NULL DEFAULT '0',
@@ -1078,8 +1078,8 @@ CREATE TABLE `[[DB_NAME_PREFIX]]template_families` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]template_files`;
-CREATE TABLE `[[DB_NAME_PREFIX]]template_files` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]template_files`;
+CREATE TABLE `[[DB_PREFIX]]template_files` (
   `family_name` varchar(50) NOT NULL,
   `file_base_name` varchar(255) CHARACTER SET ascii NOT NULL DEFAULT '',
   `missing` tinyint(1) unsigned NOT NULL DEFAULT '0',
@@ -1087,8 +1087,8 @@ CREATE TABLE `[[DB_NAME_PREFIX]]template_files` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]template_slot_link`;
-CREATE TABLE `[[DB_NAME_PREFIX]]template_slot_link` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]template_slot_link`;
+CREATE TABLE `[[DB_PREFIX]]template_slot_link` (
   `family_name` varchar(50) NOT NULL,
   `file_base_name` varchar(255) CHARACTER SET ascii NOT NULL,
   `slot_name` varchar(100) NOT NULL,
@@ -1099,8 +1099,8 @@ CREATE TABLE `[[DB_NAME_PREFIX]]template_slot_link` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]translation_chain_privacy`;
-CREATE TABLE `[[DB_NAME_PREFIX]]translation_chain_privacy` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]translation_chain_privacy`;
+CREATE TABLE `[[DB_PREFIX]]translation_chain_privacy` (
   `equiv_id` int(10) unsigned NOT NULL,
   `content_type` varchar(20) CHARACTER SET ascii NOT NULL,
   `module_class_name` varchar(200) NOT NULL DEFAULT '',
@@ -1111,8 +1111,8 @@ CREATE TABLE `[[DB_NAME_PREFIX]]translation_chain_privacy` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]translation_chains`;
-CREATE TABLE `[[DB_NAME_PREFIX]]translation_chains` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]translation_chains`;
+CREATE TABLE `[[DB_PREFIX]]translation_chains` (
   `equiv_id` int(10) unsigned NOT NULL,
   `type` char(20) CHARACTER SET ascii NOT NULL,
   `privacy` enum('public','logged_out','logged_in','group_members','in_smart_group','logged_in_not_in_smart_group','call_static_method','send_signal','with_role') NOT NULL DEFAULT 'public',
@@ -1121,8 +1121,8 @@ CREATE TABLE `[[DB_NAME_PREFIX]]translation_chains` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]tuix_file_contents`;
-CREATE TABLE `[[DB_NAME_PREFIX]]tuix_file_contents` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]tuix_file_contents`;
+CREATE TABLE `[[DB_PREFIX]]tuix_file_contents` (
   `type` enum('admin_boxes','admin_toolbar','help','organizer','slot_controls','visitor','wizards') NOT NULL,
   `path` varchar(255) CHARACTER SET ascii NOT NULL DEFAULT '',
   `panel_type` varchar(255) CHARACTER SET ascii NOT NULL DEFAULT '',
@@ -1136,8 +1136,8 @@ CREATE TABLE `[[DB_NAME_PREFIX]]tuix_file_contents` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]user_characteristic_values`;
-CREATE TABLE `[[DB_NAME_PREFIX]]user_characteristic_values` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]user_characteristic_values`;
+CREATE TABLE `[[DB_PREFIX]]user_characteristic_values` (
   `id` int(10) NOT NULL AUTO_INCREMENT,
   `characteristic_id` int(10) NOT NULL,
   `ordinal` int(10) NOT NULL,
@@ -1149,16 +1149,16 @@ CREATE TABLE `[[DB_NAME_PREFIX]]user_characteristic_values` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]user_characteristic_values_link`;
-CREATE TABLE `[[DB_NAME_PREFIX]]user_characteristic_values_link` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]user_characteristic_values_link`;
+CREATE TABLE `[[DB_PREFIX]]user_characteristic_values_link` (
   `user_id` int(10) unsigned NOT NULL,
   `user_characteristic_value_id` int(10) NOT NULL,
   PRIMARY KEY (`user_id`,`user_characteristic_value_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]user_content_accesslog`;
-CREATE TABLE `[[DB_NAME_PREFIX]]user_content_accesslog` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]user_content_accesslog`;
+CREATE TABLE `[[DB_PREFIX]]user_content_accesslog` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `hit_datetime` datetime NOT NULL DEFAULT '1970-01-01 00:00:00',
   `user_id` int(10) unsigned NOT NULL DEFAULT '0',
@@ -1178,8 +1178,8 @@ CREATE TABLE `[[DB_NAME_PREFIX]]user_content_accesslog` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]user_signin_log`;
-CREATE TABLE `[[DB_NAME_PREFIX]]user_signin_log` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]user_signin_log`;
+CREATE TABLE `[[DB_PREFIX]]user_signin_log` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `user_id` int(10) unsigned NOT NULL,
   `login_datetime` datetime DEFAULT NULL,
@@ -1194,8 +1194,8 @@ CREATE TABLE `[[DB_NAME_PREFIX]]user_signin_log` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]user_sync_log`;
-CREATE TABLE `[[DB_NAME_PREFIX]]user_sync_log` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]user_sync_log`;
+CREATE TABLE `[[DB_PREFIX]]user_sync_log` (
   `user_id` int(10) unsigned NOT NULL,
   `last_synced_timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`user_id`),
@@ -1203,8 +1203,8 @@ CREATE TABLE `[[DB_NAME_PREFIX]]user_sync_log` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]users`;
-CREATE TABLE `[[DB_NAME_PREFIX]]users` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]users`;
+CREATE TABLE `[[DB_PREFIX]]users` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `global_id` int(10) unsigned NOT NULL DEFAULT '0',
   `parent_id` int(10) unsigned NOT NULL DEFAULT '0',
@@ -1251,15 +1251,15 @@ CREATE TABLE `[[DB_NAME_PREFIX]]users` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]users_custom_data`;
-CREATE TABLE `[[DB_NAME_PREFIX]]users_custom_data` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]users_custom_data`;
+CREATE TABLE `[[DB_PREFIX]]users_custom_data` (
   `user_id` int(10) unsigned NOT NULL,
   PRIMARY KEY (`user_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]visitor_phrases`;
-CREATE TABLE `[[DB_NAME_PREFIX]]visitor_phrases` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]visitor_phrases`;
+CREATE TABLE `[[DB_PREFIX]]visitor_phrases` (
   `id` int(1) NOT NULL AUTO_INCREMENT,
   `code` text CHARACTER SET utf8mb4 NOT NULL,
   `language_id` varchar(15) NOT NULL DEFAULT '',
@@ -1277,7 +1277,7 @@ CREATE TABLE `[[DB_NAME_PREFIX]]visitor_phrases` (
   KEY `module_class_name` (`module_class_name`(100),`language_id`,`code`(150))
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-REPLACE INTO `[[DB_NAME_PREFIX]]local_revision_numbers` VALUES
+REPLACE INTO `[[DB_PREFIX]]local_revision_numbers` VALUES
  ('admin/db_updates/step_2_update_the_database_schema','content_tables.inc.php',[[INSTALLER_REVISION_NO]]),
  ('admin/db_updates/step_2_update_the_database_schema','user_tables.inc.php',[[INSTALLER_REVISION_NO]]),
  ('admin/db_updates/step_4_migrate_the_data','content_tables.inc.php',[[INSTALLER_REVISION_NO]]),

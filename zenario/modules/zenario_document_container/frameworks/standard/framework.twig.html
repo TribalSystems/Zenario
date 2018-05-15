@@ -21,30 +21,45 @@
 	{% if Documents %}
 		{% for item in Documents %}
 			<div class="document_wrap">
-			<a href="{{item.Document_Link}}" target="_blank" onclick="{{item.Google_Analytics_Link}}">
-				{% if item.Thumbnail %}
-					<div class="thumbnail thumbnail_{{item.Document_Mime}}">
-						{{item.Thumbnail}}
+				{% if item.privacy_warning %}
+					<div class="privacy_warning">
+						{% if item.privacy == 'private' %}
+							<p class="privacy_warning">{{ze('admin', 'phrase', 'Warning: content item is Public, the selected document \"[[Document_Link_Text]]\" is Private, so the document will not appear to visitors.', item)}}</p>
+						{% elseif item.privacy == 'offline' %}
+							<p class="privacy_warning">{{ze('admin', 'phrase', 'Warning: the selected document \"[[Document_Link_Text]]\" is Offline, so the document will not appear to visitors.', item)}}</p>
+						{% endif %}
 					</div>
-				{% else %}
-					<div class="thumbnail no_thumbnail_{{item.Document_Mime}}"></div>
-				{% endif %}
-			</a>
-			{% if item.Document_Type == 'file' %}
-				<div class="level_{{item.Document_Level}}">
-					{% if item.Document_Link_Text %}
-						<a href="{{item.Document_Link}}" target="_blank" onclick="{{item.Google_Analytics_Link}}">{{item.Document_Link_Text}}</a>
+				{% else %}	
+					<a href="{{item.Document_Link}}" target="_blank" onclick="{{item.Google_Analytics_Link}}">
+						{% if item.Thumbnail %}
+							<div class="thumbnail thumbnail_{{item.Document_Mime}}">
+								{{item.Thumbnail}}
+							</div>
+						{% else %}
+							<div class="thumbnail no_thumbnail_{{item.Document_Mime}}"></div>
+						{% endif %}
+					</a>
+					{% if item.Document_Type == 'file' %}
+						<div class="level_{{item.Document_Level}}">
+							{% if item.Document_Link_Text %}
+								<a href="{{item.Document_Link}}" target="_blank" onclick="{{item.Google_Analytics_Link}}">{{item.Document_Link_Text}}</a>
+							{% endif %}
+							{% if item.File_Size %}
+								<span class="file_size">{{item.File_Size|e}}</span>
+							{% endif %}
+							{% if item.Upload_Date %}
+								<span class="upload_date">{{item.Upload_Date|e}}</span>
+							{% endif %}
+							{% if Download_Link %}
+								<div class="download_link">
+									<a href="{{item.Document_Link}}" target="_blank" onclick="{{item.Google_Analytics_Link}}">{{Download_Link_Phrase|trans}}</a>
+								</div>
+							{% endif %}
+						</div>
+					{% else %}
+						<div class="level_{{item.Document_Level}}"><h3>{{item.Document_Link_Text}}</h3></div>
 					{% endif %}
-					{% if item.File_Size %}
-						<span class="file_size">{{item.File_Size|e}}</span>
-					{% endif %}
-					{% if item.Upload_Date %}
-						<span class="upload_date">{{item.Upload_Date|e}}</span>
-					{% endif %}
-				</div>
-			{% else %}
-				<div class="level_{{item.Document_Level}}"><h3>{{item.Document_Link_Text}}</h3></div>
-			{% endif %}
+				{% endif %}	
 			</div>
 		{% endfor %}
 	{% endif %}

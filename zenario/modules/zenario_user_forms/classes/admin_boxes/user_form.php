@@ -34,15 +34,15 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 			$box['tab'] = $box['key']['tab'];
 		}
 		
-		$fields['anti_spam/captcha_type']['values'] = ['word' => 'Words (Captcha 1.0)', 'math' => 'Maths'];
+		$fields['anti_spam/captcha_type']['values'] = ['math' => 'Maths (Securimage)'];
 		
 		$link = ze\link::absolute()."zenario/admin/organizer.php?#zenario__administration/panels/site_settings//captcha";
 		
 		if (ze::setting('google_recaptcha_site_key') && ze::setting('google_recaptcha_secret_key')) {
-			$fields['anti_spam/captcha_type']['values']['pictures'] = 'Pictures (Captcha 2.0)';
+			$fields['anti_spam/captcha_type']['values']['pictures'] = 'Pictures (Google reCaptcha 2.0)';
 			$fields['anti_spam/captcha_type']['note_below'] = 'Captcha settings can be found in  <a href="' . $link. '" target="_blank">Site Settings</a>';
 		} else {
-			$fields['anti_spam/captcha_type']['note_below'] = 'To enable pictures captcha (most friendly for the user)  please enter the <a href="' . $link. '" target="_blank">api key details</a>';
+			$fields['anti_spam/captcha_type']['note_below'] = 'To enable more kinds of captcha, please check your <a href="' . $link. '" target="_blank">API key details</a> and ensure all keys are completed.';
 		}
 		
 		//Hide profanity settings checkbox if site setting is not checked
@@ -101,10 +101,12 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 				$record['delete_content_sooner'] = true;
 			}
 			
+			$record['error_message_position'] = $record['show_errors_below_fields'] ? 'below' : 'above';
+			
 			$this->fillFieldValues($fields, $record);
 			
 			$box['key']['type'] = $record['type'];
-			$box['title'] = ze\admin::phrase('Editing the Form "[[name]]"', ['name' => $record['name']]);
+			$box['title'] = ze\admin::phrase('Editing settings for the form "[[name]]"', ['name' => $record['name']]);
 			
 			if ($record['title'] !== null && $record['title'] !== '') {
 				$values['details/show_title'] = true;
@@ -385,7 +387,7 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 		
 		$fields['data/redirect_location']['hidden'] = $values['data/success_message_type'] != 'redirect_after_submission';
 		
-		$fields['details/success_message']['hidden'] = $values['data/success_message_type'] != 'show_success_message';
+		$fields['data/success_message']['hidden'] = $values['data/success_message_type'] != 'show_success_message';
 		
 		if ($values['data_deletion/period_to_delete_response_headers'] == ""
 			&& ($siteWideSetting = ze::setting('period_to_delete_the_form_response_log_headers'))
@@ -401,7 +403,7 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 		}
 		
 		if (!empty($box['key']['id'])) {
-			$box['title'] = ze\admin::phrase('Editing the Form "[[name]]"', ['name' => $values['details/name']]);
+			$box['title'] = ze\admin::phrase('Editing settings for the form "[[name]]"', ['name' => $values['details/name']]);
 		}
 		
 		
@@ -468,7 +470,7 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 		} else {
 			$sql = '
 				SELECT id
-				FROM ' . DB_NAME_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_forms
+				FROM ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_forms
 				WHERE name = "' . ze\escape::sql($values['details/name']) . '"';
 			if ($box['key']['id']) {
 				$sql .= ' 
@@ -534,7 +536,7 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 		}
 		
 		$record['use_captcha'] = $values['use_captcha'];
-		$record['captcha_type'] = ($values['use_captcha'] ? $values['captcha_type'] : 'word');
+		$record['captcha_type'] = ($values['use_captcha'] ? $values['captcha_type'] : null);
 		$record['extranet_users_use_captcha'] = $values['extranet_users_use_captcha'];
 		$record['admin_email_use_template'] = ($values['admin_email_options'] == 'use_template');
 		
@@ -657,6 +659,8 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 			}
 		}
 		
+		$record['show_errors_below_fields'] = ($values['error_message_position'] == 'below');
+		
 		$record['period_to_delete_response_headers'] = $values['period_to_delete_response_headers'];
 		if ($values['period_to_delete_response_headers'] && $values['delete_content_sooner']) {
 			$record['period_to_delete_response_content'] = $values['period_to_delete_response_content'];
@@ -690,7 +694,7 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 							SELECT '
 								.ze\escape::sql(implode(', ', $translatableFields)).'
 							FROM 
-								'.DB_NAME_PREFIX. ZENARIO_USER_FORMS_PREFIX . 'user_forms
+								'.DB_PREFIX. ZENARIO_USER_FORMS_PREFIX . 'user_forms
 							WHERE ( 
 									title = "'.ze\escape::sql($oldCode).'"
 								OR

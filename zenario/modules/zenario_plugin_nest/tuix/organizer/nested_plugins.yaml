@@ -13,8 +13,8 @@ zenario__modules:
                 cVersion: ''
             db_items:
                 table: |
-                    [[DB_NAME_PREFIX]]nested_plugins AS np
-                    LEFT JOIN [[DB_NAME_PREFIX]]nested_plugins AS p
+                    [[DB_PREFIX]]nested_plugins AS np
+                    LEFT JOIN [[DB_PREFIX]]nested_plugins AS p
                        ON p.instance_id = np.instance_id
                       AND p.is_slide = 1
                       AND p.slide_num = np.slide_num
@@ -71,6 +71,8 @@ zenario__modules:
                         only:
                             label: Shown on mobile only
                             css_class: organizer_icon_show_on_mobile_only
+                slide_num:
+                    db_column: np.slide_num
                 makes_breadcrumbs:
                     title: Use for smart breadcrumbs
                     db_column: IF (np.makes_breadcrumbs, np.makes_breadcrumbs, '')
@@ -78,9 +80,15 @@ zenario__modules:
                     format: enum
                     values:
                         1:
-                            label: Breadcrumbs
+                            label: Able to generate breadcrumbs
                         2:
-                            label: Hidden, breadcrumbs only
+                            label: Generating breadcrumbs
+                        3:
+                            label: Hidden, used for generating breadcrumbs only
+                        12:
+                            label: 'Generating breadcrumbs (Warning: Breadcrumbs link not set in conductor settings)'
+                        13:
+                            label: 'Hidden, used for generating breadcrumbs only (Warning: Breadcrumbs link not set in conductor settings)'
                 
                 parent:
                     hidden: true
@@ -92,7 +100,7 @@ zenario__modules:
                 
                 module_class_name:
                     db_column: m.class_name
-                    table_join: '[[DB_NAME_PREFIX]]modules AS m ON np.module_id = m.id'
+                    table_join: '[[DB_PREFIX]]modules AS m ON np.module_id = m.id'
                 framework:
                     hidden: true
                     title: Framework
@@ -102,24 +110,24 @@ zenario__modules:
                 filename:
                     db_column: img_f.filename
                     table_join: |
-                        LEFT JOIN [[DB_NAME_PREFIX]]plugin_settings AS img_ps
+                        LEFT JOIN [[DB_PREFIX]]plugin_settings AS img_ps
                            ON img_ps.instance_id = np.instance_id
                           AND img_ps.egg_id = np.id
                           AND img_ps.foreign_key_to = 'file'
                           AND np.is_slide = 0
-                        LEFT JOIN [[DB_NAME_PREFIX]]files AS img_f
+                        LEFT JOIN [[DB_PREFIX]]files AS img_f
                            ON img_f.id = img_ps.foreign_key_id
                           AND `usage` = 'image'
                           AND img_f.mime_type IN ('image/gif', 'image/png', 'image/jpeg', 'image/svg+xml')
                 checksum:
                     db_column: img_f.checksum
                     table_join: |
-                        LEFT JOIN [[DB_NAME_PREFIX]]plugin_settings AS img_ps
+                        LEFT JOIN [[DB_PREFIX]]plugin_settings AS img_ps
                            ON img_ps.instance_id = np.instance_id
                           AND img_ps.egg_id = np.id
                           AND img_ps.foreign_key_to = 'file'
                           AND np.is_slide = 0
-                        LEFT JOIN [[DB_NAME_PREFIX]]files AS img_f
+                        LEFT JOIN [[DB_PREFIX]]files AS img_f
                            ON img_f.id = img_ps.foreign_key_id
                           AND `usage` = 'image'
                           AND img_f.mime_type IN ('image/gif', 'image/png', 'image/jpeg', 'image/svg+xml')
@@ -127,12 +135,12 @@ zenario__modules:
                     server_side_only: true
                     db_column: img_f.mime_type
                     table_join: |
-                        LEFT JOIN [[DB_NAME_PREFIX]]plugin_settings AS img_ps
+                        LEFT JOIN [[DB_PREFIX]]plugin_settings AS img_ps
                            ON img_ps.instance_id = np.instance_id
                           AND img_ps.egg_id = np.id
                           AND img_ps.foreign_key_to = 'file'
                           AND np.is_slide = 0
-                        LEFT JOIN [[DB_NAME_PREFIX]]files AS img_f
+                        LEFT JOIN [[DB_PREFIX]]files AS img_f
                            ON img_f.id = img_ps.foreign_key_id
                           AND `usage` = 'image'
                           AND img_f.mime_type IN ('image/gif', 'image/png', 'image/jpeg', 'image/svg+xml')
@@ -156,7 +164,7 @@ zenario__modules:
                         path: zenario_slide
                 nest_settings:
                     only_show_on_refiner: nest
-                    label: Nest properties
+                    label: Nest settings
                     visible_if: |
                         !tuix.key.isSlideshow
                     admin_box:
@@ -165,7 +173,7 @@ zenario__modules:
                             instanceId: ""
                 slideshow_settings:
                     only_show_on_refiner: nest
-                    label: Slideshow properties
+                    label: Slideshow settings
                     visible_if: |
                         tuix.key.isSlideshow
                     admin_box:
@@ -327,41 +335,41 @@ zenario__modules:
                     label: Use for smart breadcrumbs
                     ajax:
                         request:
-                            use_for_breadcrumbs: 1
+                            use_for_breadcrumbs: 2
                     without_columns_set:
                         is_slide: true
                     visible_if: |
-                        tuix.key.usesConductor && !(1*item.makes_breadcrumbs)
-                show_and_use_for_breadcrumbs:
-                    parent: breadcrumbs
-                    label: Show plugin
-                    ajax:
-                        request:
-                            use_for_breadcrumbs: 1
-                    without_columns_set:
-                        is_slide: true
-                    visible_if: |
-                        tuix.key.usesConductor && item.makes_breadcrumbs == 2
+                        tuix.key.usesConductor && zenario.IN(1*item.makes_breadcrumbs, 1, 11)
                 hide_and_use_for_breadcrumbs:
                     parent: breadcrumbs
                     label: Hide and use for smart breadcrumbs only
+                    ajax:
+                        request:
+                            use_for_breadcrumbs: 3
+                    without_columns_set:
+                        is_slide: true
+                    visible_if: |
+                        tuix.key.usesConductor && zenario.IN(1*item.makes_breadcrumbs, 1, 11, 2, 12)
+                show_and_use_for_breadcrumbs:
+                    parent: breadcrumbs
+                    label: Show plugin
                     ajax:
                         request:
                             use_for_breadcrumbs: 2
                     without_columns_set:
                         is_slide: true
                     visible_if: |
-                        tuix.key.usesConductor && item.makes_breadcrumbs != 2
+                        tuix.key.usesConductor && zenario.IN(1*item.makes_breadcrumbs, 3, 13)
                 stop_using_for_breadcrumbs:
                     parent: breadcrumbs
                     label: Stop using for smart breadcrumbs
                     ajax:
                         request:
-                            use_for_breadcrumbs: 0
+                            use_for_breadcrumbs: 1
                     without_columns_set:
                         is_slide: true
                     visible_if: |
-                        tuix.key.usesConductor && 1*item.makes_breadcrumbs
+                        tuix.key.usesConductor && zenario.IN(1*item.makes_breadcrumbs, 2, 12, 3, 13)
                 
                 view:
                     label: View image
@@ -390,6 +398,7 @@ zenario__modules:
                     label: Delete
                     without_columns_set:
                         is_slide: true
+                    multiple_select: true
                     ajax:
                         confirm:
                             html: true
@@ -404,7 +413,8 @@ zenario__modules:
                     label: Delete
                     with_columns_set:
                         is_slide: true
-                    visible_if: item.ordinal != 1
+                    multiple_select: true
+                    visible_if_for_all_selected_items: item.ordinal != 1
                     ajax:
                         confirm:
                             html: true

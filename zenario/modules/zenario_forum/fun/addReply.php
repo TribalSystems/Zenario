@@ -34,7 +34,7 @@ $this->checkUserIsInForumsUserTable($userId);
 
 //Add the post
 $sql = "
-	INSERT INTO ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "user_posts SET
+	INSERT INTO ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "user_posts SET
 		forum_id = ". (int) $this->forumId. ",
 		thread_id = ". (int) $this->threadId. ",
 		first_post = ". (int) $firstPost. ",

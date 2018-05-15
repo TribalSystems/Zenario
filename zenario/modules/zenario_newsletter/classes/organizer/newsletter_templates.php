@@ -35,7 +35,11 @@ class zenario_newsletter__organizer__newsletter_templates extends zenario_newsle
 	}
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
-		 //...your PHP code...//
+		 if ($refinerName == 'newsletter_templates_using_image') {
+			$mrg = ze\row::get('files', ['filename'], $refinerId);
+			$panel['title'] = ze\admin::phrase('Newsletter templates using the image "[[filename]]"', $mrg);
+			$panel['no_items_message'] = ze\admin::phrase('There are no newsletter templates using the image "[[filename]]"', $mrg);
+		 }
 	}
 	
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {

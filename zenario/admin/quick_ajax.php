@@ -210,7 +210,7 @@ if (!empty($_REQUEST['keep_session_alive'])) {
 	if (ze::isAdmin()) {
 		$sql = "
 			SELECT id, filename, width, height, checksum, `usage`
-			FROM ". DB_NAME_PREFIX. "files
+			FROM ". DB_PREFIX. "files
 			WHERE id = ". (int) $_REQUEST['lookupFileDetails'];
 		
 		if ($result = ze\sql::select($sql)) {
@@ -230,7 +230,7 @@ if (!empty($_REQUEST['keep_session_alive'])) {
 	if (ze::isAdmin()) {
 		if (!empty($_POST['_save_prefs']) && !empty($_POST['prefs'])) {
 			$sql = "
-				REPLACE INTO ". DB_NAME_PREFIX. "admin_organizer_prefs SET
+				REPLACE INTO ". DB_PREFIX. "admin_organizer_prefs SET
 					prefs = '". ze\escape::sql($_POST['prefs']). "',
 					checksum = '". ze\escape::sql(substr($_POST['checksum'], 0, 22)). "',
 					admin_id = ". (int) $_SESSION['admin_userid'];
@@ -248,7 +248,7 @@ if (!empty($_REQUEST['keep_session_alive'])) {
 			}
 			
 			$sql .= "
-				FROM ". DB_NAME_PREFIX. "admin_organizer_prefs
+				FROM ". DB_PREFIX. "admin_organizer_prefs
 				WHERE admin_id = ". (int) $_SESSION['admin_userid'];
 			$result = ze\sql::select($sql);
 			
@@ -295,7 +295,7 @@ if (!empty($_REQUEST['keep_session_alive'])) {
 		if (empty($lines) && $alias) {
 			$sql = "
 				SELECT lang_code_in_url, language_id, alias
-				FROM ". DB_NAME_PREFIX. "content_items
+				FROM ". DB_PREFIX. "content_items
 				WHERE alias != ''
 				  AND alias < '". ze\escape::sql($alias). "'
 				  AND (equiv_id, type) NOT IN ((". (int) $equivId. ", '". ze\escape::sql($_POST['cType'] ?? false). "'))
@@ -306,7 +306,7 @@ if (!empty($_REQUEST['keep_session_alive'])) {
 			if (($_POST['cID'] ?? false) && ($_POST['cType'] ?? false)) {
 				$sql = "
 					SELECT lang_code_in_url, language_id, alias
-					FROM ". DB_NAME_PREFIX. "content_items
+					FROM ". DB_PREFIX. "content_items
 					WHERE id = ". (int) ($_POST['cID'] ?? false). "
 					  AND type = '". ze\escape::sql($_POST['cType'] ?? false). "'";
 				$result = ze\sql::select($sql);
@@ -323,7 +323,7 @@ if (!empty($_REQUEST['keep_session_alive'])) {
 			
 			$sql = "
 				SELECT lang_code_in_url, language_id, alias
-				FROM ". DB_NAME_PREFIX. "content_items
+				FROM ". DB_PREFIX. "content_items
 				WHERE alias != ''
 				  AND alias > '". ze\escape::sql($alias). "'
 				  AND (equiv_id, type) NOT IN ((". (int) $equivId. ", '". ze\escape::sql($_POST['cType'] ?? false). "'))
@@ -349,7 +349,7 @@ if (!empty($_REQUEST['keep_session_alive'])) {
 						} else {
 							$sql = "
 								SELECT 1
-								FROM ". DB_NAME_PREFIX. "content_items
+								FROM ". DB_PREFIX. "content_items
 								WHERE alias = '". ze\escape::sql($content[2]). "'
 								LIMIT 2";
 							$result = ze\sql::select($sql);

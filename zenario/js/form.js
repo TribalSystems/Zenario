@@ -1208,6 +1208,7 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 		parentsValuesExist = false,
 		selected_option,
 		prop, match,
+		addWidgetWrap = false,
 		isButton = false,
 		useButtonTag = false,
 		hasBR = false,
@@ -1522,14 +1523,6 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 			//delete meHTML;
 			meHTML = undefined;
 		}
-		
-		
-		if (hasPreFieldTags) {
-			html += preFieldTags.join('');
-		}
-		if (defined(field.pre_field_html)) {
-			html += zenario.unfun(field.pre_field_html);
-		}
 	}
 	
 	
@@ -1762,9 +1755,9 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 		
 		cb.after(function() {
 			if (isMultiSelectList) {
-				thus.setupMultipleSelect(id, tab, field, readOnly || disabled);
+				thus.setupMultipleSelect(field, id, tab, readOnly || disabled);
 			} else {
-				thus.setupPickedItems(id, tab, field, readOnly, multiple_select);
+				thus.setupPickedItems(field, id, tab, readOnly, multiple_select);
 			}
 		});
 		
@@ -2042,7 +2035,8 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 						});
 				
 				if (readOnly) {
-					options = readonlyOptions;
+					options = normalOptions;
+					options.readonly = true;
 					extraAtt['class'] = ' tinymce_readonly';
 			
 				} else {
@@ -2135,7 +2129,7 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 					html += '<textarea';
 		
 				} else if (isDatePicker) {
-					html += '<span class="zenario_datepicker_wrap">';
+					addWidgetWrap = true;
 					html += '<input';
 					extraAtt.type = 'text';
 					extraAtt['class'] += ' zenario_datepicker';
@@ -2356,7 +2350,7 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 			html += _$input('type', 'button', 'class', 'zenario_open_autocomplete', 'value', '▾', 'onclick', '$(' + thus.globalName + '.get("' + jsEscape(id) + '")).autocomplete("search", "");');
 			
 		}
-		if (isDatePicker || isTextFieldWithAutocomplete) {
+		if (isTextFieldWithAutocomplete) {
 			html += '</span>';
 		}
 	}
@@ -2367,20 +2361,43 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 			html +=
 				'&nbsp; ' +
 				_$input('type', 'button', 'class', 'submit', 'value', phrase.test, 'onclick', thus.globalName + '.testURL("' + jsEscape(id) + '");');
+			
+			addWidgetWrap = true;
 		}
 		
 		//Checkbox/radio buttons always have their labels directly after their fields 
 		if (field.label && (fieldType == 'checkbox' || fieldType == 'radio')) {
 			html += ' ' + _$label('class', field.label_class, 'for', id, 'id', 'label_for__' + id, htmlspecialchars(field.label));
+			addWidgetWrap = true;
 		}
 		//Other fields only have this if they specifically use the post_field_label property
 		if (defined(field.post_field_label)) {
 			html += ' ' + _$label('for', id, 'id', 'label_for__' + id, htmlspecialchars(field.post_field_label));
+			addWidgetWrap = true;
 		}
+		
+		
+		if (hasPreFieldTags) {
+			html = preFieldTags.join('') + html;
+		}
+		if (defined(field.pre_field_html)) {
+			html = zenario.unfun(field.pre_field_html) + html;
+		}
+		
+		if (addWidgetWrap) {
+			html = _$span('class', 'zenario_field_widget_wrap', html);
+		}
+		
+		
 		
 		if (defined(field.post_field_html)) {
 			html += zenario.unfun(field.post_field_html);
 		}
+		
+		if (field.tooltip) {
+			html += _$div("class", "zenario_field_tooltip", "title", field.tooltip, '?');
+		}
+		
 		if (hasPostFieldTags) {
 			html += postFieldTags.join('');
 		}
@@ -2616,7 +2633,7 @@ methods.hierarchicalSelect = function(picked_items, field, tabTUIX, sortOrder, p
 };
 
 
-methods.setupMultipleSelect = function(id, tab, field, disable) {
+methods.setupMultipleSelect = function(field, id, tab, disable) {
 	
 	var changed = false,
 		$field = $(thus.get(id));
@@ -2643,50 +2660,38 @@ methods.setupMultipleSelect = function(id, tab, field, disable) {
 	if (disable) {
 		$field.multiselect('disable');
 	}
-}
+};
 
 
-methods.setupPickedItems = function(id, tab, field, readOnly, multiple_select) {
+methods.typeaheadSearchEnabled = function(field, id, tab) {
+};
+
+methods.typeaheadSearchAJAXURL = function(field, id, tab) {
+};
+
+methods.parseTypeaheadSearch = function(field, id, tab, readOnly, data) {
+};
+
+methods.setupPickedItems = function(field, id, tab, readOnly, multiple_select) {
 	
 	var noRecurse = false,
-		allow_typing_anything = false,
-		pAndR,
-		datas,
+		searchURL,
 		searchParam,
 		$tokenize,
-		pathDetails,
-		targetPathDetails,
 		pick_items = field.pick_items || {},
 		upload = field.upload || {},
+		allow_typing_anything = engToBoolean(pick_items.allow_typing_anything),
 		reorder_items = engToBoolean(upload.reorder_items || pick_items.reorder_items);
 	
-	if (field.pick_items
-	 && !engToBoolean(pick_items.disable_type_ahead_search)) {
-		
-		pathDetails = pick_items.path && zenarioO.convertNavPathToTagPathAndRefiners(pick_items.path);
-		targetPathDetails = pick_items.target_path && zenarioO.convertNavPathToTagPathAndRefiners(pick_items.target_path);
-		
-		//If pick_items.path leads to the same place as pick_items.target_path,
-		//prefer pick_items.path as this is more likely to have a refiner set on it
-		if (pathDetails
-		 && targetPathDetails
-		 && pathDetails.path == targetPathDetails.path) {
-			pAndR = pathDetails;
-		} else {
-			pAndR = targetPathDetails || pathDetails;
-		}
-		
-		if (pAndR) {
-			datas = URLBasePath + 'zenario/admin/organizer.ajax.php?_typeahead_search=1&path=' + encodeURIComponent(pAndR.path) + zenario.urlRequest(pAndR.request);
+	if (thus.typeaheadSearchEnabled(field, id, tab)) {
+		if (searchURL = thus.typeaheadSearchAJAXURL(field, id, tab)) {
 			searchParam = '_search';
 		}
-		
-		allow_typing_anything = engToBoolean(field.pick_items.allow_typing_anything);
 	}
 	
 	$tokenize = $(thus.get(id)).tokenize({
 		
-		datas: datas,
+		datas: searchURL,
 		searchParam: searchParam,
 		
 		//Leave 200ms between repeated AJAX requests
@@ -2713,29 +2718,8 @@ methods.setupPickedItems = function(id, tab, field, readOnly, multiple_select) {
 		},
 		maxElements: multiple_select? 0 : 1,
 		
-		parseData: function(panel) {
-			
-			var valueId, item, label,
-				data = [],
-				field = thus.tuix.tabs[tab].fields[id];
-			
-			if (panel.items) {
-				foreach (panel.items as valueId => item) {
-					
-					label = zenarioA.formatOrganizerItemName(panel, valueId)
-					
-					field.values = field.values || {};
-					field.values[valueId] = {
-						list_image: item.list_image,
-						css_class: item.css_class || (panel.item && panel.item.css_class),
-						label: label
-					};
-					
-					data.push({value: valueId, text: label, html: thus.drawPickedItem(valueId, id, field, readOnly)});
-				}
-			}
-			
-			return data;
+		parseData: function(data) {
+			return thus.parseTypeaheadSearch(thus.tuix.tabs[tab].fields[id], id, tab, readOnly, data);
 		},
 		
 		formatTokenHTML: function(valueId, text) {
@@ -2777,7 +2761,7 @@ methods.setupPickedItems = function(id, tab, field, readOnly, multiple_select) {
 	
 		//If there is no AJAX URL then no type-ahead is possible, so we need to disable it.
 		//But we still need the field to look editable, and the "remove" button should still work!
-		if (!datas && !allow_typing_anything) {
+		if (!searchURL && !allow_typing_anything) {
 			$tokenize.disableTypeAhead();
 	
 		} else {
@@ -3143,10 +3127,11 @@ methods.pickedItemsArray = function(field, value) {
 				}
 				
 				label = zenarioA.formatOrganizerItemName(panel, i);
-				item = panel.items && panel.items[i] || {};
+				item = panel.items && panel.items[i] || {missing: true};
 				
 				picked_items[i] = label;
 				field.values[i] = {
+					missing: item.missing,
 					list_image: item.list_image,
 					css_class: item.css_class || (panel.item && panel.item.css_class),
 					label: label
@@ -3426,132 +3411,58 @@ methods.hierarchicalBoxes = function(cb, tab, id, value, field, thisField, readO
 };
 
 //Return the HTML for a picked item
-methods.drawPickedItem = function(item, id, field, readOnly) {
+methods.drawPickedItem = function(item, id, field, readOnly, inDropDown) {
 	
 	if (!defined(field)) {
 		field = thus.field(id);
 	}
-	//if (!defined(value)) {
-	//	value = thus.value(id, this.tuix.tab);
-	//}
 	
-	var panel,
-		//m, i,
-		valueObject = {},
-		label = field.values && field.values[item];
-	
+	var c,
+		file
+		label = field.values && field.values[item],
+		pick_items = field.pick_items || {},
+		thumbnail = {},
+		mi = {};
 	
 	if (_.isObject(label)) {
-		valueObject = label;
-		label = label.label;
+		_.extend(mi, label);
+	
+	} else if (label) {
+		mi.label = label;
+	
 	} else {
-		if (!label) {
-			label = item;
-		}
-		valueObject.label = label;
+		mi.label = item;
+		mi.missing = true;
 	}
 	
-	var numeric = item == 1 * item,
-		extension,
-		widthAndHeight,
-		file,
-		path,
-		src,
-		mi = {
-			id: id,
-			item: item,
-			label: label,
-			//first: i == 0,
-			//last: i == sortedPickedItems.length - 1,
-			readOnly: readOnly,
-			css_class: valueObject.css_class,
-			list_image: valueObject.list_image
-		};
+	mi.id = id;
+	mi.item = item;
+	mi.readOnly = readOnly;
 	
-	if (field.tag_colors) {
-		mi.tag_color = field.tag_colors[item] || 'blue';
+	
+	if (mi.width
+	 && mi.height
+	 && (c = mi.checksum || mi.short_checksum)) {
+		thumbnail.src = URLBasePath + 'zenario/file.php?c=' + encodeURIComponent(c) + '&og=1';
+	
+		if (mi.usage) {
+			thumbnail.src += '&usage=' + encodeURIComponent(mi.usage);
+		}
+		
+		//Attempt to get the width and height from the label, and work out the correct
+		//width and height for the thumbnail.
+		//(The max is 180 by 120; this is the size of Organizer thumbnails and
+		// is also set in zenario/file.php)
+		zenarioT.resizeImage(mi.width, mi.height, 180, 120, thumbnail);
+		
+		mi.thumbnail = thumbnail;
 	}
 	
-	//Attempt to work out the path to the item in Organizer, and include an "info" button there
-	//If this is a file upload, the info button shouldn't be shown for newly uploaded files;
-	//only files with an id should show the info button.
-	if (field.pick_items
-	 && !engToBoolean(field.pick_items.hide_info_button)
-	 && (!field.upload || numeric)
-	 && (path = field.pick_items.path)
-	 && (path == field.pick_items.target_path || field.pick_items.min_path == field.pick_items.target_path)) {
-		
-		//No matter what the generated path was, there should always be two slashes between the selected item and the path
-		if (zenario.rightHandedSubStr(path, 2) == '//') {
-			path += item;
-		} else if (zenario.rightHandedSubStr(path, 1) == '/') {
-			path += '/' + item;
-		} else {
-			path += '//' + item;
-		}
-		
-		mi.organizerPath = path;
+	if (inDropDown) {
+		return thus.microTemplate(pick_items.dropdown_item_microtemplate || thus.mtPrefix + '_dropdown_item', mi);
+	} else {
+		return thus.microTemplate(pick_items.picked_item_microtemplate || thus.mtPrefix + '_picked_item', mi);
 	}
-	
-	
-	if (field.upload) {
-		mi.isUpload = true;
-		
-		extension = (('' + label).match(/(.*?)\.(\w+)$/)) || (('' + label).match(/(.*?)\.(\w+) \[.*\]$/));
-	
-		//Attempt to get the extension of the file this is chosen
-		if (extension && extension[2]) {
-			extension = extension[2].toLowerCase();
-		} else {
-			extension = 'unknown';
-		}
-		
-		mi.extension = extension;
-		
-		//Generate a link to the selected file
-		if (numeric) {
-			if ((file = field.values && field.values[item])
-			 && (file.checksum)) {
-				//If this is an existing file (with a numeric id), link by id
-				src = URLBasePath + 'zenario/file.php?c=' + encodeURIComponent(file.checksum);
-			
-				if (file.usage) {
-					src += '&usage=' + encodeURIComponent(file.usage);
-				}
-			} else {
-				//Otherwise if this looks like a numeric id, try to link by id
-				src = URLBasePath + 'zenario/file.php?id=' + item;
-			}
-		} else {
-			//Otherwise try to display it from the cache/uploads/ directory
-			src = URLBasePath + 'zenario/file.php?getUploadedFileInCacheDir=' + encodeURIComponent(item);
-		}
-	
-		//Check if thus is an image this has been chosen
-		if (extension.match(/gif|jpg|jpeg|png|svg/)) {
-			//For images, display a thumbnail this opens a colorbox when clicked
-			mi.thumbnail = {
-				onclick: thus.globalName + ".showPickedItemInPopout('" + src + "&popout=1&dummy_filename=" + encodeURIComponent("image." + extension) + "', '" + label + "');",
-				src: src + "&og=1"
-			};
-			
-			//Attempt to get the width and height from the label, and work out the correct
-			//width and height for the thumbnail.
-			//(The max is 180 by 120; this is the size of Organizer thumbnails and
-			// is also set in zenario/file.php)
-			widthAndHeight = ('' + label).match(/.*\[\s*(\d+)p?x?\s*[×x]\s*(\d+)p?x?\s*\]$/);
-			if (widthAndHeight && widthAndHeight[1] && widthAndHeight[2]) {
-				zenarioT.resizeImage(widthAndHeight[1], widthAndHeight[2], 180, 120, mi.thumbnail);
-			}
-			
-			
-		} else {
-			//Otherwise display a downlaod link
-			mi.adminDownload = src + "&adminDownload=1";
-		}
-	}
-	
-	return thus.microTemplate(thus.mtPrefix + '_picked_item', mi);
 };
 
 
@@ -3614,9 +3525,10 @@ methods.setPickedItems = function(path, key, row, panel) {
 	
 	foreach (key._items as eni) {
 		i = zenario.decodeItemIdForOrganizer(eni);
-		item = panel.items && panel.items[i] || {};
+		item = panel.items && panel.items[i] || {missing: true};
 		
 		values[i] = {
+			missing: item.missing,
 			list_image: item.list_image,
 			css_class: item.css_class || (panel.item && panel.item.css_class),
 			label: zenarioA.formatOrganizerItemName(panel, i)

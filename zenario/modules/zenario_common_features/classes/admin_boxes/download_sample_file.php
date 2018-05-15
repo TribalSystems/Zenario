@@ -36,8 +36,8 @@ class zenario_common_features__admin_boxes__download_sample_file extends ze\modu
 		$datasetColumns = [];
 		$sql = '
 			SELECT f.id, f.db_column
-			FROM '.DB_NAME_PREFIX.'custom_dataset_fields f
-			INNER JOIN '.DB_NAME_PREFIX.'custom_dataset_tabs t
+			FROM '.DB_PREFIX.'custom_dataset_fields f
+			INNER JOIN '.DB_PREFIX.'custom_dataset_tabs t
 				ON (f.dataset_id = t.dataset_id) AND (f.tab_name = t.name)
 			WHERE f.dataset_id = '.(int)$dataset['id']. '
 			AND f.db_column != ""

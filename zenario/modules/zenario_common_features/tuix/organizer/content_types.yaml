@@ -9,8 +9,8 @@ zenario__content:
             use_tall_rows: true;
             db_items:
                 table: |
-                    [[DB_NAME_PREFIX]]content_types AS ct
-                    LEFT JOIN [[DB_NAME_PREFIX]]modules AS m
+                    [[DB_PREFIX]]content_types AS ct
+                    LEFT JOIN [[DB_PREFIX]]modules AS m
                        ON m.id = ct.module_id
                 id_column: ct.content_type_id
                 client_side: true

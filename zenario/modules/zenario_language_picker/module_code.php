@@ -37,7 +37,7 @@ class zenario_language_picker extends ze\moduleBaseClass {
 	var $sections = [];
 	var $langs = [];
 	
-	function init()	{
+	function init() {
 		$this->allowCaching(
 			$atAll = true, $ifUserLoggedIn = $this->setting('destination') != 'home', $ifGetSet = true, $ifPostSet = true, $ifSessionSet = true, $ifCookieSet = true);
 		$this->clearCacheBy(
@@ -53,10 +53,10 @@ class zenario_language_picker extends ze\moduleBaseClass {
 		if ($useEquivs) {
 			$equivs = ze\sql::fetchAssocs(
 				'SELECT id, status, alias, language_id
-				FROM '. DB_NAME_PREFIX. 'content_items
+				FROM '. DB_PREFIX. 'content_items
 				WHERE equiv_id = '. (int) ze::$equivId. '
-				  AND `type` = \''. ze\escape::sql(ze::$cType). '\'',
-				false, 'language_id'
+				  AND `type` = \''. ze\escape::sql(ze::$cType). '\'', 
+				'language_id'
 			);
 		}
 		

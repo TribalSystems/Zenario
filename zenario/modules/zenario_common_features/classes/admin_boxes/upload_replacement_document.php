@@ -45,7 +45,7 @@ class zenario_common_features__admin_boxes__upload_replacement_document extends 
 			if($filename){
 				$sql="
 					SELECT COUNT(filename) as number_of_files
-					FROM ".DB_NAME_PREFIX."documents
+					FROM ".DB_PREFIX."documents
 					WHERE filename = '".ze\escape::sql($filename)."'";
 				$result = ze\sql::select($sql);
 				$row = ze\sql::fetchAssoc($result);
@@ -114,7 +114,7 @@ class zenario_common_features__admin_boxes__upload_replacement_document extends 
 				'file_datetime' => date("Y-m-d H:i:s")
 			];
 			
-			//Copy privacy if a document with the same file already exists
+			//Copy privacy settings if a document with the same file already exists
 			$docWithSameFile = ze\row::get('documents', ['privacy', 'filename'], ['file_id' => $newFileId]);
 			if ($docWithSameFile) {
 				$documentProperties['filename'] = $docWithSameFile['filename'];
@@ -140,7 +140,7 @@ class zenario_common_features__admin_boxes__upload_replacement_document extends 
 			if ($publicLink && ze\cache::cleanDirs()) {
 				$newRedirect = $oldFile['short_checksum'] . '/' . $document['filename'];
 				$sql = '
-					INSERT IGNORE INTO ' . DB_NAME_PREFIX . 'document_public_redirects (document_id, file_id, path)
+					INSERT IGNORE INTO ' . DB_PREFIX . 'document_public_redirects (document_id, file_id, path)
 					VALUES (
 						'. (int) $documentId. ',
 						'. (int) $oldFile['id']. ',
@@ -153,6 +153,14 @@ class zenario_common_features__admin_boxes__upload_replacement_document extends 
 				
 				ze\document::remakeRedirectHtaccessFiles($documentId);
 				ze\document::generatePublicLink($documentId);
+			}
+			
+			//Check if there are any other documents with the old name, and regenerate their links if necessary
+			$otherDocsWithOldName = ze\row::getArray('documents', 'id', ['file_id' => $document['file_id'], 'privacy' => 'public']);
+			if (isset($otherDocsWithOldName)) {
+				foreach ($otherDocsWithOldName as $docWithOldName) {
+					ze\document::generatePublicLink($docWithOldName);
+				}
 			}
 		}
 	}

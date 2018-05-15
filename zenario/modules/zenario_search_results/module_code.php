@@ -95,8 +95,8 @@ class zenario_search_results extends ze\moduleBaseClass {
 				c.parent_id,
 				c.name,
 				c.public
-			FROM " . DB_NAME_PREFIX . "categories AS c
-			INNER JOIN " . DB_NAME_PREFIX . "category_item_link AS cil
+			FROM " . DB_PREFIX . "categories AS c
+			INNER JOIN " . DB_PREFIX . "category_item_link AS cil
 				ON c.id = cil.category_id";
 
 		if ($parentId!==false) {
@@ -343,13 +343,13 @@ class zenario_search_results extends ze\moduleBaseClass {
 		
 		
 		$joinSQL = "INNER JOIN 
-						" . DB_NAME_PREFIX . "languages l
+						" . DB_PREFIX . "languages l
 					ON
 						c.language_id = l.id ";
 		
 		if ($useCC) {
 			$joinSQL .= "
-				INNER JOIN ". DB_NAME_PREFIX. "content_cache AS cc
+				INNER JOIN ". DB_PREFIX. "content_cache AS cc
 				   ON cc.content_id = v.id
 				  AND cc.content_type = v.type
 				  AND cc.content_version = v.version";
@@ -357,7 +357,7 @@ class zenario_search_results extends ze\moduleBaseClass {
 		
 		if ($this->category) {
 			$joinSQL .= "
-			INNER JOIN " . DB_NAME_PREFIX . "category_item_link AS cil
+			INNER JOIN " . DB_PREFIX . "category_item_link AS cil
 			   ON cil.equiv_id = c.equiv_id
 			  AND cil.content_type = c.type
 			  AND cil.category_id = ". (int) $this->category;

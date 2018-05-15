@@ -39,7 +39,7 @@
 							{% for node2 in node1.children %}
 								{% if not node2.is_admin_add_menu_item %}
 									{% set currentInCol = currentInCol + 1 %}
-									{% if (nodeExtraProperties[node2.mID]['top_of_column'] == 1) or (currentInCol > maxInCol) %}
+									{% if (nodeExtraProperties[node2.mID]['top_of_column'] == 1 and currentInCol > 1) or (currentInCol > maxInCol) %}
 										{% for i in currentInCol..maxInCol if currentInCol <= maxInCol %}
 											<div class="level3 blank"></div>
 										{% endfor %}

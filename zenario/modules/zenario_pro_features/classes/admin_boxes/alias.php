@@ -31,46 +31,126 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_pro_features__admin_boxes__alias extends ze\moduleBaseClass {
 
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values){
-		if (ze\priv::check('_PRIV_MANAGE_SPARE_ALIAS')) {
-			//Only show the "Create a Spare Alias under the old name" field if there is an existing alias,
-			//which is not already in the spare aliases table.
-			if (empty($box['tabs']['meta_data']['fields']['alias']['value'])
-			 || !ze\content::isPublished($box['key']['cID'], $box['key']['cType'])
-			 || ze\row::exists('spare_aliases', ['alias' => $box['tabs']['meta_data']['fields']['alias']['value']])) {
-				$box['tabs']['meta_data']['fields']['zenario_pro_features__create_spare_alias']['hidden'] = true;
+		//Load details on the spare aliases in use in the system, and which have been chosen here
+		$sql = "
+			SELECT sa.alias AS spare_alias
+			FROM ". DB_PREFIX. "spare_aliases AS sa
+			WHERE sa.content_id = ". (int) $box['key']['cID']. "
+			ORDER BY sa.alias";
+		$result = ze\sql::select($sql);
+		
+		$spareAliases = [];
+		while ($row = ze\sql::fetchAssoc($result)) {
+			$spareAliases[] = $row['spare_alias'];
+		}
+		
+		$values['meta_data/spare_aliases'] = implode(',', $spareAliases);
+	}
+
+	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+		
+		$oldAliasAdded = false;
+		
+		//If the "add old alias" button is pressed, add the old alias to the list
+		if (empty($fields['meta_data/create_spare_alias']['hidden'])
+		 && !empty($fields['meta_data/create_spare_alias']['pressed'])) {
+		 	$alias = $fields['meta_data/alias']['value'];
+			$values['meta_data/spare_aliases'] = implode(',', ze\ray::explodeAndTrim($values['meta_data/spare_aliases']. ','. $alias));
+		}
+		
+		//I don't want any aliases to be flagged with the "missing" tag, so I'm going to manually register them
+		if (empty($fields['meta_data/spare_aliases']['values'])) {
+			$fields['meta_data/spare_aliases']['values'] = [];
+		}
+		foreach (ze\ray::explodeAndTrim($values['spare_aliases']) as $alias) {
+			$fields['meta_data/spare_aliases']['values'][$alias] = [
+				'label' => $alias
+				
+				//Adding this line would give them the "alias" icon as well
+				//'css_class' => 'alias_url'
+			];
+			
+			if ($alias == $fields['meta_data/alias']['value']) {
+				$oldAliasAdded = true;
 			}
+		}
+		
+		//Only show the "Create a Spare Alias under the old name" field if there is an existing alias,
+		//which is not already in the spare aliases table.
+		if (isset($fields['meta_data/create_spare_alias'])) {
+			$fields['meta_data/create_spare_alias']['hidden'] = 
+				$oldAliasAdded
+			 || empty($fields['meta_data/alias']['value'])
+			 || !ze\content::isPublished($box['key']['cID'], $box['key']['cType']);
 		}
 	}
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
-		//Create a Spare Alias under the old name, if there is an old name, it is being changed, and it was requested
-		if (ze\priv::check('_PRIV_MANAGE_SPARE_ALIAS') && ze\ring::engToBoolean($box['tabs']['meta_data']['edit_mode']['on'] ?? false)) {
-			if ($values['meta_data/zenario_pro_features__create_spare_alias']
-			&& $box['tabs']['meta_data']['fields']['alias']['value'] == $box['tabs']['meta_data']['fields']['alias']['current_value']) {
-				$box['tabs']['meta_data']['errors'][] =
-				ze\admin::phrase('You cannot create a spare alias under the old name as you have not actually changed the alias.');
+		//Check permissions
+		if (ze\priv::check('_PRIV_MANAGE_SPARE_ALIAS')) {
+			
+			foreach (ze\ray::explodeAndTrim($values['spare_aliases']) as $alias) {
+				
+				if ($alias == $values['meta_data/alias']) {
+					$box['tabs']['meta_data']['errors'][] = ze\admin::phrase('The text "[[alias]]" cannot be both the main alias and a spare alias.', ['alias' => $alias]);
+				
+				} else {
+					$sql = "
+						SELECT 1
+						FROM ". DB_PREFIX. "content_items
+						WHERE `alias`= '". ze\escape::sql($alias). "'
+						  AND (id, `type`) NOT IN ((". (int) $box['key']['cID']. ", '". ze\escape::sql($box['key']['cType']). "'))
+						LIMIT 1";
+					
+					if (ze\sql::numRows($sql)) {
+						$box['tabs']['meta_data']['errors'][] = ze\admin::phrase('"[[alias]]" already exists as an alias.', ['alias' => $alias]);
+					
+					} else {
+						$sql = "
+							SELECT 1
+							FROM ". DB_PREFIX. "spare_aliases
+							WHERE `alias`= '". ze\escape::sql($alias). "'
+							  AND (content_id, content_type) NOT IN ((". (int) $box['key']['cID']. ", '". ze\escape::sql($box['key']['cType']). "'))
+							LIMIT 1";
+					
+						if (ze\sql::numRows($sql)) {
+							$box['tabs']['meta_data']['errors'][] = ze\admin::phrase('"[[alias]]" already exists as a spare alias.', ['alias' => $alias]);
+						}
+					}
+				}
 			}
 		}
-		
 	}
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		//Create a Spare Alias under the old name, if there is an old name, it is being changed, and it was requested
-		if (ze\priv::check('_PRIV_MANAGE_SPARE_ALIAS') && ze\ring::engToBoolean($box['tabs']['meta_data']['edit_mode']['on'] ?? false)) {
-			if ($values['meta_data/zenario_pro_features__create_spare_alias']
-			&& $box['tabs']['meta_data']['fields']['alias']['value']
-			&& $box['tabs']['meta_data']['fields']['alias']['value'] != $box['tabs']['meta_data']['fields']['alias']['current_value']) {
-		
-				$row = [
-						'ext_url' => '',
-						'content_id' => $box['key']['cID'],
-						'content_type' => $box['key']['cType'],
-						'created_datetime' => ze\date::now(),
-						'alias' => $box['tabs']['meta_data']['fields']['alias']['value']];
-		
-				ze\row::insert('spare_aliases', $row);
+		//Check permissions
+		if (ze\priv::check('_PRIV_MANAGE_SPARE_ALIAS')) {
+			
+			$spareAliases = [];
+			$key = [
+				'target_loc' => 'int',
+				'content_id' => $box['key']['cID'],
+				'content_type' => $box['key']['cType'],
+				'ext_url' => ''
+			];
+			
+			//Create any new spare aliases that have just been added
+			foreach (ze\ray::explodeAndTrim($values['spare_aliases']) as $alias) {
+				$row = $key;
+				$row['alias'] = $alias;
+				
+				if (!ze\row::exists('spare_aliases', $row)) {
+					$row['ext_url'] = '';
+					$row['created_datetime'] = ze\date::now();
+					ze\row::set('spare_aliases', $row, ['alias' => $alias]);
+				}
+				
+				$spareAliases[] = $alias;
 			}
+			
+			//Delete any spare aliases for this content item that were not in this list
+			$key['alias'] = ['!' => $spareAliases];
+			ze\row::delete('spare_aliases', $key);
 		}
-		
 	}
 }

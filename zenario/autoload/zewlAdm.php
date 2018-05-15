@@ -65,13 +65,13 @@ return \''. $ascii . '\';';
 		//do not auto-update
 		//are in tables with a single-column primary key
 	public static function canEncryptColumn($table, $column) {
-		\ze\row::cacheTableDef(DB_NAME_PREFIX. $table);
+		\ze::$dbL->checkTableDef(DB_PREFIX. $table);
 		
-		return isset(\ze::$dbCols[DB_NAME_PREFIX. $table][$column])
-			&& !empty(\ze::$pkCols[DB_NAME_PREFIX. $table])
+		return isset(\ze::$dbL->cols[DB_PREFIX. $table][$column])
+			&& !empty(\ze::$dbL->pks[DB_PREFIX. $table])
 			&& (bool) \ze\sql::fetchRow("
 				SHOW COLUMNS
-				FROM ". DB_NAME_PREFIX. $table. "
+				FROM ". DB_PREFIX. $table. "
 				WHERE `Field` = '". \ze\escape::sql($column). "'
 				  AND `Type` != 'tinyint(1)'
 				  AND `Key` != 'PRI'
@@ -83,18 +83,18 @@ return \''. $ascii . '\';';
 		
 		//Check if we can encrypt this column, and that it's not already encrypted
 		if (\ze\zewlAdm::canEncryptColumn($table, $column)
-		 && \ze\db::columnIsEncrypted($table, $column) === false
+		 && \ze::$dbL->columnIsEncrypted($table, $column) === false
 		 && \ze\zewl::loadClientKey()
 		 && ($col = \ze\sql::fetchRow("
 				SHOW COLUMNS
-				FROM ". DB_NAME_PREFIX. $table. "
+				FROM ". DB_PREFIX. $table. "
 				WHERE `Field` = '". \ze\escape::sql($column). "'"
 		))) {
 			
 			//Work out some settings for the encrypted column
 			$nullable = $col[2] == 'YES';
-			$pkCol = \ze::$pkCols[DB_NAME_PREFIX. $table];
-			$colDef = \ze::$dbCols[DB_NAME_PREFIX. $table][$column];
+			$pkCol = \ze::$dbL->pks[DB_PREFIX. $table];
+			$colDef = \ze::$dbL->cols[DB_PREFIX. $table][$column];
 			
 			if ($colDef->isInt
 			 || $colDef->isFloat
@@ -104,7 +104,7 @@ return \''. $ascii . '\';';
 				$coltype = 'mediumblob';
 			}
 			
-			$tableName = "`". DB_NAME_PREFIX. $table. "`";
+			$tableName = "`". DB_PREFIX. $table. "`";
 			$plainCol = "`". \ze\escape::sql($column). "`";
 			$hashedCol = "`". \ze\escape::sql('#'. $column). "`";
 			$encryptedCol = "`". \ze\escape::sql('%'. $column). "`";
@@ -173,18 +173,18 @@ return \''. $ascii . '\';';
 		
 		//Check if we can encrypt this column, and that it's not already encrypted
 		if (\ze\zewl::loadClientKey()
-		 && \ze\db::columnIsEncrypted($table, $column) === true
+		 && \ze::$dbL->columnIsEncrypted($table, $column) === true
 		 && ($col = \ze\sql::fetchRow("
 				SHOW COLUMNS
-				FROM ". DB_NAME_PREFIX. $table. "
+				FROM ". DB_PREFIX. $table. "
 				WHERE `Field` = '". \ze\escape::sql($column). "'"
 		))) {
 			
 			//Work out some settings for the encrypted column
 			$nullable = $col[2] == 'YES';
-			$pkCol = \ze::$pkCols[DB_NAME_PREFIX. $table];
+			$pkCol = \ze::$dbL->pks[DB_PREFIX. $table];
 			
-			$tableName = "`". DB_NAME_PREFIX. $table. "`";
+			$tableName = "`". DB_PREFIX. $table. "`";
 			$plainCol = "`". \ze\escape::sql($column). "`";
 			$hashedCol = "`". \ze\escape::sql('#'. $column). "`";
 			$encryptedCol = "`". \ze\escape::sql('%'. $column). "`";
@@ -209,7 +209,7 @@ return \''. $ascii . '\';';
 				DROP COLUMN ". $encryptedCol;
 			\ze\sql::update($sql, false, false);
 			
-			if (\ze\db::columnIsHashed($table, $column)) {
+			if (\ze::$dbL->columnIsHashed($table, $column)) {
 				$sql = "
 					ALTER TABLE ". $tableName. "
 					DROP COLUMN ". $hashedCol;

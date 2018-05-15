@@ -138,10 +138,10 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 			
 			//Note down which content types have categories
 			$panel['custom__content_types_with_categories'] =
-				ze\ray::valuesToKeys(ze\row::getArray('content_types', 'content_type_id', ['enable_categories' => 1]));
+				ze\ray::valuesToKeys(ze\row::getValues('content_types', 'content_type_id', ['enable_categories' => 1]));
 			
 			//Create page preview buttons
-			$pagePreviews = ze\row::getArray('page_preview_sizes', ['width', 'height', 'description', 'ordinal', 'is_default'], [], 'ordinal');
+			$pagePreviews = ze\row::getAssocs('page_preview_sizes', ['width', 'height', 'description', 'ordinal', 'is_default'], [], 'ordinal');
 			foreach ($pagePreviews as $pagePreview) {
 				$width = $pagePreview['width'];
 				$height = $pagePreview['height'];
@@ -169,7 +169,7 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 		if ($numLanguages < 2) {
 			unset($panel['columns']['sync_assist']);
 		} else {
-			$syncAssistLangs = ze\row::getArray('languages', 'id', ['sync_assist' => 1, 'id' => ['!' => ze::$defaultLang]]);
+			$syncAssistLangs = ze\row::getValues('languages', 'id', ['sync_assist' => 1, 'id' => ['!' => ze::$defaultLang]]);
 			if ($this->numSyncAssistLangs = count($syncAssistLangs)) {
 				define('ZENARIO_SYNC_ASSIST_LANGS', ze\escape::in($syncAssistLangs, 'sql'));
 			} else {
@@ -258,7 +258,7 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 				SELECT
 					layout_id, name,
 					CONCAT('L', IF (layout_id < 10, LPAD(CAST(layout_id AS CHAR), 2, '0'), CAST(layout_id AS CHAR)), ' ', name) AS id_and_name
-				FROM ". DB_NAME_PREFIX. "layouts
+				FROM ". DB_PREFIX. "layouts
 				WHERE status = 'active'";
 			
 			if ($panel['key']['cType']) {
@@ -445,10 +445,19 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 			$panel['item']['css_class'] = 'content_draft';
 			unset($panel['trash']);
 
-		} elseif ($refinerName == 'your_work_in_progress') {
-			$panel['title'] = ze\admin::phrase('Your work in progress');
-			$panel['no_items_message'] = ze\admin::phrase('You are not working on any draft content items.');
-			$panel['item']['css_class'] = 'content_draft';
+		} elseif ($refinerName == 'content_items_using_form') {
+			$mrg = [];
+			if (ze\module::inc('zenario_user_forms')) {
+				$mrg['name'] = zenario_user_forms::getFormName($refinerId);
+			}
+			$panel['title'] = ze\admin::phrase('Content items using the form "[[name]]"', $mrg);
+			$panel['no_items_message'] = ze\admin::phrase('There are no content items using the form "[[name]]"', $mrg);
+			unset($panel['trash']);
+
+		} elseif ($refinerName == 'content_items_using_image') {
+			$mrg = ze\row::get('files', ['filename'], $refinerId);
+			$panel['title'] = ze\admin::phrase('Content items using the image "[[filename]]"', $mrg);
+			$panel['no_items_message'] = ze\admin::phrase('There are no content items using the image "[[filename]]"', $mrg);
 			unset($panel['trash']);
 		}
 
@@ -465,6 +474,23 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 		$checkSpecificPerms = $showInOrganiser && ze\admin::hasSpecificPerms();
 
 		foreach ($panel['items'] as $id => &$item) {
+			
+			//If a content item has ever been edited, show last modified date and admin who modified it, but not created date...
+			if ($item['last_modified_datetime']) {
+				$item['unpublished_content_info'] =
+					 ze\admin::phrase('Last edit [[time]] by [[admin]].', [
+					 	'time' => ze\date::relative($item['last_modified_datetime']),
+					 	'admin' => ze\admin::formatName($item['last_author_id'])
+					 ]);
+			} else {
+				//... otherwise, show created date and admin who created it.
+				$item['unpublished_content_info'] =
+					 ze\admin::phrase('Created [[time]] by [[admin]].', [
+					 	'time' => ze\date::relative($item['created_datetime']),
+					 	'admin' => ze\admin::formatName($item['creating_author_id'])
+					 ]);
+			}
+			
 			$item['cell_css_classes'] = [];
 		
 			if ($item['id'] !== null) {

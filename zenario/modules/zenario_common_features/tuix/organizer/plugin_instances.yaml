@@ -5,15 +5,102 @@ zenario__modules:
         plugins:
             key:
                 skinId: ''
-            title: Plugin Library
+                moduleId: ''
+            title: Plugin library
+            select_mode_title: Select a plugin
             view_mode: list
             db_items:
-                table: '[[DB_NAME_PREFIX]]plugin_instances AS pi'
+                table: '[[DB_PREFIX]]plugin_instances AS pi'
                 id_column: pi.id
-                where_statement: WHERE pi.content_id = 0
+                where_statement: |
+                    WHERE pi.content_id = 0
+                custom__exclude_nests_and_slideshows: |
+                    AND pi.module_id NOT IN (
+                        SELECT id
+                        FROM [[DB_PREFIX]]modules
+                        WHERE class_name IN ('zenario_plugin_nest', 'zenario_slideshow')
+                    )
             refiners:
                 plugin:
                     sql: 'pi.module_id = [[REFINER_ID]]'
+                nests:
+                    title: Nest library
+                    select_mode_title: Select a nest
+                    sql: |
+                        pi.module_id = (SELECT id FROM [[DB_PREFIX]]modules WHERE class_name = 'zenario_plugin_nest')
+                slideshows:
+                    title: Slideshow library
+                    select_mode_title: Select a slideshow
+                    sql: |
+                        pi.module_id = (SELECT id FROM [[DB_PREFIX]]modules WHERE class_name = 'zenario_slideshow')
+                
+                plugins_using_form:
+                    sql: |
+                        pi.id IN (
+                            SELECT instance_id
+                            FROM [[DB_PREFIX]]plugin_settings
+                            WHERE foreign_key_to = 'user_form'
+                              AND foreign_key_id = [[REFINER_ID]]
+                              AND egg_id = 0
+                        )
+                nests_using_form:
+                    sql: |
+                        pi.module_id = (SELECT id FROM [[DB_PREFIX]]modules WHERE class_name = 'zenario_plugin_nest')
+                        AND pi.id IN (
+                            SELECT instance_id
+                            FROM [[DB_PREFIX]]plugin_settings
+                            WHERE foreign_key_to = 'user_form'
+                              AND foreign_key_id = [[REFINER_ID]]
+                              AND egg_id != 0
+                        )
+                slideshows_using_form:
+                    sql: |
+                        pi.module_id = (SELECT id FROM [[DB_PREFIX]]modules WHERE class_name = 'zenario_slideshow')
+                        AND pi.id IN (
+                            SELECT instance_id
+                            FROM [[DB_PREFIX]]plugin_settings
+                            WHERE foreign_key_to = 'user_form'
+                              AND foreign_key_id = [[REFINER_ID]]
+                              AND egg_id != 0
+                        )
+                
+                plugins_using_image:
+                    sql: |
+                        pi.id IN (
+                            SELECT foreign_key_id
+                            FROM [[DB_PREFIX]]inline_images AS iiu
+                            WHERE foreign_key_to = 'library_plugin'
+                              AND image_id = [[REFINER_ID]]
+                        )
+                nests_using_image:
+                    sql: |
+                        pi.module_id = (SELECT id FROM [[DB_PREFIX]]modules WHERE class_name = 'zenario_plugin_nest')
+                        AND pi.id IN (
+                            SELECT foreign_key_id
+                            FROM [[DB_PREFIX]]inline_images AS iiu
+                            WHERE foreign_key_to = 'library_plugin'
+                              AND image_id = [[REFINER_ID]]
+                        )
+                slideshows_using_image:
+                    sql: |
+                        pi.module_id = (SELECT id FROM [[DB_PREFIX]]modules WHERE class_name = 'zenario_slideshow')
+                        AND pi.id IN (
+                            SELECT foreign_key_id
+                            FROM [[DB_PREFIX]]inline_images AS iiu
+                            WHERE foreign_key_to = 'library_plugin'
+                              AND image_id = [[REFINER_ID]]
+                        )
+                    
+            #quick_filter_buttons:
+            #    module:
+            #        label: 'All modules'
+            #    all_modules:
+            #        parent: module
+            #        label: 'All modules'
+            #        column: module_id
+            #        value: ''
+            #        remove_filter: true
+            
             columns:
                 id:
                     format: id
@@ -24,7 +111,7 @@ zenario__modules:
                     title: ID
                     format: id
                     always_show: true
-                    db_column: "CONCAT('P', IF (pi.id < 10, LPAD(CAST(pi.id AS CHAR), 2, '0'), CAST(pi.id AS CHAR)))"
+                    db_column: pi.id
                     sort_column: pi.id
                     searchable: true
                     width: xxsmall
@@ -34,39 +121,48 @@ zenario__modules:
                     searchable: true
                     show_by_default: true
                 module_id:
-                    db_column: plg.id
-                plugin:
+                    title: Module ID
+                    hidden: true
+                    db_column: pi.module_id
+                    format: enum
+                    values: {}
+                module_name:
                     title: Module
+                    show_by_default: true
+                    visible_if: |
+                        !tuix.key.moduleId
                     db_column: plg.display_name
-                    table_join: '[[DB_NAME_PREFIX]]modules AS plg ON plg.id = pi.module_id'
+                    table_join: '[[DB_PREFIX]]modules AS plg ON plg.id = pi.module_id'
                     searchable: true
+                    disallow_filtering: true
                 module_class_name:
                     db_column: plg.class_name
-                    table_join: '[[DB_NAME_PREFIX]]modules AS plg ON plg.id = pi.module_id'
+                    table_join: '[[DB_PREFIX]]modules AS plg ON plg.id = pi.module_id'
                 framework:
                     title: Framework
                     db_column: pi.framework
-                usage:
+                where_used:
                     title: Usage
                     show_by_default: true
                     width: xlarge
+                    html: true
                 filename:
                     db_column: img_f.filename
                     table_join: |
-                        LEFT JOIN [[DB_NAME_PREFIX]]plugin_settings AS img_ps
+                        LEFT JOIN [[DB_PREFIX]]plugin_settings AS img_ps
                            ON img_ps.instance_id = pi.id
                           AND img_ps.foreign_key_to = 'file'
-                        LEFT JOIN [[DB_NAME_PREFIX]]files AS img_f
+                        LEFT JOIN [[DB_PREFIX]]files AS img_f
                            ON img_f.id = img_ps.foreign_key_id
                           AND img_f.`usage` = 'image'
                           AND img_f.mime_type IN ('image/gif', 'image/png', 'image/jpeg', 'image/svg+xml')
                 checksum:
                     db_column: img_f.checksum
                     table_join: |
-                        LEFT JOIN [[DB_NAME_PREFIX]]plugin_settings AS img_ps
+                        LEFT JOIN [[DB_PREFIX]]plugin_settings AS img_ps
                            ON img_ps.instance_id = pi.id
                           AND img_ps.foreign_key_to = 'file'
-                        LEFT JOIN [[DB_NAME_PREFIX]]files AS img_f
+                        LEFT JOIN [[DB_PREFIX]]files AS img_f
                            ON img_f.id = img_ps.foreign_key_id
                           AND img_f.`usage` = 'image'
                           AND img_f.mime_type IN ('image/gif', 'image/png', 'image/jpeg', 'image/svg+xml')
@@ -74,10 +170,10 @@ zenario__modules:
                     server_side_only: true
                     db_column: img_f.mime_type
                     table_join: |
-                        LEFT JOIN [[DB_NAME_PREFIX]]plugin_settings AS img_ps
+                        LEFT JOIN [[DB_PREFIX]]plugin_settings AS img_ps
                            ON img_ps.instance_id = pi.id
                           AND img_ps.foreign_key_to = 'file'
-                        LEFT JOIN [[DB_NAME_PREFIX]]files AS img_f
+                        LEFT JOIN [[DB_PREFIX]]files AS img_f
                            ON img_f.id = img_ps.foreign_key_id
                           AND img_f.`usage` = 'image'
                           AND img_f.mime_type IN ('image/gif', 'image/png', 'image/jpeg', 'image/svg+xml')
@@ -85,20 +181,30 @@ zenario__modules:
                 name: Plugin
                 names: Plugins
                 css_class: plugin_album_instance
+                link:
+                    path: zenario__modules/panels/nested_plugins
+                    refiner: nest
             collection_buttons:
                 create:
                     priv: _PRIV_MANAGE_REUSABLE_PLUGIN
+                    visible_if: |
+                        tuix.key.moduleId
                     css_class: zenario_create_a_new
-                    hide_on_filter: true
-                    label: Create a plugin
-                    only_show_on_refiner: plugin
+                    label: Create a ~plugin~
                     admin_box:
                         path: plugin_settings
                         create_another: true
+                create_dropdown:
+                    priv: _PRIV_MANAGE_REUSABLE_PLUGIN
+                    visible_if: |
+                        !tuix.key.moduleId
+                    css_class: zenario_create_a_new
+                    hide_when_children_are_not_visible: true
+                    label: Create a plugin
             item_buttons:
                 edit:
                     priv: _PRIV_VIEW_REUSABLE_PLUGIN
-                    label: Edit plugin settings
+                    label: Edit ~plugin~ settings
                     admin_box:
                         path: plugin_settings
                 framework_and_css:
@@ -122,7 +228,7 @@ zenario__modules:
                         has_image: true
                 usage_layouts:
                     parent: view_dropdown
-                    label: "Layouts using this plugin"
+                    label: "Layouts using this ~plugin~"
                     visible_if_for_all_selected_items: item.usage_layouts > 0
                     hide_in_select_mode: true
                     link:
@@ -133,7 +239,7 @@ zenario__modules:
                     align_right: true
                 usage_item:
                     parent: view_dropdown
-                    label: "Items using this plugin"
+                    label: "Items using this ~plugin~"
                     visible_if_for_all_selected_items: item.usage_item > 0
                     hide_in_select_mode: true
                     link:
@@ -171,9 +277,9 @@ zenario__modules:
                     ajax:
                         confirm:
                             message: |
-                                Are you sure you wish to delete plugin "[[name]]"?
+                                Are you sure you wish to delete the ~plugin~ "[[code]] [[name]]"?
                                 
-                                Its settings will be deleted but any attached images will be left in the Media panel.
+                                Its settings will be deleted but any attached images will be left in the image library.
                             multiple_select_message: Are you sure you wish to delete these plugins?
                             button_message: Delete
                             cancel_button_message: Cancel
@@ -189,13 +295,13 @@ zenario__modules:
                     ajax:
                         confirm:
                             message: |
-                                This plugin is currently used on [[usage_item]] content item(s) and [[usage_layouts]] layout(s).
+                                This ~plugin~ is currently used on [[usage_item]] content item(s) and [[usage_layouts]] layout(s).
                                 
                                 Deleting it will remove it from these content items and layouts, and this may have an immediate effect on published pages.
                                 
-                                Any attached images will be left in the "Plugins' images" panel.
+                                Any attached images will be left in image library.
                                 
-                                Are you still sure you wish to delete plugin "[[name]]"?
+                                Are you still sure you wish to delete the ~plugin~ "[[code]] [[name]]"?
                             multiple_select_message: Are you sure you wish to delete these plugins?
                             button_message: Delete
                             cancel_button_message: Cancel

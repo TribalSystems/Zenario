@@ -13,9 +13,9 @@ zenario__email_template_manager:
             refiners:
                 email_template:
                     sql: 't.code=[[REFINER_ID]]'
-                    table_join: '[[DB_NAME_PREFIX]]email_templates AS t ON l.email_template_id = t.id'
+                    table_join: '[[DB_PREFIX]]email_templates AS t ON l.email_template_id = t.id'
             db_items:
-                table: '[[DB_NAME_PREFIX]][[ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX]]email_template_sending_log AS l'
+                table: '[[DB_PREFIX]][[ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX]]email_template_sending_log AS l'
                 id_column: l.id
             item:
                 css_class: log
@@ -100,11 +100,11 @@ zenario__email_template_manager:
                 sent_from_module:
                     title: Sent from Module
                     table_join: |
-                        [[DB_NAME_PREFIX]]modules m
+                        [[DB_PREFIX]]modules m
                         ON 
                             l.module_id = m.id
                         LEFT JOIN 
-                            [[DB_NAME_PREFIX]]plugin_instances pi
+                            [[DB_PREFIX]]plugin_instances pi
                         ON
                             l.instance_id = pi.id
                     db_column: "IFNULL(m.display_name,'n/a')"
@@ -114,11 +114,11 @@ zenario__email_template_manager:
                 sent_from_plugin_instance:
                     title: Sent from Plugin
                     table_join: |
-                        [[DB_NAME_PREFIX]]modules m
+                        [[DB_PREFIX]]modules m
                         ON 
                             l.module_id = m.id
                         LEFT JOIN 
-                            [[DB_NAME_PREFIX]]plugin_instances pi
+                            [[DB_PREFIX]]plugin_instances pi
                         ON
                             l.instance_id = pi.id
                     db_column: "IFNULL(pi.name,'n/a')"

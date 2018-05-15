@@ -32,9 +32,6 @@ class zenario_users__admin_boxes__smart_group extends zenario_users {
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		ze\priv::exitIfNot('_PRIV_MANAGE_GROUP');
 		
-		
-
-		
 		$n = 0;
 		if ($box['key']['id'] && ($details = ze\smartGroup::details($box['key']['id']))) {
 			
@@ -43,7 +40,7 @@ class zenario_users__admin_boxes__smart_group extends zenario_users {
 			$box['key']['intended_usage'] = $details['intended_usage'];
 			
 			//Load all of the created rules
-			$rules = ze\row::getArray('smart_group_rules', true, ['smart_group_id' => $box['key']['id']], 'ord');
+			$rules = ze\row::getAssocs('smart_group_rules', true, ['smart_group_id' => $box['key']['id']], 'ord');
 			
 			//Create a row of fields for each rule
 			foreach ($rules as $rule) {
@@ -54,7 +51,7 @@ class zenario_users__admin_boxes__smart_group extends zenario_users {
 						//Check if a field is set, and if it's a supported field. Only add it if it is.
 						if ($rule['field_id']
 						 && ($field = ze\dataset::fieldDetails($rule['field_id']))
-						 && (ze::in($field['type'], 'group', 'checkbox', 'radios', 'centralised_radios', 'select', 'centralised_select'))) {
+						 && (ze::in($field['type'], 'group', 'checkbox', 'consent', 'radios', 'centralised_radios', 'select', 'centralised_select'))) {
 							++$n;
 					
 							$values['smart_group/field__'. $n] = $field['id'];
@@ -75,10 +72,10 @@ class zenario_users__admin_boxes__smart_group extends zenario_users {
 									$values['smart_group/is_isnt_in__'. $n] = $rule['not']? 'isnt' : 'is';
 								}
 					
-							} elseif ($field['type'] == 'checkbox') {
-								$values['smart_group/type__'. $n] = 'flag';
+							} elseif ($field['type'] == 'checkbox' || $field['type'] == 'consent') {
+								$values['smart_group/type__'. $n] = $field['type'];
 								$values['smart_group/is_isnt_set__'. $n] = $rule['not']? 'isnt' : 'is';
-					
+							
 							} else {
 								$values['smart_group/type__'. $n] = 'list';
 								$values['smart_group/value__'. $n] = $rule['value'];
@@ -150,13 +147,13 @@ class zenario_users__admin_boxes__smart_group extends zenario_users {
 			$box['key']['companiesExist'] = true;
 		}
 		if ($ZENARIO_ORGANIZATION_MANAGER_PREFIX = ze\module::prefix('zenario_organization_manager', $mustBeRunning = true)) {
-			$box['lovs']['roles'] = ze\row::getArray($ZENARIO_ORGANIZATION_MANAGER_PREFIX. 'user_location_roles', 'name', [], 'name', 'id');
+			$box['lovs']['roles'] = ze\row::getValues($ZENARIO_ORGANIZATION_MANAGER_PREFIX. 'user_location_roles', 'name', [], 'name', 'id');
 			$box['key']['rolesExist'] = !empty($box['lovs']['roles']);
 		}
 		
 		
 		if($ZENARIO_USER_ACTIVITY_BANDS_PREFIX = ze\module::prefix('zenario_user_activity_bands', $mustBeRunning = true)){
-			$box['lovs']['activity_band'] = ze\row::getArray($ZENARIO_USER_ACTIVITY_BANDS_PREFIX. 'activity_bands', 'name', [], 'name', 'id');
+			$box['lovs']['activity_band'] = ze\row::getValues($ZENARIO_USER_ACTIVITY_BANDS_PREFIX. 'activity_bands', 'name', [], 'name', 'id');
 			$box['key']['activityBandsExist'] = !empty($box['lovs']['activity_band']);
 		}
 		
@@ -164,7 +161,8 @@ class zenario_users__admin_boxes__smart_group extends zenario_users {
 		//Keep track of which things have parents
 		$unsets = [];
 		$optGroups = [
-			'flags' => [],
+			'checkboxs' => [],
+			'consents' => [],
 			'groups' => [],
 			'lists' => []
 		];
@@ -199,14 +197,20 @@ class zenario_users__admin_boxes__smart_group extends zenario_users {
 					continue;
 				}
 				
-				//Otherwise add the field to either the Groups list, Flags list or Lists list.
+				//Otherwise add the field to either the Groups list, Checkboxes list or Lists list.
 				switch ($field['type']) {
 					case 'checkbox':
-						$field['visible_if'] = "zenarioAB.valueOnThisRow('type__', field.id) == 'flag'";
-						$box['key']['flagsExist'] = true;
-						$optGroups['flags'][$field['parent']] = true;
+						$field['visible_if'] = "zenarioAB.valueOnThisRow('type__', field.id) == 'checkbox'";
+						$box['key']['checkboxesExist'] = true;
+						$optGroups['checkboxes'][$field['parent']] = true;
 						break;
-			
+						
+					case 'consent':
+						$field['visible_if'] = "zenarioAB.valueOnThisRow('type__', field.id) == 'consent'";
+						$box['key']['consentsExist'] = true;
+						$optGroups['consents'][$field['parent']] = true;
+						break;
+						
 					case 'group':
 						$field['visible_if'] = "zenarioAB.valueOnThisRow('type__', field.id) == 'group'";
 						$box['key']['groupsExist'] = true;
@@ -244,7 +248,13 @@ class zenario_users__admin_boxes__smart_group extends zenario_users {
 			if (!empty($field['parent']) && !empty($field['type'])) {
 				switch ($field['type']) {
 					case 'checkbox':
-						if (count($optGroups['flags']) < 2) {
+						if (count($optGroups['checkboxes']) < 2) {
+							unset($field['parent']);
+						}
+						break;
+					
+					case 'consent':
+						if (count($optGroups['consents']) < 2) {
 							unset($field['parent']);
 						}
 						break;
@@ -301,7 +311,7 @@ class zenario_users__admin_boxes__smart_group extends zenario_users {
 			
 			$fieldId = false;
 			if ($type = $values['smart_group/type__'. $n]) {
-				if (ze::in($type, 'group', 'flag', 'list')) {
+				if (ze::in($type, 'group', 'checkbox', 'consent', 'list')) {
 					$fieldId = (int) $values['smart_group/field__'. $n];
 				} elseif (is_numeric($type)) {
 					$fieldId = $type;
@@ -402,7 +412,7 @@ class zenario_users__admin_boxes__smart_group extends zenario_users {
 						//For each row, check that a field is selected (remembering that fields are in the
 						//"type" select list if they are fundamental fields).
 						$fieldId = false;
-						if (ze::in($type, 'group', 'flag', 'list')) {
+						if (ze::in($type, 'group', 'checkbox', 'consent', 'list')) {
 							$fieldId = (int) $values['smart_group/field__'. $n];
 						} elseif (is_numeric($type)) {
 							$fieldId = $type;
@@ -412,11 +422,12 @@ class zenario_users__admin_boxes__smart_group extends zenario_users {
 						//Check if a field is selected, and if it is a supported type
 						if ($fieldId
 						 && ($field = ze\dataset::fieldDetails($fieldId))
-						 && (ze::in($field['type'], 'group', 'checkbox', 'radios', 'centralised_radios', 'select', 'centralised_select'))) {
+						 && (ze::in($field['type'], 'group', 'checkbox', 'consent', 'radios', 'centralised_radios', 'select', 'centralised_select'))) {
 							
 							//Catch the case where someone has just changed the select lists and the types of field don't match up
 							if (($type == 'group' xor $field['type'] == 'group')
-							 || ($type == 'flag' xor $field['type'] == 'checkbox')
+							 || ($type == 'checkbox' xor $field['type'] == 'checkbox')
+							 || ($type == 'consent' xor $field['type'] == 'consent')
 							 || ($type == 'list' xor ze::in($field['type'], 'radios', 'centralised_radios', 'select', 'centralised_select'))) {
 								break;
 							}
@@ -436,7 +447,7 @@ class zenario_users__admin_boxes__smart_group extends zenario_users {
 									$rule['not'] = ze\ring::engToBoolean($values['smart_group/is_isnt_in__'. $n] == 'isnt');
 								}
 				
-							} elseif ($field['type'] == 'checkbox') {
+							} elseif ($field['type'] == 'checkbox' || $field['type'] == 'consent') {
 								$rule['not'] = ze\ring::engToBoolean($values['smart_group/is_isnt_set__'. $n] == 'isnt');
 				
 							} else {
@@ -493,7 +504,7 @@ class zenario_users__admin_boxes__smart_group extends zenario_users {
 		
 		//Delete any old existing rules that weren't just overwritten when saving about
 		$sql = "
-			DELETE FROM ". DB_NAME_PREFIX. "smart_group_rules
+			DELETE FROM ". DB_PREFIX. "smart_group_rules
 			WHERE smart_group_id = ". (int) $box['key']['id'];
 		
 		if (!empty($ords)) {

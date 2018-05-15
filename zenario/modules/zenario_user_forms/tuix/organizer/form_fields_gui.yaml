@@ -275,7 +275,7 @@ zenario__user_forms:
                                     item.type == 'document_upload'
                             note_to_user:
                                 label: 'Note below field (HTML):'
-                                type: text
+                                type: textarea
                                 maxlength: 250
                                 note_below: Enter a note to the user that will be displayed below this field.
                                 visible_if: |
@@ -352,16 +352,16 @@ zenario__user_forms:
                             item.type != 'page_break'
                         fields:
                             preload_dataset_field_user_data:
-                                label: Pre-populate with logged in users data
+                                label: Pre-populate with logged-in user's data
                                 type: checkbox
                                 value: true
                                 visible_if: |
                                     item.dataset_field_id
                             invert_dataset_result:
-                                label: Invert value when updating the users data
+                                label: Invert value when updating the user's data
                                 type: checkbox
                                 visible_if: |
-                                    item.dataset_field_id && (item.type == 'checkbox' || item.type == 'group')
+                                    item.dataset_field_id && (item.type == 'checkbox' || item.type == 'group' || item.type == 'consent')
                             default_value_options:
                                 label: 'Pre-populate field:'
                                 type: radios
@@ -386,7 +386,7 @@ zenario__user_forms:
                                         label: Unchecked
                                 note_below: Select a value to pre-populate this field.
                                 visible_if: |
-                                    !item.dataset_field_id && item.default_value_options == 'value' && (['radios', 'centralised_radios', 'select', 'centralised_select', 'checkbox', 'group'].indexOf(item.type) != -1)
+                                    !item.dataset_field_id && item.default_value_options == 'value' && (['radios', 'centralised_radios', 'select', 'centralised_select', 'checkbox', 'group', 'consent'].indexOf(item.type) != -1)
                                 indent: 1
                             default_value_text:
                                 label: 'Default value:'
@@ -394,7 +394,7 @@ zenario__user_forms:
                                 maxlength: 250
                                 note_below: Enter a value to pre-populate this field.
                                 visible_if: |
-                                    !item.dataset_field_id && item.default_value_options == 'value' && (['radios', 'centralised_radios', 'select', 'centralised_select', 'checkbox', 'group'].indexOf(item.type) == -1)
+                                    !item.dataset_field_id && item.default_value_options == 'value' && (['radios', 'centralised_radios', 'select', 'centralised_select', 'checkbox', 'group', 'consent'].indexOf(item.type) == -1)
                                 indent: 1
                             default_value_class_name:
                                 label: 'Module class name:'
@@ -556,29 +556,4 @@ zenario__user_forms:
                             crm_values:
                                 type: crm_values
                                 visible_if: |
-                                    item.send_to_crm && (['select', 'radios', 'checkboxes', 'centralised_select', 'centralised_radios', 'checkbox', 'group'].indexOf(item.type) != -1)
-                    salesforce_api:
-                        label: Salesforce
-                        visible_if: |
-                            zenarioO.pi.tuix.salesforce_enabled && (['page_break', 'section_description', 'repeat_start', 'attachment', 'file_picker', 'document_upload', 'restatement'].indexOf(item.type) == -1)
-                        fields:
-                            salesforce_send_to_crm:
-                                label: Send to Salesforce
-                                type: checkbox
-                                format_onchange: true
-                            salesforce_field_crm_name:
-                                label: 'CRM field name:'
-                                type: text
-                                maxlength: 250
-                                note_below: This is used to identify the field in the CRM
-                                visible_if: |
-                                    item.salesforce_send_to_crm
-                            salesforce_centralised_crm_buttons:
-                                type: centralised_crm_buttons
-                                visible_if: |
-                                    item.salesforce_send_to_crm && (['centralised_select', 'centralised_radios'].indexOf(item.type) != -1)
-                            salesforce_crm_values:
-                                type: crm_values
-                                crm_type: salesforce
-                                visible_if: |
-                                    item.salesforce_send_to_crm && (['select', 'radios', 'checkboxes', 'centralised_select', 'centralised_radios', 'checkbox', 'group'].indexOf(item.type) != -1)
+                                    item.send_to_crm && (['select', 'radios', 'checkboxes', 'centralised_select', 'centralised_radios', 'checkbox', 'group', 'consent'].indexOf(item.type) != -1)

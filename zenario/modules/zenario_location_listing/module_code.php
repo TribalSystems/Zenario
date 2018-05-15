@@ -100,31 +100,31 @@ class zenario_location_listing extends ze\moduleBaseClass {
 		}
 		
 		$sql .= "
-			FROM ". DB_NAME_PREFIX. ZENARIO_LOCATION_MANAGER_PREFIX. "locations AS loc";
+			FROM ". DB_PREFIX. ZENARIO_LOCATION_MANAGER_PREFIX. "locations AS loc";
 		
 		if ((int) $this->setting('region')) {
 			$sql .= "
-				INNER JOIN ". DB_NAME_PREFIX. ZENARIO_LOCATION_MANAGER_PREFIX. "location_region_link AS lrl 
+				INNER JOIN ". DB_PREFIX. ZENARIO_LOCATION_MANAGER_PREFIX. "location_region_link AS lrl 
 				   ON loc.id = lrl.location_id 
 				  AND lrl.region_id = ". (int) $this->setting('region');
 		}
 		
 		if ((int) $this->setting('sector')) {
 			$sql .= "
-				INNER JOIN ". DB_NAME_PREFIX. ZENARIO_LOCATION_MANAGER_PREFIX. "location_sector_score_link AS lnk
+				INNER JOIN ". DB_PREFIX. ZENARIO_LOCATION_MANAGER_PREFIX. "location_sector_score_link AS lnk
 				   ON loc.id = lnk.location_id";
 		}
 		
 		if (!$count) {
 			$sql .= "
-				LEFT JOIN ". DB_NAME_PREFIX. "content_items AS c
+				LEFT JOIN ". DB_PREFIX. "content_items AS c
 				   ON c.equiv_id = loc.equiv_id
 				  AND c.type = loc.content_type
 				  AND c.language_id = '". ze\escape::sql(ze::$langId). "'
-				LEFT JOIN ". DB_NAME_PREFIX. ZENARIO_LOCATION_MANAGER_PREFIX. "location_images AS im
+				LEFT JOIN ". DB_PREFIX. ZENARIO_LOCATION_MANAGER_PREFIX. "location_images AS im
 				   ON im.location_id = loc.id 
 				  AND im.sticky_flag = 1 
-				LEFT JOIN ". DB_NAME_PREFIX. "visitor_phrases AS vp_cn
+				LEFT JOIN ". DB_PREFIX. "visitor_phrases AS vp_cn
 				   ON loc.country_id IS NOT NULL
 				  AND module_class_name = 'zenario_country_manager'
 				  AND CONCAT('_COUNTRY_NAME_', loc.country_id) = vp_cn.code 
@@ -132,7 +132,7 @@ class zenario_location_listing extends ze\moduleBaseClass {
 			
 			//Custom data:
 			$sql .= "
-				LEFT JOIN ". DB_NAME_PREFIX. ZENARIO_LOCATION_MANAGER_PREFIX. "locations_custom_data AS cd
+				LEFT JOIN ". DB_PREFIX. ZENARIO_LOCATION_MANAGER_PREFIX. "locations_custom_data AS cd
 				   ON cd.location_id = loc.id";
 		}
 		
@@ -308,7 +308,7 @@ class zenario_location_listing extends ze\moduleBaseClass {
 				$datasetId = $dataset['id'];
 				$sql = "
 					SELECT f.id, f.label
-					FROM ".DB_NAME_PREFIX."custom_dataset_fields AS f
+					FROM ".DB_PREFIX."custom_dataset_fields AS f
 					WHERE f.dataset_id = ". (int) $datasetId. "
 					AND f.type = 'checkbox'
 					AND f.is_system_field = 0

@@ -27,7 +27,7 @@ zenario__users:
             no_items_in_search_message: No smart groups match your search.
             
             db_items:
-                table: '[[DB_NAME_PREFIX]]smart_groups AS sg'
+                table: '[[DB_PREFIX]]smart_groups AS sg'
                 id_column: sg.id
                 client_side: true
             refiners:

@@ -488,6 +488,7 @@ input, textarea, button {
 
 .zenario_debug div {
 	position: absolute;
+	z-index:97;
 	width: 18px;
 	height: 18px;
 	display: block;
@@ -532,20 +533,8 @@ input, textarea, button {
 
 /* Page preview icons */
 
-#zenario_at .zenario_at_toolbar_container_top ul li.zenario_small_preview_icon_desktop {
-	background:url('../admin/images/page_preview_icons/desktop-small-icon.png') no-repeat 0px center;
-}
-#zenario_at .zenario_at_toolbar_container_top ul li.zenario_small_preview_icon_laptop {
-	background:url('../admin/images/page_preview_icons/laptop-small-icon.png') no-repeat 0px center;
-}
-#zenario_at .zenario_at_toolbar_container_top ul li.zenario_small_preview_icon_tablet {
-	background:url('../admin/images/page_preview_icons/ipad-portrait-small-icon.png') no-repeat 0px center;
-}
-#zenario_at .zenario_at_toolbar_container_top ul li.zenario_small_preview_icon_tablet_landscape {
-	background:url('../admin/images/page_preview_icons/ipad-landscape-small-icon.png') no-repeat 0px center;
-}
-#zenario_at .zenario_at_toolbar_container_top ul li.zenario_small_preview_icon_smartphone {
-	background:url('../admin/images/page_preview_icons/mobile-small-icon.png') no-repeat 0px center;
+#zenario_at .zenario_at_toolbar_container_top ul li#zenario_at_button__page_preview_sizes ul li {
+	margin:0;
 }
 
 #zenario_at .zenario_at_toolbar ul li li.zenario_small_preview_icon_desktop a,
@@ -561,28 +550,49 @@ input, textarea, button {
 	margin-left: 8px;
 }
 
-.organizer_item_image.page_preview_size {
-	background:url("../admin/images/icon-page-preview-dark.svg") no-repeat center center / auto 15px;
+#zenario_at .zenario_at_toolbar_container_top ul li#zenario_at_button__page_preview_sizes ul li a {
+	padding-left:30px;
+	background-repeat:no-repeat;
+	background-position: 5px center;
+	background-size:auto 16px;
 }
 
-
-.organizer_item_image.zenario_preview_icon_desktop {
-	background:url("../admin/images/icon-page-preview-dark.svg") no-repeat center center / auto 15px;
-}
-.organizer_item_image.zenario_preview_icon_laptop {
-	background:url('../admin/images/page_preview_icons/laptop-list-icon.png') no-repeat -15px center;
-}
-.organizer_item_image.zenario_preview_icon_tablet {
-	background:url('../admin/images/page_preview_icons/ipad-portrait-list-icon.png') no-repeat -15px center;
-}
-.organizer_item_image.zenario_preview_icon_tablet_landscape {
-	background:url('../admin/images/page_preview_icons/ipad-landscape-icon.png') no-repeat -15px center;
-}
+.organizer_item_image.page_preview_size,
+.organizer_item_image.zenario_preview_icon_desktop,
+.organizer_item_image.zenario_preview_icon_laptop,
+.organizer_item_image.zenario_preview_icon_tablet,
+.organizer_item_image.zenario_preview_icon_tablet_landscape,
 .organizer_item_image.zenario_preview_icon_smartphone {
-	background:url('../admin/images/page_preview_icons/mobile-list-icon.png') no-repeat -15px center;
+	background-repeat:no-repeat;
+	background-position: center center;
+	background-size:auto 15px;
 }
 
+.organizer_item_image.page_preview_size,
+.organizer_item_image.zenario_preview_icon_desktop,
+#zenario_at .zenario_at_toolbar_container_top ul li.zenario_small_preview_icon_desktop a {
+	background-image:url('../admin/images/icon-page-preview-desktop.svg');
+}
 
+.organizer_item_image.zenario_preview_icon_laptop,
+#zenario_at .zenario_at_toolbar_container_top ul li.zenario_small_preview_icon_laptop a {
+	background-image:url('../admin/images/icon-page-preview-laptop.svg');
+}
+
+.organizer_item_image.zenario_preview_icon_tablet,
+#zenario_at .zenario_at_toolbar_container_top ul li.zenario_small_preview_icon_tablet a {
+	background-image:url('../admin/images/icon-page-preview-ipad-portrait.svg');
+}
+
+.organizer_item_image.zenario_preview_icon_tablet_landscape,
+#zenario_at .zenario_at_toolbar_container_top ul li.zenario_small_preview_icon_tablet_landscape a {
+	background-image:url('../admin/images/icon-page-preview-ipad-lanscape.svg');
+}
+
+.organizer_item_image.zenario_preview_icon_smartphone,
+#zenario_at .zenario_at_toolbar_container_top ul li.zenario_small_preview_icon_smartphone a {
+	background-image:url('../admin/images/icon-page-preview-mobile-portrait.svg');
+}
 
 /*
 	Tag colours

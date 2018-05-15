@@ -1,16 +1,16 @@
 
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]action_admin_link`;
-CREATE TABLE `[[DB_NAME_PREFIX]]action_admin_link` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]action_admin_link`;
+CREATE TABLE `[[DB_PREFIX]]action_admin_link` (
   `action_name` varchar(50) NOT NULL,
   `admin_id` int(10) unsigned NOT NULL,
   UNIQUE KEY `action_name` (`action_name`,`admin_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]admin_organizer_prefs`;
-CREATE TABLE `[[DB_NAME_PREFIX]]admin_organizer_prefs` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]admin_organizer_prefs`;
+CREATE TABLE `[[DB_PREFIX]]admin_organizer_prefs` (
   `admin_id` int(10) unsigned NOT NULL,
   `checksum` varchar(22) CHARACTER SET utf8mb4 NOT NULL DEFAULT '{}',
   `prefs` mediumtext CHARACTER SET utf8mb4,
@@ -18,8 +18,8 @@ CREATE TABLE `[[DB_NAME_PREFIX]]admin_organizer_prefs` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]admin_settings`;
-CREATE TABLE `[[DB_NAME_PREFIX]]admin_settings` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]admin_settings`;
+CREATE TABLE `[[DB_PREFIX]]admin_settings` (
   `admin_id` int(10) unsigned NOT NULL,
   `name` varchar(255) NOT NULL DEFAULT '',
   `value` mediumtext CHARACTER SET utf8mb4,
@@ -28,8 +28,8 @@ CREATE TABLE `[[DB_NAME_PREFIX]]admin_settings` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]admins`;
-CREATE TABLE `[[DB_NAME_PREFIX]]admins` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]admins`;
+CREATE TABLE `[[DB_PREFIX]]admins` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `authtype` enum('local','super') NOT NULL DEFAULT 'local',
   `global_id` int(10) unsigned NOT NULL DEFAULT '0',
@@ -72,6 +72,6 @@ CREATE TABLE `[[DB_NAME_PREFIX]]admins` (
 
 
 
-REPLACE INTO `[[DB_NAME_PREFIX]]local_revision_numbers` VALUES
+REPLACE INTO `[[DB_PREFIX]]local_revision_numbers` VALUES
  ('admin/db_updates/step_2_update_the_database_schema','admin_tables.inc.php',[[INSTALLER_REVISION_NO]]),
  ('admin/db_updates/step_4_migrate_the_data','admin_tables.inc.php',[[INSTALLER_REVISION_NO]]);

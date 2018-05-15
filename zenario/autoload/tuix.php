@@ -64,12 +64,11 @@ class tuix {
 			//T10201: Add a workaround to fix an occasional bug where the tuix_file_contents table is out of date
 			//Try to catch the case where the file was deleted in the filesystem but
 			//not from the tuix_file_contents table, and we've not noticed this yet
-			if (\ze::$lastDB
-			 && \ze::$lastDB == \ze::$localDB) {
+			if (\ze::$dbL) {
 			
 				//Look for bad rows from the table
 				$sql = "
-					DELETE FROM ". DB_NAME_PREFIX. "tuix_file_contents
+					DELETE FROM ". DB_PREFIX. "tuix_file_contents
 					WHERE '". \ze\escape::sql($path). "' LIKE CONCAT('%modules/', module_class_name, '/tuix/', type, '/', filename)";
 			
 				//If we found any, delete them and flag that the cache table might be out of date
@@ -1485,6 +1484,9 @@ class tuix {
 				} elseif (($msg = $field['validation']['no_spaces'] ?? false) && preg_replace('/\S/', '', $fieldValue)) {
 					$field['error'] = $msg;
 			
+				} elseif (($msg = $field['validation']['no_commas'] ?? false) && preg_replace('/[^,]/', '', $fieldValue)) {
+					$field['error'] = $msg;
+			
 				} elseif (($msg = $field['validation']['numeric'] ?? false) && !is_numeric($fieldValue)) {
 					$field['error'] = $msg;
 			
@@ -1874,7 +1876,7 @@ class tuix {
 					'name' => $ppath,
 					'value' => $defaultText,
 					'dont_save_default_value' => true,
-					'save_empty_value_for_hidden_fields' => false
+					'save_empty_value_when_hidden' => false
 				],
 				'ord' => ++$ord,
 				'same_row' => true,
@@ -2250,7 +2252,7 @@ class tuix {
 		if (!empty($box['key']['instanceId'])) {
 			$sql = "
 				SELECT name, `value`
-				FROM ". DB_NAME_PREFIX. "plugin_settings
+				FROM ". DB_PREFIX. "plugin_settings
 				WHERE instance_id = ". (int) $box['key']['instanceId']. "
 				  AND egg_id = ". (int) $box['key']['eggId'];
 			$result = \ze\sql::select($sql);
@@ -2415,16 +2417,16 @@ class tuix {
 	//Formerly "flagEncryptedColumnsInOrganizer()"
 	public static function flagEncryptedColumns(&$panel, $alias, $table) {
 	
-		$tableName = DB_NAME_PREFIX. $table;
+		$tableName = DB_PREFIX. $table;
 		$tableAlias = $alias. '.';
 	
-		if (!isset(\ze::$dbCols[$tableName])) {
-			\ze\row::cacheTableDef($tableName);
+		if (!isset(\ze::$dbL->cols[$tableName])) {
+			\ze::$dbL->checkTableDef($tableName);
 		}
 	
 		$encryptedColumns = [];
-		if (!empty(\ze::$dbCols[$tableName])) {
-			foreach (\ze::$dbCols[$tableName] as $col => $colDef) {
+		if (!empty(\ze::$dbL->cols[$tableName])) {
+			foreach (\ze::$dbL->cols[$tableName] as $col => $colDef) {
 				if ($colDef->encrypted) {
 					$encryptedColumns[$col] = $colDef;
 				}
@@ -2471,6 +2473,7 @@ class tuix {
 			$instance = \ze\plugin::details($egg['instance_id']);
 			$module = \ze\module::details($egg['module_id']);
 			
+			$key['moduleClassName'] = $module['class_name'];
 			$key['moduleId'] = $egg['module_id'];
 			$key['instanceId'] = $egg['instance_id'];
 			$key['eggId'] = $eggId;
@@ -2490,6 +2493,7 @@ class tuix {
 			$module = $instance = \ze\plugin::details($instanceId);
 			$egg = [];
 			
+			$key['moduleClassName'] = $module['class_name'];
 			$key['moduleId'] = $instance['module_id'];
 			$key['instanceId'] = $instanceId;
 			$key['eggId'] = 0;
@@ -2500,6 +2504,7 @@ class tuix {
 			$instance = ['framework' => $module['default_framework'], 'css_class' => ''];
 			$egg = [];
 			
+			$key['moduleClassName'] = $module['class_name'];
 			$key['moduleId'] = $moduleId;
 			$key['instanceId'] = 0;
 			$key['eggId'] = 0;

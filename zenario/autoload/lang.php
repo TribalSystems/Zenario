@@ -109,7 +109,7 @@ class lang {
 			//Attempt to find a record of the phrase in the database
 			$sql = "
 				SELECT local_text, seen_in_visitor_mode, seen_at_url IS NULL
-				FROM ". DB_NAME_PREFIX. "visitor_phrases
+				FROM ". DB_PREFIX. "visitor_phrases
 				WHERE language_id = '". \ze\escape::sql($languageId). "'
 				  AND module_class_name = '". \ze\escape::sql($moduleClass). "'
 				  AND code = '". \ze\escape::sql($code). "'
@@ -276,34 +276,73 @@ class lang {
 
 	//Formerly "applyMergeFields()"
 	public static function applyMergeFields(&$string, $replace) {
-		$content = preg_split('/\[\[([^\[\]]+)\]\]/', $string, -1,  PREG_SPLIT_DELIM_CAPTURE);
-		$string = '';
 		
-		foreach ($content as $i => &$str) {
-			if ($i % 2 === 1) {
-				//Every odd element will be a phrase code
+		$content = explode('[[', $string);
+		$string = '';
+		$first = true;
+		
+		foreach ($content as &$str) {
+			if ($first) {
+				$first = false;
+			
+			} elseif (false !== ($sbe = strpos($str, ']]'))) {
+				$mf = substr($str, 0, $sbe);
+				$str = substr($str, $sbe + 2);
 				
-				//Look out for Twig-style flags at the end of the phrase code's name
-				if (false !== ($pos = strpos($str, '|'))) {
-					$filter = trim(substr($str, $pos + 1));
-					$str = trim(substr($str, 0, $pos));
+				do {
+					//Look out for Twig-style flags at the end of the phrase code's name
+					if (false !== ($pos = strpos($mf, '|'))) {
+						$filter = trim(substr($mf, $pos + 1));
+						$mf = trim(substr($mf, 0, $pos));
 					
-					switch ($filter) {
-						case 'e':
-						case 'escape':
-							//html escaping anything using the "escape" flag
-							$string .= htmlspecialchars($replace[$str] ?? '');
-							continue 2;
+						switch ($filter) {
+							case 'e':
+							case 'escape':
+								//html escaping anything using the "escape" flag
+								$string .= htmlspecialchars($replace[$mf] ?? '');
+								break 2;
+						}
 					}
-				}
-				
-				$string .= $replace[$str] ?? '';
-			} else {
-				//Every even element will be plain text
-				$string .= $str;
+					
+					$string .= $replace[$mf] ?? '';
+				} while (false);
 			}
+			
+			$string .= $str;
 		}
 	}
+	
+	//Possible alternate version using preg_split(). This is about 33% less efficient.
+	
+	//public static function applyMergeFields(&$string, $replace) {
+	//	$content = preg_split('/\[\[([^\[\]]+)\]\]/', $string, -1,  PREG_SPLIT_DELIM_CAPTURE);
+	//	$string = '';
+	//	
+	//	foreach ($content as $i => &$str) {
+	//		if ($i % 2 === 1) {
+	//			//Every odd element will be a phrase code
+	//			
+	//			//Look out for Twig-style flags at the end of the phrase code's name
+	//			if (false !== ($pos = strpos($str, '|'))) {
+	//				$filter = trim(substr($str, $pos + 1));
+	//				$str = trim(substr($str, 0, $pos));
+	//				
+	//				switch ($filter) {
+	//					case 'e':
+	//					case 'escape':
+	//						//html escaping anything using the "escape" flag
+	//						$string .= htmlspecialchars($replace[$str] ?? '');
+	//						continue 2;
+	//				}
+	//			}
+	//			
+	//			$string .= $replace[$str] ?? '';
+	//		} else {
+	//			//Every even element will be plain text
+	//			$string .= $str;
+	//		}
+	//	}
+	//}
 	
 	//Possible alternate version that uses preg_replace_callback().
 	//Not used because it winds up as being slightly less efficient
@@ -367,7 +406,7 @@ class lang {
 		}
 	
 		//Define labels to use
-		$labels = ['_BYTES', '_KBYTES', '_MBYTES', '_GBYTES', '_TBYTES'];
+		$labels = ['[[size]] Bytes', '[[size]] KB', '[[size]] MB', '[[size]] GB', '[[size]] TB'];
 	
 		//Work out which of the labels to use, based on how many powers of 1024 go into the size, and
 		//how many labels we have
@@ -437,26 +476,26 @@ class lang {
 			$sql .= "
 				FROM (
 					SELECT DISTINCT language_id AS id
-					FROM ". DB_NAME_PREFIX. "visitor_phrases
+					FROM ". DB_PREFIX. "visitor_phrases
 				) AS l
-				LEFT JOIN ". DB_NAME_PREFIX. "languages el
+				LEFT JOIN ". DB_PREFIX. "languages el
 				   ON l.id = el.id";
 	
 		} else {
 			$sql .= "
-				FROM ". DB_NAME_PREFIX. "languages AS l";
+				FROM ". DB_PREFIX. "languages AS l";
 		}
 	
 		$sql .= "
-			LEFT JOIN ". DB_NAME_PREFIX. "visitor_phrases AS en
+			LEFT JOIN ". DB_PREFIX. "visitor_phrases AS en
 			   ON en.module_class_name = 'zenario_common_features'
 			  AND en.language_id = l.id
 			  AND en.code = '__LANGUAGE_ENGLISH_NAME__'
-			LEFT JOIN ". DB_NAME_PREFIX. "visitor_phrases AS lo
+			LEFT JOIN ". DB_PREFIX. "visitor_phrases AS lo
 			   ON lo.module_class_name = 'zenario_common_features'
 			  AND lo.language_id = l.id
 			  AND lo.code = '__LANGUAGE_LOCAL_NAME__'
-			LEFT JOIN ". DB_NAME_PREFIX. "visitor_phrases AS f
+			LEFT JOIN ". DB_PREFIX. "visitor_phrases AS f
 			   ON f.module_class_name = 'zenario_common_features'
 			  AND f.language_id = l.id
 			  AND f.code = '__LANGUAGE_FLAG_FILENAME__'

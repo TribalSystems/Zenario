@@ -1,4 +1,5 @@
-.zenario_banner__default_style > div {
+.zenario_banner__default_style > div,
+.zenario_banner__default_style > a {
 	width:100%;
 	overflow:hidden;
 	background:#273040;
@@ -48,8 +49,25 @@
 }
 
 
-.Grid_Header .Top_1 .zenario_image_container__default_style a {
-	height:100% !important;
-	margin:auto;
-	background-position:center center !important;
+.Grid_Header .Top_1 .zenario_banner.logo {
+	position:relative;
+}
+
+.Grid_Header .Top_1 .zenario_banner.logo img {
+	position: absolute;
+  	top: 50%;
+  	transform: translateY(-50%);
+}
+
+.zenario_banner__default_style > a {
+	display:block;
+	-webkit-transition : all 200ms ease-in-out;
+  	-moz-transition : all 200ms ease-in-out;
+  	-o-transition : all 200ms ease-in-out;
+  	transition : all 200ms ease-in-out;
+}
+
+.zenario_banner__default_style > a:hover {
+	opacity:0.85;
+	text-decoration:none;
 }

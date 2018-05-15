@@ -261,9 +261,12 @@ zenarioO.open = function(className, e, width, left, top, disablePageBelow, overl
 			'</div>';
 	}
 	
+	
 	var html = zenarioT.microTemplate('zenario_organizer', {topLeftHTML: zenarioO.topLeftHTML, topRightHTML: zenarioO.topRightHTML});
 	
 	zenarioA.openBox(html, className, 'og', e, width, left, top, disablePageBelow, overlay, draggable, resizable, padding, maxHeight, rightCornerOfElement, bottomCornerOfElement);
+	
+	zenarioO.setOrganizerIcons();
 };
 
 
@@ -982,7 +985,9 @@ zenarioO.go = function(path, branch, refiner, queued, lastInQueue, backwards, do
 	}
 	
 	//Attempt to find the refiner used on the panel before this one, if there was one
-	var lastRefiners = {},
+	var rememberRefiner,
+		lastRefinerName,
+		lastRefiners = {},
 		branches = zenarioO.branches.length - 1,
 		b;
 	
@@ -993,17 +998,17 @@ zenarioO.go = function(path, branch, refiner, queued, lastInQueue, backwards, do
 		
 		//Get the refiners on each of the branches that we've previously followed
 		for (b = 0; b < branches; ++b) {
-			var rememberRefiner = zenarioO.branches[b].refiners[zenarioO.branches[b+1].from];
+			rememberRefiner = zenarioO.branches[b].refiners[zenarioO.branches[b+1].from];
 			if (rememberRefiner) {
-				lastRefiners['refiner__' + rememberRefiner.name] = rememberRefiner.id;
+				lastRefiners['refiner__' + (lastRefinerName = rememberRefiner.name)] = rememberRefiner.id;
 			}
 		}
 		
 		//If we're branching with this link, get the refiner on the current panel
 		//if (branch) {
-			var rememberRefiner = zenarioO.branches[branches].refiners[zenarioO.path];
+			rememberRefiner = zenarioO.branches[branches].refiners[zenarioO.path];
 			if (rememberRefiner) {
-				lastRefiners['refiner__' + rememberRefiner.name] = rememberRefiner.id;
+				lastRefiners['refiner__' + (lastRefinerName = rememberRefiner.name)] = rememberRefiner.id;
 			}
 		//}
 		
@@ -1090,7 +1095,7 @@ zenarioO.go = function(path, branch, refiner, queued, lastInQueue, backwards, do
 		data = false,
 		store,
 		go2 = function(data) {
-			zenarioO.go2(path, url, devToolsURL, requests, branch, goNum, defaultSortColumn, thisPageSize, inCloseUpView, itemToSelect, panelInstance, searchTerm, filters, refiner, lastRefiners, server_side, backwards, runFunctionAfter, data);
+			zenarioO.go2(path, url, devToolsURL, requests, branch, goNum, defaultSortColumn, thisPageSize, inCloseUpView, itemToSelect, panelInstance, searchTerm, filters, refiner, lastRefinerName, lastRefiners, server_side, backwards, runFunctionAfter, data);
 		};
 	
 	if (url) {
@@ -1211,7 +1216,7 @@ zenarioO.go = function(path, branch, refiner, queued, lastInQueue, backwards, do
 
 //Part 2 of the go function, run when we've got the data back from the server
 	//(Or run straight away if the server was never polled)
-zenarioO.go2 = function(path, url, devToolsURL, requests, branch, goNum, defaultSortColumn, thisPageSize, inCloseUpView, itemToSelect, panelInstance, searchTerm, filters, refiner, lastRefiners, server_side, backwards, runFunctionAfter, data) {
+zenarioO.go2 = function(path, url, devToolsURL, requests, branch, goNum, defaultSortColumn, thisPageSize, inCloseUpView, itemToSelect, panelInstance, searchTerm, filters, refiner, lastRefinerName, lastRefiners, server_side, backwards, runFunctionAfter, data) {
 	
 	//For debugging
 	if (data
@@ -1241,7 +1246,8 @@ zenarioO.go2 = function(path, url, devToolsURL, requests, branch, goNum, default
 		noReturnEnabled;
 	
 	if (zenarioO.tuix) {
-		lastTitle = zenarioO.tuix.title;
+		
+		lastTitle = lastRefinerName && zenarioO.tuix.refiners && zenarioO.tuix.refiners[lastRefinerName] && zenarioO.tuix.refiners[lastRefinerName].title || zenarioO.tuix.title;
 		noReturnEnabled = engToBoolean(zenarioO.tuix.no_return);
 	}
 	
@@ -1845,6 +1851,8 @@ zenarioO.goToPage = function(page) {
 	zenarioO.lockPageClicks = true;
 	zenarioO.inspectionView = false;
 	
+	zenarioO.pi.resetScrollPosition();
+	
 	if (zenarioO.server_side) {
 		zenarioO.refreshAndShowPage(page);
 	} else {
@@ -2045,7 +2053,7 @@ zenarioO.setPanel = function() {
 	zenarioO.pi.cmsSetsSelectedItems(selectedItems);
 	
 	//Set the colour of the debug button
-	var debugButton;
+	var debugButton, path;
 	if (debugButton = get('organizer_debug_button')) {
 		
 		//Grey: normal, where there is a navigation path, no refiner.
@@ -2069,6 +2077,9 @@ zenarioO.setPanel = function() {
 	zenarioO.setPanelTitle();
 	zenarioO.setBackButton();
 	zenarioO.getPageCount();
+	
+	path = zenarioO.path.split('/');
+	get('organizer__box_wrap').className = path.join('__') + ' organizer_panel__' + path.pop();
 	
 	zenarioO.pi.showPanel($header, $panel, $footer);
 	
@@ -2986,7 +2997,7 @@ zenarioO.quickFilterEnabled = function(id) {
 zenarioO.applyMergeFields = function(string, escapeHTML, i, keepNewLines) {
 	
 	//Escape any ~s in the string
-	string = string.replace(/~/g, '~1');
+	string = (string + '').replace(/~/g, '~1');
 	
 	var string2 = string,
 		columnValue,
@@ -3011,11 +3022,11 @@ zenarioO.applyMergeFields = function(string, escapeHTML, i, keepNewLines) {
 			}
 			
 			if (!keepNewLines && defined(columnValue)) {
-				columnValue = columnValue.replace(/\n/g, ' ');
+				columnValue = (columnValue + '').replace(/\n/g, ' ');
 			}
 			
 			//Escape any ~s, [s and ]s in the string
-			columnValue = columnValue.replace(/~/g, '~1').replace(/\[/g, '~2').replace(/\]/g, '~3');
+			columnValue = (columnValue + '').replace(/~/g, '~1').replace(/\[/g, '~2').replace(/\]/g, '~3');
 			
 			while (string != (string2 = string.replace('[[' + c + ']]', columnValue))) {
 				string = string2;
@@ -3181,6 +3192,9 @@ zenarioO.selectCreatedIds = function() {
 zenarioO.reloadButton = function() {
 	zenario.outdateCachedData();
 	zenarioO.reload();
+	
+	//Reload the lower-left and upper-right sections as well if manually reloading
+	zenarioO.setOrganizerIcons();
 };
 
 //Refresh the current view
@@ -4480,11 +4494,18 @@ zenarioO.hideViewOptions = function(e) {
 
 
 zenarioO.isShowableColumn = function(c, shown) {
+	
+	var column = zenarioO.tuix.columns[c];
+	
 	if (shown) {
 		return zenarioO.shownColumns[c] && zenarioO.isShowableColumn(c);
 	} else {
 		//zenarioT.hidden(tuixObject, lib, item, id, button, column, field, section, tab, tuix)
-		return zenarioO.tuix.columns[c] && !zenarioT.hidden(undefined, zenarioO, undefined, c, undefined, zenarioO.tuix.columns[c]) && zenarioO.tuix.columns[c].title && !engToBoolean(zenarioO.tuix.columns[c].server_side_only);
+		return column
+			&& column.title
+			&& !engToBoolean(column.server_side_only)
+			&& !zenarioT.hidden(undefined, zenarioO, undefined, c, undefined, column)
+			&& !zenarioO.checkHiddenByFilter(column);
 	}
 };
 
@@ -4509,10 +4530,6 @@ zenarioO.sortArray = function(a, b) {
 		//Otherwise order by numeric data first, then strings
 		return a[2]? -1 : 1;
 	}
-};
-
-zenarioO.sortArrayDesc = function(a, b) {
-	return zenarioO.sortArray(b, a);
 };
 
 
@@ -5670,12 +5687,63 @@ zenarioO.checkDisabled = function(button, buttonId, items) {
 	return false;
 };
 
+zenarioO.checkHiddenByFilter = function(button) {
+	
+	var refiner = zenarioO.refiner,
+		refinerName = refiner && refiner.name,
+		hide_on_refiner = button.hide_on_refiner;
+	
+	//Check if this button should only be shown in a certain refiner
+	if (button.only_show_on_refiner) {
+		if (!refiner) {
+			return true;
+		
+		} else {
+			if (typeof button.only_show_on_refiner == 'object') {
+				if (!engToBoolean(button.only_show_on_refiner[refinerName])) {
+					return true;
+				}
+			} else {
+				if (refinerName != button.only_show_on_refiner) {
+					return true;
+				}
+			}
+		}
+	}
+	
+	//Check if this button should never be shown in a certain refiner
+	if (refiner && hide_on_refiner) {
+		//I want to check if someone has entered true for hide_on_refiner, but need to deal
+		//with the fact that true sometimes converted to a number 1, or a string "1".
+		//Thankfully this is easy to do in JavaScript, as 1*"1" === 1,
+		//but 1*"any-other-string" !== 1
+		if (1 === 1 * hide_on_refiner) {
+			return true;
+		
+		} else if (typeof hide_on_refiner == 'object') {
+			if (engToBoolean(hide_on_refiner[refinerName])) {
+				return true;
+			}
+		} else {
+			if (refinerName == hide_on_refiner) {
+				return true;
+			}
+		}
+	}
+	
+	//Some buttons should not be shown when there is a search or a filter set
+	if (zenarioO.filteredView && engToBoolean(button.hide_on_filter)) {
+		return true;
+	}
+	
+	return false;
+};
+
 zenarioO.checkButtonHidden = function(button, items) {
 	
 	var id,
 		singleItem = undefined,
-		singleItemId = undefined,
-		hide_on_refiner;
+		singleItemId = undefined;
 	
 	//Check to see if there is only one item selected
 	if (items) {
@@ -5707,46 +5775,8 @@ zenarioO.checkButtonHidden = function(button, items) {
 		return true;
 	}
 	
-	//Check if this button should only be shown in a certain refiner
-	if (button.only_show_on_refiner) {
-		if (!zenarioO.refiner) {
-			return true;
-		
-		} else {
-			if (typeof button.only_show_on_refiner == 'object') {
-				if (!engToBoolean(button.only_show_on_refiner[zenarioO.refiner.name])) {
-					return true;
-				}
-			} else {
-				if (zenarioO.refiner.name != button.only_show_on_refiner) {
-					return true;
-				}
-			}
-		}
-	}
-	
-	//Check if this button should never be shown in a certain refiner
-	if (zenarioO.refiner && (hide_on_refiner = button.hide_on_refiner)) {
-		//I want to check if someone has entered true for hide_on_refiner, but need to deal
-		//with the fact that true sometimes converted to a number 1, or a string "1".
-		//Thankfully this is easy to do in JavaScript, as 1*"1" === 1,
-		//but 1*"any-other-string" !== 1
-		if (1 === 1 * hide_on_refiner) {
-			return true;
-		
-		} else if (typeof hide_on_refiner == 'object') {
-			if (engToBoolean(hide_on_refiner[zenarioO.refiner.name])) {
-				return true;
-			}
-		} else {
-			if (zenarioO.refiner.name == hide_on_refiner) {
-				return true;
-			}
-		}
-	}
-	
-	//Some buttons should not be shown when there is a search or a filter set
-	if (zenarioO.filteredView && engToBoolean(button.hide_on_filter)) {
+	//Check fi there is any refiner/filter logic that should hide this button
+	if (zenarioO.checkHiddenByFilter(button)) {
 		return true;
 	}
 	
@@ -6052,31 +6082,61 @@ zenarioO.getItemCSSClass = function (i) {
 	}
 };
 
-//Send a signal to any Modules on the page to fill the lower-left of Organizer
+//Send a signal to any Modules on the page to fill the lower-left (or upper-right) of Organizer
 //This should return an array of arrays of things in the format:
-	//[[[html, ord], [html, ord], ... ], ... ]
+	//[[[html, ord, '↗'], [html, ord], ... ], ... ]
 //Flatten this, sort this, then output this.
-zenarioO.fillLowerLeft = function() {
+zenarioO.setOrganizerIcons = function() {
+	
 	var i, j,
-		a2 = [],
-		a = zenario.sendSignal('eventFillOrganizerLowerLeft');
+		_$div = zenarioT.div,
+		lowerLeftIcons = [], upperRightIcons = [],
+		pos, icons, iconGroups, icon;
 	
-	a.push([[zenarioT.microTemplate('zenario_organizer_lower_left_column', {}), 0]]);
+	//Add the debug icon if dev tools are enabled. This is added even in select/quick mode.
+	if (zenarioT.showDevTools()) {
+		upperRightIcons.push([_$div("id", "organizer_debug_button", "class", "zenario_debug", "onmouseover", "zenarioO.infoBox(this);", "onclick", "zenarioO.closeInfoBox(); zenarioA.debug('zenarioO');", _$div()), 99]);
+	}
 	
-	foreach (a as i) {
-		foreach (a[i] as j) {
-			a2.push(a[i][j]);
+	//Only add the rest of the icons in full-mode.
+	if (zenarioA.isFullOrganizerWindow && !zenarioA.openedInIframe) {
+		
+		//Add standard icons from the core
+		upperRightIcons.push([zenarioT.microTemplate('zenario_organizer_top_right_icons', {}), 1]);
+		
+		//Look for any icons from modules
+		icons = zenario.sendSignal('eventSetOrganizerIcons');
+		
+		//Look through each icon, checking the last entry in the array for its position
+		foreach (icons as i => iconGroups) {
+			if (iconGroups['↗']) {
+				upperRightIcons = upperRightIcons.concat(iconGroups['↗']);
+			}
+			if (iconGroups['↙']) {
+				lowerLeftIcons = lowerLeftIcons.concat(iconGroups['↙']);
+			}
 		}
+		
+		//Sort each group
+		lowerLeftIcons.sort(zenarioT.sortArray);
+		upperRightIcons.sort(zenarioT.sortArray);
 	}
 	
-	a2.sort(zenarioT.sortArray);
-	
-	foreach (a2 as i) {
-		a2[i] = a2[i][0];
+	//Remove the sort columns and just leave the HTML
+	foreach (lowerLeftIcons as i) {
+		lowerLeftIcons[i] = lowerLeftIcons[i][0];
+	}
+
+	foreach (upperRightIcons as i) {
+		upperRightIcons[i] = upperRightIcons[i][0];
 	}
 	
-	return a2.join('\n');
+	//Set the icons
+	$('#organizer_lowerLeftColumn').html(lowerLeftIcons.join('\n'));
+	$('#organizer_topRightIcons').html(upperRightIcons.join('\n'));
 };
+
+
 
 
 zenarioO.closeSelectMode = function() {

@@ -48,14 +48,15 @@ $installed =
  && (defined('DBNAME'))
  && (defined('DBUSER'))
  && (defined('DBPASS'))
- && (ze::$lastDB = ze::$localDB = @ze\db::connect(DBHOST, DBNAME, DBUSER, DBPASS, DBPORT, false))
- && ($result = @ze::$localDB->query("SHOW TABLES LIKE '". DB_NAME_PREFIX. "site_settings'"))
+ && (ze::$dbL = new \ze\db(DB_PREFIX, DBHOST, DBNAME, DBUSER, DBPASS, DBPORT, false))
+ && (ze::$dbL->con)
+ && ($result = @ze::$dbL->con->query("SHOW TABLES LIKE '". DB_PREFIX. "site_settings'"))
  && ($installStatus = 2)
  && ($result->num_rows)
  && ($installStatus = 3);
 
 if (!$installed) {
-	ze::$lastDB = ze::$localDB = '';
+	ze::$dbL = null;
 }
 
 
@@ -148,7 +149,7 @@ if ($systemRequirementsMet && $installed) {
 	} else
 	if (defined('DBHOST_GLOBAL') && DBHOST_GLOBAL == DBHOST
 	 && defined('DBNAME_GLOBAL') && DBNAME_GLOBAL == DBNAME
-	 && defined('DB_NAME_PREFIX_GLOBAL') && DB_NAME_PREFIX_GLOBAL == DB_NAME_PREFIX) {
+	 && defined('DB_PREFIX_GLOBAL') && DB_PREFIX_GLOBAL == DB_PREFIX) {
 		
 		echo
 			'<!--Message_Type:Error-->',
@@ -194,7 +195,7 @@ if ($systemRequirementsMet && $installed) {
 			//Check if this link has expired
 			$sql = '
 				SELECT username, id
-				FROM ' . DB_NAME_PREFIX . 'admins
+				FROM ' . DB_PREFIX . 'admins
 				WHERE hash = "' . ze\escape::sql($hash) . '"
 				AND DATE_ADD(created_date, INTERVAL ' . (int)ze::setting('new_admin_email_expiry') . ' DAY) >= NOW()
 				AND password = ""';
@@ -230,7 +231,7 @@ if ($systemRequirementsMet && $installed) {
 			//This is a migration from an old site, and the admin_settings table hasn't been created yet
 			//Security tokens are not enabled in the site_description.yaml file
 		if ($freshInstall
-		 || !ze\row::cacheTableDef(DB_NAME_PREFIX. 'admin_settings', true)
+		 || !ze::$dbL->checkTableDef(DB_PREFIX. 'admin_settings', true)
 		 || !ze\site::description('enable_two_factor_authentication_for_admin_logins')) {
 			$securityCodeChecked = true;
 		

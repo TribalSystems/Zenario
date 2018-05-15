@@ -193,6 +193,16 @@ zenario_user_form:
                     type: textarea
                     indent: 1
                     visible_if: zenarioAB.value('enable_summary_page')
+                
+                error_message_position:
+                    ord: 22
+                    label: 'Error message position:'
+                    type: select
+                    values:
+                        above:
+                            label: Above field
+                        below:
+                            label: Below field
             
         data:
             label: Actions on form submission
@@ -567,7 +577,7 @@ zenario_user_form:
                     label: 'Set SIMPLE_ACCESS cookie'
                     type: checkbox
                     side_note: |
-                        Sets the cookie "SIMPLE_ACCESS" which allows vistors (or users) to see links that are subpressed unless cookie is set. (advanced)
+                        Sets the cookie "SIMPLE_ACCESS" which allows vistors (or users) to see links (in a content summary list) that are normally hidden. <br>Use this if setting up a content item leading to gated content.
                     format_onchange: true
                 simple_access_cookie_override_redirect:
                     label: 'Override Redirection and redirect to page that required the SIMPLE_ACCESS'
@@ -578,9 +588,9 @@ zenario_user_form:
                 send_signal:
                     label: 'Send a signal'
                     type: checkbox
-                    side_note: |
-                        Broadcast the submitted form data to other modules for them to process (advanced)
-                    note_below: |
+                    side_note: >
+                        Broadcast the submitted form data to other modules for them to process (advanced).
+                        <br>
                         Signal name: eventUserFormSubmitted
         data_deletion:
             label: Data deletion

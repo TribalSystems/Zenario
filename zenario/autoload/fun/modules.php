@@ -35,7 +35,7 @@ $result = false;
 if ($dbUpdateSafemode) {
 	$sql = "
 		SELECT id, class_name, class_name AS name
-		FROM " . DB_NAME_PREFIX . "modules";
+		FROM " . DB_PREFIX . "modules";
 	
 	//Add in certain conditions, depending on where this is being called
 	if ($onlyGetRunningPlugins) {
@@ -65,7 +65,7 @@ if ($dbUpdateSafemode) {
 			css_class_name,
 			is_pluggable,
 			can_be_version_controlled
-		FROM ". DB_NAME_PREFIX. "modules";
+		FROM ". DB_PREFIX. "modules";
 	
 	//Add in certain conditions, depending on where this is being called
 	if ($onlyGetRunningPlugins) {

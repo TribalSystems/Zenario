@@ -24,7 +24,11 @@ zenario_alias:
                         An alias for this content item, and part of its URL.
                         The combination of a content item's alias and its language code is unique.
                         Lower case only, may not contain spaces or special characters.
-                    post_field_html: '<div id="alias_warning_display"></div>'
+                a_warning_display:
+                    same_row: true
+                    snippet:
+                        html: |
+                            <div id="alias_warning_display"></div>
                 language_id:
                     label: 'Language:'
                     type: select

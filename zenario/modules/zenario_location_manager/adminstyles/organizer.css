@@ -8,30 +8,24 @@
 	background: url('images/icon-locations-on.svg') no-repeat center / auto 16px;
 }
 
-
-
 .organizer_item_image.zenario_location_manager_location {
-	background:url('images/location-list-icon.png') no-repeat -15px center;
+	background: url('images/icon-locations.svg') no-repeat center / auto 18px;
 }
 
 .organizer_item_image.zenario_location_manager_sector {
-	background: 1px 2px no-repeat;
-	background-image: url('images/location-manager-sector-list.png');
+	background: url('images/icon-sectors.svg') no-repeat center / auto 18px;
 }
 
 .organizer_item_image.zenario_location_manager_supplier {
-	background: center center no-repeat;
-	background-image: url('images/suppliers-list-icons.png');
+	background: url('images/icon-suppliers-dark.svg') no-repeat center / auto 18px;
 }
 
 .organizer_item_image.zenario_location_manager_areas {
-	background: center center no-repeat;
-	background-image: url('images/areas-list-icon.png');
+	background: url('images/icon-areas-dark.svg') no-repeat center / auto 18px;
 }
 
 .organizer_item_image.zenario_location_manager_ratings {
-	background: center center no-repeat;
-	background-image: url('images/accreditors-list-icon.png');
+	background: url('images/icon-acreditors-dark.svg') no-repeat center / auto 18px;
 }
 
 

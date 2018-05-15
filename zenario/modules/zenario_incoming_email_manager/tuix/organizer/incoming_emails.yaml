@@ -24,7 +24,7 @@ zenario__administration:
 					title: Forward to Script
 					db_column: tiema.script_enable
 					table_join: |
-						LEFT JOIN [[DB_NAME_PREFIX]][[ZENARIO_INCOMING_EMAIL_MANAGER_PREFIX]]accounts AS tiema
+						LEFT JOIN [[DB_PREFIX]][[ZENARIO_INCOMING_EMAIL_MANAGER_PREFIX]]accounts AS tiema
 															ON tiema.job_id = j.id
 					format: yes_or_no
 					show_by_default: Yes
@@ -33,7 +33,7 @@ zenario__administration:
 					title: "Recipient's Username"
 					db_column: tiema.script_recipient_username
 					table_join: |
-						LEFT JOIN [[DB_NAME_PREFIX]][[ZENARIO_INCOMING_EMAIL_MANAGER_PREFIX]]accounts AS tiema
+						LEFT JOIN [[DB_PREFIX]][[ZENARIO_INCOMING_EMAIL_MANAGER_PREFIX]]accounts AS tiema
 															ON tiema.job_id = j.id
 					show_by_default: Yes
 				zenario_incoming_email_manager__fetch_enable:
@@ -41,7 +41,7 @@ zenario__administration:
 					title: Fetch from Mailbox
 					db_column: tiema.fetch_enable
 					table_join: |
-						LEFT JOIN [[DB_NAME_PREFIX]][[ZENARIO_INCOMING_EMAIL_MANAGER_PREFIX]]accounts AS tiema
+						LEFT JOIN [[DB_PREFIX]][[ZENARIO_INCOMING_EMAIL_MANAGER_PREFIX]]accounts AS tiema
 															ON tiema.job_id = j.id
 					format: yes_or_no
 					show_by_default: Yes
@@ -50,7 +50,7 @@ zenario__administration:
 					title: Server
 					db_column: tiema.fetch_server
 					table_join: |
-						LEFT JOIN [[DB_NAME_PREFIX]][[ZENARIO_INCOMING_EMAIL_MANAGER_PREFIX]]accounts AS tiema
+						LEFT JOIN [[DB_PREFIX]][[ZENARIO_INCOMING_EMAIL_MANAGER_PREFIX]]accounts AS tiema
 															ON tiema.job_id = j.id
 					show_by_default: Yes
 				zenario_incoming_email_manager__fetch_username:
@@ -58,7 +58,7 @@ zenario__administration:
 					title: Username
 					db_column: tiema.fetch_username
 					table_join: |
-						LEFT JOIN [[DB_NAME_PREFIX]][[ZENARIO_INCOMING_EMAIL_MANAGER_PREFIX]]accounts AS tiema
+						LEFT JOIN [[DB_PREFIX]][[ZENARIO_INCOMING_EMAIL_MANAGER_PREFIX]]accounts AS tiema
 															ON tiema.job_id = j.id
 					show_by_default: Yes
 			item_buttons:
@@ -138,7 +138,7 @@ zenario__administration:
 								title: From
 								db_column: tiemal.email_from
 								table_join: |
-									LEFT JOIN [[DB_NAME_PREFIX]][[ZENARIO_INCOMING_EMAIL_MANAGER_PREFIX]]account_logs AS tiemal
+									LEFT JOIN [[DB_PREFIX]][[ZENARIO_INCOMING_EMAIL_MANAGER_PREFIX]]account_logs AS tiemal
 																					ON tiemal.job_id = jl.job_id
 																					AND tiemal.log_id = jl.id
 								php: Yes
@@ -147,7 +147,7 @@ zenario__administration:
 								title: Subject
 								db_column: tiemal.email_subject
 								table_join: |
-									LEFT JOIN [[DB_NAME_PREFIX]][[ZENARIO_INCOMING_EMAIL_MANAGER_PREFIX]]account_logs AS tiemal
+									LEFT JOIN [[DB_PREFIX]][[ZENARIO_INCOMING_EMAIL_MANAGER_PREFIX]]account_logs AS tiemal
 																					ON tiemal.job_id = jl.job_id
 																					AND tiemal.log_id = jl.id
 								php: Yes
@@ -157,7 +157,7 @@ zenario__administration:
 								db_column: tiemal.email_sent
 								format: datetime
 								table_join: |
-									LEFT JOIN [[DB_NAME_PREFIX]][[ZENARIO_INCOMING_EMAIL_MANAGER_PREFIX]]account_logs AS tiemal
+									LEFT JOIN [[DB_PREFIX]][[ZENARIO_INCOMING_EMAIL_MANAGER_PREFIX]]account_logs AS tiemal
 																					ON tiemal.job_id = jl.job_id
 																					AND tiemal.log_id = jl.id
 								php: Yes

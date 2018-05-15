@@ -24,7 +24,7 @@ zenario__users:
         access_log:
             title: Access log
             db_items:
-                table: '[[DB_NAME_PREFIX]]user_content_accesslog AS uca'
+                table: '[[DB_PREFIX]]user_content_accesslog AS uca'
                 id_column: uca.id
                 encode_id_column: No
                 group_by: >
@@ -35,7 +35,7 @@ zenario__users:
                     sql: 'uca.user_id = [[REFINER_ID]]'
                 content:
                     table_join: |
-                        INNER JOIN [[DB_NAME_PREFIX]]content_items AS c
+                        INNER JOIN [[DB_PREFIX]]content_items AS c
                                                            ON c.tag_id = [[REFINER_ID]]
                                                           AND c.id = uca.content_id
                                                           AND c.type = uca.content_type
@@ -52,25 +52,25 @@ zenario__users:
                 Screen_name:
                     title: Screen name
                     db_column: u.screen_name
-                    table_join: '[[DB_NAME_PREFIX]]users AS u ON u.id = uca.user_id'
+                    table_join: '[[DB_PREFIX]]users AS u ON u.id = uca.user_id'
                     searchable: Yes
                 First_Name:
                     title: First name
                     db_column: u.first_name
                     show_by_default: Yes
-                    table_join: '[[DB_NAME_PREFIX]]users AS u ON u.id = uca.user_id'
+                    table_join: '[[DB_PREFIX]]users AS u ON u.id = uca.user_id'
                     searchable: Yes
                 Last_Name:
                     title: Last name
                     db_column: u.last_name
                     show_by_default: Yes
-                    table_join: '[[DB_NAME_PREFIX]]users AS u ON u.id = uca.user_id'
+                    table_join: '[[DB_PREFIX]]users AS u ON u.id = uca.user_id'
                     searchable: Yes
                 Email:
                     title: Email
                     db_column: u.email
                     show_by_default: Yes
-                    table_join: '[[DB_NAME_PREFIX]]users AS u ON u.id = uca.user_id'
+                    table_join: '[[DB_PREFIX]]users AS u ON u.id = uca.user_id'
                     searchable: Yes
                 Content_Item:
                     title: Content item

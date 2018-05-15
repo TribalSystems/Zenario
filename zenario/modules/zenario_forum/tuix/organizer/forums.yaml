@@ -18,7 +18,7 @@ zenario__social:
                     No Forums have been created; please put a Forum Plugin on a Content Item and then
                                             click 'Set a Forum on this Content Item' to create your first Forum.
                 db_items:
-                    table: '[[DB_NAME_PREFIX]][[ZENARIO_FORUM_PREFIX]]forums AS f'
+                    table: '[[DB_PREFIX]][[ZENARIO_FORUM_PREFIX]]forums AS f'
                     id_column: f.id
                 refiners:
                     exclude_forum:

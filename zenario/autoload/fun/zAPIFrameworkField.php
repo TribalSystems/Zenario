@@ -45,6 +45,7 @@ if (!$i) {
 		case 'select':
 		case 'checkbox':
 		case 'date':
+		case 'email':
 		case 'file':
 		case 'hidden':
 		case 'password':
@@ -173,7 +174,7 @@ if ($type == 'checkbox' || $type == 'radio') {
 }
 
 
-if (!$readonly && (!$lov || $i || $type == 'select')) {
+if (!$readonly && (!$lov || $i || $type == 'select' || $type == 'text' || $type == 'email')) {
 				
 	//Most attributes that are part of the HTML spec we'll pass on directly
 	$allowedAtt = [
@@ -262,12 +263,18 @@ if (!$readonly && (!$lov || $i || $type == 'select')) {
 	} else {
 		$html .= '<input';
 	}
-
+	
+	if ($type == 'text' && $lov) {
+		$html .= ' data-autocomplete_list="' . htmlspecialchars(json_encode(array_values($lov))) . '"';
+		$attributes['class'] = ($attributes['class'] ?? false). ' autocomplete';
+	}
+	
 	foreach ($attributes as $att => $attVal) {
 		if (isset($allowedAtt[$att])) {
 			$html .= ' '. $att. '="'. htmlspecialchars($attVal). '"';
 		}
 	}
+	
 
 	//Add the value (which happens slightly differently for select lists and textareas, and has already been done for toggles)
 	if ($type == 'date' || ($type == 'toggle' && $i)) {
@@ -309,7 +316,7 @@ if (!$i && is_array($lov)) {
 				<option value="'. htmlspecialchars($saveVal). '"'. ($saveVal == $value? ' selected="selected"' : ''). '>'.
 					htmlspecialchars($dispVal).
 				'</option>'; 
-		} else {
+		} elseif ($type != 'text') {
 			
 			$thisAttributes = $attributes;
 
@@ -367,6 +374,7 @@ if ($i) {
 			$showLabel = \ze\ring::engToBoolean($attributes['checked'] ?? false);
 			break;
 		case 'date':
+		case 'email':
 		case 'file':
 		case 'hidden':
 		case 'password':

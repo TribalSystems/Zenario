@@ -123,7 +123,7 @@ class zenario_common_features__admin_boxes__setup_language extends ze\moduleBase
 			} else {
 				$sql = "
 					SELECT id, detect_lang_codes
-					FROM ". DB_NAME_PREFIX. "languages
+					FROM ". DB_PREFIX. "languages
 					WHERE detect = 1
 					  AND id != '". ze\escape::sql($box['key']['id']). "'";
 		
@@ -265,7 +265,7 @@ class zenario_common_features__admin_boxes__setup_language extends ze\moduleBase
 		if (!$pagesExist) {
 	
 			//Check for the pages that were just made
-			$contentItems = ze\row::getArray('content_items', ['id', 'type', 'alias'], $cItemsInLangKey, 'id');
+			$contentItems = ze\row::getAssocs('content_items', ['id', 'type', 'alias'], $cItemsInLangKey, 'id');
 	
 			if (!empty($contentItems)) {
 				if (count($contentItems) < 2) {

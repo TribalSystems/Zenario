@@ -112,6 +112,8 @@ $schema = ze\tuix::readFile(CMS_ROOT. 'zenario/api/'. $schemaName. '.yaml');
 if ($schemaName == 'fea_schema') {
 	$fabSchema = ze\tuix::readFile(CMS_ROOT. 'zenario/api/admin_box_schema.yaml');
 	
+	unset($fabSchema['additionalProperties']['properties']['tabs']['additionalProperties']['properties']['fields']['additionalProperties']['properties']['pick_items']);
+	
 	$schema['additionalProperties']['properties']['tabs']['additionalProperties']['properties']['fields'] = 
 		array_merge_recursive(
 			$fabSchema['additionalProperties']['properties']['tabs']['additionalProperties']['properties']['fields'],

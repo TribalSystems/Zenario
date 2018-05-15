@@ -6,12 +6,10 @@ zenario__email_template_manager:
             title: Newsletters
             db_items:
                 table: |
-                    [[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters AS n
+                    [[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters AS n
                 id_column: n.id
-                where_statement: |
+                custom_where_statement_if_no_refiner: |
                     WHERE n.status = '_DRAFT'
-                custom_where_statement_if_archive: |
-                    WHERE n.status = '_ARCHIVED'
             view_mode: list
             default_sort_column: date_sent
             bold_columns_in_list_view: newsletter_name
@@ -26,6 +24,12 @@ zenario__email_template_manager:
                 archive:
                     sql: |
                         n.status = '_ARCHIVED'
+                newsletters_using_image:
+                    table_join: |
+                        INNER JOIN [[DB_PREFIX]]inline_images AS ii
+                           ON ii.foreign_key_to = 'newsletter'
+                          AND ii.foreign_key_id = n.id
+                          AND ii.image_id = [[REFINER_ID]]
             columns:
                 id:
                     title: ID
@@ -33,6 +37,9 @@ zenario__email_template_manager:
                     searchable: true
                     show_by_default: true
                     width: xsmall
+                status:
+                    db_column: n.status
+                    hidden: true
                 newsletter_name:
                     title: Name
                     db_column: n.newsletter_name
@@ -64,9 +71,9 @@ zenario__email_template_manager:
                         (SELECT 
                             GROUP_CONCAT(DISTINCT IFNULL(sg.name, CONCAT('[smart group ID: ', nsgl.smart_group_id, ' was removed]')) SEPARATOR ', ')
                         FROM 
-                            [[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_smart_group_link nsgl
+                            [[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_smart_group_link nsgl
                         LEFT JOIN 
-                            [[DB_NAME_PREFIX]]smart_groups sg
+                            [[DB_PREFIX]]smart_groups sg
                         ON
                             nsgl.smart_group_id= sg.id
                         WHERE
@@ -82,7 +89,7 @@ zenario__email_template_manager:
                     db_column: |
                         (
                             SELECT COUNT(DISTINCT nuls.user_id)
-                            FROM [[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link AS nuls
+                            FROM [[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link AS nuls
                             WHERE nuls.newsletter_id = n.id
                               AND nuls.email_sent != 0
                         )
@@ -94,7 +101,7 @@ zenario__email_template_manager:
                     db_column: |
                         (
                             SELECT COUNT(DISTINCT nult.user_id)
-                            FROM [[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link AS nult
+                            FROM [[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link AS nult
                             WHERE nult.newsletter_id = n.id
                         )
                     show_by_default: true
@@ -105,7 +112,7 @@ zenario__email_template_manager:
                     db_column: |
                         (
                             SELECT COUNT(DISTINCT nul.user_id)
-                            FROM [[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link AS nul
+                            FROM [[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link AS nul
                             WHERE nul.newsletter_id = n.id
                         )
                     show_by_default: true
@@ -156,7 +163,7 @@ zenario__email_template_manager:
             item:
                 name: Newsletter
                 names: Newsletters
-                css_class: ""
+                css_class: zenario_newsletter_draft
             enable_close_up_view: true
             no_items_message: ""
             collection_buttons:
@@ -232,9 +239,9 @@ zenario__email_template_manager:
                     parent: view_dropdown
                     label: Images
                     link:
-                        path: zenario__content/panels/email_images_for_newsletters
+                        path: zenario__content/panels/image_library
                         branch: true
-                        refiner: newsletter
+                        refiner: images_for_newsletter
                     hide_in_select_mode: true
                 click_throughs:
                     parent: view_dropdown

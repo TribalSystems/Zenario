@@ -33,13 +33,6 @@ ze\cache::useBrowserCache('zenario-inc-admin-js-'. LATEST_REVISION_NO);
 ze\cache::start();
 
 
-function esctick($text) {
-	$searches = ['`', '~'];
-	$replaces = ['`t', '`s'];
-	return str_replace($searches, $replaces, $text);
-}
-
-
 $output = '';
 
 
@@ -80,7 +73,7 @@ foreach([
 	'copy' => 'Copy',
 	'copied' => 'Copied to clipboard',
 	'core' => 'Core Features',
-	'couldNotOpenBox' => 'Sorry, this admin box does not exist, or you do not have the permissions needed to access it.',
+	'couldNotOpenBox' => 'This admin box could not be displayed because the "tabs" property is missing.',
 	'createAnother' => 'Save & create another',
 	'createdAnother' => 'Created &quot;[[name]]&quot;',
 	'csv' => 'CSV',
@@ -89,14 +82,14 @@ foreach([
 	'dropboxDotDotDot' => 'Choose from Dropbox...',
 	'dropToUpload' => 'Drop files here to upload',
 	'edit' => 'Edit',
-	'editorOpen' => 'You currently have an editor open, please close this before continuing.',
-	'error404' => 'Could not access a file on the server. Please check that you have uploaded all of the CMS files to the server, and that you have no misconfigured rewrite rules in your Apache config or .htaccess file that might cause a 404 error.',
-	'error404Dev' => 'Could not access a file on the server. Please check that you have uploaded all of the CMS files to the server, and that you have no misconfigured rewrite rules in your Apache config or .htaccess file that might cause a 404 error.',
+	'editorOpen' => 'You have a WYSIWYG editor open, please close this before continuing.',
+	'error404' => 'Could not access a file on the server. Please check that you have uploaded all of the Zenario files to the server, and that you have no misconfigured rewrite rules in your Apache config or .htaccess file that might cause a 404 error.',
+	'error404Dev' => 'Could not access a file on the server. Please check that you have uploaded all of the Zenario files to the server, and that you have no misconfigured rewrite rules in your Apache config or .htaccess file that might cause a 404 error.',
 	'error500' => "Something on the server is incorrectly set up or misconfigured.",
 	'error500Dev' => "Something on the server is incorrectly set up or misconfigured.\n\nNo error message was given, but most likely there is a syntax error in your code somewhere.\n\nFurther information may be available in the server's error log.",
 	'errorOnForm' => 'Please check below for errors.',
 	'errorTimedOut' => "There was no reply or a blank reply from the server.\n\nThis could be a temporary network problem, or could be a bug in the application.",
-	'errorTimedOutDev' => "There was no reply or a blank reply from the server.\n\nThis could be a temporary network problem, or could be because your php code crashed or exited without giving an error message.",
+	'errorTimedOutDev' => "There was no reply or a blank reply from the server.\n\nThis could be a temporary network problem, or could be because your PHP code crashed or exited without giving an error message.",
 	'fal' => 'False',
 	'fileSaved' => 'File saved',
 	'filterByCol' => 'Click here to filter by this column',
@@ -105,7 +98,9 @@ foreach([
 	'goToPrevPage' => 'Go to previous page',
 	'hideExport' => 'Hide CSV export options',
 	'informationForModuleDevelopers' => 'Information for module developers:',
-	'insertReusablePlugin' => 'Insert plugin',
+	'insertNest' => 'Insert nest',
+	'insertPlugin' => 'Insert plugin',
+	'insertSlideshow' => 'Insert slideshow',
 	'invertFilter' => 'Invert filter',
 	'is' => 'Is:',
 	'isnt' => 'Is not:',
@@ -117,6 +112,21 @@ foreach([
 	'loading' => 'Loading',
 	'login' => 'Login',
 	'logout' => 'Logout',
+	
+	'link_status__content_not_found' => 'Link is broken.',
+	'link_status__hidden' => 'Links to a content item that is hidden.',
+	'link_status__published_with_draft' => 'Links to a content item with an unpublished draft.',
+	'link_status__published_with_draft_401' => 'Links to a private content item that you would not be able to see without admin access, and which also has an unpublished draft.',
+	'link_status__published_with_draft_403' => 'Links to a private content item that your current extranet user cannot see, and which also has an unpublished draft.',
+	'link_status__published_401' => 'Links to a private content item that you would not be able to see without admin access.',
+	'link_status__published_403' => 'Links to a private content item that your current extranet user would not be able to see without admin access.',
+	'link_status__spare_domain' => 'This link points to a spare domain.',
+	
+	'menuFeatureImage' => "Menu node's feature image",
+	'menuImage' => "Menu node's image",
+	'menuRolloverImage' => "Menu node's rollover image",
+	
+	'missingId' => 'Missing ID',
 	'mode' => 'Mode',
 	'module' => 'Module',
 	'moreActions' => 'More actions',
@@ -323,22 +333,11 @@ _help
 	'gridUndo' => 'Undo'
 
 ] as $code => $phrase) {
-	$output .= esctick($code). '~'. esctick($phrase). '~';
+	$output .= ze\cache::esctick($code). '~'. ze\cache::esctick($phrase). '~';
 }
 
 echo 'zenario._uAM(zenarioA.phrase,', json_encode($output), ');';
-$output = '';
 
-//Include any templates (for underscore.js) from Module directories
-foreach (ze::moduleDirs('admin_microtemplates/') as $dir) {
-	foreach (scandir($dir = CMS_ROOT. $dir) as $file) {
-		if (substr($file, 0, 1) != '.' && substr($file, -5) == '.html' && is_file($dir. $file)) {
-			$name = substr($file, 0, -5);
-			$output .= esctick($name). '~'. esctick(preg_replace('@\s+@', ' ', preg_replace('@%>\s*<%@', '', file_get_contents($dir. $file)))). '~';
-		}
-	}
-}
 
-		
-echo "\n". 'zenario._uAM(zenarioT.microTemplates={},', json_encode($output), ');';
-unset($output);
+
+ze\cache::outputMicrotemplates(ze::moduleDirs('admin_microtemplates/'), 'zenarioT.microTemplates={}');

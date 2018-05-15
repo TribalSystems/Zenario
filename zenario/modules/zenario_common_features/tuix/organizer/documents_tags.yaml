@@ -11,7 +11,7 @@ zenario__content:
             title: Document tags
             db_items:
                 table: |
-                    [[DB_NAME_PREFIX]]document_tags AS dt
+                    [[DB_PREFIX]]document_tags AS dt
                 id_column: dt.id
             default_sort_column: tag_name
             columns:

@@ -12,7 +12,7 @@ zenario__content:
             no_items_message: No rules have been created
             db_items:
                 table: |
-                    [[DB_NAME_PREFIX]]document_rules AS dr
+                    [[DB_PREFIX]]document_rules AS dr
                 id_column: dr.id
             default_sort_column: ordinal
             columns:

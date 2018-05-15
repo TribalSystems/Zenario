@@ -35,65 +35,7 @@ class zenario_newsletter__organizer__image_library extends zenario_newsletter {
 	}
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
-		foreach ($panel['items'] as $id => &$item) {
-			$text = '';
-			$comma = false;
-			$usage_newsletters = (int)$item['usage_newsletters'];
-			$usage_newsletter_templates = (int)$item['usage_newsletter_templates'];
-			$newsletterUsage = $usage_newsletters + $usage_newsletter_templates;
-			if ($newsletterUsage === 1) {
-				if ($usage_newsletters === 1) {
-					$sql = '
-						SELECT 
-							n.newsletter_name
-						FROM ' . DB_NAME_PREFIX . 'inline_images ii
-						INNER JOIN ' . DB_NAME_PREFIX . ZENARIO_NEWSLETTER_PREFIX . 'newsletters n
-							ON ii.foreign_key_id = n.id
-							AND ii.foreign_key_to = "newsletter"
-						WHERE image_id = ' . $item['id'] . '
-						AND archived = 0';
-					$result = ze\sql::select($sql);
-					$row = ze\sql::fetchAssoc($result);
-					$text .= ze\admin::phrase('Used on "[[newsletter_name]]"', $row);
-				} else {
-					$sql = '
-						SELECT 
-							nt.name
-						FROM ' . DB_NAME_PREFIX . 'inline_images ii
-						INNER JOIN ' . DB_NAME_PREFIX . ZENARIO_NEWSLETTER_PREFIX . 'newsletter_templates nt
-							ON ii.foreign_key_id = nt.id
-							AND ii.foreign_key_to = "newsletter_template"
-						WHERE image_id = ' . $item['id'] . '
-						AND archived = 0';
-					$result = ze\sql::select($sql);
-					$row = ze\sql::fetchAssoc($result);
-					$text .= ze\admin::phrase('Used on "[[name]]"', $row);
-				}
-			} elseif ($newsletterUsage > 1) {
-				$text .= 'Used on ';
-				if ($usage_newsletters > 0) {
-					$text .= ze\admin::nPhrase(
-						'[[count]] newsletter',
-						'[[count]] newsletters',
-						$usage_newsletters,
-						['count' => $usage_newsletters]
-					);
-					$comma = true;
-				}
-				if ($usage_newsletter_templates > 0) {
-					if ($comma) {
-						$text .= ', ';
-					}
-					$text .= ze\admin::nPhrase(
-						'[[count]] newsletter template',
-						'[[count]] newsletter templates',
-						$usage_newsletter_templates,
-						['count' => $usage_newsletter_templates]
-					);
-				}
-			}
-			$item['all_usage_newsletters'] = $text;
-		}
+		//...your PHP code...//
 	}
 	
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {

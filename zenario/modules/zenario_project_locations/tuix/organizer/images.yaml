@@ -10,7 +10,7 @@ zenario__projects:
                 grid_view_microtemplate: zenario_grid_view_image
                 slidedown_view_microtemplate: zenario_slidedown_view_image
                 db_items:
-                    table: '[[DB_NAME_PREFIX]]files AS f'
+                    table: '[[DB_PREFIX]]files AS f'
                     where_statement: |
                         WHERE f.mime_type IN ('image/gif', 'image/png', 'image/jpeg', 'image/svg+xml')
                         AND f.`usage` = 'project_locations'
@@ -49,7 +49,7 @@ zenario__projects:
                         db_column: >
                             (
                                 SELECT 1
-                                FROM [[DB_NAME_PREFIX]][[ZENARIO_PROJECT_LOCATIONS_PREFIX]]project_locations AS l
+                                FROM [[DB_PREFIX]][[ZENARIO_PROJECT_LOCATIONS_PREFIX]]project_locations AS l
                                 WHERE l.image_id = f.id
                                 LIMIT 1
                             )

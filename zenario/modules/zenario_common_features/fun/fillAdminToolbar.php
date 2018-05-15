@@ -37,7 +37,8 @@ if (empty($_GET['get']) || !($importantGetRequests = json_decode($_GET['get'], t
 $content = ze\row::get('content_items', true, ['id' => $cID, 'type' => $cType]);
 $chain = ze\row::get('translation_chains', true, ['equiv_id' => $content['equiv_id'], 'type' => $cType]);
 $version = ze\row::get('content_item_versions', true, ['id' => $cID, 'type' => $cType, 'version' => $cVersion]);
-$menuItems = ze\menu::getFromContentItem($cID, $cType, true, false, true);
+$menuItems = ze\menu::getFromContentItem($cID, $cType, true, false, true, true);
+
 $tagId = $cType. '_'. $cID;
 $isMultilingual = ze\lang::count() > 1;
 
@@ -188,7 +189,7 @@ if ($cVersion == ze::$adminVersion && ze::$status == 'hidden') {
 	if (isset($adminToolbar['sections']['status_button']['buttons']['republish'])) {
 		if (!ze\sql::fetchRow('
 			SELECT 1
-			FROM '. DB_NAME_PREFIX. 'content_item_versions
+			FROM '. DB_PREFIX. 'content_item_versions
 			WHERE published_datetime IS NOT NULL
 			  AND published_datetime
 			  AND id = '. (int) ze::$cID. '
@@ -845,6 +846,24 @@ if (isset($adminToolbar['sections']['primary_menu_node'])) {
 				$adminToolbar['meta_info']['menu_organizer_path'] = $menuLink;
 			}
 			
+			//Check to see if this menu node has any images, and add info on each
+			$adminToolbar['sections']['menu'. $i]['images'] = [
+				'image' => $menuItem['image_id'],
+				'rollover_image' => $menuItem['rollover_image_id']
+			];
+			if (ze\module::inc('zenario_promo_menu')) {
+				$adminToolbar['sections']['menu'. $i]['images']['feature_image'] =
+					zenario_promo_menu::getFeatureImageId($menuItem['id']);
+			}
+			
+			foreach ($adminToolbar['sections']['menu'. $i]['images'] as &$image) {
+				if ($image) {
+					if ($image = ze\row::get('files', ['id', 'usage', 'checksum'], $image)) {
+						$image['url'] = ze\link::absolute(). 'zenario/file.php?usage='. $image['usage']. '&c='. $image['checksum']. '&ogl=1';
+					}
+				}
+			}
+			
 			$primary = false;
 		}
 		
@@ -990,10 +1009,10 @@ $sql = '
 	SELECT 
 		COUNT(DISTINCT c.tag_id) AS item_count, 
 		l.name
-	FROM '.DB_NAME_PREFIX.'content_item_versions v
-	INNER JOIN '.DB_NAME_PREFIX.'layouts l
+	FROM '.DB_PREFIX.'content_item_versions v
+	INNER JOIN '.DB_PREFIX.'layouts l
 		ON v.layout_id = l.layout_id
-	INNER JOIN '.DB_NAME_PREFIX.'content_items c
+	INNER JOIN '.DB_PREFIX.'content_items c
 		ON (v.version = c.admin_version) AND (v.tag_id = c.tag_id)
 	WHERE v.layout_id = '.(int)ze::$layoutId. '
 	AND c.status NOT IN ("trashed", "deleted")';
@@ -1145,8 +1164,8 @@ if (isset($adminToolbar['sections']['icons']['buttons']['item_categories_some'])
 	//If this item is in categories, list them
 	$sql = "
 		SELECT c.name
-		FROM ". DB_NAME_PREFIX. "category_item_link AS cil
-		LEFT JOIN ". DB_NAME_PREFIX. "categories AS c
+		FROM ". DB_PREFIX. "category_item_link AS cil
+		LEFT JOIN ". DB_PREFIX. "categories AS c
 		   ON cil.category_id = c.id
 		WHERE cil.equiv_id = ". (int) $content['equiv_id']. "
 		  AND cil.content_type = '" . ze\escape::sql($cType). "'";
@@ -1173,7 +1192,7 @@ if (ze\row::exists('content_types', ['enable_categories' => 0, 'content_type_id'
 //Get the slots on this Layout, and add a button for each
 $ord = 2000;
 $lookForSlots = ['family_name' => $layout['family_name'], 'file_base_name' => $layout['file_base_name']];
-foreach(ze\row::getArray('template_slot_link', ['ord', 'slot_name'], $lookForSlots, ['ord', 'slot_name']) as $slot) {
+foreach(ze\row::getAssocs('template_slot_link', ['ord', 'slot_name'], $lookForSlots, ['ord', 'slot_name']) as $slot) {
 	$adminToolbar['sections']['slot_controls']['buttons']['slot_'. $slot['slot_name']] =
 		[
 			'ord' => ++$ord,
@@ -1192,7 +1211,7 @@ foreach(ze\row::getArray('template_slot_link', ['ord', 'slot_name'], $lookForSlo
 
 
 // Create page preview buttons
-$pagePreviews = ze\row::getArray('page_preview_sizes', ['width', 'height', 'description', 'ordinal', 'is_default', 'type'], [], 'ordinal');
+$pagePreviews = ze\row::getAssocs('page_preview_sizes', ['width', 'height', 'description', 'ordinal', 'is_default', 'type'], [], 'ordinal');
 $status = ze::$status;
 switch ($status) {
 	case 'first_draft':

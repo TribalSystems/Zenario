@@ -80,7 +80,7 @@ class zenario_abstract_list extends zenario_abstract_manager {
 	//Intended to be easily overwritten
 	protected function lookForContentFrom() {
 		$sql = "
-			FROM `". ze\escape::sql(DB_NAME_PREFIX. static::table()). "` AS cd";
+			FROM `". ze\escape::sql(DB_PREFIX. static::table()). "` AS cd";
 		
 		return $sql;
 	}

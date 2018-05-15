@@ -374,7 +374,7 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 				} else {
 					$sql = "
 						SELECT id
-						FROM ". DB_NAME_PREFIX ."menu_nodes
+						FROM ". DB_PREFIX ."menu_nodes
 						WHERE accesskey = '" . ze\escape::sql($values['advanced/accesskey']) . "'";
 			
 					if ($box['key']['id']) {

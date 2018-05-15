@@ -5,7 +5,7 @@ zenario__administration:
         custom_fields:
             title: Custom dataset fields
             db_items:
-                table: '[[DB_NAME_PREFIX]]custom_dataset_fields AS cdf'
+                table: '[[DB_PREFIX]]custom_dataset_fields AS cdf'
                 id_column: cdf.id
                 where_statement: 'WHERE cdf.type != "other_system_field" AND cdf.db_column != ""'
             default_sort_column: label

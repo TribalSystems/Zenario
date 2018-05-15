@@ -344,10 +344,10 @@ class zenario_export_tools extends ze\moduleBaseClass {
 					
 					$sql = "
 						SELECT ps.*, psd.default_value
-						FROM ". DB_NAME_PREFIX. "plugin_settings AS ps
-						INNER JOIN ". DB_NAME_PREFIX. "plugin_instances AS pi
+						FROM ". DB_PREFIX. "plugin_settings AS ps
+						INNER JOIN ". DB_PREFIX. "plugin_instances AS pi
 						   ON pi.id = ps.instance_id
-						LEFT JOIN ". DB_NAME_PREFIX. "plugin_setting_defs AS psd
+						LEFT JOIN ". DB_PREFIX. "plugin_setting_defs AS psd
 						   ON psd.module_id = pi.module_id
 						  AND psd.name = ps.name
 						WHERE ps.instance_id = ". (int) $slotContents[$slotName]['instance_id']. "
@@ -392,7 +392,7 @@ class zenario_export_tools extends ze\moduleBaseClass {
 					
 					$sql = "
 						SELECT id, slide_num, ord, module_id, framework, is_slide, name_or_title
-						FROM ". DB_NAME_PREFIX. "nested_plugins
+						FROM ". DB_PREFIX. "nested_plugins
 						WHERE instance_id = ". (int) $slotContents[$slotName]['instance_id']. "
 						ORDER BY slide_num, is_slide DESC, ord";
 					
@@ -417,8 +417,8 @@ class zenario_export_tools extends ze\moduleBaseClass {
 							
 							$sql = "
 								SELECT ps.*, psd.default_value
-								FROM ". DB_NAME_PREFIX. "plugin_settings AS ps
-								LEFT JOIN ". DB_NAME_PREFIX. "plugin_setting_defs AS psd
+								FROM ". DB_PREFIX. "plugin_settings AS ps
+								LEFT JOIN ". DB_PREFIX. "plugin_setting_defs AS psd
 								   ON psd.module_id = ". (int) $egg['module_id']. "
 								  AND psd.name = ps.name
 								WHERE ps.instance_id = ". (int) $slotContents[$slotName]['instance_id']. "
@@ -926,7 +926,7 @@ class zenario_export_tools extends ze\moduleBaseClass {
 			if ($xml->template) {
 				$sql = "
 					SELECT layout_id
-					FROM ". DB_NAME_PREFIX. "layouts
+					FROM ". DB_PREFIX. "layouts
 					WHERE content_type = '". ze\escape::sql($cType). "'
 					ORDER BY
 						family_name = '". ze\escape::sql($xml->template->attributes()->family_name). "' DESC,
@@ -1118,14 +1118,14 @@ class zenario_export_tools extends ze\moduleBaseClass {
 								//Remove any Nested Tabs/Plugins that are in the database, and don't match up to the ones we just found.
 								//Otherwise we'll try to preserve their ids, in order to preserve any Swatch choices that are linked to them
 								$sql = "
-									DELETE FROM ". DB_NAME_PREFIX. "nested_plugins
+									DELETE FROM ". DB_PREFIX. "nested_plugins
 									WHERE instance_id = ". (int) $instanceId;
 								
 								if (!empty($nestedPlugins)) {
 									$sql .= "
 									  AND id NOT IN (". implode(',', $nestedPlugins). ")";
 								}
-								ze\sql::select($sql);  //No need to check the cache as the other statements should clear it correctly
+								ze\sql::cacheFriendlyUpdate($sql);  //No need to check the cache as the other statements should clear it correctly
 							
 							
 								//Check for any existing file/image-links for the current Plugin, and note down what they are for use later

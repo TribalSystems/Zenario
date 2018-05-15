@@ -60,7 +60,7 @@ class twig {
 		//Create instances of any modules that say they are usable in Twig Frameworks
 		foreach (\ze\sql::fetchAssocs("
 			SELECT id, class_name, status
-			FROM ". DB_NAME_PREFIX. "modules
+			FROM ". DB_PREFIX. "modules
 			WHERE for_use_in_twig = 1"
 		) as $module) {
 			if (\ze\module::inc($module)) {

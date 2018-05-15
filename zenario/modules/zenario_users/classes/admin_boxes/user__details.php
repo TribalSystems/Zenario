@@ -86,6 +86,40 @@ class zenario_users__admin_boxes__user__details extends ze\moduleBaseClass {
 			$userType = $user['status'] == 'contact' ? 'contact' : 'user';
 			$box['title'] = ze\admin::phrase('Editing the [[user_type]] "[[identifier]]"', ['identifier' => $user['identifier'], 'user_type' => $userType]);
 			
+			//If password is expired then show a warning
+			if (ze\user::isPasswordExpired($box['key']['id'])) {
+				$box['tabs']['details']['notices']['password_expired']['show'] = true;
+			}
+			
+			//Show a log of consents given by the user
+			$result = ze\row::query('consents', true, ['user_id' => $box['key']['id']]);
+			if (ze\sql::numRows($result) > 0) {
+				$html = '
+					<table class="basic_table" style="width:100%">
+						<tr>
+							<th>' . ze\admin::phrase('Date/time') . '</th>
+							<th>' . ze\admin::phrase('IP address') . '</th>
+							<th>' . ze\admin::phrase('Email') . '</th>
+							<th>' . ze\admin::phrase('First name') . '</th>
+							<th>' . ze\admin::phrase('Last name') . '</th>
+						</tr>';
+				while ($row = ze\sql::fetchAssoc($result)) {
+					$html .= '
+						<tr>
+							<td>' . ze\date::formatDateTime($row['datetime'], '_MEDIUM') . '</td>
+							<td>' . $row['ip_address'] . '</td>
+							<td>' . $row['email'] . '</td>
+							<td>' . $row['first_name'] . '</td>
+							<td>' . $row['last_name'] . '</td>
+						</tr>';
+				}
+				$html .= '
+					<table>';
+				$fields['dates/consents_log']['snippet']['html'] = $html;
+			}
+			
+			
+			
 		} else {
 			ze\priv::exitIfNot('_PRIV_EDIT_USER');
 			

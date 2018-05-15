@@ -938,23 +938,55 @@ zenarioA.closeSlotControls = function() {
 
 
 zenarioA.pickNewPluginSlotName = false;
-zenarioA.pickNewPlugin = function(el, slotName, level, showADifferentPlugin) {
+zenarioA.pickNewPlugin = function(el, slotName, level, isNest, preselectCurrentChoice) {
 	el.blur();
 	
 	zenarioA.pickNewPluginSlotName = slotName;
 	zenarioA.pickNewPluginLevel = level;
 	
-	var path = 'zenario__modules/panels/modules/refiners/slotable_only////';
+	var slot = zenario.slots[slotName] || {},
+		moduleId = slot.moduleId,
+		instanceId = slot.instanceId,
+		path,
+		chooseButtonPhrase;
 	
-	//Select the existing module and plugin if possible
-	if (!showADifferentPlugin
-	 && zenario.slots[slotName]
-	 && zenario.slots[slotName].moduleId
-	 && zenario.slots[slotName].instanceId) {
-		path += 'item//' + zenario.slots[slotName].moduleId + '//' + zenario.slots[slotName].instanceId;
+	if (isNest === undefined) {
+		switch (slot.moduleClassName) {
+			case 'zenario_plugin_nest':
+				isNest = true;
+				break;
+			case 'zenario_slideshow':
+				isNest = 'slideshow';
+				break;
+			default:
+				isNest = false;
+		}
 	}
 	
-	zenarioA.organizerSelect('zenarioA', 'addNewReusablePlugin', false, path, 'zenario__modules/panels/plugins', 'zenario__modules/panels/modules', 'zenario__modules/panels/plugins', true, true, phrase.insertReusablePlugin);
+	if (isNest) {
+		if (isNest == 'slideshow') {
+			path = 'zenario__modules/panels/plugins/refiners/slideshows////';
+			chooseButtonPhrase = phrase.insertSlideshow;
+		} else {
+			path = 'zenario__modules/panels/plugins/refiners/nests////';
+			chooseButtonPhrase = phrase.insertNest;
+		}
+	
+		//Select the existing module and plugin if possible
+		if (preselectCurrentChoice && instanceId) {
+			path += instanceId;
+		}
+	} else {
+		path = 'zenario__modules/panels/modules/refiners/slotable_only////';
+		chooseButtonPhrase = phrase.insertPlugin;
+	
+		//Select the existing module and plugin if possible
+		if (preselectCurrentChoice && instanceId) {
+			path += 'item//' + zenario.slots[slotName].moduleId + '//' + zenario.slots[slotName].instanceId;
+		}
+	}
+	
+	zenarioA.organizerSelect('zenarioA', 'addNewReusablePlugin', false, path, 'zenario__modules/panels/plugins', 'zenario__modules/panels/modules', 'zenario__modules/panels/plugins', true, true, chooseButtonPhrase);
 	
 	return false;
 };
@@ -1334,7 +1366,7 @@ zenarioA.checkSlotsBeingEdited = function() {
 	}
 	
 	$('body').removeClass('zenario_being_edited');
-	return false
+	return false;
 };
 
 zenarioA.checkForEdits = function() {
@@ -1933,6 +1965,7 @@ zenarioA.fileBrowser = function(field_name, url, type, win) {
 		 && zenarioAB.tuix.tabs[zenarioAB.tuix.tab]
 		 && zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields
 		 && zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[editorId];
+
 	
 	//Remember the open window, the name of the file browser's URL field (this will be something like "mceu_48-inp),
 	//and whether we found the FAB field above or not.
@@ -1987,9 +2020,9 @@ zenarioA.fileBrowser = function(field_name, url, type, win) {
 		 && zenario_wysiwyg_editor.poking) {
 			pick_items = {
 				path: 'zenario__content/panels/content/item_buttons/images//' + zenario.cType + '_' + zenario.cID + '//',
-				target_path: 'zenario__content/panels/inline_images_for_content',
-				min_path: 'zenario__content/panels/inline_images_for_content',
-				max_path: 'zenario__content/panels/inline_images_for_content',
+				target_path: 'zenario__content/panels/image_library',
+				min_path: 'zenario__content/panels/image_library',
+				max_path: 'zenario__content/panels/image_library',
 				disallow_refiners_looping_on_min_path: false};
 		
 		} else {
@@ -2276,7 +2309,7 @@ zenarioA.formatSKItemField = function(value, column) {
 			extra = '';
 		
 		if (value && (format != 'date' && format != 'datetime' && format != 'datetime_with_seconds' && format != 'remove_zero_padding')) {
-			var pos = value.indexOf(' ');
+			var pos = (value + '').indexOf(' ');
 			if (pos != -1) {
 				extra = value.substr(pos);
 				value = value.substr(0, pos);
@@ -2285,16 +2318,16 @@ zenarioA.formatSKItemField = function(value, column) {
 		
 		if (format == 'true_or_false') {
 			if (engToBoolean(value)) {
-				value = column.true_phrase || phrase.tru;
+				value = defined(column.true_phrase)? column.true_phrase : phrase.tru;
 			} else {
-				value = column.false_phrase || phrase.fal;
+				value = defined(column.false_phrase)? column.false_phrase : phrase.fal;
 			}
 			
 		} else if (format == 'yes_or_no') {
 			if (engToBoolean(value)) {
-				value = column.yes_phrase || phrase.yes;
+				value = defined(column.yes_phrase)? column.yes_phrase : phrase.yes;
 			} else {
-				value = column.no_phrase || phrase.no;
+				value = defined(column.no_phrase)? column.no_phrase : phrase.no;
 			}
 			
 		} else if (format == 'remove_zero_padding') {
@@ -2496,7 +2529,7 @@ zenarioA.organizerSelect = function(
 	if (!useIframe) {
 		//If we've not currently got an existing full-Organizer instance in this frame, set Organizer up in a <div>
 		
-		zenarioO.open(zenarioA.getSKBodyClass(win), undefined, $(window).width() * 0.8, 50, 10, true, true, true, {minWidth: 550});
+		zenarioO.open(zenarioA.getSKBodyClass(win), undefined, $(window).width() * 0.99, 50, 1, true, true, true, {minWidth: 550});
 		//zenarioO.open(className, e, width, left, top, disablePageBelow, overlay, draggable, resizable, padding, maxHeight, rightCornerOfElement, bottomCornerOfElement) {
 		
 		zenarioO.init();
@@ -2973,7 +3006,7 @@ zenarioA.scanHyperlinksAndDisplayStatus = function(containerId) {
             } else if (zenarioA.spareDomains) {
                 for (i = 0; i < zenarioA.spareDomains.length; ++i) {
                     if (url.indexOf(zenarioA.spareDomains[i]) === 0) {
-                        $el.append(_$html('del', 'class', 'zenario_link_status zenario_link_status__spare_domain', _$html('del')));
+                    	zenarioA.addLinkStatus($el, 'spare_domain');
                     }
                 }
             }
@@ -3005,7 +3038,7 @@ zenarioA.scanHyperlinksAndDisplayStatus = function(containerId) {
     zenario.ajax(ajaxURL, post, true, true).after(function(statuses) {
         for (i = 0; i < statuses.length; ++i) {
             for (j = 0; j < $links[i].length; ++j) {
-                $links[i][j].append(_$html('del', 'class', 'zenario_link_status zenario_link_status__' + statuses[i], _$html('del')));
+                zenarioA.addLinkStatus($links[i][j], statuses[i]);
             }
         }
 		
@@ -3015,6 +3048,23 @@ zenarioA.scanHyperlinksAndDisplayStatus = function(containerId) {
 			zenario.removeLinkStatus($('div.mce-content-body'));
 		}
     });
+};
+
+
+zenarioA.addLinkStatus = function($el, status) {
+    
+    var code = 'link_status__' + status,
+    	msg = phrase[code];
+    
+    $el.append(_$html('del', 'class', 'zenario_link_status zenario_' + code, _$html('del')));
+    
+    if (msg) {
+		$el.find('del.zenario_link_status > del').jQueryTooltip({
+			items: '*',
+			tooltipClass: 'zenario_link_status_tooltip',
+			content: msg
+		});
+	}
 };
 
 

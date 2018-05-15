@@ -31,7 +31,7 @@ class zenario_content_notifications extends ze\moduleBaseClass {
 	
 	
 	public static function getNotes($cID, $cType, $cVersion) {
-		return ze\row::getArray(
+		return ze\row::getAssocs(
 			ZENARIO_CONTENT_NOTIFICATIONS_PREFIX. 'versions_mirror', true, 
 			['content_id' => $cID, 'content_type' => $cType, 'content_version' => $cVersion],
 			'datetime_requested');
@@ -66,11 +66,11 @@ Link: [[link]]', $note);
 	protected static function getListOfAdminsWhoReceiveNotifications($adminId = false) {
 		$sql = "
 			SELECT DISTINCT a.id, a.email
-			FROM ". DB_NAME_PREFIX. "admins AS a
-			INNER JOIN ". DB_NAME_PREFIX. ZENARIO_CONTENT_NOTIFICATIONS_PREFIX. "admins_mirror AS am
+			FROM ". DB_PREFIX. "admins AS a
+			INNER JOIN ". DB_PREFIX. ZENARIO_CONTENT_NOTIFICATIONS_PREFIX. "admins_mirror AS am
 			   ON am.admin_id = a.id
 			  AND am.content_request_notification = 1
-			INNER JOIN " . DB_NAME_PREFIX . "action_admin_link as aal 
+			INNER JOIN " . DB_PREFIX . "action_admin_link as aal 
 			   ON aal.admin_id = a.id
 			  AND aal.action_name IN ('_ALL', '_PRIV_APPEAR_ON_CONTENT_REQUEST_RECIPIENT_LIST')
 			WHERE a.status = 'active'";
@@ -250,11 +250,11 @@ Link: [[link]]', $note);
 		
 		$sql = "
 			SELECT DISTINCT a.id, a.email
-			FROM ". DB_NAME_PREFIX. "admins AS a
-			INNER JOIN ". DB_NAME_PREFIX. ZENARIO_CONTENT_NOTIFICATIONS_PREFIX. "admins_mirror AS am
+			FROM ". DB_PREFIX. "admins AS a
+			INNER JOIN ". DB_PREFIX. ZENARIO_CONTENT_NOTIFICATIONS_PREFIX. "admins_mirror AS am
 			   ON am.admin_id = a.id
 			  AND am.`". ze\escape::sql($notification_type). "` = 1
-			INNER JOIN " . DB_NAME_PREFIX . "action_admin_link as aal 
+			INNER JOIN " . DB_PREFIX . "action_admin_link as aal 
 			   ON aal.admin_id = a.id
 			  AND aal.action_name IN ('_ALL', '_PRIV_APPEAR_ON_CONTENT_REQUEST_RECIPIENT_LIST')
 			WHERE a.status = 'active'

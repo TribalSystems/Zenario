@@ -9,7 +9,7 @@ zenario__content:
                     title: 'Event: Start Date'
                     db_column: zenario_ctype_event__ce.start_date
                     table_join: |
-                        [[DB_NAME_PREFIX]][[ZENARIO_CTYPE_EVENT_PREFIX]]content_event AS zenario_ctype_event__ce
+                        [[DB_PREFIX]][[ZENARIO_CTYPE_EVENT_PREFIX]]content_event AS zenario_ctype_event__ce
                                                 ON v.id = zenario_ctype_event__ce.id
                                                 AND v.version = zenario_ctype_event__ce.version
                                                 AND v.type = 'event'
@@ -20,7 +20,7 @@ zenario__content:
                     title: 'Event: Start Time'
                     db_column: zenario_ctype_event__ce.start_time
                     table_join: |
-                        [[DB_NAME_PREFIX]][[ZENARIO_CTYPE_EVENT_PREFIX]]content_event AS zenario_ctype_event__ce
+                        [[DB_PREFIX]][[ZENARIO_CTYPE_EVENT_PREFIX]]content_event AS zenario_ctype_event__ce
                                                 ON v.id = zenario_ctype_event__ce.id
                                                 AND v.version = zenario_ctype_event__ce.version
                                                 AND v.type = 'event'
@@ -30,7 +30,7 @@ zenario__content:
                     title: 'Event: End Date'
                     db_column: zenario_ctype_event__ce.end_date
                     table_join: |
-                        [[DB_NAME_PREFIX]][[ZENARIO_CTYPE_EVENT_PREFIX]]content_event AS zenario_ctype_event__ce
+                        [[DB_PREFIX]][[ZENARIO_CTYPE_EVENT_PREFIX]]content_event AS zenario_ctype_event__ce
                                                 ON v.id = zenario_ctype_event__ce.id
                                                 AND v.version = zenario_ctype_event__ce.version
                                                 AND v.type = 'event'
@@ -41,7 +41,7 @@ zenario__content:
                     title: 'Event: End Time'
                     db_column: zenario_ctype_event__ce.end_time
                     table_join: |
-                        [[DB_NAME_PREFIX]][[ZENARIO_CTYPE_EVENT_PREFIX]]content_event AS zenario_ctype_event__ce
+                        [[DB_PREFIX]][[ZENARIO_CTYPE_EVENT_PREFIX]]content_event AS zenario_ctype_event__ce
                                                 ON v.id = zenario_ctype_event__ce.id
                                                 AND v.version = zenario_ctype_event__ce.version
                                                 AND v.type = 'event'

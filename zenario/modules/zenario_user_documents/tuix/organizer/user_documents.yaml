@@ -11,8 +11,8 @@ zenario__content:
                 title: Confidential documents for user
                 db_items:
                     table: |
-                        [[DB_NAME_PREFIX]][[ZENARIO_USER_DOCUMENTS_PREFIX]]user_documents AS ud
-                        LEFT JOIN [[DB_NAME_PREFIX]]files AS f ON ud.file_id = f.id
+                        [[DB_PREFIX]][[ZENARIO_USER_DOCUMENTS_PREFIX]]user_documents AS ud
+                        LEFT JOIN [[DB_PREFIX]]files AS f ON ud.file_id = f.id
                     id_column: ud.id
                 default_sort_column: name
                 view_mode: list

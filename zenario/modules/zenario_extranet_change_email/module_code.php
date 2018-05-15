@@ -69,7 +69,7 @@ class zenario_extranet_change_email extends zenario_extranet {
 						new_email,
 						hash
 					FROM " 
-						. DB_NAME_PREFIX . ZENARIO_EXTRANET_CHANGE_EMAIL_PREFIX . "new_user_emails 
+						. DB_PREFIX . ZENARIO_EXTRANET_CHANGE_EMAIL_PREFIX . "new_user_emails 
 					WHERE
 						hash ='" . ze\escape::sql($_GET['hash'] ?? false) . "'";
 			
@@ -78,7 +78,7 @@ class zenario_extranet_change_email extends zenario_extranet {
 				$userDetails = ze\user::details($row['user_id']);
 			
 				$sql = "UPDATE "
-							. DB_NAME_PREFIX . "users 
+							. DB_PREFIX . "users 
 						SET 
 							last_profile_update_in_frontend = NOW(),
 							screen_name = IF(email=screen_name,'" . $row['new_email'] . "',screen_name),
@@ -90,7 +90,7 @@ class zenario_extranet_change_email extends zenario_extranet {
 				ze\module::sendSignal("eventUserEmailChanged",["user_id" => $row['user_id'], "old_email" => $userDetails['email'], "new_email" => $row['new_email']]);
 				
 				$sql = "DELETE FROM " 
-						. DB_NAME_PREFIX . ZENARIO_EXTRANET_CHANGE_EMAIL_PREFIX . "new_user_emails 
+						. DB_PREFIX . ZENARIO_EXTRANET_CHANGE_EMAIL_PREFIX . "new_user_emails 
 					WHERE
 						hash ='" . ze\escape::sql($_GET['hash'] ?? false) . "'";
 				ze\sql::update($sql);
@@ -133,7 +133,7 @@ class zenario_extranet_change_email extends zenario_extranet {
 				if ($this->setting('confirmation_email_template') && ze\module::inc('zenario_email_template_manager')){
 					$hash = md5(($_POST['extranet_email'] ?? false) . ze\link::host() . time()) . time();
 					$sql = "REPLACE INTO " 
-								. DB_NAME_PREFIX . ZENARIO_EXTRANET_CHANGE_EMAIL_PREFIX . "new_user_emails 
+								. DB_PREFIX . ZENARIO_EXTRANET_CHANGE_EMAIL_PREFIX . "new_user_emails 
 							SET 
 								user_id = " . (int) ze\user::id() . ",
 								new_email = '" . ze\escape::sql($_POST['extranet_email'] ?? false) . "',

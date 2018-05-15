@@ -31,11 +31,11 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 //Create a mirror table for jobs, with extra info for email accounts
 	ze\dbAdm::revision( 4
 , <<<_sql
-	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]][[ZENARIO_INCOMING_EMAIL_MANAGER_PREFIX]]accounts`
+	DROP TABLE IF EXISTS `[[DB_PREFIX]][[ZENARIO_INCOMING_EMAIL_MANAGER_PREFIX]]accounts`
 _sql
 
 , <<<_sql
-	CREATE TABLE `[[DB_NAME_PREFIX]][[ZENARIO_INCOMING_EMAIL_MANAGER_PREFIX]]accounts` (
+	CREATE TABLE `[[DB_PREFIX]][[ZENARIO_INCOMING_EMAIL_MANAGER_PREFIX]]accounts` (
 		`job_id` int(10) unsigned NOT NULL,
 		`script_enable` tinyint(1) unsigned NOT NULL default 0,
 		`script_recipient_username` varchar(255) NULL,
@@ -57,7 +57,7 @@ _sql
 //Add a new column for the error mailbox
 );	ze\dbAdm::revision( 7
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_INCOMING_EMAIL_MANAGER_PREFIX]]accounts`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_INCOMING_EMAIL_MANAGER_PREFIX]]accounts`
 	ADD COLUMN `fetch_error_mailbox` varchar(255) NOT NULL default ''
 _sql
 
@@ -65,11 +65,11 @@ _sql
 //Create a mirror table for job_logs, with extra info for emails
 );	ze\dbAdm::revision( 9
 , <<<_sql
-	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]][[ZENARIO_INCOMING_EMAIL_MANAGER_PREFIX]]account_logs`
+	DROP TABLE IF EXISTS `[[DB_PREFIX]][[ZENARIO_INCOMING_EMAIL_MANAGER_PREFIX]]account_logs`
 _sql
 
 , <<<_sql
-	CREATE TABLE `[[DB_NAME_PREFIX]][[ZENARIO_INCOMING_EMAIL_MANAGER_PREFIX]]account_logs` (
+	CREATE TABLE `[[DB_PREFIX]][[ZENARIO_INCOMING_EMAIL_MANAGER_PREFIX]]account_logs` (
 		`job_id` int(10) unsigned NOT NULL,
 		`log_id` int(10) unsigned NOT NULL,
 		`email_from` varchar(255) NOT NULL default '',
@@ -84,7 +84,7 @@ _sql
 //drop unique key
 ze\dbAdm::revision( 20
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_INCOMING_EMAIL_MANAGER_PREFIX]]accounts`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_INCOMING_EMAIL_MANAGER_PREFIX]]accounts`
 	DROP KEY `fetch_server`
 _sql
 );

@@ -16,7 +16,7 @@ define('DBPASS', '[[DBPASS]]');
 //Database port number:
 define('DBPORT', '[[DBPORT]]');
 //Prefix for all table names (to keep them distinct from other apps):
-define('DB_NAME_PREFIX', '[[DB_NAME_PREFIX]]');
+define('DB_PREFIX', '[[DB_PREFIX]]');
 //Use MySQL in "strict" mode:
 define('DEBUG_USE_STRICT_MODE', true);
 
@@ -32,7 +32,21 @@ define('DEBUG_USE_STRICT_MODE', true);
 //define('DBUSER_GLOBAL', '[[DBUSER_GLOBAL]]');
 //define('DBPASS_GLOBAL', '[[DBPASS_GLOBAL]]');
 //define('DBPORT_GLOBAL', '[[DBPORT_GLOBAL]]');
-//define('DB_NAME_PREFIX_GLOBAL', '[[DB_NAME_PREFIX_GLOBAL]]');
+//define('DB_PREFIX_GLOBAL', '[[DB_PREFIX_GLOBAL]]');
+
+
+  ///////////////////////////////////////////////
+ // MySQL database settings for data archives //
+///////////////////////////////////////////////
+
+// These parameters allow you to specify a different database for asset data and
+// other large storage.
+//define('DBHOST_DA', '[[DBHOST_DA]]');
+//define('DBNAME_DA', '[[DBNAME_DA]]');
+//define('DBUSER_DA', '[[DBUSER_DA]]');
+//define('DBPASS_DA', '[[DBPASS_DA]]');
+//define('DBPORT_DA', '[[DBPORT_DA]]');
+//define('DB_PREFIX_DA', '[[DB_PREFIX_DA]]');
 
 
   ///////////////////////////

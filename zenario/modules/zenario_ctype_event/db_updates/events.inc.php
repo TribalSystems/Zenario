@@ -2,11 +2,11 @@
 
 ze\dbAdm::revision(1
 , <<<_sql
-	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]][[ZENARIO_CTYPE_EVENT_PREFIX]]content_event`
+	DROP TABLE IF EXISTS `[[DB_PREFIX]][[ZENARIO_CTYPE_EVENT_PREFIX]]content_event`
 _sql
 
 , <<<_sql
-	CREATE TABLE `[[DB_NAME_PREFIX]][[ZENARIO_CTYPE_EVENT_PREFIX]]content_event`(
+	CREATE TABLE `[[DB_PREFIX]][[ZENARIO_CTYPE_EVENT_PREFIX]]content_event`(
 		`id` int(10) unsigned NOT NULL,
 		`version` int(10) unsigned NOT NULL,
 		`start_date` date NULL,
@@ -45,27 +45,33 @@ _sql
 
 ); ze\dbAdm::revision(38
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_CTYPE_EVENT_PREFIX]]content_event`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_CTYPE_EVENT_PREFIX]]content_event`
 	ADD COLUMN `url_is_private` tinyint(1) NOT NULL default 0 AFTER `url`
 _sql
 
 ); ze\dbAdm::revision(39
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_CTYPE_EVENT_PREFIX]]content_event`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_CTYPE_EVENT_PREFIX]]content_event`
 	DROP COLUMN `url_is_private`,
 	ADD COLUMN `private_url` varchar(250) NULL
 _sql
 
 ); ze\dbAdm::revision(40
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_CTYPE_EVENT_PREFIX]]content_event`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_CTYPE_EVENT_PREFIX]]content_event`
 	DROP COLUMN `private_url`
 _sql
 
 ); ze\dbAdm::revision(42
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_CTYPE_EVENT_PREFIX]]content_event`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_CTYPE_EVENT_PREFIX]]content_event`
 	ADD COLUMN `location` varchar(250) CHARACTER SET utf8mb4 NULL AFTER `location_id`
+_sql
+
+); ze\dbAdm::revision(45
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_CTYPE_EVENT_PREFIX]]content_event`
+	MODIFY COLUMN `url` text
 _sql
 
 );

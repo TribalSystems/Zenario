@@ -190,25 +190,25 @@ class zenario_location_map_and_listing extends ze\moduleBaseClass {
 		}
 		
 		$sql .= "
-			FROM ". DB_NAME_PREFIX. ZENARIO_LOCATION_MANAGER_PREFIX. "locations AS loc";
+			FROM ". DB_PREFIX. ZENARIO_LOCATION_MANAGER_PREFIX. "locations AS loc";
 		
 		if ($sectorId = $this->setting('sector')) {
 			$sql .= "
-				INNER JOIN ". DB_NAME_PREFIX. ZENARIO_LOCATION_MANAGER_PREFIX. "location_sector_score_link AS lnk
+				INNER JOIN ". DB_PREFIX. ZENARIO_LOCATION_MANAGER_PREFIX. "location_sector_score_link AS lnk
 				   ON loc.id = lnk.location_id
 				   AND lnk.sector_id = ". (int)$sectorId;
 		}
 		if ($regionId = $this->setting('region')) {
 			$sql .= "
-				INNER JOIN ". DB_NAME_PREFIX. ZENARIO_LOCATION_MANAGER_PREFIX. "location_region_link AS lrl 
+				INNER JOIN ". DB_PREFIX. ZENARIO_LOCATION_MANAGER_PREFIX. "location_region_link AS lrl 
 					ON loc.id = lrl.location_id 
 				   AND lrl.region_id = ". (int)$regionId;
 		}
 		
 		$sql .= "
-			LEFT JOIN ". DB_NAME_PREFIX. ZENARIO_LOCATION_MANAGER_PREFIX. "locations_custom_data AS cd
+			LEFT JOIN ". DB_PREFIX. ZENARIO_LOCATION_MANAGER_PREFIX. "locations_custom_data AS cd
 				ON cd.location_id = loc.id
-			LEFT JOIN ". DB_NAME_PREFIX. "visitor_phrases AS vp_cn
+			LEFT JOIN ". DB_PREFIX. "visitor_phrases AS vp_cn
 				   ON loc.country_id IS NOT NULL
 				  AND module_class_name = 'zenario_country_manager'
 				  AND CONCAT('_COUNTRY_NAME_', loc.country_id) = vp_cn.code 
@@ -303,7 +303,7 @@ class zenario_location_map_and_listing extends ze\moduleBaseClass {
 		// Filter locations by distance to postcode
 		$lat = $lng = $label = $error = false;
 		if ($this->setting('enable_postcode_search') && !empty($this->data['postcode'])) {
-			$json = file_get_contents('http://maps.googleapis.com/maps/api/geocode/json?address=' . urlencode($this->data['postcode']) . '&components=postal_code:' .  urlencode($this->data['postcode']));
+			$json = file_get_contents('https://maps.googleapis.com/maps/api/geocode/json?key=' . urlencode(ze::setting('google_maps_api_key')) . '&address=' . urlencode($this->data['postcode']) . '&components=postal_code:' .  urlencode($this->data['postcode']));
 			$data = json_decode($json, true);
 			switch ($data['status']) {
 				case 'OK':
@@ -332,7 +332,7 @@ class zenario_location_map_and_listing extends ze\moduleBaseClass {
 		if ($hide_locations_list_before_search
 			&& (
 				($this->setting('filter_by_country') && $this->data['country_id'])
-				|| ($this->setting('enable_postcode_search') && $this->data['postcode'] && $this->data['postcode_search_success'])
+				|| ($this->setting('enable_postcode_search') && $this->data['postcode'] && isset($this->data['postcode_search_success']))
 			)
 			|| !$hide_locations_list_before_search
 		) {
@@ -433,13 +433,13 @@ class zenario_location_map_and_listing extends ze\moduleBaseClass {
 		
 		$sql = "
 			SELECT SUBSTR(code, 15), local_text
-			FROM ". DB_NAME_PREFIX. "visitor_phrases AS vp_cn
+			FROM ". DB_PREFIX. "visitor_phrases AS vp_cn
 			WHERE module_class_name = 'zenario_country_manager'
 			  AND language_id = '". ze\escape::sql(ze::$visLang). "'
 			  AND code IN (
 				SELECT CONCAT('_COUNTRY_NAME_', loc.country_id)
-				FROM ". DB_NAME_PREFIX. ZENARIO_LOCATION_MANAGER_PREFIX. "locations AS loc
-				LEFT JOIN ". DB_NAME_PREFIX. ZENARIO_LOCATION_MANAGER_PREFIX. "locations_custom_data AS cd
+				FROM ". DB_PREFIX. ZENARIO_LOCATION_MANAGER_PREFIX. "locations AS loc
+				LEFT JOIN ". DB_PREFIX. ZENARIO_LOCATION_MANAGER_PREFIX. "locations_custom_data AS cd
 					ON cd.location_id = loc.id
 				WHERE loc.status = 'active'";
 		

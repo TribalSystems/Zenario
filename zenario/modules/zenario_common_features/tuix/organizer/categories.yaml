@@ -8,7 +8,7 @@ zenario__content:
             disable_grid_view: Yes
             no_items_message: No categories found.
             db_items:
-                table: '[[DB_NAME_PREFIX]]categories AS cat'
+                table: '[[DB_PREFIX]]categories AS cat'
                 custom_where_statement_top_level: WHERE cat.parent_id = 0
                 id_column: cat.id
             refiners:
@@ -43,8 +43,8 @@ zenario__content:
                     db_column: |
                         (
                             SELECT COUNT(DISTINCT c.id, c.type)
-                            FROM [[DB_NAME_PREFIX]]category_item_link AS cil
-                            INNER JOIN [[DB_NAME_PREFIX]]content_items AS c
+                            FROM [[DB_PREFIX]]category_item_link AS cil
+                            INNER JOIN [[DB_PREFIX]]content_items AS c
                                ON c.equiv_id = cil.equiv_id
                               AND c.type = cil.content_type
                               AND c.status NOT IN ('trashed','deleted')

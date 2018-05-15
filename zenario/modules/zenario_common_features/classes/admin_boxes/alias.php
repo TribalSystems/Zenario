@@ -44,22 +44,22 @@ class zenario_common_features__admin_boxes__alias extends ze\moduleBaseClass {
 		}
 		
 		//Load the alias
-		$box['tabs']['meta_data']['fields']['alias']['value'] =
+		$values['meta_data/alias'] =
 			ze\content::alias($box['key']['cID'], $box['key']['cType']);
-		$box['tabs']['meta_data']['fields']['lang_code_in_url']['value'] =
+		$values['meta_data/lang_code_in_url'] =
 			ze\row::get('content_items', 'lang_code_in_url', ['id' => $box['key']['cID'], 'type' => $box['key']['cType']]);
 		
 		if (ze::setting('translations_different_aliases')) {
-			$box['tabs']['meta_data']['fields']['update_translations']['value'] = 'update_this';
+			$values['meta_data/update_translations'] = 'update_this';
 			
 			//If this is a translation, only allow the translation's alias to be changed
 			if ($box['key']['equivId'] != $box['key']['cID']) {
-				$box['tabs']['meta_data']['fields']['update_translations']['readonly'] = true;
+				$fields['meta_data/update_translations']['readonly'] = true;
 			}
 			
 		} else {
-			$box['tabs']['meta_data']['fields']['update_translations']['value'] = 'update_all';
-			$box['tabs']['meta_data']['fields']['update_translations']['readonly'] = true;
+			$values['meta_data/update_translations'] = 'update_all';
+			$fields['meta_data/update_translations']['readonly'] = true;
 			
 			//If translations share an alias with the main content item,
 			//only allow the alias to be changed in the primary language.
@@ -68,10 +68,10 @@ class zenario_common_features__admin_boxes__alias extends ze\moduleBaseClass {
 			}
 		}
 		
-		$box['tabs']['meta_data']['fields']['lang_code_in_url']['values']['default']['label'] =
+		$fields['meta_data/lang_code_in_url']['values']['default']['label'] =
 			ze::setting('translations_hide_language_code')?
-				$box['tabs']['meta_data']['fields']['lang_code_in_url']['values']['default']['label__hide']
-			 :	$box['tabs']['meta_data']['fields']['lang_code_in_url']['values']['default']['label__show'];
+				$fields['meta_data/lang_code_in_url']['values']['default']['label__hide']
+			 :	$fields['meta_data/lang_code_in_url']['values']['default']['label__show'];
 		
 		
 		//If every language has a specific domain name, there's no point in showing the
@@ -80,16 +80,16 @@ class zenario_common_features__admin_boxes__alias extends ze\moduleBaseClass {
 		$langSpecificDomainsNotUsed = ze\row::exists('languages', ['domain' => '']);
 		
 		if ($langSpecificDomainsUsed && !$langSpecificDomainsNotUsed) {
-			$box['tabs']['meta_data']['fields']['lang_code_in_url']['hidden'] =
-			$box['tabs']['meta_data']['fields']['lang_code_in_url_dummy']['hidden'] = true;
+			$fields['meta_data/lang_code_in_url']['hidden'] =
+			$fields['meta_data/lang_code_in_url_dummy']['hidden'] = true;
 		}
 		
 		//Hide the language if there is only 1 enabled.
 		if (ze\lang::count() > 1) {
-			ze\contentAdm::getLanguageSelectListOptions($box['tabs']['meta_data']['fields']['language_id']);
-			$box['tabs']['meta_data']['fields']['language_id']['value'] = ze\content::langId($box['key']['cID'], $box['key']['cType']);
+			ze\contentAdm::getLanguageSelectListOptions($fields['meta_data/language_id']);
+			$values['meta_data/language_id'] = ze\content::langId($box['key']['cID'], $box['key']['cType']);
 		} else {
-			$box['tabs']['meta_data']['fields']['language_id']['hidden'] = true;
+			$fields['meta_data/language_id']['hidden'] = true;
 		}
 		
 		$box['title'] =

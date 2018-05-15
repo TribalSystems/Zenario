@@ -30,7 +30,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 //Look in the database for an up to date cache
 $sql = "
 	DELETE
-	FROM ". DB_NAME_PREFIX. "plugin_instance_store
+	FROM ". DB_PREFIX. "plugin_instance_store
 	WHERE is_cache = 1
 	  AND last_updated > NOW() - INTERVAL ". (int) $expiryTimeInSeconds. " SECOND
 	  AND method_name = '". \ze\escape::sql($methodName). "'

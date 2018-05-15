@@ -43,7 +43,7 @@ function renameModuleDirectory($oldName, $newName, $uninstallOldModule = false, 
 			'plugin_item_link', 'plugin_layout_link'
 		] as $table) {
 			$sql = "
-				UPDATE IGNORE ". DB_NAME_PREFIX. $table. " SET
+				UPDATE IGNORE ". DB_PREFIX. $table. " SET
 					module_id = ". (int) $newId. "
 				WHERE module_id = ". (int) $oldId;
 			ze\sql::update($sql);
@@ -109,7 +109,7 @@ function replaceModule($oldName, $newName) {
 			'plugin_item_link', 'plugin_layout_link'
 		] as $table) {
 			$sql = "
-				UPDATE IGNORE ". DB_NAME_PREFIX. $table. " SET
+				UPDATE IGNORE ". DB_PREFIX. $table. " SET
 					module_id = ". (int) $newId. "
 				WHERE module_id = ". (int) $oldId;
 			ze\sql::update($sql);
@@ -140,8 +140,8 @@ function replaceModulePlugins($oldName, $newName, $settingName, $settingValue) {
 	
 	if (($oldId = ze\module::id($oldName)) && ($newId = ze\module::id($newName))) {
 		$sql = "
-			UPDATE IGNORE ". DB_NAME_PREFIX. "nested_plugins np
-			INNER JOIN " . DB_NAME_PREFIX . "plugin_settings ps
+			UPDATE IGNORE ". DB_PREFIX. "nested_plugins np
+			INNER JOIN " . DB_PREFIX . "plugin_settings ps
 				ON np.id = ps.egg_id
 				AND ps.name = '" . ze\escape::sql($settingName) . "'
 			SET np.module_id = ". (int) $newId. "
@@ -249,7 +249,7 @@ if (ze\dbAdm::needRevision(41744)) {
 	] as $oldName => $newName) {
 		$sql = '
 			SELECT instance_id, name, egg_id, value
-			FROM ' . DB_NAME_PREFIX . 'plugin_settings
+			FROM ' . DB_PREFIX . 'plugin_settings
 			WHERE name = "' . ze\escape::sql($oldName) . '"';
 		$result = ze\sql::select($sql);
 		while ($row = ze\sql::fetchAssoc($result)) {
@@ -270,7 +270,7 @@ if (ze\dbAdm::needRevision(41744)) {
 		$oldPathName = 'assetwolf_' . $mode;
 		$sql = '
 			SELECT instance_id, name, egg_id
-			FROM ' . DB_NAME_PREFIX . 'plugin_settings
+			FROM ' . DB_PREFIX . 'plugin_settings
 			WHERE name LIKE "phrase.' . ze\escape::sql($oldPathName) . '%"';
 		$result = ze\sql::select($sql);
 		while ($row = ze\sql::fetchAssoc($result)) {
@@ -284,15 +284,151 @@ if (ze\dbAdm::needRevision(41744)) {
 
 //The zenario_translation_tools module is gone in verion 8 (it's been merged into the core).
 if (ze\dbAdm::needRevision(41920)) {
-	
 	renameModuleDirectory('zenario_translation_tools', false, true);
-	
 	ze\dbAdm::revision(41920);
 }
-
 
 //The zenario_companies_fea modules now needs the zenario_organization_manager running
 if (ze\dbAdm::needRevision(43630)) {
 	runNewModuleDependency('zenario_companies_fea', 'zenario_organization_manager');
 	ze\dbAdm::revision(43630);
+}
+
+//The zenario_storefront_physical_products_fea and zenario_storefront_documents_fea modules have been
+//merged into a single module: zenario_storefront_products_fea
+//so migrate their plugin settings then replace the modules.
+if (ze\dbAdm::needRevision(45191)) {
+	
+	//Update plugin settings for zenario_storefront_physical_products_fea
+	$sql = '
+		SELECT id AS egg_id, instance_id
+		FROM ' . DB_PREFIX . 'nested_plugins
+		WHERE module_id = (
+			SELECT id
+			FROM ' . DB_PREFIX . 'modules
+			WHERE class_name = "zenario_storefront_physical_products_fea"
+		)';
+	$result = ze\sql::select($sql);
+	while ($plugin = ze\sql::fetchAssoc($result)) {
+		$settings = [];
+		$sql = '
+			SELECT name, value
+			FROM ' . DB_PREFIX . 'plugin_settings
+			WHERE instance_id = ' . (int)$plugin['instance_id'] . '
+			AND egg_id = ' . (int)$plugin['egg_id'];
+		$result2 = ze\sql::select($sql);
+		while ($setting = ze\sql::fetchAssoc($result2)) {
+			$settings[$setting['name']] = $setting['value'];
+		}
+	
+		$vals = [];
+		$keys = ['instance_id' => $plugin['instance_id'], 'egg_id' => $plugin['egg_id']];
+	
+		$keys['name'] = 'product_type';
+		$vals = ['value' => 'physical_product'];
+		ze\row::set('plugin_settings', $vals, $keys);
+	
+		$keys['name'] = 'enable.column__thumbnail_image';
+		$vals = ['name' => 'list_products__column__thumbnail_image'];
+		ze\row::update('plugin_settings', $vals, $keys);
+	
+		$keys['name'] = 'enable.add_product_to_basket';
+		$vals = ['name' => 'enable.buy_product'];
+		ze\row::update('plugin_settings', $vals, $keys);
+	
+		$keys['name'] = 'price_sales_tax';
+		$vals = ['value' => 'inc_tax'];
+		ze\row::set('plugin_settings', $vals, $keys);
+	
+		if ($settings['mode'] == 'list_products') {
+			$keys['name'] = 'enable.buy_product';
+			$vals = ['value' => '1'];
+			ze\row::set('plugin_settings', $vals, $keys);
+		}
+	}
+	renameModuleDirectory('zenario_storefront_physical_products_fea', 'zenario_storefront_products_fea', true);
+	
+	
+	//Update plugin settings for zenario_storefront_documents_fea
+	$sql = '
+		SELECT id AS egg_id, instance_id
+		FROM ' . DB_PREFIX . 'nested_plugins
+		WHERE module_id = (
+			SELECT id
+			FROM ' . DB_PREFIX . 'modules
+			WHERE class_name = "zenario_storefront_documents_fea"
+		)';
+	$result = ze\sql::select($sql);
+	while ($plugin = ze\sql::fetchAssoc($result)) {
+		$settings = [];
+		$sql = '
+			SELECT name, value
+			FROM ' . DB_PREFIX . 'plugin_settings
+			WHERE instance_id = ' . (int)$plugin['instance_id'] . '
+			AND egg_id = ' . (int)$plugin['egg_id'];
+		$result2 = ze\sql::select($sql);
+		while ($setting = ze\sql::fetchAssoc($result2)) {
+			$settings[$setting['name']] = $setting['value'];
+		}
+	
+		$vals = [];
+		$keys = ['instance_id' => $plugin['instance_id'], 'egg_id' => $plugin['egg_id']];
+	
+		$keys['name'] = 'product_type';
+		$vals = ['value' => 'document'];
+		ze\row::set('plugin_settings', $vals, $keys);
+	
+		if ($settings['mode'] == 'list_storefront_documents') {
+			$keys['name'] = 'mode';
+			$vals = ['value' => 'list_products'];
+			ze\row::set('plugin_settings', $vals, $keys);
+		} elseif ($settings['mode'] == 'view_storefront_document') {
+			$keys['name'] = 'mode';
+			$vals = ['value' => 'view_product'];
+			ze\row::set('plugin_settings', $vals, $keys);
+		
+			$keys['name'] = 'show_title';
+			$vals = ['value' => '1'];
+			ze\row::set('plugin_settings', $vals, $keys);
+		
+			$keys['name'] = 'title_tags';
+			$vals = ['value' => 'h2'];
+			ze\row::set('plugin_settings', $vals, $keys);
+		}
+	
+		$keys['name'] = 'enable.view_storefront_document';
+		$vals = ['value' => 'enable.view_document'];
+		ze\row::update('plugin_settings', $vals, $keys);
+	
+		$keys['name'] = 'enable.buy_storefront_document';
+		$vals = ['value' => 'enable.buy_product'];
+		ze\row::update('plugin_settings', $vals, $keys);
+	
+		$keys['name'] = 'list_products__column__thumbnail_image';
+		$vals = ['value' => '0'];
+		ze\row::set('plugin_settings', $vals, $keys);
+	
+	}
+	renameModuleDirectory('zenario_storefront_documents_fea', 'zenario_storefront_products_fea', true);
+	
+	//Update nest paths
+	$count = ze\sql::numRows(ze\sql::select('SHOW COLUMNS FROM ' . DB_PREFIX . 'nested_paths WHERE Field = "command"'));
+	if ($count == 1) {
+		$col = 'command';
+	} else {
+		$col = 'commands';
+	}
+	$sql = '
+		UPDATE ' . DB_PREFIX . 'nested_paths
+		SET `' . ze\escape::sql($col) . '` = "view_product"
+		WHERE `' . ze\escape::sql($col) . '` = "view_storefront_document"';
+	ze\sql::update($sql);
+	
+	ze\dbAdm::revision(45191);
+}
+
+//The zenario_salesforce_api_form_integration modules now needs the zenario_crm_form_integration running
+if (ze\dbAdm::needRevision(45351)) {
+	runNewModuleDependency('zenario_salesforce_api_form_integration', 'zenario_crm_form_integration');
+	ze\dbAdm::revision(45351);
 }

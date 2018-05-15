@@ -50,14 +50,37 @@ if ($_SESSION['destURL'] ?? false) {
 	}
 }
 
+//Follow redirect rules
 if ($showWelcomePage
-	&& ( $this->getCIDAndCTypeFromSetting($cID, $cType, 'welcome_page'))
 	&& ( $this->setting('show_welcome_page') == '_ALWAYS'
 	||  ($this->setting('show_welcome_page') == '_IF_NO_PREVIOUS_PAGE' && !$validDestURL)
 	||  ($this->setting('show_welcome_page') == '_IF_NO_PREVIOUS_PAGE' && ($privacy == 'public')))
 ) {
+	//..Get page according to redirect rules
+	$allowRoleRedirectRules = ze\module::inc('zenario_organization_manager');
+	for ($i = 1; $i <= $this->setting('number_of_redirect_rules'); $i++) {
+		if ($this->setting('redirect_rule_type__' . $i) == 'group') {
+			if (($groupId = $this->setting('redirect_rule_group__' . $i)) && ze\user::isInGroup($groupId)) {
+				$this->getCIDAndCTypeFromSetting($cID, $cType, 'redirect_rule_content_item__' . $i);
+				break;
+			}
+		} elseif ($this->setting('redirect_rule_type__' . $i) == 'role') {
+			if ($allowRoleRedirectRules 
+				&& ($roleId = $this->setting('redirect_rule_role__' . $i)) 
+				&& zenario_organization_manager::getUserRoleLocations(ze\user::id(), $roleId)
+			) {
+				$this->getCIDAndCTypeFromSetting($cID, $cType, 'redirect_rule_content_item__' . $i);
+				break;
+			}
+		}
+	}
+	//..Fallback page
+	if (!$cID && !$cType) {
+		$this->getCIDAndCTypeFromSetting($cID, $cType, 'welcome_page');
+	}
 	ze\content::langEquivalentItem($cID, $cType);
 	$this->headerRedirect($this->linkToItem($cID, $cType, true));
+	
 //Otherwise attempt to redirect the user back where they came from
 } elseif ($redirectBackIfPossible && $validDestURL && ($redirectRegardlessOfPerms || $this->checkPermsOnDestURL())) {
 	$this->headerRedirect($_SESSION['destURL']);

@@ -575,7 +575,7 @@ properties:
         type: object
         description: >
             For plugins that are designed to work with the nest conductor, you should define a list
-            of commands that your plugin issues.
+            of commands/modes that your plugin issues.
             
             This list is used to pre-populate the list of values used when creating a path in the conductor.
             
@@ -598,3 +598,38 @@ properties:
                         
                         If not specified, the CMS will assume that it can be used from mode,
                         or that your plugin does not use different modes.
+                
+                request_vars:
+                    type: object
+                    description: >
+                        For plugins that are designed to work with the nest conductor, and need/use certain variables
+                        in the request, you should define a list of these variables.
+            
+                        You should define them on a mode-by-mode basis - i.e. this should be an array of arrays.
+            
+                        You will need to increment your plugin's revision number if you make a change to the vars here.
+                    additionalProperties:
+                        type: string
+                        description: >
+                            A name of a request variable.
+                
+                hierarchical_var:
+                    type: string
+                    description: >
+                        If your command is hierarchical (i.e. it can be repeated through many levels of hierarchical),
+                        you should specify the variable that is used for this in this property (e.g. dataPoolId).
+            
+                        You will need to increment your plugin's revision number if you make a change to this property.
+                
+                able_to_generate_smart_breadcrumbs:
+                    type: boolean
+                    description: >
+                        Set this if your plugin is able to generate smart-breadcrumbs in this mode.
+            
+                        You will need to increment your plugin's revision number if you make a change to this property.
+                
+                hidden:
+                    type: boolean
+                    description: >
+                        You can set this property if you wish to hide an option from the picker,
+                        but still define options for it if someone manually types it.

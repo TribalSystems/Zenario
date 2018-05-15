@@ -30,7 +30,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 //Look up the slots on the page
 $sql = "
 	SELECT slot_name
-	FROM ". DB_NAME_PREFIX. "template_slot_link
+	FROM ". DB_PREFIX. "template_slot_link
 	WHERE family_name = '". \ze\escape::sql(\ze::$templateFamily). "'
 	  AND file_base_name = '". \ze\escape::sql(\ze::$templateFileBaseName). "'";
 $result = \ze\sql::select($sql);
@@ -54,7 +54,7 @@ foreach (\ze::$slotContents as $slotName => &$details) {
 //Remove any missing slots from the database
 foreach($missingSlots as $slotName) {
 	$sql = "
-		DELETE FROM ". DB_NAME_PREFIX. "template_slot_link
+		DELETE FROM ". DB_PREFIX. "template_slot_link
 		WHERE slot_name = '". \ze\escape::sql($slotName). "'
 		  AND family_name = '". \ze\escape::sql(\ze::$templateFamily). "'
 		  AND file_base_name = '". \ze\escape::sql(\ze::$templateFileBaseName). "'";
@@ -64,7 +64,7 @@ foreach($missingSlots as $slotName) {
 //Add any new slots to the database
 foreach($newSlots as $slotName) {
 	$sql = "
-		REPLACE INTO ". DB_NAME_PREFIX. "template_slot_link SET
+		REPLACE INTO ". DB_PREFIX. "template_slot_link SET
 			slot_name = '". \ze\escape::sql($slotName). "',
 			family_name = '". \ze\escape::sql(\ze::$templateFamily). "',
 			file_base_name = '". \ze\escape::sql(\ze::$templateFileBaseName). "'";

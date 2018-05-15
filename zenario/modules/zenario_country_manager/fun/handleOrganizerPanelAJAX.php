@@ -45,13 +45,13 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 					ze\row::delete(ZENARIO_COUNTRY_MANAGER_PREFIX . "country_manager_countries", ['id' => $id]);					
 
 					$sql = "DELETE FROM "
-								. DB_NAME_PREFIX . "visitor_phrases
+								. DB_PREFIX . "visitor_phrases
 							WHERE
 									module_class_name = 'zenario_country_manager'
 								AND code IN (SELECT 
 												name 
 											FROM " 
-												. DB_NAME_PREFIX . ZENARIO_COUNTRY_MANAGER_PREFIX . "country_manager_regions 
+												. DB_PREFIX . ZENARIO_COUNTRY_MANAGER_PREFIX . "country_manager_regions 
 											WHERE
 												country_id = '" . ze\escape::sql($id) . "'
 											)";

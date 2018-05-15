@@ -6,13 +6,13 @@ zenario__locations:
             title: Sectors
             view_mode: list
             db_items:
-                table: '[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]sectors AS s'
+                table: '[[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]sectors AS s'
                 id_column: s.id
                 client_side: Yes
             default_sort_column: path
             refiners:
                 location_sectors:
-                    sql: 's.id IN (SELECT sector_id FROM [[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]location_sector_score_link WHERE location_id IN [[REFINER_IDS]])'
+                    sql: 's.id IN (SELECT sector_id FROM [[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]location_sector_score_link WHERE location_id IN [[REFINER_IDS]])'
                 sub_sectors:
                     sql: 's.parent_id IN ([[REFINER_IDS]])'
             columns:
@@ -21,7 +21,7 @@ zenario__locations:
                     format: yes_or_no
                     db_column: lssl.sticky_flag
                     table_join: |
-                        [[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]location_sector_score_link AS lssl
+                        [[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]location_sector_score_link AS lssl
                                                     ON lssl.sector_id = s.id
                                                     AND lssl.location_id = [[REFINER__LOCATION_SECTORS]]
                     show_by_default: Yes
@@ -40,14 +40,14 @@ zenario__locations:
                 name:
                     title: Sector name
                     db_column: s.name
-                    table_join: '[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]sectors AS ps ON s.parent_id = ps.id'
+                    table_join: '[[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]sectors AS ps ON s.parent_id = ps.id'
                     searchable: Yes
                     width: medium
                 score:
                     title: Score
                     db_column: lssl.score_id
                     table_join: |
-                        [[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]location_sector_score_link AS lssl
+                        [[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]location_sector_score_link AS lssl
                                                     ON lssl.sector_id = s.id
                                                     AND lssl.location_id = [[REFINER__LOCATION_SECTORS]]
                     show_by_default: Yes

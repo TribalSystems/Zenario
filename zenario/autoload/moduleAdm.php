@@ -206,10 +206,10 @@ class moduleAdm {
 			return \ze\admin::phrase('_ANOTHER_VERSION_OF_PLUGIN_IS_INSTALLED');
 	
 		} elseif (!\ze\moduleAdm::loadDescription($module['class_name'], $desc)) {
-			return \ze\admin::phrase("This Module's description file is missing or not valid.");
+			return \ze\admin::phrase("This module's description file is missing or not valid.");
 	
 		} elseif (empty($desc['required_cms_version'])) {
-			return \ze\admin::phrase("This Module's description file does not state it's required version number.");
+			return \ze\admin::phrase("This module's description file does not state its required version number.");
 	
 		} elseif (version_compare($desc['required_cms_version'], ZENARIO_MAJOR_VERSION. '.'. ZENARIO_MINOR_VERSION, '>')) {
 			return \ze\admin::phrase('Sorry, this Module requires Zenario [[version]] or later to run. Please update your copy of the CMS.', ['version' => $desc['required_cms_version']]);
@@ -224,7 +224,7 @@ class moduleAdm {
 				$inEditions = \ze\ray::valuesToKeys($editions);
 			
 				if (empty($inEditions[$edition])) {
-					return \ze\admin::phrase('In order to start this module, your site needs to be upgraded to Zenario [[0]].', $editions);
+					return \ze\admin::phrase('In order to start this module, your site needs to be upgraded to Zenario [[0]]. This is determined in the zenario_custom/site_description.yaml file. Please contact your system adminstrator or hosting provider to request this change.', $editions);
 				}
 			}
 		
@@ -245,7 +245,7 @@ class moduleAdm {
 						if (!empty($installation_status)) {
 							return $installation_status;
 						} else {
-							return \ze\admin::phrase("This Module cannot be run because the checkInstallationCanProceed() function in its installation_check.php file returned false.");
+							return \ze\admin::phrase("This module cannot be run because the checkInstallationCanProceed() function in its installation_check.php file returned false.");
 						}
 					}
 				}
@@ -343,7 +343,7 @@ class moduleAdm {
 			
 				$foundModules[$moduleName] = true;
 				$sql = "
-					INSERT INTO ". DB_NAME_PREFIX. "modules SET
+					INSERT INTO ". DB_PREFIX. "modules SET
 						class_name = '". \ze\escape::sql($moduleName). "',
 						vlp_class = '". \ze\escape::sql($desc['vlp_class_name']). "',
 						display_name = '". \ze\escape::sql($desc['display_name']). "',
@@ -405,7 +405,7 @@ class moduleAdm {
 	
 		//Mark modules that are not in the system
 		if (!$dbUpdateSafeMode) {
-			foreach (\ze\row::getArray('modules', 'class_name', []) as $id => $moduleName) {
+			foreach (\ze\row::getValues('modules', 'class_name', []) as $id => $moduleName) {
 				if (!isset($foundModules[$moduleName])) {
 					\ze\row::set('modules', ['missing' => 1], $id);
 				}
@@ -425,7 +425,7 @@ class moduleAdm {
 		//Check that the core does not depend on the module
 		$sql = "
 			SELECT 1
-			FROM ". DB_NAME_PREFIX. "module_dependencies
+			FROM ". DB_PREFIX. "module_dependencies
 			WHERE dependency_class_name = '". \ze\escape::sql($module['class_name']). "'
 			  AND module_id = 0";
 		$result = \ze\sql::select($sql);
@@ -440,7 +440,7 @@ class moduleAdm {
 		//Check that the module has no other modules that are inheriting from this one
 		$sql = "
 			SELECT module_id, module_class_name
-			FROM ". DB_NAME_PREFIX. "module_dependencies
+			FROM ". DB_PREFIX. "module_dependencies
 			WHERE dependency_class_name = '". \ze\escape::sql($module['class_name']). "'
 			  AND `type` = 'dependency'";
 		$result = \ze\sql::select($sql);
@@ -463,7 +463,7 @@ class moduleAdm {
 		//Check that the module has no dependencies
 		$sql = "
 			SELECT module_class_name
-			FROM ". DB_NAME_PREFIX. "module_dependencies
+			FROM ". DB_PREFIX. "module_dependencies
 			WHERE dependency_class_name = '". \ze\escape::sql($module['class_name']). "'
 			  AND `type` = 'dependency'";
 		$result = \ze\sql::select($sql);
@@ -505,10 +505,10 @@ class moduleAdm {
 
 		foreach(['job_logs'] as $table) {
 			$sql = "
-				DELETE FROM ". DB_NAME_PREFIX. $table. "
+				DELETE FROM ". DB_PREFIX. $table. "
 				WHERE job_id IN (
 					SELECT id
-					FROM ". DB_NAME_PREFIX. "jobs
+					FROM ". DB_PREFIX. "jobs
 					WHERE job_id = ". (int) $moduleId. "
 				)";
 			\ze\sql::update($sql);
@@ -526,7 +526,7 @@ class moduleAdm {
 
 		//Attempt to delete any module tables or views
 		$prefix2 = "mod". (int) $moduleId. "_";
-		$prefix = DB_NAME_PREFIX. $prefix2;
+		$prefix = DB_PREFIX. $prefix2;
 		$prefixLen = strlen($prefix);
 
 		$sql = "
@@ -543,14 +543,14 @@ class moduleAdm {
 		//Delete any datasets that used any of these tables
 		$sql = "
 			DELETE cd.*, cdt.*, cdf.*, fv.*, vl.*
-			FROM ". DB_NAME_PREFIX. "custom_datasets AS cd
-			LEFT JOIN ". DB_NAME_PREFIX. "custom_dataset_tabs AS cdt
+			FROM ". DB_PREFIX. "custom_datasets AS cd
+			LEFT JOIN ". DB_PREFIX. "custom_dataset_tabs AS cdt
 			   ON cdt.dataset_id = cd.id
-			LEFT JOIN ". DB_NAME_PREFIX. "custom_dataset_fields AS cdf
+			LEFT JOIN ". DB_PREFIX. "custom_dataset_fields AS cdf
 			   ON cdf.dataset_id = cd.id
-			LEFT JOIN ". DB_NAME_PREFIX. "custom_dataset_field_values AS fv
+			LEFT JOIN ". DB_PREFIX. "custom_dataset_field_values AS fv
 			   ON fv.field_id = cdf.id
-			LEFT JOIN ". DB_NAME_PREFIX. "custom_dataset_values_link AS vl
+			LEFT JOIN ". DB_PREFIX. "custom_dataset_values_link AS vl
 			   ON vl.dataset_id = cd.id
 			WHERE cd.table LIKE '". $prefix2. "%'";
 		\ze\sql::update($sql);
@@ -588,7 +588,7 @@ class moduleAdm {
 
 		//Delete any records of the module having been installed
 		$sql = "
-			DELETE FROM ". DB_NAME_PREFIX. "local_revision_numbers
+			DELETE FROM ". DB_PREFIX. "local_revision_numbers
 			WHERE path LIKE '%modules/". \ze\escape::like($module['class_name']). "'
 			   OR path LIKE '%modules/". \ze\escape::like($module['class_name']). "/db_updates'
 			   OR path LIKE '%plugins/". \ze\escape::like($module['class_name']). "'
@@ -647,7 +647,7 @@ class moduleAdm {
 		}
 
 		$sql = "
-			UPDATE ". DB_NAME_PREFIX. "modules SET
+			UPDATE ". DB_PREFIX. "modules SET
 				vlp_class = '". \ze\escape::sql($desc['vlp_class_name']). "',
 				display_name = '". \ze\escape::sql($desc['display_name']). "',
 				default_framework = '". \ze\escape::sql($desc['default_framework']). "',
@@ -664,7 +664,7 @@ class moduleAdm {
 
 		//Remove any existing dependencies
 		$sql = "
-			DELETE FROM ". DB_NAME_PREFIX. "module_dependencies
+			DELETE FROM ". DB_PREFIX. "module_dependencies
 			WHERE module_id = '". (int) $moduleId. "'";
 		\ze\sql::update($sql);
 
@@ -700,7 +700,7 @@ class moduleAdm {
 			foreach ($modules as $module) {
 				if ($module && $module != $moduleClassName && $module != $moduleClassName) {
 					$sql = "
-						INSERT INTO ". DB_NAME_PREFIX. "module_dependencies SET
+						INSERT INTO ". DB_PREFIX. "module_dependencies SET
 							module_id = '". (int) $moduleId. "',
 							module_class_name = '". \ze\escape::sql($moduleClassName). "',
 							dependency_class_name = '". \ze\escape::sql(trim($module)). "',
@@ -762,7 +762,7 @@ class moduleAdm {
 
 		//Remove any existing signals
 		$sql = "
-			DELETE FROM ". DB_NAME_PREFIX. "signals
+			DELETE FROM ". DB_PREFIX. "signals
 			WHERE module_id = '". (int) $moduleId. "'";
 		\ze\sql::update($sql);
 
@@ -771,7 +771,7 @@ class moduleAdm {
 			foreach($desc['signals'] as $signal) {
 				if (!empty($signal['name'])) {
 					$sql = "
-						INSERT INTO ". DB_NAME_PREFIX. "signals SET
+						INSERT INTO ". DB_PREFIX. "signals SET
 							signal_name = '". \ze\escape::sql($signal['name']). "',
 							module_id = '". (int) $moduleId. "',
 							module_class_name = '". \ze\escape::sql($moduleClassName). "',
@@ -790,7 +790,7 @@ class moduleAdm {
 				if (!empty($job['name'])) {
 					$jobs .= ($jobs? ',' : ''). "'". \ze\escape::sql($job['name']). "'";
 					$sql = "
-						INSERT IGNORE INTO ". DB_NAME_PREFIX. "jobs SET
+						INSERT IGNORE INTO ". DB_PREFIX. "jobs SET
 							manager_class_name = '". \ze\escape::sql((($job['manager_class_name'] ?? false) ?: 'zenario_scheduled_task_manager')). "',
 							job_name = '". \ze\escape::sql($job['name']). "',
 							module_id = '". (int) $moduleId. "',
@@ -816,7 +816,7 @@ class moduleAdm {
 
 		//Remove any unused jobs
 		$innerSql = "
-			FROM ". DB_NAME_PREFIX. "jobs
+			FROM ". DB_PREFIX. "jobs
 			WHERE module_id = ". (int) $moduleId;
 
 		if ($jobs) {
@@ -825,7 +825,7 @@ class moduleAdm {
 		}
 
 		$sql = "
-			DELETE FROM ". DB_NAME_PREFIX. "job_logs
+			DELETE FROM ". DB_PREFIX. "job_logs
 			WHERE job_id IN (
 				SELECT id
 				". $innerSql. "
@@ -923,7 +923,7 @@ class moduleAdm {
 													//if the default value is non-empty, and the value has never been saved before.
 													if ($value) {
 														$sql = "
-															INSERT IGNORE INTO ". DB_NAME_PREFIX. "user_perm_settings SET
+															INSERT IGNORE INTO ". DB_PREFIX. "user_perm_settings SET
 																name = '". \ze\escape::sql($perm). "',
 																value = '". \ze\escape::sql((string) $value). "'";
 														\ze\sql::update($sql);
@@ -932,7 +932,7 @@ class moduleAdm {
 												} else {
 													//For site settings, update the default values.
 													$sql = "
-														INSERT INTO ". DB_NAME_PREFIX. "site_settings SET
+														INSERT INTO ". DB_PREFIX. "site_settings SET
 															name = '". \ze\escape::sql($name). "',
 															value = NULL,
 															default_value = '". \ze\escape::sql((string) $value). "'
@@ -956,7 +956,12 @@ class moduleAdm {
 		if ($specialPageChanges) {
 			\ze\contentAdm::addNeededSpecialPages();
 		}
-
+		
+		
+		//Recalculate any request vars set by this module's plugins
+		if (!empty($desc['path_commands'])) {
+			\ze\pluginAdm::setSlideRequestVars(false, false, $moduleId);
+		}
 
 		return true;
 	}
@@ -1022,7 +1027,7 @@ class moduleAdm {
 				 && !empty($type['content_type_name_en'])) {
 			
 					$sql = "
-						INSERT INTO ". DB_NAME_PREFIX. "content_types SET
+						INSERT INTO ". DB_PREFIX. "content_types SET
 							content_type_id = '". \ze\escape::sql($type['content_type_id']). "',
 							content_type_name_en = '". \ze\escape::sql($type['content_type_name_en']). "',
 							content_type_plural_en = '". \ze\escape::sql($type['content_type_plural_en'] ?? ''). "',
@@ -1047,12 +1052,12 @@ class moduleAdm {
 						//Find an HTML Layout to copy; try to pick the most popular one, otherwise just pick the first one
 						$sql = "
 							SELECT t.*
-							FROM ". DB_NAME_PREFIX. "content_items AS c
-							INNER JOIN ". DB_NAME_PREFIX. "content_item_versions AS v
+							FROM ". DB_PREFIX. "content_items AS c
+							INNER JOIN ". DB_PREFIX. "content_item_versions AS v
 							   ON v.id = c.id
 							  AND v.type = c.type
 							  AND v.version = c.admin_version
-							INNER JOIN ". DB_NAME_PREFIX. "layouts AS t
+							INNER JOIN ". DB_PREFIX. "layouts AS t
 							   ON t.layout_id = v.layout_id
 							  AND t.content_type = v.type
 							WHERE c.status NOT IN ('hidden','trashed','deleted')

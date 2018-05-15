@@ -10,8 +10,8 @@ zenario__content:
             
             db_items:
                 table: |
-                    [[DB_NAME_PREFIX]]files AS f
-                    INNER JOIN [[DB_NAME_PREFIX]]custom_dataset_files_link AS cdfl
+                    [[DB_PREFIX]]files AS f
+                    INNER JOIN [[DB_PREFIX]]custom_dataset_files_link AS cdfl
                        ON cdfl.file_id = f.id
                 id_column: f.id
                 where_statement: |

@@ -67,7 +67,7 @@ if (ze\dbAdm::needRevision(31200)) {
 
 		$sql = "
 			SELECT id, location, path, filename, data, mime_type, width, height
-			FROM ". DB_NAME_PREFIX. "files
+			FROM ". DB_PREFIX. "files
 			WHERE mime_type IN ('image/gif', 'image/png', 'image/jpeg')
 			  AND width != 0
 			  AND height != 0
@@ -92,7 +92,7 @@ if (ze\dbAdm::needRevision(31200)) {
 	
 			ze\file::resizeImageString($img['data'], $img['mime_type'], $img['width'], $img['height'], $c[3], $c[4]);
 			$img['data'] = "
-				UPDATE ". DB_NAME_PREFIX. "files SET
+				UPDATE ". DB_PREFIX. "files SET
 					`". ze\escape::sql($c[0]). "` = '". ze\escape::sql($img['data']). "',
 					`". ze\escape::sql($c[1]). "` = ". (int) $img['width']. ",
 					`". ze\escape::sql($c[2]). "` = ". (int) $img['height']. "
@@ -124,7 +124,7 @@ if (ze\dbAdm::needRevision(36380)) {
 if (ze\dbAdm::needRevision(39440)) {
 	$sql = "
 		SELECT *
-		FROM ". DB_NAME_PREFIX. "plugin_settings
+		FROM ". DB_PREFIX. "plugin_settings
 		WHERE name = 'other_modes'
 		  AND `value` != ''
 		  AND `value` IS NOT NULL";
@@ -149,7 +149,7 @@ if (ze\dbAdm::needRevision(40190)) {
 			$redirects = explode(',', $document['short_checksum_list']);
 			foreach ($redirects as $path) {
 				ze\sql::update('
-					INSERT IGNORE INTO ' . DB_NAME_PREFIX . 'document_public_redirects (`document_id`, `path`) 
+					INSERT IGNORE INTO ' . DB_PREFIX . 'document_public_redirects (`document_id`, `path`) 
 					VALUES (' . (int)$document['id']. ', "' . ze\escape::sql($path) . '")'
 				);
 			}
@@ -157,7 +157,7 @@ if (ze\dbAdm::needRevision(40190)) {
 	}
 	
 	ze\sql::update('
-		ALTER TABLE `'. DB_NAME_PREFIX. 'documents`
+		ALTER TABLE `'. DB_PREFIX. 'documents`
 		DROP COLUMN `short_checksum_list`'
 	);
 
@@ -167,12 +167,12 @@ if (ze\dbAdm::needRevision(40190)) {
 //Correct a bug where uploading an image into a nest did not flag the image as being used.
 if (ze\dbAdm::needRevision(40670)) {
 	$sql = "
-		SELECT id, content_id, content_type, content_version
-		FROM ". DB_NAME_PREFIX. "plugin_instances
+		SELECT id, content_id, content_type, content_version, is_nest, is_slideshow
+		FROM ". DB_PREFIX. "plugin_instances
 		WHERE content_id = 0
 		  AND module_id IN (
 			SELECT module_id
-			FROM ". DB_NAME_PREFIX. "modules
+			FROM ". DB_PREFIX. "modules
 			WHERE class_name IN ('zenario_plugin_nest', 'zenario_slideshow')
 		)";
 	
@@ -206,16 +206,16 @@ if (ze\dbAdm::needRevision(42450)) {
 					np.slide_num,
 					np.cols,
 					GROUP_CONCAT(ps.value ORDER BY ps.name SEPARATOR '`') AS settings
-				FROM ". DB_NAME_PREFIX. "plugin_instances AS pi
-				INNER JOIN ". DB_NAME_PREFIX. "nested_plugins AS np
+				FROM ". DB_PREFIX. "plugin_instances AS pi
+				INNER JOIN ". DB_PREFIX. "nested_plugins AS np
 				   ON np.instance_id = pi.id
-				  AND np.module_id  = (SELECT id FROM ". DB_NAME_PREFIX. "modules WHERE class_name = 'zenario_breadcrumbs')
-				INNER JOIN ". DB_NAME_PREFIX. "plugin_settings AS ps
+				  AND np.module_id  = (SELECT id FROM ". DB_PREFIX. "modules WHERE class_name = 'zenario_breadcrumbs')
+				INNER JOIN ". DB_PREFIX. "plugin_settings AS ps
 				   ON ps.instance_id = pi.id
 				  AND ps.egg_id = np.id
 				  AND ps.name IN ('add_conductor_slides', 'breadcrumb_trail', 'breadcrumb_trail_separator', 'menu_section')
 				WHERE pi.content_id = 0
-				  AND pi.module_id = (SELECT id FROM ". DB_NAME_PREFIX. "modules WHERE class_name = 'zenario_plugin_nest')
+				  AND pi.module_id = (SELECT id FROM ". DB_PREFIX. "modules WHERE class_name = 'zenario_plugin_nest')
 				GROUP BY
 					pi.id,
 					np.id,
@@ -255,7 +255,7 @@ if (ze\dbAdm::needRevision(42450)) {
 					
 					//Remove the old breadcrumb plugins
 					foreach (ze\ray::explodeAndTrim($row['eggs'], true) as $eggId) {
-						zenario_plugin_nest::removePlugin('zenario_plugin_nest', $eggId, $row['instance_id']);
+						zenario_plugin_nest::removePlugin($eggId, $row['instance_id']);
 					}
 				}
 			}
@@ -277,8 +277,8 @@ if (ze\dbAdm::needRevision(42460)) {
 			cc.name,
 			cc.value AS codename,
 			ct.value AS thing
-		FROM ". DB_NAME_PREFIX. "plugin_settings AS cc
-		INNER JOIN ". DB_NAME_PREFIX. "plugin_settings AS ct
+		FROM ". DB_PREFIX. "plugin_settings AS cc
+		INNER JOIN ". DB_PREFIX. "plugin_settings AS ct
 		   ON ct.instance_id = cc.instance_id
 		  AND ct.egg_id = cc.egg_id
 		  AND SUBSTR(ct.name, 1, 6) = SUBSTR(cc.name, 1, 6)
@@ -302,7 +302,7 @@ if (ze\dbAdm::needRevision(42460)) {
 			//Look for all of the properties saved for this column or button
 			$sql = "
 				SELECT name, `value`
-				FROM ". DB_NAME_PREFIX. "plugin_settings
+				FROM ". DB_PREFIX. "plugin_settings
 				WHERE instance_id = ". (int) $row['instance_id']. "
 				  AND egg_id = ". (int) $row['egg_id']. "
 				  AND name LIKE '". ze\escape::like($prefix). "%'";
@@ -355,7 +355,7 @@ if (ze\dbAdm::needRevision(42460)) {
 if (ze\dbAdm::needRevision(43250)) {
 	
 	//Look for all grid layouts
-	foreach (ze\row::getArray(
+	foreach (ze\row::getAssocs(
 		'layouts',
 		['layout_id', 'family_name', 'file_base_name'],
 		['family_name' => 'grid_templates']
@@ -417,23 +417,23 @@ if (ze\dbAdm::needRevision(43720)) {
 		SELECT
 			mn_ol.id,
 			mn_dl.id
-		FROM ". DB_NAME_PREFIX. "menu_nodes AS mn_dl
-		INNER JOIN ". DB_NAME_PREFIX. "menu_text AS mt_dl
+		FROM ". DB_PREFIX. "menu_nodes AS mn_dl
+		INNER JOIN ". DB_PREFIX. "menu_text AS mt_dl
 		   ON mt_dl.menu_id = mn_dl.id
 		  AND mt_dl.language_id = '". ze\escape::sql(ze::$defaultLang). "'
-		LEFT JOIN ". DB_NAME_PREFIX. "menu_text AS mt_dl_null
+		LEFT JOIN ". DB_PREFIX. "menu_text AS mt_dl_null
 		   ON mt_dl_null.menu_id = mn_dl.id
 		  AND mt_dl_null.language_id != '". ze\escape::sql(ze::$defaultLang). "'
 
-		INNER JOIN ". DB_NAME_PREFIX. "menu_nodes AS mn_ol
+		INNER JOIN ". DB_PREFIX. "menu_nodes AS mn_ol
 		   ON mn_ol.equiv_id = mn_dl.equiv_id
 		  AND mn_ol.content_type = mn_dl.content_type
 		  AND mn_ol.section_id = mn_dl.section_id
 		  AND mn_ol.parent_id = mn_dl.parent_id
-		INNER JOIN ". DB_NAME_PREFIX. "menu_text AS mt_ol
+		INNER JOIN ". DB_PREFIX. "menu_text AS mt_ol
 		   ON mt_ol.menu_id = mn_ol.id
 		  AND mt_ol.language_id != '". ze\escape::sql(ze::$defaultLang). "'
-		LEFT JOIN ". DB_NAME_PREFIX. "menu_text AS mt_ol_null
+		LEFT JOIN ". DB_PREFIX. "menu_text AS mt_ol_null
 		   ON mt_ol_null.menu_id = mn_ol.id
 		  AND mt_ol_null.language_id != mt_ol.language_id
 
@@ -460,8 +460,8 @@ if (ze\dbAdm::needRevision(43720)) {
 if (ze\dbAdm::needRevision(44260)) {
 	
 	$sql = "
-		SELECT id, content_id, content_type, content_version
-		FROM ". DB_NAME_PREFIX. "plugin_instances
+		SELECT id, content_id, content_type, content_version, is_nest, is_slideshow
+		FROM ". DB_PREFIX. "plugin_instances
 		WHERE content_id = 0";
 	
 	$result = ze\sql::select($sql);
@@ -472,8 +472,10 @@ if (ze\dbAdm::needRevision(44260)) {
 	ze\dbAdm::revision(44260);
 }
 
+
 //Migrate data after removing a setting.
-if (ze\dbAdm::needRevision(44269)) {
+//(N.b. this was added in an after-branch patch in 8.1 revision 44269, but is safe to re-run.)
+if (ze\dbAdm::needRevision(44601)) {
 	
 	if (!ze::setting('sign_in_access_log')) { 
 		ze\site::setSetting('period_to_delete_sign_in_log', 'never_save');
@@ -487,18 +489,130 @@ if (ze\dbAdm::needRevision(44269)) {
 		ze\site::setSetting('period_to_delete_the_user_content_access_log', 'never_delete');
 	}
 	
-	ze\dbAdm::revision(44269);
+	ze\dbAdm::revision(44601);
+}
+
+
+
+//In version 8.1 and earlier there was some "black magic" in the conductor, that tried to find
+//the path that the smart breadcrumbs should take, if it wasn't specified.
+//We've removed this in 8.2 and it's now either specifically set, or not at all.
+//However to prevent problems with sites breaking in the migration, I'm going to apply the
+//same settings as the "black magic" did in a migration script, just so no functionality changes.
+if (ze\dbAdm::needRevision(44800)) {
+	
+	$sql = "
+		SELECT path.instance_id, path.from_state, path.equiv_id, path.content_type, path.to_state
+		
+		/* For each slide */
+		FROM ". DB_PREFIX. "nested_plugins AS from_slide
+		
+		/* Look for each path leading from said slide (except for back/submit/create/delete links) */
+		INNER JOIN ". DB_PREFIX. "nested_paths AS path
+		   ON path.instance_id = from_slide.instance_id
+		  AND FIND_IN_SET(path.from_state, from_slide.states)
+		  AND path.command NOT IN ('back', 'submit')
+		  AND path.command NOT LIKE 'crea%'
+		  AND path.command NOT LIKE 'dele%'
+		  AND path.equiv_id = 0
+		
+		/* Look for the slide it goes to */
+		INNER JOIN ". DB_PREFIX. "nested_plugins AS to_slide
+		   ON to_slide.instance_id = from_slide.instance_id
+		  AND to_slide.is_slide = 1
+		  AND FIND_IN_SET(path.to_state, to_slide.states)
+		
+		/* Check if something on the slide has breadcrumbs */
+		LEFT JOIN ". DB_PREFIX. "nested_plugins AS mbc
+		   ON mbc.instance_id = from_slide.instance_id
+		  AND mbc.slide_num = to_slide.slide_num
+		  AND mbc.is_slide = 0
+		  AND mbc.makes_breadcrumbs > 1
+		
+		/* Completely exclude anything that already has breadcrumbs set */
+		LEFT JOIN ". DB_PREFIX. "nested_paths AS bc
+		   ON bc.instance_id = from_slide.instance_id
+		  AND FIND_IN_SET(bc.from_state, from_slide.states)
+		  AND bc.is_forwards = 1
+
+
+		WHERE from_slide.is_slide = 1
+		  AND from_slide.states != ''
+		  AND bc.instance_id IS NULL
+
+		ORDER BY
+			from_slide.instance_id, path.from_state,
+	
+			/* Prefer a link to a slide that has a plugin with the makes_breadcrumbs flag set */
+			mbc.instance_id IS NOT NULL DESC,
+	
+			/* Look out for a view command, and favour that one */
+			path.command LIKE 'view%' DESC,
+	
+			/* Otherwise look out for an edit command */
+			path.command LIKE 'edit%' DESC,
+	
+			/* Prefer a slide that's earlier in the order as this is more likely to be higher up */
+			to_slide.slide_num";
+	
+	$last = '';
+	$result = ze\sql::select($sql);
+	while ($path = ze\sql::fetchAssoc($result)) {
+		$ths = $path['instance_id']. '.'. $path['from_state'];
+		
+		if ($last != $ths) {
+			$last = $ths;
+			ze\row::update('nested_paths', ['is_forwards' => 1], $path);
+		}
+	}
+	
+	ze\dbAdm::revision(44800);
+}
+
+
+
+
+//Various bugs in the system at various points were causing duplicate module tables to be created.
+//Look at all of the tables created in the CMS, and look for module tables that are for
+//modules that don't exist, or don't actually match the module they were created for.
+if (ze\dbAdm::needRevision(45060)) {
+	
+	$modules = ze\module::modules($onlyGetRunningPlugins = false, $ignoreUninstalledPlugins = true, $dbUpdateSafemode = true);
+	foreach (ze\dbAdm::lookupExistingCMSTables() as $tbl) {
+		//Only check module tables
+		if ($tbl['module_id']) {
+			
+			//Look for the module with the id from the table prefix
+			if (isset($modules[$tbl['module_id']])) {
+				
+				//Work out what the prefix should be for this module
+				$prefixConstant = $modules[$tbl['module_id']]['prefix'];
+				$prefix = DB_PREFIX. constant($prefixConstant);
+				
+				//Check the prefix matches
+				if (ze\ring::chopPrefix($prefix, $tbl['actual_name'])) {
+					
+					//If it matches, this table is good, don't delete it!
+					continue;
+				}
+			}
+			
+			ze\sql::update('DROP TABLE `'. ze\escape::sql($tbl['actual_name']). '`');
+		}
+	}
+	
+	ze\dbAdm::revision(45060);
 }
 
 //Migrate data for zenario_extranet after renaming a plugin setting
-if (ze\dbAdm::needRevision(44276)) {
+//(N.b. this was added in an after-branch patch in 8.1 revision 44276, but is safe to re-run.)
+if (ze\dbAdm::needRevision(45192)) {
 	
 	$sql = '
-		UPDATE ' . DB_NAME_PREFIX . 'plugin_settings
+		UPDATE ' . DB_PREFIX . 'plugin_settings
 		SET name = "show_link_to_registration_page", value = !value
 		WHERE name = "hide_registration_link"';
 	ze\sql::update($sql);
 	
-	ze\dbAdm::revision(44276);
+	ze\dbAdm::revision(45192);
 }
-

@@ -63,11 +63,11 @@ class zenario_project_locations extends ze\moduleBaseClass {
 		
 	public function getCountryOptions(){
 		$sql = "SELECT l.country_id as id, IFNULL(vs.local_text, CONCAT('_COUNTRY_NAME_', cmc.id)) as name
-				FROM " . DB_NAME_PREFIX . ZENARIO_PROJECT_LOCATIONS_PREFIX . 'project_locations'  
+				FROM " . DB_PREFIX . ZENARIO_PROJECT_LOCATIONS_PREFIX . 'project_locations'  
 					. ' AS l 
-						INNER JOIN ' . DB_NAME_PREFIX . ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_countries
+						INNER JOIN ' . DB_PREFIX . ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_countries
 								AS cmc ON l.country_id = cmc.id
-								LEFT JOIN ' . DB_NAME_PREFIX . "visitor_phrases AS vs
+								LEFT JOIN ' . DB_PREFIX . "visitor_phrases AS vs
 										ON CONCAT('_COUNTRY_NAME_',cmc.id) = vs.code
 										AND vs.language_id = '" . ze\escape::sql(ze::$visLang) . "'
 												ORDER BY 2";
@@ -91,13 +91,13 @@ class zenario_project_locations extends ze\moduleBaseClass {
 			$sql = "SELECT
 						R.id, IFNULL(vs.local_text, R.name) as name
 					FROM 
-						". DB_NAME_PREFIX . ZENARIO_PROJECT_LOCATIONS_PREFIX . "project_locations AS ids
+						". DB_PREFIX . ZENARIO_PROJECT_LOCATIONS_PREFIX . "project_locations AS ids
 					INNER JOIN 
-						". DB_NAME_PREFIX . ZENARIO_COUNTRY_MANAGER_PREFIX . "country_manager_regions R
+						". DB_PREFIX . ZENARIO_COUNTRY_MANAGER_PREFIX . "country_manager_regions R
 					ON 
 						ids.region_id = R.id and ids.country_id='" . ze\escape::sql($this->country_id) . "'
 					LEFT JOIN 
-						". DB_NAME_PREFIX . "visitor_phrases AS vs
+						". DB_PREFIX . "visitor_phrases AS vs
 					ON 
 						R.name = vs.code AND vs.language_id = '" . ze\escape::sql(ze::$visLang) . "'
 					ORDER BY 2";
@@ -118,8 +118,8 @@ class zenario_project_locations extends ze\moduleBaseClass {
 	public function getServicesOptions(){
 
 		$sql = 'SELECT s.id, IFNULL(vp.local_text, s.name) as name 
-				FROM ' . DB_NAME_PREFIX . ZENARIO_PROJECT_LOCATIONS_PREFIX.'project_location_services'
-				. ' AS s LEFT JOIN ' . DB_NAME_PREFIX . "visitor_phrases 
+				FROM ' . DB_PREFIX . ZENARIO_PROJECT_LOCATIONS_PREFIX.'project_location_services'
+				. ' AS s LEFT JOIN ' . DB_PREFIX . "visitor_phrases 
 				AS vp ON CONCAT('_PROJECT_PORTFOLIO_SERVICE_', s.id) = vp.code
 				AND vp.language_id = '" . ze\escape::sql(ze::$visLang) . "' ORDER BY 2";
 			
@@ -137,8 +137,8 @@ class zenario_project_locations extends ze\moduleBaseClass {
 	public function getSectorsOptions(){
 
 		$sql = 'SELECT s.id, IFNULL(vp.local_text, s.name) as name 
-				FROM ' . DB_NAME_PREFIX . ZENARIO_PROJECT_LOCATIONS_PREFIX.'project_location_sectors'
-				. ' AS s LEFT JOIN ' . DB_NAME_PREFIX . "visitor_phrases 
+				FROM ' . DB_PREFIX . ZENARIO_PROJECT_LOCATIONS_PREFIX.'project_location_sectors'
+				. ' AS s LEFT JOIN ' . DB_PREFIX . "visitor_phrases 
 				AS vp ON CONCAT('_PROJECT_PORTFOLIO_SECTOR_', s.id) = vp.code 
 				AND vp.language_id = '" . ze\escape::sql(ze::$visLang) . "' ORDER BY 2";
 			
@@ -177,12 +177,12 @@ class zenario_project_locations extends ze\moduleBaseClass {
 	
 	protected function selectFrom($for_map='false') {
 		$sql = "
-			FROM ". DB_NAME_PREFIX. ZENARIO_PROJECT_LOCATIONS_PREFIX. "project_locations AS pl
-			LEFT JOIN ". DB_NAME_PREFIX. "content_items AS c
+			FROM ". DB_PREFIX. ZENARIO_PROJECT_LOCATIONS_PREFIX. "project_locations AS pl
+			LEFT JOIN ". DB_PREFIX. "content_items AS c
 			ON c.equiv_id = pl.equiv_id
 			AND c.type = 'projects'
 			AND c.language_id = '". ze\escape::sql(ze::$langId). "'
-			LEFT JOIN ". DB_NAME_PREFIX. "content_item_versions AS v
+			LEFT JOIN ". DB_PREFIX. "content_item_versions AS v
 			ON v.id = c.id
 			AND v.type = c.type
 			AND v.version = c.". (ze\priv::check()? "admin_version" : "visitor_version");
@@ -190,13 +190,13 @@ class zenario_project_locations extends ze\moduleBaseClass {
 		
 		if ($this->sector_id) {
 			$sql .= "
-				INNER JOIN ". DB_NAME_PREFIX. ZENARIO_PROJECT_LOCATIONS_PREFIX. "project_location_sector_link AS plsecl
+				INNER JOIN ". DB_PREFIX. ZENARIO_PROJECT_LOCATIONS_PREFIX. "project_location_sector_link AS plsecl
 				ON plsecl.project_location_id = pl.id
 				AND plsecl.sector_id = ". (int) $this->sector_id;
 		}
 		if ($this->service_id) {
 			$sql .= "
-				INNER JOIN ". DB_NAME_PREFIX. ZENARIO_PROJECT_LOCATIONS_PREFIX. "project_location_service_link AS plserl
+				INNER JOIN ". DB_PREFIX. ZENARIO_PROJECT_LOCATIONS_PREFIX. "project_location_service_link AS plserl
 				ON plserl.project_location_id = pl.id
 				AND plserl.service_id = ". (int) $this->service_id;
 		}
@@ -498,8 +498,8 @@ class zenario_project_locations extends ze\moduleBaseClass {
 					$fields['image_id']['value'] = $projectDetails['image_id'];
 					$fields['alt_tag']['value'] = $projectDetails['alt_tag'];
 
-					$fields['sectors']['value'] = implode(',', ze\row::getArray(ZENARIO_PROJECT_LOCATIONS_PREFIX. 'project_location_sector_link', 'sector_id', ['project_location_id' => $box['key']['id']]));
-					$fields['services']['value'] = implode(',', ze\row::getArray(ZENARIO_PROJECT_LOCATIONS_PREFIX. 'project_location_service_link', 'service_id', ['project_location_id' => $box['key']['id']]));
+					$fields['sectors']['value'] = implode(',', ze\row::getValues(ZENARIO_PROJECT_LOCATIONS_PREFIX. 'project_location_sector_link', 'sector_id', ['project_location_id' => $box['key']['id']]));
+					$fields['services']['value'] = implode(',', ze\row::getValues(ZENARIO_PROJECT_LOCATIONS_PREFIX. 'project_location_service_link', 'service_id', ['project_location_id' => $box['key']['id']]));
 
 //					$fields['url']['value'] = $projectDetails['url'];
 

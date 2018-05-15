@@ -17,9 +17,9 @@ zenario__locations:
             children_of_location:
                 sql: 'l.parent_id = [[REFINER_ID]]'
             parent_locations:
-                sql: '(l.parent_id = 0 OR l.parent_id IS NULL) AND l.id IN (SELECT parent_id FROM [[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations AS l2)'
+                sql: '(l.parent_id = 0 OR l.parent_id IS NULL) AND l.id IN (SELECT parent_id FROM [[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations AS l2)'
             sector_locations:
-                sql: 'l.id IN (SELECT location_id FROM [[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]location_sector_score_link WHERE sector_id IN [[REFINER_IDS]])'
+                sql: 'l.id IN (SELECT location_id FROM [[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]location_sector_score_link WHERE sector_id IN [[REFINER_IDS]])'
             map:
                 sql: 'l.id = l.id'
             
@@ -31,11 +31,11 @@ zenario__locations:
                 sql: ''
         db_items:
             table: |
-                [[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations AS l
-                LEFT JOIN [[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]location_images AS i
+                [[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations AS l
+                LEFT JOIN [[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]location_images AS i
                    ON l.id = i.location_id
             
-                LEFT JOIN [[DB_NAME_PREFIX]]files AS f
+                LEFT JOIN [[DB_PREFIX]]files AS f
                    ON i.image_id = f.id
             id_column: l.id
         default_sort_column: description
@@ -114,7 +114,7 @@ zenario__locations:
                 title: Country
                 db_column: c.english_name
                 table_join: |
-                    [[DB_NAME_PREFIX]][[ZENARIO_COUNTRY_MANAGER_PREFIX]]country_manager_countries c
+                    [[DB_PREFIX]][[ZENARIO_COUNTRY_MANAGER_PREFIX]]country_manager_countries c
                                                 ON
                                                     l.country_id = c.id
                 show_by_default: Yes
@@ -123,11 +123,11 @@ zenario__locations:
             region:
                 title: Region
                 table_join: |
-                    [[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]location_region_link AS lrl1
+                    [[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]location_region_link AS lrl1
                                                 ON
                                                     l.id = lrl1.location_id
                                                 LEFT JOIN
-                                                    [[DB_NAME_PREFIX]][[ZENARIO_COUNTRY_MANAGER_PREFIX]]country_manager_regions r
+                                                    [[DB_PREFIX]][[ZENARIO_COUNTRY_MANAGER_PREFIX]]country_manager_regions r
                                                 ON
                                                     lrl1.region_id = r.id
                 db_column: "GROUP_CONCAT(DISTINCT r.name ORDER BY lrl1.id DESC SEPARATOR ', ')"
@@ -168,8 +168,8 @@ zenario__locations:
                 db_column: |
                     (
                                                 SELECT GROUP_CONCAT(DISTINCT s.name ORDER BY s.name SEPARATOR ', ')
-                                                FROM [[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]location_sector_score_link AS lssl
-                                                INNER JOIN [[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]sectors s
+                                                FROM [[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]location_sector_score_link AS lssl
+                                                INNER JOIN [[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]sectors s
                                                    ON lssl.sector_id = s.id
                                                 WHERE l.id = lssl.location_id 
                                             )
@@ -180,8 +180,8 @@ zenario__locations:
                 db_column: |
                     (
                                                 SELECT sts.name
-                                                FROM [[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]location_sector_score_link AS lssl
-                                                INNER JOIN [[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]sectors sts
+                                                FROM [[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]location_sector_score_link AS lssl
+                                                INNER JOIN [[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]sectors sts
                                                    ON lssl.sector_id = sts.id
                                                 WHERE lssl.location_id = l.id 
                                                 AND lssl.sticky_flag = 1
@@ -194,7 +194,7 @@ zenario__locations:
                     IF (pl.description IS NULL,
                                                 IF ((
                                                     SELECT COUNT(*)
-                                                    FROM [[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations AS cl
+                                                    FROM [[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations AS cl
                                                     WHERE cl.parent_id = l.id
                                                 ) = 0,
                                                     '[Not in hierarchy]',
@@ -204,7 +204,7 @@ zenario__locations:
                                             )
                 title: Child of
                 table_join: |
-                    [[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations AS pl 
+                    [[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations AS pl 
                                             ON pl.id = l.parent_id
                 show_by_default: No
                 hidden: false
@@ -212,7 +212,7 @@ zenario__locations:
                 db_column: |
                     (
                                                 SELECT COUNT(DISTINCT cl.id)
-                                                FROM [[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations AS cl
+                                                FROM [[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations AS cl
                                                 WHERE cl.parent_id = l.id
                                                   AND cl.parent_id IS NOT NULL
                                                   AND cl.parent_id != 0

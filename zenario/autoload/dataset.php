@@ -68,7 +68,7 @@ class dataset {
 	public static function fieldBasicDetails($fieldId) {
 		$sql = "
 			SELECT type, is_system_field, db_column, label, default_label
-			FROM ". DB_NAME_PREFIX. "custom_dataset_fields
+			FROM ". DB_PREFIX. "custom_dataset_fields
 			WHERE id = ". (int) $fieldId;
 		return \ze\sql::fetchAssoc($sql);
 	}
@@ -87,16 +87,17 @@ class dataset {
 	}
 
 	//Formerly "getDatasetFieldsDetails()"
-	public static function fieldsDetails($dataset) {
+	public static function fieldsDetails($dataset, $indexById = false) {
 		if (!is_numeric($dataset)) {
 			$dataset = \ze\dataset::details($dataset, ['id']);
 			$dataset = $dataset['id'];
 		}
 	
 		$out = [];
-		if ($fields = \ze\row::getArray('custom_dataset_fields', true, ['dataset_id' => $dataset, 'type' => ['!' => 'other_system_field']])) {
+		if ($fields = \ze\row::getAssocs('custom_dataset_fields', true, ['dataset_id' => $dataset, 'type' => ['!' => 'other_system_field']])) {
+			$index = $indexById ? 'id' : 'db_column';
 			foreach ($fields as $field) {
-				$out[$field['db_column']] = $field;
+				$out[$field[$index]] = $field;
 			}
 		}
 	
@@ -148,8 +149,8 @@ class dataset {
 				
 					$sql = "
 						SELECT cdvl.value_id
-						FROM ". \ze::$lastDBPrefix. "custom_dataset_values_link AS cdvl
-						INNER JOIN ". \ze::$lastDBPrefix. "custom_dataset_field_values AS cdfv
+						FROM ". DB_PREFIX. "custom_dataset_values_link AS cdvl
+						INNER JOIN ". DB_PREFIX. "custom_dataset_field_values AS cdfv
 						   ON cdfv.id = cdvl.value_id
 						  AND cdfv.field_id = ". (int) $cfield['id']. "
 						WHERE cdvl.linking_id = ". (int) $recordId;
@@ -157,7 +158,7 @@ class dataset {
 					$values = \ze\sql::fetchValues($sql);
 			
 					if ($forDisplay) {
-						$values = \ze\row::getArray('custom_dataset_field_values', 'label', ['field_id' => $cfield['id'], 'id' => $values], 'label');
+						$values = \ze\row::getValues('custom_dataset_field_values', 'label', ['field_id' => $cfield['id'], 'id' => $values], 'label');
 				
 						if ($returnCSV) {
 							return implode(', ', $values);
@@ -175,7 +176,7 @@ class dataset {
 					break;
 			
 				case 'file_picker':
-					$values = \ze\row::getArray(
+					$values = \ze\row::getAssocs(
 						'custom_dataset_files_link',
 						'file_id',
 						[
@@ -184,7 +185,7 @@ class dataset {
 							'linking_id' => $recordId]);
 			
 					if ($forDisplay) {
-						$values = \ze\row::getArray('files', 'filename', ['id' => $values], 'filename');
+						$values = \ze\row::getValues('files', 'filename', ['id' => $values], 'filename');
 				
 						if ($returnCSV) {
 							return implode(', ', $values);
@@ -262,8 +263,8 @@ class dataset {
 		//Remove any values from the database that *weren't* selected
 		$sql = "
 			DELETE cdvl.*
-			FROM ". DB_NAME_PREFIX. "custom_dataset_field_values AS cdfv
-			INNER JOIN ". DB_NAME_PREFIX. "custom_dataset_values_link AS cdvl
+			FROM ". DB_PREFIX. "custom_dataset_field_values AS cdfv
+			INNER JOIN ". DB_PREFIX. "custom_dataset_values_link AS cdvl
 			   ON cdvl.value_id = cdfv.id
 			  AND cdvl.linking_id = ". (int) $linkingId. "
 			WHERE cdfv.field_id = ". (int) $fieldId;
@@ -319,7 +320,7 @@ class dataset {
 		//Remove any values from the database that *weren't* selected
 		$sql = "
 			DELETE
-			FROM ". DB_NAME_PREFIX. "custom_dataset_files_link
+			FROM ". DB_PREFIX. "custom_dataset_files_link
 			WHERE dataset_id = ". (int) $datasetId. "
 			  AND field_id = ". (int) $cField['id']. "
 			  AND linking_id = ". (int) $linkingId;
@@ -340,8 +341,8 @@ class dataset {
 
 		$sql = "
 			SELECT f.id
-			FROM ". DB_NAME_PREFIX. "files AS f
-			LEFT JOIN ". DB_NAME_PREFIX. "custom_dataset_files_link AS cdfl
+			FROM ". DB_PREFIX. "files AS f
+			LEFT JOIN ". DB_PREFIX. "custom_dataset_files_link AS cdfl
 			   ON cdfl.file_id = f.id
 			WHERE f.`usage` = 'dataset_file'
 			  AND cdfl.file_id IS NULL
@@ -380,12 +381,14 @@ class dataset {
 			$value = ['label' => $value];
 		}
 	
-		++\ze::$dbupCurrentRevision;
+		++self::$ord;
 	
 		if (empty($value['ord'])) {
-			$value['ord'] = \ze::$dbupCurrentRevision;
+			$value['ord'] = self::$ord;
 		}
 	}
+	
+	private static $ord;
 
 	//Formerly "getDatasetFieldLOV()"
 	public static function fieldLOV($field, $flat = true, $filter = false) {
@@ -400,16 +403,16 @@ class dataset {
 			}
 			if ($lov = \ze\dataset::centralisedListValues($field['values_source'], $filter)) {
 				if (!$flat) {
-					\ze::$dbupCurrentRevision = 0;
+					self::$ord = 0;
 					array_walk($lov, 'ze\\dataset::fieldLOVFlatArrayToLabeled');
-					\ze::$dbupCurrentRevision = false;
+					self::$ord = false;
 				}
 			}
 	
 		} elseif (\ze\ring::chopPrefix('dataset_', $field['type'])) {
 			if ($labelDetails = \ze\dataset::labelFieldDetails($field['dataset_foreign_key_id'])) {
 			
-				$lov = \ze\row::getArray($labelDetails['table'], $labelDetails['db_column'], [], $labelDetails['db_column']);
+				$lov = \ze\row::getAssocs($labelDetails['table'], $labelDetails['db_column'], [], $labelDetails['db_column']);
 			
 				if (!$flat) {
 					$ord = 0;
@@ -424,7 +427,7 @@ class dataset {
 				$table = $field['is_system_field'] ? $dataset['system_table'] : $dataset['table'];
 				$sql = '
 					SELECT DISTINCT ' . \ze\escape::sql($field['db_column']) . '
-					FROM ' . DB_NAME_PREFIX . $table . '
+					FROM ' . DB_PREFIX . $table . '
 					ORDER BY ' . \ze\escape::sql($field['db_column']);
 				$result = \ze\sql::select($sql);
 				while ($row = \ze\sql::fetchRow($result)) {
@@ -440,7 +443,7 @@ class dataset {
 				$cols = ['ord', 'label', 'note_below'];
 			}
 		
-			$lov = \ze\row::getArray('custom_dataset_field_values', $cols, ['field_id' => $field['id']], ['ord']);
+			$lov = \ze\row::getAssocs('custom_dataset_field_values', $cols, ['field_id' => $field['id']], ['ord']);
 		}
 		return $lov;
 	}
@@ -459,28 +462,28 @@ class dataset {
 			if ($field['type'] == 'checkboxes') {
 				$sql = "
 					SELECT COUNT(DISTINCT vl.linking_id)
-					FROM ". DB_NAME_PREFIX. "custom_dataset_field_values AS fv
-					INNER JOIN ". DB_NAME_PREFIX. "custom_dataset_values_link AS vl
+					FROM ". DB_PREFIX. "custom_dataset_field_values AS fv
+					INNER JOIN ". DB_PREFIX. "custom_dataset_values_link AS vl
 					ON vl.value_id = fv.id
 					WHERE fv.field_id = ". (int) $field['id'];
 		
 			} elseif ($field['type'] == 'file_picker') {
 				$sql = "
 					SELECT COUNT(DISTINCT linking_id)
-					FROM ". DB_NAME_PREFIX. "custom_dataset_files_link
+					FROM ". DB_PREFIX. "custom_dataset_files_link
 					WHERE dataset_id = ". (int) $dataset['id']. "
 					  AND field_id = ". (int) $field['id'];
 		
 			} elseif (\ze::in($field['type'], 'checkbox', 'group', 'radios', 'select')) {
 				$sql = "
 					SELECT COUNT(*)
-					FROM `". DB_NAME_PREFIX. \ze\escape::sql($field['is_system_field']? $dataset['system_table'] : $dataset['table']). "`
+					FROM `". DB_PREFIX. \ze\escape::sql($field['is_system_field']? $dataset['system_table'] : $dataset['table']). "`
 					WHERE `". \ze\escape::sql($field['db_column']). "` != 0";
 		
 			} else {
 				$sql = "
 					SELECT COUNT(*)
-					FROM `". DB_NAME_PREFIX. \ze\escape::sql($field['is_system_field']? $dataset['system_table'] : $dataset['table']). "`
+					FROM `". DB_PREFIX. \ze\escape::sql($field['is_system_field']? $dataset['system_table'] : $dataset['table']). "`
 					WHERE `". \ze\escape::sql($field['db_column']). "` IS NOT NULL
 					  AND `". \ze\escape::sql($field['db_column']). "` != ''";
 			}

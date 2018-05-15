@@ -54,8 +54,8 @@ class category {
 					c.parent_id,
 					c.name,
 					c.public
-				FROM " . DB_NAME_PREFIX . "categories AS c
-				INNER JOIN " . DB_NAME_PREFIX . "category_item_link AS cil
+				FROM " . DB_PREFIX . "categories AS c
+				INNER JOIN " . DB_PREFIX . "category_item_link AS cil
 					ON c.id = cil.category_id
 				WHERE cil.equiv_id = " . (int) $equivId . "
 					AND cil.content_type = '" . \ze\escape::sql($cType) . "'";

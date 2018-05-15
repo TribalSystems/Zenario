@@ -37,7 +37,7 @@ zenario_slide:
                 title_merge_fields:
                     same_row: true
                     visible_if: |
-                        !_.isEmpty(field.values)
+                        tuix.key.usesConductor && !_.isEmpty(field.values)
                     type: select
                     css_class: slide_title_merge_fields iconselectmenu
                     empty_value: 'Add merge field...'
@@ -49,6 +49,8 @@ zenario_slide:
                         $(this).val('').iconselectmenu('refresh');
                 
                 invisible_in_nav:
+                    visible_if: |
+                        !tuix.key.usesConductor
                     label: 'Hide the tab-link to this slide'
                     type: checkbox
                     side_note: >
@@ -85,58 +87,6 @@ zenario_slide:
                     note_below: |
                         This will look for a path in the nest conductor called "back" or "close".
                         If no path exists, a browser-back will be used.
-                
-                request_vars0:
-                    hide_with_previous_field: true
-                    label: Request variables for links to this slide
-                    type: select
-                    empty_value: ' -- Select -- '
-                    values: coreVars
-                    redraw_onchange: true
-                    note_below: |
-                        If a back button or a breadcrumb link is generated to this slide,
-                        these variables will be used in the link.
-                
-                request_vars1:
-                    hide_with_previous_field: true
-                    visible_if:
-                        lib.value: request_vars0
-                    same_row: true
-                    pre_field_html: ', &nbsp; '
-                    type: select
-                    empty_value: ' -- Select -- '
-                    values: coreVars
-                    redraw_onchange: true
-                request_vars2:
-                    hide_with_previous_field: true
-                    visible_if:
-                        lib.value: request_vars1
-                    same_row: true
-                    pre_field_html: ', &nbsp; '
-                    type: select
-                    empty_value: ' -- Select -- '
-                    values: coreVars
-                    redraw_onchange: true
-                request_vars3:
-                    hide_with_previous_field: true
-                    visible_if:
-                        lib.value: request_vars2
-                    same_row: true
-                    pre_field_html: ', &nbsp; '
-                    type: select
-                    empty_value: ' -- Select -- '
-                    values: coreVars
-                    redraw_onchange: true
-                request_vars4:
-                    hide_with_previous_field: true
-                    visible_if:
-                        lib.value: request_vars3
-                    same_row: true
-                    pre_field_html: ', &nbsp; '
-                    type: select
-                    empty_value: ' -- Select -- '
-                    values: coreVars
-                    redraw_onchange: true
                 
                 global_command:
                     visible_if: tuix.key.usesConductor
@@ -262,5 +212,4 @@ zenario_slide:
                     label: Show an Embed button
                     type: checkbox
     lovs:
-        coreVars: {}
         title_merge_fields: {}

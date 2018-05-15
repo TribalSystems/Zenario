@@ -109,7 +109,7 @@ if ($resultSp = \ze\row::query('special_pages', true, [])) {
 									if (!empty($page['layout'])) {
 										$sql = "
 											SELECT layout_id
-											FROM ". DB_NAME_PREFIX. "layouts
+											FROM ". DB_PREFIX. "layouts
 											WHERE name LIKE '%". \ze\escape::like($page['layout']). "%'
 											LIMIT 1";
 										$resultL = \ze\sql::select($sql);

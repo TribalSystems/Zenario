@@ -20,8 +20,17 @@ zenario_document_upload:
                         #extensions: 
                         #	- .zip
                         dropbox: true
-                        dropbox_phrase: 'Upload from dropbox'
-                    pick_items:
-                        path: zenario__content/panels/image_library
-                        select_phrase: Select image...
+                        dropbox_phrase: 'Upload from Dropbox'
                     side_note: 'If you cannot see the Dropbox button, go to Configuration and select "API Keys" to enable Dropbox integration.'
+                privacy:
+                    label: 'Privacy'
+                    type: radios
+                    values:
+                        public:
+                            label: 'Public'
+                        private:
+                            label: 'Private'
+                        offline:
+                            label: 'Decide later'
+                    validation:
+                        required: 'Choose the privacy of the document.'

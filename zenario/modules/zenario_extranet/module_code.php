@@ -46,6 +46,8 @@ class zenario_extranet extends ze\moduleBaseClass {
 	var $user_id = false;
 	var $old_password = false;
 	
+	var $user_password = false;
+	
 	var $showTermsAndConditionsCheckbox = false;
 	protected $hasLoginForm = true;
 	
@@ -73,6 +75,50 @@ class zenario_extranet extends ze\moduleBaseClass {
 				$this->logUserIn($_POST['user_id'] ?? false);
 				$this->redirectToPage();
 			}
+		
+		} elseif (isset($_POST['accept_terms_and_conditions'])
+			&& ($userId = $_POST['user_id'] ?? false)
+			&& ze\user::checkPassword($userId, ($_POST['user_password'] ?? false))
+		) {
+			$this->errors = [];
+			if (empty($_POST['extranet_terms_and_conditions'])) {
+				$this->errors[] = ['Error' => $this->setting('accept_terms_and_conditions_message')];
+			}
+			
+			if (!empty($this->errors)) {
+				$this->mode = 'modeTermsAndConditions';
+			} else {
+				ze\row::set('users', ['terms_and_conditions_accepted' => 1], $userId);
+				
+				//Record consent
+				$userDetails = ze\row::get('users', ['first_name', 'last_name', 'email'], ['id' => $_POST['user_id']]);
+				$cID = $cType = false;
+				$this->getCIDAndCTypeFromSetting($cID, $cType, 'terms_and_conditions_page');
+				$TCLink = [ 'TCLink' =>$this->linkToItem($cID, $cType, true)];
+				ze\user::recordConsent($userId, $userDetails['email'], $userDetails['first_name'] ?? false, $userDetails['last_name'] ?? false, strip_tags($this->phrase('_T_C_LINK', $TCLink)));
+				
+				// Save custom fields from frameworks
+				$details = [];
+				ze::$dbL->checkTableDef($tableName = DB_PREFIX . 'users_custom_data');
+				foreach (ze::$dbL->cols[$tableName] as $col => $colDef) {
+					if ($col != 'user_id' && isset($_POST[$col])) {
+						$details[$col] = $_POST[$col];
+						$colType = ze\row::get('custom_dataset_fields', 'type', ["db_column" => $col]);
+						//check if dataset feild is consent field
+						if ($colType && $colType == "consent") {
+							ze\user::recordConsent($userId, $userDetails['email'], $userDetails['first_name'] ?? false, $userDetails['last_name'] ?? false, strip_tags($this->phrase("_".$col)));
+						}
+					}
+				}
+				
+				if (!empty($details)) {
+					ze\row::set('users_custom_data', $details, $userId);
+				}
+				
+				$this->logUserIn($userId);
+				$this->redirectToPage();
+			}
+			
 		} else {
 			
 			$this->mode = 'modeLogin';
@@ -129,9 +175,10 @@ class zenario_extranet extends ze\moduleBaseClass {
 						if (ze::setting('cookie_consent_for_extranet') == 'granted') {
 							ze\cookie::setConsent();
 						}
-						
+					
 						$this->redirectToPage();
 					}
+					
 					if ($this->hasLoginForm) {
 						if ($this->setting('requires_terms_and_conditions') == 1 && $this->setting('terms_and_conditions_page') && $this->showTermsAndConditionsCheckbox) {
 							$this->subSections['Ts_And_Cs_Section'] = true;
@@ -142,8 +189,8 @@ class zenario_extranet extends ze\moduleBaseClass {
 							$this->objects['Ts_And_Cs_Link'] =  $this->phrase('_T_C_LINK', $TCLink);
 						}
 					}
+					
 				}
-				
 			}
 			
 			if ($manageCookies) {
@@ -189,36 +236,60 @@ class zenario_extranet extends ze\moduleBaseClass {
 		echo $this->closeForm();
 	}
 	
+	protected function modeTermsAndConditions() {
+		$mergeFields = $this->getTitleAndLabelMergeFields();
+		
+		$subSections = [];
+		$subSections['Error_Display'] = $this->errors;
+		
+		$cID = $cType = false;
+		$this->getCIDAndCTypeFromSetting($cID, $cType, 'terms_and_conditions_page');
+		ze\content::langEquivalentItem($cID, $cType);
+		$TCLink = [ 'TCLink' =>$this->linkToItem($cID, $cType, true)];
+		$mergeFields['Ts_And_Cs_Link'] =  $this->phrase('_T_C_LINK', $TCLink);
+		
+		echo $this->getLoginOpenForm();
+			echo $this->remember('accept_terms_and_conditions', 1);
+			echo $this->remember('user_id', $this->user_id);
+			echo $this->remember('user_password', $this->user_password);
+			$this->framework('Terms_And_Conditions_Form',  $mergeFields, $subSections);
+		echo $this->closeForm();
+	}
+	
 	
 	//Display a login form
 	protected function modeLogin() {
 		$this->addLoginLinks();
 		
-		$cID = $cType = false;
-		if ($this->hasLoginForm
-		 && ze\content::langSpecialPage('zenario_login', $cID, $cType)) {
+		if ($this->hasLoginForm) {
 			$this->subSections['Login_title_section'] = true;
 			$this->subSections['Login_Form'] = true;
 			
-			if (($this->cID == $cID && $this->cType == $cType) || !$this->setting('redirect_to_login_page_on_submit')) {
-				$this->objects['openForm'] = $this->openForm(
-					'',' class="form-horizontal"',
-					$action = false,
-					$scrollToTopOfSlot = false, $fadeOutAndIn = true,
-					$usePost = true, $autoAddRequests = false
-				);
-			} else {
-				$this->objects['openForm'] = 
-					'<form action="'.
-						htmlspecialchars($this->linkToItem($cID, $cType)).
-					'" method="post">';
-			}
+			$this->objects['openForm'] = $this->getLoginOpenForm();
 				
 			$this->framework('Outer', $this->objects, $this->subSections);
 		
 		} else {
 			$this->subSections['Login'] = true;
 			$this->framework('Outer', $this->objects, $this->subSections);
+		}
+	}
+	
+	protected function getLoginOpenForm() {
+		$cID = $cType = false;
+		ze\content::langSpecialPage('zenario_login', $cID, $cType);
+		if (($this->cID == $cID && $this->cType == $cType) || !$this->setting('redirect_to_login_page_on_submit')) {
+			return $this->openForm(
+				'',' class="form-horizontal"',
+				$action = false,
+				$scrollToTopOfSlot = false, $fadeOutAndIn = true,
+				$usePost = true, $autoAddRequests = false
+			);
+		} else {
+			return 
+				'<form action="'.
+					htmlspecialchars($this->linkToItem($cID, $cType)).
+				'" method="post">';
 		}
 	}
 	
@@ -387,31 +458,6 @@ class zenario_extranet extends ze\moduleBaseClass {
 		return require ze::funIncPath(__FILE__, __FUNCTION__);
 	}
 	
-	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
-		return require ze::funIncPath(__FILE__, __FUNCTION__);
-	}
-	
-	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		switch ($path) {
-			case 'plugin_settings':
-				$defaultLangId = ze::$defaultLang;
-				
-				foreach ([
-					'error_messages/invalid_email_error_text' => '_ERROR_INVALID_EXTRANET_EMAIL',		
-					'error_messages/screen_name_required_error_text' => '_ERROR_EXTRANET_SCREEN_NAME',		
-					'error_messages/email_address_required_error_text' => '_ERROR_EXTRANET_EMAIL',			
-					'error_messages/password_required_error_text' => '_ERROR_EXTRANET_PASSWORD',		
-					'error_messages/no_new_password_error_text' => '_ERROR_NEW_PASSWORD',
-					'error_messages/no_new_repeat_password_error_text' => '_ERROR_REPEAT_NEW_PASSWORD'
-				] as $fieldName => $code) {
-					if (isset($fields[$fieldName])) {
-						ze\row::set('visitor_phrases', ['local_text' => $values[$fieldName]], ['code' => $code, 'language_id' => $defaultLangId]);
-					}
-				}
-				
-				break;
-		}
-	}
 	
 	//Log a user in after successful validation
 	function logUserIn($userId) {
@@ -441,38 +487,36 @@ class zenario_extranet extends ze\moduleBaseClass {
 		if ($this->validateFormFields('Login_Form')) {
 			//check if email address has been entered
 			//Check if this user exists, their password is correct, and they are active. Only log them in if so.
-			$sql = "
-				SELECT
-					id, password_needs_changing, terms_and_conditions_accepted, `status`,
-					(
-							password_needs_changing
-						AND last_login IS NULL
-						AND created_date <= DATE_SUB(NOW(), INTERVAL ". ((int) ze::setting('temp_password_timeout') ?: 14). " DAY)
-					) AS password_expired
-				FROM [users as u]";
-			
 			if (!$this->useScreenName || $this->setting('login_with') == 'Email') {
-				$sql .= "
-				WHERE [u.email == extranet_email]";
+				$userId = ze\row::get('users', 'id', ['email' => $_POST['extranet_email'] ?? false]);
 			} else {
-				$sql .= "
-				WHERE [u.screen_name == extranet_screen_name]";
+				$userId = ze\row::get('users', 'id', ['screen_name' => $_POST['extranet_screen_name'] ?? false]);
 			}
 			
-			$values = ['extranet_email' => $_POST['extranet_email'] ?? false, 'extranet_screen_name' => $_POST['extranet_screen_name'] ?? false];
-			$result = ze\sql::select($sql, $values);
-			
-			if ($user = ze\sql::fetchAssoc($result)) {
+			if ($userId) {
+				$sql = "
+					SELECT
+						id, password_needs_changing, terms_and_conditions_accepted, `status`
+					FROM ". DB_PREFIX. "users as u
+					WHERE id = ". (int) $userId;
+				$user = ze\sql::fetchAssoc($sql);
 				if ($user['status'] != "contact") {
-					if ($user['password_expired']) {
+					if (ze\user::isPasswordExpired($userId)) {
 						$errorMessage = $this->setting('password_expired_message');
 						$this->errors[] = ['Error' => $this->phrase($errorMessage)];
 					
 					} elseif (ze\user::checkPassword($user['id'], ($_POST['extranet_password'] ?? false))) {
 						//password correct
 						if($_REQUEST['extranet_terms_and_conditions'] ?? false){
-							ze\row::set('users', ['terms_and_conditions_accepted'=>1], ['id' => $user['id']]);
+							ze\row::set('users', ['terms_and_conditions_accepted' => 1],  $user['id']);
 							$user['terms_and_conditions_accepted'] = true;
+							
+							//Record consent
+							$userDetails = ze\row::get('users', ['first_name', 'last_name', 'email'], ['id' => $userId]);
+							$cID = $cType = false;
+							$this->getCIDAndCTypeFromSetting($cID, $cType, 'terms_and_conditions_page');
+							$TCLink = [ 'TCLink' =>$this->linkToItem($cID, $cType, true)];
+							ze\user::recordConsent($userId, $userDetails['email'], $userDetails['first_name'] ?? false, $userDetails['last_name'] ?? false, strip_tags($this->phrase('_T_C_LINK', $TCLink)));
 						}
 						if ($user['status'] == 'active') {
 							if ($user['password_needs_changing']) {
@@ -483,12 +527,20 @@ class zenario_extranet extends ze\moduleBaseClass {
 			
 							} elseif ($this->setting('requires_terms_and_conditions') && $this->setting('terms_and_conditions_page') 
 								&& (!$user['terms_and_conditions_accepted'] 
-									|| ($this->setting('requires_terms_and_conditions') == 'always' && !$_REQUEST['extranet_terms_and_conditions']))) {
+									|| ($this->setting('requires_terms_and_conditions') == 'always' && empty($_REQUEST['extranet_terms_and_conditions'])))) {
 								//show terms and conditions checkbox
 								$errorMessage = $this->setting('accept_terms_and_conditions_message');
 								$this->errors[] = ['Error' => $errorMessage];
 								$this->showTermsAndConditionsCheckbox = true;
-			
+								
+								//If the user attempting to login has not accepted the terms and conditions yet, show a single checkbox
+								//that they must check in order to proceed.
+								if ($this->setting('requires_terms_and_conditions') == 1) {
+									$this->mode = 'modeTermsAndConditions';
+									$this->user_id = $user['id'];
+									$this->user_password = $_POST['extranet_password'];
+								}
+								
 							} else {
 								//all conditions meet, log user in
 								$this->logUserIn($user['id']);
@@ -592,28 +644,6 @@ class zenario_extranet extends ze\moduleBaseClass {
 		return ze\row::get('users', ['id', 'first_name', 'last_name', 'screen_name', 'password', 'password_salt', 'email', 'hash'], ['email' => $email]);
 	}
 	
-	
-	
-	
-	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		switch ($path) {
-			case 'plugin_settings':
-				if (isset($box['tabs']['welcome_back_page']['fields']['welcome_page'])
-				 && isset($box['tabs']['welcome_back_page']['fields']['show_welcome_page'])) {
-					$box['tabs']['welcome_back_page']['fields']['welcome_page']['hidden'] = 
-						$values['welcome_back_page/show_welcome_page'] != '_ALWAYS'
-					 && $values['welcome_back_page/show_welcome_page'] != '_IF_NO_PREVIOUS_PAGE';
-				}
-				if (isset($box['tabs']['welcome_back_page']['fields']['terms_and_conditions_page'])
-				 && isset($box['tabs']['welcome_back_page']['fields']['requires_terms_and_conditions'])) {
-					$box['tabs']['welcome_back_page']['fields']['terms_and_conditions_page']['hidden'] = 
-						!$values['welcome_back_page/requires_terms_and_conditions'];
-				}
-
-				break;
-		}
-	}
-	
 	function validatePassword($newPassword,$confirmation,$oldPassword=false,$vlpClass=false,$userId = false) {
 		$errors = [];
 	
@@ -660,9 +690,7 @@ class zenario_extranet extends ze\moduleBaseClass {
 		return $errors;
 	}
 	
-	
 	protected function getTitleAndLabelMergeFields() {
-		
 		$mergeFields = [];
 		
 		$this->objects['main_login_heading'] = $mergeFields['main_login_heading'] = $this->phrase($this->setting('main_login_heading'));
@@ -675,6 +703,134 @@ class zenario_extranet extends ze\moduleBaseClass {
 		
 	}
 	
+	
+	
+	
+	
+	
+	
+	public function setupRedirectRuleRows(&$box, &$fields, &$values, $changes, $filling, $addRows = 0) {
+		return ze\tuix::setupMultipleRows(
+			$box, $fields, $values, $changes, $filling = false,
+			$box['tabs']['action_after_login']['redirect_rule_template_fields'],
+			$addRows,
+			$minNumRows = 0,
+			$tabName = 'action_after_login',
+			$deleteButtonCodeName = 'remove__znz'
+		);
+	}
+	
+	
+	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
+		switch ($path) {
+			case 'plugin_settings':
+				if (isset($fields['first_tab/login_with'])) {
+					$fields['first_tab/login_with']['readonly'] = !ze::setting('user_use_screen_name');
+				}
+		
+				$defaultLangId = ze::$defaultLang;
+				foreach ([
+					'error_messages/invalid_email_error_text' => '_ERROR_INVALID_EXTRANET_EMAIL',		
+					'error_messages/screen_name_required_error_text' => '_ERROR_EXTRANET_SCREEN_NAME',		
+					'error_messages/email_address_required_error_text' => '_ERROR_EXTRANET_EMAIL',			
+					'error_messages/password_required_error_text' => '_ERROR_EXTRANET_PASSWORD',		
+					'error_messages/no_new_password_error_text' => '_ERROR_NEW_PASSWORD',
+					'error_messages/no_new_repeat_password_error_text' => '_ERROR_REPEAT_NEW_PASSWORD'
+				] as $fieldName => $code) {
+					if (isset($fields[$fieldName])) {
+						$values[$fieldName] = ze\row::get('visitor_phrases', 'local_text', ['code' => $code, 'language_id' => $defaultLangId]);
+					}
+				}
+		
+				//Set the default value of the registration page selector to the special page.
+				if (empty($values['first_tab/registration_page'])) {
+					$cID = $cType = false;
+					if (ze\content::langSpecialPage('zenario_registration', $cID, $cType)) {
+						$tagId = $cType . '_' . $cID;
+						$values['first_tab/registration_page'] = $tagId;
+					}
+				}
+				
+				
+				//Load lists for redirect rules and disable "role" based rules if organization manager is not running.
+				$box['lovs']['groups'] = ze\datasetAdm::listCustomFields('users', $flat = false, 'groups_only', $customOnly = true, $useOptGroups = true, $hideEmptyOptGroupParents = true);
+				if ($allowRoleRedirectRules = ze\module::inc('zenario_organization_manager')) {
+					$box['lovs']['roles'] = ze\row::getValues(ZENARIO_ORGANIZATION_MANAGER_PREFIX . 'user_location_roles', 'name', [], 'name', 'id');
+				} else {
+					$box['tabs']['action_after_login']['redirect_rule_template_fields']['redirect_rule_type__znz']['values']['role']['disabled'] = true;
+				}
+				
+				//Setup multi-rows for redirect rules.
+				if (isset($fields['action_after_login/number_of_redirect_rules'])) {
+					$addRows = (int)$values['action_after_login/number_of_redirect_rules'];
+					$changes = [];
+					$multiRows = $this->setupRedirectRuleRows($box, $fields, $values, $changes, $filling = true, $addRows);
+					$values['action_after_login/number_of_redirect_rules'] = $multiRows['numRows'];
+				
+					$valuesInDB = [];
+					ze\tuix::loadAllPluginSettings($box, $valuesInDB);
+					for ($i = 1; $i <= $addRows; $i++) {
+						$type = $valuesInDB['redirect_rule_type__' . $i] ?? false;
+						if ($type && ($type != 'role' || $allowRoleRedirectRules)) {
+							$values['action_after_login/redirect_rule_type__' . $i] = $type;
+							$values['action_after_login/redirect_rule_group__' . $i] = $valuesInDB['redirect_rule_group__' . $i] ?? false;
+							$values['action_after_login/redirect_rule_role__' . $i] = $valuesInDB['redirect_rule_role__' . $i] ?? false;
+							$values['action_after_login/redirect_rule_content_item__' . $i] = $valuesInDB['redirect_rule_content_item__' . $i] ?? false;
+						}
+					}
+				}
+				
+				break;
+		}
+	}
+	
+	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+		switch ($path) {
+			case 'plugin_settings':
+				if (isset($box['tabs']['action_after_login']['fields']['welcome_page'])
+				 && isset($box['tabs']['action_after_login']['fields']['show_welcome_page'])) {
+					$box['tabs']['action_after_login']['fields']['welcome_page']['hidden'] = 
+						$values['action_after_login/show_welcome_page'] != '_ALWAYS'
+					 && $values['action_after_login/show_welcome_page'] != '_IF_NO_PREVIOUS_PAGE';
+				}
+				if (isset($box['tabs']['action_after_login']['fields']['terms_and_conditions_page'])
+				 && isset($box['tabs']['action_after_login']['fields']['requires_terms_and_conditions'])) {
+					$box['tabs']['action_after_login']['fields']['terms_and_conditions_page']['hidden'] = 
+						!$values['action_after_login/requires_terms_and_conditions'];
+				}
+				
+				//Handle redirect rules multi-row updates
+				if (isset($fields['action_after_login/number_of_redirect_rules'])) {
+					$addRows = !empty($box['tabs']['action_after_login']['fields']['add_redirect_rule']['pressed']);
+					$multiRows = $this->setupRedirectRuleRows($box, $fields, $values, $changes, $filling = false, $addRows);
+					$values['action_after_login/number_of_redirect_rules'] = $multiRows['numRows'];
+				}
+				
+				break;
+		}
+	}
+	
+	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+		switch ($path) {
+			case 'plugin_settings':
+				$defaultLangId = ze::$defaultLang;
+				
+				foreach ([
+					'error_messages/invalid_email_error_text' => '_ERROR_INVALID_EXTRANET_EMAIL',		
+					'error_messages/screen_name_required_error_text' => '_ERROR_EXTRANET_SCREEN_NAME',		
+					'error_messages/email_address_required_error_text' => '_ERROR_EXTRANET_EMAIL',			
+					'error_messages/password_required_error_text' => '_ERROR_EXTRANET_PASSWORD',		
+					'error_messages/no_new_password_error_text' => '_ERROR_NEW_PASSWORD',
+					'error_messages/no_new_repeat_password_error_text' => '_ERROR_REPEAT_NEW_PASSWORD'
+				] as $fieldName => $code) {
+					if (isset($fields[$fieldName])) {
+						ze\row::set('visitor_phrases', ['local_text' => $values[$fieldName]], ['code' => $code, 'language_id' => $defaultLangId]);
+					}
+				}
+				
+				break;
+		}
+	}
 	
 	
 

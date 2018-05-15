@@ -33,17 +33,17 @@ class zenario_users__organizer__groups extends zenario_users {
 		foreach ($panel['items'] as $id => &$item) {
 			$sql = '
 				SELECT COUNT(*)
-				FROM [users_custom_data AS ucd]
-				INNER JOIN [users AS u]
+				FROM '. DB_PREFIX. 'users_custom_data AS ucd
+				INNER JOIN '. DB_PREFIX. 'users AS u
 				   ON ucd.user_id = u.id
-				WHERE [ucd.'. $item['db_column']. ' = val]
-				AND u.status != \'suspended\'';
-			$item['members'] = ze\sql::fetchValue($sql, ['val' => 1]);
+				'. ze\row::whereCol('users_custom_data', 'ucd', $item['db_column'], '=', 1, $first = true). '
+				'. ze\row::whereCol('users', 'u', 'status', '!=', 'suspended');
+			$item['members'] = (int) ze\sql::fetchValue($sql);
 			
 			$sql = '
 				SELECT COUNT(*)
-				FROM '.DB_NAME_PREFIX.'group_link gcl
-				INNER JOIN '.DB_NAME_PREFIX.'content_items c
+				FROM '.DB_PREFIX.'group_link gcl
+				INNER JOIN '.DB_PREFIX.'content_items c
 					ON c.status != \'trashed\'
 					AND gcl.link_from_id = c.equiv_id
 					AND gcl.link_from_char = c.type

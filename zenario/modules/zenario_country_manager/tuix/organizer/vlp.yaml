@@ -10,7 +10,7 @@ zenario__languages:
                                                         AND vp.language_id = [[FOCUSED_LANGUAGE_ID]]
                 zenario_countries_regions_phrases:
                     table_join: |
-                        [[DB_NAME_PREFIX]][[ZENARIO_COUNTRY_MANAGER_PREFIX]]country_manager_regions rns
+                        [[DB_PREFIX]][[ZENARIO_COUNTRY_MANAGER_PREFIX]]country_manager_regions rns
                                                         ON
                                                             rns.id = [[REFINER_ID]]
                     sql: |

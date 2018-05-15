@@ -39,6 +39,20 @@ class zenario_common_features__admin_boxes__duplicate_plugin extends ze\moduleBa
 		$box['tabs']['instance']['edit_mode']['always_on'] = true;
 		$box['title'] = ze\admin::phrase('Duplicating the plugin "[[instance_name]]".', $instance);
 		
+		switch ($instance['class_name']) {
+			case 'zenario_plugin_nest':
+				$box['title'] = ze\admin::phrase('Duplicating the nest "[[instance_name]]".', $instance);
+				$fields['instance/name']['label'] = ze\admin::phrase('Nest name');
+				break;
+			case 'zenario_slideshow':
+				$box['title'] = ze\admin::phrase('Duplicating the slideshow "[[instance_name]]".', $instance);
+				$fields['instance/name']['label'] = ze\admin::phrase('Slideshow name');
+				break;
+			default:
+				$box['title'] = ze\admin::phrase('Duplicating the plugin "[[instance_name]]".', $instance);
+				$fields['instance/name']['label'] = ze\admin::phrase('Plugin name');
+		}
+		
 		$values['instance/name'] = $instance['name'];
 	}
 
@@ -54,7 +68,7 @@ class zenario_common_features__admin_boxes__duplicate_plugin extends ze\moduleBa
 				//Check to see if an instance of that name already exists
 				$sql = "
 					SELECT 1
-					FROM ". DB_NAME_PREFIX. "plugin_instances
+					FROM ". DB_PREFIX. "plugin_instances
 					WHERE name =  '". ze\escape::sql($values['instance/name']). "'";
 				
 				$result = ze\sql::select($sql);

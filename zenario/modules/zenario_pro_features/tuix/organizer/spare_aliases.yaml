@@ -15,7 +15,7 @@ zenario__administration:
             no_items_message: No spare aliases have been created.
             view_mode: list
             db_items:
-                table: '[[DB_NAME_PREFIX]]spare_aliases AS sa'
+                table: '[[DB_PREFIX]]spare_aliases AS sa'
                 id_column: sa.alias
             columns:
                 alias:

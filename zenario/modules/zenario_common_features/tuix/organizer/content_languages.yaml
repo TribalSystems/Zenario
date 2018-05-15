@@ -10,7 +10,7 @@ zenario__content:
             disable_grid_view: true
             allow_bypass: Yes
             db_items:
-                table: '[[DB_NAME_PREFIX]]languages AS l'
+                table: '[[DB_PREFIX]]languages AS l'
                 id_column: l.id
                 client_side: Yes
             refiners:

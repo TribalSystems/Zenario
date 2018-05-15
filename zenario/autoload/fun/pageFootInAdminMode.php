@@ -48,8 +48,8 @@ if ($includeOrganizer) {
 	
 	$sql = "
 		SELECT DISTINCT tfc.panel_type
-		FROM ". DB_NAME_PREFIX. "tuix_file_contents AS tfc
-		INNER JOIN ". DB_NAME_PREFIX. "modules AS m
+		FROM ". DB_PREFIX. "tuix_file_contents AS tfc
+		INNER JOIN ". DB_PREFIX. "modules AS m
 		   ON m.class_name = tfc.module_class_name
 		  AND m.status IN ('module_running', 'module_is_abstract')
 		WHERE tfc.panel_type IN ('google_map', 'google_map_or_list', 'network_graph')";
@@ -159,7 +159,7 @@ foreach (\ze\lang::getLanguages(!\ze::$cID) as $lang) {
 
 $spareDomains = [];
 $sql = '
-	SELECT requested_url FROM ' . DB_NAME_PREFIX . 'spare_domain_names';
+	SELECT requested_url FROM ' . DB_PREFIX . 'spare_domain_names';
 $result = \ze\sql::select($sql);
 while ($row = \ze\sql::fetchAssoc($result)) {
 	$spareDomains[] = \ze\link::protocol() . $row['requested_url'];

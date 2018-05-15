@@ -8,7 +8,7 @@ zenario__user_forms:
             no_items_message: No Forms have been created.
             select_mode_title: Select a form...
             db_items:
-                table: '[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms AS f'
+                table: '[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms AS f'
                 where_statement: WHERE f.status = 'active'
                 id_column: f.id
             refiners:
@@ -49,7 +49,7 @@ zenario__user_forms:
                     tooltip: Field count
                     db_column: |
                         (
-                        SELECT COUNT(*) FROM [[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields
+                        SELECT COUNT(*) FROM [[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields
                         WHERE user_form_id=f.id
                         )
                     show_by_default: true
@@ -62,7 +62,7 @@ zenario__user_forms:
                     tooltip: Logged responses
                     db_column: |
                         (
-                        SELECT COUNT(*) FROM [[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response
+                        SELECT COUNT(*) FROM [[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response
                         WHERE form_id = f.id
                         )
                     align_right: true
@@ -73,20 +73,18 @@ zenario__user_forms:
                     tooltip: Latest response date/time
                     db_column: |
                         (
-                        SELECT MAX(response_datetime) FROM [[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response
+                        SELECT MAX(response_datetime) FROM [[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response
                         WHERE form_id = f.id
                         )
                     format: datetime
                     show_by_default: true
-                plugin_usage:
-                    title: Plugin usage
+                where_used:
+                    title: Usage
                     show_by_default: true
-                plugin_module_name:
-                    title: Plugin module names
-                    show_by_default: false
-                plugin_content_items:
-                    title: Content usage
-                    show_by_default: true
+                    width: xlarge
+                    html: true
+                plugin_is_used:
+                    hidden: true
             default_sort_column: name
             
             item:
@@ -146,7 +144,7 @@ zenario__user_forms:
                     ord: 1
                     priv: _PRIV_MANAGE_FORMS
                     hide_in_select_mode: true
-                    label: Edit form meta data
+                    label: Edit form settings
                     admin_box:
                         path: zenario_user_form
                 edit_form_fields_gui:
@@ -184,13 +182,13 @@ zenario__user_forms:
                     label: View
                     hide_in_select_mode: true
                     hide_when_children_are_not_visible: true
-                view_content_items:
-                    ord: 6
-                    label: Content items this form is used on
-                    parent: view_dropdown
-                    link:
-                        path: zenario__content/panels/content
-                        refiner: form_id
+#                view_content_items:
+#                    ord: 6
+#                    label: Content items this form is used on
+#                    parent: view_dropdown
+#                    link:
+#                        path: zenario__content/panels/content
+#                        refiner: form_id
                 advanced_dropdown:
                     ord: 6.1
                     label: Advanced
@@ -232,20 +230,21 @@ zenario__user_forms:
                     multiple_select_tooltip: Delete these forms?
                     multiple_select: true
                     disabled_if_for_all_selected_items: |
-                        zenario.engToBoolean(item.plugin_content_items) || zenario.engToBoolean(item.plugin_usage);
+                        item.plugin_is_used
                     disabled_tooltip: |
                         This form is currently in use. Please remove the form from all plugins before attempting to delete the form.
-                    visible_if_for_all_selected_items: item.response_count == 0
                     ajax:
                         confirm:
                             message: |
                                 Are you sure you want to delete the form "[[name]]"?
                                 This action cannot be undone.
-
+                                
+                                Recorded form responses will be deleted.
                             multiple_select_message: |
                                 Are you sure you wish to delete these forms?
                                 This action cannot be undone.
                                 
+                                Recorded form responses will be deleted.
                             button_message: Delete
                             cancel_button_message: Cancel
                             message_type: warning
@@ -260,7 +259,8 @@ zenario__user_forms:
                     multiple_select_tooltip: Archive these forms?
                     multiple_select: true
                     visible_if_for_all_selected_items: item.response_count > 0
-                    disabled_if_for_all_selected_items: zenario.engToBoolean(item.plugin_content_items) || zenario.engToBoolean(item.plugin_usage);
+                    disabled_if_for_all_selected_items: |
+                        item.plugin_is_used
                     disabled_tooltip: |
                         This form is currently in use. Please remove the form from all plugins before attempting to archive the form.
                     ajax:
@@ -277,3 +277,24 @@ zenario__user_forms:
                         request:
                             archive_form: "1"
                     hide_on_refiner: archived
+            hidden_nav:
+                plugins_using_form:
+                    link:
+                        path: zenario__modules/panels/plugins
+                        refiner: plugins_using_form
+                nests_using_form:
+                    link:
+                        path: zenario__modules/panels/plugins
+                        refiner: nests_using_form
+                slideshows_using_form:
+                    link:
+                        path: zenario__modules/panels/plugins
+                        refiner: slideshows_using_form
+                content_items_using_form:
+                    link:
+                        path: zenario__content/panels/content
+                        refiner: content_items_using_form
+                layouts_using_form:
+                    link:
+                        path: zenario__layouts/panels/layouts
+                        refiner: layouts_using_form

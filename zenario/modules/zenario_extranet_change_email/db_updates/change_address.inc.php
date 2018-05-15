@@ -28,11 +28,11 @@
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 ze\dbAdm::revision(1,
 <<<_sql
-	DROP TABLE IF EXISTS [[DB_NAME_PREFIX]][[ZENARIO_EXTRANET_CHANGE_EMAIL_PREFIX]]new_user_emails
+	DROP TABLE IF EXISTS [[DB_PREFIX]][[ZENARIO_EXTRANET_CHANGE_EMAIL_PREFIX]]new_user_emails
 _sql
 ,
 <<<_sql
-CREATE TABLE [[DB_NAME_PREFIX]][[ZENARIO_EXTRANET_CHANGE_EMAIL_PREFIX]]new_user_emails
+CREATE TABLE [[DB_PREFIX]][[ZENARIO_EXTRANET_CHANGE_EMAIL_PREFIX]]new_user_emails
 	(
 	`user_id` int(10) NOT NULL,
 	`new_email` varchar(100) NOT NULL,
@@ -42,12 +42,10 @@ CREATE TABLE [[DB_NAME_PREFIX]][[ZENARIO_EXTRANET_CHANGE_EMAIL_PREFIX]]new_user_
 _sql
 );
 ze\dbAdm::revision(4, "
-	INSERT IGNORE INTO [[DB_NAME_PREFIX]]email_templates (
+	INSERT IGNORE INTO [[DB_PREFIX]]email_templates (
 		`code`,
 		`template_name`,
 		`subject`,
-		`email_address_from`,
-		`email_name_from`,
 		`body`,
 		`date_created`,
 		`created_by_id`,
@@ -56,8 +54,6 @@ ze\dbAdm::revision(4, "
 		 'zenario_extranet_change_email__to_user_email_change_en',
 		 'To User: Change email verification',
 		 'Verify your new email address',
-		 '" . ze\escape::sql(ze::setting('email_address_from')) . "',
-		 '" . ze\escape::sql(ze::setting('email_name_from')) . "',
 		 '<p>Dear [[first_name]] [[last_name]],</p>
 		<p>You have recently changed your email address and we now need to verify the new email address.</p>
 		<p>Please follow this link to verify your new email address: <a href=\"[[email_confirmation_link]]\">[[email_confirmation_link]]</a></p>
@@ -72,7 +68,7 @@ ze\dbAdm::revision(4, "
 ze\dbAdm::revision(30,
 
 <<<_sql
-	UPDATE [[DB_NAME_PREFIX]]email_templates
+	UPDATE [[DB_PREFIX]]email_templates
 	SET `module_class_name` = 'zenario_extranet_change_email'
 	WHERE `code` = 'zenario_extranet_change_email__to_user_email_change_en'
 _sql

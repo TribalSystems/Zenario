@@ -185,7 +185,7 @@ if ($newDraftCreated) {
 		//Copy the record of which inline files are used here
 		//Note that while the "in_use" column is set here, it will be recalculated by the \ze\contentAdm::syncInlineFileContentLink() function below
 		$sql = "
-			REPLACE INTO ". DB_NAME_PREFIX. "inline_images (
+			REPLACE INTO ". DB_PREFIX. "inline_images (
 				image_id,
 				foreign_key_to,
 				foreign_key_id,
@@ -199,7 +199,7 @@ if ($newDraftCreated) {
 				'". \ze\escape::sql($cTypeTo). "',
 				". (int) $cVersionTo. ",
 				in_use
-			FROM ". DB_NAME_PREFIX. "inline_images
+			FROM ". DB_PREFIX. "inline_images
 			WHERE foreign_key_to = 'content'
 			  AND foreign_key_id = ". (int) $cIDFrom. "
 			  AND foreign_key_char = '". \ze\escape::sql($cTypeFrom). "'
@@ -211,11 +211,11 @@ if ($newDraftCreated) {
 			  AND in_use = 1";
 		}
 		
-		\ze\sql::select($sql);  //No need to check the cache as the other statements should clear it correctly
+		\ze\sql::cacheFriendlyUpdate($sql);  //No need to check the cache as the other statements should clear it correctly
 		
 		//Copy Slot Contents
 		$sql = "
-			REPLACE INTO ". DB_NAME_PREFIX. "plugin_item_link (
+			REPLACE INTO ". DB_PREFIX. "plugin_item_link (
 				module_id,
 				instance_id,
 				content_id,
@@ -229,15 +229,15 @@ if ($newDraftCreated) {
 				'". \ze\escape::sql($cTypeTo). "',
 				". (int) $cVersionTo. ",
 				slot_name
-			FROM ". DB_NAME_PREFIX. "plugin_item_link
+			FROM ". DB_PREFIX. "plugin_item_link
 			WHERE content_id = ". (int) $cIDFrom. "
 			  AND content_type = '". \ze\escape::sql($cTypeFrom). "'
 			  AND content_version = ". (int) $cVersionFrom;
-		\ze\sql::select($sql);  //No need to check the cache as the other statements should clear it correctly
+		\ze\sql::cacheFriendlyUpdate($sql);  //No need to check the cache as the other statements should clear it correctly
 		
 		
 		$sql = "
-			REPLACE INTO ". DB_NAME_PREFIX. "content_cache (
+			REPLACE INTO ". DB_PREFIX. "content_cache (
 				content_id,
 				content_type,
 				content_version,
@@ -251,11 +251,11 @@ if ($newDraftCreated) {
 				text,
 				extract,
 				extract_wordcount
-			FROM ". DB_NAME_PREFIX. "content_cache
+			FROM ". DB_PREFIX. "content_cache
 			WHERE content_id = ". (int) $cIDFrom. "
 			  AND content_type = '". \ze\escape::sql($cTypeFrom). "'
 			  AND content_version = ". (int) $cVersionFrom;
-		\ze\sql::select($sql);  //No need to check the cache as the other statements should clear it correctly
+		\ze\sql::cacheFriendlyUpdate($sql);  //No need to check the cache as the other statements should clear it correctly
 		
 		
 		\ze\pluginAdm::duplicateVC($cIDTo, $cIDFrom, $cType, $cVersionTo, $cVersionFrom, $cTypeFrom);

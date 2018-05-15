@@ -251,8 +251,11 @@ class zenario_feed_reader extends ze\moduleBaseClass {
 				];
 				$subSections['Feeds'][] = $feedMergeFields;
 			}
+		
+		$pageMergeFields['title_tags'] = $this->setting('title_tags');
+		$pageMergeFields['feed_title_tags'] = $this->setting('feed_title_tags');
+		
 		$this->framework('Feed_Reader', $pageMergeFields, $subSections );
-	
 	}
 	
 	protected function getLiveFeed() {
@@ -309,6 +312,7 @@ class zenario_feed_reader extends ze\moduleBaseClass {
 				$box['tabs']['display']['fields']['date_format']['hidden'] = $values['display/show_date_time']=='dont_show';
 				$box['tabs']['display']['fields']['feed_title']['hidden'] = $values['display/title']!='use_custom_title';
 				$box['tabs']['filtering']['fields']['regexp']['hidden'] = $values['filtering/regexp_field']=='do_no_filter';
+				$box['tabs']['display']['fields']['title_tags']['hidden'] = $values['display/title']=='dont_show';
 				break;
 				
 		}

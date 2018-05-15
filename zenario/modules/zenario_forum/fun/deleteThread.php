@@ -32,7 +32,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 $postCount = 0;
 $sql = "
 	SELECT poster_id
-	FROM ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "user_posts
+	FROM ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "user_posts
 	WHERE thread_id = ". (int) $this->threadId. "
 	GROUP BY poster_id";
 
@@ -50,13 +50,13 @@ $this->markOtherThreadsAsLessRecent($threadLastUpdated, $this->forumId);
 
 //Delete all posts in the thread
 $sql = "
-	DELETE FROM ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "user_posts
+	DELETE FROM ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "user_posts
 	WHERE thread_id = ". (int) $this->threadId;
 $result = ze\sql::update($sql);
 
 //Delete the thread
 $sql = "
-	DELETE FROM ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "threads
+	DELETE FROM ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "threads
 	WHERE id = ". (int) $this->threadId;
 $result = ze\sql::update($sql);
 

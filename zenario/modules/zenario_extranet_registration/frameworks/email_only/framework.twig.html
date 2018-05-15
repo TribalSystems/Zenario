@@ -46,13 +46,13 @@
 					
 					<div class="extranet_field">
 						<div class="label"><label for="email">{{"_EMAIL:"|trans}}</label></div>
-						{{this.frameworkField({'type': "text", 'name': "email", 'id': "email", 'pattern': "new_email", 'required': "true", 'class': "extranet_text"})}}
+						{{this.frameworkField({'type': "email", 'name': "email", 'id': "email", 'pattern': "new_email", 'required': "true", 'class': "extranet_text"})}}
 					</div>
 					
 					{% if Second_Email %}
 						<div class="extranet_field">
 							<div class="label"><label for="email_confirm">{{"Repeat email:"|trans}}</label></div>
-							{{this.frameworkField({'type': "text", 'name': "email_confirm", 'id': "email_confirm", 'class': "extranet_text"})}}
+							{{this.frameworkField({'type': "email", 'name': "email_confirm", 'id': "email_confirm", 'class': "extranet_text"})}}
 						</div>
 					{% endif %}
 
@@ -110,7 +110,7 @@
 					
 					<div class="extranet_field">
 						<div class="label"><label for="email">{{"_EMAIL:"|trans}}</label></div>
-						{{this.frameworkField({'type': "text", 'name': "email", 'id': "email", 'pattern': "unverified_email", 'required': "true", 'class': "extranet_text"})}}
+						{{this.frameworkField({'type': "email", 'name': "email", 'id': "email", 'pattern': "unverified_email", 'required': "true", 'class': "extranet_text"})}}
 					</div>
 					
 					<div class="extranet_btn"><div class="r">

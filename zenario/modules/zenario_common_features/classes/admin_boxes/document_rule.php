@@ -263,7 +263,7 @@ class zenario_common_features__admin_boxes__document_rule extends ze\moduleBaseC
 		if (!$box['key']['id']) {
 			$sql = "
 				SELECT 1 + IFNULL(MAX(ordinal), 0)
-				FROM ". DB_NAME_PREFIX. "document_rules";
+				FROM ". DB_PREFIX. "document_rules";
 			$result = ze\sql::select($sql);
 			$row = ze\sql::fetchRow($result);
 			$rule['ordinal'] = $row[0];

@@ -27,12 +27,10 @@
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 ze\dbAdm::revision(1, "
-	INSERT IGNORE [[DB_NAME_PREFIX]]email_templates (
+	INSERT IGNORE [[DB_PREFIX]]email_templates (
 		`code`,
 		`template_name`,
 		`subject`,
-		`email_address_from`,
-		`email_name_from`,
 		`body`,
 		`date_created`,
 		`created_by_id`,
@@ -41,8 +39,6 @@ ze\dbAdm::revision(1, "
 		 'zenario_extranet_password_reset__to_user_password_reset_en',
 		 'To User: Password reset',
 		 'Password reset',
-		 '" . ze\escape::sql(ze::setting('email_address_from')) . "',
-		 '" . ze\escape::sql(ze::setting('email_name_from')) . "',
 		 '<p>Dear [[first_name]] [[last_name]],</p>
 		 <p>You (or someone pretending to be you) asked for a reset of your password on <a href=\"[[cms_url]]\">[[cms_url]]</a></p>
 		 <p>To reset your password, please click the link below</p>
@@ -58,7 +54,7 @@ ze\dbAdm::revision(1, "
 ); ze\dbAdm::revision(3,
 
 <<<_sql
-	UPDATE [[DB_NAME_PREFIX]]email_templates
+	UPDATE [[DB_PREFIX]]email_templates
 	SET `module_class_name` = 'zenario_extranet_password_reset'
 	WHERE `code` = 'zenario_extranet_password_reset__to_user_password_reset_en'
 _sql

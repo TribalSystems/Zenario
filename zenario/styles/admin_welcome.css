@@ -199,13 +199,13 @@ body.webkit input {
 .welcome div.thickbox_table fieldset.zenario_grouping__sub_table .invalid > div,
 .welcome div.thickbox_table fieldset.zenario_grouping__sub_table .sub_invalid > div
 {
-	background:url('../admin/images/error-icon-small.png') no-repeat 15px 5px;
+	background:url('../admin/images/icon-error.svg') no-repeat 15px 5px / 16px 16px;
 }
 
 .welcome div.thickbox_table fieldset.zenario_grouping__sub_table .warning > div,
 .welcome div.thickbox_table fieldset.zenario_grouping__sub_table .sub_warning > div
 {
-	background:url('../admin/images/icon-warning.png') no-repeat 15px 5px;
+	background:url('../admin/images/icon-warning.svg') no-repeat 15px 5px / 16px 16px;
 }
 
 /* Diagnostics */
@@ -773,7 +773,7 @@ body.webkit input {
 .welcome div.thickbox_table .zfab_error 
 {
 	margin-bottom:20px;
-	background:url('../admin/images/error-icon-small.png') no-repeat 0 0 ;
+	background:url('../admin/images/icon-error.svg') no-repeat left 0 / 16px 16px;
 }
 
 .welcome div.thickbox_table .zfab_error_wrap .zfab_error_inner
@@ -1127,75 +1127,80 @@ body.ie #zenario_abtab .zenario_ab_tab__login .zenario_ab_row__remember_me:hover
 
 .organizer_item_image {
 	display: inline-block;
-	width: 12px;
-	height: 11px;
+	width: 20px;
+	height: 23px;
 	background-repeat: no-repeat;
 	background-size: 25.5px 2000px;
+	margin-right:5px;
+}
+
+#welcome div[class*="content_unpublished"] {
+	position:relative;
+}
+
+#welcome div[class*="content_unpublished"] .organizer_item_image {
+	position:absolute;
+	top:5px;
+	left:20px;
+}
+
+#welcome div[class*="content_unpublished"] .zfab_row_fields > span {
+	display:block;
+	margin-left:25px;
 }
 
 .organizer_item_image.home_content_draft_published {
-	background-position: -8px -323px;
-	background-image: url('../admin/images/sprites/sprite-list-icons-single-col-v2.png');
+	background:url("../admin/images/icon-content-home-draft-published.png") no-repeat center center / 20px 23px;
 }
 .organizer_item_image.home_content_published {
 	background-position: -8px -22px;
 	background-image: url('../admin/images/sprites/sprite-list-icons-single-col-v2.png');
 }
 .organizer_item_image.home_content_draft {
-	background-position: -8px -298px;
-	background-image: url('../admin/images/sprites/sprite-list-icons-single-col-v2.png');
+	background:url("../admin/images/icon-content-home-draft.png") no-repeat center center / 20px 23px;
 }
 .organizer_item_image.special_content_draft_published {
-	background-position: -8px -423px;
-	background-image: url('../admin/images/sprites/sprite-list-icons-single-col-v2.png');
+	background:url("../admin/images/icon-content-special-draft-published.png") no-repeat center center / 20px 23px;
 }
 .organizer_item_image.special_content_published {
 	background-position: -8px -72px;
 	background-image: url('../admin/images/sprites/sprite-list-icons-single-col-v2.png');
 }
 .organizer_item_image.special_content_draft_hidden {
-	background-position: -8px -448px;
-	background-image: url('../admin/images/sprites/sprite-list-icons-single-col-v2.png');
+	background:url("../admin/images/icon-content-special-draft-hidden.png") no-repeat center center / 20px 23px;
 }
 .organizer_item_image.special_content_hidden {
 	background-position: -8px -175px;
 	background-image: url('../admin/images/sprites/sprite-list-icons-single-col-v2.png');
 }
 .organizer_item_image.special_content_draft {
-	background-position: -8px -398px;
-	background-image: url('../admin/images/sprites/sprite-list-icons-single-col-v2.png');
+	background:url("../admin/images/icon-content-special-draft.png") no-repeat center center / 20px 23px;
 }
 .organizer_item_image.special_content_draft_trashed {
-	background-position: -8px -448px;
-	background-image: url('../admin/images/sprites/sprite-list-icons-single-col-v2.png');
+	background:url("../admin/images/icon-content-special-draft-trashed.png") no-repeat center center / 20px 23px;
 }
 .organizer_item_image.special_content_trashed {
 	background-position: -8px -123px;
 	background-image: url('../admin/images/sprites/sprite-list-icons-single-col-v2.png');
 }
 .organizer_item_image.content_draft_published {
-	background-position: -8px -223px;
-	background-image: url('../admin/images/sprites/sprite-list-icons-single-col-v2.png');
+	background:url("../admin/images/icon-content-draft-published.png") no-repeat center center / 20px 23px;
 }
 .organizer_item_image.content_published {
-	background-position: -8px -47px;
-	background-image: url('../admin/images/sprites/sprite-list-icons-single-col-v2.png');
+	background:url("../admin/images/icon-content-published.svg") no-repeat center center / 20px 23px;
 }
 .organizer_item_image.content_draft_hidden {
-	background-position: -8px -273px;
-	background-image: url('../admin/images/sprites/sprite-list-icons-single-col-v2.png');
+	background:url("../admin/images/icon-content-draft-hidden.png") no-repeat center center / 20px 23px;
 }
 .organizer_item_image.content_hidden {
 	background-position: -8px -147px;
 	background-image: url('../admin/images/sprites/sprite-list-icons-single-col-v2.png');
 }
 .organizer_item_image.content_draft {
-	background-position: -8px -197px;
-	background-image: url('../admin/images/sprites/sprite-list-icons-single-col-v2.png');
+	background:url("../admin/images/icon-content-draft.svg") no-repeat center center / 20px 23px;
 }
 .organizer_item_image.content_draft_trashed {
-	background-position: -8px -247px;
-	background-image: url('../admin/images/sprites/sprite-list-icons-single-col-v2.png');
+	background:url("../admin/images/icon-content-draft-trashed.png") no-repeat center center / 20px 23px;
 }
 .organizer_item_image.content_trashed {
 	background-position: -8px -97px;

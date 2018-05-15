@@ -28,12 +28,10 @@
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
 ze\dbAdm::revision(37, "
-    INSERT IGNORE INTO [[DB_NAME_PREFIX]]email_templates (
+    INSERT IGNORE INTO [[DB_PREFIX]]email_templates (
     	`code`,
         `template_name`,
         `subject`,
-        `email_address_from`,
-        `email_name_from`,
         `body`,
         `date_created`,
         `created_by_id`,
@@ -42,8 +40,6 @@ ze\dbAdm::revision(37, "
     	'zenario_comments__to_admin_comment_notification_en',
         'To Admin: Comment notification',
         'Comment notification',
-        '". ze\escape::sql(ze::setting('email_address_from')). "',
-        '". ze\escape::sql(ze::setting('email_name_from')). "',
         '<p>Dear Admin,</p>
         <p>The following comment has been made on the page entitled &quot;[[page_title]]&quot;:</p>
         <p>Comment:<br/>[[message]]</p>
@@ -58,12 +54,10 @@ ze\dbAdm::revision(37, "
 ");
 
 ze\dbAdm::revision(104, "
-    INSERT IGNORE INTO [[DB_NAME_PREFIX]]email_templates (
+    INSERT IGNORE INTO [[DB_PREFIX]]email_templates (
     	`code`,
         `template_name`,
         `subject`,
-        `email_address_from`,
-        `email_name_from`,
         `body`,
         `date_created`,
         `created_by_id`,
@@ -72,8 +66,6 @@ ze\dbAdm::revision(104, "
     	'zenario_comments__comment_report',
         'To Admin: Reported User Comment',
         'Reported User Comment',
-        '". ze\escape::sql(ze::setting('email_address_from')). "',
-        '". ze\escape::sql(ze::setting('email_name_from')). "',
         '<p>Dear Admin,</p>
         <p>A visitor to your website has reported the following User-submitted comment as offensive:</p>
 		<p><b>URL: </b><a href=\"[[link]]\">[[link]]</a></p>
@@ -92,12 +84,10 @@ ze\dbAdm::revision(104, "
 ");
 
 ze\dbAdm::revision(107, "
-    INSERT IGNORE INTO [[DB_NAME_PREFIX]]email_templates (
+    INSERT IGNORE INTO [[DB_PREFIX]]email_templates (
     	`code`,
         `template_name`,
         `subject`,
-        `email_address_from`,
-        `email_name_from`,
         `body`,
         `date_created`,
         `created_by_id`,
@@ -106,8 +96,6 @@ ze\dbAdm::revision(107, "
     	'zenario_comments__comment_awaiting_approval',
         'To Admin: Comment awaiting approval',
         'Comment awaiting approval',
-        '". ze\escape::sql(ze::setting('email_address_from')). "',
-        '". ze\escape::sql(ze::setting('email_name_from')). "',
         '<p>Dear Admin,</p>
         <p>The following comment on the page entitled &quot;[[page_title]]&quot; is awaiting approval:</p>
         <p>Comment:<br/>[[message]]</p>
@@ -126,19 +114,19 @@ ze\dbAdm::revision(107, "
 ze\dbAdm::revision(150,
 
 <<<_sql
-	UPDATE [[DB_NAME_PREFIX]]email_templates
+	UPDATE [[DB_PREFIX]]email_templates
 	SET `module_class_name` = 'zenario_anonymous_comments'
 	WHERE `code` = 'zenario_comments__to_admin_comment_notification_en'
 _sql
 
 ,<<<_sql
-	UPDATE [[DB_NAME_PREFIX]]email_templates
+	UPDATE [[DB_PREFIX]]email_templates
 	SET `module_class_name` = 'zenario_anonymous_comments'
 	WHERE `code` = 'zenario_comments__comment_report'
 _sql
 
 ,<<<_sql
-	UPDATE [[DB_NAME_PREFIX]]email_templates
+	UPDATE [[DB_PREFIX]]email_templates
 	SET `module_class_name` = 'zenario_anonymous_comments'
 	WHERE `code` = 'zenario_comments__comment_awaiting_approval'
 _sql

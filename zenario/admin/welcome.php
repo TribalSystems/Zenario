@@ -56,14 +56,15 @@ $installed =
  && (defined('DBNAME'))
  && (defined('DBUSER'))
  && (defined('DBPASS'))
- && (ze::$lastDB = ze::$localDB = @ze\db::connect(DBHOST, DBNAME, DBUSER, DBPASS, DBPORT, false))
- && ($result = @ze::$localDB->query("SHOW TABLES LIKE '". DB_NAME_PREFIX. "site_settings'"))
+ && (ze::$dbL = new \ze\db(DB_PREFIX, DBHOST, DBNAME, DBUSER, DBPASS, DBPORT, false))
+ && (ze::$dbL->con)
+ && ($result = @ze::$dbL->con->query("SHOW TABLES LIKE '". DB_PREFIX. "site_settings'"))
  && ($installStatus = 2)
  && ($result->num_rows)
  && ($installStatus = 3);
 
 if (!$installed) {
-	ze::$lastDB = ze::$localDB = '';
+	ze::$dbL = null;
 }
 
 
@@ -144,7 +145,7 @@ if ($installed) {
 	//Check for versions of Tribiq CMS/Zenario before 7.5
 	$sql = "
 		SELECT 1
-		FROM ". DB_NAME_PREFIX. "local_revision_numbers
+		FROM ". DB_PREFIX. "local_revision_numbers
 		WHERE path IN ('admin/db_updates/step_1_update_the_updater_itself', 'admin/db_updates/step_2_update_the_database_schema', 'admin/db_updates/step_4_migrate_the_data')
 		  AND patchfile IN ('updater_tables.inc.php', 'admin_tables.inc.php', 'content_tables.inc.php', 'user_tables.inc.php')
 		  AND revision_no < ". (38660). "
@@ -170,7 +171,7 @@ if ($installed) {
 	//at a previous version of the software.
 	$sql = "
 		SELECT revision_no
-		FROM ". DB_NAME_PREFIX. "local_revision_numbers
+		FROM ". DB_PREFIX. "local_revision_numbers
 		WHERE path IN ('admin/db_updates/step_1_update_the_updater_itself', 'admin/db_updates/step_2_update_the_database_schema', 'admin/db_updates/step_4_migrate_the_data')
 		  AND patchfile IN ('updater_tables.inc.php', 'admin_tables.inc.php', 'content_tables.inc.php', 'user_tables.inc.php')
 		  AND revision_no > ". (int) LATEST_REVISION_NO. "
@@ -181,7 +182,7 @@ if ($installed) {
 		
 		$sql = "
 			SELECT value
-			FROM ". DB_NAME_PREFIX. "site_settings
+			FROM ". DB_PREFIX. "site_settings
 			WHERE name = 'zenario_version'";
 		$dbVer = ze\sql::fetchRow(ze\sql::select($sql));
 		
@@ -207,6 +208,9 @@ if ($installed) {
 			</p>';
 		exit;
 	}
+	
+	//Check for any out of date YAML files and clear the cache if needed.
+	ze\miscAdm::checkForChangesInYamlFiles();
 }
 
 
@@ -246,9 +250,9 @@ ze\content::pageBody();
 ze\content::pageFoot('../', 'welcome', false, false);
 
 $logoURL = $logoWidth = $logoHeight = false;
-if (ze::$lastDB
+if (ze::$dbL
  && ze::setting('brand_logo') == 'custom'
- && ($result = ze\sql::select("SHOW COLUMNS IN ". DB_NAME_PREFIX. "files WHERE Field = 'thumbnail_64x64_width'"))
+ && ($result = ze\sql::select("SHOW COLUMNS IN ". DB_PREFIX. "files WHERE Field = 'thumbnail_64x64_width'"))
  && ($dbAtRecentRevision = ze\sql::fetchRow($result))
  && (ze\file::imageLink($logoWidth, $logoHeight, $logoURL, ze::setting('custom_logo'), 500, 250, $mode = 'resize', $offset = 0, $retina = true))) {
 	

@@ -59,7 +59,7 @@ distinctQuery:
     <p>This works just like the <span class="code"><a href="ref-core-getrows">getRows()</a></span> function, except the <span class="code">DISTINCT</span> keyword is used in MySQL to remove duplicate rows.</p>
     <h2>Where You Can Use It</h2>
     <p>From Zenario 7.0.0 onwards.</p>
-getDistinctArray:
+getDistinctAssocs:
   summary: |
     Gets multiple rows from a given table in the database as a PHP array.
     This works just like the getRowsArray() function, except the DISTINCT keyword is used in MySQL to remove duplicate rows.

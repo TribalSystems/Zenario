@@ -8,8 +8,8 @@ zenario__content:
             title: Documents
             db_items:
                 table: |
-                    [[DB_NAME_PREFIX]]documents AS d
-                    LEFT JOIN [[DB_NAME_PREFIX]]files AS f ON d.file_id = f.id
+                    [[DB_PREFIX]]documents AS d
+                    LEFT JOIN [[DB_PREFIX]]files AS f ON d.file_id = f.id
                 where_statement: WHERE d.type = 'folder'
                 id_column: d.id
                 client_side: true

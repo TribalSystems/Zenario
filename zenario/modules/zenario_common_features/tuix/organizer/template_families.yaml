@@ -7,7 +7,7 @@ zenario__layouts:
             title: Template directories
             no_items_message: There are no template directories in your zenario_custom/templates directory
             db_items:
-                table: '[[DB_NAME_PREFIX]]template_families AS tf'
+                table: '[[DB_PREFIX]]template_families AS tf'
                 id_column: tf.family_name
                 encode_id_column: true
             columns:
@@ -35,7 +35,7 @@ zenario__layouts:
                     db_column: |
                         (
                                 SELECT COUNT(*)
-                                FROM [[DB_NAME_PREFIX]]layouts AS t
+                                FROM [[DB_PREFIX]]layouts AS t
                                 WHERE t.family_name = tf.family_name
                                 GROUP BY tf.family_name
                             )

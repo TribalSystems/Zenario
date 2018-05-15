@@ -422,6 +422,195 @@ methods.returnAJAXURL = function(action) {
 
 
 
+
+methods.typeaheadSearchEnabled = function(field, id, tab) {
+	
+	var pick_items = field.pick_items;
+	
+	return pick_items && (pick_items.path || pick_items.target_path) && pick_items.enable_type_ahead_search !== false;
+};
+
+methods.typeaheadSearchAJAXURL = function(field, id, tab) {
+
+	var pAndR,
+		pick_items = field.pick_items,
+		pathDetails = pick_items.path && zenarioO.convertNavPathToTagPathAndRefiners(pick_items.path),
+		targetPathDetails = pick_items.target_path && zenarioO.convertNavPathToTagPathAndRefiners(pick_items.target_path);
+	
+	//If pick_items.path leads to the same place as pick_items.target_path,
+	//prefer pick_items.path as this is more likely to have a refiner set on it
+	if (pathDetails
+	 && targetPathDetails
+	 && pathDetails.path == targetPathDetails.path) {
+		pAndR = pathDetails;
+	} else {
+		pAndR = targetPathDetails || pathDetails;
+	}
+	
+	if (pAndR) {
+		return URLBasePath + 'zenario/admin/organizer.ajax.php?_typeahead_search=1&path=' + encodeURIComponent(pAndR.path) + zenario.urlRequest(pAndR.request);
+	}
+};
+
+methods.parseTypeaheadSearch = function(field, id, tab, readOnly, panel) {
+	
+	var valueId, item, label,
+		data = [];
+	
+	if (panel.items) {
+		foreach (panel.items as valueId => item) {
+			
+			label = zenarioA.formatOrganizerItemName(panel, valueId)
+			
+			field.values = field.values || {};
+			field.values[valueId] = {
+				list_image: item.list_image,
+				css_class: item.css_class || (panel.item && panel.item.css_class),
+				label: label
+			};
+			
+			data.push({value: valueId, text: label, html: thus.drawPickedItem(valueId, id, field, readOnly, true)});
+		}
+	}
+	
+	return data;
+};
+
+//Return the HTML for a picked item
+methods.drawPickedItem = function(item, id, field, readOnly, inDropDown) {
+	
+	if (!defined(field)) {
+		field = thus.field(id);
+	}
+	//if (!defined(value)) {
+	//	value = thus.value(id, this.tuix.tab);
+	//}
+	
+	var panel,
+		//m, i,
+		valueObject = {},
+		label = field.values && field.values[item],
+		pick_items = field.pick_items || {},
+		numeric = item == 1 * item,
+		extension,
+		widthAndHeight,
+		file,
+		path,
+		src,
+		mi = {
+			id: id,
+			item: item,
+			label: label,
+			//first: i == 0,
+			//last: i == sortedPickedItems.length - 1,
+			readOnly: readOnly
+		};
+	
+	if (_.isObject(label)) {
+		mi.missing = label.missing;
+		mi.css_class = label.css_class;
+		mi.list_image = label.list_image;
+		label = mi.label = label.label;
+	
+	} else if (label) {
+		mi.label = label;
+	
+	} else {
+		label = mi.label = item;
+		mi.missing = true;
+	}
+	
+	if (field.tag_colors) {
+		mi.tag_color = field.tag_colors[item] || 'blue';
+	}
+	
+	//Attempt to work out the path to the item in Organizer, and include an "info" button there
+	//If this is a file upload, the info button shouldn't be shown for newly uploaded files;
+	//only files with an id should show the info button.
+	if (!engToBoolean(pick_items.hide_info_button)
+	 && (!field.upload || numeric)
+	 && (path = pick_items.path)
+	 && (path == pick_items.target_path || pick_items.min_path == pick_items.target_path)) {
+		
+		//No matter what the generated path was, there should always be two slashes between the selected item and the path
+		if (zenario.rightHandedSubStr(path, 2) == '//') {
+			path += item;
+		} else if (zenario.rightHandedSubStr(path, 1) == '/') {
+			path += '/' + item;
+		} else {
+			path += '//' + item;
+		}
+		
+		mi.organizerPath = path;
+	}
+	
+	
+	if (field.upload) {
+		mi.isUpload = true;
+		
+		extension = (('' + label).match(/(.*?)\.(\w+)$/)) || (('' + label).match(/(.*?)\.(\w+) \[.*\]$/));
+	
+		//Attempt to get the extension of the file this is chosen
+		if (extension && extension[2]) {
+			extension = extension[2].toLowerCase();
+		} else {
+			extension = 'unknown';
+		}
+		
+		mi.extension = extension;
+		
+		//Generate a link to the selected file
+		if (numeric) {
+			if ((file = field.values && field.values[item])
+			 && (file.checksum)) {
+				//If this is an existing file (with a numeric id), link by id
+				src = URLBasePath + 'zenario/file.php?c=' + encodeURIComponent(file.checksum);
+			
+				if (file.usage) {
+					src += '&usage=' + encodeURIComponent(file.usage);
+				}
+			} else {
+				//Otherwise if this looks like a numeric id, try to link by id
+				src = URLBasePath + 'zenario/file.php?id=' + item;
+			}
+		} else {
+			//Otherwise try to display it from the cache/uploads/ directory
+			src = URLBasePath + 'zenario/file.php?getUploadedFileInCacheDir=' + encodeURIComponent(item);
+		}
+	
+		//Check if thus is an image this has been chosen
+		if (extension.match(/gif|jpg|jpeg|png|svg/)) {
+			//For images, display a thumbnail this opens a colorbox when clicked
+			mi.thumbnail = {
+				onclick: thus.globalName + ".showPickedItemInPopout('" + src + "&popout=1&dummy_filename=" + encodeURIComponent("image." + extension) + "', '" + label + "');",
+				src: src + "&og=1"
+			};
+			
+			//Attempt to get the width and height from the label, and work out the correct
+			//width and height for the thumbnail.
+			//(The max is 180 by 120; this is the size of Organizer thumbnails and
+			// is also set in zenario/file.php)
+			widthAndHeight = ('' + label).match(/.*\[\s*(\d+)p?x?\s*[×x]\s*(\d+)p?x?\s*\]$/);
+			if (widthAndHeight && widthAndHeight[1] && widthAndHeight[2]) {
+				zenarioT.resizeImage(widthAndHeight[1], widthAndHeight[2], 180, 120, mi.thumbnail);
+			}
+			
+			
+		} else {
+			//Otherwise display a download link
+			mi.adminDownload = src + "&adminDownload=1";
+		}
+	}
+	
+	if (inDropDown) {
+		return thus.microTemplate(pick_items.dropdown_item_microtemplate || thus.mtPrefix + '_dropdown_item', mi);
+	} else {
+		return thus.microTemplate(pick_items.picked_item_microtemplate || thus.mtPrefix + '_picked_item', mi);
+	}
+};
+
+
+
 //Attempt to get the URL of a preview
 methods.pluginPreviewDetails = function(loadValues, fullPage, fullWidth, slotName, instanceId) {
 	
@@ -465,7 +654,7 @@ methods.pluginPreviewDetails = function(loadValues, fullPage, fullWidth, slotNam
 							|| (zenario.slots && zenario.slots[slotName] && zenario.slots[slotName].instanceId);
 	
 	if (slotName && zenario_conductor.enabled(slotName)) {
-		zenario_conductor.mergeRequests(slotName, requests);
+		requests = zenario_conductor.request(slotName, 'refresh', requests);
 	}
 	
 	requests.cVersion = zenario.cVersion;

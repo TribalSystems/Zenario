@@ -56,8 +56,17 @@ if (ze\dbAdm::needRevision(159)) {
 	ze\dbAdm::revision(159);
 }
 
-if (ze\dbAdm::needRevision(210)) {
+if (ze\dbAdm::needRevision(225)) {
 	$dataset = ze\dataset::details('documents');
+	
 	ze\datasetAdm::registerSystemField($dataset['id'], 'text', 'details', 'document_title', 'title');
-	ze\dbAdm::revision(210);
+	ze\datasetAdm::registerSystemField($dataset['id'], 'date', 'details', 'date_uploaded', 'file_datetime');
+	ze\datasetAdm::registerSystemField($dataset['id'], 'text', 'details', 'document_name', '');
+	ze\datasetAdm::registerSystemField($dataset['id'], 'checkboxes', 'details', 'tags', '');
+	ze\datasetAdm::registerSystemField($dataset['id'], 'radios', 'details', 'privacy', 'privacy');
+	
+	ze\datasetAdm::registerSystemField($dataset['id'], 'textarea', 'extract', 'extract', '');
+	ze\datasetAdm::registerSystemField($dataset['id'], 'text', 'extract', 'extract_wordcount', '');
+	
+	ze\dbAdm::revision(225);
 }

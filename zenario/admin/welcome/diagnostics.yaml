@@ -557,7 +557,7 @@ diagnostics:
                     grouping: sub_table
                     full_width: true
                     snippet:
-                        html: Site content
+                        html: Content items in draft form
                     hide_on_install: true
                     visible_if: zenarioAW.togglePressed(1)
                 show_content:
@@ -577,6 +577,31 @@ diagnostics:
                 content_unpublished_5: *blank_child
                 content_more_unpublished: *blank_child
                 
+                
+                administrators:
+                    grouping: sub_table
+                    full_width: true
+                    snippet:
+                        html: Administrators
+                    hide_on_install: true
+                    visible_if: zenarioAW.togglePressed(1)
+                show_administrators:
+                    grouping: sub_table
+                    type: toggle
+                    redraw_onchange: true
+                    same_row: true
+                    hide_on_install: true
+                    visible_if: "zenarioAW.togglePressed(1, tuixObject)"
+                
+                administrators_active: *blank_child
+                    snippet:
+                        html: No administrator has been inactive for over 90 days.
+                administrator_inactive_1: *blank_child
+                administrator_inactive_2: *blank_child 
+                administrator_inactive_3: *blank_child 
+                administrator_inactive_4: *blank_child 
+                administrator_inactive_5: *blank_child 
+                administrator_more_inactive: *blank_child 
                 
                 continue:
                     value: Continue

@@ -93,7 +93,7 @@ class zenario_common_features__organizer__phrases extends ze\moduleBaseClass {
 					$dbColumnText = $alias. ".local_text";
 					$dbColumnFlag = $alias. ".protect_flag";
 					$tableJoin = "
-						LEFT JOIN ". DB_NAME_PREFIX. "visitor_phrases AS ". $alias. "
+						LEFT JOIN ". DB_PREFIX. "visitor_phrases AS ". $alias. "
 						   ON ". $alias. ".code = vp.code
 						  AND ". $alias. ".module_class_name = vp.module_class_name
 						  AND ". $alias. ".language_id = '". ze\escape::sql($language['id']). "'";
@@ -269,8 +269,8 @@ class zenario_common_features__organizer__phrases extends ze\moduleBaseClass {
 			//Handle translated and/or customised phrases that are linked to the current phrase
 			if ($_REQUEST['delete_translated_phrases'] ?? false) {
 				$sql = "
-					FROM ". DB_NAME_PREFIX. "visitor_phrases AS t
-					INNER JOIN ". DB_NAME_PREFIX. "visitor_phrases AS l
+					FROM ". DB_PREFIX. "visitor_phrases AS t
+					INNER JOIN ". DB_PREFIX. "visitor_phrases AS l
 					   ON l.module_class_name = t.module_class_name
 					  AND l.code = t.code
 					WHERE t.id IN (". ze\escape::in($ids, 'numeric'). ")
@@ -325,7 +325,7 @@ class zenario_common_features__organizer__phrases extends ze\moduleBaseClass {
 				//Get a list of codes to merge
 			$sql = "
 				SELECT id, code, module_class_name, SUBSTR(code, 1, 1) = '_' AS is_code
-				FROM ". DB_NAME_PREFIX. "visitor_phrases
+				FROM ". DB_PREFIX. "visitor_phrases
 				WHERE id IN (". ze\escape::in($ids, 'numeric'). ")
 				ORDER BY id DESC";
 			$result = ze\sql::select($sql);
@@ -355,7 +355,7 @@ class zenario_common_features__organizer__phrases extends ze\moduleBaseClass {
 			//Get a list of the newest ids in each language (which will probably have the most up to date translations)
 			$sql = "
 				SELECT MAX(id), language_id
-				FROM ". DB_NAME_PREFIX. "visitor_phrases
+				FROM ". DB_PREFIX. "visitor_phrases
 				WHERE module_class_name = '". ze\escape::sql($className). "'
 				  AND code IN (". ze\escape::in($codes). ")
 				GROUP BY language_id";
@@ -370,7 +370,7 @@ class zenario_common_features__organizer__phrases extends ze\moduleBaseClass {
 	
 			//Delete the oldest phrases that would clash with the primary key after a merge
 			$sql = "
-				DELETE FROM ". DB_NAME_PREFIX. "visitor_phrases
+				DELETE FROM ". DB_PREFIX. "visitor_phrases
 				WHERE module_class_name = '". ze\escape::sql($className). "'
 				  AND code IN (". ze\escape::in($codes). ")
 				  AND id NOT IN (". ze\escape::in($idsToKeep, 'numeric'). ")";
@@ -378,7 +378,7 @@ class zenario_common_features__organizer__phrases extends ze\moduleBaseClass {
 	
 			//Update the remaining phrases to use the correct code
 			$sql = "
-				UPDATE ". DB_NAME_PREFIX. "visitor_phrases
+				UPDATE ". DB_PREFIX. "visitor_phrases
 				SET code = '". ze\escape::sql($newCode). "'
 				WHERE module_class_name = '". ze\escape::sql($className). "'
 				  AND id IN (". ze\escape::in($idsToKeep, 'numeric'). ")";

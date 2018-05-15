@@ -39,15 +39,15 @@ if (!ze::setting('sitemap_enabled')) {
 
 $sql = "
 	SELECT c.id, c.type, c.alias, v.published_datetime
-	FROM ". DB_NAME_PREFIX. "content_items AS c
-	INNER JOIN ". DB_NAME_PREFIX. "translation_chains AS tc
+	FROM ". DB_PREFIX. "content_items AS c
+	INNER JOIN ". DB_PREFIX. "translation_chains AS tc
 	   ON c.equiv_id = tc.equiv_id
 	  AND c.type = tc.type
-	INNER JOIN ". DB_NAME_PREFIX. "content_item_versions AS v
+	INNER JOIN ". DB_PREFIX. "content_item_versions AS v
 	   ON c.id = v.id
 	  AND c.type = v.type
 	  AND c.visitor_version = v.version
-	LEFT JOIN ". DB_NAME_PREFIX. "special_pages AS sp
+	LEFT JOIN ". DB_PREFIX. "special_pages AS sp
 	   ON c.equiv_id = sp.equiv_id
 	  AND c.type = sp.content_type
 	  AND sp.page_type IN ('zenario_not_found', 'zenario_no_access')
@@ -77,7 +77,7 @@ $xml->startDocument('1.0', 'UTF-8');
 			$xml->writeElement('loc', ze\link::toItem($item['id'], $item['type'], true, '', $item['alias'], false, true));
 			$xml->endElement();
 		}
-	
+
 //send signal
 $returnedPages = ze\module::sendSignal('pagesToAddToSitemap', []);
 

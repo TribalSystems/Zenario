@@ -42,6 +42,9 @@ class zenario_user_forms__organizer__user_forms extends ze\moduleBaseClass {
 	}
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
+		
+		$addFullDetails = ze::in($mode, 'full', 'quick', 'select');
+		
 		if ($refinerName == 'email_address_setting') {
 			unset($panel['collection_buttons']);
 			$panel['title'] = ze\admin::phrase('Summary of email addresses used by forms');
@@ -58,136 +61,53 @@ class zenario_user_forms__organizer__user_forms extends ze\moduleBaseClass {
 			$panel['item_buttons']['edit_predefined_text']['hidden'] = true;
 		}
 		
-		
-		//Get plugins using a form
-		$moduleIds = zenario_user_forms::getFormModuleIds();
-		$formPlugins = [];
-		$sql = '
-			SELECT id, name, 0 AS egg_id
-			FROM '.DB_NAME_PREFIX.'plugin_instances
-			WHERE module_id IN ('. ze\escape::in($moduleIds, 'numeric'). ')
-			ORDER BY name';
-		$result = ze\sql::select($sql);
-		while ($row = ze\sql::fetchAssoc($result)) {
-			$formPlugins[$row['id']] = $row['name'];
-		}
-		$sql = "
-			SELECT pi.id, pi.name, np.id AS egg_id
-			FROM ". DB_NAME_PREFIX. "nested_plugins AS np
-			INNER JOIN ". DB_NAME_PREFIX. "plugin_instances AS pi
-			   ON pi.id = np.instance_id
-			WHERE np.module_id IN (". ze\escape::in($moduleIds, 'numeric'). ")
-			ORDER BY pi.name";
-		$result = ze\sql::select($sql);
-		while ($row = ze\sql::fetchAssoc($result)) {
-			$formPlugins[$row['id']] = $row['name'];
-		}
-		
-		//Get content items with a plugin using a form on
-		$formUsage = [];
-		$contentItemUsage = [];
-		$layoutUsage = [];
-		if ($formPlugins) {
-			$sql = '
-				SELECT pil.content_id, pil.content_type, pil.instance_id
-				FROM '.DB_NAME_PREFIX.'plugin_item_link pil
-				INNER JOIN '.DB_NAME_PREFIX.'content_items c
-					ON (pil.content_id = c.id) AND (pil.content_type = c.type) AND (pil.content_version = c.admin_version)
-				WHERE c.status NOT IN (\'trashed\',\'deleted\')
-				AND pil.instance_id IN ('. ze\escape::in(array_keys($formPlugins), 'numeric'). ')
-				GROUP BY pil.content_id, pil.content_type, pil.instance_id';
-			$result = ze\sql::select($sql);
-			while ($row = ze\sql::fetchAssoc($result)) {
-				$tagId = ze\content::formatTag($row['content_id'], $row['content_type']);
-				$contentItemUsage[$row['instance_id']][] = $tagId;
-			}
-			
-			//Get layouts with a plugin using a form on
-			$sql = '
-				SELECT l.name, pll.instance_id
-				FROM '.DB_NAME_PREFIX.'plugin_layout_link pll
-				INNER JOIN '.DB_NAME_PREFIX.'layouts l
-					ON pll.layout_id = l.layout_id
-				WHERE l.status = "active"
-				AND pll.instance_id IN (' . ze\escape::in(array_keys($formPlugins), 'numeric') . ')
-				GROUP BY l.layout_id, pll.instance_id';
-			$result = ze\sql::select($sql);
-			while ($row = ze\sql::fetchAssoc($result)) {
-				$layoutUsage[$row['instance_id']][] = $row['name'];
-			}
-		}
-		
-		foreach($formPlugins as $instanceId => $pluginName) {
-			$className = static::getModuleClassNameByInstanceId($instanceId);
-			$moduleName = ze\module::getModuleDisplayNameByClassName($className);
-			
-			if ($formId = ze\row::get('plugin_settings', 'value', ['instance_id' => $instanceId, 'name' => 'user_form'])) {
-				$details = ['instanceId' => $instanceId, 'pluginName' => $pluginName, 'moduleName' => $moduleName];
-				if (isset($contentItemUsage[$instanceId])) {
-					$details['contentItems'] = $contentItemUsage[$instanceId];
-				}
-				if (isset($layoutUsage[$instanceId])) {
-					$details['layouts'] = $layoutUsage[$instanceId];
-				}
-				$formUsage[$formId][] = $details;
-			}
-		}
-		
 		foreach ($panel['items'] as $id => &$item) {
-			$pluginUsage = '';
-			$contentUsage = '';
-			$layoutUsage = '';
-			$moduleNames = [];
-			if (isset($formUsage[$id]) && !empty($formUsage[$id])) {
-				$pluginUsage = 'P'. $formUsage[$id][0]['instanceId']. ' '. $formUsage[$id][0]['pluginName'];
-				if (($count = count($formUsage[$id])) > 1) {
-					$plural = (($count - 1) == 1) ? '' : 's';
-					$pluginUsage .= ' and '.($count - 1).' other plugin'.$plural;
-				}
-				$contentCount = 0;
-				$layoutCount = 0;
-				foreach($formUsage[$id] as $plugin) {
-					$moduleNames[$plugin['moduleName']] = $plugin['moduleName'];
-					if (isset($plugin['contentItems'])) {
-						if (empty($contentUsage)) {
-							$contentUsage = '"'.$plugin['contentItems'][0].'"';
-						}
-						$contentCount += count($plugin['contentItems']);
-					}
-					if (isset($plugin['layouts'])) {
-						if (empty($layoutUsage)) {
-							$layoutUsage = '"' . $plugin['layouts'][0] . '"';
-						}
-						$layoutCount += count($plugin['layouts']);
-					}
-				}
-				
-				//Multiple content, no layout
-				if ($contentCount > 1 && $layoutCount == 0) {
-					$plural = (($contentCount - 1) == 1) ? '' : 's';
-					$contentUsage .= ' and '.($contentCount - 1).' other item'.$plural;
-				//Multiple content, layout
-				} elseif ($contentCount > 1 && $layoutCount > 0) {
-					$plural = (($contentCount - 1) == 1) ? '' : 's';
-					$plural2 = ($layoutCount == 1) ? '' : 's';
-					$contentUsage .= ', '.($contentCount - 1).' other item'.$plural . ' and '.$layoutCount. ' layout'.$plural2;
-				//Single content, layout
-				} elseif ($contentCount == 1 && $layoutCount > 0) {
-					$plural2 = ($layoutCount == 1) ? '' : 's';
-					$contentUsage .= ' and '.$layoutCount. ' layout'.$plural2;
-				//No content, layout
-				} elseif (!$contentCount && $layoutCount) {
-					$contentUsage = $layoutUsage;
-					if ($layoutCount > 1) {
-						$plural2 = (($layoutCount - 1) == 1) ? '' : 's';
-						$contentUsage .= ' and '.($layoutCount - 1).' other layout'.$plural2;
-					}
-				}
-			}
-			$item['plugin_module_name'] = implode(', ', $moduleNames);
-			$item['plugin_usage'] = $pluginUsage;
-			$item['plugin_content_items'] = $contentUsage;
 			
+			if ($addFullDetails) {
+				//Get plugin instances using this form...
+				$usage = [];
+				$usageLinks = false;
+				
+				$instanceIds = zenario_user_forms::getFormPlugins($id);
+				
+				if (!empty($instanceIds)) {
+					$pluginIds = zenario_user_forms::getFormPlugins($id, 'plugins');
+					$nestIds = zenario_user_forms::getFormPlugins($id, 'nests');
+					$slideshowIds = zenario_user_forms::getFormPlugins($id, 'slideshows');
+					
+					$instanceId = $instanceIds[0];
+					
+					$usage = ze\pluginAdm::getUsage($instanceIds);
+					
+					if (!empty($pluginIds)) {
+						$usage['plugins'] = count($pluginIds);
+						$usage['plugin'] = $pluginIds[0];
+					}
+					if (!empty($nestIds)) {
+						$usage['nests'] = count($nestIds);
+						$usage['nest'] = $nestIds[0];
+					}
+					if (!empty($slideshowIds)) {
+						$usage['slideshows'] = count($slideshowIds);
+						$usage['slideshow'] = $slideshowIds[0];
+					}
+					
+					if (!empty($usage['content_items']) || !empty($usage['layouts'])) {
+						$item['plugin_is_used'] = true;
+					}
+				}
+			
+				$usageLinks = [
+					'plugins' => 'zenario__user_forms/panels/user_forms/hidden_nav/plugins_using_form//'. (int) $id. '//', 
+					'nests' => 'zenario__user_forms/panels/user_forms/hidden_nav/nests_using_form//'. (int) $id. '//', 
+					'slideshows' => 'zenario__user_forms/panels/user_forms/hidden_nav/slideshows_using_form//'. (int) $id. '//', 
+					'content_items' => 'zenario__user_forms/panels/user_forms/hidden_nav/content_items_using_form//'. (int) $id. '//', 
+					'layouts' => 'zenario__user_forms/panels/user_forms/hidden_nav/layouts_using_form//'. (int) $id. '//'
+				];
+				$item['where_used'] = implode('; ', ze\miscAdm::getUsageText($usage, $usageLinks));
+			}
+			
+			//Show a seperate icon for different types of forms
 			if ($item['type'] != 'standard') {
 				$item['css_class'] = 'form_type_' . $item['type'];
 			}
@@ -275,8 +195,8 @@ class zenario_user_forms__organizer__user_forms extends ze\moduleBaseClass {
 	public static function getModuleClassNameByInstanceId($id) {
 		$sql = '
 			SELECT class_name
-			FROM '.DB_NAME_PREFIX.'modules m
-			INNER JOIN '.DB_NAME_PREFIX.'plugin_instances pi
+			FROM '.DB_PREFIX.'modules m
+			INNER JOIN '.DB_PREFIX.'plugin_instances pi
 				ON m.id = pi.module_id
 			WHERE pi.id = '.(int)$id;
 		$result = ze\sql::select($sql);

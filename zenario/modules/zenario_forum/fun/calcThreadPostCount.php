@@ -31,7 +31,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 //Update the user's post count
 if ($quickAdd && $userId) {
 	$sql = "
-		UPDATE ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "threads SET
+		UPDATE ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "threads SET
 			date_updated = NOW(),
 			updater_id = ". (int) $userId. ",
 			post_count = post_count + 1
@@ -40,7 +40,7 @@ if ($quickAdd && $userId) {
 	//Get details of the id of the new latest post
 	$sql = "
 		SELECT id, poster_id, date_posted
-		FROM ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "user_posts
+		FROM ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "user_posts
 		WHERE thread_id = ". (int) $threadId. "
 		ORDER BY id DESC
 		LIMIT 1";
@@ -49,12 +49,12 @@ if ($quickAdd && $userId) {
 	$newLatestPost = ze\sql::fetchAssoc($result);
 	
 	$sql = "
-		UPDATE ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "threads SET
+		UPDATE ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "threads SET
 			date_updated = '". ze\escape::sql($newLatestPost['date_posted']). "',
 			updater_id = ". (int) $newLatestPost['poster_id']. ",
 			post_count = (
 				SELECT COUNT(*)
-				FROM ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "user_posts
+				FROM ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "user_posts
 				WHERE thread_id = ". (int) $threadId. "
 			)
 		WHERE id = ". (int) $threadId;

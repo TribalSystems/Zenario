@@ -33,7 +33,7 @@ switch ($path) {
 			foreach (explode(',',$ids) as $code) {
 				$sql = "
 					DELETE FROM "
-							. DB_NAME_PREFIX.  "email_templates
+							. DB_PREFIX.  "email_templates
 					WHERE 
 						code = '". ze\escape::sql($code) . "'";
 				ze\sql::update($sql);

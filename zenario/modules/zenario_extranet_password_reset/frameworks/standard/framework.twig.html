@@ -3,6 +3,11 @@
         <div class="extranet_inner_wrap">
             {% if Message_Display %}
                 <div class="extranet_message">{{Message}}</div>
+                {% if Login_Link_Section %}
+                    <div class="extranet_links">
+                    	<div><a {{Login_Link}}>{{"Go back to Login"|trans}}</a></div>
+                    </div>
+                {% endif %}
             {% endif %}
             
             {% if Main_Title %}
@@ -21,7 +26,7 @@
                 <div>
                     <div class="extranet_field">
                         <div class="label"><label for="extranet_email">{{"Please enter your email address:"|trans}}</label></div>
-                        {{this.frameworkField({'type': "text", 'name': "extranet_email", 'id': "extranet_email", 'pattern': "email", 'required': "true", 'class': "extranet_text"})}}
+                        {{this.frameworkField({'type': "email", 'name': "extranet_email", 'id': "extranet_email", 'pattern': "email", 'required': "true", 'class': "extranet_text"})}}
                     </div>
                     <div class="extranet_btn"><div class="r"><input type="submit" name="extranet_send_reset_email" class="extranet_submit i" value="{{'Reset Password'|trans}}" /></div></div>
                 </div>

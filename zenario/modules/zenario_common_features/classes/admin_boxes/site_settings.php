@@ -56,6 +56,24 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 			}
 		}
 
+		//TODO: Settings for adding captcha to login page
+		/*if ($settingGroup == 'administration') {
+			$fields['anti_spam/captcha_type']['values'] = ['word' => 'Words (Captcha 1.0)', 'math' => 'Maths'];
+		
+			$link = ze\link::absolute()."zenario/admin/organizer.php?#zenario__administration/panels/site_settings//captcha";
+		
+			if (ze::setting('google_recaptcha_site_key') && ze::setting('google_recaptcha_secret_key')) {
+				$fields['anti_spam/captcha_type']['values']['pictures'] = 'Pictures (Captcha 2.0)';
+				$fields['anti_spam/captcha_type']['note_below'] = 'Captcha settings can be found in  <a href="' . $link. '" target="_blank">Site Settings</a>';
+			} else {
+				$fields['anti_spam/captcha_type']['note_below'] = 'To enable more kinds of captcha, please check your <a href="' . $link. '" target="_blank">API key details</a> and ensure all keys are completed.';
+			}
+		
+			if (!$values['use_honeypot']) {
+				$values['honeypot_label'] = 'Please don\'t type anything in this field';
+			}
+		}*/
+		
 		if (isset($fields['admin_domain/admin_domain_is_public'])) {
 			$fields['admin_domain/admin_domain_is_public']['value'] = !ze\link::adminDomainIsPrivate();
 		}
@@ -290,6 +308,14 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 			}
 		}
 		
+		//Add editor options to standard email template editor
+		$styleFormats = ze\site::description('email_style_formats');
+		if (!empty($styleFormats)) {
+			$fields['template/standard_email_template']['editor_options']['style_formats'] = $styleFormats;
+			$fields['template/standard_email_template']['editor_options']['toolbar'] =
+				'undo redo | image link unlink | bold italic | removeformat | styleselect | fontsizeselect | formatselect | numlist bullist | outdent indent | code';
+		}
+		
 		if ($settingGroup == 'data_protection') {
 			//Show a warning if the scheduled task for deleting content is not running.
 			if (!ze\module::inc('zenario_scheduled_task_manager') 
@@ -299,6 +325,38 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 			} else {
 				$box['tabs']['data_protection']['notices']['scheduled_task_running']['show'] = true;
 			}
+			
+			//Fill the backups tab
+			if (file_exists($dirpath = ze::setting('backup_dir'))) {
+				$backupsCount = 0;
+				foreach (scandir($dirpath) as $i => $file) {
+					if (is_file($dirpath. '/'. $file) && substr($file, 0, 1) != '.') {
+						$backupsCount++;
+					}
+				}
+				$fields['backup/manual_backups']['snippet']['html'] .= '<p>' . ze\admin::nphrase('There is 1 manual backup.', 'There are [[count]] manual backups.', $backupsCount) . '</p>';
+			} else {
+				$fields['backup/manual_backups']['snippet']['html'] .= '<p>' . ze\admin::phrase('The backups directory "[[path]]" could not be found.', ['path' => $dirpath]) . '</p>';
+			}
+			$link = ze\link::absolute() . 'zenario/admin/organizer.php#zenario__administration/panels/backups';
+			$fields['backup/manual_backups']['snippet']['html'] .= '<p><a target="_blank" href="'.$link.'">Go to backups panel</a></p>';
+			
+			if (($path = ze::setting('automated_backup_log_path')) 
+				&& is_file($path) 
+				&& is_readable($path) 
+				&& ($backup = ze\welcome::lastAutomatedBackup())
+			) {
+				$fields['backup/automated_backups']['snippet']['html'] .= '<p>' . ze\admin::phrase(
+					'The database "[[DBNAME]]" was last backed up on [[date]] on the server "[[server]]"	.', 
+					[
+						'DBNAME' => DBNAME, 
+						'date' => ze\date::format($backup[0]), 
+						'server' => $backup[1]
+					]
+				) . '</p>';
+			} else {
+				$fields['backup/automated_backups']['snippet']['html'] = '<p>' . ze\admin::phrase('None found.') . '</p>';
+			}
 		}
 		
 		$link = ze\link::absolute() . '/zenario/admin/organizer.php#zenario__administration/panels/site_settings//data_protection~.site_settings~tdata_protection~k{"id"%3A"data_protection"}';
@@ -306,6 +364,15 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 	}
 
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+		//TODO: Settings for adding captcha to login page
+		/*if ($settingGroup == 'administration') {
+			$fields['anti_spam/honeypot_label']['hidden'] = !$values['anti_spam/use_honeypot'];
+		
+			$fields['anti_spam/captcha_type']['hidden'] =
+			$fields['anti_spam/extranet_users_use_captcha']['hidden'] =
+				!$values['anti_spam/use_captcha'];
+		}*/
+		
 		if (isset($fields['debug/debug_override_email_address'])) {
 			$fields['debug/debug_override_email_address']['hidden'] = !$values['debug/debug_override_enable'];
 		}
@@ -570,6 +637,7 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 			
 					$settings = [
 						'email_address_from' => 'email',
+						'base64_encode_emails' => 'smtp',
 						'smtp_host' => 'smtp',
 						'smtp_password' => 'smtp',
 						'smtp_port' => 'smtp',
@@ -844,7 +912,7 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 										//Resync every content equivalence, trying to make sure that the pages for the new default language are used as the base
 										$sql = "
 											SELECT DISTINCT equiv_id, type
-											FROM ". DB_NAME_PREFIX. "content_items
+											FROM ". DB_PREFIX. "content_items
 											WHERE status NOT IN ('trashed','deleted')";
 										$equivResult = ze\sql::select($sql);
 										while ($equiv = ze\sql::fetchAssoc($equivResult)) {
@@ -875,8 +943,8 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 		if ($changesToFiles) {
 			$sql = "
 				SELECT f.id
-				FROM ". DB_NAME_PREFIX. "files AS f
-				LEFT JOIN ". DB_NAME_PREFIX. "site_settings AS s
+				FROM ". DB_PREFIX. "files AS f
+				LEFT JOIN ". DB_PREFIX. "site_settings AS s
 				   ON s.value = f.id
 				  AND s.value = CONCAT('', f.id)
 				WHERE f.`usage` = 'site_setting'

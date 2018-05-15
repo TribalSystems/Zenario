@@ -153,8 +153,8 @@ class zenario_common_features__admin_boxes__export_dataset extends ze\moduleBase
 		foreach ($checkboxFields as $fieldId) {
 			$sql = '
 				SELECT l.linking_id, GROUP_CONCAT(v.label ORDER BY v.ord) AS labels
-				FROM ' . DB_NAME_PREFIX . 'custom_dataset_values_link l
-				LEFT JOIN ' . DB_NAME_PREFIX . 'custom_dataset_field_values v
+				FROM ' . DB_PREFIX . 'custom_dataset_values_link l
+				LEFT JOIN ' . DB_PREFIX . 'custom_dataset_field_values v
 					ON l.value_id = v.id
 					AND v.field_id = ' . (int)$fieldId . '
 				WHERE l.dataset_id = ' . (int)$dataset['id'] . '
@@ -226,8 +226,8 @@ class zenario_common_features__admin_boxes__export_dataset extends ze\moduleBase
 	private static function getExportableDatasetFieldsSQL($datasetId) {
 		$sql = '
 			SELECT f.id, f.db_column, f.is_system_field, f.type, f.tab_name, f.field_name
-			FROM '.DB_NAME_PREFIX.'custom_dataset_fields f
-			INNER JOIN '.DB_NAME_PREFIX.'custom_dataset_tabs t
+			FROM '.DB_PREFIX.'custom_dataset_fields f
+			INNER JOIN '.DB_PREFIX.'custom_dataset_tabs t
 				ON (f.dataset_id = t.dataset_id) AND (f.tab_name = t.name)
 			WHERE f.dataset_id = '.(int)$datasetId. '
 			AND f.include_in_export = 1

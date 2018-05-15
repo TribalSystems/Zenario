@@ -8,14 +8,14 @@ start_running_on_install: false
 license_info: 'Modified BSD License'
 description: |
     <p>
-        This module allows you to create a slideshow made out of plugins, not images.
-        Any plugin that is marked as &quot;nestable&quot; in its description may placed inside.
+        This module allows you to create an animated slideshow.
+    </p><p>
+        Each slide will contain one plugin, such as a Banner plugin (which can have an image, text and a hyperlink). But in fact any plugin that is &quot;nestable&quot; may be placed on a slide.
     </p><p>
         You can create dynamic effects for your visitors, controlling all aspects of display and slide transitions.
-        The slides can auto-advance after a set amount of time,
-        or you can turn the auto-advance off so slides will only be displayed when a visitor clicks them.
+        The slides can auto-advance after a set delay, or slides can be set to only advance when a visitor clicks Next or Prev.
     </p><p>
-        The effects are powered by the
+        Animation effects are available via the
            <a href="http://malsup.com/jquery/cycle/" target="_blank">jQuery Cycle</a> or
            <a href="https://github.com/fredleblanc/roundabout" target="_blank">jQuery Roundabout</a>
           libraries (you can choose which you want in the slideshow's settings).
@@ -23,13 +23,7 @@ description: |
         The links to each slide can be invisible, appear visually as a tab, or in some other visual form,
         depending on the CSS and framework.
     </p><p>
-        You can restrict a slide's visibility:
-        <ul>
-            <li>to logged-in extranet users</li>
-            <li>to logged-in extranet users in a given group</li>
-            <li>to logged-in extranet users in a given smart group</li>
-            <li>by calling a static method from another module, e.g. <code>checkVisitorInCountries()</code> from the <code>zenario_geoip_lookup</code> module</li>
-        </ul>
+        You can restrict visibility on a slide-by-slide basis, so that only extranet users can see a slide, only users in a given group, only users in a given smart group, or you can create visibility rules (such as by-country control) by calling a static method from another module (e.g. <code>checkVisitorInCountries()</code> from the <code>zenario_geoip_lookup</code> module).
     </p>
 category: pluggable
 keywords: >

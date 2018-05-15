@@ -8,16 +8,11 @@ zenario_duplicate_plugin:
             edit_mode: 
                 enabled: true
             fields: 
-                desc: 
-                    full_width: true
-                    snippet: 
-                        html: Use this screen to create a copy of this plugin.
-                    visible_if: zenarioAB.tuix.key.duplicate
                 name: 
-                    label: "Plugin name:"
+                    label: ''
                     type: text
                     maxlength: "250"
                     validation: 
-                        required: Please enter a new name for this plugin.
+                        required: Please enter a new name.
     max_height: 160
     hide_tab_bar: true

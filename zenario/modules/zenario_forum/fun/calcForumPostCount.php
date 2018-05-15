@@ -31,7 +31,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 //Update the forums's post count
 if ($quickAdd && $userId) {
 	$sql = "
-		UPDATE ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "forums SET
+		UPDATE ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "forums SET
 			date_updated = NOW(),
 			updater_id = ". (int) $userId. ",
 			post_count = post_count + 1";
@@ -46,7 +46,7 @@ if ($quickAdd && $userId) {
 } else {
 	$sql = "
 		SELECT poster_id, date_posted
-		FROM ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "user_posts
+		FROM ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "user_posts
 		WHERE forum_id = ". (int) $forumId. "
 		ORDER BY id DESC
 		LIMIT 1";
@@ -61,17 +61,17 @@ if ($quickAdd && $userId) {
 	}
 	
 	$sql = "
-		UPDATE ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "forums SET
+		UPDATE ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "forums SET
 			date_updated = ". $dateUpdated. ",
 			updater_id = ". (int) $updaterId. ",
 			thread_count = (
 				SELECT COUNT(*)
-				FROM ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "threads
+				FROM ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "threads
 				WHERE forum_id = ". (int) $forumId. "
 			),
 			post_count = (
 				SELECT COUNT(*)
-				FROM ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "user_posts
+				FROM ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "user_posts
 				WHERE forum_id = ". (int) $forumId. "
 			)
 		WHERE id = ". (int) $forumId;

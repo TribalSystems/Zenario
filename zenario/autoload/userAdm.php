@@ -78,15 +78,14 @@ class userAdm {
 		//Then create a unqiue identifier by appending some numbers to the end of the "Base identifier"
 	
 		//Check if the identifier column is encrypted
-		\ze\row::cacheTableDef(DB_NAME_PREFIX. 'users');
-		if (!\ze::$dbCols[DB_NAME_PREFIX. 'users']['identifier']->encrypted) {
+		if (!\ze::$dbL->columnIsEncrypted('users', 'identifier')) {
 			//Attempt to generate a unique indentifier
 	
 			// Get all current identifiers from this site
 			$identifiers = [];
 			$sql = '
 				SELECT id, identifier 
-				FROM '.DB_NAME_PREFIX.'users
+				FROM '.DB_PREFIX.'users
 				WHERE identifier LIKE "'.\ze\escape::sql($baseIdentifier).'%"
 				AND id != '.(int)$userId;
 			$result = \ze\sql::select($sql);
@@ -137,7 +136,7 @@ class userAdm {
 	public static function nextScreenName() {
 		$sql = "
 			SELECT IFNULL(MAX(id), 0) + 1
-			FROM ". DB_NAME_PREFIX. "users";
+			FROM ". DB_PREFIX. "users";
 		$result = \ze\sql::select($sql);
 		$row = \ze\sql::fetchRow($result);
 	
@@ -190,6 +189,13 @@ class userAdm {
 	
 		if (!$id) {
 			$values['created_date'] = \ze\date::now();
+			if (empty($values['creation_method_note'])) {
+				if (\ze\admin::id()) {
+					$values['creation_method_note'] = 'Created by admin ' . \ze\row::get('admins', 'username', \ze\admin::id());
+				} elseif (\ze\user::id()) {
+					$values['creation_method_note'] = 'Created by user ' . \ze\row::get('users', 'identifier', \ze\user::id());
+				}
+			}
 		}
 		$values['modified_date'] = \ze\date::now();
 	
@@ -233,8 +239,8 @@ class userAdm {
 			if ($id && !empty($values['status']) && $values['status'] == 'contact') {
 				$values['parent_id'] = 0;
 				$sql = '
-					UPDATE ' . DB_NAME_PREFIX . 'users u
-					INNER JOIN ' . DB_NAME_PREFIX . 'users u2
+					UPDATE ' . DB_PREFIX . 'users u
+					INNER JOIN ' . DB_PREFIX . 'users u2
 						ON u.parent_id = u2.id
 					SET u.parent_id = 0
 					WHERE u2.id = ' . (int)$id;
@@ -359,13 +365,13 @@ class userAdm {
 		if ($deleteAllData) {
 			//Delete user signin log
 			$sql = ' 
-				DELETE FROM '. DB_NAME_PREFIX. 'user_signin_log
+				DELETE FROM '. DB_PREFIX. 'user_signin_log
 				WHERE user_id = ' . (int)$userId;
 			\ze\sql::update($sql);
 			
 			//Delete user content access log
 			$sql = ' 
-				DELETE FROM '. DB_NAME_PREFIX. 'user_content_accesslog 
+				DELETE FROM '. DB_PREFIX. 'user_content_accesslog 
 				WHERE user_id = ' . (int)$userId;
 			\ze\sql::update($sql);
 		}
@@ -375,7 +381,7 @@ class userAdm {
 	public static function updateHash($userId) {
 		$emailAddress = \ze\row::get('users', 'email', $userId);
 		$sql = "
-			UPDATE ". DB_NAME_PREFIX. "users 
+			UPDATE ". DB_PREFIX. "users 
 			SET hash = '". \ze\escape::sql(\ze\userAdm::createHash($userId, $emailAddress)). "'
 			WHERE id = ". (int) $userId;
 		\ze\sql::update($sql, false, false);

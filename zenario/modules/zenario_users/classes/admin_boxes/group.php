@@ -79,7 +79,7 @@ class zenario_users__admin_boxes__group extends zenario_users {
 			$sql = '
 				SELECT
 					IFNULL(MAX(ord), 1) + 1
-				FROM '. DB_NAME_PREFIX. 'custom_dataset_fields
+				FROM '. DB_PREFIX. 'custom_dataset_fields
 				WHERE dataset_id = ' . (int)$dataset['id'] . '
 				AND tab_name = "' . ze\escape::sql($tab_name) . '"';
 			$result = ze\sql::select($sql);

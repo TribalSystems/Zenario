@@ -36,18 +36,3 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 //These updates are run before any other updates in any other files are run
 
 
-
-
-//Move any db-updates for MongoDB into a different file than the updates for MySQL.
-//This makes things a little easier to fix if one database is out-of-step with the other
-ze\dbAdm::revision( 38300
-, <<<_sql
-	INSERT IGNORE INTO `[[DB_NAME_PREFIX]]local_revision_numbers`
-		(path, patchfile, revision_no)
-	SELECT
-		path, 'mongo.inc.php', revision_no
-	FROM `[[DB_NAME_PREFIX]]local_revision_numbers`
-	WHERE path = 'modules/assetwolf_2/db_updates'
-	  AND patchfile = 'assetwolf_asset_manager.inc.php'
-_sql
-);

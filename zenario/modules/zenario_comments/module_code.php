@@ -89,7 +89,7 @@ class zenario_comments extends zenario_anonymous_comments {
 			SELECT
 				latest_activity > NOW() - INTERVAL 10 MINUTE AS `online`,
 				post_count
-			FROM ". DB_NAME_PREFIX. ZENARIO_COMMENTS_PREFIX. "users
+			FROM ". DB_PREFIX. ZENARIO_COMMENTS_PREFIX. "users
 			WHERE user_id = ". (int) $userId;
 		$result = ze\sql::select($sql);
 		
@@ -137,7 +137,7 @@ class zenario_comments extends zenario_anonymous_comments {
 	
 	function updateUserLatestActivity($userId) {
 		$sql = "
-			UPDATE ". DB_NAME_PREFIX. ZENARIO_COMMENTS_PREFIX. "users SET
+			UPDATE ". DB_PREFIX. ZENARIO_COMMENTS_PREFIX. "users SET
 				latest_activity = NOW()
 			WHERE user_id = ". (int) $userId;
 		ze\sql::update($sql, false, false);
@@ -223,7 +223,7 @@ class zenario_comments extends zenario_anonymous_comments {
 	function checkUserIsInForumsUserTable($userId) {
 		if (!ze\row::exists(ZENARIO_COMMENTS_PREFIX. 'users', ['user_id' => $userId])) {
 			$sql = "
-				INSERT INTO ". DB_NAME_PREFIX. ZENARIO_COMMENTS_PREFIX. "users
+				INSERT INTO ". DB_PREFIX. ZENARIO_COMMENTS_PREFIX. "users
 					(user_id, latest_activity)
 				VALUES
 					(". (int) $userId. ", NOW())";
@@ -241,7 +241,7 @@ class zenario_comments extends zenario_anonymous_comments {
 		
 		//Update the user's post count
 		$sql = "
-			UPDATE ". DB_NAME_PREFIX. ZENARIO_COMMENTS_PREFIX. "users SET
+			UPDATE ". DB_PREFIX. ZENARIO_COMMENTS_PREFIX. "users SET
 				post_count = post_count + 1
 			WHERE user_id = ". (int) $userId;
 		
@@ -266,7 +266,7 @@ class zenario_comments extends zenario_anonymous_comments {
 		
 		//Update the user's post count
 		$sql = "
-			UPDATE ". DB_NAME_PREFIX. ZENARIO_COMMENTS_PREFIX. "users SET
+			UPDATE ". DB_PREFIX. ZENARIO_COMMENTS_PREFIX. "users SET
 				post_count = post_count - 1
 			WHERE post_count > 0
 			  AND user_id = ". (int) $this->post['poster_id'];
@@ -282,7 +282,7 @@ class zenario_comments extends zenario_anonymous_comments {
 		//Update the user's post count
 		$sql = "
 			UPDATE "
-					. DB_NAME_PREFIX. ZENARIO_COMMENTS_PREFIX. "users 
+					. DB_PREFIX. ZENARIO_COMMENTS_PREFIX. "users 
 			SET
 				post_count = post_count - 1
 			WHERE 
@@ -294,18 +294,18 @@ class zenario_comments extends zenario_anonymous_comments {
 	
 	public static function eventUserDeleted($userId) {
 		$sql = "
-			DELETE FROM ". DB_NAME_PREFIX. ZENARIO_COMMENTS_PREFIX. "users
+			DELETE FROM ". DB_PREFIX. ZENARIO_COMMENTS_PREFIX. "users
 			WHERE user_id = ". (int) $userId;
 		ze\sql::update($sql);
 		
 		$sql = "
-			UPDATE ". DB_NAME_PREFIX. ZENARIO_ANONYMOUS_COMMENTS_PREFIX. "user_comments SET
+			UPDATE ". DB_PREFIX. ZENARIO_ANONYMOUS_COMMENTS_PREFIX. "user_comments SET
 				poster_id = 0
 			WHERE poster_id = ". (int) $userId;
 		ze\sql::update($sql);
 		
 		$sql = "
-			UPDATE ". DB_NAME_PREFIX. ZENARIO_ANONYMOUS_COMMENTS_PREFIX. "user_comments SET
+			UPDATE ". DB_PREFIX. ZENARIO_ANONYMOUS_COMMENTS_PREFIX. "user_comments SET
 				updater_id = 0
 			WHERE updater_id = ". (int) $userId;
 		ze\sql::update($sql);

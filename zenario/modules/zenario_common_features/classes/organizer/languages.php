@@ -49,13 +49,13 @@ class zenario_common_features__organizer__languages extends ze\moduleBaseClass {
 			
 				if ($refinerName == 'plugin') {
 					$panel['db_items']['table'] = '
-								[[DB_NAME_PREFIX]]languages AS l
+								[[DB_PREFIX]]languages AS l
 							LEFT JOIN 
-								[[DB_NAME_PREFIX]]visitor_phrases AS vp
+								[[DB_PREFIX]]visitor_phrases AS vp
 							ON
 								l.id = vp.language_id
 							LEFT JOIN 
-								[[DB_NAME_PREFIX]]modules pl
+								[[DB_PREFIX]]modules pl
 							ON 
 								vp.module_class_name=pl.class_name';
 	
@@ -122,8 +122,8 @@ _text
 					foreach ($panel['items'] as $id => &$item) {
 						$sql = "
 							SELECT COUNT(*)
-							FROM ". DB_NAME_PREFIX. "content_items AS c
-							INNER JOIN ". DB_NAME_PREFIX. "content_item_versions AS v
+							FROM ". DB_PREFIX. "content_items AS c
+							INNER JOIN ". DB_PREFIX. "content_item_versions AS v
 							   ON v.id = c.id
 							  AND v.type = c.type
 							  AND v.version = c.admin_version
@@ -165,7 +165,7 @@ _text
 						//Count how many Content Equivalences exist in total
 						$sql = "
 							SELECT COUNT(DISTINCT equiv_id, type)
-							FROM ". DB_NAME_PREFIX. "content_items
+							FROM ". DB_PREFIX. "content_items
 							WHERE status NOT IN ('trashed','deleted')";
 						$result = ze\sql::select($sql);
 						$row = ze\sql::fetchRow($result);
@@ -279,11 +279,11 @@ _text
 				if (($_POST['delete'] ?? false) && ze\priv::check('_PRIV_MANAGE_LANGUAGE_PHRASE')) {
 					$sql = "
 						DELETE
-						FROM " . DB_NAME_PREFIX . "visitor_phrases
+						FROM " . DB_PREFIX . "visitor_phrases
 						WHERE language_id = '" . ze\escape::sql($_POST['id']) . "'
 						  AND '" . ze\escape::sql($_POST['id']) . "' NOT IN (
 							SELECT id
-							FROM " . DB_NAME_PREFIX . "languages
+							FROM " . DB_PREFIX . "languages
 						)";
 					ze\sql::update($sql);
 				}

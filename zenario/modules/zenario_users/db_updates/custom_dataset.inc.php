@@ -98,8 +98,15 @@ if (ze\dbAdm::needRevision(52)) {
 	ze\dbAdm::revision(52);
 }
 
-//Rename dataset
-if (ze\dbAdm::needRevision(70)) {
+//IP addresses have been deleted according to GDPR (General Data Protection Regulation)
+//Delete the dataset field
+if (ze\dbAdm::needRevision(71)) {
+	$dataset = ze\dataset::details('users');
+	ze\row::delete('custom_dataset_fields', ['dataset_id' => $dataset['id'], 'db_column' => 'last_login_ip']);
+}
+
+if (ze\dbAdm::needRevision(73)) {
+	//Rename dataset
 	$datasetId = ze\datasetAdm::register(
 		'Users/Contacts',
 		'users_custom_data',
@@ -108,13 +115,11 @@ if (ze\dbAdm::needRevision(70)) {
 		'zenario__users/panels/users',
 		'_PRIV_VIEW_USER',
 		'_PRIV_EDIT_USER');
-}
-
-//IP addresses have been deleted according to GDPR (General Data Protection Regulation)
-//Delete the dataset field
-if (ze\dbAdm::needRevision(71)) {
-	$dataset = ze\dataset::details('users');
-	ze\row::delete('custom_dataset_fields', ['dataset_id' => $dataset['id'], 'db_column' => 'last_login_ip']);
+	
+	//Change terms_and_conditions_accepted to a consent type field 
+	ze\datasetAdm::registerSystemField($datasetId, 'consent', 'details', 'terms_and_conditions_accepted');
+	
+	ze\dbAdm::revision(73);
 }
 
 	

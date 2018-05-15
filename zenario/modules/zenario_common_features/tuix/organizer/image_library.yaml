@@ -9,11 +9,10 @@ zenario__content:
             
             db_items:
                 table: |
-                    [[DB_NAME_PREFIX]]files AS f
+                    [[DB_PREFIX]]files AS f
                 id_column: f.id
                 where_statement: |
                     WHERE f.`usage` = 'image'
-                      AND f.archived = 0
                       AND f.mime_type IN ('image/gif', 'image/png', 'image/jpeg', 'image/svg+xml')
             
             panel_type: multi_line_list_or_grid
@@ -25,11 +24,33 @@ zenario__content:
             
             refiners:
                 tag:
-                    #n.b. this code needs to be completed by preFillOrganizerPanel() before it can work!
                     table_join: |
-                        INNER JOIN [[DB_NAME_PREFIX]]image_tag_link AS rtitl
+                        INNER JOIN [[DB_PREFIX]]image_tag_link AS rtitl
                            ON rtitl.image_id = f.id
                           AND rtitl.tag_id = 
+                    #n.b. this code needs to be completed by preFillOrganizerPanel() before it can work!
+                
+                images_for_content_item:
+                    table_join: |
+                        INNER JOIN [[DB_PREFIX]]content_items AS c
+                           ON c.tag_id = [[REFINER_ID]]
+                        INNER JOIN [[DB_PREFIX]]content_item_versions AS v
+                           ON v.id = c.id
+                          AND v.type = c.type
+                          AND v.version = c.admin_version
+                        INNER JOIN [[DB_PREFIX]]inline_images AS ii
+                           ON ii.image_id = f.id
+                          AND ii.foreign_key_to = 'content'
+                          AND ii.foreign_key_id = c.id
+                          AND ii.foreign_key_char = c.type
+                          AND ii.foreign_key_version = c.admin_version
+                
+                images_for_newsletter:
+                    table_join: |
+                        INNER JOIN [[DB_PREFIX]]inline_images AS ii
+                         ON ii.image_id = f.id
+                        AND ii.foreign_key_to = 'newsletter'
+                        AND ii.foreign_key_id = [[REFINER_ID]]
             
             
             columns:
@@ -49,25 +70,35 @@ zenario__content:
                     get_tags_from_column: tags
                 
                 tags:
-                    #title: Tags
-                    #db_column: |
-                    #    (
-                    #        SELECT GROUP_CONCAT(itl.tag_id SEPARATOR ',')
-                    #        FROM [[DB_NAME_PREFIX]]image_tag_link AS itl
-                    #        WHERE itl.image_id = f.id
-                    #        GROUP BY itl.image_id
-                    #    )
                     db_column: |
                         (
                             SELECT GROUP_CONCAT(DISTINCT it.name ORDER BY it.name SEPARATOR ',')
-                            FROM [[DB_NAME_PREFIX]]image_tag_link AS itl
-                            INNER JOIN [[DB_NAME_PREFIX]]image_tags AS it
+                            FROM [[DB_PREFIX]]image_tag_link AS itl
+                            INNER JOIN [[DB_PREFIX]]image_tags AS it
                                ON itl.tag_id = it.id
                             WHERE itl.image_id = f.id
                             GROUP BY itl.image_id
                         )
                     searchable: false
                     disallow_sorting: true
+                
+                is_featured_image:
+                    title: Feature image
+                    db_column: v.feature_image_id = f.id
+                    show_by_default: true
+                    parent: filename
+                    format: yes_or_no
+                    yes_phrase: Featured image
+                    no_phrase: ''
+                
+                in_use_here:
+                    title: In use here
+                    db_column: ii.in_use
+                    show_by_default: true
+                    parent: filename
+                    format: yes_or_no
+                    yes_phrase: ''
+                    no_phrase: Attached but not used
                 
                 
                 duplicate_filename:
@@ -77,7 +108,7 @@ zenario__content:
                     db_column: |
                         (
                             SELECT 1
-                            FROM [[DB_NAME_PREFIX]]files AS df
+                            FROM [[DB_PREFIX]]files AS df
                             WHERE df.`usage` = f.`usage`
                               AND df.filename = f.filename
                               AND df.archived = 0
@@ -167,113 +198,99 @@ zenario__content:
                     db_column: |
                         (
                             SELECT 1
-                            FROM [[DB_NAME_PREFIX]]inline_images AS uii
-                            WHERE uii.image_id = f.id
-                              AND uii.in_use = 1
-                              AND uii.archived = 0
+                            FROM [[DB_PREFIX]]inline_images
+                            WHERE image_id = f.id
+                              AND in_use = 1
+                              AND archived = 0
                             LIMIT 1
                         )
                     format: yes_or_no
                     hidden: true
                 
-                all_usage_content:
+                where_used:
                     show_by_default: true
                     width: xlarge
                     title: Where it's used
-                    tooltip: All content usage (attached to items, plugins, menu nodes)
+                    html: true
                     empty_value: Not used
                 
                 
                 usage_content:
-                    title: Attached to (content items)
                     db_column: |
                         (
-                            SELECT COUNT(DISTINCT cii.foreign_key_to, cii.foreign_key_id, cii.foreign_key_char)
-                            FROM [[DB_NAME_PREFIX]]inline_images AS cii
-                            WHERE cii.image_id = f.id
-                              AND cii.foreign_key_to = 'content'
-                              AND cii.archived = 0
-                        )
-                    filter_format: yes_or_no
-                    search_column: |
-                        (
                             SELECT 1
-                            FROM [[DB_NAME_PREFIX]]inline_images AS cii
-                            WHERE cii.image_id = f.id
-                              AND cii.foreign_key_to = 'content'
-                              AND cii.archived = 0
+                            FROM [[DB_PREFIX]]inline_images
+                            WHERE image_id = f.id
+                              AND foreign_key_to = 'content'
+                              AND archived = 0
                             LIMIT 1
                         )
-                    show_by_default: false
-                    align_right: true
-                    width: xsmall
+                    format: yes_or_no
+                    hidden: true
                 
                 usage_plugins:
-                    title: Usage (plugins)
                     db_column: |
                         (
-                            SELECT COUNT(DISTINCT pii.foreign_key_to, pii.foreign_key_id)
-                            FROM [[DB_NAME_PREFIX]]inline_images AS pii
-                            WHERE pii.image_id = f.id
-                              AND pii.foreign_key_to = 'library_plugin'
-                              AND pii.foreign_key_id != 0
-                        )
-                    filter_format: yes_or_no
-                    search_column: |
-                        (
                             SELECT 1
-                            FROM [[DB_NAME_PREFIX]]inline_images AS pii
-                            WHERE pii.image_id = f.id
-                              AND pii.foreign_key_to = 'library_plugin'
+                            FROM [[DB_PREFIX]]inline_images
+                            WHERE image_id = f.id
+                              AND foreign_key_to = 'library_plugin'
+                              AND is_nest = 0
                             LIMIT 1
                         )
-                    show_by_default: false
-                    align_right: true
-                    width: xsmall
+                    format: yes_or_no
+                    hidden: true
+                
+                usage_nests:
+                    db_column: |
+                        (
+                            SELECT 1
+                            FROM [[DB_PREFIX]]inline_images
+                            WHERE image_id = f.id
+                              AND foreign_key_to = 'library_plugin'
+                              AND is_nest = 1
+                              AND is_slideshow = 0
+                            LIMIT 1
+                        )
+                    format: yes_or_no
+                    hidden: true
+                
+                usage_slideshows:
+                    db_column: |
+                        (
+                            SELECT 1
+                            FROM [[DB_PREFIX]]inline_images
+                            WHERE image_id = f.id
+                              AND foreign_key_to = 'library_plugin'
+                              AND is_slideshow = 1
+                            LIMIT 1
+                        )
+                    format: yes_or_no
+                    hidden: true
                 
                 usage_menu_nodes:
-                    title: Usage (menu nodes)
                     db_column: |
                         (
-                            SELECT COUNT(DISTINCT eii.foreign_key_to, eii.foreign_key_id)
-                            FROM [[DB_NAME_PREFIX]]inline_images AS eii
-                            WHERE eii.image_id = f.id
-                              AND eii.foreign_key_to = 'menu_node'
-                        )
-                    filter_format: yes_or_no
-                    search_column: |
-                        (
                             SELECT 1
-                            FROM [[DB_NAME_PREFIX]]inline_images AS eii
-                            WHERE eii.image_id = f.id
-                              AND eii.foreign_key_to = 'menu_node'
+                            FROM [[DB_PREFIX]]inline_images
+                            WHERE image_id = f.id
+                              AND foreign_key_to = 'menu_node'
                             LIMIT 1
                         )
-                    search_column:
-                    show_by_default: false
-                    align_right: true
-                    width: xsmall
+                    format: yes_or_no
+                    hidden: true
                 
                 usage_email_templates:
-                    title: Email templates
-                    tooltip: Usage (email templates)
                     db_column: |
                         (
-                            SELECT COUNT(DISTINCT eii.foreign_key_to, eii.foreign_key_id)
-                            FROM [[DB_NAME_PREFIX]]inline_images AS eii
-                            WHERE eii.image_id = f.id
-                              AND eii.foreign_key_to = 'email_template'
-                        )
-                    filter_format: yes_or_no
-                    search_column: |
-                        (
                             SELECT 1
-                            FROM [[DB_NAME_PREFIX]]inline_images AS eii
-                            WHERE eii.image_id = f.id
-                              AND eii.foreign_key_to = 'email_template'
+                            FROM [[DB_PREFIX]]inline_images
+                            WHERE image_id = f.id
+                              AND foreign_key_to = 'email_template'
                             LIMIT 1
                         )
-                    show_by_default: false
+                    format: yes_or_no
+                    hidden: true
             
             default_sort_column: filename
             label_format_for_popouts: |
@@ -321,6 +338,16 @@ zenario__content:
                 #    column: usage_plugins
                 #    value: 1
                 #    invert: true
+                usage_nests:
+                    parent: usage_dropdown
+                    label: Used by a nest
+                    column: usage_nests
+                    value: 1
+                usage_slideshows:
+                    parent: usage_dropdown
+                    label: Used by a slideshow
+                    column: usage_slideshows
+                    value: 1
                 usage_email_templates:
                     parent: usage_dropdown
                     label: Used by an email template
@@ -380,6 +407,22 @@ zenario__content:
                     label: Manage tags
                     link:
                         path: zenario__content/panels/image_tags
+                
+                add_to_content_item:
+                    only_show_on_refiner: images_for_content_item
+                    label: Add image from image library
+                    pick_items:
+                        path: zenario__content/panels/image_library
+                        target_path: zenario__content/panels/image_library
+                        min_path: zenario__content/panels/image_library
+                        disallow_refiners_looping_on_min_path: true
+                        one_to_one_choose_phrase: Use
+                        multiple_select: true
+                        request:
+                            add: 1
+            
+            
+            
             item_buttons:
                 edit:
                     label: Edit image properties
@@ -493,6 +536,20 @@ zenario__content:
                     hide_in_select_mode: true
                     admin_box:
                         path: zenario_change_tags
+                        
+                send_to_documents:
+                    priv: _PRIV_MANAGE_MEDIA
+                    label: Send to Documents
+                    hide_in_select_mode: true
+                    ajax:
+                        confirm:
+                            message: >
+                                Are you sure you wish to send the selected image "[[filename]]" to Documents?
+                            button_message: Send to Documents
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            send_to_documents: 1
                     
                 delete:
                     priv: _PRIV_MANAGE_MEDIA
@@ -510,3 +567,102 @@ zenario__content:
                             message_type: warning
                         request:
                             delete: 1
+                    
+                delete_in_use:
+                    priv: _PRIV_MANAGE_MEDIA
+                    label: Delete
+                    multiple_select: false
+                    hide_in_select_mode: true
+                    visible_if_for_any_selected_items: >
+                        item.in_use_anywhere
+                    ajax:
+                        confirm:
+                            html: true
+                            button_message: Delete
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            delete_in_use: 1
+                
+                
+                
+                
+                flag_as_feature:
+                    priv: _PRIV_SET_CONTENT_ITEM_STICKY_IMAGE
+                    only_show_on_refiner: images_for_content_item
+                    label: Flag as feature image
+                    hide_in_select_mode: false
+                    visible_if: |
+                        !zenario.engToBoolean(item.is_featured_image)
+                    ajax:
+                        confirm:
+                            message: |
+                                Do you wish to use "[[filename]]" as the feature image for this content item?
+                                
+                                The feature image can appear automatically in banners, content summary lists and other managed links to this content item.
+                            button_message: Flag as feature image
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            flag_as_feature: true
+                unflag_as_feature:
+                    priv: _PRIV_SET_CONTENT_ITEM_STICKY_IMAGE
+                    only_show_on_refiner: images_for_content_item
+                    label: Unflag as feature image
+                    hide_in_select_mode: false
+                    visible_if_for_all_selected_items: |
+                        item.is_featured_image
+                    ajax:
+                        confirm:
+                            message: 'Are you sure you wish to stop using the image "[[filename]]" as the feature image?'
+                            button_message: Unflag as feature image
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            unflag_as_feature: true
+                
+                remove_from_content:
+                    priv: _PRIV_MANAGE_MEDIA
+                    only_show_on_refiner: images_for_content_item
+                    label: Detach from content item
+                    multiple_select: true
+                    hide_in_select_mode: false
+                    disabled_if_for_any_selected_items: |
+                        item.in_use_here || item.is_featured_image
+                    disabled_tooltip: |
+                        You cannot detach an image that is in use.
+                        
+                        First remove the image from where it is used (WYSIWYG Editor or Banner), then you can detach it.
+                    ajax:
+                        confirm:
+                            message: |
+                                Are you sure you wish to detach the image "[[filename]]" from this content item?
+                            multiple_select_message: |
+                                Are you sure you wish to detach these images from this content item?
+                            button_message: Detach
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            remove: 1
+            
+            hidden_nav:
+                plugins_using_image:
+                    link:
+                        path: zenario__modules/panels/plugins
+                        refiner: plugins_using_image
+                nests_using_image:
+                    link:
+                        path: zenario__modules/panels/plugins
+                        refiner: nests_using_image
+                slideshows_using_image:
+                    link:
+                        path: zenario__modules/panels/plugins
+                        refiner: slideshows_using_image
+                content_items_using_image:
+                    link:
+                        path: zenario__content/panels/content
+                        refiner: content_items_using_image
+                menu_nodes_using_image:
+                    link:
+                        path: zenario__menu/panels/menu_nodes
+                        refiner: menu_nodes_using_image

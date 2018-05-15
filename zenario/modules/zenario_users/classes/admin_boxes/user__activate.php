@@ -55,7 +55,7 @@ class zenario_users__admin_boxes__user__activate extends zenario_users {
 		if (($id = (int)$box['key']['id']) && ze\priv::check('_PRIV_EDIT_USER')) {
 			$sql ="
 					UPDATE "
-					. DB_NAME_PREFIX . "users
+					. DB_PREFIX . "users
 					SET
 						status='active'
 					WHERE

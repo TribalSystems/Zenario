@@ -33,16 +33,6 @@ class zenario_common_features extends ze\moduleBaseClass {
 	
 	
 	
-	
-	
-	//Get the layout and content usage of a plugin in a sentence 
-	public static function getPluginInstanceUsage($instanceId, &$itemCount = 0, &$layoutCount = 0) {
-		return require ze::funIncPath(__FILE__, __FUNCTION__);
-	}
-	
-	
-	
-	
 	// Centralised list for user status
 	public static function userStatus($mode, $value = false) {
 		switch ($mode) {
@@ -159,7 +149,7 @@ class zenario_common_features extends ze\moduleBaseClass {
 			//Fetch the name of the instance, and the name of the swatch being used
 			$sql = "
 				SELECT name, framework, css_class
-				FROM ". DB_NAME_PREFIX. "plugin_instances
+				FROM ". DB_PREFIX. "plugin_instances
 				WHERE id = ". (int) $slot['instance_id'];
 			$result = ze\sql::select($sql);
 			if ($row = ze\sql::fetchAssoc($result)) {
@@ -264,7 +254,7 @@ class zenario_common_features extends ze\moduleBaseClass {
 	
 	public static function reviewDatabaseQueryForChanges(&$sql, &$ids, &$values, $table = false, $runSql = false) {
 		if ($runSql) {
-			ze\sql::update($sql, false, false);
+			ze\sql::cacheFriendlyUpdate($sql);
 			return ze\sql::affectedRows();
 		}
 	}
@@ -428,8 +418,8 @@ class zenario_common_features extends ze\moduleBaseClass {
 	public static function jobPublishContent($serverTime) {
 		$sql = "
 			SELECT v.id, v.type, v.version, c.status
-			FROM ". DB_NAME_PREFIX. "content_item_versions AS v
-			INNER JOIN ". DB_NAME_PREFIX. "content_items AS c
+			FROM ". DB_PREFIX. "content_item_versions AS v
+			INNER JOIN ". DB_PREFIX. "content_items AS c
 			   ON c.id = v.id
 			  AND c.type = v.type
 			WHERE v.scheduled_publish_datetime <= STR_TO_DATE('". ze\escape::sql($serverTime). "', '%Y-%m-%d %H:%i:%s')";
@@ -497,7 +487,7 @@ class zenario_common_features extends ze\moduleBaseClass {
 			case ze\dataset::LIST_MODE_INFO:
 				return ['can_filter' => false];
 			case ze\dataset::LIST_MODE_LIST:
-				return ze\row::getArray('lov_salutations', 'name', [], 'name', 'name');
+				return ze\row::getValues('lov_salutations', 'name', [], 'name', 'name');
 			case ze\dataset::LIST_MODE_VALUE:
 				return $value;
 		}

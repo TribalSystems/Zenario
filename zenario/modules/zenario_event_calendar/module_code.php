@@ -304,12 +304,12 @@ class zenario_event_calendar extends ze\moduleBaseClass {
 					c.id
 				";
 		$sqlJoin = "
-				INNER JOIN " . DB_NAME_PREFIX . ZENARIO_CTYPE_EVENT_PREFIX . "content_event AS ce
+				INNER JOIN " . DB_PREFIX . ZENARIO_CTYPE_EVENT_PREFIX . "content_event AS ce
 					ON v.id = ce.id
 					AND v.version = ce.version
 					AND v.type = 'event'
 				LEFT JOIN "
-					. DB_NAME_PREFIX . "category_item_link as cil 
+					. DB_PREFIX . "category_item_link as cil 
 				ON 
 						c.equiv_id = cil.equiv_id
 					AND c.type = cil.content_type";
@@ -347,12 +347,12 @@ class zenario_event_calendar extends ze\moduleBaseClass {
 					c.id
 				";
 		$sqlJoin = "
-				INNER JOIN " . DB_NAME_PREFIX . ZENARIO_CTYPE_EVENT_PREFIX . "content_event AS ce
+				INNER JOIN " . DB_PREFIX . ZENARIO_CTYPE_EVENT_PREFIX . "content_event AS ce
 					ON v.id = ce.id
 					AND v.version = ce.version
 					AND v.type = 'event'
 				LEFT JOIN "
-					. DB_NAME_PREFIX . "category_item_link as cil 
+					. DB_PREFIX . "category_item_link as cil 
 				ON 
 						c.equiv_id = cil.equiv_id
 					AND c.type = cil.content_type";
@@ -394,12 +394,12 @@ class zenario_event_calendar extends ze\moduleBaseClass {
 					c.id
 				";
 		$sqlJoin = "
-				INNER JOIN " . DB_NAME_PREFIX . ZENARIO_CTYPE_EVENT_PREFIX . "content_event AS ce
+				INNER JOIN " . DB_PREFIX . ZENARIO_CTYPE_EVENT_PREFIX . "content_event AS ce
 					ON v.id = ce.id
 					AND v.version = ce.version
 					AND v.type = 'event'
 				LEFT JOIN "
-					. DB_NAME_PREFIX . "category_item_link as cil 
+					. DB_PREFIX . "category_item_link as cil 
 				ON 
 						c.equiv_id = cil.equiv_id
 					AND c.type = cil.content_type";
@@ -466,12 +466,12 @@ class zenario_event_calendar extends ze\moduleBaseClass {
 					c.id
 				";
 		$sqlJoin = "
-				INNER JOIN " . DB_NAME_PREFIX . ZENARIO_CTYPE_EVENT_PREFIX . "content_event AS ce
+				INNER JOIN " . DB_PREFIX . ZENARIO_CTYPE_EVENT_PREFIX . "content_event AS ce
 					ON v.id = ce.id
 					AND v.version = ce.version
 					AND v.type = 'event'
 				LEFT JOIN "
-					. DB_NAME_PREFIX . "category_item_link as cil 
+					. DB_PREFIX . "category_item_link as cil 
 				ON 
 						c.equiv_id = cil.equiv_id
 					AND c.type = cil.content_type";
@@ -557,12 +557,12 @@ class zenario_event_calendar extends ze\moduleBaseClass {
 					description
 				";
 		$sqlJoin = "
-				INNER JOIN " . DB_NAME_PREFIX . ZENARIO_CTYPE_EVENT_PREFIX . "content_event AS ce
+				INNER JOIN " . DB_PREFIX . ZENARIO_CTYPE_EVENT_PREFIX . "content_event AS ce
 					ON v.id = ce.id
 					AND v.version = ce.version
 					AND v.type = 'event'
 				LEFT JOIN "
-					. DB_NAME_PREFIX . "category_item_link as cil 
+					. DB_PREFIX . "category_item_link as cil 
 				ON 
 						c.equiv_id = cil.equiv_id
 					AND c.type = cil.content_type
@@ -619,7 +619,7 @@ class zenario_event_calendar extends ze\moduleBaseClass {
 		$sql .= " ORDER BY end_date,end_time ";
 		 
  		if (ze\sql::numRows($result=ze\sql::select($sql))>0 ){
-			while($row=ze\sql::fetchArray($result)){
+			while($row=ze\sql::fetchAssoc($result)){
 				if ((!($this->setting('hide_private_items'))) || ze\content::checkPerm($row['id'],'event',$row['version'])){
 					$retVal[]=[
 						'id'=>$row['id'],

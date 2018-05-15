@@ -8,7 +8,8 @@ zenario_smart_group:
         num_rules: 1
         
         # Flags for whether certain types of user-field exist
-        flagsExist: false
+        checkboxesExist: false
+        consentsExist: false
         groupsExist: false
         listsExist: false
         
@@ -130,7 +131,8 @@ zenario_smart_group:
                     values: fields
                     empty_value: ' -- Select -- '
                     visible_if: |
-                        zenarioAB.value('type__znz') == 'flag' ||
+                        zenarioAB.value('type__znz') == 'checkbox' ||
+                        zenarioAB.value('type__znz') == 'consent' ||
                         zenarioAB.value('type__znz') == 'group' ||
                         zenarioAB.value('type__znz') == 'list'
                     format_onchange: true
@@ -202,7 +204,8 @@ zenario_smart_group:
                         isnt:
                             label: is not set
                     visible_if: |
-                        zenarioAB.value('type__znz') == 'flag'
+                        zenarioAB.value('type__znz') == 'checkbox' ||
+                        zenarioAB.value('type__znz') == 'consent'
                     format_onchange: true
                 
                 
@@ -297,14 +300,19 @@ zenario_smart_group:
                 ord: 100001
                 label: Group
                 visible_if: tuix.key.groupsExist
-            flag:
+            checkbox:
                 parent: user_fields
                 ord: 100002
-                label: Flag
-                visible_if: tuix.key.flagsExist
-            list:
+                label: Checkbox
+                visible_if: tuix.key.checkboxesExist
+            consent:
                 parent: user_fields
                 ord: 100003
+                label: Consent checkbox
+                visible_if: tuix.key.consentsExist
+            list:
+                parent: user_fields
+                ord: 100004
                 label: Radio or list
                 visible_if: tuix.key.listsExist
             

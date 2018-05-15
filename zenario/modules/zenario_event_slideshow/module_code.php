@@ -38,13 +38,13 @@ class zenario_event_slideshow extends ze\moduleBaseClass {
 		$sqlSelect = '
 			SELECT
 				c.id, c.type, c.visitor_version, v.title
-			FROM '.DB_NAME_PREFIX.'content_items c';
+			FROM '.DB_PREFIX.'content_items c';
 		$sqlJoins = '
-			INNER JOIN '.DB_NAME_PREFIX.'content_item_versions v
+			INNER JOIN '.DB_PREFIX.'content_item_versions v
 				ON (c.tag_id = v.tag_id) AND (c.visitor_version = v.version)
-			INNER JOIN '.DB_NAME_PREFIX.'translation_chains tc
+			INNER JOIN '.DB_PREFIX.'translation_chains tc
 				ON (c.equiv_id = tc.equiv_id) AND (c.type = tc.type)
-			INNER JOIN '.DB_NAME_PREFIX. ZENARIO_CTYPE_EVENT_PREFIX.'content_event cv
+			INNER JOIN '.DB_PREFIX. ZENARIO_CTYPE_EVENT_PREFIX.'content_event cv
 				ON (c.id = cv.id) AND (c.visitor_version = cv.version)';
 		$sqlWhere = '
 			WHERE c.type = "event"
@@ -54,7 +54,7 @@ class zenario_event_slideshow extends ze\moduleBaseClass {
 			AND tc.privacy = "public"';
 		if ($this->setting('filter_by_category') && $this->setting('content_category')) {
 			$sqlJoins .= '
-				INNER JOIN '.DB_NAME_PREFIX.'category_item_link cil
+				INNER JOIN '.DB_PREFIX.'category_item_link cil
 					ON (c.equiv_id = cil.equiv_id) AND (c.type = cil.content_type)';
 			$sqlWhere .= '
 				AND cil.category_id = '.(int)$this->setting('content_category');

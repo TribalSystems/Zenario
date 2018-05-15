@@ -4,11 +4,29 @@ zenario_alias:
     tabs:
         meta_data:
             fields:
-                zenario_pro_features__create_spare_alias:
+                alias:
+                    redraw_immediately_onchange: true
+                create_spare_alias:
                     priv: _PRIV_MANAGE_SPARE_ALIAS
-                    label: 'Create a spare alias under the old name'
-                    type: checkbox
-                    side_note: |
-                        Don't lose traffic.
-                        When visitors request the page's old alias, the server will perform a Redirect to its new alias (recommended).
-                    visible_if: zenarioAB.editModeOn()
+                    ord: alias.01
+                    same_row: true
+                    visible_if: |
+                        tabs.meta_data.fields.alias.current_value &&
+                        tabs.meta_data.fields.alias.current_value != tabs.meta_data.fields.alias.value
+                    type: button
+                    css_class: zfab_text_link_button
+                    format_onchange: true
+                    value: Create a spare alias under the old name
+                spare_aliases:
+                    label: 'Spare aliases:'
+                    pick_items:
+                        #path: zenario__administration/panels/zenario_settings_pro_features__spare_aliases
+                        multiple_select: true
+                        nothing_selected_phrase: No spare aliases set
+                        enable_type_ahead_search: false
+                        allow_typing_anything: true
+                        hide_select_button: true
+                    cols: 4
+                    note_below: |
+                        You may type the names of aliases that do not exist to create them.
+                        Press the tab or the comma button while typing to enter multiple aliases.

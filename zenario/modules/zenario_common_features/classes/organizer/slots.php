@@ -105,7 +105,7 @@ class zenario_common_features__organizer__slots extends ze\moduleBaseClass {
 				//that is flagged as uses wireframe.
 				if (ze\priv::check('_PRIV_MANAGE_TEMPLATE_SLOT')) {
 					$i = 0;
-					foreach (ze\row::getArray(
+					foreach (ze\row::getAssocs(
 						'modules',
 						['id', 'display_name'],
 						['status' => 'module_running', 'is_pluggable' => 1, 'can_be_version_controlled' => 1],
@@ -139,7 +139,7 @@ class zenario_common_features__organizer__slots extends ze\moduleBaseClass {
 
 		//Get the slots on this Layout, and calculate their contents
 		$ord = 0;
-		foreach(ze\row::getArray('template_slot_link', ['ord', 'slot_name'], $lookForSlots, ['ord', 'slot_name']) as $slot) {
+		foreach(ze\row::getAssocs('template_slot_link', ['ord', 'slot_name'], $lookForSlots, ['ord', 'slot_name']) as $slot) {
 			$panel['items'][$slot['slot_name']] =
 				[
 					'ord' => $slot['ord']? $slot['ord'] : ++$ord,

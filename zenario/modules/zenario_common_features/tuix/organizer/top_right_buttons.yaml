@@ -17,7 +17,7 @@ top_right_buttons:
 
     view_profile:
         parent: admin_name
-        label: View profile
+        label: Your profile
         onclick: |
             zenarioAB.open(
                 'zenario_admin',
@@ -57,6 +57,19 @@ top_right_buttons:
             ).after(function() {
                 document.location.reload(true);
             });
+    
+    styles_fab_black:
+        visible_if: zenarioT.showDevTools()
+        parent: admin_name
+        label: View black styles FAB
+        onclick: |
+            zenarioAB.open('styles_fab_black');
+    styles_fab_white:
+        visible_if: zenarioT.showDevTools()
+        parent: admin_name
+        label: View white styles FAB
+        onclick: |
+            zenarioAB.open('styles_fab_white');
     
     #no_children:
     #    css_class: zenario_admin_name

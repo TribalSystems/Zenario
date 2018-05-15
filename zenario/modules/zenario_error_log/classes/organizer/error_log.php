@@ -33,8 +33,8 @@ class zenario_error_log__organizer__error_log extends ze\moduleBaseClass {
 		$spareAliases = [];
 		$sql = '
 			SELECT el.id, sa.target_loc, sa.content_id, sa.content_type, sa.ext_url
-			FROM '.DB_NAME_PREFIX.'spare_aliases sa
-			INNER JOIN '.DB_NAME_PREFIX. ZENARIO_ERROR_LOG_PREFIX. 'error_log el
+			FROM '.DB_PREFIX.'spare_aliases sa
+			INNER JOIN '.DB_PREFIX. ZENARIO_ERROR_LOG_PREFIX. 'error_log el
 				ON sa.alias = el.page_alias';
 		$result = ze\sql::select($sql);
 		while($row = ze\sql::fetchAssoc($result)) {

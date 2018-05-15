@@ -11,9 +11,9 @@
 }
 
 #zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_no_request a {
-	background:grey url('request-icon-off-state-toolbar-view.png') no-repeat;
+	background:grey url('icon-notes-grey.svg') no-repeat center / 14px 14px;
 }
 
 #zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_request a {
-	background:yellow url('request-icon-on-state-toolbar-view.png') no-repeat;
+	background:yellow url('icon-notes-grey.svg') no-repeat center / 14px 14px;
 }

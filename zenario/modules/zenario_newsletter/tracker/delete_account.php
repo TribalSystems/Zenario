@@ -52,14 +52,14 @@ if (!($newsletters = ze\module::activate('zenario_newsletter'))) {
 
 $sql = "
 	SELECT user_id, newsletter_id
-	FROM ". DB_NAME_PREFIX. ZENARIO_NEWSLETTER_PREFIX. "newsletter_user_link
+	FROM ". DB_PREFIX. ZENARIO_NEWSLETTER_PREFIX. "newsletter_user_link
 	WHERE delete_account_hash = '". ze\escape::sql($_REQUEST['t'] ?? false). "'";
 
 $result = ze\sql::select($sql);
 if ($row = ze\sql::fetchAssoc($result)) {
 	$sql = "
 		SELECT 1
-		FROM ". DB_NAME_PREFIX. "users
+		FROM ". DB_PREFIX. "users
 		WHERE id = ". (int) $row['user_id'];
 	$result = ze\sql::select($sql);
 	

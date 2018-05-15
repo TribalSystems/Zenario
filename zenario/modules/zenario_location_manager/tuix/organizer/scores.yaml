@@ -7,7 +7,7 @@ zenario__locations:
                 title: Sector scores
                 view_mode: list
                 db_items:
-                    table: '[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]scores AS s'
+                    table: '[[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]scores AS s'
                     id_column: s.id
                 default_sort_column: id
                 columns:

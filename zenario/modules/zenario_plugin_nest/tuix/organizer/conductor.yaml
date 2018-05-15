@@ -8,8 +8,8 @@ zenario__modules:
                 instanceId: ''
             #db_items:
             #    table: |
-            #        [[DB_NAME_PREFIX]]nested_plugins AS np
-            #        LEFT JOIN [[DB_NAME_PREFIX]]nested_plugins AS p
+            #        [[DB_PREFIX]]nested_plugins AS np
+            #        LEFT JOIN [[DB_PREFIX]]nested_plugins AS p
             #           ON p.instance_id = np.instance_id
             #          AND p.is_slide = 1
             #          AND p.slide_num = np.slide_num
@@ -26,6 +26,11 @@ zenario__modules:
                 label:
                     title: Name
                     show_by_default: true
+                dummy_column_for_filter:
+                    hidden: true
+                    format: enum
+                    values:
+                        show_vars: {}
 
             #item:
             #    name: Nested slide/plugin
@@ -36,6 +41,25 @@ zenario__modules:
             
             
             cytoscape: {}
+            quick_filter_buttons:
+                show_labels: 
+                    label: Show labels
+                    column: dummy_column_for_filter
+                    value: ''
+                    remove_filter: true
+                show_vars: 
+                    label: Show variables
+                    column: dummy_column_for_filter
+                    value: show_vars
+                    tooltip: |
+                        The variables shown here are defined in the description.yaml file of the
+                        modules.
+                        <br/><br/>
+                        To add a variable to a path, a module developer should edit the
+                        description.yaml file of the module that the path is for.
+                        <br/><br/>
+                        If you have created a custom path, you will need to manually enter the variables
+                        used in the path's properties.
             
             collection_buttons:
                 do_save_positions:

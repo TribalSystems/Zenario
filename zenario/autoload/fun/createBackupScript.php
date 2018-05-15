@@ -73,11 +73,11 @@ password="'. DBPASS. '"';
 	$postProcessing = '';
 	
 	//When we make the backup, attempt to insert the *\prefix:'zenario_':prefix\*/ flag that the CMS uses to check the table names in the backup script.
-	//However only try to do this if the DB_NAME_PREFIX only contains word-characters
-	if (preg_replace('@[a-zA-Z_]@', '', DB_NAME_PREFIX) === '') {
+	//However only try to do this if the DB_PREFIX only contains word-characters
+	if (preg_replace('@[a-zA-Z_]@', '', DB_PREFIX) === '') {
 		//Remove any "/*!40000 */" comments around the alter-table statements as we can't have comments within comments
 		$postProcessing .= ' | sed -E \'s@^/\\*\\!4[0-9]+ (ALTER TABLE.*)\\*/;$@\\1;@\'';
-		$postProcessing .= ' | sed -E \'s@^(DROP TABLE|DROP TABLE IF EXISTS|CREATE TABLE|CREATE TABLE IF NOT EXISTS|INSERT INTO|REPLACE INTO|UPDATE|ALTER TABLE) `('. DB_NAME_PREFIX. ')@\\1 /\\*\\\\prefix:\'"\'"\'\2\'"\'"\':prefix\\\\\\*/`\2@\'';
+		$postProcessing .= ' | sed -E \'s@^(DROP TABLE|DROP TABLE IF EXISTS|CREATE TABLE|CREATE TABLE IF NOT EXISTS|INSERT INTO|REPLACE INTO|UPDATE|ALTER TABLE) `('. DB_PREFIX. ')@\\1 /\\*\\\\prefix:\'"\'"\'\2\'"\'"\':prefix\\\\\\*/`\2@\'';
 	}
 	
 	//This line would attempt to force UTF8.
@@ -134,7 +134,7 @@ if ($gzip) {
 }
 $g = $open($backupPath, 'wb');
 
-//Loop through every table beginning with the DB_NAME_PREFIX
+//Loop through every table beginning with the DB_PREFIX
 foreach(\ze\dbAdm::lookupExistingCMSTables() as $table) {
 
 	//Attempt to get the create table script for the current table
@@ -144,24 +144,14 @@ foreach(\ze\dbAdm::lookupExistingCMSTables() as $table) {
 	//create statement for the table/view.
 	//(For example, this is a view and the current user has no rights to see views)
 	//Ignore it if so!
-	if (!($result = @\ze\sql::select($sql))) {
-		continue;
-	}
-
-	$createTable = \ze\sql::fetchAssoc($result);
-
-	//Check if this is a view and not a table - ignore it if so!
-	if ($table['view'] || !$createTable['Create Table']) {
-		continue;
-	}
-
-	//Ignore tables that are not from the CMS, or any tables from older versions of the CMS that were left after an upgrade
-	if (!$table['in_use']) {
+	if (!($result = @\ze\sql::select($sql))
+	 || !($createTable = \ze\sql::fetchAssoc($result))
+	 || !($createTable['Create Table'])) {
 		continue;
 	}
 
 	//Old logic: replace the table prefix with a pattern
-		//Remove the DB_NAME_PREFIX, and add [['DB_NAME_PREFIX']] in its place.
+		//Remove the DB_PREFIX, and add [['DB_PREFIX']] in its place.
 		//$importTable = "[['". $table['prefix']. "']]". $table['name'];
 		//$createTable = str_replace('`'. $table['actual_name']. '`', '`'. $importTable. '`', $createTable['Create Table']);
 
@@ -173,7 +163,7 @@ foreach(\ze\dbAdm::lookupExistingCMSTables() as $table) {
 	//Third attempt:
 		//This tries to come up with something that will still work with mysql/phpMyAdmin, but will also allow for
 		//restores to databases with different table prefixes
-		$importTable = '/*\\prefix:\''. DB_NAME_PREFIX. '\':prefix\\*/`'. $table['actual_name']. '`';
+		$importTable = '/*\\prefix:\''. DB_PREFIX. '\':prefix\\*/`'. $table['actual_name']. '`';
 		$createTable = str_replace('`'. $table['actual_name']. '`', $importTable, $createTable['Create Table']);
 
 	//Get details on each column in the current table
@@ -227,9 +217,9 @@ foreach(\ze\dbAdm::lookupExistingCMSTables() as $table) {
 	gzwrite($g, $inserts);
 
 	//Attempt to get a list of the existing primary keys in each table.
-	\ze\row::cacheTableDef($table['actual_name']);
-	if ($pkCol = \ze\ray::value(\ze::$pkCols, $table['actual_name'])) {
-		$pkColIsInt = \ze::$dbCols[$table['actual_name']][$pkCol]->isInt;
+	\ze::$dbL->checkTableDef($table['actual_name']);
+	if ($pkCol = \ze\ray::value(\ze::$dbL->pks, $table['actual_name'])) {
+		$pkColIsInt = \ze::$dbL->cols[$table['actual_name']][$pkCol]->isInt;
 	
 		$sql = "
 			SELECT `". \ze\escape::sql($pkCol). "`
@@ -262,11 +252,11 @@ foreach(\ze\dbAdm::lookupExistingCMSTables() as $table) {
 		$first = true;
 		if (is_array($id)) {
 			foreach($id as $col => &$val) {
-				\ze\row::writeCol($table['actual_name'], $sql, $col, $val, $first, true);
+				\ze\row::writeCol($sql, $table['actual_name'], '', $col, $val, $first, true);
 			}
 	
 		} elseif ($id !== false) {
-			\ze\row::writeCol($table['actual_name'], $sql, $pkCol, $id, $first, true);
+			\ze\row::writeCol($sql, $table['actual_name'], '', $pkCol, $id, $first, true);
 		}
 		$result = \ze\sql::select($sql);
 

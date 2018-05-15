@@ -118,7 +118,7 @@ class datasetAdm {
 		
 			if ($field['type'] == 'file_picker') {
 				$sql = "
-					DELETE FROM ". DB_NAME_PREFIX. "custom_dataset_files_link
+					DELETE FROM ". DB_PREFIX. "custom_dataset_files_link
 					WHERE field_id = ". (int) $field['id']. "
 					  AND dataset_id = ". (int) $dataset['id'];
 			
@@ -129,15 +129,15 @@ class datasetAdm {
 			} elseif ($field['type'] == 'checkboxes') {
 				$sql = "
 					DELETE fv.*, vl.*
-					FROM ". DB_NAME_PREFIX. "custom_dataset_field_values AS fv
-					INNER JOIN ". DB_NAME_PREFIX. "custom_dataset_values_link AS vl
+					FROM ". DB_PREFIX. "custom_dataset_field_values AS fv
+					INNER JOIN ". DB_PREFIX. "custom_dataset_values_link AS vl
 					ON vl.value_id = fv.id
 					WHERE fv.field_id = ". (int) $field['id'];
 				\ze\sql::update($sql);
 		
 			} elseif ($field['type'] != 'repeat_end') {
 				$sql = "
-					ALTER TABLE `". DB_NAME_PREFIX. \ze\escape::sql($dataset['table']). "`
+					ALTER TABLE `". DB_PREFIX. \ze\escape::sql($dataset['table']). "`
 					DROP COLUMN `". \ze\escape::sql($field['db_column']). "`";
 				if ($field['repeat_start_id']) {
 					$rows = \ze\row::get('custom_dataset_fields', 'max_rows', $field['repeat_start_id']);
@@ -163,14 +163,14 @@ class datasetAdm {
 		if ($dataset = \ze\dataset::details($dataset)) {
 			$sql = "
 				DELETE cd.*, t.*, f.*, fv.*, vl.*
-				FROM ". DB_NAME_PREFIX. "custom_datasets AS cd
-				LEFT JOIN ". DB_NAME_PREFIX. "custom_dataset_tabs AS t
+				FROM ". DB_PREFIX. "custom_datasets AS cd
+				LEFT JOIN ". DB_PREFIX. "custom_dataset_tabs AS t
 				   ON t.dataset_id = cd.id
-				LEFT JOIN ". DB_NAME_PREFIX. "custom_dataset_fields AS f
+				LEFT JOIN ". DB_PREFIX. "custom_dataset_fields AS f
 				   ON f.dataset_id = cd.id
-				LEFT JOIN ". DB_NAME_PREFIX. "custom_dataset_field_values AS fv
+				LEFT JOIN ". DB_PREFIX. "custom_dataset_field_values AS fv
 				   ON fv.field_id = f.id
-				LEFT JOIN ". DB_NAME_PREFIX. "custom_dataset_values_link AS vl
+				LEFT JOIN ". DB_PREFIX. "custom_dataset_values_link AS vl
 				   ON vl.value_id = fv.id
 				WHERE cd.id = ". (int) $dataset['id'];
 			\ze\sql::update($sql);
@@ -189,6 +189,7 @@ class datasetAdm {
 			case 'repeat_start':
 			case 'checkbox':
 			case 'group':
+			case 'consent':
 				return " tinyint(1) NOT NULL default 0";
 		
 			case 'radios':
@@ -292,7 +293,7 @@ class datasetAdm {
 			$columns = ['tab_name', 'is_system_field', 'fundamental', 'field_name', 'type', 'db_column', 'label', 'default_label', 'ord'];
 		}
 	
-		$fields = \ze\row::getArray('custom_dataset_fields', $columns, $key, 'ord');
+		$fields = \ze\row::getAssocs('custom_dataset_fields', $columns, $key, 'ord');
 		$existingParents = [];
 		foreach ($fields as &$field) {
 			if ($field['is_system_field'] && $field['label'] == '') {
@@ -311,7 +312,7 @@ class datasetAdm {
 	
 		//Add opt-groups for each tab
 		if ($useOptGroups) {
-			foreach (\ze\row::getArray('custom_dataset_tabs', ['is_system_field', 'name', 'label', 'default_label', 'ord'], ['dataset_id' => $dataset['id']]) as $tab) {
+			foreach (\ze\row::getAssocs('custom_dataset_tabs', ['is_system_field', 'name', 'label', 'default_label', 'ord'], ['dataset_id' => $dataset['id']]) as $tab) {
 			
 				if ($hideEmptyOptGroupParents && empty($existingParents['tab__'. $tab['name']])) {
 					continue;
@@ -334,9 +335,11 @@ class datasetAdm {
 			case 'group':
 				return 'Group';
 			case 'checkbox':
-				return 'Flag';
+				return 'Checkbox';
+			case 'consent':
+				return 'Consent';
 			case 'checkboxes':
-				return 'Checkboxes';
+				return 'Checkbox group';
 			case 'date':
 				return 'Date';
 			case 'editor':
@@ -430,7 +433,7 @@ class datasetAdm {
 	
 		$sql = "
 			SELECT *
-			FROM ". DB_NAME_PREFIX. "custom_dataset_fields
+			FROM ". DB_PREFIX. "custom_dataset_fields
 			WHERE dataset_id = ". (int) $field['dataset_id']. "
 			  AND parent_id = ". (int) $field['id']. "
 			  AND is_system_field = 0";
@@ -529,7 +532,7 @@ class datasetAdm {
 	
 		$sql = "
 			SHOW COLUMNS
-			FROM `". DB_NAME_PREFIX. \ze\escape::sql($table). "`
+			FROM `". DB_PREFIX. \ze\escape::sql($table). "`
 			WHERE Field = '". \ze\escape::sql($column). "'";
 		
 		if ($row = \ze\sql::fetchAssoc($sql)) {
@@ -556,7 +559,7 @@ class datasetAdm {
 			
 				$sql = "
 					SHOW KEYS
-					FROM `". DB_NAME_PREFIX. \ze\escape::sql($dataset['table']). "`
+					FROM `". DB_PREFIX. \ze\escape::sql($dataset['table']). "`
 					WHERE Column_name = '". \ze\escape::sql($columnName). "'";
 				$result = \ze\sql::select($sql);
 				while ($row = \ze\sql::fetchAssoc($result)) {
@@ -575,7 +578,7 @@ class datasetAdm {
 		
 			//Start building the query we'll need
 			$sql = "
-				ALTER TABLE `". DB_NAME_PREFIX. \ze\escape::sql($dataset['table']). "`";
+				ALTER TABLE `". DB_PREFIX. \ze\escape::sql($dataset['table']). "`";
 		
 			if ($def === '') {
 				//Some fields (e.g. checkboxes, file pickers) don't store their values in the table
@@ -598,7 +601,7 @@ class datasetAdm {
 					if ($field['create_index'] && $oldColType == 'TINYTEXT') {
 						//Bugfix - when changing a TINYTEXT to a varchar, remove any null values
 						\ze\sql::update("
-							UPDATE `". DB_NAME_PREFIX. \ze\escape::sql($dataset['table']). "`
+							UPDATE `". DB_PREFIX. \ze\escape::sql($dataset['table']). "`
 							SET `". \ze\escape::sql($oldName). "` = ''
 							WHERE `". \ze\escape::sql($oldName). "` IS NULL
 						");
@@ -628,7 +631,7 @@ class datasetAdm {
 			//Drop any existing keys
 			foreach ($keys as $key) {
 				$sqlK = "
-					ALTER TABLE `". DB_NAME_PREFIX. \ze\escape::sql($dataset['table']). "`
+					ALTER TABLE `". DB_PREFIX. \ze\escape::sql($dataset['table']). "`
 					DROP KEY `". \ze\escape::sql($key). "`";
 				\ze\sql::update($sqlK);
 			}
@@ -640,7 +643,7 @@ class datasetAdm {
 			//Add a key if needed
 			if ($def !== '' && $field['create_index']) {
 				$sql = "
-					ALTER TABLE `". DB_NAME_PREFIX. \ze\escape::sql($dataset['table']). "`
+					ALTER TABLE `". DB_PREFIX. \ze\escape::sql($dataset['table']). "`
 					ADD KEY (`". \ze\escape::sql($field['db_column']). "`";
 			
 				if ($field['type'] == 'editor' || $field['type'] == 'textarea') {
@@ -726,7 +729,7 @@ class datasetAdm {
 			
 			if ($sql) {
 				$sql = "
-					ALTER TABLE `". DB_NAME_PREFIX. \ze\escape::sql($dataset['table']). "`" . trim($sql, ',');
+					ALTER TABLE `". DB_PREFIX. \ze\escape::sql($dataset['table']). "`" . trim($sql, ',');
 					\ze\sql::update($sql);
 			}
 		}

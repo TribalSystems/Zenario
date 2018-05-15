@@ -180,9 +180,11 @@ methods.getFieldReadableType = function(type, tuixType, getOtherSystemFieldTUIXT
 		case 'group':
 			return 'Group';
 		case 'checkbox':
-			return 'Flag';
+			return 'Checkbox';
+		case 'consent':
+			return 'Consent';
 		case 'checkboxes':
-			return 'Checkboxes';
+			return 'Checkbox group';
 		case 'date':
 			return 'Date';
 		case 'editor':
@@ -216,6 +218,10 @@ methods.getFieldReadableType = function(type, tuixType, getOtherSystemFieldTUIXT
 						return 'Toggle';
 					case 'grouping':
 						return 'Grouping';
+					case 'submit':
+						return 'Submit';
+					case 'hidden':
+						return 'Hidden';
 					default:
 						return this.getFieldReadableType(tuixType);
 				}

@@ -3,11 +3,11 @@
 zenario__users:
     panels:
         administrators:
+            panel_type: list_with_caching_disabled
             title: Administrators
             no_items_message: This site has no administrators. Click "Create" to create one.
-            view_mode: list
             db_items:
-                table: '[[DB_NAME_PREFIX]]admins AS a'
+                table: '[[DB_PREFIX]]admins AS a'
                 id_column: a.id
                 custom_where_statement_if_no_refiner: "WHERE status != 'deleted'"
             refiners:
@@ -15,6 +15,7 @@ zenario__users:
                     sql: "status != 'deleted'"
                 trashed:
                     sql: "status = 'deleted'"
+            default_sort_column: full_name
             columns:
                 full_name:
                     title: Name
@@ -46,7 +47,7 @@ zenario__users:
                             WHEN 'specific_actions' THEN
                                 IF ((
                                     SELECT 1
-                                    FROM [[DB_NAME_PREFIX]]action_admin_link
+                                    FROM [[DB_PREFIX]]action_admin_link
                                     AS aal
                                     WHERE aal.admin_id = a.id
                                     LIMIT 1
@@ -82,6 +83,8 @@ zenario__users:
                     format: yes_or_no
                     db_column: a.is_client_account
                     disallow_sorting: true
+                is_inactive:
+                    format: yes_or_no
                 csuper:
                     db_column: "IF (a.authtype = 'multi-site', ', multi-site', \'\')"
                 status:
@@ -91,11 +94,12 @@ zenario__users:
                     title: Created
                     db_column: a.created_date
                     format: date
+                session_id:
+                    db_column: session_id
                 last_login:
                     title: Last login
                     db_column: |
                         a.last_login
-                    format: datetime
                     show_by_default: true
                     width: medium
                 last_platform:
@@ -107,20 +111,20 @@ zenario__users:
                 filename:
                     db_column: f.filename
                     table_join: >
-                        LEFT JOIN [[DB_NAME_PREFIX]]files AS f
+                        LEFT JOIN [[DB_PREFIX]]files AS f
                         ON a.image_id = f.id
                         AND f.`usage` = 'admin'
                 checksum:
                     db_column: f.checksum
                     table_join: >
-                        LEFT JOIN [[DB_NAME_PREFIX]]files AS f
+                        LEFT JOIN [[DB_PREFIX]]files AS f
                         ON a.image_id = f.id
                         AND f.`usage` = 'admin'
                 has_image:
                     format: yes_or_no
                     db_column: f.id IS NOT NULL
                     table_join: >
-                        LEFT JOIN [[DB_NAME_PREFIX]]files AS f
+                        LEFT JOIN [[DB_PREFIX]]files AS f
                         ON a.image_id = f.id
                         AND f.`usage` = 'admin'
                     width: xxsmall
@@ -225,7 +229,17 @@ zenario__users:
                         traits.active: true
                     without_columns_set:
                         traits.current_admin: true
-            default_sort_column: full_name
+            inline_buttons:
+                inactive:
+                    visible_if: |
+                        zenario.engToBoolean(item.is_inactive)
+                    css_class: zenario_ib_warning
+                    admin_box:
+                        path: zenario_admin
+                    tooltip: |
+                        [[inactive_tooltip]]
+
+            
             trash:
                 link:
                     path: zenario__users/panels/administrators

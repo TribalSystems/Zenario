@@ -1111,7 +1111,7 @@ class zenario_incoming_email_manager extends ze\moduleBaseClass {
 			self::clearOldData();
 			
 			$sql = "
-				REPLACE INTO ". DB_NAME_PREFIX. ZENARIO_INCOMING_EMAIL_MANAGER_PREFIX. "account_logs SET
+				REPLACE INTO ". DB_PREFIX. ZENARIO_INCOMING_EMAIL_MANAGER_PREFIX. "account_logs SET
 					job_id = ". (int) $jobId. ",
 					log_id = ". (int) $logId. ",
 					email_from = '". ze\escape::sql(ze\ray::value($addresses, 'from:', 0, 'address')). "',
@@ -1132,7 +1132,7 @@ class zenario_incoming_email_manager extends ze\moduleBaseClass {
 		if ($days && is_numeric($days)) {
 			$date = date('Y-m-d', strtotime('-'.$days.' day', strtotime(date('Y-m-d'))));
 			$sql = " 
-				DELETE FROM ". DB_NAME_PREFIX. ZENARIO_INCOMING_EMAIL_MANAGER_PREFIX. "account_logs
+				DELETE FROM ". DB_PREFIX. ZENARIO_INCOMING_EMAIL_MANAGER_PREFIX. "account_logs
 				WHERE email_sent < '".ze\escape::sql($date)."'";
 			ze\sql::update($sql);
 			return ze\sql::affectedRows();

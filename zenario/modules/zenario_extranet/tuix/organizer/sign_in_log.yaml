@@ -11,7 +11,7 @@ zenario__users:
 				title: Sign-in Log
 				view_mode: list
 				db_items:
-					table: '[[DB_NAME_PREFIX]]user_signin_log AS usl LEFT JOIN [[DB_NAME_PREFIX]]users AS u ON usl.user_id = u.id'
+					table: '[[DB_PREFIX]]user_signin_log AS usl LEFT JOIN [[DB_PREFIX]]users AS u ON usl.user_id = u.id'
 					id_column: usl.id
 					encode_id_column: No
 					group_by: >

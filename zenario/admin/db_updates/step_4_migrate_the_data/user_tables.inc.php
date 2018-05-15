@@ -38,10 +38,10 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 //Move the data and delete the old column.
 if (ze\dbAdm::needRevision(40780)) {
 	
-	if (ze\sql::numRows('SHOW COLUMNS FROM '. DB_NAME_PREFIX. 'users_custom_data LIKE "send_delayed_registration_email"')) {
+	if (ze\sql::numRows('SHOW COLUMNS FROM '. DB_PREFIX. 'users_custom_data LIKE "send_delayed_registration_email"')) {
 		ze\sql::update('
-			UPDATE '. DB_NAME_PREFIX . 'users AS u
-			INNER JOIN '. DB_NAME_PREFIX. 'users_custom_data AS ucd
+			UPDATE '. DB_PREFIX . 'users AS u
+			INNER JOIN '. DB_PREFIX. 'users_custom_data AS ucd
 			   ON ucd.user_id = u.id
 			  AND ucd.send_delayed_registration_email = 1
 			SET u.send_delayed_registration_email = 1
@@ -59,7 +59,7 @@ if (ze\dbAdm::needRevision(40780)) {
 //force them to switch and encrypt them during the migration to version 8.
 if (ze\dbAdm::needRevision(41700)) {
 	
-	foreach (ze\row::getArray('users', ['id', 'password'], ['password_salt' => null]) as $user) {
+	foreach (ze\row::getAssocs('users', ['id', 'password'], ['password_salt' => null]) as $user) {
 		ze\userAdm::setPassword($user['id'], $user['password']);
 	}
 	
@@ -70,7 +70,7 @@ if (ze\dbAdm::needRevision(41700)) {
 if (ze\dbAdm::needRevision(41741)) {
 	$code = 'zenario_users__to_user_account_suspended';
 	$sql = "
-		DELETE FROM " . DB_NAME_PREFIX . "email_templates
+		DELETE FROM " . DB_PREFIX . "email_templates
 		WHERE code = '". ze\escape::sql($code) . "'";
 	ze\sql::update($sql);
 	ze\contentAdm::removeItemFromPluginSettings('email_template', 0, $code);
@@ -85,21 +85,21 @@ if (ze\dbAdm::needRevision(41742)) {
 	$newTemplate = 'zenario_users__to_user_account_activated';
 	
 	$sql = '
-		UPDATE ' . DB_NAME_PREFIX . 'site_settings
+		UPDATE ' . DB_PREFIX . 'site_settings
 		SET value = "' . ze\escape::sql($newTemplate) . '"
 		WHERE value = "' . ze\escape::sql($oldTemplate) . '"';
 	$sql = '
-		UPDATE ' . DB_NAME_PREFIX . 'plugin_settings
+		UPDATE ' . DB_PREFIX . 'plugin_settings
 		SET value = "' . ze\escape::sql($newTemplate) . '"
 		WHERE value = "' . ze\escape::sql($oldTemplate) . '"';
 	
 	$sql = "
-		DELETE FROM " . DB_NAME_PREFIX . "email_templates
+		DELETE FROM " . DB_PREFIX . "email_templates
 		WHERE code = '". ze\escape::sql($oldTemplate) . "'";
 	ze\sql::update($sql);
 	
 	$sql = "
-		UPDATE " . DB_NAME_PREFIX . "email_templates
+		UPDATE " . DB_PREFIX . "email_templates
 		SET template_name = 'To User: Account activated'
 		WHERE code = 'zenario_users__to_user_account_activated'";
 	ze\sql::update($sql);

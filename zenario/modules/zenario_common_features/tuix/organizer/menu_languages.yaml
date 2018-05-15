@@ -14,7 +14,7 @@ zenario__menu:
             disable_grid_view: true
             php: true
             db_items:
-                table: '[[DB_NAME_PREFIX]]languages AS l'
+                table: '[[DB_PREFIX]]languages AS l'
                 id_column: l.id
                 client_side: true
             refiners:

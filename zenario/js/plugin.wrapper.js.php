@@ -138,25 +138,7 @@ if (!empty($moduleDetails)) {
 	}
 	
 	if (!empty($includeMicrotemplates)) {
-		
-		function esctick($text) {
-			$searches = ['`', '~'];
-			$replaces = ['`t', '`s'];
-			return str_replace($searches, $replaces, $text);
-		}
-		
-		
-		$output = '';
-		foreach ($includeMicrotemplates as $jsDir) {
-			foreach (scandir($dir = CMS_ROOT. $jsDir) as $file) {
-				if (substr($file, 0, 1) != '.' && substr($file, -5) == '.html' && is_file($dir. $file)) {
-					$name = substr($file, 0, -5);
-					$output .= esctick($name). '~'. esctick(preg_replace('@\s+@', ' ', preg_replace('@%>\s*<%@', '', file_get_contents($dir. $file)))). '~';
-				}
-			}
-		}
-		echo "\n". 'zenario._uAM(zenario.microTemplates,', json_encode($output), ');';
-		unset($output);
+		ze\cache::outputMicrotemplates($includeMicrotemplates, 'zenario.microTemplates');
 	}
 }
 
@@ -165,7 +147,7 @@ if (!empty($_GET['organizer'])) {
 	$moduleInfo =
 		ze\sql::fetchAssocs("
 			SELECT id, class_name, display_name, status IN ('module_running', 'module_is_abstract') AS running
-			FROM ". DB_NAME_PREFIX. "modules");
+			FROM ". DB_PREFIX. "modules");
 	
 	foreach ($moduleInfo as &$info) {
 		$info['id'] = (int) $info['id'];

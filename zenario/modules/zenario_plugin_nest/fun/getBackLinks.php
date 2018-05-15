@@ -38,9 +38,9 @@ if ($this->usesConductor && $this->state) {
 
 
 	$backToState = false;
-	if (!empty($this->commands['back'][0])
-	 && empty($this->commands['back'][2])) {
-		$backToState = $this->commands['back'][0];
+	if (!empty($this->commands['back'])
+	 && empty($this->commands['back']->cID)) {
+		$backToState = $this->commands['back']->toState;
 	}
 
 	while ($backToState
@@ -51,10 +51,10 @@ if ($this->usesConductor && $this->state) {
 	
 		$backToState = ze\sql::fetchValue("
 			SELECT to_state
-			FROM ". DB_NAME_PREFIX. "nested_paths
+			FROM ". DB_PREFIX. "nested_paths
 			WHERE instance_id = ". (int) $this->instanceId. "
 			  AND from_state = '". ze\escape::sql($backToState). "'
-			  AND commands IN ('back', 'close')
+			  AND command IN ('back', 'close')
 			ORDER BY to_state
 			LIMIT 1
 		");
@@ -77,7 +77,7 @@ if ($this->usesConductor && $this->state) {
 		}
 		
 		//Loop through each of the variables needed by the destination
-		foreach ($back['slide']['request_vars'] as $reqVar => $dummy) {
+		foreach ($back['slide']['request_vars'] as $reqVar) {
 			//Check the settings on the destination to see if it needs that variable.
 			//If so then try to add it from the core variables.
 			if (empty($requests[$reqVar]) && !empty(ze::$vars[$reqVar])) {
@@ -96,11 +96,11 @@ if ($this->usesConductor && $this->state) {
 		//Check to see if there is an egg on this slide that generates smart breadcrumbs
 		$sql = "
 			SELECT np.id, np.slide_num, np.ord, np.module_id, np.framework, np.css_class, np.cols, np.small_screens
-			FROM ". DB_NAME_PREFIX. "nested_plugins AS np
+			FROM ". DB_PREFIX. "nested_plugins AS np
 			WHERE np.instance_id = ". (int) $this->instanceId. "
 			  AND np.is_slide = 0
 			  AND np.slide_num = ". (int) $slideNum. "
-			  AND np.makes_breadcrumbs != 0
+			  AND np.makes_breadcrumbs > 1
 			ORDER BY np.ord
 			LIMIT 1";
 		
@@ -180,90 +180,9 @@ if ($this->usesConductor && $this->state) {
 	//If there are breadcrumbs on this level, we need to try and work out which slide they will go to
 	if ($lastBack && !empty($lastBack['smart'])) {
 		
-		$vbcState = false;
-		
-		//Check if it's specifically set
-		if ($this->forwardCommand && isset($this->commands[$this->forwardCommand][0])) {
-			$vbcState = $this->commands[$this->forwardCommand][0];
-		
-		//Otherwise try and work it out/take a best guess
-		} else {
-			//Get all of the possible options for the next slide
-			$viewSlides =
-			$editSlides =
-			$possibleNextSlides = [];
-			foreach ($this->commands as $commandName => $command) {
-			
-				//Don't count back/close/submit/go to schema links
-				if ($commandName != 'back'
-				 && $commandName != 'close'
-				 && $commandName != 'submit'
-				 && $commandName != 'go_to_schema') {
-				
-					//Paranoida check: Is this actually listed in $this->statesToSlides?
-					if ($slideNum = ($this->statesToSlides[$command[0]] ?? false)) {
-						switch (substr($commandName, 0, 4)) {
-						
-							//Don't count create/delete links
-							case 'crea':
-							case 'dele':
-								continue 2;
-						
-							//Look out for a "view" command, and favour that one
-							case 'view':
-								$viewSlides[] = $slideNum;
-								break;
-						
-							//Otherwise look out for an "edit" command
-							case 'edit':
-								$editSlides[] = $slideNum;
-						}
-					}
-				
-					$possibleNextSlides[$slideNum] = $command[0];
-				}
-			}
-		
-		
-			//Prefer a link to a slide that has a plugin with the makes_breadcrumbs flag set.
-			//Otherwise pick anything we see.
-			if (!empty($possibleNextSlides)) {
-				$sql = "
-					SELECT np.slide_num
-					FROM ". DB_NAME_PREFIX. "nested_plugins AS np
-					WHERE np.instance_id = ". (int) $this->instanceId. "
-					  AND np.is_slide = 0
-					  AND np.slide_num IN (". ze\escape::in(array_keys($possibleNextSlides), true). ")
-					ORDER BY
-						np.makes_breadcrumbs != 0 DESC";
-		
-				//Otherwise try to pick a "view" command.
-				if (!empty($viewSlides)) {
-					$sql .= ",
-						np.slide_num IN (". ze\escape::in($viewSlides, true). ") DESC";
-				}
-		
-				//Otherwise try to pick an "edit" command.
-				if (!empty($editSlides)) {
-					$sql .= ",
-						np.slide_num IN (". ze\escape::in($editSlides, true). ") DESC";
-				}
-		
-				//If given a choice, prefer a slide that's earlier in the order as this is more likely to be higher up
-				$sql .= ",
-					np.slide_num
-					LIMIT 1";
-		
-				if (($slideNum = (int) ze\sql::fetchValue($sql))
-				 && (isset($possibleNextSlides[$slideNum]))) {
-					$vbcState = $possibleNextSlides[$slideNum];
-				}
-			}
-		}
-		
-		if ($vbcState) {
+		if ($this->forwardCommand && isset($this->commands[$this->forwardCommand])) {
 			foreach ($lastBack['smart'] as &$vbc) {
-				$vbc['request']['state'] = $vbcState;
+				$vbc['request']['state'] = $this->commands[$this->forwardCommand]->toState;
 				$vbc['current'] = false;
 			}
 		} else {

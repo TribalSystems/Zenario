@@ -36,8 +36,9 @@ switch ($path) {
 				manager_class_name,
 				job_name, module_id, 0+months AS months, 0+days AS days, hours, minutes, first_n_days_of_month,
 				log_on_action, log_on_no_action, email_on_action,
-				email_on_no_action, email_address_on_no_action, email_address_on_action, email_address_on_error, run_every_minute
-			FROM ". DB_NAME_PREFIX. "jobs
+				email_on_no_action, email_address_on_no_action, email_address_on_action, email_address_on_error, run_every_minute,
+				last_run_started, last_run_finished, last_successful_run, last_action
+			FROM ". DB_PREFIX. "jobs
 			WHERE id = ". (int) $box['key']['id'];
 		
 		$result = ze\sql::select($sql);
@@ -116,5 +117,9 @@ switch ($path) {
 			$box['title'] = ze\admin::phrase('Editing scheduled task "[[job_name]]" for the module [[module_display_name]]', $details);
 		}
 		
+		$values['last_run/last_run_started'] = $details['last_run_started'];
+		$values['last_run/last_run_finished'] = $details['last_run_finished'];
+		$values['last_run/last_successful_run'] = $details['last_successful_run'];
+		$values['last_run/last_action'] = $details['last_action'];
 		break;
 }

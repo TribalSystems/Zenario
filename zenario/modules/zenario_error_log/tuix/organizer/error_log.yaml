@@ -11,8 +11,8 @@ zenario__administration:
             disable_grid_view: true
             db_items:
                 table: |
-                    [[DB_NAME_PREFIX]][[ZENARIO_ERROR_LOG_PREFIX]]error_log el
-                    LEFT JOIN [[DB_NAME_PREFIX]]spare_aliases sa
+                    [[DB_PREFIX]][[ZENARIO_ERROR_LOG_PREFIX]]error_log el
+                    LEFT JOIN [[DB_PREFIX]]spare_aliases sa
                         ON el.page_alias = sa.alias
                 id_column: el.id
             default_sort_column: datetime

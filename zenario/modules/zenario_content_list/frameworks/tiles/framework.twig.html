@@ -31,10 +31,10 @@
 		{% if Show_Title %}
 			<{{Title_Tags}}>{{Title_With_Content}}</{{Title_Tags}}>
 		{% endif %}
-		<div class="content_list_listing">
+		<div class="content_list_listing{% if Content_Items_Equal_Height %} setmychildren {% endif %}">
 			{% for item in Row %}
 				<a {{item.Link}}{{item.Target_Blank}}>
-				<div class="content_list_data_row data_row_{{this.oddOrEven()}}">
+				<div class="content_list_data_row{% if Content_Items_Equal_Height %} tothesameheight{% endif %} data_row_{{this.oddOrEven()}}{% if item.Disabled %} disabled_link{% endif %}">
 					{% if Show_Sticky_Image %}
 						<div class="sticky_image">
 							{{item.Sticky_Image}}

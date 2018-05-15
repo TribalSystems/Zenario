@@ -54,6 +54,18 @@ class ray {
 		return $o;
 	}
 
+	public static function pullOutKey($a, $key) {
+		$o = [];
+		if (is_array($a)) {
+			foreach ($a as $v) {
+				if (is_array($a) && isset($v[$key])) {
+					$o[] = $v[$key];
+				}
+			}
+		}
+		return $o;
+	}
+
 	//Formerly "engToBooleanArray()"
 	public static function engToBooleanArray(&$array, $key, $key2 = false, $key3 = false, $key4 = false, $key5 = false, $key6 = false, $key7 = false, $key8 = false, $key9 = false) {
 	

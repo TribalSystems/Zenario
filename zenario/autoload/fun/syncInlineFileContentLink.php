@@ -43,8 +43,8 @@ if ($publishing) {
 $fileIds = [];
 $sql = "
 	SELECT ps.value
-	FROM ". DB_NAME_PREFIX. "plugin_instances AS pi
-	INNER JOIN ". DB_NAME_PREFIX. "plugin_settings AS ps
+	FROM ". DB_PREFIX. "plugin_instances AS pi
+	INNER JOIN ". DB_PREFIX. "plugin_settings AS ps
 	   ON pi.id = ps.instance_id
 	  AND ps.is_content = 'version_controlled_setting'
 	  AND ps.foreign_key_to IN('file', 'multiple_files')
@@ -66,7 +66,7 @@ if ($fileId = \ze\row::get('content_item_versions', 'feature_image_id', ['id' =>
 
 //Do a quick check to see if all of those ids exist, only add the ones in the database!
 if (!empty($fileIds)) {
-	$files = \ze\row::getArray('files', ['id', 'usage', 'privacy'], ['id' => $fileIds]);
+	$files = \ze\row::getAssocs('files', ['id', 'usage', 'privacy'], ['id' => $fileIds]);
 }
 
 
@@ -75,8 +75,8 @@ if (!empty($fileIds)) {
 //Get each content area (which will have been converted into HTML snippets)
 $sql = "
 	SELECT ps.instance_id, ps.name, ps.egg_id, ps.value
-	FROM ". DB_NAME_PREFIX. "plugin_instances AS pi
-	INNER JOIN ". DB_NAME_PREFIX. "plugin_settings AS ps
+	FROM ". DB_PREFIX. "plugin_instances AS pi
+	INNER JOIN ". DB_PREFIX. "plugin_settings AS ps
 	   ON pi.id = ps.instance_id
 	WHERE pi.content_id = ". (int) $cID. "
 	  AND pi.content_type = '". \ze\escape::sql($cType). "'

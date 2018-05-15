@@ -29,7 +29,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 ze\dbAdm::revision(12
 , <<<_sql
-	CREATE TABLE IF NOT EXISTS [[DB_NAME_PREFIX]][[ZENARIO_COUNTRY_MANAGER_PREFIX]]country_manager_countries (
+	CREATE TABLE IF NOT EXISTS [[DB_PREFIX]][[ZENARIO_COUNTRY_MANAGER_PREFIX]]country_manager_countries (
 		`id` varchar(5) NOT NULL ,
 		`english_name` varchar(255),
 		`active` tinyint(1),
@@ -38,7 +38,7 @@ ze\dbAdm::revision(12
 _sql
 , 
 <<<_sql
-	REPLACE INTO [[DB_NAME_PREFIX]][[ZENARIO_COUNTRY_MANAGER_PREFIX]]country_manager_countries (`id`,`english_name`,`active`)
+	REPLACE INTO [[DB_PREFIX]][[ZENARIO_COUNTRY_MANAGER_PREFIX]]country_manager_countries (`id`,`english_name`,`active`)
 	VALUES 
 		("AD","Andorra",1),
 		("AE","United Arab Emirates",1),
@@ -289,11 +289,11 @@ _sql
 _sql
 ,
 <<<_sql
-DROP TABLE IF EXISTS [[DB_NAME_PREFIX]][[ZENARIO_COUNTRY_MANAGER_PREFIX]]country_manager_regions;
+DROP TABLE IF EXISTS [[DB_PREFIX]][[ZENARIO_COUNTRY_MANAGER_PREFIX]]country_manager_regions;
 _sql
 ,
 <<<_sql
-	CREATE TABLE IF NOT EXISTS [[DB_NAME_PREFIX]][[ZENARIO_COUNTRY_MANAGER_PREFIX]]country_manager_regions (
+	CREATE TABLE IF NOT EXISTS [[DB_PREFIX]][[ZENARIO_COUNTRY_MANAGER_PREFIX]]country_manager_regions (
 		`id` varchar(5) NOT NULL,
 		`country_id` varchar(5) NOT NULL,
 		`name` varchar(255),
@@ -304,7 +304,7 @@ _sql
 );
 ze\dbAdm::revision(16
 , <<<_sql
-ALTER TABLE [[DB_NAME_PREFIX]][[ZENARIO_COUNTRY_MANAGER_PREFIX]]country_manager_regions
+ALTER TABLE [[DB_PREFIX]][[ZENARIO_COUNTRY_MANAGER_PREFIX]]country_manager_regions
 CHANGE COLUMN id code varchar(5), 
 ADD COLUMN id int(10) AUTO_INCREMENT FIRST,
 DROP PRIMARY KEY, 
@@ -313,14 +313,14 @@ _sql
 );
 ze\dbAdm::revision(17
 , <<<_sql
-ALTER TABLE [[DB_NAME_PREFIX]][[ZENARIO_COUNTRY_MANAGER_PREFIX]]country_manager_regions
+ALTER TABLE [[DB_PREFIX]][[ZENARIO_COUNTRY_MANAGER_PREFIX]]country_manager_regions
 ADD CONSTRAINT UNIQUE (`code`,`country_id`);
 _sql
 );
 ze\dbAdm::revision(25
 ,<<<_sql
 INSERT IGNORE
-	[[DB_NAME_PREFIX]][[ZENARIO_COUNTRY_MANAGER_PREFIX]]country_manager_regions (name,code,country_id,active) 
+	[[DB_PREFIX]][[ZENARIO_COUNTRY_MANAGER_PREFIX]]country_manager_regions (name,code,country_id,active) 
 VALUES 
 	('Alabama','AL','US',1),
 	('Alaska','AK','US',1),
@@ -390,20 +390,20 @@ _sql
 );
 ze\dbAdm::revision(27
 , <<<_sql
-	ALTER TABLE [[DB_NAME_PREFIX]][[ZENARIO_COUNTRY_MANAGER_PREFIX]]country_manager_regions
+	ALTER TABLE [[DB_PREFIX]][[ZENARIO_COUNTRY_MANAGER_PREFIX]]country_manager_regions
 	ADD COLUMN `parent_id` int(10) NOT NULL DEFAULT 0 AFTER `id`
 _sql
 );
 ze\dbAdm::revision(28
 ,<<<_sql
-	ALTER TABLE [[DB_NAME_PREFIX]][[ZENARIO_COUNTRY_MANAGER_PREFIX]]country_manager_regions
+	ALTER TABLE [[DB_PREFIX]][[ZENARIO_COUNTRY_MANAGER_PREFIX]]country_manager_regions
 	DROP KEY `code`,
 ADD CONSTRAINT UNIQUE  (`name`,`parent_id`,`country_id`)
 _sql
 );
 ze\dbAdm::revision(58
 ,<<<_sql
-	ALTER TABLE [[DB_NAME_PREFIX]][[ZENARIO_COUNTRY_MANAGER_PREFIX]]country_manager_regions 
+	ALTER TABLE [[DB_PREFIX]][[ZENARIO_COUNTRY_MANAGER_PREFIX]]country_manager_regions 
 	ADD COLUMN `region_type` enum('region', 'state', 'city') NOT NULL DEFAULT 'region',
 	ADD KEY (`region_type`);
 _sql
@@ -411,11 +411,11 @@ _sql
 // Add phone code to countries
 ze\dbAdm::revision(62
 ,<<<_sql
-	ALTER TABLE [[DB_NAME_PREFIX]][[ZENARIO_COUNTRY_MANAGER_PREFIX]]country_manager_countries
+	ALTER TABLE [[DB_PREFIX]][[ZENARIO_COUNTRY_MANAGER_PREFIX]]country_manager_countries
 	ADD COLUMN `phonecode` int(5) NOT NULL
 _sql
 ,<<<_sql
-	INSERT INTO [[DB_NAME_PREFIX]][[ZENARIO_COUNTRY_MANAGER_PREFIX]]country_manager_countries (id, phonecode) 
+	INSERT INTO [[DB_PREFIX]][[ZENARIO_COUNTRY_MANAGER_PREFIX]]country_manager_countries (id, phonecode) 
 	VALUES 
 		('AF', 93),
 		('AL', 355),
@@ -664,18 +664,18 @@ _sql
 
 ); ze\dbAdm::revision(67
 ,<<<_sql
-	ALTER TABLE [[DB_NAME_PREFIX]][[ZENARIO_COUNTRY_MANAGER_PREFIX]]country_manager_countries
+	ALTER TABLE [[DB_PREFIX]][[ZENARIO_COUNTRY_MANAGER_PREFIX]]country_manager_countries
 	MODIFY COLUMN `phonecode` int(5) NOT NULL DEFAULT 0
 _sql
 
 ); ze\dbAdm::revision(69
 ,<<<_sql
-	UPDATE [[DB_NAME_PREFIX]][[ZENARIO_COUNTRY_MANAGER_PREFIX]]country_manager_countries
+	UPDATE [[DB_PREFIX]][[ZENARIO_COUNTRY_MANAGER_PREFIX]]country_manager_countries
 	SET `active` = 0 WHERE active IS NULL
 _sql
 
 ,<<<_sql
-	ALTER TABLE [[DB_NAME_PREFIX]][[ZENARIO_COUNTRY_MANAGER_PREFIX]]country_manager_countries
+	ALTER TABLE [[DB_PREFIX]][[ZENARIO_COUNTRY_MANAGER_PREFIX]]country_manager_countries
 	MODIFY COLUMN `active` tinyint(1) NOT NULL DEFAULT 1
 _sql
 

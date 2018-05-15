@@ -78,15 +78,15 @@ class menu {
 			}
 			
 			$sql .= "
-				FROM ". DB_NAME_PREFIX. "content_items AS c
-				INNER JOIN ". DB_NAME_PREFIX. "menu_nodes AS m
+				FROM ". DB_PREFIX. "content_items AS c
+				INNER JOIN ". DB_PREFIX. "menu_nodes AS m
 				   ON m.equiv_id = c.equiv_id
 				  AND m.content_type = c.type
 				  AND m.target_loc = 'int'
-				". ($allowGhosts? "LEFT" : "INNER"). " JOIN ". DB_NAME_PREFIX. "menu_text AS t
+				". ($allowGhosts? "LEFT" : "INNER"). " JOIN ". DB_PREFIX. "menu_text AS t
 				   ON t.menu_id = m.id
 				  AND t.language_id = c.language_id
-				INNER JOIN ". DB_NAME_PREFIX. "menu_text AS mt
+				INNER JOIN ". DB_PREFIX. "menu_text AS mt
 				   ON mt.menu_id = m.id
 				  AND mt.language_id = c.language_id
 				WHERE c.id = ". (int) $cID. "
@@ -121,7 +121,7 @@ class menu {
 
 		$sql = "
 			SELECT id
-			FROM ". DB_NAME_PREFIX. "menu_nodes
+			FROM ". DB_PREFIX. "menu_nodes
 			WHERE equiv_id = ". (int) $equivId. "
 			  AND content_type = '". \ze\escape::sql($cType). "'
 			  AND section_id = ". (int) \ze\menu::sectionId($section). "
@@ -159,10 +159,10 @@ class menu {
 			SELECT
 				m2.equiv_id,
 				m2.content_type
-			FROM ". DB_NAME_PREFIX. "menu_nodes AS m1
-			INNER JOIN ". DB_NAME_PREFIX. "menu_hierarchy AS mh
+			FROM ". DB_PREFIX. "menu_nodes AS m1
+			INNER JOIN ". DB_PREFIX. "menu_hierarchy AS mh
 			   ON mh.child_id = m1.id
-			INNER JOIN ". DB_NAME_PREFIX. "menu_nodes AS m2
+			INNER JOIN ". DB_PREFIX. "menu_nodes AS m2
 			   ON m2.id = mh.ancestor_id
 			  AND m2.target_loc = 'int'
 			WHERE m1.target_loc = 'int'
@@ -224,10 +224,10 @@ class menu {
 				m.ordinal,
 				m.rel_tag,
 				m.css_class
-			FROM ". DB_NAME_PREFIX. "menu_text AS t
-			INNER JOIN ". DB_NAME_PREFIX. "menu_nodes AS m
+			FROM ". DB_PREFIX. "menu_text AS t
+			INNER JOIN ". DB_PREFIX. "menu_nodes AS m
 			   ON m.id = t.menu_id
-			LEFT JOIN ". DB_NAME_PREFIX. "content_items AS c
+			LEFT JOIN ". DB_PREFIX. "content_items AS c
 			   ON m.equiv_id = c.equiv_id
 			  AND m.content_type = c.type
 			  AND m.target_loc = 'int'
@@ -273,7 +273,7 @@ class menu {
 		if ($redundancy == 'primary') {
 			$sql = '
 				SELECT COUNT(*)
-				FROM ' . DB_NAME_PREFIX . 'menu_nodes
+				FROM ' . DB_PREFIX . 'menu_nodes
 				WHERE equiv_id = ' . (int)$equiv_id . '
 				AND content_type = "'. \ze\escape::sql($content_type) . '"';
 			$result = \ze\sql::select($sql);
@@ -301,7 +301,7 @@ class menu {
 	
 		$sql = "
 			SELECT name, language_id
-			FROM ". DB_NAME_PREFIX. "menu_text AS mt
+			FROM ". DB_PREFIX. "menu_text AS mt
 			WHERE menu_id = ". (int) $mID. "
 			ORDER BY
 				language_id = '". \ze\escape::sql($langId). "' DESC,
@@ -380,7 +380,7 @@ class menu {
 				
 					$sql = '
 						SELECT alias
-						FROM '. DB_NAME_PREFIX. 'content_items
+						FROM '. DB_PREFIX. 'content_items
 						WHERE id = '. (int) $row['equiv_id']. '
 						  AND `type` = \''. \ze\escape::sql($row['cType']). '\'';
 					
@@ -457,11 +457,11 @@ class menu {
 				IFNULL(t.name, d.name) AS name,
 				IFNULL(t.ext_url, d.ext_url) AS ext_url,
 				IFNULL(t.descriptive_text, d.descriptive_text) AS descriptive_text
-			FROM ". DB_NAME_PREFIX. "menu_nodes AS m
-			LEFT JOIN ". DB_NAME_PREFIX. "menu_text AS t
+			FROM ". DB_PREFIX. "menu_nodes AS m
+			LEFT JOIN ". DB_PREFIX. "menu_text AS t
 			   ON t.menu_id = m.id
 			  AND t.language_id = '". \ze\escape::sql($language). "'
-			LEFT JOIN ". DB_NAME_PREFIX. "menu_text AS d
+			LEFT JOIN ". DB_PREFIX. "menu_text AS d
 			   ON t.menu_id IS NULL
 			  AND d.menu_id = m.id
 			  AND d.language_id = '". \ze\escape::sql(\ze::$defaultLang). "'";
@@ -471,14 +471,14 @@ class menu {
 				t.name,
 				t.ext_url,
 				t.descriptive_text
-			FROM ". DB_NAME_PREFIX. "menu_nodes AS m
-			INNER JOIN ". DB_NAME_PREFIX. "menu_text AS t
+			FROM ". DB_PREFIX. "menu_nodes AS m
+			INNER JOIN ". DB_PREFIX. "menu_text AS t
 			   ON t.menu_id = m.id
 			  AND t.language_id = '". \ze\escape::sql($language). "'";
 		}
 	
 		$sql .= "
-			LEFT JOIN ".DB_NAME_PREFIX."content_items AS c
+			LEFT JOIN ".DB_PREFIX."content_items AS c
 			   ON m.target_loc = 'int'
 			  AND m.equiv_id = c.equiv_id
 			  AND m.content_type = c.type
@@ -579,7 +579,7 @@ class menu {
 			//Look for children of the Menu Nodes we will be displaying, so we know which Menu Nodes have no children
 			$sql = "
 				SELECT DISTINCT ancestor_id
-				FROM ". DB_NAME_PREFIX. "menu_hierarchy
+				FROM ". DB_PREFIX. "menu_hierarchy
 				WHERE ancestor_id IN (". $menuIds. ")
 				  AND separation = 1";
 		
@@ -592,7 +592,7 @@ class menu {
 			if ($currentMenuId) {
 				$sql = "
 					SELECT ancestor_id
-					FROM ". DB_NAME_PREFIX. "menu_hierarchy
+					FROM ". DB_PREFIX. "menu_hierarchy
 					WHERE ancestor_id IN (". $menuIds. ")
 					  AND child_id = ". (int) $currentMenuId;
 			

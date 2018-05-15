@@ -314,7 +314,7 @@ class zenario_slideshow_2 extends ze\moduleBaseClass {
 				if (empty($errors)) {
 					
 					// Delete currently saved slides if not in save data.
-					$ids = ze\row::getArray(ZENARIO_SLIDESHOW_2_PREFIX. 'slides', ['image_id'], ['instance_id' => $this->instanceId]);
+					$ids = ze\row::getAssocs(ZENARIO_SLIDESHOW_2_PREFIX. 'slides', ['image_id'], ['instance_id' => $this->instanceId]);
 					foreach ($ids as $key => $slideDetails) {
 						if (array_search($key, $ordinals) === false) {
 							ze\row::delete(ZENARIO_SLIDESHOW_2_PREFIX. 'slides', ["id" => $key]);
@@ -514,8 +514,8 @@ class zenario_slideshow_2 extends ze\moduleBaseClass {
 				s.param_2,
 				s.field_id,
 				s.hidden
-			FROM  ". DB_NAME_PREFIX. ZENARIO_SLIDESHOW_2_PREFIX. "slides AS s
-			INNER JOIN ". DB_NAME_PREFIX. "files AS f
+			FROM  ". DB_PREFIX. ZENARIO_SLIDESHOW_2_PREFIX. "slides AS s
+			INNER JOIN ". DB_PREFIX. "files AS f
 				ON s.image_id = f.id
 			WHERE s.instance_id = ". (int) $this->instanceId. "
 			ORDER BY s.ordinal";
@@ -539,8 +539,8 @@ class zenario_slideshow_2 extends ze\moduleBaseClass {
 					f.width AS r_width, 
 					f.filename AS r_filename,
 					f.alt_tag AS r_alt_tag 
-				FROM ". DB_NAME_PREFIX. ZENARIO_SLIDESHOW_2_PREFIX. "slides AS s
-				INNER JOIN ". DB_NAME_PREFIX. "files AS f
+				FROM ". DB_PREFIX. ZENARIO_SLIDESHOW_2_PREFIX. "slides AS s
+				INNER JOIN ". DB_PREFIX. "files AS f
 					ON s.rollover_image_id = f.id
 				WHERE s.instance_id = ". (int)$this->instanceId. "
 					AND s.id = ". (int) $row1['id'];
@@ -562,8 +562,8 @@ class zenario_slideshow_2 extends ze\moduleBaseClass {
 					f.width AS m_width, 
 					f.filename AS m_filename,
 					f.alt_tag AS m_alt_tag 
-				FROM ". DB_NAME_PREFIX. ZENARIO_SLIDESHOW_2_PREFIX. "slides AS s
-				INNER JOIN ". DB_NAME_PREFIX. "files AS f
+				FROM ". DB_PREFIX. ZENARIO_SLIDESHOW_2_PREFIX. "slides AS s
+				INNER JOIN ". DB_PREFIX. "files AS f
 					ON s.mobile_image_id = f.id
 				WHERE s.instance_id = ". (int) $this->instanceId. "
 					AND s.id = ". (int) $row1['id'];
@@ -637,7 +637,7 @@ class zenario_slideshow_2 extends ze\moduleBaseClass {
 	public function getNewImageDetails($id) {
 		$sql = "
 			SELECT id AS image_id, filename, alt_tag,  width, width AS true_width, height, height AS true_height
-			FROM ". DB_NAME_PREFIX. "files
+			FROM ". DB_PREFIX. "files
 			WHERE id = ". (int) $id;
 		$result = ze\sql::select($sql);
 		$row = ze\sql::fetchAssoc($result);
@@ -688,7 +688,7 @@ class zenario_slideshow_2 extends ze\moduleBaseClass {
 	}
 	
 	public static function eventPluginInstanceDuplicated($oldInstanceId, $newInstanceId) {
-		$oldSlideshowSettings = ze\row::getArray(ZENARIO_SLIDESHOW_2_PREFIX. 'slides', true, ['instance_id' => $oldInstanceId]);
+		$oldSlideshowSettings = ze\row::getAssocs(ZENARIO_SLIDESHOW_2_PREFIX. 'slides', true, ['instance_id' => $oldInstanceId]);
 		foreach ($oldSlideshowSettings as $slideId => $slideDetails) {
 			unset($slideDetails['id']);
 			$slideDetails['instance_id'] = $newInstanceId;

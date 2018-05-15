@@ -52,18 +52,18 @@
 					<div id="zenario_field_details_header_content" class="field_details_header_content">
 						<div class="field_name {{m.type|e}}">
 							
-							<div class="view_mode" <% if (m.just_added) { %>style="display:none;"<% } %>>
-								<h5>{{m.name|e}}</h5>
+							<div class="view_mode">
+								<h5 id="field_display__name">{{m.name|e}}</h5>
 								<span class="edit_field_name_button">Edit</span>
 							</div>
-							<div class="edit_mode" <% if (!m.just_added) { %>style="display:none;"<% } %>>
+							<div class="edit_mode" style="display:none;">
 								<input name="name" id="field__name" type="text" value="{{m.name|e}}" maxlength="255" placeholder="Field name (admin use only)"/>
 								<span class="done_field_name_button">Done</span>
 							</div>
 							
 						</div>
 						<div class="field_buttons">
-							<span class="add_new_field">Add new field</span>
+							<span class="add_new_field">Done</span>
 						</div>
 						<div class="field_info">
 							<span class="field_type_message">{{m.typePhrase|e}}</span>

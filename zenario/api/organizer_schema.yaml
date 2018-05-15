@@ -332,7 +332,7 @@ additionalProperties:
                                 description: >
                                     The name of a table in the database (including the prefix), and an alias.
                                     
-                                    E.g. <code>[[DB_NAME_PREFIX]]some_table_name AS t</code>
+                                    E.g. <code>[[DB_PREFIX]]some_table_name AS t</code>
             
             
                                     This property must be written in your .yaml file,
@@ -490,6 +490,10 @@ additionalProperties:
                                 css_class: *css_class
                                 hidden: *hidden
                                 visible_if: *visible_if
+                                only_show_on_refiner: *only_show_on_refiner
+                                hide_on_refiner: *hide_on_refiner
+                                hide_on_filter: *hide_on_filter
+                                
                                 db_column:
                                     type: string
                                     static: true
@@ -751,6 +755,10 @@ additionalProperties:
                                     description: >
                                         Text in this column will align right rather then left.
                                         Useful for displaying numbers.
+                                html:
+                                    type: boolean
+                                    description: >
+                                        If this is set, the value of the column will not be html-escaped.
                                 show_by_default:
                                     type: boolean
                                     description: >
@@ -1065,6 +1073,18 @@ additionalProperties:
                                         when this refiner is active.
                                         
                                         This works from version 7.5 onwards.
+                                
+                                always_show_flat_view:
+                                    type: boolean
+                                    description: >
+                                        The "hierarchy_with_lazy_load" panel type shows hierarchy mode normally,
+                                        but then switches back to a flat list view if someone starts searching.
+                                        
+                                        If you consider your refiner a "search", and always want to show a flat
+                                        list view even if someone hasn't typed anything in the search box, then
+                                        set this property.
+                                        
+                                        This works from version 8.2 onwards.
                     
                     refiner_required:
                         type: boolean
@@ -1845,7 +1865,7 @@ additionalProperties:
                         description: >
                             Item buttons appear when one or more items are selected, and are intended to be for actions that apply to the selected items.
                         additionalProperties:
-                            type: object            
+                            type: object
                             oneOf:
                                 -
                                     required:
@@ -2112,7 +2132,7 @@ additionalProperties:
                         description: >
                             Inline buttons appear next to each item, and are intended to be for actions that apply to the item they are next to.
                         additionalProperties:
-                            type: object            
+                            type: object
                             oneOf:
                                 -
                                     required:
@@ -2265,7 +2285,7 @@ additionalProperties:
                         description: >
                             Hidden navigation is effectively a button that is always hidden.
                         additionalProperties:
-                            type: object            
+                            type: object
                             oneOf:
                                 -
                                     required:
@@ -2597,7 +2617,7 @@ additionalProperties:
                     collection_buttons:
                         additionalProperties:
                             properties:
-                                ajax:        
+                                ajax:
                                     properties:
                                         pass_matched_ids:
                                             type: boolean
@@ -2613,7 +2633,7 @@ additionalProperties:
                                                 
                                                 This works from version 7.2 onwards.
                                         
-                                admin_box:        
+                                admin_box:
                                     properties:
                                         pass_matched_ids:
                                             type: boolean
@@ -2679,7 +2699,7 @@ additionalProperties:
                                 
                                         This is implemented using the Colorbox library.
                             
-                                        If a panel has column(s) called id, filename or checksum, 
+                                        If a panel has column(s) called id, filename or checksum,
                                         the values of these columns for the currently selected item will
                                         be added onto the end of the URL specified in the <code>href</code> property as requests.
                     inline_buttons:
@@ -2705,7 +2725,7 @@ additionalProperties:
                                 
                                         This is implemented using the Colorbox library.
                             
-                                        If a panel has column(s) called id, filename or checksum, 
+                                        If a panel has column(s) called id, filename or checksum,
                                         the values of these columns for the currently selected item will
                                         be added onto the end of the URL specified in the <code>href</code> property as requests.
                     

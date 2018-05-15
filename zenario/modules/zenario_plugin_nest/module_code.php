@@ -27,6 +27,116 @@
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
+
+//Define a class for holding information on conductor links
+//(N.b. everything is public so it can be passed through json_encode() and sent to the client.)
+class zenario_conductor__link {
+	 public $command;
+	 public $toState;
+	 public $hVar = '';
+	 public $bVar = '';
+	 public $vars = [];
+	 public $dRequests = [];
+	 public $descendants = [];
+	 public $cID;
+	 public $cType;
+	 
+	 public function __construct($command, $toState, $vars = [], $descendants = '', $hVar = '') {
+		$this->command = $command;
+		$this->toState = $toState;
+		$this->hVar = $hVar;
+		
+		if ($vars !== []) {
+			//For each variable requested by the destination slide, check if we have it set here,
+			//and if so, add it to a list of default requests.
+			foreach ($vars as $var) {
+				if (isset(ze::$vars[$var])) {
+					$this->dRequests[$var] = ze::$vars[$var];
+				
+				} elseif (isset(ze::$importantGetRequests[$var])) {
+					if (isset($_REQUEST[$var])) {
+						$this->dRequests[$var] = $_REQUEST[$var];
+					}
+				
+				} else {
+					$this->dRequests[$var] = '';
+				}
+				
+				
+				//If this command has a hierarchical variable, e.g. dataPoolId,
+				//and has a variable that matches, e.g. dataPoolId3, then note that down.
+				if ($hVar !== ''
+				 && ze\ring::chopPrefix($hVar, $var)) {
+					$this->bVar = $var;
+				}
+			}
+		}
+		if ($descendants !== '') {
+			$this->descendants = ze\ray::explodeAndTrim($descendants);
+		}
+	 }
+	 
+	 public function link($requests, $itemId = null) {
+	 	
+		//Handle links to other content items
+	 	if ($this->cID) {
+	 		//Clear any requests that point to this nest/slide/state
+			unset($requests['state']);
+			unset($requests['slideId']);
+			unset($requests['slideNum']);
+			
+			//Set the state or slide that we're linking to
+			if (is_numeric($this->toState)) {
+				$requests['slideNum'] = $this->toState;
+			} else {
+				$requests['state'] = $this->toState;
+			}
+			
+			return ze\link::toItem($this->cID, $this->cType, false, $requests);
+		
+		//Handle links to other states/slides
+		} else {
+			
+			$dRequests = $this->dRequests;
+			
+			//Ignore any requests if this is a back link
+			if (!empty($requests)
+			 && $this->command != 'back') {
+				//Look through the requests this slide takes, and override the defaults
+				//with any specific values set here.
+				foreach ($dRequests as $var => &$val) {
+					if (isset($requests[$var])) {
+						$var = $requests[$var];
+					}
+				}
+				unset($val);
+			
+				//Catch the case where a basic variable (e.g. dataPoolId) is in the request,
+				//but we need a hierarchical variable (e.g. dataPoolId3).
+				if ($this->bVar !== ''
+				 && empty($dRequests[$this->bVar])
+				 && isset($requests[$this->hVar])) {
+					$dRequests[$this->bVar] = $requests[$this->hVar];
+				}
+			}
+			
+			$dRequests['state'] = $this->toState;
+			unset($dRequests['slideId']);
+			unset($dRequests['slideNum']);
+			
+			//Automatically unset any empty requests
+			foreach ($dRequests as $var => $val) {
+				if (empty($val)) {
+					unset($dRequests[$var]);
+				}
+			}
+			
+			return ze\link::toItem(ze::$cID, ze::$cType, false, $dRequests, ze::$alias);
+		}
+	}
+}
+
+
 class zenario_plugin_nest extends ze\moduleBaseClass {
 	
 	protected static $addedSubtitle = false;
@@ -199,7 +309,7 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 							if ('public' != $slide['privacy']
 							 || 'public' != ze\sql::fetchValue("
 												SELECT privacy
-												FROM ". DB_NAME_PREFIX. "translation_chains
+												FROM ". DB_PREFIX. "translation_chains
 												WHERE equiv_id = ". (int) ze::$equivId. "
 												  AND type = '". ze\escape::sql(ze::$cType). "'")
 							) {
@@ -269,7 +379,7 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 			}
 			
 			if (!empty($this->slides[$this->slideNum]['request_vars'])) {
-				foreach ($this->slides[$this->slideNum]['request_vars'] as $var => $dummy) {
+				foreach ($this->slides[$this->slideNum]['request_vars'] as $var) {
 					$this->registerGetRequest($var);
 				}
 			}
@@ -277,6 +387,31 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 		
 		//Load all of the paths from the current state
 		if ($conductorEnabled && $this->state) {
+			
+			//Add a refresh command to the current state
+			//Attempt to get the correct pathing information for this state from a normal path that links there
+			$sql = "
+				SELECT descendants, hierarchical_var
+				FROM ". DB_PREFIX. "nested_paths
+				WHERE instance_id = ". (int) $this->instanceId. "
+				  AND to_state = '". ze\escape::sql($this->state). "'
+				  AND command NOT IN ('back', 'submit')
+				ORDER BY is_custom ASC
+				LIMIT 1";
+			
+			if ($path = ze\sql::fetchAssoc($sql)) {
+				$this->commands['refresh'] = new zenario_conductor__link(
+					'refresh', $this->state, $this->slides[$this->slideNum]['request_vars'],
+					$path['descendants'],
+					$path['hierarchical_var']
+				);
+			} else {
+				//Otherwise just use the information we have, and don't set up linking variables
+				$this->commands['refresh'] = new zenario_conductor__link(
+					'refresh', $this->state, $this->slides[$this->slideNum]['request_vars']
+				);
+			}
+			
 			
 			//Loop through each slide, checking if they have any states or global commands
 			$hadCommands = [];
@@ -296,7 +431,29 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 								
 								//N.b. don't allow the link if we're already in that state...
 								if ($state != $this->state) {
-									$this->commands[$command] = [$state, $slide['request_vars']];
+									
+									//Attempt to get the correct pathing information for this state from a normal path that links there
+									$sql = "
+										SELECT descendants, hierarchical_var
+										FROM ". DB_PREFIX. "nested_paths
+										WHERE instance_id = ". (int) $this->instanceId. "
+										  AND to_state = '". ze\escape::sql($state). "'
+										  AND command NOT IN ('back', 'submit')
+										ORDER BY is_custom ASC
+										LIMIT 1";
+									
+									if ($path = ze\sql::fetchAssoc($sql)) {
+										$this->commands[$command] = new zenario_conductor__link(
+											$command,
+											$state,
+											$slide['request_vars'],
+											$path['descendants'],
+											$path['hierarchical_var']
+										);
+									} else {
+										//Otherwise just use the information we have, and don't set up linking variables
+										$this->commands[$command] = new zenario_conductor__link($command, $state, $slide['request_vars']);
+									}
 									$this->usesConductor = true;
 								}
 								
@@ -316,14 +473,16 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 			//Look through the nested paths that lead from this slide, and note each down
 			//as long as it leads to another slide that we can see.
 			$sql = "
-				SELECT to_state, equiv_id, content_type, commands, is_forwards
-				FROM ". DB_NAME_PREFIX. "nested_paths
+				SELECT to_state, equiv_id, content_type, command, descendants, hierarchical_var, is_custom, is_forwards
+				FROM ". DB_PREFIX. "nested_paths
 				WHERE instance_id = ". (int) $this->instanceId. "
 				  AND from_state = '". ze\escape::sql($this->state). "'
 				ORDER BY to_state";
 			
 			foreach (ze\sql::fetchAssocs($sql) as $path) {
-				foreach (ze\ray::explodeAndTrim($path['commands']) as $command) {
+				$state = $path['to_state'];
+				
+				foreach (ze\ray::explodeAndTrim($path['command']) as $command) {
 					
 					//Handle links to other content items
 					if ($path['equiv_id']) {
@@ -332,22 +491,39 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 						$cType = $path['content_type'];
 						ze\content::langEquivalentItem($cID, $cType);
 						
-						$this->commands[$command] = [
-							$path['to_state'],
-							null,
-							$cID,
-							$cType
-						];
+						$this->commands[$command] = new zenario_conductor__link($command, $state);
+						$this->commands[$command]->cID = $cID;
+						$this->commands[$command]->cType = $cType;
 					
 					//Handle links to other slides
-					} elseif (isset($this->statesToSlides[$path['to_state']])) {
+					} elseif (isset($this->statesToSlides[$state])) {
 						
-						$slideNum = $this->statesToSlides[$path['to_state']];
+						$slideNum = $this->statesToSlides[$state];
 						
-						$this->commands[$command] = [
-							$path['to_state'],
-							$this->slides[$slideNum]['request_vars']
-						];
+						//If this is a custom path, attempt to get the pathing info from a non-custom path,
+						//as this is more likely to be accurate.
+						if ($path['is_custom']) {
+							$sql = "
+								SELECT hierarchical_var
+								FROM ". DB_PREFIX. "nested_paths
+								WHERE instance_id = ". (int) $this->instanceId. "
+								  AND to_state = '". ze\escape::sql($state). "'
+								  AND command NOT IN ('back', 'submit')
+								  AND is_custom = 0
+								LIMIT 1";
+							
+							if ($path2 = ze\sql::fetchAssoc($sql)) {
+								$path['hierarchical_var'] = $path2['hierarchical_var'];
+							}
+						}
+						
+						$this->commands[$command] = new zenario_conductor__link(
+							$command,
+							$state,
+							$this->slides[$slideNum]['request_vars'],
+							$path['descendants'],
+							$path['hierarchical_var']
+						);
 						
 						if ($path['is_forwards']) {
 							$this->forwardCommand = $command;
@@ -358,7 +534,24 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 			}
 			
 			if ($this->usesConductor && !$specificEgg) {
-				$this->callScript('zenario_conductor', 'setCommands', $this->slotName, $this->commands, ze::$vars, $this->state);
+				
+				$vars = array_filter(array_merge($_GET, ze::$vars));
+				
+				unset(
+					//Clear any standard content item variables
+					$vars['cID'], $vars['cType'], $vars['cVersion'], $vars['visLang'],
+					
+					//Clear any standard plugin variables
+					$vars['slotName'], $vars['instanceId'], $vars['method_call'],
+					
+					//Clear any requests that point to this nest/slide/state
+					$vars['state'], $vars['slideId'], $vars['slideNum'],
+					
+					//Clear some FEA variables
+					$vars['mode'], $vars['path']
+				);
+				
+				$this->callScript('zenario_conductor', 'setCommands', $this->slotName, $this->commands, $this->state, $vars);
 				
 				//Add the current title of the current conductor slide to the page title
 				//(Though use a static variable to stop this happening twice if there are two nests on the same page.)
@@ -377,23 +570,6 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 		//...except if no tabs exist, don't hide anything
 		} elseif (!ze\row::exists('nested_plugins', ['instance_id' => $this->instanceId, 'is_slide' => 1]) && $this->loadTab($this->slideNum = 1)) {
 			$this->show = true;
-		}
-		
-		//Set up some things for the conductor
-		if ($this->usesConductor && !$specificEgg) {
-			
-			//Work out an array of the current requests, by looking in ze::$importantGetRequests
-			$this->currentRequests = [];
-			foreach(ze::$importantGetRequests as $var => $defaultValue) {
-				if (isset($_REQUEST[$var])) {
-					$this->currentRequests[$var] = $_REQUEST[$var];
-				
-				} elseif (isset(ze::$vars[$var])) {
-					$this->currentRequests[$var] = ze::$vars[$var];
-				}
-			}
-
-			$this->callScript('zenario_conductor', 'registerGetRequest', $this->slotName, $this->currentRequests);
 		}
 		
 		return $this->show;
@@ -416,7 +592,8 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 		if ($this->inLibrary) {
 			$text = $this->phrase($text);
 		}
-
+		
+		//Break the title up by mergefields, using the [[merge_field_name]] syntax
 		$frags = explode('[[', $text);
 		$count = count($frags);
 	
@@ -427,11 +604,35 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 				$part = explode(']]', $frags[$i], 2);
 			
 				if (isset($part[1])) {
-					if ($htmlescape) {
-						$text = htmlspecialchars(ze\content::requestVarMergeField($part[0])). $part[1];
+					
+					
+					//Look for variables from modules, using the syntax [[module_class_name:var_name]]
+					$details = explode(':', $part[0], 2);
+					
+					if (isset($details[1])
+					 && ze\module::inc($details[0])) {
+						
+						$val = call_user_func([$details[0], 'requestVarMergeField'], $details[1]);
+					
+					//Allow any id from the $_REQUEST or core vars to be displayed
+					} elseif (isset(ze::$vars[$details[0]])) {
+						$val = ze::$vars[$details[0]];
+					
+					} elseif (isset($_REQUEST[$details[0]])) {
+						$val = $_REQUEST[$details[0]];
+					
 					} else {
-						$text .= ze\content::requestVarMergeField($part[0]). $part[1];
+						$val = '';
 					}
+				
+					if ($htmlescape) {
+						$text .= htmlspecialchars($val);
+					} else {
+						$text .= $val;
+					}
+					
+					//Anything that's not a mergefield should be left as-is
+					$text .= $part[1];
 				} else {
 					$text .= $part[0];
 				}
@@ -483,7 +684,7 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 				states, show_back, show_embed, show_refresh, show_auto_refresh, auto_refresh_interval, request_vars, global_command,
 				invisible_in_nav,
 				privacy, smart_group_id, module_class_name, method_name, param_1, param_2, always_visible_to_admins
-			FROM ". DB_NAME_PREFIX. "nested_plugins
+			FROM ". DB_PREFIX. "nested_plugins
 			WHERE instance_id = ". (int) $this->instanceId. "
 			  AND is_slide = 1
 			ORDER BY slide_num";
@@ -496,7 +697,7 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 			//This also sometimes happens after a site migration.
 			//In this case, call the resyncNest function,
 			//e.g. to ensure there is at least one slide and fix any other possibly invalid date
-			call_user_func([$this->moduleClassName, 'resyncNest'], $this->instanceId);
+			self::resyncNest($this->instanceId);
 			$result = ze\sql::select($sql);
 			$sqlNumRows = ze\sql::numRows($result);
 		}
@@ -506,7 +707,7 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 		} else {
 			while ($row = ze\sql::fetchAssoc($result)) {
 				$row['states'] = explode(',', $row['states']);
-				$row['request_vars'] = ze\ray::valuesToKeys(ze\ray::explodeAndTrim($row['request_vars']));
+				$row['request_vars'] = ze\ray::explodeAndTrim($row['request_vars']);
 				
 				$this->slides[$row['slide_num']] = $row;
 			}
@@ -561,7 +762,7 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 		//Look up every nested plugin in this slide
 		$sql = "
 			SELECT np.id, np.slide_num, np.ord, np.module_id, np.framework, np.css_class, np.cols, np.small_screens
-			FROM ". DB_NAME_PREFIX. "nested_plugins AS np
+			FROM ". DB_PREFIX. "nested_plugins AS np
 			WHERE np.instance_id = ". (int) $this->instanceId. "
 			  AND np.is_slide = 0
 			  AND np.slide_num = ". (int) $slideNum;
@@ -571,8 +772,9 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 			  AND np.id = ". (int) $specificEgg;
 		}
 		
+		//N.b. exclude plugins with the "Hidden, breadcrumbs only" option set
 		$sql .= "
-			  AND np.makes_breadcrumbs != 2
+			  AND np.makes_breadcrumbs != 3
 			ORDER BY np.ord";
 		
 		$result = ze\sql::select($sql);
@@ -974,6 +1176,7 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 				case 'formatVisitorTUIX':
 				case 'validateVisitorTUIX':
 				case 'saveVisitorTUIX':
+				case 'typeaheadSearchAJAX':
 					return (int) ($_REQUEST['eggId'] ?? false);
 			}
 		}
@@ -992,58 +1195,64 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 	
 	
 	public function showFloatingBox() {
-		if ($class = $this->getSpecificEgg($class)) {
+		if ($class = $this->getSpecificEgg()) {
 			return $class->showFloatingBox();
 		}
 	}
 	public function showRSS() {
-		if ($class = $this->getSpecificEgg($class)) {
+		if ($class = $this->getSpecificEgg()) {
 			return $class->showRSS();
 		}
 	}
 	public function handlePluginAJAX() {
-		if ($class = $this->getSpecificEgg($class)) {
+		if ($class = $this->getSpecificEgg()) {
 			return $class->handlePluginAJAX();
 		}
 	}
 	
 	public function returnVisitorTUIXEnabled($path) {
-		if ($class = $this->getSpecificEgg($class)) {
+		if ($class = $this->getSpecificEgg()) {
 			return $class->returnVisitorTUIXEnabled($path);
 		}
 	}
 	
 	public function fillVisitorTUIX($path, &$tags, &$fields, &$values) {
-		if ($class = $this->getSpecificEgg($class)) {
+		if ($class = $this->getSpecificEgg()) {
 			return $class->fillVisitorTUIX($path, $tags, $fields, $values);
 		}
 	}
 	
 	public function formatVisitorTUIX($path, &$tags, &$fields, &$values, &$changes) {
-		if ($class = $this->getSpecificEgg($class)) {
+		if ($class = $this->getSpecificEgg()) {
 			return $class->formatVisitorTUIX($path, $tags, $fields, $values, $changes);
 		}
 	}
 	
 	public function validateVisitorTUIX($path, &$tags, &$fields, &$values, &$changes, $saving) {
-		if ($class = $this->getSpecificEgg($class)) {
+		if ($class = $this->getSpecificEgg()) {
 			return $class->validateVisitorTUIX($path, $tags, $fields, $values, $changes, $saving);
 		}
 	}
 	
 	public function saveVisitorTUIX($path, &$tags, &$fields, &$values, &$changes) {
-		if ($class = $this->getSpecificEgg($class)) {
+		if ($class = $this->getSpecificEgg()) {
 			return $class->saveVisitorTUIX($path, $tags, $fields, $values, $changes);
 		}
 	}
 	
+	public function typeaheadSearchAJAX($path, $tab, $searchField, $searchTerm, &$searchResults) {
+		if ($class = $this->getSpecificEgg()) {
+			return $class->typeaheadSearchAJAX($path, $tab, $searchField, $searchTerm, $searchResults);
+		}
+	}
+	
 	public function returnGlobalName() {
-		if ($class = $this->getSpecificEgg($class)) {
+		if ($class = $this->getSpecificEgg()) {
 			return $class->returnGlobalName();
 		}
 	}
 	
-	protected function getSpecificEgg(&$class) {
+	protected function getSpecificEgg() {
 		if ($this->show
 		 && ($specificEgg = $this->specificEgg())
 		 && ($slotNameNestId = ze\ray::value($this->modules[$this->slideNum], $specificEgg))
@@ -1185,11 +1394,11 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 		return require ze::funIncPath(__FILE__, __FUNCTION__);
 	}
 	
-	public static function removePlugin($className, $eggId, $instanceId) {
+	public static function removePlugin($eggId, $instanceId, $resync = true) {
 		require ze::funIncPath(__FILE__, __FUNCTION__);
 	}
 	
-	protected function removeSlide($className, $eggId, $instanceId) {
+	protected function removeSlide($slideId, $instanceId, $resync = true) {
 		require ze::funIncPath(__FILE__, __FUNCTION__);
 	}
 	
@@ -1207,7 +1416,7 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 	protected static function maxTab($instanceId) {
 		return ze\sql::fetchValue("
 			SELECT MAX(slide_num) AS slide_num
-			FROM ". DB_NAME_PREFIX. "nested_plugins
+			FROM ". DB_PREFIX. "nested_plugins
 			WHERE is_slide = 1
 			  AND instance_id = ". (int) $instanceId);
 	}
@@ -1215,7 +1424,7 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 	protected static function maxOrd($instanceId, $slideNum) {
 		return ze\sql::fetchValue("
 			SELECT MAX(ord) AS ord
-			FROM ". DB_NAME_PREFIX. "nested_plugins
+			FROM ". DB_PREFIX. "nested_plugins
 			WHERE slide_num = ". (int) $slideNum. "
 			  AND is_slide = 0
 			  AND instance_id = ". (int) $instanceId);
@@ -1254,53 +1463,18 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 	}
 	
 	public function cCommandEnabled($command) {
-		return !empty($this->commands[$command][0]);
+		return isset($this->commands[$command]) && !empty($this->commands[$command]->toState);
 	}
 	
 	public function cLink($command, $requests = []) {
-		if (empty($this->commands[$command][0])) {
-			return false;
-		
-		//Handle links to other slides
-		} elseif (empty($this->commands[$command][2])) {
-			
-			//Loop through each of the variables needed by the destination
-			foreach ($this->commands[$command][1] as $reqVar => $dummy) {
-				//Check the settings on the destination to see if it needs that variable.
-				//If so then try to add it from the core variables.
-				if (empty($requests[$reqVar]) && !empty(ze::$vars[$reqVar])) {
-					$requests[$reqVar] = ze::$vars[$reqVar];
-				}
-			}
-			
-			$requests['state'] = $this->commands[$command][0];
-			unset($requests['slideId']);
-			unset($requests['slideNum']);
-			
-			//If we're generating a link to the current state, keep all of the registered get requests
-			$autoAddImportantRequests = $requests['state'] == $this->state;
-			
-			return ze\link::toItem(ze::$cID, ze::$cType, false, $requests, ze::$alias, $autoAddImportantRequests);
-		
-		//Handle links to other content items
-		} else {
-			//Set the state or slide that we're linking to
-			unset($requests['state']);
-			unset($requests['slideId']);
-			unset($requests['slideNum']);
-			
-			if (is_numeric($this->commands[$command][0])) {
-				$requests['slideNum'] = $this->commands[$command][0];
-			} else {
-				$requests['state'] = $this->commands[$command][0];
-			}
-			
-			return ze\link::toItem($this->commands[$command][2], $this->commands[$command][3], false, $requests);
+		if (isset($this->commands[$command]) && !empty($this->commands[$command]->toState)) {
+			return $this->commands[$command]->link($requests);
 		}
+		return false;
 	}
 	
 	public function cBackLink() {
-		return $this->cLink($this->cCommandEnabled('back')? 'back' : 'close');
+		return $this->cLink('back');
 	}
 	
 	protected static function deletePath($instanceId, $fromState, $toState = false, $equivId = 0, $contentType = '') {

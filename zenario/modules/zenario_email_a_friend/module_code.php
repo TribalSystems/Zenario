@@ -97,12 +97,12 @@ class zenario_email_a_friend extends ze\moduleBaseClass {
 			$this->checkVar('name',$this->phrase('_SENDER_NAME'),100);
 			
 			if ((!$this->errors) && $this->setting('email_template') ) {
-				$mergeFields = ['sender_name'=>post('name'), 
-									'your_email'=>post('email'),
-									'sender_message'=>post('msg'),
+				$mergeFields = ['sender_name'=>ze::post('name'), 
+									'your_email'=>ze::post('email'),
+									'sender_message'=>ze::post('msg'),
 									'link_to_page'=>$this->linkToItem($this->cID,$this->cType,true),
-									'page_title'=>getItemTitle($this->cID,$this->cType),
-									'page_description'=>getItemDescription($this->cID,$this->cType,$this->cVersion)];
+									'page_title'=>ze\content::title($this->cID,$this->cType),
+									'page_description'=>ze\content::description($this->cID,$this->cType,$this->cVersion)];
 																		
 				if (zenario_email_template_manager::sendEmailsUsingTemplate($_POST['email_to'] ?? false,$this->setting('email_template'),$mergeFields,[])){
 					$this->displaySections['Email_friend_popup_msg_sent']=true;

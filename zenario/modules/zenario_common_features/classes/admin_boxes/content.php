@@ -1139,7 +1139,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 				//so we'll need to correct this.
 				if ($nextNodeId = ze\sql::fetchValue('
 					SELECT id
-					FROM '. DB_NAME_PREFIX. 'menu_nodes
+					FROM '. DB_PREFIX. 'menu_nodes
 					WHERE section_id = '. (int) $menu['section_id']. '
 					  AND parent_id = '. (int) $menu['parent_id']. '
 					  AND ordinal > '. (int) $menu['ordinal']. '
@@ -1362,11 +1362,11 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 		
 					//Create copies of any Menu Node Text into this language
 					$sql = "
-						INSERT IGNORE INTO ". DB_NAME_PREFIX. "menu_text
+						INSERT IGNORE INTO ". DB_PREFIX. "menu_text
 							(menu_id, language_id, name, descriptive_text)
 						SELECT menu_id, '". ze\escape::sql($values['meta_data/language_id']). "', '". ze\escape::sql($values['meta_data/menu_text']). "', descriptive_text
-						FROM ". DB_NAME_PREFIX. "menu_nodes AS mn
-						INNER JOIN ". DB_NAME_PREFIX. "menu_text AS mt
+						FROM ". DB_PREFIX. "menu_nodes AS mn
+						INNER JOIN ". DB_PREFIX. "menu_text AS mt
 						   ON mt.menu_id = mn.id
 						  AND mt.language_id = '". ze\escape::sql(ze\content::langId($box['key']['source_cID'], $box['key']['cType'])). "'
 						WHERE mn.equiv_id = ". (int) $equivId. "

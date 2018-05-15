@@ -6,6 +6,194 @@ plugin_settings:
         first_tab:
             label: Display
             fields:
+                
+                enable_conductor:
+                    plugin_setting:
+                        name: enable_conductor
+                        save_value_when_hidden: true
+                    hidden: true
+                    type: checkbox
+                
+                show_tabs:
+                    plugin_setting:
+                        name: show_tabs
+                        save_value_when_hidden: true
+                    hidden: true
+                    type: checkbox
+                
+                show_next_prev_buttons:
+                    plugin_setting:
+                        name: show_next_prev_buttons
+                        save_value_when_hidden: true
+                    hidden: true
+                    type: checkbox
+                
+                nest_type:
+                    label: Nest Type
+                    type: radios
+                    value: permission
+                    values:
+                        permission:
+                            label: Single slide/permission-based
+                        tabs:
+                            label: Tabbed
+                        buttons:
+                            label: Next and previous
+                        tabs_and_buttons:
+                            label: Tabbed with next and previous
+                        conductor:
+                            label: Conductor-driven
+                    redraw_onchange: true
+                
+                tabs_desc:
+                    indent: 1
+                    hide_if_previous_outdented_value_isnt:
+                        tabs: true
+                        tabs_and_buttons: true
+                    snippet:
+                        span: |
+                            Every slide in the nest that the visitor can see will have a tab.
+                            Clicking on a tab will switch to that slide.
+                
+                buttons_desc:
+                    indent: 1
+                    hide_if_previous_outdented_value_isnt:
+                        buttons: true
+                        tabs_and_buttons: true
+                    snippet:
+                        span: |
+                            Next and previous buttons will be shown, which can be used to navigate between slides.
+                
+                permission_desc:
+                    indent: 1
+                    hide_if_previous_outdented_value_isnt: permission
+                    snippet:
+                        span: |
+                            Only one slide, the first slide, will be shown.
+                            
+                            If you define multiple slides, visitors will be shown the first slide in the
+                            list that they have permissions to see.
+                            
+                            You can use this to show different plugins to different people, based on
+                            their permissions.
+                
+                conductor_desc:
+                    indent: 1
+                    hide_if_previous_outdented_value_isnt: conductor
+                    snippet:
+                        span: |
+                            When the visitor first visits the page, the first slide will be shown.
+                            
+                            From there on, conductor will be used to control the navigation.
+                
+                next_prev_buttons_loop:
+                    plugin_setting:
+                        name: next_prev_buttons_loop
+                    indent: 1
+                    hide_if_previous_outdented_value_isnt:
+                        buttons: true
+                        tabs_and_buttons: true
+                    label: 'Loop next/previous buttons'
+                    type: checkbox
+                    side_note: |
+                        I.e. pressing the next button on the last slide goes to the first slide.
+                
+                
+                bc_add:
+                    plugin_setting:
+                        name: bc_add
+                    indent: 1
+                    hide_if_previous_outdented_value_isnt: conductor
+                    type: checkbox
+                    label: Show breadcrumbs
+                    redraw_onchange: true
+                bc_cols:
+                    plugin_setting:
+                        name: bc_cols
+                    indent: 2
+                    hide_with_previous_outdented_field: true
+                    hide_if_previous_outdented_value_isnt: 1
+                    title: Columns
+                    type: select
+                    label: Columns
+                    empty_value: Full-width
+                    values: grid_cols
+                
+                bc_menu_section:
+                    plugin_setting:
+                        name: bc_menu_section
+                        foreign_key_to: menu_section
+                        dangling_cross_references: delete_instance
+                        use_value_for_plugin_name: 2
+                    indent: 2
+                    hide_with_previous_outdented_field: true
+                    hide_if_previous_outdented_value_isnt: 1
+                    label: 'Menu Section:'
+                    pick_items:
+                        path: zenario__menu/panels/sections
+                        min_path: zenario__menu/panels/sections
+                        max_path: zenario__menu/panels/sections
+                        target_path: zenario__menu/panels/sections
+                        select_phrase: Select Menu Section...
+                        hide_remove_button: true
+                    value: "1"
+                    validation:
+                        required_if_not_hidden: Please select a menu section
+                        
+                bc_breadcrumb_trail:
+                    plugin_setting:
+                        name: bc_breadcrumb_trail
+                    indent: 2
+                    hide_with_previous_outdented_field: true
+                    hide_if_previous_outdented_value_isnt: 1
+                    label: "First breadcrumb:"
+                    type: radios
+                    values:
+                        do_not_prefix:
+                            label: "Use the top level menu node"
+                        site_home_page:
+                            label: "Use the home page"
+                        other_menu_node:
+                            label: "Use a specific menu node"
+                    value: site_home_page
+                    format_onchange: true
+                    side_note: On multi-lingual sites, the link will always point to the page in the current visitor language, if it exists.
+                    
+                bc_breadcrumb_prefix_menu:
+                    plugin_setting:
+                        name: bc_breadcrumb_prefix_menu
+                        foreign_key_to: content
+                        dangling_cross_references: delete_instance
+                        use_value_for_plugin_name: 1
+                    indent: 2
+                    hide_with_previous_outdented_field: true
+                    hide_if_previous_outdented_value_isnt: 1
+                    visible_if: >
+                        zenarioAB.value('bc_breadcrumb_trail') == 'other_menu_node'
+                    label: 'Menu node:'
+                    pick_items:
+                        path: zenario__menu/panels/menu_position/refiners/existing////
+                        min_path: zenario__menu/panels/menu_position
+                        select_phrase: Select menu node...
+                        disallow_refiners_looping_on_min_path: true
+                        hide_remove_button: true
+                        visible_if_for_all_selected_items: |
+                            zenario.engToBoolean(item.menu_id)
+                    validation:
+                        required_if_not_hidden: Please select a menu node
+                        
+                bc_breadcrumb_trail_separator:
+                    plugin_setting:
+                        name: bc_breadcrumb_trail_separator
+                    indent: 2
+                    hide_with_previous_outdented_field: true
+                    hide_if_previous_outdented_value_isnt: 1
+                    label: 'Breadcrumb trail separator:'
+                    type: text
+                    value: '»'
+                    style: 'width: 5em;'
+        
+        
                 show_heading:
                     plugin_setting:
                         name: show_heading
@@ -37,141 +225,16 @@ plugin_settings:
                         p: Paragraph
                     value: h1
                     side_note: Choose which HTML tag the heading will be displayed in.
-                
-                enable_conductor:
-                    plugin_setting:
-                        name: enable_conductor
-                    label: 'Enable nest conductor (advanced)'
-                    type: checkbox
-                    redraw_onchange: true
-                    side_note: |
-                        The nest conductor can be used to turn a plugin nest into a modal AJAX application.
-                
-                show_tabs:
-                    plugin_setting:
-                        name: show_tabs
-                    visible_if: |
-                        !zenarioAB.value('enable_conductor')
-                    label: 'Show tabs'
-                    type: checkbox
-                
-                show_next_prev_buttons:
-                    plugin_setting:
-                        name: show_next_prev_buttons
-                    hide_with_previous_field: true
-                    label: 'Show next/previous buttons'
-                    type: checkbox
-                    redraw_onchange: true
-                next_prev_buttons_loop:
-                    plugin_setting:
-                        name: next_prev_buttons_loop
-                    indent: 1
-                    hide_with_previous_field: true
-                    visible_if: |
-                        zenarioAB.value('show_next_prev_buttons')
-                    label: 'Loop next/previous buttons'
-                    type: checkbox
-                    side_note: |
-                        I.e. pressing the Next button on the last tab goes to the first tab.
-                        Only applies to Frameworks with Next/Previous buttons.
         
-        breadcrumbs:
-            label: Breadcrumbs
-            fields:
-                bc_add:
-                    plugin_setting:
-                        name: bc_add
-                    type: checkbox
-                    label: Add breadcrumbs to the top of each slide
-                    redraw_onchange: true
-                bc_cols:
-                    plugin_setting:
-                        name: bc_cols
-                    indent: 1
-                    hide_if_previous_outdented_value_isnt: 1
-                    title: Columns
-                    type: select
-                    label: Columns
-                    empty_value: Full-width
-                    values: grid_cols
-                
-                bc_menu_section:
-                    plugin_setting:
-                        name: bc_menu_section
-                        foreign_key_to: menu_section
-                        dangling_cross_references: delete_instance
-                        use_value_for_plugin_name: 2
-                    indent: 1
-                    hide_if_previous_outdented_value_isnt: 1
-                    label: 'Menu Section:'
-                    pick_items:
-                        path: zenario__menu/panels/sections
-                        min_path: zenario__menu/panels/sections
-                        max_path: zenario__menu/panels/sections
-                        target_path: zenario__menu/panels/sections
-                        select_phrase: Select Menu Section...
-                        hide_remove_button: true
-                    value: "1"
-                    validation:
-                        required_if_not_hidden: Please select a menu section
-                        
-                bc_breadcrumb_trail:
-                    plugin_setting:
-                        name: bc_breadcrumb_trail
-                    indent: 1
-                    hide_if_previous_outdented_value_isnt: 1
-                    label: "First breadcrumb:"
-                    type: radios
-                    values:
-                        do_not_prefix:
-                            label: "Use the top level menu node"
-                        site_home_page:
-                            label: "Use the home page"
-                        other_menu_node:
-                            label: "Use a specific menu node"
-                    value: site_home_page
-                    format_onchange: true
-                    side_note: On multi-lingual sites, the link will always point to the page in the current visitor language, if it exists.
-                    
-                bc_breadcrumb_prefix_menu:
-                    plugin_setting:
-                        name: bc_breadcrumb_prefix_menu
-                        foreign_key_to: content
-                        dangling_cross_references: delete_instance
-                        use_value_for_plugin_name: 1
-                    indent: 1
-                    hide_if_previous_outdented_value_isnt: 1
-                    visible_if: >
-                        zenarioAB.value('bc_breadcrumb_trail') == 'other_menu_node'
-                    label: 'Menu node:'
-                    pick_items:
-                        path: zenario__menu/panels/menu_position/refiners/existing////
-                        min_path: zenario__menu/panels/menu_position
-                        select_phrase: Select menu node...
-                        disallow_refiners_looping_on_min_path: true
-                        hide_remove_button: true
-                        visible_if_for_all_selected_items: |
-                            zenario.engToBoolean(item.menu_id)
-                    validation:
-                        required_if_not_hidden: Please select a menu node
-                        
-                bc_breadcrumb_trail_separator:
-                    plugin_setting:
-                        name: bc_breadcrumb_trail_separator
-                    indent: 1
-                    hide_if_previous_outdented_value_isnt: 1
-                    label: 'Breadcrumb trail separator:'
-                    type: text
-                    value: '»'
-                    style: 'width: 5em;'
+        
         size:
-            label: Image size
+            label: Banners
             fields:
                 desc:
                     full_width: true
                     snippet:
                         html: |
-                            The following settings let you set default values to apply to Banner Plugins that have an image.
+                            The following settings let you set default values to apply to Banner plugins that have an image.
                             The values you choose here will apply to every Banner, unless overridden by settings of individual Banners.
                 banner_canvas:
                     plugin_setting:
@@ -270,6 +333,20 @@ plugin_settings:
                     maxlength: 5
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
+        eggs_size:
+            label: All plugins size
+            fields:
+                desc:
+                    full_width: true
+                    snippet:
+                        html: |
+                            The following settings let you set default values to apply to all plugins in this nest.
+                eggs_equal_height:
+                    label: 'Make all plugins in nest equal height'
+                    plugin_setting:
+                        name: eggs_equal_height
+                    type: checkbox
+                    value: 0
     lovs:
         grid_cols:
             1:

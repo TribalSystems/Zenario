@@ -54,7 +54,7 @@ class zenario_plugin_nest__organizer__conductor extends zenario_plugin_nest__org
 	protected static function addStateToSlide($instanceId, $slideId = false) {
 		
 		//Get all of the existing states
-		$existingStatesOnSlides = ze\row::getArray('nested_plugins', 'states', ['instance_id' => $instanceId, 'is_slide' => 1]);
+		$existingStatesOnSlides = ze\row::getValues('nested_plugins', 'states', ['instance_id' => $instanceId, 'is_slide' => 1]);
 		
 		//The above will give us an array of CSV, which is no use to us.
 		//Convert to flat CSV, then to an array, to flatten it out and make it usable
@@ -89,7 +89,7 @@ class zenario_plugin_nest__organizer__conductor extends zenario_plugin_nest__org
 		
 		//Check which slides have this state on them, and get an array of ids => states
 		//There should only be one per nest, but I'll write a loop anyway just in case there's bad data
-		$slides = ze\row::getArray('nested_plugins',
+		$slides = ze\row::getAssocs('nested_plugins',
 			'states',
 			['instance_id' => $instanceId, 'is_slide' => 1, 'states' => [$state]]);
 		
@@ -123,7 +123,7 @@ class zenario_plugin_nest__organizer__conductor extends zenario_plugin_nest__org
 	
 	protected static function ensureEachSlideHasAtLeastOneState($instanceId) {
 		//Look for slides with no states created, and make sure that they have at least one state each
-		foreach (ze\row::getArray('nested_plugins', 'id', ['instance_id' => $instanceId, 'is_slide' => 1, 'states' => ''], 'slide_num') as $slideId) {
+		foreach (ze\row::getValues('nested_plugins', 'id', ['instance_id' => $instanceId, 'is_slide' => 1, 'states' => ''], 'slide_num') as $slideId) {
 			static::addStateToSlide($instanceId, $slideId);
 		}
 	}
@@ -154,13 +154,15 @@ class zenario_plugin_nest__organizer__conductor extends zenario_plugin_nest__org
 		$c = $instance['class_name'];
 		$this->setTitleAndCheckPermissions($path, $panel, $refinerName, $refinerId, $mode, $instance);
 		
+		$showVars = zenario_organizer::filterValue('dummy_column_for_filter') == 'show_vars';
+		
 		//Look for slides with no states created, and make sure that they have at least one state each
 		static::ensureEachSlideHasAtLeastOneState($instance['instance_id']);
 		
 		
 		//Get all of the existing slides and states
 		$coloursForStates = [];
-		$slides = ze\row::getArray('nested_plugins', ['id', 'slide_num', 'name_or_title', 'states'], ['instance_id' => $instance['instance_id'], 'is_slide' => 1]);
+		$slides = ze\row::getAssocs('nested_plugins', ['id', 'slide_num', 'name_or_title', 'states', 'request_vars'], ['instance_id' => $instance['instance_id'], 'is_slide' => 1]);
 		
 		if (count($slides) < 1) {
 			$panel['no_items_message'] = ze\admin::phrase('Please add at least one slide to this nest to use the nest conductor.');
@@ -187,12 +189,17 @@ class zenario_plugin_nest__organizer__conductor extends zenario_plugin_nest__org
 				$panel['items'][$id] = [
 					'id' => $id,
 					'type' => 'slide',
-					'label' => $slide['name_or_title'],
 					'key' => [
 						'state' => $multipleStates? '' : $states[0],
 						'slideId' => $slide['id']
 					]
 				];
+				
+				if ($showVars) {
+					$panel['items'][$id]['label'] = $slide['request_vars'];
+				} else {
+					$panel['items'][$id]['label'] = $slide['name_or_title'];
+				}
 				
 				if ($multipleStates) {
 					$panel['items'][$id]['selected_label'] = ze\admin::phrase('Slide [[slide_num]]', $slide);
@@ -268,7 +275,7 @@ class zenario_plugin_nest__organizer__conductor extends zenario_plugin_nest__org
 					
 					
 					//Get all of the existing paths from this state
-					$paths = ze\row::getArray('nested_paths', true, ['instance_id' => $instance['instance_id'], 'from_state' => $state]);
+					$paths = ze\row::getAssocs('nested_paths', true, ['instance_id' => $instance['instance_id'], 'from_state' => $state]);
 					
 					foreach ($paths as $edge) {
 						$pathId = 'path_'. $edge['from_state']. '_'. $edge['to_state'];
@@ -335,10 +342,7 @@ class zenario_plugin_nest__organizer__conductor extends zenario_plugin_nest__org
 						}
 				
 						$cssClasses = 'dotted';
-						$commands = ze\ray::explodeAndTrim($edge['commands']);
-						$commands = implode(', ', $commands);
-						
-						if ($commands == 'back') {
+						if ($edge['command'] == 'back') {
 							$cssClasses = 'dashed';
 						
 						} elseif ($edge['is_forwards']) {
@@ -348,7 +352,7 @@ class zenario_plugin_nest__organizer__conductor extends zenario_plugin_nest__org
 						$panel['items'][$pathId] = [
 							'id' => $pathId,
 							'type' => 'path',
-							'label' => $commands,
+							'label' => $edge['command'],
 							'classes' => $cssClasses,
 							'from_state' => $edge['from_state'],
 							'to_state' => $edge['to_state'],
@@ -357,6 +361,12 @@ class zenario_plugin_nest__organizer__conductor extends zenario_plugin_nest__org
 							'color' => $colour,
 							'selected_label' => $selected_label
 						];
+				
+						if ($showVars) {
+							$panel['items'][$pathId]['label'] = $edge['request_vars'];
+						} else {
+							$panel['items'][$pathId]['label'] = $edge['command'];
+						}
 					}
 				}
 			}
@@ -373,38 +383,43 @@ class zenario_plugin_nest__organizer__conductor extends zenario_plugin_nest__org
 		$this->exitIfNoEditPermsOnNest($instance);
 		
 		
-		if (($_POST['add_state'] ?? false) && ze\priv::check()) {
-			static::addStateToSlide($instance['instance_id'], ($_POST['slideId'] ?? false));
-		
-		} elseif (($_POST['delete_state'] ?? false) && ze\priv::check()) {
-			static::removeStateFromSlide($instance['instance_id'], ($_POST['state'] ?? false));
-		
-		} elseif (($_POST['add_path'] ?? false) && ze\priv::check()) {
-			static::addPath($instance['instance_id'], ($_POST['state'] ?? false), ($_POST['add_path'] ?? false));
-		
-		} elseif (($_POST['redirect_path'] ?? false) && ze\priv::check()) {
-			$fromTo = explode('_', $ids);
-			if (!empty($fromTo[1]) && !empty($fromTo[2])) {
-				static::redirectPath($instance['instance_id'], $fromTo[1], $fromTo[2], ($fromTo[3] ?? false), ($fromTo[4] ?? false), ($_POST['redirect_path'] ?? false));
-				
-				return 'path_'. $fromTo[1]. '_'. ($_POST['redirect_path'] ?? false);
-			}
-		
-		} elseif (($_POST['delete_path'] ?? false) && ze\priv::check()) {
-			
-			$fromTo = explode('_', $ids);
-			if (!empty($fromTo[1]) && !empty($fromTo[2])) {
-				static::deletePath($instance['instance_id'], $fromTo[1], $fromTo[2], ($fromTo[3] ?? false), ($fromTo[4] ?? false));
-			}
-			
-		} elseif (($_POST['save_positions'] ?? false) && ze\priv::check()) {
+		if (ze::post('save_positions') && ze\priv::check()) {
 			ze\row::set('plugin_instance_store',
 				['store' => $_POST['positions'], 'last_updated' => ze\date::now(), 'is_cache' => 0],
 				['instance_id' => $instance['instance_id'], 'method_name' => '#conductor_positions#']);
 		
-		//} elseif (($_POST['reset_positions'] ?? false) && ze\priv::check()) {
+		//} elseif (ze::post('reset_positions') && ze\priv::check()) {
 		//	ze\row::delete('plugin_instance_store',
 		//		['instance_id' => $instance['instance_id'], 'method_name' => '#conductor_positions#']);
+		
+		} else {
+		
+			if (ze::post('add_state') && ze\priv::check()) {
+				static::addStateToSlide($instance['instance_id'], ze::post('slideId'));
+		
+			} elseif (ze::post('delete_state') && ze\priv::check()) {
+				static::removeStateFromSlide($instance['instance_id'], ze::post('state'));
+		
+			} elseif (ze::post('add_path') && ze\priv::check()) {
+				static::addPath($instance['instance_id'], ze::post('state'), ze::post('add_path'));
+		
+			} elseif (ze::post('redirect_path') && ze\priv::check()) {
+				$fromTo = explode('_', $ids);
+				if (!empty($fromTo[1]) && !empty($fromTo[2])) {
+					static::redirectPath($instance['instance_id'], $fromTo[1], $fromTo[2], ($fromTo[3] ?? false), ($fromTo[4] ?? false), ze::post('redirect_path'));
+				
+					return 'path_'. $fromTo[1]. '_'. ze::post('redirect_path');
+				}
+		
+			} elseif (ze::post('delete_path') && ze\priv::check()) {
+			
+				$fromTo = explode('_', $ids);
+				if (!empty($fromTo[1]) && !empty($fromTo[2])) {
+					static::deletePath($instance['instance_id'], $fromTo[1], $fromTo[2], ($fromTo[3] ?? false), ($fromTo[4] ?? false));
+				}
+			}
+			
+			ze\pluginAdm::calcConductorHierarchy($instance['instance_id']);
 		}
 		
 		

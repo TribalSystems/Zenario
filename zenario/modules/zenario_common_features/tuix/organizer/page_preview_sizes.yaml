@@ -8,7 +8,7 @@ zenario__administration:
                 No page preview sizes have been created.
             view_mode: list
             db_items:
-                table: '[[DB_NAME_PREFIX]]page_preview_sizes AS pps'
+                table: '[[DB_PREFIX]]page_preview_sizes AS pps'
                 id_column: pps.id
             reorder:
                 column: ordinal

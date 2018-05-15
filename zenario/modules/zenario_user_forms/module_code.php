@@ -41,6 +41,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 	protected $formPageHash = false;
 	protected $displayMode = false;
 	protected $reloaded = false;
+	protected $userId = false;
 	
 	public function init() {
 		ze::requireJsLib('zenario/libs/manually_maintained/mit/jquery/jquery-ui.datepicker.min.js');
@@ -52,6 +53,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			$clearByContent = false, $clearByMenu = false, $clearByUser = true, $clearByFile = false, $clearByModuleData = true);
 		
 		$formId = $this->setting('user_form');
+		
 		//This plugin must have a form selected
 		if (!$formId) {
 			if (ze\admin::id()) {
@@ -60,7 +62,8 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			return true;
 		}
 		
-		$userId = ze\user::id();
+		$this->userId = $this->getUserId();
+		
 		$this->dataset = ze\dataset::details('users');
 		$this->form = static::getForm($formId);
 		$t = $this->form['translate_text'];
@@ -123,12 +126,16 @@ class zenario_user_forms extends ze\moduleBaseClass {
 					<div class="form_fields">
 						<div class="form_field">
 						<div class="field_title">' . static::fPhrase('Email:', [], $t) . '</div>';
-				if ($error) {
+				if ($error && !$this->form['show_errors_below_fields']) {
 					$html .= '
 						<div class="form_error">' . static::fPhrase($error, [], $t) . '</div>';
 				}
 				$html .= '
 						<input type="text" name="email" value="' . $value . '">';
+				if ($error && $this->form['show_errors_below_fields']) {
+					$html .= '
+						<div class="form_error">' . static::fPhrase($error, [], $t) . '</div>';
+				}
 				$html .= '
 						</div>
 					</div>';
@@ -141,7 +148,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				$this->data['form_HTML'] = $html;
 				return true;
 			}
-			if ($userId) {
+			if ($this->userId) {
 				$html = $this->getWelcomePageHTML();
 				$html  .= $this->getExtranetLinksHTML(['change_password' => true, 'logout' => true]);
 				$this->data['form_HTML'] = $html;
@@ -159,7 +166,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				}
 				return true;
 			}
-			if (!$userId) {
+			if (!$this->userId) {
 				if (ze\admin::id()) {
 					$this->data['form_HTML'] = '<p class="error">' . ze\admin::phrase('You must be logged in as an Extranet User to see this Plugin.') . '</p>';
 				}
@@ -203,8 +210,8 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		}
 		
 		//Logged in user duplicate submission check
-		if ($userId && $this->form['no_duplicate_submissions']) {
-			if (ze\row::exists(ZENARIO_USER_FORMS_PREFIX . 'user_response', ['user_id' => $userId, 'form_id' => $formId])) {
+		if ($this->userId && $this->form['no_duplicate_submissions']) {
+			if (ze\row::exists(ZENARIO_USER_FORMS_PREFIX . 'user_response', ['user_id' => $this->userId, 'form_id' => $formId])) {
 				$html = '<p class="info">' . static::fPhrase($this->form['duplicate_submission_message'], [], $t) . '</p>';
 				$html .= $this->getCloseButtonHTML();
 				$this->cssClass .= ' no_title';
@@ -223,12 +230,12 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				if ($this->form['partial_completion_get_request']) {
 					$getRequestValue = $_REQUEST[$this->form['partial_completion_get_request']] ?? 0;
 				}
-				$partialSaveFound = ze\row::exists(ZENARIO_USER_FORMS_PREFIX . 'user_partial_response', ['user_id' => $userId, 'form_id' => $formId, 'get_request_value' => $getRequestValue]);
+				$partialSaveFound = ze\row::exists(ZENARIO_USER_FORMS_PREFIX . 'user_partial_response', ['user_id' => $this->userId, 'form_id' => $formId, 'get_request_value' => $getRequestValue]);
 				if ($partialSaveFound) {
 					if (!$this->form['allow_clear_partial_data'] || ($_POST['resume'] ?? false)) {
-						$this->loadPartialSaveData($userId, $formId, $getRequestValue);
+						$this->loadPartialSaveData($this->userId, $formId, $getRequestValue);
 					} elseif ($this->form['allow_clear_partial_data'] && ($_POST['clear'] ?? false)) {
-						static::deleteOldPartialResponse($formId, $userId, $getRequestValue);
+						static::deleteOldPartialResponse($formId, $this->userId, $getRequestValue);
 					} else {
 						$html = $this->getPartialSaveResumeFormHTML();
 						$html .= $this->getCloseButtonHTML();
@@ -419,6 +426,10 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		return true;
 	}
 	
+	protected function getUserId() {
+	    return  ze\user::id();
+	}
+	
 	protected function getExtranetLinksHTML($links) {
 		$html = '';
 		$t = $this->form['translate_text'];
@@ -435,7 +446,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				}
 			}
 			if (!empty($links['login'])) {
-				if (ze\content::langSpecialPage('zenario_login', $cID, $cType) && !ze\user::id()) {
+				if (ze\content::langSpecialPage('zenario_login', $cID, $cType) && !$this->userId) {
 					$html .= '<div><a ' . $this->linkToItemAnchor($cID, $cType) . '>' . static::fPhrase('Go back to Login', [], $t) . '</a></div>';
 				}
 			}
@@ -641,6 +652,9 @@ class zenario_user_forms extends ze\moduleBaseClass {
 	public static function getForm($formId) {
 		return ze\row::get(ZENARIO_USER_FORMS_PREFIX . 'user_forms', true, $formId);
 	}
+	public static function getFormName($formId) {
+		return ze\row::get(ZENARIO_USER_FORMS_PREFIX . 'user_forms', 'name', $formId);
+	}
 	
 	public static function getFormPages($formId) {
 		$pages = [];
@@ -734,9 +748,15 @@ class zenario_user_forms extends ze\moduleBaseClass {
 	
 	public static function getConditionList($field, $fields) {
 		$conditionList = [];
+		$fieldsAdded = [];
+		$initialField = $field;
 		while (!empty($field['visible_condition_field_id'])) {
 			$conditionFieldId = $field['visible_condition_field_id'];
 			if ($conditionFieldId) {
+				//Make sure we don't get into an infinite loop if the condition list loops forever
+				if (isset($fieldsAdded[$conditionFieldId]) || ($conditionFieldId == $initialField['id']) || count($conditionList) > 500) {
+					break;
+				}
 				$conditionField = $fields[$conditionFieldId];
 				$condition = [
 					'id' => $conditionFieldId, 
@@ -749,6 +769,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 					$condition['operator'] = $field['visible_condition_checkboxes_operator'];
 				}
 				$conditionList[] = $condition;
+				$fieldsAdded[$conditionFieldId] = true;
 				$field = $conditionField;
 			}
 		}
@@ -853,8 +874,27 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		ze\row::delete(ZENARIO_USER_FORMS_PREFIX . 'user_response', $responseId);
 	}
 	
+	public static function deletePredefinedTextTarget($fieldId) {
+		ze\row::delete(ZENARIO_USER_FORMS_PREFIX . 'predefined_text_targets', $fieldId);
+		static::deletePredefinedTextTrigger(false, $fieldId);
+	}
+	
+	public static function deletePredefinedTextTrigger($triggerId, $targetFieldId = false) {
+		if ($targetFieldId) {
+			ze\row::delete(ZENARIO_USER_FORMS_PREFIX . 'predefined_text_triggers', ['target_form_field_id' => $targetFieldId]);
+		} else {
+			$targetFieldId = ze\row::get(ZENARIO_USER_FORMS_PREFIX . 'predefined_text_triggers', 'target_form_field_id', $triggerId);
+			ze\row::delete(ZENARIO_USER_FORMS_PREFIX . 'predefined_text_triggers', $triggerId);
+		
+			//Tidy up ordinals
+			$ord = 0;
+			foreach (ze\row::getValues(ZENARIO_USER_FORMS_PREFIX . 'predefined_text_triggers', 'id', ['target_form_field_id' => $targetFieldId], 'ord') as $id) {
+				ze\row::update(ZENARIO_USER_FORMS_PREFIX . 'predefined_text_triggers', ['ord' => ++$ord], $id);
+			}
+		}
+	}
+	
 	public static function deleteFormField($fieldId, $updateOrdinals = true, $formExists = true) {
-		$error = new ze\error();
 		$formField = ze\row::get(ZENARIO_USER_FORMS_PREFIX . 'user_form_fields', true, $fieldId);
 		
 		//Send signal that the form field is now deleted (sent before actual delete in case modules need to look at any metadata or field values)
@@ -877,6 +917,14 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		
 		//Delete any response data
 		ze\row::delete(ZENARIO_USER_FORMS_PREFIX . 'user_response_data', ['form_field_id' => $fieldId]);
+		
+		//Delete predefined text target and trigger records (if exists)
+		static::deletePredefinedTextTarget($fieldId);
+		$result = ze\row::query(ZENARIO_USER_FORMS_PREFIX . 'predefined_text_triggers', ['id'], ['form_field_id' => $fieldId]);
+		while ($row = ze\sql::fetchAssoc($result)) {
+			static::deletePredefinedTextTrigger($row['id']);
+		}
+		
 		return true;
 	}
 	
@@ -885,52 +933,6 @@ class zenario_user_forms extends ze\moduleBaseClass {
 	}
 	
 	public static function deleteForm($formId) {
-		$error = new ze\error();
-		
-		//Get form details
-		$formDetails = ze\row::get(ZENARIO_USER_FORMS_PREFIX . 'user_forms', ['name'], $formId);
-		if ($formDetails === false) {
-			$error->add(ze\admin::phrase('Error. Form with ID "[[id]]" does not exist.', ['id' => $formId]));
-			return $error;
-		}
-		
-		//Don't delete forms used in plugins
-		$moduleIds = static::getFormModuleIds();
-		$instanceIds = [];
-		$sql = '
-			SELECT id
-			FROM '.DB_NAME_PREFIX.'plugin_instances
-			WHERE module_id IN ('. ze\escape::in($moduleIds, 'numeric'). ')
-			ORDER BY name';
-		$result = ze\sql::select($sql);
-		while ($row = ze\sql::fetchAssoc($result)) {
-			$instanceIds[] = $row['id'];
-		}
-		$sql = "
-            SELECT pi.id, pi.name, np.id AS egg_id
-            FROM ". DB_NAME_PREFIX. "nested_plugins AS np
-            INNER JOIN ". DB_NAME_PREFIX. "plugin_instances AS pi
-               ON pi.id = np.instance_id
-            WHERE np.module_id IN (". ze\escape::in($moduleIds, 'numeric'). ")
-            ORDER BY pi.name";
-        $result = ze\sql::select($sql);
-        while ($row = ze\sql::fetchAssoc($result)) {
-            $instanceIds[] = $row['id'];
-        }
-		
-		foreach ($instanceIds as $instanceId) {
-			if (ze\row::exists('plugin_settings', ['instance_id' => $instanceId, 'name' => 'user_form', 'value' => $formId])) {
-				$error->add(ze\admin::phrase('Error. Unable to delete form "[[name]]" as it is used in a plugin.', $formDetails));
-				return $error;
-			}
-		}
-		
-		//Don't delete forms with logged responses
-		if (ze\row::exists(ZENARIO_USER_FORMS_PREFIX.'user_response', ['form_id' => $formId])) {
-			$error->add(ze\admin::phrase('Error. Unable to delete form "[[name]]" as it has logged user responses.', $formDetails));
-			return $error;
-		}
-		
 		//Send signal that the form is now deleted (sent before actual delete in case modules need to look at any metadata or form fields)
 		ze\module::sendSignal('eventFormDeleted', [$formId]);
 		
@@ -950,8 +952,10 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		}
 		
 		//Delete responses
-		ze\row::delete(ZENARIO_USER_FORMS_PREFIX . 'user_response', ['form_id' => $formId]);
-		
+		$result = ze\row::query(ZENARIO_USER_FORMS_PREFIX . 'user_response', ['id'], ['form_id' => $formId]);
+		while ($row = ze\sql::fetchAssoc($result)) {
+			static::deleteFormResponse($row['id']);
+		}
 		return true;
 	}
 	
@@ -964,8 +968,8 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		$repeatRows = [];
 		$sql = '
 			SELECT f.id, f.min_rows, f.max_rows, d.id AS dataset_field_id, IFNULL(f.field_type, d.type) AS type
-			FROM ' . DB_NAME_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_form_fields f
-			LEFT JOIN ' . DB_NAME_PREFIX . 'custom_dataset_fields d
+			FROM ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_form_fields f
+			LEFT JOIN ' . DB_PREFIX . 'custom_dataset_fields d
 				ON f.user_field_id = d.id
 			WHERE f.user_form_id = ' . (int)$formId . '
 			AND (f.field_type = "repeat_start" OR d.type = "repeat_start")';
@@ -982,19 +986,19 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			if ($responseId) {
 				$sql = '
 					SELECT d.form_field_id, d.field_row, d.value, f.field_type, c.type
-					FROM ' . DB_NAME_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_response_data d
-					INNER JOIN ' . DB_NAME_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_form_fields f
+					FROM ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_response_data d
+					INNER JOIN ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_form_fields f
 						ON d.form_field_id = f.id
-					LEFT JOIN ' . DB_NAME_PREFIX . 'custom_dataset_fields c
+					LEFT JOIN ' . DB_PREFIX . 'custom_dataset_fields c
 						ON f.user_field_id = c.id
 					WHERE d.user_response_id = ' . (int)$responseId;
 			} elseif ($partialResponseId) {
 				$sql = '
 					SELECT d.form_field_id, d.field_row, d.value, f.field_type, c.type
-					FROM ' . DB_NAME_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_partial_response_data d
-					INNER JOIN ' . DB_NAME_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_form_fields f
+					FROM ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_partial_response_data d
+					INNER JOIN ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_form_fields f
 						ON d.form_field_id = f.id
-					LEFT JOIN ' . DB_NAME_PREFIX . 'custom_dataset_fields c
+					LEFT JOIN ' . DB_PREFIX . 'custom_dataset_fields c
 						ON f.user_field_id = c.id
 					WHERE d.user_partial_response_id = ' . (int)$partialResponseId;
 			}
@@ -1130,14 +1134,14 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				cdf.repeat_start_id AS dataset_repeat_start_id,
 				ptt.form_field_id AS predefined_text_target_id,
 				ptt.button_label AS predefined_text_button_label
-			FROM ' . DB_NAME_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_forms AS uf
-			INNER JOIN ' . DB_NAME_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_form_fields AS uff
+			FROM ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_forms AS uf
+			INNER JOIN ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_form_fields AS uff
 				ON uf.id = uff.user_form_id
-			INNER JOIN ' . DB_NAME_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'pages p
+			INNER JOIN ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'pages p
 				ON uff.page_id = p.id
-			LEFT JOIN ' . DB_NAME_PREFIX . 'custom_dataset_fields AS cdf
+			LEFT JOIN ' . DB_PREFIX . 'custom_dataset_fields AS cdf
 				ON uff.user_field_id = cdf.id
-			LEFT JOIN ' . DB_NAME_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'predefined_text_targets ptt
+			LEFT JOIN ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'predefined_text_targets ptt
 				ON uff.id = ptt.form_field_id
 			WHERE TRUE';
 		if ($formId) {
@@ -1159,6 +1163,10 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		while ($field = ze\sql::fetchAssoc($result)) {
 			if ($field['field_type']) {
 				$field['type'] = $field['field_type'];
+			}
+			if ($field['type'] == 'consent') {
+				$field['type'] = 'checkbox';
+				$field['is_consent'] = true;
 			}
 			
 			if ($field['type'] == 'repeat_start') {
@@ -1425,7 +1433,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			}
 			
 			if ($this->form['enable_summary_page_required_checkbox']) {
-				if (isset($this->errors['summary_required_checkbox'])) {
+				if (isset($this->errors['summary_required_checkbox']) && !$this->form['show_errors_below_fields']) {
 					$html .= '<div class="form_error">' . $this->errors['summary_required_checkbox'] . '</div>';
 				}
 				$html .= '
@@ -1433,6 +1441,9 @@ class zenario_user_forms extends ze\moduleBaseClass {
 						<input id="' . $this->containerId . '_summary_required_checkbox" type="checkbox" name="summary_required_checkbox">
 						<label class="field_title" for="' . $this->containerId . '_summary_required_checkbox">' . static::fPhrase($this->form['summary_page_required_checkbox_label'], [], $t) . '</label>
 					</div>';
+				if (isset($this->errors['summary_required_checkbox']) && $this->form['show_errors_below_fields']) {
+					$html .= '<div class="form_error">' . $this->errors['summary_required_checkbox'] . '</div>';
+				}
 			}
 		} else {
 			foreach ($this->pages[$pageId]['fields'] as $i => $fieldId) {
@@ -1643,13 +1654,17 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		//Label
 		if ($field['type'] != 'group' && $field['type'] != 'checkbox') {
 			$html .= '<div class="field_title">' . htmlspecialchars(static::fPhrase($field['label'], [], $t)) . '</div>';
-			$html .= $errorHTML;
+			if (!$this->form['show_errors_below_fields']) {
+				$html .= $errorHTML;
+			}
 		}
 		
 		switch ($field['type']) {
 			case 'group':
 			case 'checkbox':
-				$html .= $errorHTML;
+				if (!$this->form['show_errors_below_fields']) {
+					$html .= $errorHTML;
+				}
 				$html .= '<input type="checkbox"';
 				if ($value) {
 					$html .= ' checked="checked"';
@@ -2194,6 +2209,10 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				break;
 		}
 		
+		if ($this->form['show_errors_below_fields']) {
+			$html .= $errorHTML;
+		}
+		
 		if (!empty($field['note_to_user'])) {
 			$html .= '<div class="note_to_user">'. static::fPhrase($field['note_to_user'], [], $t) .'</div>';
 		}
@@ -2265,12 +2284,12 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		if (isset($_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data'][$fieldId])) {
 			$value = $_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data'][$fieldId];
 		//..Otherwise see if we can load from the  dataset
-		} elseif ($field['preload_dataset_field_user_data'] && ze\user::id() && $field['db_column']) {
+		} elseif ($field['preload_dataset_field_user_data'] && $this->userId && $field['db_column']) {
 			$row = false;
 			if (isset($field['row'])) {
 				$row = $field['row'];
 			}
-			$datasetStoredValue = ze\dataset::fieldValue($this->dataset, $field['dataset_field_id'], ze\user::id(), true, false, $row);
+			$datasetStoredValue = ze\dataset::fieldValue($this->dataset, $field['dataset_field_id'], $this->userId, true, false, $row);
 			$value = static::getFieldValueFromStored($field, $datasetStoredValue);
 			
 			//Hack to allow dataset fields to have a default value of 0 for calculated fields
@@ -2507,7 +2526,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			case 'select':
 			case 'radios':
 			case 'checkboxes':
-				return ze\row::getArray(ZENARIO_USER_FORMS_PREFIX. 'form_field_values', 'label', ['form_field_id' => $field['id']], 'ord');
+				return ze\row::getValues(ZENARIO_USER_FORMS_PREFIX. 'form_field_values', 'label', ['form_field_id' => $field['id']], 'ord');
 		}
 		return $values;
 	}
@@ -2528,7 +2547,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		} elseif (isset($_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data'][$fieldId])) {
 			$rows = $_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data'][$fieldId];
 		} elseif ($repeatStartField['dataset_field_id']) {
-			$datasetStoredValue = ze\dataset::fieldValue($this->dataset, $repeatStartField['dataset_field_id'], ze\user::id());
+			$datasetStoredValue = ze\dataset::fieldValue($this->dataset, $repeatStartField['dataset_field_id'], $this->userId);
 			$rows = static::getFieldValueFromStored($repeatStartField, $datasetStoredValue);
 		} else {
 			$rows = static::getFieldValueFromStored($repeatStartField, $repeatStartField['min_rows']);
@@ -2650,15 +2669,18 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			$text = '';
 			while ($row = ze\sql::fetchAssoc($result)) {
 				$triggered = false;
-				$triggerField = $this->fields[$row['form_field_id']];
-				$triggerFieldValue = $this->getFieldCurrentValue($triggerField['id']);
-				if ($triggerField['type'] == 'checkbox' || $triggerField['type'] == 'group') {
-					$triggered = $triggerFieldValue;
-				} elseif ($triggerField['type'] == 'checkboxes' && $row['form_field_value_id']) {
-					$triggered = in_array($row['form_field_value_id'], $triggerFieldValue);
-				}
-				if ($triggered) {
-					$text .= $row['text'] . "\n\n";
+				$triggerField = $this->fields[$row['form_field_id']] ?? false;
+				
+				if ($triggerField) {
+					$triggerFieldValue = $this->getFieldCurrentValue($triggerField['id']);
+					if ($triggerField['type'] == 'checkbox' || $triggerField['type'] == 'group') {
+						$triggered = $triggerFieldValue;
+					} elseif ($triggerField['type'] == 'checkboxes' && $row['form_field_value_id']) {
+						$triggered = in_array($row['form_field_value_id'], $triggerFieldValue);
+					}
+					if ($triggered) {
+						$text .= $row['text'] . "\n\n";
+					}
 				}
 			}
 			$_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data'][$setPreDefinedTextFieldId] = $text;
@@ -2872,7 +2894,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		}
 		
 		//Check if user is allowed more than one submission
-		if (!ze\user::id()
+		if (!$this->userId
 			&& $field['db_column'] == 'email' 
 			&& $this->form['save_data']
 			&& $this->form['user_duplicate_email_action'] == 'stop'
@@ -2960,8 +2982,8 @@ class zenario_user_forms extends ze\moduleBaseClass {
 						$validationMessage = static::fPhrase('Please enter a screen name', [], $t);
 					} elseif (!ze\ring::validateScreenName($value)) {
 						$validationMessage = static::fPhrase('Please enter a valid screen name', [], $t);
-					} elseif ((ze\user::id() && ze\row::exists('users', ['screen_name' => $value, 'id' => ['!' => ze\user::id()]])) 
-						|| (!ze\user::id() && ze\row::exists('users', ['screen_name' => $value]))
+					} elseif (($this->userId && ze\row::exists('users', ['screen_name' => $value, 'id' => ['!' => $this->userId]])) 
+						|| (!$this->userId && ze\row::exists('users', ['screen_name' => $value]))
 					) {
 						return static::fPhrase('The screen name you entered is in use', [], $t);
 					}
@@ -3000,18 +3022,23 @@ class zenario_user_forms extends ze\moduleBaseClass {
 	}
 	
 	private function saveForm() {
-		$userId = ze\user::id();
+		$userId = $this->userId;
 		
 		$getRequestValue = null;
 		if ($this->form['allow_partial_completion'] && $this->form['partial_completion_get_request']) {
 			$getRequestValue = $_REQUEST[$this->form['partial_completion_get_request']] ?? 0;
 		}
 		static::deleteOldPartialResponse($this->form['id'], $userId, $getRequestValue);
-		$fieldIdValueLink = [];
 		
+		$consentFields = [];
+		$fieldIdValueLink = [];
 		foreach ($this->fields as $fieldId => $field) {
 			$this->fields[$fieldId]['value'] = $this->getFieldCurrentValue($fieldId);
 			$fieldIdValueLink[$fieldId] = $this->getFieldStorableValue($fieldId);
+			
+			if (!empty($field['is_consent'])) {
+				$consentFields[] = $fieldId;
+			}
 		}
 		
 		//Updating users
@@ -3036,6 +3063,13 @@ class zenario_user_forms extends ze\moduleBaseClass {
 					$details = [];
 					$details['email'] = $email;
 					$details['status'] = $this->form['type'] == 'registration' ? 'pending' : $this->form['user_status'];
+					
+					if ($details['status'] == 'contact') {
+						$details['creation_method_note'] = 'Contact signup';
+					} else {
+						$details['creation_method_note'] = 'User signup';
+					}
+					
 					$details['password'] = ze\userAdm::createPassword();
 					if (isset($this->datasetFieldsColumnLink['screen_name'])) {
 						$details['screen_name_confirmed'] = true;
@@ -3051,6 +3085,36 @@ class zenario_user_forms extends ze\moduleBaseClass {
 					if ($this->form['log_user_in']) {
 						$this->logUserIn($userId);
 					}
+				}
+			}
+		}
+		
+		//Record consent if the terms and conditions checkbox was present and checked or there was a consent field on the form
+		if (!empty($consentFields)) {
+			$email = $firstName = $lastName = false;
+			if ($fieldId = ($this->datasetFieldsColumnLink['email'] ?? false)) {
+				$email = $this->getFieldCurrentValue($fieldId);
+			} else {
+			    //if not on form get from Database
+			    $email = ze\row::get('users', 'email', $userId);
+			}
+			if ($fieldId = ($this->datasetFieldsColumnLink['first_name'] ?? false)) {
+				$firstName = $this->getFieldCurrentValue($fieldId);
+			} else {
+			    //if not on form get from Database
+			    $firstName = ze\row::get('users', 'first_name', $userId);
+			}
+			if ($fieldId = ($this->datasetFieldsColumnLink['last_name'] ?? false)) {
+				$lastName = $this->getFieldCurrentValue($fieldId);
+			} else {
+			    //if not on form get from Database
+			    $lastName = ze\row::get('users', 'last_name', $userId);
+			}
+			
+			foreach ($consentFields as $fieldId) {
+				if ($this->fields[$fieldId]['value']) {
+					$label = $this->fields[$fieldId]['label'];
+					ze\user::recordConsent($userId, $email, $firstName, $lastName, $label);
 				}
 			}
 		}
@@ -3373,7 +3437,9 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		$userCustomFilePickerValues = [];
 		foreach ($this->datasetFieldsLink as $fieldId => $datasetFieldId) {
 			$field = $this->fields[$fieldId];
-			if (!$field['is_readonly'] && $field['db_column'] != 'email') {
+			
+			//Only save linked fields when the field is not readonly, the "email" system field, and not hidden with "visible_on_condition"
+			if (!$field['is_readonly'] && $field['db_column'] != 'email' && ($field['visibility'] != 'visible_on_condition' || !$this->isFieldHidden($field))) {
 				$value = $this->getFieldCurrentValue($fieldId);
 				
 				if ($field['type'] == 'checkboxes') {
@@ -3525,8 +3591,8 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		if (!$fieldId && $codeName) {
 			$sql = '
 				SELECT uff.id
-				FROM ' . DB_NAME_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_form_fields uff
-				INNER JOIN ' . DB_NAME_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_response ur
+				FROM ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_form_fields uff
+				INNER JOIN ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_response ur
 					ON ur.form_id = uff.user_form_id
 				WHERE ur.id = ' . (int)$responseId . '
 				AND uff.custom_code_name = "' . ze\escape::sql($codeName) . '"';
@@ -3689,7 +3755,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 	}
 	
 	private function createFormPartialResponse() {
-		$userId = ze\user::id();
+		$userId = $this->userId;
 		$getRequestValue = null;
 		if ($this->form['partial_completion_get_request']) {
 			$getRequestValue = $_REQUEST[$this->form['partial_completion_get_request']] ?? 0;
@@ -3766,11 +3832,9 @@ class zenario_user_forms extends ze\moduleBaseClass {
 	private function enableCaptcha() {
 		if ($this->form['use_captcha']
 			&& empty($_SESSION['captcha_passed__' . $this->instanceId])
-			&& (!ze\user::id() || $this->form['extranet_users_use_captcha'])
+			&& (!$this->userId || $this->form['extranet_users_use_captcha'])
 		) {
-			if ($this->form['captcha_type'] == 'word') {
-				return ze::setting('google_recaptcha_private_key') && ze::setting('google_recaptcha_public_key');
-			} elseif ($this->form['captcha_type'] == 'pictures') {
+			if ($this->form['captcha_type'] == 'pictures') {
 				return ze::setting('google_recaptcha_site_key') && ze::setting('google_recaptcha_secret_key');
 			} elseif ($this->form['captcha_type'] == 'math') {
 				return true;
@@ -3783,13 +3847,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		if ($this->enableCaptcha() && ($_POST['submitForm'] ?? false) && $this->instanceId == ($_POST['instanceId'] ?? false)) {
 			$error = false;
 			$t = $this->form['translate_text'];
-			if ($this->form['captcha_type'] == 'word') {
-				if ($this->checkCaptcha()) {
-					$_SESSION['captcha_passed__' . $this->instanceId] = true;
-				} else {
-					$error = true;
-				}
-			} elseif ($this->form['captcha_type'] == 'math') {
+			if ($this->form['captcha_type'] == 'math') {
 				if ($this->checkMathCaptcha()) {
 					$_SESSION['captcha_passed__' . $this->instanceId] = true;
 				} else {
@@ -3812,15 +3870,16 @@ class zenario_user_forms extends ze\moduleBaseClass {
 	private function getCaptchaHTML() {
 		$t = $this->form['translate_text'];
 		$html = '<div class="form_field captcha">';
-		if (isset($this->errors['captcha'])) {
+		if (isset($this->errors['captcha']) && !$this->form['show_errors_below_fields']) {
 			$html .= '<div class="form_error">' . static::fPhrase($this->errors['captcha'], [], $t) . '</div>';
 		}
-		if ($this->form['captcha_type'] == 'word') {
-			$html .= $this->captcha();
-		} elseif ($this->form['captcha_type'] == 'math') {
+		if ($this->form['captcha_type'] == 'math') {
 			$html .= $this->mathCaptcha();
 		} elseif ($this->form['captcha_type'] == 'pictures') {
 			$html .= $this->captcha2();
+		}
+		if (isset($this->errors['captcha']) && $this->form['show_errors_below_fields']) {
+			$html .= '<div class="form_error">' . static::fPhrase($this->errors['captcha'], [], $t) . '</div>';
 		}
 		$html .= '</div>';
 		return $html;
@@ -3833,7 +3892,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 	
 	protected function getWelcomePageHTML() {
 		$t = $this->form['translate_text'];
-		$user = ze\row::get('users', ['first_name', 'last_name'], ze\user::id());
+		$user = ze\row::get('users', ['first_name', 'last_name'], $this->userId);
 		return '<p class="success">' . static::fPhrase('Welcome, [[first_name]] [[last_name]]', $user, $t) . '</p>';
 	}
 	
@@ -4000,26 +4059,21 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		}
 	}
 	
-	public static function isFormCRMEnabled($formId) {
-		if (ze\module::inc('zenario_crm_form_integration')) {
-			$formCRMDetails = ze\row::get(
-				ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'form_crm_data', 
-				['enable_crm_integration'], 
-				['form_id' => $formId]
-			);
-			if ($formCRMDetails['enable_crm_integration']) {
-				return true;
-			}
+	public static function isFormCRMEnabled($formId, $type = 'generic') {
+		$where = ['enable' => true, 'form_id' => $formId];
+		if ($type) {
+			$where['crm_id'] = $type;
 		}
-		return false;
+		return ze\module::inc('zenario_crm_form_integration') 
+			&& ze\row::exists(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'form_crm_link', $where);
 	}
 	
 	public static function getTextFormFields($formId) {
 		$formFields = [];
 		$sql = "
 			SELECT uff.id, uff.ord, uff.name, uff.validation AS field_validation, cdf.validation AS dataset_field_validation
-			FROM ". DB_NAME_PREFIX. ZENARIO_USER_FORMS_PREFIX . "user_form_fields AS uff
-			LEFT JOIN ". DB_NAME_PREFIX. "custom_dataset_fields AS cdf
+			FROM ". DB_PREFIX. ZENARIO_USER_FORMS_PREFIX . "user_form_fields AS uff
+			LEFT JOIN ". DB_PREFIX. "custom_dataset_fields AS cdf
 				ON uff.user_field_id = cdf.id
 			WHERE uff.user_form_id = ". (int)$formId. "
 				AND (cdf.type = 'text' || uff.field_type = 'text')
@@ -4043,9 +4097,46 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		return $ids;
 	}
 	
+	public static function getFormPlugins($formId = false, $pns = null) {
+		
+		$sql = "
+			SELECT DISTINCT ps.instance_id
+			FROM ". DB_PREFIX. "plugin_settings AS ps
+			INNER JOIN ". DB_PREFIX. "plugin_instances AS pi
+			   ON ps.instance_id = pi.id
+			WHERE ps.foreign_key_to = 'user_form'
+			  AND pi.content_id = 0";
+		
+		if ($formId) {
+			$sql .= "
+			  AND ps.foreign_key_id = ". (int) $formId;
+		}
+		
+		switch ($pns) {
+			case 'nests':
+				$sql .= "
+			  AND pi.module_id = ". (int) ze\module::id('zenario_plugin_nest');
+				break;
+			
+			case 'slideshows':
+				$sql .= "
+			  AND pi.module_id = ". (int) ze\module::id('zenario_slideshow');
+				break;
+			
+			case 'plugins':
+				$sql .= "
+			  AND pi.module_id NOT IN (". (int) ze\module::id('zenario_slideshow'). ", ". (int) ze\module::id('zenario_plugin_nest'). ")";
+		}
+		
+		return ze\sql::fetchValues($sql);
+	}
+	
+	
+	
+	
 	public static function getFormJSON($formId) {
 		$formJSON['form'] = ze\row::get(ZENARIO_USER_FORMS_PREFIX . 'user_forms', true, $formId);
-		$formJSON['pages'] = ze\row::getArray(ZENARIO_USER_FORMS_PREFIX . 'pages', true, ['form_id' => $formId]);
+		$formJSON['pages'] = ze\row::getAssocs(ZENARIO_USER_FORMS_PREFIX . 'pages', true, ['form_id' => $formId]);
 		$formJSON['fields'] = [];
 		$formJSON['values'] = [];
 		$fieldsResult = ze\row::query(ZENARIO_USER_FORMS_PREFIX . 'user_form_fields', true, ['user_form_id' => $formId]);
@@ -4378,10 +4469,10 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				p.id AS page_id, 
 				p.name AS page_name,
 				IFNULL(cdf.type, uff.field_type) AS type
-			FROM ' . DB_NAME_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_form_fields uff
-			INNER JOIN ' . DB_NAME_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'pages p
+			FROM ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_form_fields uff
+			INNER JOIN ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'pages p
 				ON uff.page_id = p.id
-			LEFT JOIN ' . DB_NAME_PREFIX . 'custom_dataset_fields AS cdf
+			LEFT JOIN ' . DB_PREFIX . 'custom_dataset_fields AS cdf
 				ON uff.user_field_id = cdf.id
 			WHERE TRUE';
 		if ($fieldId) {
@@ -4420,7 +4511,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		//Clear form responses for forms with individual settings
 		$sql = '
 			SELECT id, period_to_delete_response_headers
-			FROM ' . DB_NAME_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_forms
+			FROM ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_forms
 			WHERE period_to_delete_response_headers != ""';
 		$formsResult = ze\sql::select($sql);
 		while ($form = ze\sql::fetchAssoc($formsResult)) {
@@ -4429,7 +4520,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				$date = date('Y-m-d', strtotime('-'.$days.' day', strtotime(date('Y-m-d'))));
 				$sql = '
 					SELECT id
-					FROM ' . DB_NAME_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_response
+					FROM ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_response
 					WHERE form_id = ' . (int)$form['id'] . '
 					AND response_datetime < "' . ze\escape::sql($date) . '"';
 				$result = ze\sql::select($sql);
@@ -4445,8 +4536,8 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			$date = date('Y-m-d', strtotime('-'.$days.' day', strtotime(date('Y-m-d'))));
 			$sql = '
 				SELECT ur.id
-				FROM ' . DB_NAME_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_response ur
-				INNER JOIN ' . DB_NAME_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_forms uf
+				FROM ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_response ur
+				INNER JOIN ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_forms uf
 					ON ur.form_id = uf.id
 				WHERE uf.period_to_delete_response_headers = ""
 				AND response_datetime < "' . ze\escape::sql($date) . '"';
@@ -4463,7 +4554,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		//Clear form responses for forms with individual settings
 		$sql = '
 			SELECT id, period_to_delete_response_content
-			FROM ' . DB_NAME_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_forms
+			FROM ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_forms
 			WHERE period_to_delete_response_content != ""';
 		$formsResult = ze\sql::select($sql);
 		while ($form = ze\sql::fetchAssoc($formsResult)) {
@@ -4472,20 +4563,20 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				$date = date('Y-m-d', strtotime('-'.$days.' day', strtotime(date('Y-m-d'))));
 				$sql = '
 					DELETE urd.*
-					FROM ' . DB_NAME_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_response_data urd
-					INNER JOIN ' . DB_NAME_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_response ur
+					FROM ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_response_data urd
+					INNER JOIN ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_response ur
 						ON urd.user_response_id = ur.id
 					WHERE ur.form_id = ' . (int)$form['id'] . '
 					AND ur.response_datetime < "' . ze\escape::sql($date) . '"';
 				ze\sql::update($sql);
 				
 				$sql = '
-					UPDATE ' . DB_NAME_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_response
+					UPDATE ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_response
 					SET data_deleted = 1
 					WHERE form_id = ' . (int)$form['id'] . '
 					AND response_datetime < "' . ze\escape::sql($date) . '"';
 				ze\sql::update($sql);
-				$cleared += ze\sql::affectedRows();
+ 				$cleared += ze\sql::affectedRows();
 			}
 		}
 		
@@ -4495,23 +4586,24 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			$date = date('Y-m-d', strtotime('-'.$days.' day', strtotime(date('Y-m-d'))));
 			$sql = '
 				DELETE urd.*
-				FROM ' . DB_NAME_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_response_data urd
-				INNER JOIN ' . DB_NAME_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_response ur
+				FROM ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_response_data urd
+				INNER JOIN ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_response ur
 					ON urd.user_response_id = ur.id
-				INNER JOIN ' . DB_NAME_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_forms uf
+				INNER JOIN ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_forms uf
 					ON ur.form_id = uf.id
 				WHERE uf.period_to_delete_response_content = ""
 				AND ur.response_datetime < "' . ze\escape::sql($date) . '"';
 			ze\sql::update($sql);
 			
 			$sql = '
-				UPDATE ' . DB_NAME_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_response ur
-				INNER JOIN ' . DB_NAME_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_forms uf
+				UPDATE ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_response ur
+				INNER JOIN ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_forms uf
 					ON ur.form_id = uf.id
 				SET ur.data_deleted = 1
 				WHERE uf.period_to_delete_response_content = ""
 				AND ur.response_datetime < "' . ze\escape::sql($date) . '"';
 			ze\sql::update($sql);
+
 			$cleared += ze\sql::affectedRows();
 		}
 		return $cleared;
@@ -4522,14 +4614,14 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		if ($deleteAllData) {
 			$sql = '
 				DELETE urd.*
-				FROM ' . DB_NAME_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_response_data urd
-				INNER JOIN ' . DB_NAME_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_response ur
+				FROM ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_response_data urd
+				INNER JOIN ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_response ur
 					ON urd.user_response_id = ur.id
 				WHERE ur.user_id = ' . (int)$userId;
 			ze\sql::update($sql);
 			
 			$sql = '
-				UPDATE ' . DB_NAME_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_response
+				UPDATE ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_response
 				SET user_id = 0, user_deleted = 1, data_deleted = 1
 				WHERE user_id = ' . (int)$userId;
 			ze\sql::update($sql);

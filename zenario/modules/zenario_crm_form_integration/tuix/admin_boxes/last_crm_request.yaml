@@ -1,4 +1,4 @@
-zenario_crm_form_integration__last_crm_request:
+zenario__last_crm_request:
     title: Last CRM request
     hide_tab_bar: true
     key:

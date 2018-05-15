@@ -108,25 +108,6 @@ zenario__content:
                         traits.empty: true
                     visible_if: >
                         zenarioO.refiner && zenarioO.refiner.name == 'content_item'
-                
-                replace_plugin:
-                    parent: insert_dropdown
-                    label: Show a different plugin on this content item...
-                    combine_items:
-                        path: zenario__modules/panels/modules/refiners/slotable_only////
-                        target_path: zenario__modules/panels/plugins
-                        min_path: zenario__modules/panels/modules
-                        max_path: zenario__modules/panels/plugins
-                        one_to_one_choose_phrase: Insert plugin
-                        request:
-                            level: 1
-                            addPluginInstance: 1
-                    with_columns_set:
-                        traits.full: true
-                        traits.reusable: true
-                        traits.template: true
-                    visible_if: >
-                        zenarioO.refiner && zenarioO.refiner.name == 'content_item'
                         
                 remove_dropdown:
                     label: Remove

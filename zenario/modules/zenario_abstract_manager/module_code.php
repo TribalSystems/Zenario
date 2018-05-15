@@ -60,11 +60,11 @@ class zenario_abstract_manager extends ze\moduleBaseClass {
 	public static function createDatasetTableAndRegisterDataset() {
 		
 		$tableCreated =
-			ze\row::cacheTableDef(DB_NAME_PREFIX. static::table(), $checkExists = true);
+			ze::$dbL->checkTableDef(DB_PREFIX. static::table(), $checkExists = true);
 		
 		if (!$tableCreated) {
 			ze\sql::update("
-				CREATE TABLE `". ze\escape::sql(DB_NAME_PREFIX. static::table()). "` (
+				CREATE TABLE `". ze\escape::sql(DB_PREFIX. static::table()). "` (
 					`id` int(10) unsigned NOT NULL AUTO_INCREMENT,
 					`record_name` varchar(255) CHARACTER SET utf8mb4 NOT NULL default '',
 					PRIMARY KEY (`id`),
@@ -126,7 +126,7 @@ class zenario_abstract_manager extends ze\moduleBaseClass {
 	
 	
 	protected static function loadDatasetFieldsDetails() {
-		return ze\row::getArray(
+		return ze\row::getAssocs(
 				'custom_dataset_fields',
 				['id', 'type', 'db_column', 'dataset_foreign_key_id', 'values_source'],
 				['dataset_id' => static::getDatasetId(), 'is_system_field' => 0]);
@@ -164,7 +164,7 @@ class zenario_abstract_manager extends ze\moduleBaseClass {
 
 				case 'checkboxes':
 					//For checkboxes, there could be multiple values, so pass an array of ids => values
-					$ids[$col] = ze\row::getArray(
+					$ids[$col] = ze\row::getAssocs(
 						'custom_dataset_values_link',
 						'value_id',
 						['dataset_id' => static::getDatasetId(), 'linking_id' => $id]);
@@ -172,7 +172,7 @@ class zenario_abstract_manager extends ze\moduleBaseClass {
 					if (empty($ids[$col])) {
 						$values[$col] = [];
 					} else {
-						$values[$col] = ze\row::getArray(
+						$values[$col] = ze\row::getAssocs(
 							'custom_dataset_field_values',
 							'label',
 							['field_id' => $cfield['id'], 'id' => $ids[$col]],
@@ -265,7 +265,7 @@ class zenario_abstract_manager extends ze\moduleBaseClass {
 		if ($path != static::$dsInfo['adminBoxPath']) return;
 		
 		if (!$box['key']['id']) {
-			$box['key']['id'] = ze\db::getNextAutoIncrementId(static::table());
+			$box['key']['id'] = ze\sql::getNextAutoIncrementId(static::table());
 		}
 	}
 	
@@ -290,7 +290,7 @@ class zenario_abstract_manager extends ze\moduleBaseClass {
 			$panel['db_items'] = [];
 		}
 		if (empty($panel['db_items']['table'])) {
-			$panel['db_items']['table'] = '`'. ze\escape::sql(DB_NAME_PREFIX. static::table()). '` AS cd';
+			$panel['db_items']['table'] = '`'. ze\escape::sql(DB_PREFIX. static::table()). '` AS cd';
 		}
 		if (empty($panel['db_items']['id_column'])) {
 			$panel['db_items']['id_column'] = 'cd.id';

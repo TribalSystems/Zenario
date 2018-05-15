@@ -817,7 +817,7 @@ public static function updateMetaInfoInDB(&$data, &$slots, &$layout) {
 
 	//Remove any deleted slots from the database
 	$sql = "
-		DELETE FROM ". DB_NAME_PREFIX. "template_slot_link
+		DELETE FROM ". DB_PREFIX. "template_slot_link
 		WHERE family_name = '". \ze\escape::sql($layout['family_name']). "'
 		  AND file_base_name = '". \ze\escape::sql($layout['file_base_name']). "'";
 	

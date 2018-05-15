@@ -28,12 +28,10 @@
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
 ze\dbAdm::revision(6, "
-	INSERT IGNORE INTO [[DB_NAME_PREFIX]]email_templates (
+	INSERT IGNORE INTO [[DB_PREFIX]]email_templates (
 		`code`,
 		`template_name`,
 		`subject`,
-		`email_address_from`,
-		`email_name_from`,
 		`body`,
 		`date_created`,
 		`created_by_id`,
@@ -43,8 +41,6 @@ ze\dbAdm::revision(6, "
 		 'zenario_users__to_user_account_activated',
 		 'To User: Account Activated',
 		 'Your account on [[cms_url]] has been activated',
-		 '" . ze\escape::sql(ze::setting('email_address_from')) . "',
-		 '" . ze\escape::sql(ze::setting('email_name_from')) . "',
 		 '<p>Dear [[first_name]] [[last_name]],</p>
 		<p>Your account has been activated and you can now login to the extranet area using the following details:</p>
 		<p>screen name: [[screen_name]]<br /> 
@@ -60,7 +56,7 @@ ze\dbAdm::revision(6, "
 ); ze\dbAdm::revision(40,
 
 <<<_sql
-	UPDATE [[DB_NAME_PREFIX]]email_templates
+	UPDATE [[DB_PREFIX]]email_templates
 	SET `module_class_name` = 'zenario_users'
 	WHERE `code` = 'zenario_users__to_user_account_activated'
 _sql
@@ -69,12 +65,10 @@ _sql
 
 
 ze\dbAdm::revision(43, 
-	"INSERT IGNORE [[DB_NAME_PREFIX]]email_templates (
+	"INSERT IGNORE [[DB_PREFIX]]email_templates (
 		`code`,
 		`template_name`,
 		`subject`,
-		`email_address_from`,
-		`email_name_from`,
 		`body`,
 		`date_created`,
 		`created_by_id`,
@@ -83,8 +77,6 @@ ze\dbAdm::revision(43,
 		'zenario_users__inactive_user_short_time',
 		'To User: Inactive User (Short Time)',
 		'We\'ve missed you',
-		'". ze\escape::sql(ze::setting('email_address_from')). "',
-		'". ze\escape::sql(ze::setting('email_name_from')). "',
 		'<p>Dear [[salutation]] [[first_name]] [[last_name]],</p> we\'ve not seen you in a while. <br> Did you know that you can do these cool features on the portal: <br> ..... <br> ..... <br> [[link]]',
 		NOW(),
 		". (int) ze\admin::id(). ",
@@ -93,12 +85,10 @@ ze\dbAdm::revision(43,
 	);
 	
 ze\dbAdm::revision(44, 
-	"INSERT IGNORE [[DB_NAME_PREFIX]]email_templates (
+	"INSERT IGNORE [[DB_PREFIX]]email_templates (
 		`code`,
 		`template_name`,
 		`subject`,
-		`email_address_from`,
-		`email_name_from`,
 		`body`,
 		`date_created`,
 		`created_by_id`,
@@ -107,8 +97,6 @@ ze\dbAdm::revision(44,
 		'zenario_users__inactive_user_long_time',
 		'To User: Inactive User (Long Time)',
 		'We\'ve missed you',
-		'". ze\escape::sql(ze::setting('email_address_from')). "',
-		'". ze\escape::sql(ze::setting('email_name_from')). "',
 		'<p>Dear [[salutation]] [[first_name]] [[last_name]],</p> we\'ve not seen you in a long time. <br> Did you know that you can do these cool features on the portal: <br> ..... <br> ..... <br> [[link]]',
 		NOW(),
 		". (int) ze\admin::id(). ",
@@ -119,7 +107,7 @@ ze\dbAdm::revision(44,
 ze\dbAdm::revision(59,
 
 <<<_sql
-	UPDATE [[DB_NAME_PREFIX]]email_templates
+	UPDATE [[DB_PREFIX]]email_templates
 	SET `module_class_name` = 'zenario_users'
 	WHERE `code` = 'zenario_users__inactive_user_long_time'
 	OR `code` = 'zenario_users__inactive_user_short_time'

@@ -235,14 +235,14 @@ if (is_array($data) && ze\gridAdm::validateData($data)) {
 								)) {
 									//Switch the slot names in the system
 									$sql = "
-										UPDATE IGNORE ".  DB_NAME_PREFIX. "plugin_layout_link
+										UPDATE IGNORE ".  DB_PREFIX. "plugin_layout_link
 										SET slot_name = '". ze\escape::sql($newName). "'
 										WHERE slot_name = '". ze\escape::sql($oldName). "'
 										  AND layout_id = ". (int) $layout['layout_id'];
 									ze\sql::update($sql);
 								
 									$sql = "
-										UPDATE IGNORE ".  DB_NAME_PREFIX. "template_slot_link
+										UPDATE IGNORE ".  DB_PREFIX. "template_slot_link
 										SET slot_name = '". ze\escape::sql($newName). "'
 										WHERE slot_name = '". ze\escape::sql($oldName). "'
 										  AND family_name = '". ze\escape::sql($layout['family_name']). "'
@@ -250,8 +250,8 @@ if (is_array($data) && ze\gridAdm::validateData($data)) {
 									ze\sql::update($sql);
 								
 									$sql = "
-										UPDATE IGNORE ".  DB_NAME_PREFIX. "content_item_versions AS v
-										INNER JOIN ".  DB_NAME_PREFIX. "plugin_instances AS pi
+										UPDATE IGNORE ".  DB_PREFIX. "content_item_versions AS v
+										INNER JOIN ".  DB_PREFIX. "plugin_instances AS pi
 										   ON pi.content_id = v.id
 										  AND pi.content_type = v.type
 										  AND pi.content_version = v.version
@@ -261,8 +261,8 @@ if (is_array($data) && ze\gridAdm::validateData($data)) {
 									ze\sql::update($sql);
 								
 									$sql = "
-										UPDATE IGNORE ".  DB_NAME_PREFIX. "content_item_versions AS v
-										INNER JOIN ".  DB_NAME_PREFIX. "plugin_item_link AS pil
+										UPDATE IGNORE ".  DB_PREFIX. "content_item_versions AS v
+										INNER JOIN ".  DB_PREFIX. "plugin_item_link AS pil
 										   ON pil.content_id = v.id
 										  AND pil.content_type = v.type
 										  AND pil.content_version = v.version

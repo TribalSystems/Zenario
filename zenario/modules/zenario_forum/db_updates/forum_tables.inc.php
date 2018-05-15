@@ -34,11 +34,11 @@ ze\dbAdm::revision( 1
 //Create a table to store extra information on forums
 //This mirrors a content id and a content type (usually html, but this is not a restriction) from the CMS
 , <<<_sql
-	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]][[ZENARIO_FORUM_PREFIX]]forums`
+	DROP TABLE IF EXISTS `[[DB_PREFIX]][[ZENARIO_FORUM_PREFIX]]forums`
 _sql
 
 , <<<_sql
-	CREATE TABLE `[[DB_NAME_PREFIX]][[ZENARIO_FORUM_PREFIX]]forums`(
+	CREATE TABLE `[[DB_PREFIX]][[ZENARIO_FORUM_PREFIX]]forums`(
 		`id` int(10) unsigned NOT NULL auto_increment,
 		`content_id` int(10) unsigned NOT NULL,
 		`content_type` varchar(20) NOT NULL,
@@ -55,11 +55,11 @@ _sql
 
 //Create a table to store information on threads in each forum
 , <<<_sql
-	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]][[ZENARIO_FORUM_PREFIX]]threads`
+	DROP TABLE IF EXISTS `[[DB_PREFIX]][[ZENARIO_FORUM_PREFIX]]threads`
 _sql
 
 , <<<_sql
-	CREATE TABLE `[[DB_NAME_PREFIX]][[ZENARIO_FORUM_PREFIX]]threads`(
+	CREATE TABLE `[[DB_PREFIX]][[ZENARIO_FORUM_PREFIX]]threads`(
 		`id` int(10) unsigned NOT NULL auto_increment,
 		`forum_id` int(10) unsigned NOT NULL,
 		`date_posted` datetime NOT NULL,
@@ -91,11 +91,11 @@ _sql
 
 //Create a table to store user posts
 , <<<_sql
-	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]][[ZENARIO_FORUM_PREFIX]]user_posts`
+	DROP TABLE IF EXISTS `[[DB_PREFIX]][[ZENARIO_FORUM_PREFIX]]user_posts`
 _sql
 
 , <<<_sql
-	CREATE TABLE `[[DB_NAME_PREFIX]][[ZENARIO_FORUM_PREFIX]]user_posts`(
+	CREATE TABLE `[[DB_PREFIX]][[ZENARIO_FORUM_PREFIX]]user_posts`(
 		`id` int(10) unsigned NOT NULL auto_increment,
 		`forum_id` int(10) unsigned NOT NULL,
 		`thread_id` int(10) unsigned NOT NULL,
@@ -122,11 +122,11 @@ _sql
 //However this will not be 100% accurate, so these tables are used to store exceptions.
 //There will also be some sort of age-limit on the two user_unread tables to stop them filling up with outdated data
 , <<<_sql
-	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]][[ZENARIO_FORUM_PREFIX]]user_unread_threads`
+	DROP TABLE IF EXISTS `[[DB_PREFIX]][[ZENARIO_FORUM_PREFIX]]user_unread_threads`
 _sql
 
 , <<<_sql
-	CREATE TABLE `[[DB_NAME_PREFIX]][[ZENARIO_FORUM_PREFIX]]user_unread_threads`(
+	CREATE TABLE `[[DB_PREFIX]][[ZENARIO_FORUM_PREFIX]]user_unread_threads`(
 		`forum_id` int(10) unsigned NOT NULL,
 		`reader_id` int(10) unsigned NOT NULL,
 		`unread_from` int(10) unsigned NOT NULL,
@@ -141,52 +141,52 @@ _sql
 //Drop some tables which were created but not implemented for clarity
 );	ze\dbAdm::revision( 20
 , <<<_sql
-	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]][[ZENARIO_FORUM_PREFIX]]user_post_ratings`
+	DROP TABLE IF EXISTS `[[DB_PREFIX]][[ZENARIO_FORUM_PREFIX]]user_post_ratings`
 _sql
 
 , <<<_sql
-	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]][[ZENARIO_FORUM_PREFIX]]user_tracked_threads`
+	DROP TABLE IF EXISTS `[[DB_PREFIX]][[ZENARIO_FORUM_PREFIX]]user_tracked_threads`
 _sql
 
 
 //Modify the forums table to add more Content Items fields
 );	ze\dbAdm::revision( 21
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_FORUM_PREFIX]]forums`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_FORUM_PREFIX]]forums`
 	ADD COLUMN `ordinal` int(10) unsigned NOT NULL default 1
 	AFTER `id`
 _sql
 
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_FORUM_PREFIX]]forums`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_FORUM_PREFIX]]forums`
 	CHANGE COLUMN `content_id` `forum_content_id` int(10) unsigned NOT NULL
 _sql
 
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_FORUM_PREFIX]]forums`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_FORUM_PREFIX]]forums`
 	CHANGE COLUMN `content_type` `forum_content_type` varchar(20) NOT NULL
 _sql
 
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_FORUM_PREFIX]]forums`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_FORUM_PREFIX]]forums`
 	ADD COLUMN `thread_content_id` int(10) unsigned NOT NULL default 0
 	AFTER `forum_content_type`
 _sql
 
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_FORUM_PREFIX]]forums`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_FORUM_PREFIX]]forums`
 	ADD COLUMN `thread_content_type` varchar(20) NOT NULL default ''
 	AFTER `thread_content_id`
 _sql
 
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_FORUM_PREFIX]]forums`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_FORUM_PREFIX]]forums`
 	ADD COLUMN `new_thread_content_id` int(10) unsigned NOT NULL default 0
 	AFTER `thread_content_type`
 _sql
 
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_FORUM_PREFIX]]forums`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_FORUM_PREFIX]]forums`
 	ADD COLUMN `new_thread_content_type` varchar(20) NOT NULL default ''
 	AFTER `new_thread_content_id`
 _sql
@@ -195,27 +195,27 @@ _sql
 //Add/modify keys for the forums table
 );	ze\dbAdm::revision( 22
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_FORUM_PREFIX]]forums`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_FORUM_PREFIX]]forums`
 	DROP INDEX `content_id`
 _sql
 
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_FORUM_PREFIX]]forums`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_FORUM_PREFIX]]forums`
 	ADD KEY (`ordinal`)
 _sql
 
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_FORUM_PREFIX]]forums`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_FORUM_PREFIX]]forums`
 	ADD UNIQUE KEY (`forum_content_id`, `forum_content_type`)
 _sql
 
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_FORUM_PREFIX]]forums`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_FORUM_PREFIX]]forums`
 	ADD KEY (`thread_content_id`, `thread_content_type`)
 _sql
 
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_FORUM_PREFIX]]forums`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_FORUM_PREFIX]]forums`
 	ADD KEY (`new_thread_content_id`, `new_thread_content_type`)
 _sql
 
@@ -223,16 +223,16 @@ _sql
 //Add/modify keys for the threads table
 );	ze\dbAdm::revision( 24
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_FORUM_PREFIX]]threads`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_FORUM_PREFIX]]threads`
 	ADD KEY `title_key` (`title`)
 _sql
 
 );	ze\dbAdm::revision( 132
 ,<<<_sql
-	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]][[ZENARIO_FORUM_PREFIX]]user_posts_uploads`
+	DROP TABLE IF EXISTS `[[DB_PREFIX]][[ZENARIO_FORUM_PREFIX]]user_posts_uploads`
 _sql
 , <<<_sql
-	CREATE TABLE `[[DB_NAME_PREFIX]][[ZENARIO_FORUM_PREFIX]]user_posts_uploads`(
+	CREATE TABLE `[[DB_PREFIX]][[ZENARIO_FORUM_PREFIX]]user_posts_uploads`(
 		`id` int(10) unsigned NOT NULL auto_increment,
 		`post_id` int(10) unsigned NOT NULL,
 		`file_id` int(10) unsigned NOT NULL,
@@ -275,22 +275,22 @@ if (ze\dbAdm::needRevision(160)) {
 //Attempt to convert some columns with a utf8-3-byte character set to a 4-byte character set
 ze\dbAdm::revision( 170
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_FORUM_PREFIX]]forums` MODIFY COLUMN `new_thread_content_type` varchar(20) CHARACTER SET utf8mb4 NOT NULL default ''
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_FORUM_PREFIX]]forums` MODIFY COLUMN `new_thread_content_type` varchar(20) CHARACTER SET utf8mb4 NOT NULL default ''
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_FORUM_PREFIX]]forums` MODIFY COLUMN `thread_content_type` varchar(20) CHARACTER SET utf8mb4 NOT NULL default ''
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_FORUM_PREFIX]]forums` MODIFY COLUMN `thread_content_type` varchar(20) CHARACTER SET utf8mb4 NOT NULL default ''
 _sql
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_FORUM_PREFIX]]threads` SET `title` = SUBSTR(`title`, 1, 250) WHERE CHAR_LENGTH(`title`) > 250
+	UPDATE `[[DB_PREFIX]][[ZENARIO_FORUM_PREFIX]]threads` SET `title` = SUBSTR(`title`, 1, 250) WHERE CHAR_LENGTH(`title`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_FORUM_PREFIX]]threads` MODIFY COLUMN `title` varchar(250) CHARACTER SET utf8mb4 NOT NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_FORUM_PREFIX]]threads` MODIFY COLUMN `title` varchar(250) CHARACTER SET utf8mb4 NOT NULL
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_FORUM_PREFIX]]user_posts` MODIFY COLUMN `message_text` text CHARACTER SET utf8mb4 NOT NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_FORUM_PREFIX]]user_posts` MODIFY COLUMN `message_text` text CHARACTER SET utf8mb4 NOT NULL
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_FORUM_PREFIX]]user_posts_uploads` MODIFY COLUMN `caption` varchar(60) CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_FORUM_PREFIX]]user_posts_uploads` MODIFY COLUMN `caption` varchar(60) CHARACTER SET utf8mb4 NULL
 _sql
 
 ); 

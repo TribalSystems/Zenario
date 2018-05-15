@@ -141,7 +141,7 @@ additionalProperties:
                     type: string
                     description: >
                         A CSS class name, which should be used to define an icon.
-                label: 
+                label:
                     type: string
                     description: >
                         You can use this to set a label next to the id.
@@ -456,6 +456,10 @@ additionalProperties:
                                         - success
                                     description: >
                                         The type of notice. A different styling will be applied for each different type.
+                                html:
+                                    type: boolean
+                                    description: >
+                                        If this is set, the message will not be html-escaped.
                     
                     show_errors_after_field:
                         type: string
@@ -490,7 +494,7 @@ additionalProperties:
                                 type: boolean
                                 description: >
                                     Include this property to lock a tab in edit mode, and not show the cancel
-                                    button. 
+                                    button.
                                     Note that if this property is not defined then it will default to true.
                                 default: true
                             #enable_revert:
@@ -498,7 +502,7 @@ additionalProperties:
                             #    description: >
                             #        Include this property to show the "Undo Changes" button when using the
                             #        always_on property.
-                            #        
+                            #
                             #        If this property is not defined, then the CMS will automatically enable this
                             #        option if the $box['key']['id'] variable is set.
                             #    default: (intelligent default)
@@ -968,9 +972,7 @@ additionalProperties:
                                             type: string
                                             default: Select...
                                             description: >
-                                                The text for the Select button.
-                                                
-                                                From version 7.7 onwards, you canb set this to false or an empty
+                                                The text for the Select button. Has a default value if not set.
                                         nothing_selected_phrase:
                                             type: string
                                             default: Nothing selected
@@ -984,19 +986,21 @@ additionalProperties:
                                                 
                                                 This works from version 7.3 onwards.
                                         
-                                        disable_type_ahead_search:
+                                        enable_type_ahead_search:
                                             type: boolean
                                             description: >
-                                                This disables the type-ahead search.
+                                                Set this to true to enable the typeahead search.
+                                                
+                                                Note that for backwards compatability reasons, this property
+                                                defaults to true for the admin box toolkit.
                                         
                                         hide_select_button:
                                             type: boolean
                                             description: >
-                                                This hides the select button from the interface.
+                                                This hides the select button from the interface in the
+                                                admin box toolkit.
                                                 
-                                                Note that from version 7.7 onwards, this will no longer
-                                                disable the type-ahead search. You must set the
-                                                disable_type_ahead_search property instead for this.
+                                                Note that this property does not disable the type-ahead search.
                                         
                                         allow_typing_anything:
                                             type: boolean
@@ -1007,6 +1011,20 @@ additionalProperties:
                                                 name that doesn't yet exist.
                                                 
                                                 This works from version 7.5 onwards.
+                                        
+                                        picked_item_microtemplate:
+                                            type: string
+                                            description: >
+                                                Set this to override the microtemplate used to display the picked items.
+                                                
+                                                This works from version 8.2 onwards.
+                                        dropdown_item_microtemplate:
+                                            type: string
+                                            description: >
+                                                Set this to override the microtemplate used to display the items in the
+                                                dropdown for the typeahead.
+                                                
+                                                This works from version 8.2 onwards.
                                         
                                         #In 7.3 the "hide_remove_button" property does nothing
                                         #hide_remove_button:
@@ -1418,6 +1436,14 @@ additionalProperties:
                                                 An error message to display if any spaces are entered for this field.
                                                 
                                                 From version 8 onwards, you can enter a value of true to highlight the field in red without a message.
+                                        no_commas:
+                                            type: *booly
+                                            description: >
+                                                An error message to display if any commas are entered for this field.
+                                                
+                                                You can enter a value of true to highlight the field in red without a message.
+                                        
+                                                This works from version 8.2 onwards.
                                         no_special_characters:
                                             type: *booly
                                             description: >
@@ -1506,7 +1532,7 @@ additionalProperties:
                                                 table:
                                                     type: string
                                                     description: >
-                                                        The name of the table (excluding the DB_NAME_PREFIX).
+                                                        The name of the table (excluding the DB_PREFIX).
                                                         
                                                         You can use mergefields such as [[EXAMPLE_MODULE_4_PREFIX]] if you need to use a module's table.
                                                 column:
@@ -1676,18 +1702,27 @@ additionalProperties:
                                                 This property must be written in your .yaml file.
                                                 It can't be changed in php.
                                         
-                                        save_empty_value_for_hidden_fields:
+                                        save_value_when_hidden:
                                             type: boolean
                                             description: >
-                                                This controls whether empty values are saved in the database.
+                                                By default, if a plugin setting is hidden then it won't be saved into the
+                                                database, and the default value will be used instead.
                                                 
-                                                If this property is not defined, the CMS won't save empty values,
-                                                unless there's a default value set, in which case it will.
+                                                If you still want the value of the field to be read and saved even
+                                                when it is hidden, set this property to true.
+                                        
+                                                This works from version 8.2 onwards.
+                                        
+                                        save_empty_value_when_hidden:
+                                            type: boolean
+                                            description: >
+                                                By default, if a plugin setting is hidden then it won't be saved into the
+                                                database, and the default value will be used instead.
                                                 
-                                                You can override this logic by setting this property.
+                                                If the default value is not empty, but you want an empty value for this field
+                                                to be saved if it is hidden, then set this property to true.
                                         
-                                        
-                                                This works from version 8.0 onwards.
+                                                This works from version 8.2 onwards.
                                         
                                         dont_save_default_value:
                                             type: boolean
@@ -1714,7 +1749,7 @@ additionalProperties:
                                         is_email_address:
                                             type: boolean
                                             description: >
-                                                Marks this field as an email address field when marked as true for a plugin setting. 
+                                                Marks this field as an email address field when marked as true for a plugin setting.
                                                 If it contains an email address it'll show in the Plugin emails organizer panel.
                                         
                                         translate:
@@ -1908,7 +1943,7 @@ additionalProperties:
                                                 It can't be changed in php.
                                 
                                 values:
-                                    type: 
+                                    type:
                                         - string
                                         - object
                                     description: >
@@ -2352,13 +2387,18 @@ additionalProperties:
                                         
                                         This works from version 7.3 onwards.
                                 
+                                hide_in_dataset_editor:
+                                    type: boolean
+                                    description: >
+                                        Do not show a field in the dataset editor.
+                                
                                 allow_admin_to_change_visibility:
                                     type: boolean
                                     description: >
-                                        Allows admins to set a system fields visibility in the dataset editor. 
-                                        Without this property the visibility will be readonly. 
+                                        Allows admins to set a system fields visibility in the dataset editor.
+                                        Without this property the visibility will be readonly.
                                         
-                                        Should only be set on fields that don't have any advanced logic to change 
+                                        Should only be set on fields that don't have any advanced logic to change
                                         visibility.
                                 
                                         This works from version 7.3 onwards.
@@ -2417,6 +2457,14 @@ additionalProperties:
                                         Sets a maxlength on a text field. (This doesn't work with code or html editors.)
                                         
                                         From version 7.3 onwards the CMS will automatically apply a substr() when the field is saved.
+                                
+                                tooltip:
+                                    type: string
+                                    description: >
+                                        This adds a (?) mark symbol after the field, with a tooltip displayed when the user
+                                        hovers their mouse cursor over the (?) mark symbol.
+                                        
+                                        This works from version 8.2 onwards.
                                 
                                 error_on_form_message:
                                     type: string

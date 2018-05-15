@@ -15,16 +15,16 @@ zenario__social:
                 title: Pending Comments awaiting approval
                 db_items:
                     table: |
-                        [[DB_NAME_PREFIX]][[ZENARIO_ANONYMOUS_COMMENTS_PREFIX]]user_comments cm
-                        INNER JOIN [[DB_NAME_PREFIX]]content_items c 
+                        [[DB_PREFIX]][[ZENARIO_ANONYMOUS_COMMENTS_PREFIX]]user_comments cm
+                        INNER JOIN [[DB_PREFIX]]content_items c 
                          ON cm.content_id = c.id
                         AND cm.content_type = c.type
-                        LEFT JOIN [[DB_NAME_PREFIX]]menu_nodes AS mi
+                        LEFT JOIN [[DB_PREFIX]]menu_nodes AS mi
                          ON mi.target_loc = 'int'
                         AND mi.equiv_id = c.equiv_id
                         AND mi.content_type = c.type
                         AND mi.redundancy = 'primary'
-                        LEFT JOIN [[DB_NAME_PREFIX]]menu_text AS mt
+                        LEFT JOIN [[DB_PREFIX]]menu_text AS mt
                          ON mt.menu_id = mi.id
                         AND    mt.language_id = c.language_id
                     where_statement: |

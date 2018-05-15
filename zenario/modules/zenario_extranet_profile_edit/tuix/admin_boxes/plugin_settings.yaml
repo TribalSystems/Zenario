@@ -26,6 +26,7 @@ plugin_settings:
                 user_form:
                     plugin_setting:
                         name: user_form
+                        foreign_key_to: user_form
                     label: 'Form:'
                     pick_items:
                         path: zenario__user_forms/panels/user_forms

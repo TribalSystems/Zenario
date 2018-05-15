@@ -33,10 +33,10 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 
 //Populate the page_preview_sizes table with some initial values, if it is empty
-if (!ze\sql::numRows("SELECT 1 FROM ". DB_NAME_PREFIX. "page_preview_sizes LIMIT 1")) {
+if (!ze\sql::numRows("SELECT 1 FROM ". DB_PREFIX. "page_preview_sizes LIMIT 1")) {
 	
 	ze\sql::update("
-		INSERT INTO ". DB_NAME_PREFIX. "page_preview_sizes
+		INSERT INTO ". DB_PREFIX. "page_preview_sizes
 		(width, height, description, is_default, ordinal, type)
 		VALUES 
 		(1680, 1050, 'Current computers', 0, 1, 'desktop'),

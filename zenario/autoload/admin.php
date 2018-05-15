@@ -125,6 +125,7 @@ class admin {
 		return require \ze::funIncPath(__FILE__, __FUNCTION__);
 	}
 	
+	const phraseFromTwig = true;
 	//Formerly "adminPhrase()", "getPhrase()"
 	public static function phrase($code, $replace = false, $moduleClass = false) {
 	
@@ -154,6 +155,7 @@ class admin {
 		return $phrase;
 	}
 
+	const nPhraseFromTwig = true;
 	//Formerly "nAdminPhrase()"
 	public static function nPhrase($text, $pluralText = false, $n = 1, $replace = [], $zeroText = false) {
 	
@@ -174,7 +176,14 @@ class admin {
 			return \ze\admin::phrase($text, $replace);
 		}
 	}
-
+	
+	public static function pluralPhrase($word) {
+		if (substr($word, 0, -1) == 's') {
+			return $word. 'es';
+		} else {
+			return $word. 's';
+		}
+	}
 
 
 
@@ -273,7 +282,7 @@ class admin {
 	public static function cancelPasswordChange($adminId) {
 	
 		$sql = "
-			UPDATE ". DB_NAME_PREFIX. "admins SET
+			UPDATE ". DB_PREFIX. "admins SET
 				password_needs_changing = 0
 			WHERE id = ". (int) $adminId;
 		$result = \ze\sql::update($sql);
@@ -334,7 +343,7 @@ class admin {
 
 	//Formerly "loadAdminPerms()"
 	public static function loadPerms($adminId) {
-		return \ze\ray::valuesToKeys(\ze\row::getArray('action_admin_link', 'action_name', ['admin_id' => $adminId]));
+		return \ze\ray::valuesToKeys(\ze\row::getValues('action_admin_link', 'action_name', ['admin_id' => $adminId]));
 	}
 
 	//Set an admin's session
@@ -440,14 +449,21 @@ class admin {
 		$browser = new \Browser();
 
 		$sql = "
-			UPDATE ". DB_NAME_PREFIX. "admins SET
+			UPDATE ". DB_PREFIX. "admins SET
 				last_login = NOW(),
 				last_login_ip = '". \ze\escape::sql(\ze\user::ip()). "',
 				last_browser = '". \ze\escape::sql($browser->getBrowser()). "',
 				last_browser_version = '". \ze\escape::sql($browser->getVersion()). "',
-				last_platform = '". \ze\escape::sql($browser->getPlatform()). "'
+				last_platform = '". \ze\escape::sql($browser->getPlatform()). "' ";
+				
+		if (\ze::$dbL->checkTableDef(DB_PREFIX. 'admins', 'session_id')) {
+			$sql .= ",
+				session_id = '" . \ze\escape::sql(session_id()) . "'";
+		}
+		
+		$sql .= "
 			WHERE id = ". (int) $adminId;
-		@\ze\sql::select($sql);
+		\ze\sql::cacheFriendlyUpdate($sql);
 
 		// Update last domain, so primaryDomain can return a domain name if the primary domain site setting is not set.
 		if (!\ze\link::adminDomainIsPrivate()) {
@@ -459,5 +475,21 @@ class admin {
 		$_SESSION['admin_logged_in'] = false;
 	}
 	
+	//Check if an administrator is inactive. Only local admins are checked.
+	public static function isInactive($adminId) {
+		$days = \ze\admin::getDaysBeforeAdminsAreInactive();
+		$sql = '
+			SELECT id
+			FROM ' . DB_PREFIX . 'admins
+			WHERE id = ' . (int)$adminId . '
+			AND authtype = "local" 
+			AND COALESCE(last_login, created_date) < DATE_SUB(NOW(), INTERVAL ' . (int)$days . ' DAY)';
+		$result = \ze\sql::select($sql);
+		return \ze\sql::numRows($result) > 0;
+	}
+	
+	public static function getDaysBeforeAdminsAreInactive() {
+		return \ze\site::description('days_before_admin_is_inactive') ?: 90;
+	}
 	
 }

@@ -1,4 +1,4 @@
-zenario_crm_form_integration__field_name:
+zenario__crm_field_name:
     max_height: 100
     title: "CRM Field"
     hide_tab_bar: true

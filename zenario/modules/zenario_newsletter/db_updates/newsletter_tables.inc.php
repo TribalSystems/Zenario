@@ -33,11 +33,11 @@ ze\dbAdm::revision( 8
 
 //Create a table to store newsletters
 , <<<_sql
-	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters`
+	DROP TABLE IF EXISTS `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters`
 _sql
 
 , <<<_sql
-	CREATE TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters`(
+	CREATE TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters`(
 		`id` int(10) unsigned NOT NULL auto_increment,
 		`newsletter_name` varchar(255) NOT NULL default '',
 		`subject` tinytext NULL,
@@ -64,11 +64,11 @@ _sql
 
 //Create a table to record which newsletters have gone to which people
 , <<<_sql
-	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
+	DROP TABLE IF EXISTS `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
 _sql
 
 , <<<_sql
-	CREATE TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`(
+	CREATE TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`(
 		`newsletter_id` int(10) unsigned NOT NULL,
 		`user_id` int(10) unsigned NOT NULL,
 		`tracker_hash` varchar(40) NOT NULL,
@@ -87,26 +87,26 @@ _sql
 //Fix some errors in MySQL strict mode
 );	ze\dbAdm::revision( 15
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters`
 	MODIFY COLUMN `body` text NULL
 _sql
 
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters`
 	MODIFY COLUMN `subject` tinytext NULL
 _sql
 
 //Remove an unused table if it exists
 );	ze\dbAdm::revision( 19
 , <<<_sql
-	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_designs`
+	DROP TABLE IF EXISTS `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_designs`
 _sql
 
 
 //Add another key to the newsletter_user_link table
 );	ze\dbAdm::revision( 22
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
 	ADD INDEX (`newsletter_id`, `user_id`)
 _sql
 
@@ -114,30 +114,30 @@ _sql
 //Add more hashes to the user link table
 );	ze\dbAdm::revision( 24
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
 	ADD COLUMN `remove_hash` varchar(40) NOT NULL DEFAULT ''
 	AFTER `tracker_hash`
 _sql
 
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
 	ADD COLUMN `delete_account_hash` varchar(40) NOT NULL DEFAULT ''
 	AFTER `remove_hash`
 _sql
 
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link` SET
+	UPDATE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link` SET
 		`remove_hash` = SHA(CONCAT('remove_', `tracker_hash`)),
 		`delete_account_hash` = SHA(CONCAT('delete_', `tracker_hash`))
 _sql
 
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
 	ADD UNIQUE KEY (`remove_hash`)
 _sql
 
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
 	ADD UNIQUE KEY (`delete_account_hash`)
 _sql
 
@@ -145,7 +145,7 @@ _sql
 //Add a column to record the URL
 );	ze\dbAdm::revision( 29
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters`
 	ADD COLUMN `url` varchar(255) NOT NULL default ''
 	AFTER `email_name_from`
 _sql
@@ -154,11 +154,11 @@ _sql
 //Create a table to record who has been sent a Newsletter
 );	ze\dbAdm::revision( 30
 , <<<_sql
-	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_sent_newsletter_link`
+	DROP TABLE IF EXISTS `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_sent_newsletter_link`
 _sql
 
 , <<<_sql
-	CREATE TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_sent_newsletter_link`(
+	CREATE TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_sent_newsletter_link`(
 		`newsletter_id` int(10) unsigned NOT NULL,
 		`include` tinyint(1) NOT NULL default 1,
 		`sent_newsletter_id` int(10) unsigned NOT NULL,
@@ -170,24 +170,24 @@ _sql
 //Updates for version 6
 );	ze\dbAdm::revision( 41
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]]admins` AS a
-	INNER JOIN `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters` AS n
+	UPDATE `[[DB_PREFIX]]admins` AS a
+	INNER JOIN `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters` AS n
 	   ON n.created_by_id = a.global_id
 	  AND n.created_by_authtype = 'super'
 	SET n.created_by_id = a.id
 _sql
 
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]]admins` AS a
-	INNER JOIN `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters` AS n
+	UPDATE `[[DB_PREFIX]]admins` AS a
+	INNER JOIN `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters` AS n
 	   ON n.modified_by_id = a.global_id
 	  AND n.modified_by_authtype = 'super'
 	SET n.modified_by_id = a.id
 _sql
 
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]]admins` AS a
-	INNER JOIN `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters` AS n
+	UPDATE `[[DB_PREFIX]]admins` AS a
+	INNER JOIN `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters` AS n
 	   ON n.sent_by_id = a.global_id
 	  AND n.sent_by_authtype = 'super'
 	SET n.sent_by_id = a.id
@@ -196,17 +196,17 @@ _sql
 //Updates for zenario 6
 );	ze\dbAdm::revision( 42
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters`
 	DROP COLUMN `created_by_authtype`
 _sql
 
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters`
 	DROP COLUMN `modified_by_authtype`
 _sql
 
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters`
 	DROP COLUMN `sent_by_authtype`
 _sql
 
@@ -219,7 +219,7 @@ if (ze\dbAdm::needRevision(46)) {
 	//Get a list of checksums in the old format
 	$sql = "
 		SELECT checksum, MD5(CONCAT(filename, checksum))
-		FROM ". DB_NAME_PREFIX. "files";
+		FROM ". DB_PREFIX. "files";
 	$result = ze\sql::select($sql);
 	
 	$checksums = [];
@@ -231,7 +231,7 @@ if (ze\dbAdm::needRevision(46)) {
 	//Get the body text from the newsletters
 	$sql = "
 		SELECT id, body
-		FROM ". DB_NAME_PREFIX. ZENARIO_NEWSLETTER_PREFIX. "newsletters
+		FROM ". DB_PREFIX. ZENARIO_NEWSLETTER_PREFIX. "newsletters
 		WHERE body LIKE '%cmsincludes/%'";
 	$result = ze\sql::select($sql);
 	
@@ -297,7 +297,7 @@ if (ze\dbAdm::needRevision(46)) {
 
 	ze\dbAdm::revision(49
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
 	ADD COLUMN email_overridden_by varchar(255) DEFAULT '' AFTER email_sent 
 _sql
 
@@ -305,14 +305,14 @@ _sql
 //Drop a table created in the beta but no longer used, if it exists
 );	ze\dbAdm::revision( 65
 , <<<_sql
-	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_image_link`
+	DROP TABLE IF EXISTS `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_image_link`
 _sql
 
 
 //Add a foreign key from the Newsletters table to Smart Groups
 );	ze\dbAdm::revision( 75
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters`
 	ADD COLUMN `smart_group_id` int(10) unsigned NOT NULL default 0
 	AFTER `newsletter_name`
 _sql
@@ -321,7 +321,7 @@ _sql
 //Turn a one-to-many relationship between the newsletters and groups (using the newsletter_group_link table) to just a one-to-one
 );	ze\dbAdm::revision( 78
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters`
 	ADD COLUMN `group_id` int(10) unsigned NOT NULL default 0
 	AFTER `newsletter_name`
 _sql
@@ -332,13 +332,13 @@ _sql
 if (ze\dbAdm::needRevision(79)) {
 	
 	$sql = "
-		SHOW TABLES LIKE '". ze\escape::sql(DB_NAME_PREFIX. ZENARIO_NEWSLETTER_PREFIX. "newsletter_group_link"). "'";
+		SHOW TABLES LIKE '". ze\escape::sql(DB_PREFIX. ZENARIO_NEWSLETTER_PREFIX. "newsletter_group_link"). "'";
 	
 	if (($result = ze\sql::select($sql))
 	 && (ze\sql::fetchRow($result))) {
 		$sql = "
-			UPDATE IGNORE ". DB_NAME_PREFIX. ZENARIO_NEWSLETTER_PREFIX. "newsletters AS n
-			INNER JOIN ". DB_NAME_PREFIX. ZENARIO_NEWSLETTER_PREFIX. "newsletter_group_link AS ngl
+			UPDATE IGNORE ". DB_PREFIX. ZENARIO_NEWSLETTER_PREFIX. "newsletters AS n
+			INNER JOIN ". DB_PREFIX. ZENARIO_NEWSLETTER_PREFIX. "newsletter_group_link AS ngl
 			   ON ngl.newsletter_id = n.id
 			  AND ngl.include = 1
 			SET n.group_id = ngl.group_id";
@@ -353,30 +353,30 @@ if (ze\dbAdm::needRevision(79)) {
 //Add some keys
 	ze\dbAdm::revision( 80
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters`
 	ADD KEY (`group_id`)
 _sql
 
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters`
 	ADD KEY (`smart_group_id`)
 _sql
 
 //Drop some tables that we're not using anymore.
 );	ze\dbAdm::revision( 81
 , <<<_sql
-	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_group_link`
+	DROP TABLE IF EXISTS `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_group_link`
 _sql
 
 , <<<_sql
-	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_characteristic_link`
+	DROP TABLE IF EXISTS `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_characteristic_link`
 _sql
 
 //Recipients are now selected using multiple Smart groups (OR logic)
 //Unsubscribe / Delete account links ar enow pecified in the newsletetrs
 );  ze\dbAdm::revision( 95
 , <<<_sql
-	CREATE TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_smart_group_link`
+	CREATE TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_smart_group_link`
 	(
 		`newsletter_id` int(10) unsigned NOT NULL,
 		`smart_group_id` int(10) unsigned NOT NULL
@@ -385,17 +385,17 @@ _sql
 
 , <<<_sql
 	INSERT INTO
-		`[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_smart_group_link`
+		`[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_smart_group_link`
 	SELECT
 		id, smart_group_id
 	FROM 
-		`[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters`
+		`[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters`
 	WHERE 
 		IFNULL(smart_group_id, 0) <> 0;
 _sql
 
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters`
 	DROP COLUMN `smart_group_id`,
 	CHANGE COLUMN `group_id` `unsubscribe_group_id` int(10) unsigned AFTER 	`status`, 
 	ADD COLUMN unsubscribe_text text AFTER `unsubscribe_group_id`, 
@@ -405,7 +405,7 @@ _sql
 
 );  ze\dbAdm::revision( 98, 
  <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters`
 	ADD COLUMN `smart_group_descriptions_when_sent_out` TEXT AFTER `delete_account_text`
 _sql
 
@@ -414,11 +414,11 @@ _sql
 );	ze\dbAdm::revision( 108
 
 , <<<_sql
-	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters_hyperlinks`
+	DROP TABLE IF EXISTS `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters_hyperlinks`
 _sql
 
 , <<<_sql
-	CREATE TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters_hyperlinks`(
+	CREATE TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters_hyperlinks`(
 		`id` int(10) unsigned NOT NULL auto_increment,
 		`newsletter_id` int(10) NOT NULL,
 		`link_ordinal` int(10) NOT NULL,
@@ -436,34 +436,34 @@ _sql
 
 );	ze\dbAdm::revision( 109
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters_hyperlinks`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters_hyperlinks`
 		ADD COLUMN `hyperlink_hash` varchar(40) NOT NULL DEFAULT ''
 	AFTER `id`
 _sql
 
 );  ze\dbAdm::revision( 110, 
   <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
 	ADD COLUMN `clicked_hyperlink_id` int(10)
 _sql
 
 );	ze\dbAdm::revision( 111
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters_hyperlinks`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters_hyperlinks`
 		CHANGE COLUMN `hyperlink` `hyperlink` varchar(255) NOT NULL
 _sql
 
 );	ze\dbAdm::revision( 112
 
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters_hyperlinks`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters_hyperlinks`
 		CHANGE COLUMN `link_text` `link_text` varchar(255) NOT NULL
 _sql
 
 
 );	ze\dbAdm::revision( 117
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters`
 	DROP COLUMN `unsubscribe_group_id`
 _sql
 
@@ -472,7 +472,7 @@ _sql
 
 ); ze\dbAdm::revision( 120
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters`
+	UPDATE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters`
 	SET body = REPLACE(body, 'tribiq/file.php', 'zenario/file.php')
 	WHERE body LIKE '%tribiq/file.php%'
 _sql
@@ -480,11 +480,11 @@ _sql
 ); ze\dbAdm::revision( 132
 
 , <<<_sql
-	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_templates`
+	DROP TABLE IF EXISTS `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_templates`
 _sql
 
 , <<<_sql
-	CREATE TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_templates` (
+	CREATE TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_templates` (
 		`id` int(10) unsigned NOT NULL auto_increment,
 		`name` varchar(255) NOT NULL,
 		`body` text,
@@ -498,7 +498,7 @@ _sql
 
 //Add some sample designs
 );	ze\dbAdm::revision(25, "
-	INSERT INTO `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_templates` (
+	INSERT INTO `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_templates` (
 		`name`,
 		`body`,
 		`date_created`,
@@ -758,7 +758,7 @@ _html
 ",
 
 <<<_sql
-	DELETE FROM `[[DB_NAME_PREFIX]]email_templates`
+	DELETE FROM `[[DB_PREFIX]]email_templates`
 	WHERE `code` = 'zenario_newsletter__blank'
 	OR `code` = 'zenario_newsletter__sample_design_1'
 	OR `code` = 'zenario_newsletter__sample_design_2'
@@ -770,54 +770,54 @@ _sql
 //Remove the "time_received" column
 );	ze\dbAdm::revision( 117
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
 	DROP COLUMN `time_received`
 _sql
 
 //Add some missing keys
 );	ze\dbAdm::revision( 158
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
 	DROP INDEX `username`
 _sql
 
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
 	DROP INDEX `email`
 _sql
 
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
 	DROP INDEX `email_sent`
 _sql
 
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
 	DROP INDEX `time_clicked_through`
 _sql
 
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
 	ADD INDEX `username` (`newsletter_id`, `username`)
 _sql
 
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
 	ADD INDEX `email` (`newsletter_id`, `email`)
 _sql
 
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
 	ADD INDEX `email_sent` (`newsletter_id`, `email_sent`)
 _sql
 
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
 	ADD INDEX `time_clicked_through` (`newsletter_id`, `time_clicked_through`)
 _sql
 
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
 	ADD INDEX `email_overridden_by` (`newsletter_id`, `email_overridden_by`)
 _sql
 );
@@ -833,7 +833,7 @@ if (ze\dbAdm::needRevision(159)) {
 	//Get the body text from the newsletters
 	$sql = "
 		SELECT id, body
-		FROM ". DB_NAME_PREFIX. ZENARIO_NEWSLETTER_PREFIX. "newsletters
+		FROM ". DB_PREFIX. ZENARIO_NEWSLETTER_PREFIX. "newsletters
 		WHERE body LIKE '%file.php%'";
 	$result = ze\sql::select($sql);
 	
@@ -860,7 +860,7 @@ if (ze\dbAdm::needRevision(160)) {
 	//Get the body text from the newsletters
 	$sql = "
 		SELECT id, body
-		FROM ". DB_NAME_PREFIX. ZENARIO_NEWSLETTER_PREFIX. "newsletter_templates
+		FROM ". DB_PREFIX. ZENARIO_NEWSLETTER_PREFIX. "newsletter_templates
 		WHERE body LIKE '%file.php%'";
 	$result = ze\sql::select($sql);
 	
@@ -885,7 +885,7 @@ if (ze\dbAdm::needRevision(160)) {
 //Flag the links to images in archived newsletters as archived.
 if (ze\dbAdm::needRevision(162)) {
 
-	foreach (ze\row::getArray(ZENARIO_NEWSLETTER_PREFIX. 'newsletters', 'id', ['status' => '_ARCHIVED']) as $id) {
+	foreach (ze\row::getValues(ZENARIO_NEWSLETTER_PREFIX. 'newsletters', 'id', ['status' => '_ARCHIVED']) as $id) {
 		ze\row::update('inline_images', ['archived' => 1], ['foreign_key_to' => 'newsletter', 'foreign_key_id' => $id]);
 	}
 
@@ -898,53 +898,53 @@ if (ze\dbAdm::needRevision(162)) {
 //Re-add the time_received column
 ze\dbAdm::revision( 164
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
 	ADD COLUMN `time_received` datetime NULL 
 _sql
 
 );	ze\dbAdm::revision( 165
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
 	DROP INDEX `time_received`
 _sql
 
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
 	ADD INDEX `time_received` (`newsletter_id`, `time_received`)
 _sql
 
 );	ze\dbAdm::revision( 166
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
 	CHANGE COLUMN `username` `identifier` varchar(50) NOT NULL
 _sql
 
 );	ze\dbAdm::revision( 167
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
 	DROP INDEX `username`
 _sql
 
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
 	ADD INDEX `identifier` (`newsletter_id`, `identifier`)
 _sql
 
 );	ze\dbAdm::revision( 170
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters`
 	MODIFY COLUMN `body` mediumtext
 _sql
 
 );	ze\dbAdm::revision( 171
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters`
 	ADD COLUMN `head` mediumtext
 	AFTER `url`
 _sql
 
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_templates`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_templates`
 	ADD COLUMN `head` mediumtext
 	AFTER `name`
 _sql
@@ -952,7 +952,7 @@ _sql
 
 );	ze\dbAdm::revision( 173
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters_hyperlinks`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters_hyperlinks`
 		CHANGE COLUMN `link_text` `link_text` text
 _sql
 
@@ -960,7 +960,7 @@ _sql
 
 ); ze\dbAdm::revision( 175
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters`
 	ADD COLUMN `scheduled_send_datetime` datetime DEFAULT NULL
 _sql
 
@@ -968,104 +968,104 @@ _sql
 //Attempt to convert some columns with a utf8-3-byte character set to a 4-byte character set
 ); ze\dbAdm::revision( 180
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters` MODIFY COLUMN `body` mediumtext CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters` MODIFY COLUMN `body` mediumtext CHARACTER SET utf8mb4 NULL
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters` MODIFY COLUMN `delete_account_text` text CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters` MODIFY COLUMN `delete_account_text` text CHARACTER SET utf8mb4 NULL
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters` MODIFY COLUMN `email_address_from` varchar(100) CHARACTER SET utf8mb4 NOT NULL default ''
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters` MODIFY COLUMN `email_address_from` varchar(100) CHARACTER SET utf8mb4 NOT NULL default ''
 _sql
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters` SET `email_name_from` = SUBSTR(`email_name_from`, 1, 250) WHERE CHAR_LENGTH(`email_name_from`) > 250
+	UPDATE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters` SET `email_name_from` = SUBSTR(`email_name_from`, 1, 250) WHERE CHAR_LENGTH(`email_name_from`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters` MODIFY COLUMN `email_name_from` varchar(250) CHARACTER SET utf8mb4 NOT NULL default ''
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters` MODIFY COLUMN `email_name_from` varchar(250) CHARACTER SET utf8mb4 NOT NULL default ''
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters` MODIFY COLUMN `head` mediumtext CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters` MODIFY COLUMN `head` mediumtext CHARACTER SET utf8mb4 NULL
 _sql
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters` SET `newsletter_name` = SUBSTR(`newsletter_name`, 1, 250) WHERE CHAR_LENGTH(`newsletter_name`) > 250
+	UPDATE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters` SET `newsletter_name` = SUBSTR(`newsletter_name`, 1, 250) WHERE CHAR_LENGTH(`newsletter_name`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters` MODIFY COLUMN `newsletter_name` varchar(250) CHARACTER SET utf8mb4 NOT NULL default ''
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters` MODIFY COLUMN `newsletter_name` varchar(250) CHARACTER SET utf8mb4 NOT NULL default ''
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters` MODIFY COLUMN `smart_group_descriptions_when_sent_out` text CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters` MODIFY COLUMN `smart_group_descriptions_when_sent_out` text CHARACTER SET utf8mb4 NULL
 _sql
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters` SET `subject` = SUBSTR(`subject`, 1, 250) WHERE CHAR_LENGTH(`subject`) > 250
+	UPDATE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters` SET `subject` = SUBSTR(`subject`, 1, 250) WHERE CHAR_LENGTH(`subject`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters` MODIFY COLUMN `subject` varchar(250) CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters` MODIFY COLUMN `subject` varchar(250) CHARACTER SET utf8mb4 NULL
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters` MODIFY COLUMN `unsubscribe_text` text CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters` MODIFY COLUMN `unsubscribe_text` text CHARACTER SET utf8mb4 NULL
 _sql
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters` SET `url` = SUBSTR(`url`, 1, 250) WHERE CHAR_LENGTH(`url`) > 250
+	UPDATE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters` SET `url` = SUBSTR(`url`, 1, 250) WHERE CHAR_LENGTH(`url`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters` MODIFY COLUMN `url` varchar(250) CHARACTER SET utf8mb4 NOT NULL default ''
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters` MODIFY COLUMN `url` varchar(250) CHARACTER SET utf8mb4 NOT NULL default ''
 _sql
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters_hyperlinks` SET `hyperlink` = SUBSTR(`hyperlink`, 1, 250) WHERE CHAR_LENGTH(`hyperlink`) > 250
+	UPDATE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters_hyperlinks` SET `hyperlink` = SUBSTR(`hyperlink`, 1, 250) WHERE CHAR_LENGTH(`hyperlink`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters_hyperlinks` MODIFY COLUMN `hyperlink` varchar(250) CHARACTER SET utf8mb4 NOT NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters_hyperlinks` MODIFY COLUMN `hyperlink` varchar(250) CHARACTER SET utf8mb4 NOT NULL
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters_hyperlinks` MODIFY COLUMN `hyperlink_hash` varchar(40) CHARACTER SET ascii NOT NULL default ''
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters_hyperlinks` MODIFY COLUMN `hyperlink_hash` varchar(40) CHARACTER SET ascii NOT NULL default ''
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters_hyperlinks` MODIFY COLUMN `link_text` text CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters_hyperlinks` MODIFY COLUMN `link_text` text CHARACTER SET utf8mb4 NULL
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_templates` MODIFY COLUMN `body` text CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_templates` MODIFY COLUMN `body` text CHARACTER SET utf8mb4 NULL
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_templates` MODIFY COLUMN `head` mediumtext CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_templates` MODIFY COLUMN `head` mediumtext CHARACTER SET utf8mb4 NULL
 _sql
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_templates` SET `name` = SUBSTR(`name`, 1, 250) WHERE CHAR_LENGTH(`name`) > 250
+	UPDATE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_templates` SET `name` = SUBSTR(`name`, 1, 250) WHERE CHAR_LENGTH(`name`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_templates` MODIFY COLUMN `name` varchar(250) CHARACTER SET utf8mb4 NOT NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_templates` MODIFY COLUMN `name` varchar(250) CHARACTER SET utf8mb4 NOT NULL
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link` MODIFY COLUMN `delete_account_hash` varchar(40) CHARACTER SET ascii NOT NULL default ''
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link` MODIFY COLUMN `delete_account_hash` varchar(40) CHARACTER SET ascii NOT NULL default ''
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link` MODIFY COLUMN `email` varchar(100) CHARACTER SET utf8mb4 NOT NULL default ''
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link` MODIFY COLUMN `email` varchar(100) CHARACTER SET utf8mb4 NOT NULL default ''
 _sql
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link` SET `email_overridden_by` = SUBSTR(`email_overridden_by`, 1, 245) WHERE CHAR_LENGTH(`email_overridden_by`) > 245
+	UPDATE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link` SET `email_overridden_by` = SUBSTR(`email_overridden_by`, 1, 245) WHERE CHAR_LENGTH(`email_overridden_by`) > 245
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link` MODIFY COLUMN `email_overridden_by` varchar(245) CHARACTER SET utf8mb4 NULL default ''
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link` MODIFY COLUMN `email_overridden_by` varchar(245) CHARACTER SET utf8mb4 NULL default ''
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link` MODIFY COLUMN `identifier` varchar(50) CHARACTER SET utf8mb4 NOT NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link` MODIFY COLUMN `identifier` varchar(50) CHARACTER SET utf8mb4 NOT NULL
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link` MODIFY COLUMN `remove_hash` varchar(40) CHARACTER SET ascii NOT NULL default ''
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link` MODIFY COLUMN `remove_hash` varchar(40) CHARACTER SET ascii NOT NULL default ''
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link` MODIFY COLUMN `tracker_hash` varchar(40) CHARACTER SET ascii NOT NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link` MODIFY COLUMN `tracker_hash` varchar(40) CHARACTER SET ascii NOT NULL
 _sql
 
 
 );	ze\dbAdm::revision( 181
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters_hyperlinks`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters_hyperlinks`
 		CHANGE COLUMN `hyperlink` `hyperlink` text
 _sql
 
 
 );	ze\dbAdm::revision( 182
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters_hyperlinks`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters_hyperlinks`
 	DROP COLUMN `identifier`
 _sql
 

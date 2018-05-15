@@ -25,21 +25,15 @@ site_settings:
                         public:
                             label: Public
                             note_below: |
-                                Accessible by any visitor via a friendly URL; may be indexed by search engines.
-                                <br/>
-                                (Public images have a green border in Organizer.)
+                                Can be viewed by any visitor via a constant URL, and will normally be indexed by search engines. (Shown in the Organizer Images panel with a green border.) Recommended if your site only has public web pages.
                         private:
                             label: Private
                             note_below: |
-                                Contains an cryptic directory path to prevent unauthorised visitor access; may not be indexed by search engines.
-                                <br/>
-                                (Private images have a blue border in Organizer.)
+                                Can only be viewed by logged-in extranet users via private content items. Cannot be indexed by search engines. (Shown in Organizer Images panel with a blue border.) Recommended if your site has an extranet area, or you want to protect certain images from unauthorised viewing.
                         auto:
                             label: Auto
                             note_below: |
-                                When first displayed to a visitor, the image will be set to Public if on a public content item, or Private if on a private content item.
-                                <br/>
-                                (Images still set to Auto have a orange border in Organizer.)
+                                Images will have the Auto state when first uploaded, but will be set to Public if on a public content item, or Private if on a private content item. (Shown in the Organizer Images panel with an orange border, but this changes once the image changes to Public or Private.)
         image_sizes:
             label: Image sizes
             edit_mode:

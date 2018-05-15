@@ -11,8 +11,8 @@ zenario__user_forms:
             default_sort_desc: true
             db_items:
                 table: |
-                    [[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response AS ur
-                    LEFT JOIN [[DB_NAME_PREFIX]]users u
+                    [[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response AS ur
+                    LEFT JOIN [[DB_PREFIX]]users u
                         ON ur.user_id = u.id
                 id_column: ur.id
                 max_limit: 99999999

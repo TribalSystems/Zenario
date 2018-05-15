@@ -44,8 +44,8 @@ class zenario_common_features__organizer__image_tags extends ze\moduleBaseClass 
 				//Prefer images that haven't been used for many other tags
 				$sql = "
 					SELECT itl1.image_id, COUNT(itl2.tag_id)
-					FROM ". DB_NAME_PREFIX. "image_tag_link as itl1
-					INNER JOIN ". DB_NAME_PREFIX. "image_tag_link as itl2
+					FROM ". DB_PREFIX. "image_tag_link as itl1
+					INNER JOIN ". DB_PREFIX. "image_tag_link as itl2
 					   ON itl1.image_id = itl2.image_id
 					WHERE itl1.tag_id = ". (int) $item['id']. "
 					GROUP BY itl1.image_id
@@ -67,8 +67,8 @@ class zenario_common_features__organizer__image_tags extends ze\moduleBaseClass 
 		if (($_POST['delete'] ?? false) && ze\priv::check('_PRIV_MANAGE_MEDIA') && $ids) {
 			$sql = "
 				DELETE it.*, itl.*
-				FROM ". DB_NAME_PREFIX. "image_tags as it
-				LEFT JOIN ". DB_NAME_PREFIX. "image_tag_link as itl
+				FROM ". DB_PREFIX. "image_tags as it
+				LEFT JOIN ". DB_PREFIX. "image_tag_link as itl
 				   ON it.id = itl.tag_id
 				WHERE it.name IN (". ze\escape::in($ids, 'sql'). ")";
 			

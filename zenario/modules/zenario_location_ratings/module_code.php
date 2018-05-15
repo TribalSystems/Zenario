@@ -53,7 +53,7 @@ class zenario_location_ratings extends zenario_location_manager {
 			if ($ID){
 				$accreditor = $this->getAccreditorDetails($ID);
 			
-				$sql = 'UPDATE ' .DB_NAME_PREFIX . ZENARIO_LOCATION_RATINGS_PREFIX . 'accreditors ';
+				$sql = 'UPDATE ' .DB_PREFIX . ZENARIO_LOCATION_RATINGS_PREFIX . 'accreditors ';
 				$sql .= 'SET ';
 				
 				if ($tab=="Details") {
@@ -85,7 +85,7 @@ class zenario_location_ratings extends zenario_location_manager {
 				
 				return $ID;
 			} else {
-				$sql = 'INSERT INTO ' .DB_NAME_PREFIX . ZENARIO_LOCATION_RATINGS_PREFIX . 'accreditors ';
+				$sql = 'INSERT INTO ' .DB_PREFIX . ZENARIO_LOCATION_RATINGS_PREFIX . 'accreditors ';
 				$sql .= '(`name`,`score_type`)';
 				$sql .=' VALUES (\'' . ze\escape::sql($name) . '\',\'' . ze\escape::sql($scoreType) . '\')';
 
@@ -106,18 +106,18 @@ class zenario_location_ratings extends zenario_location_manager {
 	
 		$sql = "
 				DELETE
-				FROM ". DB_NAME_PREFIX. ZENARIO_LOCATION_RATINGS_PREFIX. "accreditor_scores
+				FROM ". DB_PREFIX. ZENARIO_LOCATION_RATINGS_PREFIX. "accreditor_scores
 				WHERE accreditor_id = ". (int) $accreditorId;
 				
 		$result = ze\sql::update($sql);
 	
 		if ($accreditor['score_type']=="numeric") {
-			$sql = 'INSERT INTO ' . DB_NAME_PREFIX . ZENARIO_LOCATION_RATINGS_PREFIX . 'accreditor_scores (`accreditor_id`,`score`)
+			$sql = 'INSERT INTO ' . DB_PREFIX . ZENARIO_LOCATION_RATINGS_PREFIX . 'accreditor_scores (`accreditor_id`,`score`)
 					VALUES (' . $accreditorId . ',1),(' . $accreditorId . ',2),(' . $accreditorId . ',3),(' . $accreditorId . ',4),(' . $accreditorId . ',5)';
 					
 			$result = ze\sql::update($sql);
 		} elseif ($accreditor['score_type']=="boolean") {
-			$sql = 'INSERT INTO ' . DB_NAME_PREFIX . ZENARIO_LOCATION_RATINGS_PREFIX . 'accreditor_scores (`accreditor_id`,`score`)
+			$sql = 'INSERT INTO ' . DB_PREFIX . ZENARIO_LOCATION_RATINGS_PREFIX . 'accreditor_scores (`accreditor_id`,`score`)
 					VALUES (' . $accreditorId . ',\'Yes\'),(' . $accreditorId . ',\'No\')';
 					
 			$result = ze\sql::update($sql);
@@ -126,7 +126,7 @@ class zenario_location_ratings extends zenario_location_manager {
 
 	function checkAccreditorNameUnique ($name,$id) {
 		$sql = "SELECT id
-				FROM " . DB_NAME_PREFIX . ZENARIO_LOCATION_RATINGS_PREFIX . "accreditors
+				FROM " . DB_PREFIX . ZENARIO_LOCATION_RATINGS_PREFIX . "accreditors
 				WHERE name = '" . ze\escape::sql($name) . "'";
 		
 		if ($id) {
@@ -154,15 +154,15 @@ class zenario_location_ratings extends zenario_location_manager {
 
 	function deleteAccreditor($ID){
 		$sql = 'SELECT id
-				FROM ' . DB_NAME_PREFIX . ZENARIO_LOCATION_RATINGS_PREFIX . 'accreditor_scores
+				FROM ' . DB_PREFIX . ZENARIO_LOCATION_RATINGS_PREFIX . 'accreditor_scores
 				WHERE accreditor_id = ' . (int) $ID;
 				
 		$result = ze\sql::select($sql);
 		
 		if (ze\sql::numRows($result)>0) {
-			while ($row = ze\sql::fetchArray($result)) {
+			while ($row = ze\sql::fetchAssoc($result)) {
 				$sql = 'DELETE 
-						FROM ' .DB_NAME_PREFIX . ZENARIO_LOCATION_RATINGS_PREFIX . 'location_accreditor_score_link 
+						FROM ' .DB_PREFIX . ZENARIO_LOCATION_RATINGS_PREFIX . 'location_accreditor_score_link 
 						WHERE accreditor_score_id=' . (int) $row['id'];
 						
 				ze\sql::update($sql);
@@ -170,13 +170,13 @@ class zenario_location_ratings extends zenario_location_manager {
 		}
 		
 		$sql = 'DELETE 
-				FROM ' .DB_NAME_PREFIX . ZENARIO_LOCATION_RATINGS_PREFIX . 'accreditor_scores 
+				FROM ' .DB_PREFIX . ZENARIO_LOCATION_RATINGS_PREFIX . 'accreditor_scores 
 				WHERE accreditor_id=' . (int)$ID;
 				
 		ze\sql::update($sql);
 		
 		$sql = 'DELETE 
-				FROM ' .DB_NAME_PREFIX . ZENARIO_LOCATION_RATINGS_PREFIX . 'accreditors 
+				FROM ' .DB_PREFIX . ZENARIO_LOCATION_RATINGS_PREFIX . 'accreditors 
 				WHERE id=' . (int)$ID;
 				
 		ze\sql::update($sql);
@@ -187,9 +187,9 @@ class zenario_location_ratings extends zenario_location_manager {
 		$sql = 'SELECT id,
 					name,
 					score_type
-				FROM ' .DB_NAME_PREFIX . ZENARIO_LOCATION_RATINGS_PREFIX . 'accreditors ';
+				FROM ' .DB_PREFIX . ZENARIO_LOCATION_RATINGS_PREFIX . 'accreditors ';
 		if (ze\sql::numRows($result = ze\sql::select($sql))>0){
-			while ($row = ze\sql::fetchArray($result)) {
+			while ($row = ze\sql::fetchAssoc($result)) {
 				$rv[] = $row;
 			}
 		}
@@ -200,7 +200,7 @@ class zenario_location_ratings extends zenario_location_manager {
 		$rv = [];
 		$sql = 'SELECT name,
 					score_type
-				FROM ' .DB_NAME_PREFIX . ZENARIO_LOCATION_RATINGS_PREFIX . 'accreditors ';
+				FROM ' .DB_PREFIX . ZENARIO_LOCATION_RATINGS_PREFIX . 'accreditors ';
 		$sql .= 'WHERE id = ' . (int) $ID;
 		if (ze\sql::numRows($result = ze\sql::select($sql))==1){
 			$rv = ze\sql::fetchAssoc($result);
@@ -214,7 +214,7 @@ class zenario_location_ratings extends zenario_location_manager {
 		$scores = [];
 		$sql = 'SELECT id,
 					score
-				FROM ' .DB_NAME_PREFIX . ZENARIO_LOCATION_RATINGS_PREFIX . 'accreditor_scores ';
+				FROM ' .DB_PREFIX . ZENARIO_LOCATION_RATINGS_PREFIX . 'accreditor_scores ';
 		$sql .= 'WHERE accreditor_id = ' . (int) $ID . '
 				ORDER BY score';
 
@@ -227,7 +227,7 @@ class zenario_location_ratings extends zenario_location_manager {
 		$result = ze\sql::select($sql);
 
 		if (ze\sql::numRows($result)>0) {
-			while ($row = ze\sql::fetchArray($result)) {
+			while ($row = ze\sql::fetchAssoc($result)) {
 				$scores[] = $row;
 			}
 		}
@@ -243,7 +243,7 @@ class zenario_location_ratings extends zenario_location_manager {
 		$sql = "SELECT id,
 					location_id,
 					accreditor_score_id
-				FROM " . DB_NAME_PREFIX . ZENARIO_LOCATION_RATINGS_PREFIX . "location_accreditor_score_link
+				FROM " . DB_PREFIX . ZENARIO_LOCATION_RATINGS_PREFIX . "location_accreditor_score_link
 				WHERE location_id = " . (int) $locationId;
 				
 		$result = ze\sql::select($sql);
@@ -251,7 +251,7 @@ class zenario_location_ratings extends zenario_location_manager {
 		if (ze\sql::numRows($result)>0) {
 			$locationAccreditorScores = [];
 			
-			while ($row = ze\sql::fetchArray($result)) {
+			while ($row = ze\sql::fetchAssoc($result)) {
 				$locationAccreditorScores[] = $row;
 			}
 			
@@ -264,13 +264,13 @@ class zenario_location_ratings extends zenario_location_manager {
 	public static function getAccreditorAndScoreFromScoreId ($id) {
 		$sql = "SELECT accreditor_id,
 					score
-				FROM " . DB_NAME_PREFIX . ZENARIO_LOCATION_RATINGS_PREFIX . "accreditor_scores
+				FROM " . DB_PREFIX . ZENARIO_LOCATION_RATINGS_PREFIX . "accreditor_scores
 				WHERE id = " . (int) $id;
 				
 		$result = ze\sql::select($sql);
 		
 		if (ze\sql::numRows($result)>0) {
-			$row = ze\sql::fetchArray($result);
+			$row = ze\sql::fetchAssoc($result);
 			
 			return $row;
 		} else {
@@ -280,13 +280,13 @@ class zenario_location_ratings extends zenario_location_manager {
 
 	function updateAccreditationScores ($locationId,$accreditations) {
 		$sql = "DELETE
-				FROM " . DB_NAME_PREFIX . ZENARIO_LOCATION_RATINGS_PREFIX . "location_accreditor_score_link
+				FROM " . DB_PREFIX . ZENARIO_LOCATION_RATINGS_PREFIX . "location_accreditor_score_link
 				WHERE location_id = " . (int) $locationId;
 				
 		$result = ze\sql::update($sql);
 		
 		foreach ($accreditations as $accreditation) {
-			$sql = "INSERT INTO " . DB_NAME_PREFIX . ZENARIO_LOCATION_RATINGS_PREFIX . "location_accreditor_score_link
+			$sql = "INSERT INTO " . DB_PREFIX . ZENARIO_LOCATION_RATINGS_PREFIX . "location_accreditor_score_link
 					SET location_id = " . (int) $locationId . ",
 						accreditor_score_id = " . (int) $accreditation['score'];
 						
@@ -322,7 +322,7 @@ class zenario_location_ratings extends zenario_location_manager {
 	function deleteAccreditorScore($id) {
 		$sql = "
 				DELETE
-				FROM ". DB_NAME_PREFIX. ZENARIO_LOCATION_RATINGS_PREFIX. "accreditor_scores
+				FROM ". DB_PREFIX. ZENARIO_LOCATION_RATINGS_PREFIX. "accreditor_scores
 				WHERE id = ". (int) $id;
 				
 		$result = ze\sql::update($sql);
@@ -519,7 +519,7 @@ class zenario_location_ratings extends zenario_location_manager {
 					$box['tabs']['accreditor']['errors'][] = "Error. You must enter a Name";
 				} else {
 					$sql = "SELECT id
-							FROM " . DB_NAME_PREFIX . ZENARIO_LOCATION_RATINGS_PREFIX . "accreditors
+							FROM " . DB_PREFIX . ZENARIO_LOCATION_RATINGS_PREFIX . "accreditors
 							WHERE name = '" . ze\escape::sql($values['accreditor/name']) . "'";
 							
 					if (ze\ray::issetArrayKey($box,"key","id")) {
@@ -539,7 +539,7 @@ class zenario_location_ratings extends zenario_location_manager {
 					$box['tabs']['accreditor_rating']['errors'][] = "Error. You must enter a Rating";
 				} else {
 					$sql = "SELECT id
-							FROM " . DB_NAME_PREFIX . ZENARIO_LOCATION_RATINGS_PREFIX . "accreditor_scores
+							FROM " . DB_PREFIX . ZENARIO_LOCATION_RATINGS_PREFIX . "accreditor_scores
 							WHERE score = '" . ze\escape::sql($values['accreditor_rating/rating']) . "'
 								AND accreditor_id = " . (int) ($box["key"]["accreditor_id"] ?? false);
 							
@@ -590,15 +590,15 @@ class zenario_location_ratings extends zenario_location_manager {
 							if ($changes['zenario_location_ratings__accreditation/accreditor_' . $accreditor['id']]==1) {
 								foreach ($locationIds as $locationId) {
 									if (ze\ray::issetArrayKey($values,'zenario_location_ratings__accreditation/accreditor_' . $accreditor['id'])) {
-										$sql = "REPLACE INTO " . DB_NAME_PREFIX . ZENARIO_LOCATION_RATINGS_PREFIX . "location_accreditor_score_link
+										$sql = "REPLACE INTO " . DB_PREFIX . ZENARIO_LOCATION_RATINGS_PREFIX . "location_accreditor_score_link
 												SET location_id = " . (int) $locationId . ",
 													accreditor_score_id = " . (int) $values['zenario_location_ratings__accreditation/accreditor_' . $accreditor['id']];
 										
 										$result = ze\sql::update($sql);
 									} else {
 										$sql = "DELETE lasl
-												FROM " . DB_NAME_PREFIX . ZENARIO_LOCATION_RATINGS_PREFIX . "location_accreditor_score_link AS lasl
-												INNER JOIN " . DB_NAME_PREFIX . ZENARIO_LOCATION_RATINGS_PREFIX . "accreditor_scores AS acs
+												FROM " . DB_PREFIX . ZENARIO_LOCATION_RATINGS_PREFIX . "location_accreditor_score_link AS lasl
+												INNER JOIN " . DB_PREFIX . ZENARIO_LOCATION_RATINGS_PREFIX . "accreditor_scores AS acs
 													ON lasl.accreditor_score_id = acs.id
 												WHERE lasl.location_id = " . (int) $locationId . "
 													AND acs.accreditor_id = " . (int) $accreditor['id'];

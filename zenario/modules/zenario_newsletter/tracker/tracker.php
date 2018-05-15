@@ -40,7 +40,7 @@ if (!empty($_GET['t'])
  && ze\module::inc('zenario_newsletter')) {
 
 	$sql = "
-		UPDATE ". DB_NAME_PREFIX. ZENARIO_NEWSLETTER_PREFIX. "newsletter_user_link SET
+		UPDATE ". DB_PREFIX. ZENARIO_NEWSLETTER_PREFIX. "newsletter_user_link SET
 			time_received = NOW()
 		WHERE tracker_hash = '". ze\escape::sql($_GET['t']). "'
 		  AND time_received IS NULL";

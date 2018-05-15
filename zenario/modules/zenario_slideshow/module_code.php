@@ -32,8 +32,9 @@ class zenario_slideshow extends zenario_plugin_nest {
 	var $lastTabNum = 0;
 	
 	public function init() {
-		//Flag that this plugin is actually a nest
+		//Flag that this plugin is actually a slideshow
 		ze::$slotContents[$this->slotName]['is_nest'] = true;
+		ze::$slotContents[$this->slotName]['is_slideshow'] = true;
 		
 		$this->allowCaching(
 			$atAll = true, $ifUserLoggedIn = false, $ifGetSet = false, $ifPostSet = false, $ifSessionSet = true, $ifCookieSet = true);
@@ -47,7 +48,7 @@ class zenario_slideshow extends zenario_plugin_nest {
 		//When a Nest is first inserted, it will be empty.
 		//If the Nest is empty, call the resyncNest function just in case being empty is not a valid state.
 		} elseif (ze\priv::check() && !ze\row::exists('nested_plugins', ['instance_id' => $this->instanceId])) {
-			call_user_func([$this->moduleClassName, 'resyncNest'], $this->instanceId);
+			self::resyncNest($this->instanceId);
 		}
 		
 		

@@ -28,12 +28,10 @@
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
 ze\dbAdm::revision(80, "
-    INSERT IGNORE INTO [[DB_NAME_PREFIX]]email_templates (
+    INSERT IGNORE INTO [[DB_PREFIX]]email_templates (
     	`code`,
         `template_name`,
         `subject`,
-        `email_address_from`,
-        `email_name_from`,
         `body`,
         `date_created`,
         `created_by_id`,
@@ -42,8 +40,6 @@ ze\dbAdm::revision(80, "
     	'zenario_comments__comment_subs_en',
         'To User: Comment notification',
         'New comment notification',
-        '". ze\escape::sql(ze::setting('email_address_from')). "',
-        '". ze\escape::sql(ze::setting('email_name_from')). "',
         '<p>Dear [[subscriber_screen_name]],</p>
         <p>You are subscribed to the page entitled &quot;[[page_title]]&quot;,
         	and asked to be notified when a comment is posted on that page.</p>
@@ -63,7 +59,7 @@ ze\dbAdm::revision(80, "
 ze\dbAdm::revision(140,
 
 <<<_sql
-	UPDATE [[DB_NAME_PREFIX]]email_templates
+	UPDATE [[DB_PREFIX]]email_templates
 	SET `module_class_name` = 'zenario_comments'
 	WHERE `code` = 'zenario_comments__comment_subs_en'
 _sql

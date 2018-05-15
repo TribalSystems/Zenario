@@ -208,18 +208,24 @@ class skinAdm {
 		$sql = '';
 		$ids = $values = [];
 		$table = 'site_settings';
-		\ze\db::reviewQueryForChanges($sql, $ids, $values, $table);
+		\ze::$dbL->reviewQueryForChanges($sql, $ids, $values, $table);
 	
 		//Loop through TUIX's cache directory, trying to delete everything there
-		if (is_dir($tuixCacheDir = CMS_ROOT. 'cache/tuix/')) {
-			if ($dh = opendir($tuixCacheDir)) {
-				while (($file = readdir($dh)) !== false) {
-					if (substr($file, 0, 1) != '.') {
-						$dir = $tuixCacheDir. $file. '/';
-						\ze\cache::deleteDir($dir);
+		foreach ([
+			CMS_ROOT. 'cache/frameworks/',
+			CMS_ROOT. 'cache/pages/',
+			CMS_ROOT. 'cache/tuix/'
+		] as $cacheDir) {
+			if (is_dir($cacheDir)) {
+				if ($dh = opendir($cacheDir)) {
+					while (($file = readdir($dh)) !== false) {
+						if (substr($file, 0, 1) != '.') {
+							$dir = $cacheDir. $file. '/';
+							\ze\cache::deleteDir($dir);
+						}
 					}
+					closedir($dh);
 				}
-				closedir($dh);
 			}
 		}
 	
@@ -229,7 +235,7 @@ class skinAdm {
 		
 		if ($checkForGridChanges) {
 			//Rescan grid template for slots
-			foreach (\ze\row::getArray(
+			foreach (\ze\row::getAssocs(
 				'layouts',
 				['layout_id', 'family_name', 'file_base_name'],
 				['family_name' => 'grid_templates']
@@ -258,7 +264,7 @@ class skinAdm {
 	public static function checkForChangesInFiles($runInProductionMode = false, $forceScan = false) {
 	
 		//Do not try to do anything if there is no database connection!
-		if (!\ze::$lastDB) {
+		if (!\ze::$dbL) {
 			return false;
 		}
 	
@@ -391,7 +397,7 @@ class skinAdm {
 				//Clear the page cache completely if a Skin or a Template Family has changed
 				$sql = '';
 				$ids = $values = [];
-				\ze\db::reviewQueryForChanges($sql, $ids, $values, $table = 'template_family');
+				\ze::$dbL->reviewQueryForChanges($sql, $ids, $values, $table = 'template_family');
 		
 		
 				//Mark all current Template Families/Template Files/Skins as missing
@@ -401,13 +407,13 @@ class skinAdm {
 		
 				//Ensure that there is always a Template File and Family in the database to cover
 				//any Layouts and Skins that are also in the database, even if they would be missing.
-				foreach (\ze\row::getDistinctArray('layouts', ['family_name']) as $row) {
+				foreach (\ze\row::getDistinctAssocs('layouts', ['family_name']) as $row) {
 					\ze\row::set('template_families', ['missing' => 1], $row);
 				}
-				foreach (\ze\row::getDistinctArray('layouts', ['family_name', 'file_base_name']) as $row) {
+				foreach (\ze\row::getDistinctAssocs('layouts', ['family_name', 'file_base_name']) as $row) {
 					\ze\row::set('template_files', ['missing' => 1], $row);
 				}
-				foreach (\ze\row::getDistinctArray('skins', ['family_name']) as $row) {
+				foreach (\ze\row::getDistinctAssocs('skins', ['family_name']) as $row) {
 					\ze\row::set('template_families', ['missing' => 1], $row);
 				}
 		
@@ -462,17 +468,17 @@ class skinAdm {
 				}
 		
 				//Delete anything that is missing *and* not used
-				foreach(\ze\row::getArray('skins', 'id', ['missing' => 1]) as $skinId) {
+				foreach(\ze\row::getValues('skins', 'id', ['missing' => 1]) as $skinId) {
 					if (!\ze\layoutAdm::skinInUse($skinId)) {
 						\ze\skinAdm::delete($skinId);
 					}
 				}
-				foreach(\ze\row::getArray('template_files', ['family_name', 'file_base_name'], ['missing' => 1]) as $tf) {
+				foreach(\ze\row::getAssocs('template_files', ['family_name', 'file_base_name'], ['missing' => 1]) as $tf) {
 					if (!\ze\row::exists('layouts', $tf)) {
 						\ze\row::delete('template_files', $tf);
 					}
 				}
-				foreach(\ze\row::getArray('template_families', 'family_name', ['missing' => 1]) as $familyName) {
+				foreach(\ze\row::getValues('template_families', 'family_name', ['missing' => 1]) as $familyName) {
 					if (!\ze\layoutAdm::familyInUse($familyName)) {
 						\ze\row::delete('template_families', $familyName);
 					}

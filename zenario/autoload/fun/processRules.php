@@ -30,7 +30,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 //Load details on document auto-processing rules, and the documents dataset
 if ((!$dataset = \ze\dataset::details('documents'))
  || (!$fields = \ze\datasetAdm::listCustomFields($dataset, false))
- || (!$rules = \ze\row::getArray('document_rules', true, [], 'ordinal'))
+ || (!$rules = \ze\row::getAssocs('document_rules', true, [], 'ordinal'))
  || (empty($rules))) {
 	return false;
 }

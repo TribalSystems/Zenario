@@ -96,7 +96,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 					LEFT";
 					}
 		
-					$sql .= " JOIN ". DB_NAME_PREFIX. "category_item_link AS cil_". (int) $catId. "
+					$sql .= " JOIN ". DB_PREFIX. "category_item_link AS cil_". (int) $catId. "
 					   ON cil_". (int) $catId. ".equiv_id = c.equiv_id
 					  AND cil_". (int) $catId. ".content_type = c.type
 					  AND cil_". (int) $catId. ".category_id = ". (int) $catId;
@@ -107,7 +107,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 			foreach (ze\ray::explodeAndTrim($categories, true) as $catId) {
 				if (ze\row::exists('categories', ['id' => (int) $catId])) {
 					$sql .= "
-					LEFT JOIN ". DB_NAME_PREFIX. "category_item_link AS cil_". (int) $catId. "
+					LEFT JOIN ". DB_PREFIX. "category_item_link AS cil_". (int) $catId. "
 					   ON cil_". (int) $catId. ".equiv_id = c.equiv_id
 					  AND cil_". (int) $catId. ".content_type = c.type
 					  AND cil_". (int) $catId. ".category_id = ". (int) $catId;
@@ -118,7 +118,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 		//Only show child-nodes of the current Menu Node
 		if ($this->setting('only_show_child_items')) {
 			$sql .= "
-			INNER JOIN ". DB_NAME_PREFIX. "menu_nodes AS mi1
+			INNER JOIN ". DB_PREFIX. "menu_nodes AS mi1
 			   ON mi1.equiv_id = ". (int) ze::$equivId. "
 			  AND mi1.content_type = '". ze\escape::sql($this->cType). "'
 			  AND mi1.target_loc = 'int'";
@@ -129,7 +129,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 			}
 			
 			$sql .= "
-			INNER JOIN ". DB_NAME_PREFIX. "menu_nodes AS mi2
+			INNER JOIN ". DB_PREFIX. "menu_nodes AS mi2
 			   ON mi2.equiv_id = c.equiv_id
 			  AND mi2.content_type = c.type
 			  AND mi2.target_loc = 'int'";
@@ -140,7 +140,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 			}
 			
 			$sql .= "
-			INNER JOIN ". DB_NAME_PREFIX. "menu_hierarchy AS mh
+			INNER JOIN ". DB_PREFIX. "menu_hierarchy AS mh
 			   ON mi1.id = mh.ancestor_id
 			  AND mi2.id = mh.child_id
 			  AND mh.separation <= ". (int) $this->setting('child_item_levels');
@@ -150,9 +150,9 @@ class zenario_content_list extends ze\moduleBaseClass {
 		
 		if ($this->setting('show_author_image')) {
 			$sql .= '
-				LEFT JOIN '.DB_NAME_PREFIX.'admins AS ad
+				LEFT JOIN '.DB_PREFIX.'admins AS ad
 					ON v.writer_id = ad.id
-				LEFT JOIN '.DB_NAME_PREFIX.'files AS fi
+				LEFT JOIN '.DB_PREFIX.'files AS fi
 					ON ad.image_id = fi.id';
 		}
 		
@@ -396,7 +396,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 		$this->items = [];
 		
 		if ($showCategory = $this->setting('show_content_items_lowest_category') && ze::setting('enable_display_categories_on_content_lists')) {
-			$categories = ze\row::getArray('categories', ['name', 'id', 'parent_id', 'public'], []);
+			$categories = ze\row::getAssocs('categories', ['name', 'id', 'parent_id', 'public'], []);
 		}
 		
 		
@@ -605,8 +605,8 @@ class zenario_content_list extends ze\moduleBaseClass {
 		$publicCategories = [];
 		$sql = '
 			SELECT c.name, c.id, c.parent_id, c.public
-			FROM ' . DB_NAME_PREFIX . 'category_item_link l
-			INNER JOIN ' . DB_NAME_PREFIX . 'categories c
+			FROM ' . DB_PREFIX . 'category_item_link l
+			INNER JOIN ' . DB_PREFIX . 'categories c
 				ON l.category_id = c.id
 			WHERE l.equiv_id = ' . (int)$equivId . '
 			AND l.content_type = "' . ze\escape::sql($cType) . '"';
@@ -800,7 +800,8 @@ class zenario_content_list extends ze\moduleBaseClass {
 				'Show_RSS_Link' => (bool) $this->setting('enable_rss'),
 				'Show_Title' => (bool)$this->setting('show_headings'),
 				'Show_No_Title' => (bool)$this->setting('show_headings_if_no_items'),
-				'Show_Category' => (bool)$this->setting('show_content_items_lowest_category') && (bool)ze::setting('enable_display_categories_on_content_lists')
+				'Show_Category' => (bool)$this->setting('show_content_items_lowest_category') && (bool)ze::setting('enable_display_categories_on_content_lists'),
+				'Content_Items_Equal_Height' => (bool)$this->setting('make_content_items_equal_height')
 			]
 		);
 		

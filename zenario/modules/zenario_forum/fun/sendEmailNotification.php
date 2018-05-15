@@ -79,19 +79,19 @@ if ($newPost
  && ze\module::inc('zenario_email_template_manager')) {
 	
 	$sql = "
-		SELECT u.id, [u.salutation], [u.first_name], [u.last_name], [u.screen_name], [u.email]
-		FROM [ZENARIO_COMMENTS_PREFIX.user_subscriptions AS us]
-		INNER JOIN [users AS u]
+		SELECT u.id, u.salutation, u.first_name, u.last_name, u.screen_name, u.email
+		FROM ". DB_PREFIX. ZENARIO_COMMENTS_PREFIX. "user_subscriptions AS us
+		INNER JOIN ". DB_PREFIX. "users AS u
 		   ON u.id = us.user_id
 		  AND u.status = 'active'
-		INNER JOIN [ZENARIO_COMMENTS_PREFIX.users AS cu]
+		INNER JOIN ". DB_PREFIX. ZENARIO_COMMENTS_PREFIX. "users AS cu
 		   ON cu.user_id = u.id
 		  AND IFNULL(cu.latest_activity > us.last_notified, true)
-		WHERE us.forum_id = [0]
-		  AND us.thread_id = [1]
-		  AND us.user_id != [2]";
+		WHERE us.forum_id = ". (int) $this->forumId. "
+		  AND us.thread_id = ". (int) ($newThreadTitle === false? $this->threadId : 0). "
+		  AND us.user_id != ". (int) $userId;
 	
-	$result = ze\sql::select($sql, [$this->forumId, $newThreadTitle === false? $this->threadId : 0, $userId]);
+	$result = ze\sql::select($sql);
 	while ($row = ze\sql::fetchAssoc($result)) {
 		if ($row['email']) {
 			

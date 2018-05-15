@@ -7,7 +7,7 @@ zenario__content:
             title: Image tags
             no_items_message: No tags have been created.
             db_items:
-                table: '[[DB_NAME_PREFIX]]image_tags AS it'
+                table: '[[DB_PREFIX]]image_tags AS it'
                 id_column: it.name
             columns:
                 id:
@@ -31,13 +31,13 @@ zenario__content:
                         red: Red
                         violet: Violet
                         yellow: Yellow
-                usage:
+                usage_count:
                     title: Usage
                     show_by_default: true
                     db_column: |
                         (
                             SELECT COUNT(itl.image_id)
-                            FROM [[DB_NAME_PREFIX]]image_tag_link AS itl
+                            FROM [[DB_PREFIX]]image_tag_link AS itl
                             WHERE itl.tag_id = it.id
                         )
             
@@ -53,7 +53,7 @@ zenario__content:
                 view_images:
                     label: View images with this tag
                     visible_if_for_all_selected_items: >
-                        zenario.engToBoolean(item.usage)
+                        zenario.engToBoolean(item.usage_count)
                     link:
                         path: zenario__content/panels/image_library
                         refiner: tag
@@ -64,7 +64,7 @@ zenario__content:
                     multiple_select: true
                     hide_in_select_mode: true
                     visible_if_for_all_selected_items: >
-                        !zenario.engToBoolean(item.usage)
+                        !zenario.engToBoolean(item.usage_count)
                     ajax:
                         confirm:
                             message: |
@@ -87,7 +87,7 @@ zenario__content:
                     multiple_select: true
                     hide_in_select_mode: true
                     visible_if_for_any_selected_items: >
-                        zenario.engToBoolean(item.usage)
+                        zenario.engToBoolean(item.usage_count)
                     ajax:
                         confirm:
                             message: |

@@ -104,8 +104,8 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 	public function getCategoryOptionsWithParentId($parentId = 0){
 		
 		$sql = "SELECT c.id, IFNULL(vp.local_text, c.name) as name
-				FROM " . DB_NAME_PREFIX . "categories
-					AS c LEFT JOIN " . DB_NAME_PREFIX . "visitor_phrases 
+				FROM " . DB_PREFIX . "categories
+					AS c LEFT JOIN " . DB_PREFIX . "visitor_phrases 
 					AS vp ON CONCAT('_CATEGORY_', c.id) = vp.code
 				WHERE parent_id=" . (int)$parentId . " AND c.public = 1 ORDER BY 2";
 		$result = ze\sql::select($sql);
@@ -191,8 +191,8 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 				c.parent_id,
 				c.name,
 				c.public
-			FROM " . DB_NAME_PREFIX . "categories AS c
-			INNER JOIN " . DB_NAME_PREFIX . "category_item_link AS cil
+			FROM " . DB_PREFIX . "categories AS c
+			INNER JOIN " . DB_PREFIX . "category_item_link AS cil
 				ON c.id = cil.category_id AND c.public=1";
 
 		if ($parentId!==false) {
@@ -420,7 +420,7 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 		$category = $this->category02_id ? $this->category02_id : (
 				$this->category01_id ? $this->category01_id : $this->category00_id);
 		if($category) {
-			return " INNER JOIN " . DB_NAME_PREFIX . "category_item_link cil 
+			return " INNER JOIN " . DB_PREFIX . "category_item_link cil 
 				   ON cil.equiv_id = c.equiv_id
 				  AND cil.content_type = c.type
 				  AND cil.category_id = ". $category;
@@ -496,13 +496,13 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 		
 		
 		$joinSQL = "INNER JOIN 
-						" . DB_NAME_PREFIX . "languages l
+						" . DB_PREFIX . "languages l
 					ON
 						c.language_id = l.id ";
 		
 		if ($useCC) {
 			$joinSQL .= "
-				INNER JOIN ". DB_NAME_PREFIX. "content_cache AS cc
+				INNER JOIN ". DB_PREFIX. "content_cache AS cc
 				   ON cc.content_id = v.id
 				  AND cc.content_type = v.type
 				  AND cc.content_version = v.version";

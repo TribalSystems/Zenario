@@ -107,6 +107,469 @@ class miscAdm {
 
 
 
+
+
+	
+	//Make a sentence from the output of getPluginInstanceUsage
+	//optionally, if an instanceId is parsed in $usage, it will display the plugin at the start.
+	public static function getUsageText($usage, $usageLinks = [], $fullPath = null) {
+		$usageText = [];
+		
+		//If this isn't full mode, make sure all Organizer links use the full path. Otherwise we can just use a #.
+		if (is_null($fullPath)) {
+			$fullPath = !empty($_GET['_quick_mode']) || !empty($_GET['_select_mode']);
+		}
+		
+		if ($fullPath) {
+			$prefix = \ze\link::absolute(). 'zenario/admin/organizer.php#';
+		} else {
+			$prefix = '#';
+		}
+		
+		
+		$includeLinks = $usageLinks !== false;
+		
+		
+		
+		//Check if this links to any plugins
+		if (!empty($usage['plugins'])) {
+			$instanceId = $usage['plugin'];
+			$name = \ze\plugin::codeName($instanceId);
+			
+			if ($includeLinks) {
+				$link = 'zenario__modules/panels/plugins//'. (int) $instanceId; 
+				$name =
+					'<a target="_blank" href="'. htmlspecialchars($prefix. $link). '">
+						<span class="listicon organizer_item_image plugin_album_instance">
+						</span>'. htmlspecialchars($name). '</a>';
+			}
+			
+			//Add other item text
+			$count = $usage['plugins'];
+			if ($count > 1) {
+				if (isset($usageLinks['plugins'])) {
+					$text = \ze\admin::nphrase(
+						'[[name]] and <a target="_blank" href="[[plugins]]">1 other plugin</a>', 
+						'[[name]] and <a target="_blank" href="[[plugins]]">[[count]] other plugins', 
+						$count - 1, 
+						['name' => $name, 'plugins' => $prefix. $usageLinks['plugins']]
+					);
+				} else {
+					$text = \ze\admin::nphrase(
+						'[[name]] and 1 other plugin', 
+						'[[name]] and [[count]] other plugins',
+						$count - 1, 
+						['name' => $name]
+					);
+				}
+			} else {
+				$text = $name;
+			}
+			$usageText[] = $text;
+		}
+		
+		
+		//Check if this links to any nests
+		if (!empty($usage['nests'])) {
+			$instanceId = $usage['nest'];
+			$name = \ze\plugin::codeName($instanceId, 'zenario_plugin_nest');
+			
+			if ($includeLinks) {
+				$link = 'zenario__modules/panels/plugins/refiners/nests////'. (int) $instanceId;
+				$name =
+					'<a target="_blank" href="'. htmlspecialchars($prefix. $link). '">
+						<span class="listicon organizer_item_image plugin_album_instance">
+						</span>'. htmlspecialchars($name). '</a>';
+			}
+			
+			//Add other item text
+			$count = $usage['nests'];
+			if ($count > 1) {
+				if (isset($usageLinks['nests'])) {
+					$text = \ze\admin::nphrase(
+						'[[name]] and <a target="_blank" href="[[nests]]">1 other nest</a>', 
+						'[[name]] and <a target="_blank" href="[[nests]]">[[count]] other nests', 
+						$count - 1, 
+						['name' => $name, 'nests' => $prefix. $usageLinks['nests']]
+					);
+				} else {
+					$text = \ze\admin::nphrase(
+						'[[name]] and 1 other nest', 
+						'[[name]] and [[count]] other nests',
+						$count - 1, 
+						['name' => $name]
+					);
+				}
+			} else {
+				$text = $name;
+			}
+			$usageText[] = $text;
+		}
+		
+		
+		//Check if this links to any slideshows
+		if (!empty($usage['slideshows'])) {
+			$instanceId = $usage['slideshow'];
+			$name = \ze\plugin::codeName($instanceId, 'zenario_slideshow');
+			
+			if ($includeLinks) {
+				$link = 'zenario__modules/panels/plugins/refiners/slideshows////'. (int) $instanceId;
+				$name =
+					'<a target="_blank" href="'. htmlspecialchars($prefix. $link). '">
+						<span class="listicon organizer_item_image plugin_album_instance">
+						</span>'. htmlspecialchars($name). '</a>';
+			}
+			
+			//Add other item text
+			$count = $usage['slideshows'];
+			if ($count > 1) {
+				if (isset($usageLinks['slideshows'])) {
+					$text = \ze\admin::nphrase(
+						'[[name]] and <a target="_blank" href="[[slideshows]]">1 other slideshow</a>', 
+						'[[name]] and <a target="_blank" href="[[slideshows]]">[[count]] other slideshows', 
+						$count - 1, 
+						['name' => $name, 'slideshows' => $prefix. $usageLinks['slideshows']]
+					);
+				} else {
+					$text = \ze\admin::nphrase(
+						'[[name]] and 1 other slideshow', 
+						'[[name]] and [[count]] other slideshows',
+						$count - 1, 
+						['name' => $name]
+					);
+				}
+			} else {
+				$text = $name;
+			}
+			$usageText[] = $text;
+		}
+		
+		
+		
+		//Check if this links to any content items
+		if (!empty($usage['content_items'])) {
+			$name = \ze\content::formatTagFromTagId($usage['content_item']);
+			
+			//Show a link to the content item
+			if ($includeLinks) {
+				$cID = $cType = false;
+				\ze\content::getCIDAndCTypeFromTagId($cID, $cType, $usage['content_item']);
+				
+				if ($citem = \ze\sql::fetchAssoc('
+					SELECT alias, equiv_id, language_id, status
+					FROM '. DB_PREFIX. 'content_items
+					WHERE type = \''. \ze\escape::sql($cType). '\'
+					  AND id = '. (int) $cID
+				)) {
+					$name = 
+						'<a target="_blank" href="'. htmlspecialchars(\ze\link::toItem($cID, $cType, true, '', $citem['alias'], false, false, $citem['equiv_id'], $citem['language_id'])). '">
+							<span class="listicon organizer_item_image '. \ze\contentAdm::getItemIconClass($cID, $cType, true, $citem['status']). '">
+							</span>'. htmlspecialchars(\ze\content::formatTag($cID, $cType, $citem['alias'], $citem['language_id'])). '
+						</a>';
+				} else {
+					$name = htmlspecialchars($usage['content_item']);
+				}
+			}
+			
+			//Add other item text
+			$count = $usage['content_items'];
+			if ($count > 1) {
+				if (isset($usageLinks['content_items'])) {
+					$text = \ze\admin::nphrase(
+						'[[name]] and <a target="_blank" href="[[content_items]]">1 other content item</a>', 
+						'[[name]] and <a target="_blank" href="[[content_items]]">[[count]] other content items</a>',
+						$count - 1, 
+						['name' => $name, 'content_items' => $prefix. $usageLinks['content_items']]
+					);
+				} else {
+					$text = \ze\admin::nphrase(
+						'[[name]] and 1 other content item', 
+						'[[name]] and [[count]] other content items', 
+						$count - 1, 
+						['name' => $name]
+					);
+				}
+			} else {
+				$text = $name;
+			}
+			$usageText[] = $text;
+		}
+		
+		
+		//Check if this links to any layouts
+		if (!empty($usage['layouts'])) {
+			$layoutId = $usage['layout'];
+			$name = \ze\layoutAdm::codeName($layoutId);
+			
+			//Show a link to the layout in organizer
+			if ($includeLinks) {
+				$link = 'zenario__layouts/panels/layouts//'. (int) $layoutId;
+				$name =
+					'<a target="_blank" href="'. htmlspecialchars($prefix. $link). '">
+						<span
+							class="listicon organizer_item_image template"
+							style="background-image: url(\''. htmlspecialchars(\ze\link::absolute(). 'zenario/admin/grid_maker/ajax.php?thumbnail=1&width=14&height=16&loadDataFromLayout='. $layoutId). '\');"
+						></span>'. htmlspecialchars($name). '</a>';
+			}
+			
+			//Add other item text
+			$count = $usage['layouts'];
+			if ($count > 1) {
+				if (isset($usageLinks['layouts'])) {
+					$text = \ze\admin::nphrase(
+						'[[name]] and <a target="_blank" href="[[layouts]]">1 other layout</a>', 
+						'[[name]] and <a target="_blank" href="[[layouts]]">[[count]] other layouts</a>', 
+						$count - 1, 
+						['name' => $name, 'layouts' => $prefix. $usageLinks['layouts']]
+					);
+				} else {
+					$text = \ze\admin::nphrase(
+						'[[name]] and 1 other layout', 
+						'[[name]] and [[count]] other layouts', 
+						$count - 1, 
+						['name' => $name]
+					);
+				}
+			} else {
+				$text = $name;
+			}
+			$usageText[] = $text;
+		}
+		
+		
+		//Check if this links to any menu nodes
+		if (!empty($usage['menu_nodes'])) {
+			$menuNodeId = $usage['menu_node'];
+			$name = $menuNodeId;
+			
+			//Look up details on this menu node.
+			$menuDetails = \ze\sql::fetchAssoc('
+				SELECT mn.section_id, mn.target_loc, mn.equiv_id, mn.redundancy, mn.parent_id, mt.name, mt.ext_url
+				FROM '. DB_PREFIX. 'menu_nodes AS mn
+				INNER JOIN '. DB_PREFIX. 'menu_text AS mt
+				   ON mn.id = mt.menu_id
+				WHERE mn.id = '. (int) $menuNodeId. '
+				ORDER BY mt.language_id = \''. \ze\escape::sql(\ze::$defaultLang). '\'
+				LIMIT 1'
+			);
+			
+			if ($menuDetails) {
+				//Check if any children exist, as this changes the menu node's icon slightly
+				$menuDetails['children'] = \ze\sql::numRows('
+					SELECT 1
+					FROM '. DB_PREFIX. 'menu_hierarchy
+					WHERE ancestor_id = '. (int) $menuNodeId. '
+					LIMIT 1
+				');
+				
+				//Work out how many arrows to show before the name to show what level this menu node is at
+				$menuLevel = \ze\sql::numRows('
+					SELECT MAX(separation)
+					FROM '. DB_PREFIX. 'menu_hierarchy
+					WHERE ancestor_id = '. (int) $menuNodeId
+				);
+				
+				$name = $menuDetails['name'];
+				if ($menuLevel) {
+					$name = str_repeat(' -> ', $menuLevel). $name;
+				}
+				
+				//Show a link to the menu node in organizer
+				if ($includeLinks) {
+					$link = \ze\menuAdm::organizerLink($menuNodeId, true, $menuDetails['section_id']);
+					$name =
+						'<a target="_blank" href="'. htmlspecialchars($prefix. $link). '">
+							<span
+								class="listicon organizer_item_image '. \ze\menuAdm::cssClass($menuDetails). '"
+							></span>'. htmlspecialchars($name). '</a>';
+				}
+			}
+			
+			
+			//Add other item text
+			$count = $usage['menu_nodes'];
+			if ($count > 1) {
+				if (isset($usageLinks['menu_nodes'])) {
+					$text = \ze\admin::nphrase(
+						'[[name]] and <a target="_blank" href="[[menu_nodes]]">1 other menu node</a>', 
+						'[[name]] and <a target="_blank" href="[[menu_nodes]]">[[count]] other menu nodes', 
+						$count - 1, 
+						['name' => $name, 'menu_nodes' => $prefix. $usageLinks['menu_nodes']]
+					);
+				} else {
+					$text = \ze\admin::nphrase(
+						'[[name]] and 1 other menu node', 
+						'[[name]] and [[count]] other menu nodes', 
+						$count - 1, 
+						['name' => $name]
+					);
+				}
+			} else {
+				$text = $name;
+			}
+			$usageText[] = $text;
+		}
+		
+		
+		//Check if this links to any email templates
+		if (!empty($usage['email_templates']) && \ze\module::inc('zenario_email_template_manager')) {
+			$etId = $usage['email_template'];
+			
+			if (!is_numeric($etId)) {
+				$et = \ze\row::get('email_templates', ['code', 'template_name'], ['code' => $etId]);
+			} else {
+				$et = \ze\row::get('email_templates', ['code', 'template_name'], ['id' => $etId]);
+			}
+			$name = $et['template_name'];
+			
+			//Show a link to the email template in organizer
+			if ($includeLinks) {
+				$link = 'zenario__email_template_manager/panels/email_templates//'. $et['code'];
+				$name =
+					'<a target="_blank" href="'. htmlspecialchars($prefix. $link). '">
+						<span
+							class="listicon organizer_item_image zenario_email_template_panel"
+						></span>'. htmlspecialchars($name). '</a>';
+			}
+			
+			//Add other item text
+			$count = $usage['email_templates'];
+			if ($count > 1) {
+				if (isset($usageLinks['email_templates'])) {
+					$text = \ze\admin::nphrase(
+						'[[name]] and <a target="_blank" href="[[email_templates]]">1 other email template</a>', 
+						'[[name]] and <a target="_blank" href="[[email_templates]]">[[count]] other email templates', 
+						$count - 1, 
+						['name' => $name, 'email_templates' => $prefix. $usageLinks['email_templates']]
+					);
+				} else {
+					$text = \ze\admin::nphrase(
+						'[[name]] and 1 other email template', 
+						'[[name]] and [[count]] other email templates', 
+						$count - 1, 
+						['name' => $name]
+					);
+				}
+			} else {
+				$text = $name;
+			}
+			$usageText[] = $text;
+		}
+		
+		
+		//Check if this links to any newsletters
+		if (!empty($usage['newsletters']) && \ze\module::inc('zenario_newsletter')) {
+			$nlId = $usage['newsletter'];
+			$nl = \ze\row::get(ZENARIO_NEWSLETTER_PREFIX. 'newsletters', ['newsletter_name', 'status'], $nlId);
+			$name = $nl['newsletter_name'];
+			
+			switch ($nl['status']) {
+				case '_DRAFT':
+					$iconCSS = 'zenario_newsletter_draft';
+					$link = 'zenario__email_template_manager/panels/newsletters//'. (int) $nlId;
+					break;
+				case '_IN_PROGRESS':
+					$iconCSS = 'zenario_newsletter_in_progress_newsletter';
+					$link = 'zenario__email_template_manager/panels/newsletters/collection_buttons/process////'. (int) $nlId;
+					break;
+				case '_ARCHIVED':
+					$iconCSS = 'zenario_newsletter_sent_newsletter';
+					$link = 'zenario__email_template_manager/panels/newsletters/collection_buttons/archive////'. (int) $nlId;
+					break;
+			}
+			
+			//Show a link to the newsletter in organizer
+			if ($includeLinks) {
+				$name =
+					'<a target="_blank" href="'. htmlspecialchars($prefix. $link). '">
+						<span
+							class="listicon organizer_item_image '. $iconCSS. '"
+						></span>'. htmlspecialchars($name). '</a>';
+			}
+			
+			//Add other item text
+			$count = $usage['newsletters'];
+			if ($count > 1) {
+				if (isset($usageLinks['newsletters'])) {
+					$text = \ze\admin::nphrase(
+						'[[name]] and <a target="_blank" href="[[newsletters]]">1 other newsletter</a>', 
+						'[[name]] and <a target="_blank" href="[[newsletters]]">[[count]] other newsletters', 
+						$count - 1, 
+						['name' => $name, 'newsletters' => $prefix. $usageLinks['newsletters']]
+					);
+				} else {
+					$text = \ze\admin::nphrase(
+						'[[name]] and 1 other newsletter', 
+						'[[name]] and [[count]] other newsletters', 
+						$count - 1, 
+						['name' => $name]
+					);
+				}
+			} else {
+				$text = $name;
+			}
+			$usageText[] = $text;
+		}
+		
+		
+		//Check if this links to any newsletter templates
+		if (!empty($usage['newsletter_templates']) && \ze\module::inc('zenario_newsletter')) {
+			$nlId = $usage['newsletter_templates'];
+			$name = \ze\row::get(ZENARIO_NEWSLETTER_PREFIX. 'newsletter_templates', 'name', $nlId);
+			
+			//Show a link to the template in organizer
+			if ($includeLinks) {
+				$link = 'zenario__email_template_manager/panels/newsletters/collection_buttons/newletter_templates////'. (int) $nlId;
+				$name =
+					'<a target="_blank" href="'. htmlspecialchars($prefix. $link). '">
+						<span
+							class="listicon organizer_item_image zenario_newsletter_template"
+						></span>'. htmlspecialchars($name). '</a>';
+			}
+			
+			//Add other item text
+			$count = $usage['newsletter_templates'];
+			if ($count > 1) {
+				if (isset($usageLinks['newsletter_templates'])) {
+					$text = \ze\admin::nphrase(
+						'[[name]] and <a target="_blank" href="[[newsletter_templates]]">1 other newsletter template</a>', 
+						'[[name]] and <a target="_blank" href="[[newsletter_templates]]">[[count]] other newsletter templates', 
+						$count - 1, 
+						['name' => $name, 'newsletter_templates' => $prefix. $usageLinks['newsletter_templates']]
+					);
+				} else {
+					$text = \ze\admin::nphrase(
+						'[[name]] and 1 other newsletter template', 
+						'[[name]] and [[count]] other newsletter templates', 
+						$count - 1, 
+						['name' => $name]
+					);
+				}
+			} else {
+				$text = $name;
+			}
+			$usageText[] = $text;
+		}
+		
+		
+		
+		if (empty($usageText)) {
+			return [\ze\admin::phrase('Not used')];
+		} else {
+			return $usageText;
+		}
+	}
+
+
+
+
+
+
+
+
+
+
+
 	//Generate a hierarchical select list from a table with a parent_id column
 	//Formerly "generateHierarchicalSelectList()"
 	public static function generateHierarchicalSelectList($table, $labelCol, $parentIdCol = 'parent_id', $ids = [], $orderBy = [], $flat = false, $parentId = 0, $pad = '    ') {
@@ -150,7 +613,7 @@ class miscAdm {
 	
 		$ids[$parentIdCol] = $parentId;
 	
-		foreach (\ze\row::getArray($table, $cols, $ids, $orderBy) as $id => $row) {
+		foreach (\ze\row::getAssocs($table, $cols, $ids, $orderBy) as $id => $row) {
 			//This line in theory shouldn't be needed if the data integrety is good,
 			//but I have included it to stop infinite loops if it is not!
 			if (!isset($output[$id])) {
@@ -229,7 +692,7 @@ class miscAdm {
 				//Fill the list of slides
 				$result = \ze\sql::select("
 					SELECT id, slide_num, states, name_or_title
-					FROM ". DB_NAME_PREFIX. "nested_plugins
+					FROM ". DB_PREFIX. "nested_plugins
 					WHERE instance_id = ". (int) $box['key']['instanceId']. "
 					  AND slide_num != ". (int) $box['key']['slideNum']. "
 					  AND is_slide = 1");
@@ -250,11 +713,11 @@ class miscAdm {
 		
 				//Load the existing destination for each path on this slide.
 				$sql = "
-					SELECT from_state, to_state, equiv_id, content_type, commands
-					FROM ". DB_NAME_PREFIX. "nested_paths
+					SELECT from_state, to_state, equiv_id, content_type, command
+					FROM ". DB_PREFIX. "nested_paths
 					WHERE from_state IN (". \ze\escape::in($currentStates). ")
 					  AND instance_id = ". (int) $box['key']['instanceId']. "
-					ORDER BY commands, from_state";
+					ORDER BY command, from_state";
 		
 				$i = 0;
 				$lastTo = '';
@@ -264,8 +727,8 @@ class miscAdm {
 				
 					//Note that there may be more than one, in the case of multiple states. When this happens,
 					//we'll show no more than two.
-					if ($lastCommand != $row['commands']) {
-						$lastCommand = $row['commands'];
+					if ($lastCommand != $row['command']) {
+						$lastCommand = $row['command'];
 						$i = 1;
 					} else {
 						//If both alternate states link to the same place, don't show it twice
@@ -280,17 +743,17 @@ class miscAdm {
 						}
 					}
 			
-					if (isset($fields['to_state'. $i. '.'. $row['commands']])) {
-						$fields['to_state'. $i. '.'. $row['commands']]['hidden'] = false;
+					if (isset($fields['to_state'. $i. '.'. $row['command']])) {
+						$fields['to_state'. $i. '.'. $row['command']]['hidden'] = false;
 					
 						if ($row['equiv_id']) {
 							$codeName = $row['content_type']. '_'. $row['equiv_id']. '/'. $row['to_state'];
 						
 							$box['lovs']['slides_and_states'][$codeName] = \ze\content::formatTag($row['equiv_id'], $row['content_type'], -1, false, true);
 						
-							$values['to_state'. $i. '.'. $row['commands']] = $codeName;
+							$values['to_state'. $i. '.'. $row['command']] = $codeName;
 						} else {
-							$values['to_state'. $i. '.'. $row['commands']] = $row['to_state'];
+							$values['to_state'. $i. '.'. $row['command']] = $row['to_state'];
 						}
 					
 						$lastTo = $row['content_type']. $row['equiv_id']. $row['to_state'];
@@ -368,7 +831,7 @@ class miscAdm {
 	public static function checkForChangesInYamlFiles($forceScan = false) {
 	
 		//Safety catch - do not try to do anything if there is no database connection!
-		if (!\ze::$lastDB) {
+		if (!\ze::$dbL) {
 			return;
 		}
 	
@@ -401,7 +864,7 @@ class miscAdm {
 			//Do a full rescan of everything.
 			\ze\skinAdm::clearCache(true);
 			
-			//N.b. the ze\skinAdm::clearCache() function includes a call to this one,
+			//N.b. the \ze\skinAdm::clearCache() function includes a call to this one,
 			//with $forceScan set to true, so we can stop running the current call.
 			return;
 	
@@ -413,7 +876,11 @@ class miscAdm {
 		//Otherwise, work out the time difference between that time and now
 		} else {
 			$changed = false;
-			foreach (\ze::moduleDirs('tuix/') as $tuixDir) {
+			
+			$tuixDirs = \ze::moduleDirs('tuix/');
+			$tuixDirs[] = 'zenario/admin/welcome/';
+			
+			foreach ($tuixDirs as $tuixDir) {
 		
 				$RecursiveDirectoryIterator = new \RecursiveDirectoryIterator(CMS_ROOT. $tuixDir);
 				$RecursiveIteratorIterator = new \RecursiveIteratorIterator($RecursiveDirectoryIterator);
@@ -431,10 +898,10 @@ class miscAdm {
 	
 		if ($changed) {
 			
-			//Remove all cached calls to ze\tuix::load() if the YAML files have changed.
+			//Remove all cached calls to \ze\tuix::load() if the YAML files have changed.
 			//(I'm not going to the trouble of working out which individual files have changed
 			// and selectively removing them, ad that would be too fiddly. This is a complete wipe.
-			// But note that the ze\tuix::readFile() function does use timestamps on a per-file basis for its caching.)
+			// But note that the \ze\tuix::readFile() function does use timestamps on a per-file basis for its caching.)
 			\ze\cache::deleteDir(CMS_ROOT. 'cache/tuix/admin_boxes');
 			\ze\cache::deleteDir(CMS_ROOT. 'cache/tuix/admin_toolbar');
 			\ze\cache::deleteDir(CMS_ROOT. 'cache/tuix/organizer');
@@ -446,7 +913,7 @@ class miscAdm {
 			//Look to see what datasets are on the system, and which datasets extend which FABs
 			$datasets = [];
 			$datasetFABs = [];
-			foreach (\ze\row::getArray('custom_datasets', 'extends_admin_box') as $datasetId => $extends_admin_box) {
+			foreach (\ze\row::getAssocs('custom_datasets', 'extends_admin_box') as $datasetId => $extends_admin_box) {
 				$datasetFABs[$extends_admin_box] = $datasetId;
 			}
 		
@@ -605,18 +1072,18 @@ class miscAdm {
 					//Where we could no longer find files, delete them
 					if (empty($tf['status'])) {
 						$sql = "
-							DELETE FROM ". DB_NAME_PREFIX. "tuix_file_contents
+							DELETE FROM ". DB_PREFIX. "tuix_file_contents
 							WHERE type = '". \ze\escape::sql($tf['type']). "'
 							  AND path = '". \ze\escape::sql($tf['path']). "'
 							  AND setting_group = '". \ze\escape::sql($tf['setting_group']). "'
 							  AND module_class_name = '". \ze\escape::sql($tf['module_class_name']). "'
 							  AND filename = '". \ze\escape::sql($tf['filename']). "'";
-						\ze\sql::select($sql);
+						\ze\sql::cacheFriendlyUpdate($sql);
 			
 					//Add/update newly added/edited files
 					} else if ($tf['status'] != 'unchanged') {
 						$sql = "
-							INSERT INTO ". DB_NAME_PREFIX. "tuix_file_contents
+							INSERT INTO ". DB_PREFIX. "tuix_file_contents
 							SET type = '". \ze\escape::sql($tf['type']). "',
 								path = '". \ze\escape::sql($tf['path']). "',
 								panel_type = '". \ze\escape::sql($tf['panel_type']). "',
@@ -629,7 +1096,7 @@ class miscAdm {
 								panel_type = VALUES(panel_type),
 								last_modified = VALUES(last_modified),
 								checksum = VALUES(checksum)";
-						\ze\sql::select($sql);
+						\ze\sql::cacheFriendlyUpdate($sql);
 					}
 				}
 			}

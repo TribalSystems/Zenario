@@ -58,7 +58,7 @@ class zenario_newsletter__admin_boxes__newsletter extends zenario_newsletter {
 			$values['meta_data/newsletter_name'] = $details['newsletter_name'];
 			$values['unsub_exclude/recipients'] = 
 					ze\escape::in(
-						ze\row::getArray(
+						ze\row::getAssocs(
 							ZENARIO_NEWSLETTER_PREFIX. 'newsletter_smart_group_link',
 							'smart_group_id',
 							['newsletter_id' => $box['key']['id']]
@@ -75,7 +75,7 @@ class zenario_newsletter__admin_boxes__newsletter extends zenario_newsletter {
 			$values['unsub_exclude/delete_account_text'] = $details['delete_account_text'];
 			$values['unsub_exclude/exclude_previous_newsletters_recipients'] =
 				ze\escape::in(
-					ze\row::getArray(
+					ze\row::getAssocs(
 						ZENARIO_NEWSLETTER_PREFIX. 'newsletter_sent_newsletter_link',
 						'sent_newsletter_id',
 						['newsletter_id' => $box['key']['id'], 'include' => 0]),
@@ -142,7 +142,7 @@ class zenario_newsletter__admin_boxes__newsletter extends zenario_newsletter {
 			$pick_items['path'] = 'zenario__email_template_manager/panels/newsletters/item_buttons/images//'. (int) $box['key']['id']. '//';
 			$pick_items['min_path'] =
 			$pick_items['max_path'] =
-			$pick_items['target_path'] = 'zenario__content/panels/email_images_for_newsletters';
+			$pick_items['target_path'] = 'zenario__content/panels/image_library';
 		} else {
 			$pick_items['path'] =
 			$pick_items['min_path'] =

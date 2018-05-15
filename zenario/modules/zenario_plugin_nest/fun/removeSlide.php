@@ -27,21 +27,28 @@
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
-
 //Remove a slide, and merge modules in the slide with the next slide
-if (($slide = ze\pluginAdm::getNestDetails($eggId, $instanceId)) && ($slide['is_slide'])) {
-	//Merge with the previous slide, unless this is the first slide, in which case merge with the next slide
-	$slideNum = $slide['slide_num'] > 1? $slide['slide_num'] - 1 : 1;
+if (($slide = ze\pluginAdm::getNestDetails($slideId, $instanceId)) && ($slide['is_slide'])) {
 	
-	//Delete the slide
-	ze\row::delete('nested_plugins', ['instance_id' => $instanceId, 'id' => $eggId]);
-	
-	if ($className) {
-		call_user_func([$className, 'resyncNest'], $instanceId);
+	//Delete any plugins on this slide
+	foreach (ze\row::getValues('nested_plugins', 'id', ['instance_id' => $instanceId, 'slide_num' => $slide['slide_num']]) as $eggId) {
+		self::removePlugin($eggId, $instanceId, false);
 	}
 	
+	//Delete the slide
+	ze\row::delete('nested_plugins', ['instance_id' => $instanceId, 'id' => $slideId]);
+	
+	//Delete any nested paths
 	foreach (ze\ray::explodeAndTrim($slide['states']) as $state) {
 		static::deletePath($instanceId, $state);
+	}
+	
+	if ($resync) {
+		self::resyncNest($instanceId);
+
+		ze\contentAdm::resyncLibraryPluginFiles($instanceId);
+
+		ze\pluginAdm::setSlideRequestVars($instanceId);
 	}
 }
 

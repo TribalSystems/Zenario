@@ -1,0 +1,22 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+empty_slot:
+    actions:
+        insert_slideshow_on_item_layer:
+            priv: _PRIV_MANAGE_ITEM_SLOT
+            label: Insert slideshow from library...
+            page_modes:
+                item: true
+            onclick: |
+                if (zenarioA.draft(this.id)) {
+                    zenarioAT.clickTab('item');
+                    zenarioA.pickNewPlugin(this, slotName, 1, 'slideshow');
+                }
+                return false;
+        insert_slideshow_on_layout_layer:
+            ord: 999
+            priv: _PRIV_MANAGE_TEMPLATE_SLOT
+            label: Insert slideshow from library...
+            page_modes:
+                layout: true
+            onclick: return zenarioA.pickNewPlugin(this, slotName, 2, 'slideshow');

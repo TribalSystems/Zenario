@@ -37,7 +37,7 @@ class zenario_common_features__organizer__document_rules extends ze\moduleBaseCl
 		
 		//Look up all of the fields that have been used
 		$lovs = [];
-		foreach (array_unique(ze\row::getArray('document_rules', 'field_id', ['action' => 'set_field', 'replacement_is_regexp' => 0])) as $fieldId) {
+		foreach (array_unique(ze\row::getValues('document_rules', 'field_id', ['action' => 'set_field', 'replacement_is_regexp' => 0])) as $fieldId) {
 			$lovs[$fieldId] = ze\dataset::fieldLOV($fieldId);
 		}
 		
@@ -77,7 +77,7 @@ class zenario_common_features__organizer__document_rules extends ze\moduleBaseCl
 			foreach (ze\ray::explodeAndTrim($ids) as $id) {
 				if ($rule = ze\row::get('document_rules', true, $id)) {
 					$sql = "
-						UPDATE ". DB_NAME_PREFIX. "document_rules
+						UPDATE ". DB_PREFIX. "document_rules
 						SET ordinal = ordinal + 1
 						WHERE ordinal > ". (int) $rule['ordinal'];
 					ze\sql::update($sql);
@@ -98,7 +98,7 @@ class zenario_common_features__organizer__document_rules extends ze\moduleBaseCl
 		
 		//Tidy up the ordinals
 		$i = 0;
-		foreach (ze\row::getArray('document_rules', 'id', [], 'ordinal') as $id) {
+		foreach (ze\row::getValues('document_rules', 'id', [], 'ordinal') as $id) {
 			ze\row::update('document_rules', ['ordinal' => ++$i], $id);
 		}
 	}

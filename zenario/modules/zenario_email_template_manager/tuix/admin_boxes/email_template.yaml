@@ -17,6 +17,19 @@ zenario_email_template:
                 priv: _PRIV_MANAGE_EMAIL_TEMPLATE
                 always_on: true
                 enabled: true
+            notices:
+                debug_mode:
+                    show: ""
+                    type: warning
+                    message: ""
+                test_send_sucesses:
+                    show: ""
+                    type: success
+                    message: ""
+                test_send_error:
+                    show: ""
+                    type: error
+                    message: ""
             fields:
                 template_name:
                     label: 'Email template name:'
@@ -25,6 +38,25 @@ zenario_email_template:
                     validation:
                         required: Please enter a name for this email template.
                     side_note: For admin use only.
+                mode:
+                    label: 'Mode:'
+                    type: select
+                    values:
+                        enabled:
+                            label: Enabled
+                        debug:
+                            label: Debug mode
+                    redraw_onchange: true
+                debug_email_address:
+                    label: 'Debug email address:'
+                    indent: 1
+                    type: text
+                    visible_if: |
+                        zenarioAB.value('mode') == 'debug'
+                    validation:
+                        required_if_not_hidden: Please enter a debug email address.
+                    side_note: |
+                        Use this if you don't want the email template to be live. It will cause all email to be sent to a debug email address rather than to the usual recipients.
                 subject:
                     label: 'Email subject line:'
                     type: text
@@ -47,23 +79,6 @@ zenario_email_template:
                     validation:
                         required: Please select "From" details option.
                     side_note: You can set or change the standard sender email address and name in Site Settings.
-                email_address_from_site_settings:
-                    visible_if: |
-                        zenarioAB.value('from_details') == 'site_settings'
-                    label: 'From email address/name:'
-                    type: text
-                    maxlength: 100
-                    indent: 1
-                    readonly: true
-                email_name_from_site_settings:
-                    same_row: true
-                    visible_if: |
-                        zenarioAB.value('from_details') == 'site_settings'
-                    label: 'Sender name:'
-                    type: text
-                    maxlength: 255
-                    readonly: true
-                    note_below: ''
                 email_address_from:
                     visible_if: |
                         zenarioAB.value('from_details') == 'custom_details'
@@ -72,7 +87,7 @@ zenario_email_template:
                     maxlength: 100
                     indent: 1
                     validation:
-                        required: Please enter an email address.
+                        required_if_not_hidden: Please enter an email address.
                         email: Please enter a valid email address.
                 email_name_from:
                     visible_if: |
@@ -82,21 +97,18 @@ zenario_email_template:
                     type: text
                     maxlength: 255
                     validation:
-                        required: Please enter a sender name.
+                        required_if_not_hidden: Please enter a sender name.
                 
                 send_cc:
                     label: 'Send a CC email'
                     type: checkbox
                     redraw_onchange: true
-                    visible_if: |
-                        !zenarioAB.value('debug_override')
                 cc_email_address:
                     label: 'CC email address:'
                     indent: 1
                     type: text
                     visible_if: |
-                        !zenarioAB.value('debug_override')
-                        && zenarioAB.value('send_cc')
+                        zenarioAB.value('send_cc')
                     validation:
                         required_if_not_hidden: Please enter a Cc email address.
                         emails: Please enter a valid Cc email address.
@@ -107,44 +119,28 @@ zenario_email_template:
                     label: 'Send a Bcc email'
                     type: checkbox
                     redraw_onchange: true
-                    visible_if: |
-                        !zenarioAB.value('debug_override')
                 bcc_email_address:
                     label: 'Bcc email address:'
                     indent: 1
                     type: text
                     visible_if: |
-                        !zenarioAB.value('debug_override')
-                        && zenarioAB.value('send_bcc')
+                        zenarioAB.value('send_bcc')
                     validation:
                         required_if_not_hidden: Please enter a Bcc email address.
                         emails: Please enter a valid Bcc email address.
                     side_note: |
                         Tip: You can enter multiple email addresses separated by commas.
                 
-                debug_override:
-                    label: 'Debug mode'
-                    type: checkbox
-                    redraw_onchange: true
-                    side_note: |
-                        Use this if you don't want the email template to be live. It will cause all email to be sent to a debug email address rather than to the usual recipients.
-                debug_email_address:
-                    label: 'Debug email address:'
-                    indent: 1
-                    type: text
-                    visible_if: |
-                        zenarioAB.value('debug_override')
-                    validation:
-                        required_if_not_hidden: Please enter a debug email address.
-        body:
-            label: Email body
-            edit_mode:
-                priv: _PRIV_MANAGE_EMAIL_TEMPLATE
-                always_on: true
-                enabled: true
-            fields:
+                use_standard_email_template:
+                    type: radios
+                    values:
+                        yes:
+                            label: Use standard email template ([[link]])
+                        no:
+                            label: Customise entire email
+                    format_onchange: true
                 body:
-                    full_width: true
+                    label: 'Email body:'
                     type: editor
                     dont_trim: true
                     editor_options:
@@ -162,6 +158,42 @@ zenario_email_template:
                             disallow_refiners_looping_on_min_path: true
                     insert_link_button:
                         exists: true
+                
+                
+                test_send_email_address:
+                    type: text
+                    maxlength: "100"
+                    label: 'Send a sample email:'
+                    side_note: |
+                        You can enter your email address here, or perhaps that of a colleage, to send a sample or test email. You'll need to enter at least a subject line and some content.
+                test_send_button_dummy:
+                    same_row: true
+                    type: submit
+                    value: Send sample
+                    visible_if: '!zenarioAB.tuix.key.id'
+                    class: 'submit_disabled'
+                    onclick: 'return false;'
+                test_send_button:
+                    same_row: true
+                    type: submit
+                    format_onchange: true
+                    can_be_pressed_in_view_mode: true
+                    value: Test Send
+                    visible_if: 'zenarioAB.tuix.key.id'
+                    class: 'submit_selected'
+
+        preview:
+            label: Preview
+            edit_mode:
+                priv: _PRIV_MANAGE_EMAIL_TEMPLATE
+                always_on: true
+                enabled: true
+            fields:
+                body:
+                    type: editor
+                    dont_trim: true
+                    rows: 30
+                    readonly: true
         data_deletion:
             label: Data deletion
             edit_mode:

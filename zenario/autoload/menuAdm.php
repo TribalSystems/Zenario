@@ -33,7 +33,7 @@ class menuAdm {
 
 
 	//Formerly "getMenuItemStorekeeperDeepLink()"
-	public static function organizerLink($menuId, $langId = false, $sectionId = false, $menuIdIsParent = false) {
+	public static function organizerLink($menuId, $langId = false, $sectionId = false) {
 		if ($langId === false) {
 			$langId = \ze\content::currentLangId();
 	
@@ -41,12 +41,8 @@ class menuAdm {
 			$langId = \ze::$defaultLang;
 		}
 	
-		$menuDetails = false;
-		if ($menuId) {
+		if (!$sectionId && $menuId) {
 			$menuDetails = \ze\menu::details($menuId);
-		}
-	
-		if (!$sectionId && $menuDetails) {
 			$sectionId = $menuDetails['section_id'];
 		}
 	
@@ -57,24 +53,36 @@ class menuAdm {
 			$path .= $menuId;
 		}
 	
-		//Old logic from before we had hierarchy view
-		/*
-		if ($menuDetails) {
-			$limit = 20;
-			$ancestors = [$menuId];
-			if ($ancestorId = $menuDetails['parent_id']) {
-				do {
-					$ancestors[] = $ancestorId;
-				} while (--$limit && $ancestorId = \ze\menu::parentId($ancestorId));
-			}
-		
-			for ($i = count($ancestors) - 1; $i >= 0; --$i) {
-				$path .= '//'. ($menuIdIsParent || $i? 'item//' : ''). $ancestors[$i];
-			}
-		}
-		*/
-	
 		return $path;
+	}
+	
+	public static function cssClass($menuNode) {
+		$internalTarget = $menuNode['target_loc'] == 'int' && $menuNode['equiv_id'];
+		
+		if ($internalTarget) {
+			if ($menuNode['redundancy'] == 'unique') {
+				$cssClass = 'zenario_menunode_internal_unique';
+			} elseif ($menuNode['redundancy'] == 'primary') {
+				$cssClass = 'zenario_menunode_internal';
+			} else {
+				$cssClass = 'zenario_menunode_internal_secondary';
+			}
+
+		} elseif ($menuNode['target_loc'] == 'ext' && $menuNode['ext_url']) {
+			$cssClass = 'zenario_menunode_external';
+
+		} else {
+			$cssClass = 'zenario_menunode_unlinked';
+		}
+		
+		if (empty($item['parent_id'])) {
+			$cssClass .= ' zenario_menunode_toplevel';
+		}
+		if (!empty($item['children'])) {
+			$cssClass .= ' zenario_menunode_with_children';
+		}
+		
+		return $cssClass;
 	}
 
 	//Formerly "getMenuPathWithMenuSection()"
@@ -109,7 +117,7 @@ class menuAdm {
 			$sql .= "
 					(
 						SELECT CONCAT(mt.name, IF(mt.language_id = '". \ze\escape::sql($langId). "', '', CONCAT(' (', mt.language_id, ')')))
-						FROM ". DB_NAME_PREFIX. "menu_text AS mt
+						FROM ". DB_PREFIX. "menu_text AS mt
 						WHERE mt.menu_id = mi.id
 						ORDER BY
 							mt.language_id = '". \ze\escape::sql($langId). "' DESC,
@@ -121,8 +129,8 @@ class menuAdm {
 		$sql .= "
 					ORDER BY mh.separation DESC SEPARATOR '". \ze\escape::sql($separator). "'
 				)
-			FROM ". DB_NAME_PREFIX. "menu_hierarchy AS mh
-			INNER JOIN ". DB_NAME_PREFIX. "menu_nodes AS mi
+			FROM ". DB_PREFIX. "menu_hierarchy AS mh
+			INNER JOIN ". DB_PREFIX. "menu_nodes AS mi
 			   ON mi.id = mh.ancestor_id
 			WHERE mh.child_id = ". (int) $menuId;
 	
@@ -138,7 +146,7 @@ class menuAdm {
 	public static function level($mID) {
 		$sql = "
 			SELECT IFNULL(MAX(separation), 0) + 1
-			FROM ". DB_NAME_PREFIX. "menu_hierarchy
+			FROM ". DB_PREFIX. "menu_hierarchy
 			WHERE child_id = ". (int) $mID;
 	
 		if (($result = \ze\sql::select($sql)) && ($row = \ze\sql::fetchRow($result))) {
@@ -222,7 +230,7 @@ class menuAdm {
 		if (($newMenu || $recalc) && !isset($submission['ordinal'])) {
 			$sql = "
 				SELECT max(ordinal)
-				FROM ". DB_NAME_PREFIX. "menu_nodes 
+				FROM ". DB_PREFIX. "menu_nodes 
 				WHERE section_id = ". (int) $submission['section_id']. "
 				  AND parent_id = ". (int) ($submission['parent_id'] ?? false);
 		
@@ -235,9 +243,9 @@ class menuAdm {
 
 		//Update the Menu Nodes Table
 		$sql = "";
-		foreach(\ze\deprecated::getFields(DB_NAME_PREFIX, 'menu_nodes') as $field => $details) {
+		foreach(\ze\deprecated::getFields(DB_PREFIX, 'menu_nodes') as $field => $details) {
 			if (isset($submission[$field])) {
-				\ze\deprecated::addFieldToSQL($sql, DB_NAME_PREFIX. 'menu_nodes', $field, $submission, $menuId, $details);
+				\ze\deprecated::addFieldToSQL($sql, DB_PREFIX. 'menu_nodes', $field, $submission, $menuId, $details);
 			}
 		}
 
@@ -263,7 +271,7 @@ class menuAdm {
 		if (isset($submission['redundancy']) && !empty($submission['equiv_id'])) {
 			if ($submission['redundancy'] == 'primary') {
 				$sql = "
-					UPDATE ". DB_NAME_PREFIX. "menu_nodes SET
+					UPDATE ". DB_PREFIX. "menu_nodes SET
 						redundancy = 'secondary'
 					WHERE equiv_id = ". (int) $submission['equiv_id']. "
 					  AND content_type = '". \ze\escape::sql($submission['content_type']). "'
@@ -321,9 +329,9 @@ class menuAdm {
 	
 		$sql = "";
 		$hadUsefulField = false;
-		foreach(\ze\deprecated::getFields(DB_NAME_PREFIX, 'menu_text') as $field => $details) {
+		foreach(\ze\deprecated::getFields(DB_PREFIX, 'menu_text') as $field => $details) {
 			if (isset($submission[$field])) {
-				\ze\deprecated::addFieldToSQL($sql, DB_NAME_PREFIX. 'menu_text', $field, $submission, $textExists, $details);
+				\ze\deprecated::addFieldToSQL($sql, DB_PREFIX. 'menu_text', $field, $submission, $textExists, $details);
 			
 				if ($field != 'language_id' && $field != 'menu_id') {
 					$hadUsefulField = true;
@@ -368,8 +376,8 @@ class menuAdm {
 				c.equiv_id,
 				c.type AS content_type,
 				'secondary' AS redundancy
-			FROM ". DB_NAME_PREFIX. "content_items AS c
-			INNER JOIN ". DB_NAME_PREFIX. "content_item_versions AS v
+			FROM ". DB_PREFIX. "content_items AS c
+			INNER JOIN ". DB_PREFIX. "content_item_versions AS v
 			   ON v.id = c.id
 			  AND v.type = c.type
 			  AND v.version = c.admin_version
@@ -495,8 +503,8 @@ class menuAdm {
 				//(This will mess up the menu_hierarchy, but that will be fixed later.)
 				if ($menuDetails['section_id'] != ($sectionId = $parentDetails['section_id'])) {
 					$sql = "
-						UPDATE ". DB_NAME_PREFIX. "menu_hierarchy AS h
-						INNER JOIN ". DB_NAME_PREFIX. "menu_nodes AS m
+						UPDATE ". DB_PREFIX. "menu_hierarchy AS h
+						INNER JOIN ". DB_PREFIX. "menu_nodes AS m
 						   ON m.id = h.child_id
 						  SET m.section_id = ". (int) $parentDetails['section_id']. ",
 							  h.section_id = ". (int) $parentDetails['section_id']. "
@@ -537,8 +545,8 @@ class menuAdm {
 					//If this is a different section, move the Menu Node and its children to that section.
 					//(This will mess up the menu_hierarchy, but that will be fixed later.)
 					$sql = "
-						UPDATE ". DB_NAME_PREFIX. "menu_hierarchy AS h
-						INNER JOIN ". DB_NAME_PREFIX. "menu_nodes AS m
+						UPDATE ". DB_PREFIX. "menu_hierarchy AS h
+						INNER JOIN ". DB_PREFIX. "menu_nodes AS m
 						   ON m.id = h.child_id
 						  SET m.section_id = ". (int) $newSectionId. ",
 							  h.section_id = ". (int) $newSectionId. "
@@ -564,7 +572,7 @@ class menuAdm {
 		//If there was a specific ordinal chosen, we'll need to bump up the ordinals of the existing Menu Node(s) after that ordinal
 		if ($newNeighbour !== false && $numMoves && $idsList) {
 			$sql = "
-				UPDATE ". DB_NAME_PREFIX. "menu_nodes
+				UPDATE ". DB_PREFIX. "menu_nodes
 				SET ordinal = ordinal + ". (int) $numMoves. "
 				WHERE section_id = ". (int) $sectionId. "
 				  AND parent_id = ". (int) $newParentId. "
@@ -634,7 +642,7 @@ class menuAdm {
 	//Formerly "ensureContentItemHasPrimaryMenuItem()"
 	public static function ensureContentItemHasPrimaryNode($equivId, $cType) {
 		$sql = "
-			UPDATE ". DB_NAME_PREFIX. "menu_nodes SET
+			UPDATE ". DB_PREFIX. "menu_nodes SET
 				redundancy = 'primary'
 			WHERE equiv_id = ". (int) $equivId. "
 			  AND content_type = '". \ze\escape::sql($cType). "'
@@ -647,7 +655,7 @@ class menuAdm {
 	public static function addNewNodeToHierarchy($sectionId, $menuId, $parentId = false) {
 
 		$sql = "
-			INSERT INTO ". DB_NAME_PREFIX. "menu_hierarchy (
+			INSERT INTO ". DB_PREFIX. "menu_hierarchy (
 				section_id, child_id, ancestor_id, separation
 			) VALUES (
 				". (int) $sectionId. ", ". (int) $menuId. ", ". (int) $menuId. ", 0
@@ -655,7 +663,7 @@ class menuAdm {
 		\ze\sql::update($sql);
 	
 		$sql = "
-			INSERT INTO ". DB_NAME_PREFIX. "menu_positions (
+			INSERT INTO ". DB_PREFIX. "menu_positions (
 				parent_tag,
 				tag,
 				section_id, menu_id, is_dummy_child
@@ -667,7 +675,7 @@ class menuAdm {
 		\ze\sql::update($sql);
 	
 		$sql = "
-			INSERT INTO ". DB_NAME_PREFIX. "menu_positions (
+			INSERT INTO ". DB_PREFIX. "menu_positions (
 				parent_tag,
 				tag,
 				section_id, menu_id, is_dummy_child
@@ -680,11 +688,11 @@ class menuAdm {
 	
 		if ($parentId) {
 			$sql = "
-				INSERT INTO ". DB_NAME_PREFIX. "menu_hierarchy (
+				INSERT INTO ". DB_PREFIX. "menu_hierarchy (
 					section_id, child_id, ancestor_id, separation
 				) SELECT
 					section_id, ". (int) $menuId. ", ancestor_id, separation + 1
-				FROM ". DB_NAME_PREFIX. "menu_hierarchy
+				FROM ". DB_PREFIX. "menu_hierarchy
 				WHERE child_id = ". (int) $parentId;
 			\ze\sql::update($sql);
 		}
@@ -693,13 +701,13 @@ class menuAdm {
 	//Formerly "recalcAllMenuHierarchy()"
 	public static function recalcAllHierarchy() {
 		$sql = "
-			TRUNCATE TABLE ". DB_NAME_PREFIX. "menu_hierarchy";
+			TRUNCATE TABLE ". DB_PREFIX. "menu_hierarchy";
 		\ze\sql::update($sql);
 	
 	
 		$sql = "
 			SELECT id
-			FROM ". DB_NAME_PREFIX. "menu_sections";
+			FROM ". DB_PREFIX. "menu_sections";
 	
 		$result = \ze\sql::select($sql);
 		while ($row = \ze\sql::fetchAssoc($result)) {
@@ -715,16 +723,16 @@ class menuAdm {
 		\ze\menuAdm::recalcTopLevelPositions();
 	
 		$sql = "
-			INSERT INTO ". DB_NAME_PREFIX. "menu_hierarchy(
+			INSERT INTO ". DB_PREFIX. "menu_hierarchy(
 				section_id, child_id, ancestor_id, separation
 			) SELECT
 				section_id, id, id, 0
-			FROM ". DB_NAME_PREFIX. "menu_nodes
+			FROM ". DB_PREFIX. "menu_nodes
 			WHERE section_id = ". (int) $sectionId;
 		\ze\sql::update($sql);
 	
 		$sql = "
-			INSERT INTO ". DB_NAME_PREFIX. "menu_positions (
+			INSERT INTO ". DB_PREFIX. "menu_positions (
 				parent_tag,
 				tag,
 				section_id, menu_id, is_dummy_child
@@ -732,12 +740,12 @@ class menuAdm {
 				CONCAT(section_id, '_', parent_id, '_', 0),
 				CONCAT(section_id, '_', id, '_', 0),
 				section_id, id, 0
-			FROM ". DB_NAME_PREFIX. "menu_nodes
+			FROM ". DB_PREFIX. "menu_nodes
 			WHERE section_id = ". (int) $sectionId;
 		\ze\sql::update($sql);
 	
 		$sql = "
-			INSERT INTO ". DB_NAME_PREFIX. "menu_positions (
+			INSERT INTO ". DB_PREFIX. "menu_positions (
 				parent_tag,
 				tag,
 				section_id, menu_id, is_dummy_child
@@ -745,7 +753,7 @@ class menuAdm {
 				CONCAT(section_id, '_', id, '_', 0),
 				CONCAT(section_id, '_', id, '_', 1),
 				section_id, id, 1
-			FROM ". DB_NAME_PREFIX. "menu_nodes
+			FROM ". DB_PREFIX. "menu_nodes
 			WHERE section_id = ". (int) $sectionId;
 		\ze\sql::update($sql);
 	
@@ -758,13 +766,13 @@ class menuAdm {
 		if ($parentId) {
 			$sql = "
 				SELECT id, section_id
-				FROM ". DB_NAME_PREFIX. "menu_nodes
+				FROM ". DB_PREFIX. "menu_nodes
 				WHERE parent_id = ". (int) $parentId;
 	
 		} else {
 			$sql = "
 				SELECT id, section_id
-				FROM ". DB_NAME_PREFIX. "menu_nodes
+				FROM ". DB_PREFIX. "menu_nodes
 				WHERE section_id = ". (int) $sectionId. "
 				  AND parent_id = 0";
 		}
@@ -779,7 +787,7 @@ class menuAdm {
 		
 			foreach ($ancestors as $ancestor => $separationOffset) {
 				$sql = "
-					INSERT INTO ". DB_NAME_PREFIX. "menu_hierarchy SET
+					INSERT INTO ". DB_PREFIX. "menu_hierarchy SET
 						section_id = ". (int) $sectionId. ",
 						child_id = ". (int) $row['id']. ",
 						ancestor_id = ". (int) $ancestor. ",
@@ -801,8 +809,8 @@ class menuAdm {
 		//Delete any positions from sections that do not exist.
 		$sql = "
 			DELETE mp.*
-			FROM ". DB_NAME_PREFIX. "menu_positions AS mp
-			LEFT JOIN ". DB_NAME_PREFIX. "menu_sections AS ms
+			FROM ". DB_PREFIX. "menu_positions AS mp
+			LEFT JOIN ". DB_PREFIX. "menu_sections AS ms
 			   ON ms.id = mp.section_id
 			WHERE ms.id IS NULL";
 		\ze\sql::update($sql);
@@ -812,7 +820,7 @@ class menuAdm {
 	
 		//Insert new entries
 		$sql = "
-			INSERT INTO ". DB_NAME_PREFIX. "menu_positions (
+			INSERT INTO ". DB_PREFIX. "menu_positions (
 				parent_tag,
 				tag,
 				section_id, menu_id, is_dummy_child
@@ -820,12 +828,12 @@ class menuAdm {
 				'0',
 				CONCAT(id, '_', 0, '_', 0),
 				id, 0, 0
-			FROM ". DB_NAME_PREFIX. "menu_sections";
+			FROM ". DB_PREFIX. "menu_sections";
 		\ze\sql::update($sql);
 	
 		//Insert new entries
 		$sql = "
-			INSERT INTO ". DB_NAME_PREFIX. "menu_positions (
+			INSERT INTO ". DB_PREFIX. "menu_positions (
 				parent_tag,
 				tag,
 				section_id, menu_id, is_dummy_child
@@ -833,7 +841,7 @@ class menuAdm {
 				CONCAT(id, '_', 0, '_', 0),
 				CONCAT(id, '_', 0, '_', 1),
 				id, 0, 1
-			FROM ". DB_NAME_PREFIX. "menu_sections";
+			FROM ". DB_PREFIX. "menu_sections";
 		\ze\sql::update($sql);
 	}
 

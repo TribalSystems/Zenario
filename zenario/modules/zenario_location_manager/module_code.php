@@ -38,7 +38,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 		}
 		
 		if ($locationId) {
-			$field['value'] = ze\escape::in(ze\row::getArray(ZENARIO_LOCATION_MANAGER_PREFIX . 'location_sector_score_link', 'sector_id', ['location_id' => $locationId]), false);
+			$field['value'] = ze\escape::in(ze\row::getValues(ZENARIO_LOCATION_MANAGER_PREFIX . 'location_sector_score_link', 'sector_id', ['location_id' => $locationId]), false);
 		}
 	}
 
@@ -177,7 +177,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 				$admins = [];
 				$adminsRaw = ze\row::query("admins",["id","username","authtype"],["status" => "active"]);
 				if (ze\sql::numRows($adminsRaw)>0) {
-					while ($admin = ze\sql::fetchArray($adminsRaw)) {
+					while ($admin = ze\sql::fetchAssoc($adminsRaw)) {
 						$admins[$admin['id']] = $admin['username'];
 						
 						if ($admin['authtype']=="super") {
@@ -559,7 +559,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 										
 					foreach ($fieldsToCheck as $tuixName => $dbName) {
 						$sql = "SELECT DISTINCT " . ze\escape::sql($dbName) . "
-								FROM " . DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "locations
+								FROM " . DB_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "locations
 								WHERE id IN (" . ze\escape::sql($box['key']['id']) . ")
 								LIMIT 2";
 								
@@ -600,7 +600,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 					$sql = "SELECT DISTINCT 
 								CONCAT(content_type,'_',equiv_id) AS tag
 							FROM " 
-								. DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "locations
+								. DB_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "locations
 							WHERE 
 								id IN (" . ze\escape::sql($box['key']['id']) . ")
 							LIMIT 2";
@@ -625,8 +625,8 @@ class zenario_location_manager extends ze\moduleBaseClass {
 						$sectorsPicked = false;
 						$sql = "
 							SELECT lssl.sector_id, COUNT(DISTINCT lssl.location_id) AS cnt
-							FROM ". DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "locations AS l
-							INNER JOIN ". DB_NAME_PREFIX. ZENARIO_LOCATION_MANAGER_PREFIX . "location_sector_score_link AS lssl
+							FROM ". DB_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "locations AS l
+							INNER JOIN ". DB_PREFIX. ZENARIO_LOCATION_MANAGER_PREFIX . "location_sector_score_link AS lssl
 							   ON l.id = lssl.location_id
 							WHERE lssl.location_id IN (". $box['key']['id']. ")
 							GROUP BY lssl.sector_id";
@@ -1061,7 +1061,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 				}
 				
 				if (!empty($fieldsToChangeSQL)) {
-					$sql = "UPDATE " . DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "locations
+					$sql = "UPDATE " . DB_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "locations
 							SET ";
 
 					$sql .= implode(",",$fieldsToChangeSQL);
@@ -1488,7 +1488,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 
 						$sql = "SELECT sector_id,
 									sticky_flag
-								FROM " . DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "location_sector_score_link
+								FROM " . DB_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "location_sector_score_link
 								WHERE location_id = " . (int) $refinerId;
 									
 						$result = ze\sql::select($sql);
@@ -1499,7 +1499,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 						$stickyFlagSet = false;
 						
 						if ($locationSectorCount>0) {
-							while ($row = ze\sql::fetchArray($result)) {
+							while ($row = ze\sql::fetchAssoc($result)) {
 								$locationSectors[] = $row['sector_id'];
 								
 								if ($row['sticky_flag']) {
@@ -1531,13 +1531,13 @@ class zenario_location_manager extends ze\moduleBaseClass {
 					case 'make_sticky':
 						$IDs = explode(',',$ids);
 						foreach ($IDs as $ID){
-								$sql = "UPDATE " . DB_NAME_PREFIX . TRIBIQ_LOCATION_MANAGER_PREFIX . "location_sector_score_link
+								$sql = "UPDATE " . DB_PREFIX . TRIBIQ_LOCATION_MANAGER_PREFIX . "location_sector_score_link
 										SET sticky_flag = 0
 										WHERE location_id = " . (int) $refinerId;
 										
 								$result = ze\sql::update($sql);
 								
-								$sql = "UPDATE " . DB_NAME_PREFIX . TRIBIQ_LOCATION_MANAGER_PREFIX . "location_sector_score_link
+								$sql = "UPDATE " . DB_PREFIX . TRIBIQ_LOCATION_MANAGER_PREFIX . "location_sector_score_link
 										SET sticky_flag = 1
 										WHERE location_id = " . (int) $refinerId . "
 											AND sector_id = " . (int) $ID;
@@ -1628,7 +1628,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 					id,
 					description 
 				FROM ' 
-					. DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . 'locations ';
+					. DB_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . 'locations ';
 		if ($status){
 			$sql .= " WHERE
 							status = '" . ze\escape::sql($status) . "'" ;
@@ -1638,7 +1638,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 					description ASC';
 		
 		if (ze\sql::numRows($result = ze\sql::select($sql))>=1){
-			while ($row = ze\sql::fetchArray($result)) {
+			while ($row = ze\sql::fetchAssoc($result)) {
 				$rv[$row['id']] = $row['description'];
 			}
 		}
@@ -1651,7 +1651,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 					id,
 					description 
 				FROM ' 
-					. DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . 'locations ';
+					. DB_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . 'locations ';
 		if ($status){
 			$sql .= " WHERE
 							status = '" . ze\escape::sql($status) . "'" ;
@@ -1660,7 +1660,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 				ORDER BY 
 					description ASC';
 		if (ze\sql::numRows($result = ze\sql::select($sql))>=1){
-			while ($row = ze\sql::fetchArray($result)) {
+			while ($row = ze\sql::fetchAssoc($result)) {
 				$rv[$row['id']] = $row['description'];
 			}
 		}
@@ -1695,11 +1695,11 @@ class zenario_location_manager extends ze\moduleBaseClass {
 		$sql .= "
 					cd.*";
 		$sql.= '
-				FROM ' . DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . 'locations AS loc';
+				FROM ' . DB_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . 'locations AS loc';
 		
 		//Custom data:
 		$sql .= "
-			LEFT JOIN ". DB_NAME_PREFIX. ZENARIO_LOCATION_MANAGER_PREFIX. "locations_custom_data AS cd
+			LEFT JOIN ". DB_PREFIX. ZENARIO_LOCATION_MANAGER_PREFIX. "locations_custom_data AS cd
 			   ON cd.location_id = loc.id";
 			   
 		$sql .= '
@@ -1718,33 +1718,25 @@ class zenario_location_manager extends ze\moduleBaseClass {
 		}
 		
 		//$sql = "SELECT id
-		//		FROM " . DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "locations
+		//		FROM " . DB_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "locations
 		//		WHERE equiv_id = " . (int) $cID . "
 		//			AND content_type = '" . ze\escape::sql($cType) . "'";
 
 		$sql = "SELECT l.id
-				FROM " . DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "locations AS l
-				INNER JOIN " . DB_NAME_PREFIX . "content_items AS c1
+				FROM " . DB_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "locations AS l
+				INNER JOIN " . DB_PREFIX . "content_items AS c1
 				ON l.equiv_id = c1.id
 				AND l.content_type = c1.type
 				INNER JOIN (
 					SELECT c2.equiv_id
-					FROM " . DB_NAME_PREFIX . "content_items AS c2
+					FROM " . DB_PREFIX . "content_items AS c2
 					WHERE c2.id = " . (int) $cID . "
 					AND c2.type = '" . ze\escape::sql($cType) . "'
 				) AS sub
 				ON c1.equiv_id = sub.equiv_id";
 
 					
-		$result = ze\sql::select($sql);
-		
-		if (ze\sql::numRows($result)==1) {
-			$row = ze\sql::fetchArray($result);
-			
-			return $row['id'];
-		} else {
-			return false;
-		}
+		return ze\sql::fetchValue($sql);
 	}
 	
 	public static function getChildSectorsIndexedByIdOrderedByName($parentId=0){
@@ -1754,7 +1746,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 					parent_id,
 					name
 				FROM " 
-					.DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "sectors 
+					.DB_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "sectors 
 				WHERE 
 					" . ($parentId?"parent_id=" . (int)$parentId:" true") . "
 				ORDER BY 
@@ -1771,16 +1763,16 @@ class zenario_location_manager extends ze\moduleBaseClass {
 				SELECT 
 					l1.region_id
 				FROM 
-					" . DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "location_region_link l1
+					" . DB_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "location_region_link l1
 				LEFT JOIN
 					(SELECT 
 						l.region_id,
 						r.parent_id,
 						l.location_id
 					FROM
-						" . DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "location_region_link l
+						" . DB_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "location_region_link l
 					INNER JOIN
-						" . DB_NAME_PREFIX . ZENARIO_COUNTRY_MANAGER_PREFIX . "country_manager_regions r
+						" . DB_PREFIX . ZENARIO_COUNTRY_MANAGER_PREFIX . "country_manager_regions r
 					ON
 						l.region_id = r.id 
 					WHERE
@@ -1805,7 +1797,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 		$sql = 'SELECT 
 					parent_id,
 					name
-				FROM ' .DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . 'sectors ';
+				FROM ' .DB_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . 'sectors ';
 		$sql .= 'WHERE id = ' . (int) $ID;
 		if (ze\sql::numRows($result = ze\sql::select($sql))==1){
 			$rv = ze\sql::fetchAssoc($result);
@@ -1832,7 +1824,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 	public static function getScoreDetails($ID){
 		$rv = [];
 		$sql = 'SELECT name
-				FROM ' .DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . 'scores ';
+				FROM ' .DB_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . 'scores ';
 		$sql .= 'WHERE id = ' . (int) $ID;
 		if (ze\sql::numRows($result = ze\sql::select($sql))==1){
 			$rv = ze\sql::fetchAssoc($result);
@@ -1844,17 +1836,13 @@ class zenario_location_manager extends ze\moduleBaseClass {
 		$sectors = [];
 		
 		$sql = "SELECT sector_id
-				FROM " .DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "location_sector_score_link
+				FROM " .DB_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "location_sector_score_link
 				WHERE location_id = " . (int) $locationID;
 				
 		$result = ze\sql::select($sql);
 		
 		if (ze\sql::numRows($result)>0) {
-			while ($row = ze\sql::fetchArray($result)) {
-				$sectors[] = $row[0];
-			}
-			
-			return $sectors;
+			return ze\sql::fetchValues($result);
 		} else {
 			return false;
 		}
@@ -1865,7 +1853,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 		$sql = 'SELECT 
 					score_id,
 					sticky_flag
-				FROM ' .DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . 'location_sector_score_link
+				FROM ' .DB_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . 'location_sector_score_link
 				WHERE location_id = ' . (int) $locationID . '
 					AND sector_id = ' . (int) $sectorID;
 		if (ze\sql::numRows($result = ze\sql::select($sql))==1){
@@ -1883,7 +1871,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 	// Still used on choosewhere
 	public static function getScoreSectorDetails($locationID, $sectorID){
 		$sql = 'SELECT score_id
-				FROM ' .DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . 'location_sector_score_link
+				FROM ' .DB_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . 'location_sector_score_link
 				WHERE location_id = ' . (int) $locationID . '
 					AND sector_id = ' . (int) $sectorID;
 		if (ze\sql::numRows($result = ze\sql::select($sql))==1){
@@ -1939,7 +1927,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 		}
 	
 		$sql = 'DELETE 
-				FROM ' .DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . 'sectors 
+				FROM ' .DB_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . 'sectors 
 				WHERE id=' . (int)$ID;
 				
 		ze\sql::update($sql);
@@ -1957,15 +1945,15 @@ class zenario_location_manager extends ze\moduleBaseClass {
 
 	public static function removeSector($locationId,$sectorId=false){
 		$sql = "SELECT id
-				FROM " . DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "sectors
+				FROM " . DB_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "sectors
 				WHERE parent_id = " . (int) $sectorId;
 				
 		$result = ze\sql::select($sql);
 		
 		if (ze\sql::numRows($result)>0) {
-			while ($row = ze\sql::fetchArray($result)) {
+			while ($row = ze\sql::fetchRow($result)) {
 				$sql = "DELETE
-						FROM " . DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "location_sector_score_link
+						FROM " . DB_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "location_sector_score_link
 						WHERE location_id = " . (int) $locationId . "
 							AND sector_id = " . (int) $row[0];
 							
@@ -1974,7 +1962,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 		}
 	
 		$sql = 'DELETE 
-				FROM ' .DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . 'location_sector_score_link 
+				FROM ' .DB_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . 'location_sector_score_link 
 				WHERE location_id = ' . (int) $locationId;
 				
 		if ($sectorId) {
@@ -1986,17 +1974,17 @@ class zenario_location_manager extends ze\moduleBaseClass {
 
 	public static function changeScore($locationID, $sectorID, $mode){
 		$sql = "SELECT score_id
-				FROM " . DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . 'location_sector_score_link
+				FROM " . DB_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . 'location_sector_score_link
 				WHERE location_id = ' . (int) $locationID . '
 					AND sector_id = ' . (int) $sectorID;
 					
 		$result = ze\sql::select($sql);
 		
-		$row = ze\sql::fetchArray($result);
+		$row = ze\sql::fetchRow($result);
 		
 		if ($mode=="increase") {
 			if ($row[0]<5) {
-				$sql = 'UPDATE ' .DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . 'location_sector_score_link
+				$sql = 'UPDATE ' .DB_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . 'location_sector_score_link
 						SET score_id = score_id + 1
 						WHERE location_id = ' . (int) $locationID . '
 							AND sector_id = ' . (int) $sectorID;
@@ -2005,7 +1993,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 	
 		if ($mode=="decrease") {
 			if ($row[0]>1) {
-				$sql = 'UPDATE ' .DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . 'location_sector_score_link
+				$sql = 'UPDATE ' .DB_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . 'location_sector_score_link
 						SET score_id = score_id - 1
 						WHERE location_id = ' . (int) $locationID . '
 							AND sector_id = ' . (int) $sectorID;
@@ -2019,7 +2007,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 		$sql = "SELECT 
 					id
 				FROM " 
-					. DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "sectors
+					. DB_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "sectors
 				WHERE 
 						name = '" . ze\escape::sql($name) . "' ";
 		if ((int)$parentID){
@@ -2040,7 +2028,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 	
 	public static function checkScoreNameUnique($name, $ID) {
 		$sql = "SELECT id
-				FROM " . DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "scores
+				FROM " . DB_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "scores
 				WHERE name = '" . ze\escape::sql($name) . "'";
 		
 		if ($ID) {
@@ -2096,13 +2084,13 @@ class zenario_location_manager extends ze\moduleBaseClass {
 		
 	public static function makeLocationImageSticky($locationId,$image_id) {
 		$sql = "
-			UPDATE " . DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "location_images SET
+			UPDATE " . DB_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "location_images SET
 				sticky_flag = 0
 			WHERE location_id = " . (int) $locationId;
 		ze\sql::update($sql);
 		
 		$sql = "
-			UPDATE " . DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "location_images SET
+			UPDATE " . DB_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "location_images SET
 				sticky_flag = 1
 			WHERE location_id = " . (int) $locationId . "
 			  AND image_id = ". (int) $image_id;
@@ -2155,7 +2143,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 	
 		$region = zenario_country_manager::getRegionById($regionId);
 		$sql = "INSERT IGNORE 
-					" . DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "location_region_link
+					" . DB_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "location_region_link
 				SET 
 					location_id = " . (int) $locationId . ",
 					region_id = " . (int)  $regionId;
@@ -2177,7 +2165,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 	
 		$sector = self::getSectorDetails($sectorId);
 		
-		$sql = "REPLACE INTO " . DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "location_sector_score_link
+		$sql = "REPLACE INTO " . DB_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "location_sector_score_link
 				SET location_id = " . (int) $locationId . ",
 					sector_id = " . (int)  $sectorId . ",
 					score_id = 3";
@@ -2258,7 +2246,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 	public static function removeAllRegionsFromLocation($locationID){
 		
 		$sql = "DELETE FROM 
-					" . DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "location_region_link 
+					" . DB_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "location_region_link 
 				WHERE
 					location_id = " . (int) $locationID;
 		ze\sql::update($sql);
@@ -2298,7 +2286,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 	
 	
     public static function locationsImages($locationId) {
-        return ze\row::getArray(ZENARIO_LOCATION_MANAGER_PREFIX. 'location_images', 'image_id', ['location_id' => $locationId], 'ordinal');
+        return ze\row::getValues(ZENARIO_LOCATION_MANAGER_PREFIX. 'location_images', 'image_id', ['location_id' => $locationId], 'ordinal');
     }
     public static function addImage($locationId, $location, $filename = false) {
         $image_id = ze\file::addToDatabase('location', $location, $filename, true);
@@ -2329,6 +2317,17 @@ class zenario_location_manager extends ze\moduleBaseClass {
 					'active' => 'Active',
 					'suspended' => 'Suspended'
 				];
+		}
+	}
+	
+	public static function requestVarMergeField($name) {
+		switch ($name) {
+			case 'name':
+				return ze\sql::fetchValue('
+					SELECT description
+					FROM '. DB_PREFIX. ZENARIO_LOCATION_MANAGER_PREFIX. 'locations
+					WHERE id = '. (int) ze::$vars['locationId']
+				);
 		}
 	}
 }

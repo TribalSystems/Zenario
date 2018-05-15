@@ -72,8 +72,8 @@ if ($userId = ze\user::id()) {
 	if ($ZENARIO_ORGANIZATION_MANAGER_PREFIX = ze\module::prefix('zenario_organization_manager', true)) {
 		$sql = "
 			SELECT DISTINCT url.name
-			FROM ". DB_NAME_PREFIX. $ZENARIO_ORGANIZATION_MANAGER_PREFIX. "user_role_location_link AS urll
-			INNER JOIN ". DB_NAME_PREFIX. $ZENARIO_ORGANIZATION_MANAGER_PREFIX. "user_location_roles AS url
+			FROM ". DB_PREFIX. $ZENARIO_ORGANIZATION_MANAGER_PREFIX. "user_role_location_link AS urll
+			INNER JOIN ". DB_PREFIX. $ZENARIO_ORGANIZATION_MANAGER_PREFIX. "user_location_roles AS url
 			   ON urll.role_id = url.id
 			WHERE user_id = ". (int) $userId. "
 			ORDER BY 1";

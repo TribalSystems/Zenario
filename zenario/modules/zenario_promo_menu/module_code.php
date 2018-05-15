@@ -103,12 +103,12 @@ class zenario_promo_menu extends zenario_menu_multicolumn {
 				m.overwrite_alt_tag,
 				t.top_of_column,
 				f.alt_tag
-			FROM '.DB_NAME_PREFIX.'menu_nodes n
-			LEFT JOIN '.DB_NAME_PREFIX. ZENARIO_PROMO_MENU_PREFIX. 'menu_node_feature_image m
+			FROM '.DB_PREFIX.'menu_nodes n
+			LEFT JOIN '.DB_PREFIX. ZENARIO_PROMO_MENU_PREFIX. 'menu_node_feature_image m
 				ON n.id = m.node_id
-			LEFT JOIN '.DB_NAME_PREFIX. ZENARIO_MENU_MULTICOLUMN_PREFIX. 'nodes_top_of_column t
+			LEFT JOIN '.DB_PREFIX. ZENARIO_MENU_MULTICOLUMN_PREFIX. 'nodes_top_of_column t
 				ON n.id = t.node_id
-			LEFT JOIN '.DB_NAME_PREFIX. 'files f
+			LEFT JOIN '.DB_PREFIX. 'files f
 				ON m.image_id = f.id
 			WHERE section_id = '.(int)$this->sectionId;
 		$result = ze\sql::select($sql);
@@ -174,6 +174,10 @@ class zenario_promo_menu extends zenario_menu_multicolumn {
 	
 	public function showSlot() {
 		$this->twigFramework($this->menuArray);
+	}
+	
+	public static function getFeatureImageId($nodeId) {
+		return ze\row::get(ZENARIO_PROMO_MENU_PREFIX. 'menu_node_feature_image', 'image_id', ['node_id' => $nodeId, 'use_feature_image' => 1]);
 	}
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {

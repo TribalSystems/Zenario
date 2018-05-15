@@ -162,9 +162,11 @@ zenario_banner.saveViaAJAX = function(el, close, confirm, confirmChoice) {
 		{
 			_zenario_save_content_: 1,
 			_sync_summary: engToBoolean(confirm && confirmChoice),
-			content__content: content,
-			content__title: $('div#'+containerId+' #banner_title_input_box').val()
+			content__content: zenario.encodeItemIdForOrganizer(content),
+			content__title: zenario.encodeItemIdForOrganizer($('div#'+containerId+' #banner_title_input_box').val())
 		}, true);
+		//N.b. Cloudflare sometimes blocks HTML from being sent via the POST, e.g. if it sees it has links in it.
+		//We're attempting to work around this by calling encodeItemIdForOrganizer() to mask the HTML.
 	
 	if (error) {
 		zenario_banner.floatingMessage(error, true, 'error');

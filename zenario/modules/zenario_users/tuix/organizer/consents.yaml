@@ -1,0 +1,68 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__users:
+    nav:
+        consents:
+            priv: _PRIV_VIEW_USER
+            ord: "1.2"
+            label: Consent log
+            tooltip: >
+                View user consents
+            link:
+                path: zenario__users/panels/consents
+    
+    panels:
+        consents:
+            title: Consent log
+            db_items:
+                table: '[[DB_PREFIX]]consents c'
+                id_column: c.id
+            no_items_message: No consents recorded.
+            item:
+                css_class: zenario_consent
+            default_sort_column: datetime
+            default_sort_desc: true
+            columns:
+                id:
+                    title: ID
+                    db_column: c.id
+                    width: xxsmall
+                    align_right: true
+                    disallow_sorting: true
+                    show_by_default: false
+                datetime:
+                    title: Date/time
+                    db_column: c.datetime
+                    format: datetime    
+                    width: large
+                    always_show: true
+                user:
+                    title: Visitor
+                    width: xlarge
+                    disallow_sorting: true
+                    always_show: true                
+                consent_text: 
+                    title: Consent text
+                    db_column: c.label
+                    disallow_sorting: true
+                    width: xlarge
+                    always_show: true
+                ip_address:
+                    title: IP address
+                    db_column: c.ip_address
+                    disallow_sorting: true
+                    always_show: true
+            item_buttons:
+                view:
+                    label: View
+                    admin_box:
+                        path: zenario_consent
+            collection_buttons:
+                help:
+                    label: Help
+                    ord: 9
+                    hide_on_refiner: true
+                    help:
+                        message: >
+                            This panel shows what users have consented to. A consent is created when a form is submitted for each "consent" field on it.
+               

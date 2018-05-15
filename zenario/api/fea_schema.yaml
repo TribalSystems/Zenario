@@ -246,7 +246,7 @@ additionalProperties:
                                 type: boolean
                                 description: >
                                     Include this property to lock a tab in edit mode, and not show the cancel
-                                    button. 
+                                    button.
                                     Note that if this property is not defined then it will default to true.
                                 default: true
                     
@@ -285,6 +285,54 @@ additionalProperties:
                                             type: string
                                             description: >
                                                 A message for the cancel button
+                                
+                                pick_items:
+                                    type: object
+                                    description: >
+                                        This is used to define fields that let the user pick things,
+                                        e.g. from a typahead search.
+                                    oneOf:
+                                        -
+                                            required:
+                                                - enable_type_ahead_search
+                                        -
+                                            required:
+                                                - allow_typing_anything
+                                    properties:
+                                        multiple_select:
+                                            type: boolean
+                                            description: >
+                                                Setting this option will allow the user to enter multiple values.
+                                                They will be stored as comma-separated values.
+                                        enable_type_ahead_search:
+                                            type: boolean
+                                            description: >
+                                                Set this to true to enable the typeahead search.
+                                        
+                                        allow_typing_anything:
+                                            type: boolean
+                                            description: >
+                                                Allow the user to type anything into the box.
+                                                This is useful if you wish to have a type-ahead that helps users pick
+                                                existing things, but also be able to create something new by typing a
+                                                name that doesn't yet exist.
+                                        
+                                        picked_item_microtemplate:
+                                            type: string
+                                            description: >
+                                                Set this to override the microtemplate used to display the picked items.
+                                        dropdown_item_microtemplate:
+                                            type: string
+                                            description: >
+                                                Set this to override the microtemplate used to display the items in the
+                                                dropdown for the typeahead.
+                                        
+                                        reorder_items:
+                                            type: boolean
+                                            description: >
+                                                Setting this property will allow the administrator reorder the selected items by dragging/dropping.
+                                                
+                                                Otherwise items will be displayed in alphabetical order.
                         
         
         

@@ -43,7 +43,7 @@ class zenario_user_forms__organizer__content extends ze\moduleBaseClass {
 			if ($moduleIds) {
 				$sql = '
 					SELECT id, name, 0 AS egg_id
-					FROM '.DB_NAME_PREFIX.'plugin_instances
+					FROM '.DB_PREFIX.'plugin_instances
 					WHERE module_id IN ('. ze\escape::in($moduleIds, 'numeric'). ')
 					ORDER BY name';
 				$result = ze\sql::select($sql);
@@ -53,8 +53,8 @@ class zenario_user_forms__organizer__content extends ze\moduleBaseClass {
 			
 				$sql = "
 					SELECT pi.id, pi.name, np.id AS egg_id
-					FROM ". DB_NAME_PREFIX. "nested_plugins AS np
-					INNER JOIN ". DB_NAME_PREFIX. "plugin_instances AS pi
+					FROM ". DB_PREFIX. "nested_plugins AS np
+					INNER JOIN ". DB_PREFIX. "plugin_instances AS pi
 					   ON pi.id = np.instance_id
 					WHERE np.module_id IN (". ze\escape::in($moduleIds, 'numeric'). ")
 					ORDER BY pi.name";
@@ -67,9 +67,9 @@ class zenario_user_forms__organizer__content extends ze\moduleBaseClass {
 			$sqlJoin = $sqlWhere = '';
 			if ($instanceIds) {
 				$sqlJoin = '
-					INNER JOIN '.DB_NAME_PREFIX.'plugin_item_link pil
+					INNER JOIN '.DB_PREFIX.'plugin_item_link pil
 						ON (c.id = pil.content_id) AND (c.type = pil.content_type) AND (c.admin_version = pil.content_version)
-					INNER JOIN '.DB_NAME_PREFIX.'plugin_settings ps 
+					INNER JOIN '.DB_PREFIX.'plugin_settings ps 
 						ON (pil.instance_id = ps.instance_id) AND (ps.name = \'user_form\')';
 				$sqlWhere = '
 					pil.instance_id IN ('. ze\escape::in($instanceIds, 'numeric'). ')

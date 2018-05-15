@@ -46,3 +46,9 @@ plugin_settings:
                     show_phrase_icon: true
                     validation:
                         required_if_not_hidden: Enter a message to display to users trying to reset their password.
+                show_link_to_login_page:
+                    plugin_setting:
+                        name: show_link_to_login_page
+                    label: 'Show "Back to login" link'
+                    type: checkbox
+                    value: 1

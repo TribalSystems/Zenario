@@ -390,7 +390,7 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 								SELECT COLUMN_NAME, CHARACTER_MAXIMUM_LENGTH
 								FROM information_schema.columns
 								WHERE table_schema = "' . DBNAME . '"
-								AND table_name = "' . ze\escape::sql(DB_NAME_PREFIX . $table) . '"
+								AND table_name = "' . ze\escape::sql(DB_PREFIX . $table) . '"
 								AND COLUMN_NAME = "' . ze\escape::sql($datasetField['db_column']) . '"';
 							$result = ze\sql::select($sql);
 							$row = ze\sql::fetchRow($result);
@@ -898,6 +898,8 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 	}
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+		$admin = ze\row::get('admins', ['username', 'authtype'], ze\admin::id());
+		
 		//Include required modules
 		$dataset = ze\dataset::details($box['key']['dataset']);
 		$systemIdCol = !empty($dataset['system_table']) ? ze\row::idColumnOfTable($dataset['system_table']) : false;
@@ -1071,14 +1073,18 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 						$data['last_name'] = '';
 					}
 					$sendWelcomeEmail = false;
-					if (!$recordId && !empty($data['status'])) {
-						if ($data['status'] != 'contact' && empty($data['password'])) {
-							$data['password'] = ze\userAdm::createPassword();
+					if (!$recordId) {
+						if (!empty($data['status'])) {
+							if ($data['status'] != 'contact' && empty($data['password'])) {
+								$data['password'] = ze\userAdm::createPassword();
+							}
+							if ($data['status'] == 'active' && $values['actions/send_welcome_email'] && $values['actions/email_to_send']) {
+								//Send a welcome email
+								$sendWelcomeEmail = true;
+							}
 						}
-						if ($data['status'] == 'active' && $values['actions/send_welcome_email'] && $values['actions/email_to_send']) {
-							//Send a welcome email
-							$sendWelcomeEmail = true;
-						}
+						$data['creation_method'] = 'admin';
+						$data['creation_method_note'] = 'Imported by admin ' . $admin['username'];
 					}
 					
 					//Do not allow screen names to be imported to sites that don't use screen names

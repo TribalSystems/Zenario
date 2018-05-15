@@ -123,8 +123,8 @@ class zenario_extranet_user_image extends ze\moduleBaseClass {
 		
 		//Delete any unlinked images
 		$sql = "
-			DELETE f FROM ". DB_NAME_PREFIX. "files AS f
-			LEFT JOIN ". DB_NAME_PREFIX. "users AS u
+			DELETE f FROM ". DB_PREFIX. "files AS f
+			LEFT JOIN ". DB_PREFIX. "users AS u
 			   ON u.image_id = f.id
 			WHERE f.`usage` = 'user'
 			  AND u.image_id IS NULL";

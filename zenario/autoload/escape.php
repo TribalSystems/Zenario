@@ -53,6 +53,10 @@ class escape {
 		return htmlspecialchars(addcslashes($text, "\\\n\r\"'"));
 	}
 
+	public static function utf($string) {
+		return mb_detect_encoding($string, 'UTF-8', true)? $string : '<<invalid UTF-8 string>>';
+	}
+
 	//Formerly "XMLEscape()"
 	public static function xml($text) {
 		return str_ireplace(["'", '&nbsp;'], ['&apos;', ' '], htmlspecialchars($text));
@@ -82,7 +86,23 @@ class escape {
 	//Replacement for mysql_real_escape_string()
 	//Formerly "sqlEscape()"
 	public static function sql($text) {
-		return \ze::$lastDB->escape_string($text);
+		return \ze::$dbL->con->escape_string($text);
+	}
+	
+	public static function json($val) {
+		if (is_null($val) || false === ($enc = json_encode($val))) {
+			return 'NULL';
+		} else {
+			return '\''. \ze::$dbL->con->escape_string($enc). '\'';
+		}
+	}
+	
+	public static function intOrNull($int) {
+		if (is_null($int)) {
+			return 'NULL';
+		} else {
+			return (int) $int;
+		}
 	}
 
 	//Auto-convert ints and floats that were entered as strings into numbers.
@@ -101,7 +121,7 @@ class escape {
 				}
 			}
 			if ($sqlEscapeStrings) {
-				return "'". \ze::$lastDB->escape_string($text). "'";
+				return "'". \ze::$dbL->con->escape_string($text). "'";
 			} else {
 				return \ze\ring::engToBoolean($text);
 			}

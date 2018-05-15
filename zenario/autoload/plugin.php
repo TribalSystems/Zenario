@@ -29,6 +29,22 @@
 namespace ze;
 
 class plugin {
+	
+	public static function codeName($instanceId, $className = '') {
+		
+		switch ($className) {
+			case 'zenario_plugin_nest':
+				$p = 'N';
+				break;
+			case 'zenario_slideshow':
+				$p = 'S';
+				break;
+			default:
+				$p = 'P';
+		}
+		
+		return $p. str_pad((string) $instanceId, 2, '0', STR_PAD_LEFT);
+	}
 
 
 
@@ -77,7 +93,7 @@ class plugin {
 				pi.level
 			FROM (
 				SELECT slot_name, module_id, instance_id, id, 'template' AS type, 2 AS level
-				FROM ". DB_NAME_PREFIX. "plugin_layout_link
+				FROM ". DB_PREFIX. "plugin_layout_link
 				WHERE family_name = '". \ze\escape::sql($templateFamily). "'
 				  AND layout_id = ". (int) $layoutId.
 				  $whereSlotName;
@@ -86,7 +102,7 @@ class plugin {
 			$sql .= "
 			  UNION
 				SELECT slot_name, module_id, instance_id, id, 'item' AS type, 1 AS level
-				FROM ". DB_NAME_PREFIX. "plugin_item_link
+				FROM ". DB_PREFIX. "plugin_item_link
 				WHERE content_id = ". (int) $cID. "
 				  AND content_type = '". \ze\escape::sql($cType). "'
 				  AND content_version = ". (int) $cVersion.
@@ -99,10 +115,10 @@ class plugin {
 		//Only show missing slots for Admins with the correct permissions
 		if (\ze::isAdmin() && (\ze\priv::check('_PRIV_MANAGE_ITEM_SLOT') || \ze\priv::check('_PRIV_MANAGE_TEMPLATE_SLOT'))) {
 			$sql .= "
-			LEFT JOIN ". DB_NAME_PREFIX. "template_slot_link AS tsl";
+			LEFT JOIN ". DB_PREFIX. "template_slot_link AS tsl";
 		} else {
 			$sql .= "
-			INNER JOIN ". DB_NAME_PREFIX. "template_slot_link AS tsl";
+			INNER JOIN ". DB_PREFIX. "template_slot_link AS tsl";
 		}
 	
 		$sql .= "
@@ -111,7 +127,7 @@ class plugin {
 			  AND tsl.slot_name = pi.slot_name";
 	
 		$sql .= "
-			LEFT JOIN ". DB_NAME_PREFIX. "plugin_instances AS vcpi
+			LEFT JOIN ". DB_PREFIX. "plugin_instances AS vcpi
 			   ON vcpi.module_id = pi.module_id
 			  AND vcpi.content_id = ". (int) $cID. "
 			  AND vcpi.content_type = '". \ze\escape::sql($cType). "'
@@ -421,13 +437,13 @@ class plugin {
 				m.default_framework,
 				m.css_class_name,
 				i.css_class,
-				i.module_id,
+				i.module_id, i.is_nest, i.is_slideshow,
 				m.class_name,
 				m.display_name,
 				m.vlp_class,
 				m.status
-			FROM ". DB_NAME_PREFIX. "plugin_instances AS i
-			INNER JOIN ". DB_NAME_PREFIX. "modules AS m
+			FROM ". DB_PREFIX. "plugin_instances AS i
+			INNER JOIN ". DB_PREFIX. "modules AS m
 			   ON m.id = i.module_id";
 	
 		if ($fetchBy == 'id') {
@@ -448,7 +464,7 @@ class plugin {
 		if ($instance['content_id'] && \ze\priv::check()) {
 			$instance['instance_name'] = $instance['display_name'];
 		} else {
-			$instance['instance_name'] = 'P'. $instance['instance_id']. ' '. $instance['name'];
+			$instance['instance_name'] = \ze\plugin::codeName($instance['instance_id'], $instance['class_name']);
 		}
 	
 		unset($instance['display_name']);
@@ -470,7 +486,7 @@ class plugin {
 	
 		$sql = "
 			SELECT ". ($getModuleId? 'module_id' : 'instance_id'). "
-			FROM ". DB_NAME_PREFIX. "plugin_item_link
+			FROM ". DB_PREFIX. "plugin_item_link
 			WHERE slot_name = '". \ze\escape::sql($slotName). "'
 			  AND content_id = ". (int) $cID. "
 			  AND content_type = '". \ze\escape::sql($cType). "'
@@ -497,7 +513,7 @@ class plugin {
 	
 		$sql = "
 			SELECT ". ($getModuleId? 'module_id' : 'instance_id'). "
-			FROM ". DB_NAME_PREFIX. "plugin_layout_link
+			FROM ". DB_PREFIX. "plugin_layout_link
 			WHERE slot_name = '". \ze\escape::sql($slotName). "'
 			  AND family_name = '". \ze\escape::sql($templateFamily). "'
 			  AND layout_id = ". (int) $layoutId;
@@ -544,7 +560,7 @@ class plugin {
 	
 		$sql = "
 			SELECT dependency_class_name
-			FROM ". DB_NAME_PREFIX. "module_dependencies
+			FROM ". DB_PREFIX. "module_dependencies
 			WHERE type = 'inherit_frameworks'
 			  AND module_class_name = '". \ze\escape::sql($className). "'
 			LIMIT 1";

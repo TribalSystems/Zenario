@@ -8,7 +8,7 @@ zenario__locations:
                 no_items_message: No sectors defined, click "Define a sector" to create one.
                 view_mode: list
                 db_items:
-                    table: '[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]sectors AS s'
+                    table: '[[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]sectors AS s'
                     id_column: s.id
                     where_statement: |
                         WHERE ('[[ORGANIZER_MODE]]' = 'get_item_name'
@@ -17,7 +17,7 @@ zenario__locations:
                             OR s.parent_id = 0)
                 refiners:
                     location_sectors:
-                        sql: 's.id IN (SELECT sector_id FROM [[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]location_sector_score_link WHERE location_id IN [[REFINER_IDS]])'
+                        sql: 's.id IN (SELECT sector_id FROM [[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]location_sector_score_link WHERE location_id IN [[REFINER_IDS]])'
                     sub_sectors:
                         sql: 's.parent_id IN ([[REFINER_IDS]])'
                 columns:
@@ -30,7 +30,7 @@ zenario__locations:
                     score:
                         title: Score
                         db_column: lssl.score_id
-                        table_join: '[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]location_sector_score_link AS lssl ON lssl.sector_id = s.id'
+                        table_join: '[[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]location_sector_score_link AS lssl ON lssl.sector_id = s.id'
                         show_by_default: Yes
                         align_right: Yes
                         width: xsmall
@@ -39,7 +39,7 @@ zenario__locations:
                         db_column: |
                             (
                                                                 SELECT COUNT(DISTINCT s2.id)
-                                                                FROM [[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]sectors AS s2
+                                                                FROM [[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]sectors AS s2
                                                                 WHERE s2.parent_id = s.id
                                                             )
                         show_by_default: Yes
@@ -50,7 +50,7 @@ zenario__locations:
                         db_column: |
                             (
                                                                 SELECT COUNT(DISTINCT lssl2.location_id)
-                                                                FROM [[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]location_sector_score_link AS lssl2
+                                                                FROM [[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]location_sector_score_link AS lssl2
                                                                 WHERE lssl2.sector_id = s.id
                                                             )
                         show_by_default: Yes

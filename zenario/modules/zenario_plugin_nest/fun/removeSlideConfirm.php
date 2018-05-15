@@ -28,30 +28,35 @@
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
 
-$tabName = null;
+$slideName = null;
 foreach (explode(',', $eggIds) as $eggId) {
 	if (($egg = ze\pluginAdm::getNestDetails($eggId))
 	 && ($egg['is_slide'])) {
-		if ($tabName === null) {
-			$tabName = $egg['name_or_title'];
+		if ($slideName === null) {
+			$slideName = $egg['name_or_title'];
 		} else {
-			$tabName = false;
+			$slideName = false;
 		}
 	}
 }
 
 //Display a confirmation box, asking the admin if they want to delete the plugin(s)
-if (!$tabName) {
+if (!$slideName) {
 	$message =
-		'<p>'. ze\admin::phrase('Are you sure you wish to delete the selected Tabs? Any Plugins they contains will be moved to the next tab and will not be deleted.'). '</p>';
-
-} elseif (is_numeric($tabName)) {
-	$message =
-		'<p>'. ze\admin::phrase('Are you sure you wish to delete Tab [[tab]]? Any Plugins it contains will be moved to the next tab and will not be deleted.', ['tab' => htmlspecialchars($tabName)]). '</p>';
+		'<p>'.
+			ze\admin::phrase('Are you sure you wish to delete the selected slides?').
+		'</p><p>'.
+			ze\admin::phrase('Any plugins on these slides will also be deleted, but any attached images will be left in the image library.').
+		'</p>';
 
 } else {
 	$message =
-		'<p>'. ze\admin::phrase('Are you sure you wish to delete the &quot;[[tab]]&quot; Tab? Any Plugins it contains will be moved to the next tab and will not be deleted.', ['tab' => htmlspecialchars($tabName)]). '</p>';
+		'<p>'.
+			ze\admin::phrase('Are you sure you wish to delete the &quot;[[slideName]]&quot; slide?',
+				['slideName' => htmlspecialchars($slideName)]).
+		'<p>'.
+			ze\admin::phrase('Any plugins on this slide will also be deleted, but any attached images will be left in the image library.').
+		'</p>';
 }
 
 

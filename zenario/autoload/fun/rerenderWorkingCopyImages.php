@@ -40,7 +40,7 @@ if ($jpegOnly) {
 if ($workingCopyImages) {
 	if ($removeOldWorkingCopies) {
 		$sql = "
-			UPDATE ". DB_NAME_PREFIX. "files SET
+			UPDATE ". DB_PREFIX. "files SET
 				working_copy_width = 0,
 				working_copy_height = 0,
 				working_copy_data = NULL
@@ -51,7 +51,7 @@ if ($workingCopyImages) {
 	if ($working_copy_image_size = (int) \ze::setting('working_copy_image_size')) {
 		$sql = "
 			SELECT id, location, path, filename, data AS working_copy_data, mime_type, width AS working_copy_width, height AS working_copy_height
-			FROM ". DB_NAME_PREFIX. "files
+			FROM ". DB_PREFIX. "files
 			WHERE mime_type IN ". $mimeType. "
 			  AND (width > ". (int) $working_copy_image_size. " OR height > ". (int) $working_copy_image_size. ")
 			  AND working_copy_data IS NULL";
@@ -83,7 +83,7 @@ if ($workingCopyImages) {
 if ($thumbnailWorkingCopyImages) {
 	if ($removeOldWorkingCopies) {
 		$sql = "
-			UPDATE ". DB_NAME_PREFIX. "files SET
+			UPDATE ". DB_PREFIX. "files SET
 				working_copy_2_width = 0,
 				working_copy_2_height = 0,
 				working_copy_2_data = NULL
@@ -94,7 +94,7 @@ if ($thumbnailWorkingCopyImages) {
 	if ($thumbnail_wc_image_size = (int) \ze::setting('thumbnail_wc_image_size')) {
 		$sql = "
 			SELECT id, location, path, filename, data AS working_copy_2_data, mime_type, width AS working_copy_2_width, height AS working_copy_2_height
-			FROM ". DB_NAME_PREFIX. "files
+			FROM ". DB_PREFIX. "files
 			WHERE mime_type IN ". $mimeType. "
 			  AND (width > ". (int) $thumbnail_wc_image_size. " OR height > ". (int) $thumbnail_wc_image_size. ")
 			  AND working_copy_2_data IS NULL";

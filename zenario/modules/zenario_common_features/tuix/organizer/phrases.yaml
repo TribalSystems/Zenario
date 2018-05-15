@@ -10,8 +10,8 @@ zenario__languages:
             php: true
             db_items:
                 table: >
-                    [[DB_NAME_PREFIX]]visitor_phrases AS vp
-                    INNER JOIN [[DB_NAME_PREFIX]]languages AS l
+                    [[DB_PREFIX]]visitor_phrases AS vp
+                    INNER JOIN [[DB_PREFIX]]languages AS l
                     ON vp.language_id = l.id
                 id_column: vp.id
                 custom_where_statement_if_no_refiner: |
@@ -21,7 +21,7 @@ zenario__languages:
                     exists: true
                 language_and_plugin:
                     table_join: |
-                        INNER JOIN [[DB_NAME_PREFIX]]modules AS m
+                        INNER JOIN [[DB_PREFIX]]modules AS m
                         ON m.id = [[REFINER__LANGUAGE_AND_PLUGIN]]
                     sql: vp.module_class_name = m.class_name
                 category_public_name:

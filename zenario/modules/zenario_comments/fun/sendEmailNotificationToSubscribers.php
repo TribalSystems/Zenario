@@ -69,21 +69,21 @@ if ($newPost
  && ze\module::inc('zenario_email_template_manager')) {
 	
 	$sql = "
-		SELECT u.id, [u.salutation], [u.first_name], [u.last_name], [u.screen_name], [u.email]
-		FROM [ZENARIO_COMMENTS_PREFIX.user_subscriptions AS us]
-		INNER JOIN [users AS u]
+		SELECT u.id, salutation, first_name, last_name, screen_name, email
+		FROM ". DB_PREFIX. ZENARIO_COMMENTS_PREFIX. "user_subscriptions AS us
+		INNER JOIN ". DB_PREFIX. "users AS u
 		   ON u.id = us.user_id
 		  AND u.status = 'active'
-		INNER JOIN [ZENARIO_COMMENTS_PREFIX.users AS cu]
+		INNER JOIN ". DB_PREFIX. ZENARIO_COMMENTS_PREFIX. "users AS cu
 		   ON cu.user_id = u.id
 		  AND IFNULL(cu.latest_activity > us.last_notified, true)
-		WHERE us.content_id = [0]
-		  AND us.content_type = [1]
+		WHERE us.content_id = ". (int) $comment['content_id']. "
+		  AND us.content_type = '". ze\escape::sql($comment['content_type']). "'
 		  AND us.forum_id = 0
 		  AND us.thread_id = 0
-		  AND us.user_id != [2]";
+		  AND us.user_id != ". (int) $poster['id'];
 	
-	$result = ze\sql::select($sql, [$comment['content_id'], $comment['content_type'], $poster['id']]);
+	$result = ze\sql::select($sql);
 	
 	while ($row = ze\sql::fetchAssoc($result)) {
 		if ($row['email']) {

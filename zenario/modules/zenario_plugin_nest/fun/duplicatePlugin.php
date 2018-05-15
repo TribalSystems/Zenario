@@ -35,7 +35,7 @@ if (($egg = ze\pluginAdm::getNestDetails($eggId, $instanceId)) && (!$egg['is_sli
 		//Bump up the ordinals of any other plugins on this slide by one,
 		//so we can place this new plugin just after the one we duplicated
 		ze\sql::update("
-			UPDATE ". DB_NAME_PREFIX. "nested_plugins
+			UPDATE ". DB_PREFIX. "nested_plugins
 			  SET ord = ord + 1
 			WHERE ord > ". (int) $egg['ord']. "
 			  AND instance_id = ". (int) $instanceId. "
@@ -52,17 +52,17 @@ if (($egg = ze\pluginAdm::getNestDetails($eggId, $instanceId)) && (!$egg['is_sli
 		], $newEggId);
 		
 		$sql = "
-			INSERT INTO ". DB_NAME_PREFIX. "plugin_settings (
+			INSERT INTO ". DB_PREFIX. "plugin_settings (
 				instance_id, name, egg_id,
 				value, is_content, foreign_key_to, foreign_key_id, foreign_key_char, dangling_cross_references
 			) SELECT
 				instance_id, name, ". (int) $newEggId. ",
 				value, is_content, foreign_key_to, foreign_key_id, foreign_key_char, dangling_cross_references
-			FROM ". DB_NAME_PREFIX. "plugin_settings
+			FROM ". DB_PREFIX. "plugin_settings
 			WHERE instance_id = ". (int) $instanceId. "
 			  AND egg_id = ". (int) $eggId;
 		
-		ze\sql::select($sql);  //No need to check the cache as the other statements should clear it correctly
+		ze\sql::cacheFriendlyUpdate($sql);  //No need to check the cache as the other statements should clear it correctly
 		
 		ze\pluginAdm::manageCSSFile('copy', $instanceId, $eggId, $instanceId, $newEggId);
 		

@@ -44,19 +44,10 @@ switch ($path) {
 			$box['tabs']['first_tab']['fields']['rollover_image']['pick_items']['min_path'] =
 			$box['tabs']['first_tab']['fields']['rollover_image']['pick_items']['max_path'] =
 			$box['tabs']['first_tab']['fields']['rollover_image']['pick_items']['target_path'] =
-				'zenario__content/panels/inline_images_for_content';
+				'zenario__content/panels/image_library';
 		}
 		
 		$box['first_display'] = true;
-		
-		if (!empty($box['tabs']['first_tab']['fields']['alt_tag']['value'])) {
-			$box['tabs']['first_tab']['fields']['alt_tag']['multiple_edit']['changed'] = true;
-		}
-		
-		if (!empty($box['tabs']['first_tab']['fields']['floating_box_title']['value'])) {
-			$box['tabs']['first_tab']['fields']['floating_box_title']['multiple_edit']['changed'] = true;
-		}
-		
 		
 		//Banner Plugins should have a note that appears below their settings if they are in a nest,
 		//explaining that they may be overwritten by the global settings.

@@ -20,8 +20,7 @@ plugin_settings:
                             label: "Automatically show confidential documents for the logged-in user"
                     format_onchange: true
                 document_source:
-                    visible_if: |
-                        zenarioAB.value('container_mode') == 'documents'
+                    visible_if: zenarioAB.value('container_mode') == 'documents'
                     plugin_setting:
                         name: document_source
                     label: 'Select document or folder:'
@@ -34,6 +33,13 @@ plugin_settings:
                         select_phrase: Select...
                     format_onchange: true
                     indent: 1
+                privacy_warning:
+                    plugin_setting:
+                        name: privacy_warning
+                    #note_below: Controlled in module_code.php
+                    indent: 1
+                    same_row: true
+                    visible_if: zenarioAB.value('container_mode') == 'documents'
                 show_files_in_folders:
                     plugin_setting:
                         name: show_files_in_folders
@@ -55,6 +61,42 @@ plugin_settings:
                     label: "Show sub-folder names in results"
                     type: checkbox
                     indent: 2
+                
+                order_by:
+                    visible_if: zenarioAB.value('show_files_in_folders') == 'folder'
+                    plugin_setting:
+                        name: order_by
+                    label: 'Order by:'
+                    type: select
+                    values:
+                        manual_order:
+                            label: Manual order
+                        filename:
+                            label: Filename
+                        title:
+                            label: Title
+                        filename_title:
+                            label: Title / filename
+                        created_date:
+                            label: Created date
+                    value: manual_order
+                    indent: 2
+                    redraw_onchange: true
+                
+                order_by_sort:
+                    hide_with_previous_field: true
+                    visible_if: zenarioAB.value('order_by') != 'manual_order'
+                    plugin_setting:
+                        name: order_by_sort
+                    same_row: true
+                    indent: 2
+                    type: select
+                    values:
+                        ascending:
+                            label: Ascending
+                        descending:
+                            label: Descending
+                
                 show_folder_name_as_title:
                     plugin_setting:
                         name: show_folder_name_as_title
@@ -64,8 +106,7 @@ plugin_settings:
                     indent: 1
                 title_tags:
                     hide_with_previous_field: true
-                    visible_if: |
-                        zenarioAB.value('show_folder_name_as_title')
+                    visible_if: zenarioAB.value('show_folder_name_as_title')
                     plugin_setting:
                         name: title_tags
                     label: 'Title heading tags'
@@ -82,6 +123,157 @@ plugin_settings:
                     side_note: |
                         Choose which HTML tags the title will be displayed in.
                     indent: 2
+                filter:
+                    plugin_setting:
+                        name: filter
+                    label: 'Filter by a dataset value:'
+                    type: select
+                    values: {}
+                    empty_value: -- Don't filter --
+                    side_note: Choose a dataset field to filter the results by.
+                    format_onchange: true
+                    indent: 1
+                filter_values:
+                    hide_with_previous_field: true
+                    visible_if: zenarioAB.value('filter')
+                    plugin_setting:
+                        name: filter_values
+                    type: checkboxes
+                    values: {}
+                    indent: 2
+                    validation:
+                        required_if_not_hidden: Choose at least one filter value.
+                
+                date_filter:
+                    plugin_setting:
+                        name: date_filter
+                    label: 'Filter by a dataset date:'
+                    type: select
+                    values: {}
+                    empty_value: -- Don't filter --
+                    side_note: Choose a dataset field to filter the results by.
+                    redraw_onchange: true
+                    indent: 1
+                date_filter_type:
+                    hide_with_previous_field: true
+                    visible_if: zenarioAB.value('date_filter')
+                    plugin_setting:
+                        name: date_filter_type
+                    type: select
+                    values:
+                        date_range:
+                            label: Date range...
+                        relative_date_range:
+                            label: Relative date range...
+                        prior_to_date:
+                            label: Prior to...
+                        on_date:
+                            label: On...
+                        after_date:
+                            label: Later than...
+                    value: date_range
+                    redraw_onchange: true
+                    indent: 2
+                date_range_start:
+                    hide_with_previous_outdented_field: true
+                    visible_if: zenarioAB.value('date_filter_type') == 'date_range'
+                    plugin_setting:
+                        name: date_range_start
+                    label: "Date range start:"
+                    type: date
+                    change_month_and_year: true
+                    indent: 3
+                    validation:
+                        required_if_not_hidden: Please choose a date.
+                date_range_end:
+                    hide_with_previous_outdented_field: true
+                    visible_if: zenarioAB.value('date_filter_type') == 'date_range'
+                    plugin_setting:
+                        name: date_range_end
+                    label: "Date range end:"
+                    type: date
+                    change_month_and_year: true
+                    indent: 3
+                    validation:
+                        required_if_not_hidden: Please choose a date.
+                relative_date_range_operator:
+                    hide_with_previous_outdented_field: true
+                    visible_if: zenarioAB.value('date_filter_type') == 'relative_date_range'
+                    plugin_setting:
+                        name: relative_date_range_operator
+                    label: 'Relative date range:'
+                    type: select
+                    values:
+                        newer: 
+                            label: Not older than
+                        older: 
+                            label: Older than
+                    value: newer
+                    validation:
+                        required_if_not_hidden: Please specify a relative date range.
+                    indent: 3
+                relative_date_range_value:
+                    hide_with_previous_outdented_field: true
+                    visible_if: zenarioAB.value('date_filter_type') == 'relative_date_range'
+                    plugin_setting:
+                        name: relative_date_range_value
+                    type: text
+                    same_row: true
+                    style: width:50px;
+                    pre_field_html: '&nbsp;'
+                    post_field_html: '&nbsp;'
+                    validation:
+                        required_if_not_hidden: Please specify a relative date range.
+                relative_date_range_units:
+                    hide_with_previous_outdented_field: true
+                    visible_if: zenarioAB.value('date_filter_type') == 'relative_date_range'
+                    plugin_setting:
+                        name: relative_date_range_units
+                    type: select
+                    values:
+                        days: 
+                            label: day(s)
+                        months: 
+                            label: month(s)
+                        years: 
+                            label: year(s)
+                    same_row: true
+                    validation:
+                        required_if_not_hidden: Please specify a relative date range.
+                prior_to_date:
+                    hide_with_previous_outdented_field: true
+                    visible_if: zenarioAB.value('date_filter_type') == 'prior_to_date'
+                    plugin_setting:
+                        name: prior_to_date
+                    label: "Prior to the date:"
+                    type: date
+                    change_month_and_year: true
+                    indent: 3
+                    validation:
+                        required_if_not_hidden: Please choose a date.
+                on_date:
+                    hide_with_previous_outdented_field: true
+                    visible_if: zenarioAB.value('date_filter_type') == 'on_date'
+                    plugin_setting:
+                        name: on_date
+                    label: "On the date:"
+                    type: date
+                    change_month_and_year: true
+                    indent: 3
+                    validation:
+                        required_if_not_hidden: Please choose a date.
+                after_date:
+                    hide_with_previous_outdented_field: true
+                    visible_if: zenarioAB.value('date_filter_type') == 'after_date'
+                    plugin_setting:
+                        name: after_date
+                    label: "Later than the date:"
+                    type: date
+                    change_month_and_year: true
+                    indent: 3
+                    validation:
+                        required_if_not_hidden: Please choose a date.
+                
                 show_filename:
                     plugin_setting:
                         name: show_filename
@@ -95,8 +287,7 @@ plugin_settings:
                     type: checkbox
                     redraw_onchange: true
                 show_filename_if_no_title:
-                    visible_if: |
-                        zenarioAB.value('show_title');
+                    visible_if: zenarioAB.value('show_title');
                     indent: 1
                     plugin_setting:
                         name: show_filename_if_no_title
@@ -124,8 +315,7 @@ plugin_settings:
                     label: "Lazy load thumbnails"
                     type: checkbox
                     indent: 1
-                    visible_if: |
-                        zenarioAB.value('show_thumbnails');
+                    visible_if: zenarioAB.value('show_thumbnails');
                 canvas:
                     plugin_setting:
                         name: canvas
@@ -176,6 +366,24 @@ plugin_settings:
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
                     indent: 2
+                show_download_link:
+                    plugin_setting:
+                        name: show_download_link
+                    label: 'Show "download"'
+                    type: checkbox
+                    value: 0
+                    redraw_onchange: true
+                download_link_phrase:
+                    indent: 1
+                    plugin_setting:
+                        name: download_link_phrase
+                    label: 'Download link phrase:'
+                    type: text
+                    format_onchange: Yes
+                    visible_if:
+                        lib.value: show_download_link
+                    validation:
+                        required_if_not_hidden: Please enter a phrase
                 offer_download_as_zip:
                     plugin_setting:
                         name: offer_download_as_zip
@@ -183,8 +391,7 @@ plugin_settings:
                     type: checkbox
                     redraw_onchange: true
                 zip_file_name:
-                    visible_if: |
-                        zenarioAB.value('offer_download_as_zip')
+                    visible_if: zenarioAB.value('offer_download_as_zip')
                     plugin_setting:
                         name: zip_file_name
                     label: 'ZIP archive name'

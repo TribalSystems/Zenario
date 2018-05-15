@@ -250,7 +250,7 @@ if (!$requestedPath || empty($tags['class_name'])) {
 	
 	//Check which modules have the fill_organizer_nav property set and should be run to customise
 	//the top level navigation
-	foreach(ze\row::getArray(
+	foreach(ze\row::getAssocs(
 		'modules',
 		['class_name'],
 		['fill_organizer_nav' => 1, 'status' => ['module_running', 'module_is_abstract']]
@@ -396,7 +396,7 @@ if (!$requestedPath || empty($tags['class_name'])) {
 			
 			//We'll need a join to the custom table
 			$customJoin = "
-				LEFT JOIN `". ze\escape::sql(DB_NAME_PREFIX. $dataset['table']). "` AS custom
+				LEFT JOIN `". ze\escape::sql(DB_PREFIX. $dataset['table']). "` AS custom
 				ON ". $tags['db_items']['id_column']. " = ". $datasetIdColumn;
 			
 			//Bugfix: the join should always be added, even if the admin doesn't have the permissions,
@@ -406,7 +406,7 @@ if (!$requestedPath || empty($tags['class_name'])) {
 			if (!$dataset['view_priv'] || ze\priv::check($dataset['view_priv'])) {
 				
 				//Customise system fields
-				foreach (ze\row::getArray(
+				foreach (ze\row::getAssocs(
 					'custom_dataset_fields',
 					['field_name', 'label', 'organizer_visibility'],
 					['dataset_id' => $dataset['id'], 'is_system_field' => 1]
@@ -431,7 +431,7 @@ if (!$requestedPath || empty($tags['class_name'])) {
 				
 				//Add custom fields
 				$ord = 1000;
-				foreach (ze\row::getArray(
+				foreach (ze\row::getAssocs(
 					'custom_dataset_fields',
 					true,
 					['dataset_id' => $dataset['id'], 'organizer_visibility' => ['!' => 'none'], 'is_system_field' => 0],
@@ -465,8 +465,8 @@ if (!$requestedPath || empty($tags['class_name'])) {
 							//For checkboxes, there could be multiple values, so we'll just load the data as a string
 							$cCol['db_column'] = "(
 								SELECT GROUP_CONCAT(cdfv.label SEPARATOR ', ')
-								FROM ". DB_NAME_PREFIX. "custom_dataset_values_link AS cdvl
-								INNER JOIN ". DB_NAME_PREFIX. "custom_dataset_field_values AS cdfv
+								FROM ". DB_PREFIX. "custom_dataset_values_link AS cdvl
+								INNER JOIN ". DB_PREFIX. "custom_dataset_field_values AS cdfv
 								   ON cdfv.field_id = ". (int) $cfield['id']. "
 								  AND cdfv.id = cdvl.value_id
 								WHERE cdvl.linking_id = ". $tags['db_items']['id_column']. "
@@ -480,7 +480,7 @@ if (!$requestedPath || empty($tags['class_name'])) {
 							if ($cfield['searchable'] || $cfield['sortable']) {
 								$cCol['db_column'] = "(
 									SELECT cdfv.label
-									FROM ". DB_NAME_PREFIX. "custom_dataset_field_values AS cdfv
+									FROM ". DB_PREFIX. "custom_dataset_field_values AS cdfv
 									WHERE cdfv.id = ". $cCol['db_column']. "
 									  AND cdfv.field_id = ". (int) $cfield['id']. "
 									)";
@@ -512,7 +512,7 @@ if (!$requestedPath || empty($tags['class_name'])) {
 								$otherPrefix = "ot". (int) $cfield['id'];
 							
 								$cCol['table_join'][] = "
-									LEFT JOIN `". ze\escape::sql(DB_NAME_PREFIX. $labelDetails['table']). "` AS ". $otherPrefix. "
+									LEFT JOIN `". ze\escape::sql(DB_PREFIX. $labelDetails['table']). "` AS ". $otherPrefix. "
 									ON ". $otherPrefix. ".`". ze\escape::sql($labelDetails['id_column']). "` = ". $cCol['db_column'];
 								
 								$cCol['db_column'] = $otherPrefix. ".`". ze\escape::sql($labelDetails['db_column']). "`";

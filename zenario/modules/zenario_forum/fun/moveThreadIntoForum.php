@@ -30,7 +30,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 $sql = "
 	SELECT forum_id, last_updated_order
-	FROM ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "threads
+	FROM ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "threads
 	WHERE id = ". (int) $threadId. "
 	  AND forum_id != ". (int) $this->forumId;
 
@@ -43,14 +43,14 @@ if (($result = ze\sql::select($sql)) && ($thread = ze\sql::fetchAssoc($result)))
 	//Move the thread into this forum
 	$latestUpdated = $this->getLatestUpdated() + 1;
 	$sql = "
-		UPDATE ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "threads SET
+		UPDATE ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "threads SET
 			forum_id = ". (int) $this->forumId. ",
 			last_updated_order = ". (int) $latestUpdated. "
 		WHERE id = ". (int) $threadId;
 	ze\sql::update($sql);
 	
 	$sql = "
-		UPDATE ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "user_posts SET
+		UPDATE ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "user_posts SET
 			forum_id = ". (int) $this->forumId. "
 		WHERE thread_id = ". (int) $threadId;
 	ze\sql::update($sql);

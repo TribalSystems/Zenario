@@ -16,28 +16,28 @@ zenario__content:
             hide_filter_warning: true
             db_items:
                 table: >
-                    [[DB_NAME_PREFIX]]content_items AS lec
-                    CROSS JOIN [[DB_NAME_PREFIX]]languages AS l
-                    LEFT JOIN [[DB_NAME_PREFIX]]translation_chains AS tc
+                    [[DB_PREFIX]]content_items AS lec
+                    CROSS JOIN [[DB_PREFIX]]languages AS l
+                    LEFT JOIN [[DB_PREFIX]]translation_chains AS tc
                        ON lec.equiv_id = tc.equiv_id
                       AND lec.type = tc.type
-                    LEFT JOIN [[DB_NAME_PREFIX]]content_items AS c
+                    LEFT JOIN [[DB_PREFIX]]content_items AS c
                        ON lec.equiv_id = c.equiv_id
                       AND lec.type = c.type
                       AND l.id = c.language_id
-                    LEFT JOIN [[DB_NAME_PREFIX]]content_item_versions AS v
+                    LEFT JOIN [[DB_PREFIX]]content_item_versions AS v
                        ON c.id = v.id
                       AND c.type = v.type
                       AND c.admin_version = v.version
-                    LEFT JOIN [[DB_NAME_PREFIX]]menu_nodes AS mi
+                    LEFT JOIN [[DB_PREFIX]]menu_nodes AS mi
                        ON mi.target_loc = 'int'
                       AND mi.equiv_id = c.equiv_id
                       AND mi.content_type = c.type
                       AND mi.redundancy = 'primary'
-                    LEFT JOIN [[DB_NAME_PREFIX]]menu_text AS mt
+                    LEFT JOIN [[DB_PREFIX]]menu_text AS mt
                        ON mt.menu_id = mi.id
                       AND mt.language_id = c.language_id
-                    LEFT JOIN [[DB_NAME_PREFIX]]files AS f
+                    LEFT JOIN [[DB_PREFIX]]files AS f
                        ON f.id = v.file_id
                 id_column: IFNULL(c.tag_id, l.id)
             refiners:
@@ -48,7 +48,7 @@ zenario__content:
                     sql: >
                         lec.tag_id = (
                             SELECT CONCAT(content_type, '_', equiv_id)
-                            FROM [[DB_NAME_PREFIX]]menu_nodes
+                            FROM [[DB_PREFIX]]menu_nodes
                             WHERE id = [[REFINER__ZENARIO_TRANS__CHAINED_IN_LINK__FROM_MENU_NODE]]
                         )
             item:
@@ -197,7 +197,7 @@ zenario__content:
                     db_column: |
                         c.status != 'first_draft' AND (
                             SELECT 1
-                            FROM [[DB_NAME_PREFIX]]content_item_versions AS pv
+                            FROM [[DB_PREFIX]]content_item_versions AS pv
                             WHERE pv.id = c.id
                               AND pv.type = c.type
                               AND pv.version NOT IN (c.visitor_version, c.admin_version)

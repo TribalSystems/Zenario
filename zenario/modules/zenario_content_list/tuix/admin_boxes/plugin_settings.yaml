@@ -712,6 +712,14 @@ plugin_settings:
                     validation:
                         required_if_not_hidden: Please select a content item
                     indent: 1
+                make_content_items_equal_height:
+                    label: 'Make all content items equal height'
+                    side_note: 'Use this to improve the layout if your CSS causes events to be listed in a 2-d grid.'
+                    plugin_setting:
+                        name: make_content_items_equal_height
+                    type: checkbox
+                    value: 0
+                    format_onchange: yes
         pagination:
             label: Pagination
             notices:

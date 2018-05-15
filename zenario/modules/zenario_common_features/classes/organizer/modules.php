@@ -44,7 +44,6 @@ class zenario_common_features__organizer__modules extends ze\moduleBaseClass {
 
 			case 'phrases_only':
 			case 'slotable_only':
-			case 'wireframe_only':
 				//Don't show the filters if picking a plugin
 				$panel['quick_filter_buttons']['all']['hidden'] =
 				$panel['quick_filter_buttons']['module_not_initialized']['hidden'] =
@@ -94,24 +93,6 @@ class zenario_common_features__organizer__modules extends ze\moduleBaseClass {
 			case 'slotable_only':
 				$panel['title'] = ze\admin::phrase('Running modules with library plugins');
 				break;
-			case 'wireframe_only':
-				$panel['title'] = ze\admin::phrase('Plugins');
-				break;
-			case 'custom_modules':
-				$panel['title'] = ze\admin::phrase('Custom modules');
-				break;
-			case 'core_modules':
-				$panel['title'] = ze\admin::phrase('Core modules');
-				break;
-			case 'content_type_modules':
-				$panel['title'] = ze\admin::phrase('Content type defining modules');
-				break;
-			case 'management_modues':
-				$panel['title'] = ze\admin::phrase('Managing modules');
-				break;
-			case 'pluggable_modules':
-				$panel['title'] = ze\admin::phrase('Pluggable modules');
-				break;
 		}
 
 		$languagesExist = false;
@@ -138,17 +119,15 @@ class zenario_common_features__organizer__modules extends ze\moduleBaseClass {
 				$pluginDependencies[$row['dependency_class_name']][$row['module_class_name']] = true;
 			}
 	
-			//Look for tables used by the CMS
+			//Look for tables used by modules
 			foreach (ze\dbAdm::lookupExistingCMSTables() as $table) {
-				if (substr($table['name'], 0, 3) == 'mod') {
-					$moduleId = explode('_', substr($table['name'], 3), 2);
-					$moduleId = (int) $moduleId[0];
+				if ($table['module_id']) {
 			
-					if (!isset($moduleTables[$moduleId])) {
-						$moduleTables[$moduleId] = [];
+					if (!isset($moduleTables[$table['module_id']])) {
+						$moduleTables[$table['module_id']] = [];
 					}
 			
-					$moduleTables[$moduleId][] = $table['actual_name'];
+					$moduleTables[$table['module_id']][] = $table['actual_name'];
 				}
 			}
 
@@ -189,6 +168,19 @@ class zenario_common_features__organizer__modules extends ze\moduleBaseClass {
 				if (!$module['is_pluggable']
 				 || $module['status'] != 'module_running') {
 					$module['link'] = false;
+				
+				//The folder icon on nests/slideshow modules should lead to the nest/slideshow library panels instead
+				} elseif ($module['class_name'] == 'zenario_plugin_nest') {
+					$module['link'] = [
+						'path' => 'zenario__modules/panels/plugins',
+						'refiner' => 'nests'
+					];
+				
+				} elseif ($module['class_name'] == 'zenario_slideshow') {
+					$module['link'] = [
+						'path' => 'zenario__modules/panels/plugins',
+						'refiner' => 'slideshows'
+					];
 				}
 		
 				if ($mode != 'select') {
@@ -202,7 +194,7 @@ class zenario_common_features__organizer__modules extends ze\moduleBaseClass {
 				
 						$sql2 = "
 							SELECT language_id, COUNT(*) AS c
-							FROM ". DB_NAME_PREFIX. "visitor_phrases
+							FROM ". DB_PREFIX. "visitor_phrases
 							WHERE module_class_name = '". ze\escape::sql($module['vlp_class']). "'
 							GROUP BY language_id";
 				
@@ -336,7 +328,7 @@ class zenario_common_features__organizer__modules extends ze\moduleBaseClass {
 				
 						if (!empty($moduleTables[$id])) {
 							
-							$module['prefix'] = $prefix = DB_NAME_PREFIX. ze\module::prefix($module);
+							$module['prefix'] = $prefix = DB_PREFIX. ze\module::prefix($module);
 					
 							$module['close_up_view_bottom'] .= '<tr><th>'. ze\admin::phrase('DB tables created by this module:'). '&nbsp;</th><td valign="bottom">';
 							$i = 0;
@@ -357,7 +349,6 @@ class zenario_common_features__organizer__modules extends ze\moduleBaseClass {
 		
 			} else {
 		
-				//To do: hide or auto-delete missing modules that aren't running!
 				$module['display_name'] = $module['class_name'] . ' (Module code is missing)';
 				$module['comment'] ='';
 				$module['status'] = ze\admin::phrase('Module code is missing');

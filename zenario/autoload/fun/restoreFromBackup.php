@@ -145,7 +145,7 @@ while($reading) {
 		
 		
 		//Very old backups sometimes had global tables in them with special prefixes; ignore these
-		} elseif (strpos($statements[$i], "[['DB_NAME_PREFIX_GLOBAL']]") !== false) {
+		} elseif (strpos($statements[$i], "[['DB_PREFIX_GLOBAL']]") !== false) {
 			continue;
 		
 		} elseif (strpos($statements[$i], "[['GLOBAL_NOT_NORMALLY_RESTORED']]") !== false) {
@@ -153,9 +153,9 @@ while($reading) {
 		
 		//Handle backups created by the CMS in the previous format before "T10131, A couple of small improvements to the CMS backup system"
 		//There will be no COMMIT/CREATE DATABASE/LOCK/SET/START/UNLOCK/USE statements, and the will be a merge field for the database prefix
-		} elseif (strpos($statements[$i], "[['DB_NAME_PREFIX']]") !== false) {
-			$searchInFile = "[['DB_NAME_PREFIX']]";
-			$replaceInFile = ($replacePrefix = DB_NAME_PREFIX. 'i_m_p_');
+		} elseif (strpos($statements[$i], "[['DB_PREFIX']]") !== false) {
+			$searchInFile = "[['DB_PREFIX']]";
+			$replaceInFile = ($replacePrefix = DB_PREFIX. 'i_m_p_');
 			$searchPrefix = false;
 			$attemptToUseMySQL = false;
 		
@@ -206,18 +206,18 @@ while($reading) {
 					
 					if ($tableName = \ze\ring::chopPrefix($dbNamePrefixInFile, $tableName)) {
 						$searchInFile = '`'. ($searchPrefix = $dbNamePrefixInFile). $tableName. '`';
-						$replaceInFile = '`'. ($replacePrefix = DB_NAME_PREFIX. 'i_m_p_'). $tableName. '`';
+						$replaceInFile = '`'. ($replacePrefix = DB_PREFIX. 'i_m_p_'). $tableName. '`';
 					
 					} else {
 						$failures[] = 'Statement '. $statementNo. ":\n". $statements[$i]. "\n\nCould not read the table-prefix in this backup file\n\n\n";
 						break 2;
 					}
 				
-				//Check that the table's name begins with the DB_NAME_PREFIX,
+				//Check that the table's name begins with the DB_PREFIX,
 				//and then get just the table name without the prefix
-				} elseif ($tableName = \ze\ring::chopPrefix(DB_NAME_PREFIX, $tableName)) {
-					$searchInFile = '`'. ($searchPrefix = DB_NAME_PREFIX). $tableName. '`';
-					$replaceInFile = '`'. ($replacePrefix = DB_NAME_PREFIX. 'i_m_p_'). $tableName. '`';
+				} elseif ($tableName = \ze\ring::chopPrefix(DB_PREFIX, $tableName)) {
+					$searchInFile = '`'. ($searchPrefix = DB_PREFIX). $tableName. '`';
+					$replaceInFile = '`'. ($replacePrefix = DB_PREFIX. 'i_m_p_'). $tableName. '`';
 				
 				} else {
 					$failures[] = 'Statement '. $statementNo. ":\n". $statements[$i]. "\n\nThe table-prefix in this backup file does not match the table-prefix for this site\n\n\n";
@@ -290,7 +290,7 @@ password="'. DBPASS. '"';
 		
 		//Attempt to run the SQL. Note there are no further checks done on it, so of course it may not be valid.
 		//I'll also check whether it failed or succeeded
-		$success = @\ze::$lastDB->query(str_replace($searchInFile, $replaceInFile, $statements[$i]));
+		$success = @\ze::$dbL->con->query(str_replace($searchInFile, $replaceInFile, $statements[$i]));
 					
 		//Even if it failed, we'll keep running the SQL statements. But we'll log the failures and report at the end.
 		if (!$success) {
@@ -356,8 +356,8 @@ if (empty($failures)) {
 if (!empty($failures)) {
 	//If we failed at any point, don't write over the actual tables with the temp values!
 	//We'll need to delete the temporary tables though.
-	foreach(\ze\dbAdm::lookupImportedTables(DB_NAME_PREFIX) as $importTable) {
-		@\ze\sql::select('DROP TABLE IF EXISTS `'. $importTable. '`');
+	foreach(\ze\dbAdm::lookupImportedTables(DB_PREFIX) as $importTable) {
+		@\ze\sql::cacheFriendlyUpdate('DROP TABLE IF EXISTS `'. $importTable. '`');
 	}
 	
 	return false;
@@ -371,10 +371,10 @@ if (!empty($failures)) {
 	\ze\welcome::runSQL(false, 'local-admin-DROP.sql', $error);
 	
 	//Copy over the new tables
-	foreach(\ze\dbAdm::lookupImportedTables(DB_NAME_PREFIX) as $importTable) {
+	foreach(\ze\dbAdm::lookupImportedTables(DB_PREFIX) as $importTable) {
 		
 		//Work out the name of the actual table by removing the 'i_m_p_' prefix
-		$actualTable = str_replace(DB_NAME_PREFIX. 'i_m_p_', DB_NAME_PREFIX, $importTable);
+		$actualTable = str_replace(DB_PREFIX. 'i_m_p_', DB_PREFIX, $importTable);
 		
 		//Remove the currently existing table
 		\ze\sql::update('DROP TABLE IF EXISTS `'. $actualTable. '`', false, false);

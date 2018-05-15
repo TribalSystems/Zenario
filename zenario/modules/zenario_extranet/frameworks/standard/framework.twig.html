@@ -30,7 +30,7 @@
 					{% if Login_with_email %}
 						<div class="extranet_field">
 							<div class="label"><label for="extranet_email">{{email_field_label}}</label></div>
-							{{this.frameworkField({'type': "text", 'name': "extranet_email", 'id': "extranet_email", 'required': "true", 'pattern': "email", 'class': "extranet_text"})}}
+							{{this.frameworkField({'type': "email", 'name': "extranet_email", 'id': "extranet_email", 'required': "true", 'pattern': "email", 'class': "extranet_text"})}}
 						</div>
 					{% endif %}
 					<div class="extranet_field">
@@ -115,6 +115,21 @@
 					{{this.frameworkField({'type': "password", 'name': "extranet_new_password_confirm", 'id': "extranet_new_password_confirm", 'required': "true", 'class': "extranet_password"})}}
 				</div>
 				<div class="extranet_btn"><div class="r"><input type="submit" name="extranet_change_password" class="extranet_submit i" value="{{'_CHANGE_PASSWORD'|trans}}" /></div></div>
+			</div>
+		{% endif %}
+		
+		{% if Terms_And_Conditions_Form %}
+			
+			{% for item in Error_Display %}
+				<div class="extranet_error">{{item.Error}}</div>
+			{% endfor %}
+			
+			<div>
+				<div class="extranet_terms_and_conditions">
+					{{this.frameworkField({'type': "checkbox", 'name': "extranet_terms_and_conditions", 'id': "extranet_terms_and_conditions"})}}
+					<label for="extranet_terms_and_conditions">{{Ts_And_Cs_Link}}</label>
+				</div>
+				<div class="extranet_btn"><div class="r"><input type="submit" name="extranet_login" class="login_entry_button i" value="{{login_button_text}}" /></div></div>
 			</div>
 		{% endif %}
 		

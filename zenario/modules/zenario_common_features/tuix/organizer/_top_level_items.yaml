@@ -36,13 +36,6 @@ zenario__content:
             link:
                 path: zenario__content/panels/content
                 refiner: work_in_progress
-        your_work_in_progress:
-            css_class: content_draft
-            label: Your WiP
-            tooltip: Content items that you are currently working on
-            link:
-                path: zenario__content/panels/content
-                refiner: your_work_in_progress
         by_language:
             hidden: true
             label: Content by language
@@ -172,41 +165,6 @@ zenario__modules:
             tooltip: Software modules that add plugins to front-end pages, and Organizer functionality
             link:
                 path: zenario__modules/panels/modules
-        custom_modules:
-            css_class: plugin
-            label: Custom modules
-            tooltip: Custom modules made for this site
-            link:
-                path: zenario__modules/panels/modules
-                refiner: custom_modules
-        core_modules:
-            css_class: plugin
-            label: Core modules
-            tooltip: Modules that give or extend core functionality
-            link:
-                path: zenario__modules/panels/modules
-                refiner: core_modules
-        content_type_modules:
-            css_class: plugin
-            label: Content types
-            tooltip: Modules that allow new types of content to be created
-            link:
-                path: zenario__modules/panels/modules
-                refiner: content_type_modules
-        management_modues:
-            css_class: plugin
-            label: Organizer modules
-            tooltip: Modules that add additional management to Organizer
-            link:
-                path: zenario__modules/panels/modules
-                refiner: management_modues
-        pluggable_modules:
-            css_class: plugin
-            label: Pluggable modules
-            tooltip: Pluggable modules that can be placed in a slot on the front end of the site
-            link:
-                path: zenario__modules/panels/modules
-                refiner: pluggable_modules
         plugins:
             css_class: module
             label: Plugin library

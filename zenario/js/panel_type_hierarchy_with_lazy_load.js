@@ -62,14 +62,16 @@ var methods = methodsOf(
 
 
 
-
+methods.showFlatView = function() {
+	return defined(thus.searchTerm) || (zenarioO.refiner && zenarioO.refiner.name && zenarioO.tuix && zenarioO.tuix.refiners && zenarioO.tuix.refiners[zenarioO.refiner.name] && zenarioO.tuix.refiners[zenarioO.refiner.name].always_show_flat_view);
+};
 
 
 
 //Use this to add any requests you need to the AJAX URL used to call your panel
 methods.returnAJAXRequests = function() {
 	
-	if (defined(thus.searchTerm)) {
+	if (thus.showFlatView()) {
 		return {};
 	
 	} else if (!_.isEmpty(thus.openItemsInHierarchy)) {
@@ -87,7 +89,7 @@ methods.returnAJAXRequests = function() {
 
 //You should return the page size you wish to use, or false to disable pagination
 methods.returnPageSize = function() {
-	if (!defined(thus.searchTerm)) {
+	if (!thus.showFlatView()) {
 		return false;
 	} else {
 		return methodsOf(panelTypes.list).returnPageSize.call(thus);
@@ -101,7 +103,7 @@ methods.returnSearchingEnabled = function() {
 };
 
 methods.returnDoSortingAndSearchingOnServer = function() {
-	if (!defined(thus.searchTerm)) {
+	if (!thus.showFlatView()) {
 		return false;
 	} else {
 		return true;
@@ -112,7 +114,7 @@ methods.returnDoSortingAndSearchingOnServer = function() {
 //Draw the panel, as well as the header at the top and the footer at the bottom
 //This is called every time the panel is loaded, refreshed or when something in the header toolbar is changed.
 methods.showPanel = function($header, $panel, $footer) {
-	if (!defined(thus.searchTerm)) {
+	if (!thus.showFlatView()) {
 		return methodsOf(panelTypes.hierarchy).showPanel.apply(thus, arguments);
 	} else {
 		return methodsOf(panelTypes.list).showPanel.apply(thus, arguments);
@@ -122,7 +124,7 @@ methods.showPanel = function($header, $panel, $footer) {
 //Draw (or hide) the button toolbar
 //This is called every time different items are selected, the panel is loaded, refreshed or when something in the header toolbar is changed.
 methods.showButtons = function($buttons) {
-	if (!defined(thus.searchTerm)) {
+	if (!thus.showFlatView()) {
 		return methodsOf(panelTypes.hierarchy).showButtons.apply(thus, arguments);
 	} else {
 		return methodsOf(panelTypes.list).showButtons.apply(thus, arguments);

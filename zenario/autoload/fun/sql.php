@@ -48,7 +48,7 @@ if (is_array($smartGroupId)) {
 		return false;
 	}
 
-	$rules = \ze\row::getArray(
+	$rules = \ze\row::getAssocs(
 		'smart_group_rules',
 		['type_of_check', 'field_id', 'field2_id', 'field3_id', 'field4_id', 'field5_id', 'role_id','activity_band_id', 'not', 'value'],
 		['smart_group_id' => $smartGroupId],
@@ -107,9 +107,9 @@ foreach ($rules as $rule) {
 				//Check if a field is set, load the details, and check if it's a supported field. Only add it if it is.
 			if ($rule['field_id']
 			 && ($field = \ze\dataset::fieldBasicDetails($rule['field_id']))
-			 && (\ze::in($field['type'], 'group', 'checkbox', 'radios', 'centralised_radios', 'select', 'centralised_select'))) {
+			 && (\ze::in($field['type'], 'group', 'checkbox', 'consent', 'radios', 'centralised_radios', 'select', 'centralised_select'))) {
 				
-				$hashed = !\ze::in($field['type'], 'group', 'checkbox') && \ze\db::columnIsHashed($field['is_system_field']? 'users' : 'users_custom_data', $field['db_column']);
+				$hashed = !\ze::in($field['type'], 'group', 'checkbox', 'consent') && \ze::$dbL->columnIsHashed($field['is_system_field']? 'users' : 'users_custom_data', $field['db_column']);
 				
 				//Work out the table alias and column name
 				$col = "`". \ze\escape::sql($field['is_system_field']? $usersTableAlias : $customTableAlias). "`.`". ($hashed? '#' : ''). \ze\escape::sql($field['db_column']). "`";
@@ -150,6 +150,7 @@ foreach ($rules as $rule) {
 							//Groups and checkboxes are handled by a tinyint column
 							case 'group':
 							case 'checkbox':
+							case 'consent':
 								$check = $col. " = 1";
 								break;
 				
@@ -195,7 +196,7 @@ foreach ($rules as $rule) {
 			 && ($ZENARIO_ORGANIZATION_MANAGER_PREFIX = \ze\module::prefix('zenario_organization_manager', $mustBeRunning = true))) {
 				
 				$tableJoins .= "
-					". $leftOrInnerJoin. DB_NAME_PREFIX. $ZENARIO_ORGANIZATION_MANAGER_PREFIX. "user_role_location_link AS urll_". $i. "
+					". $leftOrInnerJoin. DB_PREFIX. $ZENARIO_ORGANIZATION_MANAGER_PREFIX. "user_role_location_link AS urll_". $i. "
 					   ON urll_". $i. ".user_id = `". \ze\escape::sql($usersTableAlias). "`.id
 					  AND urll_". $i. ".role_id = ". (int) $rule['role_id'];
 				
@@ -221,7 +222,7 @@ foreach ($rules as $rule) {
 		case 'activity_band':
 			if($ZENARIO_USER_ACTIVITY_BANDS_PREFIX = \ze\module::prefix('zenario_user_activity_bands', $mustBeRunning = true)){
 				$tableJoins .= "
-				". $leftOrInnerJoin. DB_NAME_PREFIX. $ZENARIO_USER_ACTIVITY_BANDS_PREFIX. "user_activity_bands_link AS uabl_". $i. "
+				". $leftOrInnerJoin. DB_PREFIX. $ZENARIO_USER_ACTIVITY_BANDS_PREFIX. "user_activity_bands_link AS uabl_". $i. "
 				ON uabl_".$i.".user_id = `". \ze\escape::sql($usersTableAlias). "`.id";				
 				
 				if($rule['not']){

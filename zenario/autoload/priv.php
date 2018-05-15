@@ -127,7 +127,7 @@ class priv {
 						if (!empty($_SESSION['admin_specific_menu_sections'])) {
 							$sql = "
 								SELECT 1
-								FROM ". DB_NAME_PREFIX. "menu_nodes AS mn
+								FROM ". DB_PREFIX. "menu_nodes AS mn
 								WHERE mn.section_id IN (". \ze\escape::in($_SESSION['admin_specific_menu_sections'], 'numeric'). ")
 								  AND mn.equiv_id = ". (int) $equivId. "
 								  AND mn.content_type = '". \ze\escape::sql($editCType). "'
@@ -142,8 +142,8 @@ class priv {
 						if (!empty($_SESSION['admin_specific_menu_nodes'])) {
 							$sql = "
 								SELECT 1
-								FROM ". DB_NAME_PREFIX. "menu_nodes AS mn
-								INNER JOIN ". DB_NAME_PREFIX. "menu_hierarchy AS mh
+								FROM ". DB_PREFIX. "menu_nodes AS mn
+								INNER JOIN ". DB_PREFIX. "menu_hierarchy AS mh
 								   ON mh.child_id = mn.id
 								  AND mh.ancestor_id IN (". \ze\escape::in($_SESSION['admin_specific_menu_nodes'], 'numeric'). ")
 								WHERE mn.equiv_id = ". (int) $equivId. "
@@ -247,8 +247,8 @@ class priv {
 					if (!empty($_SESSION['admin_specific_content_items'])) {
 						$sql = "
 							SELECT 1
-							FROM ". DB_NAME_PREFIX. "menu_nodes AS mn
-							INNER JOIN ". DB_NAME_PREFIX. "content_items AS c
+							FROM ". DB_PREFIX. "menu_nodes AS mn
+							INNER JOIN ". DB_PREFIX. "content_items AS c
 							   ON c.equiv_id = mn.equiv_id
 							  AND c.type = mn.content_type
 							  AND c.tag_id IN (". \ze\escape::in($_SESSION['admin_specific_content_items']). ")
@@ -280,7 +280,7 @@ class priv {
 					if (!empty($_SESSION['admin_specific_menu_nodes'])) {
 						$sql = "
 							SELECT 1
-							FROM ". DB_NAME_PREFIX. "menu_hierarchy AS mh
+							FROM ". DB_PREFIX. "menu_hierarchy AS mh
 							WHERE mh.child_id = ". (int) $menuNodeId. "
 							  AND mh.ancestor_id IN (". \ze\escape::in($_SESSION['admin_specific_menu_nodes'], 'numeric'). ")
 							LIMIT 1";

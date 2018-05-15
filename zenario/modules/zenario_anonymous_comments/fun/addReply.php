@@ -30,7 +30,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 //Add the comment
 $sql = "
-	INSERT INTO ". DB_NAME_PREFIX. ZENARIO_ANONYMOUS_COMMENTS_PREFIX. "user_comments SET
+	INSERT INTO ". DB_PREFIX. ZENARIO_ANONYMOUS_COMMENTS_PREFIX. "user_comments SET
 		content_id = ". (int) $this->cID. ",
 		content_type = '". ze\escape::sql($this->cType). "',
 		date_posted = NOW(),
@@ -46,7 +46,7 @@ $commentId = ze\sql::insertId();
 
 //Update the post count for the thread
 $sql = "
-	UPDATE ". DB_NAME_PREFIX. ZENARIO_ANONYMOUS_COMMENTS_PREFIX. "comment_content_items SET
+	UPDATE ". DB_PREFIX. ZENARIO_ANONYMOUS_COMMENTS_PREFIX. "comment_content_items SET
 		date_updated = NOW(),
 		updater_id = ". (int) $userId. ",
 		post_count = post_count + 1, 

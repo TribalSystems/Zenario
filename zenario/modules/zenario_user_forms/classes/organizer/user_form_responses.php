@@ -49,7 +49,7 @@ class zenario_user_forms__organizer__user_form_responses extends ze\moduleBaseCl
 			}
 		}
 		
-		if (!zenario_user_forms::isFormCRMEnabled($refinerId)) {
+		if (!zenario_user_forms::isFormCRMEnabled($refinerId, false)) {
 			unset($panel['columns']['crm_response']);
 		}
 		
@@ -60,8 +60,8 @@ class zenario_user_forms__organizer__user_form_responses extends ze\moduleBaseCl
 		
 		$sql = '
 			SELECT urd.value, urd.form_field_id, ur.id
-			FROM '. DB_NAME_PREFIX. ZENARIO_USER_FORMS_PREFIX .'user_response_data AS urd
-			INNER JOIN '. DB_NAME_PREFIX. ZENARIO_USER_FORMS_PREFIX .'user_response AS ur
+			FROM '. DB_PREFIX. ZENARIO_USER_FORMS_PREFIX .'user_response_data AS urd
+			INNER JOIN '. DB_PREFIX. ZENARIO_USER_FORMS_PREFIX .'user_response AS ur
 				ON urd.user_response_id = ur.id
 			WHERE ur.form_id = '. (int)$refinerId;
 		$result = ze\sql::select($sql);

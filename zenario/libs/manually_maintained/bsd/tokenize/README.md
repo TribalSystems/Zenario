@@ -1,3 +1,7 @@
+No more modification on this version !
+==========
+I'm currently developping a new version of tokenize, it can be found here https://github.com/zellerda/Tokenize2
+
 Tokenize
 ==========
 
@@ -15,7 +19,14 @@ Documentation and Demo : [https://www.zellerda.com/projects/jquery/tokenize](htt
 
 Changelog
 ---------
-jQuery Tokenize 2.5.2
+jQuery Tokenize 2.6
+ - [Issue #69] Add onDropdownShow event
+ - [Issue #80] Fix jQuery 2.1.4 ajax issue when using hash in search input
+ - [Issue #81] Add onDuplicateToken option
+ - [Issue #82] Adding trim on adding tokens
+ - [Issue #84] Adding the possibility to set multiples delimiters
+
+jQuery Tokenize 2.5.2 - 24 October 2015
  - [Issue #57] Add bower package definition
  - [Issue #64] Add ajax error handler in option
  - [Issue #66] Add searchMinLength parameter

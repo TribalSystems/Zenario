@@ -9,7 +9,7 @@ zenario__content:
                     db_column: cci.post_count
                     align_right: Yes
                     table_join: |
-                        [[DB_NAME_PREFIX]][[ZENARIO_ANONYMOUS_COMMENTS_PREFIX]]comment_content_items AS cci
+                        [[DB_PREFIX]][[ZENARIO_ANONYMOUS_COMMENTS_PREFIX]]comment_content_items AS cci
                                                  ON cci.content_id = c.id
                                                 AND cci.content_type = c.type
                 zenario_comments__date_updated:
@@ -17,6 +17,6 @@ zenario__content:
                     db_column: cci.date_updated
                     format: datetime
                     table_join: |
-                        [[DB_NAME_PREFIX]][[ZENARIO_ANONYMOUS_COMMENTS_PREFIX]]comment_content_items AS cci
+                        [[DB_PREFIX]][[ZENARIO_ANONYMOUS_COMMENTS_PREFIX]]comment_content_items AS cci
                                                  ON cci.content_id = c.id
                                                 AND cci.content_type = c.type

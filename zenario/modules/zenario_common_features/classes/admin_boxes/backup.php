@@ -46,6 +46,9 @@ class zenario_common_features__admin_boxes__backup extends ze\moduleBaseClass {
 		$contains .= ze\admin::phrase('This backup will <u>not</u> contain:');
 		$contains .= '<ul>';
 		
+		if (\ze\db::hasDataArchive()) {
+			$contains .= '<li>'. ze\admin::phrase('The data archive database.'). '</li>';
+		}
 		if (\ze\db::hasGlobal()) {
 			$contains .= '<li>'. ze\admin::phrase('The global database.'). '</li>';
 		}
@@ -53,7 +56,11 @@ class zenario_common_features__admin_boxes__backup extends ze\moduleBaseClass {
 		$contains .= '<li>'. ze\admin::phrase('The <code>docstore/</code> directory.'). '</li>';
 		$contains .= '<li>'. ze\admin::phrase('The <code>zenario_custom/</code> directory.'). '</li>';
 		
-		$contains .= '</ul>'. ze\admin::phrase('You should back up and restore these separately to preserve your custom frameworks, custom modules, documents, layouts and skins.');
+		if (\ze\db::hasDataArchive()) {
+			$contains .= '</ul>'. ze\admin::phrase('You should back up and restore these separately to preserve your archived data, custom frameworks, custom modules, documents, layouts and skins.');
+		} else {
+			$contains .= '</ul>'. ze\admin::phrase('You should back up and restore these separately to preserve your custom frameworks, custom modules, documents, layouts and skins.');
+		}
 		
 		$fields['details/desc2']['snippet']['html'] = $contains;
 		

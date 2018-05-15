@@ -433,7 +433,7 @@ zenario.lib(function(
 		return URLBasePath +
 			'zenario/ajax.php?moduleClassName=' + encodeURIComponent(moduleClassName) +
 			'&path=' + encodeURIComponent(path) +
-			'&method_call=' + (mode == 'format' || mode == 'validate' || mode == 'save'? mode : 'fill') + 'VisitorTUIX' +
+			'&method_call=' + (mode == 'tas'? 'typeaheadSearchAJAX' : (mode == 'format' || mode == 'validate' || mode == 'save'? mode : 'fill') + 'VisitorTUIX') +
 			'&_useSync=' + zenario.engToBoolean(useSync) +
 			zenario.urlRequest(requests);
 	};
@@ -485,19 +485,15 @@ var chopLeft = function(s, n) {
 var zenario_conductor = createZenarioLibrary('_conductor');
 zenario_conductor.slots = {};
 zenario_conductor.backLink =
-zenario_conductor.clearRegisteredGetRequest =
 zenario_conductor.commandEnabled =
 zenario_conductor.confirmOnClose =
 zenario_conductor.confirmOnCloseMessage =
 zenario_conductor.enabled =
-zenario_conductor.getRegisteredGetRequest =
 zenario_conductor.getSlot =
 zenario_conductor.go =
 zenario_conductor.goBack =
 zenario_conductor.link =
-zenario_conductor.mergeRequests =
 zenario_conductor.refresh =
-zenario_conductor.registerGetRequest =
 zenario_conductor.setCommands ==> {  };
 
 
@@ -1069,7 +1065,11 @@ zenario.loadDatePicker = function(async) {
 	return zenario.loadLibrary(URLBasePath + 'zenario/libs/manually_maintained/mit/jquery/jquery-ui.datepicker.min.js?v=' + zenarioCSSJSVersionNumber,
 		async, $.datepicker);
 };
-
+//Lazy-load the autocomplete library when needed
+zenario.loadAutocomplete = function(async) {
+	return zenario.loadLibrary(URLBasePath + 'zenario/libs/manually_maintained/mit/jquery/jquery-ui.autocomplete.min.js?v=' + zenarioCSSJSVersionNumber,
+		async, $.autocomplete);
+};
 
 
 
@@ -1606,6 +1606,7 @@ zenario.checkForHashChanges = function(timed) {
 				}
 			
 			} else {
+				
 				//If there was an empty hash or no hash, and we just changed a Plugin, reset it.
 				zenario.refreshPluginSlot(zenario.currentHashSlot, '', addImportantGetRequests && zenarioA.importantGetRequests || '', undefined, false, false);
 				//zenario.refreshPluginSlot = function(slotName, instanceId, additionalRequests, recordInURL, scrollToTopOfSlot, fadeOutAndIn, useCache) {
@@ -2821,7 +2822,6 @@ zenario.addJQueryElements = function(path, adminFacing, beingEdited) {
 		});
 	}
 	
-	
 	zenario.setChildrenToTheSameHeight(path);
 	
 	//Initiate the jQuery plugin for lazy-loading images
@@ -2870,6 +2870,20 @@ zenario.addJQueryElements = function(path, adminFacing, beingEdited) {
 			$(el).datepicker({
 				dateFormat: zenario.dpf,
 				showOn: 'focus'
+			});
+		}
+	});
+	
+	$(path + 'input.autocomplete').each(function(i, el) {
+		zenario.loadAutocomplete();
+		
+		var values = $(el).data('autocomplete_list');
+		if (values) {
+			$(el).autocomplete({
+				minLength: 0,
+				source: values
+			}).on('click', function () {
+				$(this).autocomplete("search", "");
 			});
 		}
 	});
@@ -3221,29 +3235,6 @@ zenario.addPluginJavaScript = function(moduleId, callback) {
 	return zenario.loadLibrary(URLBasePath + filePath, callback);
 };
 
-
-zenario.captcha = function(publicKey, divId, hideAudio) {
-	if (hideAudio) {
-		RecaptchaOptions.callback ==> { zenario.captchaHideAudio(); }
-	}
-	
-	if (!window.Recaptcha) {
-		$.getScript(
-			zenario.httpOrhttps() + 'www.google.com/recaptcha/api/js/recaptcha_ajax.js',
-			=> {
-				Recaptcha.create(publicKey, divId, RecaptchaOptions);
-			}
-		);
-	} else {
-		Recaptcha.create(publicKey, divId, RecaptchaOptions);
-	}
-};
-
-zenario.captchaHideAudio = function() {
-	$('.recaptcha_only_if_image').attr('href', '#').attr('title', '').css('cursor', 'default');
-	$('.recaptcha_only_if_image img').attr('alt', '').attr('tooltip', '').attr('src', $('.recaptcha_only_if_audio img').attr('src'));
-};
-
 zenario.rightHandedSubStr = function(string, ammount) {
 	if (zenario.browserIsIE()) {
 		var len = string.length;
@@ -3502,7 +3493,6 @@ zenario.init = function(
 	zenarioCSSJSVersionNumber,
 	userId,
 	langId,
-	recaptchaTheme,
 	datePickerFormat,
 	indexDotPHP,
 	canSetCookie,
@@ -3516,11 +3506,6 @@ zenario.init = function(
 ) {
 
 	window.zenarioCSSJSVersionNumber = zenarioCSSJSVersionNumber;
-	
-	window.RecaptchaOptions = {
-		lang: chopLeft(langId, 2),
-		theme: recaptchaTheme
-	};
 	
 	zenario.userId = userId;
 	zenario.langId = langId;

@@ -90,7 +90,7 @@ class zenario_common_features__admin_boxes__categories extends ze\moduleBaseClas
 			foreach (ze\lang::getLanguages() as $lang) {
 				if (!ze\row::exists('visitor_phrases', ['language_id' => $lang['id'], 'code' => '_CATEGORY_'. (int) $box['key']['id'], 'module_class_name' => 'zenario_common_features'])) {
 					$sql = "
-				INSERT INTO ". DB_NAME_PREFIX. "visitor_phrases SET
+				INSERT INTO ". DB_PREFIX. "visitor_phrases SET
 					language_id = '". ze\escape::sql($lang['id']). "',
 					local_text = '". ze\escape::sql($values['name']). "',
 					code = '_CATEGORY_". (int) $box['key']['id']. "',

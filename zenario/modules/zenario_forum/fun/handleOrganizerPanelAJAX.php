@@ -32,7 +32,7 @@ switch ($path) {
 	case 'zenario__social/nav/forums/panel':
 		if (($_POST['remove_forum'] ?? false) && ze\priv::check('_PRIV_MANAGE_ITEM_SLOT')) {
 			$sql = "
-				DELETE FROM ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "forums
+				DELETE FROM ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "forums
 				WHERE post_count = 0
 				  AND thread_count = 0
 				  AND id = ". (int) $ids;
@@ -40,7 +40,7 @@ switch ($path) {
 		
 		} elseif (($_POST['remove_thread_page'] ?? false) && ze\priv::check('_PRIV_MANAGE_ITEM_SLOT')) {
 			$sql = "
-				UPDATE ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "forums SET
+				UPDATE ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "forums SET
 					thread_content_id = 0,
 					thread_content_type = ''
 				WHERE id = ". (int) $ids;
@@ -48,7 +48,7 @@ switch ($path) {
 		
 		} elseif (($_POST['remove_new_thread_page'] ?? false) && ze\priv::check('_PRIV_MANAGE_ITEM_SLOT')) {
 			$sql = "
-				UPDATE ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "forums SET
+				UPDATE ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "forums SET
 					new_thread_content_id = 0,
 					new_thread_content_type = ''
 				WHERE id = ". (int) $ids;
@@ -56,14 +56,14 @@ switch ($path) {
 		
 		} elseif (($_POST['lock_forum'] ?? false) && ze\priv::check('_PRIV_MODERATE_USER_COMMENTS')) {
 			$sql = "
-				UPDATE ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "forums SET
+				UPDATE ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "forums SET
 					locked = 1
 				WHERE id = ". (int) $ids;
 			ze\sql::update($sql);
 		
 		} elseif (($_POST['unlock_forum'] ?? false) && ze\priv::check('_PRIV_MODERATE_USER_COMMENTS')) {
 			$sql = "
-				UPDATE ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "forums SET
+				UPDATE ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "forums SET
 					locked = 0
 				WHERE id = ". (int) $ids;
 			ze\sql::update($sql);
@@ -72,7 +72,7 @@ switch ($path) {
 			foreach (explode(',', $ids) as $id) {
 				if (!empty($_POST['ordinals'][$id])) {
 					$sql = "
-						UPDATE ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "forums SET
+						UPDATE ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "forums SET
 							ordinal = ". (int) $_POST['ordinals'][$id]. "
 						WHERE id = ". (int) $id;
 					ze\sql::update($sql);

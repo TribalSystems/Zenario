@@ -63,6 +63,29 @@ Notes:
 }
 
 class zenario_minify {
+	
+	public static function modified($path) {
+	
+		if (is_null(self::$stats)) {
+			self::$stats = [];
+		
+			if (is_dir(CMS_ROOT. '.svn')) {
+				$statusLines = [];
+				exec('svn status '. escapeshellarg(CMS_ROOT), $statusLines);
+	
+				foreach ($statusLines as $line) {
+					$line = explode(CMS_ROOT, $line, 2);
+					if (isset($line[1])) {
+						self::$stats[$line[1]] = trim($line[0]);
+					}
+				}
+			}
+		}
+		
+		return isset(self::$stats[$path]) || isset(self::$stats[ze\ring::chopPrefix(CMS_ROOT, $path, true)]);
+	}
+	
+	public static $stats = null;
 	public static $shortNames = [
 		'_.after(' => '_._a(',
 		'_.allKeys(' => '_._aK(',
@@ -191,8 +214,6 @@ class zenario_minify {
 		'zenario.callScript(' => 'zenario._cS(',
 		'zenario.callback(' => 'zenario._c(',
 		'zenario.canCopy(' => 'zenario._cC(',
-		'zenario.captcha(' => 'zenario._ca(',
-		'zenario.captchaHideAudio(' => 'zenario._cHA(',
 		'zenario.checkDataRevisionNumber(' => 'zenario._cDRN(',
 		'zenario.checkForHashChanges(' => 'zenario._cFHC(',
 		'zenario.checkSessionStorage(' => 'zenario._cSS(',
@@ -301,20 +322,6 @@ class zenario_minify {
 		'zenario.urlRequest(' => 'zenario._uR(',
 		'zenario.versionOfIE(' => 'zenario._vOI(',
 		'zenario.visitorTUIXLink(' => 'zenario._vTL(',
-		'zenario_conductor.backLink(' => 'zenario_conductor._bL(',
-		'zenario_conductor.clearRegisteredGetRequest(' => 'zenario_conductor._cRGR(',
-		'zenario_conductor.commandEnabled(' => 'zenario_conductor._cE(',
-		'zenario_conductor.confirmOnClose(' => 'zenario_conductor._cOC(',
-		'zenario_conductor.confirmOnCloseMessage(' => 'zenario_conductor._cOCM(',
-		'zenario_conductor.enabled(' => 'zenario_conductor._e(',
-		'zenario_conductor.getRegisteredGetRequest(' => 'zenario_conductor._gRGR(',
-		'zenario_conductor.getSlot(' => 'zenario_conductor._gS(',
-		'zenario_conductor.goBack(' => 'zenario_conductor._gB(',
-		'zenario_conductor.link(' => 'zenario_conductor._l(',
-		'zenario_conductor.mergeRequests(' => 'zenario_conductor._mR(',
-		'zenario_conductor.refresh(' => 'zenario_conductor._r(',
-		'zenario_conductor.registerGetRequest(' => 'zenario_conductor._rGR(',
-		'zenario_conductor.setCommands(' => 'zenario_conductor._sC(',
 		'zenarioT.action(' => 'zenarioT._a(',
 		'zenarioT.canDoHTML5Upload(' => 'zenarioT._cDHTML5U(',
 		'zenarioT.checkActionUnique(' => 'zenarioT._cAU(',
@@ -364,6 +371,7 @@ class zenario_minify {
 		'zenarioA.AJAXErrorHandler(' => 'zenarioA._AJEH(',
 		'zenarioA.SKInit(' => 'zenarioA._SKI(',
 		'zenarioA.addJQueryElements(' => 'zenarioA._aJQE(',
+		'zenarioA.addLinkStatus(' => 'zenarioA._aLS(',
 		'zenarioA.addMediaToTinyMCE(' => 'zenarioA._aMTTM(',
 		'zenarioA.addNewReusablePlugin(' => 'zenarioA._aNRP(',
 		'zenarioA.addNewWireframePlugin(' => 'zenarioA._aNWP(',
@@ -550,7 +558,6 @@ class zenario_minify {
 		'zenarioO.doSearch(' => 'zenarioO._dS(',
 		'zenarioO.enableInteraction(' => 'zenarioO._eI(',
 		'zenarioO.fadeOutLastButtons(' => 'zenarioO._fOLB(',
-		'zenarioO.fillLowerLeft(' => 'zenarioO._fLL(',
 		'zenarioO.filterSetOnColumn(' => 'zenarioO._fSOC(',
 		'zenarioO.followPathOnMap(' => 'zenarioO._fPOM(',
 		'zenarioO.getBackButtonTitle(' => 'zenarioO._gBBT(',
@@ -689,22 +696,21 @@ class zenario_minify {
 		'zenarioVO.changeFiltersAfterDelay(' => 'zenarioVO._cFAD(',
 		'zenario_conductor.autoRefresh(' => 'zenario_conductor._aR(',
 		'zenario_conductor.backLink(' => 'zenario_conductor._bL(',
-		'zenario_conductor.calcRequests(' => 'zenario_conductor._cR(',
-		'zenario_conductor.cleanRequests(' => 'zenario_conductor._clRe(',
-		'zenario_conductor.clearRegisteredGetRequest(' => 'zenario_conductor._cRGR(',
+		'zenario_conductor.cleanRequests(' => 'zenario_conductor._cR(',
 		'zenario_conductor.commandEnabled(' => 'zenario_conductor._cE(',
 		'zenario_conductor.confirmOnClose(' => 'zenario_conductor._cOC(',
 		'zenario_conductor.confirmOnCloseMessage(' => 'zenario_conductor._cOCM(',
 		'zenario_conductor.enabled(' => 'zenario_conductor._e(',
-		'zenario_conductor.getRegisteredGetRequest(' => 'zenario_conductor._gRGR(',
+		'zenario_conductor.getCommand(' => 'zenario_conductor._gC(',
 		'zenario_conductor.getSlot(' => 'zenario_conductor._gS(',
 		'zenario_conductor.goBack(' => 'zenario_conductor._gB(',
 		'zenario_conductor.link(' => 'zenario_conductor._l(',
 		'zenario_conductor.linkToOtherContentItem(' => 'zenario_conductor._lTOCI(',
 		'zenario_conductor.mergeRequests(' => 'zenario_conductor._mR(',
 		'zenario_conductor.refresh(' => 'zenario_conductor._r(',
-		'zenario_conductor.registerGetRequest(' => 'zenario_conductor._rGR(',
+		'zenario_conductor.request(' => 'zenario_conductor._re(',
 		'zenario_conductor.setCommands(' => 'zenario_conductor._sC(',
+		'zenario_conductor.setVars(' => 'zenario_conductor._sV(',
 		'zenario_conductor.stopAutoRefresh(' => 'zenario_conductor._sAR(',
 		'zenario_conductor.transitionIn(' => 'zenario_conductor._tI(',
 		'zenario_conductor.transitionOut(' => 'zenario_conductor._tO('
@@ -775,6 +781,8 @@ function minifyString($string) {
 }
 function minify($dir, $file, $level, $ext = '.js', $string = false) {
 	
+	
+	
 	$isCSS = $ext == '.css';
 	$yamlToJSON = $ext == '.yaml';
 	$output = [];
@@ -815,15 +823,10 @@ function minify($dir, $file, $level, $ext = '.js', $string = false) {
 			
 			$modified = 
 				RECOMPRESS_EVERYTHING ||
-				exec('svn status '.
-							escapeshellarg($srcFile)
-					);
+				zenario_minify::modified($srcFile);
 			
 			if (!$svnAdd && !$modified) {
-				$needsreverting = 
-					exec('svn status '.
-								escapeshellarg($minFile)
-						);
+				$needsreverting = zenario_minify::modified($minFile);
 			}
 		}
 		

@@ -38,14 +38,9 @@ class zenario_user_forms__organizer__predefined_text_targets extends zenario_use
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
 		if ($_POST['delete_target']) {
 			foreach (ze\ray::explodeAndTrim($ids) as $id) {
-				$this->deletePredefinedTextTarget($id);
+				static::deletePredefinedTextTarget($id);
 			}
 		}
-	}
-	
-	private function deletePredefinedTextTarget($targetId) {
-		ze\row::delete(ZENARIO_USER_FORMS_PREFIX . 'predefined_text_targets', $targetId);
-		ze\row::delete(ZENARIO_USER_FORMS_PREFIX . 'predefined_text_triggers', ['target_form_field_id' => $targetId]);
 	}
 	
 }

@@ -36,14 +36,14 @@ ze\row::delete('visitor_phrases', ['code' => '_CATEGORY_'. (int) $id, 'module_cl
 ze\contentAdm::removeItemFromPluginSettings('category', $id);
 
 $sql = "
-	UPDATE ". DB_NAME_PREFIX. "plugin_settings SET
+	UPDATE ". DB_PREFIX. "plugin_settings SET
 		value = REPLACE(REPLACE(CONCAT(',,', value, ',,'), ',". (int) $id. ",', ','), ',,', '')
 	WHERE dangling_cross_references = 'remove'
 	  AND foreign_key_to = 'categories'";
 ze\sql::update($sql);
 
 $sql = "
-	UPDATE ". DB_NAME_PREFIX. "plugin_settings SET
+	UPDATE ". DB_PREFIX. "plugin_settings SET
 		value = ''
 	WHERE dangling_cross_references = 'remove'
 	  AND foreign_key_to = 'categories'
@@ -54,15 +54,11 @@ ze\sql::update($sql);
 ze\module::sendSignal("eventCategoryDeleted",["categoryId" => $id]);
 
 if ($recurseCount<=10) {
-	$sql = "SELECT id
-			FROM " . DB_NAME_PREFIX . "categories
-			WHERE parent_id = " . $id;
-			
-	$result = ze\sql::select($sql);
-	
-	if (ze\sql::numRows($result)>0) {
-		while ($row = ze\sql::fetchArray($result)) {
-			zenario_common_features::deleteCategory($row['id'], $recurseCount);
-		}
+	foreach (ze\sql::fetchValues('
+		SELECT id
+		FROM '. DB_PREFIX. 'categories
+		WHERE parent_id = '. (int) $id
+	) as $id) {
+		zenario_common_features::deleteCategory($id, $recurseCount);
 	}
 }

@@ -74,40 +74,40 @@ methods.init = function() {
 
 //Called by Organizer whenever it needs to set the panel data.
 methods.cmsSetsPanelTUIX = function(tuix) {
-	this.tuix = tuix;
+	thus.tuix = tuix;
 };
 
 //Called by Organizer whenever it needs to set the current tag-path
 methods.cmsSetsPath = function(path) {
-	this.path = path;
+	thus.path = path;
 };
 
 //Called by Organizer to give information on the current refiner
 methods.cmsSetsRefiner = function(refiner) {
-	this.refiner = refiner;
+	thus.refiner = refiner;
 };
 
 //Called by Organizer whenever a panel is first loaded with a specific item requested
 methods.cmsSetsRequestedItem = function(requestedItem) {
-	this.lastItemClicked =
-	this.requestedItem = requestedItem;
+	thus.lastItemClicked =
+	thus.requestedItem = requestedItem;
 };
 
 //Called by Organizer to set the sort column and direction
 methods.cmsSetsSortColumn = function(sortBy, sortDesc) {
-	this.sortBy = sortBy;
-	this.sortDesc = sortDesc;
+	thus.sortBy = sortBy;
+	thus.sortDesc = sortDesc;
 };
 
 
 //If searching is enabled (i.e. your returnSearchingEnabled() method returns true)
 //then the CMS will call this method to tell you what the search term was
 methods.cmsSetsSearchTerm = function(searchTerm) {
-	this.searchTerm = searchTerm;
+	thus.searchTerm = searchTerm;
 };
 
 //Use this function to set AJAX URL you want to use to load the panel.
-//Initally the this.tuix variable will just contain a few important TUIX properties
+//Initally the thus.tuix variable will just contain a few important TUIX properties
 //and not your the panel definition from TUIX.
 //The default value here is a PHP script that will:
 	//Load all of the TUIX properties
@@ -119,8 +119,8 @@ methods.cmsSetsSearchTerm = function(searchTerm) {
 methods.returnAJAXURL = function() {
 	return URLBasePath
 		+ 'zenario/admin/organizer.ajax.php?path='
-		+ encodeURIComponent(this.path)
-		+ zenario.urlRequest(this.returnAJAXRequests());
+		+ encodeURIComponent(thus.path)
+		+ zenario.urlRequest(thus.returnAJAXRequests());
 };
 
 //Returns the URL that the dev tools will use to load debug information.
@@ -137,7 +137,7 @@ methods.returnAJAXRequests = function() {
 //You should return the page size you wish to use, or false to disable pagination
 methods.returnPageSize = function() {
 	
-	var pageSize = (zenarioO.prefs[this.path] && zenarioO.prefs[this.path].pageSize);
+	var pageSize = (zenarioO.prefs[thus.path] && zenarioO.prefs[thus.path].pageSize);
 	
 	return Math.max(20, Math.min(500, 1*pageSize || zenarioO.defaultPageSize));
 };
@@ -151,8 +151,8 @@ methods.returnPanelTitle = function() {
 //Return whether you are allowing multiple items to be selected in full and quick mode.
 //(In select mode the opening picker will determine whether multiple select is allowed.)
 methods.returnMultipleSelectEnabled = function() {
-	if (this.tuix && this.tuix.item_buttons) {
-		foreach (this.tuix.item_buttons as var i => var button) {
+	if (thus.tuix && thus.tuix.item_buttons) {
+		foreach (thus.tuix.item_buttons as var i => var button) {
 			if (button
 			 && engToBoolean(button.multiple_select)
 			 && !zenarioO.checkButtonHidden(button)) {
@@ -169,8 +169,8 @@ methods.returnMultipleSelectEnabled = function() {
 methods.returnSearchingEnabled = function() {
 	
 	//Look to see if there's a column marked as searchable, and if so return true
-	if (this.tuix && this.tuix.columns) {
-		foreach (this.tuix.columns as var c => var column) {
+	if (thus.tuix && thus.tuix.columns) {
+		foreach (thus.tuix.columns as var c => var column) {
 			if (column && engToBoolean(column.searchable)) {
 				return true;
 			}
@@ -184,7 +184,7 @@ methods.returnSearchingEnabled = function() {
 //If you return true, sorting and pagination will be applied on the server.
 //If you return false, your sortAndSearchItems() method will be called instead.
 methods.returnDoSortingAndSearchingOnServer = function() {
-	return this.tuix.db_items && !engToBoolean(this.tuix.db_items.client_side);
+	return thus.tuix.db_items && !engToBoolean(thus.tuix.db_items.client_side);
 };
 
 //Return whether to show the left hand nav.
@@ -200,12 +200,12 @@ methods.returnIsMultiLineList = function() {
 //Function to search and sort the items on the client side.
 //You should return an array of matching ids in the correct order.
 methods.sortAndSearchItems = function() {
-	return this.searchItems(this.sortItems(), this.searchTerm);
+	return thus.searchItems(thus.sortItems(), thus.searchTerm);
 };
 
 //Part one of sortAndSearchItems(), this is broken up into two halves for easier overriding
 methods.sortItems = function() {
-	return zenarioT.getSortedIdsOfTUIXElements(this.tuix, 'items', this.sortBy, this.sortDesc);
+	return zenarioT.getSortedIdsOfTUIXElements(thus.tuix, 'items', thus.sortBy, thus.sortDesc);
 };
 
 //Part two of sortAndSearchItems(), this is broken up into two halves for easier overriding
@@ -219,13 +219,13 @@ methods.searchItems = function(items, searchTerm) {
 			id = items[itemNo];
 			
 			matches = false;
-			foreach (this.tuix.columns as c => column) {
+			foreach (thus.tuix.columns as c => column) {
 				if (column && engToBoolean(column.searchable)) {
 					
 					if (zenarioO.columnValue) {
 						value = zenarioO.columnValue(id, c, true);
 					} else {
-						value = this.tuix.items && this.tuix.items[id] && this.tuix.items[id][c];
+						value = thus.tuix.items && thus.tuix.items[id] && thus.tuix.items[id][c];
 					}
 					
 					if (value == (numeric = 1*value)) {
@@ -279,7 +279,7 @@ methods.displayToastMessage = function(message, itemId) {
 
 //This is called when an admin navigates away from your panel, or your panel is about to be refreshed/reloaded.
 methods.onUnload = function($header, $panel, $footer) {
-	this.saveScrollPosition($panel);
+	thus.saveScrollPosition($panel);
 };
 
 //Remember where the admin had scrolled to.
@@ -287,8 +287,8 @@ methods.onUnload = function($header, $panel, $footer) {
 methods.saveScrollPosition = function($panel) {
 	$panel = $panel || zenarioO.getPanel();
 	
-	this.scrollTop = $panel.scrollTop();
-	this.scrollLeft = $panel.scrollLeft();
+	thus.scrollTop = $panel.scrollTop();
+	thus.scrollLeft = $panel.scrollLeft();
 };
 
 //If this panel has been displayed before, try to restore the admin's previous scroll
@@ -296,10 +296,20 @@ methods.saveScrollPosition = function($panel) {
 methods.restoreScrollPosition = function($panel) {
 	$panel = $panel || zenarioO.getPanel();
 	
+	if (thus._rsp) {
+		thus.scrollTop = thus.scrollLeft = 0;
+		delete thus._rsp;
+	}
+	
 	$panel
-		.scrollTop(this.scrollTop || 0)
-		.scrollLeft(this.scrollLeft || 0)
+		.scrollTop(thus.scrollTop || 0)
+		.scrollLeft(thus.scrollLeft || 0)
 		.trigger('scroll');
+};
+
+//Set the scroll back to the top of the panel on the next page load, e.g. if a page button was pressed.
+methods.resetScrollPosition = function() {
+	thus._rsp = true;
 };
 
 
@@ -309,48 +319,46 @@ methods.restoreScrollPosition = function($panel) {
 methods.checkboxClick = function(id, e) {
 	zenario.stop(e);
 	
-	var that = this;
-	
 	setTimeout(function() {
-		that.itemClick(id, undefined, true);
+		thus.itemClick(id, undefined, true);
 	}, 0);
 };
 
 
 methods.itemClick = function(id, e, isCheckbox) {
-	if (!this.tuix || !this.tuix.items[id]) {
+	if (!thus.tuix || !thus.tuix.items[id]) {
 		return false;
 	}
 	
 	//If the admin is holding down the shift key...
-	if (zenarioO.multipleSelectEnabled && !isCheckbox && (e || event).shiftKey && this.lastItemClicked) {
+	if (zenarioO.multipleSelectEnabled && !isCheckbox && (e || event).shiftKey && thus.lastItemClicked) {
 		//...select everything between the current item and the last item that they clicked on
-		zenarioO.selectItemRange(id, this.lastItemClicked);
+		zenarioO.selectItemRange(id, thus.lastItemClicked);
 	
 	//If multiple select is enabled and the checkbox was clicked...
 	} else if (zenarioO.multipleSelectEnabled && isCheckbox) {
 		//...toogle the item that they've clicked on
-		if (this.selectedItems[id]) {
-			this.deselectItem(id);
+		if (thus.selectedItems[id]) {
+			thus.deselectItem(id);
 		} else {
-			this.selectItem(id);
+			thus.selectItem(id);
 		}
 		zenarioO.closeInspectionView();
-		this.lastItemClicked = id;
+		thus.lastItemClicked = id;
 	
 	//If multiple select is not enabled and the checkbox was clicked
-	} else if (!zenarioO.multipleSelectEnabled && isCheckbox && this.selectedItems[id]) {
+	} else if (!zenarioO.multipleSelectEnabled && isCheckbox && thus.selectedItems[id]) {
 		//...deselect everything if this row was already selected
 		zenarioO.deselectAllItems();
 		zenarioO.closeInspectionView();
-		this.lastItemClicked = id;
+		thus.lastItemClicked = id;
 	
 	//Otherwise select the item that they've just clicked on, and nothing else
 	} else {
 		zenarioO.closeInspectionView();
 		zenarioO.deselectAllItems();
-		this.selectItem(id);
-		this.lastItemClicked = id;
+		thus.selectItem(id);
+		thus.lastItemClicked = id;
 	}
 	
 	
@@ -367,7 +375,7 @@ methods.itemClick = function(id, e, isCheckbox) {
 //Return an object of currently selected item ids
 //This should be an object in the format {1: true, 6: true, 18: true}
 methods.returnSelectedItems = function() {
-	return this.selectedItems;
+	return thus.selectedItems;
 };
 
 //This method will be called when the CMS sets the items that are selected,
@@ -376,25 +384,25 @@ methods.returnSelectedItems = function() {
 //It is usually called before your panel is drawn so you do not need to update the state
 //of the items on the page.
 methods.cmsSetsSelectedItems = function(selectedItems) {
-	this.selectedItems = selectedItems;
+	thus.selectedItems = selectedItems;
 };
 
 //This method should cause an item to be selected.
 //It is called after your panel is drawn so you should update the state of your items
 //on the page.
 methods.selectItem = function(id) {
-	this.selectedItems[id] = true;
+	thus.selectedItems[id] = true;
 	$(get('organizer_item_' + id)).addClass('organizer_selected');
-	this.updateItemCheckbox(id, true);
+	thus.updateItemCheckbox(id, true);
 };
 
 //This method should cause an item to be deselected
 //It is called after your panel is drawn so you should update the state of your items
 //on the page.
 methods.deselectItem = function(id) {
-	delete this.selectedItems[id];
+	delete thus.selectedItems[id];
 	$(get('organizer_item_' + id)).removeClass('organizer_selected');
-	this.updateItemCheckbox(id, false);
+	thus.updateItemCheckbox(id, false);
 };
 
 //This updates the checkbox for an item, if you are showing checkboxes next to items,
@@ -424,10 +432,10 @@ methods.returnInspectionViewEnabled = function() {
 //Toggle inspection view
 methods.toggleInspectionView = function(id) {
 	if (id == zenarioO.inspectionViewItemId()) {
-		this.closeInspectionView(id);
+		thus.closeInspectionView(id);
 	
 	} else {
-		this.openInspectionView(id);
+		thus.openInspectionView(id);
 	}
 };
 

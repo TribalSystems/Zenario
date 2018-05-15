@@ -19,14 +19,6 @@ zenario_publish:
                     type: warning
                     message: >
                         Are you sure you wish to publish the selected content item(s)?
-                document_warning:
-                    show: false
-                    type: warning
-                    message: ''
-                document_changes:
-                    show: false
-                    type: warning
-                    message: ''
                 
             fields:
                 publish_options:

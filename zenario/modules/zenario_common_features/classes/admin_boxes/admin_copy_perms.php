@@ -41,7 +41,7 @@ class zenario_common_features__admin_boxes__admin_copy_perms extends ze\moduleBa
 		$fields['copy/copy_from']['values'] =
 		$fields['copy/copy_to']['values'] = [];
 		
-		foreach (ze\row::getArray(
+		foreach (ze\row::getAssocs(
 			'admins',
 			['first_name', 'last_name', 'username', 'authtype'],
 			['status' => 'active', 'authtype' => 'local']

@@ -26,6 +26,8 @@
 			</div>
 		{% endif %}
 		
+		{% set Eggs_Equal_Height = this.setting('eggs_equal_height') %}
+		
 		<div class="nest_plugins_wrap">
 			{% for Tab in Tabs %}
 				{% if Tab.Plugins %}
@@ -83,11 +85,28 @@
 						</div>
 					{% endif %}
 					
-					<div class="nest_plugins" {% if Tab.Hidden %} style="display: none;" {% endif %} >
+					<div
+						class="
+							nest_plugins
+							{% if Eggs_Equal_Height %}
+								nest_equal_height setmychildren
+							{% endif %}
+						"
+						{% if Tab.Hidden %} style="display: none;" {% endif %}
+					>
 						{% set first = true %}
 						{% for Plugin in Tab.Plugins %}
+							
+							{% if Eggs_Equal_Height %}
+								<div class="nest_egg_equal_height tothesameheight">
+							{% endif %}
+							
 							{% do this.showPlugin(Plugin, true, first) %}
 							{% set first = false %}
+							
+							{% if Eggs_Equal_Height %}
+								</div>
+							{% endif %}
 						{% endfor %}
 					</div>
 					

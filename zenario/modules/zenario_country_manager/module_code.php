@@ -145,9 +145,9 @@ class zenario_country_manager extends ze\moduleBaseClass {
 					C.english_name as country_english_name,
 					C.active AS country_active 
 				FROM
-					' . DB_NAME_PREFIX . ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_regions R 
+					' . DB_PREFIX . ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_regions R 
 				LEFT JOIN  
-					'  . DB_NAME_PREFIX . ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_countries C 
+					'  . DB_PREFIX . ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_countries C 
 				ON 
 					C.id = R.country_id 
 				WHERE 1 ';
@@ -183,9 +183,9 @@ class zenario_country_manager extends ze\moduleBaseClass {
 					'filter_label' => 'Country ID:',
 					'can_filter' => true];
 			case ze\dataset::LIST_MODE_LIST:
-				return ze\row::getArray(ZENARIO_COUNTRY_MANAGER_PREFIX. 'country_manager_regions', 'name', [], 'name');
+				return ze\row::getValues(ZENARIO_COUNTRY_MANAGER_PREFIX. 'country_manager_regions', 'name', [], 'name');
 			case ze\dataset::LIST_MODE_FILTERED_LIST:
-				return ze\row::getArray(ZENARIO_COUNTRY_MANAGER_PREFIX. 'country_manager_regions', 'name', ['country_id' => $value], 'name');
+				return ze\row::getValues(ZENARIO_COUNTRY_MANAGER_PREFIX. 'country_manager_regions', 'name', ['country_id' => $value], 'name');
 			case ze\dataset::LIST_MODE_VALUE:
 				return ze\row::get(ZENARIO_COUNTRY_MANAGER_PREFIX. 'country_manager_regions', 'name', ['id' => $value]);
 		}
@@ -213,7 +213,7 @@ class zenario_country_manager extends ze\moduleBaseClass {
 					name,
 					active
 				FROM
-					' . DB_NAME_PREFIX . ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_regions
+					' . DB_PREFIX . ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_regions
 				WHERE  
 					id=' . (int)$ID ;
 				
@@ -237,7 +237,7 @@ class zenario_country_manager extends ze\moduleBaseClass {
 	//refiner - 'all', 'active', 'inactive'
 	public static function getCountryCodesList($activityFiler='all'){
 		$rv=[];
-		$sql = 'SELECT id FROM ' . DB_NAME_PREFIX . ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_countries WHERE 1 ' .self::getWhereCondForActiveField($activityFiler);
+		$sql = 'SELECT id FROM ' . DB_PREFIX . ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_countries WHERE 1 ' .self::getWhereCondForActiveField($activityFiler);
 		$sql .= self::getOrderByClause();
 		$res = ze\sql::select($sql);
 		while($row = ze\sql::fetchAssoc($res))
@@ -254,7 +254,7 @@ class zenario_country_manager extends ze\moduleBaseClass {
 					english_name,
 					active 
 				FROM ' 
-					. DB_NAME_PREFIX . ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_countries 
+					. DB_PREFIX . ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_countries 
 				WHERE 1 ' 
 					. self::getWhereCondForActiveField($activityFilter);
 		if (ze\escape::sql(trim(strtoupper($codeFilter)))!='')
@@ -275,7 +275,7 @@ class zenario_country_manager extends ze\moduleBaseClass {
 					id,
 					english_name as name
 				FROM '
-				. DB_NAME_PREFIX . ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_countries
+				. DB_PREFIX . ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_countries
 				WHERE active=1 ORDER BY 2';
 		return ze\sql::select($sql);
 	}
@@ -285,7 +285,7 @@ class zenario_country_manager extends ze\moduleBaseClass {
 			case ze\dataset::LIST_MODE_INFO:
 				return ['can_filter' => false];
 			case ze\dataset::LIST_MODE_LIST:
-				return ze\row::getArray(ZENARIO_COUNTRY_MANAGER_PREFIX. 'country_manager_countries', 'english_name', ['active' => 1], 'english_name');
+				return ze\row::getValues(ZENARIO_COUNTRY_MANAGER_PREFIX. 'country_manager_countries', 'english_name', ['active' => 1], 'english_name');
 			case ze\dataset::LIST_MODE_VALUE:
 				return ze\row::get(ZENARIO_COUNTRY_MANAGER_PREFIX. 'country_manager_countries', 'english_name', ['id' => $value]);
 		}
@@ -299,7 +299,7 @@ class zenario_country_manager extends ze\moduleBaseClass {
 				$codes = [];
 				$sql = '
 					SELECT id, english_name, phonecode
-					FROM ' . DB_NAME_PREFIX . ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_countries
+					FROM ' . DB_PREFIX . ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_countries
 					WHERE active = 1
 					AND phonecode != 0
 					ORDER BY english_name';
@@ -321,7 +321,7 @@ class zenario_country_manager extends ze\moduleBaseClass {
 				$codes = [];
 				$sql = '
 					SELECT id, english_name, phonecode
-					FROM ' . DB_NAME_PREFIX . ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_countries
+					FROM ' . DB_PREFIX . ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_countries
 					WHERE active = 1
 					AND phonecode != 0
 					ORDER BY english_name';

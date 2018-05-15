@@ -77,7 +77,7 @@ class zenario_forum_list extends zenario_content_list {
 		$sql = zenario_content_list::lookForContentTableJoins();
 		
 		$sql .= "
-			INNER JOIN ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "forums AS f
+			INNER JOIN ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "forums AS f
 			   ON f.forum_content_id = c.id
 			  AND f.forum_content_type = c.type";
 		

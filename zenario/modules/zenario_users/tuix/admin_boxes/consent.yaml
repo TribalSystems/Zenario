@@ -1,0 +1,27 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_consent:
+    key:
+        id: ''
+    identifier:
+        css_class: zenario_consent  
+        label: Consent ID
+    title: Consent
+    hide_tab_bar: true
+    max_height: 300
+    cancel_button_message: Close
+    save_button_message: ""
+    tabs:
+        details:
+            label: Details
+            edit_mode:
+                enabled: true
+            fields:
+                datetime:
+                    label: 'Date/time:'
+                ip_address:
+                    label: 'IP address:'
+                user:
+                    label: 'Visitor:'
+                consent_text:
+                    label: 'Consent text:'

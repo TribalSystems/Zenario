@@ -36,8 +36,10 @@ require 'basicheader.inc.php';
 //Check a few basic tables have been created. Exit if not.
 if (!defined('DBHOST')
  || (!ze\db::connectLocal())
- || (!ze\row::cacheTableDef(DB_NAME_PREFIX. 'local_revision_numbers', true))
- || (!ze\row::cacheTableDef(DB_NAME_PREFIX. 'site_settings', true))) {
+ || (!ze::$dbL->checkTableDef(DB_PREFIX. 'local_revision_numbers', true))
+ || (!ze::$dbL->checkTableDef(DB_PREFIX. 'site_settings', true))) {
+ 	
+ 	var_dump(ze\db::connectLocal());
  	echo 'The CMS is either not installed or up to date.';
 	exit;
 }

@@ -102,8 +102,8 @@ class welcome {
 		if (!$patterns) {
 			//If no patterns have been set, go in with a few default patterns. Note I am assuming that the CMS
 			//is running here...
-			$from = ["\r", '[[DB_NAME_PREFIX]]',	'[[LATEST_REVISION_NO]]',	'[[INSTALLER_REVISION_NO]]',	'[[THEME]]'];
-			$to =	['',	DB_NAME_PREFIX,			LATEST_REVISION_NO,			INSTALLER_REVISION_NO,			INSTALLER_DEFAULT_THEME];
+			$from = ["\r", '[[DB_PREFIX]]',	'[[LATEST_REVISION_NO]]',	'[[INSTALLER_REVISION_NO]]',	'[[THEME]]'];
+			$to =	['',	DB_PREFIX,			LATEST_REVISION_NO,			INSTALLER_REVISION_NO,			INSTALLER_DEFAULT_THEME];
 		} else {
 			$from = ["\r"];
 			$to = [''];
@@ -116,7 +116,7 @@ class welcome {
 				}
 			
 				$from[] = '[['. $pattern. ']]';
-				if ($pattern == 'DB_NAME_PREFIX') {
+				if ($pattern == 'DB_PREFIX') {
 					$to[] = $replacement;
 				} else {
 					$to[] = \ze\escape::sql($replacement);
@@ -136,7 +136,7 @@ class welcome {
 		for ($i = 0; $i < $count; ++$i) {
 			$query = $sqls[$i];
 		
-			if (!$result = \ze\sql::select($query)) {
+			if (!$result = \ze\sql::cacheFriendlyUpdate($query)) {
 				$errno = \ze\sql::errno();
 				$error = \ze\sql::error();
 				$error = '(Error '. $errno. ': '. $error. "). \n\n". $query. "\nFile: ". $file;
@@ -662,8 +662,8 @@ class welcome {
 	
 		//If the database prefix is already set in the config file, look it up and default the field to it.
 		if (!isset($fields['3/prefix']['current_value'])) {
-			if (defined('DB_NAME_PREFIX') && DB_NAME_PREFIX && strpos(DB_NAME_PREFIX, '[') === false) {
-				$values['3/prefix'] = DB_NAME_PREFIX;
+			if (defined('DB_PREFIX') && DB_PREFIX && strpos(DB_PREFIX, '[') === false) {
+				$values['3/prefix'] = DB_PREFIX;
 			} else {
 				$values['3/prefix'] = 'zenario_';
 			}
@@ -688,7 +688,7 @@ class welcome {
 			$merge['DBUSER'] = $values['3/user'];
 			$merge['DBPASS'] = $values['3/password'];
 			$merge['DBPORT'] = $values['3/port'];
-			$merge['DB_NAME_PREFIX'] = $values['3/prefix'];
+			$merge['DB_PREFIX'] = $values['3/prefix'];
 		
 			if (!$merge['DBHOST']) {
 				$tags['tabs'][3]['errors'][] = \ze\admin::phrase('Please enter your hostname.');
@@ -710,25 +710,20 @@ class welcome {
 				$tags['tabs'][3]['errors'][] = \ze\admin::phrase('The database port must be a number.');
 			}
 		
-			if (preg_match('/[^a-zA-Z0-9_]/', $merge['DB_NAME_PREFIX'])) {
+			if (preg_match('/[^a-zA-Z0-9_]/', $merge['DB_PREFIX'])) {
 				$tags['tabs'][3]['errors'][] = \ze\admin::phrase('The table prefix should only contain the characters [a-z, A-Z, 0-9 and _].');
 			}
 		
 			if (empty($tags['tabs'][3]['errors'])) {
 				
-				$testConnect = \ze\db::connect($merge['DBHOST'], $merge['DBNAME'], $merge['DBUSER'], $merge['DBPASS'], $merge['DBPORT'], $reportErrors = false);
-			
-				if (!$testConnect) {
+				\ze::$dbL = new \ze\db($merge['DB_PREFIX'], $merge['DBHOST'], $merge['DBNAME'], $merge['DBUSER'], $merge['DBPASS'], $merge['DBPORT'], $reportErrors = false);
+				
+				if (!\ze::$dbL->con) {
+					\ze::$dbL = null;
 					$tags['tabs'][3]['errors'][] = 
 						\ze\admin::phrase('The database name, username and/or password are invalid.');
 			
-				} else {
-				
-					\ze::$localDB =
-					\ze::$lastDB = $testConnect;
-					\ze::$lastDBHost = $merge['DBHOST'];
-					\ze::$lastDBName = $merge['DBNAME'];
-					\ze::$lastDBPrefix = $merge['DB_NAME_PREFIX'];			
+				} else {	
 				
 					if (!($result = @\ze\sql::select("SELECT VERSION()"))
 						   || !($version = @\ze\sql::fetchRow($result))
@@ -749,7 +744,7 @@ class welcome {
 			
 					} else {
 						while ($tables = \ze\sql::fetchRow($result)) {
-							if ($merge['DB_NAME_PREFIX'] == '' || substr($tables[0], 0, strlen($merge['DB_NAME_PREFIX'])) == $merge['DB_NAME_PREFIX']) {
+							if ($merge['DB_PREFIX'] == '' || substr($tables[0], 0, strlen($merge['DB_PREFIX'])) == $merge['DB_PREFIX']) {
 								$tags['tabs'][3]['errors'][] = \ze\admin::phrase('There are already tables in this database that match your chosen table prefix. Please choose a different table prefix, or a different database.');
 								break;
 							}
@@ -873,7 +868,7 @@ class welcome {
 				if (!@include_once CMS_ROOT. 'zenario_siteconfig.php') {
 					$tags['tabs'][7]['errors'][] = \ze\admin::phrase('There is a syntax error in zenario_siteconfig.php');
 				} else {
-					foreach (['DBHOST', 'DBNAME', 'DBUSER', 'DBPASS', 'DBPORT', 'DB_NAME_PREFIX'] as $constant) {
+					foreach (['DBHOST', 'DBNAME', 'DBUSER', 'DBPASS', 'DBPORT', 'DB_PREFIX'] as $constant) {
 						if (!defined($constant) || constant($constant) !== $merge[$constant]) {
 							$tags['tabs'][7]['errors'][] = \ze\admin::phrase('The constants in zenario_siteconfig.php are not set as below.');
 							break;
@@ -1150,16 +1145,16 @@ class welcome {
 			
 			
 				//Install to the database
-				\ze\sql::select('SET NAMES "UTF8"');
-				\ze\sql::select("SET collation_connection='utf8_general_ci'");
-				\ze\sql::select("SET collation_server='utf8_general_ci'");
-				\ze\sql::select("SET character_set_client='utf8'");
-				\ze\sql::select("SET character_set_connection='utf8'");
-				\ze\sql::select("SET character_set_results='utf8'");
-				\ze\sql::select("SET character_set_server='utf8'");
+				\ze\sql::cacheFriendlyUpdate('SET NAMES "UTF8"');
+				\ze\sql::cacheFriendlyUpdate("SET collation_connection='utf8_general_ci'");
+				\ze\sql::cacheFriendlyUpdate("SET collation_server='utf8_general_ci'");
+				\ze\sql::cacheFriendlyUpdate("SET character_set_client='utf8'");
+				\ze\sql::cacheFriendlyUpdate("SET character_set_connection='utf8'");
+				\ze\sql::cacheFriendlyUpdate("SET character_set_results='utf8'");
+				\ze\sql::cacheFriendlyUpdate("SET character_set_server='utf8'");
 			
-				if (!defined('DB_NAME_PREFIX')) {
-					define('DB_NAME_PREFIX', $merge['DB_NAME_PREFIX']);
+				if (!defined('DB_PREFIX')) {
+					define('DB_PREFIX', $merge['DB_PREFIX']);
 				}
 			
 			
@@ -1331,7 +1326,7 @@ class welcome {
 						\ze\dbAdm::checkIfUpdatesAreNeeded($moduleErrors, $andDoUpdates = true);
 						
 						//Reset the cached table details, in case any of the definitions are out of date
-						\ze::$dbCols = [];
+						\ze\dbAdm::resetTableDefs();
 					
 						//Fix a bug where sample sites might not have a default language set, by setting a default language if any content has been created
 						if (!\ze::$defaultLang && ($langId = \ze\row::get('content_items', 'language_id', []))) {
@@ -1353,7 +1348,7 @@ class welcome {
 				
 					foreach (\ze\dbAdm::lookupExistingCMSTables($dbUpdateSafeMode = true) as $table) {
 						if ($table['reset'] == 'drop') {
-							\ze\sql::select("DROP TABLE `". \ze\escape::sql($table['actual_name']). "`");
+							\ze\sql::cacheFriendlyUpdate("DROP TABLE `". \ze\escape::sql($table['actual_name']). "`");
 						}
 					}
 				} else {
@@ -1514,12 +1509,12 @@ class welcome {
 			return;
 	
 		} else {
-			$admins = \ze\row::getArray(
+			$admins = \ze\row::getAssocs(
 				'admins',
 				['first_name', 'last_name', 'username', 'authtype'],
 				[
 					'status' => 'active',
-					'id' => \ze\row::getArray(
+					'id' => \ze\row::getAssocs(
 						'action_admin_link',
 						'admin_id',
 						['action_name' => ['_ALL', '_PRIV_APPLY_DATABASE_UPDATES']])],
@@ -1599,7 +1594,7 @@ class welcome {
 					foreach($modules as $module => $pluginRevisions) {
 						$sql = "
 							SELECT display_name
-							FROM ". DB_NAME_PREFIX. "modules
+							FROM ". DB_PREFIX. "modules
 							WHERE class_name = '". \ze\escape::sql($module). "'";
 				
 						if (($result = @\ze\sql::select($sql)) && ($row = \ze\sql::fetchAssoc($result))) {
@@ -1703,7 +1698,7 @@ class welcome {
 	//Formerly "zenarioTidySecurityCodes()"
 	public static function tidySecurityCodes() {
 		$sql = "
-			DELETE FROM ". DB_NAME_PREFIX. "admin_settings
+			DELETE FROM ". DB_PREFIX. "admin_settings
 			WHERE name LIKE 'COOKIE_ADMIN_SECURITY_CODE_%'
 			  AND value < '". \ze\escape::sql(\ze\welcome::securityCodeTime(2 * \ze\site::description('two_factor_authentication_timeout'))). "'";
 		\ze\sql::update($sql, false, false);
@@ -2083,7 +2078,7 @@ class welcome {
 		$i = 0;
 		$maxI = 9;
 		$skinDirsValid = true;
-		foreach (\ze\row::getArray(
+		foreach (\ze\row::getAssocs(
 			'skins',
 			['family_name', 'name', 'display_name'],
 			['missing' => 0, 'family_name' => 'grid_templates', 'enable_editable_css' => 1]
@@ -2101,17 +2096,19 @@ class welcome {
 		
 			$mrg = [
 				'dir' => $dir = $tdir,
-				'basename' => $dir? htmlspecialchars(basename($skinWritableDir)) : ''];
+				'basename' => $dir? htmlspecialchars(basename($skinWritableDir)) : '',
+				'2dir' => $dir? htmlspecialchars($skin['name']. '/editable_css') : ''
+			];
 		
 			if (!is_dir($skinWritableDir)) {
 				$skinDirsValid = false;
 				$tags['tabs'][0]['fields']['skin_dir_status_'. $i]['row_class'] = 'sub_warning';
-				$tags['tabs'][0]['fields']['skin_dir_status_'. $i]['snippet']['html'] = \ze\admin::phrase('The directory <code>[[basename]]</code> does not exist.', $mrg);
+				$tags['tabs'][0]['fields']['skin_dir_status_'. $i]['snippet']['html'] = \ze\admin::phrase('The directory <code>[[2dir]]</code> does not exist.', $mrg);
 	
 			} elseif (!\ze\welcome::directoryIsWritable($skinWritableDir)) {
 				$skinDirsValid = false;
 				$tags['tabs'][0]['fields']['skin_dir_status_'. $i]['row_class'] = 'sub_warning';
-				$tags['tabs'][0]['fields']['skin_dir_status_'. $i]['snippet']['html'] = \ze\admin::phrase('The directory <code>[[basename]]</code> is not writable.', $mrg);
+				$tags['tabs'][0]['fields']['skin_dir_status_'. $i]['snippet']['html'] = \ze\admin::phrase('The directory <code>[[2dir]]</code> is not writable.', $mrg);
 
 			} else {
 				$fileWritable = false;
@@ -2134,11 +2131,11 @@ class welcome {
 					if ($fileWritable) {
 						$skinDirsValid = false;
 						$tags['tabs'][0]['fields']['skin_dir_status_'. $i]['row_class'] = 'sub_warning';
-						$tags['tabs'][0]['fields']['skin_dir_status_'. $i]['snippet']['html'] = \ze\admin::phrase('Some of the files in the <code>[[basename]]</code> directory are not writable by the web server (e.g. use &quot;chmod 666 *.css&quot;).', $mrg);
+						$tags['tabs'][0]['fields']['skin_dir_status_'. $i]['snippet']['html'] = \ze\admin::phrase('Some of the files in the <code>[[2dir]]</code> directory are not writable by the web server (e.g. use &quot;chmod 666 *.css&quot;).', $mrg);
 					} else {
 						$skinDirsValid = false;
 						$tags['tabs'][0]['fields']['skin_dir_status_'. $i]['row_class'] = 'sub_warning';
-						$tags['tabs'][0]['fields']['skin_dir_status_'. $i]['snippet']['html'] = \ze\admin::phrase('The files in the <code>[[basename]]</code> directory are not writable by the web server, please make them writable (e.g. use &quot;chmod 666 *.css&quot;).', $mrg);
+						$tags['tabs'][0]['fields']['skin_dir_status_'. $i]['snippet']['html'] = \ze\admin::phrase('The files in the <code>[[2dir]]</code> directory are not writable by the web server, please make them writable (e.g. use &quot;chmod 666 *.css&quot;).', $mrg);
 					}
 		
 				} elseif ($fileNotWritable !== false) {
@@ -2150,7 +2147,7 @@ class welcome {
 		
 				} else {
 					$tags['tabs'][0]['fields']['skin_dir_status_'. $i]['row_class'] = 'sub_valid';
-					$tags['tabs'][0]['fields']['skin_dir_status_'. $i]['snippet']['html'] = \ze\admin::phrase('The directory <code>[[basename]]</code> exists and is writable.', $mrg);
+					$tags['tabs'][0]['fields']['skin_dir_status_'. $i]['snippet']['html'] = \ze\admin::phrase('The directory <code>[[2dir]]</code> exists and is writable.', $mrg);
 				}
 			}
 		}
@@ -2289,6 +2286,7 @@ class welcome {
 	
 		$fields['0/site']['row_class'] = 'section_valid';
 		$fields['0/content']['row_class'] = 'section_valid';
+		$fields['0/administrators']['row_class'] = 'section_valid';
 	
 		//Don't show the "site" section yet if we've just finished an install
 		if ($freshInstall
@@ -2324,8 +2322,8 @@ class welcome {
 		
 			$sql = "
 				SELECT 1
-				FROM ". DB_NAME_PREFIX. "special_pages AS sp
-				INNER JOIN ". DB_NAME_PREFIX. "content_items AS c
+				FROM ". DB_PREFIX. "special_pages AS sp
+				INNER JOIN ". DB_PREFIX. "content_items AS c
 				   ON c.id = sp.equiv_id
 				  AND c.type = sp.content_type
 				WHERE c.status NOT IN ('published_with_draft','published')";
@@ -2353,7 +2351,7 @@ class welcome {
 				$fields['0/public_documents']['snippet']['html'] =
 					\ze\admin::nPhrase('There is a problem with the public link for [[exampleFile]] and 1 other document. Please check your public/downloads directory for possible permission problems.',
 						'There is a problem with the public link for [[exampleFile]] and [[count]] other documents. Please check your public/downloads directory for possible permission problems.',
-						$errors - 1, ['exampleFile' => $exampleFile],
+						abs($errors - 1), ['exampleFile' => $exampleFile],
 						'There is a problem with the public link for the document [[exampleFile]]. Please check your public/downloads directory for possible permission problems.'
 					);
 		
@@ -2529,7 +2527,7 @@ class welcome {
 			
 			//Check for missing modules
 			$missingModules = [];
-			foreach(\ze\row::getArray('modules', ['class_name', 'display_name'], ['status' => 'module_running'], 'class_name') as $module) {
+			foreach(\ze\row::getAssocs('modules', ['class_name', 'display_name'], ['status' => 'module_running'], 'class_name') as $module) {
 				if (!\ze::moduleDir($module['class_name'], 'module_code.php', true)) {
 					$missingModules[$module['class_name']] = \ze\admin::phrase('[[display_name|escape]] (<code>[[class_name|escape]]</code>)', $module);
 				}
@@ -2622,7 +2620,7 @@ class welcome {
 				
 				$sql = "
 					SELECT 1
-					FROM ". DB_NAME_PREFIX. "modules
+					FROM ". DB_PREFIX. "modules
 					WHERE `status` IN ('module_running','module_suspended')
 					  AND class_name IN ('zenario_extranet', 'zenario_users', 'zenario_user_forms')
 					LIMIT 1";
@@ -2699,9 +2697,9 @@ class welcome {
 			$fields['0/content_nothing_unpublished']['hidden'] = false;
 		
 			$sql = "
-				SELECT c.id, c.type, c.alias, c.language_id, c.status
-				FROM ". DB_NAME_PREFIX. "content_items AS c
-				INNER JOIN ". DB_NAME_PREFIX. "content_item_versions AS v
+				SELECT c.id, c.type, c.alias, c.language_id, c.status, v.creating_author_id AS creator, v.last_author_id AS last_author, v.created_datetime, v.last_modified_datetime
+				FROM ". DB_PREFIX. "content_items AS c
+				INNER JOIN ". DB_PREFIX. "content_item_versions AS v
 				   ON c.id = v.id
 				  AND c.type = v.type
 				  AND c.admin_version = v.version
@@ -2724,17 +2722,33 @@ class welcome {
 						$fields['0/content_more_unpublished']['snippet']['html'] =
 							\ze\admin::nPhrase('[[count]] other page is in draft mode. <a target="blank" href="[[link]]">View...</a>',
 								'[[count]] other pages are in draft mode. <a target="blank" href="[[link]]">View...</a>',
-								$rowCount - 5, $row);
+								abs($rowCount - 5), $row);
 					
 					} else {
 						$row['tag'] = htmlspecialchars(\ze\content::formatTag($row['id'], $row['type'], $row['alias'], $row['language_id']));
 						$row['link'] = htmlspecialchars(\ze\link::toItem($row['id'], $row['type'], true));
 						$row['class'] = 'organizer_item_image '. \ze\contentAdm::getItemIconClass($row['id'], $row['type'], true, $row['status']);
 			
+						//If a content item has ever been edited, show last modified date and admin who modified it, but not created date...
+						if ($row['last_modified_datetime']) {
+							$item['unpublished_content_info'] =
+								\ze\admin::phrase('Last edit [[time]] by [[admin]].', [
+									'time' => \ze\date::relative($row['last_modified_datetime']),
+									'admin' => \ze\admin::formatName($row['last_author'])
+								]);
+						} else {
+							//... otherwise, show created date and admin who created it.
+							$item['unpublished_content_info'] =
+								\ze\admin::phrase('Created [[time]] by [[admin]].', [
+									'time' => \ze\date::relative($row['created_datetime']),
+									'admin' => \ze\admin::formatName($row['creator'])
+								]);
+						}
+						
 						$fields['0/content_unpublished_'. $i]['hidden'] = false;
-						$fields['0/content_unpublished_'. $i]['row_class'] = 'warning';
+						$fields['0/content_unpublished_'. $i]['row_class'] = ''; //Don't display warning triangle icons for unpublished items anymore. Deleting this line will show a green tick icon.
 						$fields['0/content_unpublished_'. $i]['snippet']['html'] =
-							\ze\admin::phrase('<a target="blank" href="[[link]]"><span class="[[class]]"></span>[[tag]]</a> is in draft mode.', $row);
+							\ze\admin::phrase('<a target="blank" href="[[link]]"><span class="[[class]]"></span>[[tag]]</a> is in draft mode.', $row) . '<br />' . $item['unpublished_content_info'];
 					}
 				}
 			}
@@ -2748,14 +2762,106 @@ class welcome {
 				$fields['0/show_content']['pressed'] = true;
 				$fields['0/content']['row_class'] = 'section_warning';
 			}
+			
+			
+			//
+			// Go through all of the checks in the administrators section
+			//
+			
+			//Admin must have this permission to view administrator activity warnings
+			if (\ze\priv::check('_PRIV_VIEW_ADMIN')) {
+			
+				$show_warning = false;
+				$show_error = false;
+			
+				$fields['0/administrator_inactive_1']['row_class'] = 
+				$fields['0/administrator_inactive_2']['row_class'] = 
+				$fields['0/administrator_inactive_3']['row_class'] = 
+				$fields['0/administrator_inactive_4']['row_class'] = 
+				$fields['0/administrator_inactive_5']['row_class'] = 
+				$fields['0/administrator_more_inactive']['row_class'] = 
+				$fields['0/administrators_active']['row_class'] = 'valid';
+				$fields['0/administrator_inactive_1']['hidden'] = 
+				$fields['0/administrator_inactive_2']['hidden'] = 
+				$fields['0/administrator_inactive_3']['hidden'] = 
+				$fields['0/administrator_inactive_4']['hidden'] = 
+				$fields['0/administrator_inactive_5']['hidden'] = 
+				$fields['0/administrator_more_inactive']['hidden'] = true;
+				$fields['0/administrators_active']['hidden'] = false;
+				
+				$days = \ze\admin::getDaysBeforeAdminsAreInactive();
+				$fields['0/administrators_active']['snippet']['html'] = \ze\admin::phrase('No administrator has been inactive for over [[count]] days.', ['count' => $days]);
+				
+				$sql = '
+					SELECT id, username, last_login, created_date
+					FROM ' . DB_PREFIX . 'admins
+					WHERE authtype = \'local\'
+					  AND `status` = \'active\'
+					ORDER BY last_login';
+				$result = \ze\sql::select($sql);
+				$inactiveAdminCount = 0;
+				while ($row = \ze\sql::fetchAssoc($result)) {
+					if (\ze\admin::isInactive($row['id'])) {
+						if (!$show_warning) {
+							$show_warning = true;
+							$fields['0/administrators_active']['hidden'] = true;
+						}
+						if (++$inactiveAdminCount <= 5) {
+							$row['link'] = 'organizer.php#zenario__users/panels/administrators//' . $row['id'];
+						
+							$fields['0/administrator_inactive_'. $inactiveAdminCount]['hidden'] = false;
+							$fields['0/administrator_inactive_'. $inactiveAdminCount]['row_class'] = 'warning';
+							
+							if ($row['last_login']) {
+								$row['days'] = floor((strtotime('now') - strtotime($row['last_login'])) / 60 / 60 / 24);
+								$row['last_login_date'] = \ze\date::format($row['last_login'], '_MEDIUM');
+								
+								$fields['0/administrator_inactive_'. $inactiveAdminCount]['snippet']['html'] =
+									\ze\admin::phrase("<a target='blank' href='[[link]]'>[[username]]</a> hasn't logged in since [[last_login_date]], [[days]] days ago.", $row);
+							} else {
+								$row['created_date'] = \ze\date::format($row['created_date'], '_MEDIUM');
+								
+								$fields['0/administrator_inactive_'. $inactiveAdminCount]['snippet']['html'] =
+									\ze\admin::phrase("<a target='blank' href='[[link]]'>[[username]]</a> was created on [[created_date]] and has never logged in.", $row);
+							}
+						}
+					}
+				}
+				
+				if ($inactiveAdminCount > 5) {
+					$merge = ['link' => 'organizer.php#zenario__users/panels/administrators'];
+				
+					$fields['0/administrator_more_inactive']['hidden'] = false;
+					$fields['0/administrator_more_inactive']['row_class'] = 'warning';
+					$fields['0/administrator_more_inactive']['snippet']['html'] =
+						\ze\admin::nPhrase('1 other administrator is inactive. <a target="blank" href="[[link]]">View...</a>',
+							'[[count]] other administrators are inactive. <a target="blank" href="[[link]]">View...</a>',
+							abs($inactiveAdminCount - 5), $merge);
+				}
+			
+				if ($show_error) {
+					$fields['0/show_administrators']['pressed'] = true;
+					$fields['0/administrators']['row_class'] = 'section_invalid';
+		
+				} elseif ($show_warning) {
+					$fields['0/show_administrators']['pressed'] = true;
+					$fields['0/administrators']['row_class'] = 'section_warning';
+				}
+			} else {
+				$fields['0/administrators']['hidden'] = 
+				$fields['0/show_administrators']['hidden'] = 
+				$fields['0/administrator_inactive_1']['hidden'] = 
+				$fields['0/administrator_inactive_2']['hidden'] = 
+				$fields['0/administrator_inactive_3']['hidden'] = 
+				$fields['0/administrator_inactive_4']['hidden'] = 
+				$fields['0/administrator_inactive_5']['hidden'] = 
+				$fields['0/administrator_more_inactive']['hidden'] =
+				$fields['0/administrators_active']['hidden'] = true;
+			}
 		}
-	
-	
-	
-	
-	
-	
-	
+		
+		
+		
 		//Strip any trailing slashes off of a directory path
 		$values['0/backup_dir'] = preg_replace('/[\\\\\\/]+$/', '', $values['0/backup_dir']);
 		$values['0/docstore_dir'] = preg_replace('/[\\\\\\/]+$/', '', $values['0/docstore_dir']);
@@ -2794,6 +2900,7 @@ class welcome {
 			$fields['0/dirs']['row_class'] == 'section_valid'
 		 && $fields['0/site']['row_class'] == 'section_valid'
 		 && $fields['0/content']['row_class'] == 'section_valid'
+		 && $fields['0/administrators']['row_class'] = 'section_valid'
 		 && $fields['0/system_requirements']['row_class'] == 'section_valid';
 	
 		if (!$everythingIsOkay) {
@@ -2944,13 +3051,22 @@ class welcome {
 
 	//Formerly "lastAutomatedBackupTimestamp()"
 	public static function lastAutomatedBackupTimestamp($automated_backup_log_path = false) {
-	
+		$backup = \ze\welcome::lastAutomatedBackup($automated_backup_log_path);
+		if ($backup) {
+			$datetime = new \DateTime($backup[0]);
+			return $datetime->getTimestamp();
+		}
+		return 0;
+	}
+
+	public static function lastAutomatedBackup($automated_backup_log_path = false) {
 		if ($automated_backup_log_path === false) {
 			$automated_backup_log_path = \ze::setting('automated_backup_log_path');
 		}
 	
 		//Attempt to get the date of the last backup from
 		$timestamp = 0;
+		$latestLineValues = false;
 		ini_set('auto_detect_line_endings', true);
 		if ($f = fopen($automated_backup_log_path, 'r')) {
 			while ($line = fgets($f)) {
@@ -2958,16 +3074,16 @@ class welcome {
 				 && ($lineValues = str_getcsv($line))
 				 && ($lineValues[0])
 				 && ($lineValues[2]? DBNAME == $lineValues[2] : DBNAME == $lineValues[1])
-				 && ($time = new \DateTime($lineValues[0]))) {
-					$timestamp = max($timestamp, $time->getTimestamp());
+				 && ($time = new \DateTime($lineValues[0]))
+				 && ($timestamp < $time->getTimestamp())) {
+					$timestamp = $time->getTimestamp();
+					$latestLineValues = $lineValues;
 				}
 			}
 		}
-	
-		return $timestamp;
+		
+		return $latestLineValues;
 	}
-
-
 
 
 
@@ -2976,10 +3092,10 @@ class welcome {
 	
 		$sql = "
 			DELETE ps.*
-			FROM `". DB_NAME_PREFIX. "modules` AS m
-			INNER JOIN `". DB_NAME_PREFIX. "plugin_instances` AS pi
+			FROM `". DB_PREFIX. "modules` AS m
+			INNER JOIN `". DB_PREFIX. "plugin_instances` AS pi
 			   ON m.id = pi.module_id
-			INNER JOIN `". DB_NAME_PREFIX. "plugin_settings` AS ps
+			INNER JOIN `". DB_PREFIX. "plugin_settings` AS ps
 			   ON pi.id = ps.instance_id
 			  AND ps.egg_id = 0
 			  AND ps.name = '". \ze\escape::sql($settingName). "'
@@ -2988,10 +3104,10 @@ class welcome {
 
 		$sql = "
 			DELETE ps.*
-			FROM `". DB_NAME_PREFIX. "modules` AS m
-			INNER JOIN `". DB_NAME_PREFIX. "nested_plugins` AS np
+			FROM `". DB_PREFIX. "modules` AS m
+			INNER JOIN `". DB_PREFIX. "nested_plugins` AS np
 			   ON m.id = np.module_id
-			INNER JOIN `". DB_NAME_PREFIX. "plugin_settings` AS ps
+			INNER JOIN `". DB_PREFIX. "plugin_settings` AS ps
 			   ON ps.egg_id = np.id
 			  AND ps.name = '". \ze\escape::sql($settingName). "'
 			WHERE m.class_name = '". \ze\escape::sql($moduleClassName). "'";

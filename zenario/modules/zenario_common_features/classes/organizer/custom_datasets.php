@@ -31,7 +31,7 @@ class zenario_common_features__organizer__custom_datasets extends ze\moduleBaseC
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
 		
-		$panel['items'] = ze\row::getArray('custom_datasets', true, []);
+		$panel['items'] = ze\row::getAssocs('custom_datasets', true, []);
 			
 		foreach ($panel['items'] as $id => &$item) {
 			if ($item['extends_admin_box']) {
@@ -46,15 +46,15 @@ class zenario_common_features__organizer__custom_datasets extends ze\moduleBaseC
 			}
 			
 			if ($item['table']) {
-				$item['table'] = DB_NAME_PREFIX. $item['table'];
+				$item['table'] = DB_PREFIX. $item['table'];
 			}
 			if ($item['system_table']) {
-				$item['system_table'] = DB_NAME_PREFIX. $item['system_table'];
+				$item['system_table'] = DB_PREFIX. $item['system_table'];
 			}
 			
 			// Temporarily disable the GUI button for assets dataset
 			$item['gui_blacklist'] = false;
-			if (ze\module::inc('assetwolf_asset_manager') && ($item['system_table'] == (DB_NAME_PREFIX . ASSETWOLF_ASSET_MANAGER_PREFIX . 'assets'))) {
+			if (ze\module::inc('assetwolf_asset_manager') && ($item['system_table'] == (DB_PREFIX . ASSETWOLF_ASSET_MANAGER_PREFIX . 'assets'))) {
 				$item['gui_blacklist'] = true;
 			}
 		}

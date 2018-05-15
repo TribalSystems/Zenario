@@ -41,6 +41,9 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 		//Whether to allow adding fields of type "group"
 		$panel['use_groups_field'] = ($dataset['system_table'] == 'users');
 		
+		//Whether to show the "Include in export" option for this dataset
+		$panel['show_include_in_export_option'] = ($dataset['system_table'] == 'users' || (ze\module::inc('zenario_location_manager') && $dataset['system_table'] == ZENARIO_LOCATION_MANAGER_PREFIX . 'locations'));
+		
 		//Load centralised lists for fields of type "centralised_radios" and "centralised_select"
 		$centralisedLists = ze\datasetAdm::centralisedLists();
 		$panel['centralised_lists']['values'] = [];
@@ -60,10 +63,10 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 		if (ze\module::inc('zenario_user_forms')) {
 			$sql = '
 				SELECT cdf.id, uf.name, uf.id AS form_id, cdf.type, cdf.repeat_start_id
-				FROM ' . DB_NAME_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_form_fields uff
-				INNER JOIN ' . DB_NAME_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_forms uf
+				FROM ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_form_fields uff
+				INNER JOIN ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_forms uf
 					ON uff.user_form_id = uf.id
-				INNER JOIN ' . DB_NAME_PREFIX . 'custom_dataset_fields cdf
+				INNER JOIN ' . DB_PREFIX . 'custom_dataset_fields cdf
 					ON uff.user_field_id = cdf.id
 					AND cdf.is_system_field = 0';
 			$result = ze\sql::select($sql);
@@ -96,7 +99,7 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 		if ($dataset['system_table']) {
 			$sql = '
 				SHOW KEYS
-				FROM ' . DB_NAME_PREFIX . $dataset['system_table'] . '
+				FROM ' . DB_PREFIX . $dataset['system_table'] . '
 				WHERE Key_name != "PRIMARY"';
 			$result = ze\sql::select($sql);
 			while ($row = ze\sql::fetchAssoc($result)) {
@@ -177,6 +180,12 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 				$tuixField = false;
 				if (isset($foundFieldsInTUIX[$tab['name']]['fields'][$field['field_name']])) {
 					$tuixField = $foundFieldsInTUIX[$tab['name']]['fields'][$field['field_name']];
+					
+					//Don't show this field if hide_in_dataset_editor is set 
+					if (!empty($tuixField['hide_in_dataset_editor'])) {
+						continue;
+					}
+					
 				} elseif ($field['is_system_field']) {
 					continue;
 				}
@@ -347,7 +356,7 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 						$sql = "
 							SELECT
 								IFNULL(MAX(CAST(REPLACE(name, '__custom_tab_', '') AS UNSIGNED)), 0) + 1
-							FROM ". DB_NAME_PREFIX. "custom_dataset_tabs
+							FROM ". DB_PREFIX. "custom_dataset_tabs
 							WHERE dataset_id = ". (int)$datasetId;
 						$result = ze\sql::select($sql);
 						$row = ze\sql::fetchRow($result);
@@ -480,7 +489,7 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 								$values['sortable'] = false;
 								
 								if (!empty($field['show_in_organizer'])) {
-									if (in_array($field['type'], ['checkbox', 'group', 'radios', 'select', 'dataset_select', 'dataset_picker', 'file_picker', 'centralised_radios', 'centralised_select']) || (isset($field['create_index']) && $field['create_index'] == 'index')
+									if (in_array($field['type'], ['checkbox', 'group', 'consent', 'radios', 'select', 'dataset_select', 'dataset_picker', 'file_picker', 'centralised_radios', 'centralised_select']) || (isset($field['create_index']) && $field['create_index'] == 'index')
 									) {
 										$values['create_index'] = true;
 									}
@@ -660,7 +669,7 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 			case 'get_tab_field_record_counts':
 				$recordCounts = [];
 				$datasetId = $refinerId;
-				if ($tabId = $_POST['tabId'] ?? false) {
+				if ($tabId = $_POST['pageId'] ?? false) {
 					$fieldsResult = ze\row::query('custom_dataset_fields', ['id', 'db_column'], ['dataset_id' => $datasetId, 'tab_name' => $tabId]);
 					while ($field = ze\sql::fetchAssoc($fieldsResult)) {
 						if ($field['db_column']) {

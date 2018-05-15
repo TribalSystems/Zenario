@@ -263,7 +263,7 @@ if ($debugMode) {
 		}
 		
 		//Look for customised tabs
-		foreach(ze\row::getArray('custom_dataset_tabs', true, ['dataset_id' => $dataset['id']]) as $ctab) {
+		foreach(ze\row::getAssocs('custom_dataset_tabs', true, ['dataset_id' => $dataset['id']]) as $ctab) {
 			
 			//Create an entry for that tab if one was not already created
 			if (!isset($tags['tabs'][$ctab['name']])
@@ -314,7 +314,7 @@ if ($debugMode) {
 			}
 			
 			//Add custom fields
-			foreach (ze\row::getArray(
+			foreach (ze\row::getAssocs(
 				'custom_dataset_fields',
 				true,
 				['dataset_id' => $dataset['id'], 'is_system_field' => 0],
@@ -429,7 +429,7 @@ if ($debugMode) {
 					}
 				}
 				
-				if (ze\db::columnIsEncrypted($dataset['table'], $cfield['db_column'])) {
+				if (ze::$dbL->columnIsEncrypted($dataset['table'], $cfield['db_column'])) {
 					$cfield['encrypted'] = true;
 				}
 			
@@ -454,7 +454,7 @@ if ($debugMode) {
 				$cfield['row_class'] = 'zenario_fab_custom_field_row zenario_fab_custom_field_row__'. $cfield['type'];
 				$cfield['label_class'] = 'zenario_fab_custom_field_label zenario_fab_custom_field_label__'. $cfield['type'];
 				
-				if ($cfield['type'] == 'group') {
+				if ($cfield['type'] == 'group' || $cfield['type'] == 'consent') {
 					$cfield['type'] = 'checkbox';
 				} else {
 					$cfield['type'] = str_replace(['centralised_', 'dataset_'], '', $cfield['type']);
@@ -469,7 +469,7 @@ if ($debugMode) {
 		}
 		
 		//Look for customised system fields
-		foreach(ze\row::getArray(
+		foreach(ze\row::getAssocs(
 			'custom_dataset_fields',
 			true,
 			['dataset_id' => $dataset['id'], 'is_system_field' => 1]
@@ -511,7 +511,7 @@ if ($debugMode) {
 			}
 			
 			
-			if ($dataset['system_table'] && ze\db::columnIsEncrypted($dataset['system_table'], $cfield['db_column'])) {
+			if ($dataset['system_table'] && ze::$dbL->columnIsEncrypted($dataset['system_table'], $cfield['db_column'])) {
 				$customisedField['encrypted'] = true;
 			}
 		}
@@ -665,7 +665,7 @@ if ($debugMode) {
 							
 								$record = [];
 								//Save the values of custom fields
-								foreach (ze\row::getArray(
+								foreach (ze\row::getAssocs(
 									'custom_dataset_fields',
 									true,
 									['dataset_id' => $dataset['id'], 'is_system_field' => 0]

@@ -142,13 +142,13 @@
 
 #zenario_at #zenario_at_toolbars .zenario_at_status_button .zenario_at_status_button_draft a {
 	color:#E55107;
-	background:url('../admin/images/icon-warning.png') no-repeat left 1px;
+	background:url('../admin/images/icon-warning.svg') no-repeat left 1px / 15px 15px;
 	padding:0 0 0 22px;
 }
 
 #zenario_at #zenario_at_toolbars .zenario_at_status_button .zenario_at_status_button_published a {
 	color:#01AD03;
-	background:url('../admin/images/icon-tick-green-circle.svg') no-repeat left 0 / 16px 16px;
+	background:url('../admin/images/icon-tick-green-circle.svg') no-repeat left 0 / 15px 15px;
 	padding:0 0 0 22px;
 }
 
@@ -1018,6 +1018,7 @@ body.zenario_pageMode_layout #zenario_at .zenario_at_toolbar > div > ul > li.zen
 
 #zenario_at .zenario_at_status_icons_container .zenario_at_status_icons ul li span {
 	float:none;
+	line-height:1.4em;
 }
 
 #zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_alias {
@@ -1071,10 +1072,10 @@ body.zenario_pageMode_layout #zenario_at .zenario_at_toolbar > div > ul > li.zen
 	-moz-border-radius: 3px;
 	border-radius: 3px;
 	-webkit-box-shadow: 0px 0px 3px 0px #888;
-	box-shadow: 0px 0px 3px 0px #888; 
+	box-shadow: 0px 0px 3px 0px #888;  
 	max-height:400px;
 	overflow-y:auto;
-	overflow-x:hidden; 
+	overflow-x:hidden;
 }
 
 #zenario_at ul ul:after {
@@ -1106,7 +1107,7 @@ body.zenario_pageMode_layout #zenario_at .zenario_at_toolbar > div > ul > li.zen
 }
 
 #zenario_at ul li.zenario_at_button_with_children a {
-	background:url('../admin/images/store_keeper/arrow-drodown-grey.png') no-repeat right 15px;
+	background: url('../admin/images/icon-arrow-down-dark.svg') no-repeat right 15px / 8px 8px;
 }
 
 #zenario_at ul li.zenario_at_trans_dropdown__missing > a > span::after {
@@ -1138,6 +1139,18 @@ body.zenario_pageMode_layout #zenario_at .zenario_at_toolbar > div > ul > li.zen
 	padding:0 5px;
 	color:#777;
 	margin-right:5px;
+}
+
+#zenario_at #zenario_at_lower_section .zenario_at_menu_image {
+	float:left;
+	height:23px;
+	width:23px;
+	padding:0 5px;
+	cursor: default;
+}
+
+#zenario_at #zenario_at_lower_section .zenario_at_menu_image[onclick] {
+	cursor: pointer;
 }
 
 #zenario_at #zenario_at_lower_section .zenario_at_infobar {
@@ -1804,7 +1817,7 @@ body.ie9 #zenario_at_top_left_menu ul li ul li:hover ul {
 }
 
 #zenario_at_top_left_menu ul li a span.zenario_at_button_main {
-	background:url('../admin/images/arrow-dropdown-white.png') no-repeat right 5px;
+	background: url('../admin/images/icon-arrow-down-white.svg') no-repeat right 5px / 8px 8px;
 	padding-right:15px;
 }
 
@@ -1965,10 +1978,10 @@ body.ie9 #zenario_at_top_left_menu ul li ul li:hover ul {
 	}
 }
 
-/* Layout max-width: 1180px
+/* Layout max-width: 1300px
 --------------------------------------------------------------------------------------------------*/
 
-@media all and (max-width: 1181px) {
+@media all and (max-width: 1301px) {
 
 	#zenario_at .zenario_at_tabs {
 		padding-left:0;
@@ -1979,10 +1992,19 @@ body.ie9 #zenario_at_top_left_menu ul li ul li:hover ul {
 	}
 }
 
-/* Layout max-width: 1060px
+/* Layout max-width: 1250px
 --------------------------------------------------------------------------------------------------*/
 
-@media all and (max-width: 1061px) {
+@media all and (max-width: 1251px) {
+
+	#zenario_at .zenario_at_tabs {
+		padding-left:140px;
+	}
+	
+	#zenario_at_title {
+		display:block;
+		left:40px;
+	}
 
 	#zenario_at .zenario_at_tabs .zenario_toolbar .zenario_middle .zenario_middle_inner {
 		font-size:0;
@@ -2053,6 +2075,21 @@ body.ie9 #zenario_at_top_left_menu ul li ul li:hover ul {
 	
 }
 
+/* Layout max-width: 960px
+--------------------------------------------------------------------------------------------------*/
+
+@media all and (max-width: 961px) {
+
+	#zenario_at .zenario_at_tabs {
+		padding-left:0;
+	}
+	
+	#zenario_at_title {
+		display:none;
+	}
+
+}
+
 /* Layout max-width: 840px
 --------------------------------------------------------------------------------------------------*/
 
@@ -2099,7 +2136,6 @@ body.ie9 #zenario_at_top_left_menu ul li ul li:hover ul {
 	#zenario_at_logout_link a {
 		right:0;
 		width:28px;
-		background-position:-759px -6px;
 		background-color:#000;
 	}
 	

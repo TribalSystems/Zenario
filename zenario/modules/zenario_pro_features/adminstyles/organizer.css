@@ -65,15 +65,15 @@
 #zenario_scheduled_tasks_status {
 	width: 18px;
 	cursor: pointer;
-	background: url('images/clock-icon-grey.png') no-repeat 2px 8px;
+	background: url('images/icon-footer-scheduled-tasks-grey.svg') no-repeat center bottom / 18px auto;
 }
 
 #zenario_scheduled_tasks_status.jobs_running {
-	background: url('images/clock-icon-green.png') no-repeat 2px 8px;
+	background: url('images/icon-footer-scheduled-tasks-green.svg') no-repeat center bottom / 18px auto;
 }
 
 #zenario_scheduled_tasks_status.jobs_not_running {
-	background: url('images/server-time-jobs-not-running.png') no-repeat 2px 8px;
+	background: url('images/icon-footer-scheduled-tasks-warning.svg') no-repeat center bottom / 18px auto;
 }
 
 #zenario_page_caching {
@@ -93,9 +93,9 @@
 }
 
 #zenario_page_caching.zenario_page_caching_off {
-	background: url('images/accelerator_off_icon.png') no-repeat;
+	background: url('images/icon-footer-optimisation-off.svg') no-repeat center center / 18px auto;
 }
 
 #zenario_page_caching.zenario_page_caching_on {
-	background: url('images/accelerator_on_icon.png') no-repeat;
+	background: url('images/icon-footer-optimisation-on.svg') no-repeat center center / 18px auto;
 }

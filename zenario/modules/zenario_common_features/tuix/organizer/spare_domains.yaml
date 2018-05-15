@@ -9,7 +9,7 @@ zenario__administration:
                 to a specified content item under the primary domain.
             view_mode: list
             db_items:
-                table: '[[DB_NAME_PREFIX]]spare_domain_names AS sdn'
+                table: '[[DB_PREFIX]]spare_domain_names AS sdn'
                 id_column: sdn.requested_url
                 encode_id_column: Yes
                 client_side: Yes

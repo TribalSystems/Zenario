@@ -45,15 +45,8 @@ class zenario_user_forms__organizer__predefined_text_triggers extends zenario_us
 			}
 		} elseif ($_POST['delete_trigger']) {
 			foreach (ze\ray::explodeAndTrim($ids) as $id) {
-				ze\row::delete(ZENARIO_USER_FORMS_PREFIX . 'predefined_text_triggers', $id);
+				static::deletePredefinedTextTrigger($id);
 			}
-		}
-		
-		//Tidy up the ordinals
-		$targetId = $refinerId;
-		$i = 0;
-		foreach (ze\row::getArray(ZENARIO_USER_FORMS_PREFIX . 'predefined_text_triggers', 'id', ['target_form_field_id' => $targetId], 'ord') as $id) {
-			ze\row::update(ZENARIO_USER_FORMS_PREFIX . 'predefined_text_triggers', ['ord' => ++$i], $id);
 		}
 	}
 	

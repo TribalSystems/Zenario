@@ -508,36 +508,71 @@ methods.sortAndSearchItems = function(searchTerm) {
 		sortedItems = thus.sortItems(),
 		searchedItems = thus.searchItems(_.clone(sortedItems), searchTerm),
 		matchedItemsById = _.object(searchedItems, searchedItems),
-		parentIdColumn = thus.parentIdColumn();
+		parentIdColumn = thus.parentIdColumn(),
+		itemsByParent = {},
+		sortedItemsOut;
 	
 	zenarioO.nonSearchMatches = {};
 	
-	//Loop through each match, checking to see if the parent items are also matches.
-	//Items can't be displayed without their parents so we need to make sure they are visible,
-	//but we'll flag them as "non search matches" for the microtemplate to display differently
-	for (itemNo = 0; itemNo < searchedItems.length; ++itemNo) {
-		id = searchedItems[itemNo];
-		parentId = thus.tuix.items[id] && thus.tuix.items[id][parentIdColumn];
+	//If there's a search, look for the case where a child was matched but its parent wasn't.
+	if (searchedItems.length != sortedItems.length) {
+	
+		//Loop through each match, checking to see if the parent items are also matches.
+		//Items can't be displayed without their parents so we need to make sure they are visible,
+		//but we'll flag them as "non search matches" for the microtemplate to display differently
+		for (itemNo = 0; itemNo < searchedItems.length; ++itemNo) {
+			id = searchedItems[itemNo];
+			parentId = thus.tuix.items[id] && thus.tuix.items[id][parentIdColumn];
 		
-		if (parentId && !defined(matchedItemsById[parentId])) {
-			searchedItems.push(parentId);
-			matchedItemsById[parentId] = parentId;
-			zenarioO.nonSearchMatches[parentId] = true;
+			if (parentId && !defined(matchedItemsById[parentId])) {
+				searchedItems.push(parentId);
+				matchedItemsById[parentId] = parentId;
+				zenarioO.nonSearchMatches[parentId] = true;
+			}
+		}
+	
+		//Finally, the searchedItems will now be out of order so we'll need to
+		//put it back in order. The easiest way to do this is to start again from the
+		//sortedItems array and take out anything this shouldn't be in there.
+		for (itemNo = sortedItems.length; itemNo >= 0; --itemNo) {
+			id = sortedItems[itemNo];
+		
+			if (!defined(matchedItemsById[id])) {
+				sortedItems.splice(itemNo, 1);
+			}
 		}
 	}
 	
-	//Finally, the searchedItems will now be out of order so we'll need to
-	//put it back in order. The easiest way to do this is to start again from the
-	//sortedItems array and take out anything this shouldn't be in there.
-	for (itemNo = sortedItems.length; itemNo >= 0; --itemNo) {
+	
+	
+	//Change the sort order such that top level items appear before child items,
+	//and child items are sorted by their top-level items first
+	for (itemNo = 0; itemNo < sortedItems.length; ++itemNo) {
 		id = sortedItems[itemNo];
+		parentId = thus.tuix.items[id] && thus.tuix.items[id][parentIdColumn] || '';
 		
-		if (!defined(matchedItemsById[id])) {
-			sortedItems.splice(itemNo, 1);
+		//Catch a case where 0 was sent as a string. This should still count as a top-level item.
+		if (parentId == '0') {
+			parentId = '';
+		}
+		
+		if (!defined(itemsByParent[parentId])) {
+			itemsByParent[parentId] = [];
+		}
+		itemsByParent[parentId].push(id);
+	}
+	
+	sortedItemsOut = itemsByParent[''] || [];
+	for (itemNo = 0; itemNo < sortedItemsOut.length; ++itemNo) {
+		id = sortedItemsOut[itemNo];
+		
+		if (defined(itemsByParent[id])) {
+			sortedItemsOut = sortedItemsOut.concat(itemsByParent[id]);
 		}
 	}
 	
-	return sortedItems;
+	
+	return sortedItemsOut;
 };
 
 

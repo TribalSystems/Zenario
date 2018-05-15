@@ -30,7 +30,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 ze\dbAdm::revision(1
 
 , <<<_sql
-	CREATE TABLE IF NOT EXISTS [[DB_NAME_PREFIX]][[ZENARIO_LOCATION_RATINGS_PREFIX]]accreditors (
+	CREATE TABLE IF NOT EXISTS [[DB_PREFIX]][[ZENARIO_LOCATION_RATINGS_PREFIX]]accreditors (
 		`id` int(10) unsigned AUTO_INCREMENT,
 		`name` varchar(255) NOT NULL,
 		PRIMARY KEY (`id`),
@@ -39,7 +39,7 @@ ze\dbAdm::revision(1
 _sql
 
 , <<<_sql
-	CREATE TABLE IF NOT EXISTS [[DB_NAME_PREFIX]][[ZENARIO_LOCATION_RATINGS_PREFIX]]accreditor_scores (
+	CREATE TABLE IF NOT EXISTS [[DB_PREFIX]][[ZENARIO_LOCATION_RATINGS_PREFIX]]accreditor_scores (
 		`id` int(10) unsigned AUTO_INCREMENT,
 	 	`accreditor_id` int(10) unsigned NOT NULL,
 		`score` int(10) NOT NULL,
@@ -49,7 +49,7 @@ _sql
 _sql
 
 , <<<_sql
-	CREATE TABLE IF NOT EXISTS [[DB_NAME_PREFIX]][[ZENARIO_LOCATION_RATINGS_PREFIX]]location_accreditor_score_link (
+	CREATE TABLE IF NOT EXISTS [[DB_PREFIX]][[ZENARIO_LOCATION_RATINGS_PREFIX]]location_accreditor_score_link (
 		`id` int(10) unsigned AUTO_INCREMENT,
 		`location_id` int(10) unsigned NOT NULL,
 		`accreditor_score_id` int(10) unsigned NOT NULL,
@@ -61,14 +61,14 @@ _sql
 ); ze\dbAdm::revision(2
 
 , <<<_sql
-	ALTER TABLE [[DB_NAME_PREFIX]][[ZENARIO_LOCATION_RATINGS_PREFIX]]accreditors
+	ALTER TABLE [[DB_PREFIX]][[ZENARIO_LOCATION_RATINGS_PREFIX]]accreditors
 	ADD COLUMN `score_type` enum('numeric','alpha','boolean') NOT NULL DEFAULT 'numeric'
 _sql
 
 ); ze\dbAdm::revision(5
 
 , <<<_sql
-	ALTER TABLE [[DB_NAME_PREFIX]][[ZENARIO_LOCATION_RATINGS_PREFIX]]accreditor_scores
+	ALTER TABLE [[DB_PREFIX]][[ZENARIO_LOCATION_RATINGS_PREFIX]]accreditor_scores
 	MODIFY COLUMN `score` varchar(255) NOT NULL
 _sql
 

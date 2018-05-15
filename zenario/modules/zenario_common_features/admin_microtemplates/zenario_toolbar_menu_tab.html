@@ -1,4 +1,8 @@
-<% var buttons = zenarioAT.tuix.sections[zenarioA.toolbar].buttons; %>
+<% var section = zenarioAT.tuix.sections[zenarioA.toolbar],
+	images = section.images || {},
+	buttons = section.buttons || {},
+	editFAB = buttons.edit_menu_item && buttons.edit_menu_item.admin_box;
+%>
 
 <div class="zenario_at_toolbar_container_top">
 	<div class="zenario_at_content zenario_at_toolbar">
@@ -24,6 +28,45 @@
 		<div class="zenario_at_infobar_menu_section">
 			{{buttons.menu_section.label|escape}}
 		</div>
+		<% if (images.image) { %>
+			<img
+				src="{{images.image.url|escape}}"
+				title="{{zenarioA.phrase.menuImage}}"
+				class="zenario_at_menu_image"
+				
+				<% if (editFAB) { %>
+					onclick="
+						zenarioAB.open('{{editFAB.path|escape}}', {{JSON.stringify(editFAB.key)|escape}}, 'feature_image');
+					"
+				<% } %>
+			/>
+		<% } %>
+		<% if (images.rollover_image) { %>
+			<img
+				class="zenario_at_menu_image zenario_at_menu_rollover_image"
+				src="{{images.rollover_image.url|escape}}"
+				title="{{zenarioA.phrase.menuRolloverImage}}"
+				
+				<% if (editFAB) { %>
+					onclick="
+						zenarioAB.open('{{editFAB.path|escape}}', {{JSON.stringify(editFAB.key)|escape}}, 'feature_image');
+					"
+				<% } %>
+			/>
+		<% } %>
+		<% if (images.feature_image) { %>
+			<img
+				class="zenario_at_menu_image zenario_at_menu_feature_image"
+				src="{{images.feature_image.url|escape}}"
+				title="{{zenarioA.phrase.menuFeatureImage}}"
+				
+				<% if (editFAB) { %>
+					onclick="
+						zenarioAB.open('{{editFAB.path|escape}}', {{JSON.stringify(editFAB.key)|escape}}, 'feature_image');
+					"
+				<% } %>
+			/>
+		<% } %>
 		<div
 			class="
 				zenario_at_infobar

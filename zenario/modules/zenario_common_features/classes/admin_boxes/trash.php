@@ -63,12 +63,12 @@ class zenario_common_features__admin_boxes__trash extends ze\moduleBaseClass {
 					pi.content_version,
 					pi.slot_name,
 					c.alias
-				FROM ". DB_NAME_PREFIX. "plugin_settings AS ps
-				INNER JOIN ". DB_NAME_PREFIX. "plugin_instances AS pi
+				FROM ". DB_PREFIX. "plugin_settings AS ps
+				INNER JOIN ". DB_PREFIX. "plugin_instances AS pi
 				   ON pi.id = ps.instance_id
-				INNER JOIN ". DB_NAME_PREFIX. "modules AS m
+				INNER JOIN ". DB_PREFIX. "modules AS m
 				   ON m.id = pi.module_id
-				LEFT JOIN ". DB_NAME_PREFIX. "content_items AS c
+				LEFT JOIN ". DB_PREFIX. "content_items AS c
 				   ON pi.content_id = c.id AND pi.content_type = c.type
 				WHERE foreign_key_to = 'content'
 				  AND foreign_key_id = ".(int)$cID."

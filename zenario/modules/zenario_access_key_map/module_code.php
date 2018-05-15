@@ -67,7 +67,7 @@ class zenario_access_key_map extends ze\moduleBaseClass {
 		//Firstly, get every section/parent id that has an access key in it
 		$sql = "
 			SELECT DISTINCT section_id, parent_id
-			FROM ". DB_NAME_PREFIX. "menu_nodes
+			FROM ". DB_PREFIX. "menu_nodes
 			WHERE accesskey != ''";
 		
 		//Call getMenuStructure for each combination, and get every Menu Node that has an access key

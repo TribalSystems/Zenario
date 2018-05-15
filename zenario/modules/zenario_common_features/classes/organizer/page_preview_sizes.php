@@ -40,12 +40,12 @@ class zenario_common_features__organizer__page_preview_sizes extends ze\moduleBa
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
 		if (($_POST['delete'] ?? false) && ze\priv::check('_PRIV_EDIT_SITE_SETTING')) {
 			$sql = '
-				DELETE FROM '.DB_NAME_PREFIX.'page_preview_sizes
+				DELETE FROM '.DB_PREFIX.'page_preview_sizes
 				WHERE id IN ('.ze\escape::sql($ids).')';
 			ze\sql::update($sql);
 			// Re-calculate ordinals
 			$ord = 1;
-			$pagePreviewSizes = ze\row::getArray('page_preview_sizes', 'id', [], 'ordinal');
+			$pagePreviewSizes = ze\row::getValues('page_preview_sizes', 'id', [], 'ordinal');
 			foreach ($pagePreviewSizes as $pagePreviewSizeId) {
 				ze\row::update('page_preview_sizes', ['ordinal' => $ord++], $pagePreviewSizeId);
 			}
@@ -54,7 +54,7 @@ class zenario_common_features__organizer__page_preview_sizes extends ze\moduleBa
 			foreach (ze\ray::explodeAndTrim($ids) as $id) {
 				if (isset($_POST['ordinals'][$id])) {
 					$sql = "
-						UPDATE ". DB_NAME_PREFIX. "page_preview_sizes 
+						UPDATE ". DB_PREFIX. "page_preview_sizes 
 						SET ordinal = ".ze\escape::sql($_POST['ordinals'][$id])."
 						WHERE id = ". (int)$id;
 					ze\sql::update($sql);

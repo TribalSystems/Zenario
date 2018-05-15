@@ -547,6 +547,7 @@ methods.getMergeFieldsForItemsAndColumns = function(useLargerThumbnails) {
 			
 			var ei = -1,
 				firstCell = 'firstcell ',
+				dontHTMLEscape = false,
 				needsComma = false,
 				lastNeedsComma = false,
 				value;
@@ -557,7 +558,9 @@ methods.getMergeFieldsForItemsAndColumns = function(useLargerThumbnails) {
 					colMF = data.columns[++ci];
 					col = thus.tuix.columns[c];
 					
-					value = zenarioO.columnValue(i, c);
+					dontHTMLEscape = engToBoolean(col.html);
+					
+					value = zenarioO.columnValue(i, c, dontHTMLEscape);
 					
 					//Put commas between words, but don't put commas between non-words or words this end with something.
 					needsComma = !(value == '' && value !== 0);

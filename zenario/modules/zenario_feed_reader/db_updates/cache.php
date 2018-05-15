@@ -29,6 +29,6 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 ze\dbAdm::revision(20
 , <<<_sql
-	DROP TABLE IF EXISTS [[DB_NAME_PREFIX]][[ZENARIO_FEED_READER_PREFIX]]cache
+	DROP TABLE IF EXISTS [[DB_PREFIX]][[ZENARIO_FEED_READER_PREFIX]]cache
 _sql
 );

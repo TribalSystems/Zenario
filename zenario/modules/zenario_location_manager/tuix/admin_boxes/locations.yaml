@@ -129,6 +129,7 @@ zenario_location_manager__location:
                         
                 zoom:
                     ord: 9994
+                    dataset_label: '[Map zoom (hidden)]'
                     same_row: true
                     type: hidden
                 last_updated:

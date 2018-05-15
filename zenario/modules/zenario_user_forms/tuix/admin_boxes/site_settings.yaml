@@ -6,9 +6,7 @@ site_settings:
         zenario_user_forms_emails:
             label: Details
             edit_mode:
-                enabled: true
-                priv: _PRIV_EDIT_SITE_SETTING
-                on: false
+                enabled: Yes
             fields:
                 data_protection_link:
                     snippet:
@@ -30,9 +28,7 @@ site_settings:
         zenario_user_forms_profanity_filter:
             label:  Profanity filter
             edit_mode:
-                enabled: true
-                priv: _PRIV_EDIT_SITE_SETTING
-                on: false
+                enabled: Yes
             fields:
                 zenario_user_forms_set_profanity_filter:
                     site_setting:

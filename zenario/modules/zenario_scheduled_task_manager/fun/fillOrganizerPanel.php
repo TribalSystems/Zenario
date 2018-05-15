@@ -63,16 +63,8 @@ switch ($path) {
 			}
 			
 			$item['module'] = ze\module::getModuleDisplayNameByClassName($item['module']);
-			$item['hours'] = $item['hours'];
-			$item['minutes'] = $item['minutes'];
 			$item['first_n_days_of_month'] = ze\admin::phrase(ze\ray::value(zenario_scheduled_task_manager::$firstNOptions, $item['first_n_days_of_month']));
 			$item['status'] = ze\admin::phrase(ze\ray::value(zenario_scheduled_task_manager::$lastRunStatuses, $item['status']));
-			
-			if ($item['days'] == 'mon,tue,wed,thr,fri,sat,sun') {
-				$item['days'] = ze\admin::phrase('No Filter');
-			} else {
-				$item['days'] = str_replace(',', ', ', $item['days']);
-			}
 			
 			if ($item['months'] == 'jan,feb,mar,apr,may,jun,jul,aug,sep,oct,nov,dec') {
 				$item['months'] = ze\admin::phrase('No Filter');

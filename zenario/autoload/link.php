@@ -318,7 +318,7 @@ class link {
 		))) {
 			$result = \ze\sql::select("
 				SELECT alias, equiv_id, language_id, lang_code_in_url
-				FROM ". DB_NAME_PREFIX. "content_items
+				FROM ". DB_PREFIX. "content_items
 				WHERE id = ". (int) $cID. "
 				  AND type = '". \ze\escape::sql($cType). "'"
 			);
@@ -413,7 +413,7 @@ class link {
 				} else {
 					$sql = "
 						SELECT 1
-						FROM ". DB_NAME_PREFIX. "content_items
+						FROM ". DB_PREFIX. "content_items
 						WHERE alias = '". \ze\escape::sql($alias). "'
 						LIMIT 2";
 					$result = \ze\sql::select($sql);
@@ -489,7 +489,7 @@ class link {
 		//Try to get the menu node that this content item is for, and check if it has a parent to follow
 		$sql = "
 			SELECT id, parent_id, section_id
-			FROM ". DB_NAME_PREFIX. "menu_nodes AS m
+			FROM ". DB_PREFIX. "menu_nodes AS m
 			WHERE m.equiv_id = ". (int) $equivId. "
 			  AND m.content_type = '" . \ze\escape::sql($cType) . "'
 			  AND m.target_loc = 'int'
@@ -506,11 +506,11 @@ class link {
 			//if a content item has a secondary menu node
 			$sql = "
 				SELECT c.alias
-				FROM ". DB_NAME_PREFIX. "menu_hierarchy AS mh
-				INNER JOIN ". DB_NAME_PREFIX. "menu_nodes AS m
+				FROM ". DB_PREFIX. "menu_hierarchy AS mh
+				INNER JOIN ". DB_PREFIX. "menu_nodes AS m
 				   ON m.id = mh.ancestor_id
 				  AND m.target_loc = 'int'
-				INNER JOIN ". DB_NAME_PREFIX. "content_items AS c
+				INNER JOIN ". DB_PREFIX. "content_items AS c
 				   ON c.equiv_id = m.equiv_id
 				  AND c.type = m.content_type
 				  AND c.language_id = '" . \ze\escape::sql($languageId) . "'

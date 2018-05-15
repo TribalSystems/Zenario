@@ -32,7 +32,7 @@ if (!$smartGroup = \ze\row::get('smart_groups', ['intended_usage', 'must_match']
 	return '';
 }
 
-$rules = \ze\row::getArray(
+$rules = \ze\row::getAssocs(
 	'smart_group_rules',
 	['type_of_check', 'field_id', 'field2_id', 'field3_id', 'field4_id', 'field5_id', 'role_id','activity_band_id', 'not', 'value'],
 	['smart_group_id' => $smartGroupId],
@@ -62,7 +62,7 @@ foreach ($rules as $rule) {
 			//Check if a field is set, load the details, and check if it's a supported field. Only add it if it is.
 			if ($rule['field_id']
 			 && ($field = \ze\dataset::fieldBasicDetails($rule['field_id']))
-			 && (\ze::in($field['type'], 'group', 'checkbox', 'radios', 'centralised_radios', 'select', 'centralised_select'))) {
+			 && (\ze::in($field['type'], 'group', 'checkbox', 'consent', 'radios', 'centralised_radios', 'select', 'centralised_select'))) {
 		
 				if ($field['is_system_field'] && $field['label'] == '') {
 					$field['label'] = $field['default_label'];
@@ -111,6 +111,7 @@ foreach ($rules as $rule) {
 			
 					switch ($field['type']) {
 						case 'checkbox':
+						case 'consent':
 							$desc .= 'set';
 							break;
 				

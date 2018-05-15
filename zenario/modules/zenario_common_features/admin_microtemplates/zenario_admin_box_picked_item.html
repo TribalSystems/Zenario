@@ -18,34 +18,44 @@
 			form_picked_item_nothing_selected
 		">{{m.nothing_selected_phrase|e}}</span>
 
+	<% } else if (m.missing) { %>
+			<span class="
+				form_field form_picked_item
+				zenario_missing_picked_item warning_icon
+				{{(m.readOnly? ' form_picked_item_readonly' : '')}}
+			">{{zenarioA.phrase.missingId}} {{m.label|e}}</span>
+
 	<% } else { %>
 	
-		<span class="zenario_picked_file_wrapper">
-	
 		<% if (m.isUpload) { %>
-			<% if (m.thumbnail) { %>
-				<img
-					class="zenario_picked_image zenario_picked_image__{{m.extension|e}}"
-					onclick="{{m.thumbnail.onclick|e}}"
-					src="{{m.thumbnail.src|e}}"
+			<span class="zenario_picked_file_wrapper">
+				<% if (m.thumbnail) { %>
+					<img
+						class="zenario_picked_image zenario_picked_image__{{m.extension|e}}"
+						src="{{m.thumbnail.src|e}}"
+					
+						<% if (!m.isInDropDown) { %>
+							onclick="{{m.thumbnail.onclick|e}}"
+						<% } %>
 				
-					<% if (m.thumbnail.width) { %>
-						width="{{m.thumbnail.width|e}}"
-					<% } %>
-					<% if (m.thumbnail.height) { %>
-						height="{{m.thumbnail.height|e}}"
-					<% } %>
-				/>
-			<% } else { %>
-				<a
-					target="_blank"
-					href="{{m.adminDownload|e}}"
-					class="zenario_picked_file_icon zenario_picked_file_icon__{{m.extension|e}}"
-				>Download</a>
-			<% } %>
+						<% if (m.thumbnail.width) { %>
+							width="{{m.thumbnail.width|e}}"
+						<% } %>
+						<% if (m.thumbnail.height) { %>
+							height="{{m.thumbnail.height|e}}"
+						<% } %>
+					/>
+				<% } else { %>
+					<a
+						target="_blank"
+						class="zenario_picked_file_icon zenario_picked_file_icon__{{m.extension|e}}"
+						<% if (!m.isInDropDown) { %>
+							href="{{m.adminDownload|e}}"
+						<% } %>
+					>Download</a>
+				<% } %>
+			</span>
 		<% } %>
-		
-		</span>
 	
 		<% if (m.tag_color) { %>
 			<label class="zenario_tag zenario_tag_{{m.tag_color|escape}}">
@@ -75,7 +85,9 @@
 			<a
 				target="_blank"
 				class="zenario_fab_picked_item_info"
-				href="{{URLBasePath|e}}zenario/admin/organizer.php#{{m.organizerPath|e}}"
+				<% if (!m.isInDropDown) { %>
+					href="{{URLBasePath|e}}zenario/admin/organizer.php#{{m.organizerPath|e}}"
+				<% } %>
 			>i</a>
 		<% } %>
 	<% } %>

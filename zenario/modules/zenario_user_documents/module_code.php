@@ -105,7 +105,7 @@ class zenario_user_documents extends ze\moduleBaseClass {
 						$tempArray = [];
 						$item['css_class'] = 'zenario_folder_item';
 						$item['traits']['is_folder'] = true;
-						$tempArray = ze\row::getArray(ZENARIO_USER_DOCUMENTS_PREFIX.'user_documents', 'id', ['folder_id' => $item['id']]);
+						$tempArray = ze\row::getValues(ZENARIO_USER_DOCUMENTS_PREFIX.'user_documents', 'id', ['folder_id' => $item['id']]);
 						$item['folder_file_count'] = count($tempArray);
 					} else {
 						$item['css_class'] = 'zenario_file_item';
@@ -132,27 +132,7 @@ class zenario_user_documents extends ze\moduleBaseClass {
 	public function organizerPanelDownload($path, $ids, $refinerName, $refinerId) {
 		switch ($path) {
 			case 'zenario__content/hidden_nav/user_documents/panel':
-				//Redirect to the file script to do the download
-				$file =  ze\row::get('files', true, ze\row::get(ZENARIO_USER_DOCUMENTS_PREFIX.'user_documents', 'file_id', $ids));
-				if ($file['path']) {
-					header('Content-Description: File Transfer');
-					header('Content-Type: application/octet-stream');
-					header('Content-Disposition: attachment; filename="'.basename(ze\file::docstorePath($file['id'])).'"'); //<<< Note the " " surrounding the file name
-					header("Content-Type: application/force-download");
-					header("Content-Type: application/octet-stream");
-					header("Content-Type: application/download");
-					header('Content-Transfer-Encoding: binary');
-					header('Connection: Keep-Alive');
-					header('Expires: 0');
-					header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
-					header('Pragma: public');
-					header('Content-Length: ' . filesize(ze\file::docstorePath($file['id'])));
-					readfile(ze\file::docstorePath($file['id']));
-					exit;
-				} else {
-					header('location: '. ze\link::absolute(). 'zenario/file.php?adminDownload=1&download=1&id='. ze\row::get('files', 'id', ze\row::get(ZENARIO_USER_DOCUMENTS_PREFIX.'user_documents', 'file_id', $ids)));
-					exit;
-				}
+				ze\file::stream(ze\row::get(ZENARIO_USER_DOCUMENTS_PREFIX.'user_documents', 'file_id', $ids));
 		
 				break;
 		}
@@ -161,7 +141,7 @@ class zenario_user_documents extends ze\moduleBaseClass {
 		switch ($path) {
 			case 'zenario_user_documents__user_document_properties':
 				$documentTagsString = '';
-				$documentTags = ze\row::getArray(ZENARIO_USER_DOCUMENTS_PREFIX.'user_document_tag_link', 'tag_id', ['user_document_id' => $box['key']['id']]);
+				$documentTags = ze\row::getValues(ZENARIO_USER_DOCUMENTS_PREFIX.'user_document_tag_link', 'tag_id', ['user_document_id' => $box['key']['id']]);
 				$fileId = ze\row::get(ZENARIO_USER_DOCUMENTS_PREFIX.'user_documents','file_id',  $box['key']['id']);
 				$documentTitle = ze\row::get(ZENARIO_USER_DOCUMENTS_PREFIX.'user_documents','title',  $box['key']['id']);
 				$documentName = ze\row::get('files', ['filename'], $fileId);
@@ -199,7 +179,7 @@ class zenario_user_documents extends ze\moduleBaseClass {
 		$details = ze\row::get(ZENARIO_USER_DOCUMENTS_PREFIX.'user_documents', ['type', 'file_id'], $userDocumentId);
 		ze\row::delete(ZENARIO_USER_DOCUMENTS_PREFIX.'user_documents', ['id' => $userDocumentId]);
 		if ($details && $details['type'] == 'folder') {
-			$children = ze\row::getArray(ZENARIO_USER_DOCUMENTS_PREFIX.'user_documents', ['id', 'type'], ['folder_id' => $userDocumentId]);
+			$children = ze\row::getAssocs(ZENARIO_USER_DOCUMENTS_PREFIX.'user_documents', ['id', 'type'], ['folder_id' => $userDocumentId]);
 			foreach ($children as $row) {
 				self::deleteUserDocument($row['id']);
 			}

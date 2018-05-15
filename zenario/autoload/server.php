@@ -80,7 +80,13 @@ class server {
 	
 		$mail = new \PHPMailer\PHPMailer\PHPMailer($exceptions);
 		$mail->CharSet = 'UTF-8';
-		$mail->Encoding = 'base64';
+		
+		if (\ze::setting('base64_encode_emails')) {
+			$mail->Encoding = 'base64';
+			//Options for this are "8bit", "7bit", "binary", "base64", and "quoted-printable"
+			//8bit is the default, and apparrently will auto-switch to quoted-printable if needed.
+		}
+		
 	
 		$mail->Subject = $subject;
 		$mail->Body = $body;

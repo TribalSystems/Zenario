@@ -5,7 +5,7 @@ site_settings:
 	title: Editing captcha settings
 	tabs:
 		captcha:
-			label: Captcha
+			label: "reCaptcha 1.0"
 			edit_mode:
 				enabled: Yes
 				priv: _PRIV_EDIT_SITE_SETTING
@@ -16,7 +16,7 @@ site_settings:
 					snippet:
 						html: |
 							This tab contains settings for reCAPTCHA.
-															This is a Captcha that is used by some Plugins in the CMS (for example the Contact Form).
+															This is a captcha that is used by some plugins in Zenario (for example User Forms).
 				google_recaptcha_private_key:
 					site_setting:
 						name: google_recaptcha_private_key
@@ -63,7 +63,7 @@ site_settings:
 						white: White
 					note_below: The theme to use for Recaptcha.
 		captcha_picture:
-			label: Captcha 2.0 (pictures)
+			label: "reCaptcha 2.0"
 			edit_mode:
 				enabled: Yes
 				priv: _PRIV_EDIT_SITE_SETTING
@@ -74,7 +74,7 @@ site_settings:
 					snippet:
 						html: |
 							This tab contains settings for reCAPTCHA.
-															This is a Captcha that is used by some Plugins in the CMS (for example the User Forms).
+															This is a captcha that is used by some plugins in Zenario (for example User Forms).
 				google_recaptcha_site_key:
 					site_setting:
 						name: google_recaptcha_site_key

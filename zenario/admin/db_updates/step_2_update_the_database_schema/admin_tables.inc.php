@@ -35,66 +35,83 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 //Rename the admin_storekeeper_prefs table to admin_organizer_prefs
 ze\dbAdm::revision( 38821
 , <<<_sql
-	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]admin_organizer_prefs`
+	DROP TABLE IF EXISTS `[[DB_PREFIX]]admin_organizer_prefs`
 _sql
 
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]]admin_storekeeper_prefs`
-	RENAME TO `[[DB_NAME_PREFIX]]admin_organizer_prefs`
+	ALTER TABLE `[[DB_PREFIX]]admin_storekeeper_prefs`
+	RENAME TO `[[DB_PREFIX]]admin_organizer_prefs`
 _sql
 
 
 //Attempt to convert some columns with a utf8-3-byte character set to a 4-byte character set
 );	ze\dbAdm::revision( 40150
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]]admins` MODIFY COLUMN `email` varchar(200) CHARACTER SET utf8mb4 NOT NULL default ''
+	ALTER TABLE `[[DB_PREFIX]]admins` MODIFY COLUMN `email` varchar(200) CHARACTER SET utf8mb4 NOT NULL default ''
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]]admins` MODIFY COLUMN `first_name` varchar(100) CHARACTER SET utf8mb4 NOT NULL default ''
+	ALTER TABLE `[[DB_PREFIX]]admins` MODIFY COLUMN `first_name` varchar(100) CHARACTER SET utf8mb4 NOT NULL default ''
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]]admins` MODIFY COLUMN `last_name` varchar(100) CHARACTER SET utf8mb4 NOT NULL default ''
+	ALTER TABLE `[[DB_PREFIX]]admins` MODIFY COLUMN `last_name` varchar(100) CHARACTER SET utf8mb4 NOT NULL default ''
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]]admins` MODIFY COLUMN `password` varchar(50) CHARACTER SET ascii NOT NULL default ''
+	ALTER TABLE `[[DB_PREFIX]]admins` MODIFY COLUMN `password` varchar(50) CHARACTER SET ascii NOT NULL default ''
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]]admins` MODIFY COLUMN `password_salt` varchar(8) CHARACTER SET ascii NULL
+	ALTER TABLE `[[DB_PREFIX]]admins` MODIFY COLUMN `password_salt` varchar(8) CHARACTER SET ascii NULL
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]]admins` MODIFY COLUMN `reset_password` varchar(50) CHARACTER SET ascii NULL
+	ALTER TABLE `[[DB_PREFIX]]admins` MODIFY COLUMN `reset_password` varchar(50) CHARACTER SET ascii NULL
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]]admins` MODIFY COLUMN `reset_password_salt` varchar(8) CHARACTER SET ascii NULL
+	ALTER TABLE `[[DB_PREFIX]]admins` MODIFY COLUMN `reset_password_salt` varchar(8) CHARACTER SET ascii NULL
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]]admins` MODIFY COLUMN `specific_content_items` text CHARACTER SET ascii NULL
+	ALTER TABLE `[[DB_PREFIX]]admins` MODIFY COLUMN `specific_content_items` text CHARACTER SET ascii NULL
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]]admins` MODIFY COLUMN `specific_languages` text CHARACTER SET ascii NULL
+	ALTER TABLE `[[DB_PREFIX]]admins` MODIFY COLUMN `specific_languages` text CHARACTER SET ascii NULL
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]]admins` MODIFY COLUMN `specific_menu_areas` text CHARACTER SET ascii NULL
+	ALTER TABLE `[[DB_PREFIX]]admins` MODIFY COLUMN `specific_menu_areas` text CHARACTER SET ascii NULL
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]]admins` MODIFY COLUMN `username` varchar(50) CHARACTER SET utf8mb4 NOT NULL default ''
+	ALTER TABLE `[[DB_PREFIX]]admins` MODIFY COLUMN `username` varchar(50) CHARACTER SET utf8mb4 NOT NULL default ''
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]]admin_organizer_prefs` MODIFY COLUMN `checksum` varchar(22) CHARACTER SET utf8mb4 NOT NULL default '{}'
+	ALTER TABLE `[[DB_PREFIX]]admin_organizer_prefs` MODIFY COLUMN `checksum` varchar(22) CHARACTER SET utf8mb4 NOT NULL default '{}'
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]]admin_organizer_prefs` MODIFY COLUMN `prefs` mediumtext CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]]admin_organizer_prefs` MODIFY COLUMN `prefs` mediumtext CHARACTER SET utf8mb4 NULL
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]]admin_settings` MODIFY COLUMN `value` mediumtext CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]]admin_settings` MODIFY COLUMN `value` mediumtext CHARACTER SET utf8mb4 NULL
+_sql
+
+); ze\dbAdm::revision(44780,
+<<<_sql
+	ALTER TABLE `[[DB_PREFIX]]admins`
+	ADD `session_id` varchar(50) NULL
 _sql
 
 //Add a hash column to admins to allow admins to be created without a password and a personal link to the site can be sent instead
 //and then they can enter their password themselves
-);	ze\dbAdm::revision( 44270
+//(N.b. this was added in an after-branch patch in 8.1 revision 44270, so we need to check if it's not already there.)
+);	if (ze\dbAdm::needRevision(44787) && !ze\sql::numRows('SHOW COLUMNS FROM '. DB_PREFIX. 'admins LIKE "hash"'))	ze\dbAdm::revision( 44787
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]]admins`
+	ALTER TABLE `[[DB_PREFIX]]admins`
 	ADD COLUMN `hash` varchar(28) CHARACTER SET ascii NOT NULL DEFAULT ''
+_sql
+
+//T11306
+//All administrators without the "every possible permission" option checked should lose the ability to
+//create, restore and download database backups.
+//(You can reverse this if you wish, it's just a one-time change that's made upon updating.)
+); ze\dbAdm::revision(45050,
+<<<_sql
+	DELETE FROM `[[DB_PREFIX]]action_admin_link`
+	WHERE action_name IN ('_PRIV_BACKUP_SITE', '_PRIV_RESTORE_SITE')
 _sql
 
 );

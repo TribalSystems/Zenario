@@ -94,7 +94,7 @@ echo '
 				.static_warning {
 					display: inline-block;
 					border: 1px solid black;
-					background: #f5f5f5 url('", ze\link::absolute(), "zenario/admin/images/img_msg_warning_orange.png') no-repeat 3px 3px;
+					background: #f5f5f5 url('", ze\link::absolute(), "zenario/admin/images/icon-warning.svg') no-repeat 3px 3px / 33px 29px;
 					height: auto!important;
 					height: 51px;
 					padding: 10px 10px 10px 45px;

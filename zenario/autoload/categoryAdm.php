@@ -90,7 +90,12 @@ class categoryAdm {
 		$field['values'] = [];
 	
 		$ord = 0;
-		$result = \ze\row::query('categories', ['id', 'parent_id', 'name'], [], 'name');
+		//$result = \ze\row::query('categories', ['id', 'parent_id', 'name'], [], 'name');
+		$result = \ze\sql::select('
+			SELECT id, parent_id, name
+			FROM '. DB_PREFIX. 'categories
+			ORDER BY name
+		');
 	
 		while ($row = \ze\sql::fetchAssoc($result)) {
 			$field['values'][$row['id']] = ['label' => $row['name'], 'parent' => $row['parent_id'], 'ord' => ++$ord];
@@ -98,8 +103,8 @@ class categoryAdm {
 			if ($showTotals) {
 				$sql = "
 					SELECT COUNT(DISTINCT c.id, c.type)
-					FROM ". DB_NAME_PREFIX. "category_item_link AS cil
-					INNER JOIN ". DB_NAME_PREFIX. "content_items AS c
+					FROM ". DB_PREFIX. "category_item_link AS cil
+					INNER JOIN ". DB_PREFIX. "content_items AS c
 					   ON c.equiv_id = cil.equiv_id
 					  AND c.type = cil.content_type
 					  AND c.status NOT IN ('trashed','deleted')
@@ -112,7 +117,7 @@ class categoryAdm {
 		}
 	
 		if ($cID && $cType && $cVersion) {
-			$field['value'] = \ze\escape::in(\ze\row::getArray('category_item_link', 'category_id', ['equiv_id' => \ze\content::equivId($cID, $cType), 'content_type' => $cType]), true);
+			$field['value'] = \ze\escape::in(\ze\row::getValues('category_item_link', 'category_id', ['equiv_id' => \ze\content::equivId($cID, $cType), 'content_type' => $cType]), true);
 		}
 	}
 
@@ -122,7 +127,7 @@ class categoryAdm {
 		++$recurseCount;
 	
 		$sql = "SELECT id
-				FROM " . DB_NAME_PREFIX . "categories
+				FROM " . DB_PREFIX . "categories
 				WHERE parent_id = " . (int) $id;
 			
 		$result = \ze\sql::select($sql);
@@ -170,7 +175,7 @@ class categoryAdm {
 	public static function exists($categoryName, $catId = false, $parentCatId = false) {
 
 		$sql = "SELECT name
-				FROM " . DB_NAME_PREFIX . "categories
+				FROM " . DB_PREFIX . "categories
 				WHERE name = '" . \ze\escape::sql($categoryName) . "'";
 	
 		if ($catId) {

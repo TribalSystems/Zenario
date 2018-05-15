@@ -92,8 +92,8 @@ class zenario_common_features__admin_boxes__content_layout extends ze\moduleBase
 			//If there is only one unique value then populate it, otherwise show the field as blank.
 			$sql = "
 				SELECT DISTINCT v.layout_id
-				FROM ". DB_NAME_PREFIX. "content_items AS c
-				INNER JOIN ". DB_NAME_PREFIX. "content_item_versions AS v
+				FROM ". DB_PREFIX. "content_items AS c
+				INNER JOIN ". DB_PREFIX. "content_item_versions AS v
 				   ON c.id = v.id
 				  AND c.type = v.type
 				  AND c.admin_version = v.version

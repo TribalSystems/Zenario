@@ -105,8 +105,8 @@ switch ($path) {
 		
 		$sql = "
 			SELECT d.id
-			FROM " . DB_NAME_PREFIX . "documents AS d
-			LEFT JOIN " . DB_NAME_PREFIX . "files as f 
+			FROM " . DB_PREFIX . "documents AS d
+			LEFT JOIN " . DB_PREFIX . "files as f 
 				ON d.file_id = f.id";
 		if($radioOrderBy && $radioSortBy){
 			if ($radioOrderBy=='file_name') {
@@ -125,7 +125,7 @@ switch ($path) {
 				$sql.= " ORDER BY f.created_datetime";
 			} else {
 				//Custom data set
-				$sql.=' INNER JOIN '.DB_NAME_PREFIX.'documents_custom_data AS zdcd 
+				$sql.=' INNER JOIN '.DB_PREFIX.'documents_custom_data AS zdcd 
 					ON zdcd.document_id = d.id';
 				
 				if ($folderId) {
@@ -134,7 +134,7 @@ switch ($path) {
 					$sql.=" WHERE d.folder_id = 0";
 				}
 				
-				$dbColumn = ze\row::getArray('custom_dataset_fields', 'db_column', $radioOrderBy);
+				$dbColumn = ze\row::getValues('custom_dataset_fields', 'db_column', $radioOrderBy);
 				$sql.= " ORDER BY zdcd.`" . $dbColumn[$radioOrderBy] . "`";
 			}
 			// Sort order
@@ -173,7 +173,7 @@ switch ($path) {
 		// Set ordinals as last in selected folder
 		$sql = '
 			SELECT MAX(ordinal) + 1
-			FROM ' . DB_NAME_PREFIX . 'documents
+			FROM ' . DB_PREFIX . 'documents
 			WHERE folder_id = ' . (int)$folderId;
 		$result = ze\sql::select($sql);
 		$row = ze\sql::fetchRow($result);

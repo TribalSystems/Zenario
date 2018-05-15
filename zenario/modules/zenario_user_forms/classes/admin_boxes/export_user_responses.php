@@ -97,10 +97,10 @@ class zenario_user_forms__admin_boxes__export_user_responses extends ze\moduleBa
 		$responsesData = [];
 		$sql = '
 			SELECT urd.value, urd.form_field_id, ur.id
-			FROM '.DB_NAME_PREFIX. ZENARIO_USER_FORMS_PREFIX .'user_response AS ur
-			LEFT JOIN '.DB_NAME_PREFIX. ZENARIO_USER_FORMS_PREFIX .'user_response_data AS urd
+			FROM '.DB_PREFIX. ZENARIO_USER_FORMS_PREFIX .'user_response AS ur
+			LEFT JOIN '.DB_PREFIX. ZENARIO_USER_FORMS_PREFIX .'user_response_data AS urd
 				ON ur.id = urd.user_response_id
-			LEFT JOIN '.DB_NAME_PREFIX. ZENARIO_USER_FORMS_PREFIX . 'user_form_fields AS uff
+			LEFT JOIN '.DB_PREFIX. ZENARIO_USER_FORMS_PREFIX . 'user_form_fields AS uff
 				ON urd.form_field_id = uff.id
 			WHERE ur.form_id = ' . (int)$formId;
 		
@@ -148,7 +148,7 @@ class zenario_user_forms__admin_boxes__export_user_responses extends ze\moduleBa
 			}
 		}
 		
-		$responseDates = ze\row::getArray(
+		$responseDates = ze\row::getAssocs(
 			ZENARIO_USER_FORMS_PREFIX. 'user_response', 
 			'response_datetime', 
 			['form_id' => $formId], 'response_datetime'

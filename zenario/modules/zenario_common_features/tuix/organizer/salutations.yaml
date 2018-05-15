@@ -7,7 +7,7 @@ zenario__languages:
             no_items_message: No salutations have been defined
             panel_type: list
             db_items:
-                table: '[[DB_NAME_PREFIX]]lov_salutations AS l'
+                table: '[[DB_PREFIX]]lov_salutations AS l'
                 id_column: l.id
             columns:
                 name:

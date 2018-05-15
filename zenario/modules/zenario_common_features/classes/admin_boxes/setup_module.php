@@ -127,8 +127,8 @@ class zenario_common_features__admin_boxes__setup_module extends ze\moduleBaseCl
 			//Check to see if the Module just made any special pages
 			$sql = "
 				SELECT c.id, c.type, c.alias, c.language_id
-				FROM ". DB_NAME_PREFIX. "special_pages AS sp
-				INNER JOIN ". DB_NAME_PREFIX. "content_items AS c
+				FROM ". DB_PREFIX. "special_pages AS sp
+				INNER JOIN ". DB_PREFIX. "content_items AS c
 				   ON c.equiv_id = sp.equiv_id
 				  AND c.type = sp.content_type
 				WHERE sp.module_class_name = '". ze\escape::sql($module['class_name']). "'

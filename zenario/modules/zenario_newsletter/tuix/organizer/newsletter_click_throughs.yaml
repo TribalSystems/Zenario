@@ -8,7 +8,7 @@ zenario__email_template_manager:
             default_sort_column: link_ordinal
             db_items:
                 table: |
-                    [[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters_hyperlinks AS nh
+                    [[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters_hyperlinks AS nh
                 id_column: nh.id
             refiners:
                 click_through_id:

@@ -153,13 +153,13 @@ if (isset($_GET['og'])) {
 
 //Generate or load a small thumbnail for Storekeeper
 } elseif (isset($_GET['ogl'])) {
-	$width = 24;
-	$height = 23;
+	$width = 180;
+	$height = 130;
 
 //Generate or load a larger thumbnail for Storekeeper
 } elseif (isset($_GET['ogt'])) {
-	$width = 64;
-	$height = 64;
+	$width = 180;
+	$height = 130;
 
 //Generate a close-up view for Storekeeper
 } elseif (isset($_GET['closeup']) && ze\priv::check()) {
@@ -190,16 +190,21 @@ if (isset($_GET['og'])) {
 	}
 
 //Handle resizes from WYSIWYG Editors, using a hash in the get request to make it harder for visitors to hack the URL and ask for whatever size image they want.
-} elseif ($requestedWidth && $requestedHeight && $key) {
+} elseif (($requestedWidth || $requestedHeight) && $key) {
 	$width = $requestedWidth;
 	$height = $requestedHeight;
-	$mode = 'stretch';
+	if ($width && $height) {
+		$mode = 'stretch';
+	} else {
+		$mode = 'resize';
+	}
 
 } elseif ($requestedWidth && $requestedHeight && $getUploadedFileInCacheDir) {
 	$width = $requestedWidth;
 	$height = $requestedHeight;
 	$mode = 'resize';
 }
+
 
 //Attempt to output an image in the cache/uploads/ directory
 if ($getUploadedFileInCacheDir) {
@@ -238,8 +243,8 @@ if ($getUploadedFileInCacheDir) {
 
 		$sql = "
 			SELECT v.id, v.type, v.version, v.file_id, v.filename
-			FROM ". DB_NAME_PREFIX. "files AS f
-			INNER JOIN ". DB_NAME_PREFIX. "content_item_versions AS v
+			FROM ". DB_PREFIX. "files AS f
+			INNER JOIN ". DB_PREFIX. "content_item_versions AS v
 			   ON v.file_id = f.id";
 
 		if (($_REQUEST['cID'] ?? false) && ($_REQUEST['cType'] ?? false)) {
@@ -263,7 +268,7 @@ if ($getUploadedFileInCacheDir) {
 
 		} elseif ($checksum) {
 			$sql .= "
-			INNER JOIN ". DB_NAME_PREFIX. "content_items AS c
+			INNER JOIN ". DB_PREFIX. "content_items AS c
 			   ON v.id = c.id
 			  AND v.type = c.type
 			  AND v.version = ". (ze\priv::check()? "c.admin_version" : "c.visitor_version"). "
@@ -315,10 +320,10 @@ if ($getUploadedFileInCacheDir) {
 		$sql .= "thumbnail_180x130_data AS data";
 
 	} elseif (isset($_GET['ogt'])) {
-		$sql .= "thumbnail_64x64_data AS data";
+		$sql .= "thumbnail_180x130_data AS data";
 
 	} elseif (isset($_GET['ogl'])) {
-		$sql .= "thumbnail_24x23_data AS data";
+		$sql .= "thumbnail_180x130_data AS data";
 
 	//If this is content, then we'll also grab the data straight away as there should be no need to manipulate it.
 	} elseif ($usage == 'content') {
@@ -336,7 +341,7 @@ if ($getUploadedFileInCacheDir) {
 			width,
 			height,
 			size
-		FROM ". DB_NAME_PREFIX . "files";
+		FROM ". DB_PREFIX . "files";
 
 	if ($id) {
 		$sql .= "
@@ -384,7 +389,7 @@ if ($getUploadedFileInCacheDir) {
 		}
 
 		//When Handling resizes from WYSIWYG Editors, use a hash in the get request to make it harder for visitors to hack the URL and ask for whatever size image they want.
-		if ($requestedWidth && $requestedHeight && $key) {
+		if (($requestedWidth || $requestedHeight) && $key) {
 			if ($key != ze::hash64($file['id']. '_'. $requestedWidth. '_'. $requestedHeight. '_'. $checksum, 10)) {
 				$width = $file['width'];
 				$height = $file['height'];

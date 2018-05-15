@@ -38,9 +38,9 @@ class site {
 	public static function setSetting($settingName, $value, $updateDB = true, $encrypt = false, $clearCache = true) {
 		\ze::$siteConfig[$settingName] = $value;
 	
-		if ($updateDB && \ze::$lastDB) {
+		if ($updateDB && \ze::$dbL) {
 		
-			$encryptedColExists = \ze\row::cacheTableDef(DB_NAME_PREFIX. 'site_settings', 'encrypted', $useCache = true);
+			$encryptedColExists = \ze::$dbL->checkTableDef(DB_PREFIX. 'site_settings', 'encrypted', $useCache = true);
 		
 			$encrypted = 0;
 			if ($encryptedColExists && $encrypt && \ze\zewl::init()) {
@@ -49,7 +49,7 @@ class site {
 			}
 		
 			$sql = "
-				INSERT INTO ". DB_NAME_PREFIX. "site_settings SET
+				INSERT INTO ". DB_PREFIX. "site_settings SET
 					`name` = '". \ze\escape::sql($settingName). "',
 					`value` = '". \ze\escape::sql($value). "'";
 		

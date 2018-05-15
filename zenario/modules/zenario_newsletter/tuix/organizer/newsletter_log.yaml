@@ -8,8 +8,8 @@ zenario__email_template_manager:
             view_mode: list
             db_items:
                 table: |
-                    [[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link AS nul
-                    LEFT JOIN [[DB_NAME_PREFIX]]users AS u ON u.id = nul.user_id
+                    [[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link AS nul
+                    LEFT JOIN [[DB_PREFIX]]users AS u ON u.id = nul.user_id
                 id_column: "concat(nul.user_id, '_',  nul.newsletter_id)"
                 
             refiners:
@@ -78,7 +78,7 @@ zenario__email_template_manager:
                 link_clicked:
                     title: Link clicked
                     table_join: |
-                        [[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters_hyperlinks AS nh ON nul.clicked_hyperlink_id = nh.id
+                        [[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters_hyperlinks AS nh ON nul.clicked_hyperlink_id = nh.id
                     db_column: >
                         CONCAT(
                         'Link ',

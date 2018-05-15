@@ -8,8 +8,8 @@ zenario__user_forms:
             no_items_message: No pre-defined text has been defined.
             db_items:
                 table: |
-                    [[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]predefined_text_targets AS ptt
-                    INNER JOIN [[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields uff
+                    [[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]predefined_text_targets AS ptt
+                    INNER JOIN [[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields uff
                         ON ptt.form_field_id = uff.id
                 id_column: ptt.form_field_id
             refiners:
@@ -37,7 +37,7 @@ zenario__user_forms:
                     db_column: |
                         (
                             SELECT COUNT(*)
-                            FROM [[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]predefined_text_triggers AS pttg
+                            FROM [[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]predefined_text_triggers AS pttg
                             WHERE pttg.target_form_field_id = ptt.form_field_id
                         )
             collection_buttons:

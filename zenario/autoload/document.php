@@ -35,17 +35,18 @@ class document {
 
 
 	//Formerly "zenario_common_features::uploadDocument()"
-	public static function upload($filepath, $filename, $folderId = false) {
+	public static function upload($filepath, $filename, $folderId = false, $privacy = 'offline') {
 		$fileId = \ze\file::addToDatabase('hierarchial_file', $filepath, $filename, false,false,true);
-		return \ze\document::create($fileId, $filename, $folderId);
+		return \ze\document::create($fileId, $filename, $folderId, $privacy);
 	}
 	
 	//Formerly "zenario_common_features::createDocument()"
-	public static function create($fileId, $filename, $folderId) {
+	public static function create($fileId, $filename, $folderId, $privacy = 'offline') {
+		
 		//Get last ordinal within folder
 		$sql = '
 			SELECT MAX(ordinal) + 1
-			FROM ' . DB_NAME_PREFIX . 'documents
+			FROM ' . DB_PREFIX . 'documents
 			WHERE folder_id = ' . (int)($folderId ? $folderId : 0);
 		$result = \ze\sql::select($sql);
 		$row = \ze\sql::fetchRow($result);
@@ -57,14 +58,8 @@ class document {
 			'folder_id' => 0,
 			'filename' => $filename,
 			'file_datetime' => date("Y-m-d H:i:s"),
-			'ordinal' => $ordinal];
-		
-		//Copy privacy if a document with the same file already exists
-		$docWithSameFile = \ze\row::get('documents', ['privacy', 'filename'], ['file_id' => $fileId]);
-		if ($docWithSameFile) {
-			$documentProperties['privacy'] = $docWithSameFile['privacy'];
-			$documentProperties['filename'] = $docWithSameFile['filename'];
-		}
+			'ordinal' => $ordinal,
+			'privacy' => $privacy];
 		
 		//Delete any redirects that redirect the document to a different document
 		$hasRedirect = false;
@@ -88,9 +83,11 @@ class document {
 			\ze\document::processRules($documentId);
 			
 			//If there was a redirect, this document should be public
-			if ($hasRedirect) {
+			if ($hasRedirect || $privacy == 'public') {
 				\ze\document::generatePublicLink($documentId);
 			}
+			
+			
 		}
 		return $documentId;
 	}
@@ -120,7 +117,7 @@ class document {
 			}
 		}
 		$sql = '
-			UPDATE ' . DB_NAME_PREFIX . 'documents
+			UPDATE ' . DB_PREFIX . 'documents
 			SET ordinal = ordinal + 1
 			WHERE folder_id = ' . (int)$parentId;
 		\ze\sql::update($sql);
@@ -142,39 +139,47 @@ class document {
 	}
 	
 	//Formerly "zenario_common_features::deleteHierarchicalDocumentPubliclink()"
-	public static function deletePubliclink($documentId, $documentDeleted = false) {
-		$document = \ze\row::get('documents', ['id', 'file_id'], $documentId);
+	public static function deletePubliclink($documentId, $documentDeleted = false, $privacy = false) {
+		$document = \ze\row::get('documents', ['id', 'file_id', 'filename'], $documentId);
 		$file = \ze\row::get('files',  ['short_checksum'], $document['file_id']);
 		
-		$docsWithSameFile = [];
-		$result = \ze\row::query('documents', ['id'], ['file_id' => $document['file_id']]);
-		while ($row = \ze\sql::fetchAssoc($result)) {
-			$docsWithSameFile[] = $row;
-		}	
 		
-		$docsToUpdate = [];
-		$deleteMainPublicLink = !$documentDeleted || count($docsWithSameFile) == 1;
-		if ($deleteMainPublicLink) {
-			\ze\cache::deleteDir(CMS_ROOT . 'public/downloads/' . $file['short_checksum']);
-			$docsToUpdate = $docsWithSameFile;
-		} else {
-			$docsToUpdate[] = $document;
-		}
+		//Check if there are any other doucments using this file
+		$duplicatesExist = \ze\row::exists('documents', ['file_id' => $document['file_id'], 'id' => ['!' => $documentId]]);
 		
-		//Delete redirects and update privacy
-		foreach ($docsToUpdate as $docToUpdate) {
-			$result = \ze\row::query('document_public_redirects', ['path'], ['document_id' => $docToUpdate['id']]);
-			while ($redirect = \ze\sql::fetchAssoc($result)) {
-				$parts = explode('/', $redirect['path']);
-				\ze\cache::deleteDir(CMS_ROOT . 'public/downloads/' . $parts[0]);
+		$filePublicDir = CMS_ROOT . 'public/downloads/' . $file['short_checksum'];
+		$docPublicLink = $filePublicDir. '/' . $document['filename'];
+		
+		//If other documents use this file, just delete this documents from the file's directory
+		if ($duplicatesExist) {
+			if (is_file($docPublicLink)) {
+				unlink($docPublicLink);
 			}
-			\ze\row::delete('document_public_redirects', ['document_id' => $docToUpdate['id']]);
-			
-			\ze\row::update('documents', ['privacy' => 'auto'], $docToUpdate['id']);
+		
+		//If no other documents use this file, we can delete the whole directory
+		} else {
+			\ze\cache::deleteDir($filePublicDir);
 		}
+		
+		//Update current item's privacy
+		if ($privacy == false) {
+			//Make current document offline
+			\ze\row::update('documents', ['privacy' => 'offline'], ['id' => $documentId]);
+		} else {
+			//If "make private" was selected, make current document private instead of offline
+			\ze\row::update('documents', ['privacy' => $privacy], ['id' => $documentId]);
+		}
+		
+		//Delete any redirect
+		$result = \ze\row::query('document_public_redirects', ['path'], ['document_id' => $documentId]);
+		while ($redirect = \ze\sql::fetchAssoc($result)) {
+			$parts = explode('/', $redirect['path']);
+			\ze\cache::deleteDir(CMS_ROOT . 'public/downloads/' . $parts[0]);
+		}
+		\ze\row::delete('document_public_redirects', ['document_id' => $documentId]);
+		
 		return true;
 	}
-	
 
 	//Formerly "zenario_common_features::deleteHierarchicalDocument()"
 	public static function delete($documentId) {
@@ -191,10 +196,11 @@ class document {
 			
 			$fileDetails = \ze\row::get('files', ['path', 'filename', 'location'], $details['file_id']);
 			$document = \ze\row::get('documents', ['file_id', 'filename'], ['id'=>$documentId]);
-			$fileIdsInDocument = \ze\row::getArray('documents', ['file_id', 'filename'], ['file_id'=>$document['file_id']]);
+			$fileIdsInDocument = \ze\row::getAssocs('documents', ['file_id', 'filename'], ['file_id'=>$document['file_id']]);
 			$numberFileIds =count($fileIdsInDocument);
 			
 			$file = \ze\row::get('files', ['id', 'filename', 'path', 'created_datetime'], $document['file_id']);
+
 			\ze\document::deletePubliclink($documentId, true);
 			
 			if($file['filename']) {
@@ -260,7 +266,7 @@ class document {
 		$error = new \ze\error();
 		
 		if (!is_array($document)) {
-			$document = \ze\row::get('documents', ['file_id', 'filename'], $document);
+			$document = \ze\row::get('documents', ['file_id', 'id', 'filename'], $document);
 		}
 		if (!is_array($file)) {
 			$file = \ze\row::get(
@@ -270,18 +276,20 @@ class document {
 			);
 		}
 		if($file['filename']) {
+			$dirPath = false;
 			if (\ze\cache::cleanDirs()) {
 				$dirPath = \ze\cache::createDir($file['short_checksum'], 'public/downloads', false);
 			}
 			if (!$dirPath) {
-				$error->add('message', 'Could not generate public link because public file structure incorrect');
+				$error->add('message', 'Could not generate public link because public file structure is incorrect');
 				return $error;
 			}
 			
 			$symFolder =  CMS_ROOT . $dirPath;
-			$symPath = $symFolder . $document['filename'];
+			$safeFilename = \ze\file::safeName($document['filename']);
+			$symPath = $symFolder . $safeFilename;
+			$frontLink = $dirPath . $safeFilename;
 			
-			$frontLink = $dirPath . $document['filename'];
 			if (!\ze\server::isWindows() && ($path = \ze\file::docstorePath($file['id'], false))) {
 				if (!file_exists($symPath)) {
 					if(!file_exists($symFolder)) {
@@ -290,7 +298,18 @@ class document {
 					symlink($path, $symPath);
 				} 
 				
-				\ze\row::update('documents', ['privacy' => 'public'], ['file_id' => $document['file_id']]);
+				//Check if there are other documents with the same file
+				$docsWithSameFile = \ze\row::getArray('documents', ['id', 'privacy'], ['file_id' => $document['file_id']]);
+				foreach ($docsWithSameFile as $docWithSameFile) {
+					if ($docWithSameFile['id'] == $document['id']) {
+						//Make current document public
+						\ze\row::update('documents', ['privacy' => 'public'], ['id' => $docWithSameFile['id']]);
+					} else {
+						//Preserve privacy settings of other documents with the same file
+						\ze\row::update('documents', ['privacy' => $docWithSameFile['privacy']], ['id' => $docWithSameFile['id']]);
+					}
+				}
+				//\ze\row::update('documents', ['privacy' => 'public'], ['file_id' => $document['file_id']]);
 				
 				return $frontLink;
 				
@@ -306,14 +325,13 @@ class document {
 		}
 		return $error;
 	}
-
 	
 	//Formerly "zenario_common_features::remakeDocumentRedirectHtaccessFiles()"
 	public static function remakeRedirectHtaccessFiles($documentId) {
 		$sql = '
 			SELECT d.filename, f.short_checksum
-			FROM ' . DB_NAME_PREFIX . 'documents d
-			INNER JOIN ' . DB_NAME_PREFIX . 'files f
+			FROM ' . DB_PREFIX . 'documents d
+			INNER JOIN ' . DB_PREFIX . 'files f
 				ON d.file_id = f.id
 			WHERE d.id = ' . (int)$documentId;
 		$result = \ze\sql::select($sql);
@@ -343,8 +361,8 @@ class document {
 		$content .= "<IfModule mod_rewrite.c> "."\n";
 		$content .= "	RewriteEngine On "."\n";
 		$redirectFromFileName = str_replace(' ', '\ ', $redirectFromFileName );
-		$redirectToFileName = str_replace(' ', '\ ', $redirectToFileName );
-		$content .= "	RewriteRule ^".$redirectFromFileName."$ " . SUBDIRECTORY . "public/downloads/".$redirectToChecksum."/".$redirectToFileName." [R=302] "."\n";
+		$redirectToFileName = str_replace(' ', '\ ', \ze\file::safeName($redirectToFileName));
+		$content .= "	RewriteRule ^".$redirectFromFileName."$ " . SUBDIRECTORY . "public/downloads/".$redirectToChecksum."/". $redirectToFileName ." [R=302] "."\n";
 		$content .= "</IfModule>";
 		fwrite($f, $content);
 		fclose($f);
@@ -358,15 +376,15 @@ class document {
 		//Get files that should have public links and their redirects
 		$sql = "
 			SELECT d.id, d.file_id, f.filename, f.location, f.path, f.short_checksum
-			FROM " . DB_NAME_PREFIX . "documents d
-			INNER JOIN " . DB_NAME_PREFIX . "files f
+			FROM " . DB_PREFIX . "documents d
+			INNER JOIN " . DB_PREFIX . "files f
 				ON d.file_id = f.id
 			WHERE d.type = 'file' 
 			AND d.privacy = 'public'";
 		$result = \ze\sql::select($sql);
 		while($doc = \ze\sql::fetchAssoc($result)) {
 			
-			if ($forceRemake || !file_exists(CMS_ROOT. 'public/downloads/'. $doc['short_checksum']. '/'. $doc['filename'])) {
+			if ($forceRemake || !file_exists(CMS_ROOT. 'public/downloads/'. $doc['short_checksum']. '/'. \ze\file::safeName($doc['filename']))) {
 				//Make public link
 				$publicLink = \ze\document::generatePublicLink($doc['id']);
 			

@@ -52,6 +52,7 @@ site_settings:
                             label: Save forever
                     value: never_delete
         data_encryption:
+            ord: 15
             label: Data encryption
             edit_mode:
                 enabled: true

@@ -19,7 +19,6 @@ zenario_upload_replacement_document:
                     snippet:
                         html: ''
                     post_field_html: '</div>'
-                
                 upload:
                     label: 'Upload replacement document:'
                     upload:

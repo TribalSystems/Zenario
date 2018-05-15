@@ -77,7 +77,7 @@ class zenario_users__admin_boxes__site_settings extends ze\moduleBaseClass {
 				$ZENARIO_COMPANY_LOCATIONS_MANAGER_PREFIX = ze\module::prefix('zenario_company_locations_manager', true);
 				
 				if ($ZENARIO_ORGANIZATION_MANAGER_PREFIX) {
-					$box['lovs']['roles'] = ze\row::getArray($ZENARIO_ORGANIZATION_MANAGER_PREFIX. 'user_location_roles', 'name', [], 'name', 'id');
+					$box['lovs']['roles'] = ze\row::getValues($ZENARIO_ORGANIZATION_MANAGER_PREFIX. 'user_location_roles', 'name', [], 'name', 'id');
 				}
 				
 				//If the dev tools are on, add an example as a site note to each type of permissions check
@@ -104,7 +104,8 @@ class zenario_users__admin_boxes__site_settings extends ze\moduleBaseClass {
 											$onlyIfHasRolesAtAllAssignedLocations = false;
 										
 											//Check if this field is one of the permissions
-											if (ze\user::checkNamedPermExists($fieldId, $directlyAssignedToUser, $hasRoleAtCompany, $hasRoleAtLocation, $hasRoleAtLocationAtCompany, $onlyIfHasRolesAtAllAssignedLocations)) {
+											if (($permName = ze\ring::chopPrefix('perm.', $fieldId))
+											 && (ze\user::checkNamedPermExists($permName, $directlyAssignedToUser, $hasRoleAtCompany, $hasRoleAtLocation, $hasRoleAtLocationAtCompany, $onlyIfHasRolesAtAllAssignedLocations))) {
 											
 												//Break the permission code-name up into chunks
 												$perm = explode('.', $fieldId);
@@ -144,8 +145,8 @@ class zenario_users__admin_boxes__site_settings extends ze\moduleBaseClass {
 				$dataset = ze\dataset::details('users');
 				$sql = '
 					SELECT cdf.id, cdf.db_column, cdf.is_system_field, cdf.type
-					FROM ' . DB_NAME_PREFIX . 'custom_dataset_fields cdf
-					INNER JOIN ' . DB_NAME_PREFIX . 'custom_dataset_tabs cdt
+					FROM ' . DB_PREFIX . 'custom_dataset_fields cdf
+					INNER JOIN ' . DB_PREFIX . 'custom_dataset_tabs cdt
 						ON cdf.tab_name = cdt.name
 						AND cdf.dataset_id = cdt.dataset_id
 					WHERE cdf.dataset_id = ' . (int)$dataset['id'] . '
@@ -166,7 +167,7 @@ class zenario_users__admin_boxes__site_settings extends ze\moduleBaseClass {
 					if ($row['db_column'] == 'password') {
 						$security = 'Encrypted';
 						$comment = '1-way encrypted';
-					} elseif (ze\db::columnIsEncrypted($table, $row['db_column'])) {
+					} elseif (ze::$dbL->columnIsEncrypted($table, $row['db_column'])) {
 						$security = 'Encrypted';
 						$comment = '';
 					} elseif (in_array($row['db_column'], ['salutation', 'first_name', 'last_name', 'screen_name', 'identifier', 'email']) || (!$row['is_system_field'] && $row['type'] == 'text')) {
@@ -188,6 +189,25 @@ class zenario_users__admin_boxes__site_settings extends ze\moduleBaseClass {
 				$html .= '
 					<table>';
 				$fields['data_encryption/dataset_fields']['snippet']['html'] = $html;
+				
+				//Show the number of records currently stored
+				$count = ze\row::count('user_signin_log');
+				$note = ze\admin::nphrase('1 record currently stored.', '[[count]] records currently stored.', $count);
+				
+				if ($count) {
+					$min = ze\row::min('user_signin_log', 'login_datetime');
+					$note .= ' ' . ze\admin::phrase('Oldest record from [[date]].', ['date' => ze\date::formatDateTime($min, '_MEDIUM')]);
+				}
+				$fields['data_protection/period_to_delete_sign_in_log']['note_below'] = $note;
+				
+				$count = ze\row::count('user_content_accesslog');
+				$note = ze\admin::nphrase('1 record currently stored.', '[[count]] records currently stored.', $count);
+				
+				if ($count) {
+					$min = ze\row::min('user_content_accesslog', 'hit_datetime');
+					$note .= ' ' . ze\admin::phrase('Oldest record from [[date]].', ['date' => ze\date::formatDateTime($min, '_MEDIUM')]);
+				}
+				$fields['data_protection/period_to_delete_the_user_content_access_log']['note_below'] = $note;
 				
 				break;
 		}

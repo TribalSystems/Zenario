@@ -251,6 +251,7 @@ zenario_admin:
                     values:
                         _PRIV_BACKUP_SITE:
                             label: Create a backup of the site
+                            label_class: zfab_scary_option
                         _PRIV_RESTORE_SITE:
                             parent: _PRIV_BACKUP_SITE
                             label: Restore the site from a backup

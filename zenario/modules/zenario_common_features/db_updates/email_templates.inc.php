@@ -32,13 +32,11 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 //added into the database using a SQL statement.
 
 ze\dbAdm::revision(217, "
-	INSERT INTO [[DB_NAME_PREFIX]]email_templates (
+	INSERT INTO [[DB_PREFIX]]email_templates (
 		module_class_name,
 		`code`,
 		template_name,
 		`subject`,
-		email_address_from,
-		email_name_from,
 		`body`,
 		date_created,
 		created_by_id,
@@ -48,8 +46,6 @@ ze\dbAdm::revision(217, "
 		'zenario_common_features__notification_to_new_admin_no_password',
 		'Notification to new Admin (no password)',
 		'Your Zenario administrator account',
-		'". ze\escape::sql(ze::setting('email_address_from')). "',
-		'". ze\escape::sql(ze::setting('email_name_from')). "',
 		'<h1>Administrator account created</h1>
 <p>Dear&nbsp;[[first_name]] [[last_name]],</p>
 <p><br>You have been created an administrator account on [[cms_url]].</p>
@@ -72,7 +68,7 @@ ze\dbAdm::revision(217, "
 ",
 
 <<<_sql
-	UPDATE [[DB_NAME_PREFIX]]site_settings
+	UPDATE [[DB_PREFIX]]site_settings
 	SET value = "zenario_common_features__notification_to_new_admin_no_password"
 	WHERE name = "notification_to_new_admin"
 _sql

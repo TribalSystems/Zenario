@@ -35,7 +35,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 //This update will create and/or update the list of document types used for Zenario
  ze\dbAdm::revision( null
 , <<<_sql
-	INSERT INTO `[[DB_NAME_PREFIX]]document_types`
+	INSERT INTO `[[DB_PREFIX]]document_types`
 		(`type`, `mime_type`, `custom`)
 	VALUES
 		('323', 'text/h323', 0),

@@ -3,29 +3,35 @@
 zenario__modules:
     panels:
         plugins:
+            columns:
+                contents:
+                    width: xlarge
+                    title: Contents
+                    always_show: true
+                    only_show_on_refiner:
+                        nests: true
+                        slideshows: true
             item_buttons:
-                # Have two differunt buttons that both go to the nested plugins panel.
+                # Have two different buttons that both go to the nested plugins panel.
                 # (There are two buttons because I want a different label for plugins/slideshows)
                 plugins_in_nest:
-                    parent: view_dropdown
                     priv: _PRIV_VIEW_REUSABLE_PLUGIN
+                    ord: edit.1
                     visible_if: |
                         item.module_class_name == 'zenario_plugin_nest'
-                    label: Plugins in this nest
+                    label: Edit nest's plugins
                     hide_in_select_mode: true
                     link:
                         path: zenario__modules/panels/nested_plugins
-                        branch: true
                         refiner: nest
                 
                 plugins_in_slideshow:
-                    parent: view_dropdown
                     priv: _PRIV_VIEW_REUSABLE_PLUGIN
+                    ord: edit.2
                     visible_if: |
                         item.module_class_name == 'zenario_slideshow'
-                    label: Plugins in this slideshow
+                    label: Edit slideshow's plugins
                     hide_in_select_mode: true
                     link:
                         path: zenario__modules/panels/nested_plugins
-                        branch: true
                         refiner: nest

@@ -38,20 +38,20 @@ class zenario_common_features__admin_boxes__document_properties extends ze\modul
 			$documentName = ze\row::get('documents', 'filename', ['type' => 'file','id' => $documentId]);
 			$box['title'] = ze\admin::phrase('Editing metadata for document "[[filename]]"', ["filename"=>$documentName]);
 			
-			$fields['details/document_title']['value'] = $documentDetails['title'];
+			$values['details/document_title'] = $documentDetails['title'];
 			$extension = pathinfo($documentName, PATHINFO_EXTENSION);
-			$fields['details/document_extension']['value'] = $extension;
-			$fields['details/document_name']['value'] = pathinfo($documentName, PATHINFO_FILENAME);
+			$values['details/document_extension'] = $extension;
+			$values['details/document_name'] = pathinfo($documentName, PATHINFO_FILENAME);
 			$fields['details/document_name']['post_field_html'] = '&nbsp;.' . $extension;
 			$fileDatetime=ze\row::get('documents', 'file_datetime', ['type' => 'file','id' => $documentId]);
-			$fields['details/date_uploaded']['value'] = date('jS F Y H:i', strtotime($fileDatetime));
+			$values['details/date_uploaded'] = $fileDatetime;
 			
 			if (ze::setting('enable_document_tags')) {
-				$documentTags = ze\row::getArray('document_tag_link', 'tag_id', ['document_id' => $documentId]);
+				$documentTags = ze\row::getValues('document_tag_link', 'tag_id', ['document_id' => $documentId]);
 				foreach ($documentTags as $tag) {
 					$documentTagsString .= $tag . ",";
 				}
-				$fields['details/tags']['value'] = $documentTagsString;
+				$values['details/tags'] = $documentTagsString;
 				$fields['details/link_to_add_tags']['snippet']['html'] = 
 						ze\admin::phrase('To add or edit document tags click <a[[link]]>this link</a>.',
 							['link' => ' href="'. htmlspecialchars(ze\link::absolute(). 'zenario/admin/organizer.php#zenario__content/panels/document_tags'). '" target="_blank"']);
@@ -59,8 +59,8 @@ class zenario_common_features__admin_boxes__document_properties extends ze\modul
 				$fields['details/tags']['hidden'] = true;
 			}
 			
-			$fields['extract/extract_wordcount']['value'] = $documentDetails['extract_wordcount'];
-			$fields['extract/extract']['value'] = ($documentDetails['extract'] ? $documentDetails['extract']: 'No plain-text extract');
+			$values['extract/extract_wordcount'] = $documentDetails['extract_wordcount'];
+			$values['extract/extract'] = ($documentDetails['extract'] ? $documentDetails['extract']: 'No plain-text extract');
 			
 			// Add a preview image for JPEG/PNG/GIF images 
 			if (!empty($documentDetails['thumbnail_id'])) {
@@ -74,6 +74,9 @@ class zenario_common_features__admin_boxes__document_properties extends ze\modul
 					$fields['upload_image/thumbnail_image']['snippet']['html'] = ze\admin::phrase('No thumbnail avaliable');
 				}
 			}
+			
+			//Get privacy settings
+			$values['details/privacy'] = ze\row::get('documents', 'privacy', ['id' => $box['key']['id']]);
 		}
 	}
 	
@@ -93,15 +96,14 @@ class zenario_common_features__admin_boxes__document_properties extends ze\modul
 			$box['tabs']['details']['errors'][] = ze\admin::phrase('Please enter a filename.');
 		} else {
 			// Stop forward slashes being used in filenames
-			$slashPos = strpos($newDocumentName, '/');
-			if ($slashPos !== false) {
-				$box['tabs']['details']['errors'][] = ze\admin::phrase('Your filename cannot contain forward slashes (/).');
+			if ($newDocumentName !== ze\file::safeName($newDocumentName)) {
+				$box['tabs']['details']['errors'][] = ze\admin::phrase('Your filename cannot contain illegal characters, e.g. /, \\, :, *, ?, ", <, > or |');
 			}
 		}
 		
 		$sql =  "
 			SELECT id
-			FROM ".DB_NAME_PREFIX."documents
+			FROM ".DB_PREFIX."documents
 			WHERE type = 'file' 
 			AND folder_id = ". (int) $parentfolderId. "
 			AND filename = '". ze\escape::sql($newDocumentName). "' 
@@ -122,8 +124,9 @@ class zenario_common_features__admin_boxes__document_properties extends ze\modul
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		$documentId = $box['key']['id'];
 		$documentTitle = $values['details/document_title'];
+		$documentPrivacy = $values['details/privacy'];
 		
-		$document = ze\row::get('documents', ['filename', 'file_id', 'title'], ['id' => $documentId]);
+		$document = ze\row::get('documents', ['filename', 'file_id', 'title', 'id', 'privacy'], ['id' => $documentId]);
 		$file = ze\row::get('files', ['id', 'filename', 'path', 'created_datetime', 'short_checksum'], $document['file_id']);
 		
 		$oldDocumentName = $document['filename'];
@@ -143,10 +146,18 @@ class zenario_common_features__admin_boxes__document_properties extends ze\modul
 			}
 			
 			//Documents with the same file must have the same filename for now or the public link would break.
-			ze\row::update('documents', ['filename' => $documentName], ['file_id' => $document['file_id']]);
+			ze\row::update('documents', ['filename' => $documentName], ['id' => $document['id']]);
 			
 			//Update any htaccess files to redirect to the new path
 			ze\document::remakeRedirectHtaccessFiles($documentId);
+			
+			//Check if there are any other documents with the old name, and regenerate their links if necessary
+			$otherDocsWithOldName = ze\row::getArray('documents', 'id', ['file_id' => $document['file_id'], 'privacy' => 'public']);
+			if (isset($otherDocsWithOldName)) {
+				foreach ($otherDocsWithOldName as $docWithOldName) {
+					ze\document::generatePublicLink($docWithOldName);
+				}
+			}
 		}
 		
 		if ($document['title'] != $documentTitle) {
@@ -154,7 +165,7 @@ class zenario_common_features__admin_boxes__document_properties extends ze\modul
 		}
 		
 		//Save document thumbnail image
-		$old_image = ze\row::getArray('documents', 'file_id', $documentId);
+		$old_image = ze\row::getValues('documents', 'file_id', $documentId);
 		$new_image = $values['zenario_common_feature__upload'];
 		
 		if ($new_image) {
@@ -178,6 +189,17 @@ class zenario_common_features__admin_boxes__document_properties extends ze\modul
 			ze\row::set('document_tag_link', 
 				['tag_id' => $tagId, 'document_id' => $documentId], 
 				['tag_id' => $tagId, 'document_id' => $documentId]);
+		}
+		
+		//Update document privacy settings
+		ze\row::update('documents', ['privacy' => $documentPrivacy], ['id' => $documentId]);
+		
+		//Generate public link if the document is public...
+		if ($documentPrivacy == 'public') {
+			ze\document::generatePublicLink($documentId);
+		//... or delete public link if the document is private or offline.
+		} else {
+			ze\document::deletePublicLink($documentId);
 		}
 	}
 	

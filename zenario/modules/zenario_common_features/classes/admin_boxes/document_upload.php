@@ -40,7 +40,7 @@ class zenario_common_features__admin_boxes__document_upload extends ze\moduleBas
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
 		if ($values['upload_document/document__upload'] == "") {
-			$box['tabs']['upload_document']['errors'][] = ze\admin::phrase('Select a document');
+			$box['tabs']['upload_document']['errors'][] = ze\admin::phrase('Select a document.');
 		}
 		
 		$documentsUploaded = explode(',',$values['upload_document/document__upload']);
@@ -53,11 +53,11 @@ class zenario_common_features__admin_boxes__document_upload extends ze\moduleBas
 				$filename = basename(ze\file::getPathOfUploadInCacheDir($document));
 			}
 			if ($documentNameList){
-					if (in_array($filename,$documentNameList)){
-						$found=true;
-					}else{
-						$documentNameList[]=$filename;
-					}
+				if (in_array($filename,$documentNameList)){
+					$found=true;
+				}else{
+					$documentNameList[]=$filename;
+				}
 			}else{
 				$documentNameList[]=$filename;
 			}
@@ -75,7 +75,7 @@ class zenario_common_features__admin_boxes__document_upload extends ze\moduleBas
 		
 		$sql="
 			SELECT filename
-			FROM ".DB_NAME_PREFIX."documents
+			FROM ".DB_PREFIX."documents
 			WHERE folder_id = ".(int)$parentfolderId;
 			
 		$result = ze\sql::select($sql);
@@ -98,22 +98,21 @@ class zenario_common_features__admin_boxes__document_upload extends ze\moduleBas
 		$inFolder = ze\row::get('documents', 'id', ['id' => $box['key']['id'], 'type' => 'folder']);
 		$folderId = $inFolder ? $box['key']['id'] : false;
 		
+		//Get selected privacy setting
+		$privacy = $box['tabs']['upload_document']['fields']['privacy']['current_value'];
+		
 		$documentsUploaded = explode(',',$values['upload_document/document__upload']);
 		$documentId = false;
 		foreach ($documentsUploaded as $document) {
-			if (is_numeric($document)) {
-				$filename = ze\row::get('files', 'filename', $document);
-				$documentId = zenario_common_features::createDocument($document, $filename, $folderId);
-			} else {
-				$filepath = ze\file::getPathOfUploadInCacheDir($document);
-				$filename = basename(ze\file::getPathOfUploadInCacheDir($document));
-				
-				if ($filepath && $filename) {
-					$documentId = ze\document::upload($filepath, $filename, $folderId);
-				}
+			$filepath = ze\file::getPathOfUploadInCacheDir($document);
+			$filename = basename(ze\file::getPathOfUploadInCacheDir($document));
+			
+			if ($filepath && $filename) {
+				$documentId = ze\document::upload($filepath, $filename, $folderId, $privacy);
 			}
 		}
 		$box['key']['id'] = $documentId;
+		
 	}
 	
 }

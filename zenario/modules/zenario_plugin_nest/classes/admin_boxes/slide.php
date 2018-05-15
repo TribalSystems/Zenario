@@ -10,10 +10,6 @@ class zenario_plugin_nest__admin_boxes__slide extends zenario_plugin_nest {
 		if (empty(ze::$vars)) {
 			require ze::editionInclude('checkRequestVars');
 		}
-		$box['lovs']['coreVars'] = !empty($box['lovs']['coreVars']) ? $box['lovs']['coreVars'] : [];
-		foreach (ze::$vars as $key => $val) {
-			$box['lovs']['coreVars'][$key] = $key;
-		}
 		
 		//Catch the case where we open this up from the conductor
 		if ($box['key']['slideId']) {
@@ -69,17 +65,9 @@ class zenario_plugin_nest__admin_boxes__slide extends zenario_plugin_nest {
 				$values['details/always_visible_to_admins'] = $details['always_visible_to_admins'];
 		
 				$values['details/group_ids'] =
-					ze\escape::in(ze\row::getArray('group_link', 'link_to_id', ['link_to' => 'group', 'link_from' => 'slide', 'link_from_id' => $box['key']['id']]), true);
+					ze\escape::in(ze\row::getValues('group_link', 'link_to_id', ['link_to' => 'group', 'link_from' => 'slide', 'link_from_id' => $box['key']['id']]), true);
 				$values['details/role_ids'] =
-					ze\escape::in(ze\row::getArray('group_link', 'link_to_id', ['link_to' => 'role', 'link_from' => 'slide', 'link_from_id' => $box['key']['id']]), true);
-			}
-			
-			//Split the request variables up by commas, and populate up to three values in the select lists
-			$requestVars = ze\ray::explodeAndTrim($details['request_vars']);
-			for ($i = 0; $i < 5; ++$i) {
-				if (!empty($requestVars[$i])) {
-					$values['details/request_vars'. $i] = $requestVars[$i];
-				}
+					ze\escape::in(ze\row::getValues('group_link', 'link_to_id', ['link_to' => 'role', 'link_from' => 'slide', 'link_from_id' => $box['key']['id']]), true);
 			}
 			
 			
@@ -146,7 +134,7 @@ class zenario_plugin_nest__admin_boxes__slide extends zenario_plugin_nest {
 		$fields['details/group_ids']['values'] = ze\datasetAdm::getGroupPickerCheckboxesForFAB();
 		
 		if ($ZENARIO_ORGANIZATION_MANAGER_PREFIX = ze\module::prefix('zenario_organization_manager')) {
-			$fields['details/role_ids']['values'] = ze\row::getArray($ZENARIO_ORGANIZATION_MANAGER_PREFIX. 'user_location_roles', 'name', [], 'name');
+			$fields['details/role_ids']['values'] = ze\row::getValues($ZENARIO_ORGANIZATION_MANAGER_PREFIX. 'user_location_roles', 'name', [], 'name');
 		} else {
 			$fields['details/role_ids']['hidden'] =
 			$fields['details/privacy']['values']['with_role']['hidden'] = true;
@@ -235,7 +223,6 @@ class zenario_plugin_nest__admin_boxes__slide extends zenario_plugin_nest {
 			'show_refresh' => 0,
 			'show_auto_refresh' => 0,
 			'auto_refresh_interval' => 60,
-			'request_vars' => '',
 			'global_command' => ''
 		];
 		
@@ -254,15 +241,6 @@ class zenario_plugin_nest__admin_boxes__slide extends zenario_plugin_nest {
 				}
 			}
 			$details['global_command'] = $values['details/global_command'];
-			$details['request_vars'] = '';
-			
-			for ($i = 0; $i < 5; ++$i) {
-				if ($values['details/request_vars'. $i]) {
-					$details['request_vars'] .= ($i? ',' : ''). $values['details/request_vars'. $i];
-				} else {
-					break;
-				}
-			}
 		}
 		
 		switch ($details['privacy']) {
@@ -294,6 +272,8 @@ class zenario_plugin_nest__admin_boxes__slide extends zenario_plugin_nest {
 		} else {
 			ze\row::delete('group_link', $key);
 		}
+		
+		ze\pluginAdm::calcConductorHierarchy($box['key']['instanceId']);
 	}
 	
 	public function adminBoxSaveCompleted($path, $settingGroup, &$box, &$fields, &$values, $changes) {

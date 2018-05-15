@@ -44,10 +44,10 @@ if (isset($controls['actions']['settings']['onclick'])) {
 		if (isset($controls['actions']['framework_and_css'])) {
 			$controls['actions']['framework_and_css']['label'] = ze\admin::phrase('Slideshow CSS & framework');
 		}
-		$controls['actions']['settings']['label'] = ze\admin::phrase('Slideshow properties');
+		$controls['actions']['settings']['label'] = ze\admin::phrase('Slideshow settings');
 		
 		if ($existingPlugins) {
-			$controls['actions']['nested_plugins']['label'] = ze\admin::phrase('Edit plugins in slideshow');
+			$controls['actions']['nested_plugins']['label'] = ze\admin::phrase('Add/edit plugins in slideshow');
 		} else {
 			$controls['actions']['nested_plugins']['label'] = ze\admin::phrase('Add plugins to this slideshow');
 		}
@@ -58,10 +58,10 @@ if (isset($controls['actions']['settings']['onclick'])) {
 		if (isset($controls['actions']['framework_and_css'])) {
 			$controls['actions']['framework_and_css']['label'] = ze\admin::phrase('Nest CSS & framework');
 		}
-		$controls['actions']['settings']['label'] = ze\admin::phrase('Nest properties');
+		$controls['actions']['settings']['label'] = ze\admin::phrase('Nest settings');
 		
 		if ($existingPlugins) {
-			$controls['actions']['nested_plugins']['label'] = ze\admin::phrase('Edit plugins in nest');
+			$controls['actions']['nested_plugins']['label'] = ze\admin::phrase('Add/edit plugins in nest');
 		} else {
 			$controls['actions']['nested_plugins']['label'] = ze\admin::phrase('Add plugins to this nest');
 		}
@@ -72,7 +72,7 @@ if (isset($controls['actions']['settings']['onclick'])) {
 		$selectedId = (int) $this->slideId;
 	}
 	
-	$controls['actions']['nested_plugins']['ord'] = -2;
+	$controls['actions']['nested_plugins']['ord'] = 61;
 	$controls['actions']['nested_plugins']['onclick'] = "
 		return zenarioAT.organizerQuick(
 			'zenario__modules/panels/modules/item//". (int) $this->moduleId. "//item_buttons/". $buttonName. "//". (int) $this->instanceId. "//". $selectedId. "',
@@ -89,7 +89,7 @@ if (isset($controls['actions']['settings']['onclick'])) {
 		
 		$controls['actions']['edit_slide'] = $controls['actions']['settings'];
 		
-		$controls['actions']['edit_slide']['ord'] = -1;
+		$controls['actions']['edit_slide']['ord'] = 62;
 		$controls['actions']['edit_slide']['label'] = ze\admin::phrase('Slide properties (slide [[slideNum]])', ['slideNum' => $this->slideNum]);
 		$controls['actions']['edit_slide']['onclick'] = "
 			var isVersionControlled = ". ze\ring::engToBoolean($this->isVersionControlled). ";
@@ -125,7 +125,4 @@ if (isset($controls['actions']['settings']['onclick'])) {
 	//		". ze\ring::engToBoolean($this->isVersionControlled). ",
 	//		this);";
 	//}
-	
-	//Hide the regular settings button
-	unset($controls['actions']['settings']);
 }

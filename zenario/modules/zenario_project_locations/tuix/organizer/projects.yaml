@@ -6,8 +6,8 @@ zenario__projects:
                 view_mode: list
                 db_items: 
                     table: |
-                        [[DB_NAME_PREFIX]][[ZENARIO_PROJECT_LOCATIONS_PREFIX]]project_locations AS l
-                        LEFT JOIN [[DB_NAME_PREFIX]]files AS f
+                        [[DB_PREFIX]][[ZENARIO_PROJECT_LOCATIONS_PREFIX]]project_locations AS l
+                        LEFT JOIN [[DB_PREFIX]]files AS f
                         ON l.image_id = f.id
                     id_column: l.id
                 item:
@@ -90,14 +90,14 @@ zenario__projects:
                         title: Country
                         db_column: c.english_name
                         table_join: >
-                            [[DB_NAME_PREFIX]][[ZENARIO_COUNTRY_MANAGER_PREFIX]]country_manager_countries c
+                            [[DB_PREFIX]][[ZENARIO_COUNTRY_MANAGER_PREFIX]]country_manager_countries c
                             ON l.country_id = c.id
                         show_by_default: Yes
                         searchable: Yes
                     region: 
                         title: Region
                         table_join: >
-                            LEFT JOIN [[DB_NAME_PREFIX]][[ZENARIO_COUNTRY_MANAGER_PREFIX]]country_manager_regions r
+                            LEFT JOIN [[DB_PREFIX]][[ZENARIO_COUNTRY_MANAGER_PREFIX]]country_manager_regions r
                             ON l.region_id = r.id
                         db_column: >
                             r.name
@@ -121,8 +121,8 @@ zenario__projects:
                         db_column: >
                             (
                                 SELECT GROUP_CONCAT(DISTINCT s.name ORDER BY s.name SEPARATOR ', ')
-                                FROM [[DB_NAME_PREFIX]][[ZENARIO_PROJECT_LOCATIONS_PREFIX]]project_location_sector_link AS lssl
-                                INNER JOIN [[DB_NAME_PREFIX]][[ZENARIO_PROJECT_LOCATIONS_PREFIX]]project_location_sectors s
+                                FROM [[DB_PREFIX]][[ZENARIO_PROJECT_LOCATIONS_PREFIX]]project_location_sector_link AS lssl
+                                INNER JOIN [[DB_PREFIX]][[ZENARIO_PROJECT_LOCATIONS_PREFIX]]project_location_sectors s
                                 ON lssl.sector_id = s.id
                                 WHERE l.id = lssl.project_location_id
                             )   
@@ -133,8 +133,8 @@ zenario__projects:
                         db_column: >
                             (
                                 SELECT GROUP_CONCAT(DISTINCT s.name ORDER BY s.name SEPARATOR ', ')
-                                FROM [[DB_NAME_PREFIX]][[ZENARIO_PROJECT_LOCATIONS_PREFIX]]project_location_service_link AS lssl
-                                INNER JOIN [[DB_NAME_PREFIX]][[ZENARIO_PROJECT_LOCATIONS_PREFIX]]project_location_services s
+                                FROM [[DB_PREFIX]][[ZENARIO_PROJECT_LOCATIONS_PREFIX]]project_location_service_link AS lssl
+                                INNER JOIN [[DB_PREFIX]][[ZENARIO_PROJECT_LOCATIONS_PREFIX]]project_location_services s
                                 ON lssl.service_id = s.id
                                 WHERE l.id = lssl.project_location_id
                             )   

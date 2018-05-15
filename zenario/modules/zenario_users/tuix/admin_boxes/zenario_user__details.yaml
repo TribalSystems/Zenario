@@ -14,6 +14,11 @@ zenario_user__details:
             edit_mode:
                 priv: _PRIV_EDIT_USER
                 enabled: Yes
+            notices:
+                password_expired:
+                    show: false
+                    message: This user's password has expired. Reset their password to give the user more time to login.
+                    type: warning
             fields:
                 email: 
                     label: "Email"
@@ -201,7 +206,6 @@ zenario_user__details:
                 terms_and_conditions_accepted:
                     visible_if: |
                         zenarioAB.value('status', 'details')
-                        && zenarioAB.value('status', 'details') != 'contact'
                     label: "User has accepted terms and conditions"
                     side_note: "When checked, this indicates the user has accepted the site's terms and conditions; when unchecked, they will be asked to accept them when they next logs in."
                     type: checkbox
@@ -236,7 +240,7 @@ zenario_user__details:
         dates:
             visible_if: |
                 zenarioAB.tuix.key.id
-            label: Dates
+            label: Dates/History
             fields:
                 created_date: 
                     label: "Created Date"
@@ -269,3 +273,7 @@ zenario_user__details:
                     type: date
                     change_month_and_year: true
                     readonly: true
+                consents_log:
+                    label: Consents log
+                    snippet:
+                        html: 'No consents recorded for this user.'

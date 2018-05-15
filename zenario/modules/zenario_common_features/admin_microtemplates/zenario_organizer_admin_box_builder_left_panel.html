@@ -3,25 +3,26 @@
 		<div class="field_type_list_header field_type_section">
 			<h5>Add fields</h5>
 		</div>
-		<h6>Standard</h6>
+		<h6>Simple</h6>
+		<div class="field_type_list field_type_section">
+			<div class="field_type" data-type="text"><span class="text"></span><h4>Text</h4></div>
+			<div class="field_type" data-type="textarea"><span class="textarea"></span><h4>Textarea</h4></div>
+			<div class="field_type" data-type="checkbox"><span class="checkbox"></span><h4>Checkbox</h4></div>
+			<div class="field_type" data-type="checkboxes"><span class="checkboxes"></span><h4>Checkbox group</h4></div>
+			<div class="field_type" data-type="select"><span class="select"></span><h4>Select list</h4></div>
+			<div class="field_type" data-type="radios"><span class="radios"></span><h4>Radios</h4></div>
+		</div>
+		<h6>Fancy</h6>
 		<div class="field_type_list field_type_section">
 			<% if (m.use_groups_field) { %>
 				<div class="field_type" data-type="group"><span class="group"></span><h4>Group</h4></div>
+				<div class="field_type" data-type="consent"><span class="consent"></span><h4>Consent</h4></div>
 			<% } %>
-			<div class="field_type" data-type="checkbox"><span class="flag"></span><h4>Flag</h4></div>
-			<div class="field_type" data-type="text"><span class="text"></span><h4>Text</h4></div>
-			<div class="field_type" data-type="textarea"><span class="textarea"></span><h4>Textarea</h4></div>
-			<div class="field_type" data-type="select"><span class="select"></span><h4>Select list</h4></div>
-			<div class="field_type" data-type="radios"><span class="radios"></span><h4>Radios</h4></div>
-			<div class="field_type" data-type="checkboxes"><span class="checkboxes"></span><h4>Checkboxes</h4></div>
-			<div class="field_type" data-type="repeat_start"><span class="repeat_start"></span><h4>Repeat block</h4></div>
-		</div>
-		<h6>Special</h6>
-		<div class="field_type_list field_type_section">
 			<div class="field_type" data-type="date"><span class="date"></span><h4>Date</h4></div>
 			<div class="field_type" data-type="url"><span class="url"></span><h4>URL</h4></div>
 			<div class="field_type" data-type="editor"><span class="editor"></span><h4>Editor</h4></div>
 			<div class="field_type" data-type="file_picker"><span class="file_picker"></span><h4>File picker</h4></div>
+			<div class="field_type" data-type="repeat_start"><span class="repeat_start"></span><h4>Repeating section</h4></div>
 		</div>
 		<h6>Centralised data source</h6>
 		<div id="organizer_centralised_field_type_list" class="field_type_list field_type_section">
@@ -40,7 +41,7 @@
 						<h5>{{m.field_label|e}}</h5>
 					</div>
 					<div class="field_buttons">
-						<span class="add_new_field">Add new field</span>
+						<span class="add_new_field">Done</span>
 					</div>
 					<div class="field_info">
 						<span class="field_type_message">{{m.type|e}} {{m.record_count|e}}</span>
@@ -69,7 +70,7 @@
 						<h5>{{m.tab_label|e}}</h5>
 					</div>
 					<div class="field_buttons">
-						<span class="add_new_field">Add new field</span>
+						<span class="add_new_field">Done</span>
 					</div>
 				</div>
 			</div>

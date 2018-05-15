@@ -71,7 +71,7 @@ class user {
 	
 		//Look up a list of group names on the system
 		if (!is_array(\ze::$groups)) {
-			\ze::$groups = \ze\row::getArray('custom_dataset_fields', ['id', 'label', 'db_column'], ['type' => 'group', 'is_system_field' => 0], 'db_column', 'db_column');
+			\ze::$groups = \ze\row::getAssocs('custom_dataset_fields', ['id', 'label', 'db_column'], ['type' => 'group', 'is_system_field' => 0], 'db_column', 'db_column');
 		}
 	
 		if (!empty(\ze::$groups)) {
@@ -186,8 +186,7 @@ class user {
 				$admin = \ze\row::get('admins', ['modified_date'], ['authtype' => 'local', 'id' => $_SESSION['admin_userid'], 'status' => 'active']);
 		
 			} elseif (\ze\db::connectGlobal()) {
-				$admin = \ze\row::get('admins', ['modified_date'], ['authtype' => 'local', 'id' => $_SESSION['admin_global_id'], 'status' => 'active']);
-				\ze\db::connectLocal();
+				$admin = \ze\rowGlobal::get('admins', ['modified_date'], ['authtype' => 'local', 'id' => $_SESSION['admin_global_id'], 'status' => 'active']);
 			}
 		
 			//If not, log them out
@@ -334,11 +333,7 @@ class user {
 	
 		if (!$impersonate) {
 			//Update their last login time
-			$sql = "
-				UPDATE [users AS u] SET
-					last_login = NOW()
-				WHERE id = [0]";
-			\ze\sql::update($sql, [$userId]);
+			\ze\row::update('users', ['last_login' => \ze\date::now()], $userId);
 		
 	
 			if(\ze::setting('period_to_delete_sign_in_log') != 'never_save'){
@@ -351,7 +346,7 @@ class user {
 						$date = date('Y-m-d', strtotime('-'.$days.' day', strtotime($today)));
 						if($date){
 							$sql = " 
-								DELETE FROM ". DB_NAME_PREFIX. "user_signin_log
+								DELETE FROM ". DB_PREFIX. "user_signin_log
 								WHERE login_datetime < '".\ze\escape::sql($date)."'";
 							\ze\sql::update($sql);
 						}
@@ -359,7 +354,7 @@ class user {
 				}
 		
 				$sql = "
-					INSERT INTO ". DB_NAME_PREFIX. "user_signin_log SET
+					INSERT INTO ". DB_PREFIX. "user_signin_log SET
 						user_id = ". (int)  \ze\escape::sql($userId).",
 						login_datetime = NOW(),
 						browser = '". \ze\escape::sql($browser->getBrowser()). "',
@@ -428,6 +423,19 @@ class user {
 			return false;
 		}
 	}
+	
+	public static function isPasswordExpired($userId) {
+		$sql = "
+			SELECT
+				(
+					password_needs_changing
+					AND reset_password_time <= DATE_SUB(NOW(), INTERVAL ". ((int) \ze::setting('temp_password_timeout') ?: 14). " DAY)
+				) AS password_expired
+			FROM " . DB_PREFIX . "users as u
+			WHERE id = " . (int)$userId;
+		$user = \ze\sql::fetchAssoc($sql);
+		return $user && $user['password_expired'];
+	}
 
 
 	//Formerly "checkNamedUserPermExists()"
@@ -452,6 +460,8 @@ class user {
 			case 'export.allData':
 			//Recalculate all of the asset data on a site
 			case 'recalculate.allData':
+			//View invoices
+			case 'view.invoice':
 				//Superusers only
 				return true;
 			case 'view.company':
@@ -562,7 +572,7 @@ class user {
 	public static function permSetting($name) {
 		
 		return \ze\sql::fetchValue(
-			"SELECT value FROM ". DB_NAME_PREFIX. "user_perm_settings WHERE name = '". \ze\escape::sql($name). "'"
+			"SELECT value FROM ". DB_PREFIX. "user_perm_settings WHERE name = '". \ze\escape::sql($name). "'"
 		);
 	}
 
@@ -832,7 +842,7 @@ class user {
 		if ($isAW && ($ASSETWOLF_2_PREFIX = \ze\module::prefix('assetwolf_2', true))) {
 			if ($row = \ze\sql::fetchRow("
 				SELECT owner_type, owner_id
-				FROM ". DB_NAME_PREFIX. $ASSETWOLF_2_PREFIX. $awTable. "
+				FROM ". DB_PREFIX. $ASSETWOLF_2_PREFIX. $awTable. "
 				WHERE ". $awIdCol. " = ". (int) $targetId
 			)) {
 				switch ($row[0]) {
@@ -858,8 +868,8 @@ class user {
 		if ($hasRoleAtCompany && $companyId && $ZENARIO_ORGANIZATION_MANAGER_PREFIX && $ZENARIO_COMPANY_LOCATIONS_MANAGER_PREFIX) {
 			$sql = "
 				SELECT 1
-				FROM ". DB_NAME_PREFIX. $ZENARIO_ORGANIZATION_MANAGER_PREFIX. "user_role_location_link AS urll
-				". ($onlyIfHasRolesAtAllAssignedLocations? "LEFT" : "INNER"). " JOIN ". DB_NAME_PREFIX. $ZENARIO_COMPANY_LOCATIONS_MANAGER_PREFIX. "company_location_link AS cll
+				FROM ". DB_PREFIX. $ZENARIO_ORGANIZATION_MANAGER_PREFIX. "user_role_location_link AS urll
+				". ($onlyIfHasRolesAtAllAssignedLocations? "LEFT" : "INNER"). " JOIN ". DB_PREFIX. $ZENARIO_COMPANY_LOCATIONS_MANAGER_PREFIX. "company_location_link AS cll
 				   ON cll.company_id = ". (int) $companyId. "
 				  AND urll.location_id = cll.location_id
 				WHERE urll.user_id = ". (int) $authenticatingUserId;
@@ -885,7 +895,7 @@ class user {
 			if ($locationId && !$isUserCheck) {
 				$sql = "
 					SELECT 1
-					FROM ". DB_NAME_PREFIX. $ZENARIO_ORGANIZATION_MANAGER_PREFIX. "user_role_location_link
+					FROM ". DB_PREFIX. $ZENARIO_ORGANIZATION_MANAGER_PREFIX. "user_role_location_link
 					WHERE location_id = ". (int) $locationId. "
 					  AND user_id = ". (int) $authenticatingUserId;
 		
@@ -906,9 +916,9 @@ class user {
 				//Also, if we're following ONLY logic, check that they are not at any other company
 				$sql = "
 					SELECT ". ($onlyIfHasRolesAtAllAssignedLocations? "cur.user_id IS NOT NULL" : "1"). "
-					FROM ". DB_NAME_PREFIX. $ZENARIO_ORGANIZATION_MANAGER_PREFIX. "user_role_location_link AS tar
+					FROM ". DB_PREFIX. $ZENARIO_ORGANIZATION_MANAGER_PREFIX. "user_role_location_link AS tar
 					". ($onlyIfHasRolesAtAllAssignedLocations? "LEFT" : "INNER"). "
-					JOIN ". DB_NAME_PREFIX. $ZENARIO_ORGANIZATION_MANAGER_PREFIX. "user_role_location_link AS cur
+					JOIN ". DB_PREFIX. $ZENARIO_ORGANIZATION_MANAGER_PREFIX. "user_role_location_link AS cur
 					   ON cur.user_id = ". (int) $authenticatingUserId;
 		
 				if ($roleId) {
@@ -937,15 +947,15 @@ class user {
 				//Look up the company id up from the location
 				$sql = "
 					SELECT company_id
-					FROM ". DB_NAME_PREFIX. $ZENARIO_COMPANY_LOCATIONS_MANAGER_PREFIX. "company_location_link
+					FROM ". DB_PREFIX. $ZENARIO_COMPANY_LOCATIONS_MANAGER_PREFIX. "company_location_link
 					WHERE location_id = ". (int) $locationId;
 				if ($companyId = \ze\sql::fetchValue($sql)) {
 				
 					//Check if the current user is at any location in this company
 					$sql = "
 						SELECT 1
-						FROM ". DB_NAME_PREFIX. $ZENARIO_ORGANIZATION_MANAGER_PREFIX. "user_role_location_link AS urll
-						INNER JOIN ". DB_NAME_PREFIX. $ZENARIO_COMPANY_LOCATIONS_MANAGER_PREFIX. "company_location_link AS cll
+						FROM ". DB_PREFIX. $ZENARIO_ORGANIZATION_MANAGER_PREFIX. "user_role_location_link AS urll
+						INNER JOIN ". DB_PREFIX. $ZENARIO_COMPANY_LOCATIONS_MANAGER_PREFIX. "company_location_link AS cll
 						   ON cll.company_id = ". (int) $companyId. "
 						  AND urll.location_id = cll.location_id
 						WHERE urll.user_id = ". (int) $authenticatingUserId;
@@ -967,8 +977,8 @@ class user {
 				//Look up every company that the current user is assigned to
 				$sql = "
 					SELECT DISTINCT company_id
-					FROM ". DB_NAME_PREFIX. $ZENARIO_ORGANIZATION_MANAGER_PREFIX. "user_role_location_link AS urll
-					INNER JOIN ". DB_NAME_PREFIX. $ZENARIO_COMPANY_LOCATIONS_MANAGER_PREFIX. "company_location_link AS cll
+					FROM ". DB_PREFIX. $ZENARIO_ORGANIZATION_MANAGER_PREFIX. "user_role_location_link AS urll
+					INNER JOIN ". DB_PREFIX. $ZENARIO_COMPANY_LOCATIONS_MANAGER_PREFIX. "company_location_link AS cll
 					   ON urll.location_id = cll.location_id
 					WHERE urll.user_id = ". (int) $authenticatingUserId;
 		
@@ -982,9 +992,9 @@ class user {
 					//Also, if we're following ONLY logic, check that they are not at any other company
 					$sql = "
 						SELECT ". ($onlyIfHasRolesAtAllAssignedLocations? "cll.company_id IS NOT NULL" : "1"). "
-						FROM ". DB_NAME_PREFIX. $ZENARIO_ORGANIZATION_MANAGER_PREFIX. "user_role_location_link AS urll
+						FROM ". DB_PREFIX. $ZENARIO_ORGANIZATION_MANAGER_PREFIX. "user_role_location_link AS urll
 						". ($onlyIfHasRolesAtAllAssignedLocations? "LEFT" : "INNER"). "
-						JOIN ". DB_NAME_PREFIX. $ZENARIO_COMPANY_LOCATIONS_MANAGER_PREFIX. "company_location_link AS cll
+						JOIN ". DB_PREFIX. $ZENARIO_COMPANY_LOCATIONS_MANAGER_PREFIX. "company_location_link AS cll
 						   ON cll.company_id IN (". \ze\escape::in($companyIds, true). ")
 						  AND urll.location_id = cll.location_id
 						WHERE urll.user_id = ". (int) $targetId. "
@@ -1154,6 +1164,21 @@ class user {
 			$timezone = false;
 		}
 		return $timezone;
+	}
+	
+	public static function recordConsent($userId, $email, $firstName, $lastName, $label = '') {
+		\ze\row::insert(
+			'consents', 
+			[
+				'datetime' => date('Y-m-d H:i:s'), 
+				'user_id' => $userId, 
+				'ip_address' => \ze\user::ip(),
+				'email' => mb_substr($email, 0, 255, 'UTF-8'),
+				'first_name' => mb_substr($firstName, 0, 255, 'UTF-8'),
+				'last_name' => mb_substr($lastName, 0, 255, 'UTF-8'),
+				'label' => mb_substr($label, 0, 250, 'UTF-8')
+			]
+		);
 	}
 
 }

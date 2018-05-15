@@ -33,7 +33,7 @@ if (ze\dbAdm::needRevision(120)) {
 	//Get the body text from the newsletters
 	$sql = "
 		SELECT id, code, body
-		FROM ". DB_NAME_PREFIX. "email_templates
+		FROM ". DB_PREFIX. "email_templates
 		WHERE body LIKE '%file.php%'";
 	$result = ze\sql::select($sql);
 	

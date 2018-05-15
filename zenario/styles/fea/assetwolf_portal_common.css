@@ -98,12 +98,12 @@ body .zenario_skin select.assetwolf_input_keys option,
 .zfea.zfea_assetwolf_data_schema table input[id*="key__"],
 .zfea.zfea_assetwolf_data_schema table label[id*="label__key__"],
 .zfea.zfea_assetwolf_data_schema .zfea_form_row.zfea_form_row__calculated__th_key table textarea[id*="calc_code__calculated"],
-.zfea_assetwolf_edit_schema table input[id*="alias_"],
-.zfea_assetwolf_edit_schema table tr td.current_value_col,
+.zfea_aw_schema_or_metric table input[id*="alias_"],
+.zfea_aw_schema_or_metric table tr td.current_value_col,
 .zfea_assetwolf_view_schema table tr td span[id*="__key__"],
-.zfea_assetwolf_edit_schema table tr td span[id*="__key__"],
+.zfea_aw_schema_or_metric table tr td span[id*="__key__"],
 .zfea_assetwolf_view_schema table tr td span[id*="__alias__"],
-.zfea_assetwolf_edit_schema table tr td span[id*="__alias__"] {
+.zfea_aw_schema_or_metric table tr td span[id*="__alias__"] {
 	font-family:"Courier New", Courier, monospace;
 }
 
@@ -298,27 +298,27 @@ table tr td.no_items_message:last-child {
 /* Assetwolf Edit schema
 --------------------------------------------------------------------------------------------------*/
 
-.zfea_assetwolf_edit_schema fieldset {
+.zfea_aw_schema_or_metric fieldset {
 	clear:both;
 	float:none;
 }
 
-.zfea_assetwolf_edit_schema .zfea_form_row__recent_assets .ui-selectmenu-button span.ui-selectmenu-text {
+.zfea_aw_schema_or_metric .zfea_form_row__recent_assets .ui-selectmenu-button span.ui-selectmenu-text {
 	background:#FFF;
 	border:1px solid #999;
 	font-size:13px;
 }
 
-.zfea_assetwolf_edit_schema table tr td.current_value_col,
-.zfea_assetwolf_edit_schema .zfea_form_row__recent_assets.zenario_row_with_dropdown {
+.zfea_aw_schema_or_metric table tr td.current_value_col,
+.zfea_aw_schema_or_metric .zfea_form_row__recent_assets.zenario_row_with_dropdown {
 	background:#FFBFBF;
 }
 
-.zfea_assetwolf_edit_schema table tr td.current_value_col {
+.zfea_aw_schema_or_metric table tr td.current_value_col {
 	width:120px;
 }
 
-.zfea_assetwolf_edit_schema .zfea_form_row__recent_assets {
+.zfea_aw_schema_or_metric .zfea_form_row__recent_assets {
 	float:right;
 	clear:both;
 	width:545px;
@@ -327,35 +327,35 @@ table tr td.no_items_message:last-child {
 	text-align:right;
 }
 
-.zfea_assetwolf_edit_schema .zfea_form_row__recent_assets .ui-selectmenu-button span.ui-selectmenu-text {
+.zfea_aw_schema_or_metric .zfea_form_row__recent_assets .ui-selectmenu-button span.ui-selectmenu-text {
 	width:400px;
 }
 
-.zfea_assetwolf_edit_schema .zfea_form_grouping .zfea_form_row table tr.merged_cell td:last-child {
+.zfea_aw_schema_or_metric .zfea_form_grouping .zfea_form_row table tr.merged_cell td:last-child {
 	background:#FFF;
 	text-align:center;
 }
 
-.zfea_assetwolf_edit_schema .zfea_form_grouping .zfea_form_row table tr th.actions {
+.zfea_aw_schema_or_metric .zfea_form_grouping .zfea_form_row table tr th.actions {
 	width:170px;
 }
 
-.zfea_assetwolf_edit_schema .zfea_form_grouping .zfea_form_row,
-.zfea_assetwolf_edit_schema .zfea_form_grouping .zfea_form_row > div {
+.zfea_aw_schema_or_metric .zfea_form_grouping .zfea_form_row,
+.zfea_aw_schema_or_metric .zfea_form_grouping .zfea_form_row > div {
 	padding-bottom:5px;
 }
 
-.zfea_assetwolf_edit_schema .zfea_form_grouping.zfea_form_section {
+.zfea_aw_schema_or_metric .zfea_form_grouping.zfea_form_section {
 	position:relative;
 }
 
-.zfea_assetwolf_edit_schema .zfea_form_grouping.zfea_form_section .zfea_field_tooltip {
+.zfea_aw_schema_or_metric .zfea_form_grouping.zfea_form_section .zenario_field_tooltip {
 	position:absolute;
 	top:20px;
 	right:15px;
 }
 
-.zfea_assetwolf_edit_schema .zfea_form_grouping.zfea_form_section table .zfea_field_tooltip {
+.zfea_aw_schema_or_metric .zfea_form_grouping.zfea_form_section table .zenario_field_tooltip {
 	position:static;
 	top:0;
 	right:0;
@@ -363,37 +363,41 @@ table tr td.no_items_message:last-child {
 	display:inline-block;
 }
 
-.zfea_assetwolf_edit_schema .zfea_form_grouping > .zfea_form_row h3 {
+.zfea_aw_schema_or_metric .zfea_form_grouping > .zfea_form_row h3 {
 	font-size:22px;
 	border-bottom:2px solid #d9dadb;
 	padding-bottom:10px;
 }
 
-.zfea_assetwolf_edit_schema .zfea_form_grouping > .zfea_form_row label {
+.zfea_aw_schema_or_metric .zfea_form_grouping > .zfea_form_row label {
 	padding-bottom:15px;
 }
 
-.zfea_assetwolf_edit_schema .zfea_form_grouping > .zfea_form_row .zfea_popout label {
+.zfea_aw_schema_or_metric .zfea_form_grouping > .zfea_form_row .zfea_popout label {
 	padding-bottom:0;
 }
 
-.zfea_assetwolf_edit_schema .zfea_form_grouping > .zfea_form_row label[id*="key"] {
+.zfea_aw_schema_or_metric .zfea_form_grouping > .zfea_form_row label[id*="key"] {
 	padding-bottom:0;
 	margin-right:5px;
 	font-size:1em;
 }
 
-.zfea_assetwolf_edit_schema .zfea_form_grouping table input.use[type="button"] {
+.zfea_aw_schema_or_metric .zfea_form_grouping table input.use[type="button"] {
 	height:22px;
 	padding:0;
 	margin:0;
 	background:transparent;
 	border:0;
+}
+
+.zfea_aw_schema_or_metric .zfea_form_grouping table input.use[type="button"],
+.zfea_aw_schema_or_metric .zfea_form_grouping table input.use[type="button"]:hover {
 	color:#494f6b;
 	text-decoration:underline;
 }
 
-.zfea_assetwolf_edit_schema .zfea_form_grouping table input[type="text"] {
+.zfea_aw_schema_or_metric .zfea_form_grouping table input[type="text"] {
 	max-width:calc(100% - 22px);
 }
 
@@ -886,6 +890,27 @@ table.mqtt_details tr td,
 	margin-right:5px;
 }
 
+.zfea_aw_schema_or_metric.zfea_edit_box .zfea_form_grouping > .zfea_form_row label {
+	padding-bottom:5px;
+}
+
+.zfea_assetwolf_scheduled_calc.zfea_edit_box .zfea_form_grouping.zfea_form_grouping__fields_grouping .zfea_form_row,
+.zfea_assetwolf_scheduled_calc.zfea_edit_box .zfea_form_grouping.zfea_form_grouping__manual_entry_fields_grouping .zfea_form_row {
+	width:48%;
+	float:left;
+	clear:none;
+}
+
+.zfea_assetwolf_scheduled_calc.zfea_edit_box .zfea_form_grouping.zfea_form_grouping__fields_grouping .zfea_form_row:nth-child(2),
+.zfea_assetwolf_scheduled_calc.zfea_edit_box .zfea_form_grouping.zfea_form_grouping__manual_entry_fields_grouping .zfea_form_row:nth-child(2) {
+	float:right;
+}
+
+.zfea_assetwolf_scheduled_calc.zfea_edit_box .zfea_form_grouping.zfea_form_grouping__fields_grouping .zfea_form_row.zfea_form_row__source_list .ui-selectmenu-button,
+.zfea_assetwolf_scheduled_calc.zfea_edit_box .zfea_form_grouping.zfea_form_grouping__manual_entry_fields_grouping .zfea_form_row.zfea_form_row__manual_entry_source_list .ui-selectmenu-button {
+	min-width:300px;
+}
+
 /* View user
 --------------------------------------------------------------------------------------------------*/
 
@@ -1058,7 +1083,8 @@ table.mqtt_details tr td,
 .red_comms_icon,
 .orange_comms_icon,
 .green_comms_icon,
-.not_monitored_comms_icon {
+.not_monitored_comms_icon,
+.never_communicated_comms_icon {
 	display:inline-block;
 	width:22px;
 	height:22px;
@@ -1070,20 +1096,40 @@ table.mqtt_details tr td,
 	margin-left:5px;
 }
 
-.red_comms_icon {
+.red_comms_icon,
+.red_comms_list_icon {
 	background: url('images/icon-connection-red.svg') no-repeat center center / 22px;
 }
 
-.orange_comms_icon {
+.orange_comms_icon,
+.orange_comms_list_icon {
 	background: url('images/icon-connection-orange.svg') no-repeat center center / 22px;
 }
 
-.green_comms_icon {
+.green_comms_icon,
+.green_comms_list_icon {
 	background: url('images/icon-connection-green.svg') no-repeat center center / 22px;
 }
 
-.not_monitored_comms_icon {
+.not_monitored_comms_icon,
+.grey_comms_list_icon {
 	background: url('images/icon-connection-grey.svg') no-repeat center center / 22px;
+}
+
+.never_communicated_comms_icon,
+.never_comms_list_icon {
+	background: url('images/icon-never-communicated.svg') no-repeat center center / 22px;
+}
+
+.red_comms_list_icon,
+.orange_comms_list_icon,
+.green_comms_list_icon,
+.grey_comms_list_icon,
+.never_comms_list_icon {
+	display:inline-block;
+	padding-left:30px;
+	min-height:22px;
+	background-position:left center;
 }
 
 /* Locations
@@ -1764,7 +1810,7 @@ body.desktop .zfea_form_grouping__asset_details .zfea_form_row.zfea_form_row__im
 
 .zfea_assetwolf_edit_asset .zfea_form_row__asset_details_title label,
 .zfea_assetwolf_edit_asset .zfea_form_row__asset_connection_title label,
-.zfea_assetwolf_edit_asset .zfea_field_tooltip {
+.zfea_assetwolf_edit_asset .zenario_field_tooltip {
 	float:left;
 }
 
@@ -2566,6 +2612,10 @@ fieldset.zfea_form_grouping.zfea_form_grouping__last_edit_info {
 /* Common styles, date picker
 --------------------------------------------------------------------------------------------------*/
 
+.form_date_picker {
+	overflow:hidden;
+}
+
 .form_date_picker label,
 .form_date_picker select,
 .form_date_picker div,
@@ -3278,6 +3328,23 @@ span.awf_data_out_of_date,
 	width:66%;
 }
 
+.assetwolf_2_schematics .mode_edit .canvas_container {
+	float:left;
+}
+
+.assetwolf_2_schematics .mode_edit #canvas_error {
+	position: absolute;
+	top: 50%;
+	transform: translateY(-50%);
+	left:0;
+	right:0;
+	text-align:center;
+}
+
+body.desktop .assetwolf_2_schematics .mode_edit #canvas_error {
+	font-size:1.2em;
+}
+
 /* Schematics mode view */
 
 .assetwolf_2_schematics .mode_view {
@@ -3302,7 +3369,7 @@ body.touch .assetwolf_2_schematics .mode_view .icon_button.edit_icon {
 	display:none;
 }
 
-.assetwolf_2_schematics .mode_view .info,
+.assetwolf_2_schematics .info,
 .assetwolf_2_schematics .mode_view p.nothing_selected {
 	width:32%;
 	float:right;
@@ -3317,17 +3384,17 @@ body.touch .assetwolf_2_schematics .mode_view .icon_button.edit_icon {
 	font-size:1.2em;
 }
 
-.assetwolf_2_schematics .mode_view .info {
+.assetwolf_2_schematics .info {
 	position:relative;
 	z-index:2;
 	background:#fff;
 }
 
-.assetwolf_2_schematics .mode_view .info .buttons {
+.assetwolf_2_schematics .info .buttons {
 	text-align:center;
 }
 
-.assetwolf_2_schematics .mode_view .info .hotspot_popup {
+.assetwolf_2_schematics .info .hotspot_popup {
 	position:relative;
 	z-index:2;
 	width:calc(100% - 34px) !important;
@@ -3339,7 +3406,7 @@ body.touch .assetwolf_2_schematics .mode_view .icon_button.edit_icon {
 	border-radius:10px;
 }
 
-.assetwolf_2_schematics .mode_view .info .hotspot_popup:after {
+.assetwolf_2_schematics .info .hotspot_popup:after {
 	right: 100%;
 	top: 20%;
 	border: solid transparent;
@@ -3354,7 +3421,7 @@ body.touch .assetwolf_2_schematics .mode_view .icon_button.edit_icon {
 	margin-top: -14px;
 }
 
-.assetwolf_2_schematics .mode_view .info .hotspot_popup h3 {
+.assetwolf_2_schematics .info .hotspot_popup h3 {
 	text-align: center;
     color: #333333;
     font-size: 1.714em;
@@ -3365,38 +3432,38 @@ body.touch .assetwolf_2_schematics .mode_view .icon_button.edit_icon {
     text-align:left;
 }
 
-body.mobile  .assetwolf_2_schematics .mode_view .info .hotspot_popup h3 {
+body.mobile  .assetwolf_2_schematics .info .hotspot_popup h3 {
 	margin-top:40px;
 	padding:0;
 }
 
-.assetwolf_2_schematics .mode_view .info .hotspot_popup .inner {
+.assetwolf_2_schematics .info .hotspot_popup .inner {
 	overflow:hidden;
 	position:relative;
 }
 
-.assetwolf_2_schematics .mode_view .info .hotspot_popup .inner .wrap_div {
+.assetwolf_2_schematics .info .hotspot_popup .inner .wrap_div {
 	position: relative;
     left: 0;
     top: 5px;
 }
 
-body.mobile .assetwolf_2_schematics .mode_view .info .hotspot_popup .inner .wrap_div {
+body.mobile .assetwolf_2_schematics .info .hotspot_popup .inner .wrap_div {
 	position:absolute;
 }
 
-.assetwolf_2_schematics .mode_view .info .hotspot_popup .inner .wrap_div span {
+.assetwolf_2_schematics .info .hotspot_popup .inner .wrap_div span {
 	display: inline-block;
     float: left;
     padding-right: 5px;
 }
 
-.assetwolf_2_schematics .mode_view .info .hotspot_popup .inner .wrap_div span.icon img {
+.assetwolf_2_schematics .info .hotspot_popup .inner .wrap_div span.icon img {
 	max-width: 22px !important;
     max-height: 22px !important;
 }
 
-.assetwolf_2_schematics .mode_view .info .hotspot_popup .buttons {
+.assetwolf_2_schematics .info .hotspot_popup .buttons {
 	display:inline-block;
 	position:absolute;
 	top:0;
@@ -3405,12 +3472,12 @@ body.mobile .assetwolf_2_schematics .mode_view .info .hotspot_popup .inner .wrap
 
 /* Schematics mode view, manual input buttons */
 
-.assetwolf_2_schematics .mode_view .info .hotspot_popup div.manual_input {
+.assetwolf_2_schematics .info .hotspot_popup div.manual_input {
 	display:inline-block;
 	margin:5px 5px 5px 0;
 }
 
-.assetwolf_2_schematics .mode_view .info .hotspot_popup .manual_input span.label {
+.assetwolf_2_schematics .info .hotspot_popup .manual_input span.label {
 	padding-left:20px;
 	padding-right:20px;
 	background-repeat:no-repeat;
@@ -3828,20 +3895,20 @@ body.mobile .assetwolf_2_schematics div.schematic_builder .controls .buttons sel
 }
 
 .aw_list .zfea_block_list_wrap > div p.column_status,
-.assetwolf_2_schematics .mode_view .info .hotspot_popup div.asset_status {
+.assetwolf_2_schematics .info .hotspot_popup div.asset_status {
 	/*min-height:24px;*/
 	line-height:1.2em;
 	padding:10px 0 10px 28px;
 }
 
 .aw_a_list.aw_list .zfea_block_list_wrap > div p.column_status,
-.assetwolf_2_schematics .mode_view .info .hotspot_popup div.asset_status {
+.assetwolf_2_schematics .info .hotspot_popup div.asset_status {
 	padding-top:12px;
 	padding-bottom:12px;
 }
 
 .aw_list .zfea_block_list_wrap > div p.column_status,
-.assetwolf_2_schematics .mode_view .info .hotspot_popup div.asset_status {
+.assetwolf_2_schematics .info .hotspot_popup div.asset_status {
 	background-repeat:no-repeat;
 	background-position:left center;
 }
@@ -3859,24 +3926,32 @@ body.mobile .assetwolf_2_schematics div.schematic_builder .controls .buttons sel
 	padding-right:5px;
 }
 
+.aw_dp_list.aw_list .zfea_block_list_wrap > div p[class*="column_field"], 
+.assetwolf_2_schematics .info .hotspot_popup p[class*="column_field"] {
+	position:relative;
+	line-height:1.2em;
+	height:52px;
+	margin-bottom:10px !important;
+}
+
 .aw_dp_list.aw_list .zfea_block_list_wrap > div p[class*="column_field"] span,
-.assetwolf_2_schematics .mode_view .info .hotspot_popup p[class*="column_field"] {
-	background-color:#333;
+.assetwolf_2_schematics .info .hotspot_popup p[class*="column_field"] {
+	background-color:#AAA;
 	color:#fff;
 }
 
-.assetwolf_2_schematics .mode_view .info .hotspot_popup p[class*="column_field"] .label {
+.assetwolf_2_schematics .info .hotspot_popup p[class*="column_field"] .label {
 	position: absolute;
 	top: 50%;
 	transform: translateY(-50%);
-	left:58px;
+	left:15px;
 	padding-top:0;
 	padding-bottom:0;
 	height:auto;
 }
 
-.assetwolf_2_schematics .mode_view .info .hotspot_popup.blue_dis_schema p[class*="column_field"] .label,
-.assetwolf_2_schematics .mode_view .info .hotspot_popup.soap_dis_schema p[class*="column_field"] .label {
+.assetwolf_2_schematics .info .hotspot_popup.blue_dis_schema p[class*="column_field"] .label,
+.assetwolf_2_schematics .info .hotspot_popup.soap_dis_schema p[class*="column_field"] .label {
 	position:static;
 	transform:none;
 }
@@ -3904,7 +3979,7 @@ body.mobile .aw_list .zfea_block_list_wrap > div p.column_status .label {
 }
 
 body.mobile .aw_list .zfea_block_list_wrap > div p.column_name,
-body.mobile .assetwolf_2_schematics .mode_view .info .hotspot_popup h3 {
+body.mobile .assetwolf_2_schematics .info .hotspot_popup h3 {
 	font-size:1.5em;
 }
 
@@ -4125,7 +4200,7 @@ body.mobile .aw_list .zfea_block_list_wrap > div div.wrap_div p {
 /* Common styles Zfea Tooltip
 --------------------------------------------------------------------------------------------------*/
 
-.zfea .zfea_field_tooltip {
+.zfea .zenario_field_tooltip {
 	float:right;
 	margin-left:8px;
 }
@@ -4397,8 +4472,16 @@ img.ui-datepicker-trigger {
 
 .rhSlider .rhSliderContent {
 	overflow-y:auto;
-	height:100%;
-	padding:0 15px;
+	height:calc(100% - 30px);
+	padding:15px;
+}
+
+.zenario_adminLoggedIn .rhSlider .rhSliderContent {
+	height:calc(100% - 30px - 129px);
+}
+
+.rhSlider .rhSliderContent .zenario_phi_result {
+	padding-bottom:15px;
 }
 
 .rhSlider .rhSliderContent input#phi_run {
@@ -4409,9 +4492,34 @@ img.ui-datepicker-trigger {
 	margin-right: 0;
 }
 
+/* Dry run/var dumps from Phi code
+--------------------------------------------------------------------------------------------------*/
+
+.rhSliderContent h3 {
+	margin-top: 8px;
+	margin-bottom: 8px;
+}
+
+.zenario_phi_environment_table {
+	display: table;
+}
+
+.zenario_phi_environment_table > div {
+	display: table-row;
+}
+
+.zenario_phi_environment_table > div > code {
+	display: table-cell;
+}
+
 .zenario_phi_var_dump code {
 	word-wrap: break-word;
 }
+
+.zenario_phi_environment_tsm {
+	font-size: 12px;
+}
+
 
 /* Toast msg
 --------------------------------------------------------------------------------------------------*/
@@ -4619,6 +4727,48 @@ button.toast-close-button {
     border-radius: 4px 4px 0;
 }
 
+/*  Connection times
+--------------------------------------------------------------------------------------------------*/
+
+.assetwolf_2 .connection_times_options {
+	overflow:hidden;
+	padding-bottom:10px;
+	margin-right:8px;
+}
+
+.assetwolf_2 .connection_times_options > div,
+.assetwolf_2 .connection_times_options input,
+.assetwolf_2 .connection_times_options select {
+	float:left;
+	margin-right:5px;
+}
+
+.assetwolf_2 .connection_times_options input#time_interval {
+	width:30px;
+}
+
+.assetwolf_2 .connection_times_table {
+	width:100%;
+}
+
+.assetwolf_2 .connection_times_table tr th,
+.assetwolf_2 .connection_times_table tr td {
+	padding:10px;
+	border:1px solid #ccc;
+}
+
+.assetwolf_2 .connection_times_table tr th,
+.assetwolf_2 .connection_times_table tr td:first-child {
+	background:#f0f0f0;
+}
+
+.assetwolf_2 .connection_times_table tr:first-child th:first-child {
+	font-weight:bold;
+}
+
+.assetwolf_2 .connection_times_table select {
+	width:100%;
+}
 
 /*  Simulator
 --------------------------------------------------------------------------------------------------*/
@@ -4853,7 +5003,7 @@ button.toast-close-button {
 
 @media all and (max-width: 1281px) {
 
-	.assetwolf_2_schematics .mode_view .info .hotspot_popup .inner .wrap_div {
+	.assetwolf_2_schematics .info .hotspot_popup .inner .wrap_div {
 		position:relative;
 	}
 	
@@ -4890,15 +5040,15 @@ button.toast-close-button {
 
 @media all and (max-width: 681px) {
 
-	.zfea_assetwolf_edit_schema .zfea_form_row__recent_assets {
+	.zfea_aw_schema_or_metric .zfea_form_row__recent_assets {
 		width:calc(100% - 40px);
 	}
 	
-	.zfea_assetwolf_edit_schema .zfea_form_row__recent_assets .ui-selectmenu-button {
+	.zfea_aw_schema_or_metric .zfea_form_row__recent_assets .ui-selectmenu-button {
 		width:280px !important;
 	}
 	
-	.zfea_assetwolf_edit_schema .zfea_form_row__recent_assets .ui-selectmenu-button span.ui-selectmenu-text {
+	.zfea_aw_schema_or_metric .zfea_form_row__recent_assets .ui-selectmenu-button span.ui-selectmenu-text {
 		width:auto;
 	}
 	
@@ -4928,7 +5078,7 @@ button.toast-close-button {
 	
 	.assetwolf_2_schematics .mode_view .canvas_container,
 	.assetwolf_2_schematics .mode_edit .canvas_container,
-	.assetwolf_2_schematics .mode_view .info,
+	.assetwolf_2_schematics .info,
 	.assetwolf_2_schematics .mode_view p.nothing_selected {
 		width:100%;
 		float:none;
@@ -4938,11 +5088,14 @@ button.toast-close-button {
 		position:static;
 	}
 	
-	.assetwolf_2_schematics .mode_view .info {
+	.assetwolf_2_schematics .info {
 		margin-top:10px;
 	}
 	
-	.form_date_picker div {
+	.form_date_picker div,
+	.assetwolf_graph_base .time_period_selector, 
+	.assetwolf_graph_base .pre_defined_period, 
+	.assetwolf_graph_base .specific_dates {
 		float:none;
 		clear:both;
 		margin:8px 0 0;
@@ -4950,6 +5103,23 @@ button.toast-close-button {
 	
 	.assetwolf_graph_base .graph_plugin_wrap .graph_options.form_date_picker .keys {
 		padding-left:0;
+	}
+	
+	.zfea_assetwolf_scheduled_calc.zfea_edit_box .zfea_form_grouping.zfea_form_grouping__fields_grouping .zfea_form_row,
+	.zfea_assetwolf_scheduled_calc.zfea_edit_box .zfea_form_grouping.zfea_form_grouping__manual_entry_fields_grouping .zfea_form_row {
+		width:100%;
+		float:none;
+		clear:both;
+	}
+
+	.zfea_assetwolf_scheduled_calc.zfea_edit_box .zfea_form_grouping.zfea_form_grouping__fields_grouping .zfea_form_row:nth-child(2),
+	.zfea_assetwolf_scheduled_calc.zfea_edit_box .zfea_form_grouping.zfea_form_grouping__manual_entry_fields_grouping .zfea_form_row:nth-child(2) {
+		float:none;
+	}
+	
+	.zfea_assetwolf_scheduled_calc.zfea_edit_box .zfea_form_grouping.zfea_form_grouping__fields_grouping .zfea_form_row.zfea_form_row__source_list .ui-selectmenu-button,
+	.zfea_assetwolf_scheduled_calc.zfea_edit_box .zfea_form_grouping.zfea_form_grouping__fields_grouping .zfea_form_row.zfea_form_row__manual_entry_source_list .ui-selectmenu-button {
+		min-width:90%;
 	}
 }
 

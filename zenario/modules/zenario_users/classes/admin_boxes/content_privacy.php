@@ -37,7 +37,7 @@ class zenario_users__admin_boxes__content_privacy extends zenario_users {
 		$fields['privacy/smart_group_id']['values'] = ze\contentAdm::getListOfSmartGroupsWithCounts();
 		
 		if ($ZENARIO_ORGANIZATION_MANAGER_PREFIX = ze\module::prefix('zenario_organization_manager')) {
-			$fields['privacy/role_ids']['values'] = ze\row::getArray($ZENARIO_ORGANIZATION_MANAGER_PREFIX. 'user_location_roles', 'name', [], 'name');
+			$fields['privacy/role_ids']['values'] = ze\row::getValues($ZENARIO_ORGANIZATION_MANAGER_PREFIX. 'user_location_roles', 'name', [], 'name');
 		} else {
 			$fields['privacy/role_ids']['hidden'] =
 			$fields['privacy/privacy']['values']['with_role']['hidden'] = true;
@@ -80,8 +80,8 @@ class zenario_users__admin_boxes__content_privacy extends zenario_users {
 							SELECT
 								tc.privacy, tc.smart_group_id,
 								tcp.module_class_name, tcp.method_name, tcp.param_1, tcp.param_2
-							FROM ". DB_NAME_PREFIX. "translation_chains AS tc
-							LEFT JOIN ". DB_NAME_PREFIX. "translation_chain_privacy AS tcp
+							FROM ". DB_PREFIX. "translation_chains AS tc
+							LEFT JOIN ". DB_PREFIX. "translation_chain_privacy AS tcp
 							   ON tc.equiv_id = tcp.equiv_id
 							  AND tc.type = tcp.content_type
 							WHERE tc.equiv_id = ". (int) $equivId. "
@@ -91,14 +91,14 @@ class zenario_users__admin_boxes__content_privacy extends zenario_users {
 							
 							if ($chain['privacy'] == 'group_members') {
 								$chain['group_ids'] =
-									ze\escape::in(ze\row::getArray('group_link', 'link_to_id', ['link_to' => 'group', 'link_from' => 'chain', 'link_from_id' => $equivId, 'link_from_char' => $cType]), true);
+									ze\escape::in(ze\row::getValues('group_link', 'link_to_id', ['link_to' => 'group', 'link_from' => 'chain', 'link_from_id' => $equivId, 'link_from_char' => $cType]), true);
 							} else {
 								$chain['group_ids'] = '';
 							}
 							
 							if ($chain['privacy'] == 'with_role') {
 								$chain['role_ids'] =
-									ze\escape::in(ze\row::getArray('group_link', 'link_to_id', ['link_to' => 'role', 'link_from' => 'chain', 'link_from_id' => $equivId, 'link_from_char' => $cType]), true);
+									ze\escape::in(ze\row::getValues('group_link', 'link_to_id', ['link_to' => 'role', 'link_from' => 'chain', 'link_from_id' => $equivId, 'link_from_char' => $cType]), true);
 							} else {
 								$chain['role_ids'] = '';
 							}

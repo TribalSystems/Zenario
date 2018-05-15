@@ -536,16 +536,6 @@ class moduleAPI {
 	 //  Initialization Functions  //
 	////////////////////////////////
 	
-	//Depricated
-	protected final function captcha() {
-		return require \ze::funIncPath(__FILE__, __FUNCTION__);
-	}
-	
-	//Depricated
-	protected final function checkCaptcha() {
-		return require \ze::funIncPath(__FILE__, __FUNCTION__);
-	}
-	
 	//Get HTML for google reCaptcha 2.0 and init
 	protected final function captcha2() {
 		$this->callScript($this->moduleClassName, 'recaptchaCallback');
@@ -597,7 +587,6 @@ class moduleAPI {
 		$securimage = new \Securimage();
 		return isset($_POST['captcha_code']) && $securimage->check($_POST['captcha_code']) != false;
 	}
-	
 
 	public final function forcePageReload($reload = true) {
 		$this->zAPIForcePageReload($reload);
@@ -624,10 +613,6 @@ class moduleAPI {
 	}
 	public final function clearRegisteredGetRequest($request) {
 		unset(\ze::$importantGetRequests[$request]);
-		
-		if ($this->eggId) {
-			$this->callScriptAtTheEnd('zenario_conductor', 'clearRegisteredGetRequest', $this->slotName, $request);
-		}
 	}
 	
 	public final function setPageTitle($title) {
@@ -1129,7 +1114,7 @@ class moduleAPI {
 			foreach (\ze\module::inheritances($this->moduleClassName, 'inherit_settings') as $className) {
 				$sql = "
 					SELECT `name`, default_value
-					FROM ". DB_NAME_PREFIX. "plugin_setting_defs
+					FROM ". DB_PREFIX. "plugin_setting_defs
 					WHERE module_class_name = '". \ze\escape::sql($className). "'";
 				$result = \ze\sql::select($sql);
 				
@@ -1146,7 +1131,7 @@ class moduleAPI {
 				//Now look up the settings that have been set, and overwrite the defaults
 				$sql = "
 					SELECT `name`, `value`
-					FROM ". DB_NAME_PREFIX. "plugin_settings
+					FROM ". DB_PREFIX. "plugin_settings
 					WHERE instance_id = ". (int) $this->instanceId. "
 					  AND egg_id = ". (int) $eggId. "
 					  AND name != '~custom_yaml~'";
@@ -1443,7 +1428,7 @@ class moduleAPI {
 	
 	private final function zAPIFrameworkLOV($type, &$attributes, &$lov) {
 		//Load the List of Values for a field
-		if ($type == 'checkbox' || $type == 'radio' || $type == 'select' || $type == 'toggle') {
+		if ($type == 'checkbox' || $type == 'radio' || $type == 'select' || $type == 'toggle' || $type == 'text') {
 			if (!empty($attributes['source_module']) && !empty($attributes['source_method']) && \ze\module::inc($attributes['source_module'])) {
 			
 				//Old "source_param_" logic, still included for backwards compatability
@@ -1584,8 +1569,7 @@ class moduleBaseClass extends moduleAPI {
 		} elseif (!$this->moduleId) {
 			echo \ze\admin::phrase('[Empty Slot]');
 		} else {
-			echo \ze\admin::phrase('[[[module]]]',
-				['module' => htmlspecialchars(\ze\module::getModuleDisplayNameByClassName($this->moduleClassName))]);
+			echo '[', htmlspecialchars(\ze\module::getModuleDisplayNameByClassName($this->moduleClassName)), ']';
 		}
 	}
 	
@@ -1705,6 +1689,11 @@ class moduleBaseClass extends moduleAPI {
 	}
 	
 	public function saveVisitorTUIX($path, &$tags, &$fields, &$values, &$changes) {
+		
+		//...your PHP code...//
+	}
+	
+	public function typeaheadSearchAJAX($path, $tab, $searchField, $searchTerm, &$searchResults) {
 		
 		//...your PHP code...//
 	}

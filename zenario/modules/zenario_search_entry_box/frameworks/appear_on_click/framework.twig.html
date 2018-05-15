@@ -1,0 +1,16 @@
+{% if Search_Box %}
+<div class="search_button_panel"><div class="search_button">Search</div></div>
+<div class="search_entry_box_panel">
+	<form class="search_entry_box" onsubmit="{{Search_Submit}}" action="{{Search_Target}}" method="get">
+		<div>
+			{% if Search_Label %}
+				<label>{{"_SEARCH"|trans}}</label>
+			{% endif %}
+			<input type="hidden" name="cID" value="{{Search_Page_Alias}}" />
+			<input type="hidden" name="cType" value="{{Search_Page_cType}}" />
+			<input type="text" class="search_entry_input_box" id="{{Search_Field_ID}}" name="searchString" value="{{Search_String}}" />
+			<input type="submit" class="search_entry_button" value="{{'_SEARCH'|trans}}" />
+		</div>
+	</form>
+</div>
+{% endif %}

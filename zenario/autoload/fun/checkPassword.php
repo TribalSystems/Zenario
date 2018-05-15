@@ -67,11 +67,10 @@ if (\ze\db::connectGlobal()) {
 				". $passwordColumns. "
 				password_needs_changing,
 				CONCAT(first_name, ' ', last_name) AS full_name
-			FROM ". DB_NAME_PREFIX_GLOBAL ."admins
+			FROM ". DB_PREFIX_GLOBAL ."admins
 			WHERE ". $whereStatement. "
 			  AND status = 'active'";
-		$result = \ze\sql::select($sql);
-	\ze\db::connectLocal();
+		$result = \ze\sqlGlobal::select($sql);
 	
 	//Is there a superadmin with that name?
 	if ($details = \ze\sql::fetchAssoc($result)) {
@@ -88,7 +87,7 @@ if (!$details) {
 			username,
 			". $passwordColumns. "
 			CONCAT(first_name, ' ', last_name) AS full_name
-		FROM ". DB_NAME_PREFIX ."admins
+		FROM ". DB_PREFIX ."admins
 		WHERE ". $whereStatement. "
 		  AND status = 'active'";
 	$result = \ze\sql::select($sql);

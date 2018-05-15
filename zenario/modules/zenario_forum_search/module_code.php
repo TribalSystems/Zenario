@@ -96,12 +96,12 @@ class zenario_forum_search extends zenario_forum {
 		$sqlF .= "  AS relevance";
 		
 		$joinSQL = "
-			INNER JOIN ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "forums AS f
+			INNER JOIN ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "forums AS f
 			   ON c.id = f.forum_content_id
 			  AND c.type = f.forum_content_type
-			INNER JOIN ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "threads AS t
+			INNER JOIN ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "threads AS t
 			   ON f.id = t.forum_id
-			INNER JOIN ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "user_posts AS up
+			INNER JOIN ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "user_posts AS up
 			   ON t.id = up.thread_id";
 		
 		if ($showPrivateItems) {
@@ -184,10 +184,10 @@ class zenario_forum_search extends zenario_forum {
 						up.date_posted,
 						up.message_text,
 						t.title
-					FROM ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "user_posts AS up
-					INNER JOIN ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "threads AS t
+					FROM ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "user_posts AS up
+					INNER JOIN ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "threads AS t
 					   ON t.id = up.thread_id
-					INNER JOIN ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "forums AS f
+					INNER JOIN ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "forums AS f
 					   ON f.id = up.forum_id
 					WHERE up.id = ". (int) $this->posts[$i];
 				

@@ -220,10 +220,14 @@ zenario_wysiwyg_editor.saveViaAJAX = function(el, close, confirm, confirmChoice)
 	
 	var error = zenario_wysiwyg_editor.AJAX(
 		saveLink,
-			'_zenario_save_content_=1' +
-			'&_sync_summary=' + engToBoolean(confirm && confirmChoice) +
-			'&content__content=' + encodeURIComponent(content),
+		{
+			_zenario_save_content_: 1,
+			_sync_summary: engToBoolean(confirm && confirmChoice),
+			content__content: zenario.encodeItemIdForOrganizer(content)
+		},
 		true);
+		//N.b. Cloudflare sometimes blocks HTML from being sent via the POST, e.g. if it sees it has links in it.
+		//We're attempting to work around this by calling encodeItemIdForOrganizer() to mask the HTML.
 	
 	if (error) {
 		zenario_wysiwyg_editor.floatingMessage(error, true, 'error');

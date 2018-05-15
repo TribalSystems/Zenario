@@ -367,7 +367,7 @@ class zenario_extranet_registration extends zenario_extranet {
 		
 		// Temp code to remove extra values from custom frameworks. Module should eventually be changed to user_forms.
 		$fields2 = [];
-		$sql = 'SHOW COLUMNS FROM '. DB_NAME_PREFIX. 'users';
+		$sql = 'SHOW COLUMNS FROM '. DB_PREFIX. 'users';
 		$result = ze\sql::select($sql);
 		while ($column = ze\sql::fetchAssoc($result)) {
 			if (isset($fields[$column['Field']]) && ($column['Key'] != 'PRI')) {
@@ -375,10 +375,20 @@ class zenario_extranet_registration extends zenario_extranet {
 			}
 		}
 		
+		if ($fields2['status'] == 'contact') {
+			$fields2['creation_method_note'] = 'Contact signup';
+		} else {
+			$fields2['creation_method_note'] = 'User signup';
+		}
+		
 		//Allow contacts to register, turning their contact account into a user account
 		$userId = ze\row::get('users', 'id', ['email' => ($_POST['email'] ?? false), 'status' => 'contact']);
 		
 		$userId = ze\userAdm::save($fields2, $userId);
+		
+		if (!empty($fields2['terms_and_conditions_accepted'])) {
+			ze\user::recordConsent($userId, $fields2['email'] ?? false, $fields2['first_name'] ?? false, $fields2['last_name'] ?? false, strip_tags($this->phrase('_T_C_LINK')));
+		}
 		
 		if (ze::isError($userId)) {
 			return false;
@@ -386,10 +396,16 @@ class zenario_extranet_registration extends zenario_extranet {
 			
 			// Save custom fields from frameworks
 			$details = [];
-			ze\row::cacheTableDef($tableName = DB_NAME_PREFIX . 'users_custom_data');
-			foreach (ze::$dbCols[$tableName] as $col => $colDef) {
+			ze::$dbL->checkTableDef($tableName = DB_PREFIX . 'users_custom_data');
+			foreach (ze::$dbL->cols[$tableName] as $col => $colDef) {
 				if ($col != 'user_id' && isset($fields[$col])) {
 					$details[$col] = $fields[$col];
+				
+					$colType = ze\row::get('custom_dataset_fields', 'type', ["db_column" => $col]);
+					if ($colType && $colType == "consent") {
+						//check if dataset feild is consent field
+						ze\user::recordConsent($userId, $fields2['email'] ?? false, $fields2['first_name'] ?? false, $fields2['last_name'] ?? false, strip_tags($this->phrase("_".$col)));
+					}
 				}
 			}
 			
@@ -417,7 +433,7 @@ class zenario_extranet_registration extends zenario_extranet {
 		if ($userId){
 			$sql ="
 					UPDATE "
-						. DB_NAME_PREFIX . "users 
+						. DB_PREFIX . "users 
 					SET email_verified = 1";
 			
 			$sql .= " WHERE id = " . (int) $userId;
@@ -505,7 +521,7 @@ class zenario_extranet_registration extends zenario_extranet {
 		if ($userId) {
 			$sql = '
 				UPDATE '
-					 .DB_NAME_PREFIX . 'users
+					 .DB_PREFIX . 'users
 				SET 
 					status = "contact"
 				WHERE 
@@ -518,7 +534,7 @@ class zenario_extranet_registration extends zenario_extranet {
 		if ($userId){
 			$sql ="
 					UPDATE " 
-						. DB_NAME_PREFIX . "users
+						. DB_PREFIX . "users
 					SET 
 						status='active'
 					WHERE 
@@ -772,7 +788,7 @@ class zenario_extranet_registration extends zenario_extranet {
 			$template = ze::setting('delayed_registration_email_template');
 			$sql = '
 				SELECT u.id, u.identifier, u.first_name, u.last_name, u.email
-				FROM ' . DB_NAME_PREFIX. 'users AS u
+				FROM ' . DB_PREFIX. 'users AS u
 				WHERE u.send_delayed_registration_email = 1
 				  AND u.status = "active"
 				  AND DATE_ADD(u.created_date, INTERVAL '. (int) $delay. ' DAY) <= NOW()';

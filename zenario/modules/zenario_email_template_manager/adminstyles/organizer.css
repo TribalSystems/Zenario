@@ -9,24 +9,19 @@
 }
 
 .organizer_item_image.zenario_email_template_panel {
-	background: center center no-repeat;
-	background-image: url('images/icon-email-templates-list-dark.png');
+	background: url('images/icon-templates.svg') no-repeat center / 16px auto;
 }
 
 .zenario_email_template_manager_log__failed span {
 	height: 20px !important;
 	padding-left: 30px !important;
-	background-position: 5px 1px !important;
-	background-repeat: no-repeat !important;
-	background-image: url(images/failed_icon.png) !important;
+	background: url('images/icon-email-failed.svg') no-repeat 5px 1px / 16px auto;
 	display:inline-block;
 }
 
 .zenario_email_template_manager_log__sent span {
 	height: 20px !important;
 	padding-left: 30px !important;
-	background-position: 5px 1px !important;
-	background-repeat: no-repeat !important;
-	background-image: url(images/sent_icon.png) !important;
+	background: url('images/icon-email-sent.svg') no-repeat 5px 1px / 16px auto;
 	display:inline-block;
 }

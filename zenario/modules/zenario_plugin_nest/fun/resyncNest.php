@@ -42,7 +42,7 @@ $ord = 0;
 
 $sql = "
 	SELECT id, slide_num, ord, is_slide
-	FROM ". DB_NAME_PREFIX. "nested_plugins
+	FROM ". DB_PREFIX. "nested_plugins
 	WHERE instance_id = ". (int) $instanceId. "
 	ORDER BY slide_num, ord";
 
@@ -72,3 +72,6 @@ $key['is_slide'] = 0;
 $key['ord'] = 1;
 $key['cols'] = -1;
 ze\row::update('nested_plugins', ['cols' => 0], $key);
+
+//Update the request variables for the slides in this nest
+ze\pluginAdm::setSlideRequestVars($instanceId);

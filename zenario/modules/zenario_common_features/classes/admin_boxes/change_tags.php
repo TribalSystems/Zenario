@@ -37,7 +37,7 @@ class zenario_common_features__admin_boxes__change_tags extends ze\moduleBaseCla
 			$tagUsage = [];
 			$sql = '
 				SELECT tag_id, COUNT(image_id) AS count
-				FROM ' . DB_NAME_PREFIX . 'image_tag_link
+				FROM ' . DB_PREFIX . 'image_tag_link
 				WHERE image_id IN (' . ze\escape::sql($ids) . ')
 				GROUP BY tag_id';
 			$result = ze\sql::select($sql);
@@ -48,7 +48,7 @@ class zenario_common_features__admin_boxes__change_tags extends ze\moduleBaseCla
 			$counter = 10;
 			$sql = '
 				SELECT id, name AS label, color AS tag_color
-				FROM ' . DB_NAME_PREFIX . 'image_tags
+				FROM ' . DB_PREFIX . 'image_tags
 				ORDER BY name';
 			$result = ze\sql::select($sql);
 			if (ze\sql::numRows($result) <= 0) {
@@ -111,7 +111,7 @@ class zenario_common_features__admin_boxes__change_tags extends ze\moduleBaseCla
 		$tags = [];
 		$sql = '
 			SELECT id, name AS label, color AS tag_color
-			FROM ' . DB_NAME_PREFIX . 'image_tags';
+			FROM ' . DB_PREFIX . 'image_tags';
 		$result = ze\sql::select($sql);
 		while ($row = ze\sql::fetchAssoc($result)) {
 			if (isset($values['tag_' . $row['id']])) {

@@ -109,7 +109,7 @@ class zenario_news_ticker extends ze\moduleBaseClass {
 	function getCategoryFilterSQL(){
 		if ($this->setting('filter_by_category') && $this->setting('category') && ze\row::exists('categories', ['id' => $this->setting('category')])) {
 			return "
-			INNER JOIN ". DB_NAME_PREFIX. "category_item_link AS cil
+			INNER JOIN ". DB_PREFIX. "category_item_link AS cil
 			   ON cil.equiv_id = c.id
 			  AND cil.content_type = c.type
 			  AND cil.category_id = ". (int) $this->setting('category');

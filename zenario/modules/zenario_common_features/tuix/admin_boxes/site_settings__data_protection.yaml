@@ -5,6 +5,7 @@ site_settings:
     title: Editing Data Protection settings
     tabs:
         data_protection:
+            ord: 10
             label: Data recording and deletion
             edit_mode:
                 enabled: true
@@ -27,5 +28,19 @@ site_settings:
                         html: |
                             <p>Zenario can log emails that it sends (to visitors, users or administrators). It can log when extranet users log in and access content, and it can log data submitted through forms.</p>
                             <p>Note that data will not be deleted immediately when you save this box, but according to the rules described below.</p>
-
-
+        backup:
+            ord: 20
+            label: Backups
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_SITE_SETTING
+                on: false
+            fields:
+                manual_backups:
+                    label: 'Manual backups:'
+                    snippet:
+                        html: ''
+                automated_backups:
+                    label: 'Automated backups:'
+                    snippet:
+                        html: ''

@@ -58,8 +58,8 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 		//Load details on the image tags in use in the system, and which have been chosen here
 		$sql = "
 			SELECT it.name, itl.tag_id
-			FROM ". DB_NAME_PREFIX. "image_tags AS it
-			LEFT JOIN ". DB_NAME_PREFIX. "image_tag_link AS itl
+			FROM ". DB_PREFIX. "image_tags AS it
+			LEFT JOIN ". DB_PREFIX. "image_tag_link AS itl
 			   ON itl.image_id = ". (int) $box['key']['id']. "
 			  AND itl.tag_id = it.id
 			ORDER BY it.name";
@@ -108,7 +108,7 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 			if (!empty($tags)) {
 				$existingTags = ze\sql::fetchValues("
 					SELECT name
-					FROM ". DB_NAME_PREFIX. "image_tags
+					FROM ". DB_PREFIX. "image_tags
 					WHERE name IN (". ze\escape::in($tags, 'sql'). ")
 				");
 			
@@ -154,8 +154,8 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 			//If so, remove any tags that weren't picked
 			$sql = "
 				DELETE itl.*
-				FROM ". DB_NAME_PREFIX. "image_tag_link AS itl
-				LEFT JOIN ". DB_NAME_PREFIX. "image_tags AS it
+				FROM ". DB_PREFIX. "image_tag_link AS itl
+				LEFT JOIN ". DB_PREFIX. "image_tags AS it
 				   ON it.name IN (". $tagNames. ")
 				  AND it.id = itl.tag_id
 				WHERE it.id IS NULL
@@ -166,15 +166,15 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 			//Note: this logic is only safe because validateAdminBox() and the ze\escape::in() function above
 			//will insure that there are no commas in the tag names.
 			$sql = "
-				INSERT IGNORE INTO ". DB_NAME_PREFIX. "image_tags (name)
+				INSERT IGNORE INTO ". DB_PREFIX. "image_tags (name)
 				VALUES (". str_replace(',', '),(', $tagNames). ")";
 			ze\sql::update($sql);
 			
 			//Add the tags that were picked
 			$sql = "
-				INSERT IGNORE INTO ". DB_NAME_PREFIX. "image_tag_link (image_id, tag_id)
+				INSERT IGNORE INTO ". DB_PREFIX. "image_tag_link (image_id, tag_id)
 				SELECT ". (int) $box['key']['id']. ", id
-				FROM ". DB_NAME_PREFIX. "image_tags
+				FROM ". DB_PREFIX. "image_tags
 				WHERE name IN (". $tagNames. ")";
 			ze\sql::update($sql);
 		

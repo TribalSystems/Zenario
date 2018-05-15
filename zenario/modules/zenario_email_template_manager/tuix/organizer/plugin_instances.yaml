@@ -4,7 +4,7 @@ zenario__modules:
             refiners: 
                 email_address_setting:
                     table_join: |
-                        [[DB_NAME_PREFIX]]plugin_settings ps
+                        [[DB_PREFIX]]plugin_settings ps
                         ON pi.id = ps.instance_id
                     sql: |
                         (
@@ -26,7 +26,7 @@ zenario__modules:
                     db_column: |
                         (
                            SELECT GROUP_CONCAT(DISTINCT ps1.value SEPARATOR ', ')
-                           FROM [[DB_NAME_PREFIX]]plugin_settings ps1
+                           FROM [[DB_PREFIX]]plugin_settings ps1
                            WHERE ps1.instance_id = pi.id
                            AND
                            (

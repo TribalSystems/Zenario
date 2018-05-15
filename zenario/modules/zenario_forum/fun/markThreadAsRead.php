@@ -44,7 +44,7 @@ switch(1) {
   default:
 	
 	$sql = "
-		DELETE FROM ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "user_unread_threads
+		DELETE FROM ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "user_unread_threads
 		WHERE unread_from = ". (int) $threadLastUpdated. "
 		  AND unread_to = ". (int) $threadLastUpdated. "
 		  AND forum_id = ". (int) $this->forumId. "
@@ -56,7 +56,7 @@ switch(1) {
 	}
 	
 	$sql = "
-		UPDATE ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "user_unread_threads SET
+		UPDATE ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "user_unread_threads SET
 			unread_from = ". ((int) $threadLastUpdated + 1). "
 		WHERE unread_from = ". (int) $threadLastUpdated. "
 		  AND forum_id = ". (int) $this->forumId. "
@@ -68,7 +68,7 @@ switch(1) {
 	}
 	
 	$sql = "
-		UPDATE ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "user_unread_threads SET
+		UPDATE ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "user_unread_threads SET
 			unread_to = ". ((int) $threadLastUpdated - 1). "
 		WHERE unread_to = ". (int) $threadLastUpdated. "
 		  AND forum_id = ". (int) $this->forumId. "
@@ -81,7 +81,7 @@ switch(1) {
 	
 	$sql = "
 		SELECT unread_from, unread_to
-		FROM ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "user_unread_threads
+		FROM ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "user_unread_threads
 		WHERE unread_from < ". (int) $threadLastUpdated. "
 		  AND unread_to > ". (int) $threadLastUpdated. "
 		  AND forum_id = ". (int) $this->forumId. "
@@ -90,7 +90,7 @@ switch(1) {
 	$result = ze\sql::select($sql);
 	if ($row = ze\sql::fetchAssoc($result)) {
 		$sql = "
-			UPDATE ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "user_unread_threads SET
+			UPDATE ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "user_unread_threads SET
 				unread_to = ". ((int) $threadLastUpdated - 1). "
 			WHERE unread_from = ". (int) $row['unread_from']. "
 			  AND unread_to = ". (int) $row['unread_to']. "
@@ -99,7 +99,7 @@ switch(1) {
 		ze\sql::update($sql, false, false);
 		
 		$sql = "
-			INSERT INTO ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "user_unread_threads SET
+			INSERT INTO ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "user_unread_threads SET
 				unread_from = ". ((int) $threadLastUpdated + 1). ",
 				unread_to = ". (int) $row['unread_to']. ",
 				forum_id = ". (int) $this->forumId. ",
@@ -112,7 +112,7 @@ switch(1) {
 
 //Tidy up any zero-sized spans
 $sql = "
-	DELETE FROM ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "user_unread_threads
+	DELETE FROM ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "user_unread_threads
 	WHERE unread_from = ". (int) $threadLastUpdated. "
 	  AND unread_to = ". (int) $threadLastUpdated. "
 	  AND forum_id = ". (int) $this->forumId. "
@@ -121,7 +121,7 @@ ze\sql::update($sql, false, false);
 
 //Update the thread's view-count
 $sql = "
-	UPDATE ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "threads SET
+	UPDATE ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "threads SET
 		view_count = view_count + 1
 	WHERE id = ". (int) $this->threadId;
 ze\sql::update($sql, false, false);

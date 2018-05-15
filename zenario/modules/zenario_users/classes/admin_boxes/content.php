@@ -52,7 +52,7 @@ class zenario_users__admin_boxes__content extends zenario_users {
 			$fields['privacy/smart_group_id']['values'] = ze\contentAdm::getListOfSmartGroupsWithCounts();
 		
 			if ($ZENARIO_ORGANIZATION_MANAGER_PREFIX = ze\module::prefix('zenario_organization_manager')) {
-				$fields['privacy/role_ids']['values'] = ze\row::getArray($ZENARIO_ORGANIZATION_MANAGER_PREFIX. 'user_location_roles', 'name', [], 'name');
+				$fields['privacy/role_ids']['values'] = ze\row::getValues($ZENARIO_ORGANIZATION_MANAGER_PREFIX. 'user_location_roles', 'name', [], 'name');
 			} else {
 				$fields['privacy/role_ids']['hidden'] =
 				$fields['privacy/privacy']['values']['with_role']['hidden'] = true;
@@ -65,12 +65,12 @@ class zenario_users__admin_boxes__content extends zenario_users {
 				switch ($chain['privacy']) {
 					case 'group_members':
 						$values['privacy/group_ids'] =
-							ze\escape::in(ze\row::getArray('group_link', 'link_to_id', ['link_to' => 'group', 'link_from' => 'chain', 'link_from_id' => $equivId, 'link_from_char' => $cType]), true);
+							ze\escape::in(ze\row::getValues('group_link', 'link_to_id', ['link_to' => 'group', 'link_from' => 'chain', 'link_from_id' => $equivId, 'link_from_char' => $cType]), true);
 						break;
 					
 					case 'with_role':
 						$values['privacy/role_ids'] =
-							ze\escape::in(ze\row::getArray('group_link', 'link_to_id', ['link_to' => 'role', 'link_from' => 'chain', 'link_from_id' => $equivId, 'link_from_char' => $cType]), true);
+							ze\escape::in(ze\row::getValues('group_link', 'link_to_id', ['link_to' => 'role', 'link_from' => 'chain', 'link_from_id' => $equivId, 'link_from_char' => $cType]), true);
 						break;
 					
 					case 'call_static_method':

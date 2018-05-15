@@ -27,15 +27,15 @@
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
+
 class zenario_users__admin_boxes__flag extends ze\moduleBaseClass {
-	
-	
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		
-		$ids = ze\ray::explodeAndTrim($box['key']['id'], true);
+		$userIds = ze\ray::explodeAndTrim($box['key']['id'], true);
 		
-		if (!$box['key']['count'] = count($ids)) {
+		//Show a message on what actions will be taken
+		if (!$box['key']['count'] = count($userIds)) {
 			echo ze\admin::phrase('No users selected!');
 			exit;
 		
@@ -71,63 +71,117 @@ class zenario_users__admin_boxes__flag extends ze\moduleBaseClass {
 		$totalflagCount = 0;
 		$pickedItems = [];
 		$fields['flags/flags']['indeterminates'] = [];
-		
 		$fields['flags/flags']['values'] = ze\datasetAdm::listCustomFields('users', $flat = false, 'checkbox', $customOnly = true);
-
 		
-		foreach ($fields['flags/flags']['values'] as $id => &$v) {
+		foreach ($fields['flags/flags']['values'] as $datasetFieldId => &$datasetField) {
 			//Note: these are multi-checkboxes fields. I want to show the tabs, but I don't want
 			//people to be able to select them
 			
-			if (empty($v['db_column'])) {
-				$v['readonly'] =
-				$v['disabled'] = true;
-				//$v['style'] = 'display: none;';
+			if (empty($datasetField['db_column'])) {
+				$datasetField['readonly'] =
+				$datasetField['disabled'] = true;
+				//$datasetField['style'] = 'display: none;';
 			} else {
 				
-				
 				//Look up how many users are in each flag
-				$count = ze\row::count('users_custom_data', [$v['db_column'] => 1, 'user_id' => $ids]);
+				$usersWithFlag = ze\row::count('users_custom_data', [$datasetField['db_column'] => 1, 'user_id' => $userIds]);
 				
-				
-				if ($count != 0) {
+				if ($usersWithFlag != 0) {
 					++$inflagCount;
 				}
 				++$totalflagCount;
 				
 				//If some are in a flag and some are not, flag it as indeterminate
-				if ($count != 0
-				 && $count != $box['key']['count']) {
-					$fields['flags/flags']['indeterminates'][$id] = true;
+				if ($usersWithFlag != 0
+				 && $usersWithFlag != $box['key']['count']) {
+					$fields['flags/flags']['indeterminates'][$datasetFieldId] = true;
 				}
 				
 				if ($box['key']['remove']) {
 					//When removing, if some users are in a flag then it should start unchecked but be clickable.
 					//Otherwise it should be unchecked and unclickable.
-					if ($count == 0) {
-						$v['readonly'] =
-						$v['disabled'] = true;
+					if ($usersWithFlag == 0) {
+						$datasetField['readonly'] =
+						$datasetField['disabled'] = true;
 					}
 				} else {
 					//When adding, if some users are not a flag then it should start unchecked but be clickable.
 					//Otherwise it should be checked, and unclickable.
-					if ($count == $box['key']['count']) {
-						$v['readonly'] =
-						$v['disabled'] = true;
-						$pickedItems[] = $id;
+					if ($usersWithFlag == $box['key']['count']) {
+						$datasetField['readonly'] =
+						$datasetField['disabled'] = true;
+						$pickedItems[] = $datasetFieldId;
 					}
 				}
 			}
 		}
+		unset($datasetField);
 		
 		$values['flags/flags'] = implode(',', $pickedItems);
 		
 		
+		//Also show some hard-coded system fields
+		$dataset = ze\dataset::details('users');
+		$inSystemFlagCount = 0;
+		$totalSystemFlagCount = 0;
+		$pickedItems = [];
+		$fields['flags/system_flags']['indeterminates'] = [];
+		$fields['flags/system_flags']['values'] = [];
+		$datasetField = ze\row::get('custom_dataset_fields', ['id', 'db_column', 'label', 'default_label'], ['dataset_id' => $dataset['id'], 'db_column' => 'terms_and_conditions_accepted', 'is_system_field' => 1]);
+		$fields['flags/system_flags']['values'][$datasetField['id']] = $datasetField;
+		$datasetField = ze\row::get('custom_dataset_fields', ['id', 'db_column', 'label', 'default_label'], ['dataset_id' => $dataset['id'], 'db_column' => 'password_needs_changing', 'is_system_field' => 1]);
+		$fields['flags/system_flags']['values'][$datasetField['id']] = $datasetField;
+		
+		foreach ($fields['flags/system_flags']['values'] as $datasetFieldId => &$datasetField) {
+			$datasetField['label'] = $datasetField['label'] ? $datasetField['label'] : $datasetField['default_label'];
+			
+			//Look up how many users are in each flag
+			$usersWithFlag = ze\row::count('users', [$datasetField['db_column'] => 1, 'id' => $userIds]);
+			
+			if ($usersWithFlag != 0) {
+				++$inSystemFlagCount;
+			}
+			++$totalSystemFlagCount;
+			
+			//If some are in a flag and some are not, flag it as indeterminate
+			if ($usersWithFlag != 0
+			 && $usersWithFlag != $box['key']['count']) {
+				$fields['flags/system_flags']['indeterminates'][$datasetFieldId] = true;
+			}
+			
+			if ($box['key']['remove']) {
+				//When removing, if some users are in a flag then it should start unchecked but be clickable.
+				//Otherwise it should be unchecked and unclickable.
+				if ($usersWithFlag == 0) {
+					$datasetField['readonly'] =
+					$datasetField['disabled'] = true;
+				}
+			} else {
+				//When adding, if some users are not a flag then it should start unchecked but be clickable.
+				//Otherwise it should be checked, and unclickable.
+				if ($usersWithFlag == $box['key']['count']) {
+					$datasetField['readonly'] =
+					$datasetField['disabled'] = true;
+					$pickedItems[] = $datasetFieldId;
+				}
+			}
+		}
+		unset($datasetField);
+		
+		$values['flags/system_flags'] = implode(',', $pickedItems);
+		
+		
+		//Set labels
 		if ($box['key']['remove']) {
 			if ($inflagCount == 1) {
 				$fields['flags/flags']['label'] = ze\admin::phrase('Remove flag:');
 			} else {
 				$fields['flags/flags']['label'] = ze\admin::phrase('Remove flags:');
+			}
+			if ($inSystemFlagCount == 1) {
+				$fields['flags/system_flags']['label'] = ze\admin::phrase('Remove system flag:');
+			} else {
+				$fields['flags/system_flags']['label'] = ze\admin::phrase('Remove system flags:');
 			}
 		} else {
 			if ($totalflagCount - $inflagCount == 1) {
@@ -135,8 +189,12 @@ class zenario_users__admin_boxes__flag extends ze\moduleBaseClass {
 			} else {
 				$fields['flags/flags']['label'] = ze\admin::phrase('Flags:');
 			}
+			if ($totalSystemFlagCount - $inSystemFlagCount == 1) {
+				$fields['flags/system_flags']['label'] = ze\admin::phrase('System flag:');
+			} else {
+				$fields['flags/system_flags']['label'] = ze\admin::phrase('System flags:');
+			}
 		}
-		
 	}
 	
 	
@@ -149,6 +207,12 @@ class zenario_users__admin_boxes__flag extends ze\moduleBaseClass {
 		}
 		if ($fields['flags/flags']['current_value']) {
 			$current = explode(',', $fields['flags/flags']['current_value']);
+		}
+		if ($fields['flags/system_flags']['value']) {
+			$initial = array_merge($initial, explode(',', $fields['flags/system_flags']['value']));
+		}
+		if ($fields['flags/system_flags']['current_value']) {
+			$current = array_merge($current, explode(',', $fields['flags/system_flags']['current_value']));
 		}
 		
 		$diff = array_diff($current, $initial);
@@ -196,23 +260,45 @@ class zenario_users__admin_boxes__flag extends ze\moduleBaseClass {
 		$initial = [];
 		$current = [];
 		
+		//Get list of flags to update for each user
 		if ($fields['flags/flags']['value']) {
 			$initial = explode(',', $fields['flags/flags']['value']);
 		}
 		if ($fields['flags/flags']['current_value']) {
 			$current = explode(',', $fields['flags/flags']['current_value']);
 		}
-		
 		$diff = array_diff($current, $initial);
+		
+		//Get list of system flags to update for each user
+		$systemInitial = [];
+		$systemCurrent = [];
+		if ($fields['flags/system_flags']['value']) {
+			$systemInitial = explode(',', $fields['flags/system_flags']['value']);
+		}
+		if ($fields['flags/system_flags']['current_value']) {
+			$systemCurrent = explode(',', $fields['flags/system_flags']['current_value']);
+		}
+		$systemDiff = array_diff($systemCurrent, $systemInitial);
+		
 		
 		if (ze\priv::check('_PRIV_EDIT_USER')) {
 			foreach (explode(',', $box['key']['id']) as $userId) {
 				if ($userId) {
+					
+					//Update flags
 					foreach ($diff as $flagId) {
 						ze\user::addToGroup($userId, $flagId, $box['key']['remove']);
 					}
+					
+					//Update system flags
+					foreach ($systemDiff as $flagId) {
+						$dbColumn = $fields['flags/system_flags']['values'][$flagId]['db_column'];
+						ze\row::update('users', [$dbColumn => $box['key']['remove'] ? 0 : 1], $userId);
+					}
+					
 				}
 			}
 		}
+		
 	}
 }

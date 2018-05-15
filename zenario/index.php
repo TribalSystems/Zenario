@@ -368,8 +368,8 @@ if (ze\lang::count() > 1) {
 	if (!$getRequests) {
 		$sql = "
 			SELECT c.id, c.type, c.alias, c.equiv_id, c.language_id
-			FROM ". DB_NAME_PREFIX. "content_items AS c
-			INNER JOIN ". DB_NAME_PREFIX. "translation_chains AS tc
+			FROM ". DB_PREFIX. "content_items AS c
+			INNER JOIN ". DB_PREFIX. "translation_chains AS tc
 			   ON c.equiv_id = tc.equiv_id
 			  AND c.type = tc.type
 			WHERE tc.privacy = 'public'

@@ -122,7 +122,7 @@ switch ($path) {
 				$folderNameAlreadyExists=ze\row::exists('documents', ['type' => 'folder','folder_id' => $parentfolderId,'folder_name'=>$newDocumentName]);
 				$sql =  "
 					SELECT id
-					FROM ".DB_NAME_PREFIX."documents
+					FROM ".DB_PREFIX."documents
 					WHERE type = 'folder' 
 					AND folder_id =".(int)$parentfolderId."
 					AND folder_name = '".ze\escape::sql($newDocumentName)."' 

@@ -136,7 +136,7 @@ zenarioCI.box = function(slotName, type, cantCache, settingEnabled) {
 		}
 	}
 	
-	return '<div class="' + css + '" title="' + zenario.htmlspecialchars('<div class="zenario_cache_box">' + html + '</div>') + '"></div>';
+	return '<x-zenario-cache-info class="' + css + '" title="' + zenario.htmlspecialchars('<div class="zenario_cache_box">' + html + '</div>') + '"></x-zenario-cache-info>';
 }
 
 
@@ -156,13 +156,13 @@ zenarioCI.init = function(canCache) {
 			
 			if (el.id && (slotName = el.id.replace('plgslt_', '')) && (zenarioCD.slots[slotName])) {
 				
-				$(el).prepend('<div class="zenario_cache_info">' + zenarioCI.box(slotName, 'Plugin', false, zenarioCD.cache_plugins) + '</div>');
+				$(el).prepend('<x-zenario-cache-info class="zenario_cache_info">' + zenarioCI.box(slotName, 'Plugin', false, zenarioCD.cache_plugins) + '</x-zenario-cache-info>');
 			}
 		});
 		
 		zenario.get('zenario_cache_info').innerHTML = zenarioCI.box('', 'Page', !canCache, true);
 		
-		zenario.tooltips('div.zenario_cache_info div', options);
+		zenario.tooltips('x-zenario-cache-info.zenario_cache_info *', options);
 		
 		zenarioCI.inited = true;
 	}

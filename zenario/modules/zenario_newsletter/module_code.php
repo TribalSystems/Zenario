@@ -42,7 +42,7 @@ class zenario_newsletter extends ze\moduleBaseClass {
 		} 
 		
 		$parts = [];
-		foreach ( ze\row::getArray(ZENARIO_NEWSLETTER_PREFIX. 'newsletter_smart_group_link', 'smart_group_id', ['newsletter_id' => $id]) as $smartGroupId )  {
+		foreach ( ze\row::getValues(ZENARIO_NEWSLETTER_PREFIX. 'newsletter_smart_group_link', 'smart_group_id', ['newsletter_id' => $id]) as $smartGroupId )  {
 			if ($rv = self::newsletterRecipientsPart($id, $mode, $smartGroupId)) {
 				$parts[] = $rv;
 			}
@@ -61,7 +61,7 @@ class zenario_newsletter extends ze\moduleBaseClass {
 					break;
 				case 'populate': 
 					$sql = "
-						INSERT IGNORE INTO ". DB_NAME_PREFIX. ZENARIO_NEWSLETTER_PREFIX. "newsletter_user_link
+						INSERT IGNORE INTO ". DB_PREFIX. ZENARIO_NEWSLETTER_PREFIX. "newsletter_user_link
 							(newsletter_id, user_id, tracker_hash, remove_hash, delete_account_hash, `email`) "
 						. implode(" UNION ", $parts);
 					ze\sql::update($sql, false, false);
@@ -109,8 +109,8 @@ class zenario_newsletter extends ze\moduleBaseClass {
 		}
 		
 		$sql .= "
-			FROM ". DB_NAME_PREFIX. "users AS u
-			LEFT JOIN ". DB_NAME_PREFIX. "users_custom_data AS ucd
+			FROM ". DB_PREFIX. "users AS u
+			LEFT JOIN ". DB_PREFIX. "users_custom_data AS ucd
 			   ON ucd.user_id = u.id";
 		
 		$whereStatement = "
@@ -121,13 +121,13 @@ class zenario_newsletter extends ze\moduleBaseClass {
 			return false;
 		}
 		
-		foreach (ze\row::getArray(
+		foreach (ze\row::getAssocs(
 			ZENARIO_NEWSLETTER_PREFIX. 'newsletter_sent_newsletter_link',
 			'sent_newsletter_id',
 			['newsletter_id' => $id]
 		) as $sentNewsletterId) {
 			$sql .= "
-				LEFT JOIN ". DB_NAME_PREFIX. ZENARIO_NEWSLETTER_PREFIX. "newsletter_user_link AS nul_". (int) $sentNewsletterId. "
+				LEFT JOIN ". DB_PREFIX. ZENARIO_NEWSLETTER_PREFIX. "newsletter_user_link AS nul_". (int) $sentNewsletterId. "
 				   ON nul_". (int) $sentNewsletterId. ".newsletter_id = ". (int) $sentNewsletterId. "
 				  AND nul_". (int) $sentNewsletterId. ".user_id = u.id";
 		
@@ -139,7 +139,7 @@ class zenario_newsletter extends ze\moduleBaseClass {
 		if (($cFieldId = ze::setting('zenario_newsletter__all_newsletters_opt_out'))
 		 && ($cField = ze\dataset::fieldDetails($cFieldId))) {
 			$sql .= "
-				LEFT JOIN ". DB_NAME_PREFIX. "users_custom_data AS noo
+				LEFT JOIN ". DB_PREFIX. "users_custom_data AS noo
 				   ON noo.user_id = u.id
 				  AND noo.`". ze\escape::sql($cField['db_column']). "` = 1";
 		}
@@ -157,24 +157,12 @@ class zenario_newsletter extends ze\moduleBaseClass {
 	
 	
 	public function preFillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
-		if ($path == 'zenario__content/panels/email_images_for_newsletters') {
-			//Borrow the logic from the image library panel to handle the images
-			$c = $this->runSubClass('zenario_common_features', 'organizer', 'zenario__content/panels/image_library');
-			$c->preFillOrganizerPanel('generic_image_panel', $panel, $refinerName, $refinerId, $mode);
-		}
-		
 		if ($c = $this->runSubClass(__FILE__)) {
 			return $c->preFillOrganizerPanel($path, $panel, $refinerName, $refinerId, $mode);
 		}
 	}
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
-		if ($path == 'zenario__content/panels/email_images_for_newsletters') {
-			//Borrow the logic from the image library panel to handle the images
-			$c = $this->runSubClass('zenario_common_features', 'organizer', 'zenario__content/panels/image_library');
-			$c->fillOrganizerPanel('generic_image_panel', $panel, $refinerName, $refinerId, $mode);
-		}
-		
 		if ($c = $this->runSubClass(__FILE__)) {
 			return $c->fillOrganizerPanel($path, $panel, $refinerName, $refinerId, $mode);
 		}
@@ -192,7 +180,7 @@ class zenario_newsletter extends ze\moduleBaseClass {
 	//Load the details of a/for a Newsletter or Newsletter Design
 	//Or alternately create a new Newsletter/Newsletter Design using another as a template
 	//Or if there are no details to load, attempt to set the fields to some default values
-	function loadDetails($id) {
+	public static function details($id) {
 		$sql = "
 			SELECT 
 				newsletter_name,
@@ -204,10 +192,15 @@ class zenario_newsletter extends ze\moduleBaseClass {
 				body,
 				unsubscribe_text,
 				delete_account_text
-			FROM ". DB_NAME_PREFIX. ZENARIO_NEWSLETTER_PREFIX. "newsletters
+			FROM ". DB_PREFIX. ZENARIO_NEWSLETTER_PREFIX. "newsletters
 			WHERE id = ". (int) $id;
 		$result = ze\sql::select($sql);
 		return ze\sql::fetchAssoc($result);
+	}
+	
+	//Old non-static version of the above function
+	public function loadDetails($id) {
+		return self::details($id);
 	}
 	
 	
@@ -298,7 +291,7 @@ class zenario_newsletter extends ze\moduleBaseClass {
 		
 		$sql = "
 			SELECT id, newsletter_name
-			FROM ". DB_NAME_PREFIX. ZENARIO_NEWSLETTER_PREFIX. "newsletters
+			FROM ". DB_PREFIX. ZENARIO_NEWSLETTER_PREFIX. "newsletters
 			WHERE status = '_IN_PROGRESS' AND (scheduled_send_datetime IS NULL OR scheduled_send_datetime <= STR_TO_DATE('". ze\escape::sql($serverTime). "', '%Y-%m-%d %H:%i:%s'))";
 		$result = ze\sql::select($sql);
 		
@@ -329,7 +322,7 @@ class zenario_newsletter extends ze\moduleBaseClass {
 				last_name,
 				email,
 				1 AS admin_account
-			FROM '.DB_NAME_PREFIX.'admins
+			FROM '.DB_PREFIX.'admins
 			WHERE status = \'active\'';
 		
 		if ($mode == 'myself') {
@@ -380,7 +373,7 @@ class zenario_newsletter extends ze\moduleBaseClass {
 				unsubscribe_text,
 				delete_account_text
 			FROM "
-				. DB_NAME_PREFIX. ZENARIO_NEWSLETTER_PREFIX. "newsletters
+				. DB_PREFIX. ZENARIO_NEWSLETTER_PREFIX. "newsletters
 			WHERE 
 				id = ". (int) $id;
 		$newsletter = ze\sql::fetchAssoc($sql);
@@ -427,7 +420,7 @@ class zenario_newsletter extends ze\moduleBaseClass {
 				remove_hash,
 				delete_account_hash
 			FROM "
-				. DB_NAME_PREFIX. ZENARIO_NEWSLETTER_PREFIX. "newsletter_user_link
+				. DB_PREFIX. ZENARIO_NEWSLETTER_PREFIX. "newsletter_user_link
 			WHERE 
 					email_sent = 0
 			  AND 	newsletter_id = ". (int) $newsletter['id'];
@@ -451,7 +444,7 @@ class zenario_newsletter extends ze\moduleBaseClass {
 		$user = self::getUserDetails($userId);
 
 		$sql = "
-			UPDATE ". DB_NAME_PREFIX. ZENARIO_NEWSLETTER_PREFIX. "newsletter_user_link SET
+			UPDATE ". DB_PREFIX. ZENARIO_NEWSLETTER_PREFIX. "newsletter_user_link SET
 				email_sent = 1,
 				time_sent = NOW()
 			WHERE newsletter_id = ". (int) $newsletter['id']. "
@@ -490,7 +483,7 @@ class zenario_newsletter extends ze\moduleBaseClass {
 		)) {
 			
 			$sql = "
-				UPDATE ". DB_NAME_PREFIX. ZENARIO_NEWSLETTER_PREFIX. "newsletter_user_link SET
+				UPDATE ". DB_PREFIX. ZENARIO_NEWSLETTER_PREFIX. "newsletter_user_link SET
 					email_sent = 2,
 					email_overridden_by = '". ze\escape::sql($emailOverriddenBy). "'
 				WHERE newsletter_id = ". (int) $newsletter['id']. "
@@ -528,7 +521,7 @@ class zenario_newsletter extends ze\moduleBaseClass {
 						if(!$isDeleteOrSubLink) {
 							preg_match('@>(.+)<@', $str, $linktextArray);//Finds link text
 							$hyperlinkId = ze\row::set(ZENARIO_NEWSLETTER_PREFIX. "newsletters_hyperlinks", ["newsletter_id" => $newsletter["id"], "link_ordinal"=> $linkCount, "hyperlink"=>$href, "link_text" => $linktextArray[1], "clickthrough_count" => 0, "last_clicked_date" => NULL], ["newsletter_id" => $newsletter["id"], "link_ordinal"=> $linkCount]); // create hyperlink record
-							$sql = "UPDATE " . DB_NAME_PREFIX. ZENARIO_NEWSLETTER_PREFIX. "newsletters_hyperlinks SET
+							$sql = "UPDATE " . DB_PREFIX. ZENARIO_NEWSLETTER_PREFIX. "newsletters_hyperlinks SET
 									hyperlink_hash = SHA('" . $hyperlinkId . "_" . $newsletter['id'] . "')
 									WHERE id = " . $hyperlinkId;
 							ze\sql::update($sql);

@@ -14,7 +14,11 @@
 		<div class="zfab_row_inner">
 			<div class="messageDisplay">
 				<div>
-					{{zenario.htmlspecialchars(notice.message, true)}}
+					<% if (notice.html) { %>
+						{{notice.message}}
+					<% } else { %>
+						{{zenario.htmlspecialchars(notice.message, true)}}
+					<% } %>
 				</div>
 			</div>
 		</div>

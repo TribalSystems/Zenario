@@ -66,12 +66,12 @@ if (ze\priv::check()) {
 		$result_array = [];
                 
                 $sql = "SELECT version, created_datetime, 
-                        (SELECT username FROM " . DB_NAME_PREFIX . "admins as a WHERE a.id = v.creating_author_id) as creating_author,
+                        (SELECT username FROM " . DB_PREFIX . "admins as a WHERE a.id = v.creating_author_id) as creating_author,
                         last_modified_datetime, 
-                        (SELECT username FROM " . DB_NAME_PREFIX . "admins as a WHERE a.id = v.last_author_id) as last_author,
+                        (SELECT username FROM " . DB_PREFIX . "admins as a WHERE a.id = v.last_author_id) as last_author,
                         published_datetime, 
-                        (SELECT username FROM " . DB_NAME_PREFIX . "admins as a WHERE a.id = v.publisher_id) as publisher
-                    FROM " . DB_NAME_PREFIX . "content_item_versions as v 
+                        (SELECT username FROM " . DB_PREFIX . "admins as a WHERE a.id = v.publisher_id) as publisher
+                    FROM " . DB_PREFIX . "content_item_versions as v 
                     WHERE v.tag_id = '" . ze\escape::sql($tagId) . "'
                     ORDER BY v.version desc
                     LIMIT 5";
@@ -158,19 +158,39 @@ if (ze\priv::check()) {
 					$formattedSize = ze\lang::formatFilesizeNicely($size, 1, true);
 				}
 				
-				if (ze\db::hasGlobal()) {
-					$section['fields'][] = ['label' => ze\admin::phrase('Global [[dbms]] database:', $mrg), 'value' => 
-						ze\admin::phrase('[[DBNAME_GLOBAL]] on [[DBHOST_GLOBAL]], prefix [[DB_NAME_PREFIX_GLOBAL]]', get_defined_constants())];
-					$section['fields'][] = ['label' => ze\admin::phrase('Local [[dbms]] database:', $mrg), 'value' => 
-						ze\admin::phrase('[[DBNAME]] on [[DBHOST]], prefix [[DB_NAME_PREFIX]]', get_defined_constants())];
+				if (ze\db::hasGlobal() || ze\db::hasDataArchive()) {
 					
+					if (ze\db::hasGlobal()) {
+						$section['fields'][] = ['label' => ze\admin::phrase('Global [[dbms]] database:', $mrg), 'value' => 
+							ze\admin::phrase('[[DBNAME_GLOBAL]] on [[DBHOST_GLOBAL]], prefix [[DB_PREFIX_GLOBAL]]', get_defined_constants())];
+					}
+					
+					$section['fields'][] = ['label' => ze\admin::phrase('Local [[dbms]] database:', $mrg), 'value' => 
+						ze\admin::phrase('[[DBNAME]] on [[DBHOST]], prefix [[DB_PREFIX]]', get_defined_constants())];
+					
+					if (ze\db::hasDataArchive()) {
+						$section['fields'][] = ['label' => ze\admin::phrase('Data archive [[dbms]] database:', $mrg), 'value' => 
+							ze\admin::phrase('[[DBNAME_DA]] on [[DBHOST_DA]], prefix [[DB_PREFIX_DA]]', get_defined_constants())];
+					}
+				
 					if ($size) {
 						$section['fields'][] = ['label' => ze\admin::phrase('Local database size:', $mrg), 'value' => $formattedSize];
 					}
 					
+					if (ze\db::hasDataArchive()) {
+						if ($daSize = ze\sqlDA::fetchValue('
+							SELECT SUM(data_length + index_length)
+							FROM information_schema.tables
+							WHERE table_schema = "'. ze\escape::sql(DBNAME_DA). '"'
+						)) {
+							$daFormattedSize = ze\lang::formatFilesizeNicely($daSize, 1, true);
+							$section['fields'][] = ['label' => ze\admin::phrase('Data archive size:', $mrg), 'value' => $daFormattedSize];
+						}
+					}
+					
 				} else {
 					$section['fields'][] = ['label' => ze\admin::phrase('[[dbms]] database:', $mrg), 'value' =>
-						ze\admin::phrase('[[DBNAME]] on [[DBHOST]], prefix [[DB_NAME_PREFIX]]', get_defined_constants())];
+						ze\admin::phrase('[[DBNAME]] on [[DBHOST]], prefix [[DB_PREFIX]]', get_defined_constants())];
 					
 					if ($size) {
 						$section['fields'][] = ['label' => ze\admin::phrase('[[dbms]] size:', $mrg), 'value' => $formattedSize];
@@ -194,7 +214,7 @@ if (ze\priv::check()) {
 						}
 					}
 					
-					$section['fields'][] = ['label' => ze\admin::phrase('MongoDB database:'), 'value' =>
+					$section['fields'][] = ['label' => ze\admin::phrase('MongoDB database (deprecated):'), 'value' =>
 						ze\admin::phrase('[[DBNAME]] on [[DBHOST]]', ['DBNAME' => MONGODB_DBNAME, 'DBHOST' => $host])];
 				}
 				

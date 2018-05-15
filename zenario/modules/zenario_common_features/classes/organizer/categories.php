@@ -57,7 +57,7 @@ class zenario_common_features__organizer__categories extends ze\moduleBaseClass 
 			
 			if($item['id']){
 				$sql =" SELECT count(id) as number_of_categories
-						FROM ". DB_NAME_PREFIX."categories 
+						FROM ". DB_PREFIX."categories 
 						WHERE parent_id = ".(int)$item['id'];
 					
 				$result = ze\sql::select($sql);

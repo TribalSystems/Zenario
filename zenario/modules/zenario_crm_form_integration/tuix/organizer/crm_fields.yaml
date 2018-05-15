@@ -1,13 +1,13 @@
 zenario__user_forms:
     panels:
-        zenario_crm_form_integration__fields:
+        crm_fields:
             priv: _PRIV_MANAGE_FORMS
             title: Form fields with CRM names
             db_items:
                 table: |
-                    [[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields AS ff
-                    INNER JOIN [[DB_NAME_PREFIX]][[ZENARIO_CRM_FORM_INTEGRATION_PREFIX]]form_crm_fields fcf
-                        ON ff.id = fcf.form_field_id
+                    [[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields AS ff
+                    INNER JOIN [[DB_PREFIX]][[ZENARIO_CRM_FORM_INTEGRATION_PREFIX]]crm_fields cf
+                        ON ff.id = cf.form_field_id
                 id_column: ff.id
             columns:
                 id:
@@ -19,7 +19,7 @@ zenario__user_forms:
                     show_by_default: true
                 ordinal:
                     title: Ordinal
-                    db_column: fcf.ordinal
+                    db_column: cf.ord
                     align_right: true
                     width: xxsmall
                     show_by_default: true
@@ -36,11 +36,11 @@ zenario__user_forms:
                     sql: |
                         ff.user_form_id = (
                             SELECT ff2.user_form_id
-                            FROM [[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields ff2
+                            FROM [[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields ff2
                             WHERE ff2.id = [[REFINER_ID]]
                         )
-                        AND fcf.field_crm_name = (
-                            SELECT fcf2.field_crm_name
-                            FROM [[DB_NAME_PREFIX]][[ZENARIO_CRM_FORM_INTEGRATION_PREFIX]]form_crm_fields fcf2
-                            WHERE fcf2.form_field_id = [[REFINER_ID]]
+                        AND cf.name = (
+                            SELECT cf2.name
+                            FROM [[DB_PREFIX]][[ZENARIO_CRM_FORM_INTEGRATION_PREFIX]]crm_fields cf2
+                            WHERE cf2.form_field_id = [[REFINER_ID]]
                         )

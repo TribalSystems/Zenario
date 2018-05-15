@@ -1,13 +1,15 @@
 {% if Feed_Reader %}
 <div class="feed_reader_content">
-	<h1>{{Title}}</h1>
+	<{{title_tags}} class="heading">{{Title}}</{{title_tags}}>
 	{% if Feeds %}
 		{% if Content_Section %}
-			<div class="feed_reader_data_row">
-				<h2>{{Feed_Title}}</h2>
-				<p>{% if Date_Section %}<span class="date">{{Date}}</span><br />{% endif %}
-				{{Feed_Description}}</p>
-			</div>
+			{% for Feed in Feeds %}
+				<div class="feed_reader_data_row">
+					<{{feed_title_tags}} class="subheading">{{Feed.Feed_Title}}</{{feed_title_tags}}>
+					<p class="content">{% if Date_Section %}<span class="date">{{Feed.Date}}</span><br />{% endif %}
+					{{Feed.Feed_Description}}</p>
+				</div>
+			{% endfor %}
 		{% endif %}
 	{% endif %}
 </div>

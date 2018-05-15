@@ -9,8 +9,8 @@ zenario__email_template_manager:
                 css_class: zenario_email_template_panel
             db_items:
                 table: |
-                    [[DB_NAME_PREFIX]]email_templates as T
-                    LEFT JOIN [[DB_NAME_PREFIX]]modules as M
+                    [[DB_PREFIX]]email_templates as T
+                    LEFT JOIN [[DB_PREFIX]]modules as M
                         ON T.module_class_name = M.class_name
                 id_column: T.code
             default_sort_column: template_name
@@ -21,6 +21,12 @@ zenario__email_template_manager:
             refiners:
                 module:
                     sql: M.id = [[REFINER_ID]]
+                email_templates_using_image:
+                    table_join: |
+                        INNER JOIN [[DB_PREFIX]]inline_images AS ii
+                           ON ii.foreign_key_to = 'email_template'
+                          AND ii.foreign_key_id = T.id
+                          AND ii.image_id = [[REFINER_ID]]
             columns:
                 layout_id:
                     title: ID
@@ -47,6 +53,8 @@ zenario__email_template_manager:
                     searchable: true
                     show_by_default: true
                     width: large
+                from_details:
+                    db_column: T.from_details
                 email_name_from:
                     title: Email name from
                     db_column: T.email_name_from
@@ -64,7 +72,7 @@ zenario__email_template_manager:
                     db_column: |
                         (
                             SELECT COUNT(DISTINCT ii.image_id)
-                            FROM [[DB_NAME_PREFIX]]inline_images AS ii
+                            FROM [[DB_PREFIX]]inline_images AS ii
                             WHERE ii.foreign_key_id = T.id
                               AND ii.foreign_key_to = 'email_template'
                         )

@@ -186,16 +186,10 @@ class file {
 
 		$file['archived'] = 0;
 		$file['created_datetime'] = \ze\date::now();
-
+		
+		$dir = $path = false;
 		if ($addToDocstoreDirIfPossible
-		 && is_dir($dir = \ze::setting('docstore_dir'). '/')
-		 && is_writable($dir)
-		 && ((is_dir($dir = $dir. ($path = preg_replace('/\W/', '_', $filename). '_'. $file['checksum']). '/'))
-		  || (mkdir($dir) && @chmod($dir, 0777)))) {
-	
-			if (file_exists($dir. $file['filename'])) {
-				unlink($dir. $file['filename']);
-			}
+		 && self::createDocstoreDir($file['filename'], $file['checksum'], $dir, $path)) {
 	
 			if ($deleteWhenDone) {
 				rename($location, $dir. $file['filename']);
@@ -346,7 +340,7 @@ class file {
 					break;
 			
 				case 3:
-					$sql = "SELECT IFNULL(MAX(id), 0) + 1 FROM ". DB_NAME_PREFIX. "files";
+					$sql = "SELECT IFNULL(MAX(id), 0) + 1 FROM ". DB_PREFIX. "files";
 					$result = \ze\sql::select($sql);
 					$row = \ze\sql::fetchRow($result);
 					$filename = 'image_'. $row[0]. '.'. $ext;
@@ -518,6 +512,24 @@ class file {
 	
 		return false;
 	}
+	
+	public static function stream($fileId, $filename = false) {
+		if ($file = \ze\row::get('files', ['location', 'data', 'path', 'mime_type', 'filename'], ['id'=> $fileId])) {
+			
+			if ($filename === false) {
+				$filename = $file['filename'];
+			}
+			
+			header('Content-type: '. ($file['mime_type'] ?: 'application/octet-stream'));
+			header('Content-Disposition: attachment; filename="'. urlencode($filename). '"');
+			
+			if ($file['location'] == 'docstore') {
+				readfile(self::docstorePath($file['path']));
+			} else {
+				echo $file['data'];
+			}
+		}
+	}
 
 	//Formerly "documentMimeType()"
 	public static function mimeType($file) {
@@ -550,38 +562,28 @@ class file {
 	//Formerly "getDocumentFrontEndLink()"
 	public static function getDocumentFrontEndLink($documentId, $privateLink = false) {
 		$link = false;
-		$document = \ze\row::get('documents', ['file_id', 'privacy'], $documentId);
+		$document = \ze\row::get('documents', ['file_id', 'filename', 'privacy'], $documentId);
 		if ($document) {
 			// Create private link
 			if ($privateLink || ($document['privacy'] == 'private')) {
-				$link = self::createPrivateLink($document['file_id']);
+				$link = self::createPrivateLink($document['file_id'], $document['filename']);
 			// Create public link
 			} elseif ($document['privacy'] == 'public' && !\ze\server::isWindows()) {
-				$link = self::createPublicLink($document['file_id']);
+				$link = self::createPublicLink($document['file_id'], $document['filename']);
 			// Create link based on content item status and privacy
-			} elseif ($document['privacy'] == 'auto') {
-				if (\ze::$status != 'published') {
-					$link = self::createPrivateLink($document['file_id']);
-				} else {
-					$contentItemPrivacy = \ze\row::get('translation_chains', 'privacy', ['equiv_id' => \ze::$equivId, 'type' => \ze::$cType]);
-					if (($contentItemPrivacy == 'public') && !\ze\server::isWindows()) {
-						$link = self::createPublicLink($document['file_id']);
-					} else {
-						$link = self::createPrivateLink($document['file_id']);
-						$contentItemPrivacy = 'private';
-					}
-					\ze\row::update('documents', ['privacy' => $contentItemPrivacy], $documentId);
-				}
-			} 
+			}
 		}
 		return $link;
 	}
 
 	//Formerly "createFilePublicLink()"
-	public static function createPublicLink($fileId) {
+	public static function createPublicLink($fileId, $filename = false) {
 		$path = self::docstorePath($fileId, false);
 		$file = \ze\row::get('files', ['short_checksum', 'filename'], $fileId);
-		$filename = $file['filename'];
+		
+		if ($filename === false) {
+			$filename = $file['filename'];
+		}
 	
 		$relDir = 'public'. '/downloads/'. $file['short_checksum'];
 		$absDir =  CMS_ROOT. $relDir;
@@ -598,8 +600,8 @@ class file {
 	}
 
 	//Formerly "createPrivateLink()"
-	public static function createPrivateLink($fileId) {
-		return self::link($fileId, \ze::hash64($fileId. '_'. \ze\ring::random(10)), 'downloads');
+	public static function createPrivateLink($fileId, $filename = false) {
+		return self::link($fileId, \ze::hash64($fileId. '_'. \ze\ring::random(10)), 'downloads', false, $filename);
 	}
 	
 	//Produce a label for a file in the standard format
@@ -607,7 +609,7 @@ class file {
 		
 		$sql = '
 			SELECT id, filename, width, height, checksum, short_checksum, `usage`
-			FROM '. DB_NAME_PREFIX. 'files
+			FROM '. DB_PREFIX. 'files
 			WHERE id = '. (int) $fileId;
 		
 		if ($file = \ze\sql::fetchAssoc($sql)) {
@@ -617,7 +619,7 @@ class file {
 			if (\ze::isAdmin()) {
 				$sql = '
 					SELECT 1
-					FROM '. DB_NAME_PREFIX. 'files
+					FROM '. DB_PREFIX. 'files
 					WHERE `usage` = \''. \ze\escape::sql($file['usage']). '\'
 					  AND filename = \''. \ze\escape::sql($file['filename']). '\'
 					  AND short_checksum != \''. \ze\escape::sql($file['short_checksum']). '\'
@@ -637,14 +639,16 @@ class file {
 	}
 
 	//Formerly "fileLink()"
-	public static function link($fileId, $hash = false, $type = 'files', $customDocstorePath = false) {
+	public static function link($fileId, $hash = false, $type = 'files', $customDocstorePath = false, $filename = false) {
 		//Check that this file exists
 		if (!$fileId
 		 || !($file = \ze\row::get('files', ['usage', 'short_checksum', 'checksum', 'filename', 'location', 'path'], $fileId))) {
 			return false;
 		}
 		
-		$filename = $file['filename'];
+		if ($filename === false) {
+			$filename = $file['filename'];
+		}
 	
 		//Workout a hash for the file
 		if (!$hash) {
@@ -1536,7 +1540,18 @@ class file {
 		}
 	}
 
-
-
+	private static function createDocstoreDir($filename, $checksum, &$dir, &$path) {
+		if (is_dir($dir = \ze::setting('docstore_dir'). '/')
+		 && is_writable($dir)
+		 && ((is_dir($dir = $dir. ($path = preg_replace('/\W/', '_', $filename). '_'. $checksum). '/'))
+		  || (mkdir($dir) && @chmod($dir, 0777)))) {
 	
+			if (file_exists($dir. $filename)) {
+				unlink($dir. $filename);
+			}
+			
+			return true;
+		}
+		return false;
+	}
 }

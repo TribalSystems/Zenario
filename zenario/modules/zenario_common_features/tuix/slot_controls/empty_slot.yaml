@@ -71,17 +71,6 @@ empty_slot:
                 item: true
                 layout: true
     actions:
-        replace_reusable_on_item_layer:
-            priv: _PRIV_MANAGE_ITEM_SLOT
-            label: Show a different plugin on this content item...
-            page_modes:
-                item: true
-            onclick: |
-                if (zenarioA.draft(this.id)) {
-                    zenarioAT.clickTab('item');
-                    zenarioA.pickNewPlugin(this, slotName, 1, [[overides_layout]]);
-                }
-                return false;
         insert_reusable_on_item_layer:
             priv: _PRIV_MANAGE_ITEM_SLOT
             label: Insert plugin from library...
@@ -90,16 +79,16 @@ empty_slot:
             onclick: |
                 if (zenarioA.draft(this.id)) {
                     zenarioAT.clickTab('item');
-                    zenarioA.pickNewPlugin(this, slotName, 1);
+                    zenarioA.pickNewPlugin(this, slotName, 1, false);
                 }
                 return false;
         insert_reusable_on_layout_layer:
-            ord: 999
+            ord: 997
             priv: _PRIV_MANAGE_TEMPLATE_SLOT
             label: Insert plugin from library...
             page_modes:
                 layout: true
-            onclick: return zenarioA.pickNewPlugin(this, slotName, 2);
+            onclick: return zenarioA.pickNewPlugin(this, slotName, 2, false);
     
     
     

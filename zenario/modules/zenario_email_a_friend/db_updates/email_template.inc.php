@@ -28,7 +28,7 @@
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 ze\dbAdm::revision(1,
 "
-	INSERT IGNORE INTO [[DB_NAME_PREFIX]]email_templates (
+	INSERT IGNORE INTO [[DB_PREFIX]]email_templates (
 		`code`,
 		`template_name`,
 		`subject`,
@@ -62,7 +62,7 @@ ze\dbAdm::revision(1,
 ); ze\dbAdm::revision(3,
 
 <<<_sql
-	UPDATE [[DB_NAME_PREFIX]]email_templates
+	UPDATE [[DB_PREFIX]]email_templates
 	SET `module_class_name` = 'zenario_email_a_friend'
 	WHERE `code` = 'zenario_email_a_friend__to_visitor_email_this_page_to_friend_en'
 _sql

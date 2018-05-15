@@ -7,7 +7,7 @@ zenario__projects:
                 disable_grid_view: Yes
                 disable_summary_view: Yes
                 db_items: 
-                    table: "[[DB_NAME_PREFIX]][[ZENARIO_PROJECT_LOCATIONS_PREFIX]]project_location_sectors AS psector"
+                    table: "[[DB_PREFIX]][[ZENARIO_PROJECT_LOCATIONS_PREFIX]]project_location_sectors AS psector"
                     id_column: psector.id
                 item:
                     css_class: project_locations__sectors

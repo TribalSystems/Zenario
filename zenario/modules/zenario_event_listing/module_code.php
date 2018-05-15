@@ -313,9 +313,9 @@ class zenario_event_listing extends ze\moduleBaseClass {
 			if (($periodName=='week') || ($periodName=='today')) {
 				$sql = " ";
 				for ($i=$startDay;$i<=$endDay;$i++){
-					$sql .= 'SELECT ' . $i . ' as day_no,FROM_DAYS(' . $i . ') as date_str FROM ' . DB_NAME_PREFIX . ZENARIO_CTYPE_EVENT_PREFIX . 'content_event WHERE TRUE UNION ';
+					$sql .= 'SELECT ' . $i . ' as day_no,FROM_DAYS(' . $i . ') as date_str FROM ' . DB_PREFIX . ZENARIO_CTYPE_EVENT_PREFIX . 'content_event WHERE TRUE UNION ';
 				}
-				$sql .= "SELECT 0 as day_no,1 as date_str FROM " . DB_NAME_PREFIX . ZENARIO_CTYPE_EVENT_PREFIX . "content_event WHERE FALSE";
+				$sql .= "SELECT 0 as day_no,1 as date_str FROM " . DB_PREFIX . ZENARIO_CTYPE_EVENT_PREFIX . "content_event WHERE FALSE";
 				$result = ze\sql::select($sql);
 				
 				while($row = ze\sql::fetchAssoc($result)){
@@ -496,7 +496,7 @@ class zenario_event_listing extends ze\moduleBaseClass {
 					if ($this->setting('category_list')){
 						foreach (explode(',', $this->setting('category_list')) as $catId) {
 							if ($catId && ze\row::exists('categories', ['id' => (int) $catId])) {
-								$categoryJoin .=" INNER JOIN ". DB_NAME_PREFIX. "category_item_link AS cil_". (int) $catId. "
+								$categoryJoin .=" INNER JOIN ". DB_PREFIX. "category_item_link AS cil_". (int) $catId. "
 												   ON cil_". (int) $catId. ".equiv_id = c.equiv_id
 												  AND cil_". (int) $catId. ".content_type = c.type
 												  AND cil_". (int) $catId. ".category_id = ". (int) $catId;
@@ -524,7 +524,7 @@ class zenario_event_listing extends ze\moduleBaseClass {
 								( ce.start_date>'" . date('Y-m-d') . "' ) as sort_future " 
 							. ze\content::sqlToSearchContentTable(true,false, "
 																	INNER JOIN " 
-																		. DB_NAME_PREFIX . ZENARIO_CTYPE_EVENT_PREFIX . "content_event ce
+																		. DB_PREFIX . ZENARIO_CTYPE_EVENT_PREFIX . "content_event ce
 																	ON
 																			v.id = ce.id
 																		AND v.version = ce.version "

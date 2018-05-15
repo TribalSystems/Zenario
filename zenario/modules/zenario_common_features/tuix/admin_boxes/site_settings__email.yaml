@@ -97,6 +97,99 @@ site_settings:
                             ord: 8
                             label: 1 day
                     value: 'no_limit'
+        template:
+            label: Template
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_SITE_SETTING
+                on: false
+            fields:
+                description:
+                    full_width: true
+                    snippet:
+                        html: |
+                            Define a standard email template in this tab. 
+                            When an email template has the "Use standard email template" option selected, the email body is merged into the template below in [[email_body_content]].
+                standard_email_template:
+                    site_setting:
+                        name: standard_email_template
+                    label: 'Standard email template:'
+                    type: editor
+                    dont_trim: true
+                    editor_options:
+                        convert_urls: false
+                        relative_urls: false
+                    style: |
+                        width: 98%;
+                    rows: 30
+                    insert_image_button:
+                        pick_items:
+                            path: 'zenario__content/panels/image_library'
+                            target_path: 'zenario__content/panels/image_library'
+                            min_path: 'zenario__content/panels/image_library'
+                            max_path: 'zenario__content/panels/image_library'
+                            disallow_refiners_looping_on_min_path: true
+                    insert_link_button:
+                        exists: true
+                    value: |
+                        <table style="table-layout: auto; width: 860px; height: 656px;" border="0" width="100%" cellspacing="0" cellpadding="0">
+                            <tbody>
+                                <tr>
+                                    <td style="vertical-align: top; width: 860px; background: #f0f0f0;">
+                                        <table style="table-layout: auto; margin: 30px auto;" border="0" width="620" cellspacing="0" cellpadding="0" align="center">
+                                            <tbody>
+                                                <tr>
+                                                    <td style="background: #FFFFFF; vertical-align: top;">
+                                                        <table style="table-layout: auto;" border="0" width="100%" cellspacing="0" cellpadding="0">
+                                                            <tbody>
+                                                                
+                                                                <!-- HEADER -->
+                                                                <tr>
+                                                                    <td style="background: #3c3c3b; color: #fff; padding: 35px 0; border-bottom: 3px solid  #132833; text-align: center;">Company Logo</td>
+                                                                </tr>
+                                                                
+                                                                <!-- BODY -->
+                                                                <tr>
+                                                                    <td style="font-family: Arial, Helvetica; padding: 0px 20px 0px; font-size: 14px; line-height: 22px; color: #132833;">
+                                                                    <p>&nbsp;</p>
+                                                                    [[email_body_content]]
+                                                                    <p>&nbsp;</p>
+                                                                    
+                                                                    </td>
+                                                                </tr>
+                                                                
+                                                                <!-- FOOTER -->
+                                                                <tr>
+                                                                    <td style="padding: 0px;">
+                                                                        <table style="font-family: Tahoma, Geneva, sans-serif; table-layout: auto;" border="0" width="100%" cellspacing="0" cellpadding="0" bgcolor="#3c3c3b">
+                                                                            <tbody>
+                                                                                <tr>
+                                                                                    <td>&nbsp;</td>
+                                                                                </tr>
+                                                                                <tr>
+                                                                                    <td>
+                                                                                        <br>
+                                                                                        <p style="text-align: center; color: #fff; font-size: 13px; line-height: 18px;">© Your company<br> <span style="font-size: 11px;">Contact details</span></p>
+                                                                                    </td>
+                                                                                </tr>
+                                                                                <tr>
+                                                                                    <td style="color: #3c3c3b;">&nbsp;.</td>
+                                                                                </tr>
+                                                                            </tbody>
+                                                                        </table>
+                                                                    </td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
         smtp:
             label: SMTP
             edit_mode:
@@ -124,6 +217,20 @@ site_settings:
                         - Use PHP mail()
                         - Use SMTP
                     redraw_onchange: true
+                base64_encode_emails:
+                    site_setting:
+                        name: base64_encode_emails
+                    indent: 1
+                    label: 'Encoding (advanced):'
+                    type: radios
+                    value: ""
+                    values:
+                        - Do not encode (recommended)
+                        - Use base64 encoding
+                    visible_if: |
+                        !zenarioAB.value('smtp_specify_server')
+                    note_below: |
+                        You should only use the base64 option if you are regularly seeing corrupted characters in sent emails.
                 smtp_host:
                     site_setting:
                         name: smtp_host

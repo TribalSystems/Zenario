@@ -6,7 +6,7 @@ zenario__email_template_manager:
             title: Site setting email addresses
             no_items_message: There are no email addresses saved in site settings
             db_items:
-                table: '[[DB_NAME_PREFIX]]site_settings AS ss'
+                table: '[[DB_PREFIX]]site_settings AS ss'
                 id_column: ss.name
                 where_statement: WHERE ss.value REGEXP '[^@ ]+@[^. ]+(\\.[^.]+)+'
             columns:

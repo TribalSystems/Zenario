@@ -1,0 +1,364 @@
+zenario_user_form:
+    tabs: 
+        salesforce_integration:
+            ord: 11
+            label: 'Salesforce'
+            edit_mode:
+                enabled: true
+            fields:
+                client_id:
+                    label: 'Client ID:'
+                    snippet:
+                        html: ''
+                enable:
+                    label: 'Enable Salesforce API integration'
+                    type: checkbox
+                    redraw_onchange: true
+                s_object:
+                    label: Salesforce Object Name
+                    type: text
+                    note_below: >
+                        Name of Salesforce object that should be made on a form submission. e.g. Lead, Case, Account etc...
+                    visible_if: "zenarioAB.value('enable');"
+                    validation:
+                        required_if_not_hidden: Please enter a Salesforce object name.
+                desc:
+                    full_width: true
+                    snippet:
+                        html: >
+                            Use textboxes below to add fields that should be sent everytime the form is submitted.<br> 
+                    hide_with_previous_field: true
+                
+                name1: &name
+                    label: "Name / Value:"
+                    type: text
+                    maxlength: "255"
+                    style: "width: 200px"
+                    hide_with_previous_field: true
+                    visible_if: "zenarioAB.value('enable');"
+                value1: &value
+                    same_row: true
+                    label: "value:"
+                    type: text
+                    maxlength: "255"
+                    style: "width: 200px"
+                    side_note: Additional field in the form.
+                    hide_with_previous_field: true
+                    visible_if: "zenarioAB.value('enable');"
+                
+                name2: *name
+                value2: *value
+                    
+                name3: *name
+                value3: *value
+                    
+                name4: *name
+                value4: *value
+                    
+                name5: *name
+                value5: *value
+                    
+                name6: *name
+                value6: *value
+                    
+                name7: *name
+                value7: *value
+                    
+                name8: *name
+                value8: *value
+                    
+                name9: *name
+                value9: *value
+                    
+                name10: *name
+                value10: *value
+            
+        mailchimp_integration:
+            ord: 11
+            label: 'MailChimp'
+            edit_mode:
+                enabled: true
+            notices:
+                missing_email:
+                    show: false
+                    type: warning
+                    message: Please edit the email address field on your form, click the CRM tab, check the checkbox to enable CRM integration, and make sure the CRM field name is "EMAIL".
+                info:
+                    show: true
+                    type: information
+                    message: You will need to edit each field on your form and enable CRM integration. To do this, select each field in turn and go to its CRM tab, check the checkbox to enable CRM integration, and give it the CRM field name that corresponds to the directions on the MailChimp settings for the relevant mailing list.
+            fields:
+                api_key:
+                    label: 'API key:'
+                    snippet:
+                        html: ''
+                enable:
+                    label: 'Enable MailChimp API integration'
+                    type: checkbox
+                    format_onchange: true
+                
+                mailchimp_list_id:
+                    visible_if: zenarioAB.value('enable')
+                    label: 'MailChimp list ID:'
+                    type: text
+                    style: width:100px
+                    validation:
+                        required_if_not_hidden: Enter the ID of a MailChimp List to add subscribers to.
+                    side_note: To find the MailChimp List ID, please go to your MailChimp Lists, pick a List and view its Settings, then at the bottom of the page look for the Unique ID for that list.
+                
+                desc:
+                    full_width: true
+                    snippet:
+                        html: >
+                            Use textboxes below to add fields that should be sent everytime the form is submitted.<br> 
+                    hide_with_previous_field: true
+                
+                name1: *name
+                value1: *value
+                
+                name2: *name
+                value2: *value
+                    
+                name3: *name
+                value3: *value
+                    
+                name4: *name
+                value4: *value
+                    
+                name5: *name
+                value5: *value
+                    
+                name6: *name
+                value6: *value
+                    
+                name7: *name
+                value7: *value
+                    
+                name8: *name
+                value8: *value
+                    
+                name9: *name
+                value9: *value
+                    
+                name10: *name
+                value10: *value
+        
+        360lifecycle_integration:
+            ord: 12
+            label: '360Lifecycle'
+            edit_mode:
+                enabled: true
+            fields:
+                api_key:
+                    label: 'API key:'
+                    snippet:
+                        html: ''
+                enable:
+                    label: 'Enable 360Lifecycle API integration'
+                    type: checkbox
+                    format_onchange: true
+                
+                opportunity_advisor:
+                    visible_if: zenarioAB.value('enable')
+                    label: 'Opportunity Advisor:'
+                    type: text
+                    maxlength: 255
+                    value: lead.handler
+                    validation:
+                        required_if_not_hidden: Enter the Opportunity Advisor.
+                    note_below: Matches the "Full name" of the Advisor within the 360 CRM.
+                opportunity_lead_source:
+                    visible_if: zenarioAB.value('enable')
+                    label: 'Opportunity Lead Source:'
+                    type: text
+                    maxlength: 255
+                    value: Website
+                    validation:
+                        required_if_not_hidden: Enter the Opportunity Lead Source.
+                    note_below: Matches the description of an existing "Lead Source" in the 360 CRM.
+                opportunity_lead_type:
+                    visible_if: zenarioAB.value('enable')
+                    label: 'Opportunity Lead Type:'
+                    type: text
+                    maxlength: 255
+                    value: Lead Import
+                    validation:
+                        required_if_not_hidden: Enter the Opportunity Lead Type.
+                    note_below: Matches the description of an existing "Lead Type" in the 360 CRM.
+                
+                help:
+                    visible_if: zenarioAB.value('enable')
+                    label: 'The following CRM field names are expected on this form:'
+                    snippet:
+                        html: |
+                            <table class="basic_table">
+                                <tr>
+                                    <th>Field CRM name</th>
+                                    <th>Type</th>
+                                    <th>Comments</th>
+                                </tr>
+                                <tr>
+                                    <td><code>Address.AddressLine1</code></td>
+                                    <td>String</td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><code>Address.AddressLine2</code></td>
+                                    <td>String</td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><code>Address.County</code></td>
+                                    <td>String</td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><code>Address.MailingName</code></td>
+                                    <td>String</td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><code>Address.Postcode</code></td>
+                                    <td>String</td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><code>Address.Salutation</code></td>
+                                    <td>String</td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><code>Address.Town</code></td>
+                                    <td>String</td>
+                                    <td></td>
+                                </tr>
+                                
+                                <tr>
+                                    <td><code>Client1.DateOfBirth</code></td>
+                                    <td>Date</td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><code>Client1.Dependants</code></td>
+                                    <td>Integer</td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><code>Client1.EmploymentStatus</code></td>
+                                    <td>String (Enum)</td>
+                                    <td>Matches to "Employed", "Director", "Retired", "Houseperson", "Self-Employed", "Student", "Unemployed".</td>
+                                </tr>
+                                <tr>
+                                    <td><code>Client1.Forename</code></td>
+                                    <td>String</td>
+                                    <td></td>
+                                </tr>
+                                 <tr>
+                                    <td><code>Client1.Gender</code></td>
+                                    <td>String (Enum)</td>
+                                    <td>Matches to "Male", "Female".</td>
+                                </tr>
+                                <tr>
+                                    <td><code>Client1.Income</code></td>
+                                    <td>Float</td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><code>Client1.Occupation</code></td>
+                                    <td>String</td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><code>Client1.Smoker</code></td>
+                                    <td>Boolean</td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><code>Client1.Surname</code></td>
+                                    <td>String</td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><code>Client1.Title</code></td>
+                                    <td>String (Enum)</td>
+                                    <td>Matches to "Mr", "Mrs", "Ms", "Dr", "Master".</td>
+                                </tr>
+                                
+                                <tr>
+                                    <td><code>Client1.Contact.Email</code></td>
+                                    <td>String</td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><code>Client1.Contact.Mobile</code></td>
+                                    <td>String</td>
+                                    <td></td>
+                                </tr>
+                            </table>
+                    note_below: You can include a second client by copying the above for Client1 but replaced with Client2.
+        crm_integration:
+            ord: 13
+            hidden: false
+            label: 'Other CRM'
+            edit_mode:
+                enabled: true
+            
+            notices:
+                crm_info:
+                    show: true
+                    type: information
+                    message: Look in the site-settings to enable and configure sending data to either <a href="[[link_to_salesforce_tab]]" target="_blank">Salesforce</a> or <a href="[[link_to_mailchimp_tab]]" target="_blank">MailChimp</a>.
+                    html: true
+            
+            fields:
+                enable:
+                    label: 'Enable CRM integration'
+                    type: checkbox
+                    redraw_onchange: true
+                url:
+                    label: "CRM form action URL:"
+                    type: text
+                    maxlength: "255"
+                    style: "width: 416px"
+                    side_note: Enter the URL of the CRM which will receive the form information.
+                    visible_if: zenarioAB.value('enable')
+                    validation:
+                        required_if_not_hidden: Please enter the CRM form action URL.
+                desc:
+                    full_width: true
+                    snippet:
+                        html: >
+                            Use textboxes below to add fields that should be sent everytime the form is submitted.<br> 
+                    hide_with_previous_field: true
+                
+                name1: *name
+                value1: *value
+                
+                name2: *name
+                value2: *value
+                    
+                name3: *name
+                value3: *value
+                    
+                name4: *name
+                value4: *value
+                    
+                name5: *name
+                value5: *value
+                    
+                name6: *name
+                value6: *value
+                    
+                name7: *name
+                value7: *value
+                    
+                name8: *name
+                value8: *value
+                    
+                name9: *name
+                value9: *value
+                    
+                name10: *name
+                value10: *value
+
+                

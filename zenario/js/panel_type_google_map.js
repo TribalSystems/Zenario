@@ -46,22 +46,11 @@ methods.init = function() {
 	thus.offIconURL = URLBasePath+'zenario/admin/images/google_map/red-map-pin.png';
 };
 
-//Use this function to set AJAX URL you want to use to load the panel.
-//Initally the this.tuix variable will just contain a few important TUIX properties
-//and not your the panel definition from TUIX.
-//The default value here is a PHP script this will:
-	//Load all of the TUIX properties
-	//Call your preFillOrganizerPanel() method
-	//Populate items from the database if you set the db_items property in TUIX
-	//Call your fillOrganizerPanel() method
-//You can skip these steps and not do an AJAX request by returning false instead,
-//or do something different by returning a URL to a different PHP script
-methods.returnAJAXURL = function() {
-	return URLBasePath
-		+ 'zenario/admin/organizer.ajax.php?path='
-		+ encodeURIComponent(thus.path)
-		+ zenario.urlRequest(thus.returnAJAXRequests())
-		+ zenario.urlRequest('panel_type=google_map');
+//Use this to add any requests you need to the AJAX URL used to call your panel
+methods.returnAJAXRequests = function() {
+	return {
+		panel_type: 'google_map'
+	};
 };
 
 //You should return the page size you wish to use, or false to disable pagination

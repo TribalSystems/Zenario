@@ -12,8 +12,6 @@ plugin_settings:
                     type: text
                     value: 'Tribiq'
                     maxlength: 255
-                    validation:
-                        required: Please enter a company name.
                         
                 year_display:
                     plugin_setting:
@@ -124,7 +122,7 @@ plugin_settings:
                             label: 'Link to an external URL'
                             ord: 2
                         internal: 
-                            label: 'Link to a Content Item'
+                            label: 'Link to a content item'
                             ord: 3
                     value: no_link
                     format_onchange: true
@@ -135,7 +133,7 @@ plugin_settings:
                         name: hyperlink_target
                         foreign_key_to: content
                         dangling_cross_references: delete_instance
-                    label: 'Content Item'
+                    label: 'Content Item:'
                     indent: 1
                     pick_items:
                         path: zenario__content/panels/content/refiners/filter_by_lang////
@@ -143,7 +141,7 @@ plugin_settings:
                         max_path: zenario__content/panels/content
                         target_path: zenario__content/panels/content
                         disallow_refiners_looping_on_min_path: true
-                        select_phrase: select a content item...
+                        select_phrase: Select a content item...
                         hide_remove_button: true
                     validation:
                         required_if_not_hidden: Please select a content item.
@@ -162,11 +160,13 @@ plugin_settings:
                     visible_if: "zenarioAB.value('link_type') == 'external'"
                     plugin_setting:
                         name: url
-                    label: 'External URL'
+                    label: 'External URL:'
                     indent: 1
                     type: url
                     maxlength: 255
                     value: ""
+                    validation:
+                        required_if_not_hidden: Please enter a URL.
                 
                 target_blank:
                     visible_if: "zenarioAB.value('link_type') == 'external'"

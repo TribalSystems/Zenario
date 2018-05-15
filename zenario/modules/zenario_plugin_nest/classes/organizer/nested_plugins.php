@@ -47,21 +47,21 @@ class zenario_plugin_nest__organizer__nested_plugins extends zenario_plugin_nest
 		if ($instance['content_id']) {
 			$key['can_be_version_controlled'] = 1;
 		}
-		$modules = ze\row::getArray('modules', 'display_name', $key, 'display_name');
+		$modules = ze\row::getValues('modules', 'display_name', $key, 'display_name');
 		$ord = 222;
 		
-		$twigSnippets = [];
-		if (ze\module::canActivate('zenario_twig_snippet')) {
-			foreach (ze::moduleDirs('twig/') as $moduleClassName => $dir) {
-				if (ze\module::canActivate($moduleClassName)) {
-					foreach (scandir(CMS_ROOT. $dir) as $file) {
-						if (substr($file, -10) == '.twig.html') {
-							$twigSnippets[] = [$moduleClassName, substr($file, 0, -10), $file];
-						}
-					}
-				}
-			}
-		}
+		//$twigSnippets = [];
+		//if (ze\module::canActivate('zenario_twig_snippet')) {
+		//	foreach (ze::moduleDirs('twig/') as $moduleClassName => $dir) {
+		//		if (ze\module::canActivate($moduleClassName)) {
+		//			foreach (scandir(CMS_ROOT. $dir) as $file) {
+		//				if (substr($file, -10) == '.twig.html') {
+		//					$twigSnippets[] = [$moduleClassName, substr($file, 0, -10), $file];
+		//				}
+		//			}
+		//		}
+		//	}
+		//}
 
 		
 		foreach (['collection_buttons', 'item_buttons'] as $buttonType) {
@@ -235,20 +235,19 @@ class zenario_plugin_nest__organizer__nested_plugins extends zenario_plugin_nest
 				//Get a list of slide numbers/states that this state can go to
 				if ($panel['key']['usesConductor'] && $item['states']) {
 					$toStates = ze\sql::fetchAssocs('
-						SELECT path.to_state, slide.states, path.equiv_id, path.content_type, path.commands
-						FROM [nested_paths AS path]
-						INNER JOIN [nested_plugins AS slide]
+						SELECT path.to_state, slide.states, path.equiv_id, path.content_type, path.command
+						FROM '. DB_PREFIX. 'nested_paths AS path
+						INNER JOIN '. DB_PREFIX. 'nested_plugins AS slide
 						   ON slide.is_slide = 1
 						  AND FIND_IN_SET(path.to_state, slide.states)
-						  AND slide.instance_id = [0]
-						WHERE path.instance_id = [0]
-						  AND path.from_state IN ([1])',
-						[$refinerId, explode(',', $item['states'])]
+						  AND slide.instance_id = '. (int) $refinerId. '
+						WHERE path.instance_id = '. (int) $refinerId. '
+						  AND path.from_state IN ('. ze\escape::in($item['states']). ')'
 					);
 					
 					$toText = [];
 					foreach ($toStates as $toState) {
-						$label = $toState['commands']. ' → ';
+						$label = $toState['command']. ' → ';
 						
 						if ($toState['equiv_id']) {
 							$label = ze\content::formatTag($toState['equiv_id'], $toState['content_type'], -1, false, true). ', ';
@@ -278,6 +277,13 @@ class zenario_plugin_nest__organizer__nested_plugins extends zenario_plugin_nest
 					$img = '&c='. $item['checksum'];
 					$item['image'] = 'zenario/file.php?og=1'. $img;
 					$item['list_image'] = 'zenario/file.php?ogl=1'. $img;
+				}
+				
+				//Add a warning if a plugin is flagged as "makes breadcrumbs",
+				//but no breadcrumb links are set in the condcutor
+				if ($item['makes_breadcrumbs'] > 1
+				 && !ze\row::exists('nested_paths', ['instance_id' => $refinerId, 'slide_num' => $item['slide_num'], 'is_forwards' => 1])) {
+					$item['makes_breadcrumbs'] += 10;
 				}
 			}
 		}
@@ -395,21 +401,17 @@ class zenario_plugin_nest__organizer__nested_plugins extends zenario_plugin_nest
 		//Flag or unflag which plugin should be used for the breadcrumbs
 		} elseif (isset($_POST['use_for_breadcrumbs'])) {
 			if ($slideNum = ze\row::get('nested_plugins', 'slide_num', ['id' => $ids, 'instance_id' => $instanceId, 'is_slide' => 0])) {
-				
-				if (!empty($_POST['use_for_breadcrumbs'])) {
-					ze\row::update('nested_plugins',
-						['makes_breadcrumbs' => 0],
-						['instance_id' => $instanceId, 'slide_num' => $slideNum]
-					);
 					
-					$makes_breadcrumbs = max(1, min(2, (int) $_POST['use_for_breadcrumbs']));
-				} else {
-					$makes_breadcrumbs = 0;
-				}
-				
+				//Clear the flag from any other breadcrumb-enabled plugin on this slide
 				ze\row::update('nested_plugins',
-					['makes_breadcrumbs' => $makes_breadcrumbs],
-					['id' => $ids, 'instance_id' => $instanceId, 'is_slide' => 0]
+					['makes_breadcrumbs' => 1],
+					['instance_id' => $instanceId, 'slide_num' => $slideNum, 'makes_breadcrumbs' => ['>' => 0]]
+				);
+				
+				//Set the flag on this plugin
+				ze\row::update('nested_plugins',
+					['makes_breadcrumbs' => max(1, min(3, (int) $_POST['use_for_breadcrumbs']))],
+					['id' => $ids, 'instance_id' => $instanceId, 'is_slide' => 0, 'makes_breadcrumbs' => ['>' => 0]]
 				);
 			}
 		
@@ -417,22 +419,24 @@ class zenario_plugin_nest__organizer__nested_plugins extends zenario_plugin_nest
 			echo $this->removePluginConfirm($ids, $instanceId);
 			
 		} elseif ($_POST['remove_plugin'] ?? false) {
-			foreach (explode(',', $ids) as $id) {
-				static::removePlugin($instance['class_name'], $id, $instanceId);
+			//Loop through each id and remove it. Make sure to also set the resync option on the last one!
+			foreach (array_reverse(ze\ray::explodeAndTrim($ids, true), true) as $notLast => $id) {
+				static::removePlugin($id, $instanceId, !$notLast);
 			}
 		
 		} elseif ($_GET['remove_tab'] ?? false) {
 			echo $this->removeSlideConfirm($ids, $instanceId);
 			
 		} elseif ($_POST['remove_tab'] ?? false) {
-			foreach (explode(',', $ids) as $id) {
-				$this->removeSlide($instance['class_name'], $id, $instanceId);
+			//Loop through each id and remove it. Make sure to also set the resync option on the last one!
+			foreach (array_reverse(ze\ray::explodeAndTrim($ids, true), true) as $notLast => $id) {
+				$this->removeSlide($id, $instanceId, !$notLast);
 			}
 			
 		} elseif ($_POST['reorder'] ?? false) {
 			//Each specific Nest may have it's own rules for ordering, so be sure to call the correct reorder method for this Nest
-			call_user_func([$instance['class_name'], 'reorderNest'], $ids);
-			call_user_func([$instance['class_name'], 'resyncNest'], $instanceId);
+			self::reorderNest($ids);
+			self::resyncNest($instanceId);
 		}
 	}
 	

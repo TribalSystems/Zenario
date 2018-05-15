@@ -10,7 +10,7 @@ zenario__content:
                     db_column: >
                         (
                             SELECT 1
-                            FROM [[DB_NAME_PREFIX]][[ZENARIO_CONTENT_NOTIFICATIONS_PREFIX]]versions_mirror AS vm
+                            FROM [[DB_PREFIX]][[ZENARIO_CONTENT_NOTIFICATIONS_PREFIX]]versions_mirror AS vm
                             WHERE c.id = vm.content_id
                               AND c.type = vm.content_type
                               AND c.admin_version = vm.content_version

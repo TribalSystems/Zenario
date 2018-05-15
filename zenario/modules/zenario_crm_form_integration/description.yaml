@@ -1,4 +1,3 @@
-required_cms_version: 7.0.3
 author_name: Tribal Systems
 copyright_info: © Tribal Limited
 editions: Community, Pro, ProBusiness, Enterprise
@@ -6,16 +5,17 @@ start_running_on_install: false
 license_info: 'Modified BSD License'
 display_name: CRM Form Integration
 description: |
-	<p>
-		This Module allow you integrate the User Forms module with a third party CRM (customer relationship management) system.
-	</p>
+    <p>
+        This Module allows you integrate the User Forms module with a third party CRM (customer relationship management) system.
+    </p>
+    <p>
+        There are options to specifically send form data to Salesforce or MailChimp.
+    </p>
 category: management
-keywords: crm, integration, form, forms
-#default_framework: standard
+keywords: crm, integration, form, forms, salesforce, mailchimp
 
 # Reminder: you need to increment the LATEST_REVISION_NO in this module's
 # latest_revision_no.inc.php file if you change any of the fields below:
-vlp_class_name: zenario_crm_form_integration
 is_pluggable: false
 
 # Warning: adding a new dependency to an existing module will break any existing sites
@@ -27,17 +27,14 @@ is_pluggable: false
 # database-revision in zenario/admin/db_updates/step_4_migrate_the_data/plugins.inc.php
 # to fix it automatically for every site.
 dependencies:
-	zenario_user_forms: true
+    zenario_user_forms: true
 signals:
-	signal1:
-		name: eventUserFormSubmitted
-		static: true
-	signal2:
-		name: eventFormDeleted
-		static: true
-	signal3:
-		name: eventFormFieldDeleted
-		static: true
-	signal4:
-		name: eventFormFieldValueDeleted
-		static: true
+    -
+        name: eventUserFormSubmitted
+        static: true
+    -
+        name: eventFormDeleted
+        static: true
+    -
+        name: eventFormFieldDeleted
+        static: true

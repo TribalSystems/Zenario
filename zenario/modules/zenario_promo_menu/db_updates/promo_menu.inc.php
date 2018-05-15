@@ -31,12 +31,12 @@ ze\dbAdm::revision(3
 
 , <<<_sql
 	DROP TABLE IF EXISTS
-	`[[DB_NAME_PREFIX]][[ZENARIO_PROMO_MENU_PREFIX]]menu_node_feature_image`
+	`[[DB_PREFIX]][[ZENARIO_PROMO_MENU_PREFIX]]menu_node_feature_image`
 _sql
 
 , <<<_sql
 	CREATE TABLE
-	`[[DB_NAME_PREFIX]][[ZENARIO_PROMO_MENU_PREFIX]]menu_node_feature_image` (
+	`[[DB_PREFIX]][[ZENARIO_PROMO_MENU_PREFIX]]menu_node_feature_image` (
 		`node_id` int(10) unsigned NOT NULL,
 		`use_feature_image` tinyint(1) DEFAULT 0 NOT NULL,
 		`image_id` int(10) unsigned NOT NULL,
@@ -59,47 +59,47 @@ _sql
 ); ze\dbAdm::revision(4
 
 , <<<_sql
-	ALTER TABLE [[DB_NAME_PREFIX]][[ZENARIO_PROMO_MENU_PREFIX]]menu_node_feature_image
+	ALTER TABLE [[DB_PREFIX]][[ZENARIO_PROMO_MENU_PREFIX]]menu_node_feature_image
 	ADD COLUMN `offset` int(10) unsigned NOT NULL AFTER `height`
 _sql
 
 ); ze\dbAdm::revision(5
 
 , <<<_sql
-	ALTER TABLE [[DB_NAME_PREFIX]][[ZENARIO_PROMO_MENU_PREFIX]]menu_node_feature_image
+	ALTER TABLE [[DB_PREFIX]][[ZENARIO_PROMO_MENU_PREFIX]]menu_node_feature_image
 	CHANGE `canvas` `canvas` enum('unlimited', 'fixed_width', 'fixed_height', 'fixed_width_and_height', 'resize_and_crop') DEFAULT 'unlimited' NOT NULL
 _sql
 
 ); ze\dbAdm::revision(6
 
 , <<<_sql
-	ALTER TABLE [[DB_NAME_PREFIX]][[ZENARIO_PROMO_MENU_PREFIX]]menu_node_feature_image
+	ALTER TABLE [[DB_PREFIX]][[ZENARIO_PROMO_MENU_PREFIX]]menu_node_feature_image
 	CHANGE `offset` `offset` int(10) NOT NULL
 _sql
 
 ); ze\dbAdm::revision(10
 
 , <<<_sql
-	ALTER TABLE [[DB_NAME_PREFIX]][[ZENARIO_PROMO_MENU_PREFIX]]menu_node_feature_image
+	ALTER TABLE [[DB_PREFIX]][[ZENARIO_PROMO_MENU_PREFIX]]menu_node_feature_image
 	ADD COLUMN `overwrite_alt_tag` varchar(255) DEFAULT NULL
 _sql
 
 //Attempt to convert some columns with a utf8-3-byte character set to a 4-byte character set
 );	ze\dbAdm::revision( 20
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_PROMO_MENU_PREFIX]]menu_node_feature_image` SET `overwrite_alt_tag` = SUBSTR(`overwrite_alt_tag`, 1, 250) WHERE CHAR_LENGTH(`overwrite_alt_tag`) > 250
+	UPDATE `[[DB_PREFIX]][[ZENARIO_PROMO_MENU_PREFIX]]menu_node_feature_image` SET `overwrite_alt_tag` = SUBSTR(`overwrite_alt_tag`, 1, 250) WHERE CHAR_LENGTH(`overwrite_alt_tag`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_PROMO_MENU_PREFIX]]menu_node_feature_image` MODIFY COLUMN `overwrite_alt_tag` varchar(250) CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_PROMO_MENU_PREFIX]]menu_node_feature_image` MODIFY COLUMN `overwrite_alt_tag` varchar(250) CHARACTER SET utf8mb4 NULL
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_PROMO_MENU_PREFIX]]menu_node_feature_image` MODIFY COLUMN `text` text CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_PROMO_MENU_PREFIX]]menu_node_feature_image` MODIFY COLUMN `text` text CHARACTER SET utf8mb4 NULL
 _sql
 , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_PROMO_MENU_PREFIX]]menu_node_feature_image` SET `title` = SUBSTR(`title`, 1, 250) WHERE CHAR_LENGTH(`title`) > 250
+	UPDATE `[[DB_PREFIX]][[ZENARIO_PROMO_MENU_PREFIX]]menu_node_feature_image` SET `title` = SUBSTR(`title`, 1, 250) WHERE CHAR_LENGTH(`title`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_PROMO_MENU_PREFIX]]menu_node_feature_image` MODIFY COLUMN `title` varchar(250) CHARACTER SET utf8mb4 NOT NULL default ''
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_PROMO_MENU_PREFIX]]menu_node_feature_image` MODIFY COLUMN `title` varchar(250) CHARACTER SET utf8mb4 NOT NULL default ''
 _sql
 
 );

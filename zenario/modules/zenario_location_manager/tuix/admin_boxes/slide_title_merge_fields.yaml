@@ -1,0 +1,15 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_slide:
+    lovs:
+        title_merge_fields:
+            location:
+                label: 'Location'
+            '[[location_id]]':
+                parent: location
+                data-class: location_icon
+                label: 'Location ID: [[location_id]]'
+            '[[zenario_location_manager:name]]':
+                parent: location
+                data-class: location_icon
+                label: 'Location name: [[zenario_location_manager:name]]'

@@ -65,12 +65,45 @@ plugin_settings:
                     format_onchange: Yes
                 feed_title:
                     label: 'Custom title:'
+                    indent: 1
                     type: text
                     plugin_setting:
                         name: feed_title
                     value: 
                     validation:
                         required_if_not_hidden: Please enter a custom title
+                title_tags:
+                    indent: 1
+                    plugin_setting:
+                        name: title_tags
+                    label: Title tags
+                    value: h1
+                    type: select
+                    values: &tags
+                        h1:
+                            label: h1
+                            ord: 1
+                        h2:
+                            label: h2
+                            ord: 2
+                        h3:
+                            label: h3
+                            ord: 3
+                        h4:
+                            label: h4
+                            ord: 4
+                        h5:
+                            label: h5
+                            ord: 5
+                        h6:
+                            label: h6
+                            ord: 6
+                        h7:
+                            label: h7
+                            ord: 7
+                        p:
+                            label: p
+                            ord: 8
                 number_feeds_to_show:
                     label: 'Number of feeds to show:'
                     type: select
@@ -108,6 +141,13 @@ plugin_settings:
                         100:
                             label: "100"
                     value: "10"
+                feed_title_tags:
+                    plugin_setting:
+                        name: feed_title_tags
+                    label: Feed title tags
+                    value: h2
+                    type: select
+                    values: *tags
                 show_date_time:
                     label: 'Show date and time:'
                     type: radios

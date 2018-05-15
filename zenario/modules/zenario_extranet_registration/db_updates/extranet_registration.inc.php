@@ -27,14 +27,12 @@
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 ze\dbAdm::revision(1,
-"INSERT IGNORE [[DB_NAME_PREFIX]]email_templates
-(`code`,`template_name`,`subject`,`email_address_from`,`email_name_from`,`body`,`date_created`,`created_by_id`,`allow_attachments`)
+"INSERT IGNORE [[DB_PREFIX]]email_templates
+(`code`,`template_name`,`subject`,`body`,`date_created`,`created_by_id`,`allow_attachments`)
 VALUES 
 ('zenario_extranet_registration__to_user_email_verification_en',
  'To User: Email verification',
  'Account verification',
- '" . ze\escape::sql(ze::setting('email_address_from')) . "',
- '" . ze\escape::sql(ze::setting('email_name_from')) . "',
  '<p>Dear [[first_name]] [[last_name]],</p>
 <p>Thank you for registering on <a href=\"[[cms_url]]\">[[cms_url]]</a> .</p>
 <p>In order to complete your registration please click the link below to confirm your email address.</p>
@@ -46,14 +44,12 @@ VALUES
 0)"
 ,
 
-"INSERT IGNORE [[DB_NAME_PREFIX]]email_templates
-(`code`,`template_name`,`subject`,`email_address_from`,`email_name_from`,`body`,`date_created`,`created_by_id`,`allow_attachments`)
+"INSERT IGNORE [[DB_PREFIX]]email_templates
+(`code`,`template_name`,`subject`,`body`,`date_created`,`created_by_id`,`allow_attachments`)
 VALUES 
 ('zenario_extranet_registration__to_admin_user_signup_notification_en',
 'To Admin: User signup notification',
 'A new User has signed up',
-'" . ze\escape::sql(ze::setting('email_address_from')) . "',
-'" . ze\escape::sql(ze::setting('email_name_from')) . "',
 '<p>Dear Admin,</p>
 <p>A new User has signed up.</p>
 <p>You can see the User\'s details in Organizer by clicking the link below:</p>
@@ -65,14 +61,12 @@ VALUES
 0)"
 ,
 
-"INSERT IGNORE [[DB_NAME_PREFIX]]email_templates
-(`code`,`template_name`,`subject`,`email_address_from`,`email_name_from`,`body`,`date_created`,`created_by_id`,`allow_attachments`)
+"INSERT IGNORE [[DB_PREFIX]]email_templates
+(`code`,`template_name`,`subject`,`body`,`date_created`,`created_by_id`,`allow_attachments`)
 VALUES 
 ('zenario_extranet_registration__to_user_account_activation_en',
 'To User: Account activation',
 'Your account is now active',
-'" . ze\escape::sql(ze::setting('email_address_from')) . "',
-'" . ze\escape::sql(ze::setting('email_name_from')) . "',
 '<p>Dear [[first_name]] [[last_name]],</p>
 <p>Your registration on <a href=\"[[cms_url]]\">[[cms_url]]</a> is now completed.</p>
 <p>You can login to the website and access password protected areas.</p>
@@ -87,14 +81,12 @@ VALUES
 0)"
 ,
 
-"INSERT IGNORE [[DB_NAME_PREFIX]]email_templates
-(`code`,`template_name`,`subject`,`email_address_from`,`email_name_from`,`body`,`date_created`,`created_by_id`,`allow_attachments`)
+"INSERT IGNORE [[DB_PREFIX]]email_templates
+(`code`,`template_name`,`subject`,`body`,`date_created`,`created_by_id`,`allow_attachments`)
 VALUES 
 ('zenario_extranet_registration__to_admin_user_activation_notification_en',
 'To Admin: User activation notification',
 'User account activated',
-'" . ze\escape::sql(ze::setting('email_address_from')) . "',
-'" . ze\escape::sql(ze::setting('email_name_from')) . "',
 '<p>Dear Admin,</p>
 <p>The account for the User [[first_name]] [[last_name]] has been activated.</p>
 <p>You can see the User\'s details in Organizer by clicking the link below:</p>
@@ -108,11 +100,11 @@ VALUES
 ); ze\dbAdm::revision(82
 
 , <<<_sql
-	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]][[ZENARIO_EXTRANET_REGISTRATION_PREFIX]]codes`
+	DROP TABLE IF EXISTS `[[DB_PREFIX]][[ZENARIO_EXTRANET_REGISTRATION_PREFIX]]codes`
 _sql
 
 , <<<_sql
-	CREATE TABLE `[[DB_NAME_PREFIX]][[ZENARIO_EXTRANET_REGISTRATION_PREFIX]]codes` (
+	CREATE TABLE `[[DB_PREFIX]][[ZENARIO_EXTRANET_REGISTRATION_PREFIX]]codes` (
 		`id` int(10) unsigned NOT NULL AUTO_INCREMENT PRIMARY KEY,
 		`code` varchar(255) NOT NULL UNIQUE,
 		`description` text NULL
@@ -120,11 +112,11 @@ _sql
 _sql
 
 , <<<_sql
-	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]][[ZENARIO_EXTRANET_REGISTRATION_PREFIX]]code_groups`
+	DROP TABLE IF EXISTS `[[DB_PREFIX]][[ZENARIO_EXTRANET_REGISTRATION_PREFIX]]code_groups`
 _sql
 
 , <<<_sql
-	CREATE TABLE `[[DB_NAME_PREFIX]][[ZENARIO_EXTRANET_REGISTRATION_PREFIX]]code_groups` (
+	CREATE TABLE `[[DB_PREFIX]][[ZENARIO_EXTRANET_REGISTRATION_PREFIX]]code_groups` (
 		`id` int(10) unsigned NOT NULL AUTO_INCREMENT PRIMARY KEY,
 		`code_id` int(10) unsigned NOT NULL,
 		`group_id` int(10) unsigned NOT NULL,
@@ -135,25 +127,25 @@ _sql
 ); ze\dbAdm::revision(90,
 
 <<<_sql
-	UPDATE [[DB_NAME_PREFIX]]email_templates
+	UPDATE [[DB_PREFIX]]email_templates
 	SET `module_class_name` = 'zenario_extranet_registration'
 	WHERE `code` = 'zenario_extranet_registration__to_user_email_verification_en'
 _sql
 
 ,<<<_sql
-	UPDATE [[DB_NAME_PREFIX]]email_templates
+	UPDATE [[DB_PREFIX]]email_templates
 	SET `module_class_name` = 'zenario_extranet_registration'
 	WHERE `code` = 'zenario_extranet_registration__to_admin_user_signup_notification_en'
 _sql
 
 ,<<<_sql
-	UPDATE [[DB_NAME_PREFIX]]email_templates
+	UPDATE [[DB_PREFIX]]email_templates
 	SET `module_class_name` = 'zenario_extranet_registration'
 	WHERE `code` = 'zenario_extranet_registration__to_user_account_activation_en'
 _sql
 
 ,<<<_sql
-	UPDATE [[DB_NAME_PREFIX]]email_templates
+	UPDATE [[DB_PREFIX]]email_templates
 	SET `module_class_name` = 'zenario_extranet_registration'
 	WHERE `code` = 'zenario_extranet_registration__to_admin_user_activation_notification_en'
 _sql
@@ -161,11 +153,11 @@ _sql
 ); ze\dbAdm::revision(96,
 
 <<<_sql
-	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]][[ZENARIO_EXTRANET_REGISTRATION_PREFIX]]codes`
+	DROP TABLE IF EXISTS `[[DB_PREFIX]][[ZENARIO_EXTRANET_REGISTRATION_PREFIX]]codes`
 _sql
 
 , <<<_sql
-	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]][[ZENARIO_EXTRANET_REGISTRATION_PREFIX]]code_groups`
+	DROP TABLE IF EXISTS `[[DB_PREFIX]][[ZENARIO_EXTRANET_REGISTRATION_PREFIX]]code_groups`
 _sql
 
 );

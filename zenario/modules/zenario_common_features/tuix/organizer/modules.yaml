@@ -11,7 +11,7 @@ zenario__modules:
             
             db_items:
                 table: >
-                    [[DB_NAME_PREFIX]]modules as m
+                    [[DB_PREFIX]]modules as m
                 id_column: m.id
                 client_side: true
                 
@@ -51,25 +51,18 @@ zenario__modules:
                     
             refiners:
                 nestable_only:
-                    sql: 'status = "module_running" AND is_pluggable = 1 AND nestable = 1'
+                    sql: |
+                        m.status = 'module_running' AND m.is_pluggable = 1 AND m.nestable = 1
                 phrases_only:
-                    sql: 'is_pluggable = 1 AND vlp_class IS NOT NULL AND vlp_class = class_name'
+                    sql: |
+                        m.is_pluggable = 1 AND m.vlp_class IS NOT NULL AND m.vlp_class = m.class_name
                 slotable_only:
-                    sql: 'status = "module_running" AND is_pluggable = 1'
-                wireframe_only:
-                    sql: 'status = "module_running" AND is_pluggable = 1 AND can_be_version_controlled = 1'
+                    sql: |
+                        m.status = 'module_running' AND m.is_pluggable = 1
+                        AND m.class_name NOT IN ('zenario_plugin_nest', 'zenario_slideshow')
                 nestable_wireframes_only:
-                    sql: 'status = "module_running" AND is_pluggable = 1 AND nestable = 1 AND can_be_version_controlled = 1'
-                custom_modules:
-                    sql: 'category = "custom"'
-                core_modules:
-                    sql: 'category = "core"'
-                content_type_modules:
-                    sql: 'category = "content_type"'
-                management_modues:
-                    sql: 'category = "management"'
-                pluggable_modules:
-                    sql: 'category = "pluggable"'
+                    sql: |
+                        m.status = 'module_running' AND m.is_pluggable = 1 AND m.nestable = 1 AND m.can_be_version_controlled = 1
             
             columns:
                 id:
@@ -208,7 +201,6 @@ zenario__modules:
                     label: View all plugins
                     link:
                         path: zenario__modules/panels/plugins
-                        branch: true
                         refiner: album
             item_buttons:
                 edit_ctype:
@@ -229,7 +221,6 @@ zenario__modules:
                         item.is_pluggable && item.status == 'module_running'
                     link:
                         path: zenario__modules/panels/plugins
-                        branch: true
                         refiner: plugin
                 usage_layouts:
                     parent: view_dropdown
@@ -239,7 +230,6 @@ zenario__modules:
                     hide_in_select_mode: true
                     link:
                         path: zenario__layouts/panels/layouts
-                        branch: true
                         refiner: module_usage
                 usage_item:
                     parent: view_dropdown
@@ -249,7 +239,6 @@ zenario__modules:
                     hide_in_select_mode: true
                     link:
                         path: zenario__content/panels/content
-                        branch: true
                         refiner: module_usage
                 phrases:
                     priv: _PRIV_VIEW_LANGUAGE
@@ -260,7 +249,6 @@ zenario__modules:
                     hide_in_select_mode: true
                     link:
                         path: zenario__languages/panels/phrases
-                        branch: true
                         refiner: language_and_plugin
                 show_frameworks:
                     parent: view_dropdown
@@ -270,7 +258,6 @@ zenario__modules:
                         is_pluggable: true
                     link:
                         path: zenario__modules/panels/modules/hidden_nav/view_frameworks/panel
-                        branch: true
                         refiner: module
                 view_content_items:
                     parent: view_dropdown
@@ -280,7 +267,6 @@ zenario__modules:
                     hide_in_select_mode: true
                     link:
                         path: zenario__content/panels/content
-                        branch: true
                         refiner: module_effective_usage
                 action_dropdown:
                     label: Actions
@@ -339,4 +325,4 @@ zenario__modules:
                     disabled_if: |
                         !zenario.engToBoolean(item.in_edition)
                     disabled_tooltip: |
-                        In order to start this module, your site needs to be upgraded to Zenario [[edition]].
+                        In order to start this module, your site needs to be upgraded to Zenario [[edition]]. This is determined in the zenario_custom/site_description.yaml file. Please contact your system adminstrator or hosting provider to request this change.

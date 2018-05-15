@@ -8,7 +8,7 @@ zenario__administration:
             disable_grid_view: Yes
             disable_summary_view: Yes
             db_items:
-                table: '[[DB_NAME_PREFIX]]document_types AS dt'
+                table: '[[DB_PREFIX]]document_types AS dt'
                 id_column: dt.type
                 encode_id_column: Yes
             columns:

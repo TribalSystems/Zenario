@@ -1,4 +1,11 @@
 <div class="banner_wrap"><div class="banner_wrap_outer"><div class="banner_wrap_inner" {{Wrap}}>
+	{% if privacy_warning %}
+		{% if privacy == 'offline' %}
+			<p class="privacy_warning">{{ze('admin', 'phrase', 'Warning: the selected document \"[[filename]]\" is Offline, so the document will not appear to visitors.', {filename: filename})}}</p>
+		{% elseif privacy == 'private' %}
+			<p class="privacy_warning">{{ze('admin', 'phrase', 'Warning: content item is Public, the selected document \"[[filename]]\" is Private, so the document will not appear to visitors.', {filename: filename})}}</p>
+		{% endif %}
+	{% endif %}
 	{% if Background_Image %}
 		<a {{Image_Link_Href}}{{Target_Blank}} id="{{Image_css_id}}"></a>
 	

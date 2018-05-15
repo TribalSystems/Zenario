@@ -29,11 +29,11 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 ze\dbAdm::revision(8
 , <<<_sql
-	DROP TABLE IF EXISTS [[DB_NAME_PREFIX]][[ZENARIO_USER_DOCUMENTS_PREFIX]]user_documents_custom_data
+	DROP TABLE IF EXISTS [[DB_PREFIX]][[ZENARIO_USER_DOCUMENTS_PREFIX]]user_documents_custom_data
 _sql
 
 , <<<_sql
-	CREATE TABLE [[DB_NAME_PREFIX]][[ZENARIO_USER_DOCUMENTS_PREFIX]]user_documents_custom_data (
+	CREATE TABLE [[DB_PREFIX]][[ZENARIO_USER_DOCUMENTS_PREFIX]]user_documents_custom_data (
 		`user_document_id` int(10) unsigned NOT NULL,
 		PRIMARY KEY (`user_document_id`)
 	) ENGINE=MyISAM DEFAULT CHARSET=utf8
@@ -41,7 +41,7 @@ _sql
  
 );
 
-if (ze\dbAdm::needRevision(8)) {
+if (ze\dbAdm::needRevision(25)) {
 	
 	//Add or update a record in the custom_datasets table with the correct details
 	//(Note if you upgrade from version 7 or earlier this will have been done manually
@@ -65,6 +65,8 @@ if (ze\dbAdm::needRevision(8)) {
 	//(Again, if you upgrade from version 7 or earlier these will have also been done manually
 	// by the migration script, but they're also safe to call again.)
 	//ze\datasetAdm::registerSystemField($datasetId, $type, $tabName, $fieldName, $dbColumn = false, $validation = 'none', $valuesSource = '', $fundamental = false, $isRecordName = false)
+	ze\datasetAdm::registerSystemField($datasetId, 'text', 'details', 'document_title', 'title');
+	ze\datasetAdm::registerSystemField($datasetId, 'checkboxes', 'details', 'tags', '');
 	
-	ze\dbAdm::revision(8);
+	ze\dbAdm::revision(25);
 }

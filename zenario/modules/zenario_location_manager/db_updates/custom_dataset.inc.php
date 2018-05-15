@@ -31,11 +31,11 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 //Add a table to store custom locations data
 ze\dbAdm::revision(124
 , <<<_sql
-	DROP TABLE IF EXISTS [[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations_custom_data
+	DROP TABLE IF EXISTS [[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations_custom_data
 _sql
 
 , <<<_sql
-	CREATE TABLE [[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations_custom_data (
+	CREATE TABLE [[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations_custom_data (
 		`location_id` int(10) unsigned NOT NULL,
 		PRIMARY KEY (`location_id`)
 	) ENGINE=MyISAM DEFAULT CHARSET=utf8
@@ -43,7 +43,7 @@ _sql
  
 );
 
-if (ze\dbAdm::needRevision(149)) {
+if (ze\dbAdm::needRevision(165)) {
 	
 	//Add or update a record in the custom_datasets table with the correct details
 	$datasetId = ze\datasetAdm::register(
@@ -73,6 +73,11 @@ if (ze\dbAdm::needRevision(149)) {
 	ze\datasetAdm::registerSystemField($datasetId, 'text', 'details', 'postcode');
 	ze\datasetAdm::registerSystemField($datasetId, 'centralised_select', 'details', 'country', 'country_id', 'none', 'zenario_country_manager::getActiveCountries');
 	ze\datasetAdm::registerSystemField($datasetId, 'dataset_picker', 'details', 'region', '');
+	ze\datasetAdm::registerSystemField($datasetId, 'checkbox', 'details', 'hide_pin');
+	ze\datasetAdm::registerSystemField($datasetId, 'text', 'details', 'marker_lng', 'latitude');
+	ze\datasetAdm::registerSystemField($datasetId, 'text', 'details', 'marker_lat', 'longitude');
+	ze\datasetAdm::registerSystemField($datasetId, 'date', 'details', 'last_updated');
+	ze\datasetAdm::registerSystemField($datasetId, 'text', 'details', 'last_updated_by', 'last_updated_admin_id');
 	
 	ze\datasetAdm::registerSystemField($datasetId, 'text', 'details', 'phone');
 	ze\datasetAdm::registerSystemField($datasetId, 'text', 'details', 'fax');
@@ -82,7 +87,10 @@ if (ze\dbAdm::needRevision(149)) {
 	ze\datasetAdm::registerSystemField($datasetId, 'date', 'details', 'url last accessed', 'last_accessed');
 	ze\datasetAdm::registerSystemField($datasetId, 'centralised_radios', 'details', 'status', 'status', 'none', 'zenario_location_manager::locationStatus');
 	//ze\datasetAdm::registerSystemField($datasetId, $type, $tabName, $fieldName, $dbColumn = false, $validation = 'none', $valuesSource = '', $fundamental = false, $isRecordName = false)
+	
+	//sectors
+	
+	ze\datasetAdm::registerSystemField($datasetId, 'checkboxes', 'sectors', 'sectors');
 
-
-	ze\dbAdm::revision(149);
+	ze\dbAdm::revision(165);
 }

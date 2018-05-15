@@ -20,6 +20,10 @@ zenario_flag:
                     snippet:
                         html: ''
                 
+                system_flags:
+                    label: ''
+                    type: checkboxes
+                
                 flags:
                     label: ''
                     type: checkboxes

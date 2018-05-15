@@ -36,12 +36,16 @@ if (!ze\priv::check('_PRIV_EDIT_DRAFT', ze::$cID, ze::$cType)) {
 
 } else {
 	
-	ze\file::addImageDataURIsToDatabase($_POST['content__content']);
+	$html = ze\ring::decodeIdForOrganizer($_POST['content__content'] ?? '');
+	//N.b. encodeItemIdForOrganizer() was called on the HTML, to avoid sending RAW HTML over post and potentially
+	//triggering Cloudflare to blocks it, so we need to call decodeIdForOrganizer() to decode it.
+	
+	ze\file::addImageDataURIsToDatabase($html);
 	
 	//Save the field in the plugin_settings table.
 	ze\row::set(
 		'plugin_settings',
-		['is_content' => 'version_controlled_content', 'format' => 'translatable_html', 'value' => $_POST['content__content']],
+		['is_content' => 'version_controlled_content', 'format' => 'translatable_html', 'value' => $html],
 		['name' => 'html', 'instance_id' => $this->instanceId, 'egg_id' => $this->eggId]);
 	
 	ze\contentAdm::syncInlineFileContentLink($this->cID, $this->cType, $this->cVersion);
@@ -53,6 +57,6 @@ if (!ze\priv::check('_PRIV_EDIT_DRAFT', ze::$cID, ze::$cType)) {
 
 	
 	if (($_POST['_sync_summary'] ?? false) && !$this->summaryLocked($this->cID, $this->cType, $this->cVersion)) {
-		$this->syncSummary($this->cID, $this->cType, $this->cVersion, zenario_wysiwyg_editor::generateSummary($_POST['content__content']));
+		$this->syncSummary($this->cID, $this->cType, $this->cVersion, zenario_wysiwyg_editor::generateSummary($html));
 	}
 }

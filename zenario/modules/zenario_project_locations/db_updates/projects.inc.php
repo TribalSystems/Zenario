@@ -29,11 +29,11 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 ze\dbAdm::revision(3
 
 , <<<_sql
-	DROP TABLE IF EXISTS [[DB_NAME_PREFIX]][[ZENARIO_PROJECT_LOCATIONS_PREFIX]]project_locations
+	DROP TABLE IF EXISTS [[DB_PREFIX]][[ZENARIO_PROJECT_LOCATIONS_PREFIX]]project_locations
 _sql
 	
 , <<<_sql
-	CREATE TABLE `[[DB_NAME_PREFIX]][[ZENARIO_PROJECT_LOCATIONS_PREFIX]]project_locations` (
+	CREATE TABLE `[[DB_PREFIX]][[ZENARIO_PROJECT_LOCATIONS_PREFIX]]project_locations` (
 	 `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
 	 `name` varchar(255) NOT NULL,
 	 `summary` text NOT NULL,
@@ -69,11 +69,11 @@ _sql
 _sql
 	
 , <<<_sql
-	DROP TABLE IF EXISTS [[DB_NAME_PREFIX]][[ZENARIO_PROJECT_LOCATIONS_PREFIX]]project_location_sector_link
+	DROP TABLE IF EXISTS [[DB_PREFIX]][[ZENARIO_PROJECT_LOCATIONS_PREFIX]]project_location_sector_link
 _sql
 	
 , <<<_sql
-	CREATE TABLE `[[DB_NAME_PREFIX]][[ZENARIO_PROJECT_LOCATIONS_PREFIX]]project_location_sector_link` (
+	CREATE TABLE `[[DB_PREFIX]][[ZENARIO_PROJECT_LOCATIONS_PREFIX]]project_location_sector_link` (
 	 `project_location_id` int(10) unsigned NOT NULL,
 	 `sector_id` int(10) unsigned NOT NULL,
 	 PRIMARY KEY `project_location_id` (`project_location_id`,`sector_id`)
@@ -81,11 +81,11 @@ _sql
 _sql
 	
 , <<<_sql
-	DROP TABLE IF EXISTS [[DB_NAME_PREFIX]][[ZENARIO_PROJECT_LOCATIONS_PREFIX]]project_location_service_link
+	DROP TABLE IF EXISTS [[DB_PREFIX]][[ZENARIO_PROJECT_LOCATIONS_PREFIX]]project_location_service_link
 _sql
 	
 , <<<_sql
-	CREATE TABLE `[[DB_NAME_PREFIX]][[ZENARIO_PROJECT_LOCATIONS_PREFIX]]project_location_service_link` (
+	CREATE TABLE `[[DB_PREFIX]][[ZENARIO_PROJECT_LOCATIONS_PREFIX]]project_location_service_link` (
 	 `project_location_id` int(10) unsigned NOT NULL,
 	 `service_id` int(10) unsigned NOT NULL,
 	 PRIMARY KEY `project_location_id` (`project_location_id`,`service_id`)
@@ -93,11 +93,11 @@ _sql
 _sql
 	
 , <<<_sql
-	DROP TABLE IF EXISTS [[DB_NAME_PREFIX]][[ZENARIO_PROJECT_LOCATIONS_PREFIX]]project_location_sectors
+	DROP TABLE IF EXISTS [[DB_PREFIX]][[ZENARIO_PROJECT_LOCATIONS_PREFIX]]project_location_sectors
 _sql
 	
 , <<<_sql
-	CREATE TABLE `[[DB_NAME_PREFIX]][[ZENARIO_PROJECT_LOCATIONS_PREFIX]]project_location_sectors` (
+	CREATE TABLE `[[DB_PREFIX]][[ZENARIO_PROJECT_LOCATIONS_PREFIX]]project_location_sectors` (
 	 `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
 	 `name` varchar(255) NOT NULL,
 	 PRIMARY KEY (`id`),
@@ -106,11 +106,11 @@ _sql
 _sql
 	
 , <<<_sql
-	DROP TABLE IF EXISTS [[DB_NAME_PREFIX]][[ZENARIO_PROJECT_LOCATIONS_PREFIX]]project_location_services
+	DROP TABLE IF EXISTS [[DB_PREFIX]][[ZENARIO_PROJECT_LOCATIONS_PREFIX]]project_location_services
 _sql
 	
 , <<<_sql
-	CREATE TABLE `[[DB_NAME_PREFIX]][[ZENARIO_PROJECT_LOCATIONS_PREFIX]]project_location_services` (
+	CREATE TABLE `[[DB_PREFIX]][[ZENARIO_PROJECT_LOCATIONS_PREFIX]]project_location_services` (
 	 `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
 	 `name` varchar(255) NOT NULL,
 	 PRIMARY KEY (`id`),
@@ -119,17 +119,17 @@ _sql
 _sql
 );ze\dbAdm::revision(25
 , <<<_sql
-ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_PROJECT_LOCATIONS_PREFIX]]project_locations`
+ALTER TABLE `[[DB_PREFIX]][[ZENARIO_PROJECT_LOCATIONS_PREFIX]]project_locations`
 	ADD alt_tag VARCHAR(255) AFTER image_id;
 _sql
 );ze\dbAdm::revision(26
 , <<<_sql
-ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_PROJECT_LOCATIONS_PREFIX]]project_locations`
+ALTER TABLE `[[DB_PREFIX]][[ZENARIO_PROJECT_LOCATIONS_PREFIX]]project_locations`
 	ADD sort INT(10);
 _sql
 );ze\dbAdm::revision(27
 , <<<_sql
-ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_PROJECT_LOCATIONS_PREFIX]]project_location_services`
+ALTER TABLE `[[DB_PREFIX]][[ZENARIO_PROJECT_LOCATIONS_PREFIX]]project_location_services`
 	ADD sort INT(10);
 _sql
 );

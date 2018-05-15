@@ -9,10 +9,11 @@ zenario__content:
             title: Documents
             db_items:
                 table: |
-                    [[DB_NAME_PREFIX]]documents AS d
-                    LEFT JOIN [[DB_NAME_PREFIX]]files AS f ON d.file_id = f.id
+                    [[DB_PREFIX]]documents AS d
+                    LEFT JOIN [[DB_PREFIX]]files AS f ON d.file_id = f.id
                 id_column: d.id
                 client_side: true
+                max_limit: 1000
             
             panel_type: hierarchy_documents
             #panel_type: hierarchy_with_lazy_load
@@ -75,7 +76,7 @@ zenario__content:
                     db_column: |
                         (
                             SELECT d2.folder_name
-                            FROM [[DB_NAME_PREFIX]]documents d2
+                            FROM [[DB_PREFIX]]documents d2
                             WHERE d.folder_id = d2.id
                         )
                 filesize:
@@ -93,7 +94,7 @@ zenario__content:
                     
                     format: enum
                     values:
-                        auto: Hidden
+                        offline: Offline
                         public: Public
                         private: Private
                     
@@ -245,18 +246,38 @@ zenario__content:
                     parent: actions_dropdown
                     hide_in_select_mode: false
                     label: Make public
-                    multiple_select: false
+                    multiple_select: true
                     without_columns_set:
                         traits.is_folder: true
-                        traits.public_link: true
+                        traits.public: true
                     ajax: 
                         confirm:
                             message: Are you sure you want to make this document public? This will generate a public link to the document, with which it will be accessible by anyone.
+                            multiple_select_message: Are you sure you want to make these documents public? This will generate public links to each document, with which they will be accessible by anyone.
                             button_message: Make public
                             cancel_button_message: Cancel
                             message_type: question
                         request: 
                             generate_public_link: true
+                            
+                make_document_private:
+                    priv: _PRIV_EDIT_DOCUMENTS
+                    parent: actions_dropdown
+                    hide_in_select_mode: false
+                    label: Make private
+                    multiple_select: true
+                    without_columns_set:
+                        traits.is_folder: true
+                        traits.private: true
+                    ajax: 
+                        confirm:
+                            message: Are you sure you want to make this document private?
+                            multiple_select_message: Are you sure you want to make these documents private?
+                            button_message: Make private
+                            cancel_button_message: Cancel
+                            message_type: question
+                        request: 
+                            make_document_private: true
                             
                 view_public_link:
                     parent: actions_dropdown
@@ -264,7 +285,7 @@ zenario__content:
                     label: View public link
                     multiple_select: false
                     with_columns_set:
-                        traits.public_link: true
+                        traits.public: true
                     without_columns_set:
                         traits.is_folder: true
                     ajax: 
@@ -430,27 +451,30 @@ zenario__content:
                             cancel_button_message: Cancel
                         request: 
                             delete: true
-                delete_public_link:
+                make_offline:
                     priv: _PRIV_EDIT_DOCUMENTS
                     parent: actions_dropdown
                     hide_in_select_mode: false
-                    label: Delete public link
+                    label: Make offline
                     multiple_select: true
-                    with_columns_set:
-                        traits.public_link: true
                     without_columns_set:
                         traits.is_folder: true
+                        traits.offline: true
                     ajax: 
                         confirm:
                             message: | 
-                                Are you sure you want to delete the public link for this document? 
+                                Are you sure you want to make this document offline? 
                                                                 
-                                Anyone with the URL will be unable to access this document.
-                            button_message: Delete public link
+                                This will remove all public links to the document. Anyone with the URL will be unable to access it.
+                            multiple_select_message: |
+                                Are you sure you want to make these documents offline? 
+                                                                
+                                This will remove all public links to the documents. Anyone with the URLs will be unable to access them.
+                            button_message: Make offline
                             cancel_button_message: Cancel
                             message_type: question
                         request: 
-                            delete_public_link: true
+                            make_offline: true
                 delete_folder:
                     priv: _PRIV_EDIT_DOCUMENTS
                     hide_in_select_mode: true
