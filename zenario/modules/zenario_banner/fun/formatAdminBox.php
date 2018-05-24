@@ -33,6 +33,13 @@ switch ($path) {
 		if (!ze\module::inc('zenario_ctype_picture')) {
 			unset($fields['first_tab/image_source']['values']['_PICTURE']);
 		}
+		
+		$retinaSideNote = "If the source image is large enough,
+                            the resized image will be output at twice its displayed width &amp; height
+                            to appear crisp on retina screens.
+                            This will increase the download size.
+                            <br/>
+                            If the source image is not large enough this will have no effect.";
 	
 		
 		$fields['first_tab/use_rollover']['hidden'] = 
@@ -94,6 +101,11 @@ switch ($path) {
 			!$imagePicked;
 		
 		$this->showHideImageOptions($fields, $values, 'first_tab', $hidden);
+		if ($values['first_tab/canvas'] != "unlimited") {
+			$fields['first_tab/canvas']['side_note'] = $retinaSideNote;
+		} else {
+			$fields['first_tab/canvas']['side_note'] = "";
+		}
 		
 		$fields['first_tab/floating_box_title']['hidden'] = 
 			!$imagePicked
@@ -164,6 +176,11 @@ switch ($path) {
 		
 		$hidden = $values['first_tab/link_type'] != '_ENLARGE_IMAGE';
 		$this->showHideImageOptions($fields, $values, 'first_tab', $hidden, 'enlarge_');
+		if ($values['first_tab/enlarge_canvas'] != "unlimited") {
+			$fields['first_tab/enlarge_canvas']['side_note'] = $retinaSideNote;
+		} else {
+			$fields['first_tab/enlarge_canvas']['side_note'] = "";
+		}
 		
 		$cID = $cType = false;
 		if ($values['first_tab/link_type'] == '_CONTENT_ITEM'
@@ -216,6 +233,11 @@ switch ($path) {
 		$fields['mobile_tab/mobile_image']['hidden'] = $hideMobileOptions;
 		
 		$this->showHideImageOptions($fields, $values, 'mobile_tab', $hideMobileOptions, 'mobile_');
+		if ($values['mobile_tab/mobile_canvas'] != "unlimited") {
+			$fields['mobile_tab/mobile_canvas']['side_note'] = $retinaSideNote;
+		} else {
+			$fields['mobile_tab/mobile_canvas']['side_note'] = "";
+		}
 		
 		//Privacy warning:
 		//Get selected document...

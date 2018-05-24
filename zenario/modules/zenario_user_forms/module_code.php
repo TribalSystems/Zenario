@@ -57,7 +57,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		//This plugin must have a form selected
 		if (!$formId) {
 			if (ze\admin::id()) {
-				$this->data['form_HTML'] = '<p class="error">' . ze\admin::phrase('You must select a form for this plugin.') . '</p>';
+				$this->data['form_HTML'] = '<p class="error">' . htmlspecialchars(ze\admin::phrase('You must select a form for this plugin.')) . '</p>';
 			}
 			return true;
 		}
@@ -73,9 +73,9 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			if (isset($_GET['confirm_email']) && isset($_GET['hash'])) {
 				$user = ze\row::get('users', ['id', 'email_verified'], ['hash' => $_GET['hash']]);
 				if (!$user) {
-					$this->data['form_HTML'] = '<p class="error">' . static::fPhrase('We are sorry, but we were unable to find your registration. Please check whether the verification link is correct.', [], $t) . '</p>';
+					$this->data['form_HTML'] = '<p class="error">' . htmlspecialchars(static::fPhrase('We are sorry, but we were unable to find your registration. Please check whether the verification link is correct.', [], $t)) . '</p>';
 				} elseif ($user['email_verified']) {
-					$this->data['form_HTML'] = '<p class="success">' . static::fPhrase('This email address has already been verified.', [], $t) . '</p>';
+					$this->data['form_HTML'] = '<p class="success">' . htmlspecialchars(static::fPhrase('This email address has already been verified.', [], $t)) . '</p>';
 				} else {
 					ze\row::update('users', ['email_verified' => 1, 'status' => 'active'], $user['id']);
 					$this->sendWelcomeEmail($user['id']);
@@ -115,7 +115,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 						$user = ze\row::get('users', ['id'], ['email' => $value]);
 						$this->sendVerificationEmail($user['id']);
 						
-						$this->data['form_HTML'] = '<p class="success">' . static::fPhrase('Your verification email has been resent. Please be sure to check your spam/bulk mail folder.', [], $t) . '</p>';
+						$this->data['form_HTML'] = '<p class="success">' . htmlspecialchars(static::fPhrase('Your verification email has been resent. Please be sure to check your spam/bulk mail folder.', [], $t)) . '</p>';
 						return true;
 					}
 				}
@@ -125,22 +125,22 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				$html .= '
 					<div class="form_fields">
 						<div class="form_field">
-						<div class="field_title">' . static::fPhrase('Email:', [], $t) . '</div>';
+						<div class="field_title">' . htmlspecialchars(static::fPhrase('Email:', [], $t)) . '</div>';
 				if ($error && !$this->form['show_errors_below_fields']) {
 					$html .= '
-						<div class="form_error">' . static::fPhrase($error, [], $t) . '</div>';
+						<div class="form_error">' . htmlspecialchars(static::fPhrase($error, [], $t)) . '</div>';
 				}
 				$html .= '
 						<input type="text" name="email" value="' . $value . '">';
 				if ($error && $this->form['show_errors_below_fields']) {
 					$html .= '
-						<div class="form_error">' . static::fPhrase($error, [], $t) . '</div>';
+						<div class="form_error">' . htmlspecialchars(static::fPhrase($error, [], $t)) . '</div>';
 				}
 				$html .= '
 						</div>
 					</div>';
 				$html .= '<div class="form_buttons">';
-				$html .= '<input type="submit" class="next submit" value="' . static::fPhrase('Resend verification email', [], $t) . '"/>';
+				$html .= '<input type="submit" class="next submit" value="' . htmlspecialchars(static::fPhrase('Resend verification email', [], $t)) . '"/>';
 				$html .= '</div>';
 				
 				$html .= $this->closeForm();
@@ -162,13 +162,13 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			$privacy = ze\row::get('translation_chains', 'privacy', ['equiv_id' => $equivId, 'type' => $this->cType]);
 			if ($privacy == 'public') {
 				if (ze\admin::id()) {
-					$this->data['form_HTML'] = '<p class="error">' . ze\admin::phrase('This form has the "save and complete later" feature enabled and so must be placed on a password-protected page.') . '</p>';
+					$this->data['form_HTML'] = '<p class="error">' . htmlspecialchars(ze\admin::phrase('This form has the "save and complete later" feature enabled and so must be placed on a password-protected page.')) . '</p>';
 				}
 				return true;
 			}
 			if (!$this->userId) {
 				if (ze\admin::id()) {
-					$this->data['form_HTML'] = '<p class="error">' . ze\admin::phrase('You must be logged in as an Extranet User to see this Plugin.') . '</p>';
+					$this->data['form_HTML'] = '<p class="error">' . htmlspecialchars(ze\admin::phrase('You must be logged in as an Extranet User to see this Plugin.')) . '</p>';
 				}
 				return true;
 			}
@@ -212,7 +212,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		//Logged in user duplicate submission check
 		if ($this->userId && $this->form['no_duplicate_submissions']) {
 			if (ze\row::exists(ZENARIO_USER_FORMS_PREFIX . 'user_response', ['user_id' => $this->userId, 'form_id' => $formId])) {
-				$html = '<p class="info">' . static::fPhrase($this->form['duplicate_submission_message'], [], $t) . '</p>';
+				$html = '<p class="info">' . htmlspecialchars(static::fPhrase($this->form['duplicate_submission_message'], [], $t)) . '</p>';
 				$html .= $this->getCloseButtonHTML();
 				$this->cssClass .= ' no_title';
 				$this->data['form_HTML'] = $html;
@@ -437,27 +437,27 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			$html .= '<div class="extranet_links">';
 			$cID = $cType = false;
 			if (!empty($links['resend'])) {
-				$html .= '<div><a ' . $this->refreshPluginSlotAnchor('&extranet_resend=1') . '>' . static::fPhrase('Resend verification email', [], $t) . '</a></div>';
-				$html .= '<div class="extranet_link_desc">' . static::fPhrase('Use this if you have previously registered but not received your verification email.', [], $t) . '</div>';
+				$html .= '<div><a ' . $this->refreshPluginSlotAnchor('&extranet_resend=1') . '>' . htmlspecialchars(static::fPhrase('Resend verification email', [], $t)) . '</a></div>';
+				$html .= '<div class="extranet_link_desc">' . htmlspecialchars(static::fPhrase('Use this if you have previously registered but not received your verification email.', [], $t)) . '</div>';
 			}
 			if (!empty($links['register'])) {
 				if (ze\content::langSpecialPage('zenario_registration', $cID, $cType)) {
-					$html .= '<div><a ' . $this->linkToItemAnchor($cID, $cType) . '>' . static::fPhrase('Register', [], $t) . '</a></div>';
+					$html .= '<div><a ' . $this->linkToItemAnchor($cID, $cType) . '>' . htmlspecialchars(static::fPhrase('Register', [], $t)) . '</a></div>';
 				}
 			}
 			if (!empty($links['login'])) {
 				if (ze\content::langSpecialPage('zenario_login', $cID, $cType) && !$this->userId) {
-					$html .= '<div><a ' . $this->linkToItemAnchor($cID, $cType) . '>' . static::fPhrase('Go back to Login', [], $t) . '</a></div>';
+					$html .= '<div><a ' . $this->linkToItemAnchor($cID, $cType) . '>' . htmlspecialchars(static::fPhrase('Go back to Login', [], $t)) . '</a></div>';
 				}
 			}
 			if (!empty($links['change_password'])) {
 				if (ze\content::langSpecialPage('zenario_change_password', $cID, $cType)) {
-					$html .= '<div><a ' . $this->linkToItemAnchor($cID, $cType) . '>' . static::fPhrase('Change your password', [], $t) . '</a></div>';
+					$html .= '<div><a ' . $this->linkToItemAnchor($cID, $cType) . '>' . htmlspecialchars(static::fPhrase('Change your password', [], $t)) . '</a></div>';
 				}
 			}
 			if (!empty($links['logout'])) {
 				if (ze\content::langSpecialPage('zenario_logout', $cID, $cType)) {
-					$html .= '<div><a ' . $this->linkToItemAnchor($cID, $cType) . '>' . static::fPhrase('Logout', [], $t) . '</a></div>';
+					$html .= '<div><a ' . $this->linkToItemAnchor($cID, $cType) . '>' . htmlspecialchars(static::fPhrase('Logout', [], $t)) . '</a></div>';
 				}
 			}
 			$html .= '</div>';
@@ -852,15 +852,15 @@ class zenario_user_forms extends ze\moduleBaseClass {
 						$html .= '<tr><td colspan="2" class="subheader_description">' . $field['description'] . '</td></tr>';
 					}
 				} else {
-					$display = '';
+					$displayHTML = '';
 					if (isset($field['value'])) {
-						$display = static::getFieldDisplayValue($field, $field['value'], true);
+						$displayHTML = static::getFieldDisplayValue($field, $field['value'], true, $includeDownloadLinks = 'visitor');
 					}
 					if (isset($field['row']) && !empty($field['firstRepeatBlockField'])) {
 						$rows = count($fields[$field['repeat_start_id']]['rows']);
-						$html .= '<tr><td colspan="2" class="subheader">(' . $field['row'] . ' / ' . $rows . ')</td></tr>';
+						$html .= '<tr><td colspan="2" class="subheader">(' . (int)$field['row'] . ' / ' . (int)$rows . ')</td></tr>';
 					}
-					$html .= '<tr><td>' . htmlspecialchars($label) . '</td><td>' . $display . '</td></tr>';
+					$html .= '<tr><td>' . htmlspecialchars($label) . '</td><td>' . $displayHTML . '</td></tr>';
 				}
 			}
 		}
@@ -1245,7 +1245,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 	private function getFormHTML($pageId) {
 		$t = $this->form['translate_text'];
 		$html = '';
-		$html .= '<div id="' . $this->containerId . '_form_wrapper" class="form_wrapper';
+		$html .= '<div id="' . htmlspecialchars($this->containerId) . '_form_wrapper" class="form_wrapper';
 		if ($this->inFullScreen) {
 			$html .= ' in_fullscreen';
 		}
@@ -1271,18 +1271,18 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				if ($printButtonPages) {
 					$printButtonPages = explode(',', $printButtonPages);
 					if (in_array($this->pages[$pageId]['ord'], $printButtonPages)) {
-						$topButtonsHTML .= '<div id="' . $this->containerId . '_print_page" class="print_page">' . static::fPhrase('Print', [], $t) . '</div>';
+						$topButtonsHTML .= '<div id="' . htmlspecialchars($this->containerId) . '_print_page" class="print_page">' . htmlspecialchars(static::fPhrase('Print', [], $t)) . '</div>';
 						
 					}
 				}
 			}
 			//Fullscreen
 			if ($this->setting('show_fullscreen_button')) {
-				$topButtonsHTML .= '<div id="' . $this->containerId . '_fullscreen" class="fullscreen_button"';
+				$topButtonsHTML .= '<div id="' . htmlspecialchars($this->containerId) . '_fullscreen" class="fullscreen_button"';
 				if ($this->inFullScreen) {
 					$topButtonsHTML .= ' style="display:none;"';
 				}
-				$topButtonsHTML .= '>' . static::fPhrase('Fullscreen', [], $t) . '</div>';
+				$topButtonsHTML .= '>' . htmlspecialchars(static::fPhrase('Fullscreen', [], $t)) . '</div>';
 			}
 		}
 		if ($topButtonsHTML) {
@@ -1321,7 +1321,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				}
 				
 				$hasPageVisibleOnSwitcher = true;
-				$switcherHTML .= '<li data-page="' . $tPageId . '" ';
+				$switcherHTML .= '<li data-page="' . htmlspecialchars($tPageId) . '" ';
 				if ($tPage['hidden']) {
 					$switcherHTML .= ' style="display:none;"';
 				}
@@ -1352,7 +1352,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 					$switcherHTML .= $this->getVisibleConditionDataValuesHTML($tPage, $pageId);
 					$extraClasses .= ' visible_on_condition';
 				}
-				$switcherHTML .= 'class="step step_' . ($step++) . ' ' . $extraClasses . '">' . $tPage['name'] . '</li>';
+				$switcherHTML .= 'class="step step_' . (int)($step++) . ' ' . htmlspecialchars($extraClasses) . '">' . htmlspecialchars($tPage['name']) . '</li>';
 			}
 			$switcherHTML .= '</ul></div>';
 			if ($hasPageVisibleOnSwitcher) {
@@ -1362,21 +1362,21 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		
 		//Global errors and messages
 		if (isset($this->errors['global_top'])) {
-			$html .= '<div class="form_error global top">' . static::fPhrase($this->errors['global_top'], [], $t) . '</div>';
+			$html .= '<div class="form_error global top">' . htmlspecialchars(static::fPhrase($this->errors['global_top'], [], $t)) . '</div>';
 		} elseif (isset($this->messages['global_top'])) {
-			$html .= '<div class="success global top">' . static::fPhrase($this->messages['global_top'], [], $t) . '</div>';
+			$html .= '<div class="success global top">' . htmlspecialchars(static::fPhrase($this->messages['global_top'], [], $t)) . '</div>';
 		}
 		
-		$html .= '<div id="' . $this->containerId . '_user_form" class="user_form">';
+		$html .= '<div id="' . htmlspecialchars($this->containerId) . '_user_form" class="user_form">';
 		$html .= $this->openForm($onSubmit = '', $extraAttributes = 'enctype="multipart/form-data"', $action = false, $scrollToTopOfSlot = true);
 		//Hidden input for SIMPLE_ACCESS cookie rediection
 		if ($this->form['simple_access_cookie_override_redirect'] && isset($_REQUEST['rci'])) {
-			$html .= '<input type="hidden" name="rci" value="' . $_REQUEST['rci'] . '"/>';
+			$html .= '<input type="hidden" name="rci" value="' . htmlspecialchars($_REQUEST['rci']) . '"/>';
 		}
 		if ($this->form['partial_completion_get_request']) {
 			$html .= '<input type="hidden" name="' . htmlspecialchars($this->form['partial_completion_get_request']) . '" value="' . (int)($_REQUEST[$this->form['partial_completion_get_request']] ?? false) . '"/>';
 		}
-		$html .= '<input type="hidden" name="formPageHash" value="' . $this->formPageHash . '"/>';
+		$html .= '<input type="hidden" name="formPageHash" value="' . htmlspecialchars($this->formPageHash) . '"/>';
 		//Hidden input to tell whether the form has been submitted
 		$html .= '<input type="hidden" name="reloaded" value="1"/>';
 		//Hidden input to tell whether the form is in fullscreen or not
@@ -1403,7 +1403,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		$t = $this->form['translate_text'];
 		$isMultiPageForm = count($this->pages) > 1;
 		if ($isMultiPageForm) {
-			$html .= '<fieldset id="' . $this->containerId . '_page_' . $pageId . '" class="page_' . $this->pages[$pageId]['ord'] . '">';
+			$html .= '<fieldset id="' . htmlspecialchars($this->containerId) . '_page_' . htmlspecialchars($pageId) . '" class="page_' . (int)$this->pages[$pageId]['ord'] . '">';
 		}
 		
 		$onLastPage = ($pageId == end($this->pages)['id']);
@@ -1420,7 +1420,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		$repeatFieldWrapDivOpen = false;
 		
 		if ($this->form['enable_summary_page'] && $onLastPage) {
-			$html .= '<p>' . static::fPhrase("You're nearly done, please check your details before submitting.", [], $t) . '</p>';
+			$html .= '<p>' . htmlspecialchars(static::fPhrase("You're nearly done, please check your details before submitting.", [], $t)) . '</p>';
 			$data = [];
 			foreach ($this->fields as $fieldId => $field) {
 				$data[$fieldId] = $this->getFieldCurrentValue($fieldId);
@@ -1434,12 +1434,12 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			
 			if ($this->form['enable_summary_page_required_checkbox']) {
 				if (isset($this->errors['summary_required_checkbox']) && !$this->form['show_errors_below_fields']) {
-					$html .= '<div class="form_error">' . $this->errors['summary_required_checkbox'] . '</div>';
+					$html .= '<div class="form_error">' . htmlspecialchars($this->errors['summary_required_checkbox']) . '</div>';
 				}
 				$html .= '
 					<div class="form_field field_checkbox">
-						<input id="' . $this->containerId . '_summary_required_checkbox" type="checkbox" name="summary_required_checkbox">
-						<label class="field_title" for="' . $this->containerId . '_summary_required_checkbox">' . static::fPhrase($this->form['summary_page_required_checkbox_label'], [], $t) . '</label>
+						<input id="' . htmlspecialchars($this->containerId) . '_summary_required_checkbox" type="checkbox" name="summary_required_checkbox">
+						<label class="field_title" for="' . htmlspecialchars($this->containerId) . '_summary_required_checkbox">' . static::fPhrase($this->form['summary_page_required_checkbox_label'], [], $t) . '</label>
 					</div>';
 				if (isset($this->errors['summary_required_checkbox']) && $this->form['show_errors_below_fields']) {
 					$html .= '<div class="form_error">' . $this->errors['summary_required_checkbox'] . '</div>';
@@ -1451,7 +1451,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				if ($field['type'] == 'repeat_start') {
 					$html .= $this->getWrapperDivHTML($field, $wrapDivOpen, $currentDivWrapClass);
 					//Repeat start div
-					$html .= '<div id="' . $this->containerId . '_repeat_block_' . $fieldId . '" data-id="' . $fieldId . '" class="repeat_block repeat_block_' . $fieldId;
+					$html .= '<div id="' . htmlspecialchars($this->containerId) . '_repeat_block_' . (int)$fieldId . '" data-id="' . (int)$fieldId . '" class="repeat_block repeat_block_' . (int)$fieldId;
 					if ($field['css_classes']) {
 						$html .= ' ' . htmlspecialchars($field['css_classes']);
 					}
@@ -1466,11 +1466,11 @@ class zenario_user_forms extends ze\moduleBaseClass {
 						$html .= $this->getVisibleConditionDataValuesHTML($field, $pageId);
 					}
 					$html .= '>';
-					$html .= '<input type="hidden" name="' . static::getFieldName($fieldId) . '" value="' . implode(',', $field['rows']) . '">';
+					$html .= '<input type="hidden" name="' . htmlspecialchars(static::getFieldName($fieldId)) . '" value="' . htmlspecialchars(implode(',', $field['rows'])) . '">';
 				
 					//Repeat start title
 					if ($field['label']) {
-						$html .= '<div class="field_title">' . static::fPhrase($field['label'], [], $t) . '</div>';
+						$html .= '<div class="field_title">' . htmlspecialchars(static::fPhrase($field['label'], [], $t)) . '</div>';
 					}
 				
 					$html .= '<div class="repeat_rows">';
@@ -1507,7 +1507,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 						}
 						$html .= '</div>';
 						if (!empty($field['repeatBlockDeleteButton'])) {
-							$html .= '<div class="delete" data-row="' . $field['row'] . '">' . static::fPhrase('Delete', [], $t) . '</div>';
+							$html .= '<div class="delete" data-row="' . (int)$field['row'] . '">' . static::fPhrase('Delete', [], $t) . '</div>';
 						}
 						$html .= '</div>';
 					}
@@ -1533,7 +1533,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		$html .= '</div>';
 		
 		if (isset($this->errors['global_bottom'])) {
-			$html .= '<div class="form_error global bottom">' . static::fPhrase($this->errors['global_bottom'], [], $t) . '</div>';
+			$html .= '<div class="form_error global bottom">' . htmlspecialchars(static::fPhrase($this->errors['global_bottom'], [], $t)) . '</div>';
 		}
 		
 		$html .= '<div class="form_buttons">';
@@ -1545,7 +1545,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		
 		//Previous page button
 		if ($isMultiPageForm && $this->pages[$pageId]['ord'] > 1) {
-			$html .= '<input type="button" value="' . static::fPhrase($this->pages[$pageId]['previous_button_text'], [], $t) . '" class="previous"/>';
+			$html .= '<input type="button" value="' . htmlspecialchars(static::fPhrase($this->pages[$pageId]['previous_button_text'], [], $t)) . '" class="previous"/>';
 		}
 		
 		$button = $this->getCustomButtons($pageId, $onLastPage, 'center');
@@ -1555,11 +1555,11 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		
 		//Next page button
 		if ($isMultiPageForm && !$onLastPage) {
-			$html .= '<input type="button" value="' . static::fPhrase($this->pages[$pageId]['next_button_text'], [], $t) . '" class="next"/>';
+			$html .= '<input type="button" value="' . htmlspecialchars(static::fPhrase($this->pages[$pageId]['next_button_text'], [], $t)) . '" class="next"/>';
 		}
 		//Final submit button
 		if ($this->showSubmitButton() && $onLastPage) {
-			$html .= '<input type="button" class="next submit" value="' . static::fPhrase($this->form['submit_button_text'], [], $t) . '"/>';
+			$html .= '<input type="button" class="next submit" value="' . htmlspecialchars(static::fPhrase($this->form['submit_button_text'], [], $t)) . '"/>';
 		}
 		
 		$button = $this->getCustomButtons($pageId, $onLastPage, 'last');
@@ -1574,7 +1574,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		$html .= '</div>';
 		
 		if ($isMultiPageForm) {
-			$html .= '<input type="hidden" name="current_page" value="' . $pageId . '"/>';
+			$html .= '<input type="hidden" name="current_page" value="' . htmlspecialchars($pageId) . '"/>';
 			$html .= '</fieldset>';
 		}
 		return $html;
@@ -1584,7 +1584,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		$html = '';
 		if ($this->form['allow_partial_completion'] && ($this->form['partial_completion_mode'] == 'button' || $this->form['partial_completion_mode'] == 'auto_and_button')) {
 			$t = $this->form['translate_text'];
-			$html .= '<div class="complete_later"><input type="button" class="saveLater" value="' . static::fPhrase('Save and complete later', [], $t) . '" data-message="' . htmlspecialchars(static::fPhrase('You are about to save this part-completed form, so that you can return to it later. Save now?', [], $t)) . '"/></div>';
+			$html .= '<div class="complete_later"><input type="button" class="saveLater" value="' . htmlspecialchars(static::fPhrase('Save and complete later', [], $t)) . '" data-message="' . htmlspecialchars(static::fPhrase('You are about to save this part-completed form, so that you can return to it later. Save now?', [], $t)) . '"/></div>';
 		}
 		return $html;
 	}
@@ -1619,12 +1619,12 @@ class zenario_user_forms extends ze\moduleBaseClass {
 	    $t = $this->form['translate_text'];
 	    $html = '<div class="form_field honeypot" style="display:none;">';
 	    if ($this->form['honeypot_label']) {
-	        $html .= '<div class="field_title">' . static::fPhrase($this->form['honeypot_label'], [], $t) . '</div>';
+	        $html .= '<div class="field_title">' . htmlspecialchars(static::fPhrase($this->form['honeypot_label'], [], $t)) . '</div>';
 	    }
 	    if (isset($this->errors['honeypot'])) {
-	        $html .= '<div class="form_error">' . static::fPhrase($this->errors['honeypot'], [], $t) . '</div>';
+	        $html .= '<div class="form_error">' . htmlspecialchars(static::fPhrase($this->errors['honeypot'], [], $t)) . '</div>';
 	    }
-	    $html .= '<input type="text" name="field_hp" value="' . ($_POST['field_hp'] ?? '') . '" maxlength="100"/>';
+	    $html .= '<input type="text" name="field_hp" value="' . htmlspecialchars($_POST['field_hp'] ?? '') . '" maxlength="100"/>';
 	    $html .= '</div>';
 	    return $html;
 	}
@@ -1675,8 +1675,8 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				if ($hidden) {
 					$html .= ' autocomplete="hidden-field"';
 				}
-				$html .= ' name="' . $fieldName . '" id="' . $fieldElementId . '"/>';
-				$html .= '<label class="field_title" for="' . $fieldElementId . '">' . htmlspecialchars(static::fPhrase($field['label'], [], $t)) . '</label>';
+				$html .= ' name="' . htmlspecialchars($fieldName) . '" id="' . htmlspecialchars($fieldElementId) . '"/>';
+				$html .= '<label class="field_title" for="' . htmlspecialchars($fieldElementId) . '">' . htmlspecialchars(static::fPhrase($field['label'], [], $t)) . '</label>';
 				break;
 			
 			case 'restatement':
@@ -1708,8 +1708,8 @@ class zenario_user_forms extends ze\moduleBaseClass {
 						}
 					}
 					
-					$html .= '<div id="' . $this->containerId . '_field_' . $fieldId . '_calculation_code" style="display:none;">';
-					$html .= json_encode($calculationCode);
+					$html .= '<div id="' . htmlspecialchars($this->containerId) . '_field_' . htmlspecialchars($fieldId) . '_calculation_code" style="display:none;">';
+					$html .= htmlspecialchars(json_encode($calculationCode));
 					$html .= '</div>';
 				}
 				
@@ -1724,8 +1724,8 @@ class zenario_user_forms extends ze\moduleBaseClass {
 							$autocompleteFieldLOV[] = $listValue;
 						}
 					
-						$autocompleteHTML .= '<div class="suggested_values_json" data-id="' . $fieldId . '" style="display:none;">';
-						$autocompleteHTML .= json_encode($autocompleteFieldLOV);
+						$autocompleteHTML .= '<div class="suggested_values_json" data-id="' . htmlspecialchars($fieldId) . '" style="display:none;">';
+						$autocompleteHTML .= htmlspecialchars(json_encode($autocompleteFieldLOV));
 						$autocompleteHTML .= '</div>';
 					} elseif ($field['autocomplete'] && $field['values_source']) {
 						$fieldLOV = $this->getFieldCurrentLOV($fieldId);
@@ -1738,7 +1738,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 							$readonly = true;
 						}
 					
-						$autocompleteHTML .= '<div class="autocomplete_json" data-id="' . $fieldId . '" style="display:none;"';
+						$autocompleteHTML .= '<div class="autocomplete_json" data-id="' . htmlspecialchars($fieldId) . '" style="display:none;"';
 						//Add data attribute for JS events if other fields need to update when this field changes
 						if (ze\row::exists(ZENARIO_USER_FORMS_PREFIX . 'user_form_fields', ['filter_on_field' => $fieldId])) {
 							$autocompleteHTML .= ' data-source_field="1"';
@@ -1750,12 +1750,12 @@ class zenario_user_forms extends ze\moduleBaseClass {
 						}
 					
 						$autocompleteHTML .= '>';
-						$autocompleteHTML .= json_encode($autocompleteFieldLOV);
+						$autocompleteHTML .= htmlspecialchars(json_encode($autocompleteFieldLOV));
 						$autocompleteHTML .= '</div>';
 					
-						$autocompleteHTML .= '<input type="hidden" name="' . $fieldName  . '" ';
+						$autocompleteHTML .= '<input type="hidden" name="' . htmlspecialchars($fieldName)  . '" ';
 						if (isset($fieldLOV[$value])) {
-							$autocompleteHTML .= ' value="' . $value . '"';
+							$autocompleteHTML .= ' value="' . htmlspecialchars($value) . '"';
 							$value = $fieldLOV[$value];
 						} else {
 							$value = '';
@@ -1771,7 +1771,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				if ($field['field_validation'] == 'email') {
 					$fieldInputType = 'email';
 				}
-				$html .= '<input type="' . $fieldInputType . '"';
+				$html .= '<input type="' . htmlspecialchars($fieldInputType) . '"';
 				if ($readonly) {
 					$html .= ' readonly ';
 				}
@@ -1779,12 +1779,12 @@ class zenario_user_forms extends ze\moduleBaseClass {
 					$html .= ' autocomplete="hidden-field" ';
 				}
 				if ($useTextFieldName) {
-					$html .= ' name="' . $fieldName . '"';
+					$html .= ' name="' . htmlspecialchars($fieldName) . '"';
 				}
-				$html .= ' id="' . $fieldElementId . '"';
+				$html .= ' id="' . htmlspecialchars($fieldElementId) . '"';
 				//Data vars to help caculated fields
 				if ($field['repeat_start_id']) {
-					$html .= ' data-repeated="1" data-repeated_row="' . $field['row'] . '" data-repeat_id="' . $field['repeat_start_id'] . '"';
+					$html .= ' data-repeated="1" data-repeated_row="' . htmlspecialchars($field['row']) . '" data-repeat_id="' . htmlspecialchars($field['repeat_start_id']) . '"';
 				}
 				if ($value !== false) {
 					$html .= ' value="' . htmlspecialchars($value) . '"';
@@ -1808,7 +1808,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 						$maxlength = 100;
 						break;
 				}	
-				$html .= ' maxlength="' . $maxlength . '" />';
+				$html .= ' maxlength="' . htmlspecialchars($maxlength) . '" />';
 				$html .= $autocompleteHTML;
 				break;
 				
@@ -1833,18 +1833,18 @@ class zenario_user_forms extends ze\moduleBaseClass {
 					$html .= ' readonly';
 				}
 				
-				$html .= ' id="' . $fieldElementId . '"/>';
-				$html .= '<input type="hidden" name="' . $fieldName . '" id="' . $fieldElementId . '__0"';
+				$html .= ' id="' . htmlspecialchars($fieldElementId) . '"/>';
+				$html .= '<input type="hidden" name="' . htmlspecialchars($fieldName) . '" id="' . htmlspecialchars($fieldElementId) . '__0"';
 				if ($value !== false) {
 					$html .= ' value="' . htmlspecialchars($value) . '"';
 				}
 				$html .= '/>';
-				$html .= '<input type="button" class="clear_date" value="x" id="' . $fieldElementId . '__clear"/>';
+				$html .= '<input type="button" class="clear_date" value="x" id="' . htmlspecialchars($fieldElementId) . '__clear"/>';
 				break;
 				
 			case 'textarea':
 				if ($field['predefined_text_target_id'] && ze::setting('zenario_user_forms_enable_predefined_text')) {
-					$html .= '<input type="button" class="set_predefined_text" value="' . htmlspecialchars($field['predefined_text_button_label']) . '" data-id="' . $fieldId . '"/>';
+					$html .= '<input type="button" class="set_predefined_text" value="' . htmlspecialchars($field['predefined_text_button_label']) . '" data-id="' . htmlspecialchars($fieldId) . '"/>';
 				}
 				$html .= '<textarea rows="4" cols="51"';
 				if ($field['placeholder'] !== '' && $field['placeholder'] !== null) {
@@ -1856,7 +1856,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				if ($hidden) {
 					$html .= ' autocomplete="hidden-field" ';
 				}
-				$html .= ' name="' . $fieldName . '" id="' . $fieldElementId . '">';
+				$html .= ' name="' . htmlspecialchars($fieldName) . '" id="' . htmlspecialchars($fieldElementId) . '">';
 				if ($value !== false) {
 					$html .= htmlspecialchars($value);
 				}
@@ -1864,12 +1864,12 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				break;
 				
 			case 'section_description':
-				$description = static::fPhrase($field['description'], [], $t);
+				$descriptionHTML = static::fPhrase($field['description'], [], $t);
 				//If no tags...
-				if ($description == strip_tags($description)) {
-					$description = nl2br('<p>' . $description . '</p>');
+				if ($descriptionHTML == strip_tags($descriptionHTML)) {
+					$descriptionHTML = nl2br('<p>' . $descriptionHTML . '</p>');
 				}
-				$html .= '<div class="description">' . $description . '</div>';
+				$html .= '<div class="description">' . $descriptionHTML . '</div>';
 				break;
 				
 			case 'radios':
@@ -1881,7 +1881,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 					$items = count($fieldLOV);
 					$rows = ceil($items/$cols);
 					$currentRow = $currentCol = 1;
-					$html .= ' columns_' . $cols;
+					$html .= ' columns_' . (int)$cols;
 					$keys = array_keys($fieldLOV);
 					$lastValue = end($keys);
 				}
@@ -1900,15 +1900,15 @@ class zenario_user_forms extends ze\moduleBaseClass {
 					if ($hidden) {
 						$valueHTML .= ' autocomplete="hidden-field" ';
 					}
-					$valueHTML .= ' name="'. $fieldName. '" id="' . $radioElementId . '"/>';
-					$valueHTML .= '<label for="' . $radioElementId . '">' . static::fPhrase($label, [], $t) . '</label></div>'; 
+					$valueHTML .= ' name="'. htmlspecialchars($fieldName). '" id="' . htmlspecialchars($radioElementId) . '"/>';
+					$valueHTML .= '<label for="' . htmlspecialchars($radioElementId) . '">' . htmlspecialchars(static::fPhrase($label, [], $t)) . '</label></div>'; 
 					
 					if (($cols > 1) && ($currentRow > $rows)) {
 						$currentRow = 1;
 						$currentCol++;
 					}
 					if (($cols > 1) && ($currentRow == 1)) {
-						$html .= '<div class="col_' . $currentCol . ' column">';
+						$html .= '<div class="col_' . (int)$currentCol . ' column">';
 					}
 					$html .= $valueHTML;
 					if (($cols > 1) && (($currentRow++ == $rows) || ($lastValue == $valueId))) {
@@ -1918,7 +1918,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				$html .= '</div>';
 				
 				if ($readonly && !empty($value)) {
-					$html .= '<input type="hidden" name="' . $fieldName . '" value="'.htmlspecialchars($value).'" />';
+					$html .= '<input type="hidden" name="' . htmlspecialchars($fieldName) . '" value="'.htmlspecialchars($value).'" />';
 				}
 				break;
 				
@@ -1940,19 +1940,19 @@ class zenario_user_forms extends ze\moduleBaseClass {
 					if ($hidden) {
 						$html .= ' autocomplete="hidden-field" ';
 					}
-					$html .= ' name="'. $fieldName. '" id="' . $radioElementId . '"/>';
-					$html .= '<label for="' . $radioElementId . '">';
+					$html .= ' name="'. htmlspecialchars($fieldName). '" id="' . htmlspecialchars($radioElementId) . '"/>';
+					$html .= '<label for="' . htmlspecialchars($radioElementId) . '">';
 					//Make sure to use system country phrases if showing a list of countries
 					if ($isCountryList && $t) {
-						$html .= ze\lang::phrase('_COUNTRY_NAME_' . $valueId, [], 'zenario_country_manager');
+						$html .= htmlspecialchars(ze\lang::phrase('_COUNTRY_NAME_' . $valueId, [], 'zenario_country_manager'));
 					} else {
-						$html .= static::fPhrase($label, [], $t);
+						$html .= htmlspecialchars(static::fPhrase($label, [], $t));
 					}
 					$html .= '</label>';
 					$html .= '</div>'; 
 				}
 				if ($readonly && !empty($value)) {
-					$html .= '<input type="hidden" name="' . $fieldName . '" value="'.htmlspecialchars($value).'" />';
+					$html .= '<input type="hidden" name="' . htmlspecialchars($fieldName) . '" value="'.htmlspecialchars($value).'" />';
 				}
 				break;
 			
@@ -1965,18 +1965,18 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				if ($hidden) {
 					$html .= ' autocomplete="hidden-field" ';
 				}
-				$html .= ' name="' . $fieldName . '" id="' . $fieldElementId . '">';
-				$html .= '<option value="">' . static::fPhrase('-- Select --', [], $t) . '</option>';
+				$html .= ' name="' . htmlspecialchars($fieldName) . '" id="' . htmlspecialchars($fieldElementId) . '">';
+				$html .= '<option value="">' . htmlspecialchars(static::fPhrase('-- Select --', [], $t)) . '</option>';
 				foreach ($fieldLOV as $valueId => $label) {
 					$html .= '<option value="' . htmlspecialchars($valueId) . '"';
 					if ($valueId == $value) {
 						$html .= ' selected="selected" ';
 					}
-					$html .= '>' . static::fPhrase($label, [], $t) . '</option>';
+					$html .= '>' . htmlspecialchars(static::fPhrase($label, [], $t)) . '</option>';
 				}
 				$html .= '</select>';
 				if ($readonly) {
-					$html .= '<input type="hidden" name="' . $fieldName . '" value="' . htmlspecialchars($value) . '"/>';
+					$html .= '<input type="hidden" name="' . htmlspecialchars($fieldName) . '" value="' . htmlspecialchars($value) . '"/>';
 				}
 				break;
 				
@@ -1990,13 +1990,13 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				if ($hidden) {
 					$html .= ' autocomplete="hidden-field" ';
 				}
-				$html .= ' name="' . $fieldName . '" id="' . $fieldElementId . '"';
+				$html .= ' name="' . htmlspecialchars($fieldName) . '" id="' . htmlspecialchars($fieldElementId) . '"';
 				//Add class for JS events if other fields need to update when this field changes
 				if (ze\row::exists(ZENARIO_USER_FORMS_PREFIX . 'user_form_fields', ['filter_on_field' => $fieldId])) {
 					$html .= ' class="source_field"';
 				}
 				$html .= '>';
-				$html .= '<option value="">' . static::fPhrase('-- Select --', [], $t) . '</option>';
+				$html .= '<option value="">' . htmlspecialchars(static::fPhrase('-- Select --', [], $t)) . '</option>';
 				foreach ($fieldLOV as $valueId => $label) {
 					$valueId = (string)$valueId;
 					$html .= '<option value="' . htmlspecialchars($valueId) . '"';
@@ -2006,15 +2006,15 @@ class zenario_user_forms extends ze\moduleBaseClass {
 					$html .= '>';
 					//Make sure to use system country phrases if showing a list of countries
 					if ($isCountryList && $t) {
-						$html .= ze\lang::phrase('_COUNTRY_NAME_' . $valueId, [], 'zenario_country_manager');
+						$html .= htmlspecialchars(ze\lang::phrase('_COUNTRY_NAME_' . $valueId, [], 'zenario_country_manager'));
 					} else {
-						$html .= static::fPhrase($label, [], $t);
+						$html .= htmlspecialchars(static::fPhrase($label, [], $t));
 					}
 					$html .= '</option>';
 				}
 				$html .= '</select>';
 				if ($readonly) {
-					$html .= '<input type="hidden" name="' . $fieldName . '" value="' . htmlspecialchars($value) . '"/>';
+					$html .= '<input type="hidden" name="' . htmlspecialchars($fieldName) . '" value="' . htmlspecialchars($value) . '"/>';
 				}
 				break;
 			
@@ -2027,7 +2027,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 					$items = count($fieldLOV);
 					$rows = ceil($items/$cols);
 					$currentRow = $currentCol = 1;
-					$html .= ' columns_' . $cols;
+					$html .= ' columns_' . (int)$cols;
 					$keys = array_keys($fieldLOV);
 					$lastValue = end($keys);
 				}
@@ -2038,7 +2038,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 					$checkboxElementId = $fieldElementId . '_' . $valueId;
 					
 					$selected = $value && in_array($valueId, $value);
-					$checkBoxHtml .= '<div class="field_checkbox ' . ($selected ? 'checked' : '') . '"><input type="checkbox" data-value="' . $valueId . '"';
+					$checkBoxHtml .= '<div class="field_checkbox ' . ($selected ? 'checked' : '') . '"><input type="checkbox" data-value="' . htmlspecialchars($valueId) . '"';
 					if ($selected) {
 						$checkBoxHtml .= ' checked="checked"';
 					}
@@ -2048,12 +2048,12 @@ class zenario_user_forms extends ze\moduleBaseClass {
 					if ($hidden) {
 						$checkBoxHtml .= ' autocomplete="hidden-field" ';
 					}
-					$checkBoxHtml .= ' name="' . $name . '" id="' . $checkboxElementId . '"/>';
+					$checkBoxHtml .= ' name="' . htmlspecialchars($name) . '" id="' . htmlspecialchars($checkboxElementId) . '"/>';
 					
 					if ($readonly && $selected) {
-						$checkBoxHtml .= '<input type="hidden" name="' . $name . '" value="' . $selected . '" />';
+						$checkBoxHtml .= '<input type="hidden" name="' . htmlspecialchars($name) . '" value="' . htmlspecialchars($selected) . '" />';
 					}
-					$checkBoxHtml .= '<label for="' . $checkboxElementId . '">' . static::fPhrase($label, [], $t) . '</label></div>';
+					$checkBoxHtml .= '<label for="' . htmlspecialchars($checkboxElementId) . '">' . htmlspecialchars(static::fPhrase($label, [], $t)) . '</label></div>';
 					
 					
 					if (($cols > 1) && ($currentRow > $rows)) {
@@ -2061,7 +2061,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 						$currentCol++;
 					}
 					if (($cols > 1) && ($currentRow == 1)) {
-						$html .= '<div class="col_' . $currentCol . ' column">';
+						$html .= '<div class="col_' . (int)$currentCol . ' column">';
 					}
 					$html .= $checkBoxHtml;
 					if (($cols > 1) && (($currentRow++ == $rows) || ($lastValue == $valueId))) {
@@ -2075,10 +2075,10 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				if ($value || $readonly) {
 					$filename = basename($value);
 					$html .= '<div class="field_data">' . htmlspecialchars($filename) . '</div>';
-					$html .= '<input type="button" data-id="' . $fieldId . '" value="' . static::fPhrase('Remove', [], $t) . '" class="remove_attachment">';
-					$html .= '<input type="hidden" name="' . $fieldName . '" value="' . htmlspecialchars($value) . '" />';
+					$html .= '<input type="button" data-id="' . htmlspecialchars($fieldId) . '" value="' . htmlspecialchars(static::fPhrase('Remove', [], $t)) . '" class="remove_attachment">';
+					$html .= '<input type="hidden" name="' . htmlspecialchars($fieldName) . '" value="' . htmlspecialchars($value) . '" />';
 				} else {
-					$html .= '<input type="file" name="' . $fieldName . '"/>';
+					$html .= '<input type="file" name="' . htmlspecialchars($fieldName) . '"/>';
 				}
 				break;
 			
@@ -2086,28 +2086,27 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				if ($readonly) {
 					$json = json_encode($value, JSON_FORCE_OBJECT);
 					$html .= '<div class="files">';
-					$html .= '<input type="hidden" name="' . $fieldName . '" value="' . htmlspecialchars($json) . '"/>';
+					$html .= '<input type="hidden" name="' . htmlspecialchars($fieldName) . '" value="' . htmlspecialchars($json) . '"/>';
 					if ($value) {
 						foreach ($value as $fileId => $file) {
 							$html .= '<div class="file_row">';
-							$html .= '<p><a href="' . $file['path'] . '" target="_blank">' . $file['name'] . '</a></p>';
+							$html .= '<p><a href="' . htmlspecialchars($file['path']) . '" target="_blank">' . htmlspecialchars($file['name']) . '</a></p>';
 							$html .= '</div>';
 						}
 					} else {
-						$html .= static::fPhrase('No file found', [], $t);
+						$html .= htmlspecialchars(static::fPhrase('No file found', [], $t));
 					}
 					$html .= '</div>';
 				} else {
 					$json = json_encode($value, JSON_FORCE_OBJECT);
-					$multiple = $field['multiple_select'] ? 'multiple' : '';
 					$html .= '
-						<input type="hidden" name="' . $fieldName . '" value="' . htmlspecialchars($json) . '"/>
+						<input type="hidden" name="' . htmlspecialchars($fieldName) . '" value="' . htmlspecialchars($json) . '"/>
 						<div class="files"></div>
 						<div class="progress" style="display:none;">
 							<div class="progress_bar" style="background:green;height:5px;"></div>
 						</div>
-						<div class="file_upload_button"><span>' . static::fPhrase('Upload file', [], $t) . '</span>
-							<input class="file_picker_field" type="file" name="file_upload[]" ' . $multiple . '>
+						<div class="file_upload_button"><span>' . htmlspecialchars(static::fPhrase('Upload file', [], $t)) . '</span>
+							<input class="file_picker_field" type="file" name="file_upload[]" ' . htmlspecialchars($field['multiple_select'] ? 'multiple' : '') . '>
 						</div>';
 				}
 				break;
@@ -2136,14 +2135,14 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				$json = json_encode($value, JSON_FORCE_OBJECT);
 				
 				$html .= '
-					<input type="hidden" name="' . $fieldName . '" value="' . htmlspecialchars($json) . '"/>
+					<input type="hidden" name="' . htmlspecialchars($fieldName) . '" value="' . htmlspecialchars($json) . '"/>
 					<div class="files_preview">' . $previewHTML . '</div>
-					<input type="button" class="open_popup_1" value="' . static::fPhrase('Upload', [], $t) . '">
+					<input type="button" class="open_popup_1" value="' . htmlspecialchars(static::fPhrase('Upload', [], $t)) . '">
 					<div class="overlay_1" style="display:none;">
 						<div class="popup_1">
 							<span class="close">×</span>
 							<div class="header">
-								<h3>' . static::fPhrase('Upload files', [], $t) . '</h3>
+								<h3>' . htmlspecialchars(static::fPhrase('Upload files', [], $t)) . '</h3>
 							</div>
 							<div class="content">
 								<div class="files" style="min-height:200px;min-width:500px;border-style:solid;">
@@ -2155,18 +2154,18 @@ class zenario_user_forms extends ze\moduleBaseClass {
 							</div>
 							<div class="footer">
 								<div class="section_wrap">
-									<label>' . static::fPhrase('Select files to upload', [], $t) . '</label>
+									<label>' . htmlspecialchars(static::fPhrase('Select files to upload', [], $t)) . '</label>
 									<div class="button">
-										<span>' . static::fPhrase('Browse files', [], $t) . '</span>
+										<span>' . htmlspecialchars(static::fPhrase('Browse files', [], $t)) . '</span>
 										<input class="upload_complete_files" type="file" name="file_upload[]" multiple>
 									</div>
 								</div>
 								<div class="section_wrap">
-									<label>' . static::fPhrase('Upload multiple images as a single PDF', [], $t) . '</label>
-									<input type="button" class="open_popup_2" value="' . static::fPhrase('Start...', [], $t) . '">
+									<label>' . htmlspecialchars(static::fPhrase('Upload multiple images as a single PDF', [], $t)) . '</label>
+									<input type="button" class="open_popup_2" value="' . htmlspecialchars(static::fPhrase('Start...', [], $t)) . '">
 								</div>
 								<div class="section_wrap save">
-									<input type="button" class="save" value="' . static::fPhrase('Save', [], $t) . '">
+									<input type="button" class="save" value="' . htmlspecialchars(static::fPhrase('Save', [], $t)) . '">
 								</div>
 							</div>
 						</div>
@@ -2175,10 +2174,10 @@ class zenario_user_forms extends ze\moduleBaseClass {
 						<div class="popup_2">
 							<span class="close">×</span>
 							<div class="header">
-								<h3>' . static::fPhrase('PDF creator', [], $t) . '</h3>
+								<h3>' . htmlspecialchars(static::fPhrase('PDF creator', [], $t)) . '</h3>
 							</div>
 							
-							<p>' . static::fPhrase('Click the button or drag to upload images. You\'re able to drag to re-order and rotate the images. When you\'re happy, click "combine" to make a PDF.', [], $t) . '</p>
+							<p>' . htmlspecialchars(static::fPhrase('Click the button or drag to upload images. You\'re able to drag to re-order and rotate the images. When you\'re happy, click "combine" to make a PDF.', [], $t)) . '</p>
 							
 							<div class="content">
 								<div class="files" style="min-height:200px;min-width:500px;border-style:solid;">
@@ -2190,18 +2189,18 @@ class zenario_user_forms extends ze\moduleBaseClass {
 							</div>
 							<div class="footer">
 								<div class="section_wrap">
-									<label>' . static::fPhrase('Upload multiple images', [], $t) . '</label>
+									<label>' . htmlspecialchars(static::fPhrase('Upload multiple images', [], $t)) . '</label>
 									<div class="button">
-										<span>' . static::fPhrase('Browse files', [], $t) . '</span>
+										<span>' . htmlspecialchars(static::fPhrase('Browse files', [], $t)) . '</span>
 										<input class="upload_file_fragments" type="file" name="file_upload[]" multiple accept="image/jpeg,image/gif,image/png">
 									</div>
 								</div>
 								<div class="section_wrap">
-									<label>' . static::fPhrase('Filename', [], $t) . '</label>
-									<input type="text" class="filename" value="' . $fileName . '" ' . $fileNameReadonly . '>.pdf
+									<label>' . htmlspecialchars(static::fPhrase('Filename', [], $t)) . '</label>
+									<input type="text" class="filename" value="' . htmlspecialchars($fileName) . '" ' . htmlspecialchars($fileNameReadonly) . '>.pdf
 								</div>
 								<div class="section_wrap save">
-									<input type="button" class="combine" value="' . static::fPhrase('Combine', [], $t) . '">
+									<input type="button" class="combine" value="' . htmlspecialchars(static::fPhrase('Combine', [], $t)) . '">
 								</div>
 							</div>
 						</div>
@@ -2214,16 +2213,16 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		}
 		
 		if (!empty($field['note_to_user'])) {
-			$html .= '<div class="note_to_user">'. static::fPhrase($field['note_to_user'], [], $t) .'</div>';
+			$html .= '<div class="note_to_user">'. static::fPhrase($field['note_to_user'], [], $t) .'</div>'; //can be HTML
 		}
 		
 		//Field containing div open
-		$containerHTML = '<div id="' . $this->containerId . '_field_' . $fieldId . '" data-id="' . $fieldId . '" ';
+		$containerHTML = '<div id="' . htmlspecialchars($this->containerId) . '_field_' . htmlspecialchars($fieldId) . '" data-id="' . htmlspecialchars($fieldId) . '" ';
 		if ($field['visibility'] == 'visible_on_condition') {
 			$containerHTML .= $this->getVisibleConditionDataValuesHTML($field, $pageId);
 		}
 		if ($field['type'] == 'restatement') {
-			$containerHTML .= ' data-fieldid="' . $field['restatement_field'] . '"';
+			$containerHTML .= ' data-fieldid="' . htmlspecialchars($field['restatement_field']) . '"';
 		} elseif ($field['type'] == 'calculated') {
 			if ($field['value_prefix']) {
 				$containerHTML .= ' data-prefix="' . htmlspecialchars($field['value_prefix']) . '"';
@@ -2233,7 +2232,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			}
 		} elseif ($field['type'] == 'document_upload') {
 			if ($field['combined_filename'] && $field['stop_user_editing_filename']) {
-				$containerHTML .= ' data-filename="' . $field['combined_filename'] . '"';
+				$containerHTML .= ' data-filename="' . htmlspecialchars($field['combined_filename']) . '"';
 			}
 		}
 		//Check if field is hidden (ignoring the repeat)
@@ -2242,12 +2241,12 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		}
 		
 		//Containing div css classes
-		$containerHTML .= ' class="form_field field_' . $field['type'] . ' ' . htmlspecialchars($field['css_classes']);
+		$containerHTML .= ' class="form_field field_' . htmlspecialchars($field['type']) . ' ' . htmlspecialchars($field['css_classes']);
 		if ($field['repeat_start_id']) {
 			$idParts = explode('_', $fieldId);
 			if (count($idParts) == 2) {
 				$parentFieldId = $idParts[0];
-				$containerHTML .= ' field_' . $parentFieldId . '_repeat';
+				$containerHTML .= ' field_' . htmlspecialchars($parentFieldId) . '_repeat';
 			}
 		}
 		if ($readonly) {
@@ -2259,7 +2258,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		if (isset($this->errors[$fieldId])) {
 			$containerHTML .= ' has_error';
 		}
-		$containerHTML .= ' ' . $extraClasses;
+		$containerHTML .= ' ' . htmlspecialchars($extraClasses);
 		$containerHTML .= '">';
 		
 		$html = $containerHTML . $html . '</div>';
@@ -3034,7 +3033,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		$fieldIdValueLink = [];
 		foreach ($this->fields as $fieldId => $field) {
 			$this->fields[$fieldId]['value'] = $this->getFieldCurrentValue($fieldId);
-			$fieldIdValueLink[$fieldId] = $this->getFieldStorableValue($fieldId);
+			$fieldIdValueLink[$fieldId] = static::getFieldStorableValue($field, $this->fields[$fieldId]['value']);
 			
 			if (!empty($field['is_consent'])) {
 				$consentFields[] = $fieldId;
@@ -3327,12 +3326,12 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		$nameFrom = ze::setting('email_name_from');
 		
 		$body =
-			'<p>' . $startLine . '</p>
-			<p>The form "' . $formName . '" was submitted with the following data:</p>';
+			'<p>' . htmlspecialchars($startLine) . '</p>
+			<p>The form "' . htmlspecialchars($formName) . '" was submitted with the following data:</p>';
 		
 		if ($this->form['send_email_to_admin'] && !$this->form['admin_email_use_template']) {
 			if (!empty($mergeFields['breadcrumbs'])) {
-				$body .= '<p>Page submitted from: ' . $mergeFields['breadcrumbs'] . '</p>';
+				$body .= '<p>Page submitted from: ' . htmlspecialchars($mergeFields['breadcrumbs']) . '</p>';
 			}
 		}
 		
@@ -3344,40 +3343,21 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				case 'restatement':
 					continue 2;
 			}
-			$display = static::getFieldDisplayValue($field, $field['value']);
-			if ($adminDownloadLinks) {
-				switch ($field['type']) {
-					case 'attachment':
-						if ($field['value']) {
-							$fileId = $this->getFieldStorableValue($fieldId);
-							$display = '<a href="' . ze\link::absolute() . 'zenario/file.php?adminDownload=1&id=' . $fileId . '" target="_blank">' . $display . '</a>';
-						}
-						break;
-					case 'file_picker':
-					case 'document_upload':
-						$display = [];
-						$fileIds = $this->getFieldStorableValue($fieldId);
-						if ($fileIds) {
-							$fileIds = $this->getFieldValueFromStored($field, $fileIds);
-							foreach ($fileIds as $fileId => $file) {
-								$display[] = '<a href="' . ze\link::absolute() . 'zenario/file.php?adminDownload=1&id=' . $fileId . '" target="_blank">' . $file['name'] . '</a>';
-							}
-						}
-						$display = implode(', ', $display);
-						break;
-				}
+			
+			
+			$includeDownloadLinks = $adminDownloadLinks ? 'admin' : false;
+			$displayHTML = static::getFieldDisplayValue($field, $field['value'], $html = true, $includeDownloadLinks);
+			if ($field['type'] == 'textarea' && $displayHTML) {
+				$displayHTML = '<br>' . $displayHTML;
 			}
-			if ($field['type'] == 'textarea' && $display) {
-				$display = '<br>' . $display;
-			}
-			$body .= '<p>' . trim($field['name'], " \t\n\r\0\x0B:") . ': ' . $display . '</p>';
+			$body .= '<p>' . htmlspecialchars(trim($field['name'], " \t\n\r\0\x0B:")) . ': ' . $displayHTML . '</p>';
 		}
 		
 		$url = ze\link::toItem(ze::$cID, ze::$cType, true, '', false, false, true);
 		if (!$url) {
 			$url = ze\link::absolute();
 		}
-		$body .= '<p>This is an auto-generated email from ' . $url . '</p>';
+		$body .= '<p>This is an auto-generated email from ' . htmlspecialchars($url) . '</p>';
 		
 		zenario_email_template_manager::sendEmails($email, $subject, $addressFrom, $nameFrom, $body, [], $attachments, [], 0, false, $replyToEmail, $replyToName);
 	}
@@ -3467,7 +3447,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 						$canSave = !ze\row::exists('custom_dataset_files_link', ['dataset_id' => $dataset['id'], 'field_id' => $datasetFieldId, 'linking_id' => $userId]);
 					}
 					if ($canSave) {
-						$value = $this->getFieldStorableValue($fieldId);
+						$value = static::getFieldStorableValue($field, $value);
 						$values = static::getFieldValueFromStored($field, $value);
 						$userCustomFilePickerValues[$datasetFieldId] = [];
 						foreach ($values as $fileId => $file) {
@@ -3488,7 +3468,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 					}
 					
 					if ($field['type'] == 'repeat_start') {
-						$value = $this->getFieldStorableValue($fieldId);
+						$value = static::getFieldStorableValue($field, $value);
 					}
 					
 					if ($field['invert_dataset_result']) {
@@ -3577,7 +3557,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 					}
 				}
 			
-				$value = $this->getFieldStorableValue($fieldId);
+				$value = static::getFieldStorableValue($field, $field['value']);
 				ze\row::insert(ZENARIO_USER_FORMS_PREFIX . 'user_response_data', ['user_response_id' => $responseId, 'form_field_id' => $field['id'], 'value' => $value, 'field_row' => $row]);
 			}
 		}
@@ -3624,10 +3604,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 	}
 	
 	
-	private function getFieldStorableValue($fieldId) {
-		$field = $this->fields[$fieldId];
-		$value = $this->getFieldCurrentValue($fieldId);
-		
+	public static function getFieldStorableValue($field, $value) {
 		switch ($field['type']) {
 			case 'checkboxes':
 				return $value ? implode(',', $value) : '';
@@ -3688,27 +3665,29 @@ class zenario_user_forms extends ze\moduleBaseClass {
 	// - Loaded (values used in the form module code)
 	// - Display (Presentable format for viewing data)
 	//This function takes loaded data for the $value parameter
-	public static function getFieldDisplayValue($field, $value, $html = false) {
+	public static function getFieldDisplayValue($field, $value, $html = false, $includeDownloadLinks = false) {
+		$display = '';
 		switch ($field['type']) {
 			case 'checkbox':
 			case 'group':
-				return $value ? 'Yes' : 'No';
+				$display = $value ? 'Yes' : 'No';
+				break;
 			case 'radios':
 			case 'select':
-				return $value ? static::getFormFieldValueLabel($field['dataset_field_id'], $value) : '';
+				$display = $value ? static::getFormFieldValueLabel($field['dataset_field_id'], $value) : '';
+				break;
 			case 'checkboxes':
 				if ($value) {
 					$labels = [];
 					foreach ($value as $valueId) {
 						$labels[] = static::getFormFieldValueLabel($field['dataset_field_id'], $valueId);
 					}
-					return implode(', ', $labels);
+					$display = implode(', ', $labels);
 				}
-				return '';
+				break;
 			case 'date':
-				return ze\date::format($value, '_MEDIUM');
-			case 'textarea':
-				return nl2br($value);
+				$display = ze\date::format($value, '_MEDIUM');
+				break;
 			case 'centralised_radios':
 			case 'centralised_select':
 				if ($field['dataset_field_id']) {
@@ -3716,42 +3695,58 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				} else {
 					$lov = ze\dataset::centralisedListValues($field['values_source'], $field['values_source_filter']);
 				}
-				return $lov[$value] ?? '';
+				$display = $lov[$value] ?? '';
+				break;
 			case 'attachment':
-				if ($value) {
-					$fileId = ze\file::addToDatabase('forms', CMS_ROOT . $value);
+				if ($value && ($fileId = static::getFieldStorableValue($field, $value))) {
 					$file = ze\row::get('files', ['filename'], $fileId);
 					if ($file) {
-						if ($html) {
-							return '<a target="_blank" href="' . ze\file::link($fileId) . '">' . $file['filename'] . '</a>';
+						if ($html && $includeDownloadLinks == 'visitor') {
+							return '<a href="' . htmlspecialchars(ze\file::link($fileId)) . '" target="_blank">' . htmlspecialchars($file['filename']) . '</a>';
+						} elseif ($html && $includeDownloadLinks == 'admin') {
+							return '<a href="' . htmlspecialchars(ze\link::absolute()) . 'zenario/file.php?adminDownload=1&id=' . (int)$fileId . '" target="_blank">' . htmlspecialchars($file['filename']) . '</a>';
 						} else {
-							return $file['filename'];
+							$display = $file['filename'];
 						}
 					} else {
-						return 'Unknown file';
+						$display = 'Unknown file';
 					}
 				}
-				return '';
+				break;
 			case 'file_picker':
 			case 'document_upload':
-				if ($value) {
+				if ($value && ($fileIds = static::getFieldStorableValue($field, $value))) {
 					$fileList = [];
-					foreach ($value as $fileId => $file) {
-						$fileId = ze\file::addToDatabase('forms', CMS_ROOT . $file['path']);
-						if ($html) {
-							$fileList[] = '<a target="_blank" href="' . ze\file::link($fileId) . '">' . $file['name'] . '</a>';
+					foreach (explode(',', $fileIds) as $fileId) {
+						$file = ze\row::get('files', ['filename'], $fileId);
+						if ($html && $includeDownloadLinks == 'visitor') {
+							$fileList[] = '<a href="' . htmlspecialchars(ze\file::link($fileId)) . '" target="_blank">' . htmlspecialchars($file['filename']) . '</a>';
+						} elseif ($html && $includeDownloadLinks == 'admin') {
+							$fileList[] = '<a href="' . htmlspecialchars(ze\link::absolute()) . 'zenario/file.php?adminDownload=1&id=' . (int)$fileId . '" target="_blank">' . htmlspecialchars($file['filename']) . '</a>';
 						} else {
-							$fileList[] = $file['name'];
+							$fileList[] = $file['filename'];
 						}
 					}
-					return implode(', ', $fileList);
+					$display = implode(', ', $fileList);
+					if ($html) {
+						return $display;
+					}
 				}
-				return '';
+				break;
 			case 'repeat_start':
-				return is_array($value) ? count($value) : 0;
+				$display = is_array($value) ? count($value) : 0;
+				break;
 			default:
-				return $value;
+				$display = $value;
+				break;
 		}
+		if ($html) {
+			$display = htmlspecialchars($display);
+			if ($field['type'] == 'textarea') {
+				$display = nl2br($display);
+			}
+		}
+		return $display;
 	}
 	
 	private function createFormPartialResponse() {
@@ -3782,7 +3777,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				$rows = $this->fields[$field['repeat_start_id']]['rows'];
 				$row = array_search($field['row'], $rows) + 1;
 			}
-			$value = $this->getFieldStorableValue($fieldId);
+			$value = static::getFieldStorableValue($field, $field['value']);
 			
 			ze\row::insert(ZENARIO_USER_FORMS_PREFIX . 'user_partial_response_data', ['user_partial_response_id' => $responseId, 'form_field_id' => $field['id'], 'value' => $value, 'field_row' => $row]);
 		}
@@ -3871,7 +3866,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		$t = $this->form['translate_text'];
 		$html = '<div class="form_field captcha">';
 		if (isset($this->errors['captcha']) && !$this->form['show_errors_below_fields']) {
-			$html .= '<div class="form_error">' . static::fPhrase($this->errors['captcha'], [], $t) . '</div>';
+			$html .= '<div class="form_error">' . htmlspecialchars(static::fPhrase($this->errors['captcha'], [], $t)) . '</div>';
 		}
 		if ($this->form['captcha_type'] == 'math') {
 			$html .= $this->mathCaptcha();
@@ -3879,7 +3874,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			$html .= $this->captcha2();
 		}
 		if (isset($this->errors['captcha']) && $this->form['show_errors_below_fields']) {
-			$html .= '<div class="form_error">' . static::fPhrase($this->errors['captcha'], [], $t) . '</div>';
+			$html .= '<div class="form_error">' . htmlspecialchars(static::fPhrase($this->errors['captcha'], [], $t)) . '</div>';
 		}
 		$html .= '</div>';
 		return $html;
@@ -3893,23 +3888,23 @@ class zenario_user_forms extends ze\moduleBaseClass {
 	protected function getWelcomePageHTML() {
 		$t = $this->form['translate_text'];
 		$user = ze\row::get('users', ['first_name', 'last_name'], $this->userId);
-		return '<p class="success">' . static::fPhrase('Welcome, [[first_name]] [[last_name]]', $user, $t) . '</p>';
+		return '<p class="success">' . htmlspecialchars(static::fPhrase('Welcome, [[first_name]] [[last_name]]', $user, $t)) . '</p>';
 	}
 	
 	protected function getSuccessMessageHTML() {
 		$t = $this->form['translate_text'];
 		
 		if ($this->form['type'] == 'registration') {
-			$successMessage = static::fPhrase('Thank you for registering.<br> You have been sent an email with a verification link. You should check your spam/bulk mail if you do not see it soon. Please click the link in the email to verify your account.', [], $t);
+			$successMessageHTML = static::fPhrase('Thank you for registering.<br> You have been sent an email with a verification link. You should check your spam/bulk mail if you do not see it soon. Please click the link in the email to verify your account.', [], $t);
 
 		} elseif ($this->form['success_message']) {
-			$successMessage = nl2br(static::fPhrase($this->form['success_message'], [], $t));
+			$successMessageHTML = nl2br(static::fPhrase($this->form['success_message'], [], $t));
 		} elseif (ze\admin::id()) {
-			$successMessage = ze\admin::phrase('Your success message will go here when you set it.');
+			$successMessageHTML = ze\admin::phrase('Your success message will go here when you set it.');
 		} else {
-			$successMessage = 'Form submission successful!';
+			$successMessageHTML = 'Form submission successful!';
 		}
-		return '<div class="success">' . $successMessage . '</div>';
+		return '<div class="success">' . $successMessageHTML . '</div>';
 	}
 	
 	protected function getModalWindowButtonHTML() {
@@ -3929,8 +3924,8 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		$html  = '<div class="resume_box">';
 		$html .= $this->openForm('if (this.submited && !confirm("' . htmlspecialchars($this->phrase("Are you sure you want to clear all your data?")) . '")) { return false; }');
 		$html .= '<p>' . static::fPhrase($this->form['clear_partial_data_message'], [], $t) . '</p>';
-		$html .= '<input type="submit" onclick="this.form.submited = false" name="resume" value="' . static::fPhrase('Resume', [], $t) . '">';
-		$html .= '<input type="submit" onclick="this.form.submited = true" name="clear" value="' . static::fPhrase('Clear', [], $t) . '">';
+		$html .= '<input type="submit" onclick="this.form.submited = false" name="resume" value="' . htmlspecialchars(static::fPhrase('Resume', [], $t)) . '">';
+		$html .= '<input type="submit" onclick="this.form.submited = true" name="clear" value="' . htmlspecialchars(static::fPhrase('Clear', [], $t)) . '">';
 		$html .= $this->closeForm();
 		$html .= '</div>';
 		return $html;
@@ -3946,7 +3941,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 	protected function getCloseButtonHTML() {
 		$html = '';
 		if ($this->displayMode == 'inline_popup') {
-			$html .= '<div class="close" onclick="zenario_user_forms.toggleForm(\'' . $this->containerId . '\')">Close</div>';
+			$html .= '<div class="close" onclick="zenario_user_forms.toggleForm(\'' . htmlspecialchars($this->containerId) . '\')">Close</div>';
 		}
 		return $html;
 	}
@@ -3988,7 +3983,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		if ($title && !empty($this->form['title_tag'])) {
 			$html = '<' . htmlspecialchars($this->form['title_tag']);
 			if ($this->displayMode == 'inline_popup') {
-				$html .= ' onclick="zenario_user_forms.toggleForm(\'' . $this->containerId . '\')"';
+				$html .= ' onclick="zenario_user_forms.toggleForm(\'' . htmlspecialchars($this->containerId) . '\')"';
 			}
 			$html .= '>';
 			$html .= static::fPhrase($title, [], $t);
@@ -4480,7 +4475,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				AND uff.id = ' . (int)$fieldId;
 		} elseif ($targets || $triggers) {
 			$sql .= '
-				AND uff.user_form_id = ' . (int)$formId;;
+				AND uff.user_form_id = ' . (int)$formId;
 			if ($targets) {
 				$sql .= '
 					AND (uff.field_type = "textarea" || cdf.type = "textarea")';
@@ -4659,8 +4654,9 @@ class calculator {
             // Calculate the result
             if(preg_match(self::PATTERN, $input, $match)){
                 $result = $this->compute($match[0]);
+            } else {
+            	$result = 0;
             }
-            $result = 0;
         }
         
         restore_error_handler();

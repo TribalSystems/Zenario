@@ -128,6 +128,7 @@ class document {
 				'type' => 'folder',
 				'folder_name' => $name,
 				'folder_id' => $parentId,
+				'privacy' => 'public',
 				'ordinal' => 0
 			]
 		);

@@ -1104,6 +1104,24 @@ body.mobile .zfea_blocks .zfea_block_list_wrap .zfea_block {
 	float:left;
 }
 
+.zenario_skin .Tokenize.zenario_reorder_items .TokensContainer .Token {
+	width:calc(100% - 47px);
+}
+
+.zenario_skin .Tokenize.zenario_reorder_items .TokensContainer li.Token {
+	position:relative;
+	padding-right:40px;
+	background-image:url('images/icon-drag-vertical-dark.svg');
+	background-repeat:no-repeat;
+	background-position:right center;
+	background-size:auto 14px;
+}
+
+.zenario_skin .Tokenize.zenario_reorder_items .TokensContainer li.Token a.Close {
+	position:absolute;
+	right:0;
+}
+
 /* Tokenize buttons
 --------------------------------------------------------------------------------------------------*/
 

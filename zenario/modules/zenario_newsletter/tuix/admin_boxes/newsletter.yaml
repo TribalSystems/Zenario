@@ -184,6 +184,10 @@ zenario_newsletter:
                     value: 1
                     readonly: true
                 
+                exclude_recipients_with_no_consent:
+                    label: Exclude recipients without consent to recieve newsletters
+                    type: checkbox
+                    readonly: true
                 
                 unsubscribe_link:
                     label: 'Unsubscribe link:'

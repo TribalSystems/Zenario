@@ -33,8 +33,20 @@ switch ($path) {
 		$fields['each_item/author_retina']['hidden'] = 
 			!$values['each_item/show_author_image'];
 		
+		$retinaSideNote = "If the source image is large enough,
+                            the resized image will be output at twice its displayed width &amp; height
+                            to appear crisp on retina screens.
+                            This will increase the download size.
+                            <br/>
+                            If the source image is not large enough this will have no effect.";
+		
 		$hidden = !$values['each_item/show_author_image'];
 		$this->showHideImageOptions($fields, $values, 'each_item', $hidden, 'author_');
+		if ($values['each_item/author_canvas'] != "unlimited") {
+			$fields['each_item/author_canvas']['side_note'] = $retinaSideNote;
+		} else {
+			$fields['each_item/author_canvas']['side_note'] = "";
+		}
 		
 		$fields['overall_list/heading_if_items']['hidden'] = 
 		$fields['overall_list/heading_tags']['hidden'] = 
@@ -55,6 +67,11 @@ switch ($path) {
 		
 		$hidden = !$values['each_item/show_sticky_images'];
 		$this->showHideImageOptions($fields, $values, 'each_item', $hidden);
+		if ($values['each_item/canvas'] != "unlimited") {
+			$fields['each_item/canvas']['side_note'] = $retinaSideNote;
+		} else {
+			$fields['each_item/canvas']['side_note'] = "";
+		}
 		
 		$fields['each_item/date_format']['hidden'] = 
 		$fields['each_item/show_times']['hidden'] = 

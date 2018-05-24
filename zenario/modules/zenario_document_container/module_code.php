@@ -131,6 +131,9 @@ class zenario_document_container extends ze\moduleBaseClass {
 				$this->getArchiveDownloadLink($document, array_keys($documents));
 			}
 			
+			//Folders should always be public.
+			$document['privacy'] = "public";
+			
 		} elseif ($document['type'] == 'file') {
 			$file = ze\row::get('files', ['filename', 'created_datetime', 'size', 'mime_type', 'privacy'], $document['file_id']);
 			$document['Document_Created'] = $file['created_datetime'];

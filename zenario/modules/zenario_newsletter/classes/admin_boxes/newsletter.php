@@ -160,6 +160,7 @@ class zenario_newsletter__admin_boxes__newsletter extends zenario_newsletter {
 				= '<span style="text-decoration:underline;">' . zenario_newsletter::getTrackerURL() . 'delete_account.php?t=XXXXXXXXXXXXXXX</span>';
 		$box['tabs']['unsub_exclude']['fields']['delete_account_text']['post_field_html'] 
 				= '<div id="delete_account_info">Preview: ' . $values['unsub_exclude/delete_account_text'] . ' <span style="text-decoration:underline;">' . zenario_newsletter::getTrackerURL() . 'delete_account.php?t=XXXXXXXXXXXXXXX</span></div>';
+		
 	}
 
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
@@ -309,6 +310,17 @@ class zenario_newsletter__admin_boxes__newsletter extends zenario_newsletter {
 				$box['tabs']['meta_data']['notices']['test_send_sucesses']['message'] = $success;
 			}
 		}
+		
+		
+		$newsletterConsentPolicy = ze::setting('zenario_newsletter__newsletter_consent_policy');
+		$values['unsub_exclude/exclude_recipients_with_no_consent'] = ($newsletterConsentPolicy == 'consent_required');
+		if (!$newsletterConsentPolicy) {
+			//If the newsletter consent flag is not set, show a link to the site settings tab
+			$link= ze\link::absolute() . 'zenario/admin/organizer.php#zenario__administration/panels/site_settings//zenario_newsletter__site_settings_group~.site_settings~tzenario_newsletter__site_settings~k' . urlencode('{"id":"zenario_newsletter__site_settings_group"}');
+			$fields['unsub_exclude/exclude_recipients_with_no_consent']['note_below'] = ze\admin::phrase('Select a flag that represents a recipients consent to recieve newsletters <a target="_blank" href="[[link]]">here</a>.', ['link' => $link]);
+		} else {
+			unset($fields['unsub_exclude/exclude_recipients_with_no_consent']['note_below']);
+		}
 	}
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
@@ -319,7 +331,14 @@ class zenario_newsletter__admin_boxes__newsletter extends zenario_newsletter {
 				ZENARIO_NEWSLETTER_PREFIX. 'newsletters',
 				['newsletter_name' => $values['meta_data/newsletter_name'], 'id' => ['!' => $box['key']['id']]]
 			)) {
-				$box['tabs']['meta_data']['errors'][] = ze\admin::phrase('Please ensure the Name you give this Newsletter is Unique.');
+				$box['tabs']['meta_data']['errors'][] = ze\admin::phrase('Please ensure the name you give this newsletter is unique.');
+			}
+		}
+		
+		if (ze\ring::engToBoolean($box['tabs']['unsub_exclude']['edit_mode']['on'] ?? false)) {
+			//The consent flag must be chosen in the site-settings to proceed
+			if (!ze::setting('zenario_newsletter__newsletter_consent_policy')) {
+				$fields['unsub_exclude/exclude_recipients_with_no_consent']['error'] = ze\admin::phrase('You have not yet selected a consent policy for users receiving newsletters');
 			}
 		}
 	}

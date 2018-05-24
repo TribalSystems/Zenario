@@ -447,26 +447,6 @@ plugin_settings:
                     indent: 2
                     validation:
                         required_if_not_hidden: Please choose a default image.
-                retina:
-                    indent: 1
-                    plugin_setting:
-                        name: retina
-                    label: 'Output a retina image'
-                    type: checkbox
-                    value: ""
-                    side_note: |
-                        <% if (zenarioAB.value('canvas') == 'unlimited') { %>
-                            Halve the width &amp; height at which the image is displayed,
-                            so it appears crisp on retina screens.
-                        <% } else { %>
-                            If the source image is large enough
-                            output the resized image at twice its displayed width &amp; height,
-                            so it appear crisp on retina screens.
-                            This will increase the download size.
-                            <br/>
-                            If the source image is not large enough this will have no effect.
-                        <% } %>
-                    enable_microtemplates_in_properties: true
                 canvas:
                     plugin_setting:
                         name: canvas
@@ -512,6 +492,16 @@ plugin_settings:
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
                     indent: 2
+                retina:
+                    indent: 2
+                    plugin_setting:
+                        name: retina
+                    label: 'This is a retina image'
+                    type: checkbox
+                    value: ""
+                    side_note: |
+                        Display image at double density.
+                    enable_microtemplates_in_properties: true
                 
                 show_dates:
                     plugin_setting:
@@ -613,21 +603,11 @@ plugin_settings:
                     indent: 1
                     plugin_setting:
                         name: author_retina
-                    label: 'Output a retina image'
+                    label: 'This is a retina image'
                     type: checkbox
                     value: ""
                     side_note: |
-                        <% if (zenarioAB.value('author_canvas') == 'unlimited') { %>
-                            Halve the width &amp; height at which the image is displayed,
-                            so it appears crisp on retina screens.
-                        <% } else { %>
-                            If the source image is large enough
-                            output the resized image at twice its displayed width &amp; height,
-                            so it appear crisp on retina screens.
-                            This will increase the download size.
-                            <br/>
-                            If the source image is not large enough this will have no effect.
-                        <% } %>
+                        Display image at double density.
                     enable_microtemplates_in_properties: true
                 show_times:
                     plugin_setting:

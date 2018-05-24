@@ -171,6 +171,12 @@ table.table_list tr th:last-child {
 	width:220px;
 }
 
+.zfea_assetwolf_list_data_pools.aw_list table tr th.sorted_buttons,
+.zfea_assetwolf_list_data_pools.aw_list table tr td.sorted_buttons {
+	width:auto;
+	white-space:nowrap;
+}
+
 .zfea table tr th.sorted_buttons,
 .zfea table tr td.sorted_buttons,
 .zfea_assetwolf_edit_data_pool_type table tr th:last-child,
@@ -205,11 +211,11 @@ table tr td.no_items_message:last-child {
 	margin-right:20px;
 }
 
-/*	Styles for the list schema plugin.
+/*	Number styles
 --------------------------------------------------------------------------------------------------*/
 
-.zfea_assetwolf_list_schemas .col_value_for__usage {
-	/*background: radial-gradient(circle at center, rgba(255,0,0,1) 0%, rgba(255,0,0,1) 50%, rgba(255,255,255,0) 51%, rgba(255,255,255,0) 100%);*/
+.zfea_assetwolf_list_schemas .col_value_for__usage,
+.comms_wrap .comms_number {
 	position:relative;
 	top:-10px;
 	float:right;
@@ -218,13 +224,23 @@ table tr td.no_items_message:last-child {
 	line-height:18px;
 	padding-top:0;
 	font-size:10px;
-	background:red;
+	background:#333;
 	color: white;
+	font-style:italic;
+	font-weight:normal !important;
 	text-align: center;
 	-webkit-border-radius:50%;
 	-moz-border-radius:50%;
 	border-radius:50%;
 }
+
+.comms_wrap .comms_number {
+	top:5px;
+	left:-5px;
+}
+
+/*	Styles for the list schema plugin.
+--------------------------------------------------------------------------------------------------*/
 
 .aw_schema_fields .col_child_value {
 	font-style: normal;
@@ -293,6 +309,24 @@ table tr td.no_items_message:last-child {
 	width:16px;
 	height:16px;
 	background: url('images/pdf.png') no-repeat center center;
+}
+
+/* Assetwolf List data pools
+--------------------------------------------------------------------------------------------------*/
+
+.zfea_assetwolf_list_data_pools .zfea_table_list_wrap .zfea_list_outer_grouping h4 img,
+.zfea_assetwolf_list_data_pools .zfea_table_list_wrap .zfea_list_grouping h5 img {
+	display:inline-block;
+	float:left;
+	margin-right:5px;
+}
+
+.zfea_assetwolf_list_data_pools .zfea_table_list_wrap table tr td div[class*="show_communication_status"] {
+	width:140px;
+}
+
+.zfea_assetwolf_list_data_pools .zfea_table_list_wrap table tr td div[class*="show_communication_status"] .comms_wrap > span {
+	margin-left:0 !important;
 }
 
 /* Assetwolf Edit schema
@@ -1080,6 +1114,13 @@ table.mqtt_details tr td,
 	background:url('images/progressbar-circle-on.png') no-repeat center;
 }
 
+/* Commns icons
+--------------------------------------------------------------------------------------------------*/
+
+.comms_wrap {
+	display:inline-block;
+}
+
 .red_comms_icon,
 .orange_comms_icon,
 .green_comms_icon,
@@ -1098,27 +1139,27 @@ table.mqtt_details tr td,
 
 .red_comms_icon,
 .red_comms_list_icon {
-	background: url('images/icon-connection-red.svg') no-repeat center center / 22px;
+	background: url('images/icon-comms-asset-red.svg') no-repeat center center / 18px 20px;
 }
 
 .orange_comms_icon,
 .orange_comms_list_icon {
-	background: url('images/icon-connection-orange.svg') no-repeat center center / 22px;
+	background: url('images/icon-comms-asset-orange.svg') no-repeat center center / 18px 20px;
 }
 
 .green_comms_icon,
 .green_comms_list_icon {
-	background: url('images/icon-connection-green.svg') no-repeat center center / 22px;
+	background: url('images/icon-comms-asset-green.svg') no-repeat center center / 18px 20px;
 }
 
 .not_monitored_comms_icon,
 .grey_comms_list_icon {
-	background: url('images/icon-connection-grey.svg') no-repeat center center / 22px;
+	background: url('images/icon-comms-asset-grey.svg') no-repeat center center / 18px 20px;
 }
 
 .never_communicated_comms_icon,
 .never_comms_list_icon {
-	background: url('images/icon-never-communicated.svg') no-repeat center center / 22px;
+	background: url('images/icon-comms-asset-white.svg') no-repeat center center / 18px 20px;
 }
 
 .red_comms_list_icon,
@@ -3075,6 +3116,31 @@ span.awf_data_out_of_date,
 	background:url('images/icon-warning-triangle-orange.png') no-repeat center / 100%;
 }
 
+.assetwolf_2 .asset_details.information div.metadata {
+	overflow:hidden;
+	padding:5px 0;
+}
+
+.assetwolf_2 .asset_details.information div.metadata p {
+	display:inline-block;
+	float:left;
+	margin-right:5px;
+	padding:2px 8px;
+	background:#333;
+	color:#fff;
+	font-size:13px;
+}
+
+.assetwolf_2 .asset_details.information div.metadata p span:before {
+	font-family: 'FontAwesome';
+	content:"\f00c";
+	padding-right:4px;
+}
+
+.assetwolf_2 .asset_details.information div.metadata p span {
+	font-weight:normal;
+}
+
 /* Progress
 --------------------------------------------------------------------------------------------------*/
 
@@ -3938,16 +4004,6 @@ body.mobile .assetwolf_2_schematics div.schematic_builder .controls .buttons sel
 .assetwolf_2_schematics .info .hotspot_popup p[class*="column_field"] {
 	background-color:#AAA;
 	color:#fff;
-}
-
-.assetwolf_2_schematics .info .hotspot_popup p[class*="column_field"] .label {
-	position: absolute;
-	top: 50%;
-	transform: translateY(-50%);
-	left:15px;
-	padding-top:0;
-	padding-bottom:0;
-	height:auto;
 }
 
 .assetwolf_2_schematics .info .hotspot_popup.blue_dis_schema p[class*="column_field"] .label,

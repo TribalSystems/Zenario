@@ -33,8 +33,11 @@ class zenario_newsletter__admin_boxes__site_settings extends zenario_newsletter 
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		switch($settingGroup) {
 			case 'zenario_newsletter__site_settings_group':
-				$box['tabs']['zenario_newsletter__site_settings']['fields']['zenario_newsletter__all_newsletters_opt_out']['values'] =
-					ze\datasetAdm::listCustomFields('users', $flat = false, 'boolean_and_groups_only', $customOnly = true, $useOptGroups = true);
+				$fields['zenario_newsletter__all_newsletters_opt_out']['values'] =
+					ze\datasetAdm::listCustomFields('users', $flat = false, 'boolean_and_groups_only', $customOnly = true, $useOptGroups = true, $hideEmptyOptGroupParents = true);
+				
+				$fields['zenario_newsletter__newsletter_consent_flag']['values'] = 
+					ze\datasetAdm::listCustomFields('users', $flat = false, 'consent', $customOnly = false, $useOptGroups = true, $hideEmptyOptGroupParents = true);
 				break;
 		}
 	}

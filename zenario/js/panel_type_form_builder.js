@@ -475,7 +475,7 @@ methods.loadFieldDetailsPage = function(page, fieldId, errors) {
 			});
 		}
 	} else if (page == 'translations') {
-		var transFieldNamesList = _.toArray(thus.tuix.field_details.tabs[page].translapagele_fields);
+		var transFieldNamesList = _.toArray(thus.tuix.field_details.tabs[page].translatable_fields);
 		var transFieldNames = {};
 		for (var i = 0; i < transFieldNamesList.length; i++) {
 			transFieldNames[transFieldNamesList[i]] = true;
@@ -1619,7 +1619,7 @@ methods.addNewField = function(type, ord, datasetFieldId, datasetPageId, dataset
 		
 		if (datasetField.db_column == 'terms_and_conditions_accepted') {
 			newField.field_label = 'By submitting your details you are agreeing that we can store your data for legitimate business purposes and contact you to inform you about our products and services.';
-			newField.note_to_user = 'Full details can be found in our <a href="#">privacy policy.</a>';
+			newField.note_to_user = 'Full details can be found in our <a href="privacy" target="_blank">privacy policy</a>.';
 		}
 		
 		if (datasetField.dataset_repeat_grouping) {

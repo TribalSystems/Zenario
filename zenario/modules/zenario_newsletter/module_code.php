@@ -114,8 +114,7 @@ class zenario_newsletter extends ze\moduleBaseClass {
 			   ON ucd.user_id = u.id";
 		
 		$whereStatement = "
-			WHERE u.email != ''";
-		//AND u.status IN('active', 'contact')";
+			WHERE TRUE " . ze\row::whereCol('users', 'u', 'email', '!=', "");
 		
 		if (!ze\smartGroup::sql($whereStatement, $sql, $smartGroupId)) {
 			return false;
@@ -135,23 +134,37 @@ class zenario_newsletter extends ze\moduleBaseClass {
 				AND nul_". (int) $sentNewsletterId. ".user_id IS NULL";
 		}
 		
-		$cField = false;
-		if (($cFieldId = ze::setting('zenario_newsletter__all_newsletters_opt_out'))
-		 && ($cField = ze\dataset::fieldDetails($cFieldId))) {
+		//Exclude users who have opted out of newsletters
+		$optOutFlag = false;
+		if (($optOutFlagId = ze::setting('zenario_newsletter__all_newsletters_opt_out'))
+		 && ($optOutFlag = ze\dataset::fieldDetails($optOutFlagId))) {
 			$sql .= "
 				LEFT JOIN ". DB_PREFIX. "users_custom_data AS noo
 				   ON noo.user_id = u.id
-				  AND noo.`". ze\escape::sql($cField['db_column']). "` = 1";
+				  AND noo.`". ze\escape::sql($optOutFlag['db_column']). "` = 1";
+			$whereStatement .= "
+				AND noo.user_id IS NULL";
+		}
+		
+		//Exclude users who have not given consent to recieve newsletters
+		$consentFlag = false;
+		if (ze::setting('zenario_newsletter__newsletter_consent_policy') == 'consent_required'
+		 && ($consentFlagId = ze::setting('zenario_newsletter__newsletter_consent_flag'))
+		 && ($consentFlagId != 'no_consent_required')
+		 && ($consentFlag = ze\dataset::fieldDetails($consentFlagId))) {
+		 	
+		 	if ($consentFlag['is_system_field']) {
+				$whereStatement .= "
+					AND u.`". ze\escape::sql($consentFlag['db_column']). "` = 1";
+		 	} else {
+				$whereStatement .= "
+					AND ucd.`" . ze\escape::sql($consentFlag['db_column']) . "` = 1";
+		 	}
 		}
 
 		$sql .= "
 			". $whereStatement;
 		
-		if ($cField) {
-			$sql .= "
-			  AND noo.user_id IS NULL";
-		}
-
 		return $sql;
 	}
 	

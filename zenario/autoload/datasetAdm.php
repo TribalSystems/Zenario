@@ -261,6 +261,7 @@ class datasetAdm {
 						[
 							'group',
 							'checkbox',
+							'consent',
 							'checkboxes',
 							'date',
 							'editor',

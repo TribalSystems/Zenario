@@ -51,7 +51,35 @@ site_settings:
                     empty_value: '-- Select --'
                     validation:
                         required: Please select the flag on the user/contact record that should be set when a recipient clicks an Unsubscribe link.
-            
+                
+                
+                zenario_newsletter__newsletter_consent_policy:
+                    label: 'Consent policy:'
+                    site_setting:
+                        name: zenario_newsletter__newsletter_consent_policy
+                    type: select
+                    empty_value: '-- Select --'
+                    values:
+                        consent_required:
+                            label: 'Users must consent to receiving newsletters (recommended)'
+                        no_consent_required:
+                            label: 'No consent required'
+                    redraw_onchange: true
+                    validation:
+                        required: Please choose a consent policy for newsletters.
+                    
+                zenario_newsletter__newsletter_consent_flag:
+                    indent: 1
+                    visible_if: zenarioAB.value('zenario_newsletter__newsletter_consent_policy') == 'consent_required'
+                    label: 'User consent flag:'
+                    side_note: 'The flag that indicates a user has consented to receive newsletters'
+                    site_setting:
+                        name: zenario_newsletter__newsletter_consent_flag
+                    type: select
+                    empty_value: '-- Select --'
+                    validation:
+                        required_if_not_hidden: Please select the flag on the user/contact record that shows consent to receive newsletters.
+                
                 zenario_newsletter__enable_opened_emails:
                     label: 'Enable opened-email tracking'
                     side_note: 'Check this option to enable tracking of opened emails.'
