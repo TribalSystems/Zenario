@@ -1368,7 +1368,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		if ($this->form['partial_completion_get_request']) {
 			$html .= '<input type="hidden" name="' . htmlspecialchars($this->form['partial_completion_get_request']) . '" value="' . (int)($_REQUEST[$this->form['partial_completion_get_request']] ?? false) . '"/>';
 		}
-		$html .= '<input type="hidden" name="formPageHash" value="' . $this->formPageHash . '"/>';
+		$html .= '<input type="hidden" name="formPageHash" value="' . htmlspecialchars($this->formPageHash) . '"/>';
 		//Hidden input to tell whether the form has been submitted
 		$html .= '<input type="hidden" name="reloaded" value="1"/>';
 		//Hidden input to tell whether the form is in fullscreen or not
@@ -4567,8 +4567,9 @@ class calculator {
             // Calculate the result
             if(preg_match(self::PATTERN, $input, $match)){
                 $result = $this->compute($match[0]);
+            } else {
+            	$result = 0;
             }
-            $result = 0;
         }
         
         restore_error_handler();
