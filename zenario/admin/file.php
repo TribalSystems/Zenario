@@ -18,5 +18,7 @@ if (!$link || !$file) {
 	header('Content-type: ' . ($file['mime_type'] ?: 'application/octet-stream'));
 	header('Content-Disposition: attachment; filename="' . urlencode($file['filename']) . '"');
 	header('Content-Length: ' . filesize($link));
+	
+	ze\cache::end();
 	readfile($link);
 }

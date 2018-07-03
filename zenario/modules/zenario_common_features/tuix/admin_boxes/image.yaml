@@ -52,7 +52,7 @@ zenario_image:
                     label: 'Default alt-tag:'
                     type: text
                 floating_box_title:
-                    label: 'Default floating box title:'
+                    label: 'Default floating box caption:'
                     type: editor
                     dont_trim: true
                     #editor_options:

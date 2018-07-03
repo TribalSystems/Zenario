@@ -460,8 +460,9 @@ class user {
 			case 'export.allData':
 			//Recalculate all of the asset data on a site
 			case 'recalculate.allData':
-			//View invoices
+			//Permissions for ecommerce
 			case 'view.invoice':
+			case 'edit.order':
 				//Superusers only
 				return true;
 			case 'view.company':

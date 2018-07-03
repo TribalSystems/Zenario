@@ -523,6 +523,7 @@ class file {
 			header('Content-type: '. ($file['mime_type'] ?: 'application/octet-stream'));
 			header('Content-Disposition: attachment; filename="'. urlencode($filename). '"');
 			
+			\ze\cache::end();
 			if ($file['location'] == 'docstore') {
 				readfile(self::docstorePath($file['path']));
 			} else {

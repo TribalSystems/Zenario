@@ -4178,6 +4178,10 @@ body.ff #zenario_fbAdminFloatingBox.zenario_fab_plugin .zenario_fabMain #zenario
 	border: #e8c0c0 1px solid;
 }
 
+#zenario_fbAdminFloatingBox fieldset.zenario_grouping__menu {
+	clear:both;
+}
+
 /*  Add the ability to have two columns, by having two groupings, one float left and the other float right  */
 
 #zenario_fbAdminFloatingBox fieldset.zenario_grouping__left_column {

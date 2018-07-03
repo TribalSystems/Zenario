@@ -46,23 +46,19 @@ common_definitions:
             <p>If you want to hide and show TUIX elements such as toolbar buttons, toolbar tabs or Admin Box fields in different situations, you can set the <span class="code">&lt;hidden&gt;</span> property to hide them in your php methods such as <span class="code">fillAdminToolbar()</span>, <span class="code">formatAdminBox()</span> and <span class="code">preFillOrganizerPanel()</span>.</p>
             <p>Anything with the hidden property set to true will be hidden from view. But note that data is still sent from the server to the client.</p>
     visible_if: &visible_if
-        type: string
-        html_description: >
-            <p>In some cases, you may wish to conditionally show something that you can't alter in your php methods (for example, whether empty slots are currently being shown).</p>
-            <p>You can use this property to provide a snippet of JavaScript, which will be evaluated every time your button, tab or field is to be shown. Your button, tab or field will only be shown if the evaluated code returns <span class="code">true</span>.</p>
-            <p>A few useful conditions might be:</p>
-            <ul>
-                <li><code>!zenario.browserIsIE()</code>
-                    <ul><li>Do not show something in Internet Explorer</li></ul></li>
-                <li><code>!zenario.browserIsIE(7)</code>
-                    <ul><li>Do not show something in Internet Explorer versions 7 or earlier</li></ul></li>
-                <li><code>zenarioA.siteSettings.my_setting</code>
-                    <ul><li>Only show something when a Site Setting is enabled. (But note that only numeric Site Settings are available in JavaScript.)</li></ul></li>
-                <li><code>zenarioA.showGridOn</code>
-                    <ul><li>Only show a button when the grid shown.</li></ul></li>
-                <li><code>!zenarioA.showGridOn</code>
-                    <ul><li>Only show a button when the grid is not shown.</li></ul></li>
-            </ul>
+        type:
+            - string
+            - object
+        description: >
+            A snippet of JavaScript code to be evaluated.
+            
+            From version 7.5 onwards, to avoid using an inefficent eval(), you can also call a function
+            by using an object of the form:
+                lib.methodName => arg1, arg2, arg3, ...
+            
+            The visible_if property hides elements from view if the code provided does not evaluate to <code>true</code>.
+            
+            See http://zenar.io/visibility-in-tuix for examples.
 
 $schema: 'http://json-schema.org/draft-04/schema#'
 title: Admin Toolbar Schema

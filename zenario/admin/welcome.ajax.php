@@ -61,10 +61,12 @@ if (!$installed) {
 
 
 
-
 if ($_REQUEST['quickValidate'] ?? false) {
 	
-	if ($installStatus > 2 && empty($_SESSION['admin_logged_into_site'])) {
+	$tab = $_POST['tab'] ?? false;
+	
+	//Don't allow anyone to look through the directory structure for backups if the site is already installed
+	if ($tab == 6 && $installStatus > 2) {
 		exit;
 	}
 	
@@ -72,7 +74,7 @@ if ($_REQUEST['quickValidate'] ?? false) {
 	$rowClasses = json_decode($_POST['row_classes'], true);
 	$snippets = [];
 	
-	ze\welcome::quickValidateWelcomePage($values, $rowClasses, $snippets, ($_POST['tab'] ?? false));
+	ze\welcome::quickValidateWelcomePage($values, $rowClasses, $snippets, $tab);
 	
 	echo json_encode(['row_classes' => $rowClasses, 'snippets' => $snippets]);
 	exit;

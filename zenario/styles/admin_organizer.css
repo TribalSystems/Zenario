@@ -4781,8 +4781,13 @@ table.table-bordered td
 	color: #202020;
 }
 
+#organizer_rightColumn div.organizer_row.document .listicon > div {
+	padding-left:24px;
+}
+
 .organizer_document_line_outer .zenario_document_title {
 	font-weight: bold;
+	margin-right: 10px;
 }
 
 .organizer_document_line_outer .zenario_document_sub_fields {

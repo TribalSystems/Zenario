@@ -69,6 +69,8 @@ class category {
 		$result = \ze\sql::select($sql);
 	
 		if (\ze\sql::numRows($result)>0) {
+			$categories = [];
+			
 			while ($row = \ze\sql::fetchAssoc($result)) {
 				if (!$row['public']) {
 					$row['public_name'] = false;

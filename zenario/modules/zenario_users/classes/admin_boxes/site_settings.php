@@ -112,9 +112,9 @@ class zenario_users__admin_boxes__site_settings extends ze\moduleBaseClass {
 											
 												//Show the ze\user::canCreate() shortcut function if this is a create permission
 												if ($thingToCreate = ze\ring::chopPrefix('create-', $perm[1])) {
-													$field['side_note'] = '<code>checkUserCanCreate(\''. htmlspecialchars($thingToCreate). '\'';
+													$field['side_note'] = '<code>ze\\user::canCreate(\''. htmlspecialchars($thingToCreate). '\'';
 												} else {
-													$field['side_note'] = '<code>checkUserCan(\''. htmlspecialchars($perm[1]). '\'';
+													$field['side_note'] = '<code>ze\\user::can(\''. htmlspecialchars($perm[1]). '\'';
 												}
 											
 												//Companies and locations always use the "unassigned" option, so don't bother showing it

@@ -75,8 +75,7 @@ ze\plugin::slotContents(
 	ze::$slotContents,
 	ze::$cID, ze::$cType, ze::$cVersion,
 	ze::$layoutId, ze::$templateFamily, ze::$templateFileBaseName);
-ze\cache::start();
-
+ 
 
 
 echo 

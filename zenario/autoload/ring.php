@@ -150,7 +150,7 @@ class ring {
 		if (is_numeric($id)) {
 			return $id;
 		} else {
-			return $prefix. str_replace('%', '~', str_replace('~', '%7E', rawurlencode($id)));
+			return $prefix. str_replace('%', '~', str_replace('.', '%2E', str_replace('~', '%7E', rawurlencode($id))));
 		}
 	}
 

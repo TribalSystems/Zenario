@@ -61,7 +61,7 @@ class phi {
 		return self::$output;
 	}
 
-	public static function returnValue($var) {
+	public static function returnValue($var = null) {
 		self::$output = $var;
 		return null;
 		//ob_clean();

@@ -59,8 +59,7 @@ if ($checksum) {
 		'-'. $requestedWidth. '-'. $requestedHeight. '-'. $key;
 	ze\cache::useBrowserCache($ETag);
 }
-ze\cache::start();
-
+ 
 
 //There are several places in Organizer/admin mode where an image is displayed with an id and no checksum.
 //Allow this, but only in admin mode.
@@ -454,6 +453,7 @@ if ($filename) {
 	}
 }
 
+ze\cache::end();
 if ($filePath) {
 	readfile($filePath);
 } else {

@@ -129,6 +129,11 @@ methods.ffov = function(action) {
 			if (thus.tuix.reload_parent) {
 				thus.reloadParent();
 			}
+			
+			if (thus.tuix.js) {
+				zenarioT.eval(thus.tuix.js, thus);
+			}
+			
 		
 			if (thus.tuix.go) {
 				thus.go(thus.tuix.go);

@@ -1279,7 +1279,8 @@ table.mqtt_details tr td,
 --------------------------------------------------------------------------------------------------*/
 
 .aw_a_list .search_form,
-.zfea_assetwolf_list_node_hierarchy .search_form {
+.zfea_assetwolf_list_node_hierarchy .search_form,
+.zfea_assetwolf_list_data_schemas .search_form {
 	width:60%;
 	float:left;
 	margin-bottom:20px;
@@ -3121,24 +3122,20 @@ span.awf_data_out_of_date,
 	padding:5px 0;
 }
 
-.assetwolf_2 .asset_details.information div.metadata p {
+.assetwolf_2 .asset_details.information div.metadata span.has_option {
 	display:inline-block;
-	float:left;
 	margin-right:5px;
 	padding:2px 8px;
 	background:#333;
 	color:#fff;
 	font-size:13px;
+	font-weight:normal;
 }
 
-.assetwolf_2 .asset_details.information div.metadata p span:before {
+.assetwolf_2 .asset_details.information div.metadata span.has_option:before {
 	font-family: 'FontAwesome';
 	content:"\f00c";
 	padding-right:4px;
-}
-
-.assetwolf_2 .asset_details.information div.metadata p span {
-	font-weight:normal;
 }
 
 /* Progress

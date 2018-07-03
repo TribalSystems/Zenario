@@ -80,24 +80,31 @@ class zenario_common_features__admin_boxes__trash extends ze\moduleBaseClass {
 				$message .= '<br/><p><b>'.ze\content::formatTag($cID, $cType).'</b></p><br/>';
 			}
 			
-			$plugabbleCount = 0;
-			$versionControlledCount = 0;
-			$currentModule = false;
 			$currentRow = [];
-			$linkToLibraryPlugin = '';
-			$linkToVersionControlledPlugin = '';
-			
+			$prevModuleId = false;
 			$skLink = 'zenario/admin/organizer.php?fromCID='.(int)$cID.'&fromCType='.urlencode($cType);
-			$pluginsLink = '#zenario__modules/panels/modules/item//';
 			
 			while ($row = ze\sql::fetchAssoc($result)) {
-				if (!$currentModule) {
-					$currentModule = $row['module_id'];
-				} elseif ($currentModule !== $row['module_id']) {
-					$currentModule = $row['module_id'];
-					self::addToMessage($message, $plugabbleCount, $versionControlledCount, $currentRow, $linkToLibraryPlugin, $linkToVersionControlledPlugin);
+				if ($prevModuleId !== $row['module_id']) {
+					if ($prevModuleId) {
+						self::addToMessage($message, $plugabbleCount, $versionControlledCount, $currentRow, $linkToLibraryPlugin, $linkToVersionControlledPlugin);
+					}
+					$prevModuleId = $row['module_id'];
 					$plugabbleCount = $versionControlledCount = 0;
 					$linkToLibraryPlugin = $linkToVersionControlledPlugin = '';
+					
+					switch ($row['class_name']) {
+						case 'zenario_plugin_nest':
+							$pluginsLink = '#zenario__modules/panels/plugins/refiners/nests////';
+							break;
+							
+						case 'zenario_slideshow':
+							$pluginsLink = '#zenario__modules/panels/plugins/refiners/slideshows////';
+							break;
+							
+						default:
+							$pluginsLink = '#zenario__modules/panels/modules/item//'. $row['module_id']. '//';
+					}
 				}
 				if ($row['content_id']) {
 					if (!$linkToVersionControlledPlugin) {
@@ -106,13 +113,15 @@ class zenario_common_features__admin_boxes__trash extends ze\moduleBaseClass {
 					$versionControlledCount++;
 				} else {
 					if (!$linkToLibraryPlugin) {
-						$linkToLibraryPlugin = '<a href="'.$skLink.$pluginsLink.$row['module_id'].'//'.$row['instance_id'].'" target="_blank">'.$row['name'].'</a>';
+						$linkToLibraryPlugin = '<a href="'.$skLink.$pluginsLink.$row['instance_id'].'" target="_blank">'.$row['name'].'</a>';
 					}
 					$plugabbleCount++;
 				}
 				$currentRow = $row;
 			}
-			self::addToMessage($message, $plugabbleCount, $versionControlledCount, $currentRow, $linkToLibraryPlugin, $linkToVersionControlledPlugin);
+			if ($prevModuleId) {
+				self::addToMessage($message, $plugabbleCount, $versionControlledCount, $currentRow, $linkToLibraryPlugin, $linkToVersionControlledPlugin);
+			}
 		}
 		if ($message) {
 			$fields['trash/trash_options']['hidden'] = $box['max_height'] = false;

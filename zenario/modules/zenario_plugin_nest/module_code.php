@@ -161,6 +161,7 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 	protected $usedColumns = 0;
 	protected $groupingColumns = 0;
 	protected $maxColumns = false;
+	protected $sameHeight = false;
 	
 	public $banner_canvas = false;
 	public $banner_width = 0;
@@ -188,6 +189,7 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 		ze::$slotContents[$this->slotName]['is_nest'] = true;
 		
 		$conductorEnabled = (bool) $this->setting('enable_conductor');
+		$this->sameHeight = (bool) $this->setting('eggs_equal_height');
 		
 		$this->allowCaching(
 			$atAll = true, $ifUserLoggedIn = false, $ifGetSet = false, $ifPostSet = false, $ifSessionSet = true, $ifCookieSet = true);
@@ -1097,6 +1099,11 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 			}
 		}
 		
+		if ($this->sameHeight) {
+			echo '
+				<div class="nest_egg_equal_height tothesameheight">';
+		}
+		
 		
 		$p = ze\priv::check();
 		$status = false;
@@ -1130,6 +1137,11 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 				</x-zenario-admin-slot-wrapper>';
 		}
 		
+		
+		if ($this->sameHeight) {
+			echo '
+				</div>';
+		}
 		
 		if ($this->minigridInUse) {
 			//We'll need various different closing divs, depending on whether this is the

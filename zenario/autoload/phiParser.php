@@ -507,19 +507,19 @@ class phiParser {
 			//{% for key, user in users %}
 		
 		//Look for for loops. Try to accept both Twig and PHP formats of loop
-		} elseif (preg_match('@^for\s*\((.*?)\s*in\s*(.*?)\s*\:\s*(.*?)\)$@i', $line, $matches)) {
+		} elseif (preg_match('@^for\s*\((.*?)\s+in\s+(.*?)\s*\:\s*(.*?)\)$@i', $line, $matches)) {
 			$this->isFor = true;
 			$line = '{% for '. $matches[1]. ' in '. $matches[2]. '..'. $matches[3]. ' %}';
 	
-		} elseif (preg_match('@^for\s*\((.*?)\s*in\s*(.*?)\)$@i', $line, $matches)) {
+		} elseif (preg_match('@^for\s*\((.*?)\s+in\s+(.*?)\)$@i', $line, $matches)) {
 			$this->isFor = true;
 			$line = '{% for '. $matches[1]. ' in '. $matches[2]. ' %}';
 	
-		} elseif (preg_match('@^foreach\s*\((.*?)\s*as\s*(.*?)\s*=>\s*(.*?)\)$@i', $line, $matches)) {
+		} elseif (preg_match('@^foreach\s*\((.*?)\s+as\s+(.*?)\s*=>\s*(.*?)\)$@i', $line, $matches)) {
 			$this->isFor = true;
 			$line = '{% for '. $matches[2]. ', '. $matches[3]. ' in '. $matches[1]. ' %}';
 	
-		} elseif (preg_match('@^foreach\s*\((.*?)\s*as\s*(.*?)\)$@i', $line, $matches)) {
+		} elseif (preg_match('@^foreach\s*\((.*?)\s+as\s+(.*?)\)$@i', $line, $matches)) {
 			$this->isFor = true;
 			$line = '{% for '. $matches[2]. ' in '. $matches[1]. ' %}';
 	

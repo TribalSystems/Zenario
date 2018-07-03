@@ -73,9 +73,15 @@ common_definitions:
         description: >
             The hidden property hides elements from view when <code>true</code>.
     visible_if: &visible_if
-        type: string
+        type:
+            - string
+            - object
         description: >
             A snippet of JavaScript code to be evaluated.
+            
+            From version 7.5 onwards, to avoid using an inefficent eval(), you can also call a function
+            by using an object of the form:
+                lib.methodName => arg1, arg2, arg3, ...
             
             The visible_if property hides elements from view if the code provided does not evaluate to <code>true</code>.
             

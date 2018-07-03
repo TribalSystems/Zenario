@@ -265,7 +265,7 @@ methods.saveItemTUIXFields = function(item, fields, tuixPath, errors) {
 				if (field.crm_type == 'salesforce') {
 					prefix = 'salesforce';
 				}
-				if (item.type == 'checkbox' || item.type == 'group') {
+				if (item.type == 'checkbox' || item.type == 'group' || item.type == 'consent') {
 					item['_' + prefix + '_data'] = {};
 					item['_' + prefix + '_data'].values = {
 						'unchecked': {
@@ -280,7 +280,7 @@ methods.saveItemTUIXFields = function(item, fields, tuixPath, errors) {
 				}
 				$('#organizer_field_crm_values input.crm_value_input').map(function(index, input) {
 					var id = $(this).data('id');
-					if (item.type == 'checkbox' || item.type == 'group') {
+					if (item.type == 'checkbox' || item.type == 'group' || item.type == 'consent') {
 						item['_' + prefix + '_data'].values[id][prefix + '_value'] = $(this).val();
 					} else if (item.lov && item.lov[id]) {
 						item.lov[id][prefix + '_value'] = $(this).val();

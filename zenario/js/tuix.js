@@ -1371,6 +1371,11 @@ zenarioT.tuixToArray = function(tuix) {
 					vals.push(key);
 				}
 			}
+			
+			break;
+		
+		default:
+			vals = [tuix];
 	}
 	
 	return vals;

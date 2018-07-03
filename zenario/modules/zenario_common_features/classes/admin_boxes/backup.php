@@ -161,6 +161,7 @@ class zenario_common_features__admin_boxes__backup extends ze\moduleBaseClass {
 			//...and finally offer it for download
 			header('Content-Disposition: attachment; filename="'. $filename. '"');
 			header('Content-Length: '. filesize($filepath)); 
+			ze\cache::end();
 			readfile($filepath);
 			
 			//Remove the file from the temp directory
@@ -181,6 +182,7 @@ class zenario_common_features__admin_boxes__backup extends ze\moduleBaseClass {
 			//Make this page into a download
 			header('Content-Disposition: attachment; filename="'. $filename. '"');
 			header('Content-Length: '. filesize($filepath)); 
+			ze\cache::end();
 			readfile($filepath);
 		}
 	}

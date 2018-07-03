@@ -36,8 +36,7 @@
 //To allow organizer.ajax.php to call this file, only include the header if it's not already been included
 if (!class_exists('ze')) {
 	require '../adminheader.inc.php';
-	ze\cache::start();
-} else {
+ } else {
 	ze\priv::exitIfNot();
 }
 

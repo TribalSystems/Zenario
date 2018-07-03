@@ -2166,8 +2166,8 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 					extraAtt.type = 'url';
 					extraAtt.placeholder = 'http://example.com';
 					extraAtt.onblur =
-						(extraAtt.onblur || '') +
-						"if(this.value && !this.value.match('://')) this.value = 'http://' + this.value;";
+						(extraAtt.onblur || '') + 
+						"if(this.value && !this.value.match('://') && $.trim(this.value)[0] != '#') this.value = 'http://' + this.value;";
 		
 				} else {
 					if (field.slider) {

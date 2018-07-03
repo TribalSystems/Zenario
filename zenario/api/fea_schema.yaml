@@ -42,17 +42,29 @@ common_definitions:
         description: >
             The hidden property hides elements from view when <code>true</code>.
     visible_if: &visible_if
-        type: string
+        type:
+            - string
+            - object
         description: >
             A snippet of JavaScript code to be evaluated.
+            
+            From version 7.5 onwards, to avoid using an inefficent eval(), you can also call a function
+            by using an object of the form:
+                lib.methodName => arg1, arg2, arg3, ...
             
             The visible_if property hides elements from view if the code provided does not evaluate to <code>true</code>.
             
             See http://zenar.io/visibility-in-tuix for examples.
     disabled_if: &disabled_if
-        type: string
+        type:
+            - string
+            - object
         description: >
             A snippet of JavaScript code to be evaluated.
+            
+            From version 7.5 onwards, to avoid using an inefficent eval(), you can also call a function
+            by using an object of the form:
+                lib.methodName => arg1, arg2, arg3, ...
             
             If the code provided evaluates to <code>true</code> the button will be disabled.
             
@@ -1061,6 +1073,11 @@ additionalProperties:
             type: boolean
             description: >
                 If this FEA plugin was opened in a popout, this sends a signal to close it.
+
+        js:
+            description: >
+                Runs some JavaScript code before the FEA is displayed or redisplayed;
+                the format is the same as the visible_if property.
 
         reload_parent:
             type: boolean

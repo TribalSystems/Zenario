@@ -27,8 +27,7 @@
  */
 
 require '../adminheader.inc.php';
-ze\cache::start();
-
+ 
 /*
 	This file is used to handle AJAX requests for the admin toolbar.
 	It reads all relevant yaml files, then merge them together into a PHP array, calls module methods to process

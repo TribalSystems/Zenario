@@ -4,8 +4,7 @@ require '../adminheader.inc.php';
 
 ze\skinAdm::checkForChangesInFiles();
 
-ze\cache::start();
-
+ 
 $homeLink = $backLink = '';
 
 

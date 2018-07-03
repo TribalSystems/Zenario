@@ -26,7 +26,7 @@ zenario_user_form:
                     full_width: true
                     snippet:
                         html: >
-                            Use textboxes below to add fields that should be sent everytime the form is submitted.<br> 
+                            Use textboxes below to add fields that should have the same static values sent every time the form is submitted.<br> 
                     hide_with_previous_field: true
                 
                 name1: &name
@@ -110,7 +110,7 @@ zenario_user_form:
                     full_width: true
                     snippet:
                         html: >
-                            Use textboxes below to add fields that should be sent everytime the form is submitted.<br> 
+                            Use textboxes below to add fields that should have the same static values sent every time the form is submitted.<br> 
                     hide_with_previous_field: true
                 
                 name1: *name
@@ -328,7 +328,7 @@ zenario_user_form:
                     full_width: true
                     snippet:
                         html: >
-                            Use textboxes below to add fields that should be sent everytime the form is submitted.<br> 
+                            Use textboxes below to add fields that should have the same static values sent every time the form is submitted.<br> 
                     hide_with_previous_field: true
                 
                 name1: *name

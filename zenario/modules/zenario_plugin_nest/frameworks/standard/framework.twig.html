@@ -96,17 +96,8 @@
 					>
 						{% set first = true %}
 						{% for Plugin in Tab.Plugins %}
-							
-							{% if Eggs_Equal_Height %}
-								<div class="nest_egg_equal_height tothesameheight">
-							{% endif %}
-							
 							{% do this.showPlugin(Plugin, true, first) %}
 							{% set first = false %}
-							
-							{% if Eggs_Equal_Height %}
-								</div>
-							{% endif %}
 						{% endfor %}
 					</div>
 					

@@ -41,6 +41,15 @@ class cache {
 			ob_start();
 		}
 	}
+	
+	//Get rid of any all caching of the output
+	public static function end() {
+		$l = (int) ob_get_level();
+		
+		while ($l-- > 0) {
+			ob_end_flush();
+		}
+	}
 
 	//Formerly "browserBodyClass()"
 	public static function browserBodyClass() {

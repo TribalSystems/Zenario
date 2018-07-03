@@ -165,9 +165,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 		}
 
 		//Enforce a specific Content Type
-		if ($_REQUEST['refiner__content_type'] ?? false) {
-			$box['key']['target_cType'] = $_REQUEST['refiner__content_type'] ?? false;
-		}
+		$box['key']['target_cType'] = $_REQUEST['refiner__content_type'] ?? $box['key']['cType'] ?? false;
 		
 		if (!empty($box['key']['create_from_toolbar'])) {
 			$fields['meta_data/language_id']['disabled'] = true;

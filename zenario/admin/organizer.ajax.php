@@ -39,8 +39,7 @@
 */
 
 require '../visitorheader.inc.php';
-ze\cache::start();
-
+ 
 //Add the admin id and type up as constants
 define('ADMIN_ID', (int) ($_SESSION['admin_userid'] ?? false));
 

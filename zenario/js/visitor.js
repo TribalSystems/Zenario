@@ -91,7 +91,7 @@ zenario.lib(function(
 			if (1*id == id) {
 				return id;
 			} else {
-				return '~' + encodeURIComponent('' + id).replace(/~/g, '%7E').replace(/%/g, '~');
+				return '~' + encodeURIComponent('' + id).replace(/\./g, '%2E').replace(/~/g, '%7E').replace(/%/g, '~');
 			}
 		};
 
@@ -1279,7 +1279,7 @@ zenario.scrollToSlotTop = function(containerIdSlotNameOrEl, neverScrollDown, tim
 //Refresh a slot. If a conductor is in it then call the conductor's refresh function, otherwise call the standard plugin refresh function
 zenario.refreshSlot = function(slotName, requests) {
 	if (!zenario_conductor.refresh(slotName)) {
-		zenario.refreshPluginSlot(slotName, '', _.extend({no_cache: 1}, requests));
+		zenario.refreshPluginSlot(slotName, '', requests);
 	}
 };
 
@@ -1368,7 +1368,7 @@ zenario.refreshPluginSlot = function(slotName, instanceId, additionalRequests, r
 	
 	var cb = new zenario.callback;
 	
-	zenario.ajax(url, post, false, true).after(function(html) {
+	zenario.ajax(url, post, false, useCache).after(function(html) {
 		zenario.replacePluginSlotContents(slotName, instanceId, html, additionalRequests, recordInURL, scrollToTopOfSlot);
 		cb.call();
 	});
@@ -1465,6 +1465,10 @@ zenario.goToURL = function(URL, useChromeFix) {
 zenario.actAfterDelayIfNotSuperseded = function(type, fun, delay) {
 	if (!delay) {
 		delay = 900;
+	}
+	
+	if (_.isObject(type)) {
+		type = type.globalName;
 	}
 
 	if (!zenario.adinsActions[type]) {

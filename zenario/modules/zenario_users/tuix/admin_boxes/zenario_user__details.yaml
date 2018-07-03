@@ -207,7 +207,7 @@ zenario_user__details:
                     visible_if: |
                         zenarioAB.value('status', 'details')
                     label: "User has accepted terms and conditions"
-                    side_note: "When checked, this indicates the user has accepted the site's terms and conditions; when unchecked, they will be asked to accept them when they next logs in."
+                    side_note: "When checked, this indicates the user has accepted the site's terms and conditions."
                     type: checkbox
                 send_activation_email_to_user:
                     label: 'Send activation email to User'

@@ -25,8 +25,7 @@ if (!empty($_REQUEST['compress']) && !empty($_REQUEST['data'])) {
 		$ETag = 'zenario-layout_thumbnail-'. $_SERVER['HTTP_HOST']. '-'. http_build_query($_GET);
 		ze\cache::useBrowserCache($ETag);
 	}
-	ze\cache::start();
-	
+ 	
 	require CMS_ROOT. 'zenario/adminheader.inc.php';
 
 } else {

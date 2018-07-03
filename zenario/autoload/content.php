@@ -702,7 +702,7 @@ class content {
 				
 						//Redirect the case where we resolved a match, but the alias didn't actually match the language code
 						if ($reqLangId && $reqLangId != $row['language_id']) {
-							\ze\content::langEquivalentItem($cID, $cType, $reqLangId);
+							\ze\content::langEquivalentItem($cID, $cType, $reqLangId, true);
 							$redirectNeeded = 301;
 				
 						//If this was a hierarchical URL, but hierarchical URLs are disabled,

@@ -91,6 +91,14 @@ var slots = zenario_conductor.slots = {},
 	
 	getSlot = zenario_conductor.getSlot = function(slot) {
 		
+		if (!defined(slot)) {
+			var si, s;
+			foreach (slots as si => s) {
+				return s;
+			}
+			return {exists: false};
+		}
+		
 		var slotName =
 				slot && slot.slotName
 			 || zenario.getSlotnameFromEl(slot);
@@ -393,6 +401,12 @@ zenario_conductor.stopAutoRefresh = function(slotName) {
 
 zenario_conductor.refresh = function(slot) {
 	return zenario_conductor.go(slot, 'refresh');
+};
+
+zenario_conductor.reloadAfterDelay = function(delay, slot) {
+	zenario.actAfterDelayIfNotSuperseded(zenario_conductor, function() {
+		zenario_conductor.refresh(slot);
+	}, delay);
 };
 
 zenario_conductor.enabled = function(slot) {
