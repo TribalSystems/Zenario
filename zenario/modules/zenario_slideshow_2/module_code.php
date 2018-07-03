@@ -214,6 +214,8 @@ class zenario_slideshow_2 extends ze\moduleBaseClass {
 	
 	public function pluginAJAX() {
 		
+		ze\priv::exitIfNot('_PRIV_MANAGE_REUSABLE_PLUGIN');
+		
 		switch($_REQUEST['mode'] ?? false) {
 			case 'get_details':
 				
@@ -656,7 +658,7 @@ class zenario_slideshow_2 extends ze\moduleBaseClass {
 	}
 	
 	public function fillAdminSlotControls(&$controls) {
-		if (isset($controls['actions']['settings'])) {
+		if (ze\priv::check('_PRIV_MANAGE_REUSABLE_PLUGIN') && isset($controls['actions']['settings'])) {
 			$controls['actions']['settings']['label'] = ze\admin::phrase('Slideshow properties');
 			$controls['actions']['slideshow_settings'] = array(
 				'ord' => 1.1,
