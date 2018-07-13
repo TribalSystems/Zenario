@@ -2045,11 +2045,6 @@ _sql
 	MODIFY COLUMN `content_type` varchar(20) CHARACTER SET ascii NOT NULL
 _sql
 
-, <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]]user_content_accesslog`
-	MODIFY COLUMN `content_type` varchar(20) CHARACTER SET ascii NOT NULL
-_sql
-
 
 , <<<_sql
 	ALTER TABLE `[[DB_NAME_PREFIX]]menu_nodes`

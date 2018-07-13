@@ -1284,5 +1284,10 @@ _sql
 	MODIFY COLUMN `hit_datetime` datetime NOT NULL DEFAULT '1970-01-01 00:00:00'
 _sql
 
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]user_content_accesslog`
+	MODIFY COLUMN `content_type` varchar(20) CHARACTER SET ascii NOT NULL
+_sql
+
 );
 

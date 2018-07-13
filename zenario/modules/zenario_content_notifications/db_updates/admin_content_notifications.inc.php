@@ -118,7 +118,7 @@ _sql
 		`content_version` int(10) unsigned NOT NULL,
 		`admin_id` int(10) unsigned NOT NULL,
 		`action_requested` enum('publish','trash','other') NOT NULL default 'other',
-		`datetime_requested` datetime DEFAULT NULL,
+		`datetime_requested` datetime NOT NULL DEFAULT '1970-01-01 00:00:00',
 		`note` mediumtext,
 		PRIMARY KEY (`content_id`,`content_type`,`content_version`,`datetime_requested`),
 		KEY (`admin_id`),
@@ -178,6 +178,14 @@ You should log in with your administrator details and {{publish_draft_trash}} th
 To change your notification set-up, go to your profile at {{admin_profile_url}}'
 
 	WHERE name = 'content_request_email_body'
+_sql
+
+
+//Fix a bad column definition that's causing problems on MySQL 5.7
+);	revision(13
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_CONTENT_NOTIFICATIONS_PREFIX]]versions_mirror`
+	MODIFY COLUMN `datetime_requested` datetime NOT NULL DEFAULT '1970-01-01 00:00:00'
 _sql
 );
 
