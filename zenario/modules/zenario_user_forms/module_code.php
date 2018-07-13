@@ -50,7 +50,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		$this->allowCaching(
 			$atAll = true, $ifUserLoggedIn = true, $ifGetSet = false, $ifPostSet = false, $ifSessionSet = false, $ifCookieSet = false);
 		$this->clearCacheBy(
-			$clearByContent = false, $clearByMenu = false, $clearByUser = true, $clearByFile = false, $clearByModuleData = true);
+			$clearByContent = true, $clearByMenu = false, $clearByUser = true, $clearByFile = false, $clearByModuleData = true);
 		
 		$formId = $this->setting('user_form');
 		
@@ -2284,6 +2284,8 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			$value = $_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data'][$fieldId];
 		//..Otherwise see if we can load from the  dataset
 		} elseif ($field['preload_dataset_field_user_data'] && $this->userId && $field['db_column']) {
+			$this->allowCaching(false);
+			
 			$row = false;
 			if (isset($field['row'])) {
 				$row = $field['row'];
@@ -2304,6 +2306,8 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		} elseif ($field['default_value'] !== null) {
 			$value = $field['default_value'];
 		} elseif ($field['default_value_class_name'] !== null && $field['default_value_method_name'] !== null) {
+			$this->allowCaching(false);
+			
 			ze\module::inc($field['default_value_class_name']);
 			$value = call_user_func(
 				[

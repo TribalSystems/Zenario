@@ -37,6 +37,6 @@ define('ZENARIO_VERSION', '8.2');
 define('ZENARIO_MAJOR_VERSION', '8');
 define('ZENARIO_MINOR_VERSION', '2');
 define('ZENARIO_IS_BUILD', true);
-define('ZENARIO_REVISION', '47180');
+define('ZENARIO_REVISION', '47369');
 
 define('TINYMCE_DIR', 'zenario/libs/manually_maintained/lgpl/tinymce_4_7_3/');

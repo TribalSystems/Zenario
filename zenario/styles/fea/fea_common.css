@@ -340,7 +340,7 @@ body.mobile .zfea_blocks .zfea_block_list_wrap .zfea_block {
 .zfea_blocks.zfea_zenario_list_products .zfea_block_list_wrap .zfea_block,
 .zfea_blocks.zfea_zenario_list_storefront_documents .zfea_block_list_wrap .zfea_block {
     overflow: hidden;
-    padding: 15px 0;
+    padding: 15px;
     border-bottom: 2px solid #ccc;
 }
 
