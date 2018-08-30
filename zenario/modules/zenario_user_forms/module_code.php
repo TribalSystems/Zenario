@@ -4246,6 +4246,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 					}
 				}
 			}
+			unset($field);
 			
 			//Check if any fields saved on the form have issues
 			$formFieldIdProperties = ['user_email_field', 'reply_to_email_field', 'reply_to_first_name', 'reply_to_last_name'];
@@ -4275,18 +4276,21 @@ class zenario_user_forms extends ze\moduleBaseClass {
 					}
 				}
 			}
+			unset($field);
 			
 			//Check if any pages have issues
 			$pageFieldIdProperties = ['visible_condition_field_id'];
 			foreach($data['pages'] as $pageId => &$page) {
 				foreach ($pageFieldIdProperties as $fieldName) {
-					if ($field[$fieldName] && isset($invalidFields[$field[$fieldName]])) {
+					if ($page[$fieldName] && isset($invalidFields[$page[$fieldName]])) {
 						$warnings[$index][] = ze\admin::phrase('Form page "[[page]]" property "[[name]]" with value "[[value]]" cannot be imported.', ['page' => $page['name'], 'name' => $fieldName, 'value' => $page[$fieldName]]);
 						unset($page[$fieldName]);
 					}	
 				}
 			}
+			unset($page);
 		}
+		unset($data);
 		
 		//If only validating return any errors and warnings.
 		if ($validate) {
@@ -4320,6 +4324,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				$newPageId = ze\row::insert(ZENARIO_USER_FORMS_PREFIX . 'pages', $page);
 				$pageIdLink[$oldPageId] = $newPageId;
 			}
+			unset($page);
 			
 			//Create fields
 			foreach ($data['fields'] as &$field) {
@@ -4333,6 +4338,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				$newFieldId = ze\row::insert(ZENARIO_USER_FORMS_PREFIX . 'user_form_fields', $field);
 				$fieldIdLink[$oldFieldId] = $newFieldId;
 			}
+			unset($field);
 			
 			//Create values
 			foreach ($data['values'] as &$value) {
@@ -4342,6 +4348,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				$newValueId = ze\row::insert(ZENARIO_USER_FORMS_PREFIX . 'form_field_values', $value);
 				$valueIdLink[$oldValueId] = $newValueId;
 			}
+			unset($value);
 			
 			//Update form saved Ids
 			$update = [];
@@ -4393,6 +4400,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 						$update[$fieldName] = $fieldIdLink[$field[$fieldName]];
 					}
 				}
+				
 				if ($field['visible_condition_field_id'] && $field['visible_condition_field_value']) {
 					switch ($data['fields'][$field['visible_condition_field_id']]['field_type']) {
 						case 'select':
@@ -4448,6 +4456,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 							$step['value'] = $fieldIdLink[$step['value']];
 						}
 					}
+					unset($step);
 					$update['calculation_code'] = json_encode($calculationCode);
 				}
 				
@@ -4456,6 +4465,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				}
 			}
 		}
+		unset($data);
 		return $firstNewFormId;
 	}
 	

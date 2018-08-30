@@ -4781,7 +4781,9 @@ table.table-bordered td
 	color: #202020;
 }
 
-#organizer_rightColumn div.organizer_row.document .listicon > div {
+#organizer_rightColumn div.organizer_row.document .listicon > div,
+#organizer_rightColumn div.organizer_row.folder .listicon > div, 
+#organizer_rightColumn li.organizer_menu_handle .listicon > div {
 	padding-left:24px;
 }
 

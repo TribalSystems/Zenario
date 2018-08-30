@@ -899,6 +899,7 @@ class content {
 		// Returns the version of this content item which should normally be returned
 		if ($cID
 		 && $cType
+		 && (ctype_alpha(\ze\escape::sql($cType))) //cType can only be letters a-z and A-Z.
 		 && ($content = \ze\sql::fetchAssoc("
 				SELECT
 					equiv_id, id, type, language_id, alias,

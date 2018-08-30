@@ -617,7 +617,10 @@ methods.checkComplete = function() {
 			this.results.splice(0, 1);
 		}
 		foreach (this.funs as i => fun) {
-			fun[0].apply(fun[1], this.results);
+			if (!fun[2]) {
+				fun[2] = true;
+				fun[0].apply(fun[1], this.results);
+			}
 		}
 		
 		this.funs = [];
@@ -837,9 +840,9 @@ zenario.ajax = function(url, post, json, useCache, retry, continueAnyway, settin
 					return;
 				}
 		
-				cb.call(parsedResult);
+				cb.done(parsedResult);
 			} else {
-				cb.call(result);
+				cb.done(result);
 			}
 			
 			//If we were supposed to be using the cache, remember this result for next time
@@ -900,7 +903,7 @@ zenario.ajax = function(url, post, json, useCache, retry, continueAnyway, settin
 			//Allow an error handler to continue anyway in this case.
 			if (continueAnyway) {
 				req.zenario_continueAnyway = function(data) {
-					cb.call(data);
+					cb.done(data);
 				};
 			}
 			
@@ -1025,7 +1028,7 @@ zenario.loadLibrary = function(path, callback, alreadyLoaded, stylesheet) {
 	
 	if (alreadyLoaded || library.loaded) {
 		library.loaded = true;
-		library.cb.call();
+		library.cb.done();
 	
 	} else if (!library.loading) {
 		library.loading = true;
@@ -1043,7 +1046,7 @@ zenario.loadLibrary = function(path, callback, alreadyLoaded, stylesheet) {
 			dataType: 'script',
 			success: function() {
 				library.loaded = true;
-				library.cb.call();
+				library.cb.done();
 			},
 		
 			complete: => {
@@ -1156,6 +1159,10 @@ zenario.urlRequest = function(arr) {
 	}
 
 	return request;
+};
+
+zenario.addRequest = function(url, request, value) {
+	return url + (url.match(/\?/)? '&' : '?') + encodeURIComponent(request) + '=' + encodeURIComponent(value);
 };
 
 
@@ -1370,7 +1377,7 @@ zenario.refreshPluginSlot = function(slotName, instanceId, additionalRequests, r
 	
 	zenario.ajax(url, post, false, useCache).after(function(html) {
 		zenario.replacePluginSlotContents(slotName, instanceId, html, additionalRequests, recordInURL, scrollToTopOfSlot);
-		cb.call();
+		cb.done();
 	});
 	
 	return cb;
@@ -2217,13 +2224,13 @@ zenario.replacePluginSlotContents = function(slotName, instanceId, resp, additio
 			ocb.add(cb);
 			
 			zenario.loadLibrary(
-				URLBasePath + script,
+				zenario.addBasePath(script),
 				function() {
 					zenario.jsLibs[script] = true;
-					cb.call();
+					cb.done();
 				},
 				zenario.jsLibs[script],
-				stylesheet && (URLBasePath + stylesheet)
+				stylesheet && zenario.addBasePath(stylesheet)
 			);
 		})(libInfo[0], libInfo[1]);
 	}
@@ -2482,6 +2489,35 @@ zenario.callScript = function(script, className, secondTime, options) {
 			encapObject[functionName].apply(encapObject, script);
 		}
 	}
+};
+
+
+//Check if the Google Recaptcha library has been loaded
+zenario.grecaptchaIsLoaded = function() {
+	return window.grecaptcha && grecaptcha.render;
+};
+
+
+//Load the Google Recaptcha library.
+//Note this is a bit more convoluted than it should be, as Google do a lot of DOM manipulation
+//and extra AJAX loads after the initial script is loaded, so we need quite a lot of levels
+//of callback and paranoia.
+zenario.grecaptcha = function(elId) {
+	$(function() {
+		zenario.loadLibrary('https://www.google.com/recaptcha/api.js?render=explicit', function() {
+			
+			if (zenario.grecaptchaIsLoaded()) {
+				grecaptcha.render(elId, google_recaptcha);
+			} else {
+				setTimeout(function() {
+					$(function() {
+						grecaptcha.render(elId, google_recaptcha);
+					});
+				}, 75);
+			}
+			
+		}, zenario.grecaptchaIsLoaded());
+	});
 };
 
 

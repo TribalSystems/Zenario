@@ -212,7 +212,7 @@ methods.sortItems = function() {
 methods.searchItems = function(items, searchTerm) {
 	
 	if (defined(searchTerm)) {
-		var lowerCaseSearchTerm = searchTerm.toLowerCase(),
+		var lowerCaseSearchTerm = (searchTerm + '').toLowerCase(),
 			itemNo, id, c, column;
 		
 		for (itemNo = items.length - 1; itemNo >= 0; --itemNo) {

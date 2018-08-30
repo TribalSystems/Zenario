@@ -199,7 +199,9 @@ methods.animateInTab = function(html, cb, $shakeme) {
 	}
 };
 
-
+methods.useSimpleEditor = function() {
+	return false;
+};
 
 
 

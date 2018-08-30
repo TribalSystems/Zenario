@@ -2299,7 +2299,7 @@ body.retina #colorbox .connection_tabbed_panel .simulator_img {
 
 .error,
 .success,
-.warning,
+.zfea .warning,
 .ok,
 .alarm,
 .comms_error {
@@ -2311,7 +2311,6 @@ body.retina #colorbox .connection_tabbed_panel .simulator_img {
 	border-radius: 4px;
 	font-size:0.929em;
 	line-height:17px;
-	background:#F4F4F4;
 	background-repeat:no-repeat;
 	background-position:10px center;
 	background-size:32px 32px;
@@ -2319,7 +2318,7 @@ body.retina #colorbox .connection_tabbed_panel .simulator_img {
 
 .column_status.ok,
 .column_status.alarm,
-.column_status.warning {
+.zfea .column_status.warning {
 	width:auto;
 	padding:0;
 	margin:0;
@@ -2330,12 +2329,12 @@ body.retina #colorbox .connection_tabbed_panel .simulator_img {
 	line-height:1.2em;
 }
 
-.column_status.warning {
+.zfea .column_status.warning {
 	color:#494f6b;
 }
 
-.blue_dis_schema .column_status.warning,
-.soap_dis_schema .column_status.warning {
+.zfea .blue_dis_schema .column_status.warning,
+.zfea .soap_dis_schema .column_status.warning {
 	color:#fff;
 }
 
@@ -2390,9 +2389,9 @@ body.retina #colorbox .connection_tabbed_panel .simulator_img {
 
 /* - Warning -------------------------------------------------------------------------------------*/
 
-	.warning {
-		color:#00509D;
-		background-image:url('images/icon-msg-waiting.svg');
+	.zfea .warning {
+		color:#ec5c30;
+		background-image:url('images/icon-warning-triangle.svg');
 	}
 
 /* Merge field

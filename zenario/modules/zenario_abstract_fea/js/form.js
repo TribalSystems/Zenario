@@ -155,6 +155,10 @@ methods.ffov = function(action) {
 				thus.sortOutTUIX();
 				thus.draw();
 				cb.call();
+				
+				if (action == 'save' && thus.tuix.scroll_after_save) {
+					zenario.scrollToSlotTop(thus.containerId, true);
+				}
 			}
 		};
 		

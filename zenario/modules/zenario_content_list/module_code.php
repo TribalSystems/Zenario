@@ -667,6 +667,10 @@ class zenario_content_list extends ze\moduleBaseClass {
 		
 		$this->totalPages = (int) ceil($this->rows / $this->setting('page_size'));
 		
+		if ($this->page > $this->totalPages) {
+			$this->page = $this->totalPages;
+		}
+		
 		//Loop through each page to display, and add its details to an array of merge fields
 		$this->pages = [];
 		for ($i = 1; $i <= $this->setting('page_limit') && $i <= $this->totalPages; ++$i) {

@@ -272,7 +272,10 @@ Link: [[link]]', $note);
 		$mergeFields['published_drafted_trashed'] = $subject;
 		$subject_template = self::processTemplate('content_notification_email_subject', $mergeFields);
 		$body_template = self::processTemplate('content_notification_email_body', $mergeFields);
-		self::sendEmailNotification($notification_type, $subject_template, $body_template);
+		
+		if ($subject_template && $body_template) {
+			self::sendEmailNotification($notification_type, $subject_template, $body_template);
+		}
 	}
 
 	protected static function insertFieldsForEmail(&$record) {
@@ -304,7 +307,10 @@ Link: [[link]]', $note);
 		$mergeFields['created_updated'] = $subject;
 		$subject_template = self::processTemplate('menu_node_notification_email_subject', $mergeFields);
 		$body_template = self::processTemplate('menu_node_notification_email_body', $mergeFields);
-		self::sendEmailNotification($notification_type, $subject_template, $body_template);
+		
+		if ($subject_template && $body_template) {
+			self::sendEmailNotification($notification_type, $subject_template, $body_template);
+		}
 	}
 
 	protected static function getMenuFieldsForEmail($menuId, $languageId, $newText, $oldText = '') {

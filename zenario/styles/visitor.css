@@ -125,10 +125,6 @@ div.zenario_cookie_consent a {
 }
 
 div.zenario_cookie_consent .zenario_cc_message a {
-	text-decoration:none;
-}
-
-div.zenario_cookie_consent .zenario_cc_message a:hover {
 	text-decoration:underline;
 }
 

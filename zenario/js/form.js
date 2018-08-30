@@ -86,7 +86,8 @@ methods.enableInlineErrors = function() {
 //When looking for an element by id, if a container id is set, try to find an element in this container.
 //Otherwise just call get(), which looks for elements anywhere on the page
 methods.get = function(el) {
-	return (thus.containerId && $('#' + thus.containerId + ' #' + zenario.cssEscape(el))[0]) || get(el);
+	var $el;
+	return (thus.containerId && ($el = $('#' + thus.containerId + ' #' + zenario.cssEscape(el))) && ($el[0])) || get(el);
 };
 
 methods.microTemplate = function(template, data, filter) {
@@ -838,7 +839,7 @@ methods.insertHTML = function(html, cb, isNewTab) {
 		$(tab).removeClass('zenario_abtab_changed');
 	}
 	
-	cb.call();
+	cb.done();
 	
 	if (field = !isNewTab && lastFocus && thus.field(lastFocus.id)) {
 		thus.focusField(field, lastFocus.ss, lastFocus.se);
@@ -875,11 +876,21 @@ methods.addJQueryElements = function(sel) {
 	zenario.addJQueryElements(sel + ' ', true);
 		
 	//Some setup needed for iconselectmenu-type select lists
-	$(sel + ' select.iconselectmenu').iconselectmenu({
-		width: 'auto',
-		change: function() {
-			$(this).change();
-		}
+	$(sel + ' select.iconselectmenu').css('visibility', 'hidden').each(function(i, el) {
+		var $el = $(el),
+			id = $el.attr('id');
+		
+		$el.iconselectmenu({
+			width: 'auto',
+			open: function() {
+				$('body > .ui-selectmenu-menu')
+					.addClass('iconselectmenu__' + $el.attr('id'))
+					.addClass('iconselectmenu__in__' + thus.path);
+			},
+			change: function() {
+				$(this).change();
+			}
+		});
 	});
 };
 
@@ -1944,18 +1955,35 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 			
 			case 'editor':
 				html += '<textarea';
-			
-				zenarioA.getSkinDesc();
-			
+				
 				var dummyTextArea = '<textarea ' + thus.outputAtts(field) + '></textarea>',
 					minHeight = $(dummyTextArea).height(),
 					maxHeight = Math.max(Math.floor(($(window).height()) * 0.5), 300),
 					content_css = undefined,
 					onchange_callback = function(inst) {
 							thus.fieldChange(inst.id);
-						},
-					options,
-					readonlyOptions = {
+					},
+					options;
+				
+				if (thus.useSimpleEditor()) {
+					options = {
+						script_url: URLBasePath + zenario.tinyMCEPath,
+						plugins: [
+							"advlist autolink lists link image charmap hr anchor",
+							"searchreplace code fullscreen",
+							"nonbreaking table contextmenu directionality",
+							"paste autoresize"],
+						browser_spellcheck: true,
+						height: 250,
+						menubar: false,
+						toolbar: 'undo redo | formatselect | link unlink | bold italic | removeformat | alignleft aligncenter alignright alignjustify | outdent indent'
+					};
+					
+				} else {
+				
+					zenarioA.getSkinDesc();
+			
+					var readonlyOptions = {
 							script_url: URLBasePath + zenario.tinyMCEPath,
 		
 							inline: false,
@@ -1975,7 +2003,7 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 							autoresize_min_height: minHeight,
 							autoresize_max_height: maxHeight,
 							autoresize_bottom_margin: 10,
-		
+							
 							onchange_callback: onchange_callback,
 							init_instance_callback: function(instance) {
 								zenarioA.enableDragDropUploadInTinyMCE(false, undefined, thus.get('row__' + (instance.editorId || instance.id)));
@@ -1988,111 +2016,117 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 								}
 							}
 						},
-					normalOptions = _.extend({}, readonlyOptions, {
-							plugins: [
-								"advlist autolink lists link image charmap hr anchor",
-								"searchreplace code fullscreen",
-								"nonbreaking table contextmenu directionality",
-								"paste autoresize",
-						        "colorpicker textcolor fullscreen"],
+						normalOptions = _.extend({}, readonlyOptions, {
+								plugins: [
+									"advlist autolink lists link image charmap hr anchor",
+									"searchreplace code fullscreen",
+									"nonbreaking table contextmenu directionality",
+									"paste autoresize",
+									"colorpicker textcolor fullscreen"],
 		
-							image_advtab: true,
-							visual_table_class: ' ',
-							browser_spellcheck: true,
+								image_advtab: true,
+								visual_table_class: ' ',
+								browser_spellcheck: true,
 		
-							paste_preprocess: zenarioA.tinyMCEPasteRreprocess,
+								paste_preprocess: zenarioA.tinyMCEPasteRreprocess,
 
-							readonly: false,
+								readonly: false,
 						
-							convert_urls: true,
-							relative_urls: false,
+								convert_urls: true,
+								relative_urls: false,
 		
-							content_css: content_css,
-							toolbar: 'undo redo | bold italic underline strikethrough forecolor backcolor | removeformat | fontsizeselect | formatselect | numlist bullist | blockquote outdent indent | code fullscreen',
-							style_formats: zenarioA.skinDesc.style_formats,
-							oninit: undefined
-						}),
-					optionsWithImagesAndLinks = _.extend({}, normalOptions, {
-							toolbar: 'undo redo | image link unlink | bold italic underline strikethrough forecolor backcolor | removeformat | fontsizeselect | formatselect | numlist bullist | blockquote outdent indent | code fullscreen',
+								content_css: content_css,
+								toolbar: 'undo redo | bold italic underline strikethrough forecolor backcolor | removeformat | fontsizeselect | formatselect | numlist bullist | blockquote outdent indent | code fullscreen',
+								style_formats: zenarioA.skinDesc.style_formats,
+								oninit: undefined
+							}),
+						optionsWithImagesAndLinks = _.extend({}, normalOptions, {
+								toolbar: 'undo redo | image link unlink | bold italic underline strikethrough forecolor backcolor | removeformat | fontsizeselect | formatselect | numlist bullist | blockquote outdent indent | code fullscreen',
 		
-							file_browser_callback: zenarioA.fileBrowser,
-							init_instance_callback: function(instance) {
-								zenarioA.enableDragDropUploadInTinyMCE(true, URLBasePath, thus.get('row__' + (instance.editorId || instance.id)));
-								var el;
-								if ((el = instance.editorContainer)
-								 && (el = $('#' + instance.editorContainer.id + ' iframe'))
-								 && (el = el[0])
-								 && (el = el.contentWindow)) {
-									zenarioA.enableDragDropUploadInTinyMCE(true, URLBasePath, el);
+								file_browser_callback: zenarioA.fileBrowser,
+								init_instance_callback: function(instance) {
+									zenarioA.enableDragDropUploadInTinyMCE(true, URLBasePath, thus.get('row__' + (instance.editorId || instance.id)));
+									var el;
+									if ((el = instance.editorContainer)
+									 && (el = $('#' + instance.editorContainer.id + ' iframe'))
+									 && (el = el[0])
+									 && (el = el.contentWindow)) {
+										zenarioA.enableDragDropUploadInTinyMCE(true, URLBasePath, el);
+									}
 								}
-							}
-						}),
-					optionsWithImages = _.extend({}, optionsWithImagesAndLinks, {
-							toolbar: 'undo redo | image | bold italic underline strikethrough forecolor backcolor | removeformat | fontsizeselect | formatselect | numlist bullist | blockquote outdent indent | code fullscreen'
-						}),
-					optionsWithLinks = _.extend({}, optionsWithImages, {
-							toolbar: 'undo redo | link unlink | bold italic underline strikethrough forecolor backcolor | removeformat | fontsizeselect | formatselect | numlist bullist | blockquote outdent indent | code fullscreen'
-						});
+							}),
+						optionsWithImages = _.extend({}, optionsWithImagesAndLinks, {
+								toolbar: 'undo redo | image | bold italic underline strikethrough forecolor backcolor | removeformat | fontsizeselect | formatselect | numlist bullist | blockquote outdent indent | code fullscreen'
+							}),
+						optionsWithLinks = _.extend({}, optionsWithImages, {
+								toolbar: 'undo redo | link unlink | bold italic underline strikethrough forecolor backcolor | removeformat | fontsizeselect | formatselect | numlist bullist | blockquote outdent indent | code fullscreen'
+							});
 				
-				if (readOnly) {
-					options = normalOptions;
-					options.readonly = true;
-					extraAtt['class'] = ' tinymce_readonly';
+					if (readOnly) {
+						options = normalOptions;
+						options.readonly = true;
+						extraAtt['class'] = ' tinymce_readonly';
 			
-				} else {
-					if (field.insert_image_button) {
-						if (field.insert_link_button) {
-							options = optionsWithImagesAndLinks;
-							extraAtt['class'] = ' tinymce_with_images_and_links';
-						} else {
-							options = optionsWithImages;
-							extraAtt['class'] = ' tinymce_with_images';
-						}
 					} else {
-						if (field.insert_link_button) {
-							options = optionsWithLinks;
-							extraAtt['class'] = ' tinymce_with_links';
+						if (field.insert_image_button) {
+							if (field.insert_link_button) {
+								options = optionsWithImagesAndLinks;
+								extraAtt['class'] = ' tinymce_with_images_and_links';
+							} else {
+								options = optionsWithImages;
+								extraAtt['class'] = ' tinymce_with_images';
+							}
 						} else {
-							options = normalOptions;
-							extraAtt['class'] = ' tinymce';
+							if (field.insert_link_button) {
+								options = optionsWithLinks;
+								extraAtt['class'] = ' tinymce_with_links';
+							} else {
+								options = normalOptions;
+								extraAtt['class'] = ' tinymce';
+							}
 						}
 					}
+			
+					extraAtt.style = 'visibility: hidden;';
+			
+					if (_.isObject(field.editor_options) ) {
+						options = _.extend(options, field.editor_options);
+					}
 				}
-			
-				extraAtt.style = 'visibility: hidden;';
-			
-				if (_.isObject(field.editor_options) ) {
-					options = _.extend(options, field.editor_options);
-				}
-			
+				
 				options.setup = function (editor) {
 					editor.on('change', 
 						function(inst) {
 							thus.fieldChange(inst.id);
 						});
 				};
-			
+				
 				cb.after(function() {
 					var $field = $(thus.get(id)),
 						domTab = thus.get('zenario_abtab'),
-						tabDisplay = domTab.style.display;
-					
+						tabDisplay;
+				
 					//TinyMCE can fail to load if there was already an editor on the page with the same name.
 					//Attempt to try and tidy this up as a work-around
 					try {
 						$field.tinymce().remove();
 					} catch (e) {
 					}
-				
+			
 					//Temporarily set the tab's display to be visible, even if an animation was hiding it.
 					//This is a little hack to make sure this TinyMCE can get the correct width and height
 					//of the textarea, even when it's not yet visible
-					domTab.style.display = 'block';
-				
+					if (domTab) {
+						tabDisplay = domTab.style.display;
+						domTab.style.display = 'block';
+					}
+			
 					$field.tinymce(options);
-				
+			
 					//Hide the tab again if it was hidden
-					domTab.style.display = tabDisplay;
+					if (domTab) {
+						domTab.style.display = tabDisplay;
+					}
 				});
 				
 				break;
@@ -2150,7 +2184,7 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 							changeMonth: changeMonthAndYear,
 							changeYear: changeMonthAndYear,
 							dateFormat: (zenarioA.siteSettings && zenarioA.siteSettings.organizer_date_format) || zenario.dpf,
-							altField: '#_value_for__' + id,
+							altField: thus.get('_value_for__' + id),
 							altFormat: 'yy-mm-dd',
 							showOn: 'focus',
 							disabled: readOnly,
@@ -2435,6 +2469,8 @@ var allowedAtt = {
 		'onclick': true,
 		'ondblclick': true,
 		'onfocus': true,
+		'oninput': true,
+		'onpaste': true,
 		'onmousedown': true,
 		'onmousemove': true,
 		'onmouseout': true,
@@ -2672,10 +2708,11 @@ methods.typeaheadSearchAJAXURL = function(field, id, tab) {
 methods.parseTypeaheadSearch = function(field, id, tab, readOnly, data) {
 };
 
+//methods._tokenizeNoRecurse = false;
+
 methods.setupPickedItems = function(field, id, tab, readOnly, multiple_select) {
 	
-	var noRecurse = false,
-		searchURL,
+	var searchURL,
 		searchParam,
 		$tokenize,
 		pick_items = field.pick_items || {},
@@ -2705,14 +2742,12 @@ methods.setupPickedItems = function(field, id, tab, readOnly, multiple_select) {
 		// them to still be able to replace what's there by typing in the box, so instead I'll call the
 		// addToPickedItems() function which will auto-remove the previously selected value.)
 		onAddToken: function(value, text, e) {
-			if (noRecurse) {
+			if (thus._tokenizeNoRecurse) {
 				return;
 			}
 			
 			if (!multiple_select) {
-				noRecurse = true;
 				thus.addToPickedItems(value, id, tab);
-				noRecurse = false;
 			}
 			thus.$getPickItemsInput(id).focus();
 		},
@@ -2741,7 +2776,11 @@ methods.setupPickedItems = function(field, id, tab, readOnly, multiple_select) {
 		},
 		
 		onRemoveToken: function(value, e) {
-			thus.fieldChange(id);
+			if (thus._tokenizeNoRecurse) {
+				return;
+			}
+			
+			thus.removeFromPickedItems(value, id, tab);
 		}
 	});
 	
@@ -2957,6 +2996,7 @@ methods.upload = function(id, setUpDragDrop) {
 	};
 	
 	thus.uploadCallback = function(responses) {
+		
 		if (responses) {
 			var i,
 				file,
@@ -3543,49 +3583,53 @@ methods.removeFromPickedItems = function(values, id, tab) {
 };
 
 methods.addToPickedItems = function(values, id, tab, remove) {
+	thus._tokenizeNoRecurse = true;
 	
-	var field = thus.field(id, tab),
-		current_value = thus.readField(id),	//(!defined(field.current_value)? field.value : field.current_value),
-		multiple_select = (field.pick_items && engToBoolean(field.pick_items.multiple_select)) || (field.upload && engToBoolean(field.upload.multi)),
-		i, value, display, arrayOfValues, picked_items,
-		reselectedItems = {};
+		var field = thus.field(id, tab),
+			current_value = thus.readField(id),	//(!defined(field.current_value)? field.value : field.current_value),
+			multiple_select = (field.pick_items && engToBoolean(field.pick_items.multiple_select)) || (field.upload && engToBoolean(field.upload.multi)),
+			i, value, display, arrayOfValues, picked_items,
+			reselectedItems = {};
 	
-	values = zenarioT.csvToObject(values);
+		values = zenarioT.csvToObject(values);
 	
-	if (current_value) {
-		picked_items = thus.pickedItemsArray(field, current_value);
-	} else {
-		picked_items = {};
-	}
-	
-	foreach (values as value => display) {
-		
-		if (!field.values) {
-			field.values = {};
-		}
-		if (remove) {
-			delete field.values[value];
+		if (current_value) {
+			picked_items = thus.pickedItemsArray(field, current_value);
 		} else {
-			if (!field.values[value]) {
-				field.values[value] = display;
+			picked_items = {};
+		}
+	
+		foreach (values as value => display) {
+		
+			if (!field.values) {
+				field.values = {};
 			}
-			
-			if (picked_items[value]) {
-				reselectedItems[value] = true;
-			}
-			
-			if (multiple_select) {
-				picked_items[value] = true;
+			if (remove) {
+				delete field.values[value];
 			} else {
-				picked_items = {};
-				picked_items[value] = true;
-				break;
+				if (!field.values[value]) {
+					field.values[value] = display;
+				}
+			
+				if (picked_items[value]) {
+					reselectedItems[value] = true;
+				}
+			
+				if (multiple_select) {
+					picked_items[value] = true;
+				} else {
+					picked_items = {};
+					picked_items[value] = true;
+					break;
+				}
 			}
 		}
-	}
 	
-	thus.redrawPickedItems(id, field, picked_items, reselectedItems);
+		thus.redrawPickedItems(id, field, picked_items, reselectedItems);
+	
+	thus._tokenizeNoRecurse = false;
 };
+
 
 methods.redrawPickedItems = function(id, field, picked_items, reselectedItems) {
 	
@@ -3624,6 +3668,12 @@ methods.redrawPickedItems = function(id, field, picked_items, reselectedItems) {
 	}
 	
 	field.current_value = value;
+	
+	//If there is an onchange property, execute it.
+	if (field.onchange) {
+		zenarioT.eval(field.onchange, thus, field, undefined, id, undefined, undefined, field);
+	}
+	
 	thus.fieldChange(id);
 };
 
@@ -4192,7 +4242,9 @@ methods.redrawTab = function() {
 
 
 
-
+methods.useSimpleEditor = function() {
+	return true;
+};
 
 //Get a URL needed for an AJAX request
 methods.getURL = function(action) {

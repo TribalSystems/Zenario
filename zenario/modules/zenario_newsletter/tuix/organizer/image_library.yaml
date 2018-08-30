@@ -80,11 +80,13 @@ zenario__content:
                 #        request:
                 #            upload: true
                 add_to_newsletter:
+                    class_name: zenario_common_features
                     priv: _PRIV_EDIT_NEWSLETTER
                     only_show_on_refiner: images_for_newsletter
                     css_class: add
                     label: Pick an image from the library
                     pick_items:
+                        class_name: zenario_common_features
                         path: zenario__content/panels/image_library
                         target_path: zenario__content/panels/image_library
                         min_path: zenario__content/panels/image_library
@@ -96,6 +98,7 @@ zenario__content:
             item_buttons:
             
                 remove_from_newsletter:
+                    class_name: zenario_common_features
                     only_show_on_refiner: images_for_newsletter
                     priv: _PRIV_MANAGE_MEDIA
                     label: Detach from newsletter
@@ -106,6 +109,7 @@ zenario__content:
                     disabled_tooltip: |
                         You cannot detach an image that is in use.
                     ajax:
+                        class_name: zenario_common_features
                         confirm:
                             message: |
                                 Are you sure you wish to detach the image "[[filename]]" from this newsletter?

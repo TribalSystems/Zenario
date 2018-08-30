@@ -472,7 +472,7 @@ class zenario_scheduled_task_manager extends ze\moduleBaseClass {
 		$body .= 'Database Name: '. DBNAME. "\n";
 		$body .= 'Database Host: '. DBHOST. "\n";
 		$body .= 'Scheduled Task: '. $jobName. "\n";
-		$body .= 'Organizer Link: '. ze\link::protocol(). ze\link::host(). SUBDIRECTORY. 'admin/organizer.php#zenario__administration/panels/zenario_scheduled_task_manager__scheduled_tasks//'. $jobId. "\n";
+		$body .= 'Organizer Link: '. ze\link::protocol(). ze\link::host(). SUBDIRECTORY. 'zenario/admin/organizer.php#zenario__administration/panels/zenario_scheduled_task_manager__scheduled_tasks//'. $jobId. "\n";
 		$body .= 'Run on: '. $serverTime. "\n";
 		$body .= 'Status: '. $status. "\n\n";
 		$body .= 'Message:'. "\n". $logMessage;

@@ -80,9 +80,9 @@ class zewl {
 			return null;
 		}
 		if ($rawBinary) {
-			return '%'. \Defuse\Crypto\Crypto::encrypt($message, self::$key, true);
+			return '%'. \Defuse\Crypto\Crypto::encrypt((string) $message, self::$key, true);
 		} else {
-			return \ze::base16To64(\Defuse\Crypto\Crypto::encrypt($message, self::$key, false));
+			return \ze::base16To64(\Defuse\Crypto\Crypto::encrypt((string) $message, self::$key, false));
 		}
 	}
 	

@@ -80,7 +80,7 @@ class zenario_crm_form_integration extends ze\moduleBaseClass {
 		
 		//Add form field values
 		$multiValueFields = [];
-		$link = ze\row::get(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'form_crm_link', ['form_id'], $linkId);
+		$link = ze\row::get(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'form_crm_link', ['form_id', 'crm_id'], $linkId);
 		$formFields = zenario_user_forms::getFormFieldsStatic($link['form_id']);
 		$sql = '
 			SELECT uff.id, uff.name, cf.name AS crm_name, cf.ord
@@ -97,6 +97,13 @@ class zenario_crm_form_integration extends ze\moduleBaseClass {
 			
 			$field = $formFields[$fieldId];
 			$value = zenario_user_forms::getFieldValueFromStored($field, $fieldIdValueLink[$fieldId]);
+			//Salesforce dates must be null if empty
+			if ($link['crm_id'] == 'salesforce') {
+				if ($field['type'] == 'date' && !$value) {
+					$value = null;
+				}
+			}
+			
 			
 			//Get CRM field details
 			//A single field can send multiple values if there is a comma in the name and value to be sent
@@ -201,7 +208,7 @@ class zenario_crm_form_integration extends ze\moduleBaseClass {
 		$result = @file_get_contents($link['url'], false, $context);
 		
 		if ($responseId && ($result !== false)) {
-			ze\row::update(ZENARIO_USER_FORMS_PREFIX . 'user_response', ['crm_response' => $result], $responseId);
+			ze\row::update(ZENARIO_USER_FORMS_PREFIX . 'user_response', ['crm_response' => mb_substr($result, 0, 65535, 'UTF-8')], $responseId);
 		}
 	}
 	
@@ -236,7 +243,17 @@ class zenario_crm_form_integration extends ze\moduleBaseClass {
 		curl_close($curl);
 		
 		//Log result
-		$logId = ze\row::set(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'salesforce_response_log', ['datetime' => date('Y-m-d H:i:s'), 'form_id' => $link['form_id'], 'response_id' => $responseId, 'oauth_status' => $status, 'oauth_response' => $resultJSON], $logId);
+		$logId = ze\row::set(
+			ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'salesforce_response_log', 
+			[
+				'datetime' => date('Y-m-d H:i:s'), 
+				'form_id' => $link['form_id'], 
+				'response_id' => $responseId, 
+				'oauth_status' => $status, 
+				'oauth_response' => mb_substr($resultJSON, 0, 65535, 'UTF-8')
+			], 
+			$logId
+		);
 		//Delete old log entries
 		if ($logDays = ze::setting('zenario_salesforce_api_form_integration__log_expiry_time')) {
 			$sql = '
@@ -273,7 +290,7 @@ class zenario_crm_form_integration extends ze\moduleBaseClass {
 		$logId = ze\row::set(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'salesforce_response_log', ['salesforce_status' => $status, 'salesforce_response' => $resultJSON], $logId);
 		
 		if ($responseId) {
-			ze\row::update(ZENARIO_USER_FORMS_PREFIX . 'user_response', ['crm_response' => $resultJSON], $responseId);
+			ze\row::update(ZENARIO_USER_FORMS_PREFIX . 'user_response', ['crm_response' => mb_substr($resultJSON, 0, 65535, 'UTF-8')], $responseId);
 		}
 		
 		$result = json_decode($resultJSON, true);
@@ -319,7 +336,7 @@ class zenario_crm_form_integration extends ze\moduleBaseClass {
 		curl_close($curl);
 		
 		if ($responseId) {
-			ze\row::update(ZENARIO_USER_FORMS_PREFIX . 'user_response', ['crm_response' => $resultJSON], $responseId);
+			ze\row::update(ZENARIO_USER_FORMS_PREFIX . 'user_response', ['crm_response' => mb_substr($resultJSON, 0, 65535, 'UTF-8')], $responseId);
 		}
 	}
 	
@@ -418,7 +435,7 @@ class zenario_crm_form_integration extends ze\moduleBaseClass {
 		}
 		
 		if ($responseId) {
-			ze\row::update(ZENARIO_USER_FORMS_PREFIX . 'user_response', ['crm_response' => $crmResponse], $responseId);
+			ze\row::update(ZENARIO_USER_FORMS_PREFIX . 'user_response', ['crm_response' => mb_substr($crmResponse, 0, 65535, 'UTF-8')], $responseId);
 		}
 	}
 	
