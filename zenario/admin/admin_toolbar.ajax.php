@@ -53,6 +53,8 @@ $tags = [];
 $originalTags = [];
 ze\tuix::load($moduleFilesLoaded, $tags, $type, $requestedPath, $settingGroup, $compatibilityClassNames);
 
+ze\tuix::checkAdminToolbar($tags);
+
 if ($debugMode) {
 	$staticTags = $tags;
 }

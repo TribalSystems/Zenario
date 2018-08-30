@@ -663,26 +663,10 @@ class datasetAdm {
 			&& ($dataset = \ze\dataset::details($field['dataset_id']))
 			&& ($newRows || $oldRows)
 		) {
-			$sql = '';
-			
-			$exists = \ze\datasetAdm::checkColumnExistsInDB($dataset['table'], $field['db_column']);
-			
-			$oldColType = false;
-			if (!$exists && $oldName && $oldName != $field['db_column']) {
-				$oldColType = \ze\datasetAdm::checkColumnExistsInDB($dataset['table'], $oldName);
-			}
-			
-			//Get the column definition
-			$def = \ze\datasetAdm::fieldDefinition($field);
-			if ($def === false) {
-				echo \ze\admin::phrase('Error: bad field type!');
-				exit;
-			}
-			
 			$start = false;
 			$stop = false;
 			$deleting = false;
-		
+			
 			//Only create
 			if (!$oldRows) {
 				$start = 2;
@@ -693,7 +677,7 @@ class datasetAdm {
 				$stop = $oldRows;
 				$deleting = true;
 			//Update existing and create some new
-			} elseif ($newRows >= $oldRows) {
+			} elseif ($newRows > $oldRows) {
 				$start = $oldRows + 1;
 				$stop = $newRows;
 			//Update existing and delete some old
@@ -703,10 +687,26 @@ class datasetAdm {
 				$deleting = true;
 			//Just renaming
 			} elseif ($newRows == $oldRows) {
-				$start = 2;
+				$start = $newRows + 1;
+				$stop = $newRows;
 			}
-		
+			
 			if ($start !== false && $stop !== false) {
+				
+				$exists = \ze\datasetAdm::checkColumnExistsInDB($dataset['table'], \ze\dataset::repeatRowColumnName($field['db_column'], 2));
+				$oldColType = false;
+				if (!$exists && $oldName && $oldName != $field['db_column']) {
+					$oldColType = \ze\datasetAdm::checkColumnExistsInDB($dataset['table'], \ze\dataset::repeatRowColumnName($oldName, 2));
+				}
+				
+				//Get the column definition
+				$def = \ze\datasetAdm::fieldDefinition($field);
+				if ($def === false) {
+					echo \ze\admin::phrase('Error: bad field type!');
+					exit;
+				}
+				
+				$sql = '';
 				for ($i = 2; $i <= $stop; $i++) {
 					if ($i >= $start) {
 						if ($deleting) {
@@ -726,12 +726,12 @@ class datasetAdm {
 						}
 					}
 				}
-			}
-			
-			if ($sql) {
-				$sql = "
-					ALTER TABLE `". DB_PREFIX. \ze\escape::sql($dataset['table']). "`" . trim($sql, ',');
-					\ze\sql::update($sql);
+				
+				if ($sql) {
+					$sql = "
+						ALTER TABLE `". DB_PREFIX. \ze\escape::sql($dataset['table']). "`" . trim($sql, ',');
+						\ze\sql::update($sql);
+				}
 			}
 		}
 	}

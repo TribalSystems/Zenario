@@ -12,6 +12,7 @@ site_settings:
                     label: 'For the Extranet:'
                     type: select
                     visible_if: "zenarioAB.value('cookie_require_consent') == 'explicit'"
+                    indent: 1
                     values:
                         not_required:
                             label: Follow cookie policy

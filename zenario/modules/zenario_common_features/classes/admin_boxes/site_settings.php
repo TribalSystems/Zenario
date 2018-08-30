@@ -281,6 +281,8 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 			}
 		}
 		
+		//Options for setting individual cookies only available with cookie consent module
+		$fields['cookies/individual_cookie_consent']['hidden'] = !ze\module::inc('zenario_cookie_consent_status');
 		
 		//Load phrases for cookie messages
 		if (isset($fields['cookies/cookie_require_consent'])) {
@@ -289,6 +291,7 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 			
 			$values['cookies/_COOKIE_CONSENT_MESSAGE'] = $this->loadPhrase(true, '_COOKIE_CONSENT_MESSAGE');
 			$values['cookies/_COOKIE_CONSENT_ACCEPT'] = $this->loadPhrase(false, '_COOKIE_CONSENT_ACCEPT');
+			$values['cookies/_COOKIE_CONSENT_MANAGE'] = $this->loadPhrase(false, '_COOKIE_CONSENT_MANAGE');
 			$values['cookies/_COOKIE_CONSENT_REJECT'] = $this->loadPhrase(false, '_COOKIE_CONSENT_REJECT');
 			$values['cookies/_COOKIE_CONSENT_CLOSE'] = $this->loadPhrase(false, '_COOKIE_CONSENT_CLOSE');
 			
@@ -301,10 +304,11 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 				$fields['cookies/_COOKIE_CONSENT_MESSAGE']['label'] =
 				$fields['cookies/_COOKIE_CONSENT_IMPLIED_MESSAGE']['label'] = ze\admin::phrase('Message in [[lang]]', $mrg);
 				
-				$fields['cookies/_COOKIE_CONSENT_CONTINUE']['label'] = ze\admin::phrase('Continue button text in [[lang]]', $mrg);
-				$fields['cookies/_COOKIE_CONSENT_ACCEPT']['label'] = ze\admin::phrase('Accept button text in [[lang]]', $mrg);
-				$fields['cookies/_COOKIE_CONSENT_REJECT']['label'] = ze\admin::phrase('Reject button text in [[lang]]', $mrg);
-				$fields['cookies/_COOKIE_CONSENT_CLOSE']['label'] = ze\admin::phrase('Close button text in [[lang]]', $mrg);
+				$fields['cookies/_COOKIE_CONSENT_CONTINUE']['label'] = ze\admin::phrase('"Continue" button text in [[lang]]', $mrg);
+				$fields['cookies/_COOKIE_CONSENT_ACCEPT']['label'] = ze\admin::phrase('"Accept cookies" button text in [[lang]]', $mrg);
+				$fields['cookies/_COOKIE_CONSENT_MANAGE']['label'] = ze\admin::phrase('"Manage cookies" button text in [[lang]]', $mrg);
+				$fields['cookies/_COOKIE_CONSENT_REJECT']['label'] = ze\admin::phrase('"Reject cookies" button text in [[lang]]', $mrg);
+				$fields['cookies/_COOKIE_CONSENT_CLOSE']['label'] = ze\admin::phrase('"Close" button text in [[lang]]', $mrg);
 			}
 		}
 		
@@ -350,12 +354,20 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 					'The database "[[DBNAME]]" was last backed up on [[date]] on the server "[[server]]"	.', 
 					[
 						'DBNAME' => DBNAME, 
-						'date' => ze\date::format($backup[0]), 
+						'date' => ze\admin::formatDate($backup[0]), 
 						'server' => $backup[1]
 					]
 				) . '</p>';
 			} else {
 				$fields['backup/automated_backups']['snippet']['html'] = '<p>' . ze\admin::phrase('None found.') . '</p>';
+			}
+			
+		} elseif ($settingGroup == 'head_and_foot') {
+			//Show a warning and link on the cookies content tab if individual cookie consent is not enabled
+			if (!ze::setting('individual_cookie_consent')) {
+				$box['tabs']['cookie_content']['notices']['individual_cookie_consent_not_enabled']['show'] = true;
+				$link = ze\link::absolute() . '/zenario/admin/organizer.php#zenario__administration/panels/site_settings//cookies~.site_settings~tcookies~k{"id"%3A"cookies"}';
+				ze\lang::applyMergeFields($box['tabs']['cookie_content']['notices']['individual_cookie_consent_not_enabled']['message'], ['link' => htmlspecialchars($link)]);
 			}
 		}
 		
@@ -419,13 +431,13 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 
 		if (isset($fields['dates/vis_date_format_short'])) {
 			$fields['dates/vis_date_format_short__preview']['current_value'] =
-				ze\date::format(ze\date::now(), $values['dates/vis_date_format_short'], true);
+				ze\admin::formatDate(ze\date::now(), $values['dates/vis_date_format_short'], true);
 	
 			$fields['dates/vis_date_format_med__preview']['current_value'] =
-				ze\date::format(ze\date::now(), $values['dates/vis_date_format_med'], true);
+				ze\admin::formatDate(ze\date::now(), $values['dates/vis_date_format_med'], true);
 	
 			$fields['dates/vis_date_format_long__preview']['current_value'] =
-				ze\date::format(ze\date::now(), $values['dates/vis_date_format_long'], true);
+				ze\admin::formatDate(ze\date::now(), $values['dates/vis_date_format_long'], true);
 		}
 
 		if (isset($fields['sitemap/sitemap_url'])) {
@@ -608,7 +620,7 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 				} else {
 					$mrg = [
 						'DBNAME' => DBNAME,
-						'datetime' => ze\date::formatDateTime($timestamp, false, true)
+						'datetime' => ze\admin::formatDateTime($timestamp, false, true)
 					];
 					$fields['automated_backups/test']['note_below'] = htmlspecialchars(
 						ze\admin::phrase('The database "[[DBNAME]]" was last backed up on [[datetime]]', $mrg)
@@ -972,6 +984,10 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 					
 					if ($values['cookies/cookie_consent_type__explicit'] == 'message_accept_reject') {
 						$this->savePhrase(false, '_COOKIE_CONSENT_REJECT', $values['cookies/_COOKIE_CONSENT_REJECT']);
+					}
+					
+					if ($values['cookies/individual_cookie_consent']) {
+						$this->savePhrase(false, '_COOKIE_CONSENT_MANAGE', $values['cookies/_COOKIE_CONSENT_MANAGE']);
 					}
 					break;
 			}

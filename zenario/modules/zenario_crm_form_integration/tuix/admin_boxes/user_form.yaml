@@ -97,6 +97,28 @@ zenario_user_form:
                     type: checkbox
                     format_onchange: true
                 
+                send_api_request:
+                    indent: 1
+                    label: Send API request
+                    type: select
+                    values:
+                        always_send:
+                            label: Always send
+                        send_on_condition:
+                            label: Send on condition of consent field
+                    visible_if: zenarioAB.value('enable')
+                    format_onchange: true
+                    
+                consent_field:
+                    indent: 2
+                    label: Consent
+                    type: select
+                    visible_if: zenarioAB.value('enable')
+                    empty_value: -- Select --
+                    validation: 
+                        required_if_not_hidden: Please choose a consent field.
+                    format_onchange: true
+                
                 mailchimp_list_id:
                     visible_if: zenarioAB.value('enable')
                     label: 'MailChimp list ID:'

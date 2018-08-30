@@ -128,7 +128,7 @@ class zenario_common_features__admin_boxes__publish extends ze\moduleBaseClass {
 		if (($result = ze\sql::select($sql)) && ($clash = ze\sql::fetchAssoc($result))) {
 			
 			$clash['tag'] = ze\content::formatTag($clash['id'], $clash['type']);
-			$clash['date'] = ze\date::format($clash['release_date'], 'vis_date_format_short');
+			$clash['date'] = ze\admin::formatDate($clash['release_date'], 'vis_date_format_short');
 			return $clash;
 		
 		} else {

@@ -295,7 +295,7 @@ table.table_list tr .sorted_buttons {
 
 .zfea_blocks .zfea_block_list_wrap .zfea_block .buttons {
 	position:relative;
-	z-index:2;
+	z-index:3;
 	text-align:center;
 	clear:both;
 	padding:0 8px;
@@ -1619,32 +1619,6 @@ a.nest_show_embed {
 	padding-right:24px;
 }
 
-.zenario_skin .create.zfea_button_disabled,
-.zenario_skin input.create.zfea_button_disabled[type="button"],
-.zenario_skin .small_button.create.zfea_button_disabled,
-.zenario_skin input.small_button.create.zfea_button_disabled[type="button"] {
-	background:#F2EEEB;
-}
-
-.zenario_skin .create.zfea_button_disabled,
-.zenario_skin input.create.zfea_button_disabled[type="button"],
-.zenario_skin .small_button.create.zfea_button_disabled,
-.zenario_skin input.small_button.create.zfea_button_disabled[type="button"],
-.zenario_skin .create.zfea_button_disabled .fa,
-.zenario_skin input.create.zfea_button_disabled[type="button"] .fa,
-.zenario_skin .small_button.create.zfea_button_disabled .fa,
-.zenario_skin input.small_button.create.zfea_button_disabled[type="button"] .fa {
-	color:#BBB7B4 !important;
-	cursor:default;
-}
-
-.zenario_skin .create.zfea_button_disabled:hover,
-.zenario_skin input.create.zfea_button_disabled[type="button"]:hover,
-.zenario_skin .small_button.create.zfea_button_disabled:hover,
-.zenario_skin input.small_button.create.zfea_button_disabled[type="button"]:hover  {
-	opacity:1;
-}
-
 .zfea_form_grouping .zfea_form_row_delete input.small_button.delete[type="button"] {
 	position:absolute;
 	top:10px;
@@ -1663,6 +1637,21 @@ input[type="button"].launch_keeper {
 	margin-left:10px;
 	line-height:22px;
 	font-size:0.875em;
+}
+
+.zenario_skin .zfea_button_disabled {
+	background:#F2EEEB !important;
+	border-color:#BBB7B4 !important;
+	cursor:default !important;
+}
+
+.zenario_skin .zfea_button_disabled,
+.zenario_skin .zfea_button_disabled .fa {
+	color:#BBB7B4 !important;
+}
+
+.zenario_skin .zfea_button_disabled:hover  {
+	opacity:1 !important;
 }
 
 /* Common styles Zfea Loading
@@ -1717,6 +1706,28 @@ input[type="button"].launch_keeper {
 
 #hierarchy_chart .fea_preloader_circle {
 	top:50%;
+}
+
+/* Common styles Zfea Tooltip
+--------------------------------------------------------------------------------------------------*/
+
+.zfea .zenario_field_tooltip {
+	float:right;
+	margin-left:8px;
+}
+
+.zfea_field_tooltip,
+.zenario_field_tooltip {
+	width:20px;
+	height:20px;
+	line-height:20px;
+	font-weight:600;
+	background:#ccc;
+	text-align:center;
+	-webkit-border-radius: 50%;
+	-moz-border-radius: 50%;
+	border-radius: 50%;
+	cursor:default;
 }
 
 /* Spinner
@@ -2348,15 +2359,7 @@ body.retina #colorbox .connection_tabbed_panel .simulator_img {
 	}
 	
 	.error p { margin:0; }
-	
-	/*.zenario_row_with_error input[type="text"],
-	.zenario_row_with_error input[type="email"],
-	.zenario_row_with_error input[type="search"],
-	.zenario_row_with_error input[type="password"],
-	.zenario_row_with_error input[type="radio"],
-	.zenario_row_with_error input[type="checkbox"],
-	.zenario_row_with_error select,
-	.zenario_row_with_error textarea,*/
+
 	.zenario_row_with_error .Tokenize,
 	input[type="text"].zenario_field_with_error,
 	input[type="email"].zenario_field_with_error,
@@ -2397,7 +2400,7 @@ body.retina #colorbox .connection_tabbed_panel .simulator_img {
 /* Merge field
 --------------------------------------------------------------------------------------------------*/
 
-.ui-selectmenu-button.ui-widget.ui-state-default {
+/*.ui-selectmenu-button.ui-widget.ui-state-default {
 	color:#333;
 }
 
@@ -2422,7 +2425,7 @@ body.retina #colorbox .connection_tabbed_panel .simulator_img {
 
 .ui-selectmenu-menu .ui-menu .ui-iconselectmenu-selected .ui-icon {
 	filter:brightness(9);
-}
+}*/
 
 /* Common styles: font awesome icons
 --------------------------------------------------------------------------------------------------*/

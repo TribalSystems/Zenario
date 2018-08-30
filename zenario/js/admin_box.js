@@ -502,10 +502,6 @@ zenarioAB.contentTitleChange = function() {
 
 
 
-zenarioAB.mode = function() {
-	return zenarioAB.value('mode', 'first_tab');
-};
-
 zenarioAB.viewFrameworkSource = function() {
 	var url =
 		URLBasePath +

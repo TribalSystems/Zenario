@@ -127,12 +127,22 @@
 										{% endif %}
 											<img 
 												id="{{containerId|e}}_feature_img" 
+												width="{{nodeExtraProperties[node1.mID]['feature_image_width']}}"
+												height="{{nodeExtraProperties[node1.mID]['feature_image_height']}}"
 												src="{{nodeExtraProperties[node1.mID]['feature_image_link']|e}}"
 												alt="{{nodeExtraProperties[node1.mID]['alt_tag']|e}}"
-											{% if (nodeExtraProperties[node1.mID]['use_rollover_image'] == 1) %}
-											onmouseover="{this.src='{{nodeExtraProperties[node1.mID]['feature_rollover_image_link']}}'};"
-											onmouseout="{this.src='{{nodeExtraProperties[node1.mID]['feature_image_link']}}'};"
-											{% endif %}/>
+												{% if nodeExtraProperties[node1.mID]['Image_Srcset'] %} srcset="{{nodeExtraProperties[node1.mID]['Image_Srcset']|e}}" {% endif %}
+												{% if (nodeExtraProperties[node1.mID]['use_rollover_image'] == 1) %}
+													onmouseover="
+														this.src='{{nodeExtraProperties[node1.mID]['feature_rollover_image_link']}}';
+														this.srcset='{{nodeExtraProperties[node1.mID]['Rollover_Image_Srcset']}}';
+													"
+													onmouseout="
+														this.src='{{nodeExtraProperties[node1.mID]['feature_image_link']}}';
+														this.srcset='{{nodeExtraProperties[node1.mID]['Image_Srcset']}}';
+													"
+												{% endif %}
+											/>
 										{% if (nodeExtraProperties[node1.mID]['link_type'] != 'no_link') %}</a>{% endif %}
 									</div>
 									{% if (nodeExtraProperties[node1.mID]['title']) or (nodeExtraProperties[node1.mID]['text']) %}
@@ -178,11 +188,15 @@
 											{% if node1.rel_tag %}rel="{{node1.rel_tag|e}}"{% endif %}
 											{% if node1.target %}target="{{node1.target|e}}"{% endif %}
 											{% if node1.title %}title="{{node1.title|e}}"{% endif %}>
-											<img src="{{nodeExtraProperties[node1.mID]['image_link']}}" 
-											{% if node1.rollover_image_id %}
-											onmouseover="{this.src='{{nodeExtraProperties[node1.mID]['rollover_image_link']}}'};"
-											onmouseout="{this.src='{{nodeExtraProperties[node1.mID]['image_link']}}'};"
-											{% endif %}/>
+											<img
+												src="{{nodeExtraProperties[node1.mID]['image_link']}}"
+												width="{{nodeExtraProperties[node1.mID]['node_image_width']}}"
+												height="{{nodeExtraProperties[node1.mID]['node_image_height']}}"
+												{% if node1.rollover_image_id %}
+													onmouseover="{this.src='{{nodeExtraProperties[node1.mID]['rollover_image_link']}}'};"
+													onmouseout="{this.src='{{nodeExtraProperties[node1.mID]['image_link']}}'};"
+												{% endif %}
+											/>
 										</a>
 										
 									</div>
@@ -208,11 +222,13 @@
 												{% if node2.rel_tag %}rel="{{node2.rel_tag|e}}"{% endif %}
 												{% if node2.target %}target="{{node2.target|e}}"{% endif %}
 												{% if node2.title %}title="{{node2.title|e}}"{% endif %}>
-												<img src="{{nodeExtraProperties[node2.mID]['image_link']}}" 
-												{% if node2.rollover_image_id %}
-												onmouseover="{this.src='{{nodeExtraProperties[node2.mID]['rollover_image_link']}}'};"
-												onmouseout="{this.src='{{nodeExtraProperties[node2.mID]['image_link']}}'};"
-												{% endif %}/>
+												<img
+													src="{{nodeExtraProperties[node2.mID]['image_link']}}" 
+													{% if node2.rollover_image_id %}
+														onmouseover="{this.src='{{nodeExtraProperties[node2.mID]['rollover_image_link']}}'};"
+														onmouseout="{this.src='{{nodeExtraProperties[node2.mID]['image_link']}}'};"
+													{% endif %}
+												/>
 											</a>
 										</div>
 									</div>
@@ -238,11 +254,13 @@
 													{% if node3.rel_tag %}rel="{{node3.rel_tag|e}}"{% endif %}
 													{% if node3.target %}target="{{node3.target|e}}"{% endif %}
 													{% if node3.title %}title="{{node3.title|e}}"{% endif %}>
-													<img src="{{nodeExtraProperties[node3.mID]['image_link']}}" 
-													{% if node3.rollover_image_id %}
-													onmouseover="{this.src='{{nodeExtraProperties[node3.mID]['rollover_image_link']}}'};"
-													onmouseout="{this.src='{{nodeExtraProperties[node3.mID]['image_link']}}'};"
-													{% endif %}/>
+													<img
+													src="{{nodeExtraProperties[node3.mID]['image_link']}}" 
+														{% if node3.rollover_image_id %}
+															onmouseover="{this.src='{{nodeExtraProperties[node3.mID]['rollover_image_link']}}'};"
+															onmouseout="{this.src='{{nodeExtraProperties[node3.mID]['image_link']}}'};"
+														{% endif %}
+													/>
 												</a>
 											</div>
 										</div>

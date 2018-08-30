@@ -57,6 +57,25 @@ body .ace_editor.ace_autocomplete {
    color:#777;
 }
 
+.assetwolf_2 table.table_with_lines,
+.assetwolf_2 .update_background_scripts table {
+	width:100%;
+	margin-bottom:15px;
+}
+
+.assetwolf_2 table.table_with_lines th,
+.assetwolf_2 table.table_with_lines td,
+.assetwolf_2 .update_background_scripts table th,
+.assetwolf_2 .update_background_scripts table td {
+	padding:8px 10px;
+	border:1px solid #ccc;
+}
+
+.assetwolf_2 table.table_with_lines th,
+.assetwolf_2 .update_background_scripts table th {
+	font-weight:bold;
+}
+
 /* Form
 --------------------------------------------------------------------------------------------------*/
 
@@ -568,6 +587,23 @@ table.mqtt_details tr td,
  word-wrap: break-word;       /* Internet Explorer 5.5+ */
 }
 
+.indicators {
+	display:inline-block;
+	float:right;
+}
+
+.indicators .mqtt_listener,
+.indicators .data_processor {
+	display:inline-block;
+	margin:8px 0 8px 8px;
+}
+
+.mqtt_listener img,
+.data_processor img {
+	width:auto !important;
+	height:28px !important;
+}
+
 /* Resource usage
 --------------------------------------------------------------------------------------------------*/
 
@@ -929,19 +965,22 @@ table.mqtt_details tr td,
 }
 
 .zfea_assetwolf_scheduled_calc.zfea_edit_box .zfea_form_grouping.zfea_form_grouping__fields_grouping .zfea_form_row,
-.zfea_assetwolf_scheduled_calc.zfea_edit_box .zfea_form_grouping.zfea_form_grouping__manual_entry_fields_grouping .zfea_form_row {
+.zfea_assetwolf_scheduled_calc.zfea_edit_box .zfea_form_grouping.zfea_form_grouping__manual_entry_fields_grouping .zfea_form_row,
+.zfea_assetwolf_scheduled_calc.zfea_edit_box .zfea_form_grouping.zfea_form_grouping__comm_status_fields_grouping .zfea_form_row {
 	width:48%;
 	float:left;
 	clear:none;
 }
 
 .zfea_assetwolf_scheduled_calc.zfea_edit_box .zfea_form_grouping.zfea_form_grouping__fields_grouping .zfea_form_row:nth-child(2),
-.zfea_assetwolf_scheduled_calc.zfea_edit_box .zfea_form_grouping.zfea_form_grouping__manual_entry_fields_grouping .zfea_form_row:nth-child(2) {
+.zfea_assetwolf_scheduled_calc.zfea_edit_box .zfea_form_grouping.zfea_form_grouping__manual_entry_fields_grouping .zfea_form_row:nth-child(2),
+.zfea_assetwolf_scheduled_calc.zfea_edit_box .zfea_form_grouping.zfea_form_grouping__comm_status_fields_grouping .zfea_form_row:nth-child(2) {
 	float:right;
 }
 
 .zfea_assetwolf_scheduled_calc.zfea_edit_box .zfea_form_grouping.zfea_form_grouping__fields_grouping .zfea_form_row.zfea_form_row__source_list .ui-selectmenu-button,
-.zfea_assetwolf_scheduled_calc.zfea_edit_box .zfea_form_grouping.zfea_form_grouping__manual_entry_fields_grouping .zfea_form_row.zfea_form_row__manual_entry_source_list .ui-selectmenu-button {
+.zfea_assetwolf_scheduled_calc.zfea_edit_box .zfea_form_grouping.zfea_form_grouping__manual_entry_fields_grouping .zfea_form_row.zfea_form_row__manual_entry_source_list .ui-selectmenu-button,
+.zfea_assetwolf_scheduled_calc.zfea_edit_box .zfea_form_grouping.zfea_form_grouping__comm_status_fields_grouping .zfea_form_row.zfea_form_row__comm_status_destination_list .ui-selectmenu-button {
 	min-width:300px;
 }
 
@@ -1822,20 +1861,6 @@ body.desktop .zfea_form_grouping__asset_details .zfea_form_row.zfea_form_row__im
 /* Edit asset
 --------------------------------------------------------------------------------------------------*/
 
-.zfea_field_tooltip,
-.zenario_field_tooltip {
-	width:20px;
-	height:20px;
-	line-height:20px;
-	font-weight:600;
-	background:#ccc;
-	text-align:center;
-	-webkit-border-radius: 50%;
-	-moz-border-radius: 50%;
-	border-radius: 50%;
-	cursor:default;
-}
-
 .zenario_skin .zfea_assetwolf_edit_asset form {
 	padding-top:10px;
 }
@@ -2659,20 +2684,57 @@ fieldset.zfea_form_grouping.zfea_form_grouping__last_edit_info {
 }
 
 .form_date_picker label,
-.form_date_picker select,
-.form_date_picker div,
-.form_date_picker input {
-	float:left;
-	margin-right:5px;
-}
-
-.form_date_picker label,
+.form_date_picker span,
 .form_date_picker .label {
-	line-height:28px;
+	display:inline-block;
+	height:34px;
+	line-height:34px;
 }
 
 .form_date_picker select {
 	height:32px;
+}
+
+.form_date_picker label,
+.form_date_picker select,
+.form_date_picker div,
+.form_date_picker input,
+.form_date_picker span {
+	clear:none !important;
+	margin-bottom:10px;
+}
+
+.form_date_picker label,
+.form_date_picker select,
+.form_date_picker div,
+.form_date_picker input,
+.form_date_picker span {
+	float:left;
+	margin-right:5px;
+}
+
+.form_date_picker span.title {
+	font-weight:600;
+}
+
+.form_date_picker select[name="ts_format"] {
+	max-width:325px;
+}
+
+.form_date_picker select[name="format"] {
+	max-width:100px;
+}
+
+.form_date_picker .form_date_picker_button {
+	float:none;
+	clear:both !important;
+	overflow:hidden;
+	padding-top:10px;
+	text-align:center;
+}
+
+.form_date_picker .form_date_picker_button input {
+	float:none;
 }
 
 /* Common styles Zfea, new  row
@@ -3845,11 +3907,28 @@ body.mobile .assetwolf_2_schematics .info .hotspot_popup .inner .wrap_div {
 
 .assetwolf_2_schematics .schematic_builder_panel .controls .buttons.data_layer_nothing_selected .inner_content_area input.add.hotspot,
 .assetwolf_2_schematics .schematic_builder_panel .header .controls > .icon.hotspot {
-	background-image:url('images/icon-hotspot-white.svg');
+	background-image:url('images/icon-hotspot-white-v2.svg');
 }
 
-.assetwolf_2_schematics .schematic_builder_panel .controls .buttons.data_layer_nothing_selected .inner_content_area input.add.icon {
-	background-image:url('images/icon-add-state-white.svg');
+.assetwolf_2_schematics .schematic_builder_panel .controls .buttons.data_layer_nothing_selected .inner_content_area input.add.hotspot {
+	background-size:auto 18px;
+}
+
+.assetwolf_2_schematics .schematic_builder_panel .header .controls > .icon.hotspot {
+	background-size:auto 22px;
+}
+
+.assetwolf_2_schematics .schematic_builder_panel .controls .buttons.data_layer_nothing_selected .inner_content_area input.add.comms_icon,
+.assetwolf_2_schematics .schematic_builder_panel .header .controls > .icon.comms_icon {
+	background-image:url('images/icon-add-comms-white.svg');
+}
+
+.assetwolf_2_schematics .schematic_builder_panel .controls .buttons.data_layer_nothing_selected .inner_content_area input.add.comms_icon {
+	background-size:16px auto;
+}
+
+.assetwolf_2_schematics .schematic_builder_panel .header .controls > .icon.comms_icon {
+	background-size:20px auto;
 }
 
 .assetwolf_2_schematics .schematic_builder_panel .controls .buttons input.delete_all[type="button"] {
@@ -3961,19 +4040,25 @@ body.mobile .assetwolf_2_schematics div.schematic_builder .controls .buttons sel
 .assetwolf_2_schematics .info .hotspot_popup div.asset_status {
 	/*min-height:24px;*/
 	line-height:1.2em;
-	padding:10px 0 10px 28px;
+	padding:0 0 10px 28px;
 }
 
 .aw_a_list.aw_list .zfea_block_list_wrap > div p.column_status,
 .assetwolf_2_schematics .info .hotspot_popup div.asset_status {
-	padding-top:12px;
+	padding-top:2px;
 	padding-bottom:12px;
 }
 
 .aw_list .zfea_block_list_wrap > div p.column_status,
 .assetwolf_2_schematics .info .hotspot_popup div.asset_status {
 	background-repeat:no-repeat;
-	background-position:left center;
+	background-position:left 0;
+}
+
+.aw_list .zfea_block_list_wrap > div p.column_status .comms_wrap,
+.assetwolf_2_schematics .info .hotspot_popup div.asset_status .comms_wrap {
+	position:relative;
+	top:8px;
 }
 
 .aw_list .zfea_block_list_wrap > div div.wrap_div,
@@ -4250,12 +4335,15 @@ body.mobile .aw_list .zfea_block_list_wrap > div div.wrap_div p {
 	text-align:right;
 }
 
-/* Common styles Zfea Tooltip
+/* Update background scripts
 --------------------------------------------------------------------------------------------------*/
 
-.zfea .zenario_field_tooltip {
-	float:right;
-	margin-left:8px;
+.assetwolf_2 .update_background_scripts form {
+	text-align:center;
+}
+
+.assetwolf_2 .update_background_scripts form table {
+	text-align:left;
 }
 
 /* Slider
@@ -4332,25 +4420,6 @@ body.mobile .aw_list .zfea_block_list_wrap > div div.wrap_div p {
 
 .zenario_breadcrumbs {
 	padding:8px 0;
-}
-
-.assetwolf_2 span.info {
-    display: inline-block;
-    position:relative;
-    top:-5px;
-    width: 8px;
-    line-height:16px;
-    padding: 2px 5px 0;
-    margin:0 0 0 5px;
-    text-align: center;
-    font-family:serif;
-    font-size:13px;
-	-moz-border-radius: 50%;
-	-webkit-border-radius: 50%;
-	border-radius: 50%;
-	cursor:default;
-	background:#c0c0c0;
-	color:#fff;
 }
 
 /* JQuery UI
@@ -4571,6 +4640,10 @@ img.ui-datepicker-trigger {
 
 .zenario_phi_environment_tsm {
 	font-size: 12px;
+}
+
+.aw_phi_no_ranges {
+	font-style: italic;
 }
 
 
@@ -4821,6 +4894,34 @@ button.toast-close-button {
 
 .assetwolf_2 .connection_times_table select {
 	width:100%;
+}
+
+/*  Info icon
+--------------------------------------------------------------------------------------------------*/
+
+.info_icon,
+.assetwolf_2 span.info {
+	display:inline-block;
+	width:18px;
+	height:18px;
+	background:url('images/icon-info-generic-grey.svg') no-repeat center center / 100%;
+	overflow:hidden;
+	text-indent:-99px;
+	font-size:0;
+	line-height:0;
+	
+	position:relative;
+	top:4px;
+}
+
+.assetwolf_2_schematics .info .hotspot_popup .info_icon {
+	top:-2px;
+	margin-left:5px;
+}
+
+.assetwolf_2 span.info {
+    margin:0 0 0 5px;
+    cursor:default;
 }
 
 /*  Simulator
@@ -5145,7 +5246,10 @@ button.toast-close-button {
 		margin-top:10px;
 	}
 	
-	.form_date_picker div,
+	.form_date_picker select[name="ts_format"] {
+		max-width:100%;
+	}
+	
 	.assetwolf_graph_base .time_period_selector, 
 	.assetwolf_graph_base .pre_defined_period, 
 	.assetwolf_graph_base .specific_dates {

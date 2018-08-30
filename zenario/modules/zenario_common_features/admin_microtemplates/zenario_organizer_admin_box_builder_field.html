@@ -1,14 +1,14 @@
-<% m.display_label = m.field_label ? m.field_label : ((m.type == 'other_system_field') ? 'Untitled other system field' : 'Untitled'); %>
+<% m.display_label = m.label ? m.label : ((m.type == 'other_system_field') ? 'Untitled other system field' : 'Untitled'); %>
 <% m.display_type = (m.type == 'other_system_field') ? m.tuix_type : m.type; %>
 
 <% if (m.display_type == 'grouping') { %>
 	<div class="
 		grouping
-		<% if (m._isSortable) { %> is_sortable <% } %>
+		<% if (m._is_sortable) { %> is_sortable <% } %>
 		<% if (m.is_system_field) { %> system_field <% } %>"
 		data-id="{{m.id}}"
 	>
-		{{zenarioT.microTemplate('zenario_organizer_admin_box_builder_field', m._fields)}}
+		{{zenarioT.microTemplate('zenario_organizer_admin_box_builder_field', m.fields)}}
 	</div>
 <% } else { %>
 
@@ -16,16 +16,16 @@
 	id="organizer_form_field_{{m.id}}"  
 	class="
 		form_field 
-		<% if (m._isSortable) { %> is_sortable <% } %>
+		<% if (m._is_sortable) { %> is_sortable <% } %>
 		{{m.display_type}} 
 		<% if (m.type == 'other_system_field' && m.type != m.display_type) { %> other_system_field <% } %>
 		<% if (m.is_system_field) { %> system_field <% } %> 
-		<% if (m.selected) { %> selected <% } %> 
+		<% if (m._is_current_field) { %> selected <% } %> 
 		<% if (m.required) { %> required <% } %>
 		<% if (m.indent) { %> zenario_indent_level zenario_indent_level_{{m.indent}} <% } %>" 
 	data-id="{{m.id}}"
 	
-	<% if (m._inRepeat) { %>
+	<% if (m._is_repeat_field) { %>
 		style="padding-left:50px;"
 	<% } %>
 >
@@ -33,58 +33,58 @@
 	<div id="organizer_form_field_side_note_{{m.id|e}}" class="zenario_side_note_wrap" <% if (!m.side_note) { %> style="display:none;" <% } %>>
 		<div class="zenario_side_note">
 			<div class="zenario_note_icon"></div>
-			<div class="zenario_note_content">{{zenario.unfun(m.side_note)}}</div>
+			<div class="zenario_note_content">{{zenario.unfun(m.side_note)|e}}</div>
 		</div>
 	</div>
 	
-	<div id="organizer_form_field_details_{{m.id}}" class="form_field_details_wrapper">
+	<div id="organizer_form_field_details_{{m.id}}" class="form_field_details_wrapper <% if (m.indent) { %> zenario_indent_level_{{m.indent|e}} <% } %>">
 		
 		
 		<% if (m.display_type == 'group' || m.display_type == 'checkbox') { %>
-			<label class="label">{{m.display_label}}</label>
+			<label class="label">{{m.display_label|e}}</label>
 		
 		<% } else if (m.display_type == 'checkboxes') { %>
-			<span class="label">{{m.display_label}}</span>
+			<span class="label">{{m.display_label|e}}</span>
 			<div id="organizer_form_field_values_{{m.id}}">
 				{{zenarioT.microTemplate('zenario_organizer_admin_box_builder_checkbox_values_preview', m.lov)}}
 			</div>
 		
 		<% } else if (m.display_type == 'date') { %>
-			<span class="label">{{m.display_label}}</span>
+			<span class="label">{{m.display_label|e}}</span>
 			<input type="text" value="{{m.value}}" readonly class="datepicker"/>
 		
 		<% } else if (m.display_type == 'editor') { %>
-			<span class="label">{{m.display_label}}</span>
+			<span class="label">{{m.display_label|e}}</span>
 			<img src="{{m.field_placeholder}}"/>
 			
 		<% } else if (m.display_type == 'radios') { %>
-			<span class="label">{{m.display_label}}</span>
+			<span class="label">{{m.display_label|e}}</span>
 			<div id="organizer_form_field_values_{{m.id}}">
 				{{zenarioT.microTemplate('zenario_organizer_admin_box_builder_radio_values_preview', m.lov)}}
 			</div>
 		
 		<% } else if (m.display_type == 'centralised_radios') { %>
-			<span class="label">{{m.display_label}}</span>
+			<span class="label">{{m.display_label|e}}</span>
 			<div id="organizer_form_field_values_{{m.id}}">
 				{{zenarioT.microTemplate('zenario_organizer_admin_box_builder_radio_values_preview', m.lov)}}
 			</div>
 		
 		<% } else if (m.display_type == 'select' || m.display_type == 'dataset_select') { %>
-			<span class="label">{{m.display_label}}</span>
+			<span class="label">{{m.display_label|e}}</span>
 			<select readonly disabled>
 				<option>-- Select --</option>
 				{{zenarioT.microTemplate('zenario_organizer_admin_box_builder_select_values', m.lov)}}
 			</select>
 		
 		<% } else if (m.display_type == 'centralised_select') { %>
-			<span class="label">{{m.display_label}}</span>
+			<span class="label">{{m.display_label|e}}</span>
 			<select readonly disabled>
 				<option>-- Select --</option>
 				{{zenarioT.microTemplate('zenario_organizer_admin_box_builder_select_values', m.lov)}}
 			</select>
 		
 		<% } else if (m.display_type == 'dataset_picker' || m.display_type == 'pick_items') { %>
-			<span class="label">{{m.display_label}}</span>
+			<span class="label">{{m.display_label|e}}</span>
 			<div>
 				<span>
 					<div class="zenario_row_input_button zenario_group zenario_group__cols zenario_group_col_">
@@ -94,7 +94,7 @@
 				<input type="button" value="Select..." class="lauch_keeper"/>
 			</div>
 		<% } else if (m.display_type == 'file_picker' || m.display_type == 'upload') { %>
-			<span class="label">{{m.display_label}}</span>
+			<span class="label">{{m.display_label|e}}</span>
 			<div>
 				<span>
 					<div class="zenario_row_input_button zenario_group zenario_group__cols zenario_group_col_">
@@ -106,15 +106,15 @@
 			</div>
 			
 		<% } else if (m.display_type == 'text') { %>
-			<span class="label">{{m.display_label}}</span>
+			<span class="label">{{m.display_label|e}}</span>
 			<input type="text" value="" readonly/>
 		
 		<% } else if (m.display_type == 'textarea') { %>
-			<span class="label">{{m.display_label}}</span>
+			<span class="label">{{m.display_label|e}}</span>
 			<textarea disabled></textarea>
 		
 		<% } else if (m.display_type == 'url') { %>
-			<span class="label">{{m.display_label}}</span>
+			<span class="label">{{m.display_label|e}}</span>
 			<input type="text" value="http://" readonly class="url"/>
 		
 		<% } else if (m.display_type == 'repeat_start') { %>
@@ -125,7 +125,7 @@
 			<div class="border"></div>
 		
 		<% } else { %>
-			<span class="label">{{m.display_label}}</span>
+			<span class="label">{{m.display_label|e}}</span>
 			<div class="other"></div>
 		<% } %>
 	</div>
@@ -133,11 +133,11 @@
 	
 	<div id="organizer_form_field_note_below_{{m.id|e}}" class="zenario_note_below" <% if (!m.note_below) { %> style="display:none;" <% } %>>
 		<div class="zenario_note_icon"></div>
-		<div class="zenario_note_content">{{zenario.unfun(m.note_below)}}</div>
+		<div class="zenario_note_content">{{zenario.unfun(m.note_below)|e}}</div>
 	</div>
 	
 	
-	<div id="organizer_form_field_inline_buttons_{{m.id|e}}" class="form_field_inline_buttons" <% if (!m.selected) { %> style="display:none;" <% } %>>
+	<div id="organizer_form_field_inline_buttons_{{m.id|e}}" class="form_field_inline_buttons" <% if (!m._is_current_field) { %> style="display:none;" <% } %>>
 		<% if (!m.grouping || (m.grouping && m.first_in_grouping)) { %>
 			<span class="drag_icon"></span>
 		<% } %>

@@ -134,7 +134,7 @@ class module {
 		
 			$class = new $module['class_name'];
 		
-			$class->setInstance([false, false, false, false, false, false, $module['class_name'], $module['vlp_class'], $module['id'], false, false, false, false, false]);
+			$class->setInstance([false, false, false, false, false, false, $module['class_name'], $module['vlp_class'], $module['id'], false, false, false, false]);
 
 			return $class;
 		} else {

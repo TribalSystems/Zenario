@@ -40,9 +40,27 @@ class zenario_extranet_change_password extends zenario_extranet {
 		$this->manageCookies();
 		
 		if ($_POST['extranet_change_password'] ?? false) {
+		
 			if ($this->changePassword()) {
+			
 				$this->message = $this->phrase('_PASSWORD_CHANGED');
 				$this->mode = 'modeLoggedIn';
+				//send change password notification
+				if ($this->setting('zenario_extranet_change_password__send_notification_email') && $this->setting('zenario_extranet_change_password__notification_email_template')
+		             && ze\module::inc('zenario_email_template_manager')) {
+			          $userDetails['cms_url'] = ze\link::absolute();
+			      
+			         
+			         $userId = ze\user::id();
+			         $userDetails = ze\row::get("users", ['email', 'first_name', 'last_name'], ['id'=> $userId]);
+
+			         //Send the chosen email template using the Email Template Manager
+			         zenario_email_template_manager::sendEmailsUsingTemplate(
+				        $userDetails['email'],
+				        $this->setting('zenario_extranet_change_password__notification_email_template'),
+				        $userDetails);
+				
+				}
 			}
 		}
 		

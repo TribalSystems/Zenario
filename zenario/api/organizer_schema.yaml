@@ -814,6 +814,13 @@ additionalProperties:
                                         or set in your preFillOrganizerPanel() method.
                                         It can't be changed in your fillOrganizerPanel() method.
                                 
+                                disallow_quicksearch:
+                                    type: boolean
+                                    static: true
+                                    preFillOrganizerPanel: true
+                                    description: >
+                                        Allows you to disallow quick-searching on a column.
+                                                                
                                 tag_colors:
                                     type: object
                                     description: >
@@ -1168,16 +1175,7 @@ additionalProperties:
                                 image:
                                     type: string
                                     description: >
-                                        A URL for an image in grid view. Should be 180 × 130 pixels in size
-                                        (slightly smaller than 180 × 130 is okay, but no bigger).
-                                
-                                        Note that if you don't include a http:// in your URL then it will be
-                                        automatically prefixed by the URLBasePath.
-                                list_image:
-                                    type: string
-                                    description: >
-                                        A URL for an image in list or hierarchy view. Should be 24 × 23 pixels in size
-                                        (slightly smaller than 24 × 23 is okay, but no bigger).
+                                        A URL for an icon/image in grid view. Will be displayed at up to 180 × 130 pixels in size.
                                 
                                         Note that if you don't include a http:// in your URL then it will be
                                         automatically prefixed by the URLBasePath.

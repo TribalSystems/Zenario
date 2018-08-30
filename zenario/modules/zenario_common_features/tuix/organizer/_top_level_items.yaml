@@ -107,15 +107,6 @@ zenario__documents:
                 Manage tags for documents
             link:
                 path: zenario__content/panels/document_tags
-        document_rules:
-            priv: _PRIV_VIEW_DOCUMENTS
-            css_class: zenario_document_auto_set_rule
-            label: Auto-set rules
-            tooltip: >
-                Rules for auto-setting document metadata
-                based on document filename (advanced)
-            link:
-                path: zenario__content/panels/document_rules
 
 zenario__users:
     ord: -790

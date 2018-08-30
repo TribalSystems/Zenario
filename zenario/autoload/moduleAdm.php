@@ -100,27 +100,10 @@ class moduleAdm {
 	
 		$contents = false;
 	
-		//If the is_pluggable property is missing...
-		if (!isset($tags['module']['is_pluggable'])) {
-			//This property has an old name, check that for backwards-compatability purposes
-			if (isset($tags['module']['uses_instances'])) {
-				$tags['module']['is_pluggable'] = $tags['module']['uses_instances'];
-			} else {
-				//Otherwise attempt to intelligently guess whether this Module uses instances by looking for
-				//the showSlot function in its module code.
-				if (($path = \ze::moduleDir($baseModuleName, 'module_code.php', true)) && ($contents = file_get_contents($path))
-				 && (preg_match('/function\s+showSlot/', $contents))) {
-					$replaces['[[HAS_SHOWSLOT_FUNCTION]]'] = true;
-				} else {
-					$replaces['[[HAS_SHOWSLOT_FUNCTION]]'] = false;
-				}
-			}
-		}
-	
 		//If the fill_organizer_nav property is missing...
 		if (!isset($tags['module']['fill_organizer_nav'])) {
-			//Attempt to intelligently guess whether this Module uses instances by looking for
-			//the showSlot function in its module code.
+			//Attempt to intelligently guess whether this module populates the Organizer navigation
+			//by looking for the fillOrganizerNav() function in its module code.
 			if (($contents || (($path = \ze::moduleDir($baseModuleName, 'module_code.php', true)) && ($contents = file_get_contents($path))))
 			 && (preg_match('/function\s+fillOrganizerNav/', $contents))) {
 				$replaces['[[HAS_FILLORGANIZERNAV_FUNCTION]]'] = true;

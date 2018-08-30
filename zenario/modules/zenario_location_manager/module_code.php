@@ -209,7 +209,6 @@ class zenario_location_manager extends ze\moduleBaseClass {
 					if ($item['checksum'] && $item['image_usage']) {
 						$img = '&usage=' . $item['image_usage'] . '&c='. $item['checksum'];
 						$item['image'] = 'zenario/file.php?og=1'. $img;
-						$item['list_image'] = 'zenario/file.php?ogl=1'. $img;
 					}
 					
 					$locationHierarchyPathAndDeepLinks = self::getLocationHierarchyPathAndDeepLinks($id);

@@ -144,13 +144,14 @@ methods.animateInTab = function(html, cb, $shakeme) {
 				mode: 'effect',
 				complete: function() {
 					thus.insertHTML(html, cb);
+					thus.addJQueryElementsToTab();
 					
 					$('#zenario_abtab').clearQueue().show().animate({opacity: 1}, 75, function() {
 						if (zenario.browserIsIE()) {
 							thus.style.removeAttribute('filter');
 						}
 						
-						thus.addJQueryElementsToTabAndFocusFirstField();
+						thus.focusFirstField();
 					});
 					
 					thus.hideShowFields();
@@ -162,6 +163,7 @@ methods.animateInTab = function(html, cb, $shakeme) {
 			//Fade in a tab if it was hidden
 			//(It's probably not hidden but just in case)
 			thus.insertHTML(html, cb);
+			thus.addJQueryElementsToTab();
 			
 			var lastScrollTop = thus.lastScrollTop;
 			
@@ -172,9 +174,8 @@ methods.animateInTab = function(html, cb, $shakeme) {
 				
 				if (!needToShake
 				 && defined(lastScrollTop)) {
-					thus.addJQueryElementsToTab();
 				} else {
-					thus.addJQueryElementsToTabAndFocusFirstField();
+					thus.focusFirstField();
 				}
 			});
 			
@@ -189,19 +190,27 @@ methods.animateInTab = function(html, cb, $shakeme) {
 	//A new/different tab - fade it in
 	} else {
 		thus.insertHTML(html, cb, true);
+		thus.addJQueryElementsToTab();
+		
 		$('#zenario_abtab').clearQueue().show().animate({opacity: 1}, 150, function() {
 			if (zenario.browserIsIE()) {
 				thus.style.removeAttribute('filter');
 			}
 			
-			thus.addJQueryElementsToTabAndFocusFirstField();
+			thus.focusFirstField();
 		});
 	}
+};
+
+//Add any special jQuery objects to the tab
+methods.addJQueryElementsToTab = function() {
+	thus.addJQueryElements('#zenario_abtab');
 };
 
 methods.useSimpleEditor = function() {
 	return false;
 };
+
 
 
 

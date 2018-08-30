@@ -137,9 +137,7 @@ class file {
 				foreach ([
 					['working_copy_data', 'working_copy_width', 'working_copy_height', \ze::setting('working_copy_image_size'), \ze::setting('working_copy_image_size'), false],
 					['working_copy_2_data', 'working_copy_2_width', 'working_copy_2_height', \ze::setting('thumbnail_wc_image_size'), \ze::setting('thumbnail_wc_image_size'), false],
-					['thumbnail_180x130_data', 'thumbnail_180x130_width', 'thumbnail_180x130_height', 180, 130, true],
-					['thumbnail_64x64_data', 'thumbnail_64x64_width', 'thumbnail_64x64_height', 64, 64, true],
-					['thumbnail_24x23_data', 'thumbnail_24x23_width', 'thumbnail_24x23_height', 24, 23, true]
+					['thumbnail_180x130_data', 'thumbnail_180x130_width', 'thumbnail_180x130_height', 180, 130, true]
 				] as $c) {
 					if ($c[3] && $c[4] && ($c[5] || ($file['width'] > $c[3] || $file['height'] > $c[4]))) {
 						$file[$c[1]] = $image[0];
@@ -678,7 +676,7 @@ class file {
 				$data = \ze\row::get('files', 'data', $fileId);
 				file_put_contents(CMS_ROOT. $path. $filename, $data);
 				unset($data);
-				@chmod(CMS_ROOT. $path. $filename, 0666);
+				\ze\cache::chmod(CMS_ROOT. $path. $filename, 0666);
 		
 			} elseif ($pathDS = self::docstorePath($file['path'], true, $customDocstorePath)) {
 				
@@ -732,8 +730,6 @@ class file {
 							'privacy', 'mime_type', 'width', 'height',
 							'working_copy_width', 'working_copy_height', 'working_copy_2_width', 'working_copy_2_height',
 							'thumbnail_180x130_width', 'thumbnail_180x130_height',
-							'thumbnail_64x64_width', 'thumbnail_64x64_height',
-							'thumbnail_24x23_width', 'thumbnail_24x23_height',
 							'checksum', 'short_checksum', 'filename', 'location', 'path'],
 						$fileId))
 		 || !(self::isImageOrSVG($image['mime_type']))) {
@@ -894,8 +890,6 @@ class file {
 			}
 		
 			foreach ([
-				['thumbnail_24x23_data', 'thumbnail_24x23_width', 'thumbnail_24x23_height'],
-				['thumbnail_64x64_data', 'thumbnail_64x64_width', 'thumbnail_64x64_height'],
 				['thumbnail_180x130_data', 'thumbnail_180x130_width', 'thumbnail_180x130_height'],
 				['working_copy_data', 'working_copy_width', 'working_copy_height'],
 				['working_copy_2_data', 'working_copy_2_width', 'working_copy_2_height']
@@ -955,7 +949,7 @@ class file {
 			//If $useCacheDir is set, attempt to store the image in the cache directory
 			if ($useCacheDir && $path
 			 && file_put_contents(CMS_ROOT. $path. $image['filename'], $image['data'])) {
-				@chmod(CMS_ROOT. $path. $image['filename'], 0666);
+				\ze\cache::chmod(CMS_ROOT. $path. $image['filename'], 0666);
 			
 				//Try to optimise the image, if the libraries are installed
 				self::optimiseImage(CMS_ROOT. $path. $image['filename']);
@@ -1458,82 +1452,88 @@ class file {
 		//Check if the image needs to be resized
 		if ($imageWidth != $cropNewWidth || $imageHeight != $cropNewHeight) {
 			if (\ze\file::isImage($mime_type)) {
-				//Load the original image into a canvas
-				if ($image = @imagecreatefromstring($image)) {
-					//Make a new blank canvas
-					$trans = -1;
-					$resized_image = imagecreatetruecolor($cropNewWidth, $cropNewHeight);
+				
+				\ze::ignoreErrors();
+					
+					//Load the original image into a canvas
+					if ($image = @imagecreatefromstring($image)) {
+						//Make a new blank canvas
+						$trans = -1;
+						$resized_image = imagecreatetruecolor($cropNewWidth, $cropNewHeight);
 		
-					//Transparent gifs need a few fixes. Firstly, we need to fill the new image with the transparent colour.
-					if ($mime_type == 'image/gif' && ($trans = imagecolortransparent($image)) >= 0) {
-						$colour = imagecolorsforindex($image, $trans);
-						$trans = imagecolorallocate($resized_image, $colour['red'], $colour['green'], $colour['blue']);				
+						//Transparent gifs need a few fixes. Firstly, we need to fill the new image with the transparent colour.
+						if ($mime_type == 'image/gif' && ($trans = imagecolortransparent($image)) >= 0) {
+							$colour = imagecolorsforindex($image, $trans);
+							$trans = imagecolorallocate($resized_image, $colour['red'], $colour['green'], $colour['blue']);				
 			
-						imagefill($resized_image, 0, 0, $trans);				
-						imagecolortransparent($resized_image, $trans);
+							imagefill($resized_image, 0, 0, $trans);				
+							imagecolortransparent($resized_image, $trans);
 		
-					//Transparent pngs should also be filled with the transparent colour initially.
-					} elseif ($mime_type == 'image/png') {
-						imagealphablending($resized_image, false); // setting alpha blending on
-						imagesavealpha($resized_image, true); // save alphablending \ze::setting (important)
-						$trans = imagecolorallocatealpha($resized_image, 255, 255, 255, 127);
-						imagefilledrectangle($resized_image, 0, 0, $cropNewWidth, $cropNewHeight, $trans);
-					}
+						//Transparent pngs should also be filled with the transparent colour initially.
+						} elseif ($mime_type == 'image/png') {
+							imagealphablending($resized_image, false); // setting alpha blending on
+							imagesavealpha($resized_image, true); // save alphablending \ze::setting (important)
+							$trans = imagecolorallocatealpha($resized_image, 255, 255, 255, 127);
+							imagefilledrectangle($resized_image, 0, 0, $cropNewWidth, $cropNewHeight, $trans);
+						}
 		
-					$xOffset = 0;
-					$yOffset = 0;
-					if ($newWidth != $cropNewWidth) {
-						$xOffset = (int) (((10 - $offset) / 20) * ($imageWidth - $cropWidth));
+						$xOffset = 0;
+						$yOffset = 0;
+						if ($newWidth != $cropNewWidth) {
+							$xOffset = (int) (((10 - $offset) / 20) * ($imageWidth - $cropWidth));
 		
-					} elseif ($newHeight != $cropNewHeight) {
-						$yOffset = (int) ((($offset + 10) / 20) * ($imageHeight - $cropHeight));
-					}
+						} elseif ($newHeight != $cropNewHeight) {
+							$yOffset = (int) ((($offset + 10) / 20) * ($imageHeight - $cropHeight));
+						}
 		
-					//Place a resized copy of the original image on the canvas of the new image
-					imagecopyresampled($resized_image, $image, 0, 0, $xOffset, $yOffset, $cropNewWidth, $cropNewHeight, $cropWidth, $cropHeight);
+						//Place a resized copy of the original image on the canvas of the new image
+						imagecopyresampled($resized_image, $image, 0, 0, $xOffset, $yOffset, $cropNewWidth, $cropNewHeight, $cropWidth, $cropHeight);
 		
-					//The resize algorithm doesn't always respect the transparent colour nicely for gifs.
-					//Solve this by resizing using a different algorithm which doesn't do any anti-aliasing, then using
-					//this to create a transparent mask. Then use the mask to update the new image, ensuring that any pixels
-					//that should be transparent actually are.
-					if ($mime_type == 'image/gif') {
-						if ($trans >= 0) {
-							$mask = imagecreatetruecolor($cropNewWidth, $cropNewHeight);
-							imagepalettecopy($image, $mask);
+						//The resize algorithm doesn't always respect the transparent colour nicely for gifs.
+						//Solve this by resizing using a different algorithm which doesn't do any anti-aliasing, then using
+						//this to create a transparent mask. Then use the mask to update the new image, ensuring that any pixels
+						//that should be transparent actually are.
+						if ($mime_type == 'image/gif') {
+							if ($trans >= 0) {
+								$mask = imagecreatetruecolor($cropNewWidth, $cropNewHeight);
+								imagepalettecopy($image, $mask);
 				
-							imagefill($mask, 0, 0, $trans);				
-							imagecolortransparent($mask, $trans);
+								imagefill($mask, 0, 0, $trans);				
+								imagecolortransparent($mask, $trans);
 				
-							imagetruecolortopalette($mask, true, 256); 
-							imagecopyresampled($mask, $image, 0, 0, $xOffset, $yOffset, $cropNewWidth, $cropNewHeight, $cropWidth, $cropHeight);
+								imagetruecolortopalette($mask, true, 256); 
+								imagecopyresampled($mask, $image, 0, 0, $xOffset, $yOffset, $cropNewWidth, $cropNewHeight, $cropWidth, $cropHeight);
 				
-							$maskTrans = imagecolortransparent($mask);
-							for ($y = 0; $y < $cropNewHeight; ++$y) {
-								for ($x = 0; $x < $cropNewWidth; ++$x) {
-									if (imagecolorat($mask, $x, $y) === $maskTrans) {
-										imagesetpixel($resized_image, $x, $y, $trans);
+								$maskTrans = imagecolortransparent($mask);
+								for ($y = 0; $y < $cropNewHeight; ++$y) {
+									for ($x = 0; $x < $cropNewWidth; ++$x) {
+										if (imagecolorat($mask, $x, $y) === $maskTrans) {
+											imagesetpixel($resized_image, $x, $y, $trans);
+										}
 									}
 								}
 							}
 						}
-					}
 		
 		
-					$temp_file = tempnam(sys_get_temp_dir(), 'Img');
-						if ($mime_type == 'image/gif') imagegif($resized_image, $temp_file);
-						if ($mime_type == 'image/png') imagepng($resized_image, $temp_file);
-						if ($mime_type == 'image/jpeg') imagejpeg($resized_image, $temp_file, $jpeg_quality = 100);
+						$temp_file = tempnam(sys_get_temp_dir(), 'Img');
+							if ($mime_type == 'image/gif') imagegif($resized_image, $temp_file);
+							if ($mime_type == 'image/png') imagepng($resized_image, $temp_file);
+							if ($mime_type == 'image/jpeg') imagejpeg($resized_image, $temp_file, $jpeg_quality = 100);
 			
-						imagedestroy($resized_image);
-						unset($resized_image);
-						$image = file_get_contents($temp_file);
-					unlink($temp_file);
+							imagedestroy($resized_image);
+							unset($resized_image);
+							$image = file_get_contents($temp_file);
+						unlink($temp_file);
 
-					//$imageWidth = $cropNewWidth;
-					//$imageHeight = $cropNewHeight;
-				} else {
-					$image = null;
-				}
+						//$imageWidth = $cropNewWidth;
+						//$imageHeight = $cropNewHeight;
+					} else {
+						$image = null;
+					}
+					
+				\ze::noteErrors();
+				
 			} else {
 				//$imageWidth = $cropNewWidth;
 				//$imageHeight = $cropNewHeight;
@@ -1545,7 +1545,7 @@ class file {
 		if (is_dir($dir = \ze::setting('docstore_dir'). '/')
 		 && is_writable($dir)
 		 && ((is_dir($dir = $dir. ($path = preg_replace('/\W/', '_', $filename). '_'. $checksum). '/'))
-		  || (mkdir($dir) && @chmod($dir, 0777)))) {
+		  || (mkdir($dir) && \ze\cache::chmod($dir, 0777)))) {
 	
 			if (file_exists($dir. $filename)) {
 				unlink($dir. $filename);

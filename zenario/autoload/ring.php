@@ -97,6 +97,22 @@ class ring {
 			return false;
 		}
 	}
+	
+	public static function chopSuffix($string, $suffix, $returnStringOnFailure = false) {
+		if ($string === $suffix) {
+			return '';
+		}
+		
+		$len = strlen($suffix);
+	
+		if (substr($string, -$len) == $suffix) {
+			return substr($string, 0, -$len);
+		} elseif ($returnStringOnFailure) {
+			return $string;
+		} else {
+			return false;
+		}
+	}
 
 	//Formerly "explodeAndSet()"
 	public static function explodeAndSet($delimiter, $string, &...$args) {

@@ -115,7 +115,7 @@ switch (\ze::setting('cookie_require_consent')) {
 	case 'explicit':
 		//Explicit consent - show the cookie message until it is accepted or rejected, if the reject button is enabled.
 		if (ze::$cookieConsent == 'hide'
-		 || \ze\cookie::canSet()
+		 || \ze\cookie::canSet('required')
 		 || (ze::$cookieConsent != 'require') && ($_SESSION['cookies_rejected'] ?? false)) {
 			return;
 		}

@@ -95,7 +95,7 @@ class zenario_extranet extends ze\moduleBaseClass {
 				$cID = $cType = false;
 				$this->getCIDAndCTypeFromSetting($cID, $cType, 'terms_and_conditions_page');
 				$TCLink = [ 'TCLink' =>$this->linkToItem($cID, $cType, true)];
-				ze\user::recordConsent($userId, $userDetails['email'], $userDetails['first_name'] ?? false, $userDetails['last_name'] ?? false, strip_tags($this->phrase('_T_C_LINK', $TCLink)));
+				ze\user::recordConsent('extranet_login', $this->instanceId, $userId, $userDetails['email'], $userDetails['first_name'] ?? false, $userDetails['last_name'] ?? false, strip_tags($this->phrase('_T_C_LINK', $TCLink)));
 				
 				// Save custom fields from frameworks
 				$details = [];
@@ -106,7 +106,7 @@ class zenario_extranet extends ze\moduleBaseClass {
 						$colType = ze\row::get('custom_dataset_fields', 'type', ["db_column" => $col]);
 						//check if dataset feild is consent field
 						if ($colType && $colType == "consent") {
-							ze\user::recordConsent($userId, $userDetails['email'], $userDetails['first_name'] ?? false, $userDetails['last_name'] ?? false, strip_tags($this->phrase("_".$col)));
+							ze\user::recordConsent('extranet_login', $this->instanceId, $userId, $userDetails['email'], $userDetails['first_name'] ?? false, $userDetails['last_name'] ?? false, strip_tags($this->phrase("_".$col)));
 						}
 					}
 				}
@@ -132,7 +132,7 @@ class zenario_extranet extends ze\moduleBaseClass {
 					$this->objects['Redirect_Message'] = $this->phrase("You've requested a page for which access requires an account on this site. If you have an account, please log in using the form below.");
 				}
 				if ($this->hasLoginForm) {
-					if (!ze\cookie::canSet() && ze::setting('cookie_consent_for_extranet') == 'required') {
+					if (!ze\cookie::canSet('required') && ze::setting('cookie_consent_for_extranet') == 'required') {
 						ze\cookie::requireConsent();
 						$this->message = $this->phrase('_PLEASE_ACCEPT_COOKIES');
 						$this->mode = 'modeCookiesNotEnabled';
@@ -143,10 +143,10 @@ class zenario_extranet extends ze\moduleBaseClass {
 							ze\cookie::hideConsent();
 						}
 						
-						if ($this->setting('enable_remember_me') && (ze\cookie::canSet() || ze::setting('cookie_consent_for_extranet') == 'granted')) {
+						if ($this->setting('enable_remember_me') && (ze\cookie::canSet('functionality') || ze::setting('cookie_consent_for_extranet') == 'granted')) {
 							$this->subSections['Remember_Me_Section'] = true;
 						}
-						if ($this->setting('enable_log_me_in') && (ze\cookie::canSet() || ze::setting('cookie_consent_for_extranet') == 'granted')) {
+						if ($this->setting('enable_log_me_in') && (ze\cookie::canSet('functionality') || ze::setting('cookie_consent_for_extranet') == 'granted')) {
 							$this->subSections['Log_Me_In_Section'] = true;
 						}
 						
@@ -388,10 +388,12 @@ class zenario_extranet extends ze\moduleBaseClass {
 		
 		//Set the User's email/screenname cookie on their local machine if requested
 		if (isset($_SESSION['SET_EXTRANET_LOGIN_COOKIE'])) {
-			if (!$useScreenName || $login_with == 'Email') {
-				ze\cookie::set('COOKIE_LAST_EXTRANET_EMAIL', $_SESSION['SET_EXTRANET_LOGIN_COOKIE']);
-			} else {
-				ze\cookie::set('COOKIE_LAST_EXTRANET_SCREEN_NAME', $_SESSION['SET_EXTRANET_LOGIN_COOKIE']);
+			if (ze\cookie::canSet('functionality')) {
+				if (!$useScreenName || $login_with == 'Email') {
+					ze\cookie::set('COOKIE_LAST_EXTRANET_EMAIL', $_SESSION['SET_EXTRANET_LOGIN_COOKIE']);
+				} else {
+					ze\cookie::set('COOKIE_LAST_EXTRANET_SCREEN_NAME', $_SESSION['SET_EXTRANET_LOGIN_COOKIE']);
+				}
 			}
 			unset($_SESSION['SET_EXTRANET_LOGIN_COOKIE']);
 		
@@ -407,7 +409,9 @@ class zenario_extranet extends ze\moduleBaseClass {
 		
 		//Set a hash of the User's details in a cookie on their local machine if requested, so they can be logged in automatically
 		if (isset($_SESSION['SET_EXTRANET_LOG_ME_IN_COOKIE'])) {
-			ze\cookie::set('LOG_ME_IN_COOKIE', $_SESSION['SET_EXTRANET_LOG_ME_IN_COOKIE']);
+			if (ze\cookie::canSet('functionality')) {
+				ze\cookie::set('LOG_ME_IN_COOKIE', $_SESSION['SET_EXTRANET_LOG_ME_IN_COOKIE']);
+			}
 			unset($_SESSION['SET_EXTRANET_LOG_ME_IN_COOKIE']);
 		
 		//Remove the hash of the User's details if requested
@@ -516,7 +520,7 @@ class zenario_extranet extends ze\moduleBaseClass {
 							$cID = $cType = false;
 							$this->getCIDAndCTypeFromSetting($cID, $cType, 'terms_and_conditions_page');
 							$TCLink = [ 'TCLink' =>$this->linkToItem($cID, $cType, true)];
-							ze\user::recordConsent($userId, $userDetails['email'], $userDetails['first_name'] ?? false, $userDetails['last_name'] ?? false, strip_tags($this->phrase('_T_C_LINK', $TCLink)));
+							ze\user::recordConsent('extranet_login', $this->instanceId, $userId, $userDetails['email'], $userDetails['first_name'] ?? false, $userDetails['last_name'] ?? false, strip_tags($this->phrase('_T_C_LINK', $TCLink)));
 						}
 						if ($user['status'] == 'active') {
 							if ($user['password_needs_changing']) {

@@ -71,7 +71,7 @@ class userAdm {
 				$baseIdentifier = 'User';
 			}
 			if (strlen($baseIdentifier) > 50) {
-				$baseIdentifier = substr($baseIdentifier, 0, 50);
+				$baseIdentifier = mb_substr($baseIdentifier, 0, 50, 'UTF-8');
 			}
 		}
 	

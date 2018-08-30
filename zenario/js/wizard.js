@@ -81,7 +81,8 @@ zenarioW.draw2 = function() {
 		zenarioW.insertHTML(html, cb);
 		
 		$('#welcome').show({effect: 'drop', direction: 'up', duration: 300, complete: function() {
-			zenarioW.addJQueryElementsToTabAndFocusFirstField();
+			zenarioW.addJQueryElementsToTab();
+			zenarioW.focusFirstField();
 		}});
 		zenario.addJQueryElements('#zenario_abtab ', true);	
 	

@@ -530,7 +530,7 @@ class content {
 	
 		//Attempt to work out what content item we're on, and break out of this logic as soon as it's resolved
 		do {
-	
+			
 			//Show one of the home pages if there's nothing in the request and no language specific domain
 			if (!$reqLangId && !$aliasInURL) {
 				$equivId = \ze::$homeEquivId;
@@ -545,7 +545,7 @@ class content {
 				$cType = false;
 				\ze::$mustUseFullPath = true;
 				break;
-	
+				
 			} else {
 		
 				//Check for slashes in the alias

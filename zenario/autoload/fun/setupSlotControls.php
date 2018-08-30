@@ -47,7 +47,7 @@ if (!empty($slotContents) && is_array($slotContents)) {
 	\ze\tuix::parse2($tagsEmpty, $removedColumns, 'slot_controls', $path);
 	$tagsEmpty = $tagsEmpty[$path];
 	
-	$sections = ['info', 'notes', 'actions', 'overridden_info', 'overridden_actions'];
+	$sections = ['info', 'notes', 'actions', 're_move_place', 'overridden_info', 'overridden_actions'];
 	
 	//Loop through all of the slots
 	$activeModules = [];
@@ -133,7 +133,9 @@ if (!empty($slotContents) && is_array($slotContents)) {
 				$thisHtml = '
 					<div class="zenario_slotControlsWrap_'. $section. '"';
 				
-				if ($section == 'actions' || $section == 'overridden_actions') {
+				if ($section == 'actions'
+				 || $section == 're_move_place'
+				 || $section == 'overridden_actions') {
 					$thisHtml .= ' onclick="zenarioA.closeSlotControls();"';
 				}
 				$isInfoSection = $section == 'info';

@@ -80,6 +80,7 @@ class zenario_users__admin_boxes__site_settings extends ze\moduleBaseClass {
 					$box['lovs']['roles'] = ze\row::getValues($ZENARIO_ORGANIZATION_MANAGER_PREFIX. 'user_location_roles', 'name', [], 'name', 'id');
 				}
 				
+				
 				//If the dev tools are on, add an example as a site note to each type of permissions check
 				if (ze\admin::setting('show_dev_tools')) {
 					foreach ($box['tabs'] as &$tab) {
@@ -102,7 +103,7 @@ class zenario_users__admin_boxes__site_settings extends ze\moduleBaseClass {
 											$hasRoleAtLocation =
 											$hasRoleAtLocationAtCompany =
 											$onlyIfHasRolesAtAllAssignedLocations = false;
-										
+											
 											//Check if this field is one of the permissions
 											if (($permName = ze\ring::chopPrefix('perm.', $fieldId))
 											 && (ze\user::checkNamedPermExists($permName, $directlyAssignedToUser, $hasRoleAtCompany, $hasRoleAtLocation, $hasRoleAtLocationAtCompany, $onlyIfHasRolesAtAllAssignedLocations))) {
@@ -196,7 +197,7 @@ class zenario_users__admin_boxes__site_settings extends ze\moduleBaseClass {
 				
 				if ($count) {
 					$min = ze\row::min('user_signin_log', 'login_datetime');
-					$note .= ' ' . ze\admin::phrase('Oldest record from [[date]].', ['date' => ze\date::formatDateTime($min, '_MEDIUM')]);
+					$note .= ' ' . ze\admin::phrase('Oldest record from [[date]].', ['date' => ze\admin::formatDateTime($min, '_MEDIUM')]);
 				}
 				$fields['data_protection/period_to_delete_sign_in_log']['note_below'] = $note;
 				
@@ -205,7 +206,7 @@ class zenario_users__admin_boxes__site_settings extends ze\moduleBaseClass {
 				
 				if ($count) {
 					$min = ze\row::min('user_content_accesslog', 'hit_datetime');
-					$note .= ' ' . ze\admin::phrase('Oldest record from [[date]].', ['date' => ze\date::formatDateTime($min, '_MEDIUM')]);
+					$note .= ' ' . ze\admin::phrase('Oldest record from [[date]].', ['date' => ze\admin::formatDateTime($min, '_MEDIUM')]);
 				}
 				$fields['data_protection/period_to_delete_the_user_content_access_log']['note_below'] = $note;
 				

@@ -252,8 +252,6 @@ ze\content::pageFoot('../', 'welcome', false, false);
 $logoURL = $logoWidth = $logoHeight = false;
 if (ze::$dbL
  && ze::setting('brand_logo') == 'custom'
- && ($result = ze\sql::select("SHOW COLUMNS IN ". DB_PREFIX. "files WHERE Field = 'thumbnail_64x64_width'"))
- && ($dbAtRecentRevision = ze\sql::fetchRow($result))
  && (ze\file::imageLink($logoWidth, $logoHeight, $logoURL, ze::setting('custom_logo'), 500, 250, $mode = 'resize', $offset = 0, $retina = true))) {
 	
 	if (strpos($logoURL, '://') === false) {
@@ -289,6 +287,26 @@ if (!empty($_SERVER['HTTP_REFERER'])
 			['refererHost' => $refererHost, 'currentHost' => $currentHost]);
 }
 
+echo '
+	<script type="text/javascript">
+		var cb = new zenario.callback();
+	</script>';
+
+
+if (ze\welcome::enableCaptchaForAdminLogins()) {
+	echo '
+		<script defer async src="https://www.google.com/recaptcha/api.js?onload=recaptchaCallback&render=explicit"></script>
+		<script type="text/javascript">
+			var step1 = cb.add(),
+				google_recaptcha = {
+					sitekey: "' . \ze\escape::js(\ze::setting('google_recaptcha_site_key')) . '"
+				};
+			
+			function recaptchaCallback() {
+				step1.done();
+			}
+		</script>';
+}
 
 echo '
 <script type="text/javascript" src="../js/admin_welcome.min.js?v=', $v, '"></script>
@@ -296,14 +314,15 @@ echo '
 	zenarioAW.task = "', $allowedTasks[$_REQUEST['task'] ?? false] ?? false, '";
 	zenarioAW.getRequest = ', json_encode($_GET), ';
 	
-	$(document).ready(function () {
-		var msg = "', ze\escape::js('<!--Logged_Out-->'. ze\admin::phrase('You have been logged out.')), '";
+	var step2 = cb.add(),
+		msg = "', ze\escape::js('<!--Logged_Out-->'. ze\admin::phrase('You have been logged out.')), '";
 		
+	$(document).ready(function () {
 		if (!zenarioA.loggedOutIframeCheck(msg)) {
 			try {
 				zenarioA.checkCookiesEnabled().after(function(cookiesEnabled) {
 					if (cookiesEnabled) {
-						zenarioAW.start();
+						step2.done();
 						zenarioAW.refererHostWarning(', json_encode($refererHostWarning), ');
 					} else {
 						zenario.get("no_something").style.display = "block";
@@ -315,6 +334,10 @@ echo '
 				zenario.get("no_cookies").style.display = "inline";
 			}
 		}
+	});
+	
+	cb.after(function() {
+		zenarioAW.start();
 	});
 </script>';
 

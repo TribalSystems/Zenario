@@ -126,7 +126,7 @@ properties:
                         depending on the current page mode.
 
 
-   sections:
+    sections:
        type: object
        description: >
            Sections of a toolbar are wrappers that can contain one or more buttons.

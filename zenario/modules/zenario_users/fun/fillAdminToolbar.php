@@ -42,7 +42,7 @@ if (isset($adminToolbar['sections']['icons']['buttons']['item_permissions'])) {
 
 if (isset($adminToolbar['sections']['history']['buttons']['zenario_users__access_log'])) {
 
-	if (ze::setting('period_to_delete_the_user_content_access_log') != 'never_save' && !ze::in($chain['privacy'], 'public', 'logged_out')) {
+	if (ze::setting('period_to_delete_the_user_content_access_log') != 0 && !ze::in($chain['privacy'], 'public', 'logged_out')) {
 		$adminToolbar['sections']['history']['buttons']['zenario_users__access_log']['organizer_quick']['path'] =
 			'zenario__content/panels/content/user_access_log//'. $cType. '_'. $cID. '//';
 

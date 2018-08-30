@@ -60,11 +60,13 @@ switch ($path) {
 		
 		} elseif (!empty($_POST['enable_all']) && ze\priv::check('_PRIV_MANAGE_SCHEDULED_TASK')) {
 			ze\site::setSetting('jobs_enabled', 1);
+			echo '<!--Clear_Toast-->';
 			echo '<!--Reload_Organizer-->';
 			return;
 		
 		} elseif (!empty($_POST['suspend_all']) && ze\priv::check('_PRIV_MANAGE_SCHEDULED_TASK')) {
 			ze\site::setSetting('jobs_enabled', 0);
+			echo '<!--Clear_Toast-->';
 			echo '<!--Reload_Organizer-->';
 			return;
 			
@@ -82,11 +84,11 @@ switch ($path) {
 		
 			
 		} elseif (!empty($_POST['get_code'])) {
-			echo '<!--Message_Type:None-->',
-				ze\admin::phrase('To enable Scheduled Tasks to run, please add the following command into your Crontab:'),
+			echo '<!--Message_Type:Info-->',
+				ze\admin::phrase('To enable Scheduled Tasks to run, please add the following command into your crontab:'),
 				'<br/><br/>
 				<form>
-					<input type="text" readonly="readonly" style="width: 100%;"
+					<input type="text" readonly="readonly" style="width: 98%;"
 					 value="* * * * *  php ', htmlspecialchars(CMS_ROOT. ze::moduleDir('zenario_scheduled_task_manager', 'cron/run_every_minute.php')), ' 1"/>
 				</form>';
 			return;

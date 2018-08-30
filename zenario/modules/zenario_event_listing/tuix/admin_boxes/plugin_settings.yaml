@@ -452,6 +452,14 @@ plugin_settings:
                         show_start_and_end_time:
                             label: Show start and end time
                     value: show_start_and_end_time
+                show_content_items_category:
+                    plugin_setting:
+                        name: show_content_items_category
+                    label: Show category
+                    type: checkbox
+                    value: ""
+                    side_note: |
+                        The content item's lowest level public category will be displayed. Private categories will NOT be shown.
                 make_event_elements_equal_height:
                     label: 'Make all event elements equal height'
                     side_note: 'Use this to improve the layout if your CSS causes events to be listed in a 2-d grid.'

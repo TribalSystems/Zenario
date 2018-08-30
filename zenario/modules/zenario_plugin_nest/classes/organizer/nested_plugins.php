@@ -276,7 +276,6 @@ class zenario_plugin_nest__organizer__nested_plugins extends zenario_plugin_nest
 				if ($item['checksum']) {
 					$img = '&c='. $item['checksum'];
 					$item['image'] = 'zenario/file.php?og=1'. $img;
-					$item['list_image'] = 'zenario/file.php?ogl=1'. $img;
 				}
 				
 				//Add a warning if a plugin is flagged as "makes breadcrumbs",
@@ -285,6 +284,12 @@ class zenario_plugin_nest__organizer__nested_plugins extends zenario_plugin_nest
 				 && !ze\row::exists('nested_paths', ['instance_id' => $refinerId, 'slide_num' => $item['slide_num'], 'is_forwards' => 1])) {
 					$item['makes_breadcrumbs'] += 10;
 				}
+			}
+			
+			if ($item['ordinal'] == 1) {
+				$item['delete_tooltip'] = ze\admin::phrase('You cannot delete the first tab.');
+			} else {
+				$item['delete_tooltip'] = '';
 			}
 		}
 	}

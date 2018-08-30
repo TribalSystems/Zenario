@@ -87,7 +87,6 @@ full_slot:
             page_modes:
                 item: true
                 layout: true
-    notes: {}
     actions:
         settings:
             label:
@@ -159,6 +158,8 @@ full_slot:
             locked_label: 'View CSS & framework'
             onclick: return zenarioA.pluginSlotEditSettings(this, slotName, 'plugin_css_and_framework');
         
+    
+    re_move_place:
         move_on_item_layer:
             ord: 75
             page_modes:
@@ -180,7 +181,7 @@ full_slot:
         replace_reusable_on_item_layer:
             ord: 85
             priv: _PRIV_MANAGE_ITEM_SLOT
-            label: Show a plugin instead on this content item...
+            label: Replace with a plugin on this content item...
             label_different: Show a different plugin on this content item...
             page_modes:
                 item: true
@@ -202,10 +203,10 @@ full_slot:
                 return false;
             label: Hide ~plugin~ on this content item
         
-        insert_reusable_on_layout_layer:
+        replace_reusable_on_layout_layer:
             ord: 87
             priv: _PRIV_MANAGE_TEMPLATE_SLOT
-            label: Show a plugin instead...
+            label: Replace with a plugin...
             label_different: Show a different plugin...
             page_modes:
                 layout: true

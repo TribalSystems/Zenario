@@ -30,38 +30,6 @@ namespace ze;
 
 
 
-//Some quality of life constant definitions for Mongo Queries!
-	/*
-		$eq		Matches values that are equal to a specified value.
-		$gt		Matches values that are greater than a specified value.
-		$gte	Matches values that are greater than or equal to a specified value.
-		$lt		Matches values that are less than a specified value.
-		$lte	Matches values that are less than or equal to a specified value.
-		$ne		Matches all values that are not equal to a specified value.
-		$in		Matches any of the values specified in an array.
-		$nin	Matches none of the values specified in an array.
-		$set	Sets the value of a field in a document.
-		$unset	Removes the specified field from a document.
-		$min	Only updates the field if the specified value is less than the existing field value.
-		$max	Only updates the field if the specified value is greater than the existing field value.
-		$exists	Matches documents that have the specified field.
-		$type	Selects documents if a field is of the specified type.
-	*/
-define('§eq', '$eq');
-define('§gt', '$gt');
-define('§gte', '$gte');
-define('§lt', '$lt');
-define('§lte', '$lte');
-define('§ne', '$ne');
-define('§in', '$in');
-define('§nin', '$nin');
-define('§set', '$set');
-define('§unset', '$unset');
-define('§min', '$min');
-define('§max', '$max');
-define('§exists', '$exists');
-define('§type', '$type');
-
 
 //Class to store meta-information on a column from the database
 class col {
@@ -431,14 +399,8 @@ class db {
 		//Only do the review when Modules are running normally and we're connected to the local db
 		if ($this->con) {
 			if ($this === \ze::$dbL) {
-				if ($edition = \ze::$edition) {
-					return $edition::reviewDatabaseQueryForChanges($sql, $ids, $values, $table, $runSql);
-				
-				//Otherwise, if the $runSql flag is set, run the SQL anyway
-				} elseif ($runSql) {
-					\ze\sql::update($sql, false);
-					return \ze\sql::affectedRows();
-				}
+				return \ze\pageCache::reviewQuery($sql, $ids, $values, $table, $runSql);
+			
 			} elseif ($runSql) {
 				$this->con->query($sql);
 				return $this->con->affected_rows;

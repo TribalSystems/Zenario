@@ -129,18 +129,14 @@ methods.showPanel = function($header, $panel, $footer) {
 
 methods.showButtons = function($buttons) {
 	var buttons, html,
-		m = {
-			itemButtons: false,
-			collectionButtons: false
-		};
+		m = {};
 	
-	//If there is at least one item selected, show the item buttons, otherwise show the collection buttons.
-	//Never show both the item buttons and the collection buttons at the same time
+	//If there is at least one item selected, show the item buttons.
 	if (zenarioO.itemsSelected > 0) {
-		m.itemButtons = zenarioO.getItemButtons();
-	} else {
-		m.collectionButtons = zenarioO.getCollectionButtons();
+		zenarioO.getItemButtons(m);
 	}
+	zenarioO.getCollectionButtons(m);
+	
 	html = thus.microTemplate('zenario_organizer_panel_buttons', m);
 	$buttons.html(html).show();
 };

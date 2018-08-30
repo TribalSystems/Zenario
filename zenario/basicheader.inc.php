@@ -149,10 +149,17 @@ class ze {
 	public static $googleRecaptchaElements = [];
 	public static $importantGetRequests = [];
 	public static $locationDependant = false;
+	
 	public static $canCache;
 	public static $cachingInUse = false;
+	public static $cacheEnv;
+	public static $saveEnv;
+	public static $knownReq;
+	public static $allReq;
 	public static $cacheWrappers = false;
 	public static $cacheCoreVars = ['cID' => '', 'cType' => 'T', 'visLang' => 'L', 'slotName' => 'S', 'instanceId' => 'I', 'method_call' => 'M'];
+	
+	
 	public static $userAccessLogged = false;
 	public static $mustUseFullPath = false;
 	public static $wrongDomain = false;
@@ -163,7 +170,7 @@ class ze {
 	public static $pageImage = 0;
 	public static $pageKeywords = '';
 	public static $pageOGType = 'website';
-	public static $moduleClassNameForPhrases = '';
+	public static $plugin;
 	public static $langs = [];
 	public static $timezone = null;
 	public static $date = false;
@@ -181,25 +188,35 @@ class ze {
 
 	public static $skPath = '';
 	public static $skType = '';
-	public static $dbupPath = false;
-	public static $dbupUpdateFile = false;
-	public static $dbupCurrentRevision = false;
-	public static $dbupUninstallPluginOnFail = false;
+	public static $dbUpdating = false;
 	public static $pq = [];
 	public static $apcDirs = [];
 	public static $apcFoundCodes = [];
 	public static $execEnabled = null;
 	
+	public static $ers = [];
+	private static $igEr = 0;
 	private static $eSent = false;
 	public static function error($errno, $errstr, $errfile, $errline) {
 		
-		//if (!ze::$eSent && defined('EMAIL_ADDRESS_GLOBAL_SUPPORT')) {
-		//	\ze\db::reportError($errstr, 'in '. $errfile, 'at line '. $errline, '', '', 'PHP error at ');
-		//}
+		if (ze::$igEr > 0) {
+			ze::$ers[] = $errstr;
+			return true;
+		}
+		
+		if (!ze::$eSent && defined('EMAIL_ADDRESS_GLOBAL_SUPPORT')) {
+			ze\db::reportError($errstr, 'in '. $errfile, 'at line '. $errline, '', '', 'PHP error at ');
+		}
 		
 		ze::$eSent = true;
 		ze::$canCache = false;
 		return false;
+	}
+	public static function ignoreErrors() {
+		++ze::$igEr;
+	}
+	public static function noteErrors() {
+		--ze::$igEr;
 	}
 
 	

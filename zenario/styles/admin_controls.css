@@ -547,12 +547,14 @@ div.zenario_slotControlsWrap .zenario_slotControlsWrap_info .zenario_slotControl
 }
 
 div.zenario_slotControlsWrap .zenario_slotControlsWrap_actions,
+div.zenario_slotControlsWrap .zenario_slotControlsWrap_re_move_place,
 div.zenario_slotControlsWrap .zenario_slotControlsWrap_overridden_actions {
 	background:#4D4D4D;
 	border-top:1px solid #747474;
 }
 
 div.zenario_slotControlsWrap .zenario_slotControlsWrap_actions .zenario_sc,
+div.zenario_slotControlsWrap .zenario_slotControlsWrap_re_move_place .zenario_sc,
 div.zenario_slotControlsWrap .zenario_slotControlsWrap_overridden_actions .zenario_sc {
 	cursor: pointer;
 	padding:5px 10px 7px 30px;
@@ -561,27 +563,9 @@ div.zenario_slotControlsWrap .zenario_slotControlsWrap_overridden_actions .zenar
 }
 
 div.zenario_slotControlsWrap .zenario_slotControlsWrap_actions .zenario_sc:hover,
+div.zenario_slotControlsWrap .zenario_slotControlsWrap_re_move_place .zenario_sc:hover,
 div.zenario_slotControlsWrap .zenario_slotControlsWrap_overridden_actions .zenario_sc:hover {
 	background-color:#6F6F6F;
-}
-
-div.zenario_slotControlsWrap .zenario_slotControlsWrap_notes {
-	border-top:1px solid #747474;
-	border-bottom:1px solid #333;
-	color:#FFF;
-	padding:6px 10px 6px 6px;
-	font-size:10px;
-	line-height:14px;
-}
-
-div.zenario_slotControlsWrap .zenario_slotControlsWrap_notes .zenario_sc {
-	cursor: default;
-	min-height:25px;
-	padding:0 5px 5px 25px;
-}
-
-div.zenario_slotControlsWrap .zenario_slotControlsWrap_notes .zenario_slotControl_filterSettings {
-	background:url('../admin/images/slots/help-icon.png') no-repeat 0 0;
 }
 
 div.zenario_slotControlsWrap .zenario_slotControl_slotName,

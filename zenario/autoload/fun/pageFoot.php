@@ -219,10 +219,9 @@ if (!empty(\ze::$slotContents) && is_array(\ze::$slotContents)) {
 	//Include the Foot for any plugin instances on the page, if they have one
 	foreach(\ze::$slotContents as $slotName => &$instance) {
 		if (!empty($instance['class'])) {
-			$edition = \ze::$edition;
-			$edition::preSlot($slotName, 'addToPageFoot');
+			\ze\plugin::preSlot($slotName, 'addToPageFoot');
 				$instance['class']->addToPageFoot();
-			$edition::postSlot($slotName, 'addToPageFoot');
+			\ze\plugin::postSlot($slotName, 'addToPageFoot');
 		}
 	}
 }

@@ -287,6 +287,24 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 		} else {
 			$box['tabs']['data_deletion']['notices']['scheduled_task_running']['show'] = true;
 		}
+		
+		$fields['details/type']['snippet']['label'] = zenario_user_forms::getFormTypeEnglish($box['key']['type']);
+		
+		if(!empty($box['key']['id'])){
+		    $formId = $box['key']['id'];
+            $consentFields = [];
+            $sql = "select f.id, f.name, df.dataset_id 
+                    from ".DB_PREFIX.ZENARIO_USER_FORMS_PREFIX."user_form_fields f inner join ".DB_PREFIX."custom_dataset_fields df 
+                    where df.type='consent' and f.user_form_id=".$formId." and df.id= f.user_field_id";
+       
+            $result = ze\sql::select($sql);
+            while($row = ze\sql::fetchAssoc($result)){
+                $consentFields[$row['id']] = $row['name'];
+            }
+		    
+		    $fields['data/consent_field']['values'] = $consentFields;
+		}
+		
 	}
 	
 	protected function fillFieldValues(&$fields, &$rec){
@@ -460,6 +478,15 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 			
 			$fields['anti_spam/extranet_users_use_captcha']['hidden'] = true;
 		}
+        
+        
+	    if($values['data/save_data'] == '2'){//radio button for consent field condition
+		    $fields['data/consent_field']['hidden'] = false;
+		    
+		} else {
+		    $fields['data/consent_field']['hidden'] = true;
+		}
+		
 	}
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
@@ -505,7 +532,6 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 		if ($values['data_deletion/delete_content_sooner']
 			&& ((is_numeric($headersDays) && is_numeric($contentDays) && ($contentDays > $headersDays))
 				|| (is_numeric($headersDays) && $contentDays == 'never_delete')
-				|| ($headersDays == 'never_save' && $contentDays != 'never_save')
 			)
 		) {
 			$fields['data_deletion/period_to_delete_response_content']['error'] = ze\admin::phrase('You cannot save content for longer than the headers.');
@@ -589,6 +615,13 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 			
 		} else {
 			$record['log_user_in_cookie'] = 0;
+		}
+		
+		if($record['save_data'] == '2'){
+		    
+		    $record['consent_field'] = $values['consent_field'];
+		}else {
+		    $record['consent_field'] = 0;
 		}
 		
 		//Make sure registration forms cannot update existing users

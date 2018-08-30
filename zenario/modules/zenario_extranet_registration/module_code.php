@@ -57,7 +57,7 @@ class zenario_extranet_registration extends zenario_extranet {
 		$this->objects['Thank_You_Wait_For_Activation_Text'] = $this->phrase(nl2br($this->setting('register_thank_you_wait_for_activation_text')));
 		$this->objects['Thank_You_Verify_Email_Resent_Text'] = $this->phrase(nl2br($this->setting('register_thank_you_verify_email_resent_text')));
 		
-		if (!ze\cookie::canSet() && ze::setting('cookie_consent_for_extranet') == 'required') {
+		if (!ze\cookie::canSet('required') && ze::setting('cookie_consent_for_extranet') == 'required') {
 			ze\cookie::requireConsent();
 			$this->message = $this->phrase('_PLEASE_ACCEPT_COOKIES');
 			$this->mode = 'modeCookiesNotEnabled';
@@ -386,13 +386,13 @@ class zenario_extranet_registration extends zenario_extranet {
 		
 		$userId = ze\userAdm::save($fields2, $userId);
 		
-		if (!empty($fields2['terms_and_conditions_accepted'])) {
-			ze\user::recordConsent($userId, $fields2['email'] ?? false, $fields2['first_name'] ?? false, $fields2['last_name'] ?? false, strip_tags($this->phrase('_T_C_LINK')));
-		}
-		
 		if (ze::isError($userId)) {
 			return false;
 		} else {
+			//Record user consent if terms and conditions were accepted
+			if (!empty($fields2['terms_and_conditions_accepted'])) {
+				ze\user::recordConsent('extranet_registration', $this->instanceId, $userId, $fields2['email'] ?? false, $fields2['first_name'] ?? false, $fields2['last_name'] ?? false, strip_tags($this->phrase('_T_C_LINK')));
+			}
 			
 			// Save custom fields from frameworks
 			$details = [];
@@ -404,7 +404,7 @@ class zenario_extranet_registration extends zenario_extranet {
 					$colType = ze\row::get('custom_dataset_fields', 'type', ["db_column" => $col]);
 					if ($colType && $colType == "consent") {
 						//check if dataset feild is consent field
-						ze\user::recordConsent($userId, $fields2['email'] ?? false, $fields2['first_name'] ?? false, $fields2['last_name'] ?? false, strip_tags($this->phrase("_".$col)));
+						ze\user::recordConsent('extranet_registration', $this->instanceId, $userId, $fields2['email'] ?? false, $fields2['first_name'] ?? false, $fields2['last_name'] ?? false, strip_tags($this->phrase("_".$col)));
 					}
 				}
 			}

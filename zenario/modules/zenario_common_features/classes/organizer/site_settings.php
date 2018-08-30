@@ -48,16 +48,16 @@ class zenario_common_features__organizer__site_settings extends ze\moduleBaseCla
 				$url = ze\file::link($icon['id']);
 			} else {
 				$width = $height = $url = false;
-				ze\file::imageLink($width, $height, $url, $icon['id'], 24, 23);
+				ze\file::imageLink($width, $height, $url, $icon['id'], 48, 46);
 			}
-			$panel['items']['favicon']['list_image'] = $url;
+			$panel['items']['favicon']['image'] = $url;
 		}
 		
 		//Same for the site logo and the rebranding
 		if (ze::setting('brand_logo') == 'custom' && ze::setting('custom_logo')) {
 			$width = $height = $url = false;
-			ze\file::imageLink($width, $height, $url, ze::setting('custom_logo'), 24, 23);
-			$panel['items']['branding']['list_image'] = $url;
+			ze\file::imageLink($width, $height, $url, ze::setting('custom_logo'), 48, 46);
+			$panel['items']['branding']['image'] = $url;
 		}
 
 	}

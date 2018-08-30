@@ -136,7 +136,7 @@ class zenario_common_features__admin_boxes__skin_editor extends zenario_common_f
 				} else {
 					if (is_writable(CMS_ROOT. $this->skinWritableDir)) {
 						file_put_contents($filepath, $values[$file. '/css_source']);
-						@chmod($filepath, 0666);
+						\ze\cache::chmod($filepath, 0666);
 					}
 				}
 			}

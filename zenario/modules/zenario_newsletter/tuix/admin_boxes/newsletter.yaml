@@ -185,7 +185,7 @@ zenario_newsletter:
                     readonly: true
                 
                 exclude_recipients_with_no_consent:
-                    label: Exclude recipients without consent to recieve newsletters
+                    label: Exclude recipients without consent to receive newsletters
                     type: checkbox
                     readonly: true
                 

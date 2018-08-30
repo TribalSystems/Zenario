@@ -243,6 +243,16 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 		if (!$values['text/parent_path_of__menu_title']) {
 			$fields['text/path_of__menu_title']['label'] = ze\admin::phrase('Path preview (top level):');
 		}
+		
+		//If there are any custom GET requests, load them from the DB
+		$values['advanced/add_custom_get_requests'] = (bool) $menu['custom_get_requests'];
+		if ($box['key']['id'] && $values['advanced/add_custom_get_requests']) {
+			$values['advanced/custom_get_requests'] = str_replace('&', ',', $menu['custom_get_requests']);
+			$explodedGetRequests = explode(',', $values['advanced/custom_get_requests']);
+			foreach ($explodedGetRequests as $request) {
+				$fields['advanced/custom_get_requests']['values'][$request] = $request;
+			}
+		}
 
 	}
 
@@ -408,6 +418,40 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 					$box['tabs']['advanced']['errors'][] = ze\admin::phrase('Please enter the name of a static method.');
 				}
 			}
+			
+			//If the menu node uses custom GET requests, check for any invalid characters or missing "=" signs.
+			if ($values['advanced/add_custom_get_requests'] && !empty($values['advanced/custom_get_requests'])) {
+				$invalidCharErrors = $missingEqualsSigns = '';
+				$invalidCharacters = ['\;', '\:', ' ', '\'', '\"', '\\', '\/', '`', '~', '{', '}', '[', ']', ',', '.', '&', '?'];
+				
+				foreach (explode(',', $values['advanced/custom_get_requests']) as $request) {
+					$getRequestToCharacterArray = str_split($request);
+					$characterCountKeys = array_keys(array_count_values($getRequestToCharacterArray));
+					
+					foreach ($invalidCharacters as $invalidCharacter) {
+					
+						if (in_array($invalidCharacter, $characterCountKeys)) {
+							$invalidCharErrors .= '"' . $request . '",';
+							//No need to check for any more errors if 1 was found.
+							break;
+						}
+					}
+					
+					if (!in_array('\=', $characterCountKeys)) {
+						$missingEqualsSigns .= '"' . $request . '",';
+					}
+				}
+				if (!empty($invalidCharErrors) || !empty($missingEqualsSigns)) {
+					$fields['advanced/custom_get_requests']['error'] = '';
+					if (!empty($invalidCharErrors)) {
+						$fields['advanced/custom_get_requests']['error'] .= ze\admin::phrase('Invalid characters in: [[invalid_chars]]. ', ['invalid_chars' => substr($invalidCharErrors, 0, -1)]);
+					}
+					
+					if (!empty($invalidCharErrors)) {
+						$fields['advanced/custom_get_requests']['error'] .= ze\admin::phrase('Missing "=" sign in: [[missing_equals_sign]]. ', ['missing_equals_sign' => substr($missingEqualsSigns, 0, -1)]);
+					}
+				}
+			}
 		}
 	}
 	
@@ -469,6 +513,12 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 			$submission['method_name'] = $call_static_method ? $values['advanced/menu__method_name'] : '';
 			$submission['param_1'] = $call_static_method ? $values['advanced/menu__param_1'] : '';
 			$submission['param_2'] = $call_static_method ? $values['advanced/menu__param_2'] : '';
+			
+			if ($values['add_custom_get_requests']) {
+				$customGetRequests = explode(',', $values['custom_get_requests']);
+				$customGetRequests = implode('&', $customGetRequests);
+				$submission['custom_get_requests'] = $customGetRequests;
+			}
 		}
 
 		$box['key']['id'] = ze\menuAdm::save($submission, $id);

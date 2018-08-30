@@ -616,3 +616,80 @@ if (ze\dbAdm::needRevision(45192)) {
 	
 	ze\dbAdm::revision(45192);
 }
+
+//Delete any cached frameworks, as the format has changed slightly in this version
+if (ze\dbAdm::needRevision(45600)) {
+	
+	\ze\skinAdm::clearCacheDir();
+	
+	ze\dbAdm::revision(45600);
+}
+
+ze\dbAdm::revision(46308
+,  <<<_sql
+	UPDATE `[[DB_PREFIX]]email_templates`
+	SET period_to_delete_log_headers = 0
+	WHERE period_to_delete_log_headers = 'never_save'
+_sql
+,  <<<_sql
+	UPDATE `[[DB_PREFIX]]email_templates`
+	SET period_to_delete_log_content = 0
+	WHERE period_to_delete_log_content = 'never_save'
+_sql
+,  <<<_sql
+	UPDATE `[[DB_PREFIX]]site_settings`
+	SET value = 0
+	WHERE name = 'period_to_delete_the_email_template_sending_log_headers'
+	AND value = 'never_save'
+_sql
+,  <<<_sql
+	UPDATE `[[DB_PREFIX]]site_settings`
+	SET value = 0
+	WHERE name = 'period_to_delete_the_email_template_sending_log_content'
+	AND value = 'never_save'
+_sql
+,  <<<_sql
+	UPDATE `[[DB_PREFIX]]site_settings`
+	SET value = 0
+	WHERE name = 'period_to_delete_sign_in_log'
+	AND value = 'never_save'
+_sql
+,  <<<_sql
+	UPDATE `[[DB_PREFIX]]site_settings`
+	SET value = 0
+	WHERE name = 'period_to_delete_the_user_content_access_log'
+	AND value = 'never_save'
+_sql
+
+);
+
+//A bug caused uploaded documents to be added to the database instead of the docstore.
+//Now the bug is fixed we need to sort out the bugged documents by re-uploading them into
+//the docstore.
+if (ze\dbAdm::needRevision(46310)) {
+	$sql = "
+		SELECT d.id, d.file_id, f.filename, f.location, f.path, f.short_checksum, f.usage
+		FROM " . DB_PREFIX . "documents d
+		INNER JOIN " . DB_PREFIX . "files f
+			ON d.file_id = f.id
+		WHERE d.type = 'file' 
+		AND d.privacy = 'public'";
+	$result = ze\sql::select($sql);
+	while ($doc = ze\sql::fetchAssoc($result)) {
+	
+		if (!file_exists(CMS_ROOT. 'public/downloads/'. $doc['short_checksum']. '/'. ze\file::safeName($doc['filename']))) {
+			$publicLink = ze\document::generatePublicLink($doc['id']);
+		
+			if (ze::isError($publicLink)) {
+				$location = ze\file::link($doc['file_id']);
+				$newFileId = ze\file::addToDocstoreDir($doc['usage'], rawurldecode(CMS_ROOT . $location), $doc['filename']);
+			
+				if ($newFileId) {
+					ze\row::update('documents', ['file_id' => $newFileId], $doc['id']);
+				}
+			} 
+		}
+	}
+	
+	ze\dbAdm::revision(46310);
+}

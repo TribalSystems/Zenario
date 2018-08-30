@@ -52,6 +52,10 @@ security_code:
                     return_key_presses_button: next
                     style: |
                         width: 6em;
+                    tooltip: |
+                        Two-factor authentication is enabled by a setting in this site's description file
+                        (in <code>zenario_custom/site_description.yaml</code>).
+                        Please speak to your system administrator to change this setting.
                 submit:
                     value: Submit
                     type: submit

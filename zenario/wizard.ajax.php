@@ -110,7 +110,7 @@ foreach ($modules as $className => &$module) {
 	$module->formatWizard($requestedPath, $tags, $fields, $values, $changes);
 }
 
-$_SESSION['running_a_wizard'] = true;
+$_SESSION['allow_file_uploads_in_the_installer'] = true;
 
 
 

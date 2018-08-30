@@ -128,27 +128,39 @@ class cache {
 		} else {
 			$path .= $dir. '/';
 			$fullPath .= $dir. '/';
-		
-			if (is_dir($fullPath)) {
-				@touch($fullPath. 'accessed');
-				return $path;
-		
-			} else {
-				if (@mkdir($fullPath, 0777)) {
-					@chmod($fullPath, 0777);
 			
-					if ($onlyForCurrentVisitor) {
-						\ze\cache::htaccessFileForCurrentVisitor($fullPath, $ip);
-					}
-			
-					touch($fullPath. 'accessed');
-					@chmod($fullPath. 'accessed', 0666);
-					return $path;
+			\ze::ignoreErrors();
+				if (is_dir($fullPath)) {
+					@touch($fullPath. 'accessed');
+		
 				} else {
-					return false;
+					if (@mkdir($fullPath, 0777)) {
+						@chmod($fullPath, 0777);
+			
+						if ($onlyForCurrentVisitor) {
+							\ze\cache::htaccessFileForCurrentVisitor($fullPath, $ip);
+						}
+			
+						touch($fullPath. 'accessed');
+						@chmod($fullPath. 'accessed', 0666);
+					} else {
+						$path = false;
+					}
 				}
-			}
+			\ze::noteErrors();
+			return $path;
 		}
+	}
+
+
+	public static function chmod($filename, $mode = 0666) {
+		$return = false;
+		\ze::ignoreErrors();
+			if ((fileperms($filename) & 0777) !== $mode) {
+				$return = @chmod($filename, $mode);
+			}
+		\ze::noteErrors();
+		return $return;
 	}
 
 
@@ -181,7 +193,7 @@ class cache {
 		$file .= "RemoveType .php\n";
 	
 		if (file_put_contents($path. '/.htaccess', $file)) {
-			@chmod($path. '/.htaccess', 0666);
+			\ze\cache::chmod($path. '/.htaccess', 0666);
 			return true;
 		} else {
 			return false;
@@ -198,27 +210,31 @@ class cache {
 			return false;
 		}
 	
-		foreach (scandir($dir) as $file) { 
-			if ($file == '.'
-			 || $file == '..') {
-				continue;
+		\ze::ignoreErrors();
+			foreach (scandir($dir) as $file) { 
+				if ($file == '.'
+				 || $file == '..') {
+					continue;
 		
-			} else
-			if (is_file($dir. '/'. $file)) {
-				$allGone = @unlink($dir. '/'. $file) && $allGone;
+				} else
+				if (is_file($dir. '/'. $file)) {
+					$allGone = @unlink($dir. '/'. $file) && $allGone;
 		
-			} else
-			if ($subDirLimit > 0
-			 && is_dir($dir. '/'. $file)
-			 && !is_link($dir. '/'. $file)) {
-				$allGone = \ze\cache::deleteDir($dir. '/'. $file, $subDirLimit - 1) && $allGone;
+				} else
+				if ($subDirLimit > 0
+				 && is_dir($dir. '/'. $file)
+				 && !is_link($dir. '/'. $file)) {
+					$allGone = \ze\cache::deleteDir($dir. '/'. $file, $subDirLimit - 1) && $allGone;
 		
-			} else {
-				$allGone = false;
+				} else {
+					$allGone = false;
+				}
 			}
-		}
 	
-		return $allGone && @rmdir($dir);
+			$return = $allGone && @rmdir($dir);
+		\ze::noteErrors();
+		
+		return $return;
 	}
 	
 	private static $cleanedCacheDir = null;

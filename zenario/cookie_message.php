@@ -44,9 +44,26 @@ ze\cache::start();
 
 ze\db::loadSiteConfig();
 
+//Show a manage button if visitors can manage thier cookies individually
+$manageButtonHTML = '';
+if (in_array($_GET['type'], ['accept', 'accept_reject']) 
+	&& ze\module::inc('zenario_cookie_consent_status')
+	&& ze::setting('individual_cookie_consent') 
+	&& ($tagId = ze::setting('manage_cookie_consent_content_item'))
+) {
+	$cID = $cType = false;
+	ze\content::getCIDAndCTypeFromTagId($cID, $cType, $tagId);
+	ze\content::langEquivalentItem($cID, $cType);
+	$link = ze\link::toItem($cID, $cType);
+	$manageButtonHTML =  '
+		<div class="zenario_cc_manage">
+			<a href="' . htmlspecialchars($link) . '">'. ze\lang::phrase('_COOKIE_CONSENT_MANAGE'). '</a>
+		</div>';
+}
+
 switch ($_GET['type']) {
+	//Implied consent - show the cookie message, just once. Continuing to use the site counts as acceptance.
 	case 'implied':
-		//Implied consent - show the cookie message, just once. Continuing to use the site counts as acceptance.
 		echo '
 document.write(\'', ze\escape::js('
 	<div class="zenario_cookie_consent">
@@ -64,9 +81,8 @@ document.write(\'', ze\escape::js('
 '), '\');';
 		break;
 		
-		
+	//Explicit consent - show the cookie message until it is accepted
 	case 'accept':
-		//Explicit consent - show the cookie message until it is accepted
 		echo '
 document.write(\'', ze\escape::js('
 	<div class="zenario_cookie_consent">
@@ -81,15 +97,15 @@ document.write(\'', ze\escape::js('
 			<div class="zenario_cc_accept">
 				<a href="zenario/cookies.php?accept_cookies=1">'. ze\lang::phrase('_COOKIE_CONSENT_ACCEPT'). '</a>
 			</div>
+			' . $manageButtonHTML . '
 		</div>
 	</div>
 </div>
 '), '\');';
 		break;
 		
-		
+	//Explicit consent - show the cookie message until it is accepted or rejected
 	case 'accept_reject':
-		//Explicit consent - show the cookie message until it is accepted or rejected
 		echo '
 document.write(\'', ze\escape::js('
 	<div class="zenario_cookie_consent">
@@ -107,6 +123,7 @@ document.write(\'', ze\escape::js('
 			<div class="zenario_cc_accept">
 				<a href="zenario/cookies.php?accept_cookies=1">'. ze\lang::phrase('_COOKIE_CONSENT_ACCEPT'). '</a>
 			</div>
+			' . $manageButtonHTML . '
 		</div>
 	</div>
 </div>

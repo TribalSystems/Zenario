@@ -13,8 +13,13 @@ zenario_user_form:
                 always_on: true
             ord: 1
             fields:
-                name:
+                type:
                     ord: 1
+                    label: 'Type:'
+                    snippet:
+                        label: ''
+                name:
+                    ord: 1.1
                     label: 'Form name:'
                     type: text
                     side_note: This name is for admin use only and will not be seen by visitors
@@ -228,9 +233,24 @@ zenario_user_form:
                     hidden: true  
                 save_data:
                     label: 'Create user/contact record'
-                    type: checkbox
+                    type: radios
+                    values:
+                        0:
+                            label: 'Don’t create a user/contact record'
+                        1:
+                            label: 'Always create a user/contact record'
+                        2:
+                            label: 'Create a user/contact record on condition of consent field'
+                    value: no_user_record
                     format_onchange: true
-        
+                consent_field:
+                    indent: 1
+                    label: Consent
+                    type: select
+                    empty_value: -- Select --
+                    validation: 
+                        required_if_not_hidden: Please choose a consent field.
+                    format_onchange: true
                 #registration form options
                 verification_email_template:
                     label: 'Email template for verifications:'
@@ -615,7 +635,7 @@ zenario_user_form:
                     type: select
                     empty_value: Use site-wide setting
                     values:
-                        never_save:
+                        0:
                             label: Don't save
                         1:
                             label: Delete after 1 day
@@ -633,7 +653,7 @@ zenario_user_form:
                 
                 delete_content_sooner:
                     visible_if: |
-                        ['never_save', ''].indexOf(zenarioAB.value('period_to_delete_response_headers')) === -1
+                        ['0', ''].indexOf(zenarioAB.value('period_to_delete_response_headers')) === -1
                     indent: 1
                     label: Delete content sooner (just save headers)
                     type: checkbox
@@ -645,7 +665,7 @@ zenario_user_form:
                     indent: 2
                     type: select
                     values:
-                        never_save:
+                        0:
                             label: Don't save
                         1:
                             label: Delete after 1 day

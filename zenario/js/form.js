@@ -265,7 +265,7 @@ methods.loadValuesFromOrganizerPath = function(field) {
 			if (panel.items) {
 				foreach (panel.items as i => item) {
 					field.values[zenario.decodeItemIdForOrganizer(i)] = {
-						list_image: item.list_image,
+						image: item.image,
 						css_class: item.css_class || (panel.item && panel.item.css_class),
 						label: zenarioA.formatOrganizerItemName(panel, i)
 					};
@@ -394,7 +394,11 @@ methods.clickButton = function(el, id) {
 };
 
 
-methods.togglePressed = function(toggleLevel, tuixObject) {
+//This function handles the visibility for fielfs controlled by toggles that hide and show the fields underneath them.
+//It also supports multiple level of toggle, e.g. 1, 2, 3...
+//A field will be visible if the last toggle before it was pressed, and hidden if the last toggle before it was
+//either not pressed, or itself hidden by a toggle before that.
+methods.togglePressed = function(field, toggleLevel) {
 	
 	var show;
 	
@@ -412,8 +416,8 @@ methods.togglePressed = function(toggleLevel, tuixObject) {
 		show = true;
 	}
 	
-	if (tuixObject && tuixObject.type == 'toggle') {
-		thus.toggleLevelsPressed.last = show && engToBoolean(tuixObject.pressed);
+	if (field && field.type == 'toggle') {
+		thus.toggleLevelsPressed.last = show && engToBoolean(field.pressed);
 		
 		if (toggleLevel) {
 			thus.toggleLevelsPressed[toggleLevel] = thus.toggleLevelsPressed.last;
@@ -421,10 +425,6 @@ methods.togglePressed = function(toggleLevel, tuixObject) {
 	}
 	
 	return show;
-};
-
-methods.toggleLevel = function(tuixObject) {
-	return thus.toggleLevelsPressed.last;
 };
 
 //A wrapper for zenario.ajax(), this sets the retry and continueAnyway options,
@@ -870,10 +870,14 @@ methods.hideShowFields = function(onShowFunction) {
 	}
 };
 
+methods.isAdminFacing = function() {
+	return true;
+};
+
 
 //Add any special jQuery objects to the tab
 methods.addJQueryElements = function(sel) {
-	zenario.addJQueryElements(sel + ' ', true);
+	zenario.addJQueryElements(sel + ' ', thus.isAdminFacing());
 		
 	//Some setup needed for iconselectmenu-type select lists
 	$(sel + ' select.iconselectmenu').css('visibility', 'hidden').each(function(i, el) {
@@ -892,16 +896,6 @@ methods.addJQueryElements = function(sel) {
 			}
 		});
 	});
-};
-
-//Add any special jQuery objects to the tab
-methods.addJQueryElementsToTab = function() {
-	thus.addJQueryElements('#zenario_abtab');
-};
-
-methods.addJQueryElementsToTabAndFocusFirstField = function() {
-	thus.addJQueryElementsToTab();
-	thus.focusFirstField();
 };
 
 methods.fieldIsReadonly = function(id, field, tab) {
@@ -1619,6 +1613,7 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 	}
 	
 	
+	
 	if (fieldType != 'checkboxes'
 	 && (tag = thus.displayAsTag(field, readOnly))) {
 		
@@ -1773,6 +1768,27 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 		});
 		
 		
+	} else if (field.captcha) {
+		
+		html += _$input('type', 'hidden', 'style', 'display: none', 'id', id, 'value', value);
+		
+		if (!value) {
+			html += _$span('style', 'display: inline-block', 'id', 'captcha__' + id);
+			cb.after(function() {
+				grecaptcha.render(
+					'captcha__' + id,
+					_.extend(
+						{
+							sitekey: google_recaptcha.sitekey,
+							callback: function(response) {
+								thus.get(id).value = response;
+							}
+						},
+						field.captcha
+					)
+				);
+			});
+		}
 		
 	
 	} else if (fieldType) {
@@ -2100,19 +2116,19 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 							thus.fieldChange(inst.id);
 						});
 				};
-				
+			
 				cb.after(function() {
 					var $field = $(thus.get(id)),
 						domTab = thus.get('zenario_abtab'),
 						tabDisplay;
-				
+					
 					//TinyMCE can fail to load if there was already an editor on the page with the same name.
 					//Attempt to try and tidy this up as a work-around
 					try {
 						$field.tinymce().remove();
 					} catch (e) {
 					}
-			
+				
 					//Temporarily set the tab's display to be visible, even if an animation was hiding it.
 					//This is a little hack to make sure this TinyMCE can get the correct width and height
 					//of the textarea, even when it's not yet visible
@@ -2120,9 +2136,9 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 						tabDisplay = domTab.style.display;
 						domTab.style.display = 'block';
 					}
-			
+				
 					$field.tinymce(options);
-			
+				
 					//Hide the tab again if it was hidden
 					if (domTab) {
 						domTab.style.display = tabDisplay;
@@ -2200,7 +2216,7 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 					extraAtt.type = 'url';
 					extraAtt.placeholder = 'http://example.com';
 					extraAtt.onblur =
-						(extraAtt.onblur || '') + 
+						(extraAtt.onblur || '') +
 						"if(this.value && !this.value.match('://') && $.trim(this.value)[0] != '#') this.value = 'http://' + this.value;";
 		
 				} else {
@@ -3172,7 +3188,7 @@ methods.pickedItemsArray = function(field, value) {
 				picked_items[i] = label;
 				field.values[i] = {
 					missing: item.missing,
-					list_image: item.list_image,
+					image: item.image,
 					css_class: item.css_class || (panel.item && panel.item.css_class),
 					label: label
 				};
@@ -3481,21 +3497,27 @@ methods.drawPickedItem = function(item, id, field, readOnly, inDropDown) {
 	
 	
 	if (mi.width
-	 && mi.height
-	 && (c = mi.checksum || mi.short_checksum)) {
-		thumbnail.src = URLBasePath + 'zenario/file.php?c=' + encodeURIComponent(c) + '&og=1';
+	 && mi.height) {
+		if (c = mi.checksum || mi.short_checksum) {
+			thumbnail.src = URLBasePath + 'zenario/file.php?c=' + encodeURIComponent(c) + '&og=1';
 	
-		if (mi.usage) {
-			thumbnail.src += '&usage=' + encodeURIComponent(mi.usage);
+			if (mi.usage) {
+				thumbnail.src += '&usage=' + encodeURIComponent(mi.usage);
+			}
+		
+		} else if (mi.link) {
+			thumbnail.src = zenario.addBasePath(mi.link);
 		}
 		
-		//Attempt to get the width and height from the label, and work out the correct
-		//width and height for the thumbnail.
-		//(The max is 180 by 120; this is the size of Organizer thumbnails and
-		// is also set in zenario/file.php)
-		zenarioT.resizeImage(mi.width, mi.height, 180, 120, thumbnail);
+		if (thumbnail.src) {
+			//Attempt to get the width and height from the label, and work out the correct
+			//width and height for the thumbnail.
+			//(The max is 180 by 120; this is the size of Organizer thumbnails and
+			// is also set in zenario/file.php)
+			zenarioT.resizeImage(mi.width, mi.height, 180, 120, thumbnail);
 		
-		mi.thumbnail = thumbnail;
+			mi.thumbnail = thumbnail;
+		}
 	}
 	
 	if (inDropDown) {
@@ -3569,7 +3591,7 @@ methods.setPickedItems = function(path, key, row, panel) {
 		
 		values[i] = {
 			missing: item.missing,
-			list_image: item.list_image,
+			image: item.image,
 			css_class: item.css_class || (panel.item && panel.item.css_class),
 			label: zenarioA.formatOrganizerItemName(panel, i)
 		};
@@ -3961,7 +3983,7 @@ methods.value = function(f, tab, readOnly) {
 };
 
 methods.mode = function(k) {
-	return thus.value('mode');
+	return thus.value('mode', 'global_area') || thus.value('mode');
 };
 
 methods.keyIn = function(k) {
@@ -4084,7 +4106,7 @@ methods.readField = function(f) {
 		}
 	}
 	
-
+	
 	//Fields with seperate values to display values
 	if (thus.get('_value_for__' + f)) {
 		field.current_value = value = thus.get('_value_for__' + f).value;

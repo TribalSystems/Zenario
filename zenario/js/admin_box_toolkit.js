@@ -46,6 +46,20 @@ zenario.lib(function(
 	zenarioAF, zenarioABToolkit
 ) {
 	"use strict";
+	
+	
+	
+	
+	
+
+
+//Create a form instance for the "global area" for fields
+var zenarioABG = window.zenarioABG = new zenarioAF();
+zenarioABG.init('zenarioABG', 'zenario_admin_box');
+	
+	
+	
+	
 
 	var methods = methodsOf(zenarioABToolkit);
 
@@ -207,7 +221,7 @@ methods.refreshParentAndClose = function(disallowNavigation, saveAndContinue, cr
 	createAnother = createAnother && thus.createAnotherObject;
 	
 	if (!saveAndContinue && !createAnother) {
-		if (thus.cb) thus.cb.call();
+		if (thus.cb) thus.cb.done();
 		thus.close();
 	}
 	
@@ -363,7 +377,8 @@ methods.draw2 = function() {
 	
 	
 	var cb = new zenario.callback,
-		html = thus.drawFields(cb);
+		html = thus.drawFields(cb),
+		global_area;
 	
 	cb.after(thus.makeFieldAsTallAsPossible);
 	
@@ -373,9 +388,85 @@ methods.draw2 = function() {
 	delete thus.lastScrollTop;
 	
 	thus.startPoking();
+	
+	//If this FAB has a "global_area" tab, then draw it at the top
+	if ((global_area = tuix.tabs.global_area)
+	 && (!_.isEmpty(global_area.fields))) {
+		
+		zenarioABG.tuix = {
+			tab: 'global_area',
+			tabs: {
+				global_area: JSON.parse(JSON.stringify(global_area))
+			}
+		};
+		zenarioABG.sortTabs();
+		
+		//We'll want to wrap the forms instance for the global area into the current forms instance.
+		//Override the format, validate and redraw methods of the global area's forms instance to point
+		//to call the format, validate and redraw methods from current forms instance instead.
+		zenarioABG.validate = function() {
+			thus.validate();
+		};
+		zenarioABG.format = function() {
+			thus.format();
+		};
+		zenarioABG.redrawTab = function() {
+			thus.redrawTab();
+		};
+		
+		//Whenever we read the values from the global area's forms instance,
+		//merge the values we read them back in to the current forms instance.
+		zenarioABG.readTab = function() {
+			
+			methodsOf(zenarioAF).readTab.call(zenarioABG);
+			
+			var id, field, copiedField,
+				global_area = thus.tuix.tabs.global_area;
+		
+			foreach (global_area.fields as id => field) {
+			
+				copiedField = zenarioABG.tuix.tabs.global_area.fields[id];
+			
+				field.value = copiedField.value;
+				field.current_value = copiedField.current_value;
+				field.pressed = copiedField.pressed;
+				field.selected_option = copiedField.selected_option;
+				field._display_value = copiedField._display_value;
+				field.hidden = copiedField.hidden;
+				field._was_hidden_before = copiedField._was_hidden_before;
+			}
+		};
+		
+		
+		cb = new zenario.callback;
+		html = zenarioABG.drawFields(cb);
+		
+		$('#zenario_fabGlobalArea').show().html(html);
+		thus.addJQueryElements('#zenario_fabGlobalArea');
+		cb.done();
+	} else {
+		$('#zenario_fabGlobalArea').hide();
+	}
 };
 
 
+//Whenever we read the values from the current forms instance,
+//also read the values from the global area's forms instance.
+methods.readTab = function() {
+	methodsOf(zenarioAF).readTab.call(thus);
+	
+	if (thus.tuix.tabs.global_area) {
+		zenarioABG.readTab();
+	}
+};
+
+//Whenever we sort the tabs, exclude the global area from the sorted list so it's not drawn.
+//(It's fine to include it in non-sorted lists to still handle its data.)
+methods.sortTabs = function() {
+	methodsOf(zenarioAF).sortTabs.call(thus);
+	
+	thus.sortedTabs = _.filter(thus.sortedTabs, function(tab) { return tab != 'global_area'; });
+}
 
 
 methods.setTitle = function(isReadOnly) {
@@ -464,7 +555,7 @@ methods.parseTypeaheadSearch = function(field, id, tab, readOnly, panel) {
 			
 			field.values = field.values || {};
 			field.values[valueId] = {
-				list_image: item.list_image,
+				image: item.image,
 				css_class: item.css_class || (panel.item && panel.item.css_class),
 				label: label
 			};
@@ -509,7 +600,7 @@ methods.drawPickedItem = function(item, id, field, readOnly, inDropDown) {
 	if (_.isObject(label)) {
 		mi.missing = label.missing;
 		mi.css_class = label.css_class;
-		mi.list_image = label.list_image;
+		mi.image = label.image;
 		label = mi.label = label.label;
 	
 	} else if (label) {
@@ -995,12 +1086,12 @@ methods.save2 = function(data, saveAndContinue, createAnother) {
 	
 	} else if (flags.reload_organizer && isOrganizer) {
 		thus.close();
-		zenarioA.rememberToast();
+		zenarioA.toastOrNoToast(flags);
 	
 		zenarioT.uploading = false;
 		zenarioO.setWrapperClass('uploading', zenarioT.uploading);
 	
-		zenarioO.reloadPage();
+		zenarioO.reloadPage(flags.organizer_path);
 
 	//Open an Admin Box
 	} else if (flags.open_admin_box && zenarioAB.init) {
@@ -1010,7 +1101,7 @@ methods.save2 = function(data, saveAndContinue, createAnother) {
 	//Go somewhere
 	} else if (flags.go_to_url) {
 		thus.close();
-		zenarioA.rememberToast();
+		zenarioA.toastOrNoToast(flags);
 		zenario.goToURL(zenario.addBasePath(flags.go_to_url), true);
 	
 	} else if (flags.valid) {

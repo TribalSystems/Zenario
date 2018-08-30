@@ -264,6 +264,8 @@ if (!$requestedPath || empty($tags['class_name'])) {
 //If this is a request for a specific path, run that Module and let it manage its output in PHP
 } else {
 	
+	ze\tuix::checkOrganizerPanel($tags);
+	
 	if (isset($tags['priv']) && !ze\priv::check($tags['priv'])) {
 		echo ze\admin::phrase('You do not have permissions to see this Panel.');
 		exit;
@@ -439,7 +441,14 @@ if (!$requestedPath || empty($tags['class_name'])) {
 					$cCol = [];
 					$cCol['table_join'] = [$customJoin];
 					$cCol['db_column'] = "custom.`". $cfield['db_column']. "`";
-					$cCol['searchable'] = $cfield['searchable'];
+					$cCol['searchable'] = $cfield['searchable'] || $cfield['filterable'];
+					if (!$cfield['searchable']) {
+						$cCol['disallow_quicksearch'] = true;
+					}
+					if (!$cfield['filterable']) {
+						$cCol['disallow_filtering'] = true;
+					}
+					
 					$cCol['disallow_sorting'] = !$cfield['sortable'];
 					$cCol['show_by_default'] = ($cfield['organizer_visibility'] == 'show_by_default');
 					$cCol['always_show'] = ($cfield['organizer_visibility'] == 'always_show');
@@ -663,7 +672,7 @@ if (!$requestedPath || empty($tags['class_name'])) {
 			
 			$first = true;
 			foreach ($tags['columns'] as $colName => &$col) {
-				if (!empty($col['db_column']) && ze\ring::engToBoolean($col['searchable'] ?? false)) {
+				if (!empty($col['db_column']) && ze\ring::engToBoolean($col['searchable'] ?? false) && !ze\ring::engToBoolean($col['disallow_quicksearch'] ?? false)) {
 					//Group functions can't be used in a query
 					if (!preg_match('/COUNT\s*\(/i', $col['db_column'])) {
 						
@@ -1410,7 +1419,7 @@ if ($mode == 'get_item_data') {
 	}
 	
 	$tagString = '[[name]]';
-	$usedcolumns = ['css_class' => true, 'list_image' => true];
+	$usedcolumns = ['css_class' => true, 'image' => true];
 	
 	if ($mode == 'get_item_links') {
 		$usedcolumns['name'] = true;

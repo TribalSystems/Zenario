@@ -58,7 +58,7 @@ class zenario_user_forms__admin_boxes__site_settings extends ze\moduleBaseClass 
 						
 			if ($count) {
 				$min = ze\row::min(ZENARIO_USER_FORMS_PREFIX . 'user_response', 'response_datetime');
-				$note .= ' ' . ze\admin::phrase('Oldest record from [[date]].', ['date' => ze\date::formatDateTime($min, '_MEDIUM')]);
+				$note .= ' ' . ze\admin::phrase('Oldest record from [[date]].', ['date' => ze\admin::formatDateTime($min, '_MEDIUM')]);
 			}
 			$fields['data_protection/period_to_delete_the_form_response_log_headers']['note_below'] = $note;
 			
@@ -74,7 +74,6 @@ class zenario_user_forms__admin_boxes__site_settings extends ze\moduleBaseClass 
 			if ($values['data_protection/delete_email_template_sending_log_content_sooner']
 				&& ((is_numeric($headersDays) && is_numeric($contentDays) && ($contentDays > $headersDays))
 					|| (is_numeric($headersDays) && $contentDays == 'never_delete')
-					|| ($headersDays == 'never_save' && $contentDays != 'never_save')
 				)
 			) {
 				$fields['data_protection/period_to_delete_the_form_response_log_content']['error'] = ze\admin::phrase('You cannot save content for longer than the headers.');

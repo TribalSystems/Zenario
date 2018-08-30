@@ -120,18 +120,13 @@ methods.showViewOptions = function($header) {
 //n.b. your showButtons() method is special; it will be called by the CMS when the buttons needs to be drawn
 methods.showButtons = function($buttons) {
 	var buttons, html,
-		m = {
-			itemButtons: false,
-			collectionButtons: false
-		};
+		m = {};
 	
-	//If there is at least one item selected, show the item buttons, otherwise show the collection buttons.
-	//Never show both the item buttons and the collection buttons at the same time
+	//If there is at least one item selected, show the item buttons.
 	if (zenarioO.itemsSelected > 0) {
-		m.itemButtons = zenarioO.getItemButtons();
-	} else {
-		m.collectionButtons = zenarioO.getCollectionButtons();
+		zenarioO.getItemButtons(m);
 	}
+	zenarioO.getCollectionButtons(m);
 	
 	html = thus.microTemplate('zenario_organizer_panel_buttons', m);
 	
@@ -516,12 +511,12 @@ methods.getMergeFieldsForItemsAndColumns = function(useLargerThumbnails) {
 			
 			row.image_css_class = zenarioO.getItemCSSClass(i);
 			
-			if (!useLargerThumbnails && item.list_image) {
-				row.image_css_class += ' organiser_item_with_image';
-				row.image = zenario.addBasePath(item.list_image);
+			if (!useLargerThumbnails && item.image) {
+				row.image_css_class += ' organizer_item_with_image';
+				row.image = zenario.addBasePath(item.image);
 			
 			} else if (useLargerThumbnails && item.image) {
-				row.image_css_class += ' organiser_item_with_image';
+				row.image_css_class += ' organizer_item_with_image';
 				row.image = zenario.addBasePath(item.image);
 			}
 			

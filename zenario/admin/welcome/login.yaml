@@ -34,6 +34,12 @@ login:
                     row_class: row_form
                     class: password
                     return_key_presses_button: login
+                admin_login_captcha:
+                    captcha: {}
+                    tooltip: |
+                        The captcha system is enabled by a setting in this site's description file
+                        (in <code>zenario_custom/site_description.yaml</code>).
+                        Please speak to your system administrator to change this setting.
                 remember_me:
                     type: checkbox
                     row_class: row_form

@@ -114,6 +114,13 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 						ze\admin::phrase('Every page of your website is stored as a "content item". This panel shows all of the [[content_type_plural_lower_en]] of your site in a list view.',
 							$details);
 				}
+			
+				if (isset($panel['collection_buttons']['settings_ctype'])) {
+					$panel['collection_buttons']['settings_ctype']['hidden'] = false;
+					$panel['collection_buttons']['settings_ctype']['admin_box']['key']['id'] = $panel['key']['cType'];
+					$panel['collection_buttons']['settings_ctype']['label'] = 
+						ze\admin::phrase('Settings for [[content_type_plural_lower_en]]', $details);
+				}
 			}
 
 		//If this is a panel for multiple content types then we are limited in how much we can customise it.
@@ -356,12 +363,14 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 			}
 
 		} elseif ($panel['key']['layoutId'] && $panel['key']['language']) {
+			$template = ze\row::get('layouts', ['layout_id', 'name'], $panel['key']['layoutId']);
 			$mrg = [
-				'template' => ze\row::get('layouts', 'name', $panel['key']['layoutId']),
+				'layout_id' => str_pad($template['layout_id'], 2, '0', STR_PAD_LEFT),
+				'template' => $template['name'],
 				'language' => ze\lang::name($panel['key']['language'])];
 			$panel['label_format_for_grid_view'] = '[[tag]]';
-			$panel['title'] = ze\admin::phrase('Content items using the layout [[template]] in [[language]]', $mrg);
-			$panel['no_items_message'] = ze\admin::phrase('There are no content items using layout [[template]] in [[language]].', $mrg);
+			$panel['title'] = ze\admin::phrase('Content items using the layout "L[[layout_id]] [[template]]" in [[language]]', $mrg);
+			$panel['no_items_message'] = ze\admin::phrase('There are no content items using layout "L[[layout_id]] [[template]]" in [[language]].', $mrg);
 
 		} elseif ($panel['key']['cType'] && $panel['key']['language']) {
 			$mrg = [
@@ -373,10 +382,12 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 			unset($panel['columns']['type']);
 
 		} elseif ($panel['key']['layoutId']) {
+			$template = ze\row::get('layouts', ['layout_id', 'name'], $panel['key']['layoutId']);
 			$mrg = [
-				'template' => ze\row::get('layouts', 'name', $panel['key']['layoutId'])];
-			$panel['title'] = ze\admin::phrase('Content items using the layout "[[template]]"', $mrg);
-			$panel['no_items_message'] = ze\admin::phrase('There are no content items using layout [[template]].', $mrg);
+				'layout_id' => str_pad($template['layout_id'], 2, '0', STR_PAD_LEFT),
+				'template' => $template['name']];
+			$panel['title'] = ze\admin::phrase('Content items using the layout "L[[layout_id]] [[template]]"', $mrg);
+			$panel['no_items_message'] = ze\admin::phrase('There are no content items using layout "L[[layout_id]] [[template]]".', $mrg);
 
 		} elseif ($panel['key']['cType']) {
 			$panel['item']['css_class'] = 'content_type_'. $panel['key']['cType'];
@@ -810,7 +821,7 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 					}
 					echo 'unlock on this content item? ';
 					if ($date = ze\row::get('content_item_versions', 'scheduled_publish_datetime', ['id'=>$cID,'type'=>$cType,'version'=>$cVersion])) {
-						echo 'It is scheduled to be published by '.$adminDetails['first_name'].' '.$adminDetails['last_name'].' on '. ze\date::formatDateTime($date, 'vis_date_format_long');
+						echo 'It is scheduled to be published by '.$adminDetails['first_name'].' '.$adminDetails['last_name'].' on '. ze\admin::formatDateTime($date, 'vis_date_format_long');
 					} else {
 						echo 'Any administrator who has authoring permission will be able to make changes to it.';
 					}

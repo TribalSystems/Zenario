@@ -1,11 +1,11 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
 full_slot:
-    actions:
+    re_move_place:
         replace_slideshow_on_item_layer:
             ord: 85.2
             priv: _PRIV_MANAGE_ITEM_SLOT
-            label: Show a slideshow instead on this content item...
+            label: Replace with a slideshow on this content item...
             label_different: Show a different slideshow on this content item...
             page_modes:
                 item: true
@@ -16,10 +16,10 @@ full_slot:
                 }
                 return false;
         
-        insert_slideshow_on_layout_layer:
+        replace_slideshow_on_layout_layer:
             ord: 87.2
             priv: _PRIV_MANAGE_TEMPLATE_SLOT
-            label: Show a slideshow instead...
+            label: Replace with a slideshow...
             label_different: Show a different slideshow...
             page_modes:
                 layout: true

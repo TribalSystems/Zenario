@@ -4,11 +4,11 @@
 		type="radio" 
 		name="{{m.name|e}}" 
 		value="{{m.value|e}}"
-		onchange="zenarioO.pi.fieldDetailsChanged('{{m.path|e}}','{{m.name|e}}');"
+		onchange="zenarioO.pi.tuixFieldDetailsChanged('{{m.itemType|e}}', '{{m.itemId|e}}', '{{m.tuixTabId|e}}', '{{m.name|e}}');"
 		<% if (m.selected) { %>
 			checked
 		<% } %>
-		<% if (m.disabled) { %>
+		<% if (m.readonly) { %>
 			disabled
 		<% } %>
 	>

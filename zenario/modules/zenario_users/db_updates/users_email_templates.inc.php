@@ -114,3 +114,12 @@ ze\dbAdm::revision(59,
 _sql
 
 );
+ze\dbAdm::revision(76,
+
+ <<<_sql
+	ALTER TABLE [[DB_PREFIX]]users 
+	ADD COLUMN `consent_hash` varchar(28) NULL
+		
+_sql
+
+);

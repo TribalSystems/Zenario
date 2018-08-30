@@ -125,6 +125,9 @@
 									<span class="label">
 										{{col.blocks_title|e}}
 										{{m.lib.pMicroTemplate('list_cell', {col: col, item: item})}}
+										<% if (item.cell_tooltips && item.cell_tooltips[col.id]) { %>
+										    <i class="info_icon" title="{{item.cell_tooltips[col.id]|e}}"></i>
+										<% } %>
 									</span>
 								</{{tag|e}}>
 						

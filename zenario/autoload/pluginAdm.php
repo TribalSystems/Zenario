@@ -85,34 +85,40 @@ class pluginAdm {
 
 
 	//Formerly "fillAdminSlotControlPluginInfo()"
-	public static function fillSlotControlPluginInfo($moduleId, $instanceId, $isVersionControlled, $cID, $cType, $level, $isNest, $isSlideshow, &$info, &$actions) {
+	public static function fillSlotControlPluginInfo($moduleId, $instanceId, $isVersionControlled, $cID, $cType, $level, $isNest, $isSlideshow, &$info, &$actions, &$re_move_place) {
 
 
 		$pnsType = $isVersionControlled? 99 : ($isSlideshow? 2 : ($isNest? 1 : 0));
 		
 		foreach ([
 			'replace_reusable_on_item_layer' => 0, 'replace_nest_on_item_layer' => 1, 'replace_slideshow_on_item_layer' => 2,
-			'insert_reusable_on_layout_layer' => 0, 'insert_nest_on_layout_layer' => 1, 'insert_slideshow_on_layout_layer' => 2
+			'replace_reusable_on_layout_layer' => 0, 'replace_nest_on_layout_layer' => 1, 'replace_slideshow_on_layout_layer' => 2
 		] as $buttonName => $buttonPnsType) {
+			
 			if (isset($actions[$buttonName])) {
-		
 				$button = &$actions[$buttonName];
-		
-				//If this has a different label for replacing like with like, switch to that if we are replacing like with like.
-				if (isset($button['label_different'])) {
-					if ($pnsType === $buttonPnsType) {
-						$button['label'] = $button['label_different'];
-					}
-					unset($button['label_different']);
-				}
-		
-				if ($pnsType === $buttonPnsType) {
-					$preselectCurrentChoice = 'true';
-				} else {
-					$preselectCurrentChoice = 'false';
-				}
-				$button['onclick'] = str_replace('[[preselectCurrentChoice]]', $preselectCurrentChoice, $button['onclick']);
+			
+			} elseif (isset($re_move_place[$buttonName])) {
+				$button = &$re_move_place[$buttonName];
+			
+			} else {
+				continue;
 			}
+			
+			//If this has a different label for replacing like with like, switch to that if we are replacing like with like.
+			if (isset($button['label_different'])) {
+				if ($pnsType === $buttonPnsType) {
+					$button['label'] = $button['label_different'];
+				}
+				unset($button['label_different']);
+			}
+	
+			if ($pnsType === $buttonPnsType) {
+				$preselectCurrentChoice = 'true';
+			} else {
+				$preselectCurrentChoice = 'false';
+			}
+			$button['onclick'] = str_replace('[[preselectCurrentChoice]]', $preselectCurrentChoice, $button['onclick']);
 		}
 		
 		
@@ -241,16 +247,25 @@ class pluginAdm {
 				}
 			}
 		}
-	
+		
 		if (isset($actions) && is_array($actions)) {
 			foreach ($actions as &$action) {
 				if (is_array($action)) {
 					if (isset($action['label'])) {
 						$action['label'] = str_replace('~plugin~', $pluginAdminName, str_replace('~Plugin~', $ucPluginAdminName, $action['label']));
 					}
-					//if (isset($action['label_different'])) {
-					//	$action['label_different'] = str_replace('~plugin~', $pluginAdminName, str_replace('~Plugin~', $ucPluginAdminName, $action['label']));
-					//}
+					if (isset($action['onclick'])) {
+						$action['onclick'] = str_replace('~plugin~', \ze\escape::js($pluginAdminName), str_replace('~Plugin~', \ze\escape::js($ucPluginAdminName), $action['onclick']));
+					}
+				}
+			}
+		}
+		if (isset($re_move_place) && is_array($re_move_place)) {
+			foreach ($re_move_place as &$action) {
+				if (is_array($action)) {
+					if (isset($action['label'])) {
+						$action['label'] = str_replace('~plugin~', $pluginAdminName, str_replace('~Plugin~', $ucPluginAdminName, $action['label']));
+					}
 					if (isset($action['onclick'])) {
 						$action['onclick'] = str_replace('~plugin~', \ze\escape::js($pluginAdminName), str_replace('~Plugin~', \ze\escape::js($ucPluginAdminName), $action['onclick']));
 					}
@@ -1417,6 +1432,8 @@ class pluginAdm {
 							//Also remove the base variable
 							$slide['request_vars'] = array_diff($slide['request_vars'], [$hVar]);
 						}
+						
+						$slide['hierarchical_var'] = $hVar;
 					
 					
 					
@@ -1453,7 +1470,8 @@ class pluginAdm {
 		foreach ($slides as $slideId => $slide) {
 			\ze\sql::update('
 				UPDATE '. DB_PREFIX. 'nested_plugins
-				SET request_vars = \''. \ze\escape::sql(implode(',', $slide['request_vars'])). '\'
+				SET request_vars = \''. \ze\escape::sql(implode(',', $slide['request_vars'])). '\',
+					hierarchical_var = \''. \ze\escape::sql($slide['hierarchical_var']). '\'
 				WHERE id = '. (int) $slideId
 			);
 		}

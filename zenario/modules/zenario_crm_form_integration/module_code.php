@@ -32,7 +32,6 @@ class zenario_crm_form_integration extends ze\moduleBaseClass {
 	
 	public static function eventUserFormSubmitted($data, $form, $fieldIdValueLink, $responseId = false) {
 		$formId = $form['id'];
-		
 		$result = ze\row::query(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'form_crm_link', ['id', 'enable', 'crm_id'], ['form_id' => $formId]);
 		while ($link = ze\sql::fetchAssoc($result)) {
 			if ($link['enable']) {
@@ -51,8 +50,22 @@ class zenario_crm_form_integration extends ze\moduleBaseClass {
 				
 				//Send to MailChimp
 				if ($link['crm_id'] == 'mailchimp' && ze::setting('zenario_crm_form_integration__enable_mailchimp')) {
-					$data = static::formatCRMData($link['id'], $data, $fieldIdValueLink, $responseId);
-					static::sendDataToMailChimp($link['id'], $data, $responseId);
+				    $consentFieldId = ze\row::get(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'mailchimp_data', 'consent_field', ['form_id' => $formId]);
+				    				    
+				    if($link['enable']){
+				        $send = 1;
+				        if($consentFieldId){
+				            if($fieldIdValueLink[$consentFieldId]){
+				                $send = 1;
+				            } else{
+				                $send = 0;
+				            }
+				        }
+				        if($send == 1){
+					        $data = static::formatCRMData($link['id'], $data, $fieldIdValueLink, $responseId);
+					        static::sendDataToMailChimp($link['id'], $data, $responseId);
+					    }
+					}
 				}
 				
 				//Send to 360Lifecycle
@@ -216,43 +229,18 @@ class zenario_crm_form_integration extends ze\moduleBaseClass {
 		$link = ze\row::get(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'form_crm_link', ['form_id'], $linkId);
 		$crmData = ze\row::get(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'salesforce_data', ['s_object'], $link['form_id']);
 		
-		$logId = false;
-		
-		//Get OAuth2 access token
-		$url = ze::setting('zenario_salesforce_api_form_integration__login_uri') . '/services/oauth2/token';
-		$params = [
-			'grant_type' => 'password',
-			'client_id' => ze::setting('zenario_salesforce_api_form_integration__client_id'),
-			'client_secret' => ze::setting('zenario_salesforce_api_form_integration__client_secret'),
-			'username' => ze::setting('zenario_salesforce_api_form_integration__username'),
-			'password' => ze::setting('zenario_salesforce_api_form_integration__password') . ze::setting('zenario_salesforce_api_form_integration__security_token')
-		];
-		$params = http_build_query($params);
-		
-		//Record request (in case OAuth2 fails)
-		static::recordLastFormCRMRequest($linkId, $url, $params);
-		
-		$curl = curl_init($url);
-		curl_setopt($curl, CURLOPT_HEADER, false);
-		curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-		curl_setopt($curl, CURLOPT_POST, true);
-		curl_setopt($curl, CURLOPT_POSTFIELDS, $params);
-		
-		$resultJSON = curl_exec($curl);
-		$status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-		curl_close($curl);
+		$token = static::getSalesforceAccessToken($linkId);
 		
 		//Log result
-		$logId = ze\row::set(
+		$logId = ze\row::insert(
 			ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'salesforce_response_log', 
 			[
 				'datetime' => date('Y-m-d H:i:s'), 
 				'form_id' => $link['form_id'], 
 				'response_id' => $responseId, 
 				'oauth_status' => $status, 
-				'oauth_response' => mb_substr($resultJSON, 0, 65535, 'UTF-8')
-			], 
-			$logId
+				'oauth_response' => mb_substr(json_encode($token), 0, 65535, 'UTF-8')
+			]
 		);
 		//Delete old log entries
 		if ($logDays = ze::setting('zenario_salesforce_api_form_integration__log_expiry_time')) {
@@ -261,14 +249,13 @@ class zenario_crm_form_integration extends ze\moduleBaseClass {
 				WHERE datetime < DATE_SUB(NOW(), INTERVAL ' . (int)$logDays . ' DAY)';
 			ze\sql::update($sql);
 		}
-		if ($status != 201 && $status != 200) {
+		if (!$token) {
 			return false;
 		}
 		
 		//Send response to Salesforce 
-		$result = json_decode($resultJSON, true);
-		$accessToken = $result['access_token'];
-		$instanceURL = $result['instance_url'];
+		$accessToken = $token['access_token'];
+		$instanceURL = $token['instance_url'];
 		$url = $instanceURL . '/services/data/v40.0/sobjects/' . urlencode($crmData['s_object']) . '/' ;
 		$dataJSON = json_encode($data);
 		
@@ -296,6 +283,146 @@ class zenario_crm_form_integration extends ze\moduleBaseClass {
 		$result = json_decode($resultJSON, true);
 		return $result;
 	}
+	
+	public static function getSalesforceAccessToken($linkId = false) {
+		//Get OAuth2 access token
+		$url = ze::setting('zenario_salesforce_api_form_integration__login_uri') . '/services/oauth2/token';
+		$params = [
+			'grant_type' => 'password',
+			'client_id' => ze::setting('zenario_salesforce_api_form_integration__client_id'),
+			'client_secret' => ze::setting('zenario_salesforce_api_form_integration__client_secret'),
+			'username' => ze::setting('zenario_salesforce_api_form_integration__username'),
+			'password' => ze::setting('zenario_salesforce_api_form_integration__password') . ze::setting('zenario_salesforce_api_form_integration__security_token')
+		];
+		$params = http_build_query($params);
+		
+		//Record request (in case OAuth2 fails)
+		if ($linkId) {
+			static::recordLastFormCRMRequest($linkId, $url, $params);
+		}
+		
+		$curl = curl_init($url);
+		curl_setopt($curl, CURLOPT_HEADER, false);
+		curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($curl, CURLOPT_POST, true);
+		curl_setopt($curl, CURLOPT_POSTFIELDS, $params);
+		
+		$resultJSON = curl_exec($curl);
+		$status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+		curl_close($curl);
+		
+		if ($status != 201 && $status != 200) {
+			return false;
+		}
+		
+		return json_decode($resultJSON, true);
+	}
+	
+	//Validate a field and optionally a list of values on a Salesforce Object
+	public static function validateSalesforceObjectField($sObject, $name, $values = []) {
+		$token = static::getSalesforceAccessToken();
+		if (!$token) {
+			return false;
+		}
+		
+		$accessToken = $token['access_token'];
+		$instanceURL = $token['instance_url'];
+		$url = $instanceURL . '/services/data/v40.0/sobjects/' . urlencode($sObject) . '/describe';
+
+		$curl = curl_init($url);
+		curl_setopt($curl, CURLOPT_HEADER, false);
+		curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($curl, CURLOPT_HTTPHEADER, ['Authorization: OAuth ' . $accessToken, 'Content-type: application/json']);
+
+		$resultJSON = curl_exec($curl);
+		$status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+		curl_close($curl);
+		
+		if ($status != 201 && $status != 200) {
+			return false;
+		}
+		
+		$result = json_decode($resultJSON, true);
+		foreach ($result['fields'] as $field) {
+			if ($field['name'] == $name) {
+				
+				//Get items from reference and validate values
+				if ($field['type'] == 'reference' && count($field['referenceTo']) == 1) {
+					
+					//Note: if the response is too large not all results will be sent and the next batch must be retrieved in a seperate
+					//query, this hasn't been implemented yet!
+					//https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/resources_query.htm
+					$url = $instanceURL . '/services/data/v40.0/query/?q=' . urlencode('SELECT Id, Name FROM ' . $field['referenceTo'][0]);
+					
+					$curl = curl_init($url);
+					curl_setopt($curl, CURLOPT_HEADER, false);
+					curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+					curl_setopt($curl, CURLOPT_HTTPHEADER, ['Authorization: OAuth ' . $accessToken, 'Content-type: application/json']);
+					
+					$resultJSON = curl_exec($curl);
+					$status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+					curl_close($curl);
+					
+					if ($status != 201 && $status != 200) {
+						return false;
+					}
+					
+					$result = json_decode($resultJSON, true);
+					
+					//Don't attempt to get all results and just stop (as noted above)
+					if (!empty($result['nextRecordsUrl'])) {
+						return ['error' => 'too_many_values'];
+					}
+					
+					$existingValues = [];
+					foreach ($result['records'] as $record) {
+						$existingValues[$record['Id']] = true;
+					}
+					
+					$missingValues = [];
+					foreach ($values as $value) {
+						if (!isset($existingValues[$value])) {
+							$missingValues[] = $value;
+						}
+					}
+					
+					if ($missingValues) {
+						return ['error' => 'missing_values', 'values' => $missingValues];
+					} else {
+						return true;
+					}
+					
+				//Validate values
+				} elseif ($field['type'] == 'picklist') {
+					$existingValues = [];
+					foreach ($field['picklistValues'] as $pickListValue) {
+						$existingValues[$pickListValue['value']] = true;
+					}
+					
+					$missingValues = [];
+					foreach ($values as $value) {
+						if (!isset($existingValues[$value])) {
+							$missingValues[] = $value;
+						}
+					}
+					
+					if ($missingValues) {
+						return ['error' => 'missing_values', 'values' => $missingValues];
+					} else {
+						return true;
+					}
+					
+				//Only check it exists
+				} else {
+					return true;
+				}
+				break;
+			}
+		}
+		return ['error' => 'not_found'];
+	}
+	
+	
 	
 	protected static function sendDataToMailChimp($linkId, $data, $responseId) {
 		//Send even if there is no email address so we get an error back to record

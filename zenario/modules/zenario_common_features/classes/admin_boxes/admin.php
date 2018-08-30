@@ -182,7 +182,7 @@ class zenario_common_features__admin_boxes__admin extends ze\moduleBaseClass {
 					$box['tabs']['details']['notices']['is_inactive']['message'] = ze\admin::phrase(
 						"This administrator hasn't logged in since [[last_login]], [[days]] days ago.", 
 						[
-							'last_login' => ze\date::format($details['last_login'], '_MEDIUM'), 
+							'last_login' => ze\admin::formatDate($details['last_login'], '_MEDIUM'), 
 							'days' => (string)floor((strtotime('now') - strtotime($details['last_login'])) / 60 / 60 / 24)
 						]
 					);
@@ -190,7 +190,7 @@ class zenario_common_features__admin_boxes__admin extends ze\moduleBaseClass {
 					$box['tabs']['details']['notices']['is_inactive']['message'] = ze\admin::phrase(
 						"This administrator was created on [[created_date]] and has never logged in.", 
 						[
-							'created_date' => ze\date::format($details['created_date'], '_MEDIUM')
+							'created_date' => ze\admin::formatDate($details['created_date'], '_MEDIUM')
 						]
 					);
 				}
@@ -297,13 +297,13 @@ class zenario_common_features__admin_boxes__admin extends ze\moduleBaseClass {
 										'ord' => $box['tabs']['permissions']['fields'][$rowStart]['ord']. '.1',
 										'type' => 'toggle',
 										'same_row' => true,
-										'visible_if' => 'zenarioAB.togglePressed(1, tuixObject)',
+										'visible_if' => 'zenarioAB.togglePressed(field, 1)',
 										'redraw_onchange' => true,
 										'can_be_pressed_in_view_mode' => true];
 							}
 
 							$field['row_class'] = 'zenario_hierarchical_perms';
-							$field['visible_if'] = 'zenarioAB.togglePressed(2)';
+							$field['visible_if'] = 'zenarioAB.togglePressed(field, 2)';
 
 
 

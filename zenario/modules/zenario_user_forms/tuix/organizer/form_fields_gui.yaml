@@ -5,49 +5,14 @@ zenario__user_forms:
             panel_type: form_builder
             priv: _PRIV_MANAGE_FORMS
             
-            field_details:
+            form_page_details:
                 tabs:
                     details:
                         label: Details
                         fields:
-                            field_label:
-                                label: 'Label:'
-                                type: text
-                                maxlength: 250
-                                note_below: This will be the field label as seen by the user.
-                                visible_if: |
-                                    item.type != 'page_break'
-                            description:
-                                label: 'Description (HTML):'
-                                type: textarea
-                                note_below: This is a description of the section placed under the label.
-                                visible_if: |
-                                    item.type == 'section_description'
-                            values_source:
-                                label: 'Source:'
-                                type: select
-                                empty_value: -- Select --
-                                values: centralised_lists
-                                format_onchange: true
-                                visible_if: |
-                                    item.type == 'centralised_radios' || item.type == 'centralised_select' || (item.type == 'restatement' && item.mirrorFieldType == 'centralised_select')
-                            values_source_filter:
-                                label: ''
-                                type: text
-                                maxlength: 250
-                                note_below: Set a filter for the source.
-                                visible_if: |
-                                    item.type == 'centralised_radios' || item.type == 'centralised_select' && item.values_source
-                                indent: 1
-                            filter_on_field:
-                                label: 'Filter on field:'
-                                type: select
-                                empty_value: -- Select --
-                                values: centralised_list_filter_fields
-                                note_below: Filter a centralised select list based on the value of another field. 
-                                visible_if: |
-                                    item.type == 'centralised_radios' || item.type == 'centralised_select'
-                            visibility:
+                            name:
+                                hidden: true
+                            visibility: &visibility
                                 label: 'Visibility:'
                                 type: select
                                 value: visible
@@ -59,7 +24,10 @@ zenario__user_forms:
                                     visible_on_condition:
                                         label: Visible on condition
                                 format_onchange: true
-                            visible_condition_field_id:
+                            visible_condition_field_id: &visible_condition_field_id
+                                indent: 1
+                                visible_if: |
+                                    item.visibility == 'visible_on_condition'
                                 label: 'Visible on condition field:'
                                 type: select
                                 empty_value: -- Select --
@@ -67,10 +35,11 @@ zenario__user_forms:
                                 format_onchange: true
                                 note_below: |
                                     Select a field that this fields visibility will rely on from the current form (the following types of field are allowed: checkbox, checkboxes, radios, select, centralised radios and centralised select)
+                            visible_condition_field_type: &visible_condition_field_type
+                                indent: 2
+                                hide_with_previous_outdented_field: true
                                 visible_if: |
-                                    item.visibility == 'visible_on_condition'
-                                indent: 1
-                            visible_condition_field_type:
+                                    item.visible_condition_field_id
                                 type: select
                                 values:
                                     visible_if:
@@ -78,10 +47,11 @@ zenario__user_forms:
                                     visible_if_not:
                                         label: Visible if not...
                                 format_onchange: true
-                                visible_if: |
-                                    item.visibility == 'visible_on_condition' && item.visible_condition_field_id
+                            visible_condition_field_value: &visible_condition_field_value
                                 indent: 2
-                            visible_condition_field_value:
+                                hide_with_previous_outdented_field: true
+                                visible_if: |
+                                    item.visible_condition_field_id
                                 type: select
                                 empty_value: -- Select --
                                 values:
@@ -89,48 +59,118 @@ zenario__user_forms:
                                         label: Checked
                                     unchecked:
                                         label: Unchecked
-                                visible_if: |
-                                    item.visibility == 'visible_on_condition' && item.visible_condition_field_id
+                            visible_condition_checkboxes_operator: &visible_condition_checkboxes_operator
                                 indent: 2
-                            visible_condition_checkboxes_operator:
+                                hidden: true
                                 type: select
                                 values:
                                     AND:
                                         label: All options below are checked
                                     OR:
                                         label: Any option below is checked
-                                hidden: true
+                            visible_condition_checkboxes_field_value: &visible_condition_checkboxes_field_value
                                 indent: 2
-                            visible_condition_checkboxes_field_value:
+                                hidden: true
                                 type: checkboxes
                                 values: field_lov
+                            
+                            next_button_text:
+                                label: '"Next" button text:'
+                                type: text
+                                value: Next
+                                maxlength: 250
+                            previous_button_text:
+                                label: '"Back" button text:'
+                                type: text
+                                value: Previous
+                                maxlength: 250
+                            hide_in_page_switcher:
+                                label: Hide in page switcher
+                                type: checkbox
+                            show_in_summary: &show_in_summary
+                                label: Show in summary
+                                type: checkbox
+                                note_below: This will show in the form summary page and when viewing form responses.
+            
+            form_field_details:
+                tabs:
+                    details:
+                        label: Details
+                        fields:
+                            name:
+                                hidden: true
+                            label:
+                                label: 'Label:'
+                                type: text
+                                maxlength: 250
+                                note_below: This will be the field label as seen by the user.
+                                is_phrase: true
+                            description:
                                 visible_if: |
-                                    item.visibility == 'visible_on_condition' && item.visible_condition_field_id
-                                indent: 2
+                                    item.type == 'section_description'
+                                label: 'Description (HTML):'
+                                type: textarea
+                                note_below: This is a description of the section placed under the label.
+                                is_phrase: true
+                            values_source:
+                                visible_if: |
+                                    item.type == 'centralised_radios' || item.type == 'centralised_select'
+                                label: 'Source:'
+                                type: select
+                                empty_value: -- Select --
+                                values: centralised_lists
+                                format_onchange: true
+                            values_source_filter:
+                                indent: 1
+                                hide_with_previous_field: true
+                                visible_if: |
+                                    item.values_source
+                                label: ''
+                                type: text
+                                maxlength: 250
+                                note_below: Set a filter for the source.
+                            
+                            filter_on_field:
+                                visible_if: |
+                                    item.type == 'centralised_radios' || item.type == 'centralised_select'
+                                label: 'Filter on field:'
+                                type: select
+                                empty_value: -- Select --
+                                values: centralised_list_filter_fields
+                                note_below: Filter a centralised select list based on the value of another field. 
+                            
+                            visibility: *visibility
+                            visible_condition_field_id: *visible_condition_field_id
+                            visible_condition_field_type: *visible_condition_field_type
+                            visible_condition_field_value: *visible_condition_field_value
+                            visible_condition_checkboxes_operator: *visible_condition_checkboxes_operator
+                            visible_condition_checkboxes_field_value: *visible_condition_checkboxes_field_value
+                            
                             min_rows:
+                                visible_if: |
+                                    item.type == 'repeat_start'
                                 label: 'Minimum rows:'
                                 type: text
                                 value: 1
                                 maxlength: 250
                                 note_below: The number of rows that are always shown and cannot be deleted.
-                                visible_if: |
-                                    item.type == 'repeat_start'
                             max_rows:
+                                hide_with_previous_field: true
                                 label: 'Maximum rows:'
                                 type: text
                                 value: 5
                                 maxlength: 250
                                 note_below: The maximum number of rows that can be added.
-                                visible_if: |
-                                    item.type == 'repeat_start'
                             add_row_label:
+                                hide_with_previous_field: true
                                 label: 'Add row label:'
                                 type: text
                                 value: Add +
                                 maxlength: 250
-                                visible_if: |
-                                    item.type == 'repeat_start'
+                            
                             readonly_or_mandatory:
+                                visible_if: |
+                                    ['section_description', 'repeat_start', 'restatement', 'calculated'].indexOf(item.type) == -1
                                 label: 'Mandatory / Read-only:'
                                 type: select
                                 values:
@@ -146,9 +186,11 @@ zenario__user_forms:
                                         label: Mandatory if visible
                                 format_onchange: true
                                 note_below: Choose whether this field is mandatory or read-only.
-                                visible_if: |
-                                    ['page_break', 'section_description', 'repeat_start', 'restatement', 'calculated'].indexOf(item.type) == -1
                             mandatory_condition_field_id:
+                                indent: 1
+                                hide_with_previous_outdented_field: true
+                                visible_if: |
+                                   item.readonly_or_mandatory == 'conditional_mandatory'
                                 label: 'Mandatory on condition field:'
                                 type: select
                                 empty_value: -- Select --
@@ -156,21 +198,22 @@ zenario__user_forms:
                                 format_onchange: true
                                 note_below: |
                                     Select a field that this field will rely on from the current form (the following types of field are allowed: checkbox, checkboxes, radios, select, centralised radios and centralised select)
-                                visible_if: |
-                                   ['page_break', 'section_description', 'repeat_start', 'restatement', 'calculated'].indexOf(item.type) == -1 && item.readonly_or_mandatory == 'conditional_mandatory'
-                                indent: 1
-                            
                             mandatory_condition_field_type:
+                                indent: 2
+                                hide_with_previous_outdented_field: true
+                                visible_if: |
+                                    item.mandatory_condition_field_id
                                 type: select
                                 values:
                                     mandatory_if:
                                         label: Mandatory if...
                                     mandatory_if_not:
                                         label: Mandatory if not...
-                                visible_if: |
-                                    ['page_break', 'section_description', 'repeat_start', 'restatement', 'calculated'].indexOf(item.type) == -1 && item.readonly_or_mandatory == 'conditional_mandatory' && item.mandatory_condition_field_id
-                                indent: 2
                             mandatory_condition_field_value:
+                                indent: 2
+                                hide_with_previous_outdented_field: true
+                                visible_if: |
+                                    item.mandatory_condition_field_id
                                 type: select
                                 empty_value: -- Select --
                                 values:
@@ -178,35 +221,37 @@ zenario__user_forms:
                                         label: Checked
                                     unchecked:
                                         label: Unchecked
-                                visible_if: |
-                                    ['page_break', 'section_description', 'repeat_start', 'restatement', 'calculated'].indexOf(item.type) == -1 && item.readonly_or_mandatory == 'conditional_mandatory' && item.mandatory_condition_field_id
-                                indent: 2
                             mandatory_condition_checkboxes_operator:
+                                indent: 2
+                                hidden: true
                                 type: select
                                 values:
                                     AND:
                                         label: All options below are checked
                                     OR:
                                         label: Any option below is checked
-                                hidden: true
-                                indent: 2
                             mandatory_condition_checkboxes_field_value:
+                                indent: 2
+                                hide_with_previous_outdented_field: true
+                                visible_if: |
+                                    item.mandatory_condition_field_id
                                 type: checkboxes
                                 values: field_lov
-                                visible_if: |
-                                    ['page_break', 'section_description', 'repeat_start', 'restatement', 'calculated'].indexOf(item.type) == -1 && item.readonly_or_mandatory == 'conditional_mandatory' && item.mandatory_condition_field_id
-                                indent: 2
-                                
                             required_error_message:
+                                indent: 1
+                                hide_with_previous_outdented_field: true
+                                visible_if: |
+                                    ['mandatory', 'conditional_mandatory', 'mandatory_if_visible'].indexOf(item.readonly_or_mandatory) != -1
                                 label: 'Error message when field is incomplete:'
                                 type: text
                                 maxlength: 250
                                 value: This field is required.
                                 note_below: Enter an error message when this field is incomplete.
-                                visible_if: |
-                                    ['page_break', 'section_description', 'repeat_start', 'restatement', 'calculated'].indexOf(item.type) == -1 && ['mandatory', 'conditional_mandatory', 'mandatory_if_visible'].indexOf(item.readonly_or_mandatory) != -1
-                                indent: 1
+                                is_phrase: true
+                                
                             field_validation:
+                                visible_if: |
+                                    item.type == 'text'
                                 label: 'Validation:'
                                 type: select
                                 format_onchange: true
@@ -224,87 +269,67 @@ zenario__user_forms:
                                     floating_point:
                                         label: Floating point
                                 value: none
-                                visible_if: |
-                                    item.type == 'text'
                             field_validation_error_message:
+                                indent: 1
+                                hide_with_previous_outdented_field: true
+                                visible_if: |
+                                    item.field_validation && item.field_validation != 'none'
                                 label: 'Error message when validation fails:'
                                 type: text
                                 maxlength: 250
                                 note_below: Enter an error message when validation fails. 
-                                visible_if: |
-                                    item.type == 'text' && (['email', 'URL', 'integer', 'number', 'floating_point'].indexOf(item.field_validation) != -1)
-                                indent: 1
+                                is_phrase: true
+                                db_column: validation_error_message
                             placeholder:
+                                visible_if: |
+                                    item.type == 'text' || item.type == 'textarea'
                                 label: 'Placeholder:'
                                 type: text
                                 maxlength: 250
                                 note_below: Enter a value to be displayed as a placeholder until the user enters something.
-                                visible_if: |
-                                    item.type == 'text' || item.type == 'textarea'
+                                is_phrase: true
                             show_month_year_selectors:
+                                visible_if: |
+                                    item.type == 'date'
                                 label: Show month and year selectors
                                 type: checkbox
-                                visible_if: |
-                                    item.type == 'date'
                             no_past_dates:
+                                hide_with_previous_field: true
                                 label: No past dates
                                 type: checkbox
-                                visible_if: |
-                                    item.type == 'date'
                             no_future_dates:
+                                hide_with_previous_field: true
                                 label: No future dates
                                 type: checkbox
-                                visible_if: |
-                                    item.type == 'date'
                             disable_manual_input:
+                                hide_with_previous_field: true
                                 label: Disable manual input
                                 type: checkbox
-                                visible_if: |
-                                    item.type == 'date'
+                            
                             combined_filename:
+                                visible_if: |
+                                    item.type == 'document_upload'
                                 label: 'Default combined filename:'
                                 type: text
                                 maxlength: 250
                                 note_below: A filename for the combined file.
-                                visible_if: |
-                                    item.type == 'document_upload'
                             stop_user_editing_filename:
+                                hide_with_previous_field: true
                                 label: 'Stop user editing filename'
                                 type: checkbox
-                                visible_if: |
-                                    item.type == 'document_upload'
+                            
                             note_to_user:
+                                visible_if: |
+                                    ['section_description', 'repeat_start'].indexOf(item.type) == -1
                                 label: 'Note below field (HTML):'
                                 type: textarea
                                 maxlength: 250
                                 note_below: Enter a note to the user that will be displayed below this field.
+                                is_phrase: true
+                            show_in_summary: *show_in_summary
                                 visible_if: |
-                                    ['page_break', 'section_description', 'repeat_start'].indexOf(item.type) == -1
-                            next_button_text:
-                                label: '"Next" button text:'
-                                type: text
-                                value: Next
-                                maxlength: 250
-                                visible_if: |
-                                    item.type == 'page_break'
-                            previous_button_text:
-                                label: '"Back" button text:'
-                                type: text
-                                value: Previous
-                                maxlength: 250
-                                visible_if: |
-                                    item.type == 'page_break'
-                            hide_in_page_switcher:
-                                label: Hide in page switcher
-                                type: checkbox
-                                visible_if: |
-                                    item.type == 'page_break'
-                            show_in_summary:
-                                label: Show in summary
-                                type: checkbox
-                                visible_if: |
-                                    item.type == 'section_description' || item.type == 'page_break'
-                                note_below: This will show in the form summary page and when viewing form responses.
+                                    item.type == 'section_description'
+                                
                             value_prefix:
                                 label: 'Value prefix:'
                                 type: text
@@ -312,57 +337,120 @@ zenario__user_forms:
                                 visible_if: |
                                     item.type == 'calculated'
                             value_postfix:
+                                hide_with_previous_field: true
                                 label: 'Value postfix:'
                                 type: text
                                 maxlength: 250
-                                visible_if: |
-                                    item.type == 'calculated'
                             calculation_code:
+                                hide_with_previous_field: true
                                 type: calculation_code
-                                visible_if: |
-                                    item.type == 'calculated'
+                                format_onchange: true
+                            
                             restatement_field:
+                                visible_if: |
+                                    item.type == 'restatement'
                                 label: 'Field to mirror:'
                                 type: select
                                 empty_value: -- Select --
                                 values: mirror_fields
                                 note_below: You can mirror text, calculated, select lists and centralised select lists.
-                                visible_if: |
-                                    item.type == 'restatement'
+                    
                     values:
                         label: Values
                         visible_if: |
-                            ['select', 'radios', 'checkboxes', 'text'].indexOf(item.type) != -1 && item.db_column != 'salutation'
+                            ['select', 'radios', 'checkboxes', 'text'].indexOf(item.type) != -1 && ['first_name', 'last_name', 'email'].indexOf(item.db_column) == -1
                         fields:
                             enable_suggested_values:
+                                visible_if: |
+                                    item.type == 'text'
                                 label: Enable suggested values
                                 type: checkbox
                                 format_onchange: true
+                            
+                            force_suggested_values:
+                                indent: 1
+                                hide_with_previous_outdented_field: true
                                 visible_if: |
-                                    item.type == 'text'
+                                    item.enable_suggested_values
+                                label: 'Force suggested values'
+                                type: checkbox
+                                note_below: The user must enter one of the values in the suggested list.
+                            
+                            suggested_values:
+                                indent: 1
+                                hide_with_previous_outdented_field: true
+                                visible_if: |
+                                    item.enable_suggested_values
+                                type: radios
+                                values:
+                                    custom:
+                                        label: Custom
+                                    pre_defined:
+                                        label: Pre-defined list
+                                value: custom
+                                format_onchange: true
+                            
+                            suggested_values_source:
+                                indent: 2
+                                hide_with_previous_outdented_field: true
+                                visible_if: |
+                                    item.suggested_values == 'pre_defined'
+                                label: 'Source:'
+                                type: select
+                                empty_value: -- Select --
+                                values: centralised_lists
+                                format_onchange: true
+                            suggested_values_filter_on_field:
+                                indent: 2
+                                hide_with_previous_outdented_field: true
+                                visible_if: |
+                                    item.suggested_values == 'pre_defined'
+                                label: 'Filter on field:'
+                                type: select
+                                empty_value: -- Select --
+                                values: centralised_list_filter_fields
+                                format_onchange: true
+                                note_below: Filter an autocomplete list based on the value of another field.
+                            filter_placeholder:
+                                indent: 3
+                                hide_with_previous_outdented_field: true
+                                visible_if: |
+                                    item.suggested_values_filter_on_field
+                                label: 'No filter placeholder:'
+                                type: text
+                                maxlength: 250
+                                note_below: Show a placeholder message if there are no values in the list after being filtered.
+                             
                             values:
                                 type: values_list
-                                readonly_if: |
-                                    item.dataset_field_id > 0 && item.type != 'text'
                                 visible_if: |
-                                    item.type != "text" || item.enable_suggested_values
+                                    item.type != "text" || item.enable_suggested_values && item.suggested_values == 'custom'
                     advanced:
                         label: Advanced
-                        visible_if: |
-                            item.type != 'page_break'
                         fields:
+                            merge_name:
+                                visible_if: |
+                                    item.type != 'section_description' && item.type != 'restatement' && item.type != 'repeat_start'
+                                snippet:
+                                    html: ''
                             preload_dataset_field_user_data:
-                                label: Pre-populate with logged-in user's data
-                                type: checkbox
-                                value: true
                                 visible_if: |
                                     item.dataset_field_id
-                            invert_dataset_result:
-                                label: Invert value when updating the user's data
+                                label: Pre-populate with logged-in user's data
+                                type: checkbox
+                            split_first_name_last_name:
+                                label: Split this field's data on the first space between first name and last name
                                 type: checkbox
                                 visible_if: |
-                                    item.dataset_field_id && (item.type == 'checkbox' || item.type == 'group' || item.type == 'consent')
+                                    item.db_column == 'first_name' || item.db_column == 'last_name'
+                            invert_dataset_result:
+                                visible_if: |
+                                    item.dataset_field_id && (item.type == 'checkbox' || item.type == 'group')
+                                label: Invert value when updating the user's data
+                                type: checkbox
                             default_value_options:
+                                visible_if: |
+                                    !item.dataset_field_id && (['checkboxes', 'section_description', 'repeat_start', 'attachment', 'restatement', 'document_upload', 'calculated'].indexOf(item.type) == -1)
                                 label: 'Pre-populate field:'
                                 type: radios
                                 format_onchange: true
@@ -374,9 +462,11 @@ zenario__user_forms:
                                         label: Pre-populate with value
                                     method:
                                         label: Call a module's static method to get the value
-                                visible_if: |
-                                    !item.dataset_field_id && (['checkboxes', 'section_description', 'repeat_start', 'document_upload'].indexOf(item.type) == -1)
                             default_value_lov:
+                                indent: 1
+                                hide_with_previous_outdented_field: true
+                                visible_if: |
+                                    item.default_value_options == 'value' && (['radios', 'centralised_radios', 'select', 'centralised_select', 'checkbox', 'group'].indexOf(item.type) != -1)
                                 label: 'Default value:'
                                 type: select
                                 values:
@@ -385,46 +475,51 @@ zenario__user_forms:
                                     unchecked:
                                         label: Unchecked
                                 note_below: Select a value to pre-populate this field.
-                                visible_if: |
-                                    !item.dataset_field_id && item.default_value_options == 'value' && (['radios', 'centralised_radios', 'select', 'centralised_select', 'checkbox', 'group', 'consent'].indexOf(item.type) != -1)
-                                indent: 1
                             default_value_text:
+                                indent: 1
+                                hide_with_previous_outdented_field: true
+                                visible_if: |
+                                    item.default_value_options == 'value' && (['radios', 'centralised_radios', 'select', 'centralised_select', 'checkbox', 'group'].indexOf(item.type) == -1)
                                 label: 'Default value:'
                                 type: text
                                 maxlength: 250
                                 note_below: Enter a value to pre-populate this field.
-                                visible_if: |
-                                    !item.dataset_field_id && item.default_value_options == 'value' && (['radios', 'centralised_radios', 'select', 'centralised_select', 'checkbox', 'group', 'consent'].indexOf(item.type) == -1)
-                                indent: 1
+                                
                             default_value_class_name:
+                                indent: 1
+                                hide_with_previous_outdented_field: true
+                                visible_if: |
+                                     item.default_value_options == 'method'
                                 label: 'Module class name:'
                                 type: text
                                 maxlength: 250
-                                visible_if: |
-                                     !item.dataset_field_id && item.default_value_options == 'method'
-                                indent: 1
                             default_value_method_name:
+                                indent: 1
+                                hide_with_previous_outdented_field: true
+                                visible_if: |
+                                     item.default_value_options == 'method'
                                 label: 'Static method name:'
                                 type: text
                                 maxlength: 250
-                                visible_if: |
-                                     !item.dataset_field_id && item.default_value_options == 'method'
-                                indent: 1
                             default_value_param_1:
+                                indent: 1
+                                hide_with_previous_outdented_field: true
+                                visible_if: |
+                                     item.default_value_options == 'method'
                                 label: 'Parameter 1:'
                                 type: text
                                 maxlength: 250
-                                visible_if: |
-                                     !item.dataset_field_id && item.default_value_options == 'method'
-                                indent: 1
                             default_value_param_2:
+                                indent: 1
+                                hide_with_previous_outdented_field: true
+                                visible_if: |
+                                     item.default_value_options == 'method'
                                 label: 'Parameter 2:'
                                 type: text
                                 maxlength: 250
-                                visible_if: |
-                                     !item.dataset_field_id && item.default_value_options == 'method'
-                                indent: 1
                             value_field_columns:
+                                visible_if: |
+                                    item.type == 'checkboxes' || item.type == 'radios'
                                 label: 'Value columns:'
                                 type: select
                                 values:
@@ -440,18 +535,15 @@ zenario__user_forms:
                                         label: 5
                                     6:
                                         label: 6
-                                visible_if: |
-                                    item.type == 'checkboxes' || item.type == 'radios'
                             word_count_min:
+                                visible_if: |
+                                    item.type == 'textarea'
                                 label: 'Word count (min):'
                                 type: text
-                                visible_if: |
-                                    item.type == 'textarea'
                             word_count_max:
+                                hide_with_previous_field: true
                                 label: 'Word count (max):'
                                 type: text
-                                visible_if: |
-                                    item.type == 'textarea'
                             css_classes:
                                 label: 'CSS classes:'
                                 type: text
@@ -463,97 +555,67 @@ zenario__user_forms:
                                 maxlength: 250
                                 note_below: Enter a class for a wrapper div around this field. Fields above or below with the same wrapper div class will also be added into this div.
                             custom_code_name:
+                                visible_if: |
+                                    item.type != 'section_description'
                                 label: 'Custom code name:'
                                 type: text
                                 maxlength: 250
                                 note_below: This is used so a developer can reference this field in a module without having to know the ID. Unique per form.
-                                visible_if: |
-                                    item.type != 'section_description'
-                            autocomplete:
-                                label: Autocomplete
-                                type: checkbox
-                                format_onchange: true
-                                note_below: Show a list of possible options below that match what you type.
-                                visible_if: |
-                                    item.type == 'text' && item.db_column != 'salutation'
-                            values_source:
-                                label: 'Source:'
-                                type: select
-                                empty_value: -- Select --
-                                values: centralised_lists
-                                format_onchange: true
-                                visible_if: |
-                                    item.type == 'text' && item.autocomplete
-                                indent: 1
-                            filter_on_field:
-                                label: 'Filter on field:'
-                                type: select
-                                empty_value: -- Select --
-                                values: centralised_list_filter_fields
-                                format_onchange: true
-                                note_below: Filter an autocomplete list based on the value of another field.
-                                visible_if: |
-                                    item.type == 'text' && item.autocomplete
-                                indent: 1
-                            autocomplete_no_filter_placeholder:
-                                label: 'No filter placeholder:'
-                                type: text
-                                maxlength: 250
-                                note_below: Filter an autocomplete list based on the value of another field.
-                                visible_if: |
-                                    item.type == 'text' && item.autocomplete && item.filter_on_field
-                                indent: 3
+                                                                
                             invalid_responses:
+                                visible_if: |
+                                    ['checkboxes', 'select', 'radios'].indexOf(item.type) != -1                                    
                                 label: 'Invalid responses:'
                                 type: checkboxes
                                 values: field_lov
                                 format_onchange: true
                                 note_below: If you want the form to offer possible responses in the list, but want some of them to generate an error if chosen, select those responses above.
-                                visible_if: |
-                                    ['checkboxes', 'select', 'radios'].indexOf(item.type) != -1                                    
                             invalid_field_value_error_message:
+                                indent: 1
+                                hide_with_previous_field: true
+                                visible_if: |
+                                    item.invalid_responses && item.invalid_responses.length
                                 label: 'Invalid response error message:'
                                 type: text
                                 maxlength: 250
-                                visible_if: |
-                                    ['checkboxes', 'select', 'radios'].indexOf(item.type) != -1 && item.invalid_responses && item.invalid_responses.length
-                                indent: 1
+                            
                     translations:
                         label: Translations
                         visible_if: |
-                            zenarioO.pi.tuix.show_translation_tab && (['page_break'].indexOf(item.type) == -1)
-                        #Note: currently only works on fields on the details tab
-                        translatable_fields:
-                            - field_label
-                            - description
-                            - field_validation_error_message
-                            - placeholder
-                            - note_to_user
-                            - required_error_message
+                            zenarioO.pi.tuix.show_translation_tab
                         fields:
                             translations:
                                 type: translations
+                                
                     crm:
                         label: CRM
                         visible_if: |
-                            zenarioO.pi.tuix.crm_enabled && (['page_break', 'section_description', 'repeat_start', 'attachment', 'file_picker', 'document_upload', 'restatement'].indexOf(item.type) == -1)
+                            zenarioO.pi.tuix.crm_enabled && (['section_description', 'repeat_start', 'attachment', 'file_picker', 'document_upload', 'restatement'].indexOf(item.type) == -1)
                         fields:
                             send_to_crm:
                                 label: Send to CRM
                                 type: checkbox
                                 format_onchange: true
+                            crm_validate_test:
+                                visible_if: |
+                                    item.send_to_crm
+                                type: button
+                                value: Validate against Salesforce
                             field_crm_name:
+                                visible_if: |
+                                    item.send_to_crm
                                 label: 'CRM field name:'
                                 type: text
                                 maxlength: 250
                                 note_below: This is used to identify the field in the CRM
-                                visible_if: |
-                                    item.send_to_crm
                             centralised_crm_buttons:
-                                type: centralised_crm_buttons
                                 visible_if: |
                                     item.send_to_crm && (['centralised_select', 'centralised_radios'].indexOf(item.type) != -1)
+                                type: centralised_crm_buttons
                             crm_values:
-                                type: crm_values
                                 visible_if: |
-                                    item.send_to_crm && (['select', 'radios', 'checkboxes', 'centralised_select', 'centralised_radios', 'checkbox', 'group', 'consent'].indexOf(item.type) != -1)
+                                    item.send_to_crm && (['select', 'radios', 'checkboxes', 'centralised_select', 'centralised_radios', 'checkbox', 'group'].indexOf(item.type) != -1)
+                                type: crm_values
+                                    
+                                    
+                            

@@ -35,12 +35,6 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 			unset($panel['collection_buttons']['document_tags']);
 		}
 		
-		if (isset($panel['item_buttons']['autoset'])
-		 && !ze\row::exists('document_rules', [])) {
-			$panel['item_buttons']['autoset']['disabled'] = true;
-			$panel['item_buttons']['autoset']['disabled_tooltip'] = ze\admin::phrase('No rules for auto-setting document metadata have been created');
-		}
-		
 		foreach ($panel['items'] as &$item) {
 			$filePath = "";
 			$fileId = "";
@@ -90,7 +84,7 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 				}
 				
 				if ($item['date_uploaded']) {
-					$item['date_uploaded'] = ze\admin::phrase('Uploaded [[date]]', ['date' => ze\date::formatDateTime($item['date_uploaded'], '_MEDIUM', \ze::$defaultLang)]);
+					$item['date_uploaded'] = ze\admin::phrase('Uploaded [[date]]', ['date' => ze\admin::formatDateTime($item['date_uploaded'], '_MEDIUM', \ze::$defaultLang)]);
 				}
 				if ($item['extract_wordcount']) {
 					$item['extract_wordcount'] = ze\admin::nPhrase(
@@ -333,21 +327,6 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 			} else {
 				echo "<p>Successfully updated document text extract.</p>";
 				ze\row::update('documents', ['extract'=>$documentProperties['extract']], ['id' => $ids]);
-			}
-		
-		} elseif ($_POST['autoset'] ?? false) {
-			ze\document::processRules($ids);
-			
-		} elseif ($_POST['dont_autoset_metadata'] ?? false) {
-			ze\priv::exitIfNot('_PRIV_EDIT_DOCUMENTS');
-			foreach (explode(',', $ids) as $id) {
-				ze\row::update('documents', ['dont_autoset_metadata' => 1], $id);
-			}
-			
-		} elseif ($_POST['allow_autoset_metadata'] ?? false) {
-			ze\priv::exitIfNot('_PRIV_EDIT_DOCUMENTS');
-			foreach (explode(',', $ids) as $id) {
-				ze\row::update('documents', ['dont_autoset_metadata' => 0], $id);
 			}
 		
 		//Remove all of the custom data from a document

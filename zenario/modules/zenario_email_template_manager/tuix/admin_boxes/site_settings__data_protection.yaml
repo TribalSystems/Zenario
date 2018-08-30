@@ -11,7 +11,7 @@ site_settings:
                         name: period_to_delete_the_email_template_sending_log_headers
                     type: select
                     values:
-                        never_save:
+                        0:
                             label: Don't save
                         1:
                             label: Delete after 1 day
@@ -31,7 +31,7 @@ site_settings:
                     redraw_onchange: true
                 
                 delete_email_template_sending_log_content_sooner:
-                    visible_if: zenarioAB.value('period_to_delete_the_email_template_sending_log_headers') != 'never_save'
+                    visible_if: zenarioAB.value('period_to_delete_the_email_template_sending_log_headers') != '0'
                     indent: 1
                     site_setting:
                         name: delete_email_template_sending_log_content_sooner
@@ -47,7 +47,7 @@ site_settings:
                         name: period_to_delete_the_email_template_sending_log_content
                     type: select
                     values:
-                        never_save:
+                        0:
                             label: Don't save email body
                         1:
                             label: Delete after 1 day   

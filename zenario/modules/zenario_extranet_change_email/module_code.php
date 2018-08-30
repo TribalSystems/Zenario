@@ -97,6 +97,8 @@ class zenario_extranet_change_email extends zenario_extranet {
 				
 				ze\user::logIn($row['user_id']);
 				$this->message = $this->phrase('_EMAIL_CHANGED');
+				//Set email verified flag
+				ze\row::update('users', ['email_verified' => 1], ['id' => $row['user_id']]);
 				return true;
 			} else {
 				$this->message = $this->phrase('_INVALID_LINK');

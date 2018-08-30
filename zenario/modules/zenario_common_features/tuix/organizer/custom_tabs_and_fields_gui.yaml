@@ -5,27 +5,26 @@ zenario__administration:
         custom_tabs_and_fields_gui:
             panel_type: admin_box_builder
             
-            tab_details:
+            dataset_page_details:
                 hide_tab_bar: true
                 tabs:
                     details:
                         label: Details
                         fields:
-                            tab_label:
+                            label:
                                 label: 'Label:'
                                 type: text
                                 maxlength: 255
-                                validation:
-                                    required: 'Please enter a label'
                             parent_field_id:
                                 label: 'Conditional display on field:'
                                 type: select
                                 values: boolean_fields
                                 empty_value: -- No conditional display --
                                 visible_if: |
+                                    
                                     !item.is_system_field 
             
-            field_details:
+            dataset_field_details:
                 tabs:
                     details:
                         label: Details
@@ -38,7 +37,7 @@ zenario__administration:
                                 post_field_html: </div>
                                 visible_if: |
                                     item.type == 'other_system_field' && item.tuix_type != "pick_items"
-                            field_label:
+                            label:
                                 label: 'Label:'
                                 type: text
                                 maxlength: 255
@@ -50,8 +49,6 @@ zenario__administration:
                                 type: text
                                 maxlength: 64
                                 note_below: This will be used for the name of the column in the database.
-                                readonly_if: |
-                                    item.is_protected || item.is_system_field
                                 visible_if: |
                                     item.type != 'other_system_field' && item.type != 'repeat_start' && (!item.is_system_field || item.db_column)
                             values_source:
@@ -100,7 +97,7 @@ zenario__administration:
                                 label: Include in export
                                 type: checkbox
                                 visible_if: |
-                                    tuix.show_include_in_export_option && ((item.type != 'other_system_field' && item.type != 'repeat_start' && (item.db_column || item.is_new_field)) || item.allow_admin_to_change_export)
+                                    lib.tuix.show_include_in_export_option && ((item.type != 'other_system_field' && item.type != 'repeat_start' && (item.db_column || item.is_new_field)) || item.allow_admin_to_change_export)
                             autocomplete:
                                 label: Autocomplete
                                 type: checkbox
@@ -173,6 +170,7 @@ zenario__administration:
                                     hide:
                                         label: Hide
                                 format_onchange: true
+                                
                                 visible_if: |
                                     item.type != 'other_system_field' || item.tuix_type == 'pick_items'
                             parent_id:
@@ -183,6 +181,8 @@ zenario__administration:
                                 visible_if: |
                                     (item.type != 'other_system_field' || item.tuix_type == 'pick_items') && item.admin_box_visibility == 'show_on_condition'
                                 indent: 1
+                                format_onchange: true
+                                
                             note_below:
                                 label: 'Note below:'
                                 type: text
@@ -293,7 +293,13 @@ zenario__administration:
                                     !item.is_system_field && item.show_in_organizer 
                                 indent: 1
                             searchable:
-                                label: Allow searching in Organizer
+                                label: Allow quick-searching in Organizer
+                                type: checkbox
+                                visible_if: |
+                                    !item.is_system_field && item.type == 'text' && item.show_in_organizer && item.create_index == 'index'
+                                indent: 2
+                            filterable:
+                                label: Allow filtering in Organizer
                                 type: checkbox
                                 visible_if: |
                                     !item.is_system_field && ((['date', 'editor', 'text', 'textarea', 'url'].indexOf(item.type) != -1) ? item.show_in_organizer : (item.show_in_organizer && item.create_index == 'index'))

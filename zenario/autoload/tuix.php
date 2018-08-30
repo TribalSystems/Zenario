@@ -160,7 +160,7 @@ class tuix {
 		//Save this array in the cache as a JSON file, for faster loading next time
 		if ($updateCache && $cachePath) {
 			@file_put_contents($cachePath, json_encode($tags));
-			@chmod($cachePath, 0666);
+			\ze\cache::chmod($cachePath, 0666);
 		
 			if ($filemtime) {
 				@touch($cachePath, $filemtime);
@@ -390,11 +390,55 @@ class tuix {
 		//If we can cache this to avoid doing all of this work next time, do so!
 		if ($cachePath) {
 			@file_put_contents($cachePath, json_encode(['m' => $modules, 't' => $tags]));
-			@chmod($cachePath, 0666);
+			\ze\cache::chmod($cachePath, 0666);
 		}
 	}
-
-
+	
+	
+	//This function ensures that a list of elements is actually a list,
+	//and not someone passing in a string or something by mistake
+	public static function ensureArray(&$tags, ...$keys) {
+		foreach ($keys as $key) {
+			if (isset($tags[$key])
+			 && !is_array($tags[$key])) {
+				$tags[$key] = [];
+			}
+		}
+	}
+	
+	
+	public static function checkOrganizerPanel(&$tags) {
+		
+		self::ensureArray($tags,
+			'columns',
+			'quick_filter_buttons',
+			'refiners',
+			'items',
+			'collection_buttons',
+			'item_buttons',
+			'inline_buttons',
+			'hidden_nav'
+		);
+	}
+	
+	public static function checkTUIXForm(&$tags) {
+		
+		self::ensureArray($tags,
+			'key',
+			'tabs',
+			'lovs'
+		);
+	}
+	
+	public static function checkAdminToolbar(&$tags) {
+		
+		self::ensureArray($tags,
+			'toolbars',
+			'sections'
+		);
+	}
+	
+	
 	//Formerly "zenarioReadTUIXFileR()"
 	public static function readFileR(&$tags, &$xml) {
 		$lastKey = null;
@@ -802,6 +846,7 @@ class tuix {
 			$orderItems = $parentKey == 'info'
 						|| $parentKey == 'notes'
 						|| $parentKey == 'actions'
+						|| $parentKey == 're_move_place'
 						|| $parentKey == 'overridden_info'
 						|| $parentKey == 'overridden_actions';
 	
@@ -1073,7 +1118,7 @@ class tuix {
 		//Try to save a copy of the admin box in the cache directory
 		if (($adminBoxSyncStoragePath = \ze\tuix::syncStoragePath($tags))
 		 && (@file_put_contents($adminBoxSyncStoragePath, \ze\tuix::encode($tags)))) {
-			@chmod($adminBoxSyncStoragePath, 0666);
+			\ze\cache::chmod($adminBoxSyncStoragePath, 0666);
 			$tags['_sync']['session'] = false;
 
 		//Fallback code to store in the session
@@ -1276,8 +1321,9 @@ class tuix {
 					
 						//Only check fields that are actually fields
 						$isField = 
-							!empty($field['upload'])
-						 || !empty($field['pick_items'])
+							isset($field['upload'])
+						 || isset($field['pick_items'])
+						 || isset($field['captcha'])
 						 || (!empty($field['type']) && $field['type'] != 'submit' && $field['type'] != 'toggle' && $field['type'] != 'button');
 
 					
@@ -1434,6 +1480,43 @@ class tuix {
 		//Loop through each field, looking for fields with validation set
 		if (isset($tab['fields']) && is_array($tab['fields'])) {
 			foreach ($tab['fields'] as $fieldName => &$field) {
+				
+				if (isset($field['captcha'])) {
+					
+					if (!isset($_SESSION['fea_passed_captchas'])) {
+						$_SESSION['fea_passed_captchas'] = [];
+						
+						if (!empty($field['current_value'])) {
+							if (!isset($_SESSION['fea_passed_captchas'][$field['current_value']])) {
+								
+								//For testing on your local Mac
+								//$arrContextOptions=array(
+								//	"ssl"=>array(
+								//		"verify_peer"=>false,
+								//		"verify_peer_name"=>false,
+								//	),
+								//); 
+								
+								if (($json = file_get_contents(
+										'https://www.google.com/recaptcha/api/siteverify'.
+										'?secret='. rawurlencode(\ze::setting('google_recaptcha_secret_key')).
+										'&response='. rawurlencode($field['current_value'])
+										
+										//For testing on your local Mac
+										//, false, stream_context_create($arrContextOptions)
+									))
+								 && ($json = json_decode($json, true))
+								 && (!empty($json['success']))
+								) {
+									$_SESSION['fea_passed_captchas'][$field['current_value']] = true;
+								} else {
+									$field['current_value'] = '';
+								}
+							}
+						}
+					}
+				}
+				
 				
 				//Only check fields with then validation property
 				if (empty($field['validation'])) {
@@ -1644,7 +1727,6 @@ class tuix {
 			}
 		
 			$phrase = \ze\lang::phrase($phrase, false, $moduleClass, $languageId, self::$yamlFilePath);
-			//function phrase($code, $replace = [], $moduleClass = 'lookup', $languageId = false, $backtraceOffset = 1) {
 		}
 	}
 	
@@ -1846,13 +1928,13 @@ class tuix {
 		
 		if ($showSecondLanguageColumn) {
 			$html = '
-				<table class="customise_phrases cols_3"><tr>
+				<table class="zfab_customise_phrases cols_3"><tr>
 					<th>Original Phrase</th>
 					<th>Customised Phrase</th>
 					<th>' . \ze\lang::name($languageId) . '</th>';
 		} else {
 			$html = '
-				<table class="customise_phrases cols_2"><tr>
+				<table class="zfab_customise_phrases cols_2"><tr>
 					<th>Original Phrase</th>
 					<th>Customised Phrase</th>';
 		}
@@ -1881,12 +1963,11 @@ class tuix {
 				'ord' => ++$ord,
 				'same_row' => true,
 				'pre_field_html' => '
-					<tr style="margin-top: 5px;"><td style="padding-top: 10px;">
+					<tr><td>
 						'. htmlspecialchars($defaultText). '
 						<br/>
-						<span style="font-size: 8px;">(<span style="font-family: \'Courier New\', Courier, monospace;"
-						>'. htmlspecialchars(substr($ppath, 7)). '</span>)</span>
-					</td><td style="padding-top: 10px;">
+						<span>(<span>'. htmlspecialchars(substr($ppath, 7)). '</span>)</span>
+					</td><td>
 				',
 				'type' => strpos(trim($defaultText), "\n") === false? 'text' : 'textarea',
 				'post_field_html' => '
@@ -1907,7 +1988,7 @@ class tuix {
 					'same_row' => true,
 					'readonly' => !\ze\priv::check('_PRIV_MANAGE_LANGUAGE_PHRASE'),
 					'pre_field_html' => '
-						<td style="padding-top: 10px;">
+						<td>
 					',
 					'type' => strpos(trim($defaultText), "\n") === false? 'text' : 'textarea',
 					'post_field_html' => '
@@ -2473,41 +2554,57 @@ class tuix {
 			$instance = \ze\plugin::details($egg['instance_id']);
 			$module = \ze\module::details($egg['module_id']);
 			
-			$key['moduleClassName'] = $module['class_name'];
 			$key['moduleId'] = $egg['module_id'];
 			$key['instanceId'] = $egg['instance_id'];
 			$key['eggId'] = $eggId;
 			$key['slideNum'] = $egg['slide_num'];
+			$key['isNest'] = (bool) $instance['is_nest'];
+			$key['isSlideshow'] = (bool) $instance['is_slideshow'];
+			$key['framework'] = $egg['framework'] ?: $module['default_framework'];
+		
+		} else {
+			//Attempt to get the instance id
+			$instanceId = (int) \ze::get('instanceId') ?: ((int) \ze::get('refiner__nest') ?: (int) \ze::get('id'));
+	
+			//Attempt to get the module id
+			$moduleId = (int) \ze::get('moduleId') ?: (int) \ze::get('refiner__plugin');
+		
+			//Editing an existing plugin
+			if ($instanceId) {
+				$module = $instance = \ze\plugin::details($instanceId);
+				$egg = [];
 			
-			return;
+				$key['moduleId'] = $instance['module_id'];
+				$key['instanceId'] = $instanceId;
+				$key['eggId'] = 0;
+				$key['isNest'] = (bool) $instance['is_nest'];
+				$key['isSlideshow'] = (bool) $instance['is_slideshow'];
+				$key['framework'] = $instance['framework'] ?: $module['default_framework'];
+		
+			//Creating a new plugin
+			} else {
+				$module = \ze\module::details($moduleId);
+				$instance = ['framework' => $module['default_framework'], 'css_class' => ''];
+				$egg = [];
+			
+				$key['moduleId'] = $moduleId;
+				$key['instanceId'] = 0;
+				$key['eggId'] = 0;
+				$key['isSlideshow'] = $module['class_name'] == 'zenario_slideshow';
+				$key['isNest'] = $key['isSlideshow'] || $module['class_name'] == 'zenario_plugin_nest';
+				$key['framework'] = $module['default_framework'];
+			}
 		}
 		
-		//Attempt to get the instance id
-		$instanceId = (int) \ze::get('instanceId') ?: ((int) \ze::get('refiner__nest') ?: (int) \ze::get('id'));
-	
-		//Attempt to get the module id
-		$moduleId = (int) \ze::get('moduleId') ?: (int) \ze::get('refiner__plugin');
+		$key['moduleClassName'] = $module['class_name'];
 		
-		//Editing an existing plugin
-		if ($instanceId) {
-			$module = $instance = \ze\plugin::details($instanceId);
-			$egg = [];
-			
-			$key['moduleClassName'] = $module['class_name'];
-			$key['moduleId'] = $instance['module_id'];
-			$key['instanceId'] = $instanceId;
-			$key['eggId'] = 0;
-		
-		//Creating a new plugin
-		} else {
-			$module = \ze\module::details($moduleId);
-			$instance = ['framework' => $module['default_framework'], 'css_class' => ''];
-			$egg = [];
-			
-			$key['moduleClassName'] = $module['class_name'];
-			$key['moduleId'] = $moduleId;
-			$key['instanceId'] = 0;
-			$key['eggId'] = 0;
+		if ($key['instanceId']) {
+			$key['mode'] =
+				\ze\row::get('plugin_settings', 'value', [
+					'name' => 'mode',
+					'instance_id' => $key['instanceId'],
+					'egg_id' => $key['eggId']
+				]);
 		}
 	}
 
@@ -2544,6 +2641,8 @@ class tuix {
 		}
 		$tags = $tags[$requestedPath];
 		$clientTags = false;
+		
+		\ze\tuix::checkTUIXForm($tags);
 	
 	
 		if ($debugMode) {

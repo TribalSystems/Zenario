@@ -22,7 +22,7 @@ email_templates:
              -- Your friendly team at zenar.io
     reset_password:
         subject: Your Zenario Admin Password has been reset
-        from: Zenario
+        from: false
         body: |
             Dear [[NAME]]
             
@@ -42,7 +42,7 @@ email_templates:
             Thank you.
     new_reset_password:
         subject: Your Zenario Admin Username and Password
-        from: Zenario
+        from: false
         body: |
             Dear [[NAME]],
             
@@ -77,7 +77,7 @@ email_templates:
             Thank you.
     security_code:
         subject: Your administrator login at [[URL]][[SUBDIRECTORY]]
-        from: Zenario
+        from: false
         body: |
             Dear [[NAME]],
             

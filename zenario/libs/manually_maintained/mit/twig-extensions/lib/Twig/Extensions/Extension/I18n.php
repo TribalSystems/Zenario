@@ -25,7 +25,7 @@ class Twig_Extensions_Extension_I18n extends Twig_Extension
     public function getFilters()
     {
         return array(
-             new Twig_SimpleFilter('trans', 'phrase')
+             new Twig_SimpleFilter('trans', 'zenario_phrase')
         );
     }
 

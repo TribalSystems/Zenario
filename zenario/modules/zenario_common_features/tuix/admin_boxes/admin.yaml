@@ -88,7 +88,7 @@ zenario_admin:
                 new_admin:
                     show: false
                     type: information
-                    message: The administrator will recieve a link via email where they can set a password.
+                    message: The administrator will receive a link via email where they can set a password.
                 is_trashed:
                     show: false
                     type: warning

@@ -104,6 +104,7 @@
     top: 17%;
     left: 50%;
     z-index: 340000;
+    max-width: 90%;
 }
 
 #zenario_fbAdminOrganizer {
@@ -507,7 +508,7 @@ input, textarea, button {
 	background-color:#C5E4FD;
 }
 
-.zenario_at_dev_icons {
+.zenario_at_topRightIcons {
 	float: right;
 	width: 74px;
 	height: 18px;

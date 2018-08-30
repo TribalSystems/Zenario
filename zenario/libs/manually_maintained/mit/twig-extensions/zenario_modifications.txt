@@ -4,7 +4,7 @@ lib/Twig/Extensions/Node/Trans.php:
 	Replace:
         return $plural ? 'ngettext' : 'gettext';
     With:
-        return $plural ? 'nphrase' : 'phrase';
+        return $plural ? 'zenario_nphrase' : 'zenario_phrase';
 
 
 
@@ -39,4 +39,4 @@ lib/Twig/Extensions/Extension/I18n.php
 	Replace:
             new Twig_SimpleFilter('trans', 'gettext'),
     With:
-            new Twig_SimpleFilter('trans', 'phrase')
+            new Twig_SimpleFilter('trans', 'zenario_phrase')

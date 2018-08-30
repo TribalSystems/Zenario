@@ -116,7 +116,7 @@ To correct this, please ask your system administrator to perform a
 				$failed = true;
 		
 				touch($path);
-				@chmod($path, 0666);
+				\ze\cache::chmod($path, 0666);
 		
 				//Attempt to use wget to fetch the file
 				if (!\ze\server::isWindows() && \ze\server::execEnabled()) {

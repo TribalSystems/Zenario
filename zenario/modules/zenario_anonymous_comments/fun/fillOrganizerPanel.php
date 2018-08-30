@@ -36,7 +36,7 @@ switch ($path) {
 					'Pending Comment on "[[page_title]]", left on [[comment_last_edit]]', 
 					[
 						'page_title' => ze\link::toItem($item['content_id'], $item['content_type'], $fullPath = false, $request = '', $alias = false, $autoAddImportantRequests = false, $forceAliasInAdminMode = true),
-						'comment_last_edit' => ze\date::formatDateTime($item['comment_last_edit'])]);
+						'comment_last_edit' => ze\admin::formatDateTime($item['comment_last_edit'])]);
 			
 			$item['summary'] = zenario_anonymous_comments::sanitiseHTML($item['summary'], true, true);
 	

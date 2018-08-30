@@ -449,6 +449,7 @@ switch ($path) {
 	
 		$datasetDetails = ze\dataset::details('documents');
 		$datasetId = $datasetDetails['id'];
+		$datesetFields = [];
 		if ($datasetDetails = ze\row::getAssocs('custom_dataset_fields', true, ['dataset_id' => $datasetId, 'is_system_field' => 0])) {
 			foreach ($datasetDetails as $details) {
 				if($details['type'] == 'text' || $details['type'] == 'date') {

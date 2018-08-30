@@ -98,9 +98,9 @@ zenario__administration:
                         png jpeg jpg optimize optimise
                 favicon:
                     css_class: favicon
-                    name: Favicon
+                    name: Site logos
                     desc: >
-                        Upload or remove a Favicon or a Home Screen Icon for this site
+                        Upload or remove a Favicon, a Home Screen Icon or the Default Icon for this site
                     keywords: >
                         favicon mobile icon home screen icon
                 files_and_images:

@@ -203,7 +203,7 @@ zenario__users:
                 import_dropdown:
                     label: Import
                     hide_when_children_are_not_visible: true
-                    ord: 999998
+                    ord: 999990
                 import:
                     label: Start import wizard
                     parent: import_dropdown
@@ -230,7 +230,53 @@ zenario__users:
                         pass_matched_ids: true
                         key:
                             dataset:
-                    ord: 999999
+                    ord: 999991
+                
+                settings_dropdown:
+                    css_class: organizer_settings_dropdown
+                    ord: 999992
+                    hide_when_children_are_not_visible: true
+                    label: ⚙
+                
+                settings:
+                    priv: _PRIV_VIEW_SITE_SETTING
+                    label: Settings for Users/Contacts
+                    parent: settings_dropdown
+                    hide_in_select_mode: true
+                    admin_box:
+                        path: site_settings
+                        key:
+                            id: users
+                
+                data_protection:
+                    priv: _PRIV_VIEW_SITE_SETTING
+                    label: Data Protection
+                    parent: settings_dropdown
+                    hide_in_select_mode: true
+                    admin_box:
+                        path: site_settings
+                        key:
+                            id: data_protection
+
+
+                
+                dataset_dropdown:
+                    css_class: organizer_settings_dropdown
+                    ord: 999993
+                    hide_when_children_are_not_visible: true
+                    label: 💿 
+                    #✇ 
+                
+                users_dataset:
+                    priv: _PRIV_MANAGE_DATASET
+                    label: Edit Users Dataset
+                    parent: dataset_dropdown
+                    hide_in_select_mode: true
+                    link:
+                        path: ''
+                    
+                
+                
             item_buttons:
                 edit:
                     label: Edit [[user_type]]

@@ -120,7 +120,7 @@ switch ($path) {
 			if ($box['first_display'] && !$values['first_tab/alt_tag']) {
 				$fields['first_tab/alt_tag']['value'] = $image['alt_tag'];
 			}
-			if ($editModeOn && !$changes['first_tab/alt_tag']) {
+			if ($editModeOn && !$values['first_tab/alt_tag']) {
 				$fields['first_tab/alt_tag']['current_value'] = $image['alt_tag'];
 			}
 			

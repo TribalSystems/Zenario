@@ -105,6 +105,7 @@ site_settings:
                     language: yaml
                     style: |
                         height: 30em;
+                        width: 99%;
                 description2:
                     full_width: true
                     snippet:

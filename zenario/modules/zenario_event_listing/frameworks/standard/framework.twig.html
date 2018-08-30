@@ -37,6 +37,15 @@
 						<span class="single_event_location_country">{{Event.Event_location_country}}</span>
 					{% endif %}
 					<span class="single_event_description">{{Event.Event_Description}}</span>
+					{% if Show_Category and Event.Category %}
+						{% if Event.Category_Landing_Page_Link %}
+							<a href="{{Event.Category_Landing_Page_Link|e}}">
+						{% endif %}
+						<div class="single_event_category category_{{Event.Category_Id|e}}">{{Event.Category|e}}</div>
+						{% if Event.Category_Landing_Page_Link %}
+							</a>
+						{% endif %}
+					{% endif %}
 					<a class="single_event_more_link" href="{{Event.Link_To_Event}}" >{{'_MORE'|trans}}</a>
 				</div>
 			</div>

@@ -217,7 +217,7 @@ zenario_email_template:
                     type: select
                     empty_value: Use site-wide setting
                     values:
-                        never_save:
+                        0:
                             label: Don't save
                         1:
                             label: Delete after 1 day
@@ -237,7 +237,7 @@ zenario_email_template:
                 
                 delete_log_content_sooner:
                     visible_if: |
-                        ['never_save', ''].indexOf(zenarioAB.value('period_to_delete_log_headers')) === -1
+                        ['0', ''].indexOf(zenarioAB.value('period_to_delete_log_headers')) === -1
                     indent: 1
                     label: Delete email body sooner (just save headers)
                     type: checkbox
@@ -249,7 +249,7 @@ zenario_email_template:
                     indent: 2
                     type: select
                     values:
-                        never_save:
+                        0:
                             label: Don't save
                         1:
                             label: Delete after 1 day

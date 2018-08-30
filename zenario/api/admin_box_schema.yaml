@@ -565,6 +565,9 @@ additionalProperties:
                                 -
                                     required:
                                         - upload
+                                -
+                                    required:
+                                        - captcha
                             
                             #Note: it's legal for pick_items and upload to appear together
                             #There's a small hack in the devTools.validate() function to add this exception.
@@ -1047,7 +1050,7 @@ additionalProperties:
                                             type: string
                                             description: >
                                                 A snippet of JavaScript code to be evaluated; if it's false for an item then that item is be pickable.
-                                
+                                        
                                         traits:
                                             type: object
                                             additionalProperties:
@@ -1083,6 +1086,39 @@ additionalProperties:
                                                 Setting this property will allow the administrator reorder the selected items by dragging/dropping.
                                                 
                                                 Otherwise items will be displayed in alphabetical order.
+                                
+                                
+                                
+                                captcha:
+                                    type: object
+                                    description: >
+                                        Set this property to add a Google ReCAPTURE to a TUIX form.
+                                        
+                                        This will only work properly if the ReCAPTURE library is already included on the
+                                        page, and the sitekey and secret key are set correctly in the site settings.
+                                        
+                                        When the user correctly completes the CAPTURE, their successful responce will be stored
+                                        in this field's value.
+                                        
+                                        Any unsuccessful responces, or responces that are not verified, will be stripped out.
+                                        So if you see a value in this field in your PHP code, then you can be sure that the
+                                        CAPTURE was successfully completed.
+                                    properties:
+                                        theme:
+                                            enum:
+                                                - dark
+                                                - light
+                                            description: >
+                                                The color theme, defaults to light.
+                                        size:
+                                            enum:
+                                                - compact
+                                                - normal
+                                            description: >
+                                                The size, defaults to normal.
+                                        tabindex:
+                                            type: integer
+                                    
                                 
                                 
                                 snippet:

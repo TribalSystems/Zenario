@@ -2,7 +2,7 @@
 	id="organizer_form_tab_{{m.id|e}}" 
 	data-id="{{m.id|e}}"
 	class="tab sort 
-		<% if (m._selected) { %> on <% } %>
+		<% if (m._is_current_page) { %> on <% } %>
 		{{m.visibility|e}}" 
 >
 	<span>{{m.name|e}}</span>

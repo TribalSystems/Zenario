@@ -529,5 +529,16 @@ _sql
 	) ENGINE=MyISAM DEFAULT CHARSET=utf8
 _sql
 	
-);
+//Added a column for consent dropdown on malchimp	
+); ze\dbAdm::revision(41
+,  <<<_sql
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_CRM_FORM_INTEGRATION_PREFIX]]mailchimp_data`
+	DROP COLUMN `consent_dropdown`
+_sql
 
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_CRM_FORM_INTEGRATION_PREFIX]]mailchimp_data`
+	ADD COLUMN `consent_field` int(5) NOT NULL DEFAULT '0'
+_sql
+
+);

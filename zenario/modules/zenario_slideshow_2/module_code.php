@@ -154,6 +154,38 @@ class zenario_slideshow_2 extends ze\moduleBaseClass {
 					";
 					$placeholderSlide = true;
 				}
+				
+				// Translate phrases
+				if ($slide['overwrite_alt_tag']) {
+					$slide['overwrite_alt_tag'] = $this->phrase($slide['overwrite_alt_tag']);
+				}
+				if ($slide['tab_name']) {
+					$slide['tab_name'] = $this->phrase($slide['tab_name']);
+				}
+				if ($slide['slide_title']) {
+					$slide['slide_title'] = $this->phrase($slide['slide_title']);
+				}
+				if ($slide['slide_extra_html']) {
+					$slide['slide_extra_html'] = $this->phrase($slide['slide_extra_html']);
+				}
+				if ($slide['slide_more_link_text']) {
+					$slide['slide_more_link_text'] = $this->phrase($slide['slide_more_link_text']);
+				}
+				if ($slide['rollover_overwrite_alt_tag']) {
+					$slide['rollover_overwrite_alt_tag'] = $this->phrase($slide['rollover_overwrite_alt_tag']);
+				}
+				if ($slide['mobile_overwrite_alt_tag']) {
+					$slide['mobile_overwrite_alt_tag'] = $this->phrase($slide['mobile_overwrite_alt_tag']);
+				}
+				if ($slide['mobile_tab_name']) {
+					$slide['mobile_tab_name'] = $this->phrase($slide['mobile_tab_name']);
+				}
+				if ($slide['mobile_slide_title']) {
+					$slide['mobile_slide_title'] = $this->phrase($slide['mobile_slide_title']);
+				}
+				if ($slide['mobile_slide_extra_html']) {
+					$slide['mobile_slide_extra_html'] = $this->phrase($slide['mobile_slide_extra_html']);
+				}
 			}
 			// If a slide has a mobile image, but some do not, display a smaller version of the original image instead
 			if ($mobileImages && $missingMobileImage && ($this->setting('mobile_options') == 'seperate_fixed')) {

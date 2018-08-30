@@ -35,11 +35,15 @@ class category {
 	public static function name($id) {
 		return \ze\row::get('categories', 'name', ['id' => $id]);
 	}
+	
+	public static function codeName($id) {
+		return \ze\row::get('categories', 'code_name', ['id' => $id]);
+	}
 
 	const publicNameFromTwig = true;
 	//Formerly "categoryPublicName()"
 	public static function publicName($catId, $languageId = false) {
-		return \ze\lang::phrase('_CATEGORY_'. $catId, false, '', $languageId);
+		return \ze\lang::phrase('_CATEGORY_'. $catId, false, 'zenario_common_features', $languageId);
 	}
 
 	//Formerly "getContentItemCategories()"
@@ -53,6 +57,7 @@ class category {
 					c.id,
 					c.parent_id,
 					c.name,
+					c.code_name,
 					c.public
 				FROM " . DB_PREFIX . "categories AS c
 				INNER JOIN " . DB_PREFIX . "category_item_link AS cil
@@ -75,7 +80,7 @@ class category {
 				if (!$row['public']) {
 					$row['public_name'] = false;
 				} else {
-					$row['public_name'] = \ze\lang::phrase('_CATEGORY_'. $row['id'], false, '', $langId);
+					$row['public_name'] = \ze\lang::phrase('_CATEGORY_'. $row['id'], false, 'zenario_common_features', $langId);
 				}
 			
 				$categories[] = $row;

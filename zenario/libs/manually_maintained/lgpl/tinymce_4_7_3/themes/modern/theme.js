@@ -13546,8 +13546,8 @@ define(
 
     var setupAutoCompleteHandler = function (ctrl, editorSettings, bodyElm, fileType) {
       var autocomplete = function (term) {
-        var linkTargets = LinkTargets.find(bodyElm);
-        var menuItems = createMenuItems(term, linkTargets, fileType, editorSettings);
+        var linkTargets = editorSettings.enable_autocompletes? LinkTargets.find(bodyElm) : [];
+        var menuItems = editorSettings.enable_autocompletes? createMenuItems(term, linkTargets, fileType, editorSettings) : [];
         ctrl.showAutoComplete(menuItems, term);
       };
 

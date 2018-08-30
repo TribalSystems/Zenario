@@ -54,6 +54,13 @@ class zenario_users__organizer__users extends zenario_users {
 			unset($panel['columns']['opted_out_on']);
 			unset($panel['columns']['opt_out_method']);
 		}
+		
+		if (isset($panel['collection_buttons']['users_dataset'])) {
+			$panel['collection_buttons']['users_dataset']['link']['path'] =
+				'zenario__administration/panels/custom_datasets/item_buttons/edit_gui//'.
+				ze\dataset::details('users', 'id').
+				'//';
+		}
 	}
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
@@ -86,7 +93,6 @@ class zenario_users__organizer__users extends zenario_users {
 				$img = '&usage=user&c='. $item['checksum'];
 	
 				$item['image'] = 'zenario/file.php?og=1'. $img;
-				$item['list_image'] = 'zenario/file.php?ogt=1'. $img;
 			}
 			
 			if ($item['status'] == 'contact') {
@@ -121,7 +127,7 @@ class zenario_users__organizer__users extends zenario_users {
 			}
 			
 			//if ($item['last_login']) {
-			//	$item['last_login'] = ze\date::format($item['last_login'], ze::setting('vis_date_format_med'));
+			//	$item['last_login'] = ze\admin::formatDate($item['last_login'], ze::setting('vis_date_format_med'));
 			//	$item['readable_last_login'] = ze\admin::phrase('Last login: [[last_login]]', ['last_login' => $item['last_login']]);
 			//} elseif ($item['status'] != 'contact') {
 			//	$item['readable_last_login'] = ze\admin::phrase('Last login: Never');

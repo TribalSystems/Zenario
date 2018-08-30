@@ -3,7 +3,7 @@ description: |
     <p>
         This module logs all 404 errors that take users to the site's custom 404 page. So for example a URL of the format "www.example.com/not-a-real-page" will log an error, but a URL of the format "www.example.com/not-a-real-page.php" will not, which will be recorded in the apache error log.
     </p><p>
-        There's an organizer panel which lists these errors along with the date/time they were recieved, the referrer URL in full, the requested page Alias and the link to which the request is connected via a spare alias (if set). 
+        There's an organizer panel which lists these errors along with the date/time they were received, the referrer URL in full, the requested page Alias and the link to which the request is connected via a spare alias (if set). 
     </p><p>
         A spare alias can be created for requested aliases in this panel from an item button. The log can be cleared.
     </p>

@@ -63,10 +63,10 @@
 			</label>
 		<% } else { %>
 			<% if (!m.isUpload) { %>
-				<% if (m.list_image) { %>
+				<% if (m.image) { %>
 					<div
 						class="zenario_fab_picked_item_image"
-						style="background-image: url('{{zenario.addBasePath(m.list_image)|e}}');"
+						style="background-image: url('{{zenario.addBasePath(m.image)|e}}');"
 					></div>
 				<% } else if (m.css_class) { %>
 					<div

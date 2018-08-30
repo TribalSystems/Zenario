@@ -48,6 +48,7 @@ class zenario_user_forms__admin_boxes__field_calculation extends ze\moduleBaseCl
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
 		$calculationCode = json_decode($values['details/calculation_code'], true);
+		
 		$errors = false;
 		// Validate calculation code
 		$error = static::validateCalculationCode($calculationCode);
@@ -177,7 +178,7 @@ class zenario_user_forms__admin_boxes__field_calculation extends ze\moduleBaseCl
 						break;
 					case 'field':
 						$name = '';
-						if ($fields['details/numeric_field']['values'][$calculationCode[$i]['value']]) {
+						if (isset($fields['details/numeric_field']['values'][$calculationCode[$i]['value']])) {
 							$name = $fields['details/numeric_field']['values'][$calculationCode[$i]['value']]['label'];
 						} else {
 							$name = 'UNKNOWN FIELD';

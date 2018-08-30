@@ -9,11 +9,11 @@ description: >
         This Module has no description file, or its description file is missing its &lt;description&gt; tag.
     </p>
 keywords: ""
-is_pluggable: '[[HAS_SHOWSLOT_FUNCTION]]'
+is_pluggable: false
 fill_organizer_nav: '[[HAS_FILLORGANIZERNAV_FUNCTION]]'
 can_be_version_controlled: false
 for_use_in_twig: false
-nestable: '[[HAS_SHOWSLOT_FUNCTION]]'
+nestable: false
 vlp_class_name: '[[MODULE_DIRECTORY_NAME]]'
 css_class_name: '[[MODULE_DIRECTORY_NAME]]'
 default_framework: ""

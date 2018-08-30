@@ -1392,7 +1392,7 @@ zenarioT.tuixToArray = function(tuix) {
 
 
 zenarioT.setButtonKin = function(buttons, parentClass) {
-	zenarioT.setKin(buttons, parentClass || 'organiser_button_with_children');
+	zenarioT.setKin(buttons, parentClass || 'organizer_button_with_children');
 };
 
 zenarioT.setKin = function(buttons, parentClass) {

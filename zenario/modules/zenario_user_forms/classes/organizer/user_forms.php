@@ -111,6 +111,16 @@ class zenario_user_forms__organizer__user_forms extends ze\moduleBaseClass {
 			if ($item['type'] != 'standard') {
 				$item['css_class'] = 'form_type_' . $item['type'];
 			}
+			
+			if ($item['latest_response']) {
+				$item['latest_response'] = ze\admin::formatDateTime($item['latest_response'], '_MEDIUM');
+			}
+			$form = ze\row::get(ZENARIO_USER_FORMS_PREFIX . 'user_forms', ['save_record'], $id);
+			if (!$form['save_record']) {
+				$item['latest_response'] = ze\admin::phrase("Doesn't log responses");
+			}
+			
+			$item['type'] = zenario_user_forms::getFormTypeEnglish($item['type']);
 		}
 	}
 	

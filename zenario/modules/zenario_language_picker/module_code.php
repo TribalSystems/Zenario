@@ -55,7 +55,7 @@ class zenario_language_picker extends ze\moduleBaseClass {
 				'SELECT id, status, alias, language_id
 				FROM '. DB_PREFIX. 'content_items
 				WHERE equiv_id = '. (int) ze::$equivId. '
-				  AND `type` = \''. ze\escape::sql(ze::$cType). '\'', 
+				  AND `type` = \''. ze\escape::sql(ze::$cType). '\'',
 				'language_id'
 			);
 		}

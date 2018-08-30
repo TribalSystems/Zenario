@@ -118,7 +118,8 @@ zenarioAW.draw2 = function() {
 		zenarioAW.insertHTML(html, cb);
 		
 		$('#welcome').show({effect: 'drop', direction: 'up', duration: 300, complete: function() {
-			zenarioAW.addJQueryElementsToTabAndFocusFirstField();
+			zenarioAW.addJQueryElementsToTab();
+			zenarioAW.focusFirstField();
 		}});
 		zenario.addJQueryElements('#zenario_abtab ', true);	
 	
@@ -205,6 +206,14 @@ zenarioAW.refererHostWarning = function(msg) {
 	}
 };
 
+
+//These functions need to be defined to enable file uploads
+zenarioAW.getKey = function() {
+	return {};
+};
+zenarioAW.ajaxURL = function() {
+	return URLBasePath + 'zenario/ajax.php?method_call=handleWelcomeAJAX';
+};
 
 
 

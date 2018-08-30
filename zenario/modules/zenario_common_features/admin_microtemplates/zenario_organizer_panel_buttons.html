@@ -1,16 +1,38 @@
 <div id="organizer_rightColumnOptions" class="organizer_toolbar clearfix">
-	<% if (m.itemButtons && m.itemButtons.length) { %>
-		<div class="toolbar" id="organizer_itemToolbar">
-			<span id="organizer_itemToolbarButtons" class="toolbarButtons">
-				{{zenarioT.microTemplate('zenario_organizer_button', m.itemButtons)}}
-			</span>
+	<% if (m.collectionButtons && m.collectionButtons.length) { %>
+		<div id="organizer_collectionToolbarWrap">
+			<div class="toolbar" id="organizer_collectionToolbar">
+				<span id="organizer_collectionToolbarButtons" class="toolbarButtons">
+					{{zenarioT.microTemplate('zenario_organizer_button', m.collectionButtons)}}
+				</span>
+			</div>
 		</div>
+	<% } %>
 	
-	<% } else if (m.collectionButtons && m.collectionButtons.length) { %>
-		<div class="toolbar" id="organizer_collectionToolbar">
-			<span id="organizer_collectionToolbarButtons" class="toolbarButtons">
-				{{zenarioT.microTemplate('zenario_organizer_button', m.collectionButtons)}}
-			</span>
+	<% if (m.itemsSelected) { %>
+	
+		<div id="organizer_itemToolbarWrap">
+			<div class="toolbar" id="organizer_itemToolbar">
+			
+				<div id="organizer_itemToolbarButtons" class="toolbarButtons">
+			
+					<% if (m.itemCSSClass) { %>
+						<div class="organizer_item_toolbar_image">
+							<div class="listicon organizer_item_image {{m.itemCSSClass|escape}}">
+								<div class="organizer_items_selected">
+									<% if (m.itemsSelected > 1) { %>
+										{{m.itemsSelected}} items
+									<% } %>
+								</div>
+							</div>
+						</div>
+					<% } %>
+				
+					<% if (m.itemButtons && m.itemButtons.length) { %>
+						{{zenarioT.microTemplate('zenario_organizer_button', m.itemButtons)}}
+					<% } %>
+				</div>
+			</div>
 		</div>
 	<% } %>
 	

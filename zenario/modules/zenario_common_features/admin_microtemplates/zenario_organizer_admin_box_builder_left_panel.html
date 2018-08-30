@@ -32,64 +32,40 @@
 			<div class="field_type" data-type="dataset_picker"><span class="dataset_picker"></span><h4>Dataset picker</h4></div>
 		</div>
 	</div>
-<% } else if (m.mode == 'field_details') { %>
+<% } else if (m.mode == 'edit_field' || m.mode == 'edit_page') { %>
 	<div id="organizer_field_details_outer" class="field_details_outer">
 		<div id="organizer_field_details_inner" class="field_details_inner">
-			<div class="field_details_header">
-				<div id="zenario_field_details_header_content" class="field_details_header_content">
-					<div class="field_name">
-						<h5>{{m.field_label|e}}</h5>
+			<form id="organizer_field_details_form">
+				<div class="field_details_header">
+					<div id="zenario_field_details_header_content" class="field_details_header_content">
+						<div class="field_name">
+							<h5>{{m.label|e}}</h5>
+						</div>
+						<div class="field_buttons">
+							<span class="add_new_field">Done</span>
+						</div>
+						<% if (m.mode == 'edit_field') { %>
+							<div class="field_info">
+								<span class="field_type_message">{{m.type|e}} {{m.record_count|e}}</span>
+							</div> 
+						<% } %>
 					</div>
-					<div class="field_buttons">
-						<span class="add_new_field">Done</span>
+				</div>
+				<% if (!m.hide_tab_bar) { %>
+					<div id="organizer_field_details_tabs" class="field_details_tabs">
+						<!-- TUIX tabs -->
 					</div>
-					<div class="field_info">
-						<span class="field_type_message">{{m.type|e}} {{m.record_count|e}}</span>
-					</div> 
-				</div>
-			</div>
-			<% if (!m.hide_tab_bar) { %>
-				<div id="organizer_field_details_tabs" class="field_details_tabs">
-					<!-- TUIX tabs -->
-				</div>
-			<% } %>
-			
-			<div id="organizer_field_details" class="field_details">
-				<form id="organizer_field_details_form">
+				<% } %>
+				<div id="organizer_field_details" class="field_details">
 					<!-- TUIX fields -->
-				</form>
-			</div>
-		</div>
-	</div>
-<% } else if (m.mode == 'tab_details') { %>
-	<div id="organizer_tab_details_outer" class="tab_details_outer">
-		<div id="organizer_tab_details_inner" class="tab_details_inner">
-			<div class="tab_details_header">
-				<div id="zenario_tab_details_header_content" class="tab_details_header_content">
-					<div class="field_name">
-						<h5>{{m.tab_label|e}}</h5>
+				</div>
+				
+				<% if (m.mode == 'edit_page' && !m.is_system_field) { %>
+					<div class="bottom_buttons">
+						<input id="organizer_remove_form_tab" type="button" value="Delete tab"/>
 					</div>
-					<div class="field_buttons">
-						<span class="add_new_field">Done</span>
-					</div>
-				</div>
-			</div>
-			<% if (!m.hide_tab_bar) { %>
-				<div id="organizer_tab_details_tabs" class="tab_details_tabs">
-					<!-- TUIX tabs -->
-				</div>
-			<% } %>
-			
-			<div id="organizer_tab_details" class="tab_details">
-				<form id="organizer_tab_details_form">
-					<!-- TUIX fields -->
-				</form>
-			</div>
-			<% if (!m.is_system_field) { %>
-				<div class="bottom_buttons">
-					<input id="organizer_remove_form_tab" type="button" value="Delete tab"/>
-				</div>
-			<% } %>
+				<% } %>
+			</form>
 		</div>
 	</div>
 <% } %>

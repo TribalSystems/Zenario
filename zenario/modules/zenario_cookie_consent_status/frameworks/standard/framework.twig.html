@@ -1,31 +1,147 @@
 <div class="cookie_form">
-	<div class="cookie_message_and_status {{Status_Css_Class}}">
-		<div class="cookie_message">
-			{{"Your current cookie status on this website is:"|trans}}
-		</div>
-		<div class="cookie_status">
-			{{Status}}
-		</div>
-	</div>
 	
-	{% if Accepted_Cookies %}
-		<div class="cookie_button_area">
-			<div class="cookie_button_message">
-				{{"Click here to reject further cookies."|trans}}
+	{% if individual %}
+		<h2>{{'Privacy settings'|trans}}</h2>
+		
+		{% if saved %}
+			<p class="success">{{'Your changes have been saved.'|trans}}</p>
+		{% endif %}
+		
+		{{this.openForm()}}
+		
+		<div class="cookie">
+			<h5>{{'Necessary cookies'|trans}}</h5>
+			<p>{{'Essential cookies needed by this site. Without these cookies services cannot be provided.'|trans}}</p>
+			<label class="switch">
+				<input type="checkbox" checked disabled>
+				<span class="slider round"></span>
+			</label>
+		</div>
+		
+		<div class="cookie">
+			<h5>{{'Functionality'|trans}}</h5>
+			<p>{{"These cookies are used to remember choices you've made, for example to remember your login username."|trans}}</p>
+			<label class="switch">
+				<input type="checkbox" name="functionality" {{functionality}}>
+				<span class="slider round"></span>
+			</label>
+		</div>
+		
+		<div class="cookie">
+			<h5>{{'Analytics'|trans}}</h5>
+			<p>{{'These cookies are used to monitor traffic levels and page visits anonymously on our site.'|trans}}</p>
+			<label class="switch">
+				<input type="checkbox" name="analytics" {{analytics}}>
+				<span class="slider round"></span>
+			</label>
+		</div>
+		
+		<div class="cookie">
+			<h5>{{'Social Media'|trans}}</h5>
+			<p>{{'These cookies allow easy sharing of pages via social media, and allow tracking of shares.'|trans}}</p>
+			<label class="switch">
+				<input type="checkbox" name="social_media" {{social_media}}>
+				<span class="slider round"></span>
+			</label>
+		</div>
+		
+		
+		<input type="submit" name="cancel" value="{{'Cancel'|trans}}">
+		<input type="submit" name="save" value="{{'Save'|trans}}">
+		
+		{{this.closeForm()}}
+		
+	{% else %}
+		<div class="cookie_message_and_status {{Status_Css_Class}}">
+			<div class="cookie_message">
+				{{"Your current cookie status on this website is:"|trans}}
 			</div>
-			<div class="cookie_button">
-				<a href="{{Reject_Link}}">{{"Reject Cookies"|trans}}</a>
+			<div class="cookie_status">
+				{{Status}}
 			</div>
 		</div>
-	{% endif %}
-	{% if Rejected_Cookies %}
-		<div class="cookie_button_area">
-			<div class="cookie_button_message">
-				{{"Click here to opt in to cookies on this site."|trans}}
+	
+		{% if Accepted_Cookies %}
+			<div class="cookie_button_area">
+				<div class="cookie_button_message">
+					{{"Click here to reject further cookies."|trans}}
+				</div>
+				<div class="cookie_button">
+					<a href="{{Reject_Link}}">{{"Reject Cookies"|trans}}</a>
+				</div>
 			</div>
-			<div class="cookie_button">
-				<a href="{{Accept_Link}}">{{"Accept Cookies"|trans}}</a>
+		{% endif %}
+		{% if Rejected_Cookies %}
+			<div class="cookie_button_area">
+				<div class="cookie_button_message">
+					{{"Click here to opt in to cookies on this site."|trans}}
+				</div>
+				<div class="cookie_button">
+					<a href="{{Accept_Link}}">{{"Accept Cookies"|trans}}</a>
+				</div>
 			</div>
-		</div>
+		{% endif %}
 	{% endif %}
 </div>
+
+<style>
+	/* TEMPORARY STYES! */
+	/* The switch - the box around the slider */
+	.switch {
+	  position: relative;
+	  display: inline-block;
+	  width: 60px;
+	  height: 34px;
+	}
+
+	/* Hide default HTML checkbox */
+	.switch input {display:none;}
+
+	/* The slider */
+	.slider {
+	  position: absolute;
+	  cursor: pointer;
+	  top: 0;
+	  left: 0;
+	  right: 0;
+	  bottom: 0;
+	  background-color: #ccc;
+	  -webkit-transition: .4s;
+	  transition: .4s;
+	}
+
+	.slider:before {
+	  position: absolute;
+	  content: "";
+	  height: 26px;
+	  width: 26px;
+	  left: 4px;
+	  bottom: 4px;
+	  background-color: white;
+	  -webkit-transition: .4s;
+	  transition: .4s;
+	}
+
+	input:checked + .slider {
+	  background-color: #2196F3;
+	}
+
+	input:focus + .slider {
+	  box-shadow: 0 0 1px #2196F3;
+	}
+
+	input:checked + .slider:before {
+	  -webkit-transform: translateX(26px);
+	  -ms-transform: translateX(26px);
+	  transform: translateX(26px);
+	}
+
+	/* Rounded sliders */
+	.slider.round {
+	  border-radius: 34px;
+	}
+
+	.slider.round:before {
+	  border-radius: 50%;
+	}
+</style>

@@ -148,6 +148,8 @@ class zenario_extranet_password_reset extends zenario_extranet {
 			return false;
 		} else {
 			ze\userAdm::setPassword($userId, ($_POST['extranet_new_password'] ?? false), false);
+			//Set email verified flag
+			ze\row::update('users', ['email_verified' => 1], ['id' => $userId]);
 			return true;
 		}
 	}

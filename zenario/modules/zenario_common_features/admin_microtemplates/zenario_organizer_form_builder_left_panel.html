@@ -41,7 +41,7 @@
 			{{zenarioT.microTemplate('zenario_organizer_form_builder_dataset_tab', m.datasetTabs)}}
 		</div>
 	</div>
-<% } else if (m.mode == 'field_details') { %>
+<% } else if (m.mode == 'edit_field' || m.mode == 'edit_page') { %>
 	<div id="organizer_field_details_outer" class="field_details_outer" >
 		<div id="organizer_field_details_inner" class="field_details_inner">
 			<form id="organizer_field_details_form">
@@ -66,7 +66,7 @@
 							<span class="add_new_field">Done</span>
 						</div>
 						<div class="field_info">
-							<span class="field_type_message">{{m.typePhrase|e}}</span>
+							<span class="field_type_message">{{m.type_phrase|e}}</span>
 						</div> 
 					</div>
 				</div>
@@ -78,9 +78,9 @@
 				<div id="organizer_field_details" class="field_details">
 					<!-- TUIX fields -->
 				</div>
-				<% if (m.is_tab) { %>
+				<% if (m.mode == 'edit_page') { %>
 					<div class="bottom_buttons">
-						<input id="organizer_remove_form_tab" type="button" value="Delete page"/>
+						<input id="organizer_remove_form_page" type="button" value="Delete page"/>
 					</div>
 				<% } %> 
 			</form>

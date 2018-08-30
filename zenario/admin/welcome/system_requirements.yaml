@@ -25,32 +25,32 @@ system_requirements:
                     full_width: true
                     snippet:
                         html: Web Server
-                    visible_if: zenarioAW.togglePressed(1)
+                    visible_if: zenarioAW.togglePressed(field, 1)
                 show_server: &show_section
                     grouping: sub_table
                     type: toggle
                     redraw_onchange: true
                     same_row: true
-                    visible_if: "zenarioAW.togglePressed(1, tuixObject)"
+                    visible_if: "zenarioAW.togglePressed(field, 1)"
                 server_1:
                     grouping: sub_table
                     full_width: true
                     snippet:
                         html: Apache http server version 2.4.7 or later
-                    visible_if: zenarioAW.togglePressed()
+                    visible_if: zenarioAW.togglePressed(field)
                 php:
                     grouping: sub_table
                     full_width: true
                     snippet:
                         html: PHP
-                    visible_if: zenarioAW.togglePressed(1)
+                    visible_if: zenarioAW.togglePressed(field, 1)
                 show_php: *show_section
                 php_1:
                     grouping: sub_table
                     full_width: true
                     snippet:
                         html: PHP version 7.0 or later
-                    visible_if: zenarioAW.togglePressed()
+                    visible_if: zenarioAW.togglePressed(field)
                 opcache_misconfigured:
                     grouping: sub_table
                     full_width: true
@@ -64,83 +64,83 @@ system_requirements:
                             
                             Please edit your <code>php.ini</code> and either turn <code>opcache.enable</code> off
                             or else turn <code>opcache.dups_fix</code> on.
-                    visible_if: zenarioAW.togglePressed()
+                    visible_if: zenarioAW.togglePressed(field)
                 mysql:
                     grouping: sub_table
                     full_width: true
                     snippet:
                         html: MySQL
-                    visible_if: zenarioAW.togglePressed(1)
+                    visible_if: zenarioAW.togglePressed(field, 1)
                 show_mysql: *show_section
                 mysql_1:
                     grouping: sub_table
                     full_width: true
                     snippet:
                         html: MySQLi extension enabled in PHP
-                    visible_if: zenarioAW.togglePressed()
+                    visible_if: zenarioAW.togglePressed(field)
                 mysql_2:
                     grouping: sub_table
                     full_width: true
                     snippet:
                         html: MySQL client and MySQL server version 5.5.3 or later
-                    visible_if: zenarioAW.togglePressed()
+                    visible_if: zenarioAW.togglePressed(field)
                 mb:
                     grouping: sub_table
                     full_width: true
                     snippet:
                         html: Unicode Support
-                    visible_if: zenarioAW.togglePressed(1)
+                    visible_if: zenarioAW.togglePressed(field, 1)
                 show_mb: *show_section
                 mb_1:
                     grouping: sub_table
                     full_width: true
                     snippet:
                         html: ctype extension enabled in PHP
-                    visible_if: zenarioAW.togglePressed()
+                    visible_if: zenarioAW.togglePressed(field)
                 mb_2:
                     grouping: sub_table
                     full_width: true
                     snippet:
                         html: mbstring extension enabled in PHP
-                    visible_if: zenarioAW.togglePressed()
+                    visible_if: zenarioAW.togglePressed(field)
                 gd:
                     grouping: sub_table
                     full_width: true
                     snippet:
                         html: Image Manipulation
-                    visible_if: zenarioAW.togglePressed(1)
+                    visible_if: zenarioAW.togglePressed(field, 1)
                 show_gd: *show_section
                 gd_1:
                     grouping: sub_table
                     full_width: true
                     snippet:
                         html: GD Library enabled in PHP
-                    visible_if: zenarioAW.togglePressed()
+                    visible_if: zenarioAW.togglePressed(field)
                 gd_2:
                     grouping: sub_table
                     full_width: true
                     snippet:
                         html: GIF Read Support enabled in PHP
-                    visible_if: zenarioAW.togglePressed()
+                    visible_if: zenarioAW.togglePressed(field)
                 gd_3:
                     grouping: sub_table
                     full_width: true
                     snippet:
                         html: JPG Support enabled in PHP
-                    visible_if: zenarioAW.togglePressed()
+                    visible_if: zenarioAW.togglePressed(field)
                 gd_4:
                     grouping: sub_table
                     full_width: true
                     snippet:
                         html: PNG Support enabled in PHP
-                    visible_if: zenarioAW.togglePressed()
+                    visible_if: zenarioAW.togglePressed(field)
                 optional:
                     grouping: sub_table
                     full_width: true
                     row_class: sub_level
                     snippet:
                         html: Optional requirements
-                    visible_if: zenarioAW.togglePressed(1)
+                    visible_if: zenarioAW.togglePressed(field, 1)
                 show_optional: *show_section
                 optional_mod_deflate:
                     grouping: sub_table
@@ -150,7 +150,7 @@ system_requirements:
                         html: |
                             deflate module enabled in Apache
                             <br/><small>Needed for compressing files, for a faster page-load</small>
-                    visible_if: zenarioAW.togglePressed()
+                    visible_if: zenarioAW.togglePressed(field)
                 optional_mod_expires:
                     grouping: sub_table
                     full_width: true
@@ -159,7 +159,7 @@ system_requirements:
                         html: |
                             expires module enabled in Apache
                             <br/><small>Needed for images and files to be cached in the visitors browser, for a faster page-load</small>
-                    visible_if: zenarioAW.togglePressed()
+                    visible_if: zenarioAW.togglePressed(field)
                 optional_mod_rewrite:
                     grouping: sub_table
                     full_width: true
@@ -168,7 +168,7 @@ system_requirements:
                         html: |
                             rewrite module enabled in Apache
                             <br/><small>Needed for friendly URLs</small>
-                    visible_if: zenarioAW.togglePressed()
+                    visible_if: zenarioAW.togglePressed(field)
                 optional_curl:
                     grouping: sub_table
                     full_width: true
@@ -177,7 +177,7 @@ system_requirements:
                         html: |
                             curl extension enabled in PHP
                             <br/><small>Needed for translating pages using Google Translate</small>
-                    visible_if: zenarioAW.togglePressed()
+                    visible_if: zenarioAW.togglePressed(field)
                 optional_zip:
                     grouping: sub_table
                     full_width: true
@@ -186,7 +186,7 @@ system_requirements:
                         html: |
                             zip extension enabled in PHP
                             <br/><small>Needed for creating document extracts</small>
-                    visible_if: zenarioAW.togglePressed()
+                    visible_if: zenarioAW.togglePressed(field)
                 
                 
                 continue:

@@ -98,7 +98,7 @@ site_settings:
                             label: 1 day
                     value: 'no_limit'
         template:
-            label: Template
+            label: Standard Email Template
             edit_mode:
                 enabled: true
                 priv: _PRIV_EDIT_SITE_SETTING
@@ -108,8 +108,8 @@ site_settings:
                     full_width: true
                     snippet:
                         html: |
-                            Define a standard email template in this tab. 
-                            When an email template has the "Use standard email template" option selected, the email body is merged into the template below in [[email_body_content]].
+                            Define a standard, site-wide, email template. 
+                            When an email template has the "Use standard email template" option selected, the email body will be merged into the template below in the merge field [[email_body_content]].
                 standard_email_template:
                     site_setting:
                         name: standard_email_template
@@ -369,6 +369,7 @@ site_settings:
                     language: yaml
                     style: |
                         height: 30em;
+                        width: 99%;
                 description2:
                     full_width: true
                     snippet:

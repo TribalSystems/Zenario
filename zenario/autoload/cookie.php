@@ -59,8 +59,8 @@ class cookie {
 	}
 
 	//Formerly "setCookieConsent()"
-	public static function setConsent() {
-		\ze\cookie::set('cookies_accepted', 1);
+	public static function setConsent($types = false) {
+		\ze\cookie::set('cookies_accepted', $types ? $types : 1);
 		unset($_SESSION['cookies_rejected']);
 	}
 
@@ -85,8 +85,22 @@ class cookie {
 
 	const canSetFromTwig = true;
 	//Formerly "canSetCookie()"
-	public static function canSet() {
-		return \ze::setting('cookie_require_consent') != 'explicit' || !empty($_COOKIE['cookies_accepted']) || \ze\priv::check();
+	public static function canSet($type = false) {
+		if (\ze::setting('cookie_require_consent') != 'explicit' || \ze\priv::check()) {
+			return true;
+		}
+		
+		$cookies = explode(',', $_COOKIE['cookies_accepted'] ?? '');
+		//If "1" set, any cookie can be set
+		if (in_array(1, $cookies)) {
+			return true;
+		}
+		//Otherwise check if specific cookie is allowed
+		if ($type) {
+			return in_array($type, $cookies);
+		}
+		//Otherwise check if every cookie type has been set (required, functionality, analytics, social_media)
+		return count($cookies) == 4;
 	}
 
 	//Formerly "hideCookieConsent()"

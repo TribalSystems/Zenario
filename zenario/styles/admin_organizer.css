@@ -1568,6 +1568,10 @@ div.organizer_pageSize {
 	padding:0 0 5px 0;
 }
 
+#organizer_leftColumn .organizer_sectionTitleText .organizer_sectionText {
+	font-size:11px;
+}
+
 #organizer_leftColumn .legend_on span,
 #organizer_leftColumn .legend_on a span,
 #organizer_leftColumn .organizer_legend a:hover span{
@@ -1757,20 +1761,34 @@ div.organizer_pageSize {
 }
 
 .organizer_rightColumnOptions_panel {
-	padding:10px 0 10px;
-	background:url('../admin/images/store_keeper/org-border-right-column.gif') repeat-x bottom;
+	margin-bottom:5px;
+	border-bottom:1px solid #DCDCDC;
 	position:relative;
 }
 
 .organizer_toolbar,
 .organizer_rightColumnOptions_panel {
-	height:36px;
+	height:50px;
+}
+
+/*	Hack to stop buttons from overflowing to the next line  */
+#organizer_rightColumnOptions {
+	width: 3000px;
 }
 
 #organizer_collectionToolbar,
 #organizer_itemToolbar,
+#organizer_collectionToolbarWrap,
+#organizer_itemToolbarWrap,
 #organizer_previousToolbar {
-	position: absolute;
+	display: inline-block;
+}
+
+/*	Set a solid background on the item buttons, so they cover up the collection buttons if overlayed  */
+#organizer_itemToolbar,
+#organizer_itemToolbarWrap {
+    position: relative;
+    z-index: 50;
 }
 
 #organizer_collectionToolbar a,
@@ -1780,42 +1798,55 @@ div.organizer_pageSize {
 	cursor:pointer;
 }
 
+/* 110518 - Liz
+
+#organizer_collectionToolbar {
+	width:210px;
+	overflow:hidden;
+}
+
+#organizer_collectionToolbar #organizer_collectionToolbarButtons {
+	display:block;
+	width:3000px;
+	height:50px;
+}*/
+
 
 #organizer_itemToolbar {
 	z-index:9;
 }
 
-.organizer_toolbar .toolbarButtons span.organiser_button_dropdown_trigger,
+.organizer_toolbar .toolbarButtons span.organizer_button_dropdown_trigger,
 .organizer_toolbar .toolbarButtons .organizer_button_separator {
 	float:left;
 	margin:10px 0 0;
 	height:20px;
 }
 
-.organizer_toolbar .toolbarButtons span.organiser_button_dropdown_trigger .organiser_button_children span.organiser_button_dropdown_trigger {
+.organizer_toolbar .toolbarButtons span.organizer_button_dropdown_trigger .organizer_button_children span.organizer_button_dropdown_trigger {
 	margin:0;
 	height:auto;
 	float:none;
 }
 
-.organizer_toolbar .toolbarButtons span.organiser_button_dropdown_trigger .organiser_button_children span.organiser_button_dropdown_trigger:hover .label_without_icon {
+.organizer_toolbar .toolbarButtons span.organizer_button_dropdown_trigger .organizer_button_children span.organizer_button_dropdown_trigger:hover .label_without_icon {
 	background:#DDF6FD;
 }
 
-.organizer_toolbar .toolbarButtons span.organiser_button_dropdown_trigger .label_without_icon {
+.organizer_toolbar .toolbarButtons span.organizer_button_dropdown_trigger .label_without_icon {
 	padding:0 10px;
 }
 
-.organizer_toolbar .toolbarButtons span.organiser_button_dropdown_trigger .organiser_button_with_children {
+.organizer_toolbar .toolbarButtons span.organizer_button_dropdown_trigger .organizer_button_with_children {
 	padding-right:4px;
 }
 
-.organizer_toolbar .toolbarButtons span.organiser_button_dropdown_trigger .organiser_button_with_children a {
+.organizer_toolbar .toolbarButtons span.organizer_button_dropdown_trigger .organizer_button_with_children a {
 	background: url('../admin/images/icon-arrow-down-dark.svg') no-repeat right 5px / 8px 8px;
 	padding-right:12px;
 }
 
-.organizer_toolbar .toolbarButtons span.organiser_button_dropdown_trigger .organiser_button_with_children span.organiser_button_dropdown_trigger a {
+.organizer_toolbar .toolbarButtons span.organizer_button_dropdown_trigger .organizer_button_with_children span.organizer_button_dropdown_trigger a {
 	background:none;
 	padding-right:0;
 }
@@ -1835,13 +1866,13 @@ div.organizer_pageSize {
 	text-decoration:none;
 }
 
-.organizer_toolbar .toolbar .organiser_button_dropdown_trigger {
+.organizer_toolbar .toolbar .organizer_button_dropdown_trigger {
 	display: block;
 	float: left;
 	position:relative;
 }
 
-.organizer_toolbar .toolbar div.organiser_button_children {
+.organizer_toolbar .toolbar div.organizer_button_children {
 	display: none;
 	top: 20px;
 	left:0;
@@ -1851,7 +1882,7 @@ div.organizer_pageSize {
 	padding: 0;
 }
 
-.organizer_toolbar .toolbar div.organiser_button_children div {
+.organizer_toolbar .toolbar div.organizer_button_children div {
 	margin: 0px auto;
 	padding: 2px 2px 2px;
 	width: 200px;
@@ -1859,28 +1890,28 @@ div.organizer_pageSize {
 	background-color: white;
 }
 
-.organizer_toolbar .toolbar div.organiser_button_children a {
+.organizer_toolbar .toolbar div.organizer_button_children a {
 	display:block;
 	padding:5px 0;
 }
 
-.organizer_toolbar .toolbar div.organiser_button_children .organizer_button_separator {
+.organizer_toolbar .toolbar div.organizer_button_children .organizer_button_separator {
 	display:none;
 }
 
-.organizer_toolbar .toolbar .organiser_button_dropdown_trigger:hover div.organiser_button_children {
+.organizer_toolbar .toolbar .organizer_button_dropdown_trigger:hover div.organizer_button_children {
 	display: block;
 }
 
-.organizer_toolbar .toolbar .organiser_button_dropdown_trigger:hover div.organiser_button_children div.organiser_button_children {
+.organizer_toolbar .toolbar .organizer_button_dropdown_trigger:hover div.organizer_button_children div.organizer_button_children {
 	display: none;
 }
 
-.organizer_toolbar .toolbar div.organiser_button_children div {
+.organizer_toolbar .toolbar div.organizer_button_children div {
 	clear: left;
 }
 
-.organizer_toolbar .toolbar div.organiser_button_children div.organizer_button_separator {
+.organizer_toolbar .toolbar div.organizer_button_children div.organizer_button_separator {
 	display: none;
 }
 
@@ -1931,11 +1962,28 @@ div.organizer_pageSize {
 .organizer_toolbar .toolbar .toolbarButtons ul li a {
 	display: block;
 	height:25px;
-	padding:5px 15px 6px 15px;
+	padding:10px 15px 6px 15px;
 	text-decoration:none;
 }
 
-.organizer_toolbar .toolbar .toolbarButtons ul li.zenario_create_a_new a,
+.organizer_toolbar .toolbar #organizer_collectionToolbarButtons > ul {
+	margin-top:5px;
+}
+
+.organizer_toolbar .toolbar #organizer_collectionToolbarButtons > ul > li {
+	margin-top:0;
+}
+
+.organizer_toolbar .toolbar#organizer_collectionToolbar .toolbarButtons > ul > li {
+	background:none !important;
+	padding-right:0 !important;
+	margin-right:5px;
+} 
+
+.organizer_toolbar .toolbar#organizer_collectionToolbar .toolbarButtons > ul.organizer_button__settings_dropdown > li {
+	padding-right:5px !important;
+} 
+
 .organizer_toolbar .toolbar .toolbarButtons ul li.organizer_applyButton a,
 .organizer_toolbar .toolbar .toolbarButtons ul li.organizer_cancelButton a {
 	cursor: pointer;
@@ -1945,22 +1993,6 @@ div.organizer_pageSize {
 	-moz-border-radius: 2px;
 	border-radius: 2px;
 	padding:5px 10px 6px;
-}
-
-.organizer_toolbar .toolbar .toolbarButtons ul li.zenario_create_a_new a {
-	height:15px;
-}
-
-.organizer_toolbar .toolbar .toolbarButtons ul li.zenario_create_a_new li a {
-	height:auto;
-}
-
-.organizer_toolbar .toolbar .toolbarButtons ul li li.zenario_create_a_new a {
-	text-shadow:none;
-}
-
-.organizer_toolbar .toolbar .toolbarButtons ul li.zenario_create_a_new a {
-	background:#EA5900;
 }
 
 .organizer_toolbar .toolbar .toolbarButtons ul li.organizer_applyButton a {
@@ -1984,16 +2016,13 @@ div.organizer_pageSize {
 	transition:all 0.5s ease 0s;
 }
 
-.organizer_toolbar .toolbar .toolbarButtons ul li.zenario_create_a_new a,
-.organizer_toolbar .toolbar .toolbarButtons ul li.zenario_create_a_new a:hover,
-.organizer_toolbar .toolbar .toolbarButtons ul li.zenario_create_a_new:hover a,
 .organizer_toolbar .toolbar .toolbarButtons ul li.organizer_applyButton a,
 .organizer_toolbar .toolbar .toolbarButtons ul li.organizer_applyButton:hover a,
 .organizer_toolbar .toolbar .toolbarButtons ul li.organizer_applyButton a:hover,
 .organizer_toolbar .toolbar .toolbarButtons ul li.organizer_cancelButton a,
 .organizer_toolbar .toolbar .toolbarButtons ul li.organizer_cancelButton:hover a,
 .organizer_toolbar .toolbar .toolbarButtons ul li.organizer_cancelButton a:hover {
-	color:#FFF;
+	color:#FFF !important;
 }
 
 .organizer_toolbar .toolbar .toolbarButtons ul li {
@@ -2022,7 +2051,9 @@ div.organizer_pageSize {
 	margin: 0px auto;
 	padding:0px;
 	min-width: 200px;
-	max-height: 35em;
+	/*max-height: 35em;
+	overflow-y:auto;*/
+	max-height:70vh;
 	overflow-y:auto;
 }
 
@@ -2061,16 +2092,29 @@ div.organizer_pageSize {
 
 .organizer_toolbar .toolbar .toolbarButtons ul ul {
 	background:#F6F6F6;
-	border:1px solid #333;
-	-webkit-border-radius: 4px;
-	-moz-border-radius: 4px;
-	border-radius: 4px;
+	border:1px solid #808080;
 	-webkit-box-shadow: 0 1px 5px rgba(0,0,0,.85), inset 0 1px #fff;
 	-moz-box-shadow: 0 1px 5px rgba(0,0,0,.85), inset 0 1px #fff;
 	box-shadow: 0 1px 5px rgba(0,0,0,.85), inset 0 1px #fff;  
+	position: relative;
 }
 
 .organizer_toolbar .toolbar .toolbarButtons ul ul:after {
+	bottom: 100%;
+	left: 20px;
+	border: solid transparent;
+	content: " ";
+	height: 0;
+	width: 0;
+	position: absolute;
+	pointer-events: none;
+	border-color: rgba(50, 52, 51, 0);
+	border-bottom-color: #323433;
+	border-width: 8px;
+	margin-left: -8px;
+}
+
+/*.organizer_toolbar .toolbar .toolbarButtons ul ul:after {
 	border-color: #F6F6F6 transparent;
 	border-style: solid;
 	border-width: 0 10px 10px;
@@ -2092,19 +2136,40 @@ div.organizer_pageSize {
 	position: absolute;
 	left: 13px;
 	width: 0;
-}
+}*/
 
-.organizer_toolbar .toolbar .toolbarButtons ul li.organiser_button_with_children a {
-	background: url('../admin/images/icon-arrow-down-dark.svg') no-repeat right 10px / 8px 8px;
+.organizer_toolbar .toolbar .toolbarButtons ul li.organizer_button_with_children a {
+	background: url('../admin/images/icon-arrow-down-dark.svg') no-repeat right 15px / 8px 8px;
 }
 
 .organizer_toolbar .toolbar .toolbarButtons ul li {
 	display:inline-block;
-	background:url('../admin/images/store_keeper/org_toolbar_separator.gif') no-repeat right 2px;
+	background:url('../admin/images/store_keeper/org_toolbar_separator.gif') no-repeat right 7px;
+	margin-top:5px;
+}
+
+.organizer_toolbar .toolbar .toolbarButtons .organizer_item_toolbar_image {
+	margin-top:10px;
+}
+
+.organizer_toolbar .toolbar .toolbarButtons .organizer_item_toolbar_image,
+.organizer_toolbar .toolbar .toolbarButtons .organizer_item_toolbar_image div {
+	float: left;
+	height: 26px;
+	background-position: left center;
+}
+.organizer_toolbar .toolbar .toolbarButtons .organizer_items_selected {
+	white-space: nowrap;
+	padding: 5px 0 0 26px;
+	margin: 0 5px 0 0;
+}
+
+.organizer_toolbar .toolbar .toolbarButtons ul:last-child li {
+	background: none;
 }
 
 .organizer_toolbar .toolbar .toolbarButtons ul li li,
-.organizer_toolbar .toolbar .toolbarButtons ul li.organiser_button_with_children li a {
+.organizer_toolbar .toolbar .toolbarButtons ul li.organizer_button_with_children li a {
 	background:none;
 }
 
@@ -2112,12 +2177,19 @@ div.organizer_pageSize {
 	background:url('../admin/images/icon-info.gif') no-repeat right 10px;
 }*/
 
+.organizer_toolbar .toolbar .toolbarButtons ul li li a {
+	-webkit-transition : background-color 200ms ease-in-out;
+  	-moz-transition : background-color 200ms ease-in-out;
+  	-o-transition : background-color 200ms ease-in-out;
+  	transition : background-color 200ms ease-in-out;
+}
+
 .organizer_toolbar .toolbar .toolbarButtons ul li:hover a {
 	color:#007FA3;
 }
 
 .organizer_toolbar .toolbar .toolbarButtons ul li:hover li a:hover {
-	color:#027dc9;
+	background:#fbf290;
 }
 
 .organizer_toolbar .toolbar .toolbarButtons ul li:hover li a {
@@ -2134,27 +2206,42 @@ div.organizer_pageSize {
 
 /* Toolbar orange button with children */
 
-.organizer_toolbar .toolbar .toolbarButtons ul li.zenario_create_a_new.organiser_button_with_children > a {
+/*.organizer_toolbar .toolbar .toolbarButtons ul li.zenario_create_a_new.organizer_button_with_children > a {
 	background:#ea5900;
 }
 
-.organizer_toolbar .toolbar .toolbarButtons ul li.zenario_create_a_new.organiser_button_with_children > a span {
+.organizer_toolbar .toolbar .toolbarButtons ul li.zenario_create_a_new.organizer_button_with_children > a span {
 	padding-right:15px;
 	background: url('../admin/images/icon-arrow-down-white.svg') no-repeat right 5px / 8px 8px;
 }
 
-.organizer_toolbar .toolbar .toolbarButtons ul li.zenario_create_a_new.organiser_button_with_children ul {
+.organizer_toolbar .toolbar .toolbarButtons ul li.zenario_create_a_new.organizer_button_with_children ul {
 	overflow-y: auto;
 	top:26px;
 	max-height:300px;
 }
 
-.organizer_toolbar .toolbar .toolbarButtons ul li.zenario_create_a_new.organiser_button_with_children ul li a {
+.organizer_toolbar .toolbar .toolbarButtons ul li.zenario_create_a_new.organizer_button_with_children ul li a {
 	color:#000;
 	text-shadow:none;
 }
-.organizer_toolbar .toolbar .toolbarButtons ul li.zenario_create_a_new.organiser_button_with_children ul li a:hover {
+.organizer_toolbar .toolbar .toolbarButtons ul li.zenario_create_a_new.organizer_button_with_children ul li a:hover {
 	color:#027dc9;
+}*/
+
+.organizer_toolbar .toolbar .toolbarButtons > ul > li {
+	-webkit-transition : background-color 200ms ease-in-out;
+  	-moz-transition : background-color 200ms ease-in-out;
+  	-o-transition : background-color 200ms ease-in-out;
+  	transition : background-color 200ms ease-in-out;
+}
+
+.organizer_toolbar .toolbar .toolbarButtons > ul > li:hover {
+	background-color:#fbf290;
+}
+
+.organizer_toolbar .toolbar .toolbarButtons > ul > li:hover a {
+	color:#000;
 }
 
 /* Quick filter buttons - hastely copied from the above */
@@ -2324,7 +2411,7 @@ div.organizer_pageSize {
 	width: 0;
 }
 
-#organizer_quickFilter ul li.organiser_button_with_children > a {
+#organizer_quickFilter ul li.organizer_button_with_children > a {
 	background: url('../admin/images/icon-arrow-down-dark.svg') no-repeat right center / 8px 8px;
 	line-height:28px;
 	margin-top:3px;
@@ -2334,12 +2421,12 @@ div.organizer_pageSize {
 /*
 	Fix a bug with that image having the wrong size - CSS 3 only
 */
-#organizer_quickFilter ul li.organiser_button_with_children > a {
+#organizer_quickFilter ul li.organizer_button_with_children > a {
 	background-position: right 5px center;
 }
 
 #organizer_quickFilter ul li li,
-#organizer_quickFilter ul li.organiser_button_with_children li a {
+#organizer_quickFilter ul li.organizer_button_with_children li a {
 	background:none;
 }
 
@@ -2479,9 +2566,11 @@ div.organizer_pageSize {
 	margin-left:20px;
 	padding:8px 12px;
 	position:absolute;
-	right:2px;
+	top:5px;
+	right:7px;
 	color:#000;
 	font-size:11px;
+	background:#f6f6f6;
 	border:2px dashed #CDCDCD;
 	-webkit-border-radius: 4px;
 	-moz-border-radius: 4px;
@@ -2675,6 +2764,36 @@ div.organizer_pageSize {
 	100% {background: #F6F6F6;}
 }
 
+/*#organizer_rightColumn #organizer_itemToolbar  {
+	animation: yellow_flash 1s;
+	-webkit-animation: yellow_flash 1s;
+}*/
+
+#organizer_rightColumn #organizer_itemToolbar {
+	padding-left: 8px;
+	box-sizing: border-box;
+}
+
+#organizer_rightColumn #organizer_collectionToolbar,
+#organizer_rightColumn #organizer_itemToolbar,
+#organizer_rightColumn #organizer_collectionToolbarWrap,
+#organizer_rightColumn #organizer_itemToolbarWrap {
+	height:49px;
+}
+
+.organizer_toolbar .toolbar .toolbarButtons > ul {
+}
+
+/*
+	N.b. I've dispalyed the "white flash" on the collection buttons as it doesn't
+	look very nice when they are always displayed along with the item buttons
+*/
+/*
+#organizer_rightColumn #organizer_collectionToolbar {
+	animation: white_flash 1s;
+	-webkit-animation: white_flash 1s;
+}
+
 @keyframes white_flash {
 	0%   {background: #F6F6F6;}
 	50%  {background: #ffffff;}
@@ -2686,15 +2805,29 @@ div.organizer_pageSize {
 	50%  {background: #ffffff;}
 	100% {background: #F6F6F6;}
 }
+*/
 
-#organizer_rightColumn #organizer_itemToolbar {
-	animation: yellow_flash 1s;
-	-webkit-animation: yellow_flash 1s;
+
+
+
+
+/*
+	Icons for the drop-down menus in Organizer for site settings/dataset settings
+*/
+.organizer_settings_dropdown > a > span {
+	font-size: 0;
+    width: 13px;
+    height: 13px;
+    line-height: 13px;
+    display: inline-block;
 }
 
-#organizer_rightColumn #organizer_collectionToolbar {
-	animation: white_flash 1s;
-	-webkit-animation: white_flash 1s;
+.organizer_button__settings_dropdown .organizer_settings_dropdown > a > span {
+	background: url('../admin/images/icon-site-settings-dark.svg') no-repeat center center;
+}
+
+.organizer_button__dataset_dropdown .organizer_settings_dropdown > a > span {
+	background: url("../admin/images/icon-datasets-dark.svg") no-repeat center center;
 }
 
 
@@ -3389,7 +3522,7 @@ body.ie8 .organizer_item_image.ghost {
 }
 
 .organizer_item_image.zenario_smart_news_group {
-	background: url('../admin/images/icon-smart-newsletter-group-placeholder.png') no-repeat center center;
+	background: url('../admin/images/icon-smart-newsletter-group.svg') no-repeat center center / 18px;
 }
 
 .organizer_item_image.zenario_group {
@@ -3401,7 +3534,7 @@ body.ie8 .organizer_item_image.ghost {
 }
 
 .organizer_item_image.pending_comment {
-	background: url('../admin/images/icon-pending-comments-black.png') no-repeat center center;
+	background: url('../admin/images/icon-pending-comments-dark.svg') no-repeat center center / 16px;
 }
 
 .organizer_item_image.zenario_forum__forum {
@@ -3474,13 +3607,9 @@ body.ie8 .organizer_item_image.ghost {
 	background:url("../admin/images/icon-content-home-draft-published.png") no-repeat center center / 20px 23px;
 }
 
-#organizer_rightColumn div.organizer_row div.organizer_cell.home_content_published {
-	background:  -10px -40px no-repeat;
-	background-image: url('../admin/images/sprites/sprite-list-icons-single-col-v2.png');
-}
+#organizer_rightColumn div.organizer_row div.organizer_cell.home_content_published,
 .organizer_item_image.home_content_published {
-	background:  -15px -44px no-repeat;
-	background-image: url('../admin/images/sprites/sprite-list-icons-single-col-v2.png');
+	background:url("../admin/images/icon-content-home-published.svg") no-repeat center center / 20px 23px;
 }
 
 #organizer_rightColumn div.organizer_row div.organizer_cell.home_content_draft,
@@ -3503,13 +3632,9 @@ body.ie8 .organizer_item_image.ghost {
 	background:url("../admin/images/icon-content-special-draft-hidden.png") no-repeat center center / 20px 23px;
 }
 
-#organizer_rightColumn div.organizer_row div.organizer_cell.special_content_hidden {
-	background:  -10px -340px no-repeat;
-	background-image: url('../admin/images/sprites/sprite-list-icons-single-col-v2.png');
-}
+#organizer_rightColumn div.organizer_row div.organizer_cell.special_content_hidden,
 .organizer_item_image.special_content_hidden {
-	background:  -15px -344px no-repeat;
-	background-image: url('../admin/images/sprites/sprite-list-icons-single-col-v2.png');
+	background:url("../admin/images/icon-content-special-hidden.svg") no-repeat center center / 20px 23px;
 }
 
 #organizer_rightColumn div.organizer_row div.organizer_cell.special_content_draft,
@@ -3522,13 +3647,9 @@ body.ie8 .organizer_item_image.ghost {
 	background:url("../admin/images/icon-content-special-draft-trashed.png") no-repeat center center / 20px 23px;
 }
 
-#organizer_rightColumn div.organizer_row div.organizer_cell.special_content_trashed {
-	background:  -10px -242px no-repeat;
-	background-image: url('../admin/images/sprites/sprite-list-icons-single-col-v2.png');
-}
+#organizer_rightColumn div.organizer_row div.organizer_cell.special_content_trashed,
 .organizer_item_image.special_content_trashed {
-	background:  -15px -245px no-repeat;
-	background-image: url('../admin/images/sprites/sprite-list-icons-single-col-v2.png');
+	background:url("../admin/images/icon-content-special-trashed.svg") no-repeat center center / 20px 23px;
 }
 
 #organizer_rightColumn div.organizer_row div.organizer_cell.content_draft_published,
@@ -3546,13 +3667,9 @@ body.ie8 .organizer_item_image.ghost {
 	background:url("../admin/images/icon-content-draft-hidden.png") no-repeat center center / 20px 23px;
 }
 
-#organizer_rightColumn div.organizer_row div.organizer_cell.content_hidden {
-	background:  -10px -290px no-repeat;
-	background-image: url('../admin/images/sprites/sprite-list-icons-single-col-v2.png');
-}
+#organizer_rightColumn div.organizer_row div.organizer_cell.content_hidden,
 .organizer_item_image.content_hidden {
-	background:  -15px -294px no-repeat;
-	background-image: url('../admin/images/sprites/sprite-list-icons-single-col-v2.png');
+	background:url("../admin/images/icon-content-hidden.svg") no-repeat center center / 20px 23px;
 }
 
 #organizer_rightColumn div.organizer_row div.organizer_cell.content_draft,
@@ -3602,23 +3719,21 @@ body.ie8 .organizer_item_image.ghost {
 	background:url("../admin/images/icon-datasets-dark.svg") no-repeat center center / auto 20px;
 }
 
-.organizer_item_image.language {
+.organizer_item_image.language,
+.organizer_item_image.phrase_translated {
 	background:url("../admin/images/icon-languages.svg") no-repeat center center / auto 16px;
 }
 
 .organizer_item_image.phrase_translated {
-	background: -20px -18px  no-repeat;
-	background-image: url('../admin/images/sprites/phrase-translation-status.png');
+	background-size:auto 18px;
 }
 
 .organizer_item_image.phrase_partially_translated {
-	background: -20px -79px  no-repeat;
-	background-image: url('../admin/images/sprites/phrase-translation-status.png');
+	background:url("../admin/images/icon_phrase_partially_translated.svg") no-repeat center center / auto 20px;
 }
 
 .organizer_item_image.phrase_not_translated {
-	background: -20px -140px  no-repeat;
-	background-image: url('../admin/images/sprites/phrase-translation-status.png');
+	background:url("../admin/images/icon_phrase_not_translated.svg") no-repeat center center / auto 20px;
 }
 
 
@@ -3808,13 +3923,11 @@ body.ie8 .organizer_item_image.ghost {
 }
 
 .organizer_item_image.site_enabled {
-	background:  -15px -1394px no-repeat;
-	background-image: url('../admin/images/sprites/sprite-list-icons-single-col-v2.png');
+	background: url('../admin/images/icon-site-enabled-dark.svg') no-repeat center center / 19px 19px;
 }
 
 .organizer_item_image.site_disabled {
-	background:  -15px center no-repeat;
-	background-image: url('../admin/images/site-disabled-icon.png');
+	background: url('../admin/images/icon-site-disabled.svg') no-repeat center center / 19px 19px;
 }
 
 .organizer_item_image.tab {
@@ -3975,7 +4088,7 @@ body.ie6 #organizer_rightColumn div.organizer_list_view div.organizer_item {
 	height: 130px;
 }
 
-#organizer_rightColumn div.organiser_item_with_image {
+#organizer_rightColumn div.organizer_item_with_image {
 	background-position: center center;
 	background-repeat: no-repeat;
 }
@@ -4782,7 +4895,7 @@ table.table-bordered td
 }
 
 #organizer_rightColumn div.organizer_row.document .listicon > div,
-#organizer_rightColumn div.organizer_row.folder .listicon > div, 
+#organizer_rightColumn div.organizer_row.folder .listicon > div,
 #organizer_rightColumn li.organizer_menu_handle .listicon > div {
 	padding-left:24px;
 }
@@ -5024,7 +5137,7 @@ table.table-bordered td
 
 
 /* Image gallery thumbnails */
-.organizer_list_view_with_tall_rows .listicon .organiser_item_with_image {
+.organizer_list_view_with_tall_rows .listicon .organizer_item_with_image {
 	display: block;
 	float: left;
 }
@@ -5183,12 +5296,12 @@ table.table-bordered td
 
 
 
-#organizer_collectionPanelButtons_no_items ul .organiser_button_with_children ul li a { 
+#organizer_collectionPanelButtons_no_items ul .organizer_button_with_children ul li a { 
 	min-width:200px;
 	text-align: center;
 }
 
-.label_without_icon.organiser_button_with_children > a { 
+.label_without_icon.organizer_button_with_children > a { 
 	min-width:0; 
 }
 
@@ -5197,7 +5310,7 @@ table.table-bordered td
 }
 
 #organizer_collectionPanelButtons_no_items ul .zenario_create_a_new a,
-#organizer_collectionPanelButtons_no_items ul .zenario_create_a_new.organiser_button_with_children ul li.label_without_icon a {
+#organizer_collectionPanelButtons_no_items ul .zenario_create_a_new.organizer_button_with_children ul li.label_without_icon a {
 	cursor: pointer;
 	padding: 5px 10px 6px;
 	background: #ea5900;
@@ -5226,7 +5339,7 @@ table.table-bordered td
 	min-width: 200px;
 }
 
-#organizer_collectionPanelButtons_no_items ul .organiser_button_with_children a {
+#organizer_collectionPanelButtons_no_items ul .organizer_button_with_children a {
 	text-align: left;
 	cursor: auto;
 	display:inline-block;
@@ -5236,22 +5349,22 @@ table.table-bordered td
 	padding-right: 15px;
 }
 
-#organizer_collectionPanelButtons_no_items ul .zenario_create_a_new.organiser_button_with_children > a {
+#organizer_collectionPanelButtons_no_items ul .zenario_create_a_new.organizer_button_with_children > a {
 	color:#000;
 	text-shadow: none;
 }
 
-#organizer_collectionPanelButtons_no_items ul .zenario_create_a_new.organiser_button_with_children ul li.label_without_icon a {
+#organizer_collectionPanelButtons_no_items ul .zenario_create_a_new.organizer_button_with_children ul li.label_without_icon a {
 	margin:5px 8px;
 }
 
-#organizer_collectionPanelButtons_no_items ul .organiser_button_with_children a,
-#organizer_collectionPanelButtons_no_items ul .organiser_button_with_children ul,
-#organizer_collectionPanelButtons_no_items ul .organiser_button_with_children ul li {
+#organizer_collectionPanelButtons_no_items ul .organizer_button_with_children a,
+#organizer_collectionPanelButtons_no_items ul .organizer_button_with_children ul,
+#organizer_collectionPanelButtons_no_items ul .organizer_button_with_children ul li {
 	display:inline-block;
 }
 
-#organizer_collectionPanelButtons_no_items ul .organiser_button_with_children ul li a {
+#organizer_collectionPanelButtons_no_items ul .organizer_button_with_children ul li a {
 	background: #e9e9e9;
 	cursor: pointer;
 	padding: 5px 10px 6px;
@@ -5262,7 +5375,7 @@ table.table-bordered td
 	font-weight: normal;
 }
 
-#organizer_collectionPanelButtons_no_items ul .organiser_button_with_children ul {
+#organizer_collectionPanelButtons_no_items ul .organizer_button_with_children ul {
 	padding: 0;
 }
 
@@ -6377,20 +6490,18 @@ span.video_title {
 	margin:3px 0;
 }
 
-.organizer_form_builder_view .form_fields_palette .field_details .value input[type="text"],
-.organizer_form_builder_view .form_fields_palette .field_details .value input[type="email"],
-.organizer_form_builder_view .form_fields_palette .field_details .value input[type="password"],
-.organizer_form_builder_view .form_fields_palette .field_details .value select,
-.organizer_form_builder_view .form_fields_palette .field_details .field_value input[type="text"],
-.organizer_admin_box_builder_view .form_fields_palette .field_details .value input[type="text"],
-.organizer_admin_box_builder_view .form_fields_palette .field_details .value input[type="email"],
-.organizer_admin_box_builder_view .form_fields_palette .field_details .value input[type="password"],
+.organizer_form_builder_view .form_fields_palette .field_details input[type="text"],
+.organizer_form_builder_view .form_fields_palette .field_details input[type="email"],
+.organizer_form_builder_view .form_fields_palette .field_details input[type="password"],
+.organizer_form_builder_view .form_fields_palette .field_details select,
+.organizer_admin_box_builder_view .form_fields_palette .field_details input[type="text"],
+.organizer_admin_box_builder_view .form_fields_palette .field_details input[type="email"],
+.organizer_admin_box_builder_view .form_fields_palette .field_details input[type="password"],
 .organizer_admin_box_builder_view .form_fields_palette .field_details select,
-.organizer_admin_box_builder_view .form_fields_palette .field_details .field_value input[type="text"],
-.organizer_admin_box_builder_view .form_fields_palette .tab_details .value input[type="text"],
-.organizer_admin_box_builder_view .form_fields_palette .tab_details .value input[type="email"],
-.organizer_admin_box_builder_view .form_fields_palette .tab_details .value input[type="password"],
-.organizer_admin_box_builder_view .form_fields_palette .tab_details .value select {
+.organizer_admin_box_builder_view .form_fields_palette .tab_details input[type="text"],
+.organizer_admin_box_builder_view .form_fields_palette .tab_details input[type="email"],
+.organizer_admin_box_builder_view .form_fields_palette .tab_details input[type="password"],
+.organizer_admin_box_builder_view .form_fields_palette .tab_details select {
 	width:calc(100% - 12px);
 }
 
@@ -7045,4 +7156,112 @@ div.ui-tooltip.zenario_link_status_tooltip .ui-tooltip-content {
 	font-size:12px;
 	line-height:15px;
 	margin:0;
+}
+
+/* NEW STYLES FOR ORGANIZER BAR
+--------------------------------------------------------------------------------------------------*/
+
+#organizer_buttons {
+	background:#baefba;
+}
+
+#organizer_collectionToolbarWrap {
+	padding-left:5px;
+	padding-right:0;
+}
+
+#organizer_rightColumn #organizer_itemToolbar {
+	border-left:0;
+}
+
+#organizer_itemToolbarWrap #organizer_itemToolbar .toolbarButtons {
+	background:#f6f6f6;
+	border: 1px solid #ccc;
+    height: 37px;
+    margin-top: 6px;
+    padding-left: 10px;
+}
+
+#organizer_rightColumn #organizer_itemToolbarButtons  {
+	animation: yellow_flash 1s;
+	-webkit-animation: yellow_flash 1s;
+}
+
+.organizer_toolbar .toolbar .toolbarButtons .organizer_item_toolbar_image {
+	margin-top:5px;
+}
+
+.organizer_toolbar .toolbar .toolbarButtons ul li {
+	margin-top:0;
+}
+
+.organizer_toolbar .toolbar .toolbarButtons ul li a {
+	padding-bottom:2px;
+}
+
+/*.organizer_toolbar .toolbar .toolbarButtons ul li.zenario_create_a_new a, 
+.organizer_toolbar .toolbar .toolbarButtons ul.organizer_button__export li a, 
+.organizer_toolbar .toolbar .toolbarButtons ul.organizer_button__help li a {
+	background:transparent;
+}
+
+.organizer_toolbar .toolbar .toolbarButtons ul.organizer_button__export li a, 
+.organizer_toolbar .toolbar .toolbarButtons ul.organizer_button__help li a {
+	background:transparent;
+}
+
+.organizer_toolbar .toolbar .toolbarButtons ul li.zenario_create_a_new.organizer_button_with_children > a {
+	background:transparent;
+}
+
+.organizer_toolbar .toolbar .toolbarButtons ul li.zenario_create_a_new.organizer_button_with_children > a span {
+	background:url('../admin/images/icon-arrow-down-dark.svg')  no-repeat right 5px / 8px 8px;
+}*/
+
+.organizer_toolbar .toolbar .toolbarButtons > ul > li.zenario_create_a_new > a:before {
+	content:' +';
+}
+
+.organizer_toolbar .toolbar .toolbarButtons ul li.zenario_create_a_new a,
+.organizer_toolbar .toolbar .toolbarButtons ul li.zenario_create_a_new a:hover, 
+.organizer_toolbar .toolbar .toolbarButtons ul li.zenario_create_a_new:hover a,  
+.organizer_toolbar .toolbar .toolbarButtons ul.organizer_button__export li a,  
+.organizer_toolbar .toolbar .toolbarButtons ul.organizer_button__help li a {
+	color:#000 !important;
+}
+
+.organizer_toolbar #organizer_collectionToolbarWrap .toolbar .toolbarButtons > ul > li > a,  
+.organizer_toolbar #organizer_collectionToolbarWrap .toolbar .toolbarButtons ul.organizer_button__help li a {
+	color:#111;
+}
+
+.organizer_toolbar #organizer_collectionToolbarWrap .toolbar .toolbarButtons ul li a:hover,
+.organizer_toolbar #organizer_collectionToolbarWrap .toolbar .toolbarButtons ul li:hover a,
+.organizer_toolbar #organizer_collectionToolbarWrap .toolbar .toolbarButtons ul li.zenario_create_a_new a:hover, 
+.organizer_toolbar #organizer_collectionToolbarWrap .toolbar .toolbarButtons ul li.zenario_create_a_new:hover a,
+.organizer_toolbar #organizer_collectionToolbarWrap .toolbar .toolbarButtons ul.organizer_button__export li:hover a, 
+.organizer_toolbar #organizer_collectionToolbarWrap .toolbar .toolbarButtons ul.organizer_button__export li a:hover, 
+.organizer_toolbar #organizer_collectionToolbarWrap .toolbar .toolbarButtons ul.organizer_button__help li:hover a, 
+.organizer_toolbar #organizer_collectionToolbarWrap .toolbar .toolbarButtons ul.organizer_button__help li a:hover {
+	color:#000;
+}
+
+.organizer_toolbar .toolbar .toolbarButtons ul li.zenario_create_a_new a, 
+.organizer_toolbar .toolbar .toolbarButtons ul.organizer_button__export li a, 
+.organizer_toolbar .toolbar .toolbarButtons ul.organizer_button__help li a {
+	-webkit-border-radius:0;
+	-moz-border-radius:0;
+	border-radius:0;
+	-webkit-text-shadow:none;
+	-moz-text-shadow:none;
+	text-shadow:none;
+}
+
+#organizer_applyCancelToolbar {
+	padding:12px 0 0 10px;
+}
+
+#organizer_applyCancelToolbar ul li,
+#organizer_applyCancelToolbar ul li:hover {
+	background:transparent;
 }

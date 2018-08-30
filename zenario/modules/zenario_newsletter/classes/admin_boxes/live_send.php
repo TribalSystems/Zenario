@@ -152,7 +152,7 @@ class zenario_newsletter__admin_boxes__live_send extends zenario_newsletter {
 							$msg = '<!--Message_Type:Success-->';
 							
 							if ($values['send/send_time_options'] == 'schedule') {
-								$date = ze\date::formatDateTime($scheduledSendDate, '_MEDIUM');
+								$date = ze\admin::formatDateTime($scheduledSendDate, '_MEDIUM');
 								$msg .= '<p>'. ze\admin::phrase('This Newsletter will commence sending on [[date]].', ['date' => $date]). '</p>';
 							} else {
 								$msg .= '<p>'. ze\admin::phrase('This Newsletter will commence sending within the next 5 minutes.'). '</p>';

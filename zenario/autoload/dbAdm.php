@@ -422,6 +422,11 @@ class dbAdm {
 			\ze\sql::update($sql);
 		}
 	}
+	
+	private static $dbupPath = false;
+	private static $dbupUpdateFile = false;
+	private static $dbupCurrentRevision = false;
+	private static $dbupUninstallPluginOnFail = false;
 
 
 	//Run a patch file, making the revisions needed
@@ -470,23 +475,25 @@ class dbAdm {
 		
 			//Set the inputs into global variables, so we can remember them for this revision
 			//without needing to add extra parameters to every function (which would make the update files look messy!)
-			\ze::$dbupPath = $path;
-			\ze::$dbupUpdateFile = $updateFile;
-			\ze::$dbupCurrentRevision = $currentRevision;
-			\ze::$dbupUninstallPluginOnFail = $uninstallPluginOnFail;
+			\ze::$dbUpdating = true;
+			self::$dbupPath = $path;
+			self::$dbupUpdateFile = $updateFile;
+			self::$dbupCurrentRevision = $currentRevision;
+			self::$dbupUninstallPluginOnFail = $uninstallPluginOnFail;
 		
 			//Run the update file
 			require_once CMS_ROOT. $path. '/'. $updateFile;
 		
-			$path = \ze::$dbupPath;
-			$updateFile = \ze::$dbupUpdateFile;
-			$currentRevision = \ze::$dbupCurrentRevision;
-			$uninstallPluginOnFail = \ze::$dbupUninstallPluginOnFail;
+			$path = self::$dbupPath;
+			$updateFile = self::$dbupUpdateFile;
+			$currentRevision = self::$dbupCurrentRevision;
+			$uninstallPluginOnFail = self::$dbupUninstallPluginOnFail;
 			
-			\ze::$dbupPath = false;
-			\ze::$dbupUpdateFile = false;
-			\ze::$dbupCurrentRevision = false;
-			\ze::$dbupUninstallPluginOnFail = false;
+			\ze::$dbUpdating = false;
+			self::$dbupPath = false;
+			self::$dbupUpdateFile = false;
+			self::$dbupCurrentRevision = false;
+			self::$dbupUninstallPluginOnFail = false;
 		
 			//Clear any cached information on the existing database tables, as this can cause database errors if it's used when out-of-date
 			\ze\dbAdm::resetTableDefs();
@@ -503,7 +510,7 @@ class dbAdm {
 		//If we have already applied the revision, we can stop without processing it any further
 	
 		//Note that there is functionality to override this and always apply a revision!
-		if (\ze::$dbupCurrentRevision !== \ze\dbAdm::RUN_EVERY_UPDATE && $revisionNumber <= \ze::$dbupCurrentRevision) {
+		if (self::$dbupCurrentRevision !== \ze\dbAdm::RUN_EVERY_UPDATE && $revisionNumber <= self::$dbupCurrentRevision) {
 			return false;
 		} else {
 			return true;
@@ -524,7 +531,7 @@ class dbAdm {
 
 	//This function is used for database revisions. It's called from the patch files.
 	//WARNING: It expects to already be connected to the correct database, and to have
-	//the \ze::$dbupPath, \ze::$dbupUpdateFile and \ze::$dbupCurrentRevision global variables set
+	//the self::$dbupPath, self::$dbupUpdateFile and self::$dbupCurrentRevision global variables set
 	//Formerly "revision()"
 	public static function revision($revisionNumber) {
 
@@ -540,7 +547,7 @@ class dbAdm {
 		}
 		//If the above wasn't true, then we'll need to apply the update
 		
-		if (\ze::$dbupUpdateFile == 'data_archive.inc.php') {
+		if (self::$dbupUpdateFile == 'data_archive.inc.php') {
 			$db = \ze::$dbD;
 		} else {
 			$db = \ze::$dbL;
@@ -576,8 +583,8 @@ class dbAdm {
 				echo 'Database query error: '. $errNo. ', '. $db->con->error. ', '. $sql;
 			
 				//If this was the installation of a Module, then remove everything that the Module has installed
-				if (\ze::$dbupUninstallPluginOnFail) {
-					\ze\moduleAdm::uninstall(\ze::$dbupUninstallPluginOnFail, true);
+				if (self::$dbupUninstallPluginOnFail) {
+					\ze\moduleAdm::uninstall(self::$dbupUninstallPluginOnFail, true);
 				}
 			
 				//Stop
@@ -588,8 +595,8 @@ class dbAdm {
 		//Update the revision number for this module, or set it if it was not there.
 		//I'm doing this with each revision, just in case we get an error in one
 		//- the previous revisions won't be applied.
-		if ($revisionNumber && \ze::$dbupCurrentRevision !== \ze\dbAdm::RUN_EVERY_UPDATE) {
-			\ze\dbAdm::setModuleRevisionNumber($revisionNumber, \ze::$dbupPath, \ze::$dbupUpdateFile);
+		if ($revisionNumber && self::$dbupCurrentRevision !== \ze\dbAdm::RUN_EVERY_UPDATE) {
+			\ze\dbAdm::setModuleRevisionNumber($revisionNumber, self::$dbupPath, self::$dbupUpdateFile);
 	
 		} else {
 			\ze\db::updateDataRevisionNumber();

@@ -27,7 +27,8 @@
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
-$v = $w = 'v='. \ze\db::codeVersion();
+$codeVersion = ze\db::codeVersion();
+$v = $w = 'v='. $codeVersion;
 
 if (!\ze::$cacheWrappers) {
 	$w .= '&amp;no_cache=1';
@@ -249,10 +250,9 @@ if (!empty(\ze::$slotContents) && is_array(\ze::$slotContents)) {
 	//Include the Head for any plugin instances on the page, if they have one
 	foreach(\ze::$slotContents as $slotName => &$instance) {
 		if (!empty($instance['class'])) {
-			$edition = \ze::$edition;
-			$edition::preSlot($slotName, 'addToPageHead');
+			\ze\plugin::preSlot($slotName, 'addToPageHead');
 				$instance['class']->addToPageHead();
-			$edition::postSlot($slotName, 'addToPageHead');
+			\ze\plugin::postSlot($slotName, 'addToPageHead');
 		}
 	}
 }
@@ -262,19 +262,24 @@ if (!empty(\ze::$slotContents) && is_array(\ze::$slotContents)) {
 if (!empty(\ze::$googleRecaptchaElements)) {
 	echo '
 <script type="text/javascript">
-	var recaptchaCallback = function() {';
+	var google_recaptcha = {
+			sitekey: "' . \ze\escape::js(\ze::setting('google_recaptcha_site_key')) . '",
+			theme: "' . \ze\escape::js(\ze::setting('google_recaptcha_widget_theme')) . '"
+		},
+		recaptchaCallback = function() {
+			if (window.grecaptcha && grecaptcha.render) {
+				var el, elId;';
 	
 	foreach (\ze::$googleRecaptchaElements as $elementId) {
 		echo '
-		if (document.getElementById("' . \ze\escape::js($elementId) . '") && document.getElementById("' .  \ze\escape::js($elementId) . '").innerHTML === "" && typeof(grecaptcha) !== "undefined") {
-			grecaptcha.render("' . \ze\escape::js($elementId) . '", {
-				sitekey: "' . \ze\escape::js(\ze::setting('google_recaptcha_site_key')) . '",
-				theme: "' . \ze\escape::js(\ze::setting('google_recaptcha_widget_theme')) . '"
-			})
-		}';
+				if ((el = document.getElementById(elId = "' . \ze\escape::js($elementId) . '")) && (el.innerHTML === "")) {
+					grecaptcha.render(elId, google_recaptcha);
+				}';
 	}
+	
 	echo '
-	};
+			}
+		};
 </script>';
 	echo '
 <script src="https://www.google.com/recaptcha/api.js?onload=recaptchaCallback&render=explicit"></script>';
@@ -402,6 +407,9 @@ if (\ze::$cID) {
 	}
 	
 }
+
+//Used by service workers to cache wrapper files
+echo '<script type="text/javascript">window.zenarioCodeVersion = "', $codeVersion, '"</script>';
 
 //Bugfixes for IE 6, 7 and 8
 echo '

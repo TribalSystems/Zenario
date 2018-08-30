@@ -65,7 +65,7 @@ class server {
 		if ($addressFrom === false) {
 			$addressFrom = \ze::setting('email_address_from');
 		}
-		if ($nameFrom === false) {
+		if (!$nameFrom) {
 			$nameFrom = \ze::setting('email_name_from');
 		}
 	
@@ -243,7 +243,7 @@ class server {
 		}
 		
 		if ($chmod !== null) {
-			@chmod($pathTo, $chmod);
+			\ze\cache::chmod($pathTo, $chmod);
 		}
 	}
 

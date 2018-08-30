@@ -79,9 +79,9 @@ if (ze\priv::check()) {
                 $rv = [];
                 if($result = ze\sql::select($sql)) {
                     while($row = ze\sql::fetchAssoc($result)) {
-						$row['last_modified_datetime'] = ze\date::formatDateTime($row['last_modified_datetime'], 'vis_date_format_med');
-						$row['published_datetime'] = ze\date::formatDateTime($row['published_datetime'], 'vis_date_format_med');
-						$row['created_datetime'] = ze\date::formatDateTime($row['created_datetime'],'vis_date_format_med');
+						$row['last_modified_datetime'] = ze\admin::formatDateTime($row['last_modified_datetime'], 'vis_date_format_med');
+						$row['published_datetime'] = ze\admin::formatDateTime($row['published_datetime'], 'vis_date_format_med');
+						$row['created_datetime'] = ze\admin::formatDateTime($row['created_datetime'],'vis_date_format_med');
 						$row['status'] = ze\contentAdm::getContentItemVersionStatus($content, $row['version']);
 						if($row['status'] == 'draft') {
 							if($content['lock_owner_id']) {
@@ -116,7 +116,7 @@ if (ze\priv::check()) {
 		
 			if (!empty($svninfo['Last Changed Date'])) {
 			
-				if ($date = ze\date::formatDateTime($svninfo['Last Changed Date'], false, ze\admin::languageIdForDatesInAdminMode())) {
+				if ($date = ze\admin::formatDateTime($svninfo['Last Changed Date'], false)) {
 					$section['fields'][] = ['label' => ze\admin::phrase('Last SVN commit applied to this site:'), 'value' => $date];
 				}
 			}
@@ -264,7 +264,7 @@ if (ze\priv::check()) {
 		
 	//Get a preview of a date format
 	} elseif (ze::get('previewDateFormat')) {
-		echo ze\date::format(ze\date::now(), (ze::get('previewDateFormat')), true);
+		echo ze\admin::formatDate(ze\date::now(), (ze::get('previewDateFormat')), true);
 		exit;
 	
 	//Toggle dev tools on/off

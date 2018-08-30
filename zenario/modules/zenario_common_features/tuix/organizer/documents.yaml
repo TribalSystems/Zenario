@@ -125,13 +125,6 @@ zenario__content:
                 plaintext_extract_details:
                     title: Extract text
                     width: xxlarge
-                
-                dont_autoset_metadata:
-                    db_column: d.dont_autoset_metadata
-                    width: small
-                    format: yes_or_no
-                mime_type:
-                    db_column: f.mime_type
             collection_buttons:
                 upload:
                     priv: _PRIV_EDIT_DOCUMENTS
@@ -295,51 +288,6 @@ zenario__content:
                     label: Advanced
                     multiple_select: true
                     hide_when_children_are_not_visible: true
-                autoset:
-                    priv: _PRIV_EDIT_DOCUMENTS
-                    parent: advanced_dropdown
-                    hide_in_select_mode: true
-                    label: Auto-set metadata
-                    tooltip: >
-                        Apply the rules to auto-set the metadata for this document from its filename
-                    multiple_select: true
-                    multiple_select_tooltip: >
-                        Apply the rules to auto-set the metadata for these documents from their filenames
-                    without_columns_set:
-                        traits.is_folder: true
-                    ajax:
-                        request: 
-                            autoset: true
-                    disabled_if_for_all_selected_items: >
-                        zenario.engToBoolean(item.dont_autoset_metadata)
-                    disabled_tooltip: >
-                        All of the selected documents are protected from auto-set
-                dont_autoset_metadata:
-                    priv: _PRIV_EDIT_DOCUMENTS
-                    parent: advanced_dropdown
-                    hide_in_select_mode: true
-                    label: Protect from auto-set
-                    multiple_select: true
-                    without_columns_set:
-                        traits.is_folder: true
-                    ajax:
-                        request: 
-                            dont_autoset_metadata: true
-                    visible_if_for_any_selected_items: >
-                        !zenario.engToBoolean(item.dont_autoset_metadata)
-                allow_autoset_metadata:
-                    priv: _PRIV_EDIT_DOCUMENTS
-                    parent: advanced_dropdown
-                    hide_in_select_mode: true
-                    label: Allow auto-set
-                    multiple_select: true
-                    without_columns_set:
-                        traits.is_folder: true
-                    ajax:
-                        request: 
-                            allow_autoset_metadata: true
-                    visible_if_for_any_selected_items: >
-                        zenario.engToBoolean(item.dont_autoset_metadata)
                 remove_metadata:
                     priv: _PRIV_EDIT_DOCUMENTS
                     parent: advanced_dropdown

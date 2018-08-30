@@ -29,6 +29,7 @@ zenario_user__details:
                     type: checkbox
                     redraw_onchange: true
                     readonly: true
+                    side_note: If checked, the user has received an email and clicked on a special link within that email.
                 salutation: 
                     label: "Salutation"
                     type: text
@@ -206,7 +207,7 @@ zenario_user__details:
                 terms_and_conditions_accepted:
                     visible_if: |
                         zenarioAB.value('status', 'details')
-                    label: "User has accepted terms and conditions"
+                    label: "User/contact has accepted terms and conditions"
                     side_note: "When checked, this indicates the user has accepted the site's terms and conditions."
                     type: checkbox
                 send_activation_email_to_user:

@@ -200,6 +200,7 @@ zenario__modules:
                         !tuix.key.moduleId
                     css_class: zenario_create_a_new
                     hide_when_children_are_not_visible: true
+                    hide_on_refiner: email_address_setting
                     label: Create a plugin
             item_buttons:
                 edit:

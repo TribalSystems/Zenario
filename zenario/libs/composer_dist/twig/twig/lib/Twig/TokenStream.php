@@ -123,7 +123,7 @@ final class Twig_TokenStream
      */
     public function isEOF()
     {
-        return $this->tokens[$this->current]->getType() === Twig_Token::EOF_TYPE;
+        return /* Twig_Token::EOF_TYPE */ -1 === $this->tokens[$this->current]->getType();
     }
 
     /**

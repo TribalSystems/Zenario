@@ -7,6 +7,8 @@ zenario__user_forms:
             view_mode: list
             no_items_message: No Forms have been created.
             select_mode_title: Select a form...
+            panel_type: multi_line_list
+            use_tall_rows: true
             db_items:
                 table: '[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms AS f'
                 where_statement: WHERE f.status = 'active'
@@ -37,7 +39,10 @@ zenario__user_forms:
                     searchable: true
                     width: xlarge
                 type:
+                    title: Type
                     db_column: f.type
+                    parent: name
+                    show_by_default: true
                 form_email_addresses:
                     title: Email
                     db_column: f.admin_email_addresses
@@ -76,7 +81,7 @@ zenario__user_forms:
                         SELECT MAX(response_datetime) FROM [[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response
                         WHERE form_id = f.id
                         )
-                    format: datetime
+                    #format: datetime
                     show_by_default: true
                 where_used:
                     title: Usage

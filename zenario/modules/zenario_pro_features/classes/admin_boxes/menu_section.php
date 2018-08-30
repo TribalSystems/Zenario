@@ -57,15 +57,14 @@ class zenario_pro_features__admin_boxes__menu_section extends ze\moduleBaseClass
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		ze\priv::exitIfNot('_PRIV_ADD_MENU_SECTION');
 		
-		//Add if new
-		if (!$box['key']['id']) {
-			ze\row::insert('menu_sections', ['section_name' => $values['menu_section/section_name']]);
+		$box['key']['id'] = ze\row::set('menu_sections', ['section_name' => $values['menu_section/section_name']], $box['key']['id']);
 		
-		//Rename if changed
-		} elseif ($values['menu_section/section_name'] != $box['key']['id']) {
-			ze\row::update('menu_sections', ['section_name' => $values['menu_section/section_name']], $box['key']['id']);
-		}
 		ze\menuAdm::recalcTopLevelPositions();
+	}
+	
+	public function adminBoxSaveCompleted($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+		ze\tuix::closeWithFlags(['reload_organizer' => true, 'organizer_path' => 'zenario__menu/panels/by_language/item//'. ze::$defaultLang. '//'. $box['key']['id']]);
+		exit;
 	}
 
 }

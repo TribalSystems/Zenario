@@ -154,7 +154,7 @@ methods.ffov = function(action) {
 			} else {
 				thus.sortOutTUIX();
 				thus.draw();
-				cb.call();
+				cb.done();
 				
 				if (action == 'save' && thus.tuix.scroll_after_save) {
 					zenario.scrollToSlotTop(thus.containerId, true);
@@ -216,6 +216,10 @@ methods.ajaxURL = function() {
 
 
 
+methods.isAdminFacing = function() {
+	return false;
+};
+
 methods.putHTMLOnPage = function(html) {
 	
 	thus.clearOnScrollForItemButtons();
@@ -232,11 +236,14 @@ methods.putHTMLOnPage = function(html) {
 	
 	$fea.html(html);
 	
-	thus.cb.call();
+	thus.cb.done();
 	thus.addJQueryElements('#' + sel);
 	
 	if (zenario.adminId) {
-		zenarioA.scanHyperlinksAndDisplayStatus(sel);
+		var nestContainerId = zenario.getContainerIdFromSlotName(zenario.getSlotnameFromEl(sel));
+		zenario.actAfterDelayIfNotSuperseded('scanHyperlinks__' + nestContainerId, function() {
+			zenarioA.scanHyperlinksAndDisplayStatus(nestContainerId);
+		});
 	}
 };
 
@@ -1677,6 +1684,10 @@ methods.confirm = function(confirm, after) {
 			if ($colorbox.length) {
 				$colorbox[0].className = cssClassName;
 			}
+			
+			//Add another, manual call to colorbox.resize() to try and fix a bug where the colorbox sometimes gets the
+			//height wrong when first sizing itself
+			$.colorbox.resize();
 		};
 	
 	$.colorbox.remove();

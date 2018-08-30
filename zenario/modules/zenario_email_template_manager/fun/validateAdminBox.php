@@ -48,7 +48,6 @@ switch ($path) {
 			if ($values['data_deletion/delete_log_content_sooner']
 				&& ((is_numeric($headersDays) && is_numeric($contentDays) && ($contentDays > $headersDays))
 					|| (is_numeric($headersDays) && $contentDays == 'never_delete')
-					|| ($headersDays == 'never_save' && $contentDays != 'never_save')
 				)
 			) {
 				$fields['data_deletion/period_to_delete_log_content']['error'] = ze\admin::phrase('You cannot save content for longer than the headers.');
@@ -65,7 +64,6 @@ switch ($path) {
 			if ($values['data_protection/delete_form_response_log_content_sooner']
 				&& ((is_numeric($headersDays) && is_numeric($contentDays) && ($contentDays > $headersDays))
 					|| (is_numeric($headersDays) && $contentDays == 'never_delete')
-					|| ($headersDays == 'never_save' && $contentDays != 'never_save')
 				)
 			) {
 				$fields['data_protection/period_to_delete_the_email_template_sending_log_content']['error'] = ze\admin::phrase('You cannot save content for longer than the headers.');

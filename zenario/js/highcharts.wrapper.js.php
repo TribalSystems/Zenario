@@ -35,7 +35,7 @@ ze\cache::start();
 
 //Run pre-load actions
 
-require ze::editionInclude('wrapper.pre_load');
+if (ze::$canCache) require CMS_ROOT. 'zenario/includes/wrapper.pre_load.inc.php';
 
 
 //Include highcharts if this site has brought a license and included it in the
@@ -46,4 +46,4 @@ ze\cache::incJS('zenario/libs/not_to_redistribute/highcharts/exporting');
 ze\cache::incJS('zenario/libs/not_to_redistribute/highcharts/export-csv');
 
 //Run post-display actions
-require ze::editionInclude('wrapper.post_display');
+if (ze::$canCache) require CMS_ROOT. 'zenario/includes/wrapper.post_display.inc.php';

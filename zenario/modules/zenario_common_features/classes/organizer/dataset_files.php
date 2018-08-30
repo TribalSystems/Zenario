@@ -47,8 +47,6 @@ class zenario_common_features__organizer__dataset_files extends ze\moduleBaseCla
 			
 			if (ze\file::isImageOrSVG($item['mime_type'])) {
 				$img = 'zenario/file.php?c='. $item['checksum']. '&usage=dataset_file';
-				//$item['list_image'] = $img. '&ogt=1';
-				$item['list_image'] = $img. '&ogl=1';
 				$item['image'] = $img. '&og=1';
 			}
 			

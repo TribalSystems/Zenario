@@ -40,7 +40,16 @@ zenario__users:
                     title: Visitor
                     width: xlarge
                     disallow_sorting: true
-                    always_show: true                
+                    always_show: true
+                email:
+                    db_column: c.email
+                    searchable: true
+                first_name:
+                    db_column: c.first_name
+                    searchable: true
+                last_name:
+                    db_column: c.last_name
+                    searchable: true         
                 consent_text: 
                     title: Consent text
                     db_column: c.label
@@ -57,6 +66,18 @@ zenario__users:
                     label: View
                     admin_box:
                         path: zenario_consent
+                delete:
+                    label: Delete
+                    multiple_select: true
+                    ajax:
+                        confirm:
+                            message: 'Are you sure you wish to delete the consent given by the user "[[user]]" on [[datetime]]?'
+                            multiple_select_message: 'Are you sure you wish to delete the selected consent records?'
+                            button_message: Delete
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            delete: "1"
             collection_buttons:
                 help:
                     label: Help

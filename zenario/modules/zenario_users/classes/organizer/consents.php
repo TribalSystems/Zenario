@@ -32,11 +32,16 @@ class zenario_users__organizer__consents extends zenario_users {
 
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
 		foreach ($panel['items'] as $consentId => &$item) {
-			
 			//Show user details from consent in a single column
 			$item['user'] = static::formatConsentUser($consentId);
-			
 		}
 	}
 	
+	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
+		if (isset($_POST['delete'])) {
+			foreach (explode(',', $ids) as $consentId) {
+				ze\user::deleteConsent($consentId);
+			}
+		}
+    }
 }

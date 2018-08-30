@@ -33,6 +33,29 @@ class zenario_common_features__admin_boxes__backup extends ze\moduleBaseClass {
 	 public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		$values['details/username'] = $_SESSION['admin_username'] ?? false;
 		
+		if (!$box['key']['id']) {
+			if ($size = ze\sql::fetchValue('
+				SELECT SUM(data_length + index_length)
+				FROM information_schema.tables
+				WHERE table_schema = "'. ze\escape::sql(DBNAME). '"'
+			)) {
+				$mrg = ['formattedSize' => ze\lang::formatFilesizeNicely($size, 1, true)];
+				
+				if ($size > 52428800 && !ze\dbAdm::testMySQL(true)) {
+					$box['tabs']['details']['notices']['mysqldump_unavailable']['show'] = true;
+					$box['tabs']['details']['notices']['mysqldump_unavailable']['message'] =
+						ze\admin::phrase('Zenario is unable to call mysqldump directly. Your database is [[formattedSize]] in size (which is over the recommended 50MB limit); making a backup of this size without being able to use mysqldump may take a long time, and your site may run slowly while this is happening.', $mrg);
+				
+				} elseif ($size > 524288000) {
+					$box['tabs']['details']['notices']['mysqldump_unavailable']['show'] = true;
+					$box['tabs']['details']['notices']['mysqldump_unavailable']['message'] =
+						ze\admin::phrase('Your database is [[formattedSize]] in size (which is over the recommended 500MB limit); making a backup of this size may take a long time.', $mrg);
+				}
+			}
+		}
+		
+		
+		
 		$contains = ze\admin::phrase('This backup will contain:');
 		$contains .= '<ul>';
 		
@@ -126,7 +149,7 @@ class zenario_common_features__admin_boxes__backup extends ze\moduleBaseClass {
 		
 		ze\dbAdm::createBackupScript($backupPath, $gzip, $encrypt);
 		
-		@chmod($backupPath, 0666);
+		\ze\cache::chmod($backupPath, 0666);
 		
 		$box['key']['id'] = ze\ring::encodeIdForOrganizer($fileName);
 	}

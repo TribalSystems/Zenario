@@ -1,6 +1,6 @@
 /**
  * Display a nice easy to use multiselect list
- * @Version: 2.4.6
+ * @Version: 2.4.11
  * @Author: Patrick Springstubbe
  * @Contact: @JediNobleclem
  * @Website: springstubbe.us
@@ -59,15 +59,17 @@
         minHeight          : 200,   // minimum height of option overlay
         maxHeight          : null,  // maximum height of option overlay
         maxWidth           : null,  // maximum width of option overlay (or selector)
-        maxPlaceholderWidth: null, // maximum width of placeholder button
-        maxPlaceholderOpts : 10, // maximum number of placeholder options to show until "# selected" shown instead
+        maxPlaceholderWidth: null,  // maximum width of placeholder button
+        maxPlaceholderOpts : 10,    // maximum number of placeholder options to show until "# selected" shown instead
         showCheckbox       : true,  // display the checkbox to the user
-        optionAttributes   : [],  // attributes to copy to the checkbox from the option element
+        checkboxAutoFit    : false,  // auto calc checkbox padding
+        optionAttributes   : [],    // attributes to copy to the checkbox from the option element
 
         // Callbacks
-        onLoad        : function( element ){},  // fires at end of list initialization
-        onOptionClick : function( element, option ){}, // fires when an option is clicked
-        onControlClose: function( element ){}, // fires when the options list is closed
+        onLoad        : function( element ){},           // fires at end of list initialization
+        onOptionClick : function( element, option ){},   // fires when an option is clicked
+        onControlClose: function( element ){},           // fires when the options list is closed
+        onSelectAll   : function( element, selected ){}, // fires when (un)select all is clicked
 
         // @NOTE: these are for future development
         minSelect: false, // minimum number of items that can be selected
@@ -89,7 +91,7 @@
     if( typeof String.prototype.trim !== 'function' ) {
         String.prototype.trim = function() {
             return this.replace(/^\s+|\s+$/g, '');
-        }
+        };
     }
 
     function MultiSelect( element, options )
@@ -140,16 +142,18 @@
             $(instance.element).addClass('jqmsLoaded').data( 'plugin_multiselect-instance', instance );
 
             // add option container
-            $(instance.element).after('<div class="ms-options-wrap"><button><span>None Selected</span></button><div class="ms-options"><ul></ul></div></div>');
+            $(instance.element).after('<div class="ms-options-wrap"><button type="button"><span>None Selected</span></button><div class="ms-options"><ul></ul></div></div>');
 
             var placeholder = $(instance.element).next('.ms-options-wrap').find('> button:first-child');
             var optionsWrap = $(instance.element).next('.ms-options-wrap').find('> .ms-options');
             var optionsList = optionsWrap.find('> ul');
-            var hasOptGroup = $(instance.element).find('optgroup').length ? true : false;
 
             // don't show checkbox (add class for css to hide checkboxes)
             if( !instance.options.showCheckbox ) {
                 optionsWrap.addClass('hide-checkbox');
+            }
+            else if( instance.options.checkboxAutoFit ) {
+                optionsWrap.addClass('checkbox-autofit');
             }
 
             // check if list is disabled
@@ -162,12 +166,13 @@
                 placeholder.css( 'maxWidth', instance.options.maxPlaceholderWidth );
             }
 
-            // cacl default maxHeight
-            var maxHeight = ($(window).height() - optionsWrap.offset().top + $(window).scrollTop() - 20);
-
             // override with user defined maxHeight
             if( instance.options.maxHeight ) {
-                maxHeight = instance.options.maxHeight;
+                var maxHeight = instance.options.maxHeight;
+            }
+            else {
+                // cacl default maxHeight
+                var maxHeight = ($(window).height() - optionsWrap.offset().top + $(window).scrollTop() - 20);
             }
 
             // maxHeight cannot be less than options.minHeight
@@ -250,18 +255,21 @@
                 if( optionsWrap.closest('.ms-options-wrap').hasClass('ms-active') ) {
                     optionsWrap.css( 'maxHeight', '' );
 
-                    // cacl default maxHeight
-                    var maxHeight = ($(window).height() - optionsWrap.offset().top + $(window).scrollTop() - 20);
-
                     // override with user defined maxHeight
                     if( instance.options.maxHeight ) {
-                        maxHeight = instance.options.maxHeight;
+                        var maxHeight = instance.options.maxHeight;
+                    }
+                    else {
+                        // cacl default maxHeight
+                        var maxHeight = ($(window).height() - optionsWrap.offset().top + $(window).scrollTop() - 20);
                     }
 
-                    // maxHeight cannot be less than options.minHeight
-                    maxHeight = maxHeight < instance.options.minHeight ? instance.options.minHeight : maxHeight;
+                    if( maxHeight ) {
+                        // maxHeight cannot be less than options.minHeight
+                        maxHeight = maxHeight < instance.options.minHeight ? instance.options.minHeight : maxHeight;
 
-                    optionsWrap.css( 'maxHeight', maxHeight );
+                        optionsWrap.css( 'maxHeight', maxHeight );
+                    }
                 }
                 else if( typeof instance.options.onControlClose == 'function' ) {
                     instance.options.onControlClose( instance.element );
@@ -349,13 +357,12 @@
                     }
                     // deselect everything
                     else {
-                        optionsList.find('li:not(.optgroup, .ms-hidden).selected').removeClass('selected')
+                        optionsList.find('li:not(.optgroup, .ms-hidden).selected').removeClass('selected');
                         optionsList.find('li:not(.optgroup, .ms-hidden, .selected) input[type="checkbox"]:not(:disabled)').prop( 'checked', false );
                     }
                 }
                 else if( $(this).closest('li').hasClass('optgroup') ) {
-                    var optgroup      = $(this).closest('li.optgroup');
-                    var optgroupLabel = optgroup.find('> .label').text();
+                    var optgroup = $(this).closest('li.optgroup');
 
                     // check if any selected if so then select them
                     if( optgroup.find('li:not(.selected, .ms-hidden)').length ) {
@@ -377,6 +384,11 @@
 
                 instance.updateSelectAll   = true;
                 instance.updatePlaceholder = true;
+
+                // USER CALLBACK
+                if( typeof instance.options.onSelectAll == 'function' ) {
+                    instance.options.onSelectAll( instance.element, vals.length );
+                }
 
                 instance._updateSelectAllText();
                 instance._updatePlaceholderText();
@@ -492,6 +504,7 @@
                 }
             }
 
+            var containers = [];
             for( var key in options ) {
                 // Prevent prototype methods injected into options from being iterated over.
                 if( !options.hasOwnProperty( key ) ) {
@@ -502,8 +515,35 @@
                 var container       = $('<li/>');
                 var appendContainer = true;
 
+                // OPTION
+                if( thisOption.hasOwnProperty('value') ) {
+                    if( instance.options.showCheckbox && instance.options.checkboxAutoFit ) {
+                        container.addClass('ms-reflow');
+                    }
+
+                    // add option to ms dropdown
+                    instance._addOption( container, thisOption );
+
+                    if( updateSelect ) {
+                        var selOption = $('<option value="'+ thisOption.value +'">'+ thisOption.name +'</option>');
+
+                        // add custom user attributes
+                        if( thisOption.hasOwnProperty('attributes') && Object.keys( thisOption.attributes ).length ) {
+                            selOption.attr( thisOption.attributes );
+                        }
+
+                        // mark option as selected
+                        if( thisOption.checked ) {
+                            selOption.prop( 'selected', true );
+                        }
+
+                        select.append( selOption );
+                    }
+                }
                 // OPTGROUP
-                if( thisOption.hasOwnProperty('options') ) {
+                else if( thisOption.hasOwnProperty('options') ) {
+                    var optGroup = $('<optgroup label="'+ thisOption.label +'"></optgroup>');
+
                     optionsList.find('> li.optgroup > span.label').each(function(){
                         if( $(this).text() == thisOption.label ) {
                             container       = $(this).closest('.optgroup');
@@ -514,11 +554,10 @@
                     // prepare to append optgroup to select element
                     if( updateSelect ) {
                         if( select.find('optgroup[label="'+ thisOption.label +'"]').length ) {
-                            var optGroup = select.find('optgroup[label="'+ thisOption.label +'"]');
+                            optGroup = select.find('optgroup[label="'+ thisOption.label +'"]');
                         }
                         else {
-                            var optGroup = $('<optgroup label="'+ thisOption.label +'"></optgroup>');
-                                select.append( optGroup );
+                            select.append( optGroup );
                         }
                     }
 
@@ -532,7 +571,7 @@
 
                         // add select all link
                         if( instance.options.selectGroup ) {
-                            container.append('<a href="#" class="ms-selectall">' + instance.options.texts.selectAll + '</a>')
+                            container.append('<a href="#" class="ms-selectall">' + instance.options.texts.selectAll + '</a>');
                         }
 
                         container.append('<ul/>');
@@ -546,7 +585,10 @@
                         }
 
                         var thisGOption = thisOption.options[ gKey ];
-                        var gContainer  = $('<li/>').addClass('ms-reflow');
+                        var gContainer  = $('<li/>');
+                        if( instance.options.showCheckbox && instance.options.checkboxAutoFit ) {
+                            gContainer.addClass('ms-reflow');
+                        }
 
                         // no clue what this is we hit (skip)
                         if( !thisGOption.hasOwnProperty('value') ) {
@@ -575,51 +617,31 @@
                         }
                     }
                 }
-                // OPTION
-                else if( thisOption.hasOwnProperty('value') ) {
-                    container.addClass('ms-reflow')
-
-                    // add option to ms dropdown
-                    instance._addOption( container, thisOption );
-
-                    if( updateSelect ) {
-                        var selOption = $('<option value="'+ thisOption.value +'">'+ thisOption.name +'</option>');
-
-                        // add custom user attributes
-                        if( thisOption.hasOwnProperty('attributes') && Object.keys( thisOption.attributes ).length ) {
-                            selOption.attr( thisOption.attributes );
-                        }
-
-                        // mark option as selected
-                        if( thisOption.checked ) {
-                            selOption.prop( 'selected', true );
-                        }
-
-                        select.append( selOption );
-                    }
-                }
                 else {
                     // no clue what this is we hit (skip)
                     continue;
                 }
 
                 if( appendContainer ) {
-                    optionsList.append( container );
+                    containers.push( container );
                 }
             }
+            optionsList.append( containers );
 
             // pad out label for room for the checkbox
-            var chkbx = optionsList.find('.ms-reflow input[type="checkbox"]').eq(0);
-            if( chkbx.length && chkbx.css('display').match(/block$/) ) {
-                var checkboxWidth = chkbx.outerWidth();
-                    checkboxWidth = checkboxWidth ? checkboxWidth : 15;
+            if( instance.options.checkboxAutoFit && instance.options.showCheckbox && !optionsWrap.hasClass('hide-checkbox') ) {
+                var chkbx = optionsList.find('.ms-reflow:eq(0) input[type="checkbox"]');
+                if( chkbx.length ) {
+                    var checkboxWidth = chkbx.outerWidth();
+                        checkboxWidth = checkboxWidth ? checkboxWidth : 15;
 
-                optionsList.find('.ms-reflow label').css(
-                    'padding-left',
-                    (parseInt( chkbx.closest('label').css('padding-left') ) * 2) + checkboxWidth
-                );
+                    optionsList.find('.ms-reflow label').css(
+                        'padding-left',
+                        (parseInt( chkbx.closest('label').css('padding-left') ) * 2) + checkboxWidth
+                    );
 
-                optionsList.find('.ms-reflow').removeClass('ms-reflow');
+                    optionsList.find('.ms-reflow').removeClass('ms-reflow');
+                }
             }
 
             // update placeholder text
@@ -782,7 +804,7 @@
 
             // get selected options
             var selOpts = [];
-            for( key in selectVals ) {
+            for( var key in selectVals ) {
                 selOpts.push(
                     $.trim( select.find('option[value="'+ selectVals[ key ] +'"]').text() )
                 );
@@ -802,13 +824,13 @@
                 optionsWrap.closest('.ms-options-wrap').removeClass('ms-has-selections');
             }
 
-            // if copy is larger than button width use "# selected"
-            if( (placeholderTxt.width() > placeholder.width()) || (selOpts.length != selectVals.length) ) {
-                placeholderTxt.text( select.val().length + instance.options.texts.selectedOptions );
-            }
             // replace placeholder text
-            else if( !selOpts.length ) {
+            if( !selOpts.length ) {
                 placeholderTxt.text( instance.options.texts.placeholder );
+            }
+            // if copy is larger than button width use "# selected"
+            else if( (placeholderTxt.width() > placeholder.width()) || (selOpts.length != selectVals.length) ) {
+                placeholderTxt.text( select.val().length + instance.options.texts.selectedOptions );
             }
         },
 
@@ -861,6 +883,10 @@
 
     // ENABLE JQUERY PLUGIN FUNCTION
     $.fn.multiselect = function( options ){
+        if( !this.length ) {
+            return;
+        }
+
         var args = arguments;
         var ret;
 

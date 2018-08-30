@@ -102,6 +102,10 @@ class zenario_event_listing extends ze\moduleBaseClass {
 			    ze\file::imageLink($width, $height, $defaultImageURL, $this->setting('default_image_id'), $this->setting("width"), $this->setting("height"), $this->setting('canvas'), 0, $this->setting('retina'));
 			}
 			
+			if ($showCategory = $this->setting('show_content_items_category') && ze::setting('enable_display_categories_on_content_lists')) {
+				$categories = ze\row::getAssocs('categories', ['name', 'id', 'parent_id', 'public'], []);
+			}
+			
 			$result = ze\sql::select($sql . ze\sql::limit($this->page, $this->setting('page_size'), $this->setting('offset')));
 			while($row = ze\sql::fetchAssoc($result)){
 			    $eventRow = [];
@@ -215,6 +219,22 @@ class zenario_event_listing extends ze\moduleBaseClass {
 				$eventRow['cID'] = $row['id'];
 				$eventRow['equiv_id'] = $row['equiv_id'];
 				$eventRow['language_id'] = $row['language_id'];
+				$eventRow['type'] = $row['type'];
+				
+				if ($showCategory) {
+					if (ze\module::inc('zenario_content_list')) {
+						$categoryId = zenario_content_list::getContentItemLowestPublicCategory($eventRow['equiv_id'], $eventRow['type'], $categories);
+						if ($categoryId) {
+							$eventRow['Category'] = ze\lang::phrase('_CATEGORY_' . $categoryId);
+							$eventRow['Category_Id'] = $categoryId;
+							$category = ze\row::get('categories', ['landing_page_equiv_id', 'landing_page_content_type', 'code_name'], $categoryId);
+							$eventRow['Category_code_name'] = $category['code_name'];
+							if ($category['landing_page_equiv_id'] && $category['landing_page_content_type']) {
+								$eventRow['Category_Landing_Page_Link'] = ze\link::toItem($category['landing_page_equiv_id'], $category['landing_page_content_type']);
+							}
+						}
+					}
+				}
 
 				if ( ($this->cType != 'event' || $eventRow['equiv_id'] != ze\content::equivId($this->cID, $this->cType))  && (!isset($eventRows[$eventRow['equiv_id']]) || ($eventRows[$eventRow['equiv_id']]['language_id'] != ze::$langId)) ){
 					$eventRows[$eventRow['equiv_id']] = $eventRow;
@@ -251,6 +271,7 @@ class zenario_event_listing extends ze\moduleBaseClass {
 			
 			$this->data['Events_List'] = true;
 			$this->data['Event_Row_On_List'] = $eventRows;
+			$this->data['Show_Category'] = (bool)$this->setting('show_content_items_category') && (bool)ze::setting('enable_display_categories_on_content_lists');
 		} else {
 		    $this->data['No_Events'] = true;
 		}
@@ -511,6 +532,7 @@ class zenario_event_listing extends ze\moduleBaseClass {
 								v.content_summary,
 								v.feature_image_id,
 								c.equiv_id,
+								c.type,
 								c.language_id,
 								ce.location_id,
 								ce.location,
@@ -692,6 +714,14 @@ class zenario_event_listing extends ze\moduleBaseClass {
                 	
                 $hidden = !$values['each_item/show_sticky_images'];
                 $this->showHideImageOptions($fields, $values, 'each_item', $hidden);
+                
+                $categoriesEnabled = ze::setting('enable_display_categories_on_content_lists');
+				if (!$categoriesEnabled) {
+					$fields['each_item/show_content_items_category']['disabled'] = true;
+					$fields['each_item/show_content_items_category']['side_note'] = ze\admin::phrase('You must enable this option in your site settings under "Categories".');
+					$values['each_item/show_content_items_category'] = false;
+				}
+                
 				break;
 		}
 	}

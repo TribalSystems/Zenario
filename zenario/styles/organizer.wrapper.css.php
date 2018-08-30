@@ -35,7 +35,7 @@ ze\cache::start();
 
 //Run pre-load actions
 
-require ze::editionInclude('wrapper.pre_load');
+if (ze::$canCache) require CMS_ROOT. 'zenario/includes/wrapper.pre_load.inc.php';
 
 
 //Include the CSS needed for Organizer and its support libraries
@@ -46,4 +46,4 @@ ze\cache::incCSS('zenario/libs/manually_maintained/mit/jssor/skin');
 
 
 //Run post-display actions
-require ze::editionInclude('wrapper.post_display');
+if (ze::$canCache) require CMS_ROOT. 'zenario/includes/wrapper.post_display.inc.php';

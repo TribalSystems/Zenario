@@ -1341,8 +1341,10 @@ class contentAdm {
 					if (count($groupNames) > 1) {
 						$groupNames = [implode(', ', $groupNames)];
 						return \ze\admin::phrase('Private, only show to extranet users in the groups: [[0]]', $groupNames);
-					} else {
+					} elseif (count($groupNames) == 1) {
 						return \ze\admin::phrase('Private, only show to extranet users in the group: [[0]]', $groupNames);
+					} else {
+						return \ze\admin::phrase('Private, only show to extranet users in the group: [[0]]', [0 => '(error: selected group not found)']);
 					}
 					break;
 			
@@ -1374,8 +1376,10 @@ class contentAdm {
 						if (count($roleNames) > 1) {
 							$roleNames = [implode(', ', $roleNames)];
 							return \ze\admin::phrase('Private, only show to extranet users with the following roles at ANY location: [[0]]', $roleNames);
-						} else {
+						} elseif (count($roleNames) == 1) {
 							return \ze\admin::phrase('Private, only show to extranet users with the following role at ANY location: [[0]]', $roleNames);
+						} else {
+							return \ze\admin::phrase('Private, only show to extranet users with the following role at ANY location: [[0]]', [0 => '(error: selected role not found)']);
 						}
 					}
 					break;

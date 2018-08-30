@@ -68,9 +68,17 @@ if (file_exists('visitorheader.inc.php') && file_exists('../index.php')) {
 require 'basicheader.inc.php';
 ze\cookie::startSession();
 
-//Run pre-load actions
 
-require ze::editionInclude('index.pre_load');
+//Run pre-load actions
+//Set the cookie consent cookie if we see cookies_accepted in the visitor's session
+if (!empty($_SESSION['cookies_accepted'])) {
+	ze\cookie::setConsent();
+	unset($_SESSION['cookies_accepted']);
+}
+
+//Attempt to use page caching, rather then re-render this page
+if (ze::$canCache) require CMS_ROOT. 'zenario/includes/index.pre_load.inc.php';
+
 
 define('CHECK_IF_MAJOR_REVISION_IS_NEEDED', true);
 require CMS_ROOT. 'zenario/visitorheader.inc.php';
@@ -287,7 +295,22 @@ do {
 } while (false);
 
 
-require ze::editionInclude('index.post_get_contents');
+
+if (ze::$canCache) {
+	if (isset(ze::$cacheEnv)) {
+		foreach ($_GET as $request => &$value) {
+			if ($request != 'cID' && $request != 'cType' && $request != 'visLang' && $request != 'slotName' && $request != 'instanceId') {
+				if (isset(ze::$importantGetRequests[$request])) {
+					ze::$knownReq[$request] = $value;
+			
+				} else {
+					ze::$cacheEnv['g'] = 'g';
+				}
+			}
+		}
+	}
+}
+
 
 
 $canonicalURL = ze\link::toItem(ze::$cID, ze::$cType, true, '', false, true, true);
@@ -337,6 +360,7 @@ if (ze::$langId !== ze::$visLang) {
 $imageWidth = $imageHeight = $imageURL = false;
 if (ze::$pageImage && ze\file::imageLink($imageWidth, $imageHeight, $imageURL, ze::$pageImage, 0, 0, 'resize', 0, false, $fullPath = true)) {
 	$mimeType = ze\row::get('files', 'mime_type', ze::$pageImage);
+	
 	echo '
 <meta property="og:image:type" content="' . htmlspecialchars($mimeType) . '" />
 <meta property="og:image" content="', htmlspecialchars($imageURL), '"/>
@@ -346,6 +370,28 @@ if (ze::$pageImage && ze\file::imageLink($imageWidth, $imageHeight, $imageURL, z
 		echo '
 <meta property="og:image:secure_url" content="', htmlspecialchars($imageURL), '"/>';
 	}
+}
+else {
+
+//This default image will be shown if a page does not have a feature image.
+   if (ze::setting('default_icon') && ($icon = ze\row::get('files', ['id', 'mime_type', 'filename', 'checksum'], ze::setting('default_icon')))) {
+			if ($icon['mime_type'] == 'image/vnd.microsoft.icon' || $icon['mime_type'] == 'image/x-icon') {
+				$url = ze\file::link($icon['id']);
+			} else {
+				$imageWidth = $imageHeight = $url = false;
+				ze\file::imageLink($imageWidth, $imageHeight, $url, $icon['id'], 0, 0, 'resize', 0, false, $fullPath = true);
+			}
+    	echo '
+<meta property="og:image:type" content="' . htmlspecialchars($icon['mime_type']) . '" />
+<meta property="og:image" content="', htmlspecialchars($url), '"/>
+<meta property="og:image:width" content="' . htmlspecialchars($imageWidth) . '" />
+<meta property="og:image:height" content="' . htmlspecialchars($imageHeight) . '" />';
+    if (ze\link::protocol() == "https://") {
+		echo '
+<meta property="og:image:secure_url" content="', htmlspecialchars($url), '"/>';
+	}
+
+  }
 }
 
 echo '
@@ -388,8 +434,16 @@ if (ze\lang::count() > 1) {
 }
 
 ze\content::pageHead('zenario/', false, true, $overrideFrameworkAndCSS);
-echo "\n", ze::setting('sitewide_head'), "\n</head>";
+echo "\n", ze::setting('sitewide_head'), "\n";
 
+if (ze\cookie::canSet('analytics') && ze::setting('sitewide_analytics_html_location') == 'head') {
+	echo "\n", ze::setting('sitewide_analytics_html'), "\n";
+}
+if (ze\cookie::canSet('social_media') && ze::setting('sitewide_social_media_html_location') == 'head') {
+	echo "\n", ze::setting('sitewide_social_media_html'), "\n";
+}
+
+echo "</head>";
 
 $contentItemDiv =
 	"\n".
@@ -546,10 +600,28 @@ if ($specificInstance || $specificSlot) {
 
 
 echo "\n", ze::setting('sitewide_foot'), "\n";
-
+if (ze\cookie::canSet('analytics') && ze::setting('sitewide_analytics_html_location') == 'foot') {
+	echo "\n", ze::setting('sitewide_analytics_html'), "\n";
+}
+if (ze\cookie::canSet('social_media') && ze::setting('sitewide_social_media_html_location') == 'foot') {
+	echo "\n", ze::setting('sitewide_social_media_html'), "\n";
+}
 
 //Run post-display actions
-require ze::editionInclude('index.post_display');
+//Record the first RSS link on this page, if there was one
+if (ze::$rss
+ && !ze::$rss1st
+ && empty($_REQUEST['slideId'])
+ && empty($_REQUEST['slideNum'])
+ && empty($_REQUEST['slotName'])
+ && empty($_REQUEST['instanceId'])
+ && ($rss = explode('_', ze::$rss, 2))
+ && (!empty($rss[1]))) {
+	ze\row::set('content_item_versions', ['rss_slot_name' => $rss[1], 'rss_nest' => (int) $rss[0]], ['id' => ze::$cID, 'type' => ze::$cType, 'version' => ze::$cVersion]);
+}
+//Attempt to save this page to the cache, if caching is possible
+if (ze::$canCache) require CMS_ROOT. 'zenario/includes/index.post_display.inc.php';
+
 
 echo "\n</body>\n</html>";
 

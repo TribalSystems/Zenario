@@ -160,7 +160,7 @@ class zenario_user_forms__admin_boxes__export_user_responses extends ze\moduleBa
 			$rowPointer++;
 			$response = [];
 			$response[0] = $responseId;
-			$response[1] = ze\date::formatDateTime($responseDates[$responseId], '_MEDIUM');
+			$response[1] = ze\admin::formatDateTime($responseDates[$responseId], '_MEDIUM');
 			
 			$j = 1;
 			foreach ($exportHeaders as $formFieldId => $name) {

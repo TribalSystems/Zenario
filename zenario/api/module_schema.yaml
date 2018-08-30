@@ -60,10 +60,6 @@ properties:
         description: >
             If your module is pluggable then you should set this property.
             A module that is pluggable can generate plugins.
-        
-            If you don't specify this property, or don't write a <code>description.yaml</code> file for your
-            module, then the CMS will take an intelligent guess based on whether you have
-            the <code>showSlot()</code> function in your module_code.php.
     is_abstract:
         type: boolean
         description: >

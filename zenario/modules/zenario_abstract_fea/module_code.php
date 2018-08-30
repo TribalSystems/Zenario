@@ -477,11 +477,16 @@ class zenario_abstract_fea extends ze\moduleBaseClass {
 	
 	protected function setupOverridesForPhrases(&$box, &$fields, &$values) {
 		
-		$modePath = $this->getPathFromMode($values['first_tab/mode']);
+		$mode = $values['global_area/mode'] ?: $values['first_tab/mode'];
+		
+		$modePath = $this->getPathFromMode($mode);
+		
+		$ord = 1000;
         
         foreach (ze\row::getDistinctAssocs(
             'tuix_file_contents', 'path', ['type' => 'visitor', 'module_class_name' => $this->moduleClassName]
         ) as $feaPath) {
+        	++$ord;
             if (isset($box['tabs']['phrases.'. $feaPath])) {
                 $box['tabs']['phrases.'. $feaPath]['hidden'] = true;
             }
@@ -490,6 +495,7 @@ class zenario_abstract_fea extends ze\moduleBaseClass {
                     $box['tabs']['phrases.'. $feaPath]['hidden'] = false;
                 } else {
                     $box['tabs']['phrases.'. $feaPath] = [
+                    	'ord' => $ord,
                         'edit_mode' => $box['tabs']['first_tab']['edit_mode'],
                         'fields' => [],
                         'label' => ze\admin::phrase('Phrases ([[mode]])', ['mode' => str_replace('_', ' ', $this->getModeFromPath($feaPath))])

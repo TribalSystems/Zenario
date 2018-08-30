@@ -34,6 +34,17 @@ site_settings:
                             ord: "2"
                             label: "Explicit consent: require visitor's consent before setting cookies"
                     redraw_onchange: true
+                
+                individual_cookie_consent:
+                    site_setting:
+                        name: individual_cookie_consent
+                    label: Allow the user to consent to individual cookies
+                    type: checkbox
+                    side_note: Adds a "Manage" button to the visitor message.
+                    visible_if: |
+                        zenarioAB.value('cookie_require_consent') == 'explicit'
+                    indent: 1
+                    redraw_onchange: true
                 description__dont_inform:
                     snippet:
                         html: |
@@ -47,6 +58,7 @@ site_settings:
                     type: select
                     visible_if: |
                         zenarioAB.value('cookie_require_consent') == 'implied'
+                    indent: 1
                     values:
                         message_continue: A consent message with a "Continue" button
                     redraw_onchange: true
@@ -60,12 +72,14 @@ site_settings:
                                 Modules that set cookies may do so irrespective of the visitor's action.
                             </p>
                     visible_if: "zenarioAB.value('cookie_require_consent') == 'implied'"
+                    indent: 1
                 cookie_consent_type__explicit:
                     site_setting:
                         name: cookie_consent_type
                     label: 'Message for visitor:'
                     type: select
                     visible_if: "zenarioAB.value('cookie_require_consent') == 'explicit'"
+                    indent: 1
                     values:
                         message_accept: A consent message with an "Accept" button
                         message_accept_reject: >
@@ -92,6 +106,8 @@ site_settings:
                     visible_if: |
                         zenarioAB.value('cookie_require_consent') == 'explicit' &&
                         zenarioAB.value('cookie_consent_type__explicit') != 'message_accept_reject'
+                    indent: 1
+                    
                 description__explicit__message_accept_reject:
                     snippet:
                         html: |
@@ -112,7 +128,7 @@ site_settings:
                     visible_if: |
                         zenarioAB.value('cookie_require_consent') == 'explicit' &&
                         zenarioAB.value('cookie_consent_type__explicit') == 'message_accept_reject'
-        
+                    indent: 1
                 _COOKIE_CONSENT_IMPLIED_MESSAGE:
                     indent: 1
                     visible_if: |
@@ -126,7 +142,7 @@ site_settings:
                     indent: 1
                     visible_if: |
                         zenarioAB.value('cookie_require_consent') == 'implied'
-                    label: Continue button text
+                    label: '"Continue" button text'
                     type: text
                     validation:
                         required_if_not_hidden: true
@@ -144,16 +160,46 @@ site_settings:
                     indent: 1
                     visible_if: |
                         zenarioAB.value('cookie_require_consent') == 'explicit'
-                    label: Accept button text
+                    label: '"Accept cookies" button text'
                     type: text
                     validation:
                         required_if_not_hidden: true
+                _COOKIE_CONSENT_MANAGE:
+                    indent: 1
+                    visible_if: |
+                        zenarioAB.value('cookie_require_consent') == 'explicit' && 
+                        zenarioAB.value('individual_cookie_consent')
+                    label: '"Manage cookies" button text'
+                    type: text
+                    validation:
+                        required_if_not_hidden: true
+                
+                manage_cookie_consent_content_item:
+                    site_setting:
+                        name: manage_cookie_consent_content_item
+                    visible_if: |
+                        zenarioAB.value('cookie_require_consent') == 'explicit' && 
+                        zenarioAB.value('individual_cookie_consent')
+                    indent: 2
+                    label: 'Content item for managing cookies:'
+                    pick_items:
+                        path: zenario__content/panels/content/refiners/filter_by_lang////
+                        min_path: zenario__content/panels/content
+                        max_path: zenario__content/panels/content
+                        target_path: zenario__content/panels/content
+                        disallow_refiners_looping_on_min_path: true
+                        select_phrase: Select a content item...
+                        hide_remove_button: true
+                    validation:
+                        required_if_not_hidden: true
+                    note_below: "A content item that should have a cookie consent status plugin to allow visitors to manage their privacy settings."
+                
                 _COOKIE_CONSENT_REJECT:
                     indent: 1
                     visible_if: |
                         zenarioAB.value('cookie_require_consent') == 'explicit' &&
                         zenarioAB.value('cookie_consent_type__explicit') == 'message_accept_reject'
-                    label: Reject button text
+                    label: '"Reject cookies" button text'
                     type: text
                     validation:
                         required_if_not_hidden: true
@@ -161,7 +207,7 @@ site_settings:
                     indent: 1
                     visible_if: |
                         zenarioAB.value('cookie_require_consent') == 'explicit'
-                    label: Close button text
+                    label: '"Close" button text'
                     type: text
                     validation:
                         required_if_not_hidden: true

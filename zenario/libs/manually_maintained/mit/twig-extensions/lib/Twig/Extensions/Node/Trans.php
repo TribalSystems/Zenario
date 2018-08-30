@@ -159,6 +159,6 @@ class Twig_Extensions_Node_Trans extends Twig_Node
      */
     protected function getTransFunction($plural)
     {
-        return $plural ? 'nphrase' : 'phrase';
+        return $plural ? 'zenario_nphrase' : 'zenario_phrase';
     }
 }

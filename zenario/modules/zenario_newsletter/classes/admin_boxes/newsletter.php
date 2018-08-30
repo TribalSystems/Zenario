@@ -113,7 +113,7 @@ class zenario_newsletter__admin_boxes__newsletter extends zenario_newsletter {
 			$fuse = 100;
 			$nameCandidate = '';
 			while ($fuse--) {
-				$nameCandidate = ze\admin::phrase('Newsletter ' . ze\date::format(date('Y-m-d'), '_LONG') . ($i>1?(' (' . (int) $i . ')'):''));
+				$nameCandidate = ze\admin::phrase('Newsletter ' . ze\admin::formatDate(date('Y-m-d'), '_LONG') . ($i>1?(' (' . (int) $i . ')'):''));
 				if (!ze\row::exists(ZENARIO_NEWSLETTER_PREFIX . "newsletters", ['newsletter_name' => $nameCandidate])) {
 					break;
 				}
@@ -317,7 +317,7 @@ class zenario_newsletter__admin_boxes__newsletter extends zenario_newsletter {
 		if (!$newsletterConsentPolicy) {
 			//If the newsletter consent flag is not set, show a link to the site settings tab
 			$link= ze\link::absolute() . 'zenario/admin/organizer.php#zenario__administration/panels/site_settings//zenario_newsletter__site_settings_group~.site_settings~tzenario_newsletter__site_settings~k' . urlencode('{"id":"zenario_newsletter__site_settings_group"}');
-			$fields['unsub_exclude/exclude_recipients_with_no_consent']['note_below'] = ze\admin::phrase('Select a flag that represents a recipients consent to recieve newsletters <a target="_blank" href="[[link]]">here</a>.', ['link' => $link]);
+			$fields['unsub_exclude/exclude_recipients_with_no_consent']['note_below'] = ze\admin::phrase('Select a flag that represents a recipients consent to receive newsletters <a target="_blank" href="[[link]]">here</a>.', ['link' => $link]);
 		} else {
 			unset($fields['unsub_exclude/exclude_recipients_with_no_consent']['note_below']);
 		}

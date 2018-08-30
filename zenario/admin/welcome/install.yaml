@@ -18,7 +18,7 @@ install:
                     type: toggle
                     redraw_onchange: true
                     full_width: true
-                    visible_if: "zenarioAW.togglePressed(1, tuixObject)"
+                    visible_if: "zenarioAW.togglePressed(field, 1)"
                 reason:
                     full_width: true
                     pre_field_html: |  
@@ -27,7 +27,7 @@ install:
                         html: "&nbsp;"
                     post_field_html: |
                         </div>
-                    visible_if: zenarioAW.togglePressed()
+                    visible_if: zenarioAW.togglePressed(field)
                 next:
                     value: Begin Installation
                     type: submit

@@ -1,24 +1,26 @@
-<div
-	data-position="top"
-	onclick="zenarioAB.enableOrDisableSite();"
+<% if (zenarioA.adminPrivs._PRIV_EDIT_SITE_SETTING) { %>
+	<div
+		data-position="top"
+		onclick="zenarioAB.enableOrDisableSite();"
 	
-	data-tooltip-options="
-		{position: {my: 'left center', at: 'right top', collision: 'flipfit'}}
-	"
+		data-tooltip-options="
+			{position: {my: 'left center', at: 'right top', collision: 'flipfit'}}
+		"
 	
-	{% if (!zenarioA.siteSettings.site_enabled) { %}
-		class="organizer_enabled_disabled site_disabled"
-		title="Site disabled and in development mode."
+		<% if (!zenarioA.siteSettings.site_enabled) { %>
+			class="organizer_enabled_disabled site_disabled"
+			title="Site disabled and in development mode."
 	
-	{% } else if (zenarioA.siteSettings.site_mode == 'production') { %}
-		class="organizer_enabled_disabled site_enabled"
-		title="Site enabled and in production mode."
+		<% } else if (zenarioA.siteSettings.site_mode == 'production') { %>
+			class="organizer_enabled_disabled site_enabled"
+			title="Site enabled and in production mode."
 	
-	{% } else { %}
-		class="organizer_enabled_disabled site_enabled_development"
-		title="Site enabled and in development mode."
-	{% } %}
-></div>
+		<% } else { %>
+			class="organizer_enabled_disabled site_enabled_development"
+			title="Site enabled and in development mode."
+		<% } %>
+	></div>
+<% } %>
 <div
 	class="organizer_info_box"
 	data-step="16" data-position="top"

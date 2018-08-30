@@ -369,7 +369,6 @@ class zenario_project_locations extends ze\moduleBaseClass {
 				foreach ($panel['items'] as $id => &$item) {
 					
 					$item['image'] = 'zenario/file.php?c='. $item['checksum']. '&usage=project_locations&og=1';
-					$item['list_image'] = 'zenario/file.php?c='. $item['checksum']. '&usage=project_locations&ogl=1';
 				}
 			case 'zenario__projects/nav/projects/panel':
 				foreach ($panel['items'] as $id => &$item) {
@@ -377,7 +376,6 @@ class zenario_project_locations extends ze\moduleBaseClass {
 						$img = '&usage=project_locations&c='. $item['checksum'];
 					
 						$item['image'] = 'zenario/file.php?og=1'. $img;
-						$item['list_image'] = 'zenario/file.php?ogl=1'. $img;
 					}
 				}
 			break;

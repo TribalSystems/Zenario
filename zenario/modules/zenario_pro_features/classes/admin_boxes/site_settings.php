@@ -140,7 +140,7 @@ class zenario_pro_features__admin_boxes__site_settings extends ze\moduleBaseClas
 		//Changes to the cache site settings..?
 		if (ze\priv::check('_PRIV_EDIT_SITE_SETTING') && ze\ring::engToBoolean($box['tabs']['caching']['edit_mode']['on'] ?? false)) {
 			//Empty the cache if so
-			zenario_pro_features::clearCacheOnShutdown($clearAll = true);
+			ze\pageCache::clearOnShutdown($clearAll = true);
 			
 			// Save the current users IP address if option checked
 			if (!ze::setting('limit_caching_debug_info_by_ip') && $values['caching/limit_caching_debug_info_by_ip']) {

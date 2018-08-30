@@ -48,7 +48,7 @@ class zenario_crm_form_integration__admin_boxes__last_crm_request extends zenari
 			$lastCRMRequest = ze\sql::fetchAssoc($sql);
 			if ($lastCRMRequest) {
 				$values['details/url'] = $lastCRMRequest['url'];
-				$values['details/datetime'] = ze\date::formatDateTime($lastCRMRequest['datetime'], '_MEDIUM');
+				$values['details/datetime'] = ze\admin::formatDateTime($lastCRMRequest['datetime'], '_MEDIUM');
 				$values['details/request'] = $lastCRMRequest['request'];
 			}
 		}

@@ -10,7 +10,7 @@ sections:
                 admin_box:
                     path: zenario_content_requests
                     key:
-                        action_requested: trash
+                        action_requested: send_request
             request_publish: &request_publish
                 parent: action_dropdown
                 label: Publish...
@@ -18,7 +18,7 @@ sections:
                 admin_box:
                     path: zenario_content_requests
                     key:
-                        action_requested: publish
+                        action_requested: send_request
     
     restricted_editing:
         buttons:
@@ -34,4 +34,4 @@ sections:
                 admin_box:
                     path: zenario_content_requests
                     key:
-                        action_requested: publish
+                        action_requested: send_request

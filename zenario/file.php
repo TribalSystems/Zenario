@@ -53,7 +53,6 @@ if ($checksum) {
 	$ETag =
 		'zenario-file-'. $_SERVER['HTTP_HOST']. '-'. $usage. '-'. $checksum.
 		(isset($_GET['og'])? '-og' : '').
-		(isset($_GET['ogl'])? '-ogl' : '').
 		(isset($_GET['closeup'])? '-closeup' : '').
 		(isset($_GET['popout'])? '-popout' : '').
 		'-'. $requestedWidth. '-'. $requestedHeight. '-'. $key;
@@ -66,13 +65,11 @@ if ($checksum) {
 if (isset($_GET['adminDownload'])
  || !$checksum
  && (isset($_GET['og'])
-  || isset($_GET['ogl'])
-  || isset($_GET['ogt'])
   || isset($_GET['closeup'])
   || isset($_GET['popout']))) {
 	
 	ze\cookie::startSession();
-	if (empty($_SESSION['running_a_wizard'])) {
+	if (empty($_SESSION['allow_file_uploads_in_the_installer'])) {
 		require CMS_ROOT. 'zenario/adminheader.inc.php';
 		$adminBackend = true;
 	} else {
@@ -147,16 +144,6 @@ if ($usage == 'user' && ($_REQUEST['user_id'] ?? false)) {
 
 //Generate or load a thumbnail for Storekeeper
 if (isset($_GET['og'])) {
-	$width = 180;
-	$height = 130;
-
-//Generate or load a small thumbnail for Storekeeper
-} elseif (isset($_GET['ogl'])) {
-	$width = 180;
-	$height = 130;
-
-//Generate or load a larger thumbnail for Storekeeper
-} elseif (isset($_GET['ogt'])) {
 	$width = 180;
 	$height = 130;
 
@@ -314,14 +301,8 @@ if ($getUploadedFileInCacheDir) {
 			filename,
 			";
 
-	//If this is a Storekeeper thumbnail then we'll grab the image data up straight away.
+	//If this is a thumbnail then we'll grab the image data up straight away.
 	if (isset($_GET['og'])) {
-		$sql .= "thumbnail_180x130_data AS data";
-
-	} elseif (isset($_GET['ogt'])) {
-		$sql .= "thumbnail_180x130_data AS data";
-
-	} elseif (isset($_GET['ogl'])) {
 		$sql .= "thumbnail_180x130_data AS data";
 
 	//If this is content, then we'll also grab the data straight away as there should be no need to manipulate it.

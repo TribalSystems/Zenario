@@ -121,14 +121,10 @@ class Zenario_Twig_Cache implements Twig_CacheInterface {
     }
 
     public function write($key, $content) {
-    	
-    	//var_dump('writing', $key, $content);
-    	
-    	
         $dir = basename(dirname($key));
         ze\cache::createDir($dir, 'cache/frameworks', false);
         file_put_contents($key, $content);
-        @chmod($key, 0664);
+        \ze\cache::chmod($key, 0664);
     }
 
     public function getTimestamp($key) {
@@ -190,14 +186,16 @@ function zenario_callLibFromTwig($lib, $fun, ...$args) {
 
 
 
-
-
-
-//Define the phrase() and the nphrase() functions for use in Twig frameworks
-function nphrase($text, $pluralText = false, $n = 1, $replace = [], $moduleClass = 'lookup', $languageId = false, $backtraceOffset = 1, $cli = false) {
-	return ze\lang::nphrase($text, $pluralText, $n, $replace, $moduleClass, $languageId, $backtraceOffset, $cli);
+//Define the phrase() and the nphrase() functions for use in Twig frameworks.
+//These should map to the phrase/nphrase functions of whatever plugin is currently running
+function zenario_nphrase($text, $replace = []) {
+	if (\ze::$plugin) {
+		return \ze::$plugin->nphrase($text, $replace);
+	}
 }
 
-function phrase($code, $replace = false, $moduleClass = 'lookup', $languageId = false, $backtraceOffset = 1, $cli = false) {
-	return ze\lang::phrase($code, $replace, $moduleClass, $languageId, $backtraceOffset, $cli);
+function zenario_phrase($text, $pluralText = false, $n = 1, $replace = []) {
+	if (\ze::$plugin) {
+		return \ze::$plugin->phrase($text, $pluralText, $n, $replace);
+	}
 }

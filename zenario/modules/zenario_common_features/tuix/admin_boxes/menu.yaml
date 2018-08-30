@@ -208,6 +208,26 @@ zenario_menu:
                         When linking to the current content item,
                         keep variables like <code>mode</code> or <code>page</code> in the URL.
                 
+                add_custom_get_requests:
+                    label: |
+                        Add custom GET requests
+                    type: checkbox
+                    value: 0
+                    redraw_onchange: true
+                custom_get_requests:
+                    label: |
+                        Custom GET requests:
+                    visible_if: |
+                        zenarioAB.value('add_custom_get_requests')
+                    indent: 1
+                    values: {}
+                    pick_items:
+                        multiple_select: true
+                        nothing_selected_phrase: Menu node has no custom GET requests
+                        enable_type_ahead_search: false
+                        allow_typing_anything: true
+                        hide_select_button: true
+                
                 call_static_method:
                     label: |
                         Call a module's static method to customise this menu node

@@ -45,56 +45,15 @@ _sql
 	) ENGINE=MyISAM DEFAULT CHARSET=utf8
 _sql
 
-//Add default values for site settings
-, <<<_sql
-	INSERT INTO `[[DB_PREFIX]]site_settings`
-	(name, default_value)
-	VALUES
-		('content_notification_email_subject', 'Website content notification: Item {{published_drafted_trashed}}'),
-		('content_notification_email_body', 'This is an automated message from the website at {{url}}.
 
-Item {{published_drafted_trashed}}, details:
-
-Content item reference:	{{tag_id}}
-Browser title: {{title}}
-Who by:        {{admin_name}}
-When:          {{datetime_when}}
-Link:          {{hyperlink}}'),
-		('menu_node_notification_email_subject','Website content notification: Menu node {{created_updated}}'),
-		('menu_node_notification_email_body', 'This is an automated message from the website at {{url}}.
-
-Menu node {{created_updated}}, details:
-
-Content item reference:  {{tag_id}}
-Browser title:           {{title}}
-Who by:                  {{admin_name}}
-When:                    {{datetime_when}}
-Link:                    {{hyperlink}}
-
-Previous menu node text: {{previous_menu_node}}
-New menu node text:      {{new_menu_node}}'),
-		('content_request_email_subject','Request to {{publish_draft_trash}} {{tag_id}}'),
-		('content_request_email_body', 'The administrator {{admin_name}} on the site {{url}} is requesting 
-to {{publish_draft_trash}} the content item {{tag_id}}.
-    
-Click here to go to that page: {{hyperlink}}.
-    
-You should log in with your administrator details and {{publish_draft_trash}} the item.')
-
-	ON DUPLICATE KEY UPDATE
-		default_value = VALUES(default_value)
-_sql
-
-
-);	ze\dbAdm::revision(2
+); ze\dbAdm::revision(2
 , <<<_sql
 	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_CONTENT_NOTIFICATIONS_PREFIX]]admin_content_notifications`
 	ADD COLUMN `content_request_notification` tinyint(1) NOT NULL default 0
 _sql
 
-
 //Give the admin_content_notifications table a more sensible name!
-);	ze\dbAdm::revision(3
+); ze\dbAdm::revision(3
 , <<<_sql
 	DROP TABLE IF EXISTS `[[DB_PREFIX]][[ZENARIO_CONTENT_NOTIFICATIONS_PREFIX]]admins_mirror`
 _sql
@@ -104,9 +63,8 @@ _sql
 	RENAME TO `[[DB_PREFIX]][[ZENARIO_CONTENT_NOTIFICATIONS_PREFIX]]admins_mirror`
 _sql
 
-
 //Create a proper linking table
-);	ze\dbAdm::revision(4
+); ze\dbAdm::revision(4
 , <<<_sql
 	DROP TABLE IF EXISTS `[[DB_PREFIX]][[ZENARIO_CONTENT_NOTIFICATIONS_PREFIX]]versions_mirror`
 _sql
@@ -127,66 +85,31 @@ _sql
 	) ENGINE=MyISAM DEFAULT CHARSET=utf8
 _sql
 
-); ze\dbAdm::revision(10
-
-, <<<_sql
-	UPDATE `[[DB_PREFIX]]site_settings`
-	SET default_value = 'This is an automated message from the website at {{url}}.
-
-Item {{published_drafted_trashed}}, details:
-
-Content item reference:	{{tag_id}}
-Browser title: {{title}}
-Who by:        {{admin_name}}
-When:          {{datetime_when}}
-Link:          {{hyperlink}}
-
-To change your notification set-up, go to your profile at {{admin_profile_url}}'
-
-	WHERE name = 'content_notification_email_body'
-_sql
-
-, <<<_sql
-	UPDATE `[[DB_PREFIX]]site_settings`
-	SET default_value = 'This is an automated message from the website at {{url}}.
-
-Menu node {{created_updated}}, details:
-
-Content item reference:  {{tag_id}}
-Browser title:           {{title}}
-Who by:                  {{admin_name}}
-When:                    {{datetime_when}}
-Link:                    {{hyperlink}}
-
-Previous menu node text: {{previous_menu_node}}
-New menu node text:      {{new_menu_node}}
-
-To change your notification set-up, go to your profile at {{admin_profile_url}}'
-
-	WHERE name = 'menu_node_notification_email_body'
-_sql
-
-, <<<_sql
-	UPDATE `[[DB_PREFIX]]site_settings`
-	SET default_value = 'The administrator {{admin_name}} on the site {{url}} is requesting 
-to {{publish_draft_trash}} the content item {{tag_id}}.
-    
-Click here to go to that page: {{hyperlink}}.
-    
-You should log in with your administrator details and {{publish_draft_trash}} the item.
-
-To change your notification set-up, go to your profile at {{admin_profile_url}}'
-
-	WHERE name = 'content_request_email_body'
-_sql
-
-
 //Fix a bad column definition that's causing problems on MySQL 5.7
-);	ze\dbAdm::revision(13
+); ze\dbAdm::revision(13
 , <<<_sql
 	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_CONTENT_NOTIFICATIONS_PREFIX]]versions_mirror`
 	MODIFY COLUMN `datetime_requested` datetime NOT NULL DEFAULT '1970-01-01 00:00:00'
 _sql
+
+//Update this table to also record publish notes for content versions
+); ze\dbAdm::revision(20
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_CONTENT_NOTIFICATIONS_PREFIX]]versions_mirror`
+	ADD COLUMN `type` enum('request', 'note') NOT NULL default 'note' AFTER `admin_id`,
+	CHANGE `datetime_requested` `datetime_created` datetime NOT NULL DEFAULT '1970-01-01 00:00:00'
+_sql
+
+, <<<_sql
+	UPDATE `[[DB_PREFIX]][[ZENARIO_CONTENT_NOTIFICATIONS_PREFIX]]versions_mirror`
+	SET type = 'request'
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_CONTENT_NOTIFICATIONS_PREFIX]]versions_mirror`
+	DROP COLUMN `action_requested`
+_sql
+
 );
 
 

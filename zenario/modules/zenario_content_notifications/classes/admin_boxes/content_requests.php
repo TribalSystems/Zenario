@@ -27,75 +27,124 @@
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
-class zenario_content_notifications__admin_boxes__content_requests extends zenario_content_notifications {
 
+class zenario_content_notifications__admin_boxes__content_requests extends zenario_content_notifications {
+	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
-		
+		//Get cID and cType
 		if ($box['key']['cID'] && $box['key']['cType']) {
 			$box['key']['id'] = $box['key']['cType']. '_'. $box['key']['cID'];
 		} else {
 			ze\content::getCIDAndCTypeFromTagId($box['key']['cID'], $box['key']['cType'], $box['key']['id']);
 		}
-		
+		//Get cVersion
 		$latestVersion = ze\content::latestVersion($box['key']['cID'], $box['key']['cType']);
 		if (!$box['key']['cVersion']) {
 			$box['key']['cVersion'] = $latestVersion;
-		
+		//Don't allow new notes on old versions
 		} elseif ($box['key']['cVersion'] != $latestVersion) {
 			unset($box['tabs']['requests']['edit_mode']);
 		}
 		
-		if (!ze\content::isDraft($box['key']['cID'], $box['key']['cType'], $box['key']['cVersion'])) {
-			unset($fields['action_requested']['values']['publish']);
-		}
+		$box['title'] = ze\admin::phrase('Notes and requests for the content item "[[tag]]"', ['tag' => ze\content::formatTag($box['key']['cID'], $box['key']['cType'])]);
 		
+		//Pre-open the new note action
 		if ($box['key']['action_requested']) {
-			$values['action_requested'] = $box['key']['action_requested'];
+			$values['requests/action'] = $box['key']['action_requested'];
 		}
 		
-		$box['title'] = ze\admin::phrase('Requests for the content item "[[tag]]"', ['tag' => ze\content::formatTag($box['key']['cID'], $box['key']['cType'])]);
-		
-		
-		$values['existing_requests'] = '';
-		foreach (self::getNotes($box['key']['cID'], $box['key']['cType'], $box['key']['cVersion']) as $note) {
-			
-			if ($values['existing_requests'] !== '') {
-				$values['existing_requests'] .= "\n\n\n";
-			}
-			
-			$values['existing_requests'] .= self::noteHeader($note). "\n\n". $note['note'];
+		//Load notes for this content item (all versions)
+		$sql = '
+			SELECT content_id, content_type, content_version, admin_id, type, datetime_created, note
+			FROM ' . DB_PREFIX . ZENARIO_CONTENT_NOTIFICATIONS_PREFIX . 'versions_mirror
+			WHERE content_id = ' . (int)$box['key']['cID'] . '
+			AND content_type = "' . ze\escape::sql($box['key']['cType']) . '"
+			ORDER BY datetime_created DESC';
+		$result = ze\sql::select($sql);
+		$i = 0;
+		while ($note = ze\sql::fetchAssoc($result)) {
+			$box['tabs']['requests']['fields']['note_' . ++$i] = [
+				'pre_field_html' => static::getNoteHeader(
+					$note['admin_id'], 
+					$note['datetime_created'], 
+					$note['content_id'], 
+					$note['content_type'], 
+					$note['content_version'], 
+					$note['type']
+				),
+				'type' => 'textarea',
+				'value' => $note['note'],
+				'ord' => $i + 100,
+				'class' => 'ab_note',
+				'style' => 'min-height:100px',
+				'readonly' => true,
+			];
 		}
 		
-		$values['recipients'] = ze\escape::in(array_keys(self::getListOfAdminsWhoReceiveNotifications()), 'numeric');
+		if (ze\sql::numRows($result) == 0) {
+			$fields['requests/line']['snippet']['html'] .= '<br><br><p>' . ze\admin::phrase('No notes or requests found.') . '</p>';
+		}
+		
+		//Load recipients for new requests
+		$values['requests/recipients'] = ze\escape::in(array_keys(self::getListOfAdminsWhoReceiveNotifications()), 'numeric');
 	}
-
+	
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		
-		if (!empty($box['tabs']['requests']['edit_mode']['enabled'])
-		 && $values['action_requested']) {
-			$newNote = $this->newNote($box, $values);
-			$fields['request_details']['snippet']['html'] = nl2br(htmlspecialchars(self::noteHeader($newNote)));
+		//Add a header when making a new note
+		if ($values['requests/action']) {
+			$title = '';
+			if ($values['requests/action'] == 'send_request') {
+				$title = 'New request:';
+			} else {
+				$title = 'New note:';
+			}
+			$fields['requests/note']['pre_field_html'] = static::getNoteHeader(
+				ze\admin::id(), 
+				ze\date::now(), 
+				$box['key']['cID'],
+				$box['key']['cType'],
+				$box['key']['cVersion'],
+				$title
+			);
 		}
 	}
-
-	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
-		if ($values['action_requested']  == 'publish'
-		 && !ze\content::isDraft($box['key']['cID'], $box['key']['cType'], $box['key']['cVersion'])) {
-			$box['tabs']['requests']['errors'][] = ze\admin::phrase('This content item does not have a draft to publish.');
-		}
-	}
-
+	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		
-		$note = $this->newNote($box, $values);
-		
-		ze\row::insert(ZENARIO_CONTENT_NOTIFICATIONS_PREFIX. 'versions_mirror', $note);
-		
-		$messageText = self::noteHeader($note). "\n\n". $note['note'];
-		
-		foreach (self::getListOfAdminsWhoReceiveNotifications() as $admin) {
-			$addressToOverriddenBy = '';
-			ze\server::sendEmail('Website content request: Item request', $messageText, $admin['email'], $addressToOverriddenBy, $nameTo = false, $addressFrom = false, $nameFrom = false, $attachments = [], $attachmentFilenameMappings = [], $precedence = 'bulk', $isHTML = false);
+		//Save a note
+		if ($values['requests/action'] && ($note = trim($values['requests/note']))) {
+			$type = $values['requests/action'] == 'send_request' ? 'request' : 'note';
+			
+			ze\row::insert(
+				ZENARIO_CONTENT_NOTIFICATIONS_PREFIX. 'versions_mirror',
+				[
+					'content_id' => $box['key']['cID'], 
+					'content_type' => $box['key']['cType'],
+					'content_version' => $box['key']['cVersion'],
+					'admin_id' => ze\admin::id(),
+					'type' => $type,
+					'datetime_created' => ze\date::now(),
+					'note' => $note
+				]	
+			);
+			
+			//Send to admins if this is a request
+			if ($type == 'request') {
+				$admins = self::getListOfAdminsWhoReceiveNotifications();
+				$header = static::getNoteHeader(
+					ze\admin::id(), 
+					ze\date::now(), 
+					$box['key']['cID'],
+					$box['key']['cType'],
+					$box['key']['cVersion'],
+					'New request:',
+					$link = true
+				);
+				foreach($admins as $admin) {
+					$addressToOverriddenBy = '';
+					$body = $header . '<br><br>' . nl2br(htmlspecialchars($note));
+					ze\server::sendEmail('Website content request: Item request', $body, $admin['email'], $addressToOverriddenBy, $nameTo = false, $addressFrom = false, $nameFrom = false, $attachments = [], $attachmentFilenameMappings = [], $precedence = 'bulk', $isHTML = true);
+				}
+			}
 		}
 	}
 

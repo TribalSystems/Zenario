@@ -126,16 +126,13 @@ zenarioSE.insertHTML = function(html, cb, isNewTab) {
 	this.get('zenario_abtab').innerHTML = html;
 	this.tabHidden = false;
 	
-	cb.call();
+	cb.done();
 	zenarioSE.size(true);
 };
 
-zenarioSE.addJQueryElementsToTab =
-zenarioSE.addJQueryElementsToTabAndFocusFirstField = function() {
+zenarioSE.addJQueryElementsToTab = function() {
 	//Add any special jQuery objects to the tab
 	zenario.addJQueryElements('#zenarioSE ', true);
-	
-	this.focusFirstField();
 };
 
 

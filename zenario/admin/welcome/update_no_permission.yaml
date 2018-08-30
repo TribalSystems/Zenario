@@ -5,7 +5,7 @@ update_no_permission:
             edit_mode:
                 enabled: true
                 on: true
-                always_on: true
+                always_on: true        
             fields:
                 blurb:
                     full_width: true

@@ -1,11 +1,11 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
 full_slot:
-    actions:
+    re_move_place:
         replace_nest_on_item_layer:
             ord: 85.1
             priv: _PRIV_MANAGE_ITEM_SLOT
-            label: Show a nest instead on this content item...
+            label: Replace with a nest on this content item...
             label_different: Show a different nest on this content item...
             page_modes:
                 item: true
@@ -16,10 +16,10 @@ full_slot:
                 }
                 return false;
         
-        insert_nest_on_layout_layer:
+        replace_nest_on_layout_layer:
             ord: 87.1
             priv: _PRIV_MANAGE_TEMPLATE_SLOT
-            label: Show a nest instead...
+            label: Replace with a nest...
             label_different: Show a different nest...
             page_modes:
                 layout: true

@@ -610,30 +610,21 @@ body.ie9 #zenario_fbAdminFloatingBox.zenario_fab_plugin #zenario_fabTabs > div.z
 	min-height: 40px;
 	padding-left: 42px;
 	background:transparent url('../admin/images/icon-tick-green-circle.svg') no-repeat left top / 33px 32px;
-	
-	/* Min-Height Hack for IE 6 */
-	height: auto !important;
-	height: 51px;
+	height: auto;
 }
 
 .zenario_fbAdmin .zenario_fbQuestion {
 	min-height: 40px;
 	padding-left: 42px;
 	background:transparent url('../admin/images/icon-question.svg') no-repeat left top / 33px 32px;
-	
-	/* Min-Height Hack for IE 6 */
-	height: auto !important;
-	height: 51px;
+	height: auto;
 }
 
 .zenario_fbAdmin .zenario_fbError {
 	min-height: 40px;
 	padding-left: 42px;
 	background:transparent url('../admin/images/icon-error.svg') no-repeat left top / 33px 32px;
-	
-	/* Min-Height Hack for IE 6 */
-	height: auto !important;
-	height: 51px;
+	height: auto;
 }
 
 .zenario_fbAdmin .zenario_fbWarning,
@@ -641,11 +632,16 @@ body.ie9 #zenario_fbAdminFloatingBox.zenario_fab_plugin #zenario_fabTabs > div.z
 	min-height: 40px;
 	padding-left: 42px;
 	background:transparent url('../admin/images/icon-warning.svg') no-repeat top left / 33px 29px;
-	
-	/* Min-Height Hack for IE 6 */
-	height: auto !important;
+	height: auto;
+}
+
+.zenario_fbAdmin .zenario_fbInfo {
+	min-height: 40px;
+	padding-left: 42px;
+	background:transparent url('../admin/images/icon-information.svg') no-repeat left top / 33px 32px;
 	height: 51px;
 }
+
 
 #zenario_fbAdminMessage .zenario_fbButtons {
 	padding: 10px 0 0 0;
@@ -2432,28 +2428,41 @@ body.ie6 .zenario_now h1 {
 
 /*  Styles for phrases  */
 
-#zenario_fbAdminFloatingBox table.customise_phrases {
+#zenario_fbAdminFloatingBox table.zfab_customise_phrases {
 	width:100%;
 }
 
-#zenario_fbAdminFloatingBox table.customise_phrases.cols_2 tbody tr th,
-#zenario_fbAdminFloatingBox table.customise_phrases.cols_2 tbody tr td {
+#zenario_fbAdminFloatingBox table.zfab_customise_phrases.cols_2 tbody tr th,
+#zenario_fbAdminFloatingBox table.zfab_customise_phrases.cols_2 tbody tr td {
 	width:48% !important;
 	padding-right:2%;
 }
 
-#zenario_fbAdminFloatingBox table.customise_phrases.cols_3 tbody tr th,
-#zenario_fbAdminFloatingBox table.customise_phrases.cols_3 tbody tr td {
+#zenario_fbAdminFloatingBox table.zfab_customise_phrases.cols_3 tbody tr th,
+#zenario_fbAdminFloatingBox table.zfab_customise_phrases.cols_3 tbody tr td {
 	width:31% !important;
 	padding-right:2%;
 }
 
-#zenario_fbAdminFloatingBox table.customise_phrases input[type="text"] {
+#zenario_fbAdminInner table.zfab_customise_phrases td {
+	padding-top: 10px;
+	margin-top: 5px;
+}
+
+#zenario_fbAdminInner table.zfab_customise_phrases td > span {
+	font-size: 8px;
+}
+
+#zenario_fbAdminInner table.zfab_customise_phrases td > span > span {
+	 font-family: 'Courier New', Courier, monospace;
+}
+
+#zenario_fbAdminFloatingBox table.zfab_customise_phrases input[type="text"] {
 	width:80%;
 	width:calc(100% - 12px);
 }
 
-#zenario_fbAdminFloatingBox table.customise_phrases tbody tr td > span {
+#zenario_fbAdminFloatingBox table.zfab_customise_phrases tbody tr td > span {
 	display:inline-block;
 	-ms-word-break: break-all;
      word-break: break-all;
@@ -3005,7 +3014,9 @@ body.zenario_fbAdminFloatingBox__isOpen > div.ui-selectmenu-menu {
 	background:#333;
 	border:0;
 	margin:0 20px 0  0;
-	padding:0 5px;
+	padding:0 5px 0 42px;
+	line-height:17px;
+	background: url('../admin/images/icon-modules-off.svg') no-repeat 14px center / auto 15px;
 }
 
 #zenario_fbAdminFloatingBox.zenario_fab_plugin .zenario_fabHead #zenario_fabTitleWrap {
@@ -3083,6 +3094,10 @@ body.zenario_fbAdminFloatingBox__isOpen > div.ui-selectmenu-menu {
 	border-top-color:#747474;
 	color:#FFF;
 	font-size:11px;
+}
+
+#zenario_fbAdminFloatingBox.zenario_fab_plugin .zenario_fabMain #zenario_fbMain #zenario_fbAdminInner a {
+	color:#FFF;
 }
 
 #zenario_fbAdminFloatingBox.zenario_fab_plugin .zenario_fabMain #zenario_fbMain .zenario_row_input_button {
@@ -3332,13 +3347,14 @@ body.ff #zenario_fbAdminFloatingBox.zenario_fab_plugin .zenario_fabMain #zenario
 }
 
 
-#zenario_fbAdminFloatingBox.zenario_fab_plugin_settings .zenario_ab_row__duplicate_or_rename .zenario_show_on_open {
+#zenario_fbAdminFloatingBox.zenario_fab_plugin_settings .zenario_ab_row__duplicate_or_rename {
 	overflow:hidden;
-	padding:10px;
+	padding:5px 10px 10px !important;
 	border:1px solid orange;
+	background:#313330;
 }
 
-#zenario_fbAdminFloatingBox.zenario_fab_plugin_settings .zenario_ab_row__duplicate_or_rename .zenario_show_on_open .zfab_plugin_rename_warning {
+#zenario_fbAdminFloatingBox.zenario_fab_plugin_settings .zenario_ab_row__duplicate_or_rename .zfab_plugin_rename_warning {
 	padding-bottom:10px;
 }
 
@@ -3621,6 +3637,7 @@ body.ff #zenario_fbAdminFloatingBox.zenario_fab_plugin .zenario_fabMain #zenario
 	background:url('../admin/images/check-minus-over.png') no-repeat;
 }
 
+#zenario_fbAdminFloatingBox textarea.ab_note,
 .zenario_ab_row__note textarea#note {
 	width:96% !important;
 	width:calc(100% - 24px) !important;
@@ -4042,6 +4059,85 @@ body.ff #zenario_fbAdminFloatingBox.zenario_fab_plugin .zenario_fabMain #zenario
 	height: 25px;
 }
 
+
+/*
+	Styles for the global area that's always visible at the top right
+*/
+
+#zenario_fabGlobalArea {
+	position: absolute;
+	z-index: 1;
+	float: right;
+	right: 68px;
+	top: 50px;
+	
+	width:250px;
+}
+
+#zenario_fabGlobalArea .zfab_row .title,
+#zenario_fabGlobalArea .zfab_row .zfab_row_fields {
+	display:inline-block;
+	float:left;
+}
+
+#zenario_fabGlobalArea .zfab_row .title {
+	width:42px;
+}
+
+#zenario_fabGlobalArea .zfab_row .zfab_row_fields {
+	width:calc(100% - 42px);
+}
+
+#zenario_fabGlobalArea .zfab_row .title label {
+	font-weight:bold;
+	font-size:11px;
+	color:#FFF;
+}
+
+#zenario_fbAdminFloatingBox.zenario_fab_plugin #zenario_fabGlobalArea .zfab_row#row__mode .ui-state-default {
+	padding:0;
+	border:0;
+}
+
+#zenario_fabGlobalArea .zfab_row#row__mode .ui-selectmenu-button {
+	float:left;
+	-webkit-border-radius: 4px;
+	-moz-border-radius: 4px;
+	border-radius: 4px;
+}
+
+#zenario_fabGlobalArea .zfab_row#row__mode .ui-selectmenu-button span.ui-selectmenu-text {
+	width:166px;
+	padding:3px 30px 4px 10px;
+	font-size:12px;
+	background:#B9B9B9;
+	color:#333;
+}
+
+#zenario_fabGlobalArea .ui-selectmenu-button.ui-widget.ui-state-default .ui-icon {
+	width:26px;
+	height:26px;
+	top:0;
+	right:0;
+	margin-top:0;
+	background:#F6F6F6;
+	color:#333;
+}
+
+#zenario_fabGlobalArea .ui-selectmenu-button.ui-widget.ui-state-default .ui-icon::before {
+	top:2px;
+	left:-9px;
+	font-size:15px;
+}
+
+.ui-selectmenu-menu .ui-menu .ui-selectmenu-optgroup {
+	margin-top:0.1em !important;
+}
+
+/*
+	END: Styles for the global area that's always visible at the top right
+*/
+
 #zenario_fbAdminFloatingBox.zenario_fab_default_style .zenario_fabHead .zenario_fabSlideToggle {
 	display:block;
 	width:27px;
@@ -4203,6 +4299,24 @@ body.ff #zenario_fbAdminFloatingBox.zenario_fab_plugin .zenario_fabMain #zenario
 	min-width: 440px;
 }
 
+/* Plugin name  */
+
+#zenario_fbAdminFloatingBox fieldset.zenario_grouping.zenario_grouping__plugin_name {
+	margin-top:10px;
+	padding:10px;
+	background:#676767;
+	-webkit-border-radius: 6px;
+	-moz-border-radius: 6px;
+	border-radius: 6px;
+}
+
+#zenario_fbAdminFloatingBox fieldset.zenario_grouping.zenario_grouping__plugin_name .zfab_row {
+	padding-top:0;
+}
+
+#zenario_fbAdminFloatingBox #zenario_fbAdminInner fieldset.zenario_grouping.zenario_grouping__plugin_name .zenario_indent_level_1 {
+	margin-left:0;
+}
 
 /*  "Readonly" banner at the top right of readonly FABs  */
 
@@ -4768,12 +4882,13 @@ div.Tokenize ul.TokensContainer li.Token .organizer_item_image.zenario_menunode_
 	font-size:15px;
 }
 
-body.zenario_fbAdminFloatingBox__isOpen > div.ui-selectmenu-menu ul.ui-menu {
-	max-height:250px;
+body.zenario_fbAdminFloatingBox__isOpen > div.ui-selectmenu-menu {
+	overflow-y:auto;
 }
 
-body.zenario_fbAdminFloatingBox__isOpen > div.ui-selectmenu-menu.iconselectmenu__in__plugin_settings ul.ui-menu {
+body.zenario_fbAdminFloatingBox__isOpen > div.ui-selectmenu-menu {
 	max-height:80vh;
+	overflow-y:auto;
 }
 
 body.zenario_fbAdminFloatingBox__isOpen > div.ui-selectmenu-menu ul.ui-menu .ui-menu-item {

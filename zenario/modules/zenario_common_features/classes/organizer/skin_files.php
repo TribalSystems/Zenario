@@ -81,7 +81,7 @@ class zenario_common_features__organizer__skin_files extends ze\moduleBaseClass 
 							  || substr($file, -5) == '.jpeg'
 							  || substr($file, -4) == '.png') {
 								if ($item['filesize'] < 15000) {
-									$item['list_image'] = $dir. $file;
+									$item['image'] = $dir. $file;
 								} else {
 									$item['css_class'] = 'media_image';
 								}

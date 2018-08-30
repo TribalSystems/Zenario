@@ -18,6 +18,7 @@ plugin_settings:
                     language: html
                     style: >
                         height: 30em;
+                        width: 99%;
                 cookie_consent:
                     plugin_setting:
                         name: cookie_consent
@@ -36,6 +37,7 @@ plugin_settings:
                             label: >
                                 HTML contains code that sets cookies; hide it and request
                                 consent until consent is given by the visitor
+                    note_below: If individual cookie consent is turned on for visitors, cookies set by this HTML will be considered "Necessary cookies".
                 hide_in_admin_mode:
                     plugin_setting:
                         name: hide_in_admin_mode

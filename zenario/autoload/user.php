@@ -50,6 +50,18 @@ class user {
 		$ip = explode(',', $ip, 2);
 		return $ip[0];
 	}
+	
+	public static function anonymizeIP($ip) {
+		$packedAddress = @inet_pton($ip);
+		if (strlen($packedAddress) == 4) {
+			$ipNetMask = '255.255.255.0';
+		} elseif (strlen($packedAddress) == 16) {
+			$ipNetMask = 'ffff:ffff:ffff:0000:0000:0000:0000:0000';
+		} else {
+			return '';
+		}
+		return inet_ntop(inet_pton($ip) & inet_pton($ipNetMask));
+	}
 
 	//Add an extranet user into a group, or out of a group
 	//Formerly "addUserToGroup()"
@@ -334,25 +346,11 @@ class user {
 		if (!$impersonate) {
 			//Update their last login time
 			\ze\row::update('users', ['last_login' => \ze\date::now()], $userId);
-		
 	
-			if(\ze::setting('period_to_delete_sign_in_log') != 'never_save'){
+			if (\ze::setting('period_to_delete_sign_in_log') != 0) {
 				require_once CMS_ROOT. 'zenario/libs/manually_maintained/mit/browser/lib/browser.php';
 				$browser = new \Browser();
-		
-				if($days = \ze::setting('period_to_delete_sign_in_log')){
-					if(is_numeric($days)){
-						$today = date('Y-m-d');
-						$date = date('Y-m-d', strtotime('-'.$days.' day', strtotime($today)));
-						if($date){
-							$sql = " 
-								DELETE FROM ". DB_PREFIX. "user_signin_log
-								WHERE login_datetime < '".\ze\escape::sql($date)."'";
-							\ze\sql::update($sql);
-						}
-					}
-				}
-		
+				
 				$sql = "
 					INSERT INTO ". DB_PREFIX. "user_signin_log SET
 						user_id = ". (int)  \ze\escape::sql($userId).",
@@ -442,12 +440,6 @@ class user {
 	public static function checkNamedPermExists($perm, &$directlyAssignedToUser, &$hasRoleAtCompany, &$hasRoleAtLocation, &$hasRoleAtLocationAtCompany, &$onlyIfHasRolesAtAllAssignedLocations) {
 	
 		switch ($perm) {
-			//Custom permissions (TODO: some way to add these in from custom modules)
-			case 'view.pending_membership_application':
-			case 'upload_extra_documents.pending_membership_application':
-			case 'accept_reject.pending_membership_application':
-				return true;
-			
 			case 'manage.conference':
 			//Permissions for changing site settings
 			case 'manage.options-assetwolf':
@@ -1144,6 +1136,7 @@ class user {
 		return $time;
 	}
 
+	const timeZoneFromTwig = true;
 	//Formerly "getUserTimezone()"
 	public static function timeZone($userId = false) {
 		$timezone = false;
@@ -1167,19 +1160,30 @@ class user {
 		return $timezone;
 	}
 	
-	public static function recordConsent($userId, $email, $firstName, $lastName, $label = '') {
+	public static function recordConsent($sourceName, $sourceId, $userId, $email, $firstName, $lastName, $label = '') {
+		$ip = \ze\user::ip();
+		if ($ip && \ze::setting('anonymize_consent_log_ip_address')) {
+			$ip = \ze\user::anonymizeIP($ip);
+		}
+		
 		\ze\row::insert(
 			'consents', 
 			[
+				'source_name' => mb_substr($sourceName, 0, 255, 'UTF-8'),
+				'source_id' => mb_substr($sourceId, 0, 255, 'UTF-8'),
 				'datetime' => date('Y-m-d H:i:s'), 
-				'user_id' => $userId, 
-				'ip_address' => \ze\user::ip(),
+				'user_id' => (int)$userId, 
+				'ip_address' => mb_substr($ip, 0, 255, 'UTF-8'),
 				'email' => mb_substr($email, 0, 255, 'UTF-8'),
 				'first_name' => mb_substr($firstName, 0, 255, 'UTF-8'),
 				'last_name' => mb_substr($lastName, 0, 255, 'UTF-8'),
 				'label' => mb_substr($label, 0, 250, 'UTF-8')
 			]
 		);
+	}
+	
+	public static function deleteConsent($consentId) {
+		\ze\row::delete('consents', $consentId);
 	}
 
 }

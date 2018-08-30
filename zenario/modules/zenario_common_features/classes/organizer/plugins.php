@@ -236,7 +236,6 @@ class zenario_common_features__organizer__plugins extends ze\moduleBaseClass {
 				$img = '&c='. $item['checksum'];
 				$item['has_image'] = true;
 				$item['image'] = 'zenario/file.php?og=1'. $img;
-				$item['list_image'] = 'zenario/file.php?ogl=1'. $img;
 			}
 			
 			if ($item['module_class_name'] != 'zenario_plugin_nest'

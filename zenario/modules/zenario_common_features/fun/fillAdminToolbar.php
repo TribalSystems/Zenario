@@ -433,7 +433,7 @@ if (isset($adminToolbar['sections']['edit']['buttons']['item_meta_data'])) {
 		
 		if ($version['release_date']) {
 			$tooltip .= 
-				htmlspecialchars(ze\date::format($version['release_date']));
+				htmlspecialchars(ze\admin::formatDate($version['release_date']));
 		}
 	}
 	
@@ -859,7 +859,7 @@ if (isset($adminToolbar['sections']['primary_menu_node'])) {
 			foreach ($adminToolbar['sections']['menu'. $i]['images'] as &$image) {
 				if ($image) {
 					if ($image = ze\row::get('files', ['id', 'usage', 'checksum'], $image)) {
-						$image['url'] = ze\link::absolute(). 'zenario/file.php?usage='. $image['usage']. '&c='. $image['checksum']. '&ogl=1';
+						$image['url'] = ze\link::absolute(). 'zenario/file.php?usage='. $image['usage']. '&c='. $image['checksum']. '&og=1';
 					}
 				}
 			}
@@ -1129,9 +1129,9 @@ foreach ($showVersions as $showVersion => $dummy) {
 		$mrg['version'] = $v['version'];
 		$mrg['name'] = ze\admin::formatName($lastActionBy);
 		$mrg['time'] = ze\date::formatTime($lastAction, ze::setting('vis_time_format'), true);
-		$mrg['date'] = ze\date::format($lastAction, ze::setting('vis_date_format_med'), true);
+		$mrg['date'] = ze\admin::formatDate($lastAction, ze::setting('vis_date_format_med'), true);
 
-		if ($mrg['date'] == ze\date::format(ze\date::now(), ze::setting('vis_date_format_med'))) {
+		if ($mrg['date'] == ze\admin::formatDate(ze\date::now(), ze::setting('vis_date_format_med'))) {
 			$mrg['date'] = ze\admin::phrase('today');
 		}
 		

@@ -126,6 +126,11 @@ if (!empty(\ze::$adminSettings)) {
 	}
 }
 
+//Add any privs here that you need to check for in JavaScript
+$adminPrivs = [
+	'_PRIV_EDIT_SITE_SETTING' => \ze\priv::check('_PRIV_EDIT_SITE_SETTING')
+];
+
 $importantGetRequests = \ze\link::importantGetRequests();
 if (empty($importantGetRequests)) {
 	$importantGetRequests = '{}';
@@ -181,6 +186,7 @@ zenarioA.init(
 	', \ze\ring::engToBoolean($_SESSION['admin_show_grid'] ?? false), ',
 	', json_encode($settings), ',
 	', json_encode($adminSettings), ',
+	', json_encode($adminPrivs), ',
 	', $importantGetRequests, ',
 	', (int) $adminHasSpecificPerms, ',
 	', (int) $adminHasSpecificPermsOnThisPage, ',

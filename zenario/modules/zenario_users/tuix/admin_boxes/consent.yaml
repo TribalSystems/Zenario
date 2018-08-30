@@ -25,3 +25,5 @@ zenario_consent:
                     label: 'Visitor:'
                 consent_text:
                     label: 'Consent text:'
+                source:
+                    label: 'Source:'

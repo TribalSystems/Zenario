@@ -50,7 +50,7 @@ class date {
 
 
 	//Formerly "formatDateNicely()"
-	public static function format($date, $format_type = false, $languageId = false, $time_format = '', $rss = false, $cli = false) {
+	public static function format($date, $format_type = false, $languageId = false, $time_format = '', $rss = false, $cli = false, $admin = false) {
 	
 		//Use $languageId === true as a shortcut to the site default language
 		//Otherwise if $languageId is not set, try to get language from session, or the site default if that is not set
@@ -110,16 +110,18 @@ class date {
 				$returnDate .= $timezone;
 			}
 		
+		} elseif ($admin) {
+			\ze\lang::applyMergeFields($returnDate, \ze\admin::$englishDatePhrases);
 		} else {
-			\ze\lang::replacePhraseCodesInString($returnDate, '', $languageId, 2, $cli);
+			\ze\lang::replacePhraseCodesInString($returnDate, 'zenario_common_features', $languageId, 2, $cli);
 		}
 	
 		return $returnDate;
 	}
 
 	//Formerly "formatDateTimeNicely()"
-	public static function formatDateTime($date, $format_type = false, $languageId = false, $rss = false, $cli = false) {
-		return \ze\date::format($date, $format_type, $languageId, true, $rss, $cli);
+	public static function formatDateTime($date, $format_type = false, $languageId = false, $rss = false, $cli = false, $admin = false) {
+		return \ze\date::format($date, $format_type, $languageId, true, $rss, $cli, $admin);
 	}
 
 	//Formerly "formatTimeNicely()"
@@ -136,6 +138,24 @@ class date {
 	
 		$row = \ze\sql::fetchRow($sql);
 		return $row[0];
+	}
+
+	const formattedTimeZoneFromTwig = true;
+	public static function formattedTimeZone($date = null) {
+		
+		if (is_null($date)) {
+			$date = \ze\user::convertToUsersTimeZone(new \DateTime());
+		}
+		
+		return $date->format('T');
+	}
+
+	const formattedServerTimeZoneFromTwig = true;
+	public static function formattedServerTimeZone() {
+		
+		$date = new \DateTime();
+		
+		return $date->format('T');
 	}
 
 

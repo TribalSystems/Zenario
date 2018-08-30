@@ -34,7 +34,7 @@ class zenario_user_forms__admin_boxes__user_form_response extends ze\moduleBaseC
 		$box['title'] = ze\admin::phrase('Form response [[id]]', ['id' => $responseId]);
 		$responseDetails = ze\row::get(ZENARIO_USER_FORMS_PREFIX. 'user_response', ['response_datetime', 'crm_response', 'form_id'], $responseId);
 		$formId = $responseDetails['form_id'];
-		$values['response_datetime'] = ze\date::formatDateTime($responseDetails['response_datetime'], 'vis_date_format_med');
+		$values['response_datetime'] = ze\admin::formatDateTime($responseDetails['response_datetime'], 'vis_date_format_med');
 		
 		$crmEnabled = false;
 		if (zenario_user_forms::isFormCRMEnabled($box['key']['form_id'], false)) {

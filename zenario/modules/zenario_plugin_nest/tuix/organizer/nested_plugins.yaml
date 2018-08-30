@@ -414,7 +414,8 @@ zenario__modules:
                     with_columns_set:
                         is_slide: true
                     multiple_select: true
-                    visible_if_for_all_selected_items: item.ordinal != 1
+                    disabled_if_for_all_selected_items: item.ordinal == 1
+                    tooltip: "[[delete_tooltip]]"
                     ajax:
                         confirm:
                             html: true

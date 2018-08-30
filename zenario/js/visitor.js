@@ -52,6 +52,7 @@ zenario.lib(function(
 
 	
 	var plgslt_ = 'plgslt_',
+		TOOTIPS_SELECTOR = '*[title]:not(iframe)',
 		userAgent = navigator.userAgent,
 		scrollBody,
 		di,
@@ -129,11 +130,7 @@ zenario.lib(function(
 	};
 
 	zenario.getEggIdFromEl = function(el) {
-		var containerId = zenario.getContainerIdFromEl(el);
-		
-		return containerId
-			&& typeof containerId == 'string'
-			&& 1 * containerId.split('-')[1];
+		return zenario.getSlotnameFromEl(el, false, true);
 	};
 
 	zenario.getContainerIdFromSlotName = function(slotName) {
@@ -244,18 +241,24 @@ zenario.lib(function(
 		}
 	};
 
-	zenario.scrollTop = function(value, time, el) {
-	
+	zenario.scrollTop = function(value, time, el, stop) {
+		
 		if (!defined(el)) {
 			el = scrollBody;
 		}
+		
+		var $el = $(el);
+		
+		if (stop) {
+			$el.stop(true, true);
+		}
 	
 		if (!defined(value)) {
-			return $(el).scrollTop();
+			return $el.scrollTop();
 		} else if (!time) {
-			return $(el).scrollTop(value);
+			return $el.scrollTop(value);
 		} else {
-			$(el).animate({ scrollTop: value }, time);
+			$el.animate({ scrollTop: value }, time);
 		}
 	};
 
@@ -266,6 +269,15 @@ zenario.lib(function(
 			return $body.scrollLeft();
 		} else {
 			return $body.scrollLeft(value);
+		}
+	};
+
+	zenario.scrollToEl = function(selector) {
+		var $el = $(selector),
+			scrollY = $el && $el.offset().top;
+		
+		if (scrollY) {
+			zenario.scrollTop(scrollY, undefined, undefined, true);
 		}
 	};
 	
@@ -475,6 +487,9 @@ var chopLeft = function(s, n) {
 	},
 	chopRight = function(s, n) {
 		return s.substr(n);
+	},
+	isNumeric = function(n) {
+		return n == 1*n;
 	};
 	
 
@@ -1017,7 +1032,7 @@ var loadingScripts = {},
 
 zenario.loadScript =
 zenario.loadLibrary = function(path, callback, alreadyLoaded, stylesheet) {
-
+	
 	var library =
 			loadedScripts[path] =
 				loadedScripts[path] || {
@@ -1191,58 +1206,83 @@ zenario.clone = function(a, b, c) {
 
 
 
-
+//
 //Functions for managing plugin slots
-zenario.getSlotnameFromContainerId = function(containerId) {
-	return containerId.replace(/plgslt_/, '').split('-')[0];
-}
+//
 
 //Attempt to get the name of a slot from an element within the slot
-zenario.getSlotnameFromEl = function(el, getContainerId) {
+zenario.getSlotnameFromEl = function(el, getContainerId, getEggId) {
+	
+	var output;
+	
 	if (_.isString(el)) {
-		if (getContainerId) {
-			return el;
-		} else {
-			return zenario.getSlotnameFromContainerId(el);
-		}
+		return zenario.parseContainerId(el, getContainerId, getEggId);
 
 	} else if (_.isObject(el)) {
 		do {
-			if (el.id && el.id == 'colorbox') {
-				return zenario.colorboxOpen;
-		
-			} else if (el.id && chopLeft(el.id, 7) == plgslt_) {
-			
-				var hyphen = el.id.indexOf('-'),
-					slotName;
-			
-				//Extract the slot name out from the container id
-				if (hyphen == -1) {
-					slotName = chopRight(el.id, 7);
-				} else {
-					slotName = el.id.substr(7, hyphen - 7);
+			if (el.id) {
+				if (el.id == 'colorbox') {
+					return zenario.colorboxOpen;
 				
-					//Check that this matches the correct pattern
-					var eggId = chopRight(el.id, hyphen + 1);
-					if (eggId != 1*eggId) {
-						continue;
-					}
-				}
-			
-				//Check if this is a name of a slot that exists!
-				if (!zenario.slots[slotName]) {
-					continue;
-				}
-			
-				if (getContainerId) {
-					return el.id;
-				} else {
-					return slotName;
+				} else if (output = zenario.parseContainerId(el.id, getContainerId, getEggId)) {
+					return output;
 				}
 			}
 		} while (el = el.parentNode)
 	}
+	
 	return false;
+};
+
+//Parse a container id and check it's valid.
+//Then return either the slot name, container id or egg id
+zenario.parseContainerId = function(elId, getContainerId, getEggId) {
+	
+	//Check this is a valid container id
+	if (!elId || chopLeft(elId, 7) != plgslt_) {
+		
+		//Catch the case where we're given a slot name, and were looking for a slot name or container id
+		if (!getEggId && zenario.slots[elId]) {
+			if (getContainerId) {
+				return plgslt_ + elId;
+			} else {
+				return elId;
+			}
+		}
+		
+		return false;
+	}
+	
+	
+	//Check this matches the pattern of a container id.
+	var eggId,
+		split = elId.split('-'),
+		slotName = chopRight(split[0], 7);
+	
+	//There are two possible patterns:
+		//plgslt_SlotName
+		//plgslt_SlotName-eggId
+	if (split.length == 1) {
+	} else if (split.length == 2 && isNumeric(split[1])) {
+		eggId = 1*split[1];
+	} else {
+		return false;
+	}
+
+	//Check if this is a name of a slot that exists!
+	if (!zenario.slots[slotName]) {
+		return false;
+	}
+
+	if (getContainerId) {
+		return elId;
+	
+	} else if (getEggId) {
+		return eggId;
+	
+	} else {
+		return slotName;
+	}
 };
 
 //Scroll to the top of a slot if needed
@@ -2027,7 +2067,7 @@ var signalsInProgress = {},
 		resizeToDesktop: true
 	},
 	slotNameForEvent = function(slotName, containerId) {
-		return slotName || (containerId && zenario.getSlotnameFromContainerId(containerId)) || '%PAGE_WIDE%';
+		return slotName || (containerId && zenario.getSlotnameFromEl(containerId)) || '%PAGE_WIDE%';
 	}
 
 //Register an event for a plugin in a slot. (You can also specific a specific container id within a slot.)
@@ -2370,7 +2410,10 @@ zenario.replacePluginSlotContents = function(slotName, instanceId, resp, additio
 	
 		if (inAdminMode) {
 			zenarioA.checkSlotsBeingEdited();
-			zenarioA.scanHyperlinksAndDisplayStatus(containerId);
+			
+			zenario.actAfterDelayIfNotSuperseded('scanHyperlinks__' + containerId, function() {
+				zenarioA.scanHyperlinksAndDisplayStatus(containerId);
+			});
 		}
 	
 		zenario.sendSignal('eventSlotUpdated', {slotName: slotName, instanceId: instanceId, flags: flags}, inAdminMode);
@@ -2519,6 +2562,7 @@ zenario.grecaptcha = function(elId) {
 		}, zenario.grecaptchaIsLoaded());
 	});
 };
+		
 
 
 
@@ -2929,24 +2973,10 @@ zenario.addJQueryElements = function(path, adminFacing, beingEdited) {
 	});
 	
 	//Tooltips
-	var tooltips;
 	if (adminFacing && zenario.inAdminMode) {
-		tooltips = zenarioA.tooltips;
+		zenarioA.tooltips(path + ' ' + TOOTIPS_SELECTOR);
 	} else {
-		tooltips = zenario.tooltips;
-	}
-	
-	tooltips(path + 'div[title]');
-	tooltips(path + 'input[title]');
-		
-	if (!/android|iphone|ipod|series60|symbian|windows ce|blackberry/i.test(userAgent)) {
-		tooltips(path + 'a[title]');
-		tooltips(path + 'img[title]');
-		tooltips(path + 'area[title]');
-		
-		if (zenario.inAdminMode) {
-			zenarioA.addJQueryElements(path);
-		}
+		zenario.tooltips(path + ' ' + TOOTIPS_SELECTOR);
 	}
 	
 	//clickablebox class
@@ -3128,64 +3158,59 @@ var tooltipContent = function() {
 
 //Wrapper function for jQuery tooltips
 zenario.tooltips = function(target, options) {
+	
 	zenario.closeTooltip();
 	if (!defined(target)) {
-		//Add tooltips to an entire page after it has been loaded
-		zenario.tooltips('a[title]', options);
-		zenario.tooltips('div[title]', options);
-		zenario.tooltips('img[title]', options);
-		zenario.tooltips('area[title]', options);
-		zenario.tooltips('input[title]', options);
-	} else {
-		if (!options) {
-			options = {};
-		}
-		
-		if (!defined(options.tooltipClass)) {
-			options.tooltipClass = 'zenario_visitor_tooltip';
-		}
-		if (!defined(options.show)) {
-			options.show = {duration: 750, easing: 'zenarioLinearWithBigDelay'};
-		}
-		if (!defined(options.hide)) {
-			options.hide = 100;
-		}
-		if (!defined(options.position)) {
-			options.position = {my: 'center top+2', at: 'center bottom', collision: 'flipfit'};
-		}
-		if (!defined(options.content)) {
-			options.content = tooltipContent;
-		}
-		
-		$('.ui-tooltip').remove();
-		
-		$(target).each(function(i, el) {
-			var thisOptions,
-				$el = $(el),
-				tooltipOptions = $el.attr('data-tooltip-options');
-			
-			if (tooltipOptions) {
-				try {
-					thisOptions = zenario.clone(options, JSON.parse(tooltipOptions));
-				} catch (error) {
-					try {
-						thisOptions = zenario.clone(options, JSON.parse(zenario.fixJSON(tooltipOptions)));
-					} catch (error) {
-						thisOptions = options;
-					}
-				}
-			} else {
-				thisOptions = options;
-			}
-			
-			if (thisOptions.position && !defined(thisOptions.position.using)) {
-				thisOptions.position.using = zenario.tooltipsUsing;
-			}
-					
-			$el.jQueryTooltip(thisOptions);
-		})
-		
+		target = TOOTIPS_SELECTOR;
 	}
+	
+	if (!options) {
+		options = {};
+	}
+	
+	if (!defined(options.tooltipClass)) {
+		options.tooltipClass = 'zenario_visitor_tooltip';
+	}
+	if (!defined(options.show)) {
+		options.show = {duration: 750, easing: 'zenarioLinearWithBigDelay'};
+	}
+	if (!defined(options.hide)) {
+		options.hide = 100;
+	}
+	if (!defined(options.position)) {
+		options.position = {my: 'center top+2', at: 'center bottom', collision: 'flipfit'};
+	}
+	if (!defined(options.content)) {
+		options.content = tooltipContent;
+	}
+	
+	$('.ui-tooltip').remove();
+	
+	$(target).each(function(i, el) {
+		var thisOptions,
+			$el = $(el),
+			tooltipOptions = $el.attr('data-tooltip-options');
+		
+		if (tooltipOptions) {
+			try {
+				thisOptions = zenario.clone(options, JSON.parse(tooltipOptions));
+			} catch (error) {
+				try {
+					thisOptions = zenario.clone(options, JSON.parse(zenario.fixJSON(tooltipOptions)));
+				} catch (error) {
+					thisOptions = options;
+				}
+			}
+		} else {
+			thisOptions = options;
+		}
+		
+		if (thisOptions.position && !defined(thisOptions.position.using)) {
+			thisOptions.position.using = zenario.tooltipsUsing;
+		}
+				
+		$el.jQueryTooltip(thisOptions);
+	});
 };
 
 //Adjusted from http://jqueryui.com/tooltip/#custom-style

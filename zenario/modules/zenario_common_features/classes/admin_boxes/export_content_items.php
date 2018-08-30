@@ -128,9 +128,9 @@ class zenario_common_features__admin_boxes__export_content_items extends ze\modu
 			$contentItem['description'] = $row['description'];
 			$contentItem['keywords'] = $row['keywords'];
 			$contentItem['status'] = isset($statusEnglishNames[$row['status']]) ? $statusEnglishNames[$row['status']] : $row['status'];
-			$contentItem['first_created_datetime'] = ze\date::formatDateTime($row['first_created_datetime'], '_MEDIUM');
+			$contentItem['first_created_datetime'] = ze\admin::formatDateTime($row['first_created_datetime'], '_MEDIUM');
 			$contentItem['creating_author'] = self::getAdminFullname($row['creating_author_id'], $admins);
-			$contentItem['created_datetime'] = ze\date::formatDateTime($row['created_datetime'], '_MEDIUM');
+			$contentItem['created_datetime'] = ze\admin::formatDateTime($row['created_datetime'], '_MEDIUM');
 			$contentItem['last_author'] = self::getAdminFullname($row['last_author_id'], $admins);
 			$contentItem['inline_files'] = (string)$row['inline_files'];
 			$contentItem['translations'] = self::getTranslationCount($row['id'], $row['type'], $row['equiv_id'], $row['language_id'], $languages);

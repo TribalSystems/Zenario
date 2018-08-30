@@ -889,7 +889,7 @@ _sql
 		`value` varchar(255) CHARACTER SET ascii,
 		PRIMARY KEY (`name`),
 		KEY (`value`)
-	)
+	) ENGINE=MyISAM DEFAULT CHARSET=utf8 
 _sql
 
 , <<<_sql
@@ -1099,7 +1099,7 @@ _sql
 		`name` varchar(20) CHARACTER SET utf8mb4 NOT NULL,
 		PRIMARY KEY (`id`),
 		UNIQUE KEY (`name`)
-	) 
+	) ENGINE=MyISAM DEFAULT CHARSET=utf8 
 _sql
 
 //Insert some initial values
@@ -1176,7 +1176,7 @@ _sql
 		`value` varchar(255) CHARACTER SET ascii,
 		PRIMARY KEY (`name`),
 		KEY (`value`)
-	)
+	) ENGINE=MyISAM DEFAULT CHARSET=utf8 
 _sql
 
 
@@ -1827,6 +1827,127 @@ _sql
 , <<<_sql
 	ALTER TABLE `[[DB_PREFIX]]inline_images`
 	ADD KEY (`is_slideshow`)
+_sql
+
+//Drop some of the thumbnail sizes from the files table
+);	ze\dbAdm::revision( 46050
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]files`
+	DROP COLUMN `thumbnail_64x64_width`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]files`
+	DROP COLUMN `thumbnail_64x64_height`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]files`
+	DROP COLUMN `thumbnail_64x64_data`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]files`
+	DROP COLUMN `thumbnail_24x23_width`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]files`
+	DROP COLUMN `thumbnail_24x23_height`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]files`
+	DROP COLUMN `thumbnail_24x23_data`
+_sql
+
+//Add some columns to the consents table to record the source of the consent (e.g. form or extranet registration plugin)
+);	ze\dbAdm::revision( 46051
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]consents`
+	ADD COLUMN `source_name` varchar(255) NOT NULL DEFAULT '' AFTER `id`,
+	ADD COLUMN `source_id` varchar(255) NOT NULL DEFAULT '' AFTER `source_name`
+_sql
+
+
+//Fix a mistake where a couple of tables had the wrong engine/character-set chosen by mistake.
+);	ze\dbAdm::revision( 46200
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]lov_salutations`
+	ENGINE=MyISAM
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]lov_salutations`
+	CONVERT TO CHARACTER SET utf8
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]user_perm_settings`
+	ENGINE=MyISAM
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]user_perm_settings`
+	CONVERT TO CHARACTER SET utf8
+_sql
+
+//Add the hierarchical_var column to the nested_plugins table,
+//as an efficiency improvement to save more queries to look this up.
+);	ze\dbAdm::revision(46250
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]nested_plugins`
+	ADD COLUMN `hierarchical_var` varchar(32) CHARACTER SET ascii NOT NULL DEFAULT ''
+	AFTER `request_vars`
+_sql
+
+//Rename and merge another case where there were two different plugin settings for the same thing
+);  ze\dbAdm::revision(46300
+, <<<_sql
+	UPDATE IGNORE `[[DB_PREFIX]]plugin_settings`
+	SET name = 'enable.metadata'
+	WHERE name = 'assetwolf__view_data_pool_details__show_meta_data'
+_sql
+
+//Enable "Show a heading" (show_a_heading) setting in Zenario Document Container if "Show selected folder name as title" (show_folder_name_as_title) was enabled
+);	ze\dbAdm::revision( 46302
+, <<<_sql
+	INSERT IGNORE INTO `[[DB_PREFIX]]plugin_settings` (
+	  `instance_id`,
+	  `egg_id`,
+	  `name`,
+	  `value`,
+	  `is_content`
+	)
+	SELECT
+	  `instance_id`,
+	  `egg_id`,
+	  'show_a_heading',
+	  `value`,
+	  `is_content`
+	FROM `[[DB_PREFIX]]plugin_settings` AS ps
+	WHERE ps.name = "show_folder_name_as_title"
+_sql
+
+);	ze\dbAdm::revision(46306
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]menu_nodes`
+	ADD COLUMN `custom_get_requests` varchar(255) DEFAULT NULL
+_sql
+
+);	ze\dbAdm::revision(46307
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]categories`
+	ADD COLUMN `code_name` varchar(255) CHARACTER SET ascii DEFAULT NULL AFTER `name`,
+	ADD UNIQUE KEY(`code_name`)
+_sql
+
+//Enable categories for Event content types
+); ze\dbAdm::revision(46309
+,<<<_sql
+	UPDATE `[[DB_PREFIX]]content_types`
+	SET enable_categories = 1
+	WHERE content_type_name_en = "Event"
 _sql
 
 );

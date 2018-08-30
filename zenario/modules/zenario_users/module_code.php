@@ -178,7 +178,7 @@ class zenario_users extends ze\moduleBaseClass {
 		if (!empty($_SESSION['extranetUserID'])
 		&& !isset($_SESSION['extranetUserImpersonated'])
 		&& self::doesContentItemLogUserAccess($cID, $cType, $cVersion)
-		&& ze::setting('period_to_delete_the_user_content_access_log') != 'never_save') {
+		&& ze::setting('period_to_delete_the_user_content_access_log') != 0) {
 			
 			self::clearOldData();
 			ze::$userAccessLogged = true;
@@ -196,18 +196,33 @@ class zenario_users extends ze\moduleBaseClass {
 	}
 	
 	public static function clearOldData() {
+		$cleared = 0;
+		//Clear user content access log
 		$days = ze::setting('period_to_delete_the_user_content_access_log');
-		if ($days && is_numeric($days)) {
-			$date = date('Y-m-d', strtotime('-'.$days.' day', strtotime(date('Y-m-d'))));
-			if($date){
-				$sql = " 
-					DELETE FROM ". DB_PREFIX. "user_content_accesslog 
+		if (is_numeric($days)) {
+			$sql = " 
+				DELETE FROM ". DB_PREFIX. "user_content_accesslog";
+			if ($days && ($date = date('Y-m-d', strtotime('-'.$days.' day', strtotime(date('Y-m-d')))))) {
+				$sql .= "
 					WHERE hit_datetime < '".ze\escape::sql($date)."'";
-				ze\sql::update($sql);
-				return ze\sql::affectedRows();
 			}
+			ze\sql::update($sql);
+			$cleared += ze\sql::affectedRows();
 		}
-		return false;
+		
+		//Clear user signin log
+		$days = ze::setting('period_to_delete_sign_in_log');
+		if (is_numeric($days)) {
+			$sql = " 
+				DELETE FROM ". DB_PREFIX. "user_signin_log";
+			if ($days && ($date = date('Y-m-d', strtotime('-'.$days.' day', strtotime(date('Y-m-d')))))) {
+				$sql .= "
+					WHERE login_datetime < '".ze\escape::sql($date)."'";
+			}
+			ze\sql::update($sql);
+			$cleared += ze\sql::affectedRows();
+		}
+		return $cleared;
 	}
 	
 	//Check if a content item logs user access
@@ -324,12 +339,14 @@ class zenario_users extends ze\moduleBaseClass {
 		$user = ze\user::logIn($userId, true);
 		$_SESSION['extranetUserImpersonated'] = true;
 		
-		if ($rememberMe) {
-			ze\cookie::set('COOKIE_LAST_EXTRANET_EMAIL', $user['email']);
-			ze\cookie::set('COOKIE_LAST_EXTRANET_SCREEN_NAME', $user['screen_name']);
-		}
-		if ($logMeIn) {
-			ze\cookie::set('LOG_ME_IN_COOKIE', $user['login_hash']);
+		if (ze\cookie::canSet('functionality')) {
+			if ($rememberMe) {
+				ze\cookie::set('COOKIE_LAST_EXTRANET_EMAIL', $user['email']);
+				ze\cookie::set('COOKIE_LAST_EXTRANET_SCREEN_NAME', $user['screen_name']);
+			}
+			if ($logMeIn) {
+				ze\cookie::set('LOG_ME_IN_COOKIE', $user['login_hash']);
+			}
 		}
 	}
 		
@@ -386,7 +403,7 @@ class zenario_users extends ze\moduleBaseClass {
 				$message .= "\nFirst name: ".$user['first_name'];
 				$message .= "\nLast name: ".$user['last_name'];
 				$message .= "\nEmail: ".$user['email'];
-				$message .= "\nCreated date: ".ze\date::format($user['created_date'], '_MEDIUM');
+				$message .= "\nCreated date: ".ze\admin::formatDate($user['created_date'], '_MEDIUM');
 			}
 			echo 'Users deleted: '.$count . $message;
 			return $count;

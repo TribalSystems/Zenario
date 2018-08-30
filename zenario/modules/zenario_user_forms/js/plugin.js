@@ -392,7 +392,7 @@
 			});
 		});
 		//Init autocomplete lists
-		var $autocompleteLists = $('#' + containerId + '_user_form .autocomplete_json');
+		var $autocompleteLists = $('#' + containerId + '_user_form .suggested_values_json');
 		$autocompleteLists.each(function() {
 			var that = this;
 			var values = JSON.parse($(this).text());
@@ -430,7 +430,9 @@
 							var found = list.find(function(el) {
 								return el.label.toLowerCase() === value.toLowerCase();
 							});
-							$(this).data('ui-autocomplete')._trigger('select', 'autocompleteselect', {item:found});
+							if (found || $(that).data('force_suggested_values')) {
+								$(this).data('ui-autocomplete')._trigger('select', 'autocompleteselect', {item:found});
+							}
 						}
 					},
 					open: function(event, ui) {
@@ -441,24 +443,11 @@
  					}
 				}).on('click', function () {
 					if (list.length == 0) {
-						var placeholder = $(that).data('auto_placeholder');
+						var placeholder = $(that).data('filter_placeholder');
 						if (placeholder) {
 							$(this).prop('placeholder', placeholder);
 						}
 					}
-					$(this).autocomplete("search", "");
-				});
-			}
-		});
-		//Init suggested values lists
-		var $suggestedValuesLists = $('#' + containerId + '_user_form .suggested_values_json');
-		$suggestedValuesLists.each(function() {
-			var values = JSON.parse($(this).text());
-			if (values) {
-				$(this).prev().autocomplete({
-					minLength: 0,
-					source: values
-				}).on('click', function () {
 					$(this).autocomplete("search", "");
 				});
 			}

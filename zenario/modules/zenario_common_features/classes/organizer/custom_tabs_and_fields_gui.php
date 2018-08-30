@@ -35,7 +35,6 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 		$dataset = ze\dataset::details($datasetId);
 		
 		$panel['title'] = ze\admin::phrase('Managing the dataset "[[label]]"', $dataset);
-		$panel['items'] = [];
 		$panel['dataset'] = $dataset;
 		
 		//Whether to allow adding fields of type "group"
@@ -44,10 +43,9 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 		//Whether to show the "Include in export" option for this dataset
 		$panel['show_include_in_export_option'] = ($dataset['system_table'] == 'users' || (ze\module::inc('zenario_location_manager') && $dataset['system_table'] == ZENARIO_LOCATION_MANAGER_PREFIX . 'locations'));
 		
-		//Load centralised lists for fields of type "centralised_radios" and "centralised_select"
+		//Get centralised lists for fields of type "centralised_radios" and "centralised_select"
 		$centralisedLists = ze\datasetAdm::centralisedLists();
 		$panel['centralised_lists']['values'] = [];
-		$count = 1;
 		foreach ($centralisedLists as $method => $label) {
 			$params = explode('::', $method);
 			if (ze\module::inc($params[0])) {
@@ -79,7 +77,6 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 				}
 				$panel['dataset_fields_in_forms'][$row['id']][] = $row['form_id'];
 			}
-			
 		}
 		
 		//Load pickable datasets for fields of type "dataset_select" and "dataset_picker"
@@ -95,6 +92,7 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 			$panel['datasets'][$row['id']] = ['label' => $row['label'], 'ord' => $ord++];
 		}
 		
+		//Get keys from system table, these fields will be shown as having an index
 		$systemKeys = [];
 		if ($dataset['system_table']) {
 			$sql = '
@@ -108,54 +106,55 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 		}
 		
 		
+		//Get tabs and fields from TUIX
 		$moduleFilesLoaded = [];
 		$tags = [];
 		ze\tuix::load(
 			$moduleFilesLoaded, $tags, $type = 'admin_boxes', $dataset['extends_admin_box'],
 			$settingGroup = '', $compatibilityClassNames = false, $runningModulesOnly = true, $exitIfError = true
 		);
-		
 		$foundFieldsInTUIX = [];
-		//Get tabs and fields from TUIX
 		if (!empty($tags[$dataset['extends_admin_box']]['tabs'])
 			&& is_array($tags[$dataset['extends_admin_box']]['tabs'])
 		) {
 			//Loop through system tabs in TUIX
 			$tabOrdinal = 0;
-			foreach ($tags[$dataset['extends_admin_box']]['tabs'] as $tabName => $tab) {
+			foreach ($tags[$dataset['extends_admin_box']]['tabs'] as $tabId => $tab) {
 				//Only load tabs with labels
 				if (empty($tab['label']) && empty($tab['default_label'])) {
 					continue;
 				}
-				$foundFieldsInTUIX[$tabName] = [
+				$foundFieldsInTUIX[$tabId] = [
 					'ord' => ++$tabOrdinal,
-					'label' => ze::ifNull($tab['dataset_label'] ?? false, $tab['label'] ?? false),
-					'fields' => []
+					'label' => ze::ifNull($tab['dataset_label'] ?? false, $tab['label'] ?? false)
 				];
 				if (!empty($tab['fields'])
 					&& is_array($tab['fields'])
 				) {
 					//Loop through system fields in TUIX
-					$fieldOrdinal = 0;
-					foreach ($tab['fields'] as $fieldName => $field) {
-						$foundFieldsInTUIX[$tabName]['fields'][$fieldName] = $field;
+					foreach ($tab['fields'] as $fieldId => $field) {
+						$foundFieldsInTUIX[$tabId]['fields'][$fieldId] = $field;
 					}
 				}
 			}
 		}
 		
+		
 		//Get custom data for system tabs and custom tabs
+		$panel['pages'] = [];
+		$panel['items'] = [];
 		$tabsResult = ze\row::query('custom_dataset_tabs', true, ['dataset_id' => $dataset['id']], 'ord');
 		$tabCount = 0;
 		while ($tab = ze\sql::fetchAssoc($tabsResult)) {
+			//Only load system tabs found in tuix
 			if ($tab['is_system_field'] && !isset($foundFieldsInTUIX[$tab['name']])) {
 				continue;
 			}
 			++$tabCount;
 			$tabProperties = [
+				'id' => $tab['name'],
 				'ord' => $tabCount,
-				'name' => $tab['name'],
-				'tab_label' => $tab['label'],
+				'label' => $tab['label'],
 				'is_system_field' => 0,
 				'parent_field_id' => (int)$tab['parent_field_id'],
 				'fields' => []
@@ -163,29 +162,29 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 			if ($tab['is_system_field'] && isset($foundFieldsInTUIX[$tab['name']])) {
 				$tabProperties['is_system_field'] = 1;
 				if ($tab['default_label'] && !$tab['label']) {
-					$tabProperties['tab_label'] = $tab['default_label'];
+					$tabProperties['label'] = $tab['default_label'];
 				}
 			}
-			//First tab automatically loads it's fields
+			
+			//First tab automatically loads it's fields record counts
 			if ($tabCount == 1) {
 				$tabProperties['record_counts_fetched'] = true;
 			}
-			$panel['items'][$tab['name']] = $tabProperties;
+			$panel['pages'][$tab['name']] = $tabProperties;
 			
 			
 			$fieldsResult = ze\row::query('custom_dataset_fields', true, ['dataset_id' => $dataset['id'], 'tab_name' => $tab['name']], 'ord');
 			$fieldCount = 0;
-			$groupings = [];
 			while ($field = ze\sql::fetchAssoc($fieldsResult)) {
 				$tuixField = false;
 				if (isset($foundFieldsInTUIX[$tab['name']]['fields'][$field['field_name']])) {
 					$tuixField = $foundFieldsInTUIX[$tab['name']]['fields'][$field['field_name']];
-					
 					//Don't show this field if hide_in_dataset_editor is set 
 					if (!empty($tuixField['hide_in_dataset_editor'])) {
 						continue;
 					}
 					
+				//Only load system fields found in tuix	
 				} elseif ($field['is_system_field']) {
 					continue;
 				}
@@ -193,13 +192,14 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 				
 				$fieldProperties = [
 					'id' => (int)$field['id'],
+					'page_id' => $tab['name'],
 					'parent_id' => (int)$field['parent_id'],
 					'is_system_field' => (int)$field['is_system_field'],
 					'is_protected' => (int)$field['protected'],
 					'was_protected' => (int)$field['protected'],
 					'is_readonly' => (int)$field['readonly'],
 					'ord' => $fieldCount,
-					'field_label' => $field['label'] ? $field['label'] : ($field['default_label'] ? $field['default_label'] : ''),
+					'label' => $field['label'] ? $field['label'] : ($field['default_label'] ? $field['default_label'] : ''),
 					'type' => $field['type'],
 					'width' => (int)$field['width'],
 					'height' => (int)$field['height'],
@@ -216,6 +216,7 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 					'show_in_organizer' => (int)($field['organizer_visibility'] != 'none'),
 					'create_index' => $field['create_index'] ? 'index' : 'no_index',
 					'searchable' => (int)$field['searchable'],
+					'filterable' => (int)$field['filterable'],
 					'sortable' => (int)$field['sortable'],
 					'include_in_export' => (int)$field['include_in_export'],
 					'autocomplete' => (int)$field['autocomplete'],
@@ -245,13 +246,11 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 					$fieldProperties['lov'] = [];
 					foreach ($fieldValues as $valueId => $value) {
 						$value['ord'] = ++$fieldValueOrdinal;
-						$value['id'] = $valueId;
 						$fieldProperties['lov'][$valueId] = $value;
 					}
 				}
 				
 				if ($field['is_system_field'] && $tuixField) {
-					$tuixField['id'] = $field['id'];
 					//dataset_label always overrides label
 					if (isset($tuixField['dataset_label'])) {
 						$fieldProperties['label'] = $tuixField['dataset_label'];
@@ -265,7 +264,6 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 						if (!empty($tuixField['type'])) {
 							$fieldProperties['tuix_type'] = $tuixField['type'];
 							if ($fieldProperties['tuix_type'] == 'grouping') {
-								$groupings[$field['field_name']] = $field;
 								$fieldProperties['grouping_name'] = $tuixField['name'];
 							}
 						} elseif (isset($tuixField['snippet']['html'])) {
@@ -274,7 +272,7 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 							$fieldProperties['tuix_type'] = 'pick_items';
 						} elseif (isset($tuixField['upload'])) {
 							$fieldProperties['tuix_type'] = 'upload';
-							$fieldProperties['field_label'] = $tuixField['upload']['upload_phrase'] ?? 'Upload...';
+							$fieldProperties['label'] = $tuixField['upload']['upload_phrase'] ?? 'Upload...';
 						}
 					}
 					//Look for groupings on system fields
@@ -283,10 +281,11 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 					}
 				}
 				
-				$panel['items'][$tab['name']]['fields'][$field['id']] = $fieldProperties;
+				$panel['pages'][$tab['name']]['fields'][$field['id']] = 1;
+				$panel['items'][$field['id']] = $fieldProperties;
 			}
-			
 		}
+		
 	}
 	
 	
@@ -297,62 +296,67 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 		
 		switch ($_POST['mode'] ?? false) {
 			case 'save':
-				$dataJSON = $_POST['data'] ?? false;
-				$data = json_decode($dataJSON, true);
-				
 				$errors = [];
-				$selectedFieldId = $_POST['selectedFieldId'] ?? false;
-				$selectedPageId = $_POST['selectedPageId'] ?? false;
+				
+				//$dataJSON = $_POST['data'] ?? false;
+				//$data = json_decode($dataJSON, true);
+				//$selectedFieldId = $_POST['selectedFieldId'] ?? false;
+				//$selectedPageId = $_POST['selectedPageId'] ?? false;
+				$pages = json_decode($_POST['pages'] ?? false, true);
+				$fields = json_decode($_POST['fields'] ?? false, true);
+				$fieldsTUIX = json_decode($_POST['fieldsTUIX'] ?? false, true);
+				$editingThing = $_POST['editingThing'] ?? false;
+				$editingThingId = $_POST['editingThingId'] ?? false;
 				$currentPageId = $_POST['currentPageId'] ?? false;
 				$deletedPages = json_decode($_POST['deletedPages'] ?? false, true);
 				$deletedFields = json_decode($_POST['deletedFields'] ?? false, true);
+				$deletedValues = json_decode($_POST['deletedValues'] ?? false, true);
 				
-				$tabsReordeded = isset($_POST['tabsReordered']) && $_POST['tabsReordered'] == 'true';
-				$tabDeleted = false;
-				$tabCreated = false;
+				$pagesReordered = !empty($_POST['pagesReordered']);
+				$existingPageDeleted = false;
+				$pageCreated = false;
 				
-				$existingDatasetTabs = [];
+				$existingPages = [];
 				$result = ze\row::query('custom_dataset_tabs', ['name', 'is_system_field'], ['dataset_id' => $datasetId]);
 				while ($row = ze\sql::fetchAssoc($result)) {
-					$existingDatasetTabs[$row['name']] = $row;
+					$existingPages[$row['name']] = $row;
 				}
 				
-				$existingDatasetFields = [];
+				$existingFields = [];
 				$result = ze\row::query('custom_dataset_fields', ['id', 'tab_name', 'is_system_field', 'db_column', 'type', 'allow_admin_to_change_visibility', 'allow_admin_to_change_export', 'protected', 'min_rows', 'max_rows', 'repeat_start_id', 'create_index'], ['dataset_id' => $datasetId]);
 				while ($row = ze\sql::fetchAssoc($result)) {
-					$existingDatasetFields[$row['id']] = $row;
+					$existingFields[$row['id']] = $row;
 				}
 				
 				//Make sure requested changes are all valid before saving...
-				$sortedData = [];
-				if ($errors = $this->validateDatasetChanges($data, $sortedData, $deletedPages, $deletedFields, $existingDatasetTabs, $existingDatasetFields)) {
-					exit(json_encode($errors));
+				if ($errors = $this->validateDatasetChanges($pages, $fields, $deletedPages, $deletedFields, $existingPages, $existingFields)) {
+					exit(json_encode(['errors' => $errors]));
 				}
+				$sortedData = $this->getSortedData($pages, $fields);
 				
 				//If valid, apply changes
-				//Delete tabs
 				foreach ($deletedPages as $tabId) {
-					if (isset($existingDatasetTabs[$tabId])) {
-						$tabDeleted = true;
-						ze\row::delete('custom_dataset_tabs', ['dataset_id' => $datasetId, 'name' => $tabId]);
+					if (isset($existingPages[$tabId])) {
+						$existingPageDeleted = true;
+						break;
 					}
 				}
-				//Delete fields
 				foreach ($deletedFields as $fieldId) {
-					if (isset($existingDatasetFields[$fieldId])) {
-						$existingDatasetTabs[$existingDatasetFields[$fieldId]['tab_name']]['_tabFieldRemoved'] = true;
-						ze\row::update('custom_dataset_fields', ['protected' => false], $fieldId);
-						ze\datasetAdm::deleteField($fieldId);
+					if (isset($existingFields[$fieldId])) {
+						$existingPages[$existingFields[$fieldId]['tab_name']]['field_deleted'] = true;
 					}
 				}
-				//Create new fields
-				$oldTabNameLink = [];
-				$oldFieldIdLink = [];
-				foreach ($sortedData as $tabIndex => &$tab) {
-					$name = $tab['name'];
-					if (isset($tab['_is_new'])) {
-						$tabCreated = true;
-						$tab['_changed'] = true;
+				
+				$tempPageIdLink = [];
+				$tempFieldIdLink = [];
+				$tempValueIdLink = [];
+				foreach ($sortedData as $pageIndex => &$page) {
+					
+					//Create new pages
+					$pageId = $tempPageId = $page['id'];
+					if (!isset($existingPages[$pageId])) {
+						$pageCreated = true;
+						$page['_new'] = true;
 						$sql = "
 							SELECT
 								IFNULL(MAX(CAST(REPLACE(name, '__custom_tab_', '') AS UNSIGNED)), 0) + 1
@@ -360,192 +364,90 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 							WHERE dataset_id = ". (int)$datasetId;
 						$result = ze\sql::select($sql);
 						$row = ze\sql::fetchRow($result);
-						$name = '__custom_tab_'. $row[0];
-						ze\row::insert('custom_dataset_tabs', ['name' => $name, 'dataset_id' => $datasetId]);
+						$pageId = '__custom_tab_'. $row[0];
+						ze\row::insert('custom_dataset_tabs', ['name' => $pageId, 'dataset_id' => $datasetId]);
 					}
-					$oldTabNameLink[$tab['name']] = $name;
-					$tab['name'] = $name;
+					$tempPageIdLink[$tempPageId] = $page['id'] = $pageId;
 					
-					foreach ($tab['fields'] as $fieldIndex => &$field) {
-						$fieldId = $field['id'];
-						if (isset($field['_is_new'])) {
-							if (isset($existingDatasetTabs[$name])) {
-								$existingDatasetTabs[$name]['_tabFieldCreated'] = true;
+					foreach ($page['fields'] as $fieldIndex => $fieldId) {
+						$field = &$fields[$fieldId];
+						
+						//Create new fields
+						$tempFieldId = $field['id'];
+						if (!isset($existingFields[$fieldId])) {
+							if (isset($existingPages[$pageId])) {
+								$existingPages[$pageId]['field_created'] = true;
 							}
-							$field['_changed'] = true;
-							$fieldId = ze\row::insert('custom_dataset_fields', ['dataset_id' => $datasetId, 'tab_name' => $tab['name'], 'type' => $field['type']]);
+							$field['_new'] = true;
+							$fieldId = ze\row::insert('custom_dataset_fields', ['dataset_id' => $datasetId, 'tab_name' => $pageId, 'type' => $field['type']]);
 							if ($field['type'] == 'repeat_start') {
 								$columName = ze\dataset::repeatStartRowColumnName($fieldId);
 								$field['db_column'] = $columName;
 								ze\row::update('custom_dataset_fields', ['db_column' => $columName], $fieldId);
 							}
 						}
-						$oldFieldIdLink[$field['id']] = $fieldId;
-						$field['id'] = $fieldId;
+						$tempFieldIdLink[$tempFieldId] = $field['id'] = $fieldId;
+						
+						//Create new field values
+						if (in_array($field['type'], ['checkboxes', 'radios', 'select']) && !empty($field['lov']) && empty($existingFields[$fieldId]['is_system_field'])) {
+							foreach ($field['lov'] as $valueId => $value) {
+								$tempValueId = $valueId;
+								if (!is_numeric($valueId)) {
+									$valueId = ze\row::insert('custom_dataset_field_values', ['field_id' => $fieldId, 'label' => '']);
+								}
+								$tempValueIdLink[$tempValueId] = $valueId;
+							}
+						}
 					}
 					unset($field);
 				}
-				unset($tab);
+				unset($page);
 				
-				$currentPageId = $oldTabNameLink[$currentPageId];
-				if ($selectedPageId) {
-					$selectedPageId = $oldTabNameLink[$selectedPageId];
-				}
-				if ($selectedFieldId) {
-					$selectedFieldId = $oldFieldIdLink[$selectedFieldId];
+				//Keep current page / field selected on reload
+				$currentPageId = $tempPageIdLink[$currentPageId];
+				if ($editingThing == 'page') {
+					$editingThingId = $tempPageIdLink[$editingThingId];
+				} elseif ($editingThing == 'field') {
+					$editingThingId = $tempFieldIdLink[$editingThingId];
 				}
 				
 				//Update data
-				$tabOrderChanged = $tabsReordeded || $tabCreated || $tabDeleted;
-				foreach ($sortedData as $tabIndex => $tab) {
-					$dTab = [];
-					if (isset($existingDatasetTabs[$tab['name']])) {
-						$dTab = $existingDatasetTabs[$tab['name']];
-					}
+				$pageOrderChanged = $pagesReordered || $pageCreated || $existingPageDeleted;
+				foreach ($sortedData as $pageIndex => $page) {
+					$existingPage = $existingPages[$page['id']] ?? false;
 					
 					$values = [];
-					if ($tabOrderChanged) {
-						$values['ord'] = $tabIndex + 1;
+					//Update page ordinals
+					if ($pageOrderChanged) {
+						$values['ord'] = $pageIndex + 1;
 					}
-					if (isset($tab['_changed'])) {
-						$values['label'] = mb_substr(trim($tab['tab_label']), 0, 32);
-						if (empty($dTab['is_system_field'])) {
-							if (!empty($tab['parent_field_id']) && !empty($oldFieldIdLink[$tab['parent_field_id']])) {
-								$values['parent_field_id'] = $oldFieldIdLink[$tab['parent_field_id']];
-							} else {
-								$values['parent_field_id'] = 0;
-							}
-						}
+					//Update page data
+					if (isset($page['_changed']) || isset($page['_new'])) {
+						$values = array_merge($values, $this->getDatasetPageOptions($page, $existingPage, $fields, $tempFieldIdLink));
 					}
 					if ($values) {
-						ze\row::update('custom_dataset_tabs', $values, ['name' => $tab['name'], 'dataset_id' => $datasetId]);
+						ze\row::update('custom_dataset_tabs', $values, ['name' => $page['id'], 'dataset_id' => $datasetId]);
 					}
 					
-					$tabFieldOrderChanged = empty($dTab) || !empty($tab['_tabFieldsReordered']) || !empty($dTab['_tabFieldCreated']) || !empty($dTab['_tabFieldRemoved']);
-					
+					$pageFieldOrderChanged = !$existingPage || !empty($page['fields_reordered']) || !empty($existingPage['field_created']) || !empty($existingPage['field_deleted']);
 					$repeatStartField = false;
 					$columnUpdates = [];
 					$columnIndex = 0;
-					foreach ($tab['fields'] as $fieldIndex => $field) {
-						$dField = [];
-						if (isset($existingDatasetFields[$field['id']])) {
-							$dField = $existingDatasetFields[$field['id']];
-						}
+					foreach ($page['fields'] as $fieldIndex => $fieldId) {
+						$field = $fields[$fieldId];
+						$existingField = $existingFields[$fieldId] ?? false;
 						
+						//Update field ordinal / page
 						$values = [];
-						if ($tabFieldOrderChanged) {
+						if ($pageFieldOrderChanged) {
 							$values['ord'] = $fieldIndex + 1;
-							$values['tab_name'] = $tab['name'];
+							$values['tab_name'] = $page['id'];
 						}
-						if ($field['type'] == 'repeat_start') {
-							$minRows = !empty($field['min_rows']) ? (int)$field['min_rows'] : 1;
-							if ($minRows < 1) {
-								$minRows = 1;
-							} elseif ($minRows > 10) {
-								$minRows = 10;
-							}
-							$maxRows = !empty($field['max_rows']) ? (int)$field['max_rows'] : 5;
-							if ($maxRows < 2) {
-								$maxRows = 2;
-							} elseif ($maxRows > 20) {
-								$maxRows = 20;
-							}
-							if ($minRows > $maxRows) {
-								$minRows = $maxRows;
-							}
-							$values['min_rows'] = $minRows;
-							$values['max_rows'] = $maxRows;
-						}
-						
-						//Do not allow other_system_fields to be edited other than ordinal
-						if (isset($field['_changed']) && (!$dField || $dField['type'] != 'other_system_field')) {
-							if (empty($dField['is_system_field'])) {
-								$values['protected'] = !empty($field['is_protected']);
-								$values['readonly'] = !empty($field['is_readonly']);
-								if ($field['type'] != 'repeat_start') {
-									$values['db_column'] = empty($field['db_column']) ? '' : mb_substr(trim($field['db_column']), 0, 64);
-								}
-								$values['height'] = empty($field['height']) ? 0 : (int)$field['height'];
-								$values['width'] = empty($field['width']) ? 0 : $field['width'];
-								$values['required'] = !empty($field['required']);
-								$values['required_message'] = null;
-								if ($values['required']) {
-									$values['required_message'] = mb_substr(trim($field['required_message']), 0, 255);
-								}
-								$values['validation'] = 'none';
-								$values['validation_message'] = null;
-								if (!empty($field['validation'])) {
-									$values['validation'] = $field['validation'];
-									if ($field['validation'] != 'none' && !empty($field['validation_message'])) {
-										$values['validation_message'] = mb_substr(trim($field['validation_message']), 0, 255);
-									}
-								}
-								$values['organizer_visibility'] = 'none';
-								if (!empty($field['show_in_organizer'])) {
-									$values['organizer_visibility'] = $field['organizer_visibility'];
-								}
-								$values['create_index'] = false;
-								$values['searchable'] = false;
-								$values['sortable'] = false;
-								
-								if (!empty($field['show_in_organizer'])) {
-									if (in_array($field['type'], ['checkbox', 'group', 'consent', 'radios', 'select', 'dataset_select', 'dataset_picker', 'file_picker', 'centralised_radios', 'centralised_select']) || (isset($field['create_index']) && $field['create_index'] == 'index')
-									) {
-										$values['create_index'] = true;
-									}
-									
-									if (!empty($field['searchable'])) {
-										$values['searchable'] = true;
-									}
-									if (!empty($field['sortable']) && $values['create_index']) {
-										$values['sortable'] = true;
-									}
-								}
-								
-								$values['values_source'] = empty($field['values_source']) ? '' : $field['values_source'];
-								$values['values_source_filter'] = !empty($field['values_source']) && isset($field['values_source_filter']) ? mb_substr(trim($field['values_source_filter']), 0, 255) : '';
-								if ($field['type']) {
-									if ($field['type'] == 'dataset_select' || $field['type'] == 'dataset_picker') {
-										$values['dataset_foreign_key_id'] = !empty($field['dataset_foreign_key_id']) ? $field['dataset_foreign_key_id'] : 0;
-									}
-								}
-								if ((!$dField && ($field['type'] == 'file_picker')) 
-									|| ($dField && ($dField['type'] == 'file_picker'))
-								) {
-									$values['multiple_select'] = !empty($field['multiple_select']);
-									$values['store_file'] = !empty($field['store_file']) ? $field['store_file'] : null;
-									$values['extensions'] = !empty($field['extensions']) ? mb_substr(trim($field['extensions']), 0, 255) : '';
-								}
-							} elseif (!empty($dField['allow_admin_to_change_visibility'])) {
-								$values['organizer_visibility'] = empty($field['hide_in_organizer']) ? 'none' : 'hide';
-							}
-							
-							$values['label'] = empty($field['field_label']) ? '' :  mb_substr(trim($field['field_label']), 0, 64);
-							$values['include_in_export'] = !empty($field['include_in_export']);
-							$values['autocomplete'] = !empty($field['autocomplete']);
-							
-							$values['note_below'] = '';
-							if (!empty($field['note_below'])) {
-								$values['note_below'] = mb_substr(trim($field['note_below']), 0, 255);
-							}
-							$values['side_note'] = '';
-							if (!empty($field['side_note'])) {
-								$values['side_note'] = mb_substr(trim($field['side_note']), 0, 255);
-							}
-						} elseif (!empty($dField['allow_admin_to_change_export'])) {
-							$values['include_in_export'] = !empty($field['include_in_export']);
-						}
-						
-						//Note: pick_items fields can change visibility
-						$values['parent_id'] = 0;
-						$values['admin_box_visibility'] = !empty($field['admin_box_visibility']) ? $field['admin_box_visibility'] : 'show';
-						if ($values['admin_box_visibility'] == 'show_on_condition' && !empty($field['parent_id'])) {
-							$values['parent_id'] = $oldFieldIdLink[$field['parent_id']];
-						}
-						
-						if ($repeatStartField || !empty($dField['repeat_start_id'])) {
+						//Update field data
+						if ($repeatStartField || !empty($existingField['repeat_start_id'])) {
 							$values['repeat_start_id'] = $repeatStartField ? $repeatStartField['id'] : 0;
 						}
+						$values = array_merge($values, $this->getDatasetFieldOptions($field, $existingField, $tempFieldIdLink));
 						if ($values) {
 							ze\row::update('custom_dataset_fields', $values, $field['id']);
 						}
@@ -553,58 +455,45 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 						$oldName = false;
 						$newRows = false;
 						$oldRows = false;
-						
-						if ($dField) {
-							$oldName = $dField['db_column'];
-							if ($dField['repeat_start_id']) {
-								$oldRows = $existingDatasetFields[$dField['repeat_start_id']]['max_rows'];
+						if ($existingField) {
+							$oldName = $existingField['db_column'];
+							if ($existingField['repeat_start_id']) {
+								$oldRows = $existingFields[$existingField['repeat_start_id']]['max_rows'];
 							}
 						}
 						if ($repeatStartField) {
 							$newRows = $repeatStartField['max_rows'];
 						}
 						
-						
 						//Update dataset field db columns
-						if (empty($dField['is_system_field'])
+						if (empty($existingField['is_system_field'])
 							&& !empty($field['db_column'])
 							&& (($oldName !== $field['db_column'])
 								|| ($oldRows != $newRows)
-								|| ($dField && isset($values['create_index']) && ($values['create_index'] != $dField['create_index']))
+								|| ($existingField && isset($values['create_index']) && ($values['create_index'] != $existingField['create_index']))
 							)
 						) {
 							//Make sure there are no clashes by renaming columns to unique name and then to new name later
 							$field['temp_db_column'] = '__tmp_col_' . (++$columnIndex) . '_' . ze\ring::randomFromSet();
-							ze\row::update('custom_dataset_fields', ['db_column' => $field['temp_db_column']], $field['id']);
+							ze\row::update('custom_dataset_fields', ['db_column' => $field['temp_db_column'], 'db_update_running' => true], $field['id']);
 							
-							$columnUpdates[$field['id']] = ['db_column' => $field['db_column'], 'temp_db_column' => $field['temp_db_column'], 'new_rows' => $newRows, 'old_rows' => $oldRows];
+							$columnUpdates[$field['id']] = ['db_column' => $field['db_column'], 'old_db_column' => $oldName, 'temp_db_column' => $field['temp_db_column'], 'new_rows' => $newRows, 'old_rows' => $oldRows];
 							ze\datasetAdm::createFieldInDB($field['id'], $oldName);
 						}
 						
-						//Save field values
-						if (!empty($field['lov'])
-							&& !empty($field['type'])
-							&& in_array($field['type'], ['checkboxes', 'radios', 'select'])
-							&& empty($dField['is_system_field'])
-						) {
-							if (!empty($field['_deleted_lov'])) {
-								foreach ($field['_deleted_lov'] as $valueId) {
-									ze\row::delete('custom_dataset_field_values', $valueId);
-								}
+						//Update field values
+						if (in_array($field['type'], ['checkboxes', 'radios', 'select']) && !empty($field['lov']) && empty($existingFields[$fieldId]['is_system_field'])) {
+							foreach ($field['lov'] as $valueId => $value) {
+								$field['lov'][$valueId]['id'] = $valueId;
 							}
-							$sortedValues = $field['lov'];
-							usort($sortedValues, 'ze\ray::sortByOrd');
-							foreach ($sortedValues as $valueIndex => $value) {
-								$lovValues = [
-									'field_id' => $field['id'],
+							usort($field['lov'], 'ze\ray::sortByOrd');
+							
+							foreach ($field['lov'] as $valueIndex => $value) {
+								$columns = [
 									'ord' => $valueIndex + 1,
-									'label' => mb_substr(trim($value['label']), 0, 250)
+									'label' => mb_substr(trim($value['label']), 0, 250, 'UTF-8')
 								];
-								$ids = [];
-								if (empty($value['_is_new'])) {
-									$ids['id'] = $value['id'];
-								}
-								ze\row::set('custom_dataset_field_values', $lovValues, $ids);
+								ze\row::update('custom_dataset_field_values', $columns, $tempValueIdLink[$value['id']]);
 							}
 						}
 						
@@ -623,8 +512,28 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 						
 						//Create multiple columns for fields in a repeating section
 						if ($update['new_rows'] || $update['old_rows']) {
-							ze\datasetAdm::createFieldMultiRowsInDB($fieldId, $update['temp_db_column'], $update['new_rows'], $update['old_rows']);
+							ze\datasetAdm::createFieldMultiRowsInDB($fieldId, $update['old_db_column'], $update['new_rows'], $update['old_rows']);
 						}
+						
+						ze\row::update('custom_dataset_fields', ['db_update_running' => false], $fieldId);
+					}
+				}
+				
+				//Delete values
+				foreach ($deletedValues as $valueId) {
+					ze\row::delete('custom_dataset_field_values', $valueId);
+				}
+				//Delete fields
+				foreach ($deletedFields as $fieldId) {
+					if (isset($existingFields[$fieldId])) {
+						ze\row::update('custom_dataset_fields', ['protected' => false], $fieldId);
+						ze\datasetAdm::deleteField($fieldId);
+					}
+				}
+				//Delete tabs
+				foreach ($deletedPages as $tabId) {
+					if (isset($existingPages[$tabId])) {
+						ze\row::delete('custom_dataset_tabs', ['dataset_id' => $datasetId, 'name' => $tabId]);
 					}
 				}
 				
@@ -633,8 +542,8 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 				echo json_encode(
 					[
 						'currentPageId' => $currentPageId, 
-						'selectedPageId' => $selectedPageId, 
-						'selectedFieldId' => $selectedFieldId
+						'editingThing' => $editingThing, 
+						'editingThingId' => $editingThingId
 					]
 				);
 				break;	
@@ -692,61 +601,183 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 		}
 	}
 	
-	private function validateDatasetChanges($data, &$sortedData, $deletedPages, $deletedFields, $existingDatasetTabs, $existingDatasetFields) {
+	private function getSortedData($pages, $fields) {
+		$sortedData = $pages;
+		usort($sortedData, 'ze\ray::sortByOrd');
+		foreach ($sortedData as $i => &$page) {
+			$page['fields'] = array_keys($page['fields']);
+			usort($page['fields'], function($a, $b) use($fields) {
+				return $fields[$a]['ord'] - $fields[$b]['ord'];
+			});
+		}
+		return $sortedData;
+	}
+	
+	private function validateDatasetChanges($pages, $fields, $deletedPages, $deletedFields, $existingPages, $existingFields) {
 		$errors = [];
 		
-		//Fields and tabs that are saved on another field or tabs details cannot be deleted without first removing them from the other field or tab.
+		//Get lists of pages/fields that cannot be deleted
 		$undeletableFields = [];
-		$undeletableTabs = [];
-		
-		$sortedData = $data;
-		usort($sortedData, 'ze\ray::sortByOrd');
-		foreach ($sortedData as $tabIndex => $tab) {
-			if (isset($tab['_changed']) || isset($tab['_is_new'])) {
-				//Check tab details are valid
-				//Nothing to validate for now..
+		$undeletablePages = [];
+		foreach ($pages as $pageId => $page) {
+			if (!empty($page['parent_field_id'])) {
+				$undeletableFields[$page['parent_field_id']] = true;
 			}
-			if (!empty($tab['parent_field_id'])) {
-				$undeletableFields[$tab['parent_field_id']] = true;
-			}
-			
-			if (empty($tab['fields'])) {
-				continue;
-			}
-			usort($sortedData[$tabIndex]['fields'], 'ze\ray::sortByOrd');
-			foreach ($sortedData[$tabIndex]['fields'] as $fieldIndex => $field) {
-				if (!empty($field['parent_id'])) {
-					$undeletableFields[$field['parent_id']] = true;
-				}
-				
-				if (isset($field['_changed']) || isset($field['_is_new'])) {
-					//Check field details are valid
-					//To do.. redo validation from javascript here
-				}
-				//Check field order is valid
-				//To do.. redo validation from javascript here
+		}
+		foreach ($fields as $fieldId => $field) {
+			if (!empty($field['parent_id'])) {
+				$undeletableFields[$field['parent_id']] = true;
 			}
 		}
 		
-		//Check tabs can be deleted
-		foreach ($deletedPages as $tabId) {
-			if (isset($datasetTabs[$tabId]) && !empty($datasetTabs[$tabId]['is_system_field'])) {
-				$errors[] = ze\admin::phrase("Unable to delete tab \"[[tabId]]\" because it's a system tab.", ['tabId' => $tabId]);
-			} elseif (isset($undeletableTabs[$tabId])) {
-				$errors[] = ze\admin::phrase("Unable to delete tab \"[[tabId]]\" because it's being used by another tab or field.", ['tabId' => $tabId]);
+		//Make we don't try and delete anything we shouldn't
+		foreach ($deletedPages as $pageId) {
+			if (!empty($existingPages[$pageId]['is_system_field'])) {
+				$errors[] = ze\admin::phrase("Unable to delete tab \"[[tabId]]\" because it's a system tab.", ['tabId' => $pageId]);
+			} elseif (isset($undeletablePages[$pageId])) {
+				$errors[] = ze\admin::phrase("Unable to delete tab \"[[tabId]]\" because it's being used by another tab or field.", ['tabId' => $pageId]);
 			}
 		}
-		
-		//Check fields can be deleted
 		foreach ($deletedFields as $fieldId) {
-			if (isset($datasetFields[$fieldId]) && !empty($datasetFields[$fieldId]['is_system_field'])) {
+			if (!empty($existingFields[$fieldId]['is_system_field'])) {
 				$errors[] = ze\admin::phrase("Unable to delete field \"[[fieldId]]\" because it's a system field.", ['fieldId' => $fieldId]);
 			} elseif (isset($undeletableFields[$fieldId])) {
-				$errors[] = ze\admin::phrase("Unable to delete field \"[[fieldId]]\" because it's being used by another field or tab.", ['tabId' => $tabId]);
+				$errors[] = ze\admin::phrase("Unable to delete field \"[[fieldId]]\" because it's being used by another field or tab.", ['fieldId' => $fieldId]);
 			}
 		}
 		
+		//Note, all other validation is client-side. It was moved there in order to speed up editing so you don't 
+		//have an ajax request every time it needed to run. In the future it may be nessesary to have server-side validation as well.
+		
 		return $errors;
+	}
+	
+	private function getDatasetPageOptions($page, $existingPage, $fields, $tempFieldIdLink) {
+		$values = [];
+		$values['label'] = mb_substr(trim($page['label']), 0, 32);
+		if (empty($existingPage['is_system_field'])) {
+			if (!empty($page['parent_field_id']) && !empty($tempFieldIdLink[$page['parent_field_id']])) {
+				$values['parent_field_id'] = $tempFieldIdLink[$page['parent_field_id']];
+			} else {
+				$values['parent_field_id'] = 0;
+			}
+		}
+		return $values;
+	}
+	
+	private function getDatasetFieldOptions($field, $existingField, $tempFieldIdLink) {
+		$values = [];
+		if ($field['type'] == 'repeat_start') {
+			$minRows = !empty($field['min_rows']) ? (int)$field['min_rows'] : 1;
+			if ($minRows < 1) {
+				$minRows = 1;
+			} elseif ($minRows > 10) {
+				$minRows = 10;
+			}
+			$maxRows = !empty($field['max_rows']) ? (int)$field['max_rows'] : 5;
+			if ($maxRows < 2) {
+				$maxRows = 2;
+			} elseif ($maxRows > 20) {
+				$maxRows = 20;
+			}
+			if ($minRows > $maxRows) {
+				$minRows = $maxRows;
+			}
+			$values['min_rows'] = $minRows;
+			$values['max_rows'] = $maxRows;
+		}
+	
+		//Do not allow other_system_fields to be edited other than ordinal
+		if ((isset($field['_changed']) || isset($field['_new'])) && (!$existingField || $existingField['type'] != 'other_system_field')) {
+			if (empty($existingField['is_system_field'])) {
+				$values['protected'] = !empty($field['is_protected']);
+				$values['readonly'] = !empty($field['is_readonly']);
+				if ($field['type'] != 'repeat_start') {
+					$values['db_column'] = empty($field['db_column']) ? '' : mb_substr(trim($field['db_column']), 0, 64);
+				}
+				$values['height'] = empty($field['height']) ? 0 : (int)$field['height'];
+				$values['width'] = empty($field['width']) ? 0 : $field['width'];
+				$values['required'] = !empty($field['required']);
+				$values['required_message'] = null;
+				if ($values['required']) {
+					$values['required_message'] = mb_substr(trim($field['required_message']), 0, 255);
+				}
+				$values['validation'] = 'none';
+				$values['validation_message'] = null;
+				if (!empty($field['validation'])) {
+					$values['validation'] = $field['validation'];
+					if ($field['validation'] != 'none' && !empty($field['validation_message'])) {
+						$values['validation_message'] = mb_substr(trim($field['validation_message']), 0, 255);
+					}
+				}
+				$values['organizer_visibility'] = 'none';
+				if (!empty($field['show_in_organizer'])) {
+					$values['organizer_visibility'] = $field['organizer_visibility'];
+				}
+				$values['create_index'] = false;
+				$values['searchable'] = false;
+				$values['filterable'] = false;
+				$values['sortable'] = false;
+			
+				if (!empty($field['show_in_organizer'])) {
+					if (in_array($field['type'], ['checkbox', 'group', 'consent', 'radios', 'select', 'dataset_select', 'dataset_picker', 'file_picker', 'centralised_radios', 'centralised_select']) || (isset($field['create_index']) && $field['create_index'] == 'index')
+					) {
+						$values['create_index'] = true;
+					}
+				
+					if (!empty($field['searchable'])) {
+						$values['searchable'] = true;
+					}
+					if (!empty($field['filterable'])) {
+						$values['filterable'] = true;
+					}
+					if (!empty($field['sortable']) && $values['create_index']) {
+						$values['sortable'] = true;
+					}
+				}
+			
+				$values['values_source'] = empty($field['values_source']) ? '' : $field['values_source'];
+				$values['values_source_filter'] = !empty($field['values_source']) && isset($field['values_source_filter']) ? mb_substr(trim($field['values_source_filter']), 0, 255) : '';
+				if ($field['type']) {
+					if ($field['type'] == 'dataset_select' || $field['type'] == 'dataset_picker') {
+						$values['dataset_foreign_key_id'] = !empty($field['dataset_foreign_key_id']) ? $field['dataset_foreign_key_id'] : 0;
+					}
+				}
+				if ((!$existingField && ($field['type'] == 'file_picker')) 
+					|| ($existingField && ($existingField['type'] == 'file_picker'))
+				) {
+					$values['multiple_select'] = !empty($field['multiple_select']);
+					$values['store_file'] = !empty($field['store_file']) ? $field['store_file'] : null;
+					$values['extensions'] = !empty($field['extensions']) ? mb_substr(trim($field['extensions']), 0, 255) : '';
+				}
+			} elseif (!empty($existingField['allow_admin_to_change_visibility'])) {
+				$values['organizer_visibility'] = empty($field['hide_in_organizer']) ? 'none' : 'hide';
+			}
+		
+			$values['label'] = empty($field['label']) ? '' :  mb_substr(trim($field['label']), 0, 64);
+			$values['include_in_export'] = !empty($field['include_in_export']);
+			$values['autocomplete'] = !empty($field['autocomplete']);
+		
+			$values['note_below'] = '';
+			if (!empty($field['note_below'])) {
+				$values['note_below'] = mb_substr(trim($field['note_below']), 0, 255);
+			}
+			$values['side_note'] = '';
+			if (!empty($field['side_note'])) {
+				$values['side_note'] = mb_substr(trim($field['side_note']), 0, 255);
+			}
+		} elseif (!empty($existingField['allow_admin_to_change_export'])) {
+			$values['include_in_export'] = !empty($field['include_in_export']);
+		}
+	
+		//Note: pick_items fields can change visibility
+		$values['parent_id'] = 0;
+		$values['admin_box_visibility'] = !empty($field['admin_box_visibility']) ? $field['admin_box_visibility'] : 'show';
+		if ($values['admin_box_visibility'] == 'show_on_condition' && !empty($field['parent_id'])) {
+			$values['parent_id'] = $tempFieldIdLink[$field['parent_id']] ?? 0;
+		}
+		
+		return $values;
 	}
 	
 }

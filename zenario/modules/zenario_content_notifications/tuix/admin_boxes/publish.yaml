@@ -1,0 +1,18 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_publish:
+    max_height: 500
+    tabs:
+        publish:
+            fields:
+                zenario_content_notifications__add_note:
+                    label: Add a note
+                    type: checkbox
+                    redraw_onchange: true
+                zenario_content_notifications__note:
+                    visible_if: "zenarioAB.value('zenario_content_notifications__add_note')"
+                    indent: 1
+                    type: textarea
+                    rows: 7
+                    css_class: ab_note
+                    

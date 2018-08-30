@@ -2096,7 +2096,7 @@ body.ie9 #zenario_at_top_left_menu ul li ul li:hover ul {
 @media all and (max-width: 841px) {
 
 	#zenario_at .zenario_at_status_icons_container,
-	.zenario_at_dev_icons {
+	.zenario_at_topRightIcons {
 		display:none;
 	}
 	

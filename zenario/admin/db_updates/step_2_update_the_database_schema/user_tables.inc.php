@@ -256,6 +256,7 @@ _sql
 	MODIFY COLUMN `type` enum('group','checkbox','consent','checkboxes','date','editor','radios','centralised_radios','select','centralised_select','text','textarea','url','other_system_field','dataset_select','dataset_picker','file_picker','repeat_start','repeat_end') NOT NULL DEFAULT 'other_system_field'
 _sql
 
+//This field should not be nullable and default to 'visitor' to work correctly...
 ); ze\dbAdm::revision( 45403
 , <<<_sql
 	UPDATE `[[DB_PREFIX]]users`
@@ -268,7 +269,38 @@ _sql
 	MODIFY COLUMN `creation_method` enum('visitor','admin') NOT NULL DEFAULT 'visitor'
 _sql
 
+//Add a property to dataset fields to record whether it should be filterable or not
+//"searchable" now means it should work with the quick-search ("text" type only property)
+//"filterable" means it should work with the right side filters
+); ze\dbAdm::revision( 45601
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]custom_dataset_fields`
+	ADD COLUMN `filterable` tinyint(1) NOT NULL DEFAULT '0' AFTER `searchable`
+_sql
+
+, <<<_sql
+	UPDATE `[[DB_PREFIX]]custom_dataset_fields`
+	SET `filterable` = 1
+	WHERE `searchable` = 1 AND `is_system_field` = 0
+_sql
+
+, <<<_sql
+	UPDATE `[[DB_PREFIX]]custom_dataset_fields`
+	SET `searchable` = 0
+	WHERE `is_system_field` = 0 AND `type` != "text"
+_sql
+
+//Add a property to dataset fields for when their db column is being updated on the custom data table.
+//For long queries this can be used to avoid database errors for when the stored name and actual name 
+//is out of sync. 
+); ze\dbAdm::revision( 46305
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]custom_dataset_fields`
+	ADD COLUMN `db_update_running` tinyint(1) NOT NULL DEFAULT '0' AFTER `db_column`
+_sql
+
 );
+
 
 
 

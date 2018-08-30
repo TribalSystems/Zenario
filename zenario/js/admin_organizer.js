@@ -4041,7 +4041,7 @@ zenarioO.setViewOptions = function() {
 	get('zenario_fbAdminViewModeOptions').innerHTML = zenarioVO.drawTUIX(fields, 'zenario_filters_popup', cb);
 	
 	zenario.addJQueryElements('#zenario_fbAdminViewModeOptions ', true);
-	cb.call();
+	cb.done();
 	
 	zenarioO.size(true);
 };
@@ -5327,6 +5327,8 @@ zenarioO.setButtons = function() {
 	
 	zenarioO.setChooseButton();
 	
+	zenarioO.sizeButtons();
+	
 	//if (!get('organizer_rightColumnOptions')) {
 	//	return;
 	//}
@@ -5348,6 +5350,67 @@ zenarioO.setButtons = function() {
 	//	zenarioO.setUploads();
 	//	zenarioO.setChooseButton();
 	//}
+};
+
+zenarioO.sizeButtons = function() {
+	var LARGE_PADDING = 3000,
+		MARGIN = 25,
+		domWrap = get('organizer_buttons'),
+		domCB = get('organizer_collectionToolbar'),
+		domIB = get('organizer_itemToolbar'),
+		domCW = get('organizer_collectionToolbarWrap'),
+		domIW = get('organizer_itemToolbarWrap'),
+		$wrap = domWrap && $(domWrap),
+		$cB = domCB && $(domCB),
+		$iB = domIB && $(domIB),
+		$cW = domCW && $(domCW),
+		$iW = domIW && $(domIW),
+		wrapWidth,
+		cBWidth,
+		iBWidth;
+	
+	if ($wrap && $cB) {
+		
+		$cW.show();
+		
+		wrapWidth = $wrap.width() - MARGIN;
+		
+		$cW.width(LARGE_PADDING);
+		$cB.width('');
+		cBWidth = $cB.width();
+		
+		if ($iB && $iB.is(":visible")) {
+			$iW.width(LARGE_PADDING);
+			$iB.width('');
+			iBWidth = $iB.width();
+			
+			if (cBWidth + iBWidth > wrapWidth) {
+				if (iBWidth > wrapWidth) {
+					$iW.width(wrapWidth);
+					$iB.width(LARGE_PADDING);
+					$cW.hide();
+				} else {
+					$iW.width('');
+					$iB.width('');
+					$cW.width(wrapWidth - iBWidth);
+					$cB.width(LARGE_PADDING);
+				}
+			} else {
+				$iW.width('');
+				$iB.width('');
+				$cW.width('');
+				$cB.width('');
+			}
+		} else {
+			if (cBWidth > wrapWidth) {
+				$cW.width(wrapWidth);
+				$cB.width(LARGE_PADDING);
+			} else {
+				$cW.width('');
+				$cB.width('');
+			}
+		}
+	}
 };
 
 zenarioO.getQuickFilters = function() {
@@ -5379,7 +5442,7 @@ zenarioO.getQuickFilters = function() {
 };
 
 //zenarioO.setCollectionButtons = function(transition) {
-zenarioO.getCollectionButtons = function() {
+zenarioO.getCollectionButtons = function(m) {
 	
 	var bi = -1,
 		button,
@@ -5407,7 +5470,7 @@ zenarioO.getCollectionButtons = function() {
 	//Add parent/child relationships
 	zenarioT.setButtonKin(buttons);
 	
-	return buttons;
+	m.collectionButtons = buttons;
 };
 
 zenarioO.buttonsPrevHTML = '';
@@ -5500,7 +5563,7 @@ zenarioO.hideItemButtons = function(transition) {
 
 
 //zenarioO.setItemButtons = function(transition) {
-zenarioO.getItemButtons = function() {
+zenarioO.getItemButtons = function(m) {
 	
 	var i,
 		bi = -1,
@@ -5511,9 +5574,15 @@ zenarioO.getItemButtons = function() {
 		i, itemNo,
 		selectedItems = zenarioO.pi.returnSelectedItems(),
 		id = zenarioO.getKeyId(true),
-		item = id && zenarioO.tuix.items && zenarioO.tuix.items[id];
+		item = id && zenarioO.tuix.items && zenarioO.tuix.items[id],
+		itemsSelected = zenarioO.itemsSelected,
+		itemCSSClass = zenarioO.tuix.item && zenarioO.tuix.item.css_class;
 	
-	if (zenarioO.itemsSelected > 0) {
+	if (itemsSelected > 0) {
+		if (itemsSelected == 1) {
+			itemCSSClass = item.css_class || itemCSSClass;
+		}
+		
 		foreach (zenarioO.sortedItemButtons as itemNo => i) {
 			button = zenarioO.tuix.item_buttons[i];
 			
@@ -5533,7 +5602,7 @@ zenarioO.getItemButtons = function() {
 				}
 			}
 			
-			if (zenarioO.itemsSelected < minItems || (maxItems && zenarioO.itemsSelected > maxItems)) {
+			if (itemsSelected < minItems || (maxItems && itemsSelected > maxItems)) {
 				continue;
 			}
 			
@@ -5572,7 +5641,10 @@ zenarioO.getItemButtons = function() {
 	//Add parent/child relationships
 	zenarioT.setButtonKin(buttons);
 	
-	return buttons;
+	
+	m.itemButtons = buttons;
+	m.itemCSSClass = itemCSSClass;
+	m.itemsSelected = itemsSelected;
 };
 
 
@@ -6339,8 +6411,8 @@ zenarioO.size = function(refresh) {
 	
 	if (width && height) {
 		//Set a minimum width/height
-		if (width < 550) {
-			width = 550;
+		if (width < zenarioA.orgMinWidth) {
+			width = zenarioA.orgMinWidth;
 		}
 		if (height < 400) {
 			height = 400;
@@ -6458,6 +6530,8 @@ zenarioO.size = function(refresh) {
 			if (zenarioO.pi) {
 				zenarioO.pi.sizePanel($header, $panel, $footer, $buttons);
 			}
+			
+			zenarioO.sizeButtons();
 			
 			
 			zenarioO.lastSize = width + 'x' + height;

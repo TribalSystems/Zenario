@@ -199,8 +199,8 @@ class zenario_email_template_manager extends ze\moduleBaseClass {
 		
 		//Check if this email should be logged
 		$template = ze\row::get('email_templates', ['template_name', 'period_to_delete_log_headers', 'period_to_delete_log_content'], $templateNo);
-		if ($template['period_to_delete_log_headers'] == 'never_save'
-			|| ($template['period_to_delete_log_headers'] == '' && ze::setting('period_to_delete_the_email_template_sending_log_headers') == 'never_save')
+		if ($template['period_to_delete_log_headers'] === '0'
+			|| ($template['period_to_delete_log_headers'] === '' && ze::setting('period_to_delete_the_email_template_sending_log_headers') === '0')
 		) {
 			return false;
 		}
@@ -233,9 +233,9 @@ class zenario_email_template_manager extends ze\moduleBaseClass {
 		}
 		
 		//Check if this email's content should be logged
-		if ($template['period_to_delete_log_content'] == 'never_save') {
+		if ($template['period_to_delete_log_content'] === '0') {
 			$body = ze\admin::phrase('Body not saved because the email template setting for data deletion is set to "Don\'t save".');
-		} elseif ($template['period_to_delete_log_content'] == '' && ze::setting('period_to_delete_the_email_template_sending_log_content') == 'never_save') {
+		} elseif ($template['period_to_delete_log_content'] === '' && ze::setting('period_to_delete_the_email_template_sending_log_content') === '0') {
 			$body = ze\admin::phrase('Body not saved because the site-wide setting for email data deletion is set to "Don\'t save".');
 		}
 		if (strlen($body) < 100000) {
@@ -264,28 +264,33 @@ class zenario_email_template_manager extends ze\moduleBaseClass {
 		$result = ze\sql::select($sql);
 		while ($row = ze\sql::fetchAssoc($result)) {
 			$days = $row['period_to_delete_log_headers'];
-			if ($days && is_numeric($days)) {
-				$date = date('Y-m-d', strtotime('-'.$days.' day', strtotime(date('Y-m-d'))));
+			if (is_numeric($days)) {
 				$sql = '
 					DELETE FROM ' . DB_PREFIX . ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX . 'email_template_sending_log
-					WHERE email_template_id = ' . (int)$row['id'] . '
-					AND sent_datetime < "' . ze\escape::sql($date) . '"';
+					WHERE email_template_id = ' . (int)$row['id'];
+				if ($days && ($date = date('Y-m-d', strtotime('-'.$days.' day', strtotime(date('Y-m-d')))))) {
+					$sql .= '
+						AND sent_datetime < "' . ze\escape::sql($date) . '"';
+				}
 				ze\sql::update($sql);
 				$cleared += ze\sql::affectedRows();
+				
 			}
 		}
 		
 		//Clear email template sending log for the rest
 		$days = ze::setting('period_to_delete_the_email_template_sending_log_headers');
-		if ($days && is_numeric($days)) {
-			$date = date('Y-m-d', strtotime('-'.$days.' day', strtotime(date('Y-m-d'))));
+		if (is_numeric($days)) {
 			$sql = '
 				DELETE etsl.*
 				FROM ' . DB_PREFIX . ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX . 'email_template_sending_log etsl
 				LEFT JOIN ' . DB_PREFIX . 'email_templates et
 					ON etsl.email_template_id = et.id
-				WHERE (et.period_to_delete_log_headers IS NULL OR et.period_to_delete_log_headers = "")
-				AND etsl.sent_datetime < "' . ze\escape::sql($date) . '"';
+				WHERE (et.period_to_delete_log_headers IS NULL OR et.period_to_delete_log_headers = "")';
+			if ($days && ($date = date('Y-m-d', strtotime('-'.$days.' day', strtotime(date('Y-m-d')))))) {
+				$sql .= '
+					AND etsl.sent_datetime < "' . ze\escape::sql($date) . '"';
+			}
 			ze\sql::update($sql);
 			$cleared += ze\sql::affectedRows();
 		}
@@ -301,13 +306,15 @@ class zenario_email_template_manager extends ze\moduleBaseClass {
 		$result = ze\sql::select($sql);
 		while ($row = ze\sql::fetchAssoc($result)) {
 			$days = $row['period_to_delete_log_content'];
-			if ($days && is_numeric($days)) {
-				$date = date('Y-m-d', strtotime('-'.$days.' day', strtotime(date('Y-m-d'))));
+			if (is_numeric($days)) {
 				$sql = '
 					UPDATE ' . DB_PREFIX . ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX . 'email_template_sending_log
 					SET email_body = "[Email body deleted]"
-					WHERE email_template_id = ' . (int)$row['id'] . '
-					AND sent_datetime < "' . ze\escape::sql($date) . '"';
+					WHERE email_template_id = ' . (int)$row['id'];
+				if ($days && ($date = date('Y-m-d', strtotime('-'.$days.' day', strtotime(date('Y-m-d')))))) {
+					$sql .= '
+						AND sent_datetime < "' . ze\escape::sql($date) . '"';
+				}
 				ze\sql::update($sql);
 				$cleared += ze\sql::affectedRows();
 			}
@@ -315,15 +322,17 @@ class zenario_email_template_manager extends ze\moduleBaseClass {
 		
 		//Clear email template sending log for the rest
 		$days = ze::setting('period_to_delete_the_email_template_sending_log_content');
-		if ($days && is_numeric($days)) {
-			$date = date('Y-m-d', strtotime('-'.$days.' day', strtotime(date('Y-m-d'))));
+		if (is_numeric($days)) {
 			$sql = '
 				UPDATE ' . DB_PREFIX . ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX . 'email_template_sending_log etsl
 				LEFT JOIN ' . DB_PREFIX . 'email_templates et
 					ON etsl.email_template_id = et.id
 				SET etsl.email_body = "[Email body deleted]"
-				WHERE (et.period_to_delete_log_content IS NULL OR et.period_to_delete_log_content = "")
-				AND etsl.sent_datetime < "' . ze\escape::sql($date) . '"';
+				WHERE (et.period_to_delete_log_content IS NULL OR et.period_to_delete_log_content = "")';
+			if ($days && ($date = date('Y-m-d', strtotime('-'.$days.' day', strtotime(date('Y-m-d')))))) {
+				$sql .= '
+					AND etsl.sent_datetime < "' . ze\escape::sql($date) . '"';
+			}
 			ze\sql::update($sql);
 			$cleared += ze\sql::affectedRows();
 		}

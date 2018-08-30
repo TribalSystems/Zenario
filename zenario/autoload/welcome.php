@@ -1366,7 +1366,11 @@ class welcome {
 
 
 
-
+	public static function enableCaptchaForAdminLogins() {
+		return \ze::setting('google_recaptcha_site_key')
+			&& \ze::setting('google_recaptcha_secret_key')
+			&& \ze\site::description('enable_captcha_for_admin_logins');
+	}
 
 	//Formerly "loginAJAX()"
 	public static function loginAJAX(&$source, &$tags, &$fields, &$values, $changes, $getRequest) {
@@ -1387,7 +1391,11 @@ class welcome {
 	
 		//Check a login attempt
 		} elseif ($tags['tab'] == 'login' && !empty($fields['login/login']['pressed'])) {
-		
+			
+			//Call the standard TUIX validation, as there's a captcha on this screen that needs validating,
+			//and this function has the logic to handle it.
+			\ze\tuix::applyValidation($tags['tabs']['login'], true);
+			
 			if (!$values['login/username']) {
 				$tags['tabs']['login']['errors'][] = \ze\admin::phrase('Please enter your administrator username.');
 			}
@@ -1395,7 +1403,11 @@ class welcome {
 			if (!$values['login/password']) {
 				$tags['tabs']['login']['errors'][] = \ze\admin::phrase('Please enter your administrator password.');
 			}
-		
+			
+			if (\ze\welcome::enableCaptchaForAdminLogins() && !$values['login/admin_login_captcha']) {
+				$tags['tabs']['login']['errors'][] = \ze\admin::phrase('Please complete the CAPTCHA.');
+			}
+			
 			if (empty($tags['tabs']['login']['errors'])) {
 				$details = [];
 			
@@ -1404,10 +1416,21 @@ class welcome {
 				if (!$adminIdL) {
 					$tags['tabs']['login']['errors']['details_wrong'] =
 						\ze\admin::phrase('Your administaror username and password were not recognised. Please check and try again.');
+					
+					//Be nasty and reset the captcha if they got the username or password wrong!
+					if (\ze\welcome::enableCaptchaForAdminLogins()) {
+						$values['login/admin_login_captcha'] = '';
+					}
+					
 			
 				} elseif (\ze::isError($adminIdL)) {
 					$tags['tabs']['login']['errors']['details_wrong'] =
 						\ze\admin::phrase($adminIdL->__toString());
+					
+					//Be nasty and reset the captcha if they got the username or password wrong!
+					if (\ze\welcome::enableCaptchaForAdminLogins()) {
+						$values['login/admin_login_captcha'] = '';
+					}
 			
 				} else {
 					\ze\admin::logIn($adminIdL, $values['login/remember_me']);
@@ -1494,6 +1517,8 @@ class welcome {
 				$fields['login/reset']['hidden'] = true;
 				$fields['login/description']['hidden'] = false;
 			}
+			
+			$fields['login/admin_login_captcha']['hidden'] = !\ze\welcome::enableCaptchaForAdminLogins();
 		}
 	
 		return false;
@@ -1509,6 +1534,29 @@ class welcome {
 			return;
 	
 		} else {
+		 
+		      
+		       $tags['tabs'][0]['errors'][0] = \ze\admin::phrase("Sorry, you do not have permission to apply a database update to this site. An email has been sent to the Zenario system administrator to ask them to do this.");
+		       
+				if(!isset($_SESSION["mailSent"])){//send mail once to global support.
+				    
+				    $subject = \ze\admin::phrase("Admin has no permission to apply db updates") ;
+		            $message = \ze\admin::phrase('Dear Admin,')."\n\n". \ze\admin::phrase('The admin "').$_SESSION['admin_username'].\ze\admin::phrase('" has no permission to apply db updates for the site ').\ze\link::absolute()."admin. \n\n".\ze\admin::phrase("Thanks.");
+		    
+		            $mailSent = \ze\server::sendEmail(
+					            $subject, $message,
+					            EMAIL_ADDRESS_GLOBAL_SUPPORT,
+					            $addressToOverriddenBy,
+							    $nameTo = false,
+							    $addressFrom = false,
+							    $nameFrom = $source['email_templates']['installed_cms']['from'],
+							    false, false, false,
+							    $isHTML = false);
+					$_SESSION["mailSent"]= $mailSent ;  
+				}			
+			
+		  
+							    
 			$admins = \ze\row::getAssocs(
 				'admins',
 				['first_name', 'last_name', 'username', 'authtype'],
@@ -1522,9 +1570,10 @@ class welcome {
 			);
 		
 			if (!empty($admins)) {
+			    
 				$html =
 					'<p>'. \ze\admin::phrase('The following administrators are able to apply updates:'). '</p><ul>';
-			
+			   
 				foreach ($admins as $admin) {
 					$html .= '<li>'. htmlspecialchars(\ze\admin::formatName($admin)). '</li>';
 				}
@@ -2349,10 +2398,10 @@ class welcome {
 				$show_warning = true;
 				$fields['0/public_documents']['row_class'] = 'warning';
 				$fields['0/public_documents']['snippet']['html'] =
-					\ze\admin::nPhrase('There is a problem with the public link for [[exampleFile]] and 1 other document. Please check your public/downloads directory for possible permission problems.',
-						'There is a problem with the public link for [[exampleFile]] and [[count]] other documents. Please check your public/downloads directory for possible permission problems.',
+					\ze\admin::nPhrase('There is a problem with the public link for [[exampleFile]] and 1 other document. Please check your docstore and public/downloads directory for possible permission problems.',
+						'There is a problem with the public link for [[exampleFile]] and [[count]] other documents. Please check your docstore and public/downloads directory for possible permission problems.',
 						abs($errors - 1), ['exampleFile' => $exampleFile],
-						'There is a problem with the public link for the document [[exampleFile]]. Please check your public/downloads directory for possible permission problems.'
+						'There is a problem with the public link for the document [[exampleFile]]. Please check your docstore and public/downloads directory for possible permission problems.'
 					);
 		
 			} else {
@@ -2814,12 +2863,12 @@ class welcome {
 							
 							if ($row['last_login']) {
 								$row['days'] = floor((strtotime('now') - strtotime($row['last_login'])) / 60 / 60 / 24);
-								$row['last_login_date'] = \ze\date::format($row['last_login'], '_MEDIUM');
+								$row['last_login_date'] = \ze\admin::formatDate($row['last_login'], '_MEDIUM');
 								
 								$fields['0/administrator_inactive_'. $inactiveAdminCount]['snippet']['html'] =
 									\ze\admin::phrase("<a target='blank' href='[[link]]'>[[username]]</a> hasn't logged in since [[last_login_date]], [[days]] days ago.", $row);
 							} else {
-								$row['created_date'] = \ze\date::format($row['created_date'], '_MEDIUM');
+								$row['created_date'] = \ze\admin::formatDate($row['created_date'], '_MEDIUM');
 								
 								$fields['0/administrator_inactive_'. $inactiveAdminCount]['snippet']['html'] =
 									\ze\admin::phrase("<a target='blank' href='[[link]]'>[[username]]</a> was created on [[created_date]] and has never logged in.", $row);

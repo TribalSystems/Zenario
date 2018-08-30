@@ -31,7 +31,7 @@ class zenario_users__organizer__content extends zenario_users {
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
 		foreach ($panel['items'] as $id => &$item) {
-			if (ze::setting('period_to_delete_the_user_content_access_log') != 'never_save' && !ze::in($item['privacy'], 'public', 'logged_out')) {
+			if (ze::setting('period_to_delete_the_user_content_access_log') != 0 && !ze::in($item['privacy'], 'public', 'logged_out')) {
 				$item['traits']['log_access'] = true;
 			}
 		}

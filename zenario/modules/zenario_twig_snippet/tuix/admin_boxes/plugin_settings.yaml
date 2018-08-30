@@ -9,6 +9,8 @@ plugin_settings:
                     label: 'Twig code:'
                     type: code_editor
                     tall_as_possible: true
+                    style: |
+                        width: 99%;
                     value: ""
                     dont_trim: true
                     language: twig

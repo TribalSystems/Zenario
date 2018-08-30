@@ -214,7 +214,7 @@ class row {
 	
 		} elseif ($d->isJSON) {
 			if ($path !== false) {
-				$sql .= $cSql. $sign. \ze\escape::stringToIntOrFloat($val, true);
+				$sql .= $cSql. $sign. \ze\escape::stringToIntOrFloat($val, true, true);
 			} else {
 				$sql .= $cSql. $sign. \ze\escape::json($val);
 			}
@@ -597,7 +597,7 @@ class row {
 								if (is_array($val)) {
 									$sql .= \ze\escape::json($val);
 								} else {
-									$sql .= \ze\escape::stringToIntOrFloat($val, true);
+									$sql .= \ze\escape::stringToIntOrFloat($val, true, true);
 								}
 							}
 							$sql .= ')';

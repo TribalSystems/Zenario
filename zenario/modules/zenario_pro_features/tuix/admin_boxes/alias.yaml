@@ -22,11 +22,10 @@ zenario_alias:
                     pick_items:
                         #path: zenario__administration/panels/zenario_settings_pro_features__spare_aliases
                         multiple_select: true
-                        nothing_selected_phrase: No spare aliases set
+                        nothing_selected_phrase: Content item has no spare aliases
                         enable_type_ahead_search: false
                         allow_typing_anything: true
                         hide_select_button: true
                     cols: 4
                     note_below: |
-                        You may type the names of aliases that do not exist to create them.
-                        Press the tab or the comma button while typing to enter multiple aliases.
+                        To create spare aliases, just type its name (case sensitive), which will be in the URL after the / (slash). The visitor will then experience a redirect to the main alias. Type a tab or comma button to enter more than one.

@@ -36,41 +36,56 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 					ze\row::update(ZENARIO_COUNTRY_MANAGER_PREFIX . "country_manager_countries", ['active' => 0], ['id' => $id]);
 				}
 				if (($_POST['action'] ?? false) == 'delete_country') {
-					ze\row::delete("visitor_phrases", 
-								[
-										'module_class_name' => 'zenario_country_manager',
-										'code' => '_COUNTRY_NAME_' . $id
-									] 
-							);
-					ze\row::delete(ZENARIO_COUNTRY_MANAGER_PREFIX . "country_manager_countries", ['id' => $id]);					
-
-					$sql = "DELETE FROM "
-								. DB_PREFIX . "visitor_phrases
-							WHERE
-									module_class_name = 'zenario_country_manager'
-								AND code IN (SELECT 
-												name 
-											FROM " 
-												. DB_PREFIX . ZENARIO_COUNTRY_MANAGER_PREFIX . "country_manager_regions 
-											WHERE
-												country_id = '" . ze\escape::sql($id) . "'
-											)";
-					ze\sql::update($sql);
-					ze\row::delete(ZENARIO_COUNTRY_MANAGER_PREFIX . "country_manager_regions", ['country_id' => $id]);
 					
-					ze\module::sendSignal('eventCountryDeleted', ["countryId" => $id]);
+					//Check if the country has regions. If yes, do not delete the country.
+					$result = ze\row::getArray(ZENARIO_COUNTRY_MANAGER_PREFIX . "country_manager_regions", ["id", "name"], ["country_id" => $id]);
+					if ($result) {
+						echo ze\admin::phrase("This country has " . count($result) . " regions. Please delete them first.");
+					} else {
+						ze\row::delete("visitor_phrases", 
+									[
+											'module_class_name' => 'zenario_country_manager',
+											'code' => '_COUNTRY_NAME_' . $id
+										] 
+								);
+						ze\row::delete(ZENARIO_COUNTRY_MANAGER_PREFIX . "country_manager_countries", ['id' => $id]);					
+
+						$sql = "DELETE FROM "
+									. DB_PREFIX . "visitor_phrases
+								WHERE
+										module_class_name = 'zenario_country_manager'
+									AND code IN (SELECT 
+													name 
+												FROM " 
+													. DB_PREFIX . ZENARIO_COUNTRY_MANAGER_PREFIX . "country_manager_regions 
+												WHERE
+													country_id = '" . ze\escape::sql($id) . "'
+												)";
+						ze\sql::update($sql);
+						ze\row::delete(ZENARIO_COUNTRY_MANAGER_PREFIX . "country_manager_regions", ['country_id' => $id]);
+					
+						ze\module::sendSignal('eventCountryDeleted', ["countryId" => $id]);
+					}
 				}
 
 				if (($_POST['action'] ?? false) == 'delete_region') {
-					$name = ze\row::get(ZENARIO_COUNTRY_MANAGER_PREFIX . "country_manager_regions", "name", ['id' => $id]);
-					ze\row::delete("visitor_phrases", 
-								[
-										'module_class_name' => 'zenario_country_manager',
-										'code' => $name
-									] 
-							);
-					ze\row::delete(ZENARIO_COUNTRY_MANAGER_PREFIX . "country_manager_regions", ['id' => $id]);
-					ze\module::sendSignal('eventRegionDeleted', ["regionId" => $id]);
+					
+					//Check if the region has subregions. If yes, do not delete the region.
+					$result = ze\row::getArray(ZENARIO_COUNTRY_MANAGER_PREFIX . "country_manager_regions", ["id", "name"], ["parent_id" => $id]);
+					
+					if ($result) {
+						echo ze\admin::phrase("This region has " . count($result) . " subregions. Please delete them first.");
+					} else {
+						$name = ze\row::get(ZENARIO_COUNTRY_MANAGER_PREFIX . "country_manager_regions", "name", ['id' => $id]);
+						ze\row::delete("visitor_phrases", 
+									[
+											'module_class_name' => 'zenario_country_manager',
+											'code' => $name
+										] 
+								);
+						ze\row::delete(ZENARIO_COUNTRY_MANAGER_PREFIX . "country_manager_regions", ['id' => $id]);
+						ze\module::sendSignal('eventRegionDeleted', ["regionId" => $id]);
+					}
 				}
 			}
 		} else {

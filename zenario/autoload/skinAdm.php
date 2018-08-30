@@ -196,6 +196,20 @@ class skinAdm {
 		\ze\row::delete('skins', $skinId);
 	}
 
+	//Loop through the frameworks/page/tuix cache directories, trying to delete everything there
+	public static function clearCacheDir() {
+	
+		foreach ([
+			CMS_ROOT. 'cache/frameworks/',
+			CMS_ROOT. 'cache/pages/',
+			CMS_ROOT. 'cache/tuix/'
+		] as $cacheDir) {
+			if (is_dir($cacheDir)) {
+				\ze\cache::deleteDir($cacheDir, 1);
+			}
+		}
+	}
+
 	//This function clears as many cached/stored things as possible!
 	//Formerly "zenarioClearCache()"
 	public static function clearCache($checkForGridChanges = false) {
@@ -209,25 +223,8 @@ class skinAdm {
 		$ids = $values = [];
 		$table = 'site_settings';
 		\ze::$dbL->reviewQueryForChanges($sql, $ids, $values, $table);
-	
-		//Loop through TUIX's cache directory, trying to delete everything there
-		foreach ([
-			CMS_ROOT. 'cache/frameworks/',
-			CMS_ROOT. 'cache/pages/',
-			CMS_ROOT. 'cache/tuix/'
-		] as $cacheDir) {
-			if (is_dir($cacheDir)) {
-				if ($dh = opendir($cacheDir)) {
-					while (($file = readdir($dh)) !== false) {
-						if (substr($file, 0, 1) != '.') {
-							$dir = $cacheDir. $file. '/';
-							\ze\cache::deleteDir($dir);
-						}
-					}
-					closedir($dh);
-				}
-			}
-		}
+		
+		\ze\skinAdm::clearCacheDir();
 	
 		//Check for changes in TUIX, Layout and Skin files
 		\ze\miscAdm::checkForChangesInYamlFiles($forceScan = true);

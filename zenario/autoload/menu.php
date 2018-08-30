@@ -443,6 +443,7 @@ class menu {
 				m.use_download_page,
 				m.hide_private_item,
 				m.add_registered_get_requests,
+				m.custom_get_requests,
 				m.invisible,
 				m.accesskey,
 				m.ordinal,
@@ -759,6 +760,10 @@ class menu {
 		
 			if (\ze::$cID == $row['cID'] && \ze::$cType == $row['cType'] && \ze::$menuTitle !== false) {
 				$row['name'] = \ze::$menuTitle;
+			}
+			
+			if ($row['custom_get_requests']) {
+				$request .= '&'. $row['custom_get_requests'];
 			}
 		
 			$link = \ze\link::toItem($row['cID'], $row['cType'], false, $request, $row['alias'], $row['add_registered_get_requests']);

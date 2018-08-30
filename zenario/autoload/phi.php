@@ -393,7 +393,11 @@ class phi {
 			$vars = array_merge($vars, self::$vars);
 		}
 		
-		self::$twig->render($twigCode, $vars);
+		\ze::ignoreErrors();
+			\ze::$isTwig = true;
+				self::$twig->render($twigCode, $vars);
+			\ze::$isTwig = false;
+		\ze::noteErrors();
 		
 		$emptyArray = [];
 		self::$outputs = &$emptyArray;

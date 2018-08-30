@@ -88,6 +88,7 @@ class zenario_promo_menu extends zenario_menu_multicolumn {
 				n.rollover_image_id,
 				m.use_feature_image, 
 				m.image_id AS feature_image_id, 
+				m.feature_image_is_retina, 
 				m.canvas, 
 				m.width, 
 				m.height,
@@ -113,25 +114,40 @@ class zenario_promo_menu extends zenario_menu_multicolumn {
 			WHERE section_id = '.(int)$this->sectionId;
 		$result = ze\sql::select($sql);
 		while ($row = ze\sql::fetchAssoc($result)) {
-			// Set image links
+			// Set image links:
+			
+			//Feature image...
 			$url = $width = $height = false;
-			ze\file::imageLink($width, $height, $url, $row['feature_image_id'], $row['width'], $row['height'], $row['canvas'], $row['offset']);
+			ze\file::imageLink($width, $height, $url, $row['feature_image_id'], $row['width'], $row['height'], $row['canvas'], $row['offset'], $row['feature_image_is_retina']);
+			if ($row['feature_image_is_retina']) {
+				$row['Image_Srcset'] = $url. ' 2x';
+			}
+			$row['feature_image_width'] = $width;
+			$row['feature_image_height'] = $height;
 			$row['feature_image_link'] = $url;
 			
+			//Feature image rollover...
+			if ($row['use_rollover_image'] && $row['feature_rollover_image_id']) {
+				$url = $width = $height = false;
+				ze\file::imageLink($width, $height, $url, $row['feature_rollover_image_id'], $row['width'], $row['height'], $row['canvas'], $row['offset'], $row['feature_image_is_retina']);
+				if ($row['feature_image_is_retina']) {
+					$row['Rollover_Image_Srcset'] = $url. ' 2x';
+				}
+				$row['feature_rollover_image_link'] = $url;
+			}
+			
+			//Node image...
 			$url = $width = $height = false;
 			ze\file::imageLink($width, $height, $url, $row['image_id']);
+			$row['node_image_width'] = $width;
+			$row['node_image_height'] = $height;
 			$row['image_link'] = $url;
 			
 			if ($row['overwrite_alt_tag']) {
 				$row['alt_tag'] = $row['overwrite_alt_tag'];
 			}
 			
-			if ($row['use_rollover_image'] && $row['feature_rollover_image_id']) {
-				$url = $width = $height = false;
-				ze\file::imageLink($width, $height, $url, $row['feature_rollover_image_id'], $row['width'], $row['height'], $row['canvas'], $row['offset']);
-				$row['feature_rollover_image_link'] = $url;
-			}
-			
+			//and Node image rollover.
 			if ($row['rollover_image_id']) {
 				$url = $width = $height = false;
 				ze\file::imageLink($width, $height, $url, $row['rollover_image_id']);
@@ -185,7 +201,7 @@ class zenario_promo_menu extends zenario_menu_multicolumn {
 			case 'zenario_menu':
 				$nodeId = $box['key']['id'];
 				$row = ze\row::get(ZENARIO_PROMO_MENU_PREFIX. 'menu_node_feature_image',
-					['use_feature_image', 'image_id', 'canvas', 'width', 'height', 'offset', 'use_rollover_image', 'rollover_image_id', 'title', 'text', 'link_type', 'link_visibility', 'dest_url', 'open_in_new_window', 'overwrite_alt_tag'],
+					['use_feature_image', 'image_id', 'feature_image_is_retina', 'canvas', 'width', 'height', 'offset', 'use_rollover_image', 'rollover_image_id', 'title', 'text', 'link_type', 'link_visibility', 'dest_url', 'open_in_new_window', 'overwrite_alt_tag'],
 					['node_id' => $nodeId]);
 				$box['key']['feature_image_id'] = $row['image_id'] ? $row['image_id'] : '';
 				$file = ze\row::get('files', ['alt_tag'], $row['image_id']);
@@ -214,6 +230,9 @@ class zenario_promo_menu extends zenario_menu_multicolumn {
 				$values['feature_image/zenario_promo_menu__feature_image_checkbox'] = $row['use_feature_image'];
 				$values['feature_image/zenario_promo_menu__feature_image'] = $row['image_id'];
 				$values['feature_image/zenario_promo_menu__canvas'] = empty($row['canvas']) ? 'unlimited' : $row['canvas'];
+				$values['feature_image/zenario_promo_menu__feature_image_is_retina'] =
+					$row['feature_image_is_retina']
+					|| ($values['feature_image/zenario_promo_menu__canvas'] != 'unlimited');
 				$values['feature_image/zenario_promo_menu__width'] = $row['width'];
 				$values['feature_image/zenario_promo_menu__height'] = $row['height'];
 				$values['feature_image/zenario_promo_menu__offset'] = $row['offset'];
@@ -240,7 +259,12 @@ class zenario_promo_menu extends zenario_menu_multicolumn {
 		switch($path) {
 			case 'zenario_menu':
 				
+				$fields['feature_image/rollover_image_id']['hidden'] = 
+					$fields['feature_image/use_rollover_image']['hidden'] =
+					!$values['feature_image/show_image'];
+				
 				$imageId = $values['feature_image/zenario_promo_menu__feature_image'];
+				$rolloverImageId = $values['feature_image/zenario_promo_menu__rollover_image'];
 				
 				if ($imageId != $box['key']['feature_image_id']) {
 					$alt_tag = '';
@@ -284,6 +308,26 @@ class zenario_promo_menu extends zenario_menu_multicolumn {
 					!($values['feature_image/zenario_promo_menu__link_type'] == 'external_url' ||
 					$values['feature_image/zenario_promo_menu__link_type'] == 'content_item');
 					
+				//Retina support
+				$retinaSideNote = "If the source image is large enough,
+                            the resized image will be output at twice its displayed width &amp; height
+                            to appear crisp on retina screens.
+                            This will increase the download size.
+                            <br/>
+                            If the source image is not large enough this will have no effect.";
+				
+				$fields['feature_image/zenario_promo_menu__feature_image_is_retina']['hidden'] =
+					!(bool) $imageId
+					|| $values['feature_image/zenario_promo_menu__canvas'] != "unlimited"
+					|| !$values['feature_image/zenario_promo_menu__feature_image_checkbox'];
+				
+				
+				if ($values['feature_image/zenario_promo_menu__canvas'] != "unlimited") {
+					$fields['feature_image/zenario_promo_menu__canvas']['side_note'] = $retinaSideNote;
+				} else {
+					$fields['feature_image/zenario_promo_menu__canvas']['side_note'] = "";
+				}
+					
 				break;
 		}
 	}
@@ -313,18 +357,18 @@ class zenario_promo_menu extends zenario_menu_multicolumn {
 				}
 				$submission['image_id'] = $imageId;
 	
-				if ($rolloverImageId = $values['feature_image/rollover_image_id']) {
-					if ($path = ze\file::getPathOfUploadInCacheDir($rolloverImageId)) {
-						$rolloverImageId = ze\file::addToDatabase('image', $path);
+				if ($values['show_image']
+					&& $values['use_rollover_image']
+					&& $rolloverImageId = $values['feature_image/rollover_image_id']
+					) {
+						if ($path = ze\file::getPathOfUploadInCacheDir($rolloverImageId)) {
+							$rolloverImageId = ze\file::addToDatabase('image', $path);
 			
-					}
-					$submission['rollover_image_id'] = $rolloverImageId;
+						}
+						$submission['rollover_image_id'] = $rolloverImageId;
+						ze\row::set('inline_images', ['image_id' => $rolloverImageId, 'in_use' => 1], ['foreign_key_to' => 'menu_node', 'foreign_key_id' => $id, 'foreign_key_char' => 'rollover_image']);
 				} else {
 					$submission['rollover_image_id'] = 0;
-				}
-				if ($values['use_rollover_image'] && $rolloverImageId) {
-					ze\row::set('inline_images', ['image_id' => $rolloverImageId, 'in_use' => 1], ['foreign_key_to' => 'menu_node', 'foreign_key_id' => $id, 'foreign_key_char' => 'rollover_image']);
-				} else {
 					ze\row::delete('inline_images', ['foreign_key_to' => 'menu_node', 'foreign_key_id' => $id, 'foreign_key_char' => 'rollover_image']);
 				}
 				ze\menuAdm::save($submission, $id);
@@ -362,6 +406,9 @@ class zenario_promo_menu extends zenario_menu_multicolumn {
 					if ($location = ze\file::getPathOfUploadInCacheDir($values['feature_image/zenario_promo_menu__feature_image'])) {
 						$featureImage['image_id'] = ze\file::addToDatabase('image', $location);
 					}
+					$featureImage['feature_image_is_retina'] =
+						$values['feature_image/zenario_promo_menu__feature_image_is_retina']
+						|| ($values['feature_image/zenario_promo_menu__canvas'] != 'unlimited');
 					
 					$featureImage['canvas'] = $values['feature_image/zenario_promo_menu__canvas'];
 					$featureImage['width'] = ($fields['feature_image/zenario_promo_menu__width']['hidden']) ? 0 : $values['feature_image/zenario_promo_menu__width'];

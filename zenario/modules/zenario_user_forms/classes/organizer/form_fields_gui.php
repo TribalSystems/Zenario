@@ -34,12 +34,15 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 		$form = ze\row::get(ZENARIO_USER_FORMS_PREFIX . 'user_forms', ['name', 'type', 'title', 'translate_text', 'enable_summary_page'], $formId);
 		
 		$panel['title'] = ze\admin::phrase('Form fields for "[[name]]"', $form);
-		$panel['items'] = [];
-		$panel['form_title'] =  $form['title'];
-		$panel['form_enable_summary_page'] = (int)$form['enable_summary_page'];
+		$panel['form'] = $form;
+		$panel['link'] = ze\link::absolute();
 		
-		//If this form is translatable, pass the languages and translatable fields
+		//Get the pages of this form
+		$panel['pages'] = zenario_user_forms::getFormPages($formId);
+		
+		//Check if translations are enabled on this form
 		if ($form['translate_text']) {
+			$panel['languages'] = [];
 			$languages = ze\lang::getLanguages(false, true, true);
 			$ord = 0;
 			foreach ($languages as $languageId => $language) {
@@ -50,131 +53,21 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 				$panel['languages'][$languageId]['ord'] = ++$ord;
 			}
 		}
-		
-		//Load centralised lists for fields of type "centralised_radios" and "centralised_select"
-		$centralisedLists = ze\datasetAdm::centralisedLists();
-		$panel['centralised_lists']['values'] = [];
-		$count = 1;
-		foreach ($centralisedLists as $method => $label) {
-			$params = explode('::', $method);
-			if (ze\module::inc($params[0])) {
-				$info = call_user_func($method, ze\dataset::LIST_MODE_INFO);
-				$panel['centralised_lists']['values'][$method] = ['info' => $info, 'label' => $label];
+		$phraseFields = [];
+		if (!empty($panel['show_translation_tab'])) {
+			foreach ($panel['form_field_details']['tabs'] as $tuixTab) {
+				foreach ($tuixTab['fields'] as $tuixFieldId => $tuixField) {
+					if (!empty($tuixField['is_phrase'])) {
+						$phraseFields[] = $tuixFieldId;
+					}
+				}
 			}
 		}
 		
-		//Add a link to the users dataset panel
-		$dataset = ze\dataset::details('users');
-		$panel['link_to_dataset'] = ze\link::absolute() . 'zenario/admin/organizer.php#zenario__administration/panels/custom_datasets//' . $dataset['id'];
-		
-		//Get dataset tabs and fields list
-		$panel['dataset_fields'] = $this->getPanelDatasetFields();
-		
-		//Check if CRM is enabled on this form
-		$panel['crm_enabled'] = zenario_user_forms::isFormCRMEnabled($formId, false);
-		
-		//Check if the form is not in use OR is on a pubic page so that if the "email" dataset field is missing from the form
-		//and another dataset field is present, a warning can be displayed.
-		$instanceIds = zenario_user_forms::getFormPlugins($formId);
-		
-		$panel['not_used_or_on_public_page'] =
-			!ze\pluginAdm::usage($instanceIds)
-		 || ze\pluginAdm::usage($instanceIds, $publishedOnly = false, $itemLayerOnly = false, $reportContentItems = false, $publicPagesOnly = true);
-		
-		
-		//Get form fields
-		$pageBreakCount = 0;
-		$fields = static::getFormFields($formId);
-		$defaultValues = [];
-		foreach ($panel['field_details']['tabs'] as $tabName => $tab) {
-			if (!empty($tab['fields'])) {
-				foreach ($tab['fields'] as $fieldName => $field) {
-					if (isset($field['value'])) {
-						$defaultValues[$fieldName] = $field['value'];
-					}	
-				}
-			}
-		}
-		$pageFields = [];
-		foreach ($fields as $fieldId => &$field) {
-			//Make sure any number fields are passed as numbers not strings
-			foreach ($field as &$prop) {
-				if (is_numeric($prop)) {
-					$prop = (int)$prop;
-				}
-			}
-			unset($prop);
-			
-			if (!isset($pageFields[$field['page_id']])) {
-				$pageFields[$field['page_id']] = [];
-			}
-			$pageFields[$field['page_id']][$fieldId] = 1;
-			
-			$field['field_label'] = $field['label'];
-			
-			//Get field LOV, CRM values
-			if (in_array($field['type'], ['checkboxes', 'radios', 'select', 'centralised_radios', 'centralised_select', 'text'])) {
-				$field['lov'] = [];
-				if ($field['dataset_field_id'] && $field['type'] != 'text') {
-					$lov = ze\dataset::fieldLOV($field['dataset_field_id'], false);
-					$field['values_source'] = ze\row::get('custom_dataset_fields', 'values_source', $field['dataset_field_id']);
-					foreach ($lov as $valueId => $value) {
-						$lov[$valueId]['id'] = $valueId;
-					}
-				} else {
-					if ($field['type'] == 'centralised_radios' || $field['type'] == 'centralised_select') {
-						$lov = [];
-						$centralisedValues = ze\dataset::centralisedListValues($field['values_source'], $field['values_source_filter']);
-						$ord = 0;
-						foreach ($centralisedValues as $valueId => $value) {
-							$lov[$valueId] = [
-								'id' => $valueId,
-								'label' => $value,
-								'ord' => ++$ord
-							];
-						}
-					} else {
-						$lov = ze\row::getAssocs(ZENARIO_USER_FORMS_PREFIX. 'form_field_values', ['id', 'label', 'ord', 'is_invalid'], ['form_field_id' => $field['id']], 'ord');
-						$field['invalid_responses'] = [];
-						if (in_array($field['type'], ['checkboxes', 'radios', 'select'])) {
-							foreach ($lov as $valueId => $value) {
-								if (!empty($value['is_invalid'])) {
-									$field['invalid_responses'][] = (string)$valueId;
-								}
-							}
-						}
-					}
-				}
-				//CRM values
-				if ($panel['crm_enabled']) {
-					foreach ($lov as $valueId => &$value) {
-						if ($field['type'] == 'centralised_radios' || $field['type'] == 'centralised_select') {
-							$value['crm_value'] = $valueId;
-						} else {
-							$value['crm_value'] = $value['label'];
-						}
-					}
-					unset($value);
-				}
-				$field['lov'] = $lov;
-				
-			//Get count of page breaks to calculate next page_break name
-			} elseif ($field['type'] == 'page_break') {
-				$pageBreakCount++;
-			} elseif ($field['type'] == 'calculated') {
-				if ($field['calculation_code']) {
-					$field['calculation_code'] = json_decode($field['calculation_code']);
-				}
-			}
-			
-			//Group repeat dataset fields
-			if ($field['dataset_field_id'] && $field['repeat_start_id'] && isset($fields[$field['repeat_start_id']])) {
-				$field['dataset_repeat_grouping'] = $fields[$field['repeat_start_id']]['dataset_field_id'];
-			} elseif ($field['dataset_field_id'] && ($field['type'] == 'repeat_start')) {
-				$field['dataset_repeat_grouping'] = $field['dataset_field_id'];
-				$field['min_rows'] = $field['dataset_min_rows'];
-				$field['max_rows'] = $field['dataset_max_rows'];
-			}
+		//Get the fields of this form
+		$panel['items'] = zenario_user_forms::getFormFieldsStatic($formId);
+		foreach ($panel['items'] as $fieldId => &$field) {
+			$panel['pages'][$field['page_id']]['fields'][$fieldId] = 1;
 			
 			//Get readonly status
 			$field['readonly_or_mandatory'] = 'none';
@@ -188,11 +81,38 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 				$field['readonly_or_mandatory'] = 'conditional_mandatory';
 			}
 			
+			//Get visibility values
+			$field['visible_condition_field_type'] = $field['visible_condition_invert'] ? 'visible_if_not' : 'visible_if';
+			if ($field['visibility'] == 'visible_on_condition' && $field['visible_condition_field_id'] && isset($panel['items'][$field['visible_condition_field_id']])) {
+				$conditionFieldType = $panel['items'][$field['visible_condition_field_id']]['type'];
+				
+				$values = explode(',', $field['visible_condition_field_value']);
+				if (count($values) > 1 || $conditionFieldType == 'checkboxes') {
+					$field['visible_condition_checkboxes_field_value'] = $values;
+					if ($conditionFieldType != 'checkboxes') {
+						$field['visible_condition_field_type'] = 'visible_if_one_of';
+					}
+				} elseif ($conditionFieldType == 'checkbox' || $conditionFieldType == 'group') {
+					$field['visible_condition_field_value'] = $field['visible_condition_field_value'] ? 'checked' : 'unchecked';
+				}
+			}
+			
+			//Get readonly / mandatory values
+			$field['mandatory_condition_field_type'] = $field['mandatory_condition_invert'] ? 'mandatory_if_not' : 'mandatory_if';
+			if ($field['readonly_or_mandatory'] == 'conditional_mandatory' && $field['mandatory_condition_field_id'] && isset($panel['items'][$field['mandatory_condition_field_id']])) {
+				$conditionFieldType = $panel['items'][$field['mandatory_condition_field_id']]['type'];
+				if ($conditionFieldType == 'checkboxes') {
+					$field['mandatory_condition_checkboxes_field_value'] = explode(',', $field['mandatory_condition_field_value']);
+				} elseif ($conditionFieldType == 'checkbox' || $conditionFieldType == 'group') {
+					$field['mandatory_condition_field_value'] = $field['mandatory_condition_field_value'] ? 'checked' : 'unchecked';
+				}
+			}
+			
 			//Get default value status
 			$field['default_value_options'] = 'none';
 			if ($field['default_value'] !== null && $field['default_value'] !== '') {
 				$field['default_value_options'] = 'value';
-				if (in_array($field['type'], ['checkbox', 'group', 'consent'])) {
+				if (in_array($field['type'], ['checkbox', 'group'])) {
 					$field['default_value_lov'] = $field['default_value'] ? 'checked' : 'unchecked';
 				} elseif (in_array($field['type'], ['radios', 'centralised_radios', 'select', 'centralised_select'])) {
 					$field['default_value_lov'] = $field['default_value'];
@@ -203,61 +123,108 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 				$field['default_value_options'] = 'method';
 			}
 			
-			$field['visible_condition_field_type'] = $field['visible_condition_invert'] ? 'visible_if_not' : 'visible_if';
-			if ($field['visibility'] == 'visible_on_condition' && $field['visible_condition_field_id'] && isset($fields[$field['visible_condition_field_id']])) {
-				$conditionFieldType = $fields[$field['visible_condition_field_id']]['type'];
+			if ($field['suggested_values']) {
+				$field['enable_suggested_values'] = true;
+				if ($field['suggested_values'] == 'pre_defined') {
+					$field['suggested_values_source'] = $field['values_source'];
+					$field['suggested_values_filter_on_field'] = $field['filter_on_field'];
+				}
+			}
+			
+			//Get field list of values
+			if (in_array($field['type'], ['checkboxes', 'radios', 'select', 'centralised_radios', 'centralised_select']) || ($field['type'] == 'text' && $field['suggested_values'] == 'custom')) {
+				$lov = zenario_user_forms::getFormFieldLOVStatic($field, $field['values_source_filter']);
+				$field['lov'] = [];
+				$ord = 0;
+				foreach ($lov as $valueId => $label) {
+					$field['lov'][$valueId] = [
+						'label' => $label, 
+						'ord' => ++$ord
+					];
+				}
 				
-				$values = explode(',', $field['visible_condition_field_value']);
-				if (count($values) > 1 || $conditionFieldType == 'checkboxes') {
-					$field['visible_condition_checkboxes_field_value'] = $values;
-					if ($conditionFieldType != 'checkboxes') {
-						$field['visible_condition_field_type'] = 'visible_if_one_of';
-					}
-				} elseif ($conditionFieldType == 'checkbox' || $conditionFieldType == 'group' || $conditionFieldType == 'consent') {
-					$field['visible_condition_field_value'] = $field['visible_condition_field_value'] ? 'checked' : 'unchecked';
-				}
+				$field['invalid_responses'] = array_map('strval', array_values(ze\row::getAssocs(ZENARIO_USER_FORMS_PREFIX. 'form_field_values', 'id', ['form_field_id' => $field['id'], 'is_invalid' => true], 'ord')));
+				
 			}
 			
-			$field['mandatory_condition_field_type'] = $field['mandatory_condition_invert'] ? 'mandatory_if_not' : 'mandatory_if';
-			if ($field['readonly_or_mandatory'] == 'conditional_mandatory' && $field['mandatory_condition_field_id'] && isset($fields[$field['mandatory_condition_field_id']])) {
-				$conditionFieldType = $fields[$field['mandatory_condition_field_id']]['type'];
-				if ($conditionFieldType == 'checkboxes') {
-					$field['mandatory_condition_checkboxes_field_value'] = explode(',', $field['mandatory_condition_field_value']);
-				} elseif ($conditionFieldType == 'checkbox' || $conditionFieldType == 'group' || $conditionFieldType == 'consent') {
-					$field['mandatory_condition_field_value'] = $field['mandatory_condition_field_value'] ? 'checked' : 'unchecked';
-				}
+			if ($field['type'] == 'calculated') {
+				$field['calculation_code'] = json_decode($field['calculation_code']);
 			}
 			
-			foreach ($defaultValues as $defaultValueName => $defaultValue) {
-				if (empty($field[$defaultValueName]) && (!isset($field[$defaultValueName]) || $field[$defaultValueName] !== 0)) {
-					$field[$defaultValueName] = $defaultValue;
-				}
+			//Group repeat dataset fields
+			if ($field['dataset_field_id'] && $field['repeat_start_id'] && isset($panel['items'][$field['repeat_start_id']])) {
+				$field['dataset_repeat_grouping'] = $panel['items'][$field['repeat_start_id']]['dataset_field_id'];
+			} elseif ($field['dataset_field_id'] && ($field['type'] == 'repeat_start')) {
+				$field['dataset_repeat_grouping'] = $field['dataset_field_id'];
+				$field['min_rows'] = $field['dataset_min_rows'];
+				$field['max_rows'] = $field['dataset_max_rows'];
 			}
-			
-			$field['_crm_data'] = [];
-			$field['_translations'] = [];
 			
 			if (!empty($panel['show_translation_tab'])) {
-				$field['_translations'] = [];
-				foreach ($panel['field_details']['tabs']['translations']['translatable_fields'] as $fieldName) {
-					$field['_translations'][$fieldName] = ['value' => $field[$fieldName], 'phrases' => []];
-					if ($field[$fieldName]) {
-						$phrases = ze\row::query(
+				$field['translations'] = [];
+				foreach ($phraseFields as $tuixFieldId) {
+					$field['translations'][$tuixFieldId] = [];
+					if (isset($field[$tuixFieldId])) {
+						$phrasesResult = ze\row::query(
 							'visitor_phrases', 
 							['local_text', 'language_id'], 
-							['code' => $field[$fieldName], 'module_class_name' => 'zenario_user_forms']
+							['code' => $field[$tuixFieldId], 'module_class_name' => 'zenario_user_forms']
 						);
-						while ($row = ze\sql::fetchAssoc($phrases)) {
-							if (!empty($languages[$row['language_id']]['translate_phrases'])) {
-								$field['_translations'][$fieldName]['phrases'][$row['language_id']] = $row['local_text'];
+						while ($row = ze\sql::fetchAssoc($phrasesResult)) {
+							if (!empty($panel['languages'][$row['language_id']]['translate_phrases'])) {
+								$field['translations'][$tuixFieldId][$row['language_id']] = $row['local_text'];
 							}
 						}
-						
 					}
 				}
 			}
 		}
 		unset($field);
+		
+		foreach ($panel['pages'] as $pageId => &$page) {
+			$page['visible_condition_field_type'] = $page['visible_condition_invert'] ? 'visible_if_not' : 'visible_if';
+			if ($page['visibility'] == 'visible_on_condition' && $page['visible_condition_field_id'] && isset($panel['items'][$page['visible_condition_field_id']])) {
+				$conditionFieldType = $panel['items'][$page['visible_condition_field_id']]['type'];
+				$values = explode(',', $page['visible_condition_field_value']);
+				if (count($values) > 1 || $conditionFieldType == 'checkboxes') {
+					$page['visible_condition_checkboxes_field_value'] = $values;
+					if ($conditionFieldType != 'checkboxes') {
+						$page['visible_condition_field_type'] = 'visible_if_one_of';
+					}
+				} elseif ($conditionFieldType == 'checkbox' || $conditionFieldType == 'group' || $conditionFieldType == 'consent') {
+					$page['visible_condition_field_value'] = $page['visible_condition_field_value'] ? 'checked' : 'unchecked';
+				}
+			}
+		}
+		unset($page);
+		
+		//Get a link to the users dataset panel
+		$dataset = ze\dataset::details('users');
+		$panel['link_to_dataset'] = ze\link::absolute() . 'zenario/admin/organizer.php#zenario__administration/panels/custom_datasets//' . $dataset['id'];
+		
+		//Get centralised lists for fields of type "centralised_radios" and "centralised_select"
+		$centralisedLists = ze\datasetAdm::centralisedLists();
+		$panel['centralised_lists']['values'] = [];
+		foreach ($centralisedLists as $method => $label) {
+			$params = explode('::', $method);
+			if (ze\module::inc($params[0])) {
+				$info = call_user_func($method, ze\dataset::LIST_MODE_INFO);
+				$panel['centralised_lists']['values'][$method] = ['info' => $info, 'label' => $label];
+			}
+		}
+		
+		//Get dataset tabs and fields
+		$panel['dataset'] = $this->getPanelDatasetInfo();
+		
+		//Check if CRM is enabled on this form
+		$panel['crm_enabled'] = zenario_user_forms::isFormCRMEnabled($formId, false);
+		
+		//Check if the form is not in use OR is on a pubic page so that if the "email" dataset field is missing from the form
+		//and another dataset field is present, a warning can be displayed.
+		$instanceIds = zenario_user_forms::getFormPlugins($formId);
+		$panel['not_used_or_on_public_page'] =
+			!ze\pluginAdm::usage($instanceIds)
+			|| ze\pluginAdm::usage($instanceIds, $publishedOnly = false, $itemLayerOnly = false, $reportContentItems = false, $publicPagesOnly = true);
 		
 		
 		//Get CRM data for form fields if crm module is running
@@ -272,90 +239,63 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 					ON uff.user_field_id = cdf.id';
 			$result = ze\sql::select($sql);
 			while ($row = ze\sql::fetchAssoc($result)) {
-				if (isset($fields[$row['form_field_id']])) {
-					//Get CRM field name
-					$fields[$row['form_field_id']]['field_crm_name'] = $row['field_crm_name'];
-					$fields[$row['form_field_id']]['send_to_crm'] = true;
-					
-					$type = $row['field_type'] ? $row['field_type'] : $row['type'];
-					
-					//Get multi field CRM values
-					if (in_array($type, ['checkboxes', 'select', 'radios', 'centralised_select', 'centralised_radios', 'checkbox', 'group', 'consent'])) {
-						$foundCRMValues = [];
-						
-						$crmValues = ze\row::query(
-							ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'crm_field_values', 
-							[
-								'form_field_value_dataset_id', 
-								'form_field_value_unlinked_id', 
-								'form_field_value_centralised_key', 
-								'form_field_value_checkbox_state',
-								'value'
-							], 
-							['form_field_id' => $row['form_field_id']]
-						);
-						
-						while ($crmValue = ze\sql::fetchAssoc($crmValues)) {
-							if ($type == 'checkbox' || $type == 'group' || $type == 'consent') {
-								$state = $crmValue['form_field_value_checkbox_state'] ? 'checked' : 'unchecked';
-								$fields[$row['form_field_id']]['_crm_data']['values'][$state] = [
-									'label' => $crmValue['form_field_value_checkbox_state'],
-									'crm_value' => $crmValue['value']
-								];
-							} elseif ($type == 'centralised_select' || $type == 'centralised_radios') {
-								if (isset($fields[$row['form_field_id']]['lov'][$crmValue['form_field_value_centralised_key']])) {
-									$fields[$row['form_field_id']]['lov'][$crmValue['form_field_value_centralised_key']]['crm_value'] = $crmValue['value'];
-								}
-							} else {
-								if ($row['user_field_id']) {
-									if (isset($fields[$row['form_field_id']]['lov'][$crmValue['form_field_value_dataset_id']])) {
-										$fields[$row['form_field_id']]['lov'][$crmValue['form_field_value_dataset_id']]['crm_value'] = $crmValue['value'];
-									}
-								} else {
-									if (isset($fields[$row['form_field_id']]['lov'][$crmValue['form_field_value_unlinked_id']])) {
-										$fields[$row['form_field_id']]['lov'][$crmValue['form_field_value_unlinked_id']]['crm_value'] = $crmValue['value'];
-									}
-								}
-							}
+				if (!isset($panel['items'][$row['form_field_id']])) {
+					continue;
+				}
+				//Get CRM field name
+				$panel['items'][$row['form_field_id']]['field_crm_name'] = $row['field_crm_name'];
+				$panel['items'][$row['form_field_id']]['send_to_crm'] = true;
+				$type = $row['field_type'] ? $row['field_type'] : $row['type'];
+				
+				//Get multi field CRM values
+				if (!in_array($type, ['checkboxes', 'select', 'radios', 'centralised_select', 'centralised_radios', 'checkbox', 'group', 'consent'])) {
+					continue;
+				}
+				
+				$crmValues = ze\row::query(
+					ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'crm_field_values', 
+					[
+						'form_field_value_dataset_id', 
+						'form_field_value_unlinked_id', 
+						'form_field_value_centralised_key', 
+						'form_field_value_checkbox_state',
+						'value'
+					], 
+					['form_field_id' => $row['form_field_id']]
+				);
+				while ($crmValue = ze\sql::fetchAssoc($crmValues)) {
+					if ($type == 'checkbox' || $type == 'group' || $type == 'consent') {
+						$state = $crmValue['form_field_value_checkbox_state'] ? 'checked' : 'unchecked';
+						$panel['items'][$row['form_field_id']]['crm_lov'][$state] = $crmValue['value'];
+					} elseif ($type == 'centralised_select' || $type == 'centralised_radios') {
+						if (isset($panel['items'][$row['form_field_id']]['lov'][$crmValue['form_field_value_centralised_key']])) {
+							$panel['items'][$row['form_field_id']]['crm_lov'][$crmValue['form_field_value_centralised_key']] = $crmValue['value'];
+						}
+					} elseif ($row['user_field_id']) {
+						if (isset($panel['items'][$row['form_field_id']]['lov'][$crmValue['form_field_value_dataset_id']])) {
+							$panel['items'][$row['form_field_id']]['crm_lov'][$crmValue['form_field_value_dataset_id']] = $crmValue['value'];
+						}
+					} else {
+						if (isset($panel['items'][$row['form_field_id']]['lov'][$crmValue['form_field_value_unlinked_id']])) {
+							$panel['items'][$row['form_field_id']]['crm_lov'][$crmValue['form_field_value_unlinked_id']] = $crmValue['value'];
 						}
 					}
 				}
 			}
 		}
 		
-		$pages = [];
-		$pagesResult = ze\row::query(ZENARIO_USER_FORMS_PREFIX . 'pages', true, ['form_id' => $formId], 'ord');
-		
-		while ($page = ze\sql::fetchAssoc($pagesResult)) {
-			$page['field_label'] = $page['label'];
-			
-			$page['visible_condition_field_type'] = $page['visible_condition_invert'] ? 'visible_if_not' : 'visible_if';
-			if ($page['visibility'] == 'visible_on_condition' && $page['visible_condition_field_id'] && isset($fields[$page['visible_condition_field_id']])) {
-				$conditionFieldType = $fields[$page['visible_condition_field_id']]['type'];
-				
-				$values = explode(',', $page['visible_condition_field_value']);
-				if (count($values) > 1 || $conditionFieldType == 'checkboxes') {
-					$page['visible_condition_checkboxes_field_value'] = $values;
-					if ($conditionFieldType != 'checkboxes') {
-						$page['visible_condition_field_type'] = 'visible_if_one_of';
-					}
-				} elseif ($conditionFieldType == 'checkbox' || $conditionFieldType == 'group' || $conditionFieldType == 'consent') {
-					$page['visible_condition_field_value'] = $page['visible_condition_field_value'] ? 'checked' : 'unchecked';
-				}
-			}
-			
-			$page['fields'] = $pageFields[$page['id']] ?? [];
-			$pages[$page['id']] = $page;
-		}
-		
-		$panel['fields'] = $fields;	
-		$panel['items'] = $pages;
+		//Hide salesforce validation button if not enabled on form
+		$panel['form_field_details']['tabs']['crm']['fields']['crm_validate_test']['hidden'] =  !zenario_user_forms::isFormCRMEnabled($formId, 'salesforce');
 	}
 	
 	
-	public function getPanelDatasetFields() {
+	public function getPanelDatasetInfo() {
+		$info = [];
+		$info['tabs'] = [];
+		$info['fields'] = [];
 		$dataset = ze\dataset::details('users');
-		$tabs = [];
+		
+		//Get dataset tabs
 		$result = ze\row::query(
 			'custom_dataset_tabs', 
 			['is_system_field', 'name', 'label', 'default_label', 'ord'], 
@@ -363,73 +303,61 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 		);
 		while ($row = ze\sql::fetchAssoc($result)) {
 			$row['ord'] = (int)$row['ord'];
-			$tabs[$row['name']] = $row;
+			$row['fields'] = [];
+			$info['tabs'][$row['name']] = $row;
 		}
 		
-		$this->getPanelDatasetFieldsByTab($dataset, $tabs);
-		
-		//Do not pass tabs with no fields
-		foreach ($tabs as $tabName => $tab) {
-			if (empty($tabs[$tabName]['fields'])) {
-				unset($tabs[$tabName]);
-			}
-		}
-		
-		return $tabs;
-	}
-	
-	private function getPanelDatasetFieldsByTab($dataset, &$tabs, $repeatStartId = false, $depth = 1) {
-		if ($depth > 99) {
-			return false;
-		}
-		
+		//Get dataset fields
 		$sql = '
-			SELECT cdf.id, cdf.tab_name, cdf.is_system_field, cdf.fundamental, cdf.field_name, cdf.type, cdf.db_column, cdf.label, cdf.default_label, cdf.ord, cdf.values_source, cdf.values_source_filter
+			SELECT
+				cdf.id, 
+				cdf.tab_name, 
+				cdf.is_system_field, 
+				cdf.fundamental, 
+				cdf.field_name, 
+				cdf.type, 
+				cdf.db_column, 
+				cdf.label, 
+				cdf.default_label, 
+				cdf.ord, 
+				cdf.values_source, 
+				cdf.values_source_filter,
+				cdf.repeat_start_id
 			FROM ' . DB_PREFIX . 'custom_dataset_fields cdf
-			INNER JOIN ' . DB_PREFIX . 'custom_dataset_tabs cdt
-				ON cdf.tab_name = cdt.name
-				AND cdf.dataset_id = cdt.dataset_id
 			WHERE cdf.dataset_id = ' . (int)$dataset['id'] . '
-			AND cdf.field_name NOT IN ("identifier", "created_date", "modified_date", "last_login", "last_profile_update_in_frontend", "suspended_date", "email_verified", "status", "password", "password_needs_changing", "screen_name_confirmed", "send_activation_email_to_user")';
-		if ($repeatStartId) {
-			$sql .= '
-				AND cdf.repeat_start_id = ' . (int)$repeatStartId;
-		} else {
-			$sql .= '
-				AND cdf.type IN ("group", "checkbox", "consent", "checkboxes", "date", "editor", "radios", "centralised_radios", "select", "centralised_select", "text", "textarea", "url", "file_picker", "repeat_start")
-			AND cdf.repeat_start_id = 0';
-		} 
-		$sql .= '
-			ORDER BY cdt.ord, cdf.ord';
-		
+			AND (
+				!cdf.is_system_field 
+				OR cdf.field_name IN (	
+					"email",
+					"salutation",
+					"first_name",
+					"last_name",
+					"screen_name",
+					"terms_and_conditions_accepted"
+				)
+			)';
 		$result = ze\sql::select($sql);
 		while ($row = ze\sql::fetchAssoc($result)) {
-			if (isset($tabs[$row['tab_name']])) {
-				$row['ord'] = (int)$row['ord'];
-				if (in_array($row['type'], ['checkboxes', 'radios', 'select', 'centralised_select', 'centralised_radios'])) {
-					$row['lov'] = ze\dataset::fieldLOV($row['id'], false);
-					foreach ($row['lov'] as $valueId => $value) {
-						$row['lov'][$valueId]['id'] = $valueId;
-					}
-				}
-				if (!$row['label'] && $row['default_label']) {
-					$row['label'] = $row['default_label'];
-				}
-				
-				if ($repeatStartId) {
-					if (isset($tabs[$row['tab_name']]['fields'][$repeatStartId])) {
-						$tabs[$row['tab_name']]['fields'][$repeatStartId]['fields'][$row['id']] = $row;
-					}
-				} else {
-					$tabs[$row['tab_name']]['fields'][$row['id']] = $row;
-				}
-				
-				//Nest dataset repeat fields into repeat start
-				if ($row['type'] == 'repeat_start') {
-					$this->getPanelDatasetFieldsByTab($dataset, $tabs, $row['id'], ++$depth);
-				}
+			$row['ord'] = (int)$row['ord'];
+			if (!$row['label'] && $row['default_label']) {
+				$row['label'] = $row['default_label'];
+			}
+			
+			if (in_array($row['type'], ['checkboxes', 'radios', 'select', 'centralised_select', 'centralised_radios'])) {
+				$row['lov'] = ze\dataset::fieldLOV($row['id'], false);
+			}
+			
+			$info['tabs'][$row['tab_name']]['fields'][$row['id']] = 1;
+			$info['fields'][$row['id']] = $row;
+		}
+		
+		//Remove tabs with no fields
+		foreach ($info['tabs'] as $tabName => $tab) {
+			if (empty($tab['fields'])) {
+				unset($tab);
 			}
 		}
+		return $info;
 	}
 	
 	
@@ -437,92 +365,81 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 		$formId = $refinerId;
 		
 		switch ($_POST['mode'] ?? false) {
+			//Note, the only validation done on this data is client-side. It was moved there in order to speed up editing so you don't 
+			//have an ajax request every time it needed to run. In the future it may be nessesary to have server-side validation as well.
 			case 'save':
 				$form = ze\row::get(ZENARIO_USER_FORMS_PREFIX . 'user_forms', ['translate_text'], $formId);
 				$languages = ze\lang::getLanguages(false, true, true);
 				$crmEnabled = zenario_user_forms::isFormCRMEnabled($formId, false);
-								
-				$pagesJSON = $_POST['pages'] ?? false;
-				$pages = json_decode($pagesJSON, true);
-				$fieldsJSON = $_POST['fields'] ?? false;
-				$fields = json_decode($fieldsJSON, true);
-				
 				$errors = [];
-				$selectedFieldId = $_POST['selectedFieldId'] ?? false;
-				$selectedPageId = $_POST['selectedPageId'] ?? false;
+						
+				$pages = json_decode($_POST['pages'] ?? false, true);
+				$fields = json_decode($_POST['fields'] ?? false, true);
+				$fieldsTUIX = json_decode($_POST['fieldsTUIX'] ?? false, true);
+				$editingThing = $_POST['editingThing'] ?? false;
+				$editingThingId = $_POST['editingThingId'] ?? false;
 				$currentPageId = $_POST['currentPageId'] ?? false;
 				$deletedPages = json_decode($_POST['deletedPages'] ?? false, true);
 				$deletedFields = json_decode($_POST['deletedFields'] ?? false, true);
 				$deletedValues = json_decode($_POST['deletedValues'] ?? false, true);
 				
-				$pagesReordered = isset($_POST['pagesReordered']) && $_POST['pagesReordered'] == 'true';
-				$pageDeleted = false;
+				$pagesReordered = !empty($_POST['pagesReordered']);
+				$existingPageDeleted = false;
 				$pageCreated = false;
 				
-				$existingPages = [];
-				$result = ze\row::query(ZENARIO_USER_FORMS_PREFIX . 'pages', ['id'], ['form_id' => $formId]);
-				while ($row = ze\sql::fetchAssoc($result)) {
-					$existingPages[$row['id']] = $row;
-				}
+				$existingPages = zenario_user_forms::getFormPages($formId);
+				$existingFields = zenario_user_forms::getFormFieldsStatic($formId);
 				
-				$existingFields = [];
-				$result = ze\row::query(ZENARIO_USER_FORMS_PREFIX . 'user_form_fields', ['id', 'page_id', 'repeat_start_id'], ['user_form_id' => $formId]);
-				while ($row = ze\sql::fetchAssoc($result)) {
-					$existingFields[$row['id']] = $row;
-				}
+				$sortedData = $this->getSortedData($pages, $fields);
 				
-				//Make sure requested changes are all valid before saving...
-				$sortedData = [];
-				if ($errors = $this->validateFormChanges($pages, $fields, $sortedData, $deletedPages, $deletedFields, $existingPages, $existingFields)) {
-					exit(json_encode($errors));
-				}
-				
-				//If valid, apply changes
 				foreach ($deletedPages as $pageId) {
 					if (isset($existingPages[$pageId])) {
-						$pageDeleted = true;
+						$existingPageDeleted = true;
 						break;
 					}
 				}
 				foreach ($deletedFields as $fieldId) {
 					if (isset($existingFields[$fieldId])) {
-						$existingPages[$existingFields[$fieldId]['page_id']]['_pageFieldRemoved'] = true;
+						$existingPages[$existingFields[$fieldId]['page_id']]['field_deleted'] = true;
 					}
 				}
-				//Create new pages, fields, values
+				
 				$tempPageIdLink = [];
 				$tempFieldIdLink = [];
 				$tempValueIdLink = [];
 				foreach ($sortedData as $pageIndex => &$page) {
+					
+					//Create new pages
 					$pageId = $tempPageId = $page['id'];
-					if (isset($page['_is_new'])) {
+					if (!is_numeric($pageId)) {
 						$pageCreated = true;
-						$page['_changed'] = true;
+						$page['_new'] = true;
 						$pageId = ze\row::insert(ZENARIO_USER_FORMS_PREFIX . 'pages', ['form_id' => $formId]);
 					}
 					$tempPageIdLink[$tempPageId] = $page['id'] = $pageId;
 					
 					foreach ($page['fields'] as $fieldIndex => $fieldId) {
 						$field = &$fields[$fieldId];
-						$fieldId = $tempFieldId = $field['id'];
-						if (isset($field['_is_new'])) {
+						
+						//Create new fields
+						$tempFieldId = $fieldId;
+						if (!is_numeric($fieldId)) {
 							if (isset($existingPages[$pageId])) {
-								$existingPages[$pageId]['_pageFieldCreated'] = true;
+								$existingPages[$pageId]['field_created'] = true;
 							}
-							$field['_changed'] = true;
+							$field['_new'] = true;
 							$fieldId = ze\row::insert(ZENARIO_USER_FORMS_PREFIX . 'user_form_fields', ['user_form_id' => $formId, 'page_id' => $pageId]);
 						}
 						$tempFieldIdLink[$tempFieldId] = $field['id'] = $fieldId;
 						
-						if ((in_array($field['type'], ['checkboxes', 'radios', 'select']) && empty($field['dataset_field_id'])) || $field['type'] == 'text') {
-							if (!empty($field['lov'])) {
-								foreach ($field['lov'] as $valueIndex => $value) {
-									$valueId = $tempValueId = $value['id'];
-									if (isset($value['_is_new'])) {
-										$valueId = ze\row::insert(ZENARIO_USER_FORMS_PREFIX . 'form_field_values', ['form_field_id' => $fieldId]);
-									}
-									$tempValueIdLink[$tempValueId] = $valueId;
+						//Create new field values
+						if (((in_array($field['type'], ['checkboxes', 'radios', 'select']) && empty($field['dataset_field_id'])) || $field['type'] == 'text') && !empty($field['lov'])) {
+							foreach ($field['lov'] as $valueId => $value) {
+								$tempValueId = $valueId;
+								if (!is_numeric($valueId)) {
+									$valueId = ze\row::insert(ZENARIO_USER_FORMS_PREFIX . 'form_field_values', ['form_field_id' => $fieldId]);
 								}
+								$tempValueIdLink[$tempValueId] = $valueId;
 							}
 						}
 					}
@@ -530,61 +447,62 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 				}
 				unset($page);
 				
+				//Keep current page / field selected on reload
 				$currentPageId = $tempPageIdLink[$currentPageId];
-				if ($selectedPageId) {
-					$selectedPageId = $tempPageIdLink[$selectedPageId];
+				if ($editingThing == 'page') {
+					$editingThingId = $tempPageIdLink[$editingThingId];
+				} elseif ($editingThing == 'field') {
+					$editingThingId = $tempFieldIdLink[$editingThingId];
 				}
-				if ($selectedFieldId) {
-					$selectedFieldId = $tempFieldIdLink[$selectedFieldId];
+				
+				$phraseFields = [];
+				foreach ($fieldsTUIX['tabs'] as $tuixTabId => $tuixTab) {
+					foreach ($tuixTab['fields'] as $tuixFieldId => $tuixField) {
+						if (!empty($tuixField['is_phrase'])) {
+							$phraseFields[$tuixFieldId] = $tuixField['db_column'] ?? $tuixFieldId;
+						}
+					}
 				}
 				
 				//Update data
-				$pageOrderChanged = $pagesReordered || $pageCreated || $pageDeleted;
+				$pageOrderChanged = $pagesReordered || $pageCreated || $existingPageDeleted;
 				foreach ($sortedData as $pageIndex => $page) {
-					$dPage = [];
-					if (isset($existingPages[$page['id']])) {
-						$dPage = $existingPages[$page['id']];
-					}
+					$existingPage = $existingPages[$page['id']] ?? false;
 					
 					$values = [];
+					//Update page ordinals
 					if ($pageOrderChanged) {
 						$values['ord'] = $pageIndex + 1;
 					}
-					if (isset($page['_changed'])) {
-						$values['name'] = $this->sanitizeTextForSQL($page['name']);
-						if (isset($page['label'])) {
-							$values['label'] = $this->sanitizeTextForSQL($page['label']);
-						}
-						if (isset($page['next_button_text'])) {
-							$values['next_button_text'] = $this->sanitizeTextForSQL($page['next_button_text']);
-						}
-						if (isset($page['previous_button_text'])) {
-							$values['previous_button_text'] = $this->sanitizeTextForSQL($page['previous_button_text']);
-						}
-						$values['hide_in_page_switcher'] = !empty($page['hide_in_page_switcher']);
-						$values['show_in_summary'] = !empty($page['show_in_summary']);
-						$values = array_merge($values, $this->getVisibilityOptions($page, $fields, $tempFieldIdLink, $tempValueIdLink));
+					//Update page data
+					if (isset($page['_changed']) || isset($page['_new'])) {
+						$values = array_merge(
+							$values, 
+							$this->getFormPageOptions($page, $fields, $tempFieldIdLink, $tempValueIdLink),
+							$this->getVisibilityOptions($page, $fields, $tempFieldIdLink, $tempValueIdLink)
+						);
 					}
 					if ($values) {
 						ze\row::update(ZENARIO_USER_FORMS_PREFIX . 'pages', $values, $page['id']);
 					}
 					
-					$pageFieldOrderChanged = empty($dPage) || !empty($page['_pageFieldsReordered']) || !empty($dPage['_pageFieldCreated']) || !empty($dPage['_pageFieldRemoved']);
+					
+					$pageFieldOrderChanged = !$existingPage || !empty($page['fields_reordered']) || !empty($existingPage['field_created']) || !empty($existingPage['field_deleted']);
 					
 					$repeatStartField = false;
 					foreach ($page['fields'] as $fieldIndex => $fieldId) {
 						$field = $fields[$fieldId];
-						$dField = [];
-						if (isset($existingFields[$field['id']])) {
-							$dField = $existingFields[$field['id']];
-						}
+						$existingField = $existingFields[$fieldId] ?? false;
 						
 						$values = [];
+						
+						//Update field ordinal / page
 						if ($pageFieldOrderChanged) {
 							$values['ord'] = $fieldIndex + 1;
 							$values['page_id'] = $page['id'];
 						}
-						if (isset($field['_changed'])) {
+						//Update field data
+						if (isset($field['_changed']) || isset($field['_new'])) {
 							$fieldId = $field['id'];
 							$values = array_merge(
 								$values, 
@@ -592,27 +510,27 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 								$this->getVisibilityOptions($field, $fields, $tempFieldIdLink, $tempValueIdLink)
 							);
 							
-							//Save translations
-							if ($form['translate_text'] && !empty($field['_translations'])) {
-								$this->updateFieldTranslations($form, $field, $languages);
+							//Save translations from tuix fields with "is_phrase" property set
+							if ($form['translate_text'] && !empty($field['translations'])) {
+								$this->updateFieldTranslations($field, $existingField, $languages, $phraseFields);
 							}
 							//Save field CRM data
 							if ($crmEnabled) {
 								$this->updateFieldCRMData($formId, $fieldId, $field, $tempValueIdLink);
 							}
 							//Update field values
-							if (empty($field['dataset_field_id']) || $field['type'] == 'text') {
+							if (empty($field['dataset_field_id']) || ($field['type'] == 'text' && !empty($field['enable_suggested_values']) && $field['suggested_values'] == 'custom')) {
 								$this->updateFieldListOfValues($field, $tempValueIdLink);
 							}
 							
 							//Delete values
-							if ($field['type'] == 'text' && empty($field['enable_suggested_values'])) {
+							if ($field['type'] == 'text' && empty($field['enable_suggested_values']) && !empty($field['lov'])) {
 								$deletedValues = array_merge($deletedValues, array_keys($field['lov']));
 								$field['lov'] = [];
 							}
 						}
 						
-						if ($repeatStartField || !empty($dField['repeat_start_id'])) {
+						if ($repeatStartField || !empty($existingField['repeat_start_id'])) {
 							$values['repeat_start_id'] = $repeatStartField ? $repeatStartField['id'] : 0;
 						}
 						
@@ -661,8 +579,8 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 					[
 						'errors' => $errors, 
 						'currentPageId' => $currentPageId, 
-						'selectedPageId' => $selectedPageId, 
-						'selectedFieldId' => $selectedFieldId
+						'editingThing' => $editingThing, 
+						'editingThingId' => $editingThingId
 					]
 				);
 				break;
@@ -680,72 +598,45 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 					$params = explode('::', $method);
 					if (ze\module::inc($params[0])) {
 						$result = call_user_func($_POST['method'] ?? false, $mode, $value);
-						$ord = 0;
-						foreach ($result as $id => $label) {
-							$lov[$id] = [
-								'id' => $id,
-								'label' => $label,
-								'ord' => ++$ord
-							];
+						if ($result) {
+							$ord = 0;
+							foreach ($result as $id => $label) {
+								$lov[$id] = [
+									'id' => $id,
+									'label' => $label,
+									'ord' => ++$ord
+								];
+							}
 						}
 					}
 					echo json_encode($lov);
 				}
 				break;
+			
+			case 'validate_salesforce_field':
+				ze\module::inc('zenario_crm_form_integration');
+				
+				$item = json_decode($_POST['item'], true);
+				$sObject = ze\row::get(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'salesforce_data', 's_object', $formId);
+				$name = $item['field_crm_name'] ?? false;
+				$values = array_values($item['crm_lov'] ?? []);
+				
+				$result = zenario_crm_form_integration::validateSalesforceObjectField($sObject, $name, $values);
+				echo json_encode($result);
+				break;
 		}
 	}
 	
-	
-	private function validateFormChanges($pages, &$fields, &$sortedData, $deletedPages, $deletedFields, $existingPages, $existingFields) {
-		$errors = [];
-		
-		//Fields and pages that are saved on another field or pages details cannot be deleted without first removing them from the other field or page.
-		$undeletableFields = [];
-		$undeletablePages = [];
-		//$undeletableFieldValues = []; //TODO
-		
+	private function getSortedData($pages, $fields) {
 		$sortedData = $pages;
 		usort($sortedData, 'ze\ray::sortByOrd');
-		foreach ($sortedData as $pageIndex => &$page) {
-			if (isset($page['_changed']) || isset($page['_is_new'])) {
-				//Check page details are valid
-				//TODO
-			}
-			if (isset($page['visibility']) && $page['visibility'] == 'visible_on_condition' && !empty($page['visible_condition_field_id'])) {
-				$undeletableFields[$page['visible_condition_field_id']] = true;
-			}
-			
-			$page['fields'] = $page['fields'] ?? [];
-			if (empty($page['fields'])) {
-				continue;
-			}
+		foreach ($sortedData as $i => &$page) {
 			$page['fields'] = array_keys($page['fields']);
 			usort($page['fields'], function($a, $b) use($fields) {
-				$a = $fields[$a];
-				$b = $fields[$b];
-				if ($a['ord'] == $b['ord']) {
-					return 0;
-				}
-				return ($a['ord'] < $b['ord']) ? -1 : 1;
+				return $fields[$a]['ord'] - $fields[$b]['ord'];
 			});
-			
-			foreach ($page['fields'] as $fieldIndex => $fieldId) {
-				$field = &$fields[$fieldId];
-				
-				//$undeletableFields[$fieldId] = true //TODO
-				
-				if (isset($field['_changed']) || isset($field['_is_new'])) {
-					//Check field details are valid
-					//TODO
-				}
-				
-				if ($field['type'] == 'checkboxes' || $field['type'] == 'radios' || $field['type'] == 'select' || $field['type'] == 'text') {
-					$field['lov'] = $field['lov'] ?? [];
-					usort($field['lov'], 'ze\ray::sortByOrd');
-				}
-			}
 		}
-		return $errors;
+		return $sortedData;
 	}
 	
 	private function sanitizeTextForSQL($text, $length = 250) {
@@ -788,7 +679,6 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 						break;
 					case 'checkbox':
 					case 'group':
-					case 'consent':
 						$values['visible_condition_field_value'] = (!empty($item['visible_condition_field_value']) && $item['visible_condition_field_value'] == 'checked') ? 1 : 0;
 						break;
 					default:
@@ -826,13 +716,13 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 			ze\row::set(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'crm_fields', $formCRMValues, ['form_field_id' => $fieldId]);
 			
 			
-			if (($field['type'] == 'checkbox' || $field['type'] == 'group' || $field['type'] == 'consent') && !empty($field['_crm_data']['values'])) {
-				foreach ($field['_crm_data']['values'] as $lovId => $lovValue) {
-					$state = ($lovId == 'checked') ? 1 : 0;
+			if (($field['type'] == 'checkbox' || $field['type'] == 'group') && !empty($field['crm_lov'])) {
+				foreach ($field['crm_lov'] as $valueId => $crmValue) {
+					$state = ($valueId == 'checked') ? 1 : 0;
 					ze\row::set(
 						ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'crm_field_values',
 						[
-							'value' => $lovValue['crm_value'],
+							'value' => $crmValue,
 							'form_field_value_dataset_id' => null,
 							'form_field_value_unlinked_id' => null,
 							'form_field_value_centralised_key' => null
@@ -847,23 +737,19 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 			} else {
 				
 				//Save values
-				if (isset($field['lov'])) {
-					foreach ($field['lov'] as $i => $lovValue) {
-						if (!isset($lovValue['crm_value']) || $lovValue['crm_value'] === '') {
-							continue;
-						}
-						$lovId = $lovValue['id'];
+				if (!empty($field['crm_lov'])) {
+					foreach ($field['crm_lov'] as $valueId => $crmValue) {
 						if ($field['type'] == 'centralised_select' || $field['type'] == 'centralised_radios') {
 							ze\row::set(
 								ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'crm_field_values',
 								[
-									'value' => $lovValue['crm_value'],
+									'value' => $crmValue,
 									'form_field_value_dataset_id' => null,
 									'form_field_value_unlinked_id' => null,
 									'form_field_value_checkbox_state' => null
 								],
 								[
-									'form_field_value_centralised_key' => $lovId,
+									'form_field_value_centralised_key' => $valueId,
 									'form_field_id' => $fieldId
 								]
 							);
@@ -871,32 +757,32 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 							ze\row::set(
 								ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'crm_field_values',
 								[
-									'value' => $lovValue['crm_value'],
+									'value' => $crmValue,
 									'form_field_value_centralised_key' => null,
 									'form_field_value_unlinked_id' => null,
 									'form_field_value_checkbox_state' => null
 								],
 								[
-									'form_field_value_dataset_id' => $lovId,
+									'form_field_value_dataset_id' => $valueId,
 									'form_field_id' => $fieldId
 								]
 							);
 						} else {
 							
 							//Get actual ID if the value was using a temp ID e.g. t1
-							if (isset($tempValueIdLink[$lovId])) {
-								$lovId = $tempValueIdLink[$lovId];
+							if (isset($tempValueIdLink[$valueId])) {
+								$valueId = $tempValueIdLink[$valueId];
 								
 								ze\row::set(
 									ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'crm_field_values',
 									[
-										'value' => $lovValue['crm_value'],
+										'value' => $crmValue,
 										'form_field_value_centralised_key' => null,
 										'form_field_value_dataset_id' => null,
 										'form_field_value_checkbox_state' => null
 									],
 									[
-										'form_field_value_unlinked_id' => $lovId,
+										'form_field_value_unlinked_id' => $valueId,
 										'form_field_id' => $fieldId
 									]
 								);
@@ -913,120 +799,87 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 	
 	private function updateFieldListOfValues($field, $tempValueIdLink) {
 		if (in_array($field['type'], ['checkboxes', 'radios', 'select', 'text']) && !empty($field['lov'])) {
+			foreach ($field['lov'] as $valueId => $value) {
+				$field['lov'][$valueId]['id'] = $valueId;
+			}
+			usort($field['lov'], 'ze\ray::sortByOrd');
+			
 			foreach ($field['lov'] as $valueIndex => $value) {
-				$valueId = $tempValueIdLink[$value['id']];
-				$values = [
+				$columns = [
 					'ord' => $valueIndex + 1,
 					'label' => $this->sanitizeTextForSQL($value['label']),
-					'is_invalid' => !empty($field['invalid_responses']) && in_array($valueId, $field['invalid_responses'])
+					'is_invalid' => !empty($field['invalid_responses']) && in_array($value['id'], $field['invalid_responses'])
 				];
-				ze\row::update(ZENARIO_USER_FORMS_PREFIX . 'form_field_values', $values, $valueId);
+				ze\row::update(ZENARIO_USER_FORMS_PREFIX . 'form_field_values', $columns, $tempValueIdLink[$value['id']]);
 			}
 		}
 	}
 	
-	private function updateFieldTranslations($form, $field, $languages) {
-		$fieldId = $field['id'];
-		$translatableFields = ['label', 'placeholder', 'note_to_user', 'required_error_message', 'validation_error_message', 'description'];
-		$fieldsToTranslate = ze\row::get(ZENARIO_USER_FORMS_PREFIX . 'user_form_fields', $translatableFields, $fieldId);
-
-		//Update phrase code if phrases are changed to keep translation chain
-		foreach ($translatableFields as $index => $name) {
-			$oldCode = '';
-			if ($fieldsToTranslate) {
-				$oldCode = $fieldsToTranslate[$name];
+	private function updateFieldTranslations($field, $existingField, $languages, $phraseFields) {
+		foreach ($phraseFields as $tuixFieldId => $dbColumn) {
+			if (empty($field['translations'][$tuixFieldId])) {
+				continue;
 			}
-			if ($name == 'validation_error_message') {
-				$name = 'field_validation_error_message';
-			} else if ($name == 'label') {
-				$name = 'field_label';
-			}
+			$oldPhraseCode = $existingField[$dbColumn] ?? false;
 			//Check if old value has more than 1 entry in any translatable field
 			$identicalPhraseFound = false;
-			if ($oldCode) {
+			if ($oldPhraseCode) {
+				$where = [];
+				foreach ($phraseFields as $tuixFieldId2 => $dbColumn2) {
+					$where[] = '`' . ze\escape::sql($dbColumn2) . '` = "' . ze\escape::sql($oldPhraseCode) . '"';
+				}
 				$sql = '
 					SELECT id
 					FROM ' . DB_PREFIX.ZENARIO_USER_FORMS_PREFIX . 'user_form_fields
-					WHERE ( 
-							label = "'.ze\escape::sql($oldCode).'"
-						OR
-							placeholder = "'.ze\escape::sql($oldCode).'"
-						OR
-							note_to_user = "'.ze\escape::sql($oldCode).'"
-						OR
-							required_error_message = "'.ze\escape::sql($oldCode).'"
-						OR
-							validation_error_message = "'.ze\escape::sql($oldCode).'"
-						OR
-							description = "'.ze\escape::sql($oldCode).'"
-					)';
+					WHERE (' . implode(' OR ', $where) . ')';
 				$result = ze\sql::select($sql);
 				if (ze\sql::numRows($result) > 1) {
 					$identicalPhraseFound = true;
 				}
 			}
-
-			$field[$name] = isset($field[$name]) ? $field[$name] : '';
-
+			
+			$newPhraseCode = $field[$tuixFieldId] ?? false;
+			
 			//If another field is using the same phrase code...
 			if ($identicalPhraseFound) {
-				foreach ($languages as $language) {
-					//Create or overwrite new phrases with the new english code
-					$setArray = [];
-					if (!empty($language['translate_phrases'])) {
-						$setArray['local_text'] = !empty($field['_translations'][$name]['phrases'][$language['id']]) ? $field['_translations'][$name]['phrases'][$language['id']] : null;
-					}
-					ze\row::set('visitor_phrases', 
-						$setArray,
-						[
-							'code' => $field[$name],
-							'module_class_name' => 'zenario_user_forms',
-							'language_id' => $language['id']
-						]
-					);
-				}
+				//Leave as is
+				
+			//If nothing else is using the same phrase code...
+			} elseif (!ze\row::exists('visitor_phrases', ['code' => $newPhraseCode, 'module_class_name' => 'zenario_user_forms'])) {
+				ze\row::update(
+					'visitor_phrases', 
+					['code' => $newPhraseCode], 
+					['code' => $oldPhraseCode, 'module_class_name' => 'zenario_user_forms']
+				);
+			
+			//If code already exists, and nothing else is using the code, delete current phrases, and update/create new 	
 			} else {
-				//If nothing else is using the same phrase code...
-				if (!ze\row::exists('visitor_phrases', ['code' => $field[$name], 'module_class_name' => 'zenario_user_forms'])) {
-					ze\row::update(
-						'visitor_phrases', 
-						['code' => $field[$name]], 
-						['code' => $oldCode, 'module_class_name' => 'zenario_user_forms']
+				ze\row::delete('visitor_phrases', ['code' => $oldPhraseCode, 'module_class_name' => 'zenario_user_forms']);
+			}
+			
+			if ($newPhraseCode) {
+				foreach ($field['translations'][$tuixFieldId] as $languageId => $phrase) {
+					$phrase = $phrase === '' ? null : $phrase;
+					ze\row::set(
+						'visitor_phrases',
+						['local_text' => $phrase], 
+						['code' => $newPhraseCode, 'module_class_name' => 'zenario_user_forms', 'language_id' => $languageId]
 					);
-					foreach($languages as $language) {
-						if ($language['translate_phrases'] && !empty($field['_translations'][$name]['phrases'][$language['id']])) {
-							ze\row::set('visitor_phrases',
-								[
-									'local_text' => ($field['_translations'][$name]['phrases'][$language['id']] !== '' ) ? $field['_translations'][$name]['phrases'][$language['id']] : null], 
-								[
-									'code' => $field[$name], 
-									'module_class_name' => 'zenario_user_forms', 
-									'language_id' => $language['id']]);
-						}
-	
-					}
-				//If code already exists, and nothing else is using the code, delete current phrases, and update/create new translations
-				} else {
-					ze\row::delete('visitor_phrases', ['code' => $oldCode, 'module_class_name' => 'zenario_user_forms']);
-					if (!empty($field[$name])) {
-						foreach($languages as $language) {
-							$setArray = [];
-							if (!empty($language['translate_phrases'])) {
-								$setArray['local_text'] = !empty($field['_translations'][$name]['phrases'][$language['id']]) ? $field['_translations'][$name]['phrases'][$language['id']] : null;
-							}
-							ze\row::set('visitor_phrases',
-								$setArray,
-								[
-									'code' => $field[$name], 
-									'module_class_name' => 'zenario_user_forms', 
-									'language_id' => $language['id']
-								]
-							);
-						}
-					}
 				}
 			}
 		}
+	}
+	
+	private function getFormPageOptions($page, $fields, $tempFieldIdLink, $tempValueIdLink) {
+		$values = [];
+		
+		$values['name'] = isset($page['name']) ? $this->sanitizeTextForSQL($page['name']) : null;
+		$values['next_button_text'] = isset($page['next_button_text']) ? $this->sanitizeTextForSQL($page['next_button_text']) : '';
+		$values['previous_button_text'] = isset($page['previous_button_text']) ? $this->sanitizeTextForSQL($page['previous_button_text']) : '';
+		$values['hide_in_page_switcher'] = !empty($page['hide_in_page_switcher']);
+		$values['show_in_summary'] = !empty($page['show_in_summary']);
+		
+		return $values;
 	}
 	
 	private function getFormFieldOptions($field, $fields, $tempFieldIdLink, $tempValueIdLink) {
@@ -1038,15 +891,9 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 			$values['field_type'] = $field['type'];
 		}
 		
-		$values['name'] = $this->sanitizeTextForSQL($field['name']);
-		if (isset($field['field_label'])) {
-			$values['label'] = $this->sanitizeTextForSQL($field['field_label']);
-		}
-		
-		$values['placeholder'] = null;
-		if (isset($field['placeholder'])) {
-			$values['placeholder'] = $this->sanitizeTextForSQL($field['placeholder']);
-		}
+		$values['name'] = isset($field['name']) ? $this->sanitizeTextForSQL($field['name']) : '';
+		$values['label'] = isset($field['label']) ? $this->sanitizeTextForSQL($field['label']) : null;
+		$values['placeholder'] = isset($field['placeholder']) ? $this->sanitizeTextForSQL($field['placeholder']) : null;
 		
 		$readonlyOrMandatory = !empty($field['readonly_or_mandatory']) ? $field['readonly_or_mandatory'] : false;
 		$values['is_readonly'] = ($readonlyOrMandatory == 'readonly');
@@ -1090,7 +937,6 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 					break;
 				case 'checkbox':
 				case 'group':
-				case 'consent':
 					$values['mandatory_condition_field_value'] = (!empty($field['mandatory_condition_field_value']) && $field['mandatory_condition_field_value'] == 'checked') ? 1 : 0;
 					break;
 				default:
@@ -1099,12 +945,9 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 			}
 		}
 		
-		$values['custom_code_name'] = null;
-		if (!empty($field['custom_code_name'])) {
-			$values['custom_code_name'] = $this->sanitizeTextForSQL($field['custom_code_name']);
-		}
-		
+		$values['custom_code_name'] = !empty($field['custom_code_name']) ? $this->sanitizeTextForSQL($field['custom_code_name']) : null;
 		$values['preload_dataset_field_user_data'] = !empty($field['preload_dataset_field_user_data']);
+		$values['split_first_name_last_name'] = !empty($field['split_first_name_last_name']);
 		
 		$defaultValueMode = !empty($field['default_value_options']) ? $field['default_value_options'] : false;
 		$values['default_value'] = null;
@@ -1113,10 +956,14 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 		$values['default_value_param_1'] = null;
 		$values['default_value_param_2'] = null;
 		if ($defaultValueMode == 'value') {
-			if (in_array($field['type'], ['checkbox', 'group', 'consent']) && isset($field['default_value_lov'])) {
+			if (in_array($field['type'], ['checkbox', 'group']) && isset($field['default_value_lov'])) {
 				$values['default_value'] = $field['default_value_lov'] == 'checked' ? 1 : 0;
 			} else if (in_array($field['type'], ['radios', 'centralised_radios', 'select', 'centralised_select']) && isset($field['default_value_lov'])) {
-				$values['default_value'] = $field['default_value_lov'];
+				if (isset($tempValueIdLink[$field['default_value_lov']]) && empty($field['dataset_field_id']) && in_array($field['type'], ['radios', 'select'])) {
+					$values['default_value'] = $tempValueIdLink[$field['default_value_lov']];
+				} else {
+					$values['default_value'] = $field['default_value_lov'];
+				}
 			} elseif (isset($field['default_value_text'])) {
 				$values['default_value'] = $this->sanitizeTextForSQL($field['default_value_text']);
 			}
@@ -1136,27 +983,36 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 			}
 		}
 		
-		$values['autocomplete'] = 0;
-		$values['autocomplete_no_filter_placeholder'] = null;
-		if (!empty($field['autocomplete'])) {
-			$values['autocomplete'] = 1;
-			if (isset($field['autocomplete_no_filter_placeholder'])) {
-				$values['autocomplete_no_filter_placeholder'] = $this->sanitizeTextForSQL($field['autocomplete_no_filter_placeholder']);
+		$values['values_source'] = '';
+	 	$values['values_source_filter'] = '';
+	 	if (!empty($field['values_source'])) {
+	 		$values['values_source'] = $this->sanitizeTextForSQL($field['values_source']);
+	 		if (!empty($field['values_source_filter'])) {
+	 			$values['values_source_filter'] = $this->sanitizeTextForSQL($field['values_source_filter']);
+	 		}
+	 	}
+	 	$values['filter_on_field'] = !empty($field['filter_on_field']) ? (int)$tempFieldIdLink[$field['filter_on_field']] : 0;
+		
+		$values['suggested_values'] = null;
+		$values['filter_placeholder'] = null;
+		$values['force_suggested_values'] = !empty($field['enable_suggested_values']) && !empty($field['force_suggested_values']);
+		if (!empty($field['enable_suggested_values']) && ($field['suggested_values'] ?? false)) {
+			$values['suggested_values'] = $field['suggested_values'];
+			
+			if ($field['suggested_values'] == 'pre_defined') {
+				if (isset($field['filter_placeholder'])) {
+					$values['filter_placeholder'] = $this->sanitizeTextForSQL($field['filter_placeholder']);
+				}
+				if (!empty($field['suggested_values_source'])) {
+					$values['values_source'] = $this->sanitizeTextForSQL($field['suggested_values_source']);
+				}
+				$values['filter_on_field'] = !empty($field['suggested_values_filter_on_field']) ? (int)$tempFieldIdLink[$field['suggested_values_filter_on_field']] : 0;
 			}
 		}
 		
-		$values['note_to_user'] = null;
-		if (isset($field['note_to_user'])) {
-			$values['note_to_user'] = $this->sanitizeTextForSQL($field['note_to_user']);
-		}
-		$values['css_classes'] = null;
-		if (isset($field['css_classes'])) {
-			$values['css_classes'] = $this->sanitizeTextForSQL($field['css_classes']);
-		}
-		$values['div_wrap_class'] = null;
-		if (isset($field['div_wrap_class'])) {
-			$values['div_wrap_class'] = $this->sanitizeTextForSQL($field['div_wrap_class']);
-		}
+		$values['note_to_user'] = isset($field['note_to_user']) ? $this->sanitizeTextForSQL($field['note_to_user']) : null;
+		$values['css_classes'] = isset($field['css_classes']) ? $this->sanitizeTextForSQL($field['css_classes']) : null;
+		$values['div_wrap_class'] = isset($field['div_wrap_class']) ? $this->sanitizeTextForSQL($field['div_wrap_class']) : null;
 		
 		$values['validation'] = null;
 		$values['validation_error_message'] = null;
@@ -1165,110 +1021,42 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 			$values['validation_error_message'] = $this->sanitizeTextForSQL($field['field_validation_error_message']);
 		}
 		
-		$values['description'] = null;
-		if (isset($field['description'])) {
-			$values['description'] = $this->sanitizeTextForSQL($field['description'], 65535);
-		}
-		
-		$values['value_prefix'] = null;
-		if (!empty($field['value_prefix'])) {
-			$values['value_prefix'] = $field['value_prefix'];
-		}
-		
-		$values['value_postfix'] = null;
-		if (!empty($field['value_postfix'])) {
-			$values['value_postfix'] = $field['value_postfix'];
-		}
+		$values['description'] = isset($field['description']) ? $this->sanitizeTextForSQL($field['description'], 65535) : null;
+	 	$values['value_field_columns'] = !empty($field['value_field_columns']) ? (int)$field['value_field_columns'] : 0;
 	 	
-	 	$values['values_source'] = '';
-	 	$values['values_source_filter'] = '';
-	 	if (!empty($field['values_source'])) {
-	 		$values['values_source'] = $this->sanitizeTextForSQL($field['values_source']);
-	 		if (!empty($field['values_source_filter'])) {
-	 			$values['values_source_filter'] = $this->sanitizeTextForSQL($field['values_source_filter']);
-	 		}
-	 	}
+	 	$values['invert_dataset_result'] = !empty($field['invert_dataset_result']) ? (int)$field['invert_dataset_result'] : 0;
+	 	$values['invalid_field_value_error_message'] = !empty($field['invalid_responses']) && !empty($field['invalid_field_value_error_message']) ? $this->sanitizeTextForSQL($field['invalid_field_value_error_message']) : null;
 	 	
-	 	$values['value_field_columns'] = 0;
-	 	if (!empty($field['value_field_columns'])) {
-	 		$values['value_field_columns'] = (int)$field['value_field_columns'];
-	 	}
 	 	
-	 	$values['min_rows'] = 0;
-	 	$values['max_rows'] = 0;
-	 	if (!empty($field['min_rows'])) {
-	 		$values['min_rows'] = (int)$field['min_rows'];
-	 	}
-	 	if (!empty($field['max_rows'])) {
-	 		$values['max_rows'] = (int)$field['max_rows'];
-	 	}
-	 	$values['add_row_label'] = null;
-	 	if (!empty($field['add_row_label'])) {
-	 		$values['add_row_label'] = $this->sanitizeTextForSQL($field['add_row_label']);
-	 	}
-	 	
-	 	$values['show_month_year_selectors'] = 0;
-	 	if (!empty($field['show_month_year_selectors'])) {
-	 		$values['show_month_year_selectors'] = (int)$field['show_month_year_selectors'];
-	 	}
-	 	
-	 	$values['no_past_dates'] = 0;
-	 	if (!empty($field['no_past_dates'])) {
-	 		$values['no_past_dates'] = (int)$field['no_past_dates'];
-	 	}
-	 	
-	 	$values['no_future_dates'] = 0;
-	 	if (!empty($field['no_future_dates'])) {
-	 		$values['no_future_dates'] = (int)$field['no_future_dates'];
-	 	}
-	 	
-	 	$values['stop_user_editing_filename'] = 0;
-	 	if (!empty($field['stop_user_editing_filename'])) {
-	 		$values['stop_user_editing_filename'] = (int)$field['stop_user_editing_filename'];
-	 	}
-	 	
-	 	$values['show_in_summary'] = 0;
-	 	if (!empty($field['show_in_summary'])) {
-	 		$values['show_in_summary'] = (int)$field['show_in_summary'];
-	 	}
-	 	
-	 	$values['enable_suggested_values'] = 0;
-	 	if (!empty($field['enable_suggested_values'])) {
-	 		$values['enable_suggested_values'] = (int)$field['enable_suggested_values'];
-	 	}
-	 	
-	 	$values['invert_dataset_result'] = 0;
-	 	if (!empty($field['invert_dataset_result'])) {
-	 		$values['invert_dataset_result'] = (int)$field['invert_dataset_result'];
-	 	}
-	 	
-	 	$values['disable_manual_input'] = 0;
-	 	if (!empty($field['disable_manual_input'])) {
-	 		$values['disable_manual_input'] = (int)$field['disable_manual_input'];
-	 	}
-	 	
-	 	$values['invalid_field_value_error_message'] = null;
-	 	if (!empty($field['invalid_responses']) && !empty($field['invalid_field_value_error_message'])) {
-	 		$values['invalid_field_value_error_message'] = $this->sanitizeTextForSQL($field['invalid_field_value_error_message']);
-	 	}
-	 	
-	 	$values['word_count_max'] = null;
-	 	if (!empty($field['word_count_max']) && (int)$field['word_count_max'] > 0) {
-	 		$values['word_count_max'] = (int)$field['word_count_max'];
-	 	}
-	 	
-	 	$values['word_count_min'] = null;
-	 	if (!empty($field['word_count_min']) && (int)$field['word_count_min'] > 0) {
-	 		$values['word_count_min'] = (int)$field['word_count_min'];
-	 	}
-	 	
-	 	$values['combined_filename'] = null;
-	 	if (!empty($field['combined_filename'])) {
-	 		$values['combined_filename'] = preg_replace('/[^\w-]/', '_', $this->sanitizeTextForSQL($field['combined_filename']));
-	 	}
-	 	
-	 	$values['calculation_code'] = '';
-		if ($field['type'] == 'calculated') {
+	 	if ($field['type'] == 'repeat_start') {
+	 		$values['min_rows'] = !empty($field['min_rows']) ? (int)$field['min_rows'] : 0;
+	 		$values['max_rows'] = !empty($field['max_rows']) ? (int)$field['max_rows'] : 0;
+	 		$values['add_row_label'] = !empty($field['add_row_label']) ? $this->sanitizeTextForSQL($field['add_row_label']) : null;
+	 		
+	 	} elseif ($field['type'] == 'date') {
+	 		$values['show_month_year_selectors'] = !empty($field['show_month_year_selectors']) ? (int)$field['show_month_year_selectors'] : 0;
+	 		$values['no_past_dates'] = !empty($field['no_past_dates']) ? (int)$field['no_past_dates'] : 0;
+	 		$values['no_future_dates'] = !empty($field['no_future_dates']) ? (int)$field['no_future_dates'] : 0;
+	 		$values['disable_manual_input'] = !empty($field['disable_manual_input']) ? (int)$field['disable_manual_input']: 0;
+	 		
+	 	} elseif ($field['type'] == 'document_upload') {
+	 		$values['stop_user_editing_filename'] = !empty($field['stop_user_editing_filename']) ? (int)$field['stop_user_editing_filename'] : 0;
+	 		$values['combined_filename'] = !empty($field['combined_filename']) ? preg_replace('/[^\w-]/', '_', $this->sanitizeTextForSQL($field['combined_filename'])) : null;
+	 		
+	 	} elseif ($field['type'] == 'section_description') {
+	 		$values['show_in_summary'] = !empty($field['show_in_summary']) ? (int)$field['show_in_summary'] : 0;
+	 		
+	 	} elseif ($field['type'] == 'textarea') {
+	 		$values['word_count_max'] = (!empty($field['word_count_max']) && (int)$field['word_count_max'] > 0) ? (int)$field['word_count_max'] : null;
+	 		$values['word_count_min'] = (!empty($field['word_count_min']) && (int)$field['word_count_min'] > 0) ? (int)$field['word_count_min'] : null;
+	 		
+	 	} elseif ($field['type'] == 'restatement') {
+	 		$values['restatement_field'] = !empty($field['restatement_field']) ? (int)$tempFieldIdLink[$field['restatement_field']] : 0;
+	 		
+	 	} elseif ($field['type'] == 'calculated') {
+	 		$values['value_prefix'] = !empty($field['value_prefix']) ? $this->sanitizeTextForSQL($field['value_prefix']) : null;
+			$values['value_postfix'] = !empty($field['value_postfix']) ? $this->sanitizeTextForSQL($field['value_postfix']) : null;
+	 		$values['calculation_code'] = '';
 			if (!empty($field['calculation_code'])) {
 				foreach ($field['calculation_code'] as $index => $step) {
 					if ($step['type'] == 'field') {
@@ -1277,119 +1065,8 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 				}
 				$values['calculation_code'] = json_encode($field['calculation_code']);
 			}
-		}
-		
-		$values['restatement_field'] = 0;
-		if (!empty($field['restatement_field'])) {
-			$values['restatement_field'] = (int)$tempFieldIdLink[$field['restatement_field']];
-		}
-		
-		$values['filter_on_field'] = !empty($field['filter_on_field']) ? (int)$tempFieldIdLink[$field['filter_on_field']] : 0;
+	 	}
 	 	
 	 	return $values;
-	}
-	
-	private static function getFormFields($formId) {
-		$fields = [];
-		$sql = '
-			SELECT 
-				uff.id, 
-				uff.user_form_id,
-				uff.page_id,
-				uff.ord, 
-				uff.is_readonly, 
-				uff.is_required,
-				uff.mandatory_if_visible,
-				uff.mandatory_condition_field_id,
-				uff.mandatory_condition_invert,
-				uff.mandatory_condition_checkboxes_operator,
-				uff.mandatory_condition_field_value,
-				uff.visibility,
-				uff.visible_condition_field_id,
-				uff.visible_condition_invert,
-				uff.visible_condition_checkboxes_operator,
-				uff.visible_condition_field_value,
-				uff.label,
-				uff.name,
-				uff.placeholder,
-				uff.preload_dataset_field_user_data,
-				uff.default_value,
-				uff.default_value_class_name,
-				uff.default_value_method_name,
-				uff.default_value_param_1,
-				uff.default_value_param_2,
-				uff.note_to_user,
-				uff.css_classes,
-				uff.div_wrap_class,
-				uff.required_error_message,
-				uff.validation AS field_validation,
-				uff.validation_error_message AS field_validation_error_message,
-				uff.field_type,
-				uff.description,
-				uff.calculation_code,
-				uff.value_prefix,
-				uff.value_postfix,
-				uff.restatement_field,
-				uff.values_source,
-				uff.values_source_filter,
-				uff.custom_code_name,
-				uff.autocomplete,
-				uff.autocomplete_no_filter_placeholder,
-				uff.value_field_columns,
-				uff.min_rows,
-				uff.max_rows,
-				uff.add_row_label,
-				uff.show_month_year_selectors,
-				uff.no_past_dates,
-				uff.no_future_dates,
-				uff.disable_manual_input,
-				uff.invalid_field_value_error_message,
-				uff.word_count_max,
-				uff.word_count_min,
-				uff.combined_filename,
-				uff.stop_user_editing_filename,
-				uff.show_in_summary,
-				uff.filter_on_field,
-				uff.repeat_start_id,
-				uff.enable_suggested_values,
-				uff.invert_dataset_result,
-				cdf.id AS dataset_field_id, 
-				cdf.type, 
-				cdf.db_column, 
-				cdf.label AS dataset_field_label,
-				cdf.default_label,
-				cdf.is_system_field, 
-				cdf.dataset_id, 
-				cdf.validation AS dataset_field_validation, 
-				cdf.validation_message AS dataset_field_validation_message,
-				cdf.multiple_select,
-				cdf.store_file,
-				cdf.extensions,
-				cdf.values_source AS dataset_values_source,
-				cdf.min_rows AS dataset_min_rows,
-				cdf.max_rows AS dataset_max_rows,
-				cdf.repeat_start_id AS dataset_repeat_start_id
-			FROM ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_forms AS uf
-			INNER JOIN ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_form_fields AS uff
-				ON uf.id = uff.user_form_id
-			LEFT JOIN ' . DB_PREFIX . 'custom_dataset_fields AS cdf
-				ON uff.user_field_id = cdf.id
-			WHERE TRUE';
-		if ($formId) {
-			$sql .= '
-				AND uff.user_form_id = ' . (int)$formId;
-		}
-		$sql .= '
-			ORDER BY uff.ord';
-		$result = ze\sql::select($sql);
-		$repeatBlockFields = [];
-		while ($field = ze\sql::fetchAssoc($result)) {
-			if ($field['field_type']) {
-				$field['type'] = $field['field_type'];
-			}
-			$fields[$field['id']] = $field;
-		}
-		
-		return $fields;
 	}
 }

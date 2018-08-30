@@ -21,7 +21,7 @@ zenario__email_template_manager:
                 path: zenario__email_template_manager/panels/email_log
         plugin_email_addresses:
             css_class: plugin_album_instance
-            ord: 3
+            ord: 5
             priv: _PRIV_VIEW_USER
             label: Plugin recipients
             tooltip: "View plugins that have an email address in a setting"
@@ -29,9 +29,9 @@ zenario__email_template_manager:
                 path: zenario__modules/panels/plugins
                 refiner: email_address_setting
         site_setting_email_addresses:
-            ord: 3.1
+            ord: 5.1
             priv: _PRIV_VIEW_USER
-            label: Site recipients
+            label: Site-wide recipients
             tooltip: "View site settings that have an email address"
             link:
                 path: zenario__email_template_manager/panels/site_setting_email_addresses

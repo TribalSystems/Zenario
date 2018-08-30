@@ -6,9 +6,17 @@ plugin_settings:
         first_tab:
             label: Filter
             fields:
+                content_item_filters:
+                    type: grouping
+                category_filters:
+                    type: grouping
+                    snippet:
+                        label: Category filters
+                        label_class: subheading
                 content_type:
                     plugin_setting:
                         name: content_type
+                    grouping: content_item_filters
                     label: 'Source content type:'
                     type: select
                     value: html
@@ -19,6 +27,7 @@ plugin_settings:
                 only_show:
                     plugin_setting:
                         name: only_show
+                    grouping: content_item_filters
                     label: 'Items to show:'
                     type: select
                     value: all
@@ -32,6 +41,7 @@ plugin_settings:
                 language_selection:
                     plugin_setting:
                         name: language_selection
+                    grouping: content_item_filters
                     label: 'Only show items in:'
                     type: select
                     value: visitor
@@ -44,6 +54,7 @@ plugin_settings:
                                     label: Specific languages...
                     format_onchange: Yes
                 specific_languages:
+                    grouping: content_item_filters
                     label: 'Select languages:'
                     plugin_setting:
                         name: specific_languages
@@ -53,6 +64,7 @@ plugin_settings:
                         required_if_not_hidden: Please select a language.
                     indent: 1
                 release_date:
+                    grouping: content_item_filters
                     label: 'Filter by release date:'
                     plugin_setting:
                         name: release_date
@@ -75,6 +87,7 @@ plugin_settings:
                 start_date:
                     plugin_setting:
                         name: start_date
+                    grouping: content_item_filters
                     label: "Date range start:"
                     type: date
                     change_month_and_year: "1"
@@ -83,6 +96,7 @@ plugin_settings:
                 end_date:
                     plugin_setting:
                         name: end_date
+                    grouping: content_item_filters
                     label: "Date range end:"
                     type: date
                     change_month_and_year: "1"
@@ -90,6 +104,7 @@ plugin_settings:
                     indent: 1
                 relative_operator:
                     label: 'Relative date range:'
+                    grouping: content_item_filters
                     plugin_setting:
                         name: relative_operator
                     type: select
@@ -102,6 +117,7 @@ plugin_settings:
                     side_note: "Content items must have been published and they must have the release date defined."
                     indent: 1
                 relative_value:
+                    grouping: content_item_filters
                     plugin_setting:
                         name: relative_value
                     type: text
@@ -115,6 +131,7 @@ plugin_settings:
                 relative_units:
                     plugin_setting:
                         name: relative_units
+                    grouping: content_item_filters
                     type: select
                     values:
                         days: day(s)
@@ -127,6 +144,7 @@ plugin_settings:
                 prior_to_date:
                     plugin_setting:
                         name: prior_to_date
+                    grouping: content_item_filters
                     label: "Prior to the date:"
                     type: date
                     change_month_and_year: "1"
@@ -135,6 +153,7 @@ plugin_settings:
                 on_date:
                     plugin_setting:
                         name: on_date
+                    grouping: content_item_filters
                     label: "On the date:"
                     type: date
                     change_month_and_year: "1"
@@ -143,6 +162,7 @@ plugin_settings:
                 after_date:
                     plugin_setting:
                         name: after_date
+                    grouping: content_item_filters
                     label: "After the date:"
                     type: date
                     change_month_and_year: "1"
@@ -151,6 +171,7 @@ plugin_settings:
                 only_show_child_items:
                     plugin_setting:
                         name: only_show_child_items
+                    grouping: content_item_filters
                     label: 'Filter by relative menu position...'
                     type: checkbox
                     value: ""
@@ -161,6 +182,7 @@ plugin_settings:
                 child_item_levels:
                     plugin_setting:
                         name: child_item_levels
+                    grouping: content_item_filters
                     label: 'Menu levels:'
                     type: select
                     value: "1"
@@ -182,6 +204,7 @@ plugin_settings:
                 show_secondaries:
                     plugin_setting:
                         name: show_secondaries
+                    grouping: content_item_filters
                     label: 'Menu node type:'
                     type: select
                     value: "0"
@@ -195,11 +218,44 @@ plugin_settings:
                         secondary menu nodes.
                     indent: 1
                 
+                category_filters_dropdown:
+                    plugin_setting:
+                        name: category_filters_dropdown
+                    grouping: category_filters
+                    type: select
+                    format_onchange: true
+                    side_note: 'Use "Show content with categories matching the current content item" option to show related news/blog items.'
+                    values:
+                        "":
+                            label: -- Don't filter --
+                        choose_categories_to_display_or_omit:
+                            label: Choose categories to filter by
+                        show_content_with_matching_categories:
+                            label: Show content with categories matching the current content item
+                    value: choose_categories_to_display_or_omit
+                    
+                refine_type_content_with_matching_categories:
+                    plugin_setting:
+                        name: refine_type_content_with_matching_categories
+                    grouping: category_filters
+                    type: select
+                    indent: 1
+                    value: any_categories
+                    values:
+                        any_categories:
+                            label: Show content items that match ANY of the current content item categories
+                        all_categories:
+                            label: Only show content items that match ALL of the current content item categories
+                    visible_if: |
+                        zenarioAB.value('category_filters_dropdown') == 'show_content_with_matching_categories'
+                        
                 category:
                     plugin_setting:
                         name: category
                         foreign_key_to: categories
+                    grouping: category_filters
                     label: 'Filter by category:'
+                    indent: 1
                     pick_items:
                         path: zenario__content/panels/categories
                         min_path: zenario__content/panels/categories
@@ -208,31 +264,42 @@ plugin_settings:
                         select_phrase: Select categories...
                         multiple_select: true
                     value: ""
+                    visible_if: |
+                        zenarioAB.value('category_filters_dropdown') == 'choose_categories_to_display_or_omit'
                     side_note: |
                         Only show content items in this category.
                 
                 refine_type:
                     plugin_setting:
                         name: refine_type
+                    grouping: category_filters
                     type: select
+                    indent: 1
                     value: all_categories
                     values:
                         any_categories:
                             label: Only show content items that are in ANY of the selected categories
                         all_categories:
                             label: Only show content items that are in ALL of the selected categories
+                    visible_if: |
+                        zenarioAB.value('category_filters_dropdown') == 'choose_categories_to_display_or_omit'
                 
                 
                 enable_omit_category:
                     plugin_setting:
                         name: enable_omit_category
-                    label: 'Omit categories:'
+                    grouping: category_filters
+                    label: 'Omit categories'
+                    indent: 1
                     type: checkbox
                     value: ""
                     redraw_onchange: true
+                    visible_if: |
+                        zenarioAB.value('category_filters_dropdown') == 'choose_categories_to_display_or_omit'
                 
                 omit_category:
-                    indent: 1
+                    indent: 2
+                    grouping: category_filters
                     visible_if: |
                         zenarioAB.value('enable_omit_category')
                     plugin_setting:
@@ -246,11 +313,14 @@ plugin_settings:
                         select_phrase: Select categories...
                         multiple_select: true
                     value: ""
+                    visible_if: |
+                        zenarioAB.value('enable_omit_category') && zenarioAB.value('category_filters_dropdown') == 'choose_categories_to_display_or_omit'
                 
                 refine_type_dummy:
-                    indent: 1
+                    indent: 2
+                    grouping: category_filters
                     visible_if: |
-                        zenarioAB.value('enable_omit_category')
+                        zenarioAB.value('enable_omit_category') && zenarioAB.value('category_filters_dropdown') == 'choose_categories_to_display_or_omit'
                     type: select
                     readonly: true
                     values:
@@ -327,6 +397,8 @@ plugin_settings:
                     type: text
                     value: 'No content to list'
                     indent: 1
+                    visible_if: |
+                        zenarioAB.value('show_headings_if_no_items')
                 order:
                     plugin_setting:
                         name: order
@@ -669,12 +741,12 @@ plugin_settings:
                 simple_access_cookie_required:
                     plugin_setting:
                         name: simple_access_cookie_required
-                    label: Show enabled link, but link to alternate page if "SIMPLE_ACCESS" cookie is not set
+                    label: Only link to content item directly if "SIMPLE_ACCESS" cookie is set; otherwise link to gated content form page
                     type: checkbox
                     value: ""
                     format_onchange: Yes
                     side_note: |
-                        This feature can be used for "teaser" pages where you want some information about the visitor but don't want a full blown sign up.
+                        This feature can be used for gated content. The listing is the "teaser" and the user will be linked to the form initially, whereupon he will be given the cookie. Once he has the cookie, he will be linked to the content item.
                 simple_access_cookie_alternate_page:
                     visible_if: |
                         zenarioAB.value('simple_access_cookie_required')

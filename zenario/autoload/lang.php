@@ -47,7 +47,7 @@ class lang {
 	}
 	
 	
-	public static function replacePhraseCodesInString(&$string, $moduleClass = 'lookup', $languageId = false, $backtraceOffset = 2, $cli = false) {
+	public static function replacePhraseCodesInString(&$string, $moduleClass = 'zenario_common_features', $languageId = false, $backtraceOffset = 2, $cli = false) {
 		
 		if (!is_string($string)) {
 			return;
@@ -69,20 +69,12 @@ class lang {
 	const phraseFromTwig = true;
 	//Replacement function for gettext()/ngettext() in our Twig frameworks
 	//Formerly "phrase()"
-	public static function phrase($code, $replace = false, $moduleClass = 'lookup', $languageId = false, $backtraceOffset = 1, $cli = false) {
+	public static function phrase($code, $replace = false, $moduleClass = 'zenario_common_features', $languageId = false, $backtraceOffset = 1, $cli = false) {
 	
 		if (false === $code
 		 || is_null($code)
 		 || '' === ($code = trim($code))) {
 			return '';
-		}
-	
-		//The twig frameworks don't pass in the phrase class name, so we need to rememeber it using a static class variable
-		if ($moduleClass === 'lookup') {
-			$moduleClass = \ze::$moduleClassNameForPhrases;
-		}
-		if (!$moduleClass) {
-			$moduleClass = 'zenario_common_features';
 		}
 	
 	
@@ -370,7 +362,7 @@ class lang {
 
 	const nphraseFromTwig = true;
 	//Formerly "nphrase()"
-	public static function nphrase($text, $pluralText = false, $n = 1, $replace = [], $moduleClass = 'lookup', $languageId = false, $backtraceOffset = 1, $cli = false) {
+	public static function nphrase($text, $pluralText = false, $n = 1, $replace = [], $moduleClass = 'zenario_common_features', $languageId = false, $backtraceOffset = 1, $cli = false) {
 	
 		//Allow the caller to enter the name of a merge field that contains $n
 		if (is_string($n) && !is_numeric($n) && isset($replace[$n])) {

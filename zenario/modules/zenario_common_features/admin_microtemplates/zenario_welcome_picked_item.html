@@ -1,1 +1,36 @@
-<!-- Not currently used -->
+<div class="
+	zfea_row_input_button
+	zfea_group
+	zfea_group_{{m.cols|e}}_cols
+	zfea_group_col_{{m.col|e}}
+">
+	<% if (m.noItemSelected) { %>
+		<span class="
+			form_field form_picked_item
+			form_picked_item_nothing_selected
+		">{{m.nothing_selected_phrase|e}}</span>
+
+	<% } else { %>
+	
+		<% if (m.thumbnail) { %>
+			<span class="zfea_picked_file_wrapper">
+				<img
+					class="zfea_picked_image zfea_picked_image__{{m.extension|e}}"
+					src="{{m.thumbnail.src|e}}"
+			
+					<% if (m.thumbnail.width) { %>
+						width="{{m.thumbnail.width|e}}"
+					<% } %>
+					<% if (m.thumbnail.height) { %>
+						height="{{m.thumbnail.height|e}}"
+					<% } %>
+				/>
+			</span>
+		<% } %>
+		
+		<span class="
+			form_field form_picked_item
+			{{(m.readOnly? ' form_picked_item_readonly' : '')}}
+		">{{m.label|e}}</span>
+	<% } %>
+</div>

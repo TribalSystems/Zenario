@@ -57,7 +57,6 @@ class zenario_common_features__organizer__image_tags extends ze\moduleBaseClass 
 				 && ($checksum = ze\row::get('files', 'checksum', $row[0]))) {
 					$img = 'zenario/file.php?c='. $checksum;
 					$item['image'] = $img. '&og=1';
-					$item['list_image'] = $img. '&ogl=1';
 				}
 			}
 		}

@@ -82,10 +82,10 @@ switch ($level) {
 			$canChange = false;
 		}
 		
-		unset($controls['actions']['insert_reusable_on_layout_layer']);
-		unset($controls['actions']['insert_nest_on_layout_layer']);
-		unset($controls['actions']['insert_slideshow_on_layout_layer']);
-		unset($controls['actions']['remove_from_layout_layer']);
+		unset($controls['actions']['insert_reusable_on_layout_layer'], $controls['re_move_place']['replace_reusable_on_layout_layer']);
+		unset($controls['actions']['insert_nest_on_layout_layer'], $controls['re_move_place']['replace_nest_on_layout_layer']);
+		unset($controls['actions']['insert_slideshow_on_layout_layer'], $controls['re_move_place']['replace_slideshow_on_layout_layer']);
+		unset($controls['re_move_place']['remove_from_layout_layer']);
 		
 		break;
 	
@@ -118,9 +118,9 @@ if (!$moduleId) {
 	if (!$level) {
 		//Empty slots
 		unset($controls['info']['opaque']);
-		unset($controls['actions']['replace_reusable_on_item_layer']);
-		unset($controls['actions']['replace_nest_on_item_layer']);
-		unset($controls['actions']['replace_slideshow_on_item_layer']);
+		unset($controls['re_move_place']['replace_reusable_on_item_layer']);
+		unset($controls['re_move_place']['replace_nest_on_item_layer']);
+		unset($controls['re_move_place']['replace_slideshow_on_item_layer']);
 	
 		//On the Layout Layer, add an option to insert a Wireframe version of each Plugin
 		//that is flagged as uses wireframe.
@@ -143,12 +143,12 @@ if (!$moduleId) {
 	} else {
 		//Opaque slots
 		unset($controls['info']['empty']);
-		unset($controls['actions']['insert_reusable_on_item_layer']);
-		unset($controls['actions']['insert_nest_on_item_layer']);
-		unset($controls['actions']['insert_slideshow_on_item_layer']);
-		unset($controls['actions']['insert_reusable_on_layout_layer']);
-		unset($controls['actions']['insert_nest_on_layout_layer']);
-		unset($controls['actions']['insert_slideshow_on_layout_layer']);
+		unset($controls['actions']['insert_reusable_on_item_layer'], $controls['re_move_place']['insert_reusable_on_item_layer']);
+		unset($controls['actions']['insert_nest_on_item_layer'], $controls['re_move_place']['insert_nest_on_item_layer']);
+		unset($controls['actions']['insert_slideshow_on_item_layer'], $controls['re_move_place']['insert_slideshow_on_item_layer']);
+		unset($controls['actions']['insert_reusable_on_layout_layer'], $controls['re_move_place']['replace_reusable_on_layout_layer']);
+		unset($controls['actions']['insert_nest_on_layout_layer'], $controls['re_move_place']['replace_nest_on_layout_layer']);
+		unset($controls['actions']['insert_slideshow_on_layout_layer'], $controls['re_move_place']['replace_slideshow_on_layout_layer']);
 	}
 	
 	unset($controls['info']['vc']);
@@ -189,7 +189,7 @@ if (!$moduleId) {
 		unset($controls['info']['slot_css_class']);
 	}
 	
-	ze\pluginAdm::fillSlotControlPluginInfo($moduleId, $instanceId, $isVersionControlled, $cID, $cType, $level, $isNest, $isSlideshow, $controls['info'], $controls['actions']);
+	ze\pluginAdm::fillSlotControlPluginInfo($moduleId, $instanceId, $isVersionControlled, $cID, $cType, $level, $isNest, $isSlideshow, $controls['info'], $controls['actions'], $controls['re_move_place']);
 
 	
 	
@@ -240,25 +240,25 @@ if (!$moduleId) {
 	
 	
 	if (!$couldChange || $level == 2) {
-		unset($controls['actions']['move_on_item_layer']);
-		unset($controls['actions']['remove_from_item_layer']);
+		unset($controls['re_move_place']['move_on_item_layer']);
+		unset($controls['re_move_place']['remove_from_item_layer']);
 	}
 	if (!$couldChange || $level == 1) {
-		unset($controls['actions']['move_on_layout_layer']);
-		unset($controls['actions']['remove_from_layout_layer']);
+		unset($controls['re_move_place']['move_on_layout_layer']);
+		unset($controls['re_move_place']['remove_from_layout_layer']);
 	}
 	if (!$couldChange || $level == 1 || $isVersionControlled) {
-		unset($controls['actions']['insert_reusable_on_item_layer']);
-		unset($controls['actions']['insert_nest_on_item_layer']);
-		unset($controls['actions']['insert_slideshow_on_item_layer']);
+		unset($controls['actions']['insert_reusable_on_item_layer'], $controls['re_move_place']['insert_reusable_on_item_layer']);
+		unset($controls['actions']['insert_nest_on_item_layer'], $controls['re_move_place']['insert_nest_on_item_layer']);
+		unset($controls['actions']['insert_slideshow_on_item_layer'], $controls['re_move_place']['insert_slideshow_on_item_layer']);
 	}
 	if (!$couldChange/* || $isVersionControlled*/) {
-		unset($controls['actions']['replace_reusable_on_item_layer']);
-		unset($controls['actions']['replace_nest_on_item_layer']);
-		unset($controls['actions']['replace_slideshow_on_item_layer']);
+		unset($controls['re_move_place']['replace_reusable_on_item_layer']);
+		unset($controls['re_move_place']['replace_nest_on_item_layer']);
+		unset($controls['re_move_place']['replace_slideshow_on_item_layer']);
 	}
 	if (!$couldChange || ($level == 1 && !$overriddenPlugin) || $isVersionControlled || ze::$locked || !ze\priv::check('_PRIV_MANAGE_ITEM_SLOT', $cID, $cType)) {
-		unset($controls['actions']['hide_plugin']);
+		unset($controls['re_move_place']['hide_plugin']);
 	}
 
 	
@@ -272,11 +272,13 @@ if (!$moduleId) {
 			$status = ze::$slotContents[$slotName]['init'];
 		}
 		
-		if ($status === ZENARIO_401_NOT_LOGGED_IN || $status === ZENARIO_403_NO_PERMISSION) {
-			$controls['css_class'] .= ' zenario_slotWithNoPermission';
+		if (!$status) {
+			if (!empty(ze::$slotContents[$slotName]['error']) || $status === ZENARIO_401_NOT_LOGGED_IN || $status === ZENARIO_403_NO_PERMISSION) {
+				$controls['css_class'] .= ' zenario_slotWithNoPermission';
 		
-		} elseif (!$status) {
-			$controls['css_class'] .= ' zenario_slotNotShownInVisitorMode';
+			} else {
+				$controls['css_class'] .= ' zenario_slotNotShownInVisitorMode';
+			}
 		}
 		
 		if (ze::$slotContents[$slotName]['class']->shownInMenuMode()) {
@@ -293,25 +295,25 @@ if (!$moduleId) {
 	
 	//Don't allow wireframe plugins to be replaced
 	if ($isVersionControlled) {
-		//unset($controls['actions']['replace_reusable_on_item_layer']);
-		//unset($controls['actions']['replace_nest_on_item_layer']);
-		//unset($controls['actions']['replace_slideshow_on_item_layer']);
-		unset($controls['actions']['insert_reusable_on_item_layer']);
-		unset($controls['actions']['insert_nest_on_item_layer']);
-		unset($controls['actions']['insert_slideshow_on_item_layer']);
-		unset($controls['actions']['insert_reusable_on_layout_layer']);
-		unset($controls['actions']['insert_nest_on_layout_layer']);
-		unset($controls['actions']['insert_slideshow_on_layout_layer']);
+		//unset($controls['re_move_place']['replace_reusable_on_item_layer']);
+		//unset($controls['re_move_place']['replace_nest_on_item_layer']);
+		//unset($controls['re_move_place']['replace_slideshow_on_item_layer']);
+		unset($controls['actions']['insert_reusable_on_item_layer'], $controls['re_move_place']['insert_reusable_on_item_layer']);
+		unset($controls['actions']['insert_nest_on_item_layer'], $controls['re_move_place']['insert_nest_on_item_layer']);
+		unset($controls['actions']['insert_slideshow_on_item_layer'], $controls['re_move_place']['insert_slideshow_on_item_layer']);
+		unset($controls['actions']['insert_reusable_on_layout_layer'], $controls['re_move_place']['replace_reusable_on_layout_layer']);
+		unset($controls['actions']['insert_nest_on_layout_layer'], $controls['re_move_place']['replace_nest_on_layout_layer']);
+		unset($controls['actions']['insert_slideshow_on_layout_layer'], $controls['re_move_place']['replace_slideshow_on_layout_layer']);
 	}
 }
 
 if (!$couldEdit) {
-	unset($controls['actions']['replace_reusable_on_item_layer']);
-	unset($controls['actions']['replace_nest_on_item_layer']);
-	unset($controls['actions']['replace_slideshow_on_item_layer']);
-	unset($controls['actions']['insert_reusable_on_item_layer']);
-	unset($controls['actions']['insert_nest_on_item_layer']);
-	unset($controls['actions']['insert_slideshow_on_item_layer']);
+	unset($controls['re_move_place']['replace_reusable_on_item_layer']);
+	unset($controls['re_move_place']['replace_nest_on_item_layer']);
+	unset($controls['re_move_place']['replace_slideshow_on_item_layer']);
+	unset($controls['actions']['insert_reusable_on_item_layer'], $controls['re_move_place']['insert_reusable_on_item_layer']);
+	unset($controls['actions']['insert_nest_on_item_layer'], $controls['re_move_place']['insert_nest_on_item_layer']);
+	unset($controls['actions']['insert_slideshow_on_item_layer'], $controls['re_move_place']['insert_slideshow_on_item_layer']);
 }
 
 
@@ -333,8 +335,9 @@ if ($overriddenPlugin) {
 		}
 	}
 	
+	$dummy = [];
 	$overriddenIsVersionControlled = !$overriddenPlugin['instance_id'];
-	ze\pluginAdm::fillSlotControlPluginInfo($overriddenPlugin['module_id'], $overriddenPlugin['instance_id'], $overriddenIsVersionControlled, $cID, $cType, 2, $overriddenPluginIsNest, $overriddenPluginIsSlideshow, $controls['overridden_info'], $controls['overridden_actions']);
+	ze\pluginAdm::fillSlotControlPluginInfo($overriddenPlugin['module_id'], $overriddenPlugin['instance_id'], $overriddenIsVersionControlled, $cID, $cType, 2, $overriddenPluginIsNest, $overriddenPluginIsSlideshow, $controls['overridden_info'], $controls['overridden_actions'], $dummy);
 	
 	if (!$couldChange) {
 		unset($controls['overridden_actions']['show_plugin']);
@@ -347,9 +350,9 @@ if ($overriddenPlugin) {
 	
 	//Don't allow wireframe plugins to be replaced
 	if ($overriddenIsVersionControlled) {
-		unset($controls['actions']['insert_reusable_on_layout_layer']);
-		unset($controls['actions']['insert_nest_on_layout_layer']);
-		unset($controls['actions']['insert_slideshow_on_layout_layer']);
+		unset($controls['actions']['insert_reusable_on_layout_layer'], $controls['re_move_place']['replace_reusable_on_layout_layer']);
+		unset($controls['actions']['insert_nest_on_layout_layer'], $controls['re_move_place']['replace_nest_on_layout_layer']);
+		unset($controls['actions']['insert_slideshow_on_layout_layer'], $controls['re_move_place']['replace_slideshow_on_layout_layer']);
 	}
 	
 	

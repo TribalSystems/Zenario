@@ -67,7 +67,6 @@ class zenario_common_features__organizer__administrators extends ze\moduleBaseCl
 				$img = '&usage=admin&c='. $item['checksum'];
 	
 				$item['image'] = 'zenario/file.php?og=1'. $img;
-				$item['list_image'] = 'zenario/file.php?ogl=1'. $img;
 			}
 			
 			//Show an inline warning button if this admin is inactive.
@@ -77,7 +76,7 @@ class zenario_common_features__organizer__administrators extends ze\moduleBaseCl
 					$item['inactive_tooltip'] = ze\admin::phrase(
 						"This administrator hasn't logged in since [[last_login]], [[days]] days ago.", 
 						[
-							'last_login' => ze\date::format($item['last_login'], '_MEDIUM'),
+							'last_login' => ze\admin::formatDate($item['last_login'], '_MEDIUM'),
 							'days' => (string)floor((strtotime('now') - strtotime($item['last_login'])) / 60 / 60 / 24)
 						]
 					);
@@ -85,13 +84,13 @@ class zenario_common_features__organizer__administrators extends ze\moduleBaseCl
 					$item['inactive_tooltip'] = ze\admin::phrase(
 						"This administrator was created on [[created_date]] and has never logged in.", 
 						[
-							'created_date' => ze\date::format($item['created_date'], '_MEDIUM')
+							'created_date' => ze\admin::formatDate($item['created_date'], '_MEDIUM')
 						]
 					);
 				}
 			}
 			
-			$item['last_login'] = ze\date::formatDateTime($item['last_login'], 'vis_date_format_med', $useDefaultLang = true);
+			$item['last_login'] = ze\admin::formatDateTime($item['last_login'], 'vis_date_format_med', $useDefaultLang = true);
 				
 			//Check if an admin has ever logged in.
 			if ($sessionId = $item['session_id']) {

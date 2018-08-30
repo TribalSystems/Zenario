@@ -33,43 +33,64 @@ class zenario_cookie_consent_status extends ze\moduleBaseClass {
 	protected $mergeFields = [];
 	
 	public function init() {
-		
 		if (ze::setting('cookie_require_consent') != 'explicit') {
 			return false;
+		}
+		$this->allowCaching(
+			$atAll = true, $ifUserLoggedIn = true, $ifGetSet = true, $ifPostSet = true, $ifSessionSet = true, $ifCookieSet = false);
+		$this->clearCacheBy(
+			$clearByContent = false, $clearByMenu = false, $clearByUser = false, $clearByFile = false, $clearByModuleData = false);
 		
+		if (ze::setting('individual_cookie_consent')) {
+			$this->mergeFields['individual'] = true;
+			
+			//Save changes
+			if (isset($_POST['save'])) {
+				$cookieTypes = ['required'];
+				if (isset($_POST['functionality'])) {
+					$cookieTypes[] = 'functionality';
+				}
+				if (isset($_POST['analytics'])) {
+					$cookieTypes[] = 'analytics';
+				}
+				if (isset($_POST['social_media'])) {
+					$cookieTypes[] = 'social_media';
+				}
+				ze\cookie::setConsent(implode(',', $cookieTypes));
+				$this->mergeFields['saved'] = true;
+				$this->callScript('zenario_cookie_consent_status', 'onConsentSave', $this->containerId);
+			}
+			
+			//Load consent data
+			$this->mergeFields['functionality'] = ze\cookie::canSet('functionality') ? 'checked' : '';
+			$this->mergeFields['analytics'] = ze\cookie::canSet('analytics') ? 'checked' : '';
+			$this->mergeFields['social_media'] = ze\cookie::canSet('social_media') ? 'checked' : '';
+			
 		} else {
-			//Note that it's perfectly safe to cache this Plugin, as the three different situations
-			//(cookies rejected, cookies accepted and not chosen) are stored differently.
-			$this->allowCaching(
-				$atAll = true, $ifUserLoggedIn = true, $ifGetSet = true, $ifPostSet = true, $ifSessionSet = true, $ifCookieSet = true);
-			$this->clearCacheBy(
-				$clearByContent = false, $clearByMenu = false, $clearByUser = false, $clearByFile = false, $clearByModuleData = false);
-			
-			
 			if (!empty($_SESSION['cookies_rejected'])) {
 				$this->mergeFields['Status'] = $this->phrase('_REJECTED');
 				$this->mergeFields['Status_Css_Class'] = 'cookie_rejected';
-			
+		
 			} elseif (!empty($_COOKIE['cookies_accepted'])) {
 				$this->mergeFields['Status'] = $this->phrase('_ACCEPTED');
 				$this->mergeFields['Status_Css_Class'] = 'cookie_accept';
-			
+		
 			} else {
 				$this->mergeFields['Status'] = $this->phrase('_NOT_CHOSEN');
 				$this->mergeFields['Status_Css_Class'] = 'cookie_not_chosen';
 			}
-			
+		
 			if (!empty($_COOKIE['cookies_accepted'])) {
 				$this->sections['Accepted_Cookies'] = true;
 			} else {
 				$this->sections['Rejected_Cookies'] = true;
 			}
-			
+		
 			$this->mergeFields['Accept_Link'] = 'zenario/cookies.php?accept_cookies=1';
 			$this->mergeFields['Reject_Link'] = 'zenario/cookies.php?accept_cookies=0';
-			
-			return true;
 		}
+		
+		return true;
 	}
 	
 	public function showSlot() {

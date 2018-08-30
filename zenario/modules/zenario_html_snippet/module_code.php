@@ -63,7 +63,7 @@ class zenario_html_snippet extends ze\moduleBaseClass {
 			case 'required':
 				ze\cookie::requireConsent();
 			case 'needed':
-				if (!ze\cookie::canSet()) {
+				if (!ze\cookie::canSet('required')) {
 					$this->raw_html = '';
 					return false;
 				}

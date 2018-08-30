@@ -97,16 +97,16 @@ plugin_settings:
                         descending:
                             label: Descending
                 
-                show_folder_name_as_title:
+                show_a_heading:
                     plugin_setting:
-                        name: show_folder_name_as_title
-                    label: "Show selected folder name as title"
+                        name: show_a_heading
+                    label: "Show a heading"
                     type: checkbox
                     redraw_onchange: true
                     indent: 1
                 title_tags:
                     hide_with_previous_field: true
-                    visible_if: zenarioAB.value('show_folder_name_as_title')
+                    visible_if: zenarioAB.value('show_a_heading')
                     plugin_setting:
                         name: title_tags
                     label: 'Title heading tags'
@@ -123,6 +123,25 @@ plugin_settings:
                     side_note: |
                         Choose which HTML tags the title will be displayed in.
                     indent: 2
+                show_folder_name_as_title:
+                    plugin_setting:
+                        name: show_folder_name_as_title
+                    label: "Show selected folder name as title"
+                    type: checkbox
+                    redraw_onchange: true
+                    indent: 2
+                    visible_if: zenarioAB.value('show_a_heading')
+                heading:
+                    plugin_setting:
+                        name: heading
+                    label: "Heading:"
+                    type: text
+                    indent: 2
+                    value: "Heading"
+                    visible_if: (zenarioAB.value('show_a_heading') && !zenarioAB.value('show_folder_name_as_title'))
+                    validation:
+                        required_if_not_hidden: Enter a heading.
+                    
                 filter:
                     plugin_setting:
                         name: filter

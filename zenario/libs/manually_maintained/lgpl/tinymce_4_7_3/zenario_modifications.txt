@@ -16,6 +16,15 @@ themes/inlite/theme.js and themes/modern/theme.js
 	With:
 			style.zIndex = 0xFFFF + 0xFFFF + (zenarioAB.isOpen? 300000 : 0);
 
+  Add an option for enabling/disabling autocompletes (e.g. the anchor links) and disable them by default
+	Replace:
+        var linkTargets = LinkTargets.find(bodyElm);
+        var menuItems = createMenuItems(term, linkTargets, fileType, editorSettings);
+	With:
+        var linkTargets = editorSettings.enable_autocompletes? LinkTargets.find(bodyElm) : [];
+        var menuItems = editorSettings.enable_autocompletes? createMenuItems(term, linkTargets, fileType, editorSettings) : [];
+
+
 
 
 tinymce.js

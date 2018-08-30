@@ -1,7 +1,7 @@
 <div class="organizer_no_items">
 	{{m.no_items_message|escape}}
 	<div class="large_panel_buttons">
-		<% buttons = {collectionButtons: zenarioO.getCollectionButtons()}; %>
-		{{zenarioT.microTemplate('zenario_organizer_panel_buttons_no_items', buttons)}}
+		<% var mnb = {}; zenarioO.getCollectionButtons(mnb); %>
+		{{zenarioT.microTemplate('zenario_organizer_panel_buttons_no_items', mnb)}}
 	</div>
 </div>

@@ -61,92 +61,94 @@ $directories = [
 //A $lifetime of -2 is for old deprecated/unused directories that should be immediately deleted
 
 
-//Loop through each temporary directory, looking to clean each up
-foreach ($directories as $mainDir => $subDirs) {
+\ze::ignoreErrors();
+	//Loop through each temporary directory, looking to clean each up
+	foreach ($directories as $mainDir => $subDirs) {
 
-	//Check each main dir is there, and attempt to create it if it is not
-	if (!is_dir($dir = CMS_ROOT. $mainDir. '/')) {
-		if (!@mkdir($dir)) {
-			return self::$cleanedCacheDir = false;
-		}
-		@chmod($dir, 0777);
-	}
-
-	foreach ($subDirs as $type => $lifetime) {
-		
-		//Check if the main directory is writable
-		if (!is_writable(CMS_ROOT. $mainDir. '/')) {
-			return self::$cleanedCacheDir = false;
-	
-		//Check if the sub-directory is there
-		} elseif (!is_dir($dir = CMS_ROOT. $mainDir. '/'. $type. '/')) {
-			
-			//If it's not there, and this was one of the old unused directories, then that's good!
-			if ($lifetime == -2) {
-				continue;
-			
-			//Otherwise we should try and create it.
-			} else {
-				if (!@mkdir($dir)) {
-					return self::$cleanedCacheDir = false;
-				}
-				@chmod($dir, 0777);
+		//Check each main dir is there, and attempt to create it if it is not
+		if (!is_dir($dir = CMS_ROOT. $mainDir. '/')) {
+			if (!@mkdir($dir)) {
+				return self::$cleanedCacheDir = false;
 			}
+			@chmod($dir, 0777);
+		}
+
+		foreach ($subDirs as $type => $lifetime) {
+		
+			//Check if the main directory is writable
+			if (!is_writable(CMS_ROOT. $mainDir. '/')) {
+				return self::$cleanedCacheDir = false;
 	
-		} elseif (!is_writable($dir) && $lifetime != -2) {
-			return self::$cleanedCacheDir = false;
+			//Check if the sub-directory is there
+			} elseif (!is_dir($dir = CMS_ROOT. $mainDir. '/'. $type. '/')) {
+			
+				//If it's not there, and this was one of the old unused directories, then that's good!
+				if ($lifetime == -2) {
+					continue;
+			
+				//Otherwise we should try and create it.
+				} else {
+					if (!@mkdir($dir)) {
+						return self::$cleanedCacheDir = false;
+					}
+					@chmod($dir, 0777);
+				}
 	
-		//Otherwise check the file times, looking for out of date files
-		} elseif ($lifetime != -1) {
-			foreach (scandir($dir) as $folder) {
-				if ($folder != '.' && $folder != '..') {
+			} elseif (!is_writable($dir) && $lifetime != -2) {
+				return self::$cleanedCacheDir = false;
+	
+			//Otherwise check the file times, looking for out of date files
+			} elseif ($lifetime != -1) {
+				foreach (scandir($dir) as $folder) {
+					if ($folder != '.' && $folder != '..') {
 				
-					//Check the modification date of the file called "accessed", or just grab any other file if that's not present
-					if (is_dir($dir. $folder)) {
-						if (!is_file($accessed = $dir. $folder. '/accessed')) {
-							foreach (scandir($dir. $folder) as $file) {
-								if (substr($file, 0, 1) != '.') {
-									$accessed = $dir. $folder. '/'. $file;
-									break;
+						//Check the modification date of the file called "accessed", or just grab any other file if that's not present
+						if (is_dir($dir. $folder)) {
+							if (!is_file($accessed = $dir. $folder. '/accessed')) {
+								foreach (scandir($dir. $folder) as $file) {
+									if (substr($file, 0, 1) != '.') {
+										$accessed = $dir. $folder. '/'. $file;
+										break;
+									}
 								}
 							}
-						}
-					} else {
-						$accessed = $dir. $folder;
-					}
-				
-					$empty = true;
-					if ($accessed) {
-						//Use the last access time for preference, but default to the modified time otherwise
-						$timeA = @fileatime($accessed);
-						$timeM = @filemtime($accessed);
-				
-						if (!$timeA || $timeA < $timeM) {
-							$timeA = $timeM;
-						}
-				
-						$empty = $timeA < $time - $lifetime;
-					}
-			
-					//If the file or directory is completely out of date, delete it
-					if ($empty) {
-						if (is_dir($dir. $folder)) {
-							\ze\cache::deleteDir($dir. $folder);
 						} else {
-							@unlink($dir. $folder);
+							$accessed = $dir. $folder;
+						}
+				
+						$empty = true;
+						if ($accessed) {
+							//Use the last access time for preference, but default to the modified time otherwise
+							$timeA = @fileatime($accessed);
+							$timeM = @filemtime($accessed);
+				
+							if (!$timeA || $timeA < $timeM) {
+								$timeA = $timeM;
+							}
+				
+							$empty = $timeA < $time - $lifetime;
+						}
+			
+						//If the file or directory is completely out of date, delete it
+						if ($empty) {
+							if (is_dir($dir. $folder)) {
+								\ze\cache::deleteDir($dir. $folder);
+							} else {
+								@unlink($dir. $folder);
+							}
 						}
 					}
 				}
-			}
 			
-			//Attempt to tidy up and delete old/decprecated directories if they are empty so
-			//people browsing the file system don't get confused by them
-			if ($lifetime == -2) {
-				\ze\cache::deleteDir($dir);
+				//Attempt to tidy up and delete old/decprecated directories if they are empty so
+				//people browsing the file system don't get confused by them
+				if ($lifetime == -2) {
+					\ze\cache::deleteDir($dir);
+				}
 			}
 		}
 	}
-}
+\ze::noteErrors();
 
 
 return self::$cleanedCacheDir = true;

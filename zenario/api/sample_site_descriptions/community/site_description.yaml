@@ -26,8 +26,13 @@ max_local_administrators: 2
 max_enabled_languages: 0
 
 
+# Whether to enable a CAPTCHA on the admin login.
+# If enabled, an admin must complete a CAPTCHA before each login attempt.
+# To enable this, go to Organizer->Site Settings->Captcha and set a Site Key and Secret Key.
+enable_captcha_for_admin_logins: false
+
 # Whether to enable two-factor authentication.
-# If  enabled, an admin must verify access to their email when logging into the site.
+# If enabled, an admin must verify access to their email when logging into the site.
 enable_two_factor_authentication_for_admin_logins: false
 
 # Whether to apply two-factor authentication on a per-IP basis.

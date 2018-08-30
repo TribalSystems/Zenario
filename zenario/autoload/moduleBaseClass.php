@@ -231,6 +231,14 @@ class moduleAPI {
 	 //  Framework Functions  //
 	///////////////////////////
 	
+	public final function frameworkDir() {
+		if ($this->frameworkPath) {
+			return dirname($this->frameworkPath). '/';
+		} else {
+			return false;
+		}
+	}
+	
 	//New Twig version of zenario frameworks
 	protected final function twigFramework($vars = [], $return = false, $fromString = false, $fromFile = false) {
 		
@@ -310,55 +318,57 @@ class moduleAPI {
 		
 		
 		\ze::$isTwig = true;
-		\ze::$moduleClassNameForPhrases = $this->moduleClassNameForPhrases;
+		\ze::$plugin = &$this;
 		$this->currentTwigVars = $vars;
 		
-		try {
-			if ($fromString === false) {
-				if ($fromFile === false) {
-					if ($this->frameworkPath) {
-						$output = \ze\twig::render($this->frameworkPath, $vars);
-					} elseif ($this->framework) {
-						$output = \ze\admin::phrase('Cannot display; the file [[moduleClassName]]/frameworks/[[framework]]/framework.twig.html is missing.', ['framework' => $this->framework, 'moduleClassName' => $this->moduleClassName]);
+		\ze::ignoreErrors();
+			try {
+				if ($fromString === false) {
+					if ($fromFile === false) {
+						if ($this->frameworkPath) {
+							$output = \ze\twig::render($this->frameworkPath, $vars);
+						} elseif ($this->framework) {
+							$output = \ze\admin::phrase('Cannot display; the file [[moduleClassName]]/frameworks/[[framework]]/framework.twig.html is missing.', ['framework' => $this->framework, 'moduleClassName' => $this->moduleClassName]);
+						} else {
+							$output = \ze\admin::phrase("Cannot display; no framework was selected.");
+						}
 					} else {
-						$output = \ze\admin::phrase("Cannot display; no framework was selected.");
+						$output = \ze\twig::render($fromFile, $vars);
 					}
 				} else {
-					$output = \ze\twig::render($fromFile, $vars);
+					$output = \ze\twig::render("\n". $fromString, $vars);
 				}
-			} else {
-				$output = \ze\twig::render("\n". $fromString, $vars);
-			}
 
-			if (!$return) {
-				echo $output;
-				$output = null;
-			}
-			
-		} catch (\Exception $e) {
-			\ze::$canCache = false;
-			
-			if (\ze\priv::check()) {
-				echo
-					\ze\admin::phrase('[[moduleClassName]] in [[slotName]]: [[error]] (In [[framework]] at line [[line]].)', [
-						'error' => htmlspecialchars($e->getMessage()),
-						'framework' => $this->frameworkPath,
-						'moduleClassName' => $this->moduleClassName,
-						'slotName' => $this->slotName,
-						'line' => $e->getTemplateLine()
-					]);
-			
-			} else {
-				if (defined('DEBUG_SEND_EMAIL') && DEBUG_SEND_EMAIL === true) {
-					\ze\db::reportError("Twig syntax error in visitor mode", $e->getMessage());
+				if (!$return) {
+					echo $output;
+					$output = null;
 				}
+			
+			} catch (\Exception $e) {
+				\ze::$canCache = false;
+			
+				if (\ze\priv::check()) {
+					echo
+						\ze\admin::phrase('[[moduleClassName]] in [[slotName]]: [[error]] (In [[framework]] at line [[line]].)', [
+							'error' => htmlspecialchars($e->getMessage()),
+							'framework' => $this->frameworkPath,
+							'moduleClassName' => $this->moduleClassName,
+							'slotName' => $this->slotName,
+							'line' => $e->getTemplateLine()
+						]);
+			
+				} else {
+					if (defined('DEBUG_SEND_EMAIL') && DEBUG_SEND_EMAIL === true) {
+						\ze\db::reportError("Twig syntax error in visitor mode", $e->getMessage());
+					}
 	
-				if (!defined('SHOW_SQL_ERRORS_TO_VISITORS') || SHOW_SQL_ERRORS_TO_VISITORS !== true) {
-					echo 'A syntax error has occured in a framework on this section of the site. Please contact a site Administrator.';
-					exit;
+					if (!defined('SHOW_SQL_ERRORS_TO_VISITORS') || SHOW_SQL_ERRORS_TO_VISITORS !== true) {
+						echo 'A syntax error has occured in a framework on this section of the site. Please contact a site Administrator.';
+						exit;
+					}
 				}
 			}
-		}
+		\ze::noteErrors();
 		
 		unset($this->currentTwigVars, $this->zAPIOddOrEven);
 		\ze::$isTwig = false;
@@ -444,7 +454,7 @@ class moduleAPI {
 	}
 	
 	protected final function pagination($paginationStyleSettingName, $currentPage, $pages, &$html, &$links = [], $extraAttributes = []) {
-		//Attempt to check if the named class exists, and fall back to 'pagSimpleNumbers' if not
+		//Attempt to check if the named class exists, and fall back to 'pagCloseWithNPIfNeeded' if not
 		$classAndMethod = explode('::', $this->setting($paginationStyleSettingName) ?: $paginationStyleSettingName, 2);
 		
 		if (!empty($classAndMethod[0]) && !empty($classAndMethod[1]) && \ze\module::inc($classAndMethod[0]) && method_exists($classAndMethod[0], $classAndMethod[1])) {
@@ -460,7 +470,7 @@ class moduleAPI {
 			$this->instanceName, $this->instanceId,
 			$this->moduleClassName, $this->moduleClassNameForPhrases,
 			$this->moduleId,
-			$this->defaultFramework, $this->framework,
+			$this->framework,
 			$this->cssClass,
 			$this->slotLevel, $this->isVersionControlled],
 			$this->eggId, $this->slideId, $this->beingDisplayed);
@@ -476,10 +486,20 @@ class moduleAPI {
 	}
 		
 	public final function phrase($text, $replace = []) {
+		
+		if (isset($this->zAPISettings['phrase.framework.'. $text])) {
+			$text = $this->zAPISettings['phrase.framework.'. $text];
+		}
+		
 		return \ze\lang::phrase($text, $replace, $this->moduleClassNameForPhrases, \ze::$visLang);
 	}
 	
 	public final function nphrase($text, $pluralText = false, $n = 1, $replace = []) {
+		
+		if (isset($this->zAPISettings['phrase.framework.'. $text])) {
+			$text = $this->zAPISettings['phrase.framework.'. $text];
+		}
+		
 		return \ze\lang::nphrase($text, $pluralText, $n, $replace, $this->moduleClassNameForPhrases, \ze::$visLang);
 	}
 	
@@ -557,7 +577,7 @@ class moduleAPI {
 		$recaptchaResponse = $_POST['g-recaptcha-response'] ?? false;
 		if ($recaptchaResponse) {
 			$secretKey = \ze::setting('google_recaptcha_secret_key');
-			$URL = "https://www.google.com/recaptcha/api/siteverify?secret=".$secretKey."&response=".$recaptchaResponse;
+			$URL = "https://www.google.com/recaptcha/api/siteverify?secret=". rawurlencode($secretKey). "&response=". rawurlencode($recaptchaResponse);
 		
 			$request = file_get_contents($URL);
 			$response = json_decode($request, true);
@@ -991,8 +1011,6 @@ class moduleAPI {
 	protected $framework;
 	protected $cssClass;
 	
-	protected $defaultFramework;
-	
 	private $frameworkPath;
 	private $frameworkData;
 	private $frameworkLoaded = false;
@@ -1039,7 +1057,7 @@ class moduleAPI {
 			 $this->instanceName, $this->instanceId,
 			 $this->moduleClassName, $this->moduleClassNameForPhrases,
 			 $this->moduleId,
-			 $this->defaultFramework, $this->framework,
+			 $this->framework,
 			 $this->cssClass,
 			 $this->slotLevel, $this->isVersionControlled) = $locationAndInstanceDetails;
 		
@@ -1055,7 +1073,6 @@ class moduleAPI {
 		
 		$this->slotName = preg_replace('/[^\w-]/', '', $this->slotName);
 		$this->slotNameNestId = $this->slotName. ($this->eggId? '-'. $this->eggId : '');
-		$this->defaultFramework = preg_replace('/[^\w-]/', '', $this->defaultFramework);
 		$this->framework = preg_replace('/[^\w-]/', '', $this->framework);
 		
 		if ($this->slotName) {
@@ -1091,23 +1108,10 @@ class moduleAPI {
 		
 		//Set up settings for front-end plugins
 		if ($this->instanceId) {
-			if ($this->framework || $this->defaultFramework) {
-				
-				//Check that a framework has been chosen, and exists in the filesystem
-				if (!$this->framework
-				 || !($this->frameworkPath = \ze\plugin::frameworkPath($this->framework, $this->moduleClassName))) {
-					
-					//Attempt to fall back to the default framework if it does not
-					if ($this->defaultFramework
-					 && $this->defaultFramework != $this->framework) {
-						if ($this->frameworkPath = \ze\plugin::frameworkPath($this->framework, $this->moduleClassName)) {
-							$this->framework = $this->defaultFramework;
-						}
-					}
-				}
+			
+			if ($this->framework) {
+				$this->frameworkPath = \ze\plugin::frameworkPath($this->framework, $this->moduleClassName);
 			}
-			
-			
 			
 			//Look up this plugin's settings, starting with the default values
 			//Make sure to get default values if they are defined in extened Modules
@@ -1165,7 +1169,6 @@ class moduleAPI {
 	public final function show($includeAdminControlsIfInAdminMode = true, $showPlaceholderMethod = 'showSlot') {
 		if (\ze::$isTwig) return;
 		
-		$edition = \ze::$edition;
 		$isLayoutPreview = \ze::$cID === -1;
 		$isShowSlot = $showPlaceholderMethod == 'showSlot';
 		
@@ -1214,31 +1217,36 @@ class moduleAPI {
 					$status = $slot['init'];
 				}
 				
-				//In admin mode, show an error if the plugin could not run due to user permissions
-				if (($status === ZENARIO_401_NOT_LOGGED_IN || $status === ZENARIO_403_NO_PERMISSION) && \ze\priv::check()) {
-					
-					//N.b. as a convience feature, I'll allow for plugin devs to send either a 401 or a 403 error,
-					//and pick the correct message here
-					if (\ze\user::id()) {
-						echo '<em>'. \ze\admin::phrase('You do not have adequate user permission to view this plugin.'). '</em>';
-					} else {
-						echo '<em>'. \ze\admin::phrase('You need to be logged in as an extranet user to view this plugin.'). '</em>';
-					}
-				
-				} elseif ($status) {
+				if ($status) {
 					
 					if (!$this->eggId) {
-						$edition::preSlot($this->slotName, $showPlaceholderMethod);
+						\ze\plugin::preSlot($this->slotName, $showPlaceholderMethod);
 					}
 					
 					$this->$showPlaceholderMethod();
 					
 					if (!$this->eggId) {
-						$edition::postSlot($this->slotName, $showPlaceholderMethod);
+						\ze\plugin::postSlot($this->slotName, $showPlaceholderMethod);
 					}
 				
-				} elseif ($checkPriv && empty($slot['module_id'])) {
-					echo \ze\admin::phrase('[Empty Slot]');
+				} elseif ($checkPriv) {
+					//In admin mode, show an error if the plugin could not run due to user permissions
+					if ($status === ZENARIO_401_NOT_LOGGED_IN || $status === ZENARIO_403_NO_PERMISSION) {
+					
+						//N.b. as a convience feature, I'll allow for plugin devs to send either a 401 or a 403 error,
+						//and pick the correct message here
+						if (\ze\user::id()) {
+							echo '<em>'. \ze\admin::phrase('You do not have adequate user permission to view this plugin.'). '</em>';
+						} else {
+							echo '<em>'. \ze\admin::phrase('You need to be logged in as an extranet user to view this plugin.'). '</em>';
+						}
+				
+					} elseif (!empty($slot['error'])) {
+						echo '<em>'. htmlspecialchars($slot['error']). '</em>';
+				
+					} elseif (empty($slot['module_id'])) {
+						echo \ze\admin::phrase('[Empty Slot]');
+					}
 				}
 			}
 		echo $this->endInner();
@@ -1367,7 +1375,7 @@ class moduleAPI {
 				$this->instanceName, $this->instanceId,
 				$this->moduleClassName, $this->moduleClassNameForPhrases,
 				$this->moduleId,
-				$this->defaultFramework, $this->framework,
+				$this->framework,
 				$this->cssClass,
 				$this->slotLevel, $this->isVersionControlled],
 				$this->eggId, $this->slideId, $this->beingDisplayed,

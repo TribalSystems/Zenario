@@ -190,7 +190,6 @@ class zenario_common_features__organizer__layouts extends ze\moduleBaseClass {
 				// Try to automatically add a thumbnail
 				if (!empty($foundPaths[$item['path']])) {
 					$item['image'] = 'zenario/admin/grid_maker/ajax.php?thumbnail=1&width=180&height=130&loadDataFromLayout='. $id. '&checksum='. $foundPaths[$item['path']]['checksum'];
-					$item['list_image'] = 'zenario/admin/grid_maker/ajax.php?thumbnail=1&width=24&height=23&loadDataFromLayout='. $id. '&checksum='. $foundPaths[$item['path']]['checksum'];
 				}
 				
 			//Non-numeric ids are the Family and Filenames of Template Files that have no layouts created

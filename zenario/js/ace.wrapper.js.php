@@ -35,7 +35,7 @@ ze\cache::start();
 
 //Run pre-load actions
 
-require ze::editionInclude('wrapper.pre_load');
+if (ze::$canCache) require CMS_ROOT. 'zenario/includes/wrapper.pre_load.inc.php';
 
 
 //Include Ace Editor and extensions
@@ -51,4 +51,4 @@ ace.config.set("basePath", URLBasePath + "zenario/libs/manually_maintained/bsd/a
 ze\cache::incJS('zenario/libs/manually_maintained/bsd/ace/src-min-noconflict/mode-javascript');
 
 //Run post-display actions
-require ze::editionInclude('wrapper.post_display');
+if (ze::$canCache) require CMS_ROOT. 'zenario/includes/wrapper.post_display.inc.php';

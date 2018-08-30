@@ -34,10 +34,13 @@ class zenario_pro_features__organizer__sections extends ze\moduleBaseClass {
 		if (($_POST['delete_menu_section'] ?? false) && ze\priv::check('_PRIV_DELETE_MENU_SECTION') && !ze\row::exists('menu_nodes', ['section_id' => $ids])) {
 			if (ze\menu::sectionName($ids) == 'Main') {
 				echo ze\admin::phrase('You cannot delete the &quot;Main&quot; Menu Section');
+			
 			} else {
 				ze\row::delete('menu_sections', $ids);
 				ze\contentAdm::removeItemFromPluginSettings('menu_section', $ids);
 				ze\menuAdm::recalcTopLevelPositions();
+				
+				echo '<!--Reload_Organizer-->';
 			}
 		}
 	}

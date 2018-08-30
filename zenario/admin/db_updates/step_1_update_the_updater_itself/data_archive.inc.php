@@ -48,6 +48,20 @@ ze\dbAdm::revision( 44390
 		`revision_no` int(10) unsigned NOT NULL,
 		PRIMARY KEY (`path`,`patchfile`),
 		KEY `revision_no` (`revision_no`)
-	)
+	) ENGINE=MyISAM DEFAULT CHARSET=utf8
 _sql
+
+
+//Fix a mistake where a table had the wrong engine/character-set chosen by mistake.
+);	ze\dbAdm::revision( 46200
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX_DA]]data_archive_revision_numbers`
+	ENGINE=MyISAM
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX_DA]]data_archive_revision_numbers`
+	CONVERT TO CHARACTER SET utf8
+_sql
+
 );

@@ -110,7 +110,20 @@ class escape {
 		//By default, strings are always converted into either an int or a float.
 		//If $sqlEscapeStrings is set, strings may be left as strings and will be \ze\escape::sql()'ed if needed
 	//Formerly "stringToIntOrFloat()"
-	public static function stringToIntOrFloat($text, $sqlEscapeStrings = false) {
+	public static function stringToIntOrFloat($text, $sqlEscapeStrings = false, $isJSON = false) {
+		
+		if ($isJSON) {
+			if ($text === true) {
+				return 'TRUE';
+			
+			} elseif ($text === false) {
+				return 'FALSE';
+			
+			} elseif ($text === null) {
+				return 'NULL';
+			}
+		}
+		
 		if (is_string($text)) {
 			if (is_numeric($text))  {
 				if ($text[0] !== '0' && strpbrk($text, '.eE') === false) {

@@ -579,6 +579,33 @@ zenario__content:
                         path: zenario_export_content_items
                         key:
                             type: ''
+                
+                settings_dropdown:
+                    css_class: organizer_settings_dropdown
+                    hide_when_children_are_not_visible: true
+                    label: ⚙
+                
+                settings_ctype:
+                    priv: _PRIV_EDIT_CONTENT_TYPE
+                    parent: settings_dropdown
+                    hide_in_select_mode: true
+                    hidden: hidden
+                    label: ''
+                    admin_box:
+                        path: zenario_content_type_details
+                        key:
+                            id: ''
+                
+                settings_administration:
+                    priv: _PRIV_VIEW_SITE_SETTING
+                    parent: settings_dropdown
+                    hide_in_select_mode: true
+                    label: Settings for content item administration
+                    admin_box:
+                        path: site_settings
+                        key:
+                            id: administration
+                
                 help:
                     label: Help
                     hide_on_refiner: true

@@ -5,8 +5,12 @@ zenario_categories:
         id: ''
         parent_id: ''
         sub_category: ''
+    identifier:
+        css_class: zenario_category_icon
+        label: Category ID
     title: 'Creating a category'
     title_for_existing_records: 'Editing the category "[[details/name]]"'
+           
     max_height: 350
     hide_tab_bar: true
     tabs:
@@ -17,19 +21,29 @@ zenario_categories:
                 always_on: true
             fields:
                 name:
-                    label: 'Name:'
+                    label: 'Internal name:'
                     type: text
                     side_note: >
                         Internal name.
                 public:
                     label: 'Public'
                     type: checkbox
+                    format_onchange: true
                     side_note: >
                         When a category is public, its name may be visible to visitors.
-                        The system will create a phrase with this name in all enabled languages;
-                        you can then edit that phrase in the visitor phrases system.
+                        You can create a phrase with this name in all enabled languages.
+                code_name:
+                    label: "Code name"
+                    indent: 1
+                    type: text
+                    visible_if: |
+                        zenarioAB.value('public')
+                    side_note: The code name may appear in URLs to make them more friendly/meaningful.
+                    validation:
+                        required_if_not_hidden: "Please enter a code name."
                 landing_page:
                     label: 'Landing page:'
+                    indent: 1
                     pick_items:
                         path: zenario__content/panels/content/refiners/filter_by_lang////
                         min_path: zenario__content/panels/content
@@ -39,3 +53,5 @@ zenario_categories:
                     side_note: |
                         Choose a landing page for this category. This will usually be a content item with a content list on it which lists items in this category. If a content list displays the content's category, that will become a link to this page.
                     hidden: true
+                    visible_if: |
+                        zenarioAB.value('public')

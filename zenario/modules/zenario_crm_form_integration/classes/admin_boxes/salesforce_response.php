@@ -33,7 +33,7 @@ class zenario_crm_form_integration__admin_boxes__salesforce_response extends zen
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		if ($logId = $box['key']['id']) {
 			$log = ze\row::get(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'salesforce_response_log', true, $logId);
-			$fields['details/datetime']['snippet']['html'] = ze\date::formatDateTime($log['datetime'], '_MEDIUM');
+			$fields['details/datetime']['snippet']['html'] = ze\admin::formatDateTime($log['datetime'], '_MEDIUM');
 			
 			$box['title'] = ze\admin::phrase('Salesforce response [[id]]', $log);
 			

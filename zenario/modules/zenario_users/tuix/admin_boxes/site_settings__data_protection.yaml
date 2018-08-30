@@ -11,7 +11,7 @@ site_settings:
                     label: "How long should the user sign-in log be saved?"
                     type: select
                     values: 
-                        never_save: 
+                        0: 
                             label: Don't save
                         1:
                             label: Delete after 1 day
@@ -34,7 +34,7 @@ site_settings:
                     label: "How long should the user content-access log be saved?"
                     type: select
                     values: 
-                        never_save: 
+                        0: 
                             label: Don't save
                         1:
                             label: Delete after 1 day
@@ -67,3 +67,19 @@ site_settings:
                 dataset_fields:
                     snippet:
                         html: ''
+        consent_log:
+            ord: 16
+            label: Consent log
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_SITE_SETTING
+                on: false
+            fields:
+                anonymize_consent_log_ip_address:
+                    site_setting:
+                        name: anonymize_consent_log_ip_address
+                    label: Anonymize IP addresses recorded in the consent log
+                    type: checkbox
+                    note_below: |
+                        The last octet of IPv4 IP addresses and the last 60 bits of IPv6 addresses will be set to zeros.
+                        

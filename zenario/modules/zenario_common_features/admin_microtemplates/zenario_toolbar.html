@@ -39,19 +39,27 @@
 		<div class="zenario_at_container zenario_at_toolbar_container">
 			<div id="zenario_at_toolbars">
 		
-				<% if (zenarioT.showDevTools()) { %>
-					<div class="zenario_at_dev_icons" style="<% if (false) { %>display: none;<% } %>">
+				<!--
+					The "display: none;" is to hide these icons when drawing the temporary HTML in the
+					pageBodyAdminToolbar() function.
+					When actually drawing this microtemplate, the "if (false)" will stop
+					the "display: none;" from being output.
+				-->
+				<div class="zenario_at_topRightIcons" style="<% if (false) { %>display: none;<% } %>">
+					<% if (zenarioT.showDevTools()) { %>
 						<div
 							class="zenario_at_dev_icon zenario_debug"
 							onclick="zenarioA.debug('zenarioAT');"
 						><div></div></div>
-						
-						<div
-							class="zenario_at_dev_icon organizer_info_box"
-							onclick="zenarioA.infoBox();"
-							title="About Zenario"
-						></div>
+					<% } %>
 					
+					<div
+						class="zenario_at_dev_icon organizer_info_box"
+						onclick="zenarioA.infoBox();"
+						title="About Zenario"
+					></div>
+				
+					<% if (zenarioA.adminPrivs._PRIV_EDIT_SITE_SETTING) { %>
 						<% if (zenario.engToBoolean(zenarioA.siteSettings.site_enabled)) { %>
 							<% if (zenarioA.siteSettings.site_mode == 'production') { %>
 								<div
@@ -73,8 +81,8 @@
 								title="Site disabled; development mode"
 							></div>
 						<% } %>
-					</div>
-				<% } %>
+					<% } %>
+				</div>
 		
 				<div class="zenario_at_status_button">
 					{{zenarioT.microTemplate('zenario_toolbar_status_icon', m.sections.status_button)}}

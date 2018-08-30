@@ -115,6 +115,8 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 		$module = $instance = $egg = [];
 		ze\tuix::setupPluginFABKey($box['key'], $module, $instance, $egg);
 		
+		
+		
 		$module['display_name'] = ze\module::displayName($box['key']['moduleId']);
 
 
@@ -227,6 +229,11 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 				} else {
 					$instanceName = $instance['name'];
 				}
+				
+				$titleMrg = [
+					'module' => $module['display_name'],
+					'instanceName' => $instanceName
+				];
 
 				//If this is a new instance, try and ensure that the name we are suggesting is unique
 				if (!$box['key']['instanceId']) {
@@ -237,9 +244,22 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 				}
 		
 				$values['first_tab/instance_name'] = $instanceName;
-
+				
+				
+				//Load the current values of the plugin settings from the database
 				$valuesInDB = [];
 				ze\tuix::loadAllPluginSettings($box, $valuesInDB);
+				
+				
+				//Work out which mode and framework this plugin is using
+				$box['key']['lastMode'] = $box['key']['mode'];
+				$box['key']['moduleClassNameForPhrases'] = $module['vlp_class'];
+				
+				if ($box['key']['framework']) {
+					$this->setupOverridesForPhrases($box, $valuesInDB);
+				}
+				
+				
 
 				if (!empty($box['tabs']) && is_array($box['tabs'])) {
 					foreach ($box['tabs'] as $tabName => &$tab) {
@@ -277,6 +297,7 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 
 				//Hide the name for plugins that don't use this (e.g. nested/version controlled plugins)
 				if ($box['key']['eggId'] || $box['key']['isVersionControlled']) {
+					$fields['first_tab/plugin_name']['hidden'] =
 					$fields['first_tab/instance_name']['hidden'] =
 					$fields['first_tab/duplicate_or_rename']['hidden'] = true;
 				
@@ -312,49 +333,47 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 		
 		
 				// Get admin box title
+				
 				if ($box['key']['eggId'] && $box['key']['isVersionControlled']) {
-					$title = 
-						ze\admin::phrase('Editing a plugin of the "[[module]]" module, in the [[instanceName]]',
-							['module' => htmlspecialchars($module['display_name']),
-								  'instanceName' => htmlspecialchars($instanceName)]);
+					if ($box['key']['isSlideshow']) {
+						$title = ze\admin::phrase('[[module]], in version controlled slideshow [[instanceName]]', $titleMrg);
+					} else {
+						$title = ze\admin::phrase('[[module]], in version controlled nest [[instanceName]]', $titleMrg);
+					}
 		
 				} elseif ($box['key']['eggId']) {
-					$title = 
-						ze\admin::phrase('Editing a plugin of the "[[module]]" module, in the nest "[[instanceName]]"',
-							['module' => htmlspecialchars($module['display_name']),
-								  'instanceName' => htmlspecialchars($instanceName)]);
+					if ($box['key']['isSlideshow']) {
+						$title =  ze\admin::phrase('[[module]], in slideshow "[[instanceName]]"', $titleMrg);
+					} else {
+						$title =  ze\admin::phrase('[[module]], in nest "[[instanceName]]"', $titleMrg);
+					}
 		
 				} elseif ($box['key']['isVersionControlled']) {
-					$title = 
-						ze\admin::phrase('Editing the [[module]]',
-							['module' => htmlspecialchars($module['display_name'])]);
+					$title = ze\admin::phrase('Version controlled [[module]]', $titleMrg);
 		
 				} elseif ($box['key']['instanceId']) {
 					switch ($module['class_name']) {
 						case 'zenario_plugin_nest':
-							$title = ze\admin::phrase('Editing a nest');
+							$title = ze\admin::phrase('Nest');
 							break;
 						case 'zenario_slideshow':
-							$title = ze\admin::phrase('Editing a slideshow');
+							$title = ze\admin::phrase('Slideshow');
 							break;
 						default:
-							$title = 
-								ze\admin::phrase('Editing a [[module]] plugin',
-									['module' => htmlspecialchars($module['display_name'])]);
+							$title = $titleMrg['module'];
 					}
 		
 				} else {
 					switch ($module['class_name']) {
 						case 'zenario_plugin_nest':
-							$title = ze\admin::phrase('Creating a nest');
+							$title = ze\admin::phrase('New nest');
 							break;
 						case 'zenario_slideshow':
-							$title = ze\admin::phrase('Creating a slideshow');
+							$title = ze\admin::phrase('New slideshow');
 							break;
 						default:
 							$title = 
-								ze\admin::phrase('Creating a [[module]] plugin',
-							['module' => htmlspecialchars($module['display_name'])]);
+								ze\admin::phrase('New [[module]]', $titleMrg);
 					}
 				}
 		
@@ -382,6 +401,11 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 			case 'plugin_css_and_framework':
 		
 				$instanceName = $instance['instance_name'];
+				
+				$titleMrg = [
+					'module' => $module['display_name'],
+					'instanceName' => $instanceName
+				];
 		
 				if ($canEdit) {
 					$box['tabs']['all_css_tab']['edit_mode'] =
@@ -553,27 +577,37 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 		
 				// Get admin box title
 				if ($box['key']['eggId'] && $box['key']['isVersionControlled']) {
-					$title = 
-						ze\admin::phrase('CSS & framework for a plugin of the "[[module]]" module, in the [[instanceName]]',
-							['module' => htmlspecialchars($module['display_name']),
-								  'instanceName' => htmlspecialchars($instanceName)]);
+					if ($box['key']['isSlideshow']) {
+						$title = ze\admin::phrase('CSS & framework for [[module]], in version controlled slideshow [[instanceName]]', $titleMrg);
+					} else {
+						$title = ze\admin::phrase('CSS & framework for [[module]], in version controlled nest [[instanceName]]', $titleMrg);
+					}
 		
 				} elseif ($box['key']['eggId']) {
-					$title = 
-						ze\admin::phrase('CSS & framework for a plugin of the "[[module]]" module, in the nest "[[instanceName]]"',
-							['module' => htmlspecialchars($module['display_name']),
-								  'instanceName' => htmlspecialchars($instanceName)]);
+					if ($box['key']['isSlideshow']) {
+						$title =  ze\admin::phrase('CSS & framework for [[module]], in slideshow "[[instanceName]]"', $titleMrg);
+					} else {
+						$title =  ze\admin::phrase('CSS & framework for [[module]], in nest "[[instanceName]]"', $titleMrg);
+					}
 		
 				} elseif ($box['key']['isVersionControlled']) {
-					$title = 
-						ze\admin::phrase('CSS & framework for the [[module]]',
-							['module' => htmlspecialchars($module['display_name'])]);
+					$title = ze\admin::phrase('CSS & framework for version controlled [[module]]', $titleMrg);
 		
 				} else {
-					$title = 
-						ze\admin::phrase('CSS & framework for a plugin of the module "[[module]]"',
-							['module' => htmlspecialchars($module['display_name'])]);
+					switch ($module['class_name']) {
+						case 'zenario_plugin_nest':
+							$title = ze\admin::phrase('CSS & framework for Nest');
+							break;
+						case 'zenario_slideshow':
+							$title = ze\admin::phrase('CSS & framework for Slideshow');
+							break;
+						default:
+							$title = ze\admin::phrase('CSS & framework for [[module]]', $titleMrg);
+					}
 				}
+				
+				
+				
 		
 				break;
 		}
@@ -588,16 +622,45 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		switch ($path) {
+			case 'plugin_settings':
+				
+				
+				//Change the framework phrases if the mode has changed
+				if ($box['key']['framework']) {
+					$mode = $values['mode'] ?? '';
+				
+					if ($box['key']['lastMode'] != $mode) {
+						$box['key']['lastMode'] = $box['key']['mode'] = $mode;
+					
+						$this->setupOverridesForPhrases($box);
+					}
+				}
+				
+				break;
+				
+				
 			case 'plugin_css_and_framework':
 				if (!empty($values['framework_tab/framework'])) {
 
 					$module = ze\module::details($box['key']['moduleId']);
 
 					if ($frameworkFile = ze\plugin::frameworkPath($values['framework_tab/framework'], $module['class_name'])) {
-						$values['framework_tab/framework_source'] = file_get_contents($frameworkFile);
-						$fields['framework_tab/framework_source']['language'] = $frameworkFile;
-						$fields['framework_tab/framework_path']['hidden'] = false;
-						$fields['framework_tab/framework_path']['snippet']['label'] = $frameworkFile;
+		
+						$mode = $box['key']['mode'];
+						if ($mode
+						 && file_exists($modeDir = dirname($frameworkFile). '/modes/'. $mode. '.twig.html')) {
+							
+							$values['framework_tab/framework_source'] = file_get_contents($modeDir);
+							$fields['framework_tab/framework_source']['language'] = $modeDir;
+							$fields['framework_tab/framework_path']['hidden'] = false;
+							$fields['framework_tab/framework_path']['snippet']['label'] = $modeDir;
+						
+						} else {
+							$values['framework_tab/framework_source'] = file_get_contents($frameworkFile);
+							$fields['framework_tab/framework_source']['language'] = $frameworkFile;
+							$fields['framework_tab/framework_path']['hidden'] = false;
+							$fields['framework_tab/framework_path']['snippet']['label'] = $frameworkFile;
+						}
 
 					} else {
 						$values['framework_tab/framework_source'] = '';
@@ -1214,7 +1277,7 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 							if ($values['this_css_tab/use_css_file']
 							 && is_writable(CMS_ROOT. $this->skinWritableDir)) {
 								file_put_contents($filepath, $values['this_css_tab/css_source']);
-								@chmod($filepath, 0666);
+								\ze\cache::chmod($filepath, 0666);
 							}
 						}
 					}
@@ -1231,7 +1294,7 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 						if ($values['all_css_tab/use_css_file']
 						 && is_writable(CMS_ROOT. $this->skinWritableDir)) {
 							file_put_contents($filepath, $values['all_css_tab/css_source']);
-							@chmod($filepath, 0666);
+							\ze\cache::chmod($filepath, 0666);
 						}
 					}
 					
@@ -1267,4 +1330,233 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 		ze\sql::update($sql);
 		
 	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	//This function scans the module code/framework of a plugin, looking for simple cases of phrases being used.
+	//It then creates a tab with plugin settings that serve as overrides for these.
+	public static function setupOverridesForPhrases(&$box, $valuesInDB = []) {
+		
+		$fields = &$box['tabs']['phrases.framework']['fields'];
+		
+		//Disable and hide any previous fields, so they're not shown and don't get saved in the plugin settings table
+		if (!empty($fields)) {
+			foreach ($fields as &$field) {
+				if (is_array($field) && !empty($field)) {
+					$field['hidden'] = true;
+				}
+			}
+		}
+		
+		$mode = $box['key']['mode'];
+		$phrases = [];
+		$pInCode = false;
+		$pInTwig = false;
+		
+		//Get the contents of the framework file
+		if (($framework = $box['key']['framework'])
+		 && ($frameworkFile = ze\plugin::frameworkPath($framework, $box['key']['moduleClassName']))
+		 && ($twig = file_get_contents(CMS_ROOT. $frameworkFile))) {
+		
+			//If there's a sub-framework for this mode, get the contents of that as well
+			if ($mode
+			 && file_exists($modeDir = CMS_ROOT. dirname($frameworkFile). '/modes/'. $mode. '.twig.html')) {
+				$twig .= file_get_contents($modeDir);
+			}
+		
+		
+			//Use a regular expression to look for any simple cases of phrases being used.
+			$split = preg_split('@\{\{\s*([\'"])(.*?)\1\s*\|\s*trans\s*\}\}@', $twig, -1,  PREG_SPLIT_DELIM_CAPTURE);
+			$count = count($split);
+
+			for ($i = 2; $i < $count; $i += 3) {
+				$code = stripslashes($split[$i]);
+				$phrases[$code] = $code;
+				$pInTwig = true;
+			}
+		}
+		
+		
+		
+		
+		
+		//Attempt to get phrases from the PHP code as well.
+		//If this is a modal plugin, look for the mode in the classes subdirectory, otherwise try looking at the module_code.php.
+		//Note that I am not handling modules/classes that extend other modules/classes right now.
+		if ($mode
+		 && file_exists($modeDir = CMS_ROOT. ze::moduleDir($box['key']['moduleClassName'], 'classes/visitor/'. $mode. '.php', true))) {
+			$php = file_get_contents($modeDir);
+		} else {
+			$php = file_get_contents(CMS_ROOT. ze::moduleDir($box['key']['moduleClassName'], 'module_code.php'));
+		}
+		
+		if ($php) {
+			//Use token_get_all() to parse the file.
+			//This is a lot more reliable than trying to use a regular expression.
+			$tokens = token_get_all($php);
+			
+			foreach ($tokens as &$token) {
+				if (!is_string($token)) {
+					$token = $token[1];
+				}
+			}
+			unset($token);
+			
+			
+			//Look through the tokens we got, looking for calls to $this->phrase()
+			$mi = count($tokens) - 4;
+			
+			for ($i = 0; $i < $mi; ++$i) {
+	
+				if ($tokens[$i    ] == '$this'
+				 && $tokens[$i + 1] == '->'
+				 && $tokens[$i + 2] == 'phrase'
+				 && $tokens[$i + 3] == '(') {
+					$phrase = $tokens[$i + 4];
+					
+					//Check that the phrase code is a string.
+					//(We won't try to handle the case where it's a variable.)
+					if ($phrase[0] == "'"
+					 || $phrase[0] == '"') {
+					 	$code = stripslashes(substr($phrase, 1, -1));
+						$phrases[$code] = $code;
+						$pInCode = true;
+					}
+				}
+			}
+		}
+
+		
+		
+		
+		
+		if ($pInCode) {
+			if ($pInTwig) {
+				$box['tabs']['phrases.framework']['label'] = ze\admin::phrase('Phrases');
+			} else {
+				$box['tabs']['phrases.framework']['label'] = ze\admin::phrase('Phrases (PHP code)');
+			}
+		
+		} else {
+			if ($pInTwig) {
+				$box['tabs']['phrases.framework']['label'] = ze\admin::phrase('Phrases (framework)');
+			} else {
+				$box['tabs']['phrases.framework']['hidden'] = true;
+				return;
+			}
+		}
+		$box['tabs']['phrases.framework']['hidden'] = false;
+		
+		
+		
+		
+		
+		
+		
+		$ord = 1000;
+		
+		$html = '
+			<table class="zfab_customise_phrases cols_2"><tr>
+				<th>Original Phrase</th>
+				<th>Customised Phrase</th>
+			</tr>';
+		
+		$fields['phrase_table_start'] = [
+			'ord' => 100,
+			'snippet' => [
+				'html' => $html
+			]
+		];
+		
+		
+		foreach ($phrases as $code => &$defaultText) {
+			if ($code[0] == '_') {
+				$defaultText = ze\sql::fetchValue("
+					SELECT local_text
+					FROM ". DB_PREFIX. "visitor_phrases
+					WHERE `code` = '". ze\escape::sql($code). "'
+					  AND language_id = '". ze\escape::sql(ze::$defaultLang). "'
+					  AND module_class_name = '". ze\escape::sql($box['key']['moduleClassNameForPhrases']). "'
+				") ?: $defaultText;
+			}
+		}
+		unset($defaultText);
+		asort($phrases);	
+		
+		foreach ($phrases as $code => $defaultText) {
+			$ppath = 'phrase.framework.'. $code;
+			
+			if (!isset($fields[$ppath])) {
+				
+				$pre_field_html = '
+					<tr><td>
+						'. htmlspecialchars($defaultText);
+			
+				if ($code[0] == '_') {
+					$pre_field_html .= '
+						<br/>
+						<span>(<span>'. htmlspecialchars($code). '</span>)</span>';
+				}
+			
+				$pre_field_html .= '
+					</td><td>';
+				
+				$fields[$ppath] = [
+					'ord' => ++$ord,
+					'same_row' => true,
+					'pre_field_html' => $pre_field_html,
+					'type' => strpos(trim($defaultText), "\n") === false? 'text' : 'textarea',
+					'post_field_html' => '</td></tr>'
+				];
+		
+				if (isset($valuesInDB[$ppath])) {
+					$fields[$ppath]['value'] = $valuesInDB[$ppath];
+				} else {
+					$fields[$ppath]['value'] = $defaultText;
+				}
+			
+			} else {
+				$fields[$ppath]['hidden'] = false;
+			}
+			
+			$fields[$ppath]['ord'] = ++$ord;
+			$fields[$ppath]['plugin_setting'] = [
+				'name' => $ppath,
+				'value' => $defaultText,
+				'dont_save_default_value' => true,
+				'save_empty_value_when_hidden' => false
+			];
+		}
+	
+		$fields['phrase_table_end'] = [
+			'ord' => 999999,
+			'same_row' => true,
+			'snippet' => [
+				'html' => '
+					</table>'
+			]
+		];
+	
+		if (\ze\row::exists('languages', ['translate_phrases' => 1])) {
+			$mrg = [
+				'def_lang_name' => htmlspecialchars(\ze\lang::name(\ze::$defaultLang)),
+				'phrases_panel' => htmlspecialchars(\ze\link::absolute(). 'zenario/admin/organizer.php#zenario__languages/panels/phrases')
+			];
+		
+			$fields['phrase_table_end']['show_phrase_icon'] = true;
+			$fields['phrase_table_end']['snippet']['html'] .= '
+				<br/>
+				<span>'.
+				\ze\admin::phrase('<a href="[[phrases_panel]]" target="_blank">Click here to manage translations in Organizer</a>.', $mrg).
+				'</span>';
+		}
+	}
+	
 }

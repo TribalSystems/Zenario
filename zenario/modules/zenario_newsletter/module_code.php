@@ -146,7 +146,7 @@ class zenario_newsletter extends ze\moduleBaseClass {
 				AND noo.user_id IS NULL";
 		}
 		
-		//Exclude users who have not given consent to recieve newsletters
+		//Exclude users who have not given consent to receive newsletters
 		$consentFlag = false;
 		if (ze::setting('zenario_newsletter__newsletter_consent_policy') == 'consent_required'
 		 && ($consentFlagId = ze::setting('zenario_newsletter__newsletter_consent_flag'))

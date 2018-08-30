@@ -47,7 +47,7 @@ class zenario_user_forms__admin_boxes__email_template extends ze\moduleBaseClass
 							cdf.db_column, 
 							CONCAT("unlinked_", uff.field_type, "_", uff.id)
 						), 
-						uff.label
+						uff.name
 					) AS name,
 					uff.field_type,
 					uff.ord,
@@ -91,18 +91,22 @@ class zenario_user_forms__admin_boxes__email_template extends ze\moduleBaseClass
 				$sql = '
 					SELECT 
 						IFNULL(uff.name, cdf.label) AS name, 
-						IFNULL(cdf.db_column, CONCAT(\'unlinked_\', uff.field_type, \'_\', uff.id)) AS mergefield
-					FROM '.DB_PREFIX.ZENARIO_USER_FORMS_PREFIX . 'user_form_fields AS uff
+						IFNULL(cdf.db_column, CONCAT(\'unlinked_\', uff.field_type, \'_\', uff.id)) AS mergefield,
+						uff.split_first_name_last_name
+					FROM ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_form_fields AS uff
+					INNER JOIN ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'pages p
+						ON uff.page_id = p.id
 					LEFT JOIN '.DB_PREFIX. 'custom_dataset_fields AS cdf
 						ON uff.user_field_id = cdf.id
 					WHERE (uff.field_type NOT IN ("page_break", "restatement", "section_description") 
 						OR uff.field_type IS NULL)';
-				
 				if ($formFieldId == 'all') {
 					$sql .= ' AND uff.user_form_id = '.(int)$formId;
 				} else {
 					$sql .= ' AND uff.id = '.(int)$formFieldId;
 				}
+				$sql .= '
+					ORDER BY p.ord, uff.ord';
 				
 				$result = ze\sql::select($sql);
 				$mergeFields = '';
@@ -111,7 +115,12 @@ class zenario_user_forms__admin_boxes__email_template extends ze\moduleBaseClass
 					if ($row['name']) {
 						$mergeFields .= trim($row['name'], " \t\n\r\0\x0B:"). ': ';
 					}
-					$mergeFields .= '[['.$row['mergefield'].']]</p>';
+					if ($row['split_first_name_last_name']) {
+						$mergeFields .= '[[first_name]] [[last_name]]';
+					} else {
+						$mergeFields .= '[['.$row['mergefield'].']]';
+					}
+					$mergeFields .= '</p>';
 				}
 				$values['meta_data/body'] .= $mergeFields;
 				$values['meta_data/user_form_field'] = '';

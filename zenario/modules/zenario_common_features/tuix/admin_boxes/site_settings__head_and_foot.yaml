@@ -26,6 +26,7 @@ site_settings:
                     value: ''
                     style: >
                         height: 25em;
+                        width: 99%;
                     note_below: >
                         HTML entered here will take effect across the entire site. Use the Layout tab in the admin toolbar, or the Edit Plugins tab, to enter additional HTML that is applied to pages with a given layout, or a specific content item.
         body:
@@ -50,6 +51,7 @@ site_settings:
                     value: ''
                     style: >
                         height: 25em;
+                        width: 99%;
         foot:
             label: HTML before </body>
             edit_mode:
@@ -72,6 +74,7 @@ site_settings:
                     value: ''
                     style: >
                         height: 25em;
+                        width: 99%;
                     note_below: |
                         <p>The following JavaScript libraries are available for you to use:</p>
                         <ul class="zenario_js_libs_available">
@@ -81,7 +84,66 @@ site_settings:
                             <li><a href="https://modernizr.com/" target="_blank">Modernizr</a></li>
                             <li><a href="http://underscorejs.org/" target="_blank">Underscore.js</a></li>
                         </ul>
+        cookie_content:
+            label: Cookie-creating content (Analytics and social media)
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_SITE_SETTING
+            notices:
+                individual_cookie_consent_not_enabled:
+                    type: warning
+                    message: <a href="[[link]]" target="_blank">Individual cookie consent</a> has not been enabled so the content below will always be added to pages.
+                    html: true
+            fields:
+                sitewide_analytics_html_location:
+                    site_setting:
+                        name: sitewide_analytics_html_location
+                    type: select
+                    pre_field_html: 'Add <b>Analytics</b> HTML&nbsp;'
+                    values:
+                        head:
+                            label: within the <head> tag
+                        body:
+                            label: immediately after the <body> tag
+                        foot:
+                            label: immediately before the </body> tag
+                    post_field_html: '&nbsp;of all pages unless the user has explicitly disabled analytics cookies:'
 
+                sitewide_analytics_html:
+                    site_setting:
+                        name: sitewide_analytics_html
+                    type: code_editor
+                    dont_trim: true
+                    language: html
+                    value: ''
+                    style: >
+                        height: 20em;
+                        width: 99%;
+                
+                sitewide_social_media_html_location:
+                    site_setting:
+                        name: sitewide_social_media_html_location
+                    type: select
+                    pre_field_html: 'Add <b>Social Media</b> HTML&nbsp;'
+                    values:
+                        head:
+                            label: within the <head> tag
+                        body:
+                            label: immediately after the <body> tag
+                        foot:
+                            label: immediately before the </body> tag
+                    post_field_html: '&nbsp;of all pages unless the user has explicitly disabled social media cookies:'
+
+                sitewide_social_media_html:
+                    site_setting:
+                        name: sitewide_social_media_html
+                    type: code_editor
+                    dont_trim: true
+                    language: html
+                    value: ''
+                    style: >
+                        height: 20em;
+                        width: 99%;
     confirm:
         show: true
         message: |

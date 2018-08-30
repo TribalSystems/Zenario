@@ -85,7 +85,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 		$sql = "";
 		
 		//Filter by a categories if requested
-		if ($categories = $this->setting('category')) {
+		if ($this->setting('category_filters_dropdown') == 'choose_categories_to_display_or_omit' && $categories = $this->setting('category')) {
 			foreach (ze\ray::explodeAndTrim($categories, true) as $catId) {
 				if (ze\row::exists('categories', ['id' => (int) $catId])) {
 					if ($this->setting('refine_type') != 'any_categories') {
@@ -103,14 +103,38 @@ class zenario_content_list extends ze\moduleBaseClass {
 				}
 			}
 		}
-		if ($this->setting('enable_omit_category') && ($categories = $this->setting('omit_category'))) {
+		
+		if ($this->setting('category_filters_dropdown') == 'choose_categories_to_display_or_omit' && $this->setting('enable_omit_category') && ($categories = $this->setting('omit_category'))) {
 			foreach (ze\ray::explodeAndTrim($categories, true) as $catId) {
 				if (ze\row::exists('categories', ['id' => (int) $catId])) {
 					$sql .= "
-					LEFT JOIN ". DB_PREFIX. "category_item_link AS cil_". (int) $catId. "
-					   ON cil_". (int) $catId. ".equiv_id = c.equiv_id
-					  AND cil_". (int) $catId. ".content_type = c.type
-					  AND cil_". (int) $catId. ".category_id = ". (int) $catId;
+					LEFT JOIN ". DB_PREFIX. "category_item_link AS ocil_". (int) $catId. "
+					   ON ocil_". (int) $catId. ".equiv_id = c.equiv_id
+					  AND ocil_". (int) $catId. ".content_type = c.type
+					  AND ocil_". (int) $catId. ".category_id = ". (int) $catId;
+				}
+			}
+		}
+		
+		if ($this->setting('category_filters_dropdown') == 'show_content_with_matching_categories') {
+			$contentItemInfo = ze\row::get('content_items', ['id', 'type'], ['equiv_id' => ze::$equivId]);
+			$contentItemCategories = ze\category::contentItemCategories($contentItemInfo['id'], $contentItemInfo['type'], $publicOnly = true);
+			if ($contentItemCategories) {
+				foreach ($contentItemCategories as $contentItemCategory) {
+					if (ze\row::exists('categories', ['id' => (int) $contentItemCategory['id']])) {
+						if ($this->setting('refine_type_content_with_matching_categories') != 'any_categories') {
+							$sql .= "
+						INNER";
+						} else {
+							$sql .= "
+						LEFT";
+						}
+					
+						$sql .= " JOIN ". DB_PREFIX. "category_item_link AS cil_". (int) $contentItemCategory['id']. "
+						   ON cil_". (int) $contentItemCategory['id']. ".equiv_id = c.equiv_id
+						  AND cil_". (int) $contentItemCategory['id']. ".content_type = c.type
+						  AND cil_". (int) $contentItemCategory['id']. ".category_id = ". (int) $contentItemCategory['id'];
+					}
 				}
 			}
 		}
@@ -187,7 +211,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 		}
 		
 		$first = true;
-		if ($this->setting('refine_type') == 'any_categories' && ($categories = $this->setting('category'))) {
+		if ($this->setting('category_filters_dropdown') == 'choose_categories_to_display_or_omit' && $this->setting('refine_type') == 'any_categories' && ($categories = $this->setting('category'))) {
 			foreach (ze\ray::explodeAndTrim($categories, true) as $catId) {
 				if (ze\row::exists('categories', ['id' => (int) $catId])) {
 					if ($first) {
@@ -203,15 +227,37 @@ class zenario_content_list extends ze\moduleBaseClass {
 				}
 			}
 		}
+		
+		if ($this->setting('category_filters_dropdown') == 'show_content_with_matching_categories' && $this->setting('refine_type_content_with_matching_categories') == 'any_categories') {
+			$contentItemInfo = ze\row::get('content_items', ['id', 'type'], ['equiv_id' => ze::$equivId]);
+			$contentItemCategories = ze\category::contentItemCategories($contentItemInfo['id'], $contentItemInfo['type'], $publicOnly = true);
+			if ($contentItemCategories) {
+				foreach ($contentItemCategories as $contentItemCategory) {
+					if (ze\row::exists('categories', ['id' => (int) $contentItemCategory['id']])) {
+						if ($first) {
+							$sql .= "
+								AND (";
+						} else {
+							$sql .= "
+								OR";
+						}
+					
+						$sql .= " cil_". (int) $contentItemCategory['id']. ".category_id IS NOT NULL";
+						$first = false;
+					}
+				}
+			}
+		}
+				
 		if (!$first) {
 			$sql .= ")";
 		}
 		
-		if ($this->setting('enable_omit_category') && ($categories = $this->setting('omit_category'))) {
+		if ($this->setting('category_filters_dropdown') == 'choose_categories_to_display_or_omit' && $this->setting('enable_omit_category') && ($categories = $this->setting('omit_category'))) {
 			foreach (ze\ray::explodeAndTrim($categories, true) as $catId) {
 				if (ze\row::exists('categories', ['id' => (int) $catId])) {
 					$sql .= "
-						AND cil_". (int) $catId. ".category_id IS NULL";
+						AND ocil_". (int) $catId. ".category_id IS NULL";
 				}
 			}
 		}
@@ -338,12 +384,18 @@ class zenario_content_list extends ze\moduleBaseClass {
 		if ($this->setting('hide_private_items') == 1) {
 			$hidePrivateItems = true;
 		}
-		$sql =
-			ze\content::sqlToSearchContentTable(
-				$hidePrivateItems, $this->setting('only_show'), 
-				$this->lookForContentTableJoins()
-			).
-			$this->lookForContentWhere();
+		
+		$tableJoins = $this->lookForContentTableJoins();
+		if ($this->setting('category_filters_dropdown') == 'show_content_with_matching_categories' && !$tableJoins) {
+			$sql = false;
+		} else {
+			$sql =
+				ze\content::sqlToSearchContentTable(
+					$hidePrivateItems, $this->setting('only_show'), 
+					$tableJoins
+				).
+				$this->lookForContentWhere();
+		}
 		return $sql;
 	}
 	
@@ -527,7 +579,8 @@ class zenario_content_list extends ze\moduleBaseClass {
 					if ($categoryId) {
 						$item['Category'] = ze\lang::phrase('_CATEGORY_' . $categoryId);
 						$item['Category_Id'] = $categoryId;
-						$category = ze\row::get('categories', ['landing_page_equiv_id', 'landing_page_content_type'], $categoryId);
+						$category = ze\row::get('categories', ['landing_page_equiv_id', 'landing_page_content_type', 'code_name'], $categoryId);
+						$item['Category_code_name'] = $category['code_name'];
 						if ($category['landing_page_equiv_id'] && $category['landing_page_content_type']) {
 							$item['Category_Landing_Page_Link'] = ze\link::toItem($category['landing_page_equiv_id'], $category['landing_page_content_type']);
 						}
@@ -600,7 +653,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 		return !empty($this->items) || ((bool)$this->setting('show_headings_if_no_items'));
 	}
 	
-	// Gets a content items lowest level public category (return false if there are multiple)
+	// Gets a content item's lowest level public category (return false if there are multiple)
 	public static function getContentItemLowestPublicCategory($equivId, $cType, $allCategories) {
 		$publicCategories = [];
 		$sql = '
@@ -662,8 +715,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 		}
 		
 		//Get a count of how many items we have to display
-		$result = ze\sql::select('SELECT COUNT(*) '. $sql);
-		list($this->rows) = ze\sql::fetchRow($result);
+		$this->rows = ze\sql::fetchValue('SELECT COUNT(*) '. $sql);
 		
 		$this->totalPages = (int) ceil($this->rows / $this->setting('page_size'));
 		
@@ -864,105 +916,6 @@ class zenario_content_list extends ze\moduleBaseClass {
 	
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		require ze::funIncPath(__FILE__, __FUNCTION__);
-	}
-	
-	public function fillAdminSlotControls(&$controls) {
-		$controls['notes']['filter_settings'] = [
-			'ord' => 0,
-			'label' => '',
-			'css_class' => 'zenario_slotControl_filterSettings',
-			'page_modes' => ['edit' => true, 'item' => true, 'layout' => true]];
-		
-		$this->fillAdminSlotControlsShowFilterSettings($controls);
-	}
-	
-	protected function fillAdminSlotControlsShowFilterSettings(&$controls) {
-		
-		if ($this->setting('content_type') == 'all') {
-			$controls['notes']['filter_settings']['label'] .=
-				ze\admin::phrase('Source Content Type: All Content Types');
-		
-		} else {
-			$controls['notes']['filter_settings']['label'] .=
-				ze\admin::phrase('Source Content Type: [[ctype]]',
-					['ctype' => htmlspecialchars(ze\content::getContentTypeName($this->setting('content_type')))]);
-		}
-		
-		switch ($this->setting('only_show')) {
-			case 'public':
-				$controls['notes']['filter_settings']['label'] .= '<br/>'. ze\admin::phrase('Show: Public Content Items only');
-				break;
-			
-			case 'all':
-				$controls['notes']['filter_settings']['label'] .= '<br/>'. ze\admin::phrase('Show: Public and Private Content Items');
-				break;
-			
-			case 'private':
-				$controls['notes']['filter_settings']['label'] .= '<br/>'. ze\admin::phrase('Show: Private Content Items only');
-				break;
-		}
-		
-		if ($this->setting('language_selection') == 'all') {
-			$controls['notes']['filter_settings']['label'] .= '<br/>'. ze\admin::phrase('Show Items in: All enabled Languages');
-		} elseif ($this->setting('language_selection') == 'visitor') {
-			$controls['notes']['filter_settings']['label'] .= '<br/>'. ze\admin::phrase("Show Items in: Visitor's Language");
-		} elseif ($this->setting('language_selection') == 'specific_languages') {
-			$langs = ze\lang::getLanguages();
-			$arr = [];
-			foreach(explode(",", $this->setting('specific_languages')) as $langCode )  {
-				$arr[] = $langs[$langCode]['english_name'] ?? false;
-			}
-			sort($arr);
-			$controls['notes']['filter_settings']['label'] .= '<br/>'. ze\admin::phrase("Show Items in: " . htmlspecialchars(implode(", ", $arr)));
-		}
-		
-		if ($this->setting('only_show_child_items')) {
-			if ((int) $this->setting('child_item_levels') == 1) {
-				$controls['notes']['filter_settings']['label'] .= '<br/>'. ze\admin::phrase('Menu Levels: Content in the menu one level below current Item');
-			
-			} elseif ((int) $this->setting('child_item_levels') >= 99) {
-				$controls['notes']['filter_settings']['label'] .= '<br/>'. ze\admin::phrase('Menu Levels: All Content in the menu below current Item');
-			
-			} else {
-				$controls['notes']['filter_settings']['label'] .= '<br/>'. ze\admin::phrase('Menu Levels: Content in the menu up to [[child_item_levels]] levels below',
-														['child_item_levels' => (int) $this->setting('child_item_levels')]);
-			}
-		}
-		
-		$this->fillAdminSlotControlsShowFilterSettingsCategories($controls);
-	}
-	
-	public function fillAdminSlotControlsShowFilterSettingsCategories(&$controls) {
-		if ($this->setting('category')) {
-			$first = true;
-			foreach(ze\ray::explodeAndTrim($this->setting('category'), true) as $catId) {
-				if ($name = ze\category::name($catId)) {
-					$separator = ",";
-					$labelPrefix = "";
-				
-					if ($this->setting('refine_type') != 'any_categories') {
-						$separator = " AND ";
-						$labelPrefix = "In ";
-					} else {
-						$separator = " OR ";
-						$labelPrefix = "In ";
-					}
-
-				
-					if ($first) {
-						$first = false;
-						$controls['notes']['filter_settings']['label'] .=
-							'<br/>'.
-							ze\admin::phrase($labelPrefix . 'Category:').
-							' ';
-					} else {
-						$controls['notes']['filter_settings']['label'] .= $separator;
-					}
-				
-					$controls['notes']['filter_settings']['label'] .= htmlspecialchars($name);
-				}
-			}
-		}
 	}
 
 	public function getDocumentIDs() {

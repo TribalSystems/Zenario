@@ -33,11 +33,26 @@ class zenario_users__admin_boxes__consent extends zenario_users {
 		$consentId = $box['key']['id'];
 		$consent = ze\row::get('consents', true, $consentId);
 		
-		$fields['details/datetime']['snippet']['html'] = ze\date::formatDateTime($consent['datetime']);
+		$fields['details/datetime']['snippet']['html'] = ze\admin::formatDateTime($consent['datetime']);
 		$fields['details/ip_address']['snippet']['html'] = $consent['ip_address'];
 		$user = static::formatConsentUser($consentId);
 		$fields['details/user']['snippet']['html'] = $user;
 		$fields['details/consent_text']['snippet']['html'] = $consent['label'];
+		
+		if ($consent['source_name'] == 'form' && ze\module::inc('zenario_user_forms')) {
+			$form = ze\row::get(ZENARIO_USER_FORMS_PREFIX . 'user_forms', ['name'], $consent['source_id']);
+			if ($form) {
+				$fields['details/source']['snippet']['html'] = ze\admin::phrase('Form ([[name]])', $form);
+			} else {
+				$fields['details/source']['snippet']['html'] = ze\admin::phrase('Unknown form');
+			}
+		} elseif ($consent['source_name'] == 'extranet_registration') {
+			$fields['details/source']['snippet']['html'] = ze\admin::phrase('Extranet registration');
+		} elseif ($consent['source_name'] == 'extranet_login') {
+			$fields['details/source']['snippet']['html'] = ze\admin::phrase('Extranet login');
+		} else {
+			$fields['details/source']['snippet']['html'] = ze\admin::phrase('Unknown');
+		}
 		
 		$box['title'] = ze\admin::phrase('Consent given by "[[user]]"', ['user' => $user]);
 	}

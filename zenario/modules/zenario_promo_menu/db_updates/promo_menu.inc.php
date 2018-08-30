@@ -102,4 +102,10 @@ _sql
 	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_PROMO_MENU_PREFIX]]menu_node_feature_image` MODIFY COLUMN `title` varchar(250) CHARACTER SET utf8mb4 NOT NULL default ''
 _sql
 
+);	ze\dbAdm::revision( 22
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_PROMO_MENU_PREFIX]]menu_node_feature_image`
+	ADD COLUMN `feature_image_is_retina` tinyint(1) DEFAULT 0 NOT NULL AFTER `image_id`
+_sql
+
 );

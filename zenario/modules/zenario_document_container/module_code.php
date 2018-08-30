@@ -47,6 +47,7 @@ class zenario_document_container extends ze\moduleBaseClass {
 			$documentId = $this->setting('document_source');
 			//Show info in admin mode
 			if (ze\priv::check()) {
+				
 				//$this->showDocumentPluginAdminInfo($documentId);
 			}
 			$this->useDocumentTags = ze::setting('enable_document_tags') && $this->setting('document_tags');
@@ -57,14 +58,19 @@ class zenario_document_container extends ze\moduleBaseClass {
 			//Title
 			$this->data['Title_Tags'] = $this->setting('title_tags') ? $this->setting('title_tags') : 'h1';
 			$this->data['main_folder_title'] = false;
-			if ($this->setting('show_folder_name_as_title')) {
-				$this->data['main_folder_title'] = ze\row::get('documents', 'folder_name', $documentId);
+			if ($this->setting('show_a_heading')) {
+				if ($this->setting('show_folder_name_as_title')) {
+					$this->data['main_folder_title'] = ze\row::get('documents', 'folder_name', $documentId);
+				} else {
+					$this->data['main_folder_title'] = $this->setting('heading');
+				}
 			}
 			
 		} elseif ($mode == 'user_documents') {
 			$userId = ze\user::id();
 			//User documents must be running
 			if (!ze\module::inc('zenario_user_documents')) {
+				
 				return false;
 			}
 			//Show info in admin mode
@@ -747,7 +753,7 @@ class zenario_document_container extends ze\moduleBaseClass {
 					$fields['first_tab/document_tags']['snippet']['html'] = ze\admin::phrase('There are no document tags');
 				}
 				
-				$fields['first_tab/show_folder_name_as_title']['hidden'] = !$isFolder;
+				$fields['first_tab/show_a_heading']['hidden'] = !$isFolder;
 				$fields['first_tab/filter']['hidden'] = !$isFolder;
 				$fields['first_tab/date_filter']['hidden'] = !$isFolder;
 				$fields['first_tab/order_by']['hidden'] = !$isFolder;

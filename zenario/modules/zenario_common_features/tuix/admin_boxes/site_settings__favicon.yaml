@@ -51,3 +51,22 @@ site_settings:
                     validation:
                         must_be_gif_or_png: >
                             The home-screen icon must be a .gif or a .png file.
+                default_icon:
+                    site_setting:
+                        name: default_icon
+                    label: "Default icon:"
+                    upload: 
+                        accept: "image/*"
+                        extensions: 
+                            - .gif
+                            - .png
+                        drag_and_drop: false
+                    note_below: >
+                        This default image will be shown if a page does not have a feature image.
+                        You should upload a <code>.gif</code> or a <code>.png</code> file for a default icon.
+                        We recommend that the image should be at least 200x200 pixels in size;
+                        the image will be auto-downsized.
+                    validation:
+                        must_be_gif_or_png: >
+                            The default icon must be a .gif or a .png file.
+                                    

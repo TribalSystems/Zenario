@@ -54,7 +54,7 @@ plugin_settings:
                         name: date_html_tag
                     grouping: filters
                     label: Date tags
-                    value: h1
+                    value: h2
                     visible_if:
                         lib.value: show_date
                     type: select
@@ -77,9 +77,6 @@ plugin_settings:
                         h6:
                             label: h6
                             ord: 6
-                        h7:
-                            label: h7
-                            ord: 7
                         p:
                             label: p
                             ord: 8
@@ -108,7 +105,7 @@ plugin_settings:
                     grouping: filters
                     label: 'Show description'
                     type: checkbox
-                    value: "1"
+                    value: "0"
                     format_onchange: true
                 description_html_tag:
                     indent: 1
@@ -116,7 +113,7 @@ plugin_settings:
                         name: description_html_tag
                     grouping: filters
                     label: Description tags
-                    value: h1
+                    value: h2
                     visible_if:
                         lib.value: show_description
                     type: select
@@ -127,7 +124,7 @@ plugin_settings:
                     grouping: filters
                     label: 'Show summary'
                     type: checkbox
-                    value: "1"
+                    value: "0"
                     format_onchange: true
                 summary_html_tag:
                     indent: 1
@@ -135,7 +132,7 @@ plugin_settings:
                         name: summary_html_tag
                     grouping: filters
                     label: Summary tags
-                    value: h1
+                    value: h2
                     visible_if:
                         lib.value: show_summary
                     type: select
@@ -155,7 +152,7 @@ plugin_settings:
                         name: categories_html_tag
                     grouping: filters
                     label: Categories tags
-                    value: h1
+                    value: h2
                     visible_if:
                         lib.value: show_categories
                     type: select
@@ -166,7 +163,7 @@ plugin_settings:
                     grouping: filters
                     label: 'Show keywords'
                     type: checkbox
-                    value: "1"
+                    value: "0"
                     format_onchange: true
                 keywords_html_tag:
                     indent: 1
@@ -174,7 +171,7 @@ plugin_settings:
                         name: keywords_html_tag
                     grouping: filters
                     label: Keywords tags
-                    value: h1
+                    value: h2
                     visible_if:
                         lib.value: show_keywords
                     type: select
@@ -185,7 +182,7 @@ plugin_settings:
                     grouping: filters
                     label: 'Show language name'
                     type: checkbox
-                    value: "1"
+                    value: "0"
                     format_onchange: true
                 language_name_html_tag:
                     indent: 1
@@ -193,7 +190,7 @@ plugin_settings:
                         name: language_name_html_tag
                     grouping: filters
                     label: Language name tags
-                    value: h1
+                    value: h2
                     visible_if:
                         lib.value: show_language_name
                     type: select
@@ -204,7 +201,7 @@ plugin_settings:
                     grouping: filters
                     label: 'Show language'
                     type: checkbox
-                    value: "1"
+                    value: "0"
                     format_onchange: true
                 language_html_tag:
                     indent: 1
@@ -212,7 +209,7 @@ plugin_settings:
                         name: language_html_tag
                     grouping: filters
                     label: Language tags
-                    value: h1
+                    value: h2
                     visible_if:
                         lib.value: show_language
                     type: select
@@ -223,7 +220,7 @@ plugin_settings:
                     grouping: filters
                     label: 'Show writer name'
                     type: checkbox
-                    value: "1"
+                    value: "0"
                     format_onchange: true
                 writer_name_html_tag:
                     indent: 1
@@ -231,7 +228,7 @@ plugin_settings:
                         name: writer_name_html_tag
                     grouping: filters
                     label: Writer name tags
-                    value: h1
+                    value: h2
                     visible_if:
                         lib.value: show_writer_name
                     type: select
@@ -250,7 +247,7 @@ plugin_settings:
                         name: writer_image_label_html_tag
                     grouping: filters
                     label: Writer image label tags
-                    value: h1
+                    value: h2
                     #visible_if: (controlled in module code)
                     type: select
                     values: *tags
@@ -339,7 +336,7 @@ plugin_settings:
                         name: sticky_image_label_html_tag
                     grouping: filters
                     label: Feature image label tags
-                    value: h1
+                    value: h2
                     #visible_if: (controlled in module code)
                     type: select
                     values: *tags

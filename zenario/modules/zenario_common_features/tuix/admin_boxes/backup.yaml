@@ -13,10 +13,9 @@ zenario_backup:
             edit_mode:
                 enabled: true
             notices:
-                are_you_sure:
-                    show: true
-                    type: info
-                    message: ''
+                mysqldump_unavailable:
+                    type: warning
+                    message: Zenario cannot call mysqldump directly.
             fields:
                 desc1a:
                     visible_if: |

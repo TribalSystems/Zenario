@@ -30,7 +30,7 @@ header('Content-Type: text/javascript; charset=UTF-8');
 require '../basicheader.inc.php';
 
 //Get a list of module ids from the url
-$modules = array_unique(explode(',', $_GET['ids']));
+$modules = array_unique(explode(',', $_GET['ids'] ?? false));
 $moduleDetails = [];
 
 //Ensure that the site name and subdirectory are part of the ETag, as modules can have different ids on different servers
@@ -59,7 +59,7 @@ ze\cache::useBrowserCache($ETag);
 
 //Run pre-load actions
 
-require ze::editionInclude('wrapper.pre_load');
+if (ze::$canCache) require CMS_ROOT. 'zenario/includes/wrapper.pre_load.inc.php';
 
 
 ze\cache::start();
@@ -160,4 +160,4 @@ if (!empty($_GET['organizer'])) {
 
 
 //Run post-display actions
-require ze::editionInclude('wrapper.post_display');
+if (ze::$canCache) require CMS_ROOT. 'zenario/includes/wrapper.post_display.inc.php';

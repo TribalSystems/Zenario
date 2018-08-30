@@ -27,40 +27,44 @@
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
+
 class zenario_content_notifications extends ze\moduleBaseClass {
-	
 	
 	public static function getNotes($cID, $cType, $cVersion) {
 		return ze\row::getAssocs(
 			ZENARIO_CONTENT_NOTIFICATIONS_PREFIX. 'versions_mirror', true, 
 			['content_id' => $cID, 'content_type' => $cType, 'content_version' => $cVersion],
-			'datetime_requested');
+			'datetime_created'
+		);
 	}
 	
-	public static function noteHeader($note) {
-		$note['formatted_datetime_requested'] = ze\date::formatDateTime($note['datetime_requested']);
-		$note['admin_name'] = ze\admin::formatName($note['admin_id']);
-		$note['tag'] = ze\content::formatTag($note['content_id'], $note['content_type']);
-		$note['link'] = ze\link::toItem($note['content_id'], $note['content_type'], $fullPath = true);
+	public static function getNoteHeader($adminId, $datetime, $cID, $cType, $cVersion, $title = false, $link = false) {
+		$header = '';
 		
-		return ze\admin::phrase(
-'Action requested: [[action_requested]]
-Requested by: [[admin_name]]
-On: [[formatted_datetime_requested]]
-Content item: [[tag]]
-Link: [[link]]', $note);
-	}
-
-	protected function newNote(&$box, &$values) {
-		return [
-				'content_id' => $box['key']['cID'],
-				'content_type' => $box['key']['cType'],
-				'content_version' => $box['key']['cVersion'],
-				'admin_id' => ze\admin::id(),
-				'action_requested' => $values['action_requested'],
-				'datetime_requested' => ze\date::now(),
-				'note' => $values['note']
-			];
+		if ($title) {
+			switch ($title) {
+				case 'request':
+					$title = ze\admin::phrase('Request:');
+					break;
+				case 'note':
+					$title = ze\admin::phrase('Note:');
+					break;
+				default:
+					$title = ze\admin::phrase($title);
+					break;
+			}
+			$header .= ze\admin::phrase('<b><u>[[title]]</u></b>', ['title' => $title]) . '<br>';
+		}
+		
+		$header .= ze\admin::phrase('<b>By:</b> [[by]]', ['by' => ze\admin::formatName($adminId)]) . '<br>';
+		$header .= ze\admin::phrase('<b>On:</b> [[on]]', ['on' => ze\admin::formatDateTime($datetime)]) . '<br>';
+		$header .= ze\admin::phrase('<b>For:</b> [[content]] (Version [[version]])', ['content' => ze\content::formatTag($cID, $cType), 'version' => $cVersion]);
+		
+		if ($link) {
+			$header .= '<br>' . ze\link::toItem($cID, $cType, $fullPath = true);;
+		}
+		
+		return $header;
 	}
 	
 	protected static function getListOfAdminsWhoReceiveNotifications($adminId = false) {
@@ -94,6 +98,15 @@ Link: [[link]]', $note);
 		}
 	}
 
+	protected static function getAdminNotifications($adminId) {
+		return ze\row::get(
+			ZENARIO_CONTENT_NOTIFICATIONS_PREFIX . 'admins_mirror', 
+			['content_request_notification', 'draft_notification', 'published_notification', 'menu_node_notification'], 
+			$adminId
+		);
+	}
+	
+
 	public function fillAdminToolbar(&$adminToolbar, $cID, $cType, $cVersion) {
 
 		if (ze\content::isDraft(ze::$status)
@@ -124,66 +137,15 @@ Link: [[link]]', $note);
 		}
 	}
 	
-	protected static function getAdminNotifications($admin_id) {
-		return ze\row::get(ZENARIO_CONTENT_NOTIFICATIONS_PREFIX . 'admins_mirror', 
-					['content_request_notification', 'draft_notification', 
-						'published_notification', 'menu_node_notification'], $admin_id);
-	}
-
-
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		if ($c = $this->runSubClass(__FILE__)) {
 			return $c->fillAdminBox($path, $settingGroup, $box, $fields, $values);
-		}
-		
-		switch ($path) {
-			case 'zenario_admin':
-				if ($details = self::getAdminNotifications($box['key']['id'])) {
-					$values['notifications_tab/draft_notification'] = $details['draft_notification'];
-					$values['notifications_tab/published_notification'] = $details['published_notification'];
-					$values['notifications_tab/menu_node_notification'] = $details['menu_node_notification'];
-					$values['notifications_tab/content_request_notification'] = $details['content_request_notification'];
-				}
-				
-				break;
 		}
 	}
 
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		if ($c = $this->runSubClass(__FILE__)) {
 			return $c->formatAdminBox($path, $settingGroup, $box, $fields, $values, $changes);
-		}
-		
-		switch ($path) {
-			case 'zenario_admin':
-				
-				switch ($values['permissions/permissions']) {
-					case 'all_permissions':
-						$notificationPerms = true;
-						break;
-					
-					case 'specific_actions':
-						$notificationPerms = 
-							!empty($values['permissions/perm_publish_permissions'])
-						 && strpos($values['permissions/perm_publish_permissions'], '_PRIV_APPEAR_ON_CONTENT_REQUEST_RECIPIENT_LIST') !== false;
-						break;
-					
-					default:
-						$notificationPerms = false;
-				}
-				
-				$fields['notifications_tab/no_notifications']['hidden'] = $notificationPerms;
-				
-				$fields['notifications_tab/content_request_notification']['hidden'] =
-				$fields['notifications_tab/draft_notification']['hidden'] =
-				$fields['notifications_tab/published_notification']['hidden'] =
-				$fields['notifications_tab/menu_node_notification']['hidden'] = !$notificationPerms;
-				
-				//Allow an admin to edit their own notifications, otherwise check the _PRIV_EDIT_ADMIN permission
-				$box['tabs']['notifications_tab']['edit_mode']['enabled'] =
-					$notificationPerms && ($box['key']['id'] == ze\admin::id() || ze\priv::check('_PRIV_EDIT_ADMIN'));
-				
-				break;
 		}
 	}
 
@@ -197,133 +159,145 @@ Link: [[link]]', $note);
 		if ($c = $this->runSubClass(__FILE__)) {
 			return $c->saveAdminBox($path, $settingGroup, $box, $fields, $values, $changes);
 		}
-		
-		switch ($path) {
-			case 'zenario_admin':
-				
-				//Allow an admin to edit their own notifications, otherwise check the _PRIV_EDIT_ADMIN permission
-				if (ze\ring::engToBoolean($box['tabs']['notifications_tab']['edit_mode']['on'] ?? false)
-				 && ($box['key']['id'] == ze\admin::id() || ze\priv::check('_PRIV_EDIT_ADMIN'))) {
-					ze\row::set(
-						ZENARIO_CONTENT_NOTIFICATIONS_PREFIX. 'admins_mirror',
-						[
-							'draft_notification' => $values['notifications_tab/draft_notification'],
-							'published_notification' => $values['notifications_tab/published_notification'],
-							'menu_node_notification' => $values['notifications_tab/menu_node_notification'],
-							'content_request_notification' => $values['notifications_tab/content_request_notification']],
-						$box['key']['id']);
-				}
-				
-				break;
+	}
+	
+	public function adminBoxSaveCompleted($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+		if ($c = $this->runSubClass(__FILE__)) {
+			return $c->adminBoxSaveCompleted($path, $settingGroup, $box, $fields, $values, $changes);
 		}
 	}
+
+	
+
+	
+	
+	
+
+	
+
+	
+	
 	
 	
 	//Delete requests for any versions that are deleted from the system
 	public static function eventContentDeleted($cID, $cType, $cVersion) {
 		ze\row::delete(
 			ZENARIO_CONTENT_NOTIFICATIONS_PREFIX. 'versions_mirror',
-			['content_id' => $cID, 'content_type' => $cType, 'content_version' => $cVersion]);
+			['content_id' => $cID, 'content_type' => $cType, 'content_version' => $cVersion]
+		);
+	}
+	
+	//Notification sending
+	
+	public static function eventContentPublished($cID, $cType, $cVersion) {
+		self::sendEmailNotification('published_notification', 'content_item', 'published', self::getContentFieldsForEmail($cID, $cType, $cVersion));
 	}
 
+	public static function eventDraftCreated($cIDTo, $cIDFrom, $cTypeTo, $cVersionTo, $cVersionFrom, $cTypeFrom) {
+		self::sendEmailNotification('draft_notification', 'content_item', 'drafted', self::getContentFieldsForEmail($cIDTo, $cTypeTo, $cVersionTo));
+	}
+	
+	public static function eventMenuNodeTextAdded($menuId, $languageId, $newText) {
+		self::sendEmailNotification('menu_node_notification', 'menu_node', 'created', self::getMenuFieldsForEmail($menuId, $languageId, $newText));
+	}
+	
+	public static function eventMenuNodeTextUpdated($menuId, $languageId, $newText, $oldText) {
+		self::sendEmailNotification('menu_node_notification', 'menu_node', 'updated', self::getMenuFieldsForEmail($menuId, $languageId, $newText, $oldText));
+	}
 	
 	
+	protected static function sendEmailNotification($notificationType, $thing, $action, $mergeFields) {
+		$mergeFields['action'] = '[[item]] [[action]]';
+		$replace = [];
+		switch ($thing) {
+			case 'content_item':
+				$replace['item'] = 'Item';
+				switch ($action) {
+					case 'published':
+						$replace['action'] = 'published';
+						break;
+					case 'drafted':
+						$replace['action'] = 'drafted';
+						break;
+				}
+				break;
+			case 'menu_node':
+				$replace['item'] = 'Menu node';
+				switch ($action) {
+					case 'created':
+						$replace['action'] = 'created';
+						break;
+					case 'updated':
+						$replace['action'] = 'updated';
+						break;
+				}
+				break;
+		}
+		ze\lang::applyMergeFields($mergeFields['action'], $replace);
+		
+		$subject = self::processTemplate('content_notification_email_subject', $mergeFields);
+		$body = self::processTemplate('content_notification_email_body', $mergeFields);
+		$addressToOverriddenBy = '';
+		
+		if ($subject && $body) {
+			$sql = "
+				SELECT DISTINCT a.id, a.email
+				FROM ". DB_PREFIX. "admins AS a
+				INNER JOIN ". DB_PREFIX. ZENARIO_CONTENT_NOTIFICATIONS_PREFIX. "admins_mirror AS am
+				   ON am.admin_id = a.id
+				  AND am.`". ze\escape::sql($notificationType). "` = 1
+				INNER JOIN " . DB_PREFIX . "action_admin_link as aal 
+				   ON aal.admin_id = a.id
+				  AND aal.action_name IN ('_ALL', '_PRIV_APPEAR_ON_CONTENT_REQUEST_RECIPIENT_LIST')
+				WHERE a.status = 'active'
+				  AND id != ". (int) ze\admin::id();
+			$result = ze\sql::select($sql);
+			while ($row = ze\sql::fetchAssoc($result)) {
+				ze\server::sendEmail($subject, $body, $row['email'], $addressToOverriddenBy, $nameTo = false, $addressFrom = false, $nameFrom = false, $attachments = [], $attachmentFilenameMappings = [], $precedence = 'bulk', $isHTML = false);
+			}
+		}
+	}
 	
-	
-	
-
 	public static function processTemplate($template_key, &$fields) {
 		$template = ze::setting($template_key);
 		$re = '/\{\{([^}]+)\}\}/';
 
 		$result = preg_replace_callback($re, function ($matches) use (&$fields) {
-					$key = $matches[1];
-					if (isset($fields[$key])) {
-						return $fields[$key];
-					}
-					return $matches[0];
-				}, $template);
+			$key = $matches[1];
+			if (isset($fields[$key])) {
+				return $fields[$key];
+			}
+			return $matches[0];
+		}, $template);
+		
 		return $result;
 	}
-
-	protected static function sendEmailNotification($notification_type, $subject, $body) {
-		
-		$sql = "
-			SELECT DISTINCT a.id, a.email
-			FROM ". DB_PREFIX. "admins AS a
-			INNER JOIN ". DB_PREFIX. ZENARIO_CONTENT_NOTIFICATIONS_PREFIX. "admins_mirror AS am
-			   ON am.admin_id = a.id
-			  AND am.`". ze\escape::sql($notification_type). "` = 1
-			INNER JOIN " . DB_PREFIX . "action_admin_link as aal 
-			   ON aal.admin_id = a.id
-			  AND aal.action_name IN ('_ALL', '_PRIV_APPEAR_ON_CONTENT_REQUEST_RECIPIENT_LIST')
-			WHERE a.status = 'active'
-			  AND id != ". (int) ze\admin::id();
-
-		$result = ze\sql::select($sql);
-		while ($row = ze\sql::fetchAssoc($result)) {
-			$addressToOverriddenBy = '';
-			ze\server::sendEmail($subject, $body, $row['email'], $addressToOverriddenBy, $nameTo = false, $addressFrom = false, $nameFrom = false, $attachments = [], $attachmentFilenameMappings = [], $precedence = 'bulk', $isHTML = false);
-		}
-	}
-
-	protected static function sendEmailContentNotification($notification_type, $subject, $mergeFields) {
-
-		$mergeFields['published_drafted_trashed'] = $subject;
-		$subject_template = self::processTemplate('content_notification_email_subject', $mergeFields);
-		$body_template = self::processTemplate('content_notification_email_body', $mergeFields);
-		
-		if ($subject_template && $body_template) {
-			self::sendEmailNotification($notification_type, $subject_template, $body_template);
-		}
-	}
-
+	
+	
 	protected static function insertFieldsForEmail(&$record) {
 		$record['url'] = $url = ze\link::adminDomain() . SUBDIRECTORY;
 		$record['admin_name'] = ze\admin::formatName();
 		$record['admin_profile_url'] = 
 			ze\link::absolute(). 'zenario/admin/organizer.php?#zenario__users/panels/administrators';
-		$record['datetime_when'] = ze\date::formatDateTime(ze\date::now());
+		$record['datetime_when'] = ze\admin::formatDateTime(ze\date::now());
 	}
-
+	
 	protected static function getContentFieldsForEmail($cID, $cType, $cVersion) {
 		$record = ze\row::get('content_item_versions', ['tag_id', 'title'], ['id' => $cID, 'type' => $cType, 'version' => $cVersion]);
 		self::insertFieldsForEmail($record);
 		$url = $record['url'];
 		$record['hyperlink'] = ze\link::toItem($cID, $cType, $fullPath = true, $request = '&cVersion=' . $cVersion);
+		$record['previous_menu_node'] = 'n/a';
+		$record['new_menu_node'] = 'n/a';
 		return $record;
 	}
-
-	public static function eventContentPublished($cID, $cType, $cVersion) {
-		self::sendEmailContentNotification('published_notification', 'published', self::getContentFieldsForEmail($cID, $cType, $cVersion));
-	}
-
-	public static function eventDraftCreated($cIDTo, $cIDFrom, $cTypeTo, $cVersionTo, $cVersionFrom, $cTypeFrom) {
-		self::sendEmailContentNotification('draft_notification', 'drafted', self::getContentFieldsForEmail($cIDTo, $cTypeTo, $cVersionTo));
-	}
-
-	protected static function sendEmailMenuNodeNotification($notification_type, $subject, $mergeFields) {
-
-		$mergeFields['created_updated'] = $subject;
-		$subject_template = self::processTemplate('menu_node_notification_email_subject', $mergeFields);
-		$body_template = self::processTemplate('menu_node_notification_email_body', $mergeFields);
-		
-		if ($subject_template && $body_template) {
-			self::sendEmailNotification($notification_type, $subject_template, $body_template);
-		}
-	}
-
+	
 	protected static function getMenuFieldsForEmail($menuId, $languageId, $newText, $oldText = '') {
-
-		$title = '';
-		$tag_id = '';
-		$link = '';
-		
+		$title = $tagId = $link = '';
 		if ($equiv = ze\menu::getContentItem($menuId)) {
-			
 			if (ze\content::langEquivalentItem($equiv['content_id'], $equiv['content_type'], $languageId)) {
 				$title = ze\content::title($equiv['content_id'], $equiv['content_type']);
-				$tag_id = ze\content::formatTag($equiv['content_id'], $equiv['content_type']);
+				$tagId = ze\content::formatTag($equiv['content_id'], $equiv['content_type']);
 				$link = ze\link::toItem($equiv['content_id'], $equiv['content_type'], $fullPath = true);
 			}
 		}
@@ -333,17 +307,11 @@ Link: [[link]]', $note);
 		$record['previous_menu_node'] = $oldText;
 		$record['new_menu_node'] = $newText;
 		$record['title'] = $title;
-		$record['tag_id'] = $tag_id;
+		$record['tag_id'] = $tagId;
 		$record['hyperlink'] = $link;
 		return $record;
 	}
-
-	public static function eventMenuNodeTextAdded($menuId, $languageId, $newText) {
-		self::sendEmailMenuNodeNotification('menu_node_notification', 'created', self::getMenuFieldsForEmail($menuId, $languageId, $newText));
-	}
-
-	public static function eventMenuNodeTextUpdated($menuId, $languageId, $newText, $oldText) {
-		self::sendEmailMenuNodeNotification('menu_node_notification', 'updated', self::getMenuFieldsForEmail($menuId, $languageId, $newText, $oldText));
-	}
+	
+	
 
 }

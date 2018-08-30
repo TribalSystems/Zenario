@@ -137,6 +137,8 @@ if ($loadDefinition) {
 			exit;
 		}
 	}
+	
+	ze\tuix::checkTUIXForm($tags);
 }
 
 if ($debugMode) {

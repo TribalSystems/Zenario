@@ -24,13 +24,13 @@ diagnostics:
                     full_width: true
                     snippet:
                         html: System Requirements
-                    visible_if: zenarioAW.togglePressed(1)
+                    visible_if: zenarioAW.togglePressed(field, 1)
                 show_system_requirements: &show_section
                     grouping: sub_table
                     type: toggle
                     redraw_onchange: true
                     same_row: true
-                    visible_if: "zenarioAW.togglePressed(1, tuixObject)"
+                    visible_if: "zenarioAW.togglePressed(field, 1)"
                 
                 server:
                     grouping: sub_table
@@ -38,27 +38,27 @@ diagnostics:
                     row_class: sub_level
                     snippet:
                         html: Web Server
-                    visible_if: zenarioAW.togglePressed(2)
+                    visible_if: zenarioAW.togglePressed(field, 2)
                 show_server: &show_subsection
                     grouping: sub_table
                     type: toggle
                     redraw_onchange: true
                     same_row: true
-                    visible_if: "zenarioAW.togglePressed(2, tuixObject)"
+                    visible_if: "zenarioAW.togglePressed(field, 2)"
                 server_1:
                     grouping: sub_table
                     full_width: true
                     row_class: sub_field
                     snippet:
                         html: Apache http server version 2.4.7 or later
-                    visible_if: zenarioAW.togglePressed()
+                    visible_if: zenarioAW.togglePressed(field)
                 php:
                     grouping: sub_table
                     full_width: true
                     row_class: sub_level
                     snippet:
                         html: PHP
-                    visible_if: zenarioAW.togglePressed(2)
+                    visible_if: zenarioAW.togglePressed(field, 2)
                 show_php: *show_subsection
                 php_1:
                     grouping: sub_table
@@ -66,7 +66,7 @@ diagnostics:
                     row_class: sub_field
                     snippet:
                         html: PHP version 7.0 or later
-                    visible_if: zenarioAW.togglePressed()
+                    visible_if: zenarioAW.togglePressed(field)
                 opcache_misconfigured:
                     grouping: sub_table
                     full_width: true
@@ -80,14 +80,14 @@ diagnostics:
                             
                             Please edit your <code>php.ini</code> and either turn <code>opcache.enable</code> off
                             or else turn <code>opcache.dups_fix</code> on.
-                    visible_if: zenarioAW.togglePressed()
+                    visible_if: zenarioAW.togglePressed(field)
                 mysql:
                     grouping: sub_table
                     full_width: true
                     row_class: sub_level
                     snippet:
                         html: MySQL
-                    visible_if: zenarioAW.togglePressed(2)
+                    visible_if: zenarioAW.togglePressed(field, 2)
                 show_mysql: *show_subsection
                 mysql_1:
                     grouping: sub_table
@@ -95,21 +95,21 @@ diagnostics:
                     row_class: sub_field
                     snippet:
                         html: MySQLi extension enabled in PHP
-                    visible_if: zenarioAW.togglePressed()
+                    visible_if: zenarioAW.togglePressed(field)
                 mysql_2:
                     grouping: sub_table
                     full_width: true
                     row_class: sub_field
                     snippet:
                         html: MySQL client and MySQL server version 5.5.3 or later
-                    visible_if: zenarioAW.togglePressed()
+                    visible_if: zenarioAW.togglePressed(field)
                 mb:
                     grouping: sub_table
                     full_width: true
                     row_class: sub_level
                     snippet:
                         html: Unicode Support
-                    visible_if: zenarioAW.togglePressed(2)
+                    visible_if: zenarioAW.togglePressed(field, 2)
                 show_mb: *show_subsection
                 mb_1:
                     grouping: sub_table
@@ -117,21 +117,21 @@ diagnostics:
                     row_class: sub_field
                     snippet:
                         html: ctype extension enabled in PHP
-                    visible_if: zenarioAW.togglePressed()
+                    visible_if: zenarioAW.togglePressed(field)
                 mb_2:
                     grouping: sub_table
                     full_width: true
                     row_class: sub_field
                     snippet:
                         html: mbstring extension enabled in PHP
-                    visible_if: zenarioAW.togglePressed()
+                    visible_if: zenarioAW.togglePressed(field)
                 gd:
                     grouping: sub_table
                     full_width: true
                     row_class: sub_level
                     snippet:
                         html: Image Manipulation
-                    visible_if: zenarioAW.togglePressed(2)
+                    visible_if: zenarioAW.togglePressed(field, 2)
                 show_gd: *show_subsection
                 gd_1:
                     grouping: sub_table
@@ -139,35 +139,35 @@ diagnostics:
                     row_class: sub_field
                     snippet:
                         html: GD Library enabled in PHP
-                    visible_if: zenarioAW.togglePressed()
+                    visible_if: zenarioAW.togglePressed(field)
                 gd_2:
                     grouping: sub_table
                     full_width: true
                     row_class: sub_field
                     snippet:
                         html: GIF Read Support enabled in PHP
-                    visible_if: zenarioAW.togglePressed()
+                    visible_if: zenarioAW.togglePressed(field)
                 gd_3:
                     grouping: sub_table
                     full_width: true
                     row_class: sub_field
                     snippet:
                         html: JPG Support enabled in PHP
-                    visible_if: zenarioAW.togglePressed()
+                    visible_if: zenarioAW.togglePressed(field)
                 gd_4:
                     grouping: sub_table
                     full_width: true
                     row_class: sub_field
                     snippet:
                         html: PNG Support enabled in PHP
-                    visible_if: zenarioAW.togglePressed()
+                    visible_if: zenarioAW.togglePressed(field)
                 optional:
                     grouping: sub_table
                     full_width: true
                     row_class: sub_level
                     snippet:
                         html: Optional requirements
-                    visible_if: zenarioAW.togglePressed(2)
+                    visible_if: zenarioAW.togglePressed(field, 2)
                 show_optional: *show_subsection
                 optional_mod_deflate:
                     grouping: sub_table
@@ -177,7 +177,7 @@ diagnostics:
                         html: |
                             deflate module enabled in Apache
                             <br/><small>Needed for compressing files, for a faster page-load</small>
-                    visible_if: zenarioAW.togglePressed()
+                    visible_if: zenarioAW.togglePressed(field)
                 optional_mod_expires:
                     grouping: sub_table
                     full_width: true
@@ -186,7 +186,7 @@ diagnostics:
                         html: |
                             expires module enabled in Apache
                             <br/><small>Needed for images and files to be cached in the visitors browser, for a faster page-load</small>
-                    visible_if: zenarioAW.togglePressed()
+                    visible_if: zenarioAW.togglePressed(field)
                 optional_mod_rewrite:
                     grouping: sub_table
                     full_width: true
@@ -195,7 +195,7 @@ diagnostics:
                         html: |
                             rewrite module enabled in Apache
                             <br/><small>Needed for friendly URLs</small>
-                    visible_if: zenarioAW.togglePressed()
+                    visible_if: zenarioAW.togglePressed(field)
                 optional_curl:
                     grouping: sub_table
                     full_width: true
@@ -204,7 +204,7 @@ diagnostics:
                         html: |
                             curl extension enabled in PHP
                             <br/><small>Needed for translating pages using Google Translate</small>
-                    visible_if: zenarioAW.togglePressed()
+                    visible_if: zenarioAW.togglePressed(field)
                 optional_zip:
                     grouping: sub_table
                     full_width: true
@@ -213,7 +213,7 @@ diagnostics:
                         html: |
                             zip extension enabled in PHP
                             <br/><small>Needed for creating document extracts</small>
-                    visible_if: zenarioAW.togglePressed()
+                    visible_if: zenarioAW.togglePressed(field)
                 
                 
                 
@@ -225,7 +225,7 @@ diagnostics:
                     full_width: true
                     snippet:
                         html: Directories
-                    visible_if: zenarioAW.togglePressed(1)
+                    visible_if: zenarioAW.togglePressed(field, 1)
                 show_dirs: *show_section
                 
                 dir_1:
@@ -234,7 +234,7 @@ diagnostics:
                     row_class: sub_level
                     snippet:
                         html: Backup Storage Area
-                    visible_if: zenarioAW.togglePressed(2)
+                    visible_if: zenarioAW.togglePressed(field, 2)
                 show_dir_1: *show_subsection
                 dir_1_blurb:
                     grouping: sub_table
@@ -245,19 +245,19 @@ diagnostics:
                             If you wish to store site backups on your server, you should create a directory
                             on your server in which to keep them.
                             It should start with a slash, but do not add a trailing slash.
-                    visible_if: zenarioAW.togglePressed()
+                    visible_if: zenarioAW.togglePressed(field)
                 backup_dir: &changeable_dir
                     grouping: sub_table
                     full_width: true
                     row_class: sub_field
                     type: text
-                    visible_if: zenarioAW.togglePressed()
+                    visible_if: zenarioAW.togglePressed(field)
                 backup_dir_status:
                     grouping: sub_table
                     full_width: true
                     snippet:
                         html: "&nbsp;"
-                    visible_if: zenarioAW.togglePressed()
+                    visible_if: zenarioAW.togglePressed(field)
                 
                 dir_2:
                     grouping: sub_table
@@ -265,7 +265,7 @@ diagnostics:
                     row_class: sub_level
                     snippet:
                         html: Document Secure Store (Docstore)
-                    visible_if: zenarioAW.togglePressed(2)
+                    visible_if: zenarioAW.togglePressed(field, 2)
                 show_dir_2: *show_subsection
                 dir_2_blurb:
                     grouping: sub_table
@@ -276,7 +276,7 @@ diagnostics:
                             You should create a directory on your server where Documents can be stored by the CMS.
                             Please enter the absolute path to the directory.
                             It should start with a slash, but do not add a trailing slash.
-                    visible_if: zenarioAW.togglePressed()
+                    visible_if: zenarioAW.togglePressed(field)
                 docstore_dir: *changeable_dir
                 docstore_dir_status: &dir_status
                     grouping: sub_table
@@ -284,7 +284,7 @@ diagnostics:
                     row_class: sub_field
                     snippet:
                         html: "&nbsp;"
-                    visible_if: zenarioAW.togglePressed()
+                    visible_if: zenarioAW.togglePressed(field)
                 
                 dir_3:
                     grouping: sub_table
@@ -292,7 +292,7 @@ diagnostics:
                     row_class: sub_level
                     snippet:
                         html: Templates Directory
-                    visible_if: zenarioAW.togglePressed(2)
+                    visible_if: zenarioAW.togglePressed(field, 2)
                 show_dir_3: *show_subsection
                 dir_3_blurb:
                     grouping: sub_table
@@ -303,14 +303,14 @@ diagnostics:
                             Zenario uses template files to form the layout of web pages.
                             These may be edited by an administrator, and Zenario writes them to the following directory.
                             Please ensure it exists and is writable by the web server:
-                    visible_if: zenarioAW.togglePressed()
+                    visible_if: zenarioAW.togglePressed(field)
                 template_dir: &readonly_dir
                     grouping: sub_table
                     full_width: true
                     row_class: sub_field
                     type: text
                     readonly: readonly
-                    visible_if: zenarioAW.togglePressed()
+                    visible_if: zenarioAW.togglePressed(field)
                 template_dir_status: *dir_status
                 
                 dir_4:
@@ -319,7 +319,7 @@ diagnostics:
                     row_class: sub_level
                     snippet:
                         html: CSS Directories
-                    visible_if: zenarioAW.togglePressed(2)
+                    visible_if: zenarioAW.togglePressed(field, 2)
                 show_dir_4: *show_subsection
                 dir_4_blurb:
                     grouping: sub_table
@@ -327,7 +327,7 @@ diagnostics:
                     row_class: sub_field
                     snippet:
                         html: ''
-                    visible_if: zenarioAW.togglePressed()
+                    visible_if: zenarioAW.togglePressed(field)
                 skin_dir_1: *readonly_dir
                 skin_dir_status_1: *dir_status
                 skin_dir_2: *readonly_dir
@@ -353,7 +353,7 @@ diagnostics:
                     row_class: sub_level
                     snippet:
                         html: Cache Directory
-                    visible_if: zenarioAW.togglePressed(2)
+                    visible_if: zenarioAW.togglePressed(field, 2)
                 show_dir_5: *show_subsection
                 dir_5_blurb:
                     grouping: sub_table
@@ -363,7 +363,7 @@ diagnostics:
                         html: |
                             Zenario can store generated files in a cache directory to speed up performance and reduce load on the database.
                             Please ensure it exists and is writable by the web server:
-                    visible_if: zenarioAW.togglePressed()
+                    visible_if: zenarioAW.togglePressed(field)
                 cache_dir: *readonly_dir
                 cache_dir_status: *dir_status
                 
@@ -373,7 +373,7 @@ diagnostics:
                     row_class: sub_level
                     snippet:
                         html: Private Directory
-                    visible_if: zenarioAW.togglePressed(2)
+                    visible_if: zenarioAW.togglePressed(field, 2)
                 show_dir_6: *show_subsection
                 dir_6_blurb:
                     grouping: sub_table
@@ -384,7 +384,7 @@ diagnostics:
                             Zenario uses a cache directory to store documents and images temporarily
                             while they are downloaded by users.
                             Please ensure it exists and is writable by the web server:
-                    visible_if: zenarioAW.togglePressed()
+                    visible_if: zenarioAW.togglePressed(field)
                 private_dir: *readonly_dir
                 private_dir_status: *dir_status
                 
@@ -394,7 +394,7 @@ diagnostics:
                     row_class: sub_level
                     snippet:
                         html: Public Directory
-                    visible_if: zenarioAW.togglePressed(2)
+                    visible_if: zenarioAW.togglePressed(field, 2)
                 show_dir_7: *show_subsection
                 dir_7_blurb:
                     grouping: sub_table
@@ -404,7 +404,7 @@ diagnostics:
                         html: |
                             Zenario uses a directory to store documents that are publicly available.
                             This directory MUST be writable by the web server.
-                    visible_if: zenarioAW.togglePressed()
+                    visible_if: zenarioAW.togglePressed(field)
                 public_dir: *readonly_dir
                 public_dir_status: *dir_status
                 
@@ -415,14 +415,14 @@ diagnostics:
                     snippet:
                         html: Site configuration
                     hide_on_install: true
-                    visible_if: zenarioAW.togglePressed(1)
+                    visible_if: zenarioAW.togglePressed(field, 1)
                 show_site:
                     grouping: sub_table
                     type: toggle
                     redraw_onchange: true
                     same_row: true
                     hide_on_install: true
-                    visible_if: "zenarioAW.togglePressed(1, tuixObject)"
+                    visible_if: "zenarioAW.togglePressed(field, 1)"
                 site_description_missing:
                     grouping: sub_table
                     full_width: true
@@ -434,7 +434,7 @@ diagnostics:
                             e.g. by copying or symlinking one of the files from the
                             <code>zenario/api/sample_site_descriptions/</code> directory.
                     hide_on_install: true
-                    visible_if: zenarioAW.togglePressed()
+                    visible_if: zenarioAW.togglePressed(field)
                 site_disabled: &blank_child
                     grouping: sub_table
                     full_width: true
@@ -442,7 +442,7 @@ diagnostics:
                     snippet:
                         html: ''
                     hide_on_install: true
-                    visible_if: zenarioAW.togglePressed()
+                    visible_if: zenarioAW.togglePressed(field)
                 site_special_pages_unpublished: *blank_child
                 public_documents: *blank_child
                 site_automated_backups: *blank_child
@@ -461,7 +461,7 @@ diagnostics:
                             to define a primary domain.
                             
                     hide_on_install: true
-                    visible_if: zenarioAW.togglePressed()
+                    visible_if: zenarioAW.togglePressed(field)
                 forwarded_ip_misconfigured:
                     grouping: sub_table
                     full_width: true
@@ -472,7 +472,7 @@ diagnostics:
                             in your <code>zenario_siteconfig.php</code> file,
                             but you are not using a load balancer or a proxy,
                             or your load balancer or proxy is misconfigured.
-                    visible_if: zenarioAW.togglePressed()
+                    visible_if: zenarioAW.togglePressed(field)
                 errors_not_shown:
                     grouping: sub_table
                     full_width: true
@@ -487,7 +487,7 @@ diagnostics:
                             click the hammer icon at the bottom left of Organizer
                             to fully enable the site.)
                     hide_on_install: true
-                    visible_if: zenarioAW.togglePressed()
+                    visible_if: zenarioAW.togglePressed(field)
                 notices_shown:
                     grouping: sub_table
                     full_width: true
@@ -500,7 +500,7 @@ diagnostics:
                             should be set to <code>(E_ALL & ~E_NOTICE & ~E_STRICT)</code>
                             in your <code>zenario_siteconfig.php</code> file.)
                     hide_on_install: true
-                    visible_if: zenarioAW.togglePressed()
+                    visible_if: zenarioAW.togglePressed(field)
                 email_addresses_overridden:
                     grouping: sub_table
                     full_width: true
@@ -509,7 +509,7 @@ diagnostics:
                         html: ''
                             #You have &ldquo;Email debug mode&rdquo; enabled...
                     hide_on_install: true
-                    visible_if: zenarioAW.togglePressed()
+                    visible_if: zenarioAW.togglePressed(field)
                 #email_addresses_not_overridden:
                 #    grouping: sub_table
                 #    full_width: true
@@ -520,7 +520,7 @@ diagnostics:
                 #            but you do not have &ldquo;Email debug mode&rdquo; enabled under
                 #            <em>Configuration -&gt; Site Settings-&gt; Email -&gt; Debug</em> in Organizer.
                 #    hide_on_install: true
-                #    visible_if: zenarioAW.togglePressed()
+                #    visible_if: zenarioAW.togglePressed(field)
                 missing_modules: *blank_child
                 bad_extra_module_symlinks: *blank_child
                 module_errors: *blank_child
@@ -534,7 +534,7 @@ diagnostics:
                             but doesn't use HTTPS to secure the transmission of passwords and other personal data.
                             We recommend you ask your system administrator to make this site run using HTTPS.
                     hide_on_install: true
-                    visible_if: zenarioAW.togglePressed()
+                    visible_if: zenarioAW.togglePressed(field)
                 two_factor_security:
                     grouping: sub_table
                     full_width: true
@@ -546,7 +546,7 @@ diagnostics:
                             Please edit the <code>zenario_custom/site_description.yaml</code> file
                             to enable two-factor authentication.
                     hide_on_install: true
-                    visible_if: zenarioAW.togglePressed()
+                    visible_if: zenarioAW.togglePressed(field)
                 robots_txt: *blank_child
                 
                 
@@ -559,14 +559,14 @@ diagnostics:
                     snippet:
                         html: Content items in draft form
                     hide_on_install: true
-                    visible_if: zenarioAW.togglePressed(1)
+                    visible_if: zenarioAW.togglePressed(field, 1)
                 show_content:
                     grouping: sub_table
                     type: toggle
                     redraw_onchange: true
                     same_row: true
                     hide_on_install: true
-                    visible_if: "zenarioAW.togglePressed(1, tuixObject)"
+                    visible_if: "zenarioAW.togglePressed(field, 1)"
                 content_nothing_unpublished: *blank_child
                     snippet:
                         html: You have no unpublished content items.
@@ -584,14 +584,14 @@ diagnostics:
                     snippet:
                         html: Administrators
                     hide_on_install: true
-                    visible_if: zenarioAW.togglePressed(1)
+                    visible_if: zenarioAW.togglePressed(field, 1)
                 show_administrators:
                     grouping: sub_table
                     type: toggle
                     redraw_onchange: true
                     same_row: true
                     hide_on_install: true
-                    visible_if: "zenarioAW.togglePressed(1, tuixObject)"
+                    visible_if: "zenarioAW.togglePressed(field, 1)"
                 
                 administrators_active: *blank_child
                     snippet:

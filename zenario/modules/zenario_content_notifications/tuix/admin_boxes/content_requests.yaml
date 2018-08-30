@@ -14,49 +14,31 @@ zenario_content_requests:
             edit_mode:
                 enabled: Yes
                 priv: _PRIV_EDIT_DRAFT
-            
             fields:
-                existing_requests:
-                    visible_if: "zenarioAB.value('existing_requests')"
-                    label: 'Existing requests:'
-                    type: textarea
-                    rows: 15
-                    readonly: Yes
-                
-                create_draft_to_send_request:
-                    full_width: true
-                    snippet:
-                        html: 
-                
-                action_requested:
-                    label: 'Create a request:'
-                    visible_if: zenarioAB.editModeOn()
-                    format_onchange: Yes
+                action:
+                    label: 'Action:'
                     type: select
-                    empty_value: '-- Select --'
+                    empty_value: -- Select --
                     values:
-                        publish:
-                            label: Request to publish
-                        trash:
-                            label: Request to trash                    
-                        other:
-                            label: Request another action
+                        add_note:
+                            label: Add a note
+                        send_request:
+                            label: Send a request
+                    format_onchange: true
                     validation:
-                        required: Please select the type of request
-                request_details:
-                    label: 'New request:'
-                    visible_if: "zenarioAB.editModeOn() && zenarioAB.value('action_requested')"
-                    snippet:
-                        html: ""
+                        required: Please select an action.
+                
                 note:
-                    label: 'Add a comment:'
-                    visible_if: "zenarioAB.editModeOn() && zenarioAB.value('action_requested')"
+                    visible_if: "zenarioAB.value('action')"
+                    indent: 1
                     type: textarea
                     rows: 7
+                    css_class: ab_note
                 
                 recipients:
+                    visible_if: "zenarioAB.value('action') == 'send_request'"
+                    indent: 1
                     label: 'List of recipients:'
-                    visible_if: "zenarioAB.editModeOn() && zenarioAB.value('action_requested')"
                     pick_items:
                         path: zenario__users/panels/administrators
                         min_path: zenario__users/panels/administrators
@@ -66,3 +48,8 @@ zenario_content_requests:
                         hide_remove_button: true
                         nothing_selected_phrase: There are no admins who can receive notifications
                     readonly: true
+                
+                line:
+                    snippet:
+                        html: <hr><b>Previous notes and requests:</b>
+                    

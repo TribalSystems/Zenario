@@ -36,14 +36,7 @@ switch ($path) {
 			}
 		}
 		break;
-	
-
-	case 'editor_temp_file':
-		$key = false;
-		$privCheck = ze\priv::check('_PRIV_MANAGE_MEDIA');
-		
-		return require ze::funIncPath(__FILE__, 'media.handleOrganizerPanelAJAX');
-		
+			
 	//For debug
 	default:
 		print_r($_GET);

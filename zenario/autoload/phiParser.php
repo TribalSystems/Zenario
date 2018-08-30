@@ -51,6 +51,7 @@ class phiParser {
 		$result = null;
 		
 		try {
+			\ze::$ers = [];
 			$twigCode = self::phiToTwig($phiCode, $allowFunctions);
 			$result = \ze\phi::runTwig($twigCode, $outputs, $vars, true);
 	
@@ -70,13 +71,14 @@ class phiParser {
 			}
 			
 			if (is_numeric($i) && isset(self::$lines[$i-1])) {
-				$error = 'Error at line '. (self::$lines[$i-1]->lineNumber + 1). ', "'. self::$originalLines[self::$lines[$i-1]->lineNumber]. '": '. $message;
+				\ze::$ers[] = 'Error at line '. (self::$lines[$i-1]->lineNumber + 1). ', "'. self::$originalLines[self::$lines[$i-1]->lineNumber]. '": '. $message;
 			} else {
-				$error = $message;
+				\ze::$ers[] = $message;
 			}
+			$error = true;
 		}
 	
-		return ['result' => $result, 'error' => $error, 'varDumps' => \ze\phi::$varDumps, 'twig' => $twigCode];
+		return ['result' => $result, 'error' => $error, 'errors' => \ze::$ers, 'varDumps' => \ze\phi::$varDumps, 'twig' => $twigCode];
 	}
 	
 	
@@ -448,7 +450,7 @@ class phiParser {
 				
 				default:
 					if ($nextNonEmptyToken == '(') {
-						if ($token == 'return') {
+						if ($token == 'return' || $token == 'exit') {
 							$functionOpenedAtBracket[$bracketsOpen] = true;
 							$token = '_zPhiR_(_zPhiRV_';
 						

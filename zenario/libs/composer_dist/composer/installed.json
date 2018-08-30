@@ -1,47 +1,221 @@
 [
     {
-        "name": "powder96/numbers.php",
-        "version": "dev-master",
-        "version_normalized": "9999999-dev",
+        "name": "composer/ca-bundle",
+        "version": "1.1.1",
+        "version_normalized": "1.1.1.0",
         "source": {
             "type": "git",
-            "url": "https://github.com/powder96/numbers.php.git",
-            "reference": "d4fd8361f80aa3d272bf1a5e3a6f7f745755cf5f"
+            "url": "https://github.com/composer/ca-bundle.git",
+            "reference": "d2c0a83b7533d6912e8d516756ebd34f893e9169"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/powder96/numbers.php/zipball/d4fd8361f80aa3d272bf1a5e3a6f7f745755cf5f",
-            "reference": "d4fd8361f80aa3d272bf1a5e3a6f7f745755cf5f",
+            "url": "https://api.github.com/repos/composer/ca-bundle/zipball/d2c0a83b7533d6912e8d516756ebd34f893e9169",
+            "reference": "d2c0a83b7533d6912e8d516756ebd34f893e9169",
             "shasum": ""
         },
         "require": {
-            "php": ">=5.3.0"
+            "ext-openssl": "*",
+            "ext-pcre": "*",
+            "php": "^5.3.2 || ^7.0"
         },
         "require-dev": {
-            "phpunit/phpunit": "3.7.*"
+            "phpunit/phpunit": "^4.8.35 || ^5.7 || ^6.5",
+            "psr/log": "^1.0",
+            "symfony/process": "^2.5 || ^3.0 || ^4.0"
         },
-        "time": "2013-03-13 20:38:18",
+        "time": "2018-03-29T19:57:20+00:00",
         "type": "library",
-        "installation-source": "source",
+        "extra": {
+            "branch-alias": {
+                "dev-master": "1.x-dev"
+            }
+        },
+        "installation-source": "dist",
         "autoload": {
-            "psr-0": {
-                "NumbersPHP": "lib/",
-                "NumbersPHP\\Tests": "test/"
+            "psr-4": {
+                "Composer\\CaBundle\\": "src"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "MIT"
+        ],
+        "authors": [
+            {
+                "name": "Jordi Boggiano",
+                "email": "j.boggiano@seld.be",
+                "homepage": "http://seld.be"
+            }
+        ],
+        "description": "Lets you find a path to the system CA bundle, and includes a fallback to the Mozilla CA bundle.",
+        "keywords": [
+            "cabundle",
+            "cacert",
+            "certificate",
+            "ssl",
+            "tls"
+        ]
+    },
+    {
+        "name": "geoip2/geoip2",
+        "version": "v2.9.0",
+        "version_normalized": "2.9.0.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/maxmind/GeoIP2-php.git",
+            "reference": "a807fbf65212eef5d8d2db1a1b31082b53633d77"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/maxmind/GeoIP2-php/zipball/a807fbf65212eef5d8d2db1a1b31082b53633d77",
+            "reference": "a807fbf65212eef5d8d2db1a1b31082b53633d77",
+            "shasum": ""
+        },
+        "require": {
+            "maxmind-db/reader": "~1.0",
+            "maxmind/web-service-common": "~0.5",
+            "php": ">=5.4"
+        },
+        "require-dev": {
+            "friendsofphp/php-cs-fixer": "2.*",
+            "phpunit/phpunit": "4.*",
+            "squizlabs/php_codesniffer": "3.*"
+        },
+        "time": "2018-04-10T15:32:59+00:00",
+        "type": "library",
+        "installation-source": "dist",
+        "autoload": {
+            "psr-4": {
+                "GeoIp2\\": "src"
             }
         },
         "notification-url": "https://packagist.org/downloads/",
         "license": [
             "Apache-2.0"
         ],
-        "description": "Advanced Mathematics Library for PHP (port of Numbers.js)",
-        "homepage": "https://github.com/powder96/numbers.php",
+        "authors": [
+            {
+                "name": "Gregory J. Oschwald",
+                "email": "goschwald@maxmind.com",
+                "homepage": "http://www.maxmind.com/"
+            }
+        ],
+        "description": "MaxMind GeoIP2 PHP API",
+        "homepage": "https://github.com/maxmind/GeoIP2-php",
         "keywords": [
-            "arithmetic",
-            "math",
-            "mathematics",
-            "numbers",
-            "statistics"
+            "IP",
+            "geoip",
+            "geoip2",
+            "geolocation",
+            "maxmind"
         ]
+    },
+    {
+        "name": "maxmind-db/reader",
+        "version": "v1.3.0",
+        "version_normalized": "1.3.0.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/maxmind/MaxMind-DB-Reader-php.git",
+            "reference": "e042b4f8a2dff41e19019faf16427178b07fbd58"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/maxmind/MaxMind-DB-Reader-php/zipball/e042b4f8a2dff41e19019faf16427178b07fbd58",
+            "reference": "e042b4f8a2dff41e19019faf16427178b07fbd58",
+            "shasum": ""
+        },
+        "require": {
+            "php": ">=5.4"
+        },
+        "require-dev": {
+            "friendsofphp/php-cs-fixer": "2.*",
+            "phpunit/phpunit": "4.* || 5.*",
+            "satooshi/php-coveralls": "1.0.*",
+            "squizlabs/php_codesniffer": "3.*"
+        },
+        "suggest": {
+            "ext-bcmath": "bcmath or gmp is required for decoding larger integers with the pure PHP decoder",
+            "ext-gmp": "bcmath or gmp is required for decoding larger integers with the pure PHP decoder",
+            "ext-maxminddb": "A C-based database decoder that provides significantly faster lookups"
+        },
+        "time": "2018-02-21T21:23:33+00:00",
+        "type": "library",
+        "installation-source": "dist",
+        "autoload": {
+            "psr-4": {
+                "MaxMind\\Db\\": "src/MaxMind/Db"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "Apache-2.0"
+        ],
+        "authors": [
+            {
+                "name": "Gregory J. Oschwald",
+                "email": "goschwald@maxmind.com",
+                "homepage": "http://www.maxmind.com/"
+            }
+        ],
+        "description": "MaxMind DB Reader API",
+        "homepage": "https://github.com/maxmind/MaxMind-DB-Reader-php",
+        "keywords": [
+            "database",
+            "geoip",
+            "geoip2",
+            "geolocation",
+            "maxmind"
+        ]
+    },
+    {
+        "name": "maxmind/web-service-common",
+        "version": "v0.5.0",
+        "version_normalized": "0.5.0.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/maxmind/web-service-common-php.git",
+            "reference": "61a9836fa3bb1743ab89752bae5005d71e78c73b"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/maxmind/web-service-common-php/zipball/61a9836fa3bb1743ab89752bae5005d71e78c73b",
+            "reference": "61a9836fa3bb1743ab89752bae5005d71e78c73b",
+            "shasum": ""
+        },
+        "require": {
+            "composer/ca-bundle": "^1.0.3",
+            "ext-curl": "*",
+            "ext-json": "*",
+            "php": ">=5.4"
+        },
+        "require-dev": {
+            "friendsofphp/php-cs-fixer": "2.*",
+            "phpunit/phpunit": "4.*",
+            "squizlabs/php_codesniffer": "3.*"
+        },
+        "time": "2018-02-12T22:31:54+00:00",
+        "type": "library",
+        "installation-source": "dist",
+        "autoload": {
+            "psr-4": {
+                "MaxMind\\Exception\\": "src/Exception",
+                "MaxMind\\WebService\\": "src/WebService"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "Apache-2.0"
+        ],
+        "authors": [
+            {
+                "name": "Gregory Oschwald",
+                "email": "goschwald@maxmind.com"
+            }
+        ],
+        "description": "Internal MaxMind Web Service API",
+        "homepage": "https://github.com/maxmind/web-service-common-php"
     },
     {
         "name": "mustangostang/spyc",
@@ -64,7 +238,7 @@
         "require-dev": {
             "phpunit/phpunit": "4.3.*@dev"
         },
-        "time": "2017-02-24 16:06:33",
+        "time": "2017-02-24T16:06:33+00:00",
         "type": "library",
         "extra": {
             "branch-alias": {
@@ -97,21 +271,22 @@
     },
     {
         "name": "phpmailer/phpmailer",
-        "version": "v6.0.1",
-        "version_normalized": "6.0.1.0",
+        "version": "v6.0.5",
+        "version_normalized": "6.0.5.0",
         "source": {
             "type": "git",
             "url": "https://github.com/PHPMailer/PHPMailer.git",
-            "reference": "992392437c2e2784e0dc41446024fe411d293c96"
+            "reference": "cb3ea134d4d3729e7857737d5f320cce9caf4d32"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/PHPMailer/PHPMailer/zipball/992392437c2e2784e0dc41446024fe411d293c96",
-            "reference": "992392437c2e2784e0dc41446024fe411d293c96",
+            "url": "https://api.github.com/repos/PHPMailer/PHPMailer/zipball/cb3ea134d4d3729e7857737d5f320cce9caf4d32",
+            "reference": "cb3ea134d4d3729e7857737d5f320cce9caf4d32",
             "shasum": ""
         },
         "require": {
             "ext-ctype": "*",
+            "ext-filter": "*",
             "php": ">=5.5.0"
         },
         "require-dev": {
@@ -131,7 +306,7 @@
             "stevenmaguire/oauth2-microsoft": "Needed for Microsoft XOAUTH2 authentication",
             "symfony/polyfill-mbstring": "To support UTF-8 if the Mbstring PHP extension is not enabled (^1.2)"
         },
-        "time": "2017-09-14 16:47:12",
+        "time": "2018-03-27T13:49:45+00:00",
         "type": "library",
         "installation-source": "dist",
         "autoload": {
@@ -163,6 +338,101 @@
         "description": "PHPMailer is a full-featured email creation and transfer class for PHP"
     },
     {
+        "name": "powder96/numbers.php",
+        "version": "dev-master",
+        "version_normalized": "9999999-dev",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/powder96/numbers.php.git",
+            "reference": "d4fd8361f80aa3d272bf1a5e3a6f7f745755cf5f"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/powder96/numbers.php/zipball/d4fd8361f80aa3d272bf1a5e3a6f7f745755cf5f",
+            "reference": "d4fd8361f80aa3d272bf1a5e3a6f7f745755cf5f",
+            "shasum": ""
+        },
+        "require": {
+            "php": ">=5.3.0"
+        },
+        "require-dev": {
+            "phpunit/phpunit": "3.7.*"
+        },
+        "time": "2013-03-13T20:38:18+00:00",
+        "type": "library",
+        "installation-source": "source",
+        "autoload": {
+            "psr-0": {
+                "NumbersPHP": "lib/",
+                "NumbersPHP\\Tests": "test/"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "Apache-2.0"
+        ],
+        "description": "Advanced Mathematics Library for PHP (port of Numbers.js)",
+        "homepage": "https://github.com/powder96/numbers.php",
+        "keywords": [
+            "arithmetic",
+            "math",
+            "mathematics",
+            "numbers",
+            "statistics"
+        ]
+    },
+    {
+        "name": "ps/image-optimizer",
+        "version": "1.2.0",
+        "version_normalized": "1.2.0.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/psliwa/image-optimizer.git",
+            "reference": "72620751d99b7ab0f5e32685a7689cc99e46a82a"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/psliwa/image-optimizer/zipball/72620751d99b7ab0f5e32685a7689cc99e46a82a",
+            "reference": "72620751d99b7ab0f5e32685a7689cc99e46a82a",
+            "shasum": ""
+        },
+        "require": {
+            "psr/log": "1.0.*",
+            "symfony/options-resolver": "~2.1 | ~3.0 | ~4.0",
+            "symfony/process": "~2.0 | ~3.0 | ~4.0"
+        },
+        "require-dev": {
+            "phpunit/phpunit": "^5.0"
+        },
+        "time": "2018-04-11T21:27:34+00:00",
+        "type": "library",
+        "installation-source": "dist",
+        "autoload": {
+            "psr-0": {
+                "ImageOptimizer": "src/"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "MIT"
+        ],
+        "authors": [
+            {
+                "name": "Piotr Sliwa",
+                "email": "peter.pl7@gmail.com"
+            }
+        ],
+        "description": "Image optimization / compression library. This library is able to optimize png, jpg and gif files in very easy and handy way. It uses optipng, pngquant, pngcrush, pngout, gifsicle, jpegoptim and jpegtran tools.",
+        "keywords": [
+            "compression",
+            "image",
+            "image optimizer",
+            "jpegoptim",
+            "optimization",
+            "optipng"
+        ]
+    },
+    {
         "name": "psr/log",
         "version": "1.0.2",
         "version_normalized": "1.0.2.0",
@@ -180,7 +450,7 @@
         "require": {
             "php": ">=5.3.0"
         },
-        "time": "2016-10-10 12:19:37",
+        "time": "2016-10-10T12:19:37+00:00",
         "type": "library",
         "extra": {
             "branch-alias": {
@@ -213,27 +483,27 @@
     },
     {
         "name": "symfony/options-resolver",
-        "version": "v3.3.13",
-        "version_normalized": "3.3.13.0",
+        "version": "v3.4.11",
+        "version_normalized": "3.4.11.0",
         "source": {
             "type": "git",
             "url": "https://github.com/symfony/options-resolver.git",
-            "reference": "623d9c210a137205f7e6e98166105625402cbb2f"
+            "reference": "f3109a6aedd20e35c3a33190e932c2b063b7b50e"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/symfony/options-resolver/zipball/623d9c210a137205f7e6e98166105625402cbb2f",
-            "reference": "623d9c210a137205f7e6e98166105625402cbb2f",
+            "url": "https://api.github.com/repos/symfony/options-resolver/zipball/f3109a6aedd20e35c3a33190e932c2b063b7b50e",
+            "reference": "f3109a6aedd20e35c3a33190e932c2b063b7b50e",
             "shasum": ""
         },
         "require": {
             "php": "^5.5.9|>=7.0.8"
         },
-        "time": "2017-11-05 15:47:03",
+        "time": "2018-01-11T07:56:07+00:00",
         "type": "library",
         "extra": {
             "branch-alias": {
-                "dev-master": "3.3-dev"
+                "dev-master": "3.4-dev"
             }
         },
         "installation-source": "dist",
@@ -268,120 +538,18 @@
         ]
     },
     {
-        "name": "symfony/process",
-        "version": "v3.3.13",
-        "version_normalized": "3.3.13.0",
-        "source": {
-            "type": "git",
-            "url": "https://github.com/symfony/process.git",
-            "reference": "a56a3989fb762d7b19a0cf8e7693ee99a6ffb78d"
-        },
-        "dist": {
-            "type": "zip",
-            "url": "https://api.github.com/repos/symfony/process/zipball/a56a3989fb762d7b19a0cf8e7693ee99a6ffb78d",
-            "reference": "a56a3989fb762d7b19a0cf8e7693ee99a6ffb78d",
-            "shasum": ""
-        },
-        "require": {
-            "php": "^5.5.9|>=7.0.8"
-        },
-        "time": "2017-11-13 15:31:11",
-        "type": "library",
-        "extra": {
-            "branch-alias": {
-                "dev-master": "3.3-dev"
-            }
-        },
-        "installation-source": "dist",
-        "autoload": {
-            "psr-4": {
-                "Symfony\\Component\\Process\\": ""
-            },
-            "exclude-from-classmap": [
-                "/Tests/"
-            ]
-        },
-        "notification-url": "https://packagist.org/downloads/",
-        "license": [
-            "MIT"
-        ],
-        "authors": [
-            {
-                "name": "Fabien Potencier",
-                "email": "fabien@symfony.com"
-            },
-            {
-                "name": "Symfony Community",
-                "homepage": "https://symfony.com/contributors"
-            }
-        ],
-        "description": "Symfony Process Component",
-        "homepage": "https://symfony.com"
-    },
-    {
-        "name": "ps/image-optimizer",
-        "version": "1.1.2",
-        "version_normalized": "1.1.2.0",
-        "source": {
-            "type": "git",
-            "url": "https://github.com/psliwa/image-optimizer.git",
-            "reference": "e8f68a7a8cffd551d788bdd334d697a97daecac8"
-        },
-        "dist": {
-            "type": "zip",
-            "url": "https://api.github.com/repos/psliwa/image-optimizer/zipball/e8f68a7a8cffd551d788bdd334d697a97daecac8",
-            "reference": "e8f68a7a8cffd551d788bdd334d697a97daecac8",
-            "shasum": ""
-        },
-        "require": {
-            "psr/log": "1.0.*",
-            "symfony/options-resolver": "~2.1 | ~3.0",
-            "symfony/process": "~2.0 | ~3.0"
-        },
-        "require-dev": {
-            "phpunit/phpunit": "^5.0"
-        },
-        "time": "2017-07-24 18:40:03",
-        "type": "library",
-        "installation-source": "dist",
-        "autoload": {
-            "psr-0": {
-                "ImageOptimizer": "src/"
-            }
-        },
-        "notification-url": "https://packagist.org/downloads/",
-        "license": [
-            "MIT"
-        ],
-        "authors": [
-            {
-                "name": "Piotr Sliwa",
-                "email": "peter.pl7@gmail.com"
-            }
-        ],
-        "description": "Image optimization / compression library. This library is able to optimize png, jpg and gif files in very easy and handy way. It uses optipng, pngquant, pngcrush, pngout, gifsicle, jpegoptim and jpegtran tools.",
-        "keywords": [
-            "compression",
-            "image",
-            "image optimizer",
-            "jpegoptim",
-            "optimization",
-            "optipng"
-        ]
-    },
-    {
         "name": "symfony/polyfill-mbstring",
-        "version": "v1.6.0",
-        "version_normalized": "1.6.0.0",
+        "version": "v1.8.0",
+        "version_normalized": "1.8.0.0",
         "source": {
             "type": "git",
             "url": "https://github.com/symfony/polyfill-mbstring.git",
-            "reference": "2ec8b39c38cb16674bbf3fea2b6ce5bf117e1296"
+            "reference": "3296adf6a6454a050679cde90f95350ad604b171"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/symfony/polyfill-mbstring/zipball/2ec8b39c38cb16674bbf3fea2b6ce5bf117e1296",
-            "reference": "2ec8b39c38cb16674bbf3fea2b6ce5bf117e1296",
+            "url": "https://api.github.com/repos/symfony/polyfill-mbstring/zipball/3296adf6a6454a050679cde90f95350ad604b171",
+            "reference": "3296adf6a6454a050679cde90f95350ad604b171",
             "shasum": ""
         },
         "require": {
@@ -390,11 +558,11 @@
         "suggest": {
             "ext-mbstring": "For best performance"
         },
-        "time": "2017-10-11 12:05:26",
+        "time": "2018-04-26T10:06:28+00:00",
         "type": "library",
         "extra": {
             "branch-alias": {
-                "dev-master": "1.6-dev"
+                "dev-master": "1.8-dev"
             }
         },
         "installation-source": "dist",
@@ -431,18 +599,69 @@
         ]
     },
     {
-        "name": "twig/twig",
-        "version": "v2.4.4",
-        "version_normalized": "2.4.4.0",
+        "name": "symfony/process",
+        "version": "v3.4.11",
+        "version_normalized": "3.4.11.0",
         "source": {
             "type": "git",
-            "url": "https://github.com/twigphp/Twig.git",
-            "reference": "eddb97148ad779f27e670e1e3f19fb323aedafeb"
+            "url": "https://github.com/symfony/process.git",
+            "reference": "4cbf2db9abcb01486a21b7a059e03a62fae63187"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/twigphp/Twig/zipball/eddb97148ad779f27e670e1e3f19fb323aedafeb",
-            "reference": "eddb97148ad779f27e670e1e3f19fb323aedafeb",
+            "url": "https://api.github.com/repos/symfony/process/zipball/4cbf2db9abcb01486a21b7a059e03a62fae63187",
+            "reference": "4cbf2db9abcb01486a21b7a059e03a62fae63187",
+            "shasum": ""
+        },
+        "require": {
+            "php": "^5.5.9|>=7.0.8"
+        },
+        "time": "2018-05-16T08:49:21+00:00",
+        "type": "library",
+        "extra": {
+            "branch-alias": {
+                "dev-master": "3.4-dev"
+            }
+        },
+        "installation-source": "dist",
+        "autoload": {
+            "psr-4": {
+                "Symfony\\Component\\Process\\": ""
+            },
+            "exclude-from-classmap": [
+                "/Tests/"
+            ]
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "MIT"
+        ],
+        "authors": [
+            {
+                "name": "Fabien Potencier",
+                "email": "fabien@symfony.com"
+            },
+            {
+                "name": "Symfony Community",
+                "homepage": "https://symfony.com/contributors"
+            }
+        ],
+        "description": "Symfony Process Component",
+        "homepage": "https://symfony.com"
+    },
+    {
+        "name": "twig/twig",
+        "version": "v2.4.8",
+        "version_normalized": "2.4.8.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/twigphp/Twig.git",
+            "reference": "7b604c89da162034bdf4bb66310f358d313dd16d"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/twigphp/Twig/zipball/7b604c89da162034bdf4bb66310f358d313dd16d",
+            "reference": "7b604c89da162034bdf4bb66310f358d313dd16d",
             "shasum": ""
         },
         "require": {
@@ -451,10 +670,10 @@
         },
         "require-dev": {
             "psr/container": "^1.0",
-            "symfony/debug": "~2.7",
-            "symfony/phpunit-bridge": "~3.3@dev"
+            "symfony/debug": "^2.7",
+            "symfony/phpunit-bridge": "^3.3"
         },
-        "time": "2017-09-27 18:10:31",
+        "time": "2018-04-02T09:24:19+00:00",
         "type": "library",
         "extra": {
             "branch-alias": {

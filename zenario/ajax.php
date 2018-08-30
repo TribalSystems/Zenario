@@ -34,8 +34,7 @@ ze\cookie::startSession();
 
 
 //Run pre-load actions
-
-require ze::editionInclude('ajax.pre_load');
+if (ze::$canCache) require CMS_ROOT. 'zenario/includes/ajax.pre_load.inc.php';
 
 
 $type = false;
@@ -265,23 +264,16 @@ if ($methodCall == 'refreshPlugin'
 	exit;
 	
 
-} elseif ($methodCall == 'handleAdminBoxAJAX') {
+} elseif ($methodCall == 'handleAdminBoxAJAX' || $methodCall == 'handleWelcomeAJAX' || $methodCall == 'handleWizardAJAX') {
+	
 	require 'visitorheader.inc.php';
 	
-	if (empty($_SESSION['running_a_wizard']) && !ze\priv::check()) {
+	if (empty($_SESSION['allow_file_uploads_in_the_installer']) && !ze\priv::check()) {
 		exit;
 	}
 	
 	ze\fileAdm::handleAdminBoxAJAX();
-
-} elseif ($methodCall == 'handleWizardAJAX') {
 	
-	if (empty($_SESSION['running_a_wizard'])) {
-		exit;
-	}
-	
-	require 'visitorheader.inc.php';
-	ze\fileAdm::handleAdminBoxAJAX();
 
 //Handle any other Admin Mode methods
 } else {
@@ -696,4 +688,4 @@ if ($methodCall == 'showFile') {
 
 
 //Run post-display actions
-require ze::editionInclude('ajax.post_display');
+if (ze::$canCache) require CMS_ROOT. 'zenario/includes/index.post_display.inc.php';

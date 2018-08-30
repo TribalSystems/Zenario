@@ -79,4 +79,9 @@ plugin_settings:
                         bottom:
                             label: Bottom
                     value: bottom
+                hide_extranet_links:
+                    plugin_setting:
+                        name: hide_extranet_links
+                    label: Hide extranet links
+                    type: checkbox
                 

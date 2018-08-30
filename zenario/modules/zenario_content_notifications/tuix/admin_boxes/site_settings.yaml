@@ -24,7 +24,7 @@ site_settings:
                     label: 'Content notification email subject:'
                     type: text
                     value: |
-                      Website content notification: Item {{published_drafted_trashed}}
+                        Website content notification: {{action}}
                     validation:
                         required: Please enter an email subject for content notification.
 
@@ -37,61 +37,26 @@ site_settings:
                     value: >
                         This is an automated message from the website at {{url}}.
                         
-                        Item {{published_drafted_trashed}}, details:
+
+                        {{action}}, details:
                         
-                        Content item reference:    {{tag_id}}
+
+                        Content item reference: {{tag_id}}
+                        
                         Browser title: {{title}}
-                        Who by:        {{admin_name}}
-                        When:          {{datetime_when}}
-                        Link:          {{hyperlink}}
+                        
+                        Who by: {{admin_name}}
+                        
+                        When: {{datetime_when}}
+                        
+                        Link: {{hyperlink}}
+                        
+                        
+                        Previous menu node text: {{previous_menu_node}}
+                        
+                        New menu node text: {{new_menu_node}}
+                        
+                        
+                        To change your notification set-up, go to your profile at {{admin_profile_url}}
                     validation:
                         required: Please enter an email body for content notification.
-
-                menu_node_notification_email_subject:
-                    site_setting:
-                        name: menu_node_notification_email_subject
-                    label: 'Menu node notification email subject:'
-                    type: text
-                    validation:
-                        required: Please enter an email subject for menu node notification.
-
-                menu_node_notification_email_body:
-                    site_setting:
-                        name: menu_node_notification_email_body
-                    label: 'Menu node notification email body:'
-                    type: textarea
-                    rows: 10
-                    validation:
-                        required: Please enter an email body for menu node notification.
-
-
-        content_requests:
-            label: Content requests email templates
-            edit_mode:
-                enabled: Yes
-                priv: _PRIV_EDIT_SITE_SETTING
-                on: No
-            fields:
-                description:
-                    full_width: Yes
-                    snippet:
-                        html: |
-                            This tab contains default settings for the content requests sent by your site.
-
-                content_request_email_subject:
-                    site_setting:
-                        name: content_request_email_subject
-                    label: 'Content request email subject:'
-                    type: text
-                    validation:
-                        required: Please enter an email subject for content request.
-
-                content_request_email_body:
-                    site_setting:
-                        name: content_request_email_body
-                    label: 'Content request email body:'
-                    type: textarea
-                    rows: 10
-                    validation:
-                        required: Please enter an email body for content request.
-

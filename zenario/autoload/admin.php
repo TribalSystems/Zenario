@@ -263,6 +263,48 @@ class admin {
 			return $adminDetails['first_name']. ' '. $adminDetails['last_name']. ' ('. $adminDetails['username']. ')';
 		}
 	}
+	
+	public static $englishDatePhrases = [
+		'_MONTH_SHORT_01' => 'Jan',
+		'_MONTH_SHORT_02' => 'Feb',
+		'_MONTH_SHORT_03' => 'Mar',
+		'_MONTH_SHORT_04' => 'Apr',
+		'_MONTH_SHORT_05' => 'May',
+		'_MONTH_SHORT_06' => 'Jun',
+		'_MONTH_SHORT_07' => 'Jul',
+		'_MONTH_SHORT_08' => 'Aug',
+		'_MONTH_SHORT_09' => 'Sep',
+		'_MONTH_SHORT_10' => 'Oct',
+		'_MONTH_SHORT_11' => 'Nov',
+		'_MONTH_SHORT_12' => 'Dec',
+		'_MONTH_LONG_01' => 'January',
+		'_MONTH_LONG_02' => 'February',
+		'_MONTH_LONG_03' => 'March',
+		'_MONTH_LONG_04' => 'April',
+		'_MONTH_LONG_05' => 'May',
+		'_MONTH_LONG_06' => 'June',
+		'_MONTH_LONG_07' => 'July',
+		'_MONTH_LONG_08' => 'August',
+		'_MONTH_LONG_09' => 'Septemper',
+		'_MONTH_LONG_10' => 'October',
+		'_MONTH_LONG_11' => 'November',
+		'_MONTH_LONG_12' => 'December',
+		'_WEEKDAY_0' => 'Sunday',
+		'_WEEKDAY_1' => 'Monday',
+		'_WEEKDAY_2' => 'Tuesday',
+		'_WEEKDAY_3' => 'Wednesday',
+		'_WEEKDAY_4' => 'Thursday',
+		'_WEEKDAY_5' => 'Friday',
+		'_WEEKDAY_6' => 'Saturday'
+	];
+	
+	public static function formatDate($date, $format_type = false, $languageId = false, $time_format = '', $rss = false, $cli = false) {
+		return \ze\date::format($date, $format_type, $languageId, $time_format, $rss, $cli, $admin = true);
+	}
+	
+	public static function formatDateTime($date, $format_type = false, $languageId = false, $rss = false, $cli = false) {
+		return \ze\date::formatDateTime($date, $format_type, $languageId, $rss, $cli, $admin = true);
+	}
 
 
 	//Check to see if an admin exists and if the supplied password matches their password

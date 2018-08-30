@@ -121,7 +121,7 @@ switch ($path) {
 		if ($box['key']['id']) {
 			$logRecord = self::getLogRecordById($box['key']['id']);
 			if(count($logRecord)) {
-				$box['title'] = 'Email sent to "' .  htmlspecialchars($logRecord['email_address_to'] ?? false) . '" on ' .  ze\date::format($logRecord['sent_datetime'] ?? false) . ' ' . ze\date::formatTime($logRecord['sent_datetime'] ?? false,ze::setting('vis_time_format'),'');
+				$box['title'] = 'Email sent to "' .  htmlspecialchars($logRecord['email_address_to'] ?? false) . '" on ' .  ze\admin::formatDate($logRecord['sent_datetime'] ?? false) . ' ' . ze\date::formatTime($logRecord['sent_datetime'] ?? false,ze::setting('vis_time_format'),'');
 				$values['email_template_name'] = $logRecord['email_template_name'];
 				$values['email_subject'] = $logRecord['email_subject'];
 				$values['email_address_to'] = $logRecord['email_address_to'];
@@ -169,7 +169,7 @@ switch ($path) {
 			
 			if ($count) {
 				$min = ze\row::min(ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX . 'email_template_sending_log', 'sent_datetime');
-				$note .= ' ' . ze\admin::phrase('Oldest record from [[date]].', ['date' => ze\date::formatDateTime($min, '_MEDIUM')]);
+				$note .= ' ' . ze\admin::phrase('Oldest record from [[date]].', ['date' => ze\admin::formatDateTime($min, '_MEDIUM')]);
 			}
 			$fields['data_protection/period_to_delete_the_email_template_sending_log_headers']['note_below'] = $note;
 			

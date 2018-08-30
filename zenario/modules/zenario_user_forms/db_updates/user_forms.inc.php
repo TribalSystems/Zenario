@@ -493,7 +493,7 @@ if (ze\dbAdm::needRevision(62)) {
 ze\dbAdm::revision(63
 , <<<_sql
 	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
-	ADD COLUMN `page_end_name` varchar(255) DEFAULT 'Page end'
+	ADD COLUMN `page_end_name` varchar(255) DEFAULT 'Page 1'
 _sql
 
 ); ze\dbAdm::revision(64
@@ -703,7 +703,7 @@ _sql
 	UPDATE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` SET `page_end_name` = SUBSTR(`page_end_name`, 1, 250) WHERE CHAR_LENGTH(`page_end_name`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` MODIFY COLUMN `page_end_name` varchar(250) CHARACTER SET utf8mb4 NULL default 'Page end'
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` MODIFY COLUMN `page_end_name` varchar(250) CHARACTER SET utf8mb4 NULL default 'Page 1'
 _sql
 , <<<_sql
 	UPDATE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms` SET `partial_completion_message` = SUBSTR(`partial_completion_message`, 1, 250) WHERE CHAR_LENGTH(`partial_completion_message`) > 250
@@ -1412,10 +1412,90 @@ _sql
 	ADD COLUMN `show_errors_below_fields` tinyint(1) NOT NULL DEFAULT '0'
 _sql
 
-); ze\dbAdm::revision(203
+//Add a setting for first_name or last_name dataset fields to record both names
+); ze\dbAdm::revision(210
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
+	ADD COLUMN `split_first_name_last_name` tinyint(1) NOT NULL DEFAULT '0'
+_sql
+
+); ze\dbAdm::revision(211
 , <<<_sql
 	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
 	MODIFY COLUMN `welcome_message` text CHARACTER SET utf8mb4 DEFAULT NULL
+_sql
+
+
+//Merge "autocomplete" and "enable_suggested_values" options into somthing that makes more sense
+); ze\dbAdm::revision(215
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
+	CHANGE `autocomplete_no_filter_placeholder` `filter_placeholder` varchar(250) CHARACTER SET utf8mb4 DEFAULT NULL,
+	ADD COLUMN `suggested_values` enum('custom', 'pre_defined') DEFAULT NULL AFTER `filter_placeholder`,
+	ADD COLUMN `force_suggested_values` tinyint(1) NOT NULL DEFAULT '0' AFTER `suggested_values`
+_sql
+
+, <<<_sql
+	UPDATE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` 
+	SET `force_suggested_values` = 1, `suggested_values` = 'pre_defined'
+	WHERE `autocomplete` = 1
+_sql
+
+, <<<_sql
+	UPDATE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields` 
+	SET `suggested_values` = 'custom'
+	WHERE `enable_suggested_values` = 1 AND `autocomplete` = 0
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
+	DROP COLUMN `enable_suggested_values`,
+	DROP COLUMN `autocomplete`
+_sql
+
+//Added a column for third radio button option
+); ze\dbAdm::revision(217
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
+	ADD COLUMN `consent_dropdown` int(5) NOT NULL DEFAULT '0'
+_sql
+
+//Added a column for third radio button option
+); ze\dbAdm::revision(218
+,  <<<_sql
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
+	DROP COLUMN `consent_dropdown`
+_sql
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
+	ADD COLUMN `consent_field` int(5) NOT NULL DEFAULT '0'
+_sql
+
+); ze\dbAdm::revision(220
+,  <<<_sql
+	UPDATE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
+	SET period_to_delete_response_headers = 0
+	WHERE period_to_delete_response_headers = 'never_save'
+_sql
+
+,  <<<_sql
+	UPDATE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
+	SET period_to_delete_response_content = 0
+	WHERE period_to_delete_response_content = 'never_save'
+_sql
+
+,  <<<_sql
+	UPDATE `[[DB_PREFIX]]site_settings`
+	SET value = 0
+	WHERE name = 'period_to_delete_the_form_response_log_headers'
+	AND value = 'never_save'
+_sql
+
+,  <<<_sql
+	UPDATE `[[DB_PREFIX]]site_settings`
+	SET value = 0
+	WHERE name = 'period_to_delete_the_form_response_log_content'
+	AND value = 'never_save'
 _sql
 
 );

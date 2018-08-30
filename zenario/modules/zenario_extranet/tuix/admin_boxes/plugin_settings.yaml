@@ -302,7 +302,7 @@ plugin_settings:
                         required_if_not_hidden: Please select a content item.
                 
         error_messages:
-            label: Error messages
+            label: Phrases (error messages)
             fields:
                 description:
                     full_width: Yes
@@ -451,4 +451,7 @@ plugin_settings:
                     type: text
                     value: "Your new password is the same as your old password."
                     show_phrase_icon: true
+    lovs:
+        groups: {}
+        roles: {}
 

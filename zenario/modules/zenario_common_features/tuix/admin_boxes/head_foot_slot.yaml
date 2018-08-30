@@ -24,7 +24,8 @@ zenario_head_foot_slot:
                     tall_as_possible: true
                     dont_trim: true
                     language: html
-                    rows: 22
+                    style: |
+                        width: 99%;
                     note_below: |
                         <p>The following JavaScript libraries are available for you to use:</p>
                         <ul class="zenario_js_libs_available">
@@ -59,6 +60,7 @@ zenario_head_foot_slot:
                             label: >
                                 HTML contains code that sets cookies; hide it and request
                                 consent until consent is given by the visitor
+                    note_below: If individual cookie consent is turned on for visitors, cookies set by this HTML will be considered "Necessary cookies".
                 output_in_admin_mode:
                     type: checkbox
                     label: Output in Admin Mode

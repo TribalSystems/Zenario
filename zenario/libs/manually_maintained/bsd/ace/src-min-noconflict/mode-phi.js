@@ -42,6 +42,10 @@
 			'return': {}
 		},
 		phiFunctions = {
+			//Flow control
+			'return': {input: 'mixed'},
+			'exit': {input: 'mixed'},
+			
 			//PHP maths functions
 			'abs': {input: 'number', returns: 'number'},
 			'acos': {input: 'number', returns: 'number'},
@@ -112,7 +116,7 @@
 			
 			//Assetwolf's functions
 			'getHistoricValue': {input: 'key, timestamp[, nodeId]', returns: 'value'},
-			'getMetricValue': {input: 'key, timestamp[, nodeId]', returns: 'value'},
+			'getMetricValue': {input: 'key, fromTimestamp[, nodeId]', returns: 'value'},
 			'getMetadata': {input: 'name[, nodeId]', returns: 'value'},
 			'getInheritedMetadata': {input: 'name[, nodeId]', returns: 'value'},
 			'getTimestamp': {input: 'description[, timestamp]', returns: 'number'},

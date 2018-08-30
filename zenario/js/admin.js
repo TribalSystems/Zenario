@@ -46,14 +46,7 @@ zenario.lib(function(
 ) {
 	"use strict";
 
-
-phrase = phrase || {};
-
-var plgslt_ = 'plgslt_';
-
-zenarioA.showGridOn = false;
-zenarioA.storekeeperInitTime = 5000;
-zenarioA.adminSettings = zenarioA.adminSettings || {};
+zenarioA.orgMinWidth = 550;
 
 zenarioA.tooltipLengthThresholds = {
 	adminBoxTitle: 120,
@@ -61,6 +54,21 @@ zenarioA.tooltipLengthThresholds = {
 	organizerBackButton: 70,
 	organizerPanelTitle: 100
 };
+
+
+var ADMIN_MESSAGE_BOX_WIDTH = 700;
+
+
+
+
+
+var plgslt_ = 'plgslt_';
+
+phrase = phrase || {};
+zenarioA.adminSettings = zenarioA.adminSettings || {};
+zenarioA.adminPrivs = zenarioA.adminPrivs || {};
+zenarioA.showGridOn = false;
+
 
 
 zenarioT.lib(function(
@@ -173,8 +181,8 @@ zenarioA.showMessage = function(resp, buttonsHTML, messageType, modal, htmlEscap
 		if (message) {
 			alert(message);
 		}
-		zenarioA.rememberToast();
-	
+		zenarioA.toastOrNoToast(flags);
+		
 		zenarioT.uploading = false;
 		zenarioO.setWrapperClass('uploading', zenarioT.uploading);
 	
@@ -201,7 +209,7 @@ zenarioA.showMessage = function(resp, buttonsHTML, messageType, modal, htmlEscap
 
 	//Go somewhere
 	} else if (defined(flags.Go_To_URL)) {
-		zenarioA.rememberToast();
+		zenarioA.toastOrNoToast(flags);
 		zenario.goToURL(zenario.addBasePath(flags.Go_To_URL), true);
 		hadCommand = true;
 	}
@@ -650,7 +658,7 @@ zenarioA.getGridSlotDetails = function(slotName) {
 	if ($gridspan.length) {
 		//Attempt to get the CSS class names of the wrapper of the slot
 		//(it's easier to look this up using JavaScript than it is to work it out in fillAllAdminSlotControls() in php).
-		grid.cssClass = $gridspan.attr('class'),
+		grid.cssClass = $gridspan.attr('class');
 		
 		//Strip out "alpha" and "omega" from the class names
 		grid.cssClass = grid.cssClass.replace(' alpha ', ' ').replace(' omega ', ' ');
@@ -768,6 +776,14 @@ zenarioA.getGridSlotDetails = function(slotName) {
 		 && (container[1])) {
 			grid.container = 1*container[1];
 		}
+	
+	} else {
+		//Fallback logic for non-grid maker slots
+		$gridspan = $('.' + slotName + '.slot');
+		
+		if ($gridspan.length) {
+			grid.cssClass = $gridspan.attr('class');
+		}
 	}
 	
 	return grid;
@@ -804,7 +820,7 @@ zenarioA.openSlotControls = function(el, e, slotName, isFromAdminToolbar) {
 		
 		var width,
 			section,
-			sections = {info: false, notes: false, actions: false, overridden_info: false, overridden_actions: false},
+			sections = {info: false, notes: false, actions: false, re_move_place: false, overridden_info: false, overridden_actions: false},
 			instanceId = zenario.slots[slotName].instanceId,
 			grid = zenarioA.getGridSlotDetails(slotName);
 		
@@ -1748,6 +1764,9 @@ zenarioA.floatingBox = function(message, buttonsHTML, messageType, modal, htmlEs
 	} else if (messageType == 'error' || messageType == 2) {
 		messageType = 'zenario_fbError';
 	
+	} else if (messageType == 'info') {
+		messageType = 'zenario_fbInfo';
+	
 	} else if (messageType && messageType != 'none') {
 		messageType = 'zenario_fbWarning';
 		defaultModalValue = true;
@@ -1770,7 +1789,7 @@ zenarioA.floatingBox = function(message, buttonsHTML, messageType, modal, htmlEs
 	html = zenarioT.microTemplate('zenario_popout_message', m);
 	
 	delete zenarioA.onCancelFloatingBox;
-	zenarioA.openBox(html, 'zenario_fbAdmin zenario_prompt', 'AdminMessage', undefined, 550, 50, 17, modal, true, false, false);
+	zenarioA.openBox(html, 'zenario_fbAdmin zenario_prompt', 'AdminMessage', undefined, ADMIN_MESSAGE_BOX_WIDTH, 50, 17, modal, true, false, false);
 	
 	//Add the command to close the floating box to each button in the box.
 	//Note that it must come *before* any other action.
@@ -1915,7 +1934,7 @@ zenarioA.enableDragDropUploadInTinyMCE = function(enableImages, prefix, el) {
 				request = {
 					method_call: 'handleOrganizerPanelAJAX',
 					__pluginClassName__: 'zenario_common_features',
-					__path__: 'editor_temp_file',
+					__path__: 'zenario__content/panels/image_library',
 					upload: 1};
 			
 			zenarioT.setHTML5UploadFromDragDrop(
@@ -2529,7 +2548,7 @@ zenarioA.organizerSelect = function(
 	if (!useIframe) {
 		//If we've not currently got an existing full-Organizer instance in this frame, set Organizer up in a <div>
 		
-		zenarioO.open(zenarioA.getSKBodyClass(win), undefined, $(window).width() * 0.99, 50, 1, true, true, true, {minWidth: 550});
+		zenarioO.open(zenarioA.getSKBodyClass(win), undefined, $(window).width() * 0.99, 50, 1, true, true, true, {minWidth: zenarioA.orgMinWidth});
 		//zenarioO.open(className, e, width, left, top, disablePageBelow, overlay, draggable, resizable, padding, maxHeight, rightCornerOfElement, bottomCornerOfElement) {
 		
 		zenarioO.init();
@@ -2804,9 +2823,7 @@ zenarioA.toast = function(object) {
 		
 		//Remember this toast that we had for the next 60 seconds,
 		//or until another toast comes in
-		if (zenarioA.clearLastToast) {
-			clearTimeout(zenarioA.clearLastToast);
-		}
+		zenarioA.clearToast();
 		zenarioA.lastToast = JSON.stringify(object);
 		setTimeout(function () {
 			zenarioA.lastToast = false;
@@ -2827,6 +2844,22 @@ zenarioA.toast = function(object) {
 		
 		//Reminder to self: the toast function returns a $jQuery element with the toaster,
 		//just in case we ever wanted to do something like add a click event...
+	}
+};
+
+
+
+zenarioA.toastOrNoToast = function(flags) {
+	if (flags.Clear_Toast) {
+		zenarioA.clearToast();
+	} else {
+		zenarioA.rememberToast();
+	}
+};
+
+zenarioA.clearToast = function() {
+	if (zenarioA.clearLastToast) {
+		clearTimeout(zenarioA.clearLastToast);
 	}
 };
 
@@ -2968,10 +3001,10 @@ zenarioA.checkCookiesEnabled = function() {
 	
 	zenario.ajax(url).after(function(result) {
 		if (result) {
-			cb.call(result);
+			cb.done(result);
 		} else {
 			zenario.ajax(url).after(function(result) {
-				cb.call(result);
+				cb.done(result);
 			});
 		}
 	});
@@ -3078,6 +3111,7 @@ zenarioA.init = function(
 	showGridOn,
 	siteSettings,
 	adminSettings,
+	adminPrivs,
 	importantGetRequests,
 	adminHasSpecificPerms,
 	adminHasSpecificPermsOnThisPage,
@@ -3095,6 +3129,7 @@ zenarioA.init = function(
 	zenarioA.showGridOn = showGridOn;
 	zenarioA.siteSettings = siteSettings;
 	zenarioA.adminSettings = adminSettings;
+	zenarioA.adminPrivs = adminPrivs;
 	zenarioA.importantGetRequests = importantGetRequests;
 	zenarioA.adminHasSpecificPerms = adminHasSpecificPerms;
 	zenarioA.adminHasSpecificPermsOnThisPage = adminHasSpecificPermsOnThisPage;

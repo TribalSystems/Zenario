@@ -391,28 +391,11 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 		if ($conductorEnabled && $this->state) {
 			
 			//Add a refresh command to the current state
-			//Attempt to get the correct pathing information for this state from a normal path that links there
-			$sql = "
-				SELECT descendants, hierarchical_var
-				FROM ". DB_PREFIX. "nested_paths
-				WHERE instance_id = ". (int) $this->instanceId. "
-				  AND to_state = '". ze\escape::sql($this->state). "'
-				  AND command NOT IN ('back', 'submit')
-				ORDER BY is_custom ASC
-				LIMIT 1";
-			
-			if ($path = ze\sql::fetchAssoc($sql)) {
-				$this->commands['refresh'] = new zenario_conductor__link(
-					'refresh', $this->state, $this->slides[$this->slideNum]['request_vars'],
-					$path['descendants'],
-					$path['hierarchical_var']
-				);
-			} else {
-				//Otherwise just use the information we have, and don't set up linking variables
-				$this->commands['refresh'] = new zenario_conductor__link(
-					'refresh', $this->state, $this->slides[$this->slideNum]['request_vars']
-				);
-			}
+			$this->commands['refresh'] = new zenario_conductor__link(
+				'refresh', $this->state,
+				$this->slides[$this->slideNum]['request_vars'], '',
+				$this->slides[$this->slideNum]['hierarchical_var']
+			);
 			
 			
 			//Loop through each slide, checking if they have any states or global commands
@@ -431,31 +414,12 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 							if (($command = $slide['global_command'])
 							 && !isset($hadCommands[$command])) {
 								
-								//N.b. don't allow the link if we're already in that state...
+								//Don't allow the link if we're already in that state...
 								if ($state != $this->state) {
 									
-									//Attempt to get the correct pathing information for this state from a normal path that links there
-									$sql = "
-										SELECT descendants, hierarchical_var
-										FROM ". DB_PREFIX. "nested_paths
-										WHERE instance_id = ". (int) $this->instanceId. "
-										  AND to_state = '". ze\escape::sql($state). "'
-										  AND command NOT IN ('back', 'submit')
-										ORDER BY is_custom ASC
-										LIMIT 1";
-									
-									if ($path = ze\sql::fetchAssoc($sql)) {
-										$this->commands[$command] = new zenario_conductor__link(
-											$command,
-											$state,
-											$slide['request_vars'],
-											$path['descendants'],
-											$path['hierarchical_var']
-										);
-									} else {
-										//Otherwise just use the information we have, and don't set up linking variables
-										$this->commands[$command] = new zenario_conductor__link($command, $state, $slide['request_vars']);
-									}
+									$this->commands[$command] = new zenario_conductor__link(
+										$command, $state, $slide['request_vars'], '', $slide['hierarchical_var']
+									);
 									$this->usesConductor = true;
 								}
 								
@@ -502,21 +466,10 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 						
 						$slideNum = $this->statesToSlides[$state];
 						
-						//If this is a custom path, attempt to get the pathing info from a non-custom path,
+						//If this is a custom path or a back button, use the pathing info from the slide,
 						//as this is more likely to be accurate.
-						if ($path['is_custom']) {
-							$sql = "
-								SELECT hierarchical_var
-								FROM ". DB_PREFIX. "nested_paths
-								WHERE instance_id = ". (int) $this->instanceId. "
-								  AND to_state = '". ze\escape::sql($state). "'
-								  AND command NOT IN ('back', 'submit')
-								  AND is_custom = 0
-								LIMIT 1";
-							
-							if ($path2 = ze\sql::fetchAssoc($sql)) {
-								$path['hierarchical_var'] = $path2['hierarchical_var'];
-							}
+						if ($path['is_custom'] || $command == 'back') {
+							$path['hierarchical_var'] = $this->slides[$slideNum]['hierarchical_var'];
 						}
 						
 						$this->commands[$command] = new zenario_conductor__link(
@@ -683,7 +636,8 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 			SELECT
 				id, id AS slide_id,
 				slide_num, name_or_title,
-				states, show_back, show_embed, show_refresh, show_auto_refresh, auto_refresh_interval, request_vars, global_command,
+				states, show_back, show_embed, show_refresh, show_auto_refresh, auto_refresh_interval,
+				request_vars, hierarchical_var, global_command,
 				invisible_in_nav,
 				privacy, smart_group_id, module_class_name, method_name, param_1, param_2, always_visible_to_admins
 			FROM ". DB_PREFIX. "nested_plugins
@@ -1003,7 +957,10 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 	public function showPlugin($slotNameNestId, $includeAdminControlsIfInAdminMode = false) {
 		
 		//Flag that we're no longer running Twig code, if this was called from a Twig Framework
-		ze::$isTwig = false;
+		if ($wasTwig = ze::$isTwig) {
+			ze::$isTwig = false;
+			ze::noteErrors();
+		}
 		
 		if ($this->minigridInUse) {
 			$minigrid = $this->minigrid[$slotNameNestId];
@@ -1111,7 +1068,7 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 			$status = ze::$slotContents[$slotNameNestId]['init'];
 		}
 		
-		$noPermsMsg = ($status === ZENARIO_401_NOT_LOGGED_IN || $status === ZENARIO_403_NO_PERMISSION) && $p;
+		$noPermsMsg = !$status && (!empty(ze::$slotContents[$slotNameNestId]['error']) || $status === ZENARIO_401_NOT_LOGGED_IN || $status === ZENARIO_403_NO_PERMISSION) && $p;
 		
 		if ($p) {
 			echo '
@@ -1172,7 +1129,10 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 		}
 		
 		//Flag that we're going back to running Twig code, if this was called from a Twig Framework
-		ze::$isTwig = true;
+		if ($wasTwig) {
+			ze::$isTwig = true;
+			ze::ignoreErrors();
+		}
 	}
 	
 	

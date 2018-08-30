@@ -1285,7 +1285,7 @@ protected static function mkdir($path) {
 			if (!@mkdir($dir)) {
 				throw new Exception('_ZENARIO_GRID_MAKER_ERROR_002');
 			} else {
-				@chmod($dir, 0777);
+				\ze\cache::chmod($dir, 0777);
 			}
 		}
 		\ze\db::updateDataRevisionNumber();
@@ -1301,7 +1301,7 @@ protected static function put($path, $contents, $isExecutable) {
 		if (!@file_put_contents(self::$tempDir. $path, $contents)) {
 			throw new Exception('_ZENARIO_GRID_MAKER_ERROR_003');
 		}
-		@chmod(self::$tempDir. $path, $isExecutable? 0664 : 0666);
+		\ze\cache::chmod(self::$tempDir. $path, $isExecutable? 0664 : 0666);
 		\ze\db::updateDataRevisionNumber();
 	
 	} elseif (self::$mode == 'zip') {
@@ -1314,7 +1314,7 @@ protected static function put($path, $contents, $isExecutable) {
 protected static function copy($from, $to, $isExecutable) {
 	if (self::$mode == 'fs') {
 		copy($from, self::$tempDir. $to);
-		@chmod(self::$tempDir. $to, $isExecutable? 0664 : 0666);
+		\ze\cache::chmod(self::$tempDir. $to, $isExecutable? 0664 : 0666);
 		\ze\db::updateDataRevisionNumber();
 	
 	} elseif (self::$mode == 'zip') {

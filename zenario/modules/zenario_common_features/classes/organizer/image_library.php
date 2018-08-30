@@ -253,12 +253,6 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 			if (!empty($panel['key']['usage']) && $panel['key']['usage'] != 'image') {
 				$img .= '&usage='. rawurlencode($panel['key']['usage']);
 			}
-			
-			if ($tallRowsInListView) {
-				$item['list_image'] = $img. '&ogt=1';
-			} else {
-				$item['list_image'] = $img. '&ogl=1';
-			}
 			$item['image'] = $img. '&og=1';
 			
 			$classes = [];

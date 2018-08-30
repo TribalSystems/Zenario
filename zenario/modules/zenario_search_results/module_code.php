@@ -217,21 +217,21 @@ class zenario_search_results extends ze\moduleBaseClass {
 		
 		//We'll only be displaying the details on one content type at a time
 		//Sanitise the result set that we will be displaying, and prepare the url and other details
-		if ($this->results[$this->cTypeToSearch]['Record_Count']) {
+		if ($this->results[$this->cTypeToSearch]['Record_Count'] && $this->results[$this->cTypeToSearch]['search_results']) {
 			foreach($this->results[$this->cTypeToSearch]['search_results'] as $i => &$result) {
-				
+			
 				$result['Result_No'] = $this->results[$this->cTypeToSearch]['offset'] + $i;
-				
+			
 				$result['title']		= htmlspecialchars($result['title']);
 				$result['keywords']		= htmlspecialchars($result['keywords']);
 				$result['description']	= htmlspecialchars($result['description']);
-				
+			
 				if ($this->setting('data_field') == 'description') {
 					$result['content_bodymain'] = $result['description'];
 				} elseif ($this->setting('data_field') == 'content_summary') {
 					$result['content_bodymain'] = $result['content_summary'];
 				}
-				
+			
 				$result['url'] = htmlspecialchars($this->linkToItem($result['id'], $result['type'], false, '', $result['alias']));
 			}
 		}

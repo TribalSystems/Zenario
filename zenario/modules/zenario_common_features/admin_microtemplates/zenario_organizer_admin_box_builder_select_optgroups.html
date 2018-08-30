@@ -1,17 +1,9 @@
 <% if (!m.hasChildren) { %>
-
-<option value="{{m.value|e}}" 
-	<% if (m.selected) { %>
-		selected="selected"
-	<% } %>
->
-	{{m.label|e}}
-</option>
-
+	{{zenarioT.microTemplate('zenario_organizer_admin_box_builder_select_values', m)}}
+	
 <% } else { %>
-
-<optgroup label="{{m.label|e}}">
-	{{zenarioT.microTemplate('zenario_organizer_admin_box_builder_select_values', m.options)}}
-</optgroup>
+	<optgroup label="{{m.label|e}}">
+		{{zenarioT.microTemplate('zenario_organizer_admin_box_builder_select_values', m.options)}}
+	</optgroup>
 
 <% } %>

@@ -106,7 +106,7 @@ class zenario_users__admin_boxes__user__details extends ze\moduleBaseClass {
 				while ($row = ze\sql::fetchAssoc($result)) {
 					$html .= '
 						<tr>
-							<td>' . ze\date::formatDateTime($row['datetime'], '_MEDIUM') . '</td>
+							<td>' . ze\admin::formatDateTime($row['datetime'], '_MEDIUM') . '</td>
 							<td>' . $row['ip_address'] . '</td>
 							<td>' . $row['email'] . '</td>
 							<td>' . $row['first_name'] . '</td>
@@ -268,6 +268,10 @@ class zenario_users__admin_boxes__user__details extends ze\moduleBaseClass {
 				if (ze\priv::check('_PRIV_EDIT_USER')) {
 					$cols['password_needs_changing'] = $values['details/password_needs_changing'];
 				}
+			}
+			
+			if (empty($values['details/email'])) {
+				$cols['email_verified'] = 0;
 			}
 			$box['key']['id'] = ze\userAdm::save($cols, $box['key']['id']);
 		}

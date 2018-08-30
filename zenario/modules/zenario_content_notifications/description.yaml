@@ -11,8 +11,6 @@ description: |
 
     <p>In the first feature, the module allows one or more Publishers to receive content item-related requests. (There is a new permission beneath Publisher which allows administrators to opt in, and a second flag which the administrator may actually opt in so as to then receive the requests).<p>
 
-    <p>The requests include: Publish; Trash; and other ad hoc item-related change requests.</p>
-
     <p>There is a new &quot;Publish...&quot; button on the admin toolbar (visible to Author administrators who do <i>not</i> have publishing permission). When clicked, the author sees a box in which he can write a comment and send the request-to-publish to the nominated publishers.</p>
 
     <p>When the request is made, an email is sent to all opted-in administrators, and a copy of the request is attached to that version of the content item.</p>
@@ -20,7 +18,9 @@ description: |
     <p>Content items which have such a request are displayed with a yellow note icon, both on the admin toolbar and in Organizer. It is then up to the publisher to either publish the content item, or delete the draft if they don't want to approve it.</p>
 
     <p>This is a powerful tool for delegating authoring ability over a site's content to a wider pool of authors, with a streamlined author-publishing process.</p>
-
+    
+    <p>Notes can also be made against a content item which are not emailed to other admins.</p>
+    
     <p>The second feature described above allows any administrator to monitor key events on the site, including the drafting, publishing and trashing of a content item, and also the changing of any menu node text.<p>
 
     <p>The CMS monitors all such changes and sends an automated email to administrators who have opted to be informed of such changes.<p>
@@ -49,18 +49,18 @@ nestable: false
 dependencies:
     zenario_pro_features: true
 signals:
-    signal1:
+    -
         name: eventContentPublished
         static: true
-    signal2:
+    -
         name: eventDraftCreated
         static: true
-    signal3:
+    -
         name: eventMenuNodeTextAdded
         static: true
-    signal4:
+    -
         name: eventMenuNodeTextUpdated
         static: true
-    signal5:
+    -
         name: eventContentDeleted
         static: true

@@ -9,14 +9,14 @@ zenario_menu:
                 enabled: true
             fields:
                 show_image:
-                    ord: 0.1
-                    label: 'Show an image'
+                    ord: 2.1
+                    label: 'Show an image beside the menu node'
                     type: checkbox
                     format_onchange: true
                     side_note: "An image will show up next to the menu node."
                 image_id:
                     visible_if: "zenarioAB.value('show_image')"
-                    ord: 0.2
+                    ord: 2.2
                     label: 'Image:'
                     indent: 1
                     upload:
@@ -27,7 +27,7 @@ zenario_menu:
                             - .jpg
                             - .jpeg
                             - .png
-                        drag_and_drop: true
+                        drag_and_drop: false
                         reorder_items: false
                     pick_items:
                         path: zenario__content/panels/image_library
@@ -38,14 +38,15 @@ zenario_menu:
                     validation:
                         required_if_not_hidden: Please select an image.
                 use_rollover_image:
-                    ord: 0.3
+                    ord: 3.1
+                    indent: 1
                     label: 'Show a rollover image effect'
                     type: checkbox
                     format_onchange: true
                     side_note: "An image will show up on mouse over and It will disappear on mouse out."
                 rollover_image_id:
-                    ord: 0.4
-                    indent: 1
+                    ord: 3.2
+                    indent: 2
                     label: 'Rollover image:'
                     visible_if: "zenarioAB.value('use_rollover_image')"
                     upload:
@@ -56,7 +57,7 @@ zenario_menu:
                             - .jpg
                             - .jpeg
                             - .png
-                        drag_and_drop: true
+                        drag_and_drop: false
                         reorder_items: false
                     pick_items:
                         path: zenario__content/panels/image_library
@@ -66,11 +67,13 @@ zenario_menu:
                         select_phrase: Select image...
                 zenario_promo_menu__feature_image_checkbox:
                     label: 'Show a feature image'
+                    ord: 1.01
                     type: checkbox
                     format_onchange: true
                     side_note: "A feature image appears as a large image on a promotional menu during hover over this menu node. Only supported if the menu plugin supports images (e.g. Promo image plugin)"
                 zenario_promo_menu__feature_image:
                     indent: 1
+                    ord: 1.02
                     foreign_key_to: file
                     label: 'Image:'
                     pick_items:
@@ -95,6 +98,7 @@ zenario_menu:
                         required_if_not_hidden: Please select an image.
                 zenario_promo_menu__canvas:
                     indent: 1
+                    ord: 1.03
                     label: 'Image canvas:'
                     type: select
                     value: unlimited
@@ -117,6 +121,7 @@ zenario_menu:
                     format_onchange: Yes
                 zenario_promo_menu__width:
                     indent: 2
+                    ord: 1.04
                     label: 'Width:'
                     type: text
                     validation:
@@ -128,6 +133,7 @@ zenario_menu:
                     post_field_html: '&nbsp;pixels'
                 zenario_promo_menu__height:
                     indent: 2
+                    ord: 1.05
                     label: 'Height:'
                     type: text
                     validation:
@@ -140,6 +146,7 @@ zenario_menu:
                 
                 zenario_promo_menu__offset:
                     indent: 2
+                    ord: 1.06
                     plugin_setting:
                         name: offset
                     label: 'Offset:'
@@ -154,15 +161,26 @@ zenario_menu:
                     note_below: |
                         Moving the slider to the left will move the image left or down;
                                                     moving the slider to the right will move the image right or up.
+                                                    
+                zenario_promo_menu__feature_image_is_retina:
+                    indent: 2
+                    ord: 1.07
+                    label: 'This is a retina image'
+                    type: checkbox
+                    value: ""
+                    side_note: |
+                        Display image at double density.
                 
                 zenario_promo_menu__use_rollover:
                     indent: 1
+                    ord: 1.08
                     label: 'Use a rollover image'
                     type: checkbox
                     value: ""
                     format_onchange: Yes
                 zenario_promo_menu__rollover_image:
                     indent: 2
+                    ord: 1.09
                     foreign_key_to: file
                     label: 'Change image on rollover:'
                     pick_items:
@@ -182,11 +200,13 @@ zenario_menu:
                         drag_and_drop: false
                         reorder_items: false
                     value: ""
+                    note_below: "Please note if the menu node is selected, the rollover image will always show."
                     format_onchange: true
                 
                 
                 zenario_promo_menu__overwrite_alt_tag:
                     indent: 1
+                    ord: 1.10
                     multiple_edit:
                         original_value: ""
                     label: 'Overwrite image alt-tag:'
@@ -197,6 +217,7 @@ zenario_menu:
                 
                 zenario_promo_menu__title:
                     indent: 1
+                    ord: 1.11
                     label: 'Title:'
                     type: text
                     width: "150"
@@ -204,6 +225,7 @@ zenario_menu:
                     value: ""
                 zenario_promo_menu__text:
                     indent: 1
+                    ord: 1.12
                     label: 'Description (HTML):'
                     type: editor
                     dont_trim: true
@@ -217,6 +239,7 @@ zenario_menu:
                 
                 zenario_promo_menu__link_type:
                     indent: 1
+                    ord: 1.13
                     label: 'Destination:'
                     type: radios
                     values:
@@ -233,6 +256,7 @@ zenario_menu:
                     format_onchange: Yes
                 zenario_promo_menu__hyperlink_target:
                     indent: 2
+                    ord: 1.14
                     label: 'Content item:'
                     pick_items:
                         path: zenario__content/panels/content/refiners/filter_by_lang////
@@ -247,6 +271,7 @@ zenario_menu:
                     format_onchange: Yes
                 zenario_promo_menu__hide_private_item:
                     indent: 2
+                    ord: 1.15
                     label: 'Privacy:'
                     type: select
                     value: always_show
@@ -265,12 +290,14 @@ zenario_menu:
                             label: Only show to extranet users
                 zenario_promo_menu__url:
                     indent: 2
+                    ord: 1.16
                     label: 'External URL:'
                     type: url
                     maxlength: "255"
                     value: ""
                 zenario_promo_menu__target_blank:
                     indent: 2
+                    ord: 1.17
                     label: 'Open in a new window'
                     type: checkbox
                     value: ""
