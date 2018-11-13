@@ -3,7 +3,7 @@
 require '../../../adminheader.inc.php';
 require 'tree_explorer.fun.php';
 
-$cachingRestrictions = false;
+$cachingRestrictions = 0;
 $allowCaching = true;
 
 if ($_GET["section_id"] ?? false) {

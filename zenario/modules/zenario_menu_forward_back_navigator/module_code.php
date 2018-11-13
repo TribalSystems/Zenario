@@ -53,7 +53,7 @@ class zenario_menu_forward_back_navigator extends zenario_menu {
 		$parentMenuId = (int) ze\menu::parentId($currentMenuId);
 		
 		//N.b. caching not implemented yet
-		$cachingRestrictions = '';
+		$cachingRestrictions = 0;
 		
 		
 		//Check if we're showing an "up" link

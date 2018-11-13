@@ -1343,7 +1343,7 @@ class content {
 	
 		//Break the search string up into tokens.
 		//Normally we break by spaces, but you can use a pattern in double quotes to override this
-		preg_match_all('/"([^"]+)"|(\S+)/', trim($searchString), $searchStrings, PREG_SET_ORDER);
+		preg_match_all('/"([^"]*\w[^"]*)"|(\S*\w\S*)/', trim($searchString), $searchStrings, PREG_SET_ORDER);
 	
 		$quotesUsed = false;
 		$searchWordsAndPhrases = [];

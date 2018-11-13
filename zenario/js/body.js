@@ -94,6 +94,20 @@
 	
 	//Add a CSS class for whether this is a touch screen or not
 	lSet(('ontouchstart' in window) || navigator.msMaxTouchPoints, 'touch', 'no_touching');
+	
+	
+	//Create a function that runs code as soon as the DOM is ready.
+	//This uses jQuery's $(function() { ... }) function if possible, however if jQuery is not yet loaded
+	//then it falls back to the addEventListener() function.
+	window.zOnLoad = function(runMe) {
+		if (window.$) {
+			$(runMe);
+		} else if (window.addEventListener) {
+			addEventListener('DOMContentLoaded', runMe);
+		} else {
+			runMe();
+		}
+	};
 
 
 })(document.body, window, window.zenarioL = {});

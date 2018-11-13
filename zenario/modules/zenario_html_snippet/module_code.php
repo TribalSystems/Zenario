@@ -41,6 +41,9 @@ class zenario_html_snippet extends ze\moduleBaseClass {
 	protected $raw_html = '';
 	protected $enablePhraseCodeReplace = true;
 	
+	const JS_PREFIX = '(function(slotName, containerId) {';
+	const JS_SUFFIX = '})';
+	
 	//When the plugin is set up, also get the content item's status and the content section to display
 	function init() {
 		$this->allowCaching(
@@ -105,7 +108,13 @@ class zenario_html_snippet extends ze\moduleBaseClass {
 		
 		} elseif ($this->hasJS($javascript)) {
 			echo '
-<script type="text/javascript">', $javascript, '
+<script type="text/javascript"';
+			
+			if (ze::setting('defer_js')) {
+				echo ' defer';
+			}
+			
+			echo '>', $javascript, '
 </script>';
 		}
 	}
@@ -122,15 +131,14 @@ class zenario_html_snippet extends ze\moduleBaseClass {
 		 && (self::canMinifyJavaScript())) {
 		
 		} elseif ($javascript = trim($this->setting('javascript'))) {
+			$javascript = self::JS_PREFIX. "\n". $javascript. "\n". self::JS_SUFFIX;
 		
 		} else {
 			$javascript = '';
 			return false;
 		}
 		
-		$javascript = '
-var slotName = '. json_encode($this->slotName). ', containerId = '. json_encode($this->containerId). ';
-'. $javascript;
+		$javascript .= '('. json_encode($this->slotName). ', '. json_encode($this->containerId). ');';
 		return true;
 	}
 	
@@ -145,7 +153,7 @@ var slotName = '. json_encode($this->slotName). ', containerId = '. json_encode(
 				require_once CMS_ROOT. 'zenario/includes/js_minify.inc.php';
 				define('IGNORE_REVERTS', true);
 				define('RECOMPRESS_EVERYTHING', true);
-				$values['javascript/minified_javascript'] = minifyString($values['javascript/javascript']);
+				$values['javascript/minified_javascript'] = minifyString(self::JS_PREFIX. $values['javascript/javascript']. self::JS_SUFFIX);
 			}
 			$fields['javascript/minify']['hidden'] =
 			$fields['javascript/minified_javascript']['hidden'] = false;

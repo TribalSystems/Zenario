@@ -267,9 +267,9 @@ class lang {
 	}
 
 	//Formerly "applyMergeFields()"
-	public static function applyMergeFields(&$string, $replace) {
+	public static function applyMergeFields(&$string, $replace, $open = '[[', $close = ']]', $autoHTMLEscape = false) {
 		
-		$content = explode('[[', $string);
+		$content = explode($open, $string);
 		$string = '';
 		$first = true;
 		
@@ -277,27 +277,32 @@ class lang {
 			if ($first) {
 				$first = false;
 			
-			} elseif (false !== ($sbe = strpos($str, ']]'))) {
+			} elseif (false !== ($sbe = strpos($str, $close))) {
 				$mf = substr($str, 0, $sbe);
 				$str = substr($str, $sbe + 2);
 				
-				do {
-					//Look out for Twig-style flags at the end of the phrase code's name
-					if (false !== ($pos = strpos($mf, '|'))) {
-						$filter = trim(substr($mf, $pos + 1));
-						$mf = trim(substr($mf, 0, $pos));
+				if ($autoHTMLEscape) {
+					$string .= htmlspecialchars($replace[$mf] ?? '');
+				
+				} else {
+					do {
+						//Look out for Twig-style flags at the end of the phrase code's name
+						if (false !== ($pos = strpos($mf, '|'))) {
+							$filter = trim(substr($mf, $pos + 1));
+							$mf = trim(substr($mf, 0, $pos));
 					
-						switch ($filter) {
-							case 'e':
-							case 'escape':
-								//html escaping anything using the "escape" flag
-								$string .= htmlspecialchars($replace[$mf] ?? '');
-								break 2;
+							switch ($filter) {
+								case 'e':
+								case 'escape':
+									//html escaping anything using the "escape" flag
+									$string .= htmlspecialchars($replace[$mf] ?? '');
+									break 2;
+							}
 						}
-					}
 					
-					$string .= $replace[$mf] ?? '';
-				} while (false);
+						$string .= $replace[$mf] ?? '';
+					} while (false);
+				}
 			}
 			
 			$string .= $str;

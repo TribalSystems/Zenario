@@ -3370,6 +3370,7 @@ body.ff #zenario_fbAdminFloatingBox.zenario_fab_plugin .zenario_fabMain #zenario
 
 #zenario_fbAdminFloatingBox .zenario_fab_picked_item_image {
 	background: 50% 50% no-repeat;
+	background-size:contain;
 }
 
 #zenario_fbAdminFloatingBox .zenario_fabMain #zenario_fbMain .zenario_fab_picked_item_info {
@@ -3599,6 +3600,11 @@ body.ff #zenario_fbAdminFloatingBox.zenario_fab_plugin .zenario_fabMain #zenario
 	border:1px solid #dadada;
 	background:#f6f6f6;
 	color:#666 !important;
+}
+
+#zenario_fbAdminFloatingBox.zenario_fab_zenario__pop_up_note #name_for_email .Dropdown .form_picked_item,
+#zenario_fbAdminFloatingBox.zenario_fab_zenario__pop_up_project_task_note #name_for_email .Dropdown .form_picked_item {
+	border:0;
 }
 
 #zenario_fbAdminFloatingBox.zenario_fab_zenario__pop_up_note #name_for_email input[readonly="readonly"],

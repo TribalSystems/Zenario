@@ -1365,6 +1365,11 @@ zenario.refreshPluginSlot = function(slotName, instanceId, additionalRequests, r
 	}
 	
 	additionalRequests = zenario.addTabIdToURL(additionalRequests, slotName);
+	
+	//Make sure that we keep the "visLang" variable in the URL if it is present
+	if (zenario.visLang) {
+		additionalRequests += '&visLang=' + encodeURIComponent(zenario.visLang);
+	}
 
 	//Allow a slot to be refreshed by name only, in which case we'll check its current instance id
 	if (instanceId == 'lookup') {
@@ -3567,7 +3572,8 @@ zenario.init = function(
 	cType,
 	skinId,
 	
-	slashesInURL
+	slashesInURL,
+	visLang
 ) {
 
 	window.zenarioCSSJSVersionNumber = zenarioCSSJSVersionNumber;
@@ -3584,6 +3590,7 @@ zenario.init = function(
 	zenario.skinId = skinId || undefined;
 	
 	zenario.slashesInURL = !!slashesInURL;
+	zenario.visLang = visLang;
 	
 	
 

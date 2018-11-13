@@ -48,7 +48,7 @@ if (!$isAdmin
  && $defer
  && \ze::setting('defer_js')) {
 	$scriptTag = '<script type="text/javascript" defer';
-	$inlineStart = "(window.addEventListener || (function(a,b){b();}))('DOMContentLoaded', function() {";
+	$inlineStart = "zOnLoad(function() {";
 	$inlineStop = '});';
 } else {
 	$scriptTag = '<script type="text/javascript"';
@@ -68,13 +68,30 @@ echo '
 '. $scriptTag. ' src="', $prefix, 'js/visitor.wrapper.js.php?', $w, '"></script>';
 
 
-
+$currentLangId = \ze\content::currentLangId();
 
 //Write other related JavaScript variables to the page
 	//Note that page caching may cause the wrong user id to be set.
 	//As with ($_SESSION['extranetUserID'] ?? false), anything that changes behaviour by Extranet User should not allow the page to be cached.
 echo '
-'. $scriptTag. '>'. $inlineStart. 'zenario.init("'. \ze::setting('css_js_version'). '",', (int) ($_SESSION['extranetUserID'] ?? 0), ',"', \ze\escape::js(\ze\content::currentLangId()), '","', \ze\escape::js(\ze::setting('vis_date_format_datepicker')), '","', \ze\escape::js(DIRECTORY_INDEX_FILENAME), '",', (int) \ze\cookie::canSet(), ',', (int) \ze::$equivId, ',', (int) \ze::$cID, ',"', \ze\escape::js(\ze::$cType), '",', (int) \ze::$skinId, ',', (int) \ze::setting('mod_rewrite_slashes'), ');'. $inlineStop. '</script>';
+'. $scriptTag. '>'. $inlineStart. 'zenario.init("'.
+	\ze::setting('css_js_version'). '",',
+	(int) ($_SESSION['extranetUserID'] ?? 0), ',"',
+	\ze\escape::js(\ze\content::currentLangId()), '","',
+	\ze\escape::js(\ze::setting('vis_date_format_datepicker')), '","',
+	\ze\escape::js(DIRECTORY_INDEX_FILENAME), '",',
+	(int) \ze\cookie::canSet(), ',',
+	(int) \ze::$equivId, ',',
+	(int) \ze::$cID, ',"', \ze\escape::js(\ze::$cType), '",',
+	(int) \ze::$skinId, ',',
+	(int) \ze::setting('mod_rewrite_slashes');
+
+if (\ze::$visLang && \ze::$visLang != $currentLangId) {
+	echo ',"', \ze\escape::js(\ze::$visLang), '"';
+}
+
+
+echo ');'. $inlineStop. '</script>';
 
 
 

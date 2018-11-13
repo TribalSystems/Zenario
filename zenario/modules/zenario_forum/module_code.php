@@ -548,7 +548,7 @@ class zenario_forum extends zenario_comments {
 	
 	
 	//Update a post in the thread
-	function editPost($userId, $messageText) {
+	function editPost($userId, $messageText, $posterName = "") {
 		$post_id = $this->post['id'];
 		//Add the comment
 		$sql = "

@@ -44,7 +44,7 @@ class wrapper {
 		
 			if ($linkV !== false) {
 				echo '
-<link rel="stylesheet" type="text/css" media="', $media, '" href="', htmlspecialchars($pathURL. $file), '?v='. $linkV. '"/>';
+<link rel="stylesheet" type="text/css" media="', $media, '" href="', htmlspecialchars($pathURL. $file), '?'. $linkV. '"/>';
 		
 			} else { 
 				//Include the contents of the file, being careful to correct for the fact that the relative path for images will be wrong

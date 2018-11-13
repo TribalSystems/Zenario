@@ -379,13 +379,16 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 	}
 
 	//Edit a comment
-	function editPost($userId, $messageText) {
+	function editPost($userId, $messageText, $posterName = "") {
 		
 		//Add the comment
 		$sql = "
 			UPDATE ". DB_PREFIX. ZENARIO_ANONYMOUS_COMMENTS_PREFIX. "user_comments SET
-				message_text = '". ze\escape::sql(zenario_anonymous_comments::sanitiseHTML($messageText, $this->setting('enable_images'), $this->setting('enable_links'))). "',
-				date_updated = NOW(),
+				message_text = '". ze\escape::sql(zenario_anonymous_comments::sanitiseHTML($messageText, $this->setting('enable_images'), $this->setting('enable_links'))). "',";
+		if ($posterName) {
+			$sql .= "poster_name = '" . ze\escape::sql($posterName) . "',";
+		}
+		$sql .= "date_updated = NOW(),
 				updater_id = ". (int) $userId. "
 			WHERE content_id = ". (int) $this->cID. "
 			  AND content_type = '". ze\escape::sql($this->cType). "'

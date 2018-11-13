@@ -64,7 +64,7 @@ Notes:
 
 class zenario_minify {
 	
-	public static function modified($path) {
+	public static function svnStatus($path) {
 	
 		if (is_null(self::$stats)) {
 			self::$stats = [];
@@ -82,7 +82,7 @@ class zenario_minify {
 			}
 		}
 		
-		return isset(self::$stats[$path]) || isset(self::$stats[ze\ring::chopPrefix(CMS_ROOT, $path, true)]);
+		return self::$stats[$path] ?? self::$stats[ze\ring::chopPrefix(CMS_ROOT, $path, true)] ?? null;
 	}
 	
 	public static $stats = null;
@@ -753,7 +753,7 @@ function applyCompilationMacros($code) {
 	
 	//Automatically add "var thus = this;" to the start of any method declarations
 	if ($usesThus) {
-		$code = preg_replace('@(\bmethods\.[\w\$]+\s*=\s*function\s*\([^\)]*\)\s*\{)@', '$1 var thus = this;', $code);
+		$code = preg_replace('@(\bmethods\w*\.[\w\$]+\s*=\s*function\s*\([^\)]*\)\s*\{)@', '$1 var thus = this;', $code);
 	}
 	
 	//Some special custom logic for zenario core libraries
@@ -827,14 +827,15 @@ function minify($dir, $file, $level, $ext = '.js', $string = false) {
 		$needsreverting = false;
 		
 		if ($string === false && is_dir('.svn')) {
-			$svnAdd = !file_exists($minFile);
+			$svnAdd = !file_exists($minFile) && zenario_minify::svnStatus($minFile) != '!';
 			
 			$modified = 
 				RECOMPRESS_EVERYTHING ||
-				zenario_minify::modified($srcFile);
+				zenario_minify::svnStatus($srcFile) ||
+				zenario_minify::svnStatus($minFile) == '!';
 			
 			if (!$svnAdd && !$modified) {
-				$needsreverting = zenario_minify::modified($minFile);
+				$needsreverting = zenario_minify::svnStatus($minFile);
 			}
 		}
 		
@@ -876,11 +877,11 @@ function minify($dir, $file, $level, $ext = '.js', $string = false) {
 					
 					if ($yamlToJSON) {
 						$tags = Spyc::YAMLLoad($srcFile);
-						file_put_contents($minFile, json_encode($tags));
+						file_put_contents($minFile, json_encode($tags, JSON_FORCE_OBJECT));
 					
 					} elseif (!$isCSS && USE_CLOSURE_COMPILER) {
 						//copy($srcFile, $minFile);
-						exec('java -jar '. escapeshellarg(CLOSURE_COMPILER_PATH). ' '. $v. ' --compilation_level SIMPLE_OPTIMIZATIONS --js_output_file '.
+						exec('java -jar '. escapeshellarg(CLOSURE_COMPILER_PATH). ' '. $v. ' --language_in ECMASCRIPT5 --compilation_level SIMPLE_OPTIMIZATIONS --js_output_file '.
 									escapeshellarg($minFile).
 							//Code to generate a source-map if needed
 								//' --source_map_format=V3 --create_source_map '.

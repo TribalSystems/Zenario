@@ -59,10 +59,16 @@ if (isset($_POST['comm_message'])) {
 	$this->sections['Post_Message']['Post_Text'] =  zenario_anonymous_comments::sanitiseHTML($this->post['message_text'], $this->setting('enable_images'), $this->setting('enable_links'));
 	
 } elseif ($quoteMode == 'quote' && $this->canQuotePost() && !empty($this->post['id'])) {
+	
+	if ($this->post['poster_id']) {
+		$quotedUserName = $this->getUserScreenName($this->post['poster_id']);
+	} else {
+		$quotedUserName =$this->post['poster_name'];
+	}
 	$this->sections['Post_Message']['Post_Text'] =
 		zenario_anonymous_comments::sanitiseHTML(
 			'<blockquote>'.
-				'<b>'. $this->phrase('_SAID', ['user' => $this->getUserScreenName($this->post['poster_id'])]). '</b>'.
+				'<b>'. $this->phrase('_SAID', ['user' => $quotedUserName]). '</b>'.
 				"<br/>".
 				$this->post['message_text'].
 			"</blockquote><p>&nbsp;</p>"

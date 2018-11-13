@@ -1498,4 +1498,10 @@ _sql
 	AND value = 'never_save'
 _sql
 
+);ze\dbAdm::revision(221
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
+	MODIFY COLUMN `visible_condition_field_value` longtext CHARACTER SET utf8mb4 DEFAULT NULL
+_sql
+
 );

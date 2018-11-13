@@ -48,7 +48,7 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 		$details['filesize'] = ze\lang::formatFilesizeNicely($details['size'], 1, true);
 		
 		$box['tabs']['details']['fields']['size']['snippet']['html'] = 
-			ze\admin::phrase('[[filesize]] [[[width]] × [[height]]px]', $details);
+			ze\admin::phrase('{{filesize}} [{{width}} × {{height}}px]', $details, false, '{{', '}}');
 		
 		$box['tabs']['details']['fields']['filename']['value'] = $details['filename'];
 		$box['tabs']['details']['fields']['alt_tag']['value'] = $details['alt_tag'];

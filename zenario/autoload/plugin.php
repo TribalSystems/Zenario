@@ -339,7 +339,6 @@ class plugin {
 
 	
 	private static $pluginPageHeadHTML = [];
-	private static $pluginPageFootHTML = [];
 	
 	//Activate and setup a plugin
 	//Note that the function canActivateModule() or equivalent should be called on the plugin's name before calling \ze\plugin::setInstance(), loadPluginInstance() or \ze\plugin::initInstance()
@@ -463,9 +462,8 @@ class plugin {
 														$slotContents[$slotNameNestId]['class']->pageHead = $vars['h'];
 														unset($vars['h']);
 													}
-													if (isset($vars['f'])) {
-														$slotContents[$slotNameNestId]['class']->pageFoot = $vars['f'];
-														unset($vars['f']);
+													if (file_exists($chPath. 'foot.html')) {
+														$slotContents[$slotNameNestId]['class']->pageFoot = file_get_contents($chPath. 'foot.html');
 													}
 													if (isset($vars['l'])) {
 														foreach ($vars['l'] as $lib => $dummy) {
@@ -764,7 +762,9 @@ class plugin {
 			} elseif ($showPlaceholderMethod == 'addToPageFoot') {
 				//Note down any html added to the page foot
 				if ($useOb) {
-					self::$pluginPageFootHTML[$slotName] = ob_get_flush();
+					if ($html = ob_get_flush()) {
+						\ze::$slotContents[$slotName]['class']->zAPICacheFoot($html);
+					}
 				}
 					
 			} elseif ($showPlaceholderMethod == 'showSlot') {
@@ -855,11 +855,6 @@ class plugin {
 								unset(self::$pluginPageHeadHTML[$slotNameNestId]);
 							}
 
-							if (!empty(self::$pluginPageFootHTML[$slotNameNestId])) {
-								$slots[$slotNameNestId]['f'] = self::$pluginPageFootHTML[$slotNameNestId];
-								unset(self::$pluginPageFootHTML[$slotNameNestId]);
-							}
-
 							if (!empty(\ze::$jsLibs)) {
 								$slots[$slotNameNestId]['l'] = \ze::$jsLibs;
 							}
@@ -909,6 +904,8 @@ class plugin {
 							file_put_contents(CMS_ROOT. $path. 'cached_files', $images);
 							\ze\cache::chmod(CMS_ROOT. $path. 'cached_files', 0666);
 						}
+						
+						\ze::$slotContents[$slotName]['cache_path'] = $path;
 					}
 				}
 	

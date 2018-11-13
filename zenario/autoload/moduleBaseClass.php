@@ -686,9 +686,9 @@ class moduleAPI {
 	
 	public final function linkToItemAnchor(
 		$cID, $cType = 'html', $fullPath = false, $request = '', $alias = false,
-		$autoAddImportantRequests = false, $forceAliasInAdminMode = false
+		$autoAddImportantRequests = false, $forceAliasInAdminMode = false, $stayInCurrentLanguage = false
 	) {
-		return ' href="'. htmlspecialchars(\ze\link::toItem($cID, $cType, $fullPath, $request, $alias, $autoAddImportantRequests, $forceAliasInAdminMode)). '"';
+		return ' href="'. htmlspecialchars(\ze\link::toItem($cID, $cType, $fullPath, $request, $alias, $autoAddImportantRequests, $forceAliasInAdminMode, false, false, $stayInCurrentLanguage)). '"';
 	}
 	
 	public final function linkToItemAnchorAndJS(
@@ -1017,6 +1017,11 @@ class moduleAPI {
 	protected $frameworkOutputted = false;
 	
 	
+	public final function zAPICacheFoot($html) {
+		if (isset(\ze::$slotContents[$this->slotName]['cache_path'])) {
+			file_put_contents(CMS_ROOT. \ze::$slotContents[$this->slotName]['cache_path']. 'foot.html', $html, FILE_APPEND);
+		}
+	}
 	
 	public final function zAPIGetCachableVars(&$a) {
 		$a = [

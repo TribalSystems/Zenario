@@ -3161,7 +3161,11 @@ div.organizer_pageSize {
 
 #organizer_rightColumn div.organizer_item_image.organizer_list_view_image {
 	background-position: 30% center;
-	background-size: contain;
+}
+
+#organizer_rightColumn div.organizer_item_image.organizer_list_view_image,
+#organizer_rightColumnContent div.organizer_row div.organizer_cell.listicon > div.organizer_item_with_image {
+	background-size:contain;
 }
 
 .organizer_item_image.zenario_nest_tab {

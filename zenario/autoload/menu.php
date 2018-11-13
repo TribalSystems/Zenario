@@ -332,12 +332,16 @@ class menu {
 	}
 
 
+	const privateItemsExist = 1;
+	const staticFunctionCalled = 2;
+
 	//Formerly "shouldShowMenuItem()"
 	public static function shouldShow(&$row, &$cachingRestrictions, $language, $getFullMenu = false, $adminMode = false) {
 	
 		// Hide menu node if static method is set
 		if (!empty($row['module_class_name'])) {
-			$cachingRestrictions = 'staticFunctionCalled';
+			$cachingRestrictions = max($cachingRestrictions, self::staticFunctionCalled);
+			
 			if (!(\ze\module::inc($row['module_class_name']))
 			 || !(method_exists($row['module_class_name'], $row['method_name']))
 			 || !($overrides = call_user_func(
@@ -407,15 +411,15 @@ class menu {
 			//Check for Menu Nodes that are only shown if logged in/out as an Extranet User
 			//But note that this logic is not used in Admin Mode; Admins always see every Menu Node, and don't see any special markings for these Menu Nodes
 			} elseif ($row['hide_private_item'] == 3) {
-				$cachingRestrictions = 'privateItemsExist';
+				$cachingRestrictions = max($cachingRestrictions, self::privateItemsExist);
 				return !empty($_SESSION['extranetUserID']) || $adminMode;
 		
 			} elseif ($row['hide_private_item'] == 2) {
-				$cachingRestrictions = 'privateItemsExist';
+				$cachingRestrictions = max($cachingRestrictions, self::privateItemsExist);
 				return empty($_SESSION['extranetUserID']) || $adminMode;
 		
 			} elseif ($row['hide_private_item']) {
-				$cachingRestrictions = 'privateItemsExist';
+				$cachingRestrictions = max($cachingRestrictions, self::privateItemsExist);
 				return \ze\content::checkPerm($row['cID'], $row['cType']);
 			}
 		}

@@ -425,7 +425,7 @@ class zenario_document_container extends ze\moduleBaseClass {
 				FROM ' . ze\escape::sql($sqlTable) . ' d
 				INNER JOIN '.DB_PREFIX.'files f
 					ON d.file_id = f.id
-				WHERE d.id IN (' . ze\escape::sql(ze::get('ids')) . ')' .
+				WHERE d.id IN (' . ze\escape::in(ze::get('ids'), true) . ')' .
 				$sqlWhere;
 			$result = ze\sql::select($sql);
 			while ($row = ze\sql::fetchAssoc($result)) {

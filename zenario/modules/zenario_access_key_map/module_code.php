@@ -56,7 +56,7 @@ class zenario_access_key_map extends ze\moduleBaseClass {
 	}
 	
 	public function showSlot() {
-		$cachingRestrictions = false;
+		$cachingRestrictions = 0;
 		$mergeFields = [];
 		$subSections = [];
 		$mergeFields['Access_Key_Map'] = $this->phrase( '_ACCESS_KEY_MAP' );
@@ -97,13 +97,13 @@ class zenario_access_key_map extends ze\moduleBaseClass {
 		}
 		
 		switch ($cachingRestrictions) {
-			case 'privateItemsExist':
+			case ze\menu::privateItemsExist:
 				$this->allowCaching(
 					$atAll = true, $ifUserLoggedIn = false, $ifGetSet = true, $ifPostSet = true, $ifSessionSet = true, $ifCookieSet = true);
 				$this->clearCacheBy(
 					$clearByContent = false, $clearByMenu = true, $clearByUser = false, $clearByFile = false, $clearByModuleData = false);
 				break;
-			case 'staticFunctionCalled':
+			case ze\menu::staticFunctionCalled:
 				$this->allowCaching(false);
 				break;
 		}

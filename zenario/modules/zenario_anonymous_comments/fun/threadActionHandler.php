@@ -102,7 +102,7 @@ if (($_POST['comm_request'] ?? false) == 'post_reply' && $this->canMakePost()) {
 	
 } elseif (($_POST['comm_request'] ?? false) == 'edit_post' && $this->canEditPost($this->post)) {
 	if ($_POST['comm_message']) {
-		$this->editPost(ze\user::id(), $_POST['comm_message']);
+		$this->editPost(ze\user::id(), $_POST['comm_message'], $_POST['comm_name']);
 	} else {
 		//complain about required fields
 		$failure = true;

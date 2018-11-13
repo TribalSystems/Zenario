@@ -88,22 +88,30 @@
 		//can then define its methods.
 		//This is more of a longcut than a shortcut function, but it makes the syntax
 		//a little more readable and friendly when setting the methods of a class.
-		methodsOf = window.methodsOf = zenario.methodsOf = function(thisClass) {
+		methodsOf =
+		window.methodsOf =
+		zenario.methodsOf = function(thisClass) {
 			return thisClass.prototype;
 		},
 		
 		//Shortcut to document.getElementById()
-		get = window.get = zenario.get = function(el) {
+		get =
+		window.get =
+		zenario.get = function(el) {
 			return document.getElementById(el);
 		},
 
 		//Shortcut to hasOwnProperty()
-		has = window.has = zenario.has = function(o, k) {
+		has =
+		window.has =
+		zenario.has = function(o, k) {
 			return defined(o) && o.hasOwnProperty && o.hasOwnProperty(k);
 		},
 		
 		//Return either 0 or 1, based on an input string
-		engToBoolean = window.engToBoolean = zenario.engToBoolean = function(text) {
+		engToBoolean =
+		window.engToBoolean =
+		zenario.engToBoolean = function(text) {
 		
 			var ty = typeof text;
 		
@@ -124,7 +132,9 @@
 		},
 		
 		//Safely escape some text for displaying as HTML
-		htmlspecialchars = window.htmlspecialchars = zenario.htmlspecialchars = function(text, preserveLineBreaks, preserveSpaces) {
+		htmlspecialchars =
+		window.htmlspecialchars =
+		zenario.htmlspecialchars = function(text, preserveLineBreaks, preserveSpaces) {
 		
 			if (_.isFunction(text)) {
 				text = text();
@@ -156,25 +166,43 @@
 		},
 		
 		//Escape text for a JavaScript string
-		jsEscape = window.jsEscape = zenario.jsEscape = function(text) {
+		jsEscape =
+		window.jsEscape =
+		zenario.jsEscape = function(text) {
 			return escape(text).r(/\%u/g, '\\u').r(/\%/g, '\\x');
 		},
 		
-		jsUnescape = window.jsUnescape = zenario.jsUnescape = function(text) {
+		jsUnescape =
+		window.jsUnescape =
+		zenario.jsUnescape = function(text) {
 			return unescape(text.r(/\\u/gi, '%u').r(/\\x/gi, '%')).r(/\\(.)/g, "$1");
 		},
 	
 		//Fallback for browsers *cough IE* that don't have a CSS escape function,
 		//as per http://stackoverflow.com/questions/2786538/need-to-escape-a-special-character-in-a-jquery-selector-string
-		cssEscape = window.cssEscape = zenario.cssEscape = function(text) {
+		cssEscape =
+		window.cssEscape =
+		zenario.cssEscape = function(text) {
 			if (window.CSS && CSS.escape) {
 				return CSS.escape(text);
 			} else {
 				return text.r(/[!"#$%&'()*+,.\/:;<=>?@[\\\]^`{|}~]/g, '\\$&');
 			}
 		};
+	
+	zenario.defined = defined;
 	zenario.extensionOf = window.extensionOf = extensionOf;
 	zenario.createZenarioLibrary = window.createZenarioLibrary = createZenarioLibrary;
+	
+	//Add proper definitions for these functions, just for the API documentor to catch
+	/*
+		zenario.defined = function(prop) {
+		};
+		zenario.extensionOf = function(parent, initFun) {
+		};
+		zenario.createZenarioLibrary = function(zenarioEncapName, parent, initFun) {
+		};
+	*/
 	
 	
 	zenarioA.phrase = {};

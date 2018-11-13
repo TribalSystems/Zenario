@@ -1,35 +1,14 @@
 <?php
-
-class PaysonApiError {
-
-    protected $errorId;
-    protected $message;
-    protected $parameter;
-
-    public function __construct($errorId, $message, $parameter = null) {
-        $this->errorId = $errorId;
-        $this->message = $message;
-        $this->parameter = $parameter;
+namespace PaysonEmbedded{
+    class PaysonApiError {
+        public $message = NULL;
+        public $parameter = NULL;
+        public function __construct($message, $parameter = null) {
+            $this->message = $message;
+            $this->parameter = $parameter;
+        }
+        public function __toString() {
+            return "Message: " . $this->message . "\t Parameter: " . $this->parameter;
+        }
     }
-
-    public function getMessage() {
-        return $this->message;
-    }
-
-    public function getParameter() {
-        return $this->parameter;
-    }
-
-    public function getErrorId() {
-        return $this->errorId;
-    }
-
-    public function __toString() {
-        return "ErrorId: " . $this->getErrorId() .
-                " Message: " . $this->getMessage() .
-                " Parameter: " . $this->getParameter();
-    }
-
 }
-
-?>

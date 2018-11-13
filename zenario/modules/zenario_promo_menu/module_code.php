@@ -56,7 +56,7 @@ class zenario_promo_menu extends zenario_menu_multicolumn {
 		$this->onlyIncludeOnLinks = false;
 		$this->showInvisibleMenuItems = false;
 		$this->showMissingMenuNodes = $this->setting('show_missing_menu_nodes');
-		$cachingRestrictions = false;
+		$cachingRestrictions = 0;
 		
 		$parentMenuId = $this->getStartNode();
 		
@@ -71,11 +71,11 @@ class zenario_promo_menu extends zenario_menu_multicolumn {
 							 ze\content::showUntranslatedContentItems());
 							 
 		switch ($cachingRestrictions) {
-			case 'privateItemsExist':
+			case ze\menu::privateItemsExist:
 				$this->allowCaching(
 					$atAll = true, $ifUserLoggedIn = false, $ifGetSet = true, $ifPostSet = true, $ifSessionSet = true, $ifCookieSet = true);
 				break;
-			case 'staticFunctionCalled':
+			case ze\menu::staticFunctionCalled:
 				$this->allowCaching(false);
 				break;
 		}

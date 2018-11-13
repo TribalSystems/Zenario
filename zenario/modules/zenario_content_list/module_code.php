@@ -493,7 +493,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 				$item['cVersion'] = $row['version'];
 				$item['Id'] = $row['type']. '_'. $row['id'];
 				$item['Target_Blank'] = '';
-				$item['Link'] = $this->linkToItemAnchor($row['id'], $row['type'], false, '', $row['alias']);
+				$item['Link'] = $this->linkToItemAnchor($row['id'], $row['type'], false, '', $row['alias'], false, false, $stayInCurrentLanguage = true);
 				$item['Full_Link'] = $this->escapeIfRSS($this->linkToItem($row['id'], $row['type'], true, '', $row['alias']));
 				$item['Content_Type'] = $row['type'];
 				$item['Title'] = $this->escapeIfRSS($row['title']);
@@ -550,7 +550,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 					$link = $this->linkToItem($row['id'], $row['type'], false, 'download=1', $row['alias']);
 					$item['Download_Page_Link'] = $item['Link'];
 					$item['Download_Page_Full_Link'] = $item['Full_Link'];
-					$item['Download_Now_Link'] = $this->linkToItemAnchor($row['id'], $row['type'], false, 'download=1', $row['alias']);
+					$item['Download_Now_Link'] = $this->linkToItemAnchor($row['id'], $row['type'], false, 'download=1', $row['alias'], false, false, $stayInCurrentLanguage = true);
 					$item['Download_Now_Full_Link'] = $this->escapeIfRSS(ze\link::absolute() . $link);
 					$item['Download_Now_Link'] .= ' onclick="'. htmlspecialchars(ze\file::trackDownload($link)). '"';
 					
@@ -637,7 +637,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 						
 						$this->getCIDAndCTypeFromSetting($cID, $cType, 'simple_access_cookie_alternate_page');
 						ze\content::langEquivalentItem($cID, $cType);
-						$item['Link'] = $this->linkToItemAnchor($cID, $cType, false, "rci=".$item['Id']);
+						$item['Link'] = $this->linkToItemAnchor($cID, $cType, false, "rci=".$item['Id'], false, false, false, $stayInCurrentLanguage = true);
 						$item['Full_Link'] = $this->escapeIfRSS($this->linkToItem($cID, $cType, true, "rci=".$item['Id']));
 					}
 				}
@@ -788,7 +788,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 		$moreLink = false;
 		if ($this->setting('show_more_link') && $this->getCIDAndCTypeFromSetting($cID, $cType, 'more_hyperlink_target')) {
 			ze\content::langEquivalentItem($cID, $cType);
-			$moreLink = $this->linkToItemAnchor($cID, $cType);
+			$moreLink = $this->linkToItemAnchor($cID, $cType, false, '', false, false, false, $stayInCurrentLanguage = true);
 		}
 		
 		$paginationLinks = [];

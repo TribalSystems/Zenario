@@ -565,11 +565,16 @@ methods.openEdit = function(itemType, itemId, tuixTabId, stopAnimation) {
 	if (itemType == 'page') {
 		mergeFields.type = 'page_break';
 		mergeFields.mode = 'edit_page';
+		item.type = mergeFields.type  ;
 	} else if (itemType == 'field') {
 		mergeFields.type = item.type;
 		mergeFields.mode = 'edit_field';
 	}
+	
 	mergeFields.type_phrase = thus.getFieldReadableType(item);
+	if (item.dataset_field_id) {
+		mergeFields.type_phrase += ', linked field → ' + item.db_column;
+	}
 	
 	var html = thus.microTemplate('zenario_organizer_form_builder_left_panel', mergeFields);
 	var $div = $('#organizer_form_builder .form_fields_palette .form_fields_palette_outer').html(html);

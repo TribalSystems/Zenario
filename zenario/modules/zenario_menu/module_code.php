@@ -143,7 +143,7 @@ class zenario_menu extends ze\moduleBaseClass {
 		
 		
 		//Get the menu structure from the database.
-		$cachingRestrictions = false;
+		$cachingRestrictions = 0;
 		$menuArray =
 			ze\menu::getStructure($cachingRestrictions,
 							 $this->sectionId, $this->currentMenuId, $this->parentMenuId,
@@ -155,11 +155,11 @@ class zenario_menu extends ze\moduleBaseClass {
 							 ze\content::showUntranslatedContentItems());
 							 
 		switch ($cachingRestrictions) {
-			case 'privateItemsExist':
+			case ze\menu::privateItemsExist:
 				$this->allowCaching(
 					$atAll = true, $ifUserLoggedIn = false, $ifGetSet = true, $ifPostSet = true, $ifSessionSet = true, $ifCookieSet = true);
 				break;
-			case 'staticFunctionCalled':
+			case ze\menu::staticFunctionCalled:
 				$this->allowCaching(false);
 				break;
 		}
@@ -412,7 +412,7 @@ class zenario_menu extends ze\moduleBaseClass {
 		
 		if ($menu = ze\menu::getFromContentItem($cID, $cType)) {
 			
-			$cachingRestrictions = false;
+			$cachingRestrictions = 0;
 			$rows = ze\menu::getStructure(
 				$cachingRestrictions,
 				$menu['section_id'],

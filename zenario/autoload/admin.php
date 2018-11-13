@@ -127,7 +127,7 @@ class admin {
 	
 	const phraseFromTwig = true;
 	//Formerly "adminPhrase()", "getPhrase()"
-	public static function phrase($code, $replace = false, $moduleClass = false) {
+	public static function phrase($code, $replace = false, $moduleClass = false, $open = '[[', $close = ']]', $autoHTMLEscape = false) {
 	
 		if ($moduleClass) {
 			return \ze\lang::phrase($code, $replace, $moduleClass);
@@ -150,7 +150,7 @@ class admin {
 		}
 		
 		if (!empty($replace)) {
-			\ze\lang::applyMergeFields($phrase, $replace);
+			\ze\lang::applyMergeFields($phrase, $replace, $open, $close, $autoHTMLEscape);
 		}
 		return $phrase;
 	}
