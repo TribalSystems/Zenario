@@ -42,7 +42,7 @@ echo '<!DOCTYPE HTML>
 			margin: 0;
 		}
 	</style>
-	<script src="' . ze\link::protocol() . 'maps.googleapis.com/maps/api/js?v=3" type="text/javascript"></script>
+	<script src="' . ze\link::protocol() . 'maps.googleapis.com/maps/api/js?v=3&key=' . urlencode(ze::setting('google_maps_api_key')) . '" type="text/javascript"></script>
 </head>
 <body>
 	<div id="map">
