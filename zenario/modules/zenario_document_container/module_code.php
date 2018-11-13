@@ -94,7 +94,7 @@ class zenario_document_container extends module_base_class {
 				FROM ' . sqlEscape($sqlTable) . ' d
 				INNER JOIN '.DB_NAME_PREFIX.'files f
 					ON d.file_id = f.id
-				WHERE d.id IN (' . sqlEscape(get('ids')) . ')' .
+				WHERE d.id IN (' . inEscape(get('ids'), true) . ')' .
 				$sqlWhere;
 			$result = sqlSelect($sql);
 			while ($row = sqlFetchAssoc($result)) {
