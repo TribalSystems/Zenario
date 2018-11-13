@@ -2891,7 +2891,9 @@ class welcome {
 	public static function redirectAdmin($getRequest, $useAliasInAdminMode = false) {
 		
 		$cID = $cType = $redirectNeeded = $aliasInURL = false;
-		\ze\content::resolveFromRequest($cID, $cType, $redirectNeeded, $aliasInURL, $getRequest, $getRequest, []);
+		if (!empty($getRequest)) {
+			\ze\content::resolveFromRequest($cID, $cType, $redirectNeeded, $aliasInURL, $getRequest, $getRequest, []);
+		}
 		
 		$domain = ($useAliasInAdminMode || !\ze\priv::check())? \ze\link::primaryDomain() : \ze\link::adminDomain();
 	

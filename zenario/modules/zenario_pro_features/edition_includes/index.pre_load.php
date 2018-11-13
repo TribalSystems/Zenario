@@ -42,7 +42,7 @@ function pageCacheDir(&$requests, $type = 'index') {
 function zenario_page_caching__logStats($stats) {
 	
 	if (is_dir($dir = 'cache/stats/page_caching/') && is_writeable($dir)) {
-	} elseif (function_exists('createCacheDir') && $dir = ze\cache::createDir('page_caching', 'stats', true, false)) {
+	} elseif ($dir = ze\cache::createDir('page_caching', 'stats', true, false)) {
 	} else {
 		return false;
 	}

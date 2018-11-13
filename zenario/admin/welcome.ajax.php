@@ -58,10 +58,6 @@ if (!$installed) {
 	ze::$lastDB = ze::$localDB = '';
 }
 
-if (!defined('ERROR_REPORTING_LEVEL')) {
-	define('ERROR_REPORTING_LEVEL', E_ALL & ~E_NOTICE & ~E_STRICT);
-}
-error_reporting(ERROR_REPORTING_LEVEL);
 
 
 

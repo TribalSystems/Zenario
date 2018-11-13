@@ -741,6 +741,7 @@ class menu {
 				$request = '&download=1';
 			}
 			if (isset($row['placeholder'])) {
+				$language = \ze::$visLang ?? \ze::$defaultLang;
 				$request .= '&visLang='. rawurlencode($language);
 			}
 			if ($requests) {

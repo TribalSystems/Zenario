@@ -44,11 +44,20 @@ class zenario_common_features__organizer__template_families extends ze\moduleBas
 		foreach ($panel['items'] as $family => &$item) {
 			$item['path'] = CMS_ROOT. ze\content::templatePath($item['name']);
 			
-			if (is_dir($item['path'])) {
+			if (is_dir($dir = $item['path'])) {
 				$item['files'] = 0;
-				foreach (scandir($item['path']) as $file) {
-					if (substr($file, 0, 1) != '.' && substr($file, -8) == '.tpl.php' && is_file($item['path']. $file)) {
+				foreach (scandir($dir) as $file) {
+					if (substr($file, 0, 1) != '.' && substr($file, -8) == '.tpl.php' && is_file($dir. $file)) {
 						++$item['files'];
+					}
+				}
+			}
+			
+			if (is_dir($dir = $item['path']. 'skins/')) {
+				$item['skins'] = 0;
+				foreach (scandir($dir) as $file) {
+					if (substr($file, 0, 1) != '.' && is_dir($dir. $file)) {
+						++$item['skins'];
 					}
 				}
 			}

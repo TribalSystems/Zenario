@@ -442,11 +442,11 @@ if (!empty($_REQUEST)) ze::trim($_REQUEST);
 
 
 //Set the error level if specified in the site configs, defaulting to (E_ALL & ~E_NOTICE | E_STRICT) if not defined or if the site configs have not yet been included
-if (defined('ERROR_REPORTING_LEVEL')) {
-	error_reporting(ERROR_REPORTING_LEVEL);
-} else {
-	error_reporting(E_ALL & ~E_NOTICE & ~E_STRICT);
+if (!defined('ERROR_REPORTING_LEVEL')) {
+	define('ERROR_REPORTING_LEVEL', E_ALL & ~E_NOTICE & ~E_STRICT);
 }
+error_reporting(ERROR_REPORTING_LEVEL);
+
 
 //Putting "no_cache" in the request should always disable any caching
 ze::$canCache = empty($_REQUEST['no_cache']);

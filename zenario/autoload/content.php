@@ -574,10 +574,17 @@ class content {
 			
 					$aliasInURL = $aliasInURL[0];
 				}
-		
+			
+				//Catch the case where someone typed /admin onto the URL to try and login to admin mode
+				if ($aliasInURL === 'admin') {
+					$cID = false;
+					$cType = false;
+					$redirectNeeded = 'admin';
+					break;
+				
 				//Catch the case where the language id is in the URL, and nothing else.
 				//This should be a link to the home page in that language.
-				if ($aliasInURL && isset(\ze::$langs[$aliasInURL])) {
+				} elseif ($aliasInURL && isset(\ze::$langs[$aliasInURL])) {
 					$reqLangId = $aliasInURL;
 					$aliasInURL = false;
 			

@@ -51,7 +51,7 @@ require 'includes/tree_explorer.php';
 	<div style="clear: both;"></div>
     <div id="body"></div>
 	<script type="text/javascript" src="../../libs/bower/jquery/dist/jquery.min.js?v=<?php echo $v;?>"></script>
-	<script type="text/javascript" src="../../libs/bower/d3/d3.v3.min.js?v=<?php echo $v;?>"></script>
+	<script type="text/javascript" src="../../libs/bower/d3/d3.min.js?v=<?php echo $v;?>"></script>
 	<script type="text/javascript" src="../../libs/manually_maintained/public_domain/json/json2.min.js?v=<?php echo $v;?>"></script>
 	<script type="text/javascript" src="../../js/admin_tree_explorer.min.js?v=<?php echo $v;?>"></script>
 </body>

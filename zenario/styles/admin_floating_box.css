@@ -1227,6 +1227,7 @@ body.zenario_fbog__isOpen .zenario_fbAdmin .zenario_fbButtons input.zenario_fabE
 #zenario_fbAdminInner .zenario_row_with_error select,
 #zenario_fbAdminInner .zenario_row_with_error textarea,*/
 #zenario_fbAdminInner .zenario_row_with_error .Tokenize,
+#zenario_fbAdminInner input[type="url"].zenario_field_with_error,
 #zenario_fbAdminInner input[type="text"].zenario_field_with_error,
 #zenario_fbAdminInner input[type="email"].zenario_field_with_error,
 #zenario_fbAdminInner input[type="search"].zenario_field_with_error,

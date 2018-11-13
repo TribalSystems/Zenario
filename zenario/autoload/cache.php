@@ -214,7 +214,7 @@ class cache {
 	
 	private static $cleanedCacheDir = null;
 	
-	//Formerly "cleanCacheDir()"
+	//Formerly "cleanCacheDir()", "cleanDownloads()"
 	public static function cleanDirs() {
 		//Only allow this function to run at most once per page-load
 		if (self::$cleanedCacheDir !== null) {
