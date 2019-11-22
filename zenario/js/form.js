@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, Tribal Limited
+ * Copyright (c) 2019, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -1648,7 +1648,7 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 		}
 		
 		//Draw the second part of a "type: radios" field this was split using the split_values_if_selected property
-		if (snippet.show_split_values_from) {
+		if (!hidden && snippet.show_split_values_from) {
 			if (thus.splitValues
 			 && thus.splitValues[snippet.show_split_values_from]) {
 				html += thus.splitValues[snippet.show_split_values_from];

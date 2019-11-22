@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2018, Tribal Limited
+ * Copyright (c) 2019, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -213,7 +213,13 @@ class sql {
 	}
 	
 	public static function pageStart($page, $pageSize, $offset = 0) {
-		return max((( (int) $page - 1) * (int) $pageSize) + $offset, 0);
+		$start = max((( (int) $page - 1) * (int) $pageSize) + $offset, 0);
+		
+		if (is_int($start)) {
+			return $start;
+		} else {
+			return 0;
+		}
 	}
 
 

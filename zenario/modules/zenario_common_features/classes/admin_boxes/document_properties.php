@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2018, Tribal Limited
+ * Copyright (c) 2019, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -97,7 +97,7 @@ class zenario_common_features__admin_boxes__document_properties extends ze\modul
 		} else {
 			// Stop forward slashes being used in filenames
 			if ($newDocumentName !== ze\file::safeName($newDocumentName)) {
-				$box['tabs']['details']['errors'][] = ze\admin::phrase('Your filename cannot contain illegal characters, e.g. /, \\, :, *, ?, ", <, > or |');
+				$box['tabs']['details']['errors'][] = ze\admin::phrase('Your filename cannot contain illegal characters, e.g. /, \\, :, ;, *, ?, ", <, > or |');
 			}
 		}
 		

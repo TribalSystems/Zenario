@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2018, Tribal Limited
+ * Copyright (c) 2019, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -38,7 +38,7 @@ class zenario_google_map extends ze\moduleBaseClass {
 		$this->clearCacheBy(
 			$clearByContent = false, $clearByMenu = false, $clearByUser = false, $clearByFile = false, $clearByModuleData = false);
 		
-		$apiKey = ze::setting('google_maps_api_key');
+		$apiKey = ze::setting('google_maps_geocode_api_key');
 		if ($apiKey) {
 			$this->data['googlemap'] = '<div id="object_in_' . $this->containerId.'" style="height: '.$this->setting('height').'px; width: '.$this->setting('width').'px;"></div>';
 			$this->callScript(
@@ -47,7 +47,7 @@ class zenario_google_map extends ze\moduleBaseClass {
 				$this->setting("address"),
 				'object_in_' . $this->containerId,
 				$this->phrase( "_GOOGLE_COULD_NOT_FIND_ADDRESS", [ 'address' => $this->setting( 'address' )]),
-				ze\link::protocol() .'maps.google.com/maps/api/js?sensor=false&key=' . urlencode($apiKey)
+				ze\link::protocol() .'maps.google.com/maps/api/js?key=' . urlencode($apiKey)
 			);
 		} else {
 			$this->data['googlemap'] = $this->phrase('Please set a Google Maps API key.');

@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2018, Tribal Limited
+ * Copyright (c) 2019, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -231,7 +231,7 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 					"\n\n",
 					ze\admin::phrase('To add a file format to the known file format list, go to "Configuration -> Uploadable file types" in Organizer.'),
 					"\n\n",
-					ze\admin::phrase('Please also check that your filename does not contain any of the following characters: ' . "\n" . '\\ / : * ? " < > |');
+					ze\admin::phrase('Please also check that your filename does not contain any of the following characters: ' . "\n" . '\\ / : ; * ? " < > |');
 				exit;
 			}
 			

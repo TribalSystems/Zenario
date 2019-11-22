@@ -44,7 +44,7 @@ zenario_menu:
                     ord: 3
                     label: 'Menu text:'
                     type: text
-                    maxlength: 255
+                    maxlength: 250
                     onkeyup: |
                         get('path_of__' + this.id).value =
                             !this.value?

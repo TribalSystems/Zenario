@@ -1,0 +1,5 @@
+Fix a PHP error:
+	Replaced:
+		if ( count($conditions) > 0 ) $this->conditions = $conditions;
+	With:
+		if ( $conditions !== null && count($conditions) > 0 ) $this->conditions = $conditions;

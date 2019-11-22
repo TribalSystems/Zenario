@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2018, Tribal Limited
+ * Copyright (c) 2019, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -1561,7 +1561,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 	public function showFile() {
 		echo '<html>
 				<head>
-				<script id="google_api" type="text/javascript" src="' . ze\link::protocol() . 'maps.google.com/maps/api/js?sensor=false&key=' . urlencode(ze::setting('google_maps_api_key')) . '"></script>
+				<script id="google_api" type="text/javascript" src="' . ze\link::protocol() . 'maps.google.com/maps/api/js?key=' . urlencode(ze::setting('google_maps_api_key')) . '"></script>
 				<script type="text/javascript" src="modules/zenario_location_manager/js/locations.js"></script>
 				</head>
 				<script type="text/javascript">

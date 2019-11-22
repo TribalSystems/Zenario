@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2018, Tribal Limited
+ * Copyright (c) 2019, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -425,19 +425,14 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 				$invalidCharacters = ['\;', '\:', ' ', '\'', '\"', '\\', '\/', '`', '~', '{', '}', '[', ']', ',', '.', '&', '?'];
 				
 				foreach (explode(',', $values['advanced/custom_get_requests']) as $request) {
-					$getRequestToCharacterArray = str_split($request);
-					$characterCountKeys = array_keys(array_count_values($getRequestToCharacterArray));
 					
-					foreach ($invalidCharacters as $invalidCharacter) {
+					$badChar = strpbrk($request, '\;\: \'\"\\\/`~{}[],.&?');
 					
-						if (in_array($invalidCharacter, $characterCountKeys)) {
-							$invalidCharErrors .= '"' . $request . '",';
-							//No need to check for any more errors if 1 was found.
-							break;
-						}
+					if ($badChar !== false) {
+						$invalidCharErrors .= '"' . $request . '",';
 					}
 					
-					if (!in_array('\=', $characterCountKeys)) {
+					if (strpos($request, '=') === false) {
 						$missingEqualsSigns .= '"' . $request . '",';
 					}
 				}
@@ -447,7 +442,7 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 						$fields['advanced/custom_get_requests']['error'] .= ze\admin::phrase('Invalid characters in: [[invalid_chars]]. ', ['invalid_chars' => substr($invalidCharErrors, 0, -1)]);
 					}
 					
-					if (!empty($invalidCharErrors)) {
+					if (!empty($missingEqualsSigns)) {
 						$fields['advanced/custom_get_requests']['error'] .= ze\admin::phrase('Missing "=" sign in: [[missing_equals_sign]]. ', ['missing_equals_sign' => substr($missingEqualsSigns, 0, -1)]);
 					}
 				}

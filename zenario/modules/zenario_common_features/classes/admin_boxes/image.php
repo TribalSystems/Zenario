@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2018, Tribal Limited
+ * Copyright (c) 2019, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -84,6 +84,9 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 		
 		} elseif (ze\file::mimeType($values['details/filename']) != ze\row::get('files', 'mime_type', $box['key']['id'])) {
 			$box['tabs']['details']['errors'][] = ze\admin::phrase("You must not change the file's extension.");
+		
+		} elseif ($values['details/filename'] !== ze\file::safeName($values['details/filename'])) {
+			$box['tabs']['details']['errors'][] = ze\admin::phrase('The filename must not contain any of the following characters: \\ / : ; * ? " < > |');
 		}
 		
 		$tags = ze\ray::explodeAndTrim($values['details/tags']);

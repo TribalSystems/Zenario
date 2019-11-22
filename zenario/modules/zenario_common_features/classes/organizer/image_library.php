@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2018, Tribal Limited
+ * Copyright (c) 2019, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -236,11 +236,11 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 				
 				if (isset($item['privacy'])) {
 					if ($item['privacy'] == 'auto') {
-						$item['tooltip'] = ze\admin::phrase('[[name]] is Hidden. (will become Public when placed on a public content item, or Private when placed on a private content item)', ['name' => $item['filename']]);
+						$item['tooltip'] = ze\admin::phrase('[[name]] is Hidden. (will become Public when placed on a public content item, or Private when placed on a private content item)', ['name' => htmlspecialchars($item['filename'])]);
 					} elseif ($item['privacy'] == 'private') {
-						$item['tooltip'] = ze\admin::phrase('[[name]] is Private. (only a logged-in extranet user can access this image via an internal link; URL will change from time to time)', ['name' => $item['filename']]);
+						$item['tooltip'] = ze\admin::phrase('[[name]] is Private. (only a logged-in extranet user can access this image via an internal link; URL will change from time to time)', ['name' => htmlspecialchars($item['filename'])]);
 					} elseif ($item['privacy'] == 'public') {
-						$item['tooltip'] = ze\admin::phrase('[[name]] is Public. (any visitor who knows the public link can access it)', ['name' => $item['filename']]);
+						$item['tooltip'] = ze\admin::phrase('[[name]] is Public. (any visitor who knows the public link can access it)', ['name' => htmlspecialchars($item['filename'])]);
 					}
 				}
 			}
@@ -392,7 +392,7 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 				return $fileId;
 
 			} else {
-				echo ze\admin::phrase('Please upload a valid GIF, JPG or PNG image.');
+				echo ze\admin::phrase('Please upload a valid GIF, JPG, PNG or SVG image.');
 				return false;
 			}
 

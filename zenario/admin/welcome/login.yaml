@@ -13,11 +13,13 @@ login:
                         html: |
                             <h1>Zenario Administrator Login</h1>
                             <p>
-                                Your administrator username and a temporary password have been emailed to you.
-                                (If you have not received this then please check your &quot;spam&quot; folder
-                                in case the email has been mis-filed.)
+                                If your details are known to this site, your administrator username and a temporary
+                                password will have been emailed to you.
+                                
+                                Please check your "spam" folder if not immediately received!
+                            </p><p>
+                                Then please enter your details below.
                             </p>
-                            <p>Please enter them below:</p>
                 description:
                     full_width: true
                     snippet:

@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2018, Tribal Limited
+ * Copyright (c) 2019, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -303,7 +303,7 @@ class zenario_location_map_and_listing extends ze\moduleBaseClass {
 		// Filter locations by distance to postcode
 		$lat = $lng = $label = $error = false;
 		if ($this->setting('enable_postcode_search') && !empty($this->data['postcode'])) {
-			$json = file_get_contents('https://maps.googleapis.com/maps/api/geocode/json?key=' . urlencode(ze::setting('google_maps_api_key')) . '&address=' . urlencode($this->data['postcode']) . '&components=postal_code:' .  urlencode($this->data['postcode']));
+			$json = file_get_contents('https://maps.googleapis.com/maps/api/geocode/json?key=' . urlencode(ze::setting('google_maps_geocode_api_key')) . '&address=' . urlencode($this->data['postcode']) . '&components=postal_code:' .  urlencode($this->data['postcode']));
 			$data = json_decode($json, true);
 			switch ($data['status']) {
 				case 'OK':
@@ -478,7 +478,7 @@ class zenario_location_map_and_listing extends ze\moduleBaseClass {
 					}
 				</style>
 				
-				<script id="google_api" type="text/javascript" src="https://maps.google.com/maps/api/js?sensor=false&key=' . urlencode(ze::setting('google_maps_api_key')) . '"></script>';
+				<script id="google_api" type="text/javascript" src="https://maps.google.com/maps/api/js?key=' . urlencode(ze::setting('google_maps_api_key')) . '"></script>';
 			
 			//Add icons so the JavaScript code can look up the background image from them
 			$cssClasses = [];

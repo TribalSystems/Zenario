@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2018, Tribal Limited
+ * Copyright (c) 2019, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -510,7 +510,7 @@ class zenario_abstract_fea extends ze\moduleBaseClass {
 	
 	//Add dataset fields onto an FEA form
 	//Called in fillVisitorTUIX
-	protected function setupDatasetFields(&$tags, &$fields, &$values, $tab, $dataset, $datasetFieldIds, $recordId, $startOrd = 99, $edit = true) {
+	protected function setupDatasetFields(&$tags, &$fields, &$values, $tab, $dataset, $datasetFieldIds, $recordId, $startOrd = 99, $edit = true, $flat = true) {
 		
 		foreach ($datasetFieldIds as $datasetFieldId) {
 			$datasetField = ze\dataset::fieldDetails($datasetFieldId, $dataset);
@@ -548,7 +548,7 @@ class zenario_abstract_fea extends ze\moduleBaseClass {
 					$newInput['type'] = "select";
 					$newInput['empty_value'] = " -- Select --";
 				} else {
-					$list = ze\dataset::fieldLOV($datasetField);
+					$list = ze\dataset::fieldLOV($datasetField, $flat);
 					if (isset($list[$newInput['value']])) {
 						$newInput['value'] = $list[$newInput['value']];
 					}
@@ -560,7 +560,7 @@ class zenario_abstract_fea extends ze\moduleBaseClass {
 			}
 			
 			if ($edit && in_array($datasetField['type'], ['centralised_select', 'centralised_radios', 'select', 'radios', 'checkboxes'])) {
-				$newInput['values'] = ze\dataset::fieldLOV($datasetField);
+				$newInput['values'] = ze\dataset::fieldLOV($datasetField, $flat);
 			}
 			
 			//Merge any custom tuix with fields

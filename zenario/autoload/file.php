@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2018, Tribal Limited
+ * Copyright (c) 2019, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -50,6 +50,38 @@ class file {
 		}
 	
 		return false;
+	}
+	
+	
+	//Attempt to check if the contents of a file match the file
+	public static function check($filepath, $mimeType = null) {
+		
+		if ($mimeType === null) {
+			$mimeType = \ze\file::mimeType($filepath);
+		}
+		
+		$check = true;
+		\ze::ignoreErrors();
+		
+			if (\ze\file::isImageOrSVG($mimeType)) {
+				if (\ze\file::isImage($mimeType)) {
+					$check = (bool) getimagesize($filepath);
+			
+				} else {
+					if (function_exists('simplexml_load_string')) {
+						$check = (bool) simplexml_load_string(file_get_contents($filepath));
+					}
+				}
+			
+			} elseif ($mimeType == 'application/zip'  || substr($mimeType, 0, 45) == 'application/vnd.openxmlformats-officedocument') {
+				if (class_exists('ZipArchive')) {
+					$zip = new \ZipArchive;
+					$check = ($zip->open($filepath)) && ($zip->numFiles);
+				}
+			}
+		\ze::noteErrors();
+		
+		return $check;
 	}
 
 	//Formerly "addFileToDatabase()"
@@ -118,12 +150,16 @@ class file {
 
 
 
-		//Check if the file is an image
+		//Check if the file is an image and get its meta info
+		//(Note this logic is the same as in ze\file::check(), except it also saves the meta info.)
 		if (\ze\file::isImageOrSVG($file['mime_type'])) {
 	
 			if (\ze\file::isImage($file['mime_type'])) {
-		
-				$image = getimagesize($location);
+				
+				\ze::ignoreErrors();
+					$image = getimagesize($location);
+				\ze::noteErrors();
+				
 				if ($image === false) {
 					return false;
 				}	
@@ -148,30 +184,36 @@ class file {
 				}
 	
 			} else
-			if (function_exists('simplexml_load_string')
-			 && ($svg = simplexml_load_string(file_get_contents($location)))) {
-		
-				foreach ($svg->attributes() as $name => $value) {
-					switch (strtolower($name)) {
-						case 'width':
-							$file['width'] = (int) $value;
-							break;
+			if (function_exists('simplexml_load_string')) {
+				\ze::ignoreErrors();
+					$svg = simplexml_load_string(file_get_contents($location));
+				\ze::noteErrors();
 				
-						case 'height':
-							$file['height'] = (int) $value;
-							break;
+				if ($svg) {
+					foreach ($svg->attributes() as $name => $value) {
+						switch (strtolower($name)) {
+							case 'width':
+								$file['width'] = (int) $value;
+								break;
 				
-						case 'viewbox':
+							case 'height':
+								$file['height'] = (int) $value;
+								break;
+				
+							case 'viewbox':
 					
-							$viewbox = explode(' ', (string) $value);
+								$viewbox = explode(' ', (string) $value);
 					
-							if (empty($file['width']) && !empty($viewbox[2])) {
-								$file['width'] = (int) $viewbox[2];
-							}
-							if (empty($file['height']) && !empty($viewbox[3])) {
-								$file['height'] = (int) $viewbox[3];
-							}
+								if (empty($file['width']) && !empty($viewbox[2])) {
+									$file['width'] = (int) $viewbox[2];
+								}
+								if (empty($file['height']) && !empty($viewbox[3])) {
+									$file['height'] = (int) $viewbox[3];
+								}
+						}
 					}
+				} else {
+					return false;
 				}
 			}
 	
@@ -179,6 +221,12 @@ class file {
 			$filenameArray = explode('.', $filename);
 			$altTag = trim(preg_replace('/[^a-z0-9]+/i', ' ', $filenameArray[0]));
 			$file['alt_tag'] = $altTag;
+		
+		//For non images, just run ze\file::check() without any specific tweaks.
+		} else {
+			if (!\ze\file::check($location, $file['mime_type'])) {
+				return false;
+			}
 		}
 
 
@@ -858,12 +906,15 @@ class file {
 			}
 		}
 		
+		$safeName = \ze\file::safeName($image['filename']);
+		$filepath = CMS_ROOT. $path. $safeName;
+		
 		//Look for the image inside the cache directory
-		if ($path && file_exists($path. $image['filename'])) {
+		if ($path && file_exists($filepath)) {
 		
 			//If the image is already available, all we need to do is link to it
 			if ($internalFilePath) {
-				$url = CMS_ROOT. $path. $image['filename'];
+				$url = $filepath;
 		
 			} else {
 				if ($fullPath) {
@@ -871,7 +922,7 @@ class file {
 				} else {
 					$url = \ze\link::absoluteIfNeeded();
 				}
-				$url .= $path. rawurlencode($image['filename']);
+				$url .= $path. rawurlencode($safeName);
 			
 				$width = $widthOut;
 				$height = $heightOut;
@@ -945,17 +996,17 @@ class file {
 			if ($imageNeedsToBeResized) {
 				\ze\file::resizeImageStringToSize($image['data'], $image['mime_type'], $imageWidth, $imageHeight, $newWidth, $newHeight, $cropWidth, $cropHeight, $cropNewWidth, $cropNewHeight, $offset);
 			}
-		
+			
 			//If $useCacheDir is set, attempt to store the image in the cache directory
 			if ($useCacheDir && $path
-			 && file_put_contents(CMS_ROOT. $path. $image['filename'], $image['data'])) {
-				\ze\cache::chmod(CMS_ROOT. $path. $image['filename'], 0666);
+			 && file_put_contents($filepath, $image['data'])) {
+				\ze\cache::chmod($filepath, 0666);
 			
 				//Try to optimise the image, if the libraries are installed
-				self::optimiseImage(CMS_ROOT. $path. $image['filename']);
+				self::optimiseImage($filepath);
 			
 				if ($internalFilePath) {
-					$url = CMS_ROOT. $path. $image['filename'];
+					$url = $filepath;
 			
 				} else {
 					if ($fullPath) {
@@ -963,7 +1014,7 @@ class file {
 					} else {
 						$url = \ze\link::absoluteIfNeeded();
 					}
-					$url .= $path. rawurlencode($image['filename']);
+					$url .= $path. rawurlencode($safeName);
 				}
 			
 				$width = $widthOut;
@@ -997,7 +1048,7 @@ class file {
 					'mode' => $mode, 'offset' => $offset,
 					'id' => $fileId, 'useCacheDir' => $useCacheDir];
 		
-			$url = 'zenario/file.php?usage=resize&c='. $hash. ($retina? '&retina=1' : ''). '&filename='. rawurlencode($image['filename']);
+			$url = 'zenario/file.php?usage=resize&c='. $hash. ($retina? '&retina=1' : ''). '&filename='. rawurlencode($safeName);
 		
 			$width = $widthOut;
 			$height = $heightOut;
@@ -1262,7 +1313,7 @@ class file {
 		if ($strict) {
 			$filename = preg_replace('@[^\w\.-]@', '', $filename);
 		} else {
-			$filename = str_replace(['/', '\\', ':', '*', '?', '"', '<', '>', '|'], '', $filename);
+			$filename = str_replace(['/', '\\', ':', ';', '*', '?', '"', '<', '>', '|'], '', $filename);
 		}
 		if ($filename === '') {
 			$filename = '_';

@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2018, Tribal Limited
+ * Copyright (c) 2019, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -36,8 +36,9 @@ class document {
 
 	//Formerly "zenario_common_features::uploadDocument()"
 	public static function upload($filepath, $filename, $folderId = false, $privacy = 'offline') {
-		$fileId = \ze\file::addToDatabase('hierarchial_file', $filepath, $filename, false,false,true);
-		return \ze\document::create($fileId, $filename, $folderId, $privacy);
+		if ($fileId = \ze\file::addToDatabase('hierarchial_file', $filepath, $filename, false,false,true)) {
+			return \ze\document::create($fileId, $filename, $folderId, $privacy);
+		}
 	}
 	
 	//Formerly "zenario_common_features::createDocument()"

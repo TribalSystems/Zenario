@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, Tribal Limited
+ * Copyright (c) 2019, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -2188,6 +2188,9 @@ zenario.sendSignal = function(signalName, data) {
 
 
 
+zenario.hasInlineTag = function(html) {
+	return html.match(/\<\s*(link|script|style)/i);
+};
 
 
 
@@ -2226,7 +2229,7 @@ zenario.replacePluginSlotContents = function(slotName, instanceId, resp, additio
 	
 	//Don't try and do an AJAX reload if text has <script> or <styles> tags in
 		//However, if this was a POST submission, ignore this check as we don't want to re-submit the post data
-	if (!isFormPost && resp.responseText.match(/<(link|script|style)/i)) {
+	if (!isFormPost && zenario.hasInlineTag(resp.responseText)) {
 		forceReloadHref = zenario.linkToItem(zenario.cID, zenario.cType, additionalRequests);
 	}
 	
@@ -3152,8 +3155,12 @@ zenario.formatDate = function(date, showTime, format) {
 var tooltipContent = function() {
 		var title = this.title,
 			pos = this.title.indexOf('|');
-	
-		if (pos != -1) {
+		
+		if (zenario.hasInlineTag(title)) {
+			console.error('Dangerous looking tooltip: ', title);
+			throw '<script> tag detected in tooltip, someone forgot to HTML escape something!';
+		
+		} else if (pos != -1) {
 			return '<h3>' + chopLeft(this.title, pos) + '</h3><p>' + chopRight(this.title, pos+1) + '</p>';
 		} else {
 			return title;
@@ -3213,7 +3220,7 @@ zenario.tooltips = function(target, options) {
 		if (thisOptions.position && !defined(thisOptions.position.using)) {
 			thisOptions.position.using = zenario.tooltipsUsing;
 		}
-				
+		
 		$el.jQueryTooltip(thisOptions);
 	});
 };

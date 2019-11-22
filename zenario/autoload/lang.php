@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2018, Tribal Limited
+ * Copyright (c) 2019, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -269,8 +269,15 @@ class lang {
 	//Formerly "applyMergeFields()"
 	public static function applyMergeFields(&$string, $replace, $open = '[[', $close = ']]', $autoHTMLEscape = false) {
 		
-		$content = explode($open, $string);
-		$string = '';
+		//If dataset fields are processed, an array with the label and an ordinal might be passed instead of a label string.
+		//The code below will account for that.
+		if (is_array($string)) {
+			$content = explode($open, $string['label']);
+		} else {
+			$content = explode($open, $string);
+		}
+		
+		$newString = '';
 		$first = true;
 		
 		foreach ($content as &$str) {
@@ -282,7 +289,7 @@ class lang {
 				$str = substr($str, $sbe + 2);
 				
 				if ($autoHTMLEscape) {
-					$string .= htmlspecialchars($replace[$mf] ?? '');
+					$newString .= htmlspecialchars($replace[$mf] ?? '');
 				
 				} else {
 					do {
@@ -295,17 +302,23 @@ class lang {
 								case 'e':
 								case 'escape':
 									//html escaping anything using the "escape" flag
-									$string .= htmlspecialchars($replace[$mf] ?? '');
+									$newString .= htmlspecialchars($replace[$mf] ?? '');
 									break 2;
 							}
 						}
 					
-						$string .= $replace[$mf] ?? '';
+						$newString .= $replace[$mf] ?? '';
 					} while (false);
 				}
 			}
 			
-			$string .= $str;
+			$newString .= $str;
+			
+			if (is_array($string)) {
+				$string['label'] = $newString;
+			} else {
+				$string = $newString;
+			}
 		}
 	}
 	

@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2018, Tribal Limited
+ * Copyright (c) 2019, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -673,7 +673,7 @@ class zenario_extranet_registration extends zenario_extranet {
 			$this->subSections['User_passwords'] = true;
 		}
 		
-		echo $this->openForm('',' class="form-horizontal"');
+		echo $this->openForm('',' class="form-horizontal"', $action = false, $scrollToTopOfSlot = true, $fadeOutAndIn = true);
 			$this->subSections['Registration_Form'] = true;
 			$this->framework('Outer', $this->objects, $this->subSections);
 		echo $this->closeForm();
@@ -684,7 +684,7 @@ class zenario_extranet_registration extends zenario_extranet {
 		
 		$this->objects['Registration_Link'] = $this->refreshPluginSlotAnchor();
 		
-		echo $this->openForm('',' class="form-horizontal"'),
+		echo $this->openForm('',' class="form-horizontal"', $action = false, $scrollToTopOfSlot = true, $fadeOutAndIn = true),
 			$this->remember('extranet_resend');
 			$this->subSections['Resend_Form'] = true;
 			$this->framework('Resend_Form', $this->objects, $this->subSections);

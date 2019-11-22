@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2018, Tribal Limited
+ * Copyright (c) 2019, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -430,21 +430,21 @@ class zenario_common_features__organizer__phrases extends ze\moduleBaseClass {
 
 		} elseif ($numberOf['upload_error']) {
 			echo ze\admin::phrase("There was an error with your file upload. Please make sure you have provided a valid file, in the format required by this tool.").
-					ze\admin::phrase("Language Pack imported. [[added]] ze\lang::phrase(s) were added and [[updated]] ze\lang::phrase(s) have been updated. [[protected]] ze\lang::phrase(s) were protected and not overwritten.", $numberOf);
+					ze\admin::phrase("Language Pack imported. [[added]] phrase(s) were added and [[updated]] phrase(s) have been updated. [[protected]] phrase(s) were protected and not overwritten.", $numberOf);
 	
 		} elseif ($numberOf['added'] || $numberOf['updated']) {
 			echo '<!--Message_Type:Success-->';
 			if ($changeButtonHTML) {
 				echo '<!--Button_HTML:<input type="button" class="submit" value="', ze\admin::phrase('OK'), '" onclick="zenarioO.reloadPage(\'zenario__languages/panels/languages\');"/>-->';
 			}
-			echo ze\admin::phrase("Language pack imported. [[added]] ze\lang::phrase(s) were added and [[updated]] ze\lang::phrase(s) have been updated. [[protected]] ze\lang::phrase(s) were protected and not overwritten.", $numberOf);
+			echo ze\admin::phrase("Language pack imported. [[added]] phrase(s) were added and [[updated]] phrase(s) have been updated. [[protected]] phrase(s) were protected and not overwritten.", $numberOf);
 	
 		} else {
 			echo '<!--Message_Type:Warning-->';
 			echo ze\admin::phrase("No phrases were imported.");
 	
 			if ($numberOf['protected'] > 0) {
-				echo ze\admin::phrase(" [[protected]] ze\lang::phrase(s) were protected and not overwritten.", $numberOf);
+				echo ze\admin::phrase(" [[protected]] phrase(s) were protected and not overwritten.", $numberOf);
 			}
 		}
 	}

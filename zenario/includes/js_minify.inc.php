@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2018, Tribal Limited
+ * Copyright (c) 2019, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -257,6 +257,7 @@ class zenario_minify {
 		'zenario.htmlspecialchars(' => 'zenario._h(',
 		'zenario.httpOrhttps(' => 'zenario._hO(',
 		'zenario.hypEscape(' => 'zenario._hE(',
+		'zenario.hasInlineTag(' => 'zenario._hIT(',
 		'zenario.inDoc(' => 'zenario._iD(',
 		'zenario.inList(' => 'zenario._iL(',
 		'zenario.isFullScreen(' => 'zenario._iFS(',

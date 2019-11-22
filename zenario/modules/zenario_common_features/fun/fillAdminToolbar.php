@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2018, Tribal Limited
+ * Copyright (c) 2019, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -940,9 +940,9 @@ $mrg = [
 	'cID' => ze::$cID,
 	'cType' => ze::$cType,
 	'cVersion' => ze::$cVersion,
-	'cType_name' => ze\content::getContentTypeName(ze::$cType),
-	'title' => ze::$pageTitle,
-	'alias' => ze::$alias,
+	'cType_name' => htmlspecialchars(ze\content::getContentTypeName(ze::$cType)),
+	'title' => htmlspecialchars(ze::$pageTitle),
+	'alias' => htmlspecialchars(ze::$alias),
 	'lang' => ze\lang::name(ze::$langId),
 	'wordcount' => (int) ze\row::get('content_cache', 'text_wordcount', ['content_id' => ze::$cID, 'content_type' => ze::$cType, 'content_version' => ze::$cVersion])
 ];
@@ -1127,7 +1127,7 @@ foreach ($showVersions as $showVersion => $dummy) {
 	
 		$mrg = [];
 		$mrg['version'] = $v['version'];
-		$mrg['name'] = ze\admin::formatName($lastActionBy);
+		$mrg['name'] = htmlspecialchars(ze\admin::formatName($lastActionBy));
 		$mrg['time'] = ze\date::formatTime($lastAction, ze::setting('vis_time_format'), true);
 		$mrg['date'] = ze\admin::formatDate($lastAction, ze::setting('vis_date_format_med'), true);
 

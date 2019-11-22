@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2018, Tribal Limited
+ * Copyright (c) 2019, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -370,7 +370,7 @@ class zenario_location_listing extends ze\moduleBaseClass {
 		echo '
 			<html>
 				<head>
-					<script id="google_api" type="text/javascript" src="https://maps.google.com/maps/api/js?sensor=false&key=' . urlencode(ze::setting('google_maps_api_key')) . '"></script>
+					<script id="google_api" type="text/javascript" src="https://maps.google.com/maps/api/js?key=' . urlencode(ze::setting('google_maps_geocode_api_key')) . '"></script>
 				</head>
 				<body onload="
 					function initMap(elId,lat,lng,zoom) {

@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2018, Tribal Limited
+ * Copyright (c) 2019, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -1995,7 +1995,14 @@ class zenario_user_forms extends ze\moduleBaseClass {
 					if ($valueId == $value) {
 						$html .= ' selected="selected" ';
 					}
-					$html .= '>' . htmlspecialchars(static::fPhrase($label, [], $t)) . '</option>';
+					
+					//If dataset fields are processed, an array with the label and an ordinal might be passed instead of a label string.
+					//The code below will account for that.
+					if (is_array($label)) {
+						$html .= '>' . htmlspecialchars(static::fPhrase($label['label'], [], $t)) . '</option>';
+					} else {
+						$html .= '>' . htmlspecialchars(static::fPhrase($label, [], $t)) . '</option>';
+					}
 				}
 				$html .= '</select>';
 				if ($readonly) {

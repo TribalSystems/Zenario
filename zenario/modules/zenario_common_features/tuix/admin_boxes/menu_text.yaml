@@ -46,7 +46,7 @@ zenario_menu_text:
                     grouping: right_column
                     label: 'Menu text:'
                     type: text
-                    maxlength: 255
+                    maxlength: 250
                     validation:
                         required: Please enter the text for this menu node
                     onkeyup: |

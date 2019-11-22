@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2018, Tribal Limited
+ * Copyright (c) 2019, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -1948,6 +1948,20 @@ _sql
 	UPDATE `[[DB_PREFIX]]content_types`
 	SET enable_categories = 1
 	WHERE content_type_name_en = "Event"
+_sql
+
+
+//Fix a bug where it was possible to put invalid characters in a filename when renaming it.
+//Adding a DB query to sanitise anywhere it's previously happened.
+);	ze\dbAdm::revision(46312
+, <<<_sql
+	UPDATE `[[DB_PREFIX]]files`
+	SET filename =
+		REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(
+		REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(
+			filename
+		, '\\\\', ''), '/', ''), ':', ''), ';', ''), '*', ''),
+		'?', ''), '"', ''), '<', ''), '>', ''), '|', '')
 _sql
 
 );

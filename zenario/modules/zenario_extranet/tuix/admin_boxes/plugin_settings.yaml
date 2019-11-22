@@ -302,7 +302,30 @@ plugin_settings:
                         required_if_not_hidden: Please select a content item.
                 
         error_messages:
-            label: Phrases (error messages)
+            label: Error phrases
+            notices:
+                warn_about_email_enumeration:
+                    show: true
+                    type: warning
+                    visible_if: |
+                        lib.value('login_with', 'first_tab') == 'Email' && (
+                            $.trim(lib.value('wrong_password_message')) != $.trim(lib.value('email_not_in_db_message'))
+                         || $.trim(lib.value('wrong_password_message')) != $.trim(lib.value('contact_not_extranet_message'))
+                        )
+                    message: >
+                        The message when an email address is recognised is different from when it's unknown (or a contact);
+                        a hacker could figure out if an account exists.
+                        For better security, use the same phrase in those three cases.
+                warn_about_screen_name_enumeration:
+                    show: true
+                    type: warning
+                    visible_if: |
+                        lib.value('login_with', 'first_tab') == 'Screen_Name' &&
+                        $.trim(lib.value('wrong_password_message')) != $.trim(lib.value('screen_name_not_in_db_message'))
+                    message: >
+                        The message when an email address is recognised is different from when it's unknown;
+                        a hacker could figure out if an account exists.
+                        For better security, use the same phrase in both cases.
             fields:
                 description:
                     full_width: Yes
@@ -338,6 +361,7 @@ plugin_settings:
                     type: text
                     value: "This email address is not associated with any account."
                     show_phrase_icon: true
+                    redraw_onchange: true
                 screen_name_not_in_db_message:
                     plugin_setting:
                         name: screen_name_not_in_db_message
@@ -346,6 +370,7 @@ plugin_settings:
                     type: text
                     value: "This screen name is not associated with any account."
                     show_phrase_icon: true
+                    redraw_onchange: true
                 wrong_password_message:
                     plugin_setting:
                         name: wrong_password_message
@@ -354,6 +379,7 @@ plugin_settings:
                     type: text
                     value: "The password you have entered is incorrect."
                     show_phrase_icon: true
+                    redraw_onchange: true
                 password_expired_message:
                     plugin_setting:
                         name: password_expired_message
@@ -394,6 +420,7 @@ plugin_settings:
                     type: text
                     value: "The email address entered is associated with a contact, not an extranet user. Please contact the administrator for more assistance."
                     show_phrase_icon: true
+                    redraw_onchange: true
                 accept_terms_and_conditions_message:
                     plugin_setting:
                         name: accept_terms_and_conditions_message

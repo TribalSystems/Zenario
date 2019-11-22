@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2018, Tribal Limited
+ * Copyright (c) 2019, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -1413,19 +1413,8 @@ class welcome {
 			
 				$adminIdL = \ze\admin::checkPassword($values['login/username'], $details, $values['login/password'], $checkViaEmail = false);
 			
-				if (!$adminIdL) {
-					$tags['tabs']['login']['errors']['details_wrong'] =
-						\ze\admin::phrase('Your administaror username and password were not recognised. Please check and try again.');
-					
-					//Be nasty and reset the captcha if they got the username or password wrong!
-					if (\ze\welcome::enableCaptchaForAdminLogins()) {
-						$values['login/admin_login_captcha'] = '';
-					}
-					
-			
-				} elseif (\ze::isError($adminIdL)) {
-					$tags['tabs']['login']['errors']['details_wrong'] =
-						\ze\admin::phrase($adminIdL->__toString());
+				if (!$adminIdL || \ze::isError($adminIdL)) {
+					$tags['tabs']['login']['errors']['details_wrong'] = \ze\admin::phrase('_ERROR_ADMIN_LOGIN_USERNAME');
 					
 					//Be nasty and reset the captcha if they got the username or password wrong!
 					if (\ze\welcome::enableCaptchaForAdminLogins()) {

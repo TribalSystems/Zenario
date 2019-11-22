@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2018, Tribal Limited
+ * Copyright (c) 2019, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -50,7 +50,12 @@ class zenario_common_features__admin_boxes__document_upload extends ze\moduleBas
 			if (is_numeric($document)) {
 				$filename = ze\row::get('files', 'filename', $document);
 			} else {
-				$filename = basename(ze\file::getPathOfUploadInCacheDir($document));
+				$location = ze\file::getPathOfUploadInCacheDir($document);
+				$filename = basename($location);
+				
+				if (!ze\file::check($location)) {
+					$box['tabs']['upload_document']['errors'][] = ze\admin::phrase('The contents of the file "[[filename]]" are corrupted and/or invalid.', ['filename' => $filename]);
+				}
 			}
 			if ($documentNameList){
 				if (in_array($filename,$documentNameList)){

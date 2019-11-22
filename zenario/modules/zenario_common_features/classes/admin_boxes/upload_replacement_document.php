@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2018, Tribal Limited
+ * Copyright (c) 2019, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -74,12 +74,19 @@ class zenario_common_features__admin_boxes__upload_replacement_document extends 
 			 && ($file['checksum'] = md5_file($location))
 			 && ($file['checksum'] = ze::base16To64($file['checksum']))
 		) {
-			$documentId = $box['key']['id'];
-			$document = ze\row::get('documents', ['file_id'], $documentId);
-			$key = ['checksum' => $file['checksum'], 'id' => $document['file_id']];
-			if ($existingFile = ze\row::get('files', ['id', 'filename', 'location', 'path'], $key)) {
-				if (ze\file::docstorePath($existingFile['id'], false)){
-					$fields['file/upload']['error'] = ze\admin::phrase('The replacement document is the same as the current document.');
+			
+			if (!ze\file::check($location)) {
+				$filename = basename($location);
+				$fields['file/upload']['error'] = ze\admin::phrase('The contents of the file "[[filename]]" are corrupted and/or invalid.', ['filename' => $filename]);
+				
+			} else {
+				$documentId = $box['key']['id'];
+				$document = ze\row::get('documents', ['file_id'], $documentId);
+				$key = ['checksum' => $file['checksum'], 'id' => $document['file_id']];
+				if ($existingFile = ze\row::get('files', ['id', 'filename', 'location', 'path'], $key)) {
+					if (ze\file::docstorePath($existingFile['id'], false)){
+						$fields['file/upload']['error'] = ze\admin::phrase('The replacement document is the same as the current document.');
+					}
 				}
 			}
 		}
@@ -101,65 +108,68 @@ class zenario_common_features__admin_boxes__upload_replacement_document extends 
 			
 			//Upload new file
 			$newFileId = ze\file::addToDatabase('hierarchial_file', $replacementDocumentPath, false, false, false, true);
-			$newFile = ze\row::get('files', ['filename', 'short_checksum'], $newFileId);
 			
-			if (!$values['file/keep_meta_data']) {
-				ze\row::update('documents', ['title' => ""], ['id' => $documentId]);
-				ze\row::delete('documents_custom_data', $documentId);
-			}
+			if ($newFileId) {
+				$newFile = ze\row::get('files', ['filename', 'short_checksum'], $newFileId);
 			
-			$documentProperties = [
-				'file_id' => $newFileId,
-				'filename' => $replacementDocumentName,
-				'file_datetime' => date("Y-m-d H:i:s")
-			];
-			
-			//Copy privacy settings if a document with the same file already exists
-			$docWithSameFile = ze\row::get('documents', ['privacy', 'filename'], ['file_id' => $newFileId]);
-			if ($docWithSameFile) {
-				$documentProperties['filename'] = $docWithSameFile['filename'];
-				if ($docWithSameFile['privacy'] == 'public') {
-					$documentProperties['privacy'] = $docWithSameFile['privacy'];
-				} elseif ($publicLink) {
-					ze\row::update('documents', ['privacy' => 'public'], ['file_id' => $newFileId]);
+				if (!$values['file/keep_meta_data']) {
+					ze\row::update('documents', ['title' => ""], ['id' => $documentId]);
+					ze\row::delete('documents_custom_data', $documentId);
 				}
-			}
 			
-			if (!$values['file/keep_thumbnail_image'] || !$values['file/keep_extract_text']) {
-				$extraProperties = ze\document::addExtract($newFileId);
-				if (!$values['file/keep_thumbnail_image']) {
-					$documentProperties['thumbnail_id'] = $extraProperties['thumbnail_id'] ?? 0;
+				$documentProperties = [
+					'file_id' => $newFileId,
+					'filename' => $replacementDocumentName,
+					'file_datetime' => date("Y-m-d H:i:s")
+				];
+			
+				//Copy privacy settings if a document with the same file already exists
+				$docWithSameFile = ze\row::get('documents', ['privacy', 'filename'], ['file_id' => $newFileId]);
+				if ($docWithSameFile) {
+					$documentProperties['filename'] = $docWithSameFile['filename'];
+					if ($docWithSameFile['privacy'] == 'public') {
+						$documentProperties['privacy'] = $docWithSameFile['privacy'];
+					} elseif ($publicLink) {
+						ze\row::update('documents', ['privacy' => 'public'], ['file_id' => $newFileId]);
+					}
 				}
-				if (!$values['file/keep_extract_text']) {
-					$documentProperties['extract'] = $extraProperties['extract'];
-					$documentProperties['extract_wordcount'] = $extraProperties['extract_wordcount'];
+			
+				if (!$values['file/keep_thumbnail_image'] || !$values['file/keep_extract_text']) {
+					$extraProperties = ze\document::addExtract($newFileId);
+					if (!$values['file/keep_thumbnail_image']) {
+						$documentProperties['thumbnail_id'] = $extraProperties['thumbnail_id'] ?? 0;
+					}
+					if (!$values['file/keep_extract_text']) {
+						$documentProperties['extract'] = $extraProperties['extract'];
+						$documentProperties['extract_wordcount'] = $extraProperties['extract_wordcount'];
+					}
 				}
-			}
-			ze\row::set('documents', $documentProperties, $documentId);
-			//If the old file had a public link, create a new public link for the new file and remake all redirects to point to it including the old file.
-			if ($publicLink && ze\cache::cleanDirs()) {
-				$newRedirect = $oldFile['short_checksum'] . '/' . $document['filename'];
-				$sql = '
-					INSERT IGNORE INTO ' . DB_PREFIX . 'document_public_redirects (document_id, file_id, path)
-					VALUES (
-						'. (int) $documentId. ',
-						'. (int) $oldFile['id']. ',
-						\''. ze\escape::sql(mb_substr($newRedirect, 0, 255, 'UTF-8')). '\'
-					)';
-				ze\sql::update($sql);
+				ze\row::set('documents', $documentProperties, $documentId);
+				//If the old file had a public link, create a new public link for the new file and remake all redirects to point to it including the old file.
+				if ($publicLink && ze\cache::cleanDirs()) {
+					$newRedirect = $oldFile['short_checksum'] . '/' . $document['filename'];
+					$sql = '
+						INSERT IGNORE INTO ' . DB_PREFIX . 'document_public_redirects (document_id, file_id, path)
+						VALUES (
+							'. (int) $documentId. ',
+							'. (int) $oldFile['id']. ',
+							\''. ze\escape::sql(mb_substr($newRedirect, 0, 255, 'UTF-8')). '\'
+						)';
+					ze\sql::update($sql);
 				
-				//Delete any redirects to the same document to stop infinite redirect shenanigans
-				ze\row::delete('document_public_redirects', ['document_id' => $documentId, 'file_id' => $newFileId]);
+					//Delete any redirects to the same document to stop infinite redirect shenanigans
+					ze\row::delete('document_public_redirects', ['document_id' => $documentId, 'file_id' => $newFileId]);
 				
-				ze\document::remakeRedirectHtaccessFiles($documentId);
-				ze\document::generatePublicLink($documentId);
-			}
+					ze\document::remakeRedirectHtaccessFiles($documentId);
+					ze\document::generatePublicLink($documentId);
+				}
 			
-			//Check if there are any other documents with the old name, and regenerate their links if necessary
-			$otherDocsWithOldName = ze\row::getArray('documents', 'id', ['file_id' => $document['file_id'], 'privacy' => 'public']);
-			if (isset($otherDocsWithOldName)) {
-				foreach ($otherDocsWithOldName as $docWithOldName) {
-					ze\document::generatePublicLink($docWithOldName);
+				//Check if there are any other documents with the old name, and regenerate their links if necessary
+				$otherDocsWithOldName = ze\row::getArray('documents', 'id', ['file_id' => $document['file_id'], 'privacy' => 'public']);
+				if (isset($otherDocsWithOldName)) {
+					foreach ($otherDocsWithOldName as $docWithOldName) {
+						ze\document::generatePublicLink($docWithOldName);
+					}
 				}
 			}
 		}
